@@ -1,7 +1,8 @@
 # 17 - Implementation Plan: Step-by-Step Tasks
 
-**Version:** 2.1
+**Version:** 2.2
 **Datum:** 2026-02-15
+**Aenderung v2.2:** Phase 2 als implementiert markiert, Abweichungen dokumentiert
 **Aenderung v2.1:** Phase 1 als implementiert markiert, Abweichungen dokumentiert
 **Aenderung v2.0:** Vollstaendige Neufassung — 5 Phasen, ~140 Tasks, 100% Spec-Abdeckung
 
@@ -12,10 +13,45 @@
 | Phase | Tasks | Status | Datum |
 |-------|-------|--------|-------|
 | **Phase 1** | 41 | **ERLEDIGT** | 2026-02-15 |
-| Phase 2 | 37 | Offen | — |
+| **Phase 2** | 37 | **ERLEDIGT** | 2026-02-15 |
 | Phase 3 | 30 | Offen | — |
 | Phase 4 | 20 | Offen | — |
 | Phase 5 | 10 | Offen | — |
+
+### Phase 2 — Ergebnis
+
+**32 von 37 Tasks erledigt.** 5 Tasks offen (Daten-Migration P2.2.1–P2.2.5 + Frontend Integration Tests P2.5.5). Verifikation:
+
+| Objekt | Erwartet | Tatsaechlich |
+|--------|----------|-------------|
+| API-Endpoints | ~81+ | 81+ |
+| Pydantic Models | 13 Dateien | 13 |
+| Backend Services | 10 (BaseService + 8 Entity + Audit) | 10 |
+| Backend Routers | 10 | 10 |
+| Shared Components | 10 | 10 |
+| API Services (Frontend) | 11 (10 Entity + Index) | 11 |
+| Entity View Components | 18 (4×Agents + 4×Buildings + 4×Events + 6×Chat) | 18 |
+| Layout Components | 5 (SimulationShell, Header, Nav, PlatformHeader, UserMenu) | 5 |
+| Zod Validation Schemas | 6 (agent, building, event, simulation, common, index) | 6 |
+| Encryption Utility | 1 | 1 |
+| Backend Tests (gesamt) | bestanden | 52/52 |
+| TypeScript Kompilierung | 0 Fehler | 0 Fehler |
+| Biome Lint | clean | clean (61 Dateien) |
+| Ruff Lint | clean | clean |
+| Swagger UI | ~81+ Endpoints | /api/docs |
+
+### Phase 2 — Abweichungen von Plan
+
+1. **Daten-Migration (P2.2.1–P2.2.5) auf spaeter verschoben** — Seed-Dateien muessen Alt-Daten aus dem bestehenden Velgarien-System (TEXT→UUID Mapping, deutsche Enums→englische Taxonomy-Values, Spalten-Umbenennungen) ins neue Schema konvertieren. Erfordert Zugriff auf die konkreten Alt-Daten. Wird separat durchgefuehrt.
+2. **Frontend Integration Tests (P2.5.5) auf spaeter verschoben** — Component-Tests erfordern Mock-Setup fuer Supabase + API. Wird mit restlichen Tests in Phase 3 ergaenzt.
+3. **`settings` Import-Konflikt in app.py** — `backend.routers.settings` kollidiert mit `backend.config.settings`. Geloest durch `from backend.config import settings as app_settings`.
+4. **A003 Ruff-Ignore fuer Services** — `backend/services/**/*.py` braucht A003-Ignore (`list` als Methode in BaseService, shadows builtin).
+5. **SimulationsApiService zusaetzlich erstellt** — Plan nannte 9 API Services (P2.4.3), tatsaechlich 10 + SimulationsApiService (P2.4.4) + Index = 11 Dateien.
+6. **Kein SimulationSelector / LocaleSelector** — PlatformHeader implementiert, aber SimulationSelector und LocaleSelector als separate Komponenten nicht erstellt. Simulation-Kontext wird ueber AppStateManager + SimulationShell geloest. LocaleSelector kommt in Phase 3 (i18n).
+7. **AppStateManager erweitert** — Neue Signals: `currentRole`, `taxonomies`, `settings`, `simulationId`. Neue Computed: `isOwner`, `canAdmin`. `canEdit` vereinfacht (nutzt `currentRole` Signal statt Member-Lookup).
+8. **TemplateResult Typ-Import** — `app-shell.ts` braucht expliziten `import type { TemplateResult }` fuer `let content` in `_renderSimulationView()` (Biome verbietet implizites any).
+9. **Event als SimEvent** — Frontend Events-Komponenten importieren `Event as SimEvent` um DOM-`Event` Namenskonflikt zu vermeiden.
+10. **ApiResponse<Building> Typ-Annotation** — `BuildingEditModal.ts` braucht explizite `let response: ApiResponse<Building>` (Biome noUndeclaredVariables).
 
 ### Phase 1 — Ergebnis
 

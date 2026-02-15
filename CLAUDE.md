@@ -15,7 +15,7 @@
 
 Multi-simulation platform rebuilt from a single-world Flask app. See `00_PROJECT_OVERVIEW.md` for full context.
 
-**Current Status:** Phase 1 complete (Platform Foundation). Phase 2 next (Velgarien as first simulation).
+**Current Status:** Phase 1 + Phase 2 complete. Phase 3 next (Settings, i18n, AI Pipelines).
 
 ## Tech Stack
 
@@ -41,21 +41,30 @@ Multi-simulation platform rebuilt from a single-world Flask app. See `00_PROJECT
 
 ```
 backend/              FastAPI application
-  app.py              Entry point
+  app.py              Entry point (registers 13 routers)
   config.py           Settings (pydantic-settings, extra="ignore")
   dependencies.py     JWT auth, Supabase client, role checking
-  routers/            API endpoints (/api/v1/...)
-  models/             Pydantic request/response models
-  services/           Business logic
+  routers/            API endpoints — 13 routers, 81+ endpoints (/api/v1/...)
+  models/             Pydantic request/response models (16 files)
+  services/           Business logic (BaseService + 8 entity + audit + simulation)
   middleware/         Rate limiting, security headers
-  tests/              pytest tests (conftest.py has TestClient + JWT fixtures)
+  utils/              Encryption (AES-256 for settings)
+  tests/              pytest tests (52 tests: unit + integration)
 frontend/             Lit + Vite application
   src/
-    app-shell.ts      Main app with @lit-labs/router
-    components/       Lit web components (auth/, platform/)
-    services/         Supabase client, API services, AppStateManager
+    app-shell.ts      Main app with @lit-labs/router (auth + simulation-scoped routes)
+    components/
+      auth/           Login, Register views
+      platform/       PlatformHeader, UserMenu, SimulationsDashboard
+      layout/         SimulationShell, SimulationHeader, SimulationNav
+      shared/         10 reusable components (BaseModal, DataTable, FilterBar, etc.)
+      agents/         AgentsView, AgentCard, AgentEditModal, AgentDetailsPanel
+      buildings/      BuildingsView, BuildingCard, BuildingEditModal, BuildingDetailsPanel
+      events/         EventsView, EventCard, EventEditModal, EventDetailsPanel
+      chat/           ChatView, ChatWindow, ConversationList, MessageList, MessageInput, AgentSelector
+    services/         Supabase client, 11 API services, AppStateManager
     styles/           CSS design tokens (tokens/) + base styles (base/)
-    types/            TypeScript interfaces (all in index.ts)
+    types/            TypeScript interfaces (index.ts) + Zod validation schemas (validation/)
   tests/              vitest tests
 supabase/
   migrations/         12 SQL migration files (001-012)
@@ -124,16 +133,19 @@ All endpoints under `/api/v1/`. Swagger UI at `/api/docs`. Responses use unified
 }
 ```
 
-Current endpoints: `/api/v1/health`, `/api/v1/users/me`, `/api/v1/simulations` (CRUD).
+81+ endpoints across 13 routers. Platform-level: `/api/v1/health`, `/api/v1/users/me`, `/api/v1/simulations`. Simulation-scoped: `/api/v1/simulations/{simulation_id}/agents`, `buildings`, `events`, `agent_professions`, `locations`, `taxonomies`, `settings`, `chat`, `members`, `campaigns`.
 
 ## Backend Patterns
 
-- **Config:** `backend/config.py` — `Settings(BaseSettings)` with `extra="ignore"`, reads `.env`
+- **Config:** `backend/config.py` — `Settings(BaseSettings)` with `extra="ignore"`, reads `.env`. Imported as `app_settings` in `app.py` to avoid conflict with `routers.settings`.
 - **Auth:** `get_current_user()` validates JWT via python-jose, returns `CurrentUser(id, email, access_token)`
 - **Supabase client:** `get_supabase()` creates client with user's JWT (RLS enforced)
 - **Role checking:** `require_role("admin")` factory returns Depends() that checks simulation_members
 - **Rate limiting:** slowapi — 30/hr AI generation, 100/min standard
 - **Models:** `PaginatedResponse[T]`, `SuccessResponse[T]`, `ErrorResponse` in `models/common.py`
+- **BaseService:** Generic CRUD in `services/base_service.py` — uses `active_*` views for soft-delete filtering, optional `include_deleted=True` for admin queries
+- **AuditService:** `services/audit_service.py` — logs CRUD operations to `audit_log` table with entity diffs
+- **Encryption:** `utils/encryption.py` — AES-256 via `cryptography` for sensitive settings values
 
 ## Frontend Patterns
 
@@ -143,6 +155,11 @@ Current endpoints: `/api/v1/health`, `/api/v1/users/me`, `/api/v1/simulations` (
 - Routing via `@lit-labs/router` (Reactive Controller in app-shell)
 - All types in `frontend/src/types/index.ts`
 - Design tokens as CSS Custom Properties in `styles/tokens/`
+- **Shared components:** 10 reusable components in `components/shared/` (BaseModal, SharedFilterBar, DataTable, Pagination, Toast, ConfirmDialog, FormBuilder, ErrorState, LoadingState, EmptyState)
+- **Entity views:** Each entity has 4 files: ListView, Card, EditModal, DetailsPanel (except Chat which has 6)
+- **Event naming:** `import type { Event as SimEvent }` to avoid DOM `Event` conflict
+- **Taxonomy-driven options:** Dropdowns populated from `appState.getTaxonomiesByType()` with locale-aware labels
+- **AppStateManager signals:** `user`, `accessToken`, `currentSimulation`, `simulations`, `currentRole`, `taxonomies`, `settings`. Computed: `isAuthenticated`, `simulationId`, `isOwner`, `canAdmin`, `canEdit`
 
 ## Spec Documents
 
@@ -158,7 +175,7 @@ Current endpoints: `/api/v1/health`, `/api/v1/users/me`, `/api/v1/simulations` (
 | `10_AUTH_AND_SECURITY.md` | Hybrid auth, JWT validation, RLS strategies | v1.0 (rewritten) |
 | `12_DESIGN_SYSTEM.md` | CSS tokens, brutalist aesthetic, component styles | v1.0 |
 | `13_TECHSTACK_RECOMMENDATION.md` | All config templates (pyproject, package.json, etc.) | v1.3 |
-| `17_IMPLEMENTATION_PLAN.md` | 138 tasks, 5 phases, dependency graph | v2.1 |
+| `17_IMPLEMENTATION_PLAN.md` | 138 tasks, 5 phases, dependency graph | v2.2 |
 
 ## Python Version
 
@@ -169,3 +186,4 @@ Use `python3.13` explicitly (system `python3` is 3.9.6). The venv at `backend/.v
 Per-file ignores in `pyproject.toml`:
 - `backend/tests/**/*.py` — S101 (assert), S105/S106 (hardcoded passwords in test fixtures)
 - `backend/routers/**/*.py` + `backend/dependencies.py` — B008 (Depends() in defaults, standard FastAPI pattern)
+- `backend/services/**/*.py` — A003 (`list` method in BaseService shadows builtin)

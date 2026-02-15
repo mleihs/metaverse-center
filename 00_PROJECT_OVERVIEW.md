@@ -2,7 +2,7 @@
 
 **Version:** 1.1
 **Datum:** 2026-02-15
-**Status:** Phase 1 implementiert (Platform Foundation)
+**Status:** Phase 1 + Phase 2 implementiert (Platform Foundation + Entity CRUD)
 
 ---
 
