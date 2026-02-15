@@ -1,6 +1,6 @@
 # 16 - Testing Strategy
 
-**Version:** 1.0
+**Version:** 1.1
 **Datum:** 2026-02-15
 
 ---
@@ -834,16 +834,26 @@ jobs:
   test-backend:
     runs-on: ubuntu-latest
     needs: lint
-    services:
-      supabase:
-        image: supabase/postgres:15
-        ports: [54322:5432]
-        env:
-          POSTGRES_PASSWORD: postgres
+    # Kein services:-Block noetig — supabase start verwaltet eigene Docker-Container
+    # (inkl. Postgres auf 54322, API-Gateway auf 54321, Auth, Storage, etc.)
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: '3.11' }
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with: { version: latest }
+
+      - name: Start Supabase (local)
+        run: |
+          supabase start
+          # Exportiere Supabase-Umgebungsvariablen fuer nachfolgende Steps
+          supabase status -o env >> $GITHUB_ENV
+        # Startet alle Supabase-Dienste lokal:
+        # - API Gateway: http://localhost:54321
+        # - Postgres: localhost:54322
+        # - Auth, Storage, Realtime, etc.
 
       - name: Install Dependencies
         run: pip install -e ".[test]"
@@ -857,8 +867,10 @@ jobs:
         run: pytest tests/integration/ -v -m integration
         working-directory: backend
         env:
-          SUPABASE_URL: http://localhost:54321
-          SUPABASE_JWT_SECRET: ${{ secrets.TEST_JWT_SECRET }}
+          # Variablen von `supabase status -o env` (via GITHUB_ENV):
+          # SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, etc.
+          # werden automatisch aus dem vorherigen Step uebernommen
+          SUPABASE_DB_URL: postgresql://postgres:postgres@localhost:54322/postgres
 
   test-frontend:
     runs-on: ubuntu-latest

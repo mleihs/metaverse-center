@@ -1,55 +1,56 @@
-# 04 - Domain Models: Entitäten mit Simulation-Scope
+# 04 - Domain Models: Entitaeten mit Simulation-Scope
 
-**Version:** 1.0
+**Version:** 2.0
 **Datum:** 2026-02-15
+**Aenderung v2.0:** Alle Spalten-Renames aus 03_DATABASE_SCHEMA_NEW v2.0 uebernommen
 
 ---
 
-## Übersicht
+## Uebersicht
 
-Alle Entitäten tragen eine `simulation_id` und sind damit einer Simulation zugeordnet. Die Simulation ist die Top-Level-Entity.
+Alle Entitaeten tragen eine `simulation_id` und sind damit einer Simulation zugeordnet. Die Simulation ist die Top-Level-Entity.
 
 ```
 Simulation (Top-Level)
-├── Agents
-│   ├── AgentProfessions
-│   └── AgentInteractions (mit Events, Buildings, Trends)
-├── Buildings
-│   ├── BuildingAgentRelations
-│   ├── BuildingEventRelations
-│   └── BuildingProfessionRequirements
-├── Events
-│   └── EventReactions
-├── Cities
-│   ├── Zones
-│   └── CityStreets
-├── Campaigns
-│   ├── CampaignEvents
-│   └── CampaignMetrics
-├── SocialTrends
-│   ├── TrendKeywords
-│   └── TrendKeywordAssociations
-├── SocialMedia
-│   ├── SocialMediaPosts
-│   ├── SocialMediaComments
-│   └── SocialMediaAgentReactions
-├── ChatConversations
-│   └── ChatMessages
-├── PromptTemplates
-└── SimulationTaxonomies
++-- Agents
+|   +-- AgentProfessions
+|   +-- AgentInteractions (mit Events, Buildings, Trends)
++-- Buildings
+|   +-- BuildingAgentRelations
+|   +-- BuildingEventRelations
+|   +-- BuildingProfessionRequirements
++-- Events
+|   +-- EventReactions
++-- Cities
+|   +-- Zones
+|   +-- CityStreets
++-- Campaigns
+|   +-- CampaignEvents
+|   +-- CampaignMetrics
++-- SocialTrends
+|   +-- TrendKeywords
+|   +-- TrendKeywordAssociations
++-- SocialMedia
+|   +-- SocialMediaPosts
+|   +-- SocialMediaComments
+|   +-- SocialMediaAgentReactions
++-- ChatConversations
+|   +-- ChatMessages
++-- PromptTemplates
++-- SimulationTaxonomies
 ```
 
 ---
 
 ## 1. Simulation
 
-**Top-Level Entity** - Container für alle anderen Entitäten.
+**Top-Level Entity** - Container fuer alle anderen Entitaeten.
 
 ```typescript
 interface Simulation {
   id: UUID;
-  name: string;                     // "Velgarien"
-  slug: string;                     // "velgarien"
+  name: string;                     // "Velgarien" — CHECK length 1-255
+  slug: string;                     // "velgarien" — CHECK ^[a-z0-9-]+$ length <= 100
   description: string;
   theme: SimulationTheme;           // 'dystopian' | 'utopian' | 'fantasy' | 'scifi' | 'historical' | 'custom'
   status: SimulationStatus;         // 'draft' | 'configuring' | 'active' | 'paused' | 'archived'
@@ -70,15 +71,15 @@ interface Simulation {
 }
 ```
 
-**Zugehörige Entitäten:**
+**Zugehoerige Entitaeten:**
 
 ```typescript
 interface SimulationMember {
   id: UUID;
   simulation_id: UUID;
   user_id: UUID;
-  role: SimulationRole;             // 'owner' | 'admin' | 'editor' | 'viewer'
-  invited_by?: UUID;
+  member_role: SimulationRole;      // RENAMED: role -> member_role (SQL reserved word)
+  invited_by_id?: UUID;             // RENAMED: invited_by -> invited_by_id (FK-Suffix)
   joined_at: string;
 
   // Populated
@@ -89,9 +90,9 @@ interface SimulationSetting {
   id: UUID;
   simulation_id: UUID;
   category: SettingCategory;        // 'general' | 'world' | 'ai' | 'integration' | 'design' | 'access'
-  key: string;
-  value: any;                       // JSON value
-  updated_by?: UUID;
+  setting_key: string;              // RENAMED: key -> setting_key (SQL reserved word)
+  setting_value: any;               // RENAMED: value -> setting_value (SQL reserved word)
+  updated_by_id?: UUID;             // RENAMED: updated_by -> updated_by_id (FK-Suffix)
   created_at: string;
   updated_at: string;
 }
@@ -120,7 +121,7 @@ interface SimulationTaxonomy {
 interface Agent {
   id: UUID;
   simulation_id: UUID;
-  name: string;
+  name: string;                     // CHECK length 1-255
   system?: string;                  // Referenz auf Taxonomy 'system'
   character?: string;               // Charakter-Beschreibung
   background?: string;              // Hintergrund-Geschichte
@@ -129,10 +130,13 @@ interface Agent {
   portrait_image_url?: string;
   portrait_description?: string;
   data_source?: string;
-  created_by_user?: UUID;
+  created_by_id?: UUID;             // RENAMED: created_by_user -> created_by_id (FK-Suffix)
   created_at: string;
   updated_at: string;
   deleted_at?: string;
+
+  // Generated (read-only, not in create/update DTOs)
+  search_vector?: string;           // tsvector, not exposed in API
 
   // Relations (loaded on demand)
   professions?: AgentProfession[];
@@ -141,12 +145,13 @@ interface Agent {
 }
 ```
 
-**Mapping Alt → Neu:**
-- `charakter` → `character`
-- `hintergrund` → `background`
-- `portrait_description_encoded` → `portrait_description`
-- `event_reactions` JSONB → eliminiert (nur noch `event_reactions` Tabelle)
-- `id` TEXT → `id` UUID
+**Mapping Alt -> Neu:**
+- `charakter` -> `character`
+- `hintergrund` -> `background`
+- `portrait_description_encoded` -> `portrait_description`
+- `created_by_user` -> `created_by_id`
+- `event_reactions` JSONB -> eliminiert (nur noch `event_reactions` Tabelle)
+- `id` TEXT -> `id` UUID
 
 ---
 
@@ -184,8 +189,8 @@ interface AgentProfession {
 interface Building {
   id: UUID;
   simulation_id: UUID;
-  name: string;
-  type: string;                     // Referenz auf Taxonomy 'building_type'
+  name: string;                     // CHECK length 1-255
+  building_type: string;            // RENAMED: type -> building_type (SQL reserved word)
   description?: string;
   style?: string;
   location?: GeoLocation;           // JSON: {lat, lng, address}
@@ -195,7 +200,7 @@ interface Building {
   address?: string;
   population_capacity: number;
   construction_year?: number;
-  condition?: string;
+  building_condition?: string;      // RENAMED: condition -> building_condition (SQL reserved word)
   geojson?: GeoJSON;
   image_url?: string;
   image_prompt_text?: string;
@@ -205,6 +210,9 @@ interface Building {
   created_at: string;
   updated_at: string;
   deleted_at?: string;
+
+  // Generated (read-only)
+  search_vector?: string;           // tsvector, not exposed in API
 
   // Relations
   agents?: BuildingAgentRelation[];
@@ -226,10 +234,10 @@ interface Building {
 interface Event {
   id: UUID;
   simulation_id: UUID;
-  title: string;
-  type?: string;
+  title: string;                    // CHECK length 1-500
+  event_type?: string;              // RENAMED: type -> event_type (SQL reserved word)
   description?: string;
-  event_timestamp: string;          // Renamed: timestamp → event_timestamp
+  occurred_at: string;              // RENAMED: event_timestamp -> occurred_at (Timestamp-Suffix)
   data_source: string;              // 'local' | 'generated' | 'imported' | 'transformed'
   metadata?: Record<string, any>;
   source_platform?: string;
@@ -240,11 +248,14 @@ interface Event {
   original_trend_data?: Record<string, any>;
   impact_level: number;             // 1-10
   location?: string;
-  tags: string[];
+  tags: string[];                   // CHANGED: was jsonb, now text[]
   external_refs?: Record<string, any>;
   created_at: string;
   updated_at: string;
   deleted_at?: string;
+
+  // Generated (read-only)
+  search_vector?: string;           // tsvector, not exposed in API
 
   // Relations
   reactions?: EventReaction[];
@@ -266,7 +277,7 @@ interface EventReaction {
   agent_id: UUID;
   agent_name: string;
   reaction_text: string;
-  reaction_timestamp: string;
+  occurred_at: string;              // RENAMED: reaction_timestamp -> occurred_at (Timestamp-Suffix)
   emotion?: string;
   confidence_score?: number;        // 0.0-1.0
   data_source?: string;
@@ -283,13 +294,13 @@ interface EventReaction {
 
 ## 7. City
 
-**Übergeordnete geographische Einheit.**
+**Uebergeordnete geographische Einheit.**
 
 ```typescript
 interface City {
   id: UUID;
   simulation_id: UUID;
-  name: string;
+  name: string;                     // CHECK length 1-255
   layout_type?: string;
   description?: string;
   population: number;
@@ -317,7 +328,7 @@ interface Zone {
   id: UUID;
   simulation_id: UUID;
   city_id: UUID;
-  name: string;
+  name: string;                     // CHECK length 1-255
   description?: string;
   zone_type: string;                // Referenz auf Taxonomy 'zone_type'
   population_estimate: number;
@@ -344,7 +355,7 @@ interface CityStreet {
   city_id: UUID;
   zone_id?: UUID;
   name?: string;
-  type?: string;
+  street_type?: string;             // RENAMED: type -> street_type (SQL reserved word)
   length_km?: number;
   geojson?: GeoJSON;
   created_at: string;
@@ -356,19 +367,19 @@ interface CityStreet {
 
 ## 10. Campaign
 
-**Organisierte Aktionen/Initiativen. Generischer Ersatz für `propaganda_campaigns`.**
+**Organisierte Aktionen/Initiativen. Generischer Ersatz fuer `propaganda_campaigns`.**
 
 ```typescript
 interface Campaign {
   id: UUID;
   simulation_id: UUID;
-  title: string;                    // Renamed: dystopian_title → title
+  title: string;                    // CHECK length 1-500
   description?: string;
   campaign_type?: string;           // Referenz auf Taxonomy 'campaign_type'
   target_demographic?: string;      // Referenz auf Taxonomy
   urgency_level?: string;           // Referenz auf Taxonomy
   source_trend_id?: UUID;
-  integrated_as_event: boolean;
+  is_integrated_as_event: boolean;  // RENAMED: integrated_as_event -> is_integrated_as_event (Boolean-Prefix)
   event_id?: UUID;
   created_at: string;
   updated_at: string;
@@ -391,15 +402,15 @@ interface Campaign {
 interface SocialTrend {
   id: UUID;
   simulation_id: UUID;
-  name: string;
+  name: string;                     // CHECK length 1-255
   platform: string;                 // Dynamisch, nicht CHECK-constrained
   raw_data?: Record<string, any>;
   volume: number;
   url?: string;
   fetched_at: string;
-  relevance_score?: number;         // 0-10
+  relevance_score?: number;         // 0-10, numeric(4,2)
   sentiment?: string;               // Dynamisch
-  processed: boolean;
+  is_processed: boolean;            // RENAMED: processed -> is_processed (Boolean-Prefix)
   created_at: string;
   updated_at: string;
 }
@@ -420,18 +431,18 @@ interface SocialMediaPost {
   page_id?: string;
   author?: string;
   message?: string;
-  created_time: string;
+  source_created_at: string;        // RENAMED: created_time -> source_created_at (Timestamp-Suffix)
   attachments: any[];
   reactions: Record<string, any>;
   transformed_content?: string;
   transformation_type?: string;
-  transformation_timestamp?: string;
+  transformed_at?: string;          // RENAMED: transformation_timestamp -> transformed_at (Timestamp-Suffix)
   original_sentiment?: Record<string, any>;
   transformed_sentiment?: Record<string, any>;
   is_published: boolean;
   linked_event_id?: UUID;
-  import_timestamp: string;
-  last_sync: string;
+  imported_at: string;              // RENAMED: import_timestamp -> imported_at (Timestamp-Suffix)
+  last_synced_at: string;           // RENAMED: last_sync -> last_synced_at (Timestamp-Suffix)
   created_at: string;
   updated_at: string;
 }
@@ -444,10 +455,10 @@ interface SocialMediaComment {
   parent_comment_id?: UUID;
   author: string;
   message: string;
-  created_time: string;
+  source_created_at: string;        // RENAMED: created_time -> source_created_at (Timestamp-Suffix)
   transformed_content?: string;
   sentiment?: Record<string, any>;
-  import_timestamp: string;
+  imported_at: string;              // RENAMED: import_timestamp -> imported_at (Timestamp-Suffix)
   created_at: string;
   updated_at: string;
 }
@@ -492,8 +503,8 @@ interface ChatConversation {
 interface ChatMessage {
   id: UUID;
   conversation_id: UUID;
-  role: 'user' | 'assistant';
-  content: string;                  // Max 5000 chars
+  sender_role: 'user' | 'assistant';  // RENAMED: role -> sender_role (SQL reserved word)
+  content: string;                     // Max 5000 chars
   metadata?: Record<string, any>;
   created_at: string;
 }
@@ -510,7 +521,7 @@ interface PromptTemplate {
   id: UUID;
   simulation_id?: UUID;             // NULL = Plattform-Default
   template_type: PromptTemplateType;
-  category: PromptCategory;
+  prompt_category: PromptCategory;  // RENAMED: category -> prompt_category (Clarity)
   locale: string;                   // 'de' | 'en' | ...
   template_name: string;
   prompt_content: string;
@@ -520,12 +531,12 @@ interface PromptTemplate {
   default_model?: string;
   temperature: number;              // 0.0-2.0
   max_tokens: number;
-  negative_prompt?: string;         // Für Bildgenerierung
+  negative_prompt?: string;         // Fuer Bildgenerierung
   is_system_default: boolean;
   is_active: boolean;
   version: number;
   parent_template_id?: UUID;
-  created_by?: UUID;
+  created_by_id?: UUID;             // RENAMED: created_by -> created_by_id (FK-Suffix)
   created_at: string;
   updated_at: string;
 }
@@ -606,7 +617,7 @@ interface CampaignEvent {
   campaign_id: UUID;
   event_id: UUID;
   integration_type: string;
-  integration_status: string;
+  integration_status: string;       // 'pending' | 'active' | 'completed'
   agent_reactions_generated: boolean;
   reactions_count: number;
   event_metadata?: Record<string, any>;
@@ -625,6 +636,19 @@ interface CampaignMetric {
   measured_at: string;
 }
 ```
+
+---
+
+## Column Rename Summary (v1.0 -> v2.0)
+
+All renames follow these conventions established in 03_DATABASE_SCHEMA_NEW v2.0:
+
+| Convention | Rule | Examples |
+|------------|------|---------|
+| **SQL Reserved Words** | Prefix with table/context name | `type` -> `building_type`, `role` -> `member_role` |
+| **FK Suffix** | All foreign key columns end in `_id` | `created_by` -> `created_by_id`, `updated_by` -> `updated_by_id` |
+| **Boolean Prefix** | All booleans start with `is_` | `processed` -> `is_processed` |
+| **Timestamp Suffix** | All timestamps end in `_at` | `last_sync` -> `last_synced_at`, `created_time` -> `source_created_at` |
 
 ---
 

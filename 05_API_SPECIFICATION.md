@@ -299,7 +299,7 @@ Profession-Anforderungen setzen.
 ### `GET /api/v1/simulations/:simId/events`
 Alle Events (paginiert).
 
-**Query:** `?type=political&urgency=high&sort=-event_timestamp&limit=50`
+**Query:** `?event_type=political&urgency=high&sort=-occurred_at&limit=50`
 
 ### `GET /api/v1/simulations/:simId/events/:eventId`
 Event-Details.
@@ -394,7 +394,7 @@ Metriken einer Kampagne.
 ### `GET /api/v1/simulations/:simId/social-trends`
 Alle Trends.
 
-**Query:** `?platform=guardian&sentiment=negative&processed=false`
+**Query:** `?platform=guardian&sentiment=negative&is_processed=false`
 
 ### `POST /api/v1/simulations/:simId/social-trends/fetch`
 Trends von externen Quellen abrufen.

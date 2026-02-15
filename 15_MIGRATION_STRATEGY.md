@@ -1,6 +1,6 @@
 # 15 - Migration Strategy: Velgarien → Multi-Simulations-Plattform
 
-**Version:** 1.0
+**Version:** 1.1
 **Datum:** 2026-02-15
 
 ---
@@ -50,14 +50,15 @@ Neues Datenbank-Schema, Auth-System und API-Grundstruktur stehen. Noch keine Dat
 14. event_reactions (mit simulation_id)
 15. campaigns (ehemals propaganda_campaigns)
 16. campaign_events
-17. social_trends (mit simulation_id)
-18. social_media_posts (ehemals facebook_posts)
-19. social_media_comments (ehemals facebook_comments)
-20. social_media_agent_reactions
-21. chat_conversations (ehemals agent_chats)
-22. chat_messages (ehemals agent_chat_messages)
-23. user_agents (mit simulation_id)
-24. audit_log
+17. campaign_metrics
+18. social_trends (mit simulation_id)
+19. social_media_posts (ehemals facebook_posts)
+20. social_media_comments (ehemals facebook_comments)
+21. social_media_agent_reactions
+22. chat_conversations (ehemals agent_chats)
+23. chat_messages (ehemals agent_chat_messages)
+24. user_agents (mit simulation_id)
+25. audit_log
 ```
 
 **Schema-Korrekturen gegenuber Altsystem:**
@@ -149,10 +150,11 @@ Alle bestehenden Velgarien-Daten in die neue Plattform migrieren. Velgarien wird
 
 ```sql
 -- Velgarien-Simulation erstellen
-INSERT INTO simulations (id, name, description, theme, status, content_locale, created_by)
+INSERT INTO simulations (id, name, slug, description, theme, status, content_locale, owner_id)
 VALUES (
   'velgarien-uuid',
   'Velgarien',
+  'velgarien',
   'Eine dystopische Welt unter totaler Kontrolle',
   'dystopian',
   'active',
@@ -161,7 +163,7 @@ VALUES (
 );
 
 -- Admin als Owner
-INSERT INTO simulation_members (simulation_id, user_id, role)
+INSERT INTO simulation_members (simulation_id, user_id, member_role)
 VALUES ('velgarien-uuid', 'admin-user-uuid', 'owner');
 ```
 
@@ -297,14 +299,14 @@ CREATE TEMP TABLE event_id_mapping (
 INSERT INTO event_id_mapping (old_id)
 SELECT id FROM old_events;
 
-INSERT INTO events (id, simulation_id, title, description, type, urgency_level,
+INSERT INTO events (id, simulation_id, title, description, event_type, urgency_level,
                     target_demographic, status, created_at, updated_at)
 SELECT
   m.new_id,
   'velgarien-uuid',
   e.title,
   e.description,
-  e.type,
+  e.type,  -- Alt: type → Neu: event_type
   -- Urgency: Deutsch → Englisch
   CASE e.urgency_level
     WHEN 'NIEDRIG' THEN 'low'
@@ -325,14 +327,14 @@ JOIN event_id_mapping m ON m.old_id = e.id;
 
 ```sql
 -- Buildings haben bereits UUID-PKs
-INSERT INTO buildings (id, simulation_id, name, description, type, special_type,
+INSERT INTO buildings (id, simulation_id, name, description, building_type, special_type,
                        city_id, zone_id, street_id, image_url, created_at, updated_at)
 SELECT
   b.id,
   'velgarien-uuid',
   b.name,
   b.description,
-  b.type,
+  b.type,  -- Alt: type → Neu: building_type
   -- Special Type: Deutsch → Englisch
   CASE b.special_type
     WHEN 'akademie_der_wissenschaften' THEN 'academy_of_sciences'
@@ -416,16 +418,18 @@ FROM old_city_streets;
 ```sql
 -- facebook_posts → social_media_posts
 INSERT INTO social_media_posts (id, simulation_id, platform, external_id, message,
-                                 created_time, likes_count, comments_count, shares_count)
+                                 source_created_at, likes_count, comments_count, shares_count)
 SELECT
   id, 'velgarien-uuid', 'facebook', facebook_post_id, message,
-  created_time, likes_count, comments_count, shares_count
+  created_time,  -- Alt: created_time → Neu: source_created_at
+  likes_count, comments_count, shares_count
 FROM old_facebook_posts;
 
 -- facebook_comments → social_media_comments
-INSERT INTO social_media_comments (id, simulation_id, post_id, external_id, message, created_time)
+INSERT INTO social_media_comments (id, simulation_id, post_id, external_id, message, source_created_at)
 SELECT
-  id, 'velgarien-uuid', post_id, facebook_comment_id, message, created_time
+  id, 'velgarien-uuid', post_id, facebook_comment_id, message,
+  created_time  -- Alt: created_time → Neu: source_created_at
 FROM old_facebook_comments;
 ```
 
@@ -448,11 +452,11 @@ LEFT JOIN agent_id_mapping am ON am.old_id = ac.agent_id::text;
 
 -- agent_chat_messages → chat_messages
 -- Hinweis: chat_messages hat kein simulation_id (wird über conversation → simulation aufgelöst)
-INSERT INTO chat_messages (id, conversation_id, role, content, created_at)
+INSERT INTO chat_messages (id, conversation_id, sender_role, content, created_at)
 SELECT
   id,
   chat_id,
-  role,
+  role,  -- Alt: role → Neu: sender_role
   content,
   created_at
 FROM old_agent_chat_messages;
@@ -509,8 +513,8 @@ Konfigurierbares Settings-System und Mehrsprachigkeit. Alle hartcodierten Werte 
 ### 3.1 Simulation-Settings fur Velgarien
 
 ```sql
--- General Settings (category + key entsprechen dem Schema in 03_DATABASE_SCHEMA_NEW.md)
-INSERT INTO simulation_settings (simulation_id, category, key, value)
+-- General Settings (category + setting_key/setting_value gemaess 03_DATABASE_SCHEMA_NEW.md v2.0)
+INSERT INTO simulation_settings (simulation_id, category, setting_key, setting_value)
 VALUES
   ('velgarien-uuid', 'general', 'name', '"Velgarien"'),
   ('velgarien-uuid', 'general', 'description', '"Eine dystopische Welt unter totaler Kontrolle"'),
@@ -519,7 +523,7 @@ VALUES
   ('velgarien-uuid', 'general', 'content_locales', '["de"]');
 
 -- AI Settings (ehemals config.py)
-INSERT INTO simulation_settings (simulation_id, category, key, value)
+INSERT INTO simulation_settings (simulation_id, category, setting_key, setting_value)
 VALUES
   ('velgarien-uuid', 'ai', 'models.agent_description', '"deepseek/deepseek-chat-v3-0324"'),
   ('velgarien-uuid', 'ai', 'models.agent_reaction', '"meta-llama/llama-3.3-70b-instruct:free"'),
@@ -532,7 +536,7 @@ VALUES
   ('velgarien-uuid', 'ai', 'image_models.building_image', '"stability-ai/stable-diffusion"');
 
 -- Integration Settings (ehemals config.py + .env)
-INSERT INTO simulation_settings (simulation_id, category, key, value)
+INSERT INTO simulation_settings (simulation_id, category, setting_key, setting_value)
 VALUES
   ('velgarien-uuid', 'integration', 'facebook.enabled', 'true'),
   ('velgarien-uuid', 'integration', 'facebook.page_id', '"203648343900979"'),
@@ -1081,3 +1085,19 @@ async def get_simulation_context(
 - **10_AUTH_AND_SECURITY.md** - Auth + RLS Setup
 - **13_TECHSTACK_RECOMMENDATION.md** - FastAPI Stack-Empfehlung + Migrationspfad
 - **14_I18N_ARCHITECTURE.md** - i18n Implementation
+
+---
+
+## Aenderungsprotokoll
+
+### v1.1 (2026-02-15)
+- Spaltenumbenennung gemaess 03_DATABASE_SCHEMA_NEW.md v2.0:
+  - `simulations.created_by` → `owner_id` + `slug` Spalte hinzugefuegt
+  - `simulation_members.role` → `member_role`
+  - `simulation_settings.key` → `setting_key`, `value` → `setting_value`
+  - `events.type` → `event_type` (INSERT-Spalte, SELECT bleibt Alt-Spalte)
+  - `buildings.type` → `building_type` (INSERT-Spalte, SELECT bleibt Alt-Spalte)
+  - `social_media_posts/comments.created_time` → `source_created_at`
+  - `chat_messages.role` → `sender_role`
+- `campaign_metrics` in Tabellen-Reihenfolge aufgenommen (Nr. 17, Total: 25)
+- Irrefuehrenden Kommentar bei Settings-INSERT korrigiert

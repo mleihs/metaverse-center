@@ -1,8 +1,9 @@
 # 13 - Tech Stack Recommendation
 
-**Version:** 1.2
+**Version:** 1.3
 **Datum:** 2026-02-15
 **Änderung v1.1:** Backend-Framework von Flask zu FastAPI gewechselt
+**Änderung v1.3:** Lokale Supabase-Entwicklungsumgebung dokumentiert
 **Änderung v1.2:** Biome, Zod, @lit-labs/router, supabase-py async-Korrektur hinzugefügt
 
 ---
@@ -558,9 +559,10 @@ velgarien-platform/
 │   ├── tsconfig.json
 │   └── vite.config.ts
 ├── supabase/
-│   ├── migrations/
-│   ├── seed/
-│   └── functions/
+│   ├── config.toml              # Supabase CLI Konfiguration (via `supabase init`)
+│   ├── migrations/              # SQL-Migrationen (via `supabase migration new`)
+│   ├── seed.sql                 # Seed-Daten (ausgefuehrt bei `supabase db reset`)
+│   └── functions/               # Edge Functions (Deno)
 ├── docker/
 │   ├── Dockerfile.backend
 │   ├── Dockerfile.frontend
@@ -572,6 +574,146 @@ velgarien-platform/
 ├── CLAUDE.md
 └── README.md
 ```
+
+---
+
+## Lokale Supabase-Entwicklungsumgebung
+
+### Voraussetzungen
+
+- **Docker Desktop** (laeuft im Hintergrund)
+- **Supabase CLI** (>= v2.0)
+
+```bash
+# macOS
+brew install supabase/tap/supabase
+
+# npm (plattformuebergreifend)
+npm install -g supabase
+```
+
+### Ersteinrichtung
+
+```bash
+# 1. Supabase-Projekt initialisieren (erstellt supabase/ Verzeichnis)
+supabase init
+
+# 2. Lokale Supabase-Instanz starten (Docker muss laufen)
+supabase start
+# Startet alle Dienste:
+#   API URL:       http://localhost:54321
+#   GraphQL URL:   http://localhost:54321/graphql/v1
+#   DB URL:        postgresql://postgres:postgres@localhost:54322/postgres
+#   Studio URL:    http://localhost:54323  (Web-UI)
+#   Inbucket URL:  http://localhost:54324  (E-Mail-Testing)
+#   Anon Key:      eyJ...  (wird ausgegeben)
+#   Service Key:   eyJ...  (wird ausgegeben)
+#   JWT Secret:    super-secret-jwt-token-with-at-least-32-characters-long
+
+# 3. Status und Keys anzeigen
+supabase status
+
+# 4. Umgebungsvariablen exportieren (fuer .env)
+supabase status -o env > .env.local
+```
+
+### Migration-Workflow
+
+```bash
+# Neue Migration erstellen
+supabase migration new <migration_name>
+# → Erstellt supabase/migrations/<timestamp>_<migration_name>.sql
+
+# Migrationen auf lokale DB anwenden
+supabase db push
+
+# Lokale DB komplett zuruecksetzen (alle Daten + Schema)
+supabase db reset
+# Fuehrt alle Migrationen erneut aus + supabase/seed.sql
+
+# Diff zwischen lokaler DB und Migrationen generieren
+supabase db diff --schema public
+# Nuetzlich wenn Schema-Aenderungen direkt in Studio gemacht wurden
+
+# TypeScript-Typen generieren
+supabase gen types typescript --local > frontend/src/types/supabase.ts
+```
+
+### Seed-Daten
+
+```bash
+# supabase/seed.sql wird bei jedem `supabase db reset` ausgefuehrt
+# Hier Velgarien-Testdaten platzieren (aus 15_MIGRATION_STRATEGY.md Phase 2)
+```
+
+### Remote-Projekt verknuepfen
+
+```bash
+# Mit Supabase-Cloud-Projekt verknuepfen (fuer Deployment)
+supabase link --project-ref <project-id>
+
+# Remote-Migrationen auf Cloud-Projekt anwenden
+supabase db push --linked
+
+# Remote-Schema als Migration pullen (falls Schema direkt im Dashboard geaendert wurde)
+supabase db pull
+```
+
+### Taeglich
+
+```bash
+# Starten (falls gestoppt)
+supabase start
+
+# Stoppen (Container bleiben erhalten, Daten persistent)
+supabase stop
+
+# Stoppen + alle Daten loeschen
+supabase stop --no-backup
+
+# Logs anzeigen
+supabase logs --service postgres
+supabase logs --service auth
+```
+
+### .env.example (lokale Entwicklung)
+
+```env
+# Supabase (lokal via `supabase start`)
+SUPABASE_URL=http://localhost:54321
+SUPABASE_ANON_KEY=<von supabase status>
+SUPABASE_SERVICE_ROLE_KEY=<von supabase status>
+SUPABASE_JWT_SECRET=super-secret-jwt-token-with-at-least-32-characters-long
+SUPABASE_DB_URL=postgresql://postgres:postgres@localhost:54322/postgres
+
+# FastAPI Backend
+BACKEND_URL=http://localhost:8000
+BACKEND_CORS_ORIGINS=http://localhost:5173
+
+# Frontend (Vite)
+VITE_SUPABASE_URL=http://localhost:54321
+VITE_SUPABASE_ANON_KEY=<von supabase status>
+VITE_BACKEND_URL=http://localhost:8000
+```
+
+### Edge Functions lokal testen
+
+```bash
+# Neue Edge Function erstellen
+supabase functions new <function_name>
+
+# Lokal ausfuehren (mit Hot Reload)
+supabase functions serve <function_name> --env-file .env.local
+
+# Alle Functions deployen (auf Remote)
+supabase functions deploy
+```
+
+### Supabase Studio (lokale Web-UI)
+
+Nach `supabase start` ist das lokale Studio erreichbar unter **http://localhost:54323**.
+Damit koennen Tabellen, RLS-Policies, Auth-Nutzer und Storage-Buckets
+direkt im Browser verwaltet werden — identisch zum Cloud-Dashboard.
 
 ---
 
