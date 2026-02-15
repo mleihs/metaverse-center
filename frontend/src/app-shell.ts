@@ -1,4 +1,5 @@
 import { Router } from '@lit-labs/router';
+import type { TemplateResult } from 'lit';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from './services/AppStateManager.js';
@@ -6,7 +7,13 @@ import { authService } from './services/supabase/SupabaseAuthService.js';
 
 import './components/auth/LoginView.js';
 import './components/auth/RegisterView.js';
+import './components/platform/PlatformHeader.js';
 import './components/platform/SimulationsDashboard.js';
+import './components/layout/SimulationShell.js';
+import './components/agents/AgentsView.js';
+import './components/buildings/BuildingsView.js';
+import './components/events/EventsView.js';
+import './components/chat/ChatView.js';
 
 @customElement('velg-app')
 export class VelgApp extends LitElement {
@@ -19,49 +26,8 @@ export class VelgApp extends LitElement {
       background: var(--color-surface);
     }
 
-    .app-header {
-      height: var(--header-height);
-      background: var(--color-surface-header);
-      border-bottom: var(--border-default);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 var(--space-6);
-    }
-
-    .app-header__title {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-lg);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
-    }
-
-    .app-header__actions {
-      display: flex;
-      align-items: center;
-      gap: var(--space-3);
-    }
-
-    .app-header__signout {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: var(--text-sm);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      padding: var(--space-1) var(--space-3);
-      border: var(--border-medium);
-      background: transparent;
-      cursor: pointer;
-      transition: all var(--transition-fast);
-    }
-
-    .app-header__signout:hover {
-      background: var(--color-surface-sunken);
-    }
-
     .app-main {
-      padding: var(--content-padding);
+      padding: 0;
     }
 
     .loading-container {
@@ -74,6 +40,29 @@ export class VelgApp extends LitElement {
       font-size: var(--text-lg);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
+      color: var(--color-text-secondary);
+    }
+
+    .placeholder-view {
+      padding: var(--content-padding);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 40vh;
+      gap: var(--space-4);
+    }
+
+    .placeholder-view__title {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-black);
+      font-size: var(--text-xl);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-brutalist);
+    }
+
+    .placeholder-view__text {
+      font-size: var(--text-base);
       color: var(--color-text-secondary);
     }
   `;
@@ -114,6 +103,42 @@ export class VelgApp extends LitElement {
           return true;
         },
       },
+      // --- Simulation-scoped routes ---
+      {
+        path: '/simulations/:id/agents',
+        render: ({ id }) => this._renderSimulationView(id ?? '', 'agents'),
+        enter: async () => this._guardAuth(),
+      },
+      {
+        path: '/simulations/:id/buildings',
+        render: ({ id }) => this._renderSimulationView(id ?? '', 'buildings'),
+        enter: async () => this._guardAuth(),
+      },
+      {
+        path: '/simulations/:id/events',
+        render: ({ id }) => this._renderSimulationView(id ?? '', 'events'),
+        enter: async () => this._guardAuth(),
+      },
+      {
+        path: '/simulations/:id/chat',
+        render: ({ id }) => this._renderSimulationView(id ?? '', 'chat'),
+        enter: async () => this._guardAuth(),
+      },
+      {
+        path: '/simulations/:id/social',
+        render: ({ id }) => this._renderSimulationView(id ?? '', 'social'),
+        enter: async () => this._guardAuth(),
+      },
+      {
+        path: '/simulations/:id/locations',
+        render: ({ id }) => this._renderSimulationView(id ?? '', 'locations'),
+        enter: async () => this._guardAuth(),
+      },
+      {
+        path: '/simulations/:id/settings',
+        render: ({ id }) => this._renderSimulationView(id ?? '', 'settings'),
+        enter: async () => this._guardAuth(),
+      },
       {
         path: '/',
         render: () => html``,
@@ -138,7 +163,25 @@ export class VelgApp extends LitElement {
 
   async connectedCallback(): Promise<void> {
     super.connectedCallback();
+    this.addEventListener('navigate', this._handleNavigate as EventListener);
     await this._initAuth();
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.removeEventListener('navigate', this._handleNavigate as EventListener);
+  }
+
+  private _handleNavigate = (e: CustomEvent<string>): void => {
+    this._router.goto(e.detail);
+  };
+
+  private async _guardAuth(): Promise<boolean> {
+    if (!appState.isAuthenticated.value) {
+      this._router.goto('/login');
+      return false;
+    }
+    return true;
   }
 
   private async _initAuth(): Promise<void> {
@@ -153,9 +196,37 @@ export class VelgApp extends LitElement {
     }
   }
 
-  private async _handleSignOut(): Promise<void> {
-    await authService.signOut();
-    this._router.goto('/login');
+  private _renderSimulationView(simulationId: string, view: string) {
+    let content: TemplateResult;
+    switch (view) {
+      case 'agents':
+        content = html`<velg-agents-view .simulationId=${simulationId}></velg-agents-view>`;
+        break;
+      case 'buildings':
+        content = html`<velg-buildings-view .simulationId=${simulationId}></velg-buildings-view>`;
+        break;
+      case 'events':
+        content = html`<velg-events-view .simulationId=${simulationId}></velg-events-view>`;
+        break;
+      case 'chat':
+        content = html`<velg-chat-view .simulationId=${simulationId}></velg-chat-view>`;
+        break;
+      default:
+        content = html`
+          <div class="placeholder-view">
+            <div class="placeholder-view__title">${view}</div>
+            <div class="placeholder-view__text">
+              This view is coming soon.
+            </div>
+          </div>
+        `;
+    }
+
+    return html`
+      <velg-simulation-shell .simulationId=${simulationId}>
+        ${content}
+      </velg-simulation-shell>
+    `;
   }
 
   protected render() {
@@ -164,23 +235,7 @@ export class VelgApp extends LitElement {
     }
 
     return html`
-      ${
-        appState.isAuthenticated.value
-          ? html`
-          <header class="app-header">
-            <span class="app-header__title">Velgarien</span>
-            <div class="app-header__actions">
-              <button
-                class="app-header__signout"
-                @click=${this._handleSignOut}
-              >
-                Sign Out
-              </button>
-            </div>
-          </header>
-        `
-          : null
-      }
+      ${appState.isAuthenticated.value ? html`<velg-platform-header></velg-platform-header>` : null}
       <main class="app-main">
         ${this._router.outlet()}
       </main>

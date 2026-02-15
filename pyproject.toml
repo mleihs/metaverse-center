@@ -47,6 +47,7 @@ select = ["E", "F", "W", "I", "N", "UP", "S", "B", "A", "C4", "DTZ", "T20", "ICN
 "backend/tests/**/*.py" = ["S101", "S105", "S106"]
 "backend/routers/**/*.py" = ["B008"]
 "backend/dependencies.py" = ["B008"]
+"backend/services/**/*.py" = ["A003"]
 
 [tool.pytest.ini_options]
 testpaths = ["backend/tests"]

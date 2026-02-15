@@ -3,10 +3,24 @@ from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
-from backend.config import settings
+from backend.config import settings as app_settings
 from backend.middleware.rate_limit import limiter
 from backend.middleware.security import SecurityHeadersMiddleware
-from backend.routers import health, simulations, users
+from backend.routers import (
+    agent_professions,
+    agents,
+    buildings,
+    campaigns,
+    chat,
+    events,
+    health,
+    locations,
+    members,
+    settings,
+    simulations,
+    taxonomies,
+    users,
+)
 
 app = FastAPI(
     title="Velgarien Platform API",
@@ -21,7 +35,7 @@ app = FastAPI(
 app.add_middleware(SecurityHeadersMiddleware)
 
 # CORS
-origins = [origin.strip() for origin in settings.cors_origins.split(",")]
+origins = [origin.strip() for origin in app_settings.cors_origins.split(",")]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -38,3 +52,13 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.include_router(health.router)
 app.include_router(users.router)
 app.include_router(simulations.router)
+app.include_router(agents.router)
+app.include_router(buildings.router)
+app.include_router(events.router)
+app.include_router(agent_professions.router)
+app.include_router(locations.router)
+app.include_router(taxonomies.router)
+app.include_router(settings.router)
+app.include_router(chat.router)
+app.include_router(members.router)
+app.include_router(campaigns.router)
