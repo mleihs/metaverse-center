@@ -14,6 +14,7 @@ import './components/agents/AgentsView.js';
 import './components/buildings/BuildingsView.js';
 import './components/events/EventsView.js';
 import './components/chat/ChatView.js';
+import './components/settings/SettingsView.js';
 
 @customElement('velg-app')
 export class VelgApp extends LitElement {
@@ -210,6 +211,9 @@ export class VelgApp extends LitElement {
         break;
       case 'chat':
         content = html`<velg-chat-view .simulationId=${simulationId}></velg-chat-view>`;
+        break;
+      case 'settings':
+        content = html`<velg-settings-view .simulationId=${simulationId}></velg-settings-view>`;
         break;
       default:
         content = html`

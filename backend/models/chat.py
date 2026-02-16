@@ -19,6 +19,7 @@ class MessageCreate(BaseModel):
     content: str = Field(..., min_length=1, max_length=10000)
     sender_role: str = "user"
     metadata: dict | None = None
+    generate_response: bool = False
 
 
 class ConversationResponse(BaseModel):

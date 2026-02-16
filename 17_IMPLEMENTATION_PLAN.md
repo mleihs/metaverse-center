@@ -1,7 +1,8 @@
 # 17 - Implementation Plan: Step-by-Step Tasks
 
-**Version:** 2.3
-**Datum:** 2026-02-15
+**Version:** 2.4
+**Datum:** 2026-02-16
+**Aenderung v2.4:** Phase 3 implementiert (Settings, i18n, AI-Pipelines, Prompt-System)
 **Aenderung v2.3:** Daten-Migration Seed-Files (P2.2.1-P2.2.5) erstellt, Phase 2 vollstaendig
 **Aenderung v2.2:** Phase 2 als implementiert markiert, Abweichungen dokumentiert
 **Aenderung v2.1:** Phase 1 als implementiert markiert, Abweichungen dokumentiert
@@ -15,9 +16,51 @@
 |-------|-------|--------|-------|
 | **Phase 1** | 41 | **ERLEDIGT** | 2026-02-15 |
 | **Phase 2** | 37 | **ERLEDIGT** | 2026-02-15 |
-| Phase 3 | 30 | Offen | — |
+| **Phase 3** | 30 | **ERLEDIGT** | 2026-02-16 |
 | Phase 4 | 20 | Offen | — |
 | Phase 5 | 10 | Offen | — |
+
+### Phase 3 — Ergebnis
+
+**28 von 30 Tasks erledigt.** 2 Tasks teilweise offen (P3.3.4 msg()-Migration auf alle Komponenten, P3.6.3 Security-Tests). Verifikation:
+
+| Objekt | Erwartet | Tatsaechlich |
+|--------|----------|-------------|
+| Backend Services (gesamt) | ~17 | 17 + 2 external = 19 |
+| Backend Routers (gesamt) | ~15 | 15 |
+| Backend Models (gesamt) | 16 | 16 |
+| AI Services (OpenRouter, Replicate) | 2 | 2 (backend/services/external/) |
+| ModelResolver | 1 | 1 (4-Level Fallback) |
+| PromptResolver | 1 | 1 (5-Level Fallback) |
+| ExternalServiceResolver | 1 | 1 |
+| GenerationService | 1 | 1 (10+ Generierungstypen) |
+| ImageService | 1 | 1 (End-to-End Pipeline) |
+| ChatAIService | 1 | 1 (Memory-basiert) |
+| Generation Router | 1 | 1 (5 Endpoints, Rate-Limited) |
+| Prompt Templates Router | 1 | 1 (6 Endpoints) |
+| Prompt Templates Seed | 1 | 1 (30 Templates, 15 Typen × 2 Locales) |
+| Settings Panels (Frontend) | 7 | 7 (General, World, AI, Integration, Design, Access, View) |
+| GenerationApiService | 1 | 1 |
+| ThemeService | 1 | 1 |
+| Error Handler | 1 | 1 |
+| i18n Setup (@lit/localize) | 3 | 3 (locale-service, locale-codes, de.ts) |
+| Formatters | 1 | 1 (5 Funktionen) |
+| Frontend Components (gesamt) | ~44 | 44 (75 TS-Dateien gesamt) |
+| Backend Tests (gesamt) | bestanden | 52/52 |
+| Frontend Tests (gesamt) | bestanden | 8/8 |
+| TypeScript Kompilierung | 0 Fehler | 0 Fehler |
+| Biome Lint | clean | clean (75 Dateien) |
+| Ruff Lint | clean | clean |
+
+### Phase 3 — Abweichungen von Plan
+
+1. **msg()-Migration (P3.3.4) aufgeschoben** — i18n-Infrastruktur steht (locale-service, formatters, lit-localize.json), aber hardcodierte Strings in allen 44 Komponenten noch nicht auf `msg()` umgestellt. Erfolgt schrittweise bei Bedarf.
+2. **Security-Tests (P3.6.3) aufgeschoben** — CORS + Security Headers Middleware bereits in Phase 1 implementiert. Dedizierte Integration-Tests kommen bei Bedarf.
+3. **Pagination Standardisierung (P3.6.1)** — Bereits in Phase 2 standardisiert (PaginatedResponse, limit/offset/sort auf allen List-Endpoints). Kein zusaetzlicher Aufwand noetig.
+4. **LangChain nicht verwendet** — ChatAIService nutzt direktes OpenRouter-API statt LangChain. Simpler, weniger Dependencies. Memory via SQL-Abfrage der letzten 50 Nachrichten.
+5. **30 Prompt Templates statt 44** — 15 Template-Typen × 2 Locales = 30 (nicht alle 22 Typen aus Spec, die restlichen 7 Social-Media-Varianten werden bei Bedarf ergaenzt).
+6. **Pillow als optionale Dependency** — ImageService faellt graceful zurueck wenn Pillow nicht installiert ist (gibt raw bytes zurueck).
+7. **SettingsView Route** — `app-shell.ts` um Settings-Route erweitert: `/simulations/:id/settings` rendert `<velg-settings-view>`.
 
 ### Phase 2 — Ergebnis
 

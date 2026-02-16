@@ -1,4 +1,4 @@
-"""Chat endpoints — no AI, direct storage only."""
+"""Chat endpoints — with optional AI response generation."""
 
 from uuid import UUID
 
@@ -12,7 +12,9 @@ from backend.models.chat import (
     MessageResponse,
 )
 from backend.models.common import CurrentUser, SuccessResponse
+from backend.services.chat_ai_service import ChatAIService
 from backend.services.chat_service import ChatService
+from backend.services.external_service_resolver import ExternalServiceResolver
 from supabase import Client
 
 router = APIRouter(
@@ -67,7 +69,7 @@ async def get_messages(
 
 @router.post(
     "/conversations/{conversation_id}/messages",
-    response_model=SuccessResponse[MessageResponse],
+    response_model=SuccessResponse[MessageResponse | list[MessageResponse]],
     status_code=201,
 )
 async def send_message(
@@ -78,11 +80,38 @@ async def send_message(
     _role_check: str = Depends(require_role("editor")),
     supabase: Client = Depends(get_supabase),
 ) -> dict:
-    """Send a message in a conversation."""
-    message = await _service.send_message(
+    """Send a message in a conversation.
+
+    If generate_response=true, also generates an AI response from the agent.
+    """
+    # Save user message
+    user_message = await _service.send_message(
         supabase, conversation_id, body.content, body.sender_role, body.metadata,
     )
-    return {"success": True, "data": message}
+
+    if not body.generate_response:
+        return {"success": True, "data": user_message}
+
+    # Generate AI response
+    resolver = ExternalServiceResolver(supabase, simulation_id)
+    ai_config = await resolver.get_ai_provider_config()
+    chat_ai = ChatAIService(
+        supabase, simulation_id,
+        openrouter_api_key=ai_config.openrouter_api_key,
+    )
+    await chat_ai.generate_response(
+        conversation_id, body.content,
+    )
+
+    # Load the AI message that was saved by ChatAIService
+    ai_messages = await _service.get_messages(
+        supabase, conversation_id, limit=1,
+    )
+
+    return {
+        "success": True,
+        "data": [user_message, ai_messages[0]] if ai_messages else user_message,
+    }
 
 
 @router.delete("/conversations/{conversation_id}", response_model=SuccessResponse[ConversationResponse])

@@ -4,6 +4,7 @@ export { BuildingsApiService, buildingsApi } from './BuildingsApiService.js';
 export { CampaignsApiService, campaignsApi } from './CampaignsApiService.js';
 export { ChatApiService, chatApi } from './ChatApiService.js';
 export { EventsApiService, eventsApi } from './EventsApiService.js';
+export { GenerationApiService, generationApi } from './GenerationApiService.js';
 export { LocationsApiService, locationsApi } from './LocationsApiService.js';
 export { MembersApiService, membersApi } from './MembersApiService.js';
 export { SettingsApiService, settingsApi } from './SettingsApiService.js';

@@ -14,21 +14,23 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "lit": "^3.3.0",
-    "@lit/reactive-element": "^2.0.0",
-    "@lit-labs/router": "^0.1.3",
     "@lit-labs/preact-signals": "^1.0.0",
+    "@lit-labs/router": "^0.1.3",
     "@lit/context": "^1.1.0",
+    "@lit/localize": "^0.12.2",
+    "@lit/reactive-element": "^2.0.0",
     "@preact/signals-core": "^1.8.0",
     "@supabase/supabase-js": "^2.45.0",
     "@tabler/icons": "^3.0.0",
+    "lit": "^3.3.0",
     "zod": "^3.23.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.0.0",
+    "@lit/localize-tools": "^0.8.1",
+    "@open-wc/testing": "^4.0.0",
     "typescript": "^5.5.0",
     "vite": "^5.4.0",
-    "vitest": "^1.6.0",
-    "@open-wc/testing": "^4.0.0"
+    "vitest": "^1.6.0"
   }
 }

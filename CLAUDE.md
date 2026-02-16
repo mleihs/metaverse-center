@@ -15,7 +15,7 @@
 
 Multi-simulation platform rebuilt from a single-world Flask app. See `00_PROJECT_OVERVIEW.md` for full context.
 
-**Current Status:** Phase 1 + Phase 2 complete. Phase 3 next (Settings, i18n, AI Pipelines).
+**Current Status:** Phase 1 + Phase 2 + Phase 3 complete. Phase 4 next (Social, Multi-User, Realtime).
 
 ## Tech Stack
 

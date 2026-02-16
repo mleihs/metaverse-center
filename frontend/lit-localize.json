@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/nicolo-ribaudo/nicolo-ribaudo.github.io/main/nicolo-ribaudo.github.io/lit-localize.schema.json",
+  "sourceLocale": "en",
+  "targetLocales": ["de"],
+  "output": {
+    "mode": "runtime",
+    "outputDir": "src/locales/generated"
+  },
+  "inputFiles": ["src/**/*.ts"]
+}

@@ -13,9 +13,11 @@ from backend.routers import (
     campaigns,
     chat,
     events,
+    generation,
     health,
     locations,
     members,
+    prompt_templates,
     settings,
     simulations,
     taxonomies,
@@ -62,3 +64,5 @@ app.include_router(settings.router)
 app.include_router(chat.router)
 app.include_router(members.router)
 app.include_router(campaigns.router)
+app.include_router(generation.router)
+app.include_router(prompt_templates.router)
