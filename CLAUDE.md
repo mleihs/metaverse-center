@@ -68,6 +68,7 @@ frontend/             Lit + Vite application
   tests/              vitest tests
 supabase/
   migrations/         12 SQL migration files (001-012)
+  seed/               5 SQL seed files (001-005): simulation, agents, entities, social/chat, verification
   config.toml         Local Supabase config
 ```
 
@@ -175,7 +176,7 @@ All endpoints under `/api/v1/`. Swagger UI at `/api/docs`. Responses use unified
 | `10_AUTH_AND_SECURITY.md` | Hybrid auth, JWT validation, RLS strategies | v1.0 (rewritten) |
 | `12_DESIGN_SYSTEM.md` | CSS tokens, brutalist aesthetic, component styles | v1.0 |
 | `13_TECHSTACK_RECOMMENDATION.md` | All config templates (pyproject, package.json, etc.) | v1.3 |
-| `17_IMPLEMENTATION_PLAN.md` | 138 tasks, 5 phases, dependency graph | v2.2 |
+| `17_IMPLEMENTATION_PLAN.md` | 138 tasks, 5 phases, dependency graph | v2.3 |
 
 ## Python Version
 

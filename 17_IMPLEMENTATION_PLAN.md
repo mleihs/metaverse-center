@@ -1,7 +1,8 @@
 # 17 - Implementation Plan: Step-by-Step Tasks
 
-**Version:** 2.2
+**Version:** 2.3
 **Datum:** 2026-02-15
+**Aenderung v2.3:** Daten-Migration Seed-Files (P2.2.1-P2.2.5) erstellt, Phase 2 vollstaendig
 **Aenderung v2.2:** Phase 2 als implementiert markiert, Abweichungen dokumentiert
 **Aenderung v2.1:** Phase 1 als implementiert markiert, Abweichungen dokumentiert
 **Aenderung v2.0:** Vollstaendige Neufassung — 5 Phasen, ~140 Tasks, 100% Spec-Abdeckung
@@ -20,7 +21,7 @@
 
 ### Phase 2 — Ergebnis
 
-**32 von 37 Tasks erledigt.** 5 Tasks offen (Daten-Migration P2.2.1–P2.2.5 + Frontend Integration Tests P2.5.5). Verifikation:
+**36 von 37 Tasks erledigt.** 1 Task offen (Frontend Integration Tests P2.5.5 — auf Phase 3 verschoben). Verifikation:
 
 | Objekt | Erwartet | Tatsaechlich |
 |--------|----------|-------------|
@@ -39,10 +40,12 @@
 | Biome Lint | clean | clean (61 Dateien) |
 | Ruff Lint | clean | clean |
 | Swagger UI | ~81+ Endpoints | /api/docs |
+| Migration Seed Files | 5 | 5 (001-005, 1867 Zeilen) |
+| Taxonomy Values | ~70 | 72 (12 Typen) |
 
 ### Phase 2 — Abweichungen von Plan
 
-1. **Daten-Migration (P2.2.1–P2.2.5) auf spaeter verschoben** — Seed-Dateien muessen Alt-Daten aus dem bestehenden Velgarien-System (TEXT→UUID Mapping, deutsche Enums→englische Taxonomy-Values, Spalten-Umbenennungen) ins neue Schema konvertieren. Erfordert Zugriff auf die konkreten Alt-Daten. Wird separat durchgefuehrt.
+1. **Daten-Migration (P2.2.1–P2.2.5) erledigt** — 5 SQL Seed-Files in `supabase/seed/`. 001 ist standalone (Simulation + Taxonomien). 002-004 verwenden Staging-Tables fuer Alt-Daten mit vollstaendigen Transformationen (TEXT→UUID Mapping, Deutsche ENUMs→Englische Taxonomie-Werte, Spaltenumbenennungen). 005 ist umfassende Verifikation. Supabase-Instanz war beim Erstellen offline (Timeout) — Ausfuehrung muss bei naechster Gelegenheit verifiziert werden.
 2. **Frontend Integration Tests (P2.5.5) auf spaeter verschoben** — Component-Tests erfordern Mock-Setup fuer Supabase + API. Wird mit restlichen Tests in Phase 3 ergaenzt.
 3. **`settings` Import-Konflikt in app.py** — `backend.routers.settings` kollidiert mit `backend.config.settings`. Geloest durch `from backend.config import settings as app_settings`.
 4. **A003 Ruff-Ignore fuer Services** — `backend/services/**/*.py` braucht A003-Ignore (`list` als Methode in BaseService, shadows builtin).
