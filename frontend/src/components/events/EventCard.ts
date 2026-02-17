@@ -1,9 +1,12 @@
-import { msg, str } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing, svg } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import type { Event as SimEvent } from '../../types/index.js';
+import '../shared/VelgBadge.js';
+import '../shared/VelgIconButton.js';
 
+@localized()
 @customElement('velg-event-card')
 export class VelgEventCard extends LitElement {
   static styles = css`
@@ -109,37 +112,6 @@ export class VelgEventCard extends LitElement {
       gap: var(--space-1-5);
     }
 
-    .card__badge {
-      display: inline-flex;
-      align-items: center;
-      padding: var(--space-0-5) var(--space-2);
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: var(--text-xs);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      border: var(--border-width-default) solid var(--color-border);
-      background: var(--color-surface-header);
-    }
-
-    .card__badge--type {
-      background: var(--color-primary-bg);
-      border-color: var(--color-primary);
-      color: var(--color-primary);
-    }
-
-    .card__badge--ai {
-      background: var(--color-info-bg);
-      border-color: var(--color-info);
-      color: var(--color-info);
-    }
-
-    .card__badge--reactions {
-      background: var(--color-warning-bg);
-      border-color: var(--color-warning);
-      color: var(--color-warning);
-    }
-
     .card__meta {
       display: flex;
       flex-direction: column;
@@ -192,30 +164,6 @@ export class VelgEventCard extends LitElement {
       margin-top: auto;
     }
 
-    .card__action-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 30px;
-      height: 30px;
-      padding: 0;
-      background: transparent;
-      border: var(--border-width-thin) solid var(--color-border-light);
-      cursor: pointer;
-      color: var(--color-text-secondary);
-      transition: all var(--transition-fast);
-    }
-
-    .card__action-btn:hover {
-      background: var(--color-surface-sunken);
-      color: var(--color-text-primary);
-    }
-
-    .card__action-btn--danger:hover {
-      background: var(--color-danger-bg);
-      color: var(--color-danger);
-      border-color: var(--color-danger);
-    }
   `;
 
   @property({ type: Object }) event!: SimEvent;
@@ -362,9 +310,9 @@ export class VelgEventCard extends LitElement {
 
         <div class="card__body">
           <div class="card__badges">
-            ${evt.event_type ? html`<span class="card__badge card__badge--type">${evt.event_type}</span>` : null}
-            ${evt.data_source === 'ai' ? html`<span class="card__badge card__badge--ai">AI</span>` : null}
-            ${reactionCount > 0 ? html`<span class="card__badge card__badge--reactions">${msg(str`${reactionCount} Reactions`)}</span>` : null}
+            ${evt.event_type ? html`<velg-badge variant="primary">${evt.event_type}</velg-badge>` : null}
+            ${evt.data_source === 'ai' ? html`<velg-badge variant="info">AI</velg-badge>` : null}
+            ${reactionCount > 0 ? html`<velg-badge variant="warning">${msg(str`${reactionCount} Reactions`)}</velg-badge>` : null}
           </div>
 
           <div class="card__meta">
@@ -406,22 +354,12 @@ export class VelgEventCard extends LitElement {
           appState.canEdit.value
             ? html`
               <div class="card__actions">
-                <button
-                  class="card__action-btn"
-                  @click=${this._handleEdit}
-                  title=${msg('Edit')}
-                  aria-label=${msg('Edit event')}
-                >
+                <velg-icon-button .label=${msg('Edit event')} @icon-click=${this._handleEdit}>
                   ${this._editIcon()}
-                </button>
-                <button
-                  class="card__action-btn card__action-btn--danger"
-                  @click=${this._handleDelete}
-                  title=${msg('Delete')}
-                  aria-label=${msg('Delete event')}
-                >
+                </velg-icon-button>
+                <velg-icon-button variant="danger" .label=${msg('Delete event')} @icon-click=${this._handleDelete}>
                   ${this._deleteIcon()}
-                </button>
+                </velg-icon-button>
               </div>
             `
             : nothing

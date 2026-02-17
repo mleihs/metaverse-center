@@ -14,7 +14,11 @@ from backend.models.building import (
 )
 from backend.models.campaign import CampaignCreate, CampaignResponse
 from backend.models.chat import (
+    AddAgentRequest,
+    AgentBrief,
     ConversationCreate,
+    EventReferenceCreate,
+    EventReferenceResponse,
     MessageCreate,
     MessageResponse,
 )
@@ -166,13 +170,70 @@ class TestEventFilter:
 
 
 class TestConversationCreate:
-    def test_valid(self):
-        c = ConversationCreate(agent_id=uuid4())
+    def test_valid_single_agent(self):
+        c = ConversationCreate(agent_ids=[uuid4()])
         assert c.title is None
+        assert len(c.agent_ids) == 1
 
-    def test_with_title(self):
-        c = ConversationCreate(agent_id=uuid4(), title="Test Chat")
-        assert c.title == "Test Chat"
+    def test_valid_multi_agent(self):
+        ids = [uuid4(), uuid4(), uuid4()]
+        c = ConversationCreate(agent_ids=ids, title="Group Chat")
+        assert c.title == "Group Chat"
+        assert len(c.agent_ids) == 3
+
+    def test_empty_agent_ids_raises(self):
+        with pytest.raises(ValidationError):
+            ConversationCreate(agent_ids=[])
+
+
+class TestAgentBrief:
+    def test_valid(self):
+        ab = AgentBrief(id=uuid4(), name="Alaric")
+        assert ab.portrait_image_url is None
+
+    def test_with_portrait(self):
+        ab = AgentBrief(id=uuid4(), name="Mirena", portrait_image_url="https://example.com/portrait.png")
+        assert ab.portrait_image_url == "https://example.com/portrait.png"
+
+
+class TestAddAgentRequest:
+    def test_valid(self):
+        req = AddAgentRequest(agent_id=uuid4())
+        assert req.agent_id is not None
+
+
+class TestEventReferenceCreate:
+    def test_valid(self):
+        ref = EventReferenceCreate(event_id=uuid4())
+        assert ref.event_id is not None
+
+
+class TestEventReferenceResponse:
+    def test_valid(self):
+        now = datetime.now(UTC)
+        ref = EventReferenceResponse(
+            id=uuid4(),
+            event_id=uuid4(),
+            event_title="Market Explosion",
+            event_type="disaster",
+            impact_level=8,
+            referenced_at=now,
+        )
+        assert ref.event_title == "Market Explosion"
+        assert ref.impact_level == 8
+        assert ref.event_description is None
+        assert ref.occurred_at is None
+
+    def test_minimal(self):
+        now = datetime.now(UTC)
+        ref = EventReferenceResponse(
+            id=uuid4(),
+            event_id=uuid4(),
+            event_title="Council Meeting",
+            referenced_at=now,
+        )
+        assert ref.event_type is None
+        assert ref.impact_level is None
 
 
 class TestMessageCreate:
@@ -200,6 +261,24 @@ class TestMessageResponse:
             created_at=now,
         )
         assert m.sender_role == "assistant"
+        assert m.agent_id is None
+        assert m.agent is None
+
+    def test_with_agent_attribution(self):
+        now = datetime.now(UTC)
+        agent_id = uuid4()
+        m = MessageResponse(
+            id=uuid4(),
+            conversation_id=uuid4(),
+            sender_role="assistant",
+            content="I am Alaric.",
+            created_at=now,
+            agent_id=agent_id,
+            agent=AgentBrief(id=agent_id, name="Alaric"),
+        )
+        assert m.agent_id == agent_id
+        assert m.agent is not None
+        assert m.agent.name == "Alaric"
 
 
 # --- Member Models ---

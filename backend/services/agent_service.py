@@ -44,7 +44,13 @@ class AgentService(BaseService):
         if primary_profession:
             query = query.eq("primary_profession", primary_profession)
         if search:
-            query = query.textSearch("search_vector", search)
+            try:
+                # Append :* for prefix matching so partial words work
+                fts_query = ":* & ".join(search.split()) + ":*"
+                query = query.fts("search_vector", fts_query)
+            except Exception:
+                safe = search.replace("%", "").replace("_", "")
+                query = query.ilike("name", f"%{safe}%")
 
         query = query.range(offset, offset + limit - 1)
         response = query.execute()
@@ -62,7 +68,7 @@ class AgentService(BaseService):
         """Get all event reactions for an agent."""
         response = (
             supabase.table("event_reactions")
-            .select("*")
+            .select("*, events(id, title)")
             .eq("simulation_id", str(simulation_id))
             .eq("agent_id", str(agent_id))
             .order("created_at", desc=True)

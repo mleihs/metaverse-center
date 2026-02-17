@@ -1,9 +1,10 @@
-import { msg, str } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { settingsApi } from '../../services/api/index.js';
 import type { SimulationSetting } from '../../types/index.js';
 import { VelgToast } from '../shared/Toast.js';
+import '../shared/VelgSectionHeader.js';
 
 const COLOR_FIELDS = [
   { key: 'color_primary', label: msg('Primary'), defaultValue: '#e63946' },
@@ -28,6 +29,7 @@ const FONT_FIELDS = [
 
 const MAX_CUSTOM_CSS_LENGTH = 10240; // 10KB
 
+@localized()
 @customElement('velg-design-settings-panel')
 export class VelgDesignSettingsPanel extends LitElement {
   static styles = css`
@@ -45,18 +47,6 @@ export class VelgDesignSettingsPanel extends LitElement {
       display: flex;
       flex-direction: column;
       gap: var(--space-4);
-    }
-
-    .section__title {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-lg);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-primary);
-      margin: 0;
-      padding-bottom: var(--space-2);
-      border-bottom: var(--border-default);
     }
 
     .color-grid {
@@ -457,7 +447,7 @@ export class VelgDesignSettingsPanel extends LitElement {
         ${this._error ? html`<div class="panel__error">${this._error}</div>` : nothing}
 
         <div class="section">
-          <h2 class="section__title">${msg('Colors')}</h2>
+          <velg-section-header variant="large">${msg('Colors')}</velg-section-header>
           <div class="color-grid">
             ${COLOR_FIELDS.map(
               (cf) => html`
@@ -487,7 +477,7 @@ export class VelgDesignSettingsPanel extends LitElement {
         </div>
 
         <div class="section">
-          <h2 class="section__title">${msg('Typography')}</h2>
+          <velg-section-header variant="large">${msg('Typography')}</velg-section-header>
           <div class="font-grid">
             ${FONT_FIELDS.map(
               (ff) => html`
@@ -508,7 +498,7 @@ export class VelgDesignSettingsPanel extends LitElement {
         </div>
 
         <div class="section">
-          <h2 class="section__title">${msg('Custom CSS')}</h2>
+          <velg-section-header variant="large">${msg('Custom CSS')}</velg-section-header>
           <div class="form__group">
             <label class="form__label" for="design-custom-css">${msg('Additional Styles')}</label>
             <textarea
@@ -526,7 +516,7 @@ export class VelgDesignSettingsPanel extends LitElement {
         </div>
 
         <div class="section">
-          <h2 class="section__title">${msg('Live Preview')}</h2>
+          <velg-section-header variant="large">${msg('Live Preview')}</velg-section-header>
           ${this._renderPreview()}
         </div>
 

@@ -1,8 +1,10 @@
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { SocialMediaPost } from '../../types/index.js';
+import '../shared/VelgBadge.js';
 
+@localized()
 @customElement('velg-post-card')
 export class VelgPostCard extends LitElement {
   static styles = css`
@@ -24,14 +26,6 @@ export class VelgPostCard extends LitElement {
     .card__message { font-size: var(--text-sm); line-height: var(--leading-relaxed); max-height: 80px; overflow: hidden; text-overflow: ellipsis; }
     .card__transformed { padding: var(--space-2); background: var(--color-primary-bg); border-left: 3px solid var(--color-primary); font-size: var(--text-sm); font-style: italic; max-height: 60px; overflow: hidden; }
     .card__badges { display: flex; flex-wrap: wrap; gap: var(--space-1-5); }
-    .card__badge {
-      display: inline-flex; padding: var(--space-0-5) var(--space-2);
-      font-family: var(--font-brutalist); font-weight: var(--font-bold);
-      font-size: var(--text-xs); text-transform: uppercase; letter-spacing: var(--tracking-wide);
-      border: var(--border-width-default) solid var(--color-border); background: var(--color-surface-header);
-    }
-    .card__badge--platform { background: var(--color-primary-bg); border-color: var(--color-primary); color: var(--color-primary); }
-    .card__badge--transformed { background: var(--color-success-bg); border-color: var(--color-success); color: var(--color-success); }
     .card__actions { display: flex; gap: var(--space-2); padding: var(--space-2) var(--space-4) var(--space-3); margin-top: auto; }
     .card__action-btn {
       padding: var(--space-1-5) var(--space-3); font-family: var(--font-brutalist);
@@ -83,8 +77,8 @@ export class VelgPostCard extends LitElement {
           ${p.message ? html`<div class="card__message">${p.message}</div>` : ''}
           ${p.transformed_content ? html`<div class="card__transformed">${p.transformed_content}</div>` : ''}
           <div class="card__badges">
-            <span class="card__badge card__badge--platform">${p.platform}</span>
-            ${p.transformed_content ? html`<span class="card__badge card__badge--transformed">${p.transformation_type || msg('Transformed')}</span>` : ''}
+            <velg-badge variant="primary">${p.platform}</velg-badge>
+            ${p.transformed_content ? html`<velg-badge variant="success">${p.transformation_type || msg('Transformed')}</velg-badge>` : ''}
           </div>
         </div>
         <div class="card__actions">

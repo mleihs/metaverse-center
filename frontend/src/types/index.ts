@@ -287,7 +287,9 @@ export interface EventReaction {
   created_at: string;
   updated_at: string;
   agent?: Agent;
+  agents?: { id: UUID; name: string; portrait_image_url?: string };
   event?: Event;
+  events?: { id: UUID; title: string };
 }
 
 // --- City / Zone / Street ---
@@ -459,11 +461,28 @@ export interface SocialMediaAgentReaction {
 
 // --- Chat ---
 
+export interface AgentBrief {
+  id: UUID;
+  name: string;
+  portrait_image_url?: string;
+}
+
+export interface ChatEventReference {
+  id: UUID;
+  event_id: UUID;
+  event_title: string;
+  event_type?: string;
+  event_description?: string;
+  occurred_at?: string;
+  impact_level?: number;
+  referenced_at: string;
+}
+
 export interface ChatConversation {
   id: UUID;
   simulation_id: UUID;
   user_id: UUID;
-  agent_id: UUID;
+  agent_id?: UUID;
   title?: string;
   status: 'active' | 'archived';
   message_count: number;
@@ -472,6 +491,8 @@ export interface ChatConversation {
   updated_at: string;
   messages?: ChatMessage[];
   agent?: Agent;
+  agents?: AgentBrief[];
+  event_references?: ChatEventReference[];
 }
 
 export interface ChatMessage {
@@ -481,6 +502,8 @@ export interface ChatMessage {
   content: string;
   metadata?: Record<string, unknown>;
   created_at: string;
+  agent_id?: UUID;
+  agent?: AgentBrief;
 }
 
 // --- Prompt Templates ---

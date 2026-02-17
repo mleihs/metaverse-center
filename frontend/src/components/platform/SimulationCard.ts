@@ -1,8 +1,10 @@
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { Simulation } from '../../types/index.js';
+import '../shared/VelgBadge.js';
 
+@localized()
 @customElement('velg-simulation-card')
 export class VelgSimulationCard extends LitElement {
   static styles = css`
@@ -51,46 +53,8 @@ export class VelgSimulationCard extends LitElement {
       white-space: nowrap;
     }
 
-    .card__badge {
-      display: inline-flex;
-      align-items: center;
-      padding: var(--space-0-5) var(--space-2);
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: var(--text-xs);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      border: var(--border-width-default) solid var(--color-border);
+    velg-badge {
       flex-shrink: 0;
-    }
-
-    .card__badge--active {
-      background: var(--color-success-bg);
-      border-color: var(--color-success);
-      color: var(--color-success);
-    }
-
-    .card__badge--draft {
-      background: var(--color-warning-bg);
-      border-color: var(--color-warning);
-      color: var(--color-warning);
-    }
-
-    .card__badge--paused {
-      background: var(--color-info-bg);
-      border-color: var(--color-info);
-      color: var(--color-info);
-    }
-
-    .card__badge--archived {
-      background: var(--color-surface-sunken);
-      color: var(--color-text-muted);
-    }
-
-    .card__badge--configuring {
-      background: var(--color-info-bg);
-      border-color: var(--color-info);
-      color: var(--color-info);
     }
 
     .card__body {
@@ -157,8 +121,14 @@ export class VelgSimulationCard extends LitElement {
     );
   }
 
-  private _getStatusBadgeClass(status: string): string {
-    return `card__badge card__badge--${status}`;
+  private _getStatusVariant(status: string): string {
+    const map: Record<string, string> = {
+      active: 'success',
+      draft: 'warning',
+      paused: 'info',
+      configuring: 'info',
+    };
+    return map[status] ?? 'default';
   }
 
   protected render() {
@@ -169,9 +139,9 @@ export class VelgSimulationCard extends LitElement {
       <div class="card" @click=${this._handleClick}>
         <div class="card__header">
           <h3 class="card__title">${sim.name}</h3>
-          <span class=${this._getStatusBadgeClass(sim.status)}>
+          <velg-badge variant=${this._getStatusVariant(sim.status)}>
             ${sim.status}
-          </span>
+          </velg-badge>
         </div>
 
         <div class="card__body">

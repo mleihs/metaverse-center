@@ -77,3 +77,10 @@ class EventFilter(BaseModel):
     impact_level: int | None = None
     tag: str | None = None
     search: str | None = None
+
+
+class GenerateEventReactionsRequest(BaseModel):
+    """Request to generate agent reactions to an event."""
+
+    agent_ids: list[str] | None = None
+    max_agents: int = Field(default=10, ge=1, le=50)

@@ -15,6 +15,7 @@ class BuildingService(BaseService):
 
     table_name = "buildings"
     view_name = "active_buildings"
+    supports_created_by = False
 
     @classmethod
     async def list(
@@ -49,7 +50,13 @@ class BuildingService(BaseService):
         if city_id:
             query = query.eq("city_id", str(city_id))
         if search:
-            query = query.textSearch("search_vector", search)
+            try:
+                # Append :* for prefix matching so partial words work
+                fts_query = ":* & ".join(search.split()) + ":*"
+                query = query.fts("search_vector", fts_query)
+            except Exception:
+                safe = search.replace("%", "").replace("_", "")
+                query = query.ilike("name", f"%{safe}%")
 
         query = query.range(offset, offset + limit - 1)
         response = query.execute()

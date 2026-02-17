@@ -1,8 +1,9 @@
-import { msg, str } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { type AppNotification, notificationService } from '../../services/NotificationService.js';
 
+@localized()
 @customElement('velg-notification-center')
 export class VelgNotificationCenter extends LitElement {
   static styles = css`

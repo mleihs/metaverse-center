@@ -711,6 +711,40 @@ CREATE INDEX idx_messages_conversation ON chat_messages(conversation_id, created
 **Renames:**
 - `role` -> `sender_role` (SQL reserved word)
 
+### `chat_conversation_agents`
+
+Junction table for multi-agent (group) conversations. Each row links an agent to a conversation.
+
+```sql
+CREATE TABLE public.chat_conversation_agents (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    conversation_id uuid NOT NULL REFERENCES chat_conversations(id) ON DELETE CASCADE,
+    agent_id uuid NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
+    added_at timestamptz DEFAULT now() NOT NULL,
+    UNIQUE (conversation_id, agent_id)
+);
+
+CREATE INDEX idx_conv_agents_conversation ON chat_conversation_agents(conversation_id);
+CREATE INDEX idx_conv_agents_agent ON chat_conversation_agents(agent_id);
+```
+
+### `chat_event_references`
+
+Tracks which events are referenced in a conversation's context, allowing agents to reason about events during chat.
+
+```sql
+CREATE TABLE public.chat_event_references (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    conversation_id uuid NOT NULL REFERENCES chat_conversations(id) ON DELETE CASCADE,
+    event_id uuid NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+    referenced_by uuid REFERENCES auth.users(id),
+    referenced_at timestamptz DEFAULT now() NOT NULL,
+    UNIQUE (conversation_id, event_id)
+);
+
+CREATE INDEX idx_event_refs_conversation ON chat_event_references(conversation_id);
+```
+
 ---
 
 ## AI & Prompts

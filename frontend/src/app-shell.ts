@@ -1,4 +1,4 @@
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { Router } from '@lit-labs/router';
 import type { TemplateResult } from 'lit';
 import { css, html, LitElement } from 'lit';
@@ -26,6 +26,7 @@ import './components/platform/InvitationAcceptView.js';
 import './components/platform/CreateSimulationWizard.js';
 import './components/platform/UserProfileView.js';
 
+@localized()
 @customElement('velg-app')
 export class VelgApp extends LitElement {
   static styles = css`
@@ -84,35 +85,17 @@ export class VelgApp extends LitElement {
       {
         path: '/login',
         render: () => html`<velg-login-view></velg-login-view>`,
-        enter: async () => {
-          if (appState.isAuthenticated.value) {
-            this._router.goto('/dashboard');
-            return false;
-          }
-          return true;
-        },
+        enter: async () => this._guardGuest(),
       },
       {
         path: '/register',
         render: () => html`<velg-register-view></velg-register-view>`,
-        enter: async () => {
-          if (appState.isAuthenticated.value) {
-            this._router.goto('/dashboard');
-            return false;
-          }
-          return true;
-        },
+        enter: async () => this._guardGuest(),
       },
       {
         path: '/dashboard',
         render: () => html`<velg-simulations-dashboard></velg-simulations-dashboard>`,
-        enter: async () => {
-          if (!appState.isAuthenticated.value) {
-            this._router.goto('/login');
-            return false;
-          }
-          return true;
-        },
+        enter: async () => this._guardAuth(),
       },
       {
         path: '/invitations/:token',
@@ -169,6 +152,7 @@ export class VelgApp extends LitElement {
         path: '/',
         render: () => html``,
         enter: async () => {
+          await this._authReady;
           if (appState.isAuthenticated.value) {
             this._router.goto('/dashboard');
           } else {
@@ -187,6 +171,18 @@ export class VelgApp extends LitElement {
 
   @state() private _initializing = true;
 
+  // Auth-ready gate: route guards await this before checking isAuthenticated.
+  // Resolves after authService.initialize() completes (session restored or absent).
+  private _authReady: Promise<void>;
+  private _resolveAuthReady!: () => void;
+
+  constructor() {
+    super();
+    this._authReady = new Promise((resolve) => {
+      this._resolveAuthReady = resolve;
+    });
+  }
+
   async connectedCallback(): Promise<void> {
     super.connectedCallback();
     await localeService.initLocale();
@@ -203,9 +199,21 @@ export class VelgApp extends LitElement {
     this._router.goto(e.detail);
   };
 
+  /** Wait for auth to be ready, then check if user is authenticated. */
   private async _guardAuth(): Promise<boolean> {
+    await this._authReady;
     if (!appState.isAuthenticated.value) {
       this._router.goto('/login');
+      return false;
+    }
+    return true;
+  }
+
+  /** Wait for auth to be ready, then redirect authenticated users away from login/register. */
+  private async _guardGuest(): Promise<boolean> {
+    await this._authReady;
+    if (appState.isAuthenticated.value) {
+      this._router.goto('/dashboard');
       return false;
     }
     return true;
@@ -216,6 +224,7 @@ export class VelgApp extends LitElement {
       await authService.initialize();
     } finally {
       this._initializing = false;
+      this._resolveAuthReady();
     }
   }
 

@@ -1,4 +1,4 @@
-import { msg, str } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
@@ -11,6 +11,7 @@ import type {
 } from '../../types/index.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { VelgToast } from '../shared/Toast.js';
+import '../shared/VelgSectionHeader.js';
 
 interface AccessFormData {
   visibility: 'public' | 'private';
@@ -28,6 +29,7 @@ const DEFAULT_FORM: AccessFormData = {
   max_members: 50,
 };
 
+@localized()
 @customElement('velg-access-settings-panel')
 export class VelgAccessSettingsPanel extends LitElement {
   static styles = css`
@@ -39,18 +41,6 @@ export class VelgAccessSettingsPanel extends LitElement {
       display: flex;
       flex-direction: column;
       gap: var(--space-5);
-    }
-
-    .panel__section-title {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-lg);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-primary);
-      margin: 0;
-      padding-bottom: var(--space-2);
-      border-bottom: var(--border-default);
     }
 
     .panel__owner-notice {
@@ -845,7 +835,7 @@ export class VelgAccessSettingsPanel extends LitElement {
     if (!this._isOwner) return nothing;
 
     return html`
-      <h2 class="panel__section-title">${msg('Members')}</h2>
+      <velg-section-header variant="large">${msg('Members')}</velg-section-header>
 
       ${
         this._loadingMembers
@@ -1015,7 +1005,7 @@ export class VelgAccessSettingsPanel extends LitElement {
 
     return html`
       <div class="panel">
-        <h2 class="panel__section-title">${msg('Access Control')}</h2>
+        <velg-section-header variant="large">${msg('Access Control')}</velg-section-header>
 
         <div class="panel__owner-notice">
           ${msg('Only the simulation owner can modify these settings.')}

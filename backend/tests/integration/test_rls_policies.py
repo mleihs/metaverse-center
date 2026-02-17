@@ -293,6 +293,28 @@ class TestRoleBasedAccess:
         )
         assert response.status_code == 403
 
+    def test_viewer_cannot_add_agent_to_conversation(self, client: TestClient, user_a):
+        """A viewer should not be able to add agents to a conversation."""
+        self._setup_auth_with_role(user_a, "viewer")
+
+        convo_id = uuid4()
+        response = client.post(
+            f"/api/v1/simulations/{self.SIM_ID}/chat/conversations/{convo_id}/agents",
+            json={"agent_id": str(uuid4())},
+        )
+        assert response.status_code == 403
+
+    def test_viewer_cannot_add_event_reference(self, client: TestClient, user_a):
+        """A viewer should not be able to add event references to a conversation."""
+        self._setup_auth_with_role(user_a, "viewer")
+
+        convo_id = uuid4()
+        response = client.post(
+            f"/api/v1/simulations/{self.SIM_ID}/chat/conversations/{convo_id}/events",
+            json={"event_id": str(uuid4())},
+        )
+        assert response.status_code == 403
+
     # --- Editor cannot access admin endpoints ---
 
     def test_editor_cannot_upsert_setting(self, client: TestClient, user_a):

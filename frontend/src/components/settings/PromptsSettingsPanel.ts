@@ -1,4 +1,4 @@
-import { msg, str } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { promptTemplatesApi } from '../../services/api/index.js';
@@ -44,6 +44,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   analysis: msg('Analysis'),
 };
 
+@localized()
 @customElement('velg-prompts-settings-panel')
 export class VelgPromptsSettingsPanel extends LitElement {
   static styles = css`

@@ -1,9 +1,10 @@
-import { msg, str } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { settingsApi } from '../../services/api/index.js';
 import type { SimulationSetting } from '../../types/index.js';
 import { VelgToast } from '../shared/Toast.js';
+import '../shared/VelgSectionHeader.js';
 
 interface IntegrationSection {
   id: string;
@@ -96,6 +97,7 @@ const SECTIONS: IntegrationSection[] = [
   },
 ];
 
+@localized()
 @customElement('velg-integration-settings-panel')
 export class VelgIntegrationSettingsPanel extends LitElement {
   static styles = css`
@@ -123,16 +125,6 @@ export class VelgIntegrationSettingsPanel extends LitElement {
       align-items: center;
       justify-content: space-between;
       gap: var(--space-3);
-    }
-
-    .section__title {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-base);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-primary);
-      margin: 0;
     }
 
     .section__save-btn {
@@ -494,7 +486,7 @@ export class VelgIntegrationSettingsPanel extends LitElement {
           (section) => html`
             <div class="section">
               <div class="section__header">
-                <h2 class="section__title">${section.title}</h2>
+                <velg-section-header variant="large">${section.title}</velg-section-header>
                 <button
                   class="section__save-btn"
                   @click=${() => this._handleSaveSection(section)}

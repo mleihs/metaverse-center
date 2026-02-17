@@ -82,7 +82,6 @@ class OpenRouterService:
             "HTTP-Referer": "https://velgarien.app",
             "X-Title": "Velgarien Platform",
         }
-
         last_error: Exception | None = None
 
         for attempt in range(MAX_RETRIES + 1):

@@ -1,102 +1,29 @@
-import { msg, str } from '@lit/localize';
-import { css, html, LitElement, svg } from 'lit';
+import { localized, msg, str } from '@lit/localize';
+import { css, html, LitElement, nothing, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { eventsApi } from '../../services/api/index.js';
+import { generationProgress } from '../../services/GenerationProgressService.js';
 import type { EventReaction, Event as SimEvent } from '../../types/index.js';
+import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
+import { panelButtonStyles } from '../shared/panel-button-styles.js';
+import { VelgToast } from '../shared/Toast.js';
+import '../shared/VelgBadge.js';
+import '../shared/VelgSectionHeader.js';
+import '../shared/VelgSidePanel.js';
 
+@localized()
 @customElement('velg-event-details-panel')
 export class VelgEventDetailsPanel extends LitElement {
-  static styles = css`
+  static styles = [
+    panelButtonStyles,
+    css`
     :host {
       display: block;
+      --side-panel-width: 540px;
     }
 
-    .backdrop {
-      position: fixed;
-      inset: 0;
-      z-index: var(--z-modal);
-      display: flex;
-      justify-content: flex-end;
-      background: rgba(0, 0, 0, 0.4);
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity var(--transition-normal), visibility var(--transition-normal);
-    }
-
-    .backdrop--open {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    .panel {
-      width: 100%;
-      max-width: 540px;
-      height: 100%;
-      background: var(--color-surface-raised);
-      border-left: var(--border-default);
-      box-shadow: var(--shadow-xl);
-      overflow-y: auto;
-      transform: translateX(100%);
-      transition: transform var(--transition-normal);
-      display: flex;
-      flex-direction: column;
-    }
-
-    .backdrop--open .panel {
-      transform: translateX(0);
-    }
-
-    .panel__header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-3);
-      padding: var(--space-4) var(--space-6);
-      background: var(--color-surface-header);
-      border-bottom: var(--border-medium);
-      flex-shrink: 0;
-    }
-
-    .panel__title {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-lg);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
-      margin: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      flex: 1;
-      min-width: 0;
-    }
-
-    .panel__close {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 32px;
-      height: 32px;
-      padding: 0;
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-lg);
-      line-height: 1;
-      background: transparent;
-      border: var(--border-medium);
-      cursor: pointer;
-      transition: all var(--transition-fast);
-      flex-shrink: 0;
-    }
-
-    .panel__close:hover {
-      background: var(--color-surface-sunken);
-    }
-
-    .panel__body {
-      flex: 1;
+    .panel__content {
       padding: var(--space-6);
-      overflow-y: auto;
       display: flex;
       flex-direction: column;
       gap: var(--space-5);
@@ -108,17 +35,6 @@ export class VelgEventDetailsPanel extends LitElement {
       gap: var(--space-2);
     }
 
-    .panel__section-title {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-xs);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-secondary);
-      padding-bottom: var(--space-1);
-      border-bottom: var(--border-light);
-    }
-
     .panel__text {
       font-size: var(--text-base);
       line-height: var(--leading-relaxed);
@@ -127,31 +43,6 @@ export class VelgEventDetailsPanel extends LitElement {
 
     .panel__text--secondary {
       color: var(--color-text-secondary);
-    }
-
-    .panel__badge {
-      display: inline-flex;
-      align-items: center;
-      padding: var(--space-0-5) var(--space-2);
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: var(--text-xs);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      border: var(--border-width-default) solid var(--color-border);
-      background: var(--color-surface-header);
-    }
-
-    .panel__badge--type {
-      background: var(--color-primary-bg);
-      border-color: var(--color-primary);
-      color: var(--color-primary);
-    }
-
-    .panel__badge--source {
-      background: var(--color-info-bg);
-      border-color: var(--color-info);
-      color: var(--color-info);
     }
 
     .panel__badges {
@@ -258,11 +149,10 @@ export class VelgEventDetailsPanel extends LitElement {
     .panel__reactions {
       display: flex;
       flex-direction: column;
-      gap: var(--space-3);
+      gap: var(--space-1);
     }
 
     .panel__reaction {
-      padding: var(--space-3);
       background: var(--color-surface);
       border: var(--border-width-thin) solid var(--color-border-light);
     }
@@ -270,9 +160,25 @@ export class VelgEventDetailsPanel extends LitElement {
     .panel__reaction-header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
       gap: var(--space-2);
-      margin-bottom: var(--space-1-5);
+      padding: var(--space-2) var(--space-3);
+      cursor: pointer;
+      user-select: none;
+      transition: background var(--transition-fast);
+    }
+
+    .panel__reaction-header:hover {
+      background: var(--color-surface-header);
+    }
+
+    .panel__reaction-chevron {
+      flex-shrink: 0;
+      color: var(--color-text-muted);
+      transition: transform var(--transition-fast);
+    }
+
+    .panel__reaction-chevron--open {
+      transform: rotate(90deg);
     }
 
     .panel__reaction-agent {
@@ -281,6 +187,11 @@ export class VelgEventDetailsPanel extends LitElement {
       font-size: var(--text-sm);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .panel__reaction-emotion {
@@ -293,12 +204,38 @@ export class VelgEventDetailsPanel extends LitElement {
       background: var(--color-surface-header);
       border: var(--border-width-thin) solid var(--color-border);
       color: var(--color-text-secondary);
+      flex-shrink: 0;
+    }
+
+    .panel__reaction-delete {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: var(--color-text-muted);
+      flex-shrink: 0;
+      transition: color var(--transition-fast);
+    }
+
+    .panel__reaction-delete:hover {
+      color: var(--color-danger);
+    }
+
+    .panel__reaction-body {
+      padding: 0 var(--space-3) var(--space-3) var(--space-3);
+      border-top: var(--border-width-thin) solid var(--color-border-light);
     }
 
     .panel__reaction-text {
       font-size: var(--text-sm);
       line-height: var(--leading-relaxed);
       color: var(--color-text-secondary);
+      padding-top: var(--space-2);
     }
 
     .panel__reaction-empty {
@@ -323,70 +260,27 @@ export class VelgEventDetailsPanel extends LitElement {
       padding: var(--space-3);
     }
 
-    /* Footer actions */
-    .panel__footer {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: var(--space-3);
-      padding: var(--space-4) var(--space-6);
-      border-top: var(--border-medium);
-      flex-shrink: 0;
-    }
-
-    .panel__btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: var(--space-1-5);
-      padding: var(--space-2) var(--space-4);
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-sm);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
-      border: var(--border-default);
-      box-shadow: var(--shadow-md);
-      cursor: pointer;
-      transition: all var(--transition-fast);
-    }
-
-    .panel__btn:hover {
-      transform: translate(-2px, -2px);
-      box-shadow: var(--shadow-lg);
-    }
-
-    .panel__btn:active {
-      transform: translate(0);
-      box-shadow: var(--shadow-pressed);
-    }
-
+    /* Override: Edit uses neutral style here because Generate is the primary action */
     .panel__btn--edit {
       background: var(--color-surface-raised);
       color: var(--color-text-primary);
     }
-
-    .panel__btn--danger {
-      background: var(--color-danger);
-      color: var(--color-text-inverse);
-      border-color: var(--color-danger);
-    }
-
-    .panel__btn--danger:hover {
-      background: var(--color-danger-hover);
-    }
-  `;
+  `,
+  ];
 
   @property({ type: Object }) event: SimEvent | null = null;
   @property({ type: String }) simulationId = '';
-  @property({ type: Boolean }) open = false;
+  @property({ type: Boolean, reflect: true }) open = false;
 
   @state() private _reactions: EventReaction[] = [];
   @state() private _reactionsLoading = false;
+  @state() private _generatingReactions = false;
+  @state() private _expandedReactions: Set<string> = new Set();
 
   protected willUpdate(changedProperties: Map<PropertyKey, unknown>): void {
     if (changedProperties.has('event') || changedProperties.has('open')) {
       if (this.open && this.event) {
+        this._expandedReactions = new Set();
         this._loadReactions();
       }
     }
@@ -432,6 +326,28 @@ export class VelgEventDetailsPanel extends LitElement {
     return 'active';
   }
 
+  private _chevronIcon() {
+    return svg`
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 6l6 6l-6 6" />
+      </svg>
+    `;
+  }
+
+  private _trashIcon() {
+    return svg`
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 7l16 0" />
+        <path d="M10 11l0 6" />
+        <path d="M14 11l0 6" />
+        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
+        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
+      </svg>
+    `;
+  }
+
   private _editIcon() {
     return svg`
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
@@ -456,19 +372,18 @@ export class VelgEventDetailsPanel extends LitElement {
     `;
   }
 
-  private _handleClose(): void {
-    this.dispatchEvent(
-      new CustomEvent('panel-close', {
-        bubbles: true,
-        composed: true,
-      }),
-    );
-  }
-
-  private _handleBackdropClick(e: MouseEvent): void {
-    if ((e.target as HTMLElement).classList.contains('backdrop')) {
-      this._handleClose();
-    }
+  private _brainIcon() {
+    return svg`
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15.5 13a3.5 3.5 0 0 0 -3.5 3.5v1a3.5 3.5 0 0 0 7 0v-1.8" />
+        <path d="M8.5 13a3.5 3.5 0 0 1 3.5 3.5v1a3.5 3.5 0 0 1 -7 0v-1.8" />
+        <path d="M17.5 16a3.5 3.5 0 0 0 0 -7h-.5" />
+        <path d="M19 9.3v-2.8a3.5 3.5 0 0 0 -7 0" />
+        <path d="M6.5 16a3.5 3.5 0 0 1 0 -7h.5" />
+        <path d="M5 9.3v-2.8a3.5 3.5 0 0 1 7 0v10" />
+      </svg>
+    `;
   }
 
   private _handleEdit(): void {
@@ -489,6 +404,79 @@ export class VelgEventDetailsPanel extends LitElement {
         composed: true,
       }),
     );
+  }
+
+  private _toggleReaction(reactionId: string): void {
+    const next = new Set(this._expandedReactions);
+    if (next.has(reactionId)) {
+      next.delete(reactionId);
+    } else {
+      next.add(reactionId);
+    }
+    this._expandedReactions = next;
+  }
+
+  private async _handleDeleteReaction(reaction: EventReaction): Promise<void> {
+    if (!this.event) return;
+
+    const agentName = reaction.agents?.name ?? reaction.agent_name;
+    const confirmed = await VelgConfirmDialog.show({
+      title: msg('Delete reaction'),
+      message: msg(str`Delete reaction of ${agentName} to "${this.event.title}"?`),
+      confirmLabel: msg('Delete'),
+      variant: 'danger',
+    });
+
+    if (!confirmed) return;
+
+    const response = await eventsApi.deleteReaction(this.simulationId, this.event.id, reaction.id);
+    if (response.success) {
+      this._reactions = this._reactions.filter((r) => r.id !== reaction.id);
+      VelgToast.success(msg('Reaction deleted'));
+    } else {
+      VelgToast.error(response.error?.message ?? msg('Failed to delete reaction'));
+    }
+  }
+
+  private async _handleGenerateReactions(): Promise<void> {
+    if (!this.event || this._generatingReactions) return;
+    this._generatingReactions = true;
+
+    try {
+      await generationProgress.run('reactions', async (progress) => {
+        progress.setStep('prepare', msg('Loading agents...'));
+        await new Promise((r) => setTimeout(r, 300));
+
+        progress.setStep(
+          'generate',
+          msg('Generating agent reactions...'),
+          msg('This may take a moment'),
+        );
+
+        const response = await eventsApi.generateReactions(
+          this.simulationId,
+          (this.event as SimEvent).id,
+        );
+
+        progress.setStep('process', msg('Processing reactions...'));
+        await new Promise((r) => setTimeout(r, 200));
+
+        if (response.success && response.data) {
+          // Reload to get full data with agent joins
+          await this._loadReactions();
+          progress.complete(msg(str`${response.data.length} reactions generated`));
+          VelgToast.success(msg(str`${response.data.length} agent reactions generated`));
+        } else {
+          const errMsg = response.error?.message || msg('Reaction generation failed');
+          progress.setError(errMsg);
+          VelgToast.error(errMsg);
+        }
+      });
+    } catch {
+      // handled by GenerationProgressService
+    } finally {
+      this._generatingReactions = false;
+    }
   }
 
   private _renderImpactBar() {
@@ -519,7 +507,7 @@ export class VelgEventDetailsPanel extends LitElement {
 
     return html`
       <div class="panel__section">
-        <div class="panel__section-title">${msg('Metadata')}</div>
+        <velg-section-header>${msg('Metadata')}</velg-section-header>
         <div class="panel__kv-list">
           ${entries.map(
             ([key, value]) => html`
@@ -545,21 +533,47 @@ export class VelgEventDetailsPanel extends LitElement {
 
     return html`
       <div class="panel__reactions">
-        ${this._reactions.map(
-          (reaction) => html`
+        ${this._reactions.map((reaction) => {
+          const isOpen = this._expandedReactions.has(reaction.id);
+          const agentName = reaction.agents?.name ?? reaction.agent_name;
+          return html`
             <div class="panel__reaction">
-              <div class="panel__reaction-header">
-                <span class="panel__reaction-agent">${reaction.agent_name}</span>
+              <div
+                class="panel__reaction-header"
+                @click=${() => this._toggleReaction(reaction.id)}
+              >
+                <span class="panel__reaction-chevron ${isOpen ? 'panel__reaction-chevron--open' : ''}">
+                  ${this._chevronIcon()}
+                </span>
+                <span class="panel__reaction-agent">${agentName}</span>
                 ${
                   reaction.emotion
                     ? html`<span class="panel__reaction-emotion">${reaction.emotion}</span>`
-                    : null
+                    : nothing
                 }
+                <button
+                  class="panel__reaction-delete"
+                  title=${msg('Delete reaction')}
+                  @click=${(e: MouseEvent) => {
+                    e.stopPropagation();
+                    this._handleDeleteReaction(reaction);
+                  }}
+                >
+                  ${this._trashIcon()}
+                </button>
               </div>
-              <div class="panel__reaction-text">${reaction.reaction_text}</div>
+              ${
+                isOpen
+                  ? html`
+                  <div class="panel__reaction-body">
+                    <div class="panel__reaction-text">${reaction.reaction_text}</div>
+                  </div>
+                `
+                  : nothing
+              }
             </div>
-          `,
-        )}
+          `;
+        })}
       </div>
     `;
   }
@@ -568,127 +582,127 @@ export class VelgEventDetailsPanel extends LitElement {
     const evt = this.event;
 
     return html`
-      <div
-        class="backdrop ${this.open ? 'backdrop--open' : ''}"
-        @click=${this._handleBackdropClick}
+      <velg-side-panel
+        .open=${this.open}
+        .panelTitle=${evt?.title ?? msg('Event Details')}
       >
-        <div class="panel">
-          <div class="panel__header">
-            <h2 class="panel__title">${evt?.title ?? msg('Event Details')}</h2>
-            <button
-              class="panel__close"
-              @click=${this._handleClose}
-              aria-label=${msg('Close')}
-            >
-              X
-            </button>
-          </div>
-
-          ${
-            evt
-              ? html`
-              <div class="panel__body">
-                <!-- Type & Source badges -->
-                <div class="panel__section">
-                  <div class="panel__badges">
-                    ${evt.event_type ? html`<span class="panel__badge panel__badge--type">${evt.event_type}</span>` : null}
-                    ${evt.data_source ? html`<span class="panel__badge panel__badge--source">${evt.data_source}</span>` : null}
+        ${
+          evt
+            ? html`
+              <div slot="content">
+                <div class="panel__content">
+                  <!-- Type & Source badges -->
+                  <div class="panel__section">
+                    <div class="panel__badges">
+                      ${evt.event_type ? html`<velg-badge variant="primary">${evt.event_type}</velg-badge>` : null}
+                      ${evt.data_source ? html`<velg-badge variant="info">${evt.data_source}</velg-badge>` : null}
+                    </div>
                   </div>
-                </div>
 
-                <!-- Description -->
-                ${
-                  evt.description
-                    ? html`
-                    <div class="panel__section">
-                      <div class="panel__section-title">${msg('Description')}</div>
-                      <div class="panel__text">${evt.description}</div>
-                    </div>
-                  `
-                    : null
-                }
-
-                <!-- Occurred At -->
-                ${
-                  evt.occurred_at
-                    ? html`
-                    <div class="panel__section">
-                      <div class="panel__section-title">${msg('Occurred At')}</div>
-                      <div class="panel__text">${this._formatDate(evt.occurred_at)}</div>
-                    </div>
-                  `
-                    : null
-                }
-
-                <!-- Impact Level -->
-                <div class="panel__section">
-                  <div class="panel__section-title">${msg('Impact Level')}</div>
-                  ${this._renderImpactBar()}
-                </div>
-
-                <!-- Location -->
-                ${
-                  evt.location
-                    ? html`
-                    <div class="panel__section">
-                      <div class="panel__section-title">${msg('Location')}</div>
-                      <div class="panel__text">${evt.location}</div>
-                    </div>
-                  `
-                    : null
-                }
-
-                <!-- Tags -->
-                ${
-                  evt.tags && evt.tags.length > 0
-                    ? html`
-                    <div class="panel__section">
-                      <div class="panel__section-title">${msg('Tags')}</div>
-                      <div class="panel__tags">
-                        ${evt.tags.map((tag) => html`<span class="panel__tag">${tag}</span>`)}
+                  <!-- Description -->
+                  ${
+                    evt.description
+                      ? html`
+                      <div class="panel__section">
+                        <velg-section-header>${msg('Description')}</velg-section-header>
+                        <div class="panel__text">${evt.description}</div>
                       </div>
-                    </div>
-                  `
-                    : null
-                }
+                    `
+                      : null
+                  }
 
-                <!-- Metadata -->
-                ${this._renderMetadata()}
+                  <!-- Occurred At -->
+                  ${
+                    evt.occurred_at
+                      ? html`
+                      <div class="panel__section">
+                        <velg-section-header>${msg('Occurred At')}</velg-section-header>
+                        <div class="panel__text">${this._formatDate(evt.occurred_at)}</div>
+                      </div>
+                    `
+                      : null
+                  }
 
-                <!-- Reactions -->
-                <div class="panel__section">
-                  <div class="panel__section-title">
-                    ${msg(str`Reactions (${this._reactions.length})`)}
+                  <!-- Impact Level -->
+                  <div class="panel__section">
+                    <velg-section-header>${msg('Impact Level')}</velg-section-header>
+                    ${this._renderImpactBar()}
                   </div>
-                  ${this._renderReactions()}
+
+                  <!-- Location -->
+                  ${
+                    evt.location
+                      ? html`
+                      <div class="panel__section">
+                        <velg-section-header>${msg('Location')}</velg-section-header>
+                        <div class="panel__text">${evt.location}</div>
+                      </div>
+                    `
+                      : null
+                  }
+
+                  <!-- Tags -->
+                  ${
+                    evt.tags && evt.tags.length > 0
+                      ? html`
+                      <div class="panel__section">
+                        <velg-section-header>${msg('Tags')}</velg-section-header>
+                        <div class="panel__tags">
+                          ${evt.tags.map((tag) => html`<span class="panel__tag">${tag}</span>`)}
+                        </div>
+                      </div>
+                    `
+                      : null
+                  }
+
+                  <!-- Metadata -->
+                  ${this._renderMetadata()}
+
+                  <!-- Reactions -->
+                  <div class="panel__section">
+                    <velg-section-header>
+                      ${msg(str`Reactions (${this._reactions.length})`)}
+                    </velg-section-header>
+                    ${this._renderReactions()}
+                  </div>
                 </div>
               </div>
 
-              <div class="panel__footer">
-                <button
-                  class="panel__btn panel__btn--edit"
-                  @click=${this._handleEdit}
-                >
-                  ${this._editIcon()}
-                  ${msg('Edit')}
-                </button>
-                <button
-                  class="panel__btn panel__btn--danger"
-                  @click=${this._handleDelete}
-                >
-                  ${this._deleteIcon()}
-                  ${msg('Delete')}
-                </button>
+              <button
+                slot="footer"
+                class="panel__btn panel__btn--generate"
+                @click=${this._handleGenerateReactions}
+                ?disabled=${this._generatingReactions}
+              >
+                ${this._brainIcon()}
+                ${this._generatingReactions ? msg('Generating...') : msg('Generate Reactions')}
+              </button>
+              <button
+                slot="footer"
+                class="panel__btn panel__btn--edit"
+                @click=${this._handleEdit}
+              >
+                ${this._editIcon()}
+                ${msg('Edit')}
+              </button>
+              <button
+                slot="footer"
+                class="panel__btn panel__btn--danger"
+                @click=${this._handleDelete}
+              >
+                ${this._deleteIcon()}
+                ${msg('Delete')}
+              </button>
+            `
+            : html`
+              <div slot="content">
+                <div class="panel__content">
+                  <div class="panel__text panel__text--secondary">${msg('No event selected.')}</div>
+                </div>
               </div>
             `
-              : html`
-              <div class="panel__body">
-                <div class="panel__text panel__text--secondary">${msg('No event selected.')}</div>
-              </div>
-            `
-          }
-        </div>
-      </div>
+        }
+      </velg-side-panel>
     `;
   }
 }

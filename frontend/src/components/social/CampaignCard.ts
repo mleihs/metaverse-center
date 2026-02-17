@@ -1,8 +1,10 @@
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { Campaign } from '../../types/index.js';
+import '../shared/VelgBadge.js';
 
+@localized()
 @customElement('velg-campaign-card')
 export class VelgCampaignCard extends LitElement {
   static styles = css`
@@ -21,10 +23,6 @@ export class VelgCampaignCard extends LitElement {
     .card__body { padding: var(--space-3) var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); flex: 1; }
     .card__description { font-size: var(--text-sm); color: var(--color-text-secondary); line-height: var(--leading-relaxed); max-height: 60px; overflow: hidden; }
     .card__badges { display: flex; flex-wrap: wrap; gap: var(--space-1-5); }
-    .card__badge { display: inline-flex; padding: var(--space-0-5) var(--space-2); font-family: var(--font-brutalist); font-weight: var(--font-bold); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: var(--tracking-wide); border: var(--border-width-default) solid var(--color-border); background: var(--color-surface-header); }
-    .card__badge--type { background: var(--color-primary-bg); border-color: var(--color-primary); color: var(--color-primary); }
-    .card__badge--urgency { background: var(--color-warning-bg); border-color: var(--color-warning); color: var(--color-warning); }
-    .card__badge--integrated { background: var(--color-success-bg); border-color: var(--color-success); color: var(--color-success); }
   `;
 
   @property({ type: Object }) campaign!: Campaign;
@@ -48,9 +46,9 @@ export class VelgCampaignCard extends LitElement {
         <div class="card__body">
           ${c.description ? html`<div class="card__description">${c.description}</div>` : ''}
           <div class="card__badges">
-            ${c.campaign_type ? html`<span class="card__badge card__badge--type">${c.campaign_type}</span>` : ''}
-            ${c.urgency_level ? html`<span class="card__badge card__badge--urgency">${c.urgency_level}</span>` : ''}
-            ${c.is_integrated_as_event ? html`<span class="card__badge card__badge--integrated">${msg('Event')}</span>` : ''}
+            ${c.campaign_type ? html`<velg-badge variant="primary">${c.campaign_type}</velg-badge>` : ''}
+            ${c.urgency_level ? html`<velg-badge variant="warning">${c.urgency_level}</velg-badge>` : ''}
+            ${c.is_integrated_as_event ? html`<velg-badge variant="success">${msg('Event')}</velg-badge>` : ''}
           </div>
         </div>
       </div>

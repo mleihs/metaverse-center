@@ -33,6 +33,7 @@ class BaseService:
 
     table_name: str
     view_name: str | None = None  # e.g. "active_agents" — used for list/get queries
+    supports_created_by: bool = True  # Override to False for tables without created_by_id
 
     @classmethod
     def _read_table(cls, include_deleted: bool = False) -> str:
@@ -128,7 +129,7 @@ class BaseService:
         })
 
         # Set created_by_id if the table supports it
-        if "created_by_id" not in insert_data:
+        if cls.supports_created_by and "created_by_id" not in insert_data:
             insert_data.setdefault("created_by_id", str(user_id))
 
         response = (

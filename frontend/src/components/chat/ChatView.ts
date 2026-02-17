@@ -1,14 +1,22 @@
-import { msg, str } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { chatApi } from '../../services/api/index.js';
-import type { Agent, ChatConversation } from '../../types/index.js';
+import type {
+  Agent,
+  ChatConversation,
+  ChatEventReference,
+  Event as SimEvent,
+} from '../../types/index.js';
+import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { VelgToast } from '../shared/Toast.js';
 
 import './ConversationList.js';
 import './ChatWindow.js';
 import './AgentSelector.js';
+import './EventPicker.js';
 
+@localized()
 @customElement('velg-chat-view')
 export class VelgChatView extends LitElement {
   static styles = css`
@@ -111,6 +119,8 @@ export class VelgChatView extends LitElement {
   @state() private _loading = true;
   @state() private _error: string | null = null;
   @state() private _showAgentSelector = false;
+  @state() private _agentSelectorMode: 'create' | 'add' = 'create';
+  @state() private _showEventPicker = false;
 
   async connectedCallback(): Promise<void> {
     super.connectedCallback();
@@ -167,29 +177,88 @@ export class VelgChatView extends LitElement {
     }
   }
 
+  private async _handleConversationDelete(e: CustomEvent<ChatConversation>): Promise<void> {
+    const conversation = e.detail;
+    const agentNames = conversation.agents?.map((a) => a.name) ?? [];
+    const agentName =
+      agentNames.length > 0
+        ? agentNames.slice(0, 3).join(', ')
+        : (conversation.agent?.name ?? msg('Agent'));
+
+    const confirmed = await VelgConfirmDialog.show({
+      title: msg('Delete Conversation'),
+      message: msg(
+        str`Are you sure you want to permanently delete the conversation with ${agentName}? All messages will be lost.`,
+      ),
+      confirmLabel: msg('Delete'),
+      variant: 'danger',
+    });
+
+    if (!confirmed) return;
+
+    try {
+      const response = await chatApi.deleteConversation(this.simulationId, conversation.id);
+      if (response.success) {
+        VelgToast.success(msg('Conversation deleted.'));
+        this._conversations = this._conversations.filter((c) => c.id !== conversation.id);
+        if (this._selectedConversation?.id === conversation.id) {
+          this._selectedConversation = null;
+        }
+      } else {
+        VelgToast.error(response.error?.message ?? msg('Failed to delete conversation.'));
+      }
+    } catch {
+      VelgToast.error(msg('An unexpected error occurred while deleting the conversation.'));
+    }
+  }
+
   private _handleNewConversation(): void {
+    this._agentSelectorMode = 'create';
     this._showAgentSelector = true;
   }
 
-  private async _handleAgentSelected(e: CustomEvent<Agent>): Promise<void> {
-    const agent = e.detail;
+  private async _handleAgentsSelected(e: CustomEvent<Agent[]>): Promise<void> {
+    const agents = e.detail;
     this._showAgentSelector = false;
+
+    if (this._agentSelectorMode === 'add') {
+      await this._addAgentsToConversation(agents);
+      return;
+    }
+
+    // Create new conversation with selected agents
+    const agentIds = agents.map((a) => a.id);
+    const names = agents.map((a) => a.name);
+    const title =
+      names.length === 1
+        ? msg(str`Chat with ${names[0]}`)
+        : msg(
+            str`Group: ${names.slice(0, 3).join(', ')}${names.length > 3 ? ` +${names.length - 3}` : ''}`,
+          );
 
     try {
       const response = await chatApi.createConversation(this.simulationId, {
-        agent_id: agent.id,
-        title: msg(str`Chat with ${agent.name}`),
+        agent_ids: agentIds,
+        title,
       });
 
       if (response.success && response.data) {
-        // Add the agent reference to the new conversation for display
+        const agentBriefs = agents.map((a) => ({
+          id: a.id,
+          name: a.name,
+          portrait_image_url: a.portrait_image_url,
+        }));
         const newConversation: ChatConversation = {
           ...response.data,
-          agent,
+          agents: agentBriefs,
         };
         this._conversations = [newConversation, ...this._conversations];
         this._selectedConversation = newConversation;
-        VelgToast.success(msg(str`Conversation started with ${agent.name}.`));
+        VelgToast.success(
+          names.length === 1
+            ? msg(str`Conversation started with ${names[0]}.`)
+            : msg(str`Group conversation started with ${names.length} agents.`),
+        );
       } else {
         VelgToast.error(response.error?.message ?? msg('Failed to create conversation.'));
       }
@@ -198,8 +267,101 @@ export class VelgChatView extends LitElement {
     }
   }
 
+  private async _addAgentsToConversation(agents: Agent[]): Promise<void> {
+    if (!this._selectedConversation) return;
+
+    for (const agent of agents) {
+      try {
+        const response = await chatApi.addAgent(
+          this.simulationId,
+          this._selectedConversation.id,
+          agent.id,
+        );
+        if (!response.success) {
+          VelgToast.error(response.error?.message ?? msg(str`Failed to add ${agent.name}.`));
+        }
+      } catch {
+        VelgToast.error(msg(str`Failed to add ${agent.name}.`));
+      }
+    }
+
+    // Reload conversations to get updated agent lists
+    await this._loadConversations();
+    // Re-select the current conversation with updated data
+    if (this._selectedConversation) {
+      const updated = this._conversations.find(
+        (c) => c.id === (this._selectedConversation as ChatConversation).id,
+      );
+      if (updated) this._selectedConversation = updated;
+    }
+    VelgToast.success(msg(str`${agents.length} agent(s) added.`));
+  }
+
+  private _handleOpenAgentSelector(): void {
+    this._agentSelectorMode = 'add';
+    this._showAgentSelector = true;
+  }
+
+  private _handleOpenEventPicker(): void {
+    this._showEventPicker = true;
+  }
+
+  private async _handleEventSelected(e: CustomEvent<SimEvent>): Promise<void> {
+    if (!this._selectedConversation) return;
+    const event = e.detail;
+    this._showEventPicker = false;
+
+    try {
+      const response = await chatApi.addEventReference(
+        this.simulationId,
+        this._selectedConversation.id,
+        event.id,
+      );
+      if (response.success && response.data) {
+        // Update conversation's event_references locally
+        const refs = [...(this._selectedConversation.event_references ?? []), response.data];
+        this._selectedConversation = {
+          ...this._selectedConversation,
+          event_references: refs,
+        };
+        VelgToast.success(msg(str`Event "${event.title}" referenced.`));
+      } else {
+        VelgToast.error(response.error?.message ?? msg('Failed to reference event.'));
+      }
+    } catch {
+      VelgToast.error(msg('An unexpected error occurred.'));
+    }
+  }
+
+  private async _handleRemoveEventRef(e: CustomEvent<ChatEventReference>): Promise<void> {
+    if (!this._selectedConversation) return;
+    const ref = e.detail;
+
+    try {
+      const response = await chatApi.removeEventReference(
+        this.simulationId,
+        this._selectedConversation.id,
+        ref.event_id,
+      );
+      if (response.success) {
+        const refs = (this._selectedConversation.event_references ?? []).filter(
+          (r) => r.event_id !== ref.event_id,
+        );
+        this._selectedConversation = {
+          ...this._selectedConversation,
+          event_references: refs,
+        };
+      } else {
+        VelgToast.error(response.error?.message ?? msg('Failed to remove event reference.'));
+      }
+    } catch {
+      VelgToast.error(msg('An unexpected error occurred.'));
+    }
+  }
+
   private _handleModalClose(): void {
     this._showAgentSelector = false;
+    this._showEventPicker = false;
   }
 
   protected render() {
@@ -244,11 +406,16 @@ export class VelgChatView extends LitElement {
               .selectedId=${this._selectedConversation?.id ?? ''}
               @conversation-select=${this._handleConversationSelect}
               @conversation-archive=${this._handleConversationArchive}
+              @conversation-delete=${this._handleConversationDelete}
             ></velg-conversation-list>
           </div>
         </div>
 
-        <div class="main-area">
+        <div class="main-area"
+          @open-agent-selector=${this._handleOpenAgentSelector}
+          @open-event-picker=${this._handleOpenEventPicker}
+          @remove-event-ref=${this._handleRemoveEventRef}
+        >
           <velg-chat-window
             .conversation=${this._selectedConversation}
             .simulationId=${this.simulationId}
@@ -259,9 +426,19 @@ export class VelgChatView extends LitElement {
       <velg-agent-selector
         .simulationId=${this.simulationId}
         .open=${this._showAgentSelector}
-        @agent-selected=${this._handleAgentSelected}
+        .mode=${this._agentSelectorMode}
+        .excludeAgentIds=${this._selectedConversation?.agents?.map((a) => a.id) ?? []}
+        @agents-selected=${this._handleAgentsSelected}
         @modal-close=${this._handleModalClose}
       ></velg-agent-selector>
+
+      <velg-event-picker
+        .simulationId=${this.simulationId}
+        .open=${this._showEventPicker}
+        .referencedEventIds=${this._selectedConversation?.event_references?.map((r) => r.event_id) ?? []}
+        @event-selected=${this._handleEventSelected}
+        @modal-close=${this._handleModalClose}
+      ></velg-event-picker>
     `;
   }
 }

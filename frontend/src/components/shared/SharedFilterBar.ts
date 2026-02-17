@@ -1,4 +1,4 @@
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
@@ -18,6 +18,7 @@ export interface FilterChangeDetail {
   search: string;
 }
 
+@localized()
 @customElement('velg-filter-bar')
 export class VelgFilterBar extends LitElement {
   static styles = css`

@@ -1,4 +1,4 @@
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
@@ -15,6 +15,7 @@ class SimulationsApiService extends BaseApiService {
 
 const simulationsApi = new SimulationsApiService();
 
+@localized()
 @customElement('velg-simulations-dashboard')
 export class VelgSimulationsDashboard extends LitElement {
   static styles = css`

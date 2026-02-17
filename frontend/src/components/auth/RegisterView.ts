@@ -1,8 +1,9 @@
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { authService } from '../../services/supabase/SupabaseAuthService.js';
 
+@localized()
 @customElement('velg-register-view')
 export class VelgRegisterView extends LitElement {
   static styles = css`

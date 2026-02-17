@@ -38,3 +38,37 @@ class IntegrateTrendRequest(BaseModel):
     event_type: str | None = None
     impact_level: int = Field(default=5, ge=1, le=10)
     tags: list[str] = Field(default_factory=list)
+
+
+# --- Browse workflow models (ephemeral, no DB storage) ---
+
+
+class BrowseArticlesRequest(BaseModel):
+    """Request to browse/search articles from external sources without DB storage."""
+
+    source: str = Field(default="guardian", pattern=r"^(guardian|newsapi)$")
+    query: str | None = Field(default=None, max_length=500)
+    section: str | None = None
+    limit: int = Field(default=15, ge=1, le=50)
+
+
+class TransformArticleRequest(BaseModel):
+    """Request to transform an ephemeral article (not from DB) into simulation context."""
+
+    article_name: str = Field(..., min_length=1, max_length=500)
+    article_platform: str
+    article_url: str | None = None
+    article_raw_data: dict | None = None
+
+
+class IntegrateArticleRequest(BaseModel):
+    """Request to integrate an article as an event with optional reaction generation."""
+
+    title: str = Field(..., min_length=1, max_length=500)
+    description: str | None = None
+    event_type: str | None = None
+    impact_level: int = Field(default=5, ge=1, le=10)
+    tags: list[str] = Field(default_factory=list)
+    generate_reactions: bool = True
+    max_reaction_agents: int = Field(default=20, ge=1, le=50)
+    source_article: dict | None = None

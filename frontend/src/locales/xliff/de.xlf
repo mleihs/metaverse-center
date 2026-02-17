@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+<?xml version='1.0' encoding='UTF-8'?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
 <file target-language="de" source-language="en" original="lit-localize-inputs" datatype="plaintext">
 <body>
 <trans-unit id="s332f8fed504da6be">
@@ -638,10 +638,6 @@
   <source>An unexpected error occurred while loading agents.</source>
   <target>Ein unerwarteter Fehler beim Laden der Agenten.</target>
 </trans-unit>
-<trans-unit id="sfd503599a2f0c8dc">
-  <source>Select Agent</source>
-  <target>Agent auswählen</target>
-</trans-unit>
 <trans-unit id="sd6f1fe12887e55ce">
   <source>No agents match your search.</source>
   <target>Keine Agenten gefunden.</target>
@@ -671,11 +667,11 @@
   <target>Ein unerwarteter Fehler beim Archivieren der Konversation.</target>
 </trans-unit>
 <trans-unit id="s0a552e96950fee13">
-  <source>Chat with <x id="0" equiv-text="${agent.name}"/></source>
+  <source>Chat with <x id="0" equiv-text="${names[0]}"/></source>
   <target>Chat mit <x id="0" equiv-text="${agent.name}"/></target>
 </trans-unit>
 <trans-unit id="s8d746648f3712457">
-  <source>Conversation started with <x id="0" equiv-text="${agent.name}"/>.</source>
+  <source>Conversation started with <x id="0" equiv-text="${names[0]}"/>.</source>
   <target>Konversation gestartet mit <x id="0" equiv-text="${agent.name}"/>.</target>
 </trans-unit>
 <trans-unit id="sd372b232ee1d8588">
@@ -705,14 +701,6 @@
 <trans-unit id="s0152e8b504b6db4d">
   <source>An unexpected error occurred while loading messages.</source>
   <target>Ein unerwarteter Fehler beim Laden der Nachrichten.</target>
-</trans-unit>
-<trans-unit id="s032238aafc8f6e16">
-  <source>Failed to get AI response.</source>
-  <target>Fehler beim Abrufen der KI-Antwort.</target>
-</trans-unit>
-<trans-unit id="s3e7f157bf0f6eee1">
-  <source>An unexpected error occurred while getting the AI response.</source>
-  <target>Ein unerwarteter Fehler beim Abrufen der KI-Antwort.</target>
 </trans-unit>
 <trans-unit id="s19fec3f264f22034">
   <source>Failed to send message.</source>
@@ -769,10 +757,6 @@
 <trans-unit id="s5eaee60bc1bf5897">
   <source>Type your message...</source>
   <target>Nachricht eingeben...</target>
-</trans-unit>
-<trans-unit id="s57adf424d57c8a0f">
-  <source>Send</source>
-  <target>Senden</target>
 </trans-unit>
 <trans-unit id="sdd8b5e23480b864f">
   <source>Just now</source>
@@ -2430,22 +2414,6 @@
   <source>No metrics available</source>
   <target>Keine Metriken verfügbar</target>
 </trans-unit>
-<trans-unit id="s6a21fa12275daab8">
-  <source>Search query is required</source>
-  <target>Suchbegriff ist erforderlich</target>
-</trans-unit>
-<trans-unit id="s809104f8db9a69ed">
-  <source>Fetch Trends</source>
-  <target>Trends abrufen</target>
-</trans-unit>
-<trans-unit id="s17d0f1725a859219">
-  <source>Search Query</source>
-  <target>Suchanfrage</target>
-</trans-unit>
-<trans-unit id="s5d6fa1bc53eff118">
-  <source>Enter keywords to search for relevant trends</source>
-  <target>Schlüsselwörter eingeben, um relevante Trends zu suchen</target>
-</trans-unit>
 <trans-unit id="s5f43af3669b1e098">
   <source>Source</source>
   <target>Quelle</target>
@@ -2457,22 +2425,6 @@
 <trans-unit id="s91a65cb55433adb4">
   <source>Limit</source>
   <target>Limit</target>
-</trans-unit>
-<trans-unit id="s3f1f0c762ddcb20e">
-  <source>5 results</source>
-  <target>5 Ergebnisse</target>
-</trans-unit>
-<trans-unit id="sc5c7aa7b28ebfe72">
-  <source>10 results</source>
-  <target>10 Ergebnisse</target>
-</trans-unit>
-<trans-unit id="s1ad810b974d14ffd">
-  <source>20 results</source>
-  <target>20 Ergebnisse</target>
-</trans-unit>
-<trans-unit id="s54b914ceb1c3397e">
-  <source>50 results</source>
-  <target>50 Ergebnisse</target>
 </trans-unit>
 <trans-unit id="sef8a1067009e4d5a">
   <source>Post transformed</source>
@@ -2526,18 +2478,6 @@
   <source>No posts found</source>
   <target>Keine Beiträge gefunden</target>
 </trans-unit>
-<trans-unit id="s2ac496e8edbdfaf9">
-  <source>Failed to load trends</source>
-  <target>Fehler beim Laden der Trends</target>
-</trans-unit>
-<trans-unit id="s2896c3d46d2217c9">
-  <source>Trends fetched successfully</source>
-  <target>Trends erfolgreich abgerufen</target>
-</trans-unit>
-<trans-unit id="s72bad63b1fdc9eb3">
-  <source>Failed to fetch trends</source>
-  <target>Fehler beim Abrufen der Trends</target>
-</trans-unit>
 <trans-unit id="s5c67b6c66029e5b2">
   <source>Platform</source>
   <target>Plattform</target>
@@ -2569,14 +2509,6 @@
 <trans-unit id="s09205907b5b56cda">
   <source>No</source>
   <target>Nein</target>
-</trans-unit>
-<trans-unit id="se1d4188c97e3c10d">
-  <source>Loading trends...</source>
-  <target>Trends werden geladen...</target>
-</trans-unit>
-<trans-unit id="sa0ad6467df2df026">
-  <source>No trends found</source>
-  <target>Keine Trends gefunden</target>
 </trans-unit>
 <trans-unit id="s2a9501ccb60465a5">
   <source>Transformation failed</source>
@@ -2701,6 +2633,248 @@
 <trans-unit id="s62d9da7ce0def73c">
   <source>An unexpected error occurred.</source>
   <target>Ein unerwarteter Fehler ist aufgetreten.</target>
+</trans-unit>
+<trans-unit id="s862e881b525e5127">
+  <source>Transforming article</source>
+  <target>Artikel transformieren</target>
+</trans-unit>
+<trans-unit id="sef4eb1eaf7ab6fff">
+  <source>AI transforming article</source>
+  <target>KI transformiert Artikel</target>
+</trans-unit>
+<trans-unit id="sdc63ec20b1ccc2db">
+  <source>AI transforming article...</source>
+  <target>KI transformiert Artikel...</target>
+</trans-unit>
+<trans-unit id="s3aae3d4a7b611137">
+  <source>Processing result...</source>
+  <target>Ergebnis wird verarbeitet...</target>
+</trans-unit>
+<trans-unit id="s4b8ea3a188d02ea7">
+  <source>Transformation complete</source>
+  <target>Transformation abgeschlossen</target>
+</trans-unit>
+<trans-unit id="s62b8d126a7bef112">
+  <source>Generating agent reactions...</source>
+  <target>Agenten-Reaktionen werden generiert...</target>
+</trans-unit>
+<trans-unit id="sdbc215b41c0cb950">
+  <source>Processing reactions...</source>
+  <target>Reaktionen werden verarbeitet...</target>
+</trans-unit>
+<trans-unit id="s6d936d8dcc053ab0">
+  <source><x id="0" equiv-text="${response.data.length}"/> reactions generated</source>
+  <target><x id="0" equiv-text="${response.data.length}"/> Reaktionen generiert</target>
+</trans-unit>
+<trans-unit id="s7dcfa30133c26319">
+  <source><x id="0" equiv-text="${response.data.length}"/> agent reactions generated</source>
+  <target><x id="0" equiv-text="${response.data.length}"/> Agenten-Reaktionen generiert</target>
+</trans-unit>
+<trans-unit id="sc02725662448fb75">
+  <source>Reaction generation failed</source>
+  <target>Reaktionsgenerierung fehlgeschlagen</target>
+</trans-unit>
+<trans-unit id="s8bf481a0b5d8a689">
+  <source>Generating...</source>
+  <target>Generiere...</target>
+</trans-unit>
+<trans-unit id="s33e3e6bb8e4a84ce">
+  <source>Generate Reactions</source>
+  <target>Reaktionen generieren</target>
+</trans-unit>
+<trans-unit id="s981031bd2a4d564d">
+  <source>Generating reactions</source>
+  <target>Reaktionen generieren</target>
+</trans-unit>
+<trans-unit id="s80ff87a791d4535f">
+  <source>Loading agents</source>
+  <target>Agenten laden</target>
+</trans-unit>
+<trans-unit id="sa9ce86d557cade9c">
+  <source>Generating agent reactions</source>
+  <target>Agenten-Reaktionen generieren</target>
+</trans-unit>
+<trans-unit id="s4a36a898aa9c57c2">
+  <source>Processing reactions</source>
+  <target>Reaktionen verarbeiten</target>
+</trans-unit>
+<trans-unit id="s6044cfd54f58c981">
+  <source>Delete reaction</source>
+  <target>Reaktion löschen</target>
+</trans-unit>
+<trans-unit id="s7e3cbbae942c94dc">
+  <source>Delete reaction of <x id="0" equiv-text="${this.agent.name}"/> to "<x id="1" equiv-text="${eventTitle}"/>"?</source>
+  <target>Reaktion von <x id="0" equiv-text="${this.agent.name}"/> auf „<x id="1" equiv-text="${eventTitle}"/>" löschen?</target>
+</trans-unit>
+<trans-unit id="s8fd49ef6054b1197">
+  <source>Reaction deleted</source>
+  <target>Reaktion gelöscht</target>
+</trans-unit>
+<trans-unit id="s3532213ca3873ddf">
+  <source>Failed to delete reaction</source>
+  <target>Reaktion konnte nicht gelöscht werden</target>
+</trans-unit>
+<trans-unit id="sef72ba000d7f7124">
+  <source><x id="0" equiv-text="${displayName}"/> is typing...</source>
+  <target><x id="0" equiv-text="${agentName}"/> tippt...</target>
+</trans-unit>
+<trans-unit id="s10361832e7a4e3e2">
+  <source>Shift+Enter for line break</source>
+  <target>Shift+Enter für Zeilenumbruch</target>
+</trans-unit>
+<trans-unit id="s63d040e37887f17e">
+  <source>Today</source>
+  <target>Heute</target>
+</trans-unit>
+<trans-unit id="s5b4abc92ede53bc7">
+  <source>Yesterday</source>
+  <target>Gestern</target>
+</trans-unit>
+<trans-unit id="sefe2184eac608415">
+  <source>Delete Conversation</source>
+  <target>Konversation löschen</target>
+</trans-unit>
+<trans-unit id="s7841bb6037c4563e">
+  <source>Are you sure you want to permanently delete the conversation with <x id="0" equiv-text="${agentName}"/>? All messages will be lost.</source>
+  <target>Möchtest du die Konversation mit <x id="0" equiv-text="${agentName}"/> wirklich endgültig löschen? Alle Nachrichten gehen verloren.</target>
+</trans-unit>
+<trans-unit id="s40fc621a022dc51f">
+  <source>Conversation deleted.</source>
+  <target>Konversation gelöscht.</target>
+</trans-unit>
+<trans-unit id="sbc17d2e9c8f2b927">
+  <source>Failed to delete conversation.</source>
+  <target>Fehler beim Löschen der Konversation.</target>
+</trans-unit>
+<trans-unit id="s65dca4e016c87e75">
+  <source>An unexpected error occurred while deleting the conversation.</source>
+  <target>Ein unerwarteter Fehler beim Löschen der Konversation.</target>
+</trans-unit>
+<trans-unit id="se407983ffa8cd99d">
+  <source>Selected (<x id="0" equiv-text="${selected.length}"/>)</source>
+<target>Ausgewählt (<x id="0" equiv-text="${selected.length}"/>)</target></trans-unit>
+<trans-unit id="sda972e1524e96cb2">
+  <source>Add Agents</source>
+<target>Agenten hinzufügen</target></trans-unit>
+<trans-unit id="s6013c30fdf25015d">
+  <source>Select Agents</source>
+<target>Agenten auswählen</target></trans-unit>
+<trans-unit id="s76402dc74efa459d">
+  <source>Add (<x id="0" equiv-text="${this._selectedIds.size}"/>)</source>
+<target>Hinzufügen (<x id="0" equiv-text="${this._selectedIds.size}"/>)</target></trans-unit>
+<trans-unit id="s780d47c5d94eaca5">
+  <source>Start Conversation (<x id="0" equiv-text="${this._selectedIds.size}"/> Agents)</source>
+<target>Gespräch starten (<x id="0" equiv-text="${this._selectedIds.size}"/> Agenten)</target></trans-unit>
+<trans-unit id="s2e1246a8a0f9f582">
+  <source>Group: <x id="0" equiv-text="${names.slice(0, 3).join(', ')}${names.length &gt; 3 ? ` +${names.length - 3}` : ''}"/></source>
+<target>Gruppe: <x id="0" equiv-text="${names.slice(0, 3).join(', ')}${names.length &gt; 3 ? ` +${names.length - 3}` : ''}"/></target></trans-unit>
+<trans-unit id="sce4b0b13cd896498">
+  <source>Group conversation started with <x id="0" equiv-text="${names.length}"/> agents.</source>
+<target>Gruppengespräch mit <x id="0" equiv-text="${names.length}"/> Agenten gestartet.</target></trans-unit>
+<trans-unit id="s138591852cc6d90a">
+  <source>Failed to add <x id="0" equiv-text="${agent.name}"/>.</source>
+<target>Fehler beim Hinzufügen von <x id="0" equiv-text="${agent.name}"/>.</target></trans-unit>
+<trans-unit id="s1feb2c0afcc4660c">
+  <source><x id="0" equiv-text="${agents.length}"/> agent(s) added.</source>
+<target><x id="0" equiv-text="${agents.length}"/> Agent(en) hinzugefügt.</target></trans-unit>
+<trans-unit id="s4095b60011d6e4ae">
+  <source>Event "<x id="0" equiv-text="${event.title}"/>" referenced.</source>
+<target>Event "<x id="0" equiv-text="${event.title}"/>" referenziert.</target></trans-unit>
+<trans-unit id="s588ec63806be19a6">
+  <source>Failed to reference event.</source>
+<target>Event konnte nicht referenziert werden.</target></trans-unit>
+<trans-unit id="sa42a5b5211da5648">
+  <source>Failed to remove event reference.</source>
+<target>Event-Referenz konnte nicht entfernt werden.</target></trans-unit>
+<trans-unit id="s1a445bc371e19b14">
+  <source>Add Event</source>
+<target>Event hinzufügen</target></trans-unit>
+<trans-unit id="sabc6f5601ffed38c">
+  <source><x id="0" equiv-text="${agentCount}"/> agents are responding...</source>
+<target><x id="0" equiv-text="${agentCount}"/> Agenten antworten...</target></trans-unit>
+<trans-unit id="s61b59619104804be">
+  <source><x id="0" equiv-text="${agentCount}"/> agents · <x id="1" equiv-text="${this.conversation.message_count}"/> messages</source>
+<target><x id="0" equiv-text="${agentCount}"/> Agenten · <x id="1" equiv-text="${this.conversation.message_count}"/> Nachrichten</target></trans-unit>
+<trans-unit id="s2a9a0cbeb976d3f5">
+  <source>Add Agent</source>
+<target>Agent hinzufügen</target></trans-unit>
+<trans-unit id="s375f7f22335a12de">
+  <source>Failed to load events.</source>
+<target>Events konnten nicht geladen werden.</target></trans-unit>
+<trans-unit id="scf69b34c198397c2">
+  <source>An unexpected error occurred while loading events.</source>
+<target>Beim Laden der Events ist ein unerwarteter Fehler aufgetreten.</target></trans-unit>
+<trans-unit id="s8582537d138254ba">
+  <source>Reference Event</source>
+<target>Event referenzieren</target></trans-unit>
+<trans-unit id="sa549cbab876a0f77">
+  <source>No events match your search.</source>
+<target>Keine Events gefunden.</target></trans-unit>
+<trans-unit id="sfb741c33537cb876">
+  <source>No events available.</source>
+<target>Keine Events verfügbar.</target></trans-unit>
+<trans-unit id="sc2af0fb75d9ce952">
+  <source>Event Referenced</source>
+<target>Event referenziert</target></trans-unit>
+<trans-unit id="s5c790af89996fdfe">
+  <source>Failed to load articles</source>
+  <target>Artikel konnten nicht geladen werden</target>
+</trans-unit>
+<trans-unit id="scc1db59d292cbc4c">
+  <source>Section</source>
+  <target>Rubrik</target>
+</trans-unit>
+<trans-unit id="s13730661a22ebb88">
+  <source>All Sections</source>
+  <target>Alle Rubriken</target>
+</trans-unit>
+<trans-unit id="sab66c5269937c0d4">
+  <source>Search query (optional)</source>
+  <target>Suchbegriff (optional)</target>
+</trans-unit>
+<trans-unit id="s2e1167d02811dfdc">
+  <source>e.g. climate, technology...</source>
+  <target>z.B. Klima, Technologie...</target>
+</trans-unit>
+<trans-unit id="s3c777006dd236508">
+  <source>Load Articles</source>
+  <target>Artikel laden</target>
+</trans-unit>
+<trans-unit id="s17c6bfaa75895ad6">
+  <source>Selected Article</source>
+  <target>Ausgewaehlter Artikel</target>
+</trans-unit>
+<trans-unit id="s3aeba787c1a1b3cf">
+  <source>Read Article</source>
+  <target>Artikel lesen</target>
+</trans-unit>
+<trans-unit id="s639f30f9c1fd5cba">
+  <source>Deselect</source>
+  <target>Abwaehlen</target>
+</trans-unit>
+<trans-unit id="se7118cd75b4a4086">
+  <source>Browse News</source>
+  <target>Nachrichten durchsuchen</target>
+</trans-unit>
+<trans-unit id="s8fc7fc210f0097ec">
+  <source>Loading articles...</source>
+  <target>Artikel werden geladen...</target>
+</trans-unit>
+<trans-unit id="s659bd4838db8f671">
+  <source>No articles found</source>
+  <target>Keine Artikel gefunden</target>
+</trans-unit>
+<trans-unit id="s0f51454f932e2e46">
+  <source>Event created with <x id="0" equiv-text="${result.reactions_count}"/> agent reactions</source>
+  <target>Event erstellt mit <x id="0" equiv-text="${result.reactions_count}"/> Agenten-Reaktionen</target>
+</trans-unit>
+<trans-unit id="s6d90940f8abe4a87">
+  <source>Generate agent reactions</source>
+  <target>Agenten-Reaktionen generieren</target>
+</trans-unit>
+<trans-unit id="s34f37a8446976da9">
+  <source>Number of agents</source>
+  <target>Anzahl Agenten</target>
 </trans-unit>
 </body>
 </file>

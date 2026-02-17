@@ -14,6 +14,7 @@ from backend.models.common import (
 )
 from backend.services.agent_service import AgentService
 from backend.services.audit_service import AuditService
+from backend.services.event_service import EventService
 from supabase import Client
 
 router = APIRouter(
@@ -148,3 +149,17 @@ async def get_agent_reactions(
     """Get all event reactions for an agent."""
     reactions = await _service.get_reactions(supabase, simulation_id, agent_id)
     return {"success": True, "data": reactions}
+
+
+@router.delete("/{agent_id}/reactions/{reaction_id}", response_model=SuccessResponse[dict])
+async def delete_agent_reaction(
+    simulation_id: UUID,
+    agent_id: UUID,
+    reaction_id: UUID,
+    user: CurrentUser = Depends(get_current_user),
+    _role_check: str = Depends(require_role("editor")),
+    supabase: Client = Depends(get_supabase),
+) -> dict:
+    """Delete a single reaction for an agent."""
+    deleted = await EventService.delete_reaction(supabase, simulation_id, reaction_id)
+    return {"success": True, "data": deleted}

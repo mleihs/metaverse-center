@@ -1,8 +1,9 @@
-import { msg, str } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { City } from '../../types/index.js';
 
+@localized()
 @customElement('velg-city-list')
 export class VelgCityList extends LitElement {
   static styles = css`

@@ -65,6 +65,21 @@ HARDCODED_FALLBACKS: dict[str, str] = {
         "Transform the following social media post into a dystopian "
         "propaganda version. Respond in {locale_name}."
     ),
+    "chat_event_context": (
+        "--- REFERENCED EVENTS ---\n{event_list}\n--- END EVENTS ---"
+    ),
+    "chat_event_item": (
+        "[{event_title}] (Type: {event_type}, Impact: {impact_level}/10, Date: {occurred_at})\n"
+        "{event_description}"
+    ),
+    "chat_group_instruction": (
+        "You are in a group conversation. The other participants are: {other_agent_names}. "
+        "Respond to the user's and other agents' statements. "
+        "Reference the mentioned events when relevant to the conversation."
+    ),
+    "chat_event_reaction": (
+        "{agent_name} reacted to \"{event_title}\": {reaction_text} (Emotion: {emotion})"
+    ),
 }
 
 

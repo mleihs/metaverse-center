@@ -23,6 +23,37 @@ class GuardianService:
     def __init__(self, api_key: str):
         self.api_key = api_key
 
+    async def browse(
+        self,
+        *,
+        section: str | None = None,
+        limit: int = 15,
+    ) -> list[dict[str, Any]]:
+        """Browse newest Guardian articles without a search query."""
+        params: dict[str, Any] = {
+            "api-key": self.api_key,
+            "page-size": min(limit, 50),
+            "show-fields": "headline,trailText,standfirst,byline,thumbnail",
+            "order-by": "newest",
+        }
+        if section:
+            params["section"] = section
+
+        async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS) as client:
+            resp = await client.get(f"{GUARDIAN_BASE_URL}/search", params=params)
+
+            if resp.status_code == 429:
+                raise GuardianError("Guardian API rate limit exceeded.")
+            if resp.status_code != 200:
+                raise GuardianError(
+                    f"Guardian API error {resp.status_code}: {resp.text[:200]}"
+                )
+
+            data = resp.json()
+
+        results = data.get("response", {}).get("results", [])
+        return [self._normalize(r) for r in results]
+
     async def search(
         self,
         query: str,
@@ -35,7 +66,7 @@ class GuardianService:
             "api-key": self.api_key,
             "q": query,
             "page-size": min(limit, 50),
-            "show-fields": "headline,trailText,byline",
+            "show-fields": "headline,trailText,standfirst,byline,thumbnail",
             "order-by": "relevance",
         }
         if section:
@@ -58,7 +89,7 @@ class GuardianService:
 
     @staticmethod
     def _normalize(article: dict[str, Any]) -> dict[str, Any]:
-        """Convert Guardian article to social_trends row format."""
+        """Convert Guardian article to normalized article format."""
         fields = article.get("fields", {})
         return {
             "name": fields.get("headline", article.get("webTitle", "")),
@@ -69,6 +100,8 @@ class GuardianService:
                 "section": article.get("sectionId"),
                 "byline": fields.get("byline"),
                 "trail_text": fields.get("trailText"),
+                "standfirst": fields.get("standfirst"),
+                "thumbnail": fields.get("thumbnail"),
                 "publication_date": article.get("webPublicationDate"),
             },
         }

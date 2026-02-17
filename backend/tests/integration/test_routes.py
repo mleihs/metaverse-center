@@ -67,6 +67,20 @@ class TestRouteRegistration:
             f"Expected 70+ API routes, got {len(api_routes)}"
         )
 
+    def test_chat_group_endpoints_registered(self, client: TestClient):
+        """Verify multi-agent chat endpoints are registered."""
+        routes = [route.path for route in app.routes]
+        route_str = "\n".join(routes)
+
+        # Conversation agent management
+        assert any("conversations" in r and "agents" in r for r in routes), (
+            f"No conversation agent routes found. Available:\n{route_str}"
+        )
+        # Conversation event references
+        assert any("conversations" in r and "events" in r for r in routes), (
+            f"No conversation event routes found. Available:\n{route_str}"
+        )
+
 
 class TestUnauthenticatedAccess:
     """Verify that protected endpoints reject unauthenticated requests."""

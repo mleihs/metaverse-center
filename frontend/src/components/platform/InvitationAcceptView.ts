@@ -1,4 +1,4 @@
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
@@ -6,6 +6,7 @@ import { invitationsApi } from '../../services/api/index.js';
 import type { InvitationPublicInfo } from '../../types/index.js';
 import { VelgToast } from '../shared/Toast.js';
 
+@localized()
 @customElement('velg-invitation-accept-view')
 export class VelgInvitationAcceptView extends LitElement {
   static styles = css`

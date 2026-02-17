@@ -1,4 +1,4 @@
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { socialMediaApi } from '../../services/api/index.js';
@@ -7,6 +7,7 @@ import { VelgToast } from '../shared/Toast.js';
 
 import '../shared/BaseModal.js';
 
+@localized()
 @customElement('velg-post-transform-modal')
 export class VelgPostTransformModal extends LitElement {
   static styles = css`

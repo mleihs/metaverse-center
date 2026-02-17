@@ -1,4 +1,4 @@
-import { msg, str } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
@@ -6,6 +6,7 @@ import { usersApi } from '../../services/api/index.js';
 import type { MembershipInfo } from '../../types/index.js';
 import { VelgToast } from '../shared/Toast.js';
 
+@localized()
 @customElement('velg-user-profile-view')
 export class VelgUserProfileView extends LitElement {
   static styles = css`

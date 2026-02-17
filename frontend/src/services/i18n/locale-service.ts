@@ -1,11 +1,20 @@
 import { configureLocalization } from '@lit/localize';
 import { sourceLocale, targetLocales } from '../../locales/generated/locale-codes.js';
 
-// Since we use runtime mode, we need to provide a loadLocale function
+// Load locale modules via static imports so Vite can resolve .js → .ts
+function loadLocale(locale: string) {
+  switch (locale) {
+    case 'de':
+      return import('../../locales/generated/de.js');
+    default:
+      return Promise.reject(new Error(`Unknown locale: ${locale}`));
+  }
+}
+
 const { getLocale, setLocale: litSetLocale } = configureLocalization({
   sourceLocale,
   targetLocales,
-  loadLocale: (locale: string) => import(`../../locales/generated/${locale}.js`),
+  loadLocale,
 });
 
 const LOCALE_STORAGE_KEY = 'velg-locale';
@@ -41,7 +50,12 @@ class LocaleService {
   async initLocale(): Promise<void> {
     const locale = this.getInitialLocale();
     if (locale !== sourceLocale) {
-      await this.setLocale(locale);
+      try {
+        await this.setLocale(locale);
+      } catch {
+        // Fallback to source locale if loading fails
+        console.warn(`Failed to load locale "${locale}", falling back to "${sourceLocale}"`);
+      }
     }
   }
 }

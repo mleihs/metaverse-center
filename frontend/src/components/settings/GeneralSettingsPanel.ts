@@ -1,9 +1,10 @@
-import { msg, str } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { settingsApi } from '../../services/api/index.js';
 import type { SimulationSetting, SimulationTheme } from '../../types/index.js';
 import { VelgToast } from '../shared/Toast.js';
+import '../shared/VelgSectionHeader.js';
 
 const THEME_OPTIONS: Array<{ value: SimulationTheme; label: string }> = [
   { value: 'dystopian', label: msg('Dystopian') },
@@ -21,6 +22,7 @@ interface GeneralFormData {
   theme: SimulationTheme;
 }
 
+@localized()
 @customElement('velg-general-settings-panel')
 export class VelgGeneralSettingsPanel extends LitElement {
   static styles = css`
@@ -32,18 +34,6 @@ export class VelgGeneralSettingsPanel extends LitElement {
       display: flex;
       flex-direction: column;
       gap: var(--space-5);
-    }
-
-    .panel__section-title {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-lg);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-primary);
-      margin: 0;
-      padding-bottom: var(--space-2);
-      border-bottom: var(--border-default);
     }
 
     .form {
@@ -330,7 +320,7 @@ export class VelgGeneralSettingsPanel extends LitElement {
 
     return html`
       <div class="panel">
-        <h2 class="panel__section-title">${msg('General Settings')}</h2>
+        <velg-section-header variant="large">${msg('General Settings')}</velg-section-header>
 
         ${this._error ? html`<div class="panel__error">${this._error}</div>` : nothing}
 

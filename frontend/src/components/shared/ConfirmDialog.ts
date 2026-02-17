@@ -1,9 +1,10 @@
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import './BaseModal.js';
 
+@localized()
 @customElement('velg-confirm-dialog')
 export class VelgConfirmDialog extends LitElement {
   static styles = css`

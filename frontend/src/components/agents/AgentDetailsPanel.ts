@@ -1,126 +1,25 @@
-import { msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { agentsApi } from '../../services/api/index.js';
 import type { Agent, EventReaction } from '../../types/index.js';
+import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
+import '../shared/Lightbox.js';
+import { panelButtonStyles } from '../shared/panel-button-styles.js';
+import { VelgToast } from '../shared/Toast.js';
+import '../shared/VelgAvatar.js';
+import '../shared/VelgBadge.js';
+import '../shared/VelgSectionHeader.js';
+import '../shared/VelgSidePanel.js';
 
+@localized()
 @customElement('velg-agent-details-panel')
 export class VelgAgentDetailsPanel extends LitElement {
-  static styles = css`
+  static styles = [
+    panelButtonStyles,
+    css`
     :host {
       display: block;
-    }
-
-    .backdrop {
-      position: fixed;
-      inset: 0;
-      z-index: var(--z-modal);
-      display: flex;
-      justify-content: flex-end;
-      background: rgba(0, 0, 0, 0.4);
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity var(--transition-normal), visibility var(--transition-normal);
-    }
-
-    .backdrop--open {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    .panel {
-      width: 100%;
-      max-width: 520px;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      background: var(--color-surface-raised);
-      border-left: var(--border-default);
-      box-shadow: var(--shadow-xl);
-      transform: translateX(100%);
-      transition: transform var(--transition-normal);
-      overflow: hidden;
-    }
-
-    .backdrop--open .panel {
-      transform: translateX(0);
-    }
-
-    .panel__header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: var(--space-4) var(--space-6);
-      background: var(--color-surface-header);
-      border-bottom: var(--border-medium);
-      flex-shrink: 0;
-    }
-
-    .panel__title {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-lg);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
-      margin: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .panel__close {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 32px;
-      height: 32px;
-      padding: 0;
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-lg);
-      line-height: 1;
-      background: transparent;
-      border: var(--border-medium);
-      cursor: pointer;
-      transition: all var(--transition-fast);
-      flex-shrink: 0;
-    }
-
-    .panel__close:hover {
-      background: var(--color-surface-sunken);
-    }
-
-    .panel__body {
-      flex: 1;
-      overflow-y: auto;
-      padding: 0;
-    }
-
-    .panel__portrait {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      object-fit: cover;
-      display: block;
-      border-bottom: var(--border-medium);
-    }
-
-    .panel__portrait-placeholder {
-      width: 100%;
-      aspect-ratio: 3 / 2;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--color-surface-sunken);
-      border-bottom: var(--border-medium);
-    }
-
-    .panel__initials {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-5xl);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
     }
 
     .panel__info {
@@ -136,51 +35,10 @@ export class VelgAgentDetailsPanel extends LitElement {
       gap: var(--space-2);
     }
 
-    .panel__badge {
-      display: inline-flex;
-      align-items: center;
-      padding: var(--space-0-5) var(--space-2);
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: var(--text-xs);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      border: var(--border-width-default) solid var(--color-border);
-      background: var(--color-surface-header);
-    }
-
-    .panel__badge--system {
-      background: var(--color-primary-bg);
-      border-color: var(--color-primary);
-      color: var(--color-primary);
-    }
-
-    .panel__badge--gender {
-      background: var(--color-surface-header);
-    }
-
-    .panel__badge--ai {
-      background: var(--color-info-bg);
-      border-color: var(--color-info);
-      color: var(--color-info);
-    }
-
     .panel__section {
       display: flex;
       flex-direction: column;
       gap: var(--space-2);
-    }
-
-    .panel__section-title {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-sm);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-secondary);
-      margin: 0;
-      padding-bottom: var(--space-1);
-      border-bottom: var(--border-light);
     }
 
     .panel__section-content {
@@ -233,13 +91,36 @@ export class VelgAgentDetailsPanel extends LitElement {
     .panel__reactions {
       display: flex;
       flex-direction: column;
-      gap: var(--space-3);
+      gap: var(--space-1);
     }
 
     .panel__reaction {
-      padding: var(--space-3);
       background: var(--color-surface-sunken);
       border: var(--border-width-thin) solid var(--color-border-light);
+    }
+
+    .panel__reaction-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      cursor: pointer;
+      user-select: none;
+      transition: background var(--transition-fast);
+    }
+
+    .panel__reaction-header:hover {
+      background: var(--color-surface-header);
+    }
+
+    .panel__reaction-chevron {
+      flex-shrink: 0;
+      color: var(--color-text-muted);
+      transition: transform var(--transition-fast);
+    }
+
+    .panel__reaction-chevron--open {
+      transform: rotate(90deg);
     }
 
     .panel__reaction-event {
@@ -249,19 +130,11 @@ export class VelgAgentDetailsPanel extends LitElement {
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-secondary);
-      margin-bottom: var(--space-1);
-    }
-
-    .panel__reaction-text {
-      font-size: var(--text-sm);
-      color: var(--color-text-primary);
-      line-height: var(--leading-relaxed);
-    }
-
-    .panel__reaction-meta {
-      display: flex;
-      gap: var(--space-3);
-      margin-top: var(--space-1-5);
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .panel__reaction-emotion {
@@ -269,60 +142,42 @@ export class VelgAgentDetailsPanel extends LitElement {
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
       text-transform: uppercase;
-      color: var(--color-text-muted);
-    }
-
-    .panel__footer {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: var(--space-3);
-      padding: var(--space-4) var(--space-6);
-      border-top: var(--border-medium);
+      padding: var(--space-0-5) var(--space-1-5);
       background: var(--color-surface-header);
+      border: var(--border-width-thin) solid var(--color-border);
+      color: var(--color-text-muted);
       flex-shrink: 0;
     }
 
-    .panel__btn {
-      display: inline-flex;
+    .panel__reaction-delete {
+      display: flex;
       align-items: center;
       justify-content: center;
-      gap: var(--space-2);
-      padding: var(--space-2) var(--space-4);
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-sm);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
-      border: var(--border-default);
-      box-shadow: var(--shadow-md);
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      background: transparent;
+      border: none;
       cursor: pointer;
-      transition: all var(--transition-fast);
+      color: var(--color-text-muted);
+      flex-shrink: 0;
+      transition: color var(--transition-fast);
     }
 
-    .panel__btn:hover {
-      transform: translate(-2px, -2px);
-      box-shadow: var(--shadow-lg);
+    .panel__reaction-delete:hover {
+      color: var(--color-danger);
     }
 
-    .panel__btn:active {
-      transform: translate(0);
-      box-shadow: var(--shadow-pressed);
+    .panel__reaction-body {
+      padding: 0 var(--space-3) var(--space-3) var(--space-3);
+      border-top: var(--border-width-thin) solid var(--color-border-light);
     }
 
-    .panel__btn--edit {
-      background: var(--color-primary);
-      color: var(--color-text-inverse);
-    }
-
-    .panel__btn--danger {
-      background: var(--color-danger);
-      color: var(--color-text-inverse);
-      border-color: var(--color-danger);
-    }
-
-    .panel__btn--danger:hover {
-      background: var(--color-danger-hover);
+    .panel__reaction-text {
+      font-size: var(--text-sm);
+      color: var(--color-text-primary);
+      line-height: var(--leading-relaxed);
+      padding-top: var(--space-2);
     }
 
     .panel__reactions-loading {
@@ -341,7 +196,8 @@ export class VelgAgentDetailsPanel extends LitElement {
       color: var(--color-text-muted);
       font-style: italic;
     }
-  `;
+  `,
+  ];
 
   @property({ type: Object }) agent: Agent | null = null;
   @property({ type: String }) simulationId = '';
@@ -349,6 +205,30 @@ export class VelgAgentDetailsPanel extends LitElement {
 
   @state() private _reactions: EventReaction[] = [];
   @state() private _reactionsLoading = false;
+  @state() private _expandedReactions: Set<string> = new Set();
+  @state() private _lightboxSrc: string | null = null;
+
+  private _chevronIcon() {
+    return svg`
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 6l6 6l-6 6" />
+      </svg>
+    `;
+  }
+
+  private _trashIcon() {
+    return svg`
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 7l16 0" />
+        <path d="M10 11l0 6" />
+        <path d="M14 11l0 6" />
+        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
+        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
+      </svg>
+    `;
+  }
 
   private _editIcon() {
     return svg`
@@ -377,29 +257,9 @@ export class VelgAgentDetailsPanel extends LitElement {
   protected updated(changedProperties: Map<PropertyKey, unknown>): void {
     if (changedProperties.has('agent') || changedProperties.has('open')) {
       if (this.open && this.agent && this.simulationId) {
+        this._expandedReactions = new Set();
         this._loadReactions();
       }
-    }
-  }
-
-  connectedCallback(): void {
-    super.connectedCallback();
-    this._boundKeyDown = this._handleKeyDown.bind(this);
-    document.addEventListener('keydown', this._boundKeyDown);
-  }
-
-  disconnectedCallback(): void {
-    super.disconnectedCallback();
-    if (this._boundKeyDown) {
-      document.removeEventListener('keydown', this._boundKeyDown);
-    }
-  }
-
-  private _boundKeyDown: ((e: KeyboardEvent) => void) | null = null;
-
-  private _handleKeyDown(e: KeyboardEvent): void {
-    if (e.key === 'Escape' && this.open) {
-      this._close();
     }
   }
 
@@ -418,30 +278,6 @@ export class VelgAgentDetailsPanel extends LitElement {
       this._reactions = [];
     } finally {
       this._reactionsLoading = false;
-    }
-  }
-
-  private _getInitials(name: string): string {
-    return name
-      .split(/\s+/)
-      .map((part) => part.charAt(0))
-      .slice(0, 2)
-      .join('')
-      .toUpperCase();
-  }
-
-  private _close(): void {
-    this.dispatchEvent(
-      new CustomEvent('panel-close', {
-        bubbles: true,
-        composed: true,
-      }),
-    );
-  }
-
-  private _handleBackdropClick(e: MouseEvent): void {
-    if ((e.target as HTMLElement).classList.contains('backdrop')) {
-      this._close();
     }
   }
 
@@ -466,6 +302,38 @@ export class VelgAgentDetailsPanel extends LitElement {
           composed: true,
         }),
       );
+    }
+  }
+
+  private _toggleReaction(reactionId: string): void {
+    const next = new Set(this._expandedReactions);
+    if (next.has(reactionId)) {
+      next.delete(reactionId);
+    } else {
+      next.add(reactionId);
+    }
+    this._expandedReactions = next;
+  }
+
+  private async _handleDeleteReaction(reaction: EventReaction): Promise<void> {
+    if (!this.agent) return;
+
+    const eventTitle = reaction.events?.title ?? reaction.event_id.slice(0, 8);
+    const confirmed = await VelgConfirmDialog.show({
+      title: msg('Delete reaction'),
+      message: msg(str`Delete reaction of ${this.agent.name} to "${eventTitle}"?`),
+      confirmLabel: msg('Delete'),
+      variant: 'danger',
+    });
+
+    if (!confirmed) return;
+
+    const response = await agentsApi.deleteReaction(this.simulationId, this.agent.id, reaction.id);
+    if (response.success) {
+      this._reactions = this._reactions.filter((r) => r.id !== reaction.id);
+      VelgToast.success(msg('Reaction deleted'));
+    } else {
+      VelgToast.error(response.error?.message ?? msg('Failed to delete reaction'));
     }
   }
 
@@ -506,17 +374,43 @@ export class VelgAgentDetailsPanel extends LitElement {
 
     return html`
       <div class="panel__reactions">
-        ${this._reactions.slice(0, 10).map(
-          (r) => html`
+        ${this._reactions.map((r) => {
+          const isOpen = this._expandedReactions.has(r.id);
+          const eventTitle = r.events?.title ?? r.event_id.slice(0, 8);
+          return html`
             <div class="panel__reaction">
-              <div class="panel__reaction-event">${r.event?.title ?? `Event ${r.event_id.slice(0, 8)}`}</div>
-              <div class="panel__reaction-text">${r.reaction_text}</div>
-              <div class="panel__reaction-meta">
+              <div
+                class="panel__reaction-header"
+                @click=${() => this._toggleReaction(r.id)}
+              >
+                <span class="panel__reaction-chevron ${isOpen ? 'panel__reaction-chevron--open' : ''}">
+                  ${this._chevronIcon()}
+                </span>
+                <span class="panel__reaction-event">${eventTitle}</span>
                 ${r.emotion ? html`<span class="panel__reaction-emotion">${r.emotion}</span>` : nothing}
+                <button
+                  class="panel__reaction-delete"
+                  title=${msg('Delete reaction')}
+                  @click=${(e: MouseEvent) => {
+                    e.stopPropagation();
+                    this._handleDeleteReaction(r);
+                  }}
+                >
+                  ${this._trashIcon()}
+                </button>
               </div>
+              ${
+                isOpen
+                  ? html`
+                  <div class="panel__reaction-body">
+                    <div class="panel__reaction-text">${r.reaction_text}</div>
+                  </div>
+                `
+                  : nothing
+              }
             </div>
-          `,
-        )}
+          `;
+        })}
       </div>
     `;
   }
@@ -525,48 +419,37 @@ export class VelgAgentDetailsPanel extends LitElement {
     const agent = this.agent;
 
     return html`
-      <div
-        class="backdrop ${this.open ? 'backdrop--open' : ''}"
-        @click=${this._handleBackdropClick}
+      <velg-side-panel
+        .open=${this.open}
+        .panelTitle=${agent?.name ?? msg('Agent Details')}
       >
-        <div class="panel">
-          <div class="panel__header">
-            <h2 class="panel__title">${agent?.name ?? msg('Agent Details')}</h2>
-            <button
-              class="panel__close"
-              @click=${this._close}
-              aria-label=${msg('Close')}
-            >
-              X
-            </button>
-          </div>
+        ${
+          agent
+            ? html`
+              <velg-avatar
+                slot="media"
+                .src=${agent.portrait_image_url ?? ''}
+                .name=${agent.name}
+                size="full"
+                ?clickable=${!!agent.portrait_image_url}
+                @avatar-click=${(e: CustomEvent) => {
+                  this._lightboxSrc = (e.detail as { src: string }).src;
+                }}
+              ></velg-avatar>
 
-          <div class="panel__body">
-            ${
-              agent
-                ? html`
-                ${
-                  agent.portrait_image_url
-                    ? html`<img class="panel__portrait" src=${agent.portrait_image_url} alt=${agent.name} />`
-                    : html`
-                      <div class="panel__portrait-placeholder">
-                        <span class="panel__initials">${this._getInitials(agent.name)}</span>
-                      </div>
-                    `
-                }
-
+              <div slot="content">
                 <div class="panel__info">
                   <div class="panel__badges">
-                    ${agent.system ? html`<span class="panel__badge panel__badge--system">${agent.system}</span>` : nothing}
-                    ${agent.gender ? html`<span class="panel__badge panel__badge--gender">${agent.gender}</span>` : nothing}
-                    ${agent.data_source === 'ai' ? html`<span class="panel__badge panel__badge--ai">${msg('AI Generated')}</span>` : nothing}
+                    ${agent.system ? html`<velg-badge variant="primary">${agent.system}</velg-badge>` : nothing}
+                    ${agent.gender ? html`<velg-badge>${agent.gender}</velg-badge>` : nothing}
+                    ${agent.data_source === 'ai' ? html`<velg-badge variant="info">${msg('AI Generated')}</velg-badge>` : nothing}
                   </div>
 
                   ${
                     agent.character
                       ? html`
                       <div class="panel__section">
-                        <h3 class="panel__section-title">${msg('Character')}</h3>
+                        <velg-section-header>${msg('Character')}</velg-section-header>
                         <div class="panel__section-content">${agent.character}</div>
                       </div>
                     `
@@ -577,7 +460,7 @@ export class VelgAgentDetailsPanel extends LitElement {
                     agent.background
                       ? html`
                       <div class="panel__section">
-                        <h3 class="panel__section-title">${msg('Background')}</h3>
+                        <velg-section-header>${msg('Background')}</velg-section-header>
                         <div class="panel__section-content">${agent.background}</div>
                       </div>
                     `
@@ -585,30 +468,34 @@ export class VelgAgentDetailsPanel extends LitElement {
                   }
 
                   <div class="panel__section">
-                    <h3 class="panel__section-title">${msg('Professions')}</h3>
+                    <velg-section-header>${msg('Professions')}</velg-section-header>
                     ${this._renderProfessions()}
                   </div>
 
                   <div class="panel__section">
-                    <h3 class="panel__section-title">${msg('Reactions')}</h3>
+                    <velg-section-header>${msg('Reactions')}</velg-section-header>
                     ${this._renderReactions()}
                   </div>
                 </div>
-              `
-                : nothing
-            }
-          </div>
+              </div>
 
-          <div class="panel__footer">
-            <button class="panel__btn panel__btn--danger" @click=${this._handleDelete}>
-              ${this._deleteIcon()} ${msg('Delete')}
-            </button>
-            <button class="panel__btn panel__btn--edit" @click=${this._handleEdit}>
-              ${this._editIcon()} ${msg('Edit')}
-            </button>
-          </div>
-        </div>
-      </div>
+              <button slot="footer" class="panel__btn panel__btn--edit" @click=${this._handleEdit}>
+                ${this._editIcon()} ${msg('Edit')}
+              </button>
+              <button slot="footer" class="panel__btn panel__btn--danger" @click=${this._handleDelete}>
+                ${this._deleteIcon()} ${msg('Delete')}
+              </button>
+            `
+            : nothing
+        }
+      </velg-side-panel>
+
+      <velg-lightbox
+        .src=${this._lightboxSrc}
+        @lightbox-close=${() => {
+          this._lightboxSrc = null;
+        }}
+      ></velg-lightbox>
     `;
   }
 }

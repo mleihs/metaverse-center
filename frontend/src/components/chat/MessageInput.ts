@@ -1,7 +1,11 @@
-import { msg } from '@lit/localize';
-import { css, html, LitElement } from 'lit';
+import { localized, msg } from '@lit/localize';
+import { css, html, LitElement, svg } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 
+const CHAR_LIMIT = 10000;
+const CHAR_WARN_THRESHOLD = 8000;
+
+@localized()
 @customElement('velg-message-input')
 export class VelgMessageInput extends LitElement {
   static styles = css`
@@ -11,11 +15,17 @@ export class VelgMessageInput extends LitElement {
 
     .input-area {
       display: flex;
-      align-items: flex-end;
-      gap: var(--space-3);
+      flex-direction: column;
+      gap: var(--space-1);
       padding: var(--space-4);
       border-top: var(--border-medium);
       background: var(--color-surface-raised);
+    }
+
+    .input-area__row {
+      display: flex;
+      align-items: flex-end;
+      gap: var(--space-3);
     }
 
     .input-area__textarea {
@@ -56,9 +66,10 @@ export class VelgMessageInput extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      min-width: 72px;
+      gap: var(--space-2);
+      min-width: 44px;
       height: 40px;
-      padding: var(--space-2) var(--space-4);
+      padding: var(--space-2) var(--space-3);
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-xs);
@@ -87,11 +98,43 @@ export class VelgMessageInput extends LitElement {
       opacity: 0.5;
       cursor: not-allowed;
     }
+
+    .input-area__send svg {
+      flex-shrink: 0;
+    }
+
+    .input-area__footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 16px;
+    }
+
+    .input-area__hint {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
+
+    .input-area__counter {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
+
+    .input-area__counter--warn {
+      color: var(--color-warning-hover);
+    }
+
+    .input-area__counter--limit {
+      color: var(--color-text-danger);
+    }
   `;
 
   @property({ type: Boolean }) disabled = false;
 
   @state() private _content = '';
+  @state() private _focused = false;
 
   @query('.input-area__textarea') private _textarea!: HTMLTextAreaElement;
 
@@ -103,7 +146,7 @@ export class VelgMessageInput extends LitElement {
 
   private _autoResize(textarea: HTMLTextAreaElement): void {
     textarea.style.height = 'auto';
-    const maxHeight = 120; // 4 lines approx
+    const maxHeight = 120;
     textarea.style.height = `${Math.min(textarea.scrollHeight, maxHeight)}px`;
   }
 
@@ -133,25 +176,58 @@ export class VelgMessageInput extends LitElement {
     }
   }
 
+  private _renderSendIcon() {
+    return svg`
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" stroke-linejoin="miter">
+        <path d="M10 14l11 -11" />
+        <path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5" />
+      </svg>
+    `;
+  }
+
   protected render() {
+    const charCount = this._content.length;
+    const showCounter = charCount >= CHAR_WARN_THRESHOLD;
+    const counterClass =
+      charCount >= CHAR_LIMIT
+        ? 'input-area__counter input-area__counter--limit'
+        : charCount >= CHAR_WARN_THRESHOLD
+          ? 'input-area__counter input-area__counter--warn'
+          : 'input-area__counter';
+
     return html`
       <div class="input-area">
-        <textarea
-          class="input-area__textarea"
-          .value=${this._content}
-          placeholder=${msg('Type your message...')}
-          ?disabled=${this.disabled}
-          @input=${this._handleInput}
-          @keydown=${this._handleKeyDown}
-          rows="1"
-        ></textarea>
-        <button
-          class="input-area__send"
-          ?disabled=${this.disabled || !this._content.trim()}
-          @click=${this._send}
-        >
-          ${msg('Send')}
-        </button>
+        <div class="input-area__row">
+          <textarea
+            class="input-area__textarea"
+            .value=${this._content}
+            placeholder=${msg('Type your message...')}
+            ?disabled=${this.disabled}
+            @input=${this._handleInput}
+            @keydown=${this._handleKeyDown}
+            @focus=${() => {
+              this._focused = true;
+            }}
+            @blur=${() => {
+              this._focused = false;
+            }}
+            rows="1"
+          ></textarea>
+          <button
+            class="input-area__send"
+            ?disabled=${this.disabled || !this._content.trim()}
+            @click=${this._send}
+          >
+            ${this._renderSendIcon()}
+          </button>
+        </div>
+        <div class="input-area__footer">
+          <span class="input-area__hint">
+            ${this._focused ? msg('Shift+Enter for line break') : ''}
+          </span>
+          ${showCounter ? html`<span class=${counterClass}>${charCount}/${CHAR_LIMIT}</span>` : null}
+        </div>
       </div>
     `;
   }

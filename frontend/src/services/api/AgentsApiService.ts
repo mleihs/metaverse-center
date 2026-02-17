@@ -29,6 +29,14 @@ export class AgentsApiService extends BaseApiService {
     return this.get(`/simulations/${simulationId}/agents/${agentId}/reactions`);
   }
 
+  deleteReaction(
+    simulationId: string,
+    agentId: string,
+    reactionId: string,
+  ): Promise<ApiResponse<void>> {
+    return this.delete(`/simulations/${simulationId}/agents/${agentId}/reactions/${reactionId}`);
+  }
+
   generatePortrait(
     simulationId: string,
     agentId: string,

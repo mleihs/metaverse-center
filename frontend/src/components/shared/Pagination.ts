@@ -1,7 +1,8 @@
-import { msg, str } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
+@localized()
 @customElement('velg-pagination')
 export class VelgPagination extends LitElement {
   static styles = css`

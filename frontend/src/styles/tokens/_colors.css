@@ -20,6 +20,7 @@
   --color-primary: #000000;
   --color-primary-hover: #1f2937;
   --color-primary-active: #374151;
+  --color-primary-bg: var(--color-gray-100);
 
   --color-danger: #ef4444;
   --color-danger-hover: #dc2626;

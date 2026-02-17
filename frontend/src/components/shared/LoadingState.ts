@@ -1,7 +1,8 @@
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
+@localized()
 @customElement('velg-loading-state')
 export class VelgLoadingState extends LitElement {
   static styles = css`

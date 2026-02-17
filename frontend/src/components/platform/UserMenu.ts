@@ -1,9 +1,10 @@
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { authService } from '../../services/supabase/SupabaseAuthService.js';
 
+@localized()
 @customElement('velg-user-menu')
 export class VelgUserMenu extends LitElement {
   static styles = css`

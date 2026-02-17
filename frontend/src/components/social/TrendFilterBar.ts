@@ -1,10 +1,11 @@
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { html, LitElement } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import type { FilterChangeDetail } from '../shared/SharedFilterBar.js';
 
 import '../shared/SharedFilterBar.js';
 
+@localized()
 @customElement('velg-trend-filter-bar')
 export class VelgTrendFilterBar extends LitElement {
   private _handleChange(e: CustomEvent<FilterChangeDetail>): void {

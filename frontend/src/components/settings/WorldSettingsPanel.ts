@@ -1,8 +1,10 @@
-import { msg, str } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { taxonomiesApi } from '../../services/api/index.js';
+import '../shared/VelgBadge.js';
+import '../shared/VelgSectionHeader.js';
 import type { SimulationTaxonomy, TaxonomyType } from '../../types/index.js';
 import { VelgToast } from '../shared/Toast.js';
 
@@ -31,6 +33,7 @@ interface NewTaxonomyForm {
   sort_order: number;
 }
 
+@localized()
 @customElement('velg-world-settings-panel')
 export class VelgWorldSettingsPanel extends LitElement {
   static styles = css`
@@ -42,18 +45,6 @@ export class VelgWorldSettingsPanel extends LitElement {
       display: flex;
       flex-direction: column;
       gap: var(--space-5);
-    }
-
-    .panel__section-title {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-lg);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-primary);
-      margin: 0;
-      padding-bottom: var(--space-2);
-      border-bottom: var(--border-default);
     }
 
     .panel__controls {
@@ -136,30 +127,6 @@ export class VelgWorldSettingsPanel extends LitElement {
       font-size: var(--text-sm);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      padding: var(--space-0-5) var(--space-2);
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-xs);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      border: var(--border-width-thin) solid;
-    }
-
-    .badge--active {
-      color: var(--color-success);
-      border-color: var(--color-success);
-      background: rgba(34, 197, 94, 0.1);
-    }
-
-    .badge--inactive {
-      color: var(--color-text-muted);
-      border-color: var(--color-border-light);
-      background: var(--color-surface-sunken);
     }
 
     .toggle-btn {
@@ -439,7 +406,7 @@ export class VelgWorldSettingsPanel extends LitElement {
 
     return html`
       <div class="panel">
-        <h2 class="panel__section-title">${msg('World Taxonomies')}</h2>
+        <velg-section-header variant="large">${msg('World Taxonomies')}</velg-section-header>
 
         ${this._error ? html`<div class="panel__error">${this._error}</div>` : nothing}
 
@@ -499,9 +466,9 @@ export class VelgWorldSettingsPanel extends LitElement {
                         <td class="table__td">${tax.label[this._locale] ?? tax.value}</td>
                         <td class="table__td">${tax.sort_order}</td>
                         <td class="table__td">
-                          <span class="badge ${tax.is_active ? 'badge--active' : 'badge--inactive'}">
+                          <velg-badge variant=${tax.is_active ? 'success' : 'default'}>
                             ${tax.is_active ? msg('Active') : msg('Inactive')}
-                          </span>
+                          </velg-badge>
                         </td>
                         <td class="table__td">
                           <button

@@ -9,9 +9,7 @@ dependencies = [
     "pydantic-settings>=2.1.0",
     "supabase>=2.0.0",
     "httpx>=0.27.0",
-    "langchain>=0.1.0",
-    "langchain-openai>=0.0.5",
-    "Pillow>=10.0.1",
+"Pillow>=10.0.1",
     "cryptography>=41.0.7",
     "python-jose[cryptography]>=3.3.0",
     "structlog>=23.2.0",
@@ -44,7 +42,7 @@ line-length = 120
 select = ["E", "F", "W", "I", "N", "UP", "S", "B", "A", "C4", "DTZ", "T20", "ICN"]
 
 [tool.ruff.lint.per-file-ignores]
-"backend/tests/**/*.py" = ["S101", "S105", "S106"]
+"backend/tests/**/*.py" = ["S101", "S105", "S106", "E501"]
 "backend/routers/**/*.py" = ["B008"]
 "backend/dependencies.py" = ["B008"]
 "backend/services/**/*.py" = ["A003"]

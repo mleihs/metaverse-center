@@ -57,7 +57,7 @@ frontend/             Lit + Vite application
       auth/           Login, Register views
       platform/       PlatformHeader, UserMenu, SimulationsDashboard, CreateSimulationWizard, UserProfileView, InvitationAcceptView, NotificationCenter
       layout/         SimulationShell, SimulationHeader, SimulationNav
-      shared/         10 reusable components (BaseModal, DataTable, FilterBar, etc.)
+      shared/         17 reusable components + 1 shared CSS module (see Code Reusability)
       agents/         AgentsView, AgentCard, AgentEditModal, AgentDetailsPanel
       buildings/      BuildingsView, BuildingCard, BuildingEditModal, BuildingDetailsPanel
       events/         EventsView, EventCard, EventEditModal, EventDetailsPanel
@@ -71,6 +71,7 @@ frontend/             Lit + Vite application
       generated/      Auto-generated: de.ts, locale-codes.ts (DO NOT EDIT)
       xliff/          Translation interchange: de.xlf (EDIT THIS for translations)
     styles/           CSS design tokens (tokens/) + base styles (base/)
+    utils/            Shared utilities (text.ts, formatters.ts, error-handler.ts)
     types/            TypeScript interfaces (index.ts) + Zod validation schemas (validation/)
   tests/              vitest tests (130 tests: validation + API + notification)
 e2e/                  Playwright E2E tests (37 specs across 8 files)
@@ -105,9 +106,44 @@ npx lit-localize build                         # Build de.ts from XLIFF translat
 supabase start                                 # Start local Supabase
 supabase db reset                              # Reset + reapply all migrations
 supabase status                                # Check container status
+# Direct SQL via Docker (when psql not available or MCP times out)
+docker exec supabase_db_velgarien-rebuild psql -U postgres -c "SQL..."
+
+# Server Restart (ALWAYS use this sequence — orphaned workers can hold ports)
+# Step 1: Kill by process name (catches parent + workers)
+pkill -9 -f uvicorn 2>/dev/null; pkill -9 -f "node.*vite" 2>/dev/null; pkill -9 -f "npm exec vite" 2>/dev/null
+# Step 2: Kill orphaned Python multiprocessing workers
+ps aux | grep "multiprocessing.spawn\|multiprocessing.resource_tracker" | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null
+# Step 3: Wait for ports to free
+sleep 3
+# Step 4: Verify ports are free (no LISTEN output = good)
+netstat -an | grep -E '\.8000|\.5173' | grep LISTEN
+# Step 5: Start backend (from project root)
+cd /Users/mleihs/Dev/velgarien-rebuild && source backend/.venv/bin/activate
+nohup uvicorn backend.app:app --reload --host 0.0.0.0 --port 8000 > /tmp/velgarien-backend.log 2>&1 &
+# Step 6: Start frontend (from frontend/ directory)
+cd /Users/mleihs/Dev/velgarien-rebuild/frontend
+nohup npx vite --host 0.0.0.0 --port 5173 > /tmp/velgarien-frontend.log 2>&1 &
+# Step 7: Verify both started (wait ~5s, check health + logs)
+sleep 5 && curl -s http://localhost:8000/api/v1/health && head -5 /tmp/velgarien-backend.log
 
 # Docker queries (when psql not available)
 docker exec supabase_db_velgarien-rebuild psql -U postgres -c "SELECT ..."
+```
+
+## Supabase MCP (Local)
+
+The Supabase MCP server is configured in `.mcp.json` (project root) to connect to the **local** Supabase instance:
+
+```
+URL: http://127.0.0.1:54321/mcp
+Container: supabase_db_velgarien-rebuild
+```
+
+This overrides the remote Supabase plugin (`https://mcp.supabase.com/mcp`). Use the MCP tools (`mcp__supabase__*`) for migrations, SQL queries, type generation, and advisory checks. If the MCP connection times out, use Docker psql as fallback:
+
+```bash
+docker exec supabase_db_velgarien-rebuild psql -U postgres -c "SQL..."
 ```
 
 ## Schema Naming Conventions
@@ -169,7 +205,7 @@ All endpoints under `/api/v1/`. Swagger UI at `/api/docs`. Responses use unified
 - Routing via `@lit-labs/router` (Reactive Controller in app-shell)
 - All types in `frontend/src/types/index.ts`
 - Design tokens as CSS Custom Properties in `styles/tokens/`
-- **Shared components:** 10 reusable components in `components/shared/` (BaseModal, SharedFilterBar, DataTable, Pagination, Toast, ConfirmDialog, FormBuilder, ErrorState, LoadingState, EmptyState)
+- **Shared components:** 17 reusable components + 1 shared CSS module in `components/shared/` — see Code Reusability section for full list
 - **Entity views:** Each entity has 4 files: ListView, Card, EditModal, DetailsPanel (except Chat which has 6)
 - **Event naming:** `import type { Event as SimEvent }` to avoid DOM `Event` conflict
 - **Taxonomy-driven options:** Dropdowns populated from `appState.getTaxonomiesByType()` with locale-aware labels
@@ -218,12 +254,19 @@ Alternatively, add `<target>` elements directly to `frontend/src/locales/xliff/d
 
 **Before writing new code, ALWAYS search for existing reusable patterns:**
 
-1. **Check `components/shared/`** — 10 shared components exist (BaseModal, DataTable, SharedFilterBar, Pagination, Toast, ConfirmDialog, FormBuilder, ErrorState, LoadingState, EmptyState). Use them instead of creating one-off solutions.
+1. **Check `components/shared/`** — 17 shared components + 1 CSS module exist. Use them instead of creating one-off solutions:
+   - **Layout:** `VelgSidePanel` (slide-from-right detail panel shell with backdrop, Escape, 3 slots: media/content/footer), `BaseModal` (centered dialog)
+   - **UI Primitives:** `VelgBadge` (6 color variants), `VelgAvatar` (portrait + initials fallback, 3 sizes), `VelgIconButton` (30px icon action button), `VelgSectionHeader` (section titles, 2 variants)
+   - **Data Display:** `DataTable`, `Pagination`, `SharedFilterBar`
+   - **Feedback:** `Toast`, `ConfirmDialog`, `LoadingState`, `EmptyState`, `ErrorState`, `GenerationProgress`
+   - **Forms:** `FormBuilder`
+   - **Media:** `Lightbox` (fullscreen image overlay with Escape/click-to-close)
+   - **Shared CSS:** `panel-button-styles.ts` — `panelButtonStyles` for detail panel footer buttons (`.panel__btn` base + `--edit`, `--danger`, `--generate` variants). Usage: `static styles = [panelButtonStyles, css\`...\`]`
 2. **Check `services/`** — BaseApiService provides CRUD patterns. Extend it for new API services. BaseService (backend) provides generic CRUD with soft-delete, audit logging, and optimistic locking.
 3. **Check existing components** for similar patterns — entity views follow a consistent 4-file pattern (ListView, Card, EditModal, DetailsPanel). Copy the pattern, don't reinvent it.
 4. **Check `styles/tokens/`** — Use existing CSS custom properties for spacing, colors, typography. Don't hardcode values.
 5. **Check `types/index.ts`** — Use existing TypeScript interfaces. Extend them if needed, don't duplicate.
-6. **Check `utils/`** — Icons utility, formatters, and other shared utilities exist. Add to them rather than creating parallel utilities.
+6. **Check `utils/`** — `text.ts` (getInitials), `formatters.ts`, `error-handler.ts`. Add to them rather than creating parallel utilities.
 7. **Backend:** Check `services/base_service.py` before implementing CRUD logic. Check `models/common.py` for response types. Check `dependencies.py` for auth patterns.
 
 ## Spec Documents

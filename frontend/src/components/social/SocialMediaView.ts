@@ -1,4 +1,4 @@
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { socialMediaApi } from '../../services/api/index.js';
@@ -14,6 +14,7 @@ import '../shared/EmptyState.js';
 import './PostCard.js';
 import './PostTransformModal.js';
 
+@localized()
 @customElement('velg-social-media-view')
 export class VelgSocialMediaView extends LitElement {
   static styles = css`

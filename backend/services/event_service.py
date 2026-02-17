@@ -15,6 +15,7 @@ class EventService(BaseService):
 
     table_name = "events"
     view_name = "active_events"
+    supports_created_by = False
 
     @classmethod
     async def list(
@@ -46,7 +47,8 @@ class EventService(BaseService):
         if tag:
             query = query.contains("tags", [tag])
         if search:
-            query = query.or_(f"title.ilike.%{search}%,description.ilike.%{search}%")
+            safe = search.replace("%", "").replace("_", "")
+            query = query.or_(f"title.ilike.%{safe}%,description.ilike.%{safe}%")
 
         query = query.range(offset, offset + limit - 1)
         response = query.execute()
@@ -97,6 +99,53 @@ class EventService(BaseService):
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to add event reaction.",
+            )
+
+        return response.data[0]
+
+    @classmethod
+    async def update_reaction(
+        cls,
+        supabase: Client,
+        reaction_id: UUID,
+        data: dict,
+    ) -> dict:
+        """Update an existing event reaction."""
+        response = (
+            supabase.table("event_reactions")
+            .update(data)
+            .eq("id", str(reaction_id))
+            .execute()
+        )
+
+        if not response.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Event reaction not found.",
+            )
+
+        return response.data[0]
+
+    @classmethod
+    async def delete_reaction(
+        cls,
+        supabase: Client,
+        simulation_id: UUID,
+        reaction_id: UUID,
+    ) -> dict:
+        """Delete a single event reaction."""
+        response = (
+            supabase.table("event_reactions")
+            .delete()
+            .eq("id", str(reaction_id))
+            .eq("simulation_id", str(simulation_id))
+            .execute()
+        )
+
+        if not response.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Event reaction not found.",
             )
 
         return response.data[0]

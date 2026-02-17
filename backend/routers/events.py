@@ -1,8 +1,9 @@
 """Event CRUD endpoints with reactions and tag filtering."""
 
+import logging
 from uuid import UUID
 
-from fastapi import APIRouter, Body, Depends, Header, Query
+from fastapi import APIRouter, Body, Depends, Header, HTTPException, Query, status
 
 from backend.dependencies import get_current_user, get_supabase, require_role
 from backend.models.common import (
@@ -11,10 +12,18 @@ from backend.models.common import (
     PaginationMeta,
     SuccessResponse,
 )
-from backend.models.event import EventCreate, EventResponse, EventUpdate
+from backend.models.event import (
+    EventCreate,
+    EventResponse,
+    EventUpdate,
+    GenerateEventReactionsRequest,
+)
 from backend.services.audit_service import AuditService
 from backend.services.event_service import EventService
+from backend.services.external_service_resolver import ExternalServiceResolver
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api/v1/simulations/{simulation_id}/events",
@@ -157,25 +166,111 @@ async def add_reaction(
     return {"success": True, "data": reaction}
 
 
-@router.post("/{event_id}/generate-reaction", response_model=SuccessResponse[dict])
-async def generate_reaction(
+@router.delete("/{event_id}/reactions/{reaction_id}", response_model=SuccessResponse[dict])
+async def delete_event_reaction(
     simulation_id: UUID,
     event_id: UUID,
-    agent_id: UUID = Body(..., embed=True),
+    reaction_id: UUID,
     user: CurrentUser = Depends(get_current_user),
     _role_check: str = Depends(require_role("editor")),
     supabase: Client = Depends(get_supabase),
 ) -> dict:
-    """Generate an AI reaction for an agent (stub — Phase 3)."""
-    return {
-        "success": True,
-        "data": {
-            "event_id": str(event_id),
-            "agent_id": str(agent_id),
-            "status": "pending",
-            "message": "AI reaction generation will be available in Phase 3.",
-        },
-    }
+    """Delete a single reaction from an event."""
+    deleted = await _service.delete_reaction(supabase, simulation_id, reaction_id)
+    return {"success": True, "data": deleted}
+
+
+@router.post(
+    "/{event_id}/generate-reactions",
+    response_model=SuccessResponse[list[dict]],
+)
+async def generate_reactions(
+    simulation_id: UUID,
+    event_id: UUID,
+    body: GenerateEventReactionsRequest,
+    user: CurrentUser = Depends(get_current_user),
+    _role_check: str = Depends(require_role("editor")),
+    supabase: Client = Depends(get_supabase),
+) -> dict:
+    """Generate AI reactions from agents for an event."""
+    event = await _service.get(supabase, simulation_id, event_id)
+
+    if body.agent_ids:
+        # Specific agents requested — use custom query
+        agent_query = (
+            supabase.table("active_agents")
+            .select("id, name, character, system")
+            .eq("simulation_id", str(simulation_id))
+            .in_("id", body.agent_ids)
+        )
+        agents = (agent_query.execute()).data or []
+
+        if not agents:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No agents found for reaction generation.",
+            )
+
+        resolver = ExternalServiceResolver(supabase, simulation_id)
+        ai_config = await resolver.get_ai_provider_config()
+
+        from backend.services.generation_service import GenerationService
+
+        gen = GenerationService(supabase, simulation_id, ai_config.openrouter_api_key)
+
+        existing = await _service.get_reactions(supabase, simulation_id, event_id)
+        existing_map: dict[str, dict] = {r["agent_id"]: r for r in existing}
+
+        reactions: list[dict] = []
+        for agent in agents:
+            try:
+                reaction_text = await gen.generate_agent_reaction(
+                    agent_data={
+                        "name": agent["name"],
+                        "character": agent.get("character", ""),
+                        "system": agent.get("system", ""),
+                    },
+                    event_data={
+                        "title": event["title"],
+                        "description": event.get("description", ""),
+                    },
+                )
+
+                prev = existing_map.get(agent["id"])
+                if prev:
+                    reaction = await _service.update_reaction(
+                        supabase, prev["id"],
+                        {"reaction_text": reaction_text, "data_source": "ai_generated"},
+                    )
+                else:
+                    reaction = await _service.add_reaction(
+                        supabase, simulation_id, event_id,
+                        {
+                            "agent_id": agent["id"],
+                            "agent_name": agent["name"],
+                            "reaction_text": reaction_text,
+                            "data_source": "ai_generated",
+                        },
+                    )
+                reactions.append(reaction)
+            except Exception as e:
+                logger.warning("Failed to generate reaction for agent %s: %s", agent["name"], e)
+    else:
+        # Use shared helper for general reaction generation
+        from backend.routers.social_trends import _generate_reactions_for_event
+
+        reactions = await _generate_reactions_for_event(
+            supabase, simulation_id, event,
+            max_agents=body.max_agents,
+        )
+
+        if not reactions:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No agents found for reaction generation.",
+            )
+
+    return {"success": True, "data": reactions}
 
 
 @router.get("/by-tags/{tags}", response_model=SuccessResponse[list])

@@ -1,4 +1,4 @@
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
@@ -8,6 +8,7 @@ import type { ApiResponse, Building } from '../../types/index.js';
 import '../shared/BaseModal.js';
 import { VelgToast } from '../shared/Toast.js';
 
+@localized()
 @customElement('velg-building-edit-modal')
 export class VelgBuildingEditModal extends LitElement {
   static styles = css`

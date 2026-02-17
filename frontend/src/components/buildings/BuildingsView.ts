@@ -1,4 +1,4 @@
-import { msg, str } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
@@ -16,6 +16,7 @@ import './BuildingCard.js';
 import './BuildingEditModal.js';
 import './BuildingDetailsPanel.js';
 
+@localized()
 @customElement('velg-buildings-view')
 export class VelgBuildingsView extends LitElement {
   static styles = css`

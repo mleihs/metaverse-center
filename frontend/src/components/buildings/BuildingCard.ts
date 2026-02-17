@@ -1,9 +1,13 @@
-import { msg, str } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing, svg } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import type { Building } from '../../types/index.js';
+import '../shared/Lightbox.js';
+import '../shared/VelgBadge.js';
+import '../shared/VelgIconButton.js';
 
+@localized()
 @customElement('velg-building-card')
 export class VelgBuildingCard extends LitElement {
   static styles = css`
@@ -46,6 +50,7 @@ export class VelgBuildingCard extends LitElement {
       height: 100%;
       object-fit: cover;
       display: block;
+      cursor: pointer;
     }
 
     .card__placeholder {
@@ -82,44 +87,6 @@ export class VelgBuildingCard extends LitElement {
       flex-wrap: wrap;
     }
 
-    .card__badge {
-      display: inline-flex;
-      align-items: center;
-      padding: var(--space-0-5) var(--space-2);
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: var(--text-xs);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      border: var(--border-width-thin) solid var(--color-border);
-      background: var(--color-surface-header);
-      color: var(--color-text-secondary);
-    }
-
-    .card__badge--condition-good {
-      background: var(--color-success-bg, #e6f9e6);
-      border-color: var(--color-success);
-      color: var(--color-success);
-    }
-
-    .card__badge--condition-fair {
-      background: var(--color-warning-bg, #fff8e1);
-      border-color: var(--color-warning);
-      color: var(--color-warning);
-    }
-
-    .card__badge--condition-poor {
-      background: var(--color-danger-bg, #fce4e4);
-      border-color: var(--color-danger);
-      color: var(--color-danger);
-    }
-
-    .card__badge--condition-ruined {
-      background: var(--color-danger-bg, #fce4e4);
-      border-color: var(--color-danger);
-      color: var(--color-danger);
-    }
-
     .card__meta {
       display: flex;
       align-items: center;
@@ -144,33 +111,10 @@ export class VelgBuildingCard extends LitElement {
       margin-top: auto;
     }
 
-    .card__action-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 30px;
-      height: 30px;
-      padding: 0;
-      background: transparent;
-      border: var(--border-width-thin) solid var(--color-border-light);
-      cursor: pointer;
-      color: var(--color-text-secondary);
-      transition: all var(--transition-fast);
-    }
-
-    .card__action-btn:hover {
-      background: var(--color-surface-sunken);
-      color: var(--color-text-primary);
-    }
-
-    .card__action-btn--danger:hover {
-      background: var(--color-danger-bg);
-      color: var(--color-danger);
-      border-color: var(--color-danger);
-    }
   `;
 
   @property({ attribute: false }) building!: Building;
+  @state() private _lightboxSrc: string | null = null;
 
   private _buildingIcon() {
     return svg`
@@ -196,14 +140,13 @@ export class VelgBuildingCard extends LitElement {
     `;
   }
 
-  private _getConditionClass(condition: string | undefined): string {
-    if (!condition) return '';
+  private _getConditionVariant(condition: string | undefined): string {
+    if (!condition) return 'default';
     const normalized = condition.toLowerCase();
-    if (normalized === 'good') return 'card__badge--condition-good';
-    if (normalized === 'fair') return 'card__badge--condition-fair';
-    if (normalized === 'poor') return 'card__badge--condition-poor';
-    if (normalized === 'ruined') return 'card__badge--condition-ruined';
-    return '';
+    if (normalized === 'good') return 'success';
+    if (normalized === 'fair') return 'warning';
+    if (normalized === 'poor' || normalized === 'ruined') return 'danger';
+    return 'default';
   }
 
   private _editIcon() {
@@ -276,7 +219,15 @@ export class VelgBuildingCard extends LitElement {
         <div class="card__image">
           ${
             b.image_url
-              ? html`<img src=${b.image_url} alt=${b.name} loading="lazy" />`
+              ? html`<img
+                  src=${b.image_url}
+                  alt=${b.name}
+                  loading="lazy"
+                  @click=${(e: Event) => {
+                    e.stopPropagation();
+                    this._lightboxSrc = b.image_url ?? null;
+                  }}
+                />`
               : html`<div class="card__placeholder">${this._buildingIcon()}</div>`
           }
         </div>
@@ -285,12 +236,12 @@ export class VelgBuildingCard extends LitElement {
           <h3 class="card__name">${b.name}</h3>
 
           <div class="card__badges">
-            ${b.building_type ? html`<span class="card__badge">${b.building_type}</span>` : nothing}
+            ${b.building_type ? html`<velg-badge>${b.building_type}</velg-badge>` : nothing}
             ${
               b.building_condition
-                ? html`<span class="card__badge ${this._getConditionClass(b.building_condition)}">
+                ? html`<velg-badge variant=${this._getConditionVariant(b.building_condition)}>
                     ${b.building_condition}
-                  </span>`
+                  </velg-badge>`
                 : nothing
             }
           </div>
@@ -309,27 +260,24 @@ export class VelgBuildingCard extends LitElement {
           appState.canEdit.value
             ? html`
               <div class="card__actions">
-                <button
-                  class="card__action-btn"
-                  @click=${this._handleEdit}
-                  title=${msg('Edit')}
-                  aria-label=${msg('Edit building')}
-                >
+                <velg-icon-button .label=${msg('Edit building')} @icon-click=${this._handleEdit}>
                   ${this._editIcon()}
-                </button>
-                <button
-                  class="card__action-btn card__action-btn--danger"
-                  @click=${this._handleDelete}
-                  title=${msg('Delete')}
-                  aria-label=${msg('Delete building')}
-                >
+                </velg-icon-button>
+                <velg-icon-button variant="danger" .label=${msg('Delete building')} @icon-click=${this._handleDelete}>
                   ${this._deleteIcon()}
-                </button>
+                </velg-icon-button>
               </div>
             `
             : nothing
         }
       </div>
+
+      <velg-lightbox
+        .src=${this._lightboxSrc}
+        @lightbox-close=${() => {
+          this._lightboxSrc = null;
+        }}
+      ></velg-lightbox>
     `;
   }
 }

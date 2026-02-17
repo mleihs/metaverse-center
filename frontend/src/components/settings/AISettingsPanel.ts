@@ -1,9 +1,10 @@
-import { msg, str } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { settingsApi } from '../../services/api/index.js';
 import type { SimulationSetting } from '../../types/index.js';
 import { VelgToast } from '../shared/Toast.js';
+import '../shared/VelgSectionHeader.js';
 
 /** The 8 AI model purpose keys used in the settings. */
 const MODEL_PURPOSES = [
@@ -58,6 +59,7 @@ const GENERATION_PARAMS = [
   { key: 'default_max_tokens', label: msg('Default Max Tokens'), placeholder: '2048' },
 ] as const;
 
+@localized()
 @customElement('velg-ai-settings-panel')
 export class VelgAISettingsPanel extends LitElement {
   static styles = css`
@@ -75,18 +77,6 @@ export class VelgAISettingsPanel extends LitElement {
       display: flex;
       flex-direction: column;
       gap: var(--space-4);
-    }
-
-    .section__title {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-lg);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-primary);
-      margin: 0;
-      padding-bottom: var(--space-2);
-      border-bottom: var(--border-default);
     }
 
     .section__subtitle {
@@ -339,7 +329,7 @@ export class VelgAISettingsPanel extends LitElement {
         ${this._error ? html`<div class="panel__error">${this._error}</div>` : nothing}
 
         <div class="section">
-          <h2 class="section__title">${msg('Text Models')}</h2>
+          <velg-section-header variant="large">${msg('Text Models')}</velg-section-header>
           <p class="section__subtitle">${msg('Select a model for each generation purpose')}</p>
           <div class="form-grid">
             ${MODEL_PURPOSES.map(
@@ -368,7 +358,7 @@ export class VelgAISettingsPanel extends LitElement {
         </div>
 
         <div class="section">
-          <h2 class="section__title">${msg('Image Generation')}</h2>
+          <velg-section-header variant="large">${msg('Image Generation')}</velg-section-header>
           <div class="form-grid form-grid--narrow">
             ${IMAGE_PARAMS.map(
               (param) => html`
@@ -389,7 +379,7 @@ export class VelgAISettingsPanel extends LitElement {
         </div>
 
         <div class="section">
-          <h2 class="section__title">${msg('Generation Defaults')}</h2>
+          <velg-section-header variant="large">${msg('Generation Defaults')}</velg-section-header>
           <div class="form-grid form-grid--narrow">
             ${GENERATION_PARAMS.map(
               (param) => html`

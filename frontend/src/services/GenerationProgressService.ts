@@ -54,6 +54,24 @@ const GENERATION_CONFIGS = {
       { id: 'complete', label: msg('Complete') },
     ] as GenerationStep[],
   }),
+  transform: () => ({
+    title: msg('Transforming article'),
+    steps: [
+      { id: 'prepare', label: msg('Preparing') },
+      { id: 'transform', label: msg('AI transforming article') },
+      { id: 'process', label: msg('Processing') },
+      { id: 'complete', label: msg('Complete') },
+    ] as GenerationStep[],
+  }),
+  reactions: () => ({
+    title: msg('Generating reactions'),
+    steps: [
+      { id: 'prepare', label: msg('Loading agents') },
+      { id: 'generate', label: msg('Generating agent reactions') },
+      { id: 'process', label: msg('Processing reactions') },
+      { id: 'complete', label: msg('Complete') },
+    ] as GenerationStep[],
+  }),
 } as const;
 
 type GenerationType = keyof typeof GENERATION_CONFIGS;
@@ -61,10 +79,10 @@ type GenerationType = keyof typeof GENERATION_CONFIGS;
 class GenerationProgressService {
   private _element: VelgGenerationProgress | null = null;
 
-  private _ensureElement(): VelgGenerationProgress {
+  private async _ensureElement(): Promise<VelgGenerationProgress> {
     if (!this._element || !this._element.isConnected) {
-      // Lazy-import ensures the component is registered
-      import('../components/shared/GenerationProgress.js');
+      // Await the import to ensure the custom element is registered
+      await import('../components/shared/GenerationProgress.js');
       this._element = document.createElement('velg-generation-progress');
       document.body.appendChild(this._element);
     }
@@ -79,7 +97,7 @@ class GenerationProgressService {
     config: ProgressConfig,
     callback: (progress: ProgressHandle) => Promise<T>,
   ): Promise<T> {
-    const el = this._ensureElement();
+    const el = await this._ensureElement();
 
     el.show(config.title, config.steps);
     if (config.closeable) el.closeable = true;

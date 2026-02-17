@@ -1,8 +1,10 @@
-import { msg, str } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { SocialTrend } from '../../types/index.js';
+import '../shared/VelgBadge.js';
 
+@localized()
 @customElement('velg-trend-card')
 export class VelgTrendCard extends LitElement {
   static styles = css`
@@ -33,22 +35,14 @@ export class VelgTrendCard extends LitElement {
 
     .card__badges { display: flex; flex-wrap: wrap; gap: var(--space-1-5); }
 
-    .card__badge {
-      display: inline-flex; align-items: center; padding: var(--space-0-5) var(--space-2);
-      font-family: var(--font-brutalist); font-weight: var(--font-bold);
-      font-size: var(--text-xs); text-transform: uppercase;
-      letter-spacing: var(--tracking-wide); border: var(--border-width-default) solid var(--color-border);
-      background: var(--color-surface-header);
-    }
-
-    .card__badge--platform { background: var(--color-primary-bg); border-color: var(--color-primary); color: var(--color-primary); }
-    .card__badge--sentiment-positive { background: var(--color-success-bg); border-color: var(--color-success); color: var(--color-success); }
-    .card__badge--sentiment-negative { background: var(--color-danger-bg); border-color: var(--color-danger); color: var(--color-danger); }
-    .card__badge--sentiment-neutral { background: var(--color-info-bg); border-color: var(--color-info); color: var(--color-info); }
-    .card__badge--processed { background: var(--color-warning-bg); border-color: var(--color-warning); color: var(--color-warning); }
-
     .card__meta { display: flex; flex-direction: column; gap: var(--space-1); }
     .card__meta-item { display: flex; align-items: center; gap: var(--space-1-5); font-size: var(--text-sm); color: var(--color-text-secondary); }
+
+    .card__abstract {
+      font-size: var(--text-sm); color: var(--color-text-secondary);
+      line-height: 1.5; display: -webkit-box;
+      -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+    }
 
     .card__url { font-size: var(--text-sm); color: var(--color-primary); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
     .card__url:hover { text-decoration: underline; }
@@ -74,14 +68,20 @@ export class VelgTrendCard extends LitElement {
   @property({ type: Object }) trend!: SocialTrend;
   @property({ type: String }) simulationId = '';
 
-  private _getSentimentClass(): string {
+  private _getAbstract(): string {
+    const raw = this.trend.raw_data as Record<string, string> | undefined;
+    const text = raw?.trail_text || raw?.description || '';
+    return text.replace(/<[^>]*>/g, '');
+  }
+
+  private _getSentimentVariant(): string {
     switch (this.trend.sentiment) {
       case 'positive':
-        return 'card__badge--sentiment-positive';
+        return 'success';
       case 'negative':
-        return 'card__badge--sentiment-negative';
+        return 'danger';
       default:
-        return 'card__badge--sentiment-neutral';
+        return 'info';
     }
   }
 
@@ -108,10 +108,11 @@ export class VelgTrendCard extends LitElement {
         </div>
         <div class="card__body">
           <div class="card__badges">
-            <span class="card__badge card__badge--platform">${t.platform}</span>
-            ${t.sentiment ? html`<span class="card__badge ${this._getSentimentClass()}">${t.sentiment}</span>` : ''}
-            ${t.is_processed ? html`<span class="card__badge card__badge--processed">${msg('Processed')}</span>` : ''}
+            <velg-badge variant="primary">${t.platform}</velg-badge>
+            ${t.sentiment ? html`<velg-badge variant=${this._getSentimentVariant()}>${t.sentiment}</velg-badge>` : ''}
+            ${t.is_processed ? html`<velg-badge variant="warning">${msg('Processed')}</velg-badge>` : ''}
           </div>
+          ${this._getAbstract() ? html`<p class="card__abstract">${this._getAbstract()}</p>` : ''}
           <div class="card__meta">
             ${t.volume ? html`<span class="card__meta-item">${msg(str`Volume: ${t.volume}`)}</span>` : ''}
             ${t.relevance_score != null ? html`<span class="card__meta-item">${msg(str`Relevance: ${t.relevance_score}/10`)}</span>` : ''}

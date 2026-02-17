@@ -1,4 +1,4 @@
-import { msg, str } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { simulationsApi } from '../../services/api/index.js';
@@ -19,6 +19,7 @@ interface SimulationFormData {
   taxonomy_choice: TaxonomyChoice;
 }
 
+@localized()
 @customElement('velg-create-simulation-wizard')
 export class VelgCreateSimulationWizard extends LitElement {
   static styles = css`

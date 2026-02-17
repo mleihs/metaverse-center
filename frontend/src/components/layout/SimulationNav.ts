@@ -1,4 +1,4 @@
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
@@ -21,6 +21,7 @@ function getTabs(): NavTab[] {
   ];
 }
 
+@localized()
 @customElement('velg-simulation-nav')
 export class VelgSimulationNav extends LitElement {
   static styles = css`

@@ -1,8 +1,9 @@
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { CampaignMetric } from '../../types/index.js';
 
+@localized()
 @customElement('velg-campaign-metrics')
 export class VelgCampaignMetrics extends LitElement {
   static styles = css`

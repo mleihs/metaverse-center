@@ -1,4 +1,4 @@
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
@@ -19,6 +19,7 @@ interface AgentFormData {
   portrait_image_url: string;
 }
 
+@localized()
 @customElement('velg-agent-edit-modal')
 export class VelgAgentEditModal extends LitElement {
   static styles = css`

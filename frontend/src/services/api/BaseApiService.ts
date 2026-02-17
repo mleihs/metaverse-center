@@ -54,18 +54,24 @@ export class BaseApiService {
       }
 
       const response = await fetch(url, options);
-      const json = await response.json();
 
       if (!response.ok) {
+        let errorCode = `HTTP_${response.status}`;
+        let errorMessage = response.statusText;
+        try {
+          const json = await response.json();
+          errorCode = json.code || errorCode;
+          errorMessage = json.message || json.detail || errorMessage;
+        } catch {
+          // Response body is not JSON — use statusText
+        }
         return {
           success: false,
-          error: {
-            code: json.code || `HTTP_${response.status}`,
-            message: json.message || json.detail || response.statusText,
-          },
+          error: { code: errorCode, message: errorMessage },
         };
       }
 
+      const json = await response.json();
       return {
         success: true,
         data: json.data !== undefined ? json.data : json,
@@ -94,6 +100,10 @@ export class BaseApiService {
   protected put<T>(path: string, body?: unknown, updatedAt?: string): Promise<ApiResponse<T>> {
     const extraHeaders = updatedAt ? { 'If-Updated-At': updatedAt } : undefined;
     return this.request<T>('PUT', path, body, undefined, extraHeaders);
+  }
+
+  protected patch<T>(path: string, body?: unknown): Promise<ApiResponse<T>> {
+    return this.request<T>('PATCH', path, body);
   }
 
   protected delete<T>(path: string): Promise<ApiResponse<T>> {

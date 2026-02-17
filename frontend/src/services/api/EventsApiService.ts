@@ -36,6 +36,25 @@ export class EventsApiService extends BaseApiService {
   ): Promise<ApiResponse<EventReaction>> {
     return this.post(`/simulations/${simulationId}/events/${eventId}/reactions`, data);
   }
+
+  deleteReaction(
+    simulationId: string,
+    eventId: string,
+    reactionId: string,
+  ): Promise<ApiResponse<void>> {
+    return this.delete(`/simulations/${simulationId}/events/${eventId}/reactions/${reactionId}`);
+  }
+
+  generateReactions(
+    simulationId: string,
+    eventId: string,
+    data?: { agent_ids?: string[]; max_agents?: number },
+  ): Promise<ApiResponse<EventReaction[]>> {
+    return this.post(
+      `/simulations/${simulationId}/events/${eventId}/generate-reactions`,
+      data || {},
+    );
+  }
 }
 
 export const eventsApi = new EventsApiService();

@@ -1,4 +1,4 @@
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
@@ -28,6 +28,7 @@ const TABS: TabDef[] = [
   { key: 'access', label: msg('Access'), ownerOnly: true },
 ];
 
+@localized()
 @customElement('velg-settings-view')
 export class VelgSettingsView extends LitElement {
   static styles = css`

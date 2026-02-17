@@ -1,4 +1,4 @@
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
@@ -9,6 +9,7 @@ export interface GenerationStep {
 
 type StepState = 'pending' | 'active' | 'completed';
 
+@localized()
 @customElement('velg-generation-progress')
 export class VelgGenerationProgress extends LitElement {
   static styles = css`

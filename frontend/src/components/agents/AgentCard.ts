@@ -1,9 +1,14 @@
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing, svg } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import type { Agent } from '../../types/index.js';
+import '../shared/Lightbox.js';
+import '../shared/VelgAvatar.js';
+import '../shared/VelgBadge.js';
+import '../shared/VelgIconButton.js';
 
+@localized()
 @customElement('velg-agent-card')
 export class VelgAgentCard extends LitElement {
   static styles = css`
@@ -32,33 +37,6 @@ export class VelgAgentCard extends LitElement {
       box-shadow: var(--shadow-pressed);
     }
 
-    .card__portrait {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      object-fit: cover;
-      display: block;
-      border-bottom: var(--border-medium);
-    }
-
-    .card__portrait-placeholder {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--color-surface-sunken);
-      border-bottom: var(--border-medium);
-    }
-
-    .card__initials {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-3xl);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
-    }
-
     .card__body {
       padding: var(--space-3) var(--space-4);
       display: flex;
@@ -85,31 +63,6 @@ export class VelgAgentCard extends LitElement {
       gap: var(--space-1-5);
     }
 
-    .card__badge {
-      display: inline-flex;
-      align-items: center;
-      padding: var(--space-0-5) var(--space-2);
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: var(--text-xs);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      border: var(--border-width-default) solid var(--color-border);
-      background: var(--color-surface-header);
-    }
-
-    .card__badge--system {
-      background: var(--color-primary-bg);
-      border-color: var(--color-primary);
-      color: var(--color-primary);
-    }
-
-    .card__badge--ai {
-      background: var(--color-info-bg);
-      border-color: var(--color-info);
-      color: var(--color-info);
-    }
-
     .card__meta {
       display: flex;
       flex-direction: column;
@@ -133,43 +86,10 @@ export class VelgAgentCard extends LitElement {
       padding: var(--space-2) var(--space-4) var(--space-3);
       margin-top: auto;
     }
-
-    .card__action-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 30px;
-      height: 30px;
-      padding: 0;
-      background: transparent;
-      border: var(--border-width-thin) solid var(--color-border-light);
-      cursor: pointer;
-      color: var(--color-text-secondary);
-      transition: all var(--transition-fast);
-    }
-
-    .card__action-btn:hover {
-      background: var(--color-surface-sunken);
-      color: var(--color-text-primary);
-    }
-
-    .card__action-btn--danger:hover {
-      background: var(--color-danger-bg);
-      color: var(--color-danger);
-      border-color: var(--color-danger);
-    }
   `;
 
   @property({ type: Object }) agent!: Agent;
-
-  private _getInitials(name: string): string {
-    return name
-      .split(/\s+/)
-      .map((part) => part.charAt(0))
-      .slice(0, 2)
-      .join('')
-      .toUpperCase();
-  }
+  @state() private _lightboxSrc: string | null = null;
 
   private _editIcon() {
     return svg`
@@ -233,22 +153,23 @@ export class VelgAgentCard extends LitElement {
 
     return html`
       <div class="card" @click=${this._handleClick}>
-        ${
-          agent.portrait_image_url
-            ? html`<img class="card__portrait" src=${agent.portrait_image_url} alt=${agent.name} loading="lazy" />`
-            : html`
-              <div class="card__portrait-placeholder">
-                <span class="card__initials">${this._getInitials(agent.name)}</span>
-              </div>
-            `
-        }
+        <velg-avatar
+          .src=${agent.portrait_image_url ?? ''}
+          .name=${agent.name}
+          size="full"
+          ?clickable=${!!agent.portrait_image_url}
+          @avatar-click=${(e: CustomEvent) => {
+            e.stopPropagation();
+            this._lightboxSrc = (e.detail as { src: string }).src;
+          }}
+        ></velg-avatar>
 
         <div class="card__body">
           <h3 class="card__name">${agent.name}</h3>
 
           <div class="card__badges">
-            ${agent.system ? html`<span class="card__badge card__badge--system">${agent.system}</span>` : null}
-            ${agent.data_source === 'ai' ? html`<span class="card__badge card__badge--ai">${msg('AI Generated')}</span>` : null}
+            ${agent.system ? html`<velg-badge variant="primary">${agent.system}</velg-badge>` : null}
+            ${agent.data_source === 'ai' ? html`<velg-badge variant="info">${msg('AI Generated')}</velg-badge>` : null}
           </div>
 
           <div class="card__meta">
@@ -261,27 +182,24 @@ export class VelgAgentCard extends LitElement {
           appState.canEdit.value
             ? html`
               <div class="card__actions">
-                <button
-                  class="card__action-btn"
-                  @click=${this._handleEdit}
-                  title=${msg('Edit')}
-                  aria-label=${msg('Edit agent')}
-                >
+                <velg-icon-button .label=${msg('Edit agent')} @icon-click=${this._handleEdit}>
                   ${this._editIcon()}
-                </button>
-                <button
-                  class="card__action-btn card__action-btn--danger"
-                  @click=${this._handleDelete}
-                  title=${msg('Delete')}
-                  aria-label=${msg('Delete agent')}
-                >
+                </velg-icon-button>
+                <velg-icon-button variant="danger" .label=${msg('Delete agent')} @icon-click=${this._handleDelete}>
                   ${this._deleteIcon()}
-                </button>
+                </velg-icon-button>
               </div>
             `
             : nothing
         }
       </div>
+
+      <velg-lightbox
+        .src=${this._lightboxSrc}
+        @lightbox-close=${() => {
+          this._lightboxSrc = null;
+        }}
+      ></velg-lightbox>
     `;
   }
 }

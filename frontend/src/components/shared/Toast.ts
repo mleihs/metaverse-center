@@ -1,4 +1,4 @@
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 
@@ -13,6 +13,7 @@ interface ToastItem {
 let toastContainerInstance: VelgToast | null = null;
 let toastIdCounter = 0;
 
+@localized()
 @customElement('velg-toast')
 export class VelgToast extends LitElement {
   static styles = css`

@@ -12,6 +12,7 @@ from backend.services.external.openrouter import (
     OpenRouterService,
     RateLimitError,
 )
+from backend.services.external.output_repair import repair_json_output
 from backend.services.model_resolver import ModelResolver, ResolvedModel
 from backend.services.prompt_service import LOCALE_NAMES, PromptResolver
 from supabase import Client
@@ -217,8 +218,12 @@ class GenerationService:
         news_content: str,
         locale: str = "de",
     ) -> dict:
-        """Transform a real news article into the simulation narrative."""
-        return await self._generate(
+        """Transform a real news article into the simulation narrative.
+
+        Parses JSON from the LLM response to return structured fields:
+        title, description, event_type, impact_level, plus a clean narrative.
+        """
+        result = await self._generate(
             template_type="news_transformation",
             model_purpose="news_transformation",
             variables={
@@ -229,6 +234,28 @@ class GenerationService:
             },
             locale=locale,
         )
+
+        raw_content = result.get("content", "")
+
+        # Parse JSON from LLM response (same pattern as agent/building)
+        parsed = self._parse_json_content(raw_content)
+        if parsed:
+            for field in ("title", "description", "event_type", "impact_level"):
+                if field in parsed:
+                    result[field] = parsed[field]
+
+        # Extract clean narrative (strip markers, JSON block, separator)
+        narrative = re.sub(r"```json[\s\S]*?```", "", raw_content).strip()
+        narrative = re.sub(r"\n---\s*$", "", narrative, flags=re.MULTILINE).strip()
+        narrative = re.sub(
+            r"^\*\*(?:Titel|Title):\*\*\s*[^\n]*\n?", "", narrative,
+        ).strip()
+        narrative = re.sub(
+            r"^\*\*(?:Artikel|Article):\*\*\s*\n?", "", narrative,
+        ).strip()
+        result["narrative"] = narrative
+
+        return result
 
     async def generate_social_media_transform(
         self,
@@ -268,15 +295,53 @@ class GenerationService:
 
     # --- JSON parsing ---
 
+    async def _parse_or_repair_json(
+        self,
+        content: str,
+        model_id: str,
+        pydantic_model: type | None = None,
+    ) -> dict | None:
+        """Parse JSON from LLM response, with LLM repair as last resort.
+
+        Tries _parse_json_content() first. If that fails and a pydantic_model
+        is provided, asks the LLM to fix the malformed output.
+        """
+        parsed = self._parse_json_content(content)
+        if parsed is not None:
+            return parsed
+
+        if pydantic_model is None:
+            return None
+
+        logger.info("Attempting LLM repair for malformed JSON output")
+        return await repair_json_output(
+            openrouter=self._openrouter,
+            model=model_id,
+            malformed_output=content,
+            pydantic_model=pydantic_model,
+        )
+
     @staticmethod
     def _parse_json_content(content: str) -> dict | None:
         """Extract and parse JSON from LLM response.
 
-        Handles markdown code fences (```json ... ```) and raw JSON.
-        Falls back to regex extraction for truncated/incomplete JSON.
+        Handles:
+        1. Embedded ```json ... ``` blocks within mixed narrative+JSON content
+        2. Content that is entirely a fenced JSON block
+        3. Raw JSON without fences
+        4. Regex fallback for truncated/incomplete JSON
+
         Returns parsed dict or None if parsing fails.
         """
-        # Strip markdown code fences
+        # 1. Try extracting an embedded ```json ... ``` block from mixed content
+        fence_match = re.search(r"```json\s*([\s\S]*?)```", content)
+        if fence_match:
+            try:
+                return json.loads(fence_match.group(1).strip())
+            except (json.JSONDecodeError, ValueError):
+                pass
+
+        # 2. Try stripping fences at start/end (content is entirely fenced JSON)
         cleaned = re.sub(r"^```(?:json)?\s*", "", content.strip())
         cleaned = re.sub(r"\s*```$", "", cleaned.strip())
 
@@ -285,7 +350,7 @@ class GenerationService:
         except (json.JSONDecodeError, ValueError):
             pass
 
-        # Fallback: extract fields via regex from truncated JSON
+        # 3. Fallback: extract fields via regex from truncated JSON
         return GenerationService._extract_json_fields(cleaned)
 
     @staticmethod

@@ -1,4 +1,4 @@
-import { msg, str } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
@@ -7,6 +7,7 @@ import type { Event as SimEvent } from '../../types/index.js';
 import { VelgToast } from '../shared/Toast.js';
 import '../shared/BaseModal.js';
 
+@localized()
 @customElement('velg-event-edit-modal')
 export class VelgEventEditModal extends LitElement {
   static styles = css`

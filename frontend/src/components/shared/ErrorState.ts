@@ -1,7 +1,8 @@
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, svg } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
+@localized()
 @customElement('velg-error-state')
 export class VelgErrorState extends LitElement {
   static styles = css`
