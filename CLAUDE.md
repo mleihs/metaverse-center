@@ -15,7 +15,7 @@
 
 Multi-simulation platform rebuilt from a single-world Flask app. See `00_PROJECT_OVERVIEW.md` for full context.
 
-**Current Status:** All 5 phases complete + i18n fully implemented + codebase audit applied + architecture audit applied + lore expansion + dashboard LoreScroll + per-simulation theming + WCAG contrast validation. 139 tasks. 885 localized UI strings (EN/DE). Platform ready for deployment.
+**Current Status:** All 5 phases complete + i18n fully implemented + codebase audit applied + architecture audit applied + lore expansion + dashboard LoreScroll + per-simulation theming + WCAG contrast validation. 139 tasks. 885 localized UI strings (EN/DE). Production deployed on Railway + hosted Supabase.
 
 ## Tech Stack
 
@@ -79,7 +79,7 @@ e2e/                  Playwright E2E tests (37 specs across 8 files)
   helpers/            auth.ts, fixtures.ts
   tests/              auth, agents, buildings, events, chat, settings, multi-user, social
 supabase/
-  migrations/         13 SQL migration files (001-013)
+  migrations/         19 SQL migration files (001-017)
   seed/               10 SQL seed files (001-010): simulation, agents, entities, social/chat, verification, prompts, sample data, image config, capybara kingdom, simulation themes
   config.toml         Local Supabase config
 scripts/              Utility scripts (image generation via Replicate)
@@ -133,20 +133,29 @@ sleep 5 && curl -s http://localhost:8000/api/v1/health && head -5 /tmp/velgarien
 docker exec supabase_db_velgarien-rebuild psql -U postgres -c "SELECT ..."
 ```
 
-## Supabase MCP (Local)
+## Supabase MCP
 
-The Supabase MCP server is configured in `.mcp.json` (project root) to connect to the **local** Supabase instance:
+Two MCP servers configured in `.mcp.json`:
 
-```
-URL: http://127.0.0.1:54321/mcp
-Container: supabase_db_velgarien-rebuild
-```
+| Server | URL | Use |
+|--------|-----|-----|
+| `supabase` (local) | `http://127.0.0.1:54321/mcp` | `mcp__supabase__*` tools |
+| `supabase-prod` | `https://mcp.supabase.com/mcp?project_ref=bffjoupddfjaljqrwqck` | `mcp__supabase-prod__*` tools |
 
-This overrides the remote Supabase plugin (`https://mcp.supabase.com/mcp`). Use the MCP tools (`mcp__supabase__*`) for migrations, SQL queries, type generation, and advisory checks. If the MCP connection times out, use Docker psql as fallback:
+**Local fallback** (when MCP times out): `docker exec supabase_db_velgarien-rebuild psql -U postgres -c "SQL..."`
 
-```bash
-docker exec supabase_db_velgarien-rebuild psql -U postgres -c "SQL..."
-```
+## Production Deployment
+
+| Component | URL |
+|-----------|-----|
+| Backend (Railway) | `https://backend-production-8f7a.up.railway.app` |
+| Supabase (hosted) | `https://bffjoupddfjaljqrwqck.supabase.co` |
+
+**Auth:** Production uses ES256 (ECC P-256) tokens verified via JWKS. Local uses HS256 with shared secret.
+
+**Schema changes:** `supabase db push` (requires `SUPABASE_ACCESS_TOKEN` env var). Migrations 016-017 are data-only (seeds for deployed DBs).
+
+**Env vars:** Railway service `metaverse-center` in project `metaverse.center`. See `.env.production.example` for required vars.
 
 ## Schema Naming Conventions
 
@@ -306,7 +315,7 @@ See `18_THEMING_SYSTEM.md` for full contrast documentation.
 
 ## Spec Documents
 
-19 specification documents (00-18) in project root. **Always consult the relevant spec before implementing:**
+20 specification documents (00-19) in project root. **Always consult the relevant spec before implementing:**
 
 | Doc | Content | Version |
 |-----|---------|---------|
@@ -320,6 +329,7 @@ See `18_THEMING_SYSTEM.md` for full contrast documentation.
 | `13_TECHSTACK_RECOMMENDATION.md` | All config templates (pyproject, package.json, etc.) | v1.3 |
 | `17_IMPLEMENTATION_PLAN.md` | 138 tasks, 5 phases, dependency graph | v2.6 |
 | `18_THEMING_SYSTEM.md` | Per-simulation theming: token taxonomy, presets, ThemeService, contrast rules | v1.1 |
+| `19_DEPLOYMENT_INFRASTRUCTURE.md` | Production deployment, dev→prod sync, data migration playbook | v1.0 |
 
 ## Python Version
 

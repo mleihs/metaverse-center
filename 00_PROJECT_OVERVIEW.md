@@ -1,8 +1,8 @@
 # 00 - Project Overview: Velgarien Multi-Simulations-Plattform
 
-**Version:** 1.2
-**Datum:** 2026-02-16
-**Status:** Alle 5 Phasen + i18n + per-Simulation-Theming komplett (Platform Foundation, Entity CRUD, Settings/AI, Social/Realtime, Testing, i18n, Theming)
+**Version:** 1.3
+**Datum:** 2026-02-25
+**Status:** Alle 5 Phasen + i18n + per-Simulation-Theming komplett. Production deployed auf Railway + hosted Supabase (siehe [19_DEPLOYMENT_INFRASTRUCTURE.md](./19_DEPLOYMENT_INFRASTRUCTURE.md))
 
 ---
 
@@ -206,6 +206,7 @@ Plattform (Multi-Tenancy)
 | [16_TESTING_STRATEGY.md](./16_TESTING_STRATEGY.md) | Test-Pyramide, Coverage, CI-Integration |
 | [17_IMPLEMENTATION_PLAN.md](./17_IMPLEMENTATION_PLAN.md) | 139 Tasks, 5 Phasen, Dependency Graph |
 | [18_THEMING_SYSTEM.md](./18_THEMING_SYSTEM.md) | Per-Simulation Theming: Token-Taxonomie, Presets, ThemeService |
+| [19_DEPLOYMENT_INFRASTRUCTURE.md](./19_DEPLOYMENT_INFRASTRUCTURE.md) | Production-Deployment, Dev→Prod Sync, Data Migration Playbook |
 
 ---
 
