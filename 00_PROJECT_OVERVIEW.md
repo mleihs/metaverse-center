@@ -2,7 +2,7 @@
 
 **Version:** 1.2
 **Datum:** 2026-02-16
-**Status:** Alle 5 Phasen + i18n komplett (Platform Foundation, Entity CRUD, Settings/AI, Social/Realtime, Testing, i18n)
+**Status:** Alle 5 Phasen + i18n + per-Simulation-Theming komplett (Platform Foundation, Entity CRUD, Settings/AI, Social/Realtime, Testing, i18n, Theming)
 
 ---
 
@@ -203,6 +203,9 @@ Plattform (Multi-Tenancy)
 | [13_TECHSTACK_RECOMMENDATION.md](./13_TECHSTACK_RECOMMENDATION.md) | Stack-Empfehlung |
 | [14_I18N_ARCHITECTURE.md](./14_I18N_ARCHITECTURE.md) | Mehrsprachigkeit |
 | [15_MIGRATION_STRATEGY.md](./15_MIGRATION_STRATEGY.md) | Migration Velgarien → Multi-Plattform |
+| [16_TESTING_STRATEGY.md](./16_TESTING_STRATEGY.md) | Test-Pyramide, Coverage, CI-Integration |
+| [17_IMPLEMENTATION_PLAN.md](./17_IMPLEMENTATION_PLAN.md) | 139 Tasks, 5 Phasen, Dependency Graph |
+| [18_THEMING_SYSTEM.md](./18_THEMING_SYSTEM.md) | Per-Simulation Theming: Token-Taxonomie, Presets, ThemeService |
 
 ---
 
@@ -225,14 +228,10 @@ Die Mock-/Fallback-Templates M1-M7 (Agent-Charakter, Agent-Hintergrund, Portrait
 
 **Betroffene Datei:** 05_API_SPECIFICATION.md
 
-### 3. Velgarien-spezifische Design-Token-Werte fehlen
+### 3. ~~Velgarien-spezifische Design-Token-Werte fehlen~~ — GELÖST
 
-`12_DESIGN_SYSTEM.md` definiert das vollständige Token-System, aber die **konkreten Theme-Werte für Velgarien als erste Simulation** (Accent-Farben, spezifische Header-Hintergründe, etc.) sind nicht explizit gelistet. Das Standard-Theme (schwarz/weiss Brutalist) ist vollständig definiert, aber ein `[data-simulation-theme="velgarien"]`-Block mit konkreten Hex-Werten fehlt.
+**Gelöst durch:** Per-Simulation Theming-System (18_THEMING_SYSTEM.md). 5 Presets (inkl. Cyberpunk für Velgarien) definieren konkrete Token-Werte. Simulation-Themes werden via ThemeService als CSS-Overrides auf `<velg-simulation-shell>` gesetzt. Seed-Daten in `supabase/seed/010_simulation_themes.sql`.
 
-**Betroffene Datei:** 12_DESIGN_SYSTEM.md
+### 4. ~~Keine dedizierte Test-Strategie~~ — GELÖST
 
-### 4. Keine dedizierte Test-Strategie
-
-Es existiert kein `16_TESTING_STRATEGY.md`. Testing wird nur in `13_TECHSTACK_RECOMMENDATION.md` als Tool-Auswahl (vitest, playwright, @open-wc/testing) erwähnt. Eine vollständige Spezifikation mit Test-Pyramide, Abdeckungszielen, CI-Integration und Test-Daten-Strategie fehlt.
-
-**Empfehlung:** Bei Bedarf als 16. Dokument ergänzen.
+**Gelöst durch:** `16_TESTING_STRATEGY.md` wurde erstellt mit Test-Pyramide, Coverage-Zielen, CI-Integration und Test-Daten-Strategie.

@@ -53,6 +53,9 @@ interface Simulation {
   slug: string;                     // "velgarien" — CHECK ^[a-z0-9-]+$ length <= 100
   description: string;
   theme: SimulationTheme;           // 'dystopian' | 'utopian' | 'fantasy' | 'scifi' | 'historical' | 'custom'
+                                    // NOTE: This is a high-level narrative category. Detailed visual overrides
+                                    // (colors, fonts, shadows, etc.) are stored in simulation_settings with
+                                    // category='design'. See 18_THEMING_SYSTEM.md for the full token taxonomy.
   status: SimulationStatus;         // 'draft' | 'configuring' | 'active' | 'paused' | 'archived'
   content_locale: string;           // "de"
   additional_locales: string[];     // ["en"]

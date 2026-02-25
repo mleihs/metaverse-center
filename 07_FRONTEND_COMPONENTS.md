@@ -564,6 +564,47 @@ class BaseApiService {
 └──────────────────────────────────────────────────────────┘
 ```
 
+### Design Settings → Theme Editor
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ Design Settings                                          │
+├──────────────────────────────────────────────────────────┤
+│                                                          │
+│ ── Preset ──                                             │
+│ [Brutalist] [Sunless Sea] [Solarpunk] [Cyberpunk] [Nord.]│
+│                                                          │
+│ ── Colors (16) ──                                        │
+│ Primary:   [■ #000000]  Hover:    [■ #1a1a1a]           │
+│ Secondary: [■ #3b82f6]  Accent:   [■ #f59e0b]           │
+│ Background:[■ #ffffff]  Surface:  [■ #f5f5f5]           │
+│ Text:      [■ #0a0a0a]  Muted:    [■ #a3a3a3]           │
+│ Border:    [■ #000000]  Danger:   [■ #dc2626]           │
+│ ...                                                      │
+│                                                          │
+│ ── Typography (7) ──                                     │
+│ Heading Font: [Courier New, monospace        ]           │
+│ Body Font:    [system-ui, sans-serif         ]           │
+│ Weight: [900 ▾]  Transform: [uppercase ▾]               │
+│ Base Size: [16px ]                                       │
+│                                                          │
+│ ── Character ──                                          │
+│ Border Radius: [0     ]  Shadow Style: [offset ▾]       │
+│ Shadow Color:  [■ #000]  Hover Effect: [translate ▾]    │
+│                                                          │
+│ ── Animation ──                                          │
+│ Speed: [1.0x   ]  Easing: [ease ▾]                      │
+│                                                          │
+│ ── Custom CSS ──                                         │
+│ [Textarea max 10KB...                        ]           │
+│                                                          │
+│ [Save Changes]                                           │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+```
+
+Alle Änderungen zeigen eine Live-Preview innerhalb der Shell. Preset-Auswahl füllt alle Felder mit Preset-Werten. Siehe `18_THEMING_SYSTEM.md` für vollständige Token-Taxonomie.
+
 ---
 
 ## Komponenten-Zählung (Neu vs Alt)

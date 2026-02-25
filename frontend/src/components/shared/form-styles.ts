@@ -135,7 +135,7 @@ export const formStyles = css`
 
   .gen-btn--primary:hover {
     background: var(--color-info);
-    color: var(--color-text-inverse);
+    color: var(--color-surface);
   }
 
   .footer {

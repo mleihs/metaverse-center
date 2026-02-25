@@ -89,7 +89,7 @@ export class VelgSettingsView extends LitElement {
     }
 
     .settings__tab--active {
-      color: var(--color-primary);
+      color: var(--color-text-primary);
       border-bottom-color: var(--color-primary);
     }
 

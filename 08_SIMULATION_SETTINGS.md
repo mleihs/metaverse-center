@@ -284,39 +284,92 @@ Verwaltung über eigene UI (Prompt Template Editor).
 
 ## 5. Design Settings
 
-### Theme-Tokens pro Simulation
+Per-Simulation-Theming erlaubt vollständige visuelle Anpassung. Settings werden als flache Keys (Kategorie `design`) in `simulation_settings` gespeichert. Die vollständige Token-Taxonomie und Architektur ist in **18_THEMING_SYSTEM.md** dokumentiert.
 
-| Setting Key | Velgarien-Default | Beschreibung |
+### Theme-Tokens pro Simulation (32 Tokens, 3 Tiers)
+
+#### Tier 1: Farben (16 Tokens)
+
+| Setting Key | Brutalist-Default | Beschreibung |
 |------------|-------------------|-------------|
-| `design.colors.primary` | `#ff3333` | Primärfarbe |
-| `design.colors.primary_hover` | `#cc0000` | Primär-Hover |
-| `design.colors.secondary` | `#333333` | Sekundärfarbe |
-| `design.colors.accent` | `#ff6600` | Akzentfarbe |
-| `design.colors.background` | `#1a1a1a` | Hintergrund |
-| `design.colors.surface` | `#2a2a2a` | Oberflächen |
-| `design.colors.text` | `#f0f0f0` | Textfarbe |
-| `design.colors.text_muted` | `#999999` | Gedämpfter Text |
-| `design.colors.border` | `#444444` | Rahmenfarbe |
-| `design.colors.error` | `#ff4444` | Fehlerfarbe |
-| `design.colors.success` | `#44ff44` | Erfolgsfarbe |
-| `design.colors.warning` | `#ffaa00` | Warnfarbe |
-| `design.typography.font_family` | "Courier New, monospace" | Hauptschrift |
-| `design.typography.heading_font` | "Arial Black, sans-serif" | Überschriften |
-| `design.typography.font_size_base` | "16px" | Basis-Schriftgröße |
-| `design.logo_url` | null | Eigenes Logo |
-| `design.custom_css` | null | Custom CSS (max 10KB) |
+| `color_primary` | `#000000` | Primärfarbe |
+| `color_primary_hover` | `#1a1a1a` | Primär-Hover |
+| `color_primary_active` | `#333333` | Primär-Active |
+| `color_secondary` | `#3b82f6` | Sekundärfarbe |
+| `color_accent` | `#f59e0b` | Akzentfarbe |
+| `color_background` | `#ffffff` | Hintergrund |
+| `color_surface` | `#f5f5f5` | Oberflächen |
+| `color_surface_sunken` | `#e5e5e5` | Abgesenkte Flächen |
+| `color_surface_header` | `#fafafa` | Header-Hintergrund |
+| `color_text` | `#0a0a0a` | Textfarbe |
+| `color_text_secondary` | `#525252` | Sekundärer Text |
+| `color_text_muted` | `#a3a3a3` | Gedämpfter Text |
+| `color_border` | `#000000` | Rahmenfarbe |
+| `color_border_light` | `#d4d4d4` | Heller Rahmen |
+| `color_danger` | `#dc2626` | Fehlerfarbe |
+| `color_success` | `#16a34a` | Erfolgsfarbe |
+
+#### Tier 2: Typographie (7 Tokens)
+
+| Setting Key | Brutalist-Default | Beschreibung |
+|------------|-------------------|-------------|
+| `font_heading` | `'Courier New', Monaco, monospace` | Überschriften-Font |
+| `font_body` | `system-ui, sans-serif` | Fließtext-Font |
+| `font_mono` | `SF Mono, Monaco, monospace` | Monospace-Font |
+| `heading_weight` | `900` | Überschriften-Gewicht |
+| `heading_transform` | `uppercase` | Überschriften-Transform |
+| `heading_tracking` | `1px` | Überschriften-Buchstabenabstand |
+| `font_base_size` | `16px` | Basis-Schriftgröße |
+
+#### Tier 3: Charakter & Animation (9 Tokens)
+
+| Setting Key | Brutalist-Default | Beschreibung |
+|------------|-------------------|-------------|
+| `border_radius` | `0` | Eckenrundung |
+| `border_width` | `3px` | Dicke Rahmenbreite |
+| `border_width_default` | `2px` | Standard-Rahmenbreite |
+| `shadow_style` | `offset` | Shadow-Typ: `offset`, `blur`, `glow`, `none` |
+| `shadow_color` | `#000000` | Shadow-Farbe |
+| `hover_effect` | `translate` | Hover-Effekt: `translate`, `scale`, `glow`, `none` |
+| `animation_speed` | `1` | Animations-Geschwindigkeit (Multiplikator) |
+| `animation_easing` | `ease` | Easing-Funktion |
+| `text_inverse` | `#ffffff` | Invertierte Textfarbe |
+
+#### Sonstige
+
+| Setting Key | Default | Beschreibung |
+|------------|---------|-------------|
+| `logo_url` | null | Eigenes Logo |
+| `custom_css` | null | Custom CSS (max 10KB, sanitized) |
+
+### Preset-System
+
+5 vordefinierte Presets können als Ausgangspunkt gewählt werden:
+
+| Preset | Charakter | Vorgeschlagen für |
+|--------|-----------|-------------------|
+| `brutalist` | Schwarz/Weiß, Offset-Shadows, Monospace, 0 Radius | Default, Custom |
+| `sunless-sea` | Tiefsee-Blaugrün, Glow-Shadows, Serif, 6px Radius | Fantasy |
+| `solarpunk` | Warmgelb/Grün, Blur-Shadows, Serif, 12px Radius | Utopian |
+| `cyberpunk` | Neon-Orange/Dunkel, Glow-Shadows, Condensed, 2px Radius | Dystopian, Sci-Fi |
+| `nordic-noir` | Kühles Grau, Blur-Shadows, Sans-Serif, 4px Radius | Historical |
 
 ### Anwendung der Theme-Tokens
 
-```css
-/* Simulation-Theme wird als CSS Custom Properties injiziert */
-:root[data-simulation="velgarien"] {
-  --sim-color-primary: #ff3333;
-  --sim-color-background: #1a1a1a;
-  --sim-font-family: "Courier New", monospace;
-  /* ... */
-}
+ThemeService setzt CSS Custom Properties als Inline-Styles auf das `<velg-simulation-shell>` Host-Element (nicht auf `:root`). CSS-Vererbung leitet die Overrides an alle Kind-Komponenten weiter — auch durch Shadow DOM Grenzen.
+
+```typescript
+// SimulationShell ruft auf:
+themeService.applySimulationTheme(simulationId, this);
+
+// ThemeService setzt z.B.:
+hostElement.style.setProperty('--color-primary', '#ff6b2b');
+hostElement.style.setProperty('--font-brutalist', "'Arial Narrow', sans-serif");
 ```
+
+Berechnete Tokens (`shadow_style` → 7 Shadow-Variablen, `animation_speed` → 4 Duration-Variablen) werden von ThemeService dynamisch generiert. Plattform-Level-Views (Dashboard, Login) verwenden immer die unveränderten Base-Tokens.
+
+**Siehe:** `18_THEMING_SYSTEM.md` für vollständige Architektur, Token-Mapping-Tabelle und Computed-Token-Logik.
 
 ---
 

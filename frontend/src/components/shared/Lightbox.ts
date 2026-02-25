@@ -36,49 +36,49 @@ export class VelgLightbox extends LitElement {
       max-width: 90vw;
       max-height: 85vh;
       object-fit: contain;
-      border: var(--border-width-thick, 3px) solid var(--color-surface, #fff);
-      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+      border: var(--border-width-thick) solid var(--color-surface);
+      box-shadow: var(--shadow-2xl);
       cursor: default;
     }
 
     .lightbox__close {
       position: absolute;
-      top: var(--space-4, 16px);
-      right: var(--space-4, 16px);
-      background: var(--color-surface, #fff);
-      color: var(--color-text-primary, #000);
-      border: var(--border-default, 2px solid #000);
-      box-shadow: var(--shadow-md, 0 2px 8px rgba(0, 0, 0, 0.2));
+      top: var(--space-4);
+      right: var(--space-4);
+      background: var(--color-surface-raised);
+      color: var(--color-text-primary);
+      border: var(--border-default);
+      box-shadow: var(--shadow-md);
       width: 40px;
       height: 40px;
-      font-family: var(--font-brutalist, sans-serif);
-      font-weight: var(--font-black, 900);
-      font-size: var(--text-lg, 18px);
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-black);
+      font-size: var(--text-lg);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background var(--transition-fast, 0.1s), color var(--transition-fast, 0.1s);
+      transition: background var(--transition-fast), color var(--transition-fast);
     }
 
     .lightbox__close:hover {
-      background: var(--color-danger, #e53e3e);
-      color: var(--color-text-inverse, #fff);
+      background: var(--color-danger);
+      color: var(--color-text-inverse);
     }
 
     .lightbox__caption {
       position: absolute;
-      bottom: var(--space-6, 24px);
+      bottom: var(--space-6);
       left: 50%;
       transform: translateX(-50%);
       max-width: 80vw;
-      padding: var(--space-2, 8px) var(--space-4, 16px);
-      font-family: var(--font-mono, monospace);
-      font-size: var(--text-sm, 14px);
+      padding: var(--space-2) var(--space-4);
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
       font-style: italic;
-      color: rgba(255, 255, 255, 0.8);
+      color: var(--color-text-inverse);
       background: rgba(0, 0, 0, 0.6);
-      border-radius: var(--border-radius, 4px);
+      border-radius: var(--border-radius, 0);
       text-align: center;
       pointer-events: none;
     }

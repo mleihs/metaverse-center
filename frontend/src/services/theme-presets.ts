@@ -1,0 +1,244 @@
+/**
+ * Theme Presets — predefined theme configurations for simulations.
+ *
+ * Each preset is a flat Record<string, string> matching setting keys
+ * used in simulation_settings (category='design').
+ */
+
+import type { SimulationTheme } from '../types/index.js';
+
+export type ThemePresetName =
+  | 'brutalist'
+  | 'sunless-sea'
+  | 'solarpunk'
+  | 'cyberpunk'
+  | 'nordic-noir';
+
+export const THEME_PRESETS: Record<ThemePresetName, Record<string, string>> = {
+  brutalist: {
+    color_primary: '#000000',
+    color_primary_hover: '#1a1a1a',
+    color_primary_active: '#333333',
+    color_secondary: '#3b82f6',
+    color_accent: '#d97706',
+    color_background: '#ffffff',
+    color_surface: '#f5f5f5',
+    color_surface_sunken: '#e5e5e5',
+    color_surface_header: '#fafafa',
+    color_text: '#0a0a0a',
+    color_text_secondary: '#525252',
+    color_text_muted: '#888888',
+    color_border: '#000000',
+    color_border_light: '#d4d4d4',
+    color_danger: '#dc2626',
+    color_success: '#16a34a',
+    color_primary_bg: '#f3f4f6',
+    color_info_bg: '#eff6ff',
+    color_danger_bg: '#fef2f2',
+    color_success_bg: '#f0fdf4',
+    color_warning_bg: '#fffbeb',
+    font_heading: "'Courier New', Monaco, 'Lucida Console', monospace",
+    font_body: 'system-ui, -apple-system, sans-serif',
+    font_mono: "SF Mono, Monaco, Inconsolata, 'Roboto Mono', monospace",
+    heading_weight: '900',
+    heading_transform: 'uppercase',
+    heading_tracking: '1px',
+    font_base_size: '16px',
+    border_radius: '0',
+    border_width: '3px',
+    border_width_default: '2px',
+    shadow_style: 'offset',
+    shadow_color: '#000000',
+    hover_effect: 'translate',
+    animation_speed: '1',
+    animation_easing: 'ease',
+    text_inverse: '#ffffff',
+  },
+
+  'sunless-sea': {
+    color_primary: '#0d7377',
+    color_primary_hover: '#0a5c5f',
+    color_primary_active: '#084a4d',
+    color_secondary: '#00e5cc',
+    color_accent: '#f4a261',
+    color_background: '#0a1628',
+    color_surface: '#0f2236',
+    color_surface_sunken: '#081320',
+    color_surface_header: '#0d1d30',
+    color_text: '#e8ede9',
+    color_text_secondary: '#90aa9c',
+    color_text_muted: '#708e80',
+    color_border: '#1a3a4a',
+    color_border_light: '#0f2a3a',
+    color_danger: '#e74c3c',
+    color_success: '#27ae60',
+    color_primary_bg: '#061a1e',
+    color_info_bg: '#0d2a38',
+    color_danger_bg: '#2d1520',
+    color_success_bg: '#0d2a1e',
+    color_warning_bg: '#2a2210',
+    font_heading: "'Georgia', 'Palatino Linotype', serif",
+    font_body: "'Segoe UI', Roboto, sans-serif",
+    font_mono: "SF Mono, Monaco, Inconsolata, 'Roboto Mono', monospace",
+    heading_weight: '700',
+    heading_transform: 'none',
+    heading_tracking: '0.05em',
+    font_base_size: '16px',
+    border_radius: '6px',
+    border_width: '1px',
+    border_width_default: '1px',
+    shadow_style: 'glow',
+    shadow_color: '#00e5cc',
+    hover_effect: 'glow',
+    animation_speed: '1.5',
+    animation_easing: 'ease-in-out',
+    text_inverse: '#e8ede9',
+  },
+
+  solarpunk: {
+    color_primary: '#16a34a',
+    color_primary_hover: '#15803d',
+    color_primary_active: '#166534',
+    color_secondary: '#b45309',
+    color_accent: '#e11d48',
+    color_background: '#fefce8',
+    color_surface: '#fffbeb',
+    color_surface_sunken: '#fef9c3',
+    color_surface_header: '#fefdf0',
+    color_text: '#1a2e05',
+    color_text_secondary: '#4d7c0f',
+    color_text_muted: '#5c8a14',
+    color_border: '#a3e635',
+    color_border_light: '#d9f99d',
+    color_danger: '#ef4444',
+    color_success: '#059669',
+    color_primary_bg: '#f0fdf4',
+    color_info_bg: '#fffbeb',
+    color_danger_bg: '#fef2f2',
+    color_success_bg: '#ecfdf5',
+    color_warning_bg: '#fff1f2',
+    font_heading: "'Georgia', 'Playfair Display', serif",
+    font_body: "'Segoe UI', Roboto, sans-serif",
+    font_mono: "SF Mono, Monaco, Inconsolata, 'Roboto Mono', monospace",
+    heading_weight: '600',
+    heading_transform: 'capitalize',
+    heading_tracking: '0.02em',
+    font_base_size: '16px',
+    border_radius: '12px',
+    border_width: '1px',
+    border_width_default: '1px',
+    shadow_style: 'blur',
+    shadow_color: '#16a34a',
+    hover_effect: 'scale',
+    animation_speed: '1.3',
+    animation_easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+    text_inverse: '#1a2e05',
+  },
+
+  cyberpunk: {
+    color_primary: '#ff6b2b',
+    color_primary_hover: '#ea580c',
+    color_primary_active: '#c2410c',
+    color_secondary: '#00d4ff',
+    color_accent: '#a855f7',
+    color_background: '#0a0a0a',
+    color_surface: '#171717',
+    color_surface_sunken: '#0a0a0a',
+    color_surface_header: '#141414',
+    color_text: '#fafafa',
+    color_text_secondary: '#a3a3a3',
+    color_text_muted: '#858585',
+    color_border: '#ff6b2b',
+    color_border_light: '#292524',
+    color_danger: '#ef4444',
+    color_success: '#22c55e',
+    color_primary_bg: '#2a1a0f',
+    color_info_bg: '#0f1a2a',
+    color_danger_bg: '#2a1010',
+    color_success_bg: '#0f2a10',
+    color_warning_bg: '#2a1f0f',
+    font_heading: "'Arial Narrow', 'Barlow Condensed', sans-serif",
+    font_body: 'system-ui, -apple-system, sans-serif',
+    font_mono: "SF Mono, Monaco, Inconsolata, 'Roboto Mono', monospace",
+    heading_weight: '900',
+    heading_transform: 'uppercase',
+    heading_tracking: '0.08em',
+    font_base_size: '15px',
+    border_radius: '2px',
+    border_width: '2px',
+    border_width_default: '1px',
+    shadow_style: 'glow',
+    shadow_color: '#ff6b2b',
+    hover_effect: 'glow',
+    animation_speed: '0.7',
+    animation_easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+    text_inverse: '#0a0a0a',
+  },
+
+  'nordic-noir': {
+    color_primary: '#64748b',
+    color_primary_hover: '#475569',
+    color_primary_active: '#334155',
+    color_secondary: '#3b82f6',
+    color_accent: '#d97706',
+    color_background: '#f8fafc',
+    color_surface: '#ffffff',
+    color_surface_sunken: '#f1f5f9',
+    color_surface_header: '#f8fafc',
+    color_text: '#1e293b',
+    color_text_secondary: '#475569',
+    color_text_muted: '#708090',
+    color_border: '#cbd5e1',
+    color_border_light: '#e2e8f0',
+    color_danger: '#dc2626',
+    color_success: '#16a34a',
+    color_primary_bg: '#f1f5f9',
+    color_info_bg: '#eff6ff',
+    color_danger_bg: '#fef2f2',
+    color_success_bg: '#f0fdf4',
+    color_warning_bg: '#fffbeb',
+    font_heading: "'Inter', system-ui, sans-serif",
+    font_body: "'Inter', system-ui, sans-serif",
+    font_mono: "SF Mono, Monaco, Inconsolata, 'Roboto Mono', monospace",
+    heading_weight: '500',
+    heading_transform: 'none',
+    heading_tracking: '-0.01em',
+    font_base_size: '16px',
+    border_radius: '4px',
+    border_width: '1px',
+    border_width_default: '1px',
+    shadow_style: 'blur',
+    shadow_color: '#64748b',
+    hover_effect: 'scale',
+    animation_speed: '1.2',
+    animation_easing: 'ease-in-out',
+    text_inverse: '#f8fafc',
+  },
+};
+
+/** Maps SimulationTheme types to suggested preset names. */
+export function getPresetForTheme(theme: SimulationTheme): ThemePresetName {
+  switch (theme) {
+    case 'dystopian':
+      return 'cyberpunk';
+    case 'utopian':
+      return 'solarpunk';
+    case 'fantasy':
+      return 'sunless-sea';
+    case 'scifi':
+      return 'cyberpunk';
+    case 'historical':
+      return 'nordic-noir';
+    default:
+      return 'brutalist';
+  }
+}
+
+/** All available preset names for UI display. */
+export const PRESET_NAMES: ThemePresetName[] = [
+  'brutalist',
+  'sunless-sea',
+  'solarpunk',
+  'cyberpunk',
+  'nordic-noir',
+];

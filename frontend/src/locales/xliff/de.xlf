@@ -1602,25 +1602,13 @@
   <source>Success</source>
   <target>Erfolg</target>
 </trans-unit>
-<trans-unit id="s34be76c6b1eadbef">
-  <source>Warning</source>
-  <target>Warnung</target>
-</trans-unit>
 <trans-unit id="s0b83a299b1ff53db">
   <source>Primary Hover</source>
   <target>Primär Hover</target>
 </trans-unit>
-<trans-unit id="s1b4a36fce2456660">
-  <source>Font Family</source>
-  <target>Schriftfamilie</target>
-</trans-unit>
 <trans-unit id="s737d3d59d50c9b56">
   <source>Heading Font</source>
   <target>Überschrift-Schrift</target>
-</trans-unit>
-<trans-unit id="s5db114fa301d661d">
-  <source>Base Font Size (px)</source>
-  <target>Basis-Schriftgröße (px)</target>
 </trans-unit>
 <trans-unit id="sb61f026993e669a0">
   <source>Failed to load design settings</source>
@@ -1681,10 +1669,6 @@
 <trans-unit id="s2821a2a7e03787c0">
   <source>This is how body text will appear with the selected colors and fonts.</source>
   <target>So wird der Fließtext mit den gewählten Farben und Schriften dargestellt.</target>
-</trans-unit>
-<trans-unit id="s638cacf952af2ae6">
-  <source>This is muted/secondary text.</source>
-  <target>Dies ist gedämpfter/sekundärer Text.</target>
 </trans-unit>
 <trans-unit id="s2ff11704362fe823">
   <source>Primary Button</source>
@@ -3428,6 +3412,374 @@ Die Karte liegt offen. Die Scherben warten. Welche Welt betrittst du zuerst?</ta
 <trans-unit id="sd1fe64b421c93c84">
   <source>The Bureau of Impossible Geography — Headquarters spanning four Shards</source>
   <target>Das Büro für Unmögliche Geographie — Hauptquartier über vier Scherben hinweg</target>
+</trans-unit>
+<trans-unit id="s403aed059ef25646">
+  <source>Main brand color for buttons, active states, and accents. Appears on primary buttons, active tabs, and focus rings.</source>
+  <target>Die Hauptfarbe für Buttons, aktive Zustände und Akzente. Erscheint auf primären Buttons, aktiven Tabs und Fokusringen.</target>
+</trans-unit>
+<trans-unit id="sc9be08c738fe2a54">
+  <source>Hover state of primary elements. Slightly lighter or darker than primary.</source>
+  <target>Hover-Zustand primärer Elemente. Etwas heller oder dunkler als die Primärfarbe.</target>
+</trans-unit>
+<trans-unit id="sec8d1b2507d38e15">
+  <source>Primary Active</source>
+  <target>Primär Aktiv</target>
+</trans-unit>
+<trans-unit id="s09f8b033582c5faf">
+  <source>Active/pressed state of primary elements.</source>
+  <target>Aktiv-/Gedrückt-Zustand primärer Elemente.</target>
+</trans-unit>
+<trans-unit id="s70d0fd66fc08c7cb">
+  <source>Secondary accent color used for info badges, links, and highlights.</source>
+  <target>Sekundäre Akzentfarbe für Info-Badges, Links und Hervorhebungen.</target>
+</trans-unit>
+<trans-unit id="s01d0e75a462b1e55">
+  <source>Accent color for warnings, highlights, and decorative elements.</source>
+  <target>Akzentfarbe für Warnungen, Hervorhebungen und dekorative Elemente.</target>
+</trans-unit>
+<trans-unit id="s070bbeb77530be69">
+  <source>Main page background color. The base layer behind all content.</source>
+  <target>Hintergrundfarbe der Hauptseite. Die Basisebene hinter allen Inhalten.</target>
+</trans-unit>
+<trans-unit id="s1fb0c7435e5c67ab">
+  <source>Raised surface color for cards, panels, and modals.</source>
+  <target>Erhöhte Oberflächenfarbe für Karten, Panels und Modals.</target>
+</trans-unit>
+<trans-unit id="sc6e8d7aead574294">
+  <source>Surface Sunken</source>
+  <target>Oberfläche Vertieft</target>
+</trans-unit>
+<trans-unit id="s151d11558d0facc3">
+  <source>Recessed surface color for inset areas and input backgrounds.</source>
+  <target>Vertiefte Oberflächenfarbe für eingelassene Bereiche und Eingabehintergründe.</target>
+</trans-unit>
+<trans-unit id="sa6479c0126dd61f1">
+  <source>Surface Header</source>
+  <target>Oberfläche Kopfzeile</target>
+</trans-unit>
+<trans-unit id="sbd735c8d6ca423d8">
+  <source>Background color for headers and navigation bars.</source>
+  <target>Hintergrundfarbe für Kopfzeilen und Navigationsleisten.</target>
+</trans-unit>
+<trans-unit id="sa6cf3a5ff210fc66">
+  <source>Primary text color used for headings and body text.</source>
+  <target>Primäre Textfarbe für Überschriften und Fließtext.</target>
+</trans-unit>
+<trans-unit id="se3b6bce36f09a544">
+  <source>Text Secondary</source>
+  <target>Text Sekundär</target>
+</trans-unit>
+<trans-unit id="sf09420c7ff33dd23">
+  <source>Secondary text color for labels, captions, and less prominent text.</source>
+  <target>Sekundäre Textfarbe für Labels, Bildunterschriften und weniger prominenten Text.</target>
+</trans-unit>
+<trans-unit id="sac925e0f39de0631">
+  <source>Muted text color for placeholders, disabled text, and hints.</source>
+  <target>Gedämpfte Textfarbe für Platzhalter, deaktivierten Text und Hinweise.</target>
+</trans-unit>
+<trans-unit id="sfd5bf37cda128e58">
+  <source>Primary border color for cards, inputs, and dividers.</source>
+  <target>Primäre Rahmenfarbe für Karten, Eingabefelder und Trennlinien.</target>
+</trans-unit>
+<trans-unit id="sc4145b25ecabf1ff">
+  <source>Border Light</source>
+  <target>Rahmen Hell</target>
+</trans-unit>
+<trans-unit id="s80a287f55cc92cfe">
+  <source>Subtle border color for light dividers and secondary borders.</source>
+  <target>Dezente Rahmenfarbe für helle Trennlinien und sekundäre Rahmen.</target>
+</trans-unit>
+<trans-unit id="s5183765fa43d93ee">
+  <source>Danger</source>
+  <target>Gefahr</target>
+</trans-unit>
+<trans-unit id="sa2afd924e61f86d3">
+  <source>Color for error states, destructive actions, and danger alerts.</source>
+  <target>Farbe für Fehlerzustände, destruktive Aktionen und Gefahrenwarnungen.</target>
+</trans-unit>
+<trans-unit id="s638dd8d84dcb38d7">
+  <source>Color for success states, confirmations, and positive feedback.</source>
+  <target>Farbe für Erfolgszustände, Bestätigungen und positives Feedback.</target>
+</trans-unit>
+<trans-unit id="s6d817d8ce543d146">
+  <source>Font family for all headings (h1-h6), navigation labels, and section titles.</source>
+  <target>Schriftfamilie für alle Überschriften (h1-h6), Navigationslabels und Abschnittstitel.</target>
+</trans-unit>
+<trans-unit id="sbdcab3770b54db36">
+  <source>Body Font</source>
+  <target>Fließtext-Schrift</target>
+</trans-unit>
+<trans-unit id="s7d17738dfc8ce88b">
+  <source>Font family for body text, paragraphs, and form inputs.</source>
+  <target>Schriftfamilie für Fließtext, Absätze und Formulareingaben.</target>
+</trans-unit>
+<trans-unit id="s43923158d9dc8059">
+  <source>Monospace Font</source>
+  <target>Monospace-Schrift</target>
+</trans-unit>
+<trans-unit id="se5b71a480dfde45c">
+  <source>Font family for code blocks, data tables, and technical content.</source>
+  <target>Schriftfamilie für Code-Blöcke, Datentabellen und technische Inhalte.</target>
+</trans-unit>
+<trans-unit id="s9ad29ca8dd6c3646">
+  <source>Base Font Size</source>
+  <target>Basis-Schriftgröße</target>
+</trans-unit>
+<trans-unit id="se74dad58889bffa1">
+  <source>Base font size in px. All other sizes scale relative to this.</source>
+  <target>Basis-Schriftgröße in px. Alle anderen Größen skalieren relativ dazu.</target>
+</trans-unit>
+<trans-unit id="s635cbfc052980c2b">
+  <source>Heading Weight</source>
+  <target>Überschrift-Stärke</target>
+</trans-unit>
+<trans-unit id="s22f38e4c8ac7aad2">
+  <source>Font weight for headings. 400=normal, 700=bold, 900=black.</source>
+  <target>Schriftstärke für Überschriften. 400=normal, 700=fett, 900=schwarz.</target>
+</trans-unit>
+<trans-unit id="s715a1086534f54f1">
+  <source>Heading Transform</source>
+  <target>Überschrift-Transformation</target>
+</trans-unit>
+<trans-unit id="s9581441b4a287b96">
+  <source>Text transform for headings. "uppercase" for ALL CAPS, "capitalize" for Title Case, "none" for normal.</source>
+  <target>Texttransformation für Überschriften. „uppercase" für GROSSBUCHSTABEN, „capitalize" für Titelform, „none" für normal.</target>
+</trans-unit>
+<trans-unit id="s82e601e552e42e22">
+  <source>Heading Letter Spacing</source>
+  <target>Überschrift-Zeichenabstand</target>
+</trans-unit>
+<trans-unit id="se13f9407a01dbabe">
+  <source>Letter spacing for headings. Use CSS values like 1px, 0.05em, or -0.01em.</source>
+  <target>Zeichenabstand für Überschriften. CSS-Werte wie 1px, 0.05em oder -0.01em verwenden.</target>
+</trans-unit>
+<trans-unit id="s0b786a0e85eb6783">
+  <source>Border Radius</source>
+  <target>Eckenradius</target>
+</trans-unit>
+<trans-unit id="sb82858d9c3196268">
+  <source>Corner rounding for all cards, buttons, and inputs. 0=sharp brutalist corners, 12px=soft organic feel.</source>
+  <target>Eckenabrundung für alle Karten, Buttons und Eingabefelder. 0=scharfe brutalistische Ecken, 12px=weiches organisches Gefühl.</target>
+</trans-unit>
+<trans-unit id="s65fa35704ddf7f12">
+  <source>Border Width (Primary)</source>
+  <target>Rahmenbreite (Primär)</target>
+</trans-unit>
+<trans-unit id="s042cf235158340d5">
+  <source>Thickness of primary borders on cards and prominent elements.</source>
+  <target>Dicke primärer Rahmen auf Karten und prominenten Elementen.</target>
+</trans-unit>
+<trans-unit id="sb6482a5d0bf3e8a3">
+  <source>Border Width (Default)</source>
+  <target>Rahmenbreite (Standard)</target>
+</trans-unit>
+<trans-unit id="sbcfda893793072ea">
+  <source>Thickness of standard borders on inputs, dividers, and secondary elements.</source>
+  <target>Dicke von Standard-Rahmen bei Eingabefeldern, Trennlinien und sekundären Elementen.</target>
+</trans-unit>
+<trans-unit id="s5bbe37dc659753a4">
+  <source>Shadow Style</source>
+  <target>Schatten-Stil</target>
+</trans-unit>
+<trans-unit id="s0ce5b690bb44ac3b">
+  <source>Overall shadow character. "offset"=hard brutalist shadows, "blur"=soft organic, "glow"=luminous cyberpunk/fantasy, "none"=flat minimalist.</source>
+  <target>Gesamtcharakter der Schatten. „offset"=harte brutalistische Schatten, „blur"=weich organisch, „glow"=leuchtend Cyberpunk/Fantasy, „none"=flach minimalistisch.</target>
+</trans-unit>
+<trans-unit id="sfb6130a4b86b8d75">
+  <source>Offset (Brutalist)</source>
+  <target>Versatz (Brutalistisch)</target>
+</trans-unit>
+<trans-unit id="sd0cfb557e58a0d10">
+  <source>Blur (Organic)</source>
+  <target>Weichzeichner (Organisch)</target>
+</trans-unit>
+<trans-unit id="s511f036bfc29fd1d">
+  <source>Glow (Fantasy)</source>
+  <target>Leuchten (Fantasy)</target>
+</trans-unit>
+<trans-unit id="saea0756a767d7ea1">
+  <source>None (Minimalist)</source>
+  <target>Keine (Minimalistisch)</target>
+</trans-unit>
+<trans-unit id="s913122466d8dead2">
+  <source>Shadow Color</source>
+  <target>Schattenfarbe</target>
+</trans-unit>
+<trans-unit id="se82fd566e2419965">
+  <source>Tint color for shadows and glows. Black for brutalist, cyan for bioluminescent, etc.</source>
+  <target>Tönungsfarbe für Schatten und Leuchten. Schwarz für brutalistisch, Cyan für biolumineszent usw.</target>
+</trans-unit>
+<trans-unit id="s92e050db290b96b2">
+  <source>Hover Effect</source>
+  <target>Hover-Effekt</target>
+</trans-unit>
+<trans-unit id="sb1c4ec8a36dd925f">
+  <source>How interactive elements respond to hover. "translate"=lift up-left, "scale"=grow slightly, "glow"=luminous highlight.</source>
+  <target>Wie interaktive Elemente auf Hover reagieren. „translate"=nach oben-links anheben, „scale"=leicht vergrößern, „glow"=leuchtende Hervorhebung.</target>
+</trans-unit>
+<trans-unit id="s80bf66e15059680f">
+  <source>Translate (Lift)</source>
+  <target>Verschieben (Anheben)</target>
+</trans-unit>
+<trans-unit id="s9d19fa9405421e05">
+  <source>Scale (Grow)</source>
+  <target>Skalieren (Vergrößern)</target>
+</trans-unit>
+<trans-unit id="scc547d9a7afbee89">
+  <source>Glow (Luminous)</source>
+  <target>Leuchten (Luminös)</target>
+</trans-unit>
+<trans-unit id="s9324f1f07209dc2d">
+  <source>Text on Primary</source>
+  <target>Text auf Primärfarbe</target>
+</trans-unit>
+<trans-unit id="sb963037d05bb2bdd">
+  <source>Text color used on primary-color backgrounds (e.g. buttons). Usually white or dark.</source>
+  <target>Textfarbe auf Primärfarbe-Hintergründen (z.B. Buttons). Üblicherweise weiß oder dunkel.</target>
+</trans-unit>
+<trans-unit id="sb6381b2977e87732">
+  <source>Animation Speed</source>
+  <target>Animationsgeschwindigkeit</target>
+</trans-unit>
+<trans-unit id="s0084901dbe14cae9">
+  <source>Speed multiplier for all transitions. 0.7=fast/snappy, 1.0=normal, 1.5=slow/flowing.</source>
+  <target>Geschwindigkeitsmultiplikator für alle Übergänge. 0.7=schnell/knackig, 1.0=normal, 1.5=langsam/fließend.</target>
+</trans-unit>
+<trans-unit id="sa08ebf4eb2c139e0">
+  <source>Easing Function</source>
+  <target>Beschleunigungsfunktion</target>
+</trans-unit>
+<trans-unit id="s001cd39c4046c99d">
+  <source>CSS timing function for transitions. Controls the acceleration curve of animations.</source>
+  <target>CSS-Zeitfunktion für Übergänge. Steuert die Beschleunigungskurve von Animationen.</target>
+</trans-unit>
+<trans-unit id="s20377f7d1cbd9fb3">
+  <source>Ease (Default)</source>
+  <target>Ease (Standard)</target>
+</trans-unit>
+<trans-unit id="sd036ef4b7b8c7370">
+  <source>Ease In-Out (Smooth)</source>
+  <target>Ease In-Out (Sanft)</target>
+</trans-unit>
+<trans-unit id="se230f0ba94a96086">
+  <source>Ease In</source>
+  <target>Ease In</target>
+</trans-unit>
+<trans-unit id="sf0abbb0a918969e7">
+  <source>Ease Out</source>
+  <target>Ease Out</target>
+</trans-unit>
+<trans-unit id="se7a532063ef7b740">
+  <source>Linear</source>
+  <target>Linear</target>
+</trans-unit>
+<trans-unit id="s2232d4e93c4cde67">
+  <source>Sharp (Cyberpunk)</source>
+  <target>Scharf (Cyberpunk)</target>
+</trans-unit>
+<trans-unit id="sfc8a5cf12045b6d1">
+  <source>Bouncy (Playful)</source>
+  <target>Federnd (Verspielt)</target>
+</trans-unit>
+<trans-unit id="sc99474f4edfadd8f">
+  <source>Brutalist</source>
+  <target>Brutalistisch</target>
+</trans-unit>
+<trans-unit id="se3f125d31f13239b">
+  <source>Sunless Sea</source>
+  <target>Sonnenloses Meer</target>
+</trans-unit>
+<trans-unit id="sfa766b43e34760ae">
+  <source>Solarpunk</source>
+  <target>Solarpunk</target>
+</trans-unit>
+<trans-unit id="sc281a38372d6c85a">
+  <source>Cyberpunk</source>
+  <target>Cyberpunk</target>
+</trans-unit>
+<trans-unit id="sf43d048c879b2624">
+  <source>Nordic Noir</source>
+  <target>Nordic Noir</target>
+</trans-unit>
+<trans-unit id="s089a87a53b3b77e5">
+  <source>Theme Preset</source>
+  <target>Thema-Vorlage</target>
+</trans-unit>
+<trans-unit id="s3e1618c50c1b2662">
+  <source>Apply Preset</source>
+  <target>Vorlage anwenden</target>
+</trans-unit>
+<trans-unit id="sa602e3fd3f2d98fd">
+  <source>Animation</source>
+  <target>Animation</target>
+</trans-unit>
+<trans-unit id="s3e87e59901aeeab1">
+  <source>Raw CSS injected into the page. Use for advanced overrides beyond the token system.</source>
+  <target>Rohes CSS, das in die Seite eingefügt wird. Für erweiterte Überschreibungen jenseits des Token-Systems.</target>
+</trans-unit>
+<trans-unit id="s1327f37fad4fa3be">
+  <source>This is secondary text.</source>
+  <target>Dies ist sekundärer Text.</target>
+</trans-unit>
+<trans-unit id="se233690363d1b5da">
+  <source>This is muted/disabled text.</source>
+  <target>Dies ist gedämpfter/deaktivierter Text.</target>
+</trans-unit>
+<trans-unit id="s92257bc04dde993d">
+  <source>Sunken</source>
+  <target>Vertieft</target>
+</trans-unit>
+<trans-unit id="s962feca81af7efa1">
+  <source>Card Title</source>
+  <target>Kartentitel</target>
+</trans-unit>
+<trans-unit id="s48d5586be93a9247">
+  <source>A sample card showing how surfaces, borders, and shadows combine.</source>
+  <target>Eine Beispielkarte, die zeigt, wie Oberflächen, Rahmen und Schatten zusammenwirken.</target>
+</trans-unit>
+<trans-unit id="s06471a3c2aed9b4b">
+  <source>Input field</source>
+  <target>Eingabefeld</target>
+</trans-unit>
+<trans-unit id="s6621c5ab9f313267">
+  <source>Primary Background</source>
+  <target>Primärer Hintergrund</target>
+</trans-unit>
+<trans-unit id="s7ed2cec6022abb49">
+  <source>Tinted background for primary badges, selected states, and highlights.</source>
+  <target>Getönter Hintergrund für primäre Badges, ausgewählte Zustände und Hervorhebungen.</target>
+</trans-unit>
+<trans-unit id="sb77bc77c033d3b73">
+  <source>Info Background</source>
+  <target>Info-Hintergrund</target>
+</trans-unit>
+<trans-unit id="s9ea57f677727d243">
+  <source>Tinted background for info badges, generate buttons, and informational panels.</source>
+  <target>Getönter Hintergrund für Info-Badges, Generierungsschaltflächen und Informationspanels.</target>
+</trans-unit>
+<trans-unit id="se558fa37e1ef06ea">
+  <source>Danger Background</source>
+  <target>Gefahr-Hintergrund</target>
+</trans-unit>
+<trans-unit id="saf3cd9f040d4174d">
+  <source>Tinted background for error messages and danger alerts.</source>
+  <target>Getönter Hintergrund für Fehlermeldungen und Gefahrenwarnungen.</target>
+</trans-unit>
+<trans-unit id="s3ed365569972d214">
+  <source>Success Background</source>
+  <target>Erfolg-Hintergrund</target>
+</trans-unit>
+<trans-unit id="seb7da1019afd3442">
+  <source>Tinted background for success states and positive feedback.</source>
+  <target>Getönter Hintergrund für Erfolgszustände und positive Rückmeldungen.</target>
+</trans-unit>
+<trans-unit id="sc786ad55e8e74685">
+  <source>Warning Background</source>
+  <target>Warnungs-Hintergrund</target>
+</trans-unit>
+<trans-unit id="s94eebc2db928b6c8">
+  <source>Tinted background for warning messages and caution indicators.</source>
+  <target>Getönter Hintergrund für Warnmeldungen und Vorsichtshinweise.</target>
 </trans-unit>
 
 </body>

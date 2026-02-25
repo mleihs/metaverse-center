@@ -453,7 +453,7 @@ export class VelgAccessSettingsPanel extends LitElement {
       align-items: center;
       gap: var(--space-2);
       padding: var(--space-3);
-      background: var(--color-success-bg, #e6f9e6);
+      background: var(--color-success-bg);
       border: var(--border-width-default) solid var(--color-success);
       word-break: break-all;
     }

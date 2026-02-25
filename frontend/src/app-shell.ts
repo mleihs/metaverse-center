@@ -4,7 +4,7 @@ import type { TemplateResult } from 'lit';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from './services/AppStateManager.js';
-import { membersApi, taxonomiesApi } from './services/api/index.js';
+import { membersApi, settingsApi, taxonomiesApi } from './services/api/index.js';
 import { localeService } from './services/i18n/locale-service.js';
 import { authService } from './services/supabase/SupabaseAuthService.js';
 
@@ -231,13 +231,15 @@ export class VelgApp extends LitElement {
   private _lastLoadedSimulationId = '';
 
   private async _loadSimulationContext(simulationId: string): Promise<void> {
+    // Allow re-load on re-entry (theme needs to reapply after switching sims)
     if (this._lastLoadedSimulationId === simulationId) return;
     this._lastLoadedSimulationId = simulationId;
 
-    // Load taxonomies and member role in parallel
-    const [taxResponse, membersResponse] = await Promise.all([
+    // Load taxonomies, member role, and design settings in parallel
+    const [taxResponse, membersResponse, settingsResponse] = await Promise.all([
       taxonomiesApi.list(simulationId, { limit: '500' }),
       membersApi.list(simulationId),
+      settingsApi.list(simulationId, 'design'),
     ]);
 
     if (taxResponse.success && taxResponse.data) {
@@ -251,6 +253,10 @@ export class VelgApp extends LitElement {
       if (me) {
         appState.setCurrentRole(me.member_role as 'owner' | 'admin' | 'editor' | 'viewer');
       }
+    }
+
+    if (settingsResponse.success && settingsResponse.data) {
+      appState.setSettings(Array.isArray(settingsResponse.data) ? settingsResponse.data : []);
     }
   }
 

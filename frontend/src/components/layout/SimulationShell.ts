@@ -1,5 +1,6 @@
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { themeService } from '../../services/ThemeService.js';
 
 import './SimulationHeader.js';
 import './SimulationNav.js';
@@ -10,6 +11,8 @@ export class VelgSimulationShell extends LitElement {
     :host {
       display: block;
       min-height: calc(100vh - var(--header-height));
+      background-color: var(--color-surface);
+      color: var(--color-text-primary);
     }
 
     .shell {
@@ -24,6 +27,37 @@ export class VelgSimulationShell extends LitElement {
   `;
 
   @property({ type: String }) simulationId = '';
+
+  private _appliedSimulationId = '';
+
+  async connectedCallback(): Promise<void> {
+    super.connectedCallback();
+    if (this.simulationId) {
+      await this._applyTheme();
+    }
+  }
+
+  disconnectedCallback(): void {
+    themeService.resetTheme(this);
+    this._appliedSimulationId = '';
+    super.disconnectedCallback();
+  }
+
+  protected async willUpdate(changedProperties: Map<PropertyKey, unknown>): Promise<void> {
+    if (
+      changedProperties.has('simulationId') &&
+      this.simulationId &&
+      this.simulationId !== this._appliedSimulationId
+    ) {
+      await this._applyTheme();
+    }
+  }
+
+  private async _applyTheme(): Promise<void> {
+    if (!this.simulationId) return;
+    this._appliedSimulationId = this.simulationId;
+    await themeService.applySimulationTheme(this.simulationId, this);
+  }
 
   protected render() {
     return html`

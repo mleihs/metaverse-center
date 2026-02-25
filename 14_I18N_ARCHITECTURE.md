@@ -2,7 +2,7 @@
 
 **Version:** 1.2
 **Datum:** 2026-02-16
-**Aenderung v1.2:** Ebene 1 (Plattform-UI) vollstaendig implementiert — 675 Strings mit msg() gewrappt, DE-Uebersetzungen in XLIFF, Locale-Toggle in PlatformHeader, FormatService fuer Datum/Zahlen
+**Aenderung v1.2:** Ebene 1 (Plattform-UI) vollstaendig implementiert — 875 Strings mit msg() gewrappt, DE-Uebersetzungen in XLIFF, Locale-Toggle in PlatformHeader, FormatService fuer Datum/Zahlen
 **Änderung v1.1:** @lit/localize Modus von Build-Time auf Runtime korrigiert
 
 ---
@@ -39,8 +39,8 @@ Die Internationalisierung betrifft drei unabhangige Ebenen, die jeweils eigene M
 
 ### Frontend: Alle Strings mit msg() gewrappt
 
-**675 UI-Strings** in 66 Komponenten + 2 Services mit `msg()` / `msg(str\`...\`)` gewrappt.
-Komplette deutsche Uebersetzung in XLIFF (675 trans-units) und generiertem `de.ts`.
+**875 UI-Strings** in 68 Komponenten + 3 Services mit `msg()` / `msg(str\`...\`)` gewrappt.
+Komplette deutsche Uebersetzung in XLIFF (875 trans-units) und generiertem `de.ts`.
 
 | Bereich | Dateien | Strings |
 |---------|---------|---------|
@@ -54,9 +54,9 @@ Komplette deutsche Uebersetzung in XLIFF (675 trans-units) und generiertem `de.t
 | Chat | 6 | ~25 |
 | Social | 13 | ~50 |
 | Locations | 5 | ~20 |
-| Settings | 8 | ~50 |
-| Services | 2 | ~20 |
-| **Gesamt** | **66+2** | **~675** |
+| Settings | 8 | ~130 |
+| Services | 3 | ~25 |
+| **Gesamt** | **68+3** | **~875** |
 
 ### Fruehere Probleme (GELOEST)
 
@@ -184,8 +184,8 @@ Uebersetzungen werden ueber den `@lit/localize` XLIFF-Workflow verwaltet (NICHT 
 
 **Generierte Dateien:**
 - `frontend/src/locales/generated/locale-codes.ts` — Source/Target Locale Konstanten
-- `frontend/src/locales/generated/de.ts` — Hash-basierte Template-Map (675 Eintraege, auto-generiert)
-- `frontend/src/locales/xliff/de.xlf` — XLIFF 1.2 Interchange-Datei (675 trans-units)
+- `frontend/src/locales/generated/de.ts` — Hash-basierte Template-Map (875 Eintraege, auto-generiert)
+- `frontend/src/locales/xliff/de.xlf` — XLIFF 1.2 Interchange-Datei (875 trans-units)
 
 **Wichtig:** Die `de.ts` Datei wird automatisch generiert und darf NICHT manuell bearbeitet werden.
 Aenderungen erfolgen ausschliesslich ueber die XLIFF-Datei + `lit-localize build`.

@@ -190,6 +190,154 @@ test.describe('Settings View', () => {
     }
   });
 
+  test('Design tab — preset selection fills all fields', async ({ page }) => {
+    const settingsView = page.locator('velg-settings-view');
+    await expect(settingsView).toBeVisible();
+
+    // Click on the Design tab
+    const designTab = settingsView.locator('.settings__tab', { hasText: 'Design' });
+    await designTab.click();
+
+    // Verify the Design settings panel loads
+    const designPanel = settingsView.locator('velg-design-settings-panel');
+    await expect(designPanel).toBeVisible({ timeout: 10_000 });
+
+    // Wait for loading to complete
+    const sectionTitle = designPanel.locator('.section__title, velg-section-header').first();
+    await expect(sectionTitle).toBeVisible({ timeout: 10_000 });
+
+    // Store original values for restoration
+    const colorPrimaryHex = designPanel.locator('[data-testid="color-primary-hex"]');
+    const fontHeadingInput = designPanel.locator('[data-testid="font-heading-input"]');
+    await expect(colorPrimaryHex).toBeVisible({ timeout: 5_000 });
+    const originalColorPrimary = await colorPrimaryHex.inputValue();
+    const originalFontHeading = await fontHeadingInput.inputValue();
+
+    // Select "cyberpunk" preset
+    const presetDropdown = designPanel.locator('[data-testid="preset-dropdown"]');
+    await presetDropdown.selectOption('cyberpunk');
+
+    // Click Apply Preset
+    const applyBtn = designPanel.locator('[data-testid="apply-preset-btn"]');
+    await applyBtn.click();
+
+    // Verify cyberpunk values were applied
+    await expect(colorPrimaryHex).toHaveValue('#ff6b2b');
+    const fontHeadingValue = await fontHeadingInput.inputValue();
+    expect(fontHeadingValue).toContain('Arial Narrow');
+
+    // Restore by selecting "brutalist" and saving
+    await presetDropdown.selectOption('brutalist');
+    await applyBtn.click();
+
+    const saveBtn = designPanel.locator('[data-testid="design-save-btn"]');
+    await saveBtn.click();
+
+    const toast = page.locator('velg-toast');
+    await expect(toast).toContainText(/saved/i, { timeout: 5_000 });
+  });
+
+  test('Design tab — color hex input syncs', async ({ page }) => {
+    const settingsView = page.locator('velg-settings-view');
+    await expect(settingsView).toBeVisible();
+
+    // Click on the Design tab
+    const designTab = settingsView.locator('.settings__tab', { hasText: 'Design' });
+    await designTab.click();
+
+    const designPanel = settingsView.locator('velg-design-settings-panel');
+    await expect(designPanel).toBeVisible({ timeout: 10_000 });
+
+    // Wait for loading
+    const sectionTitle = designPanel.locator('.section__title, velg-section-header').first();
+    await expect(sectionTitle).toBeVisible({ timeout: 10_000 });
+
+    // Store original color_primary
+    const colorPrimaryHex = designPanel.locator('[data-testid="color-primary-hex"]');
+    await expect(colorPrimaryHex).toBeVisible({ timeout: 5_000 });
+    const originalColor = await colorPrimaryHex.inputValue();
+
+    // Fill hex input with #ff0000
+    await colorPrimaryHex.clear();
+    await colorPrimaryHex.fill('#ff0000');
+
+    // Verify save button is enabled (dirty state)
+    const saveBtn = designPanel.locator('[data-testid="design-save-btn"]');
+    await expect(saveBtn).toBeEnabled();
+
+    // Save and verify toast
+    await saveBtn.click();
+    const toast = page.locator('velg-toast');
+    await expect(toast).toContainText(/saved/i, { timeout: 5_000 });
+
+    // Restore original color
+    await colorPrimaryHex.clear();
+    await colorPrimaryHex.fill(originalColor);
+    await saveBtn.click();
+    await expect(toast).toContainText(/saved/i, { timeout: 5_000 });
+  });
+
+  test('Design tab — character fields persist after save', async ({ page }) => {
+    const settingsView = page.locator('velg-settings-view');
+    await expect(settingsView).toBeVisible();
+
+    // Click on the Design tab
+    const designTab = settingsView.locator('.settings__tab', { hasText: 'Design' });
+    await designTab.click();
+
+    const designPanel = settingsView.locator('velg-design-settings-panel');
+    await expect(designPanel).toBeVisible({ timeout: 10_000 });
+
+    // Wait for loading
+    const sectionTitle = designPanel.locator('.section__title, velg-section-header').first();
+    await expect(sectionTitle).toBeVisible({ timeout: 10_000 });
+
+    // Store originals
+    const borderRadiusInput = designPanel.locator('[data-testid="border-radius-input"]');
+    const shadowStyleSelect = designPanel.locator('[data-testid="shadow-style-select"]');
+    await expect(borderRadiusInput).toBeVisible({ timeout: 5_000 });
+    const originalBorderRadius = await borderRadiusInput.inputValue();
+    const originalShadowStyle = await shadowStyleSelect.inputValue();
+
+    // Change border_radius to "8px" and shadow_style to "blur"
+    await borderRadiusInput.clear();
+    await borderRadiusInput.fill('8px');
+    await shadowStyleSelect.selectOption('blur');
+
+    // Save
+    const saveBtn = designPanel.locator('[data-testid="design-save-btn"]');
+    await saveBtn.click();
+    const toast = page.locator('velg-toast');
+    await expect(toast).toContainText(/saved/i, { timeout: 5_000 });
+
+    // Reload and navigate back to Design tab
+    await page.reload();
+    await expect(settingsView).toBeVisible({ timeout: 10_000 });
+    const designTab2 = settingsView.locator('.settings__tab', { hasText: 'Design' });
+    await designTab2.click();
+
+    const designPanel2 = settingsView.locator('velg-design-settings-panel');
+    await expect(designPanel2).toBeVisible({ timeout: 10_000 });
+
+    // Wait for loading
+    const sectionTitle2 = designPanel2.locator('.section__title, velg-section-header').first();
+    await expect(sectionTitle2).toBeVisible({ timeout: 10_000 });
+
+    // Verify values persisted
+    const borderRadiusInput2 = designPanel2.locator('[data-testid="border-radius-input"]');
+    const shadowStyleSelect2 = designPanel2.locator('[data-testid="shadow-style-select"]');
+    await expect(borderRadiusInput2).toBeVisible({ timeout: 5_000 });
+    await expect(borderRadiusInput2).toHaveValue('8px');
+    await expect(shadowStyleSelect2).toHaveValue('blur');
+
+    // Restore originals
+    await borderRadiusInput2.clear();
+    await borderRadiusInput2.fill(originalBorderRadius);
+    await shadowStyleSelect2.selectOption(originalShadowStyle);
+    await saveBtn.click();
+    await expect(toast).toContainText(/saved/i, { timeout: 5_000 });
+  });
+
   test('changes theme in Design tab', async ({ page }) => {
     const settingsView = page.locator('velg-settings-view');
     await expect(settingsView).toBeVisible();

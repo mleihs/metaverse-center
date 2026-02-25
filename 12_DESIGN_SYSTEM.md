@@ -436,40 +436,48 @@ styles/
 }
 ```
 
-### 2.3 Simulation-Theme-Override-Mechanismus
+### 2.3 Simulation-Theme-Override-Mechanismus (Shell-Scoped)
 
-```css
-/* Theme-Overrides werden per Simulation geladen */
-/* Beispiel: Velgarien (dystopisch, dunkel) */
-[data-simulation-theme="velgarien"] {
-  --theme-accent: #ef4444;
-  --theme-accent-hover: #dc2626;
-  --theme-header-bg: #1f2937;
-  --theme-surface: #fafafa;
-}
+Theme-Overrides werden **nicht** auf `:root` gesetzt, sondern auf das `<velg-simulation-shell>` Host-Element. Die Base-Tokens auf `:root` (§1, §2.1, §2.2) bleiben immer unverändert. CSS Custom Properties vererben sich durch Shadow DOM — daher erreichen die Overrides alle Kind-Komponenten innerhalb der Shell.
 
-/* Beispiel: Utopia (hell, freundlich) */
-[data-simulation-theme="utopia"] {
-  --theme-accent: #22c55e;
-  --theme-accent-hover: #16a34a;
-  --theme-header-bg: #f0fdf4;
-}
+```
+:root (Base-Tokens — immer Brutalist)
+  │
+  └── <velg-app> (Plattform-Level — nutzt Base-Tokens)
+       │
+       └── <velg-simulation-shell style="--color-primary: #ff6b2b; ...">
+            │                     ↑ ThemeService setzt Overrides hier
+            └── <velg-agents-view> (sieht die Override-Werte via Vererbung)
+                 └── <velg-agent-card> (ebenso)
 ```
 
-**Dynamische Simulation-Themes via JavaScript:**
+**Dynamische Simulation-Themes via ThemeService:**
 
 ```typescript
-// Theme-Tokens aus simulation_settings laden
-function applySimulationTheme(settings: SimulationSettings): void {
-  const root = document.documentElement;
-  const theme = settings.design;
+// SimulationShell ruft beim Laden auf:
+await themeService.applySimulationTheme(simulationId, this);
 
-  if (theme.primary_color) root.style.setProperty('--theme-accent', theme.primary_color);
-  if (theme.header_bg) root.style.setProperty('--theme-header-bg', theme.header_bg);
-  if (theme.font_family) root.style.setProperty('--font-brutalist', theme.font_family);
-  // ... weitere Theme-Tokens
-}
+// ThemeService lädt Design-Settings via API, dann:
+// 1. Direkte Token-Mappings (flat key → CSS var)
+hostElement.style.setProperty('--color-primary', '#ff6b2b');
+hostElement.style.setProperty('--font-brutalist', "'Arial Narrow', sans-serif");
+
+// 2. Berechnete Tokens: shadow_style → 7 Shadow-Variablen
+//    shadow_style='glow' + shadow_color='#ff6b2b' →
+//    --shadow-xs, --shadow-sm, ..., --shadow-2xl, --shadow-pressed
+
+// 3. Berechnete Tokens: animation_speed → 4 Duration-Variablen
+//    animation_speed=0.7 →
+//    --duration-fast: 70ms, --duration-normal: 140ms, etc.
 ```
+
+5 Presets (brutalist, sunless-sea, solarpunk, cyberpunk, nordic-noir) stehen als Ausgangspunkt zur Verfügung. DesignSettingsPanel bietet Live-Preview beim Bearbeiten. Alle 37 Theme-Einstellungen (21 Farben + 7 Typografie + 9 Charakter) sind über die Design-Settings editierbar.
+
+**Contrast-Validierung:** Alle Presets werden automatisch via `frontend/tests/theme-contrast.test.ts` gegen WCAG 2.1 AA Kontrastverhältnisse geprüft (4.5:1 für normalen Text, 3.0:1 für Badges/Buttons/Muted-Text). Neue Presets müssen diesen Test bestehen.
+
+**Cleanup:** `themeService.resetTheme(hostElement)` entfernt alle Overrides, wenn die Simulation gewechselt wird.
+
+**Vollständige Architektur:** Siehe `18_THEMING_SYSTEM.md` für Token-Taxonomy (37 Settings, 3 Tiers), Computed-Token-Logik, Preset-Definitionen und Contrast-Regeln.
 
 ---
 
@@ -1226,3 +1234,4 @@ CSS Custom Properties durchdringen Shadow DOM automatisch - daher funktioniert d
 - **07_FRONTEND_COMPONENTS.md** - Komponenten die das Design System nutzen
 - **08_SIMULATION_SETTINGS.md** - Design Settings (Theme-Konfiguration pro Simulation)
 - **13_TECHSTACK_RECOMMENDATION.md** - CSS-Tools und Build-Konfiguration
+- **18_THEMING_SYSTEM.md** - Per-Simulation Theming: Token-Taxonomie, Presets, ThemeService-Architektur

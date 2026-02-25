@@ -1084,11 +1084,11 @@ frontend/src/components/chat/
 **Ref.:** 08_SIMULATION_SETTINGS §Integration Settings, 11_EXTERNAL_SERVICES
 
 #### P3.1.5 — DesignSettingsPanel
-**Dateien:** `frontend/src/components/settings/DesignSettingsPanel.ts`
-**Aktion:** Color-Picker fuer 12 Farben (primary, secondary, accent, background, surface, text, etc.), Font-Family, Heading-Font, Font-Size, Logo-Upload, Custom CSS (max 10KB). Live-Preview.
-**Akzeptanz:** Farbe aendern → Live-Preview aktualisiert. Speichern → Simulation nutzt neue Farben.
+**Dateien:** `frontend/src/components/settings/DesignSettingsPanel.ts`, `frontend/src/services/theme-presets.ts`, `frontend/src/types/validation/theme.ts`
+**Aktion:** Preset-Selector (5 Presets: brutalist, sunless-sea, solarpunk, cyberpunk, nordic-noir), 16 Color-Picker, 7 Typography-Felder, Character-Section (border-radius, shadow-style, hover-effect), Animation-Section (speed, easing), Info-Bubbles mit Token-Erklaerungen, Custom CSS (max 10KB). Live-Preview via ThemeService.applyConfig().
+**Akzeptanz:** Preset waehlen → alle Felder aktualisiert + Live-Preview. Einzelne Farbe aendern → Live-Preview aktualisiert. Speichern → Simulation nutzt neue Tokens. 82 neue i18n-Strings (DE/EN).
 **Abh.:** P2.4.3, P2.1.9
-**Ref.:** 08_SIMULATION_SETTINGS §Design Settings
+**Ref.:** 08_SIMULATION_SETTINGS §Design Settings, 18_THEMING_SYSTEM
 
 #### P3.1.6 — AccessSettingsPanel
 **Dateien:** `frontend/src/components/settings/AccessSettingsPanel.ts`
@@ -1115,10 +1115,10 @@ frontend/src/components/chat/
 
 #### P3.2.3 — Simulation Theme Application Service
 **Dateien:** `frontend/src/services/ThemeService.ts`
-**Aktion:** Laedt Design-Settings aus API. Injiziert als CSS Custom Properties (`--sim-color-primary`, etc.) auf `:root[data-simulation]`. Custom CSS Sanitizer.
-**Akzeptanz:** Simulation mit custom Farben → CSS Properties aktualisiert. Custom CSS wird sanitized + injiziert.
+**Aktion:** Laedt Design-Settings aus API. Setzt Base-Token-Overrides als CSS Custom Properties auf `<velg-simulation-shell>` Host-Element (shell-scoped, nicht `:root`). Direkte Token-Mappings (32 flat keys → CSS vars), berechnete Shadow-Tokens (shadow_style + shadow_color → 7 Shadow-Variablen), berechnete Animation-Tokens (animation_speed → 4 Duration-Variablen). Custom CSS Sanitizer (max 10KB, @import/javascript:/expression() entfernt). Cleanup via resetTheme().
+**Akzeptanz:** Simulation mit custom Farben → CSS Properties auf Shell-Element gesetzt. Plattform-Level Views nutzen weiterhin Base-Tokens. Custom CSS wird sanitized + injiziert. Simulation-Wechsel → alte Tokens bereinigt.
 **Abh.:** P3.1.5, P2.4.3
-**Ref.:** 08_SIMULATION_SETTINGS §Design Settings §Anwendung der Theme-Tokens
+**Ref.:** 08_SIMULATION_SETTINGS §Design Settings, 18_THEMING_SYSTEM
 
 #### P3.2.4 — GenerationApiService (Frontend)
 **Dateien:** `frontend/src/services/api/GenerationApiService.ts`

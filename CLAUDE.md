@@ -15,7 +15,7 @@
 
 Multi-simulation platform rebuilt from a single-world Flask app. See `00_PROJECT_OVERVIEW.md` for full context.
 
-**Current Status:** All 5 phases complete + i18n fully implemented + codebase audit applied + architecture audit applied + lore expansion + dashboard LoreScroll. 139 tasks. 797 localized UI strings (EN/DE). Platform ready for deployment.
+**Current Status:** All 5 phases complete + i18n fully implemented + codebase audit applied + architecture audit applied + lore expansion + dashboard LoreScroll + per-simulation theming + WCAG contrast validation. 139 tasks. 885 localized UI strings (EN/DE). Platform ready for deployment.
 
 ## Tech Stack
 
@@ -65,22 +65,22 @@ frontend/             Lit + Vite application
       social/         SocialTrendsView, SocialMediaView, CampaignDashboard, CampaignDetailView, TrendCard, PostCard, TransformationModal, PostTransformModal, CampaignCard
       locations/      LocationsView, CityList, ZoneList, StreetList, LocationEditModal
       settings/       SettingsView + 7 panels (General, World, AI, Integration, Design, Access, View)
-    services/         Supabase client, 16 API services, AppStateManager, NotificationService, RealtimeService, PresenceService
+    services/         Supabase client, 16 API services, AppStateManager, NotificationService, RealtimeService, PresenceService, ThemeService, theme-presets
       i18n/           LocaleService + FormatService
     locales/          i18n files
       generated/      Auto-generated: de.ts, locale-codes.ts (DO NOT EDIT)
       xliff/          Translation interchange: de.xlf (EDIT THIS for translations)
-    styles/           CSS design tokens (tokens/) + base styles (base/)
+    styles/           CSS design tokens (tokens/: 8 files — colors, typography, spacing, borders, shadows, animation, layout, z-index) + base styles (base/)
     utils/            Shared utilities (text.ts, formatters.ts, error-handler.ts, icons.ts)
     types/            TypeScript interfaces (index.ts) + Zod validation schemas (validation/)
-  tests/              vitest tests (87 tests: validation + API + notification)
+  tests/              vitest tests (183 tests: validation + API + notification + theme contrast)
 e2e/                  Playwright E2E tests (37 specs across 8 files)
   playwright.config.ts
   helpers/            auth.ts, fixtures.ts
   tests/              auth, agents, buildings, events, chat, settings, multi-user, social
 supabase/
   migrations/         13 SQL migration files (001-013)
-  seed/               5 SQL seed files (001-005): simulation, agents, entities, social/chat, verification
+  seed/               10 SQL seed files (001-010): simulation, agents, entities, social/chat, verification, prompts, sample data, image config, capybara kingdom, simulation themes
   config.toml         Local Supabase config
 scripts/              Utility scripts (image generation via Replicate)
 concept.md            Game design proposal (~9300 words) with expanded meta-lore + research appendix
@@ -254,7 +254,7 @@ Alternatively, add `<target>` elements directly to `frontend/src/locales/xliff/d
 | `frontend/lit-localize.json` | Config: sourceLocale=en, targetLocale=de, runtime mode |
 | `frontend/src/services/i18n/locale-service.ts` | LocaleService: initLocale, setLocale, getInitialLocale |
 | `frontend/src/services/i18n/format-service.ts` | FormatService: formatDate, formatDateTime, formatNumber, formatRelativeTime |
-| `frontend/src/locales/xliff/de.xlf` | XLIFF translations (797 trans-units) — edit this for translations |
+| `frontend/src/locales/xliff/de.xlf` | XLIFF translations (875 trans-units) — edit this for translations |
 | `frontend/src/locales/generated/de.ts` | Auto-generated — NEVER edit manually |
 | `frontend/src/locales/generated/locale-codes.ts` | Source/target locale constants |
 
@@ -281,9 +281,32 @@ Alternatively, add `<target>` elements directly to `frontend/src/locales/xliff/d
 6. **Check `utils/`** — `text.ts` (getInitials), `formatters.ts`, `error-handler.ts`, `icons.ts` (centralized SVG icons). Add to them rather than creating parallel utilities. For icons, always import from `icons.ts` — never define inline SVG methods in components.
 7. **Backend:** Check `services/base_service.py` before implementing CRUD logic. Check `models/common.py` for response types. Check `dependencies.py` for auth patterns.
 
+## Theme Contrast Rules — MANDATORY for Presets
+
+All theme presets are validated by `frontend/tests/theme-contrast.test.ts` (WCAG 2.1 AA). **Any change to theme presets must pass this test.**
+
+### Minimum Ratios
+
+| Category | Minimum | Pairs |
+|---|---|---|
+| Normal text on surfaces | **4.5:1** | `color_text`, `color_text_secondary` on `color_surface` and `color_background` |
+| Muted text on surfaces | **3.0:1** | `color_text_muted` on `color_surface` and `color_background` |
+| Button text | **3.0:1** | `text_inverse` on `color_primary` and `color_danger` |
+| Badge text on tinted bg | **3.0:1** | `color_primary` on `color_primary_bg`, `color_secondary` on `color_info_bg`, `color_accent` on `color_warning_bg`, `color_danger` on `color_danger_bg`, `color_success` on `color_success_bg` |
+| Gen-button hover | **3.0:1** | `color_background` on `color_secondary` |
+
+### Key Rules
+
+1. **Semantic colors must be functional** — `color_secondary` (→ `--color-info`) and `color_accent` (→ `--color-warning`) are used as badge text and must have sufficient contrast. Never use pale/pastel values.
+2. **Dark themes need dark `-bg` tints** — if `color_background` is dark, all 5 `-bg` tokens must be dark too.
+3. **`text_inverse` must work on both `color_primary` and `color_danger`** — it's used on solid-color buttons.
+4. **Always run after preset changes**: `cd frontend && npx vitest run tests/theme-contrast.test.ts`
+
+See `18_THEMING_SYSTEM.md` for full contrast documentation.
+
 ## Spec Documents
 
-18 specification documents (00-17) in project root. **Always consult the relevant spec before implementing:**
+19 specification documents (00-18) in project root. **Always consult the relevant spec before implementing:**
 
 | Doc | Content | Version |
 |-----|---------|---------|
@@ -296,6 +319,7 @@ Alternatively, add `<target>` elements directly to `frontend/src/locales/xliff/d
 | `12_DESIGN_SYSTEM.md` | CSS tokens, brutalist aesthetic, component styles | v1.0 |
 | `13_TECHSTACK_RECOMMENDATION.md` | All config templates (pyproject, package.json, etc.) | v1.3 |
 | `17_IMPLEMENTATION_PLAN.md` | 138 tasks, 5 phases, dependency graph | v2.6 |
+| `18_THEMING_SYSTEM.md` | Per-simulation theming: token taxonomy, presets, ThemeService, contrast rules | v1.1 |
 
 ## Python Version
 

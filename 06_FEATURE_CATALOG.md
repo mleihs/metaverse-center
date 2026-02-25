@@ -114,7 +114,7 @@ Features die innerhalb einer Simulation existieren.
 | C2 | **World Settings** | MUST | Taxonomien verwalten (Systeme, Professionen, etc.) |
 | C3 | **AI Settings** | SHOULD | Modelle pro Zweck, Prompt-Templates, Parameter |
 | C4 | **Integration Settings** | SHOULD | Social Media Accounts, News-Quellen, API-Keys |
-| C5 | **Design Settings** | COULD | Theme/Farbschema, Logo, Custom CSS |
+| C5 | **Design Settings** | DONE | Per-Simulation Theming: 32 Token-Overrides (Farben, Typographie, Charakter, Animation), 5 Presets, Live-Preview, Custom CSS. Impl. in Phase 3. |
 | C6 | **Access Settings** | SHOULD | Öffentlich/Privat, Einladungen, Rollen |
 | C7 | **Taxonomy Editor** | MUST | UI zum Hinzufügen/Bearbeiten/Deaktivieren von Taxonomie-Werten |
 | C8 | **Prompt Template Editor** | SHOULD | UI zum Bearbeiten von AI-Prompts pro Sprache |
@@ -147,4 +147,4 @@ Features die innerhalb einer Simulation existieren.
 ### Phase 4: Vollständig
 - S36-S40 (Social Media Integration)
 - P8-P10 (Archivierung, Klonen, Admin)
-- C5 (Design Settings)
+- ~~C5 (Design Settings)~~ — vorgezogen nach Phase 3 (implementiert)

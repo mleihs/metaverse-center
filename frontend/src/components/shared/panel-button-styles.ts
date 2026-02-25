@@ -55,7 +55,7 @@ export const panelButtonStyles = css`
 
   .panel__btn--generate:hover {
     background: var(--color-info);
-    color: var(--color-text-inverse);
+    color: var(--color-surface);
   }
 
   .panel__btn--generate:disabled {
