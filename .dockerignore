@@ -1,0 +1,13 @@
+node_modules
+frontend/node_modules
+frontend/dist
+static/dist
+backend/.venv
+backend/__pycache__
+backend/tests
+e2e
+.git
+.claude
+*.md
+supabase
+scripts
