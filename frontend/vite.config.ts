@@ -11,7 +11,6 @@ export default defineConfig({
           'lit': ['lit', '@lit/reactive-element'],
           'signals': ['@preact/signals-core', '@lit-labs/preact-signals'],
           'router': ['@lit-labs/router'],
-          'icons': ['@tabler/icons'],
           'supabase': ['@supabase/supabase-js'],
         },
       },
