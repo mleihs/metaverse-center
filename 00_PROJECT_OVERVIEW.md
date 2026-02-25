@@ -2,7 +2,7 @@
 
 **Version:** 1.3
 **Datum:** 2026-02-25
-**Status:** Alle 5 Phasen + i18n + per-Simulation-Theming komplett. Production deployed auf Railway + hosted Supabase (siehe [19_DEPLOYMENT_INFRASTRUCTURE.md](./19_DEPLOYMENT_INFRASTRUCTURE.md))
+**Status:** Alle 5 Phasen + i18n + per-Simulation-Theming komplett. Anonymous View Audit abgeschlossen (Rate Limiting, RLS-Härtung, Service-Layer-Refactoring, Tests). Production deployed auf Railway + hosted Supabase. Alle Agenten-Portraits (13) und Gebäude-Bilder (11) via Replicate AI generiert. (Siehe [19_DEPLOYMENT_INFRASTRUCTURE.md](./19_DEPLOYMENT_INFRASTRUCTURE.md))
 
 ---
 

@@ -13,6 +13,9 @@ export class LocationsApiService extends BaseApiService {
   }
 
   getCity(simulationId: string, cityId: string): Promise<ApiResponse<City>> {
+    if (!appState.isAuthenticated.value) {
+      return this.getPublic(`/simulations/${simulationId}/locations/cities/${cityId}`);
+    }
     return this.get(`/simulations/${simulationId}/locations/cities/${cityId}`);
   }
 
@@ -38,6 +41,9 @@ export class LocationsApiService extends BaseApiService {
   }
 
   getZone(simulationId: string, zoneId: string): Promise<ApiResponse<Zone>> {
+    if (!appState.isAuthenticated.value) {
+      return this.getPublic(`/simulations/${simulationId}/locations/zones/${zoneId}`);
+    }
     return this.get(`/simulations/${simulationId}/locations/zones/${zoneId}`);
   }
 

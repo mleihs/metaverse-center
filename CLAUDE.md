@@ -15,7 +15,7 @@
 
 Multi-simulation platform rebuilt from a single-world Flask app. See `00_PROJECT_OVERVIEW.md` for full context.
 
-**Current Status:** All 5 phases complete + i18n fully implemented + codebase audit applied + architecture audit applied + lore expansion + dashboard LoreScroll + per-simulation theming + WCAG contrast validation + public-first architecture (anonymous read access). 139 tasks. 889 localized UI strings (EN/DE). Production deployed on Railway + hosted Supabase.
+**Current Status:** All 5 phases complete + i18n fully implemented + codebase audit applied + architecture audit applied + lore expansion + dashboard LoreScroll + per-simulation theming + WCAG contrast validation + public-first architecture (anonymous read access) + anonymous view audit applied. 139 tasks. 889 localized UI strings (EN/DE). Production deployed on Railway + hosted Supabase.
 
 ## Tech Stack
 
@@ -46,12 +46,12 @@ backend/              FastAPI application
   app.py              Entry point (registers 20 routers)
   config.py           Settings (pydantic-settings, extra="ignore")
   dependencies.py     JWT auth, Supabase client (user/anon/admin), role checking
-  routers/            API endpoints — 20 routers, 120+ endpoints (/api/v1/... + /api/v1/public/...)
+  routers/            API endpoints — 20 routers, 136 endpoints (/api/v1/... + /api/v1/public/...)
   models/             Pydantic request/response models (19 files)
   services/           Business logic (BaseService + 15 entity + audit + simulation + external)
   middleware/         Rate limiting, security headers
   utils/              Encryption (AES-256 for settings), search helpers
-  tests/              pytest tests (239 tests: unit + integration + security + performance)
+  tests/              pytest tests (275 tests: unit + integration + security + performance)
 frontend/             Lit + Vite application
   src/
     app-shell.ts      Main app with @lit-labs/router (auth + simulation-scoped routes)
@@ -76,12 +76,12 @@ frontend/             Lit + Vite application
     utils/            Shared utilities (text.ts, formatters.ts, error-handler.ts, icons.ts)
     types/            TypeScript interfaces (index.ts) + Zod validation schemas (validation/)
   tests/              vitest tests (183 tests: validation + API + notification + theme contrast)
-e2e/                  Playwright E2E tests (37 specs across 8 files)
+e2e/                  Playwright E2E tests (56 specs across 9 files)
   playwright.config.ts
   helpers/            auth.ts, fixtures.ts
   tests/              auth, agents, buildings, events, chat, settings, multi-user, social
 supabase/
-  migrations/         20 SQL migration files (001-018)
+  migrations/         22 SQL migration files (001-020)
   seed/               10 SQL seed files (001-010): simulation, agents, entities, social/chat, verification, prompts, sample data, image config, capybara kingdom, simulation themes
   config.toml         Local Supabase config
 scripts/              Utility scripts (image generation via Replicate)
@@ -133,6 +133,27 @@ sleep 5 && curl -s http://localhost:8000/api/v1/health && head -5 /tmp/velgarien
 
 # Docker queries (when psql not available)
 docker exec supabase_db_velgarien-rebuild psql -U postgres -c "SELECT ..."
+
+# Production Deployment
+SUPABASE_ACCESS_TOKEN=sbp_... supabase db push    # Push migrations to production
+git push origin main                                # Code deploy (Railway auto-builds)
+curl -s https://metaverse.center/api/v1/health     # Verify production health
+
+# Production DB via REST API (NOT via MCP — MCP is local only!)
+curl -s "https://bffjoupddfjaljqrwqck.supabase.co/rest/v1/TABLE?select=COLS" \
+  -H "Authorization: Bearer sb_secret_..." \
+  -H "apikey: sb_secret_..."
+
+# Production Storage Upload
+curl -X POST "https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/BUCKET/PATH" \
+  -H "Authorization: Bearer sb_secret_..." \
+  -H "apikey: sb_secret_..." \
+  -H "Content-Type: image/webp" \
+  -H "x-upsert: true" \
+  --data-binary @/tmp/image.webp
+
+# Migration repair (if db push fails due to stale temp migration)
+SUPABASE_ACCESS_TOKEN=sbp_... supabase migration repair --status reverted VERSION
 ```
 
 ## Supabase MCP
@@ -155,7 +176,9 @@ Two MCP servers configured in `.mcp.json`:
 
 **Auth:** Production uses ES256 (ECC P-256) tokens verified via JWKS. Local uses HS256 with shared secret.
 
-**Schema changes:** `supabase db push` (requires `SUPABASE_ACCESS_TOKEN` env var). Migrations 016-017 are data-only (seeds for deployed DBs). Migration 018 adds 21 anon RLS policies for public read access.
+**Schema changes:** `supabase db push` (requires `SUPABASE_ACCESS_TOKEN` env var, format `sbp_...`, from Dashboard → Avatar → Access Tokens). Migrations 016-017 are data-only (seeds for deployed DBs). Migration 018 adds 21 anon RLS policies for public read access. Migration 019 adds `idx_buildings_street` index. Migration 020 restricts `settings_anon_select` policy to `category = 'design'` only (defense in depth).
+
+**Production DB modifications:** The `mcp__supabase__*` tools are LOCAL only. For production, use the Supabase REST API with the secret key (`sb_secret_...`, from Dashboard → Settings → API), or `supabase db push` with a temporary migration file. See `19_DEPLOYMENT_INFRASTRUCTURE.md` for full procedures.
 
 **Env vars:** Railway service `metaverse-center` in project `metaverse.center`. See `.env.production.example` for required vars.
 
@@ -196,7 +219,7 @@ All endpoints under `/api/v1/`. Swagger UI at `/api/docs`. Responses use unified
 }
 ```
 
-120+ endpoints across 20 routers. Platform-level: `/api/v1/health`, `/api/v1/users/me`, `/api/v1/simulations`, `/api/v1/invitations`. Simulation-scoped: `/api/v1/simulations/{simulation_id}/agents`, `buildings`, `events`, `agent_professions`, `locations`, `taxonomies`, `settings`, `chat`, `members`, `campaigns`, `social-trends`, `social-media`, `generation`, `prompt-templates`. Public (no auth): `/api/v1/public/simulations`, `/api/v1/public/simulations/{id}/*` (GET-only, ~20 endpoints mirroring authenticated reads).
+136 endpoints across 20 routers. Platform-level: `/api/v1/health`, `/api/v1/users/me`, `/api/v1/simulations`, `/api/v1/invitations`. Simulation-scoped: `/api/v1/simulations/{simulation_id}/agents`, `buildings`, `events`, `agent_professions`, `locations`, `taxonomies`, `settings`, `chat`, `members`, `campaigns`, `social-trends`, `social-media`, `generation`, `prompt-templates`. Public (no auth, rate-limited 100/min): `/api/v1/public/simulations`, `/api/v1/public/simulations/{id}/*` (GET-only, 20 endpoints mirroring authenticated reads, delegates to service layer).
 
 ## Backend Patterns
 
@@ -208,7 +231,7 @@ All endpoints under `/api/v1/`. Swagger UI at `/api/docs`. Responses use unified
 - **Models:** `PaginatedResponse[T]`, `SuccessResponse[T]`, `ErrorResponse` in `models/common.py`
 - **BaseService:** Generic CRUD in `services/base_service.py` — uses `active_*` views for soft-delete filtering, optional `include_deleted=True` for admin queries. Set `view_name = None` for tables without soft-delete (e.g., campaigns, agent_professions, locations). Public `serialize_for_json()` utility for datetime/UUID/date conversion.
 - **Entity services:** All CRUD routers use dedicated services — `AgentService` (with `list_for_reaction()` for lightweight AI queries), `BuildingService`, `EventService` (with `generate_reactions()` for AI reaction generation), `CampaignService` (extends BaseService), `LocationService` (facade delegating to `CityService`/`ZoneService`/`StreetService`, all extending BaseService), `AgentProfessionService` (extends BaseService), `PromptTemplateService` (custom, uses `is_active` for soft-delete), `MemberService` (with `LastOwnerError` exception + `get_user_memberships()`), `SocialMediaService`, `SocialTrendsService`
-- **Public router:** `routers/public.py` — GET-only endpoints under `/api/v1/public`, uses `get_anon_supabase()` (no auth required). Mirrors authenticated read endpoints for simulations, agents, buildings, events, locations, chat, taxonomies, settings (design category only), social-media, social-trends, campaigns.
+- **Public router:** `routers/public.py` — 20 GET-only endpoints under `/api/v1/public`, rate-limited (100/min), uses `get_anon_supabase()` (no auth required). Delegates to service layer (`AgentService`, `BuildingService`, `EventService`, `LocationService`, `SettingsService`, `SocialTrendsService`, `SocialMediaService`, `CampaignService`) for query consistency. Covers simulations, agents, buildings, events, locations (cities/zones/streets with detail views), chat, taxonomies, settings (design category only), social-media, social-trends, campaigns.
 - **Router discipline:** Routers handle HTTP only — no direct DB queries, no business logic helpers, no late-binding imports. All service imports at module level. External service imports (Guardian, NewsAPI, Facebook, GenerationService) at module level.
 - **AuditService:** `services/audit_service.py` — logs CRUD operations to `audit_log` table with entity diffs. Applied to all data-changing endpoints across all routers.
 - **Search utility:** `utils/search.py` — `apply_search_filter(query, search, vector_field, fallback_fields)` for full-text search with ilike fallback
@@ -219,7 +242,7 @@ All endpoints under `/api/v1/`. Swagger UI at `/api/docs`. Responses use unified
 - Components extend `LitElement` with `@customElement('velg-...')`
 - State via Preact Signals (`appState` in `AppStateManager.ts`)
 - API calls through `BaseApiService` (auto-attaches JWT from appState). `getPublic()` method routes to `/api/v1/public/*` without Authorization header for anonymous access. Always import existing API service singletons (e.g., `simulationsApi`, `buildingsApi`) — never create inline service classes in components.
-- **Public API routing pattern:** API services check `appState.isAuthenticated.value` on read methods — if false, call `this.getPublic(path)` instead of `this.get(path)`. Applied to 10 services: Simulations, Agents, Buildings, Events, Chat, Locations, Taxonomies, Settings, SocialMedia, Campaigns.
+- **Public API routing pattern:** API services check `appState.isAuthenticated.value` on read methods — if false, call `this.getPublic(path)` instead of `this.get(path)`. Applied to 11 services: Simulations, Agents, Buildings, Events, Chat, Locations (list + detail), Taxonomies, Settings, SocialMedia, SocialTrends, Campaigns.
 - **API contract:** Backend endpoints using query params (e.g., `assign-agent?agent_id=...`, `profession-requirements?profession=...`) must use `URLSearchParams` in the frontend — never send these as JSON body. `PaginatedResponse<T>` uses `meta?: { count, total, limit, offset }` matching the backend structure.
 - Routing via `@lit-labs/router` (Reactive Controller in app-shell)
 - All types in `frontend/src/types/index.ts`

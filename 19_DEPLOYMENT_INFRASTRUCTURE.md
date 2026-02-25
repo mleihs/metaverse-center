@@ -1,6 +1,6 @@
 # 19 — Deployment Infrastructure & Dev→Prod Sync
 
-**Version:** 1.0
+**Version:** 1.1
 **Date:** 2026-02-25
 **Status:** Production deployed (Railway + hosted Supabase)
 
@@ -312,21 +312,84 @@ docker exec supabase_db_velgarien-rebuild psql -U postgres \
 
 For simple queries, use the production MCP server or the Supabase management API.
 
-### Image File Transfer
+### Image File Transfer (Proven Procedure)
 
 Images exist in 4 storage buckets:
 
-| Bucket | Content |
-|--------|---------|
-| `agent.portraits` | Agent portrait images |
-| `building.images` | Building images |
-| `user.agent.portraits` | User-created agent portraits |
-| `simulation.assets` | Simulation banners, icons, lore images |
+| Bucket | Content | Current Count |
+|--------|---------|---------------|
+| `agent.portraits` | Agent portrait images | 13 (8 Velgarien + 5 Capybara) |
+| `building.images` | Building images | 11 (6 Velgarien + 5 Capybara) |
+| `user.agent.portraits` | User-created agent portraits | 0 |
+| `simulation.assets` | Simulation banners, icons, lore images | 36 (platform assets) |
 
-Transfer approach:
-1. Download from local storage API (`http://127.0.0.1:54321/storage/v1/object/public/{bucket}/{path}`)
-2. Upload to production storage API (`https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/{bucket}/{path}`)
-3. Requires `service_role` key for production uploads
+#### Step-by-Step Transfer
+
+**Prerequisites:** Supabase secret key (`sb_secret_...`) from Dashboard → Settings → API.
+
+**1. Clean production buckets** (optional — if replacing existing images):
+
+```bash
+# List files in a bucket
+curl -s "$PROD_URL/storage/v1/object/list/agent.portraits" \
+  -H "Authorization: Bearer $SECRET_KEY" \
+  -H "apikey: $SECRET_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"prefix": "", "limit": 100}'
+
+# Delete files (batch)
+curl -s -X DELETE "$PROD_URL/storage/v1/object/agent.portraits" \
+  -H "Authorization: Bearer $SECRET_KEY" \
+  -H "apikey: $SECRET_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"prefixes": ["path/to/file1.webp", "path/to/file2.webp"]}'
+```
+
+**2. Download from local, upload to production:**
+
+```bash
+# Download from local storage (public bucket — no auth needed)
+curl -o /tmp/image.webp "http://127.0.0.1:54321/storage/v1/object/public/agent.portraits/{sim_id}/{agent_id}/{uuid}.webp"
+
+# Upload to production (requires secret key, x-upsert: true to overwrite)
+curl -X POST "$PROD_URL/storage/v1/object/agent.portraits/{sim_id}/{agent_id}/{uuid}.webp" \
+  -H "Authorization: Bearer $SECRET_KEY" \
+  -H "apikey: $SECRET_KEY" \
+  -H "Content-Type: image/webp" \
+  -H "x-upsert: true" \
+  --data-binary @/tmp/image.webp
+```
+
+**3. Update DB URLs** via the Supabase REST API (not MCP — MCP tools only connect to local):
+
+```bash
+# Update a single agent portrait URL
+curl -X PATCH "$PROD_URL/rest/v1/agents?id=eq.$AGENT_ID" \
+  -H "Authorization: Bearer $SECRET_KEY" \
+  -H "apikey: $SECRET_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Prefer: return=minimal" \
+  -d "{\"portrait_image_url\": \"$PROD_URL/storage/v1/object/public/agent.portraits/{path}\"}"
+```
+
+**Or bulk-rewrite** all localhost URLs (if images were transferred with same paths):
+
+```bash
+# This MUST run against PRODUCTION, not local.
+# Use REST API or a temporary migration — NOT the local MCP.
+```
+
+#### Important: MCP Tools Are Local-Only
+
+The `mcp__supabase__*` tools in Claude Code connect to the **local** Supabase instance (`127.0.0.1:54321`). To modify the production database:
+
+| Method | When to Use |
+|--------|-------------|
+| REST API with `sb_secret_` key | Individual row updates, storage operations |
+| `supabase db push` with temp migration | Bulk SQL (INSERT, UPDATE, DELETE) |
+| Production MCP (`mcp__supabase-prod__*`) | Read queries (if connected) |
+
+**Never run URL rewrite SQL via the local MCP** — it will modify local data instead of production.
 
 ---
 
@@ -376,6 +439,7 @@ supabase db push
 | `017_capybara_kingdom` | Capybara Kingdom simulation seed | Data-only |
 | `018_public_read_access` | 21 anon RLS policies for public read access | Schema |
 | `019_add_buildings_street_index` | Index on `buildings.street_id` | Schema |
+| `020_restrict_settings_anon_policy` | Restrict `settings_anon_select` to `category = 'design'` | Schema |
 
 ### Data-Only Migrations (016, 017)
 
@@ -460,9 +524,9 @@ Setup steps performed:
 1. Created project on Supabase dashboard
 2. Created auth user `admin@velgarien.dev` (UUID `00000000-0000-0000-0000-000000000001`) via Auth Admin API
 3. Applied 21 migrations via `supabase db push`
-4. Imported data via temporary migration
-5. Uploaded 36 images to storage buckets
-6. Rewrote image URLs from localhost to production
+4. Imported data via temporary migration (then repaired stale migration entry)
+5. Uploaded 60 images to storage buckets (36 platform assets + 13 agent portraits + 11 building images)
+6. Updated image URLs in production DB via REST API with `sb_secret_` key
 
 ### MCP Configuration
 
@@ -501,7 +565,7 @@ The backend `dependencies.py` handles both: it tries HS256 first (local), then f
 
 ## 6. Migration Lessons Learned
 
-These 8 issues were encountered during the initial production data migration. They are documented here to prevent repeating them.
+These 12 issues were encountered during production deployments. They are documented here to prevent repeating them.
 
 ### Issue 1: Auth User Must Exist Before Data Migrations
 
@@ -557,6 +621,65 @@ curl -X POST "https://bffjoupddfjaljqrwqck.supabase.co/auth/v1/admin/users" \
 **Problem:** The direct database hostname `db.bffjoupddfjaljqrwqck.supabase.co` resolves to an AAAA (IPv6) record only. Local machines without IPv6 routing cannot connect. The connection pooler resolves to IPv4 but returns "Tenant not found" errors.
 
 **Solution:** Use `supabase db push` (the CLI manages its own connection) or the management API for queries. Direct `psql` connections from local machines may not work without IPv6 support.
+
+### Issue 9: Stale Temporary Migrations Block `db push`
+
+**Problem:** After using a temporary migration file for data import (e.g., `99999999999999_temp_data_import.sql`), its version is recorded in production's `schema_migrations` table. Even after deleting the local file, `supabase db push` fails because it finds a remote migration version with no matching local file.
+
+**Solution:** Use `migration repair` to mark the stale migration as reverted:
+```bash
+SUPABASE_ACCESS_TOKEN=sbp_... supabase migration repair --status reverted 20260225200000
+```
+
+Then retry `supabase db push`. This also applies if a migration was manually applied to production (e.g., via MCP) and later added as a migration file with a different timestamp — use `repair --status applied` to register it.
+
+### Issue 10: MCP Tools Connect to Local DB, Not Production
+
+**Problem:** The `mcp__supabase__*` tools in Claude Code always connect to the local Supabase instance (`127.0.0.1:54321`). Running UPDATE/INSERT statements via MCP modifies the local database, not production. This caused accidental local URL rewriting during a production deployment.
+
+**Solution:** For production database modifications:
+- **Individual rows:** Use the Supabase REST API with `sb_secret_` key via `curl`
+- **Bulk operations:** Use a temporary migration file + `supabase db push`
+- **Read queries:** The production MCP (`mcp__supabase-prod__*`) works for SELECT queries if connected
+
+Never assume MCP tools target production. Always verify which database you're modifying.
+
+### Issue 11: Railway Pauses Free/Trial Deploys Without Warning
+
+**Problem:** After pushing to `main`, the Railway auto-deploy silently fails. No deployment appears in the deployment list. The `railway redeploy --yes` command returns `"We've paused free/trial deploys"`. Production continues serving the old build with no error indication.
+
+**Solution:** Before pushing code to production, verify Railway account status:
+```bash
+# Check deployment list — if no new deploy appears after push, account may be paused
+railway deployment list
+
+# Verify which build is actually live
+curl -s https://metaverse.center/ | grep "<title>"
+```
+
+If deploys are paused, check the Railway Dashboard for billing alerts and upgrade or add credits as needed. **Always verify the deploy actually happened** after pushing — don't assume auto-deploy worked.
+
+### Issue 12: Image UUID Mismatch After Re-Generation
+
+**Problem:** When images are re-generated locally (e.g., new Replicate runs), the UUID in the filename changes (each generation produces a new UUID). If the image files are transferred to production storage with the new UUIDs but the production DB still references the old UUIDs, images appear broken — even though the new files exist in storage.
+
+**Example:**
+```
+Production DB:  .../agent-id/OLD-UUID.webp    ← points to deleted file
+Storage:        .../agent-id/NEW-UUID.webp    ← actual file
+```
+
+**Solution:** After transferring images, **always update ALL image URLs** in the production DB — not just newly-added entities. Compare local URLs against production URLs for every entity:
+```bash
+# Compare local vs production UUIDs
+docker exec supabase_db_velgarien-rebuild psql -U postgres -t -c \
+  "SELECT name, split_part(portrait_image_url, '/', -1) FROM agents WHERE portrait_image_url IS NOT NULL ORDER BY name"
+
+curl -s "$PROD_URL/rest/v1/agents?portrait_image_url=not.is.null&select=name,portrait_image_url" \
+  -H "Authorization: Bearer $SECRET_KEY" -H "apikey: $SECRET_KEY"
+```
+
+Any UUID mismatch means the production DB URL needs updating via the REST API.
 
 ---
 
@@ -646,6 +769,12 @@ git push origin main
 # Railway detects changes in watch patterns and auto-builds
 ```
 
+**Verify deploy succeeded** (Railway can silently skip deploys if account is paused):
+```bash
+railway deployment list                              # New entry should appear
+curl -s https://metaverse.center/ | grep "<title>"   # Should reflect new build
+```
+
 ### Code-Only Deploy (No Data Changes)
 
 Most deploys are code-only. Just merge to `main` and push:
@@ -656,10 +785,20 @@ git merge feature/my-change
 git push origin main
 ```
 
-Railway handles the rest. Monitor via the Railway dashboard or:
+**Always verify the deploy actually happened:**
 ```bash
+# 1. Check Railway triggered a new deployment
+railway deployment list
+# → Look for a new entry with BUILDING or SUCCESS status after your push timestamp
+
+# 2. Verify production serves the new build (check HTML title, asset hashes, etc.)
+curl -s https://metaverse.center/ | grep "<title>"
+
+# 3. Health check
 curl -s https://metaverse.center/api/v1/health
 ```
+
+If no new deployment appears, Railway may have paused deploys (billing/trial limit). Check the Railway Dashboard. See Issue 11.
 
 ### Schema-Only Deploy (No Code Changes)
 
@@ -701,17 +840,60 @@ supabase status
 | RLS policy denied | Missing simulation_members row | Verify user is a member of the simulation |
 | ERR_TOO_MANY_REDIRECTS | Cloudflare SSL set to "Flexible" | Change to **Full (strict)** in Cloudflare SSL/TLS settings |
 | Port 8000/5173 in use (local) | Orphaned processes | Follow Server Restart sequence in CLAUDE.md |
+| `db push` fails: "Remote migration versions not found" | Stale temp migration in production | `supabase migration repair --status reverted <version>` |
+| MCP UPDATE modified local DB instead of production | MCP tools are local-only | Use REST API with `sb_secret_` key for production modifications |
+| Push to main but production unchanged | Railway paused free/trial deploys | Check Railway Dashboard billing; `railway deployment list` to verify |
+| Images uploaded but broken on production | UUID mismatch after re-generation | Update ALL image URLs in production DB, not just new ones |
 
 ### Credentials Reference
 
 **No credentials are stored in this document or in version control.**
 
-| Credential | Where to Find |
-|------------|---------------|
-| Supabase keys (production) | Supabase Dashboard → Settings → API |
-| Supabase keys (local) | `supabase status` output |
-| Railway env vars | Railway Dashboard → metaverse-center → Variables |
-| `SUPABASE_ACCESS_TOKEN` | Supabase Dashboard → Account → Access Tokens |
+#### Supabase API Keys (New Format)
+
+Supabase has transitioned from legacy JWT-based keys to a new key format. Both are available on the dashboard:
+
+| Key Type | Format | Where to Find | Purpose |
+|----------|--------|---------------|---------|
+| **Secret key** | `sb_secret_...` | Dashboard → Settings → API → "Secret keys" | Server-side operations: storage uploads, direct DB access via REST API, admin operations |
+| **Publishable key** | `sb_publishable_...` | Dashboard → Settings → API → "Publishable key" | Client-side: safe for browser, used with RLS |
+| **Legacy anon key** | `eyJhbGci...` (JWT) | Dashboard → Settings → API (scroll down) | Same as publishable, older format |
+| **Legacy service_role key** | `eyJhbGci...` (JWT) | Dashboard → Settings → API (scroll down) | Same as secret, older format |
+
+**Railway env vars** still use the legacy JWT format (`SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`). Both formats work for API calls — the new `sb_secret_` key can be used as `Authorization: Bearer sb_secret_...` and as `apikey: sb_secret_...` interchangeably with the legacy JWT keys.
+
+#### SUPABASE_ACCESS_TOKEN (CLI Authentication)
+
+This is a **separate credential** from the API keys. It authenticates the `supabase` CLI for commands like `db push`, `migration list`, etc.
+
+| Step | Action |
+|------|--------|
+| 1 | Go to [supabase.com/dashboard](https://supabase.com/dashboard) |
+| 2 | Click your **avatar** (top-right corner) |
+| 3 | Select **"Access Tokens"** |
+| 4 | Generate or copy a token (format: `sbp_...`) |
+
+**Usage:** Either set as env var or pass inline:
+```bash
+# Option 1: Export for session
+export SUPABASE_ACCESS_TOKEN=sbp_your_token_here
+
+# Option 2: Inline per command
+SUPABASE_ACCESS_TOKEN=sbp_... supabase db push
+```
+
+#### Complete Credentials Map
+
+| Credential | Format | Where to Find | Used For |
+|------------|--------|---------------|----------|
+| Supabase secret key | `sb_secret_...` | Dashboard → Settings → API | Storage API, REST API (server-side) |
+| Supabase publishable key | `sb_publishable_...` | Dashboard → Settings → API | Frontend Supabase client |
+| Supabase access token | `sbp_...` | Dashboard → Avatar → Access Tokens | CLI: `supabase db push`, `migration list` |
+| Legacy anon key | JWT (`eyJ...`) | Dashboard → Settings → API | Railway `SUPABASE_ANON_KEY` env var |
+| Legacy service_role key | JWT (`eyJ...`) | Dashboard → Settings → API | Railway `SUPABASE_SERVICE_ROLE_KEY` env var |
+| JWT secret | string | Dashboard → Settings → API → JWT Settings | Railway `SUPABASE_JWT_SECRET` env var |
+| Railway env vars | varies | Railway Dashboard → metaverse-center → Variables | Backend config |
+| Production user | email/password | `admin@velgarien.dev` | Auth for production API calls |
 
 See `.env.production.example` for the full list of required environment variables.
 
