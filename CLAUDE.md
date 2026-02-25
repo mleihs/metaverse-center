@@ -1,4 +1,4 @@
-# Velgarien Platform — Development Guidelines
+# metaverse.center — Development Guidelines
 
 ## Core Principles
 

@@ -1066,10 +1066,6 @@
   <source>Content Locale</source>
   <target>Inhaltssprache</target>
 </trans-unit>
-<trans-unit id="s33ecb6a0475f10b9">
-  <source>Import Velgarien defaults</source>
-  <target>Velgarien-Standardwerte importieren</target>
-</trans-unit>
 <trans-unit id="s6c8a9318626d9892">
   <source>Start with the standard set of taxonomies for professions, building types, and more.</source>
   <target>Starte mit dem Standardsatz an Taxonomien für Berufe, Gebäudetypen und mehr.</target>
@@ -1189,10 +1185,6 @@
 <trans-unit id="s7f59f507e02a2f38">
   <source>View</source>
   <target>Ansehen</target>
-</trans-unit>
-<trans-unit id="s3e042b4d7919b2b6">
-  <source>Velgarien</source>
-  <target>Velgarien</target>
 </trans-unit>
 <trans-unit id="sf05411f156e17c04">
   <source>Simulation:</source>
@@ -2985,10 +2977,6 @@
   <source>Enter Shard</source>
   <target>Scherbe betreten</target>
 </trans-unit>
-<trans-unit id="sba76034e2f6cea8e">
-  <source>The Cartographer's Map</source>
-  <target>Die Karte des Kartographen</target>
-</trans-unit>
 <trans-unit id="s61f8c04d625ecfcd">
   <source>There was once a single world. Something broke it into shards. Each shard runs on its own rules, its own physics of power. The edges don't quite fit together anymore. But they do touch.</source>
   <target>Es gab einst eine einzige Welt. Etwas zerbrach sie in Scherben. Jede Scherbe folgt ihren eigenen Regeln, ihrer eigenen Physik der Macht. Die Ränder passen nicht mehr ganz zusammen. Aber sie berühren sich.</target>
@@ -3796,6 +3784,18 @@ Die Karte liegt offen. Die Scherben warten. Welche Welt betrittst du zuerst?</ta
 <trans-unit id="sc9c1228bb02d8b37">
   <source>Sign in to start conversations and chat with agents</source>
   <target>Melde dich an, um Konversationen zu starten und mit Agenten zu chatten</target>
+</trans-unit>
+<trans-unit id="s0d9c722d31aa3f05">
+  <source>Import metaverse.center defaults</source>
+  <target>metaverse.center-Standardwerte importieren</target>
+</trans-unit>
+<trans-unit id="s5edf033e63a8e428">
+  <source>metaverse.center</source>
+  <target>metaverse.center</target>
+</trans-unit>
+<trans-unit id="s26b5a43720f4c1ca">
+  <source>The Cartographer's Metaverse</source>
+  <target>Das Metaversum des Kartographen</target>
 </trans-unit>
 
 </body>

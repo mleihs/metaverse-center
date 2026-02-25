@@ -1,4 +1,4 @@
-# 00 - Project Overview: Velgarien Multi-Simulations-Plattform
+# 00 - Project Overview: metaverse.center Multi-Simulations-Plattform
 
 **Version:** 1.3
 **Datum:** 2026-02-25
@@ -8,7 +8,7 @@
 
 ## Vision
 
-Die **Velgarien Multi-Simulations-Plattform** ist ein Neuaufbau des bestehenden Velgarien-Projekts. Statt einer einzelnen hartcodierten dystopischen Welt wird eine **generische Plattform** geschaffen, auf der beliebig viele Weltensimulationen erstellt, konfiguriert und verwaltet werden können.
+Die **metaverse.center Multi-Simulations-Plattform** ist ein Neuaufbau des bestehenden Velgarien-Projekts. Statt einer einzelnen hartcodierten dystopischen Welt wird eine **generische Plattform** geschaffen, auf der beliebig viele Weltensimulationen erstellt, konfiguriert und verwaltet werden können.
 
 **Velgarien** wird dabei zur **ersten Simulation** und Referenz-Implementation auf dieser Plattform.
 

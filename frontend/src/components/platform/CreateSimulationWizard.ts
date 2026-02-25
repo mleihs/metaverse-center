@@ -601,7 +601,7 @@ export class VelgCreateSimulationWizard extends LitElement {
     const options: Array<{ value: TaxonomyChoice; title: string; desc: string }> = [
       {
         value: 'defaults',
-        title: msg('Import Velgarien defaults'),
+        title: msg('Import metaverse.center defaults'),
         desc: msg(
           'Start with the standard set of taxonomies for professions, building types, and more.',
         ),
@@ -664,7 +664,7 @@ export class VelgCreateSimulationWizard extends LitElement {
     };
 
     const taxonomyLabels: Record<TaxonomyChoice, string> = {
-      defaults: msg('Import Velgarien defaults'),
+      defaults: msg('Import metaverse.center defaults'),
       empty: msg('Start empty'),
       custom: msg('Custom'),
     };

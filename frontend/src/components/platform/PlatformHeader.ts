@@ -157,7 +157,7 @@ export class VelgPlatformHeader extends LitElement {
     return html`
       <div class="header">
         <div class="header__left">
-          <span class="header__title" @click=${this._handleTitleClick}>${msg('Velgarien')}</span>
+          <span class="header__title" @click=${this._handleTitleClick}>${msg('metaverse.center')}</span>
 
           ${
             this._simulations.length > 0

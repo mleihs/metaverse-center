@@ -358,7 +358,7 @@ export class VelgSimulationsDashboard extends LitElement {
         ></div>
         <div class="hero__noise"></div>
         <div class="hero__overlay">
-          <h1 class="hero__title">${msg("The Cartographer's Map")}</h1>
+          <h1 class="hero__title">${msg("The Cartographer's Metaverse")}</h1>
           <p class="hero__lore">
             ${msg("There was once a single world. Something broke it into shards. Each shard runs on its own rules, its own physics of power. The edges don't quite fit together anymore. But they do touch.")}
           </p>

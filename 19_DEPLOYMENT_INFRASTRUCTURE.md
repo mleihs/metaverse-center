@@ -351,7 +351,7 @@ supabase db push
 # and applies only new ones
 ```
 
-### Migration File Inventory (19 Files)
+### Migration File Inventory (21 Files)
 
 | Migration | Content | Type |
 |-----------|---------|------|
@@ -374,6 +374,8 @@ supabase db push
 | `015_cleanup` | Schema cleanup and fixes | Schema |
 | `016_image_gen_config` | Image generation config seed data | Data-only |
 | `017_capybara_kingdom` | Capybara Kingdom simulation seed | Data-only |
+| `018_public_read_access` | 21 anon RLS policies for public read access | Schema |
+| `019_add_buildings_street_index` | Index on `buildings.street_id` | Schema |
 
 ### Data-Only Migrations (016, 017)
 
@@ -457,7 +459,7 @@ See `.env.production.example` for the full list including optional AI/external s
 Setup steps performed:
 1. Created project on Supabase dashboard
 2. Created auth user `admin@velgarien.dev` (UUID `00000000-0000-0000-0000-000000000001`) via Auth Admin API
-3. Applied 19 migrations via `supabase db push`
+3. Applied 21 migrations via `supabase db push`
 4. Imported data via temporary migration
 5. Uploaded 36 images to storage buckets
 6. Rewrote image URLs from localhost to production
