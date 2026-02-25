@@ -1,6 +1,7 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { appState } from '../../services/AppStateManager.js';
 import { eventsApi } from '../../services/api/index.js';
 import { generationProgress } from '../../services/GenerationProgressService.js';
 import type { EventReaction, Event as SimEvent } from '../../types/index.js';
@@ -288,7 +289,7 @@ export class VelgEventDetailsPanel extends LitElement {
   }
 
   private async _loadReactions(): Promise<void> {
-    if (!this.event || !this.simulationId) return;
+    if (!this.event || !this.simulationId || !appState.isAuthenticated.value) return;
 
     this._reactionsLoading = true;
     try {
@@ -609,31 +610,37 @@ export class VelgEventDetailsPanel extends LitElement {
                 </div>
               </div>
 
-              <button
-                slot="footer"
-                class="panel__btn panel__btn--generate"
-                @click=${this._handleGenerateReactions}
-                ?disabled=${this._generatingReactions}
-              >
-                ${icons.brain()}
-                ${this._generatingReactions ? msg('Generating...') : msg('Generate Reactions')}
-              </button>
-              <button
-                slot="footer"
-                class="panel__btn panel__btn--edit"
-                @click=${this._handleEdit}
-              >
-                ${icons.edit()}
-                ${msg('Edit')}
-              </button>
-              <button
-                slot="footer"
-                class="panel__btn panel__btn--danger"
-                @click=${this._handleDelete}
-              >
-                ${icons.trash()}
-                ${msg('Delete')}
-              </button>
+              ${
+                appState.canEdit.value
+                  ? html`
+                <button
+                  slot="footer"
+                  class="panel__btn panel__btn--generate"
+                  @click=${this._handleGenerateReactions}
+                  ?disabled=${this._generatingReactions}
+                >
+                  ${icons.brain()}
+                  ${this._generatingReactions ? msg('Generating...') : msg('Generate Reactions')}
+                </button>
+                <button
+                  slot="footer"
+                  class="panel__btn panel__btn--edit"
+                  @click=${this._handleEdit}
+                >
+                  ${icons.edit()}
+                  ${msg('Edit')}
+                </button>
+                <button
+                  slot="footer"
+                  class="panel__btn panel__btn--danger"
+                  @click=${this._handleDelete}
+                >
+                  ${icons.trash()}
+                  ${msg('Delete')}
+                </button>
+              `
+                  : nothing
+              }
             `
             : html`
               <div slot="content">

@@ -1,10 +1,14 @@
 import type { ApiResponse, City, CityStreet, Zone } from '../../types/index.js';
+import { appState } from '../AppStateManager.js';
 import { BaseApiService } from './BaseApiService.js';
 
 export class LocationsApiService extends BaseApiService {
   // --- Cities ---
 
   listCities(simulationId: string, params?: Record<string, string>): Promise<ApiResponse<City[]>> {
+    if (!appState.isAuthenticated.value) {
+      return this.getPublic(`/simulations/${simulationId}/locations/cities`, params);
+    }
     return this.get(`/simulations/${simulationId}/locations/cities`, params);
   }
 
@@ -27,6 +31,9 @@ export class LocationsApiService extends BaseApiService {
   // --- Zones ---
 
   listZones(simulationId: string, params?: Record<string, string>): Promise<ApiResponse<Zone[]>> {
+    if (!appState.isAuthenticated.value) {
+      return this.getPublic(`/simulations/${simulationId}/locations/zones`, params);
+    }
     return this.get(`/simulations/${simulationId}/locations/zones`, params);
   }
 
@@ -52,6 +59,9 @@ export class LocationsApiService extends BaseApiService {
     simulationId: string,
     params?: Record<string, string>,
   ): Promise<ApiResponse<CityStreet[]>> {
+    if (!appState.isAuthenticated.value) {
+      return this.getPublic(`/simulations/${simulationId}/locations/streets`, params);
+    }
     return this.get(`/simulations/${simulationId}/locations/streets`, params);
   }
 

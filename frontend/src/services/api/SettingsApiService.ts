@@ -1,4 +1,5 @@
 import type { ApiResponse, SettingCategory, SimulationSetting } from '../../types/index.js';
+import { appState } from '../AppStateManager.js';
 import { BaseApiService } from './BaseApiService.js';
 
 export class SettingsApiService extends BaseApiService {
@@ -6,6 +7,9 @@ export class SettingsApiService extends BaseApiService {
     simulationId: string,
     category?: SettingCategory,
   ): Promise<ApiResponse<SimulationSetting[]>> {
+    if (!appState.isAuthenticated.value) {
+      return this.getPublic(`/simulations/${simulationId}/settings`);
+    }
     const params = category ? { category } : undefined;
     return this.get(`/simulations/${simulationId}/settings`, params);
   }
@@ -14,6 +18,9 @@ export class SettingsApiService extends BaseApiService {
     simulationId: string,
     category: SettingCategory,
   ): Promise<ApiResponse<SimulationSetting[]>> {
+    if (!appState.isAuthenticated.value) {
+      return this.getPublic(`/simulations/${simulationId}/settings`);
+    }
     return this.get(`/simulations/${simulationId}/settings`, { category });
   }
 

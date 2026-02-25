@@ -3781,6 +3781,22 @@ Die Karte liegt offen. Die Scherben warten. Welche Welt betrittst du zuerst?</ta
   <source>Tinted background for warning messages and caution indicators.</source>
   <target>Getönter Hintergrund für Warnmeldungen und Vorsichtshinweise.</target>
 </trans-unit>
+<trans-unit id="sdb26de56d7d43d18">
+  <source>Invalid email or password.</source>
+  <target>Ungültige E-Mail oder Passwort.</target>
+</trans-unit>
+<trans-unit id="sd4834a205d67ccdf">
+  <source>Signing in...</source>
+  <target>Anmeldung läuft...</target>
+</trans-unit>
+<trans-unit id="scad07cc65ad2fb30">
+  <source>Don't have an account?</source>
+  <target>Noch kein Konto?</target>
+</trans-unit>
+<trans-unit id="sc9c1228bb02d8b37">
+  <source>Sign in to start conversations and chat with agents</source>
+  <target>Melde dich an, um Konversationen zu starten und mit Agenten zu chatten</target>
+</trans-unit>
 
 </body>
 </file>

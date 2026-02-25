@@ -5,6 +5,7 @@ import type {
   SocialMediaComment,
   SocialMediaPost,
 } from '../../types/index.js';
+import { appState } from '../AppStateManager.js';
 import { BaseApiService } from './BaseApiService.js';
 
 export class SocialMediaApiService extends BaseApiService {
@@ -12,6 +13,9 @@ export class SocialMediaApiService extends BaseApiService {
     simulationId: string,
     params?: Record<string, string>,
   ): Promise<ApiResponse<PaginatedResponse<SocialMediaPost>>> {
+    if (!appState.isAuthenticated.value) {
+      return this.getPublic(`/simulations/${simulationId}/social-media`, params);
+    }
     return this.get(`/simulations/${simulationId}/social-media/posts`, params);
   }
 

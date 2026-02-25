@@ -4,6 +4,7 @@ import type {
   SimulationTaxonomy,
   TaxonomyType,
 } from '../../types/index.js';
+import { appState } from '../AppStateManager.js';
 import { BaseApiService } from './BaseApiService.js';
 
 export class TaxonomiesApiService extends BaseApiService {
@@ -11,6 +12,9 @@ export class TaxonomiesApiService extends BaseApiService {
     simulationId: string,
     params?: Record<string, string>,
   ): Promise<ApiResponse<PaginatedResponse<SimulationTaxonomy>>> {
+    if (!appState.isAuthenticated.value) {
+      return this.getPublic(`/simulations/${simulationId}/taxonomies`, params);
+    }
     return this.get(`/simulations/${simulationId}/taxonomies`, params);
   }
 

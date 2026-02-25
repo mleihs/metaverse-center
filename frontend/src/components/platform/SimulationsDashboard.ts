@@ -301,7 +301,7 @@ export class VelgSimulationsDashboard extends LitElement {
     try {
       const response = await simulationsApi.list();
       const items = Array.isArray(response.data) ? response.data : [];
-      if (response.success && items.length > 0) {
+      if (response.success) {
         this._simulations = items;
         appState.setSimulations(items);
       } else {
@@ -384,9 +384,15 @@ export class VelgSimulationsDashboard extends LitElement {
             <div class="empty-state__text">
               ${msg('Fracture reality and create your first shard — a world with its own agents, buildings, and events.')}
             </div>
-            <button class="btn-fracture" @click=${this._handleCreateClick}>
-              ${msg('Fracture a New Shard')}
-            </button>
+            ${
+              appState.isAuthenticated.value
+                ? html`
+              <button class="btn-fracture" @click=${this._handleCreateClick}>
+                ${msg('Fracture a New Shard')}
+              </button>
+            `
+                : null
+            }
           </div>
         `
           : html`
@@ -395,9 +401,15 @@ export class VelgSimulationsDashboard extends LitElement {
               <h2 class="shards-header__title">${msg('Active Shards')}</h2>
               <span class="shards-header__count">${count} ${msg('worlds')}</span>
               <div class="shards-header__spacer"></div>
-              <button class="btn-fracture" @click=${this._handleCreateClick}>
-                ${msg('Fracture a New Shard')}
-              </button>
+              ${
+                appState.isAuthenticated.value
+                  ? html`
+                <button class="btn-fracture" @click=${this._handleCreateClick}>
+                  ${msg('Fracture a New Shard')}
+                </button>
+              `
+                  : null
+              }
             </div>
 
             <div class="shards-grid">

@@ -1,6 +1,7 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { appState } from '../../services/AppStateManager.js';
 import { chatApi } from '../../services/api/index.js';
 import type {
   Agent,
@@ -109,6 +110,23 @@ export class VelgChatView extends LitElement {
 
     .main-area {
       overflow: hidden;
+    }
+
+    .sign-in-banner {
+      padding: var(--space-3) var(--space-4);
+      background: var(--color-info-bg);
+      border-bottom: 1px solid var(--color-info-border);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--color-text-secondary);
+      text-align: center;
+    }
+
+    .sign-in-banner a {
+      color: var(--color-text-link);
+      text-decoration: underline;
+      cursor: pointer;
+      font-weight: var(--font-bold);
     }
   `;
 
@@ -402,14 +420,30 @@ export class VelgChatView extends LitElement {
         <div class="sidebar">
           <div class="sidebar__header">
             <div class="sidebar__title">${msg('Conversations')}</div>
-            <button class="sidebar__new-btn" @click=${this._handleNewConversation}>
-              ${msg('+ New')}
-            </button>
+            ${
+              appState.isAuthenticated.value
+                ? html`
+              <button class="sidebar__new-btn" @click=${this._handleNewConversation}>
+                ${msg('+ New')}
+              </button>
+            `
+                : null
+            }
           </div>
+          ${
+            !appState.isAuthenticated.value
+              ? html`
+            <div class="sign-in-banner">
+              ${msg('Sign in to start conversations and chat with agents')}
+            </div>
+          `
+              : null
+          }
           <div class="sidebar__list">
             <velg-conversation-list
               .conversations=${this._conversations}
               .selectedId=${this._selectedConversation?.id ?? ''}
+              ?readonly=${!appState.isAuthenticated.value}
               @conversation-select=${this._handleConversationSelect}
               @conversation-archive=${this._handleConversationArchive}
               @conversation-delete=${this._handleConversationDelete}

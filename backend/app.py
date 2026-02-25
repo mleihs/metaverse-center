@@ -24,6 +24,7 @@ from backend.routers import (
     locations,
     members,
     prompt_templates,
+    public,
     settings,
     simulations,
     social_media,
@@ -93,6 +94,7 @@ app.include_router(prompt_templates.router)
 app.include_router(invitations.router)
 app.include_router(social_trends.router)
 app.include_router(social_media.router)
+app.include_router(public.router)
 
 # --- Static Files (Production SPA) ---
 # Serves the built frontend from static/dist/ if available.

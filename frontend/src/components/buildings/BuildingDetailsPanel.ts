@@ -1,6 +1,7 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { appState } from '../../services/AppStateManager.js';
 import { buildingsApi } from '../../services/api/index.js';
 import type { Building, BuildingAgentRelation } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
@@ -167,6 +168,7 @@ export class VelgBuildingDetailsPanel extends LitElement {
       return;
     }
 
+    if (!appState.isAuthenticated.value) return;
     this._loadingAgents = true;
     try {
       const response = await buildingsApi.getAgents(this.simulationId, this.building.id);
@@ -362,12 +364,18 @@ export class VelgBuildingDetailsPanel extends LitElement {
                 </div>
               </div>
 
-              <button slot="footer" class="panel__btn panel__btn--edit" @click=${this._handleEdit}>
-                ${msg('Edit')}
-              </button>
-              <button slot="footer" class="panel__btn panel__btn--danger" @click=${this._handleDelete}>
-                ${msg('Delete')}
-              </button>
+              ${
+                appState.canEdit.value
+                  ? html`
+                <button slot="footer" class="panel__btn panel__btn--edit" @click=${this._handleEdit}>
+                  ${msg('Edit')}
+                </button>
+                <button slot="footer" class="panel__btn panel__btn--danger" @click=${this._handleDelete}>
+                  ${msg('Delete')}
+                </button>
+              `
+                  : nothing
+              }
             `
             : nothing
         }

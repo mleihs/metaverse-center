@@ -1,4 +1,5 @@
 import type { ApiResponse, Event, EventReaction, PaginatedResponse } from '../../types/index.js';
+import { appState } from '../AppStateManager.js';
 import { BaseApiService } from './BaseApiService.js';
 
 export class EventsApiService extends BaseApiService {
@@ -6,10 +7,16 @@ export class EventsApiService extends BaseApiService {
     simulationId: string,
     params?: Record<string, string>,
   ): Promise<ApiResponse<PaginatedResponse<Event>>> {
+    if (!appState.isAuthenticated.value) {
+      return this.getPublic(`/simulations/${simulationId}/events`, params);
+    }
     return this.get(`/simulations/${simulationId}/events`, params);
   }
 
   getById(simulationId: string, eventId: string): Promise<ApiResponse<Event>> {
+    if (!appState.isAuthenticated.value) {
+      return this.getPublic(`/simulations/${simulationId}/events/${eventId}`);
+    }
     return this.get(`/simulations/${simulationId}/events/${eventId}`);
   }
 

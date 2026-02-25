@@ -173,6 +173,7 @@ export class VelgConversationList extends LitElement {
 
   @property({ type: Array }) conversations: ChatConversation[] = [];
   @property({ type: String }) selectedId = '';
+  @property({ type: Boolean }) readonly = false;
 
   private _formatTime(dateString: string | undefined): string {
     if (!dateString) return '';
@@ -320,16 +321,23 @@ export class VelgConversationList extends LitElement {
             conversation.status === 'archived'
               ? html`
                 <div class="conversation__status">${msg('Archived')}</div>
-                <div class="conversation__actions">
-                  <button
-                    class="conversation__action-btn"
-                    @click=${(e: Event) => this._handleDelete(e, conversation)}
-                  >
-                    ${msg('Delete')}
-                  </button>
-                </div>
+                ${
+                  !this.readonly
+                    ? html`
+                  <div class="conversation__actions">
+                    <button
+                      class="conversation__action-btn"
+                      @click=${(e: Event) => this._handleDelete(e, conversation)}
+                    >
+                      ${msg('Delete')}
+                    </button>
+                  </div>
+                `
+                    : null
+                }
               `
-              : html`
+              : !this.readonly
+                ? html`
                 <div class="conversation__actions">
                   <button
                     class="conversation__action-btn"
@@ -345,6 +353,7 @@ export class VelgConversationList extends LitElement {
                   </button>
                 </div>
               `
+                : null
           }
         </div>
       </div>

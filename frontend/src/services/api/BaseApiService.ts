@@ -100,6 +100,47 @@ export class BaseApiService {
     return this.request<T>('GET', path, undefined, params);
   }
 
+  /**
+   * Public GET — routes to /api/v1/public prefix, no Authorization header.
+   * Used for anonymous read access to active simulation data.
+   */
+  protected getPublic<T>(path: string, params?: Record<string, string>): Promise<ApiResponse<T>> {
+    const url = this.buildUrl(`/public${path}`, params);
+    return this.requestRaw<T>(url);
+  }
+
+  private async requestRaw<T>(url: string): Promise<ApiResponse<T>> {
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        let errorCode = `HTTP_${response.status}`;
+        let errorMessage = response.statusText;
+        try {
+          const json = await response.json();
+          errorCode = json.code || errorCode;
+          errorMessage = json.message || json.detail || errorMessage;
+        } catch {
+          // Response body is not JSON
+        }
+        return { success: false, error: { code: errorCode, message: errorMessage } };
+      }
+
+      const json = await response.json();
+      return {
+        success: true,
+        data: json.data !== undefined ? json.data : json,
+        meta: json.meta,
+      };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'An unknown error occurred';
+      return { success: false, error: { code: 'NETWORK_ERROR', message } };
+    }
+  }
+
   protected post<T>(path: string, body?: unknown): Promise<ApiResponse<T>> {
     return this.request<T>('POST', path, body);
   }

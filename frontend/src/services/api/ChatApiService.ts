@@ -5,10 +5,14 @@ import type {
   ChatMessage,
   PaginatedResponse,
 } from '../../types/index.js';
+import { appState } from '../AppStateManager.js';
 import { BaseApiService } from './BaseApiService.js';
 
 export class ChatApiService extends BaseApiService {
   listConversations(simulationId: string): Promise<ApiResponse<ChatConversation[]>> {
+    if (!appState.isAuthenticated.value) {
+      return this.getPublic(`/simulations/${simulationId}/chat/conversations`);
+    }
     return this.get(`/simulations/${simulationId}/chat/conversations`);
   }
 
@@ -24,6 +28,12 @@ export class ChatApiService extends BaseApiService {
     conversationId: string,
     params?: Record<string, string>,
   ): Promise<ApiResponse<PaginatedResponse<ChatMessage>>> {
+    if (!appState.isAuthenticated.value) {
+      return this.getPublic(
+        `/simulations/${simulationId}/chat/conversations/${conversationId}/messages`,
+        params,
+      );
+    }
     return this.get(
       `/simulations/${simulationId}/chat/conversations/${conversationId}/messages`,
       params,

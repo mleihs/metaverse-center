@@ -1,7 +1,7 @@
 import { localized, msg } from '@lit/localize';
 import { Router } from '@lit-labs/router';
 import type { TemplateResult } from 'lit';
-import { css, html, LitElement } from 'lit';
+import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from './services/AppStateManager.js';
 import { membersApi, settingsApi, taxonomiesApi } from './services/api/index.js';
@@ -9,6 +9,7 @@ import { localeService } from './services/i18n/locale-service.js';
 import { authService } from './services/supabase/SupabaseAuthService.js';
 
 import './components/auth/LoginView.js';
+import './components/auth/LoginPanel.js';
 import './components/auth/RegisterView.js';
 import './components/platform/PlatformHeader.js';
 import './components/platform/SimulationsDashboard.js';
@@ -95,7 +96,10 @@ export class VelgApp extends LitElement {
       {
         path: '/dashboard',
         render: () => html`<velg-simulations-dashboard></velg-simulations-dashboard>`,
-        enter: async () => this._guardAuth(),
+        enter: async () => {
+          await this._authReady;
+          return true;
+        },
       },
       {
         path: '/invitations/:token',
@@ -112,36 +116,54 @@ export class VelgApp extends LitElement {
         render: () => html`<velg-create-simulation-wizard open></velg-create-simulation-wizard>`,
         enter: async () => this._guardAuth(),
       },
-      // --- Simulation-scoped routes ---
+      // --- Simulation-scoped routes (public read, auth for mutations) ---
       {
         path: '/simulations/:id/agents',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'agents'),
-        enter: async () => this._guardAuth(),
+        enter: async () => {
+          await this._authReady;
+          return true;
+        },
       },
       {
         path: '/simulations/:id/buildings',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'buildings'),
-        enter: async () => this._guardAuth(),
+        enter: async () => {
+          await this._authReady;
+          return true;
+        },
       },
       {
         path: '/simulations/:id/events',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'events'),
-        enter: async () => this._guardAuth(),
+        enter: async () => {
+          await this._authReady;
+          return true;
+        },
       },
       {
         path: '/simulations/:id/chat',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'chat'),
-        enter: async () => this._guardAuth(),
+        enter: async () => {
+          await this._authReady;
+          return true;
+        },
       },
       {
         path: '/simulations/:id/social',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'social'),
-        enter: async () => this._guardAuth(),
+        enter: async () => {
+          await this._authReady;
+          return true;
+        },
       },
       {
         path: '/simulations/:id/locations',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'locations'),
-        enter: async () => this._guardAuth(),
+        enter: async () => {
+          await this._authReady;
+          return true;
+        },
       },
       {
         path: '/simulations/:id/settings',
@@ -153,23 +175,20 @@ export class VelgApp extends LitElement {
         render: () => html``,
         enter: async () => {
           await this._authReady;
-          if (appState.isAuthenticated.value) {
-            this._router.goto('/dashboard');
-          } else {
-            this._router.goto('/login');
-          }
+          this._router.goto('/dashboard');
           return false;
         },
       },
     ],
     {
       fallback: {
-        render: () => html`<velg-login-view></velg-login-view>`,
+        render: () => html`<velg-simulations-dashboard></velg-simulations-dashboard>`,
       },
     },
   );
 
   @state() private _initializing = true;
+  @state() private _showLoginPanel = false;
 
   // Auth-ready gate: route guards await this before checking isAuthenticated.
   // Resolves after authService.initialize() completes (session restored or absent).
@@ -187,16 +206,28 @@ export class VelgApp extends LitElement {
     super.connectedCallback();
     await localeService.initLocale();
     this.addEventListener('navigate', this._handleNavigate as EventListener);
+    this.addEventListener('login-panel-open', this._handleLoginPanelOpen as EventListener);
+    this.addEventListener('login-panel-close', this._handleLoginPanelClose as EventListener);
     await this._initAuth();
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
     this.removeEventListener('navigate', this._handleNavigate as EventListener);
+    this.removeEventListener('login-panel-open', this._handleLoginPanelOpen as EventListener);
+    this.removeEventListener('login-panel-close', this._handleLoginPanelClose as EventListener);
   }
 
   private _handleNavigate = (e: CustomEvent<string>): void => {
     this._router.goto(e.detail);
+  };
+
+  private _handleLoginPanelOpen = (): void => {
+    this._showLoginPanel = true;
+  };
+
+  private _handleLoginPanelClose = (): void => {
+    this._showLoginPanel = false;
   };
 
   /** Wait for auth to be ready, then check if user is authenticated. */
@@ -235,28 +266,45 @@ export class VelgApp extends LitElement {
     if (this._lastLoadedSimulationId === simulationId) return;
     this._lastLoadedSimulationId = simulationId;
 
-    // Load taxonomies, member role, and design settings in parallel
-    const [taxResponse, membersResponse, settingsResponse] = await Promise.all([
-      taxonomiesApi.list(simulationId, { limit: '500' }),
-      membersApi.list(simulationId),
-      settingsApi.list(simulationId, 'design'),
-    ]);
+    if (appState.isAuthenticated.value) {
+      // Authenticated: load taxonomies, member role, and design settings in parallel
+      const [taxResponse, membersResponse, settingsResponse] = await Promise.all([
+        taxonomiesApi.list(simulationId, { limit: '500' }),
+        membersApi.list(simulationId),
+        settingsApi.list(simulationId, 'design'),
+      ]);
 
-    if (taxResponse.success && taxResponse.data) {
-      appState.setTaxonomies(Array.isArray(taxResponse.data) ? taxResponse.data : []);
-    }
-
-    if (membersResponse.success && membersResponse.data) {
-      const members = Array.isArray(membersResponse.data) ? membersResponse.data : [];
-      const userId = appState.user.value?.id;
-      const me = members.find((m) => m.user_id === userId);
-      if (me) {
-        appState.setCurrentRole(me.member_role as 'owner' | 'admin' | 'editor' | 'viewer');
+      if (taxResponse.success && taxResponse.data) {
+        appState.setTaxonomies(Array.isArray(taxResponse.data) ? taxResponse.data : []);
       }
-    }
 
-    if (settingsResponse.success && settingsResponse.data) {
-      appState.setSettings(Array.isArray(settingsResponse.data) ? settingsResponse.data : []);
+      if (membersResponse.success && membersResponse.data) {
+        const members = Array.isArray(membersResponse.data) ? membersResponse.data : [];
+        const userId = appState.user.value?.id;
+        const me = members.find((m) => m.user_id === userId);
+        if (me) {
+          appState.setCurrentRole(me.member_role as 'owner' | 'admin' | 'editor' | 'viewer');
+        }
+      }
+
+      if (settingsResponse.success && settingsResponse.data) {
+        appState.setSettings(Array.isArray(settingsResponse.data) ? settingsResponse.data : []);
+      }
+    } else {
+      // Anonymous: load taxonomies + design settings via public API, skip members
+      appState.setCurrentRole(null);
+      const [taxResponse, settingsResponse] = await Promise.all([
+        taxonomiesApi.list(simulationId, { limit: '500' }),
+        settingsApi.list(simulationId, 'design'),
+      ]);
+
+      if (taxResponse.success && taxResponse.data) {
+        appState.setTaxonomies(Array.isArray(taxResponse.data) ? taxResponse.data : []);
+      }
+
+      if (settingsResponse.success && settingsResponse.data) {
+        appState.setSettings(Array.isArray(settingsResponse.data) ? settingsResponse.data : []);
+      }
     }
   }
 
@@ -309,10 +357,11 @@ export class VelgApp extends LitElement {
     }
 
     return html`
-      ${appState.isAuthenticated.value ? html`<velg-platform-header></velg-platform-header>` : null}
+      <velg-platform-header></velg-platform-header>
       <main class="app-main">
         ${this._router.outlet()}
       </main>
+      ${this._showLoginPanel ? html`<velg-login-panel></velg-login-panel>` : nothing}
     `;
   }
 }

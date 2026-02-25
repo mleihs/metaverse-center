@@ -1,6 +1,7 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, svg, type TemplateResult } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
+import { appState } from '../../services/AppStateManager.js';
 import { chatApi } from '../../services/api/index.js';
 import type {
   AgentBrief,
@@ -668,10 +669,16 @@ export class VelgChatWindow extends LitElement {
             : null
         }
 
-        <velg-message-input
-          ?disabled=${this._sending || this._aiTyping || isArchived}
-          @send-message=${this._handleSendMessage}
-        ></velg-message-input>
+        ${
+          appState.isAuthenticated.value
+            ? html`
+          <velg-message-input
+            ?disabled=${this._sending || this._aiTyping || isArchived}
+            @send-message=${this._handleSendMessage}
+          ></velg-message-input>
+        `
+            : null
+        }
       </div>
 
       <velg-lightbox

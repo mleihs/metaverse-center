@@ -770,9 +770,11 @@ Was wir über den Ersten Kartographen wissen, stammt von seinem Instrument: der 
 'sc8f1cc9b4bbf0a02': str`Bevölkerung: ${0}`,
 'sc99474f4edfadd8f': `Brutalistisch`,
 'sc9be08c738fe2a54': `Hover-Zustand primärer Elemente. Etwas heller oder dunkler als die Primärfarbe.`,
+'sc9c1228bb02d8b37': `Melde dich an, um Konversationen zu starten und mit Agenten zu chatten`,
 'sc9d9798d6939227d': `Flux Dev + LoRA (benutzerdefinierter Stil)`,
 'sc9e36319670bfb2c': `Noch keine Nachrichten`,
 'scab632ef90c76c45': `Fehler beim Deaktivieren der Vorlage`,
+'scad07cc65ad2fb30': `Noch kein Konto?`,
 'scadea4de00d91108': `Drei Denkschulen existieren unter den Kartographen:
 
 Die Absolutisten vertreten, dass Scherbengrenzen fest und messbar sind — Membranen, die kartiert und schließlich durch Geometrie durchbrochen werden können. Sie bauen Instrumente. Ihre Instrumente funktionieren gelegentlich für ungefähr dreißig Sekunden, bevor sie schmelzen, sich in Singvögel verwandeln oder darauf bestehen, schon immer Teetassen gewesen zu sein.
@@ -826,6 +828,7 @@ Das Büro unterstützt offiziell keine dieser Schulen und finanziert alle drei.`
 'sd3c149daeefc07d8': `Meine Simulation...`,
 'sd3cb6b8b1a427c31': `Sekundär`,
 'sd3fe4da4acab1532': `NewsAPI`,
+'sd4834a205d67ccdf': `Anmeldung läuft...`,
 'sd494f1ec78d8c5de': `BÜRO FÜR UNMÖGLICHE GEOGRAPHIE — Dokument HIDDEN-LAW/001
 
 Axiom 1: Eine Scherbe ist eine in sich konsistente Erzählung. Sie muss nicht wahr sein, aber sie muss kohärent sein. Eine Scherbe, die sich selbst widerspricht, wird [VERZEHRT] und die resultierenden Trümmer werden [UNLESERLICH] über angrenzende Scherben als kulturelle Kontamination, falsche Erinnerungen und unerklärliche Architektur.
@@ -857,6 +860,7 @@ Axiom 4: Die Kartographen existieren außerhalb der Axiome. Dies ist kein Privil
 'sdabfef8968aeb5fa': `Ein unerwarteter Fehler ist aufgetreten`,
 'sdad9a8331eaf87b9': str`${0} Reaktionen`,
 'sdaecc3c29a27c5c5': `Ein unbekannter Fehler ist aufgetreten`,
+'sdb26de56d7d43d18': `Ungültige E-Mail oder Passwort.`,
 'sdbc215b41c0cb950': `Reaktionen werden verarbeitet...`,
 'sdbda38e8f04a8c4e': `Das Multiversum ist kein Problem, das gelöst werden muss. Es ist eine Frage, die bewohnt werden will.`,
 'sdc63ec20b1ccc2db': `KI transformiert Artikel...`,

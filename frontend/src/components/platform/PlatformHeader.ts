@@ -91,6 +91,26 @@ export class VelgPlatformHeader extends LitElement {
     .locale-toggle:hover {
       background: var(--color-surface-hover);
     }
+
+    .btn-sign-in {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-black);
+      font-size: var(--text-sm);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-brutalist);
+      padding: var(--space-1-5) var(--space-4);
+      background: var(--color-primary);
+      color: var(--color-text-inverse);
+      border: var(--border-default);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .btn-sign-in:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: var(--shadow-md);
+    }
   `;
 
   @state() private _simulations: Simulation[] = [];
@@ -104,6 +124,10 @@ export class VelgPlatformHeader extends LitElement {
     this.dispatchEvent(
       new CustomEvent('navigate', { detail: '/dashboard', bubbles: true, composed: true }),
     );
+  }
+
+  private _handleSignInClick(): void {
+    this.dispatchEvent(new CustomEvent('login-panel-open', { bubbles: true, composed: true }));
   }
 
   private async _toggleLocale(): Promise<void> {
@@ -160,7 +184,11 @@ export class VelgPlatformHeader extends LitElement {
           <button class="locale-toggle" @click=${this._toggleLocale}>
             ${localeService.currentLocale === 'en' ? 'DE' : 'EN'}
           </button>
-          <velg-user-menu></velg-user-menu>
+          ${
+            appState.isAuthenticated.value
+              ? html`<velg-user-menu></velg-user-menu>`
+              : html`<button class="btn-sign-in" @click=${this._handleSignInClick}>${msg('Sign In')}</button>`
+          }
         </div>
       </div>
     `;

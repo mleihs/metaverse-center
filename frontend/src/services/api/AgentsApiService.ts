@@ -1,4 +1,5 @@
 import type { Agent, ApiResponse, EventReaction, PaginatedResponse } from '../../types/index.js';
+import { appState } from '../AppStateManager.js';
 import { BaseApiService } from './BaseApiService.js';
 
 export class AgentsApiService extends BaseApiService {
@@ -6,10 +7,16 @@ export class AgentsApiService extends BaseApiService {
     simulationId: string,
     params?: Record<string, string>,
   ): Promise<ApiResponse<PaginatedResponse<Agent>>> {
+    if (!appState.isAuthenticated.value) {
+      return this.getPublic(`/simulations/${simulationId}/agents`, params);
+    }
     return this.get(`/simulations/${simulationId}/agents`, params);
   }
 
   getById(simulationId: string, agentId: string): Promise<ApiResponse<Agent>> {
+    if (!appState.isAuthenticated.value) {
+      return this.getPublic(`/simulations/${simulationId}/agents/${agentId}`);
+    }
     return this.get(`/simulations/${simulationId}/agents/${agentId}`);
   }
 

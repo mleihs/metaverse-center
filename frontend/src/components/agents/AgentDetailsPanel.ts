@@ -1,6 +1,7 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { appState } from '../../services/AppStateManager.js';
 import { agentsApi } from '../../services/api/index.js';
 import type { Agent, EventReaction } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
@@ -219,7 +220,7 @@ export class VelgAgentDetailsPanel extends LitElement {
   }
 
   private async _loadReactions(): Promise<void> {
-    if (!this.agent || !this.simulationId) return;
+    if (!this.agent || !this.simulationId || !appState.isAuthenticated.value) return;
 
     this._reactionsLoading = true;
     try {
@@ -434,12 +435,18 @@ export class VelgAgentDetailsPanel extends LitElement {
                 </div>
               </div>
 
-              <button slot="footer" class="panel__btn panel__btn--edit" @click=${this._handleEdit}>
-                ${icons.edit()} ${msg('Edit')}
-              </button>
-              <button slot="footer" class="panel__btn panel__btn--danger" @click=${this._handleDelete}>
-                ${icons.trash()} ${msg('Delete')}
-              </button>
+              ${
+                appState.canEdit.value
+                  ? html`
+                <button slot="footer" class="panel__btn panel__btn--edit" @click=${this._handleEdit}>
+                  ${icons.edit()} ${msg('Edit')}
+                </button>
+                <button slot="footer" class="panel__btn panel__btn--danger" @click=${this._handleDelete}>
+                  ${icons.trash()} ${msg('Delete')}
+                </button>
+              `
+                  : nothing
+              }
             `
             : nothing
         }

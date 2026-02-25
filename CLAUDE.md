@@ -15,7 +15,7 @@
 
 Multi-simulation platform rebuilt from a single-world Flask app. See `00_PROJECT_OVERVIEW.md` for full context.
 
-**Current Status:** All 5 phases complete + i18n fully implemented + codebase audit applied + architecture audit applied + lore expansion + dashboard LoreScroll + per-simulation theming + WCAG contrast validation. 139 tasks. 885 localized UI strings (EN/DE). Production deployed on Railway + hosted Supabase.
+**Current Status:** All 5 phases complete + i18n fully implemented + codebase audit applied + architecture audit applied + lore expansion + dashboard LoreScroll + per-simulation theming + WCAG contrast validation + public-first architecture (anonymous read access). 139 tasks. 889 localized UI strings (EN/DE). Production deployed on Railway + hosted Supabase.
 
 ## Tech Stack
 
@@ -37,14 +37,16 @@ Multi-simulation platform rebuilt from a single-world Flask app. See `00_PROJECT
 
 **Defense in Depth:** FastAPI `Depends()` validates roles (Layer 1), Supabase RLS validates access (Layer 2).
 
+**Public-First Architecture:** Anonymous users can browse all simulation data (read-only) without authentication. Frontend API services check `appState.isAuthenticated.value` and route GET requests to `/api/v1/public/*` (anon, no JWT) or `/api/v1/*` (authenticated). Backend public router uses `get_anon_supabase()` with anon RLS policies. Write operations require authentication. LoginPanel slides in from right via `VelgSidePanel`.
+
 ## Directory Structure
 
 ```
 backend/              FastAPI application
-  app.py              Entry point (registers 19 routers)
+  app.py              Entry point (registers 20 routers)
   config.py           Settings (pydantic-settings, extra="ignore")
-  dependencies.py     JWT auth, Supabase client, role checking
-  routers/            API endpoints — 19 routers, 100+ endpoints (/api/v1/...)
+  dependencies.py     JWT auth, Supabase client (user/anon/admin), role checking
+  routers/            API endpoints — 20 routers, 120+ endpoints (/api/v1/... + /api/v1/public/...)
   models/             Pydantic request/response models (19 files)
   services/           Business logic (BaseService + 15 entity + audit + simulation + external)
   middleware/         Rate limiting, security headers
@@ -54,7 +56,7 @@ frontend/             Lit + Vite application
   src/
     app-shell.ts      Main app with @lit-labs/router (auth + simulation-scoped routes)
     components/
-      auth/           Login, Register views
+      auth/           Login, Register views, LoginPanel (slide-in)
       platform/       PlatformHeader, UserMenu, SimulationsDashboard, LoreScroll, CreateSimulationWizard, UserProfileView, InvitationAcceptView, NotificationCenter
       layout/         SimulationShell, SimulationHeader, SimulationNav
       shared/         17 reusable components + 3 shared CSS modules (see Code Reusability)
@@ -79,7 +81,7 @@ e2e/                  Playwright E2E tests (37 specs across 8 files)
   helpers/            auth.ts, fixtures.ts
   tests/              auth, agents, buildings, events, chat, settings, multi-user, social
 supabase/
-  migrations/         19 SQL migration files (001-017)
+  migrations/         20 SQL migration files (001-018)
   seed/               10 SQL seed files (001-010): simulation, agents, entities, social/chat, verification, prompts, sample data, image config, capybara kingdom, simulation themes
   config.toml         Local Supabase config
 scripts/              Utility scripts (image generation via Replicate)
@@ -153,7 +155,7 @@ Two MCP servers configured in `.mcp.json`:
 
 **Auth:** Production uses ES256 (ECC P-256) tokens verified via JWKS. Local uses HS256 with shared secret.
 
-**Schema changes:** `supabase db push` (requires `SUPABASE_ACCESS_TOKEN` env var). Migrations 016-017 are data-only (seeds for deployed DBs).
+**Schema changes:** `supabase db push` (requires `SUPABASE_ACCESS_TOKEN` env var). Migrations 016-017 are data-only (seeds for deployed DBs). Migration 018 adds 21 anon RLS policies for public read access.
 
 **Env vars:** Railway service `metaverse-center` in project `metaverse.center`. See `.env.production.example` for required vars.
 
@@ -174,7 +176,7 @@ These renames were applied in the v2.0 schema to avoid SQL reserved words. **Alw
 
 ## Database (27 Tables)
 
-- **101 RLS policies** — CRUD per table, role-based via helper functions
+- **122 RLS policies** — CRUD per table, role-based via helper functions + 21 anon SELECT policies for public read access
 - **22 triggers** — 16 updated_at + 6 business logic (slug immutability, status transitions, primary profession, last owner protection, conversation stats)
 - **6 views** — 4 active_* (soft-delete filter) + simulation_dashboard + conversation_summaries
 - **2 materialized views** — campaign_performance + agent_statistics
@@ -194,18 +196,19 @@ All endpoints under `/api/v1/`. Swagger UI at `/api/docs`. Responses use unified
 }
 ```
 
-100+ endpoints across 19 routers. Platform-level: `/api/v1/health`, `/api/v1/users/me`, `/api/v1/simulations`, `/api/v1/invitations`. Simulation-scoped: `/api/v1/simulations/{simulation_id}/agents`, `buildings`, `events`, `agent_professions`, `locations`, `taxonomies`, `settings`, `chat`, `members`, `campaigns`, `social-trends`, `social-media`, `generation`, `prompt-templates`.
+120+ endpoints across 20 routers. Platform-level: `/api/v1/health`, `/api/v1/users/me`, `/api/v1/simulations`, `/api/v1/invitations`. Simulation-scoped: `/api/v1/simulations/{simulation_id}/agents`, `buildings`, `events`, `agent_professions`, `locations`, `taxonomies`, `settings`, `chat`, `members`, `campaigns`, `social-trends`, `social-media`, `generation`, `prompt-templates`. Public (no auth): `/api/v1/public/simulations`, `/api/v1/public/simulations/{id}/*` (GET-only, ~20 endpoints mirroring authenticated reads).
 
 ## Backend Patterns
 
 - **Config:** `backend/config.py` — `Settings(BaseSettings)` with `extra="ignore"`, reads `.env`. Imported as `app_settings` in `app.py` to avoid conflict with `routers.settings`.
 - **Auth:** `get_current_user()` validates JWT via python-jose, returns `CurrentUser(id, email, access_token)`
-- **Supabase client:** `get_supabase()` creates client with user's JWT (RLS enforced)
+- **Supabase client:** `get_supabase()` creates client with user's JWT (RLS enforced). `get_anon_supabase()` creates client with anon key only (no JWT, anon RLS policies for public endpoints).
 - **Role checking:** `require_role("admin")` factory returns Depends() that checks simulation_members
 - **Rate limiting:** slowapi — 30/hr AI generation, 10/min AI chat, 5/min external API, 100/min standard
 - **Models:** `PaginatedResponse[T]`, `SuccessResponse[T]`, `ErrorResponse` in `models/common.py`
 - **BaseService:** Generic CRUD in `services/base_service.py` — uses `active_*` views for soft-delete filtering, optional `include_deleted=True` for admin queries. Set `view_name = None` for tables without soft-delete (e.g., campaigns, agent_professions, locations). Public `serialize_for_json()` utility for datetime/UUID/date conversion.
 - **Entity services:** All CRUD routers use dedicated services — `AgentService` (with `list_for_reaction()` for lightweight AI queries), `BuildingService`, `EventService` (with `generate_reactions()` for AI reaction generation), `CampaignService` (extends BaseService), `LocationService` (facade delegating to `CityService`/`ZoneService`/`StreetService`, all extending BaseService), `AgentProfessionService` (extends BaseService), `PromptTemplateService` (custom, uses `is_active` for soft-delete), `MemberService` (with `LastOwnerError` exception + `get_user_memberships()`), `SocialMediaService`, `SocialTrendsService`
+- **Public router:** `routers/public.py` — GET-only endpoints under `/api/v1/public`, uses `get_anon_supabase()` (no auth required). Mirrors authenticated read endpoints for simulations, agents, buildings, events, locations, chat, taxonomies, settings (design category only), social-media, social-trends, campaigns.
 - **Router discipline:** Routers handle HTTP only — no direct DB queries, no business logic helpers, no late-binding imports. All service imports at module level. External service imports (Guardian, NewsAPI, Facebook, GenerationService) at module level.
 - **AuditService:** `services/audit_service.py` — logs CRUD operations to `audit_log` table with entity diffs. Applied to all data-changing endpoints across all routers.
 - **Search utility:** `utils/search.py` — `apply_search_filter(query, search, vector_field, fallback_fields)` for full-text search with ilike fallback
@@ -215,7 +218,8 @@ All endpoints under `/api/v1/`. Swagger UI at `/api/docs`. Responses use unified
 
 - Components extend `LitElement` with `@customElement('velg-...')`
 - State via Preact Signals (`appState` in `AppStateManager.ts`)
-- API calls through `BaseApiService` (auto-attaches JWT from appState). Always import existing API service singletons (e.g., `simulationsApi`, `buildingsApi`) — never create inline service classes in components.
+- API calls through `BaseApiService` (auto-attaches JWT from appState). `getPublic()` method routes to `/api/v1/public/*` without Authorization header for anonymous access. Always import existing API service singletons (e.g., `simulationsApi`, `buildingsApi`) — never create inline service classes in components.
+- **Public API routing pattern:** API services check `appState.isAuthenticated.value` on read methods — if false, call `this.getPublic(path)` instead of `this.get(path)`. Applied to 10 services: Simulations, Agents, Buildings, Events, Chat, Locations, Taxonomies, Settings, SocialMedia, Campaigns.
 - **API contract:** Backend endpoints using query params (e.g., `assign-agent?agent_id=...`, `profession-requirements?profession=...`) must use `URLSearchParams` in the frontend — never send these as JSON body. `PaginatedResponse<T>` uses `meta?: { count, total, limit, offset }` matching the backend structure.
 - Routing via `@lit-labs/router` (Reactive Controller in app-shell)
 - All types in `frontend/src/types/index.ts`
@@ -263,7 +267,7 @@ Alternatively, add `<target>` elements directly to `frontend/src/locales/xliff/d
 | `frontend/lit-localize.json` | Config: sourceLocale=en, targetLocale=de, runtime mode |
 | `frontend/src/services/i18n/locale-service.ts` | LocaleService: initLocale, setLocale, getInitialLocale |
 | `frontend/src/services/i18n/format-service.ts` | FormatService: formatDate, formatDateTime, formatNumber, formatRelativeTime |
-| `frontend/src/locales/xliff/de.xlf` | XLIFF translations (875 trans-units) — edit this for translations |
+| `frontend/src/locales/xliff/de.xlf` | XLIFF translations (889 trans-units) — edit this for translations |
 | `frontend/src/locales/generated/de.ts` | Auto-generated — NEVER edit manually |
 | `frontend/src/locales/generated/locale-codes.ts` | Source/target locale constants |
 

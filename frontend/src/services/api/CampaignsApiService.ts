@@ -5,6 +5,7 @@ import type {
   CampaignMetric,
   PaginatedResponse,
 } from '../../types/index.js';
+import { appState } from '../AppStateManager.js';
 import { BaseApiService } from './BaseApiService.js';
 
 export class CampaignsApiService extends BaseApiService {
@@ -12,6 +13,9 @@ export class CampaignsApiService extends BaseApiService {
     simulationId: string,
     params?: Record<string, string>,
   ): Promise<ApiResponse<PaginatedResponse<Campaign>>> {
+    if (!appState.isAuthenticated.value) {
+      return this.getPublic(`/simulations/${simulationId}/campaigns`, params);
+    }
     return this.get(`/simulations/${simulationId}/campaigns`, params);
   }
 

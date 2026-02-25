@@ -5,11 +5,11 @@ from uuid import UUID
 import httpx
 from fastapi import Depends, Header, HTTPException, Path, status
 from jose import JWTError, jwt
+from supabase_auth.errors import AuthApiError
 
 from backend.config import settings
 from backend.models.common import CurrentUser
 from supabase import Client, create_client
-from supabase_auth.errors import AuthApiError
 
 logger = logging.getLogger(__name__)
 
@@ -124,6 +124,14 @@ async def get_supabase(
             detail=f"Session expired or invalid: {e}",
         ) from e
     return client
+
+
+async def get_anon_supabase() -> Client:
+    """Create a Supabase client with the anon key only (no JWT).
+
+    Applies anon RLS policies — used for public read-only endpoints.
+    """
+    return create_client(settings.supabase_url, settings.supabase_anon_key)
 
 
 async def get_admin_supabase() -> Client:
