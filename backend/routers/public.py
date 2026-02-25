@@ -42,6 +42,26 @@ def _paginated(data: list[dict], total: int, limit: int, offset: int) -> dict:
 # ── Simulations ──────────────────────────────────────────────────────────
 
 
+def _enrich_with_counts(supabase: Client, simulations: list[dict]) -> None:
+    """Enrich simulation dicts with counts from the simulation_dashboard view."""
+    if not simulations:
+        return
+    ids = [s["id"] for s in simulations]
+    count_response = (
+        supabase.table("simulation_dashboard")
+        .select("simulation_id, agent_count, building_count, event_count, member_count")
+        .in_("simulation_id", ids)
+        .execute()
+    )
+    counts_map = {row["simulation_id"]: row for row in (count_response.data or [])}
+    for sim in simulations:
+        counts = counts_map.get(sim["id"], {})
+        sim["agent_count"] = counts.get("agent_count", 0)
+        sim["building_count"] = counts.get("building_count", 0)
+        sim["event_count"] = counts.get("event_count", 0)
+        sim["member_count"] = counts.get("member_count", 0)
+
+
 @router.get("/simulations", response_model=PaginatedResponse)
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_simulations(
@@ -61,6 +81,7 @@ async def list_simulations(
     )
     data = response.data or []
     total = response.count if response.count is not None else len(data)
+    _enrich_with_counts(supabase, data)
     return _paginated(data, total, limit, offset)
 
 
@@ -82,7 +103,9 @@ async def get_simulation(
     )
     if not response.data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Simulation not found.")
-    return {"success": True, "data": response.data[0]}
+    data = response.data
+    _enrich_with_counts(supabase, data)
+    return {"success": True, "data": data[0]}
 
 
 # ── Agents ───────────────────────────────────────────────────────────────

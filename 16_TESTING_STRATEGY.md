@@ -1,7 +1,8 @@
 # 16 - Testing Strategy
 
-**Version:** 1.1
-**Datum:** 2026-02-15
+**Version:** 1.2
+**Datum:** 2026-02-25
+**Aenderung v1.2:** Aktualisierte Test-Zahlen (275 Backend, 197 Frontend, 56 E2E), 88 WCAG-Kontrast-Tests, 36 Anonymous-View-Integrationstests
 
 ---
 
@@ -9,22 +10,22 @@
 
 ```
           ┌──────────┐
-          │   E2E    │  ~20 Tests   (Playwright)
+          │   E2E    │  56 Specs   (Playwright, 9 Dateien)
           │ Browser  │  Kritische User-Flows
          ┌┴──────────┴┐
-         │ Integration │  ~80 Tests  (pytest + vitest)
+         │ Integration │  ~110 Tests (pytest + vitest)
          │  API + DB   │  Router ↔ Service ↔ DB
         ┌┴────────────┴┐
-        │     Unit      │  ~300 Tests (pytest + vitest)
+        │     Unit      │  ~360 Tests (pytest + vitest)
         │ Services, Utils│  Isolierte Logik
         └───────────────┘
 ```
 
 | Ebene | Backend (pytest) | Frontend (vitest) | Ziel |
 |-------|-----------------|-------------------|------|
-| **Unit** | Services, Utils, Models, Encryption | Components, State, Validation, Formatters | ~300 Tests, < 30s |
-| **Integration** | Router → Service → Supabase (TestClient) | API-Services → Mock-Server, Component Interaction | ~80 Tests, < 2min |
-| **E2E** | — | Playwright: Login → CRUD → Chat → Settings | ~20 Tests, < 5min |
+| **Unit** | Services, Utils, Models, Encryption | Components, State, Validation, Formatters, WCAG-Kontrast (88 Tests) | ~360 Tests, < 30s |
+| **Integration** | Router → Service → Supabase (TestClient), 36 Anonymous-View-Tests | API-Services → Mock-Server, Component Interaction | ~110 Tests, < 2min |
+| **E2E** | — | Playwright: Login → CRUD → Chat → Settings → Public Access (10 Specs) | 56 Specs, < 5min |
 
 ### Abdeckungsziele
 

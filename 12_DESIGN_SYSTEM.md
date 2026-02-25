@@ -1,7 +1,8 @@
 # 12 - Design System: Komplett-Neuaufbau
 
-**Version:** 1.0
-**Datum:** 2026-02-15
+**Version:** 1.1
+**Datum:** 2026-02-25
+**Aenderung v1.1:** 6 Theme-Presets implementiert (default, brutalist, fantasy-kingdom, cyberpunk, steampunk, deep-space-horror). WCAG 2.1 AA Kontrast-Validierung: 88 Tests (14 Paare pro Preset). Mindest-Kontrast: 4.5:1 (Normal-Text), 3.0:1 (Muted-Text, Button-Text, Badge-Text).
 
 ---
 

@@ -1,10 +1,11 @@
 # 13 - Tech Stack Recommendation
 
-**Version:** 1.3
-**Datum:** 2026-02-15
-**Änderung v1.1:** Backend-Framework von Flask zu FastAPI gewechselt
+**Version:** 1.4
+**Datum:** 2026-02-25
+**Aenderung v1.4:** Biome 2.4 (exakte Version), Playwright E2E-Testing, Replicate API (Flux Dev) fuer Bildgenerierung, @lit/localize Runtime-Modus mit XLIFF-Workflow (893 Strings).
 **Änderung v1.3:** Lokale Supabase-Entwicklungsumgebung dokumentiert
 **Änderung v1.2:** Biome, Zod, @lit-labs/router, supabase-py async-Korrektur hinzugefügt
+**Änderung v1.1:** Backend-Framework von Flask zu FastAPI gewechselt
 
 ---
 

@@ -1,8 +1,8 @@
 # 00 - Project Overview: metaverse.center Multi-Simulations-Plattform
 
-**Version:** 1.3
+**Version:** 1.4
 **Datum:** 2026-02-25
-**Status:** Alle 5 Phasen + i18n + per-Simulation-Theming komplett. Anonymous View Audit abgeschlossen (Rate Limiting, RLS-Härtung, Service-Layer-Refactoring, Tests). Production deployed auf Railway + hosted Supabase. Alle Agenten-Portraits (13) und Gebäude-Bilder (11) via Replicate AI generiert. (Siehe [19_DEPLOYMENT_INFRASTRUCTURE.md](./19_DEPLOYMENT_INFRASTRUCTURE.md))
+**Status:** Alle 5 Phasen + i18n + per-Simulation-Theming komplett. 3 Simulationen live: Velgarien, Capybara Kingdom, Station Null. Anonymous View Audit abgeschlossen (Rate Limiting, RLS-Härtung, 21 anon-RLS-Policies, Service-Layer-Refactoring, 36 Integration-Tests + 10 E2E-Specs). 24 Migrationen (001-021 + ensure_dev_user). 6 Theme-Presets (default, brutalist, fantasy-kingdom, cyberpunk, steampunk, deep-space-horror). 893 lokalisierte UI-Strings (EN/DE). 19 Agenten-Portraits + 18 Gebäude-Bilder + 3 Banner via Replicate AI generiert. Production deployed auf Railway + hosted Supabase. (Siehe [19_DEPLOYMENT_INFRASTRUCTURE.md](./19_DEPLOYMENT_INFRASTRUCTURE.md))
 
 ---
 
@@ -16,13 +16,16 @@ Die **metaverse.center Multi-Simulations-Plattform** ist ein Neuaufbau des beste
 
 ```
 Plattform (Multi-Tenancy)
-├── Simulation "Velgarien" (dystopisch, deutsch)
-│   ├── Agenten, Gebäude, Events, Zonen, Städte
+├── Simulation "Velgarien" (dystopisch, brutalist theme)
+│   ├── 8 Agenten, 6 Gebäude, 6 Events, 3 Zonen, 1 Stadt
 │   ├── Eigene Enums, Prompts, Design, Integrationen
 │   └── Eigene AI-Modelle und Konfiguration
-├── Simulation "Utopia Prime" (utopisch, englisch)
-│   ├── ...
-│   └── Komplett eigene Konfiguration
+├── Simulation "Capybara Kingdom" (fantasy, underground kingdom)
+│   ├── 5 Agenten, 5 Gebäude, 5 Zonen, 1 Stadt
+│   └── Fantasy-Kingdom Theme, viktorianische Ästhetik
+├── Simulation "Station Null" (sci-fi horror, deep space)
+│   ├── 6 Agenten, 7 Gebäude, 4 Zonen, 1 Stadt
+│   └── Deep-Space-Horror Theme, Alien meets Tarkovsky
 └── Simulation N
     └── ...
 ```

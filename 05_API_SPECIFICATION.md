@@ -1,7 +1,8 @@
 # 05 - API Specification: Alle Endpoints (Simulation-Scoped)
 
-**Version:** 1.0
-**Datum:** 2026-02-15
+**Version:** 1.1
+**Datum:** 2026-02-25
+**Aenderung v1.1:** 136 Endpoints total (20 Router). 20 Public-Endpoints unter `/api/v1/public/*` fuer anonymen Lesezugriff (Rate-Limit: 100/min). Public-Simulations-Endpoint liefert jetzt `agent_count`, `building_count`, `event_count` via `simulation_dashboard` View.
 
 ---
 

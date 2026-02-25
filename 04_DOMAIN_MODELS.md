@@ -1,7 +1,8 @@
 # 04 - Domain Models: Entitaeten mit Simulation-Scope
 
-**Version:** 2.0
-**Datum:** 2026-02-15
+**Version:** 2.1
+**Datum:** 2026-02-25
+**Aenderung v2.1:** `banner_url`, `icon_url` Felder in Simulation-Interface. `agent_count`, `building_count`, `event_count`, `member_count` als optionale enriched-Felder (von `simulation_dashboard` View).
 **Aenderung v2.0:** Alle Spalten-Renames aus 03_DATABASE_SCHEMA_NEW v2.0 uebernommen
 
 ---

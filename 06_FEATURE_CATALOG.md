@@ -1,7 +1,8 @@
 # 06 - Feature Catalog: Plattform + Simulation Features
 
-**Version:** 1.0
-**Datum:** 2026-02-15
+**Version:** 1.1
+**Datum:** 2026-02-25
+**Aenderung v1.1:** 3 Simulationen (Velgarien, Capybara Kingdom, Station Null). Public-First-Architektur (anonymer Lesezugriff ohne Login). Dashboard-Bannerbilder. LoreScroll-Akkordeon. 6 Theme-Presets.
 
 ---
 

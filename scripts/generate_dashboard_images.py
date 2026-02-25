@@ -1,7 +1,11 @@
-"""Generate dashboard images: 1 hero background + 2 simulation banners.
+"""Generate dashboard images: 1 hero background + 3 simulation banners.
 
 Uses Replicate Flux Dev directly, converts to WebP, uploads to Supabase Storage
 (simulation.assets bucket), and updates banner_url on each simulation.
+
+Usage:
+  python3.13 scripts/generate_dashboard_images.py              # Generate all
+  python3.13 scripts/generate_dashboard_images.py station-null  # Generate one by name
 
 Requires:
   - Backend .venv activated (for replicate + Pillow)
@@ -29,19 +33,34 @@ from PIL import Image
 # ── Config ──────────────────────────────────────────────────────────────────
 
 SUPABASE_URL = "http://127.0.0.1:54321"
-SUPABASE_ANON_KEY = (
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
-    ".eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9"
-    ".CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0"
-)
-SUPABASE_SERVICE_KEY = (
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
-    ".eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0"
-    ".EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU"
-)
+
+
+def get_service_key() -> str:
+    """Get the Supabase service key. Prefers sb_secret_ from `supabase status`."""
+    import subprocess
+
+    result = subprocess.run(
+        ["supabase", "status"],
+        capture_output=True, text=True,
+    )
+    for line in result.stdout.splitlines():
+        if "Secret" in line and "sb_secret_" in line:
+            for part in line.split():
+                if part.startswith("sb_secret_"):
+                    return part
+    # Fallback: legacy JWT service_role key
+    return (
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+        ".eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0"
+        ".EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU"
+    )
+
+
+SUPABASE_SERVICE_KEY = get_service_key()
 
 VELGARIEN_SIM_ID = "10000000-0000-0000-0000-000000000001"
 CAPYBARA_SIM_ID = "20000000-0000-0000-0000-000000000001"
+STATION_NULL_SIM_ID = "30000000-0000-0000-0000-000000000001"
 
 BUCKET = "simulation.assets"
 FLUX_MODEL = "black-forest-labs/flux-dev"
@@ -92,6 +111,22 @@ IMAGES = [
         "width": 1024,
         "height": 683,
     },
+    {
+        "name": "Station Null Banner",
+        "storage_path": f"{STATION_NULL_SIM_ID}/banner.webp",
+        "simulation_id": STATION_NULL_SIM_ID,
+        "prompt": (
+            "Derelict space station exterior orbiting a supermassive black hole, "
+            "the accretion disk casting amber and violet light across corroded hull plates, "
+            "a research station with rotating habitation rings and antenna arrays, "
+            "hull breaches leaking atmosphere into void, organic growths visible through "
+            "cracked viewports, deep space horror, Alien meets Event Horizon aesthetic, "
+            "concept art quality, wide establishing shot, cold void background with "
+            "gravitational lensing distortion, not photorealistic, not bright, not clean"
+        ),
+        "width": 1024,
+        "height": 683,
+    },
 ]
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
@@ -113,21 +148,12 @@ def upload_to_storage(path: str, data: bytes) -> str:
     url = f"{SUPABASE_URL}/storage/v1/object/{BUCKET}/{path}"
     headers = {
         "Authorization": f"Bearer {SUPABASE_SERVICE_KEY}",
+        "apikey": SUPABASE_SERVICE_KEY,
         "Content-Type": "image/webp",
+        "x-upsert": "true",
     }
 
-    # Try to delete existing file first (ignore errors)
-    requests.delete(url, headers=headers, timeout=10)
-
-    resp = requests.post(
-        url,
-        headers=headers,
-        data=data,
-        timeout=30,
-    )
-    if resp.status_code not in (200, 201):
-        # Try upsert via PUT
-        resp = requests.put(url, headers=headers, data=data, timeout=30)
+    resp = requests.post(url, headers=headers, data=data, timeout=30)
     resp.raise_for_status()
 
     public_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{path}"
@@ -184,9 +210,22 @@ def main() -> None:
         print("ERROR: REPLICATE_API_TOKEN not set in environment or .env")
         sys.exit(1)
 
-    print(f"Replicate token: {token[:8]}...\n")
+    print(f"Replicate token: {token[:8]}...")
+    print(f"Service key: {SUPABASE_SERVICE_KEY[:15]}...\n")
 
-    for img in IMAGES:
+    # Filter by name if argument provided
+    images = IMAGES
+    if len(sys.argv) > 1:
+        filter_name = sys.argv[1].lower().replace("_", " ").replace("-", " ")
+        images = [img for img in IMAGES if filter_name in img["name"].lower().replace("-", " ")]
+        if not images:
+            print(f"ERROR: No image matching '{sys.argv[1]}'. Available:")
+            for img in IMAGES:
+                print(f"  - {img['name']}")
+            sys.exit(1)
+        print(f"Generating {len(images)} image(s) matching '{sys.argv[1]}':\n")
+
+    for img in images:
         print(f"--- {img['name']} ---")
         print(f"  Prompt: {img['prompt'][:80]}...")
         print(f"  Target: {img['width']}x{img['height']}")

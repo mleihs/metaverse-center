@@ -1,7 +1,7 @@
 # 18 — Per-Simulation Theming System
 
-**Version:** v1.1
-**Status:** Implemented
+**Version:** v1.2
+**Status:** Implemented — 6 Presets: default, brutalist, fantasy-kingdom, cyberpunk, steampunk, deep-space-horror. WCAG 2.1 AA validiert (88 Kontrast-Tests, 14 Paare pro Preset).
 
 ## Overview
 

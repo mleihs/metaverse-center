@@ -12,7 +12,8 @@ export type ThemePresetName =
   | 'sunless-sea'
   | 'solarpunk'
   | 'cyberpunk'
-  | 'nordic-noir';
+  | 'nordic-noir'
+  | 'deep-space-horror';
 
 export const THEME_PRESETS: Record<ThemePresetName, Record<string, string>> = {
   brutalist: {
@@ -214,6 +215,46 @@ export const THEME_PRESETS: Record<ThemePresetName, Record<string, string>> = {
     animation_easing: 'ease-in-out',
     text_inverse: '#f8fafc',
   },
+
+  'deep-space-horror': {
+    color_primary: '#00cc88',
+    color_primary_hover: '#00b377',
+    color_primary_active: '#009966',
+    color_secondary: '#00ccff',
+    color_accent: '#ff6633',
+    color_background: '#050508',
+    color_surface: '#0c0c14',
+    color_surface_sunken: '#030306',
+    color_surface_header: '#0a0a12',
+    color_text: '#c8d0d8',
+    color_text_secondary: '#7888a0',
+    color_text_muted: '#6888a8',
+    color_border: '#1a2030',
+    color_border_light: '#141820',
+    color_danger: '#ff3344',
+    color_success: '#00cc88',
+    color_primary_bg: '#0a1a14',
+    color_info_bg: '#0a1420',
+    color_danger_bg: '#200a0c',
+    color_success_bg: '#0a200e',
+    color_warning_bg: '#201a0a',
+    font_heading: "'Courier New', Monaco, monospace",
+    font_body: 'system-ui, -apple-system, sans-serif',
+    font_mono: "SF Mono, Monaco, Inconsolata, 'Roboto Mono', monospace",
+    heading_weight: '700',
+    heading_transform: 'uppercase',
+    heading_tracking: '0.12em',
+    font_base_size: '15px',
+    border_radius: '0',
+    border_width: '1px',
+    border_width_default: '1px',
+    shadow_style: 'glow',
+    shadow_color: '#00cc88',
+    hover_effect: 'glow',
+    animation_speed: '1.8',
+    animation_easing: 'ease-in',
+    text_inverse: '#050508',
+  },
 };
 
 /** Maps SimulationTheme types to suggested preset names. */
@@ -241,4 +282,5 @@ export const PRESET_NAMES: ThemePresetName[] = [
   'solarpunk',
   'cyberpunk',
   'nordic-noir',
+  'deep-space-horror',
 ];

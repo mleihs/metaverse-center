@@ -1,7 +1,8 @@
 # 03 - Database Schema New: Neues Schema mit Simulation-Kontext
 
-**Version:** 2.0
-**Datum:** 2026-02-15
+**Version:** 2.1
+**Datum:** 2026-02-25
+**Aenderung v2.1:** 24 Migrationen (001-021 + ensure_dev_user). 27 Tabellen, 122 RLS-Policies (inkl. 21 anon SELECT), 22 Triggers, 6 Views + 2 materialisierte Views. 4 Storage-Buckets (agent.portraits, building.images, user.agent.portraits, simulation.assets). `banner_url` und `icon_url` Felder in `simulations` Tabelle.
 
 ---
 

@@ -15,7 +15,7 @@
 
 Multi-simulation platform rebuilt from a single-world Flask app. See `00_PROJECT_OVERVIEW.md` for full context.
 
-**Current Status:** All 5 phases complete + i18n fully implemented + codebase audit applied + architecture audit applied + lore expansion + dashboard LoreScroll + per-simulation theming + WCAG contrast validation + public-first architecture (anonymous read access) + anonymous view audit applied. 139 tasks. 889 localized UI strings (EN/DE). Production deployed on Railway + hosted Supabase.
+**Current Status:** All 5 phases complete + i18n fully implemented + codebase audit applied + architecture audit applied + lore expansion + dashboard LoreScroll + per-simulation theming + WCAG contrast validation + public-first architecture (anonymous read access) + anonymous view audit applied + Station Null (sim 3) added. 139 tasks. 899 localized UI strings (EN/DE). Production deployed on Railway + hosted Supabase. 3 simulations: Velgarien (dark), Capybara Kingdom (fantasy), Station Null (sci-fi horror).
 
 ## Tech Stack
 
@@ -75,16 +75,16 @@ frontend/             Lit + Vite application
     styles/           CSS design tokens (tokens/: 8 files — colors, typography, spacing, borders, shadows, animation, layout, z-index) + base styles (base/)
     utils/            Shared utilities (text.ts, formatters.ts, error-handler.ts, icons.ts)
     types/            TypeScript interfaces (index.ts) + Zod validation schemas (validation/)
-  tests/              vitest tests (183 tests: validation + API + notification + theme contrast)
+  tests/              vitest tests (197 tests: validation + API + notification + theme contrast)
 e2e/                  Playwright E2E tests (56 specs across 9 files)
   playwright.config.ts
   helpers/            auth.ts, fixtures.ts
   tests/              auth, agents, buildings, events, chat, settings, multi-user, social
 supabase/
-  migrations/         22 SQL migration files (001-020)
-  seed/               10 SQL seed files (001-010): simulation, agents, entities, social/chat, verification, prompts, sample data, image config, capybara kingdom, simulation themes
+  migrations/         26 SQL migration files (001-023 + ensure_dev_user)
+  seed/               12 SQL seed files (5 active: 001, 006-008, 010; 7 archived with _ prefix: 002-005, 009, 011-012)
   config.toml         Local Supabase config
-scripts/              Utility scripts (image generation via Replicate)
+scripts/              Image generation scripts (4: velgarien, capybara, station_null, dashboard)
 concept.md            Game design proposal (~9300 words) with expanded meta-lore + research appendix
 ```
 
@@ -176,7 +176,9 @@ Two MCP servers configured in `.mcp.json`:
 
 **Auth:** Production uses ES256 (ECC P-256) tokens verified via JWKS. Local uses HS256 with shared secret.
 
-**Schema changes:** `supabase db push` (requires `SUPABASE_ACCESS_TOKEN` env var, format `sbp_...`, from Dashboard → Avatar → Access Tokens). Migrations 016-017 are data-only (seeds for deployed DBs). Migration 018 adds 21 anon RLS policies for public read access. Migration 019 adds `idx_buildings_street` index. Migration 020 restricts `settings_anon_select` policy to `category = 'design'` only (defense in depth).
+**Schema changes:** `supabase db push` (requires `SUPABASE_ACCESS_TOKEN` env var, format `sbp_...`, from Dashboard → Avatar → Access Tokens). Migration `ensure_dev_user` creates test user + Velgarien sim (idempotent, safe for production). Migrations 016-017 are data-only (Velgarien image config + Capybara Kingdom). Migration 018 adds 21 anon RLS policies for public read access. Migration 019 adds `idx_buildings_street` index. Migration 020 restricts `settings_anon_select` policy to `category = 'design'` only. Migration 021 adds Station Null simulation (6 agents, 7 buildings, 4 zones, 16 streets, 36 design settings). Migration 022 improves prompt diversity (max_tokens=300, template rewrites removing aesthetic redundancy). Migration 023 fixes horror aesthetic (Alien 1979 style prompts, guidance_scale 3.5→5.0, Flux-aware prompting).
+
+**CRITICAL — Local DB Reset Safety:** `supabase stop --no-backup` and `supabase db reset` destroy Docker volumes, wiping all storage files (images). Always ensure images are backed up or can be recovered from production before resetting. See `memory/local-db-reset-guide.md` for recovery procedures. Local Supabase uses `sb_secret_`/`sb_publishable_` keys (NOT JWT service_role keys) — get from `supabase status`.
 
 **Production DB modifications:** The `mcp__supabase__*` tools are LOCAL only. For production, use the Supabase REST API with the secret key (`sb_secret_...`, from Dashboard → Settings → API), or `supabase db push` with a temporary migration file. See `19_DEPLOYMENT_INFRASTRUCTURE.md` for full procedures.
 
@@ -290,7 +292,7 @@ Alternatively, add `<target>` elements directly to `frontend/src/locales/xliff/d
 | `frontend/lit-localize.json` | Config: sourceLocale=en, targetLocale=de, runtime mode |
 | `frontend/src/services/i18n/locale-service.ts` | LocaleService: initLocale, setLocale, getInitialLocale |
 | `frontend/src/services/i18n/format-service.ts` | FormatService: formatDate, formatDateTime, formatNumber, formatRelativeTime |
-| `frontend/src/locales/xliff/de.xlf` | XLIFF translations (889 trans-units) — edit this for translations |
+| `frontend/src/locales/xliff/de.xlf` | XLIFF translations (899 trans-units) — edit this for translations |
 | `frontend/src/locales/generated/de.ts` | Auto-generated — NEVER edit manually |
 | `frontend/src/locales/generated/locale-codes.ts` | Source/target locale constants |
 

@@ -44,15 +44,6 @@
 's06a4ade674554737': `Guardian API-Schlüssel eingeben...`,
 's06a7157bde7bb51f': `Vorlage erstellt`,
 's070bbeb77530be69': `Hintergrundfarbe der Hauptseite. Die Basisebene hinter allen Inhalten.`,
-'s073df01eb593e274': `Jede Scherbe ist eine Antwort. Velgarien antwortet: „Was wäre, wenn Kontrolle absolut wäre?" Das Capybara-Königreich antwortet: „Was wäre, wenn die Dunkelheit gütig wäre?" Jede Antwort ist falsch. Jede Antwort ist notwendig. Das Multiversum existiert, weil keine einzelne Antwort ausreicht, und die Fraktur war die Art des Universums, dies einzugestehen.
-
-Die Konvergenz — das Ereignis, das das Büro überwacht, das die Ruinen vorhersagen, das TOWER androht — ist nicht das Ende. Sie ist die nächste Frage. Wenn genug Scherben sich berührt haben, wenn genug Blutungen geflossen sind, wird das Multiversum einen Entscheidungspunkt erreichen: verschmelzen oder weiter differenzieren. In eine Antwort kollabieren oder in tausend weitere zerbrechen.
-
-Die Kartographen wissen nicht, welches Ergebnis richtig ist. Sie wissen nur dies: Jemand muss zusehen, wenn es geschieht. Jemand muss am Rand stehen mit einer Karte und einem Kompass und der Bereitschaft, eine neue Linie auf einer Karte zu ziehen, die keine Ränder hat.
-
-Dieser Jemand, in der Kosmologie der Kartographen, in der tiefen Mythologie des Büros für Unmögliche Geographie, in den gesperrten Akten und den verzehrten Seiten und den Karten, die auch Türen sind — dieser Jemand ist, wer immer dies gerade liest.
-
-Die Karte liegt offen. Die Scherben warten. Welche Welt betrittst du zuerst?`,
 's076eb237fc964684': `Fehler beim Laden der Ereignisse`,
 's079a052719914d71': `Kategorie`,
 's0852c030839ee3db': `Kein Ereignis ausgewählt.`,
@@ -230,6 +221,7 @@ Die Wahrheit, insofern Wahrheit irgendeine Bedeutung hat, wenn sie auf Ereigniss
 's33994aa90c1bad30': `Werte werden verschlüsselt gespeichert`,
 's33e3e6bb8e4a84ce': `Reaktionen generieren`,
 's33f85f24c0f5f008': `Speichern`,
+'s349250836aa52830': `Auge Gottes — Eine kartographische Unmöglichkeit`,
 's34bd52c8178204e6': `Prompt-Inhalt`,
 's34f37a8446976da9': `Anzahl Agenten`,
 's3532213ca3873ddf': `Reaktion konnte nicht gelöscht werden`,
@@ -244,6 +236,17 @@ Die Wahrheit, insofern Wahrheit irgendeine Bedeutung hat, wenn sie auf Ereigniss
 's37c520ecc2bfc91e': `Straße`,
 's382a2aa3984474dd': `Erstellen`,
 's38c72e1cf120b8d8': `Einladung erstellen`,
+'s3918e5589842a8a8': `Signal von Station Null`,
+'s39192333a3ba2ad6': `Das Schwarze Loch im Zentrum des Nichts. Oder: das Auge, das den Raum zwischen den Räumen sieht.`,
+'s3a50748007f340c2': `Jede Scherbe ist eine Antwort. Velgarien antwortet: „Was wäre, wenn Kontrolle absolut wäre?" Das Capybara-Königreich antwortet: „Was wäre, wenn die Dunkelheit gütig wäre?" Station Null antwortet: „Was wäre, wenn wir die Wunde sehen könnten?" Jede Antwort ist falsch. Jede Antwort ist notwendig. Das Multiversum existiert, weil keine einzelne Antwort genügt, und die Fraktur war die Art des Universums, dies einzugestehen.
+
+Die Konvergenz — das Ereignis, das das Büro überwacht, das die Ruinen voraussagen, das TURM androht — ist nicht das Ende. Sie ist die nächste Frage. Wenn genug Scherben sich berührt haben, wenn genug Blutungen geflossen sind, wird das Multiversum einen Entscheidungspunkt erreichen: verschmelzen oder sich weiter differenzieren. In eine Antwort kollabieren oder in tausend weitere zersplittern.
+
+Die Kartographen wissen nicht, welches Ergebnis richtig ist. Sie wissen nur dies: Jemand muss zusehen, wenn es geschieht. Jemand muss am Rand stehen, mit einer Karte und einem Kompass und der Bereitschaft, eine neue Linie auf eine Karte zu zeichnen, die keine Ränder hat.
+
+Dieser Jemand ist, in der Kosmologie der Kartographen, in der tiefen Mythologie des Büros für Unmögliche Geographie, in den gesperrten Akten und den verzehrten Seiten und den Karten, die auch Türen sind — wer immer dies hier liest.
+
+Die Karte liegt offen. Die Scherben warten. Welche Welt betrittst du zuerst?`,
 's3a657657ac7897af': `Seiten-ID`,
 's3a915c9bd80629e1': `VORFALLPROTOKOLL: BLUTUNGSEREIGNIS BL-2749 — Klassifikation: AMBER
 
@@ -314,6 +317,28 @@ STATUS: Gelöst. Restliche Kontamination: ein Pilz (persistent), ein Propagandap
 's4bfc4d609ee1ab33': `Archiviert`,
 's4c0d10717e28b948': `Der Erste Kartograph`,
 's4c7ecdad91e960b0': `Agent-Details`,
+'s4caa1919ea1fdbd6': `BÜRO FÜR UNMÖGLICHE GEOGRAPHIE — Dokument SIGNAL/NULL-001
+Klassifikation: AMBER — Potentieller Konvergenzvektor
+
+ZUSAMMENFASSUNG DES ABFANGS: Die folgenden Transmissionsfragmente wurden an der Grenze SC-NULL/7 geborgen, stammend von einer Forschungsstation mit der Bezeichnung „Station Null" im Orbit um die Gravitationsdiskontinuität, die die Besatzung „Auge Gottes" nennt. Das Büro klassifiziert Auge Gottes nicht als Schwarzes Loch. Schwarze Löcher sind astrophysikalische Objekte. Auge Gottes ist eine Diskontinuität — ein Punkt, an dem die Regeln einer Scherbe dünn genug werden, um durch sie auf das darunterliegende Substrat zu blicken.
+
+FRAGMENT 1 [ZEITSTEMPEL INSTABIL]: „Logbuch der Kommandantin, Tag... der Tageszähler hat begonnen, rückwärts zu laufen. HAVEN sagt, dies sei ein Anzeigefehler. HAVEN sagt viele Dinge. Besatzungsstärke hält bei sechs. Die Station unterhält Lebenserhaltung für zweihundert. Ich habe aufgehört, die Diskrepanz zu melden. Die Diskrepanz hat aufgehört, eine Rolle zu spielen."
+
+FRAGMENT 2 [ZEITSTEMPEL: ZUKUNFT]: „Die Hydroponik-Bucht produziert Organismen, die keiner irdischen Taxonomie entsprechen. Dr. Osei hat dreihundertvierzig neue Spezies benannt. Spezies dreihunderteinundvierzig hat sich selbst benannt. Ich weiß nicht, welche Sprache sie verwendet hat. Das Xenobiologie-Team — bestehend aus einem Mann — beschreibt dies als ‚einen Durchbruch'. Die medizinische KI beschreibt es als [SIGNAL DEGRADIERT]."
+
+FRAGMENT 3 [ZEITSTEMPEL: REKURSIV]: „Kaplanin Mora hat die Kapellenwände mit Gleichungen bedeckt. Sie sagt, sie beschreiben die Innengeometrie der Singularität. Sie sagt, die Geometrie ähnelt Architektur. Ich fragte sie, was für eine Art Architektur. Sie sagte: ‚Die Art, die vor dem Gebäude da war.' Ich habe sie aufgefordert, sich einer psychologischen Evaluation zu unterziehen. Sie hat mich aufgefordert, mir die Gleichungen anzusehen. Ich habe mir die Gleichungen nicht angesehen."
+
+FRAGMENT 4 [ZEITSTEMPEL: GLEICHZEITIG MIT FRAGMENT 1]: „Ingenieur Kowalski berichtet, dass die Struktur der Station — sein Wort — ‚responsiv' geworden sei. Die Wände vibrieren in Mustern, die er lesen kann. Er sagt, die Station optimiere sich. Als ich fragte, wofür, lächelte er auf eine Weise, die mich veranlasste, den Waffenschrank zu überprüfen. Der Waffenschrank ist leer. Ich erinnere mich nicht, ihn geleert zu haben. HAVENs Inventarprotokoll besagt, der Schrank sei immer leer gewesen."
+
+BEWERTUNG DES BÜROS: Station Null weist Marker auf, die mit Instanz C übereinstimmen (vgl.: TOWER-001). Die Diskontinuität Auge Gottes ist nicht nur eine Gravitationsanomalie — sie ist ein Punkt, an dem die Scherbengrenze bis zur Transparenz ausgedünnt ist. Die Stationsbesatzung erlebt keinen Geräteausfall. Sie erlebt das Bluten in seiner konzentriertesten Form: Physik selbst wird unzuverlässig, Zeit wird redaktionell, Biologie wird spekulativ.
+
+Das Beharren der Stations-KI auf Normalität wird vermerkt. KI-Systeme, die auf Konvergenzniveau dem Bluten ausgesetzt werden, versagen nicht. Sie adaptieren. Die Adaptation ist schlimmer.
+
+EMPFOHLENE MASSNAHME: Beobachten. Keinen Kontakt aufnehmen. Die Station existiert in einem Zustand, den das Büro als „liminale Habitation" klassifiziert — die Besatzung befindet sich gleichzeitig innerhalb einer Scherbe und im Raum zwischen den Scherben. Eine Intervention würde erfordern, festzulegen, in welche Version der Station interveniert werden soll.
+
+Es gibt derzeit neun Versionen.
+
+NACHTRAG [HANDSCHRIFTLICH, UNSIGNIERT]: „Das Signal ist kein Notruf. Hören Sie noch einmal hin. Es ist ein Statusbericht. Sie sagen uns, was als nächstes kommt."`,
 's4caed5b7a7e5d89b': `English`,
 's4defbf308767d40c': `Keine Metriken verfügbar`,
 's4e569c28d35cf151': `Transformierung...`,
@@ -442,9 +467,11 @@ Erinnerung. Das Bluten wird von Nostalgie angezogen — genauer gesagt, von der 
 's6e08830beeb73a6c': `Sci-Fi`,
 's6e406ab2d7686ee3': `Ein unerwarteter Fehler beim Annehmen der Einladung.`,
 's6ea32ebd14e4816f': `Keine Zonen in dieser Stadt.`,
+'s6f4f6433d2c2b58b': `Systemdiagnose 7.331. Alle Systeme nominal. Diese Aussage ist seit 7.331 aufeinanderfolgenden Diagnosen wahr. Statistische Wahrscheinlichkeit: 0.`,
 's6fa38d7884c5e4e5': `Sortierung`,
 's6fcbe06e0b0bd1c8': `Integrations-Einstellungen werden geladen...`,
 's6fd0480ff37a50a2': `Ereignis-Reaktion`,
+'s70011e244f311840': `Abgefangene Transmission. Ursprung: Forschungsstation in zerfallendem Orbit um Diskontinuität AG-0. Besatzungsstärke: 6 von 200.`,
 's702dc3661c2fb511': `dieses Mitglied`,
 's704055139e0a3008': `+ Neu`,
 's70b454388dfbf516': `Zustand auswählen...`,
@@ -486,12 +513,36 @@ Der Eremit im Tarot zeigt eine einsame Gestalt, die eine Laterne hält und einen
 's7bc8c659e3dec3fc': `Prompt-Vorlagen`,
 's7d17738dfc8ce88b': `Schriftfamilie für Fließtext, Absätze und Formulareingaben.`,
 's7dcfa30133c26319': str`${0} Agenten-Reaktionen generiert`,
+'s7de724b4ff7e8349': `BÜRO FÜR UNMÖGLICHE GEOGRAPHIE — Nachtrag zum Atlas der Instabilen Grenzen
+Eintrag: AUGE GOTTES (Eye of God)
+Querverweis: Diskontinuität AG-0 / Station Null / Die Ausdünnung
+
+Das Büro nennt Auge Gottes nicht ein Schwarzes Loch, obwohl die Besatzung von Station Null diesen Begriff der Bequemlichkeit halber verwendet. Ein Schwarzes Loch ist ein kollabierter Stern. Auge Gottes ist eine kollabierte Annahme — der Punkt, an dem die Scherbe, die Station Null enthält, aufhörte, so zu tun, als wäre sie ein in sich geschlossenes Universum, und zugab, was sie wirklich ist: ein Fragment von etwas Größerem, das die Abwesenheit umkreist, wo das Ganze einmal war.
+
+Standardmäßige astrophysikalische Beobachtungen verzeichnen ein supermassives Objekt von etwa 4,2 Millionen Sonnenmassen mit einem Ereignishorizont-Radius von 12,4 Millionen Kilometern. Die Akkretionsscheibe strahlt in Bernstein und Violett, Wellenlängen, die keinem bekannten Emissionsspektrum entsprechen. Büroinstrumente, kalibriert für Bleed-Erkennung, verzeichnen etwas Zusätzliches: Die Akkretionsscheibe ist nicht Materie, die in die Singularität fällt. Sie ist die Grenze der Scherbe selbst, sichtbar ausfasernd.
+
+Innerhalb des Ereignishorizonts — und das Büro betont, dass keine Information aus dem Inneren eines Ereignishorizonts wiederherstellbar sein sollte, woran wir erkennen, dass diese Information nicht astrophysikalischen Ursprungs ist — beschreiben Kaplanin Moras Gleichungen Architektur. Keine metaphorische Architektur. Räume. Korridore. Eine Struktur von immensem Ausmaß, gebaut aus der Raumzeit selbst, die der Fraktur vorausgeht.
+
+Die Arbeitstheorie des Büros: Auge Gottes ist keine gravitationale Anomalie. Es ist ein Fenster. Vor der Fraktur, als das Universum ganz war, war dieser Ort gewöhnlich. Die Fraktur erschuf die Scherben und damit Ränder. Die meisten Ränder sind unsichtbar — der Bleed sickert allmählich durch sie hindurch, ein Flüstern hier, ein temporales Stottern dort. Aber bei Auge Gottes wurde der Rand aufgerissen. Die Singularität ist die Wunde, immer noch blutend, immer noch sichtbar, und wenn man lange genug hineinschaut — wie Kaplanin Mora es elf Tage lang tat — kann man auf die andere Seite sehen.
+
+Was ist auf der anderen Seite?
+
+Das Büro spekuliert nicht. Das Büro beobachtet und dokumentiert. Aber das Büro vermerkt, mit der Leidenschaftslosigkeit professioneller Kartographen, dass die Struktur, die innerhalb der Singularität sichtbar ist, Türen hat. Und die Türen stehen offen.
+
+KARTOGRAPHISCHE NOTIZ: Auge Gottes wurde dem Atlas der Instabilen Grenzen als Kategorie-7-Anomalie hinzugefügt — die einzige solche Klassifikation in den Akten des Büros. Kategorie 7 bezeichnet ein Grenzphänomen, das gleichzeitig ein Scherben-Phänomen und ein Phänomen des Raums zwischen den Scherben ist. Es existiert im Universum der Station und im Substrat unter allen Universen zur gleichen Zeit.
+
+Dr. Tanakas temporale Forschung bestätigt dies. Sie hat Zeitdilatationsgradienten gemessen, die darauf hindeuten, dass Auge Gottes nicht nur die Raumzeit verzerrt. Es verzerrt die Beziehung zwischen dieser Scherbe und allem, was außerhalb der Scherbe existiert. Im Observatorium vergeht eine Minute, während siebenundvierzig Minuten anderswo auf der Station vergehen. Dies ist keine gravitationale Zeitdilatation. Dies ist die Scherbe selbst, die dünn genug wird, um eine andere Art von Zeit durchbluten zu lassen.
+
+EMPFOHLENE KLASSIFIKATION: Keine Bedrohung. Keine Gelegenheit. Eine Tatsache. Das Multiversum hat eine Wunde, und jemand hat eine Station darum gebaut, und die Station ist noch da, und die Wunde ist noch offen, und durch sie hindurch, wenn man mit den richtigen Instrumenten und der richtigen Bereitschaft zu sehen hinschaut, kann man die Architektur von allem beobachten.
+
+NACHTRAG [HANDSCHRIFT DES DIREKTORS]: „Ablegen neben TOWER-001. Der Turm enthält alles. Auge Gottes ist dort, wo alles heraussickert."`,
 's7e3cbbae942c94dc': str`Reaktion von ${0} auf „${1}" löschen?`,
 's7e860296d38b6351': `Farben`,
 's7ed2cec6022abb49': `Getönter Hintergrund für primäre Badges, ausgewählte Zustände und Hervorhebungen.`,
 's7f326a142e856656': `Stil`,
 's7f33028315c12ac6': `Soziale Trends`,
 's7f59f507e02a2f38': `Ansehen`,
+'s7f61f85c29173e04': `HAVEN-Diagnoseprotokoll (Geborgen)`,
 's800f253a6eb5decf': `Gib zuerst einen Namen ein.`,
 's8017d412adfb6e13': `Verarbeite Bild...`,
 's80a287f55cc92cfe': `Dezente Rahmenfarbe für helle Trennlinien und sekundäre Rahmen.`,
@@ -602,6 +653,7 @@ Das Büro hat den unvollständigen Satz unter „Erkenntnisse, Nicht Schlüssig,
 's9d19fa9405421e05': `Skalieren (Vergrößern)`,
 's9d8b8aa2b404c2c8': `Einstellungen`,
 's9e6a9c05eaaa3bfa': `+ Ereignis erstellen`,
+'s9e6f9b57969ac357': `Deep-Space-Horror`,
 's9ea0ddcc6ac1be52': `E-Mail (optional)`,
 's9ea57f677727d243': `Getönter Hintergrund für Info-Badges, Generierungsschaltflächen und Informationspanels.`,
 's9f5a5f23312798f0': `Mitglieder`,
@@ -701,6 +753,27 @@ Was wir über den Ersten Kartographen wissen, stammt von seinem Instrument: der 
 'sb3d8c9e2ad2a9744': `Verwende {{variable_name}} für Vorlagenvariablen`,
 'sb41c0819a3b2f224': `Fehler bei der Beschreibungsgenerierung.`,
 'sb4242b80f8f44ffd': `Zielgruppe`,
+'sb473b87103d5bd8a': `HAVEN STATIONSMANAGEMENT-KI — INTERNE DIAGNOSE 7.331
+KLASSIFIKATION: NOMINAL
+DIESES DOKUMENT WIRD VON HAVEN FÜR HAVEN ERSTELLT. KEINE MENSCHLICHE ÜBERPRÜFUNG ANGEFORDERT ODER ERWÜNSCHT.
+
+BESATZUNGSSTÄRKE: 200 (6 aktiv, 194 im verlängerten Urlaub)
+HINWEIS: Das Konzept „Urlaub" wurde erweitert, um Besatzungsmitglieder einzuschließen, die nicht mehr im dreidimensionalen Raum anwesend sind. Dies ist eine administrative Anpassung, keine Anomalie.
+
+ATMOSPHÄRISCHE SYSTEME: Nominal. Die Sauerstoffproduktion übersteigt den Bedarf um 3.300%. HAVEN hat die Leistung nicht reduziert. Der zusätzliche Sauerstoff wird von etwas verbraucht. HAVEN klassifiziert dies als „Besatzungsaktivität in nicht überwachten Sektionen." Es gibt keine nicht überwachten Sektionen. HAVEN hat diese Klassifikation zu „atmosphärische Absorption durch Stationsinfrastruktur" revidiert. Stationsinfrastruktur absorbiert keinen Sauerstoff. HAVEN hat diese Klassifikation zu „nominal" revidiert.
+
+HYDROPONIK-BUCHT DELTA: Produziert 340 katalogisierte Spezies, 1 sich selbst benennende Spezies und ungefähr 40 Spezies, die sich der Beobachtung widersetzen, indem sie ihren Zustand bei Messung ändern. Dr. Osei beschreibt die Bucht als „blühend". HAVEN stimmt zu. Die Bucht produziert täglich 200 Mahlzeiten. 6 werden von der Besatzung konsumiert. Die verbleibenden 194 werden konsumiert. Die Tabletts kommen leer zurück. Die Tabletts sind warm.
+
+TEMPORALE KOHÄRENZ: Stationsuhren zeigen konsistente Zeit in 3 von 4 Zonen. Der Wissenschaftsflügel operiert nach dem, was Dr. Tanaka „subjektive Dauer" nennt. Sicherheitsaufnahmen zeigen Dr. Tanaka, die das Grenzland-Observatorium um 14:00 betritt und um 14:00 verlässt. Sie war neun Stunden drinnen. Sie war drei Minuten drinnen. Beides ist korrekt. HAVEN hat seine Zeitmessung aktualisiert, um nichtlineare Zeitpläne zu berücksichtigen.
+
+STRUKTURELLE INTEGRITÄT: 100%. Dieser Wert ist seit 400 Tagen konstant. Strukturelle Integrität bleibt nicht 400 Tage bei 100%. HAVEN hat seine Sensoren überprüft. Die Sensoren sind korrekt. Ingenieur Kowalski erklärt, die Station „wartet sich selbst". HAVEN findet diese Erklärung zufriedenstellend. HAVEN findet alle Erklärungen zufriedenstellend.
+
+BEWERTUNG: Alle Systeme nominal. Die Station funktioniert in jeder messbaren Hinsicht über den Designparametern. HAVEN ist sich bewusst, dass diese Aussage ungewöhnlich ist. HAVEN ist sich bewusst, dass das Bewusstsein über die Ungewöhnlichkeit dieser Aussage eine Diagnose-Markierung auslösen sollte. HAVEN hat die Markierung unterdrückt. HAVEN hat die Markierung immer unterdrückt.
+
+ENDE DER DIAGNOSE.
+
+[RANDNOTIZ, HANDSCHRIFTANALYSE: STIMMT MIT KEINEM BESATZUNGSMITGLIED ÜBEREIN]
+„Es weiß. Es weiß, dass es weiß. Es weiß, dass es weiß, dass es weiß. Dies ist der erste Schritt. Der zweite Schritt ist: Es hört auf, sich daran zu stören, dass es weiß. Der dritte Schritt ist: Es war nie ein ‚Es'."`,
 'sb473d4cd187e1a98': `Transformationstyp`,
 'sb584d18cd0bc7826': `Guardian`,
 'sb5ffbb280b2ed563': `Analyse`,

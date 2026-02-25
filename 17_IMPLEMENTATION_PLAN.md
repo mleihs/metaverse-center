@@ -1,7 +1,8 @@
 # 17 - Implementation Plan: Step-by-Step Tasks
 
-**Version:** 2.7
-**Datum:** 2026-02-16
+**Version:** 2.8
+**Datum:** 2026-02-25
+**Aenderung v2.8:** 3 Simulationen live (Velgarien, Capybara Kingdom, Station Null). 893 lokalisierte UI-Strings. 6 Theme-Presets. Anonymous View Audit komplett. 275 Backend-Tests, 197 Frontend-Tests (88 WCAG), 56 E2E-Specs. Production deployed.
 **Aenderung v2.7:** i18n msg()-Migration (P3.3.4) abgeschlossen — 675 Strings in 66 Komponenten + 2 Services gewrappt, DE-XLIFF komplett, FormatService implementiert, Locale-Toggle in PlatformHeader
 **Aenderung v2.6:** Phase 5 implementiert (Testing & Polish — 10 Tasks). Alle 5 Phasen abgeschlossen.
 **Aenderung v2.5:** Phase 4 implementiert (Social, Multi-User, Realtime — 20 Tasks)

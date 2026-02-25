@@ -1,7 +1,8 @@
 # 07 - Frontend Components: Komponenten + Simulation-Settings-UI
 
-**Version:** 1.1
-**Datum:** 2026-02-15
+**Version:** 1.2
+**Datum:** 2026-02-25
+**Aenderung v1.2:** LoreScroll-Akkordeon auf Dashboard. LoginPanel (Slide-from-Right). SimulationCard mit Banner-Bild + Zaehler. VelgSimulationShell Theming-Lifecycle (connectedCallback/disconnectedCallback). Anonymer Read-Only-Modus in allen Entity-Komponenten via `appState.isAuthenticated.value`.
 **Änderung v1.1:** Zod-Validierung, @lit-labs/router, Biome-Tooling ergänzt
 
 ---

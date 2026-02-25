@@ -1,7 +1,8 @@
 # 15 - Migration Strategy: Velgarien → Multi-Simulations-Plattform
 
-**Version:** 1.1
-**Datum:** 2026-02-15
+**Version:** 1.2
+**Datum:** 2026-02-25
+**Aenderung v1.2:** 24 Migrationen total (001-021 + ensure_dev_user). Seed-Archivierung mit `_`-Prefix (002-005, 009, 011-012). 5 aktive Seeds (001, 006, 007, 008, 010). Migration 018: Public-Access (21 anon-RLS-Policies). Migration 019: Buildings-Street-Index. Migration 020: Restrict-Settings-Policy. Migration 021: Station Null (Simulation + Daten + Design-Theme). Migration ensure_dev_user: Test-User + Velgarien-Simulation (muss VOR Daten-Migrationen 016+ laufen).
 
 ---
 

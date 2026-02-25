@@ -1,7 +1,8 @@
 # 10 - Auth and Security
 
-**Version:** 1.1
-**Datum:** 2026-02-15
+**Version:** 1.2
+**Datum:** 2026-02-25
+**Aenderung v1.2:** Public-First-Architektur: `get_anon_supabase()` erstellt Supabase-Client ohne JWT (anon-Key only). 21 anon-SELECT-RLS-Policies fuer oeffentlichen Lesezugriff. Frontend-Services routen GET-Requests via `appState.isAuthenticated.value` zu `/api/v1/public/*` (anon) oder `/api/v1/*` (auth). Rate-Limiting: 100/min fuer Public-Endpoints.
 
 ---
 

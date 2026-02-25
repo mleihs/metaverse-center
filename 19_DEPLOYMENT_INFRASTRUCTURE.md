@@ -1,8 +1,8 @@
 # 19 — Deployment Infrastructure & Dev→Prod Sync
 
-**Version:** 1.1
+**Version:** 1.2
 **Date:** 2026-02-25
-**Status:** Production deployed (Railway + hosted Supabase)
+**Status:** Production deployed (Railway + hosted Supabase). 3 Simulationen live. 24 lokale Migrationen, 22 auf Production (021 Station Null + ensure_dev_user noch nicht gepusht). Lokale Supabase verwendet `sb_secret_`/`sb_publishable_` Keys (NICHT JWT service_role). `supabase stop --no-backup` zerstört Docker-Volumes inkl. aller Storage-Dateien (Bilder). Image-UUIDs ändern sich bei Re-Generierung — ALLE DB-URLs müssen aktualisiert werden.
 
 ---
 
