@@ -34,24 +34,62 @@ const TEXT_MODEL_OPTIONS = [
   'mistralai/mistral-large',
 ];
 
-/** Image parameter keys. */
-const IMAGE_PARAMS = [
-  { key: 'image_width', label: msg('Image Width (px)'), type: 'number', placeholder: '1024' },
-  { key: 'image_height', label: msg('Image Height (px)'), type: 'number', placeholder: '1024' },
-  { key: 'image_guidance_scale', label: msg('Guidance Scale'), type: 'number', placeholder: '7.5' },
-  {
-    key: 'image_num_inference_steps',
-    label: msg('Inference Steps'),
-    type: 'number',
-    placeholder: '50',
-  },
-  {
-    key: 'image_scheduler',
-    label: msg('Scheduler'),
-    type: 'text',
-    placeholder: 'DPMSolverMultistep',
-  },
-] as const;
+/** Image model options. */
+function getImageModelOptions() {
+  return [
+    { value: 'black-forest-labs/flux-dev', label: msg('Flux Dev (recommended)') },
+    { value: 'black-forest-labs/flux-schnell', label: msg('Flux Schnell (fast)') },
+    { value: 'black-forest-labs/flux-1.1-pro', label: msg('Flux 1.1 Pro (highest quality)') },
+    {
+      value: 'black-forest-labs/flux-dev-lora',
+      label: msg('Flux Dev + LoRA (custom style)'),
+    },
+    {
+      value:
+        'stability-ai/stable-diffusion:ac732df83cea7fff18b8472768c88ad041fa750ff7682a21affe81863cbe77e4',
+      label: msg('Stable Diffusion 1.5 (legacy)'),
+    },
+  ];
+}
+
+/** Image model purpose keys. */
+function getImageModelPurposes() {
+  return [
+    { key: 'image_model_agent_portrait', label: msg('Portrait Model') },
+    { key: 'image_model_building_image', label: msg('Building Image Model') },
+  ];
+}
+
+/** SD-specific params (hidden when Flux is selected). */
+function getSdParams() {
+  return [
+    { key: 'image_width', label: msg('Image Width (px)'), placeholder: '512' },
+    { key: 'image_height', label: msg('Image Height (px)'), placeholder: '768' },
+    { key: 'image_scheduler', label: msg('Scheduler'), placeholder: 'K_EULER', type: 'text' },
+  ];
+}
+
+/** Flux-specific params (hidden when SD is selected). */
+function getFluxParams() {
+  return [
+    { key: 'image_aspect_ratio', label: msg('Aspect Ratio'), placeholder: '3:4', type: 'text' },
+    {
+      key: 'image_output_quality',
+      label: msg('Output Quality'),
+      placeholder: '90',
+      min: '1',
+      max: '100',
+    },
+  ];
+}
+
+/** Shared image params (shown for both model families). */
+function getSharedImageParams() {
+  return [
+    { key: 'image_guidance_scale', label: msg('Guidance Scale'), placeholder: '7.5' },
+    { key: 'image_num_inference_steps', label: msg('Inference Steps'), placeholder: '50' },
+  ];
+}
 
 /** Default generation params. */
 const GENERATION_PARAMS = [
@@ -89,6 +127,14 @@ export class VelgAISettingsPanel extends LitElement {
       margin: 0;
     }
 
+    .section__help {
+      font-family: var(--font-sans);
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      margin: 0;
+      line-height: 1.4;
+    }
+
     .form-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -105,6 +151,10 @@ export class VelgAISettingsPanel extends LitElement {
       gap: var(--space-1-5);
     }
 
+    .form__group--full {
+      grid-column: 1 / -1;
+    }
+
     .form__label {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
@@ -115,7 +165,8 @@ export class VelgAISettingsPanel extends LitElement {
     }
 
     .form__input,
-    .form__select {
+    .form__select,
+    .form__textarea {
       font-family: var(--font-sans);
       font-size: var(--text-sm);
       padding: var(--space-2) var(--space-3);
@@ -128,18 +179,28 @@ export class VelgAISettingsPanel extends LitElement {
     }
 
     .form__input:focus,
-    .form__select:focus {
+    .form__select:focus,
+    .form__textarea:focus {
       outline: none;
       border-color: var(--color-border-focus);
       box-shadow: var(--ring-focus);
     }
 
-    .form__input::placeholder {
+    .form__input::placeholder,
+    .form__textarea::placeholder {
       color: var(--color-text-muted);
     }
 
     .form__select {
       cursor: pointer;
+    }
+
+    .form__textarea {
+      min-height: 80px;
+      resize: vertical;
+      font-family: var(--font-mono, monospace);
+      font-size: var(--text-xs);
+      line-height: 1.5;
     }
 
     .panel__footer {
@@ -219,6 +280,33 @@ export class VelgAISettingsPanel extends LitElement {
     return false;
   }
 
+  /** Check if any configured image model is Flux-based. */
+  private get _hasFluxModel(): boolean {
+    for (const purpose of getImageModelPurposes()) {
+      const val = this._values[purpose.key] ?? '';
+      if (val.includes('flux')) return true;
+    }
+    return false;
+  }
+
+  /** Check if any configured image model is SD-based. */
+  private get _hasSdModel(): boolean {
+    for (const purpose of getImageModelPurposes()) {
+      const val = this._values[purpose.key] ?? '';
+      if (!val || val.includes('stability-ai')) return true;
+    }
+    return false;
+  }
+
+  /** Check if any configured image model is a LoRA model. */
+  private get _hasLoraModel(): boolean {
+    for (const purpose of getImageModelPurposes()) {
+      const val = this._values[purpose.key] ?? '';
+      if (val.includes('lora')) return true;
+    }
+    return false;
+  }
+
   protected willUpdate(changedProperties: Map<PropertyKey, unknown>): void {
     if (changedProperties.has('simulationId') && this.simulationId) {
       this._loadSettings();
@@ -272,7 +360,7 @@ export class VelgAISettingsPanel extends LitElement {
   }
 
   private _handleInput(key: string, e: Event): void {
-    const target = e.target as HTMLInputElement | HTMLSelectElement;
+    const target = e.target as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
     this._values = { ...this._values, [key]: target.value };
   }
 
@@ -328,6 +416,7 @@ export class VelgAISettingsPanel extends LitElement {
       <div class="panel">
         ${this._error ? html`<div class="panel__error">${this._error}</div>` : nothing}
 
+        <!-- Text Models -->
         <div class="section">
           <velg-section-header variant="large">${msg('Text Models')}</velg-section-header>
           <p class="section__subtitle">${msg('Select a model for each generation purpose')}</p>
@@ -357,17 +446,50 @@ export class VelgAISettingsPanel extends LitElement {
           </div>
         </div>
 
+        <!-- Image Model -->
+        <div class="section">
+          <velg-section-header variant="large">${msg('Image Model')}</velg-section-header>
+          <p class="section__subtitle">${msg('Select an image generation model for each purpose')}</p>
+          <div class="form-grid">
+            ${getImageModelPurposes().map(
+              (purpose) => html`
+                <div class="form__group">
+                  <label class="form__label" for="ai-${purpose.key}">${purpose.label}</label>
+                  <select
+                    class="form__select"
+                    id="ai-${purpose.key}"
+                    .value=${this._values[purpose.key] ?? ''}
+                    @change=${(e: Event) => this._handleInput(purpose.key, e)}
+                  >
+                    <option value="">${msg('-- Default (SD 1.5) --')}</option>
+                    ${getImageModelOptions().map(
+                      (opt) => html`
+                        <option value=${opt.value} ?selected=${this._values[purpose.key] === opt.value}>
+                          ${opt.label}
+                        </option>
+                      `,
+                    )}
+                  </select>
+                </div>
+              `,
+            )}
+          </div>
+        </div>
+
+        <!-- Image Generation Parameters -->
         <div class="section">
           <velg-section-header variant="large">${msg('Image Generation')}</velg-section-header>
           <div class="form-grid form-grid--narrow">
-            ${IMAGE_PARAMS.map(
+            <!-- Shared params (both model families) -->
+            ${getSharedImageParams().map(
               (param) => html`
                 <div class="form__group">
                   <label class="form__label" for="ai-${param.key}">${param.label}</label>
                   <input
                     class="form__input"
                     id="ai-${param.key}"
-                    type=${param.type}
+                    type="number"
+                    step="0.5"
                     placeholder=${param.placeholder}
                     .value=${this._values[param.key] ?? ''}
                     @input=${(e: Event) => this._handleInput(param.key, e)}
@@ -375,9 +497,129 @@ export class VelgAISettingsPanel extends LitElement {
                 </div>
               `,
             )}
+
+            <!-- SD-specific params -->
+            ${
+              this._hasSdModel
+                ? getSdParams().map(
+                    (param) => html`
+                    <div class="form__group">
+                      <label class="form__label" for="ai-${param.key}">${param.label}</label>
+                      <input
+                        class="form__input"
+                        id="ai-${param.key}"
+                        type=${param.type ?? 'number'}
+                        placeholder=${param.placeholder}
+                        .value=${this._values[param.key] ?? ''}
+                        @input=${(e: Event) => this._handleInput(param.key, e)}
+                      />
+                    </div>
+                  `,
+                  )
+                : nothing
+            }
+
+            <!-- Flux-specific params -->
+            ${
+              this._hasFluxModel
+                ? getFluxParams().map(
+                    (param) => html`
+                    <div class="form__group">
+                      <label class="form__label" for="ai-${param.key}">${param.label}</label>
+                      <input
+                        class="form__input"
+                        id="ai-${param.key}"
+                        type=${param.type ?? 'number'}
+                        placeholder=${param.placeholder}
+                        min=${param.min ?? ''}
+                        max=${param.max ?? ''}
+                        .value=${this._values[param.key] ?? ''}
+                        @input=${(e: Event) => this._handleInput(param.key, e)}
+                      />
+                    </div>
+                  `,
+                  )
+                : nothing
+            }
           </div>
         </div>
 
+        <!-- Style Prompts -->
+        <div class="section">
+          <velg-section-header variant="large">${msg('Style Prompts')}</velg-section-header>
+          <p class="section__help">
+            ${msg('Style keywords appended to every image generation prompt. Leave empty to use defaults.')}
+          </p>
+          <div class="form-grid">
+            <div class="form__group form__group--full">
+              <label class="form__label" for="ai-style-portrait">
+                ${msg('Portrait Style Prompt')}
+              </label>
+              <textarea
+                class="form__textarea"
+                id="ai-style-portrait"
+                placeholder=${msg('photorealistic portrait photograph, cinematic lighting, shallow depth of field, single subject, high detail')}
+                .value=${this._values.image_style_prompt_portrait ?? ''}
+                @input=${(e: Event) => this._handleInput('image_style_prompt_portrait', e)}
+              ></textarea>
+            </div>
+            <div class="form__group form__group--full">
+              <label class="form__label" for="ai-style-building">
+                ${msg('Building Style Prompt')}
+              </label>
+              <textarea
+                class="form__textarea"
+                id="ai-style-building"
+                placeholder=${msg('architectural photograph, cinematic composition, photorealistic, high detail, dramatic lighting')}
+                .value=${this._values.image_style_prompt_building ?? ''}
+                @input=${(e: Event) => this._handleInput('image_style_prompt_building', e)}
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- LoRA (conditional) -->
+        ${
+          this._hasLoraModel
+            ? html`
+            <div class="section">
+              <velg-section-header variant="large">${msg('Custom Style LoRA')}</velg-section-header>
+              <p class="section__help">
+                ${msg('LoRA URL for custom fine-tuned styles. Only used with Flux Dev + LoRA model.')}
+              </p>
+              <div class="form-grid">
+                <div class="form__group">
+                  <label class="form__label" for="ai-lora-url">${msg('LoRA URL')}</label>
+                  <input
+                    class="form__input"
+                    id="ai-lora-url"
+                    type="text"
+                    placeholder="https://replicate.delivery/..."
+                    .value=${this._values.image_lora_url ?? ''}
+                    @input=${(e: Event) => this._handleInput('image_lora_url', e)}
+                  />
+                </div>
+                <div class="form__group">
+                  <label class="form__label" for="ai-lora-scale">${msg('LoRA Scale')}</label>
+                  <input
+                    class="form__input"
+                    id="ai-lora-scale"
+                    type="number"
+                    step="0.05"
+                    min="0"
+                    max="1"
+                    placeholder="0.85"
+                    .value=${this._values.image_lora_scale ?? ''}
+                    @input=${(e: Event) => this._handleInput('image_lora_scale', e)}
+                  />
+                </div>
+              </div>
+            </div>
+          `
+            : nothing
+        }
+
+        <!-- Generation Defaults -->
         <div class="section">
           <velg-section-header variant="large">${msg('Generation Defaults')}</velg-section-header>
           <div class="form-grid form-grid--narrow">

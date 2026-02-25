@@ -45,7 +45,7 @@ class ImageService:
 
         Returns the public URL of the uploaded portrait.
         """
-        # 1. Generate portrait description (always English for SD)
+        # 1. Generate portrait description (always English for image models)
         description = await self._generation.generate_portrait_description(
             agent_name=agent_name,
             agent_data=agent_data,
@@ -57,26 +57,25 @@ class ImageService:
             description[:100],
         )
 
-        # 2. Generate image via Replicate
+        # 2. Append style prompt from settings
+        style_prompt = await self._model_resolver.resolve_style_prompt("portrait")
+        if style_prompt:
+            description = f"{description}, {style_prompt}"
+
+        # 3. Generate image via Replicate
         image_model = await self._model_resolver.resolve_image_model(
             "agent_portrait",
         )
         raw_bytes = await self._replicate.generate_image(
             model=image_model.model,
-            version=image_model.version,
             prompt=description,
-            negative_prompt=image_model.negative_prompt,
-            width=image_model.width,
-            height=image_model.height,
-            guidance_scale=image_model.guidance_scale,
-            num_inference_steps=image_model.num_inference_steps,
-            scheduler=image_model.scheduler,
+            **image_model.to_replicate_params(),
         )
 
-        # 3. Convert to WebP
+        # 4. Convert to WebP (skip if Flux already outputs WebP)
         webp_bytes = _convert_to_webp(raw_bytes)
 
-        # 4. Upload to Supabase Storage
+        # 5. Upload to Supabase Storage
         filename = f"{self._simulation_id}/{agent_id}/{uuid4()}.webp"
         url = await self._upload_to_storage(
             bucket="agent.portraits",
@@ -84,7 +83,7 @@ class ImageService:
             data=webp_bytes,
         )
 
-        # 5. Update agent record
+        # 6. Update agent record
         self._supabase.table("agents").update(
             {"portrait_image_url": url},
         ).eq("id", str(agent_id)).execute()
@@ -97,45 +96,45 @@ class ImageService:
         building_id: UUID,
         building_name: str,
         building_type: str,
+        building_data: dict | None = None,
     ) -> str:
-        """Generate an image for a building and upload to storage."""
-        # 1. Generate building description for image prompt
-        result = await self._generation.generate_building(
-            building_type=building_type,
+        """Generate an image for a building and upload to storage.
+
+        Uses a dedicated building_image_description template (same pattern as
+        portrait generation) to produce a proper image-generation prompt that
+        reflects the building's game-state properties.
+        """
+        # 1. Generate building image description via LLM template
+        description = await self._generation.generate_building_image_description(
             building_name=building_name,
-            locale="en",
+            building_type=building_type,
+            building_data=building_data,
         )
-        raw_description = result.get("content", building_name)
-
-        # Format as SD-compatible prompt with architectural style keywords
-        description = (
-            f"architectural photograph, {building_type} building, "
-            f"brutalist dystopian style, concrete and steel, "
-            f"{raw_description[:300]}, "
-            "dramatic lighting, imposing structure, photorealistic, "
-            "high detail, cinematic composition"
+        logger.info(
+            "Building image description for '%s': %s",
+            building_name,
+            description[:100],
         )
 
-        # 2. Generate image
+        # 2. Append style prompt from settings
+        style_prompt = await self._model_resolver.resolve_style_prompt("building")
+        if style_prompt:
+            description = f"{description}, {style_prompt}"
+
+        # 3. Generate image
         image_model = await self._model_resolver.resolve_image_model(
             "building_image",
         )
         raw_bytes = await self._replicate.generate_image(
             model=image_model.model,
-            version=image_model.version,
             prompt=description,
-            negative_prompt=image_model.negative_prompt,
-            width=image_model.width,
-            height=image_model.height,
-            guidance_scale=image_model.guidance_scale,
-            num_inference_steps=image_model.num_inference_steps,
-            scheduler=image_model.scheduler,
+            **image_model.to_replicate_params(),
         )
 
-        # 3. Convert to WebP
+        # 4. Convert to WebP
         webp_bytes = _convert_to_webp(raw_bytes)
 
-        # 4. Upload
+        # 5. Upload
         filename = f"{self._simulation_id}/{building_id}/{uuid4()}.webp"
         url = await self._upload_to_storage(
             bucket="building.images",
@@ -143,7 +142,7 @@ class ImageService:
             data=webp_bytes,
         )
 
-        # 5. Update building record
+        # 6. Update building record
         self._supabase.table("buildings").update(
             {"image_url": url},
         ).eq("id", str(building_id)).execute()

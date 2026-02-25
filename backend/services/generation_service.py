@@ -172,6 +172,41 @@ class GenerationService:
         )
         return result.get("content", "")
 
+    async def generate_building_image_description(
+        self,
+        building_name: str,
+        building_type: str,
+        building_data: dict | None = None,
+        locale: str = "en",
+    ) -> str:
+        """Generate a building image description for image generation.
+
+        Always returns English (image models expect English prompts).
+        Uses the building_image_description template with full game-logic context.
+        """
+        data = building_data or {}
+        variables: dict[str, str] = {
+            "building_name": building_name,
+            "building_type": building_type,
+            "building_condition": data.get("building_condition", ""),
+            "building_style": data.get("building_style", ""),
+            "building_description": data.get("description", ""),
+            "special_type": data.get("special_type", ""),
+            "construction_year": str(data.get("construction_year", "")),
+            "population_capacity": str(data.get("population_capacity", "")),
+            "zone_name": data.get("zone_name", ""),
+            "simulation_name": await self._get_simulation_name(),
+            "locale_name": "English",
+        }
+
+        result = await self._generate(
+            template_type="building_image_description",
+            model_purpose="building_description",
+            variables=variables,
+            locale="en",
+        )
+        return result.get("content", "")
+
     async def generate_event(
         self,
         event_type: str,

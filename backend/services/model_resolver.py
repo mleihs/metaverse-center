@@ -23,31 +23,25 @@ PLATFORM_DEFAULT_MODELS: dict[str, str] = {
     "fallback": "deepseek/deepseek-r1-0528:free",
 }
 
-PLATFORM_DEFAULT_IMAGE_MODELS: dict[str, dict[str, str]] = {
-    "agent_portrait": {
-        "model": "stability-ai/stable-diffusion",
-        "version": "ac732df83cea7fff18b8472768c88ad041fa750ff7682a21affe81863cbe77e4",
-    },
-    "building_image": {
-        "model": "stability-ai/stable-diffusion",
-        "version": "ac732df83cea7fff18b8472768c88ad041fa750ff7682a21affe81863cbe77e4",
-    },
-    "fallback": {
-        "model": "stability-ai/stable-diffusion",
-        "version": "ac732df83cea7fff18b8472768c88ad041fa750ff7682a21affe81863cbe77e4",
-    },
+# Platform default image models — SD 1.5 as cheap default ($0.002/img)
+# Simulations can override to Flux Dev ($0.025/img) via settings
+PLATFORM_DEFAULT_IMAGE_MODELS: dict[str, str] = {
+    "agent_portrait": "stability-ai/stable-diffusion:ac732df83cea7fff18b8472768c88ad041fa750ff7682a21affe81863cbe77e4",
+    "building_image": "stability-ai/stable-diffusion:ac732df83cea7fff18b8472768c88ad041fa750ff7682a21affe81863cbe77e4",
+    "fallback": "stability-ai/stable-diffusion:ac732df83cea7fff18b8472768c88ad041fa750ff7682a21affe81863cbe77e4",
 }
 
 PLATFORM_DEFAULT_PARAMS: dict[str, float | int | str] = {
     "temperature": 0.8,
     "max_tokens": 1500,
+    # SD defaults
     "image_width_portrait": 512,
     "image_height_portrait": 768,
     "image_width_building": 768,
     "image_height_building": 512,
-    "guidance_scale": 7.5,
-    "num_inference_steps": 50,
-    "scheduler": "K_EULER",
+    "image_guidance_scale": 7.5,
+    "image_num_inference_steps": 50,
+    "image_scheduler": "K_EULER",
     "negative_prompt_agent": (
         "cartoon, anime, illustration, painting, drawing, artistic, "
         "distorted, deformed, low quality, blurry, text, watermark, signature, "
@@ -60,6 +54,25 @@ PLATFORM_DEFAULT_PARAMS: dict[str, float | int | str] = {
         "cartoon, anime, low quality, blurry, distorted, "
         "bright colors, cheerful, happy, colorful, vibrant, sunny, "
         "modern glass, clean minimalist, utopian"
+    ),
+    # Flux defaults (used when model contains "flux")
+    "flux_guidance": 3.5,
+    "flux_num_inference_steps": 28,
+    "flux_aspect_ratio_portrait": "3:4",
+    "flux_aspect_ratio_building": "4:3",
+    "flux_output_format": "webp",
+    "flux_output_quality": 90,
+}
+
+# Generic platform default style prompts (neutral, no brutalist)
+PLATFORM_DEFAULT_STYLE_PROMPTS: dict[str, str] = {
+    "portrait": (
+        "photorealistic portrait photograph, cinematic lighting, "
+        "shallow depth of field, single subject, high detail"
+    ),
+    "building": (
+        "architectural photograph, cinematic composition, "
+        "photorealistic, high detail, dramatic lighting"
     ),
 }
 
@@ -76,17 +89,61 @@ class ResolvedModel:
 
 @dataclass
 class ResolvedImageModel:
-    """Resolved image model with generation parameters."""
+    """Resolved image model with generation parameters.
+
+    The `model` field uses SDK convention:
+    - "black-forest-labs/flux-dev" (official, no version)
+    - "stability-ai/stable-diffusion:ac732d..." (version-hash appended)
+    """
 
     model: str
-    version: str
+    # SD-specific params (ignored by Flux)
     width: int = 512
     height: int = 512
     guidance_scale: float = 7.5
     num_inference_steps: int = 50
     scheduler: str = "K_EULER"
     negative_prompt: str = ""
+    # Flux-specific params (ignored by SD)
+    aspect_ratio: str = ""
+    output_format: str = "webp"
+    output_quality: int = 90
+    # LoRA (Flux only)
+    lora_url: str = ""
+    lora_scale: float = 0.85
+    # Metadata
     source: str = "platform_default"
+
+    @property
+    def is_flux(self) -> bool:
+        """Check if this is a Flux model."""
+        return "flux" in self.model.lower()
+
+    def to_replicate_params(self) -> dict:
+        """Build params dict for ReplicateService.generate_image()."""
+        if self.is_flux:
+            params: dict = {
+                "guidance": self.guidance_scale,
+                "num_inference_steps": self.num_inference_steps,
+                "output_format": self.output_format,
+                "output_quality": self.output_quality,
+            }
+            if self.aspect_ratio:
+                params["aspect_ratio"] = self.aspect_ratio
+            if self.lora_url and "lora" in self.model.lower():
+                params["hf_lora"] = self.lora_url
+                params["lora_scale"] = self.lora_scale
+            return params
+
+        # SD params
+        return {
+            "width": self.width,
+            "height": self.height,
+            "guidance_scale": self.guidance_scale,
+            "num_inference_steps": self.num_inference_steps,
+            "scheduler": self.scheduler,
+            "negative_prompt": self.negative_prompt,
+        }
 
 
 class ModelResolver:
@@ -121,10 +178,12 @@ class ModelResolver:
         for row in response.data or []:
             key = row["setting_key"]
             value = row["setting_value"]
-            if isinstance(value, str):
+            # Strip surrounding quotes from JSON string values
+            if isinstance(value, str) and value.startswith('"') and value.endswith('"'):
+                self._settings_cache[key] = value[1:-1]
+            elif isinstance(value, str):
                 self._settings_cache[key] = value
             elif isinstance(value, dict | list):
-                # JSON values stored as-is
                 self._settings_cache[key] = str(value)
             else:
                 self._settings_cache[key] = str(value) if value is not None else ""
@@ -185,36 +244,84 @@ class ModelResolver:
         )
 
     async def resolve_image_model(self, purpose: str) -> ResolvedImageModel:
-        """Resolve the best image model for the given purpose."""
+        """Resolve the best image model for the given purpose.
+
+        The model string uses SDK convention:
+        - "black-forest-labs/flux-dev" for Flux official models
+        - "stability-ai/stable-diffusion:ac732d..." for version-hash models
+        """
         ai_settings = await self._load_settings()
 
-        # Check simulation-specific image model (not yet exposed in UI)
+        # Resolve model (may be "black-forest-labs/flux-dev" or "stability-ai/stable-diffusion:hash")
         sim_model = ai_settings.get(f"image_model_{purpose}")
-        sim_version = ai_settings.get(f"image_model_{purpose}_version")
-
         if not sim_model:
-            # Fall back to platform defaults
-            platform = PLATFORM_DEFAULT_IMAGE_MODELS.get(
+            sim_model = PLATFORM_DEFAULT_IMAGE_MODELS.get(
                 purpose, PLATFORM_DEFAULT_IMAGE_MODELS["fallback"],
             )
-            sim_model = platform["model"]
-            sim_version = platform["version"]
 
-        # Load image parameters — use purpose-specific defaults
+        is_flux = "flux" in sim_model.lower()
         is_portrait = "portrait" in purpose
-        default_w = 512 if is_portrait else 768
-        default_h = 768 if is_portrait else 512
+
+        if is_flux:
+            # Flux parameters
+            ar_key = "portrait" if is_portrait else "building"
+            default_ar = str(PLATFORM_DEFAULT_PARAMS.get(f"flux_aspect_ratio_{ar_key}", "3:4"))
+            guidance = self._get_float(
+                ai_settings, "image_guidance_scale",
+                float(PLATFORM_DEFAULT_PARAMS.get("flux_guidance", 3.5)),
+            )
+            steps = self._get_int(
+                ai_settings, "image_num_inference_steps",
+                int(PLATFORM_DEFAULT_PARAMS.get("flux_num_inference_steps", 28)),
+            )
+            aspect_ratio = ai_settings.get("image_aspect_ratio", default_ar)
+            output_format = ai_settings.get(
+                "image_output_format",
+                str(PLATFORM_DEFAULT_PARAMS.get("flux_output_format", "webp")),
+            )
+            output_quality = self._get_int(
+                ai_settings, "image_output_quality",
+                int(PLATFORM_DEFAULT_PARAMS.get("flux_output_quality", 90)),
+            )
+            lora_url = ai_settings.get("image_lora_url", "")
+            lora_scale = self._get_float(ai_settings, "image_lora_scale", 0.85)
+
+            return ResolvedImageModel(
+                model=sim_model,
+                guidance_scale=guidance,
+                num_inference_steps=steps,
+                aspect_ratio=aspect_ratio,
+                output_format=output_format,
+                output_quality=output_quality,
+                lora_url=lora_url,
+                lora_scale=lora_scale,
+                source="simulation" if ai_settings.get(f"image_model_{purpose}") else "platform",
+            )
+
+        # SD parameters
+        default_w = int(PLATFORM_DEFAULT_PARAMS.get(
+            f"image_width_{'portrait' if is_portrait else 'building'}", 512,
+        ))
+        default_h = int(PLATFORM_DEFAULT_PARAMS.get(
+            f"image_height_{'portrait' if is_portrait else 'building'}", 768 if is_portrait else 512,
+        ))
         width = self._get_int(ai_settings, "image_width", default_w)
         height = self._get_int(ai_settings, "image_height", default_h)
-        guidance = self._get_float(ai_settings, "image_guidance_scale", 7.5)
-        steps = self._get_int(ai_settings, "image_num_inference_steps", 50)
+        guidance = self._get_float(
+            ai_settings, "image_guidance_scale",
+            float(PLATFORM_DEFAULT_PARAMS.get("image_guidance_scale", 7.5)),
+        )
+        steps = self._get_int(
+            ai_settings, "image_num_inference_steps",
+            int(PLATFORM_DEFAULT_PARAMS.get("image_num_inference_steps", 50)),
+        )
         scheduler = ai_settings.get(
             "image_scheduler",
-            str(PLATFORM_DEFAULT_PARAMS.get("scheduler", "K_EULER")),
+            str(PLATFORM_DEFAULT_PARAMS.get("image_scheduler", "K_EULER")),
         )
 
         # Negative prompt per purpose type
-        neg_key = "agent" if "portrait" in purpose else "building"
+        neg_key = "agent" if is_portrait else "building"
         negative = ai_settings.get(
             f"negative_prompt_{neg_key}",
             str(PLATFORM_DEFAULT_PARAMS.get(f"negative_prompt_{neg_key}", "")),
@@ -222,7 +329,6 @@ class ModelResolver:
 
         return ResolvedImageModel(
             model=sim_model,
-            version=sim_version or "",
             width=width,
             height=height,
             guidance_scale=guidance,
@@ -231,6 +337,24 @@ class ModelResolver:
             negative_prompt=negative,
             source="simulation" if ai_settings.get(f"image_model_{purpose}") else "platform",
         )
+
+    async def resolve_style_prompt(self, purpose: str) -> str:
+        """Resolve the style prompt for image generation.
+
+        Looks up `image_style_prompt_{purpose}` in simulation settings,
+        falls back to platform defaults.
+
+        Args:
+            purpose: "portrait" or "building"
+
+        Returns:
+            Style prompt string to append to image generation prompts.
+        """
+        ai_settings = await self._load_settings()
+        style = ai_settings.get(f"image_style_prompt_{purpose}", "")
+        if style:
+            return style
+        return PLATFORM_DEFAULT_STYLE_PROMPTS.get(purpose, "")
 
     @staticmethod
     def _get_float(settings: dict[str, str], key: str, default: float) -> float:

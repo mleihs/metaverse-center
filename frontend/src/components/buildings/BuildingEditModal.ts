@@ -225,7 +225,15 @@ export class VelgBuildingEditModal extends LitElement {
           entity_type: 'building',
           entity_id: buildingId,
           entity_name: this._name,
-          extra: { building_type: this._buildingType },
+          extra: {
+            building_type: this._buildingType,
+            building_condition: this._buildingCondition || undefined,
+            building_style: this._style || undefined,
+            special_type: undefined,
+            construction_year: this._constructionYear ?? undefined,
+            description: this._description || undefined,
+            population_capacity: this._populationCapacity || undefined,
+          },
         });
 
         progress.setStep('process_image', msg('Processing image...'));

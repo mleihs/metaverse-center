@@ -232,11 +232,22 @@ async def generate_image(
                 agent_data=body.extra,
             )
         else:
-            building_type = (body.extra or {}).get("building_type", "residential")
+            extra = body.extra or {}
+            building_type = extra.get("building_type", "residential")
+            building_data = {
+                "building_condition": extra.get("building_condition", ""),
+                "building_style": extra.get("building_style", ""),
+                "description": extra.get("description", ""),
+                "special_type": extra.get("special_type", ""),
+                "construction_year": extra.get("construction_year", ""),
+                "population_capacity": extra.get("population_capacity", ""),
+                "zone_name": extra.get("zone_name", ""),
+            }
             url = await service.generate_building_image(
                 building_id=body.entity_id,
                 building_name=body.entity_name,
                 building_type=building_type,
+                building_data=building_data,
             )
 
         return {"success": True, "data": {"image_url": url}}

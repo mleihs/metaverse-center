@@ -17,6 +17,7 @@ dependencies = [
     "python-dotenv>=1.1.0",
     "python-multipart>=0.0.9",
     "slowapi>=0.1.9",
+    "replicate>=1.0.7",
 ]
 
 [project.optional-dependencies]

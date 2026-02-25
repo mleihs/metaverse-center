@@ -194,7 +194,7 @@ Antworte auf {locale_name}.',
     'meta-llama/llama-3.3-70b-instruct:free', 0.7, 400, true, admin_id
 ) ON CONFLICT DO NOTHING;
 
--- 5. portrait_description (EN only — SD expects English)
+-- 5. portrait_description (EN — generates English image-gen prompts)
 INSERT INTO prompt_templates (
     simulation_id, template_type, prompt_category, locale, template_name,
     prompt_content, system_prompt, variables, default_model,
@@ -206,11 +206,13 @@ INSERT INTO prompt_templates (
 Character traits: {agent_character}
 Background: {agent_background}
 
-COMPOSITION: Close-up head-and-shoulders portrait, single subject centered in frame, shallow depth of field, studio-quality lighting.
-Describe in detail: age, ethnicity, facial features, expression, hairstyle, clothing visible at shoulders, lighting, mood.
-Write as a Stable Diffusion prompt — comma-separated descriptors, no sentences.
+COMPOSITION: Close-up head-and-shoulders portrait, single subject centered in frame,
+shallow depth of field, studio-quality lighting.
+Describe in detail: age, ethnicity, facial features, expression, hairstyle,
+clothing visible at shoulders, lighting direction, mood.
+Write as an image generation prompt — comma-separated descriptors, no sentences.
 IMPORTANT: Describe only ONE person. Never mention multiple people.
-Example: "single person, head-and-shoulders portrait, middle-aged man, sharp features, grey temples, stern expression, military uniform collar visible, dramatic side lighting, shallow depth of field"',
+IMPORTANT: Include lighting and mood descriptors for visual consistency.',
     'You are a portrait description specialist for AI image generation. Write concise, visual descriptors for a single person portrait.',
     '[{"name": "agent_name"}, {"name": "agent_character"}, {"name": "agent_background"}]',
     'deepseek/deepseek-chat-v3-0324', 0.6, 200,
@@ -218,7 +220,7 @@ Example: "single person, head-and-shoulders portrait, middle-aged man, sharp fea
     true, admin_id
 ) ON CONFLICT DO NOTHING;
 
--- 5. portrait_description (DE — still generates English output for SD)
+-- 5. portrait_description (DE — still generates English output for image-gen)
 INSERT INTO prompt_templates (
     simulation_id, template_type, prompt_category, locale, template_name,
     prompt_content, system_prompt, variables, default_model,
@@ -230,15 +232,89 @@ INSERT INTO prompt_templates (
 Charaktereigenschaften: {agent_character}
 Hintergrund: {agent_background}
 
-KOMPOSITION: Nahaufnahme Kopf-und-Schulter-Portrait, einzelne Person zentriert, geringe Tiefenschärfe, Studio-Beleuchtung.
-Beschreibe detailliert: Alter, Ethnie, Gesichtszüge, Ausdruck, sichtbare Kleidung an Schultern, Beleuchtung, Stimmung.
-Schreibe als Stable-Diffusion-Prompt — kommagetrennte Deskriptoren, keine Sätze.
+KOMPOSITION: Nahaufnahme Kopf-und-Schulter-Portrait, einzelne Person zentriert,
+geringe Tiefenschärfe, Studio-Beleuchtung.
+Beschreibe detailliert: Alter, Ethnie, Gesichtszüge, Ausdruck, sichtbare Kleidung an Schultern,
+Lichtrichtung, Stimmung.
+Schreibe als Bildgenerierungs-Prompt — kommagetrennte Deskriptoren, keine Sätze.
 WICHTIG: Beschreibe nur EINE Person. Erwähne niemals mehrere Personen.
-WICHTIG: Schreibe die Beschreibung auf ENGLISCH (für die Bildgenerierung).',
+WICHTIG: Schreibe die Beschreibung auf ENGLISCH (für die Bildgenerierung).
+WICHTIG: Beleuchtung und Stimmung immer beschreiben für visuelle Konsistenz.',
     'Du bist ein Portrait-Beschreibungs-Spezialist für KI-Bildgenerierung. Schreibe prägnante, visuelle Deskriptoren auf Englisch für ein Einzelperson-Portrait.',
     '[{"name": "agent_name"}, {"name": "agent_character"}, {"name": "agent_background"}]',
     'deepseek/deepseek-chat-v3-0324', 0.6, 200,
     'cartoon, anime, illustration, distorted, deformed, ugly, blurry, low quality, text, watermark, multiple people, group, crowd, two people, two faces, extra limbs, extra fingers, cropped, out of frame, full body',
+    true, admin_id
+) ON CONFLICT DO NOTHING;
+
+-- 5b. building_image_description (EN — generates English image-gen prompts)
+INSERT INTO prompt_templates (
+    simulation_id, template_type, prompt_category, locale, template_name,
+    prompt_content, system_prompt, variables, default_model,
+    temperature, max_tokens, is_system_default, created_by_id
+) VALUES (
+    NULL, 'building_image_description', 'generation', 'en', 'Building Image Description (EN)',
+    'Describe an architectural photograph of a building for image generation.
+
+Building: {building_name}
+Type: {building_type}
+Condition: {building_condition}
+Style: {building_style}
+Special type: {special_type}
+Construction year: {construction_year}
+Description: {building_description}
+Zone: {zone_name}
+
+Based on these properties, describe the building visually.
+The CONDITION is critical — a "ruined" building should show structural damage, crumbling walls,
+broken windows. A "poor" building shows neglect and decay. "Fair" is functional but worn.
+"Good" is well-maintained. "Excellent" is pristine.
+
+The BUILDING TYPE affects architecture — government buildings are imposing and authoritarian,
+military buildings are fortified and stark, industrial buildings are functional and massive,
+residential buildings vary by condition.
+
+Write as an image generation prompt — comma-separated descriptors, no sentences.
+Include: architectural style, materials, condition indicators, lighting, atmosphere, scale.',
+    'You are an architectural description specialist for AI image generation. Write concise, visual descriptors for building photographs.',
+    '[{"name": "building_name"}, {"name": "building_type"}, {"name": "building_condition"}, {"name": "building_style"}, {"name": "special_type"}, {"name": "construction_year"}, {"name": "building_description"}, {"name": "zone_name"}, {"name": "simulation_name"}]',
+    'deepseek/deepseek-chat-v3-0324', 0.6, 200,
+    true, admin_id
+) ON CONFLICT DO NOTHING;
+
+-- 5b. building_image_description (DE — still generates English output for image-gen)
+INSERT INTO prompt_templates (
+    simulation_id, template_type, prompt_category, locale, template_name,
+    prompt_content, system_prompt, variables, default_model,
+    temperature, max_tokens, is_system_default, created_by_id
+) VALUES (
+    NULL, 'building_image_description', 'generation', 'de', 'Gebäude-Bildbeschreibung (DE)',
+    'Beschreibe ein Architekturfoto eines Gebäudes für die Bildgenerierung.
+
+Gebäude: {building_name}
+Typ: {building_type}
+Zustand: {building_condition}
+Stil: {building_style}
+Spezialtyp: {special_type}
+Baujahr: {construction_year}
+Beschreibung: {building_description}
+Zone: {zone_name}
+
+Beschreibe das Gebäude visuell basierend auf diesen Eigenschaften.
+Der ZUSTAND ist entscheidend — ein "ruiniertes" Gebäude zeigt strukturelle Schäden, bröckelnde Mauern,
+zerbrochene Fenster. "Schlecht" zeigt Vernachlässigung und Verfall. "Mittel" ist funktional aber abgenutzt.
+"Gut" ist gepflegt. "Ausgezeichnet" ist makellos.
+
+Der GEBÄUDETYP beeinflusst die Architektur — Regierungsgebäude sind imposant und autoritär,
+Militärgebäude sind befestigt und karg, Industriegebäude sind funktional und massiv,
+Wohngebäude variieren je nach Zustand.
+
+Schreibe als Bildgenerierungs-Prompt — kommagetrennte Deskriptoren, keine Sätze.
+Einschließen: Architekturstil, Materialien, Zustandsindikatoren, Beleuchtung, Atmosphäre, Maßstab.
+WICHTIG: Schreibe die Beschreibung auf ENGLISCH (für die Bildgenerierung).',
+    'Du bist ein Architektur-Beschreibungs-Spezialist für KI-Bildgenerierung. Schreibe prägnante, visuelle Deskriptoren auf Englisch für Gebäudefotografien.',
+    '[{"name": "building_name"}, {"name": "building_type"}, {"name": "building_condition"}, {"name": "building_style"}, {"name": "special_type"}, {"name": "construction_year"}, {"name": "building_description"}, {"name": "zone_name"}, {"name": "simulation_name"}]',
+    'deepseek/deepseek-chat-v3-0324', 0.6, 200,
     true, admin_id
 ) ON CONFLICT DO NOTHING;
 

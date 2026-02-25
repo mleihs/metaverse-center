@@ -2322,18 +2322,6 @@
   <source>Retry</source>
   <target>Erneut versuchen</target>
 </trans-unit>
-<trans-unit id="s94ec139e88fa8580">
-  <source><x id="0" equiv-text="${field.label}"/> is required</source>
-  <target><x id="0" equiv-text="${field.label}"/> ist erforderlich</target>
-</trans-unit>
-<trans-unit id="s2b8f50c64be440f7">
-  <source>Select <x id="0" equiv-text="${field.label}"/>...</source>
-  <target><x id="0" equiv-text="${field.label}"/> auswählen...</target>
-</trans-unit>
-<trans-unit id="sb3d4f79d9d8b71e5">
-  <source>Submit</source>
-  <target>Absenden</target>
-</trans-unit>
 <trans-unit id="s21f68e65dbf5b5a4">
   <source>Processing...</source>
   <target>Verarbeitung...</target>
@@ -2876,6 +2864,160 @@
   <source>Number of agents</source>
   <target>Anzahl Agenten</target>
 </trans-unit>
+
+          <target>Flux Dev (empfohlen)</target>
+
+
+          <target>Flux Schnell (schnell)</target>
+
+
+          <target>Flux 1.1 Pro (höchste Qualität)</target>
+
+
+          <target>Flux Dev + LoRA (benutzerdefinierter Stil)</target>
+
+
+          <target>Stable Diffusion 1.5 (veraltet)</target>
+
+
+          <target>Portrait-Modell</target>
+
+
+          <target>Gebäudebild-Modell</target>
+
+
+          <target>Seitenverhältnis</target>
+
+
+          <target>Ausgabequalität</target>
+
+
+          <target>Bildmodell</target>
+
+
+          <target>Bildgenerierungsmodell für jeden Zweck auswählen</target>
+
+
+          <target>-- Standard (SD 1.5) --</target>
+
+
+          <target>Stil-Prompts</target>
+
+
+          <target>Stil-Schlüsselwörter, die jedem Bildgenerierungs-Prompt angehängt werden. Leer lassen für Standardwerte.</target>
+
+
+          <target>Portrait-Stil-Prompt</target>
+
+
+          <target>Fotorealistisches Portraitfoto, filmische Beleuchtung, geringe Tiefenschärfe, einzelnes Motiv, hohe Detailtreue</target>
+
+
+          <target>Gebäude-Stil-Prompt</target>
+
+
+          <target>Architekturfoto, filmische Komposition, fotorealistisch, hohe Detailtreue, dramatische Beleuchtung</target>
+
+
+          <target>Benutzerdefiniertes Stil-LoRA</target>
+
+
+          <target>LoRA-URL für benutzerdefinierte Stil-Feinabstimmungen. Nur mit Flux Dev + LoRA-Modell verwendet.</target>
+
+
+          <target>LoRA-URL</target>
+
+
+          <target>LoRA-Skalierung</target>
+<trans-unit id="s1e1e9c666b144c27">
+  <source>Flux Dev (recommended)</source>
+  <target>Flux Dev (empfohlen)</target>
+</trans-unit>
+<trans-unit id="se3a7fcc07a2bb2f6">
+  <source>Flux Schnell (fast)</source>
+  <target>Flux Schnell (schnell)</target>
+</trans-unit>
+<trans-unit id="s251aa0f85c6ab013">
+  <source>Flux 1.1 Pro (highest quality)</source>
+  <target>Flux 1.1 Pro (höchste Qualität)</target>
+</trans-unit>
+<trans-unit id="sc9d9798d6939227d">
+  <source>Flux Dev + LoRA (custom style)</source>
+  <target>Flux Dev + LoRA (benutzerdefinierter Stil)</target>
+</trans-unit>
+<trans-unit id="s57d2f688fa0676b7">
+  <source>Stable Diffusion 1.5 (legacy)</source>
+  <target>Stable Diffusion 1.5 (veraltet)</target>
+</trans-unit>
+<trans-unit id="s193ce36e325fa2fb">
+  <source>Portrait Model</source>
+  <target>Portrait-Modell</target>
+</trans-unit>
+<trans-unit id="s239d7dcaf3aa1e49">
+  <source>Building Image Model</source>
+  <target>Gebäudebild-Modell</target>
+</trans-unit>
+<trans-unit id="s6dd591597c707086">
+  <source>Aspect Ratio</source>
+  <target>Seitenverhältnis</target>
+</trans-unit>
+<trans-unit id="s28c7c6d49197de2d">
+  <source>Output Quality</source>
+  <target>Ausgabequalität</target>
+</trans-unit>
+<trans-unit id="sfd8011be1da2105b">
+  <source>Image Model</source>
+  <target>Bildmodell</target>
+</trans-unit>
+<trans-unit id="s5fa756d347b022ce">
+  <source>Select an image generation model for each purpose</source>
+  <target>Bildgenerierungsmodell für jeden Zweck auswählen</target>
+</trans-unit>
+<trans-unit id="sc22ff043651db744">
+  <source>-- Default (SD 1.5) --</source>
+  <target>-- Standard (SD 1.5) --</target>
+</trans-unit>
+<trans-unit id="sfc3c5aa0cc98da39">
+  <source>Style Prompts</source>
+  <target>Stil-Prompts</target>
+</trans-unit>
+<trans-unit id="s5e4c06783d2bc2d0">
+  <source>Style keywords appended to every image generation prompt. Leave empty to use defaults.</source>
+  <target>Stil-Schlüsselwörter, die jedem Bildgenerierungs-Prompt angehängt werden. Leer lassen für Standardwerte.</target>
+</trans-unit>
+<trans-unit id="sc2aab0bc9d05bc67">
+  <source>Portrait Style Prompt</source>
+  <target>Portrait-Stil-Prompt</target>
+</trans-unit>
+<trans-unit id="sd128764a915ea47a">
+  <source>photorealistic portrait photograph, cinematic lighting, shallow depth of field, single subject, high detail</source>
+  <target>Fotorealistisches Portraitfoto, filmische Beleuchtung, geringe Tiefenschärfe, einzelnes Motiv, hohe Detailtreue</target>
+</trans-unit>
+<trans-unit id="s4ffa5f6067dbd686">
+  <source>Building Style Prompt</source>
+  <target>Gebäude-Stil-Prompt</target>
+</trans-unit>
+<trans-unit id="s99cad15a2cb858cd">
+  <source>architectural photograph, cinematic composition, photorealistic, high detail, dramatic lighting</source>
+  <target>Architekturfoto, filmische Komposition, fotorealistisch, hohe Detailtreue, dramatische Beleuchtung</target>
+</trans-unit>
+<trans-unit id="s99f85db20338ecc9">
+  <source>Custom Style LoRA</source>
+  <target>Benutzerdefiniertes Stil-LoRA</target>
+</trans-unit>
+<trans-unit id="s1e4004f4846b8f4e">
+  <source>LoRA URL for custom fine-tuned styles. Only used with Flux Dev + LoRA model.</source>
+  <target>LoRA-URL für benutzerdefinierte Stil-Feinabstimmungen. Nur mit Flux Dev + LoRA-Modell verwendet.</target>
+</trans-unit>
+<trans-unit id="s221d5b5fd8e89304">
+  <source>LoRA URL</source>
+  <target>LoRA-URL</target>
+</trans-unit>
+<trans-unit id="se752da3b2b28d9cb">
+  <source>LoRA Scale</source>
+  <target>LoRA-Skalierung</target>
+</trans-unit>
+
 </body>
 </file>
 </xliff>
