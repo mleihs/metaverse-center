@@ -6,7 +6,7 @@ _CSP = "; ".join([
     "default-src 'self'",
     "script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com",
     "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://region1.google-analytics.com",
-    "img-src 'self' https://*.supabase.co data:",
+    "img-src 'self' https://*.supabase.co https://www.googletagmanager.com data:",
     "style-src 'self' 'unsafe-inline'",
     "font-src 'self'",
     "frame-ancestors 'none'",
