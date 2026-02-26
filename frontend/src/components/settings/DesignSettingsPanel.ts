@@ -1,8 +1,10 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import { settingsApi } from '../../services/api/index.js';
 import { themeService } from '../../services/ThemeService.js';
 import { PRESET_NAMES, THEME_PRESETS, type ThemePresetName } from '../../services/theme-presets.js';
+import type { SimulationSetting } from '../../types/index.js';
 import { BaseSettingsPanel } from '../shared/BaseSettingsPanel.js';
 import { VelgToast } from '../shared/Toast.js';
 import '../shared/VelgSectionHeader.js';
@@ -743,8 +745,8 @@ export class VelgDesignSettingsPanel extends BaseSettingsPanel {
   `,
   ];
 
-  protected get category(): string {
-    return 'design';
+  protected get category() {
+    return 'design' as const;
   }
 
   protected get successMessage(): string {
@@ -764,11 +766,10 @@ export class VelgDesignSettingsPanel extends BaseSettingsPanel {
     this._error = null;
 
     try {
-      const { settingsApi } = await import('../../services/api/index.js');
       const response = await settingsApi.list(this.simulationId, 'design');
 
       if (response.success && response.data) {
-        const settings = response.data as import('../../types/index.js').SimulationSetting[];
+        const settings = response.data as SimulationSetting[];
         const vals: Record<string, string> = {};
 
         for (const setting of settings) {

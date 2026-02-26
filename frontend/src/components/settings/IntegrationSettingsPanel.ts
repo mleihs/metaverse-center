@@ -124,8 +124,8 @@ export class VelgIntegrationSettingsPanel extends BaseSettingsPanel {
     `,
   ];
 
-  protected get category(): string {
-    return 'integration';
+  protected get category() {
+    return 'integration' as const;
   }
 
   @state() private _savingSections: Set<string> = new Set();

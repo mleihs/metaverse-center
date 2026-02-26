@@ -364,8 +364,8 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
     `,
   ];
 
-  protected get category(): string {
-    return 'access';
+  protected get category() {
+    return 'access' as const;
   }
 
   protected get successMessage(): string {

@@ -116,8 +116,8 @@ export class VelgAISettingsPanel extends BaseSettingsPanel {
     `,
   ];
 
-  protected get category(): string {
-    return 'ai';
+  protected get category() {
+    return 'ai' as const;
   }
 
   protected get successMessage(): string {
