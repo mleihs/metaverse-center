@@ -11,6 +11,7 @@ interface NavTab {
 
 function getTabs(): NavTab[] {
   return [
+    { label: msg('Lore'), path: 'lore' },
     { label: msg('Agents'), path: 'agents' },
     { label: msg('Buildings'), path: 'buildings' },
     { label: msg('Events'), path: 'events' },
@@ -70,7 +71,7 @@ export class VelgSimulationNav extends LitElement {
   `;
 
   @property({ type: String }) simulationId = '';
-  @state() private _activeTab = 'agents';
+  @state() private _activeTab = 'lore';
 
   connectedCallback(): void {
     super.connectedCallback();

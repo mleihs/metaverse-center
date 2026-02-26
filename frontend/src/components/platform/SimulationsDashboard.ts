@@ -327,7 +327,7 @@ export class VelgSimulationsDashboard extends LitElement {
   private _handleSimulationClick(e: CustomEvent<Simulation>): void {
     const simulation = e.detail;
     appState.setCurrentSimulation(simulation);
-    window.history.pushState({}, '', `/simulations/${simulation.id}/agents`);
+    window.history.pushState({}, '', `/simulations/${simulation.id}/lore`);
     window.dispatchEvent(new PopStateEvent('popstate'));
   }
 

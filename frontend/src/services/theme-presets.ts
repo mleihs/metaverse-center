@@ -13,7 +13,8 @@ export type ThemePresetName =
   | 'solarpunk'
   | 'cyberpunk'
   | 'nordic-noir'
-  | 'deep-space-horror';
+  | 'deep-space-horror'
+  | 'arc-raiders';
 
 export const THEME_PRESETS: Record<ThemePresetName, Record<string, string>> = {
   brutalist: {
@@ -255,6 +256,46 @@ export const THEME_PRESETS: Record<ThemePresetName, Record<string, string>> = {
     animation_easing: 'ease-in',
     text_inverse: '#050508',
   },
+
+  'arc-raiders': {
+    color_primary: '#C08A10',
+    color_primary_hover: '#A87700',
+    color_primary_active: '#8F6600',
+    color_secondary: '#2B5BA8',
+    color_accent: '#B84D1A',
+    color_background: '#ECE2D0',
+    color_surface: '#F5EDE0',
+    color_surface_sunken: '#E0D4BE',
+    color_surface_header: '#F0E8D8',
+    color_text: '#130918',
+    color_text_secondary: '#3D2E47',
+    color_text_muted: '#7A6B85',
+    color_border: '#8B7D6B',
+    color_border_light: '#C9BBAA',
+    color_danger: '#C42B1C',
+    color_success: '#2D7A3A',
+    color_primary_bg: '#FFFFFF',
+    color_info_bg: '#EEF1F8',
+    color_danger_bg: '#FDF0EE',
+    color_success_bg: '#EFF8F0',
+    color_warning_bg: '#FFF5E6',
+    font_heading: "'Barlow', 'Arial Narrow', sans-serif",
+    font_body: 'system-ui, -apple-system, sans-serif',
+    font_mono: "SF Mono, Monaco, Inconsolata, 'Roboto Mono', monospace",
+    heading_weight: '800',
+    heading_transform: 'uppercase',
+    heading_tracking: '0.06em',
+    font_base_size: '16px',
+    border_radius: '4px',
+    border_width: '2px',
+    border_width_default: '2px',
+    shadow_style: 'offset',
+    shadow_color: '#8B7D6B',
+    hover_effect: 'translate',
+    animation_speed: '0.9',
+    animation_easing: 'ease-out',
+    text_inverse: '#FFFFFF',
+  },
 };
 
 /** Maps SimulationTheme types to suggested preset names. */
@@ -283,4 +324,5 @@ export const PRESET_NAMES: ThemePresetName[] = [
   'cyberpunk',
   'nordic-noir',
   'deep-space-horror',
+  'arc-raiders',
 ];

@@ -1,11 +1,11 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { icons } from '../../utils/icons.js';
 
 import '../shared/Lightbox.js';
 
-interface LoreSection {
+export interface LoreSection {
   id: string;
   chapter: string;
   arcanum: string;
@@ -323,6 +323,168 @@ RECOMMENDED CLASSIFICATION: Not a threat. Not an opportunity. A fact. The multiv
 ADDENDUM [DIRECTOR'S HANDWRITING]: "File alongside TOWER-001. The Tower contains everything. Auge Gottes is where everything leaks out."`),
     },
     {
+      id: 'speranza-raid-log',
+      chapter: msg('The Convergence — The Question'),
+      arcanum: 'XXII',
+      title: msg('Raid Log: Speranza'),
+      epigraph: msg(
+        'Bureau of Impossible Geography — Shard Classification Report. Subject: Speranza. Status: Contagious.',
+      ),
+      body: msg(`BUREAU OF IMPOSSIBLE GEOGRAPHY — Document SHARD/SPERANZA-001
+Classification: AMBER — Contagious Resilience Vector
+
+SHARD PROFILE: Speranza is a post-apocalyptic Shard centred on an underground city called Toledo, built into collapsed limestone sinkholes beneath the ruins of pre-Fracture Italy. The surface is harvested by autonomous machines designated ARC — their origin unknown, their purpose unclear, their efficiency absolute. Humanity survives underground, organised into contrade — districts connected by an electromagnetic transport network called the Tube. Population approximately 12,000 across seventeen contrade.
+
+The Shard's dominant narrative is survival through community. Unlike Velgarien (control), the Capybara Kingdom (wonder), or Station Null (knowledge), Speranza's answer to the Fracture is: "What if we simply refused to stop?" This is a more dangerous answer than it appears.
+
+BLEED CHARACTERISTICS: Speranza bleeds hope. Not optimism — hope. The distinction is critical. Optimism is the belief that things will improve. Hope is the decision to act as though they might, in full knowledge that they might not. When Speranza's Bleed touches adjacent Shards, agents experience sudden, inexplicable motivation. In Velgarien, Bureau 9 flagged three cases of citizens spontaneously forming mutual aid networks. In the Capybara Kingdom, a colony of cave-dwellers began singing work songs in a language none of them knew — phonetic analysis identified fragments of Italian.
+
+The Bureau classifies Speranza's Bleed signature as "contagious resilience." It is resistant to suppression and adaptive to context. The hope does not arrive as a feeling. It arrives as an action — the impulse to repair, to share, to build something even when building is irrational.
+
+RECOMMENDED MONITORING: Standard observation protocol. Note that Cartographers assigned to Speranza report elevated morale and a tendency to bring food to share during debriefings. This is considered a minor contamination effect and is not being corrected, because the food is good.`),
+    },
+    {
+      id: 'speranza-bulletin',
+      chapter: msg('The Convergence — The Question'),
+      arcanum: 'XXIII',
+      title: msg('Contrada Bulletin: Day 1,847'),
+      epigraph: msg(
+        'Speranza Contrada Council — Daily Bulletin. Posted on the wall outside the Canteen. Someone has drawn a tomato in the margin.',
+      ),
+      body: msg(`SPERANZA CONTRADA BULLETIN — Day 1,847 since the Consolidation
+
+RAID REPORT: The Cinghiali (Capitana Ferretti) completed Topside Run 203 without casualties. Salvage haul: 14kg copper wire, 3 intact circuit boards, 1 pre-collapse medical kit (sealed, contents unknown — Dottor Ferrara has claimed it), and a crate of sealed glass jars containing what appears to be honey. The honey is being tested. If it's real honey, the Canteen will serve it on bread at Tuesday supper and nobody will mention where it came from because we don't talk about the bees.
+
+ARC ACTIVITY: Topside Watch reports a 12% increase in Surveyor patrols along the northern approach. The Brenner route is temporarily closed for Slingshot traffic until the patrol pattern resets. Estimated reopening: 3 days. Lina says 2. Bet accordingly.
+
+TUBE NETWORK: Slingshot maintenance scheduled for tomorrow 06:00-10:00. No outbound pods during this window. Inbound pods from Contrada Sole and Contrada Amalfi will be delayed. If you're expecting a delivery from Sole, it will arrive when it arrives. Complaining to Lina will not make it arrive faster and will result in your name being added to the Delayed Indefinitely list.
+
+GUILD OF GEARS: Enzo reports that the Frankengun Mark III prototype is ready for field testing. Capitana Ferretti has volunteered the Cinghiali for the test run. Dottor Ferrara has volunteered to not be there when it's tested, "for medical observation purposes at a safe distance, which I define as another contrada."
+
+TRADING POST: Celeste announces new stock from Contrada Roma: fabric, thread, and three working batteries. Trade in person — no IOUs for batteries, she's not running a charity. (She is running a charity. The charity has a 12% commission.)
+
+CANTEEN MENU: Tomato soup. Again. The courtyard garden produced a bumper crop and we will eat every last one of them and be grateful. There is bread. There may be cheese if Sole's delivery arrives. There is always coffee, though calling it coffee is a kindness.
+
+COMMUNITY: The children's mural on Primo Stairway is finished. It depicts a sunrise. None of them have seen a sunrise. It is the most beautiful thing in Speranza.
+
+— Posted by order of the Contrada Council. Corrections, complaints, and recipes to the suggestion box outside the Canteen. The suggestion box is checked weekly. The suggestion box has never contained a suggestion that wasn't a complaint. We live in hope.`),
+    },
+    {
+      id: 'speranza-field-notes',
+      chapter: msg('The Cartographers — Those Who Map the Impossible'),
+      arcanum: 'XXIV',
+      title: msg('Field Notes: The Hope Frequency'),
+      epigraph: msg(
+        'Personal journal of Cartographer Maren Voss. Entry 1 of what she assumes will be many, because the food is too good to leave.',
+      ),
+      body: msg(`CARTOGRAPHER'S PERSONAL LOG — Maren Voss
+Assignment: Speranza Shard, long-term observation
+Entry 1
+
+I have been in the field for eleven years. I have walked through the Bleed in fourteen Shards. I have seen the ruins of the Threshold Palace and heard the tone in the Chapel of Silence. I say this so that what follows has context: nothing has affected me like the risotto.
+
+I entered the Speranza Shard through a Bleed-point in the southern tunnels, arriving in a passage that smelled of limestone and cooking oil. Standard procedure: observe, do not interact, maintain analytical distance. I maintained analytical distance for approximately four hours, at which point a woman named Celeste Amara handed me a bowl of risotto made with mushrooms that grow on the sinkhole walls, and I sat on a crate in the middle of the Trading Post and I ate it, and I understood something about this Shard that the Bureau's instruments will never capture.
+
+The risotto was not exceptional. The rice was overcooked. The mushrooms were gritty. The stock was mostly water with aspirations. But the woman who made it had traded three favours and a battery to get the rice from Contrada Sole, and the mushrooms were gathered by children from the sinkhole walls, and the stock was made from bones that the Canteen had boiled three times already, and every ingredient represented an act of refusal — a refusal to accept that survival means merely not dying.
+
+This is the Bleed signature the Bureau calls "contagious resilience," and from the inside, it does not feel like a Bleed effect. It feels like being invited to dinner.
+
+I visited the courtyard garden in the Quarters. Tomatoes. Growing underground, under UV lamps, in soil made from composted refuse and crushed limestone. They are small and imperfect and taste like sunlight, which is impossible, because no sunlight reaches them. A botanist would say the flavour comes from the UV spectrum. A Cartographer would say the flavour comes from the fact that someone planted them. Someone watered them. Someone believed they would grow.
+
+The Bureau's Bleed sensors show elevated readings throughout Speranza, but the readings are not spikes — they are a constant hum. A frequency. The Shard itself vibrates at a pitch that my instruments register as "anomalous" and my gut registers as "alive." I am calling it the Hope Frequency, and I am aware that this is not a scientific designation, and I do not care.
+
+I have requested an extension of my observation period. Officially, for data collection. Unofficially, because Celeste says the Canteen is serving honey on bread on Tuesday, and I need to know if it's real honey.`),
+    },
+    {
+      id: 'speranza-arc-dossier',
+      chapter: msg('The Convergence — The Question'),
+      arcanum: 'XXV',
+      title: msg('ARC Threat Dossier'),
+      epigraph: msg(
+        'Topside Watch Field Guide. Compiled by Capitana Ferretti. Distributed to all raid squads. "Know them. Fear them. Rob them."',
+      ),
+      body: msg(`SPERANZA TOPSIDE WATCH — ARC Machine Classification Guide
+Compiled by Capitana Rosa Ferretti, Raid Squad Cinghiali
+Revision 7. Updates in red ink are not corrections; they are things I learned the hard way.
+
+CLASS 1: SNITCH
+Size: Football. Behaviour: Aerial surveillance. Scans in UV and infrared. Transmits location data to heavier units.
+Threat level: LOW individually. CRITICAL in swarms.
+How to avoid: Stay under cover. Snitches can't see through solid material — rubble, metal sheeting, a good coat. They scan in patterns. Learn the pattern. Move between scans. If one spots you, you have approximately 90 seconds before heavier units arrive. Enzo's Frankengun can disable one at 40 metres. Throwing a rock also works at 10 metres but is less dignified.
+
+CLASS 2: TICK
+Size: Large dog. Behaviour: Ground patrol and resource collection. Six-legged locomotion. Cutting arms for dismantling structures. Carries salvage in abdominal cavity.
+Threat level: MEDIUM. They are strong and fast but not smart. They follow collection routes and respond to Snitch alerts.
+How to avoid: Ticks navigate by magnetic field and vibration. Stand still on rubble and they might walk past you. Don't stand still on metal — they can feel your heartbeat through it. If engaged, aim for the sensor cluster on the dorsal surface. If you don't have a weapon, run. Ticks are fast in straight lines but turn like a bus.
+
+CLASS 3: SURVEYOR
+Size: Small building. Behaviour: Area denial. Deploys a scanning field approximately 200m radius. Anything in the field is catalogued and — if organic — targeted for "collection."
+Threat level: HIGH. If you see a Surveyor, your raid is over. Retreat.
+How to avoid: You don't avoid a Surveyor. You avoid the area where a Surveyor is. Topside Watch tracks their positions. Check your route briefing. If your route briefing says "Surveyor-free" and you see a Surveyor, the route briefing was wrong and you should write a strongly worded note to Topside Watch if you survive.
+
+CLASS 4: MATRIARCH
+Size: Cathedral. Behaviour: Unknown. We have seen three in twelve years of raiding. They move slowly across the horizon, emitting a low-frequency hum that you feel in your teeth. They do not react to human presence. They are doing something that we do not understand. The ground behind them is different — not destroyed, but changed, as if it has been edited.
+Threat level: DO NOT APPROACH. Not because it's dangerous (it probably is) but because we don't know what it would do, and I have a policy of not finding out what buildings-sized machines do when you annoy them.
+
+GENERAL NOTES: ARC machines are not angry. They are not cruel. They are indifferent in a way that is worse than cruelty. They harvest the surface the way weather erodes a cliff face — efficiently, impersonally, and without the possibility of negotiation. We do not fight them. We survive around them. This is the only strategy that has worked for 1,847 days and I intend to keep the streak going.`),
+    },
+    {
+      id: 'speranza-toledo',
+      chapter: msg('The Bleed — Where Worlds Touch'),
+      arcanum: 'XXVI',
+      title: msg('Toledo — The City Below'),
+      epigraph: msg(
+        'Bureau of Impossible Geography — Supplement to the Atlas of Inhabited Shards.',
+      ),
+      imageSlug: 'speranza-toledo',
+      imageCaption: msg(
+        'Toledo — A vast underground city built into collapsed limestone sinkholes',
+      ),
+      body: msg(`BUREAU OF IMPOSSIBLE GEOGRAPHY — Supplement to the Atlas of Inhabited Shards
+Entry: TOLEDO (Underground City)
+Cross-reference: Speranza Shard / Post-Apocalyptic Classification / Subterranean Civilisation
+
+Toledo exists because limestone is soluble and humans are stubborn. When the ARC machines began harvesting the surface, the survivors discovered that the old Italian city sat above a network of natural sinkholes, collapsed cisterns, and defunct metro tunnels that extended hundreds of metres underground. They did not evacuate into these spaces so much as fall into them, and then — in an act of defiance that the Bureau considers characteristically human — they decided to stay.
+
+The city now houses approximately 12,000 people across seventeen contrade — districts built into separate sinkhole systems, connected by the Tube network: an electromagnetic transport system that fires cargo pods through tunnels bored in the limestone. Each contrada has its own character, its own council, its own version of survival. Speranza, the oldest, is built into a collapsed plaza three stories deep, its pre-collapse buildings leaning against the sinkhole walls at precarious angles that engineers insist are stable and residents insist are "characterful."
+
+The Tube network is Toledo's circulatory system and its greatest engineering achievement. Slingshot operators like Lina Russo navigate by sound — the pitch of the electromagnetic hum, the rhythm of joints in the rail, the echo that tells them if the tunnel ahead is clear or collapsed. A pod travels between contrade in minutes. The network carries goods, messages, and occasionally people, though passenger transport is officially discouraged and unofficially constant.
+
+What interests the Bureau is not Toledo's engineering — impressive as it is — but its cultural production. Speranza's children paint murals of sunrises they have never seen. The Canteen serves meals that are acts of culinary philosophy. Celeste's Trading Post is not merely a market but a proof of concept — proof that exchange, negotiation, and the occasional 12% commission are more durable than any machine.
+
+The Shard bleeds this. Not the desperation of survival, but the stubbornness of meaning-making. Toledo is not a bunker. It is a city. The distinction matters. A bunker is a place you survive in. A city is a place you live in. Toledo's residents insist, with the cheerful belligerence of people who have argued this point for 1,847 days, that they are living.
+
+The Bureau notes that the Bleed readings around Toledo are unusually stable — a steady hum rather than the spikes recorded in other Shards. Cartographer Maren Voss has designated this the "Hope Frequency." The designation is not standard Bureau nomenclature. It has been adopted unanimously.`),
+    },
+    {
+      id: 'speranza-stripes',
+      chapter: msg('The Convergence — The Question'),
+      arcanum: 'XXVII',
+      title: msg('The Stripes'),
+      epigraph: msg(
+        'Bureau analysis of the ARC chromatic phenomenon. Three hypotheses. Zero conclusions.',
+      ),
+      body: msg(`BUREAU OF IMPOSSIBLE GEOGRAPHY — Document ARC/CHROMATIC-001
+Classification: GREEN — Research Interest
+Cross-reference: Speranza Shard / ARC Machine Behaviour / Anomalous Coloration
+
+SUBJECT: The ARC machines display a consistent chromatic feature across all observed classes: a band of rainbow-spectrum colour, colloquially known as "the Stripes." The Stripes appear on Snitches as a thin iridescent band around the scanning lens. On Ticks, as a prismatic stripe along the dorsal surface. On Surveyors, as a broad chromatic sweep across the scanning field emitter. On Matriarchs, the Stripes are visible from kilometres away — a slow-moving rainbow that plays across the machine's hull like oil on water.
+
+The Stripes serve no known functional purpose. They do not correlate with operational state, threat posture, or environmental conditions. They are, by every engineering analysis the Guild of Gears has conducted, decorative.
+
+HYPOTHESIS 1 (Engineering): The Stripes are a byproduct of the ARC machines' energy systems — a harmless chromatic emission from high-frequency power generation, comparable to the iridescence of a soap bubble. This is the simplest explanation. Enzo Moretti, Guild of Gears, considers it "boring and therefore probably wrong."
+
+HYPOTHESIS 2 (Behavioural): The Stripes are a signalling mechanism between ARC units — a visual language that humans cannot decode because we lack the sensory bandwidth. This hypothesis is supported by the observation that Matriarch Stripe patterns change in the presence of other ARC units. It is undermined by the observation that Matriarch Stripe patterns also change in the presence of sunsets.
+
+HYPOTHESIS 3 (Cartographic): The Stripes are a Bleed artefact. The ARC machines exist in a Shard that was once part of the Unnamed. The rainbow is a residual trace of wholeness — a fragment of the undifferentiated light that existed before the Fracture split white light into spectra and one world into many. In this reading, the ARC machines carry the memory of the Unnamed in their chromatic band, and the Stripes are not decoration but homesickness expressed as colour.
+
+The Bureau prefers Hypothesis 3 because it is the most unsettling. The raiders of Speranza prefer no hypothesis at all. Capitana Ferretti's position: "They're machines. They have stripes. I don't need to know why. I need to know where."
+
+CULTURAL NOTE: Despite Ferretti's pragmatism, the Stripes have entered Speranza's cultural lexicon. Children draw them in their murals. Celeste sells hand-dyed fabric in rainbow patterns. The contrada flag — a gold sun on black — has been modified by popular consensus to include a thin rainbow band at the bottom edge. When asked what it represents, residents give contradictory answers: "hope," "defiance," "beauty where it doesn't belong," and, from one elderly woman in the Quarters, "proof that even the things trying to kill us can't help being beautiful."
+
+The Bureau finds this last answer the most concerning and the most human.`),
+    },
+    {
       id: 'the-question',
       chapter: msg('The Convergence — The Question'),
       arcanum: 'XXI',
@@ -330,7 +492,7 @@ ADDENDUM [DIRECTOR'S HANDWRITING]: "File alongside TOWER-001. The Tower contains
       epigraph: msg(
         'The multiverse is not a problem to be solved. It is a question to be inhabited.',
       ),
-      body: msg(`Every Shard is an answer. Velgarien answers: "What if control were absolute?" The Capybara Kingdom answers: "What if the darkness were kind?" Station Null answers: "What if we could see the wound?" Each answer is wrong. Each answer is necessary. The multiverse exists because no single answer is sufficient, and the Fracture was the universe's way of admitting this.
+      body: msg(`Every Shard is an answer. Velgarien answers: "What if control were absolute?" The Capybara Kingdom answers: "What if the darkness were kind?" Station Null answers: "What if we could see the wound?" Speranza answers: "What if we simply refused to stop?" Each answer is wrong. Each answer is necessary. The multiverse exists because no single answer is sufficient, and the Fracture was the universe's way of admitting this.
 
 The Convergence — the event that the Bureau monitors, that the ruins foretell, that TOWER threatens — is not the end. It is the next question. When enough Shards have touched, when enough Bleeds have flowed, the multiverse will reach a decision point: merge, or differentiate further. Collapse into one answer, or fracture into a thousand more.
 
@@ -350,6 +512,20 @@ export class VelgLoreScroll extends LitElement {
     :host {
       display: block;
       padding: var(--space-8) var(--space-6);
+
+      /* Lore color tokens — defaults match dashboard (white-on-dark) */
+      --lore-text: rgba(255, 255, 255, 0.75);
+      --lore-heading: #fff;
+      --lore-muted: rgba(255, 255, 255, 0.6);
+      --lore-faint: rgba(255, 255, 255, 0.45);
+      --lore-accent: rgba(255, 200, 100, 0.7);
+      --lore-accent-strong: rgba(255, 200, 100, 0.8);
+      --lore-surface: rgba(255, 255, 255, 0.04);
+      --lore-surface-hover: rgba(255, 255, 255, 0.08);
+      --lore-divider: rgba(255, 255, 255, 0.15);
+      --lore-image-border: rgba(255, 255, 255, 0.1);
+      --lore-btn-border: rgba(255, 255, 255, 0.2);
+      --lore-btn-text: rgba(255, 255, 255, 0.6);
     }
 
     /* ── Chapter Dividers ── */
@@ -368,7 +544,7 @@ export class VelgLoreScroll extends LitElement {
     .chapter-divider__line {
       flex: 1;
       height: 1px;
-      background: rgba(255, 255, 255, 0.15);
+      background: var(--lore-divider);
     }
 
     .chapter-divider__text {
@@ -377,7 +553,7 @@ export class VelgLoreScroll extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: rgba(255, 255, 255, 0.45);
+      color: var(--lore-faint);
       white-space: nowrap;
     }
 
@@ -393,8 +569,8 @@ export class VelgLoreScroll extends LitElement {
       gap: var(--space-3);
       cursor: pointer;
       padding: var(--space-3) var(--space-4);
-      background: rgba(255, 255, 255, 0.04);
-      border-left: 3px solid rgba(255, 200, 100, 0.4);
+      background: var(--lore-surface);
+      border-left: 3px solid color-mix(in srgb, var(--lore-accent) 60%, transparent);
       border-radius: 0 var(--border-radius) var(--border-radius) 0;
       transition:
         background var(--transition-fast),
@@ -403,20 +579,20 @@ export class VelgLoreScroll extends LitElement {
     }
 
     .section__header:hover {
-      background: rgba(255, 255, 255, 0.08);
-      border-left-color: rgba(255, 200, 100, 0.7);
+      background: var(--lore-surface-hover);
+      border-left-color: var(--lore-accent);
     }
 
     .section__header--expanded {
-      border-left-color: rgba(255, 200, 100, 0.8);
-      background: rgba(255, 255, 255, 0.06);
+      border-left-color: var(--lore-accent-strong);
+      background: color-mix(in srgb, var(--lore-surface) 80%, var(--lore-surface-hover));
     }
 
     .section__arcanum {
       font-family: var(--font-mono);
       font-size: var(--text-sm);
       font-weight: var(--font-bold);
-      color: rgba(255, 200, 100, 0.7);
+      color: var(--lore-accent);
       min-width: 36px;
       text-align: center;
     }
@@ -427,14 +603,14 @@ export class VelgLoreScroll extends LitElement {
       font-size: var(--text-lg);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: #fff;
+      color: var(--lore-heading);
       margin: 0;
       flex: 1;
     }
 
     .section__toggle {
       flex-shrink: 0;
-      color: rgba(255, 255, 255, 0.5);
+      color: var(--lore-muted);
       transition: transform var(--transition-fast);
     }
 
@@ -451,7 +627,7 @@ export class VelgLoreScroll extends LitElement {
       font-family: var(--font-mono);
       font-size: var(--text-sm);
       font-style: italic;
-      color: rgba(255, 255, 255, 0.6);
+      color: var(--lore-muted);
       line-height: var(--leading-relaxed);
       margin: var(--space-2) 0 0 calc(var(--space-4) + 3px);
       padding-left: var(--space-3);
@@ -480,7 +656,7 @@ export class VelgLoreScroll extends LitElement {
     .section__text {
       font-size: var(--text-sm);
       line-height: var(--leading-relaxed);
-      color: rgba(255, 255, 255, 0.75);
+      color: var(--lore-text);
       white-space: pre-line;
     }
 
@@ -494,21 +670,21 @@ export class VelgLoreScroll extends LitElement {
     .section__image {
       width: 100%;
       display: block;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--lore-image-border);
       border-radius: var(--border-radius);
       cursor: pointer;
       transition: border-color var(--transition-fast);
     }
 
     .section__image:hover {
-      border-color: rgba(255, 200, 100, 0.4);
+      border-color: color-mix(in srgb, var(--lore-accent) 60%, transparent);
     }
 
     .section__caption {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
       font-style: italic;
-      color: rgba(255, 255, 255, 0.5);
+      color: var(--lore-muted);
       margin-top: var(--space-2);
       text-align: center;
     }
@@ -531,18 +707,18 @@ export class VelgLoreScroll extends LitElement {
       font-size: var(--text-sm);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: rgba(255, 255, 255, 0.6);
+      color: var(--lore-btn-text);
       background: transparent;
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      border: 1px solid var(--lore-btn-border);
       border-radius: var(--border-radius);
       cursor: pointer;
       transition: all var(--transition-fast);
     }
 
     .descend__btn:hover {
-      color: #fff;
-      border-color: rgba(255, 255, 255, 0.5);
-      background: rgba(255, 255, 255, 0.05);
+      color: var(--lore-heading);
+      border-color: var(--lore-muted);
+      background: var(--lore-surface);
     }
 
     /* ── Responsive ── */
@@ -564,12 +740,17 @@ export class VelgLoreScroll extends LitElement {
     }
   `;
 
-  /** Which sections are expanded. Default: first 3 */
-  @state() private _expanded = new Set<string>([
-    'the-unnamed',
-    'the-first-cartographer',
-    'the-hidden-law',
-  ]);
+  /** External sections to render (if not provided, uses platform lore) */
+  @property({ type: Array }) sections?: LoreSection[];
+
+  /** Base path for images in Supabase storage */
+  @property({ type: String }) basePath = 'platform/lore';
+
+  /** Which sections are expanded. Initialized to first 3 sections in willUpdate. */
+  @state() private _expanded = new Set<string>();
+
+  /** Track whether _expanded has been initialised for the current sections */
+  private _expandedInitialised = false;
 
   /** Whether the user has clicked "Descend Deeper" to reveal all sections */
   @state() private _revealedAll = false;
@@ -581,6 +762,16 @@ export class VelgLoreScroll extends LitElement {
 
   /** Number of sections to show before "Descend Deeper" */
   private readonly _initialCount = 6;
+
+  protected willUpdate(changedProperties: Map<PropertyKey, unknown>): void {
+    // Initialise _expanded to the first 3 section IDs on first render
+    // or when the sections property changes
+    if (changedProperties.has('sections') || !this._expandedInitialised) {
+      const allSections = this.sections ?? getLoreSections();
+      this._expanded = new Set(allSections.slice(0, 3).map((s) => s.id));
+      this._expandedInitialised = true;
+    }
+  }
 
   private _toggleSection(id: string): void {
     const next = new Set(this._expanded);
@@ -610,11 +801,11 @@ export class VelgLoreScroll extends LitElement {
   private _getImageUrl(slug: string): string | null {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     if (!supabaseUrl) return null;
-    return `${supabaseUrl}/storage/v1/object/public/simulation.assets/platform/lore/${slug}.webp`;
+    return `${supabaseUrl}/storage/v1/object/public/simulation.assets/${this.basePath}/${slug}.avif`;
   }
 
   protected render() {
-    const sections = getLoreSections();
+    const sections = this.sections ?? getLoreSections();
     const visibleSections = this._revealedAll ? sections : sections.slice(0, this._initialCount);
     const hasMore = !this._revealedAll && sections.length > this._initialCount;
 

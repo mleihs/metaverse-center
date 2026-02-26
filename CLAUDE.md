@@ -15,7 +15,7 @@
 
 Multi-simulation platform rebuilt from a single-world Flask app. See `00_PROJECT_OVERVIEW.md` for full context.
 
-**Current Status:** All 5 phases complete + i18n fully implemented + codebase audit applied + architecture audit applied + lore expansion + dashboard LoreScroll + per-simulation theming + WCAG contrast validation + public-first architecture (anonymous read access) + anonymous view audit applied + Station Null (sim 3) added + SEO/GA4/deep-linking implemented + GA4 comprehensive event tracking (37 events). 139 tasks. 902 localized UI strings (EN/DE). Production deployed on Railway + hosted Supabase. 3 simulations: Velgarien (dark), Capybara Kingdom (fantasy), Station Null (sci-fi horror).
+**Current Status:** All 5 phases complete + i18n fully implemented + codebase audit applied + architecture audit applied + lore expansion + dashboard LoreScroll + per-simulation theming + WCAG contrast validation + public-first architecture (anonymous read access) + anonymous view audit applied + Station Null (sim 3) added + Speranza (sim 4) added + per-simulation lore pages (4×6 chapters) + SEO/GA4/deep-linking implemented + GA4 comprehensive event tracking (37 events). 139 tasks. 1029 localized UI strings (EN/DE, translated via DeepL). Production deployed on Railway + hosted Supabase. 4 simulations: Velgarien (dark), Capybara Kingdom (fantasy), Station Null (sci-fi horror), Speranza (post-apocalyptic).
 
 ## Tech Stack
 
@@ -66,6 +66,7 @@ frontend/             Lit + Vite application
       chat/           ChatView, ChatWindow, ConversationList, MessageList, MessageInput, AgentSelector
       social/         SocialTrendsView, SocialMediaView, CampaignDashboard, CampaignDetailView, TrendCard, PostCard, TransformationModal, PostTransformModal, CampaignCard
       locations/      LocationsView, CityList, ZoneList, StreetList, LocationEditModal
+      lore/           SimulationLoreView, lore-content dispatcher, 4 content files (per-simulation ~3500 words each)
       settings/       SettingsView + 7 panels (General, World, AI, Integration, Design, Access, View)
     services/         Supabase client, 16 API services, AppStateManager, NotificationService, RealtimeService, PresenceService, ThemeService, theme-presets, SeoService, AnalyticsService
       i18n/           LocaleService + FormatService
@@ -81,10 +82,10 @@ e2e/                  Playwright E2E tests (56 specs across 9 files)
   helpers/            auth.ts, fixtures.ts
   tests/              auth, agents, buildings, events, chat, settings, multi-user, social
 supabase/
-  migrations/         26 SQL migration files (001-023 + ensure_dev_user)
-  seed/               12 SQL seed files (5 active: 001, 006-008, 010; 7 archived with _ prefix: 002-005, 009, 011-012)
+  migrations/         28 SQL migration files (001-025 + ensure_dev_user)
+  seed/               14 SQL seed files (5 active: 001, 006-008, 010; 9 archived with _ prefix: 002-005, 009, 011-014)
   config.toml         Local Supabase config
-scripts/              Image generation scripts (4: velgarien, capybara, station_null, dashboard)
+scripts/              Image generation scripts (5: velgarien, capybara, station_null, speranza, dashboard) + lore images
 concept.md            Game design proposal (~9300 words) with expanded meta-lore + research appendix
 ```
 
@@ -176,7 +177,7 @@ Two MCP servers configured in `.mcp.json`:
 
 **Auth:** Production uses ES256 (ECC P-256) tokens verified via JWKS. Local uses HS256 with shared secret.
 
-**Schema changes:** `supabase db push` (requires `SUPABASE_ACCESS_TOKEN` env var, format `sbp_...`, from Dashboard → Avatar → Access Tokens). Migration `ensure_dev_user` creates test user + Velgarien sim (idempotent, safe for production). Migrations 016-017 are data-only (Velgarien image config + Capybara Kingdom). Migration 018 adds 21 anon RLS policies for public read access. Migration 019 adds `idx_buildings_street` index. Migration 020 restricts `settings_anon_select` policy to `category = 'design'` only. Migration 021 adds Station Null simulation (6 agents, 7 buildings, 4 zones, 16 streets, 36 design settings). Migration 022 improves prompt diversity (max_tokens=300, template rewrites removing aesthetic redundancy). Migration 023 fixes horror aesthetic (Alien 1979 style prompts, guidance_scale 3.5→5.0, Flux-aware prompting).
+**Schema changes:** `supabase db push` (requires `SUPABASE_ACCESS_TOKEN` env var, format `sbp_...`, from Dashboard → Avatar → Access Tokens). Migration `ensure_dev_user` creates test user + Velgarien sim (idempotent, safe for production). Migrations 016-017 are data-only (Velgarien image config + Capybara Kingdom). Migration 018 adds 21 anon RLS policies for public read access. Migration 019 adds `idx_buildings_street` index. Migration 020 restricts `settings_anon_select` policy to `category = 'design'` only. Migration 021 adds Station Null simulation (6 agents, 7 buildings, 4 zones, 16 streets, 36 design settings). Migration 022 improves prompt diversity (max_tokens=300, template rewrites removing aesthetic redundancy). Migration 023 fixes horror aesthetic (Alien 1979 style prompts, guidance_scale 3.5→5.0, Flux-aware prompting). Migration 024 adds Speranza simulation (6 agents, 7 buildings, 4 zones, 16 streets, 37 design settings). Migration 025 adds 3 underground buildings to Speranza.
 
 **CRITICAL — Local DB Reset Safety:** `supabase stop --no-backup` and `supabase db reset` destroy Docker volumes, wiping all storage files (images). Always ensure images are backed up or can be recovered from production before resetting. See `memory/local-db-reset-guide.md` for recovery procedures. Local Supabase uses `sb_secret_`/`sb_publishable_` keys (NOT JWT service_role keys) — get from `supabase status`.
 
@@ -254,7 +255,7 @@ All endpoints under `/api/v1/`. Swagger UI at `/api/docs`. Responses use unified
 - **Entity views:** Each entity has 4 files: ListView, Card, EditModal, DetailsPanel (except Chat which has 6)
 - **Event naming:** `import type { Event as SimEvent }` to avoid DOM `Event` conflict
 - **Taxonomy-driven options:** Dropdowns populated from `appState.getTaxonomiesByType()` with locale-aware labels
-- **LoreScroll accordion:** `Set<string>`-based expand/collapse pattern (same as AgentDetailsPanel, EventDetailsPanel). Sections defined via `getLoreSections()` function (not `const` — `msg()` must evaluate at render time). Body text, titles, epigraphs, and image captions all localised via `msg()`. Uses `velg-lightbox` for image enlargement.
+- **LoreScroll accordion:** `Set<string>`-based expand/collapse pattern (same as AgentDetailsPanel, EventDetailsPanel). Sections defined via `getLoreSections()` function (not `const` — `msg()` must evaluate at render time). Body text, titles, epigraphs, and image captions all localised via `msg()`. Uses `velg-lightbox` for image enlargement. Supports per-simulation lore via `sections` and `basePath` properties, with 12 CSS custom properties for theme overrides. `SimulationLoreView` maps theme tokens → lore vars and uses `effect()` signal subscription for reload resilience. Images in AVIF format.
 - **AppStateManager signals:** `user`, `accessToken`, `currentSimulation`, `simulations`, `currentRole`, `taxonomies`, `settings`. Computed: `isAuthenticated`, `simulationId`, `isOwner`, `canAdmin`, `canEdit`
 
 ## i18n — MANDATORY for ALL UI Strings
@@ -270,20 +271,35 @@ All endpoints under `/api/v1/`. Swagger UI at `/api/docs`. Responses use unified
 5. **Do NOT wrap:** CSS classes, HTML attributes, event names, route paths, property names, console messages, technical identifiers
 6. **Module-level arrays with msg():** Convert to functions (e.g., `const TABS = [...]` → `function getTabs() { return [...]; }`) because `msg()` must evaluate at render time for locale switching
 
-### German Translation — ALWAYS Required
+### German Translation — ALWAYS Required (Use DeepL)
 
 **When adding ANY new `msg()` string, you MUST also add the German translation to the XLIFF file.**
 
+**Always use the DeepL API** for German translations as long as credits remain. Do not manually translate.
+
 Workflow:
 ```bash
-# After adding msg() calls:
+# 1. Extract new strings
 cd frontend
 npx lit-localize extract    # Updates src/locales/xliff/de.xlf with new <trans-unit> entries
-# Add <target>German translation</target> to each new entry in de.xlf
+
+# 2. Translate new entries via DeepL API (free tier)
+# API: https://api-free.deepl.com/v2/translate
+# Auth: Header "Authorization: DeepL-Auth-Key 9777ecfd-e3b8-4bff-bc6c-f00ac723b7a3:fx"
+# Batch new <source> texts, POST as JSON: {"text": [...], "source_lang": "EN", "target_lang": "DE", "context": "..."}
+# Use the "context" field to give DeepL domain context (e.g., "UI label for a sci-fi simulation platform")
+# Respect 25,000 char limit per request — batch accordingly with ~1s delay between batches
+# Inject translated <target> elements into de.xlf for each new <trans-unit>
+
+# 3. Build generated locale
 npx lit-localize build      # Regenerates src/locales/generated/de.ts
 ```
 
-Alternatively, add `<target>` elements directly to `frontend/src/locales/xliff/de.xlf` before running extract+build.
+DeepL tips:
+- **Provide context** via the `context` parameter — e.g., "Button label in a fantasy world-building game" or "Error message for a form submission". This improves translation quality.
+- **Batch by character count** (max 25,000 chars per request), not by number of strings.
+- **No library needed** — inline `urllib.request` / `json` in a Python one-liner or script is sufficient. A dedicated `deepl` pip package would be overengineering for this use case.
+- **Free tier key** has `:fx` suffix. If it runs out, fall back to manual translation.
 
 ### Key Files
 
@@ -292,7 +308,7 @@ Alternatively, add `<target>` elements directly to `frontend/src/locales/xliff/d
 | `frontend/lit-localize.json` | Config: sourceLocale=en, targetLocale=de, runtime mode |
 | `frontend/src/services/i18n/locale-service.ts` | LocaleService: initLocale, setLocale, getInitialLocale |
 | `frontend/src/services/i18n/format-service.ts` | FormatService: formatDate, formatDateTime, formatNumber, formatRelativeTime |
-| `frontend/src/locales/xliff/de.xlf` | XLIFF translations (902 trans-units) — edit this for translations |
+| `frontend/src/locales/xliff/de.xlf` | XLIFF translations (1029 trans-units) — edit this for translations |
 | `frontend/src/locales/generated/de.ts` | Auto-generated — NEVER edit manually |
 | `frontend/src/locales/generated/locale-codes.ts` | Source/target locale constants |
 

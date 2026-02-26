@@ -61,6 +61,6 @@
   /* === BORDER COLORS === */
   --color-border: var(--color-gray-1000);
   --color-border-light: var(--color-gray-200);
-  --color-border-focus: var(--color-info);
+  --color-border-focus: var(--color-primary);
   --color-border-danger: var(--color-danger);
 }

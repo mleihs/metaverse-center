@@ -14,11 +14,11 @@ from supabase import Client
 logger = logging.getLogger(__name__)
 
 MAX_IMAGE_DIMENSION = 1024
-WEBP_QUALITY = 85
+AVIF_QUALITY = 85
 
 
 class ImageService:
-    """Orchestrates image generation: description -> Replicate -> WebP -> Storage."""
+    """Orchestrates image generation: description -> Replicate -> AVIF -> Storage."""
 
     def __init__(
         self,
@@ -72,15 +72,15 @@ class ImageService:
             **image_model.to_replicate_params(),
         )
 
-        # 4. Convert to WebP (skip if Flux already outputs WebP)
-        webp_bytes = _convert_to_webp(raw_bytes)
+        # 4. Convert to AVIF
+        avif_bytes = _convert_to_avif(raw_bytes)
 
         # 5. Upload to Supabase Storage
-        filename = f"{self._simulation_id}/{agent_id}/{uuid4()}.webp"
+        filename = f"{self._simulation_id}/{agent_id}/{uuid4()}.avif"
         url = await self._upload_to_storage(
             bucket="agent.portraits",
             path=filename,
-            data=webp_bytes,
+            data=avif_bytes,
         )
 
         # 6. Update agent record
@@ -131,15 +131,15 @@ class ImageService:
             **image_model.to_replicate_params(),
         )
 
-        # 4. Convert to WebP
-        webp_bytes = _convert_to_webp(raw_bytes)
+        # 4. Convert to AVIF
+        avif_bytes = _convert_to_avif(raw_bytes)
 
         # 5. Upload
-        filename = f"{self._simulation_id}/{building_id}/{uuid4()}.webp"
+        filename = f"{self._simulation_id}/{building_id}/{uuid4()}.avif"
         url = await self._upload_to_storage(
             bucket="building.images",
             path=filename,
-            data=webp_bytes,
+            data=avif_bytes,
         )
 
         # 6. Update building record
@@ -160,15 +160,15 @@ class ImageService:
         self._supabase.storage.from_(bucket).upload(
             path,
             data,
-            {"content-type": "image/webp"},
+            {"content-type": "image/avif"},
         )
 
         result = self._supabase.storage.from_(bucket).get_public_url(path)
         return result
 
 
-def _convert_to_webp(image_bytes: bytes) -> bytes:
-    """Convert image bytes to WebP format, resizing if needed."""
+def _convert_to_avif(image_bytes: bytes) -> bytes:
+    """Convert image bytes to AVIF format, resizing if needed."""
     try:
         from PIL import Image
     except ImportError:
@@ -186,5 +186,5 @@ def _convert_to_webp(image_bytes: bytes) -> bytes:
         img = img.convert("RGB")
 
     output = io.BytesIO()
-    img.save(output, format="WEBP", quality=WEBP_QUALITY)
+    img.save(output, format="AVIF", quality=AVIF_QUALITY)
     return output.getvalue()

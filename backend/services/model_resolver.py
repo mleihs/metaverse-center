@@ -60,8 +60,8 @@ PLATFORM_DEFAULT_PARAMS: dict[str, float | int | str] = {
     "flux_num_inference_steps": 28,
     "flux_aspect_ratio_portrait": "3:4",
     "flux_aspect_ratio_building": "4:3",
-    "flux_output_format": "webp",
-    "flux_output_quality": 90,
+    "flux_output_format": "png",
+    "flux_output_quality": 100,
 }
 
 # Generic platform default style prompts (neutral, no brutalist)
@@ -106,8 +106,8 @@ class ResolvedImageModel:
     negative_prompt: str = ""
     # Flux-specific params (ignored by SD)
     aspect_ratio: str = ""
-    output_format: str = "webp"
-    output_quality: int = 90
+    output_format: str = "png"
+    output_quality: int = 100
     # LoRA (Flux only)
     lora_url: str = ""
     lora_scale: float = 0.85
@@ -277,11 +277,11 @@ class ModelResolver:
             aspect_ratio = ai_settings.get("image_aspect_ratio", default_ar)
             output_format = ai_settings.get(
                 "image_output_format",
-                str(PLATFORM_DEFAULT_PARAMS.get("flux_output_format", "webp")),
+                str(PLATFORM_DEFAULT_PARAMS.get("flux_output_format", "png")),
             )
             output_quality = self._get_int(
                 ai_settings, "image_output_quality",
-                int(PLATFORM_DEFAULT_PARAMS.get("flux_output_quality", 90)),
+                int(PLATFORM_DEFAULT_PARAMS.get("flux_output_quality", 100)),
             )
             lora_url = ai_settings.get("image_lora_url", "")
             lora_scale = self._get_float(ai_settings, "image_lora_scale", 0.85)

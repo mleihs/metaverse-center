@@ -61,6 +61,7 @@ SUPABASE_SERVICE_KEY = get_service_key()
 VELGARIEN_SIM_ID = "10000000-0000-0000-0000-000000000001"
 CAPYBARA_SIM_ID = "20000000-0000-0000-0000-000000000001"
 STATION_NULL_SIM_ID = "30000000-0000-0000-0000-000000000001"
+SPERANZA_SIM_ID = "40000000-0000-0000-0000-000000000001"
 
 BUCKET = "simulation.assets"
 FLUX_MODEL = "black-forest-labs/flux-dev"
@@ -123,6 +124,22 @@ IMAGES = [
             "cracked viewports, deep space horror, Alien meets Event Horizon aesthetic, "
             "concept art quality, wide establishing shot, cold void background with "
             "gravitational lensing distortion, not photorealistic, not bright, not clean"
+        ),
+        "width": 1024,
+        "height": 683,
+    },
+    {
+        "name": "Speranza Banner",
+        "storage_path": f"{SPERANZA_SIM_ID}/banner.webp",
+        "simulation_id": SPERANZA_SIM_ID,
+        "prompt": (
+            "Underground sinkhole city panorama, collapsed limestone cavern with "
+            "pre-collapse buildings leaning at angles against rock walls, warm amber "
+            "string lights criss-crossing overhead, rope bridges and scaffolding, "
+            "market stalls and a massive electromagnetic rail launcher in the background, "
+            "retro-futuristic post-apocalyptic, 1970s NASA-punk aesthetic, "
+            "concept art quality, wide establishing shot, warm hopeful atmosphere "
+            "despite post-apocalyptic setting, not photorealistic, not bright daylight"
         ),
         "width": 1024,
         "height": 683,

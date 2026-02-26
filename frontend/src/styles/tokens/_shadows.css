@@ -15,7 +15,7 @@
   --shadow-inset: inset 2px 2px 0 rgba(0, 0, 0, 0.2);
 
   /* === FOCUS RINGS === */
-  --ring-focus: 0 0 0 3px rgba(59, 130, 246, 0.4);
+  --ring-focus: 0 0 0 3px color-mix(in srgb, var(--color-border-focus) 40%, transparent);
   --ring-danger: 0 0 0 3px rgba(239, 68, 68, 0.4);
   --ring-success: 0 0 0 3px rgba(34, 197, 94, 0.4);
   --ring-warning: 0 0 0 3px rgba(245, 158, 11, 0.4);

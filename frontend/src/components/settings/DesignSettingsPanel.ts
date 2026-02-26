@@ -344,6 +344,7 @@ function getPresetLabels(): Record<ThemePresetName, string> {
     cyberpunk: msg('Cyberpunk'),
     'nordic-noir': msg('Nordic Noir'),
     'deep-space-horror': msg('Deep Space Horror'),
+    'arc-raiders': msg('Arc Raiders'),
   };
 }
 

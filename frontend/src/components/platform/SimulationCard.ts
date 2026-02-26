@@ -235,7 +235,7 @@ export class VelgSimulationCard extends LitElement {
 
     return html`
       <a
-        href="/simulations/${sim.id}/agents"
+        href="/simulations/${sim.id}/lore"
         class="shard"
         style="--shard-color: ${color}; --shard-color-alpha: ${colorAlpha}"
         @click=${this._handleClick}

@@ -29,6 +29,7 @@ import './components/locations/LocationsView.js';
 import './components/platform/InvitationAcceptView.js';
 import './components/platform/CreateSimulationWizard.js';
 import './components/platform/UserProfileView.js';
+import './components/lore/SimulationLoreView.js';
 import './components/shared/CookieConsent.js';
 
 @localized()
@@ -157,6 +158,14 @@ export class VelgApp extends LitElement {
         },
       },
       // --- Simulation-scoped routes (public read, auth for mutations) ---
+      {
+        path: '/simulations/:id/lore',
+        render: ({ id }) => this._renderSimulationView(id ?? '', 'lore'),
+        enter: async () => {
+          await this._authReady;
+          return true;
+        },
+      },
       {
         path: '/simulations/:id/agents',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'agents'),
@@ -374,6 +383,9 @@ export class VelgApp extends LitElement {
     });
     let content: TemplateResult;
     switch (view) {
+      case 'lore':
+        content = html`<velg-simulation-lore-view .simulationId=${simulationId}></velg-simulation-lore-view>`;
+        break;
       case 'agents':
         content = html`<velg-agents-view .simulationId=${simulationId}></velg-agents-view>`;
         break;

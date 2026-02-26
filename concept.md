@@ -276,7 +276,7 @@ But here is what we have not told you, because the Cartographers do not tell it 
 
 **The multiverse is not a problem to be solved. It is a question to be inhabited.**
 
-Every Shard is an answer. Velgarien answers: "What if control were absolute?" The Capybara Kingdom answers: "What if the darkness were kind?" The Bloom will answer: "What if peace were suffocating?" Station Null will answer: "What if isolation were alive?" Each answer is wrong. Each answer is necessary. The multiverse exists because no single answer is sufficient, and the Fracture was the universe's way of admitting this.
+Every Shard is an answer. Velgarien answers: "What if control were absolute?" The Capybara Kingdom answers: "What if the darkness were kind?" Station Null answers: "What if we could see the wound?" Speranza answers: "What if we simply refused to stop?" The Bloom will answer: "What if peace were suffocating?" Each answer is wrong. Each answer is necessary. The multiverse exists because no single answer is sufficient, and the Fracture was the universe's way of admitting this.
 
 The Convergence — the event that the Bureau monitors, that the ruins foretell, that TOWER threatens — is not the end. It is the next question. When enough Shards have touched, when enough Bleeds have flowed, when enough agents have dreamed of worlds they've never visited, the multiverse will reach a decision point: merge, or differentiate further. Collapse into one answer, or fracture into a thousand more.
 
@@ -352,6 +352,57 @@ A derelict research station orbiting the black hole "Auge Gottes" (Eye of God), 
 - *Building style:* "deep space horror architecture, derelict research station, industrial sci-fi interior, harsh fluorescent and CRT glow, clinical whites with organic growth, Alien meets Tarkovsky, concept art, exposed conduits, fog, black hole light in amber and violet"
 
 **Aesthetic:** Pitch black with harsh fluorescent bursts, clinical whites stained with organic growth, body horror undertones, CRT monitor glow, industrial decay in zero-G. The palette is void-black with CRT green (#00cc88) accents, cold cyan (#00ccff) for scanner displays, and warning orange (#ff6633) for alarm states. Headings in monospace uppercase suggest computer terminal output. Animation is deliberately slow — 1.8x normal speed — creating a sense of creeping dread.
+
+### 3b. Speranza — Arc Raiders Post-Apocalyptic
+
+**Theme:** `scifi` | **Locale:** `en` | **Aesthetic:** Arc Raiders / 1970s NASA-punk / Children of Men
+
+**Literary Influences:** The Arc Raiders universe by Embark Studios (underground survival, ARC machines, contrada system); Cormac McCarthy's *The Road* (hope as the only resource that matters); Emily St. John Mandel's *Station Eleven* (civilization rebuilt through culture and community); Ursula K. Le Guin (the dispossessed — people who build meaning from scarcity); Italian neorealism (Rossellini, De Sica — dignity in rubble); NASA-punk aesthetic (Alien's "truckers in space," worn utilitarian technology, analogue interfaces).
+
+Speranza is the oldest contrada in Toledo, a vast underground city built into collapsed limestone sinkholes beneath the ruins of post-apocalyptic Italy. The year is 2180. The surface is harvested by autonomous machines designated ARC — their origin unknown, their purpose unclear, their efficiency absolute. Humanity survives underground, organized into seventeen contrade connected by the Tube network: electromagnetic slingshots that fire cargo pods through tunnels bored in the rock.
+
+The word "Speranza" means hope in Italian, and the residents of this contrada use it without irony and without naivety. Hope is not optimism. Optimism is the belief that things will improve. Hope is the decision to act as though they might, in full knowledge that they might not. This distinction is the philosophical core of the simulation.
+
+In the multiverse meta-lore, Speranza is a Shard that the Bureau of Impossible Geography classifies as a "Contagious Resilience Vector." Its Bleed signature does not manifest as contamination or distortion — it manifests as motivation. When Speranza's Bleed touches adjacent Shards, agents begin to repair things, share food, and form communities. The Bureau considers this the most dangerous Bleed effect it has encountered, because it is the hardest to suppress.
+
+**Agents (6):**
+1. **Capitana Rosa Ferretti** — Raid Squads / female. Veteran raid squad leader in her fifties, sun-damaged skin, gap-toothed grin. Has led over 200 raids Topside. Lost her first husband on raid ninety-one and doesn't talk about it. Treats ARC machines the way a farmer treats weather: dangerous, predictable if you pay attention, and not worth hating. Her squad — the Cinghiali (Wild Boars) — is the most decorated and most fined for discipline violations.
+2. **Enzo Moretti** — Guild of Gears / male. Mechanic who "talks to machines" as a diagnostic method. Heavyset, permanent squint, fingers calloused enough to test circuit integrity by touch. Built the Frankengun — a handheld EMP device cobbled from ARC capacitors. Came to Speranza as a child refugee from Contrada Brenner. Cares about how things work more than why.
+3. **Lina Russo** — Tube Network / female. Slingshot operator who navigates by sound — the pitch of the electromagnetic hum, the rhythm of joints in the rail, the echo pattern that tells her if the tunnel ahead is clear or collapsed. Cable-burn scars on both forearms from a brake failure during her certification run. Navigation tattoo on her left wrist — a simplified Tube map she updates herself with needle and ink.
+4. **Celeste Amara** — Contrada Council / female. Trader who built the largest market in Toledo from a single blanket on the amphitheater floor. Controls the flow of goods between contrade through a network of contacts, favours, and IOUs that constitutes Speranza's real economy. Refugee background. Her smile is genuine and her handshake is a contract.
+5. **Dottor Marco Ferrara** — Contrada Council / male. Speranza's only doctor for a population of seven hundred. Pessimistic about everything except his patients, whom he treats with fierce, quiet tenderness. His pharmacy is a shelf of salvaged medications, herbal tinctures, and things he's synthesised from Topside chemical supplies. Dark humour deployed as local anaesthetic.
+6. **Tomas Vidal** — Raid Squads / male. Young recruit of twenty-two from Contrada Brenner, idealistic and still learning that stillness is a survival skill. Joined the Cinghiali because Capitana Ferretti saw something in his eagerness that reminded her of raiders who lived long enough to get good. Has completed eleven raids. On the seventh, he froze. On the ninth, he spotted a Snitch pattern Rosa had missed.
+
+**Buildings (7):**
+- **The Slingshot Hub** — A forty-metre electromagnetic rail that fires cargo pods at 200 km/h through limestone tunnels. The terminal is a cathedral of salvaged engineering: capacitor banks from a pre-collapse power plant, cooling from industrial air conditioning, a control cabin with analogue gauges and hand-drawn trajectory charts.
+- **Celeste's Trading Post** — The largest market in Toledo, sprawling across the amphitheater floor. Stalls made from car doors, traffic signs as awnings, old refrigerators as secure storage. The real economy runs on reputation and reciprocity, not Chips.
+- **The Gear Forge** — The Guild of Gears' primary workshop, built into a vaulted Ottoman-era cistern. Forge furnaces line one wall, fed by gas from deep-bore wells. The ARC salvage section is behind a cage door: captured machine parts laid out like museum specimens.
+- **The Canteen** — Communal dining hall in a former bank vault. Courtyard garden above grows tomatoes and herbs under UV lamps. Tomato soup every day. The coffee is terrible and the company is mandatory. This is where Speranza argues, celebrates, and plans.
+- **The Watchtower** — Reinforced observation post rising through a shaft to the surface. Salvaged radar equipment maintained with religious reverence. Two watchers work twelve-hour shifts logging ARC patrol patterns. Most Speranzans never see the sky. The watchers see it every day and wish they didn't.
+- **The Infirmary** — Dottor Ferrara's domain: a converted basement with a dental chair as operating table, a car battery powering a defibrillator, surgical instruments sterilised in a pressure cooker. Scrupulously clean despite everything.
+- **Habitation Block Primo** — The oldest residential structure: a four-story converted parking garage, subdivided into family units with salvaged partition walls. Level Four, the old roof, has been enclosed with salvaged glass as a communal greenhouse. It is ugly, draughty, and crowded. It is home.
+
+**Zones (4):** The Hub (central amphitheater), The Workshops (former metro tunnels and cisterns), The Quarters (residential), Topside Access (fortified surface exits).
+
+**Streets (16):** Tunnels, bridges, stairways, galleries, alleys, and ramps connecting the zones:
+- *The Hub:* Slingshot Gallery, Market Ramp, Constellation Alley, Signal Bridge
+- *The Workshops:* Forge Tunnel, Cistern Gallery, Metro Ramp, Parts Alley
+- *The Quarters:* Primo Stairway, Garden Tunnel, Laundry Bridge, Mural Alley
+- *Topside Access:* Blast Door Tunnel, Watchtower Stairway, Staging Ramp, Locker Gallery
+
+**ARC Machines (4 classes):**
+- *Snitch* — Football-sized aerial surveillance. Scans in UV and infrared. Low threat individually, critical in swarms. 90-second window before heavier units arrive.
+- *Tick* — Large-dog-sized ground patrol. Six-legged. Cutting arms for dismantling structures. Navigates by magnetic field and vibration.
+- *Surveyor* — Building-sized area denial. 200m scanning field. If organic, targeted for "collection."
+- *Matriarch* — Cathedral-sized. Unknown purpose. The ground behind them is different — not destroyed, but *changed*.
+
+**The Stripes:** All ARC machines display a rainbow-spectrum chromatic band of unknown purpose. The Bureau's preferred hypothesis: the Stripes are a Bleed artefact, a residual trace of the Unnamed — homesickness expressed as colour. The raiders don't care why. The children draw them in their murals.
+
+**Image Prompts:**
+- *Portrait style:* "retro-futuristic post-apocalyptic portrait, underground sinkhole city, warm amber string light illumination, 1970s NASA-punk, worn utilitarian clothing, cinematic Cuaron/Villeneuve, concept art, detailed face with character, limestone walls background"
+- *Building style:* "underground sinkhole architecture, pre-collapse buildings at angles against limestone walls, rope bridges and string lights, warm amber lighting, retro-futuristic industrial, 1970s NASA-punk, Blade Runner meets Mad Max, lived-in surfaces, concept art"
+
+**Aesthetic:** Warm parchment (#ECE2D0) background with golden amber (#C08A10) accents. Barlow 800-weight uppercase headings. 2px borders with offset shadows in warm grey. The palette is warm and hopeful — a deliberate contrast to Station Null's void-black and Velgarien's monochrome grey. Animation is slightly fast (0.9x) — the energy of a community that doesn't have time to wait.
 
 ### 4. The Brass Menagerie — Steampunk Animal Parliament
 
@@ -518,13 +569,20 @@ If building these, the recommended order based on impact and feasibility:
 
 ## V. WHICH SIMULATIONS TO BUILD NEXT
 
-**Recommended first three** (maximum aesthetic and mechanical diversity):
+**Built simulations** (in order of creation):
+
+1. **Velgarien** — Brutalist dystopia. The original simulation. Control as identity.
+2. **The Capybara Kingdom** — Sunless Sea underground fantasy. Wonder as survival.
+3. **Station Null** — Deep space horror. Knowledge as wound.
+4. **Speranza** — Arc Raiders post-apocalyptic. Hope as resistance.
+
+**Recommended next three** (maximum aesthetic and mechanical diversity):
 
 1. **Nova Prokovia** — Dystopian like Velgarien but radically different tone (absurdist vs oppressive). Tests whether the platform can hold two dystopias with distinct identities. Natural Bleed partner for Velgarien (totalitarian mirror).
 
 2. **The Bloom** — Utopian counterpoint to everything else. Tests whether the platform works for non-conflict-driven narratives. The Bloom's pacifism makes it a fascinating diplomatic partner — and a vulnerable target during Convergence.
 
-3. **Station Null** — Sci-fi horror, maximally different from the other three. Tests extreme isolation narratives. Station Null's broken time mechanics create unique event echo possibilities (events arrive before they happen in other simulations).
+3. **The Brass Menagerie** — Steampunk animal parliament. Tests fantasy with political satire. Maximally different genre from all existing simulations.
 
 ---
 
