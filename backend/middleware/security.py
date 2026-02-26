@@ -4,9 +4,9 @@ from starlette.responses import Response
 
 _CSP = "; ".join([
     "default-src 'self'",
-    "script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com",
-    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://region1.google-analytics.com",
-    "img-src 'self' https://*.supabase.co https://www.googletagmanager.com data:",
+    "script-src 'self' https://*.googletagmanager.com",
+    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com",
+    "img-src 'self' https://*.supabase.co https://*.google-analytics.com https://*.googletagmanager.com data:",
     "style-src 'self' 'unsafe-inline'",
     "font-src 'self'",
     "frame-ancestors 'none'",
