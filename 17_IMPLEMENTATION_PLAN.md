@@ -1,7 +1,8 @@
 # 17 - Implementation Plan: Step-by-Step Tasks
 
-**Version:** 2.8
-**Datum:** 2026-02-25
+**Version:** 2.9
+**Datum:** 2026-02-26
+**Aenderung v2.9:** Phase 6 hinzugefuegt — Agent Relationships, Event Echoes, Cartographer's Map. 18 neue Tasks (alle erledigt). 30 DB-Tabellen, 157 API-Endpoints, 23 Router. 302 Frontend-Tests, 359 Backend-Tests, 73 E2E-Specs. 1088 i18n-Strings.
 **Aenderung v2.8:** 3 Simulationen live (Velgarien, Capybara Kingdom, Station Null). 893 lokalisierte UI-Strings. 6 Theme-Presets. Anonymous View Audit komplett. 275 Backend-Tests, 197 Frontend-Tests (88 WCAG), 56 E2E-Specs. Production deployed.
 **Aenderung v2.7:** i18n msg()-Migration (P3.3.4) abgeschlossen — 675 Strings in 66 Komponenten + 2 Services gewrappt, DE-XLIFF komplett, FormatService implementiert, Locale-Toggle in PlatformHeader
 **Aenderung v2.6:** Phase 5 implementiert (Testing & Polish — 10 Tasks). Alle 5 Phasen abgeschlossen.
@@ -23,6 +24,72 @@
 | **Phase 3** | 30 | **ERLEDIGT** | 2026-02-16 |
 | **Phase 4** | 20 | **ERLEDIGT** | 2026-02-16 |
 | **Phase 5** | 10 | **ERLEDIGT** | 2026-02-16 |
+| **Phase 6** | 18 | **ERLEDIGT** | 2026-02-26 |
+
+### Phase 6 — Ergebnis
+
+**18 von 18 Tasks erledigt.** Verifikation:
+
+| Objekt | Erwartet | Tatsaechlich |
+|--------|----------|-------------|
+| DB-Migration (026) | 3 Tabellen + RLS + Triggers | 3 Tabellen, 8 RLS-Policies, 3 Triggers, 24 Taxonomy-Werte |
+| Backend Models | 2 neue | 2 (relationship.py, echo.py) |
+| Backend Services | 3 neue | 3 (relationship_service, echo_service, connection_service — connection inline) |
+| Backend Routers | 3 neue | 3 (relationships, echoes, connections) |
+| Public Endpoints | 6 neue | 6 (relationships, echoes, connections, map-data) |
+| Frontend Types | 6 neue | 6 (AgentRelationship, EventEcho, EchoVector, EchoStatus, SimulationConnection, MapData) |
+| Frontend API Services | 3 neue | 3 (relationship-api, echo-api, connection-api) |
+| Frontend: Relationships UI | 3 Komponenten | 3 (RelationshipCard, RelationshipEditModal, AgentDetailsPanel update) |
+| Frontend: Echoes UI | 4 Komponenten | 4 (EchoCard, EchoTriggerModal, EventDetailsPanel update, EventsView filter) |
+| Frontend: Cartographer's Map | 7 Dateien | 7 (CartographerMap, MapGraph, MapConnectionPanel, MapTooltip, map-force, map-data, map-types) |
+| Frontend: Route + Nav | 2 modified | 2 (app-shell.ts, PlatformHeader.ts) |
+| i18n Strings | ~59 neue | 59 (1088 gesamt) |
+| Backend Tests | 90 neue | 90 (5 Dateien: relationship_service, echo_service, relationship_router, echo_router, connection_router) |
+| Frontend Tests | 60 neue | 60 (4 Dateien: relationship-api, echo-api, map-force, map-data) |
+| E2E Tests | 17 neue | 17 (3 Dateien: relationships.spec.ts, echoes.spec.ts, multiverse-map.spec.ts) |
+| Demo Data | Seeds | 12 relationships, 6 connections, 2 prompt templates |
+| Prompt Templates | 2 neue | 2 (relationship_generation, event_echo_transformation) |
+| Visual Testing | WebMCP | Map layout, relationship panel, echo section verified |
+
+### Phase 6 — Task-Liste
+
+**P6.1 — Database Migration**
+- [x] P6.1.1: agent_relationships Tabelle (Schema + Constraints + Indexes)
+- [x] P6.1.2: event_echoes Tabelle (Schema + Constraints + Indexes)
+- [x] P6.1.3: simulation_connections Tabelle (Schema + Constraints + Indexes)
+- [x] P6.1.4: RLS-Policies (8 Policies: anon SELECT, auth CRUD, service-role)
+- [x] P6.1.5: Taxonomy relationship_type (24 Werte, 4 Simulationen)
+- [x] P6.1.6: Demo-Daten (12 Relationships, 6 Connections, 2 Prompt Templates)
+
+**P6.2 — Backend (Models + Services + Routers)**
+- [x] P6.2.1: Pydantic Models (relationship.py, echo.py)
+- [x] P6.2.2: RelationshipService (extends BaseService)
+- [x] P6.2.3: EchoService (cross-sim writes, cascade prevention)
+- [x] P6.2.4: Relationships Router (5 Endpoints)
+- [x] P6.2.5: Echoes Router (5 Endpoints)
+- [x] P6.2.6: Connections Router (4 Endpoints)
+- [x] P6.2.7: Public Router Erweiterungen (6 neue Endpoints inkl. map-data)
+- [x] P6.2.8: Router-Registrierung in app.py
+
+**P6.3 — Frontend (Types + API + UI + Map)**
+- [x] P6.3.1: TypeScript Interfaces (6 neue) + API Services (3 neue)
+- [x] P6.3.2: Relationships UI (RelationshipCard, RelationshipEditModal, AgentDetailsPanel)
+- [x] P6.3.3: Echoes UI (EchoCard, EchoTriggerModal, EventDetailsPanel, EventsView)
+- [x] P6.3.4: Cartographer's Map (7 Dateien: CartographerMap, MapGraph, MapConnectionPanel, MapTooltip, map-force, map-data, map-types)
+- [x] P6.3.5: Route /multiverse + PlatformHeader Nav-Link
+- [x] P6.3.6: i18n — 59 neue Strings (extract + DeepL + build)
+
+**P6.4 — Tests**
+- [x] P6.4.1: Backend Tests (90 Tests: services + routers)
+- [x] P6.4.2: Frontend Tests (60 Tests: API services + map-force + map-data)
+- [x] P6.4.3: E2E Tests (17 Specs: relationships, echoes, multiverse-map)
+- [x] P6.4.4: Visual Testing via WebMCP (Map layout, panels, locale switch)
+
+### Phase 6 — Abweichungen von Plan
+
+1. **ConnectionService nicht als eigene Datei** — Connections-Logik ist einfach genug, dass der Router direkt Supabase-Queries nutzt statt eines dedizierten Service.
+2. **Force-Simulation Bug** — Initialer Kraftbalance war fuer vollstaendigen Graphen falsch kalibriert (Anziehung ueberwog Abstossung 5x). Behoben durch Parameter-Tuning (repulsion 8000→50000, attraction 0.005→0.001, centerForce 0.02→0.005) und Entfernung der minDistance-Klemmung.
+3. **Shadow-DOM Click-Propagation** — E2E-Tests brauchten spezifische Shadow-DOM-Selektoren (.card__body statt Host-Element) wegen Event-Propagation in Custom Elements.
 
 ### Phase 5 — Ergebnis
 
@@ -1683,7 +1750,12 @@ frontend/src/components/locations/
 | **Phase 5** | 5.1 | 7 | E2E Tests (Playwright) |
 | | 5.2 | 3 | Security + Performance |
 | | **Summe** | **10** | |
-| **Gesamt** | | **138** | |
+| **Phase 6** | 6.1 | 6 | Database Migration (3 Tabellen, RLS, Taxonomies, Demo-Daten) |
+| | 6.2 | 8 | Backend (Models, Services, Routers, Public Endpoints) |
+| | 6.3 | 6 | Frontend (Types, API, Relationships UI, Echoes UI, Map, i18n) |
+| | 6.4 | 4 | Tests (Backend, Frontend, E2E, Visual) |
+| | **Summe** | **18** | |
+| **Gesamt** | | **156** | |
 
 ### Dateien + Endpoints (geschaetzt)
 
@@ -1694,7 +1766,8 @@ frontend/src/components/locations/
 | Phase 3 | ~50 | ~25 |
 | Phase 4 | ~40 | ~15 |
 | Phase 5 | ~30 (Tests) | — |
-| **Gesamt** | **~280** | **~108+** |
+| Phase 6 | ~35 | ~20 |
+| **Gesamt** | **~315** | **~157** |
 
 ---
 
@@ -1725,10 +1798,14 @@ P1.4.1 → P1.4.5 → P1.4.6 → P1.4.9 → P1.4.10
                                                              ↓
                                                   P5.1.1 → P5.1.7 → P5.2.3
                                                                        ↓
-                                                                      DONE
+                                                  P6.1.1 → P6.1.6 → P6.2.1 → P6.2.8
+                                                                                 ↓
+                                                  P6.3.1 → P6.3.5 → P6.3.6 → P6.4.1 → P6.4.4
+                                                                                           ↓
+                                                                                          DONE
 ```
 
-**Kritischer Pfad:** Setup → Schema (Triggers+Views) → Auth → CRUD → Migration → Settings → i18n → Prompts → AI Generation → Chat+AI → Social → Tests → Security Audit
+**Kritischer Pfad:** Setup → Schema (Triggers+Views) → Auth → CRUD → Migration → Settings → i18n → Prompts → AI Generation → Chat+AI → Social → Tests → Security Audit → Relationships+Echoes+Map → Phase 6 Tests
 
 ---
 

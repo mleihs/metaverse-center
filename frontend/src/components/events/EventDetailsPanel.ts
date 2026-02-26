@@ -2,9 +2,9 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
-import { eventsApi } from '../../services/api/index.js';
+import { echoesApi, eventsApi, simulationsApi } from '../../services/api/index.js';
 import { generationProgress } from '../../services/GenerationProgressService.js';
-import type { EventReaction, Event as SimEvent } from '../../types/index.js';
+import type { EventEcho, EventReaction, Event as SimEvent, Simulation } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { panelButtonStyles } from '../shared/panel-button-styles.js';
@@ -12,6 +12,8 @@ import { VelgToast } from '../shared/Toast.js';
 import '../shared/VelgBadge.js';
 import '../shared/VelgSectionHeader.js';
 import '../shared/VelgSidePanel.js';
+import './EchoCard.js';
+import './EchoTriggerModal.js';
 
 @localized()
 @customElement('velg-event-details-panel')
@@ -278,12 +280,17 @@ export class VelgEventDetailsPanel extends LitElement {
   @state() private _reactionsLoading = false;
   @state() private _generatingReactions = false;
   @state() private _expandedReactions: Set<string> = new Set();
+  @state() private _echoes: EventEcho[] = [];
+  @state() private _simulations: Simulation[] = [];
+  @state() private _echoTriggerOpen = false;
 
   protected willUpdate(changedProperties: Map<PropertyKey, unknown>): void {
     if (changedProperties.has('event') || changedProperties.has('open')) {
       if (this.open && this.event) {
         this._expandedReactions = new Set();
         this._loadReactions();
+        this._loadEchoes();
+        this._loadSimulations();
       }
     }
   }
@@ -303,6 +310,36 @@ export class VelgEventDetailsPanel extends LitElement {
       this._reactions = this.event.reactions ?? [];
     } finally {
       this._reactionsLoading = false;
+    }
+  }
+
+  private async _loadEchoes(): Promise<void> {
+    if (!this.event || !this.simulationId) return;
+
+    try {
+      const response = await echoesApi.listForEvent(this.simulationId, this.event.id);
+      if (response.success && response.data) {
+        this._echoes = response.data;
+      } else {
+        this._echoes = [];
+      }
+    } catch {
+      this._echoes = [];
+    }
+  }
+
+  private async _loadSimulations(): Promise<void> {
+    if (this._simulations.length > 0) return;
+    try {
+      const response = await simulationsApi.list();
+      if (response.success && response.data) {
+        const data = response.data;
+        this._simulations = Array.isArray(data)
+          ? data
+          : ((data as { items?: Simulation[] }).items ?? []);
+      }
+    } catch {
+      // Simulations list is optional context
     }
   }
 
@@ -520,6 +557,103 @@ export class VelgEventDetailsPanel extends LitElement {
     `;
   }
 
+  private _getSimulationName(simId: string): string {
+    const sim = this._simulations.find((s) => s.id === simId);
+    return sim?.name ?? simId;
+  }
+
+  private _handleTriggerEchoClick(): void {
+    this._echoTriggerOpen = true;
+  }
+
+  private _handleEchoTriggerClose(): void {
+    this._echoTriggerOpen = false;
+  }
+
+  private _handleEchoTriggered(): void {
+    this._echoTriggerOpen = false;
+    this._loadEchoes();
+    VelgToast.success(msg('Echo triggered successfully'));
+  }
+
+  private _handleEchoClick(e: CustomEvent<EventEcho>): void {
+    const echo = e.detail;
+    if (echo.target_event) {
+      this.dispatchEvent(
+        new CustomEvent('event-click', {
+          detail: echo.target_event,
+          bubbles: true,
+          composed: true,
+        }),
+      );
+    }
+  }
+
+  private _renderBleedProvenance() {
+    const evt = this.event;
+    if (!evt || evt.data_source !== 'bleed' || !evt.external_refs) return null;
+
+    const refs = evt.external_refs as Record<string, unknown>;
+    const sourceSimId = refs.source_simulation_id as string | undefined;
+    const echoVector = refs.echo_vector as string | undefined;
+
+    if (!sourceSimId) return null;
+
+    const sourceName = this._getSimulationName(sourceSimId);
+
+    return html`
+      <div class="panel__section">
+        <velg-section-header>${msg('Bleed Origin')}</velg-section-header>
+        <div class="panel__text panel__text--secondary">
+          ${msg(str`Originated in ${sourceName}${echoVector ? ` via ${echoVector}` : ''}`)}
+        </div>
+      </div>
+    `;
+  }
+
+  private _renderEchoes() {
+    return html`
+      <div class="panel__section">
+        <velg-section-header>
+          ${msg(str`Echoes (${this._echoes.length})`)}
+        </velg-section-header>
+
+        ${
+          this._echoes.length === 0
+            ? html`<div class="panel__reaction-empty">${msg('No echoes yet')}</div>`
+            : html`
+            <div class="panel__reactions">
+              ${this._echoes.map(
+                (echo) => html`
+                  <velg-echo-card
+                    .echo=${echo}
+                    .simulationName=${this._getSimulationName(echo.target_simulation_id)}
+                    @echo-click=${this._handleEchoClick}
+                  ></velg-echo-card>
+                `,
+              )}
+            </div>
+          `
+        }
+
+        ${
+          appState.canAdmin.value
+            ? html`
+            <button
+              class="panel__btn panel__btn--edit"
+              style="margin-top: var(--space-2);"
+              @click=${this._handleTriggerEchoClick}
+            >
+              ${icons.sparkle()}
+              ${msg('Trigger Echo')}
+            </button>
+          `
+            : nothing
+        }
+      </div>
+    `;
+  }
+
   protected render() {
     const evt = this.event;
 
@@ -607,6 +741,12 @@ export class VelgEventDetailsPanel extends LitElement {
                     </velg-section-header>
                     ${this._renderReactions()}
                   </div>
+
+                  <!-- Bleed Provenance -->
+                  ${this._renderBleedProvenance()}
+
+                  <!-- Echoes -->
+                  ${this._renderEchoes()}
                 </div>
               </div>
 
@@ -651,6 +791,15 @@ export class VelgEventDetailsPanel extends LitElement {
             `
         }
       </velg-side-panel>
+
+      <velg-echo-trigger-modal
+        .event=${this.event}
+        .simulationId=${this.simulationId}
+        .simulations=${this._simulations}
+        ?open=${this._echoTriggerOpen}
+        @modal-close=${this._handleEchoTriggerClose}
+        @echo-triggered=${this._handleEchoTriggered}
+      ></velg-echo-trigger-modal>
     `;
   }
 }

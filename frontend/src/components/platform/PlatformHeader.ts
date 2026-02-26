@@ -47,6 +47,32 @@ export class VelgPlatformHeader extends LitElement {
       opacity: 0.8;
     }
 
+    .header__nav-link {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-bold);
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      cursor: pointer;
+      padding: var(--space-1) var(--space-2);
+      border: var(--border-default);
+      background: var(--color-surface);
+      transition: background 0.1s, color 0.1s;
+    }
+
+    .header__nav-link:hover {
+      background: var(--color-surface-hover);
+      color: var(--color-text);
+    }
+
+    .header__nav-link--active {
+      background: var(--color-primary);
+      color: var(--color-text-inverse);
+      border-color: var(--color-primary);
+    }
+
     .sim-selector {
       display: flex;
       align-items: center;
@@ -129,6 +155,14 @@ export class VelgPlatformHeader extends LitElement {
     );
   }
 
+  private _handleMapClick(e: Event): void {
+    e.preventDefault();
+    const target = window.location.pathname === '/multiverse' ? '/dashboard' : '/multiverse';
+    this.dispatchEvent(
+      new CustomEvent('navigate', { detail: target, bubbles: true, composed: true }),
+    );
+  }
+
   private _handleSignInClick(): void {
     this.dispatchEvent(new CustomEvent('login-panel-open', { bubbles: true, composed: true }));
   }
@@ -161,6 +195,8 @@ export class VelgPlatformHeader extends LitElement {
       <div class="header">
         <div class="header__left">
           <a href="/dashboard" class="header__title" @click=${this._handleTitleClick}>${msg('metaverse.center')}</a>
+
+          <a href="/multiverse" class="header__nav-link ${window.location.pathname === '/multiverse' ? 'header__nav-link--active' : ''}" @click=${this._handleMapClick}>${msg('Map')}</a>
 
           ${
             this._simulations.length > 0

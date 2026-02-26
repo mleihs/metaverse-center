@@ -15,8 +15,10 @@ from backend.models.common import PaginatedResponse, PaginationMeta, SuccessResp
 from backend.services.agent_service import AgentService
 from backend.services.building_service import BuildingService
 from backend.services.campaign_service import CampaignService
+from backend.services.echo_service import ConnectionService, EchoService
 from backend.services.event_service import EventService
 from backend.services.location_service import LocationService
+from backend.services.relationship_service import RelationshipService
 from backend.services.settings_service import SettingsService
 from backend.services.social_media_service import SocialMediaService
 from backend.services.social_trends_service import SocialTrendsService
@@ -425,3 +427,92 @@ async def list_campaigns(
         supabase, simulation_id, limit=limit, offset=offset,
     )
     return _paginated(data, total, limit, offset)
+
+
+# ── Agent Relationships ─────────────────────────────────────────────────
+
+
+@router.get("/simulations/{simulation_id}/agents/{agent_id}/relationships", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def list_agent_relationships(
+    request: Request,
+    simulation_id: UUID,
+    agent_id: UUID,
+    supabase: Client = Depends(get_anon_supabase),
+) -> dict:
+    """List relationships for a specific agent (public)."""
+    data = await RelationshipService.list_for_agent(supabase, simulation_id, agent_id)
+    return {"success": True, "data": data}
+
+
+@router.get("/simulations/{simulation_id}/relationships", response_model=PaginatedResponse)
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def list_simulation_relationships(
+    request: Request,
+    simulation_id: UUID,
+    supabase: Client = Depends(get_anon_supabase),
+    limit: int = Query(default=100, ge=1, le=500),
+    offset: int = Query(default=0, ge=0),
+) -> dict:
+    """List all relationships in a simulation (public)."""
+    data, total = await RelationshipService.list_for_simulation(
+        supabase, simulation_id, limit=limit, offset=offset,
+    )
+    return _paginated(data, total, limit, offset)
+
+
+# ── Event Echoes ────────────────────────────────────────────────────────
+
+
+@router.get("/simulations/{simulation_id}/echoes", response_model=PaginatedResponse)
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def list_echoes(
+    request: Request,
+    simulation_id: UUID,
+    supabase: Client = Depends(get_anon_supabase),
+    limit: int = Query(default=25, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+) -> dict:
+    """List incoming echoes for a simulation (public)."""
+    data, total = await EchoService.list_for_simulation(
+        supabase, simulation_id, direction="incoming", limit=limit, offset=offset,
+    )
+    return _paginated(data, total, limit, offset)
+
+
+@router.get("/simulations/{simulation_id}/events/{event_id}/echoes", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def list_event_echoes(
+    request: Request,
+    simulation_id: UUID,
+    event_id: UUID,
+    supabase: Client = Depends(get_anon_supabase),
+) -> dict:
+    """List echoes for a specific event (public)."""
+    data = await EchoService.list_for_event(supabase, event_id)
+    return {"success": True, "data": data}
+
+
+# ── Simulation Connections & Map Data ───────────────────────────────────
+
+
+@router.get("/connections", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def list_connections(
+    request: Request,
+    supabase: Client = Depends(get_anon_supabase),
+) -> dict:
+    """List all active simulation connections (public, for map)."""
+    data = await ConnectionService.list_all(supabase, active_only=True)
+    return {"success": True, "data": data}
+
+
+@router.get("/map-data", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def get_map_data(
+    request: Request,
+    supabase: Client = Depends(get_anon_supabase),
+) -> dict:
+    """Aggregated endpoint for Cartographer's Map — simulations + connections + echo counts."""
+    data = await ConnectionService.get_map_data(supabase)
+    return {"success": True, "data": data}

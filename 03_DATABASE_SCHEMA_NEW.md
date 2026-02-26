@@ -1,7 +1,8 @@
 # 03 - Database Schema New: Neues Schema mit Simulation-Kontext
 
-**Version:** 2.1
-**Datum:** 2026-02-25
+**Version:** 2.2
+**Datum:** 2026-02-26
+**Aenderung v2.2:** 3 neue Tabellen (agent_relationships, event_echoes, simulation_connections). 30 Tabellen gesamt, 130 RLS-Policies, 25 Triggers. Migration 026. Taxonomy-Typ `relationship_type` mit 24 Werten (6 pro Simulation).
 **Aenderung v2.1:** 24 Migrationen (001-021 + ensure_dev_user). 27 Tabellen, 122 RLS-Policies (inkl. 21 anon SELECT), 22 Triggers, 6 Views + 2 materialisierte Views. 4 Storage-Buckets (agent.portraits, building.images, user.agent.portraits, simulation.assets). `banner_url` und `icon_url` Felder in `simulations` Tabelle.
 
 ---
@@ -1207,6 +1208,9 @@ CREATE POLICY agents_delete ON agents FOR DELETE
 | `chat_conversations` | Own | Own | Own | Own |
 | `chat_messages` | Own Conv | Own Conv | - | - |
 | `prompt_templates` | Member | Admin+ | Admin+ | Admin+ |
+| `agent_relationships` | Anon/Member | Editor+ | Editor+ | Editor+ |
+| `event_echoes` | Anon/Member | Service only | Service only | Service only |
+| `simulation_connections` | Anon/Member | Service only | Service only | Service only |
 | `audit_log` | Admin+ | Service only | - | - |
 
 ---
@@ -1276,14 +1280,15 @@ CREATE POLICY simulation_assets_insert ON storage.objects FOR INSERT
 
 | Metrik | Wert |
 |--------|------|
-| Tabellen | 27 (+ campaign_events, campaign_metrics gegenueber v1.0) |
+| Tabellen | 30 (+ agent_relationships, event_echoes, simulation_connections gegenueber v2.1) |
 | Trigger Functions | 6 |
 | Utility Functions | 4 |
 | RLS Functions | 3 |
-| Triggers | 22 (16x updated_at + 6 business logic) |
+| Triggers | 25 (19x updated_at + 6 business logic) |
 | Regular Views | 6 (4x active_* + simulation_dashboard + conversation_summaries) |
 | Materialized Views | 2 (campaign_performance + agent_statistics) |
-| Indexes | ~50 (inkl. partial, GIN, unique) |
+| RLS-Policies | 130 (inkl. 24 anon SELECT + 8 Phase-6-Policies) |
+| Indexes | ~60 (inkl. partial, GIN, unique) |
 | Storage Buckets | 4 |
 
 ---
@@ -1395,3 +1400,199 @@ CREATE POLICY simulation_assets_insert ON storage.objects FOR INSERT
 | `propaganda_type` CHECK | `taxonomy(type='campaign_type')` | surveillance, control, etc. |
 | `zone_type` CHECK | `taxonomy(type='zone_type')` | residential, commercial, etc. |
 | `security_level` CHECK | `taxonomy(type='security_level')` | low, medium, high, restricted |
+
+---
+
+## Beziehungs- und Echo-Tabellen (Phase 6)
+
+Migration 026 fuegt drei Tabellen hinzu, die das Verbindungsgewebe zwischen Agenten und Simulationen bilden: Beziehungen innerhalb einer Simulation, Event-Echos (Bleed) zwischen Simulationen, und Metadaten ueber Simulations-Verbindungen.
+
+### `agent_relationships`
+
+Intra-Simulation-Beziehungen zwischen Agenten. Jede Beziehung hat einen Typ (aus Taxonomy `relationship_type`), eine Intensitaet (1-10), und kann uni- oder bidirektional sein.
+
+```sql
+CREATE TABLE agent_relationships (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  simulation_id UUID NOT NULL REFERENCES simulations(id) ON DELETE CASCADE,
+  source_agent_id UUID NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
+  target_agent_id UUID NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
+  relationship_type TEXT NOT NULL,
+  is_bidirectional BOOLEAN NOT NULL DEFAULT true,
+  intensity INTEGER NOT NULL DEFAULT 5 CHECK (intensity BETWEEN 1 AND 10),
+  description TEXT,
+  metadata JSONB DEFAULT '{}',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+  CONSTRAINT no_self_relation CHECK (source_agent_id != target_agent_id),
+  CONSTRAINT unique_relationship UNIQUE (source_agent_id, target_agent_id, relationship_type)
+);
+
+CREATE INDEX idx_agent_rel_source ON agent_relationships(source_agent_id);
+CREATE INDEX idx_agent_rel_target ON agent_relationships(target_agent_id);
+CREATE INDEX idx_agent_rel_sim ON agent_relationships(simulation_id);
+```
+
+**Constraints:**
+- `no_self_relation` — Ein Agent kann keine Beziehung zu sich selbst haben
+- `unique_relationship` — Nur eine Beziehung pro (source, target, type)-Kombination
+- `intensity` — Ganzzahl 1-10, Default 5
+- `relationship_type` — Referenz auf taxonomy `relationship_type` (24 Werte, 6 pro Simulation)
+
+### `event_echoes`
+
+Cross-Simulation-Bleed: Events einer Simulation koennen als abgewandelte Echos in einer anderen Simulation erscheinen. Der `echo_vector` bestimmt den thematischen Kanal (commerce, language, memory, resonance, architecture, dream, desire).
+
+```sql
+CREATE TABLE event_echoes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  source_event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+  source_simulation_id UUID NOT NULL REFERENCES simulations(id),
+  target_simulation_id UUID NOT NULL REFERENCES simulations(id),
+  target_event_id UUID REFERENCES events(id) ON DELETE SET NULL,
+  echo_vector TEXT NOT NULL CHECK (echo_vector IN ('commerce','language','memory','resonance','architecture','dream','desire')),
+  echo_strength NUMERIC(3,2) NOT NULL DEFAULT 1.0 CHECK (echo_strength BETWEEN 0 AND 1),
+  echo_depth INTEGER NOT NULL DEFAULT 1 CHECK (echo_depth BETWEEN 1 AND 3),
+  root_event_id UUID REFERENCES events(id),
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','generating','completed','failed','rejected')),
+  bleed_metadata JSONB DEFAULT '{}',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+  CONSTRAINT no_self_echo CHECK (source_simulation_id != target_simulation_id),
+  CONSTRAINT unique_echo UNIQUE (source_event_id, target_simulation_id)
+);
+
+CREATE INDEX idx_echo_source ON event_echoes(source_event_id);
+CREATE INDEX idx_echo_target_sim ON event_echoes(target_simulation_id);
+CREATE INDEX idx_echo_status ON event_echoes(status);
+```
+
+**Constraints:**
+- `no_self_echo` — Echos koennen nicht in dieselbe Simulation zeigen
+- `unique_echo` — Nur ein Echo pro (source_event, target_simulation)-Kombination
+- `echo_vector` — CHECK auf 7 erlaubte Werte: commerce, language, memory, resonance, architecture, dream, desire
+- `echo_strength` — NUMERIC(3,2), 0.00-1.00
+- `echo_depth` — 1-3 (verhindert Kaskaden: Echo eines Echos max. 3 Stufen tief)
+- `status` — CHECK auf 5 Werte (siehe Status-Workflow)
+
+**Status-Workflow:**
+```
+pending → generating → completed
+                    → failed
+pending → rejected
+```
+- `pending` — Echo erkannt, wartet auf AI-Transformation
+- `generating` — AI generiert gerade das transformierte Event
+- `completed` — `target_event_id` gesetzt, Echo-Event erstellt
+- `failed` — AI-Generierung fehlgeschlagen
+- `rejected` — Manuell oder automatisch abgelehnt (z.B. Bleed deaktiviert)
+
+**Kaskadenverhinderung:**
+- `echo_depth` begrenzt Ketten auf max. 3 Stufen
+- `root_event_id` verweist immer auf das Original-Event (nicht das Zwischen-Echo)
+- `unique_echo` verhindert doppelte Echos desselben Events in dieselbe Simulation
+
+### `simulation_connections`
+
+Multiverse-Kanten: Metadaten ueber die Verbindung zwischen zwei Simulationen. Definiert welche Bleed-Vektoren aktiv sind und wie stark die Verbindung ist.
+
+```sql
+CREATE TABLE simulation_connections (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  simulation_a_id UUID NOT NULL REFERENCES simulations(id) ON DELETE CASCADE,
+  simulation_b_id UUID NOT NULL REFERENCES simulations(id) ON DELETE CASCADE,
+  connection_type TEXT NOT NULL DEFAULT 'bleed',
+  bleed_vectors TEXT[] NOT NULL DEFAULT '{}',
+  strength NUMERIC(3,2) NOT NULL DEFAULT 0.5 CHECK (strength BETWEEN 0 AND 1),
+  description TEXT,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+  CONSTRAINT no_self_connection CHECK (simulation_a_id != simulation_b_id),
+  CONSTRAINT unique_connection UNIQUE (simulation_a_id, simulation_b_id)
+);
+```
+
+**Constraints:**
+- `no_self_connection` — Keine Verbindung einer Simulation mit sich selbst
+- `unique_connection` — Nur eine Verbindung pro Simulations-Paar (Reihenfolge beachten: a < b konventionell)
+- `strength` — NUMERIC(3,2), 0.00-1.00 (Default 0.5)
+- `bleed_vectors` — TEXT Array der aktiven Echo-Vektoren fuer diese Verbindung
+- `is_active` — Verbindung kann deaktiviert werden ohne Loeschung
+
+---
+
+### Neue RLS-Policies (Phase 6)
+
+8 neue Policies ueber 3 Tabellen. `event_echoes` und `simulation_connections` haben keine INSERT/UPDATE/DELETE-Policies fuer regulaere User — Schreibzugriff erfolgt ausschliesslich ueber `service_role` (Cross-Simulation-Operationen).
+
+| # | Policy-Name | Tabelle | Operation | Rolle | Beschreibung |
+|---|-------------|---------|-----------|-------|-------------|
+| 1 | `agent_relationships_anon_select` | `agent_relationships` | SELECT | anon | Leserecht fuer aktive Simulationen (anon RLS) |
+| 2 | `agent_relationships_select` | `agent_relationships` | SELECT | public | Mitglieder-Leserecht via `user_has_simulation_access()` |
+| 3 | `agent_relationships_insert` | `agent_relationships` | INSERT | public | Editor+ via `user_has_simulation_role('editor')` |
+| 4 | `agent_relationships_update` | `agent_relationships` | UPDATE | public | Editor+ via `user_has_simulation_role('editor')` |
+| 5 | `agent_relationships_delete` | `agent_relationships` | DELETE | public | Editor+ via `user_has_simulation_role('editor')` |
+| 6 | `event_echoes_anon_select` | `event_echoes` | SELECT | anon | Leserecht fuer aktive Target-Simulationen (anon RLS) |
+| 7 | `event_echoes_select` | `event_echoes` | SELECT | public | Mitglieder von Source- ODER Target-Simulation |
+| 8 | `simulation_connections_anon_select` | `simulation_connections` | SELECT | anon | Leserecht fuer aktive Verbindungen (`is_active = true`) |
+| 9 | `simulation_connections_select` | `simulation_connections` | SELECT | public | Alle authentifizierten User (`USING (true)`) |
+
+**Hinweis:** `event_echoes` und `simulation_connections` haben bewusst keine INSERT/UPDATE/DELETE-Policies. Schreiboperationen gehen ueber den Admin-Supabase-Client (`service_role`), der RLS umgeht. Dies ist korrekt, da Cross-Simulation-Operationen nicht an einzelne User-Berechtigungen gebunden sind.
+
+---
+
+### Neue Triggers (Phase 6)
+
+3 neue `updated_at`-Triggers (erhoehen Gesamt auf 25: 19x updated_at + 6 business logic):
+
+```sql
+CREATE TRIGGER set_agent_relationships_updated_at
+  BEFORE UPDATE ON agent_relationships
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+CREATE TRIGGER set_event_echoes_updated_at
+  BEFORE UPDATE ON event_echoes
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+CREATE TRIGGER set_simulation_connections_updated_at
+  BEFORE UPDATE ON simulation_connections
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+```
+
+---
+
+### Taxonomy: `relationship_type`
+
+24 simulationsspezifische Beziehungstypen (6 pro Simulation). Gespeichert in `simulation_taxonomies` mit `taxonomy_type = 'relationship_type'`.
+
+| Simulation | Wert | Label (EN) | Label (DE) |
+|-----------|------|-----------|-----------|
+| **Velgarien** | `handler` | Handler | Fuehrungsoffizier |
+| | `informant` | Informant | Informant |
+| | `rival` | Rival | Rivale |
+| | `co_conspirator` | Co-Conspirator | Mitverschwoerer |
+| | `supervisor` | Supervisor | Vorgesetzter |
+| | `subject` | Subject | Subjekt |
+| **Capybara Kingdom** | `ally` | Ally | Verbuendeter |
+| | `mentor` | Mentor | Mentor |
+| | `rival` | Rival | Rivale |
+| | `trading_partner` | Trading Partner | Handelspartner |
+| | `blood_oath` | Blood Oath | Blutschwur |
+| | `scholarly_colleague` | Scholarly Colleague | Gelehrter Kollege |
+| **Station Null** | `crew_partner` | Crew Partner | Crew-Partner |
+| | `antagonist` | Antagonist | Antagonist |
+| | `subject_of_study` | Subject of Study | Forschungsobjekt |
+| | `commanding_officer` | Commanding Officer | Kommandeur |
+| | `quarantine_contact` | Quarantine Contact | Quarantaene-Kontakt |
+| **Speranza** | `contrada_kin` | Contrada Kin | Contrada-Verwandter |
+| | `raid_partner` | Raid Partner | Raubzug-Partner |
+| | `apprentice` | Apprentice | Lehrling |
+| | `rival` | Rival | Rivale |
+| | `salvage_partner` | Salvage Partner | Bergungspartner |
+| | `sworn_enemy` | Sworn Enemy | Erzfeind |
+
+**Hinweis:** Station Null hat nur 5 Typen (nicht 6). `rival` wird von Velgarien, Capybara Kingdom und Speranza geteilt (gleicher `value`, unterschiedliche `simulation_id`).

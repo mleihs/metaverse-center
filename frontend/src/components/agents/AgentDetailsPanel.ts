@@ -2,8 +2,8 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
-import { agentsApi } from '../../services/api/index.js';
-import type { Agent, EventReaction } from '../../types/index.js';
+import { agentsApi, relationshipsApi } from '../../services/api/index.js';
+import type { Agent, AgentRelationship, EventReaction } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import { agentAltText } from '../../utils/text.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
@@ -14,6 +14,8 @@ import '../shared/VelgAvatar.js';
 import '../shared/VelgBadge.js';
 import '../shared/VelgSectionHeader.js';
 import '../shared/VelgSidePanel.js';
+import './RelationshipCard.js';
+import './RelationshipEditModal.js';
 
 @localized()
 @customElement('velg-agent-details-panel')
@@ -199,6 +201,46 @@ export class VelgAgentDetailsPanel extends LitElement {
       color: var(--color-text-muted);
       font-style: italic;
     }
+
+    .panel__relationships {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .panel__rel-actions {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+    }
+
+    .panel__rel-btn {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-bold);
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+      padding: var(--space-1-5) var(--space-3);
+      border: var(--border-width-thin) solid var(--color-border);
+      background: var(--color-surface-sunken);
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .panel__rel-btn:hover {
+      background: var(--color-surface-header);
+      color: var(--color-text-primary);
+    }
+
+    .panel__rel-btn--generate {
+      border-color: var(--color-info);
+      color: var(--color-info);
+    }
+
+    .panel__rel-btn--generate:hover {
+      background: var(--color-info-bg);
+    }
   `,
   ];
 
@@ -211,12 +253,18 @@ export class VelgAgentDetailsPanel extends LitElement {
   @state() private _expandedReactions: Set<string> = new Set();
   @state() private _lightboxSrc: string | null = null;
   @state() private _lightboxAlt = '';
+  @state() private _relationships: AgentRelationship[] = [];
+  @state() private _allAgents: Agent[] = [];
+  @state() private _relEditOpen = false;
+  @state() private _relEditTarget: AgentRelationship | null = null;
 
   protected updated(changedProperties: Map<PropertyKey, unknown>): void {
     if (changedProperties.has('agent') || changedProperties.has('open')) {
       if (this.open && this.agent && this.simulationId) {
         this._expandedReactions = new Set();
         this._loadReactions();
+        this._loadRelationships();
+        this._loadAllAgents();
       }
     }
   }
@@ -237,6 +285,148 @@ export class VelgAgentDetailsPanel extends LitElement {
     } finally {
       this._reactionsLoading = false;
     }
+  }
+
+  private async _loadRelationships(): Promise<void> {
+    if (!this.agent || !this.simulationId) return;
+
+    try {
+      const response = await relationshipsApi.listForAgent(this.simulationId, this.agent.id);
+      if (response.success && response.data) {
+        this._relationships = response.data;
+      } else {
+        this._relationships = [];
+      }
+    } catch {
+      this._relationships = [];
+    }
+  }
+
+  private async _loadAllAgents(): Promise<void> {
+    if (!this.simulationId) return;
+
+    try {
+      const response = await agentsApi.list(this.simulationId, { limit: '100' });
+      if (response.success && response.data) {
+        const data = response.data as unknown as { data: Agent[] };
+        this._allAgents = data.data ?? [];
+      } else {
+        this._allAgents = [];
+      }
+    } catch {
+      this._allAgents = [];
+    }
+  }
+
+  private _handleRelationshipClick(e: CustomEvent<{ agentId: string }>): void {
+    const otherAgentId = e.detail.agentId;
+    const otherAgent = this._allAgents.find((a) => a.id === otherAgentId);
+    if (otherAgent) {
+      this.dispatchEvent(
+        new CustomEvent('agent-click', {
+          detail: otherAgent,
+          bubbles: true,
+          composed: true,
+        }),
+      );
+    }
+  }
+
+  private _handleRelationshipEdit(e: CustomEvent<AgentRelationship>): void {
+    this._relEditTarget = e.detail;
+    this._relEditOpen = true;
+  }
+
+  private async _handleRelationshipDelete(e: CustomEvent<AgentRelationship>): Promise<void> {
+    const rel = e.detail;
+    const isSource = rel.source_agent_id === this.agent?.id;
+    const otherName = isSource
+      ? (rel.target_agent?.name ?? msg('Unknown'))
+      : (rel.source_agent?.name ?? msg('Unknown'));
+
+    const confirmed = await VelgConfirmDialog.show({
+      title: msg('Delete relationship'),
+      message: msg(str`Delete relationship with ${otherName}?`),
+      confirmLabel: msg('Delete'),
+      variant: 'danger',
+    });
+
+    if (!confirmed) return;
+
+    const response = await relationshipsApi.remove(this.simulationId, rel.id);
+    if (response.success) {
+      this._relationships = this._relationships.filter((r) => r.id !== rel.id);
+      VelgToast.success(msg('Relationship deleted'));
+    } else {
+      VelgToast.error(response.error?.message ?? msg('Failed to delete relationship'));
+    }
+  }
+
+  private _handleRelationshipSaved(): void {
+    this._relEditOpen = false;
+    this._relEditTarget = null;
+    this._loadRelationships();
+  }
+
+  private _handleAddRelationship(): void {
+    this._relEditTarget = null;
+    this._relEditOpen = true;
+  }
+
+  private _handleGenerateRelationships(): void {
+    VelgToast.info(msg('Relationship generation coming soon'));
+  }
+
+  private _renderRelationships() {
+    if (this._relationships.length === 0) {
+      return html`
+        <span class="panel__empty">${msg('No relationships defined.')}</span>
+        ${
+          appState.canEdit.value
+            ? html`
+              <div class="panel__rel-actions">
+                <button class="panel__rel-btn" @click=${this._handleAddRelationship}>
+                  ${msg('Add Relationship')}
+                </button>
+                <button class="panel__rel-btn panel__rel-btn--generate" @click=${this._handleGenerateRelationships}>
+                  ${icons.sparkle()} ${msg('Generate Relationships')}
+                </button>
+              </div>
+            `
+            : nothing
+        }
+      `;
+    }
+
+    return html`
+      <div class="panel__relationships">
+        ${this._relationships.map(
+          (rel) => html`
+            <velg-relationship-card
+              .relationship=${rel}
+              .currentAgentId=${this.agent?.id ?? ''}
+              @relationship-click=${this._handleRelationshipClick}
+              @relationship-edit=${this._handleRelationshipEdit}
+              @relationship-delete=${this._handleRelationshipDelete}
+            ></velg-relationship-card>
+          `,
+        )}
+        ${
+          appState.canEdit.value
+            ? html`
+              <div class="panel__rel-actions">
+                <button class="panel__rel-btn" @click=${this._handleAddRelationship}>
+                  ${msg('Add Relationship')}
+                </button>
+                <button class="panel__rel-btn panel__rel-btn--generate" @click=${this._handleGenerateRelationships}>
+                  ${icons.sparkle()} ${msg('Generate Relationships')}
+                </button>
+              </div>
+            `
+            : nothing
+        }
+      </div>
+    `;
   }
 
   private _handleEdit(): void {
@@ -435,6 +625,18 @@ export class VelgAgentDetailsPanel extends LitElement {
                     <velg-section-header>${msg('Reactions')}</velg-section-header>
                     ${this._renderReactions()}
                   </div>
+
+                  <div class="panel__section">
+                    <velg-section-header>
+                      ${msg('Relationships')}
+                      ${
+                        this._relationships.length > 0
+                          ? html` <velg-badge>${this._relationships.length}</velg-badge>`
+                          : nothing
+                      }
+                    </velg-section-header>
+                    ${this._renderRelationships()}
+                  </div>
                 </div>
               </div>
 
@@ -462,6 +664,19 @@ export class VelgAgentDetailsPanel extends LitElement {
           this._lightboxSrc = null;
         }}
       ></velg-lightbox>
+
+      <velg-relationship-edit-modal
+        ?open=${this._relEditOpen}
+        .relationship=${this._relEditTarget}
+        .simulationId=${this.simulationId}
+        .sourceAgentId=${this.agent?.id ?? ''}
+        .agents=${this._allAgents}
+        @relationship-saved=${this._handleRelationshipSaved}
+        @modal-close=${() => {
+          this._relEditOpen = false;
+          this._relEditTarget = null;
+        }}
+      ></velg-relationship-edit-modal>
     `;
   }
 }

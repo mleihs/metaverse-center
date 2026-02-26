@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
 <file target-language="de" source-language="en" original="lit-localize-inputs" datatype="plaintext">
 <body>
@@ -5841,6 +5841,183 @@ Die Karte ist offen. Die Scherben warten. Welche Welt betritt man zuerst?</targe
 <trans-unit id="s2441dc4e87d2fedf">
   <source>Arc Raiders</source>
 <target>Arc Raiders</target></trans-unit>
+<trans-unit id="s2ae949567899b630">
+  <source><x id="0" equiv-text="${this.relationshipCount}" /> connections</source>
+<target><x id="0" equiv-text="${this.relationshipCount}" /> Verbindungen</target></trans-unit>
+<trans-unit id="s8b7fe0de5711e3b3">
+  <source>Delete relationship with <x id="0" equiv-text="${otherName}" />?</source>
+<target>Beziehung zu <x id="0" equiv-text="${otherName}" /> löschen?</target></trans-unit>
+<trans-unit id="sb09760df3317fa96">
+  <source>Relationship deleted</source>
+<target>Beziehung gelöscht</target></trans-unit>
+<trans-unit id="s9b62de443da47c7a">
+  <source>Failed to delete relationship</source>
+<target>Beziehung konnte nicht gelöscht werden</target></trans-unit>
+<trans-unit id="s0e4baba7ced50335">
+  <source>Relationship generation coming soon</source>
+<target>Erzeugung von Beziehungen in Kürze</target></trans-unit>
+<trans-unit id="sb9f1ab4d0eed35ba">
+  <source>No relationships defined.</source>
+<target>Es sind keine Beziehungen definiert.</target></trans-unit>
+<trans-unit id="sf9cf0abd1dba0252">
+  <source>Add Relationship</source>
+<target>Beziehung hinzufügen</target></trans-unit>
+<trans-unit id="s8fbbb5b4a02a67b5">
+  <source>Generate Relationships</source>
+<target>Beziehungen generieren</target></trans-unit>
+<trans-unit id="sd7076a5eb4212b38">
+  <source>Relationships</source>
+<target>Beziehungen</target></trans-unit>
+<trans-unit id="se8edf05c0d1a7108">
+  <source>Unknown Agent</source>
+<target>Unbekannter Agent</target></trans-unit>
+<trans-unit id="s6d4242171ca34c49">
+  <source>Mutual</source>
+<target>Gegenseitig</target></trans-unit>
+<trans-unit id="s0a3dbdeec8637661">
+  <source>Edit relationship</source>
+<target>Beziehung bearbeiten</target></trans-unit>
+<trans-unit id="s0296909a88677dac">
+  <source>Delete relationship</source>
+<target>Beziehung löschen</target></trans-unit>
+<trans-unit id="s54897edfc5fb9f98">
+  <source>Target agent is required</source>
+<target>Ziel-Agent ist erforderlich</target></trans-unit>
+<trans-unit id="s76128ff2f9970b28">
+  <source>Relationship type is required</source>
+<target>Beziehungsart ist erforderlich</target></trans-unit>
+<trans-unit id="s4a8d3551480ab881">
+  <source>Edit Relationship</source>
+<target>Beziehung bearbeiten</target></trans-unit>
+<trans-unit id="s9e514f111b79d06d">
+  <source>Create Relationship</source>
+<target>Beziehung erstellen</target></trans-unit>
+<trans-unit id="s258346331c704579">
+  <source>Target Agent</source>
+<target>Ziel-Agent</target></trans-unit>
+<trans-unit id="s75d877b3d83de9d2">
+  <source>Select Agent...</source>
+<target>Agent auswählen...</target></trans-unit>
+<trans-unit id="s92d36f290ccea6a9">
+  <source>Relationship Type</source>
+<target>Beziehungsart</target></trans-unit>
+<trans-unit id="s2fa9c4821bd618eb">
+  <source>Select Type...</source>
+<target>Typ auswählen...</target></trans-unit>
+<trans-unit id="s6defad3c9955280a">
+  <source>Intensity</source>
+<target>Intensität</target></trans-unit>
+<trans-unit id="s67692ad3a0f77eee">
+  <source>Bidirectional relationship</source>
+<target>Bidirektionale Beziehung</target></trans-unit>
+<trans-unit id="sd6e6fe8f787cb5f9">
+  <source>Describe the nature of this relationship...</source>
+<target>Beschreiben Sie die Art dieser Beziehung...</target></trans-unit>
+<trans-unit id="s4a9040f690f32f4b">
+  <source>Strength: <x id="0" equiv-text="${strengthPercent}" />%</source>
+<target>Stärke: <x id="0" equiv-text="${strengthPercent}" />%</target></trans-unit>
+<trans-unit id="s4735a3d8edbe6a6a">
+  <source>Depth <x id="0" equiv-text="${echo.echo_depth}" />/3</source>
+<target>Tiefe <x id="0" equiv-text="${echo.echo_depth}" />/3</target></trans-unit>
+<trans-unit id="sed9fa982ea6c6f9a">
+  <source>Target simulation is required</source>
+<target>Zielsimulation ist erforderlich</target></trans-unit>
+<trans-unit id="s0da3ef79edf16d1e">
+  <source>Echo vector is required</source>
+<target>Echo-Vektor ist erforderlich</target></trans-unit>
+<trans-unit id="s1acf926b53869028">
+  <source>No source event selected</source>
+<target>Kein Quellenereignis ausgewählt</target></trans-unit>
+<trans-unit id="s0e88c3d38826461a">
+  <source>Echo triggered successfully</source>
+<target>Echo erfolgreich ausgelöst</target></trans-unit>
+<trans-unit id="s892f5df6c55fcffa">
+  <source>Failed to trigger echo</source>
+<target>Echo konnte nicht ausgelöst werden</target></trans-unit>
+<trans-unit id="s50ff754396b4796d">
+  <source>Connection Preview</source>
+<target>Verbindungsvorschau</target></trans-unit>
+<trans-unit id="s7b3a70561cec8d75">
+  <source>Type:</source>
+<target>Typ:</target></trans-unit>
+<trans-unit id="s16b1fd2c79ef8773">
+  <source>Default Strength:</source>
+<target>Standard-Stärke:</target></trans-unit>
+<trans-unit id="sbb81b873f4798952">
+  <source>Available Vectors:</source>
+<target>Verfügbare Vektoren:</target></trans-unit>
+<trans-unit id="s6c1b6ade7cbd5ef8">
+  <source>Trigger Echo</source>
+<target>Echo auslösen</target></trans-unit>
+<trans-unit id="s5236b6115ce200b0">
+  <source>Source Event</source>
+<target>Quell-Ereignis</target></trans-unit>
+<trans-unit id="s6cf857d385ca1187">
+  <source>Target Simulation</source>
+<target>Zielsimulation</target></trans-unit>
+<trans-unit id="s9282b347c0d8f8a4">
+  <source>-- Select Target --</source>
+<target>-- Ziel auswählen --</target></trans-unit>
+<trans-unit id="s73c360da050243db">
+  <source>Echo Vector</source>
+<target>Echo-Vektor</target></trans-unit>
+<trans-unit id="sc25dc6b7d84775f2">
+  <source>-- Select Vector --</source>
+<target>-- Vektor auswählen --</target></trans-unit>
+<trans-unit id="s5ef81dc86d97e0d4">
+  <source>Strength Override (<x id="0" equiv-text="${strengthPercent}" />%)</source>
+<target>Stärke überschreiben (<x id="0" equiv-text="${strengthPercent}" />%)</target></trans-unit>
+<trans-unit id="sf5e1db1a2e189b29">
+  <source>Triggering...</source>
+<target>Auslösen...</target></trans-unit>
+<trans-unit id="s81d07f0d580d48db">
+  <source>Bleed</source>
+<target>Bleed</target></trans-unit>
+<trans-unit id="s5a8ee66c2774b544">
+  <source>Echo</source>
+<target>Echo</target></trans-unit>
+<trans-unit id="sf3c5453727851433">
+  <source>Bleed Origin</source>
+<target>Bleed-Ursprung</target></trans-unit>
+<trans-unit id="s792c6e5dfb1db352">
+  <source>Originated in <x id="0" equiv-text="${sourceName}${echoVector ? ` via ${echoVector}` : ''}" /></source>
+<target>Entstanden in <x id="0" equiv-text="${sourceName}${echoVector ? ` via ${echoVector}` : ''}" /></target></trans-unit>
+<trans-unit id="sb0c67156cc5c5f81">
+  <source>Echoes (<x id="0" equiv-text="${this._echoes.length}" />)</source>
+<target>Echos (<x id="0" equiv-text="${this._echoes.length}" />)</target></trans-unit>
+<trans-unit id="saf512757f366bf25">
+  <source>No echoes yet</source>
+<target>Noch keine Echos</target></trans-unit>
+<trans-unit id="sfb499cdf6efdbab1">
+  <source>Show Bleed events only</source>
+<target>Nur Bleed-Ereignisse anzeigen</target></trans-unit>
+<trans-unit id="seefe1b6d14f4bbd1">
+  <source>Multiverse Map</source>
+<target>Multiversum-Karte</target></trans-unit>
+<trans-unit id="sa1f96f8a36872cf3">
+  <source>Loading multiverse...</source>
+<target>Multiversum laden...</target></trans-unit>
+<trans-unit id="sba76034e2f6cea8e">
+  <source>The Cartographer's Map</source>
+<target>Die Karte des Kartographen</target></trans-unit>
+<trans-unit id="sb9476c020ef38e4e">
+  <source>A living diagram of the multiverse and its connections</source>
+<target>Ein lebendiges Diagramm des Multiversums und seiner Verbindungen</target></trans-unit>
+<trans-unit id="s2c48b113d71fd39b">
+  <source>Connection Details</source>
+<target>Verbindungsdetails</target></trans-unit>
+<trans-unit id="se1b13a7c92d4dcc3">
+  <source>Connection Type</source>
+<target>Verbindungstyp</target></trans-unit>
+<trans-unit id="s0204454f7ec71c97">
+  <source>Bleed Vectors</source>
+<target>Bleed-Vektoren</target></trans-unit>
+<trans-unit id="s82c21acdbcd6e830">
+  <source>Strength</source>
+<target>Stärke</target></trans-unit>
+<trans-unit id="s1e187919b52639f1">
+  <source>Map</source>
+<target>Karte</target></trans-unit>
 </body>
 </file>
 </xliff>

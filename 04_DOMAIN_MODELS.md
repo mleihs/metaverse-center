@@ -1,7 +1,8 @@
 # 04 - Domain Models: Entitaeten mit Simulation-Scope
 
-**Version:** 2.1
-**Datum:** 2026-02-25
+**Version:** 2.2
+**Datum:** 2026-02-26
+**Aenderung v2.2:** 6 neue Interfaces (AgentRelationship, EventEcho, EchoVector, EchoStatus, SimulationConnection, MapData). Taxonomy-Typ `relationship_type`. Prompt-Template-Typen `relationship_generation` + `event_echo_transformation`.
 **Aenderung v2.1:** `banner_url`, `icon_url` Felder in Simulation-Interface. `agent_count`, `building_count`, `event_count`, `member_count` als optionale enriched-Felder (von `simulation_dashboard` View).
 **Aenderung v2.0:** Alle Spalten-Renames aus 03_DATABASE_SCHEMA_NEW v2.0 uebernommen
 
@@ -15,6 +16,7 @@ Alle Entitaeten tragen eine `simulation_id` und sind damit einer Simulation zuge
 Simulation (Top-Level)
 +-- Agents
 |   +-- AgentProfessions
+|   +-- AgentRelationships
 |   +-- AgentInteractions (mit Events, Buildings, Trends)
 +-- Buildings
 |   +-- BuildingAgentRelations
@@ -22,6 +24,7 @@ Simulation (Top-Level)
 |   +-- BuildingProfessionRequirements
 +-- Events
 |   +-- EventReactions
+|   +-- EventEchoes
 +-- Cities
 |   +-- Zones
 |   +-- CityStreets
@@ -39,6 +42,7 @@ Simulation (Top-Level)
 |   +-- ChatMessages
 +-- PromptTemplates
 +-- SimulationTaxonomies
++-- SimulationConnections (Cross-Simulation)
 ```
 
 ---
@@ -566,7 +570,9 @@ type PromptTemplateType =
   | 'news_transformation'
   | 'social_media_transformation'
   | 'social_media_sentiment'
-  | 'social_media_agent_reaction';
+  | 'social_media_agent_reaction'
+  | 'relationship_generation'
+  | 'event_echo_transformation';
 
 type PromptCategory =
   | 'text_generation'
@@ -678,3 +684,114 @@ Die folgenden Taxonomy-Typen ersetzen alle hartcodierten ENUMs und CHECK Constra
 | `interaction_type` | CHECK | supportive, resistant, fearful, neutral |
 | `campaign_tone` | `tone` CHECK | authoritarian, paternalistic, urgent, reassuring, threatening |
 | `complexity_level` | CHECK | simple, medium, complex, sophisticated |
+| `relationship_type` | Neu (v2.2) | ally, rival, mentor, student, lover, family, colleague, enemy |
+
+---
+
+## 16. Agent Relationships
+
+**Beziehungen zwischen Agenten innerhalb einer Simulation.**
+
+```typescript
+interface AgentRelationship {
+  id: UUID;
+  simulation_id: UUID;
+  source_agent_id: UUID;
+  target_agent_id: UUID;
+  relationship_type: string;        // Referenz auf Taxonomy 'relationship_type'
+  is_bidirectional: boolean;
+  intensity: number;                // Staerke der Beziehung
+  description?: string;
+  metadata?: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+
+  // Populated
+  source_agent?: Agent;
+  target_agent?: Agent;
+}
+```
+
+---
+
+## 17. Event Echoes
+
+**Simulations-uebergreifende Echo-Effekte von Events.** Wenn ein bedeutsames Event in einer Simulation stattfindet, kann es als Echo in eine andere Simulation "bluten" — transformiert durch einen Echo-Vektor.
+
+```typescript
+type EchoVector =
+  | 'commerce'       // Handelsbeziehungen
+  | 'language'        // Sprachliche Drift
+  | 'memory'          // Kollektive Erinnerung
+  | 'resonance'       // Thematische Resonanz
+  | 'architecture'    // Bauliche Einfluesse
+  | 'dream'           // Traumhafte Verzerrung
+  | 'desire';         // Unterbewusste Sehnsucht
+
+type EchoStatus = 'pending' | 'generating' | 'completed' | 'failed' | 'rejected';
+
+interface EventEcho {
+  id: UUID;
+  source_event_id: UUID;
+  source_simulation_id: UUID;
+  target_simulation_id: UUID;
+  target_event_id?: UUID;           // Generiertes Ziel-Event (nach Transformation)
+  echo_vector: EchoVector;
+  echo_strength: number;            // 0-1, Zerfall pro Hop
+  echo_depth: number;               // 1-3, Kaskadenverhinderung
+  root_event_id?: UUID;             // Urspruengliches Event bei Kaskaden
+  status: EchoStatus;
+  bleed_metadata?: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+
+  // Populated
+  source_event?: Event;
+  target_event?: Event;
+}
+```
+
+**Echo-Regeln:**
+- **Echo-Vektoren (7 Typen):** `commerce`, `language`, `memory`, `resonance`, `architecture`, `dream`, `desire` — bestimmen, wie das Quell-Event beim Uebergang transformiert wird.
+- **Echo-Tiefe (1-3):** Verhindert endlose Kaskaden. Ein Echo der Tiefe 3 erzeugt keine weiteren Echoes. `root_event_id` verweist auf das urspruengliche Ausloese-Event.
+- **Echo-Staerke (0-1):** Nimmt pro Hop ab. Bestimmt den Impact-Level des generierten Ziel-Events. Unterhalb eines Schwellwerts wird das Echo verworfen.
+- **Status-Workflow:** `pending` -> `generating` (AI-Transformation laeuft) -> `completed` (Ziel-Event erstellt) | `failed` (Generierung fehlgeschlagen) | `rejected` (manuell abgelehnt oder Staerke zu gering).
+
+---
+
+## 18. Simulation Connections
+
+**Verbindungen zwischen Simulationen fuer Cross-Simulation-Interaktion.**
+
+```typescript
+interface SimulationConnection {
+  id: UUID;
+  simulation_a_id: UUID;
+  simulation_b_id: UUID;
+  connection_type: string;
+  bleed_vectors: string[];           // Erlaubte Echo-Vektoren fuer diese Verbindung
+  strength: number;                  // Verbindungsstaerke
+  description?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+
+  // Populated
+  simulation_a?: Simulation;
+  simulation_b?: Simulation;
+}
+```
+
+---
+
+## 19. Map Data (Aggregiert)
+
+**Aggregierte Daten fuer die Simulations-Karte / Netzwerk-Visualisierung.**
+
+```typescript
+interface MapData {
+  simulations: Simulation[];
+  connections: SimulationConnection[];
+  echo_counts: Record<string, number>;  // Simulation-ID -> Anzahl aktiver Echoes
+}
+```

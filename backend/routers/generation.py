@@ -64,6 +64,13 @@ class GenerateEventRequest(BaseModel):
     locale: str = "de"
 
 
+class GenerateRelationshipsRequest(BaseModel):
+    """Request to generate agent relationships."""
+
+    agent_id: UUID
+    locale: str = "de"
+
+
 class GenerateImageRequest(BaseModel):
     """Request to generate an image for an entity."""
 
@@ -209,6 +216,66 @@ async def generate_event(
     except Exception as e:
         logger.exception("Event generation failed")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
+
+
+@router.post("/relationships", response_model=SuccessResponse[list])
+@limiter.limit(RATE_LIMIT_AI_GENERATION)
+async def generate_relationships(
+    request: Request,
+    simulation_id: UUID,
+    body: GenerateRelationshipsRequest,
+    user: CurrentUser = Depends(get_current_user),
+    _role_check: str = Depends(require_role("editor")),
+    supabase: Client = Depends(get_supabase),
+) -> dict:
+    """Generate relationship suggestions for an agent using AI."""
+    try:
+        # Get agent data
+        agent_resp = (
+            supabase.table("agents")
+            .select("*")
+            .eq("simulation_id", str(simulation_id))
+            .eq("id", str(body.agent_id))
+            .single()
+            .execute()
+        )
+        if not agent_resp.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Agent not found.",
+            )
+
+        # Get other agents in the simulation
+        others_resp = (
+            supabase.table("agents")
+            .select("id, name, system, character, background")
+            .eq("simulation_id", str(simulation_id))
+            .neq("id", str(body.agent_id))
+            .is_("deleted_at", "null")
+            .limit(20)
+            .execute()
+        )
+
+        service = await _get_generation_service(simulation_id, supabase)
+        result = await service.generate_agent_relationships(
+            agent_data=agent_resp.data,
+            other_agents=others_resp.data or [],
+            locale=body.locale,
+        )
+        return {"success": True, "data": result}
+    except HTTPException:
+        raise
+    except OpenRouterError as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(e),
+        ) from e
+    except Exception as e:
+        logger.exception("Relationship generation failed")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        ) from e
 
 
 @router.post("/image", response_model=SuccessResponse[dict])

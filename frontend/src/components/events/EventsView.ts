@@ -83,6 +83,31 @@ export class VelgEventsView extends LitElement {
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
       gap: var(--space-4);
     }
+
+    .events__bleed-filter {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .events__bleed-filter label {
+      display: flex;
+      align-items: center;
+      gap: var(--space-1-5);
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-bold);
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .events__bleed-filter input[type="checkbox"] {
+      cursor: pointer;
+      accent-color: var(--color-warning);
+    }
   `;
 
   @property({ type: String }) simulationId = '';
@@ -99,6 +124,7 @@ export class VelgEventsView extends LitElement {
   @state() private _editEvent: SimEvent | null = null;
   @state() private _showEditModal = false;
   @state() private _showDetails = false;
+  @state() private _bleedOnly = false;
 
   private get _canEdit(): boolean {
     return appState.canEdit.value;
@@ -137,6 +163,10 @@ export class VelgEventsView extends LitElement {
 
     if (this._search) {
       params.search = this._search;
+    }
+
+    if (this._bleedOnly) {
+      params.data_source = 'bleed';
     }
 
     for (const [key, value] of Object.entries(this._filters)) {
@@ -232,6 +262,12 @@ export class VelgEventsView extends LitElement {
     this._selectedEvent = null;
   }
 
+  private _handleBleedToggle(e: InputEvent): void {
+    this._bleedOnly = (e.target as HTMLInputElement).checked;
+    this._offset = 0;
+    this._loadEvents();
+  }
+
   private _handleRetry(): void {
     this._loadEvents();
   }
@@ -268,6 +304,17 @@ export class VelgEventsView extends LitElement {
           search-placeholder=${msg('Search events...')}
           @filter-change=${this._handleFilterChange}
         ></velg-filter-bar>
+
+        <div class="events__bleed-filter">
+          <label>
+            <input
+              type="checkbox"
+              .checked=${this._bleedOnly}
+              @change=${this._handleBleedToggle}
+            />
+            ${msg('Show Bleed events only')}
+          </label>
+        </div>
 
         ${
           this._loading

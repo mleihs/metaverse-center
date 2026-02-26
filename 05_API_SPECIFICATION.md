@@ -1,7 +1,8 @@
 # 05 - API Specification: Alle Endpoints (Simulation-Scoped)
 
-**Version:** 1.1
-**Datum:** 2026-02-25
+**Version:** 1.2
+**Datum:** 2026-02-26
+**Aenderung v1.2:** 157 Endpoints total (23 Router). 3 neue Router (relationships, echoes, connections). 6 neue Public-Endpoints fuer Relationships/Echoes/Connections/Map-Data. Aggregierter Map-Data-Endpoint.
 **Aenderung v1.1:** 136 Endpoints total (20 Router). 20 Public-Endpoints unter `/api/v1/public/*` fuer anonymen Lesezugriff (Rate-Limit: 100/min). Public-Simulations-Endpoint liefert jetzt `agent_count`, `building_count`, `event_count` via `simulation_dashboard` View.
 
 ---
@@ -606,6 +607,362 @@ Einladung annehmen.
 
 ---
 
+## 18. Relationships (Simulation-Scoped)
+
+Beziehungen zwischen Agenten innerhalb einer Simulation. Bidirektionale und gerichtete Beziehungen mit Intensitaetswerten.
+
+### `GET /api/v1/simulations/:simId/agents/:agentId/relationships`
+Alle Beziehungen eines Agenten (beide Richtungen — source und target).
+
+**Response:** `SuccessResponse[list[RelationshipResponse]]`
+
+**Rolle:** `viewer`
+
+### `GET /api/v1/simulations/:simId/relationships`
+Alle Beziehungen einer Simulation (fuer Graphen-Darstellung).
+
+**Query:** `?limit=100&offset=0`
+
+**Limits:** `limit` 1-500 (Default: 100)
+
+**Response:** `PaginatedResponse[RelationshipResponse]`
+
+**Rolle:** `viewer`
+
+### `POST /api/v1/simulations/:simId/agents/:agentId/relationships`
+Beziehung zwischen zwei Agenten erstellen. Audit-Log wird geschrieben.
+
+**Body:**
+```json
+{
+  "target_agent_id": "uuid",
+  "relationship_type": "ally",
+  "is_bidirectional": true,
+  "intensity": 5,
+  "description": "Langjährige Verbündete"
+}
+```
+
+| Feld | Typ | Required | Default | Beschreibung |
+|------|-----|----------|---------|-------------|
+| `target_agent_id` | UUID | Ja | - | Ziel-Agent |
+| `relationship_type` | string | Ja | - | Art der Beziehung (frei definierbar) |
+| `is_bidirectional` | bool | Nein | `true` | Beidseitige Beziehung |
+| `intensity` | int | Nein | `5` | Intensitaet (1-10) |
+| `description` | string | Nein | `null` | Beschreibung |
+
+**Response:** `SuccessResponse[RelationshipResponse]` (Status 201)
+
+**Rolle:** `editor`
+
+### `PATCH /api/v1/simulations/:simId/relationships/:relationshipId`
+Beziehung aktualisieren. Alle Felder optional (Partial Update). Audit-Log wird geschrieben.
+
+**Body:**
+```json
+{
+  "relationship_type": "rival",
+  "intensity": 8
+}
+```
+
+**Response:** `SuccessResponse[RelationshipResponse]`
+
+**Rolle:** `editor`
+
+### `DELETE /api/v1/simulations/:simId/relationships/:relationshipId`
+Beziehung loeschen. Audit-Log wird geschrieben.
+
+**Response:** `SuccessResponse[{ "message": "Relationship deleted." }]`
+
+**Rolle:** `editor`
+
+### RelationshipResponse Schema
+
+```json
+{
+  "id": "uuid",
+  "simulation_id": "uuid",
+  "source_agent_id": "uuid",
+  "target_agent_id": "uuid",
+  "relationship_type": "ally",
+  "is_bidirectional": true,
+  "intensity": 5,
+  "description": "Langjährige Verbündete",
+  "metadata": null,
+  "created_at": "2026-02-26T12:00:00Z",
+  "updated_at": "2026-02-26T12:00:00Z",
+  "source_agent": { "id": "uuid", "name": "Agent A" },
+  "target_agent": { "id": "uuid", "name": "Agent B" }
+}
+```
+
+---
+
+## 19. Echoes (Simulation-Scoped)
+
+Event-Echoes (Bleed) — simulationsuebergreifende Ereignis-Resonanzen. Ein Event in Simulation A kann als Echo in Simulation B auftauchen. Echoes durchlaufen einen Status-Workflow: `pending` → `approved` / `rejected`. Erfordert eine aktive Simulation-Connection zwischen den Simulationen.
+
+### `GET /api/v1/simulations/:simId/echoes`
+Alle Echoes einer Simulation (eingehend oder ausgehend).
+
+**Query:** `?direction=incoming&status=pending&limit=25&offset=0`
+
+| Parameter | Typ | Default | Beschreibung |
+|-----------|-----|---------|-------------|
+| `direction` | string | `incoming` | `incoming` oder `outgoing` |
+| `status` | string | - | Filter nach Status (`pending`, `approved`, `rejected`) |
+| `limit` | int | 25 | Max Ergebnisse (1-100) |
+| `offset` | int | 0 | Pagination Offset |
+
+**Response:** `PaginatedResponse[EchoResponse]`
+
+**Rolle:** `viewer`
+
+### `GET /api/v1/simulations/:simId/events/:eventId/echoes`
+Alle Echoes die von einem bestimmten Event ausgehen.
+
+**Response:** `SuccessResponse[list[EchoResponse]]`
+
+**Rolle:** `viewer`
+
+### `POST /api/v1/simulations/:simId/echoes`
+Echo manuell ausloesen — sendet ein Event als Echo an eine Ziel-Simulation. Das Quell-Event muss zur aktuellen Simulation gehoeren. Verwendet `admin_supabase` (service_role) fuer simulationsuebergreifenden Schreibzugriff. Audit-Log wird geschrieben.
+
+**Body:**
+```json
+{
+  "source_event_id": "uuid",
+  "target_simulation_id": "uuid",
+  "echo_vector": "resonance",
+  "echo_strength": 0.8
+}
+```
+
+| Feld | Typ | Required | Default | Beschreibung |
+|------|-----|----------|---------|-------------|
+| `source_event_id` | UUID | Ja | - | Quell-Event (muss in `:simId` existieren) |
+| `target_simulation_id` | UUID | Ja | - | Ziel-Simulation |
+| `echo_vector` | enum | Ja | - | Vektor: `commerce`, `language`, `memory`, `resonance`, `architecture`, `dream`, `desire` |
+| `echo_strength` | float | Nein | `1.0` | Staerke (0-1) |
+
+**Response:** `SuccessResponse[EchoResponse]` (Status 201)
+
+**Rolle:** `admin`
+
+### `PATCH /api/v1/simulations/:simId/echoes/:echoId/approve`
+Eingehendes Echo genehmigen. Verwendet `admin_supabase`. Audit-Log wird geschrieben.
+
+**Response:** `SuccessResponse[EchoResponse]`
+
+**Rolle:** `admin`
+
+### `PATCH /api/v1/simulations/:simId/echoes/:echoId/reject`
+Eingehendes Echo ablehnen. Verwendet `admin_supabase`. Audit-Log wird geschrieben.
+
+**Response:** `SuccessResponse[EchoResponse]`
+
+**Rolle:** `admin`
+
+### EchoResponse Schema
+
+```json
+{
+  "id": "uuid",
+  "source_event_id": "uuid",
+  "source_simulation_id": "uuid",
+  "target_simulation_id": "uuid",
+  "target_event_id": null,
+  "echo_vector": "resonance",
+  "echo_strength": 0.8,
+  "echo_depth": 1,
+  "root_event_id": null,
+  "status": "pending",
+  "bleed_metadata": null,
+  "created_at": "2026-02-26T12:00:00Z",
+  "updated_at": "2026-02-26T12:00:00Z",
+  "source_event": { "id": "uuid", "title": "..." },
+  "target_event": null
+}
+```
+
+### Echo Status-Workflow
+
+```
+pending → approved    (Admin genehmigt, Target-Event wird erzeugt)
+pending → rejected    (Admin lehnt ab, Echo wird archiviert)
+```
+
+### Echo-Vektoren (enum)
+
+| Vektor | Beschreibung |
+|--------|-------------|
+| `commerce` | Wirtschaftliche Verflechtungen |
+| `language` | Sprachliche/kulturelle Resonanz |
+| `memory` | Kollektive Erinnerungen |
+| `resonance` | Allgemeine thematische Resonanz |
+| `architecture` | Bauliche/raeumliche Einfluesse |
+| `dream` | Traumhafte/unbewusste Verbindungen |
+| `desire` | Sehnsuechte und Beduerfnisse |
+
+---
+
+## 20. Connections (Plattform-Level)
+
+Verbindungen zwischen Simulationen — definieren ueber welche Vektoren Echoes (Bleed) zwischen zwei Simulationen fliessen koennen. Plattform-Level (nicht simulation-scoped).
+
+### `GET /api/v1/connections`
+Alle Simulation-Connections auflisten (aktive und inaktive).
+
+**Response:** `SuccessResponse[list[ConnectionResponse]]`
+
+**Auth:** Authentifizierter Benutzer (kein Rollen-Check)
+
+### `POST /api/v1/connections`
+Neue Verbindung zwischen zwei Simulationen erstellen. Verwendet `admin_supabase`.
+
+**Body:**
+```json
+{
+  "simulation_a_id": "uuid",
+  "simulation_b_id": "uuid",
+  "connection_type": "bleed",
+  "bleed_vectors": ["commerce", "memory", "resonance"],
+  "strength": 0.5,
+  "description": "Handelsroute zwischen den Welten",
+  "is_active": true
+}
+```
+
+| Feld | Typ | Required | Default | Beschreibung |
+|------|-----|----------|---------|-------------|
+| `simulation_a_id` | UUID | Ja | - | Erste Simulation |
+| `simulation_b_id` | UUID | Ja | - | Zweite Simulation |
+| `connection_type` | string | Nein | `"bleed"` | Art der Verbindung |
+| `bleed_vectors` | list[string] | Nein | `[]` | Erlaubte Echo-Vektoren |
+| `strength` | float | Nein | `0.5` | Verbindungsstaerke (0-1) |
+| `description` | string | Nein | `null` | Beschreibung |
+| `is_active` | bool | Nein | `true` | Verbindung aktiv |
+
+**Response:** `SuccessResponse[ConnectionResponse]` (Status 201)
+
+**Auth:** Authentifizierter Benutzer + `admin_supabase` (Platform-Admin)
+
+### `PATCH /api/v1/connections/:connectionId`
+Verbindung aktualisieren. Alle Felder optional. Verwendet `admin_supabase`.
+
+**Body:**
+```json
+{
+  "bleed_vectors": ["commerce", "memory"],
+  "strength": 0.7,
+  "is_active": false
+}
+```
+
+**Response:** `SuccessResponse[ConnectionResponse]`
+
+**Auth:** Authentifizierter Benutzer + `admin_supabase` (Platform-Admin)
+
+### `DELETE /api/v1/connections/:connectionId`
+Verbindung loeschen. Verwendet `admin_supabase`.
+
+**Response:** `SuccessResponse[{ "message": "Connection deleted." }]`
+
+**Auth:** Authentifizierter Benutzer + `admin_supabase` (Platform-Admin)
+
+### ConnectionResponse Schema
+
+```json
+{
+  "id": "uuid",
+  "simulation_a_id": "uuid",
+  "simulation_b_id": "uuid",
+  "connection_type": "bleed",
+  "bleed_vectors": ["commerce", "memory", "resonance"],
+  "strength": 0.5,
+  "description": "Handelsroute zwischen den Welten",
+  "is_active": true,
+  "created_at": "2026-02-26T12:00:00Z",
+  "updated_at": "2026-02-26T12:00:00Z",
+  "simulation_a": { "id": "uuid", "name": "Velgarien" },
+  "simulation_b": { "id": "uuid", "name": "Speranza" }
+}
+```
+
+---
+
+## 21. Public Endpoints — Relationships, Echoes, Connections, Map-Data
+
+Zusaetzliche oeffentliche Endpoints (ohne Authentifizierung, Rate-Limit: 100/min) fuer das Relationship-/Echo-/Connection-System. Ergaenzen die bestehenden 20 Public-Endpoints aus v1.1.
+
+### `GET /api/v1/public/simulations/:simId/agents/:agentId/relationships`
+Beziehungen eines Agenten (oeffentlich).
+
+**Response:** `SuccessResponse[list[RelationshipResponse]]`
+
+### `GET /api/v1/public/simulations/:simId/relationships`
+Alle Beziehungen einer Simulation (oeffentlich, fuer Graphen).
+
+**Query:** `?limit=100&offset=0`
+
+**Response:** `PaginatedResponse[RelationshipResponse]`
+
+### `GET /api/v1/public/simulations/:simId/echoes`
+Eingehende Echoes einer Simulation (oeffentlich).
+
+**Query:** `?limit=25&offset=0`
+
+**Response:** `PaginatedResponse[EchoResponse]`
+
+### `GET /api/v1/public/simulations/:simId/events/:eventId/echoes`
+Echoes eines bestimmten Events (oeffentlich).
+
+**Response:** `SuccessResponse[list[EchoResponse]]`
+
+### `GET /api/v1/public/connections`
+Alle aktiven Simulation-Connections (oeffentlich, fuer Map).
+
+**Response:** `SuccessResponse[list[ConnectionResponse]]`
+
+### `GET /api/v1/public/map-data`
+Aggregierter Endpoint fuer die Cartographer's Map — liefert alle Daten fuer die Kartenansicht in einem Request.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "simulations": [
+      { "id": "uuid", "name": "Velgarien", "slug": "velgarien", "status": "active", "..." : "..." }
+    ],
+    "connections": [
+      {
+        "id": "uuid",
+        "simulation_a_id": "uuid",
+        "simulation_b_id": "uuid",
+        "connection_type": "bleed",
+        "bleed_vectors": ["commerce", "memory"],
+        "strength": 0.5,
+        "is_active": true
+      }
+    ],
+    "echo_counts": {
+      "sim-uuid-1": 3,
+      "sim-uuid-2": 7
+    }
+  }
+}
+```
+
+| Feld | Typ | Beschreibung |
+|------|-----|-------------|
+| `simulations` | list[dict] | Alle aktiven Simulationen mit Basis-Daten |
+| `connections` | list[dict] | Alle aktiven Connections zwischen Simulationen |
+| `echo_counts` | dict | Anzahl aktiver Echoes pro Simulation (Key: `simulation_id`) |
+
+---
+
 ## Endpoint-Zusammenfassung
 
 | Bereich | Endpoints | Methoden |
@@ -627,4 +984,9 @@ Einladung annehmen.
 | Prompt Templates | 6 | CRUD + Test |
 | Users | 1 | Profile (Auth via Supabase direkt) |
 | Invitations | 3 | Create/Validate/Accept |
-| **Gesamt** | **~108** | |
+| Relationships | 5 | List (Agent/Sim) + Create + Patch + Delete |
+| Echoes | 5 | List (Sim/Event) + Trigger + Approve + Reject |
+| Connections | 4 | List + Create + Patch + Delete |
+| Public (neu) | 6 | Relationships + Echoes + Connections + Map-Data |
+| Public (bestehend) | 20 | Anonymer Lesezugriff |
+| **Gesamt** | **~157** | |

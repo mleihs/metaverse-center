@@ -267,6 +267,7 @@ export class VelgEventCard extends LitElement {
           <div class="card__badges">
             ${evt.event_type ? html`<velg-badge variant="primary">${evt.event_type}</velg-badge>` : null}
             ${evt.data_source === 'ai' ? html`<velg-badge variant="info">AI</velg-badge>` : null}
+            ${evt.data_source === 'bleed' ? html`<velg-badge variant="warning">${msg('Bleed')}</velg-badge>` : null}
             ${reactionCount > 0 ? html`<velg-badge variant="warning">${msg(str`${reactionCount} Reactions`)}</velg-badge>` : null}
           </div>
 
@@ -287,6 +288,16 @@ export class VelgEventCard extends LitElement {
                 <span class="card__meta-item">
                   <span class="card__meta-icon">${icons.location()}</span>
                   ${evt.location}
+                </span>
+              `
+                : null
+            }
+            ${
+              (evt.external_refs as Record<string, unknown> | undefined)?.echo_vector
+                ? html`
+                <span class="card__meta-item">
+                  <span class="card__meta-icon">${icons.sparkle()}</span>
+                  ${msg('Echo')}: ${(evt.external_refs as Record<string, unknown>).echo_vector}
                 </span>
               `
                 : null

@@ -30,6 +30,7 @@ import './components/platform/InvitationAcceptView.js';
 import './components/platform/CreateSimulationWizard.js';
 import './components/platform/UserProfileView.js';
 import './components/lore/SimulationLoreView.js';
+import './components/multiverse/CartographerMap.js';
 import './components/shared/CookieConsent.js';
 
 @localized()
@@ -119,6 +120,16 @@ export class VelgApp extends LitElement {
           await this._authReady;
           seoService.reset();
           analyticsService.trackPageView('/dashboard', document.title);
+          return true;
+        },
+      },
+      {
+        path: '/multiverse',
+        render: () => html`<velg-cartographer-map></velg-cartographer-map>`,
+        enter: async () => {
+          await this._authReady;
+          seoService.setTitle(['Multiverse Map']);
+          analyticsService.trackPageView('/multiverse', document.title);
           return true;
         },
       },

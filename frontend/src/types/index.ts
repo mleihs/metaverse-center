@@ -41,7 +41,8 @@ export type TaxonomyType =
   | 'sentiment'
   | 'interaction_type'
   | 'campaign_tone'
-  | 'complexity_level';
+  | 'complexity_level'
+  | 'relationship_type';
 
 export type PromptTemplateType =
   | 'agent_generation'
@@ -64,7 +65,9 @@ export type PromptTemplateType =
   | 'news_transformation'
   | 'social_media_transformation'
   | 'social_media_sentiment'
-  | 'social_media_agent_reaction';
+  | 'social_media_agent_reaction'
+  | 'relationship_generation'
+  | 'event_echo_transformation';
 
 export type PromptCategory =
   | 'text_generation'
@@ -578,6 +581,80 @@ export interface MembershipInfo {
   simulation_name: string;
   member_role: SimulationRole;
   joined_at: string;
+}
+
+// --- Agent Relationships ---
+
+export interface AgentRelationship {
+  id: UUID;
+  simulation_id: UUID;
+  source_agent_id: UUID;
+  target_agent_id: UUID;
+  relationship_type: string;
+  is_bidirectional: boolean;
+  intensity: number;
+  description?: string;
+  metadata?: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+  source_agent?: Agent;
+  target_agent?: Agent;
+}
+
+// --- Event Echoes ---
+
+export type EchoVector =
+  | 'commerce'
+  | 'language'
+  | 'memory'
+  | 'resonance'
+  | 'architecture'
+  | 'dream'
+  | 'desire';
+
+export type EchoStatus = 'pending' | 'generating' | 'completed' | 'failed' | 'rejected';
+
+export interface EventEcho {
+  id: UUID;
+  source_event_id: UUID;
+  source_simulation_id: UUID;
+  target_simulation_id: UUID;
+  target_event_id?: UUID;
+  echo_vector: EchoVector;
+  echo_strength: number;
+  echo_depth: number;
+  root_event_id?: UUID;
+  status: EchoStatus;
+  bleed_metadata?: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+  source_event?: Event;
+  target_event?: Event;
+}
+
+// --- Simulation Connections ---
+
+export interface SimulationConnection {
+  id: UUID;
+  simulation_a_id: UUID;
+  simulation_b_id: UUID;
+  connection_type: string;
+  bleed_vectors: string[];
+  strength: number;
+  description?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  simulation_a?: Simulation;
+  simulation_b?: Simulation;
+}
+
+// --- Map Data ---
+
+export interface MapData {
+  simulations: Simulation[];
+  connections: SimulationConnection[];
+  echo_counts: Record<string, number>;
 }
 
 // --- API Response Types ---

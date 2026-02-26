@@ -328,6 +328,87 @@ class GenerationService:
             locale=locale,
         )
 
+    async def generate_agent_relationships(
+        self,
+        agent_data: dict,
+        other_agents: list[dict],
+        locale: str = "de",
+    ) -> list[dict]:
+        """Generate relationship suggestions for an agent.
+
+        Returns a list of dicts, each with:
+        target_agent_id, relationship_type, intensity, description, is_bidirectional
+        """
+        agents_summary = "\n".join(
+            f"- {a['name']} (ID: {a['id']}, system: {a.get('system', 'N/A')})"
+            for a in other_agents[:20]
+        )
+
+        result = await self._generate(
+            template_type="relationship_generation",
+            model_purpose="agent_description",
+            variables={
+                "agent_name": agent_data.get("name", ""),
+                "agent_character": agent_data.get("character", ""),
+                "agent_background": agent_data.get("background", ""),
+                "agent_system": agent_data.get("system", ""),
+                "other_agents": agents_summary,
+                "simulation_name": await self._get_simulation_name(),
+                "locale_name": LOCALE_NAMES.get(locale, locale),
+            },
+            locale=locale,
+        )
+
+        parsed = self._parse_json_content(result.get("content", ""))
+        if parsed and isinstance(parsed.get("relationships"), list):
+            return parsed["relationships"]
+        if isinstance(parsed, list):
+            return parsed
+        return []
+
+    async def generate_echo_transformation(
+        self,
+        source_event: dict,
+        target_simulation_name: str,
+        target_description: str,
+        echo_vector: str,
+        locale: str = "de",
+    ) -> dict:
+        """Transform a source event into a target simulation's voice.
+
+        Returns dict with: title, description
+        """
+        result = await self._generate(
+            template_type="event_echo_transformation",
+            model_purpose="event_generation",
+            variables={
+                "source_title": source_event.get("title", ""),
+                "source_description": source_event.get("description", ""),
+                "source_simulation": await self._get_simulation_name(),
+                "target_simulation": target_simulation_name,
+                "target_description": target_description,
+                "echo_vector": echo_vector,
+                "locale_name": LOCALE_NAMES.get(locale, locale),
+            },
+            locale=locale,
+        )
+
+        parsed = self._parse_json_content(result.get("content", ""))
+        if parsed:
+            return {
+                "title": parsed.get("title", source_event.get("title", "")),
+                "description": parsed.get(
+                    "description",
+                    result.get("content", ""),
+                ),
+                "model_used": result.get("model_used"),
+            }
+        return {
+            "title": source_event.get("title", ""),
+            "description": result.get("content", ""),
+            "model_used": result.get("model_used"),
+        }
+
     # --- JSON parsing ---
 
     async def _parse_or_repair_json(

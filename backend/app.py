@@ -18,6 +18,8 @@ from backend.routers import (
     buildings,
     campaigns,
     chat,
+    connections,
+    echoes,
     events,
     generation,
     health,
@@ -26,6 +28,7 @@ from backend.routers import (
     members,
     prompt_templates,
     public,
+    relationships,
     seo,
     settings,
     simulations,
@@ -96,6 +99,9 @@ app.include_router(prompt_templates.router)
 app.include_router(invitations.router)
 app.include_router(social_trends.router)
 app.include_router(social_media.router)
+app.include_router(relationships.router)
+app.include_router(echoes.router)
+app.include_router(connections.router)
 app.include_router(public.router)
 app.include_router(seo.router)
 

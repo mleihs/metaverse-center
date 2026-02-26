@@ -1,4 +1,4 @@
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
@@ -71,6 +71,15 @@ export class VelgAgentCard extends LitElement {
       white-space: nowrap;
     }
 
+    .card__connections {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-bold);
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+    }
+
     .card__actions {
       display: flex;
       align-items: center;
@@ -83,6 +92,7 @@ export class VelgAgentCard extends LitElement {
   ];
 
   @property({ type: Object }) agent!: Agent;
+  @property({ type: Number }) relationshipCount = 0;
   @state() private _lightboxSrc: string | null = null;
   @state() private _lightboxAlt = '';
 
@@ -147,6 +157,7 @@ export class VelgAgentCard extends LitElement {
           <div class="card__meta">
             ${agent.gender ? html`<span class="card__meta-item">${agent.gender}</span>` : null}
             ${agent.primary_profession ? html`<span class="card__meta-item">${agent.primary_profession}</span>` : null}
+            ${this.relationshipCount > 0 ? html`<span class="card__connections">${msg(str`${this.relationshipCount} connections`)}</span>` : null}
           </div>
         </div>
 

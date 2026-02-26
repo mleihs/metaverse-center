@@ -15,7 +15,7 @@
 
 Multi-simulation platform rebuilt from a single-world Flask app. See `00_PROJECT_OVERVIEW.md` for full context.
 
-**Current Status:** All 5 phases complete + i18n fully implemented + codebase audit applied + architecture audit applied + lore expansion + dashboard LoreScroll + per-simulation theming + WCAG contrast validation + public-first architecture (anonymous read access) + anonymous view audit applied + Station Null (sim 3) added + Speranza (sim 4) added + per-simulation lore pages (4×6 chapters) + SEO/GA4/deep-linking implemented + GA4 comprehensive event tracking (37 events). 139 tasks. 1029 localized UI strings (EN/DE, translated via DeepL). Production deployed on Railway + hosted Supabase. 4 simulations: Velgarien (dark), Capybara Kingdom (fantasy), Station Null (sci-fi horror), Speranza (post-apocalyptic).
+**Current Status:** All 6 phases complete + i18n fully implemented + codebase audit applied + architecture audit applied + lore expansion + dashboard LoreScroll + per-simulation theming + WCAG contrast validation + public-first architecture (anonymous read access) + anonymous view audit applied + Station Null (sim 3) added + Speranza (sim 4) added + per-simulation lore pages (4×6 chapters) + SEO/GA4/deep-linking implemented + GA4 comprehensive event tracking (37 events) + Agent Relationships + Event Echoes (Bleed mechanic) + Cartographer's Map (multiverse force-directed graph). 157 tasks. 1088 localized UI strings (EN/DE, translated via DeepL). Production deployed on Railway + hosted Supabase. 4 simulations: Velgarien (dark), Capybara Kingdom (fantasy), Station Null (sci-fi horror), Speranza (post-apocalyptic).
 
 ## Tech Stack
 
@@ -43,10 +43,10 @@ Multi-simulation platform rebuilt from a single-world Flask app. See `00_PROJECT
 
 ```
 backend/              FastAPI application
-  app.py              Entry point (registers 20 routers)
+  app.py              Entry point (registers 23 routers)
   config.py           Settings (pydantic-settings, extra="ignore")
   dependencies.py     JWT auth, Supabase client (user/anon/admin), role checking
-  routers/            API endpoints — 20 routers, 136 endpoints (/api/v1/... + /api/v1/public/...)
+  routers/            API endpoints — 23 routers, 157 endpoints (/api/v1/... + /api/v1/public/...)
   models/             Pydantic request/response models (19 files)
   services/           Business logic (BaseService + 15 entity + audit + simulation + external)
   middleware/         Rate limiting, security headers (CSP), SEO crawler detection + HTML enrichment
@@ -67,6 +67,7 @@ frontend/             Lit + Vite application
       social/         SocialTrendsView, SocialMediaView, CampaignDashboard, CampaignDetailView, TrendCard, PostCard, TransformationModal, PostTransformModal, CampaignCard
       locations/      LocationsView, CityList, ZoneList, StreetList, LocationEditModal
       lore/           SimulationLoreView, lore-content dispatcher, 4 content files (per-simulation ~3500 words each)
+      multiverse/   CartographerMap, MapGraph, MapConnectionPanel, MapTooltip, map-force, map-data, map-types
       settings/       SettingsView + 7 panels (General, World, AI, Integration, Design, Access, View)
     services/         Supabase client, 16 API services, AppStateManager, NotificationService, RealtimeService, PresenceService, ThemeService, theme-presets, SeoService, AnalyticsService
       i18n/           LocaleService + FormatService
@@ -200,12 +201,13 @@ These renames were applied in the v2.0 schema to avoid SQL reserved words. **Alw
 | `portrait_url` | `portrait_image_url` | Explicit |
 | `created_time` | `source_created_at` | Consistency |
 
-## Database (27 Tables)
+## Database (30 Tables)
 
-- **122 RLS policies** — CRUD per table, role-based via helper functions + 21 anon SELECT policies for public read access
-- **22 triggers** — 16 updated_at + 6 business logic (slug immutability, status transitions, primary profession, last owner protection, conversation stats)
+- **130 RLS policies** — CRUD per table, role-based via helper functions + 21 anon SELECT policies for public read access
+- **25 triggers** — 16 updated_at + 6 business logic (slug immutability, status transitions, primary profession, last owner protection, conversation stats) + 3 new table triggers
 - **6 views** — 4 active_* (soft-delete filter) + simulation_dashboard + conversation_summaries
 - **2 materialized views** — campaign_performance + agent_statistics
+- **3 new tables** — agent_relationships (intra-sim agent graph), event_echoes (cross-sim Bleed mechanic), simulation_connections (multiverse topology)
 - **4 storage buckets** — agent.portraits, building.images, user.agent.portraits, simulation.assets
 - **16 functions** — RLS helpers, utility (generate_slug, validate_taxonomy_value), trigger functions
 
@@ -222,7 +224,7 @@ All endpoints under `/api/v1/`. Swagger UI at `/api/docs`. Responses use unified
 }
 ```
 
-138 endpoints across 21 routers. Platform-level: `/api/v1/health`, `/api/v1/users/me`, `/api/v1/simulations`, `/api/v1/invitations`. SEO: `/robots.txt`, `/sitemap.xml` (dynamic from DB). Simulation-scoped: `/api/v1/simulations/{simulation_id}/agents`, `buildings`, `events`, `agent_professions`, `locations`, `taxonomies`, `settings`, `chat`, `members`, `campaigns`, `social-trends`, `social-media`, `generation`, `prompt-templates`. Public (no auth, rate-limited 100/min): `/api/v1/public/simulations`, `/api/v1/public/simulations/{id}/*` (GET-only, 20 endpoints mirroring authenticated reads, delegates to service layer).
+157 endpoints across 23 routers. Platform-level: `/api/v1/health`, `/api/v1/users/me`, `/api/v1/simulations`, `/api/v1/invitations`. SEO: `/robots.txt`, `/sitemap.xml` (dynamic from DB). Simulation-scoped: `/api/v1/simulations/{simulation_id}/agents`, `buildings`, `events`, `agent_professions`, `locations`, `taxonomies`, `settings`, `chat`, `members`, `campaigns`, `social-trends`, `social-media`, `generation`, `prompt-templates`, `relationships`, `echoes`. Public (no auth, rate-limited 100/min): `/api/v1/public/simulations`, `/api/v1/public/simulations/{id}/*` (GET-only, 26 endpoints mirroring authenticated reads, delegates to service layer). Platform-level public: `/api/v1/public/connections`, `/api/v1/public/map-data`.
 
 ## Backend Patterns
 
@@ -233,7 +235,7 @@ All endpoints under `/api/v1/`. Swagger UI at `/api/docs`. Responses use unified
 - **Rate limiting:** slowapi — 30/hr AI generation, 10/min AI chat, 5/min external API, 100/min standard
 - **Models:** `PaginatedResponse[T]`, `SuccessResponse[T]`, `ErrorResponse` in `models/common.py`
 - **BaseService:** Generic CRUD in `services/base_service.py` — uses `active_*` views for soft-delete filtering, optional `include_deleted=True` for admin queries. Set `view_name = None` for tables without soft-delete (e.g., campaigns, agent_professions, locations). Public `serialize_for_json()` utility for datetime/UUID/date conversion.
-- **Entity services:** All CRUD routers use dedicated services — `AgentService` (with `list_for_reaction()` for lightweight AI queries), `BuildingService`, `EventService` (with `generate_reactions()` for AI reaction generation), `CampaignService` (extends BaseService), `LocationService` (facade delegating to `CityService`/`ZoneService`/`StreetService`, all extending BaseService), `AgentProfessionService` (extends BaseService), `PromptTemplateService` (custom, uses `is_active` for soft-delete), `MemberService` (with `LastOwnerError` exception + `get_user_memberships()`), `SocialMediaService`, `SocialTrendsService`
+- **Entity services:** All CRUD routers use dedicated services — `AgentService` (with `list_for_reaction()` for lightweight AI queries), `BuildingService`, `EventService` (with `generate_reactions()` for AI reaction generation), `CampaignService` (extends BaseService), `LocationService` (facade delegating to `CityService`/`ZoneService`/`StreetService`, all extending BaseService), `AgentProfessionService` (extends BaseService), `PromptTemplateService` (custom, uses `is_active` for soft-delete), `MemberService` (with `LastOwnerError` exception + `get_user_memberships()`), `SocialMediaService`, `SocialTrendsService`, `RelationshipService` (extends BaseService for agent_relationships), `EchoService` (cross-simulation writes via admin client, cascade prevention), `ConnectionService` (platform-level simulation connections)
 - **Public router:** `routers/public.py` — 20 GET-only endpoints under `/api/v1/public`, rate-limited (100/min), uses `get_anon_supabase()` (no auth required). Delegates to service layer (`AgentService`, `BuildingService`, `EventService`, `LocationService`, `SettingsService`, `SocialTrendsService`, `SocialMediaService`, `CampaignService`) for query consistency. Covers simulations, agents, buildings, events, locations (cities/zones/streets with detail views), chat, taxonomies, settings (design category only), social-media, social-trends, campaigns.
 - **Router discipline:** Routers handle HTTP only — no direct DB queries, no business logic helpers, no late-binding imports. All service imports at module level. External service imports (Guardian, NewsAPI, Facebook, GenerationService) at module level.
 - **AuditService:** `services/audit_service.py` — logs CRUD operations to `audit_log` table with entity diffs. Applied to all data-changing endpoints across all routers.
@@ -246,6 +248,7 @@ All endpoints under `/api/v1/`. Swagger UI at `/api/docs`. Responses use unified
 - State via Preact Signals (`appState` in `AppStateManager.ts`)
 - API calls through `BaseApiService` (auto-attaches JWT from appState). `getPublic()` method routes to `/api/v1/public/*` without Authorization header for anonymous access. Always import existing API service singletons (e.g., `simulationsApi`, `buildingsApi`) — never create inline service classes in components.
 - **Public API routing pattern:** API services check `appState.isAuthenticated.value` on read methods — if false, call `this.getPublic(path)` instead of `this.get(path)`. Applied to 11 services: Simulations, Agents, Buildings, Events, Chat, Locations (list + detail), Taxonomies, Settings, SocialMedia, SocialTrends, Campaigns.
+- **Multiverse Map:** Force-directed graph at `/multiverse` (platform-level route). Custom physics simulation in `map-force.ts` (~130 lines). SVG rendering in Lit Shadow DOM with pan/zoom. Mobile fallback to card list at ≤768px.
 - **API contract:** Backend endpoints using query params (e.g., `assign-agent?agent_id=...`, `profession-requirements?profession=...`) must use `URLSearchParams` in the frontend — never send these as JSON body. `PaginatedResponse<T>` uses `meta?: { count, total, limit, offset }` matching the backend structure.
 - Routing via `@lit-labs/router` (Reactive Controller in app-shell)
 - All types in `frontend/src/types/index.ts`
@@ -361,7 +364,7 @@ See `18_THEMING_SYSTEM.md` for full contrast documentation.
 
 ## Spec Documents
 
-20 specification documents (00-19) in project root. **Always consult the relevant spec before implementing:**
+21 specification documents (00-20) in project root. **Always consult the relevant spec before implementing:**
 
 | Doc | Content | Version |
 |-----|---------|---------|
@@ -376,6 +379,7 @@ See `18_THEMING_SYSTEM.md` for full contrast documentation.
 | `17_IMPLEMENTATION_PLAN.md` | 138 tasks, 5 phases, dependency graph | v2.6 |
 | `18_THEMING_SYSTEM.md` | Per-simulation theming: token taxonomy, presets, ThemeService, contrast rules | v1.1 |
 | `19_DEPLOYMENT_INFRASTRUCTURE.md` | Production deployment, dev→prod sync, data migration playbook | v1.0 |
+| `20_RELATIONSHIPS_ECHOES_MAP.md` | Agent relationships, event echoes, cartographer's map — feature docs + user manual | v1.0 |
 
 ## Python Version
 
