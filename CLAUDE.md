@@ -43,21 +43,21 @@ Multi-simulation platform rebuilt from a single-world Flask app. See `00_PROJECT
 
 ```
 backend/              FastAPI application
-  app.py              Entry point (registers 24 routers)
+  app.py              Entry point (registers 28 routers)
   config.py           Settings (pydantic-settings, extra="ignore")
   dependencies.py     JWT auth, Supabase client (user/anon/admin), role checking
-  routers/            API endpoints — 24 routers, 165+ endpoints (/api/v1/... + /api/v1/public/...)
+  routers/            API endpoints — 28 routers, 217 endpoints (/api/v1/... + /api/v1/public/...)
   models/             Pydantic request/response models (19 files)
-  services/           Business logic (BaseService + 15 entity + audit + simulation + external)
+  services/           Business logic (BaseService + 20 entity + audit + simulation + external)
   middleware/         Rate limiting, security headers (CSP), SEO crawler detection + HTML enrichment
   utils/              Encryption (AES-256 for settings), search helpers
-  tests/              pytest tests (412 tests: unit + integration + security + performance)
+  tests/              pytest tests (472 tests: unit + integration + security + performance)
 frontend/             Lit + Vite application
   src/
     app-shell.ts      Main app with @lit-labs/router (auth + simulation-scoped routes)
     components/
       auth/           Login, Register views, LoginPanel (slide-in)
-      platform/       PlatformHeader, UserMenu, SimulationsDashboard, LoreScroll, CreateSimulationWizard, UserProfileView, InvitationAcceptView, NotificationCenter
+      platform/       PlatformHeader, UserMenu, DevAccountSwitcher, SimulationsDashboard, LoreScroll, CreateSimulationWizard, UserProfileView, InvitationAcceptView, NotificationCenter
       layout/         SimulationShell, SimulationHeader, SimulationNav
       shared/         18 reusable components + 5 shared CSS modules + BaseSettingsPanel base class (see Code Reusability)
       agents/         AgentsView, AgentCard, AgentEditModal, AgentDetailsPanel
@@ -68,8 +68,10 @@ frontend/             Lit + Vite application
       locations/      LocationsView, CityList, ZoneList, StreetList, LocationEditModal
       lore/           SimulationLoreView, lore-content dispatcher, 4 content files (per-simulation ~3500 words each)
       multiverse/   CartographerMap, MapGraph, MapConnectionPanel, MapTooltip, map-force, map-data, map-types
-      settings/       SettingsView + 7 panels (General, World, AI, Integration, Design, Access, View)
-    services/         Supabase client, 16 API services, AppStateManager, NotificationService, RealtimeService, PresenceService, ThemeService, theme-presets, SeoService, AnalyticsService
+      settings/       SettingsView + 7 panels (General, World, AI, Integration, Design, Access, View) + BleedSettingsPanel
+      epoch/          EpochCommandCenter, EpochCreationWizard, DeployOperativeModal, EpochLeaderboard, EpochBattleLog
+      health/         SimulationHealthView
+    services/         Supabase client, 18 API services, AppStateManager, NotificationService, RealtimeService, PresenceService, ThemeService, theme-presets, SeoService, AnalyticsService
       i18n/           LocaleService + FormatService
     locales/          i18n files
       generated/      Auto-generated: de.ts, locale-codes.ts (DO NOT EDIT)
@@ -83,8 +85,8 @@ e2e/                  Playwright E2E tests (73 specs across 12 files)
   helpers/            auth.ts, fixtures.ts
   tests/              auth, agents, buildings, events, chat, settings, multi-user, social
 supabase/
-  migrations/         33 SQL migration files (001-030 + ensure_dev_user)
-  seed/               14 SQL seed files (5 active: 001, 006-008, 010; 9 archived with _ prefix: 002-005, 009, 011-014)
+  migrations/         36 SQL migration files (001-033 + ensure_dev_user)
+  seed/               16 SQL seed files (7 active: 001, 006-008, 010, 015-016; 9 archived with _ prefix: 002-005, 009, 011-014)
   config.toml         Local Supabase config
 scripts/              Image generation scripts (5: velgarien, capybara, station_null, speranza, dashboard) + lore images
 concept.md            Game design proposal (~9300 words) with expanded meta-lore + research appendix
@@ -178,7 +180,7 @@ Two MCP servers configured in `.mcp.json`:
 
 **Auth:** Production uses ES256 (ECC P-256) tokens verified via JWKS. Local uses HS256 with shared secret.
 
-**Schema changes:** `supabase db push` (requires `SUPABASE_ACCESS_TOKEN` env var, format `sbp_...`, from Dashboard → Avatar → Access Tokens). Migration `ensure_dev_user` creates test user + Velgarien sim (idempotent, safe for production). Migrations 016-017 are data-only (Velgarien image config + Capybara Kingdom). Migration 018 adds 21 anon RLS policies for public read access. Migration 019 adds `idx_buildings_street` index. Migration 020 restricts `settings_anon_select` policy to `category = 'design'` only. Migration 021 adds Station Null simulation (6 agents, 7 buildings, 4 zones, 16 streets, 36 design settings). Migration 022 improves prompt diversity (max_tokens=300, template rewrites removing aesthetic redundancy). Migration 023 fixes horror aesthetic (Alien 1979 style prompts, guidance_scale 3.5→5.0, Flux-aware prompting). Migration 024 adds Speranza simulation (6 agents, 7 buildings, 4 zones, 16 streets, 37 design settings). Migration 025 adds 3 underground buildings to Speranza. Migration 026 adds agent_relationships, event_echoes, simulation_connections tables + demo data. Migration 027 fixes building description prompts (short functional output instead of 150-250 word narratives). Migration 028 adds embassies table + embassy_prompt_templates + RLS policies + triggers + 12 embassy buildings (3 per sim) + 6 cross-sim embassy connections with ambassador metadata. Migration 029 adds embassy prompt templates (EN/DE). Migration 030 fixes ambassador metadata swap on building reorder.
+**Schema changes:** `supabase db push` (requires `SUPABASE_ACCESS_TOKEN` env var, format `sbp_...`, from Dashboard → Avatar → Access Tokens). Migration `ensure_dev_user` creates test user + Velgarien sim (idempotent, safe for production). Migrations 016-017 are data-only (Velgarien image config + Capybara Kingdom). Migration 018 adds 21 anon RLS policies for public read access. Migration 019 adds `idx_buildings_street` index. Migration 020 restricts `settings_anon_select` policy to `category = 'design'` only. Migration 021 adds Station Null simulation (6 agents, 7 buildings, 4 zones, 16 streets, 36 design settings). Migration 022 improves prompt diversity (max_tokens=300, template rewrites removing aesthetic redundancy). Migration 023 fixes horror aesthetic (Alien 1979 style prompts, guidance_scale 3.5→5.0, Flux-aware prompting). Migration 024 adds Speranza simulation (6 agents, 7 buildings, 4 zones, 16 streets, 37 design settings). Migration 025 adds 3 underground buildings to Speranza. Migration 026 adds agent_relationships, event_echoes, simulation_connections tables + demo data. Migration 027 fixes building description prompts (short functional output instead of 150-250 word narratives). Migration 028 adds embassies table + embassy_prompt_templates + RLS policies + triggers + 12 embassy buildings (3 per sim) + 6 cross-sim embassy connections with ambassador metadata. Migration 029 adds embassy prompt templates (EN/DE). Migration 030 fixes ambassador metadata swap on building reorder. Migration 031 adds 4 materialized views (mv_building_readiness, mv_zone_stability, mv_embassy_effectiveness, mv_simulation_health). Migration 032 adds 6 competitive layer tables (game_epochs, epoch_teams, epoch_participants, operative_missions, epoch_scores, battle_log) + RLS + triggers. Migration 033 widens simulation read access for game mechanics queries.
 
 **CRITICAL — Local DB Reset Safety:** `supabase stop --no-backup` and `supabase db reset` destroy Docker volumes, wiping all storage files (images). Always ensure images are backed up or can be recovered from production before resetting. See `memory/local-db-reset-guide.md` for recovery procedures. Local Supabase uses `sb_secret_`/`sb_publishable_` keys (NOT JWT service_role keys) — get from `supabase status`.
 
@@ -201,13 +203,14 @@ These renames were applied in the v2.0 schema to avoid SQL reserved words. **Alw
 | `portrait_url` | `portrait_image_url` | Explicit |
 | `created_time` | `source_created_at` | Consistency |
 
-## Database (31 Tables)
+## Database (37 Tables)
 
-- **136 RLS policies** — CRUD per table, role-based via helper functions + 21 anon SELECT policies for public read access + embassy policies
-- **25 triggers** — 16 updated_at + 6 business logic (slug immutability, status transitions, primary profession, last owner protection, conversation stats) + 3 new table triggers
+- **136+ RLS policies** — CRUD per table, role-based via helper functions + 21 anon SELECT policies for public read access + embassy policies + competitive layer policies
+- **25+ triggers** — 16 updated_at + 6 business logic (slug immutability, status transitions, primary profession, last owner protection, conversation stats) + 3 new table triggers + competitive layer triggers
 - **6 views** — 4 active_* (soft-delete filter) + simulation_dashboard + conversation_summaries
-- **2 materialized views** — campaign_performance + agent_statistics
-- **3 new tables** — agent_relationships (intra-sim agent graph), event_echoes (cross-sim Bleed mechanic), simulation_connections (multiverse topology)
+- **6 materialized views** — campaign_performance + agent_statistics + mv_building_readiness + mv_zone_stability + mv_embassy_effectiveness + mv_simulation_health
+- **Phase 6 tables** — agent_relationships (intra-sim agent graph), event_echoes (cross-sim Bleed mechanic), simulation_connections (multiverse topology)
+- **Competitive layer tables** — game_epochs, epoch_teams, epoch_participants, operative_missions, epoch_scores, battle_log
 - **4 storage buckets** — agent.portraits, building.images, user.agent.portraits, simulation.assets
 - **16 functions** — RLS helpers, utility (generate_slug, validate_taxonomy_value), trigger functions
 
@@ -224,7 +227,7 @@ All endpoints under `/api/v1/`. Swagger UI at `/api/docs`. Responses use unified
 }
 ```
 
-158 endpoints across 23 routers. Platform-level: `/api/v1/health`, `/api/v1/users/me`, `/api/v1/simulations`, `/api/v1/invitations`. SEO: `/robots.txt`, `/sitemap.xml` (dynamic from DB, uses slugs). Simulation-scoped: `/api/v1/simulations/{simulation_id}/agents`, `buildings`, `events`, `agent_professions`, `locations`, `taxonomies`, `settings`, `chat`, `members`, `campaigns`, `social-trends`, `social-media`, `generation`, `prompt-templates`, `relationships`, `echoes`. Public (no auth, rate-limited 100/min): `/api/v1/public/simulations`, `/api/v1/public/simulations/{id}/*`, `/api/v1/public/simulations/by-slug/{slug}` (GET-only, 27 endpoints mirroring authenticated reads, delegates to service layer). Platform-level public: `/api/v1/public/connections`, `/api/v1/public/map-data`.
+217 endpoints across 28 routers. Platform-level: `/api/v1/health`, `/api/v1/users/me`, `/api/v1/simulations`, `/api/v1/invitations`. SEO: `/robots.txt`, `/sitemap.xml` (dynamic from DB, uses slugs). Simulation-scoped: `/api/v1/simulations/{simulation_id}/agents`, `buildings`, `events`, `agent_professions`, `locations`, `taxonomies`, `settings`, `chat`, `members`, `campaigns`, `social-trends`, `social-media`, `generation`, `prompt-templates`, `relationships`, `echoes`. Competitive layer: `epochs`, `operatives`, `scores`, `game-mechanics`. Public (no auth, rate-limited 100/min): `/api/v1/public/simulations`, `/api/v1/public/simulations/{id}/*`, `/api/v1/public/simulations/by-slug/{slug}` (GET-only, 44 endpoints mirroring authenticated reads, delegates to service layer). Platform-level public: `/api/v1/public/connections`, `/api/v1/public/map-data`.
 
 ## Backend Patterns
 
@@ -235,7 +238,7 @@ All endpoints under `/api/v1/`. Swagger UI at `/api/docs`. Responses use unified
 - **Rate limiting:** slowapi — 30/hr AI generation, 10/min AI chat, 5/min external API, 100/min standard
 - **Models:** `PaginatedResponse[T]`, `SuccessResponse[T]`, `ErrorResponse` in `models/common.py`
 - **BaseService:** Generic CRUD in `services/base_service.py` — uses `active_*` views for soft-delete filtering, optional `include_deleted=True` for admin queries. Set `view_name = None` for tables without soft-delete (e.g., campaigns, agent_professions, locations). Public `serialize_for_json()` utility for datetime/UUID/date conversion.
-- **Entity services:** All CRUD routers use dedicated services — `AgentService` (with `list_for_reaction()` for lightweight AI queries), `BuildingService`, `EventService` (with `generate_reactions()` for AI reaction generation), `CampaignService` (extends BaseService), `LocationService` (facade delegating to `CityService`/`ZoneService`/`StreetService`, all extending BaseService), `AgentProfessionService` (extends BaseService), `PromptTemplateService` (custom, uses `is_active` for soft-delete), `MemberService` (with `LastOwnerError` exception + `get_user_memberships()`), `SocialMediaService`, `SocialTrendsService`, `RelationshipService` (extends BaseService for agent_relationships), `EchoService` (cross-simulation writes via admin client, cascade prevention), `ConnectionService` (platform-level simulation connections)
+- **Entity services:** All CRUD routers use dedicated services — `AgentService` (with `list_for_reaction()` for lightweight AI queries), `BuildingService`, `EventService` (with `generate_reactions()` for AI reaction generation), `CampaignService` (extends BaseService), `LocationService` (facade delegating to `CityService`/`ZoneService`/`StreetService`, all extending BaseService), `AgentProfessionService` (extends BaseService), `PromptTemplateService` (custom, uses `is_active` for soft-delete), `MemberService` (with `LastOwnerError` exception + `get_user_memberships()`), `SocialMediaService`, `SocialTrendsService`, `RelationshipService` (extends BaseService for agent_relationships), `EchoService` (cross-simulation writes via admin client, cascade prevention), `ConnectionService` (platform-level simulation connections), `EpochService`, `OperativeService`, `ScoringService`, `GameMechanicsService`, `BattleLogService`
 - **Public router:** `routers/public.py` — 27 GET-only endpoints under `/api/v1/public`, rate-limited (100/min), uses `get_anon_supabase()` (no auth required). Includes `/simulations/by-slug/{slug}` for slug-based URL resolution. Delegates to service layer (`AgentService`, `BuildingService`, `EventService`, `LocationService`, `SettingsService`, `SocialTrendsService`, `SocialMediaService`, `CampaignService`, `RelationshipService`, `EchoService`, `ConnectionService`) for query consistency. Covers simulations, agents, buildings, events, locations (cities/zones/streets with detail views), chat, taxonomies, settings (design category only), social-media, social-trends, campaigns, relationships, echoes, connections, map-data.
 - **Router discipline:** Routers handle HTTP only — no direct DB queries, no business logic helpers, no late-binding imports. All service imports at module level. External service imports (Guardian, NewsAPI, Facebook, GenerationService) at module level.
 - **AuditService:** `services/audit_service.py` — logs CRUD operations to `audit_log` table with entity diffs. Applied to all data-changing endpoints across all routers.
@@ -368,23 +371,26 @@ See `18_THEMING_SYSTEM.md` for full contrast documentation.
 
 ## Spec Documents
 
-22 specification documents (00-21) in project root. **Always consult the relevant spec before implementing:**
+25 specification documents (00-22 + GAME_DESIGN_DOCUMENT) in project root. **Always consult the relevant spec before implementing:**
 
 | Doc | Content | Version |
 |-----|---------|---------|
-| `03_DATABASE_SCHEMA_NEW.md` | Complete schema (27 tables, triggers, views, RLS) | v2.0 |
+| `03_DATABASE_SCHEMA_NEW.md` | Complete schema (37 tables, triggers, views, RLS) | v2.0 |
 | `04_DOMAIN_MODELS.md` | TypeScript interfaces (aligned with schema v2.0) | v2.0 |
-| `05_API_SPECIFICATION.md` | 108 endpoints with request/response formats | v1.0 |
+| `05_API_SPECIFICATION.md` | 217 endpoints with request/response formats | v1.0 |
 | `07_FRONTEND_COMPONENTS.md` | Component hierarchy, routing, state management | v1.1 |
 | `09_AI_INTEGRATION.md` | AI pipelines, prompt system, model fallback | v1.0 |
 | `10_AUTH_AND_SECURITY.md` | Hybrid auth, JWT validation, RLS strategies | v1.0 (rewritten) |
 | `12_DESIGN_SYSTEM.md` | CSS tokens, brutalist aesthetic, component styles | v1.0 |
 | `13_TECHSTACK_RECOMMENDATION.md` | All config templates (pyproject, package.json, etc.) | v1.3 |
-| `17_IMPLEMENTATION_PLAN.md` | 138 tasks, 5 phases, dependency graph | v2.6 |
+| `17_IMPLEMENTATION_PLAN.md` | 160 tasks, 6 phases, dependency graph | v2.9 |
 | `18_THEMING_SYSTEM.md` | Per-simulation theming: token taxonomy, presets, ThemeService, contrast rules | v1.1 |
 | `19_DEPLOYMENT_INFRASTRUCTURE.md` | Production deployment, dev→prod sync, data migration playbook | v1.0 |
 | `20_RELATIONSHIPS_ECHOES_MAP.md` | Agent relationships, event echoes, cartographer's map — feature docs + user manual | v1.0 |
 | `21_EMBASSIES.md` | Embassies & ambassadors: cross-sim diplomatic feature, visual effects, user manual | v1.0 |
+| `22_GAME_SYSTEMS.md` | Game mechanics: materialized views, computed attributes, bleed system | v1.0 |
+| `22_EPOCHS_COMPETITIVE_LAYER.md` | Competitive PvP: epochs, operatives, scoring, battle log | v1.0 |
+| `GAME_DESIGN_DOCUMENT.md` | High-level game design concept and vision | v1.0 |
 
 ## Python Version
 
