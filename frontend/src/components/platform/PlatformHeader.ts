@@ -1,5 +1,5 @@
 import { localized, msg } from '@lit/localize';
-import { css, html, LitElement, nothing } from 'lit';
+import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { localeService } from '../../services/i18n/locale-service.js';
@@ -355,9 +355,7 @@ export class VelgPlatformHeader extends LitElement {
   connectedCallback(): void {
     super.connectedCallback();
     this._simulations = appState.simulations.value;
-    if (import.meta.env.DEV) {
-      import('./DevAccountSwitcher.js');
-    }
+    import('./DevAccountSwitcher.js');
   }
 
   private _handleTitleClick(e: Event): void {
@@ -452,7 +450,7 @@ export class VelgPlatformHeader extends LitElement {
         </div>
 
         <div class="header__right">
-          ${import.meta.env.DEV ? html`<velg-dev-account-switcher></velg-dev-account-switcher>` : nothing}
+          ${html`<velg-dev-account-switcher></velg-dev-account-switcher>`}
           <button class="locale-toggle" @click=${this._toggleLocale}>
             ${localeService.currentLocale === 'en' ? 'DE' : 'EN'}
           </button>
