@@ -5,6 +5,7 @@ Only GET endpoints for active simulation data.
 Delegates to existing service layer where possible (keeps query logic in sync).
 """
 
+from datetime import UTC, datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
@@ -18,6 +19,7 @@ from backend.services.building_service import BuildingService
 from backend.services.campaign_service import CampaignService
 from backend.services.echo_service import ConnectionService, EchoService
 from backend.services.embassy_service import EmbassyService
+from backend.services.epoch_invitation_service import EpochInvitationService
 from backend.services.epoch_service import EpochService
 from backend.services.event_service import EventService
 from backend.services.game_mechanics_service import GameMechanicsService
@@ -77,11 +79,12 @@ async def list_simulations(
     limit: int = Query(default=25, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
 ) -> dict:
-    """List all active simulations (public)."""
+    """List all active template simulations (public). Excludes game instances."""
     response = (
         supabase.table("simulations")
         .select("*", count="exact")
         .eq("status", "active")
+        .eq("simulation_type", "template")
         .order("created_at", desc=True)
         .range(offset, offset + limit - 1)
         .execute()
@@ -694,12 +697,12 @@ async def list_epochs_public(
 
 @router.get("/epochs/active", response_model=SuccessResponse)
 @limiter.limit(RATE_LIMIT_PUBLIC)
-async def get_active_epoch_public(
+async def get_active_epochs_public(
     request: Request,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
-    """Get the currently active epoch (public)."""
-    data = await EpochService.get_active_epoch(supabase)
+    """Get all active epochs — lobby + running (public)."""
+    data = await EpochService.get_active_epochs(supabase)
     return {"success": True, "data": data}
 
 
@@ -785,3 +788,42 @@ async def get_battle_log_public(
         supabase, epoch_id, limit=limit, offset=offset
     )
     return _paginated(data, total, limit, offset)
+
+
+# ── Epoch Invitations (Public) ──────────────────────────────────────
+
+
+@router.get("/epoch-invitations/{token}", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def validate_epoch_invitation(
+    request: Request,
+    token: str,
+    supabase: Client = Depends(get_anon_supabase),
+) -> dict:
+    """Validate an epoch invitation token and return epoch info + lore."""
+    invitation = await EpochInvitationService.get_by_token(supabase, token)
+    epoch_data = invitation.get("game_epochs") or {}
+
+    expires_at_str = invitation.get("expires_at", "")
+    is_expired = False
+    if expires_at_str:
+        try:
+            expires_at = datetime.fromisoformat(expires_at_str.replace("Z", "+00:00"))
+            is_expired = expires_at < datetime.now(UTC)
+        except (ValueError, TypeError):
+            pass
+
+    config = epoch_data.get("config") or {}
+
+    return {
+        "success": True,
+        "data": {
+            "epoch_name": epoch_data.get("name", "Unknown"),
+            "epoch_description": epoch_data.get("description"),
+            "epoch_status": epoch_data.get("status", "unknown"),
+            "lore_text": config.get("invitation_lore"),
+            "expires_at": invitation.get("expires_at"),
+            "is_expired": is_expired or invitation.get("status") == "expired",
+            "is_accepted": invitation.get("status") == "accepted",
+        },
+    }

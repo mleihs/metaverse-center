@@ -53,3 +53,13 @@
   --h5-size: var(--text-md);
   --h6-size: var(--text-base);
 }
+
+/* === Mobile Typography Scale === */
+@media (max-width: 640px) {
+  :root {
+    --text-3xl: 1.953rem;   /* 31px, was 39px */
+    --text-4xl: 2.441rem;   /* 39px, was 49px */
+    --h1-size: var(--text-2xl);
+    --h2-size: var(--text-xl);
+  }
+}

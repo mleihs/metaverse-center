@@ -104,6 +104,32 @@ export class VelgBaseModal extends LitElement {
       border-top: var(--border-light);
       flex-shrink: 0;
     }
+
+    /* === Mobile overrides === */
+    @media (max-width: 640px) {
+      .modal {
+        max-width: none;
+        margin: var(--space-3);
+        max-height: 90vh;
+      }
+
+      .modal__header {
+        padding: var(--space-3) var(--space-4);
+      }
+
+      .modal__close {
+        min-width: 44px;
+        min-height: 44px;
+      }
+
+      .modal__body {
+        padding: var(--space-4);
+      }
+
+      .modal__footer {
+        padding: var(--space-3) var(--space-4);
+      }
+    }
   `;
 
   @property({ type: Boolean, reflect: true }) open = false;

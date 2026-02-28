@@ -23,3 +23,17 @@
      2xl: 1536px
   */
 }
+
+/* === Mobile Layout Overrides === */
+@media (max-width: 640px) {
+  :root {
+    --content-padding: var(--space-4);   /* 16px, was 24px */
+    --header-height: 52px;               /* 52px, was 60px */
+  }
+}
+
+@media (max-width: 400px) {
+  :root {
+    --content-padding: var(--space-3);   /* 12px */
+  }
+}

@@ -76,6 +76,21 @@ export class VelgSimulationHeader extends LitElement {
       background: var(--color-surface-sunken);
       color: var(--color-text-secondary);
     }
+
+    @media (max-width: 640px) {
+      :host {
+        padding: var(--space-3) var(--space-4);
+      }
+
+      .header {
+        gap: var(--space-2);
+        flex-wrap: wrap;
+      }
+
+      .header__name {
+        font-size: var(--text-lg);
+      }
+    }
   `;
 
   @property({ type: String }) simulationId = '';

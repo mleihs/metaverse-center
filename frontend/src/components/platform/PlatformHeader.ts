@@ -348,6 +348,42 @@ export class VelgPlatformHeader extends LitElement {
       0% { background-position: 0% 0; }
       100% { background-position: 200% 0; }
     }
+
+    /* === Mobile: collapse header elements === */
+
+    @media (max-width: 640px) {
+      .header {
+        padding: 0 var(--space-3);
+      }
+
+      .header__left {
+        gap: var(--space-3);
+      }
+
+      .header__title {
+        font-size: var(--text-base);
+        letter-spacing: 0;
+      }
+
+      .sim-selector__label {
+        display: none;
+      }
+
+      .header__nav-link {
+        padding: var(--space-1-5) var(--space-3) var(--space-1-5) var(--space-5);
+        font-size: var(--text-xs);
+      }
+
+      .header__right {
+        gap: var(--space-2);
+      }
+    }
+
+    @media (max-width: 400px) {
+      .header__nav-link {
+        display: none;
+      }
+    }
   `;
 
   @state() private _simulations: Simulation[] = [];
@@ -391,6 +427,13 @@ export class VelgPlatformHeader extends LitElement {
     );
   }
 
+  private _handleGuideClick(e: Event): void {
+    e.preventDefault();
+    this.dispatchEvent(
+      new CustomEvent('navigate', { detail: '/how-to-play', bubbles: true, composed: true }),
+    );
+  }
+
   private _handleSignInClick(): void {
     this.dispatchEvent(new CustomEvent('login-panel-open', { bubbles: true, composed: true }));
   }
@@ -427,6 +470,8 @@ export class VelgPlatformHeader extends LitElement {
           <a href="/multiverse" class="header__nav-link ${window.location.pathname === '/multiverse' ? 'header__nav-link--active' : ''}" @click=${this._handleMapClick}>${msg('Map')}</a>
 
           <a href="/epoch" class="header__nav-link ${window.location.pathname === '/epoch' ? 'header__nav-link--active' : ''}" @click=${this._handleEpochClick}>${msg('Epoch')}</a>
+
+          <a href="/how-to-play" class="header__nav-link ${window.location.pathname === '/how-to-play' ? 'header__nav-link--active' : ''}" @click=${this._handleGuideClick}>${msg('Guide')}</a>
 
           ${
             this._simulations.length > 0

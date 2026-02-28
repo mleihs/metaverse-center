@@ -18,6 +18,7 @@ import { epochsApi } from '../../services/api/EpochsApiService.js';
 import type { EpochScoreWeights } from '../../types/index.js';
 import '../shared/BaseModal.js';
 import { formStyles } from '../shared/form-styles.js';
+import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 
 type Step = 'designation' | 'economy' | 'doctrine' | 'confirm';
@@ -38,9 +39,25 @@ function getStepLabels(): Record<Step, string> {
 export class VelgEpochCreationWizard extends LitElement {
   static styles = [
     formStyles,
+    infoBubbleStyles,
     css`
       :host {
         display: block;
+      }
+
+      /* Override info bubble for dark theme + position below to avoid modal overflow clipping */
+      .info-bubble__icon {
+        background: var(--color-gray-600);
+        color: var(--color-gray-950);
+      }
+
+      .info-bubble__tooltip {
+        background: var(--color-gray-800);
+        color: var(--color-gray-200);
+        border: 1px solid var(--color-gray-700);
+        /* Position below instead of above — modal body has overflow-y: auto which clips upward tooltips */
+        bottom: auto;
+        top: calc(100% + 6px);
       }
 
       /* Override modal body for dark theme */
@@ -329,7 +346,7 @@ export class VelgEpochCreationWizard extends LitElement {
       }
 
       .weight-bar__name--stability   { color: var(--color-success); }
-      .weight-bar__name--influence   { color: #a78bfa; }
+      .weight-bar__name--influence   { color: var(--color-epoch-influence); }
       .weight-bar__name--sovereignty { color: var(--color-info); }
       .weight-bar__name--diplomatic  { color: var(--color-warning); }
       .weight-bar__name--military    { color: var(--color-danger); }
@@ -358,7 +375,7 @@ export class VelgEpochCreationWizard extends LitElement {
       }
 
       .weight-bar__fill--stability   { background: var(--color-success); }
-      .weight-bar__fill--influence   { background: #a78bfa; }
+      .weight-bar__fill--influence   { background: var(--color-epoch-influence); }
       .weight-bar__fill--sovereignty { background: var(--color-info); }
       .weight-bar__fill--diplomatic  { background: var(--color-warning); }
       .weight-bar__fill--military    { background: var(--color-danger); }
@@ -446,6 +463,18 @@ export class VelgEpochCreationWizard extends LitElement {
       .summary__val {
         color: var(--color-gray-200);
         font-weight: 600;
+      }
+
+      .summary__section--note {
+        border-color: var(--color-epoch-influence, #a78bfa);
+        background: rgba(167, 139, 250, 0.05);
+      }
+
+      .summary__note {
+        margin: 0;
+        font-size: var(--text-xs);
+        color: var(--color-gray-400);
+        line-height: 1.5;
       }
 
       /* ── Footer ──────────────────────────── */
@@ -782,7 +811,10 @@ export class VelgEpochCreationWizard extends LitElement {
     return html`
       <div class="console-form">
         <div class="field">
-          <label class="field__label">${msg('Epoch Name')} *</label>
+          <label class="field__label">
+            ${msg('Epoch Name')} *
+            ${renderInfoBubble(msg('A unique name for this competitive epoch. Visible to all participants and spectators.'))}
+          </label>
           <input
             class="field__input"
             type="text"
@@ -795,7 +827,10 @@ export class VelgEpochCreationWizard extends LitElement {
         </div>
 
         <div class="field">
-          <label class="field__label">${msg('Description')}</label>
+          <label class="field__label">
+            ${msg('Description')}
+            ${renderInfoBubble(msg('Optional briefing text shown in the lobby. Set the narrative tone for the competition.'))}
+          </label>
           <textarea
             class="field__textarea"
             placeholder=${msg('Optional briefing for participants...')}
@@ -808,7 +843,10 @@ export class VelgEpochCreationWizard extends LitElement {
 
         <div class="range-field">
           <div class="range-field__header">
-            <span class="range-field__label">${msg('Duration')}</span>
+            <span class="range-field__label">
+              ${msg('Duration')}
+              ${renderInfoBubble(msg('Total epoch length in days. Automatically split into Foundation (20%), Competition (65%), and Reckoning (15%) phases.'))}
+            </span>
             <span class="range-field__readout">${this._durationDays}d</span>
           </div>
           <input
@@ -837,7 +875,10 @@ export class VelgEpochCreationWizard extends LitElement {
       <div class="console-form">
         <div class="range-field">
           <div class="range-field__header">
-            <span class="range-field__label">${msg('Cycle Interval')}</span>
+            <span class="range-field__label">
+              ${msg('Cycle Interval')}
+              ${renderInfoBubble(msg('Hours between each game cycle. Each cycle grants RP and resolves operative missions. Shorter cycles = faster gameplay.'))}
+            </span>
             <span class="range-field__readout">${this._cycleHours}h</span>
           </div>
           <input
@@ -855,7 +896,10 @@ export class VelgEpochCreationWizard extends LitElement {
         <div class="field-row">
           <div class="range-field">
             <div class="range-field__header">
-              <span class="range-field__label">${msg('RP per Cycle')}</span>
+              <span class="range-field__label">
+                ${msg('RP per Cycle')}
+                ${renderInfoBubble(msg('Resonance Points granted each cycle. RP is spent to deploy operatives (spies, saboteurs, assassins, etc.). Foundation phase grants 1.5x.'))}
+              </span>
               <span class="range-field__readout">${this._rpPerCycle}</span>
             </div>
             <input
@@ -871,7 +915,10 @@ export class VelgEpochCreationWizard extends LitElement {
 
           <div class="range-field">
             <div class="range-field__header">
-              <span class="range-field__label">${msg('RP Cap')}</span>
+              <span class="range-field__label">
+                ${msg('RP Cap')}
+                ${renderInfoBubble(msg('Maximum RP a participant can accumulate. Excess RP from cycle grants is lost. Forces players to spend rather than hoard.'))}
+              </span>
               <span class="range-field__readout">${this._rpCap}</span>
             </div>
             <input
@@ -889,7 +936,10 @@ export class VelgEpochCreationWizard extends LitElement {
 
         <div class="range-field">
           <div class="range-field__header">
-            <span class="range-field__label">${msg('Max Team Size')}</span>
+            <span class="range-field__label">
+              ${msg('Max Team Size')}
+              ${renderInfoBubble(msg('Maximum number of simulations in one alliance. Larger teams share diplomatic bonuses but split influence.'))}
+            </span>
             <span class="range-field__readout">${this._maxTeamSize}</span>
           </div>
           <input
@@ -904,7 +954,10 @@ export class VelgEpochCreationWizard extends LitElement {
         </div>
 
         <div class="toggle-field">
-          <span class="toggle-field__label">${msg('Allow Betrayal')}</span>
+          <span class="toggle-field__label">
+            ${msg('Allow Betrayal')}
+            ${renderInfoBubble(msg('When enabled, alliance members can leave and attack former allies. Betrayal incurs a -20% diplomatic penalty and marks the traitor publicly.'))}
+          </span>
           <div
             class="toggle ${this._allowBetrayal ? 'toggle--on' : ''}"
             @click=${() => {
@@ -924,10 +977,19 @@ export class VelgEpochCreationWizard extends LitElement {
     const total = this._weightTotal();
     const isValid = total === 100;
 
-    const dims: { key: string; label: string; value: number; setter: (v: number) => void }[] = [
+    const dims: {
+      key: string;
+      label: string;
+      hint: string;
+      value: number;
+      setter: (v: number) => void;
+    }[] = [
       {
         key: 'stability',
         label: msg('Stability'),
+        hint: msg(
+          'Building readiness and zone stability. Rewards maintaining infrastructure and keeping buildings in good condition.',
+        ),
         value: this._wStability,
         setter: (v) => {
           this._wStability = v;
@@ -936,6 +998,9 @@ export class VelgEpochCreationWizard extends LitElement {
       {
         key: 'influence',
         label: msg('Influence'),
+        hint: msg(
+          'Social media reach and propaganda effectiveness. Scored by campaign performance and social trend engagement.',
+        ),
         value: this._wInfluence,
         setter: (v) => {
           this._wInfluence = v;
@@ -944,6 +1009,9 @@ export class VelgEpochCreationWizard extends LitElement {
       {
         key: 'sovereignty',
         label: msg('Sovereignty'),
+        hint: msg(
+          'Territorial control and agent count. More agents and buildings under your control means higher sovereignty.',
+        ),
         value: this._wSovereignty,
         setter: (v) => {
           this._wSovereignty = v;
@@ -952,6 +1020,9 @@ export class VelgEpochCreationWizard extends LitElement {
       {
         key: 'diplomatic',
         label: msg('Diplomatic'),
+        hint: msg(
+          'Embassy effectiveness and alliance standing. Active embassies with ambassadors and alliance membership boost this score.',
+        ),
         value: this._wDiplomatic,
         setter: (v) => {
           this._wDiplomatic = v;
@@ -960,6 +1031,9 @@ export class VelgEpochCreationWizard extends LitElement {
       {
         key: 'military',
         label: msg('Military'),
+        hint: msg(
+          'Offensive operations and defense success. Scored by successful spy/saboteur/assassin missions and guardian interceptions.',
+        ),
         value: this._wMilitary,
         setter: (v) => {
           this._wMilitary = v;
@@ -980,7 +1054,10 @@ export class VelgEpochCreationWizard extends LitElement {
           (d) => html`
             <div class="weight-bar">
               <div class="weight-bar__header">
-                <span class="weight-bar__name weight-bar__name--${d.key}">${d.label}</span>
+                <span class="weight-bar__name weight-bar__name--${d.key}">
+                  ${d.label}
+                  ${renderInfoBubble(d.hint)}
+                </span>
                 <span class="weight-bar__pct">${d.value}%</span>
               </div>
               <div class="weight-bar__track">
@@ -1086,6 +1163,15 @@ export class VelgEpochCreationWizard extends LitElement {
             <span class="summary__key">${msg('Military')}</span>
             <span class="summary__val">${this._wMilitary}%</span>
           </div>
+        </div>
+
+        <div class="summary__section summary__section--note">
+          <div class="summary__title">${msg('Game Instances')}</div>
+          <p class="summary__note">
+            ${msg(
+              'When the epoch starts, each participating simulation will be cloned into a balanced game instance. Templates remain untouched.',
+            )}
+          </p>
         </div>
       </div>
     `;

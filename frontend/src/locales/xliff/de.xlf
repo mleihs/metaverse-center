@@ -255,12 +255,12 @@
   <target>Agent löschen</target>
 </trans-unit>
 <trans-unit id="s02f08b8f4c49b948">
-  <source>Are you sure you want to delete "<x id="0" equiv-text="${agent.name}" />"? This action cannot be undone.</source>
-  <target>Bist du sicher, dass du "<x id="0" equiv-text="${agent.name}" />" löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.</target>
+  <source>Are you sure you want to delete "<x id="0" equiv-text="${agent.name}"/>"? This action cannot be undone.</source>
+  <target>Bist du sicher, dass du "<x id="0" equiv-text="${agent.name}"/>" löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.</target>
 </trans-unit>
 <trans-unit id="s7b1cbc0600f84568">
-  <source>Agent "<x id="0" equiv-text="${agent.name}" />" deleted successfully.</source>
-  <target>Agent "<x id="0" equiv-text="${agent.name}" />" erfolgreich gelöscht.</target>
+  <source>Agent "<x id="0" equiv-text="${agent.name}"/>" deleted successfully.</source>
+  <target>Agent "<x id="0" equiv-text="${agent.name}"/>" erfolgreich gelöscht.</target>
 </trans-unit>
 <trans-unit id="s3f6ddd7fde652c49">
   <source>Failed to delete agent.</source>
@@ -299,8 +299,8 @@
   <target>Ersten Agenten erstellen</target>
 </trans-unit>
 <trans-unit id="s9a75aea85d85be7a">
-  <source><x id="0" equiv-text="${this._total}" /> Agent<x id="1" equiv-text="${this._total !== 1 ? 's' : ''}" /></source>
-  <target><x id="0" equiv-text="${this._total}" /> Agent<x id="1" equiv-text="${this._total !== 1 ? 's' : ''}" /></target>
+  <source><x id="0" equiv-text="${this._total}"/> Agent<x id="1" equiv-text="${this._total !== 1 ? 's' : ''}"/></source>
+  <target><x id="0" equiv-text="${this._total}"/> Agent<x id="1" equiv-text="${this._total !== 1 ? 's' : ''}"/></target>
 </trans-unit>
 <trans-unit id="see08734dfee6e873">
   <source>An unexpected error occurred. Please try again.</source>
@@ -355,8 +355,8 @@
   <target>Bereits ein Konto?</target>
 </trans-unit>
 <trans-unit id="s59149d52748a3ed5">
-  <source>Cap: <x id="0" equiv-text="${b.population_capacity}" /></source>
-  <target>Kap.: <x id="0" equiv-text="${b.population_capacity}" /></target>
+  <source>Cap: <x id="0" equiv-text="${b.population_capacity}"/></source>
+  <target>Kap.: <x id="0" equiv-text="${b.population_capacity}"/></target>
 </trans-unit>
 <trans-unit id="scb249e1a0bc04d37">
   <source>Edit building</source>
@@ -371,8 +371,8 @@
   <target>Keine Agenten diesem Gebäude zugewiesen.</target>
 </trans-unit>
 <trans-unit id="sf628c218795d33ba">
-  <source>Agent <x id="0" equiv-text="${rel.agent_id.slice(0, 8)}" />...</source>
-  <target>Agent <x id="0" equiv-text="${rel.agent_id.slice(0, 8)}" />...</target>
+  <source>Agent <x id="0" equiv-text="${rel.agent_id.slice(0, 8)}"/>...</source>
+  <target>Agent <x id="0" equiv-text="${rel.agent_id.slice(0, 8)}"/>...</target>
 </trans-unit>
 <trans-unit id="s4334827f0cc60a87">
   <source>Building Details</source>
@@ -595,8 +595,8 @@
   <target>Gebäude löschen</target>
 </trans-unit>
 <trans-unit id="s05d059c94d5c3d4c">
-  <source>"<x id="0" equiv-text="${building.name}" />" has been deleted</source>
-  <target>"<x id="0" equiv-text="${building.name}" />" wurde gelöscht</target>
+  <source>"<x id="0" equiv-text="${building.name}"/>" has been deleted</source>
+  <target>"<x id="0" equiv-text="${building.name}"/>" wurde gelöscht</target>
 </trans-unit>
 <trans-unit id="s5cd6e615c956bbe4">
   <source>Failed to delete building</source>
@@ -623,12 +623,12 @@
   <target>Keine Gebäude gefunden. Erstelle eines, um loszulegen.</target>
 </trans-unit>
 <trans-unit id="s0b7e8f388caf2b36">
-  <source><x id="0" equiv-text="${this._total}" /> buildings total</source>
-  <target><x id="0" equiv-text="${this._total}" /> Gebäude insgesamt</target>
+  <source><x id="0" equiv-text="${this._total}"/> buildings total</source>
+  <target><x id="0" equiv-text="${this._total}"/> Gebäude insgesamt</target>
 </trans-unit>
 <trans-unit id="s9289a1008fa7df3d">
-  <source><x id="0" equiv-text="${this._total}" /> building total</source>
-  <target><x id="0" equiv-text="${this._total}" /> Gebäude insgesamt</target>
+  <source><x id="0" equiv-text="${this._total}"/> building total</source>
+  <target><x id="0" equiv-text="${this._total}"/> Gebäude insgesamt</target>
 </trans-unit>
 <trans-unit id="se6ce9f50ddd15633">
   <source>Failed to load agents.</source>
@@ -667,12 +667,12 @@
   <target>Ein unerwarteter Fehler beim Archivieren der Konversation.</target>
 </trans-unit>
 <trans-unit id="s0a552e96950fee13">
-  <source>Chat with <x id="0" equiv-text="${names[0]}" /></source>
-  <target>Chat mit <x id="0" equiv-text="${agent.name}" /></target>
+  <source>Chat with <x id="0" equiv-text="${names[0]}"/></source>
+  <target>Chat mit <x id="0" equiv-text="${agent.name}"/></target>
 </trans-unit>
 <trans-unit id="s8d746648f3712457">
-  <source>Conversation started with <x id="0" equiv-text="${names[0]}" />.</source>
-  <target>Konversation gestartet mit <x id="0" equiv-text="${agent.name}" />.</target>
+  <source>Conversation started with <x id="0" equiv-text="${names[0]}"/>.</source>
+  <target>Konversation gestartet mit <x id="0" equiv-text="${agent.name}"/>.</target>
 </trans-unit>
 <trans-unit id="sd372b232ee1d8588">
   <source>Failed to create conversation.</source>
@@ -719,8 +719,8 @@
   <target>Wähle eine Konversation aus der Liste oder starte eine neue, indem du einen Agenten auswählst.</target>
 </trans-unit>
 <trans-unit id="sd94e4de48e8973cb">
-  <source><x id="0" equiv-text="${this.conversation.message_count}" /> messages</source>
-  <target><x id="0" equiv-text="${this.conversation.message_count}" /> Nachrichten</target>
+  <source><x id="0" equiv-text="${this.conversation.message_count}"/> messages</source>
+  <target><x id="0" equiv-text="${this.conversation.message_count}"/> Nachrichten</target>
 </trans-unit>
 <trans-unit id="se3b62a22fe3df419">
   <source>Loading messages...</source>
@@ -763,16 +763,16 @@
   <target>Gerade eben</target>
 </trans-unit>
 <trans-unit id="s8c1837e74a81ad0d">
-  <source><x id="0" equiv-text="${diffMins}" />m ago</source>
-  <target>vor <x id="0" equiv-text="${diffMins}" />m</target>
+  <source><x id="0" equiv-text="${diffMins}"/>m ago</source>
+  <target>vor <x id="0" equiv-text="${diffMins}"/>m</target>
 </trans-unit>
 <trans-unit id="sa86ea054ad5277ce">
-  <source><x id="0" equiv-text="${diffHours}" />h ago</source>
-  <target>vor <x id="0" equiv-text="${diffHours}" />h</target>
+  <source><x id="0" equiv-text="${diffHours}"/>h ago</source>
+  <target>vor <x id="0" equiv-text="${diffHours}"/>h</target>
 </trans-unit>
 <trans-unit id="s4abcddbf0c24a4e2">
-  <source><x id="0" equiv-text="${diffDays}" />d ago</source>
-  <target>vor <x id="0" equiv-text="${diffDays}" />d</target>
+  <source><x id="0" equiv-text="${diffDays}"/>d ago</source>
+  <target>vor <x id="0" equiv-text="${diffDays}"/>d</target>
 </trans-unit>
 <trans-unit id="scb6a9c1a1757adbc">
   <source>You</source>
@@ -783,8 +783,8 @@
   <target>Noch keine Nachrichten. Starte die Konversation.</target>
 </trans-unit>
 <trans-unit id="sdad9a8331eaf87b9">
-  <source><x id="0" equiv-text="${reactionCount}" /> Reactions</source>
-  <target><x id="0" equiv-text="${reactionCount}" /> Reaktionen</target>
+  <source><x id="0" equiv-text="${reactionCount}"/> Reactions</source>
+  <target><x id="0" equiv-text="${reactionCount}"/> Reaktionen</target>
 </trans-unit>
 <trans-unit id="se44a1146a7e00fd1">
   <source>Edit event</source>
@@ -811,8 +811,8 @@
   <target>Auswirkungsstufe</target>
 </trans-unit>
 <trans-unit id="s0abfa55578dfaa92">
-  <source>Reactions (<x id="0" equiv-text="${this._reactions.length}" />)</source>
-  <target>Reaktionen (<x id="0" equiv-text="${this._reactions.length}" />)</target>
+  <source>Reactions (<x id="0" equiv-text="${this._reactions.length}"/>)</source>
+  <target>Reaktionen (<x id="0" equiv-text="${this._reactions.length}"/>)</target>
 </trans-unit>
 <trans-unit id="s0852c030839ee3db">
   <source>No event selected.</source>
@@ -875,8 +875,8 @@
   <target>Optionaler Ort</target>
 </trans-unit>
 <trans-unit id="s73de114e5f85f526">
-  <source>Impact Level (<x id="0" equiv-text="${this._impactLevel}" />/10)</source>
-  <target>Auswirkungsstufe (<x id="0" equiv-text="${this._impactLevel}" />/10)</target>
+  <source>Impact Level (<x id="0" equiv-text="${this._impactLevel}"/>/10)</source>
+  <target>Auswirkungsstufe (<x id="0" equiv-text="${this._impactLevel}"/>/10)</target>
 </trans-unit>
 <trans-unit id="s03aa3cfb08dff960">
   <source>Tags</source>
@@ -939,32 +939,32 @@
   <target>Einstellungen</target>
 </trans-unit>
 <trans-unit id="sc8f1cc9b4bbf0a02">
-  <source>Population: <x id="0" equiv-text="${city.population.toLocaleString()}" /></source>
-  <target>Bevölkerung: <x id="0" equiv-text="${city.population.toLocaleString()}" /></target>
+  <source>Population: <x id="0" equiv-text="${city.population.toLocaleString()}"/></source>
+  <target>Bevölkerung: <x id="0" equiv-text="${city.population.toLocaleString()}"/></target>
 </trans-unit>
 <trans-unit id="s9914f7f7bed983b3">
-  <source><x id="0" equiv-text="${this._typeLabel}" /> updated successfully</source>
-  <target><x id="0" equiv-text="${this._typeLabel}" /> erfolgreich aktualisiert</target>
+  <source><x id="0" equiv-text="${this._typeLabel}"/> updated successfully</source>
+  <target><x id="0" equiv-text="${this._typeLabel}"/> erfolgreich aktualisiert</target>
 </trans-unit>
 <trans-unit id="sa73b997642f65846">
-  <source><x id="0" equiv-text="${this._typeLabel}" /> created successfully</source>
-  <target><x id="0" equiv-text="${this._typeLabel}" /> erfolgreich erstellt</target>
+  <source><x id="0" equiv-text="${this._typeLabel}"/> created successfully</source>
+  <target><x id="0" equiv-text="${this._typeLabel}"/> erfolgreich erstellt</target>
 </trans-unit>
 <trans-unit id="sa80933980d6bd0c7">
-  <source>Edit <x id="0" equiv-text="${this._typeLabel}" /></source>
-  <target><x id="0" equiv-text="${this._typeLabel}" /> bearbeiten</target>
+  <source>Edit <x id="0" equiv-text="${this._typeLabel}"/></source>
+  <target><x id="0" equiv-text="${this._typeLabel}"/> bearbeiten</target>
 </trans-unit>
 <trans-unit id="s5d6af4c100ad321b">
-  <source>Create <x id="0" equiv-text="${this._typeLabel}" /></source>
-  <target><x id="0" equiv-text="${this._typeLabel}" /> erstellen</target>
+  <source>Create <x id="0" equiv-text="${this._typeLabel}"/></source>
+  <target><x id="0" equiv-text="${this._typeLabel}"/> erstellen</target>
 </trans-unit>
 <trans-unit id="s1148def0112d096a">
-  <source>Enter <x id="0" equiv-text="${this.type}" /> name</source>
-  <target><x id="0" equiv-text="${this.type}" />-Name eingeben</target>
+  <source>Enter <x id="0" equiv-text="${this.type}"/> name</source>
+  <target>Name <x id="0" equiv-text="${this.type}"/> eingeben</target>
 </trans-unit>
 <trans-unit id="s57b9a8cb0c1fd049">
-  <source>Describe the <x id="0" equiv-text="${this.type}" />...</source>
-  <target><x id="0" equiv-text="${this.type}" /> beschreiben...</target>
+  <source>Describe the <x id="0" equiv-text="${this.type}"/>...</source>
+  <target>Beschreibe <x id="0" equiv-text="${this.type}"/>...</target>
 </trans-unit>
 <trans-unit id="s697d9f0a4d8350d2">
   <source>Failed to load cities</source>
@@ -1023,24 +1023,24 @@
   <target>Straße erstellen</target>
 </trans-unit>
 <trans-unit id="s763db5db763a5f30">
-  <source>+ Create <x id="0" equiv-text="${levelLabels[this._level]}" /></source>
-  <target>+ <x id="0" equiv-text="${levelLabels[this._level]}" /> erstellen</target>
+  <source>+ Create <x id="0" equiv-text="${levelLabels[this._level]}"/></source>
+  <target>+ <x id="0" equiv-text="${levelLabels[this._level]}"/> erstellen</target>
 </trans-unit>
 <trans-unit id="s1acd3fb8f42de406">
   <source>Unnamed Street</source>
   <target>Unbenannte Straße</target>
 </trans-unit>
 <trans-unit id="sd6a7f6d64037f1ae">
-  <source>Est. Population: <x id="0" equiv-text="${zone.population_estimate.toLocaleString()}" /></source>
-  <target>Geschätzte Bevölkerung: <x id="0" equiv-text="${zone.population_estimate.toLocaleString()}" /></target>
+  <source>Est. Population: <x id="0" equiv-text="${zone.population_estimate.toLocaleString()}"/></source>
+  <target>Geschätzte Bevölkerung: <x id="0" equiv-text="${zone.population_estimate.toLocaleString()}"/></target>
 </trans-unit>
 <trans-unit id="s35396e2f40c21cb3">
   <source>Slug is required</source>
   <target>Slug ist erforderlich</target>
 </trans-unit>
 <trans-unit id="s0c7dffd240ca1092">
-  <source>Simulation "<x id="0" equiv-text="${response.data.name}" />" created.</source>
-  <target>Simulation "<x id="0" equiv-text="${response.data.name}" />" erstellt.</target>
+  <source>Simulation "<x id="0" equiv-text="${response.data.name}"/>" created.</source>
+  <target>Simulation "<x id="0" equiv-text="${response.data.name}"/>" erstellt.</target>
 </trans-unit>
 <trans-unit id="s6a1b50bed7ff39b8">
   <source>Failed to create simulation.</source>
@@ -1166,26 +1166,6 @@
   <source>Accept Invitation</source>
   <target>Einladung annehmen</target>
 </trans-unit>
-<trans-unit id="s84126fa92f00b4ef">
-  <source>just now</source>
-  <target>gerade eben</target>
-</trans-unit>
-<trans-unit id="s5be3c6d61cd9182f">
-  <source>Notifications</source>
-  <target>Benachrichtigungen</target>
-</trans-unit>
-<trans-unit id="s978e956f5e3073c9">
-  <source>Mark all read</source>
-  <target>Alle als gelesen markieren</target>
-</trans-unit>
-<trans-unit id="s88f171391e8d15c2">
-  <source>No notifications</source>
-  <target>Keine Benachrichtigungen</target>
-</trans-unit>
-<trans-unit id="s7f59f507e02a2f38">
-  <source>View</source>
-  <target>Ansehen</target>
-</trans-unit>
 <trans-unit id="sf05411f156e17c04">
   <source>Simulation:</source>
   <target>Simulation:</target>
@@ -1271,8 +1251,8 @@
   <target>Du bist noch kein Mitglied einer Simulation.</target>
 </trans-unit>
 <trans-unit id="s0561bb86953cba6a">
-  <source>Joined <x id="0" equiv-text="${this._formatDate(m.joined_at)}" /></source>
-  <target>Beigetreten <x id="0" equiv-text="${this._formatDate(m.joined_at)}" /></target>
+  <source>Joined <x id="0" equiv-text="${this._formatDate(m.joined_at)}"/></source>
+  <target>Beigetreten <x id="0" equiv-text="${this._formatDate(m.joined_at)}"/></target>
 </trans-unit>
 <trans-unit id="sb061ff5a347a296e">
   <source>Profile</source>
@@ -1287,8 +1267,8 @@
   <target>Zugangs-Einstellungen erfolgreich gespeichert.</target>
 </trans-unit>
 <trans-unit id="s784363bffc053c01">
-  <source>Role updated to <x id="0" equiv-text="${newRole}" />.</source>
-  <target>Rolle aktualisiert auf <x id="0" equiv-text="${newRole}" />.</target>
+  <source>Role updated to <x id="0" equiv-text="${newRole}"/>.</source>
+  <target>Rolle aktualisiert auf <x id="0" equiv-text="${newRole}"/>.</target>
 </trans-unit>
 <trans-unit id="s79268a5304465029">
   <source>Failed to change role.</source>
@@ -1303,16 +1283,16 @@
   <target>Mitglied entfernen</target>
 </trans-unit>
 <trans-unit id="sd0996bc3a8b5df93">
-  <source>Are you sure you want to remove <x id="0" equiv-text="${displayName}" /> from this simulation?</source>
-  <target>Bist du sicher, dass du <x id="0" equiv-text="${displayName}" /> aus dieser Simulation entfernen möchtest?</target>
+  <source>Are you sure you want to remove <x id="0" equiv-text="${displayName}"/> from this simulation?</source>
+  <target>Bist du sicher, dass du <x id="0" equiv-text="${displayName}"/> aus dieser Simulation entfernen möchtest?</target>
 </trans-unit>
 <trans-unit id="sea4f08110bb8f15d">
   <source>Remove</source>
   <target>Entfernen</target>
 </trans-unit>
 <trans-unit id="s0bcd877483a23da5">
-  <source><x id="0" equiv-text="${displayName}" /> has been removed.</source>
-  <target><x id="0" equiv-text="${displayName}" /> wurde entfernt.</target>
+  <source><x id="0" equiv-text="${displayName}"/> has been removed.</source>
+  <target><x id="0" equiv-text="${displayName}"/> wurde entfernt.</target>
 </trans-unit>
 <trans-unit id="s58791d830f346d4b">
   <source>Failed to remove member.</source>
@@ -1603,8 +1583,8 @@
   <target>Fehler beim Laden der Design-Einstellungen</target>
 </trans-unit>
 <trans-unit id="scd0bfa2bff811826">
-  <source>Custom CSS exceeds maximum of <x id="0" equiv-text="${MAX_CUSTOM_CSS_LENGTH / 1024}" />KB.</source>
-  <target>Benutzerdefiniertes CSS überschreitet das Maximum von <x id="0" equiv-text="${MAX_CUSTOM_CSS_LENGTH / 1024}" />KB.</target>
+  <source>Custom CSS exceeds maximum of <x id="0" equiv-text="${MAX_CUSTOM_CSS_LENGTH / 1024}"/>KB.</source>
+  <target>Benutzerdefiniertes CSS überschreitet das Maximum von <x id="0" equiv-text="${MAX_CUSTOM_CSS_LENGTH / 1024}"/>KB.</target>
 </trans-unit>
 <trans-unit id="s9419de2e7561341a">
   <source>Design settings saved successfully.</source>
@@ -1631,12 +1611,12 @@
   <target>Zusätzliche Stile</target>
 </trans-unit>
 <trans-unit id="s6496d792d13b37bc">
-  <source>Max <x id="0" equiv-text="${MAX_CUSTOM_CSS_LENGTH / 1024}" />KB.</source>
-  <target>Max. <x id="0" equiv-text="${MAX_CUSTOM_CSS_LENGTH / 1024}" />KB.</target>
+  <source>Max <x id="0" equiv-text="${MAX_CUSTOM_CSS_LENGTH / 1024}"/>KB.</source>
+  <target>Max. <x id="0" equiv-text="${MAX_CUSTOM_CSS_LENGTH / 1024}"/>KB.</target>
 </trans-unit>
 <trans-unit id="sf12516a6ba47b093">
-  <source>Current: <x id="0" equiv-text="${((this._values.custom_css ?? '').length / 1024).toFixed(1)}" />KB</source>
-  <target>Aktuell: <x id="0" equiv-text="${((this._values.custom_css ?? '').length / 1024).toFixed(1)}" />KB</target>
+  <source>Current: <x id="0" equiv-text="${((this._values.custom_css ?? '').length / 1024).toFixed(1)}"/>KB</source>
+  <target>Aktuell: <x id="0" equiv-text="${((this._values.custom_css ?? '').length / 1024).toFixed(1)}"/>KB</target>
 </trans-unit>
 <trans-unit id="sfd45ce497f1d354f">
   <source>Live Preview</source>
@@ -1691,8 +1671,8 @@
   <target>Fehler beim Laden der Einstellungen</target>
 </trans-unit>
 <trans-unit id="sabca4cadd0e18910">
-  <source>Failed to save <x id="0" equiv-text="${key}" /></source>
-  <target>Fehler beim Speichern von <x id="0" equiv-text="${field.key}" /></target>
+  <source>Failed to save <x id="0" equiv-text="${key}"/></source>
+  <target>Fehler beim Speichern von <x id="0" equiv-text="${field.key}"/></target>
 </trans-unit>
 <trans-unit id="sa97c26fbad888226">
   <source>General settings saved successfully.</source>
@@ -1803,8 +1783,8 @@
   <target>Fehler beim Laden der Integrations-Einstellungen</target>
 </trans-unit>
 <trans-unit id="sd02a9432614df2f5">
-  <source><x id="0" equiv-text="${section.title}" /> settings saved.</source>
-  <target><x id="0" equiv-text="${section.title}" />-Einstellungen gespeichert.</target>
+  <source><x id="0" equiv-text="${section.title}"/> settings saved.</source>
+  <target><x id="0" equiv-text="${section.title}"/>-Einstellungen gespeichert.</target>
 </trans-unit>
 <trans-unit id="s33994aa90c1bad30">
   <source>Values are encrypted at rest</source>
@@ -1931,8 +1911,8 @@
   <target>Vorlage deaktivieren</target>
 </trans-unit>
 <trans-unit id="s69d0d905cda1e7aa">
-  <source>Are you sure you want to deactivate "<x id="0" equiv-text="${template.template_name}" />"?</source>
-  <target>Bist du sicher, dass du "<x id="0" equiv-text="${template.template_name}" />" deaktivieren möchtest?</target>
+  <source>Are you sure you want to deactivate "<x id="0" equiv-text="${template.template_name}"/>"?</source>
+  <target>Bist du sicher, dass du "<x id="0" equiv-text="${template.template_name}"/>" deaktivieren möchtest?</target>
 </trans-unit>
 <trans-unit id="s1a9c6b9c8cb6bbf1">
   <source>Template deactivated</source>
@@ -2027,8 +2007,8 @@
   <target>z.B. meta-llama/llama-3.1-8b-instruct</target>
 </trans-unit>
 <trans-unit id="s820f8a6f13d4e378">
-  <source>Temperature (<x id="0" equiv-text="${this._temperature}" />)</source>
-  <target>Temperatur (<x id="0" equiv-text="${this._temperature}" />)</target>
+  <source>Temperature (<x id="0" equiv-text="${this._temperature}"/>)</source>
+  <target>Temperatur (<x id="0" equiv-text="${this._temperature}"/>)</target>
 </trans-unit>
 <trans-unit id="sa3a2de5eef189c11">
   <source>Max Tokens</source>
@@ -2219,8 +2199,8 @@
   <target>Aktivieren</target>
 </trans-unit>
 <trans-unit id="sfb73892965d2b361">
-  <source>Add New <x id="0" equiv-text="${this._selectedType.replace(/_/g, ' ')}" /> Value</source>
-  <target>Neuen <x id="0" equiv-text="${this._selectedType.replace(/_/g, ' ')}" />-Wert hinzufügen</target>
+  <source>Add New <x id="0" equiv-text="${this._selectedType.replace(/_/g, ' ')}"/> Value</source>
+  <target>Neuen <x id="0" equiv-text="${this._selectedType.replace(/_/g, ' ')}"/>-Wert hinzufügen</target>
 </trans-unit>
 <trans-unit id="scef70ed367a87332">
   <source>Value (code)</source>
@@ -2258,10 +2238,6 @@
   <source>Cancel</source>
   <target>Abbrechen</target>
 </trans-unit>
-<trans-unit id="sa26d7a273074cbf9">
-  <source>No data available</source>
-  <target>Keine Daten verfügbar</target>
-</trans-unit>
 <trans-unit id="s980bee8ef29d6a1c">
   <source>Nothing here yet.</source>
   <target>Noch nichts vorhanden.</target>
@@ -2287,8 +2263,8 @@
   <target>Laden...</target>
 </trans-unit>
 <trans-unit id="s1e983dceeed1e078">
-  <source>Showing <x id="0" equiv-text="${this._showingStart}" />-<x id="1" equiv-text="${this._showingEnd}" /> of <x id="2" equiv-text="${this.total}" /></source>
-  <target><x id="0" equiv-text="${this._showingStart}" />-<x id="1" equiv-text="${this._showingEnd}" /> von <x id="2" equiv-text="${this.total}" /> angezeigt</target>
+  <source>Showing <x id="0" equiv-text="${this._showingStart}"/>-<x id="1" equiv-text="${this._showingEnd}"/> of <x id="2" equiv-text="${this.total}"/></source>
+  <target>Zeige <x id="0" equiv-text="${this._showingStart}"/>-<x id="1" equiv-text="${this._showingEnd}"/> von <x id="2" equiv-text="${this.total}"/></target>
 </trans-unit>
 <trans-unit id="safec7f1a369755f0">
   <source>Prev</source>
@@ -2329,30 +2305,6 @@
 <trans-unit id="sb71567d0627888e3">
   <source>No campaigns yet</source>
   <target>Noch keine Kampagnen</target>
-</trans-unit>
-<trans-unit id="s1ac2e7a6b9ac490f">
-  <source>Loading campaign...</source>
-  <target>Kampagne wird geladen...</target>
-</trans-unit>
-<trans-unit id="s036cc2927992d0ed">
-  <source>Events (<x id="0" equiv-text="${this._events.length}" />)</source>
-  <target>Ereignisse (<x id="0" equiv-text="${this._events.length}" />)</target>
-</trans-unit>
-<trans-unit id="s11a3323f704dcfc6">
-  <source>No events linked.</source>
-  <target>Keine Ereignisse verknüpft.</target>
-</trans-unit>
-<trans-unit id="s576a9359adcf9b8b">
-  <source>Metrics (<x id="0" equiv-text="${this._metrics.length}" />)</source>
-  <target>Metriken (<x id="0" equiv-text="${this._metrics.length}" />)</target>
-</trans-unit>
-<trans-unit id="sf06042538514d135">
-  <source>No metrics yet.</source>
-  <target>Noch keine Metriken.</target>
-</trans-unit>
-<trans-unit id="s4defbf308767d40c">
-  <source>No metrics available</source>
-  <target>Keine Metriken verfügbar</target>
 </trans-unit>
 <trans-unit id="s5f43af3669b1e098">
   <source>Source</source>
@@ -2471,8 +2423,8 @@
   <target>Transformiert</target>
 </trans-unit>
 <trans-unit id="se5be05dac1218eba">
-  <source>Model: <x id="0" equiv-text="${this._modelUsed}" /></source>
-  <target>Modell: <x id="0" equiv-text="${this._modelUsed}" /></target>
+  <source>Model: <x id="0" equiv-text="${this._modelUsed}"/></source>
+  <target>Modell: <x id="0" equiv-text="${this._modelUsed}"/></target>
 </trans-unit>
 <trans-unit id="s2b631bf5b4abd6e1">
   <source>Event Title</source>
@@ -2527,12 +2479,12 @@
   <target>Verarbeitet</target>
 </trans-unit>
 <trans-unit id="s092f5d61ee596839">
-  <source>Volume: <x id="0" equiv-text="${t.volume}" /></source>
-  <target>Volumen: <x id="0" equiv-text="${t.volume}" /></target>
+  <source>Volume: <x id="0" equiv-text="${t.volume}"/></source>
+  <target>Volumen: <x id="0" equiv-text="${t.volume}"/></target>
 </trans-unit>
 <trans-unit id="sdf9fac68c991ff20">
-  <source>Relevance: <x id="0" equiv-text="${t.relevance_score}" />/10</source>
-  <target>Relevanz: <x id="0" equiv-text="${t.relevance_score}" />/10</target>
+  <source>Relevance: <x id="0" equiv-text="${t.relevance_score}"/>/10</source>
+  <target>Relevanz: <x id="0" equiv-text="${t.relevance_score}"/>/10</target>
 </trans-unit>
 <trans-unit id="sc1fff4f356dfb2fb">
   <source>Transform</source>
@@ -2603,12 +2555,12 @@
   <target>Reaktionen werden verarbeitet...</target>
 </trans-unit>
 <trans-unit id="s6d936d8dcc053ab0">
-  <source><x id="0" equiv-text="${response.data.length}" /> reactions generated</source>
-  <target><x id="0" equiv-text="${response.data.length}" /> Reaktionen generiert</target>
+  <source><x id="0" equiv-text="${response.data.length}"/> reactions generated</source>
+  <target><x id="0" equiv-text="${response.data.length}"/> Reaktionen generiert</target>
 </trans-unit>
 <trans-unit id="s7dcfa30133c26319">
-  <source><x id="0" equiv-text="${response.data.length}" /> agent reactions generated</source>
-  <target><x id="0" equiv-text="${response.data.length}" /> Agenten-Reaktionen generiert</target>
+  <source><x id="0" equiv-text="${response.data.length}"/> agent reactions generated</source>
+  <target><x id="0" equiv-text="${response.data.length}"/> Agentenreaktionen generiert</target>
 </trans-unit>
 <trans-unit id="sc02725662448fb75">
   <source>Reaction generation failed</source>
@@ -2643,8 +2595,8 @@
   <target>Reaktion löschen</target>
 </trans-unit>
 <trans-unit id="s7e3cbbae942c94dc">
-  <source>Delete reaction of <x id="0" equiv-text="${this.agent.name}" /> to "<x id="1" equiv-text="${eventTitle}" />"?</source>
-  <target>Reaktion von <x id="0" equiv-text="${this.agent.name}" /> auf „<x id="1" equiv-text="${eventTitle}" />" löschen?</target>
+  <source>Delete reaction of <x id="0" equiv-text="${this.agent.name}"/> to "<x id="1" equiv-text="${eventTitle}"/>"?</source>
+  <target>Reaktion von <x id="0" equiv-text="${this.agent.name}"/> auf „<x id="1" equiv-text="${eventTitle}"/>" löschen?</target>
 </trans-unit>
 <trans-unit id="s8fd49ef6054b1197">
   <source>Reaction deleted</source>
@@ -2655,8 +2607,8 @@
   <target>Reaktion konnte nicht gelöscht werden</target>
 </trans-unit>
 <trans-unit id="sef72ba000d7f7124">
-  <source><x id="0" equiv-text="${displayName}" /> is typing...</source>
-  <target><x id="0" equiv-text="${agentName}" /> tippt...</target>
+  <source><x id="0" equiv-text="${displayName}"/> is typing...</source>
+  <target><x id="0" equiv-text="${displayName}"/> tippt...</target>
 </trans-unit>
 <trans-unit id="s10361832e7a4e3e2">
   <source>Shift+Enter for line break</source>
@@ -2675,8 +2627,8 @@
   <target>Konversation löschen</target>
 </trans-unit>
 <trans-unit id="s7841bb6037c4563e">
-  <source>Are you sure you want to permanently delete the conversation with <x id="0" equiv-text="${agentName}" />? All messages will be lost.</source>
-  <target>Möchtest du die Konversation mit <x id="0" equiv-text="${agentName}" /> wirklich endgültig löschen? Alle Nachrichten gehen verloren.</target>
+  <source>Are you sure you want to permanently delete the conversation with <x id="0" equiv-text="${agentName}"/>? All messages will be lost.</source>
+  <target>Möchtest du die Konversation mit <x id="0" equiv-text="${agentName}"/> wirklich endgültig löschen? Alle Nachrichten gehen verloren.</target>
 </trans-unit>
 <trans-unit id="s40fc621a022dc51f">
   <source>Conversation deleted.</source>
@@ -2691,8 +2643,8 @@
   <target>Ein unerwarteter Fehler beim Löschen der Konversation.</target>
 </trans-unit>
 <trans-unit id="se407983ffa8cd99d">
-  <source>Selected (<x id="0" equiv-text="${selected.length}" />)</source>
-  <target>Ausgewählt (<x id="0" equiv-text="${selected.length}" />)</target>
+  <source>Selected (<x id="0" equiv-text="${selected.length}"/>)</source>
+  <target>Ausgewählt (<x id="0" equiv-text="${selected.length}"/>)</target>
 </trans-unit>
 <trans-unit id="sda972e1524e96cb2">
   <source>Add Agents</source>
@@ -2703,32 +2655,32 @@
   <target>Agenten auswählen</target>
 </trans-unit>
 <trans-unit id="s76402dc74efa459d">
-  <source>Add (<x id="0" equiv-text="${this._selectedIds.size}" />)</source>
-  <target>Hinzufügen (<x id="0" equiv-text="${this._selectedIds.size}" />)</target>
+  <source>Add (<x id="0" equiv-text="${this._selectedIds.size}"/>)</source>
+  <target>Hinzufügen (<x id="0" equiv-text="${this._selectedIds.size}"/>)</target>
 </trans-unit>
 <trans-unit id="s780d47c5d94eaca5">
-  <source>Start Conversation (<x id="0" equiv-text="${this._selectedIds.size}" /> Agents)</source>
-  <target>Gespräch starten (<x id="0" equiv-text="${this._selectedIds.size}" /> Agenten)</target>
+  <source>Start Conversation (<x id="0" equiv-text="${this._selectedIds.size}"/> Agents)</source>
+  <target>Gespräch starten (<x id="0" equiv-text="${this._selectedIds.size}"/> Agenten)</target>
 </trans-unit>
 <trans-unit id="s2e1246a8a0f9f582">
-  <source>Group: <x id="0" equiv-text="${names.slice(0, 3).join(', ')}${names.length &gt; 3 ? ` +${names.length - 3}` : ''}" /></source>
-  <target>Gruppe: <x id="0" equiv-text="${names.slice(0, 3).join(', ')}${names.length &gt; 3 ? ` +${names.length - 3}` : ''}" /></target>
+  <source>Group: <x id="0" equiv-text="${names.slice(0, 3).join(', ')}${names.length &gt; 3 ? ` +${names.length - 3}` : ''}"/></source>
+  <target>Gruppe: <x id="0" equiv-text="${names.slice(0, 3).join(', ')}${names.length &gt; 3 ? ` +${names.length - 3}` : ''}"/></target>
 </trans-unit>
 <trans-unit id="sce4b0b13cd896498">
-  <source>Group conversation started with <x id="0" equiv-text="${names.length}" /> agents.</source>
-  <target>Gruppengespräch mit <x id="0" equiv-text="${names.length}" /> Agenten gestartet.</target>
+  <source>Group conversation started with <x id="0" equiv-text="${names.length}"/> agents.</source>
+  <target>Gruppengespräch mit <x id="0" equiv-text="${names.length}"/> Agenten gestartet.</target>
 </trans-unit>
 <trans-unit id="s138591852cc6d90a">
-  <source>Failed to add <x id="0" equiv-text="${agent.name}" />.</source>
-  <target>Fehler beim Hinzufügen von <x id="0" equiv-text="${agent.name}" />.</target>
+  <source>Failed to add <x id="0" equiv-text="${agent.name}"/>.</source>
+  <target>Fehler beim Hinzufügen von <x id="0" equiv-text="${agent.name}"/>.</target>
 </trans-unit>
 <trans-unit id="s1feb2c0afcc4660c">
-  <source><x id="0" equiv-text="${agents.length}" /> agent(s) added.</source>
-  <target><x id="0" equiv-text="${agents.length}" /> Agent(en) hinzugefügt.</target>
+  <source><x id="0" equiv-text="${agents.length}"/> agent(s) added.</source>
+  <target><x id="0" equiv-text="${agents.length}"/> Agent(en) hinzugefügt.</target>
 </trans-unit>
 <trans-unit id="s4095b60011d6e4ae">
-  <source>Event "<x id="0" equiv-text="${event.title}" />" referenced.</source>
-  <target>Event "<x id="0" equiv-text="${event.title}" />" referenziert.</target>
+  <source>Event "<x id="0" equiv-text="${event.title}"/>" referenced.</source>
+  <target>Event "<x id="0" equiv-text="${event.title}"/>" referenziert.</target>
 </trans-unit>
 <trans-unit id="s588ec63806be19a6">
   <source>Failed to reference event.</source>
@@ -2743,12 +2695,12 @@
   <target>Event hinzufügen</target>
 </trans-unit>
 <trans-unit id="sabc6f5601ffed38c">
-  <source><x id="0" equiv-text="${agentCount}" /> agents are responding...</source>
-  <target><x id="0" equiv-text="${agentCount}" /> Agenten antworten...</target>
+  <source><x id="0" equiv-text="${agentCount}"/> agents are responding...</source>
+  <target><x id="0" equiv-text="${agentCount}"/> Agenten antworten...</target>
 </trans-unit>
 <trans-unit id="s61b59619104804be">
-  <source><x id="0" equiv-text="${agentCount}" /> agents · <x id="1" equiv-text="${this.conversation.message_count}" /> messages</source>
-  <target><x id="0" equiv-text="${agentCount}" /> Agenten · <x id="1" equiv-text="${this.conversation.message_count}" /> Nachrichten</target>
+  <source><x id="0" equiv-text="${agentCount}"/> agents · <x id="1" equiv-text="${this.conversation.message_count}"/> messages</source>
+  <target><x id="0" equiv-text="${agentCount}"/> Agenten · <x id="1" equiv-text="${this.conversation.message_count}"/> Nachrichten</target>
 </trans-unit>
 <trans-unit id="s2a9a0cbeb976d3f5">
   <source>Add Agent</source>
@@ -2827,8 +2779,8 @@
   <target>Keine Artikel gefunden</target>
 </trans-unit>
 <trans-unit id="s0f51454f932e2e46">
-  <source>Event created with <x id="0" equiv-text="${result.reactions_count}" /> agent reactions</source>
-  <target>Event erstellt mit <x id="0" equiv-text="${result.reactions_count}" /> Agenten-Reaktionen</target>
+  <source>Event created with <x id="0" equiv-text="${result.reactions_count}"/> agent reactions</source>
+  <target>Event erstellt mit <x id="0" equiv-text="${result.reactions_count}"/> Agenten-Reaktionen</target>
 </trans-unit>
 <trans-unit id="s6d90940f8abe4a87">
   <source>Generate agent reactions</source>
@@ -5838,11 +5790,11 @@ Die Karte ist offen. Die Scherben warten. Welche Welt betritt man zuerst?</targe
   <source>Arc Raiders</source>
 <target>Arc Raiders</target></trans-unit>
 <trans-unit id="s2ae949567899b630">
-  <source><x id="0" equiv-text="${this.relationshipCount}" /> connections</source>
-<target><x id="0" equiv-text="${this.relationshipCount}" /> Verbindungen</target></trans-unit>
+  <source><x id="0" equiv-text="${this.relationshipCount}"/> connections</source>
+<target><x id="0" equiv-text="${this.relationshipCount}"/> Verbindungen</target></trans-unit>
 <trans-unit id="s8b7fe0de5711e3b3">
-  <source>Delete relationship with <x id="0" equiv-text="${otherName}" />?</source>
-<target>Beziehung zu <x id="0" equiv-text="${otherName}" /> löschen?</target></trans-unit>
+  <source>Delete relationship with <x id="0" equiv-text="${otherName}"/>?</source>
+<target>Beziehung zu <x id="0" equiv-text="${otherName}"/> löschen?</target></trans-unit>
 <trans-unit id="sb09760df3317fa96">
   <source>Relationship deleted</source>
 <target>Beziehung gelöscht</target></trans-unit>
@@ -5907,11 +5859,11 @@ Die Karte ist offen. Die Scherben warten. Welche Welt betritt man zuerst?</targe
   <source>Describe the nature of this relationship...</source>
 <target>Beschreiben Sie die Art dieser Beziehung...</target></trans-unit>
 <trans-unit id="s4a9040f690f32f4b">
-  <source>Strength: <x id="0" equiv-text="${strengthPercent}" />%</source>
-<target>Stärke: <x id="0" equiv-text="${strengthPercent}" />%</target></trans-unit>
+  <source>Strength: <x id="0" equiv-text="${strengthPercent}"/>%</source>
+<target>Stärke: <x id="0" equiv-text="${strengthPercent}"/>%</target></trans-unit>
 <trans-unit id="s4735a3d8edbe6a6a">
-  <source>Depth <x id="0" equiv-text="${echo.echo_depth}" />/3</source>
-<target>Tiefe <x id="0" equiv-text="${echo.echo_depth}" />/3</target></trans-unit>
+  <source>Depth <x id="0" equiv-text="${echo.echo_depth}"/>/3</source>
+<target>Tiefe <x id="0" equiv-text="${echo.echo_depth}"/>/3</target></trans-unit>
 <trans-unit id="sed9fa982ea6c6f9a">
   <source>Target simulation is required</source>
 <target>Zielsimulation ist erforderlich</target></trans-unit>
@@ -5958,8 +5910,8 @@ Die Karte ist offen. Die Scherben warten. Welche Welt betritt man zuerst?</targe
   <source>-- Select Vector --</source>
 <target>-- Vektor auswählen --</target></trans-unit>
 <trans-unit id="s5ef81dc86d97e0d4">
-  <source>Strength Override (<x id="0" equiv-text="${strengthPercent}" />%)</source>
-<target>Stärke überschreiben (<x id="0" equiv-text="${strengthPercent}" />%)</target></trans-unit>
+  <source>Strength Override (<x id="0" equiv-text="${strengthPercent}"/>%)</source>
+<target>Stärke überschreiben (<x id="0" equiv-text="${strengthPercent}"/>%)</target></trans-unit>
 <trans-unit id="sf5e1db1a2e189b29">
   <source>Triggering...</source>
 <target>Auslösen...</target></trans-unit>
@@ -5973,11 +5925,11 @@ Die Karte ist offen. Die Scherben warten. Welche Welt betritt man zuerst?</targe
   <source>Bleed Origin</source>
 <target>Bleed-Ursprung</target></trans-unit>
 <trans-unit id="s792c6e5dfb1db352">
-  <source>Originated in <x id="0" equiv-text="${sourceName}${echoVector ? ` via ${echoVector}` : ''}" /></source>
-<target>Entstanden in <x id="0" equiv-text="${sourceName}${echoVector ? ` via ${echoVector}` : ''}" /></target></trans-unit>
+  <source>Originated in <x id="0" equiv-text="${sourceName}${echoVector ? ` via ${echoVector}` : ''}"/></source>
+<target>Entstanden in <x id="0" equiv-text="${sourceName}${echoVector ? ` via ${echoVector}` : ''}"/></target></trans-unit>
 <trans-unit id="sb0c67156cc5c5f81">
-  <source>Echoes (<x id="0" equiv-text="${this._echoes.length}" />)</source>
-<target>Echos (<x id="0" equiv-text="${this._echoes.length}" />)</target></trans-unit>
+  <source>Echoes (<x id="0" equiv-text="${this._echoes.length}"/>)</source>
+<target>Echos (<x id="0" equiv-text="${this._echoes.length}"/>)</target></trans-unit>
 <trans-unit id="saf512757f366bf25">
   <source>No echoes yet</source>
 <target>Noch keine Echos</target></trans-unit>
@@ -6392,18 +6344,12 @@ Die Karte ist offen. Die Scherben warten. Welche Welt betritt man zuerst?</targe
 <trans-unit id="s1b10da4706d2d048">
   <source>Epoch Command Center</source>
 <target>Epochen-Kommandozentrale</target></trans-unit>
-<trans-unit id="sa3c5614afae21527">
-  <source>No active epoch. The multiverse awaits.</source>
-<target>Keine aktive Epoche. Das Multiversum erwartet Sie.</target></trans-unit>
 <trans-unit id="s2a962dc98c969b06">
   <source>Create New Epoch</source>
 <target>Neue Epoche erstellen</target></trans-unit>
 <trans-unit id="s1b5f152ec2f3774b">
   <source>Sign in to create or join an epoch.</source>
 <target>Melden Sie sich an, um eine Epoche zu erstellen oder ihr beizutreten.</target></trans-unit>
-<trans-unit id="s444ae4c73a96c01d">
-  <source>Past Epochs</source>
-<target>Vergangene Epochen</target></trans-unit>
 <trans-unit id="s5033dab8c17f05f2">
   <source>Completed</source>
 <target>Abgeschlossen</target></trans-unit>
@@ -6552,14 +6498,14 @@ Die Karte ist offen. Die Scherben warten. Welche Welt betritt man zuerst?</targe
   <source>Duration</source>
 <target>Dauer</target></trans-unit>
 <trans-unit id="seae40374c70dff85">
-  <source>Foundation <x id="0" equiv-text="${foundationDays}" />d · Competition <x id="1" equiv-text="${competitionDays}" />d · Reckoning <x id="2" equiv-text="${reckoningDays}" />d</source>
-<target>Gründung <x id="0" equiv-text="${foundationDays}" />d · Wettbewerb <x id="1" equiv-text="${competitionDays}" />d · Abrechnung <x id="2" equiv-text="${reckoningDays}" />d</target></trans-unit>
+  <source>Foundation <x id="0" equiv-text="${foundationDays}"/>d · Competition <x id="1" equiv-text="${competitionDays}"/>d · Reckoning <x id="2" equiv-text="${reckoningDays}"/>d</source>
+<target>Gründung <x id="0" equiv-text="${foundationDays}"/>d · Wettbewerb <x id="1" equiv-text="${competitionDays}"/>d · Abrechnung <x id="2" equiv-text="${reckoningDays}"/>d</target></trans-unit>
 <trans-unit id="s2130cc649867ca4a">
   <source>Cycle Interval</source>
 <target>Zyklus-Intervall</target></trans-unit>
 <trans-unit id="s567a3193a6ad8025">
-  <source><x id="0" equiv-text="${cyclesPerDay}" /> cycles per day</source>
-<target><x id="0" equiv-text="${cyclesPerDay}" /> Zyklen pro Tag</target></trans-unit>
+  <source><x id="0" equiv-text="${cyclesPerDay}"/> cycles per day</source>
+<target><x id="0" equiv-text="${cyclesPerDay}"/> Zyklen pro Tag</target></trans-unit>
 <trans-unit id="s4d2d7498eb8ea64a">
   <source>RP per Cycle</source>
 <target>RP pro Zyklus</target></trans-unit>
@@ -6657,8 +6603,8 @@ Die Karte ist offen. Die Scherben warten. Welche Welt betritt man zuerst?</targe
             <target>Ziel</target>
 </trans-unit>
 <trans-unit id="s28c479d90d98669f">
-  <source>Operative deployed. Mission <x id="0" equiv-text="${(resp.data as OperativeMission).operative_type}" /> initiated.</source>
-            <target>Agent eingesetzt. Mission <x id="0" equiv-text="${(resp.data as OperativeMission).operative_type}" /> eingeleitet.</target>
+  <source>Operative deployed. Mission <x id="0" equiv-text="${(resp.data as OperativeMission).operative_type}"/> initiated.</source>
+            <target>Agent eingesetzt. Mission <x id="0" equiv-text="${(resp.data as OperativeMission).operative_type}"/> eingeleitet.</target>
 </trans-unit>
 <trans-unit id="s24b066f426d2451f">
   <source>Deployment failed.</source>
@@ -6768,8 +6714,8 @@ Die Karte ist offen. Die Scherben warten. Welche Welt betritt man zuerst?</targe
   <source>Recall</source>
 <target>Zurückrufen</target></trans-unit>
 <trans-unit id="sc7917496fcdac3c1">
-  <source>Join as <x id="0" equiv-text="${sim.name}" /></source>
-<target>Beitreten als <x id="0" equiv-text="${sim.name}" /></target></trans-unit>
+  <source>Join as <x id="0" equiv-text="${sim.name}"/></source>
+<target>Beitreten als <x id="0" equiv-text="${sim.name}"/></target></trans-unit>
 <trans-unit id="s05f002f9b4d51185">
   <source>Leave Epoch</source>
 <target>Epoche verlassen</target></trans-unit>
@@ -6780,8 +6726,8 @@ Die Karte ist offen. Die Scherben warten. Welche Welt betritt man zuerst?</targe
   <source>Admin Controls</source>
 <target>Admin-Kontrollen</target></trans-unit>
 <trans-unit id="s37126756ae8cd2b8">
-  <source>Advance to <x id="0" equiv-text="${nextPhase}" /></source>
-<target>Vorrücken zu <x id="0" equiv-text="${nextPhase}" /></target></trans-unit>
+  <source>Advance to <x id="0" equiv-text="${nextPhase}"/></source>
+<target>Vorrücken zu <x id="0" equiv-text="${nextPhase}"/></target></trans-unit>
 <trans-unit id="s4a7e72a40252ae9d">
   <source>Resolve Cycle</source>
 <target>Zyklus auflösen</target></trans-unit>
@@ -6789,8 +6735,8 @@ Die Karte ist offen. Die Scherben warten. Welche Welt betritt man zuerst?</targe
   <source>Cancel Epoch</source>
 <target>Epoche abbrechen</target></trans-unit>
 <trans-unit id="s3f1c5eba029d4e0b">
-  <source>Sweep complete: <x id="0" equiv-text="${detected.length}" /> threats detected</source>
-<target>Sweep abgeschlossen: <x id="0" equiv-text="${detected.length}" /> Bedrohungen erkannt</target></trans-unit>
+  <source>Sweep complete: <x id="0" equiv-text="${detected.length}"/> threats detected</source>
+<target>Sweep abgeschlossen: <x id="0" equiv-text="${detected.length}"/> Bedrohungen erkannt</target></trans-unit>
 <trans-unit id="s6b0bbc26e964a513">
   <source>Counter-intel sweep failed.</source>
 <target>Gegenspionage-Sweep fehlgeschlagen.</target></trans-unit>
@@ -6809,9 +6755,6 @@ Die Karte ist offen. Die Scherben warten. Welche Welt betritt man zuerst?</targe
 <trans-unit id="s73f73eaa20a5cc8b">
   <source>Failed to leave epoch.</source>
 <target>Verlassen der Epoche fehlgeschlagen.</target></trans-unit>
-<trans-unit id="s0f9b5c3a49aed88e">
-  <source>Epoch started!</source>
-<target>Epoche gestartet!</target></trans-unit>
 <trans-unit id="sa2fb2b6ae3c07f9e">
   <source>Failed to start epoch.</source>
 <target>Epoche konnte nicht gestartet werden.</target></trans-unit>
@@ -6827,9 +6770,6 @@ Die Karte ist offen. Die Scherben warten. Welche Welt betritt man zuerst?</targe
 <trans-unit id="s88af7b5bc34cafd7">
   <source>Failed to resolve cycle.</source>
 <target>Zyklus konnte nicht aufgelöst werden.</target></trans-unit>
-<trans-unit id="s675bf5500429cca5">
-  <source>This will permanently end the epoch. All missions and scores will be frozen. This cannot be undone.</source>
-<target>Dadurch wird die Epoche dauerhaft beendet. Alle Missionen und Spielstände werden eingefroren. Dies kann nicht rückgängig gemacht werden.</target></trans-unit>
 <trans-unit id="s1244b230a449bfc1">
   <source>Epoch cancelled.</source>
 <target>Epoche abgebrochen.</target></trans-unit>
@@ -6885,8 +6825,8 @@ Die Karte ist offen. Die Scherben warten. Welche Welt betritt man zuerst?</targe
   <source>Cycles</source>
 <target>Zyklen</target></trans-unit>
 <trans-unit id="s9a8758a0c98cfb49">
-  <source><x id="0" equiv-text="${this._suggestions.length}" /> suggestions generated</source>
-<target><x id="0" equiv-text="${this._suggestions.length}" /> Vorschläge generiert</target></trans-unit>
+  <source><x id="0" equiv-text="${this._suggestions.length}"/> suggestions generated</source>
+<target><x id="0" equiv-text="${this._suggestions.length}"/> Vorschläge generiert</target></trans-unit>
 <trans-unit id="sea8f4c8095b57166">
   <source>No suggestions generated</source>
 <target>Keine Vorschläge generiert</target></trans-unit>
@@ -6894,8 +6834,8 @@ Die Karte ist offen. Die Scherben warten. Welche Welt betritt man zuerst?</targe
   <source>Generation failed</source>
 <target>Generierung fehlgeschlagen</target></trans-unit>
 <trans-unit id="sc2a2ef3edfd49261">
-  <source><x id="0" equiv-text="${saved}" /> relationships saved</source>
-<target><x id="0" equiv-text="${saved}" /> Beziehungen gespeichert</target></trans-unit>
+  <source><x id="0" equiv-text="${saved}"/> relationships saved</source>
+<target><x id="0" equiv-text="${saved}"/> Beziehungen gespeichert</target></trans-unit>
 <trans-unit id="s2dc335265b16339d">
   <source>Failed to save relationships</source>
 <target>Beziehungen konnten nicht gespeichert werden</target></trans-unit>
@@ -6908,6 +6848,1010 @@ Die Karte ist offen. Die Scherben warten. Welche Welt betritt man zuerst?</targe
 <trans-unit id="s12d6dde9b30c3093">
   <source>Dismiss</source>
 <target>Verwerfen</target></trans-unit>
+<trans-unit id="sd4fb4e6cb1959587">
+  <source>Ambassador status temporarily suspended</source>
+<target>Botschafterstatus vorübergehend ausgesetzt</target></trans-unit>
+<trans-unit id="sf59d9197d2e50c93">
+  <source>Blocked</source>
+<target>Blockiert</target></trans-unit>
+<trans-unit id="s884d4cf10355eb55">
+  <source>Embassy effectiveness reduced by infiltration</source>
+<target>Durch Infiltration reduzierte Effektivität von Botschaften</target></trans-unit>
+<trans-unit id="s2022738a339cc4d1">
+  <source>Compromised</source>
+<target>Kompromittiert</target></trans-unit>
+<trans-unit id="sb8501d388f861fda">
+  <source>Traitor</source>
+<target>Verräter</target></trans-unit>
+<trans-unit id="s3ffe852e7fa0aa4b">
+  <source>This event was caused by foreign propaganda</source>
+<target>Dieses Ereignis wurde durch ausländische Propaganda ausgelöst</target></trans-unit>
+<trans-unit id="s422f75860c8ec44b">
+  <source>Eyes Only</source>
+<target>Nur Augen</target></trans-unit>
+<trans-unit id="s39a40c2b78514678">
+  <source>How to Play</source>
+<target>Wie man spielt</target></trans-unit>
+<trans-unit id="s410aa9983da8164a">
+  <source>Classified Operations Manual</source>
+<target>Klassifiziertes Operationshandbuch</target></trans-unit>
+<trans-unit id="sf0ca10f343249063">
+  <source>Contents</source>
+<target>Inhalt</target></trans-unit>
+<trans-unit id="s87b4215203f18477">
+  <source>An Epoch is a competitive season where simulations battle across five dimensions: Stability, Influence, Sovereignty, Diplomatic, and Military. Each epoch is time-limited, divided into phases, and scored in real time. Deploy operatives, forge alliances, sabotage rivals, and climb the leaderboard. Anyone can spectate; only participants can act.</source>
+<target>Eine Epoche ist eine Wettbewerbssaison, in der die Simulationen in fünf Dimensionen kämpfen: Stabilität, Einfluss, Souveränität, Diplomatie und Militär. Jede Epoche ist zeitlich begrenzt, in Phasen unterteilt und wird in Echtzeit ausgewertet. Setzen Sie Agenten ein, schmieden Sie Allianzen, sabotieren Sie Rivalen und erklimmen Sie die Rangliste. Jeder kann zuschauen; nur Teilnehmer können handeln.</target></trans-unit>
+<trans-unit id="s7a55239397865211">
+  <source>Every epoch progresses through 5 phases. Each phase changes what actions are available and how scores are calculated.</source>
+<target>Jede Epoche durchläuft 5 Phasen. Jede Phase ändert, welche Aktionen zur Verfügung stehen und wie die Punkte berechnet werden.</target></trans-unit>
+<trans-unit id="s2694fff10f66a0c7">
+  <source>Resonance Points (RP)</source>
+<target>Resonanzpunkte (RP)</target></trans-unit>
+<trans-unit id="sa1f932fee5eedc38">
+  <source>RP is your action economy. Every cycle, each participant receives RP to spend on deploying operatives or running counter-intelligence sweeps. Unspent RP carries over, capped at 30.</source>
+<target>RP ist Ihre Aktionsökonomie. In jedem Zyklus erhält jeder Teilnehmer RP, die er für die Entsendung von Agenten oder die Durchführung von Spionageabwehraktionen ausgeben kann. Nicht ausgegebene RP werden bis zu einer Obergrenze von 30 übertragen.</target></trans-unit>
+<trans-unit id="s9b5e948bbc3cce00">
+  <source>Six operative types, each with different costs, timings, and effects. Choose wisely — RP is scarce.</source>
+<target>Sechs operative Typen, jeder mit unterschiedlichen Kosten, Zeitpunkten und Effekten. Wählen Sie weise - RP ist rar.</target></trans-unit>
+<trans-unit id="s8b60b1a35a2f22a7">
+  <source>Success Probability</source>
+<target>Erfolgswahrscheinlichkeit</target></trans-unit>
+<trans-unit id="s8068263d91e1b67d">
+  <source>Every mission is resolved with a probability roll:</source>
+<target>Jede Mission wird durch einen Wahrscheinlichkeitswurf entschieden:</target></trans-unit>
+<trans-unit id="s28932a1c1d01055c">
+  <source>Clamped to [0.05, 0.95]. Guardians reduce success by 20% each. Embassy infiltration reduces effectiveness by 50%.</source>
+<target>Eingeschränkt auf [0,05, 0,95]. Wächter reduzieren den Erfolg um jeweils 20%. Die Infiltration von Botschaften reduziert die Effektivität um 50%.</target></trans-unit>
+<trans-unit id="sff01f19295c3b47e">
+  <source>Deploy</source>
+<target>Aufstellen</target></trans-unit>
+<trans-unit id="s619c213c4b109eb2">
+  <source>Instant</source>
+<target>Sofort</target></trans-unit>
+<trans-unit id="s8959726a6f1a181b">
+  <source><x id="0" equiv-text="${op.deployCycles}"/> cycle</source>
+<target><x id="0" equiv-text="${op.deployCycles}"/> Zyklus</target></trans-unit>
+<trans-unit id="s7d15d2dac95778b8">
+  <source><x id="0" equiv-text="${op.missionCycles}"/> cycles</source>
+<target><x id="0" equiv-text="${op.missionCycles}"/> Zyklen</target></trans-unit>
+<trans-unit id="sf0b1ea194defb1c3">
+  <source>Scores are computed across 5 dimensions, normalized against other participants, then weighted by the epoch preset to produce a composite score. Highest composite wins.</source>
+<target>Die Punkte werden in 5 Dimensionen berechnet, im Vergleich zu den anderen Teilnehmern normalisiert und dann mit der Epochenvorgabe gewichtet, um eine zusammengesetzte Punktzahl zu erhalten. Die höchste zusammengesetzte Punktzahl gewinnt.</target></trans-unit>
+<trans-unit id="s57ce5bc9b2b4287e">
+  <source>Preset</source>
+<target>Voreingestellt</target></trans-unit>
+<trans-unit id="sa4fa9190cbf396e4">
+  <source>Form teams with other simulations. Allies share no direct resources, but gain diplomatic scoring bonuses and can coordinate strikes. Embassies serve as deployment channels for operatives.</source>
+<target>Bilden Sie Teams mit anderen Simulationen. Verbündete teilen keine direkten Ressourcen, erhalten aber diplomatische Punkteboni und können Angriffe koordinieren. Botschaften dienen als Einsatzkanäle für Agenten.</target></trans-unit>
+<trans-unit id="s1bc05cf2cf2e4517">
+  <source>Alliance Bonus</source>
+<target>Allianz-Bonus</target></trans-unit>
+<trans-unit id="se2686e12957f7521">
+  <source>Each active ally gives +10% to your diplomatic score. A 3-member alliance means each member gets +20% diplomatic.</source>
+<target>Jeder aktive Verbündete gibt +10% auf die Diplomatiepunkte. Eine Allianz mit 3 Mitgliedern bedeutet, dass jedes Mitglied +20% Diplomatie erhält.</target></trans-unit>
+<trans-unit id="sb8cbb5880a7fcf81">
+  <source>If allow_betrayal is enabled, allied simulations can attack each other. But beware: if a betrayal mission is detected, the entire alliance dissolves and the betrayer receives a −20% diplomatic score penalty. With the Diplomat preset (35% diplomatic weight), this is catastrophic.</source>
+<target>Wenn allow_betrayal aktiviert ist, können sich verbündete Simulationen gegenseitig angreifen. Aber Vorsicht: Wenn eine Verratsmission entdeckt wird, löst sich die gesamte Allianz auf und der Verräter erhält einen Diplomatieabzug von -20%. Mit der Voreinstellung Diplomat (35% diplomatisches Gewicht) ist dies katastrophal.</target></trans-unit>
+<trans-unit id="sbb475457c25380bb">
+  <source>The Bleed is the cross-simulation influence that connects the multiverse. Events in one simulation can echo into others, creating ripple effects. During Reckoning phase, bleed is amplified — sovereignty scores fluctuate more, and echo opportunities multiply.</source>
+<target>The Bleed ist der simulationsübergreifende Einfluss, der das Multiversum miteinander verbindet. Ereignisse in einer Simulation können sich auf andere auswirken und Welleneffekte erzeugen. Während der Reckoning-Phase wird der Bleed verstärkt - die Souveränitätswerte schwanken stärker und die Möglichkeiten für Echo-Effekte vervielfachen sich.</target></trans-unit>
+<trans-unit id="sdb08af8338deba4c">
+  <source>Sovereignty measures how well you resist foreign influence. Events with data_source "bleed" or "propagandist" count against your sovereignty score. Strong sovereignty = resilient simulation.</source>
+<target>Souveränität misst, wie gut man sich gegen fremden Einfluss wehrt. Ereignisse mit der Datenquelle "Anzapfen" oder "Propagandist" zählen gegen Ihren Souveränitätswert. Starke Souveränität = widerstandsfähige Simulation.</target></trans-unit>
+<trans-unit id="s087d1c07b52aa3e3">
+  <source><x id="0" equiv-text="${match.players.length}"/>P</source>
+<target><x id="0" equiv-text="${match.players.length}"/>P</target></trans-unit>
+<trans-unit id="s3f0abb6b668a1747">
+  <source>Special Rules</source>
+<target>Besondere Regeln</target></trans-unit>
+<trans-unit id="s44859a63e5faee39">
+  <source>Cycle-by-Cycle Replay</source>
+<target>Zyklus-für-Zyklus-Wiederholung</target></trans-unit>
+<trans-unit id="sbf0c7dd234427318">
+  <source>Phase</source>
+<target>Phase</target></trans-unit>
+<trans-unit id="sa442044b586ec8bf">
+  <source>Action</source>
+<target>Aktion</target></trans-unit>
+<trans-unit id="s005053d82b712e0a">
+  <source>Notes</source>
+<target>Anmerkungen</target></trans-unit>
+<trans-unit id="s36cad2da49b6d2a2">
+  <source>Final scores</source>
+<target>Endgültige Punktzahl</target></trans-unit>
+<trans-unit id="sbc30a188dbfd7af5">
+  <source>No actions</source>
+<target>Keine Aktionen</target></trans-unit>
+<trans-unit id="s7f86d7e8ee00fb42">
+  <source>Final Standings</source>
+<target>Endgültiger Spielstand</target></trans-unit>
+<trans-unit id="sbb5b9ef5860838f4">
+  <source>Composite</source>
+<target>Zusammengesetzt</target></trans-unit>
+<trans-unit id="sfada85a2eaafd019">
+  <source>Key Moments</source>
+<target>Schlüsselmomente</target></trans-unit>
+<trans-unit id="s6f71106b333f916d">
+  <source>First Blood</source>
+<target>Erstes Blut</target></trans-unit>
+<trans-unit id="s1efa78d33be9d0de">
+  <source>Tutorial Match</source>
+<target>Tutorial-Spiel</target></trans-unit>
+<trans-unit id="sd46aeff205fd952a">
+  <source>A simple 1v1 duel that teaches the basics: RP management, guardian deployment, spying, sabotage, and propaganda events.</source>
+<target>Ein einfaches 1v1-Duell, in dem die Grundlagen vermittelt werden: RP-Management, Einsatz von Wächtern, Spionage, Sabotage und Propaganda-Events.</target></trans-unit>
+<trans-unit id="s593a536d68165e0f">
+  <source>Fortify the Market District</source>
+<target>Befestigt das Marktviertel</target></trans-unit>
+<trans-unit id="s207adfa9c8f47501">
+  <source>Protect the River Ward</source>
+<target>Schützt die Flusswache</target></trans-unit>
+<trans-unit id="s0c3f2fbcc8096c4a">
+  <source>Second guardian in Industrial Quarter</source>
+<target>Zweiter Wächter im Industrieviertel</target></trans-unit>
+<trans-unit id="s67d6adf1f00be84f">
+  <source>First offensive move</source>
+<target>Erster offensiver Zug</target></trans-unit>
+<trans-unit id="s3432f86abfaa1f99">
+  <source>Target the Capybara Bathhouse</source>
+<target>Ziel ist das Capybara-Badehaus</target></trans-unit>
+<trans-unit id="s6f3bed352e321b65">
+  <source>Detects the incoming propagandist!</source>
+<target>Entdeckt den ankommenden Propagandisten!</target></trans-unit>
+<trans-unit id="s4b4f33c11f8a1257">
+  <source>Spy resolves: SUCCESS</source>
+<target>Spion löst auf: ERFOLG</target></trans-unit>
+<trans-unit id="s396c7ecf60a227a9">
+  <source>+2 military score</source>
+<target>+2 Militärwertung</target></trans-unit>
+<trans-unit id="se2bf2f5402732858">
+  <source>Propagandist resolves: DETECTED</source>
+<target>Propagandist wird aufgelöst: ENTDECKT</target></trans-unit>
+<trans-unit id="sb543c896052c4d83">
+  <source>-3 military penalty. Propaganda event NOT created.</source>
+<target>-3 militärische Strafe. Propaganda-Ereignis NICHT erstellt.</target></trans-unit>
+<trans-unit id="sdf2a6a03fecaf8cc">
+  <source>Saboteur resolves: SUCCESS</source>
+<target>Saboteur wird aufgelöst: ERFOLG</target></trans-unit>
+<trans-unit id="s287730b789bf589f">
+  <source>Bathhouse: good → moderate. +5 military.</source>
+<target>Badehaus: gut → mäßig. +5 Militär.</target></trans-unit>
+<trans-unit id="s026da3fed166732f">
+  <source>Revenge attempt during Reckoning</source>
+<target>Racheversuch während Reckoning</target></trans-unit>
+<trans-unit id="sf5fbf255db57ae38">
+  <source>Saboteur resolves: FAILED</source>
+<target>Saboteur wird aufgelöst: FAILED</target></trans-unit>
+<trans-unit id="s362f48aa5dcdf2d1">
+  <source>Propagandist resolves: SUCCESS</source>
+<target>Propagandist wird aufgelöst: ERFOLG</target></trans-unit>
+<trans-unit id="s0e7abc11f6b34c1c">
+  <source>Propaganda event created in Velgarien (impact 4). Sovereignty hit!</source>
+<target>Propaganda-Ereignis erstellt in Velgarien (Wirkung 4). Souveränität getroffen!</target></trans-unit>
+<trans-unit id="scac33d89d10e383e">
+  <source>Cycle 5: Velgarien's counter-intel sweep catches the propagandist, saving sovereignty points.</source>
+<target>Zyklus 5: Velgariens Spionageabwehr fängt den Propagandisten ab und rettet Souveränitätspunkte.</target></trans-unit>
+<trans-unit id="s49427fd2486638ac">
+  <source>Cycle 7: Saboteur successfully degrades the Bathhouse, tipping the stability balance.</source>
+<target>Zyklus 7: Der Saboteur zersetzt erfolgreich das Badehaus und kippt das Gleichgewicht der Stabilität.</target></trans-unit>
+<trans-unit id="s70f815a0e3bd88b3">
+  <source>Cycle 9: Capybara's late propagandist succeeds, creating a destabilizing event in Velgarien.</source>
+<target>Zyklus 9: Capybaras verstorbener Propagandist hat Erfolg und löst ein destabilisierendes Ereignis in Velgarien aus.</target></trans-unit>
+<trans-unit id="s616dd6d0d6666477">
+  <source>The Grand Alliance</source>
+<target>Die Große Allianz</target></trans-unit>
+<trans-unit id="s109dca04a38abe3d">
+  <source>Team Match</source>
+<target>Teamspiel</target></trans-unit>
+<trans-unit id="sbe06f492226bd28e">
+  <source>2v2 alliance warfare. Velgarien + Speranza vs Capybara + Station Null. Shows coordinated spy→saboteur combos, alliance diplomatic bonus (+10% per ally), and builder stability focus.</source>
+<target>2v2-Allianz-Kriegsführung. Velgarien + Speranza gegen Capybara + Station Null. Zeigt koordinierte Spion/Saboteur-Kombinationen, den diplomatischen Bonus der Allianz (+10% pro Verbündetem) und den Fokus auf die Stabilität des Erbauers.</target></trans-unit>
+<trans-unit id="sb2823d67a015b2b8">
+  <source>Alliance diplomatic bonus: each ally gives +10% to diplomatic score.</source>
+<target>Diplomatie-Bonus der Allianz: Jeder Verbündete gibt +10% auf die Diplomatiepunkte.</target></trans-unit>
+<trans-unit id="se36cf77fba147b29">
+  <source>Form alliances</source>
+<target>Allianzen bilden</target></trans-unit>
+<trans-unit id="s8efab6486cd8cba4">
+  <source>Velgarien+Speranza form "Iron Pact". Capybara+Station Null form "Void Accord".</source>
+<target>Velgarien+Speranza bilden den "Eisernen Pakt". Capybara+Station Null bilden den "Void Accord".</target></trans-unit>
+<trans-unit id="s9aef2d025ce7c7f1">
+  <source>Deploy 2 Guardians each</source>
+<target>Setzen Sie jeweils 2 Wächter ein</target></trans-unit>
+<trans-unit id="sc665024bce7e562a">
+  <source>Foundation phase: fortify key zones</source>
+<target>Gründungsphase: Befestigung von Schlüsselzonen</target></trans-unit>
+<trans-unit id="scbe58d91170c8a63">
+  <source>Intel gathering for coordinated strike</source>
+<target>Sammeln von Informationen für koordinierte Angriffe</target></trans-unit>
+<trans-unit id="s5eeb6084d181834f">
+  <source>Coordinated with ally</source>
+<target>Koordiniert mit Verbündeten</target></trans-unit>
+<trans-unit id="sd282349beaa91df7">
+  <source>Intel reveals weak zone</source>
+<target>Geheimdienst offenbart Schwachstelle</target></trans-unit>
+<trans-unit id="s622732d14ee1f8ca">
+  <source>Follow-up strike on revealed weakness</source>
+<target>Folgeangriff bei aufgedeckter Schwäche</target></trans-unit>
+<trans-unit id="sf71eafc4c77440e1">
+  <source>Iron Pact embassy</source>
+<target>Botschaft des Eisernen Pakts</target></trans-unit>
+<trans-unit id="s57310dc4d966b013">
+  <source>Counter-attack on alliance infrastructure</source>
+<target>Gegenangriff auf die Infrastruktur der Allianz</target></trans-unit>
+<trans-unit id="s697929ab0614d62d">
+  <source>Building degraded. Builder preset amplifies stability loss for Capybara.</source>
+<target>Abgebautes Gebäude. Die Erbauer-Voreinstellung verstärkt den Stabilitätsverlust für Capybara.</target></trans-unit>
+<trans-unit id="s3958e89c1f4285db">
+  <source>Coordinated pressure on second enemy</source>
+<target>Koordinierter Druck auf den zweiten Feind</target></trans-unit>
+<trans-unit id="s96a7f3b06893bdd1">
+  <source>Infiltrator resolves: SUCCESS</source>
+<target>Infiltrator wird aufgelöst: ERFOLG</target></trans-unit>
+<trans-unit id="s541a5545f652213b">
+  <source>Iron Pact embassy compromised! −50% effectiveness for 3 cycles.</source>
+<target>Die Botschaft des Eisernen Pakts wurde kompromittiert! -50% Wirksamkeit für 3 Zyklen.</target></trans-unit>
+<trans-unit id="s34e3d3df680faa76">
+  <source>Cycle 7-10: Iron Pact executes a coordinated spy→saboteur combo across both enemies.</source>
+<target>Zyklus 7-10: Der Eiserne Pakt führt eine koordinierte Spion/Saboteur-Kombination zwischen beiden Gegnern aus.</target></trans-unit>
+<trans-unit id="s350105512126a946">
+  <source>Cycle 14: Builder preset (stability weight 35%) makes sabotage devastating.</source>
+<target>Zyklus 14: Die Voreinstellung Builder (Stabilitätsgewicht 35%) macht Sabotage verheerend.</target></trans-unit>
+<trans-unit id="s9495b8a3e1d80f5a">
+  <source>Cycle 18: Station Null's infiltrator compromises the Iron Pact embassy, reducing diplomatic effectiveness.</source>
+<target>Zyklus 18: Der Infiltrator von Station Null kompromittiert die Botschaft des Eisernen Pakts und beeinträchtigt die diplomatische Effektivität.</target></trans-unit>
+<trans-unit id="s3c84e9f8b56b001c">
+  <source>Alliance bonus: Iron Pact members each get +10% diplomatic from their ally.</source>
+<target>Allianzbonus: Mitglieder des Eisernen Pakts erhalten jeweils +10% Diplomatie von ihrem Verbündeten.</target></trans-unit>
+<trans-unit id="sca453b57f96a27bf">
+  <source>Shadow War</source>
+<target>Schattenkrieg</target></trans-unit>
+<trans-unit id="s86ca9056f2f6a70f">
+  <source>Free-for-All</source>
+<target>Frei-für-Alle</target></trans-unit>
+<trans-unit id="s2b66149bc6c70ed1">
+  <source>Three-way free-for-all with Warmonger preset (military weight 40%). All-out offensive showcasing assassins, counter-intel, ambassador blocking, and infiltrator embassy reduction.</source>
+<target>Drei-Wege-Free-for-All mit der Voreinstellung Warmonger (Militärgewicht 40%). Großoffensive mit Attentätern, Gegenspionage, Blockieren von Botschaftern und Verkleinerung von Infiltrator-Botschaften.</target></trans-unit>
+<trans-unit id="sbc069ca66bee6989">
+  <source>Minimal defense, saving RP for offense</source>
+<target>Minimale Verteidigung, spart RP für die Offensive</target></trans-unit>
+<trans-unit id="s65c346b10d817d1e">
+  <source>Target: Ambassador Aldric</source>
+<target>Ziel: Botschafter Aldric</target></trans-unit>
+<trans-unit id="seb84b7aec69bc76e">
+  <source>Assassin resolves: SUCCESS</source>
+<target>Meuchelmörder löst auf: ERFOLG</target></trans-unit>
+<trans-unit id="sc87a52c301304d56">
+  <source>Aldric's relationships −2. Ambassador status BLOCKED for 3 cycles (24h).</source>
+<target>Aldrics Beziehungen -2. Botschafterstatus BLOCKIERT für 3 Zyklen (24h).</target></trans-unit>
+<trans-unit id="seeea4f14fa5d90a4">
+  <source>Too late — assassin already resolved</source>
+<target>Zu spät - Attentäter bereits entschlossen</target></trans-unit>
+<trans-unit id="se747278a8c0ea5f4">
+  <source>Station Null embassy</source>
+<target>Station Null-Botschaft</target></trans-unit>
+<trans-unit id="s26c3427979749ab5">
+  <source>Revenge for Aldric</source>
+<target>Rache für Aldric</target></trans-unit>
+<trans-unit id="sca8120f9a9485ead">
+  <source>Station Null embassy COMPROMISED. −50% effectiveness for 3 cycles.</source>
+<target>Station Null-Botschaft KOMPROMISIERT. -50% Wirksamkeit für 3 Zyklen.</target></trans-unit>
+<trans-unit id="sb23b4805ed6d2595">
+  <source>Assassin resolves: DETECTED</source>
+<target>Meuchelmörder löst auf: ENTDECKT</target></trans-unit>
+<trans-unit id="sfb200a3f40bd554c">
+  <source>Revenge mission fails! −3 military penalty.</source>
+<target>Rache-Mission scheitert! -3 militärische Strafe.</target></trans-unit>
+<trans-unit id="se34443bbca9f0972">
+  <source>Cycle 8: Station Null's assassin blocks Ambassador Aldric — Velgarien loses embassy effectiveness.</source>
+<target>Zyklus 8: Der Attentäter von Station Null blockiert Botschafter Aldric - Velgarien verliert die Wirksamkeit der Botschaft.</target></trans-unit>
+<trans-unit id="sfe54fe9b32508b3d">
+  <source>Cycle 13: Speranza's infiltrator compromises Station Null's embassy — 50% penalty for 3 cycles.</source>
+<target>Zyklus 13: Speranzas Infiltrator kompromittiert die Botschaft von Station Null - 50% Strafe für 3 Zyklen.</target></trans-unit>
+<trans-unit id="sf9e7edc02bac19b1">
+  <source>Cycle 15: Velgarien's revenge assassin is detected — costly failure with Warmonger's 40% military weight.</source>
+<target>Zyklus 15: Velgariens Rache-Attentäter wird aufgespürt - ein kostspieliger Fehlschlag mit dem 40%igen militärischen Gewicht von Warmonger.</target></trans-unit>
+<trans-unit id="sd647cc1a6537c477">
+  <source>Warmonger preset makes military the decisive dimension. Station Null's successful assassin (+8) vs Velgarien's detected attempt (−3) creates a 11-point swing.</source>
+<target>Die Voreinstellung Kriegstreiber macht das Militär zur entscheidenden Dimension. Station Nulls erfolgreicher Attentäter (+8) gegen Velgariens aufgedeckten Versuch (-3) ergibt einen 11-Punkte-Schwung.</target></trans-unit>
+<trans-unit id="s934ff321cb6a07ca">
+  <source>The Diplomat's Gambit</source>
+<target>Das Gambit des Diplomaten</target></trans-unit>
+<trans-unit id="sb47a98c660acbe78">
+  <source>Betrayal Match</source>
+<target>Verratsspiel</target></trans-unit>
+<trans-unit id="s395c8468f9226e92">
+  <source>Alliance with betrayal enabled. One player secretly attacks their ally in cycle 15, gets detected in cycle 18 — alliance dissolves, −20% diplomatic penalty. Shows how betrayal can backfire with Diplomat preset's 35% diplomatic weight.</source>
+<target>Allianz mit aktiviertem Verrat. Ein Spieler greift seinen Verbündeten in Zyklus 15 heimlich an, wird in Zyklus 18 entdeckt - die Allianz löst sich auf, -20% diplomatische Strafe. Zeigt, wie Verrat mit der Diplomat-Voreinstellung von 35% diplomatischem Gewicht nach hinten losgehen kann.</target></trans-unit>
+<trans-unit id="sfe1b171537179ee0">
+  <source>allow_betrayal = true. Detected betrayal dissolves the entire alliance and applies −20% diplomatic penalty to the betrayer.</source>
+<target>allow_betrayal = true. Entdeckter Verrat löst die gesamte Allianz auf und fügt dem Verräter einen diplomatischen Nachteil von -20% zu.</target></trans-unit>
+<trans-unit id="sb323d6079e0e6ada">
+  <source>Velgarien+Capybara form "Dawn Covenant". Station Null+Speranza form "Ashen League".</source>
+<target>Velgarien+Capybara bilden den "Dawn Covenant". Station Null+Speranza bilden die "Aschenliga".</target></trans-unit>
+<trans-unit id="sd994dbd86080e3c3">
+  <source>Foundation defenses established</source>
+<target>Gründung von Verteidigungsanlagen</target></trans-unit>
+<trans-unit id="saa3142e86f5e3527">
+  <source>2 guardians each, embassy connections active</source>
+<target>Je 2 Wächter, aktive Botschaftsverbindungen</target></trans-unit>
+<trans-unit id="sa4d6690b12240fc5">
+  <source>Coordinated strikes on Ashen League</source>
+<target>Koordinierte Angriffe auf Ashen League</target></trans-unit>
+<trans-unit id="s8ed21fbbfff71b89">
+  <source>Station Null + Speranza</source>
+<target>Station Null + Speranza</target></trans-unit>
+<trans-unit id="s09d8f5d3fa567502">
+  <source>Coordinated defense + counter-strikes</source>
+<target>Koordinierte Verteidigung + Gegenangriffe</target></trans-unit>
+<trans-unit id="s9bf4124a5c669b65">
+  <source>Dawn Covenant</source>
+<target>Der Bund der Morgenröte</target></trans-unit>
+<trans-unit id="s1afebd11fb13cdcb">
+  <source>Standard operations continue</source>
+<target>Standardoperationen werden fortgesetzt</target></trans-unit>
+<trans-unit id="s40c12ce9a527b31c">
+  <source>Score gap: Dawn Covenant leading by ~8 points composite</source>
+<target>Punktelücke: Dawn Covenant führt mit ~8 Punkten Composite</target></trans-unit>
+<trans-unit id="s32f4d7b9cda552cf">
+  <source>BETRAYAL! Capybara secretly attacks ally Velgarien. Targets the Great Library.</source>
+<target>VERTRAUEN! Capybara greift heimlich den Verbündeten Velgarien an. Ziel ist die Große Bibliothek.</target></trans-unit>
+<trans-unit id="s519f4fc83253f50e">
+  <source>Second betrayal operation</source>
+<target>Zweite Verratsoperation</target></trans-unit>
+<trans-unit id="sf596b36dcdf0e713">
+  <source>Routine sweep...</source>
+<target>Routinemäßige Durchsuchung...</target></trans-unit>
+<trans-unit id="sd4de219c7a49083f">
+  <source>Saboteur resolves: DETECTED</source>
+<target>Saboteur wird aufgelöst: ENTDECKT</target></trans-unit>
+<trans-unit id="s48c5db33d38f1122">
+  <source>BETRAYAL DETECTED! The Dawn Covenant is dissolved. Capybara receives −20% diplomatic penalty. The Great Library is saved, but trust is shattered.</source>
+<target>VERRAT ENTDECKT! Der Dawn Covenant ist aufgelöst. Capybara erhält einen diplomatischen Malus von -20%. Die Große Bibliothek ist gerettet, aber das Vertrauen ist zerbrochen.</target></trans-unit>
+<trans-unit id="s99ac19457b20ca81">
+  <source>Cycle 15: Capybara secretly deploys against ally Velgarien — a desperate gambit to seize first place.</source>
+<target>Zyklus 15: Capybara setzt heimlich gegen den Verbündeten Velgarien ein - ein verzweifelter Schachzug, um den ersten Platz zu erobern.</target></trans-unit>
+<trans-unit id="se43d583c33758b9b">
+  <source>Cycle 17: Velgarien's routine counter-intel sweep reveals the saboteur.</source>
+<target>Zyklus 17: Velgariens routinemäßige Spionageabwehr enttarnt den Saboteur.</target></trans-unit>
+<trans-unit id="s20fa1290e7015e73">
+  <source>Cycle 18: Betrayal detected! Dawn Covenant dissolves. Capybara loses 20% diplomatic score.</source>
+<target>Zyklus 18: Verrat entdeckt! Dawn Covenant löst sich auf. Capybara verliert 20% Diplomatiepunkte.</target></trans-unit>
+<trans-unit id="s7326fbafcaa8b448">
+  <source>With Diplomat preset (diplomatic weight 35%), the −20% penalty is devastating — Capybara drops from 2nd to last place.</source>
+<target>Mit der Voreinstellung Diplomat (diplomatisches Gewicht 35%) ist die -20%-Strafe verheerend - Capybara fällt vom 2. auf den letzten Platz zurück.</target></trans-unit>
+<trans-unit id="s27985a711059f43b">
+  <source>Lesson: Betrayal is high-risk. The Diplomat preset punishes it hardest because diplomatic score carries the most weight.</source>
+<target>Lektion: Verrat ist hochriskant. Die Voreinstellung Diplomat bestraft ihn am härtesten, da die diplomatischen Punkte am meisten Gewicht haben.</target></trans-unit>
+<trans-unit id="sfc8180c642f2eca2">
+  <source>What is an Epoch?</source>
+<target>Was ist eine Epoche?</target></trans-unit>
+<trans-unit id="scd46b35183884dae">
+  <source>Phases &amp; Timeline</source>
+<target>Phasen &amp; Zeitleiste</target></trans-unit>
+<trans-unit id="sfb3002fff1a70baf">
+  <source>Operatives</source>
+<target>Agenten</target></trans-unit>
+<trans-unit id="sadb999784b989d13">
+  <source>Scoring System</source>
+<target>Punktesystem</target></trans-unit>
+<trans-unit id="sc2effad0b4c5f929">
+  <source>Alliances &amp; Diplomacy</source>
+<target>Allianzen &amp; Diplomatie</target></trans-unit>
+<trans-unit id="sb5509b9fb833617e">
+  <source>Bleed &amp; Echoes</source>
+<target>Bluten &amp; Echos</target></trans-unit>
+<trans-unit id="se0708140f5f774a0">
+  <source>Example Matches</source>
+<target>Beispiel-Matches</target></trans-unit>
+<trans-unit id="se1dec2c72bcbb693">
+  <source>Lobby</source>
+<target>Lobby</target></trans-unit>
+<trans-unit id="s7d646833f0a6909d">
+  <source>Simulations join and teams form. No operations allowed.</source>
+<target>Simulationen treten zusammen und Teams bilden sich. Keine Operationen erlaubt.</target></trans-unit>
+<trans-unit id="s4805f66a0398ef8f">
+  <source>+50% RP generation. Only guardians can deploy. Build your defenses.</source>
+<target>+50% RP-Generierung. Nur Wächter können eingesetzt werden. Bauen Sie Ihre Verteidigung auf.</target></trans-unit>
+<trans-unit id="s1900c1f5c6ceff40">
+  <source>All operative types unlocked. Full warfare begins.</source>
+<target>Alle Agententypen sind freigeschaltet. Die volle Kriegsführung beginnt.</target></trans-unit>
+<trans-unit id="sb6df73853127344a">
+  <source>Bleed amplified. Final push. Scores frozen at phase end.</source>
+<target>Blutvergießen verstärkt. Endspurt. Spielstände werden am Ende der Phase eingefroren.</target></trans-unit>
+<trans-unit id="saf0958d127d6ce9f">
+  <source>Titles awarded. Final standings published.</source>
+<target>Vergabe von Titeln. Endgültige Rangliste wird veröffentlicht.</target></trans-unit>
+<trans-unit id="s07311903233fe50c">
+  <source>Gathers intelligence from target simulation. Instant deployment, low cost, low risk.</source>
+<target>Sammelt Informationen aus der Zielsimulation. Sofortiger Einsatz, geringe Kosten, geringes Risiko.</target></trans-unit>
+<trans-unit id="s66c05ffc8f769be2">
+  <source>Reveals target zone information and active defenses.</source>
+<target>Zeigt Informationen über die Zielzone und aktive Verteidigungsmaßnahmen an.</target></trans-unit>
+<trans-unit id="sf859a71262c50db0">
+  <source>Degrades a target building's condition by one level (good → moderate → poor → ruined).</source>
+<target>Verschlechtert den Zustand eines Zielgebäudes um eine Stufe (gut → mäßig → schlecht → ruiniert).</target></trans-unit>
+<trans-unit id="s8922399e2d4c4167">
+  <source>Damages infrastructure. Reduces target stability score.</source>
+<target>Beschädigt die Infrastruktur. Reduziert den Stabilitätswert des Ziels.</target></trans-unit>
+<trans-unit id="s50c423524405aaff">
+  <source>Launches a propaganda campaign in target simulation.</source>
+<target>Startet eine Propagandakampagne in der Zielsimulation.</target></trans-unit>
+<trans-unit id="s77571e1bd3c31a71">
+  <source>Creates a destabilizing event (impact 3–5) in the target. Reduces their sovereignty.</source>
+<target>Erzeugt ein destabilisierendes Ereignis (Auswirkung 3-5) im Zielland. Verringert ihre Souveränität.</target></trans-unit>
+<trans-unit id="sfadd25a629ccc9a3">
+  <source>Targets a specific agent. Highest cost, highest reward.</source>
+<target>Zielt auf einen bestimmten Agenten ab. Höchste Kosten, höchste Belohnung.</target></trans-unit>
+<trans-unit id="sc61d707157e10018">
+  <source>Weakens all relationships by –2 intensity. Blocks ambassador status for 3 cycles.</source>
+<target>Schwächt alle Beziehungen um -2 Intensität. Sperrt den Status des Botschafters für 3 Zyklen.</target></trans-unit>
+<trans-unit id="s9c559936de746928">
+  <source>Deploys to your own simulation. Reduces enemy success probability by 20% per guardian in zone.</source>
+<target>Lässt sich in Ihrer eigenen Simulation einsetzen. Reduziert die gegnerische Erfolgswahrscheinlichkeit um 20% pro Wächter in der Zone.</target></trans-unit>
+<trans-unit id="s059ad2a775546dda">
+  <source>Passive defense. Permanent while deployed. Foundation-phase only.</source>
+<target>Passive Verteidigung. Permanent während des Einsatzes. Nur in der Gründungsphase.</target></trans-unit>
+<trans-unit id="s6f29a277b6e3363b">
+  <source>Targets an enemy embassy. Long deployment, high intelligence value.</source>
+<target>Ziel ist eine feindliche Botschaft. Langer Einsatz, hoher Geheimdienstwert.</target></trans-unit>
+<trans-unit id="sca45048a5719121d">
+  <source>Reduces embassy effectiveness by 50% for 3 cycles. Compromises diplomatic operations.</source>
+<target>Reduziert die Effektivität von Botschaften für 3 Zyklen um 50%. Beeinträchtigt die diplomatischen Operationen.</target></trans-unit>
+<trans-unit id="sc46ec05c4f2b2e37">
+  <source>Base RP per cycle</source>
+<target>Basis-RP pro Zyklus</target></trans-unit>
+<trans-unit id="s47b02d5a19e878c3">
+  <source>Foundation bonus</source>
+<target>Gründungsbonus</target></trans-unit>
+<trans-unit id="s2725ff4e817fc1f3">
+  <source>RP cap</source>
+<target>RP-Kappe</target></trans-unit>
+<trans-unit id="s016352b44c5f175f">
+  <source>Counter-intel cost</source>
+<target>Gegenspionage-Kosten</target></trans-unit>
+<trans-unit id="s75c4547fd5fe7658">
+  <source>RP accumulates</source>
+<target>RP sammelt sich an</target></trans-unit>
+<trans-unit id="sf219c88a03a6cbd7">
+  <source>Unspent RP carries over</source>
+<target>Nicht ausgegebene RP wird übertragen</target></trans-unit>
+<trans-unit id="sbffe2c7598324d8e">
+  <source>Navigation menu</source>
+<target>Menü Navigation</target></trans-unit>
+<trans-unit id="s7bf3b283b3f22c4b">
+  <source>Guide</source>
+<target>Leitfaden</target></trans-unit>
+<trans-unit id="sab07cf2bfae8483f">
+  <source>Privacy Policy</source>
+<target>Datenschutzrichtlinien</target></trans-unit>
+<trans-unit id="s9a4101d5a15ad426">
+  <source>Proven strategies for each phase, economy management, counter-play patterns, and preset-specific approaches. Study these before your first deployment.</source>
+<target>Bewährte Strategien für jede Phase, Wirtschaftsmanagement, Gegenspielermuster und voreingestellte spezifische Vorgehensweisen. Studieren Sie diese vor Ihrem ersten Einsatz.</target></trans-unit>
+<trans-unit id="s452e9702471f7258">
+  <source>Five fully worked-out matches showing different strategies, presets, and mechanics in action. Expand each match to see cycle-by-cycle replays.</source>
+<target>Fünf vollständig ausgearbeitete Matches, die verschiedene Strategien, Voreinstellungen und Mechanismen in Aktion zeigen. Erweitern Sie jedes Match, um Zyklus-für-Zyklus-Wiederholungen zu sehen.</target></trans-unit>
+<trans-unit id="s9a3d2e430b315b77">
+  <source>The Complete Campaign</source>
+<target>Die komplette Kampagne</target></trans-unit>
+<trans-unit id="sc114ba799d263d12">
+  <source>Full Replay — Every Cycle</source>
+<target>Vollständige Wiederholung - Jeder Zyklus</target></trans-unit>
+<trans-unit id="s44eda2f56d3d72b5">
+  <source>A complete 3-player free-for-all with every single cycle shown — no skipped turns. Tracks RP budgets, deployment timing, resolution outcomes, phase transitions, and score evolution from start to finish. Demonstrates all six operative types, counter-intel, and phase-specific strategy.</source>
+<target>Ein komplettes 3-Spieler-Free-for-All mit Anzeige jedes einzelnen Zyklus - keine übersprungenen Züge. Verfolgt RP-Budgets, Aufmarschzeiten, Auflösungsergebnisse, Phasenübergänge und die Entwicklung der Punkte von Anfang bis Ende. Demonstriert alle sechs operativen Typen, Gegenspionage und phasenspezifische Strategie.</target></trans-unit>
+<trans-unit id="sbd93a97e782029a7">
+  <source>Market District + Industrial Quarter. Balance: 15−6 = 9 RP</source>
+<target>Marktbezirk + Industrieviertel. Gleichgewicht: 15-6 = 9 RP</target></trans-unit>
+<trans-unit id="saa5b572fccca23ce">
+  <source>River Ward only. Saving RP for quick strike. Balance: 12 RP</source>
+<target>Nur River Ward. Sparen Sie RP für Schnellangriffe. Gleichgewicht: 12 RP</target></trans-unit>
+<trans-unit id="s1f73a42314572d2e">
+  <source>Sector 7 + Medbay Corridor. Balance: 9 RP</source>
+<target>Sektor 7 + Medbay-Korridor. Gleichgewicht: 9 RP</target></trans-unit>
+<trans-unit id="sd5308eae64717d6a">
+  <source>Noble Quarter. Balance: 9+15−3 = 21 RP</source>
+<target>Nobles Viertel. Bilanz: 9+15-3 = 21 RP</target></trans-unit>
+<trans-unit id="scf39b80e603d0909">
+  <source>Bamboo Market. Balance: 12+15−3 = 24 RP</source>
+<target>Bambusmarkt. Gleichgewicht: 12+15-3 = 24 RP</target></trans-unit>
+<trans-unit id="s7d28c4ef91fee1de">
+  <source>Command Deck. Balance: 9+15−3 = 21 RP</source>
+<target>Kommando-Deck. Gleichgewicht: 9+15-3 = 21 RP</target></trans-unit>
+<trans-unit id="s863dcead3bc55c4a">
+  <source>Save RP</source>
+<target>RP speichern</target></trans-unit>
+<trans-unit id="sc25960c3447a4138">
+  <source>3 guardians deployed. Balance: 21+15 = 30 RP (cap). Foundation ends.</source>
+<target>3 Wächter im Einsatz. Gleichgewicht: 21+15 = 30 RP (Obergrenze). Gründung endet.</target></trans-unit>
+<trans-unit id="s29af05a1b55eeaed">
+  <source>2 guardians deployed. Balance: 24+15 = 30 RP (cap). Aggressive reserve.</source>
+<target>2 Wächter im Einsatz. Gleichgewicht: 24+15 = 30 RP (Obergrenze). Aggressive Reserve.</target></trans-unit>
+<trans-unit id="sf1c45b3a108ece9a">
+  <source>3 guardians deployed. Balance: 21+15 = 30 RP (cap). Solid defense.</source>
+<target>3 Wächter im Einsatz. Gleichgewicht: 21+15 = 30 RP (Obergrenze). Solide Verteidigung.</target></trans-unit>
+<trans-unit id="sa55e35193722c499">
+  <source>Intel gathering. Instant deploy, resolves cycle 7. Balance: 30+10−3 = 30 (cap)</source>
+<target>Sammeln von Informationen. Sofortiger Einsatz, wird in Zyklus 7 aufgelöst. Gleichgewicht: 30+10-3 = 30 (Obergrenze)</target></trans-unit>
+<trans-unit id="s6eeca49a6a91d58b">
+  <source>Quick strike doctrine. Balance: 30+10−3 = 30 (cap)</source>
+<target>Schnellschlag-Doktrin. Gleichgewicht: 30+10-3 = 30 (Obergrenze)</target></trans-unit>
+<trans-unit id="sa0dec93c72ab10cd">
+  <source>Waiting for intel. Balance: 30 (cap)</source>
+<target>Warten auf Informationen. Gleichgewicht: 30 (cap)</target></trans-unit>
+<trans-unit id="sfc0f54c4b5728fc7">
+  <source>1 cycle deploy. Target: Reactor Core. Balance: 30−5 = 25 RP</source>
+<target>1 Zyklus Einsatz. Ziel: Reaktorkern. Gleichgewicht: 30-5 = 25 RP</target></trans-unit>
+<trans-unit id="s87760d8279827050">
+  <source>1 cycle deploy, 2 cycle mission. Propaganda campaign. Balance: 30−4 = 26 RP</source>
+<target>1 Zyklus Einsatz, 2 Zyklen Mission. Propaganda-Kampagne. Gleichgewicht: 30-4 = 26 RP</target></trans-unit>
+<trans-unit id="sfef017af7034a4eb">
+  <source>Counter-intel first. Resolves cycle 8. Balance: 30−3 = 27 RP</source>
+<target>Gegenspionage zuerst. Löst Zyklus 8 auf. Gleichgewicht: 30-3 = 27 RP</target></trans-unit>
+<trans-unit id="s910e6ded59e046ab">
+  <source>Suspects incoming propaganda. Balance: 25+10−3 = 30 (cap)</source>
+<target>Verdächtige eingehende Propaganda. Gleichgewicht: 25+10-3 = 30 (Obergrenze)</target></trans-unit>
+<trans-unit id="s21d231a081103179">
+  <source>Waiting for ops to resolve. Balance: 26+10 = 30 (cap)</source>
+<target>Warten auf die Auflösung von Operationen. Gleichgewicht: 26+10 = 30 (Obergrenze)</target></trans-unit>
+<trans-unit id="s43a768ffb3b502b7">
+  <source>Target: Capybara Bathhouse. Balance: 27+10−5 = 30 (cap)</source>
+<target>Ziel: Capybara-Badehaus. Gleichgewicht: 27+10-5 = 30 (Obergrenze)</target></trans-unit>
+<trans-unit id="s61cfec09319c4a96">
+  <source>Capybara weak zone revealed. +2 military. Balance: 30 (cap)</source>
+<target>Capybara Schwachstelle aufgedeckt. +2 Militär. Gleichgewicht: 30 (Obergrenze)</target></trans-unit>
+<trans-unit id="saf3a9d599113a2ac">
+  <source>Reactor Core: good → moderate. +5 military. Station Null stability hit.</source>
+<target>Reaktorkern: gut → mäßig. +5 Militär. Station Null Stabilität getroffen.</target></trans-unit>
+<trans-unit id="s63e844ea13c68442">
+  <source>Caught by cycle 6 sweep! −3 military penalty. No propaganda event created.</source>
+<target>Gefangen von Zyklus 6 Sweep! -3 militärische Strafe. Kein Propaganda-Ereignis erstellt.</target></trans-unit>
+<trans-unit id="s6192446e162482de">
+  <source>Target: Ambassador Nutmeg. 2 cycle deploy. Balance: 30−8 = 22 RP</source>
+<target>Ziel: Botschafter Muskatnuss. 2 Zyklen Einsatz. Bilanz: 30-8 = 22 RP</target></trans-unit>
+<trans-unit id="s27ac30fe2203bf78">
+  <source>Target: Great Library. Retaliation. Balance: 30−5 = 25 RP</source>
+<target>Ziel: Große Bibliothek. Vergeltung. Gleichgewicht: 30-5 = 25 RP</target></trans-unit>
+<trans-unit id="s894370245039b318">
+  <source>Velgarien defense layout revealed. +2 military.</source>
+<target>Velgarien Verteidigungsplan enthüllt. +2 Militär.</target></trans-unit>
+<trans-unit id="se8e7b8825d1a998a">
+  <source>Assassin deploying. Balance: 22+10 = 30 (cap)</source>
+<target>Einsatz von Assassinen. Gleichgewicht: 22+10 = 30 (Obergrenze)</target></trans-unit>
+<trans-unit id="s7b78e7d0baad4e26">
+  <source>Velgarien embassy</source>
+<target>Velgarien-Botschaft</target></trans-unit>
+<trans-unit id="sb801fd926b8944e9">
+  <source>2 cycle deploy. Target embassy infrastructure. Balance: 25+10−6 = 29 RP</source>
+<target>2 Zyklen Einsatz. Ziel: Botschaftsinfrastruktur. Bilanz: 25+10-6 = 29 RP</target></trans-unit>
+<trans-unit id="s3437114fbc371c08">
+  <source>Exploit Capybara while weakened. Balance: 30−4 = 26 RP</source>
+<target>Capybara ausnutzen, wenn es geschwächt ist. Gleichgewicht: 30-4 = 26 RP</target></trans-unit>
+<trans-unit id="s44ca063da8168ec4">
+  <source>Target: Bamboo Market (revealed by spy). Balance: 30−5 = 25 RP</source>
+<target>Ziel: Bambusmarkt (aufgedeckt durch Spion). Gleichgewicht: 30-5 = 25 RP</target></trans-unit>
+<trans-unit id="s980c2f2b2375394b">
+  <source>Defensive check. Balance: 29+10−3 = 30 (cap)</source>
+<target>Defensiv-Check. Gleichgewicht: 29+10-3 = 30 (Obergrenze)</target></trans-unit>
+<trans-unit id="sba1694a4685d27e3">
+  <source>Bathhouse: good → moderate. +5 military. Capybara stability drops.</source>
+<target>Badehaus: gut → mäßig. +5 Militär. Capybara-Stabilität fällt.</target></trans-unit>
+<trans-unit id="s829ad597c4e6b763">
+  <source>Ambassador Nutmeg hit! All relationships −2. BLOCKED for 3 cycles. +8 military.</source>
+<target>Botschafter Muskatnuss getroffen! Alle Beziehungen -2. BLOCKIERT für 3 Zyklen. +8 Militär.</target></trans-unit>
+<trans-unit id="sc8fbba10ffae48cd">
+  <source>Great Library protected by guardians (3 in zone = 60% reduction). 5 RP wasted.</source>
+<target>Große Bibliothek geschützt durch Wächter (3 in der Zone = 60% Reduktion). 5 RP verschwendet.</target></trans-unit>
+<trans-unit id="s144e77d429157a13">
+  <source>Propagandist still in mission. Balance: 26+10 = 30 (cap)</source>
+<target>Propagandist noch im Einsatz. Gleichgewicht: 26+10 = 30 (Obergrenze)</target></trans-unit>
+<trans-unit id="sb36ef686829363d3">
+  <source>Bamboo Market: good → moderate. +5 military. Velgarien now leads military.</source>
+<target>Bambusmarkt: gut → mäßig. +5 Militär. Velgarien führt jetzt das Militär an.</target></trans-unit>
+<trans-unit id="s77562ee12ab994c7">
+  <source>Infiltrator resolves: FAILED</source>
+<target>Infiltrator löst auf: FAILED</target></trans-unit>
+<trans-unit id="sc7639c3b482f1ecf">
+  <source>Embassy infiltration fails — Velgarien guardians too strong. 6 RP wasted.</source>
+<target>Botschaftsinfiltration scheitert - Velgarien-Wächter zu stark. 6 RP verschwendet.</target></trans-unit>
+<trans-unit id="s2a3097cb3ad0ad8c">
+  <source>Propaganda event (impact 4) created in Capybara. +3 military. Sovereignty hit.</source>
+<target>Propaganda-Ereignis (Auswirkung 4), erstellt in Capybara. +3 Militär. Souveränitätstreffer.</target></trans-unit>
+<trans-unit id="s3150f382313baef6">
+  <source>Leading comfortably. Reckoning begins — bleed amplified. Balance: 25+10 = 30 (cap)</source>
+<target>Bequemes Führen. Reckoning beginnt - Blutung verstärkt. Gleichgewicht: 25+10 = 30 (Obergrenze)</target></trans-unit>
+<trans-unit id="s36930eef41d12474">
+  <source>Desperate final strike. Target: Market Hall. Balance: 30−5 = 25 RP</source>
+<target>Verzweifelter letzter Schlag. Ziel: Markthalle. Gleichgewicht: 30-5 = 25 RP</target></trans-unit>
+<trans-unit id="sb0758e11e718cb5f">
+  <source>Pile on the weakest. Target: Bathhouse (already moderate). Balance: 30−5 = 25 RP</source>
+<target>Auf den Schwächsten setzen. Ziel: Badehaus (bereits moderat). Gleichgewicht: 30-5 = 25 RP</target></trans-unit>
+<trans-unit id="s3f9b5ed55fcbc51e">
+  <source>Final defensive check. Balance: 30−3 = 27 RP</source>
+<target>Abschließende Überprüfung der Defensive. Gleichgewicht: 30-3 = 27 RP</target></trans-unit>
+<trans-unit id="sb98548ad2fc6abe1">
+  <source>Nothing left to deploy. Balance: 25+10 = 30 (cap)</source>
+<target>Nichts mehr zum Einsetzen. Gleichgewicht: 25+10 = 30 (Obergrenze)</target></trans-unit>
+<trans-unit id="s0a1d5c02b3e6112c">
+  <source>Bathhouse: moderate → poor. +5 military. Capybara stability collapses.</source>
+<target>Badehaus: mäßig → schlecht. +5 Militär. Capybara Stabilität bricht zusammen.</target></trans-unit>
+<trans-unit id="s1c91b336328cebbb">
+  <source>Caught by cycle 14 sweep! −3 military. Final humiliation.</source>
+<target>Gefangen von Zyklus 14 Sweep! -3 Militär. Endgültige Demütigung.</target></trans-unit>
+<trans-unit id="s0f0a29e3cfab3d9d">
+  <source>Cycle 6–7: Velgarien's counter-intel sweep catches Capybara's propagandist — a 6-point swing (−3 for Capybara, +0 saved for Velgarien).</source>
+<target>Zyklus 6-7: Velgariens Gegenspionage erwischt Capybaras Propagandisten - ein 6-Punkte-Schwenk (-3 für Capybara, +0 für Velgarien).</target></trans-unit>
+<trans-unit id="scae32e20d3d286f9">
+  <source>Cycle 8–11: Velgarien's assassin blocks Ambassador Nutmeg for 3 cycles, crippling Capybara's diplomatic score during mid-game.</source>
+<target>Zyklus 8-11: Velgariens Attentäter blockiert Botschafter Muskatnuss für 3 Zyklen, wodurch Capybaras diplomatischer Punktestand in der Spielmitte sinkt.</target></trans-unit>
+<trans-unit id="s1aee0920606ec1da">
+  <source>Cycle 11: Capybara's saboteur fails against 3 guardians in Velgarien's library zone — the Foundation Wall strategy pays off.</source>
+<target>Zyklus 11: Capybaras Saboteur scheitert gegen 3 Wächter in Velgariens Bibliothekszone - die Strategie der Fundamentmauer zahlt sich aus.</target></trans-unit>
+<trans-unit id="sec1e8311746ebbcb">
+  <source>Cycle 10–12: Station Null plays kingmaker — bathhouse sabotage + propaganda push Capybara to last place.</source>
+<target>Zyklus 10-12: Station Null spielt Königsmacher - Badehaus-Sabotage + Propaganda schieben Capybara auf den letzten Platz.</target></trans-unit>
+<trans-unit id="s4afc9ce59482e976">
+  <source>Cycle 14–15: Station Null's second saboteur degrades the already-moderate bathhouse to poor, while Capybara's desperate saboteur is detected. A brutal final act.</source>
+<target>Zyklus 14-15: Der zweite Saboteur von Station Null degradiert das bereits mäßige Badehaus zu einem schlechten, während der verzweifelte Saboteur von Capybara entdeckt wird. Ein brutaler Schlussakt.</target></trans-unit>
+<trans-unit id="s20d23745311b618e">
+  <source>RP efficiency: Velgarien spent 36 RP on offense (spy+saboteur×2+assassin) with 3 successes. Capybara spent 23 RP on offense (spy+propagandist+saboteur+infiltrator) with 0 successes. Economy wins wars.</source>
+<target>RP-Effizienz: Velgarien hat 36 RP für Offensive (Spion+Saboteur×2+Attentäter) mit 3 Erfolgen ausgegeben. Capybara gab 23 RP für die Offensive aus (Spion+Propagandist+Saboteur+Infiltrator) mit 0 Erfolgen. Wirtschaft gewinnt Kriege.</target></trans-unit>
+<trans-unit id="s5c7d18f2826766c5">
+  <source>Tactics &amp; Strategies</source>
+<target>Taktik und Strategien</target></trans-unit>
+<trans-unit id="sc0f7a527b86b9c5b">
+  <source>The Foundation Wall</source>
+<target>Die Grundmauer</target></trans-unit>
+<trans-unit id="s8a370cf6326b8547">
+  <source>Spend all foundation RP on guardians (5 guardians = −100% enemy success rate in defended zones). Maximum defense, zero offense. You enter competition with no RP reserve but an impenetrable fortress. Best with Builder preset where stability is king.</source>
+<target>Geben Sie alle Gründungs-RP für Wächter aus (5 Wächter = -100% feindliche Erfolgsrate in verteidigten Zonen). Maximale Verteidigung, null Offensive. Du gehst ohne RP-Reserve, aber mit einer uneinnehmbaren Festung in den Wettbewerb. Am besten mit der Voreinstellung Builder, bei der Stabilität im Vordergrund steht.</target></trans-unit>
+<trans-unit id="sc29232fbf4ea683b">
+  <source>The Quick Strike</source>
+<target>Der Schnellangriff</target></trans-unit>
+<trans-unit id="s5968f6ea515224b3">
+  <source>Deploy only 1 guardian during foundation, save the rest. You enter competition with 30+ RP — enough for an assassin + saboteur on cycle 4. Risky: undefended zones are vulnerable. Best with Warmonger preset where early military points compound.</source>
+<target>Setzen Sie bei der Gründung nur 1 Wächter ein, sparen Sie den Rest. Sie gehen mit 30+ RP in den Wettbewerb - genug für einen Attentäter + Saboteur in Zyklus 4. Riskant: Unverteidigte Zonen sind verwundbar. Am besten mit der Voreinstellung Kriegstreiber, wo frühe Militärpunkte zusammenkommen.</target></trans-unit>
+<trans-unit id="sbaff4d9330e477c0">
+  <source>The Balanced Start</source>
+<target>Der ausgewogene Start</target></trans-unit>
+<trans-unit id="s131c39f7d3122cc1">
+  <source>Deploy 2–3 guardians, keep a moderate RP reserve (15–20). Covers key zones without sacrificing offensive capability. The safest opener — works with any preset and adapts to opponent behavior.</source>
+<target>Setzen Sie 2-3 Wächter ein, halten Sie eine moderate RP-Reserve (15-20). Deckt Schlüsselzonen ab, ohne die Offensivfähigkeit zu opfern. Der sicherste Eröffner - funktioniert mit jeder Voreinstellung und passt sich dem gegnerischen Verhalten an.</target></trans-unit>
+<trans-unit id="s307d6dc4b4380e1c">
+  <source>Spy→Saboteur Combo</source>
+<target>Spion→Saboteur-Kombination</target></trans-unit>
+<trans-unit id="se4c9cd4459ca7033">
+  <source>Deploy a spy first (3 RP, instant). When intel resolves after 3 cycles, it reveals weak zones. Follow up with a saboteur (5 RP) aimed at the exposed target. Total investment: 8 RP over 2 cycles for a highly targeted strike.</source>
+<target>Setzen Sie zuerst einen Spion ein (3 RP, sofort). Wenn die Informationen nach 3 Zyklen aufgelöst werden, zeigen sie schwache Zonen auf. Setzen Sie anschließend einen Saboteur ein (5 RP), der auf das aufgedeckte Ziel gerichtet ist. Gesamtinvestition: 8 RP über 2 Zyklen für einen sehr gezielten Angriff.</target></trans-unit>
+<trans-unit id="s657c0670702157a8">
+  <source>The Reckoning Rush</source>
+<target>Der Rausch der Abrechnung</target></trans-unit>
+<trans-unit id="scd1f91f425c56f88">
+  <source>Save RP throughout competition, then unleash multiple operatives during reckoning when bleed is amplified. Opponents have fewer cycles to recover, and sovereignty hits hurt more. High risk: if enemies scored early, the deficit may be insurmountable.</source>
+<target>Sparen Sie RP während des gesamten Wettbewerbs und setzen Sie dann während der Abrechnung, wenn die Blutung verstärkt wird, mehrere Operatoren ein. Die Gegner haben weniger Zyklen, um sich zu erholen, und Souveränitätstreffer schmerzen mehr. Hohes Risiko: Wenn die Gegner früh punkten, kann der Rückstand unüberwindbar sein.</target></trans-unit>
+<trans-unit id="s3517bc09cada0338">
+  <source>The Early Assassin</source>
+<target>Der frühe Assassine</target></trans-unit>
+<trans-unit id="s9764d6eb5361cd4c">
+  <source>Deploy an assassin in cycles 5–6 (early competition). Costs 8 RP and takes 2 cycles to deploy, but a successful hit blocks the ambassador for 3 cycles during the critical mid-game. Devastating if it lands, crushing if detected (−3 military).</source>
+<target>Setzen Sie einen Attentäter in den Zyklen 5-6 ein (früher Wettbewerb). Er kostet 8 RP und braucht 2 Zyklen, um eingesetzt zu werden, aber ein erfolgreicher Treffer blockiert den Botschafter für 3 Zyklen in der kritischen Phase des Spiels. Verheerend, wenn er trifft, vernichtend, wenn er entdeckt wird (-3 Militär).</target></trans-unit>
+<trans-unit id="s76a6693baccdf381">
+  <source>RP Float vs. RP Burn</source>
+<target>RP-Float vs. RP-Burn</target></trans-unit>
+<trans-unit id="s4a7c23ca3dd1834c">
+  <source>Never exceed the 30 RP cap (wasted income). Never hoard when good targets exist (opportunity cost). The sweet spot: spend 7–8 RP per cycle and maintain a 5–10 RP reserve for counter-intel or reactive deployments.</source>
+<target>Überschreiten Sie niemals die RP-Obergrenze von 30 (verschwendetes Einkommen). Horten Sie niemals, wenn es gute Ziele gibt (Opportunitätskosten). Der Sweet Spot: 7-8 RP pro Zyklus ausgeben und eine Reserve von 5-10 RP für Gegenspionage oder reaktive Einsätze halten.</target></trans-unit>
+<trans-unit id="s5ee59b315584d300">
+  <source>Counter-Intel Timing</source>
+<target>Counter-Intel Timing</target></trans-unit>
+<trans-unit id="s2caf393a5a02dfa7">
+  <source>A sweep costs 3 RP. Use it when you suspect incoming propagandists or saboteurs — not every cycle. A detected enemy mission costs THEM −3 military AND negates their effect. One well-timed sweep can swing 8+ points.</source>
+<target>Ein Sweep kostet 3 RP. Setzen Sie ihn ein, wenn Sie den Verdacht haben, dass Propagandisten oder Saboteure eindringen - nicht in jedem Zyklus. Eine entdeckte feindliche Mission kostet SIE -3 Militär und negiert ihren Effekt. Ein gut getimter Sweep kann 8+ Punkte bringen.</target></trans-unit>
+<trans-unit id="s325560ecdfa0aabe">
+  <source>Guardian Stacking</source>
+<target>Wächter-Stapelung</target></trans-unit>
+<trans-unit id="s64923db714c4bd08">
+  <source>Each guardian reduces enemy success by 20%. Three guardians in one zone = 60% reduction. Forces enemies to target undefended zones instead. But 9 RP on defense is 9 RP not spent on offense — only stack when protecting high-value buildings.</source>
+<target>Jeder Wächter reduziert den gegnerischen Erfolg um 20%. Drei Wächter in einer Zone = 60%ige Reduzierung. Zwingt Feinde, stattdessen unverteidigte Zonen anzugreifen. Aber 9 RP für die Verteidigung sind 9 RP, die nicht für die Offensive ausgegeben werden - nur stapeln, wenn hochwertige Gebäude geschützt werden.</target></trans-unit>
+<trans-unit id="sa2ec3c9680a83b11">
+  <source>The Embassy Shield</source>
+<target>Der Botschaftsschild</target></trans-unit>
+<trans-unit id="s81a06362a4048958">
+  <source>Infiltrators reduce your embassy effectiveness by 50% for 3 cycles. Counter by deploying your own infiltrator against their embassy — mutual neutralization. Or stack guardians near embassy zones to prevent infiltration entirely.</source>
+<target>Infiltratoren reduzieren die Effektivität Ihrer Botschaft für 3 Zyklen um 50%. Kontern Sie, indem Sie Ihren eigenen Infiltrator gegen ihre Botschaft einsetzen - gegenseitige Neutralisierung. Oder stapeln Sie Wächter in der Nähe von Botschaftszonen, um die Infiltration ganz zu verhindern.</target></trans-unit>
+<trans-unit id="s66fa013a18039b0d">
+  <source>Builder: Turtle Up</source>
+<target>Ersteller: Turtle Up</target></trans-unit>
+<trans-unit id="s9269a89286a789b2">
+  <source>With 35% stability weight, protect your buildings at all costs. A single saboteur degrading a building from good to moderate is catastrophic. Guardian-heavy defense + counter-intel sweeps every 2–3 cycles. Let enemies waste RP on failed attacks.</source>
+<target>Mit 35% Stabilitätsgewicht müssen Sie Ihre Gebäude um jeden Preis schützen. Ein einziger Saboteur, der ein Gebäude von gut auf mäßig verschlechtert, ist katastrophal. Wächter-lastige Verteidigung + Gegenintelligenz-Sweeps alle 2-3 Zyklen. Lassen Sie Feinde RP für fehlgeschlagene Angriffe verschwenden.</target></trans-unit>
+<trans-unit id="s5273ab40335d5e62">
+  <source>Warmonger: Glass Cannon</source>
+<target>Kriegstreiber: Glaskanone</target></trans-unit>
+<trans-unit id="s7b42aff05e886d92">
+  <source>With 40% military weight, every successful mission is massive (+5 saboteur, +8 assassin). But detected missions (−3 each) hurt double. Go all-in on offense with spies for intel, then targeted strikes. Accept defensive losses — stability only counts for 10%.</source>
+<target>Mit 40% militärischem Gewicht ist jede erfolgreiche Mission massiv (+5 Saboteur, +8 Attentäter). Aber entdeckte Missionen (jeweils -3) schmerzen doppelt. Gehen Sie in die Offensive mit Spionen für Informationen, dann gezielte Angriffe. Nimm defensive Verluste in Kauf - Stabilität zählt nur zu 10%.</target></trans-unit>
+<trans-unit id="s18497ea8aa09f3cd">
+  <source>Diplomat: Embassy Network</source>
+<target>Diplomat: Botschaftsnetz</target></trans-unit>
+<trans-unit id="sdaa5cc065357f47e">
+  <source>With 35% diplomatic weight, your embassies ARE your score. Each ally gives +10% diplomatic. Protect embassies from infiltrators, never betray allies (the −20% penalty is fatal), and focus on building the largest alliance network possible.</source>
+<target>Mit 35% diplomatischem Gewicht SIND Ihre Botschaften Ihre Punkte. Jeder Verbündete gibt +10% Diplomatie. Schützen Sie Botschaften vor Infiltratoren, verraten Sie niemals Verbündete (die -20% Strafe sind fatal) und konzentrieren Sie sich auf den Aufbau eines möglichst großen Allianznetzwerks.</target></trans-unit>
+<trans-unit id="sf7977dca3af28830">
+  <source>Epoch started! Game instances spawned.</source>
+<target>Epoche gestartet! Spielinstanzen gespawnt.</target></trans-unit>
+<trans-unit id="sc857ed8a322e5ad1">
+  <source>This will permanently end the epoch. All missions and scores will be frozen. Game instances will be deleted. This cannot be undone.</source>
+<target>Dadurch wird die Epoche dauerhaft beendet. Alle Missionen und Spielstände werden eingefroren. Die Spielinstanzen werden gelöscht. Dies kann nicht rückgängig gemacht werden.</target></trans-unit>
+<trans-unit id="s3e614c43ab5fdc53">
+  <source>Game Instances</source>
+<target>Spielinstanzen</target></trans-unit>
+<trans-unit id="s08dc539858f6cee5">
+  <source>When the epoch starts, each participating simulation will be cloned into a balanced game instance. Templates remain untouched.</source>
+<target>Wenn die Epoche beginnt, wird jede teilnehmende Simulation in eine ausgeglichene Spielinstanz geklont. Vorlagen bleiben unangetastet.</target></trans-unit>
+<trans-unit id="s3a600d31970d2a92">
+  <source>Game Instance</source>
+<target>Spielinstanz</target></trans-unit>
+<trans-unit id="s4575cada14d4c82e">
+  <source>A unique name for this competitive epoch. Visible to all participants and spectators.</source>
+<target>Ein eindeutiger Name für diese Wettbewerbsepoche. Sichtbar für alle Teilnehmer und Zuschauer.</target>
+</trans-unit>
+<trans-unit id="s980762672b0a1b53">
+  <source>Optional briefing text shown in the lobby. Set the narrative tone for the competition.</source>
+<target>Optionaler Briefing-Text, der in der Lobby angezeigt wird. Legt den erzählerischen Ton für den Wettbewerb fest.</target>
+</trans-unit>
+<trans-unit id="s32b651cb5233fa17">
+  <source>Total epoch length in days. Automatically split into Foundation (20%), Competition (65%), and Reckoning (15%) phases.</source>
+<target>Gesamtlänge der Epoche in Tagen. Automatisch aufgeteilt in die Phasen Gründung (20%), Wettbewerb (65%) und Abrechnung (15%).</target>
+</trans-unit>
+<trans-unit id="s2cff39686248cd7d">
+  <source>Hours between each game cycle. Each cycle grants RP and resolves operative missions. Shorter cycles = faster gameplay.</source>
+<target>Stunden zwischen den einzelnen Spielzyklen. Jeder Zyklus gewährt RP und löst operative Missionen auf. Kürzere Zyklen = schnelleres Gameplay.</target>
+</trans-unit>
+<trans-unit id="s0e2cfd4c80adda34">
+  <source>Resonance Points granted each cycle. RP is spent to deploy operatives (spies, saboteurs, assassins, etc.). Foundation phase grants 1.5x.</source>
+<target>Resonanzpunkte werden in jedem Zyklus vergeben. RP werden ausgegeben, um Agenten (Spione, Saboteure, Attentäter usw.) einzusetzen. Die Gründungsphase gewährt 1,5x.</target>
+</trans-unit>
+<trans-unit id="se3b29476f680bb95">
+  <source>Maximum RP a participant can accumulate. Excess RP from cycle grants is lost. Forces players to spend rather than hoard.</source>
+<target>Maximale RP, die ein Teilnehmer ansammeln kann. Überschüssige RP aus Zyklusvergaben sind verloren. Zwingt die Spieler dazu, RP auszugeben, anstatt sie zu horten.</target>
+</trans-unit>
+<trans-unit id="sa2d0b71952f69b5a">
+  <source>Maximum number of simulations in one alliance. Larger teams share diplomatic bonuses but split influence.</source>
+<target>Maximale Anzahl von Simulationen in einer Allianz. Größere Teams teilen sich diplomatische Boni, aber teilen sich den Einfluss.</target>
+</trans-unit>
+<trans-unit id="sc9f15a3b00fae612">
+  <source>When enabled, alliance members can leave and attack former allies. Betrayal incurs a -20% diplomatic penalty and marks the traitor publicly.</source>
+<target>Wenn aktiviert, können Allianzmitglieder ehemalige Verbündete verlassen und angreifen. Verrat zieht einen diplomatischen Nachteil von -20% nach sich und kennzeichnet den Verräter öffentlich.</target>
+</trans-unit>
+<trans-unit id="s1e4409aa6329d0d7">
+  <source>Building readiness and zone stability. Rewards maintaining infrastructure and keeping buildings in good condition.</source>
+<target>Gebäudebereitschaft und Zonenstabilität. Belohnt die Instandhaltung der Infrastruktur und die Erhaltung von Gebäuden in gutem Zustand.</target>
+</trans-unit>
+<trans-unit id="sf93b6a0d1f4470c0">
+  <source>Social media reach and propaganda effectiveness. Scored by campaign performance and social trend engagement.</source>
+<target>Reichweite in den sozialen Medien und Wirksamkeit der Propaganda. Bewertet nach Kampagnenleistung und Engagement für soziale Trends.</target>
+</trans-unit>
+<trans-unit id="s1c8d8b97dec2da97">
+  <source>Territorial control and agent count. More agents and buildings under your control means higher sovereignty.</source>
+<target>Territoriale Kontrolle und Anzahl der Agenten. Mehr Agenten und Gebäude unter Ihrer Kontrolle bedeuten höhere Souveränität.</target>
+</trans-unit>
+<trans-unit id="sf443c1460b332c32">
+  <source>Embassy effectiveness and alliance standing. Active embassies with ambassadors and alliance membership boost this score.</source>
+<target>Effektivität von Botschaften und Bündnisstatus. Aktive Botschaften mit Botschaftern und Allianzmitgliedschaft erhöhen diesen Wert.</target>
+</trans-unit>
+<trans-unit id="s2523a03b2bbf47b1">
+  <source>Offensive operations and defense success. Scored by successful spy/saboteur/assassin missions and guardian interceptions.</source>
+<target>Offensivoperationen und Verteidigungserfolge. Die Punkte werden durch erfolgreiche Spionage-/Saboteur-/Attentäter-Missionen und das Abfangen von Wächtern erzielt.</target>
+</trans-unit>
+<trans-unit id="sd50ef5e74f798886">
+  <source>Waiting for epoch to start. Operations available once the epoch enters foundation phase.</source>
+  <target>Wartet auf den Start der Epoche. Operationen sind verfügbar, sobald die Epoche in die Gründungsphase eintritt.</target>
+</trans-unit>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<trans-unit id="s04adb069dbb34651">
+  <source>Competitive Layer</source>
+  <target>Kompetitive Ebene</target>
+</trans-unit>
+<trans-unit id="sab18c514d2b567f0">
+  <source>New Epoch</source>
+  <target>Neue Epoche</target>
+</trans-unit>
+<trans-unit id="sf796cd9d7a7f1112">
+  <source>Create First Epoch</source>
+  <target>Erste Epoche erstellen</target>
+</trans-unit>
+<trans-unit id="s7bbb6bb170641518">
+  <source>Completed Operations</source>
+  <target>Abgeschlossene Operationen</target>
+</trans-unit>
+<trans-unit id="sb46d3613edb66558">
+  <source>Interval</source>
+  <target>Intervall</target>
+</trans-unit>
+<trans-unit id="se7a747aa44b7e486">
+  <source>View Results</source>
+  <target>Ergebnisse anzeigen</target>
+</trans-unit>
+<trans-unit id="sc99fe619bc9fa0ae">
+  <source>View Details</source>
+  <target>Details anzeigen</target>
+</trans-unit>
+<trans-unit id="s47ede5f2afbf6123">
+  <source>Operations Board</source>
+  <target>Einsatztafel</target>
+</trans-unit>
+<trans-unit id="s8f906011e31e7ea2">
+  <source>Invite Players</source>
+          <target>Spieler einladen</target>
+</trans-unit>
+<trans-unit id="s0cabec28c007ccd8">
+  <source>Invalid or expired invitation token.</source>
+          <target>Ungültiges oder abgelaufenes Einladungs-Token.</target>
+</trans-unit>
+<trans-unit id="sfe04a8390288e210">
+  <source>Failed to load invitation.</source>
+          <target>Einladung konnte nicht geladen werden.</target>
+</trans-unit>
+<trans-unit id="s82f8493b0823a619">
+  <source>Please fill in all fields.</source>
+          <target>Bitte alle Felder ausfüllen.</target>
+</trans-unit>
+<trans-unit id="s363abde8a254ea5f">
+  <source>Authentication failed. Please try again.</source>
+          <target>Authentifizierung fehlgeschlagen. Bitte erneut versuchen.</target>
+</trans-unit>
+<trans-unit id="s7072cdf7e89e4988">
+  <source>Decrypting transmission...</source>
+          <target>Entschlüsselung der Übertragung...</target>
+</trans-unit>
+<trans-unit id="sa7178471b811a4ef">
+  <source>Transmission Error</source>
+          <target>Übertragungsfehler</target>
+</trans-unit>
+<trans-unit id="s3d8206005c0a990a">
+  <source>Return to Command Center</source>
+          <target>Zurück zur Kommandozentrale</target>
+</trans-unit>
+<trans-unit id="s81151709bebe976e">
+  <source>Summons Expired</source>
+          <target>Einberufung abgelaufen</target>
+</trans-unit>
+<trans-unit id="s995b6e3aa5097908">
+  <source>This epoch invitation has expired. Request a new summons from the epoch creator.</source>
+          <target>Diese Epochen-Einladung ist abgelaufen. Fordere eine neue Einberufung vom Epochen-Ersteller an.</target>
+</trans-unit>
+<trans-unit id="s910588abff389ca4">
+  <source>Summons Already Accepted</source>
+          <target>Einberufung bereits akzeptiert</target>
+</trans-unit>
+<trans-unit id="s4aae4c4f462f2aaf">
+  <source>This invitation has already been used.</source>
+          <target>Diese Einladung wurde bereits verwendet.</target>
+</trans-unit>
+<trans-unit id="s7abbedd197c25b45">
+  <source>Enter Command Center</source>
+          <target>Kommandozentrale betreten</target>
+</trans-unit>
+<trans-unit id="s405ac017a46542f9">
+  <source>Briefing</source>
+          <target>Einsatzbesprechung</target>
+</trans-unit>
+<trans-unit id="s745c3700113d0690">
+  <source>Access Granted</source>
+          <target>Zugang gewährt</target>
+</trans-unit>
+<trans-unit id="sf9d93f30f7abcfc5">
+  <source>Authentication verified. Proceed to the command center.</source>
+          <target>Authentifizierung bestätigt. Weiter zur Kommandozentrale.</target>
+</trans-unit>
+<trans-unit id="sef33ba9ef1c71534">
+  <source>Enter the Command Center</source>
+          <target>Kommandozentrale betreten</target>
+</trans-unit>
+<trans-unit id="s9d727e98c51d2bee">
+  <source>Authentication Required</source>
+          <target>Authentifizierung erforderlich</target>
+</trans-unit>
+<trans-unit id="sca974356724f8230">
+  <source>Log In</source>
+          <target>Einloggen</target>
+</trans-unit>
+<trans-unit id="s321c03399a143242">
+  <source>Create Account</source>
+          <target>Konto erstellen</target>
+</trans-unit>
+<trans-unit id="sffef1a8596bc58bb">
+  <source>Authenticating...</source>
+          <target>Authentifizierung...</target>
+</trans-unit>
+<trans-unit id="saba203f0c4724d0c">
+  <source>Authenticate</source>
+          <target>Authentifizieren</target>
+</trans-unit>
+<trans-unit id="sf36d476b4ff68301">
+  <source>Summons dispatched to <x id="0" equiv-text="${this._email}"/></source>
+          <target>Einberufung gesendet an <x id="0" equiv-text="${this._email}"/></target>
+</trans-unit>
+<trans-unit id="sade3c823832adef6">
+  <source>Failed to send invitation.</source>
+          <target>Einladung konnte nicht gesendet werden.</target>
+</trans-unit>
+<trans-unit id="sf3a754b0971bf8b3">
+  <source>Lore regenerated.</source>
+          <target>Lore neu generiert.</target>
+</trans-unit>
+<trans-unit id="seaeec55f063715d7">
+  <source>Failed to regenerate lore.</source>
+          <target>Lore konnte nicht neu generiert werden.</target>
+</trans-unit>
+<trans-unit id="s4f79e1216c30a35e">
+  <source>Invitation revoked.</source>
+          <target>Einladung widerrufen.</target>
+</trans-unit>
+<trans-unit id="s17bbb09bb9da6aea">
+  <source>Failed to revoke invitation.</source>
+          <target>Einladung konnte nicht widerrufen werden.</target>
+</trans-unit>
+<trans-unit id="s222518c111c0632e">
+  <source>Epoch Summons</source>
+          <target>Epochen-Einberufung</target>
+</trans-unit>
+<trans-unit id="sb520aa8f212e58e7">
+  <source>Dispatch Summons</source>
+          <target>Einberufung senden</target>
+</trans-unit>
+<trans-unit id="s5520ba8011799c2d">
+  <source>operative@email.com</source>
+          <target>operative@email.com</target>
+</trans-unit>
+<trans-unit id="s57adf424d57c8a0f">
+  <source>Send</source>
+          <target>Senden</target>
+</trans-unit>
+<trans-unit id="s87d915df8e4fe1db">
+  <source>Intel Dispatch</source>
+          <target>Geheimdienstbericht</target>
+</trans-unit>
+<trans-unit id="s34c6b634e908b21e">
+  <source>Classified</source>
+          <target>Geheim</target>
+</trans-unit>
+<trans-unit id="s5965070b79882805">
+  <source>No lore generated yet. Send an invitation to auto-generate.</source>
+          <target>Noch kein Lore generiert. Sende eine Einladung zur automatischen Generierung.</target>
+</trans-unit>
+<trans-unit id="s80908076f581f5cf">
+  <source>Regenerate</source>
+          <target>Neu generieren</target>
+</trans-unit>
+<trans-unit id="s6ce6c8a25237548a">
+  <source>Dispatched Summons</source>
+          <target>Gesendete Einberufungen</target>
+</trans-unit>
+<trans-unit id="s0e871352ba4b17d3">
+  <source>Revoke</source>
+          <target>Widerrufen</target>
+</trans-unit>
+<trans-unit id="s3a57e673a5771b00">
+  <source>No invitations sent yet.</source>
+          <target>Noch keine Einladungen gesendet.</target>
+</trans-unit>
+
 </body>
 </file>
 </xliff>

@@ -30,8 +30,12 @@ export class VelgBuildingsView extends LitElement {
 
     .view__grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
       gap: var(--space-5);
+    }
+
+    @media (max-width: 480px) {
+      .view__grid { grid-template-columns: 1fr; }
     }
   `,
   ];

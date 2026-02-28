@@ -42,6 +42,8 @@
   --color-info-bg: #eff6ff;
   --color-info-border: #bfdbfe;
 
+  --color-epoch-influence: #a78bfa;
+
   /* === SURFACE COLORS === */
   --color-surface: var(--color-gray-0);
   --color-surface-raised: var(--color-gray-0);

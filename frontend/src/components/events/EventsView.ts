@@ -30,8 +30,12 @@ export class VelgEventsView extends LitElement {
 
     .view__grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
       gap: var(--space-4);
+    }
+
+    @media (max-width: 480px) {
+      .view__grid { grid-template-columns: 1fr; }
     }
 
     .events__bleed-filter {

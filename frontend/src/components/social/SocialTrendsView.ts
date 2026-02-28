@@ -192,8 +192,12 @@ export class VelgSocialTrendsView extends LitElement {
 
     /* Article grid */
     .articles__grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
       gap: var(--space-4);
+    }
+
+    @media (max-width: 480px) {
+      .articles__grid { grid-template-columns: 1fr; }
     }
 
     /* Article card */
@@ -263,6 +267,23 @@ export class VelgSocialTrendsView extends LitElement {
       font-family: var(--font-brutalist); font-weight: var(--font-bold);
       font-size: var(--text-md); text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist); color: var(--color-text-secondary);
+    }
+
+    /* === Mobile: stack selected panel === */
+    @media (max-width: 640px) {
+      .selected {
+        flex-direction: column;
+      }
+
+      .selected__image {
+        width: 100%;
+        height: 160px;
+      }
+
+      .selected__actions {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
     }
   `;
 

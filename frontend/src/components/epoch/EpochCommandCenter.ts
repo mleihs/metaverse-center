@@ -34,6 +34,7 @@ import './EpochLeaderboard.js';
 import './EpochBattleLog.js';
 import './EpochCreationWizard.js';
 import './DeployOperativeModal.js';
+import './EpochInvitePanel.js';
 
 type TabId = 'overview' | 'leaderboard' | 'operations' | 'battle-log' | 'alliances';
 
@@ -353,20 +354,9 @@ export class VelgEpochCommandCenter extends LitElement {
     .panel:nth-child(3) { animation-delay: 240ms; }
     .panel:nth-child(4) { animation-delay: 320ms; }
 
-    .lobby__header {
+    .ops-board__header {
       animation: lobby-fade 0.6s ease-out;
     }
-
-    .past-epoch {
-      opacity: 0;
-      animation: panel-enter 0.35s ease-out forwards;
-    }
-
-    .past-epoch:nth-child(1) { animation-delay: 200ms; }
-    .past-epoch:nth-child(2) { animation-delay: 280ms; }
-    .past-epoch:nth-child(3) { animation-delay: 360ms; }
-    .past-epoch:nth-child(4) { animation-delay: 440ms; }
-    .past-epoch:nth-child(5) { animation-delay: 520ms; }
 
     .banner__stats {
       display: flex;
@@ -639,104 +629,7 @@ export class VelgEpochCommandCenter extends LitElement {
       color: var(--color-success);
     }
 
-    /* ── Lobby State ──────────────────────────── */
-
-    .lobby {
-      max-width: var(--container-2xl, 1400px);
-      margin: 0 auto;
-      padding: var(--space-8) var(--space-6);
-    }
-
-    .lobby__header {
-      text-align: center;
-      margin-bottom: var(--space-8);
-    }
-
-    .lobby__title {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-4xl);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
-      margin: 0 0 var(--space-2);
-    }
-
-    .lobby__subtitle {
-      font-family: var(--font-mono, monospace);
-      font-size: var(--text-sm);
-      color: var(--color-gray-500);
-    }
-
-    .lobby__create-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-2);
-      margin-top: var(--space-6);
-      padding: var(--space-3) var(--space-6);
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-sm);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      color: var(--color-gray-950);
-      background: var(--color-gray-100);
-      border: 3px solid var(--color-gray-100);
-      cursor: pointer;
-      transition: all var(--transition-normal);
-    }
-
-    .lobby__create-btn:hover {
-      transform: translate(-2px, -2px);
-      box-shadow: 4px 4px 0 var(--color-gray-600);
-    }
-
-    /* ── Past Epochs ──────────────────────────── */
-
-    .past-epochs {
-      margin-top: var(--space-8);
-    }
-
-    .past-epoch {
-      display: grid;
-      grid-template-columns: 40px 1fr auto auto;
-      gap: var(--space-4);
-      align-items: center;
-      padding: var(--space-3) var(--space-4);
-      border: 1px solid var(--color-gray-800);
-      margin-bottom: var(--space-2);
-      transition: border-color var(--transition-normal);
-    }
-
-    .past-epoch:hover {
-      border-color: var(--color-gray-600);
-    }
-
-    .past-epoch__rank {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-lg);
-      color: var(--color-gray-600);
-    }
-
-    .past-epoch__name {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: var(--text-sm);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-    }
-
-    .past-epoch__duration {
-      font-family: var(--font-mono, monospace);
-      font-size: var(--text-xs);
-      color: var(--color-gray-500);
-    }
-
-    .past-epoch__winner {
-      font-family: var(--font-mono, monospace);
-      font-size: var(--text-xs);
-      color: var(--color-success);
-    }
+    /* (lobby/past-epoch CSS removed — replaced by ops-board) */
 
     /* ── No Auth ──────────────────────────────── */
 
@@ -805,7 +698,7 @@ export class VelgEpochCommandCenter extends LitElement {
       background: var(--color-gray-600);
     }
 
-    .lobby__create-btn:active {
+    .ops-board__create-btn:active {
       transform: translate(0, 0);
       box-shadow: none;
     }
@@ -1086,6 +979,486 @@ export class VelgEpochCommandCenter extends LitElement {
       background: rgba(239 68 68 / 0.15);
     }
 
+    /* ── Back to Ops Board button ─────────── */
+
+    .banner__back {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1-5);
+      font-family: var(--font-mono, monospace);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-gray-500);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      margin-bottom: var(--space-2);
+      transition: color 0.2s, transform 0.2s;
+    }
+
+    .banner__back:hover {
+      color: var(--color-gray-200);
+      transform: translateX(-3px);
+    }
+
+    .banner__back-arrow {
+      display: inline-block;
+      transition: transform 0.2s;
+    }
+
+    .banner__back:hover .banner__back-arrow {
+      transform: translateX(-2px);
+    }
+
+    /* ── Operations Board ─────────────────── */
+
+    .ops-board {
+      max-width: var(--container-2xl, 1400px);
+      margin: 0 auto;
+      padding: var(--space-6);
+      position: relative;
+    }
+
+    /* CRT scanline overlay on entire board */
+    .ops-board::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 3px,
+          rgba(255 255 255 / 0.008) 3px,
+          rgba(255 255 255 / 0.008) 4px
+        );
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .ops-board__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: var(--space-5);
+      padding-bottom: var(--space-3);
+      border-bottom: 2px solid var(--color-gray-800);
+      position: relative;
+    }
+
+    .ops-board__title-block {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+
+    .ops-board__surtitle {
+      font-family: var(--font-mono, monospace);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--color-gray-600);
+    }
+
+    .ops-board__title {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-black);
+      font-size: var(--text-3xl);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-brutalist);
+      margin: 0;
+      line-height: 1;
+    }
+
+    .ops-board__create-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-black);
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+      color: var(--color-gray-950);
+      background: var(--color-gray-100);
+      border: 2px solid var(--color-gray-100);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .ops-board__create-btn:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 4px 4px 0 var(--color-gray-700);
+    }
+
+    .ops-board__create-btn:active {
+      transform: translate(0);
+      box-shadow: none;
+    }
+
+    /* ── Epoch Dossier Grid ───────────────── */
+
+    .dossier-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: var(--space-4);
+    }
+
+    @media (max-width: 640px) {
+      .dossier-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ── Dossier Card ─────────────────────── */
+
+    .dossier-card {
+      --dossier-color: var(--color-gray-600);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      background: var(--color-gray-900);
+      border: 1px solid var(--color-gray-800);
+      cursor: pointer;
+      transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+      overflow: hidden;
+      opacity: 0;
+      animation: dossier-enter 0.4s ease-out forwards;
+    }
+
+    @keyframes dossier-enter {
+      from {
+        opacity: 0;
+        transform: translateX(-12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .dossier-card:nth-child(1) { animation-delay: 60ms; }
+    .dossier-card:nth-child(2) { animation-delay: 140ms; }
+    .dossier-card:nth-child(3) { animation-delay: 220ms; }
+    .dossier-card:nth-child(4) { animation-delay: 300ms; }
+    .dossier-card:nth-child(5) { animation-delay: 380ms; }
+    .dossier-card:nth-child(6) { animation-delay: 460ms; }
+
+    /* Left accent bar */
+    .dossier-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--dossier-color);
+      transition: width 0.2s, box-shadow 0.2s;
+    }
+
+    .dossier-card:hover {
+      border-color: var(--dossier-color);
+      transform: translateX(4px);
+      box-shadow: -4px 0 0 var(--dossier-color), 0 0 20px rgba(0 0 0 / 0.4);
+    }
+
+    .dossier-card:hover::before {
+      width: 4px;
+      box-shadow: 0 0 10px var(--dossier-color);
+    }
+
+    /* Phase colors */
+    .dossier-card--lobby { --dossier-color: var(--color-gray-500); }
+    .dossier-card--foundation { --dossier-color: #4ade80; }
+    .dossier-card--competition { --dossier-color: #f59e0b; }
+    .dossier-card--reckoning { --dossier-color: #ef4444; }
+
+    /* Running epoch border pulse */
+    .dossier-card--foundation,
+    .dossier-card--competition,
+    .dossier-card--reckoning {
+      animation: dossier-enter 0.4s ease-out forwards, dossier-pulse 4s ease-in-out 0.5s infinite;
+    }
+
+    @keyframes dossier-pulse {
+      0%, 100% { box-shadow: 0 0 0 rgba(0 0 0 / 0); }
+      50% { box-shadow: 0 0 16px color-mix(in srgb, var(--dossier-color) 20%, transparent); }
+    }
+
+    /* ── Dossier internals ────────────────── */
+
+    .dossier-card__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: var(--space-4) var(--space-4) var(--space-2) calc(var(--space-4) + 3px);
+    }
+
+    .dossier-card__name {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-black);
+      font-size: var(--text-lg);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+      line-height: 1.1;
+      color: var(--color-gray-100);
+    }
+
+    .dossier-card__status {
+      display: flex;
+      align-items: center;
+      gap: var(--space-1-5);
+      padding: var(--space-0-5) var(--space-2);
+      border: 1px solid var(--dossier-color);
+      flex-shrink: 0;
+    }
+
+    .dossier-card__dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--dossier-color);
+      box-shadow: 0 0 4px var(--dossier-color);
+    }
+
+    /* Pulse on running epochs */
+    .dossier-card--foundation .dossier-card__dot,
+    .dossier-card--competition .dossier-card__dot,
+    .dossier-card--reckoning .dossier-card__dot {
+      animation: chip-dot-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes chip-dot-pulse {
+      0%, 100% { box-shadow: 0 0 4px var(--dossier-color); opacity: 1; }
+      50% { box-shadow: 0 0 10px var(--dossier-color); opacity: 0.6; }
+    }
+
+    .dossier-card__status-label {
+      font-family: var(--font-mono, monospace);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--dossier-color);
+      font-weight: 600;
+    }
+
+    /* ── Stats row ────────────────────────── */
+
+    .dossier-card__stats {
+      display: flex;
+      gap: var(--space-4);
+      padding: var(--space-2) var(--space-4) var(--space-3) calc(var(--space-4) + 3px);
+    }
+
+    .dossier-stat {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .dossier-stat__value {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-black);
+      font-size: var(--text-base);
+      color: var(--color-gray-200);
+      line-height: 1;
+    }
+
+    .dossier-stat__label {
+      font-family: var(--font-mono, monospace);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-gray-600);
+    }
+
+    /* ── Progress bar ─────────────────────── */
+
+    .dossier-card__progress {
+      padding: 0 var(--space-4) var(--space-3) calc(var(--space-4) + 3px);
+    }
+
+    .dossier-progress {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .dossier-progress__bar {
+      flex: 1;
+      height: 3px;
+      background: var(--color-gray-800);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dossier-progress__fill {
+      position: absolute;
+      inset: 0;
+      background: var(--dossier-color);
+      transform-origin: left;
+      transition: transform 0.6s ease;
+    }
+
+    .dossier-progress__text {
+      font-family: var(--font-mono, monospace);
+      font-size: 9px;
+      color: var(--color-gray-500);
+      flex-shrink: 0;
+    }
+
+    /* ── Footer / join area ───────────────── */
+
+    .dossier-card__footer {
+      margin-top: auto;
+      padding: var(--space-2) var(--space-4) var(--space-3) calc(var(--space-4) + 3px);
+      border-top: 1px solid var(--color-gray-800);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+    }
+
+    .dossier-join-btn {
+      padding: var(--space-1) var(--space-3);
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-bold);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+      color: var(--color-success);
+      background: transparent;
+      border: 1px solid var(--color-success);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .dossier-join-btn:hover {
+      background: var(--color-success);
+      color: var(--color-gray-950);
+    }
+
+    .dossier-join-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .dossier-card__view-hint {
+      font-family: var(--font-mono, monospace);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-gray-600);
+      margin-left: auto;
+      transition: color 0.2s;
+    }
+
+    .dossier-card:hover .dossier-card__view-hint {
+      color: var(--color-gray-400);
+    }
+
+    /* ── Create New card ──────────────────── */
+
+    .dossier-card--create {
+      border-style: dashed;
+      border-color: var(--color-gray-700);
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 160px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .dossier-card--create::before {
+      display: none;
+    }
+
+    .dossier-card--create:hover {
+      border-color: var(--color-gray-400);
+      background: rgba(255 255 255 / 0.02);
+      transform: none;
+      box-shadow: none;
+    }
+
+    .dossier-create__inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .dossier-create__plus {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-black);
+      font-size: var(--text-3xl);
+      color: var(--color-gray-600);
+      line-height: 1;
+      transition: color 0.2s, transform 0.2s;
+    }
+
+    .dossier-card--create:hover .dossier-create__plus {
+      color: var(--color-gray-300);
+      transform: scale(1.1);
+    }
+
+    .dossier-create__label {
+      font-family: var(--font-mono, monospace);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--color-gray-600);
+      transition: color 0.2s;
+    }
+
+    .dossier-card--create:hover .dossier-create__label {
+      color: var(--color-gray-400);
+    }
+
+    /* ── No Auth banner in ops board ──────── */
+
+    .ops-board__no-auth {
+      font-family: var(--font-mono, monospace);
+      font-size: var(--text-sm);
+      color: var(--color-gray-600);
+      text-align: center;
+      padding: var(--space-8);
+      border: 1px dashed var(--color-gray-800);
+    }
+
+    /* ── Past epochs section in ops board ── */
+
+    .ops-board__section-title {
+      font-family: var(--font-mono, monospace);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--color-gray-600);
+      margin: var(--space-8) 0 var(--space-3);
+      padding-bottom: var(--space-2);
+      border-bottom: 1px solid var(--color-gray-800);
+    }
+
+    /* Mobile ops board */
+    @media (max-width: 640px) {
+      .ops-board {
+        padding: var(--space-4) var(--space-3);
+      }
+
+      .ops-board__header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-3);
+      }
+
+      .dossier-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     /* ── Recall Button ─────────────────────── */
 
     .mission__recall {
@@ -1108,11 +1481,45 @@ export class VelgEpochCommandCenter extends LitElement {
       opacity: 0.4;
       cursor: not-allowed;
     }
+
+    /* === Mobile overrides === */
+    @media (max-width: 640px) {
+      .banner__inner {
+        grid-template-columns: 1fr;
+        padding: var(--space-4) var(--space-3);
+      }
+
+      .banner__stats {
+        gap: var(--space-3);
+      }
+
+      .stepper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .tabs {
+        padding: 0 var(--space-3);
+        overflow-x: auto;
+      }
+
+      .tab {
+        padding: var(--space-2) var(--space-3);
+        font-size: 0.56rem;
+        letter-spacing: 0;
+      }
+
+      .content {
+        padding: var(--space-4) var(--space-3);
+      }
+    }
   `;
 
   @state() private _loading = true;
+  @state() private _activeEpochs: Epoch[] = [];
   @state() private _epoch: Epoch | null = null;
   @state() private _pastEpochs: Epoch[] = [];
+  @state() private _participantCounts: Record<string, number> = {};
   @state() private _participants: EpochParticipant[] = [];
   @state() private _teams: EpochTeam[] = [];
   @state() private _leaderboard: LeaderboardEntry[] = [];
@@ -1124,6 +1531,7 @@ export class VelgEpochCommandCenter extends LitElement {
   @state() private _showCreateWizard = false;
   @state() private _showDeployModal = false;
   @state() private _showAdminPanel = false;
+  @state() private _showInvitePanel = false;
   @state() private _creatingTeam = false;
   @state() private _teamName = '';
   @state() private _actionLoading = false;
@@ -1146,11 +1554,30 @@ export class VelgEpochCommandCenter extends LitElement {
       }
     }
 
-    // Load active epoch
-    const activeResult = await epochsApi.getActiveEpoch();
+    // Load active epochs (lobby + running)
+    const activeResult = await epochsApi.getActiveEpochs();
     if (activeResult.success && activeResult.data) {
-      this._epoch = activeResult.data;
-      await this._loadEpochDetails(activeResult.data.id);
+      this._activeEpochs = activeResult.data as Epoch[];
+
+      // Load participant counts for each epoch in parallel
+      const countPromises = this._activeEpochs.map(async (e) => {
+        const resp = await epochsApi.listParticipants(e.id);
+        const list = resp.success ? (resp.data as EpochParticipant[]) || [] : [];
+        return [e.id, list.length] as [string, number];
+      });
+      const counts = await Promise.all(countPromises);
+      this._participantCounts = Object.fromEntries(counts);
+
+      // If an epoch was previously selected and still exists, keep it
+      if (this._epoch) {
+        const stillValid = this._activeEpochs.find((e) => e.id === this._epoch?.id);
+        if (stillValid) {
+          this._epoch = stillValid;
+          await this._loadEpochDetails(stillValid.id);
+        } else {
+          this._epoch = null;
+        }
+      }
     }
 
     // Load past epochs
@@ -1175,8 +1602,17 @@ export class VelgEpochCommandCenter extends LitElement {
       this._participants = (participants.data as EpochParticipant[]) || [];
       // Find my participation
       const mySimIds = appState.simulations.value.map((s) => s.id);
+      // Match participant by direct simulation_id (lobby phase, templates)
+      // OR by source_template_id (active phase, game instances)
       this._myParticipant =
-        this._participants.find((p) => mySimIds.includes(p.simulation_id)) ?? null;
+        this._participants.find(
+          (p) =>
+            mySimIds.includes(p.simulation_id) ||
+            mySimIds.includes(
+              (p.simulations as { source_template_id?: string } | undefined)?.source_template_id ??
+                '',
+            ),
+        ) ?? null;
     }
 
     if (teams.success) {
@@ -1369,7 +1805,7 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     const mainContent = !this._epoch
-      ? this._renderLobby()
+      ? this._renderOpsBoard()
       : html`
         ${this._renderBanner()}
         ${this._renderLobbyActions()}
@@ -1395,54 +1831,221 @@ export class VelgEpochCommandCenter extends LitElement {
         @modal-close=${this._onDeployModalClose}
         @operative-deployed=${this._onOperativeDeployed}
       ></velg-deploy-operative-modal>
+      <velg-epoch-invite-panel
+        .open=${this._showInvitePanel}
+        .epochId=${this._epoch?.id ?? ''}
+        @panel-close=${() => {
+          this._showInvitePanel = false;
+        }}
+      ></velg-epoch-invite-panel>
     `;
   }
 
-  // ── Lobby (no active epoch) ──────────────────────
+  // ── Operations Board (epoch list) ───────────────
 
-  private _renderLobby() {
+  private _renderOpsBoard() {
+    const mySims = appState.simulations.value.filter(
+      (s) => !s.simulation_type || s.simulation_type === 'template',
+    );
+
     return html`
-      <div class="lobby">
-        <div class="lobby__header">
-          <h1 class="lobby__title">${msg('Epoch Command Center')}</h1>
-          <p class="lobby__subtitle">${msg('No active epoch. The multiverse awaits.')}</p>
-
+      <div class="ops-board">
+        <div class="ops-board__header">
+          <div class="ops-board__title-block">
+            <span class="ops-board__surtitle">${msg('Competitive Layer')}</span>
+            <h1 class="ops-board__title">${msg('Epoch Command Center')}</h1>
+          </div>
           ${
             appState.isAuthenticated.value
               ? html`
-              <button class="lobby__create-btn" @click=${this._createEpoch}>
+              <button class="ops-board__create-btn" @click=${this._createEpoch}>
                 + ${msg('Create New Epoch')}
               </button>
             `
-              : html`
-              <div class="no-auth">
-                <p class="no-auth__text">${msg('Sign in to create or join an epoch.')}</p>
-              </div>
-            `
+              : nothing
           }
         </div>
 
         ${
+          this._activeEpochs.length > 0
+            ? html`
+            <div class="dossier-grid">
+              ${this._activeEpochs.map((e) => this._renderDossierCard(e, mySims))}
+              ${
+                appState.isAuthenticated.value
+                  ? html`
+                <div
+                  class="dossier-card dossier-card--create"
+                  @click=${this._createEpoch}
+                >
+                  <div class="dossier-create__inner">
+                    <span class="dossier-create__plus">+</span>
+                    <span class="dossier-create__label">${msg('New Epoch')}</span>
+                  </div>
+                </div>
+              `
+                  : nothing
+              }
+            </div>
+          `
+            : html`
+            <div class="dossier-grid">
+              ${
+                appState.isAuthenticated.value
+                  ? html`
+                <div
+                  class="dossier-card dossier-card--create"
+                  @click=${this._createEpoch}
+                >
+                  <div class="dossier-create__inner">
+                    <span class="dossier-create__plus">+</span>
+                    <span class="dossier-create__label">${msg('Create First Epoch')}</span>
+                  </div>
+                </div>
+              `
+                  : html`
+                <div class="ops-board__no-auth">
+                  ${msg('Sign in to create or join an epoch.')}
+                </div>
+              `
+              }
+            </div>
+          `
+        }
+
+        ${
           this._pastEpochs.length > 0
             ? html`
-            <div class="past-epochs">
-              <h2 class="panel__title" style="margin-bottom: var(--space-3)">${msg('Past Epochs')}</h2>
-              ${this._pastEpochs.map(
-                (epoch, i) => html`
-                <div class="past-epoch">
-                  <span class="past-epoch__rank">#${i + 1}</span>
-                  <span class="past-epoch__name">${epoch.name}</span>
-                  <span class="past-epoch__duration">${epoch.config?.duration_days ?? '?'}d</span>
-                  <span class="past-epoch__winner">${msg('Completed')}</span>
-                </div>
-              `,
-              )}
+            <div class="ops-board__section-title">${msg('Completed Operations')}</div>
+            <div class="dossier-grid">
+              ${this._pastEpochs.map((epoch) => this._renderDossierCard(epoch, mySims))}
             </div>
           `
             : nothing
         }
       </div>
     `;
+  }
+
+  private _renderDossierCard(epoch: Epoch, mySims: Simulation[]) {
+    const totalCycles = epoch.config
+      ? Math.floor((epoch.config.duration_days * 24) / epoch.config.cycle_hours)
+      : 0;
+    const progress = totalCycles > 0 ? epoch.current_cycle / totalCycles : 0;
+    const pCount = this._participantCounts[epoch.id] ?? 0;
+    const isCompleted = epoch.status === 'completed';
+    const isLobby = epoch.status === 'lobby';
+
+    // In lobby phase, show join buttons for all user's template sims
+    // (exact participation check happens server-side on join)
+    const joinable = isLobby ? mySims : [];
+
+    return html`
+      <div
+        class="dossier-card dossier-card--${epoch.status}"
+        @click=${() => this._onSelectEpoch(epoch)}
+      >
+        <div class="dossier-card__header">
+          <span class="dossier-card__name">${epoch.name}</span>
+          <div class="dossier-card__status">
+            <span class="dossier-card__dot"></span>
+            <span class="dossier-card__status-label">${epoch.status}</span>
+          </div>
+        </div>
+
+        <div class="dossier-card__stats">
+          <div class="dossier-stat">
+            <span class="dossier-stat__value">${pCount}</span>
+            <span class="dossier-stat__label">${msg('Players')}</span>
+          </div>
+          <div class="dossier-stat">
+            <span class="dossier-stat__value">${epoch.current_cycle}/${totalCycles}</span>
+            <span class="dossier-stat__label">${msg('Cycles')}</span>
+          </div>
+          <div class="dossier-stat">
+            <span class="dossier-stat__value">${epoch.config?.cycle_hours ?? '?'}h</span>
+            <span class="dossier-stat__label">${msg('Interval')}</span>
+          </div>
+          ${
+            epoch.config
+              ? html`
+              <div class="dossier-stat">
+                <span class="dossier-stat__value">${epoch.config.duration_days}d</span>
+                <span class="dossier-stat__label">${msg('Duration')}</span>
+              </div>
+            `
+              : nothing
+          }
+        </div>
+
+        ${
+          !isCompleted && totalCycles > 0
+            ? html`
+            <div class="dossier-card__progress">
+              <div class="dossier-progress">
+                <div class="dossier-progress__bar">
+                  <div
+                    class="dossier-progress__fill"
+                    style="transform: scaleX(${Math.min(progress, 1)})"
+                  ></div>
+                </div>
+                <span class="dossier-progress__text">${Math.round(progress * 100)}%</span>
+              </div>
+            </div>
+          `
+            : nothing
+        }
+
+        <div class="dossier-card__footer">
+          ${
+            isLobby && appState.isAuthenticated.value && joinable.length > 0
+              ? joinable.map(
+                  (sim) => html`
+                  <button
+                    class="dossier-join-btn"
+                    ?disabled=${this._actionLoading}
+                    @click=${(ev: Event) => {
+                      ev.stopPropagation();
+                      this._onJoinFromBoard(epoch.id, sim.id);
+                    }}
+                  >+ ${msg(str`Join as ${sim.name}`)}</button>
+                `,
+                )
+              : nothing
+          }
+          <span class="dossier-card__view-hint">${isCompleted ? msg('View Results') : msg('View Details')} &rarr;</span>
+        </div>
+      </div>
+    `;
+  }
+
+  private async _onSelectEpoch(epoch: Epoch) {
+    this._epoch = epoch;
+    this._activeTab = 'overview';
+    await this._loadEpochDetails(epoch.id);
+  }
+
+  private async _onJoinFromBoard(epochId: string, simulationId: string) {
+    this._actionLoading = true;
+    try {
+      const result = await epochsApi.joinEpoch(epochId, simulationId);
+      if (result.success) {
+        VelgToast.success(msg('Joined epoch.'));
+        // Update participant count
+        this._participantCounts = {
+          ...this._participantCounts,
+          [epochId]: (this._participantCounts[epochId] ?? 0) + 1,
+        };
+      } else {
+        VelgToast.error(
+          (result.error as { message?: string })?.message ?? msg('Failed to join epoch.'),
+        );
+      }
+    } catch {
+      VelgToast.error(msg('Failed to join epoch.'));
+    } finally {
+      this._actionLoading = false;
+    }
   }
 
   // ── Banner (active epoch header) ─────────────────
@@ -1459,6 +2062,10 @@ export class VelgEpochCommandCenter extends LitElement {
         <div class="banner__bg"></div>
         <div class="banner__inner">
           <div>
+            <button class="banner__back" @click=${this._backToOpsBoard}>
+              <span class="banner__back-arrow">&larr;</span>
+              ${msg('Operations Board')}
+            </button>
             <h1 class="banner__title">${this._epoch.name}</h1>
             <p class="banner__sub">
               <span class="banner__phase ${this._getPhaseClass(this._epoch.status)}">
@@ -1576,7 +2183,7 @@ export class VelgEpochCommandCenter extends LitElement {
 
         <!-- Quick Actions -->
         ${
-          this._myParticipant
+          this._myParticipant && this._epoch?.status !== 'lobby'
             ? html`
             <div class="panel">
               <div class="panel__header">
@@ -1596,7 +2203,18 @@ export class VelgEpochCommandCenter extends LitElement {
               </div>
             </div>
           `
-            : html`
+            : this._myParticipant && this._epoch?.status === 'lobby'
+              ? html`
+            <div class="panel">
+              <div class="panel__header">
+                <h3 class="panel__title">${msg('Quick Actions')}</h3>
+              </div>
+              <div class="panel__body">
+                <p class="empty-hint">${msg('Waiting for epoch to start. Operations available once the epoch enters foundation phase.')}</p>
+              </div>
+            </div>
+          `
+              : html`
             <div class="panel">
               <div class="panel__header">
                 <h3 class="panel__title">${msg('Spectating')}</h3>
@@ -1893,7 +2511,12 @@ export class VelgEpochCommandCenter extends LitElement {
     const isCreator = this._epoch.created_by_id === appState.user.value?.id;
     const mySims = appState.simulations.value;
     const participantSimIds = this._participants.map((p) => p.simulation_id);
-    const joinableSims = mySims.filter((s) => !participantSimIds.includes(s.id));
+    // Only show template simulations for joining (not game instances or archived)
+    const joinableSims = mySims.filter(
+      (s) =>
+        !participantSimIds.includes(s.id) &&
+        (!s.simulation_type || s.simulation_type === 'template'),
+    );
 
     return html`
       <div style="max-width: var(--container-2xl, 1400px); margin: 0 auto; padding: 0 var(--space-6);">
@@ -1925,6 +2548,12 @@ export class VelgEpochCommandCenter extends LitElement {
               isCreator
                 ? html`
               <button
+                class="lobby-btn lobby-btn--join"
+                @click=${() => {
+                  this._showInvitePanel = true;
+                }}
+              >${msg('Invite Players')}</button>
+              <button
                 class="lobby-btn lobby-btn--start"
                 ?disabled=${this._actionLoading || this._participants.length < 2}
                 @click=${this._onStartEpoch}
@@ -1932,6 +2561,17 @@ export class VelgEpochCommandCenter extends LitElement {
             `
                 : nothing
             }
+          </div>
+        `
+            : nothing
+        }
+        ${
+          !isLobby
+            ? html`
+          <div class="lobby-actions">
+            <button class="lobby-btn lobby-btn--join" @click=${this._createEpoch}>
+              + ${msg('Create New Epoch')}
+            </button>
           </div>
         `
             : nothing
@@ -1990,6 +2630,18 @@ export class VelgEpochCommandCenter extends LitElement {
 
   // ── Actions ──────────────────────────────────────
 
+  private _backToOpsBoard() {
+    this._epoch = null;
+    this._participants = [];
+    this._teams = [];
+    this._leaderboard = [];
+    this._missions = [];
+    this._threats = [];
+    this._battleLog = [];
+    this._myParticipant = null;
+    this._activeTab = 'overview';
+  }
+
   private _createEpoch() {
     this._showCreateWizard = true;
   }
@@ -1998,9 +2650,13 @@ export class VelgEpochCommandCenter extends LitElement {
     this._showCreateWizard = false;
   }
 
-  private _onEpochCreated() {
+  private async _onEpochCreated() {
     this._showCreateWizard = false;
-    this._loadData();
+    await this._loadData();
+    // Auto-open invite panel for the newly created epoch
+    if (this._epoch) {
+      this._showInvitePanel = true;
+    }
   }
 
   private _onDeployOperative() {
@@ -2080,7 +2736,7 @@ export class VelgEpochCommandCenter extends LitElement {
     const result = await epochsApi.startEpoch(this._epoch.id);
     this._actionLoading = false;
     if (result.success) {
-      VelgToast.success(msg('Epoch started!'));
+      VelgToast.success(msg('Epoch started! Game instances spawned.'));
       await this._loadData();
     } else {
       VelgToast.error(msg('Failed to start epoch.'));
@@ -2120,7 +2776,7 @@ export class VelgEpochCommandCenter extends LitElement {
     const confirmed = await VelgConfirmDialog.show({
       title: msg('Cancel Epoch'),
       message: msg(
-        'This will permanently end the epoch. All missions and scores will be frozen. This cannot be undone.',
+        'This will permanently end the epoch. All missions and scores will be frozen. Game instances will be deleted. This cannot be undone.',
       ),
       confirmLabel: msg('Cancel Epoch'),
       variant: 'danger',

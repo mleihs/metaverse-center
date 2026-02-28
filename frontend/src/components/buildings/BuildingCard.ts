@@ -109,6 +109,7 @@ export class VelgBuildingCard extends LitElement {
   ];
 
   @property({ attribute: false }) building!: Building;
+  @property({ type: Boolean }) compromised = false;
 
   private _getConditionVariant(condition: string | undefined): string {
     if (!condition) return 'default';
@@ -187,6 +188,7 @@ export class VelgBuildingCard extends LitElement {
                 : nothing
             }
             ${b.special_type === 'embassy' ? html`<velg-badge variant="info">${msg('Embassy')}</velg-badge>` : nothing}
+            ${this.compromised ? html`<velg-badge variant="danger" title=${msg('Embassy effectiveness reduced by infiltration')}>${msg('Compromised')}</velg-badge>` : nothing}
           </div>
 
           <div class="card__meta">

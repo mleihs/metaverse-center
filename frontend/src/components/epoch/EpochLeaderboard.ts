@@ -147,6 +147,26 @@ export class VelgEpochLeaderboard extends LitElement {
       font-style: italic;
     }
 
+    .sim__traitor {
+      display: inline-block;
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-bold);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-danger);
+      border: 1px solid var(--color-danger);
+      padding: 0 4px;
+      margin-left: 4px;
+      vertical-align: middle;
+    }
+
+    .sim__alliance {
+      font-family: var(--font-mono, monospace);
+      font-size: 9px;
+      color: var(--color-success);
+    }
+
     /* ── Composite Score ──────────────────── */
 
     .composite {
@@ -184,7 +204,7 @@ export class VelgEpochLeaderboard extends LitElement {
     }
 
     .dim-bar__fill--stability   { background: var(--color-success); }
-    .dim-bar__fill--influence   { background: #a78bfa; }
+    .dim-bar__fill--influence   { background: var(--color-epoch-influence); }
     .dim-bar__fill--sovereignty { background: var(--color-info); }
     .dim-bar__fill--diplomatic  { background: var(--color-warning); }
     .dim-bar__fill--military    { background: var(--color-danger); }
@@ -230,10 +250,19 @@ export class VelgEpochLeaderboard extends LitElement {
 
     /* ── Responsive ───────────────────────── */
 
+    .table-wrapper {
+      width: 100%;
+    }
+
     @media (max-width: 768px) {
       .dim-cell,
       .table th.bar-col {
         display: none;
+      }
+
+      .table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
       }
     }
   `;
@@ -304,6 +333,7 @@ export class VelgEpochLeaderboard extends LitElement {
     const maxDim = this._getMaxDimensionValue();
 
     return html`
+      <div class="table-wrapper">
       <table class="table">
         ${
           this.compact
@@ -343,6 +373,7 @@ export class VelgEpochLeaderboard extends LitElement {
           ${sorted.map((entry, i) => this._renderRow(entry, i, maxDim))}
         </tbody>
       </table>
+      </div>
     `;
   }
 
@@ -356,13 +387,19 @@ export class VelgEpochLeaderboard extends LitElement {
     const title = this._getDimensionTitle(entry);
     const rankClass = entry.rank <= 3 ? `rank--${entry.rank}` : '';
 
+    const hasBetrayal = (entry.betrayal_penalty ?? 0) > 0;
+    const allyCount = this._getAllyCount(entry);
+
     return html`
       <tr class="row" style="animation-delay: ${delay}ms">
         <td><span class="rank ${rankClass}">${entry.rank}</span></td>
         <td>
           <div class="sim">
-            <span class="sim__name">${entry.simulation_name}</span>
-            ${entry.team_name ? html`<span class="sim__team">${entry.team_name}</span>` : nothing}
+            <span class="sim__name">
+              ${entry.simulation_name}
+              ${hasBetrayal ? html`<span class="sim__traitor">${msg('Traitor')}</span>` : nothing}
+            </span>
+            ${entry.team_name ? html`<span class="sim__team">${entry.team_name}${allyCount > 0 ? html`<span class="sim__alliance"> (+${allyCount * 10}%)</span>` : nothing}</span>` : nothing}
             ${title ? html`<span class="sim__title">"${title}"</span>` : nothing}
           </div>
         </td>
@@ -392,6 +429,13 @@ export class VelgEpochLeaderboard extends LitElement {
         </div>
       </td>
     `;
+  }
+
+  private _getAllyCount(entry: LeaderboardEntry): number {
+    if (!entry.team_name) return 0;
+    return this.entries.filter(
+      (e) => e.team_name === entry.team_name && e.simulation_id !== entry.simulation_id,
+    ).length;
   }
 
   private _getMaxDimensionValue(): number {

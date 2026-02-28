@@ -1132,7 +1132,7 @@ export class VelgDeployOperativeModal extends LitElement {
           <velg-avatar
             name=${agent.name}
             .src=${agent.portrait_image_url ?? null}
-            size="lg"
+            size="sm"
           ></velg-avatar>
         </div>
         <div class="dossier__info">

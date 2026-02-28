@@ -18,7 +18,8 @@ export class VelgCampaignDashboard extends LitElement {
     .campaigns { display: flex; flex-direction: column; gap: var(--space-4); }
     .campaigns__header { display: flex; align-items: center; justify-content: space-between; }
     .campaigns__title { font-family: var(--font-brutalist); font-weight: var(--font-black); font-size: var(--text-2xl); text-transform: uppercase; letter-spacing: var(--tracking-brutalist); margin: 0; }
-    .campaigns__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--space-4); }
+    .campaigns__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--space-4); }
+    @media (max-width: 480px) { .campaigns__grid { grid-template-columns: 1fr; } }
   `;
 
   @property({ type: String }) simulationId = '';

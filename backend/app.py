@@ -21,6 +21,7 @@ from backend.routers import (
     connections,
     echoes,
     embassies,
+    epoch_invitations,
     epochs,
     events,
     game_mechanics,
@@ -110,6 +111,7 @@ app.include_router(embassies.router)
 app.include_router(connections.router)
 app.include_router(game_mechanics.router)
 app.include_router(epochs.router)
+app.include_router(epoch_invitations.router)
 app.include_router(operatives.router)
 app.include_router(scores.router)
 app.include_router(public.router)

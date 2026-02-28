@@ -142,6 +142,12 @@ export class VelgAgentCard extends LitElement {
           <div class="card__badges">
             ${agent.system ? html`<velg-badge variant="primary">${agent.system}</velg-badge>` : null}
             ${agent.is_ambassador ? html`<velg-badge variant="warning">${msg('Ambassador')}</velg-badge>` : null}
+            ${
+              agent.ambassador_blocked_until &&
+              new Date(agent.ambassador_blocked_until) > new Date()
+                ? html`<velg-badge variant="danger" title=${msg('Ambassador status temporarily suspended')}>${msg('Blocked')}</velg-badge>`
+                : null
+            }
             ${agent.data_source === 'ai' ? html`<velg-badge variant="info">${msg('AI Generated')}</velg-badge>` : null}
           </div>
 

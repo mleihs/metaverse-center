@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     # Security
     settings_encryption_key: str = ""
 
+    # Email
+    resend_api_key: str = ""
+
     # App
     app_title: str = "Velgarien Platform"
     debug: bool = False

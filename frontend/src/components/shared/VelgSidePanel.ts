@@ -19,6 +19,7 @@ export class VelgSidePanel extends LitElement {
       background: rgba(0, 0, 0, 0.4);
       opacity: 0;
       visibility: hidden;
+      overflow: hidden;
       transition: opacity var(--transition-normal), visibility var(--transition-normal);
     }
 
@@ -111,6 +112,26 @@ export class VelgSidePanel extends LitElement {
       padding: var(--space-4) var(--space-6);
       border-top: var(--border-medium);
       flex-shrink: 0;
+    }
+
+    /* === Mobile: full-width panel === */
+    @media (max-width: 640px) {
+      .panel {
+        max-width: none;
+      }
+
+      .panel__header {
+        padding: var(--space-3);
+      }
+
+      .panel__close {
+        min-width: 44px;
+        min-height: 44px;
+      }
+
+      .panel__footer {
+        padding: var(--space-3);
+      }
     }
   `;
 

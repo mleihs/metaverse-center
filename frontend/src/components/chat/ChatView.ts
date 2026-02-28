@@ -128,6 +128,30 @@ export class VelgChatView extends LitElement {
       cursor: pointer;
       font-weight: var(--font-bold);
     }
+
+    /* === Mobile: stack sidebar above chat === */
+
+    @media (max-width: 640px) {
+      .chat-layout {
+        grid-template-columns: 1fr;
+        height: auto;
+        min-height: 0;
+      }
+
+      .sidebar {
+        border-right: none;
+        border-bottom: var(--border-medium);
+        max-height: 200px;
+      }
+
+      .sidebar__list {
+        max-height: 140px;
+      }
+
+      .main-area {
+        min-height: 400px;
+      }
+    }
   `;
 
   @property({ type: String }) simulationId = '';

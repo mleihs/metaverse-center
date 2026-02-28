@@ -70,7 +70,7 @@ class ScoringService:
         stability = await cls._compute_stability(supabase, simulation_id)
         influence = await cls._compute_influence(supabase, epoch_id, simulation_id)
         sovereignty = await cls._compute_sovereignty(supabase, simulation_id)
-        diplomatic = await cls._compute_diplomatic(supabase, simulation_id)
+        diplomatic = await cls._compute_diplomatic(supabase, epoch_id, simulation_id)
         military = await cls._compute_military(supabase, epoch_id, simulation_id)
 
         return {
@@ -146,10 +146,13 @@ class ScoringService:
         return max(0, 100 * (1 - bleed_impact / total_impact))
 
     @classmethod
-    async def _compute_diplomatic(cls, supabase: Client, simulation_id: str) -> float:
-        """Diplomatic = sum of embassy effectiveness × (1 + 0.1 × alliance_count).
+    async def _compute_diplomatic(
+        cls, supabase: Client, epoch_id: UUID, simulation_id: str
+    ) -> float:
+        """Diplomatic = sum(embassy_effectiveness) × 10 × (1 + 0.1 × alliance_count) × (1 - betrayal_penalty).
 
         Rewards building and maintaining diplomatic networks.
+        Alliance bonus rewards cooperation; betrayal penalty punishes treachery.
         """
         # Embassy effectiveness from materialized view
         resp = (
@@ -177,7 +180,37 @@ class ScoringService:
         if total_effectiveness == 0:
             total_effectiveness = embassy_count * 0.5
 
-        return total_effectiveness * 10  # scale up for scoring
+        base_score = total_effectiveness * 10  # scale up for scoring
+
+        # A4: Alliance bonus — +10% per active ally
+        active_alliance_count = 0
+        participant_resp = (
+            supabase.table("epoch_participants")
+            .select("team_id, betrayal_penalty")
+            .eq("epoch_id", str(epoch_id))
+            .eq("simulation_id", simulation_id)
+            .maybe_single()
+            .execute()
+        )
+        betrayal_penalty = 0.0
+        if participant_resp.data:
+            team_id = participant_resp.data.get("team_id")
+            betrayal_penalty = float(participant_resp.data.get("betrayal_penalty") or 0)
+            if team_id:
+                allies_resp = (
+                    supabase.table("epoch_participants")
+                    .select("id")
+                    .eq("team_id", team_id)
+                    .execute()
+                )
+                active_alliance_count = max(0, len(allies_resp.data or []) - 1)
+
+        alliance_multiplier = 1.0 + (0.1 * active_alliance_count)
+
+        # A5: Betrayal penalty — -20% diplomatic on detected betrayal
+        betrayal_multiplier = 1.0 - betrayal_penalty
+
+        return base_score * alliance_multiplier * betrayal_multiplier
 
     @classmethod
     async def _compute_military(

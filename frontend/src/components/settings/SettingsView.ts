@@ -162,6 +162,21 @@ export class VelgSettingsView extends LitElement {
       background: var(--color-warning);
       color: var(--color-surface);
     }
+
+    /* === Mobile: shrink tabs to fit === */
+
+    @media (max-width: 640px) {
+      .settings__tabs {
+        gap: 0;
+        padding: 0 var(--space-2);
+      }
+
+      .settings__tab {
+        padding: var(--space-2) var(--space-2-5);
+        font-size: 0.56rem;
+        letter-spacing: 0;
+      }
+    }
   `;
 
   @property({ type: String }) simulationId = '';

@@ -38,6 +38,14 @@ export class VelgIconButton extends LitElement {
       cursor: not-allowed;
       pointer-events: none;
     }
+
+    /* Mobile: WCAG 44px minimum touch target */
+    @media (max-width: 640px) {
+      button {
+        min-width: 44px;
+        min-height: 44px;
+      }
+    }
   `;
 
   @property({ type: String, reflect: true }) variant: 'default' | 'danger' = 'default';

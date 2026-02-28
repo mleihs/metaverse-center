@@ -1,28 +1,9 @@
 /**
- * Static map configuration — theme colors, node sizes, and lore-based
+ * Static map configuration — node sizes, vector labels, and lore-based
  * connection descriptions (i18n-ready for when dynamic data replaces these).
  */
 
-/** Theme color map — matches SimulationCard.ts THEME_COLORS */
-export const THEME_COLORS: Record<string, string> = {
-  dystopian: '#ef4444',
-  dark: '#ef4444', // Velgarien uses 'dark' theme
-  fantasy: '#f59e0b',
-  utopian: '#22c55e',
-  scifi: '#06b6d4',
-  historical: '#a78bfa',
-  custom: '#a855f7',
-};
-
-/** Get theme color with fallback */
-export function getThemeColor(theme: string): string {
-  return THEME_COLORS[theme] ?? '#888888';
-}
-
-/** Glow filter color (semi-transparent version of theme color) */
-export function getGlowColor(theme: string): string {
-  return `${getThemeColor(theme)}66`;
-}
+export { getGlowColor, getThemeColor, THEME_COLORS } from '../../utils/theme-colors.js';
 
 /** Vector display labels */
 export const VECTOR_LABELS: Record<string, string> = {

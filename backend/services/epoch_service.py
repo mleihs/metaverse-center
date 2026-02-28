@@ -62,16 +62,16 @@ class EpochService:
         return resp.data
 
     @classmethod
-    async def get_active_epoch(cls, supabase: Client) -> dict | None:
-        """Get the currently active epoch (foundation/competition/reckoning)."""
+    async def get_active_epochs(cls, supabase: Client) -> list[dict]:
+        """Get all active epochs (lobby/foundation/competition/reckoning)."""
         resp = (
             supabase.table("game_epochs")
             .select("*")
-            .in_("status", ["foundation", "competition", "reckoning"])
-            .limit(1)
+            .in_("status", ["lobby", "foundation", "competition", "reckoning"])
+            .order("created_at", desc=True)
             .execute()
         )
-        return resp.data[0] if resp.data else None
+        return resp.data or []
 
     # ── Create / Update ──────────────────────────────────────
 
@@ -85,14 +85,6 @@ class EpochService:
         config: dict | None = None,
     ) -> dict:
         """Create a new epoch in lobby status."""
-        # Validate no active epoch exists
-        active = await cls.get_active_epoch(supabase)
-        if active:
-            raise HTTPException(
-                status.HTTP_409_CONFLICT,
-                f"An epoch is already active: '{active['name']}' ({active['status']}).",
-            )
-
         merged_config = {**DEFAULT_CONFIG, **(config or {})}
 
         data = {
@@ -131,8 +123,18 @@ class EpochService:
     # ── Lifecycle Transitions ────────────────────────────────
 
     @classmethod
-    async def start_epoch(cls, supabase: Client, epoch_id: UUID) -> dict:
-        """Transition epoch from lobby -> foundation."""
+    async def start_epoch(cls, supabase: Client, epoch_id: UUID, user_id: UUID) -> dict:
+        """Transition epoch from lobby -> foundation.
+
+        This triggers the game instance cloning process:
+        1. Clone all participating simulations into game instances
+        2. epoch_participants are repointed to instance simulation_ids
+        3. Transition epoch to foundation phase
+        4. Grant initial RP
+        """
+        from backend.dependencies import get_admin_supabase
+        from backend.services.game_instance_service import GameInstanceService
+
         epoch = await cls.get(supabase, epoch_id)
         if epoch["status"] != "lobby":
             raise HTTPException(
@@ -148,6 +150,13 @@ class EpochService:
                 "Need at least 2 participants to start an epoch.",
             )
 
+        # Clone simulations into game instances (atomic batch operation)
+        admin = await get_admin_supabase()
+        epoch_number = await GameInstanceService.get_epoch_number(supabase)
+        instance_mapping = await GameInstanceService.clone_for_epoch(
+            admin, epoch_id, user_id, epoch_number
+        )
+
         config = {**DEFAULT_CONFIG, **epoch.get("config", {})}
         duration = timedelta(days=config["duration_days"])
         now = datetime.now(UTC)
@@ -159,10 +168,17 @@ class EpochService:
                 "starts_at": now.isoformat(),
                 "ends_at": (now + duration).isoformat(),
                 "current_cycle": 1,
+                "config": {
+                    **config,
+                    "instance_mapping": instance_mapping,
+                },
             })
             .eq("id", str(epoch_id))
             .execute()
         )
+
+        # Re-fetch participants (now pointing to game instances)
+        participants = await cls.list_participants(supabase, epoch_id)
 
         # Grant initial RP to all participants (foundation bonus)
         foundation_rp = int(config["rp_per_cycle"] * 1.5)
@@ -173,7 +189,10 @@ class EpochService:
 
     @classmethod
     async def advance_phase(cls, supabase: Client, epoch_id: UUID) -> dict:
-        """Advance to the next phase (foundation->competition->reckoning->completed)."""
+        """Advance to the next phase (foundation->competition->reckoning->completed).
+
+        When advancing to 'completed', game instances are archived.
+        """
         epoch = await cls.get(supabase, epoch_id)
         next_status_map = {
             "foundation": "competition",
@@ -193,11 +212,23 @@ class EpochService:
             .eq("id", str(epoch_id))
             .execute()
         )
+
+        # Archive game instances when epoch completes
+        if next_status == "completed":
+            from backend.dependencies import get_admin_supabase
+            from backend.services.game_instance_service import GameInstanceService
+
+            admin = await get_admin_supabase()
+            await GameInstanceService.archive_instances(admin, epoch_id)
+
         return resp.data[0] if resp.data else epoch
 
     @classmethod
     async def cancel_epoch(cls, supabase: Client, epoch_id: UUID) -> dict:
-        """Cancel an epoch (any non-terminal state)."""
+        """Cancel an epoch (any non-terminal state).
+
+        Deletes all game instances created for this epoch.
+        """
         epoch = await cls.get(supabase, epoch_id)
         if epoch["status"] in ("completed", "cancelled"):
             raise HTTPException(
@@ -211,6 +242,15 @@ class EpochService:
             .eq("id", str(epoch_id))
             .execute()
         )
+
+        # Delete game instances (only exist if epoch was started)
+        if epoch["status"] != "lobby":
+            from backend.dependencies import get_admin_supabase
+            from backend.services.game_instance_service import GameInstanceService
+
+            admin = await get_admin_supabase()
+            await GameInstanceService.delete_instances(admin, epoch_id)
+
         return resp.data[0] if resp.data else epoch
 
     # ── Participants ─────────────────────────────────────────
@@ -224,7 +264,7 @@ class EpochService:
         """List all participants in an epoch."""
         resp = (
             supabase.table("epoch_participants")
-            .select("*, simulations(name, slug)")
+            .select("*, simulations(name, slug, simulation_type, source_template_id)")
             .eq("epoch_id", str(epoch_id))
             .order("joined_at")
             .execute()

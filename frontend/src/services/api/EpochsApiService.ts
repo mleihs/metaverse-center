@@ -6,6 +6,8 @@ import type {
   ApiResponse,
   BattleLogEntry,
   Epoch,
+  EpochInvitation,
+  EpochInvitationPublicInfo,
   EpochParticipant,
   EpochScore,
   EpochTeam,
@@ -26,7 +28,7 @@ export class EpochsApiService extends BaseApiService {
     return this.get('/epochs', params);
   }
 
-  getActiveEpoch(): Promise<ApiResponse<Epoch | null>> {
+  getActiveEpochs(): Promise<ApiResponse<Epoch[]>> {
     if (!appState.isAuthenticated.value) {
       return this.getPublic('/epochs/active');
     }
@@ -196,6 +198,31 @@ export class EpochsApiService extends BaseApiService {
     params?: Record<string, string>,
   ): Promise<ApiResponse<PaginatedResponse<BattleLogEntry>>> {
     return this.getPublic(`/epochs/${epochId}/battle-log`, params);
+  }
+
+  // ── Invitations ────────────────────────────────────
+
+  sendInvitation(
+    epochId: string,
+    data: { email: string; expires_in_hours?: number },
+  ): Promise<ApiResponse<EpochInvitation>> {
+    return this.post(`/epochs/${epochId}/invitations`, data);
+  }
+
+  listInvitations(epochId: string): Promise<ApiResponse<EpochInvitation[]>> {
+    return this.get(`/epochs/${epochId}/invitations`);
+  }
+
+  revokeInvitation(epochId: string, invitationId: string): Promise<ApiResponse<EpochInvitation>> {
+    return this.delete(`/epochs/${epochId}/invitations/${invitationId}`);
+  }
+
+  regenerateLore(epochId: string): Promise<ApiResponse<{ lore_text: string }>> {
+    return this.post(`/epochs/${epochId}/invitations/regenerate-lore`);
+  }
+
+  validateEpochInvitation(token: string): Promise<ApiResponse<EpochInvitationPublicInfo>> {
+    return this.getPublic(`/epoch-invitations/${token}`);
   }
 }
 

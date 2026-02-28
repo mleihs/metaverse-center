@@ -33,6 +33,8 @@ import './components/lore/SimulationLoreView.js';
 import './components/health/SimulationHealthView.js';
 import './components/multiverse/CartographerMap.js';
 import './components/epoch/EpochCommandCenter.js';
+import './components/epoch/EpochInviteAcceptView.js';
+import './components/how-to-play/HowToPlayView.js';
 import './components/shared/CookieConsent.js';
 
 @localized()
@@ -142,6 +144,26 @@ export class VelgApp extends LitElement {
           await this._authReady;
           seoService.setTitle(['Epoch Command Center']);
           analyticsService.trackPageView('/epoch', document.title);
+          return true;
+        },
+      },
+      {
+        path: '/epoch/join',
+        render: () => html`<velg-epoch-invite-accept-view></velg-epoch-invite-accept-view>`,
+        enter: async () => {
+          await this._authReady;
+          seoService.setTitle(['Epoch Summons']);
+          analyticsService.trackPageView('/epoch/join', document.title);
+          return true;
+        },
+      },
+      {
+        path: '/how-to-play',
+        render: () => html`<velg-how-to-play></velg-how-to-play>`,
+        enter: async () => {
+          await this._authReady;
+          seoService.setTitle(['How to Play']);
+          analyticsService.trackPageView('/how-to-play', document.title);
           return true;
         },
       },

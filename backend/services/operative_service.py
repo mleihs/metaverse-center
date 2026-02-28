@@ -8,6 +8,7 @@ from uuid import UUID
 from fastapi import HTTPException, status
 
 from backend.models.epoch import OperativeDeploy
+from backend.services.battle_log_service import BattleLogService
 from backend.services.epoch_service import OPERATIVE_RP_COSTS, EpochService
 from supabase import Client
 
@@ -120,6 +121,35 @@ class OperativeService:
                     status.HTTP_400_BAD_REQUEST,
                     "Embassy must be active to deploy operatives.",
                 )
+
+        # Check for betrayal (attacking an ally)
+        if body.operative_type != "guardian" and body.target_simulation_id:
+            source_p = (
+                supabase.table("epoch_participants")
+                .select("team_id")
+                .eq("epoch_id", str(epoch_id))
+                .eq("simulation_id", str(simulation_id))
+                .maybe_single()
+                .execute()
+            )
+            target_p = (
+                supabase.table("epoch_participants")
+                .select("team_id")
+                .eq("epoch_id", str(epoch_id))
+                .eq("simulation_id", str(body.target_simulation_id))
+                .maybe_single()
+                .execute()
+            )
+            source_team = source_p.data.get("team_id") if source_p.data else None
+            target_team = target_p.data.get("team_id") if target_p.data else None
+
+            if source_team and target_team and source_team == target_team:
+                config = epoch.get("config", {})
+                if not config.get("allow_betrayal", True):
+                    raise HTTPException(
+                        status.HTTP_400_BAD_REQUEST,
+                        "Betrayal is disabled in this epoch.",
+                    )
 
         # Validate agent belongs to simulation
         agent = (
@@ -260,19 +290,30 @@ class OperativeService:
             )
             guardian_count = len(guardians_resp.data or [])
 
-        # Embassy effectiveness (simplified: use connection strength)
+        # Embassy effectiveness — check for active infiltration penalty
         embassy_eff = 0.5
         if body.embassy_id:
             emb_resp = (
                 supabase.table("embassies")
-                .select("id")
+                .select("id, infiltration_penalty, infiltration_penalty_expires_at")
                 .eq("id", str(body.embassy_id))
                 .single()
                 .execute()
             )
             if emb_resp.data:
-                # Use game mechanics if available, otherwise default
-                embassy_eff = 0.6
+                base_eff = 0.6
+                penalty = float(emb_resp.data.get("infiltration_penalty") or 0)
+                expires_at = emb_resp.data.get("infiltration_penalty_expires_at")
+                if penalty > 0 and expires_at:
+                    if datetime.fromisoformat(expires_at.replace("Z", "+00:00")) > datetime.now(UTC):
+                        base_eff *= (1.0 - penalty)
+                    else:
+                        # Penalty expired — clear it lazily
+                        supabase.table("embassies").update({
+                            "infiltration_penalty": 0,
+                            "infiltration_penalty_expires_at": None,
+                        }).eq("id", str(body.embassy_id)).execute()
+                embassy_eff = base_eff
 
         probability = (
             base
@@ -420,7 +461,82 @@ class OperativeService:
             .execute()
         )
 
+        # Check for betrayal (same-team attack)
+        await cls._check_betrayal(supabase, mission, outcome)
+
         return resp.data[0] if resp.data else {**mission, **update_data}
+
+    @classmethod
+    async def _check_betrayal(
+        cls, supabase: Client, mission: dict, outcome: str
+    ) -> None:
+        """Detect betrayal when a mission targets an ally. On detection,
+        dissolve the alliance and apply a -20% diplomatic penalty."""
+        if not mission.get("target_simulation_id"):
+            return
+
+        source_p = (
+            supabase.table("epoch_participants")
+            .select("team_id")
+            .eq("epoch_id", mission["epoch_id"])
+            .eq("simulation_id", mission["source_simulation_id"])
+            .maybe_single()
+            .execute()
+        )
+        target_p = (
+            supabase.table("epoch_participants")
+            .select("team_id")
+            .eq("epoch_id", mission["epoch_id"])
+            .eq("simulation_id", mission["target_simulation_id"])
+            .maybe_single()
+            .execute()
+        )
+
+        source_team = source_p.data.get("team_id") if source_p.data else None
+        target_team = target_p.data.get("team_id") if target_p.data else None
+
+        if not (source_team and target_team and source_team == target_team):
+            return
+
+        is_detected = outcome in ("detected", "captured")
+
+        # Fetch epoch for cycle number
+        epoch_resp = (
+            supabase.table("game_epochs")
+            .select("current_cycle")
+            .eq("id", mission["epoch_id"])
+            .single()
+            .execute()
+        )
+        cycle = epoch_resp.data.get("current_cycle", 1) if epoch_resp.data else 1
+
+        await BattleLogService.log_betrayal(
+            supabase,
+            UUID(mission["epoch_id"]),
+            cycle,
+            UUID(mission["source_simulation_id"]),
+            UUID(mission["target_simulation_id"]),
+            is_detected,
+        )
+
+        if is_detected:
+            # Dissolve alliance — remove all members from team
+            supabase.table("epoch_participants").update(
+                {"team_id": None}
+            ).eq("team_id", source_team).execute()
+
+            # Apply -20% diplomatic penalty to betrayer
+            supabase.table("epoch_participants").update(
+                {"betrayal_penalty": 0.2}
+            ).eq("epoch_id", mission["epoch_id"]).eq(
+                "simulation_id", mission["source_simulation_id"]
+            ).execute()
+
+            logger.info(
+                "Betrayal detected: sim %s attacked ally %s — alliance dissolved, penalty applied",
+                mission["source_simulation_id"],
+                mission["target_simulation_id"],
+            )
 
     @classmethod
     async def _apply_success_effect(cls, supabase: Client, mission: dict) -> dict:
@@ -462,14 +578,35 @@ class OperativeService:
                 }
 
         if op_type == "propagandist":
+            # A1: Create a destabilizing event in the target simulation
+            from backend.dependencies import get_admin_supabase
+
+            admin = await get_admin_supabase()
+            target_sim = mission["target_simulation_id"]
+            event_data = {
+                "simulation_id": target_sim,
+                "title": "Propaganda Campaign — Foreign Influence Detected",
+                "description": "Morale undermined by external propaganda operations.",
+                "event_type": "social",
+                "impact_level": secrets.SystemRandom().randint(3, 5),
+                "data_source": "propagandist",
+                "metadata": {
+                    "mission_id": str(mission["id"]),
+                    "source_simulation_id": str(mission["source_simulation_id"]),
+                    "operative_type": "propagandist",
+                },
+            }
+            admin.table("events").insert(event_data).execute()
+
             return {
                 "outcome": "success",
-                "narrative": "Propaganda campaign succeeded. Target population's morale has been undermined.",
+                "narrative": "Propaganda campaign succeeded. Target population's morale undermined.",
                 "score_awarded": True,
+                "event_created": True,
             }
 
         if op_type == "assassin" and mission.get("target_entity_id"):
-            # Weaken target agent's relationships
+            # Weaken target agent's relationships (-2 intensity)
             rel_resp = (
                 supabase.table("agent_relationships")
                 .select("id, intensity")
@@ -484,18 +621,56 @@ class OperativeService:
                 supabase.table("agent_relationships").update(
                     {"intensity": new_intensity}
                 ).eq("id", rel["id"]).execute()
+
+            # A2: Block ambassador status for 3 cycles
+            epoch_resp = (
+                supabase.table("game_epochs")
+                .select("config")
+                .eq("id", mission["epoch_id"])
+                .single()
+                .execute()
+            )
+            config = (epoch_resp.data or {}).get("config", {})
+            cycle_hours = config.get("cycle_hours", 8)
+            blocked_until = datetime.now(UTC) + timedelta(hours=3 * cycle_hours)
+            supabase.table("agents").update(
+                {"ambassador_blocked_until": blocked_until.isoformat()}
+            ).eq("id", mission["target_entity_id"]).execute()
+
             return {
                 "outcome": "success",
-                "narrative": "Assassination successful. Target agent's influence diminished.",
+                "narrative": (
+                    "Assassination successful. Target agent's influence "
+                    "diminished and ambassador status suspended."
+                ),
                 "relationships_weakened": len(rel_resp.data or []),
+                "ambassador_blocked_until": blocked_until.isoformat(),
             }
 
         if op_type == "infiltrator" and mission.get("target_entity_id"):
+            # A3: Reduce embassy effectiveness by 50% for 3 cycles
+            epoch_resp = (
+                supabase.table("game_epochs")
+                .select("config")
+                .eq("id", mission["epoch_id"])
+                .single()
+                .execute()
+            )
+            config = (epoch_resp.data or {}).get("config", {})
+            cycle_hours = config.get("cycle_hours", 8)
+            expires_at = datetime.now(UTC) + timedelta(hours=3 * cycle_hours)
+
+            supabase.table("embassies").update({
+                "infiltration_penalty": 0.5,
+                "infiltration_penalty_expires_at": expires_at.isoformat(),
+            }).eq("id", mission["target_entity_id"]).execute()
+
             return {
                 "outcome": "success",
-                "narrative": "Embassy infiltrated. Intelligence on diplomatic operations obtained.",
+                "narrative": "Embassy infiltrated. Diplomatic effectiveness severely compromised.",
                 "intel_gathered": True,
                 "target_embassy_id": mission["target_entity_id"],
+                "effectiveness_reduced": True,
             }
 
         return {"outcome": "success", "narrative": "Mission completed."}

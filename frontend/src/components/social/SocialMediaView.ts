@@ -31,7 +31,8 @@ export class VelgSocialMediaView extends LitElement {
       box-shadow: var(--shadow-md); cursor: pointer; transition: all var(--transition-fast);
     }
     .social__btn:hover { transform: translate(-2px, -2px); box-shadow: var(--shadow-lg); }
-    .social__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: var(--space-4); }
+    .social__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--space-4); }
+    @media (max-width: 480px) { .social__grid { grid-template-columns: 1fr; } }
   `;
 
   @property({ type: String }) simulationId = '';

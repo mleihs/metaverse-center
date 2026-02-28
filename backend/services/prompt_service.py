@@ -80,6 +80,12 @@ HARDCODED_FALLBACKS: dict[str, str] = {
     "chat_event_reaction": (
         "{agent_name} reacted to \"{event_title}\": {reaction_text} (Emotion: {emotion})"
     ),
+    "epoch_invitation_lore": (
+        "Draft a classified tactical dispatch summoning operatives to "
+        "Operation {epoch_name}. Briefing: {epoch_description}. "
+        "Known participants: {participant_names}. "
+        "Write one terse paragraph in military intelligence style."
+    ),
 }
 
 

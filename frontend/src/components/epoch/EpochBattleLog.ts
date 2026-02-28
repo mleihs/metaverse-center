@@ -81,11 +81,13 @@ export class VelgEpochBattleLog extends LitElement {
     .entry--mission_failed::before          { background: var(--color-gray-600); }
     .entry--detected::before                { background: var(--color-danger); }
     .entry--sabotage::before                { background: var(--color-warning); }
-    .entry--propaganda::before              { background: #a78bfa; }
+    .entry--propaganda::before              { background: var(--color-epoch-influence); }
     .entry--assassination::before           { background: var(--color-danger); }
     .entry--agent_wounded::before           { background: var(--color-danger); }
     .entry--alliance_formed::before         { background: var(--color-info); }
-    .entry--betrayal::before                { background: var(--color-danger-hover); }
+    .entry--betrayal::before                { background: var(--color-danger-hover); width: 4px; opacity: 1; }
+    .entry--betrayal .entry__narrative       { font-weight: var(--font-bold); color: var(--color-gray-100); }
+    .entry--betrayal .entry__type            { color: var(--color-danger); }
     .entry--phase_change::before            { background: var(--color-warning); }
     .entry--counter_intel::before           { background: var(--color-info); }
 
@@ -229,7 +231,7 @@ export class VelgEpochBattleLog extends LitElement {
       assassination: '\u{1F5E1}',
       agent_wounded: '\u{1FA78}',
       alliance_formed: '\u{1F91D}',
-      betrayal: '\u{1F5E1}',
+      betrayal: '\u{2620}',
       phase_change: '\u{26A1}',
       counter_intel: '\u{1F50E}',
     };

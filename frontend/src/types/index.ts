@@ -14,6 +14,8 @@ export type SimulationTheme =
 
 export type SimulationStatus = 'draft' | 'configuring' | 'active' | 'paused' | 'archived';
 
+export type SimulationType = 'template' | 'game_instance' | 'archived';
+
 export type SimulationRole = 'owner' | 'admin' | 'editor' | 'viewer';
 
 export type SettingCategory =
@@ -86,6 +88,9 @@ export interface Simulation {
   description: string;
   theme: SimulationTheme;
   status: SimulationStatus;
+  simulation_type: SimulationType;
+  source_template_id?: UUID;
+  epoch_id?: UUID;
   content_locale: string;
   additional_locales: string[];
   owner_id: UUID;
@@ -157,6 +162,7 @@ export interface Agent {
   updated_at: string;
   deleted_at?: string;
   is_ambassador?: boolean;
+  ambassador_blocked_until?: string;
   professions?: AgentProfession[];
   reactions?: EventReaction[];
   building_relations?: BuildingAgentRelation[];
@@ -683,6 +689,8 @@ export interface Embassy {
   event_propagation: boolean;
   embassy_metadata?: EmbassyMetadata;
   created_by_id?: UUID;
+  infiltration_penalty?: number;
+  infiltration_penalty_expires_at?: string;
   created_at: string;
   updated_at: string;
   building_a?: Building;
@@ -861,6 +869,30 @@ export interface Epoch {
   updated_at: string;
 }
 
+export interface EpochInvitation {
+  id: UUID;
+  epoch_id: UUID;
+  invited_email: string;
+  invite_token: string;
+  status: 'pending' | 'accepted' | 'expired' | 'revoked';
+  invited_by_id: UUID;
+  expires_at: string;
+  accepted_at?: string;
+  accepted_by_id?: UUID;
+  created_at: string;
+  email_sent?: boolean;
+}
+
+export interface EpochInvitationPublicInfo {
+  epoch_name: string;
+  epoch_description?: string;
+  epoch_status: string;
+  lore_text?: string;
+  expires_at: string;
+  is_expired: boolean;
+  is_accepted: boolean;
+}
+
 export interface EpochParticipant {
   id: UUID;
   epoch_id: UUID;
@@ -870,7 +902,13 @@ export interface EpochParticipant {
   current_rp: number;
   last_rp_grant_at?: string;
   final_scores?: Record<string, number>;
-  simulations?: { name: string; slug: string };
+  betrayal_penalty?: number;
+  simulations?: {
+    name: string;
+    slug: string;
+    simulation_type?: SimulationType;
+    source_template_id?: UUID;
+  };
 }
 
 export interface EpochTeam {
@@ -917,6 +955,7 @@ export interface LeaderboardEntry {
   diplomatic: number;
   military: number;
   composite: number;
+  betrayal_penalty?: number;
   stability_title?: string;
   influence_title?: string;
   sovereignty_title?: string;

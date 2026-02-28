@@ -189,8 +189,14 @@ export class VelgSimulationsDashboard extends LitElement {
 
     .shards-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: var(--space-6);
+    }
+
+    @media (max-width: 480px) {
+      .shards-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     /* ── Footer Lore ── */
@@ -263,16 +269,24 @@ export class VelgSimulationsDashboard extends LitElement {
 
     @media (max-width: 640px) {
       .hero {
-        min-height: 240px;
+        min-height: 220px;
       }
 
       .hero__title {
         font-size: var(--text-2xl);
-        letter-spacing: 2px;
+        letter-spacing: 1px;
+      }
+
+      .hero__lore {
+        font-size: var(--text-xs);
+      }
+
+      .hero__overlay {
+        padding: var(--space-6) var(--space-4);
       }
 
       .content {
-        padding: var(--space-5) var(--space-4);
+        padding: var(--space-4) var(--space-3);
       }
 
       .shards-grid {

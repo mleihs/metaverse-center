@@ -45,12 +45,13 @@ class SimulationService:
         if not sim_ids:
             return [], 0
 
-        # Query simulations with filters
+        # Query simulations with filters (exclude game instances by default)
         query = (
             supabase.table("simulations")
             .select("*", count="exact")
             .in_("id", sim_ids)
             .is_("deleted_at", "null")
+            .eq("simulation_type", "template")
             .order("created_at", desc=True)
         )
 

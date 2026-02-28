@@ -35,6 +35,19 @@ export class VelgSimulationNav extends LitElement {
       border-bottom: var(--border-default);
     }
 
+    .instance-badge {
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+      padding: var(--space-1) var(--space-6);
+      background: var(--color-epoch-influence, #a78bfa);
+      color: #fff;
+      font-size: var(--font-size-xs);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
     .nav {
       display: flex;
       align-items: stretch;
@@ -213,14 +226,132 @@ export class VelgSimulationNav extends LitElement {
         transform: translateY(1px) rotate(2deg) scale(0.98);
       }
     }
+
+    /* === Mobile: hamburger menu === */
+
+    .mobile-bar {
+      display: none;
+    }
+
+    .mobile-menu {
+      display: none;
+    }
+
+    @media (max-width: 640px) {
+      .nav {
+        display: none;
+      }
+
+      .mobile-bar {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        padding: var(--space-2) var(--space-4);
+      }
+
+      .mobile-bar__hamburger {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        background: transparent;
+        border: var(--border-default);
+        cursor: pointer;
+        color: var(--color-text-primary);
+        transition: all var(--transition-fast);
+        flex-shrink: 0;
+        padding: 0;
+      }
+
+      .mobile-bar__hamburger:hover {
+        background: var(--color-surface-raised);
+      }
+
+      .mobile-bar__current {
+        font-family: var(--font-brutalist);
+        font-weight: var(--font-bold);
+        font-size: var(--text-sm);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-wide);
+        color: var(--color-primary);
+      }
+
+      .mobile-menu {
+        display: none;
+        flex-direction: column;
+        border-top: var(--border-default);
+        background: var(--color-surface);
+      }
+
+      .mobile-menu--open {
+        display: flex;
+      }
+
+      .mobile-menu__item {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        padding: var(--space-3) var(--space-4);
+        font-family: var(--font-brutalist);
+        font-weight: var(--font-bold);
+        font-size: var(--text-sm);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-wide);
+        color: var(--color-text-muted);
+        text-decoration: none;
+        border: none;
+        border-left: 3px solid transparent;
+        background: transparent;
+        cursor: pointer;
+        transition: color var(--transition-fast), background var(--transition-fast);
+        min-height: 44px;
+      }
+
+      .mobile-menu__item:hover {
+        background: var(--color-surface-raised);
+        color: var(--color-primary);
+      }
+
+      .mobile-menu__item--active {
+        color: var(--color-primary);
+        background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+        border-left-color: var(--color-primary);
+      }
+
+      .mobile-menu__icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+      }
+    }
   `;
 
   @property({ type: String }) simulationId = '';
   @state() private _activeTab = 'lore';
+  @state() private _menuOpen = false;
+
+  private _boundClickOutside: ((e: MouseEvent) => void) | null = null;
+  private _boundKeyDown: ((e: KeyboardEvent) => void) | null = null;
 
   connectedCallback(): void {
     super.connectedCallback();
     this._detectActiveTab();
+    this._boundClickOutside = this._handleClickOutside.bind(this);
+    this._boundKeyDown = this._handleKeyDown.bind(this);
+    document.addEventListener('click', this._boundClickOutside);
+    document.addEventListener('keydown', this._boundKeyDown);
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    if (this._boundClickOutside) {
+      document.removeEventListener('click', this._boundClickOutside);
+    }
+    if (this._boundKeyDown) {
+      document.removeEventListener('keydown', this._boundKeyDown);
+    }
   }
 
   private _detectActiveTab(): void {
@@ -238,6 +369,7 @@ export class VelgSimulationNav extends LitElement {
   private _handleTabClick(e: Event, tab: NavTab): void {
     e.preventDefault();
     this._activeTab = tab.path;
+    this._menuOpen = false;
     this.dispatchEvent(
       new CustomEvent('navigate', {
         detail: `/simulations/${this._slug}/${tab.path}`,
@@ -247,6 +379,25 @@ export class VelgSimulationNav extends LitElement {
     );
   }
 
+  private _toggleMenu(e: Event): void {
+    e.stopPropagation();
+    this._menuOpen = !this._menuOpen;
+  }
+
+  private _handleClickOutside(e: MouseEvent): void {
+    if (!this._menuOpen) return;
+    const path = e.composedPath();
+    if (!path.includes(this)) {
+      this._menuOpen = false;
+    }
+  }
+
+  private _handleKeyDown(e: KeyboardEvent): void {
+    if (e.key === 'Escape' && this._menuOpen) {
+      this._menuOpen = false;
+    }
+  }
+
   private get _visibleTabs(): NavTab[] {
     return getTabs().filter((tab) => {
       if (tab.requireAdmin && !appState.canAdmin.value) return false;
@@ -254,10 +405,27 @@ export class VelgSimulationNav extends LitElement {
     });
   }
 
+  private get _activeLabel(): string {
+    const tab = this._visibleTabs.find((t) => t.path === this._activeTab);
+    return tab?.label ?? '';
+  }
+
+  private get _isGameInstance(): boolean {
+    return appState.currentSimulation.value?.simulation_type === 'game_instance';
+  }
+
   protected render() {
+    const tabs = this._visibleTabs;
+
     return html`
+      ${
+        this._isGameInstance
+          ? html`<div class="instance-badge">${icons.bolt(12)} ${msg('Game Instance')}</div>`
+          : ''
+      }
+      <!-- Desktop: horizontal tabs -->
       <nav class="nav">
-        ${this._visibleTabs.map(
+        ${tabs.map(
           (tab, i) => html`
             <a
               href="/simulations/${this._slug}/${tab.path}"
@@ -271,6 +439,33 @@ export class VelgSimulationNav extends LitElement {
           `,
         )}
       </nav>
+
+      <!-- Mobile: hamburger bar + dropdown -->
+      <div class="mobile-bar">
+        <button
+          class="mobile-bar__hamburger"
+          @click=${this._toggleMenu}
+          aria-label=${msg('Navigation menu')}
+          aria-expanded=${this._menuOpen}
+        >
+          ${this._menuOpen ? icons.close(18) : icons.menu(20)}
+        </button>
+        <span class="mobile-bar__current">${this._activeLabel}</span>
+      </div>
+      <div class="mobile-menu ${this._menuOpen ? 'mobile-menu--open' : ''}">
+        ${tabs.map(
+          (tab) => html`
+            <a
+              class="mobile-menu__item ${this._activeTab === tab.path ? 'mobile-menu__item--active' : ''}"
+              href="/simulations/${this._slug}/${tab.path}"
+              @click=${(e: Event) => this._handleTabClick(e, tab)}
+            >
+              <span class="mobile-menu__icon">${tab.icon()}</span>
+              ${tab.label}
+            </a>
+          `,
+        )}
+      </div>
     `;
   }
 }

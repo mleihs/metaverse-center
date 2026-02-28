@@ -186,4 +186,11 @@ export const formStyles = css`
     background: var(--color-primary);
     color: var(--color-text-inverse);
   }
+
+  /* === Mobile: stack form rows === */
+  @media (max-width: 640px) {
+    .form__row {
+      grid-template-columns: 1fr;
+    }
+  }
 `;

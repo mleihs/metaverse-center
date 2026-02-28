@@ -2,6 +2,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { Embassy } from '../../types/index.js';
+import { getThemeColor } from '../../utils/theme-colors.js';
 import '../shared/VelgBadge.js';
 
 /**
@@ -174,18 +175,7 @@ export class VelgEmbassyLink extends LitElement {
   }
 
   private _getThemeColor(theme?: string): string {
-    const colors: Record<string, string> = {
-      dystopian: '#ef4444',
-      dark: '#ef4444',
-      fantasy: '#f59e0b',
-      utopian: '#22c55e',
-      scifi: '#06b6d4',
-      historical: '#a78bfa',
-      custom: '#a855f7',
-      'deep-space-horror': '#06b6d4',
-      'arc-raiders': '#d97706',
-    };
-    return colors[theme ?? ''] ?? '#888888';
+    return getThemeColor(theme ?? '');
   }
 
   protected render() {

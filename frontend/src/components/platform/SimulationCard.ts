@@ -1,17 +1,9 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import type { Simulation, SimulationTheme } from '../../types/index.js';
+import type { Simulation } from '../../types/index.js';
+import { getThemeColor } from '../../utils/theme-colors.js';
 import '../shared/VelgBadge.js';
-
-const THEME_COLORS: Record<SimulationTheme, string> = {
-  dystopian: '#ef4444',
-  fantasy: '#f59e0b',
-  utopian: '#22c55e',
-  scifi: '#06b6d4',
-  historical: '#a78bfa',
-  custom: '#a855f7',
-};
 
 @localized()
 @customElement('velg-simulation-card')
@@ -244,7 +236,7 @@ export class VelgSimulationCard extends LitElement {
     const sim = this.simulation;
     if (!sim) return html``;
 
-    const color = THEME_COLORS[sim.theme] ?? '#888';
+    const color = getThemeColor(sim.theme);
     const colorAlpha = `${color}33`;
 
     return html`

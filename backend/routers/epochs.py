@@ -24,6 +24,7 @@ from backend.models.epoch import (
 from backend.services.audit_service import AuditService
 from backend.services.battle_log_service import BattleLogService
 from backend.services.epoch_service import EpochService
+from backend.services.game_instance_service import GameInstanceService
 from supabase import Client
 
 logger = logging.getLogger(__name__)
@@ -53,13 +54,13 @@ async def list_epochs(
     }
 
 
-@router.get("/active", response_model=SuccessResponse[EpochResponse | None])
-async def get_active_epoch(
+@router.get("/active", response_model=SuccessResponse[list[EpochResponse]])
+async def get_active_epochs(
     user: CurrentUser = Depends(get_current_user),
     supabase: Client = Depends(get_supabase),
 ) -> dict:
-    """Get the currently active epoch (if any)."""
-    data = await EpochService.get_active_epoch(supabase)
+    """Get all active epochs (lobby + running)."""
+    data = await EpochService.get_active_epochs(supabase)
     return {"success": True, "data": data}
 
 
@@ -120,8 +121,12 @@ async def start_epoch(
     _creator_check: None = Depends(require_epoch_creator()),
     supabase: Client = Depends(get_supabase),
 ) -> dict:
-    """Start an epoch (lobby -> foundation). Creator only."""
-    data = await EpochService.start_epoch(supabase, epoch_id)
+    """Start an epoch (lobby -> foundation). Creator only.
+
+    This clones all participating simulations into game instances
+    with normalized gameplay values.
+    """
+    data = await EpochService.start_epoch(supabase, epoch_id, user.id)
     await BattleLogService.log_phase_change(
         supabase, epoch_id, 1, "lobby", "foundation"
     )
@@ -170,6 +175,17 @@ async def cancel_epoch(
         supabase, None, user.id, "game_epochs", epoch_id, "update",
         details={"action": "cancel", "old_status": epoch["status"]},
     )
+    return {"success": True, "data": data}
+
+
+@router.get("/{epoch_id}/instances", response_model=SuccessResponse)
+async def list_instances(
+    epoch_id: UUID,
+    user: CurrentUser = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase),
+) -> dict:
+    """List all game instances for an epoch."""
+    data = await GameInstanceService.list_instances(supabase, epoch_id)
     return {"success": True, "data": data}
 
 

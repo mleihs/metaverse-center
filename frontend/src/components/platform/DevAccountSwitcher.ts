@@ -74,6 +74,12 @@ export class VelgDevAccountSwitcher extends LitElement {
       opacity: 0.5;
       pointer-events: none;
     }
+
+    @media (max-width: 640px) {
+      :host {
+        display: none;
+      }
+    }
   `;
 
   @state() private _switching = false;

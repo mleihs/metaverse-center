@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from datetime import UTC, datetime
 from uuid import UUID
 
 from backend.services.base_service import BaseService
@@ -187,5 +188,18 @@ class AgentService(BaseService):
             if name:
                 ambassador_names.add(name)
 
+        now = datetime.now(UTC)
         for agent in agents:
-            agent["is_ambassador"] = agent.get("name") in ambassador_names
+            is_ambassador = agent.get("name") in ambassador_names
+            # A2: Check if ambassador status is temporarily blocked
+            blocked_until = agent.get("ambassador_blocked_until")
+            if blocked_until and is_ambassador:
+                try:
+                    blocked_dt = datetime.fromisoformat(
+                        str(blocked_until).replace("Z", "+00:00")
+                    )
+                    if blocked_dt > now:
+                        is_ambassador = False
+                except (ValueError, TypeError):
+                    pass
+            agent["is_ambassador"] = is_ambassador

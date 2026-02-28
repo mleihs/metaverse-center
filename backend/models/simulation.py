@@ -39,6 +39,9 @@ class SimulationResponse(BaseModel):
     owner_id: UUID
     icon_url: str | None = None
     banner_url: str | None = None
+    simulation_type: str = "template"
+    source_template_id: UUID | None = None
+    epoch_id: UUID | None = None
     created_at: datetime
     updated_at: datetime
     archived_at: datetime | None = None

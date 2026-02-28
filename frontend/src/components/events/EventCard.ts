@@ -293,6 +293,7 @@ export class VelgEventCard extends LitElement {
             ${evt.event_type ? html`<velg-badge variant="primary">${evt.event_type}</velg-badge>` : null}
             ${evt.data_source === 'ai' ? html`<velg-badge variant="info">AI</velg-badge>` : null}
             ${evt.data_source === 'bleed' ? html`<velg-badge variant="warning">${msg('Bleed')}</velg-badge>` : null}
+            ${evt.data_source === 'propagandist' ? html`<velg-badge variant="warning" title=${msg('This event was caused by foreign propaganda')}>${msg('Propaganda')}</velg-badge>` : null}
             ${reactionCount > 0 ? html`<velg-badge variant="warning">${msg(str`${reactionCount} Reactions`)}</velg-badge>` : null}
           </div>
 
