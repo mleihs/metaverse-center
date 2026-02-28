@@ -8,12 +8,20 @@
   --duration-slow: 300ms;
   --duration-slower: 500ms;
 
+  /* === ENTRANCE DURATIONS (theme-scalable via ThemeService) === */
+  --duration-entrance: 350ms;
+  --duration-stagger: 40ms;
+  --duration-cascade: 60ms;
+
   /* === EASING === */
   --ease-default: ease;
   --ease-in: ease-in;
   --ease-out: ease-out;
   --ease-in-out: ease-in-out;
   --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-dramatic: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-snap: cubic-bezier(0.5, 0, 0, 1);
 
   /* === COMPOSED TRANSITIONS === */
   --transition-fast: var(--duration-fast) var(--ease-default);

@@ -19,6 +19,20 @@ export class VelgSimulationCard extends LitElement {
   static styles = css`
     :host {
       display: block;
+      opacity: 0;
+      animation: shard-enter 500ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) forwards;
+      animation-delay: calc(var(--i, 0) * 80ms);
+    }
+
+    @keyframes shard-enter {
+      from {
+        opacity: 0;
+        transform: translateY(16px) scale(0.97);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
     }
 
     .shard {

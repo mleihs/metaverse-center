@@ -1,7 +1,8 @@
 # 03 - Database Schema New: Neues Schema mit Simulation-Kontext
 
-**Version:** 2.2
-**Datum:** 2026-02-26
+**Version:** 2.3
+**Datum:** 2026-02-28
+**Aenderung v2.3:** 9 neue Tabellen (embassies, game_epochs, epoch_teams, epoch_participants, operative_missions, epoch_scores, battle_log + vorherige agent_relationships, event_echoes, simulation_connections). 39 Tabellen gesamt, 161 RLS-Policies, ~38 unique Triggers (59 Trigger-Eintraege), 8 Views, 4 materialisierte Views, 19 Functions (ohne unaccent-Varianten). Migrationen 026-033. Competitive Layer (Epochs, Operatives, Scoring, Battle Log). Embassies & Ambassadors (Cross-Sim Diplomatic Buildings). Game-Mechanics-Functions (materialized view refresh, weight fallback, epoch status validation).
 **Aenderung v2.2:** 3 neue Tabellen (agent_relationships, event_echoes, simulation_connections). 30 Tabellen gesamt, 130 RLS-Policies, 25 Triggers. Migration 026. Taxonomy-Typ `relationship_type` mit 24 Werten (6 pro Simulation).
 **Aenderung v2.1:** 24 Migrationen (001-021 + ensure_dev_user). 27 Tabellen, 122 RLS-Policies (inkl. 21 anon SELECT), 22 Triggers, 6 Views + 2 materialisierte Views. 4 Storage-Buckets (agent.portraits, building.images, user.agent.portraits, simulation.assets). `banner_url` und `icon_url` Felder in `simulations` Tabelle.
 
@@ -877,6 +878,89 @@ RETURNS boolean AS $$
           AND is_active = true
     );
 $$ LANGUAGE sql STABLE;
+
+-- Game weight fallback: Returns weight factor for game mechanics taxonomy values
+CREATE OR REPLACE FUNCTION public.game_weight_fallback(p_taxonomy_type text, p_value text)
+RETURNS numeric AS $$
+    -- Returns a weight factor (0.0-1.0) for game mechanics calculations.
+    -- Falls back to sensible defaults when taxonomy metadata lacks explicit weights.
+$$ LANGUAGE sql IMMUTABLE;
+```
+
+### Game-Mechanics Functions (Migration 031-032)
+
+```sql
+-- Refresh all 4 game-mechanics materialized views
+CREATE OR REPLACE FUNCTION public.refresh_all_game_metrics()
+RETURNS void AS $$
+BEGIN
+    REFRESH MATERIALIZED VIEW CONCURRENTLY mv_building_readiness;
+    REFRESH MATERIALIZED VIEW CONCURRENTLY mv_zone_stability;
+    REFRESH MATERIALIZED VIEW CONCURRENTLY mv_embassy_effectiveness;
+    REFRESH MATERIALIZED VIEW CONCURRENTLY mv_simulation_health;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Individual view refreshes
+CREATE OR REPLACE FUNCTION public.refresh_building_readiness()
+RETURNS void AS $$
+BEGIN
+    REFRESH MATERIALIZED VIEW CONCURRENTLY mv_building_readiness;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION public.refresh_zone_stability()
+RETURNS void AS $$
+BEGIN
+    REFRESH MATERIALIZED VIEW CONCURRENTLY mv_zone_stability;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION public.refresh_embassy_effectiveness()
+RETURNS void AS $$
+BEGIN
+    REFRESH MATERIALIZED VIEW CONCURRENTLY mv_embassy_effectiveness;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger function: Sends pg_notify when game-metrics-relevant data changes
+CREATE OR REPLACE FUNCTION public.notify_game_metrics_stale()
+RETURNS TRIGGER AS $$
+BEGIN
+    PERFORM pg_notify('game_metrics_stale', json_build_object(
+        'table', TG_TABLE_NAME,
+        'operation', TG_OP
+    )::text);
+    RETURN COALESCE(NEW, OLD);
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger function: Validates epoch status state machine transitions
+CREATE OR REPLACE FUNCTION public.validate_epoch_status_transition()
+RETURNS TRIGGER AS $$
+DECLARE
+    valid_transitions jsonb := '{
+        "lobby": ["foundation", "cancelled"],
+        "foundation": ["competition", "cancelled"],
+        "competition": ["reckoning", "cancelled"],
+        "reckoning": ["completed", "cancelled"],
+        "completed": [],
+        "cancelled": []
+    }'::jsonb;
+    allowed jsonb;
+BEGIN
+    IF OLD.status = NEW.status THEN
+        RETURN NEW;
+    END IF;
+
+    allowed := valid_transitions -> OLD.status;
+    IF allowed IS NULL OR NOT (allowed ? NEW.status) THEN
+        RAISE EXCEPTION 'Invalid epoch status transition: % -> %', OLD.status, NEW.status;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 ```
 
 ### Trigger Functions
@@ -1023,6 +1107,23 @@ CREATE TRIGGER trg_slug_immutable BEFORE UPDATE ON simulations
 -- Last owner protection
 CREATE TRIGGER trg_last_owner BEFORE DELETE ON simulation_members
     FOR EACH ROW EXECUTE FUNCTION prevent_last_owner_removal();
+
+-- Epoch status transitions (Migration 032)
+CREATE TRIGGER trg_epoch_status BEFORE UPDATE ON game_epochs
+    FOR EACH ROW EXECUTE FUNCTION validate_epoch_status_transition();
+
+-- Game metrics stale notification (Migration 031)
+-- Applied to buildings, building_agent_relations, building_profession_requirements, zones, embassies
+CREATE TRIGGER trg_buildings_metrics_stale AFTER INSERT OR UPDATE OR DELETE ON buildings
+    FOR EACH ROW EXECUTE FUNCTION notify_game_metrics_stale();
+CREATE TRIGGER trg_bar_metrics_stale AFTER INSERT OR UPDATE OR DELETE ON building_agent_relations
+    FOR EACH ROW EXECUTE FUNCTION notify_game_metrics_stale();
+CREATE TRIGGER trg_bpr_metrics_stale AFTER INSERT OR UPDATE OR DELETE ON building_profession_requirements
+    FOR EACH ROW EXECUTE FUNCTION notify_game_metrics_stale();
+CREATE TRIGGER trg_zones_metrics_stale AFTER INSERT OR UPDATE OR DELETE ON zones
+    FOR EACH ROW EXECUTE FUNCTION notify_game_metrics_stale();
+CREATE TRIGGER trg_embassies_metrics_stale AFTER INSERT OR UPDATE OR DELETE ON embassies
+    FOR EACH ROW EXECUTE FUNCTION notify_game_metrics_stale();
 ```
 
 ---
@@ -1123,6 +1224,84 @@ CREATE MATERIALIZED VIEW public.agent_statistics AS
 CREATE UNIQUE INDEX idx_agent_statistics_pk ON agent_statistics(agent_id);
 ```
 
+### Game-Mechanics Materialized Views (Migration 031)
+
+4 materialisierte Views fuer berechnete Spielmetriken. Werden via `refresh_all_game_metrics()` oder einzeln aktualisiert.
+
+```sql
+-- Building readiness: Berechnet Bereitschaft basierend auf Staffing, Condition, Population
+CREATE MATERIALIZED VIEW public.mv_building_readiness AS
+    SELECT
+        b.id AS building_id,
+        b.simulation_id,
+        b.name,
+        b.building_type,
+        b.building_condition,
+        b.population_capacity,
+        count(DISTINCT bar.agent_id) AS assigned_agents,
+        count(DISTINCT bpr.id) AS required_professions,
+        -- staffing_ratio, condition_score, readiness berechnet
+        ...
+    FROM buildings b
+    LEFT JOIN building_agent_relations bar ON b.id = bar.building_id
+    LEFT JOIN building_profession_requirements bpr ON b.id = bpr.building_id
+    WHERE b.deleted_at IS NULL
+    GROUP BY b.id;
+
+CREATE UNIQUE INDEX idx_mv_building_readiness_pk ON mv_building_readiness(building_id);
+
+-- Zone stability: Berechnet Stabilitaet basierend auf Building Readiness und Security Level
+CREATE MATERIALIZED VIEW public.mv_zone_stability AS
+    SELECT
+        z.id AS zone_id,
+        z.simulation_id,
+        z.name,
+        z.zone_type,
+        z.security_level,
+        -- avg_readiness, building_count, stability berechnet
+        ...
+    FROM zones z
+    LEFT JOIN buildings b ON b.zone_id = z.id AND b.deleted_at IS NULL
+    LEFT JOIN mv_building_readiness mbr ON b.id = mbr.building_id
+    GROUP BY z.id;
+
+CREATE UNIQUE INDEX idx_mv_zone_stability_pk ON mv_zone_stability(zone_id);
+
+-- Embassy effectiveness: Berechnet Effektivitaet basierend auf Building Health, Ambassador Quality, Vector Alignment
+CREATE MATERIALIZED VIEW public.mv_embassy_effectiveness AS
+    SELECT
+        e.id AS embassy_id,
+        e.simulation_a_id,
+        e.simulation_b_id,
+        e.status,
+        e.bleed_vector,
+        -- building_health, ambassador_quality, vector_alignment, effectiveness berechnet
+        ...
+    FROM embassies e
+    LEFT JOIN buildings ba ON e.building_a_id = ba.id
+    LEFT JOIN buildings bb ON e.building_b_id = bb.id;
+
+CREATE UNIQUE INDEX idx_mv_embassy_effectiveness_pk ON mv_embassy_effectiveness(embassy_id);
+
+-- Simulation health: Aggregiert Zone-Stabilitaet, Building Readiness, Diplomatic Reach, Bleed Permeability
+CREATE MATERIALIZED VIEW public.mv_simulation_health AS
+    SELECT
+        s.id AS simulation_id,
+        s.name,
+        -- avg_zone_stability, avg_readiness, diplomatic_reach, bleed_permeability, overall_health berechnet
+        ...
+    FROM simulations s
+    WHERE s.deleted_at IS NULL;
+
+CREATE UNIQUE INDEX idx_mv_simulation_health_pk ON mv_simulation_health(simulation_id);
+```
+
+**Spalten pro View:**
+- **mv_building_readiness:** `building_id`, `simulation_id`, `name`, `building_type`, `building_condition`, `population_capacity`, `assigned_agents`, `required_professions`, `staffing_ratio`, `condition_score`, `readiness`
+- **mv_zone_stability:** `zone_id`, `simulation_id`, `name`, `zone_type`, `security_level`, `building_count`, `avg_readiness`, `stability`
+- **mv_embassy_effectiveness:** `embassy_id`, `simulation_a_id`, `simulation_b_id`, `status`, `bleed_vector`, `building_health`, `ambassador_quality`, `vector_alignment`, `effectiveness`
+- **mv_simulation_health:** `simulation_id`, `name`, `avg_zone_stability`, `avg_readiness`, `diplomatic_reach`, `bleed_permeability`, `overall_health`
+
 ---
 
 ## RLS-Policies (alle Tabellen)
@@ -1211,6 +1390,13 @@ CREATE POLICY agents_delete ON agents FOR DELETE
 | `agent_relationships` | Anon/Member | Editor+ | Editor+ | Editor+ |
 | `event_echoes` | Anon/Member | Service only | Service only | Service only |
 | `simulation_connections` | Anon/Member | Service only | Service only | Service only |
+| `embassies` | Anon/Member | Admin+ | Admin+ | Admin+ |
+| `game_epochs` | Anon/Member | Auth | Auth | - |
+| `epoch_teams` | Anon/Member | Auth | Auth | - |
+| `epoch_participants` | Anon/Member | Auth | Auth | - |
+| `operative_missions` | Source/Target Member | Source Member | Source Owner | - |
+| `epoch_scores` | Anon/Member | Auth | - | - |
+| `battle_log` | Public/Member | Auth | - | - |
 | `audit_log` | Admin+ | Service only | - | - |
 
 ---
@@ -1280,15 +1466,16 @@ CREATE POLICY simulation_assets_insert ON storage.objects FOR INSERT
 
 | Metrik | Wert |
 |--------|------|
-| Tabellen | 30 (+ agent_relationships, event_echoes, simulation_connections gegenueber v2.1) |
-| Trigger Functions | 6 |
-| Utility Functions | 4 |
+| Tabellen | 39 (+ embassies, game_epochs, epoch_teams, epoch_participants, operative_missions, epoch_scores, battle_log gegenueber v2.2) |
+| Trigger Functions | 8 (set_updated_at, update_conversation_stats, enforce_single_primary_profession, validate_simulation_status_transition, immutable_slug, prevent_last_owner_removal, notify_game_metrics_stale, validate_epoch_status_transition) |
+| Utility Functions | 7 (role_meets_minimum, generate_slug, validate_taxonomy_value, game_weight_fallback, refresh_all_game_metrics, refresh_building_readiness, refresh_embassy_effectiveness, refresh_zone_stability) |
 | RLS Functions | 3 |
-| Triggers | 25 (19x updated_at + 6 business logic) |
-| Regular Views | 6 (4x active_* + simulation_dashboard + conversation_summaries) |
-| Materialized Views | 2 (campaign_performance + agent_statistics) |
-| RLS-Policies | 130 (inkl. 24 anon SELECT + 8 Phase-6-Policies) |
-| Indexes | ~60 (inkl. partial, GIN, unique) |
+| Functions gesamt | 19 (ohne unaccent-Varianten) |
+| Triggers | ~38 unique (~59 Eintraege inkl. updated_at auf allen Tabellen + business logic) |
+| Regular Views | 8 (4x active_* + simulation_dashboard + conversation_summaries + agent_statistics + campaign_performance) |
+| Materialized Views | 4 (mv_building_readiness + mv_zone_stability + mv_embassy_effectiveness + mv_simulation_health) |
+| RLS-Policies | 161 (inkl. anon SELECT + Phase-6 + Embassy + Competitive Layer) |
+| Indexes | ~80 (inkl. partial, GIN, unique) |
 | Storage Buckets | 4 |
 
 ---
@@ -1307,6 +1494,8 @@ CREATE POLICY simulation_assets_insert ON storage.objects FOR INSERT
 | Soft-delete filter | **Views** | Uses views | -- |
 | Dashboard stats | **View** | Uses view | Renders |
 | Campaign perf | **Materialized view** | Refreshes | Renders |
+| Game metrics | **4 Materialized views** | `refresh_all_game_metrics()` | Info bubbles + Health dashboard |
+| Epoch status | **Trigger** | Validates first | UI state machine |
 | Role hierarchy | **Function** | `require_role()` dep | `canEdit` signal |
 | Taxonomy validation | Function available | **Primary validator** | Populates dropdowns |
 | AI orchestration | -- | **PromptResolver, ModelResolver** | Progress UI |
@@ -1375,6 +1564,16 @@ CREATE POLICY simulation_assets_insert ON storage.objects FOR INSERT
 |---------|-------|
 | `campaign_events` | Many-to-many Campaign <-> Event mit Metriken |
 | `campaign_metrics` | Zeitreihendaten fuer Campaign-Performance |
+| `agent_relationships` | Intra-Simulation Agenten-Beziehungsgraph (Phase 6, Migration 026) |
+| `event_echoes` | Cross-Simulation Bleed-Echos (Phase 6, Migration 026) |
+| `simulation_connections` | Multiverse-Topologie (Phase 6, Migration 026) |
+| `embassies` | Cross-Simulation diplomatische Gebaeude-Verbindungen (Migration 028) |
+| `game_epochs` | Zeitlich begrenzte PvP-Wettbewerbe (Migration 032) |
+| `epoch_teams` | Allianzen innerhalb einer Epoche (Migration 032) |
+| `epoch_participants` | Simulations-Teilnahme an Epochen mit RP-Tracking (Migration 032) |
+| `operative_missions` | Agenten-basierte Missionen (Spionage, Diplomatie, Sabotage) (Migration 032) |
+| `epoch_scores` | Pro-Zyklus Multi-Dimension Scoring (Migration 032) |
+| `battle_log` | Narrativer Epoch-Event-Log (Migration 032) |
 
 ### Typ-Korrekturen
 
@@ -1596,3 +1795,209 @@ CREATE TRIGGER set_simulation_connections_updated_at
 | | `sworn_enemy` | Sworn Enemy | Erzfeind |
 
 **Hinweis:** Station Null hat nur 5 Typen (nicht 6). `rival` wird von Velgarien, Capybara Kingdom und Speranza geteilt (gleicher `value`, unterschiedliche `simulation_id`).
+
+---
+
+## Embassy-Tabelle (Migration 028-030)
+
+Cross-Simulation diplomatische Gebaeude. Embassy-Gebaeude (`buildings.special_type = 'embassy'`) werden ueber diese Junction-Tabelle verbunden. Jede Embassy verbindet zwei Gebaeude aus verschiedenen Simulationen und kann Ambassadoren (Agenten) zuweisen.
+
+### `embassies`
+
+| Spalte | Typ | Nullable | Default |
+|--------|-----|----------|---------|
+| `id` | uuid | NO | `gen_random_uuid()` |
+| `building_a_id` | uuid | NO | |
+| `simulation_a_id` | uuid | NO | |
+| `building_b_id` | uuid | NO | |
+| `simulation_b_id` | uuid | NO | |
+| `status` | text | NO | `'proposed'` |
+| `connection_type` | text | NO | `'embassy'` |
+| `description` | text | YES | |
+| `established_by` | text | YES | |
+| `bleed_vector` | text | YES | |
+| `event_propagation` | boolean | NO | `true` |
+| `embassy_metadata` | jsonb | YES | `'{}'` |
+| `created_by_id` | uuid | YES | |
+| `created_at` | timestamptz | NO | `now()` |
+| `updated_at` | timestamptz | NO | `now()` |
+
+**Foreign Keys:**
+- `building_a_id` → `buildings(id) ON DELETE CASCADE`
+- `building_b_id` → `buildings(id) ON DELETE CASCADE`
+- `simulation_a_id` → `simulations(id) ON DELETE CASCADE`
+- `simulation_b_id` → `simulations(id) ON DELETE CASCADE`
+- `created_by_id` → `auth.users(id)`
+
+**RLS:** 5 Policies:
+- `embassies_anon_select` — SELECT fuer anon: aktive Embassies in aktiven Simulationen
+- `embassies_select` — SELECT fuer Mitglieder von Simulation A oder B
+- `embassies_insert` — INSERT fuer Admin+ in einer der beiden Simulationen
+- `embassies_update` — UPDATE fuer Admin+ in einer der beiden Simulationen
+- `embassies_delete` — DELETE fuer Admin+ in einer der beiden Simulationen
+
+**Ambassador-Mechanismus:** `embassy_metadata` speichert Ambassador-Zuordnungen als JSONB (z.B. `{"ambassador_a_id": "uuid", "ambassador_b_id": "uuid"}`). Der `is_ambassador`-Flag auf Agenten wird von `AgentService._enrich_ambassador_flag()` berechnet (kein DB-Feld).
+
+---
+
+## Competitive Layer Tabellen (Migration 032)
+
+6 Tabellen fuer das PvP-Epoch-System: Zeitlich begrenzte Wettbewerbe zwischen Simulationen mit Operativen (Agenten als Spione/Diplomaten/Saboteure), Scoring und Battle-Log.
+
+### `game_epochs`
+
+Zeitlich begrenzte Wettbewerbs-Epochen mit Status-State-Machine.
+
+| Spalte | Typ | Nullable | Default |
+|--------|-----|----------|---------|
+| `id` | uuid | NO | `gen_random_uuid()` |
+| `name` | text | NO | |
+| `description` | text | YES | |
+| `created_by_id` | uuid | NO | |
+| `starts_at` | timestamptz | YES | |
+| `ends_at` | timestamptz | YES | |
+| `current_cycle` | integer | YES | `0` |
+| `status` | text | NO | `'lobby'` |
+| `config` | jsonb | NO | `'{}'` |
+| `created_at` | timestamptz | NO | `now()` |
+| `updated_at` | timestamptz | NO | `now()` |
+
+**Foreign Keys:**
+- `created_by_id` → `auth.users(id)`
+
+**RLS:** 4 Policies (anon_select, select, insert, update).
+
+**Status-Transitions:** `lobby` → `foundation` → `competition` → `reckoning` → `completed`, jeder Status → `cancelled`. Durchgesetzt via `validate_epoch_status_transition()` Trigger.
+
+### `epoch_teams`
+
+Allianzen innerhalb einer Epoche. Simulationen koennen Teams bilden.
+
+| Spalte | Typ | Nullable | Default |
+|--------|-----|----------|---------|
+| `id` | uuid | NO | `gen_random_uuid()` |
+| `epoch_id` | uuid | NO | |
+| `name` | text | NO | |
+| `created_by_simulation_id` | uuid | NO | |
+| `created_at` | timestamptz | NO | `now()` |
+| `dissolved_at` | timestamptz | YES | |
+| `dissolved_reason` | text | YES | |
+
+**Foreign Keys:**
+- `epoch_id` → `game_epochs(id) ON DELETE CASCADE`
+- `created_by_simulation_id` → `simulations(id)`
+
+**RLS:** 4 Policies (anon_select, select, insert, update).
+
+### `epoch_participants`
+
+Simulationen, die an einer Epoche teilnehmen. Trackt Resource Points (RP) und optionale Team-Zuordnung.
+
+| Spalte | Typ | Nullable | Default |
+|--------|-----|----------|---------|
+| `id` | uuid | NO | `gen_random_uuid()` |
+| `epoch_id` | uuid | NO | |
+| `simulation_id` | uuid | NO | |
+| `team_id` | uuid | YES | |
+| `joined_at` | timestamptz | NO | `now()` |
+| `current_rp` | integer | NO | `0` |
+| `last_rp_grant_at` | timestamptz | YES | |
+| `final_scores` | jsonb | YES | |
+
+**Foreign Keys:**
+- `epoch_id` → `game_epochs(id) ON DELETE CASCADE`
+- `simulation_id` → `simulations(id)`
+- `team_id` → `epoch_teams(id) ON DELETE SET NULL`
+
+**RLS:** 4 Policies (anon_select, select, insert, update).
+
+### `operative_missions`
+
+Agenten-basierte Missionen: Spionage, Diplomatie, Sabotage. Jede Mission hat Kosten (RP), Erfolgswahrscheinlichkeit und Aufloesung.
+
+| Spalte | Typ | Nullable | Default |
+|--------|-----|----------|---------|
+| `id` | uuid | NO | `gen_random_uuid()` |
+| `epoch_id` | uuid | NO | |
+| `agent_id` | uuid | NO | |
+| `operative_type` | text | NO | |
+| `source_simulation_id` | uuid | NO | |
+| `target_simulation_id` | uuid | YES | |
+| `embassy_id` | uuid | YES | |
+| `target_entity_id` | uuid | YES | |
+| `target_entity_type` | text | YES | |
+| `target_zone_id` | uuid | YES | |
+| `status` | text | NO | `'deploying'` |
+| `cost_rp` | integer | NO | |
+| `success_probability` | numeric | YES | |
+| `deployed_at` | timestamptz | NO | `now()` |
+| `resolves_at` | timestamptz | NO | |
+| `resolved_at` | timestamptz | YES | |
+| `mission_result` | jsonb | YES | |
+| `created_at` | timestamptz | NO | `now()` |
+
+**Foreign Keys:**
+- `epoch_id` → `game_epochs(id) ON DELETE CASCADE`
+- `agent_id` → `agents(id)`
+- `source_simulation_id` → `simulations(id)`
+- `target_simulation_id` → `simulations(id)`
+- `embassy_id` → `embassies(id)`
+- `target_zone_id` → `zones(id)`
+
+**RLS:** 3 Policies:
+- `operative_missions_insert` — INSERT fuer Source-Simulation-Mitglieder
+- `operative_missions_select` — SELECT fuer Mitglieder von Source- ODER Target-Simulation
+- `operative_missions_update` — UPDATE fuer Owner der Source-Simulation
+
+### `epoch_scores`
+
+Pro-Zyklus Scoring fuer jede Simulation innerhalb einer Epoche. 5 Score-Dimensionen plus Composite.
+
+| Spalte | Typ | Nullable | Default |
+|--------|-----|----------|---------|
+| `id` | uuid | NO | `gen_random_uuid()` |
+| `epoch_id` | uuid | NO | |
+| `simulation_id` | uuid | NO | |
+| `cycle_number` | integer | NO | |
+| `stability_score` | numeric | NO | `0` |
+| `influence_score` | numeric | NO | `0` |
+| `sovereignty_score` | numeric | NO | `0` |
+| `diplomatic_score` | numeric | NO | `0` |
+| `military_score` | numeric | NO | `0` |
+| `composite_score` | numeric | NO | `0` |
+| `computed_at` | timestamptz | NO | `now()` |
+
+**Foreign Keys:**
+- `epoch_id` → `game_epochs(id) ON DELETE CASCADE`
+- `simulation_id` → `simulations(id)`
+
+**RLS:** 3 Policies (anon_select, insert, select).
+
+### `battle_log`
+
+Narrativer Log aller Epoch-Events: Missionen, Score-Aenderungen, Allianzen, Konflikte. Oeffentliche Eintraege (`is_public = true`) sind fuer alle sichtbar.
+
+| Spalte | Typ | Nullable | Default |
+|--------|-----|----------|---------|
+| `id` | uuid | NO | `gen_random_uuid()` |
+| `epoch_id` | uuid | NO | |
+| `cycle_number` | integer | NO | |
+| `event_type` | text | NO | |
+| `source_simulation_id` | uuid | YES | |
+| `target_simulation_id` | uuid | YES | |
+| `mission_id` | uuid | YES | |
+| `narrative` | text | NO | |
+| `is_public` | boolean | NO | `false` |
+| `metadata` | jsonb | NO | `'{}'` |
+| `created_at` | timestamptz | NO | `now()` |
+
+**Foreign Keys:**
+- `epoch_id` → `game_epochs(id) ON DELETE CASCADE`
+- `source_simulation_id` → `simulations(id)`
+- `target_simulation_id` → `simulations(id)`
+- `mission_id` → `operative_missions(id) ON DELETE SET NULL`
+
+**RLS:** 3 Policies:
+- `battle_log_anon_select` — SELECT fuer anon: nur oeffentliche Eintraege (`is_public = true`)
+- `battle_log_insert` — INSERT fuer authentifizierte User
+- `battle_log_select` — SELECT fuer oeffentliche Eintraege ODER Mitglieder von Source-/Target-Simulation

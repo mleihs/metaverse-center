@@ -69,6 +69,7 @@ export class VelgAvatar extends LitElement {
 
   @property({ type: String }) src = '';
   @property({ type: String }) name = '';
+  @property({ type: String, attribute: 'alt' }) altText = '';
   @property({ type: String, reflect: true }) size: 'xs' | 'sm' | 'full' = 'sm';
   @property({ type: Boolean, reflect: true }) clickable = false;
 
@@ -92,7 +93,7 @@ export class VelgAvatar extends LitElement {
           <img
             class="avatar__img"
             src=${this.src}
-            alt=${this.name}
+            alt=${this.altText || this.name}
             loading="lazy"
             @click=${this.clickable ? this._handleClick : nothing}
           />

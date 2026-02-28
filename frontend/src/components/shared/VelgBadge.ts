@@ -19,6 +19,17 @@ export class VelgBadge extends LitElement {
       background: var(--color-surface-header);
       color: var(--color-text-secondary);
       line-height: 1.4;
+      animation: badge-pop 200ms var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) both;
+      transition: background var(--duration-fast, 100ms),
+        border-color var(--duration-fast, 100ms),
+        color var(--duration-fast, 100ms);
+    }
+
+    @keyframes badge-pop {
+      from {
+        opacity: 0;
+        transform: scale(0.7);
+      }
     }
 
     :host([variant='primary']) {

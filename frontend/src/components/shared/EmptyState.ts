@@ -23,6 +23,26 @@ export class VelgEmptyState extends LitElement {
 
     .empty__icon {
       color: var(--color-text-muted);
+      animation: empty-icon-enter 500ms var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) both;
+    }
+
+    .empty__icon svg {
+      animation: empty-icon-idle 8s linear infinite 1s;
+    }
+
+    @keyframes empty-icon-enter {
+      from {
+        opacity: 0;
+        transform: scale(0.5) rotate(-15deg);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) rotate(0);
+      }
+    }
+
+    @keyframes empty-icon-idle {
+      to { transform: rotate(360deg); }
     }
 
     .empty__message {
@@ -33,6 +53,14 @@ export class VelgEmptyState extends LitElement {
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-secondary);
       max-width: 480px;
+      animation: empty-fade-up 400ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) both 150ms;
+    }
+
+    @keyframes empty-fade-up {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
     }
 
     .empty__cta {
@@ -51,6 +79,7 @@ export class VelgEmptyState extends LitElement {
       box-shadow: var(--shadow-md);
       cursor: pointer;
       transition: all var(--transition-fast);
+      animation: empty-fade-up 400ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) both 300ms;
     }
 
     .empty__cta:hover {

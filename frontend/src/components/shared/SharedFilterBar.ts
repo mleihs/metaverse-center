@@ -102,6 +102,14 @@ export class VelgFilterBar extends LitElement {
       letter-spacing: var(--tracking-wide);
       background: var(--color-surface-header);
       border: var(--border-width-thin) solid var(--color-border);
+      animation: chip-pop 200ms var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) both;
+    }
+
+    @keyframes chip-pop {
+      from {
+        opacity: 0;
+        transform: scale(0.8);
+      }
     }
 
     .filter-bar__chip-remove {

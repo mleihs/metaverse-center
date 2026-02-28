@@ -3,9 +3,14 @@
 import logging
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
-from backend.dependencies import get_current_user, get_supabase
+from backend.dependencies import (
+    get_current_user,
+    get_supabase,
+    require_epoch_creator,
+    require_simulation_member,
+)
 from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.models.epoch import (
     EpochCreate,
@@ -16,6 +21,7 @@ from backend.models.epoch import (
     TeamCreate,
     TeamResponse,
 )
+from backend.services.audit_service import AuditService
 from backend.services.battle_log_service import BattleLogService
 from backend.services.epoch_service import EpochService
 from supabase import Client
@@ -82,6 +88,9 @@ async def create_epoch(
         description=body.description,
         config=body.config.model_dump() if body.config else None,
     )
+    await AuditService.log_action(
+        supabase, None, user.id, "game_epochs", data["id"], "create",
+    )
     return {"success": True, "data": data}
 
 
@@ -108,12 +117,17 @@ async def update_epoch(
 async def start_epoch(
     epoch_id: UUID,
     user: CurrentUser = Depends(get_current_user),
+    _creator_check: None = Depends(require_epoch_creator()),
     supabase: Client = Depends(get_supabase),
 ) -> dict:
-    """Start an epoch (lobby -> foundation)."""
+    """Start an epoch (lobby -> foundation). Creator only."""
     data = await EpochService.start_epoch(supabase, epoch_id)
     await BattleLogService.log_phase_change(
         supabase, epoch_id, 1, "lobby", "foundation"
+    )
+    await AuditService.log_action(
+        supabase, None, user.id, "game_epochs", epoch_id, "update",
+        details={"action": "start", "new_status": "foundation"},
     )
     return {"success": True, "data": data}
 
@@ -122,14 +136,19 @@ async def start_epoch(
 async def advance_phase(
     epoch_id: UUID,
     user: CurrentUser = Depends(get_current_user),
+    _creator_check: None = Depends(require_epoch_creator()),
     supabase: Client = Depends(get_supabase),
 ) -> dict:
-    """Advance to next epoch phase."""
+    """Advance to next epoch phase. Creator only."""
     epoch = await EpochService.get(supabase, epoch_id)
     old_status = epoch["status"]
     data = await EpochService.advance_phase(supabase, epoch_id)
     await BattleLogService.log_phase_change(
         supabase, epoch_id, epoch.get("current_cycle", 1), old_status, data["status"]
+    )
+    await AuditService.log_action(
+        supabase, None, user.id, "game_epochs", epoch_id, "update",
+        details={"action": "advance", "old_status": old_status, "new_status": data["status"]},
     )
     return {"success": True, "data": data}
 
@@ -138,13 +157,18 @@ async def advance_phase(
 async def cancel_epoch(
     epoch_id: UUID,
     user: CurrentUser = Depends(get_current_user),
+    _creator_check: None = Depends(require_epoch_creator()),
     supabase: Client = Depends(get_supabase),
 ) -> dict:
-    """Cancel an epoch."""
+    """Cancel an epoch. Creator only."""
     epoch = await EpochService.get(supabase, epoch_id)
     data = await EpochService.cancel_epoch(supabase, epoch_id)
     await BattleLogService.log_phase_change(
         supabase, epoch_id, epoch.get("current_cycle", 0), epoch["status"], "cancelled"
+    )
+    await AuditService.log_action(
+        supabase, None, user.id, "game_epochs", epoch_id, "update",
+        details={"action": "cancel", "old_status": epoch["status"]},
     )
     return {"success": True, "data": data}
 
@@ -153,10 +177,15 @@ async def cancel_epoch(
 async def resolve_cycle(
     epoch_id: UUID,
     user: CurrentUser = Depends(get_current_user),
+    _creator_check: None = Depends(require_epoch_creator()),
     supabase: Client = Depends(get_supabase),
 ) -> dict:
-    """Resolve the current cycle (allocate RP, advance cycle counter)."""
+    """Resolve the current cycle (allocate RP, advance cycle counter). Creator only."""
     data = await EpochService.resolve_cycle(supabase, epoch_id)
+    await AuditService.log_action(
+        supabase, None, user.id, "game_epochs", epoch_id, "update",
+        details={"action": "resolve_cycle", "cycle": data.get("current_cycle")},
+    )
     return {"success": True, "data": data}
 
 
@@ -188,8 +217,29 @@ async def join_epoch(
     user: CurrentUser = Depends(get_current_user),
     supabase: Client = Depends(get_supabase),
 ) -> dict:
-    """Join an epoch with a simulation."""
+    """Join an epoch with a simulation.
+
+    The user must be an editor+ in the simulation they are joining with.
+    """
+    # Verify user is editor+ in the simulation they're registering
+    member_resp = (
+        supabase.table("simulation_members")
+        .select("member_role")
+        .eq("simulation_id", str(body.simulation_id))
+        .eq("user_id", str(user.id))
+        .limit(1)
+        .execute()
+    )
+    if not member_resp.data or member_resp.data[0]["member_role"] == "viewer":
+        raise HTTPException(
+            status_code=403,
+            detail="You must be an editor or higher in this simulation to join an epoch.",
+        )
     data = await EpochService.join_epoch(supabase, epoch_id, body.simulation_id)
+    await AuditService.log_action(
+        supabase, body.simulation_id, user.id, "epoch_participants", data.get("id"), "create",
+        details={"epoch_id": str(epoch_id)},
+    )
     return {"success": True, "data": data}
 
 
@@ -202,6 +252,10 @@ async def leave_epoch(
 ) -> dict:
     """Leave an epoch (lobby phase only)."""
     await EpochService.leave_epoch(supabase, epoch_id, simulation_id)
+    await AuditService.log_action(
+        supabase, simulation_id, user.id, "epoch_participants", None, "delete",
+        details={"epoch_id": str(epoch_id)},
+    )
     return {"success": True, "data": {"message": "Left epoch."}}
 
 
@@ -232,13 +286,18 @@ async def create_team(
     body: TeamCreate,
     simulation_id: UUID = Query(..., description="Your simulation ID"),
     user: CurrentUser = Depends(get_current_user),
+    _member_check: str = Depends(require_simulation_member("editor")),
     supabase: Client = Depends(get_supabase),
 ) -> dict:
-    """Create a new alliance/team."""
+    """Create a new alliance/team. Must be editor+ in your simulation."""
     data = await EpochService.create_team(supabase, epoch_id, simulation_id, body.name)
     epoch = await EpochService.get(supabase, epoch_id)
     await BattleLogService.log_alliance_formed(
         supabase, epoch_id, epoch.get("current_cycle", 0), body.name, [simulation_id]
+    )
+    await AuditService.log_action(
+        supabase, simulation_id, user.id, "epoch_teams", data.get("id"), "create",
+        details={"epoch_id": str(epoch_id), "name": body.name},
     )
     return {"success": True, "data": data}
 
@@ -249,10 +308,15 @@ async def join_team(
     team_id: UUID,
     simulation_id: UUID = Query(..., description="Your simulation ID"),
     user: CurrentUser = Depends(get_current_user),
+    _member_check: str = Depends(require_simulation_member("editor")),
     supabase: Client = Depends(get_supabase),
 ) -> dict:
-    """Join an existing team."""
+    """Join an existing team. Must be editor+ in your simulation."""
     data = await EpochService.join_team(supabase, epoch_id, team_id, simulation_id)
+    await AuditService.log_action(
+        supabase, simulation_id, user.id, "epoch_teams", team_id, "update",
+        details={"action": "join", "epoch_id": str(epoch_id)},
+    )
     return {"success": True, "data": data}
 
 
@@ -261,8 +325,13 @@ async def leave_team(
     epoch_id: UUID,
     simulation_id: UUID = Query(..., description="Your simulation ID"),
     user: CurrentUser = Depends(get_current_user),
+    _member_check: str = Depends(require_simulation_member("editor")),
     supabase: Client = Depends(get_supabase),
 ) -> dict:
-    """Leave your current team."""
+    """Leave your current team. Must be editor+ in your simulation."""
     data = await EpochService.leave_team(supabase, epoch_id, simulation_id)
+    await AuditService.log_action(
+        supabase, simulation_id, user.id, "epoch_teams", None, "update",
+        details={"action": "leave", "epoch_id": str(epoch_id)},
+    )
     return {"success": True, "data": data}

@@ -323,8 +323,9 @@ export class VelgBuildingsView extends LitElement {
 
       <div class="view__grid">
         ${this._buildings.map(
-          (building) => html`
+          (building, i) => html`
             <velg-building-card
+              style="--i: ${i}"
               .building=${building}
               @building-click=${this._handleBuildingClick}
               @building-edit=${this._handleBuildingEdit}

@@ -126,8 +126,37 @@ export class VelgBaseModal extends LitElement {
   }
 
   private _handleKeyDown(e: KeyboardEvent): void {
-    if (e.key === 'Escape' && this.open) {
+    if (!this.open) return;
+    if (e.key === 'Escape') {
       this._close();
+      return;
+    }
+    if (e.key === 'Tab') {
+      this._trapFocus(e);
+    }
+  }
+
+  private _trapFocus(e: KeyboardEvent): void {
+    const focusableSelector =
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    const modal = this.shadowRoot?.querySelector('.modal');
+    if (!modal) return;
+
+    const focusable = [
+      ...modal.querySelectorAll<HTMLElement>(focusableSelector),
+      ...(this.querySelectorAll<HTMLElement>(focusableSelector) || []),
+    ];
+    if (focusable.length === 0) return;
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
     }
   }
 

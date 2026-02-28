@@ -8,6 +8,7 @@ import type { SimulationSetting } from '../../types/index.js';
 import { BaseSettingsPanel } from '../shared/BaseSettingsPanel.js';
 import { VelgToast } from '../shared/Toast.js';
 import '../shared/VelgSectionHeader.js';
+import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { settingsStyles } from '../shared/settings-styles.js';
 
 // ---------------------------------------------------------------------------
@@ -361,6 +362,7 @@ const MAX_CUSTOM_CSS_LENGTH = 10240;
 export class VelgDesignSettingsPanel extends BaseSettingsPanel {
   static styles = [
     settingsStyles,
+    infoBubbleStyles,
     css`
     /* --- Preset Selector --- */
 
@@ -579,58 +581,6 @@ export class VelgDesignSettingsPanel extends BaseSettingsPanel {
       font-size: var(--text-sm);
       min-width: 36px;
       text-align: center;
-    }
-
-    /* --- Info Bubble --- */
-
-    .info-bubble {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      cursor: help;
-    }
-
-    .info-bubble__icon {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      font-size: 10px;
-      font-weight: 700;
-      line-height: 1;
-      background: var(--color-text-secondary);
-      color: var(--color-surface);
-      flex-shrink: 0;
-      user-select: none;
-    }
-
-    .info-bubble__tooltip {
-      display: none;
-      position: absolute;
-      bottom: calc(100% + 6px);
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--color-text-primary);
-      color: var(--color-surface);
-      padding: var(--space-2) var(--space-3);
-      font-family: var(--font-sans);
-      font-size: var(--text-xs);
-      font-weight: 400;
-      text-transform: none;
-      letter-spacing: 0;
-      line-height: 1.5;
-      white-space: normal;
-      width: 220px;
-      z-index: var(--z-tooltip);
-      box-shadow: var(--shadow-md);
-      pointer-events: none;
-    }
-
-    .info-bubble:hover .info-bubble__tooltip,
-    .info-bubble:focus-within .info-bubble__tooltip {
-      display: block;
     }
 
     /* --- Character Grid --- */
@@ -906,15 +856,6 @@ export class VelgDesignSettingsPanel extends BaseSettingsPanel {
   // Section renderers
   // ---------------------------------------------------------------------------
 
-  private _renderInfoBubble(text: string) {
-    return html`
-      <span class="info-bubble">
-        <span class="info-bubble__icon">i</span>
-        <span class="info-bubble__tooltip">${text}</span>
-      </span>
-    `;
-  }
-
   private _renderPresetSelector() {
     const labels = getPresetLabels();
     return html`
@@ -959,7 +900,7 @@ export class VelgDesignSettingsPanel extends BaseSettingsPanel {
               <div class="color-field">
                 <div class="color-field__label-row">
                   <label class="color-field__label" for="design-${cf.key}">${cf.label}</label>
-                  ${this._renderInfoBubble(cf.info)}
+                  ${renderInfoBubble(cf.info)}
                 </div>
                 <div class="color-field__input-row">
                   <input
@@ -999,7 +940,7 @@ export class VelgDesignSettingsPanel extends BaseSettingsPanel {
               <div class="form__group">
                 <div class="form__label-row">
                   <label class="form__label" for="design-${ff.key}">${ff.label}</label>
-                  ${this._renderInfoBubble(ff.info)}
+                  ${renderInfoBubble(ff.info)}
                 </div>
                 <input
                   class="form__input"
@@ -1047,7 +988,7 @@ export class VelgDesignSettingsPanel extends BaseSettingsPanel {
       <div class="form__group">
         <div class="form__label-row">
           <label class="form__label" for="design-${f.key}">${f.label}</label>
-          ${this._renderInfoBubble(f.info)}
+          ${renderInfoBubble(f.info)}
         </div>
         ${
           f.inputType === 'select'
@@ -1132,7 +1073,7 @@ export class VelgDesignSettingsPanel extends BaseSettingsPanel {
         <div class="form__group">
           <div class="form__label-row">
             <label class="form__label" for="design-custom-css">${msg('Additional Styles')}</label>
-            ${this._renderInfoBubble(
+            ${renderInfoBubble(
               msg(
                 'Raw CSS injected into the page. Use for advanced overrides beyond the token system.',
               ),

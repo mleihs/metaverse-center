@@ -113,18 +113,18 @@ export class VelgEpochCommandCenter extends LitElement {
       color: var(--color-gray-300);
     }
     .banner__phase--foundation {
-      border-color: #4ade80;
-      color: #4ade80;
+      border-color: var(--color-success);
+      color: var(--color-success);
       box-shadow: 0 0 8px rgba(74 222 128 / 0.3);
     }
     .banner__phase--competition {
-      border-color: #f59e0b;
-      color: #f59e0b;
+      border-color: var(--color-warning);
+      color: var(--color-warning);
       box-shadow: 0 0 8px rgba(245 158 11 / 0.3);
     }
     .banner__phase--reckoning {
-      border-color: #ef4444;
-      color: #ef4444;
+      border-color: var(--color-danger);
+      color: var(--color-danger);
       box-shadow: 0 0 12px rgba(239 68 68 / 0.4);
       animation: pulse-glow 2s ease-in-out infinite;
     }
@@ -169,8 +169,8 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .stepper__dot--completed {
-      background: #4ade80;
-      border-color: #4ade80;
+      background: var(--color-success);
+      border-color: var(--color-success);
     }
 
     .stepper__dot--completed::after {
@@ -186,8 +186,8 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .stepper__dot--active {
-      border-color: var(--stepper-color, #f59e0b);
-      background: var(--stepper-color, #f59e0b);
+      border-color: var(--stepper-color, var(--color-warning));
+      background: var(--stepper-color, var(--color-warning));
       animation: stepper-pulse 2s ease-in-out infinite;
     }
 
@@ -209,11 +209,11 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .stepper__label--completed {
-      color: #4ade80;
+      color: var(--color-success);
     }
 
     .stepper__label--active {
-      color: var(--stepper-color, #f59e0b);
+      color: var(--stepper-color, var(--color-warning));
       font-weight: 700;
     }
 
@@ -240,7 +240,7 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .stepper__track-fill--completed {
-      background: #4ade80;
+      background: var(--color-success);
       transform: scaleX(1);
     }
 
@@ -412,7 +412,7 @@ export class VelgEpochCommandCenter extends LitElement {
     .rp-meter__fill {
       position: absolute;
       inset: 0;
-      background: #4ade80;
+      background: var(--color-success);
       transform-origin: left;
       transition: transform var(--transition-slow);
     }
@@ -421,7 +421,7 @@ export class VelgEpochCommandCenter extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
       font-weight: 700;
-      color: #4ade80;
+      color: var(--color-success);
     }
 
     /* ── Tab Nav ──────────────────────────────── */
@@ -579,18 +579,18 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .mission__status--active {
-      border-color: #4ade80;
-      color: #4ade80;
+      border-color: var(--color-success);
+      color: var(--color-success);
     }
 
     .mission__status--deploying {
-      border-color: #f59e0b;
-      color: #f59e0b;
+      border-color: var(--color-warning);
+      color: var(--color-warning);
     }
 
     .mission__status--success {
-      border-color: #4ade80;
-      color: #4ade80;
+      border-color: var(--color-success);
+      color: var(--color-success);
     }
 
     .mission__status--failed {
@@ -599,8 +599,8 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .mission__status--detected {
-      border-color: #ef4444;
-      color: #ef4444;
+      border-color: var(--color-danger);
+      color: var(--color-danger);
     }
 
     /* ── Quick Actions ────────────────────────── */
@@ -636,7 +636,7 @@ export class VelgEpochCommandCenter extends LitElement {
 
     .action-btn__cost {
       font-family: var(--font-mono, monospace);
-      color: #4ade80;
+      color: var(--color-success);
     }
 
     /* ── Lobby State ──────────────────────────── */
@@ -735,7 +735,7 @@ export class VelgEpochCommandCenter extends LitElement {
     .past-epoch__winner {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: #4ade80;
+      color: var(--color-success);
     }
 
     /* ── No Auth ──────────────────────────────── */
@@ -788,9 +788,9 @@ export class VelgEpochCommandCenter extends LitElement {
     .threat-count {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: #ef4444;
+      color: var(--color-danger);
       padding: 2px 6px;
-      border: 1px solid #ef4444;
+      border: 1px solid var(--color-danger);
       animation: threat-blink 2s ease-in-out infinite;
     }
 
@@ -885,13 +885,13 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .lobby-btn--join {
-      color: #4ade80;
-      border-color: #4ade80;
+      color: var(--color-success);
+      border-color: var(--color-success);
       background: transparent;
     }
 
     .lobby-btn--join:hover:not(:disabled) {
-      background: #4ade80;
+      background: var(--color-success);
       color: var(--color-gray-950);
     }
 
@@ -941,7 +941,7 @@ export class VelgEpochCommandCenter extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: #f59e0b;
+      color: var(--color-warning);
       background: var(--color-gray-900);
       border: none;
       cursor: pointer;
@@ -991,8 +991,8 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .admin-btn--advance {
-      color: #4ade80;
-      border-color: #4ade80;
+      color: var(--color-success);
+      border-color: var(--color-success);
       background: transparent;
     }
 
@@ -1001,8 +1001,8 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .admin-btn--resolve {
-      color: #f59e0b;
-      border-color: #f59e0b;
+      color: var(--color-warning);
+      border-color: var(--color-warning);
       background: transparent;
     }
 
@@ -1011,8 +1011,8 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .admin-btn--cancel {
-      color: #ef4444;
-      border-color: #ef4444;
+      color: var(--color-danger);
+      border-color: var(--color-danger);
       background: transparent;
     }
 
@@ -1044,7 +1044,7 @@ export class VelgEpochCommandCenter extends LitElement {
 
     .team-form__input:focus {
       outline: none;
-      border-color: #4ade80;
+      border-color: var(--color-success);
     }
 
     .team-form__input::placeholder {
@@ -1067,8 +1067,8 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .alliance-btn--join {
-      color: #4ade80;
-      border-color: #4ade80;
+      color: var(--color-success);
+      border-color: var(--color-success);
       background: transparent;
     }
 
@@ -1077,8 +1077,8 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .alliance-btn--leave {
-      color: #ef4444;
-      border-color: #ef4444;
+      color: var(--color-danger);
+      border-color: var(--color-danger);
       background: transparent;
     }
 
@@ -1093,8 +1093,8 @@ export class VelgEpochCommandCenter extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
       text-transform: uppercase;
-      color: #f59e0b;
-      border: 1px solid #f59e0b;
+      color: var(--color-warning);
+      border: 1px solid var(--color-warning);
       background: transparent;
       cursor: pointer;
       transition: all var(--transition-normal);

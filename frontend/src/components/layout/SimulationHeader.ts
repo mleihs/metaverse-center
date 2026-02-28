@@ -25,6 +25,19 @@ export class VelgSimulationHeader extends LitElement {
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
       margin: 0;
+      animation: header-name-enter 400ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) both;
+    }
+
+    @keyframes header-name-enter {
+      from {
+        opacity: 0;
+        transform: translateX(-8px);
+        letter-spacing: 0.2em;
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
     }
 
     .header__badge {
@@ -37,6 +50,14 @@ export class VelgSimulationHeader extends LitElement {
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
       border: var(--border-default);
+      animation: badge-pop 250ms var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) both 150ms;
+    }
+
+    @keyframes badge-pop {
+      from {
+        opacity: 0;
+        transform: scale(0.7);
+      }
     }
 
     .badge--active {

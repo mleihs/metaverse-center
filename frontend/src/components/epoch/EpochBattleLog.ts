@@ -76,18 +76,18 @@ export class VelgEpochBattleLog extends LitElement {
 
     /* ── Type-specific accent colors ─────── */
 
-    .entry--operative_deployed::before      { background: #f59e0b; }
-    .entry--mission_success::before         { background: #4ade80; }
+    .entry--operative_deployed::before      { background: var(--color-warning); }
+    .entry--mission_success::before         { background: var(--color-success); }
     .entry--mission_failed::before          { background: var(--color-gray-600); }
-    .entry--detected::before                { background: #ef4444; }
-    .entry--sabotage::before                { background: #f97316; }
+    .entry--detected::before                { background: var(--color-danger); }
+    .entry--sabotage::before                { background: var(--color-warning); }
     .entry--propaganda::before              { background: #a78bfa; }
-    .entry--assassination::before           { background: #ef4444; }
-    .entry--agent_wounded::before           { background: #ef4444; }
-    .entry--alliance_formed::before         { background: #38bdf8; }
-    .entry--betrayal::before                { background: #dc2626; }
-    .entry--phase_change::before            { background: #fbbf24; }
-    .entry--counter_intel::before           { background: #22d3ee; }
+    .entry--assassination::before           { background: var(--color-danger); }
+    .entry--agent_wounded::before           { background: var(--color-danger); }
+    .entry--alliance_formed::before         { background: var(--color-info); }
+    .entry--betrayal::before                { background: var(--color-danger-hover); }
+    .entry--phase_change::before            { background: var(--color-warning); }
+    .entry--counter_intel::before           { background: var(--color-info); }
 
     /* ── Icon ─────────────────────────────── */
 
@@ -169,14 +169,14 @@ export class VelgEpochBattleLog extends LitElement {
       white-space: nowrap;
     }
 
-    .phase-divider--foundation .phase-divider__line { background: #4ade80; }
-    .phase-divider--foundation .phase-divider__label { color: #4ade80; }
+    .phase-divider--foundation .phase-divider__line { background: var(--color-success); }
+    .phase-divider--foundation .phase-divider__label { color: var(--color-success); }
 
-    .phase-divider--competition .phase-divider__line { background: #f59e0b; }
-    .phase-divider--competition .phase-divider__label { color: #f59e0b; }
+    .phase-divider--competition .phase-divider__line { background: var(--color-warning); }
+    .phase-divider--competition .phase-divider__label { color: var(--color-warning); }
 
-    .phase-divider--reckoning .phase-divider__line { background: #ef4444; }
-    .phase-divider--reckoning .phase-divider__label { color: #ef4444; }
+    .phase-divider--reckoning .phase-divider__line { background: var(--color-danger); }
+    .phase-divider--reckoning .phase-divider__label { color: var(--color-danger); }
 
     /* ── Empty ────────────────────────────── */
 

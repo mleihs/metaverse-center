@@ -464,8 +464,8 @@ class OperativeService:
         if op_type == "propagandist":
             return {
                 "outcome": "success",
-                "narrative": "Propaganda campaign succeeded. A destabilizing event has been generated.",
-                "event_created": True,
+                "narrative": "Propaganda campaign succeeded. Target population's morale has been undermined.",
+                "score_awarded": True,
             }
 
         if op_type == "assassin" and mission.get("target_entity_id"):
@@ -493,8 +493,9 @@ class OperativeService:
         if op_type == "infiltrator" and mission.get("target_entity_id"):
             return {
                 "outcome": "success",
-                "narrative": "Embassy infiltrated. Effectiveness reduced for 3 cycles.",
-                "embassy_weakened": mission["target_entity_id"],
+                "narrative": "Embassy infiltrated. Intelligence on diplomatic operations obtained.",
+                "intel_gathered": True,
+                "target_embassy_id": mission["target_entity_id"],
             }
 
         return {"outcome": "success", "narrative": "Mission completed."}

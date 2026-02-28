@@ -136,6 +136,9 @@ const BASE_DURATIONS: Record<string, number> = {
   '--duration-normal': 200,
   '--duration-slow': 300,
   '--duration-slower': 500,
+  '--duration-entrance': 350,
+  '--duration-stagger': 40,
+  '--duration-cascade': 60,
 };
 
 function computeAnimationDurations(speed: number): Record<string, string> {
@@ -243,7 +246,23 @@ class ThemeService {
       }
     }
 
-    // 4. Update composed border tokens that depend on border_width
+    // 4. Bridge hover_effect setting to CSS custom properties
+    const hoverEffect = config.hover_effect ?? 'translate';
+    hostElement.style.setProperty('--hover-effect', hoverEffect);
+    tokensApplied.push('--hover-effect');
+
+    const hoverTransforms: Record<string, string> = {
+      translate: 'translate(-2px, -2px)',
+      scale: 'scale(1.03)',
+      glow: 'translate(0)',
+    };
+    hostElement.style.setProperty(
+      '--hover-transform',
+      hoverTransforms[hoverEffect] ?? hoverTransforms.translate,
+    );
+    tokensApplied.push('--hover-transform');
+
+    // 5. Update composed border tokens that depend on border_width
     if (config.border_width_default) {
       const w = config.border_width_default;
       hostElement.style.setProperty('--border-default', `${w} solid var(--color-border)`);

@@ -113,9 +113,9 @@ export class VelgEpochLeaderboard extends LitElement {
       width: 40px;
     }
 
-    .rank--1 { color: #fbbf24; }
-    .rank--2 { color: #94a3b8; }
-    .rank--3 { color: #d97706; }
+    .rank--1 { color: var(--color-warning); }
+    .rank--2 { color: var(--color-gray-400); }
+    .rank--3 { color: var(--color-warning-hover); }
 
     /* ── Simulation Info ──────────────────── */
 
@@ -143,7 +143,7 @@ export class VelgEpochLeaderboard extends LitElement {
     .sim__title {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: #fbbf24;
+      color: var(--color-warning);
       font-style: italic;
     }
 
@@ -183,11 +183,11 @@ export class VelgEpochLeaderboard extends LitElement {
       transform: scaleX(var(--fill, 0));
     }
 
-    .dim-bar__fill--stability   { background: #4ade80; }
+    .dim-bar__fill--stability   { background: var(--color-success); }
     .dim-bar__fill--influence   { background: #a78bfa; }
-    .dim-bar__fill--sovereignty { background: #38bdf8; }
-    .dim-bar__fill--diplomatic  { background: #fbbf24; }
-    .dim-bar__fill--military    { background: #ef4444; }
+    .dim-bar__fill--sovereignty { background: var(--color-info); }
+    .dim-bar__fill--diplomatic  { background: var(--color-warning); }
+    .dim-bar__fill--military    { background: var(--color-danger); }
 
     .dim-label {
       font-family: var(--font-mono, monospace);

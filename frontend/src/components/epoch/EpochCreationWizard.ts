@@ -84,8 +84,8 @@ export class VelgEpochCreationWizard extends LitElement {
       }
 
       .phase--active {
-        color: #0a0a0a;
-        background: #4ade80;
+        color: var(--color-gray-950);
+        background: var(--color-success);
         font-weight: 700;
       }
 
@@ -103,7 +103,7 @@ export class VelgEpochCreationWizard extends LitElement {
       }
 
       .phase--done {
-        color: #4ade80;
+        color: var(--color-success);
         background: rgba(74 222 128 / 0.1);
       }
 
@@ -145,7 +145,7 @@ export class VelgEpochCreationWizard extends LitElement {
 
       .field__input:focus {
         outline: none;
-        border-color: #4ade80;
+        border-color: var(--color-success);
         box-shadow: 0 0 0 1px rgba(74 222 128 / 0.3);
       }
 
@@ -167,7 +167,7 @@ export class VelgEpochCreationWizard extends LitElement {
 
       .field__textarea:focus {
         outline: none;
-        border-color: #4ade80;
+        border-color: var(--color-success);
         box-shadow: 0 0 0 1px rgba(74 222 128 / 0.3);
       }
 
@@ -203,7 +203,7 @@ export class VelgEpochCreationWizard extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-black);
         font-size: var(--text-base);
-        color: #4ade80;
+        color: var(--color-success);
         min-width: 40px;
         text-align: right;
       }
@@ -223,8 +223,8 @@ export class VelgEpochCreationWizard extends LitElement {
         appearance: none;
         width: 14px;
         height: 14px;
-        background: #4ade80;
-        border: 2px solid #0a0a0a;
+        background: var(--color-success);
+        border: 2px solid var(--color-gray-950);
         cursor: pointer;
         transition: transform 0.15s;
       }
@@ -236,8 +236,8 @@ export class VelgEpochCreationWizard extends LitElement {
       .range-field input[type="range"]::-moz-range-thumb {
         width: 14px;
         height: 14px;
-        background: #4ade80;
-        border: 2px solid #0a0a0a;
+        background: var(--color-success);
+        border: 2px solid var(--color-gray-950);
         border-radius: 0;
         cursor: pointer;
       }
@@ -286,7 +286,7 @@ export class VelgEpochCreationWizard extends LitElement {
 
       .toggle--on {
         background: rgba(74 222 128 / 0.2);
-        border-color: #4ade80;
+        border-color: var(--color-success);
       }
 
       .toggle__thumb {
@@ -301,7 +301,7 @@ export class VelgEpochCreationWizard extends LitElement {
 
       .toggle--on .toggle__thumb {
         left: 22px;
-        background: #4ade80;
+        background: var(--color-success);
       }
 
       /* ── Doctrine (Score Weights) ────────── */
@@ -328,11 +328,11 @@ export class VelgEpochCreationWizard extends LitElement {
         letter-spacing: var(--tracking-wide);
       }
 
-      .weight-bar__name--stability   { color: #4ade80; }
+      .weight-bar__name--stability   { color: var(--color-success); }
       .weight-bar__name--influence   { color: #a78bfa; }
-      .weight-bar__name--sovereignty { color: #38bdf8; }
-      .weight-bar__name--diplomatic  { color: #fbbf24; }
-      .weight-bar__name--military    { color: #ef4444; }
+      .weight-bar__name--sovereignty { color: var(--color-info); }
+      .weight-bar__name--diplomatic  { color: var(--color-warning); }
+      .weight-bar__name--military    { color: var(--color-danger); }
 
       .weight-bar__pct {
         font-family: var(--font-mono, monospace);
@@ -357,11 +357,11 @@ export class VelgEpochCreationWizard extends LitElement {
         transition: transform 0.3s ease;
       }
 
-      .weight-bar__fill--stability   { background: #4ade80; }
+      .weight-bar__fill--stability   { background: var(--color-success); }
       .weight-bar__fill--influence   { background: #a78bfa; }
-      .weight-bar__fill--sovereignty { background: #38bdf8; }
-      .weight-bar__fill--diplomatic  { background: #fbbf24; }
-      .weight-bar__fill--military    { background: #ef4444; }
+      .weight-bar__fill--sovereignty { background: var(--color-info); }
+      .weight-bar__fill--diplomatic  { background: var(--color-warning); }
+      .weight-bar__fill--military    { background: var(--color-danger); }
 
       .weight-total {
         display: flex;
@@ -377,8 +377,8 @@ export class VelgEpochCreationWizard extends LitElement {
         font-weight: 700;
       }
 
-      .weight-total__value--valid { color: #4ade80; }
-      .weight-total__value--invalid { color: #ef4444; }
+      .weight-total__value--valid { color: var(--color-success); }
+      .weight-total__value--invalid { color: var(--color-danger); }
 
       .doctrine-presets {
         display: flex;
@@ -400,8 +400,8 @@ export class VelgEpochCreationWizard extends LitElement {
       }
 
       .preset-btn:hover {
-        border-color: #4ade80;
-        color: #4ade80;
+        border-color: var(--color-success);
+        color: var(--color-success);
       }
 
       .preset-btn:active {
@@ -507,9 +507,9 @@ export class VelgEpochCreationWizard extends LitElement {
       }
 
       .btn--launch {
-        background: #4ade80;
-        border-color: #4ade80;
-        color: #0a0a0a;
+        background: var(--color-success);
+        border-color: var(--color-success);
+        color: var(--color-gray-950);
         font-weight: 900;
         letter-spacing: 0.15em;
         position: relative;
@@ -544,11 +544,11 @@ export class VelgEpochCreationWizard extends LitElement {
 
       .error {
         padding: var(--space-2) var(--space-3);
-        border: 1px solid #ef4444;
+        border: 1px solid var(--color-danger);
         background: rgba(239 68 68 / 0.1);
         font-family: var(--font-mono, monospace);
         font-size: var(--text-xs);
-        color: #ef4444;
+        color: var(--color-danger);
       }
     `,
   ];

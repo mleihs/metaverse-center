@@ -84,6 +84,21 @@ export class VelgSettingsView extends LitElement {
       cursor: pointer;
       transition: all var(--transition-fast);
       white-space: nowrap;
+      opacity: 0;
+      animation: tab-enter 250ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) forwards;
+    }
+
+    .settings__tab:nth-child(1) { animation-delay: 0ms; }
+    .settings__tab:nth-child(2) { animation-delay: 40ms; }
+    .settings__tab:nth-child(3) { animation-delay: 80ms; }
+    .settings__tab:nth-child(4) { animation-delay: 120ms; }
+    .settings__tab:nth-child(5) { animation-delay: 160ms; }
+    .settings__tab:nth-child(6) { animation-delay: 200ms; }
+    .settings__tab:nth-child(7) { animation-delay: 240ms; }
+
+    @keyframes tab-enter {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .settings__tab:hover {
@@ -98,6 +113,14 @@ export class VelgSettingsView extends LitElement {
 
     .settings__content {
       min-height: 400px;
+    }
+
+    .settings__content > * {
+      animation: content-fade 250ms var(--ease-out, ease-out) both;
+    }
+
+    @keyframes content-fade {
+      from { opacity: 0; transform: translateY(4px); }
     }
 
     .settings__unsaved-warning {

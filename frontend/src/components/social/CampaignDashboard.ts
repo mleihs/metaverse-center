@@ -79,7 +79,7 @@ export class VelgCampaignDashboard extends LitElement {
           !this._loading && this._campaigns.length > 0
             ? html`
           <div class="campaigns__grid">
-            ${this._campaigns.map((c) => html`<velg-campaign-card .campaign=${c} .simulationId=${this.simulationId}></velg-campaign-card>`)}
+            ${this._campaigns.map((c, i) => html`<velg-campaign-card style="--i: ${i}" .campaign=${c} .simulationId=${this.simulationId}></velg-campaign-card>`)}
           </div>
           <velg-pagination .currentPage=${this._page} .totalItems=${this._total} .pageSize=${this._pageSize} @page-change=${this._handlePageChange}></velg-pagination>
         `

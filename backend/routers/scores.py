@@ -5,9 +5,10 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 
-from backend.dependencies import get_current_user, get_supabase
+from backend.dependencies import get_current_user, get_supabase, require_epoch_creator
 from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.epoch import LeaderboardEntry, ScoreResponse
+from backend.services.audit_service import AuditService
 from backend.services.scoring_service import ScoringService
 from supabase import Client
 
@@ -67,13 +68,18 @@ async def get_score_history(
 async def compute_scores(
     epoch_id: UUID,
     user: CurrentUser = Depends(get_current_user),
+    _creator_check: None = Depends(require_epoch_creator()),
     supabase: Client = Depends(get_supabase),
     cycle: int | None = Query(default=None, description="Cycle number (default: current)"),
 ) -> dict:
-    """Compute and store scores for the current or specified cycle."""
+    """Compute and store scores for the current or specified cycle. Creator only."""
     from backend.services.epoch_service import EpochService
 
     epoch = await EpochService.get(supabase, epoch_id)
     cycle_number = cycle or epoch.get("current_cycle", 1)
     data = await ScoringService.compute_cycle_scores(supabase, epoch_id, cycle_number)
+    await AuditService.log_action(
+        supabase, None, user.id, "epoch_scores", None, "create",
+        details={"epoch_id": str(epoch_id), "cycle": cycle_number, "scores_computed": len(data)},
+    )
     return {"success": True, "data": data}

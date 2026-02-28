@@ -6,7 +6,7 @@ import { relationshipsApi } from '../../services/api/index.js';
 import type { Agent, AgentRelationship } from '../../types/index.js';
 import '../shared/BaseModal.js';
 import { formStyles } from '../shared/form-styles.js';
-import { infoBubbleStyles } from '../shared/info-bubble-styles.js';
+import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 
 interface RelationshipFormData {
   target_agent_id: string;
@@ -254,15 +254,6 @@ export class VelgRelationshipEditModal extends LitElement {
     );
   }
 
-  private _renderInfoBubble(text: string) {
-    return html`
-      <span class="info-bubble">
-        <span class="info-bubble__icon">i</span>
-        <span class="info-bubble__tooltip">${text}</span>
-      </span>
-    `;
-  }
-
   protected render() {
     const typeOptions = this._getRelationshipTypeOptions();
     const filteredAgents = this._filteredAgents;
@@ -307,7 +298,7 @@ export class VelgRelationshipEditModal extends LitElement {
           <div class="form__group">
             <label class="form__label" for="rel-type">
               ${msg('Relationship Type')} <span class="form__required">*</span>
-              ${this._renderInfoBubble(msg('The nature of this bond. Affects how both agents react to events involving the other. Type-specific narrative templates shape AI generation.'))}
+              ${renderInfoBubble(msg('The nature of this bond. Affects how both agents react to events involving the other. Type-specific narrative templates shape AI generation.'))}
             </label>
             <select
               class="form__select ${this._errors.relationship_type ? 'form__select--error' : ''}"
@@ -330,7 +321,7 @@ export class VelgRelationshipEditModal extends LitElement {
             <div class="form__slider-header">
               <label class="form__label" for="rel-intensity">
                 ${msg('Intensity')}
-                ${this._renderInfoBubble(msg("How strong this relationship is (1-10). High intensity (7+): agents react to each other's events regardless of impact level. Medium (4-6): reactions require impact 5+. Low (1-3): reactions only for major events. Intensity 8+ resonates with the Resonance bleed vector."))}
+                ${renderInfoBubble(msg("How strong this relationship is (1-10). High intensity (7+): agents react to each other's events regardless of impact level. Medium (4-6): reactions require impact 5+. Low (1-3): reactions only for major events. Intensity 8+ resonates with the Resonance bleed vector."))}
               </label>
               <span class="form__slider-value">${this._formData.intensity}</span>
             </div>
@@ -356,7 +347,7 @@ export class VelgRelationshipEditModal extends LitElement {
               />
               <label class="form__checkbox-label" for="rel-bidirectional">
                 ${msg('Bidirectional relationship')}
-                ${this._renderInfoBubble(msg('When enabled, both agents feel the relationship equally. When disabled, only the source agent is affected — useful for unrequited bonds, secret alliances, or hierarchical roles.'))}
+                ${renderInfoBubble(msg('When enabled, both agents feel the relationship equally. When disabled, only the source agent is affected — useful for unrequited bonds, secret alliances, or hierarchical roles.'))}
               </label>
             </div>
           </div>

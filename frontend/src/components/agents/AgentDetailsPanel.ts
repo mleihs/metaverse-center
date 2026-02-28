@@ -15,6 +15,7 @@ import '../buildings/EmbassyLink.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import '../shared/Lightbox.js';
 import { panelButtonStyles } from '../shared/panel-button-styles.js';
+import { panelCascadeStyles } from '../shared/panel-cascade-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 import '../shared/VelgAvatar.js';
 import '../shared/VelgBadge.js';
@@ -36,6 +37,7 @@ interface RelationshipSuggestion {
 export class VelgAgentDetailsPanel extends LitElement {
   static styles = [
     panelButtonStyles,
+    panelCascadeStyles,
     css`
     :host {
       display: block;
@@ -46,6 +48,12 @@ export class VelgAgentDetailsPanel extends LitElement {
       display: flex;
       flex-direction: column;
       gap: var(--space-5);
+    }
+
+    .panel__badges,
+    .panel__influence {
+      opacity: 0;
+      animation: panel-cascade 400ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) forwards;
     }
 
     .panel__badges {
@@ -351,7 +359,7 @@ export class VelgAgentDetailsPanel extends LitElement {
 
     .panel__influence-fill {
       height: 100%;
-      transition: width 0.3s ease;
+      transition: width 0.6s var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) 0.4s;
     }
 
     .panel__influence-breakdown {
@@ -395,6 +403,20 @@ export class VelgAgentDetailsPanel extends LitElement {
       border: var(--border-width-thin) solid var(--color-border-light);
       cursor: pointer;
       transition: background var(--transition-fast);
+      opacity: 0;
+      animation: suggestion-enter 300ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) forwards;
+      animation-delay: calc(var(--i, 0) * 60ms);
+    }
+
+    @keyframes suggestion-enter {
+      from {
+        opacity: 0;
+        transform: translateX(-12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
     }
 
     .panel__suggestion:hover {
@@ -845,6 +867,7 @@ export class VelgAgentDetailsPanel extends LitElement {
           return html`
             <div
               class="panel__suggestion ${checked ? '' : 'panel__suggestion--unchecked'}"
+              style="--i: ${i}"
               @click=${() => this._toggleSuggestion(i)}
             >
               <input

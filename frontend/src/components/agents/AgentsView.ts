@@ -325,8 +325,9 @@ export class VelgAgentsView extends LitElement {
       <span class="view__count">${msg(str`${this._total} Agent${this._total !== 1 ? 's' : ''}`)}</span>
       <div class="view__grid">
         ${this._agents.map(
-          (agent) => html`
+          (agent, i) => html`
             <velg-agent-card
+              style="--i: ${i}"
               .agent=${agent}
               @agent-click=${this._handleAgentClick}
               @agent-edit=${this._handleAgentEdit}

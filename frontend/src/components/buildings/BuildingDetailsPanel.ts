@@ -13,6 +13,7 @@ import { icons } from '../../utils/icons.js';
 import { buildingAltText } from '../../utils/text.js';
 import '../shared/Lightbox.js';
 import { panelButtonStyles } from '../shared/panel-button-styles.js';
+import { panelCascadeStyles } from '../shared/panel-cascade-styles.js';
 import '../shared/VelgBadge.js';
 import '../shared/VelgSectionHeader.js';
 import '../shared/VelgSidePanel.js';
@@ -23,6 +24,7 @@ import './EmbassyLink.js';
 export class VelgBuildingDetailsPanel extends LitElement {
   static styles = [
     panelButtonStyles,
+    panelCascadeStyles,
     css`
     :host {
       display: block;
@@ -207,7 +209,7 @@ export class VelgBuildingDetailsPanel extends LitElement {
 
     .panel__readiness-fill {
       height: 100%;
-      transition: width 0.3s ease;
+      transition: width 0.6s var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) 0.4s;
     }
 
     .panel__readiness-value {
@@ -510,7 +512,7 @@ export class VelgBuildingDetailsPanel extends LitElement {
     return html`
       <velg-side-panel
         .open=${this.open}
-        .panelTitle=${msg('Building Details')}
+        .panelTitle=${b?.name ?? msg('Building Details')}
       >
         ${
           b

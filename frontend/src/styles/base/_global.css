@@ -76,6 +76,9 @@ a:focus-visible {
     --duration-normal: 0ms;
     --duration-slow: 0ms;
     --duration-slower: 0ms;
+    --duration-entrance: 0ms;
+    --duration-stagger: 0ms;
+    --duration-cascade: 0ms;
   }
 
   *,

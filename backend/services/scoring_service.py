@@ -283,7 +283,8 @@ class ScoringService:
         """Get the leaderboard for an epoch (optionally at a specific cycle).
 
         Returns entries sorted by composite_score descending, with rank and
-        simulation details.
+        simulation details. Uses a single query to fetch scores + simulation
+        info, and a batch query for team assignments (avoids N+1).
         """
         epoch = await EpochService.get(supabase, epoch_id)
 
@@ -300,31 +301,31 @@ class ScoringService:
             .execute()
         )
 
+        scores = resp.data or []
+        if not scores:
+            return []
+
+        # Batch-fetch all participant team assignments for this epoch
+        participants_resp = (
+            supabase.table("epoch_participants")
+            .select("simulation_id, team_id, epoch_teams(name)")
+            .eq("epoch_id", str(epoch_id))
+            .execute()
+        )
+        team_by_sim: dict[str, str | None] = {}
+        for p in participants_resp.data or []:
+            team = p.get("epoch_teams")
+            team_by_sim[p["simulation_id"]] = team.get("name") if team else None
+
         entries = []
-        for rank, score in enumerate(resp.data or [], start=1):
+        for rank, score in enumerate(scores, start=1):
             sim = score.get("simulations") or {}
-
-            # Get team info
-            participant_resp = (
-                supabase.table("epoch_participants")
-                .select("team_id, epoch_teams(name)")
-                .eq("epoch_id", str(epoch_id))
-                .eq("simulation_id", score["simulation_id"])
-                .limit(1)
-                .execute()
-            )
-            team_name = None
-            if participant_resp.data:
-                team = participant_resp.data[0].get("epoch_teams")
-                if team:
-                    team_name = team.get("name")
-
             entries.append({
                 "rank": rank,
                 "simulation_id": score["simulation_id"],
                 "simulation_name": sim.get("name", "Unknown"),
                 "simulation_slug": sim.get("slug"),
-                "team_name": team_name,
+                "team_name": team_by_sim.get(score["simulation_id"]),
                 "stability": float(score["stability_score"]),
                 "influence": float(score["influence_score"]),
                 "sovereignty": float(score["sovereignty_score"]),

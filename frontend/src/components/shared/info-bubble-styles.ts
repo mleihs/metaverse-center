@@ -1,19 +1,20 @@
-import { css } from 'lit';
+import { css, html } from 'lit';
 
 /**
- * Shared info bubble styles for edit modals and settings panels.
+ * Shared info bubble styles + render helper for edit modals and settings panels.
  * Usage: static styles = [formStyles, infoBubbleStyles, css`...`];
- *
- * Render method (add to component):
- *   private _renderInfoBubble(text: string) {
- *     return html`
- *       <span class="info-bubble">
- *         <span class="info-bubble__icon">i</span>
- *         <span class="info-bubble__tooltip">${text}</span>
- *       </span>
- *     `;
- *   }
+ * Render: ${renderInfoBubble('Tooltip text')}
  */
+
+/** Render an info bubble with tooltip text. */
+export function renderInfoBubble(text: string) {
+  return html`
+    <span class="info-bubble">
+      <span class="info-bubble__icon">i</span>
+      <span class="info-bubble__tooltip">${text}</span>
+    </span>
+  `;
+}
 export const infoBubbleStyles = css`
   .info-bubble {
     position: relative;

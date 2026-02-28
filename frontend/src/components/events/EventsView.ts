@@ -13,6 +13,7 @@ import '../shared/Pagination.js';
 import '../shared/LoadingState.js';
 import '../shared/ErrorState.js';
 import '../shared/EmptyState.js';
+import { viewHeaderStyles } from '../shared/view-header-styles.js';
 import './EventCard.js';
 import './EventEditModal.js';
 import './EventDetailsPanel.js';
@@ -20,65 +21,14 @@ import './EventDetailsPanel.js';
 @localized()
 @customElement('velg-events-view')
 export class VelgEventsView extends LitElement {
-  static styles = css`
+  static styles = [
+    viewHeaderStyles,
+    css`
     :host {
       display: block;
     }
 
-    .events {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-4);
-    }
-
-    .events__header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-4);
-    }
-
-    .events__title {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-2xl);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
-      margin: 0;
-    }
-
-    .events__create-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: var(--space-2);
-      padding: var(--space-2-5) var(--space-5);
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-sm);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
-      background: var(--color-primary);
-      color: var(--color-text-inverse);
-      border: var(--border-default);
-      box-shadow: var(--shadow-md);
-      cursor: pointer;
-      transition: all var(--transition-fast);
-      flex-shrink: 0;
-    }
-
-    .events__create-btn:hover {
-      transform: translate(-2px, -2px);
-      box-shadow: var(--shadow-lg);
-      background: var(--color-primary-hover);
-    }
-
-    .events__create-btn:active {
-      transform: translate(0);
-      box-shadow: var(--shadow-pressed);
-    }
-
-    .events__grid {
+    .view__grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
       gap: var(--space-4);
@@ -108,7 +58,8 @@ export class VelgEventsView extends LitElement {
       cursor: pointer;
       accent-color: var(--color-warning);
     }
-  `;
+  `,
+  ];
 
   @property({ type: String }) simulationId = '';
 
@@ -282,14 +233,14 @@ export class VelgEventsView extends LitElement {
     ];
 
     return html`
-      <div class="events">
-        <div class="events__header">
-          <h1 class="events__title">${msg('Events')}</h1>
+      <div class="view">
+        <div class="view__header">
+          <h1 class="view__title">${msg('Events')}</h1>
           ${
             this._canEdit
               ? html`
               <button
-                class="events__create-btn"
+                class="view__create-btn"
                 @click=${this._handleCreateClick}
               >
                 ${msg('+ Create Event')}
@@ -336,10 +287,11 @@ export class VelgEventsView extends LitElement {
                 ></velg-empty-state>
               `
                 : html`
-                <div class="events__grid">
+                <div class="view__grid">
                   ${this._events.map(
-                    (evt) => html`
+                    (evt, i) => html`
                       <velg-event-card
+                        style="--i: ${i}"
                         .event=${evt}
                         @event-click=${this._handleEventClick}
                         @event-edit=${this._handleEventEdit}

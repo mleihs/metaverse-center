@@ -8,6 +8,7 @@ interface ToastItem {
   id: number;
   type: ToastType;
   message: string;
+  removing?: boolean;
 }
 
 let toastContainerInstance: VelgToast | null = null;
@@ -197,7 +198,14 @@ export class VelgToast extends LitElement {
   }
 
   private _removeToast(id: number): void {
-    this._toasts = this._toasts.filter((t) => t.id !== id);
+    // Mark as removing to trigger slide-out animation
+    if (this._toasts.some((t) => t.id === id && t.removing)) return;
+    this._toasts = this._toasts.map((t) => (t.id === id ? { ...t, removing: true } : t));
+
+    // Remove from DOM after animation completes
+    setTimeout(() => {
+      this._toasts = this._toasts.filter((t) => t.id !== id);
+    }, 200);
   }
 
   private _handleClose(id: number): void {
@@ -208,7 +216,7 @@ export class VelgToast extends LitElement {
     return html`
       ${this._toasts.map(
         (toast) => html`
-          <div class="toast">
+          <div class="toast ${toast.removing ? 'toast--removing' : ''}">
             <div class="toast__indicator toast__indicator--${toast.type}"></div>
             <div class="toast__content">
               <div class="toast__type toast__type--${toast.type}">

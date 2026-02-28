@@ -243,8 +243,11 @@ describe('computeAnimationDurations', () => {
     expect(result['--duration-slower']).toBe('350ms');
   });
 
-  it('returns exactly 4 tokens', () => {
+  it('returns exactly 7 tokens (4 base + 3 entrance)', () => {
     const result = computeAnimationDurations(1.0);
-    expect(Object.keys(result)).toHaveLength(4);
+    expect(Object.keys(result)).toHaveLength(7);
+    expect(result['--duration-entrance']).toBe('350ms');
+    expect(result['--duration-stagger']).toBe('40ms');
+    expect(result['--duration-cascade']).toBe('60ms');
   });
 });

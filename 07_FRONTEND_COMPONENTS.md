@@ -1,7 +1,8 @@
 # 07 - Frontend Components: Komponenten + Simulation-Settings-UI
 
-**Version:** 1.3
-**Datum:** 2026-02-26
+**Version:** 1.4
+**Datum:** 2026-02-28
+**Aenderung v1.4:** Accurate component audit — 107 files across 15 subdirectories, 90 @customElement components. Updated shared/ (16 components + 8 CSS modules + 1 base class), removed dead code listings (DataTable, FormBuilder, NotificationCenter, CampaignDetailView, CampaignMetrics, SentimentBadge, SupabaseRealtimeService, PresenceService). Added health/, epoch/, lore/, EventPicker, BleedSettingsPanel, PromptsSettingsPanel. Updated service layer (22 API services + 7 platform services).
 **Aenderung v1.3:** Cartographer's Map (Multiverse-Visualisierung). Agent Relationships UI (RelationshipCard, RelationshipEditModal). Event Echoes UI (EchoCard, EchoTriggerModal). 7 neue Multiverse-Komponenten. Bleed-Filter in EventsView.
 **Aenderung v1.2:** LoreScroll-Akkordeon auf Dashboard. LoginPanel (Slide-from-Right). SimulationCard mit Banner-Bild + Zaehler. VelgSimulationShell Theming-Lifecycle (connectedCallback/disconnectedCallback). Anonymer Read-Only-Modus in allen Entity-Komponenten via `appState.isAuthenticated.value`.
 **Änderung v1.1:** Zod-Validierung, @lit-labs/router, Biome-Tooling ergänzt
@@ -12,23 +13,28 @@
 
 ### Plattform-Level
 
+**107 component files** across 15 subdirectories. **90 @customElement** components. **16 shared components + 8 CSS modules + 1 base class.**
+
 ```
 App (Root)
 ├── PlatformHeader
-│   ├── SimulationSelector (Dropdown)
+│   ├── DevAccountSwitcher
 │   ├── UserMenu
 │   └── LocaleSelector
 ├── SimulationsDashboard
 │   ├── SimulationCard (je Simulation)
+│   ├── LoreScroll (Akkordeon mit Plattform-Lore)
 │   └── CreateSimulationButton
 ├── CreateSimulationWizard
 │   ├── Step 1: Basic Info (Name, Theme, Locale)
 │   ├── Step 2: Taxonomies (Import defaults or custom)
 │   └── Step 3: Confirm & Create
+├── UserProfileView
+├── InvitationAcceptView
 ├── AuthViews
 │   ├── LoginView
-│   ├── RegisterView
-│   └── ResetPasswordView
+│   ├── LoginPanel (Slide-from-Right)
+│   └── RegisterView
 └── CartographerMap (/multiverse)
     ├── MapGraph (SVG force-directed graph)
     │   ├── MapNode (circle + banner + label)
@@ -37,6 +43,8 @@ App (Root)
     ├── MapConnectionPanel (edge detail, extends VelgSidePanel)
     └── Mobile Card List (≤768px fallback)
 ```
+
+**platform/ directory:** PlatformHeader, UserMenu, DevAccountSwitcher, SimulationsDashboard, LoreScroll, CreateSimulationWizard, UserProfileView, InvitationAcceptView, SimulationCard (9 files)
 
 ### Simulation-Level
 
@@ -80,43 +88,75 @@ SimulationShell (Layout mit Navigation)
 │   ├── ChatWindow
 │   │   ├── MessageList
 │   │   └── MessageInput
-│   └── AgentSelector
+│   ├── AgentSelector
+│   └── EventPicker
 ├── SocialTrendsView
-│   ├── SharedFilterBar
+│   ├── TrendFilterBar
 │   ├── TrendCard
 │   ├── TransformationModal (extends BaseModal)
 │   └── CampaignDashboard
+│       └── CampaignCard
+├── SocialMediaView
+│   ├── PostCard
+│   └── PostTransformModal (extends BaseModal)
 ├── LocationsView (Cities/Zones/Streets)
 │   ├── CityList
 │   ├── ZoneList
-│   └── MapView (optional)
-└── SettingsView ← NEU
-    ├── SettingsTabs
+│   ├── StreetList
+│   └── LocationEditModal (extends BaseModal)
+├── SimulationLoreView
+│   └── Lore Content (4 per-simulation content files)
+├── SimulationHealthView (Game Metrics Dashboard)
+├── EpochCommandCenter (Competitive PvP)
+│   ├── EpochCreationWizard
+│   ├── EpochLeaderboard
+│   ├── EpochBattleLog
+│   └── DeployOperativeModal (extends BaseModal)
+└── SettingsView
     ├── GeneralSettingsPanel
     ├── WorldSettingsPanel (Taxonomien)
-    ├── AISettingsPanel (Modelle, Prompts)
-    ├── IntegrationSettingsPanel
-    ├── DesignSettingsPanel
-    └── AccessSettingsPanel
+    ├── AISettingsPanel (extends BaseSettingsPanel)
+    ├── IntegrationSettingsPanel (extends BaseSettingsPanel)
+    ├── DesignSettingsPanel (extends BaseSettingsPanel)
+    ├── AccessSettingsPanel (extends BaseSettingsPanel)
+    ├── PromptsSettingsPanel
+    └── BleedSettingsPanel
 ```
 
 ### Shared Components
 
+**16 components + 8 CSS modules + 1 base class** (25 files total)
+
 ```
-Shared (wiederverwendbar über alle Views)
-├── BaseModal                        ← Beibehalten (exzellentes Pattern)
-├── SharedFilterBar                  ← NEU: Ersetzt 4× duplizierten Filter
-├── DataTable                        ← NEU: Als Lit-Komponente (statt HTMLElement)
-├── FormBuilder                      ← NEU: Als Lit-Komponente
-├── ErrorState                       ← NEU: Einheitliches Error-Pattern
-├── LoadingState                     ← NEU: Einheitliches Loading-Pattern
-├── EmptyState                       ← NEU: "Keine Daten" Anzeige
-├── ProgressSpinner                  ← Beibehalten
-├── AdvancedLightbox                 ← Beibehalten
-├── ConfirmDialog                    ← NEU
-├── Toast/Notification               ← NEU
-├── Pagination                       ← NEU: Einheitliche Pagination
-└── card-styles.ts                   ← Shared CSS: .card, .card--embassy (pulsing ring + gradient hover)
+Shared (wiederverwendbar ueber alle Views)
+├── Components (16)
+│   ├── BaseModal                    Focus trap, Escape-to-close, centered dialog
+│   ├── VelgSidePanel                Slide-from-right panel shell, focus trap, role="dialog", aria-modal="true"
+│   ├── SharedFilterBar              Ersetzt 4x duplizierten Filter
+│   ├── VelgBadge                    6 color variants (default, primary, info, warning, danger, success)
+│   ├── VelgAvatar                   Portrait + initials fallback, 3 sizes (sm/md/lg), optional alt override
+│   ├── VelgIconButton               30px icon action button
+│   ├── VelgSectionHeader            Section titles, 2 variants
+│   ├── ErrorState                   Einheitliches Error-Pattern
+│   ├── LoadingState                 Einheitliches Loading-Pattern
+│   ├── EmptyState                   "Keine Daten" Anzeige mit optionalem Action-Button
+│   ├── GenerationProgress           AI generation progress indicator
+│   ├── Lightbox                     Fullscreen image overlay, Escape/click-to-close, caption + alt
+│   ├── ConfirmDialog                Destructive action confirmation
+│   ├── Toast                        Notification toast with auto-dismiss
+│   ├── Pagination                   Einheitliche Pagination
+│   └── CookieConsent                GDPR banner, accept/decline analytics, privacy policy link
+├── CSS Modules (8)
+│   ├── card-styles.ts               .card, .card--embassy (pulsing ring + gradient hover)
+│   ├── form-styles.ts               .form, .form__group, .form__input/.form__textarea/.form__select
+│   ├── view-header-styles.ts        .view, .view__header, .view__title, .view__create-btn
+│   ├── panel-button-styles.ts       .panel__btn base + --edit, --danger, --generate variants
+│   ├── settings-styles.ts           .settings-panel, .settings-form, .settings-btn, .settings-toggle
+│   ├── info-bubble-styles.ts        Game mechanics info bubble tooltips
+│   ├── panel-cascade-styles.ts      Detail panel staggered cascade entrance animations
+│   └── typography-styles.ts         Shared typography patterns
+└── Base Class (1)
+    └── BaseSettingsPanel            Abstract base for simulation_settings-backed panels (load/save/dirty-tracking)
 ```
 
 **card-styles.ts — Embassy-Variante:**
@@ -174,47 +214,12 @@ interface FilterConfig {
 }
 ```
 
-### U3: VelgDataTable → Lit-Komponente
+### U3: Zod-Validierung
 
-**Problem:** VelgDataTable (404 Zeilen) ist legacy HTMLElement.
-
-**Lösung:** Kompletter Rewrite als Lit-Komponente mit Signals:
-```typescript
-@customElement('data-table')
-export class DataTable<T> extends LitElement {
-  @property({ type: Array }) columns: TableColumn<T>[] = [];
-  @property({ type: Array }) data: T[] = [];
-  @property({ type: Boolean }) loading = false;
-  @property({ type: Object }) pagination: PaginationConfig;
-  @property({ type: String }) sortBy: string;
-  @property({ type: String }) sortOrder: 'asc' | 'desc';
-
-  // Emits: 'sort-change', 'page-change', 'row-click', 'row-action'
-}
-```
-
-### U4: VelgForm → Lit-Komponente
-
-**Problem:** VelgForm (465Z) + VelgFormBuilder (305Z) sind legacy HTMLElement.
-
-**Lösung:** Lit-basierter FormBuilder mit Validierung:
-```typescript
-@customElement('form-builder')
-export class FormBuilder extends LitElement {
-  @property({ type: Array }) fields: FormFieldConfig[] = [];
-  @property({ type: Object }) values: Record<string, any> = {};
-  @property({ type: Object }) errors: Record<string, string> = {};
-  @property({ type: Boolean }) loading = false;
-
-  // Emits: 'form-submit', 'field-change', 'form-cancel'
-}
-```
-
-**Validierung mit Zod:**
+**Validierung mit Zod** (parallel zu Pydantic im Backend):
 ```typescript
 import { z } from 'zod';
 
-// Schema definieren (parallel zu Pydantic im Backend)
 const AgentCreateSchema = z.object({
   name: z.string().min(1, 'Name ist erforderlich').max(200),
   system: z.string().min(1, 'System ist erforderlich'),
@@ -226,15 +231,13 @@ const AgentCreateSchema = z.object({
 
 type AgentCreate = z.infer<typeof AgentCreateSchema>;
 
-// Verwendung in Formularen:
 const result = AgentCreateSchema.safeParse(formData);
 if (!result.success) {
   const errors = result.error.flatten().fieldErrors;
-  // → { name: ['Name ist erforderlich'], ... }
 }
 ```
 
-### U5: Error/Loading-States → Einheitlich
+### U4: Error/Loading-States → Einheitlich
 
 **Problem:** Jede View zeigt Fehler und Loading anders.
 
@@ -262,15 +265,15 @@ export class EmptyState extends LitElement {
 }
 ```
 
-### U6-U10: Weitere Fixes
+### U5-U9: Weitere Fixes
 
 | # | Problem | Lösung |
 |---|---------|--------|
-| U6 | Event-Naming gemischt | Einheitlich kebab-case: `filter-change`, `item-select` |
-| U7 | State-Management gemischt | Alle Komponenten nutzen SignalWatcher |
-| U8 | Inline Farb-Werte | Nur Design-Tokens, keine hardcodierten Werte |
-| U9 | Keine Validierung | **Zod** Schema-Validierung (TypeScript-first, Pydantic-Äquivalent) |
-| U10 | Hardcodierte Strings | **@lit/localize** i18n-System (Runtime-Mode): `msg('Loading...')` |
+| U5 | Event-Naming gemischt | Einheitlich kebab-case: `filter-change`, `item-select` |
+| U6 | State-Management gemischt | Alle Komponenten nutzen SignalWatcher |
+| U7 | Inline Farb-Werte | Nur Design-Tokens, keine hardcodierten Werte |
+| U8 | Keine Validierung | **Zod** Schema-Validierung (TypeScript-first, Pydantic-Aequivalent) |
+| U9 | Hardcodierte Strings | **@lit/localize** i18n-System (Runtime-Mode): `msg('Loading...')` |
 
 ---
 
@@ -427,42 +430,43 @@ export class AppShell extends LitElement {
 /multiverse                         → CartographerMap
 /simulations                        → SimulationsDashboard
 /simulations/new                    → CreateSimulationWizard
-/simulations/:simId                 → Redirect zu /simulations/:simId/agents
-/simulations/:simId/agents          → AgentsView
-/simulations/:simId/agents/:id      → AgentDetailsPanel
-/simulations/:simId/buildings       → BuildingsView
-/simulations/:simId/buildings/:id   → BuildingDetailsPanel
-/simulations/:simId/events          → EventsView
-/simulations/:simId/events/:id      → EventDetailsPanel
-/simulations/:simId/chat            → ChatView
-/simulations/:simId/chat/:convId    → ChatWindow
-/simulations/:simId/trends          → SocialTrendsView
-/simulations/:simId/campaigns       → CampaignDashboard
-/simulations/:simId/locations       → LocationsView
-/simulations/:simId/settings        → SettingsView
-/simulations/:simId/settings/:tab   → SettingsView (spezifischer Tab)
-/simulations/:simId/members         → MembersView
+/simulations/:slug                  → Redirect zu /simulations/:slug/lore
+/simulations/:slug/lore             → SimulationLoreView (default landing)
+/simulations/:slug/agents           → AgentsView
+/simulations/:slug/agents/:id       → AgentDetailsPanel
+/simulations/:slug/buildings        → BuildingsView
+/simulations/:slug/buildings/:id    → BuildingDetailsPanel
+/simulations/:slug/events           → EventsView
+/simulations/:slug/events/:id       → EventDetailsPanel
+/simulations/:slug/chat             → ChatView
+/simulations/:slug/chat/:convId     → ChatWindow
+/simulations/:slug/trends           → SocialTrendsView
+/simulations/:slug/campaigns        → CampaignDashboard
+/simulations/:slug/social           → SocialMediaView
+/simulations/:slug/locations        → LocationsView
+/simulations/:slug/health           → SimulationHealthView
+/simulations/:slug/epochs           → EpochCommandCenter
+/simulations/:slug/settings         → SettingsView
+/simulations/:slug/settings/:tab    → SettingsView (spezifischer Tab)
+/simulations/:slug/members          → MembersView
 /auth/login                         → LoginView
 /auth/register                      → RegisterView
-/auth/reset-password                → ResetPasswordView
 /invite/:token                      → InvitationAcceptView
+/profile                            → UserProfileView
 ```
 
 ---
 
 ## Service-Layer (Hybrid-Architektur)
 
-Das Frontend kommuniziert mit **zwei Targets**: Supabase direkt (Auth, Storage, Realtime) und FastAPI (Business-Logik).
+Das Frontend kommuniziert mit **zwei Targets**: Supabase direkt (Auth) und FastAPI (Business-Logik, 22 API services).
 
 ### Supabase Direct Services
 
 ```
 frontend/src/services/supabase/
 ├── client.ts                       # Shared Supabase Client-Instanz
-├── SupabaseAuthService.ts          # Auth: Login, Signup, Logout, Password-Reset
-├── SupabaseStorageService.ts       # Storage: User-Uploads (Portraits, Assets)
-├── SupabaseRealtimeService.ts      # Realtime: Live-Updates (Agents, Chat)
-└── index.ts
+└── SupabaseAuthService.ts          # Auth: Login, Signup, Logout, Password-Reset
 ```
 
 ```typescript
@@ -481,23 +485,47 @@ Siehe **10_AUTH_AND_SECURITY.md** für vollständige Code-Beispiele der Supabase
 
 ```
 frontend/src/services/api/
-├── BaseApiService.ts               # Basis mit JWT-Header, Error-Handling, Simulation-Context
-├── SimulationsApiService.ts        ← NEU
-├── MembersApiService.ts            ← NEU
-├── SettingsApiService.ts           ← NEU
-├── TaxonomiesApiService.ts         ← NEU
-├── AgentsApiService.ts             # Erweitert um simulation-scoped URLs
-├── BuildingsApiService.ts
-├── EventsApiService.ts
-├── ChatApiService.ts
-├── GenerationApiService.ts
-├── SocialTrendsApiService.ts
-├── SocialMediaApiService.ts        ← NEU (statt FacebookApiService)
-├── PromptTemplatesApiService.ts
-├── LocationsApiService.ts
-├── UsersApiService.ts              ← NEU (Profil + Mitgliedschaften)
-├── InvitationsApiService.ts        ← NEU
-└── index.ts
+├── BaseApiService.ts               # Basis mit JWT-Header, Error-Handling, Simulation-Context, getPublic()
+├── SimulationsApiService.ts        # Simulations CRUD + slug resolution
+├── MembersApiService.ts            # Simulation membership management
+├── SettingsApiService.ts           # Simulation settings (design, AI, integration, access)
+├── TaxonomiesApiService.ts         # Taxonomy values per simulation
+├── AgentsApiService.ts             # Agent CRUD + profession assignment
+├── BuildingsApiService.ts          # Building CRUD
+├── EventsApiService.ts             # Event CRUD + reactions
+├── ChatApiService.ts               # Conversations + messages
+├── GenerationApiService.ts         # AI generation (portraits, descriptions, relationships)
+├── SocialTrendsApiService.ts       # Social trends
+├── SocialMediaApiService.ts        # Social media posts + comments
+├── CampaignsApiService.ts          # Campaign management
+├── PromptTemplatesApiService.ts    # Prompt template CRUD
+├── LocationsApiService.ts          # Cities, zones, streets
+├── UsersApiService.ts              # User profile + memberships
+├── InvitationsApiService.ts        # Simulation invitations
+├── RelationshipsApiService.ts      # Agent relationships (Phase 6)
+├── EchoesApiService.ts             # Event echoes / Bleed mechanic (Phase 6)
+├── ConnectionsApiService.ts        # Simulation connections + map data (Phase 6)
+├── EmbassiesApiService.ts          # Embassy buildings + ambassador management
+├── EpochsApiService.ts             # Competitive epochs, operatives, scoring
+├── HealthApiService.ts             # Simulation health + game mechanics
+└── index.ts                        # Re-exports all service singletons
+```
+
+**22 API services** (excluding BaseApiService and index.ts).
+
+### Platform-Level Services
+
+```
+frontend/src/services/
+├── AppStateManager.ts              # Preact Signals global state
+├── NotificationService.ts          # In-app notifications
+├── ThemeService.ts                 # Per-simulation theming, CSS custom property injection
+├── theme-presets.ts                # 5 theme presets (brutalist, fantasy, deep-space-horror, arc-raiders, solarpunk)
+├── SeoService.ts                   # Meta tags, document title, structured data
+├── AnalyticsService.ts             # GA4 event tracking (37 events)
+├── GenerationProgressService.ts    # AI generation progress tracking
+└── i18n/
+    └── locale-service.ts           # LocaleService: initLocale, setLocale, getInitialLocale
 ```
 
 ### BaseApiService (erweitert)
@@ -530,18 +558,18 @@ class BaseApiService {
 }
 ```
 
-### Zuständigkeits-Aufteilung
+### Zustaendigkeits-Aufteilung
 
 | Aktion | Service | Target |
 |--------|---------|--------|
 | Login, Signup, Logout | SupabaseAuthService | Supabase direkt |
 | Password Reset | SupabaseAuthService | Supabase direkt |
-| Custom Portrait Upload | SupabaseStorageService | Supabase Storage |
-| Live-Updates (Chat, Agents) | SupabaseRealtimeService | Supabase Realtime |
 | Agents/Buildings/Events CRUD | AgentsApiService etc. | FastAPI |
 | AI-Generierung | GenerationApiService | FastAPI |
 | Settings, Taxonomien | SettingsApiService | FastAPI |
 | News/Social Media | SocialTrendsApiService | FastAPI |
+| Relationships, Echoes, Connections | RelationshipsApi, EchoesApi, ConnectionsApi | FastAPI |
+| Embassies, Epochs, Health | EmbassiesApi, EpochsApi, HealthApi | FastAPI |
 
 ---
 
@@ -636,19 +664,34 @@ Alle Änderungen zeigen eine Live-Preview innerhalb der Shell. Preset-Auswahl f�
 
 ---
 
-## Komponenten-Zählung (Neu vs Alt)
+## Komponenten-Zaehlung (Aktuell)
 
-| Kategorie | Alt (65 Dateien) | Neu (geschätzt) | Änderung |
-|-----------|-----------------|-----------------|----------|
-| Plattform-Level | 0 | ~10 | +10 NEU |
-| Simulation-Views | ~20 | ~15 | Konsolidiert |
-| Modals | ~11 | ~10 | BaseModal beibehalten |
-| Shared Components | ~5 | ~15 | Deutlich mehr Shared |
-| Settings UI | 2 (Model/Prompt) | ~8 | NEU |
-| Forms/Tables | 2 (legacy) | 2 (Lit) | Rewrite |
-| Services | 14 | ~18 | Erweitert |
-| Types | 6 (mit Duplikation) | ~15 (ohne Duplikation) | Konsolidiert |
-| **Gesamt** | ~65 | ~93 | Mehr Dateien, weniger Code |
+| Verzeichnis | Dateien | @customElement | Beschreibung |
+|-------------|---------|----------------|--------------|
+| platform/ | 9 | 9 | Header, Dashboard, Wizard, Profile, Lore, DevAccounts |
+| auth/ | 3 | 3 | Login, Register, LoginPanel |
+| layout/ | 3 | 3 | Shell, Header, Nav |
+| agents/ | 6 | 6 | View, Card, EditModal, DetailsPanel, RelationshipCard/EditModal |
+| buildings/ | 6 | 6 | View, Card, EditModal, DetailsPanel, EmbassyCreate/Link |
+| events/ | 6 | 6 | View, Card, EditModal, DetailsPanel, EchoCard/TriggerModal |
+| chat/ | 7 | 7 | View, Window, ConversationList, MessageList/Input, AgentSelector, EventPicker |
+| social/ | 9 | 9 | TrendsView, MediaView, CampaignDashboard, Cards, Modals, TrendFilterBar |
+| locations/ | 5 | 5 | View, CityList, ZoneList, StreetList, LocationEditModal |
+| lore/ | 6 | 1 | SimulationLoreView + lore-content dispatcher + 4 content files |
+| multiverse/ | 7 | 4 | CartographerMap, MapGraph, MapTooltip, MapConnectionPanel + 3 utilities |
+| settings/ | 9 | 9 | SettingsView + 8 panels (General, World, AI, Integration, Design, Access, Prompts, Bleed) |
+| health/ | 1 | 1 | SimulationHealthView (game metrics dashboard) |
+| epoch/ | 5 | 5 | CommandCenter, CreationWizard, Leaderboard, BattleLog, DeployOperativeModal |
+| shared/ | 25 | 16 | 16 components + 8 CSS modules + 1 base class |
+| **Gesamt** | **107** | **90** (in components/) | **15 Verzeichnisse** |
+
+### Utilities
+
+```
+frontend/src/utils/
+├── text.ts                         # getInitials() helper
+└── icons.ts                        # Centralized SVG icons with aria-hidden="true"
+```
 
 ---
 

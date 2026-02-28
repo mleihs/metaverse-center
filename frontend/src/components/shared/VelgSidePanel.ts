@@ -132,10 +132,54 @@ export class VelgSidePanel extends LitElement {
     }
   }
 
-  private _handleKeyDown(e: KeyboardEvent): void {
-    if (e.key === 'Escape' && this.open) {
-      this._emitClose();
+  protected updated(changedProperties: Map<PropertyKey, unknown>): void {
+    if (changedProperties.has('open') && this.open) {
+      this._focusFirstElement();
     }
+  }
+
+  private _handleKeyDown(e: KeyboardEvent): void {
+    if (!this.open) return;
+    if (e.key === 'Escape') {
+      this._emitClose();
+      return;
+    }
+    if (e.key === 'Tab') {
+      this._trapFocus(e);
+    }
+  }
+
+  private _trapFocus(e: KeyboardEvent): void {
+    const focusableSelector =
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    const panel = this.shadowRoot?.querySelector('.panel');
+    if (!panel) return;
+
+    const focusable = [
+      ...panel.querySelectorAll<HTMLElement>(focusableSelector),
+      ...(this.querySelectorAll<HTMLElement>(focusableSelector) || []),
+    ];
+    if (focusable.length === 0) return;
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+
+  private _focusFirstElement(): void {
+    requestAnimationFrame(() => {
+      const focusable = this.shadowRoot?.querySelector<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      focusable?.focus();
+    });
   }
 
   private _emitClose(): void {
@@ -156,7 +200,7 @@ export class VelgSidePanel extends LitElement {
   protected render() {
     return html`
       <div class="backdrop" @click=${this._handleBackdropClick}>
-        <div class="panel">
+        <div class="panel" role="dialog" aria-modal="true" aria-label=${this.panelTitle}>
           <div class="panel__header">
             <h2 class="panel__title">${this.panelTitle}</h2>
             <button

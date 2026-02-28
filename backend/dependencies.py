@@ -3,7 +3,7 @@ from typing import Annotated
 from uuid import UUID
 
 import httpx
-from fastapi import Depends, Header, HTTPException, Path, status
+from fastapi import Depends, Header, HTTPException, Path, Query, status
 from jose import JWTError, jwt
 from supabase_auth.errors import AuthApiError
 
@@ -195,3 +195,73 @@ def require_role(required_role: str):
         return actual_role
 
     return _check_role
+
+
+def require_epoch_creator():
+    """Dependency that checks the user created the epoch.
+
+    Requires `epoch_id` as a path parameter.
+    """
+
+    async def _check_creator(
+        epoch_id: Annotated[UUID, Path()],
+        user: CurrentUser = Depends(get_current_user),
+        supabase: Client = Depends(get_supabase),
+    ) -> None:
+        response = (
+            supabase.table("game_epochs")
+            .select("created_by_id")
+            .eq("id", str(epoch_id))
+            .single()
+            .execute()
+        )
+        if not response.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Epoch not found.",
+            )
+        if response.data["created_by_id"] != str(user.id):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only the epoch creator can perform this action.",
+            )
+
+    return _check_creator
+
+
+def require_simulation_member(role: str = "viewer", *, param_name: str = "simulation_id"):
+    """Dependency that checks the user has a role in a simulation passed as a query param.
+
+    Unlike require_role() which reads simulation_id from the URL path,
+    this reads it from a query parameter (used by competitive layer endpoints).
+    """
+    required_level = ROLE_HIERARCHY.get(role, 0)
+
+    async def _check_member(
+        simulation_id: Annotated[UUID, Query(alias=param_name)],
+        user: CurrentUser = Depends(get_current_user),
+        supabase: Client = Depends(get_supabase),
+    ) -> str:
+        response = (
+            supabase.table("simulation_members")
+            .select("member_role")
+            .eq("simulation_id", str(simulation_id))
+            .eq("user_id", str(user.id))
+            .limit(1)
+            .execute()
+        )
+        member = response.data[0] if response.data else None
+        if not member:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are not a member of this simulation.",
+            )
+        actual_level = ROLE_HIERARCHY.get(member["member_role"], 0)
+        if actual_level < required_level:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Requires '{role}' role in this simulation. You have '{member['member_role']}'.",
+            )
+        return member["member_role"]
+
+    return _check_member

@@ -11,10 +11,10 @@ class AuditService:
     @staticmethod
     async def log_action(
         supabase: Client,
-        simulation_id: UUID,
+        simulation_id: UUID | None,
         user_id: UUID,
         entity_type: str,
-        entity_id: UUID,
+        entity_id: UUID | str | None,
         action: str,
         details: dict | None = None,
     ) -> None:
@@ -22,18 +22,21 @@ class AuditService:
 
         Args:
             supabase: Supabase client with user JWT.
-            simulation_id: The simulation this action belongs to.
+            simulation_id: The simulation this action belongs to (None for platform-level).
             user_id: The user who performed the action.
             entity_type: Table/entity name (e.g. "agents", "buildings").
-            entity_id: The ID of the affected entity.
+            entity_id: The ID of the affected entity (None for bulk operations).
             action: One of "create", "update", "delete", "restore".
             details: Optional jsonb with old_value/new_value pairs or context.
         """
-        supabase.table("audit_log").insert({
-            "simulation_id": str(simulation_id),
+        entry = {
             "user_id": str(user_id),
             "entity_type": entity_type,
-            "entity_id": str(entity_id),
             "action": action,
             "details": details or {},
-        }).execute()
+        }
+        if simulation_id is not None:
+            entry["simulation_id"] = str(simulation_id)
+        if entity_id is not None:
+            entry["entity_id"] = str(entity_id)
+        supabase.table("audit_log").insert(entry).execute()

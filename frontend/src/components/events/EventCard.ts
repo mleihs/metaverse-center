@@ -21,19 +21,36 @@ export class VelgEventCard extends LitElement {
       box-shadow: var(--shadow-md);
       overflow: hidden;
       cursor: pointer;
-      transition: all var(--transition-fast);
+      transition: transform var(--duration-normal) var(--ease-out),
+        box-shadow var(--duration-normal) var(--ease-out),
+        border-color var(--duration-normal) var(--ease-out);
       display: flex;
       flex-direction: column;
+
+      opacity: 0;
+      animation: card-enter var(--duration-entrance, 350ms) var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) forwards;
+      animation-delay: calc(var(--i, 0) * var(--duration-stagger, 40ms));
     }
 
     .card:hover {
-      transform: translate(-2px, -2px);
+      transform: var(--hover-transform, translate(-2px, -2px));
       box-shadow: var(--shadow-lg);
     }
 
     .card:active {
       transform: translate(0);
       box-shadow: var(--shadow-pressed);
+    }
+
+    @keyframes card-enter {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .card__header {
@@ -78,6 +95,14 @@ export class VelgEventCard extends LitElement {
       width: 4px;
       background: var(--color-border-light);
       transition: background var(--transition-fast);
+      transform: scaleY(0);
+      transform-origin: bottom;
+      animation: segment-grow var(--duration-entrance, 350ms) var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) forwards;
+      animation-delay: calc(var(--seg-i, 0) * 30ms + 200ms);
+    }
+
+    @keyframes segment-grow {
+      to { transform: scaleY(1); }
     }
 
     .card__impact-segment--active {
@@ -240,7 +265,7 @@ export class VelgEventCard extends LitElement {
             return html`
               <div
                 class=${segmentClass}
-                style="height: ${height}px"
+                style="height: ${height}px; --seg-i: ${i}"
               ></div>
             `;
           })}

@@ -58,6 +58,17 @@ export class VelgLocationsView extends LitElement {
     .view__separator {
       color: var(--color-text-muted);
     }
+
+    /* Crossfade when drilling between city/zone/street levels */
+    velg-city-list,
+    velg-zone-list,
+    velg-street-list {
+      animation: content-fade 250ms var(--ease-out, ease-out) both;
+    }
+
+    @keyframes content-fade {
+      from { opacity: 0; transform: translateY(4px); }
+    }
   `,
   ];
 

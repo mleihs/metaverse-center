@@ -40,6 +40,13 @@ export class VelgMessageList extends LitElement {
       height: 0;
       border: none;
       border-top: var(--border-width-thin) solid var(--color-border-light);
+      transform-origin: center;
+      animation: line-expand 400ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) forwards;
+    }
+
+    @keyframes line-expand {
+      from { transform: scaleX(0); }
+      to { transform: scaleX(1); }
     }
 
     .date-separator__label {
@@ -95,6 +102,7 @@ export class VelgMessageList extends LitElement {
       gap: var(--space-3);
       max-width: 80%;
       margin-top: var(--space-4);
+      animation: message-enter-left 300ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) both;
     }
 
     .message-row--grouped {
@@ -104,11 +112,26 @@ export class VelgMessageList extends LitElement {
     .message-row--user {
       align-self: flex-end;
       flex-direction: row-reverse;
+      animation-name: message-enter-right;
     }
 
     .message-row--assistant {
       align-self: flex-start;
       flex-direction: row;
+    }
+
+    @keyframes message-enter-left {
+      from {
+        opacity: 0;
+        transform: translateX(-12px);
+      }
+    }
+
+    @keyframes message-enter-right {
+      from {
+        opacity: 0;
+        transform: translateX(12px);
+      }
     }
 
     /* --- Avatars --- */

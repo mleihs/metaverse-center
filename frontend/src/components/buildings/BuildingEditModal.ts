@@ -8,7 +8,7 @@ import type { ApiResponse, Building } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import '../shared/BaseModal.js';
 import { formStyles } from '../shared/form-styles.js';
-import { infoBubbleStyles } from '../shared/info-bubble-styles.js';
+import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 
 @localized()
@@ -324,15 +324,6 @@ export class VelgBuildingEditModal extends LitElement {
       }));
   }
 
-  private _renderInfoBubble(text: string) {
-    return html`
-      <span class="info-bubble">
-        <span class="info-bubble__icon">i</span>
-        <span class="info-bubble__tooltip">${text}</span>
-      </span>
-    `;
-  }
-
   protected render() {
     const typeOptions = this._getBuildingTypeOptions();
     const styleOptions = this._getBuildingStyleOptions();
@@ -345,7 +336,7 @@ export class VelgBuildingEditModal extends LitElement {
           <div class="form__group">
             <label class="form__label" for="name">
               ${msg('Name')} <span class="form__required">*</span>
-              ${this._renderInfoBubble(msg('Building identifier. AI uses this for narrative flavor in events and descriptions.'))}
+              ${renderInfoBubble(msg('Building identifier. AI uses this for narrative flavor in events and descriptions.'))}
             </label>
             <input
               class="form__input ${this._errors.name ? 'form__input--error' : ''}"
@@ -368,7 +359,7 @@ export class VelgBuildingEditModal extends LitElement {
             <div class="form__group">
               <label class="form__label" for="building_type">
                 ${msg('Building Type')} <span class="form__required">*</span>
-                ${this._renderInfoBubble(msg('Determines function and staffing requirements. Critical types (hospital, power plant) have 2x weight in zone stability. Markets resonate with Commerce bleed.'))}
+                ${renderInfoBubble(msg('Determines function and staffing requirements. Critical types (hospital, power plant) have 2x weight in zone stability. Markets resonate with Commerce bleed.'))}
               </label>
               <select
                 class="form__select ${this._errors.building_type ? 'form__select--error' : ''}"
@@ -390,7 +381,7 @@ export class VelgBuildingEditModal extends LitElement {
             <div class="form__group">
               <label class="form__label" for="building_condition">
                 ${msg('Condition')}
-                ${this._renderInfoBubble(msg('Multiplies staffing effectiveness: Good x1.0, Moderate x0.75, Poor x0.5, Ruined x0.2. Destructive events can degrade condition.'))}
+                ${renderInfoBubble(msg('Multiplies staffing effectiveness: Good x1.0, Moderate x0.75, Poor x0.5, Ruined x0.2. Destructive events can degrade condition.'))}
               </label>
               <select
                 class="form__select"
@@ -411,7 +402,7 @@ export class VelgBuildingEditModal extends LitElement {
           <div class="form__group">
             <label class="form__label" for="description">
               ${msg('Description')}
-              ${this._renderInfoBubble(msg('Short functional summary (1-2 sentences). Used as context in AI image generation and event narratives.'))}
+              ${renderInfoBubble(msg('Short functional summary (1-2 sentences). Used as context in AI image generation and event narratives.'))}
             </label>
             <div class="image-section__buttons">
               <button
@@ -439,7 +430,7 @@ export class VelgBuildingEditModal extends LitElement {
             <div class="form__group">
               <label class="form__label" for="population_capacity">
                 ${msg('Population Capacity')}
-                ${this._renderInfoBubble(msg('Maximum population supported. The ratio of assigned agents to capacity determines staffing level. Understaffed critical buildings reduce zone security.'))}
+                ${renderInfoBubble(msg('Maximum population supported. The ratio of assigned agents to capacity determines staffing level. Understaffed critical buildings reduce zone security.'))}
               </label>
               <input
                 class="form__input"
@@ -456,7 +447,7 @@ export class VelgBuildingEditModal extends LitElement {
             <div class="form__group">
               <label class="form__label" for="construction_year">
                 ${msg('Construction Year')}
-                ${this._renderInfoBubble(msg('Historical period. Feeds into AI image generation and lore. Buildings with explicit construction years resonate with Architecture bleed.'))}
+                ${renderInfoBubble(msg('Historical period. Feeds into AI image generation and lore. Buildings with explicit construction years resonate with Architecture bleed.'))}
               </label>
               <input
                 class="form__input"
@@ -475,7 +466,7 @@ export class VelgBuildingEditModal extends LitElement {
           <div class="form__group">
             <label class="form__label" for="style">
               ${msg('Style')}
-              ${this._renderInfoBubble(msg('Architectural aesthetic. Affects AI image generation. When Architecture bleed transmits, this style may influence buildings in the target simulation.'))}
+              ${renderInfoBubble(msg('Architectural aesthetic. Affects AI image generation. When Architecture bleed transmits, this style may influence buildings in the target simulation.'))}
             </label>
             <select
               class="form__select"

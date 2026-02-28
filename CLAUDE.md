@@ -15,7 +15,7 @@
 
 Multi-simulation platform rebuilt from a single-world Flask app. See `00_PROJECT_OVERVIEW.md` for full context.
 
-**Current Status:** All 6 phases complete + i18n fully implemented + codebase audit applied + architecture audit applied + lore expansion + dashboard LoreScroll + per-simulation theming + WCAG contrast validation + public-first architecture (anonymous read access) + anonymous view audit applied + Station Null (sim 3) added + Speranza (sim 4) added + per-simulation lore pages (4×6 chapters) + SEO/GA4/deep-linking implemented + GA4 comprehensive event tracking (37 events) + Agent Relationships + Event Echoes (Bleed mechanic) + Cartographer's Map (multiverse force-directed graph with starfield, energy pulses, node glow drift) + Settings architecture cleanup (shared CSS + BaseSettingsPanel base class) + Slug-based URLs (`/simulations/speranza/lore` instead of UUIDs) + Building description prompt fix (short functional output) + Embassies & Ambassadors (cross-sim diplomatic buildings, `is_ambassador` computed flag, `.card--embassy` pulsing ring + gradient hover effects with per-theme colors, 4-step creation wizard with ambassador assignment) + UI polish (SimulationNav diagonal gradient dwell effects, PlatformHeader marching ants map button, LoreScroll microanimations, close button hover effects) + English default locale + Game Systems (materialized views, mechanics service, info bubbles, AI prompt integration, bleed threshold/echo pipeline) + AI Relationship Generation (inline review flow in AgentDetailsPanel). 160 tasks. ~1373 localized UI strings (EN/DE, translated via DeepL). Production deployed on Railway + hosted Supabase. 4 simulations: Velgarien (dark), Capybara Kingdom (fantasy), Station Null (sci-fi horror), Speranza (post-apocalyptic).
+**Current Status:** All 6 phases complete + i18n fully implemented + codebase audit applied + architecture audit applied + full-stack audit remediation (security hardening, dead code removal, code deduplication, accessibility, epoch theming, SEO improvements) + lore expansion + dashboard LoreScroll + per-simulation theming + WCAG contrast validation + public-first architecture (anonymous read access) + anonymous view audit applied + Station Null (sim 3) added + Speranza (sim 4) added + per-simulation lore pages (4×6 chapters) + SEO/GA4/deep-linking implemented + GA4 comprehensive event tracking (37 events) + Agent Relationships + Event Echoes (Bleed mechanic) + Cartographer's Map (multiverse force-directed graph with starfield, energy pulses, node glow drift) + Settings architecture cleanup (shared CSS + BaseSettingsPanel base class) + Slug-based URLs (`/simulations/speranza/lore` instead of UUIDs) + Building description prompt fix (short functional output) + Embassies & Ambassadors (cross-sim diplomatic buildings, `is_ambassador` computed flag, `.card--embassy` pulsing ring + gradient hover effects with per-theme colors, 4-step creation wizard with ambassador assignment) + UI polish (SimulationNav diagonal gradient dwell effects, PlatformHeader marching ants map button, LoreScroll microanimations, close button hover effects) + English default locale + Game Systems (materialized views, mechanics service, info bubbles, AI prompt integration, bleed threshold/echo pipeline) + AI Relationship Generation (inline review flow in AgentDetailsPanel) + Dramatic Microanimations (23 files: staggered card grids, panel cascades, badge pops, impact bar segment grows, directional chat messages, tab crossfades, toast slide-out fix, theme-aware duration scaling). 160 tasks. ~1373 localized UI strings (EN/DE, translated via DeepL). Production deployed on Railway + hosted Supabase. 4 simulations: Velgarien (dark), Capybara Kingdom (fantasy), Station Null (sci-fi horror), Speranza (post-apocalyptic).
 
 ## Tech Stack
 
@@ -51,36 +51,36 @@ backend/              FastAPI application
   services/           Business logic (BaseService + 20 entity + audit + simulation + external)
   middleware/         Rate limiting, security headers (CSP), SEO crawler detection + HTML enrichment
   utils/              Encryption (AES-256 for settings), search helpers
-  tests/              pytest tests (472 tests: unit + integration + security + performance)
+  tests/              pytest tests (473 tests: unit + integration + security + performance)
 frontend/             Lit + Vite application
   src/
     app-shell.ts      Main app with @lit-labs/router (auth + simulation-scoped routes)
     components/
       auth/           Login, Register views, LoginPanel (slide-in)
-      platform/       PlatformHeader, UserMenu, DevAccountSwitcher, SimulationsDashboard, LoreScroll, CreateSimulationWizard, UserProfileView, InvitationAcceptView, NotificationCenter
+      platform/       PlatformHeader, UserMenu, DevAccountSwitcher, SimulationsDashboard, LoreScroll, CreateSimulationWizard, UserProfileView, InvitationAcceptView
       layout/         SimulationShell, SimulationHeader, SimulationNav
-      shared/         18 reusable components + 5 shared CSS modules + BaseSettingsPanel base class (see Code Reusability)
+      shared/         16 reusable components + 8 shared CSS modules + BaseSettingsPanel base class (see Code Reusability)
       agents/         AgentsView, AgentCard, AgentEditModal, AgentDetailsPanel
       buildings/      BuildingsView, BuildingCard, BuildingEditModal, BuildingDetailsPanel, EmbassyCreateModal, EmbassyLink
       events/         EventsView, EventCard, EventEditModal, EventDetailsPanel
       chat/           ChatView, ChatWindow, ConversationList, MessageList, MessageInput, AgentSelector
-      social/         SocialTrendsView, SocialMediaView, CampaignDashboard, CampaignDetailView, TrendCard, PostCard, TransformationModal, PostTransformModal, CampaignCard
+      social/         SocialTrendsView, SocialMediaView, CampaignDashboard, TrendCard, PostCard, TransformationModal, PostTransformModal, CampaignCard
       locations/      LocationsView, CityList, ZoneList, StreetList, LocationEditModal
       lore/           SimulationLoreView, lore-content dispatcher, 4 content files (per-simulation ~3500 words each)
       multiverse/   CartographerMap, MapGraph, MapConnectionPanel, MapTooltip, map-force, map-data, map-types
       settings/       SettingsView + 7 panels (General, World, AI, Integration, Design, Access, View) + BleedSettingsPanel
       epoch/          EpochCommandCenter, EpochCreationWizard, DeployOperativeModal, EpochLeaderboard, EpochBattleLog
       health/         SimulationHealthView
-    services/         Supabase client, 18 API services, AppStateManager, NotificationService, RealtimeService, PresenceService, ThemeService, theme-presets, SeoService, AnalyticsService
+    services/         Supabase client, 18 API services, AppStateManager, NotificationService, ThemeService, theme-presets, SeoService, AnalyticsService
       i18n/           LocaleService + FormatService
     locales/          i18n files
       generated/      Auto-generated: de.ts, locale-codes.ts (DO NOT EDIT)
       xliff/          Translation interchange: de.xlf (EDIT THIS for translations)
     styles/           CSS design tokens (tokens/: 8 files — colors, typography, spacing, borders, shadows, animation, layout, z-index) + base styles (base/)
-    utils/            Shared utilities (text.ts, formatters.ts, error-handler.ts, icons.ts)
+    utils/            Shared utilities (text.ts, icons.ts)
     types/            TypeScript interfaces (index.ts) + Zod validation schemas (validation/)
   tests/              vitest tests (365 tests: validation + API + notification + theme contrast + SEO/analytics + settings)
-e2e/                  Playwright E2E tests (73 specs across 12 files)
+e2e/                  Playwright E2E tests (81 specs across 12 files)
   playwright.config.ts
   helpers/            auth.ts, fixtures.ts
   tests/              auth, agents, buildings, events, chat, settings, multi-user, social
@@ -203,7 +203,7 @@ These renames were applied in the v2.0 schema to avoid SQL reserved words. **Alw
 | `portrait_url` | `portrait_image_url` | Explicit |
 | `created_time` | `source_created_at` | Consistency |
 
-## Database (37 Tables)
+## Database (39 Tables)
 
 - **136+ RLS policies** — CRUD per table, role-based via helper functions + 21 anon SELECT policies for public read access + embassy policies + competitive layer policies
 - **25+ triggers** — 16 updated_at + 6 business logic (slug immutability, status transitions, primary profession, last owner protection, conversation stats) + 3 new table triggers + competitive layer triggers
@@ -234,7 +234,7 @@ All endpoints under `/api/v1/`. Swagger UI at `/api/docs`. Responses use unified
 - **Config:** `backend/config.py` — `Settings(BaseSettings)` with `extra="ignore"`, reads `.env`. Imported as `app_settings` in `app.py` to avoid conflict with `routers.settings`.
 - **Auth:** `get_current_user()` validates JWT via python-jose, returns `CurrentUser(id, email, access_token)`
 - **Supabase client:** `get_supabase()` creates client with user's JWT (RLS enforced). `get_anon_supabase()` creates client with anon key only (no JWT, anon RLS policies for public endpoints).
-- **Role checking:** `require_role("admin")` factory returns Depends() that checks simulation_members
+- **Role checking:** `require_role("admin")` factory returns Depends() that checks simulation_members. `require_epoch_creator()` checks epoch ownership. `require_simulation_member("editor")` checks role via query param (for platform-level endpoints).
 - **Rate limiting:** slowapi — 30/hr AI generation, 10/min AI chat, 5/min external API, 100/min standard
 - **Models:** `PaginatedResponse[T]`, `SuccessResponse[T]`, `ErrorResponse` in `models/common.py`
 - **BaseService:** Generic CRUD in `services/base_service.py` — uses `active_*` views for soft-delete filtering, optional `include_deleted=True` for admin queries. Set `view_name = None` for tables without soft-delete (e.g., campaigns, agent_professions, locations). Public `serialize_for_json()` utility for datetime/UUID/date conversion.
@@ -256,7 +256,7 @@ All endpoints under `/api/v1/`. Swagger UI at `/api/docs`. Responses use unified
 - Routing via `@lit-labs/router` (Reactive Controller in app-shell)
 - All types in `frontend/src/types/index.ts`
 - Design tokens as CSS Custom Properties in `styles/tokens/`
-- **Shared components:** 18 reusable components + 5 shared CSS modules + `BaseSettingsPanel` base class in `components/shared/` — see Code Reusability section for full list
+- **Shared components:** 16 reusable components + 8 shared CSS modules + `BaseSettingsPanel` base class in `components/shared/` — see Code Reusability section for full list
 - **Slug-based URLs:** Simulation routes use slugs (`/simulations/speranza/lore`) instead of UUIDs. `app-shell._enterSimulationRoute()` (router `enter()` callback) resolves slug→UUID via `_resolveSimulation()` before render, eliminating the race condition where `render()` fired before resolution completed. All navigation links use `simulation.slug`. SEO middleware returns 301 redirects from UUID→slug for crawlers.
 - **Shared icons:** All SVG icons centralized in `utils/icons.ts` — import `{ icons }` and use `icons.edit()`, `icons.trash()`, etc. Never define inline SVG icon methods in components.
 - **Entity views:** Each entity has 4 files: ListView, Card, EditModal, DetailsPanel (except Chat which has 6)
@@ -323,14 +323,13 @@ DeepL tips:
 
 **Before writing new code, ALWAYS search for existing reusable patterns:**
 
-1. **Check `components/shared/`** — 18 reusable components + 5 CSS modules + 1 base class exist. Use them instead of creating one-off solutions:
-   - **Layout:** `VelgSidePanel` (slide-from-right detail panel shell with backdrop, Escape, 3 slots: media/content/footer), `BaseModal` (centered dialog)
-   - **UI Primitives:** `VelgBadge` (6 color variants), `VelgAvatar` (portrait + initials fallback, 3 sizes), `VelgIconButton` (30px icon action button), `VelgSectionHeader` (section titles, 2 variants)
-   - **Data Display:** `DataTable`, `Pagination`, `SharedFilterBar`
+1. **Check `components/shared/`** — 16 reusable components + 8 CSS modules + 1 base class exist. Use them instead of creating one-off solutions:
+   - **Layout:** `VelgSidePanel` (slide-from-right detail panel shell with backdrop, Escape, focus trap, 3 slots: media/content/footer), `BaseModal` (centered dialog with focus trap)
+   - **UI Primitives:** `VelgBadge` (6 color variants), `VelgAvatar` (portrait + initials fallback, 3 sizes, optional `alt` override), `VelgIconButton` (30px icon action button), `VelgSectionHeader` (section titles, 2 variants)
+   - **Data Display:** `Pagination`, `SharedFilterBar`
    - **Feedback:** `Toast`, `ConfirmDialog`, `LoadingState`, `EmptyState`, `ErrorState`, `GenerationProgress`
-   - **Forms:** `FormBuilder`
    - **Media:** `Lightbox` (fullscreen image overlay with Escape/click-to-close, optional `caption` + `alt` properties)
-   - **GDPR:** `CookieConsent` (fixed bottom banner, accept/decline analytics, stores in localStorage)
+   - **GDPR:** `CookieConsent` (fixed bottom banner, accept/decline analytics, privacy policy link, stores in localStorage)
    - **Settings:** `BaseSettingsPanel` (abstract base class for simulation_settings-backed panels — provides load/save/dirty-tracking via `settingsApi`. Subclasses define `category` getter + `render()`. Used by AI, Integration, Design, Access panels. GeneralSettingsPanel does NOT extend this — it reads from the `simulations` table directly.)
    - **Shared CSS:**
      - `panel-button-styles.ts` — `panelButtonStyles` for detail panel footer buttons (`.panel__btn` base + `--edit`, `--danger`, `--generate` variants)
@@ -338,12 +337,15 @@ DeepL tips:
      - `view-header-styles.ts` — `viewHeaderStyles` for entity list views (`.view`, `.view__header`, `.view__title`, `.view__create-btn`, `.view__count`)
      - `settings-styles.ts` — `settingsStyles` for settings panels (`.settings-panel`, `.settings-form`, `.settings-form__group`, `.settings-form__input`, `.settings-btn`, `.settings-toggle`)
      - `card-styles.ts` — `cardStyles` for entity cards (`.card` hover/active + `.card--embassy` pulsing ring + gradient hover with per-theme colors)
+     - `info-bubble-styles.ts` — `renderInfoBubble(title, text)` shared render function for info tooltips in edit modals
+     - `panel-cascade-styles.ts` — `panelCascadeStyles` for staggered detail panel section animations
+     - `typography-styles.ts` — `typographyStyles` with `.label-brutalist` class for uppercase brutalist labels
    - **Usage:** `static styles = [formStyles, css\`...\`]` — local styles win by cascade for per-component overrides
 2. **Check `services/`** — BaseApiService provides CRUD patterns. Extend it for new API services. BaseService (backend) provides generic CRUD with soft-delete, audit logging, and optimistic locking.
 3. **Check existing components** for similar patterns — entity views follow a consistent 4-file pattern (ListView, Card, EditModal, DetailsPanel). Copy the pattern, don't reinvent it.
 4. **Check `styles/tokens/`** — Use existing CSS custom properties for spacing, colors, typography. Don't hardcode values.
 5. **Check `types/index.ts`** — Use existing TypeScript interfaces. Extend them if needed, don't duplicate.
-6. **Check `utils/`** — `text.ts` (getInitials), `formatters.ts`, `error-handler.ts`, `icons.ts` (centralized SVG icons). Add to them rather than creating parallel utilities. For icons, always import from `icons.ts` — never define inline SVG methods in components.
+6. **Check `utils/`** — `text.ts` (getInitials), `icons.ts` (centralized SVG icons with `aria-hidden="true"`). Add to them rather than creating parallel utilities. For icons, always import from `icons.ts` — never define inline SVG methods in components.
 7. **Backend:** Check `services/base_service.py` before implementing CRUD logic. Check `models/common.py` for response types. Check `dependencies.py` for auth patterns.
 
 ## Theme Contrast Rules — MANDATORY for Presets
@@ -371,14 +373,14 @@ See `18_THEMING_SYSTEM.md` for full contrast documentation.
 
 ## Spec Documents
 
-25 specification documents (00-22 + GAME_DESIGN_DOCUMENT) in project root. **Always consult the relevant spec before implementing:**
+26 specification documents (00-23 + GAME_DESIGN_DOCUMENT) in project root. **Always consult the relevant spec before implementing:**
 
 | Doc | Content | Version |
 |-----|---------|---------|
-| `03_DATABASE_SCHEMA_NEW.md` | Complete schema (37 tables, triggers, views, RLS) | v2.0 |
-| `04_DOMAIN_MODELS.md` | TypeScript interfaces (aligned with schema v2.0) | v2.0 |
-| `05_API_SPECIFICATION.md` | 217 endpoints with request/response formats | v1.0 |
-| `07_FRONTEND_COMPONENTS.md` | Component hierarchy, routing, state management | v1.1 |
+| `03_DATABASE_SCHEMA_NEW.md` | Complete schema (39 tables, triggers, views, RLS) | v2.3 |
+| `04_DOMAIN_MODELS.md` | TypeScript interfaces (aligned with schema v2.3) | v2.3 |
+| `05_API_SPECIFICATION.md` | 217 endpoints with request/response formats | v1.3 |
+| `07_FRONTEND_COMPONENTS.md` | Component hierarchy, routing, state management | v1.4 |
 | `09_AI_INTEGRATION.md` | AI pipelines, prompt system, model fallback | v1.0 |
 | `10_AUTH_AND_SECURITY.md` | Hybrid auth, JWT validation, RLS strategies | v1.0 (rewritten) |
 | `12_DESIGN_SYSTEM.md` | CSS tokens, brutalist aesthetic, component styles | v1.0 |
@@ -390,6 +392,7 @@ See `18_THEMING_SYSTEM.md` for full contrast documentation.
 | `21_EMBASSIES.md` | Embassies & ambassadors: cross-sim diplomatic feature, visual effects, user manual | v1.0 |
 | `22_GAME_SYSTEMS.md` | Game mechanics: materialized views, computed attributes, bleed system | v1.0 |
 | `22_EPOCHS_COMPETITIVE_LAYER.md` | Competitive PvP: epochs, operatives, scoring, battle log | v1.0 |
+| `23_MICROANIMATIONS.md` | Dramatic entrance animations, stagger patterns, theme-aware motion across all UI | v1.0 |
 | `GAME_DESIGN_DOCUMENT.md` | High-level game design concept and vision | v1.0 |
 
 ## Python Version

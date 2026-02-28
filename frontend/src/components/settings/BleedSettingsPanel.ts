@@ -3,7 +3,7 @@ import { css, html, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { BaseSettingsPanel } from '../shared/BaseSettingsPanel.js';
 import '../shared/VelgSectionHeader.js';
-import { infoBubbleStyles } from '../shared/info-bubble-styles.js';
+import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { settingsStyles } from '../shared/settings-styles.js';
 
 /**
@@ -93,15 +93,6 @@ export class VelgBleedSettingsPanel extends BaseSettingsPanel {
     this._values = { ...this._values, [key]: value };
   }
 
-  private _renderInfoBubble(text: string) {
-    return html`
-      <span class="info-bubble">
-        <span class="info-bubble__icon">i</span>
-        <span class="info-bubble__tooltip">${text}</span>
-      </span>
-    `;
-  }
-
   protected render() {
     if (this._loading) {
       return html`<velg-loading-state message=${msg('Loading bleed settings...')}></velg-loading-state>`;
@@ -130,7 +121,7 @@ export class VelgBleedSettingsPanel extends BaseSettingsPanel {
             </label>
             <span class="bleed-toggle-row__label">
               ${msg('Enable Bleed')}
-              ${this._renderInfoBubble(msg('Master switch for cross-simulation event propagation. When disabled, no events from this simulation will echo to other worlds, and no incoming echoes will be accepted.'))}
+              ${renderInfoBubble(msg('Master switch for cross-simulation event propagation. When disabled, no events from this simulation will echo to other worlds, and no incoming echoes will be accepted.'))}
             </span>
           </div>
         </div>
@@ -172,7 +163,7 @@ export class VelgBleedSettingsPanel extends BaseSettingsPanel {
         <div class="settings-form__group">
           <label class="settings-form__label settings-form__label--xs">
             ${msg('Minimum Impact for Bleed')}
-            ${this._renderInfoBubble(msg('Minimum event impact level (1-10) required to trigger an echo. Can be effectively lowered by: unstable zones (-1), effective embassies (-1). Floor: 5.'))}
+            ${renderInfoBubble(msg('Minimum event impact level (1-10) required to trigger an echo. Can be effectively lowered by: unstable zones (-1), effective embassies (-1). Floor: 5.'))}
           </label>
           <div class="bleed-range">
             <input
@@ -199,7 +190,7 @@ export class VelgBleedSettingsPanel extends BaseSettingsPanel {
         <div class="settings-form__group">
           <label class="settings-form__label settings-form__label--xs">
             ${msg('Maximum Cascade Depth')}
-            ${this._renderInfoBubble(msg('How many times an echo can re-echo (1-3). Depth 1: direct echo only. Depth 2: echoes of echoes. Depth 3: maximum — reality fractures deeply. Each depth level applies strength decay.'))}
+            ${renderInfoBubble(msg('How many times an echo can re-echo (1-3). Depth 1: direct echo only. Depth 2: echoes of echoes. Depth 3: maximum — reality fractures deeply. Each depth level applies strength decay.'))}
           </label>
           <div class="bleed-range">
             <input
@@ -218,7 +209,7 @@ export class VelgBleedSettingsPanel extends BaseSettingsPanel {
         <div class="settings-form__group">
           <label class="settings-form__label settings-form__label--xs">
             ${msg('Strength Decay per Depth')}
-            ${this._renderInfoBubble(msg('Multiplier applied per cascade depth (0-1). At 0.6: depth 1 = 60% strength, depth 2 = 36%, depth 3 = 22%. Lower values = echoes fade faster across hops.'))}
+            ${renderInfoBubble(msg('Multiplier applied per cascade depth (0-1). At 0.6: depth 1 = 60% strength, depth 2 = 36%, depth 3 = 22%. Lower values = echoes fade faster across hops.'))}
           </label>
           <div class="bleed-range">
             <input
@@ -251,7 +242,7 @@ export class VelgBleedSettingsPanel extends BaseSettingsPanel {
           </label>
           <span class="bleed-toggle-row__label">
             ${msg('Auto-Approve Incoming Echoes')}
-            ${this._renderInfoBubble(msg('When enabled, incoming echoes skip pending status and immediately begin AI generation. When disabled, an admin must approve each echo before it manifests.'))}
+            ${renderInfoBubble(msg('When enabled, incoming echoes skip pending status and immediately begin AI generation. When disabled, an admin must approve each echo before it manifests.'))}
           </span>
         </div>
       </div>

@@ -122,12 +122,12 @@ export class VelgDeployOperativeModal extends LitElement {
 
       /* Override modal for dark tactical theme */
       velg-base-modal {
-        --color-surface-raised: #0c0a09;
-        --color-surface-header: #0a0908;
-        --color-text-primary: #e7e5e4;
-        --color-text-muted: #78716c;
-        --color-border: #44403c;
-        --color-surface: #1c1917;
+        --color-surface-raised: var(--color-gray-950);
+        --color-surface-header: var(--color-gray-950);
+        --color-text-primary: var(--color-gray-100);
+        --color-text-muted: var(--color-gray-500);
+        --color-border: var(--color-gray-700);
+        --color-surface: var(--color-gray-800);
       }
 
       /* ── Phase Indicator ─────────────────── */
@@ -136,7 +136,7 @@ export class VelgDeployOperativeModal extends LitElement {
         display: flex;
         gap: 0;
         margin-bottom: var(--space-5);
-        border: 1px solid #44403c;
+        border: 1px solid var(--color-gray-700);
         overflow: hidden;
         position: relative;
       }
@@ -164,9 +164,9 @@ export class VelgDeployOperativeModal extends LitElement {
         text-transform: uppercase;
         letter-spacing: 0.1em;
         text-align: center;
-        color: #78716c;
-        background: #0c0a09;
-        border-right: 1px solid #44403c;
+        color: var(--color-gray-500);
+        background: var(--color-gray-950);
+        border-right: 1px solid var(--color-gray-700);
         position: relative;
         transition: all 0.3s ease;
         overflow: hidden;
@@ -177,8 +177,8 @@ export class VelgDeployOperativeModal extends LitElement {
       }
 
       .phase--active {
-        color: #0c0a09;
-        background: #f59e0b;
+        color: var(--color-gray-950);
+        background: var(--color-warning);
         font-weight: 700;
       }
 
@@ -201,7 +201,7 @@ export class VelgDeployOperativeModal extends LitElement {
       }
 
       .phase--done {
-        color: #f59e0b;
+        color: var(--color-warning);
         background: rgba(245 158 11 / 0.1);
       }
 
@@ -228,29 +228,29 @@ export class VelgDeployOperativeModal extends LitElement {
         font-size: var(--text-xs);
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        color: #a8a29e;
+        color: var(--color-gray-400);
       }
 
       .field__select {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-sm);
         padding: var(--space-2) var(--space-3);
-        border: 1px solid #44403c;
-        background: #0c0a09;
-        color: #e7e5e4;
+        border: 1px solid var(--color-gray-700);
+        background: var(--color-gray-950);
+        color: var(--color-gray-100);
         cursor: pointer;
         transition: border-color 0.2s;
       }
 
       .field__select:focus {
         outline: none;
-        border-color: #f59e0b;
+        border-color: var(--color-warning);
         box-shadow: 0 0 0 1px rgba(245 158 11 / 0.3);
       }
 
       .field__select option {
-        background: #1c1917;
-        color: #e7e5e4;
+        background: var(--color-gray-800);
+        color: var(--color-gray-100);
       }
 
       /* ── Agent Dossier Card ──────────────── */
@@ -259,8 +259,8 @@ export class VelgDeployOperativeModal extends LitElement {
         display: flex;
         gap: var(--space-4);
         padding: var(--space-4);
-        border: 1px solid #44403c;
-        background: #1c1917;
+        border: 1px solid var(--color-gray-700);
+        background: var(--color-gray-800);
         position: relative;
         overflow: hidden;
         transition: border-color 0.3s;
@@ -281,7 +281,7 @@ export class VelgDeployOperativeModal extends LitElement {
       }
 
       .dossier--selected {
-        border-color: #f59e0b;
+        border-color: var(--color-warning);
         box-shadow: 0 0 12px rgba(245 158 11 / 0.15);
       }
 
@@ -303,13 +303,13 @@ export class VelgDeployOperativeModal extends LitElement {
         font-size: var(--text-base);
         text-transform: uppercase;
         letter-spacing: var(--tracking-wide);
-        color: #e7e5e4;
+        color: var(--color-gray-100);
       }
 
       .dossier__meta {
         font-family: var(--font-mono, monospace);
         font-size: 10px;
-        color: #78716c;
+        color: var(--color-gray-500);
         text-transform: uppercase;
         letter-spacing: 0.06em;
       }
@@ -317,7 +317,7 @@ export class VelgDeployOperativeModal extends LitElement {
       .dossier__warning {
         font-family: var(--font-mono, monospace);
         font-size: 10px;
-        color: #ef4444;
+        color: var(--color-danger);
         margin-top: var(--space-1);
         padding: var(--space-1) var(--space-2);
         border: 1px solid rgba(239 68 68 / 0.3);
@@ -338,8 +338,8 @@ export class VelgDeployOperativeModal extends LitElement {
         align-items: center;
         gap: var(--space-3);
         padding: var(--space-3);
-        border: 1px solid #44403c;
-        background: #0c0a09;
+        border: 1px solid var(--color-gray-700);
+        background: var(--color-gray-950);
         cursor: pointer;
         transition: all 0.2s ease;
         position: relative;
@@ -358,17 +358,17 @@ export class VelgDeployOperativeModal extends LitElement {
       }
 
       .mission-card:hover {
-        border-color: #78716c;
+        border-color: var(--color-gray-500);
         transform: translateX(2px);
       }
 
       .mission-card--selected {
-        border-color: #f59e0b;
+        border-color: var(--color-warning);
         background: rgba(245 158 11 / 0.05);
       }
 
       .mission-card--selected::before {
-        background: #f59e0b;
+        background: var(--color-warning);
       }
 
       .mission-card__icon {
@@ -394,13 +394,13 @@ export class VelgDeployOperativeModal extends LitElement {
         font-size: var(--text-sm);
         text-transform: uppercase;
         letter-spacing: var(--tracking-wide);
-        color: #e7e5e4;
+        color: var(--color-gray-100);
       }
 
       .mission-card__effect {
         font-family: var(--font-mono, monospace);
         font-size: 10px;
-        color: #78716c;
+        color: var(--color-gray-500);
         margin-top: 2px;
         line-height: 1.4;
       }
@@ -417,13 +417,13 @@ export class VelgDeployOperativeModal extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-black);
         font-size: var(--text-lg);
-        color: #f59e0b;
+        color: var(--color-warning);
       }
 
       .mission-card__duration {
         font-family: var(--font-mono, monospace);
         font-size: 9px;
-        color: #78716c;
+        color: var(--color-gray-500);
         text-transform: uppercase;
       }
 
@@ -439,8 +439,8 @@ export class VelgDeployOperativeModal extends LitElement {
         align-items: center;
         gap: var(--space-5);
         padding: var(--space-4);
-        border: 1px solid #44403c;
-        background: #0c0a09;
+        border: 1px solid var(--color-gray-700);
+        background: var(--color-gray-950);
         margin-top: var(--space-3);
       }
 
@@ -459,7 +459,7 @@ export class VelgDeployOperativeModal extends LitElement {
 
       .targeting__ring-bg {
         fill: none;
-        stroke: #292524;
+        stroke: var(--color-gray-800);
         stroke-width: 6;
       }
 
@@ -494,7 +494,7 @@ export class VelgDeployOperativeModal extends LitElement {
         font-size: 10px;
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        color: #78716c;
+        color: var(--color-gray-500);
       }
 
       .targeting__factor {
@@ -502,7 +502,7 @@ export class VelgDeployOperativeModal extends LitElement {
         justify-content: space-between;
         font-family: var(--font-mono, monospace);
         font-size: 11px;
-        color: #a8a29e;
+        color: var(--color-gray-400);
       }
 
       .targeting__factor-val {
@@ -510,11 +510,11 @@ export class VelgDeployOperativeModal extends LitElement {
       }
 
       .targeting__factor-val--positive {
-        color: #4ade80;
+        color: var(--color-success);
       }
 
       .targeting__factor-val--negative {
-        color: #ef4444;
+        color: var(--color-danger);
       }
 
       /* ── Confirmation Summary ────────────── */
@@ -524,8 +524,8 @@ export class VelgDeployOperativeModal extends LitElement {
         flex-direction: column;
         gap: var(--space-3);
         padding: var(--space-4);
-        border: 1px solid #44403c;
-        background: #1c1917;
+        border: 1px solid var(--color-gray-700);
+        background: var(--color-gray-800);
         position: relative;
       }
 
@@ -539,7 +539,7 @@ export class VelgDeployOperativeModal extends LitElement {
         font-weight: var(--font-black);
         text-transform: uppercase;
         letter-spacing: 0.15em;
-        color: #ef4444;
+        color: var(--color-danger);
         opacity: 0.6;
       }
 
@@ -548,7 +548,7 @@ export class VelgDeployOperativeModal extends LitElement {
         justify-content: space-between;
         align-items: center;
         padding: var(--space-1) 0;
-        border-bottom: 1px dashed #292524;
+        border-bottom: 1px dashed var(--color-gray-800);
       }
 
       .summary__row:last-child {
@@ -560,27 +560,27 @@ export class VelgDeployOperativeModal extends LitElement {
         font-size: 10px;
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        color: #78716c;
+        color: var(--color-gray-500);
       }
 
       .summary__val {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-sm);
         font-weight: 700;
-        color: #e7e5e4;
+        color: var(--color-gray-100);
         text-align: right;
       }
 
       .summary__val--amber {
-        color: #f59e0b;
+        color: var(--color-warning);
       }
 
       .summary__val--red {
-        color: #ef4444;
+        color: var(--color-danger);
       }
 
       .summary__val--green {
-        color: #4ade80;
+        color: var(--color-success);
       }
 
       /* ── RP Cost Badge ──────────────────── */
@@ -595,7 +595,7 @@ export class VelgDeployOperativeModal extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-black);
         font-size: var(--text-sm);
-        color: #f59e0b;
+        color: var(--color-warning);
       }
 
       /* ── Error ──────────────────────────── */
@@ -603,7 +603,7 @@ export class VelgDeployOperativeModal extends LitElement {
       .error {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-xs);
-        color: #ef4444;
+        color: var(--color-danger);
         padding: var(--space-2) var(--space-3);
         border: 1px solid rgba(239 68 68 / 0.3);
         background: rgba(239 68 68 / 0.05);
@@ -625,16 +625,16 @@ export class VelgDeployOperativeModal extends LitElement {
         text-transform: uppercase;
         letter-spacing: 0.08em;
         padding: var(--space-2) var(--space-3);
-        border: 1px solid #44403c;
+        border: 1px solid var(--color-gray-700);
         background: transparent;
-        color: #a8a29e;
+        color: var(--color-gray-400);
         cursor: pointer;
         transition: all 0.2s;
       }
 
       .btn-back:hover {
-        border-color: #78716c;
-        color: #e7e5e4;
+        border-color: var(--color-gray-500);
+        color: var(--color-gray-100);
       }
 
       .btn-next {
@@ -644,16 +644,16 @@ export class VelgDeployOperativeModal extends LitElement {
         text-transform: uppercase;
         letter-spacing: var(--tracking-wide);
         padding: var(--space-2) var(--space-5);
-        border: 2px solid #f59e0b;
+        border: 2px solid var(--color-warning);
         background: transparent;
-        color: #f59e0b;
+        color: var(--color-warning);
         cursor: pointer;
         transition: all 0.2s;
       }
 
       .btn-next:hover:not(:disabled) {
-        background: #f59e0b;
-        color: #0c0a09;
+        background: var(--color-warning);
+        color: var(--color-gray-950);
         box-shadow: 0 0 16px rgba(245 158 11 / 0.3);
       }
 
@@ -669,9 +669,9 @@ export class VelgDeployOperativeModal extends LitElement {
         text-transform: uppercase;
         letter-spacing: var(--tracking-wide);
         padding: var(--space-2) var(--space-6);
-        border: 2px solid #f59e0b;
-        background: #f59e0b;
-        color: #0c0a09;
+        border: 2px solid var(--color-warning);
+        background: var(--color-warning);
+        color: var(--color-gray-950);
         cursor: pointer;
         position: relative;
         overflow: hidden;
@@ -721,7 +721,7 @@ export class VelgDeployOperativeModal extends LitElement {
       .guardian-note {
         font-family: var(--font-mono, monospace);
         font-size: 10px;
-        color: #4ade80;
+        color: var(--color-success);
         padding: var(--space-2) var(--space-3);
         border: 1px solid rgba(74 222 128 / 0.3);
         background: rgba(74 222 128 / 0.05);
@@ -731,7 +731,7 @@ export class VelgDeployOperativeModal extends LitElement {
       .phase-gate-notice {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-xs);
-        color: #4ade80;
+        color: var(--color-success);
         padding: var(--space-2) var(--space-3);
         border: 1px solid rgba(74 222 128 / 0.25);
         background: rgba(74 222 128 / 0.06);
@@ -1147,7 +1147,7 @@ export class VelgDeployOperativeModal extends LitElement {
           }
           ${
             agent.character
-              ? html`<span class="dossier__meta" style="color: #a8a29e; font-style: italic;">
+              ? html`<span class="dossier__meta" style="color: var(--color-gray-400); font-style: italic;">
                 "${agent.character.length > 100 ? `${agent.character.substring(0, 100)}...` : agent.character}"
               </span>`
               : nothing

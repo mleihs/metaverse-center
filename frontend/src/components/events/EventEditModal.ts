@@ -7,7 +7,7 @@ import type { Event as SimEvent } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import '../shared/BaseModal.js';
 import { formStyles } from '../shared/form-styles.js';
-import { infoBubbleStyles } from '../shared/info-bubble-styles.js';
+import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 
 @localized()
@@ -286,15 +286,6 @@ export class VelgEventEditModal extends LitElement {
     }
   }
 
-  private _renderInfoBubble(text: string) {
-    return html`
-      <span class="info-bubble">
-        <span class="info-bubble__icon">i</span>
-        <span class="info-bubble__tooltip">${text}</span>
-      </span>
-    `;
-  }
-
   protected render() {
     const eventTypes = this._getEventTypeTaxonomies();
 
@@ -309,7 +300,7 @@ export class VelgEventEditModal extends LitElement {
           <div class="form__group">
             <label class="form__label form__label--required">
               ${msg('Title')}
-              ${this._renderInfoBubble(msg('Event headline. Preserved through bleed echoes — this is what agents in other simulations hear.'))}
+              ${renderInfoBubble(msg('Event headline. Preserved through bleed echoes — this is what agents in other simulations hear.'))}
             </label>
             <input
               class="form__input"
@@ -326,7 +317,7 @@ export class VelgEventEditModal extends LitElement {
           <div class="form__group">
             <label class="form__label">
               ${msg('Event Type')}
-              ${this._renderInfoBubble(msg('Narrative category. Affects AI tone and which agents react. Different types trigger different relationship dynamics.'))}
+              ${renderInfoBubble(msg('Narrative category. Affects AI tone and which agents react. Different types trigger different relationship dynamics.'))}
             </label>
             <select
               class="form__select"
@@ -347,7 +338,7 @@ export class VelgEventEditModal extends LitElement {
           <div class="form__group">
             <label class="form__label">
               ${msg('Description')}
-              ${this._renderInfoBubble(msg('Full event narrative. Transformed by bleed vectors when echoing to other simulations (e.g., Commerce bleed rewrites through economic lens).'))}
+              ${renderInfoBubble(msg('Full event narrative. Transformed by bleed vectors when echoing to other simulations (e.g., Commerce bleed rewrites through economic lens).'))}
             </label>
             <textarea
               class="form__textarea"
@@ -363,7 +354,7 @@ export class VelgEventEditModal extends LitElement {
             <div class="form__group">
               <label class="form__label">
                 ${msg('Occurred At')}
-                ${this._renderInfoBubble(msg('When the event occurred. Timeline ordering determines cause-and-effect chains. Recent high-impact events increase zone event pressure.'))}
+                ${renderInfoBubble(msg('When the event occurred. Timeline ordering determines cause-and-effect chains. Recent high-impact events increase zone event pressure.'))}
               </label>
               <input
                 class="form__input"
@@ -378,7 +369,7 @@ export class VelgEventEditModal extends LitElement {
             <div class="form__group">
               <label class="form__label">
                 ${msg('Location')}
-                ${this._renderInfoBubble(msg('Where the event happened. Events are attributed to the matching zone for stability calculations. Zones with many high-impact events become unstable.'))}
+                ${renderInfoBubble(msg('Where the event happened. Events are attributed to the matching zone for stability calculations. Zones with many high-impact events become unstable.'))}
               </label>
               <input
                 class="form__input"
@@ -395,7 +386,7 @@ export class VelgEventEditModal extends LitElement {
           <div class="form__group">
             <label class="form__label">
               ${msg(str`Impact Level (${this._impactLevel}/10)`)}
-              ${this._renderInfoBubble(msg('Determines ripple radius: 1-3 local zone, 4-6 adjacent zones, 7-8 entire city, 9-10 all cities. Events above the bleed threshold (default 8) can echo to connected simulations.'))}
+              ${renderInfoBubble(msg('Determines ripple radius: 1-3 local zone, 4-6 adjacent zones, 7-8 entire city, 9-10 all cities. Events above the bleed threshold (default 8) can echo to connected simulations.'))}
             </label>
             <div class="form__impact-wrapper">
               <input
@@ -416,7 +407,7 @@ export class VelgEventEditModal extends LitElement {
           <div class="form__group">
             <label class="form__label">
               ${msg('Tags')}
-              ${this._renderInfoBubble(msg('Tags matching a bleed vector (commerce, memory, dream...) boost echo strength by 20%. Tags matching an agent system increase reaction probability.'))}
+              ${renderInfoBubble(msg('Tags matching a bleed vector (commerce, memory, dream...) boost echo strength by 20%. Tags matching an agent system increase reaction probability.'))}
             </label>
             <div class="form__tags-container">
               ${

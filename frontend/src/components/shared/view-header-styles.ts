@@ -46,6 +46,14 @@ export const viewHeaderStyles = css`
     transition: all var(--transition-fast);
     white-space: nowrap;
     flex-shrink: 0;
+    animation: btn-materialize 400ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) both 200ms;
+  }
+
+  @keyframes btn-materialize {
+    from {
+      opacity: 0;
+      transform: translateX(8px);
+    }
   }
 
   .view__create-btn:hover {

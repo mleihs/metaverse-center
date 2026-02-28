@@ -69,6 +69,9 @@ export class VelgBuildingCard extends LitElement {
       color: var(--color-text-primary);
       margin: 0;
       line-height: var(--leading-tight);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .card__badges {

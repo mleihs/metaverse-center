@@ -5,9 +5,15 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 
-from backend.dependencies import get_current_user, get_supabase
+from backend.dependencies import (
+    get_current_user,
+    get_supabase,
+    require_epoch_creator,
+    require_simulation_member,
+)
 from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.models.epoch import MissionResponse, OperativeDeploy
+from backend.services.audit_service import AuditService
 from backend.services.battle_log_service import BattleLogService
 from backend.services.epoch_service import EpochService
 from backend.services.operative_service import OperativeService
@@ -27,9 +33,10 @@ async def deploy_operative(
     body: OperativeDeploy,
     simulation_id: UUID = Query(..., description="Your simulation ID"),
     user: CurrentUser = Depends(get_current_user),
+    _member_check: str = Depends(require_simulation_member("editor")),
     supabase: Client = Depends(get_supabase),
 ) -> dict:
-    """Deploy an operative agent on a mission."""
+    """Deploy an operative agent on a mission. Must be editor+ in source simulation."""
     mission = await OperativeService.deploy(supabase, epoch_id, simulation_id, body)
 
     # Log to battle log
@@ -38,6 +45,10 @@ async def deploy_operative(
         supabase, epoch_id, epoch.get("current_cycle", 1), mission
     )
 
+    await AuditService.log_action(
+        supabase, simulation_id, user.id, "operative_missions", mission["id"], "create",
+        details={"operative_type": body.operative_type, "epoch_id": str(epoch_id)},
+    )
     return {"success": True, "data": mission}
 
 
@@ -99,11 +110,17 @@ async def get_mission(
 async def recall_operative(
     epoch_id: UUID,
     mission_id: UUID,
+    simulation_id: UUID = Query(..., description="Your simulation ID"),
     user: CurrentUser = Depends(get_current_user),
+    _member_check: str = Depends(require_simulation_member("editor")),
     supabase: Client = Depends(get_supabase),
 ) -> dict:
-    """Recall an active operative."""
+    """Recall an active operative. Must be editor+ in source simulation."""
     data = await OperativeService.recall(supabase, mission_id)
+    await AuditService.log_action(
+        supabase, simulation_id, user.id, "operative_missions", mission_id, "update",
+        details={"action": "recall"},
+    )
     return {"success": True, "data": data}
 
 
@@ -114,9 +131,10 @@ async def recall_operative(
 async def resolve_missions(
     epoch_id: UUID,
     user: CurrentUser = Depends(get_current_user),
+    _creator_check: None = Depends(require_epoch_creator()),
     supabase: Client = Depends(get_supabase),
 ) -> dict:
-    """Resolve all pending missions that have reached their resolve time."""
+    """Resolve all pending missions that have reached their resolve time. Creator only."""
     results = await OperativeService.resolve_pending_missions(supabase, epoch_id)
 
     # Log results to battle log
@@ -124,6 +142,10 @@ async def resolve_missions(
     cycle = epoch.get("current_cycle", 1)
     for mission in results:
         await BattleLogService.log_mission_result(supabase, epoch_id, cycle, mission)
+        await AuditService.log_action(
+            supabase, None, user.id, "operative_missions", mission.get("id"), "update",
+            details={"action": "resolve", "outcome": mission.get("mission_result", {}).get("outcome")},
+        )
 
     return {"success": True, "data": results}
 
@@ -136,10 +158,15 @@ async def counter_intel_sweep(
     epoch_id: UUID,
     simulation_id: UUID = Query(..., description="Your simulation ID"),
     user: CurrentUser = Depends(get_current_user),
+    _member_check: str = Depends(require_simulation_member("editor")),
     supabase: Client = Depends(get_supabase),
 ) -> dict:
-    """Run a counter-intelligence sweep (costs 3 RP)."""
+    """Run a counter-intelligence sweep (costs 3 RP). Must be editor+ in simulation."""
     detected = await OperativeService.counter_intel_sweep(
         supabase, epoch_id, simulation_id
+    )
+    await AuditService.log_action(
+        supabase, simulation_id, user.id, "operative_missions", None, "update",
+        details={"action": "counter_intel_sweep", "detected_count": len(detected)},
     )
     return {"success": True, "data": detected}

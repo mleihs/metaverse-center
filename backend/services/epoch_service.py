@@ -408,7 +408,10 @@ class EpochService:
         amount: int,
         rp_cap: int,
     ) -> None:
-        """Grant RP to a participant, respecting the cap."""
+        """Grant RP to a participant, respecting the cap.
+
+        Uses optimistic locking to prevent concurrent grant race conditions.
+        """
         participant = (
             supabase.table("epoch_participants")
             .select("current_rp")
@@ -422,7 +425,7 @@ class EpochService:
         supabase.table("epoch_participants").update({
             "current_rp": new_rp,
             "last_rp_grant_at": datetime.now(UTC).isoformat(),
-        }).eq("id", participant_id).execute()
+        }).eq("id", participant_id).eq("current_rp", current).execute()
 
     @classmethod
     async def spend_rp(
@@ -432,7 +435,13 @@ class EpochService:
         simulation_id: UUID,
         amount: int,
     ) -> int:
-        """Spend RP. Returns remaining RP. Raises 400 if insufficient."""
+        """Spend RP with optimistic locking. Returns remaining RP.
+
+        Prevents race conditions: the UPDATE includes an eq() check on the
+        current balance. If two concurrent requests read the same balance,
+        the first to write succeeds, the second fails because current_rp
+        no longer matches.
+        """
         resp = (
             supabase.table("epoch_participants")
             .select("id, current_rp")
@@ -452,9 +461,19 @@ class EpochService:
             )
 
         new_rp = current - amount
-        supabase.table("epoch_participants").update(
-            {"current_rp": new_rp}
-        ).eq("id", resp.data["id"]).execute()
+        update_resp = (
+            supabase.table("epoch_participants")
+            .update({"current_rp": new_rp})
+            .eq("id", resp.data["id"])
+            .eq("current_rp", current)  # optimistic lock
+            .execute()
+        )
+
+        if not update_resp.data:
+            raise HTTPException(
+                status.HTTP_409_CONFLICT,
+                "RP balance changed concurrently. Please retry.",
+            )
 
         return new_rp
 

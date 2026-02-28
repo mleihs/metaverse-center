@@ -1,7 +1,8 @@
 # 05 - API Specification: Alle Endpoints (Simulation-Scoped)
 
-**Version:** 1.2
-**Datum:** 2026-02-26
+**Version:** 1.3
+**Datum:** 2026-02-28
+**Aenderung v1.3:** 217 Endpoints total (28 Router). Neue Router: health, seo, embassies, epochs, operatives, scores, game_mechanics. 44 Public-Endpoints. Generation-Router erweitert um `/relationships`. Chat-Router erweitert auf 11 Endpoints. Campaigns-Router erweitert auf 8 Endpoints. Social-Trends erweitert auf 8 Endpoints. Settings-Router erweitert auf 6 Endpoints. Invitations-Router erweitert auf 4 Endpoints.
 **Aenderung v1.2:** 157 Endpoints total (23 Router). 3 neue Router (relationships, echoes, connections). 6 neue Public-Endpoints fuer Relationships/Echoes/Connections/Map-Data. Aggregierter Map-Data-Endpoint.
 **Aenderung v1.1:** 136 Endpoints total (20 Router). 20 Public-Endpoints unter `/api/v1/public/*` fuer anonymen Lesezugriff (Rate-Limit: 100/min). Public-Simulations-Endpoint liefert jetzt `agent_count`, `building_count`, `event_count` via `simulation_dashboard` View.
 
@@ -70,6 +71,34 @@ Alle Endpoints erfordern JWT Bearer Token im Header:
 ```
 Authorization: Bearer <jwt_token>
 ```
+
+---
+
+## 0. Health (Plattform-Level)
+
+### `GET /api/v1/health`
+Platform Health Check. Keine Authentifizierung erforderlich.
+
+**Response:**
+```json
+{
+  "status": "healthy",
+  "version": "2.0.0",
+  "timestamp": "2026-02-28T12:00:00Z"
+}
+```
+
+---
+
+## 0b. SEO
+
+Root-Level Endpoints (kein `/api/v1`-Prefix).
+
+### `GET /robots.txt`
+Dynamische `robots.txt` mit Sitemap-Referenz. Keine Authentifizierung erforderlich.
+
+### `GET /sitemap.xml`
+Dynamische XML-Sitemap aus Simulations-Slugs. Keine Authentifizierung erforderlich. Cache: 1 Stunde.
 
 ---
 
@@ -513,6 +542,17 @@ Portrait-Beschreibung generieren.
 ### `POST /api/v1/simulations/:simId/generate/event`
 Event generieren.
 
+### `POST /api/v1/simulations/:simId/generate/relationships`
+Beziehungsvorschlaege fuer einen Agenten per AI generieren. Liefert eine Liste von Vorschlaegen mit Typ, Ziel-Agent, Beschreibung und Intensitaet.
+
+**Body:**
+```json
+{
+  "agent_id": "uuid",
+  "locale": "en"
+}
+```
+
 ### `POST /api/v1/simulations/:simId/generate/image`
 Bild generieren (Agent/Gebäude).
 
@@ -892,9 +932,9 @@ Verbindung loeschen. Verwendet `admin_supabase`.
 
 ---
 
-## 21. Public Endpoints — Relationships, Echoes, Connections, Map-Data
+## 21. Public Endpoints — Relationships, Echoes, Connections, Map-Data (Details)
 
-Zusaetzliche oeffentliche Endpoints (ohne Authentifizierung, Rate-Limit: 100/min) fuer das Relationship-/Echo-/Connection-System. Ergaenzen die bestehenden 20 Public-Endpoints aus v1.1.
+Detail-Dokumentation fuer ausgewaehlte Public-Endpoints. Vollstaendige Liste aller 44 Public-Endpoints: siehe Abschnitt 27.
 
 ### `GET /api/v1/public/simulations/:simId/agents/:agentId/relationships`
 Beziehungen eines Agenten (oeffentlich).
@@ -965,49 +1005,380 @@ Aggregierter Endpoint fuer die Cartographer's Map — liefert alle Daten fuer di
 
 ## 22. Embassies (Simulation-Scoped)
 
-Cross-simulation diplomatic buildings. An embassy is a building with `special_type = 'embassy'` linked to a target simulation. Agents assigned to embassies become ambassadors (`is_ambassador` computed flag in API response).
+Cross-simulation diplomatic buildings. An embassy is a building with `special_type = 'embassy'` linked to a target simulation. Agents assigned to embassies become ambassadors (`is_ambassador` computed flag in API response). Status-Workflow: `proposed` → `active` ↔ `suspended` → `dissolved`.
 
 ### `GET /api/v1/simulations/:simId/embassies`
-
 Liste aller Embassies in der Simulation.
 
-**Query:** `?target_simulation_id=uuid&limit=25&offset=0`
+**Query:** `?status=active&limit=25&offset=0`
+
+**Rolle:** `viewer`
+
+### `GET /api/v1/simulations/:simId/embassies/:embassyId`
+Embassy-Details inkl. Building-Daten.
+
+**Rolle:** `viewer`
+
+### `GET /api/v1/simulations/:simId/buildings/:buildingId/embassy`
+Embassy-Daten fuer ein bestimmtes Building (falls vorhanden, sonst `null`).
+
+**Rolle:** `viewer`
 
 ### `POST /api/v1/simulations/:simId/embassies`
+Erstellt eine neue Embassy-Verbindung zwischen zwei Buildings in verschiedenen Simulationen. Setzt `special_type = 'embassy'` auf dem Building.
 
-Erstellt eine neue Embassy (Admin/Owner). Setzt `special_type = 'embassy'` auf dem Building.
+**Rolle:** `admin`
 
-### `GET /api/v1/simulations/:simId/embassies/:id`
+### `PATCH /api/v1/simulations/:simId/embassies/:embassyId`
+Aktualisiert Embassy-Metadaten (Partial Update).
 
-Embassy-Details inkl. Building-Daten und Ambassador-Agent.
+**Rolle:** `admin`
 
-### `PUT /api/v1/simulations/:simId/embassies/:id`
+### `PATCH /api/v1/simulations/:simId/embassies/:embassyId/activate`
+Aktiviert eine vorgeschlagene oder suspendierte Embassy.
 
-Aktualisiert Embassy (Admin/Owner).
+**Rolle:** `admin`
 
-### `DELETE /api/v1/simulations/:simId/embassies/:id`
+### `PATCH /api/v1/simulations/:simId/embassies/:embassyId/suspend`
+Suspendiert eine aktive Embassy.
 
-Soft-Delete einer Embassy.
+**Rolle:** `admin`
 
-### `POST /api/v1/simulations/:simId/embassies/:id/assign-ambassador`
+### `PATCH /api/v1/simulations/:simId/embassies/:embassyId/dissolve`
+Loest eine Embassy dauerhaft auf (setzt Building-Attribute zurueck).
 
-Weist einen Agent als Ambassador zu (Admin/Owner).
+**Rolle:** `admin`
 
-**Query:** `?agent_id=uuid`
+---
 
-### `DELETE /api/v1/simulations/:simId/embassies/:id/unassign-ambassador`
+## 23. Epochs — Competitive Layer (Plattform-Level)
 
-Entfernt Ambassador-Zuweisung.
+Epochen sind zeitlich begrenzte PvP-Wettbewerbe zwischen Simulationen. Status-Workflow: `lobby` → `foundation` → `tension` → `crisis` → `resolution` → `completed` / `cancelled`. Ersteller einer Epoche hat erweiterte Lifecycle-Rechte.
+
+### `GET /api/v1/epochs`
+Alle Epochen (paginiert, optionaler Status-Filter).
+
+**Query:** `?status=active&limit=25&offset=0`
+
+**Auth:** Authentifizierter Benutzer
+
+### `GET /api/v1/epochs/active`
+Aktuell aktive Epoche (falls vorhanden, sonst `null`).
+
+**Auth:** Authentifizierter Benutzer
+
+### `GET /api/v1/epochs/:epochId`
+Epoch-Details.
+
+**Auth:** Authentifizierter Benutzer
+
+### `POST /api/v1/epochs`
+Neue Epoche erstellen (startet in `lobby`-Phase).
+
+**Body:**
+```json
+{
+  "name": "Epoch of Twilight",
+  "description": "...",
+  "config": { "cycle_duration_hours": 72, "max_participants": 8 }
+}
+```
+
+**Auth:** Authentifizierter Benutzer
+
+### `PATCH /api/v1/epochs/:epochId`
+Epoch-Konfiguration aktualisieren (nur in `lobby`-Phase).
+
+**Auth:** Authentifizierter Benutzer
+
+### `POST /api/v1/epochs/:epochId/start`
+Epoche starten (`lobby` → `foundation`). Nur Ersteller.
+
+**Auth:** Epoch-Creator
+
+### `POST /api/v1/epochs/:epochId/advance`
+Zur naechsten Phase vorrücken. Nur Ersteller.
+
+**Auth:** Epoch-Creator
+
+### `POST /api/v1/epochs/:epochId/cancel`
+Epoche abbrechen. Nur Ersteller.
+
+**Auth:** Epoch-Creator
+
+### `POST /api/v1/epochs/:epochId/resolve-cycle`
+Aktuellen Zyklus aufloesen (RP zuweisen, Zyklus-Zaehler erhoehen). Nur Ersteller.
+
+**Auth:** Epoch-Creator
+
+### `GET /api/v1/epochs/:epochId/participants`
+Alle Teilnehmer einer Epoche auflisten.
+
+**Auth:** Authentifizierter Benutzer
+
+### `POST /api/v1/epochs/:epochId/participants`
+Epoche mit einer Simulation beitreten. Benutzer muss `editor+` in der Simulation sein.
+
+**Body:**
+```json
+{
+  "simulation_id": "uuid"
+}
+```
+
+**Auth:** Simulation-Editor+
+
+### `DELETE /api/v1/epochs/:epochId/participants/:simulationId`
+Epoche verlassen (nur in `lobby`-Phase).
+
+**Auth:** Authentifizierter Benutzer
+
+### `GET /api/v1/epochs/:epochId/teams`
+Alle Teams/Allianzen einer Epoche auflisten.
+
+**Auth:** Authentifizierter Benutzer
+
+### `POST /api/v1/epochs/:epochId/teams`
+Neues Team/Allianz erstellen.
+
+**Query:** `?simulation_id=uuid` (eigene Simulation)
+
+**Body:**
+```json
+{
+  "name": "The Northern Alliance"
+}
+```
+
+**Auth:** Simulation-Editor+
+
+### `POST /api/v1/epochs/:epochId/teams/:teamId/join`
+Bestehendem Team beitreten.
+
+**Query:** `?simulation_id=uuid`
+
+**Auth:** Simulation-Editor+
+
+### `POST /api/v1/epochs/:epochId/teams/leave`
+Team verlassen.
+
+**Query:** `?simulation_id=uuid`
+
+**Auth:** Simulation-Editor+
+
+---
+
+## 24. Operatives (Epoch-Scoped)
+
+Operative Missionen innerhalb einer Epoche. Agenten werden als Spione/Saboteure/Diplomaten in andere Simulationen entsendet. Missionen kosten Resource Points (RP).
+
+### `POST /api/v1/epochs/:epochId/operatives`
+Operativen Agenten auf Mission entsenden (kostet RP).
+
+**Query:** `?simulation_id=uuid` (Quell-Simulation)
+
+**Body:**
+```json
+{
+  "operative_type": "spy",
+  "agent_id": "uuid",
+  "target_simulation_id": "uuid",
+  "target_building_id": "uuid"
+}
+```
+
+**Auth:** Simulation-Editor+
+
+### `GET /api/v1/epochs/:epochId/operatives`
+Eigene Missionen auflisten (optionaler Filter nach Simulation/Status).
+
+**Query:** `?simulation_id=uuid&status=active&limit=25&offset=0`
+
+**Auth:** Authentifizierter Benutzer
+
+### `GET /api/v1/epochs/:epochId/operatives/threats`
+Erkannte Bedrohungen fuer eigene Simulationen auflisten.
+
+**Query:** `?simulation_id=uuid` (eigene Simulation)
+
+**Auth:** Authentifizierter Benutzer
+
+### `GET /api/v1/epochs/:epochId/operatives/:missionId`
+Missions-Details.
+
+**Auth:** Authentifizierter Benutzer
+
+### `POST /api/v1/epochs/:epochId/operatives/:missionId/recall`
+Aktiven Operativen zurueckrufen.
+
+**Query:** `?simulation_id=uuid`
+
+**Auth:** Simulation-Editor+
+
+### `POST /api/v1/epochs/:epochId/operatives/resolve`
+Alle faelligen Missionen aufloesen. Nur Epoch-Creator.
+
+**Auth:** Epoch-Creator
+
+### `POST /api/v1/epochs/:epochId/operatives/counter-intel`
+Counter-Intelligence-Sweep durchfuehren (kostet 3 RP).
+
+**Query:** `?simulation_id=uuid`
+
+**Auth:** Simulation-Editor+
+
+---
+
+## 25. Scores & Leaderboard (Epoch-Scoped)
+
+Punkte-Berechnung, Bestenliste und Verlauf fuer Epochen.
+
+### `GET /api/v1/epochs/:epochId/scores/leaderboard`
+Aktuelle Bestenliste der Epoche.
+
+**Query:** `?cycle=3` (optionaler Zyklus-Filter, Default: aktuellster)
+
+**Auth:** Authentifizierter Benutzer
+
+### `GET /api/v1/epochs/:epochId/scores/standings`
+Endstände fuer abgeschlossene Epochen (inkl. Dimensions-Titel).
+
+**Auth:** Authentifizierter Benutzer
+
+### `GET /api/v1/epochs/:epochId/scores/simulations/:simulationId`
+Punkte-Verlauf einer Simulation ueber alle Zyklen einer Epoche.
+
+**Auth:** Authentifizierter Benutzer
+
+### `POST /api/v1/epochs/:epochId/scores/compute`
+Punkte fuer aktuellen oder angegebenen Zyklus berechnen und speichern. Nur Epoch-Creator.
+
+**Query:** `?cycle=3` (optional)
+
+**Auth:** Epoch-Creator
+
+---
+
+## 26. Game Mechanics / Health Dashboard (Simulation-Scoped)
+
+Lese-Endpoints fuer Materialized Views (mv_building_readiness, mv_zone_stability, mv_embassy_effectiveness, mv_simulation_health). Berechnete Spielwerte fuer Buildings, Zonen und Embassies. Admin-only Refresh-Trigger.
+
+### `GET /api/v1/simulations/:simId/health`
+Vollstaendiges Health-Dashboard — aggregiert alle Metriken (Simulation-Gesundheit, Building-Readiness, Zone-Stability, Embassy-Effectiveness).
+
+**Rolle:** `viewer`
+
+### `GET /api/v1/simulations/:simId/health/simulation`
+Simulations-Level Gesundheitsmetriken.
+
+**Rolle:** `viewer`
+
+### `GET /api/v1/simulations/:simId/health/buildings`
+Building-Readiness fuer alle Gebaeude (paginiert, sortierbar).
+
+**Query:** `?zone_id=uuid&order_by=readiness&order_asc=true&limit=100&offset=0`
+
+**Rolle:** `viewer`
+
+### `GET /api/v1/simulations/:simId/health/buildings/:buildingId`
+Readiness-Metriken fuer ein einzelnes Gebaeude.
+
+**Rolle:** `viewer`
+
+### `GET /api/v1/simulations/:simId/health/zones`
+Zone-Stability fuer alle Zonen.
+
+**Rolle:** `viewer`
+
+### `GET /api/v1/simulations/:simId/health/zones/:zoneId`
+Stability-Metriken fuer eine einzelne Zone.
+
+**Rolle:** `viewer`
+
+### `GET /api/v1/simulations/:simId/health/embassies`
+Embassy-Effectiveness fuer alle Embassies dieser Simulation.
+
+**Rolle:** `viewer`
+
+### `POST /api/v1/simulations/:simId/health/refresh`
+Manuelles Refresh aller Materialized Views. Normalerweise ueber Trigger automatisch — dieser Endpoint erlaubt manuelles Neuberechnen.
+
+**Rolle:** `admin`
+
+---
+
+## 27. Public Endpoints — Gesamt (44 Endpoints)
+
+Alle oeffentlichen Endpoints (ohne Authentifizierung, Rate-Limit: 100/min) unter `/api/v1/public/`.
+
+### Bestehende Public-Endpoints (Simulations, Entities, Chat, Taxonomies, Settings)
+
+| # | Method | Path | Beschreibung |
+|---|--------|------|-------------|
+| 1 | GET | `/simulations` | Alle Simulationen (mit Counts) |
+| 2 | GET | `/simulations/by-slug/:slug` | Simulation per Slug aufloesen |
+| 3 | GET | `/simulations/:simId` | Simulations-Details |
+| 4 | GET | `/simulations/:simId/agents` | Agenten-Liste |
+| 5 | GET | `/simulations/:simId/agents/:agentId` | Agent-Details |
+| 6 | GET | `/simulations/:simId/buildings` | Gebaeude-Liste |
+| 7 | GET | `/simulations/:simId/buildings/:buildingId` | Gebaeude-Details |
+| 8 | GET | `/simulations/:simId/events` | Events-Liste |
+| 9 | GET | `/simulations/:simId/events/:eventId` | Event-Details |
+| 10 | GET | `/simulations/:simId/locations/cities` | Staedte-Liste |
+| 11 | GET | `/simulations/:simId/locations/cities/:cityId` | Stadt-Details |
+| 12 | GET | `/simulations/:simId/locations/zones` | Zonen-Liste |
+| 13 | GET | `/simulations/:simId/locations/zones/:zoneId` | Zone-Details |
+| 14 | GET | `/simulations/:simId/locations/streets` | Strassen-Liste |
+| 15 | GET | `/simulations/:simId/chat/conversations` | Konversationen |
+| 16 | GET | `/simulations/:simId/chat/conversations/:convId/messages` | Nachrichten |
+| 17 | GET | `/simulations/:simId/taxonomies` | Taxonomien |
+| 18 | GET | `/simulations/:simId/settings` | Settings (nur `design`-Kategorie) |
+| 19 | GET | `/simulations/:simId/social-trends` | Social Trends |
+| 20 | GET | `/simulations/:simId/social-media` | Social Media Posts |
+| 21 | GET | `/simulations/:simId/campaigns` | Kampagnen |
+
+### Public Relationships, Echoes, Connections, Map-Data
+
+| # | Method | Path | Beschreibung |
+|---|--------|------|-------------|
+| 22 | GET | `/simulations/:simId/agents/:agentId/relationships` | Beziehungen eines Agenten |
+| 23 | GET | `/simulations/:simId/relationships` | Alle Beziehungen einer Simulation |
+| 24 | GET | `/simulations/:simId/echoes` | Eingehende Echoes |
+| 25 | GET | `/simulations/:simId/events/:eventId/echoes` | Echoes eines Events |
+| 26 | GET | `/connections` | Alle Simulation-Connections |
+| 27 | GET | `/map-data` | Aggregierte Karten-Daten |
 
 ### Public Embassies
 
-#### `GET /api/v1/public/simulations/:id/embassies`
+| # | Method | Path | Beschreibung |
+|---|--------|------|-------------|
+| 28 | GET | `/simulations/:simId/embassies` | Embassy-Liste |
+| 29 | GET | `/simulations/:simId/embassies/:embassyId` | Embassy-Details |
+| 30 | GET | `/simulations/:simId/buildings/:buildingId/embassy` | Embassy fuer ein Building |
+| 31 | GET | `/embassies` | Alle Embassies plattformweit |
 
-Liste aller Embassies (anonym, read-only).
+### Public Game Health
 
-#### `GET /api/v1/public/simulations/:id/embassies/:embassyId`
+| # | Method | Path | Beschreibung |
+|---|--------|------|-------------|
+| 32 | GET | `/simulations/:simId/health` | Health-Dashboard |
+| 33 | GET | `/simulations/:simId/health/buildings` | Building-Readiness |
+| 34 | GET | `/simulations/:simId/health/zones` | Zone-Stability |
+| 35 | GET | `/simulations/:simId/health/embassies` | Embassy-Effectiveness |
+| 36 | GET | `/health/all` | Globale Health-Uebersicht |
 
-Embassy-Details (anonym, read-only).
+### Public Epochs & Competitive Layer
+
+| # | Method | Path | Beschreibung |
+|---|--------|------|-------------|
+| 37 | GET | `/epochs` | Epochen-Liste |
+| 38 | GET | `/epochs/active` | Aktive Epoche |
+| 39 | GET | `/epochs/:epochId` | Epoch-Details |
+| 40 | GET | `/epochs/:epochId/participants` | Teilnehmer |
+| 41 | GET | `/epochs/:epochId/teams` | Teams/Allianzen |
+| 42 | GET | `/epochs/:epochId/leaderboard` | Bestenliste |
+| 43 | GET | `/epochs/:epochId/standings` | Endstaende |
+| 44 | GET | `/epochs/:epochId/battle-log` | Battle-Log (oeffentlicher Feed) |
 
 ---
 
@@ -1015,27 +1386,32 @@ Embassy-Details (anonym, read-only).
 
 | Bereich | Endpoints | Methoden |
 |---------|-----------|----------|
-| Simulations | 6 | CRUD + Archive |
+| Health | 1 | GET (Plattform-Level) |
+| SEO | 2 | GET (robots.txt, sitemap.xml) |
+| Simulations | 5 | CRUD + Archive |
 | Members | 4 | CRUD |
-| Settings | 5 | GET/PUT/DELETE |
+| Settings | 6 | List + ByCategory + Get + Create + Update + Delete |
 | Taxonomies | 5 | CRUD |
 | Agents | 7 | CRUD + Portrait + Reactions |
 | Agent Professions | 4 | CRUD |
 | Buildings | 11 | CRUD + Image + Relations |
 | Events | 8 | CRUD + Reactions + Generate |
 | Locations | 11 | CRUD (Cities/Zones/Streets) |
-| Campaigns | 7 | CRUD + Events + Metrics |
-| Social Trends | 5 | CRUD + Fetch/Transform/Integrate |
+| Campaigns | 8 | CRUD + Events + AddEvent + Metrics |
+| Social Trends | 8 | List + Fetch/Transform/Integrate + Workflow + Browse/TransformArticle/IntegrateArticle |
 | Social Media | 6 | Sync + Transform + Analyze |
-| Chat | 5 | Conversations + Messages |
-| Generation | 5 | AI Text + Image |
+| Chat | 11 | Conversations + Messages + Agents |
+| Generation | 6 | AI Text + Image + Relationships |
 | Prompt Templates | 6 | CRUD + Test |
 | Users | 1 | Profile (Auth via Supabase direkt) |
-| Invitations | 3 | Create/Validate/Accept |
+| Invitations | 4 | Create + List + Validate + Accept |
 | Relationships | 5 | List (Agent/Sim) + Create + Patch + Delete |
 | Echoes | 5 | List (Sim/Event) + Trigger + Approve + Reject |
 | Connections | 4 | List + Create + Patch + Delete |
-| Embassies | 7 | CRUD + Assign/Unassign Ambassador |
-| Public (neu) | 8 | Relationships + Echoes + Connections + Map-Data + Embassies |
-| Public (bestehend) | 20 | Anonymer Lesezugriff |
-| **Gesamt** | **~166** | |
+| Embassies | 8 | List + Get + GetForBuilding + Create + Update + Activate + Suspend + Dissolve |
+| Epochs | 16 | CRUD + Lifecycle (Start/Advance/Cancel/ResolveCycle) + Participants + Teams |
+| Operatives | 7 | Deploy + List + Threats + Get + Recall + Resolve + CounterIntel |
+| Scores | 4 | Leaderboard + Standings + History + Compute |
+| Game Mechanics | 8 | Health Dashboard + Sim/Buildings/Zones/Embassies + Refresh |
+| Public | 44 | Anonymer Lesezugriff (alle GET-only) |
+| **Gesamt** | **217** | **28 Router** |

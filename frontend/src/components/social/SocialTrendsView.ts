@@ -200,7 +200,17 @@ export class VelgSocialTrendsView extends LitElement {
     .article-card {
       background: var(--color-surface-raised); border: var(--border-default);
       box-shadow: var(--shadow-md); display: flex; flex-direction: column;
-      transition: all var(--transition-fast); cursor: pointer;
+      transition: transform var(--duration-normal) var(--ease-out),
+        box-shadow var(--duration-normal) var(--ease-out);
+      cursor: pointer;
+      opacity: 0;
+      animation: card-enter 350ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) forwards;
+      animation-delay: calc(var(--i, 0) * 40ms);
+    }
+
+    @keyframes card-enter {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .article-card:hover {
@@ -512,7 +522,7 @@ export class VelgSocialTrendsView extends LitElement {
     `;
   }
 
-  private _renderArticleCard(article: BrowseArticle) {
+  private _renderArticleCard(article: BrowseArticle, index = 0) {
     const abstract = this._getAbstract(article);
     const author = this._getAuthor(article);
     const date = this._getDate(article);
@@ -522,6 +532,7 @@ export class VelgSocialTrendsView extends LitElement {
     return html`
       <div
         class="article-card ${isSelected ? 'article-card--selected' : ''}"
+        style="--i: ${index}"
         @click=${() => this._handleSelectArticle(article)}
       >
         <div class="article-card__header">
@@ -583,7 +594,7 @@ export class VelgSocialTrendsView extends LitElement {
           !this._loading && this._articles.length > 0
             ? html`
             <div class="articles__grid">
-              ${this._articles.map((a) => this._renderArticleCard(a))}
+              ${this._articles.map((a, i) => this._renderArticleCard(a, i))}
             </div>
           `
             : nothing

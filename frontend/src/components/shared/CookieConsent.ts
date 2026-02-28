@@ -70,6 +70,17 @@ export class VelgCookieConsent extends LitElement {
     .btn--decline:hover {
       color: #fff;
     }
+
+    .banner__link {
+      color: rgba(255, 255, 255, 0.6);
+      text-decoration: underline;
+      font-size: var(--text-xs);
+      transition: color var(--transition-fast);
+    }
+
+    .banner__link:hover {
+      color: #fff;
+    }
   `;
 
   @state() private _visible = false;
@@ -94,7 +105,10 @@ export class VelgCookieConsent extends LitElement {
 
     return html`
       <div class="banner">
-        <span class="banner__text">${msg('We use analytics to improve this site.')}</span>
+        <span class="banner__text">
+          ${msg('We use analytics to improve this site.')}
+          <a class="banner__link" href="https://metaverse.center/privacy" target="_blank" rel="noopener">${msg('Privacy Policy')}</a>
+        </span>
         <div class="banner__actions">
           <button class="btn btn--accept" @click=${this._handleAccept}>
             ${msg('Accept Analytics')}

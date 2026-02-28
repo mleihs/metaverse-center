@@ -10,14 +10,30 @@ export const cardStyles = css`
     transition: transform var(--duration-normal) var(--ease-out),
       box-shadow var(--duration-normal) var(--ease-out),
       border-color var(--duration-normal) var(--ease-out);
+
+    /* Staggered grid entrance — set --i on each card from the parent .map() */
+    opacity: 0;
+    animation: card-enter var(--duration-entrance, 350ms) var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) forwards;
+    animation-delay: calc(var(--i, 0) * var(--duration-stagger, 40ms));
   }
   .card:hover {
-    transform: translate(-2px, -2px);
+    transform: var(--hover-transform, translate(-2px, -2px));
     box-shadow: var(--shadow-lg);
   }
   .card:active {
     transform: translate(0);
     box-shadow: var(--shadow-pressed);
+  }
+
+  @keyframes card-enter {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   /* Embassy/Ambassador — uses per-simulation theme colors.
@@ -29,7 +45,10 @@ export const cardStyles = css`
     box-shadow:
       0 0 0 1px var(--color-primary),
       0 0 8px color-mix(in srgb, var(--color-primary) 40%, transparent);
-    animation: embassy-pulse 3s ease-in-out infinite;
+    animation:
+      card-enter var(--duration-entrance, 350ms) var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) both,
+      embassy-pulse 3s ease-in-out infinite;
+    animation-delay: calc(var(--i, 0) * var(--duration-stagger, 40ms)), 0s;
   }
 
   /* Sweeping light beam — skewed highlight bar that scans across the card on hover */
@@ -56,6 +75,7 @@ export const cardStyles = css`
   }
 
   .card.card--embassy:hover {
+    opacity: 1;
     transform: translate(-4px, -4px) scale(1.03);
     border-color: transparent;
     border-width: 3px;

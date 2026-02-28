@@ -9,7 +9,8 @@ logger = logging.getLogger(__name__)
 
 _CRAWLER_RE = re.compile(
     r"Googlebot|bingbot|Twitterbot|facebookexternalhit|LinkedInBot|Slackbot"
-    r"|Discordbot|WhatsApp|TelegramBot|Applebot",
+    r"|Discordbot|WhatsApp|TelegramBot|Applebot"
+    r"|GPTBot|ChatGPT-User|ClaudeBot|Bytespider|CCBot|PerplexityBot|Amazonbot",
     re.IGNORECASE,
 )
 

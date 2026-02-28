@@ -6,7 +6,7 @@ import { agentsApi, buildingsApi, embassiesApi, simulationsApi } from '../../ser
 import type { Agent, Building, EchoVector, Simulation } from '../../types/index.js';
 import '../shared/BaseModal.js';
 import { formStyles } from '../shared/form-styles.js';
-import { infoBubbleStyles } from '../shared/info-bubble-styles.js';
+import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 import '../shared/VelgAvatar.js';
 import '../shared/VelgBadge.js';
@@ -441,15 +441,6 @@ export class VelgEmbassyCreateModal extends LitElement {
     return this._simulations.find((s) => s.id === this._targetSimId);
   }
 
-  private _renderInfoBubble(text: string) {
-    return html`
-      <span class="info-bubble">
-        <span class="info-bubble__icon">i</span>
-        <span class="info-bubble__tooltip">${text}</span>
-      </span>
-    `;
-  }
-
   private _renderBuildingPreview(building: Building | null | undefined) {
     if (!building) return nothing;
     return html`
@@ -500,7 +491,7 @@ export class VelgEmbassyCreateModal extends LitElement {
         <div class="form__group">
           <label class="form__label">
             ${msg('Target Simulation')}
-            ${this._renderInfoBubble(msg('The partner world this embassy connects to. Each simulation pair can have multiple embassies with different bleed vectors.'))}
+            ${renderInfoBubble(msg('The partner world this embassy connects to. Each simulation pair can have multiple embassies with different bleed vectors.'))}
           </label>
           <select class="form__select" .value=${this._targetSimId} @change=${this._handleTargetSimChange}>
             <option value="">${msg('Select simulation...')}</option>
@@ -514,7 +505,7 @@ export class VelgEmbassyCreateModal extends LitElement {
               <div class="form__group">
                 <label class="form__label">
                   ${msg('Target Building')}
-                  ${this._renderInfoBubble(msg('The partner building that will house the embassy. Its condition and staffing affect embassy effectiveness.'))}
+                  ${renderInfoBubble(msg('The partner building that will house the embassy. Its condition and staffing affect embassy effectiveness.'))}
                 </label>
                 <select
                   class="form__select"
@@ -553,7 +544,7 @@ export class VelgEmbassyCreateModal extends LitElement {
         <div class="form__group">
           <label class="form__label">
             ${msg('Bleed Vector')}
-            ${this._renderInfoBubble(msg('The thematic channel through which reality bleeds. Commerce: trade events. Language: linguistic drift. Memory: traumatic echoes. Resonance: parallel relationships. Architecture: structural influence. Dream: visions. Desire: yearning.'))}
+            ${renderInfoBubble(msg('The thematic channel through which reality bleeds. Commerce: trade events. Language: linguistic drift. Memory: traumatic echoes. Resonance: parallel relationships. Architecture: structural influence. Dream: visions. Desire: yearning.'))}
           </label>
           <select
             class="form__select"
@@ -569,7 +560,7 @@ export class VelgEmbassyCreateModal extends LitElement {
         <div class="form__group">
           <label class="form__label">
             ${msg('The Question')}
-            ${this._renderInfoBubble(msg('The fundamental existential question this embassy explores. Shapes AI narrative when events bleed through this channel. A well-crafted question produces richer echo narratives.'))}
+            ${renderInfoBubble(msg('The fundamental existential question this embassy explores. Shapes AI narrative when events bleed through this channel. A well-crafted question produces richer echo narratives.'))}
           </label>
           <textarea
             class="form__textarea"

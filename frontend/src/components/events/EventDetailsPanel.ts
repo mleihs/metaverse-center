@@ -8,6 +8,7 @@ import type { EventEcho, EventReaction, Event as SimEvent, Simulation } from '..
 import { icons } from '../../utils/icons.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { panelButtonStyles } from '../shared/panel-button-styles.js';
+import { panelCascadeStyles } from '../shared/panel-cascade-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 import '../shared/VelgBadge.js';
 import '../shared/VelgSectionHeader.js';
@@ -20,6 +21,7 @@ import './EchoTriggerModal.js';
 export class VelgEventDetailsPanel extends LitElement {
   static styles = [
     panelButtonStyles,
+    panelCascadeStyles,
     css`
     :host {
       display: block;
@@ -73,6 +75,14 @@ export class VelgEventDetailsPanel extends LitElement {
     .panel__impact-segment {
       flex: 1;
       background: var(--color-border-light);
+      transform: scaleY(0);
+      transform-origin: bottom;
+      animation: segment-grow var(--duration-entrance, 350ms) var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) forwards;
+      animation-delay: calc(var(--seg-i, 0) * 30ms + 200ms);
+    }
+
+    @keyframes segment-grow {
+      to { transform: scaleY(1); }
     }
 
     .panel__impact-segment--active {
@@ -471,7 +481,7 @@ export class VelgEventDetailsPanel extends LitElement {
             const segmentClass = isActive
               ? `panel__impact-segment panel__impact-segment--${impactClass}`
               : 'panel__impact-segment';
-            return html`<div class=${segmentClass} style="height: 100%"></div>`;
+            return html`<div class=${segmentClass} style="height: 100%; --seg-i: ${i}"></div>`;
           })}
         </div>
         <span class="panel__impact-value">${level}</span>

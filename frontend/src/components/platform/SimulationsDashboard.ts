@@ -416,8 +416,9 @@ export class VelgSimulationsDashboard extends LitElement {
 
             <div class="shards-grid">
               ${this._simulations.map(
-                (sim) => html`
+                (sim, i) => html`
                   <velg-simulation-card
+                    style="--i: ${i}"
                     .simulation=${sim}
                     @simulation-click=${this._handleSimulationClick}
                   ></velg-simulation-card>
