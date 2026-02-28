@@ -95,14 +95,14 @@ class ScoringService:
         """
         resp = (
             supabase.table("mv_zone_stability")
-            .select("zone_stability")
+            .select("stability")
             .eq("simulation_id", simulation_id)
             .execute()
         )
         if not resp.data:
             return 50.0  # default mid-range
 
-        stabilities = [row["zone_stability"] for row in resp.data]
+        stabilities = [float(row["stability"]) for row in resp.data]
         return (sum(stabilities) / len(stabilities)) * 100
 
     @classmethod
@@ -161,13 +161,17 @@ class ScoringService:
         Alliance bonus rewards cooperation; betrayal penalty punishes treachery.
         """
         # Embassy effectiveness from materialized view
+        # MV has simulation_a_id and simulation_b_id, not simulation_id
         resp = (
             supabase.table("mv_embassy_effectiveness")
             .select("effectiveness")
-            .eq("simulation_id", simulation_id)
+            .or_(
+                f"simulation_a_id.eq.{simulation_id},"
+                f"simulation_b_id.eq.{simulation_id}"
+            )
             .execute()
         )
-        total_effectiveness = sum(e.get("effectiveness", 0) for e in resp.data or [])
+        total_effectiveness = sum(float(e.get("effectiveness", 0)) for e in resp.data or [])
 
         # Count active embassies as base diplomatic score
         embassy_resp = (
@@ -175,8 +179,8 @@ class ScoringService:
             .select("id")
             .eq("status", "active")
             .or_(
-                f"source_simulation_id.eq.{simulation_id},"
-                f"target_simulation_id.eq.{simulation_id}"
+                f"simulation_a_id.eq.{simulation_id},"
+                f"simulation_b_id.eq.{simulation_id}"
             )
             .execute()
         )
