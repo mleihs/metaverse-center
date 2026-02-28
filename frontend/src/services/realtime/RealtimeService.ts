@@ -70,7 +70,7 @@ class RealtimeServiceImpl {
         const state = this._presenceChannel?.presenceState() ?? {};
         const users: PresenceUser[] = [];
         for (const presences of Object.values(state)) {
-          for (const p of presences as PresenceUser[]) {
+          for (const p of presences as unknown as PresenceUser[]) {
             users.push(p);
           }
         }
