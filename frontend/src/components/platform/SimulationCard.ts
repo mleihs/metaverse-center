@@ -1,7 +1,7 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import type { Simulation } from '../../types/index.js';
+import type { Simulation, SimulationTheme } from '../../types/index.js';
 import { getThemeColor } from '../../utils/theme-colors.js';
 import '../shared/VelgBadge.js';
 

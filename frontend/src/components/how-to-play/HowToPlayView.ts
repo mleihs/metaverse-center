@@ -1060,7 +1060,7 @@ export class VelgHowToPlay extends LitElement {
   }
 
   private _scrollToSection(id: string) {
-    const el = this.renderRoot.getElementById(id);
+    const el = (this.renderRoot as ShadowRoot).getElementById(id);
     el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
