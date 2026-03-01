@@ -1056,3 +1056,33 @@ export interface PaginatedResponse<T> {
   meta?: { count: number; total: number; limit: number; offset: number };
   error?: ApiError;
 }
+
+// --- Platform Admin ---
+
+export interface PlatformSetting {
+  id: string;
+  setting_key: string;
+  setting_value: string;
+  description: string | null;
+  updated_by_id: string | null;
+  updated_at: string;
+}
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  created_at: string | null;
+  last_sign_in_at: string | null;
+}
+
+export interface AdminUserDetail extends AdminUser {
+  memberships: AdminMembership[];
+}
+
+export interface AdminMembership {
+  id: string;
+  user_id: string;
+  simulation_id: string;
+  member_role: string;
+  simulations?: { id: string; name: string; slug: string };
+}

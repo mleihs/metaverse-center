@@ -1,7 +1,8 @@
 # 04 - Domain Models: Entitaeten mit Simulation-Scope
 
-**Version:** 2.5
-**Datum:** 2026-02-28
+**Version:** 2.6
+**Datum:** 2026-03-01
+**Aenderung v2.6:** Platform Admin types (PlatformSetting, AdminUser, AdminUserDetail, AdminMembership) fuer Admin-Panel User-Management und Cache-TTL-Konfiguration.
 **Aenderung v2.5:** RelationshipSuggestion interface (AI-generated relationship suggestions for inline review in AgentDetailsPanel).
 **Aenderung v2.4:** Epoch Chat types (EpochChatMessage, PresenceUser). Epoch Invitation types (EpochInvitation, EpochInvitationStatus). HowToPlay types (HtpSection, HtpOperativeCard, HtpMatch, HtpMatchReplay). cycle_ready on EpochParticipant. simulation_type/source_template_id/epoch_id on Simulation.
 **Aenderung v2.3:** Embassy types (EmbassyStatus, EmbassyAmbassador, EmbassyMetadata, Embassy). Game Mechanics types (BuildingReadiness, ZoneStability, EmbassyEffectiveness, SimulationHealth, SimulationHealthDashboard). Competitive Layer types (Epoch, EpochParticipant, EpochTeam, OperativeMission, LeaderboardEntry, EpochScore, BattleLogEntry + enums). Chat fixes (AgentBrief, ChatEventReference, optional agent_id in ChatConversation). SettingCategory + `'prompts'`.

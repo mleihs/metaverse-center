@@ -1,0 +1,158 @@
+"""Service for platform-level user management.
+
+Uses admin (service_role) Supabase client. User listing/detail/deletion
+go through SECURITY DEFINER RPC functions (admin_list_users, admin_get_user,
+admin_delete_user) because GoTrue admin API requires ES256 tokens not
+available in all environments. Membership CRUD uses direct PostgREST.
+"""
+
+from __future__ import annotations
+
+import logging
+from datetime import UTC, datetime
+from uuid import UUID
+
+from fastapi import HTTPException, status
+
+from supabase import Client
+
+logger = logging.getLogger(__name__)
+
+
+class AdminUserService:
+    """Platform-level user and membership management (admin-only)."""
+
+    @classmethod
+    async def list_users(
+        cls,
+        admin_supabase: Client,
+        *,
+        page: int = 1,
+        per_page: int = 50,
+    ) -> dict:
+        """List all auth users with pagination via RPC."""
+        response = admin_supabase.rpc(
+            "admin_list_users",
+            {"p_page": page, "p_per_page": per_page},
+        ).execute()
+        return response.data or {"users": [], "total": 0}
+
+    @classmethod
+    async def get_user_with_memberships(
+        cls,
+        admin_supabase: Client,
+        user_id: UUID,
+    ) -> dict:
+        """Get a single user with all their simulation memberships."""
+        # Fetch user via RPC
+        user_resp = admin_supabase.rpc(
+            "admin_get_user",
+            {"p_user_id": str(user_id)},
+        ).execute()
+
+        if not user_resp.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"User '{user_id}' not found.",
+            )
+
+        user_data = user_resp.data
+
+        # Fetch memberships via PostgREST
+        memberships_resp = (
+            admin_supabase.table("simulation_members")
+            .select("*, simulations(id, name, slug)")
+            .eq("user_id", str(user_id))
+            .execute()
+        )
+
+        user_data["memberships"] = memberships_resp.data or []
+        return user_data
+
+    @classmethod
+    async def delete_user(cls, admin_supabase: Client, user_id: UUID) -> None:
+        """Delete a user via RPC (cascades membership via FK)."""
+        try:
+            admin_supabase.rpc(
+                "admin_delete_user",
+                {"p_user_id": str(user_id)},
+            ).execute()
+        except Exception as e:
+            logger.warning("Failed to delete user %s: %s", user_id, e)
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"User '{user_id}' not found or could not be deleted.",
+            ) from e
+
+    @classmethod
+    async def add_membership(
+        cls,
+        admin_supabase: Client,
+        user_id: UUID,
+        simulation_id: UUID,
+        role: str,
+    ) -> dict:
+        """Add a user to a simulation with a specific role."""
+        response = (
+            admin_supabase.table("simulation_members")
+            .insert({
+                "user_id": str(user_id),
+                "simulation_id": str(simulation_id),
+                "member_role": role,
+            })
+            .execute()
+        )
+        if not response.data:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Failed to add membership. User may already be a member.",
+            )
+        return response.data[0]
+
+    @classmethod
+    async def change_membership_role(
+        cls,
+        admin_supabase: Client,
+        user_id: UUID,
+        simulation_id: UUID,
+        role: str,
+    ) -> dict:
+        """Change a user's role in a simulation."""
+        response = (
+            admin_supabase.table("simulation_members")
+            .update({
+                "member_role": role,
+                "updated_at": datetime.now(UTC).isoformat(),
+            })
+            .eq("user_id", str(user_id))
+            .eq("simulation_id", str(simulation_id))
+            .execute()
+        )
+        if not response.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Membership not found.",
+            )
+        return response.data[0]
+
+    @classmethod
+    async def remove_membership(
+        cls,
+        admin_supabase: Client,
+        user_id: UUID,
+        simulation_id: UUID,
+    ) -> dict:
+        """Remove a user from a simulation."""
+        response = (
+            admin_supabase.table("simulation_members")
+            .delete()
+            .eq("user_id", str(user_id))
+            .eq("simulation_id", str(simulation_id))
+            .execute()
+        )
+        if not response.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Membership not found.",
+            )
+        return response.data[0]

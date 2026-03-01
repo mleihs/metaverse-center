@@ -13,6 +13,7 @@ from backend.middleware.rate_limit import limiter
 from backend.middleware.security import SecurityHeadersMiddleware
 from backend.middleware.seo import enrich_html_for_crawler, get_crawler_redirect, is_crawler
 from backend.routers import (
+    admin,
     agent_professions,
     agents,
     buildings,
@@ -89,6 +90,7 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
 
 # --- Routers ---
 app.include_router(health.router)
+app.include_router(admin.router)
 app.include_router(users.router)
 app.include_router(simulations.router)
 app.include_router(agents.router)

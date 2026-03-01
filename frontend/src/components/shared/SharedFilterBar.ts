@@ -162,6 +162,14 @@ export class VelgFilterBar extends LitElement {
 
   private _debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    if (this._debounceTimer) {
+      clearTimeout(this._debounceTimer);
+      this._debounceTimer = null;
+    }
+  }
+
   private _emitChange(): void {
     this.dispatchEvent(
       new CustomEvent<FilterChangeDetail>('filter-change', {

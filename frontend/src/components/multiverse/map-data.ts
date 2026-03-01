@@ -3,18 +3,22 @@
  * connection descriptions (i18n-ready for when dynamic data replaces these).
  */
 
+import { msg } from '@lit/localize';
+
 export { getGlowColor, getThemeColor, THEME_COLORS } from '../../utils/theme-colors.js';
 
-/** Vector display labels */
-export const VECTOR_LABELS: Record<string, string> = {
-  commerce: 'Commerce',
-  language: 'Language',
-  memory: 'Memory',
-  resonance: 'Resonance',
-  architecture: 'Architecture',
-  dream: 'Dream',
-  desire: 'Desire',
-};
+/** Vector display labels (function for locale-aware evaluation) */
+export function getVectorLabels(): Record<string, string> {
+  return {
+    commerce: msg('Commerce'),
+    language: msg('Language'),
+    memory: msg('Memory'),
+    resonance: msg('Resonance'),
+    architecture: msg('Architecture'),
+    dream: msg('Dream'),
+    desire: msg('Desire'),
+  };
+}
 
 /** Embassy edge color — warm orange, distinct from bleed purple */
 export const EMBASSY_EDGE_COLOR = '#f97316';

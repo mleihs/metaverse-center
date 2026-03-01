@@ -1,7 +1,8 @@
 # 10 - Auth and Security
 
-**Version:** 1.4
-**Datum:** 2026-02-28
+**Version:** 1.5
+**Datum:** 2026-03-01
+**Aenderung v1.5:** Platform Admin Panel: `require_platform_admin()` Dependency-Factory mit Email-Allowlist (`admin@velgarien.dev`). Admin-Router (`/api/v1/admin/`) mit 8 Endpoints fuer User-Management und Platform-Settings. User-Verwaltung via 3 SECURITY DEFINER RPC-Funktionen (admin_list_users, admin_get_user, admin_delete_user) — umgeht GoTrue Admin API (HS256-Inkompatibilitaet). Platform Settings: `platform_settings` Tabelle mit service_role-only RLS. Cache-TTLs zur Laufzeit konfigurierbar (Map-Data, SEO-Metadata, HTTP-Cache-Control-Header). Frontend: 3 Admin-Komponenten, AdminApiService, `isPlatformAdmin` Signal, `/admin` Route mit Auth+Admin-Guard.
 **Aenderung v1.4:** Public API Routing Fix: `BaseApiService.getSimulationData()` prueft sowohl `isAuthenticated` als auch `currentRole` — routet zu Public-Endpoints wenn nicht authentifiziert ODER nicht Mitglied der Simulation. `_enterSimulationRoute()` bestimmt Membership via `_checkMembership()` VOR dem Render. `SettingsApiService` Design-Kategorie nutzt immer Public-Endpoint (anon RLS Policy). 14 Services migriert auf `getSimulationData()`.
 **Aenderung v1.3:** Security Hardening (Full-Stack Audit): PyJWT Migration (python-jose → PyJWT mit JWKS-Support fuer ES256 + HS256 Fallback), JWKS Cache TTL (1h), JWT-Fehlermeldungen sanitisiert (keine internen Details), CORS explizite Allowlists (allow_methods/allow_headers statt Wildcard).
 **Aenderung v1.2:** Public-First-Architektur: `get_anon_supabase()` erstellt Supabase-Client ohne JWT (anon-Key only). 21 anon-SELECT-RLS-Policies fuer oeffentlichen Lesezugriff. Frontend-Services routen GET-Requests via `appState.isAuthenticated.value` zu `/api/v1/public/*` (anon) oder `/api/v1/*` (auth). Rate-Limiting: 100/min fuer Public-Endpoints.
@@ -242,8 +243,8 @@ def get_admin_supabase() -> Client:
 ### Rollen-Hierarchie
 
 ```
-Platform Admin (global)
-  └── Kann alles auf Plattform-Ebene
+Platform Admin (global) — Email-Allowlist, nicht simulation-scoped
+  └── Kann alles auf Plattform-Ebene (User-CRUD, Platform-Settings, Cache-Konfiguration)
 
 Simulation Owner
   └── Kann alles innerhalb seiner Simulation
@@ -257,6 +258,28 @@ Simulation Editor
 Simulation Viewer
   └── Kann nur lesen
 ```
+
+### Platform Admin Authentifizierung
+
+Platform Admin ist **global** (nicht simulation-scoped). Implementiert via Email-Allowlist:
+
+```python
+# backend/dependencies.py
+PLATFORM_ADMIN_EMAILS = {"admin@velgarien.dev"}
+
+def require_platform_admin():
+    async def _check(user = Depends(get_current_user)):
+        if user.email not in PLATFORM_ADMIN_EMAILS:
+            raise HTTPException(403, "Platform admin access required.")
+        return user
+    return Depends(_check)
+```
+
+- Alle `/api/v1/admin/*` Endpoints nutzen `require_platform_admin()` als Dependency
+- Admin-Endpoints verwenden `get_admin_supabase()` (service_role Client) fuer DB-Zugriff
+- User-Management via SECURITY DEFINER RPC-Funktionen (umgeht GoTrue Admin API)
+- `platform_settings` Tabelle hat service_role-only RLS (kein anon/authenticated Zugriff)
+- Frontend: `appState.isPlatformAdmin` Computed Signal prueft `user.email`
 
 ### Rollen-Speicherung
 

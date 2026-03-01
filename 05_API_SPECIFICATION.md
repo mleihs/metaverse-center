@@ -1,7 +1,8 @@
 # 05 - API Specification: Alle Endpoints (Simulation-Scoped)
 
-**Version:** 1.5
+**Version:** 1.6
 **Datum:** 2026-03-01
+**Aenderung v1.6:** **236 Endpoints total (31 Router).** Neuer Admin-Router (`/api/v1/admin`, 8 Endpoints): Platform-Settings CRUD (list, update), User-Management (list, detail, delete), Membership-Management (add, change role, remove). Alle Admin-Endpoints erfordern `require_platform_admin()` (Email-Allowlist). Verwendet `get_admin_supabase()` (service_role) fuer auth.admin API und platform_settings Zugriff.
 **Aenderung v1.5:** 228 Endpoints total (30 Router). Public-Endpoints erweitert auf 46 (neuer `/battle-feed` Endpoint fuer globalen oeffentlichen Battle-Feed).
 **Aenderung v1.4:** 227 Endpoints total (30 Router). Neue Router: epoch_chat (3 Endpoints + 1 Ready-Signal auf epochs), epoch_invitations (4 Endpoints). Public-Endpoints erweitert auf 45 (epoch-invitation Token-Validierung). Epoch-Router erweitert um Ready-Signal.
 **Aenderung v1.3:** 217 Endpoints total (28 Router). Neue Router: health, seo, embassies, epochs, operatives, scores, game_mechanics. 44 Public-Endpoints. Generation-Router erweitert um `/relationships`. Chat-Router erweitert auf 11 Endpoints. Campaigns-Router erweitert auf 8 Endpoints. Social-Trends erweitert auf 8 Endpoints. Settings-Router erweitert auf 6 Endpoints. Invitations-Router erweitert auf 4 Endpoints.

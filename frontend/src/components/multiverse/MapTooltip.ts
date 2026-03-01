@@ -1,6 +1,7 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { SCORE_DIMENSION_COLORS } from './map-data.js';
 import type { MapNodeData } from './map-types.js';
 
 @localized()
@@ -98,10 +99,13 @@ export class VelgMapTooltip extends LitElement {
   @property({ type: Number }) x = 0;
   @property({ type: Number }) y = 0;
 
-  protected render() {
-    if (!this.node) return nothing;
+  protected updated(): void {
     this.style.left = `${this.x + 12}px`;
     this.style.top = `${this.y - 10}px`;
+  }
+
+  protected render() {
+    if (!this.node) return nothing;
 
     const isInstance = this.node.simulationType === 'game_instance';
     const isTemplate = !isInstance;
@@ -109,11 +113,11 @@ export class VelgMapTooltip extends LitElement {
     const scores = this.node.scoreDimensions;
 
     const scoreDims: { label: string; key: string; color: string }[] = [
-      { label: 'STA', key: 'stability', color: '#22c55e' },
-      { label: 'INF', key: 'influence', color: '#a78bfa' },
-      { label: 'SOV', key: 'sovereignty', color: '#3b82f6' },
-      { label: 'DIP', key: 'diplomatic', color: '#f59e0b' },
-      { label: 'MIL', key: 'military', color: '#ef4444' },
+      { label: 'STA', key: 'stability', color: SCORE_DIMENSION_COLORS.stability },
+      { label: 'INF', key: 'influence', color: SCORE_DIMENSION_COLORS.influence },
+      { label: 'SOV', key: 'sovereignty', color: SCORE_DIMENSION_COLORS.sovereignty },
+      { label: 'DIP', key: 'diplomatic', color: SCORE_DIMENSION_COLORS.diplomatic },
+      { label: 'MIL', key: 'military', color: SCORE_DIMENSION_COLORS.military },
     ];
 
     return html`

@@ -14,6 +14,9 @@ from supabase import Client, create_client
 
 logger = logging.getLogger(__name__)
 
+# Platform admin — email allowlist (single admin for now)
+PLATFORM_ADMIN_EMAILS: set[str] = {"admin@velgarien.dev"}
+
 # Role hierarchy: higher index = more privileges
 ROLE_HIERARCHY: dict[str, int] = {
     "viewer": 0,
@@ -220,6 +223,22 @@ def require_epoch_creator():
             )
 
     return _check_creator
+
+
+def require_platform_admin():
+    """Dependency that checks the user is a platform admin (by email allowlist)."""
+
+    async def _check_admin(
+        user: CurrentUser = Depends(get_current_user),
+    ) -> CurrentUser:
+        if user.email not in PLATFORM_ADMIN_EMAILS:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Platform admin access required.",
+            )
+        return user
+
+    return _check_admin
 
 
 def require_simulation_member(role: str = "viewer", *, param_name: str = "simulation_id"):

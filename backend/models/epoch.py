@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 # ── Epoch Configuration ──────────────────────────────────────────
 
@@ -17,6 +17,14 @@ class EpochScoreWeights(BaseModel):
     sovereignty: int = Field(20, ge=0, le=100)
     diplomatic: int = Field(15, ge=0, le=100)
     military: int = Field(20, ge=0, le=100)
+
+    @model_validator(mode="after")
+    def validate_sum(self) -> "EpochScoreWeights":
+        total = self.stability + self.influence + self.sovereignty + self.diplomatic + self.military
+        if total != 100:
+            msg = f"Score weights must sum to 100, got {total}."
+            raise ValueError(msg)
+        return self
 
 
 class EpochConfig(BaseModel):

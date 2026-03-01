@@ -116,7 +116,7 @@ async def recall_operative(
     supabase: Client = Depends(get_supabase),
 ) -> dict:
     """Recall an active operative. Must be editor+ in source simulation."""
-    data = await OperativeService.recall(supabase, mission_id)
+    data = await OperativeService.recall(supabase, mission_id, simulation_id)
     await AuditService.log_action(
         supabase, simulation_id, user.id, "operative_missions", mission_id, "update",
         details={"action": "recall"},

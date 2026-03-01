@@ -3,7 +3,7 @@
 import logging
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 
 from backend.dependencies import (
     get_current_user,
@@ -105,6 +105,7 @@ async def update_epoch(
     epoch_id: UUID,
     body: EpochUpdate,
     user: CurrentUser = Depends(get_current_user),
+    _creator_check: None = Depends(require_epoch_creator()),
     supabase: Client = Depends(get_supabase),
 ) -> dict:
     """Update epoch configuration (lobby phase only)."""
@@ -254,21 +255,7 @@ async def join_epoch(
 
     The user must be an editor+ in the simulation they are joining with.
     """
-    # Verify user is editor+ in the simulation they're registering
-    member_resp = (
-        supabase.table("simulation_members")
-        .select("member_role")
-        .eq("simulation_id", str(body.simulation_id))
-        .eq("user_id", str(user.id))
-        .limit(1)
-        .execute()
-    )
-    if not member_resp.data or member_resp.data[0]["member_role"] == "viewer":
-        raise HTTPException(
-            status_code=403,
-            detail="You must be an editor or higher in this simulation to join an epoch.",
-        )
-    data = await EpochService.join_epoch(supabase, epoch_id, body.simulation_id)
+    data = await EpochService.join_epoch(supabase, epoch_id, body.simulation_id, user.id)
     await AuditService.log_action(
         supabase, body.simulation_id, user.id, "epoch_participants", data.get("id"), "create",
         details={"epoch_id": str(epoch_id)},

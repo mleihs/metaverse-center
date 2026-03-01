@@ -35,6 +35,7 @@ import './components/multiverse/CartographerMap.js';
 import './components/epoch/EpochCommandCenter.js';
 import './components/epoch/EpochInviteAcceptView.js';
 import './components/how-to-play/HowToPlayView.js';
+import './components/admin/AdminPanel.js';
 import './components/shared/CookieConsent.js';
 
 @localized()
@@ -200,6 +201,21 @@ export class VelgApp extends LitElement {
             analyticsService.trackPageView('/new-simulation', document.title);
           }
           return ok;
+        },
+      },
+      {
+        path: '/admin',
+        render: () => html`<velg-admin-panel></velg-admin-panel>`,
+        enter: async () => {
+          const ok = await this._guardAuth();
+          if (!ok) return false;
+          if (!appState.isPlatformAdmin.value) {
+            this._router.goto('/dashboard');
+            return false;
+          }
+          seoService.setTitle(['Admin']);
+          analyticsService.trackPageView('/admin', document.title);
+          return true;
         },
       },
       // --- Simulation-scoped routes (public read, auth for mutations) ---
@@ -472,6 +488,9 @@ export class VelgApp extends LitElement {
     seoService.setCanonical(`/simulations/${slug}/${view}`);
     if (sim?.description) {
       seoService.setDescription(sim.description);
+    }
+    if (sim?.banner_url) {
+      seoService.setOgImage(sim.banner_url);
     }
     analyticsService.trackPageView(`/simulations/${slug}/${view}`, document.title);
 

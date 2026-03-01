@@ -1,6 +1,7 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { focusFirstElement, trapFocus } from './focus-trap.js';
 
 @localized()
 @customElement('velg-base-modal')
@@ -163,27 +164,7 @@ export class VelgBaseModal extends LitElement {
   }
 
   private _trapFocus(e: KeyboardEvent): void {
-    const focusableSelector =
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-    const modal = this.shadowRoot?.querySelector('.modal');
-    if (!modal) return;
-
-    const focusable = [
-      ...modal.querySelectorAll<HTMLElement>(focusableSelector),
-      ...(this.querySelectorAll<HTMLElement>(focusableSelector) || []),
-    ];
-    if (focusable.length === 0) return;
-
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-
-    if (e.shiftKey && document.activeElement === first) {
-      e.preventDefault();
-      last.focus();
-    } else if (!e.shiftKey && document.activeElement === last) {
-      e.preventDefault();
-      first.focus();
-    }
+    trapFocus(e, this.shadowRoot?.querySelector('.modal'), this);
   }
 
   private _handleBackdropClick(e: MouseEvent): void {
@@ -202,12 +183,7 @@ export class VelgBaseModal extends LitElement {
   }
 
   private _focusFirstElement(): void {
-    requestAnimationFrame(() => {
-      const focusable = this.shadowRoot?.querySelector<HTMLElement>(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-      );
-      focusable?.focus();
-    });
+    focusFirstElement(this.shadowRoot);
   }
 
   protected render() {

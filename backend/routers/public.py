@@ -8,7 +8,7 @@ Delegates to existing service layer where possible (keeps query logic in sync).
 from datetime import UTC, datetime
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 
 from backend.dependencies import get_anon_supabase
 from backend.middleware.rate_limit import RATE_LIMIT_STANDARD, limiter
@@ -16,6 +16,7 @@ from backend.models.common import PaginatedResponse, PaginationMeta, SuccessResp
 from backend.services.agent_service import AgentService
 from backend.services.battle_log_service import BattleLogService
 from backend.services.building_service import BuildingService
+from backend.services.cache_config import get_ttl
 from backend.services.campaign_service import CampaignService
 from backend.services.echo_service import ConnectionService, EchoService
 from backend.services.embassy_service import EmbassyService
@@ -75,11 +76,14 @@ def _enrich_with_counts(supabase: Client, simulations: list[dict]) -> None:
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_simulations(
     request: Request,
+    http_response: Response,
     supabase: Client = Depends(get_anon_supabase),
     limit: int = Query(default=25, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
 ) -> dict:
     """List all active template simulations (public). Excludes game instances."""
+    max_age = get_ttl("cache_http_simulations_max_age")
+    http_response.headers["Cache-Control"] = f"public, max-age={max_age}, stale-while-revalidate={max_age * 5}"
     response = (
         supabase.table("simulations")
         .select("*", count="exact")
@@ -531,9 +535,12 @@ async def list_event_echoes(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_connections(
     request: Request,
+    http_response: Response,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
     """List all active simulation connections (public, for map)."""
+    max_age = get_ttl("cache_http_connections_max_age")
+    http_response.headers["Cache-Control"] = f"public, max-age={max_age}, stale-while-revalidate={max_age * 5}"
     data = await ConnectionService.list_all(supabase, active_only=True)
     return {"success": True, "data": data}
 
@@ -542,9 +549,12 @@ async def list_connections(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_map_data(
     request: Request,
+    http_response: Response,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
     """Aggregated endpoint for Cartographer's Map — simulations + connections + echo counts."""
+    max_age = get_ttl("cache_http_map_data_max_age")
+    http_response.headers["Cache-Control"] = f"public, max-age={max_age}, stale-while-revalidate={max_age * 4}"
     data = await ConnectionService.get_map_data(supabase)
     return {"success": True, "data": data}
 
@@ -556,10 +566,13 @@ async def get_map_data(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_battle_feed(
     request: Request,
+    http_response: Response,
     supabase: Client = Depends(get_anon_supabase),
     limit: int = Query(default=20, ge=1, le=50),
 ) -> dict:
     """Global public battle feed across all active epochs."""
+    max_age = get_ttl("cache_http_battle_feed_max_age")
+    http_response.headers["Cache-Control"] = f"public, max-age={max_age}, stale-while-revalidate={max_age * 3}"
     data = await BattleLogService.get_global_public_feed(supabase, limit=limit)
     return {"success": True, "data": data}
 

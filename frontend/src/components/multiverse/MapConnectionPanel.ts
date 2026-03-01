@@ -1,7 +1,7 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { VECTOR_LABELS } from './map-data.js';
+import { getVectorLabels } from './map-data.js';
 import type { MapEdgeData, MapNodeData } from './map-types.js';
 import '../shared/VelgSidePanel.js';
 import '../shared/VelgBadge.js';
@@ -139,7 +139,7 @@ export class VelgMapConnectionPanel extends LitElement {
             <span class="panel__label">${msg('Bleed Vectors')}</span>
             <div class="panel__vectors">
               ${this.edge.bleedVectors.map(
-                (v) => html`<velg-badge variant="info">${VECTOR_LABELS[v] ?? v}</velg-badge>`,
+                (v) => html`<velg-badge variant="info">${getVectorLabels()[v] ?? v}</velg-badge>`,
               )}
             </div>
           </div>

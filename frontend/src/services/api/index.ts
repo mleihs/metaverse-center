@@ -1,3 +1,4 @@
+export { AdminApiService, adminApi } from './AdminApiService.js';
 export { AgentsApiService, agentsApi } from './AgentsApiService.js';
 export { BaseApiService } from './BaseApiService.js';
 export { BuildingsApiService, buildingsApi } from './BuildingsApiService.js';

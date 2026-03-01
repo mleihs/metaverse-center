@@ -33,6 +33,7 @@ class LocaleService {
     if (locale === getLocale()) return;
     await litSetLocale(locale);
     localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+    document.documentElement.lang = locale;
     analyticsService.trackEvent('change_locale', { locale });
   }
 
@@ -47,6 +48,7 @@ class LocaleService {
 
   async initLocale(): Promise<void> {
     const locale = this.getInitialLocale();
+    document.documentElement.lang = locale;
     if (locale !== sourceLocale) {
       try {
         await this.setLocale(locale);

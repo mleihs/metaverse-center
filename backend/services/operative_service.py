@@ -559,225 +559,258 @@ class OperativeService:
                 mission["target_simulation_id"],
             )
 
+    # ── Per-type success effect handlers ─────────────────
+
+    _EFFECT_DISPATCH: dict[str, str] = {
+        "spy": "_apply_spy_effect",
+        "saboteur": "_apply_saboteur_effect",
+        "propagandist": "_apply_propagandist_effect",
+        "assassin": "_apply_assassin_effect",
+        "infiltrator": "_apply_infiltrator_effect",
+    }
+
     @classmethod
     async def _apply_success_effect(cls, supabase: Client, mission: dict) -> dict:
-        """Apply the mechanical effect of a successful mission."""
-        op_type = mission["operative_type"]
+        """Apply the mechanical effect of a successful mission.
 
-        if op_type == "spy":
-            target_sim_id = mission.get("target_simulation_id")
-            intel = {}
-            if target_sim_id:
-                zones_resp = (
-                    supabase.table("zones")
-                    .select("security_level")
-                    .eq("simulation_id", target_sim_id)
-                    .execute()
-                )
-                guardian_resp = (
-                    supabase.table("operative_missions")
-                    .select("id", count="exact")
-                    .eq("operative_type", "guardian")
-                    .eq("source_simulation_id", target_sim_id)
-                    .eq("status", "active")
-                    .execute()
-                )
-                zone_levels = [z["security_level"] for z in (zones_resp.data or [])]
-                guardian_count = guardian_resp.count or 0
-                intel = {"zone_security": zone_levels, "guardian_count": guardian_count}
-
-                epoch_resp = (
-                    supabase.table("game_epochs")
-                    .select("current_cycle")
-                    .eq("id", mission["epoch_id"])
-                    .single()
-                    .execute()
-                )
-                cycle = epoch_resp.data.get("current_cycle", 1) if epoch_resp.data else 1
-
-                await BattleLogService.log_event(
-                    supabase,
-                    UUID(mission["epoch_id"]),
-                    cycle,
-                    "intel_report",
-                    f"Spy intel: {guardian_count} guardians, zones: {zone_levels}",
-                    source_simulation_id=UUID(mission["source_simulation_id"]),
-                    target_simulation_id=UUID(target_sim_id),
-                    mission_id=UUID(mission["id"]),
-                    is_public=False,
-                    metadata=intel,
-                )
-
-            return {
-                "outcome": "success",
-                "narrative": "Intelligence gathered successfully.",
-                "intel_gathered": True,
-                "intel": intel,
-            }
-
-        if op_type == "saboteur":
-            result: dict = {"outcome": "success"}
-
-            # Degrade building condition (if targeted)
-            if mission.get("target_entity_id"):
-                building_resp = (
-                    supabase.table("buildings")
-                    .select("id, building_condition")
-                    .eq("id", mission["target_entity_id"])
-                    .single()
-                    .execute()
-                )
-                if building_resp.data:
-                    condition_map = {"good": "moderate", "moderate": "poor", "poor": "ruined"}
-                    old_cond = building_resp.data["building_condition"]
-                    new_cond = condition_map.get(old_cond, old_cond)
-                    if old_cond != new_cond:
-                        supabase.table("buildings").update(
-                            {"building_condition": new_cond}
-                        ).eq("id", mission["target_entity_id"]).execute()
-                    result["damage_dealt"] = {
-                        "building_id": mission["target_entity_id"],
-                        "old_condition": old_cond,
-                        "new_condition": new_cond,
-                    }
-
-            # Downgrade a random zone's security level in target simulation
-            target_sim_id = mission.get("target_simulation_id")
-            if target_sim_id:
-                zones_resp = (
-                    supabase.table("zones")
-                    .select("id, security_level")
-                    .eq("simulation_id", target_sim_id)
-                    .execute()
-                )
-                if zones_resp.data:
-                    target_zone = secrets.SystemRandom().choice(zones_resp.data)
-                    old_level = target_zone["security_level"]
-                    new_level = _downgrade_security(old_level)
-                    if old_level != new_level:
-                        supabase.table("zones").update(
-                            {"security_level": new_level}
-                        ).eq("id", target_zone["id"]).execute()
-                    result["zone_downgraded"] = {
-                        "zone_id": target_zone["id"],
-                        "old_level": old_level,
-                        "new_level": new_level,
-                    }
-
-            narrative_parts = ["Sabotage successful."]
-            if "damage_dealt" in result:
-                d = result["damage_dealt"]
-                narrative_parts.append(f"Building degraded: {d['old_condition']} → {d['new_condition']}.")
-            if "zone_downgraded" in result:
-                z = result["zone_downgraded"]
-                narrative_parts.append(f"Zone security compromised: {z['old_level']} → {z['new_level']}.")
-            result["narrative"] = " ".join(narrative_parts)
-            return result
-
-        if op_type == "propagandist":
-            # A1: Create a destabilizing event in the target simulation
-            from backend.dependencies import get_admin_supabase
-
-            admin = await get_admin_supabase()
-            target_sim = mission["target_simulation_id"]
-            event_data = {
-                "simulation_id": target_sim,
-                "title": "Propaganda Campaign — Foreign Influence Detected",
-                "description": "Morale undermined by external propaganda operations.",
-                "event_type": "social",
-                "impact_level": secrets.SystemRandom().randint(3, 5),
-                "data_source": "propagandist",
-                "metadata": {
-                    "mission_id": str(mission["id"]),
-                    "source_simulation_id": str(mission["source_simulation_id"]),
-                    "operative_type": "propagandist",
-                },
-            }
-            admin.table("events").insert(event_data).execute()
-
-            return {
-                "outcome": "success",
-                "narrative": "Propaganda campaign succeeded. Target population's morale undermined.",
-                "score_awarded": True,
-                "event_created": True,
-            }
-
-        if op_type == "assassin" and mission.get("target_entity_id"):
-            # Weaken target agent's relationships (-2 intensity)
-            rel_resp = (
-                supabase.table("agent_relationships")
-                .select("id, intensity")
-                .or_(
-                    f"source_agent_id.eq.{mission['target_entity_id']},"
-                    f"target_agent_id.eq.{mission['target_entity_id']}"
-                )
-                .execute()
-            )
-            for rel in rel_resp.data or []:
-                new_intensity = max(1, rel["intensity"] - 2)
-                supabase.table("agent_relationships").update(
-                    {"intensity": new_intensity}
-                ).eq("id", rel["id"]).execute()
-
-            # A2: Block ambassador status for 3 cycles
-            epoch_resp = (
-                supabase.table("game_epochs")
-                .select("config")
-                .eq("id", mission["epoch_id"])
-                .single()
-                .execute()
-            )
-            config = (epoch_resp.data or {}).get("config", {})
-            cycle_hours = config.get("cycle_hours", 8)
-            blocked_until = datetime.now(UTC) + timedelta(hours=3 * cycle_hours)
-            supabase.table("agents").update(
-                {"ambassador_blocked_until": blocked_until.isoformat()}
-            ).eq("id", mission["target_entity_id"]).execute()
-
-            return {
-                "outcome": "success",
-                "narrative": (
-                    "Assassination successful. Target agent's influence "
-                    "diminished and ambassador status suspended."
-                ),
-                "relationships_weakened": len(rel_resp.data or []),
-                "ambassador_blocked_until": blocked_until.isoformat(),
-            }
-
-        if op_type == "infiltrator" and mission.get("target_entity_id"):
-            # A3: Reduce embassy effectiveness by 50% for 3 cycles
-            epoch_resp = (
-                supabase.table("game_epochs")
-                .select("config")
-                .eq("id", mission["epoch_id"])
-                .single()
-                .execute()
-            )
-            config = (epoch_resp.data or {}).get("config", {})
-            cycle_hours = config.get("cycle_hours", 8)
-            expires_at = datetime.now(UTC) + timedelta(hours=3 * cycle_hours)
-
-            supabase.table("embassies").update({
-                "infiltration_penalty": 0.5,
-                "infiltration_penalty_expires_at": expires_at.isoformat(),
-            }).eq("id", mission["target_entity_id"]).execute()
-
-            return {
-                "outcome": "success",
-                "narrative": "Embassy infiltrated. Diplomatic effectiveness severely compromised.",
-                "intel_gathered": True,
-                "target_embassy_id": mission["target_entity_id"],
-                "effectiveness_reduced": True,
-            }
-
+        Dispatches to per-operative-type handler methods.
+        """
+        handler_name = cls._EFFECT_DISPATCH.get(mission["operative_type"])
+        if handler_name:
+            handler = getattr(cls, handler_name)
+            return await handler(supabase, mission)
         return {"outcome": "success", "narrative": "Mission completed."}
+
+    @classmethod
+    async def _apply_spy_effect(cls, supabase: Client, mission: dict) -> dict:
+        """Spy: gather intel on target simulation (zone security + guardian count)."""
+        target_sim_id = mission.get("target_simulation_id")
+        intel = {}
+        if target_sim_id:
+            zones_resp = (
+                supabase.table("zones")
+                .select("security_level")
+                .eq("simulation_id", target_sim_id)
+                .execute()
+            )
+            guardian_resp = (
+                supabase.table("operative_missions")
+                .select("id", count="exact")
+                .eq("operative_type", "guardian")
+                .eq("source_simulation_id", target_sim_id)
+                .eq("status", "active")
+                .execute()
+            )
+            zone_levels = [z["security_level"] for z in (zones_resp.data or [])]
+            guardian_count = guardian_resp.count or 0
+            intel = {"zone_security": zone_levels, "guardian_count": guardian_count}
+
+            epoch_resp = (
+                supabase.table("game_epochs")
+                .select("current_cycle")
+                .eq("id", mission["epoch_id"])
+                .single()
+                .execute()
+            )
+            cycle = epoch_resp.data.get("current_cycle", 1) if epoch_resp.data else 1
+
+            await BattleLogService.log_event(
+                supabase,
+                UUID(mission["epoch_id"]),
+                cycle,
+                "intel_report",
+                f"Spy intel: {guardian_count} guardians, zones: {zone_levels}",
+                source_simulation_id=UUID(mission["source_simulation_id"]),
+                target_simulation_id=UUID(target_sim_id),
+                mission_id=UUID(mission["id"]),
+                is_public=False,
+                metadata=intel,
+            )
+
+        return {
+            "outcome": "success",
+            "narrative": "Intelligence gathered successfully.",
+            "intel_gathered": True,
+            "intel": intel,
+        }
+
+    @classmethod
+    async def _apply_saboteur_effect(cls, supabase: Client, mission: dict) -> dict:
+        """Saboteur: degrade building condition + downgrade random zone security."""
+        result: dict = {"outcome": "success"}
+
+        if mission.get("target_entity_id"):
+            building_resp = (
+                supabase.table("buildings")
+                .select("id, building_condition")
+                .eq("id", mission["target_entity_id"])
+                .single()
+                .execute()
+            )
+            if building_resp.data:
+                condition_map = {"good": "moderate", "moderate": "poor", "poor": "ruined"}
+                old_cond = building_resp.data["building_condition"]
+                new_cond = condition_map.get(old_cond, old_cond)
+                if old_cond != new_cond:
+                    supabase.table("buildings").update(
+                        {"building_condition": new_cond}
+                    ).eq("id", mission["target_entity_id"]).execute()
+                result["damage_dealt"] = {
+                    "building_id": mission["target_entity_id"],
+                    "old_condition": old_cond,
+                    "new_condition": new_cond,
+                }
+
+        target_sim_id = mission.get("target_simulation_id")
+        if target_sim_id:
+            zones_resp = (
+                supabase.table("zones")
+                .select("id, security_level")
+                .eq("simulation_id", target_sim_id)
+                .execute()
+            )
+            if zones_resp.data:
+                target_zone = secrets.SystemRandom().choice(zones_resp.data)
+                old_level = target_zone["security_level"]
+                new_level = _downgrade_security(old_level)
+                if old_level != new_level:
+                    supabase.table("zones").update(
+                        {"security_level": new_level}
+                    ).eq("id", target_zone["id"]).execute()
+                result["zone_downgraded"] = {
+                    "zone_id": target_zone["id"],
+                    "old_level": old_level,
+                    "new_level": new_level,
+                }
+
+        narrative_parts = ["Sabotage successful."]
+        if "damage_dealt" in result:
+            d = result["damage_dealt"]
+            narrative_parts.append(f"Building degraded: {d['old_condition']} → {d['new_condition']}.")
+        if "zone_downgraded" in result:
+            z = result["zone_downgraded"]
+            narrative_parts.append(f"Zone security compromised: {z['old_level']} → {z['new_level']}.")
+        result["narrative"] = " ".join(narrative_parts)
+        return result
+
+    @classmethod
+    async def _apply_propagandist_effect(cls, supabase: Client, mission: dict) -> dict:
+        """Propagandist: create destabilizing event in target simulation."""
+        from backend.dependencies import get_admin_supabase
+
+        admin = await get_admin_supabase()
+        target_sim = mission["target_simulation_id"]
+        event_data = {
+            "simulation_id": target_sim,
+            "title": "Propaganda Campaign — Foreign Influence Detected",
+            "description": "Morale undermined by external propaganda operations.",
+            "event_type": "social",
+            "impact_level": secrets.SystemRandom().randint(3, 5),
+            "data_source": "propagandist",
+            "metadata": {
+                "mission_id": str(mission["id"]),
+                "source_simulation_id": str(mission["source_simulation_id"]),
+                "operative_type": "propagandist",
+            },
+        }
+        admin.table("events").insert(event_data).execute()
+
+        return {
+            "outcome": "success",
+            "narrative": "Propaganda campaign succeeded. Target population's morale undermined.",
+            "score_awarded": True,
+            "event_created": True,
+        }
+
+    @classmethod
+    async def _apply_assassin_effect(cls, supabase: Client, mission: dict) -> dict:
+        """Assassin: weaken agent relationships + block ambassador status for 3 cycles."""
+        if not mission.get("target_entity_id"):
+            return {"outcome": "success", "narrative": "Mission completed."}
+
+        rel_resp = (
+            supabase.table("agent_relationships")
+            .select("id, intensity")
+            .or_(
+                f"source_agent_id.eq.{mission['target_entity_id']},"
+                f"target_agent_id.eq.{mission['target_entity_id']}"
+            )
+            .execute()
+        )
+        for rel in rel_resp.data or []:
+            new_intensity = max(1, rel["intensity"] - 2)
+            supabase.table("agent_relationships").update(
+                {"intensity": new_intensity}
+            ).eq("id", rel["id"]).execute()
+
+        epoch_resp = (
+            supabase.table("game_epochs")
+            .select("config")
+            .eq("id", mission["epoch_id"])
+            .single()
+            .execute()
+        )
+        config = (epoch_resp.data or {}).get("config", {})
+        cycle_hours = config.get("cycle_hours", 8)
+        blocked_until = datetime.now(UTC) + timedelta(hours=3 * cycle_hours)
+        supabase.table("agents").update(
+            {"ambassador_blocked_until": blocked_until.isoformat()}
+        ).eq("id", mission["target_entity_id"]).execute()
+
+        return {
+            "outcome": "success",
+            "narrative": (
+                "Assassination successful. Target agent's influence "
+                "diminished and ambassador status suspended."
+            ),
+            "relationships_weakened": len(rel_resp.data or []),
+            "ambassador_blocked_until": blocked_until.isoformat(),
+        }
+
+    @classmethod
+    async def _apply_infiltrator_effect(cls, supabase: Client, mission: dict) -> dict:
+        """Infiltrator: reduce embassy effectiveness by 50% for 3 cycles."""
+        if not mission.get("target_entity_id"):
+            return {"outcome": "success", "narrative": "Mission completed."}
+
+        epoch_resp = (
+            supabase.table("game_epochs")
+            .select("config")
+            .eq("id", mission["epoch_id"])
+            .single()
+            .execute()
+        )
+        config = (epoch_resp.data or {}).get("config", {})
+        cycle_hours = config.get("cycle_hours", 8)
+        expires_at = datetime.now(UTC) + timedelta(hours=3 * cycle_hours)
+
+        supabase.table("embassies").update({
+            "infiltration_penalty": 0.5,
+            "infiltration_penalty_expires_at": expires_at.isoformat(),
+        }).eq("id", mission["target_entity_id"]).execute()
+
+        return {
+            "outcome": "success",
+            "narrative": "Embassy infiltrated. Diplomatic effectiveness severely compromised.",
+            "intel_gathered": True,
+            "target_embassy_id": mission["target_entity_id"],
+            "effectiveness_reduced": True,
+        }
 
     # ── Recall ────────────────────────────────────────────
 
     @classmethod
-    async def recall(cls, supabase: Client, mission_id: UUID) -> dict:
-        """Recall an active operative (returns next cycle)."""
+    async def recall(cls, supabase: Client, mission_id: UUID, simulation_id: UUID | None = None) -> dict:
+        """Recall an active operative (returns next cycle).
+
+        If simulation_id is provided, verifies the caller owns the source simulation.
+        """
         mission = await cls.get_mission(supabase, mission_id)
+        if simulation_id and mission["source_simulation_id"] != str(simulation_id):
+            raise HTTPException(
+                status.HTTP_403_FORBIDDEN,
+                "You can only recall operatives from your own simulation.",
+            )
         if mission["status"] not in ("deploying", "active"):
             raise HTTPException(
                 status.HTTP_400_BAD_REQUEST,

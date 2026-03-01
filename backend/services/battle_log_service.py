@@ -49,7 +49,10 @@ class BattleLogService:
             resp = supabase.table("battle_log").insert(data).execute()
             return resp.data[0] if resp.data else data
         except Exception:
-            logger.debug("Battle log insert skipped (RLS): %s", event_type)
+            logger.error(
+                "Battle log insert failed for event_type=%s: %s",
+                event_type, data.get("narrative", "")[:100], exc_info=True,
+            )
             return data
 
     # ── Convenience Loggers ───────────────────────────────

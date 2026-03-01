@@ -90,11 +90,15 @@ class TestReplaceMeta:
 class TestEnrichHtmlForCrawler:
     @pytest.fixture(autouse=True)
     def _reset_cache(self):
-        """Reset the module-level HTML cache between tests."""
+        """Reset the module-level caches between tests."""
         import backend.middleware.seo as seo_module
         seo_module._index_html_cache = None
+        seo_module._sim_meta_cache.clear()
+        seo_module._anon_client = None
         yield
         seo_module._index_html_cache = None
+        seo_module._sim_meta_cache.clear()
+        seo_module._anon_client = None
 
     @pytest.mark.anyio
     async def test_returns_none_for_non_simulation_paths(self):

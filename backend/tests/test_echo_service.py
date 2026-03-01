@@ -1,6 +1,6 @@
 """Tests for EchoService and ConnectionService."""
 
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
 import pytest
@@ -604,6 +604,13 @@ class TestConnectionListAll:
 
 
 class TestConnectionGetMapData:
+    @pytest.fixture(autouse=True)
+    def _clear_cache(self):
+        """Clear the map data TTL cache between tests."""
+        ConnectionService._map_data_cache.clear()
+        yield
+        ConnectionService._map_data_cache.clear()
+
     @pytest.mark.asyncio
     async def test_returns_aggregated_data(self):
         sim = {"id": str(SIM_A), "name": "Test Sim", "status": "active"}
@@ -616,31 +623,28 @@ class TestConnectionGetMapData:
         echo_row = {"target_simulation_id": str(SIM_A)}
 
         mock = MagicMock()
-        call_idx = [0]
 
-        # Tables: simulations, simulation_dashboard, simulation_connections,
-        #         simulation_connections (inner list_all), event_echoes
+        # Name-based table routing (get_map_data calls many tables)
         def make_table(name):
             b = MagicMock()
             b.select.return_value = b
             b.eq.return_value = b
             b.is_.return_value = b
             b.or_.return_value = b
+            b.in_.return_value = b
             b.order.return_value = b
             b.range.return_value = b
-
-            idx = call_idx[0]
-            call_idx[0] += 1
+            b.limit.return_value = b
 
             r = MagicMock()
-            if idx == 0:  # simulations
+            if name == "simulations":
                 r.data = [sim]
-            elif idx == 1:  # simulation_dashboard
+            elif name == "simulation_dashboard":
                 r.data = [dash]
-            elif idx == 2:  # simulation_connections (list_all)
+            elif name == "simulation_connections":
                 r.data = [conn]
                 r.count = None
-            elif idx == 3:  # event_echoes
+            elif name == "event_echoes":
                 r.data = [echo_row]
                 r.count = 1
             else:
@@ -650,7 +654,9 @@ class TestConnectionGetMapData:
 
         mock.table.side_effect = make_table
 
-        result = await ConnectionService.get_map_data(mock)
+        with patch("backend.services.embassy_service.EmbassyService.list_all_active", new_callable=AsyncMock, return_value=[]):
+            result = await ConnectionService.get_map_data(mock)
+
         assert "simulations" in result
         assert "connections" in result
         assert "echo_counts" in result

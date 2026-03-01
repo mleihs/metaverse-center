@@ -145,6 +145,26 @@ export class VelgPlatformHeader extends LitElement {
       box-shadow: var(--shadow-pressed);
     }
 
+    /* --- Admin link accent --- */
+
+    .header__nav-link--admin {
+      color: var(--color-danger);
+      background-image:
+        repeating-linear-gradient(90deg, var(--color-danger) 0 6px, transparent 6px 12px),
+        repeating-linear-gradient(90deg, var(--color-danger) 0 6px, transparent 6px 12px),
+        repeating-linear-gradient(0deg, var(--color-danger) 0 6px, transparent 6px 12px),
+        repeating-linear-gradient(0deg, var(--color-danger) 0 6px, transparent 6px 12px);
+    }
+
+    .header__nav-link--admin::before {
+      background: var(--color-danger);
+      box-shadow: 0 0 4px var(--color-danger);
+    }
+
+    .header__nav-link--admin:hover {
+      background-color: var(--color-danger);
+    }
+
     /* --- Active state (map is open) --- */
 
     .header__nav-link--active {
@@ -434,6 +454,13 @@ export class VelgPlatformHeader extends LitElement {
     );
   }
 
+  private _handleAdminClick(e: Event): void {
+    e.preventDefault();
+    this.dispatchEvent(
+      new CustomEvent('navigate', { detail: '/admin', bubbles: true, composed: true }),
+    );
+  }
+
   private _handleSignInClick(): void {
     this.dispatchEvent(new CustomEvent('login-panel-open', { bubbles: true, composed: true }));
   }
@@ -472,6 +499,12 @@ export class VelgPlatformHeader extends LitElement {
           <a href="/epoch" class="header__nav-link ${window.location.pathname === '/epoch' ? 'header__nav-link--active' : ''}" @click=${this._handleEpochClick}>${msg('Epoch')}</a>
 
           <a href="/how-to-play" class="header__nav-link ${window.location.pathname === '/how-to-play' ? 'header__nav-link--active' : ''}" @click=${this._handleGuideClick}>${msg('Guide')}</a>
+
+          ${
+            appState.isPlatformAdmin.value
+              ? html`<a href="/admin" class="header__nav-link header__nav-link--admin ${window.location.pathname === '/admin' ? 'header__nav-link--active' : ''}" @click=${this._handleAdminClick}>${msg('Admin')}</a>`
+              : null
+          }
 
           ${
             this._simulations.length > 0

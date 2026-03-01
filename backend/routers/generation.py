@@ -137,11 +137,15 @@ async def generate_agent(
             locale=body.locale,
         )
         return {"success": True, "data": result}
-    except OpenRouterError as e:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e)) from e
+    except OpenRouterError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="AI service temporarily unavailable.",
+        ) from None
     except Exception as e:
         logger.exception("Agent generation failed")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Agent generation failed. Please try again.",
+        ) from e
 
 
 @router.post("/building", response_model=SuccessResponse[dict])
@@ -165,11 +169,15 @@ async def generate_building(
             locale=body.locale,
         )
         return {"success": True, "data": result}
-    except OpenRouterError as e:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e)) from e
+    except OpenRouterError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="AI service temporarily unavailable.",
+        ) from None
     except Exception as e:
         logger.exception("Building generation failed")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Building generation failed. Please try again.",
+        ) from e
 
 
 @router.post("/portrait-description", response_model=SuccessResponse[dict])
@@ -190,11 +198,16 @@ async def generate_portrait_description(
             agent_data=body.agent_data,
         )
         return {"success": True, "data": {"description": description}}
-    except OpenRouterError as e:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e)) from e
+    except OpenRouterError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="AI service temporarily unavailable.",
+        ) from None
     except Exception as e:
         logger.exception("Portrait description generation failed")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Portrait description generation failed. Please try again.",
+        ) from e
 
 
 @router.post("/event", response_model=SuccessResponse[dict])
@@ -219,11 +232,15 @@ async def generate_event(
             game_context=game_context,
         )
         return {"success": True, "data": result}
-    except OpenRouterError as e:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e)) from e
+    except OpenRouterError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="AI service temporarily unavailable.",
+        ) from None
     except Exception as e:
         logger.exception("Event generation failed")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Event generation failed. Please try again.",
+        ) from e
 
 
 @router.post("/relationships", response_model=SuccessResponse[list])
@@ -273,16 +290,16 @@ async def generate_relationships(
         return {"success": True, "data": result}
     except HTTPException:
         raise
-    except OpenRouterError as e:
+    except OpenRouterError:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=str(e),
-        ) from e
+            detail="AI service temporarily unavailable.",
+        ) from None
     except Exception as e:
         logger.exception("Relationship generation failed")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e),
+            detail="Relationship generation failed. Please try again.",
         ) from e
 
 
@@ -333,8 +350,12 @@ async def generate_image(
             )
 
         return {"success": True, "data": {"image_url": url}}
-    except OpenRouterError as e:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e)) from e
+    except OpenRouterError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="AI service temporarily unavailable.",
+        ) from None
     except Exception as e:
         logger.exception("Image generation failed")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Image generation failed. Please try again.",
+        ) from e

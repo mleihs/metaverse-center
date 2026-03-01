@@ -66,7 +66,9 @@ export class VelgHowToPlay extends LitElement {
     super.connectedCallback();
     seoService.setTitle([msg('How to Play')]);
     seoService.setDescription(
-      'Learn how Epochs work: competitive PvP, operatives, scoring dimensions, alliances, and bleed mechanics.',
+      msg(
+        'Learn how Epochs work: competitive PvP, operatives, scoring dimensions, alliances, and bleed mechanics.',
+      ),
     );
     analyticsService.trackPageView('/how-to-play', 'How to Play');
     this._injectFaqSchema();

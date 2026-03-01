@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   THEME_COLORS,
   VECTOR_ICONS,
-  VECTOR_LABELS,
+  getVectorLabels,
   getGlowColor,
   getThemeColor,
 } from '../src/components/multiverse/map-data.js';
@@ -75,23 +75,24 @@ describe('getGlowColor', () => {
 // VECTOR_LABELS
 // ---------------------------------------------------------------------------
 
-describe('VECTOR_LABELS', () => {
+describe('getVectorLabels', () => {
   const expectedVectors = ['commerce', 'language', 'memory', 'resonance', 'architecture', 'dream', 'desire'];
 
   it('should have labels for all expected echo vectors', () => {
+    const labels = getVectorLabels();
     for (const vector of expectedVectors) {
-      expect(VECTOR_LABELS[vector]).toBeDefined();
-      expect(typeof VECTOR_LABELS[vector]).toBe('string');
-      expect(VECTOR_LABELS[vector].length).toBeGreaterThan(0);
+      expect(labels[vector]).toBeDefined();
+      expect(typeof labels[vector]).toBe('string');
+      expect(labels[vector].length).toBeGreaterThan(0);
     }
   });
 
   it('should have exactly the expected number of entries', () => {
-    expect(Object.keys(VECTOR_LABELS).length).toBe(expectedVectors.length);
+    expect(Object.keys(getVectorLabels()).length).toBe(expectedVectors.length);
   });
 
   it('should have capitalized display labels', () => {
-    for (const label of Object.values(VECTOR_LABELS)) {
+    for (const label of Object.values(getVectorLabels())) {
       expect(label[0]).toBe(label[0].toUpperCase());
     }
   });
@@ -112,8 +113,8 @@ describe('VECTOR_ICONS', () => {
     }
   });
 
-  it('should have exactly the same keys as VECTOR_LABELS', () => {
-    const labelKeys = Object.keys(VECTOR_LABELS).sort();
+  it('should have exactly the same keys as getVectorLabels()', () => {
+    const labelKeys = Object.keys(getVectorLabels()).sort();
     const iconKeys = Object.keys(VECTOR_ICONS).sort();
     expect(iconKeys).toEqual(labelKeys);
   });

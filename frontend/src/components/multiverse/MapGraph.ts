@@ -341,7 +341,14 @@ export class VelgMapGraph extends LitElement {
   private _driftTargets = new Map<string, { dx: number; dy: number; dur: number; phase: number }>();
 
   /** Pre-generated starfield — fixed random positions so they don't re-roll on render */
-  private _stars: { x: number; y: number; r: number; twinkle: boolean; delay: number }[] = [];
+  private _stars: {
+    x: number;
+    y: number;
+    r: number;
+    twinkle: boolean;
+    delay: number;
+    opacity: number;
+  }[] = [];
   private _starsGenerated = false;
 
   connectedCallback(): void {
@@ -397,12 +404,14 @@ export class VelgMapGraph extends LitElement {
     this._stars = [];
 
     for (let i = 0; i < count; i++) {
+      const twinkle = Math.random() < 0.25;
       this._stars.push({
         x: Math.random() * w,
         y: Math.random() * h,
         r: Math.random() * 1.2 + 0.3, // 0.3–1.5px
-        twinkle: Math.random() < 0.25, // 25% twinkle
+        twinkle,
         delay: Math.random() * 3, // stagger twinkle phase
+        opacity: twinkle ? 0.2 : 0.15 + Math.random() * 0.2,
       });
     }
   }
@@ -1038,7 +1047,7 @@ export class VelgMapGraph extends LitElement {
             <circle
               class="star ${s.twinkle ? 'star--twinkle' : ''}"
               cx="${s.x}" cy="${s.y}" r="${s.r}"
-              opacity="${s.twinkle ? 0.2 : 0.15 + Math.random() * 0.2}"
+              opacity="${s.opacity}"
               style="${s.twinkle ? `animation-delay: ${s.delay}s` : ''}"
             />
           `,
@@ -1095,6 +1104,8 @@ export class VelgMapGraph extends LitElement {
       }
       <svg
         viewBox="${this._viewBox}"
+        role="img"
+        aria-label="${msg("Cartographer's Map — multiverse simulation graph")}"
         @mousedown=${this._handleMouseDown}
         @mousemove=${this._handleMouseMove}
         @mouseup=${this._handleMouseUp}

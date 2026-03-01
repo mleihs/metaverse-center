@@ -1,7 +1,8 @@
 # 07 - Frontend Components: Komponenten + Simulation-Settings-UI
 
-**Version:** 1.7
-**Datum:** 2026-02-28
+**Version:** 1.8
+**Datum:** 2026-03-01
+**Aenderung v1.8:** Platform Admin Panel — 3 neue Komponenten in `admin/` (AdminPanel, AdminUsersTab, AdminCachingTab). AdminApiService (8 Methoden). `isPlatformAdmin` computed Signal in AppStateManager. `/admin` Route mit Auth+Admin-Guard. "Admin" Nav-Link in PlatformHeader (rot, nur fuer Platform-Admin sichtbar). Updated counts: **126 files across 17 subdirectories, 104 @customElement components**, 24 API services.
 **Aenderung v1.7:** Public API routing fix — `BaseApiService.getSimulationData()` helper checks both `isAuthenticated` AND `currentRole` for simulation-scoped reads. 14 API services migrated. `_enterSimulationRoute()` determines membership via `_checkMembership()` before render. `SettingsApiService` design category always uses public endpoint.
 **Aenderung v1.6:** Full-Stack Audit v2 — EpochCommandCenter decomposed into 5 child components (EpochOpsBoard, EpochOverviewTab, EpochOperationsTab, EpochAlliancesTab, EpochLobbyActions). HowToPlayView CSS extracted to htp-styles.ts. New shared CSS: grid-layout-styles.ts (entity card grids for 5 views). ~60 hardcoded hex colors replaced with CSS custom property tokens in 10 epoch components. Updated counts: 123 files across 16 subdirectories, 101 @customElement components, 10 shared CSS modules.
 **Aenderung v1.5:** Epoch Realtime — EpochChatPanel (dual-channel tactical comms), EpochPresenceIndicator (online user dots), EpochReadyPanel (cycle readiness toggle). EpochCommandCenter now has collapsible COMMS sidebar on Operations Board. RealtimeService singleton (4 Supabase Realtime channels with Preact Signals). EpochChatApiService. Updated counts: 116 files across 16 subdirectories, 96 @customElement components, 23 API services + 8 platform services. how-to-play/ and epoch invite components also now reflected.

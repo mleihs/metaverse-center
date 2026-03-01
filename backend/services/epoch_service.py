@@ -277,8 +277,28 @@ class EpochService:
         supabase: Client,
         epoch_id: UUID,
         simulation_id: UUID,
+        user_id: UUID | None = None,
     ) -> dict:
-        """Join an epoch with a simulation."""
+        """Join an epoch with a simulation.
+
+        If user_id is provided, verifies the user is at least an editor
+        in the simulation before allowing them to join.
+        """
+        if user_id:
+            member_resp = (
+                supabase.table("simulation_members")
+                .select("member_role")
+                .eq("simulation_id", str(simulation_id))
+                .eq("user_id", str(user_id))
+                .limit(1)
+                .execute()
+            )
+            if not member_resp.data or member_resp.data[0]["member_role"] == "viewer":
+                raise HTTPException(
+                    status.HTTP_403_FORBIDDEN,
+                    "You must be an editor or higher in this simulation to join an epoch.",
+                )
+
         epoch = await cls.get(supabase, epoch_id)
         if epoch["status"] != "lobby":
             raise HTTPException(
@@ -462,10 +482,12 @@ class EpochService:
         current = participant.data.get("current_rp", 0) if participant.data else 0
         new_rp = min(current + amount, rp_cap)
 
-        supabase.table("epoch_participants").update({
+        resp = supabase.table("epoch_participants").update({
             "current_rp": new_rp,
             "last_rp_grant_at": datetime.now(UTC).isoformat(),
         }).eq("id", participant_id).eq("current_rp", current).execute()
+        if not resp.data:
+            logger.warning("RP grant failed (concurrent modification) for participant %s", participant_id)
 
     @classmethod
     async def spend_rp(

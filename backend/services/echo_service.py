@@ -10,9 +10,11 @@ import random
 from datetime import UTC, datetime
 from uuid import UUID
 
+from cachetools import TTLCache
 from fastapi import HTTPException, status
 
 from backend.services.base_service import serialize_for_json
+from backend.services.cache_config import get_ttl
 from backend.services.game_mechanics_service import GameMechanicsService
 from supabase import Client
 
@@ -557,12 +559,12 @@ class EchoService:
                 admin_supabase, echo_id, "failed",
                 metadata_update={
                     **(echo.get("bleed_metadata") or {}),
-                    "error": str(e),
+                    "error": type(e).__name__,
                 },
             )
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Echo transformation failed: {e}",
+                detail="Echo transformation failed. Please try again.",
             ) from e
 
     @classmethod
@@ -637,6 +639,9 @@ class ConnectionService:
 
     table_name = "simulation_connections"
 
+    # In-process TTL cache for get_map_data
+    _map_data_cache: TTLCache = TTLCache(maxsize=1, ttl=get_ttl("cache_map_data_ttl"))
+
     @classmethod
     async def list_all(
         cls,
@@ -668,8 +673,46 @@ class ConnectionService:
 
         Includes game instances (simulation_type, epoch_id, source_template_id)
         and epoch status for live map rendering. Excludes archived instances.
+        Results are cached in-process for 15 seconds.
         """
-        # Simulations with counts — include game instances, exclude archived
+        cached = cls._map_data_cache.get("map_data")
+        if cached is not None:
+            return cached
+
+        simulations = await cls._fetch_map_simulations(supabase)
+        connections = await cls.list_all(supabase, active_only=True)
+
+        from backend.services.embassy_service import EmbassyService
+        embassies = await EmbassyService.list_all_active(supabase)
+
+        active_instance_counts = cls._compute_active_instance_counts(simulations)
+        operative_flow = await cls._fetch_operative_flow(supabase)
+
+        instance_ids = [s["id"] for s in simulations if s.get("simulation_type") == "game_instance"]
+        score_dimensions = await cls._fetch_score_dimensions(supabase, instance_ids)
+
+        template_ids = [s["id"] for s in simulations if s.get("simulation_type") in (None, "template")]
+        sparklines = await cls._fetch_sparklines(supabase, template_ids)
+
+        echo_counts = await cls._fetch_echo_counts(supabase)
+
+        result = {
+            "simulations": simulations,
+            "connections": connections,
+            "echo_counts": echo_counts,
+            "embassies": embassies,
+            "active_instance_counts": active_instance_counts,
+            "operative_flow": operative_flow,
+            "score_dimensions": score_dimensions,
+            "sparklines": sparklines,
+        }
+
+        cls._map_data_cache["map_data"] = result
+        return result
+
+    @classmethod
+    async def _fetch_map_simulations(cls, supabase: Client) -> list[dict]:
+        """Fetch simulations with epoch status and dashboard counts."""
         sims_resp = (
             supabase.table("simulations")
             .select(
@@ -683,12 +726,8 @@ class ConnectionService:
         )
         simulations = sims_resp.data or []
 
-        # Enrich game instances with epoch status
-        epoch_ids = {
-            s["epoch_id"]
-            for s in simulations
-            if s.get("epoch_id")
-        }
+        # Enrich with epoch status
+        epoch_ids = {s["epoch_id"] for s in simulations if s.get("epoch_id")}
         epoch_status_map: dict[str, str] = {}
         if epoch_ids:
             epoch_resp = (
@@ -699,11 +738,10 @@ class ConnectionService:
             )
             for ep in epoch_resp.data or []:
                 epoch_status_map[ep["id"]] = ep["status"]
-
         for sim in simulations:
             sim["epoch_status"] = epoch_status_map.get(sim.get("epoch_id"), None)
 
-        # Enrich with counts from dashboard view
+        # Enrich with dashboard counts
         dash_resp = (
             supabase.table("simulation_dashboard")
             .select("simulation_id, agent_count, building_count, event_count")
@@ -716,27 +754,12 @@ class ConnectionService:
             sim["building_count"] = counts.get("building_count", 0)
             sim["event_count"] = counts.get("event_count", 0)
 
-        # Connections
-        connections = await cls.list_all(supabase, active_only=True)
+        return simulations
 
-        # Echo counts per simulation (incoming completed echoes)
-        echo_resp = (
-            supabase.table("event_echoes")
-            .select("target_simulation_id", count="exact")
-            .eq("status", "completed")
-            .execute()
-        )
-        echo_counts: dict[str, int] = {}
-        for row in echo_resp.data or []:
-            sid = row["target_simulation_id"]
-            echo_counts[sid] = echo_counts.get(sid, 0) + 1
-
-        # Embassies (active only, with building names)
-        from backend.services.embassy_service import EmbassyService
-        embassies = await EmbassyService.list_all_active(supabase)
-
-        # Active game instance counts per template
-        active_instance_counts: dict[str, int] = {}
+    @staticmethod
+    def _compute_active_instance_counts(simulations: list[dict]) -> dict[str, int]:
+        """Count active game instances per template simulation."""
+        counts: dict[str, int] = {}
         for sim in simulations:
             if (
                 sim.get("simulation_type") == "game_instance"
@@ -744,10 +767,28 @@ class ConnectionService:
                 and sim.get("epoch_status") in ("lobby", "foundation", "competition", "reckoning")
             ):
                 tid = sim["source_template_id"]
-                active_instance_counts[tid] = active_instance_counts.get(tid, 0) + 1
+                counts[tid] = counts.get(tid, 0) + 1
+        return counts
 
-        # Operative flow between simulations (active/deployed/en_route missions)
-        operative_flow: dict[str, dict] = {}
+    @classmethod
+    async def _fetch_echo_counts(cls, supabase: Client) -> dict[str, int]:
+        """Fetch incoming completed echo counts per simulation."""
+        echo_resp = (
+            supabase.table("event_echoes")
+            .select("target_simulation_id", count="exact")
+            .eq("status", "completed")
+            .execute()
+        )
+        counts: dict[str, int] = {}
+        for row in echo_resp.data or []:
+            sid = row["target_simulation_id"]
+            counts[sid] = counts.get(sid, 0) + 1
+        return counts
+
+    @classmethod
+    async def _fetch_operative_flow(cls, supabase: Client) -> dict[str, dict]:
+        """Fetch active operative flow between simulations."""
+        flow: dict[str, dict] = {}
         try:
             op_resp = (
                 supabase.table("operative_missions")
@@ -760,98 +801,84 @@ class ConnectionService:
                 tgt = op.get("target_simulation_id")
                 if src and tgt:
                     key = f"{src}|{tgt}"
-                    if key not in operative_flow:
-                        operative_flow[key] = {"count": 0, "types": []}
-                    operative_flow[key]["count"] += 1
+                    if key not in flow:
+                        flow[key] = {"count": 0, "types": []}
+                    flow[key]["count"] += 1
                     op_type = op.get("operative_type")
-                    if op_type and op_type not in operative_flow[key]["types"]:
-                        operative_flow[key]["types"].append(op_type)
+                    if op_type and op_type not in flow[key]["types"]:
+                        flow[key]["types"].append(op_type)
         except Exception:
             logger.debug("Operative flow query skipped (table may be empty)")
+        return flow
 
-        # Latest cycle score dimensions per game-instance simulation
-        score_dimensions: dict[str, dict] = {}
-        instance_ids = [
-            s["id"] for s in simulations if s.get("simulation_type") == "game_instance"
-        ]
-        if instance_ids:
-            try:
-                # Get the most recent score row per simulation via ordering
-                score_resp = (
-                    supabase.table("epoch_scores")
-                    .select(
-                        "simulation_id, stability_score, influence_score,"
-                        " sovereignty_score, diplomatic_score, military_score,"
-                        " cycle_number"
-                    )
-                    .in_("simulation_id", instance_ids)
-                    .order("cycle_number", desc=True)
-                    .execute()
+    @classmethod
+    async def _fetch_score_dimensions(cls, supabase: Client, instance_ids: list[str]) -> dict[str, dict]:
+        """Fetch latest cycle score dimensions per game-instance simulation."""
+        if not instance_ids:
+            return {}
+        dimensions: dict[str, dict] = {}
+        try:
+            score_resp = (
+                supabase.table("epoch_scores")
+                .select(
+                    "simulation_id, stability_score, influence_score,"
+                    " sovereignty_score, diplomatic_score, military_score,"
+                    " cycle_number"
                 )
-                seen: set[str] = set()
-                for row in score_resp.data or []:
-                    sid = row["simulation_id"]
-                    if sid in seen:
-                        continue
-                    seen.add(sid)
-                    score_dimensions[sid] = {
-                        "stability": row.get("stability_score", 0),
-                        "influence": row.get("influence_score", 0),
-                        "sovereignty": row.get("sovereignty_score", 0),
-                        "diplomatic": row.get("diplomatic_score", 0),
-                        "military": row.get("military_score", 0),
-                    }
-            except Exception:
-                logger.debug("Score dimensions query skipped")
+                .in_("simulation_id", instance_ids)
+                .order("cycle_number", desc=True)
+                .execute()
+            )
+            seen: set[str] = set()
+            for row in score_resp.data or []:
+                sid = row["simulation_id"]
+                if sid in seen:
+                    continue
+                seen.add(sid)
+                dimensions[sid] = {
+                    "stability": row.get("stability_score", 0),
+                    "influence": row.get("influence_score", 0),
+                    "sovereignty": row.get("sovereignty_score", 0),
+                    "diplomatic": row.get("diplomatic_score", 0),
+                    "military": row.get("military_score", 0),
+                }
+        except Exception:
+            logger.debug("Score dimensions query skipped")
+        return dimensions
 
-        # Sparkline data: last 10 composite scores per template (from completed epochs)
+    @classmethod
+    async def _fetch_sparklines(cls, supabase: Client, template_ids: list[str]) -> dict[str, list[float]]:
+        """Fetch last 10 composite scores per template (sparkline data)."""
+        if not template_ids:
+            return {}
         sparklines: dict[str, list[float]] = {}
-        template_ids = [
-            s["id"] for s in simulations
-            if s.get("simulation_type") in (None, "template")
-        ]
-        if template_ids:
-            try:
-                spark_resp = (
-                    supabase.table("epoch_scores")
-                    .select(
-                        "simulation_id, composite_score, cycle_number,"
-                        " simulations!inner(source_template_id)"
-                    )
-                    .order("cycle_number", desc=True)
-                    .limit(200)
-                    .execute()
+        try:
+            spark_resp = (
+                supabase.table("epoch_scores")
+                .select(
+                    "simulation_id, composite_score, cycle_number,"
+                    " simulations!inner(source_template_id)"
                 )
-                # Group by source_template_id, keep last 10 per template
-                template_scores: dict[str, list[float]] = {}
-                for row in spark_resp.data or []:
-                    sim_data = row.get("simulations")
-                    if not sim_data:
-                        continue
-                    tmpl_id = sim_data.get("source_template_id")
-                    if tmpl_id and tmpl_id in template_ids:
-                        if tmpl_id not in template_scores:
-                            template_scores[tmpl_id] = []
-                        if len(template_scores[tmpl_id]) < 10:
-                            template_scores[tmpl_id].append(
-                                float(row.get("composite_score", 0))
-                            )
-                # Reverse so chronological order (oldest first)
-                for tid, scores_list in template_scores.items():
-                    sparklines[tid] = list(reversed(scores_list))
-            except Exception:
-                logger.debug("Sparkline data query skipped")
-
-        return {
-            "simulations": simulations,
-            "connections": connections,
-            "echo_counts": echo_counts,
-            "embassies": embassies,
-            "active_instance_counts": active_instance_counts,
-            "operative_flow": operative_flow,
-            "score_dimensions": score_dimensions,
-            "sparklines": sparklines,
-        }
+                .order("cycle_number", desc=True)
+                .limit(200)
+                .execute()
+            )
+            template_scores: dict[str, list[float]] = {}
+            for row in spark_resp.data or []:
+                sim_data = row.get("simulations")
+                if not sim_data:
+                    continue
+                tmpl_id = sim_data.get("source_template_id")
+                if tmpl_id and tmpl_id in template_ids:
+                    if tmpl_id not in template_scores:
+                        template_scores[tmpl_id] = []
+                    if len(template_scores[tmpl_id]) < 10:
+                        template_scores[tmpl_id].append(float(row.get("composite_score", 0)))
+            for tid, scores_list in template_scores.items():
+                sparklines[tid] = list(reversed(scores_list))
+        except Exception:
+            logger.debug("Sparkline data query skipped")
+        return sparklines
 
     @classmethod
     async def create_connection(

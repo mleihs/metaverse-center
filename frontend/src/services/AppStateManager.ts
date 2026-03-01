@@ -41,6 +41,8 @@ export class AppStateManager {
     return role === 'owner' || role === 'admin' || role === 'editor';
   });
 
+  readonly isPlatformAdmin = computed(() => this.user.value?.email === 'admin@velgarien.dev');
+
   // --- Setters ---
 
   setUser(user: User | null): void {
