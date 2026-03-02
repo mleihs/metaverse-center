@@ -1072,7 +1072,7 @@ export class VelgAgentDetailsPanel extends LitElement {
               </span>
               <span>
                 ${p.is_primary ? html`<span class="panel__profession-primary">${msg('Primary')}</span>` : nothing}
-                <span class="panel__profession-level">Lvl ${p.qualification_level}</span>
+                <span class="panel__profession-level">${msg(str`Lvl ${p.qualification_level}`)}</span>
               </span>
             </div>
           `,

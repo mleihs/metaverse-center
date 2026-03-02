@@ -271,7 +271,7 @@ export class VelgGenerationProgress extends LitElement {
     }
 
     .progress-bar__fill--complete {
-      width: 100% !important;
+      width: 100%;
       background: var(--color-success);
       animation: none;
     }

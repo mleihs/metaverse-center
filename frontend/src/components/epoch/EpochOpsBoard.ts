@@ -6,6 +6,9 @@
  * - Past epochs section
  * - COMMS sidebar (collapsible chat panel)
  * - Create new epoch card/button
+ *
+ * Atmospheric redesign: tactical grid, radar sweep, scan beam,
+ * phase-intensity card hierarchy, segmented progress bars.
  */
 
 import { localized, msg, str } from '@lit/localize';
@@ -31,6 +34,22 @@ export class VelgEpochOpsBoard extends LitElement {
       margin: 0 auto;
       padding: var(--space-6);
       position: relative;
+      /* Tactical grid background */
+      background:
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 39px,
+          color-mix(in srgb, var(--color-border, var(--color-gray-700)) 6%, transparent) 39px,
+          color-mix(in srgb, var(--color-border, var(--color-gray-700)) 6%, transparent) 40px
+        ),
+        repeating-linear-gradient(
+          90deg,
+          transparent,
+          transparent 39px,
+          color-mix(in srgb, var(--color-border, var(--color-gray-700)) 6%, transparent) 39px,
+          color-mix(in srgb, var(--color-border, var(--color-gray-700)) 6%, transparent) 40px
+        );
     }
 
     /* CRT scanline overlay on entire board */
@@ -50,29 +69,127 @@ export class VelgEpochOpsBoard extends LitElement {
       z-index: 1;
     }
 
+    /* Scan beam — thin horizontal sweep */
+    .ops-board::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 2px;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        color-mix(in srgb, var(--color-primary) 12%, transparent) 20%,
+        color-mix(in srgb, var(--color-primary) 25%, transparent) 50%,
+        color-mix(in srgb, var(--color-primary) 12%, transparent) 80%,
+        transparent 100%
+      );
+      opacity: 0.5;
+      pointer-events: none;
+      z-index: 2;
+      animation: scan-beam 12s linear infinite;
+    }
+
+    @keyframes scan-beam {
+      0% { top: -2px; }
+      100% { top: 100%; }
+    }
+
+    /* Ambient glow — soft radial from top center */
+    .ops-board__glow {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      height: 300px;
+      background: radial-gradient(
+        ellipse at center top,
+        color-mix(in srgb, var(--color-primary) 5%, transparent) 0%,
+        transparent 70%
+      );
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Header ──────────────────────────── */
+
     .ops-board__header {
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
       margin-bottom: var(--space-5);
-      padding-bottom: var(--space-3);
+      padding: var(--space-4) var(--space-5) var(--space-3);
       border-bottom: 2px solid var(--color-gray-800);
       position: relative;
       animation: lobby-fade 0.6s ease-out;
+      overflow: hidden;
+    }
+
+    /* Radar sweep — conic gradient behind header */
+    .ops-board__header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -10%;
+      width: 200px;
+      height: 200px;
+      background: conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        color-mix(in srgb, var(--color-primary) 8%, transparent) 30deg,
+        transparent 60deg
+      );
+      border-radius: 50%;
+      opacity: 0.6;
+      animation: radar-sweep 8s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes radar-sweep {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* Corner brackets — top-left and bottom-right */
+    .ops-board__header::after {
+      content: '';
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      width: 14px;
+      height: 14px;
+      border-left: 2px solid var(--color-gray-600);
+      border-top: 2px solid var(--color-gray-600);
+      pointer-events: none;
+    }
+
+    .ops-board__bracket-br {
+      position: absolute;
+      bottom: 6px;
+      right: 6px;
+      width: 14px;
+      height: 14px;
+      border-right: 2px solid var(--color-gray-600);
+      border-bottom: 2px solid var(--color-gray-600);
+      pointer-events: none;
     }
 
     .ops-board__title-block {
       display: flex;
       flex-direction: column;
       gap: var(--space-1);
+      position: relative;
+      z-index: 1;
     }
 
     .ops-board__surtitle {
       font-family: var(--font-mono, monospace);
-      font-size: 9px;
+      font-size: 8px;
       text-transform: uppercase;
-      letter-spacing: 0.15em;
-      color: var(--color-gray-600);
+      letter-spacing: 0.4em;
+      color: var(--color-gray-500);
     }
 
     .ops-board__title {
@@ -83,6 +200,40 @@ export class VelgEpochOpsBoard extends LitElement {
       letter-spacing: var(--tracking-brutalist);
       margin: 0;
       line-height: 1;
+      text-shadow: 0 0 30px color-mix(in srgb, var(--color-primary) 15%, transparent);
+    }
+
+    /* ── Data readout strip ──────────────── */
+
+    .ops-board__readout {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-family: var(--font-mono, monospace);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-gray-600);
+      margin-bottom: var(--space-5);
+      padding: var(--space-2) 0;
+      border-bottom: 1px solid var(--color-gray-800);
+      animation: lobby-fade 0.6s ease-out 0.1s both;
+    }
+
+    .ops-board__readout-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+    }
+
+    .ops-board__readout-value {
+      color: var(--color-gray-400);
+      font-weight: 600;
+    }
+
+    .ops-board__readout-sep {
+      color: var(--color-gray-700);
+      font-size: 6px;
     }
 
     .ops-board__create-btn {
@@ -100,6 +251,8 @@ export class VelgEpochOpsBoard extends LitElement {
       border: 2px solid var(--color-gray-100);
       cursor: pointer;
       transition: all 0.2s;
+      position: relative;
+      z-index: 1;
     }
 
     .ops-board__create-btn:hover {
@@ -130,6 +283,7 @@ export class VelgEpochOpsBoard extends LitElement {
 
     .dossier-card {
       --dossier-color: var(--color-gray-600);
+      --accent-bar-width: 3px;
       position: relative;
       display: flex;
       flex-direction: column;
@@ -167,38 +321,111 @@ export class VelgEpochOpsBoard extends LitElement {
       left: 0;
       top: 0;
       bottom: 0;
-      width: 3px;
+      width: var(--accent-bar-width);
       background: var(--dossier-color);
       transition: width 0.2s, box-shadow 0.2s;
     }
 
     .dossier-card:hover {
       border-color: var(--dossier-color);
-      transform: translateX(4px);
-      box-shadow: -4px 0 0 var(--dossier-color), 0 0 20px rgba(0 0 0 / 0.4);
+      transform: translateY(-2px);
+      box-shadow:
+        0 4px 20px rgba(0 0 0 / 0.4),
+        inset 0 0 0 1px color-mix(in srgb, var(--dossier-color) 10%, transparent);
     }
 
     .dossier-card:hover::before {
-      width: 4px;
+      width: calc(var(--accent-bar-width) + 1px);
       box-shadow: 0 0 10px var(--dossier-color);
     }
 
-    /* Phase colors */
-    .dossier-card--lobby { --dossier-color: var(--color-gray-500); }
-    .dossier-card--foundation { --dossier-color: var(--color-success); }
-    .dossier-card--competition { --dossier-color: var(--color-warning); }
-    .dossier-card--reckoning { --dossier-color: var(--color-danger); }
+    /* ── Phase-intensity styles ──────────── */
 
-    /* Running epoch border pulse */
-    .dossier-card--foundation,
-    .dossier-card--competition,
-    .dossier-card--reckoning {
-      animation: dossier-enter 0.4s ease-out forwards, dossier-pulse 4s ease-in-out 0.5s infinite;
+    /* LOBBY — desaturated, subtle, waiting */
+    .dossier-card--lobby {
+      --dossier-color: var(--color-gray-500);
+      --accent-bar-width: 2px;
+      opacity: 0;
+      animation: dossier-enter 0.4s ease-out forwards;
     }
 
-    @keyframes dossier-pulse {
+    .dossier-card--lobby .dossier-card__name {
+      color: var(--color-gray-300);
+    }
+
+    /* FOUNDATION — building phase, moderate presence */
+    .dossier-card--foundation {
+      --dossier-color: var(--color-success);
+      --accent-bar-width: 3px;
+      animation: dossier-enter 0.4s ease-out forwards, dossier-pulse-soft 5s ease-in-out 0.5s infinite;
+    }
+
+    /* COMPETITION — active, prominent, peak engagement */
+    .dossier-card--competition {
+      --dossier-color: var(--color-warning);
+      --accent-bar-width: 4px;
+      box-shadow: 0 0 12px color-mix(in srgb, var(--color-warning) 8%, transparent);
+      animation: dossier-enter 0.4s ease-out forwards, dossier-pulse-medium 4s ease-in-out 0.5s infinite;
+    }
+
+    .dossier-card--competition:hover {
+      box-shadow:
+        0 4px 24px rgba(0 0 0 / 0.5),
+        0 0 20px color-mix(in srgb, var(--color-warning) 15%, transparent);
+    }
+
+    /* RECKONING — maximum intensity, crisis mode */
+    .dossier-card--reckoning {
+      --dossier-color: var(--color-danger);
+      --accent-bar-width: 5px;
+      border-color: color-mix(in srgb, var(--color-danger) 25%, var(--color-gray-800));
+      box-shadow: 0 0 16px color-mix(in srgb, var(--color-danger) 10%, transparent);
+      animation: dossier-enter 0.4s ease-out forwards, dossier-pulse-intense 3s ease-in-out 0.5s infinite;
+    }
+
+    .dossier-card--reckoning:hover {
+      box-shadow:
+        0 4px 28px rgba(0 0 0 / 0.5),
+        0 0 28px color-mix(in srgb, var(--color-danger) 20%, transparent);
+      transform: translateY(-3px);
+    }
+
+    /* COMPLETED — faded, archival */
+    .dossier-card--completed {
+      --dossier-color: var(--color-gray-600);
+      --accent-bar-width: 2px;
+      opacity: 0;
+      animation: dossier-enter 0.4s ease-out forwards;
+    }
+
+    .dossier-card--completed .dossier-card__name {
+      color: var(--color-gray-400);
+    }
+
+    .dossier-card--completed .dossier-stat__value {
+      color: var(--color-gray-400);
+    }
+
+    /* Phase pulse animations — increasing intensity */
+    @keyframes dossier-pulse-soft {
       0%, 100% { box-shadow: 0 0 0 rgba(0 0 0 / 0); }
-      50% { box-shadow: 0 0 16px color-mix(in srgb, var(--dossier-color) 20%, transparent); }
+      50% { box-shadow: 0 0 10px color-mix(in srgb, var(--dossier-color) 12%, transparent); }
+    }
+
+    @keyframes dossier-pulse-medium {
+      0%, 100% { box-shadow: 0 0 12px color-mix(in srgb, var(--dossier-color) 8%, transparent); }
+      50% { box-shadow: 0 0 22px color-mix(in srgb, var(--dossier-color) 20%, transparent); }
+    }
+
+    @keyframes dossier-pulse-intense {
+      0%, 100% {
+        box-shadow: 0 0 16px color-mix(in srgb, var(--dossier-color) 10%, transparent);
+        border-color: color-mix(in srgb, var(--color-danger) 25%, var(--color-gray-800));
+      }
+      50% {
+        box-shadow: 0 0 30px color-mix(in srgb, var(--dossier-color) 25%, transparent);
+        border-color: color-mix(in srgb, var(--color-danger) 45%, var(--color-gray-800));
+      }
     }
 
     /* ── Dossier internals ────────────────── */
@@ -207,7 +434,7 @@ export class VelgEpochOpsBoard extends LitElement {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      padding: var(--space-4) var(--space-4) var(--space-2) calc(var(--space-4) + 3px);
+      padding: var(--space-4) var(--space-4) var(--space-2) calc(var(--space-4) + var(--accent-bar-width));
     }
 
     .dossier-card__name {
@@ -218,6 +445,10 @@ export class VelgEpochOpsBoard extends LitElement {
       letter-spacing: var(--tracking-wide);
       line-height: 1.1;
       color: var(--color-gray-100);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 70%;
     }
 
     .dossier-card__status {
@@ -263,7 +494,7 @@ export class VelgEpochOpsBoard extends LitElement {
     .dossier-card__stats {
       display: flex;
       gap: var(--space-4);
-      padding: var(--space-2) var(--space-4) var(--space-3) calc(var(--space-4) + 3px);
+      padding: var(--space-2) var(--space-4) var(--space-3) calc(var(--space-4) + var(--accent-bar-width));
     }
 
     .dossier-stat {
@@ -288,10 +519,10 @@ export class VelgEpochOpsBoard extends LitElement {
       color: var(--color-gray-600);
     }
 
-    /* ── Progress bar ─────────────────────── */
+    /* ── Segmented progress bar ──────────── */
 
     .dossier-card__progress {
-      padding: 0 var(--space-4) var(--space-3) calc(var(--space-4) + 3px);
+      padding: 0 var(--space-4) var(--space-3) calc(var(--space-4) + var(--accent-bar-width));
     }
 
     .dossier-progress {
@@ -300,20 +531,34 @@ export class VelgEpochOpsBoard extends LitElement {
       gap: var(--space-2);
     }
 
-    .dossier-progress__bar {
+    .dossier-progress__segments {
       flex: 1;
-      height: 3px;
+      display: flex;
+      gap: 2px;
+      height: 4px;
+    }
+
+    .dossier-progress__seg {
+      flex: 1;
       background: var(--color-gray-800);
       position: relative;
       overflow: hidden;
+      transition: background 0.3s;
     }
 
-    .dossier-progress__fill {
-      position: absolute;
-      inset: 0;
+    .dossier-progress__seg--filled {
       background: var(--dossier-color);
-      transform-origin: left;
-      transition: transform 0.6s ease;
+    }
+
+    /* Current cycle segment: pulsing fill */
+    .dossier-progress__seg--current {
+      background: color-mix(in srgb, var(--dossier-color) 40%, var(--color-gray-800));
+      animation: seg-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes seg-pulse {
+      0%, 100% { background: color-mix(in srgb, var(--dossier-color) 30%, var(--color-gray-800)); }
+      50% { background: color-mix(in srgb, var(--dossier-color) 60%, var(--color-gray-800)); }
     }
 
     .dossier-progress__text {
@@ -321,13 +566,15 @@ export class VelgEpochOpsBoard extends LitElement {
       font-size: 9px;
       color: var(--color-gray-500);
       flex-shrink: 0;
+      min-width: 24px;
+      text-align: right;
     }
 
     /* ── Footer / join area ───────────────── */
 
     .dossier-card__footer {
       margin-top: auto;
-      padding: var(--space-2) var(--space-4) var(--space-3) calc(var(--space-4) + 3px);
+      padding: var(--space-2) var(--space-4) var(--space-3) calc(var(--space-4) + var(--accent-bar-width));
       border-top: 1px solid var(--color-gray-800);
       display: flex;
       align-items: center;
@@ -429,6 +676,92 @@ export class VelgEpochOpsBoard extends LitElement {
 
     .dossier-card--create:hover .dossier-create__label {
       color: var(--color-gray-400);
+    }
+
+    /* ── Atmospheric empty state ─────────── */
+
+    .ops-board__empty {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-10) var(--space-6);
+      border: 1px dashed var(--color-gray-700);
+      overflow: hidden;
+      min-height: 240px;
+    }
+
+    /* Radar background on empty state */
+    .ops-board__empty::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 180px;
+      height: 180px;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      border: 1px solid color-mix(in srgb, var(--color-gray-600) 15%, transparent);
+      background: conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        color-mix(in srgb, var(--color-primary) 6%, transparent) 40deg,
+        transparent 80deg
+      );
+      animation: radar-sweep 8s linear infinite;
+      pointer-events: none;
+    }
+
+    /* Concentric radar rings */
+    .ops-board__empty::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 180px;
+      height: 180px;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background:
+        radial-gradient(
+          circle,
+          transparent 29%,
+          color-mix(in srgb, var(--color-gray-600) 8%, transparent) 30%,
+          transparent 31%,
+          transparent 59%,
+          color-mix(in srgb, var(--color-gray-600) 8%, transparent) 60%,
+          transparent 61%,
+          transparent 89%,
+          color-mix(in srgb, var(--color-gray-600) 8%, transparent) 90%,
+          transparent 91%
+        );
+      pointer-events: none;
+    }
+
+    .ops-board__empty-text {
+      font-family: var(--font-mono, monospace);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.35em;
+      color: var(--color-gray-500);
+      position: relative;
+      z-index: 1;
+      animation: empty-pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes empty-pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    .ops-board__empty-sub {
+      font-family: var(--font-mono, monospace);
+      font-size: 9px;
+      color: var(--color-gray-600);
+      margin-top: var(--space-2);
+      position: relative;
+      z-index: 1;
     }
 
     /* ── No Auth banner in ops board ──────── */
@@ -715,6 +1048,56 @@ export class VelgEpochOpsBoard extends LitElement {
       }
     }
 
+    /* ── Reduced motion ──────────────────── */
+
+    @media (prefers-reduced-motion: reduce) {
+      .ops-board::after,
+      .ops-board__header::before {
+        animation: none;
+        display: none;
+      }
+
+      .dossier-card,
+      .dossier-card--lobby,
+      .dossier-card--foundation,
+      .dossier-card--competition,
+      .dossier-card--reckoning,
+      .dossier-card--completed {
+        animation: none;
+        opacity: 1;
+      }
+
+      .dossier-card__dot {
+        animation: none;
+      }
+
+      .dossier-progress__seg--current {
+        animation: none;
+        background: color-mix(in srgb, var(--dossier-color) 50%, var(--color-gray-800));
+      }
+
+      .ops-board__empty::before {
+        animation: none;
+        display: none;
+      }
+
+      .ops-board__empty-text {
+        animation: none;
+        opacity: 1;
+      }
+
+      .ops-board__header,
+      .ops-board__readout,
+      .comms-sidebar {
+        animation: none;
+      }
+
+      .comms-toggle--active .comms-toggle__icon,
+      .comms-sidebar__bar {
+        animation: none;
+      }
+    }
+
     /* ── Mobile ────────────────────────────── */
 
     @media (max-width: 768px) {
@@ -740,6 +1123,11 @@ export class VelgEpochOpsBoard extends LitElement {
         flex-direction: column;
         align-items: flex-start;
         gap: var(--space-3);
+      }
+
+      .ops-board__readout {
+        flex-wrap: wrap;
+        gap: var(--space-2);
       }
 
       .dossier-grid {
@@ -771,15 +1159,19 @@ export class VelgEpochOpsBoard extends LitElement {
     const unreadTotal =
       realtimeService.unreadEpochCount.value + realtimeService.unreadTeamCount.value;
 
+    const totalParticipants = Object.values(this.participantCounts).reduce((sum, c) => sum + c, 0);
+
     return html`
       <div class="ops-board ${this._showComms ? 'ops-board--with-comms' : ''}">
+        <div class="ops-board__glow"></div>
         <div class="ops-board__main">
           <div class="ops-board__header">
+            <div class="ops-board__bracket-br"></div>
             <div class="ops-board__title-block">
               <span class="ops-board__surtitle">${msg('Competitive Layer')}</span>
               <h1 class="ops-board__title">${msg('Epoch Command Center')}</h1>
             </div>
-            <div style="display: flex; gap: var(--space-2); align-items: center;">
+            <div style="display: flex; gap: var(--space-2); align-items: center; position: relative; z-index: 1;">
               ${
                 isAuth
                   ? html`
@@ -801,6 +1193,8 @@ export class VelgEpochOpsBoard extends LitElement {
               }
             </div>
           </div>
+
+          ${this._renderReadout(totalParticipants)}
 
           ${
             this.activeEpochs.length > 0
@@ -824,29 +1218,7 @@ export class VelgEpochOpsBoard extends LitElement {
                 }
               </div>
             `
-              : html`
-              <div class="dossier-grid">
-                ${
-                  isAuth
-                    ? html`
-                  <div
-                    class="dossier-card dossier-card--create"
-                    @click=${this._onCreateEpoch}
-                  >
-                    <div class="dossier-create__inner">
-                      <span class="dossier-create__plus">+</span>
-                      <span class="dossier-create__label">${msg('Create First Epoch')}</span>
-                    </div>
-                  </div>
-                `
-                    : html`
-                  <div class="ops-board__no-auth">
-                    ${msg('Sign in to create or join an epoch.')}
-                  </div>
-                `
-                }
-              </div>
-            `
+              : this._renderEmptyState(isAuth)
           }
 
           ${
@@ -862,6 +1234,77 @@ export class VelgEpochOpsBoard extends LitElement {
         </div>
 
         ${this._showComms ? this._renderCommsPanel() : nothing}
+      </div>
+    `;
+  }
+
+  // ── Data Readout Strip ────────────────────────────
+
+  private _renderReadout(totalParticipants: number) {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    const dateStr = now.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+
+    return html`
+      <div class="ops-board__readout">
+        <span class="ops-board__readout-item">
+          ${dateStr} ${timeStr}
+        </span>
+        <span class="ops-board__readout-sep">&bull;</span>
+        <span class="ops-board__readout-item">
+          ${msg('Active Ops')}:
+          <span class="ops-board__readout-value">${this.activeEpochs.length}</span>
+        </span>
+        <span class="ops-board__readout-sep">&bull;</span>
+        <span class="ops-board__readout-item">
+          ${msg('Deployed')}:
+          <span class="ops-board__readout-value">${totalParticipants}</span>
+        </span>
+        <span class="ops-board__readout-sep">&bull;</span>
+        <span class="ops-board__readout-item">
+          ${msg('Archived')}:
+          <span class="ops-board__readout-value">${this.pastEpochs.length}</span>
+        </span>
+      </div>
+    `;
+  }
+
+  // ── Empty State ───────────────────────────────────
+
+  private _renderEmptyState(isAuth: boolean) {
+    return html`
+      <div class="dossier-grid">
+        ${
+          isAuth
+            ? html`
+            <div class="ops-board__empty">
+              <span class="ops-board__empty-text">${msg('No Active Operations')}</span>
+              <span class="ops-board__empty-sub">${msg('Create an epoch to begin')}</span>
+            </div>
+            <div
+              class="dossier-card dossier-card--create"
+              @click=${this._onCreateEpoch}
+            >
+              <div class="dossier-create__inner">
+                <span class="dossier-create__plus">+</span>
+                <span class="dossier-create__label">${msg('Create First Epoch')}</span>
+              </div>
+            </div>
+          `
+            : html`
+            <div class="ops-board__empty">
+              <span class="ops-board__empty-text">${msg('No Active Operations')}</span>
+              <span class="ops-board__empty-sub">${msg('Sign in to create or join an epoch.')}</span>
+            </div>
+          `
+        }
       </div>
     `;
   }
@@ -987,19 +1430,7 @@ export class VelgEpochOpsBoard extends LitElement {
 
         ${
           !isCompleted && totalCycles > 0
-            ? html`
-            <div class="dossier-card__progress">
-              <div class="dossier-progress">
-                <div class="dossier-progress__bar">
-                  <div
-                    class="dossier-progress__fill"
-                    style="transform: scaleX(${Math.min(progress, 1)})"
-                  ></div>
-                </div>
-                <span class="dossier-progress__text">${Math.round(progress * 100)}%</span>
-              </div>
-            </div>
-          `
+            ? this._renderSegmentedProgress(epoch.current_cycle, totalCycles, progress)
             : nothing
         }
 
@@ -1021,6 +1452,38 @@ export class VelgEpochOpsBoard extends LitElement {
               : nothing
           }
           <span class="dossier-card__view-hint">${isCompleted ? msg('View Results') : msg('View Details')} &rarr;</span>
+        </div>
+      </div>
+    `;
+  }
+
+  // ── Segmented Progress Bar ────────────────────────
+
+  private _renderSegmentedProgress(currentCycle: number, totalCycles: number, progress: number) {
+    // Cap segments at 20 to keep it visually clean
+    const displaySegments = Math.min(totalCycles, 20);
+    const segmentRatio = totalCycles / displaySegments;
+
+    const segments = [];
+    for (let i = 0; i < displaySegments; i++) {
+      const segCycleEnd = (i + 1) * segmentRatio;
+      const segCycleStart = i * segmentRatio;
+      let segClass = 'dossier-progress__seg';
+      if (currentCycle >= segCycleEnd) {
+        segClass += ' dossier-progress__seg--filled';
+      } else if (currentCycle > segCycleStart) {
+        segClass += ' dossier-progress__seg--current';
+      }
+      segments.push(html`<div class=${segClass}></div>`);
+    }
+
+    return html`
+      <div class="dossier-card__progress">
+        <div class="dossier-progress">
+          <div class="dossier-progress__segments">
+            ${segments}
+          </div>
+          <span class="dossier-progress__text">${Math.round(progress * 100)}%</span>
         </div>
       </div>
     `;

@@ -83,19 +83,18 @@ export class VelgSimulationsDashboard extends LitElement {
     }
 
     .hero__title {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
+      font-family: var(--font-bureau);
+      font-weight: var(--font-bold);
       font-size: var(--text-4xl);
-      text-transform: uppercase;
-      letter-spacing: 4px;
+      letter-spacing: 2px;
       color: #fff;
       margin: 0 0 var(--space-5);
       text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
     }
 
     .hero__lore {
-      font-family: var(--font-mono);
-      font-size: var(--text-sm);
+      font-family: var(--font-bureau);
+      font-size: var(--text-base);
       line-height: var(--leading-relaxed);
       color: rgba(255, 255, 255, 0.6);
       margin: 0;
@@ -207,8 +206,8 @@ export class VelgSimulationsDashboard extends LitElement {
       margin-top: var(--space-10);
       padding: var(--space-6) 0 var(--space-4);
       text-align: center;
-      font-family: var(--font-mono);
-      font-size: var(--text-xs);
+      font-family: var(--font-bureau);
+      font-size: var(--text-sm);
       font-style: italic;
       color: var(--color-gray-500);
       letter-spacing: var(--tracking-wide);
@@ -381,9 +380,9 @@ export class VelgSimulationsDashboard extends LitElement {
         }
         <div class="hero__noise"></div>
         <div class="hero__overlay">
-          <h1 class="hero__title">${msg("The Cartographer's Metaverse")}</h1>
+          <h1 class="hero__title">${msg('Five Worlds. One Fracture.')}</h1>
           <p class="hero__lore">
-            ${msg("There was once a single world. Something broke it into shards. Each shard runs on its own rules, its own physics of power. The edges don't quite fit together anymore. But they do touch.")}
+            ${msg('There was once a single world. It broke into shards — each a complete reality with its own physics, its own history, its own answer to a question the universe could not ask in one voice. The edges do not fit together. But they do touch.')}
           </p>
         </div>
       </section>
@@ -391,7 +390,7 @@ export class VelgSimulationsDashboard extends LitElement {
       <!-- Lore Strip -->
       <div class="lore-strip">
         <span class="lore-strip__text">
-          // ${msg('The Bleed — Where shards press against each other, reality thins')} //
+          // ${msg('Bureau of Impossible Geography — Mapping the spaces between realities since the Fracture')} //
         </span>
       </div>
 
@@ -448,7 +447,7 @@ export class VelgSimulationsDashboard extends LitElement {
             </div>
 
             <div class="footer-lore">
-              ${msg('The map is open. The Shards are waiting. The Cartographers are watching. They always are.')}
+              ${msg('The map is open. The Shards are waiting. The Cartographers are watching. Which world do you enter first?')}
             </div>
           </div>
         `

@@ -48,7 +48,7 @@ VALUES
   (sim_id, 'design', 'color_warning_bg',      '"#2a2210"', usr_id),
 
   -- Typography
-  (sim_id, 'design', 'font_heading',          '"''Georgia'', ''Palatino Linotype'', serif"', usr_id),
+  (sim_id, 'design', 'font_heading',          '"''Cormorant Garamond'', Georgia, serif"', usr_id),
   (sim_id, 'design', 'font_body',             '"''Segoe UI'', Roboto, sans-serif"', usr_id),
   (sim_id, 'design', 'heading_weight',        '"700"', usr_id),
   (sim_id, 'design', 'heading_transform',     '"none"', usr_id),

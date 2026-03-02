@@ -422,7 +422,7 @@ export class VelgEventEditModal extends LitElement {
                             type="button"
                             class="form__tag-remove"
                             @click=${() => this._removeTag(tag)}
-                            aria-label="Remove tag ${tag}"
+                            aria-label=${msg(str`Remove tag ${tag}`)}
                           >
                             ${icons.close()}
                           </button>

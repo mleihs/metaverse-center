@@ -1,4 +1,4 @@
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -25,6 +25,14 @@ class Settings(BaseSettings):
     app_title: str = "Velgarien Platform"
     debug: bool = False
     cors_origins: str = Field(default="http://localhost:5173", alias="BACKEND_CORS_ORIGINS")
+
+    @model_validator(mode="after")
+    def _validate_required_config(self) -> "Settings":
+        if not self.supabase_url:
+            raise ValueError("supabase_url must not be empty")
+        if not self.supabase_anon_key:
+            raise ValueError("supabase_anon_key must not be empty")
+        return self
 
 
 settings = Settings()

@@ -37,6 +37,14 @@ class TestRouteRegistration:
         "chat",
         "members",
         "campaigns",
+        "social-trends",
+        "social-media",
+        "relationships",
+        "echoes",
+        "epochs",
+        "scores",
+        "operatives",
+        "health",
     ]
 
     def test_all_routes_registered(self, client: TestClient):
@@ -63,8 +71,8 @@ class TestRouteRegistration:
         routes = [route.path for route in app.routes]
         # Filter out docs/openapi routes
         api_routes = [r for r in routes if r.startswith("/api/")]
-        assert len(api_routes) >= 70, (
-            f"Expected 70+ API routes, got {len(api_routes)}"
+        assert len(api_routes) >= 200, (
+            f"Expected 200+ API routes, got {len(api_routes)}"
         )
 
     def test_chat_group_endpoints_registered(self, client: TestClient):

@@ -6,11 +6,13 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query
 
 from backend.dependencies import (
+    get_admin_supabase,
     get_current_user,
     get_supabase,
     require_epoch_creator,
     require_simulation_member,
 )
+from backend.models.bot import AddBotToEpoch
 from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.models.epoch import (
     EpochCreate,
@@ -210,9 +212,27 @@ async def resolve_cycle(
     user: CurrentUser = Depends(get_current_user),
     _creator_check: None = Depends(require_epoch_creator()),
     supabase: Client = Depends(get_supabase),
+    admin_supabase: Client = Depends(get_admin_supabase),
 ) -> dict:
-    """Resolve the current cycle (allocate RP, advance cycle counter). Creator only."""
+    """Resolve the current cycle (allocate RP, execute bot turns, advance cycle counter). Creator only."""
+    from backend.services.bot_service import BotService
+
     data = await EpochService.resolve_cycle(supabase, epoch_id)
+    config = data.get("config", {})
+    cycle_number = data.get("current_cycle", 1)
+
+    # Execute bot decisions (after RP grant, before next cycle)
+    try:
+        await BotService.execute_bot_cycle(
+            supabase=supabase,
+            admin_supabase=admin_supabase,
+            epoch_id=str(epoch_id),
+            cycle_number=cycle_number,
+            config=config,
+        )
+    except Exception:
+        logger.warning("Bot cycle execution failed for epoch %s", epoch_id, exc_info=True)
+
     try:
         await AuditService.log_action(
             supabase, None, user.id, "game_epochs", epoch_id, "update",
@@ -277,6 +297,53 @@ async def leave_epoch(
         details={"epoch_id": str(epoch_id)},
     )
     return {"success": True, "data": {"message": "Left epoch."}}
+
+
+# ── Bot Participants ───────────────────────────────────
+
+
+@router.post(
+    "/{epoch_id}/add-bot",
+    response_model=SuccessResponse[ParticipantResponse],
+    status_code=201,
+)
+async def add_bot_to_epoch(
+    epoch_id: UUID,
+    body: AddBotToEpoch,
+    user: CurrentUser = Depends(get_current_user),
+    _creator_check: None = Depends(require_epoch_creator()),
+    supabase: Client = Depends(get_supabase),
+) -> dict:
+    """Add a bot participant to an epoch lobby. Creator only."""
+    data = await EpochService.add_bot(supabase, epoch_id, body.simulation_id, body.bot_player_id)
+    try:
+        await AuditService.log_action(
+            supabase, body.simulation_id, user.id, "epoch_participants", data.get("id"), "create",
+            details={"epoch_id": str(epoch_id), "bot_player_id": str(body.bot_player_id), "is_bot": True},
+        )
+    except Exception:
+        logger.debug("Audit log skipped for add-bot (RLS)")
+    return {"success": True, "data": data}
+
+
+@router.delete("/{epoch_id}/remove-bot/{participant_id}")
+async def remove_bot_from_epoch(
+    epoch_id: UUID,
+    participant_id: UUID,
+    user: CurrentUser = Depends(get_current_user),
+    _creator_check: None = Depends(require_epoch_creator()),
+    supabase: Client = Depends(get_supabase),
+) -> dict:
+    """Remove a bot participant from epoch lobby. Creator only."""
+    await EpochService.remove_bot(supabase, epoch_id, participant_id)
+    try:
+        await AuditService.log_action(
+            supabase, None, user.id, "epoch_participants", participant_id, "delete",
+            details={"epoch_id": str(epoch_id), "is_bot": True},
+        )
+    except Exception:
+        logger.debug("Audit log skipped for remove-bot (RLS)")
+    return {"success": True, "data": {"message": "Bot removed."}}
 
 
 # ── Teams / Alliances ──────────────────────────────────

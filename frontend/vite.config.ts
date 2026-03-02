@@ -4,6 +4,7 @@ export default defineConfig({
   envDir: '..',
   build: {
     target: 'es2022',
+    sourcemap: 'hidden',
     outDir: '../static/dist',
     rollupOptions: {
       output: {

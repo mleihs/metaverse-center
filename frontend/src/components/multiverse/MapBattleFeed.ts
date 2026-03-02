@@ -41,7 +41,7 @@ export class VelgMapBattleFeed extends LitElement {
       left: 0;
       right: 0;
       height: 44px;
-      z-index: 10;
+      z-index: var(--z-raised);
       pointer-events: none;
     }
 

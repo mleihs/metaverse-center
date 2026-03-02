@@ -117,7 +117,7 @@ async def get_supabase(
     except AuthApiError as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Session expired or invalid: {e}",
+            detail="Session expired or invalid.",
         ) from e
     return client
 

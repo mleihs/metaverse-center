@@ -9,12 +9,16 @@ import { getThemeColor } from './map-data.js';
 import type { MapEdgeData, MapEmbassyEdge, MapNodeData } from './map-types.js';
 
 import './MapGraph.js';
+// MapGraph3D is lazy-loaded via dynamic import when '3d' view is selected
 import './MapConnectionPanel.js';
 import './MapBattleFeed.js';
 import './MapLeaderboardPanel.js';
+import type { VelgMapMinimap } from './MapMinimap.js';
 import './MapMinimap.js';
 import '../shared/LoadingState.js';
 import '../shared/ErrorState.js';
+
+type MapView = 'svg' | '3d';
 
 @localized()
 @customElement('velg-cartographer-map')
@@ -161,6 +165,49 @@ export class VelgCartographerMap extends LitElement {
       font-size: var(--text-xs, 12px);
     }
 
+    /* ── View Toggle ── */
+    .map__controls {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3, 12px);
+    }
+
+    .view-toggle {
+      display: flex;
+      border: 1px solid var(--color-border, #2a2a2a);
+      background: var(--color-surface-sunken, #050505);
+      overflow: hidden;
+    }
+
+    .view-toggle__btn {
+      background: none;
+      border: none;
+      color: var(--color-text-muted, #777);
+      font-family: var(--font-brutalist, monospace);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+      border-right: 1px solid var(--color-border, #2a2a2a);
+    }
+
+    .view-toggle__btn:last-child {
+      border-right: none;
+    }
+
+    .view-toggle__btn:hover {
+      color: var(--color-text-secondary, #aaa);
+      background: var(--color-surface-hover, #1f1f1f);
+    }
+
+    .view-toggle__btn--active {
+      color: var(--color-text-primary, #f0f0f0);
+      background: var(--color-surface-raised, #161616);
+    }
+
     @media (max-width: 768px) {
       .map__graph {
         display: none;
@@ -173,6 +220,10 @@ export class VelgCartographerMap extends LitElement {
       .map {
         height: auto;
         min-height: 100vh;
+      }
+
+      .view-toggle {
+        display: none;
       }
     }
   `;
@@ -187,10 +238,14 @@ export class VelgCartographerMap extends LitElement {
   @state() private _leaderboardEpochId: string | null = null;
   @state() private _leaderboardOpen = false;
   @state() private _searchQuery = '';
-  @state() private _miniVbx = 0;
-  @state() private _miniVby = 0;
-  @state() private _miniVbw = 800;
-  @state() private _miniVbh = 600;
+  @state() private _mapView: MapView = 'svg';
+  private _3dLoaded = false;
+  // Plain fields — NOT @state() to avoid Lit re-render on every pan/zoom.
+  // Updated directly on the minimap DOM element instead.
+  private _miniVbx = 0;
+  private _miniVby = 0;
+  private _miniVbw = 800;
+  private _miniVbh = 600;
   private _pollTimer: ReturnType<typeof setInterval> | null = null;
   private _searchDebounce: ReturnType<typeof setTimeout> | null = null;
 
@@ -227,26 +282,57 @@ export class VelgCartographerMap extends LitElement {
     this._loading = false;
   }
 
-  /** Refresh data without showing loading state (preserves node positions). */
+  /** Refresh data without showing loading state (preserves node positions).
+   *  If the node set hasn't structurally changed (same IDs), update data in-place
+   *  on existing node objects to avoid triggering a Lit re-render entirely. */
   private async _refreshData(): Promise<void> {
     const resp = await connectionsApi.getMapData();
     if (!resp.success || !resp.data) return;
     const mapData = resp.data as MapData;
+    const sims = mapData.simulations.filter((s) => s.simulation_type !== 'archived');
 
-    // Preserve existing node positions
-    const posMap = new Map<string, { x: number; y: number }>();
+    // Check if the node set has structurally changed (different IDs)
+    const oldIds = new Set(this._nodes.map((n) => n.id));
+    const newIds = new Set(sims.map((s) => s.id));
+    const structuralChange =
+      oldIds.size !== newIds.size || [...newIds].some((id) => !oldIds.has(id));
+
+    if (!structuralChange) {
+      // Same node set — update data properties in-place without replacing arrays.
+      // This avoids triggering Lit reactivity entirely, so no re-render/flicker.
+      const nodeMap = new Map(this._nodes.map((n) => [n.id, n]));
+      for (const sim of sims) {
+        const node = nodeMap.get(sim.id);
+        if (node) {
+          node.agentCount = sim.agent_count ?? 0;
+          node.buildingCount = sim.building_count ?? 0;
+          node.eventCount = sim.event_count ?? 0;
+          node.echoCount = mapData.echo_counts[sim.id] ?? 0;
+          node.activeInstanceCount = mapData.active_instance_counts?.[sim.id] ?? 0;
+          node.scoreDimensions = mapData.score_dimensions?.[sim.id];
+          node.sparklineScores = mapData.sparklines?.[sim.id];
+          node.epochStatus = (sim as Simulation & { epoch_status?: string }).epoch_status;
+        }
+      }
+      return;
+    }
+
+    // Structural change — preserve positions, build new arrays, assign in one shot
+    const posMap = new Map<string, { x: number; y: number; vx: number; vy: number }>();
     for (const node of this._nodes) {
-      posMap.set(node.id, { x: node.x, y: node.y });
+      posMap.set(node.id, { x: node.x, y: node.y, vx: node.vx, vy: node.vy });
     }
 
     this._transformMapData(mapData);
 
-    // Restore positions for nodes that existed before
+    // Restore positions BEFORE Lit processes the reactive update
     for (const node of this._nodes) {
       const pos = posMap.get(node.id);
       if (pos) {
         node.x = pos.x;
         node.y = pos.y;
+        node.vx = pos.vx;
+        node.vy = pos.vy;
       }
     }
   }
@@ -373,6 +459,25 @@ export class VelgCartographerMap extends LitElement {
     this._miniVby = e.detail.vby;
     this._miniVbw = e.detail.vbw;
     this._miniVbh = e.detail.vbh;
+    // Directly update minimap DOM properties — avoids triggering Lit re-render
+    // of CartographerMap which would cascade into MapGraph and restart animations
+    const minimap = this.renderRoot.querySelector('velg-map-minimap') as VelgMapMinimap | null;
+    if (minimap) {
+      minimap.vbx = this._miniVbx;
+      minimap.vby = this._miniVby;
+      minimap.vbw = this._miniVbw;
+      minimap.vbh = this._miniVbh;
+    }
+  }
+
+  private async _switchView(view: MapView): Promise<void> {
+    if (view === this._mapView) return;
+    // Lazy-load 3D component on first use
+    if (view === '3d' && !this._3dLoaded) {
+      await import('./MapGraph3D.js');
+      this._3dLoaded = true;
+    }
+    this._mapView = view;
   }
 
   private _handleSearchInput(e: InputEvent): void {
@@ -389,6 +494,34 @@ export class VelgCartographerMap extends LitElement {
     this.dispatchEvent(
       new CustomEvent('navigate', { detail: path, bubbles: true, composed: true }),
     );
+  }
+
+  private _renderGraphView() {
+    switch (this._mapView) {
+      case 'svg':
+        return html`
+          <velg-map-graph
+            .nodes=${this._nodes}
+            .edges=${this._edges}
+            .embassyEdges=${this._embassyEdges}
+            .searchQuery=${this._searchQuery}
+            @node-click=${this._handleNodeClick}
+            @edge-click=${this._handleEdgeClick}
+            @viewbox-change=${this._handleViewboxChange}
+          ></velg-map-graph>
+        `;
+      case '3d':
+        return html`
+          <velg-map-graph-3d
+            .nodes=${this._nodes}
+            .edges=${this._edges}
+            .embassyEdges=${this._embassyEdges}
+            .searchQuery=${this._searchQuery}
+            @node-click=${this._handleNodeClick}
+            @edge-click=${this._handleEdgeClick}
+          ></velg-map-graph-3d>
+        `;
+    }
   }
 
   private _renderMobileList() {
@@ -441,32 +574,44 @@ export class VelgCartographerMap extends LitElement {
               <h1 class="map__title">${msg("The Cartographer's Map")}</h1>
               <p class="map__subtitle">${msg('A living diagram of the multiverse and its connections')}</p>
             </div>
-            <input
-              class="map__search"
-              type="text"
-              placeholder="${msg('Search simulations...')}"
-              @input=${this._handleSearchInput}
-            />
+            <div class="map__controls">
+              <div class="view-toggle" role="group" aria-label="${msg('Map view mode')}">
+                <button
+                  class="view-toggle__btn ${this._mapView === 'svg' ? 'view-toggle__btn--active' : ''}"
+                  @click=${() => this._switchView('svg')}
+                  aria-pressed=${this._mapView === 'svg' ? 'true' : 'false'}
+                >SVG</button>
+                <button
+                  class="view-toggle__btn ${this._mapView === '3d' ? 'view-toggle__btn--active' : ''}"
+                  @click=${() => this._switchView('3d')}
+                  aria-pressed=${this._mapView === '3d' ? 'true' : 'false'}
+                >3D</button>
+              </div>
+              <input
+                class="map__search"
+                type="text"
+                placeholder="${msg('Search simulations...')}"
+                @input=${this._handleSearchInput}
+              />
+            </div>
           </div>
         </div>
 
         <div class="map__graph">
-          <velg-map-graph
-            .nodes=${this._nodes}
-            .edges=${this._edges}
-            .embassyEdges=${this._embassyEdges}
-            .searchQuery=${this._searchQuery}
-            @node-click=${this._handleNodeClick}
-            @edge-click=${this._handleEdgeClick}
-            @viewbox-change=${this._handleViewboxChange}
-          ></velg-map-graph>
-          <velg-map-minimap
-            .nodes=${this._nodes}
-            .vbx=${this._miniVbx}
-            .vby=${this._miniVby}
-            .vbw=${this._miniVbw}
-            .vbh=${this._miniVbh}
-          ></velg-map-minimap>
+          ${this._renderGraphView()}
+          ${
+            this._mapView !== '3d'
+              ? html`
+            <velg-map-minimap
+              .nodes=${this._nodes}
+              .vbx=${this._miniVbx}
+              .vby=${this._miniVby}
+              .vbw=${this._miniVbw}
+              .vbh=${this._miniVbh}
+            ></velg-map-minimap>
+          `
+              : nothing
+          }
           <velg-map-battle-feed></velg-map-battle-feed>
         </div>
 

@@ -1,8 +1,9 @@
 # 05 - API Specification: Alle Endpoints (Simulation-Scoped)
 
-**Version:** 1.6
-**Datum:** 2026-03-01
-**Aenderung v1.6:** **236 Endpoints total (31 Router).** Neuer Admin-Router (`/api/v1/admin`, 8 Endpoints): Platform-Settings CRUD (list, update), User-Management (list, detail, delete), Membership-Management (add, change role, remove). Alle Admin-Endpoints erfordern `require_platform_admin()` (Email-Allowlist). Verwendet `get_admin_supabase()` (service_role) fuer auth.admin API und platform_settings Zugriff.
+**Version:** 1.7
+**Datum:** 2026-03-02
+**Aenderung v1.7:** **244 Endpoints total (32 Router).** Neuer bot_players Router (`/api/v1/bot-players`, 4 Endpoints): CRUD fuer Bot-Presets. Epochs-Router erweitert um add-bot/remove-bot (2 Endpoints).
+**Aenderung v1.6:** 236 Endpoints total (31 Router). Neuer Admin-Router (`/api/v1/admin`, 8 Endpoints): Platform-Settings CRUD (list, update), User-Management (list, detail, delete), Membership-Management (add, change role, remove). Alle Admin-Endpoints erfordern `require_platform_admin()` (Email-Allowlist). Verwendet `get_admin_supabase()` (service_role) fuer auth.admin API und platform_settings Zugriff.
 **Aenderung v1.5:** 228 Endpoints total (30 Router). Public-Endpoints erweitert auf 46 (neuer `/battle-feed` Endpoint fuer globalen oeffentlichen Battle-Feed).
 **Aenderung v1.4:** 227 Endpoints total (30 Router). Neue Router: epoch_chat (3 Endpoints + 1 Ready-Signal auf epochs), epoch_invitations (4 Endpoints). Public-Endpoints erweitert auf 45 (epoch-invitation Token-Validierung). Epoch-Router erweitert um Ready-Signal.
 **Aenderung v1.3:** 217 Endpoints total (28 Router). Neue Router: health, seo, embassies, epochs, operatives, scores, game_mechanics. 44 Public-Endpoints. Generation-Router erweitert um `/relationships`. Chat-Router erweitert auf 11 Endpoints. Campaigns-Router erweitert auf 8 Endpoints. Social-Trends erweitert auf 8 Endpoints. Settings-Router erweitert auf 6 Endpoints. Invitations-Router erweitert auf 4 Endpoints.
@@ -1467,7 +1468,75 @@ Manuelles Refresh aller Materialized Views. Normalerweise ueber Trigger automati
 
 ---
 
-## 29. Public Endpoints — Gesamt (46 Endpoints)
+## 29. Bot Players (`/api/v1/bot-players`)
+
+CRUD fuer wiederverwendbare Bot-Presets. Jeder Benutzer kann eigene Bot-Presets erstellen und in Epochen einsetzen. Lesen duerfen alle authentifizierten Benutzer (fuer Lobby-Anzeige).
+
+### `GET /api/v1/bot-players`
+Eigene Bot-Presets auflisten.
+
+**Auth:** JWT
+
+**Response:** `SuccessResponse[BotPlayer[]]`
+
+### `POST /api/v1/bot-players`
+Neues Bot-Preset erstellen.
+
+**Auth:** JWT
+
+**Body:**
+```json
+{
+  "name": "Iron Guardian",
+  "personality": "sentinel",
+  "difficulty": "medium",
+  "config": {}
+}
+```
+
+**Response:** `SuccessResponse[BotPlayer]` (Status 201)
+
+### `PATCH /api/v1/bot-players/:botId`
+Bot-Preset aktualisieren.
+
+**Auth:** JWT (Ersteller)
+
+**Body:** Partielle Felder von BotPlayer
+
+**Response:** `SuccessResponse[BotPlayer]`
+
+### `DELETE /api/v1/bot-players/:botId`
+Bot-Preset loeschen.
+
+**Auth:** JWT (Ersteller)
+
+**Response:** `SuccessResponse[null]` (Status 204)
+
+### `POST /api/v1/epochs/:epochId/add-bot`
+Bot zu einer Epoche hinzufuegen. Erstellt einen neuen Epoch-Participant mit `is_bot=true`. Nur in der Lobby-Phase durch den Epoch-Creator moeglich.
+
+**Auth:** Epoch-Creator, Lobby-Phase
+
+**Body:**
+```json
+{
+  "bot_player_id": "uuid",
+  "simulation_id": "uuid"
+}
+```
+
+**Response:** `SuccessResponse[EpochParticipant]` (Status 201)
+
+### `DELETE /api/v1/epochs/:epochId/remove-bot/:participantId`
+Bot aus Epoche entfernen.
+
+**Auth:** Epoch-Creator, Lobby-Phase
+
+**Response:** `SuccessResponse[null]` (Status 204)
+
+---
+
+## 30. Public Endpoints — Gesamt (46 Endpoints)
 
 Alle oeffentlichen Endpoints (ohne Authentifizierung, Rate-Limit: 100/min) unter `/api/v1/public/`.
 
@@ -1571,11 +1640,12 @@ Alle oeffentlichen Endpoints (ohne Authentifizierung, Rate-Limit: 100/min) unter
 | Echoes | 5 | List (Sim/Event) + Trigger + Approve + Reject |
 | Connections | 4 | List + Create + Patch + Delete |
 | Embassies | 8 | List + Get + GetForBuilding + Create + Update + Activate + Suspend + Dissolve |
-| Epochs | 17 | CRUD + Lifecycle (Start/Advance/Cancel/ResolveCycle) + Participants + Teams + Ready |
+| Epochs | 19 | CRUD + Lifecycle (Start/Advance/Cancel/ResolveCycle) + Participants + Teams + Ready + AddBot + RemoveBot |
 | Epoch Chat | 3 | Send + List (Epoch-wide) + List (Team) |
 | Epoch Invitations | 4 | Create+Send + List + Revoke + RegenerateLore |
 | Operatives | 7 | Deploy + List + Threats + Get + Recall + Resolve + CounterIntel |
 | Scores | 4 | Leaderboard + Standings + History + Compute |
 | Game Mechanics | 8 | Health Dashboard + Sim/Buildings/Zones/Embassies + Refresh |
+| Bot Players | 4 | CRUD (List + Create + Update + Delete) |
 | Public | 45 | Anonymer Lesezugriff (alle GET-only) |
-| **Gesamt** | **227** | **30 Router** |
+| **Gesamt** | **244** | **32 Router** |

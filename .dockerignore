@@ -5,9 +5,11 @@ static/dist
 backend/.venv
 backend/__pycache__
 backend/tests
+frontend/tests
 e2e
 .git
 .claude
+docs/
 *.md
 supabase
 scripts

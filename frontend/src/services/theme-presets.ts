@@ -14,7 +14,8 @@ export type ThemePresetName =
   | 'cyberpunk'
   | 'nordic-noir'
   | 'deep-space-horror'
-  | 'arc-raiders';
+  | 'arc-raiders'
+  | 'illuminated-literary';
 
 export const THEME_PRESETS: Record<ThemePresetName, Record<string, string>> = {
   brutalist: {
@@ -39,7 +40,7 @@ export const THEME_PRESETS: Record<ThemePresetName, Record<string, string>> = {
     color_danger_bg: '#fef2f2',
     color_success_bg: '#f0fdf4',
     color_warning_bg: '#fffbeb',
-    font_heading: "'Courier New', Monaco, 'Lucida Console', monospace",
+    font_heading: "'Oswald', 'Arial Narrow', sans-serif",
     font_body: 'system-ui, -apple-system, sans-serif',
     font_mono: "SF Mono, Monaco, Inconsolata, 'Roboto Mono', monospace",
     heading_weight: '900',
@@ -79,7 +80,7 @@ export const THEME_PRESETS: Record<ThemePresetName, Record<string, string>> = {
     color_danger_bg: '#2d1520',
     color_success_bg: '#0d2a1e',
     color_warning_bg: '#2a2210',
-    font_heading: "'Georgia', 'Palatino Linotype', serif",
+    font_heading: "'Cormorant Garamond', Georgia, serif",
     font_body: "'Segoe UI', Roboto, sans-serif",
     font_mono: "SF Mono, Monaco, Inconsolata, 'Roboto Mono', monospace",
     heading_weight: '700',
@@ -239,7 +240,7 @@ export const THEME_PRESETS: Record<ThemePresetName, Record<string, string>> = {
     color_danger_bg: '#200a0c',
     color_success_bg: '#0a200e',
     color_warning_bg: '#201a0a',
-    font_heading: "'Courier New', Monaco, monospace",
+    font_heading: "'Space Mono', 'Courier New', monospace",
     font_body: 'system-ui, -apple-system, sans-serif',
     font_mono: "SF Mono, Monaco, Inconsolata, 'Roboto Mono', monospace",
     heading_weight: '700',
@@ -296,6 +297,46 @@ export const THEME_PRESETS: Record<ThemePresetName, Record<string, string>> = {
     animation_easing: 'ease-out',
     text_inverse: '#FFFFFF',
   },
+
+  'illuminated-literary': {
+    color_primary: '#1E3A8A',
+    color_primary_hover: '#1A3278',
+    color_primary_active: '#152A66',
+    color_secondary: '#7B2D8E',
+    color_accent: '#B8860B',
+    color_background: '#F5E6CC',
+    color_surface: '#FAF3E6',
+    color_surface_sunken: '#EDE0C8',
+    color_surface_header: '#F7EDD8',
+    color_text: '#1C1008',
+    color_text_secondary: '#3A2A18',
+    color_text_muted: '#7A6B55',
+    color_border: '#8B7D6B',
+    color_border_light: '#C9BBAA',
+    color_danger: '#9B111E',
+    color_success: '#2D6B3A',
+    color_primary_bg: '#EEF1F8',
+    color_info_bg: '#F0ECF5',
+    color_danger_bg: '#FDF0EE',
+    color_success_bg: '#EFF8F0',
+    color_warning_bg: '#FFF5E6',
+    font_heading: "'Libre Baskerville', Baskerville, Georgia, serif",
+    font_body: 'system-ui, -apple-system, sans-serif',
+    font_mono: "SF Mono, Monaco, Inconsolata, 'Roboto Mono', monospace",
+    heading_weight: '700',
+    heading_transform: 'none',
+    heading_tracking: '0.02em',
+    font_base_size: '16px',
+    border_radius: '3px',
+    border_width: '1px',
+    border_width_default: '1px',
+    shadow_style: 'blur',
+    shadow_color: '#8B7D6B88',
+    hover_effect: 'glow',
+    animation_speed: '1.1',
+    animation_easing: 'ease-in-out',
+    text_inverse: '#FFFFFF',
+  },
 };
 
 /** Maps SimulationTheme types to suggested preset names. */
@@ -304,7 +345,7 @@ export function getPresetForTheme(theme: SimulationTheme): ThemePresetName {
     case 'dystopian':
       return 'cyberpunk';
     case 'utopian':
-      return 'solarpunk';
+      return 'illuminated-literary';
     case 'fantasy':
       return 'sunless-sea';
     case 'scifi':
@@ -325,4 +366,5 @@ export const PRESET_NAMES: ThemePresetName[] = [
   'nordic-noir',
   'deep-space-horror',
   'arc-raiders',
+  'illuminated-literary',
 ];

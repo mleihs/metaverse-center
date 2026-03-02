@@ -1,16 +1,17 @@
 """Generate lore section images for all simulations + the platform dashboard.
 
-12 per-simulation images (3 per sim) + 4 platform lore images = 16 total.
+21 per-simulation images (3-9 per sim) + 4 platform lore images = 25 total.
 Uploaded to simulation.assets/{slug}/lore/ and simulation.assets/platform/lore/.
 
 Uses: Replicate Flux Dev → AVIF conversion → Supabase Storage.
 
 Usage:
-  python3.13 scripts/generate_lore_images.py                   # Generate all 16
+  python3.13 scripts/generate_lore_images.py                   # Generate all 25
   python3.13 scripts/generate_lore_images.py velgarien          # Generate 3 for Velgarien
   python3.13 scripts/generate_lore_images.py station-null       # Generate 3 for Station Null
   python3.13 scripts/generate_lore_images.py capybara-kingdom   # Generate 3 for Capybara
   python3.13 scripts/generate_lore_images.py speranza           # Generate 3 for Speranza
+  python3.13 scripts/generate_lore_images.py cite-des-dames     # Generate 9 for Cité des Dames
   python3.13 scripts/generate_lore_images.py platform           # Generate 4 platform lore
 
 Requires:
@@ -81,6 +82,13 @@ SPERANZA_STYLE = (
     "warm amber string lights and salvaged materials, retro-futuristic 1970s NASA-punk aesthetic, "
     "Italian neorealist warmth despite ruin, oil painting style, concept art quality, "
     "NOT photorealistic, NOT bright daylight. "
+)
+
+CITE_DES_DAMES_STYLE = (
+    "Illuminated manuscript illustration, layered historical eras medieval to Regency, "
+    "warm candlelight and gold leaf accents, Pre-Raphaelite jewel-tone richness, "
+    "vellum texture, ultramarine and burnished gold palette, honey-coloured stone, "
+    "painterly cinematic, literary salon atmosphere, climbing roses and stained glass, "
 )
 
 PLATFORM_STYLE = (
@@ -263,6 +271,139 @@ SIMULATION_IMAGES: dict[str, list[dict]] = {
             ),
         },
     ],
+    "cite-des-dames": [
+        {
+            "name": "The Field of Letters — Where the City Began",
+            "filename": "the-field-of-letters.avif",
+            "prompt": (
+                CITE_DES_DAMES_STYLE
+                + "Expansive sunlit plain of wildflowers and tall grass, a shallow river bisecting "
+                "the landscape, honey-coloured city walls rising in the distance catching "
+                "afternoon light, fragments of vellum and manuscript pages scattered in the soil "
+                "among the wildflowers, line of poplars along the eastern edge, warm golden "
+                "light suffusing everything, a woman in medieval green gown standing at the edge "
+                "of the field looking toward the city, the sense of fertile ground about to "
+                "become something extraordinary, illuminated manuscript border framing the scene"
+            ),
+        },
+        {
+            "name": "The Stones of the City — Women Who Became Walls",
+            "filename": "the-stones-of-the-city.avif",
+            "prompt": (
+                CITE_DES_DAMES_STYLE
+                + "Close view of honey-coloured limestone city walls with names inscribed in the "
+                "stone grain, medieval buttresses supporting Regency balustrades, Queen Anne "
+                "red-brick detailing framing Pre-Raphaelite stained glass windows depicting women "
+                "reading and writing, art nouveau ironwork gates with vine patterns of roses and "
+                "wisteria, gateposts carved with women holding telescopes and scales of justice, "
+                "warm afternoon light on the stone, the walls feel alive with memory"
+            ),
+        },
+        {
+            "name": "The Salon of Reason — Where Ideas Have Weight",
+            "filename": "the-salon-of-reason.avif",
+            "prompt": (
+                CITE_DES_DAMES_STYLE
+                + "Elegant Georgian drawing room interior, high ceilings with cream silk curtains, "
+                "walls lined floor to ceiling with leather-bound books, three fireplaces burning "
+                "simultaneously, armchairs and settees in conversational groupings, tea service "
+                "on side tables, a large oval mirror in gilt frame above the central fireplace, "
+                "women in historical dress from different eras debating passionately, "
+                "a glass case near the door displaying blue worsted stockings, warm candlelight "
+                "and firelight creating intimate atmosphere, Bluestocking salon aesthetic"
+            ),
+        },
+        {
+            "name": "The Gate of Justice — Who May Enter",
+            "filename": "the-gate-of-justice.avif",
+            "prompt": (
+                CITE_DES_DAMES_STYLE
+                + "Great stone arch gate of medieval proportions, flanked by caryatids of women "
+                "in the act of speech with mouths open and hands raised, carved in motion of "
+                "forward movement, Latin inscription carved above the arch, a vast leather-bound "
+                "register on a podium inside the gatehouse, a tall dignified woman in light shawl "
+                "and bonnet seated in a simple chair beside the gate, warm dawn light "
+                "streaming through the arch, climbing roses on the gateposts, Hildegard's hymns "
+                "seeming to emanate from the tower above"
+            ),
+        },
+        {
+            "name": "The Garden of Remembered Names",
+            "filename": "the-garden-of-remembered-names.avif",
+            "prompt": (
+                CITE_DES_DAMES_STYLE
+                + "Walled garden in the style of an English cottage garden, honey stone walls "
+                "covered in climbing roses and wisteria, gravel paths edged with lavender, "
+                "meticulously labelled botanical specimens with copperplate handwriting on brass "
+                "plates, paper flower mosaics alongside living blooms indistinguishable at distance, "
+                "cottages visible beyond the garden walls, children playing among the paths, "
+                "warm sunlight filtering through flowering trees, a sense of tenderness and justice, "
+                "every plant a memorial to a forgotten woman"
+            ),
+        },
+        {
+            "name": "The Scriptorium — What the Ink Remembers",
+            "filename": "the-scriptorium.avif",
+            "prompt": (
+                CITE_DES_DAMES_STYLE
+                + "Romanesque cloister scriptorium, stone archways opening onto a colonnade garden, "
+                "angled oak writing carrels arranged in rows, each desk lit by a single beeswax "
+                "candle, illuminated manuscript pages drying on wooden racks — lapis lazuli blue "
+                "and burnished gold leaf glinting in the warm light, a woman in Benedictine abbess "
+                "habit seated at the central desk painting a mandorla vision in brilliant jewel tones, "
+                "quills and reed pens in ceramic pots, ground pigments in mortar bowls — malachite "
+                "green, vermilion red, ultramarine from lapis lazuli — an astrolabe and musical "
+                "notation scrolls beside the manuscripts, the ceiling painted with constellations "
+                "in gold on deep blue, Evelyn De Morgan color richness"
+            ),
+        },
+        {
+            "name": "The Blazing World — What the Calculator Saw",
+            "filename": "the-blazing-world.avif",
+            "prompt": (
+                CITE_DES_DAMES_STYLE
+                + "Victorian observatory interior with domed ceiling and narrow slit revealing "
+                "a brilliant night sky, at the centre a brass Analytical Engine mechanism with "
+                "interlocking gears and numbered wheels gleaming in candlelight, punched cards "
+                "threaded through the machine, a young woman in white satin dress seated at the "
+                "engine studying Bernoulli number tables spread across the console, a mechanical "
+                "orrery of brass planets rotating slowly overhead, mathematical formulae chalked "
+                "on a slate board, scattered papers covered in algorithms, through the dome slit "
+                "the stars themselves appear as equations, Margaret Carpenter portrait lighting"
+            ),
+        },
+        {
+            "name": "The College of Letters — Where Sor Juana's Library Was Returned",
+            "filename": "the-college-of-letters.avif",
+            "prompt": (
+                CITE_DES_DAMES_STYLE
+                + "Queen Anne red brick college building with oriel windows and carved stone mullions, "
+                "a grand library interior visible through open doors — shelves rising three stories "
+                "holding volumes from every century, vellum scrolls beside printed folios beside "
+                "handwritten notebooks, a woman in Jeronymite religious habit seated at a reading "
+                "desk surrounded by four thousand returned volumes, physic garden visible through "
+                "arched windows with medicinal herbs in knot-bed patterns, afternoon light streaming "
+                "through Pre-Raphaelite stained glass casting jewel-coloured patches across the "
+                "flagstone floor, globe and astronomical instruments on a side table, Newnham College "
+                "Cambridge warmth"
+            ),
+        },
+        {
+            "name": "Literate Contamination — Books Appearing Unbidden",
+            "filename": "literate-contamination.avif",
+            "prompt": (
+                CITE_DES_DAMES_STYLE
+                + "Palimpsest double-exposure scene showing two realities overlapping, in the "
+                "foreground a dark institutional bookshelf in cold fluorescent light — brutalist "
+                "concrete or industrial metal — where several unfamiliar leather-bound volumes have "
+                "materialised among the ordinary books, each glowing faintly with warm amber light "
+                "from within as though the pages are candlelit, loose vellum pages floating in the "
+                "air between the shelves, the titles in scripts the viewer cannot read, behind and "
+                "through this scene a ghostly warm sunlit library with honey stone walls is bleeding "
+                "through like a watermark, the boundary between worlds dissolving where ink meets paper"
+            ),
+        },
+    ],
 }
 
 # ── Platform dashboard lore images (existing, kept for reference) ────────────
@@ -358,6 +499,7 @@ def generate_image(prompt: str, guidance: float = 3.5) -> bytes:
             "prompt": prompt,
             "guidance": guidance,
             "num_inference_steps": 28,
+            "aspect_ratio": "16:9",
             "output_format": "png",
             "output_quality": 100,
         },

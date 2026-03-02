@@ -14,15 +14,15 @@ export class VelgAdminPanel extends LitElement {
     :host {
       display: block;
       min-height: calc(100vh - 56px);
-      background: var(--color-gray-950, #0a0a0f);
-      color: var(--color-gray-200, #e2e2e8);
+      background: var(--color-background);
+      color: var(--color-text-primary);
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
     }
 
     .admin-hero {
       position: relative;
-      border-bottom: 3px solid var(--color-gray-800, #1e1e2a);
+      border-bottom: 3px solid var(--color-border);
       overflow: hidden;
     }
 
@@ -53,8 +53,8 @@ export class VelgAdminPanel extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-widest);
-      color: var(--color-danger, #dc2626);
-      border: 2px solid var(--color-danger, #dc2626);
+      color: var(--color-danger);
+      border: 2px solid var(--color-danger);
       padding: var(--space-0-5) var(--space-3);
       margin-bottom: var(--space-4);
     }
@@ -65,13 +65,13 @@ export class VelgAdminPanel extends LitElement {
       font-size: clamp(1.5rem, 4vw, var(--text-3xl));
       text-transform: uppercase;
       letter-spacing: 0.12em;
-      color: var(--color-gray-0, #ffffff);
+      color: var(--color-text-primary);
       margin: 0 0 var(--space-2) 0;
     }
 
     .admin-hero__subtitle {
       font-size: var(--text-sm);
-      color: var(--color-gray-400, #9ca3af);
+      color: var(--color-text-secondary);
       margin: 0;
     }
 
@@ -81,7 +81,7 @@ export class VelgAdminPanel extends LitElement {
       max-width: 1200px;
       margin: 0 auto;
       padding: 0 var(--space-6);
-      border-bottom: 2px solid var(--color-gray-800, #1e1e2a);
+      border-bottom: 2px solid var(--color-border);
     }
 
     .admin-tabs__tab {
@@ -93,7 +93,7 @@ export class VelgAdminPanel extends LitElement {
       padding: var(--space-3) var(--space-5);
       background: none;
       border: none;
-      color: var(--color-gray-500, #6b7280);
+      color: var(--color-text-muted);
       cursor: pointer;
       position: relative;
       transition:
@@ -102,12 +102,12 @@ export class VelgAdminPanel extends LitElement {
     }
 
     .admin-tabs__tab:hover {
-      color: var(--color-gray-200, #e2e2e8);
+      color: var(--color-text-primary);
       background: rgba(255 255 255 / 0.04);
     }
 
     .admin-tabs__tab--active {
-      color: var(--color-danger, #dc2626);
+      color: var(--color-danger);
     }
 
     .admin-tabs__tab--active::after {
@@ -117,7 +117,7 @@ export class VelgAdminPanel extends LitElement {
       left: 0;
       right: 0;
       height: 2px;
-      background: var(--color-danger, #dc2626);
+      background: var(--color-danger);
     }
 
     .admin-content {

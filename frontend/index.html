@@ -43,6 +43,21 @@
     }
     </script>
 
+    <!-- Google Fonts: per-simulation heading fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;800&family=Cormorant+Garamond:wght@400;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Oswald:wght@400;700;900&family=Space+Mono:wght@400;700&family=Spectral:ital,wght@0,400;0,600;0,700;1,400&display=swap" />
+
+    <!-- LCP hero preload -->
+    <link rel="preload" as="image" fetchpriority="high"
+          href="https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/dashboard-hero.webp" />
+
+    <!-- Critical CSS: prevent white flash before external CSS loads -->
+    <style>
+      body { margin: 0; background: #0a0a0f; color: #e2e2e8; }
+      velg-app { display: block; min-height: 100vh; }
+    </style>
+
     <!-- Favicons -->
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />

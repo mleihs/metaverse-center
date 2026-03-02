@@ -276,7 +276,7 @@ But here is what we have not told you, because the Cartographers do not tell it 
 
 **The multiverse is not a problem to be solved. It is a question to be inhabited.**
 
-Every Shard is an answer. Velgarien answers: "What if control were absolute?" The Capybara Kingdom answers: "What if the darkness were kind?" Station Null answers: "What if we could see the wound?" Speranza answers: "What if we simply refused to stop?" The Bloom will answer: "What if peace were suffocating?" Each answer is wrong. Each answer is necessary. The multiverse exists because no single answer is sufficient, and the Fracture was the universe's way of admitting this.
+Every Shard is an answer. Velgarien answers: "What if control were absolute?" The Capybara Kingdom answers: "What if the darkness were kind?" Station Null answers: "What if we could see the wound?" Speranza answers: "What if we simply refused to stop?" The Cité des Dames answers: "What if women had always been heard?" The Bloom will answer: "What if peace were suffocating?" Each answer is wrong. Each answer is necessary. The multiverse exists because no single answer is sufficient, and the Fracture was the universe's way of admitting this.
 
 The Convergence — the event that the Bureau monitors, that the ruins foretell, that TOWER threatens — is not the end. It is the next question. When enough Shards have touched, when enough Bleeds have flowed, when enough agents have dreamed of worlds they've never visited, the multiverse will reach a decision point: merge, or differentiate further. Collapse into one answer, or fracture into a thousand more.
 
@@ -292,7 +292,188 @@ Which world do you enter first?
 
 ---
 
-## II. 10 NEW SIMULATION CONCEPTS
+## II. THE FIVE SHARDS — Built Simulations
+
+### 1. Velgarien — Brutalist Surveillance State
+
+**Theme:** `dystopian` | **Locale:** `en` | **Aesthetic:** Soviet Brutalism / Constructivist Propaganda / Kafka
+
+**Literary DNA:** Yevgeny Zamyatin's *We* (1924) — the first dystopian novel, a glass-walled city where every citizen is a number and the Benefactor rules by manufactured consent. Zamyatin's One State, where sex requires a permit and the "Integral" spaceship will carry the gospel of unfreedom to the stars, provides the fundamental grammar of Velgarien's bureaucratic control. Mikhail Bulgakov's *The Master and Margarita* (completed 1940, published 1967) — the Devil visits Soviet Moscow and finds the bureaucracy more terrifying than Hell, because Hell at least has clear procedures. Bulgakov wrote under active surveillance; the manuscript was nearly destroyed; the novel survived because Bulgakov's wife memorised it. This is the central paradox of Velgarien: the state that claims to control reality cannot control the stories people tell when they think the walls aren't listening. (The walls are always listening. The stories persist regardless.) The Strugatsky Brothers' *Roadside Picnic* (1972) — alien "Zones" filled with incomprehensible artefacts that humans risk everything to recover. The Stalkers who enter the Zones are changed by the experience. Velgarien's Bureau 9 agents who venture too close to the Bleed zones exhibit similar symptoms: they return with knowledge that cannot be classified and memories that do not belong to them. Andrei Platonov's *The Foundation Pit* (written 1930, published 1987) — workers dig the foundation for a utopian building; the foundation pit becomes a mass grave. "Society organized around a monstrous lie, bereft of meaning." Platonov understood that the most terrifying thing about a totalitarian state is not its cruelty but its sincerity — the genuine belief, held by functionaries at every level, that they are building paradise while standing ankle-deep in evidence to the contrary. Franz Kafka (all of it) — the bureaucracy as labyrinth, the trial that has no charges, the castle that cannot be reached. Kafka's genius was understanding that absurdity and horror are not opposites but the same thing viewed from different distances.
+
+**Architectural DNA:** Le Corbusier's *béton brut* ("raw concrete") from the Unité d'Habitation in Marseille (1952) — the building as "a machine for living in." The concrete retains the wood grain of its formwork, what Le Corbusier called an accidental beauty: "the faults of texture add a certain richness and humanise the architecture." Reyner Banham's dictum: "The New Brutalism is an ethic, not an aesthetic." Not a style — a political commitment. Owen Hatherley's formulation: "Brutalist architecture was Modernism's angry underside... dedicated to the precept that nothing was too good for ordinary people." Velgarien takes this idealism and perverts it: the architecture that was meant to serve the people becomes the instrument of their control. The buildings are beautiful. The buildings are watching.
+
+Key structures that inform Velgarien's visual language: the Barbican Centre (London, 1982) — "a city within a city," 200,000m² of hand-tooled concrete, fortress-like, simultaneously protective and imprisoning; Trellick Tower (London, Ernő Goldfinger, 1972) — 31 storeys with a separate service tower connected by walkways, originally loathed, now a listed monument, a building whose reputation travelled from threat to treasure in a single generation; the House of Soviets (Kaliningrad, 1970s) — a 21-storey abandoned megastructure built atop the demolished Königsberg Castle, dubbed "the buried robot," too expensive to complete, too monumental to demolish, eventually demolished in 2024, proving that even brutalism has an expiry date; the Buzludzha Monument (Bulgaria, 1981) — a UFO-like concrete disc on a mountain summit, built to celebrate socialism, now crumbling, its mosaics exposed to weather, its flying-saucer silhouette becoming an icon of ideology abandoned by its architects.
+
+Soviet architectural progression embedded in Velgarien's history: **Constructivism** (1920s) — Tatlin's Tower (twin helix, 400m, never built), Melnikov House (two interlocking cylinders), radical and utopian; **Socialist Realism** (1930s-50s) — Moscow Metro "palaces for the people" (marble, chandeliers, frescoes), lavish ornament projecting state power; **Khrushchyovka** (1956-75) — prefabricated apartment blocks, 12 days per block, identical units stretching endlessly, total erasure of individuality; **Late Soviet Brutalism** (1960s-80s) — monumental civic buildings in raw concrete, the Ministry of Highways in Tbilisi with its interlocking concrete arms. Velgarien's districts move through these phases as you travel from the Administrative Quarter (Socialist Realism, chandeliers, marble lobbies that smell of floor polish and fear) to the Industrial Sector (Late Brutalism, raw concrete, the hum of machinery) to the Residential Blocks (Khrushchyovka, identical flats, corridors so uniform that citizens navigate by smell and superstition).
+
+**Visual DNA:** Soviet Constructivist poster art — El Lissitzky's *Beat the Whites with the Red Wedge* (1919), geometric abstraction as political weapon; Alexander Rodchenko's bold diagonal compositions, photomontage as agitprop. The visual language: red + black palette, diagonal energy, heroic workers at enormous scale, limited palette with explosive contrast, forward-facing orientation suggesting inevitable progress toward a future that never arrives. Typography as architecture: bold monumental sans-serif letterforms functioning as structural elements, the word becoming the building, the slogan becoming the skyline.
+
+**The Philosophical Question:** *"What if control were absolute?"*
+
+Not the crude control of chains and whips — Velgarien is more sophisticated than that. The control of forms in triplicate, of surveillance cameras that watch the space you occupy rather than watching you (the distinction is important, the surveillance officers insist, and the citizens believe them because not believing them requires filling out Form 88-C, "Declaration of Doubt," which takes six weeks to process and requires two character references). The control of a state so thoroughly bureaucratised that rebellion is not punished so much as *filed* — stamped, categorised, cross-referenced, and stored in Bureau 9 alongside all the other historical events that have been administratively processed into non-existence.
+
+**Bleed Signature:** Institutional contamination. When Velgarien's Bleed touches adjacent Shards, agents begin forming committees. Documents appear — memos, directives, forms requesting the completion of other forms. In the Capybara Kingdom, Archivist Gnaw once discovered an entire filing cabinet that had materialised overnight in the Deep Library, filled with personnel records for employees who did not exist in any Shard. He catalogued the cabinet. This took three weeks. He filed the catalogue. The catalogue disappeared. A receipt for the catalogue appeared. He catalogued the receipt. The Bureau considers this a textbook example of institutional contamination and has filed a report. The report has not been found.
+
+**Agents (8):**
+1. **Viktor Harken** — Bureau Director. The man who runs Velgarien, or who Velgarien allows to believe he runs it. A functionary so deeply embedded in the bureaucracy that the distinction between the man and the system has become academic. He signs documents with a pen that never runs out of ink, which he considers evidence of good maintenance and which Bureau 9 has classified.
+2. **Elena Voss** — Intelligence Operative. A spy who has spent so long pretending to be someone else that the original person has become classified information. She sends reports to a handler she has never met through a dead-drop that may or may not be monitored by the same people she is spying on.
+3. **Pater Cornelius** — Chaplain / Informant. A priest who hears confessions and files them. The faithful trust him because he wears a collar. Bureau 9 trusts him because he wears a wire. He is not sure which loyalty came first, and the question keeps him awake at night, which he reports to both employers.
+4. **Mira Steinfeld** — Resistance. An artist who paints murals on walls the state has designated for propaganda. Her murals last approximately four hours before Re-Painting Units arrive. In those four hours, something changes in the corridor. People walk differently. Some of them whistle.
+5. **General Wolf** — Military Command. The man who maintains order, which in Velgarien means maintaining the appearance of order, which in practice means standing very still in a very impressive uniform and trusting that the uniform will do the work. The uniform is doing the work. General Wolf has not made a decision in eleven years.
+6. **Lena Kray** — Dissident Artist. She writes poems on the back of ration cards and leaves them in the grey paste dispensers. The poems are terrible. The poems are free. In Velgarien, this is the same thing.
+7. **Doktor Fenn** — State Scientist. A man who studies the cracks in the walls and has begun to suspect they are not structural but geographic. He files his findings with Bureau 3 (Spatial Certainty). Bureau 3 files his findings in the shredder. He files more findings. The shredder has developed a backlog.
+8. **Schwester Irma** — State Nurse. She treats injuries the state claims do not exist with supplies the state claims are adequate. She has not slept properly in four years. She is the most competent person in Velgarien and the least recognised, which she considers the natural order of things and which the reader should consider evidence.
+
+**Buildings (6):**
+- **Bureau HQ** — The administrative centre. A building so large that the corridors on the east wing are rumoured to lead to corridors in other buildings entirely. Fluorescent lighting. Grey carpet. The hum of machinery that no one can locate. Filing cabinets in every room, including the bathrooms.
+- **Cathedral of Compliance** — Pater Cornelius's domain. A church built from the same concrete as the state buildings, its stained glass replaced with frosted panels that let in exactly the amount of light the Bureau considers theologically appropriate.
+- **Steel Gardens** — A public park made entirely of metal. Benches welded to the ground. Trees cast in iron. The Bureau of Public Harmony insists this constitutes nature. Citizens sit on the benches and feel the cold through their uniforms and do not complain, because complaining about the gardens requires Form 34-D, and Form 34-D requires a supervisor's signature, and the supervisors are on the metal benches too.
+- **The Panoptikon** — The surveillance hub. A circular building where every wall is a screen showing camera feeds from every other building. The operators watch the feeds. The feeds watch the operators. The building has no windows. It does not need them.
+- **Workers' Palace** — A residential megastructure housing 4,000 citizens in identical apartments. The apartments are clean. The apartments are warm. The apartments have exactly one window each, positioned so that every window looks at another window in the building across the corridor.
+- **Underground Warrens** — The tunnels beneath the city that the Bureau claims do not exist. They exist. People live in them. The people in them live differently. This is the closest thing Velgarien has to freedom, and the Bureau lets it continue because an underground resistance that you know about is better than an underground resistance you don't.
+
+**Zones (3):** Administrative Quarter (power), Industrial Sector (production), Residential Block (containment).
+
+**Image Prompts:**
+- *Portrait style:* "Soviet brutalist portrait, cold fluorescent lighting, concrete walls with wood grain impressions, institutional uniform, propaganda poster palette (red/black/grey), Constructivist composition with diagonal energy, detailed face showing bureaucratic fatigue, concept art, cinematic"
+- *Building style:* "Brutalist architecture, béton brut raw concrete, monumental scale dwarfing human figures, surveillance cameras, propaganda banners with Cyrillic-inspired typography, red accents on grey, Barbican Centre meets Lubyanka, overcast sky, concept art, cinematic"
+
+**Aesthetic:** Monochrome grey with red accents (#E63946 on #1A1A2E). Oswald 900-weight uppercase headings — condensed industrial sans-serif derived from Soviet propaganda typography. 2px borders, harsh offset shadows. The palette is deliberately oppressive: grey concrete, grey sky, grey paste, grey corridors, with red appearing only in propaganda, warning signs, and Mira Steinfeld's murals (which last approximately four hours). Animation speed: 1.0x (standard, mechanical, nothing wasted, nothing unexpected).
+
+---
+
+### 2. The Capybara Kingdom — Sunless Sea Underground Fantasy
+
+**Theme:** `fantasy` | **Locale:** `en` | **Aesthetic:** Fallen London / Sunless Sea / Victorian Natural History / Gormenghast
+
+**Literary DNA:** The Capybara Kingdom's primary literary ancestor is Failbetter Games' **Fallen London** (2009) and its seagoing expansion **Sunless Sea** (2015) — works of interactive fiction that reimagined Victorian London as the "Fifth City" stolen underground by a mysterious space-crab (the Bazaar) and deposited in an immense subterranean cavern called the Neath. Failbetter's genius lies in three innovations that the Capybara Kingdom inherits directly:
+
+First, **fragmentary world-building** — Fallen London never explains its cosmology through exposition. The world is revealed through hundreds of small, contradictory snippets: rumours, scholarly pamphlets, drunken confessions, auction catalogues. The player assembles the world from pieces that don't quite fit, and the not-quite-fitting is the point. The Capybara Kingdom adopts this approach through Archivist Barnaby Gnaw's footnotes, Commodore Whiskers' naval logs, and the marginalia that accumulates on every official document.
+
+Second, **impossible colours** — the Neathbow, Failbetter's taxonomy of underground light. Seven colours that don't exist on the surface: **Cosmogone** (remembered sunlight, warm and melancholy), **Irrigo** (the colour of forgetfulness, a blue that makes you lose things — memories, names, your way home), **Apocyan** (between blue and red, a colour that accelerates the mind and destabilises perception), **Violant** (a sinister purple that hides things in plain sight), **Peligin** (absolute darkness made visible, blacker than black), **Gant** (the colour of things that have been emptied of meaning, a sick greyish-cream). The Capybara Kingdom's bioluminescent ecology — its phosphorescent seas, its luminous fungi, its false stars — draws from this chromatic imagination, though the Kingdom's colours have their own taxonomy, catalogued by the Archivists with characteristic precision and occasional poetry.
+
+Third, **the economy of secrets** — in Fallen London, knowledge is currency. Secrets are literally tradeable, and the most dangerous commodity in the Neath is not weaponry but *information about the nature of things*. The Correspondence — the language of the stars, whose symbols make your eyes bleed and your hair smoulder — is the ultimate forbidden knowledge. Reading it is simultaneously lethal and irresistible. The Capybara Kingdom adapts this principle: its archives contain knowledge that changes the knower, and the Deep Library's restricted shelves hold volumes that must be read in pairs for safety, because reading them alone risks losing something the reader cannot name.
+
+Additional influences: **Mervyn Peake's *Gormenghast*** (1946-59) — a castle so vast it has become a world, its inhabitants governed by ritual so ancient that the rituals have outlived their meaning. The Capybara Kingdom's Parliament of Whiskers operates by protocols that predate the Kingdom itself, and the Archivists maintain traditions they cannot explain with the serene conviction that explanation would diminish them. **Hayao Miyazaki** (all of it) — the ability to hold wonder and danger simultaneously, to make the terrifying also beautiful, to create creatures and landscapes that are alien without being hostile. The Unterzee's creatures are Miyazaki's spirits: vast, indifferent, occasionally magnificent, always following rules that humans are not fully equipped to understand.
+
+**Failbetter's Writing Discipline:** The Capybara Kingdom's prose adopts Failbetter's signature constraints — extreme economy masking vast implication. Root descriptions max 30 words. Branch descriptions max 20 words. Results max 100 words. Second person without emotional prescription ("You see..." not "You feel..."). Dark humour coexisting with genuine cosmic wonder. Knowledge as currency — secrets literally tradeable. Fragmentary storytelling: world pieced together from hundreds of small, contradictory snippets. Unreliable narration: NPCs contradict each other, lore shifts with perspective.
+
+**The Philosophical Question:** *"What if the darkness were kind?"*
+
+Not safe — kind. The Unterzee is not benevolent. It drowns ships, swallows expeditions, harbours creatures whose biology suggests they were designed by a committee that included a mathematician, a theologian, and something with too many limbs. But the darkness is not cruel either. It is a condition, like weather, and the Capybara people have learned to live in it not by fighting it but by *understanding it*, and that understanding — patient, meticulous, slightly damp — has produced a civilisation that finds wonder in things that surface-dwellers would classify as horrifying.
+
+The mushroom wine is wonderful. The phosphorescent sea is wonderful. The screaming stone is — well, the screaming stone is the screaming stone, and the Archivists have written seventeen volumes on it, and the seventeenth volume concludes that the screaming is "not distress but discourse, and the stone is merely conversational in a register we have not yet learned to perceive." This is either scholarly generosity or scholarly madness, and in the Capybara Kingdom, the distinction has never been considered important.
+
+**Bleed Signature:** Ecological contamination. When the Capybara Kingdom's Bleed touches adjacent Shards, things begin to grow. Not plants exactly — bioluminescent organisms that follow no terrestrial taxonomy, phosphorescent patterns on walls that were previously bare, puddles that glow in colours the observer cannot quite name. In Velgarien, a clerk in Bureau 3 discovered a luminous mushroom growing from a crack in the concrete floor of his basement office. The basement did not exist on any architectural plan. The mushroom did not match any species in any database. The clerk watered it. He could not explain why. The mushroom is still there. It has been classified seven times, each classification contradicting the last. Bureau 3 considers the mushroom "contained." The mushroom considers Bureau 3 "damp and therefore adequate."
+
+**Agents (5):**
+1. **Commodore Whiskers** — Admiral of the Capybara Navy. The finest naval mind the Kingdom has produced, navigating the Unterzee by instinct, dead reckoning, and a relationship with the currents that her officers describe as "uncanny" and she describes as "listening." Her teeth are, as all capybara teeth are, superb.
+2. **Lady Caplin of Mudhollow** — Aristocrat and political operator. She controls more of the Kingdom's trade than the Parliament suspects and more of the Parliament than the traders suspect. Her parties are legendary. Her guest lists are strategic.
+3. **The Archivist (Barnaby Gnaw)** — Head Archivist of the Deep Library. A scholar who has catalogued more of the Unterzee's phenomena than any living capybara, and who suspects — with the quiet alarm of someone who has been counting for too long — that the catalogue is growing faster than he can catalogue it. His footnotes are longer than his texts. His footnotes have footnotes.
+4. **Sister Ember** — Priestess of the Luminous Order. She tends the Great Sporocarp — a bioluminescent fungal structure that the Order considers sacred and the scientists consider a research opportunity and the Kingdom considers a navigation landmark. Sister Ember does not resolve this disagreement. She tends the Sporocarp. The Sporocarp glows. Faith, in the Capybara Kingdom, is measured in candlepower.
+5. **Barnaby Gnaw** — see The Archivist. (The Archivist insists on being listed twice, once under his formal title and once under his name, because "a catalogue that omits cross-references is not a catalogue but a list, and lists are for groceries.")
+
+**Buildings (5):**
+- **The Drowned Library** — An archive complex half-submerged in the warm waters of the Thermal Springs. Books are stored on floating shelves. The reading rooms are damp. The Archivists consider this optimal for preservation, which tells you everything you need to know about Capybara Kingdom archival science.
+- **The Great Sporocarp** — A bioluminescent fungal tower that serves as lighthouse, cathedral, and ecological wonder. It pulses with light in rhythms that the Luminous Order considers prayer and the Navy considers useful for navigation.
+- **Rootwater Market** — A trading hub built into the root systems of the Fungal Warrens. Goods arrive by boat, by foot, and occasionally by mushroom — certain fungi in the Warrens are ambulatory and will carry cargo for a fee that consists of "being talked to nicely."
+- **Admiralty Grotto** — The Capybara Navy's headquarters, a natural cavern fitted with navigational charts, signal equipment, and a map of the Unterzee that is updated daily and wrong daily, which the Commodore considers a feature.
+- **The Soggy Paw Tavern** — The Kingdom's social centre. The beer is brewed from cave-barley. The wine is made from luminous mushrooms. The conversation is the real intoxicant. Information changes hands here more efficiently than at any trading post, because alcohol reduces the markup on secrets.
+
+**Zones (4):** Upper Caverns (government, society), Fungal Warrens (ecology, industry), Undertide Docks (navy, trade), Deepreach (the frontier, the unknown).
+
+**Image Prompts:**
+- *Portrait style:* "Sunless Sea fantasy portrait, bioluminescent underground cavern, phosphorescent teal and amber glow, Victorian-era naturalist expedition aesthetic, anthropomorphic capybara in scholarly or naval attire, detailed character face, warm candlelight, Gormenghast meets Miyazaki, concept art"
+- *Building style:* "Subterranean fantasy architecture, vast limestone caverns with bioluminescent fungi, phosphorescent water reflections, Victorian Gothic structures adapted to underground environment, warm amber and teal palette, stalactite formations, mushroom forests, concept art"
+
+**Aesthetic:** Deep teal (#0D7377) on midnight blue (#0A192F) with bioluminescent amber (#D4A843) accents. Cormorant Garamond 700-weight headings — a Renaissance/Victorian scholarly serif that suggests scholarly treatises and natural history catalogues. Phosphorescent glow effects on UI elements. The palette evokes bioluminescence: warm amber light against deep oceanic darkness, as if the interface itself were lit by the organisms of the Unterzee. Animation speed: 1.1x (slightly stately — the rhythm of deep-water navigation, unhurried, attentive).
+
+---
+
+### 3. Station Null — Deep Space Horror
+
+*(Existing detailed write-up follows — see Section II.3 above)*
+
+### 3b. Speranza — Arc Raiders Post-Apocalyptic
+
+*(Existing detailed write-up follows — see Section II.3b above)*
+
+### 3c. Cité des Dames — Feminist Literary Utopia
+
+*(Existing detailed write-up follows — see Section II.3c above)*
+
+---
+
+## III. LITERARY THEORY & SOURCES — The Meta-Fiction Framework
+
+*"The world we are part of is but one of a plurality of worlds." — David Lewis, On the Plurality of Worlds (1986)*
+
+This section documents the literary-theoretical framework that governs the platform's meta-narrative — the Bureau of Impossible Geography, the Bleed, the Cartographers, and the relationship between the reader and the multiverse. The meta-lore is not decorative. It is an argument about the nature of fiction, conducted through fiction, drawing on a tradition of meta-fictional experiment that stretches from Borges to the SCP Foundation.
+
+### The Borgesian Foundation
+
+**Jorge Luis Borges** (1899-1986) provides the philosophical substrate. Three Borges texts are foundational:
+
+- **"The Library of Babel"** (1941) — an infinite library containing every possible book, most of them gibberish, a few containing truth, and no reliable way to distinguish the two. The Bureau of Impossible Geography *is* the Library of Babel, institutionalised: a bureaucracy dedicated to cataloguing everything, including things that refuse to be catalogued. The Bureau's restricted archives — where documents consume themselves, where pages degrade, where the catalogue grows faster than the Archivists can catalogue it — are the Library's infinite hexagonal galleries reimagined as government filing cabinets.
+
+- **"The Garden of Forking Paths"** (1941) — a labyrinth that is also a novel, in which all possible outcomes of every decision coexist simultaneously. Borges' key insight: branching timelines are not science fiction but *literary structure*. Every novel that presents a choice implicitly contains the unchosen paths. The multiverse is a Garden of Forking Paths where each fork became a Shard, and the Fracture was the moment when the novel stopped being a single narrative and became all its possible narratives at once.
+
+- **"Tlön, Uqbar, Orbis Tertius"** (1940) — a fictional world, invented by a secret society and described in an encyclopaedia, that begins to overwrite reality. Objects from Tlön appear in the real world. Tlön's philosophy replaces real philosophy. The fiction becomes more real than reality because enough people believe in it. Borges' lesson: *fictions have causal power*. The Bleed is Tlön's mechanism operating across Shards — when a Shard's narrative becomes sufficiently compelling, it begins to rewrite adjacent realities.
+
+### Calvino and Combinatorial Literature
+
+**Italo Calvino** (1923-1985) provides the structural model. *If on a winter's night a traveler* (1979) — a novel about reading novels, in which the reader is the protagonist and the act of reading is the plot — establishes the pattern for the platform's meta-textual address to the user. When the lore tells the reader "you are performing an act of Cartography," this is Calvino's move: making the reader a character in the text they are reading, blurring the boundary between the fiction and the act of consuming the fiction.
+
+*Invisible Cities* (1972) is the more direct ancestor. Marco Polo describes 55 impossible cities to Kublai Khan. Each city is Venice seen differently. The Khan gradually understands that Polo is not describing many cities but one city — his home — from 55 angles, and that the act of description has created something that neither the real city nor any individual description contains. The multiverse is Calvino's city-catalogue: each simulation is the same broken world seen from a different angle, and the platform is Kublai Khan's throne room, the place where all descriptions converge.
+
+### Eco and the Open Work
+
+**Umberto Eco** (1932-2016) provides the participatory model. *The Open Work* (*Opera aperta*, 1962) argues that the most vital artworks are those that require reader participation to complete — works that present structured possibilities rather than fixed meanings. The reader is not an audience but an accomplice, a co-creator. Eco's "Model Reader" — the ideal reader who possesses the competences necessary to activate the text's potential — is the platform's user. The simulations are Open Works: they present structured possibilities (agents, buildings, events, the Bleed) and the user completes them by choosing where to look, what to explore, which connections to draw.
+
+### Danielewski and Typographic Identity
+
+**Mark Z. Danielewski** (b. 1966) provides the typographic precedent. *House of Leaves* (2000) uses five different typefaces for five different narrative voices: Times New Roman for the main narrator, Courier for the scholarly apparatus, Dante for the quoted manuscript, and two others for supplementary voices. The book's physical form mirrors its content — a house that is larger inside than outside, told through a manuscript that contains more voices than it should.
+
+The platform's five-font-per-simulation approach is Danielewski's technique applied at architectural scale: Oswald (Velgarien, Constructivist industrial), Cormorant Garamond (Capybara Kingdom, Victorian scholarly), Space Mono (Station Null, CRT terminal), Barlow (Speranza, utilitarian humanist), Libre Baskerville (Cité des Dames, 18th-century literary). Each font is a voice. The platform-level font — Spectral, a 19th-century French academic serif — is the Bureau's voice: the narrator who contains all the other narrators, the Danielewski framing device.
+
+### Lem and Meta-Fictional Documentation
+
+**Stanislaw Lem** (1921-2006) provides the documentary format. *A Perfect Vacuum* (1971) — reviews of nonexistent books. *Imaginary Magnitude* (1973) — introductions to nonexistent books. Lem understood that the *apparatus* of scholarship — the footnotes, the cross-references, the institutional voice — is itself a literary form, and that reviewing a book that doesn't exist is not a joke but a *demonstration* that the review format can generate reality. The Bureau's field reports, dossiers, incident logs, and classification systems are Lem's reviews: documents that describe impossible things with such institutional precision that the things become, functionally, real.
+
+### The SCP Foundation and Clinical Horror
+
+The **SCP Foundation** (2007-present) provides the tonal register. A collaborative fiction project in which a secret foundation "Secures, Contains, and Protects" anomalous objects, entities, and phenomena. The SCP format — structured bureaucratic documents describing impossible things — creates horror through the gap between the clinical tone and the incomprehensible subject. The [REDACTED] placeholder. The amnestic protocols. The containment procedures that are more frightening than the things being contained.
+
+The Bureau's [CONSUMED] and [DEGRADED] markers are SCP's [REDACTED] with a literary twist: where SCP's redactions suggest information withheld by the institution, the Bureau's markers suggest information consumed by the phenomenon being documented. The document is not being censored. The document is being *eaten by its own subject matter*. This is a different kind of horror — not the horror of secrets kept, but the horror of knowledge that resists being known.
+
+### Possible Worlds Theory
+
+**Lubomír Doležel** (*Heterocosmica*, 1998) provides the philosophical vocabulary. Doležel's "heterocosm" — a self-sustaining fictional world with its own internal logic, its own natural laws, its own mode of being — describes exactly what each simulation is. The platform is a heterocosm-of-heterocosms: a fictional space that contains multiple fictional spaces, each internally consistent, each in tension with the others. The Bleed is what happens when heterocosms press against each other — when the internal logic of one world contaminates the internal logic of another.
+
+**David Lewis** (*On the Plurality of Worlds*, 1986) — the philosopher of modal realism, who argued with perfect seriousness that every possible world is as real as ours, that there is no privileged "actual" world, that we are part of one world among infinitely many. Lewis provides the Bureau's metaphysics: the Cartographers operate as though modal realism is literally true, as though each Shard is as real as every other, as though the act of observation does not create the world but sustains it. "The world we are part of is but one of a plurality of worlds" — Lewis's opening line is the Bureau's founding charter.
+
+### Ergodic Literature
+
+**Espen Aarseth** (*Cybertext*, 1997) — coined "ergodic literature" for texts that require "nontrivial effort to traverse." Not passive reading but active navigation: choosing paths, solving puzzles, assembling fragments. The platform is ergodic in Aarseth's precise sense — users must navigate between simulations, choose which lore to read, decide which Shard to enter, assemble the meta-narrative from fragments distributed across five worlds. The meaning is not in any single simulation but in the *act of traversal* between them.
+
+### Philip K. Dick and Mutable Reality
+
+**Philip K. Dick** (*The Exegesis*, published posthumously 2011) — Dick spent the last decade of his life writing an 8,000-page philosophical journal exploring the nature of reality, which he had come to believe was a mutable text that could be edited. Reality was not fixed but written, and the writer was unknown, and the edits were ongoing. The Bleed is Dick's mutable reality: when Speranza's radio signals leak into Velgarien, reality is being rewritten. When a Bureau document consumes itself, the text is editing its own ontological status.
+
+### Per-Simulation Literary Genealogy
+
+| Simulation | Primary Ancestors | Secondary Ancestors | Font Rationale |
+|-----------|-------------------|--------------------:|----------------|
+| Velgarien | Zamyatin (*We*), Kafka, Bulgakov | Strugatsky Brothers, Platonov, Orwell | Oswald: Constructivist propaganda poster sans-serif |
+| Capybara Kingdom | Fallen London (Failbetter), Gormenghast (Peake) | Miyazaki, Victorian natural history | Cormorant Garamond: Renaissance/Victorian scholarly serif |
+| Station Null | Lem (*Solaris*), Watts (*Blindsight*), Lovecraft | *Alien* (1979), *Event Horizon*, German Expressionism | Space Mono: geometric monospace terminal |
+| Speranza | McCarthy (*The Road*), Le Guin (*The Dispossessed*) | Mandel (*Station Eleven*), Italian neorealism, NASA-punk | Barlow: utilitarian humanist sans-serif |
+| Cité des Dames | Christine de Pizan, Wollstonecraft, Woolf | Cavendish (*Blazing World*), Gilman (*Herland*), Austen | Libre Baskerville: 18th-century literary revival |
+| *Platform (Bureau)* | Borges, Calvino, Eco, Lem, SCP Foundation | Danielewski, Doležel, Lewis, Aarseth, Dick | Spectral: 19th-century French academic serif |
+
+---
+
+## IV. 10 NEW SIMULATION CONCEPTS (Unbuilt)
 
 ### 1. Nova Prokovia — Soviet Retrofuturism
 
@@ -404,6 +585,55 @@ In the multiverse meta-lore, Speranza is a Shard that the Bureau of Impossible G
 
 **Aesthetic:** Warm parchment (#ECE2D0) background with golden amber (#C08A10) accents. Barlow 800-weight uppercase headings. 2px borders with offset shadows in warm grey. The palette is warm and hopeful — a deliberate contrast to Station Null's void-black and Velgarien's monochrome grey. Animation is slightly fast (0.9x) — the energy of a community that doesn't have time to wait.
 
+### 3c. Cité des Dames — Feminist Literary Utopia
+
+**Theme:** `utopian` | **Locale:** `en` | **Aesthetic:** Illuminated manuscripts + Regency + Pre-Raphaelite + Suffragette
+
+**Literary Influences:** Christine de Pizan's *The Book of the City of Ladies* (1405) — the first feminist utopian text, an allegorical city built from the stories of remarkable women; Mary Wollstonecraft's *A Vindication of the Rights of Woman* (1792) — the founding philosophical text of modern feminism; Virginia Woolf (*A Room of One's Own*, *Orlando*) — the economics of creative freedom, the fluidity of identity across centuries; Charlotte Perkins Gilman's *Herland* (1915) — utopia as a place where women's competence is simply assumed; Margaret Cavendish's *The Blazing World* (1666) — one of the first science fiction works, written by a Duchess who refused to be invisible; Jane Austen (social architecture — the drawing room as battlefield); George Eliot (moral complexity beneath social propriety); the Brontë sisters (passion constrained by stone and weather); the Pre-Raphaelite women — Elizabeth Siddal, Evelyn De Morgan — artists in their own right, not merely muses; the Bluestocking salons of Elizabeth Montagu (1750s) — intellectual gatherings where women set the terms.
+
+**The philosophical question:** *"What if women had always been heard?"*
+
+The Cité des Dames is a city that has always existed, in the sense that it was always possible. Christine de Pizan laid its first stone in 1405 when she described, in allegorical prose, three Ladies — Reason, Rectitude, and Justice — who appeared in her study and instructed her to build a city from the stories of women throughout history. Each woman's story became a brick. Each act of courage or scholarship or art became a wall. The city grew not by conquest but by remembrance: when you name what has been silenced, the named thing builds the world.
+
+Six centuries later, the city is no longer allegorical. It exists in the multiverse as a Shard where multiple historical eras coexist — medieval scriptoria and Regency salons and Victorian observatories and Enlightenment lecture halls, all occupying the same geography in a layered simultaneity that the Bureau of Impossible Geography finds architecturally distressing. The city is built from honey-coloured Georgian stone with Queen Anne red brick, stained glass in the Pre-Raphaelite manner, art nouveau ironwork wreathed in climbing roses, and illuminated manuscript borders that appear on the walls when nobody is painting them. It is the platform's first light-themed simulation — vellum cream and ultramarine blue and burnished gold leaf, a deliberate chromatic rebellion against the dark aesthetics of every other Shard.
+
+In the multiverse meta-lore, the Cité des Dames is classified by the Bureau as a "Literate Contamination Vector." Its Bleed signature is distinctive: when the Cité's Bleed touches adjacent Shards, agents begin finding unfamiliar books on their shelves — books by authors who don't exist in their world, arguing for things their societies have never considered. A Velgarien bureaucrat discovers a treatise on the rights of citizens by "M. Wollstonecraft" and spends three days trying to classify it before realising he agrees with it. A Capybara Kingdom archivist catalogs a volume of poetry by "Sor Juana" that reduces her to tears in a language she has never learned. The Bureau considers Literate Contamination untreatable, because you cannot unread a book. You can burn it, but the reader has already changed.
+
+**Agents (6 — historical figures, fictionalised):**
+1. **Christine de Pizan** — Ordre de Raison / female. The Architect. Born in Venice, raised at the French court, widowed at twenty-five, and became the first professional female author in Europe because the alternative was poverty. In the Cité, she is both founder and chronicler — the woman who built a city from stories. Described in the style of BNF Harley MS 4431: at her writing desk, green cloth, medieval gown, gold leaf illumination.
+2. **Mary Wollstonecraft** — Salon des Lettres / female. The Philosopher. Author of *A Vindication of the Rights of Woman* (1792), who argued that women's apparent inferiority was the result of denied education, not natural deficiency. In the Cité, she runs the Salon of Reason with the intensity of someone who has eleven days left to change the world and suspects this is always the case. Portrait in the manner of John Opie (c.1797): white muslin Empire dress, candlelight simplicity.
+3. **Hildegard von Bingen** — Ordre de Justice / female. The Visionary. Benedictine abbess, composer, philosopher, herbalist, polymath — received divine visions from childhood and had the political skill to make the Church listen. In the Cité, she tends the Scriptorium with the serenity of someone whose conversations with God are ongoing and occasionally administrative. Portrait from the Scivias illuminations: abbess habit, mandala visions, gold halos.
+4. **Sor Juana Inés de la Cruz** — Salon des Lettres / female. The Scholar. Mexican Jeronymite nun, poet, and the "First Feminist of the Americas," who maintained a library of four thousand volumes and was forced to surrender it by ecclesiastical pressure. Her poem "Hombres necios" (Foolish Men) is a masterclass in controlled rage. In the Cité, she is the College's most exacting tutor — gentle with students, merciless with received ideas. Portrait after Miguel Cabrera (c.1750): at her desk surrounded by books, Jeronymite habit.
+5. **Ada Lovelace** — Observatoire / female. The Calculator. Daughter of Lord Byron and Annabella Milbanke, who channelled her inheritance of poetic imagination into mathematics after her mother deliberately steered her away from poetry. Wrote Note G for Babbage's Analytical Engine — the first computer algorithm — and speculated that the machine might compose music. In the Cité, she runs the Observatory of the Blazing World with the restless energy of someone who can see the entire future and is frustrated that it doesn't exist yet. Portrait after Margaret Sarah Carpenter (1836): white satin, mathematical instruments.
+6. **Sojourner Truth** — Ordre de Rectitude / female. The Voice. Born Isabella Baumfree into slavery, escaped in 1826, became the most powerful orator of the abolitionist and women's rights movements. Her "Ain't I a Woman?" speech at the 1851 Akron Convention demolished the argument that women were too delicate for equal rights by the simple method of existing. In the Cité, she presides at the Hall of Declarations with the authority of someone whose patience is a weapon and whose silence is louder than other people's shouting. Portrait from the 1864 carte de visite: light shawl, bonnet, powerful dignified gaze.
+
+**Buildings (7):**
+- **The Salon of Reason** — Elizabeth Montagu's Bluestocking salons (1750s) made permanent. A great drawing room with walls of books and a mirror that shows the speaker not their face but the logical structure of their argument. Lady Reason's mirror from Christine's allegory, reimagined as social architecture. Where ideas are tested not by authority but by conversation.
+- **The College of Letters** — Newnham College Cambridge in amber stone with oriel windows and Pre-Raphaelite stained glass. Lecture halls, libraries, laboratories, and an observatory dome. Founded on Wollstonecraft's principle that the deficiency is in the education, not the student. Sor Juana teaches here. The library accepts books that have never been written.
+- **The Hall of Declarations** — Seneca Falls Convention meets Olympe de Gouges's revolutionary tribunal. A semicircular chamber where declarations are read aloud and then tested against reality. The Declaration of Sentiments (1848) is carved into the wall. Sojourner Truth presides.
+- **The Scriptorium** — Hildegard's Rupertsberg monastery crossed with Christine's writing desk. An illumination workshop where manuscripts are produced by hand — not from nostalgia but because the act of writing slowly is the act of thinking completely. The ink remembers more than the writer knows.
+- **The Observatory of the Blazing World** — Margaret Cavendish's *Blazing World* (1666) as physical space: telescopes, astrolabes, Babbage's Analytical Engine (completed), and instruments that measure things for which no science yet exists. Ada Lovelace's domain. The ceiling is a map of undiscovered mathematical relationships.
+- **The Garden of Remembered Names** — The Ladies of Llangollen (Eleanor Butler and Sarah Ponsonby, 1780–1829) inspiring a garden where every plant is named for a woman whose name was erased from history. Mary Delany's botanical art as living design. A residential space built around the principle that beauty is not decoration but argument.
+- **The Gate of Justice** — Lady Justice's gate from Christine's allegory. The only entrance to the Cité. Above the arch: "Nulle n'entre ici qui ne puisse nommer une femme oubliée" — *None enter here who cannot name a forgotten woman.* The gate keeps no one out; the question is the passage.
+
+**Zones (4 — from Christine's allegory):**
+- **Quarter of Reason** — Lady Reason built the foundations. Intellectual and scientific spaces: the Salon, the College, the Observatory.
+- **Quarter of Rectitude** — Lady Rectitude built the streets. Civic governance and declarations: the Hall, the archives, the courts.
+- **Quarter of Justice** — Lady Justice added the roofs and gates. Arts, spiritual life, and memory: the Scriptorium, the Gate.
+- **The Field of Letters** — The fertile plain where the city grows. Public gardens, markets, communal life: the Garden of Remembered Names.
+
+**Streets (16):**
+- *Quarter of Reason:* Salon Promenade, Montagu Arcade, Bluestocking Lane, Lecture Gallery
+- *Quarter of Rectitude:* Declaration Way, Senate Passage, Treaty Bridge, Petition Alley
+- *Quarter of Justice:* Illumination Walk, Cloister Passage, Virtue Lane, Anthem Bridge
+- *Field of Letters:* Garden Promenade, Market Row, Foundation Way, Chronicle Alley
+
+**Image Prompts:**
+- *Portrait style:* "illuminated manuscript portrait, layered historical eras medieval to Regency, warm candlelight and gold leaf, Pre-Raphaelite color richness, vellum texture, salon or library setting, detailed face with intelligence, jewel-tone garments, painterly cinematic, not photorealistic, not digital art"
+- *Building style:* "illuminated manuscript architecture, Georgian honey stone with Queen Anne red brick, Pre-Raphaelite stained glass, warm candlelight, gold leaf borders, literary salon proportions, art nouveau ironwork, climbing roses, cinematic painterly, not photorealistic, not modern"
+
+**Aesthetic:** Vellum cream (#F5E6CC) background with ultramarine (#1E3A8A) primary and burnished gold (#B8860B) accents. Libre Baskerville serif headings at 700-weight, no uppercase — refined, not brutalist. 3px border-radius with soft blur shadows. The platform's first light-themed simulation. Suffragette purple (#7B2D8E) as secondary. Animation slightly stately (1.1x) — the rhythm of considered prose, not military briefings. Font is literary 18th-century, not monospace.
+
 ### 4. The Brass Menagerie — Steampunk Animal Parliament
 
 **Theme:** `fantasy` | **Locale:** `en` | **Aesthetic:** Wind in the Willows meets Gormenghast
@@ -476,7 +706,7 @@ An English country estate where the garden has become sentient and is slowly con
 
 ---
 
-## III. 10 CROSS-SIMULATION MECHANICS
+## V. 10 CROSS-SIMULATION MECHANICS
 
 ### 11. The Bleed — Event Echoes Across Simulations
 
@@ -550,7 +780,7 @@ This is the platform's endgame loop: **create worlds -> connect worlds -> worlds
 
 ---
 
-## IV. IMPLEMENTATION PRIORITY
+## VI. IMPLEMENTATION PRIORITY
 
 If building these, the recommended order based on impact and feasibility:
 
@@ -567,7 +797,7 @@ If building these, the recommended order based on impact and feasibility:
 
 ---
 
-## V. WHICH SIMULATIONS TO BUILD NEXT
+## VII. WHICH SIMULATIONS TO BUILD NEXT
 
 **Built simulations** (in order of creation):
 
@@ -575,6 +805,7 @@ If building these, the recommended order based on impact and feasibility:
 2. **The Capybara Kingdom** — Sunless Sea underground fantasy. Wonder as survival.
 3. **Station Null** — Deep space horror. Knowledge as wound.
 4. **Speranza** — Arc Raiders post-apocalyptic. Hope as resistance.
+5. **Cité des Dames** — Feminist literary utopia. Voice as architecture.
 
 **Recommended next three** (maximum aesthetic and mechanical diversity):
 
@@ -586,7 +817,7 @@ If building these, the recommended order based on impact and feasibility:
 
 ---
 
-## VI. RESEARCH APPENDIX — Sources & Inspirations
+## VIII. RESEARCH APPENDIX — Sources & Inspirations
 
 *This appendix documents the sources and narrative techniques that informed the meta-lore expansion. It serves as a reference for future lore work, ensuring tonal and structural consistency across updates.*
 

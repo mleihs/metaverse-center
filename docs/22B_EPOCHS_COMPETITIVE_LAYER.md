@@ -1,7 +1,8 @@
 # 22 - Epochs & Competitive Layer
 
-**Version:** 1.4
+**Version:** 1.5
 **Date:** 2026-03-02
+**Change v1.5:** Bot Players — AI-controlled opponents for solo/low-player epochs. Migration 041: `bot_players` + `bot_decision_log` tables, `is_bot`/`bot_player_id` on `epoch_participants`. 5 personality archetypes (Sentinel/Warlord/Diplomat/Strategist/Chaos) × 3 difficulty levels. Backend: BotService (cycle orchestrator), BotGameState (fog-of-war compliant), BotPersonality (5 implementations), BotChatService (dual-mode: template + LLM). Frontend: BotConfigPanel (collectible card deck builder UI), bot indicators in leaderboard/battle log/chat/ready panel, AI Settings bot chat controls.
 **Change v1.4:** Balance patch v2.2 — guardian penalty 0.08→0.06/unit (cap 0.15), guardian cost 3→4 RP, infiltrator rework (cost 6→5, embassy reduction 50%→65%, +3 influence/success, sovereignty −6→−8, score 5→6), assassin cost 8→7 + stability −4→−5 + sovereignty −10→−12, saboteur stability −5→−6, propagandist sovereignty −5→−6, detection penalty 2→3, RP economy 10→12/cycle + cap 30→40, counter-intel sweep 3→4 RP.
 **Change v1.3:** Balance patch v2.1 — guardian penalty 0.20→0.08/unit (cap 0.20), spy intel reveal (zone security + guardian count to battle log), saboteur zone downgrade (security −1 tier), scoring rebalance (propagandist +3→+5, detection −3→−2, spy influence +1/+2, guardian sovereignty +4), betrayal −20%→−25%, alliance 10%→15%. Cartographer's Map: game instance visualization (phase rings, health arcs, sparklines, operative trails, battle feed, leaderboard panel, minimap, 30s refresh).
 **Change v1.2:** EpochCommandCenter decomposed from monolithic 3364-line file into orchestrator (1934 lines) + 5 child components: EpochOpsBoard (ops board + COMMS sidebar), EpochOverviewTab, EpochOperationsTab, EpochAlliancesTab, EpochLobbyActions. Data flows via Lit properties, mutations via CustomEvent bubbling. ~60 hardcoded hex colors replaced with CSS custom property tokens across all epoch components.
@@ -26,17 +27,19 @@ Epochs represent moments when the multiverse forces its simulations into direct 
 
 ### Database Schema
 
-**7 tables** (migrations 032 + 037):
+**9 tables** (migrations 032 + 037 + 041):
 
 | Table | Purpose | Key Fields |
 |-------|---------|------------|
 | `game_epochs` | Epoch definitions + lifecycle | `name`, `status` (lobby→foundation→competition→reckoning→completed), `config` (JSONB), `current_cycle` |
-| `epoch_participants` | Simulation enrollment per epoch | `epoch_id`, `simulation_id`, `team_id`, `current_rp`, `final_scores` |
+| `epoch_participants` | Simulation enrollment per epoch | `epoch_id`, `simulation_id`, `team_id`, `current_rp`, `final_scores`, `is_bot`, `bot_player_id` |
 | `epoch_teams` | Alliance definitions | `name`, `epoch_id`, `created_by_simulation_id`, `dissolved_at`, `dissolved_reason` |
 | `operative_missions` | Deployed operatives + results | `agent_id`, `operative_type`, `source_simulation_id`, `target_simulation_id`, `embassy_id`, `status`, `success_probability`, `mission_result` |
 | `epoch_scores` | Score snapshots per cycle | `cycle_number`, 5 dimension scores + composite, unique per (epoch, simulation, cycle) |
 | `battle_log` | Narrative event feed | `event_type`, `narrative`, `is_public`, `metadata` |
-| `epoch_chat_messages` | Realtime chat messages (epoch-wide + team) | `epoch_id`, `sender_id`, `sender_simulation_id`, `channel_type`, `team_id`, `content` |
+| `epoch_chat_messages` | Realtime chat messages (epoch-wide + team) | `epoch_id`, `sender_id`, `sender_simulation_id`, `channel_type`, `team_id`, `content`, `sender_type` |
+| `bot_players` | Reusable bot preset definitions | `name`, `personality`, `difficulty`, `config` (JSONB), `created_by_id` |
+| `bot_decision_log` | Audit trail of bot decisions per cycle | `epoch_id`, `participant_id`, `cycle_number`, `phase`, `decision` (JSONB) |
 
 **4 materialized views** (migration 031):
 
@@ -51,31 +54,38 @@ Epochs represent moments when the multiverse forces its simulations into direct 
 
 | Component | File | Purpose |
 |-----------|------|---------|
-| **Epoch Router** | `routers/epochs.py` (268 lines) | CRUD epochs, join/leave, team management, lifecycle transitions |
+| **Epoch Router** | `routers/epochs.py` (268 lines) | CRUD epochs, join/leave, team management, lifecycle transitions, add/remove bots |
 | **Operatives Router** | `routers/operatives.py` (145 lines) | Deploy, recall, list missions, counter-intelligence |
 | **Scores Router** | `routers/scores.py` (79 lines) | Leaderboard, score history, final standings |
 | **Game Mechanics Router** | `routers/game_mechanics.py` (171 lines) | Simulation health, building readiness, zone stability |
-| **Epoch Service** | `services/epoch_service.py` (501 lines) | Lifecycle (create → start → advance → resolve → complete), RP allocation, cycle resolution |
+| **Bot Players Router** | `routers/bot_players.py` (~120 lines) | CRUD bot presets (user-scoped) |
+| **Epoch Service** | `services/epoch_service.py` (501 lines) | Lifecycle (create → start → advance → resolve → complete), RP allocation, cycle resolution + bot execution |
 | **Operative Service** | `services/operative_service.py` (559 lines) | Deploy/recall/resolve missions, success probability calculation |
 | **Scoring Service** | `services/scoring_service.py` (389 lines) | 5-dimension scoring, normalization, composite weighting |
 | **Battle Log Service** | `services/battle_log_service.py` (259 lines) | Record + query competitive event narratives |
 | **Game Mechanics Service** | `services/game_mechanics_service.py` (310 lines) | Read materialized views, compute live simulation metrics |
+| **Bot Service** | `services/bot_service.py` (~500 lines) | Bot cycle orchestrator — executes all bot decisions during resolve_cycle() |
+| **Bot Game State** | `services/bot_game_state.py` (~200 lines) | Fog-of-war compliant game state builder for bot decision-making |
+| **Bot Personality** | `services/bot_personality.py` (~600 lines) | Abstract base + 5 personality implementations (Sentinel/Warlord/Diplomat/Strategist/Chaos) |
+| **Bot Chat Service** | `services/bot_chat_service.py` (~250 lines) | Dual-mode chat generation (template-based + LLM via OpenRouter) |
 
 ### Frontend
 
 | Component | File | Lines | Purpose |
 |-----------|------|-------|---------|
-| **EpochCommandCenter** | `components/epoch/EpochCommandCenter.ts` | 1934 | Orchestrator — fetches state, delegates to subcomponents, handles mutations |
+| **EpochCommandCenter** | `components/epoch/EpochCommandCenter.ts` | ~1960 | Orchestrator — fetches state, delegates to subcomponents, handles mutations, wires BotConfigPanel |
 | **EpochOpsBoard** | `components/epoch/EpochOpsBoard.ts` | 1065 | Operations board: dossier cards + COMMS sidebar (collapsible chat panel) |
-| **EpochOverviewTab** | `components/epoch/EpochOverviewTab.ts` | 488 | Overview + mission cards, dispatches deploy/counter/recall events |
+| **EpochOverviewTab** | `components/epoch/EpochOverviewTab.ts` | 488 | Overview + mission cards, passes participants to leaderboard/battle log for bot cross-referencing |
 | **EpochOperationsTab** | `components/epoch/EpochOperationsTab.ts` | 355 | Operations tab, dispatches recall events |
 | **EpochAlliancesTab** | `components/epoch/EpochAlliancesTab.ts` | 400 | Alliances tab, dispatches create/join/leave-team events |
-| **EpochLobbyActions** | `components/epoch/EpochLobbyActions.ts` | 397 | Lobby actions + admin controls, dispatches epoch lifecycle events |
+| **EpochLobbyActions** | `components/epoch/EpochLobbyActions.ts` | ~420 | Lobby actions + admin controls + "Add Bots" button, dispatches epoch lifecycle events |
+| **BotConfigPanel** | `components/epoch/BotConfigPanel.ts` | ~900 | VelgSidePanel slide-out: bot preset CRUD, personality card grid with radar charts, difficulty toggle, deploy to epoch |
 | **EpochCreationWizard** | `components/epoch/EpochCreationWizard.ts` | 1245 | 3-step epoch setup (Parameters/Economy/Doctrine) |
 | **DeployOperativeModal** | `components/epoch/DeployOperativeModal.ts` | 1502 | 3-step operative deployment (Asset/Mission/Target) |
-| **EpochLeaderboard** | `components/epoch/EpochLeaderboard.ts` | 411 | Sortable score table with per-dimension bars |
-| **EpochBattleLog** | `components/epoch/EpochBattleLog.ts` | 262 | Narrative event feed with filtering |
+| **EpochLeaderboard** | `components/epoch/EpochLeaderboard.ts` | ~520 | Sortable score table with per-dimension bars + bot personality indicators |
+| **EpochBattleLog** | `components/epoch/EpochBattleLog.ts` | ~350 | Narrative event feed with filtering + bot [BOT] prefix tags |
 | **EpochsApiService** | `services/api/EpochsApiService.ts` | 203 | 27 API methods for epochs + operatives + scores |
+| **BotApiService** | `services/api/BotApiService.ts` | ~60 | CRUD for bot presets + add/remove bot from epoch |
 
 ### API Endpoints
 
@@ -124,6 +134,17 @@ Epochs represent moments when the multiverse forces its simulations into direct 
 | GET | `/epochs/{id}/scores/standings` | optional | Final standings |
 | GET | `/epochs/{id}/scores/simulations/{sid}` | owner | Score history |
 | GET | `/epochs/{id}/battle-log` | optional | Battle log entries |
+
+**Bot Players:**
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/bot-players` | authenticated | List user's bot presets |
+| POST | `/bot-players` | authenticated | Create bot preset |
+| PATCH | `/bot-players/{id}` | owner | Update bot preset |
+| DELETE | `/bot-players/{id}` | owner | Delete bot preset |
+| POST | `/epochs/{id}/add-bot` | creator | Add bot participant to epoch (lobby phase only) |
+| DELETE | `/epochs/{id}/remove-bot/{pid}` | creator | Remove bot participant from epoch |
 
 **Public (no auth):**
 
@@ -335,6 +356,34 @@ interface LeaderboardEntry {
   diplomatic: number;
   military: number;
   composite: number;
+  // Dimension titles (awarded when highest in a dimension)
+  stability_title?: string;
+  influence_title?: string;
+  sovereignty_title?: string;
+  diplomatic_title?: string;
+  military_title?: string;
+  betrayal_penalty?: number;
+}
+
+type BotPersonality = 'sentinel' | 'warlord' | 'diplomat' | 'strategist' | 'chaos';
+type BotDifficulty = 'easy' | 'medium' | 'hard';
+
+interface BotPlayer {
+  id: UUID;
+  name: string;
+  personality: BotPersonality;
+  difficulty: BotDifficulty;
+  config: Record<string, unknown>;
+  created_by_id: UUID;
+  created_at: string;
+  updated_at: string;
+}
+
+interface EpochParticipant {
+  // ... existing fields ...
+  is_bot: boolean;
+  bot_player_id?: UUID;
+  bot_players?: BotPlayer;  // Joined via PostgREST select
 }
 ```
 
@@ -347,15 +396,147 @@ interface LeaderboardEntry {
 | Database tables (migration 032) | Applied locally | NOT pushed to production |
 | Materialized views (migration 031) | Applied locally | NOT pushed to production |
 | Epoch chat table (migration 037) | Applied locally | NOT pushed to production |
-| Backend routers (4) | Complete | epochs, operatives, scores, epoch_chat |
-| Backend services (6) | Complete | epoch, operative, scoring, battle_log, game_mechanics, epoch_chat |
-| Frontend components (8) | Complete | Command center, wizard, deploy modal, leaderboard, battle log, chat panel, presence indicator, ready panel |
-| Frontend API services (2) | Complete | EpochsApiService (27 methods), EpochChatApiService (4 methods) |
+| Bot players tables (migration 041) | Applied locally | NOT pushed to production |
+| Backend routers (5) | Complete | epochs, operatives, scores, epoch_chat, bot_players |
+| Backend services (10) | Complete | epoch, operative, scoring, battle_log, game_mechanics, epoch_chat, bot_service, bot_game_state, bot_personality, bot_chat_service |
+| Frontend components (10) | Complete | Command center, wizard, deploy modal, leaderboard, battle log, chat panel, presence indicator, ready panel, invite panel, **bot config panel** |
+| Frontend API services (3) | Complete | EpochsApiService (27 methods), EpochChatApiService (4 methods), **BotApiService** (6 methods) |
 | RealtimeService | Complete | Singleton managing 4 channel types with Preact Signals |
-| TypeScript types | Complete | 14 interfaces + 4 union types |
-| i18n (EN + DE) | Complete | 1666 total strings |
+| TypeScript types | Complete | 17 interfaces + 6 union types (incl. BotPlayer, BotPersonality, BotDifficulty) |
+| i18n (EN + DE) | Complete | 2007 total strings |
 | Public API endpoints (8) | Complete | Spectator access to leaderboard, battle log, epoch info |
+| AI Settings integration | Complete | `bot_chat_mode` toggle + `model_bot_chat` model selector |
 | Production deployment | Pending | Migrations not pushed, code not deployed |
+
+---
+
+## Bot Players (Migration 041)
+
+Bot players are AI-controlled opponents that allow solo or low-player-count epoch gameplay. Users create reusable "bot presets" — configurable AI personalities that can be shuffled into any epoch. Bots execute synchronously during cycle resolution with full game mechanic compliance (same RP economy, operative constraints, success probability calculations as human players).
+
+### Design Principles
+
+1. **No LLM for tactical decisions** — Deterministic/probabilistic engine with personality-based heuristics. Fast (~50ms per bot per cycle), predictable, auditable, zero API costs for decisions.
+2. **LLM for optional chat flavor** — Dual-mode: template-based (free, instant, default) or LLM-generated (rich personality-flavored messages via OpenRouter). Configurable per-simulation in AI Settings.
+3. **Fog-of-war compliance** — `BotGameState` builds state from the same queries a human player would see. Spy intel only available if the bot actually deployed successful spies.
+4. **Zero code duplication** — Bots call `OperativeService.deploy()` and `OperativeService.spend_rp()` directly. Same validation, same constraints, same success probability.
+5. **Admin supabase for writes** — Bots are system-level actors. Using admin client bypasses RLS (no fake JWT sessions per bot).
+6. **Reusable presets** — Users create bot presets once, deploy them to any epoch. Like building a "deck of opponents."
+
+### Database Schema
+
+**`bot_players` table:**
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | UUID | PK, default gen_random_uuid() | Bot preset identifier |
+| `name` | TEXT | NOT NULL | Display name / callsign |
+| `personality` | TEXT | NOT NULL, CHECK IN ('sentinel','warlord','diplomat','strategist','chaos') | AI archetype |
+| `difficulty` | TEXT | NOT NULL DEFAULT 'medium', CHECK IN ('easy','medium','hard') | Difficulty level |
+| `config` | JSONB | NOT NULL DEFAULT '{}' | Per-personality tuning overrides |
+| `created_by_id` | UUID | FK auth.users, NOT NULL | Owner |
+| `created_at` | TIMESTAMPTZ | default now() | Created timestamp |
+| `updated_at` | TIMESTAMPTZ | default now() | Updated timestamp |
+
+**`bot_decision_log` table:**
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | UUID | PK, default gen_random_uuid() | Log entry identifier |
+| `epoch_id` | UUID | FK game_epochs ON DELETE CASCADE | Parent epoch |
+| `participant_id` | UUID | FK epoch_participants ON DELETE CASCADE | Bot participant |
+| `cycle_number` | INTEGER | NOT NULL | Cycle when decision was made |
+| `phase` | TEXT | NOT NULL | Decision phase ('analysis','allocation','deployment','alliance') |
+| `decision` | JSONB | NOT NULL | Full decision payload for audit |
+| `created_at` | TIMESTAMPTZ | default now() | Timestamp |
+
+**Columns added to `epoch_participants`:**
+
+| Column | Type | Default | Description |
+|--------|------|---------|-------------|
+| `is_bot` | BOOLEAN | false | Whether this participant is AI-controlled |
+| `bot_player_id` | UUID | NULL, FK bot_players | Reference to bot preset |
+
+**Column added to `epoch_chat_messages`:**
+
+| Column | Type | Default | Description |
+|--------|------|---------|-------------|
+| `sender_type` | TEXT | 'human' | Message origin ('human' or 'bot') |
+
+### Personality Archetypes
+
+| Personality | Strategy | RP Allocation | Alliance Behavior | Risk | Accent Color |
+|-------------|----------|---------------|-------------------|------|-------------|
+| **Sentinel** | Defensive | 50% DEF, 25% INT, 25% situational | Seeks early, loyal, never betrays first | Low | `#4ade80` (green) |
+| **Warlord** | Aggressive | 60% OFF, 20% INT, 20% DEF | Reluctant, betrays when ally threatens | High | `#ef4444` (red) |
+| **Diplomat** | Diplomatic | 30% DIP, 30% INF, 20% INT, 20% DEF | Active alliance seeker, maintains bonds | Medium | `#a78bfa` (purple) |
+| **Strategist** | Adaptive | Dynamic — counter-builds opponent strategy | Strategic alliances against leader | Medium-High | `#38bdf8` (blue) |
+| **Chaos** | Unpredictable | Random weighted each cycle | Forms/breaks randomly (30% betray/cycle) | Variable | `#fbbf24` (amber) |
+
+### Difficulty Scaling
+
+| Parameter | Easy | Medium | Hard |
+|-----------|------|--------|------|
+| RP waste % | 30% randomly unspent | 10% | 0% |
+| Intel usage | Ignores spy reports | Uses detected ops | Full optimal analysis |
+| Target quality | Random target | Decent selection | Optimal (vulnerability scoring) |
+| Alliance timing | Random | Foundation phase | Optimal based on standings |
+| Threat adaptation | None | Reacts to attacks | Proactive counter-strategy |
+| Success threshold | Deploys at any % | Skips < 20% | Skips < 35% (cost-effective only) |
+
+### Bot Execution Flow
+
+During `resolve_cycle()`, after RP grant + mission resolution, before scoring:
+
+```
+1. Get all bot participants for the epoch
+2. For each bot:
+   a. Build BotGameState (fog-of-war compliant — same data as human)
+   b. Create personality instance (factory pattern)
+   c. Execute decision pipeline:
+      - allocate_rp(state) → RP distribution per operative type
+      - apply_difficulty_waste() → Easy: 30% random waste
+      - select_targets(state, allocation) → deployment plans
+      - filter_by_success_threshold() → skip low-probability missions
+      - manage_alliances(state) → form/maintain/betray decisions
+   d. Execute decisions via OperativeService (same as human)
+   e. Log decisions to bot_decision_log (audit trail)
+   f. Generate 0-2 chat messages (template or LLM)
+   g. Set cycle_ready = TRUE
+```
+
+### Bot Chat (Dual Mode)
+
+**Template Mode (Default):** Personality-specific template pools with contextual variable substitution. ~150 templates (5 personalities × 8 contexts × 3-5 variants). Zero API cost, ~0ms latency.
+
+Contexts: idle, attacked, winning, losing, ally_joined, ally_betrayed, deployed, phase_change.
+
+**LLM Mode (Optional):** When `bot_chat_mode = 'llm'` in AI Settings, messages generated via OpenRouter using `model_bot_chat` model. Each personality has a ~200-word system prompt defining tone, vocabulary, and worldview. Max 100 tokens per message. Falls back to templates on API failure.
+
+### Frontend: BotConfigPanel
+
+VelgSidePanel slide-out with "Bot Deployment Console meets Collectible Card Deck" aesthetic. Three sections:
+
+1. **YOUR DECK** — Saved presets as compact horizontal cards (personality icon + name + difficulty badge + quick-add/delete buttons). Stagger entrance on panel open.
+2. **FORGE NEW UNIT** — Creation form: callsign input, 2×2+1 personality card grid (SVG radar charts showing 5-axis stats, personality accent color borders, stagger reveal), 3-segment difficulty toggle (LOW/MED/HGH with morph transition), expandable tactical profile + behavior matrix (CSS horizontal bar chart).
+3. **DEPLOY TO EPOCH** — Simulation dropdown (filtered to available templates) + deploy button.
+
+### Frontend: Bot Indicators in Epoch UI
+
+- **EpochLeaderboard:** Bot entries show personality SVG icon + "BOT" badge + difficulty label next to simulation name, color-coded per personality type.
+- **EpochBattleLog:** Bot-originated events prefixed with `[BOT]` tag in personality-specific color.
+- **EpochChatPanel:** Bot messages styled with amber-tinted background, italic text, "BOT" badge next to sender name.
+- **EpochReadyPanel:** Bot participants show amber "BOT" tag next to name.
+- **EpochLobbyActions:** "Add Bots" button (creator-only, lobby phase) opens BotConfigPanel.
+
+### AI Settings Integration
+
+Two new settings in the AI Settings panel (`category: 'ai'`):
+
+| Setting | Key | Type | Default | Description |
+|---------|-----|------|---------|-------------|
+| Bot Chat Mode | `bot_chat_mode` | dropdown | `template` | Template (free, instant) vs LLM (rich, API cost) |
+| Bot Chat Model | `model_bot_chat` | model selector | `deepseek/deepseek-v3.2` | Only visible when mode = LLM |
 
 ---
 

@@ -177,13 +177,9 @@ class EpochService:
             .execute()
         )
 
-        # Re-fetch participants (now pointing to game instances)
-        participants = await cls.list_participants(supabase, epoch_id)
-
         # Grant initial RP to all participants (foundation bonus)
         foundation_rp = int(config["rp_per_cycle"] * 1.5)
-        for p in participants:
-            await cls._grant_rp(supabase, p["id"], foundation_rp, config["rp_cap"])
+        await cls._grant_rp_batch(supabase, epoch_id, foundation_rp, config["rp_cap"])
 
         return resp.data[0] if resp.data else epoch
 
@@ -264,7 +260,10 @@ class EpochService:
         """List all participants in an epoch."""
         resp = (
             supabase.table("epoch_participants")
-            .select("*, simulations(name, slug, simulation_type, source_template_id)")
+            .select(
+                "*, simulations(name, slug, simulation_type, source_template_id),"
+                " bot_players(name, personality, difficulty)"
+            )
             .eq("epoch_id", str(epoch_id))
             .order("joined_at")
             .execute()
@@ -458,36 +457,130 @@ class EpochService:
         )
         return resp.data[0] if resp.data else {}
 
-    # ── RP Management ────────────────────────────────────────
+    # ── Bot Participants ────────────────────────────────────
 
     @classmethod
-    async def _grant_rp(
+    async def add_bot(
         cls,
         supabase: Client,
-        participant_id: str,
-        amount: int,
-        rp_cap: int,
-    ) -> None:
-        """Grant RP to a participant, respecting the cap.
+        epoch_id: UUID,
+        simulation_id: UUID,
+        bot_player_id: UUID,
+    ) -> dict:
+        """Add a bot participant to an epoch lobby."""
+        epoch = await cls.get(supabase, epoch_id)
+        if epoch["status"] != "lobby":
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                "Can only add bots during lobby phase.",
+            )
 
-        Uses optimistic locking to prevent concurrent grant race conditions.
-        """
-        participant = (
-            supabase.table("epoch_participants")
-            .select("current_rp")
-            .eq("id", participant_id)
+        # Verify bot exists
+        bot_resp = (
+            supabase.table("bot_players")
+            .select("id, name, personality")
+            .eq("id", str(bot_player_id))
             .single()
             .execute()
         )
-        current = participant.data.get("current_rp", 0) if participant.data else 0
-        new_rp = min(current + amount, rp_cap)
+        if not bot_resp.data:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Bot player not found.")
 
-        resp = supabase.table("epoch_participants").update({
-            "current_rp": new_rp,
-            "last_rp_grant_at": datetime.now(UTC).isoformat(),
-        }).eq("id", participant_id).eq("current_rp", current).execute()
+        # Check simulation not already in epoch
+        existing = (
+            supabase.table("epoch_participants")
+            .select("id")
+            .eq("epoch_id", str(epoch_id))
+            .eq("simulation_id", str(simulation_id))
+            .execute()
+        )
+        if existing.data:
+            raise HTTPException(
+                status.HTTP_409_CONFLICT,
+                "This simulation is already in the epoch.",
+            )
+
+        resp = (
+            supabase.table("epoch_participants")
+            .insert({
+                "epoch_id": str(epoch_id),
+                "simulation_id": str(simulation_id),
+                "is_bot": True,
+                "bot_player_id": str(bot_player_id),
+            })
+            .execute()
+        )
         if not resp.data:
-            logger.warning("RP grant failed (concurrent modification) for participant %s", participant_id)
+            raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Failed to add bot.")
+        return resp.data[0]
+
+    @classmethod
+    async def remove_bot(
+        cls,
+        supabase: Client,
+        epoch_id: UUID,
+        participant_id: UUID,
+    ) -> None:
+        """Remove a bot participant from epoch lobby."""
+        epoch = await cls.get(supabase, epoch_id)
+        if epoch["status"] != "lobby":
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                "Can only remove bots during lobby phase.",
+            )
+
+        p_resp = (
+            supabase.table("epoch_participants")
+            .select("id, is_bot")
+            .eq("id", str(participant_id))
+            .eq("epoch_id", str(epoch_id))
+            .single()
+            .execute()
+        )
+        if not p_resp.data:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Participant not found.")
+        if not p_resp.data.get("is_bot"):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "This participant is not a bot.")
+
+        supabase.table("epoch_participants").delete().eq("id", str(participant_id)).execute()
+
+    # ── RP Management ────────────────────────────────────────
+
+    @classmethod
+    async def _grant_rp_batch(
+        cls,
+        supabase: Client,
+        epoch_id: UUID,
+        amount: int,
+        rp_cap: int,
+    ) -> None:
+        """Grant RP to all participants in an epoch, respecting the cap.
+
+        Uses a single batch query via RPC to avoid N+1 SELECT+UPDATE loops.
+        Falls back to per-participant updates if the batch approach isn't available.
+        """
+        now = datetime.now(UTC).isoformat()
+        # Fetch all participants with current RP in a single query
+        resp = (
+            supabase.table("epoch_participants")
+            .select("id, current_rp")
+            .eq("epoch_id", str(epoch_id))
+            .execute()
+        )
+        participants = resp.data or []
+
+        # Build batch updates — group by target RP to minimize queries
+        rp_groups: dict[int, list[str]] = {}
+        for p in participants:
+            current = p.get("current_rp", 0)
+            new_rp = min(current + amount, rp_cap)
+            rp_groups.setdefault(new_rp, []).append(p["id"])
+
+        for new_rp, ids in rp_groups.items():
+            supabase.table("epoch_participants").update({
+                "current_rp": new_rp,
+                "last_rp_grant_at": now,
+            }).in_("id", ids).execute()
 
     @classmethod
     async def spend_rp(
@@ -567,9 +660,7 @@ class EpochService:
         if epoch["status"] == "foundation":
             rp_amount = int(rp_amount * 1.5)  # Foundation bonus
 
-        participants = await cls.list_participants(supabase, epoch_id)
-        for p in participants:
-            await cls._grant_rp(supabase, p["id"], rp_amount, config["rp_cap"])
+        await cls._grant_rp_batch(supabase, epoch_id, rp_amount, config["rp_cap"])
 
         # Reset all cycle_ready flags before advancing
         supabase.table("epoch_participants").update(

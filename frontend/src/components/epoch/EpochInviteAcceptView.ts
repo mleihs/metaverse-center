@@ -625,7 +625,7 @@ export class VelgEpochInviteAcceptView extends LitElement {
     return html`
       <div class="intel">
         <p class="intel__classification">
-          <span>CLASSIFIED</span> // EPOCH SUMMONS
+          <span>${msg('CLASSIFIED')}</span> // ${msg('EPOCH SUMMONS')}
         </p>
 
         <h1 class="intel__epoch-name">${inv.epoch_name}</h1>

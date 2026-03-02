@@ -1,14 +1,14 @@
 # 18 — Per-Simulation Theming System
 
-**Version:** v1.2
-**Status:** Implemented — 6 Presets: default, brutalist, fantasy-kingdom, cyberpunk, steampunk, deep-space-horror. WCAG 2.1 AA validiert (88 Kontrast-Tests, 14 Paare pro Preset).
+**Version:** v1.3
+**Status:** Implemented — 6 Presets: default, brutalist, fantasy-kingdom, cyberpunk, steampunk, deep-space-horror. WCAG 2.1 AA validiert (88 Kontrast-Tests, 14 Paare pro Preset). Platform-level Bureau font: `--font-bureau` (Spectral serif) for dashboard hero, LoreScroll, and footer — not overridden by per-simulation themes.
 
 ## Overview
 
 Every simulation has its own visual identity derived from a shared base design system. The theming system overrides base CSS custom properties on the `<velg-simulation-shell>` host element, so all child components inherit themed values through Shadow DOM without any per-component changes.
 
 ```
-Platform views (dashboard, profile)  →  :root tokens (always brutalist)
+Platform views (dashboard, profile)  →  :root tokens (brutalist + bureau serif)
 Simulation views (inside shell)      →  Overridden tokens on shell host
 ```
 

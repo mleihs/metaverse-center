@@ -4,7 +4,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
-from backend.dependencies import get_admin_supabase, get_current_user, get_supabase
+from backend.dependencies import get_admin_supabase, get_current_user, get_supabase, require_platform_admin
 from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.echo import ConnectionCreate, ConnectionResponse, ConnectionUpdate
 from backend.services.echo_service import ConnectionService
@@ -30,6 +30,7 @@ async def list_connections(
 async def create_connection(
     body: ConnectionCreate,
     user: CurrentUser = Depends(get_current_user),
+    _admin_check: None = Depends(require_platform_admin()),
     admin_supabase: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Create a simulation connection (platform admin only)."""
@@ -44,6 +45,7 @@ async def update_connection(
     connection_id: UUID,
     body: ConnectionUpdate,
     user: CurrentUser = Depends(get_current_user),
+    _admin_check: None = Depends(require_platform_admin()),
     admin_supabase: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Update a simulation connection (platform admin only)."""
@@ -57,6 +59,7 @@ async def update_connection(
 async def delete_connection(
     connection_id: UUID,
     user: CurrentUser = Depends(get_current_user),
+    _admin_check: None = Depends(require_platform_admin()),
     admin_supabase: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Delete a simulation connection (platform admin only)."""

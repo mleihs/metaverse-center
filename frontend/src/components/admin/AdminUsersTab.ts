@@ -13,7 +13,7 @@ export class VelgAdminUsersTab extends LitElement {
   static styles = css`
     :host {
       display: block;
-      color: var(--color-gray-200, #e2e2e8);
+      color: var(--color-text-primary);
       font-family: var(--font-mono, monospace);
     }
 
@@ -32,20 +32,20 @@ export class VelgAdminUsersTab extends LitElement {
       padding: var(--space-2) var(--space-3);
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-      background: var(--color-gray-900, #111118);
-      color: var(--color-gray-200, #e2e2e8);
-      border: 1px solid var(--color-gray-700, #374151);
+      background: var(--color-surface);
+      color: var(--color-text-primary);
+      border: 1px solid var(--color-border);
       transition: border-color 0.2s ease;
     }
 
     .search-input:focus {
       outline: none;
-      border-color: var(--color-danger, #dc2626);
-      box-shadow: 0 0 0 1px var(--color-danger, #dc2626);
+      border-color: var(--color-danger);
+      box-shadow: 0 0 0 1px var(--color-danger);
     }
 
     .search-input::placeholder {
-      color: var(--color-gray-500, #6b7280);
+      color: var(--color-text-muted);
     }
 
     .user-count {
@@ -53,7 +53,7 @@ export class VelgAdminUsersTab extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-gray-500, #6b7280);
+      color: var(--color-text-muted);
     }
 
     /* --- User list --- */
@@ -70,8 +70,8 @@ export class VelgAdminUsersTab extends LitElement {
       align-items: center;
       gap: var(--space-4);
       padding: var(--space-3) var(--space-4);
-      background: var(--color-gray-900, #111118);
-      border: 1px solid var(--color-gray-800, #1e1e2a);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
       cursor: pointer;
       transition:
         border-color 0.2s ease,
@@ -80,26 +80,26 @@ export class VelgAdminUsersTab extends LitElement {
     }
 
     .user-row:hover {
-      border-color: var(--color-gray-600, #4b5563);
+      border-color: var(--color-text-muted);
       transform: translateX(2px);
     }
 
     .user-row--expanded {
-      border-color: var(--color-danger, #dc2626);
-      box-shadow: 0 0 0 1px var(--color-danger, #dc2626);
+      border-color: var(--color-danger);
+      box-shadow: 0 0 0 1px var(--color-danger);
     }
 
     .user-email {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
       font-weight: var(--font-semibold);
-      color: var(--color-gray-100, #f3f4f6);
+      color: var(--color-text-primary);
       word-break: break-all;
     }
 
     .user-date {
       font-size: var(--text-xs);
-      color: var(--color-gray-500, #6b7280);
+      color: var(--color-text-muted);
       white-space: nowrap;
     }
 
@@ -120,35 +120,35 @@ export class VelgAdminUsersTab extends LitElement {
     }
 
     .badge--owner {
-      color: #f87171;
-      border-color: #f8717180;
-      background: rgba(248, 113, 113, 0.1);
+      color: var(--color-danger);
+      border-color: color-mix(in srgb, var(--color-danger) 50%, transparent);
+      background: color-mix(in srgb, var(--color-danger) 10%, transparent);
     }
 
     .badge--admin {
-      color: #60a5fa;
-      border-color: #60a5fa80;
-      background: rgba(96, 165, 250, 0.1);
+      color: var(--color-info);
+      border-color: color-mix(in srgb, var(--color-info) 50%, transparent);
+      background: color-mix(in srgb, var(--color-info) 10%, transparent);
     }
 
     .badge--editor {
-      color: #34d399;
-      border-color: #34d39980;
-      background: rgba(52, 211, 153, 0.1);
+      color: var(--color-success);
+      border-color: color-mix(in srgb, var(--color-success) 50%, transparent);
+      background: color-mix(in srgb, var(--color-success) 10%, transparent);
     }
 
     .badge--viewer {
-      color: var(--color-gray-400, #9ca3af);
-      border-color: var(--color-gray-600, #4b5563);
-      background: rgba(156, 163, 175, 0.08);
+      color: var(--color-text-secondary);
+      border-color: var(--color-text-muted);
+      background: color-mix(in srgb, var(--color-text-secondary) 8%, transparent);
     }
 
     /* --- Expanded detail --- */
 
     .user-detail {
       padding: var(--space-4);
-      background: var(--color-gray-900, #111118);
-      border: 1px solid var(--color-gray-800, #1e1e2a);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
       border-top: none;
       margin-top: calc(-1 * var(--space-2));
       animation: detail-slide 0.2s ease;
@@ -171,7 +171,7 @@ export class VelgAdminUsersTab extends LitElement {
       font-weight: var(--font-bold);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-gray-500, #6b7280);
+      color: var(--color-text-muted);
       margin: 0 0 var(--space-3) 0;
     }
 
@@ -187,14 +187,14 @@ export class VelgAdminUsersTab extends LitElement {
       align-items: center;
       gap: var(--space-3);
       padding: var(--space-2) var(--space-3);
-      background: var(--color-gray-850, #161622);
-      border: 1px solid var(--color-gray-800, #1e1e2a);
+      background: var(--color-background);
+      border: 1px solid var(--color-border);
     }
 
     .membership-sim {
       font-size: var(--text-sm);
       font-weight: var(--font-semibold);
-      color: var(--color-gray-200, #e2e2e8);
+      color: var(--color-text-primary);
       flex: 1;
     }
 
@@ -202,9 +202,9 @@ export class VelgAdminUsersTab extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
       padding: var(--space-1) var(--space-2);
-      background: var(--color-gray-900, #111118);
-      color: var(--color-gray-200, #e2e2e8);
-      border: 1px solid var(--color-gray-700, #374151);
+      background: var(--color-surface);
+      color: var(--color-text-primary);
+      border: 1px solid var(--color-border);
     }
 
     .btn-sm {
@@ -214,9 +214,9 @@ export class VelgAdminUsersTab extends LitElement {
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
       padding: var(--space-1) var(--space-3);
-      border: 1px solid var(--color-gray-700, #374151);
+      border: 1px solid var(--color-border);
       background: transparent;
-      color: var(--color-gray-300, #d1d5db);
+      color: var(--color-text-secondary);
       cursor: pointer;
       transition:
         background 0.2s ease,
@@ -233,25 +233,25 @@ export class VelgAdminUsersTab extends LitElement {
     }
 
     .btn-sm--danger {
-      color: #f87171;
-      border-color: #f8717180;
+      color: var(--color-danger);
+      border-color: color-mix(in srgb, var(--color-danger) 50%, transparent);
     }
 
     .btn-sm--danger:hover {
-      background: #dc2626;
-      color: #ffffff;
-      border-color: #dc2626;
+      background: var(--color-danger);
+      color: var(--color-text-inverse);
+      border-color: var(--color-danger);
     }
 
     .btn-sm--primary {
-      color: #60a5fa;
-      border-color: #60a5fa80;
+      color: var(--color-info);
+      border-color: color-mix(in srgb, var(--color-info) 50%, transparent);
     }
 
     .btn-sm--primary:hover {
-      background: #2563eb;
-      color: #ffffff;
-      border-color: #2563eb;
+      background: var(--color-info-hover);
+      color: var(--color-text-inverse);
+      border-color: var(--color-info-hover);
     }
 
     /* --- Add membership form --- */
@@ -261,16 +261,16 @@ export class VelgAdminUsersTab extends LitElement {
       align-items: center;
       gap: var(--space-2);
       padding-top: var(--space-3);
-      border-top: 1px solid var(--color-gray-800, #1e1e2a);
+      border-top: 1px solid var(--color-border);
     }
 
     .add-membership select {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
       padding: var(--space-1) var(--space-2);
-      background: var(--color-gray-900, #111118);
-      color: var(--color-gray-200, #e2e2e8);
-      border: 1px solid var(--color-gray-700, #374151);
+      background: var(--color-surface);
+      color: var(--color-text-primary);
+      border: 1px solid var(--color-border);
     }
 
     .detail-actions {
@@ -278,7 +278,7 @@ export class VelgAdminUsersTab extends LitElement {
       gap: var(--space-2);
       margin-top: var(--space-4);
       padding-top: var(--space-3);
-      border-top: 1px solid var(--color-gray-800, #1e1e2a);
+      border-top: 1px solid var(--color-border);
     }
 
     /* --- Loading / empty --- */
@@ -287,7 +287,7 @@ export class VelgAdminUsersTab extends LitElement {
     .empty {
       text-align: center;
       padding: var(--space-8);
-      color: var(--color-gray-500, #6b7280);
+      color: var(--color-text-muted);
       font-family: var(--font-brutalist);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
@@ -309,9 +309,9 @@ export class VelgAdminUsersTab extends LitElement {
       font-weight: var(--font-bold);
       text-transform: uppercase;
       padding: var(--space-1) var(--space-3);
-      border: 1px solid var(--color-gray-700, #374151);
-      background: var(--color-gray-900, #111118);
-      color: var(--color-gray-300, #d1d5db);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      color: var(--color-text-secondary);
       cursor: pointer;
     }
 
@@ -321,12 +321,12 @@ export class VelgAdminUsersTab extends LitElement {
     }
 
     .pagination__btn:hover:not(:disabled) {
-      border-color: var(--color-gray-500, #6b7280);
+      border-color: var(--color-text-muted);
     }
 
     .pagination__info {
       font-size: var(--text-xs);
-      color: var(--color-gray-500, #6b7280);
+      color: var(--color-text-muted);
     }
 
     @media (max-width: 768px) {

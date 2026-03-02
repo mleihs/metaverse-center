@@ -1,3 +1,4 @@
+import { msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
@@ -18,7 +19,7 @@ export class VelgLightbox extends LitElement {
     .lightbox {
       position: fixed;
       inset: 0;
-      z-index: 9999;
+      z-index: var(--z-top);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -129,14 +130,14 @@ export class VelgLightbox extends LitElement {
     if (!this.src) return nothing;
 
     return html`
-      <div class="lightbox" @click=${this._close}>
+      <div class="lightbox" role="dialog" aria-modal="true" @click=${this._close}>
         <img
           class="lightbox__img"
           src=${this.src}
           alt=${this.alt}
           @click=${(e: Event) => e.stopPropagation()}
         />
-        <button class="lightbox__close" aria-label="Close">&times;</button>
+        <button class="lightbox__close" aria-label=${msg('Close')}>&times;</button>
         ${this.caption ? html`<div class="lightbox__caption">${this.caption}</div>` : nothing}
       </div>
     `;

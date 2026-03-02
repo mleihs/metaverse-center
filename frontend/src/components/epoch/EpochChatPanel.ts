@@ -231,6 +231,33 @@ export class VelgEpochChatPanel extends LitElement {
       color: var(--text-mid);
     }
 
+    /* ── Bot message styling ── */
+    .msg--bot .msg__sender {
+      color: var(--color-warning);
+    }
+
+    .msg--bot .msg__body {
+      background: color-mix(in srgb, var(--color-warning) 5%, var(--surface));
+      border: 1px solid color-mix(in srgb, var(--color-warning) 15%, var(--border-dim));
+      border-left: 3px solid color-mix(in srgb, var(--color-warning) 40%, var(--border-dim));
+      color: var(--text-mid);
+      font-style: italic;
+    }
+
+    .msg__bot-badge {
+      display: inline-block;
+      font-family: var(--font-brutalist, 'Courier New', monospace);
+      font-size: 8px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 0 4px;
+      margin-left: 4px;
+      color: var(--color-warning);
+      border: 1px solid color-mix(in srgb, var(--color-warning) 40%, transparent);
+      vertical-align: middle;
+    }
+
     /* ── Input area ── */
     .input-area {
       display: flex;
@@ -541,10 +568,16 @@ export class VelgEpochChatPanel extends LitElement {
             ? html`<div class="feed-empty">${msg('No transmissions yet')}</div>`
             : messages.map((m) => {
                 const isSelf = m.sender_simulation_id === this.mySimulationId;
+                const isBot = m.sender_type === 'bot';
+                const msgClass = isSelf
+                  ? 'msg--self'
+                  : isBot
+                    ? 'msg--other msg--bot'
+                    : 'msg--other';
                 return html`
-                <div class="msg ${isSelf ? 'msg--self' : 'msg--other'}">
+                <div class="msg ${msgClass}">
                   <div class="msg__header">
-                    <span class="msg__sender">${m.sender_name ?? msg('Unknown')}</span>
+                    <span class="msg__sender">${m.sender_name ?? msg('Unknown')}${isBot ? html`<span class="msg__bot-badge">BOT</span>` : nothing}</span>
                     <span class="msg__time">${this._formatTime(m.created_at)}</span>
                   </div>
                   <div class="msg__body">${m.content}</div>

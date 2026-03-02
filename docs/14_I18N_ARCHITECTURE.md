@@ -1,7 +1,8 @@
 # 14 - I18N Architecture: Mehrsprachigkeit auf 3 Ebenen
 
-**Version:** 1.3
-**Datum:** 2026-02-25
+**Version:** 1.4
+**Datum:** 2026-03-02
+**Aenderung v1.4:** LoreScroll von 20 auf 25 Sections erweitert (6 Chapters, alle 5 Simulationen gleichmaessig abgedeckt). 58 neue UI-Strings (2063 total). concept.md erweitert (Velgarien + Capybara Kingdom + Literary Theory). 100% deutsche Abdeckung via Claude 4.6 Uebersetzung.
 **Aenderung v1.3:** 893 UI-Strings lokalisiert (EN/DE) inkl. LoreScroll-Akkordeon, Station-Null-Lore, Deep-Space-Horror-Theme-Label. 100% deutsche Abdeckung.
 **Aenderung v1.2:** Ebene 1 (Plattform-UI) vollstaendig implementiert — 875 Strings mit msg() gewrappt, DE-Uebersetzungen in XLIFF, Locale-Toggle in PlatformHeader, FormatService fuer Datum/Zahlen
 **Änderung v1.1:** @lit/localize Modus von Build-Time auf Runtime korrigiert

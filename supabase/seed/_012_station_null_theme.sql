@@ -46,7 +46,7 @@ VALUES
   (sim_id, 'design', 'color_warning_bg',      '"#201a0a"', usr_id),
 
   -- Typography
-  (sim_id, 'design', 'font_heading',          '"''Courier New'', Monaco, monospace"', usr_id),
+  (sim_id, 'design', 'font_heading',          '"''Space Mono'', ''Courier New'', monospace"', usr_id),
   (sim_id, 'design', 'font_body',             '"system-ui, -apple-system, sans-serif"', usr_id),
   (sim_id, 'design', 'heading_weight',        '"700"', usr_id),
   (sim_id, 'design', 'heading_transform',     '"uppercase"', usr_id),

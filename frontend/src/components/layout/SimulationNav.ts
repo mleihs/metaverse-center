@@ -1,5 +1,5 @@
 import { localized, msg } from '@lit/localize';
-import { css, html, LitElement, type TemplateResult } from 'lit';
+import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { icons } from '../../utils/icons.js';
@@ -424,13 +424,14 @@ export class VelgSimulationNav extends LitElement {
           : ''
       }
       <!-- Desktop: horizontal tabs -->
-      <nav class="nav">
+      <nav class="nav" role="navigation" aria-label=${msg('Simulation navigation')}>
         ${tabs.map(
           (tab, i) => html`
             <a
               href="/simulations/${this._slug}/${tab.path}"
               class="nav__tab ${this._activeTab === tab.path ? 'nav__tab--active' : ''}"
               style="animation-delay: ${i * 0.04}s"
+              aria-current=${this._activeTab === tab.path ? 'page' : nothing}
               @click=${(e: Event) => this._handleTabClick(e, tab)}
             >
               <span class="nav__icon">${tab.icon()}</span>

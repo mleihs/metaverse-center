@@ -36,6 +36,35 @@ router = APIRouter(
 )
 
 
+async def _resolve_news_service(
+    resolver: ExternalServiceResolver,
+    source: str,
+) -> GuardianService | NewsAPIService:
+    """Resolve and instantiate the appropriate external news service."""
+    if source == "guardian":
+        config = await resolver.get_guardian_config()
+        if not config:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Guardian API not configured for this simulation.",
+            )
+        return GuardianService(config.api_key)
+
+    if source == "newsapi":
+        config = await resolver.get_newsapi_config()
+        if not config:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="NewsAPI not configured for this simulation.",
+            )
+        return NewsAPIService(config.api_key)
+
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=f"Unknown source: {source}",
+    )
+
+
 @router.get("", response_model=PaginatedResponse[SocialTrendResponse])
 async def list_trends(
     simulation_id: UUID,
@@ -79,37 +108,15 @@ async def fetch_trends(
     resolver = ExternalServiceResolver(supabase, simulation_id)
 
     try:
-        if body.source == "guardian":
-            config = await resolver.get_guardian_config()
-            if not config:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Guardian API not configured for this simulation.",
-                )
-            service = GuardianService(config.api_key)
-            raw_trends = await service.search(body.query, limit=body.limit)
-
-        elif body.source == "newsapi":
-            config = await resolver.get_newsapi_config()
-            if not config:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="NewsAPI not configured for this simulation.",
-                )
-            service = NewsAPIService(config.api_key)
-            raw_trends = await service.search(body.query, limit=body.limit)
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Unknown source: {body.source}",
-            )
+        service = await _resolve_news_service(resolver, body.source)
+        raw_trends = await service.search(body.query, limit=body.limit)
     except HTTPException:
         raise
     except Exception as exc:
         logger.exception("External news API error for source=%s", body.source)
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"External API error: {exc}",
+            detail="External API error. Please try again.",
         ) from exc
 
     stored = await SocialTrendsService.store_fetched_trends(
@@ -158,7 +165,7 @@ async def transform_trend(
         logger.exception("AI transformation failed for trend=%s", body.trend_id)
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"AI transformation failed: {exc}",
+            detail="AI transformation failed. Please try again.",
         ) from exc
 
     return {
@@ -203,7 +210,7 @@ async def integrate_trend(
         logger.exception("Failed to create event from trend %s", body.trend_id)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create event: {exc}",
+            detail="Failed to create event. Please try again.",
         ) from exc
 
     try:
@@ -243,31 +250,15 @@ async def workflow(
     resolver = ExternalServiceResolver(supabase, simulation_id)
 
     try:
-        if body.source == "guardian":
-            config = await resolver.get_guardian_config()
-            if not config:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Guardian API not configured.",
-                )
-            service = GuardianService(config.api_key)
-            raw_trends = await service.search(body.query, limit=body.limit)
-        else:
-            config = await resolver.get_newsapi_config()
-            if not config:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="NewsAPI not configured.",
-                )
-            service = NewsAPIService(config.api_key)
-            raw_trends = await service.search(body.query, limit=body.limit)
+        service = await _resolve_news_service(resolver, body.source)
+        raw_trends = await service.search(body.query, limit=body.limit)
     except HTTPException:
         raise
     except Exception as exc:
         logger.exception("External news API error for source=%s", body.source)
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"External API error: {exc}",
+            detail="External API error. Please try again.",
         ) from exc
 
     stored = await SocialTrendsService.store_fetched_trends(
@@ -303,43 +294,24 @@ async def browse_articles(
     resolver = ExternalServiceResolver(supabase, simulation_id)
 
     try:
-        if body.source == "guardian":
-            config = await resolver.get_guardian_config()
-            if not config:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Guardian API not configured for this simulation.",
-                )
-            service = GuardianService(config.api_key)
-            if body.query:
-                articles = await service.search(body.query, section=body.section, limit=body.limit)
-            else:
-                articles = await service.browse(section=body.section, limit=body.limit)
-
-        elif body.source == "newsapi":
-            config = await resolver.get_newsapi_config()
-            if not config:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="NewsAPI not configured for this simulation.",
-                )
-            service = NewsAPIService(config.api_key)
-            if body.query:
-                articles = await service.search(body.query, limit=body.limit)
-            else:
-                articles = await service.browse(limit=body.limit)
+        service = await _resolve_news_service(resolver, body.source)
+        if body.query:
+            kwargs = {"limit": body.limit}
+            if body.source == "guardian" and body.section:
+                kwargs["section"] = body.section
+            articles = await service.search(body.query, **kwargs)
         else:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Unknown source: {body.source}",
-            )
+            kwargs = {"limit": body.limit}
+            if body.source == "guardian" and body.section:
+                kwargs["section"] = body.section
+            articles = await service.browse(**kwargs)
     except HTTPException:
         raise
     except Exception as exc:
         logger.exception("External news API error for source=%s", body.source)
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"External API error: {exc}",
+            detail="External API error. Please try again.",
         ) from exc
 
     return {"success": True, "data": articles}
@@ -380,7 +352,7 @@ async def transform_article(
         logger.exception("AI transformation failed for article=%s", body.article_name)
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"AI transformation failed: {exc}",
+            detail="AI transformation failed. Please try again.",
         ) from exc
 
     return {
@@ -422,7 +394,7 @@ async def integrate_article(
         logger.exception("Failed to create event from article")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create event: {exc}",
+            detail="Failed to create event. Please try again.",
         ) from exc
 
     try:

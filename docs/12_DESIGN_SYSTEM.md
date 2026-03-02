@@ -1,7 +1,8 @@
 # 12 - Design System: Komplett-Neuaufbau
 
-**Version:** 1.2
-**Datum:** 2026-02-28
+**Version:** 1.3
+**Datum:** 2026-03-02
+**Aenderung v1.3:** Spectral font added as `--font-bureau` CSS custom property for Bureau-level platform typography (hero, lore scroll, footer). Used on SimulationsDashboard and LoreScroll. Google Fonts link updated in index.html. Per-simulation heading fonts unchanged (Oswald, Cormorant Garamond, Space Mono, Barlow, Libre Baskerville).
 **Aenderung v1.2:** Shared CSS Modules section added (10 modules documented). grid-layout-styles.ts for entity card grids. htp-styles.ts for HowToPlayView. ~60 hardcoded hex colors in epoch components replaced with CSS custom property tokens.
 **Aenderung v1.1:** 6 Theme-Presets implementiert (default, brutalist, fantasy-kingdom, cyberpunk, steampunk, deep-space-horror). WCAG 2.1 AA Kontrast-Validierung: 88 Tests (14 Paare pro Preset). Mindest-Kontrast: 4.5:1 (Normal-Text), 3.0:1 (Muted-Text, Button-Text, Badge-Text).
 
@@ -177,6 +178,7 @@ styles/
 :root {
   /* === FONT FAMILIES === */
   --font-brutalist: 'Courier New', 'Monaco', 'Lucida Console', monospace;
+  --font-bureau: 'Spectral', 'Georgia', 'Times New Roman', serif;  /* Bureau-level literary prose */
   --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
 

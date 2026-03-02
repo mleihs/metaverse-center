@@ -1,0 +1,902 @@
+"""Unit tests for EpochService — lifecycle, participants, bots, RP management."""
+
+from __future__ import annotations
+
+from unittest.mock import AsyncMock, MagicMock, patch
+from uuid import uuid4
+
+import pytest
+from fastapi import HTTPException
+
+from backend.services.epoch_service import DEFAULT_CONFIG, OPERATIVE_RP_COSTS, EpochService
+
+# ── Helpers ────────────────────────────────────────────────────
+
+EPOCH_ID = uuid4()
+USER_ID = uuid4()
+SIM_ID = uuid4()
+SIM_ID_2 = uuid4()
+BOT_ID = uuid4()
+TEAM_ID = uuid4()
+
+
+def _make_chain(**overrides):
+    """Create a mock Supabase query chain."""
+    c = MagicMock()
+    c.select.return_value = c
+    c.eq.return_value = c
+    c.in_.return_value = c
+    c.single.return_value = c
+    c.maybe_single.return_value = c
+    c.limit.return_value = c
+    c.order.return_value = c
+    c.insert.return_value = c
+    c.update.return_value = c
+    c.delete.return_value = c
+    c.range.return_value = c
+    c.is_.return_value = c
+    c.upsert.return_value = c
+    for k, v in overrides.items():
+        setattr(c, k, v)
+    return c
+
+
+# ── Epoch CRUD ─────────────────────────────────────────────────
+
+
+class TestEpochCreate:
+    @pytest.mark.asyncio
+    async def test_creates_epoch_with_default_config(self):
+        sb = MagicMock()
+        chain = _make_chain()
+        epoch_data = {
+            "id": str(EPOCH_ID),
+            "name": "Test Epoch",
+            "status": "lobby",
+            "config": DEFAULT_CONFIG,
+            "created_by_id": str(USER_ID),
+        }
+        chain.execute.return_value = MagicMock(data=[epoch_data])
+        sb.table.return_value = chain
+
+        result = await EpochService.create(sb, USER_ID, "Test Epoch")
+
+        assert result["name"] == "Test Epoch"
+        assert result["status"] == "lobby"
+        insert_call = chain.insert.call_args[0][0]
+        assert insert_call["created_by_id"] == str(USER_ID)
+
+    @pytest.mark.asyncio
+    async def test_creates_epoch_with_custom_config(self):
+        sb = MagicMock()
+        chain = _make_chain()
+        epoch_data = {"id": str(EPOCH_ID), "name": "Custom", "status": "lobby", "config": {}}
+        chain.execute.return_value = MagicMock(data=[epoch_data])
+        sb.table.return_value = chain
+
+        custom_config = {"duration_days": 7, "rp_per_cycle": 15}
+        await EpochService.create(sb, USER_ID, "Custom", config=custom_config)
+
+        insert_call = chain.insert.call_args[0][0]
+        assert insert_call["config"]["duration_days"] == 7
+        assert insert_call["config"]["rp_per_cycle"] == 15
+
+    @pytest.mark.asyncio
+    async def test_raises_on_failed_insert(self):
+        sb = MagicMock()
+        chain = _make_chain()
+        chain.execute.return_value = MagicMock(data=None)
+        sb.table.return_value = chain
+
+        with pytest.raises(HTTPException) as exc:
+            await EpochService.create(sb, USER_ID, "Fail")
+        assert exc.value.status_code == 500
+
+
+# ── Epoch Get ──────────────────────────────────────────────────
+
+
+class TestEpochGet:
+    @pytest.mark.asyncio
+    async def test_returns_epoch_data(self):
+        sb = MagicMock()
+        chain = _make_chain()
+        epoch_data = {"id": str(EPOCH_ID), "status": "competition", "name": "My Epoch"}
+        chain.execute.return_value = MagicMock(data=epoch_data)
+        sb.table.return_value = chain
+
+        result = await EpochService.get(sb, EPOCH_ID)
+
+        assert result["name"] == "My Epoch"
+
+    @pytest.mark.asyncio
+    async def test_raises_404_when_not_found(self):
+        sb = MagicMock()
+        chain = _make_chain()
+        chain.execute.return_value = MagicMock(data=None)
+        sb.table.return_value = chain
+
+        with pytest.raises(HTTPException) as exc:
+            await EpochService.get(sb, EPOCH_ID)
+        assert exc.value.status_code == 404
+
+
+# ── Epoch Update ───────────────────────────────────────────────
+
+
+class TestEpochUpdate:
+    @pytest.mark.asyncio
+    async def test_allows_update_in_lobby(self):
+        sb = MagicMock()
+        chain = _make_chain()
+        epoch_data = {"id": str(EPOCH_ID), "status": "lobby", "name": "Updated"}
+        # First call: get epoch; Second call: update
+        chain.execute.side_effect = [
+            MagicMock(data={"id": str(EPOCH_ID), "status": "lobby"}),
+            MagicMock(data=[epoch_data]),
+        ]
+        sb.table.return_value = chain
+
+        result = await EpochService.update(sb, EPOCH_ID, {"name": "Updated"})
+
+        assert result["name"] == "Updated"
+
+    @pytest.mark.asyncio
+    async def test_rejects_update_in_competition(self):
+        sb = MagicMock()
+        chain = _make_chain()
+        chain.execute.return_value = MagicMock(
+            data={"id": str(EPOCH_ID), "status": "competition"}
+        )
+        sb.table.return_value = chain
+
+        with pytest.raises(HTTPException) as exc:
+            await EpochService.update(sb, EPOCH_ID, {"name": "Fail"})
+        assert exc.value.status_code == 400
+        assert "lobby" in exc.value.detail.lower()
+
+
+# ── Lifecycle Transitions ──────────────────────────────────────
+
+
+class TestLifecycleTransitions:
+    @pytest.mark.asyncio
+    async def test_advance_foundation_to_competition(self):
+        sb = MagicMock()
+        chain = _make_chain()
+        chain.execute.side_effect = [
+            MagicMock(data={"id": str(EPOCH_ID), "status": "foundation", "config": {}}),
+            MagicMock(data=[{"id": str(EPOCH_ID), "status": "competition"}]),
+        ]
+        sb.table.return_value = chain
+
+        await EpochService.advance_phase(sb, EPOCH_ID)
+
+        update_call = chain.update.call_args[0][0]
+        assert update_call["status"] == "competition"
+
+    @pytest.mark.asyncio
+    async def test_advance_competition_to_reckoning(self):
+        sb = MagicMock()
+        chain = _make_chain()
+        chain.execute.side_effect = [
+            MagicMock(data={"id": str(EPOCH_ID), "status": "competition", "config": {}}),
+            MagicMock(data=[{"id": str(EPOCH_ID), "status": "reckoning"}]),
+        ]
+        sb.table.return_value = chain
+
+        await EpochService.advance_phase(sb, EPOCH_ID)
+
+        update_call = chain.update.call_args[0][0]
+        assert update_call["status"] == "reckoning"
+
+    @pytest.mark.asyncio
+    @patch("backend.dependencies.get_admin_supabase", new_callable=AsyncMock)
+    @patch("backend.services.game_instance_service.GameInstanceService")
+    async def test_advance_reckoning_to_completed_archives_instances(self, mock_gis, mock_admin):
+        mock_admin.return_value = MagicMock()
+        mock_gis.archive_instances = AsyncMock()
+
+        sb = MagicMock()
+        chain = _make_chain()
+        chain.execute.side_effect = [
+            MagicMock(data={"id": str(EPOCH_ID), "status": "reckoning", "config": {}}),
+            MagicMock(data=[{"id": str(EPOCH_ID), "status": "completed"}]),
+        ]
+        sb.table.return_value = chain
+
+        await EpochService.advance_phase(sb, EPOCH_ID)
+
+        mock_gis.archive_instances.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_cannot_advance_from_lobby(self):
+        sb = MagicMock()
+        chain = _make_chain()
+        chain.execute.return_value = MagicMock(
+            data={"id": str(EPOCH_ID), "status": "lobby", "config": {}}
+        )
+        sb.table.return_value = chain
+
+        with pytest.raises(HTTPException) as exc:
+            await EpochService.advance_phase(sb, EPOCH_ID)
+        assert exc.value.status_code == 400
+
+    @pytest.mark.asyncio
+    async def test_cannot_advance_from_completed(self):
+        sb = MagicMock()
+        chain = _make_chain()
+        chain.execute.return_value = MagicMock(
+            data={"id": str(EPOCH_ID), "status": "completed", "config": {}}
+        )
+        sb.table.return_value = chain
+
+        with pytest.raises(HTTPException) as exc:
+            await EpochService.advance_phase(sb, EPOCH_ID)
+        assert exc.value.status_code == 400
+
+    @pytest.mark.asyncio
+    async def test_cannot_advance_from_cancelled(self):
+        sb = MagicMock()
+        chain = _make_chain()
+        chain.execute.return_value = MagicMock(
+            data={"id": str(EPOCH_ID), "status": "cancelled", "config": {}}
+        )
+        sb.table.return_value = chain
+
+        with pytest.raises(HTTPException) as exc:
+            await EpochService.advance_phase(sb, EPOCH_ID)
+        assert exc.value.status_code == 400
+
+
+# ── Cancel ─────────────────────────────────────────────────────
+
+
+class TestCancelEpoch:
+    @pytest.mark.asyncio
+    async def test_cancel_lobby_epoch(self):
+        sb = MagicMock()
+        chain = _make_chain()
+        chain.execute.side_effect = [
+            MagicMock(data={"id": str(EPOCH_ID), "status": "lobby"}),
+            MagicMock(data=[{"id": str(EPOCH_ID), "status": "cancelled"}]),
+        ]
+        sb.table.return_value = chain
+
+        await EpochService.cancel_epoch(sb, EPOCH_ID)
+
+        update_call = chain.update.call_args[0][0]
+        assert update_call["status"] == "cancelled"
+
+    @pytest.mark.asyncio
+    @patch("backend.dependencies.get_admin_supabase", new_callable=AsyncMock)
+    @patch("backend.services.game_instance_service.GameInstanceService")
+    async def test_cancel_active_epoch_deletes_instances(self, mock_gis, mock_admin):
+        mock_admin.return_value = MagicMock()
+        mock_gis.delete_instances = AsyncMock()
+
+        sb = MagicMock()
+        chain = _make_chain()
+        chain.execute.side_effect = [
+            MagicMock(data={"id": str(EPOCH_ID), "status": "competition"}),
+            MagicMock(data=[{"id": str(EPOCH_ID), "status": "cancelled"}]),
+        ]
+        sb.table.return_value = chain
+
+        await EpochService.cancel_epoch(sb, EPOCH_ID)
+
+        mock_gis.delete_instances.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_cannot_cancel_completed_epoch(self):
+        sb = MagicMock()
+        chain = _make_chain()
+        chain.execute.return_value = MagicMock(
+            data={"id": str(EPOCH_ID), "status": "completed"}
+        )
+        sb.table.return_value = chain
+
+        with pytest.raises(HTTPException) as exc:
+            await EpochService.cancel_epoch(sb, EPOCH_ID)
+        assert exc.value.status_code == 400
+
+    @pytest.mark.asyncio
+    async def test_cannot_cancel_already_cancelled_epoch(self):
+        sb = MagicMock()
+        chain = _make_chain()
+        chain.execute.return_value = MagicMock(
+            data={"id": str(EPOCH_ID), "status": "cancelled"}
+        )
+        sb.table.return_value = chain
+
+        with pytest.raises(HTTPException) as exc:
+            await EpochService.cancel_epoch(sb, EPOCH_ID)
+        assert exc.value.status_code == 400
+
+
+# ── Participants ───────────────────────────────────────────────
+
+
+class TestParticipants:
+    @pytest.mark.asyncio
+    async def test_join_epoch_in_lobby(self):
+        sb = MagicMock()
+
+        # get epoch (lobby)
+        epoch_chain = _make_chain()
+        epoch_chain.execute.return_value = MagicMock(
+            data={"id": str(EPOCH_ID), "status": "lobby"}
+        )
+
+        # check membership (user is editor)
+        member_chain = _make_chain()
+        member_chain.execute.return_value = MagicMock(
+            data=[{"member_role": "editor"}]
+        )
+
+        # check not already joined
+        existing_chain = _make_chain()
+        existing_chain.execute.return_value = MagicMock(data=[])
+
+        # insert participant
+        insert_chain = _make_chain()
+        participant = {
+            "id": str(uuid4()),
+            "epoch_id": str(EPOCH_ID),
+            "simulation_id": str(SIM_ID),
+        }
+        insert_chain.execute.return_value = MagicMock(data=[participant])
+
+        call_counts: dict[str, int] = {}
+
+        def table_router(name):
+            call_counts[name] = call_counts.get(name, 0) + 1
+            if name == "game_epochs":
+                return epoch_chain
+            if name == "simulation_members":
+                return member_chain
+            if name == "epoch_participants":
+                count = call_counts[name]
+                if count == 1:
+                    return existing_chain  # check existing
+                return insert_chain  # insert
+            return _make_chain()
+
+        sb.table.side_effect = table_router
+
+        result = await EpochService.join_epoch(sb, EPOCH_ID, SIM_ID, USER_ID)
+
+        assert result["epoch_id"] == str(EPOCH_ID)
+
+    @pytest.mark.asyncio
+    async def test_join_rejects_viewer_role(self):
+        sb = MagicMock()
+
+        member_chain = _make_chain()
+        member_chain.execute.return_value = MagicMock(
+            data=[{"member_role": "viewer"}]
+        )
+
+        sb.table.return_value = member_chain
+
+        with pytest.raises(HTTPException) as exc:
+            await EpochService.join_epoch(sb, EPOCH_ID, SIM_ID, USER_ID)
+        assert exc.value.status_code == 403
+
+    @pytest.mark.asyncio
+    async def test_join_rejects_non_lobby_epoch(self):
+        sb = MagicMock()
+
+        member_chain = _make_chain()
+        member_chain.execute.return_value = MagicMock(
+            data=[{"member_role": "owner"}]
+        )
+
+        epoch_chain = _make_chain()
+        epoch_chain.execute.return_value = MagicMock(
+            data={"id": str(EPOCH_ID), "status": "competition"}
+        )
+
+        call_counts: dict[str, int] = {}
+
+        def table_router(name):
+            call_counts[name] = call_counts.get(name, 0) + 1
+            if name == "simulation_members":
+                return member_chain
+            if name == "game_epochs":
+                return epoch_chain
+            return _make_chain()
+
+        sb.table.side_effect = table_router
+
+        with pytest.raises(HTTPException) as exc:
+            await EpochService.join_epoch(sb, EPOCH_ID, SIM_ID, USER_ID)
+        assert exc.value.status_code == 400
+
+    @pytest.mark.asyncio
+    async def test_join_rejects_duplicate_simulation(self):
+        sb = MagicMock()
+
+        member_chain = _make_chain()
+        member_chain.execute.return_value = MagicMock(
+            data=[{"member_role": "owner"}]
+        )
+
+        epoch_chain = _make_chain()
+        epoch_chain.execute.return_value = MagicMock(
+            data={"id": str(EPOCH_ID), "status": "lobby"}
+        )
+
+        existing_chain = _make_chain()
+        existing_chain.execute.return_value = MagicMock(
+            data=[{"id": str(uuid4())}]
+        )
+
+        call_counts: dict[str, int] = {}
+
+        def table_router(name):
+            call_counts[name] = call_counts.get(name, 0) + 1
+            if name == "simulation_members":
+                return member_chain
+            if name == "game_epochs":
+                return epoch_chain
+            if name == "epoch_participants":
+                return existing_chain
+            return _make_chain()
+
+        sb.table.side_effect = table_router
+
+        with pytest.raises(HTTPException) as exc:
+            await EpochService.join_epoch(sb, EPOCH_ID, SIM_ID, USER_ID)
+        assert exc.value.status_code == 409
+
+    @pytest.mark.asyncio
+    async def test_leave_epoch_in_lobby(self):
+        sb = MagicMock()
+        chain = _make_chain()
+        chain.execute.side_effect = [
+            MagicMock(data={"id": str(EPOCH_ID), "status": "lobby"}),
+            MagicMock(data=[]),  # delete
+        ]
+        sb.table.return_value = chain
+
+        # Should not raise
+        await EpochService.leave_epoch(sb, EPOCH_ID, SIM_ID)
+
+    @pytest.mark.asyncio
+    async def test_leave_rejects_non_lobby(self):
+        sb = MagicMock()
+        chain = _make_chain()
+        chain.execute.return_value = MagicMock(
+            data={"id": str(EPOCH_ID), "status": "competition"}
+        )
+        sb.table.return_value = chain
+
+        with pytest.raises(HTTPException) as exc:
+            await EpochService.leave_epoch(sb, EPOCH_ID, SIM_ID)
+        assert exc.value.status_code == 400
+
+
+# ── Bot Participants ───────────────────────────────────────────
+
+
+class TestBotParticipants:
+    @pytest.mark.asyncio
+    async def test_add_bot_in_lobby(self):
+        sb = MagicMock()
+
+        epoch_chain = _make_chain()
+        epoch_chain.execute.return_value = MagicMock(
+            data={"id": str(EPOCH_ID), "status": "lobby"}
+        )
+
+        bot_chain = _make_chain()
+        bot_chain.execute.return_value = MagicMock(
+            data={"id": str(BOT_ID), "name": "TestBot", "personality": "sentinel"}
+        )
+
+        existing_chain = _make_chain()
+        existing_chain.execute.return_value = MagicMock(data=[])
+
+        insert_chain = _make_chain()
+        insert_chain.execute.return_value = MagicMock(
+            data=[{
+                "id": str(uuid4()),
+                "epoch_id": str(EPOCH_ID),
+                "simulation_id": str(SIM_ID),
+                "is_bot": True,
+                "bot_player_id": str(BOT_ID),
+            }]
+        )
+
+        call_counts: dict[str, int] = {}
+
+        def table_router(name):
+            call_counts[name] = call_counts.get(name, 0) + 1
+            if name == "game_epochs":
+                return epoch_chain
+            if name == "bot_players":
+                return bot_chain
+            if name == "epoch_participants":
+                count = call_counts[name]
+                if count == 1:
+                    return existing_chain
+                return insert_chain
+            return _make_chain()
+
+        sb.table.side_effect = table_router
+
+        result = await EpochService.add_bot(sb, EPOCH_ID, SIM_ID, BOT_ID)
+
+        assert result["is_bot"] is True
+        assert result["bot_player_id"] == str(BOT_ID)
+
+    @pytest.mark.asyncio
+    async def test_add_bot_rejects_non_lobby(self):
+        sb = MagicMock()
+        chain = _make_chain()
+        chain.execute.return_value = MagicMock(
+            data={"id": str(EPOCH_ID), "status": "competition"}
+        )
+        sb.table.return_value = chain
+
+        with pytest.raises(HTTPException) as exc:
+            await EpochService.add_bot(sb, EPOCH_ID, SIM_ID, BOT_ID)
+        assert exc.value.status_code == 400
+
+    @pytest.mark.asyncio
+    async def test_add_bot_rejects_missing_bot(self):
+        sb = MagicMock()
+
+        epoch_chain = _make_chain()
+        epoch_chain.execute.return_value = MagicMock(
+            data={"id": str(EPOCH_ID), "status": "lobby"}
+        )
+
+        bot_chain = _make_chain()
+        bot_chain.execute.return_value = MagicMock(data=None)
+
+        def table_router(name):
+            if name == "game_epochs":
+                return epoch_chain
+            if name == "bot_players":
+                return bot_chain
+            return _make_chain()
+
+        sb.table.side_effect = table_router
+
+        with pytest.raises(HTTPException) as exc:
+            await EpochService.add_bot(sb, EPOCH_ID, SIM_ID, BOT_ID)
+        assert exc.value.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_add_bot_rejects_duplicate_simulation(self):
+        sb = MagicMock()
+
+        epoch_chain = _make_chain()
+        epoch_chain.execute.return_value = MagicMock(
+            data={"id": str(EPOCH_ID), "status": "lobby"}
+        )
+
+        bot_chain = _make_chain()
+        bot_chain.execute.return_value = MagicMock(
+            data={"id": str(BOT_ID), "name": "Bot", "personality": "sentinel"}
+        )
+
+        existing_chain = _make_chain()
+        existing_chain.execute.return_value = MagicMock(
+            data=[{"id": str(uuid4())}]
+        )
+
+        def table_router(name):
+            if name == "game_epochs":
+                return epoch_chain
+            if name == "bot_players":
+                return bot_chain
+            if name == "epoch_participants":
+                return existing_chain
+            return _make_chain()
+
+        sb.table.side_effect = table_router
+
+        with pytest.raises(HTTPException) as exc:
+            await EpochService.add_bot(sb, EPOCH_ID, SIM_ID, BOT_ID)
+        assert exc.value.status_code == 409
+
+    @pytest.mark.asyncio
+    async def test_remove_bot_in_lobby(self):
+        participant_id = uuid4()
+        sb = MagicMock()
+
+        epoch_chain = _make_chain()
+        epoch_chain.execute.return_value = MagicMock(
+            data={"id": str(EPOCH_ID), "status": "lobby"}
+        )
+
+        p_chain = _make_chain()
+        p_chain.execute.return_value = MagicMock(
+            data={"id": str(participant_id), "is_bot": True}
+        )
+
+        delete_chain = _make_chain()
+        delete_chain.execute.return_value = MagicMock(data=[])
+
+        call_counts: dict[str, int] = {}
+
+        def table_router(name):
+            call_counts[name] = call_counts.get(name, 0) + 1
+            if name == "game_epochs":
+                return epoch_chain
+            if name == "epoch_participants":
+                count = call_counts[name]
+                if count == 1:
+                    return p_chain  # select
+                return delete_chain  # delete
+            return _make_chain()
+
+        sb.table.side_effect = table_router
+
+        await EpochService.remove_bot(sb, EPOCH_ID, participant_id)
+
+    @pytest.mark.asyncio
+    async def test_remove_bot_rejects_non_bot_participant(self):
+        participant_id = uuid4()
+        sb = MagicMock()
+
+        epoch_chain = _make_chain()
+        epoch_chain.execute.return_value = MagicMock(
+            data={"id": str(EPOCH_ID), "status": "lobby"}
+        )
+
+        p_chain = _make_chain()
+        p_chain.execute.return_value = MagicMock(
+            data={"id": str(participant_id), "is_bot": False}
+        )
+
+        def table_router(name):
+            if name == "game_epochs":
+                return epoch_chain
+            if name == "epoch_participants":
+                return p_chain
+            return _make_chain()
+
+        sb.table.side_effect = table_router
+
+        with pytest.raises(HTTPException) as exc:
+            await EpochService.remove_bot(sb, EPOCH_ID, participant_id)
+        assert exc.value.status_code == 400
+        assert "not a bot" in exc.value.detail.lower()
+
+
+# ── RP Management ──────────────────────────────────────────────
+
+
+class TestRPManagement:
+    @pytest.mark.asyncio
+    async def test_grant_rp_batch_respects_cap(self):
+        sb = MagicMock()
+
+        # Fetch participants
+        select_chain = _make_chain()
+        select_chain.execute.return_value = MagicMock(
+            data=[
+                {"id": "p1", "current_rp": 35},
+                {"id": "p2", "current_rp": 10},
+            ]
+        )
+
+        # Update chain
+        update_chain = _make_chain()
+        update_chain.execute.return_value = MagicMock(data=[])
+
+        call_counts: dict[str, int] = {}
+
+        def table_router(name):
+            call_counts[name] = call_counts.get(name, 0) + 1
+            if call_counts[name] == 1:
+                return select_chain
+            return update_chain
+
+        sb.table.side_effect = table_router
+
+        await EpochService._grant_rp_batch(sb, EPOCH_ID, amount=12, rp_cap=40)
+
+        # p1: min(35+12, 40) = 40
+        # p2: min(10+12, 40) = 22
+        # Should group by target RP and batch update
+        assert update_chain.update.called
+
+    @pytest.mark.asyncio
+    async def test_spend_rp_success(self):
+        sb = MagicMock()
+        chain = _make_chain()
+        # select: current_rp=20
+        # update: success
+        chain.execute.side_effect = [
+            MagicMock(data={"id": "p1", "current_rp": 20}),
+            MagicMock(data=[{"id": "p1", "current_rp": 15}]),
+        ]
+        sb.table.return_value = chain
+
+        result = await EpochService.spend_rp(sb, EPOCH_ID, SIM_ID, 5)
+
+        assert result == 15
+
+    @pytest.mark.asyncio
+    async def test_spend_rp_insufficient_balance(self):
+        sb = MagicMock()
+        chain = _make_chain()
+        chain.execute.return_value = MagicMock(
+            data={"id": "p1", "current_rp": 3}
+        )
+        sb.table.return_value = chain
+
+        with pytest.raises(HTTPException) as exc:
+            await EpochService.spend_rp(sb, EPOCH_ID, SIM_ID, 5)
+        assert exc.value.status_code == 400
+        assert "insufficient" in exc.value.detail.lower()
+
+    @pytest.mark.asyncio
+    async def test_spend_rp_not_a_participant(self):
+        sb = MagicMock()
+        chain = _make_chain()
+        chain.execute.return_value = MagicMock(data=None)
+        sb.table.return_value = chain
+
+        with pytest.raises(HTTPException) as exc:
+            await EpochService.spend_rp(sb, EPOCH_ID, SIM_ID, 5)
+        assert exc.value.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_spend_rp_optimistic_lock_conflict(self):
+        sb = MagicMock()
+        chain = _make_chain()
+        chain.execute.side_effect = [
+            MagicMock(data={"id": "p1", "current_rp": 20}),
+            MagicMock(data=[]),  # optimistic lock failed (empty update response)
+        ]
+        sb.table.return_value = chain
+
+        with pytest.raises(HTTPException) as exc:
+            await EpochService.spend_rp(sb, EPOCH_ID, SIM_ID, 5)
+        assert exc.value.status_code == 409
+        assert "concurrently" in exc.value.detail.lower()
+
+
+# ── Resolve Cycle ──────────────────────────────────────────────
+
+
+class TestResolveCycle:
+    @pytest.mark.asyncio
+    async def test_resolve_increments_cycle(self):
+        sb = MagicMock()
+        chain = _make_chain()
+        chain.execute.side_effect = [
+            # get epoch
+            MagicMock(data={
+                "id": str(EPOCH_ID),
+                "status": "competition",
+                "config": {},
+                "current_cycle": 3,
+            }),
+            # _grant_rp_batch: select participants
+            MagicMock(data=[]),
+            # reset cycle_ready
+            MagicMock(data=[]),
+            # increment cycle
+            MagicMock(data=[{
+                "id": str(EPOCH_ID),
+                "current_cycle": 4,
+            }]),
+        ]
+        sb.table.return_value = chain
+
+        await EpochService.resolve_cycle(sb, EPOCH_ID)
+
+        # Verify the cycle was incremented
+        update_calls = chain.update.call_args_list
+        # Last update call should be the cycle increment
+        last_update = update_calls[-1][0][0]
+        assert last_update["current_cycle"] == 4
+
+    @pytest.mark.asyncio
+    async def test_resolve_rejects_lobby_phase(self):
+        sb = MagicMock()
+        chain = _make_chain()
+        chain.execute.return_value = MagicMock(
+            data={"id": str(EPOCH_ID), "status": "lobby", "config": {}, "current_cycle": 1}
+        )
+        sb.table.return_value = chain
+
+        with pytest.raises(HTTPException) as exc:
+            await EpochService.resolve_cycle(sb, EPOCH_ID)
+        assert exc.value.status_code == 400
+
+    @pytest.mark.asyncio
+    async def test_resolve_rejects_completed_phase(self):
+        sb = MagicMock()
+        chain = _make_chain()
+        chain.execute.return_value = MagicMock(
+            data={"id": str(EPOCH_ID), "status": "completed", "config": {}, "current_cycle": 10}
+        )
+        sb.table.return_value = chain
+
+        with pytest.raises(HTTPException) as exc:
+            await EpochService.resolve_cycle(sb, EPOCH_ID)
+        assert exc.value.status_code == 400
+
+    @pytest.mark.asyncio
+    async def test_resolve_foundation_grants_bonus_rp(self):
+        """Foundation phase grants 1.5x RP."""
+        sb = MagicMock()
+        chain = _make_chain()
+        chain.execute.side_effect = [
+            # get epoch
+            MagicMock(data={
+                "id": str(EPOCH_ID),
+                "status": "foundation",
+                "config": {"rp_per_cycle": 12, "rp_cap": 40},
+                "current_cycle": 1,
+            }),
+            # _grant_rp_batch: select participants
+            MagicMock(data=[{"id": "p1", "current_rp": 0}]),
+            # _grant_rp_batch: update (grouped)
+            MagicMock(data=[]),
+            # reset cycle_ready
+            MagicMock(data=[]),
+            # increment cycle
+            MagicMock(data=[{"id": str(EPOCH_ID), "current_cycle": 2}]),
+        ]
+        sb.table.return_value = chain
+
+        await EpochService.resolve_cycle(sb, EPOCH_ID)
+
+        # Foundation bonus: int(12 * 1.5) = 18 RP
+        # Check the update call in _grant_rp_batch
+        update_calls = chain.update.call_args_list
+        # First update should be the RP grant
+        rp_update = update_calls[0][0][0]
+        assert rp_update["current_rp"] == 18  # min(0+18, 40) = 18
+
+
+# ── Operative RP Costs ─────────────────────────────────────────
+
+
+class TestOperativeRPCosts:
+    def test_spy_costs_3(self):
+        assert OPERATIVE_RP_COSTS["spy"] == 3
+
+    def test_guardian_costs_4(self):
+        assert OPERATIVE_RP_COSTS["guardian"] == 4
+
+    def test_saboteur_costs_5(self):
+        assert OPERATIVE_RP_COSTS["saboteur"] == 5
+
+    def test_propagandist_costs_4(self):
+        assert OPERATIVE_RP_COSTS["propagandist"] == 4
+
+    def test_assassin_costs_7(self):
+        assert OPERATIVE_RP_COSTS["assassin"] == 7
+
+    def test_infiltrator_costs_5(self):
+        assert OPERATIVE_RP_COSTS["infiltrator"] == 5
+
+
+# ── Default Config ─────────────────────────────────────────────
+
+
+class TestDefaultConfig:
+    def test_default_rp_per_cycle(self):
+        assert DEFAULT_CONFIG["rp_per_cycle"] == 12
+
+    def test_default_rp_cap(self):
+        assert DEFAULT_CONFIG["rp_cap"] == 40
+
+    def test_default_duration_days(self):
+        assert DEFAULT_CONFIG["duration_days"] == 14
+
+    def test_default_max_team_size(self):
+        assert DEFAULT_CONFIG["max_team_size"] == 3
+
+    def test_default_allow_betrayal(self):
+        assert DEFAULT_CONFIG["allow_betrayal"] is True

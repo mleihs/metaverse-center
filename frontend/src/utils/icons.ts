@@ -189,6 +189,58 @@ export const icons = {
     </svg>
   `,
 
+  // ── Bot personality icons ────────────────────────────
+  botSentinel: (size = 24) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3l8 4.5v5c0 4.418-3.354 8.074-8 9.5-4.646-1.426-8-5.082-8-9.5v-5L12 3z" />
+      <path d="M12 8v4" />
+      <path d="M12 16h.01" />
+    </svg>
+  `,
+
+  botWarlord: (size = 24) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2l1.5 5h5l-4 3.5 1.5 5-4-3-4 3 1.5-5-4-3.5h5z" />
+      <path d="M5 20l3-3" />
+      <path d="M19 20l-3-3" />
+    </svg>
+  `,
+
+  botDiplomat: (size = 24) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M11 14h-4a2 2 0 00-2 2v2" />
+      <path d="M13 14h4a2 2 0 012 2v2" />
+      <circle cx="9" cy="8" r="3" />
+      <circle cx="15" cy="8" r="3" />
+      <path d="M12 11v3" />
+    </svg>
+  `,
+
+  botStrategist: (size = 24) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="2" />
+      <path d="M12 2v4" />
+      <path d="M12 18v4" />
+      <path d="M2 12h4" />
+      <path d="M18 12h4" />
+      <path d="M4.93 4.93l2.83 2.83" />
+      <path d="M16.24 16.24l2.83 2.83" />
+      <path d="M4.93 19.07l2.83-2.83" />
+      <path d="M16.24 7.76l2.83-2.83" />
+    </svg>
+  `,
+
+  botChaos: (size = 24) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M13 3l0 7h6l-8 11l0-7h-6l8-11" />
+    </svg>
+  `,
+
   github: (size = 18) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
       fill="currentColor" stroke="none">

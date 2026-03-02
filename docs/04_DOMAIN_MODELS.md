@@ -1,7 +1,8 @@
 # 04 - Domain Models: Entitaeten mit Simulation-Scope
 
-**Version:** 2.6
-**Datum:** 2026-03-01
+**Version:** 2.7
+**Datum:** 2026-03-02
+**Aenderung v2.7:** Bot Player types (BotPlayer, BotPersonality, BotDifficulty). is_bot/bot_player_id/bot_players auf EpochParticipant. sender_type auf EpochChatMessage.
 **Aenderung v2.6:** Platform Admin types (PlatformSetting, AdminUser, AdminUserDetail, AdminMembership) fuer Admin-Panel User-Management und Cache-TTL-Konfiguration.
 **Aenderung v2.5:** RelationshipSuggestion interface (AI-generated relationship suggestions for inline review in AgentDetailsPanel).
 **Aenderung v2.4:** Epoch Chat types (EpochChatMessage, PresenceUser). Epoch Invitation types (EpochInvitation, EpochInvitationStatus). HowToPlay types (HtpSection, HtpOperativeCard, HtpMatch, HtpMatchReplay). cycle_ready on EpochParticipant. simulation_type/source_template_id/epoch_id on Simulation.
@@ -1031,6 +1032,10 @@ interface EpochParticipant {
   current_rp: number;
   last_rp_grant_at?: string;
   final_scores?: Record<string, number>;
+  is_bot: boolean;
+  bot_player_id?: UUID;
+  bot_players?: BotPlayer;  // Joined via PostgREST select
+  cycle_ready: boolean;
   simulations?: { name: string; slug: string };
 }
 
@@ -1144,6 +1149,7 @@ interface EpochChatMessage {
   channel_type: EpochChatChannelType;
   team_id?: UUID;
   content: string;
+  sender_type: 'human' | 'bot';
   created_at: string;
   sender_simulation_name?: string; // enriched client-side
 }
@@ -1153,5 +1159,21 @@ interface PresenceUser {
   simulation_id: string;
   simulation_name: string;
   online_at: string;
+}
+
+// ── Bot Players (Migration 041) ─────────────────────────
+
+type BotPersonality = 'sentinel' | 'warlord' | 'diplomat' | 'strategist' | 'chaos';
+type BotDifficulty = 'easy' | 'medium' | 'hard';
+
+interface BotPlayer {
+  id: UUID;
+  name: string;
+  personality: BotPersonality;
+  difficulty: BotDifficulty;
+  config: Record<string, unknown>;
+  created_by_id: UUID;
+  created_at: string;
+  updated_at: string;
 }
 ```

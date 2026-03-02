@@ -1,8 +1,10 @@
 # 07 - Frontend Components: Komponenten + Simulation-Settings-UI
 
-**Version:** 1.8
-**Datum:** 2026-03-01
-**Aenderung v1.8:** Platform Admin Panel — 3 neue Komponenten in `admin/` (AdminPanel, AdminUsersTab, AdminCachingTab). AdminApiService (8 Methoden). `isPlatformAdmin` computed Signal in AppStateManager. `/admin` Route mit Auth+Admin-Guard. "Admin" Nav-Link in PlatformHeader (rot, nur fuer Platform-Admin sichtbar). Updated counts: **126 files across 17 subdirectories, 104 @customElement components**, 24 API services.
+**Version:** 2.0
+**Datum:** 2026-03-02
+**Aenderung v2.0:** Front Page Literary Rewrite — LoreScroll expanded from 20 to 25 sections across 6 chapters, all 5 simulations now covered equally (Bureau Dossier + Field Report per sim). SimulationsDashboard updated: new slogan "Five Worlds. One Fracture.", Spectral/`--font-bureau` serif font on hero/footer/lore strip. lore/ directory: 7 files (5 content files + dispatcher + SimulationLoreView). Cité des Dames lore content file added. 2063 i18n strings total.
+**Aenderung v1.9:** Bot Players — 1 neue Komponente in `epoch/` (BotConfigPanel). BotApiService (6 Methoden). Bot-Indikatoren auf EpochLeaderboard, EpochBattleLog, EpochChatPanel, EpochReadyPanel, EpochOpsBoard. "Add Bots" Button auf EpochLobbyActions. AI Settings: bot_chat_mode + model_bot_chat. Updated counts: **128 files across 17 subdirectories, 105 @customElement components**, 25 API services.
+**Aenderung v1.8:** Platform Admin Panel — 3 neue Komponenten in `admin/` (AdminPanel, AdminUsersTab, AdminCachingTab). AdminApiService (8 Methoden). `isPlatformAdmin` computed Signal in AppStateManager. `/admin` Route mit Auth+Admin-Guard. "Admin" Nav-Link in PlatformHeader (rot, nur fuer Platform-Admin sichtbar). Updated counts: 126 files across 17 subdirectories, 104 @customElement components, 24 API services.
 **Aenderung v1.7:** Public API routing fix — `BaseApiService.getSimulationData()` helper checks both `isAuthenticated` AND `currentRole` for simulation-scoped reads. 14 API services migrated. `_enterSimulationRoute()` determines membership via `_checkMembership()` before render. `SettingsApiService` design category always uses public endpoint.
 **Aenderung v1.6:** Full-Stack Audit v2 — EpochCommandCenter decomposed into 5 child components (EpochOpsBoard, EpochOverviewTab, EpochOperationsTab, EpochAlliancesTab, EpochLobbyActions). HowToPlayView CSS extracted to htp-styles.ts. New shared CSS: grid-layout-styles.ts (entity card grids for 5 views). ~60 hardcoded hex colors replaced with CSS custom property tokens in 10 epoch components. Updated counts: 123 files across 16 subdirectories, 101 @customElement components, 10 shared CSS modules.
 **Aenderung v1.5:** Epoch Realtime — EpochChatPanel (dual-channel tactical comms), EpochPresenceIndicator (online user dots), EpochReadyPanel (cycle readiness toggle). EpochCommandCenter now has collapsible COMMS sidebar on Operations Board. RealtimeService singleton (4 Supabase Realtime channels with Preact Signals). EpochChatApiService. Updated counts: 116 files across 16 subdirectories, 96 @customElement components, 23 API services + 8 platform services. how-to-play/ and epoch invite components also now reflected.
@@ -27,7 +29,7 @@ App (Root)
 │   └── LocaleSelector
 ├── SimulationsDashboard
 │   ├── SimulationCard (je Simulation)
-│   ├── LoreScroll (Akkordeon mit Plattform-Lore)
+│   ├── LoreScroll (Akkordeon mit Plattform-Lore, 25 Sections / 6 Chapters / 5 Simulations)
 │   └── CreateSimulationButton
 ├── CreateSimulationWizard
 │   ├── Step 1: Basic Info (Name, Theme, Locale)
@@ -124,7 +126,8 @@ SimulationShell (Layout mit Navigation)
 │   ├── EpochInvitePanel (VelgSidePanel slide-out, email invitations)
 │   ├── EpochChatPanel (dual-channel tactical comms: ALL CHANNELS / TEAM FREQ)
 │   ├── EpochPresenceIndicator (online user dot per simulation_id)
-│   └── EpochReadyPanel (cycle ready toggle with live broadcast)
+│   ├── EpochReadyPanel (cycle ready toggle with live broadcast)
+│   └── BotConfigPanel (VelgSidePanel slide-out: bot preset CRUD + personality cards)
 └── SettingsView
     ├── GeneralSettingsPanel
     ├── WorldSettingsPanel (Taxonomien)
@@ -525,10 +528,11 @@ frontend/src/services/api/
 ├── EpochsApiService.ts             # Competitive epochs, operatives, scoring
 ├── EpochChatApiService.ts          # Epoch chat messages (REST catch-up) + ready signals
 ├── HealthApiService.ts             # Simulation health + game mechanics
+├── BotApiService.ts                # Bot player preset CRUD + add/remove bot from epoch
 └── index.ts                        # Re-exports all service singletons
 ```
 
-**23 API services** (excluding BaseApiService and index.ts).
+**25 API services** (excluding BaseApiService and index.ts).
 
 ### Platform-Level Services
 
@@ -611,6 +615,7 @@ class BaseApiService {
 | Relationships, Echoes, Connections | RelationshipsApi, EchoesApi, ConnectionsApi | FastAPI |
 | Embassies, Epochs, Health | EmbassiesApi, EpochsApi, HealthApi | FastAPI |
 | Epoch Chat (REST catch-up) | EpochChatApiService | FastAPI |
+| Bot Players (presets, add/remove from epoch) | BotApiService | FastAPI |
 | Epoch Realtime (live messages, presence, ready) | RealtimeService | Supabase Realtime |
 
 ---
@@ -719,14 +724,14 @@ Alle Änderungen zeigen eine Live-Preview innerhalb der Shell. Preset-Auswahl f�
 | chat/ | 7 | 7 | View, Window, ConversationList, MessageList/Input, AgentSelector, EventPicker |
 | social/ | 9 | 9 | TrendsView, MediaView, CampaignDashboard, Cards, Modals, TrendFilterBar |
 | locations/ | 5 | 5 | View, CityList, ZoneList, StreetList, LocationEditModal |
-| lore/ | 6 | 1 | SimulationLoreView + lore-content dispatcher + 4 content files |
+| lore/ | 7 | 1 | SimulationLoreView + lore-content dispatcher + 5 content files (per-simulation) |
 | multiverse/ | 10 | 7 | CartographerMap, MapGraph, MapTooltip, MapConnectionPanel, MapBattleFeed, MapLeaderboardPanel, MapMinimap + 3 utilities |
 | settings/ | 9 | 9 | SettingsView + 8 panels (General, World, AI, Integration, Design, Access, Prompts, Bleed) |
 | health/ | 1 | 1 | SimulationHealthView (game metrics dashboard) |
-| epoch/ | 15 | 15 | CommandCenter (orchestrator), OpsBoard, OverviewTab, OperationsTab, AlliancesTab, LobbyActions, CreationWizard, Leaderboard, BattleLog, DeployOperativeModal, InvitePanel, InviteAcceptView, ChatPanel, PresenceIndicator, ReadyPanel |
+| epoch/ | 16 | 16 | CommandCenter (orchestrator), OpsBoard, OverviewTab, OperationsTab, AlliancesTab, LobbyActions, CreationWizard, Leaderboard, BattleLog, DeployOperativeModal, InvitePanel, InviteAcceptView, ChatPanel, PresenceIndicator, ReadyPanel, BotConfigPanel |
 | how-to-play/ | 5 | 1 | HowToPlayView + htp-styles (extracted CSS) + 3 content/type files (htp-types, htp-content-rules, htp-content-matches) |
 | shared/ | 27 | 16 | 16 components + 10 CSS modules + 1 base class |
-| **Gesamt** | **123** | **101** (in components/) | **16 Verzeichnisse** |
+| **Gesamt** | **128** | **105** (in components/) | **17 Verzeichnisse** |
 
 ### Utilities
 
@@ -1256,3 +1261,19 @@ REST API service for epoch chat persistence and ready signals. Live messages arr
 | `listMessages(epochId, params?)` | GET | `/epochs/{epochId}/chat` | List epoch-wide messages (limit, before cursor) |
 | `listTeamMessages(epochId, teamId, params?)` | GET | `/epochs/{epochId}/chat/team/{teamId}` | List team messages (limit, before cursor) |
 | `setReady(epochId, simulationId, ready)` | POST | `/epochs/{epochId}/ready` | Toggle cycle readiness for a simulation |
+
+### BotApiService
+
+REST API service for bot player preset management and epoch bot assignment.
+
+**Singleton:** `botApi` (exported from `BotApiService.ts`)
+
+**Methods:**
+| Method | HTTP | Path | Description |
+|--------|------|------|-------------|
+| `listPresets()` | GET | `/bot-players` | List current user's bot presets |
+| `createPreset(data)` | POST | `/bot-players` | Create a new bot preset (name, personality, difficulty, config) |
+| `updatePreset(id, data)` | PATCH | `/bot-players/{id}` | Update a bot preset |
+| `deletePreset(id)` | DELETE | `/bot-players/{id}` | Delete a bot preset |
+| `addBotToEpoch(epochId, data)` | POST | `/epochs/{epochId}/add-bot` | Add a bot participant to an epoch (bot_player_id, simulation_id) |
+| `removeBotFromEpoch(epochId, participantId)` | DELETE | `/epochs/{epochId}/remove-bot/{participantId}` | Remove a bot participant from an epoch |

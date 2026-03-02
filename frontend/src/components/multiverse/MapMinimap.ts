@@ -20,7 +20,7 @@ export class VelgMapMinimap extends LitElement {
       position: absolute;
       bottom: 56px;
       right: var(--space-3, 12px);
-      z-index: 10;
+      z-index: var(--z-raised);
       pointer-events: none;
     }
 

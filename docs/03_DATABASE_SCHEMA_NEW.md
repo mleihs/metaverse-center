@@ -1,8 +1,9 @@
 # 03 - Database Schema New: Neues Schema mit Simulation-Kontext
 
-**Version:** 2.6
-**Datum:** 2026-03-01
-**Aenderung v2.6:** 1 neue Tabelle (platform_settings). **42 Tabellen gesamt**, 170 RLS-Policies, ~41 unique Triggers (64 Trigger-Eintraege), 8 Views, 4 materialisierte Views, 21 Functions. Migration 040. Platform Admin: key-value store fuer runtime-konfigurierbare Cache-TTLs (map data, SEO metadata, HTTP Cache-Control). RLS service_role only (kein anon/authenticated Zugriff). updated_at Trigger.
+**Version:** 2.7
+**Datum:** 2026-03-02
+**Aenderung v2.7:** 2 neue Tabellen (bot_players, bot_decision_log). 3 neue Spalten auf epoch_participants (is_bot, bot_player_id). 1 neue Spalte auf epoch_chat_messages (sender_type). **44 Tabellen gesamt**, ~176 RLS-Policies. Migration 041.
+**Aenderung v2.6:** 1 neue Tabelle (platform_settings). 42 Tabellen gesamt, 170 RLS-Policies, ~41 unique Triggers (64 Trigger-Eintraege), 8 Views, 4 materialisierte Views, 21 Functions. Migration 040. Platform Admin: key-value store fuer runtime-konfigurierbare Cache-TTLs (map data, SEO metadata, HTTP Cache-Control). RLS service_role only (kein anon/authenticated Zugriff). updated_at Trigger.
 **Aenderung v2.5:** Neuer Index `idx_echo_source_sim_status` auf event_echoes(source_simulation_id, status) fuer Scoring-Queries.
 **Aenderung v2.4:** 2 neue Tabellen (epoch_invitations, epoch_chat_messages). 41 Tabellen gesamt, 170 RLS-Policies, ~40 unique Triggers (63 Trigger-Eintraege), 8 Views, 4 materialisierte Views, 21 Functions (ohne unaccent-Varianten). Migrationen 034-037. Operative Effects (ambassador blocking, infiltration penalty, betrayal penalty). Game Instances (simulation cloning for balanced PvP). Epoch Invitations (email-based player invitations with AI lore). Epoch Realtime (in-game chat + ready signals via Supabase broadcast triggers).
 **Aenderung v2.3:** 9 neue Tabellen (embassies, game_epochs, epoch_teams, epoch_participants, operative_missions, epoch_scores, battle_log + vorherige agent_relationships, event_echoes, simulation_connections). 39 Tabellen gesamt, 161 RLS-Policies, ~38 unique Triggers (59 Trigger-Eintraege), 8 Views, 4 materialisierte Views, 19 Functions (ohne unaccent-Varianten). Migrationen 026-033. Competitive Layer (Epochs, Operatives, Scoring, Battle Log). Embassies & Ambassadors (Cross-Sim Diplomatic Buildings). Game-Mechanics-Functions (materialized view refresh, weight fallback, epoch status validation).
@@ -1489,15 +1490,15 @@ CREATE POLICY simulation_assets_insert ON storage.objects FOR INSERT
 
 | Metrik | Wert |
 |--------|------|
-| Tabellen | 41 (+ epoch_invitations, epoch_chat_messages gegenueber v2.3) |
+| Tabellen | 44 (+ bot_players, bot_decision_log gegenueber v2.6) |
 | Trigger Functions | 10 (set_updated_at, update_conversation_stats, enforce_single_primary_profession, validate_simulation_status_transition, immutable_slug, prevent_last_owner_removal, notify_game_metrics_stale, validate_epoch_status_transition, broadcast_epoch_chat, broadcast_ready_signal) |
 | Utility Functions | 7 (role_meets_minimum, generate_slug, validate_taxonomy_value, game_weight_fallback, refresh_all_game_metrics, refresh_building_readiness, refresh_embassy_effectiveness, refresh_zone_stability) |
 | RLS Functions | 3 |
 | Functions gesamt | 21 (ohne unaccent-Varianten) |
-| Triggers | ~40 unique (~63 Eintraege inkl. updated_at auf allen Tabellen + business logic + broadcast) |
+| Triggers | ~42 unique (~66 Eintraege inkl. updated_at auf allen Tabellen + business logic + broadcast) |
 | Regular Views | 8 (4x active_* + simulation_dashboard + conversation_summaries + agent_statistics + campaign_performance) |
 | Materialized Views | 4 (mv_building_readiness + mv_zone_stability + mv_embassy_effectiveness + mv_simulation_health) |
-| RLS-Policies | 170 (inkl. anon SELECT + Phase-6 + Embassy + Competitive Layer + Epoch Chat + Epoch Invitations) |
+| RLS-Policies | ~176 (inkl. anon SELECT + Phase-6 + Embassy + Competitive Layer + Epoch Chat + Epoch Invitations + Bot Players) |
 | Indexes | ~80 (inkl. partial, GIN, unique) |
 | Storage Buckets | 4 |
 
@@ -1599,6 +1600,8 @@ CREATE POLICY simulation_assets_insert ON storage.objects FOR INSERT
 | `battle_log` | Narrativer Epoch-Event-Log (Migration 032) |
 | `epoch_invitations` | Email-basierte Spielereinladungen mit AI-Lore (Migration 036) |
 | `epoch_chat_messages` | In-Game Chat (epoch-weit + team-only) mit Realtime-Broadcast (Migration 037) |
+| `bot_players` | Wiederverwendbare Bot-Presets mit Persoenlichkeits-Archetypen (Migration 041) |
+| `bot_decision_log` | Audit-Trail aller Bot-Entscheidungen pro Zyklus (Migration 041) |
 
 ### Typ-Korrekturen
 
@@ -1929,11 +1932,18 @@ Simulationen, die an einer Epoche teilnehmen. Trackt Resource Points (RP) und op
 | `current_rp` | integer | NO | `0` |
 | `last_rp_grant_at` | timestamptz | YES | |
 | `final_scores` | jsonb | YES | |
+| `is_bot` | boolean | NO | `false` |
+| `bot_player_id` | uuid | YES | |
+| `cycle_ready` | boolean | NO | `false` |
 
 **Foreign Keys:**
 - `epoch_id` → `game_epochs(id) ON DELETE CASCADE`
 - `simulation_id` → `simulations(id)`
 - `team_id` → `epoch_teams(id) ON DELETE SET NULL`
+- `bot_player_id` → `bot_players(id)`
+
+**CHECK Constraints:**
+- `chk_bot_consistency` — `(is_bot = FALSE AND bot_player_id IS NULL) OR (is_bot = TRUE AND bot_player_id IS NOT NULL)`
 
 **RLS:** 4 Policies (anon_select, select, insert, update).
 
@@ -2102,6 +2112,7 @@ CREATE INDEX idx_epoch_chat_team_created ON epoch_chat_messages (team_id, create
 | `channel_type` | text | NO | `'epoch'` |
 | `team_id` | uuid | YES | |
 | `content` | text | NO | |
+| `sender_type` | text | NO | `'human'` |
 | `created_at` | timestamptz | NO | `now()` |
 
 **Foreign Keys:**
@@ -2113,6 +2124,7 @@ CREATE INDEX idx_epoch_chat_team_created ON epoch_chat_messages (team_id, create
 **CHECK Constraints:**
 - `channel_type IN ('epoch', 'team')`
 - `char_length(content) BETWEEN 1 AND 2000`
+- `sender_type IN ('human', 'bot')`
 
 **Indexes:**
 - `idx_epoch_chat_epoch_created` — `(epoch_id, created_at)` fuer Cursor-basierte Pagination
@@ -2182,3 +2194,90 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 - Epoch-Chat: `epoch:{epoch_id}:chat`
 - Team-Chat: `epoch:{epoch_id}:team:{team_id}:chat`
 - Ready-Status: `epoch:{epoch_id}:status`
+
+### `bot_players`
+
+Wiederverwendbare Bot-Presets ("Kartendeck von Gegnern"). Jeder Bot hat eine Persoenlichkeit (Archetyp) und Schwierigkeitsgrad. Erstellt von Benutzern, kann in mehreren Epochen wiederverwendet werden.
+
+```sql
+CREATE TABLE bot_players (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name            TEXT NOT NULL CHECK (char_length(name) >= 1 AND char_length(name) <= 50),
+    personality     TEXT NOT NULL CHECK (personality IN ('sentinel', 'warlord', 'diplomat', 'strategist', 'chaos')),
+    difficulty      TEXT NOT NULL DEFAULT 'medium' CHECK (difficulty IN ('easy', 'medium', 'hard')),
+    config          JSONB NOT NULL DEFAULT '{}',
+    created_by_id   UUID NOT NULL REFERENCES auth.users(id),
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_bot_players_created_by ON bot_players(created_by_id);
+```
+
+| Spalte | Typ | Nullable | Default |
+|--------|-----|----------|---------|
+| `id` | uuid | NO | `gen_random_uuid()` |
+| `name` | text | NO | |
+| `personality` | text | NO | |
+| `difficulty` | text | NO | `'medium'` |
+| `config` | jsonb | NO | `'{}'` |
+| `created_by_id` | uuid | NO | |
+| `created_at` | timestamptz | NO | `now()` |
+| `updated_at` | timestamptz | NO | `now()` |
+
+**Foreign Keys:**
+- `created_by_id` → `auth.users(id)`
+
+**CHECK Constraints:**
+- `char_length(name) >= 1 AND char_length(name) <= 50`
+- `personality IN ('sentinel', 'warlord', 'diplomat', 'strategist', 'chaos')`
+- `difficulty IN ('easy', 'medium', 'hard')`
+
+**Trigger:** `set_updated_at_bot_players` — updated_at Auto-Update
+
+**RLS:** 4 Policies:
+- `bot_players_select` — SELECT fuer alle authentifizierten Benutzer (fuer Lobby-Anzeige)
+- `bot_players_insert` — INSERT nur fuer eigene Bots (`created_by_id = auth.uid()`)
+- `bot_players_update` — UPDATE nur fuer eigene Bots
+- `bot_players_delete` — DELETE nur fuer eigene Bots
+
+### `bot_decision_log`
+
+Audit-Trail fuer Bot-Entscheidungen. Protokolliert jede Phase jedes Zyklus (Analyse, Allokation, Deployment, Allianz, Chat) mit der getroffenen Entscheidung als JSONB.
+
+```sql
+CREATE TABLE bot_decision_log (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    epoch_id        UUID NOT NULL REFERENCES game_epochs(id) ON DELETE CASCADE,
+    participant_id  UUID NOT NULL REFERENCES epoch_participants(id) ON DELETE CASCADE,
+    cycle_number    INTEGER NOT NULL,
+    phase           TEXT NOT NULL CHECK (phase IN ('analysis', 'allocation', 'deployment', 'alliance', 'chat')),
+    decision        JSONB NOT NULL,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_bot_decision_log_epoch ON bot_decision_log(epoch_id, cycle_number);
+CREATE INDEX idx_bot_decision_log_participant ON bot_decision_log(participant_id);
+```
+
+| Spalte | Typ | Nullable | Default |
+|--------|-----|----------|---------|
+| `id` | uuid | NO | `gen_random_uuid()` |
+| `epoch_id` | uuid | NO | |
+| `participant_id` | uuid | NO | |
+| `cycle_number` | integer | NO | |
+| `phase` | text | NO | |
+| `decision` | jsonb | NO | |
+| `created_at` | timestamptz | NO | `now()` |
+
+**Foreign Keys:**
+- `epoch_id` → `game_epochs(id) ON DELETE CASCADE`
+- `participant_id` → `epoch_participants(id) ON DELETE CASCADE`
+
+**CHECK Constraints:**
+- `phase IN ('analysis', 'allocation', 'deployment', 'alliance', 'chat')`
+
+**RLS:** 3 Policies:
+- `bot_decision_log_select` — SELECT fuer authentifizierte Epoch-Teilnehmer (Transparenz)
+- `bot_decision_log_anon_select` — SELECT fuer anon (oeffentliche Transparenz)
+- `bot_decision_log_service_insert` — INSERT nur via service_role (Admin-Client)

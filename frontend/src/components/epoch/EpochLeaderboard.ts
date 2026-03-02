@@ -9,10 +9,12 @@
  */
 
 import { localized, msg } from '@lit/localize';
-import { css, html, LitElement, nothing, type PropertyValues } from 'lit';
+import { css, html, LitElement, nothing, type PropertyValues, unsafeCSS } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
-import type { Epoch, LeaderboardEntry } from '../../types/index.js';
+import type { Epoch, EpochParticipant, LeaderboardEntry } from '../../types/index.js';
+import { PERSONALITY_COLORS } from '../../utils/bot-colors.js';
+import { icons } from '../../utils/icons.js';
 
 type SortKey =
   | 'rank'
@@ -167,6 +169,49 @@ export class VelgEpochLeaderboard extends LitElement {
       color: var(--color-success);
     }
 
+    /* ── Bot indicator ─────────────────────── */
+
+    .sim__bot {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-bold);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0 5px;
+      margin-left: 4px;
+      vertical-align: middle;
+      border: 1px solid;
+    }
+
+    .sim__bot svg {
+      width: 10px;
+      height: 10px;
+      fill: currentColor;
+    }
+
+    .sim__bot--sentinel { color: ${unsafeCSS(PERSONALITY_COLORS.sentinel)}; border-color: ${unsafeCSS(PERSONALITY_COLORS.sentinel)}; }
+    .sim__bot--warlord { color: ${unsafeCSS(PERSONALITY_COLORS.warlord)}; border-color: ${unsafeCSS(PERSONALITY_COLORS.warlord)}; }
+    .sim__bot--diplomat { color: ${unsafeCSS(PERSONALITY_COLORS.diplomat)}; border-color: ${unsafeCSS(PERSONALITY_COLORS.diplomat)}; }
+    .sim__bot--strategist { color: ${unsafeCSS(PERSONALITY_COLORS.strategist)}; border-color: ${unsafeCSS(PERSONALITY_COLORS.strategist)}; }
+    .sim__bot--chaos { color: ${unsafeCSS(PERSONALITY_COLORS.chaos)}; border-color: ${unsafeCSS(PERSONALITY_COLORS.chaos)}; }
+
+    .sim__difficulty {
+      font-family: var(--font-mono, monospace);
+      font-size: 8px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0 3px;
+      margin-left: 2px;
+      vertical-align: middle;
+    }
+
+    .sim__difficulty--easy { color: var(--color-success); }
+    .sim__difficulty--medium { color: var(--color-warning); }
+    .sim__difficulty--hard { color: var(--color-danger); }
+
     /* ── Composite Score ──────────────────── */
 
     .composite {
@@ -269,6 +314,7 @@ export class VelgEpochLeaderboard extends LitElement {
 
   @property({ type: Array }) entries: LeaderboardEntry[] = [];
   @property({ type: Object }) epoch: Epoch | null = null;
+  @property({ type: Array }) participants: EpochParticipant[] = [];
   @property({ type: Boolean, reflect: true }) compact = false;
 
   @state() private _sortKey: SortKey = 'rank';
@@ -306,6 +352,21 @@ export class VelgEpochLeaderboard extends LitElement {
       return (av > bv ? 1 : av < bv ? -1 : 0) * dir;
     });
     return sorted;
+  }
+
+  private _getBotParticipant(entry: LeaderboardEntry): EpochParticipant | undefined {
+    return this.participants.find((p) => p.simulation_id === entry.simulation_id && p.is_bot);
+  }
+
+  private _getBotIcon(personality: string) {
+    const iconMap: Record<string, () => unknown> = {
+      sentinel: icons.botSentinel,
+      warlord: icons.botWarlord,
+      diplomat: icons.botDiplomat,
+      strategist: icons.botStrategist,
+      chaos: icons.botChaos,
+    };
+    return iconMap[personality]?.() ?? nothing;
   }
 
   private _getDimensionTitle(entry: LeaderboardEntry): string | undefined {
@@ -389,6 +450,10 @@ export class VelgEpochLeaderboard extends LitElement {
 
     const hasBetrayal = (entry.betrayal_penalty ?? 0) > 0;
     const allyCount = this._getAllyCount(entry);
+    const botPart = this._getBotParticipant(entry);
+    const botPlayer = botPart?.bot_players;
+    const personality = botPlayer?.personality ?? '';
+    const difficulty = botPlayer?.difficulty ?? '';
 
     return html`
       <tr class="row" style="animation-delay: ${delay}ms">
@@ -398,6 +463,7 @@ export class VelgEpochLeaderboard extends LitElement {
             <span class="sim__name">
               ${entry.simulation_name}
               ${hasBetrayal ? html`<span class="sim__traitor">${msg('Traitor')}</span>` : nothing}
+              ${botPlayer ? html`<span class="sim__bot sim__bot--${personality}">${this._getBotIcon(personality)}BOT</span><span class="sim__difficulty sim__difficulty--${difficulty}">${difficulty}</span>` : nothing}
             </span>
             ${entry.team_name ? html`<span class="sim__team">${entry.team_name}${allyCount > 0 ? html`<span class="sim__alliance"> (+${allyCount * 10}%)</span>` : nothing}</span>` : nothing}
             ${title ? html`<span class="sim__title">"${title}"</span>` : nothing}

@@ -44,6 +44,7 @@ import './EpochOverviewTab.js';
 import './EpochOperationsTab.js';
 import './EpochAlliancesTab.js';
 import './EpochLobbyActions.js';
+import './BotConfigPanel.js';
 
 type TabId = 'overview' | 'leaderboard' | 'operations' | 'battle-log' | 'alliances' | 'chat';
 
@@ -1089,6 +1090,7 @@ export class VelgEpochCommandCenter extends LitElement {
   @state() private _showCreateWizard = false;
   @state() private _showDeployModal = false;
   @state() private _showInvitePanel = false;
+  @state() private _showBotPanel = false;
   @state() private _actionLoading = false;
   @state() private _commsEpoch: Epoch | null = null;
   @state() private _commsParticipant: EpochParticipant | null = null;
@@ -1097,7 +1099,7 @@ export class VelgEpochCommandCenter extends LitElement {
     super.connectedCallback();
     seoService.setTitle([msg('Epoch Command Center')]);
     seoService.setDescription(
-      'Competitive PvP operations dashboard — manage epochs, deploy operatives, track scores.',
+      msg('Competitive PvP operations dashboard — manage epochs, deploy operatives, track scores.'),
     );
     await this._loadData();
   }
@@ -1469,6 +1471,9 @@ export class VelgEpochCommandCenter extends LitElement {
           @invite-players=${() => {
             this._showInvitePanel = true;
           }}
+          @add-bots=${() => {
+            this._showBotPanel = true;
+          }}
           @create-epoch=${() => this._createEpoch()}
           @advance-phase=${() => this._onAdvancePhase()}
           @resolve-cycle=${() => this._onResolveCycle()}
@@ -1503,6 +1508,18 @@ export class VelgEpochCommandCenter extends LitElement {
           this._showInvitePanel = false;
         }}
       ></velg-epoch-invite-panel>
+      <velg-bot-config-panel
+        .open=${this._showBotPanel}
+        .epochId=${this._epoch?.id ?? ''}
+        .simulations=${appState.simulations.value}
+        .participants=${this._participants}
+        @panel-close=${() => {
+          this._showBotPanel = false;
+        }}
+        @bot-added=${() => {
+          if (this._epoch) this._loadEpochDetails(this._epoch.id);
+        }}
+      ></velg-bot-config-panel>
     `;
   }
 
@@ -1631,10 +1648,12 @@ export class VelgEpochCommandCenter extends LitElement {
     ];
 
     return html`
-      <div class="tabs">
+      <div class="tabs" role="tablist">
         ${tabs.map(
           (t) => html`
             <button
+              role="tab"
+              aria-selected=${this._activeTab === t.id}
               class="tab ${this._activeTab === t.id ? 'tab--active' : ''}"
               @click=${() => this._switchTab(t.id)}
             >
@@ -1683,6 +1702,7 @@ export class VelgEpochCommandCenter extends LitElement {
           <velg-epoch-leaderboard
             .entries=${this._leaderboard}
             .epoch=${this._epoch}
+            .participants=${this._participants}
           ></velg-epoch-leaderboard>
         `;
       case 'operations':
@@ -1699,6 +1719,7 @@ export class VelgEpochCommandCenter extends LitElement {
         return html`
           <velg-epoch-battle-log
             .entries=${this._battleLog}
+            .participants=${this._participants}
           ></velg-epoch-battle-log>
         `;
       case 'alliances':

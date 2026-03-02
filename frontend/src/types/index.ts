@@ -918,6 +918,21 @@ export interface EpochInvitationPublicInfo {
   is_accepted: boolean;
 }
 
+export type BotPersonality = 'sentinel' | 'warlord' | 'diplomat' | 'strategist' | 'chaos';
+
+export type BotDifficulty = 'easy' | 'medium' | 'hard';
+
+export interface BotPlayer {
+  id: UUID;
+  name: string;
+  personality: BotPersonality;
+  difficulty: BotDifficulty;
+  config: Record<string, unknown>;
+  created_by_id: UUID;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface EpochParticipant {
   id: UUID;
   epoch_id: UUID;
@@ -929,6 +944,9 @@ export interface EpochParticipant {
   final_scores?: Record<string, number>;
   betrayal_penalty?: number;
   cycle_ready?: boolean;
+  is_bot: boolean;
+  bot_player_id?: UUID;
+  bot_players?: BotPlayer;
   simulations?: {
     name: string;
     slug: string;
@@ -1027,6 +1045,7 @@ export interface EpochChatMessage {
   content: string;
   created_at: string;
   sender_name?: string;
+  sender_type?: 'human' | 'bot';
 }
 
 export interface PresenceUser {

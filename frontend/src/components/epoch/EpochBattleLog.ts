@@ -8,10 +8,11 @@
  */
 
 import { localized, msg } from '@lit/localize';
-import { css, html, LitElement, nothing } from 'lit';
+import { css, html, LitElement, nothing, unsafeCSS } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
-import type { BattleLogEntry, BattleLogEventType } from '../../types/index.js';
+import type { BattleLogEntry, BattleLogEventType, EpochParticipant } from '../../types/index.js';
+import { PERSONALITY_COLORS } from '../../utils/bot-colors.js';
 
 @localized()
 @customElement('velg-epoch-battle-log')
@@ -190,6 +191,27 @@ export class VelgEpochBattleLog extends LitElement {
       padding: var(--space-4);
     }
 
+    /* ── Bot indicator ────────────────────── */
+
+    .entry__bot-tag {
+      display: inline-block;
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-bold);
+      font-size: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0 4px;
+      margin-right: 4px;
+      vertical-align: middle;
+      border: 1px solid;
+    }
+
+    .entry__bot-tag--sentinel { color: ${unsafeCSS(PERSONALITY_COLORS.sentinel)}; border-color: ${unsafeCSS(PERSONALITY_COLORS.sentinel)}; }
+    .entry__bot-tag--warlord { color: ${unsafeCSS(PERSONALITY_COLORS.warlord)}; border-color: ${unsafeCSS(PERSONALITY_COLORS.warlord)}; }
+    .entry__bot-tag--diplomat { color: ${unsafeCSS(PERSONALITY_COLORS.diplomat)}; border-color: ${unsafeCSS(PERSONALITY_COLORS.diplomat)}; }
+    .entry__bot-tag--strategist { color: ${unsafeCSS(PERSONALITY_COLORS.strategist)}; border-color: ${unsafeCSS(PERSONALITY_COLORS.strategist)}; }
+    .entry__bot-tag--chaos { color: ${unsafeCSS(PERSONALITY_COLORS.chaos)}; border-color: ${unsafeCSS(PERSONALITY_COLORS.chaos)}; }
+
     /* ── Compact mode ─────────────────────── */
 
     :host([compact]) .entry {
@@ -218,7 +240,14 @@ export class VelgEpochBattleLog extends LitElement {
   `;
 
   @property({ type: Array }) entries: BattleLogEntry[] = [];
+  @property({ type: Array }) participants: EpochParticipant[] = [];
   @property({ type: Boolean, reflect: true }) compact = false;
+
+  private _getBotPersonality(simId?: string): string | null {
+    if (!simId) return null;
+    const p = this.participants.find((pp) => pp.simulation_id === simId && pp.is_bot);
+    return p?.bot_players?.personality ?? null;
+  }
 
   private _getIcon(type: BattleLogEventType): string {
     const icons: Record<string, string> = {
@@ -293,7 +322,12 @@ export class VelgEpochBattleLog extends LitElement {
       >
         <div class="entry__icon">${this._getIcon(entry.event_type)}</div>
         <div class="entry__content">
-          <span class="entry__narrative">${entry.narrative}</span>
+          <span class="entry__narrative">${(() => {
+            const botPersonality = this._getBotPersonality(entry.source_simulation_id);
+            return botPersonality
+              ? html`<span class="entry__bot-tag entry__bot-tag--${botPersonality}">BOT</span>${entry.narrative}`
+              : entry.narrative;
+          })()}</span>
           ${
             this.compact
               ? nothing

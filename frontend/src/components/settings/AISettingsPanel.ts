@@ -151,6 +151,11 @@ export class VelgAISettingsPanel extends BaseSettingsPanel {
     return false;
   }
 
+  /** Check if bot chat LLM mode is enabled. */
+  private get _hasBotChatLlm(): boolean {
+    return this._values.bot_chat_mode === 'llm';
+  }
+
   protected render() {
     if (this._loading) {
       return html`<velg-loading-state message=${msg('Loading AI settings...')}></velg-loading-state>`;
@@ -362,6 +367,56 @@ export class VelgAISettingsPanel extends BaseSettingsPanel {
           `
             : nothing
         }
+
+        <!-- Bot Chat -->
+        <div class="settings-section">
+          <velg-section-header variant="large">${msg('Bot Chat')}</velg-section-header>
+          <p class="settings-section__subtitle">
+            ${msg('Configure how bot players generate chat messages during epoch cycles.')}
+          </p>
+          <div class="settings-form-grid">
+            <div class="settings-form__group">
+              <label class="settings-form__label settings-form__label--xs" for="ai-bot-chat-mode">
+                ${msg('Chat Mode')}
+              </label>
+              <select
+                class="settings-form__select settings-form__select--sm"
+                id="ai-bot-chat-mode"
+                .value=${this._values.bot_chat_mode ?? ''}
+                @change=${(e: Event) => this._handleInput('bot_chat_mode', e)}
+              >
+                <option value="" ?selected=${!this._values.bot_chat_mode}>${msg('Template (Free, Instant)')}</option>
+                <option value="llm" ?selected=${this._values.bot_chat_mode === 'llm'}>${msg('LLM (Rich, Personality-Flavored)')}</option>
+              </select>
+            </div>
+            ${
+              this._hasBotChatLlm
+                ? html`
+              <div class="settings-form__group">
+                <label class="settings-form__label settings-form__label--xs" for="ai-bot-chat-model">
+                  ${msg('Bot Chat Model')}
+                </label>
+                <select
+                  class="settings-form__select settings-form__select--sm"
+                  id="ai-bot-chat-model"
+                  .value=${this._values.model_bot_chat ?? ''}
+                  @change=${(e: Event) => this._handleInput('model_bot_chat', e)}
+                >
+                  <option value="">${msg('-- Default (DeepSeek V3.2) --')}</option>
+                  ${TEXT_MODEL_OPTIONS.map(
+                    (model) => html`
+                      <option value=${model} ?selected=${this._values.model_bot_chat === model}>
+                        ${model}
+                      </option>
+                    `,
+                  )}
+                </select>
+              </div>
+            `
+                : nothing
+            }
+          </div>
+        </div>
 
         <!-- Generation Defaults -->
         <div class="settings-section">

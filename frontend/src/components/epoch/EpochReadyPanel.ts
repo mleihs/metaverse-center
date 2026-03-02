@@ -146,6 +146,16 @@ export class VelgEpochReadyPanel extends LitElement {
       border: 1px solid var(--border-dim);
     }
 
+    .participant__bot-tag {
+      font-size: 8px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 0 4px;
+      color: var(--amber);
+      border: 1px solid color-mix(in srgb, var(--amber) 30%, transparent);
+    }
+
     /* ── Toggle button ── */
     .ready-btn {
       width: 100%;
@@ -271,7 +281,7 @@ export class VelgEpochReadyPanel extends LitElement {
               <span class="participant__icon ${ready ? 'participant__icon--ready' : 'participant__icon--waiting'}">
                 ${ready ? '\u2713' : '\u2014'}
               </span>
-              <span class="participant__name">${name}</span>
+              <span class="participant__name">${name}${p.is_bot ? html`<span class="participant__bot-tag">${msg('BOT')}</span>` : nothing}</span>
               <span class="participant__tag ${ready ? 'participant__tag--ready' : 'participant__tag--waiting'}">
                 ${ready ? msg('Ready') : msg('Waiting')}
               </span>

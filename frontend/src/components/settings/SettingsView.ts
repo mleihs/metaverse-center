@@ -322,10 +322,12 @@ export class VelgSettingsView extends LitElement {
             : nothing
         }
 
-        <nav class="settings__tabs">
+        <nav class="settings__tabs" role="tablist">
           ${this._visibleTabs.map(
             (tab) => html`
               <button
+                role="tab"
+                aria-selected=${this._activeTab === tab.key}
                 class="settings__tab ${this._activeTab === tab.key ? 'settings__tab--active' : ''}"
                 @click=${() => this._handleTabClick(tab.key)}
               >

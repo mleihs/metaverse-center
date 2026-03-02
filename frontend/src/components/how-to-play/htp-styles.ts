@@ -1466,7 +1466,7 @@ export const htpStyles = css`
     .toc {
       position: sticky;
       top: 0;
-      z-index: 10;
+      z-index: var(--z-raised);
       height: auto;
       border-right: none;
       border-bottom: 1px solid var(--color-gray-800);

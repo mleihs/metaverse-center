@@ -93,14 +93,14 @@ export class VelgDevAccountSwitcher extends LitElement {
     .gate-backdrop {
       position: fixed;
       inset: 0;
-      z-index: 999;
+      z-index: var(--z-overlay);
     }
 
     .gate {
       position: absolute;
       top: calc(100% + 6px);
       right: 0;
-      z-index: 1000;
+      z-index: var(--z-modal);
       background: #1a1a1a;
       border: 1px solid #333;
       padding: 10px;

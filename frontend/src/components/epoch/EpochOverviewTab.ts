@@ -285,6 +285,7 @@ export class VelgEpochOverviewTab extends LitElement {
             <velg-epoch-leaderboard
               .entries=${this.leaderboard.slice(0, 5)}
               .epoch=${this.epoch}
+              .participants=${this.participants}
               compact
             ></velg-epoch-leaderboard>
           </div>
@@ -387,6 +388,7 @@ export class VelgEpochOverviewTab extends LitElement {
           <div class="panel__body">
             <velg-epoch-battle-log
               .entries=${this.battleLog.slice(0, 5)}
+              .participants=${this.participants}
               compact
             ></velg-epoch-battle-log>
           </div>

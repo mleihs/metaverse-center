@@ -88,6 +88,29 @@ export class VelgEpochLobbyActions extends LitElement {
       box-shadow: none;
     }
 
+    .lobby-btn--bots {
+      color: var(--color-warning);
+      border-color: var(--color-warning);
+      background: transparent;
+    }
+
+    .lobby-btn--bots:hover:not(:disabled) {
+      background: color-mix(in srgb, var(--color-warning) 15%, transparent);
+      box-shadow: 0 0 10px color-mix(in srgb, var(--color-warning) 20%, transparent);
+    }
+
+    .lobby-btn--bots .bot-icon {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+    }
+
+    .lobby-btn--bots .bot-icon svg {
+      width: 100%;
+      height: 100%;
+      fill: currentColor;
+    }
+
     /* ── Admin Controls ────────────────────── */
 
     .admin-panel {
@@ -243,6 +266,10 @@ export class VelgEpochLobbyActions extends LitElement {
               @click=${this._onInvitePlayers}
             >${msg('Invite Players')}</button>
             <button
+              class="lobby-btn lobby-btn--bots"
+              @click=${this._onAddBots}
+            >${msg('Add Bots')}</button>
+            <button
               class="lobby-btn lobby-btn--start"
               ?disabled=${this.actionLoading || this.participants.length < 2}
               @click=${this._onStartEpoch}
@@ -347,6 +374,15 @@ export class VelgEpochLobbyActions extends LitElement {
   private _onInvitePlayers() {
     this.dispatchEvent(
       new CustomEvent('invite-players', {
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
+
+  private _onAddBots() {
+    this.dispatchEvent(
+      new CustomEvent('add-bots', {
         bubbles: true,
         composed: true,
       }),

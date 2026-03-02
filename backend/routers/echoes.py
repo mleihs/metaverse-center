@@ -196,7 +196,7 @@ async def approve_echo(
     except OpenRouterError as e:
         raise HTTPException(
             status_code=http_status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=str(e),
+            detail="AI service unavailable. Please try again.",
         ) from e
     except HTTPException:
         raise
@@ -204,7 +204,7 @@ async def approve_echo(
         logger.exception("Echo approval/transformation failed for %s", echo_id)
         raise HTTPException(
             status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e),
+            detail="Echo transformation failed. Please try again.",
         ) from e
 
 

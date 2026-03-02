@@ -16,6 +16,7 @@ from backend.routers import (
     admin,
     agent_professions,
     agents,
+    bot_players,
     buildings,
     campaigns,
     chat,
@@ -114,6 +115,7 @@ app.include_router(embassies.router)
 app.include_router(connections.router)
 app.include_router(game_mechanics.router)
 app.include_router(epochs.router)
+app.include_router(bot_players.router)
 app.include_router(epoch_chat.router)
 app.include_router(epoch_invitations.router)
 app.include_router(operatives.router)

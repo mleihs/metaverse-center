@@ -65,7 +65,7 @@ export class VelgAdminCachingTab extends LitElement {
   static styles = css`
     :host {
       display: block;
-      color: var(--color-gray-200, #e2e2e8);
+      color: var(--color-text-primary);
       font-family: var(--font-mono, monospace);
     }
 
@@ -78,20 +78,20 @@ export class VelgAdminCachingTab extends LitElement {
 
     .cache-card {
       padding: var(--space-4);
-      background: var(--color-gray-900, #111118);
-      border: 1px solid var(--color-gray-800, #1e1e2a);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
       transition:
         border-color 0.2s ease,
         box-shadow 0.2s ease;
     }
 
     .cache-card:hover {
-      border-color: var(--color-gray-600, #4b5563);
+      border-color: var(--color-text-muted);
     }
 
     .cache-card--dirty {
-      border-color: #f59e0b;
-      box-shadow: 0 0 0 1px #f59e0b80;
+      border-color: var(--color-warning);
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-warning) 50%, transparent);
     }
 
     .cache-card__label {
@@ -100,13 +100,13 @@ export class VelgAdminCachingTab extends LitElement {
       font-weight: var(--font-bold);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-gray-100, #f3f4f6);
+      color: var(--color-text-primary);
       margin: 0 0 var(--space-2) 0;
     }
 
     .cache-card__description {
       font-size: var(--text-xs);
-      color: var(--color-gray-400, #9ca3af);
+      color: var(--color-text-secondary);
       line-height: 1.5;
       margin: 0 0 var(--space-3) 0;
     }
@@ -123,9 +123,9 @@ export class VelgAdminCachingTab extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
       text-align: right;
-      background: var(--color-gray-950, #0a0a0f);
-      color: var(--color-gray-100, #f3f4f6);
-      border: 1px solid var(--color-gray-700, #374151);
+      background: var(--color-background);
+      color: var(--color-text-primary);
+      border: 1px solid var(--color-border);
       border-radius: 0;
       transition: border-color 0.2s ease;
       -moz-appearance: textfield;
@@ -139,19 +139,19 @@ export class VelgAdminCachingTab extends LitElement {
 
     .cache-card__input:focus {
       outline: none;
-      border-color: var(--color-danger, #dc2626);
-      box-shadow: 0 0 0 1px var(--color-danger, #dc2626);
+      border-color: var(--color-danger);
+      box-shadow: 0 0 0 1px var(--color-danger);
     }
 
     .cache-card__unit {
       font-size: var(--text-xs);
-      color: var(--color-gray-500, #6b7280);
+      color: var(--color-text-muted);
       text-transform: uppercase;
     }
 
     .cache-card__default {
       font-size: var(--text-xs);
-      color: var(--color-gray-500, #6b7280);
+      color: var(--color-text-muted);
       margin-left: auto;
     }
 
@@ -192,31 +192,31 @@ export class VelgAdminCachingTab extends LitElement {
     }
 
     .btn--save {
-      background: #dc2626;
-      color: #ffffff;
-      border: 1px solid #dc2626;
+      background: var(--color-danger);
+      color: var(--color-text-inverse);
+      border: 1px solid var(--color-danger);
     }
 
     .btn--save:hover:not(:disabled) {
-      background: #b91c1c;
-      box-shadow: 0 0 12px rgba(220, 38, 38, 0.3);
+      background: var(--color-danger-hover);
+      box-shadow: 0 0 12px color-mix(in srgb, var(--color-danger) 30%, transparent);
     }
 
     .btn--reset {
       background: transparent;
-      color: var(--color-gray-400, #9ca3af);
-      border: 1px solid var(--color-gray-700, #374151);
+      color: var(--color-text-secondary);
+      border: 1px solid var(--color-border);
     }
 
     .btn--reset:hover:not(:disabled) {
-      color: #f87171;
-      border-color: #f8717180;
+      color: var(--color-danger);
+      border-color: color-mix(in srgb, var(--color-danger) 50%, transparent);
     }
 
     .loading {
       text-align: center;
       padding: var(--space-8);
-      color: var(--color-gray-500, #6b7280);
+      color: var(--color-text-muted);
       font-family: var(--font-brutalist);
       text-transform: uppercase;
     }

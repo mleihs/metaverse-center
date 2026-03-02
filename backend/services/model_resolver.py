@@ -19,6 +19,7 @@ PLATFORM_DEFAULT_MODELS: dict[str, str] = {
     "chat_response": "deepseek/deepseek-v3.2",
     "news_transformation": "deepseek/deepseek-v3.2",
     "social_trends": "deepseek/deepseek-v3.2",
+    "bot_chat": "deepseek/deepseek-v3.2",
     "default": "deepseek/deepseek-v3.2",
     "fallback": "deepseek/deepseek-r1-0528:free",
 }
