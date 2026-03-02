@@ -32,11 +32,14 @@ class SimulationService:
 
         Returns (data, total_count).
         """
-        # Get simulation IDs the user is a member of
+        # Get simulation IDs the user is a member of (templates only).
+        # Filter at join level to avoid URI-too-long errors when the user has
+        # many game instance / archived memberships (PostgREST URI limit).
         membership_response = (
             supabase.table("simulation_members")
-            .select("simulation_id")
+            .select("simulation_id, simulations!inner(simulation_type)")
             .eq("user_id", str(user_id))
+            .eq("simulations.simulation_type", "template")
             .execute()
         )
 

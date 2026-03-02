@@ -100,3 +100,52 @@ export interface ChangelogEntry {
   highlights: string[];
   details: { category: string; changes: string[] }[];
 }
+
+/* ── Balance Analytics types ─────────────────────────── */
+
+export interface EloRating {
+  simulation: string;
+  rating: number;
+  delta: number;
+  color: string;
+}
+
+export interface StrategyTier {
+  tier: string;
+  tierColor: string;
+  strategies: { name: string; winRate: number; appearances: number; description: string }[];
+}
+
+export interface SimulationProfile {
+  tag: string;
+  name: string;
+  color: string;
+  eloRating: number;
+  winRates: { pc2?: number; pc3: number; pc4: number; pc5: number };
+  ciLow: number;
+  ciHigh: number;
+  strengths: string;
+  weakness: string;
+}
+
+export interface DimensionVariance {
+  name: string;
+  color: string;
+  stdDev: number;
+  maxStd: number;
+  status: string;
+  contribution: number;
+}
+
+export interface HeadToHead {
+  rowSim: string;
+  colSim: string;
+  winRate: number;
+  games: number;
+}
+
+export interface BalanceInsight {
+  label: string;
+  value: string;
+  description: string;
+}

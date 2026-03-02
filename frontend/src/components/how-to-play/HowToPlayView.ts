@@ -15,20 +15,27 @@ import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { analyticsService } from '../../services/AnalyticsService.js';
 import { seoService } from '../../services/SeoService.js';
+import '../shared/EchartsChart.js';
 import { getMatches } from './htp-content-matches.js';
 import {
+  getBalanceInsights,
   getBleedThresholdRules,
   getBleedVectors,
   getChangelog,
+  getDimensionVariance,
   getEchoLifecycle,
   getEchoStrengthFormula,
+  getEloRatings,
   getEmbassyInfo,
+  getHeadToHeadData,
   getNormalizationRules,
   getOperativeCards,
   getPhases,
   getRpRules,
   getScoreDimensions,
   getScorePresets,
+  getSimulationProfiles,
+  getStrategyTiers,
   getSuccessFormula,
   getTactics,
   getTocSections,
@@ -41,6 +48,8 @@ import type {
   FinalStanding,
   MatchConfig,
   OperativeCard,
+  SimulationProfile,
+  StrategyTier,
   TacticCard,
   TocSection,
 } from './htp-types.js';
@@ -59,6 +68,7 @@ export class VelgHowToPlay extends LitElement {
   @state() private _expandedUpdates = new Set<number>();
 
   private _observer: IntersectionObserver | null = null;
+  private _chartObserver: IntersectionObserver | null = null;
 
   /* ── Lifecycle ──────────────────────────────────── */
 
@@ -72,12 +82,16 @@ export class VelgHowToPlay extends LitElement {
     );
     analyticsService.trackPageView('/how-to-play', 'How to Play');
     this._injectFaqSchema();
-    this.updateComplete.then(() => this._setupScrollSpy());
+    this.updateComplete.then(() => {
+      this._setupScrollSpy();
+      this._setupChartObserver();
+    });
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     this._observer?.disconnect();
+    this._chartObserver?.disconnect();
     seoService.removeStructuredData();
   }
 
@@ -223,6 +237,7 @@ export class VelgHowToPlay extends LitElement {
           ${this._renderTactics()}
           ${this._renderMatches()}
           ${this._renderUpdates()}
+          ${this._renderAnalytics()}
         </main>
       </div>
     `;
@@ -998,6 +1013,516 @@ export class VelgHowToPlay extends LitElement {
         }
       </div>
     `;
+  }
+  /* ── Section 13: Intelligence Report ─────────────── */
+
+  private _renderAnalytics() {
+    const elo = getEloRatings();
+    const profiles = getSimulationProfiles();
+    const tiers = getStrategyTiers();
+    const dims = getDimensionVariance();
+    const insights = getBalanceInsights();
+
+    return html`
+      <section class="section" id="analytics">
+        ${this._renderSectionHeader('13', msg('Intelligence Report'))}
+        <p class="section__text">
+          ${msg('Compiled from 200 simulated epoch games (50 per player count, 2P through 5P) using v2.1 balance tuning. All data drawn from automated Monte Carlo simulation against the live game engine. 188 games produced valid results (12 empty leaderboards excluded).')}
+        </p>
+
+        <div class="callout callout--info" style="margin-bottom: var(--space-8)">
+          <div class="callout__label">${msg('Methodology')}</div>
+          <div class="callout__text">
+            ${msg('Each game randomizes scoring preset weights, strategy assignments, and player pairings. Elo ratings use K-factor scaling for multi-player games. Statistical significance tested via chi-squared, Fisher exact, and bootstrap confidence intervals (10,000 iterations).')}
+          </div>
+        </div>
+
+        <!-- Elo Power Rankings -->
+        <div class="analytics-sub">
+          <h3 class="analytics-sub__title">${msg('Elo Power Rankings')}</h3>
+          <p class="analytics-sub__desc">
+            ${msg('Elo ratings computed from all 188 valid games. Multi-player games decomposed into pairwise matchups (winner beats each loser). All ratings start at 1500.')}
+          </p>
+          <div class="elo-chart">
+            ${elo.map(
+              (e) => html`
+                <div class="elo-row">
+                  <span class="elo-row__label" style="color: ${e.color}">${e.simulation}</span>
+                  <div class="elo-row__track">
+                    <div class="elo-row__fill" style="background: ${e.color}; --w: ${(e.rating - 1400) / 180}"></div>
+                  </div>
+                  <span class="elo-row__value">${e.rating}</span>
+                  <span class="elo-row__delta ${e.delta >= 0 ? 'elo-row__delta--up' : 'elo-row__delta--down'}">
+                    ${e.delta >= 0 ? '+' : ''}${e.delta}
+                  </span>
+                </div>
+              `,
+            )}
+          </div>
+        </div>
+
+        ${this._renderIntelChart('CLASSIFIED', msg('Simulation Performance Radar'), 'SIGINT-4', this._buildRadarOption(), '350px')}
+
+        <!-- Simulation Dossiers -->
+        <div class="analytics-sub">
+          <h3 class="analytics-sub__title">${msg('Simulation Dossiers')}</h3>
+          <p class="analytics-sub__desc">
+            ${msg('Win rates per player count, 95% bootstrap confidence intervals, and competitive profile for each simulation. Theoretical fair rates: 50% (2P), 33% (3P), 25% (4P), 20% (5P).')}
+          </p>
+          <div class="profile-grid">
+            ${profiles.map((p, i) => this._renderProfileCard(p, i))}
+          </div>
+        </div>
+
+        ${this._renderIntelChart('CLASSIFIED', msg('Win Rate Evolution by Player Count'), 'HUMINT-3', this._buildWinRateLineOption(), '320px')}
+        ${this._renderIntelChart('RESTRICTED', msg('Head-to-Head Matrix (2P Duels)'), 'COMINT-2', this._buildHeatmapOption(), '350px')}
+
+        <!-- Strategy Tier List -->
+        <div class="analytics-sub">
+          <h3 class="analytics-sub__title">${msg('Strategy Tier List')}</h3>
+          <p class="analytics-sub__desc">
+            ${msg('Win rates with Wilson score 95% confidence intervals. Ordered by observed effectiveness across all player counts and presets.')}
+          </p>
+          <div class="strat-tiers">
+            ${tiers.map((t) => this._renderStratTier(t))}
+          </div>
+        </div>
+
+        ${this._renderIntelChart('TOP SECRET', msg('Strategy Effectiveness (Wilson 95% CI)'), 'MASINT-5', this._buildStrategyBarOption(), '320px')}
+
+        <!-- Dimension Impact -->
+        <div class="analytics-sub">
+          <h3 class="analytics-sub__title">${msg('Scoring Dimension Impact')}</h3>
+          <p class="analytics-sub__desc">
+            ${msg('Standard deviation measures how much each scoring dimension differentiates between players within a game. Higher variance = more decisive. All five dimensions are now active in v2.1 (up from only 2 in v2).')}
+          </p>
+          <div class="impact-chart">
+            ${dims.map(
+              (d) => html`
+                <div class="impact-row">
+                  <span class="impact-row__label" style="color: ${d.color}">${d.name}</span>
+                  <div class="impact-row__track">
+                    <div class="impact-row__fill" style="background: ${d.color}; --w: ${d.stdDev / d.maxStd}"></div>
+                  </div>
+                  <span class="impact-row__std">\u03C3 ${d.stdDev}</span>
+                  <span class="impact-row__status" style="color: ${d.color}; border-color: ${d.color}">${d.status}</span>
+                </div>
+              `,
+            )}
+          </div>
+        </div>
+
+        <!-- Statistical Verdict -->
+        <div class="analytics-sub">
+          <h3 class="analytics-sub__title">${msg('Statistical Verdict')}</h3>
+          <p class="analytics-sub__desc">
+            ${msg('Key findings from chi-squared tests, bootstrap analysis, and game-theoretic Nash equilibrium computation.')}
+          </p>
+          <div class="verdict-grid">
+            ${insights.map(
+              (ins, i) => html`
+                <div class="verdict-card" style="--i: ${i}">
+                  <span class="verdict-card__label">${ins.label}</span>
+                  <span class="verdict-card__value">${ins.value}</span>
+                  <span class="verdict-card__desc">${ins.description}</span>
+                </div>
+              `,
+            )}
+          </div>
+        </div>
+
+        <div class="callout callout--info" style="margin-bottom: var(--space-6)">
+          <div class="callout__label">${msg('Data Provenance')}</div>
+          <div class="callout__text">
+            ${msg('All analytics data reflects v2.1 baseline (188 valid games from 200 simulated). The v2.2 balance changes above are informed by this analysis. Future simulation runs will validate v2.2 impact.')}
+          </div>
+        </div>
+
+        <div class="callout callout--warn">
+          <div class="callout__label">${msg('v2.2 Balance Changes Applied')}</div>
+          <div class="callout__text">
+            ${msg('The ci_defensive dominance (64% win rate) and dead infiltrator (1.9%) identified above have been addressed in v2.2: guardian penalty reduced to 6%/15% cap, guardian cost raised to 4 RP, counter-intel to 4 RP, infiltrator buffed (65% reduction, 5 RP, +3 influence), RP economy expanded to 12/cycle and 40 cap. See the Updates section for full changelog.')}
+          </div>
+        </div>
+
+        <div class="callout callout--tip">
+          <div class="callout__label">${msg('What This Means For Players')}</div>
+          <div class="callout__text">
+            ${msg('All simulations are competitively viable. Choose any simulation \u2014 your skill and strategy matter more than your faction. With v2.2, offensive and hybrid strategies should be more viable alongside defensive play. The expanded RP economy enables multi-pronged approaches.')}
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  private _renderProfileCard(profile: SimulationProfile, index: number) {
+    const rates = [
+      { label: '2P', value: profile.winRates.pc2 },
+      { label: '3P', value: profile.winRates.pc3 },
+      { label: '4P', value: profile.winRates.pc4 },
+      { label: '5P', value: profile.winRates.pc5 },
+    ];
+
+    return html`
+      <div class="profile-card" style="border-top-color: ${profile.color}; --i: ${index}">
+        <div class="profile-card__header">
+          <span class="profile-card__tag" style="color: ${profile.color}; border-color: ${profile.color}">${profile.tag}</span>
+          <span class="profile-card__name">${profile.name}</span>
+          <span class="profile-card__elo">${profile.eloRating}</span>
+        </div>
+        <div class="profile-card__body">
+          <div class="profile-card__rates">
+            ${rates.map(
+              (r) => html`
+                <div class="profile-card__rate">
+                  <span class="profile-card__rate-label">${r.label}</span>
+                  <span class="profile-card__rate-value ${r.value == null ? 'profile-card__rate-value--na' : ''}"
+                    style="${r.value != null ? `color: ${profile.color}` : ''}">
+                    ${r.value != null ? `${r.value}%` : 'N/A'}
+                  </span>
+                </div>
+              `,
+            )}
+          </div>
+          <div class="profile-card__ci">
+            <span class="profile-card__ci-label">95% CI</span>
+            <div class="profile-card__ci-track">
+              <div class="profile-card__ci-fill" style="background: ${profile.color}; left: ${profile.ciLow}%; right: ${100 - profile.ciHigh}%"></div>
+            </div>
+            <span class="profile-card__ci-range">${profile.ciLow}% \u2013 ${profile.ciHigh}%</span>
+          </div>
+          <div class="profile-card__text">
+            <span class="profile-card__text-label" style="color: var(--color-success)">${msg('Strengths')}</span>
+            <span class="profile-card__text-value">${profile.strengths}</span>
+          </div>
+          <div class="profile-card__text">
+            <span class="profile-card__text-label" style="color: var(--color-danger)">${msg('Weakness')}</span>
+            <span class="profile-card__text-value">${profile.weakness}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  private _renderStratTier(tier: StrategyTier) {
+    return html`
+      <div class="strat-tier">
+        <div class="strat-tier__badge" style="color: ${tier.tierColor}; border-color: ${tier.tierColor}">${tier.tier}</div>
+        <div class="strat-tier__entries">
+          ${tier.strategies.map(
+            (s) => html`
+              <div class="strat-entry">
+                <div class="strat-entry__header">
+                  <span class="strat-entry__name">${s.name}</span>
+                  <span class="strat-entry__meta">
+                    <span style="color: ${tier.tierColor}">${s.winRate}%</span>
+                    <span>n=${s.appearances}</span>
+                  </span>
+                </div>
+                <div class="strat-entry__bar">
+                  <div class="strat-entry__fill" style="background: ${tier.tierColor}; --w: ${s.winRate / 100}"></div>
+                </div>
+                <div class="strat-entry__desc">${s.description}</div>
+              </div>
+            `,
+          )}
+        </div>
+      </div>
+    `;
+  }
+
+  /* ── ECharts: Observer + Option Builders ────────── */
+
+  private _setupChartObserver(): void {
+    this._chartObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            (entry.target as HTMLElement).dataset.revealed = '';
+            this._chartObserver?.unobserve(entry.target);
+          }
+        }
+      },
+      { rootMargin: '0px', threshold: 0.05 },
+    );
+    const charts = this.renderRoot.querySelectorAll('.intel-chart');
+    for (const chart of charts) {
+      this._chartObserver.observe(chart);
+    }
+  }
+
+  private _renderIntelChart(
+    classification: string,
+    title: string,
+    grade: string,
+    option: Record<string, unknown>,
+    height: string,
+  ) {
+    return html`
+      <div class="intel-chart">
+        <div class="intel-chart__scanlines"></div>
+        <div class="intel-chart__header">
+          <span class="intel-chart__classification">${classification}</span>
+          <span class="intel-chart__title">${title}</span>
+          <span class="intel-chart__grade">${grade}</span>
+        </div>
+        <velg-echarts-chart .option=${option} height=${height}></velg-echarts-chart>
+      </div>
+    `;
+  }
+
+  /** Radar: simulation win-rate profiles across player counts. */
+  private _buildRadarOption(): Record<string, unknown> {
+    const profiles = getSimulationProfiles();
+    const SIM_HEX: Record<string, string> = {
+      Speranza: '#d4a24e',
+      'Capybara Kingdom': '#6bcb77',
+      Velgarien: '#e74c3c',
+      'Nova Meridian': '#a78bfa',
+      'Station Null': '#67e8f9',
+    };
+    return {
+      tooltip: {},
+      legend: { bottom: 0, textStyle: { color: '#94a3b8', fontSize: 10 } },
+      radar: {
+        indicator: [
+          { name: '2P', max: 80 },
+          { name: '3P', max: 55 },
+          { name: '4P', max: 35 },
+          { name: '5P', max: 30 },
+        ],
+        shape: 'polygon',
+        radius: '60%',
+      },
+      series: [
+        {
+          type: 'radar',
+          data: profiles.map((p) => ({
+            name: p.name,
+            value: [p.winRates.pc2 ?? 0, p.winRates.pc3, p.winRates.pc4, p.winRates.pc5],
+            areaStyle: { opacity: 0.08 },
+            lineStyle: { width: 2 },
+            itemStyle: { color: SIM_HEX[p.name] },
+            symbol: 'circle',
+            symbolSize: 6,
+          })),
+        },
+      ],
+      animationDuration: 800,
+      animationEasing: 'cubicOut',
+    };
+  }
+
+  /** Line chart: win rate by player count with dashed fair-rate reference. */
+  private _buildWinRateLineOption(): Record<string, unknown> {
+    const profiles = getSimulationProfiles();
+    const SIM_HEX: Record<string, string> = {
+      Speranza: '#d4a24e',
+      'Capybara Kingdom': '#6bcb77',
+      Velgarien: '#e74c3c',
+      'Nova Meridian': '#a78bfa',
+      'Station Null': '#67e8f9',
+    };
+    return {
+      tooltip: { trigger: 'axis' },
+      legend: { bottom: 0, textStyle: { color: '#94a3b8', fontSize: 10 } },
+      grid: { top: 30, right: 20, bottom: 60, left: 50 },
+      xAxis: { type: 'category', data: ['2P', '3P', '4P', '5P'], boundaryGap: false },
+      yAxis: {
+        type: 'value',
+        name: 'Win Rate %',
+        min: 0,
+        max: 70,
+        nameTextStyle: { color: '#94a3b8' },
+      },
+      series: [
+        {
+          name: 'Fair Rate',
+          type: 'line',
+          data: [50, 33.3, 25, 20],
+          lineStyle: { type: 'dashed', color: '#475569', width: 1.5 },
+          symbol: 'diamond',
+          symbolSize: 6,
+          itemStyle: { color: '#475569' },
+          z: 1,
+        },
+        ...profiles.map((p) => ({
+          name: p.name,
+          type: 'line' as const,
+          data: [p.winRates.pc2 ?? null, p.winRates.pc3, p.winRates.pc4, p.winRates.pc5],
+          connectNulls: false,
+          symbol: 'circle',
+          symbolSize: 8,
+          lineStyle: { width: 2.5 },
+          itemStyle: { color: SIM_HEX[p.name] ?? '#94a3b8' },
+          emphasis: { lineStyle: { width: 4 } },
+        })),
+      ],
+      animationDuration: 1000,
+      animationEasing: 'cubicOut',
+    };
+  }
+
+  /** Heatmap: 2P head-to-head pairwise win rates. */
+  private _buildHeatmapOption(): Record<string, unknown> {
+    const h2h = getHeadToHeadData();
+    const simNames = ['Speranza', 'Capybara Kingdom', 'Velgarien', 'Station Null'];
+    const simLabels = ['SP', 'CK', 'V', 'SN'];
+
+    const matrixData: [number, number, number][] = [];
+    for (const d of h2h) {
+      const row = simNames.indexOf(d.rowSim);
+      const col = simNames.indexOf(d.colSim);
+      if (row >= 0 && col >= 0) matrixData.push([col, row, d.winRate]);
+    }
+    // Diagonal = 50% (self-matchup, neutral)
+    for (let i = 0; i < 4; i++) matrixData.push([i, i, 50]);
+
+    return {
+      tooltip: {
+        formatter: (params: { value: [number, number, number] }) => {
+          if (params.value[0] === params.value[1]) return `${simNames[params.value[1]]} (self)`;
+          return `${simNames[params.value[1]]} vs ${simNames[params.value[0]]}: ${params.value[2]}%`;
+        },
+      },
+      grid: { top: 10, right: 90, bottom: 40, left: 90 },
+      xAxis: {
+        type: 'category',
+        data: simLabels,
+        position: 'top',
+        splitArea: {
+          show: true,
+          areaStyle: { color: ['transparent', 'rgba(30, 41, 59, 0.3)'] },
+        },
+        axisLabel: { fontWeight: 'bold' },
+      },
+      yAxis: {
+        type: 'category',
+        data: simLabels,
+        splitArea: {
+          show: true,
+          areaStyle: { color: ['transparent', 'rgba(30, 41, 59, 0.3)'] },
+        },
+        axisLabel: { fontWeight: 'bold' },
+      },
+      visualMap: {
+        min: 25,
+        max: 75,
+        calculable: false,
+        orient: 'horizontal',
+        left: 'center',
+        bottom: 0,
+        inRange: { color: ['#1a3a5c', '#1e293b', '#5c2a1a'] },
+        textStyle: { color: '#94a3b8' },
+      },
+      series: [
+        {
+          type: 'heatmap',
+          data: matrixData,
+          label: {
+            show: true,
+            formatter: (params: { value: [number, number, number] }) =>
+              params.value[0] === params.value[1] ? '\u2014' : `${params.value[2]}%`,
+            color: '#e2e8f0',
+            fontSize: 13,
+            fontWeight: 'bold',
+          },
+          itemStyle: { borderColor: '#0f172a', borderWidth: 2 },
+        },
+      ],
+      animationDuration: 600,
+    };
+  }
+
+  /** Bar chart: strategy win rates with Wilson 95% CI error bars. */
+  private _buildStrategyBarOption(): Record<string, unknown> {
+    const tiers = getStrategyTiers();
+    const tierHex: Record<string, string> = {
+      S: '#d4a24e',
+      A: '#6bcb77',
+      B: '#67e8f9',
+      C: '#94a3b8',
+      F: '#e74c3c',
+    };
+
+    const strategies = tiers.flatMap((t) =>
+      t.strategies.map((s) => ({ ...s, color: tierHex[t.tier] ?? '#94a3b8', tier: t.tier })),
+    );
+    strategies.sort((a, b) => b.winRate - a.winRate);
+
+    // Wilson score 95% CIs
+    const z = 1.96;
+    const withCI = strategies.map((s) => {
+      const p = s.winRate / 100;
+      const n = s.appearances;
+      const denom = 1 + (z * z) / n;
+      const center = (p + (z * z) / (2 * n)) / denom;
+      const margin = (z * Math.sqrt((p * (1 - p)) / n + (z * z) / (4 * n * n))) / denom;
+      return {
+        ...s,
+        ciLow: Math.max(0, (center - margin) * 100),
+        ciHigh: Math.min(100, (center + margin) * 100),
+      };
+    });
+
+    return {
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: { type: 'shadow' },
+      },
+      grid: { top: 20, right: 20, bottom: 80, left: 50 },
+      xAxis: {
+        type: 'category',
+        data: withCI.map((s) => s.name),
+        axisLabel: { rotate: 35, fontSize: 9 },
+      },
+      yAxis: { type: 'value', name: 'Win %', max: 80, nameTextStyle: { color: '#94a3b8' } },
+      series: [
+        {
+          type: 'bar',
+          data: withCI.map((s) => ({
+            value: s.winRate,
+            itemStyle: { color: s.color, opacity: 0.85 },
+          })),
+          barWidth: '55%',
+        },
+        {
+          type: 'custom',
+          data: withCI.map((s, i) => [i, s.ciLow, s.ciHigh]),
+          renderItem: (_params: unknown, api: Record<string, (v: unknown) => unknown>) => {
+            const catIdx = api.value(0) as number;
+            const low = api.value(1) as number;
+            const high = api.value(2) as number;
+            const lowPt = api.coord([catIdx, low]) as number[];
+            const highPt = api.coord([catIdx, high]) as number[];
+            const x = lowPt[0];
+            const hw = 5;
+            return {
+              type: 'group',
+              children: [
+                {
+                  type: 'line',
+                  shape: { x1: x, y1: highPt[1], x2: x, y2: lowPt[1] },
+                  style: { stroke: '#94a3b8', lineWidth: 1 },
+                },
+                {
+                  type: 'line',
+                  shape: { x1: x - hw, y1: highPt[1], x2: x + hw, y2: highPt[1] },
+                  style: { stroke: '#94a3b8', lineWidth: 1 },
+                },
+                {
+                  type: 'line',
+                  shape: { x1: x - hw, y1: lowPt[1], x2: x + hw, y2: lowPt[1] },
+                  style: { stroke: '#94a3b8', lineWidth: 1 },
+                },
+              ],
+            };
+          },
+          z: 10,
+        },
+      ],
+      animationDuration: 800,
+    };
   }
 }
 

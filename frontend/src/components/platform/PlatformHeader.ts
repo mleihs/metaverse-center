@@ -4,6 +4,7 @@ import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { localeService } from '../../services/i18n/locale-service.js';
 import type { Simulation } from '../../types/index.js';
+import { icons } from '../../utils/icons.js';
 
 import './UserMenu.js';
 
@@ -241,6 +242,41 @@ export class VelgPlatformHeader extends LitElement {
       display: flex;
       align-items: center;
       gap: var(--space-3);
+    }
+
+    /* --- GitHub link — subtle icon with tactical reveal --- */
+
+    .header__github {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      color: var(--color-text-muted);
+      border: 1px solid transparent;
+      background: transparent;
+      cursor: pointer;
+      text-decoration: none;
+      transition:
+        color 0.25s ease,
+        border-color 0.25s ease,
+        transform 0.2s ease,
+        box-shadow 0.3s ease,
+        background 0.25s ease;
+    }
+
+    .header__github:hover {
+      color: var(--color-text-primary);
+      border-color: var(--color-text-muted);
+      transform: translate(-1px, -1px);
+      box-shadow:
+        var(--shadow-md),
+        0 0 8px color-mix(in srgb, var(--color-text-muted) 25%, transparent);
+    }
+
+    .header__github:active {
+      transform: translate(0);
+      box-shadow: var(--shadow-pressed);
     }
 
     .locale-toggle {
@@ -529,6 +565,14 @@ export class VelgPlatformHeader extends LitElement {
 
         <div class="header__right">
           ${html`<velg-dev-account-switcher></velg-dev-account-switcher>`}
+          <a
+            class="header__github"
+            href="https://github.com/mleihs/velgarien-rebuild"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label=${msg('View source on GitHub')}
+            title=${msg('View source on GitHub')}
+          >${icons.github(18)}</a>
           <button class="locale-toggle" @click=${this._toggleLocale}>
             ${localeService.currentLocale === 'en' ? 'DE' : 'EN'}
           </button>

@@ -53,11 +53,11 @@ MISSION_SCORE_VALUES: dict[str, int] = {
     "saboteur": 5,
     "propagandist": 4,
     "assassin": 8,
-    "infiltrator": 5,
+    "infiltrator": 6,
 }
 
 # Detection penalty for failed missions
-DETECTION_PENALTY = 2
+DETECTION_PENALTY = 3
 
 # Security level downgrade map (saboteur effect)
 SECURITY_DOWNGRADE: dict[str, str] = {
@@ -262,7 +262,7 @@ class OperativeService:
           base = 0.55
           + operative_qualification × 0.05
           - target_zone_security × 0.05
-          - min(0.20, guardian_count × 0.08)
+          - min(0.15, guardian_count × 0.06)
           + embassy_effectiveness × 0.15
           Clamped to [0.05, 0.95]
         """
@@ -333,8 +333,8 @@ class OperativeService:
                         }).eq("id", str(body.embassy_id)).execute()
                 embassy_eff = base_eff
 
-        # Guardian penalty: -0.08 per guardian, capped at -0.20
-        guardian_penalty = min(0.20, guardian_count * 0.08)
+        # Guardian penalty: -0.06 per guardian, capped at -0.15
+        guardian_penalty = min(0.15, guardian_count * 0.06)
 
         probability = (
             base
@@ -769,7 +769,7 @@ class OperativeService:
 
     @classmethod
     async def _apply_infiltrator_effect(cls, supabase: Client, mission: dict) -> dict:
-        """Infiltrator: reduce embassy effectiveness by 50% for 3 cycles."""
+        """Infiltrator: reduce embassy effectiveness by 65% for 3 cycles."""
         if not mission.get("target_entity_id"):
             return {"outcome": "success", "narrative": "Mission completed."}
 
@@ -785,7 +785,7 @@ class OperativeService:
         expires_at = datetime.now(UTC) + timedelta(hours=3 * cycle_hours)
 
         supabase.table("embassies").update({
-            "infiltration_penalty": 0.5,
+            "infiltration_penalty": 0.65,
             "infiltration_penalty_expires_at": expires_at.isoformat(),
         }).eq("id", mission["target_entity_id"]).execute()
 
@@ -837,12 +837,12 @@ class OperativeService:
         epoch_id: UUID,
         simulation_id: UUID,
     ) -> list[dict]:
-        """Reveal active enemy operatives in your simulation (costs 3 RP).
+        """Reveal active enemy operatives in your simulation (costs 4 RP).
 
         Returns list of detected missions.
         """
-        # Spend 3 RP
-        await EpochService.spend_rp(supabase, epoch_id, simulation_id, 3)
+        # Spend 4 RP
+        await EpochService.spend_rp(supabase, epoch_id, simulation_id, 4)
 
         # Find active enemy missions targeting this simulation
         resp = (

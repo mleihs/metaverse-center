@@ -1,7 +1,8 @@
 # 22 - Epochs & Competitive Layer
 
-**Version:** 1.3
-**Date:** 2026-03-01
+**Version:** 1.4
+**Date:** 2026-03-02
+**Change v1.4:** Balance patch v2.2 — guardian penalty 0.08→0.06/unit (cap 0.15), guardian cost 3→4 RP, infiltrator rework (cost 6→5, embassy reduction 50%→65%, +3 influence/success, sovereignty −6→−8, score 5→6), assassin cost 8→7 + stability −4→−5 + sovereignty −10→−12, saboteur stability −5→−6, propagandist sovereignty −5→−6, detection penalty 2→3, RP economy 10→12/cycle + cap 30→40, counter-intel sweep 3→4 RP.
 **Change v1.3:** Balance patch v2.1 — guardian penalty 0.20→0.08/unit (cap 0.20), spy intel reveal (zone security + guardian count to battle log), saboteur zone downgrade (security −1 tier), scoring rebalance (propagandist +3→+5, detection −3→−2, spy influence +1/+2, guardian sovereignty +4), betrayal −20%→−25%, alliance 10%→15%. Cartographer's Map: game instance visualization (phase rings, health arcs, sparklines, operative trails, battle feed, leaderboard panel, minimap, 30s refresh).
 **Change v1.2:** EpochCommandCenter decomposed from monolithic 3364-line file into orchestrator (1934 lines) + 5 child components: EpochOpsBoard (ops board + COMMS sidebar), EpochOverviewTab, EpochOperationsTab, EpochAlliancesTab, EpochLobbyActions. Data flows via Lit properties, mutations via CustomEvent bubbling. ~60 hardcoded hex colors replaced with CSS custom property tokens across all epoch components.
 
@@ -160,8 +161,8 @@ RP is the action economy currency. Each simulation receives RP at the start of e
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| RP per cycle | 10 | Base allocation (foundation: 15) |
-| RP cap | 30 | Maximum stored RP — excess is lost |
+| RP per cycle | 12 | Base allocation (foundation: 18) |
+| RP cap | 40 | Maximum stored RP — excess is lost |
 | Cycle interval | 8 hours | Time between cycle resolutions |
 
 **RP costs:**
@@ -169,23 +170,23 @@ RP is the action economy currency. Each simulation receives RP at the start of e
 | Action | Cost |
 |--------|------|
 | Deploy Spy | 3 RP |
-| Deploy Guardian | 3 RP |
+| Deploy Guardian | 4 RP |
 | Deploy Propagandist | 4 RP |
 | Deploy Saboteur | 5 RP |
-| Deploy Infiltrator | 6 RP |
-| Deploy Assassin | 8 RP |
-| Counter-intelligence sweep | 3 RP |
+| Deploy Infiltrator | 5 RP |
+| Deploy Assassin | 7 RP |
+| Counter-intelligence sweep | 4 RP |
 
 ### Operative Types
 
 | Type | Cost | Deploy Time | Duration | Effect |
 |------|------|-------------|----------|--------|
 | **Spy** | 3 RP | Instant | 3 cycles | Reveals target zone security levels and guardian count (intel report in battle log). +2 Influence, +1 Diplomatic, −2 Sovereignty. |
-| **Saboteur** | 5 RP | 1 cycle | Single action | Downgrades random zone security −1 tier + building condition −1. −5 Stability, −8 Sovereignty. |
+| **Saboteur** | 5 RP | 1 cycle | Single action | Downgrades random zone security −1 tier + building condition −1. −6 Stability, −8 Sovereignty. |
 | **Propagandist** | 4 RP | 1 cycle | 2 cycles | Generates a destabilizing event (impact 6-8) in target zone |
-| **Assassin** | 8 RP | 2 cycles | Single action | Wounds target agent — reduces relationships by 2, removes ambassador status for 3 cycles |
-| **Guardian** | 3 RP | Instant | Permanent | −8% enemy success per guardian (max −20%). Deploys to OWN simulation only. |
-| **Infiltrator** | 6 RP | 2 cycles | 3 cycles | Reduces target embassy effectiveness by 50% |
+| **Assassin** | 7 RP | 2 cycles | Single action | Wounds target agent — reduces relationships by 2, removes ambassador status for 3 cycles |
+| **Guardian** | 4 RP | Instant | Permanent | −6% enemy success per guardian (max −15%). Deploys to OWN simulation only. |
+| **Infiltrator** | 5 RP | 2 cycles | 3 cycles | Reduces target embassy effectiveness by 65%. +3 Influence per success. |
 
 ### Success Probability
 
@@ -193,7 +194,7 @@ RP is the action economy currency. Each simulation receives RP at the start of e
 base_probability = 0.55
 + operative_qualification × 0.05  (0-10 scale → +0 to +0.50)
 - target_zone_security × 0.05    (mapped 0-10 → -0 to -0.50)
-- min(0.20, guardian_presence × 0.08)  (−0.08 each, cap 0.20)
+- min(0.15, guardian_presence × 0.06)  (−0.06 each, cap 0.15)
 + embassy_effectiveness × 0.15   (0-1 → +0 to +0.15)
 
 Final: clamped to [0.05, 0.95]
@@ -201,7 +202,7 @@ Final: clamped to [0.05, 0.95]
 
 **Failure outcomes:**
 - **Undetected failure** — Mission fails silently. Operative returns. No consequences.
-- **Detected failure** (probability: 1 - success_probability) — Operative captured (removed for epoch). Diplomatic Incident event in both simulations (impact 7). Embassy effectiveness -0.3 for 3 cycles. Attacker identity revealed.
+- **Detected failure** (probability: 1 - success_probability) — Operative captured (removed for epoch). Diplomatic Incident event in both simulations (impact 7). Embassy effectiveness -0.3 for 3 cycles. Attacker identity revealed. −3 Sovereignty per detection.
 
 ### Scoring — 5 Dimensions
 

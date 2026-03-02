@@ -7259,9 +7259,6 @@ Die Karte ist offen. Die Scherben warten. Welche Welt betritt man zuerst?</targe
 <trans-unit id="s77571e1bd3c31a71">
   <source>Creates a destabilizing event (impact 3–5) in the target. Reduces their sovereignty.</source>
 <target>Erzeugt ein destabilisierendes Ereignis (Auswirkung 3-5) im Zielland. Verringert ihre Souveränität.</target></trans-unit>
-<trans-unit id="sfadd25a629ccc9a3">
-  <source>Targets a specific agent. Highest cost, highest reward.</source>
-<target>Zielt auf einen bestimmten Agenten ab. Höchste Kosten, höchste Belohnung.</target></trans-unit>
 <trans-unit id="sc61d707157e10018">
   <source>Weakens all relationships by –2 intensity. Blocks ambassador status for 3 cycles.</source>
 <target>Schwächt alle Beziehungen um -2 Intensität. Sperrt den Status des Botschafters für 3 Zyklen.</target></trans-unit>
@@ -7271,9 +7268,6 @@ Die Karte ist offen. Die Scherben warten. Welche Welt betritt man zuerst?</targe
 <trans-unit id="s6f29a277b6e3363b">
   <source>Targets an enemy embassy. Long deployment, high intelligence value.</source>
 <target>Ziel ist eine feindliche Botschaft. Langer Einsatz, hoher Geheimdienstwert.</target></trans-unit>
-<trans-unit id="sca45048a5719121d">
-  <source>Reduces embassy effectiveness by 50% for 3 cycles. Compromises diplomatic operations.</source>
-<target>Reduziert die Effektivität von Botschaften für 3 Zyklen um 50%. Beeinträchtigt die diplomatischen Operationen.</target></trans-unit>
 <trans-unit id="sc46ec05c4f2b2e37">
   <source>Base RP per cycle</source>
 <target>Basis-RP pro Zyklus</target></trans-unit>
@@ -7478,15 +7472,9 @@ Die Karte ist offen. Die Scherben warten. Welche Welt betritt man zuerst?</targe
 <trans-unit id="sc0f7a527b86b9c5b">
   <source>The Foundation Wall</source>
 <target>Die Grundmauer</target></trans-unit>
-<trans-unit id="s8a370cf6326b8547">
-  <source>Spend all foundation RP on guardians (5 guardians = −100% enemy success rate in defended zones). Maximum defense, zero offense. You enter competition with no RP reserve but an impenetrable fortress. Best with Builder preset where stability is king.</source>
-<target>Geben Sie alle Gründungs-RP für Wächter aus (5 Wächter = -100% feindliche Erfolgsrate in verteidigten Zonen). Maximale Verteidigung, null Offensive. Du gehst ohne RP-Reserve, aber mit einer uneinnehmbaren Festung in den Wettbewerb. Am besten mit der Voreinstellung Builder, bei der Stabilität im Vordergrund steht.</target></trans-unit>
 <trans-unit id="sc29232fbf4ea683b">
   <source>The Quick Strike</source>
 <target>Der Schnellangriff</target></trans-unit>
-<trans-unit id="s5968f6ea515224b3">
-  <source>Deploy only 1 guardian during foundation, save the rest. You enter competition with 30+ RP — enough for an assassin + saboteur on cycle 4. Risky: undefended zones are vulnerable. Best with Warmonger preset where early military points compound.</source>
-<target>Setzen Sie bei der Gründung nur 1 Wächter ein, sparen Sie den Rest. Sie gehen mit 30+ RP in den Wettbewerb - genug für einen Attentäter + Saboteur in Zyklus 4. Riskant: Unverteidigte Zonen sind verwundbar. Am besten mit der Voreinstellung Kriegstreiber, wo frühe Militärpunkte zusammenkommen.</target></trans-unit>
 <trans-unit id="sbaff4d9330e477c0">
   <source>The Balanced Start</source>
 <target>Der ausgewogene Start</target></trans-unit>
@@ -7508,30 +7496,18 @@ Die Karte ist offen. Die Scherben warten. Welche Welt betritt man zuerst?</targe
 <trans-unit id="s3517bc09cada0338">
   <source>The Early Assassin</source>
 <target>Der frühe Assassine</target></trans-unit>
-<trans-unit id="s9764d6eb5361cd4c">
-  <source>Deploy an assassin in cycles 5–6 (early competition). Costs 8 RP and takes 2 cycles to deploy, but a successful hit blocks the ambassador for 3 cycles during the critical mid-game. Devastating if it lands, crushing if detected (−3 military).</source>
-<target>Setzen Sie einen Attentäter in den Zyklen 5-6 ein (früher Wettbewerb). Er kostet 8 RP und braucht 2 Zyklen, um eingesetzt zu werden, aber ein erfolgreicher Treffer blockiert den Botschafter für 3 Zyklen in der kritischen Phase des Spiels. Verheerend, wenn er trifft, vernichtend, wenn er entdeckt wird (-3 Militär).</target></trans-unit>
 <trans-unit id="s76a6693baccdf381">
   <source>RP Float vs. RP Burn</source>
 <target>RP-Float vs. RP-Burn</target></trans-unit>
-<trans-unit id="s4a7c23ca3dd1834c">
-  <source>Never exceed the 30 RP cap (wasted income). Never hoard when good targets exist (opportunity cost). The sweet spot: spend 7–8 RP per cycle and maintain a 5–10 RP reserve for counter-intel or reactive deployments.</source>
-<target>Überschreiten Sie niemals die RP-Obergrenze von 30 (verschwendetes Einkommen). Horten Sie niemals, wenn es gute Ziele gibt (Opportunitätskosten). Der Sweet Spot: 7-8 RP pro Zyklus ausgeben und eine Reserve von 5-10 RP für Gegenspionage oder reaktive Einsätze halten.</target></trans-unit>
 <trans-unit id="s5ee59b315584d300">
   <source>Counter-Intel Timing</source>
 <target>Counter-Intel Timing</target></trans-unit>
-<trans-unit id="s2caf393a5a02dfa7">
-  <source>A sweep costs 3 RP. Use it when you suspect incoming propagandists or saboteurs — not every cycle. A detected enemy mission costs THEM −3 military AND negates their effect. One well-timed sweep can swing 8+ points.</source>
-<target>Ein Sweep kostet 3 RP. Setzen Sie ihn ein, wenn Sie den Verdacht haben, dass Propagandisten oder Saboteure eindringen - nicht in jedem Zyklus. Eine entdeckte feindliche Mission kostet SIE -3 Militär und negiert ihren Effekt. Ein gut getimter Sweep kann 8+ Punkte bringen.</target></trans-unit>
 <trans-unit id="s325560ecdfa0aabe">
   <source>Guardian Stacking</source>
 <target>Wächter-Stapelung</target></trans-unit>
 <trans-unit id="sa2ec3c9680a83b11">
   <source>The Embassy Shield</source>
 <target>Der Botschaftsschild</target></trans-unit>
-<trans-unit id="s81a06362a4048958">
-  <source>Infiltrators reduce your embassy effectiveness by 50% for 3 cycles. Counter by deploying your own infiltrator against their embassy — mutual neutralization. Or stack guardians near embassy zones to prevent infiltration entirely.</source>
-<target>Infiltratoren reduzieren die Effektivität Ihrer Botschaft für 3 Zyklen um 50%. Kontern Sie, indem Sie Ihren eigenen Infiltrator gegen ihre Botschaft einsetzen - gegenseitige Neutralisierung. Oder stapeln Sie Wächter in der Nähe von Botschaftszonen, um die Infiltration ganz zu verhindern.</target></trans-unit>
 <trans-unit id="s66fa013a18039b0d">
   <source>Builder: Turtle Up</source>
 <target>Ersteller: Turtle Up</target></trans-unit>
@@ -7541,9 +7517,6 @@ Die Karte ist offen. Die Scherben warten. Welche Welt betritt man zuerst?</targe
 <trans-unit id="s5273ab40335d5e62">
   <source>Warmonger: Glass Cannon</source>
 <target>Kriegstreiber: Glaskanone</target></trans-unit>
-<trans-unit id="s7b42aff05e886d92">
-  <source>With 40% military weight, every successful mission is massive (+5 saboteur, +8 assassin). But detected missions (−3 each) hurt double. Go all-in on offense with spies for intel, then targeted strikes. Accept defensive losses — stability only counts for 10%.</source>
-<target>Mit 40% militärischem Gewicht ist jede erfolgreiche Mission massiv (+5 Saboteur, +8 Attentäter). Aber entdeckte Missionen (jeweils -3) schmerzen doppelt. Gehen Sie in die Offensive mit Spionen für Informationen, dann gezielte Angriffe. Nimm defensive Verluste in Kauf - Stabilität zählt nur zu 10%.</target></trans-unit>
 <trans-unit id="s18497ea8aa09f3cd">
   <source>Diplomat: Embassy Network</source>
 <target>Diplomat: Botschaftsnetz</target></trans-unit>
@@ -8029,10 +8002,6 @@ Die Karte ist offen. Die Scherben warten. Welche Welt betritt man zuerst?</targe
   <source>Infiltrator vulnerability</source>
   <target>Verwundbarkeit des Infiltrators</target>
 </trans-unit>
-<trans-unit id="s9f43989435c6940a">
-  <source>−50% effectiveness for 3 cycles</source>
-  <target>-50% Wirksamkeit für 3 Zyklen</target>
-</trans-unit>
 <trans-unit id="s9b67a7889fb2de0e">
   <source>Assassin vulnerability</source>
   <target>Assassinen-Schwachstelle</target>
@@ -8049,10 +8018,6 @@ Die Karte ist offen. Die Scherben warten. Welche Welt betritt man zuerst?</targe
   <source>The Resonant</source>
   <target>Der Resonant</target>
 </trans-unit>
-<trans-unit id="sdd3eee73167aca42">
-  <source>Measures resistance to foreign influence. Events with data_source "bleed" or "propagandist" count against you. High sovereignty = resilient simulation.</source>
-  <target>Misst den Widerstand gegen fremden Einfluss. Ereignisse mit data_source "bleed" oder "propagandist" zählen gegen Sie. Hohe Souveränität = widerstandsfähige Simulation.</target>
-</trans-unit>
 <trans-unit id="seecb200236c83e68">
   <source>The Sovereign</source>
   <target>Der Souverän</target>
@@ -8060,10 +8025,6 @@ Die Karte ist offen. Die Scherben warten. Welche Welt betritt man zuerst?</targe
 <trans-unit id="s7165a7d5d5dd457b">
   <source>The Architect</source>
   <target>Der Architekt</target>
-</trans-unit>
-<trans-unit id="s20004e64412236d0">
-  <source>Sum of successful mission values minus detection penalties (−3 per detected mission). High reward, high risk.</source>
-  <target>Summe der erfolgreichen Missionswerte abzüglich der Entdeckungsstrafen (-3 pro entdeckter Mission). Hohe Belohnung, hohes Risiko.</target>
 </trans-unit>
 <trans-unit id="s7503d38ae8add210">
   <source>The Shadow</source>
@@ -8291,21 +8252,9 @@ Die Karte ist offen. Die Scherben warten. Welche Welt betritt man zuerst?</targe
 <trans-unit id="s742a7a12b2914ea9">
   <source>Downgrades a random zone’s security level by one tier. Damages infrastructure and stability.</source>
 <target>Stuft die Sicherheitsstufe einer zufälligen Zone um eine Stufe herab. Beschädigt Infrastruktur und Stabilität.</target></trans-unit>
-<trans-unit id="se962ab4d946b4f89">
-  <source>Deploys to your own simulation. Reduces enemy success probability by 8% per guardian (max −20%).</source>
-<target>Wird in deiner eigenen Simulation stationiert. Senkt feindliche Erfolgswahrscheinlichkeit um 8 % pro Wächter (max −20 %).</target></trans-unit>
-<trans-unit id="s042e7e3cd9ecc576">
-  <source>Each guardian reduces enemy success by 8% (capped at −20% total). Three guardians reach the cap. Forces enemies to target undefended zones instead. But 9 RP on defense is 9 RP not spent on offense — only stack when protecting high-value buildings.</source>
-<target>Jeder Wächter senkt den feindlichen Erfolg um 8 % (max −20 % insgesamt). Drei Wächter erreichen das Maximum. Zwingt Feinde, unverteidigte Zonen anzugreifen. Aber 9 RP für Verteidigung sind 9 RP, die nicht in Angriff fließen – nur stapeln, wenn hochwertige Gebäude geschützt werden müssen.</target></trans-unit>
 <trans-unit id="s20f2c14e8e5943ec">
   <source>With 35% diplomatic weight, your embassies ARE your score. Each ally gives +15% diplomatic. Protect embassies from infiltrators, never betray allies (the −25% penalty is fatal), and focus on building the largest alliance network possible.</source>
 <target>Mit 35 % Diplomatiegewicht SIND deine Botschaften dein Score. Jeder Verbündete bringt +15 % Diplomatie. Schütze Botschaften vor Infiltratoren, verrate nie Verbündete (die −25 %-Strafe ist tödlich), und baue das größmögliche Bündnisnetzwerk auf.</target></trans-unit>
-<trans-unit id="s1dfc44f20a335438">
-  <source>Average stability across all zones, scaled to 0–100. Penalized by propaganda (−3), sabotage (−5), and assassination (−4) attacks. Defend your infrastructure.</source>
-<target>Durchschnittliche Stabilität aller Zonen, skaliert auf 0–100. Abzüge durch Propaganda (−3), Sabotage (−5) und Attentate (−4). Verteidige deine Infrastruktur.</target></trans-unit>
-<trans-unit id="s78ee5866ecb20462">
-  <source>Propaganda successes (+5) and espionage (+2) plus echo strength from the bleed system. Rewards projecting power across the multiverse.</source>
-<target>Propaganda-Erfolge (+5) und Spionage (+2) plus Echostärke aus dem Bleed-System. Belohnt Machtprojektion über das Multiversum.</target></trans-unit>
 <trans-unit id="sfe6b848d68c1d99a">
   <source>Embassy effectiveness times 10, plus spy intel bonus (+1 per success), multiplied by alliance bonus (+15% per ally) and reduced by betrayal penalty (−25%). Protect your embassies and honor your alliances.</source>
 <target>Botschafts-Effektivität mal 10, plus Spionage-Intel-Bonus (+1 pro Erfolg), multipliziert mit Bündnisbonus (+15 % pro Verbündetem) und reduziert durch Verratsstrafe (−25 %). Schütze deine Botschaften und halte deine Bündnisse.</target></trans-unit>
@@ -8542,6 +8491,382 @@ Die Karte ist offen. Die Scherben warten. Welche Welt betritt man zuerst?</targe
 <trans-unit id="sdbb70c1ede5a993e">
   <source>Restricted Access</source>
 <target>Zugang beschränkt</target></trans-unit>
+<trans-unit id="s1ed955d92dccc8d3">
+  <source>Active Ops</source>
+  <target>Aktive Ops</target>
+</trans-unit>
+<trans-unit id="s89bd3ccded412cff">
+  <source>Deployed</source>
+  <target>Eingesetzt</target>
+</trans-unit>
+<trans-unit id="sa86350a5f93eaf36">
+  <source>No Active Operations</source>
+  <target>Keine aktiven Operationen</target>
+</trans-unit>
+<trans-unit id="sc8f308273c9b1c57">
+  <source>Create an epoch to begin</source>
+  <target>Erstelle eine Epoche, um zu beginnen</target>
+</trans-unit>
+<trans-unit id="sca9aecb7f5a5a454">
+  <source>Compiled from 200 simulated epoch games (50 per player count, 2P through 5P) using v2.1 balance tuning. All data drawn from automated Monte Carlo simulation against the live game engine. 188 games produced valid results (12 empty leaderboards excluded).</source>
+<target>Zusammengestellt aus 200 simulierten Epochenspielen (50 pro Spieleranzahl, 2S bis 5S) unter Verwendung des v2.1 Balance-Tunings. Alle Daten stammen aus automatisierter Monte-Carlo-Simulation gegen die Live-Game-Engine. 188 Spiele lieferten valide Ergebnisse (12 leere Bestenlisten ausgeschlossen).</target></trans-unit>
+<trans-unit id="sd79f321a19083ed0">
+  <source>Methodology</source>
+<target>Methodik</target></trans-unit>
+<trans-unit id="s89fdadb0e5a97879">
+  <source>Each game randomizes scoring preset weights, strategy assignments, and player pairings. Elo ratings use K-factor scaling for multi-player games. Statistical significance tested via chi-squared, Fisher exact, and bootstrap confidence intervals (10,000 iterations).</source>
+<target>Jedes Spiel randomisiert Wertungspreset-Gewichtungen, Strategiezuweisungen und Spielerpaarungen. Elo-Wertungen verwenden K-Faktor-Skalierung für Mehrspieler-Spiele. Statistische Signifikanz getestet via Chi-Quadrat, Fisher-Exakt und Bootstrap-Konfidenzintervalle (10.000 Iterationen).</target></trans-unit>
+<trans-unit id="s4644b273d22d6727">
+  <source>Elo Power Rankings</source>
+<target>Elo-Rangliste</target></trans-unit>
+<trans-unit id="s25525a0394fea354">
+  <source>Elo ratings computed from all 188 valid games. Multi-player games decomposed into pairwise matchups (winner beats each loser). All ratings start at 1500.</source>
+<target>Elo-Wertungen berechnet aus allen 188 gültigen Spielen. Mehrspieler-Spiele in paarweise Duelle aufgelöst (Gewinner schlägt jeden Verlierer). Alle Wertungen starten bei 1500.</target></trans-unit>
+<trans-unit id="s6e762a43b023ef88">
+  <source>Simulation Dossiers</source>
+<target>Simulations-Dossiers</target></trans-unit>
+<trans-unit id="s6a579a70eb9cf7f1">
+  <source>Win rates per player count, 95% bootstrap confidence intervals, and competitive profile for each simulation. Theoretical fair rates: 50% (2P), 33% (3P), 25% (4P), 20% (5P).</source>
+<target>Gewinnraten pro Spieleranzahl, 95% Bootstrap-Konfidenzintervalle und Wettbewerbsprofil für jede Simulation. Theoretisch faire Raten: 50% (2S), 33% (3S), 25% (4S), 20% (5S).</target></trans-unit>
+<trans-unit id="sab2229ccd2ec50b8">
+  <source>Strategy Tier List</source>
+<target>Strategie-Rangliste</target></trans-unit>
+<trans-unit id="s2874f3ce81400d3f">
+  <source>Win rates with Wilson score 95% confidence intervals. Ordered by observed effectiveness across all player counts and presets.</source>
+<target>Gewinnraten mit Wilson-Score 95%-Konfidenzintervallen. Geordnet nach beobachteter Effektivität über alle Spieleranzahlen und Presets.</target></trans-unit>
+<trans-unit id="s2cb913d634b88dac">
+  <source>Scoring Dimension Impact</source>
+<target>Wertungsdimensionen-Einfluss</target></trans-unit>
+<trans-unit id="s27a66754222c1ea7">
+  <source>Standard deviation measures how much each scoring dimension differentiates between players within a game. Higher variance = more decisive. All five dimensions are now active in v2.1 (up from only 2 in v2).</source>
+<target>Die Standardabweichung misst, wie stark jede Wertungsdimension zwischen Spielern innerhalb eines Spiels differenziert. Höhere Varianz = entscheidender. Alle fünf Dimensionen sind in v2.1 aktiv (zuvor nur 2 in v2).</target></trans-unit>
+<trans-unit id="s68623760b7641941">
+  <source>Statistical Verdict</source>
+<target>Statistisches Urteil</target></trans-unit>
+<trans-unit id="saf0b74b0b93cfc2b">
+  <source>Key findings from chi-squared tests, bootstrap analysis, and game-theoretic Nash equilibrium computation.</source>
+<target>Zentrale Erkenntnisse aus Chi-Quadrat-Tests, Bootstrap-Analyse und spieltheoretischer Nash-Gleichgewichtsberechnung.</target></trans-unit>
+<trans-unit id="s57745eb0ce8d31da">
+  <source>What This Means For Players</source>
+<target>Was das für Spieler bedeutet</target></trans-unit>
+<trans-unit id="s06bbce97e12ca9d9">
+  <source>Strengths</source>
+<target>Stärken</target></trans-unit>
+<trans-unit id="s59c6a008a1f1f54e">
+  <source>Weakness</source>
+<target>Schwäche</target></trans-unit>
+<trans-unit id="sab3f912b83616b64">
+  <source>Intelligence Report</source>
+<target>Geheimdienstbericht</target></trans-unit>
+<trans-unit id="s3e41de390f38218f">
+  <source>Counter-Intel Defensive</source>
+<target>Spionageabwehr-Defensiv</target></trans-unit>
+<trans-unit id="sd9bc938ed3a057e0">
+  <source>Guardian stacking + counter-intel sweeps. The dominant meta strategy.</source>
+<target>Wächter-Stapelung + Spionageabwehr-Scans. Die dominante Meta-Strategie.</target></trans-unit>
+<trans-unit id="sc8cc897d50a5b37f">
+  <source>Propagandist Rush</source>
+<target>Propagandisten-Rush</target></trans-unit>
+<trans-unit id="s7c5e16c2eb55d1f1">
+  <source>Focus on propaganda missions for influence scoring.</source>
+<target>Fokus auf Propaganda-Missionen für Einflusswertung.</target></trans-unit>
+<trans-unit id="sda9f10592da5eb1a">
+  <source>Spy Heavy</source>
+<target>Spion-Schwerpunkt</target></trans-unit>
+<trans-unit id="s7012e4fd4da3ba9d">
+  <source>Intelligence gathering with targeted follow-up strikes.</source>
+<target>Informationsbeschaffung mit gezielten Folgeanschlägen.</target></trans-unit>
+<trans-unit id="s44ed7e47488a9a70">
+  <source>Random Mix</source>
+<target>Zufallsmix</target></trans-unit>
+<trans-unit id="s72f4cb5205e3448d">
+  <source>Varied operative deployment. Unpredictable but unfocused.</source>
+<target>Abwechslungsreicher Operativeinsatz. Unberechenbar, aber unfokussiert.</target></trans-unit>
+<trans-unit id="scf52fb8ff1d3b1a8">
+  <source>Even spread across all operative types.</source>
+<target>Gleichmäßige Verteilung über alle Operativtypen.</target></trans-unit>
+<trans-unit id="sc063cfe54c57faa6">
+  <source>Assassin Rush</source>
+<target>Attentäter-Rush</target></trans-unit>
+<trans-unit id="scf4ba88f57a99d06">
+  <source>High-cost assassin plays. Devastating when they land.</source>
+<target>Hochpreisige Attentäter-Züge. Verheerend wenn sie treffen.</target></trans-unit>
+<trans-unit id="s27739d4fd46a72aa">
+  <source>All-Out Assault</source>
+<target>Vollangriff</target></trans-unit>
+<trans-unit id="s529093ac0e17c300">
+  <source>Maximum offensive pressure, no defense.</source>
+<target>Maximaler Offensivdruck, keine Verteidigung.</target></trans-unit>
+<trans-unit id="s39e7db81664788d9">
+  <source>Saboteur Heavy</source>
+<target>Saboteur-Schwerpunkt</target></trans-unit>
+<trans-unit id="se3a6abd9beca5d14">
+  <source>Infrastructure degradation focus.</source>
+<target>Fokus auf Infrastrukturschädigung.</target></trans-unit>
+<trans-unit id="s2d325354f4f03973">
+  <source>Economy Build</source>
+<target>Wirtschaftsaufbau</target></trans-unit>
+<trans-unit id="s6523c010a603748d">
+  <source>RP hoarding. Forfeits military and influence points.</source>
+<target>RP-Hortung. Verliert Militär- und Einflusspunkte.</target></trans-unit>
+<trans-unit id="s27cf8096e0e86277">
+  <source>Infiltrator Focus</source>
+<target>Infiltrator-Fokus</target></trans-unit>
+<trans-unit id="sb8ff1c91fc979f6b">
+  <source>Embassy disruption only. Nearly zero impact on outcomes.</source>
+<target>Nur Botschaftsstörung. Nahezu null Einfluss auf Ergebnisse.</target></trans-unit>
+<trans-unit id="s5af5f75c0d04ccc3">
+  <source>Speranza</source>
+<target>Speranza</target></trans-unit>
+<trans-unit id="s21e6c5f3d6fa1298">
+  <source>Most consistent across all formats. Wins through balanced multi-dimensional scoring rather than one-dimensional blowouts.</source>
+<target>Am konsistentesten über alle Formate. Gewinnt durch ausgewogene mehrdimensionale Wertung statt eindimensionaler Dominanz.</target></trans-unit>
+<trans-unit id="sd7dfe4a91d02c5ad">
+  <source>No single dominant format. Strongest at 2P/3P where sample sizes are smallest.</source>
+<target>Kein einzelnes dominantes Format. Am stärksten bei 2S/3S, wo die Stichprobengrößen am kleinsten sind.</target></trans-unit>
+<trans-unit id="s6bdd9949326d0bef">
+  <source>Capybara Kingdom</source>
+<target>Capybara Kingdom</target></trans-unit>
+<trans-unit id="s8b693fda01416495">
+  <source>Dominant duel specialist at 65% in 2P. Excels in head-to-head matchups where targets are focused.</source>
+<target>Dominanter Duellspezialist bei 65% in 2S. Exzellent in Eins-gegen-Eins-Duellen, wenn Ziele fokussiert sind.</target></trans-unit>
+<trans-unit id="s83d859b324de4dd9">
+  <source>Collapses in 3P+ (14–22%). Gets outmaneuvered when targets are diluted across multiple opponents.</source>
+<target>Bricht bei 3S+ ein (14–22%). Wird überlistet, wenn Ziele auf mehrere Gegner verteilt sind.</target></trans-unit>
+<trans-unit id="s3e042b4d7919b2b6">
+  <source>Velgarien</source>
+<target>Velgarien</target></trans-unit>
+<trans-unit id="s5f8d517d09d29efc">
+  <source>Balanced fundamentals. Consistently near theoretical fair rate at every player count.</source>
+<target>Ausgewogene Grundlagen. Durchgehend nahe an der theoretisch fairen Rate bei jeder Spieleranzahl.</target></trans-unit>
+<trans-unit id="s6dd31c4474b7ea2e">
+  <source>Former structural advantage (v2: 43%) fully eliminated by v2.1 balance tuning.</source>
+<target>Ehemaliger struktureller Vorteil (v2: 43%) durch v2.1 Balance-Tuning vollständig beseitigt.</target></trans-unit>
+<trans-unit id="s5a3250dd72580022">
+  <source>Nova Meridian</source>
+<target>Nova Meridian</target></trans-unit>
+<trans-unit id="s1b1ca995c3c3d316">
+  <source>Best 4P performer at 27%. Resurrected from 0% win rate in v2 by embassy fix.</source>
+<target>Bester 4S-Performer bei 27%. Von 0% Gewinnrate in v2 durch Botschafts-Fix wiederbelebt.</target></trans-unit>
+<trans-unit id="sec6dd991d5012982">
+  <source>No 2P data (excluded from duel format). Still finding its competitive identity.</source>
+<target>Keine 2S-Daten (vom Duellformat ausgeschlossen). Findet noch seine Wettbewerbsidentität.</target></trans-unit>
+<trans-unit id="s9d2bd64399a71d88">
+  <source>Station Null</source>
+<target>Station Null</target></trans-unit>
+<trans-unit id="s9200f448e71b3b86">
+  <source>Stable in small formats (35% at both 2P and 3P). Consistent identity across versions.</source>
+<target>Stabil in kleinen Formaten (35% bei 2S und 3S). Konsistente Identität über Versionen hinweg.</target></trans-unit>
+<trans-unit id="s332b1d2ce6e5aa8f">
+  <source>Scales poorly to larger games. 12% at 5P is the weakest single data point in the dataset.</source>
+<target>Skaliert schlecht zu größeren Spielen. 12% bei 5S ist der schwächste einzelne Datenpunkt im Datensatz.</target></trans-unit>
+<trans-unit id="s9a84988a91b02c91">
+  <source>Dominant</source>
+<target>Dominant</target></trans-unit>
+<trans-unit id="s9deeefd89ca8a81d">
+  <source>High</source>
+<target>Hoch</target></trans-unit>
+<trans-unit id="s0f3b0ae12a710300">
+  <source>Moderate</source>
+<target>Moderat</target></trans-unit>
+<trans-unit id="s40e0a953f5c3669f">
+  <source>Chi-Squared Test</source>
+<target>Chi-Quadrat-Test</target></trans-unit>
+<trans-unit id="s6bcaa2db81b857b4">
+  <source>Win distribution is NOT statistically significant (χ² = 6.00, df = 4). Observed differences are consistent with random chance.</source>
+<target>Gewinnverteilung ist NICHT statistisch signifikant (χ² = 6,00, df = 4). Beobachtete Unterschiede sind konsistent mit Zufall.</target></trans-unit>
+<trans-unit id="sda66be98f4b06534">
+  <source>Elo Spread</source>
+<target>Elo-Spanne</target></trans-unit>
+<trans-unit id="s68560a38d9630b45">
+  <source>Points between strongest (Speranza, 1529) and weakest (Station Null, 1446). Well within normal competitive variance.</source>
+<target>Punkte zwischen stärkstem (Speranza, 1529) und schwächstem (Station Null, 1446). Weit innerhalb normaler kompetitiver Varianz.</target></trans-unit>
+<trans-unit id="s161ef4a04e593eeb">
+  <source>Nash Equilibrium</source>
+<target>Nash-Gleichgewicht</target></trans-unit>
+<trans-unit id="s4b77ac05a8df8a4e">
+  <source>100% Defensive</source>
+<target>100% Defensiv</target></trans-unit>
+<trans-unit id="s219105dbccba90e8">
+  <source>Game-theoretic optimal play is pure ci_defensive. The meta is solved — defensive play dominates all alternatives at 64% win rate.</source>
+<target>Spieltheoretisch optimales Spiel ist reines ci_defensive. Die Meta ist gelöst — defensives Spiel dominiert alle Alternativen bei 64% Gewinnrate.</target></trans-unit>
+<trans-unit id="sd3a8337c2f4fefe0">
+  <source>Bootstrap CIs</source>
+<target>Bootstrap-KIs</target></trans-unit>
+<trans-unit id="se0dd0a55a0d80f0f">
+  <source>All Overlap</source>
+<target>Alle überlappen</target></trans-unit>
+<trans-unit id="sba6b7e591b430994">
+  <source>95% confidence intervals for all 5 simulations overlap substantially (10,000 iterations). No simulation has a statistically provable advantage.</source>
+<target>95%-Konfidenzintervalle für alle 5 Simulationen überlappen sich erheblich (10.000 Iterationen). Keine Simulation hat einen statistisch nachweisbaren Vorteil.</target></trans-unit>
+<trans-unit id="sc054aecd5ffc7818">
+  <source>Simulation Performance Radar</source>
+<target>Simulations-Leistungsradar</target></trans-unit>
+<trans-unit id="s9c6afac4089904c9">
+  <source>Win Rate Evolution by Player Count</source>
+<target>Siegquoten-Entwicklung nach Spieleranzahl</target></trans-unit>
+<trans-unit id="s8bbcdb68cb3082e7">
+  <source>Head-to-Head Matrix (2P Duels)</source>
+<target>Direktvergleichsmatrix (2-Spieler-Duelle)</target></trans-unit>
+<trans-unit id="s44a7586b7db54e60">
+  <source>Strategy Effectiveness (Wilson 95% CI)</source>
+<target>Strategieeffektivität (Wilson 95%-KI)</target></trans-unit>
+<trans-unit id="s42019ab54afe464c">
+  <source>Data Provenance</source>
+<target>Datenherkunft</target></trans-unit>
+<trans-unit id="sb94dd9db2a0a65cf">
+  <source>All analytics data reflects v2.1 baseline (188 valid games from 200 simulated). The v2.2 balance changes above are informed by this analysis. Future simulation runs will validate v2.2 impact.</source>
+<target>Alle Analysedaten basieren auf der v2.1-Baseline (188 gültige Partien von 200 simulierten). Die oben genannten v2.2-Balanceanpassungen beruhen auf dieser Analyse. Zukünftige Simulationsläufe werden die Auswirkungen von v2.2 validieren.</target></trans-unit>
+<trans-unit id="s2e32b5b1994a10ed">
+  <source>v2.2 Balance Changes Applied</source>
+<target>v2.2-Balanceanpassungen angewendet</target></trans-unit>
+<trans-unit id="s5cf7148305ee4618">
+  <source>The ci_defensive dominance (64% win rate) and dead infiltrator (1.9%) identified above have been addressed in v2.2: guardian penalty reduced to 6%/15% cap, guardian cost raised to 4 RP, counter-intel to 4 RP, infiltrator buffed (65% reduction, 5 RP, +3 influence), RP economy expanded to 12/cycle and 40 cap. See the Updates section for full changelog.</source>
+<target>Die ci_defensive-Dominanz (64% Siegquote) und der wirkungslose Infiltrator (1,9%) wurden in v2.2 behoben: Wächter-Malus auf 6%/15%-Obergrenze reduziert, Wächter-Kosten auf 4 RP erhöht, Spionageabwehr auf 4 RP, Infiltrator gestärkt (65% Reduktion, 5 RP, +3 Einfluss), RP-Wirtschaft auf 12/Zyklus und 40 Obergrenze erweitert. Siehe den Abschnitt „Aktualisierungen" für das vollständige Änderungsprotokoll.</target></trans-unit>
+<trans-unit id="s256fbc86dc0b9cde">
+  <source>All simulations are competitively viable. Choose any simulation — your skill and strategy matter more than your faction. With v2.2, offensive and hybrid strategies should be more viable alongside defensive play. The expanded RP economy enables multi-pronged approaches.</source>
+<target>Alle Simulationen sind wettbewerbsfähig. Wähle eine beliebige Simulation — dein Geschick und deine Strategie zählen mehr als deine Fraktion. Mit v2.2 sollten offensive und hybride Strategien neben defensivem Spiel tragfähiger sein. Die erweiterte RP-Wirtschaft ermöglicht mehrstufige Ansätze.</target></trans-unit>
+<trans-unit id="s2881c42524f00dc5">
+  <source>Targets a specific agent. High cost, highest reward.</source>
+<target>Zielt auf einen bestimmten Agenten. Hohe Kosten, höchste Belohnung.</target></trans-unit>
+<trans-unit id="s8d4cb6b41e98ce2f">
+  <source>Deploys to your own simulation. Reduces enemy success probability by 6% per guardian (max −15%).</source>
+<target>Wird in der eigenen Simulation stationiert. Reduziert die feindliche Erfolgswahrscheinlichkeit um 6% pro Wächter (max. −15%).</target></trans-unit>
+<trans-unit id="s197834cf0357c2b1">
+  <source>Reduces embassy effectiveness by 65% for 3 cycles. Compromises diplomatic operations.</source>
+<target>Reduziert die Botschaftseffektivität um 65% für 3 Zyklen. Kompromittiert diplomatische Operationen.</target></trans-unit>
+<trans-unit id="sc937a1cf1c5af1e3">
+  <source>Spend all foundation RP on guardians (3 guardians at 4 RP each = max −15% enemy success). Maximum defense, zero offense. You enter competition with little RP reserve but strong defenses. Best with Builder preset where stability is king.</source>
+<target>Alle Fundament-RP in Wächter investieren (3 Wächter à 4 RP = max. −15% feindlicher Erfolg). Maximale Verteidigung, null Offensive. Du startest den Wettbewerb mit wenig RP-Reserve aber starken Verteidigungen. Am besten mit dem Erbauer-Preset, wo Stabilität entscheidend ist.</target></trans-unit>
+<trans-unit id="s0a7255f7f9403e1e">
+  <source>Deploy only 1 guardian during foundation, save the rest. You enter competition with 35+ RP — enough for an assassin + saboteur on cycle 4. Risky: undefended zones are vulnerable. Best with Warmonger preset where early military points compound.</source>
+<target>Nur 1 Wächter während des Fundaments stationieren, den Rest sparen. Du startest den Wettbewerb mit 35+ RP — genug für einen Assassinen + Saboteur in Zyklus 4. Riskant: unverteidigte Zonen sind verwundbar. Am besten mit dem Kriegstreiber-Preset, wo frühe Militärpunkte sich aufaddieren.</target></trans-unit>
+<trans-unit id="s1218abfb1ea14b79">
+  <source>Deploy an assassin in cycles 5–6 (early competition). Costs 7 RP and takes 2 cycles to deploy, but a successful hit blocks the ambassador for 3 cycles during the critical mid-game. Devastating if it lands, crushing if detected (−3 military).</source>
+<target>Einen Assassinen in Zyklus 5–6 entsenden (früher Wettbewerb). Kostet 7 RP und benötigt 2 Zyklen Einsatzzeit, aber ein erfolgreicher Treffer blockiert den Botschafter für 3 Zyklen während der kritischen Spielmitte. Verheerend bei Erfolg, vernichtend bei Entdeckung (−3 Militär).</target></trans-unit>
+<trans-unit id="s4bf0a35227a6cccb">
+  <source>Never exceed the 40 RP cap (wasted income). Never hoard when good targets exist (opportunity cost). The sweet spot: spend 9–10 RP per cycle and maintain a 5–15 RP reserve for counter-intel or reactive deployments.</source>
+<target>Niemals die 40-RP-Obergrenze überschreiten (verschwendetes Einkommen). Niemals horten, wenn gute Ziele existieren (Opportunitätskosten). Der optimale Bereich: 9–10 RP pro Zyklus ausgeben und eine 5–15 RP-Reserve für Spionageabwehr oder reaktive Einsätze halten.</target></trans-unit>
+<trans-unit id="s1ffb1ee83f416867">
+  <source>A sweep costs 4 RP. Use it when you suspect incoming propagandists or saboteurs — not every cycle. A detected enemy mission costs THEM −3 military AND negates their effect. One well-timed sweep can swing 10+ points.</source>
+<target>Ein Sweep kostet 4 RP. Einsetzen bei Verdacht auf eingehende Propagandisten oder Saboteure — nicht jeden Zyklus. Eine entdeckte Feindmission kostet SIE −3 Militär UND hebt deren Wirkung auf. Ein gut getimter Sweep kann 10+ Punkte verschieben.</target></trans-unit>
+<trans-unit id="s26ded7e40c40ec74">
+  <source>Each guardian reduces enemy success by 6% (capped at −15% total). Three guardians reach the cap. Forces enemies to target undefended zones instead. But 12 RP on defense is 12 RP not spent on offense — only stack when protecting high-value buildings.</source>
+<target>Jeder Wächter reduziert den feindlichen Erfolg um 6% (Obergrenze −15% gesamt). Drei Wächter erreichen die Obergrenze. Zwingt Feinde, unverteidigte Zonen anzugreifen. Aber 12 RP in Verteidigung sind 12 RP weniger für Offensive — nur stapeln, wenn hochwertige Gebäude geschützt werden.</target></trans-unit>
+<trans-unit id="se5933e2a383f4a70">
+  <source>Infiltrators reduce your embassy effectiveness by 65% for 3 cycles. Counter by deploying your own infiltrator against their embassy — mutual neutralization. Or stack guardians near embassy zones to prevent infiltration entirely.</source>
+<target>Infiltratoren reduzieren deine Botschaftseffektivität um 65% für 3 Zyklen. Gegenmaßnahme: eigenen Infiltrator gegen deren Botschaft entsenden — gegenseitige Neutralisierung. Oder Wächter in Botschaftszonen stapeln, um Infiltration vollständig zu verhindern.</target></trans-unit>
+<trans-unit id="s6ccf8058abddc337">
+  <source>With 40% military weight, every successful mission is massive (+5 saboteur, +8 assassin, +6 infiltrator). But detected missions (−3 each) hurt double. Go all-in on offense with spies for intel, then targeted strikes. Accept defensive losses — stability only counts for 10%.</source>
+<target>Mit 40% Militärgewichtung ist jede erfolgreiche Mission massiv (+5 Saboteur, +8 Assassine, +6 Infiltrator). Aber entdeckte Missionen (−3 je) schmerzen doppelt. Volle Offensive mit Spionen für Aufklärung, dann gezielte Schläge. Defensive Verluste akzeptieren — Stabilität zählt nur 10%.</target></trans-unit>
+<trans-unit id="s1acdc0617ffe922e">
+  <source>−65% effectiveness for 3 cycles</source>
+<target>−65% Effektivität für 3 Zyklen</target></trans-unit>
+<trans-unit id="s349e01f2743523fe">
+  <source>Average stability across all zones, scaled to 0–100. Penalized by propaganda (−3), sabotage (−6), and assassination (−5) attacks. Defend your infrastructure.</source>
+<target>Durchschnittliche Stabilität über alle Zonen, skaliert auf 0–100. Abzüge durch Propaganda (−3), Sabotage (−6) und Attentatsangriffe (−5). Verteidige deine Infrastruktur.</target></trans-unit>
+<trans-unit id="s82964e77ffcd3424">
+  <source>Propaganda successes (+5), espionage (+2), and infiltration (+3) plus echo strength from the bleed system. Rewards projecting power across the multiverse.</source>
+<target>Propaganda-Erfolge (+5), Spionage (+2) und Infiltration (+3) plus Echo-Stärke aus dem Bleed-System. Belohnt die Machtprojektion über das Multiversum.</target></trans-unit>
+<trans-unit id="s8af611fa3fe5be92">
+  <source>Base 100 minus inbound attack penalties (spy −2, propagandist −6, infiltrator −8, saboteur −8, assassin −12). Bonuses: +3 per detected enemy, +4 per guardian. Rewards active defense.</source>
+<target>Basis 100 minus eingehende Angriffsstrafen (Spion −2, Propagandist −6, Infiltrator −8, Saboteur −8, Assassine −12). Boni: +3 pro entdecktem Feind, +4 pro Wächter. Belohnt aktive Verteidigung.</target></trans-unit>
+<trans-unit id="s469a1785411b11af">
+  <source>Sum of successful mission values (infiltrator 6, saboteur 5, propagandist 4, spy 3, assassin 8) minus detection penalties (−3 per detected). High reward, high risk.</source>
+<target>Summe erfolgreicher Missionswerte (Infiltrator 6, Saboteur 5, Propagandist 4, Spion 3, Assassine 8) minus Entdeckungsstrafen (−3 pro Entdeckung). Hohe Belohnung, hohes Risiko.</target></trans-unit>
+<trans-unit id="sc9e04fff8c506435">
+  <source>Balance Patch: Defensive Meta Nerf &amp; Offensive Buffs</source>
+<target>Balance-Patch: Defensiv-Meta abgeschwächt &amp; Offensiv-Buffs</target></trans-unit>
+<trans-unit id="sdc9da79e5d0c5b2e">
+  <source>Guardian defense nerfed to break ci_defensive dominance</source>
+<target>Wächter-Verteidigung abgeschwächt gegen ci_defensive-Dominanz</target></trans-unit>
+<trans-unit id="sd2802c99c6453005">
+  <source>Infiltrator reworked: cheaper, stronger, now generates influence</source>
+<target>Infiltrator überarbeitet: günstiger, stärker, generiert jetzt Einfluss</target></trans-unit>
+<trans-unit id="s6dffaa11dfd81872">
+  <source>RP economy expanded: 12/cycle, 40 cap for multi-strategy play</source>
+<target>RP-Wirtschaft erweitert: 12/Zyklus, 40 Obergrenze für Mehrfachstrategien</target></trans-unit>
+<trans-unit id="s6239e219e359d1ff">
+  <source>Apache ECharts Intelligence Report visualizations</source>
+<target>Apache ECharts Geheimdienstbericht-Visualisierungen</target></trans-unit>
+<trans-unit id="sff8531bda98e7ea4">
+  <source>Guardian Nerfs</source>
+<target>Wächter-Abschwächungen</target></trans-unit>
+<trans-unit id="s55b0ea81732e1524">
+  <source>Penalty per guardian: 8%→6%, cap: 20%→15%</source>
+<target>Malus pro Wächter: 8%→6%, Obergrenze: 20%→15%</target></trans-unit>
+<trans-unit id="sfbc293a2e1ddfd01">
+  <source>Guardian RP cost: 3→4 (stacking is more expensive)</source>
+<target>Wächter-RP-Kosten: 3→4 (Stapeln wird teurer)</target></trans-unit>
+<trans-unit id="s599541a3fc89582e">
+  <source>Counter-intel sweep cost: 3→4 RP</source>
+<target>Spionageabwehr-Sweep-Kosten: 3→4 RP</target></trans-unit>
+<trans-unit id="scc1c08c6db935e92">
+  <source>Offensive Buffs</source>
+<target>Offensiv-Verstärkungen</target></trans-unit>
+<trans-unit id="s0a1694a727d35ea7">
+  <source>Saboteur stability penalty: −5→−6</source>
+<target>Saboteur-Stabilitätsmalus: −5→−6</target></trans-unit>
+<trans-unit id="sfe178d77ccc8dd4d">
+  <source>Assassin: stability −4→−5, sovereignty −10→−12, cost 8→7 RP</source>
+<target>Assassine: Stabilität −4→−5, Souveränität −10→−12, Kosten 8→7 RP</target></trans-unit>
+<trans-unit id="sd970c8db6ef7dd74">
+  <source>Propagandist sovereignty penalty: −5→−6</source>
+<target>Propagandist-Souveränitätsmalus: −5→−6</target></trans-unit>
+<trans-unit id="s4fd80b2d9bbb4f1d">
+  <source>Detection penalty: −2→−3 per detected mission</source>
+<target>Entdeckungsstrafe: −2→−3 pro entdeckter Mission</target></trans-unit>
+<trans-unit id="s810f5a362735e389">
+  <source>Infiltrator Rework</source>
+<target>Infiltrator-Überarbeitung</target></trans-unit>
+<trans-unit id="s03a4857f3b25eb4a">
+  <source>Embassy reduction: 50%→65%</source>
+<target>Botschaftsreduktion: 50%→65%</target></trans-unit>
+<trans-unit id="s11d6886a3b94ef72">
+  <source>RP cost: 6→5 (cheaper to deploy)</source>
+<target>RP-Kosten: 6→5 (günstiger zu entsenden)</target></trans-unit>
+<trans-unit id="sb6e70741f949803f">
+  <source>Sovereignty penalty to target: −6→−8</source>
+<target>Souveränitätsmalus für Ziel: −6→−8</target></trans-unit>
+<trans-unit id="s4b67f6b725f30960">
+  <source>Now generates +3 influence per success</source>
+<target>Generiert jetzt +3 Einfluss pro Erfolg</target></trans-unit>
+<trans-unit id="s7c67d50f6f2d71a3">
+  <source>Mission score value: 5→6</source>
+<target>Missionswert: 5→6</target></trans-unit>
+<trans-unit id="s8f68d16872bd48bf">
+  <source>RP Economy</source>
+<target>RP-Wirtschaft</target></trans-unit>
+<trans-unit id="s5927ef7a6addb931">
+  <source>Base RP per cycle: 10→12</source>
+<target>Basis-RP pro Zyklus: 10→12</target></trans-unit>
+<trans-unit id="sf13ac0b109876f34">
+  <source>RP cap: 30→40</source>
+<target>RP-Obergrenze: 30→40</target></trans-unit>
+<trans-unit id="s5232ed73f0d52afe">
+  <source>Foundation bonus stays at +50% (now 18 RP/cycle)</source>
+<target>Fundament-Bonus bleibt bei +50% (jetzt 18 RP/Zyklus)</target></trans-unit>
+<trans-unit id="se2eb9647f9beb78c">
+  <source>Enables multi-strategy play and economy builds</source>
+<target>Ermöglicht Mehrfachstrategie-Spiel und Wirtschafts-Builds</target></trans-unit>
+<trans-unit id="sd4d6ce43ae4b6251">
+  <source>Sovereignty Scoring</source>
+<target>Souveränitätswertung</target></trans-unit>
+<trans-unit id="s98fe07e088f6de50">
+  <source>Detection bonus: +2→+3 per caught operative</source>
+<target>Entdeckungsbonus: +2→+3 pro gefangenem Agenten</target></trans-unit>
+<trans-unit id="s3c3a0e9ee45c3814">
+  <source>Infiltrator penalty: −6→−8</source>
+<target>Infiltrator-Malus: −6→−8</target></trans-unit>
+<trans-unit id="s57008ccc5a7c83a5">
+  <source>Propagandist penalty: −5→−6</source>
+<target>Propagandist-Malus: −5→−6</target></trans-unit>
+<trans-unit id="sc720d9cdf534923d">
+  <source>Assassin penalty: −10→−12</source>
+<target>Assassinen-Malus: −10→−12</target></trans-unit>
+<trans-unit id="s324e59566027e685">
+  <source>View source on GitHub</source>
+<target>Quellcode auf GitHub ansehen</target></trans-unit>
 
 </body>
 </file>

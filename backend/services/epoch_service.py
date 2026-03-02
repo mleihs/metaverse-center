@@ -19,9 +19,9 @@ OPERATIVE_RP_COSTS: dict[str, int] = {
     "spy": 3,
     "saboteur": 5,
     "propagandist": 4,
-    "assassin": 8,
-    "guardian": 3,
-    "infiltrator": 6,
+    "assassin": 7,
+    "guardian": 4,
+    "infiltrator": 5,
 }
 
 

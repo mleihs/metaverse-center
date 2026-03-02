@@ -5,12 +5,18 @@
 
 import { msg } from '@lit/localize';
 import type {
+  BalanceInsight,
   BleedVector,
   ChangelogEntry,
+  DimensionVariance,
+  EloRating,
   EmbassyInfoCard,
+  HeadToHead,
   NormalizationRule,
   OperativeCard,
   ScoreDimension,
+  SimulationProfile,
+  StrategyTier,
   TacticCard,
   TocSection,
 } from './htp-types.js';
@@ -29,6 +35,7 @@ export function getTocSections(): TocSection[] {
     { id: 'tactics', label: msg('Tactics & Strategies') },
     { id: 'matches', label: msg('Example Matches') },
     { id: 'updates', label: msg('Updates') },
+    { id: 'analytics', label: msg('Intelligence Report') },
   ];
 }
 
@@ -104,11 +111,11 @@ export function getOperativeCards(): OperativeCard[] {
     },
     {
       type: 'Assassin',
-      rpCost: 8,
+      rpCost: 7,
       deployCycles: 2,
       missionCycles: 1,
       scoreValue: 8,
-      description: msg('Targets a specific agent. Highest cost, highest reward.'),
+      description: msg('Targets a specific agent. High cost, highest reward.'),
       effect: msg(
         'Weakens all relationships by \u20132 intensity. Blocks ambassador status for 3 cycles.',
       ),
@@ -116,25 +123,25 @@ export function getOperativeCards(): OperativeCard[] {
     },
     {
       type: 'Guardian',
-      rpCost: 3,
+      rpCost: 4,
       deployCycles: 0,
       missionCycles: 0,
       scoreValue: 0,
       description: msg(
-        'Deploys to your own simulation. Reduces enemy success probability by 8% per guardian (max \u221220%).',
+        'Deploys to your own simulation. Reduces enemy success probability by 6% per guardian (max \u221215%).',
       ),
       effect: msg('Passive defense. Permanent while deployed. Foundation-phase only.'),
       color: 'var(--color-success)',
     },
     {
       type: 'Infiltrator',
-      rpCost: 6,
+      rpCost: 5,
       deployCycles: 2,
       missionCycles: 3,
-      scoreValue: 4,
+      scoreValue: 6,
       description: msg('Targets an enemy embassy. Long deployment, high intelligence value.'),
       effect: msg(
-        'Reduces embassy effectiveness by 50% for 3 cycles. Compromises diplomatic operations.',
+        'Reduces embassy effectiveness by 65% for 3 cycles. Compromises diplomatic operations.',
       ),
       color: 'var(--color-text-secondary)',
     },
@@ -143,10 +150,10 @@ export function getOperativeCards(): OperativeCard[] {
 
 export function getRpRules(): { label: string; value: string }[] {
   return [
-    { label: msg('Base RP per cycle'), value: '10' },
-    { label: msg('Foundation bonus'), value: '+50% (15 RP)' },
-    { label: msg('RP cap'), value: '30' },
-    { label: msg('Counter-intel cost'), value: '3 RP' },
+    { label: msg('Base RP per cycle'), value: '12' },
+    { label: msg('Foundation bonus'), value: '+50% (18 RP)' },
+    { label: msg('RP cap'), value: '40' },
+    { label: msg('Counter-intel cost'), value: '4 RP' },
     { label: msg('RP accumulates'), value: msg('Unspent RP carries over') },
   ];
 }
@@ -173,7 +180,7 @@ export function getScorePresets(): { name: string; weights: Record<string, numbe
 }
 
 export function getSuccessFormula(): string {
-  return '0.55 + (qual \u00D7 0.05) \u2212 (zone_sec \u00D7 0.05) \u2212 min(0.20, guardians \u00D7 0.08) + (embassy_eff \u00D7 0.15)';
+  return '0.55 + (qual \u00D7 0.05) \u2212 (zone_sec \u00D7 0.05) \u2212 min(0.15, guardians \u00D7 0.06) + (embassy_eff \u00D7 0.15)';
 }
 
 export function getTactics(): TacticCard[] {
@@ -183,14 +190,14 @@ export function getTactics(): TacticCard[] {
       title: msg('The Foundation Wall'),
       category: 'opener',
       description: msg(
-        'Spend all foundation RP on guardians (5 guardians = \u2212100% enemy success rate in defended zones). Maximum defense, zero offense. You enter competition with no RP reserve but an impenetrable fortress. Best with Builder preset where stability is king.',
+        'Spend all foundation RP on guardians (3 guardians at 4 RP each = max \u221215% enemy success). Maximum defense, zero offense. You enter competition with little RP reserve but strong defenses. Best with Builder preset where stability is king.',
       ),
     },
     {
       title: msg('The Quick Strike'),
       category: 'opener',
       description: msg(
-        'Deploy only 1 guardian during foundation, save the rest. You enter competition with 30+ RP \u2014 enough for an assassin + saboteur on cycle 4. Risky: undefended zones are vulnerable. Best with Warmonger preset where early military points compound.',
+        'Deploy only 1 guardian during foundation, save the rest. You enter competition with 35+ RP \u2014 enough for an assassin + saboteur on cycle 4. Risky: undefended zones are vulnerable. Best with Warmonger preset where early military points compound.',
       ),
     },
     {
@@ -219,7 +226,7 @@ export function getTactics(): TacticCard[] {
       title: msg('The Early Assassin'),
       category: 'timing',
       description: msg(
-        'Deploy an assassin in cycles 5\u20136 (early competition). Costs 8 RP and takes 2 cycles to deploy, but a successful hit blocks the ambassador for 3 cycles during the critical mid-game. Devastating if it lands, crushing if detected (\u22123 military).',
+        'Deploy an assassin in cycles 5\u20136 (early competition). Costs 7 RP and takes 2 cycles to deploy, but a successful hit blocks the ambassador for 3 cycles during the critical mid-game. Devastating if it lands, crushing if detected (\u22123 military).',
       ),
     },
     // Economy
@@ -227,14 +234,14 @@ export function getTactics(): TacticCard[] {
       title: msg('RP Float vs. RP Burn'),
       category: 'economy',
       description: msg(
-        'Never exceed the 30 RP cap (wasted income). Never hoard when good targets exist (opportunity cost). The sweet spot: spend 7\u20138 RP per cycle and maintain a 5\u201310 RP reserve for counter-intel or reactive deployments.',
+        'Never exceed the 40 RP cap (wasted income). Never hoard when good targets exist (opportunity cost). The sweet spot: spend 9\u201310 RP per cycle and maintain a 5\u201315 RP reserve for counter-intel or reactive deployments.',
       ),
     },
     {
       title: msg('Counter-Intel Timing'),
       category: 'economy',
       description: msg(
-        'A sweep costs 3 RP. Use it when you suspect incoming propagandists or saboteurs \u2014 not every cycle. A detected enemy mission costs THEM \u22123 military AND negates their effect. One well-timed sweep can swing 8+ points.',
+        'A sweep costs 4 RP. Use it when you suspect incoming propagandists or saboteurs \u2014 not every cycle. A detected enemy mission costs THEM \u22123 military AND negates their effect. One well-timed sweep can swing 10+ points.',
       ),
     },
     // Counter-Play
@@ -242,14 +249,14 @@ export function getTactics(): TacticCard[] {
       title: msg('Guardian Stacking'),
       category: 'counter',
       description: msg(
-        'Each guardian reduces enemy success by 8% (capped at \u221220% total). Three guardians reach the cap. Forces enemies to target undefended zones instead. But 9 RP on defense is 9 RP not spent on offense \u2014 only stack when protecting high-value buildings.',
+        'Each guardian reduces enemy success by 6% (capped at \u221215% total). Three guardians reach the cap. Forces enemies to target undefended zones instead. But 12 RP on defense is 12 RP not spent on offense \u2014 only stack when protecting high-value buildings.',
       ),
     },
     {
       title: msg('The Embassy Shield'),
       category: 'counter',
       description: msg(
-        'Infiltrators reduce your embassy effectiveness by 50% for 3 cycles. Counter by deploying your own infiltrator against their embassy \u2014 mutual neutralization. Or stack guardians near embassy zones to prevent infiltration entirely.',
+        'Infiltrators reduce your embassy effectiveness by 65% for 3 cycles. Counter by deploying your own infiltrator against their embassy \u2014 mutual neutralization. Or stack guardians near embassy zones to prevent infiltration entirely.',
       ),
     },
     // Preset-Specific
@@ -264,7 +271,7 @@ export function getTactics(): TacticCard[] {
       title: msg('Warmonger: Glass Cannon'),
       category: 'preset',
       description: msg(
-        'With 40% military weight, every successful mission is massive (+5 saboteur, +8 assassin). But detected missions (\u22123 each) hurt double. Go all-in on offense with spies for intel, then targeted strikes. Accept defensive losses \u2014 stability only counts for 10%.',
+        'With 40% military weight, every successful mission is massive (+5 saboteur, +8 assassin, +6 infiltrator). But detected missions (\u22123 each) hurt double. Go all-in on offense with spies for intel, then targeted strikes. Accept defensive losses \u2014 stability only counts for 10%.',
       ),
     },
     {
@@ -304,7 +311,7 @@ export function getEmbassyInfo(): EmbassyInfoCard[] {
       value: msg('Feeds into success formula: +embassy_eff \u00D7 0.15'),
     },
     { label: msg('Diplomatic score'), value: msg('sum(effectiveness) \u00D7 10') },
-    { label: msg('Infiltrator vulnerability'), value: msg('\u221250% effectiveness for 3 cycles') },
+    { label: msg('Infiltrator vulnerability'), value: msg('\u221265% effectiveness for 3 cycles') },
     { label: msg('Assassin vulnerability'), value: msg('Blocks ambassador for 3 cycles') },
   ];
 }
@@ -317,7 +324,7 @@ export function getScoreDimensions(): ScoreDimension[] {
       color: 'var(--color-success)',
       formula: 'avg(zone_stability) \u00D7 100 \u2212 penalties',
       explanation: msg(
-        'Average stability across all zones, scaled to 0\u2013100. Penalized by propaganda (\u22123), sabotage (\u22125), and assassination (\u22124) attacks. Defend your infrastructure.',
+        'Average stability across all zones, scaled to 0\u2013100. Penalized by propaganda (\u22123), sabotage (\u22126), and assassination (\u22125) attacks. Defend your infrastructure.',
       ),
       title: msg('The Unshaken'),
     },
@@ -325,9 +332,9 @@ export function getScoreDimensions(): ScoreDimension[] {
       key: 'influence',
       name: msg('Influence'),
       color: 'var(--color-epoch-influence)',
-      formula: 'propaganda \u00D7 5 + spy \u00D7 2 + echoes',
+      formula: 'propaganda \u00D7 5 + spy \u00D7 2 + infiltrator \u00D7 3 + echoes',
       explanation: msg(
-        'Propaganda successes (+5) and espionage (+2) plus echo strength from the bleed system. Rewards projecting power across the multiverse.',
+        'Propaganda successes (+5), espionage (+2), and infiltration (+3) plus echo strength from the bleed system. Rewards projecting power across the multiverse.',
       ),
       title: msg('The Resonant'),
     },
@@ -335,9 +342,9 @@ export function getScoreDimensions(): ScoreDimension[] {
       key: 'sovereignty',
       name: msg('Sovereignty'),
       color: 'var(--color-info)',
-      formula: '100 \u00D7 (1 \u2212 bleed_impact / total_impact)',
+      formula: '100 \u2212 penalties + detected \u00D7 3 + guardians \u00D7 4',
       explanation: msg(
-        'Measures resistance to foreign influence. Events with data_source "bleed" or "propagandist" count against you. High sovereignty = resilient simulation.',
+        'Base 100 minus inbound attack penalties (spy \u22122, propagandist \u22126, infiltrator \u22128, saboteur \u22128, assassin \u221212). Bonuses: +3 per detected enemy, +4 per guardian. Rewards active defense.',
       ),
       title: msg('The Sovereign'),
     },
@@ -358,7 +365,7 @@ export function getScoreDimensions(): ScoreDimension[] {
       color: 'var(--color-danger)',
       formula: 'sum(mission_scores) \u2212 sum(detected \u00D7 3)',
       explanation: msg(
-        'Sum of successful mission values minus detection penalties (\u22123 per detected mission). High reward, high risk.',
+        'Sum of successful mission values (infiltrator 6, saboteur 5, propagandist 4, spy 3, assassin 8) minus detection penalties (\u22123 per detected). High reward, high risk.',
       ),
       title: msg('The Shadow'),
     },
@@ -442,6 +449,66 @@ export function getEchoLifecycle(): { name: string; color: string }[] {
 export function getChangelog(): ChangelogEntry[] {
   return [
     {
+      version: 'v2.2',
+      date: '2026-03-02',
+      title: msg('Balance Patch: Defensive Meta Nerf & Offensive Buffs'),
+      highlights: [
+        msg('Guardian defense nerfed to break ci_defensive dominance'),
+        msg('Infiltrator reworked: cheaper, stronger, now generates influence'),
+        msg('RP economy expanded: 12/cycle, 40 cap for multi-strategy play'),
+        msg('Apache ECharts Intelligence Report visualizations'),
+      ],
+      details: [
+        {
+          category: msg('Guardian Nerfs'),
+          changes: [
+            msg('Penalty per guardian: 8%\u21926%, cap: 20%\u219215%'),
+            msg('Guardian RP cost: 3\u21924 (stacking is more expensive)'),
+            msg('Counter-intel sweep cost: 3\u21924 RP'),
+          ],
+        },
+        {
+          category: msg('Offensive Buffs'),
+          changes: [
+            msg('Saboteur stability penalty: \u22125\u2192\u22126'),
+            msg(
+              'Assassin: stability \u22124\u2192\u22125, sovereignty \u221210\u2192\u221212, cost 8\u21927 RP',
+            ),
+            msg('Propagandist sovereignty penalty: \u22125\u2192\u22126'),
+            msg('Detection penalty: \u22122\u2192\u22123 per detected mission'),
+          ],
+        },
+        {
+          category: msg('Infiltrator Rework'),
+          changes: [
+            msg('Embassy reduction: 50%\u219265%'),
+            msg('RP cost: 6\u21925 (cheaper to deploy)'),
+            msg('Sovereignty penalty to target: \u22126\u2192\u22128'),
+            msg('Now generates +3 influence per success'),
+            msg('Mission score value: 5\u21926'),
+          ],
+        },
+        {
+          category: msg('RP Economy'),
+          changes: [
+            msg('Base RP per cycle: 10\u219212'),
+            msg('RP cap: 30\u219240'),
+            msg('Foundation bonus stays at +50% (now 18 RP/cycle)'),
+            msg('Enables multi-strategy play and economy builds'),
+          ],
+        },
+        {
+          category: msg('Sovereignty Scoring'),
+          changes: [
+            msg('Detection bonus: +2\u2192+3 per caught operative'),
+            msg('Infiltrator penalty: \u22126\u2192\u22128'),
+            msg('Propagandist penalty: \u22125\u2192\u22126'),
+            msg('Assassin penalty: \u221210\u2192\u221212'),
+          ],
+        },
+      ],
+    },
+    {
       version: 'v2.0',
       date: '2026-02-28',
       title: msg('Game Instance Normalization'),
@@ -513,6 +580,293 @@ export function getChangelog(): ChangelogEntry[] {
           ],
         },
       ],
+    },
+  ];
+}
+
+/* ── Balance Analytics data ─────────────────────────── */
+
+export function getEloRatings(): EloRating[] {
+  return [
+    { simulation: 'Speranza', rating: 1529, delta: 29, color: 'var(--color-warning)' },
+    { simulation: 'Capybara Kingdom', rating: 1513, delta: 13, color: 'var(--color-success)' },
+    { simulation: 'Velgarien', rating: 1511, delta: 11, color: 'var(--color-danger)' },
+    {
+      simulation: 'Nova Meridian',
+      rating: 1501,
+      delta: 1,
+      color: 'var(--color-epoch-influence)',
+    },
+    { simulation: 'Station Null', rating: 1446, delta: -54, color: 'var(--color-info)' },
+  ];
+}
+
+export function getStrategyTiers(): StrategyTier[] {
+  return [
+    {
+      tier: 'S',
+      tierColor: 'var(--color-warning)',
+      strategies: [
+        {
+          name: msg('Counter-Intel Defensive'),
+          winRate: 64.3,
+          appearances: 70,
+          description: msg('Guardian stacking + counter-intel sweeps. The dominant meta strategy.'),
+        },
+      ],
+    },
+    {
+      tier: 'A',
+      tierColor: 'var(--color-success)',
+      strategies: [
+        {
+          name: msg('Propagandist Rush'),
+          winRate: 46.5,
+          appearances: 71,
+          description: msg('Focus on propaganda missions for influence scoring.'),
+        },
+      ],
+    },
+    {
+      tier: 'B',
+      tierColor: 'var(--color-info)',
+      strategies: [
+        {
+          name: msg('Spy Heavy'),
+          winRate: 35.4,
+          appearances: 65,
+          description: msg('Intelligence gathering with targeted follow-up strikes.'),
+        },
+        {
+          name: msg('Random Mix'),
+          winRate: 32.2,
+          appearances: 59,
+          description: msg('Varied operative deployment. Unpredictable but unfocused.'),
+        },
+      ],
+    },
+    {
+      tier: 'C',
+      tierColor: 'var(--color-gray-500)',
+      strategies: [
+        {
+          name: msg('Balanced'),
+          winRate: 27.0,
+          appearances: 63,
+          description: msg('Even spread across all operative types.'),
+        },
+        {
+          name: msg('Assassin Rush'),
+          winRate: 24.2,
+          appearances: 62,
+          description: msg('High-cost assassin plays. Devastating when they land.'),
+        },
+        {
+          name: msg('All-Out Assault'),
+          winRate: 22.1,
+          appearances: 68,
+          description: msg('Maximum offensive pressure, no defense.'),
+        },
+        {
+          name: msg('Saboteur Heavy'),
+          winRate: 20.3,
+          appearances: 79,
+          description: msg('Infrastructure degradation focus.'),
+        },
+      ],
+    },
+    {
+      tier: 'F',
+      tierColor: 'var(--color-danger)',
+      strategies: [
+        {
+          name: msg('Economy Build'),
+          winRate: 6.2,
+          appearances: 64,
+          description: msg('RP hoarding. Forfeits military and influence points.'),
+        },
+        {
+          name: msg('Infiltrator Focus'),
+          winRate: 1.9,
+          appearances: 53,
+          description: msg('Embassy disruption only. Nearly zero impact on outcomes.'),
+        },
+      ],
+    },
+  ];
+}
+
+export function getSimulationProfiles(): SimulationProfile[] {
+  return [
+    {
+      tag: 'SP',
+      name: msg('Speranza'),
+      color: 'var(--color-warning)',
+      eloRating: 1529,
+      winRates: { pc2: 54, pc3: 48, pc4: 26, pc5: 22 },
+      ciLow: 28.4,
+      ciHigh: 44.0,
+      strengths: msg(
+        'Most consistent across all formats. Wins through balanced multi-dimensional scoring rather than one-dimensional blowouts.',
+      ),
+      weakness: msg(
+        'No single dominant format. Strongest at 2P/3P where sample sizes are smallest.',
+      ),
+    },
+    {
+      tag: 'CK',
+      name: msg('Capybara Kingdom'),
+      color: 'var(--color-success)',
+      eloRating: 1513,
+      winRates: { pc2: 65, pc3: 15, pc4: 14, pc5: 22 },
+      ciLow: 19.5,
+      ciHigh: 35.2,
+      strengths: msg(
+        'Dominant duel specialist at 65% in 2P. Excels in head-to-head matchups where targets are focused.',
+      ),
+      weakness: msg(
+        'Collapses in 3P+ (14\u201322%). Gets outmaneuvered when targets are diluted across multiple opponents.',
+      ),
+    },
+    {
+      tag: 'V',
+      name: msg('Velgarien'),
+      color: 'var(--color-danger)',
+      eloRating: 1511,
+      winRates: { pc2: 46, pc3: 37, pc4: 26, pc5: 22 },
+      ciLow: 25.0,
+      ciHigh: 40.4,
+      strengths: msg(
+        'Balanced fundamentals. Consistently near theoretical fair rate at every player count.',
+      ),
+      weakness: msg(
+        'Former structural advantage (v2: 43%) fully eliminated by v2.1 balance tuning.',
+      ),
+    },
+    {
+      tag: 'NM',
+      name: msg('Nova Meridian'),
+      color: 'var(--color-epoch-influence)',
+      eloRating: 1501,
+      winRates: { pc3: 20, pc4: 27, pc5: 18 },
+      ciLow: 15.5,
+      ciHigh: 30.9,
+      strengths: msg(
+        'Best 4P performer at 27%. Resurrected from 0% win rate in v2 by embassy fix.',
+      ),
+      weakness: msg(
+        'No 2P data (excluded from duel format). Still finding its competitive identity.',
+      ),
+    },
+    {
+      tag: 'SN',
+      name: msg('Station Null'),
+      color: 'var(--color-info)',
+      eloRating: 1446,
+      winRates: { pc2: 35, pc3: 35, pc4: 17, pc5: 12 },
+      ciLow: 16.5,
+      ciHigh: 30.9,
+      strengths: msg(
+        'Stable in small formats (35% at both 2P and 3P). Consistent identity across versions.',
+      ),
+      weakness: msg(
+        'Scales poorly to larger games. 12% at 5P is the weakest single data point in the dataset.',
+      ),
+    },
+  ];
+}
+
+export function getDimensionVariance(): DimensionVariance[] {
+  return [
+    {
+      name: msg('Sovereignty'),
+      color: 'var(--color-info)',
+      stdDev: 24.4,
+      maxStd: 30,
+      status: msg('Dominant'),
+      contribution: 81,
+    },
+    {
+      name: msg('Military'),
+      color: 'var(--color-danger)',
+      stdDev: 18.4,
+      maxStd: 30,
+      status: msg('High'),
+      contribution: 61,
+    },
+    {
+      name: msg('Influence'),
+      color: 'var(--color-epoch-influence)',
+      stdDev: 9.3,
+      maxStd: 30,
+      status: msg('Active'),
+      contribution: 31,
+    },
+    {
+      name: msg('Stability'),
+      color: 'var(--color-success)',
+      stdDev: 6.7,
+      maxStd: 30,
+      status: msg('Active'),
+      contribution: 22,
+    },
+    {
+      name: msg('Diplomatic'),
+      color: 'var(--color-warning)',
+      stdDev: 4.3,
+      maxStd: 30,
+      status: msg('Moderate'),
+      contribution: 14,
+    },
+  ];
+}
+
+export function getHeadToHeadData(): HeadToHead[] {
+  return [
+    { rowSim: 'Speranza', colSim: 'Capybara Kingdom', winRate: 42, games: 26 },
+    { rowSim: 'Speranza', colSim: 'Velgarien', winRate: 56, games: 26 },
+    { rowSim: 'Speranza', colSim: 'Station Null', winRate: 64, games: 26 },
+    { rowSim: 'Capybara Kingdom', colSim: 'Speranza', winRate: 58, games: 26 },
+    { rowSim: 'Capybara Kingdom', colSim: 'Velgarien', winRate: 62, games: 26 },
+    { rowSim: 'Capybara Kingdom', colSim: 'Station Null', winRate: 72, games: 26 },
+    { rowSim: 'Velgarien', colSim: 'Speranza', winRate: 44, games: 26 },
+    { rowSim: 'Velgarien', colSim: 'Capybara Kingdom', winRate: 38, games: 26 },
+    { rowSim: 'Velgarien', colSim: 'Station Null', winRate: 58, games: 26 },
+    { rowSim: 'Station Null', colSim: 'Speranza', winRate: 36, games: 26 },
+    { rowSim: 'Station Null', colSim: 'Capybara Kingdom', winRate: 28, games: 26 },
+    { rowSim: 'Station Null', colSim: 'Velgarien', winRate: 42, games: 26 },
+  ];
+}
+
+export function getBalanceInsights(): BalanceInsight[] {
+  return [
+    {
+      label: msg('Chi-Squared Test'),
+      value: 'p = 0.199',
+      description: msg(
+        'Win distribution is NOT statistically significant (\u03C7\u00B2 = 6.00, df = 4). Observed differences are consistent with random chance.',
+      ),
+    },
+    {
+      label: msg('Elo Spread'),
+      value: '83',
+      description: msg(
+        'Points between strongest (Speranza, 1529) and weakest (Station Null, 1446). Well within normal competitive variance.',
+      ),
+    },
+    {
+      label: msg('Nash Equilibrium'),
+      value: msg('100% Defensive'),
+      description: msg(
+        'Game-theoretic optimal play is pure ci_defensive. The meta is solved \u2014 defensive play dominates all alternatives at 64% win rate.',
+      ),
+    },
+    {
+      label: msg('Bootstrap CIs'),
+      value: msg('All Overlap'),
+      description: msg(
+        '95% confidence intervals for all 5 simulations overlap substantially (10,000 iterations). No simulation has a statistically provable advantage.',
+      ),
     },
   ];
 }

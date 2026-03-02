@@ -680,10 +680,26 @@ class ConnectionService:
             return cached
 
         simulations = await cls._fetch_map_simulations(supabase)
-        connections = await cls.list_all(supabase, active_only=True)
+        all_connections = await cls.list_all(supabase, active_only=True)
+
+        # Filter connections: remove orphans (pointing to archived/deleted sims).
+        sim_ids = {s["id"] for s in simulations}
+        instance_ids = {s["id"] for s in simulations if s.get("simulation_type") == "game_instance"}
+        connections = [
+            c for c in all_connections
+            if c["simulation_a_id"] in sim_ids and c["simulation_b_id"] in sim_ids
+        ]
 
         from backend.services.embassy_service import EmbassyService
-        embassies = await EmbassyService.list_all_active(supabase)
+        all_embassies = await EmbassyService.list_all_active(supabase)
+        # Filter embassies: only show template-template embassy edges on the map.
+        # Game instance cloning duplicates embassies, creating dozens of redundant
+        # instance-instance embassy edges that overwhelm the visualization.
+        embassies = [
+            e for e in all_embassies
+            if e.get("simulation_a_id") not in instance_ids
+            and e.get("simulation_b_id") not in instance_ids
+        ]
 
         active_instance_counts = cls._compute_active_instance_counts(simulations)
         operative_flow = await cls._fetch_operative_flow(supabase)
@@ -720,6 +736,7 @@ class ConnectionService:
                 " simulation_type, source_template_id, epoch_id"
             )
             .eq("status", "active")
+            .neq("simulation_type", "archived")
             .is_("deleted_at", "null")
             .order("created_at", desc=False)
             .execute()

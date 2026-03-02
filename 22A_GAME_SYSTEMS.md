@@ -257,14 +257,14 @@ EPOCH: "The First Convergence" (configurable, e.g. 14 days)
 
 **Resonance Points (RP) — The Action Economy:**
 - Each simulation receives RP at the start of each **cycle** (configurable, default: every 8 hours = 3 cycles/day)
-- Default allocation: **10 RP per cycle**, cap: **30 RP** (prevents hoarding across 3+ cycles)
-- Foundation Phase: **15 RP per cycle** (50% bonus)
+- Default allocation: **12 RP per cycle**, cap: **40 RP** (prevents hoarding across 3+ cycles)
+- Foundation Phase: **18 RP per cycle** (50% bonus)
 - RP is spent on:
-  - Deploying operatives (3–8 RP depending on type)
+  - Deploying operatives (3–7 RP depending on type)
   - Triggering deliberate bleed events (2 RP)
   - Repairing buildings damaged by sabotage (1 RP per condition step)
   - Boosting embassy effectiveness temporarily (2 RP, +0.2 for one cycle)
-  - Counter-intelligence sweep (3 RP, reveals active enemy operatives in your simulation)
+  - Counter-intelligence sweep (4 RP, reveals active enemy operatives in your simulation)
 - **Unspent RP carries over** up to the cap — but excess is lost (use it or lose it)
 - RP is **not transferable** between allied simulations (prevents kingmaking)
 
@@ -302,9 +302,9 @@ At each cycle boundary:
 | **Spy** | 3 RP | Instant | 3 cycles | Reveals target simulation's health metrics, zone stability scores, building readiness, and active operatives for the duration |
 | **Saboteur** | 5 RP | 1 cycle | Single action | Degrades one target building's condition by one step (good→moderate→poor→ruined). Target chosen by attacker. |
 | **Propagandist** | 4 RP | 1 cycle | 2 cycles | Generates a negative event (impact 6-8) in target simulation. AI-generated narrative themed to the embassy's bleed vector. |
-| **Assassin** | 8 RP | 2 cycles | Single action | "Wounds" a target agent — reduces their relationship intensities by 2 and removes ambassador status for 3 cycles. Does NOT delete the agent. |
-| **Guardian** | 3 RP | Instant | Permanent (while deployed) | Passive counter-intelligence. Each guardian in a zone increases detection probability for all enemy operatives in that zone by 20%. Guardians can be deployed to your OWN simulation only. |
-| **Infiltrator** | 6 RP | 2 cycles | 3 cycles | Temporarily reduces a target embassy's effectiveness by 50%. Can target embassies between ANY two simulations (disrupting rivals' alliances). |
+| **Assassin** | 7 RP | 2 cycles | Single action | "Wounds" a target agent — reduces their relationship intensities by 2 and removes ambassador status for 3 cycles. Does NOT delete the agent. |
+| **Guardian** | 4 RP | Instant | Permanent (while deployed) | Passive counter-intelligence. Each guardian reduces enemy success probability by 6% (max −15%). Guardians can be deployed to your OWN simulation only. |
+| **Infiltrator** | 5 RP | 2 cycles | 3 cycles | Temporarily reduces a target embassy's effectiveness by 65%. +3 Influence per success. Can target embassies between ANY two simulations (disrupting rivals' alliances). |
 
 **Operative Agents:**
 - Operatives are agents with an `operative_type` field (spy/saboteur/propagandist/assassin/guardian/infiltrator)
@@ -319,7 +319,7 @@ At each cycle boundary:
 base_probability = 0.55
 + operative_qualification × 0.05  (0-10 scale → +0 to +0.50)
 - target_zone_security × 0.05    (security_level maps to 0-10 → -0 to -0.50)
-- min(0.20, guardian_presence × 0.08)  (−0.08 each, cap 0.20)
+- min(0.15, guardian_presence × 0.06)  (−0.06 each, cap 0.15)
 + embassy_effectiveness × 0.15   (the embassy used for deployment → +0 to +0.15)
 
 Final probability clamped to [0.05, 0.95]
@@ -382,9 +382,9 @@ Final probability clamped to [0.05, 0.95]
 #### 5. Military Score (Offensive / Aggressive)
 - **What it rewards:** Successful covert operations against rivals
 - **Formula:** sum(mission_value) - sum(failure_penalty)
-  - Successful spy: +2, saboteur: +5, propagandist: +5, assassin: +8, infiltrator: +4
+  - Successful spy: +2, saboteur: +5, propagandist: +5, assassin: +8, infiltrator: +6
   - Failed (undetected): 0
-  - Failed (detected/captured): -2 (any type)
+  - Failed (detected/captured): -3 (any type)
 - **Range:** -∞ to +∞ (high risk, high reward)
 - **Strategy:** Deploy qualified operatives through effective embassies against weak targets
 - **Counter:** Deploy guardians, maintain high zone security, close compromised embassies

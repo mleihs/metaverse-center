@@ -40,12 +40,14 @@ export class VelgSimulationsDashboard extends LitElement {
     .hero__bg {
       position: absolute;
       inset: 0;
-      background-size: cover;
-      background-position: center;
       animation: hero-drift 30s ease-in-out infinite alternate;
     }
 
-    .hero__bg--has-image {
+    .hero__bg--image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
       filter: brightness(0.35);
     }
 
@@ -366,12 +368,17 @@ export class VelgSimulationsDashboard extends LitElement {
     return html`
       <!-- Hero -->
       <section class="hero">
-        <div
-          class="hero__bg ${heroUrl ? 'hero__bg--has-image' : 'hero__bg--fallback'}"
-          style=${heroUrl ? `background-image: url(${heroUrl})` : ''}
-          role=${heroUrl ? 'img' : 'presentation'}
-          aria-label=${heroUrl ? 'metaverse.center — interconnected shards of simulated reality' : ''}
-        ></div>
+        ${
+          heroUrl
+            ? html`<img
+              class="hero__bg hero__bg--image"
+              src=${heroUrl}
+              fetchpriority="high"
+              decoding="async"
+              alt="metaverse.center — interconnected shards of simulated reality"
+            />`
+            : html`<div class="hero__bg hero__bg--fallback"></div>`
+        }
         <div class="hero__noise"></div>
         <div class="hero__overlay">
           <h1 class="hero__title">${msg("The Cartographer's Metaverse")}</h1>

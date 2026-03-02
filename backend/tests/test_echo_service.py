@@ -629,6 +629,7 @@ class TestConnectionGetMapData:
             b = MagicMock()
             b.select.return_value = b
             b.eq.return_value = b
+            b.neq.return_value = b
             b.is_.return_value = b
             b.or_.return_value = b
             b.in_.return_value = b

@@ -32,8 +32,8 @@ class EpochConfig(BaseModel):
 
     duration_days: int = Field(14, ge=3, le=60)
     cycle_hours: int = Field(8, ge=2, le=24)
-    rp_per_cycle: int = Field(10, ge=5, le=25)
-    rp_cap: int = Field(30, ge=15, le=75)
+    rp_per_cycle: int = Field(12, ge=5, le=25)
+    rp_cap: int = Field(40, ge=15, le=75)
     foundation_pct: int = Field(20, ge=10, le=30)
     reckoning_pct: int = Field(15, ge=10, le=25)
     max_team_size: int = Field(3, ge=2, le=8)

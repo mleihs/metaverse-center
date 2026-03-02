@@ -381,7 +381,7 @@ The RP costs are deliberately varied to create **opportunity cost decisions**. 8
 P(success) = 0.55
   + operative_qualification × 0.05     (+0.00 to +0.50)
   - target_zone_security × 0.05        (-0.00 to -0.50)
-  - min(0.20, guardian_count × 0.08)   (-0.08 per guardian, cap 0.20)
+  - min(0.15, guardian_count × 0.06)   (-0.06 per guardian, cap 0.15)
   + embassy_effectiveness × 0.15       (+0.00 to +0.15)
 
 Clamped to [0.05, 0.95]
@@ -393,7 +393,7 @@ The base 0.5 means an "average" operative against an "average" target has a coin
 
 - **Agent qualification** (+0.50 max): The single biggest positive modifier. Investing in skilled agents pays off massively. A qualification-10 spy has 50% better odds than a qualification-0 spy.
 - **Zone security** (-0.50 max): The single biggest negative modifier. High-security zones are genuinely hard to infiltrate.
-- **Guardians** (-0.08 each, cap −0.20): Two guardians reduce by 0.16, three hit cap at −0.20. Guardians cost RP and don't attack — pure defense.
+- **Guardians** (-0.06 each, cap −0.15): Two guardians reduce by 0.12, three reach −0.15 (cap). Guardians cost 4 RP and don't attack — pure defense.
 - **Embassy effectiveness** (+0.15 max): A smaller bonus, but it rewards embassy maintenance.
 
 The clamp at [0.05, 0.95] means nothing is ever certain. Even a perfect setup can fail (5% chance), and even a terrible one can succeed (5% chance). This preserves tension.
@@ -697,12 +697,12 @@ A sustained sabotage campaign against a single high-criticality building can:
 The military scoring dimension rewards successful operations (+2 to +8 per success) and punishes detected failures (-2). At first glance, a skilled player could farm military score by spamming cheap spies (3 RP, +2 on success, low risk).
 
 **Balancing factors:**
-- Detection penalty applies regardless of operative type (-2 for any detection)
+- Detection penalty applies regardless of operative type (-3 for any detection)
 - Detection spiral weakens the embassy, reducing future success probability
 - Every deployed agent reduces domestic readiness (Stability cost)
 - Spy information is only valuable if you ACT on it (costing more RP)
 
-**Potential concern:** If a player has many highly qualified agents (qualification 8-10), their success probability is very high (base 0.55 + 0.40-0.50 from qualification). This could make spy spam a dominant strategy. The counter is guardians (−0.08 success per guardian, +4 sovereignty), but guardians cost RP and don't score militarily.
+**Potential concern:** If a player has many highly qualified agents (qualification 8-10), their success probability is very high (base 0.55 + 0.40-0.50 from qualification). This could make spy spam a dominant strategy. The counter is guardians (−0.06 success per guardian, +4 sovereignty), but guardians cost 4 RP and don't score militarily.
 
 **Recommendation for tuning:** Monitor first real epoch. If spy spam dominates, consider: (a) diminishing returns on spy score after N successful missions in same target, (b) increasing spy RP cost to 4, or (c) adding a "counterintelligence fatigue" mechanic where repeated sweeps in the same zone have diminishing returns.
 
@@ -1210,7 +1210,7 @@ P(success) = clamp(0.05, 0.95,
   0.5
   + qualification × 0.05
   - zone_security × 0.05
-  - min(0.20, guardians × 0.08)
+  - min(0.15, guardians × 0.06)
   + embassy_effectiveness × 0.15
 )
 ```

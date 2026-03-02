@@ -91,7 +91,7 @@ class ScoringService:
     async def _compute_stability(
         cls, supabase: Client, epoch_id: UUID, simulation_id: str
     ) -> float:
-        """Stability = avg(zone_stability) × 100 - propaganda×3 - saboteur×5 - assassin×4.
+        """Stability = avg(zone_stability) × 100 - propaganda×3 - saboteur×6 - assassin×5.
 
         Rewards keeping infrastructure healthy.
         Penalized by inbound propaganda events, sabotage, and assassinations.
@@ -135,24 +135,24 @@ class ScoringService:
             1 for m in (inbound_resp.data or []) if m["operative_type"] == "assassin"
         )
 
-        return max(0.0, base_stability - (propaganda_count * 3) - (saboteur_count * 5) - (assassin_count * 4))
+        return max(0.0, base_stability - (propaganda_count * 3) - (saboteur_count * 6) - (assassin_count * 5))
 
     @classmethod
     async def _compute_influence(
         cls, supabase: Client, epoch_id: UUID, simulation_id: str
     ) -> float:
-        """Influence = (propagandist_successes × 5) + (spy_successes × 2) + echo_strength_sum.
+        """Influence = (propagandist × 5) + (spy × 2) + (infiltrator × 3) + echo_strength_sum.
 
         Rewards projecting cultural and intelligence power.
         """
-        # Successful outbound propaganda and spy missions
+        # Successful outbound propaganda, spy, and infiltrator missions
         missions_resp = (
             supabase.table("operative_missions")
             .select("operative_type")
             .eq("epoch_id", str(epoch_id))
             .eq("source_simulation_id", simulation_id)
             .eq("status", "success")
-            .in_("operative_type", ["propagandist", "spy"])
+            .in_("operative_type", ["propagandist", "spy", "infiltrator"])
             .execute()
         )
         propagandist_wins = sum(
@@ -160,6 +160,9 @@ class ScoringService:
         )
         spy_wins = sum(
             1 for m in (missions_resp.data or []) if m["operative_type"] == "spy"
+        )
+        infiltrator_wins = sum(
+            1 for m in (missions_resp.data or []) if m["operative_type"] == "infiltrator"
         )
 
         # Echo strength (bleed system — may be 0 in competitive play)
@@ -172,7 +175,7 @@ class ScoringService:
         )
         echo_sum = sum(e.get("echo_strength", 0) for e in echo_resp.data or [])
 
-        return (propagandist_wins * 5) + (spy_wins * 2) + echo_sum
+        return (propagandist_wins * 5) + (spy_wins * 2) + (infiltrator_wins * 3) + echo_sum
 
     @classmethod
     async def _compute_sovereignty(
@@ -181,9 +184,9 @@ class ScoringService:
         """Sovereignty = 100 - type_penalties + detected_bonus + guardian_bonus.
 
         Penalties per successful inbound mission type:
-          spy: -2, propagandist: -5, infiltrator: -6, saboteur: -8, assassin: -10
+          spy: -2, propagandist: -6, infiltrator: -8, saboteur: -8, assassin: -12
         Bonuses:
-          +2 per detected inbound mission
+          +3 per detected inbound mission
           +4 per active guardian
 
         Rewards defending your simulation from foreign operatives.
@@ -191,10 +194,10 @@ class ScoringService:
         """
         type_penalties = {
             "spy": 2,
-            "propagandist": 5,
-            "infiltrator": 6,
+            "propagandist": 6,
+            "infiltrator": 8,
             "saboteur": 8,
-            "assassin": 10,
+            "assassin": 12,
         }
 
         # Successful inbound missions (attacks against this sim)
@@ -228,7 +231,7 @@ class ScoringService:
         guardian_count = len(guardian_resp.data or [])
 
         return max(0.0, min(100.0,
-            100.0 - penalty_total + (detected_count * 2) + (guardian_count * 4)
+            100.0 - penalty_total + (detected_count * 3) + (guardian_count * 4)
         ))
 
     @classmethod
