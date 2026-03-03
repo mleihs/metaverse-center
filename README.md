@@ -34,7 +34,7 @@ The entire platform is bilingual (English/German), fully themed per-simulation w
 
 **Buildings** — TCG card grid with AI-generated art, capacity stat gems, security dot indicators, type/condition badges, and embassy markers. Each card is a tactile 5:7 collectible with 3D tilt and light reflection on hover.
 
-![Speranza buildings view showing 10 building cards in a responsive grid with AI-generated artwork, stat gems, security indicators, and embassy badges](docs/screenshots/tcg-building-cards-grid-speranza.png)
+![The Gaslit Reach buildings view showing 8 building cards in a responsive grid with AI-generated subterranean Gothic artwork, stat gems, condition indicators, and embassy badges](docs/screenshots/tcg-building-cards-grid-gaslit-reach.png)
 
 **Agents** — Lineup Overview strip (mini portraits with 6-row aptitude bar charts for at-a-glance team comparison) above the full agent card grid. Cards display AI portraits, color-coded aptitude pips per operative type, profession/gender subtitles, and rarity-driven border treatments.
 
