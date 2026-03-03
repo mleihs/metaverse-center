@@ -639,6 +639,7 @@ class EpochService:
         cls,
         supabase: Client,
         epoch_id: UUID,
+        admin_supabase: Client | None = None,
     ) -> dict:
         """Resolve a cycle: allocate RP, increment cycle counter.
 
@@ -666,6 +667,26 @@ class EpochService:
         supabase.table("epoch_participants").update(
             {"cycle_ready": False}
         ).eq("epoch_id", str(epoch_id)).execute()
+
+        # Advance mission timers by one cycle interval so operatives resolve
+        # in sync with admin-triggered cycle resolution (not wall-clock time).
+        # Subtract cycle_hours from resolves_at for all non-guardian missions.
+        cycle_hours = config.get("cycle_hours", 8)
+        db = admin_supabase or supabase
+        active_missions = (
+            db.table("operative_missions")
+            .select("id, resolves_at, operative_type")
+            .eq("epoch_id", str(epoch_id))
+            .in_("status", ["deploying", "active"])
+            .neq("operative_type", "guardian")
+            .execute()
+        )
+        for m in active_missions.data or []:
+            old_resolves = datetime.fromisoformat(m["resolves_at"])
+            new_resolves = old_resolves - timedelta(hours=cycle_hours)
+            db.table("operative_missions").update(
+                {"resolves_at": new_resolves.isoformat()}
+            ).eq("id", m["id"]).execute()
 
         # Increment cycle
         resp = (

@@ -15,6 +15,7 @@ from backend.dependencies import (
 from backend.models.bot import AddBotToEpoch
 from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.models.epoch import (
+    BattleLogEntry,
     EpochCreate,
     EpochResponse,
     EpochUpdate,
@@ -223,6 +224,28 @@ async def list_instances(
     return {"success": True, "data": data}
 
 
+@router.get("/{epoch_id}/battle-log", response_model=PaginatedResponse[BattleLogEntry])
+async def get_battle_log(
+    epoch_id: UUID,
+    user: CurrentUser = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase),
+    event_type: str | None = Query(default=None),
+    limit: int = Query(default=50, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+) -> dict:
+    """Get battle log entries (authenticated — includes private entries)."""
+    data, total = await BattleLogService.list_entries(
+        supabase, epoch_id,
+        event_type=event_type,
+        limit=limit, offset=offset,
+    )
+    return {
+        "success": True,
+        "data": data,
+        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
+    }
+
+
 @router.post("/{epoch_id}/resolve-cycle", response_model=SuccessResponse[EpochResponse])
 async def resolve_cycle(
     epoch_id: UUID,
@@ -234,7 +257,7 @@ async def resolve_cycle(
     """Resolve the current cycle (allocate RP, execute bot turns, advance cycle counter). Creator only."""
     from backend.services.bot_service import BotService
 
-    data = await EpochService.resolve_cycle(supabase, epoch_id)
+    data = await EpochService.resolve_cycle(supabase, epoch_id, admin_supabase=admin_supabase)
     config = data.get("config", {})
     cycle_number = data.get("current_cycle", 1)
 

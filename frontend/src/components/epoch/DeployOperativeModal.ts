@@ -76,7 +76,7 @@ function getOperativeTypes(): OperativeTypeInfo[] {
     {
       type: 'assassin',
       icon: '\u{1F5E1}',
-      cost: 8,
+      cost: 7,
       duration: msg('2 cycle deploy'),
       effect: msg('Wounds target agent — reduces relationships by 2, removes ambassador status.'),
       needsTarget: 'agent',
@@ -84,7 +84,7 @@ function getOperativeTypes(): OperativeTypeInfo[] {
     {
       type: 'infiltrator',
       icon: '\u{1F47B}',
-      cost: 6,
+      cost: 5,
       duration: msg('3 cycles'),
       effect: msg('Reduces target embassy effectiveness by 50% for 3 cycles.'),
       needsTarget: 'embassy',
@@ -92,7 +92,7 @@ function getOperativeTypes(): OperativeTypeInfo[] {
     {
       type: 'guardian',
       icon: '\u{1F6E1}',
-      cost: 3,
+      cost: 4,
       duration: msg('Permanent'),
       effect: msg(
         'Detects hostile operatives entering your simulation. +15% counter-intel success.',
@@ -768,6 +768,7 @@ export class VelgDeployOperativeModal extends LitElement {
   @property({ attribute: false }) simulationId = '';
   @property({ type: Number }) currentRp = 0;
   @property({ attribute: false }) epochPhase = 'lobby';
+  @property({ attribute: false }) deployedAgentIds: string[] = [];
 
   @state() private _step: Step = 'asset';
   @state() private _loading = false;
@@ -1117,7 +1118,10 @@ export class VelgDeployOperativeModal extends LitElement {
             }}
           >
             <option value="">${msg('-- Choose operative --')}</option>
-            ${this._agents.map((a) => html`<option value=${a.id}>${a.name}</option>`)}
+            ${this._agents.map((a) => {
+              const deployed = this.deployedAgentIds.includes(a.id);
+              return html`<option value=${a.id} ?disabled=${deployed}>${a.name}${deployed ? ` (${msg('deployed')})` : ''}</option>`;
+            })}
           </select>
         </div>
 

@@ -6,6 +6,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query
 
 from backend.dependencies import (
+    get_admin_supabase,
     get_current_user,
     get_supabase,
     require_epoch_creator,
@@ -133,9 +134,10 @@ async def resolve_missions(
     user: CurrentUser = Depends(get_current_user),
     _creator_check: None = Depends(require_epoch_creator()),
     supabase: Client = Depends(get_supabase),
+    admin_supabase: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Resolve all pending missions that have reached their resolve time. Creator only."""
-    results = await OperativeService.resolve_pending_missions(supabase, epoch_id)
+    results = await OperativeService.resolve_pending_missions(admin_supabase, epoch_id)
 
     # Log results to battle log
     epoch = await EpochService.get(supabase, epoch_id)

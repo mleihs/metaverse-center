@@ -1180,6 +1180,18 @@ export class VelgEpochCommandCenter extends LitElement {
     const pastResult = await epochsApi.listEpochs({ status: 'completed' });
     if (pastResult.success && pastResult.data) {
       this._pastEpochs = pastResult.data;
+
+      // Load participant counts for completed epochs too
+      const pastCountPromises = this._pastEpochs.map(async (e) => {
+        const resp = await epochsApi.listParticipants(e.id);
+        const list = resp.success ? (resp.data as EpochParticipant[]) || [] : [];
+        return [e.id, list.length] as [string, number];
+      });
+      const pastCounts = await Promise.all(pastCountPromises);
+      this._participantCounts = {
+        ...this._participantCounts,
+        ...Object.fromEntries(pastCounts),
+      };
     }
 
     this._loading = false;
@@ -1249,7 +1261,7 @@ export class VelgEpochCommandCenter extends LitElement {
       epochsApi.listParticipants(epochId),
       epochsApi.listTeams(epochId),
       epochsApi.getLeaderboard(epochId),
-      epochsApi.getBattleLogPublic(epochId),
+      epochsApi.getBattleLog(epochId),
     ]);
 
     if (participants.success) {
@@ -1498,6 +1510,9 @@ export class VelgEpochCommandCenter extends LitElement {
         .simulationId=${this._myParticipant?.simulation_id ?? ''}
         .currentRp=${this._myParticipant?.current_rp ?? 0}
         .epochPhase=${this._epoch?.status ?? 'lobby'}
+        .deployedAgentIds=${this._missions
+          .filter((m) => ['deploying', 'active', 'returning'].includes(m.status))
+          .map((m) => m.agent_id)}
         @modal-close=${this._onDeployModalClose}
         @operative-deployed=${this._onOperativeDeployed}
       ></velg-deploy-operative-modal>
@@ -1875,13 +1890,16 @@ export class VelgEpochCommandCenter extends LitElement {
     if (!this._epoch) return;
     this._actionLoading = true;
     const result = await epochsApi.resolveCycle(this._epoch.id);
-    this._actionLoading = false;
-    if (result.success) {
-      VelgToast.success(msg('Cycle resolved.'));
-      await this._loadData();
-    } else {
+    if (!result.success) {
+      this._actionLoading = false;
       VelgToast.error(msg('Failed to resolve cycle.'));
+      return;
     }
+    await epochsApi.resolveOperatives(this._epoch.id);
+    await epochsApi.computeScores(this._epoch.id);
+    this._actionLoading = false;
+    VelgToast.success(msg('Cycle resolved.'));
+    await this._loadData();
   }
 
   private async _onCancelEpoch() {

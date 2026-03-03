@@ -91,6 +91,17 @@ export class VelgEpochBattleLog extends LitElement {
     .entry--betrayal .entry__type            { color: var(--color-danger); }
     .entry--phase_change::before            { background: var(--color-warning); }
     .entry--counter_intel::before           { background: var(--color-info); }
+    .entry--intel_report::before            { background: var(--color-info); }
+
+    .entry--intel_report .entry__intel {
+      margin-top: 4px;
+      padding: 4px 8px;
+      background: rgba(56, 189, 248, 0.08);
+      border-left: 2px solid var(--color-info);
+      font-size: 0.75rem;
+      color: var(--color-text-secondary);
+      font-family: var(--font-mono);
+    }
 
     /* ── Icon ─────────────────────────────── */
 
@@ -263,6 +274,7 @@ export class VelgEpochBattleLog extends LitElement {
       betrayal: '\u{2620}',
       phase_change: '\u{26A1}',
       counter_intel: '\u{1F50E}',
+      intel_report: '\u{1F4CB}',
     };
     return icons[type] || '\u{2694}';
   }
@@ -281,8 +293,22 @@ export class VelgEpochBattleLog extends LitElement {
       betrayal: msg('Betrayal'),
       phase_change: msg('Phase Change'),
       counter_intel: msg('Counter-Intel'),
+      intel_report: msg('Intel Report'),
     };
     return labels[type] || type;
+  }
+
+  private _renderIntelData(metadata: Record<string, unknown> | undefined) {
+    if (!metadata) return nothing;
+    const zones = metadata.zone_security as string[] | undefined;
+    const guardians = metadata.guardian_count as number | undefined;
+    if (!zones && guardians === undefined) return nothing;
+    return html`
+      <div class="entry__intel">
+        ${guardians !== undefined ? html`${msg('Guardians')}: ${guardians}` : nothing}
+        ${zones ? html`${guardians !== undefined ? ' | ' : ''}${msg('Zones')}: ${zones.join(', ')}` : nothing}
+      </div>
+    `;
   }
 
   protected render() {
@@ -332,6 +358,11 @@ export class VelgEpochBattleLog extends LitElement {
             this.compact
               ? nothing
               : html`<span class="entry__type">${this._getTypeLabel(entry.event_type)}</span>`
+          }
+          ${
+            entry.event_type === 'intel_report' && !this.compact
+              ? this._renderIntelData(entry.metadata as Record<string, unknown> | undefined)
+              : nothing
           }
         </div>
         <span class="entry__cycle">${msg('Cycle')} ${entry.cycle_number}</span>

@@ -71,6 +71,14 @@ export class EpochsApiService extends BaseApiService {
     return this.post(`/epochs/${epochId}/resolve-cycle`);
   }
 
+  resolveOperatives(epochId: string): Promise<ApiResponse<unknown>> {
+    return this.post(`/epochs/${epochId}/operatives/resolve`);
+  }
+
+  computeScores(epochId: string): Promise<ApiResponse<unknown>> {
+    return this.post(`/epochs/${epochId}/scores/compute`);
+  }
+
   // ── Participants ────────────────────────────────────
 
   listParticipants(epochId: string): Promise<ApiResponse<EpochParticipant[]>> {

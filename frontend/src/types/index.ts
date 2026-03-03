@@ -858,7 +858,8 @@ export type BattleLogEventType =
   | 'rp_allocated'
   | 'building_damaged'
   | 'agent_wounded'
-  | 'counter_intel';
+  | 'counter_intel'
+  | 'intel_report';
 
 export interface EpochScoreWeights {
   stability: number;

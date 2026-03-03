@@ -595,8 +595,8 @@ export class VelgEpochCreationWizard extends LitElement {
 
   // Step 2: Economy
   @state() private _cycleHours = 8;
-  @state() private _rpPerCycle = 10;
-  @state() private _rpCap = 30;
+  @state() private _rpPerCycle = 12;
+  @state() private _rpCap = 40;
   @state() private _maxTeamSize = 3;
   @state() private _allowBetrayal = true;
 
@@ -616,8 +616,8 @@ export class VelgEpochCreationWizard extends LitElement {
       this._description = '';
       this._durationDays = 14;
       this._cycleHours = 8;
-      this._rpPerCycle = 10;
-      this._rpCap = 30;
+      this._rpPerCycle = 12;
+      this._rpCap = 40;
       this._maxTeamSize = 3;
       this._allowBetrayal = true;
       this._wStability = 25;

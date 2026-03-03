@@ -558,6 +558,7 @@ Bürger werden daran erinnert, dass alle Bureaux zu ihrem Wohle arbeiten, dass a
 's2ceb11be2290bb1b': `Abbrechen`,
 's2cff39686248cd7d': `Stunden zwischen den einzelnen Spielzyklen. Jeder Zyklus gewährt RP und löst operative Missionen auf. Kürzere Zyklen = schnelleres Gameplay.`,
 's2d0780f48fe2a84e': `Komm`,
+'s2d286746b040786f': `Wächter`,
 's2d325354f4f03973': `Wirtschaftsaufbau`,
 's2d7c74a34288c918': `Die Kartographen — Jene, die das Unmögliche kartieren`,
 's2dc1811669a028fc': `CONTRADA BULLETIN - Historisches Archiv Speranza
@@ -697,6 +698,7 @@ Axiom 4: Die Kartographen existieren außerhalb der Axiome. Dies ist kein Privil
 's3622c8b352258188': `Zonenstabilität`,
 's362f48aa5dcdf2d1': `Propagandist wird aufgelöst: ERFOLG`,
 's363abde8a254ea5f': `Authentifizierung fehlgeschlagen. Bitte erneut versuchen.`,
+'s36554a28bc3cef1f': `im Einsatz`,
 's367d079d1aed1358': `Kosten`,
 's3685377196755142': `Splitter-Klassifikation: GOLD. Bedrohungseinschätzung: Literat. Man kann ein Buch nicht ungelesen machen. Man kann es verbrennen, aber der Leser hat sich bereits verändert.`,
 's3687049d1af562c4': `Kopieren`,
@@ -708,6 +710,7 @@ Axiom 4: Die Kartographen existieren außerhalb der Axiome. Dies ist kein Privil
 's375f4c2a073dff27': `Kartendaten-TTL`,
 's375f7f22335a12de': `Events konnten nicht geladen werden.`,
 's3763f519c347a9f7': `Jetzt`,
+'s379585ab4b53c91b': `Geheimdienstbericht`,
 's37c48ffb404037a8': `PERSÖNLICHES FORSCHUNGSPROTOKOLL — Dr. Kwame Osei
 ABTEILUNG XENOBIOLOGIE (SELBST ERNANNT)
 EINTRAG: [Unnummeriert — Dr. Osei stellte die Nummerierung der Einträge ein, als die Zählung begann, mit sich selbst uneins zu werden]
@@ -1468,6 +1471,7 @@ Deshalb können die Splitter nicht einfach wieder zusammengesetzt werden. Man ka
 's759d82f28e4e7db3': `Die Lumineszenz - Licht im Abgrund`,
 's75c4547fd5fe7658': `RP sammelt sich an`,
 's75d877b3d83de9d2': `Agent auswählen...`,
+'s760b886223d9ebdc': `Zonen`,
 's76128ff2f9970b28': `Beziehungsart ist erforderlich`,
 's763db5db763a5f30': str`+ ${0} erstellen`,
 's76402dc74efa459d': str`Hinzufügen (${0})`,

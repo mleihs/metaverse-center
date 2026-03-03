@@ -67,12 +67,13 @@ class BattleLogService:
     ) -> dict:
         """Log an operative deployment."""
         op_type = mission["operative_type"]
+        article = "An" if op_type[0] in "aeiou" else "A"
         return await cls.log_event(
             supabase,
             epoch_id,
             cycle_number,
             "operative_deployed",
-            f"A {op_type} has been deployed.",
+            f"{article} {op_type} has been deployed.",
             source_simulation_id=UUID(mission["source_simulation_id"]),
             target_simulation_id=(
                 UUID(mission["target_simulation_id"])
