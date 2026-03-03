@@ -42,6 +42,7 @@ export class VelgAgentsView extends LitElement {
       margin-bottom: var(--space-5);
       border: var(--border-width-thin) solid var(--color-border-light);
       background: var(--color-surface-sunken);
+      overflow: hidden;
     }
 
     .lineup__header {
