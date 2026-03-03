@@ -152,6 +152,23 @@ export class VelgFilterBar extends LitElement {
       background: var(--color-surface-sunken);
       color: var(--color-text-primary);
     }
+
+    @media (max-width: 480px) {
+      .filter-bar__search {
+        min-width: 0;
+        width: 100%;
+      }
+
+      .filter-bar__row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .filter-bar__select {
+        width: 100%;
+        min-height: 44px;
+      }
+    }
   `;
 
   @property({ type: Array }) filters: FilterConfig[] = [];

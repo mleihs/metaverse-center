@@ -656,6 +656,17 @@ export class VelgGameCard extends LitElement {
     :host([size="lg"]) .card__stamp { font-size: 24px; }
 
     /* ═══════════════════════════════════════════════════
+       MOBILE — fluid width, centered in single-column
+       ═══════════════════════════════════════════════════ */
+    @media (max-width: 480px) {
+      .card-perspective {
+        width: 100%;
+        max-width: 280px;
+        margin: 0 auto;
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════
        REDUCED MOTION
        ═══════════════════════════════════════════════════ */
     @media (prefers-reduced-motion: reduce) {

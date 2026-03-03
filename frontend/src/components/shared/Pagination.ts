@@ -124,6 +124,32 @@ export class VelgPagination extends LitElement {
       border-color: var(--color-border-focus);
       box-shadow: var(--ring-focus);
     }
+
+    @media (max-width: 480px) {
+      .pagination {
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-3);
+      }
+
+      .pagination__btn {
+        min-width: 44px;
+        height: 44px;
+      }
+
+      .pagination__ellipsis {
+        min-width: 44px;
+        height: 44px;
+      }
+
+      .pagination__limit-select {
+        min-height: 44px;
+      }
+
+      .pagination__info {
+        font-size: var(--text-xs);
+      }
+    }
   `;
 
   @property({ type: Number }) total = 0;

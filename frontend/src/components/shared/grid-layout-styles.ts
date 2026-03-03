@@ -24,12 +24,14 @@ export const gridLayoutStyles = css`
   @media (max-width: 640px) {
     .entity-grid {
       grid-template-columns: 1fr 1fr;
+      gap: var(--space-3);
     }
   }
 
-  @media (max-width: 400px) {
+  @media (max-width: 480px) {
     .entity-grid {
       grid-template-columns: 1fr;
+      gap: var(--space-3);
     }
   }
 `;

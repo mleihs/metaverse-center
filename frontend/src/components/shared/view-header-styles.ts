@@ -74,4 +74,21 @@ export const viewHeaderStyles = css`
     letter-spacing: var(--tracking-wide);
     color: var(--color-text-secondary);
   }
+
+  @media (max-width: 480px) {
+    .view__header {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .view__title {
+      font-size: var(--text-xl);
+    }
+
+    .view__create-btn {
+      width: 100%;
+      justify-content: center;
+      min-height: 44px;
+    }
+  }
 `;

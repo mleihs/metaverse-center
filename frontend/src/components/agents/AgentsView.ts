@@ -114,6 +114,26 @@ export class VelgAgentsView extends LitElement {
       width: 100%;
     }
 
+    @media (max-width: 480px) {
+      .lineup__card {
+        min-width: 80px;
+        max-width: 80px;
+      }
+
+      .lineup__name {
+        font-size: 8px;
+      }
+
+      .lineup__scroll {
+        gap: var(--space-2);
+        padding: var(--space-2);
+      }
+
+      .entity-grid {
+        gap: var(--space-3);
+      }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       .lineup__card {
         animation: none;

@@ -34,6 +34,12 @@ export class VelgBuildingsView extends LitElement {
       --grid-min-width: 200px;
       gap: var(--space-5);
     }
+
+    @media (max-width: 480px) {
+      .entity-grid {
+        gap: var(--space-3);
+      }
+    }
   `,
   ];
 
