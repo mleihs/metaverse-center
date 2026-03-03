@@ -46,12 +46,6 @@ The entire platform is bilingual (English/German), fully themed per-simulation w
 
 ![Velgarien agents view showing 9 agent cards in dark brutalist theme with AI portraits, aptitude pips, profession badges, and Lineup Overview strip](docs/screenshots/tcg-agent-cards-lineup-velgarien.png)
 
-*Station Null — deep space horror simulation (dark sci-fi theme)*
-
-**Buildings** — The same card grid in Station Null's deep-space-horror theme: green terminal glow, monospaced labels, AI-generated derelict interiors. Embassy badges, condition badges, and capacity bars adapt to the dark palette.
-
-![Station Null buildings view showing 10 building cards in a dark sci-fi horror theme with green terminal glow and derelict space station interiors](docs/screenshots/tcg-building-cards-grid-station-null.png)
-
 **Cartographer's Map** — Force-directed multiverse graph showing all five simulations as nodes with diplomatic connections (orange embassy links), energy pulses along edges, starfield background, and a minimap viewport. Supports 2D SVG and WebGL 3D rendering modes with search, zoom-to-cluster, and 30-second auto-refresh during active epochs.
 
 ![Cartographer's Map showing the force-directed multiverse graph with five simulation nodes, diplomatic connections, energy pulses, and minimap](docs/screenshots/cartographers-map-multiverse-graph.png)
