@@ -14,17 +14,9 @@
   <source>Edit</source>
   <target>Bearbeiten</target>
 </trans-unit>
-<trans-unit id="s56d1b711b7909810">
-  <source>Edit agent</source>
-  <target>Agent bearbeiten</target>
-</trans-unit>
 <trans-unit id="sdc673e73b5c13aea">
   <source>Delete</source>
   <target>Löschen</target>
-</trans-unit>
-<trans-unit id="s4685d85f2f78194b">
-  <source>Delete agent</source>
-  <target>Agent löschen</target>
 </trans-unit>
 <trans-unit id="s5f727bffa219bbd3">
   <source>No professions assigned.</source>
@@ -318,18 +310,6 @@
   <source>Password</source>
   <target>Passwort</target>
 </trans-unit>
-<trans-unit id="s167662b9ecc40eff">
-  <source>Signing In...</source>
-  <target>Anmeldung...</target>
-</trans-unit>
-<trans-unit id="sbf30850af3be4480">
-  <source>No account yet?</source>
-  <target>Noch kein Konto?</target>
-</trans-unit>
-<trans-unit id="s2c15b9b13a3e2a80">
-  <source>Register</source>
-  <target>Registrieren</target>
-</trans-unit>
 <trans-unit id="scfa81f565f29df08">
   <source>Passwords do not match.</source>
   <target>Passwörter stimmen nicht überein.</target>
@@ -345,26 +325,6 @@
 <trans-unit id="s3dab6bcbc22dc3e0">
   <source>Confirm Password</source>
   <target>Passwort bestätigen</target>
-</trans-unit>
-<trans-unit id="s238784fc1dc672ae">
-  <source>Registering...</source>
-  <target>Registrierung...</target>
-</trans-unit>
-<trans-unit id="s205b3e04ad286caa">
-  <source>Already have an account?</source>
-  <target>Bereits ein Konto?</target>
-</trans-unit>
-<trans-unit id="s59149d52748a3ed5">
-  <source>Cap: <x id="0" equiv-text="${b.population_capacity}" /></source>
-  <target>Kap.: <x id="0" equiv-text="${b.population_capacity}" /></target>
-</trans-unit>
-<trans-unit id="scb249e1a0bc04d37">
-  <source>Edit building</source>
-  <target>Gebäude bearbeiten</target>
-</trans-unit>
-<trans-unit id="s2b16735eedf2338a">
-  <source>Delete building</source>
-  <target>Gebäude löschen</target>
 </trans-unit>
 <trans-unit id="s9c3df420bbd7507d">
   <source>No agents assigned to this building.</source>
@@ -3366,14 +3326,6 @@
   <source>Invalid email or password.</source>
   <target>Ungültige E-Mail oder Passwort.</target>
 </trans-unit>
-<trans-unit id="sd4834a205d67ccdf">
-  <source>Signing in...</source>
-  <target>Anmeldung läuft...</target>
-</trans-unit>
-<trans-unit id="scad07cc65ad2fb30">
-  <source>Don't have an account?</source>
-  <target>Noch kein Konto?</target>
-</trans-unit>
 <trans-unit id="sc9c1228bb02d8b37">
   <source>Sign in to start conversations and chat with agents</source>
   <target>Melde dich an, um Konversationen zu starten und mit Agenten zu chatten</target>
@@ -4543,9 +4495,6 @@ Es gibt keine Distanz mehr.
 <trans-unit id="s2441dc4e87d2fedf">
   <source>Arc Raiders</source>
 <target>Arc Raiders</target></trans-unit>
-<trans-unit id="s2ae949567899b630">
-  <source><x id="0" equiv-text="${this.relationshipCount}" /> connections</source>
-<target><x id="0" equiv-text="${this.relationshipCount}" /> Verbindungen</target></trans-unit>
 <trans-unit id="s8b7fe0de5711e3b3">
   <source>Delete relationship with <x id="0" equiv-text="${otherName}" />?</source>
 <target>Beziehung zu <x id="0" equiv-text="${otherName}" /> löschen?</target></trans-unit>
@@ -5594,15 +5543,9 @@ Es gibt keine Distanz mehr.
 <trans-unit id="s12d6dde9b30c3093">
   <source>Dismiss</source>
 <target>Verwerfen</target></trans-unit>
-<trans-unit id="sd4fb4e6cb1959587">
-  <source>Ambassador status temporarily suspended</source>
-<target>Botschafterstatus vorübergehend ausgesetzt</target></trans-unit>
 <trans-unit id="sf59d9197d2e50c93">
   <source>Blocked</source>
 <target>Blockiert</target></trans-unit>
-<trans-unit id="s884d4cf10355eb55">
-  <source>Embassy effectiveness reduced by infiltration</source>
-<target>Durch Infiltration reduzierte Effektivität von Botschaften</target></trans-unit>
 <trans-unit id="s2022738a339cc4d1">
   <source>Compromised</source>
 <target>Kompromittiert</target></trans-unit>
@@ -9564,21 +9507,6 @@ Fünf Welten. Eine Fraktur. Die Karte liegt offen. Welche Welt betreten Sie zuer
 <trans-unit id="sf2a69a199c808e4c">
   <source>Fit</source>
 <target>Eignung</target></trans-unit>
-<trans-unit id="se5aa55f5c944cfc5">
-  <source>Agents Drafted</source>
-<target>Agenten aufgestellt</target></trans-unit>
-<trans-unit id="sf718f688ae47658b">
-  <source>Available Roster</source>
-<target>Verfügbarer Kader</target></trans-unit>
-<trans-unit id="sa0b24fa796b43e67">
-  <source>Best</source>
-<target>Beste</target></trans-unit>
-<trans-unit id="sed666242a9291de5">
-  <source>Deployment Lineup</source>
-<target>Einsatzaufstellung</target></trans-unit>
-<trans-unit id="sf22445b813ef0767">
-  <source>Slot <x id="0" equiv-text="${i + 1}" /></source>
-<target>Platz <x id="0" equiv-text="${i + 1}" /></target></trans-unit>
 <trans-unit id="s2fa05f91c1baa29b">
   <source>Remove <x id="0" equiv-text="${agent.name}" /></source>
 <target>Entfernen: <x id="0" equiv-text="${agent.name}" /></target></trans-unit>
@@ -10094,7 +10022,7 @@ Fünf Welten. Eine Fraktur. Die Karte liegt offen. Welche Welt betreten Sie zuer
 <target>Scan fehlgeschlagen.</target></trans-unit>
 <trans-unit id="s1445ad768e9f271c">
   <source>Purge complete: <x id="0" equiv-text="${count}" /> records deleted.</source>
-<target>Bereinigung abgeschlossen: </target></trans-unit>
+<target>Bereinigung abgeschlossen: <x id="0" equiv-text="${count}" /> Datensätze gelöscht.</target></trans-unit>
 <trans-unit id="sed4191f51a738abd">
   <source>Purge failed.</source>
 <target>Bereinigung fehlgeschlagen.</target></trans-unit>
@@ -10161,6 +10089,70 @@ Fünf Welten. Eine Fraktur. Die Karte liegt offen. Welche Welt betreten Sie zuer
 <trans-unit id="sa042ace5c01b0109">
   <source>Data Cleanup</source>
 <target>Datenbereinigung</target></trans-unit>
+<trans-unit id="s21c830f71d7d0710">
+  <source>Drag sliders to set operative strengths. Total budget must equal 36 — raising one type means lowering another. Changes auto-save when the budget balances.</source>
+<target>Schieberegler ziehen, um Operativ-Stärken festzulegen. Das Gesamtbudget muss 36 ergeben — einen Typ erhöhen bedeutet, einen anderen zu senken. Änderungen werden automatisch gespeichert, sobald das Budget ausgeglichen ist.</target></trans-unit>
+<trans-unit id="sd7b2ff2210ac9d36">
+  <source>Synergy</source>
+  <target>Synergie</target>
+</trans-unit>
+<trans-unit id="sede590289a9d7ebd">
+  <source>Drafted</source>
+  <target>Eingezogen</target>
+</trans-unit>
+<trans-unit id="s47a04128192b6bbd">
+  <source>ROSTER COMPLETE</source>
+  <target>KADER VOLLSTÄNDIG</target>
+</trans-unit>
+<trans-unit id="s5d97f8d09de1c78a">
+  <source>All players ready. Cycle resolved automatically.</source>
+  <target>Alle Spieler bereit. Zyklus automatisch aufgelöst.</target>
+</trans-unit>
+<trans-unit id="sf5a1e461d4d42bdd">
+  <source>Classified // Operative Access</source>
+<target>Geheim // Operativzugang</target></trans-unit>
+<trans-unit id="s4b2b54d0a12ad08f">
+  <source>Authentication Terminal</source>
+<target>Authentifizierungsterminal</target></trans-unit>
+<trans-unit id="s24eeaed54bb9782a">
+  <source>Present your credentials. The Bureau requires identity verification before granting terminal access.</source>
+<target>Legen Sie Ihre Zugangsdaten vor. Das Büro verlangt eine Identitätsprüfung, bevor Terminalzugang gewährt wird.</target></trans-unit>
+<trans-unit id="sc3ad95fb3df6b531">
+  <source>Operative Identifier</source>
+<target>Operativkennung</target></trans-unit>
+<trans-unit id="s051758970a023d38">
+  <source>Access Code</source>
+<target>Zugangscode</target></trans-unit>
+<trans-unit id="s30d6ff9e15e0a40a">
+  <source>Verifying...</source>
+<target>Überprüfung...</target></trans-unit>
+<trans-unit id="s81d400f3e72aa605">
+  <source>No clearance?</source>
+<target>Keine Freigabe?</target></trans-unit>
+<trans-unit id="s454e68d52b783e70">
+  <source>Request Access</source>
+<target>Zugang beantragen</target></trans-unit>
+<trans-unit id="s42e07c0f5155008d">
+  <source>Classified // New Operative Intake</source>
+<target>Geheim // Aufnahme neuer Operativer</target></trans-unit>
+<trans-unit id="sc19e27c5669d6c70">
+  <source>Registration Terminal</source>
+<target>Registrierungsterminal</target></trans-unit>
+<trans-unit id="s60d9819f3cfeba49">
+  <source>Your signal has been detected across the fracture. Five sealed worlds await your observation. Complete this intake form to request Bureau clearance.</source>
+<target>Ihr Signal wurde jenseits der Fraktur erfasst. Fünf versiegelte Welten erwarten Ihre Beobachtung. Füllen Sie dieses Aufnahmeformular aus, um eine Büro-Freigabe zu beantragen.</target></trans-unit>
+<trans-unit id="s17d5104749053d10">
+  <source>Confirm Access Code</source>
+<target>Zugangscode bestätigen</target></trans-unit>
+<trans-unit id="sf89d2b10b903e21c">
+  <source>Processing Intake...</source>
+<target>Aufnahme wird bearbeitet...</target></trans-unit>
+<trans-unit id="sb20b869d95cb52b0">
+  <source>Request Clearance</source>
+<target>Freigabe beantragen</target></trans-unit>
+<trans-unit id="s3ace74972adca414">
+  <source>Already cleared?</source>
+<target>Bereits freigeschaltet?</target></trans-unit>
 
 </body>
 </file>

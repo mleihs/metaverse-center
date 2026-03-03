@@ -8,136 +8,303 @@ import { authService } from '../../services/supabase/SupabaseAuthService.js';
 export class VelgLoginView extends LitElement {
   static styles = css`
     :host {
+      --amber: #f59e0b;
+      --amber-dim: #b45309;
+      --amber-glow: rgba(245, 158, 11, 0.15);
+      --hud-bg: #0a0a0a;
+      --hud-surface: #111;
+      --hud-border: #333;
+      --hud-text: #ccc;
+      --hud-text-dim: #888;
       display: flex;
       align-items: center;
       justify-content: center;
       min-height: 80vh;
+      padding: var(--space-4);
     }
 
-    .login-container {
+    /* ── Entrance ── */
+    @keyframes terminal-boot {
+      0% {
+        opacity: 0;
+        transform: translateY(12px) scale(0.98);
+        filter: brightness(1.5);
+      }
+      40% { opacity: 1; filter: brightness(1.2); }
+      100% { transform: translateY(0) scale(1); filter: brightness(1); }
+    }
+
+    @keyframes cursor-blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    @keyframes field-reveal {
+      from { opacity: 0; transform: translateX(-8px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .terminal, .form-group { animation: none !important; }
+      .header__cursor { animation: none !important; }
+    }
+
+    /* ── Terminal Frame ── */
+    .terminal {
       width: 100%;
-      max-width: 420px;
-      background: var(--color-surface-raised);
-      border: var(--border-default);
-      box-shadow: var(--shadow-lg);
+      max-width: 460px;
+      background: var(--hud-surface);
+      border: 1px dashed var(--hud-border);
+      position: relative;
+      animation: terminal-boot 600ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) both;
     }
 
-    .login-header {
-      padding: var(--space-4) var(--space-6);
-      background: var(--color-surface-header);
-      border-bottom: var(--border-default);
+    /* Corner brackets */
+    .terminal::before,
+    .terminal::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-color: var(--amber);
+      border-style: solid;
+      pointer-events: none;
+    }
+    .terminal::before {
+      top: -1px; left: -1px;
+      border-width: 2px 0 0 2px;
+    }
+    .terminal::after {
+      top: -1px; right: -1px;
+      border-width: 2px 2px 0 0;
     }
 
-    .login-title {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-xl);
+    .terminal__bottom-corners {
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 0;
+      pointer-events: none;
+    }
+    .terminal__bottom-corners::before,
+    .terminal__bottom-corners::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-color: var(--amber);
+      border-style: solid;
+    }
+    .terminal__bottom-corners::before {
+      bottom: 0; left: -1px;
+      border-width: 0 0 2px 2px;
+    }
+    .terminal__bottom-corners::after {
+      bottom: 0; right: -1px;
+      border-width: 0 2px 2px 0;
+    }
+
+    /* Scanline overlay */
+    .terminal__scanlines {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(245, 158, 11, 0.012) 3px,
+        rgba(245, 158, 11, 0.012) 6px
+      );
+      z-index: 1;
+    }
+
+    .terminal > *:not(.terminal__scanlines):not(.terminal__bottom-corners) {
+      position: relative;
+      z-index: 2;
+    }
+
+    /* ── Header ── */
+    .header {
+      padding: 20px 28px;
+      border-bottom: 1px dashed var(--hud-border);
+    }
+
+    .header__classification {
+      font-family: var(--font-brutalist, 'Courier New', monospace);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 4px;
       text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
+      color: var(--amber);
+      margin: 0 0 8px;
+    }
+
+    .header__title {
+      font-family: var(--font-brutalist, 'Courier New', monospace);
+      font-weight: 900;
+      font-size: var(--text-xl, 1.563rem);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--hud-text);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .header__cursor {
+      display: inline-block;
+      width: 8px;
+      height: 18px;
+      background: var(--amber);
+      animation: cursor-blink 1s step-end infinite;
+      vertical-align: middle;
+      margin-left: 2px;
+    }
+
+    .header__ref {
+      font-family: var(--font-brutalist, 'Courier New', monospace);
+      font-size: 10px;
+      color: var(--hud-text-dim);
+      margin: 6px 0 0;
+      letter-spacing: 1px;
+    }
+
+    /* ── Lore Briefing ── */
+    .briefing {
+      padding: 20px 28px;
+      border-bottom: 1px dashed var(--hud-border);
+    }
+
+    .briefing__text {
+      font-family: var(--font-brutalist, 'Courier New', monospace);
+      font-size: 12px;
+      line-height: 1.7;
+      color: var(--hud-text-dim);
       margin: 0;
     }
 
-    .login-body {
-      padding: var(--space-6);
+    /* ── Body / Form ── */
+    .body {
+      padding: 24px 28px;
     }
 
     .form-group {
       display: flex;
       flex-direction: column;
-      gap: var(--space-1-5);
-      margin-bottom: var(--space-4);
+      gap: 6px;
+      margin-bottom: 20px;
+      animation: field-reveal 400ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) both;
     }
+    .form-group:nth-child(1) { animation-delay: 150ms; }
+    .form-group:nth-child(2) { animation-delay: 220ms; }
 
     .form-label {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-sm);
+      font-family: var(--font-brutalist, 'Courier New', monospace);
+      font-weight: 900;
+      font-size: 10px;
       text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
+      letter-spacing: 3px;
+      color: var(--hud-text-dim);
     }
 
     .form-input {
-      font-family: var(--font-sans);
-      font-size: var(--text-base);
-      padding: var(--space-2-5) var(--space-3);
-      border: var(--border-default);
-      border-radius: var(--border-radius);
-      background: var(--color-surface);
-      color: var(--color-text-primary);
-      transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+      font-family: var(--font-mono, 'SF Mono', monospace);
+      font-size: var(--text-sm, 0.8rem);
+      padding: 10px 14px;
+      border: 1px solid var(--hud-border);
+      border-radius: 0;
+      background: var(--hud-bg);
+      color: var(--hud-text);
+      transition: border-color 150ms, box-shadow 150ms;
       width: 100%;
+      box-sizing: border-box;
     }
 
     .form-input:focus {
       outline: none;
-      border-color: var(--color-border-focus);
-      box-shadow: var(--ring-focus);
+      border-color: var(--amber);
+      box-shadow: 0 0 0 1px var(--amber-glow), inset 0 0 12px var(--amber-glow);
     }
 
-    .btn-primary {
+    .form-input::placeholder {
+      color: #555;
+    }
+
+    /* ── CTA Button ── */
+    .btn-submit {
       display: flex;
       align-items: center;
       justify-content: center;
       width: 100%;
-      padding: var(--space-3) var(--space-6);
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-base);
+      padding: 14px 24px;
+      font-family: var(--font-brutalist, 'Courier New', monospace);
+      font-weight: 900;
+      font-size: 13px;
       text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
-      background: var(--color-primary);
-      color: var(--color-text-inverse);
-      border: var(--border-default);
-      border-radius: var(--border-radius);
-      box-shadow: var(--shadow-md);
+      letter-spacing: 3px;
+      background: var(--amber);
+      color: var(--hud-bg);
+      border: 1px solid var(--amber-dim);
+      border-radius: 0;
       cursor: pointer;
-      transition: all var(--transition-fast);
+      transition: all 150ms;
+      margin-top: 4px;
     }
 
-    .btn-primary:hover {
-      transform: translate(-2px, -2px);
-      box-shadow: var(--shadow-lg);
+    .btn-submit:hover {
+      background: #fbbf24;
+      box-shadow: 0 0 20px var(--amber-glow);
     }
 
-    .btn-primary:active {
-      transform: translate(0);
-      box-shadow: var(--shadow-pressed);
+    .btn-submit:active {
+      transform: scale(0.98);
     }
 
-    .btn-primary:disabled {
-      opacity: 0.5;
+    .btn-submit:disabled {
+      opacity: 0.4;
       cursor: not-allowed;
       pointer-events: none;
     }
 
-    .error-message {
-      padding: var(--space-3);
-      margin-bottom: var(--space-4);
-      background: var(--color-danger-bg);
-      border: var(--border-width-default) solid var(--color-danger-border);
-      color: var(--color-text-danger);
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: var(--text-sm);
+    /* ── Error Message ── */
+    .msg--error {
+      padding: 12px 14px;
+      margin-bottom: 20px;
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-left: 3px solid #ef4444;
+      color: #fca5a5;
+      font-family: var(--font-brutalist, 'Courier New', monospace);
+      font-weight: 700;
+      font-size: 11px;
       text-transform: uppercase;
+      letter-spacing: 1px;
     }
 
-    .login-footer {
-      padding: var(--space-4) var(--space-6);
-      border-top: var(--border-light);
+    /* ── Footer ── */
+    .footer {
+      padding: 16px 28px;
+      border-top: 1px dashed var(--hud-border);
       text-align: center;
-      font-size: var(--text-sm);
-      color: var(--color-text-secondary);
+      font-family: var(--font-brutalist, 'Courier New', monospace);
+      font-size: 11px;
+      color: var(--hud-text-dim);
     }
 
-    .login-footer a {
-      color: var(--color-text-link);
+    .footer a {
+      color: var(--amber);
+      text-decoration: none;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .footer a:hover {
       text-decoration: underline;
-      font-weight: var(--font-bold);
-    }
-
-    .login-footer a:hover {
-      color: var(--color-info-hover);
     }
   `;
 
@@ -182,21 +349,35 @@ export class VelgLoginView extends LitElement {
 
   protected render() {
     return html`
-      <div class="login-container">
-        <div class="login-header">
-          <h1 class="login-title">${msg('Sign In')}</h1>
+      <div class="terminal">
+        <div class="terminal__scanlines"></div>
+        <div class="terminal__bottom-corners"></div>
+
+        <div class="header">
+          <p class="header__classification">${msg('Classified // Operative Access')}</p>
+          <h1 class="header__title">
+            ${msg('Authentication Terminal')}<span class="header__cursor"></span>
+          </h1>
+          <p class="header__ref">BUREAU OF MULTIVERSE OBSERVATION</p>
         </div>
 
-        <div class="login-body">
-          ${this._error ? html`<div class="error-message">${this._error}</div>` : null}
+        <div class="briefing">
+          <p class="briefing__text">
+            ${msg('Present your credentials. The Bureau requires identity verification before granting terminal access.')}
+          </p>
+        </div>
+
+        <div class="body">
+          ${this._error ? html`<div class="msg--error">${this._error}</div>` : null}
 
           <form @submit=${this._handleSubmit}>
             <div class="form-group">
-              <label class="form-label" for="email">${msg('Email')}</label>
+              <label class="form-label" for="email">${msg('Operative Identifier')}</label>
               <input
                 class="form-input"
                 id="email"
                 type="email"
+                placeholder="operative@example.com"
                 .value=${this._email}
                 @input=${this._handleEmailInput}
                 required
@@ -205,11 +386,12 @@ export class VelgLoginView extends LitElement {
             </div>
 
             <div class="form-group">
-              <label class="form-label" for="password">${msg('Password')}</label>
+              <label class="form-label" for="password">${msg('Access Code')}</label>
               <input
                 class="form-input"
                 id="password"
                 type="password"
+                placeholder="&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;"
                 .value=${this._password}
                 @input=${this._handlePasswordInput}
                 required
@@ -218,18 +400,18 @@ export class VelgLoginView extends LitElement {
             </div>
 
             <button
-              class="btn-primary"
+              class="btn-submit"
               type="submit"
               ?disabled=${this._loading}
             >
-              ${this._loading ? msg('Signing In...') : msg('Sign In')}
+              ${this._loading ? msg('Verifying...') : msg('Authenticate')}
             </button>
           </form>
         </div>
 
-        <div class="login-footer">
-          ${msg('No account yet?')}
-          <a href="/register" @click=${this._handleRegisterClick}>${msg('Register')}</a>
+        <div class="footer">
+          ${msg('No clearance?')}
+          <a href="/register" @click=${this._handleRegisterClick}>${msg('Request Access')}</a>
         </div>
       </div>
     `;

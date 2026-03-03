@@ -2,7 +2,7 @@
 
 **Version:** 2.3
 **Datum:** 2026-03-03
-**Aenderung v2.3:** Admin Data Cleanup Tab — Neue Komponente `AdminCleanupTab` in `admin/` (Data-Overview-Telemetriegrid + 6 Cleanup-Operationskarten mit Preview/Execute-Workflow, Kaskaden-Baum-Darstellung, VelgConfirmDialog-Integration). AdminPanel erweitert auf 3 Tabs (Users/Caching/Cleanup). AdminApiService erweitert (3 neue Methoden: getCleanupStats, previewCleanup, executeCleanup). 6 neue TypeScript-Interfaces (CleanupType, CleanupCategoryStats, CleanupStats, CleanupPreviewResult, CleanupExecuteResult). ~36 neue i18n-Strings (DE uebersetzt). Updated counts: **132 files across 17 subdirectories, 109 @customElement components**, 27 API services.
+**Aenderung v2.3:** Admin Data Cleanup Tab — Neue Komponente `AdminCleanupTab` in `admin/` (Data-Overview-Telemetriegrid + 6 Cleanup-Operationskarten mit Preview/Execute-Workflow, Kaskaden-Baum-Darstellung, VelgConfirmDialog-Integration). AdminPanel erweitert auf 3 Tabs (Users/Caching/Cleanup). AdminApiService erweitert (3 neue Methoden: getCleanupStats, previewCleanup, executeCleanup). 6 neue TypeScript-Interfaces (CleanupType, CleanupCategoryStats, CleanupStats, CleanupPreviewResult, CleanupExecuteResult). ~36 neue i18n-Strings (DE uebersetzt). Undokumentierte Ergaenzungen: `EchartsChart` Shared-Komponente (Apache ECharts 6.0 Wrapper mit taktischem Dark Theme, IntersectionObserver Scroll-Reveal, Auto-Resize) + `MapGraph3D` (WebGL 3D-Modus via 3d-force-graph + Three.js, lazy-loaded) + `map-three-render.ts` (Three.js Rendering-Factories). Aptitude-Methoden leben auf `AgentsApiService` (kein separater AptitudesApiService). Updated counts: **140 files across 19 subdirectories, 114 @customElement components**, 18 shared components + 10 CSS modules + 1 base class, 27 API services.
 **Aenderung v2.2:** Agent Aptitude System + Draft Phase — 2 neue Komponenten: `VelgAptitudeBars` in shared/ (3 sizes, editable mode, highlight, budget tracking), `DraftRosterPanel` in epoch/ (full-screen overlay, two-column layout, counter bar, team stats, lock-in). AptitudesApiService (3 Methoden). AgentDetailsPanel erweitert (aptitude editor section). AgentsView erweitert (lineup overview strip). DeployOperativeModal erweitert (aptitude bars, fit indicator, sorted dropdown). EpochCreationWizard erweitert (max_agents_per_player slider). EpochLobbyActions erweitert (draft button, draft status display). Updated counts: **131 files across 17 subdirectories, 108 @customElement components**, 27 API services.
 **Aenderung v2.1:** Epoch Cycle Email Notifications — NotificationsSettingsPanel in settings/ (new "Notifications" tab with 3 toggle switches + locale selector). NotificationPreferencesApiService (2 Methoden). Updated counts: **129 files across 17 subdirectories, 106 @customElement components**, 26 API services.
 **Aenderung v2.0:** Front Page Literary Rewrite — LoreScroll expanded from 20 to 25 sections across 6 chapters, all 5 simulations now covered equally (Bureau Dossier + Field Report per sim). SimulationsDashboard updated: new slogan "Five Worlds. One Fracture.", Spectral/`--font-bureau` serif font on hero/footer/lore strip. lore/ directory: 7 files (5 content files + dispatcher + SimulationLoreView). Cité des Dames lore content file added. 2063 i18n strings total.
@@ -22,7 +22,7 @@
 
 ### Plattform-Level
 
-**131 component files** across 17 subdirectories. **108 @customElement** components. **17 shared components + 10 CSS modules + 1 base class.**
+**140 component files** across 19 subdirectories. **114 @customElement** components. **18 shared components + 10 CSS modules + 1 base class.**
 
 ```
 App (Root)
@@ -45,11 +45,16 @@ App (Root)
 │   ├── LoginPanel (Slide-from-Right)
 │   └── RegisterView
 └── CartographerMap (/multiverse)
-    ├── MapGraph (SVG force-directed graph)
+    ├── MapGraph (2D SVG force-directed graph, default)
     │   ├── MapNode (circle + banner + label)
     │   └── MapEdge (bezier + flow animation)
+    ├── MapGraph3D (3D WebGL via 3d-force-graph + Three.js, lazy-loaded)
+    │   └── map-three-render (Three.js node/edge factories)
     ├── MapTooltip (hover info)
     ├── MapConnectionPanel (edge detail, extends VelgSidePanel)
+    ├── MapBattleFeed (scrolling public battle log ticker)
+    ├── MapLeaderboardPanel (VelgSidePanel for epoch scores)
+    ├── MapMinimap (150×100px viewport overview)
     └── Mobile Card List (≤768px fallback)
 ```
 
@@ -148,11 +153,11 @@ SimulationShell (Layout mit Navigation)
 
 ### Shared Components
 
-**17 components + 10 CSS modules + 1 base class** (28 files total)
+**18 components + 10 CSS modules + 1 base class** (29 files total)
 
 ```
 Shared (wiederverwendbar ueber alle Views)
-├── Components (17)
+├── Components (18)
 │   ├── BaseModal                    Focus trap, Escape-to-close, centered dialog
 │   ├── VelgSidePanel                Slide-from-right panel shell, focus trap, role="dialog", aria-modal="true"
 │   ├── SharedFilterBar              Ersetzt 4x duplizierten Filter
@@ -161,6 +166,7 @@ Shared (wiederverwendbar ueber alle Views)
 │   ├── VelgIconButton               30px icon action button
 │   ├── VelgSectionHeader            Section titles, 2 variants
 │   ├── VelgAptitudeBars             Operative aptitude bars (3 sizes: sm/md/lg, editable mode, highlight, budget tracking)
+│   ├── EchartsChart                 Apache ECharts 6.0 wrapper, custom tactical dark theme, IntersectionObserver scroll-reveal, auto-resize
 │   ├── ErrorState                   Einheitliches Error-Pattern
 │   ├── LoadingState                 Einheitliches Loading-Pattern
 │   ├── EmptyState                   "Keine Daten" Anzeige mit optionalem Action-Button
@@ -726,7 +732,7 @@ Alle Änderungen zeigen eine Live-Preview innerhalb der Shell. Preset-Auswahl f�
 | Verzeichnis | Dateien | @customElement | Beschreibung |
 |-------------|---------|----------------|--------------|
 | platform/ | 9 | 9 | Header, Dashboard, Wizard, Profile, Lore, DevAccounts |
-| auth/ | 3 | 3 | Login, Register, LoginPanel |
+| auth/ | 3 | 3 | Login, Register, LoginPanel (Bureau terminal HUD aesthetic) |
 | layout/ | 3 | 3 | Shell, Header, Nav |
 | agents/ | 6 | 6 | View, Card, EditModal, DetailsPanel, RelationshipCard/EditModal |
 | buildings/ | 6 | 6 | View, Card, EditModal, DetailsPanel, EmbassyCreate/Link |
@@ -735,7 +741,7 @@ Alle Änderungen zeigen eine Live-Preview innerhalb der Shell. Preset-Auswahl f�
 | social/ | 9 | 9 | TrendsView, MediaView, CampaignDashboard, Cards, Modals, TrendFilterBar |
 | locations/ | 5 | 5 | View, CityList, ZoneList, StreetList, LocationEditModal |
 | lore/ | 7 | 1 | SimulationLoreView + lore-content dispatcher + 5 content files (per-simulation) |
-| multiverse/ | 10 | 7 | CartographerMap, MapGraph, MapTooltip, MapConnectionPanel, MapBattleFeed, MapLeaderboardPanel, MapMinimap + 3 utilities |
+| multiverse/ | 12 | 8 | CartographerMap, MapGraph, MapGraph3D, MapTooltip, MapConnectionPanel, MapBattleFeed, MapLeaderboardPanel, MapMinimap + 4 utilities (map-force, map-data, map-types, map-three-render) |
 | settings/ | 10 | 10 | SettingsView + 9 panels (General, World, AI, Integration, Design, Access, Prompts, Bleed, Notifications) |
 | health/ | 1 | 1 | SimulationHealthView (game metrics dashboard) |
 | epoch/ | 17 | 17 | CommandCenter (orchestrator), OpsBoard, OverviewTab, OperationsTab, AlliancesTab, LobbyActions, CreationWizard, DraftRosterPanel, Leaderboard, BattleLog, DeployOperativeModal, InvitePanel, InviteAcceptView, ChatPanel, PresenceIndicator, ReadyPanel, BotConfigPanel |
@@ -1301,11 +1307,9 @@ REST API service for per-user email notification preferences (epoch cycle briefi
 | `getPreferences()` | GET | `/users/me/notification-preferences` | Get current user's preferences (returns defaults if no row exists) |
 | `updatePreferences(data)` | POST | `/users/me/notification-preferences` | Upsert preferences (cycle_resolved, phase_changed, epoch_completed, email_locale) |
 
-### AptitudesApiService
+### Agent Aptitude Methods (on AgentsApiService)
 
-REST API service for agent aptitude management (operative-type-specific aptitude levels).
-
-**Singleton:** `aptitudesApi` (exported from `AptitudesApiService.ts`)
+Agent aptitude methods are available on `agentsApi` (AgentsApiService), not as a separate service.
 
 **Methods:**
 | Method | HTTP | Path | Description |
