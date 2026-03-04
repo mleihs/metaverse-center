@@ -9,13 +9,29 @@
 
 ALTER TABLE epoch_participants ADD COLUMN user_id UUID REFERENCES auth.users(id);
 
--- Backfill from simulation_members (pick the highest-role member deterministically)
+-- Backfill from simulation_members.
+-- Strategy: for each participant, pick the simulation member who is a member of
+-- the FEWEST other simulations in this epoch. This avoids the admin-owns-all
+-- problem where a single user (admin) is owner of all sims and would be assigned
+-- to every participant, violating the unique (epoch_id, user_id) constraint.
+-- Per-sim players have 1 membership → preferred. Admin has N memberships → fallback.
 UPDATE epoch_participants ep
 SET user_id = (
-  SELECT sm.user_id FROM simulation_members sm
+  SELECT sm.user_id
+  FROM simulation_members sm
   WHERE sm.simulation_id = resolve_template_id(ep.simulation_id)
     AND sm.member_role IN ('editor', 'admin', 'owner')
-  ORDER BY CASE sm.member_role WHEN 'owner' THEN 1 WHEN 'admin' THEN 2 ELSE 3 END
+  ORDER BY (
+    -- Count how many OTHER participants' sims this user is also a member of
+    SELECT COUNT(*) FROM epoch_participants ep2
+    JOIN simulation_members sm2
+      ON sm2.simulation_id = resolve_template_id(ep2.simulation_id)
+      AND sm2.user_id = sm.user_id
+      AND sm2.member_role IN ('editor', 'admin', 'owner')
+    WHERE ep2.epoch_id = ep.epoch_id
+      AND ep2.id != ep.id
+      AND ep2.is_bot = false
+  ) ASC, sm.user_id  -- tiebreak by user_id for determinism
   LIMIT 1
 )
 WHERE ep.is_bot = false;
