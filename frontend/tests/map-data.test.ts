@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   THEME_COLORS,
-  VECTOR_ICONS,
   getVectorLabels,
   getGlowColor,
   getThemeColor,
@@ -98,28 +97,3 @@ describe('getVectorLabels', () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// VECTOR_ICONS
-// ---------------------------------------------------------------------------
-
-describe('VECTOR_ICONS', () => {
-  const expectedVectors = ['commerce', 'language', 'memory', 'resonance', 'architecture', 'dream', 'desire'];
-
-  it('should have icons for all expected echo vectors', () => {
-    for (const vector of expectedVectors) {
-      expect(VECTOR_ICONS[vector]).toBeDefined();
-      expect(typeof VECTOR_ICONS[vector]).toBe('string');
-      expect(VECTOR_ICONS[vector].length).toBeGreaterThan(0);
-    }
-  });
-
-  it('should have exactly the same keys as getVectorLabels()', () => {
-    const labelKeys = Object.keys(getVectorLabels()).sort();
-    const iconKeys = Object.keys(VECTOR_ICONS).sort();
-    expect(iconKeys).toEqual(labelKeys);
-  });
-
-  it('should have exactly the expected number of entries', () => {
-    expect(Object.keys(VECTOR_ICONS).length).toBe(expectedVectors.length);
-  });
-});

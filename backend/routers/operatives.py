@@ -10,7 +10,7 @@ from backend.dependencies import (
     get_current_user,
     get_supabase,
     require_epoch_creator,
-    require_simulation_member,
+    require_epoch_participant,
 )
 from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.models.epoch import MissionResponse, OperativeDeploy
@@ -34,19 +34,13 @@ async def deploy_operative(
     body: OperativeDeploy,
     simulation_id: UUID = Query(..., description="Your simulation ID"),
     user: CurrentUser = Depends(get_current_user),
-    _member_check: str = Depends(require_simulation_member("editor")),
+    _participant: dict = Depends(require_epoch_participant()),
     supabase: Client = Depends(get_supabase),
 ) -> dict:
-    """Deploy an operative agent on a mission. Must be editor+ in source simulation."""
+    """Deploy an operative agent on a mission. Must be a participant in the epoch."""
     mission = await OperativeService.deploy(supabase, epoch_id, simulation_id, body)
 
-    # Log to battle log
-    epoch = await EpochService.get(supabase, epoch_id)
-    await BattleLogService.log_operative_deployed(
-        supabase, epoch_id, epoch.get("current_cycle", 1), mission
-    )
-
-    await AuditService.log_action(
+    await AuditService.safe_log(
         supabase, simulation_id, user.id, "operative_missions", mission["id"], "create",
         details={"operative_type": body.operative_type, "epoch_id": str(epoch_id)},
     )
@@ -92,39 +86,6 @@ async def list_threats(
     return {"success": True, "data": data}
 
 
-@router.get("/{mission_id}", response_model=SuccessResponse[MissionResponse])
-async def get_mission(
-    epoch_id: UUID,
-    mission_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
-) -> dict:
-    """Get a single operative mission."""
-    data = await OperativeService.get_mission(supabase, mission_id)
-    return {"success": True, "data": data}
-
-
-# ── Recall ──────────────────────────────────────────────
-
-
-@router.post("/{mission_id}/recall", response_model=SuccessResponse[MissionResponse])
-async def recall_operative(
-    epoch_id: UUID,
-    mission_id: UUID,
-    simulation_id: UUID = Query(..., description="Your simulation ID"),
-    user: CurrentUser = Depends(get_current_user),
-    _member_check: str = Depends(require_simulation_member("editor")),
-    supabase: Client = Depends(get_supabase),
-) -> dict:
-    """Recall an active operative. Must be editor+ in source simulation."""
-    data = await OperativeService.recall(supabase, mission_id, simulation_id)
-    await AuditService.log_action(
-        supabase, simulation_id, user.id, "operative_missions", mission_id, "update",
-        details={"action": "recall"},
-    )
-    return {"success": True, "data": data}
-
-
 # ── Resolve ─────────────────────────────────────────────
 
 
@@ -155,6 +116,27 @@ async def resolve_missions(
     return {"success": True, "data": results}
 
 
+# ── Fortify Zone ────────────────────────────────────────
+
+
+@router.post("/fortify-zone", response_model=SuccessResponse[dict], status_code=201)
+async def fortify_zone(
+    epoch_id: UUID,
+    simulation_id: UUID = Query(..., description="Your simulation ID"),
+    zone_id: UUID = Query(..., description="Zone to fortify"),
+    user: CurrentUser = Depends(get_current_user),
+    _participant: dict = Depends(require_epoch_participant()),
+    supabase: Client = Depends(get_supabase),
+) -> dict:
+    """Fortify a zone during foundation phase (costs 2 RP). Must be a participant in the epoch."""
+    result = await OperativeService.fortify_zone(supabase, epoch_id, simulation_id, zone_id)
+    await AuditService.safe_log(
+        supabase, simulation_id, user.id, "zone_fortifications", result.get("id"), "create",
+        details={"zone_id": str(zone_id), "epoch_id": str(epoch_id)},
+    )
+    return {"success": True, "data": result}
+
+
 # ── Counter-Intelligence ────────────────────────────────
 
 
@@ -163,15 +145,51 @@ async def counter_intel_sweep(
     epoch_id: UUID,
     simulation_id: UUID = Query(..., description="Your simulation ID"),
     user: CurrentUser = Depends(get_current_user),
-    _member_check: str = Depends(require_simulation_member("editor")),
+    _participant: dict = Depends(require_epoch_participant()),
     supabase: Client = Depends(get_supabase),
 ) -> dict:
-    """Run a counter-intelligence sweep (costs 3 RP). Must be editor+ in simulation."""
+    """Run a counter-intelligence sweep. Must be a participant in the epoch."""
     detected = await OperativeService.counter_intel_sweep(
         supabase, epoch_id, simulation_id
     )
-    await AuditService.log_action(
+    await AuditService.safe_log(
         supabase, simulation_id, user.id, "operative_missions", None, "update",
         details={"action": "counter_intel_sweep", "detected_count": len(detected)},
     )
     return {"success": True, "data": detected}
+
+
+# ── Single Mission (parameterized — MUST come after static routes) ───
+
+
+@router.get("/{mission_id}", response_model=SuccessResponse[MissionResponse])
+async def get_mission(
+    epoch_id: UUID,
+    mission_id: UUID,
+    user: CurrentUser = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase),
+) -> dict:
+    """Get a single operative mission."""
+    data = await OperativeService.get_mission(supabase, mission_id)
+    return {"success": True, "data": data}
+
+
+# ── Recall ──────────────────────────────────────────────
+
+
+@router.post("/{mission_id}/recall", response_model=SuccessResponse[MissionResponse])
+async def recall_operative(
+    epoch_id: UUID,
+    mission_id: UUID,
+    simulation_id: UUID = Query(..., description="Your simulation ID"),
+    user: CurrentUser = Depends(get_current_user),
+    _participant: dict = Depends(require_epoch_participant()),
+    supabase: Client = Depends(get_supabase),
+) -> dict:
+    """Recall an active operative. Must be a participant in the epoch."""
+    data = await OperativeService.recall(supabase, mission_id, simulation_id)
+    await AuditService.safe_log(
+        supabase, simulation_id, user.id, "operative_missions", mission_id, "update",
+        details={"action": "recall"},
+    )
+    return {"success": True, "data": data}

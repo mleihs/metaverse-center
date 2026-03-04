@@ -79,6 +79,27 @@ def _downgrade_security(level: str) -> str:
     return SECURITY_DOWNGRADE.get(level, level)
 
 
+# Ordered list of security tiers (lowest → highest) for upgrade/downgrade
+SECURITY_TIER_ORDER: list[str] = [
+    "lawless", "contested", "low", "moderate", "guarded", "high", "maximum", "fortress",
+]
+
+# Fortification constants
+FORTIFICATION_RP_COST = 2
+FORTIFICATION_DURATION_CYCLES = 5
+
+
+def _upgrade_security(level: str) -> str:
+    """Upgrade a security level by one tier (e.g., moderate → guarded)."""
+    try:
+        idx = SECURITY_TIER_ORDER.index(level)
+    except ValueError:
+        return level
+    if idx < len(SECURITY_TIER_ORDER) - 1:
+        return SECURITY_TIER_ORDER[idx + 1]
+    return level
+
+
 class OperativeService:
     """Service for deploying, resolving, and recalling operatives."""
 
@@ -102,11 +123,11 @@ class OperativeService:
                 "Operatives can only be deployed during active epoch phases.",
             )
 
-        # Foundation phase: only guardians allowed
-        if epoch["status"] == "foundation" and body.operative_type != "guardian":
+        # Foundation phase: only guardians and spies allowed
+        if epoch["status"] == "foundation" and body.operative_type not in ("guardian", "spy"):
             raise HTTPException(
                 status.HTTP_400_BAD_REQUEST,
-                "Only guardian operatives can be deployed during foundation phase.",
+                "Only guardian and spy operatives can be deployed during foundation phase.",
             )
 
         # Guardians are self-deploy only
@@ -246,7 +267,18 @@ class OperativeService:
                 status.HTTP_500_INTERNAL_SERVER_ERROR,
                 "Failed to create operative mission.",
             )
-        return resp.data[0]
+
+        mission = resp.data[0]
+
+        # Log deployment to battle log (both human and bot paths)
+        try:
+            await BattleLogService.log_operative_deployed(
+                supabase, epoch_id, epoch.get("current_cycle", 1), mission
+            )
+        except Exception:
+            logger.debug("Battle log write failed for deployment", exc_info=True)
+
+        return mission
 
     # ── Success Probability ───────────────────────────────
 
@@ -278,14 +310,18 @@ class OperativeService:
             supabase, body.agent_id, body.operative_type
         )
 
+        # Admin client for cross-sim reads (target zones/guardians/embassies
+        # may be in a game instance the user's JWT can't access via RLS)
+        admin = await get_admin_supabase()
+
         # Target zone security
         zone_security = 5.0  # default moderate
         if body.target_zone_id:
             zone_resp = (
-                supabase.table("zones")
+                admin.table("zones")
                 .select("security_level")
                 .eq("id", str(body.target_zone_id))
-                .single()
+                .maybe_single()
                 .execute()
             )
             if zone_resp.data:
@@ -296,7 +332,7 @@ class OperativeService:
         guardian_count = 0
         if body.target_simulation_id:
             guardians_resp = (
-                supabase.table("operative_missions")
+                admin.table("operative_missions")
                 .select("id")
                 .eq("operative_type", "guardian")
                 .eq("source_simulation_id", str(body.target_simulation_id))
@@ -309,10 +345,10 @@ class OperativeService:
         embassy_eff = 0.5
         if body.embassy_id:
             emb_resp = (
-                supabase.table("embassies")
+                admin.table("embassies")
                 .select("id, infiltration_penalty, infiltration_penalty_expires_at")
                 .eq("id", str(body.embassy_id))
-                .single()
+                .maybe_single()
                 .execute()
             )
             if emb_resp.data:
@@ -324,7 +360,7 @@ class OperativeService:
                         base_eff *= (1.0 - penalty)
                     else:
                         # Penalty expired — clear it lazily
-                        supabase.table("embassies").update({
+                        admin.table("embassies").update({
                             "infiltration_penalty": 0,
                             "infiltration_penalty_expires_at": None,
                         }).eq("id", str(body.embassy_id)).execute()
@@ -357,9 +393,13 @@ class OperativeService:
         offset: int = 0,
     ) -> tuple[list[dict], int]:
         """List operative missions with optional filters."""
+        select_fields = (
+            "*, agents(name, portrait_image_url),"
+            " target_sim:simulations!target_simulation_id(name)"
+        )
         query = (
             supabase.table("operative_missions")
-            .select("*, agents(name, portrait_image_url)", count="exact")
+            .select(select_fields, count="exact")
             .eq("epoch_id", str(epoch_id))
         )
         if simulation_id:
@@ -373,9 +413,13 @@ class OperativeService:
     @classmethod
     async def get_mission(cls, supabase: Client, mission_id: UUID) -> dict:
         """Get a single mission by ID."""
+        select_fields = (
+            "*, agents(name, portrait_image_url),"
+            " target_sim:simulations!target_simulation_id(name)"
+        )
         resp = (
             supabase.table("operative_missions")
-            .select("*, agents(name, portrait_image_url)")
+            .select(select_fields)
             .eq("id", str(mission_id))
             .single()
             .execute()
@@ -600,7 +644,35 @@ class OperativeService:
             )
             zone_levels = [z["security_level"] for z in (zones_resp.data or [])]
             guardian_count = guardian_resp.count or 0
-            intel = {"zone_security": zone_levels, "guardian_count": guardian_count}
+            intel: dict = {"zone_security": zone_levels, "guardian_count": guardian_count}
+
+            # Check for zone fortifications in target simulation
+            fort_resp = (
+                supabase.table("zone_fortifications")
+                .select("zone_id, security_bonus, expires_at_cycle")
+                .eq("epoch_id", mission["epoch_id"])
+                .eq("source_simulation_id", target_sim_id)
+                .execute()
+            )
+            if fort_resp.data:
+                # Enrich with zone names
+                fort_zone_ids = [f["zone_id"] for f in fort_resp.data]
+                zone_names_resp = (
+                    supabase.table("zones")
+                    .select("id, name")
+                    .in_("id", fort_zone_ids)
+                    .execute()
+                )
+                zone_name_map = {z["id"]: z["name"] for z in (zone_names_resp.data or [])}
+                intel["fortifications"] = [
+                    {
+                        "zone_id": f["zone_id"],
+                        "zone_name": zone_name_map.get(f["zone_id"], "Unknown"),
+                        "security_bonus": f["security_bonus"],
+                        "expires_at_cycle": f["expires_at_cycle"],
+                    }
+                    for f in fort_resp.data
+                ]
 
             epoch_resp = (
                 supabase.table("game_epochs")
@@ -616,7 +688,7 @@ class OperativeService:
                 UUID(mission["epoch_id"]),
                 cycle,
                 "intel_report",
-                f"Spy intel: {guardian_count} guardians, zones: {zone_levels}",
+                f"Spy intel: {guardian_count} guardians, zones: {', '.join(zone_levels)}",
                 source_simulation_id=UUID(mission["source_simulation_id"]),
                 target_simulation_id=UUID(target_sim_id),
                 mission_id=UUID(mission["id"]),
@@ -796,9 +868,10 @@ class OperativeService:
 
     @classmethod
     async def recall(cls, supabase: Client, mission_id: UUID, simulation_id: UUID | None = None) -> dict:
-        """Recall an active operative (returns next cycle).
+        """Recall an active operative (returns next cycle, 50% RP refund).
 
         If simulation_id is provided, verifies the caller owns the source simulation.
+        Refunds 50% of the operative's deployment cost (rounded down).
         """
         mission = await cls.get_mission(supabase, mission_id)
         if simulation_id and mission["source_simulation_id"] != str(simulation_id):
@@ -811,6 +884,15 @@ class OperativeService:
                 status.HTTP_400_BAD_REQUEST,
                 f"Cannot recall mission with status '{mission['status']}'.",
             )
+
+        # Refund 50% of deployment cost (rounded down)
+        op_type = mission.get("operative_type", "")
+        cost = OPERATIVE_RP_COSTS.get(op_type, 5)
+        refund = cost // 2
+        if refund > 0:
+            epoch_id = UUID(mission["epoch_id"])
+            source_sim_id = UUID(mission["source_simulation_id"])
+            await EpochService.grant_rp(supabase, epoch_id, source_sim_id, refund)
 
         resp = (
             supabase.table("operative_missions")
@@ -858,3 +940,110 @@ class OperativeService:
             detected.append(mission)
 
         return detected
+
+    # ── Zone Fortification ─────────────────────────────────
+
+    @classmethod
+    async def fortify_zone(
+        cls,
+        supabase: Client,
+        epoch_id: UUID,
+        simulation_id: UUID,
+        zone_id: UUID,
+    ) -> dict:
+        """Fortify a zone during foundation phase (+1 security tier, hidden, 2 RP).
+
+        - Foundation only
+        - Zone must belong to the caller's simulation
+        - Max 1 fortification per zone (UNIQUE constraint)
+        - Hidden (is_public=False) — only revealed by enemy spy intel
+        """
+        epoch = await EpochService.get(supabase, epoch_id)
+
+        if epoch["status"] != "foundation":
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                "Zone fortification is only available during foundation phase.",
+            )
+
+        # Verify zone belongs to this simulation
+        zone_resp = (
+            supabase.table("zones")
+            .select("id, name, security_level, simulation_id")
+            .eq("id", str(zone_id))
+            .single()
+            .execute()
+        )
+        if not zone_resp.data or zone_resp.data["simulation_id"] != str(simulation_id):
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                "Zone does not belong to your simulation.",
+            )
+
+        # Duplicate check (UNIQUE constraint would also catch this)
+        existing = (
+            supabase.table("zone_fortifications")
+            .select("id")
+            .eq("epoch_id", str(epoch_id))
+            .eq("zone_id", str(zone_id))
+            .execute()
+        )
+        if existing.data:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                "This zone is already fortified.",
+            )
+
+        # Spend RP
+        await EpochService.spend_rp(supabase, epoch_id, simulation_id, FORTIFICATION_RP_COST)
+
+        # Compute expiry cycle
+        config = {**epoch.get("config", {})}
+        if "foundation_cycles" in config:
+            foundation_cycles = config["foundation_cycles"]
+        else:
+            total_cycles = (config.get("duration_days", 14) * 24) // config.get("cycle_hours", 8)
+            foundation_cycles = round(total_cycles * config.get("foundation_pct", 10) / 100)
+        expires_at_cycle = foundation_cycles + FORTIFICATION_DURATION_CYCLES
+
+        # Upgrade zone security by 1 tier
+        old_level = zone_resp.data["security_level"]
+        new_level = _upgrade_security(old_level)
+        if old_level != new_level:
+            supabase.table("zones").update(
+                {"security_level": new_level}
+            ).eq("id", str(zone_id)).execute()
+
+        # Insert fortification record
+        fort_data = {
+            "epoch_id": str(epoch_id),
+            "zone_id": str(zone_id),
+            "source_simulation_id": str(simulation_id),
+            "security_bonus": 1,
+            "expires_at_cycle": expires_at_cycle,
+        }
+        fort_resp = supabase.table("zone_fortifications").insert(fort_data).execute()
+
+        # Log hidden battle_log event
+        cycle = epoch.get("current_cycle", 1)
+        try:
+            await BattleLogService.log_event(
+                supabase,
+                epoch_id,
+                cycle,
+                "zone_fortified",
+                f"Zone '{zone_resp.data['name']}' has been fortified.",
+                source_simulation_id=simulation_id,
+                is_public=False,
+                metadata={
+                    "zone_id": str(zone_id),
+                    "zone_name": zone_resp.data["name"],
+                    "old_level": old_level,
+                    "new_level": new_level,
+                    "expires_at_cycle": expires_at_cycle,
+                },
+            )
+        except Exception:
+            logger.debug("Battle log write failed for zone fortification", exc_info=True)
+
+        return fort_resp.data[0] if fort_resp.data else fort_data

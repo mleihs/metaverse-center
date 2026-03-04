@@ -52,7 +52,9 @@ export function getPhases(): { name: string; color: string; description: string 
     {
       name: msg('Foundation'),
       color: 'var(--color-success)',
-      description: msg('+50% RP generation. Only guardians can deploy. Build your defenses.'),
+      description: msg(
+        '+50% RP generation. Guardians and spies can deploy. Fortify zones for hidden defense.',
+      ),
     },
     {
       name: msg('Competition'),
@@ -157,6 +159,7 @@ export function getRpRules(): { label: string; value: string }[] {
     { label: msg('Foundation bonus'), value: '+50% (18 RP)' },
     { label: msg('RP cap'), value: '40' },
     { label: msg('Counter-intel cost'), value: '4 RP' },
+    { label: msg('Zone fortification cost'), value: '2 RP' },
     { label: msg('RP accumulates'), value: msg('Unspent RP carries over') },
   ];
 }
@@ -193,7 +196,7 @@ export function getTactics(): TacticCard[] {
       title: msg('The Foundation Wall'),
       category: 'opener',
       description: msg(
-        'Spend all foundation RP on guardians (3 guardians at 4 RP each = max \u221215% enemy success). Maximum defense, zero offense. You enter competition with little RP reserve but strong defenses. Best with Builder preset where stability is king.',
+        'Spend all foundation RP on guardians + zone fortifications (3 guardians at 4 RP each + fortify 2 zones at 2 RP each = 16 RP). Maximum defense, zero offense. Fortifications add +1 security tier for 5 competition cycles. Best with Builder preset where stability is king.',
       ),
     },
     {
@@ -201,6 +204,13 @@ export function getTactics(): TacticCard[] {
       category: 'opener',
       description: msg(
         'Deploy only 1 guardian during foundation, save the rest. You enter competition with 35+ RP \u2014 enough for an assassin + saboteur on cycle 4. Risky: undefended zones are vulnerable. Best with Warmonger preset where early military points compound.',
+      ),
+    },
+    {
+      title: msg('The Nebelkrieg'),
+      category: 'opener',
+      description: msg(
+        'Foundation spies are now legal. Deploy 1\u20132 spies during foundation to scout enemy guardian deployment (which is public) and probe their zone layout. Combine with 1\u20132 zone fortifications on your weakest zones. You enter competition with intelligence AND hidden defenses. Best with Diplomat preset.',
       ),
     },
     {
@@ -451,6 +461,49 @@ export function getEchoLifecycle(): { name: string; color: string }[] {
 
 export function getChangelog(): ChangelogEntry[] {
   return [
+    {
+      version: 'v2.4',
+      date: '2026-03-04',
+      title: msg('Foundation Phase Redesign & Open Participation'),
+      highlights: [
+        msg('Foundation phase now allows spies alongside guardians'),
+        msg('Hidden zone fortification: +1 security tier for 5 cycles (2 RP)'),
+        msg('Intel Dossier tab: per-opponent intelligence from spy reports'),
+        msg('Any user can join any epoch with any template simulation'),
+      ],
+      details: [
+        {
+          category: msg('Foundation Phase ("Nebelkrieg")'),
+          changes: [
+            msg('Spies can now deploy during Foundation phase for early intelligence'),
+            msg('Guardian deployments are now public (visible in battle log)'),
+            msg(
+              'Zone fortification: 2 RP, +1 security tier, lasts 5 competition cycles, max 1 per zone',
+            ),
+            msg('Fortifications are hidden \u2014 only revealed by enemy spy intel reports'),
+            msg('Bots use personality-specific fortification strategies'),
+          ],
+        },
+        {
+          category: msg('Intel Dossier'),
+          changes: [
+            msg('New tab on epoch detail: per-opponent intelligence cards'),
+            msg('Aggregates spy reports showing zone security, guardian count, fortifications'),
+            msg('Staleness indicator: intel fades after 3 cycles'),
+            msg('Zone security badges with color-coded security levels'),
+          ],
+        },
+        {
+          category: msg('Open Epoch Participation'),
+          changes: [
+            msg('Any authenticated user can join an epoch with any template simulation'),
+            msg('No simulation membership required \u2014 just pick a faction and play'),
+            msg('Animated faction picker with staggered entrance and lock-in state'),
+            msg('One user per epoch, one simulation per epoch (duplicate prevention)'),
+          ],
+        },
+      ],
+    },
     {
       version: 'v2.3',
       date: '2026-03-03',

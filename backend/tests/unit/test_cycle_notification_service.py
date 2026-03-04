@@ -216,7 +216,7 @@ class TestBuildPlayerBriefing:
 
         # RP + team_id
         rp_chain = _make_chain()
-        rp_chain.execute.return_value = MagicMock(data={"resource_points": 18, "team_id": None})
+        rp_chain.execute.return_value = MagicMock(data={"current_rp": 18, "team_id": None})
 
         # Threats (B1)
         threat_chain = _make_chain()
@@ -315,7 +315,7 @@ class TestBuildPlayerBriefing:
         names_chain.execute.return_value = MagicMock(data=[{"id": SIM_B, "name": "Target"}])
 
         rp_chain = _make_chain()
-        rp_chain.execute.return_value = MagicMock(data={"resource_points": 10, "team_id": None})
+        rp_chain.execute.return_value = MagicMock(data={"current_rp": 10, "team_id": None})
 
         empty_chain = _make_chain()
         empty_chain.execute.return_value = MagicMock(data=[])

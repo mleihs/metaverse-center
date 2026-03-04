@@ -203,14 +203,20 @@ class EpochChatService:
 
         # Auto-resolve: if signalling ready, check if all humans are now ready
         if ready and admin_supabase:
+            # Use admin client for consistent participant data regardless of RLS
             all_participants = (
-                supabase.table("epoch_participants")
+                admin_supabase.table("epoch_participants")
                 .select("id, cycle_ready, is_bot")
                 .eq("epoch_id", str(epoch_id))
                 .execute()
             )
             humans = [p for p in (all_participants.data or []) if not p.get("is_bot")]
             all_humans_ready = len(humans) > 0 and all(p["cycle_ready"] for p in humans)
+
+            logger.info(
+                "Ready check for epoch %s: %d total, %d humans, all_ready=%s",
+                epoch_id, len(all_participants.data or []), len(humans), all_humans_ready,
+            )
 
             if all_humans_ready:
                 try:
@@ -220,9 +226,7 @@ class EpochChatService:
                     result["auto_resolved"] = True
                     result["new_cycle"] = epoch_data.get("current_cycle", 1)
                 except Exception:
-                    logger.warning(
-                        "Auto-resolve failed for epoch %s", epoch_id, exc_info=True
-                    )
+                    logger.exception("Auto-resolve FAILED for epoch %s", epoch_id)
 
         return result
 

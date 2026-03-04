@@ -1,7 +1,8 @@
 # 03 - Database Schema New: Neues Schema mit Simulation-Kontext
 
-**Version:** 2.9
-**Datum:** 2026-03-03
+**Version:** 3.0
+**Datum:** 2026-03-04
+**Aenderung v3.0:** 1 neue Tabelle (zone_fortifications). 1 neue Spalte auf epoch_participants (user_id). Neue DELETE-Policy auf epoch_participants. Erweiterte `user_has_simulation_access()` Function (Epoch-Teilnehmer koennen Simulations-Daten lesen). Competitive-Layer-RLS auf direkte `user_id`-Checks umgestellt (statt simulation_members JOINs). `zone_fortified` zu battle_log event_type CHECK hinzugefuegt. **47 Tabellen gesamt**, ~190 RLS-Policies. Migrationen 048+049. Foundation Phase Redesign ("Nebelkrieg": Spione + Fortifikationen in Foundation, zone_fortifications Tabelle) + Open Epoch Participation (jeder authentifizierte User kann mit jeder Template-Simulation an Epochen teilnehmen, keine Mitgliedschaft erforderlich).
 **Aenderung v2.9:** 1 neue Tabelle (agent_aptitudes). 2 neue Spalten auf epoch_participants (drafted_agent_ids, draft_completed_at). `max_agents_per_player` in game_epochs.config JSONB. **46 Tabellen gesamt**, ~184 RLS-Policies. Migration 047. Agent Aptitude System (operative_type-specific aptitude levels 3-9 per agent) + Draft Phase (player agent selection during epoch lobby).
 **Aenderung v2.8:** 1 neue Tabelle (notification_preferences). 1 neue SECURITY DEFINER Function (get_user_emails_batch). **45 Tabellen gesamt**, ~179 RLS-Policies. Migration 044. Per-User Email-Benachrichtigungspraeferenzen fuer Epoch-Events (cycle_resolved, phase_changed, epoch_completed, email_locale). RLS: authenticated users can read/insert/update own row only.
 **Aenderung v2.7:** 2 neue Tabellen (bot_players, bot_decision_log). 3 neue Spalten auf epoch_participants (is_bot, bot_player_id). 1 neue Spalte auf epoch_chat_messages (sender_type). **44 Tabellen gesamt**, ~176 RLS-Policies. Migration 041.
@@ -1333,11 +1334,16 @@ CREATE UNIQUE INDEX idx_mv_simulation_health_pk ON mv_simulation_health(simulati
 ### RLS-Helper-Funktionen
 
 ```sql
--- Funktion: Prueft ob User Mitglied der Simulation ist
+-- Funktion: Prueft ob User Mitglied der Simulation ist ODER Epoch-Teilnehmer mit dieser Simulation
+-- (Migration 049: erweitert um epoch_participants Check)
 CREATE OR REPLACE FUNCTION public.user_has_simulation_access(sim_id uuid)
 RETURNS boolean AS $$
     SELECT EXISTS (
         SELECT 1 FROM simulation_members
+        WHERE simulation_id = sim_id AND user_id = auth.uid()
+    )
+    OR EXISTS (
+        SELECT 1 FROM epoch_participants
         WHERE simulation_id = sim_id AND user_id = auth.uid()
     );
 $$ LANGUAGE sql SECURITY DEFINER STABLE;
@@ -1417,13 +1423,14 @@ CREATE POLICY agents_delete ON agents FOR DELETE
 | `embassies` | Anon/Member | Admin+ | Admin+ | Admin+ |
 | `game_epochs` | Anon/Member | Auth | Auth | - |
 | `epoch_teams` | Anon/Member | Auth | Auth | - |
-| `epoch_participants` | Anon/Member | Auth | Auth | - |
+| `epoch_participants` | Anon/Member | Auth (user_id=uid) | Auth | Own (user_id=uid) |
 | `operative_missions` | Source/Target Member | Source Member | Source Owner | - |
 | `epoch_scores` | Anon/Member | Auth | - | - |
 | `battle_log` | Public/Member | Auth | - | - |
 | `epoch_invitations` | Creator/Anon(token) | Creator | Creator | Creator |
 | `epoch_chat_messages` | Anon(epoch)/Participant(epoch+team) | Participant | - | - |
 | `notification_preferences` | Own (auth) | Own (auth) | Own (auth) | - |
+| `zone_fortifications` | Epoch-Participant (own sim) | Editor+ (own sim) | - | - |
 | `agent_aptitudes` | Anon/Member | Editor+ | Editor+ | Admin+ |
 | `audit_log` | Admin+ | Service only | - | - |
 
@@ -1494,7 +1501,7 @@ CREATE POLICY simulation_assets_insert ON storage.objects FOR INSERT
 
 | Metrik | Wert |
 |--------|------|
-| Tabellen | 46 (+ agent_aptitudes gegenueber v2.8) |
+| Tabellen | 47 (+ zone_fortifications gegenueber v2.9) |
 | Trigger Functions | 10 (set_updated_at, update_conversation_stats, enforce_single_primary_profession, validate_simulation_status_transition, immutable_slug, prevent_last_owner_removal, notify_game_metrics_stale, validate_epoch_status_transition, broadcast_epoch_chat, broadcast_ready_signal) |
 | Utility Functions | 7 (role_meets_minimum, generate_slug, validate_taxonomy_value, game_weight_fallback, refresh_all_game_metrics, refresh_building_readiness, refresh_embassy_effectiveness, refresh_zone_stability) |
 | RLS Functions | 3 |
@@ -1502,7 +1509,7 @@ CREATE POLICY simulation_assets_insert ON storage.objects FOR INSERT
 | Triggers | ~42 unique (~66 Eintraege inkl. updated_at auf allen Tabellen + business logic + broadcast) |
 | Regular Views | 8 (4x active_* + simulation_dashboard + conversation_summaries + agent_statistics + campaign_performance) |
 | Materialized Views | 4 (mv_building_readiness + mv_zone_stability + mv_embassy_effectiveness + mv_simulation_health) |
-| RLS-Policies | ~184 (inkl. anon SELECT + Phase-6 + Embassy + Competitive Layer + Epoch Chat + Epoch Invitations + Bot Players + Agent Aptitudes) |
+| RLS-Policies | ~190 (inkl. anon SELECT + Phase-6 + Embassy + Competitive Layer + Epoch Chat + Epoch Invitations + Bot Players + Agent Aptitudes + Zone Fortifications + Open Epoch Participation Rewrites) |
 | Indexes | ~80 (inkl. partial, GIN, unique) |
 | Storage Buckets | 4 |
 
@@ -1935,6 +1942,7 @@ Simulationen, die an einer Epoche teilnehmen. Trackt Resource Points (RP) und op
 | `id` | uuid | NO | `gen_random_uuid()` |
 | `epoch_id` | uuid | NO | |
 | `simulation_id` | uuid | NO | |
+| `user_id` | uuid | YES | |
 | `team_id` | uuid | YES | |
 | `joined_at` | timestamptz | NO | `now()` |
 | `current_rp` | integer | NO | `0` |
@@ -1949,17 +1957,26 @@ Simulationen, die an einer Epoche teilnehmen. Trackt Resource Points (RP) und op
 **Foreign Keys:**
 - `epoch_id` → `game_epochs(id) ON DELETE CASCADE`
 - `simulation_id` → `simulations(id)`
+- `user_id` → `auth.users(id)`
 - `team_id` → `epoch_teams(id) ON DELETE SET NULL`
 - `bot_player_id` → `bot_players(id)`
 
 **CHECK Constraints:**
 - `chk_bot_consistency` — `(is_bot = FALSE AND bot_player_id IS NULL) OR (is_bot = TRUE AND bot_player_id IS NOT NULL)`
+- `epoch_participants_user_id_required` — `(is_bot = true OR user_id IS NOT NULL)` — Menschliche Teilnehmer muessen eine user_id haben, Bots duerfen NULL sein.
+
+**Indexes:**
+- `epoch_participants_user_epoch_unique` — `UNIQUE(epoch_id, user_id) WHERE user_id IS NOT NULL` — Ein User pro Epoche (Partial Index, nur fuer Nicht-Bots)
+- `idx_epoch_participants_user_id` — `user_id WHERE user_id IS NOT NULL` — Schnelle user_id-Lookups in RLS
 
 **Draft-Spalten:**
 - `drafted_agent_ids` — Array der ausgewaehlten Agent-UUIDs fuer diese Epoch-Teilnahme. Gesetzt waehrend der Draft-Phase im Lobby.
 - `draft_completed_at` — Zeitstempel wann der Draft abgeschlossen wurde. `NULL` = Draft noch offen.
 
-**RLS:** 4 Policies (anon_select, select, insert, update).
+**user_id-Spalte (Migration 049):**
+- Direkte Zuordnung des Users zum Epoch-Teilnehmer. Ermoeglicht Teilnahme ohne Simulations-Mitgliedschaft (Open Epoch Participation). Wird bei INSERT gesetzt (`user_id = auth.uid()`). Bots haben `user_id = NULL`.
+
+**RLS:** 5 Policies (anon_select, select, insert mit `user_id = auth.uid()`, update, delete mit `user_id = auth.uid()`).
 
 ### `operative_missions`
 
@@ -1994,10 +2011,10 @@ Agenten-basierte Missionen: Spionage, Diplomatie, Sabotage. Jede Mission hat Kos
 - `embassy_id` → `embassies(id)`
 - `target_zone_id` → `zones(id)`
 
-**RLS:** 3 Policies:
-- `operative_missions_insert` — INSERT fuer Source-Simulation-Mitglieder
-- `operative_missions_select` — SELECT fuer Mitglieder von Source- ODER Target-Simulation
-- `operative_missions_update` — UPDATE fuer Owner der Source-Simulation
+**RLS:** 3 Policies (Migration 049: umgeschrieben auf direkte `user_id`-Checks via `epoch_participants`):
+- `operative_missions_insert` — INSERT fuer Epoch-Teilnehmer der Source-Simulation (via `epoch_participants.user_id`)
+- `operative_missions_select` — SELECT fuer Epoch-Teilnehmer von Source- ODER Target-Simulation (via `epoch_participants.user_id`)
+- `operative_missions_update` — UPDATE fuer Epoch-Teilnehmer der Source-Simulation (via `epoch_participants.user_id`)
 
 ### `epoch_scores`
 
@@ -2047,10 +2064,10 @@ Narrativer Log aller Epoch-Events: Missionen, Score-Aenderungen, Allianzen, Konf
 - `target_simulation_id` → `simulations(id)`
 - `mission_id` → `operative_missions(id) ON DELETE SET NULL`
 
-**RLS:** 3 Policies:
+**RLS:** 3 Policies (Migration 049: `battle_log_select` umgeschrieben auf direkte `user_id`-Checks via `epoch_participants`):
 - `battle_log_anon_select` — SELECT fuer anon: nur oeffentliche Eintraege (`is_public = true`)
 - `battle_log_insert` — INSERT fuer authentifizierte User
-- `battle_log_select` — SELECT fuer oeffentliche Eintraege ODER Mitglieder von Source-/Target-Simulation
+- `battle_log_select` — SELECT fuer oeffentliche Eintraege ODER Epoch-Teilnehmer von Source-/Target-Simulation (via `epoch_participants.user_id`)
 
 ---
 
@@ -2406,3 +2423,63 @@ Operative-Type-spezifische Eignungswerte pro Agent. Jeder Agent hat pro `operati
 - `agent_aptitudes_insert` — INSERT fuer Editor+ via `user_has_simulation_role(simulation_id, 'editor')`
 - `agent_aptitudes_update` — UPDATE fuer Editor+ via `user_has_simulation_role(simulation_id, 'editor')`
 - `agent_aptitudes_delete` — DELETE fuer Admin+ via `user_has_simulation_role(simulation_id, 'admin')`
+
+---
+
+## Foundation Phase Redesign + Open Epoch Participation (Migrationen 048-049)
+
+Migration 048 fuehrt die "Nebelkrieg"-Mechanik ein: Zonenfortifikationen als versteckte Verteidigungsaktionen waehrend der Foundation-Phase. Spione sind jetzt in Foundation erlaubt (neben Guardians). Migration 049 oeffnet Epoch-Teilnahme fuer alle authentifizierten User — keine Simulations-Mitgliedschaft erforderlich. `user_id` auf `epoch_participants`, RLS-Policies auf direkte `user_id`-Checks umgestellt.
+
+### `zone_fortifications`
+
+Versteckte Zonenfortifikationen waehrend der Foundation-Phase. Erhoehen die Sicherheitsstufe einer Zone um 1 Tier fuer eine begrenzte Anzahl von Zyklen. Nur sichtbar fuer den Besitzer und via Spion-Intel.
+
+| Spalte | Typ | Nullable | Default |
+|--------|-----|----------|---------|
+| `id` | uuid | NO | `gen_random_uuid()` |
+| `epoch_id` | uuid | NO | |
+| `zone_id` | uuid | NO | |
+| `source_simulation_id` | uuid | NO | |
+| `security_bonus` | integer | NO | `1` |
+| `expires_at_cycle` | integer | NO | |
+| `created_at` | timestamptz | NO | `now()` |
+
+**Foreign Keys:**
+- `epoch_id` → `game_epochs(id) ON DELETE CASCADE`
+- `zone_id` → `zones(id) ON DELETE CASCADE`
+- `source_simulation_id` → `simulations(id) ON DELETE CASCADE`
+
+**UNIQUE Constraint:**
+- `UNIQUE(epoch_id, zone_id)` — Maximal eine Fortifikation pro Zone pro Epoche
+
+**Indexes:**
+- `idx_zone_fortifications_epoch` — `epoch_id` (fuer Epoch-basierte Abfragen)
+- `idx_zone_fortifications_source` — `source_simulation_id` (fuer Source-Simulation-Lookups)
+
+**RLS:** 2 Policies:
+- `zone_fortifications_select` — SELECT fuer Epoch-Teilnehmer der Source-Simulation (via `epoch_participants` + `simulation_members`)
+- `zone_fortifications_insert` — INSERT fuer Editor+ der Source-Simulation (via `simulation_members`)
+
+### Erweiterter `battle_log` event_type CHECK (Migration 048)
+
+```sql
+ALTER TABLE battle_log ADD CONSTRAINT battle_log_event_type_check CHECK (
+    event_type IN (
+        'operative_deployed', 'mission_success', 'mission_failed',
+        'detected', 'captured', 'sabotage', 'propaganda', 'assassination',
+        'infiltration', 'alliance_formed', 'alliance_dissolved', 'betrayal',
+        'phase_change', 'epoch_start', 'epoch_end', 'rp_allocated',
+        'building_damaged', 'agent_wounded', 'counter_intel', 'intel_report',
+        'zone_fortified'
+    )
+);
+```
+
+### Open Epoch Participation — RLS-Umstellung (Migration 049)
+
+Migration 049 stellt die Competitive-Layer-RLS von `simulation_members`-JOINs auf direkte `user_id`-Checks via `epoch_participants` um. Betroffene Policies:
+
+- **epoch_participants:** INSERT erfordert `user_id = auth.uid()` (oder `is_bot = true`). Neue DELETE-Policy (`user_id = auth.uid()`).
+- **epoch_chat_messages:** 3 Policies umgeschrieben (epoch SELECT, team SELECT, INSERT) — alle via `epoch_participants.user_id` statt `simulation_members` JOIN + `resolve_template_id()`.
+- **operative_missions:** 3 Policies umgeschrieben (SELECT, INSERT, UPDATE) — alle via `epoch_participants.user_id`.
+- **battle_log:** SELECT umgeschrieben — via `epoch_participants.user_id` + `epoch_participants.simulation_id`.

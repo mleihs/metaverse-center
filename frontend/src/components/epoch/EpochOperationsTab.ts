@@ -8,6 +8,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { EpochParticipant, OperativeMission } from '../../types/index.js';
+import { getOperativeIcon } from '../../utils/operative-icons.js';
 
 @localized()
 @customElement('velg-epoch-operations-tab')
@@ -119,7 +120,7 @@ export class VelgEpochOperationsTab extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: var(--text-base);
+      color: var(--color-gray-300);
       border: 1px solid var(--color-gray-700);
       background: var(--color-gray-800);
       flex-shrink: 0;
@@ -324,11 +325,12 @@ export class VelgEpochOperationsTab extends LitElement {
 
     return html`
       <div class="mission ${isDefensive ? 'mission--defensive' : 'mission--offensive'}">
-        <div class="mission__icon">${this._getOperativeIcon(m.operative_type)}</div>
+        <div class="mission__icon">${getOperativeIcon(m.operative_type)}</div>
         <div class="mission__info">
           <div class="mission__type">
             ${m.operative_type}
             ${m.agents?.name ? html` &middot; ${m.agents.name}` : nothing}
+            ${m.target_sim?.name ? html` &rarr; ${m.target_sim.name}` : nothing}
           </div>
           <div class="mission__detail">
             ${
@@ -356,18 +358,6 @@ export class VelgEpochOperationsTab extends LitElement {
         </span>
       </div>
     `;
-  }
-
-  private _getOperativeIcon(type: string): string {
-    const icons: Record<string, string> = {
-      spy: '\u{1F50D}',
-      saboteur: '\u{1F4A3}',
-      propagandist: '\u{1F4E2}',
-      assassin: '\u{1F5E1}',
-      guardian: '\u{1F6E1}',
-      infiltrator: '\u{1F47B}',
-    };
-    return icons[type] || '\u{2694}';
   }
 
   private _getMissionStatusClass(status: string): string {

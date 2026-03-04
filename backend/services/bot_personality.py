@@ -65,10 +65,19 @@ class AllianceAction:
 
 
 @dataclass
+class FortificationPlan:
+    """A zone fortification decision (foundation phase only)."""
+
+    zone_id: str
+    cost_rp: int = 2
+
+
+@dataclass
 class BotDecisions:
     """Complete set of decisions for a bot's cycle turn."""
 
     deployments: list[DeploymentPlan] = field(default_factory=list)
+    fortifications: list[FortificationPlan] = field(default_factory=list)
     alliances: list[AllianceAction] = field(default_factory=list)
     rp_spent: int = 0
     reasoning: str = ""
@@ -85,24 +94,34 @@ class BotPersonality(ABC):
         self.params = DIFFICULTY_PARAMS.get(difficulty, DIFFICULTY_PARAMS["medium"])
 
     def decide(self, state: BotGameState) -> BotDecisions:
-        """Full decision pipeline: allocate → target → alliance."""
+        """Full decision pipeline: allocate → fortify → deploy → alliance."""
         available_rp = state.current_rp
         available_rp = self._apply_difficulty_waste(available_rp)
 
-        deployments = self._plan_deployments(state, available_rp)
+        # Fortifications first (foundation only), then deployments with remaining RP
+        fortifications = self._plan_fortifications(state, available_rp)
+        fort_cost = sum(f.cost_rp for f in fortifications)
+        remaining_rp = available_rp - fort_cost
+
+        deployments = self._plan_deployments(state, remaining_rp)
         alliances = self.manage_alliances(state)
 
-        total_spent = sum(d.cost_rp for d in deployments)
+        total_spent = sum(d.cost_rp for d in deployments) + fort_cost
         return BotDecisions(
             deployments=deployments,
+            fortifications=fortifications,
             alliances=alliances,
             rp_spent=total_spent,
-            reasoning=self._explain(state, deployments, alliances),
+            reasoning=self._explain(state, deployments, alliances, fortifications),
         )
 
     @abstractmethod
     def _plan_deployments(self, state: BotGameState, available_rp: int) -> list[DeploymentPlan]:
         """Plan operative deployments within RP budget."""
+
+    def _plan_fortifications(self, state: BotGameState, available_rp: int) -> list[FortificationPlan]:
+        """Plan zone fortifications (foundation phase only). Default: none."""
+        return []
 
     @abstractmethod
     def manage_alliances(self, state: BotGameState) -> list[AllianceAction]:
@@ -128,14 +147,20 @@ class BotPersonality(ABC):
         return state.get_leader_sim_id()
 
     def _pick_agent(
-        self, state: BotGameState, operative_type: str | None = None
+        self,
+        state: BotGameState,
+        operative_type: str | None = None,
+        exclude_ids: set[str] | None = None,
     ) -> dict | None:
         """Pick an available agent for deployment.
 
         At medium/hard difficulty with an operative_type, picks the agent
         with the highest aptitude for that type. At easy, picks randomly.
+        exclude_ids: agent IDs already planned this cycle (not yet in DB).
         """
         available = state.get_available_agents()
+        if exclude_ids:
+            available = [a for a in available if a["id"] not in exclude_ids]
         if not available:
             return None
         if operative_type and self.params["use_intel"]:
@@ -152,18 +177,30 @@ class BotPersonality(ABC):
         operative_type: str,
         target_sim_id: str | None,
         remaining_rp: int,
+        planned: list[DeploymentPlan] | None = None,
     ) -> DeploymentPlan | None:
-        """Try to create a deployment plan, returning None if impossible."""
+        """Try to create a deployment plan, returning None if impossible.
+
+        planned: already-planned deployments this cycle (for agent/guardian dedup).
+        """
         cost = OPERATIVE_RP_COSTS.get(operative_type, 5)
         if cost > remaining_rp:
             return None
 
-        agent = self._pick_agent(state, operative_type)
+        planned = planned or []
+        exclude_ids = {p.agent_id for p in planned}
+
+        agent = self._pick_agent(state, operative_type, exclude_ids)
         if not agent:
             return None
 
         # Guardians are self-deploy (no target/embassy)
+        # Cap at half the total agents to reserve agents for offense
         if operative_type == "guardian":
+            max_guardians = max(1, len(state.own_agents) // 2)
+            planned_guardians = sum(1 for p in planned if p.operative_type == "guardian")
+            if (state.own_guardians + planned_guardians) >= max_guardians:
+                return None
             return DeploymentPlan(
                 operative_type="guardian",
                 agent_id=agent["id"],
@@ -188,10 +225,16 @@ class BotPersonality(ABC):
         )
 
     def _explain(
-        self, state: BotGameState, deployments: list[DeploymentPlan], alliances: list[AllianceAction]
+        self,
+        state: BotGameState,
+        deployments: list[DeploymentPlan],
+        alliances: list[AllianceAction],
+        fortifications: list[FortificationPlan] | None = None,
     ) -> str:
         """Generate human-readable reasoning for the decision log."""
         parts = [f"[{self.name.upper()}@{self.difficulty}] Cycle {state.current_cycle}:"]
+        if fortifications:
+            parts.append(f"Fortifying {len(fortifications)} zone(s).")
         if deployments:
             types = [d.operative_type for d in deployments]
             parts.append(f"Deploying {len(deployments)} operatives: {', '.join(types)}.")
@@ -218,14 +261,27 @@ class SentinelPersonality(BotPersonality):
 
     name = "sentinel"
 
+    def _plan_fortifications(self, state: BotGameState, available_rp: int) -> list[FortificationPlan]:
+        """Sentinel fortifies all 4 zones (8 RP)."""
+        if state.epoch_phase != "foundation":
+            return []
+        plans: list[FortificationPlan] = []
+        rp = available_rp
+        for zone in state.own_zones:
+            if rp < 2:
+                break
+            plans.append(FortificationPlan(zone_id=zone["id"]))
+            rp -= 2
+        return plans
+
     def _plan_deployments(self, state: BotGameState, available_rp: int) -> list[DeploymentPlan]:
         plans: list[DeploymentPlan] = []
         rp = available_rp
 
-        # Foundation phase: only guardians
+        # Foundation phase: guardians + spies
         if state.epoch_phase == "foundation":
             while rp >= OPERATIVE_RP_COSTS["guardian"]:
-                plan = self._try_deploy(state, "guardian", None, rp)
+                plan = self._try_deploy(state, "guardian", None, rp, plans)
                 if not plan:
                     break
                 plans.append(plan)
@@ -235,7 +291,7 @@ class SentinelPersonality(BotPersonality):
         # Priority 1: Guardians (50% of budget)
         guardian_budget = int(available_rp * 0.50)
         while rp > (available_rp - guardian_budget) and rp >= OPERATIVE_RP_COSTS["guardian"]:
-            plan = self._try_deploy(state, "guardian", None, rp)
+            plan = self._try_deploy(state, "guardian", None, rp, plans)
             if not plan:
                 break
             plans.append(plan)
@@ -248,7 +304,7 @@ class SentinelPersonality(BotPersonality):
             for attacker_id in attackers:
                 if rp < OPERATIVE_RP_COSTS["spy"]:
                     break
-                plan = self._try_deploy(state, "spy", attacker_id, rp)
+                plan = self._try_deploy(state, "spy", attacker_id, rp, plans)
                 if plan:
                     plans.append(plan)
                     rp -= plan.cost_rp
@@ -258,7 +314,7 @@ class SentinelPersonality(BotPersonality):
         if rank == 1 and rp >= OPERATIVE_RP_COSTS["saboteur"]:
             target = self._pick_target(state, "leader")  # Attack #2
             if target:
-                plan = self._try_deploy(state, "saboteur", target, rp)
+                plan = self._try_deploy(state, "saboteur", target, rp, plans)
                 if plan:
                     plans.append(plan)
                     rp -= plan.cost_rp
@@ -309,7 +365,7 @@ class WarlordPersonality(BotPersonality):
         # Foundation: deploy guardians (limited)
         if state.epoch_phase == "foundation":
             while rp >= OPERATIVE_RP_COSTS["guardian"] and len(plans) < 2:
-                plan = self._try_deploy(state, "guardian", None, rp)
+                plan = self._try_deploy(state, "guardian", None, rp, plans)
                 if not plan:
                     break
                 plans.append(plan)
@@ -318,7 +374,7 @@ class WarlordPersonality(BotPersonality):
 
         # Minimal guardians (20% budget, max 1)
         if state.own_guardians == 0 and rp >= OPERATIVE_RP_COSTS["guardian"]:
-            plan = self._try_deploy(state, "guardian", None, rp)
+            plan = self._try_deploy(state, "guardian", None, rp, plans)
             if plan:
                 plans.append(plan)
                 rp -= plan.cost_rp
@@ -335,7 +391,7 @@ class WarlordPersonality(BotPersonality):
 
         # 20% spy for intel
         if rp >= OPERATIVE_RP_COSTS["spy"]:
-            plan = self._try_deploy(state, "spy", target, rp)
+            plan = self._try_deploy(state, "spy", target, rp, plans)
             if plan:
                 plans.append(plan)
                 rp -= plan.cost_rp
@@ -345,7 +401,7 @@ class WarlordPersonality(BotPersonality):
         for op_type in offensive_queue:
             if rp < OPERATIVE_RP_COSTS.get(op_type, 5):
                 continue
-            plan = self._try_deploy(state, op_type, target, rp)
+            plan = self._try_deploy(state, op_type, target, rp, plans)
             if plan:
                 plans.append(plan)
                 rp -= plan.cost_rp
@@ -398,6 +454,20 @@ class DiplomatPersonality(BotPersonality):
 
     name = "diplomat"
 
+    def _plan_fortifications(self, state: BotGameState, available_rp: int) -> list[FortificationPlan]:
+        """Diplomat fortifies zones that have embassies (diplomatic assets)."""
+        if state.epoch_phase != "foundation":
+            return []
+        plans: list[FortificationPlan] = []
+        rp = available_rp
+        # Pick up to 2 zones (diplomat is moderate on defense)
+        for zone in state.own_zones[:2]:
+            if rp < 2:
+                break
+            plans.append(FortificationPlan(zone_id=zone["id"]))
+            rp -= 2
+        return plans
+
     def _plan_deployments(self, state: BotGameState, available_rp: int) -> list[DeploymentPlan]:
         plans: list[DeploymentPlan] = []
         rp = available_rp
@@ -405,7 +475,7 @@ class DiplomatPersonality(BotPersonality):
         # Foundation: guardians
         if state.epoch_phase == "foundation":
             while rp >= OPERATIVE_RP_COSTS["guardian"] and len(plans) < 2:
-                plan = self._try_deploy(state, "guardian", None, rp)
+                plan = self._try_deploy(state, "guardian", None, rp, plans)
                 if not plan:
                     break
                 plans.append(plan)
@@ -414,7 +484,7 @@ class DiplomatPersonality(BotPersonality):
 
         # Moderate guardians (20%)
         if state.own_guardians < 2 and rp >= OPERATIVE_RP_COSTS["guardian"]:
-            plan = self._try_deploy(state, "guardian", None, rp)
+            plan = self._try_deploy(state, "guardian", None, rp, plans)
             if plan:
                 plans.append(plan)
                 rp -= plan.cost_rp
@@ -428,7 +498,7 @@ class DiplomatPersonality(BotPersonality):
         for opp_id in opponents:
             if rp < OPERATIVE_RP_COSTS["spy"]:
                 break
-            plan = self._try_deploy(state, "spy", opp_id, rp)
+            plan = self._try_deploy(state, "spy", opp_id, rp, plans)
             if plan:
                 plans.append(plan)
                 rp -= plan.cost_rp
@@ -439,7 +509,7 @@ class DiplomatPersonality(BotPersonality):
             if rp < OPERATIVE_RP_COSTS.get(op_type, 5):
                 continue
             target = opponents[i % len(opponents)]
-            plan = self._try_deploy(state, op_type, target, rp)
+            plan = self._try_deploy(state, op_type, target, rp, plans)
             if plan:
                 plans.append(plan)
                 rp -= plan.cost_rp
@@ -489,14 +559,37 @@ class StrategistPersonality(BotPersonality):
 
     name = "strategist"
 
+    def _plan_fortifications(self, state: BotGameState, available_rp: int) -> list[FortificationPlan]:
+        """Strategist fortifies 1-2 weakest (lowest security) zones."""
+        if state.epoch_phase != "foundation":
+            return []
+        from backend.services.operative_service import SECURITY_TIER_ORDER
+
+        plans: list[FortificationPlan] = []
+        rp = available_rp
+        # Sort zones by security level (weakest first)
+        sorted_zones = sorted(
+            state.own_zones,
+            key=lambda z: SECURITY_TIER_ORDER.index(z.get("security_level", "moderate"))
+            if z.get("security_level", "moderate") in SECURITY_TIER_ORDER
+            else 3,
+        )
+        max_forts = _rng.randint(1, 2)
+        for zone in sorted_zones[:max_forts]:
+            if rp < 2:
+                break
+            plans.append(FortificationPlan(zone_id=zone["id"]))
+            rp -= 2
+        return plans
+
     def _plan_deployments(self, state: BotGameState, available_rp: int) -> list[DeploymentPlan]:
         plans: list[DeploymentPlan] = []
         rp = available_rp
 
-        # Foundation: guardians
+        # Foundation: guardians + spies
         if state.epoch_phase == "foundation":
             while rp >= OPERATIVE_RP_COSTS["guardian"] and len(plans) < 2:
-                plan = self._try_deploy(state, "guardian", None, rp)
+                plan = self._try_deploy(state, "guardian", None, rp, plans)
                 if not plan:
                     break
                 plans.append(plan)
@@ -512,7 +605,7 @@ class StrategistPersonality(BotPersonality):
         spy_target = leader or (opponents[0] if opponents else None)
 
         if spy_target and rp >= OPERATIVE_RP_COSTS["spy"]:
-            plan = self._try_deploy(state, "spy", spy_target, rp)
+            plan = self._try_deploy(state, "spy", spy_target, rp, plans)
             if plan:
                 plans.append(plan)
                 rp -= plan.cost_rp
@@ -536,7 +629,7 @@ class StrategistPersonality(BotPersonality):
             if rp < OPERATIVE_RP_COSTS.get(op_type, 5):
                 continue
             deploy_target = None if op_type == "guardian" else target
-            plan = self._try_deploy(state, op_type, deploy_target, rp)
+            plan = self._try_deploy(state, op_type, deploy_target, rp, plans)
             if plan:
                 plans.append(plan)
                 rp -= plan.cost_rp
@@ -586,6 +679,22 @@ class ChaosPersonality(BotPersonality):
 
     name = "chaos"
 
+    def _plan_fortifications(self, state: BotGameState, available_rp: int) -> list[FortificationPlan]:
+        """Chaos randomly fortifies 0-2 zones."""
+        if state.epoch_phase != "foundation":
+            return []
+        plans: list[FortificationPlan] = []
+        rp = available_rp
+        num_forts = _rng.randint(0, 2)
+        zones = list(state.own_zones)
+        _rng.shuffle(zones)
+        for zone in zones[:num_forts]:
+            if rp < 2:
+                break
+            plans.append(FortificationPlan(zone_id=zone["id"]))
+            rp -= 2
+        return plans
+
     def _plan_deployments(self, state: BotGameState, available_rp: int) -> list[DeploymentPlan]:
         plans: list[DeploymentPlan] = []
         rp = available_rp
@@ -596,7 +705,7 @@ class ChaosPersonality(BotPersonality):
             for _ in range(num_guardians):
                 if rp < OPERATIVE_RP_COSTS["guardian"]:
                     break
-                plan = self._try_deploy(state, "guardian", None, rp)
+                plan = self._try_deploy(state, "guardian", None, rp, plans)
                 if plan:
                     plans.append(plan)
                     rp -= plan.cost_rp
@@ -624,7 +733,7 @@ class ChaosPersonality(BotPersonality):
             if rp < OPERATIVE_RP_COSTS.get(op_type, 5):
                 continue
             deploy_target = None if op_type == "guardian" else target
-            plan = self._try_deploy(state, op_type, deploy_target, rp)
+            plan = self._try_deploy(state, op_type, deploy_target, rp, plans)
             if plan:
                 plans.append(plan)
                 rp -= plan.cost_rp

@@ -328,13 +328,13 @@ class TestParticipants:
             data={"id": str(EPOCH_ID), "status": "lobby"}
         )
 
-        # check membership (user is editor)
-        member_chain = _make_chain()
-        member_chain.execute.return_value = MagicMock(
-            data=[{"member_role": "editor"}]
+        # check simulation is template
+        sim_chain = _make_chain()
+        sim_chain.execute.return_value = MagicMock(
+            data=[{"simulation_type": "template"}]
         )
 
-        # check not already joined
+        # check not already joined (sim check + user check)
         existing_chain = _make_chain()
         existing_chain.execute.return_value = MagicMock(data=[])
 
@@ -353,12 +353,12 @@ class TestParticipants:
             call_counts[name] = call_counts.get(name, 0) + 1
             if name == "game_epochs":
                 return epoch_chain
-            if name == "simulation_members":
-                return member_chain
+            if name == "simulations":
+                return sim_chain
             if name == "epoch_participants":
                 count = call_counts[name]
-                if count == 1:
-                    return existing_chain  # check existing
+                if count <= 2:
+                    return existing_chain  # sim check + user check
                 return insert_chain  # insert
             return _make_chain()
 
@@ -369,42 +369,28 @@ class TestParticipants:
         assert result["epoch_id"] == str(EPOCH_ID)
 
     @pytest.mark.asyncio
-    async def test_join_rejects_viewer_role(self):
+    async def test_join_rejects_non_template_simulation(self):
+        """Cannot join with a game instance or archived simulation."""
         sb = MagicMock()
-
-        member_chain = _make_chain()
-        member_chain.execute.return_value = MagicMock(
-            data=[{"member_role": "viewer"}]
-        )
-
-        sb.table.return_value = member_chain
-
-        with pytest.raises(HTTPException) as exc:
-            await EpochService.join_epoch(sb, EPOCH_ID, SIM_ID, USER_ID)
-        assert exc.value.status_code == 403
-
-    @pytest.mark.asyncio
-    async def test_join_rejects_non_lobby_epoch(self):
-        sb = MagicMock()
-
-        member_chain = _make_chain()
-        member_chain.execute.return_value = MagicMock(
-            data=[{"member_role": "owner"}]
-        )
 
         epoch_chain = _make_chain()
         epoch_chain.execute.return_value = MagicMock(
-            data={"id": str(EPOCH_ID), "status": "competition"}
+            data={"id": str(EPOCH_ID), "status": "lobby"}
+        )
+
+        sim_chain = _make_chain()
+        sim_chain.execute.return_value = MagicMock(
+            data=[{"simulation_type": "game_instance"}]
         )
 
         call_counts: dict[str, int] = {}
 
         def table_router(name):
             call_counts[name] = call_counts.get(name, 0) + 1
-            if name == "simulation_members":
-                return member_chain
             if name == "game_epochs":
                 return epoch_chain
+            if name == "simulations":
+                return sim_chain
             return _make_chain()
 
         sb.table.side_effect = table_router
@@ -414,17 +400,32 @@ class TestParticipants:
         assert exc.value.status_code == 400
 
     @pytest.mark.asyncio
-    async def test_join_rejects_duplicate_simulation(self):
+    async def test_join_rejects_non_lobby_epoch(self):
         sb = MagicMock()
 
-        member_chain = _make_chain()
-        member_chain.execute.return_value = MagicMock(
-            data=[{"member_role": "owner"}]
+        epoch_chain = _make_chain()
+        epoch_chain.execute.return_value = MagicMock(
+            data={"id": str(EPOCH_ID), "status": "competition"}
         )
+
+        sb.table.side_effect = lambda name: epoch_chain if name == "game_epochs" else _make_chain()
+
+        with pytest.raises(HTTPException) as exc:
+            await EpochService.join_epoch(sb, EPOCH_ID, SIM_ID, USER_ID)
+        assert exc.value.status_code == 400
+
+    @pytest.mark.asyncio
+    async def test_join_rejects_duplicate_simulation(self):
+        sb = MagicMock()
 
         epoch_chain = _make_chain()
         epoch_chain.execute.return_value = MagicMock(
             data={"id": str(EPOCH_ID), "status": "lobby"}
+        )
+
+        sim_chain = _make_chain()
+        sim_chain.execute.return_value = MagicMock(
+            data=[{"simulation_type": "template"}]
         )
 
         existing_chain = _make_chain()
@@ -436,12 +437,58 @@ class TestParticipants:
 
         def table_router(name):
             call_counts[name] = call_counts.get(name, 0) + 1
-            if name == "simulation_members":
-                return member_chain
             if name == "game_epochs":
                 return epoch_chain
+            if name == "simulations":
+                return sim_chain
             if name == "epoch_participants":
                 return existing_chain
+            return _make_chain()
+
+        sb.table.side_effect = table_router
+
+        with pytest.raises(HTTPException) as exc:
+            await EpochService.join_epoch(sb, EPOCH_ID, SIM_ID, USER_ID)
+        assert exc.value.status_code == 409
+
+    @pytest.mark.asyncio
+    async def test_join_rejects_duplicate_user(self):
+        """Same user cannot join the same epoch with a different simulation."""
+        sb = MagicMock()
+
+        epoch_chain = _make_chain()
+        epoch_chain.execute.return_value = MagicMock(
+            data={"id": str(EPOCH_ID), "status": "lobby"}
+        )
+
+        sim_chain = _make_chain()
+        sim_chain.execute.return_value = MagicMock(
+            data=[{"simulation_type": "template"}]
+        )
+
+        # sim not already in epoch
+        sim_existing_chain = _make_chain()
+        sim_existing_chain.execute.return_value = MagicMock(data=[])
+
+        # user already in epoch
+        user_existing_chain = _make_chain()
+        user_existing_chain.execute.return_value = MagicMock(
+            data=[{"id": str(uuid4())}]
+        )
+
+        call_counts: dict[str, int] = {}
+
+        def table_router(name):
+            call_counts[name] = call_counts.get(name, 0) + 1
+            if name == "game_epochs":
+                return epoch_chain
+            if name == "simulations":
+                return sim_chain
+            if name == "epoch_participants":
+                count = call_counts[name]
+                if count == 1:
+                    return sim_existing_chain  # sim check passes
+                return user_existing_chain  # user check fails
             return _make_chain()
 
         sb.table.side_effect = table_router

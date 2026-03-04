@@ -894,7 +894,8 @@ export type BattleLogEventType =
   | 'building_damaged'
   | 'agent_wounded'
   | 'counter_intel'
-  | 'intel_report';
+  | 'intel_report'
+  | 'zone_fortified';
 
 export interface EpochScoreWeights {
   stability: number;
@@ -909,8 +910,12 @@ export interface EpochConfig {
   cycle_hours: number;
   rp_per_cycle: number;
   rp_cap: number;
-  foundation_pct: number;
-  reckoning_pct: number;
+  foundation_cycles: number;
+  reckoning_cycles: number;
+  /** @deprecated Use foundation_cycles instead */
+  foundation_pct?: number;
+  /** @deprecated Use reckoning_cycles instead */
+  reckoning_pct?: number;
   max_team_size: number;
   max_agents_per_player: number;
   allow_betrayal: boolean;
@@ -975,6 +980,7 @@ export interface EpochParticipant {
   id: UUID;
   epoch_id: UUID;
   simulation_id: UUID;
+  user_id?: UUID;
   team_id?: UUID;
   joined_at: string;
   current_rp: number;
@@ -1025,6 +1031,7 @@ export interface OperativeMission {
   mission_result?: Record<string, unknown>;
   created_at: string;
   agents?: { name: string; portrait_image_url?: string };
+  target_sim?: { name: string };
 }
 
 export interface LeaderboardEntry {

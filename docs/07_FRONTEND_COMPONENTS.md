@@ -1,7 +1,8 @@
 # 07 - Frontend Components: Komponenten + Simulation-Settings-UI
 
-**Version:** 2.3
-**Datum:** 2026-03-03
+**Version:** 2.4
+**Datum:** 2026-03-04
+**Aenderung v2.4:** Foundation Phase Redesign + Open Epoch Participation — 2 neue Komponenten in `epoch/` (EpochIntelDossierTab, MissionCard). 1 neues Utility (operative-icons.ts). EpochOverviewTab erweitert (Fortify Zone Button + Zone-Selektor + Defensive Fortifications Section). EpochLobbyActions erweitert (Sim-Picker mit Faction Cards + deployed/dismiss States). EpochBattleLog erweitert (zone_fortified Event-Rendering). EpochCommandCenter erweitert (Intel-Dossier Tab + fortify-zone Event-Wiring). EpochsApiService erweitert (fortifyZone Methode). _myParticipant-Matching jetzt via user_id statt Simulations-Mitgliedschaft. Updated counts: **143 files across 19 subdirectories, 117 @customElement components**, 18 shared components + 10 CSS modules + 1 base class, 27 API services.
 **Aenderung v2.3:** Admin Data Cleanup Tab — Neue Komponente `AdminCleanupTab` in `admin/` (Data-Overview-Telemetriegrid + 6 Cleanup-Operationskarten mit Preview/Execute-Workflow, Kaskaden-Baum-Darstellung, VelgConfirmDialog-Integration). AdminPanel erweitert auf 3 Tabs (Users/Caching/Cleanup). AdminApiService erweitert (3 neue Methoden: getCleanupStats, previewCleanup, executeCleanup). 6 neue TypeScript-Interfaces (CleanupType, CleanupCategoryStats, CleanupStats, CleanupPreviewResult, CleanupExecuteResult). ~36 neue i18n-Strings (DE uebersetzt). Undokumentierte Ergaenzungen: `EchartsChart` Shared-Komponente (Apache ECharts 6.0 Wrapper mit taktischem Dark Theme, IntersectionObserver Scroll-Reveal, Auto-Resize) + `MapGraph3D` (WebGL 3D-Modus via 3d-force-graph + Three.js, lazy-loaded) + `map-three-render.ts` (Three.js Rendering-Factories). Aptitude-Methoden leben auf `AgentsApiService` (kein separater AptitudesApiService). Updated counts: **140 files across 19 subdirectories, 114 @customElement components**, 18 shared components + 10 CSS modules + 1 base class, 27 API services.
 **Aenderung v2.2:** Agent Aptitude System + Draft Phase — 2 neue Komponenten: `VelgAptitudeBars` in shared/ (3 sizes, editable mode, highlight, budget tracking), `DraftRosterPanel` in epoch/ (full-screen overlay, two-column layout, counter bar, team stats, lock-in). AptitudesApiService (3 Methoden). AgentDetailsPanel erweitert (aptitude editor section). AgentsView erweitert (lineup overview strip). DeployOperativeModal erweitert (aptitude bars, fit indicator, sorted dropdown). EpochCreationWizard erweitert (max_agents_per_player slider). EpochLobbyActions erweitert (draft button, draft status display). Updated counts: **131 files across 17 subdirectories, 108 @customElement components**, 27 API services.
 **Aenderung v2.1:** Epoch Cycle Email Notifications — NotificationsSettingsPanel in settings/ (new "Notifications" tab with 3 toggle switches + locale selector). NotificationPreferencesApiService (2 Methoden). Updated counts: **129 files across 17 subdirectories, 106 @customElement components**, 26 API services.
@@ -22,7 +23,7 @@
 
 ### Plattform-Level
 
-**140 component files** across 19 subdirectories. **114 @customElement** components. **18 shared components + 10 CSS modules + 1 base class.**
+**143 component files** across 19 subdirectories. **117 @customElement** components. **18 shared components + 10 CSS modules + 1 base class.**
 
 ```
 App (Root)
@@ -125,14 +126,16 @@ SimulationShell (Layout mit Navigation)
 ├── SimulationHealthView (Game Metrics Dashboard)
 ├── EpochCommandCenter (Competitive PvP — orchestrator, delegates to subcomponents)
 │   ├── EpochOpsBoard (dossier cards + COMMS sidebar, dispatches select/join/create events)
-│   ├── EpochOverviewTab (overview + mission render, dispatches deploy/counter/recall events)
+│   ├── EpochOverviewTab (overview + mission render + fortify zone, dispatches deploy/counter/recall/fortify events)
+│   ├── EpochIntelDossierTab (per-opponent intel cards from spy battle log: zone security, guardians, fortifications)
 │   ├── EpochOperationsTab (operations tab, dispatches recall events)
 │   ├── EpochAlliancesTab (alliances tab, dispatches create/join/leave-team events)
-│   ├── EpochLobbyActions (lobby + admin controls, draft button + draft status, dispatches epoch lifecycle events)
+│   ├── EpochLobbyActions (lobby + admin controls, draft button + sim picker with faction cards, dispatches epoch lifecycle events)
 │   ├── EpochCreationWizard (includes max_agents_per_player slider in config step)
 │   ├── DraftRosterPanel (full-screen overlay: two-column agent selection, counter bar, team stats, lock-in)
 │   ├── EpochLeaderboard
-│   ├── EpochBattleLog
+│   ├── EpochBattleLog (includes zone_fortified event rendering)
+│   ├── MissionCard (reusable operative mission card with status badges)
 │   ├── DeployOperativeModal (extends BaseModal, aptitude bars + fit indicator + sorted dropdown)
 │   ├── EpochInvitePanel (VelgSidePanel slide-out, email invitations)
 │   ├── EpochChatPanel (dual-channel tactical comms: ALL CHANNELS / TEAM FREQ)
@@ -744,17 +747,19 @@ Alle Änderungen zeigen eine Live-Preview innerhalb der Shell. Preset-Auswahl f�
 | multiverse/ | 12 | 8 | CartographerMap, MapGraph, MapGraph3D, MapTooltip, MapConnectionPanel, MapBattleFeed, MapLeaderboardPanel, MapMinimap + 4 utilities (map-force, map-data, map-types, map-three-render) |
 | settings/ | 10 | 10 | SettingsView + 9 panels (General, World, AI, Integration, Design, Access, Prompts, Bleed, Notifications) |
 | health/ | 1 | 1 | SimulationHealthView (game metrics dashboard) |
-| epoch/ | 17 | 17 | CommandCenter (orchestrator), OpsBoard, OverviewTab, OperationsTab, AlliancesTab, LobbyActions, CreationWizard, DraftRosterPanel, Leaderboard, BattleLog, DeployOperativeModal, InvitePanel, InviteAcceptView, ChatPanel, PresenceIndicator, ReadyPanel, BotConfigPanel |
+| epoch/ | 19 | 19 | CommandCenter (orchestrator), OpsBoard, OverviewTab, IntelDossierTab, OperationsTab, AlliancesTab, LobbyActions, CreationWizard, DraftRosterPanel, Leaderboard, BattleLog, MissionCard, DeployOperativeModal, InvitePanel, InviteAcceptView, ChatPanel, PresenceIndicator, ReadyPanel, BotConfigPanel |
 | how-to-play/ | 5 | 1 | HowToPlayView + htp-styles (extracted CSS) + 3 content/type files (htp-types, htp-content-rules, htp-content-matches) |
 | shared/ | 28 | 17 | 17 components + 10 CSS modules + 1 base class |
-| **Gesamt** | **131** | **108** (in components/) | **17 Verzeichnisse** |
+| **Gesamt** | **143** | **117** (in components/) | **19 Verzeichnisse** |
 
 ### Utilities
 
 ```
 frontend/src/utils/
 ├── text.ts                         # getInitials() helper
-└── icons.ts                        # Centralized SVG icons with aria-hidden="true"
+├── icons.ts                        # Centralized SVG icons with aria-hidden="true"
+├── operative-icons.ts              # Centralized operative-type SVG icons (spy, guardian, saboteur, propagandist, infiltrator, assassin, zone_fortified)
+└── theme-colors.ts                 # Theme color utilities
 ```
 
 ---
@@ -1407,3 +1412,59 @@ Full-screen overlay for the epoch agent draft. Players select which agents from 
 
 - **Draft Button:** "DRAFT ROSTER" button visible for each joined participant. Disabled if draft already completed (shows "ROSTER LOCKED" with check icon + timestamp). Opens `DraftRosterPanel` overlay on click.
 - **Draft Status Display:** Below each participant row, shows draft status — "Draft Pending" (amber) or "Roster Locked (3 agents)" (green) with `draft_completed_at` relative timestamp.
+
+---
+
+## Foundation Phase Redesign UI (Migration 048)
+
+### EpochIntelDossierTab (`velg-epoch-intel-dossier-tab`)
+
+Per-opponent intelligence dashboard assembled from spy battle log data. Shows what the player has learned about each rival through successful spy missions.
+
+**Tag:** `<velg-epoch-intel-dossier-tab>`
+
+**Properties:**
+| Name | Typ | Beschreibung |
+|------|-----|-------------|
+| `epoch` | `Epoch` | Current epoch object |
+| `participants` | `EpochParticipant[]` | All epoch participants |
+| `myParticipant` | `EpochParticipant` | Player's own participant record |
+| `battleLog` | `BattleLogEntry[]` | Epoch battle log entries |
+
+**Layout:**
+- Grid of per-opponent intel cards. Each card shows: simulation name/avatar, zone security badges (low/medium/high counts), guardian deployment count, fortification indicators (revealed by spy intel), staleness indicator (how many cycles since last intel).
+- Cards are only populated when the player has spy intel reports (`event_type = 'intel_report'`) for that opponent in the battle log metadata.
+- Empty state when no intel has been gathered.
+
+**Accessibility:** `<article>` semantic elements, `role`/`aria` attributes, WCAG AA contrast (no container opacity — explicit dimmed colors instead), `prefers-reduced-motion`.
+
+### MissionCard (`velg-mission-card`)
+
+Reusable operative mission card component used by EpochOverviewTab and EpochOperationsTab to display individual mission status.
+
+**Tag:** `<velg-mission-card>`
+
+**Properties:**
+| Name | Typ | Beschreibung |
+|------|-----|-------------|
+| `mission` | `OperativeMission` | Mission data |
+| `participants` | `EpochParticipant[]` | For resolving simulation names |
+
+### operative-icons.ts
+
+Centralized SVG icon module for all operative types. Exports `operativeIcons` object with methods for each operative type (`spy()`, `guardian()`, `saboteur()`, `propagandist()`, `infiltrator()`, `assassin()`, `zone_fortified()`). Used by EpochOverviewTab, EpochBattleLog, EpochOperationsTab, DeployOperativeModal, and MissionCard. All icons include `aria-hidden="true"`.
+
+### EpochOverviewTab Enhancements (Migration 048)
+
+- **Fortify Zone Button:** "FORTIFY ZONE" action button visible during Foundation phase. Opens zone selector dropdown (own zones only). Costs 2 RP. Dispatches `fortify-zone` CustomEvent to EpochCommandCenter.
+- **Defensive Fortifications Section:** "Defensive Fortifications" manifest with corner bracket decorative frame. Lists active and expired fortifications with pulsing status dots, zone name, security bonus, and expiry cycle. Active = green dot, Expired = dimmed.
+- **RP Cost Fixes:** Guardian 3→4, Counter-Intel 3→4 (matching v2.2 balance).
+
+### EpochLobbyActions Enhancements (Migration 049)
+
+- **Sim Picker:** When joining an epoch, players see a simulation picker with faction cards showing simulation name, banner, agent count, and theme accent. Cards show 3 states: available (clickable), deployed (dimmed with "DEPLOYED" badge if already used in another epoch), and selected (highlighted border). Dismiss button to cancel selection.
+- **_myParticipant Matching:** Now matches via `user_id` instead of simulation membership, supporting open epoch participation where any user can join with any template simulation.
+
+### EpochBattleLog Enhancement (Migration 048)
+
+- **zone_fortified Event:** Renders fortification events with shield icon from `operative-icons.ts`, zone name, and "fortified" narrative. Uses defensive green accent color.

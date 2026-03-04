@@ -288,7 +288,8 @@ class TestDeployValidation:
         assert exc.value.status_code == 400
 
     @pytest.mark.asyncio
-    async def test_rejects_non_guardian_in_foundation_phase(self):
+    async def test_rejects_non_guardian_spy_in_foundation_phase(self):
+        """Foundation phase only allows guardians and spies."""
         sb = MagicMock()
         epoch_chain = MagicMock()
         epoch_chain.select.return_value = epoch_chain
@@ -299,11 +300,11 @@ class TestDeployValidation:
         )
         sb.table.return_value = epoch_chain
 
-        body = _make_deploy_body("spy", TARGET_SIM_ID, EMBASSY_ID)
+        body = _make_deploy_body("saboteur", TARGET_SIM_ID, EMBASSY_ID)
         with pytest.raises(HTTPException) as exc:
             await OperativeService.deploy(sb, EPOCH_ID, SIM_ID, body)
         assert exc.value.status_code == 400
-        assert "guardian" in exc.value.detail.lower()
+        assert "guardian" in exc.value.detail.lower() or "spy" in exc.value.detail.lower()
 
     @pytest.mark.asyncio
     async def test_guardian_cannot_have_target_simulation(self):
@@ -389,14 +390,23 @@ class TestSuccessProbability:
         chain.eq.return_value = chain
         chain.in_.return_value = chain
         chain.single.return_value = chain
+        chain.maybe_single.return_value = chain
         chain.execute.return_value = MagicMock(data=[])
 
         sb.table.return_value = chain
 
+        admin_mock = MagicMock()
+        admin_mock.table.return_value = chain
+
         body = _make_deploy_body("spy", TARGET_SIM_ID, EMBASSY_ID)
-        prob = await OperativeService._calculate_success_probability(
-            sb, body, SIM_ID
-        )
+        with patch(
+            "backend.services.operative_service.get_admin_supabase",
+            new_callable=AsyncMock,
+            return_value=admin_mock,
+        ):
+            prob = await OperativeService._calculate_success_probability(
+                sb, body, SIM_ID
+            )
         # base=0.55, aptitude=6 (default, no rows), zone_security=5.0 default, guardian=0, embassy=0.5
         # 0.55 + 6*0.03 - 5.0*0.05 - 0 + 0.5*0.15 = 0.55 + 0.18 - 0.25 + 0.075 = 0.555
         assert 0.05 <= prob <= 0.95
@@ -410,17 +420,26 @@ class TestSuccessProbability:
         chain.eq.return_value = chain
         chain.in_.return_value = chain
         chain.single.return_value = chain
+        chain.maybe_single.return_value = chain
         # No professions
         chain.execute.return_value = MagicMock(data=[])
 
         sb.table.side_effect = lambda name: chain
 
+        admin_mock = MagicMock()
+        admin_mock.table.side_effect = lambda name: chain
+
         body = _make_deploy_body(
             "spy", TARGET_SIM_ID, EMBASSY_ID, target_zone_id=ZONE_ID,
         )
-        prob = await OperativeService._calculate_success_probability(
-            sb, body, SIM_ID
-        )
+        with patch(
+            "backend.services.operative_service.get_admin_supabase",
+            new_callable=AsyncMock,
+            return_value=admin_mock,
+        ):
+            prob = await OperativeService._calculate_success_probability(
+                sb, body, SIM_ID
+            )
         assert prob >= 0.05
 
     @pytest.mark.asyncio
@@ -439,7 +458,7 @@ class TestSuccessProbability:
         zone_chain = MagicMock()
         zone_chain.select.return_value = zone_chain
         zone_chain.eq.return_value = zone_chain
-        zone_chain.single.return_value = zone_chain
+        zone_chain.maybe_single.return_value = zone_chain
         zone_chain.execute.return_value = MagicMock(
             data={"security_level": "lawless"}
         )
@@ -453,14 +472,18 @@ class TestSuccessProbability:
         embassy_chain = MagicMock()
         embassy_chain.select.return_value = embassy_chain
         embassy_chain.eq.return_value = embassy_chain
-        embassy_chain.single.return_value = embassy_chain
+        embassy_chain.maybe_single.return_value = embassy_chain
         embassy_chain.execute.return_value = MagicMock(
             data={"id": str(EMBASSY_ID), "infiltration_penalty": 0, "infiltration_penalty_expires_at": None}
         )
 
-        def table_router(name):
-            if name == "agent_aptitudes":
-                return aptitude_chain
+        # sb handles agent_aptitudes only
+        sb.table.side_effect = lambda name: aptitude_chain if name == "agent_aptitudes" else MagicMock()
+
+        # admin handles zones, guardians, embassies (cross-sim reads)
+        admin_mock = MagicMock()
+
+        def admin_router(name):
             if name == "zones":
                 return zone_chain
             if name == "operative_missions":
@@ -469,14 +492,19 @@ class TestSuccessProbability:
                 return embassy_chain
             return MagicMock()
 
-        sb.table.side_effect = table_router
+        admin_mock.table.side_effect = admin_router
 
         body = _make_deploy_body(
             "spy", TARGET_SIM_ID, EMBASSY_ID, target_zone_id=ZONE_ID,
         )
-        prob = await OperativeService._calculate_success_probability(
-            sb, body, SIM_ID
-        )
+        with patch(
+            "backend.services.operative_service.get_admin_supabase",
+            new_callable=AsyncMock,
+            return_value=admin_mock,
+        ):
+            prob = await OperativeService._calculate_success_probability(
+                sb, body, SIM_ID
+            )
         assert prob <= 0.95
 
     @pytest.mark.asyncio
@@ -502,26 +530,33 @@ class TestSuccessProbability:
         embassy_chain = MagicMock()
         embassy_chain.select.return_value = embassy_chain
         embassy_chain.eq.return_value = embassy_chain
-        embassy_chain.single.return_value = embassy_chain
+        embassy_chain.maybe_single.return_value = embassy_chain
         embassy_chain.execute.return_value = MagicMock(
             data={"id": str(EMBASSY_ID), "infiltration_penalty": 0, "infiltration_penalty_expires_at": None}
         )
 
-        def table_router(name):
-            if name == "agent_aptitudes":
-                return aptitude_chain
+        sb.table.side_effect = lambda name: aptitude_chain if name == "agent_aptitudes" else MagicMock()
+
+        admin_mock = MagicMock()
+
+        def admin_router(name):
             if name == "operative_missions":
                 return guardian_chain
             if name == "embassies":
                 return embassy_chain
             return MagicMock()
 
-        sb.table.side_effect = table_router
+        admin_mock.table.side_effect = admin_router
 
         body = _make_deploy_body("spy", TARGET_SIM_ID, EMBASSY_ID)
-        prob = await OperativeService._calculate_success_probability(
-            sb, body, SIM_ID
-        )
+        with patch(
+            "backend.services.operative_service.get_admin_supabase",
+            new_callable=AsyncMock,
+            return_value=admin_mock,
+        ):
+            prob = await OperativeService._calculate_success_probability(
+                sb, body, SIM_ID
+            )
         # base=0.55 + 6*0.03 - 5.0*0.05 - 0.15 + 0.6*0.15 = 0.55 + 0.18 - 0.25 - 0.15 + 0.09 = 0.42
         assert 0.35 <= prob <= 0.50
 
@@ -547,26 +582,33 @@ class TestSuccessProbability:
         embassy_chain = MagicMock()
         embassy_chain.select.return_value = embassy_chain
         embassy_chain.eq.return_value = embassy_chain
-        embassy_chain.single.return_value = embassy_chain
+        embassy_chain.maybe_single.return_value = embassy_chain
         embassy_chain.execute.return_value = MagicMock(
             data={"id": str(EMBASSY_ID), "infiltration_penalty": 0, "infiltration_penalty_expires_at": None}
         )
 
-        def table_router(name):
-            if name == "agent_aptitudes":
-                return aptitude_chain
+        sb.table.side_effect = lambda name: aptitude_chain if name == "agent_aptitudes" else MagicMock()
+
+        admin_mock = MagicMock()
+
+        def admin_router(name):
             if name == "operative_missions":
                 return guardian_chain
             if name == "embassies":
                 return embassy_chain
             return MagicMock()
 
-        sb.table.side_effect = table_router
+        admin_mock.table.side_effect = admin_router
 
         body = _make_deploy_body("spy", TARGET_SIM_ID, EMBASSY_ID)
-        prob = await OperativeService._calculate_success_probability(
-            sb, body, SIM_ID
-        )
+        with patch(
+            "backend.services.operative_service.get_admin_supabase",
+            new_callable=AsyncMock,
+            return_value=admin_mock,
+        ):
+            prob = await OperativeService._calculate_success_probability(
+                sb, body, SIM_ID
+            )
         # base=0.55 + 9*0.03 - 5.0*0.05 - 0 + 0.6*0.15 = 0.55 + 0.27 - 0.25 + 0.09 = 0.66
         assert 0.60 <= prob <= 0.70
 
@@ -912,6 +954,7 @@ class TestRecall:
         sb = MagicMock()
         mission_data = {
             "id": str(uuid4()),
+            "epoch_id": str(EPOCH_ID),
             "source_simulation_id": str(SIM_ID),
             "status": "active",
             "operative_type": "spy",
@@ -939,9 +982,10 @@ class TestRecall:
 
         sb.table.side_effect = table_router
 
-        result = await OperativeService.recall(
-            sb, UUID(mission_data["id"]), SIM_ID,
-        )
+        with patch("backend.services.operative_service.EpochService.grant_rp", new_callable=AsyncMock):
+            result = await OperativeService.recall(
+                sb, UUID(mission_data["id"]), SIM_ID,
+            )
         assert result is not None
         assert result["status"] == "returning"
 

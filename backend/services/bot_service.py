@@ -124,7 +124,25 @@ class BotService:
         )
         decisions = personality.decide(game_state)
 
-        # 3. Execute deployments (via same OperativeService humans use)
+        # 3a. Execute fortifications (foundation phase only)
+        fortified = []
+        for fort_plan in decisions.fortifications:
+            try:
+                result = await OperativeService.fortify_zone(
+                    admin_supabase,
+                    UUID(epoch_id),
+                    UUID(participant["simulation_id"]),
+                    UUID(fort_plan.zone_id),
+                )
+                fortified.append(result)
+            except Exception:
+                logger.warning(
+                    "Bot fortification failed: zone %s",
+                    fort_plan.zone_id,
+                    exc_info=True,
+                )
+
+        # 3b. Execute deployments (via same OperativeService humans use)
         deployed = []
         for plan in decisions.deployments:
             try:
@@ -142,7 +160,7 @@ class BotService:
                 )
                 deployed.append(mission)
             except Exception:
-                logger.debug(
+                logger.warning(
                     "Bot deployment failed: %s %s → %s",
                     plan.operative_type, plan.agent_id, plan.target_simulation_id,
                     exc_info=True,
@@ -155,7 +173,7 @@ class BotService:
 
         # 5. Log decisions for transparency
         await cls._log_decisions(
-            admin_supabase, epoch_id, participant["id"], cycle_number, decisions, deployed
+            admin_supabase, epoch_id, participant["id"], cycle_number, decisions, deployed, fortified
         )
 
         # 6. Generate chat message (template or LLM, best-effort)
@@ -175,6 +193,7 @@ class BotService:
             "participant_id": participant["id"],
             "success": True,
             "deployments": len(deployed),
+            "fortifications": len(fortified),
             "alliances": len(alliance_results),
             "reasoning": decisions.reasoning,
         }
@@ -240,6 +259,7 @@ class BotService:
         cycle_number: int,
         decisions,
         deployed: list[dict],
+        fortified: list[dict] | None = None,
     ) -> None:
         """Log bot decisions for transparency and debugging."""
         log_entry = {
@@ -258,6 +278,11 @@ class BotService:
                     for d in decisions.deployments
                 ],
                 "executed_deployments": len(deployed),
+                "planned_fortifications": [
+                    {"zone_id": f.zone_id, "cost": f.cost_rp}
+                    for f in decisions.fortifications
+                ],
+                "executed_fortifications": len(fortified or []),
                 "alliance_actions": [
                     {"action": a.action, "target": a.target_simulation_id}
                     for a in decisions.alliances

@@ -167,6 +167,17 @@ export class VelgEpochReadyPanel extends LitElement {
       border: 1px solid color-mix(in srgb, var(--amber) 30%, transparent);
     }
 
+    .participant__tag--auto {
+      color: var(--text-dim);
+      border: 1px solid var(--border-dim);
+      font-style: italic;
+    }
+
+    .bar__seg--bot {
+      background: color-mix(in srgb, var(--amber) 25%, var(--border-dim));
+      opacity: 0.6;
+    }
+
     /* ── Toggle button ── */
     .ready-btn {
       width: 100%;
@@ -244,8 +255,12 @@ export class VelgEpochReadyPanel extends LitElement {
     return ['foundation', 'competition', 'reckoning'].includes(this.epochStatus);
   }
 
-  private _getReadyCount(): number {
-    return Object.values(this._readyStates).filter(Boolean).length;
+  private _getHumans(): EpochParticipant[] {
+    return this.participants.filter((p) => !p.is_bot);
+  }
+
+  private _getHumanReadyCount(): number {
+    return this._getHumans().filter((p) => this._readyStates[p.simulation_id]).length;
   }
 
   private _isMyReady(): boolean {
@@ -270,6 +285,12 @@ export class VelgEpochReadyPanel extends LitElement {
       const data = result.data as { auto_resolved?: boolean; new_cycle?: number } | undefined;
       if (data?.auto_resolved) {
         const newCycle = data.new_cycle ?? 0;
+        // Reset all ready states immediately — backend already set cycle_ready=false
+        const resetStates: Record<string, boolean> = {};
+        for (const p of this.participants) {
+          resetStates[p.simulation_id] = false;
+        }
+        realtimeService.readyStates.value = resetStates;
         realtimeService.broadcastCycleResolved(this.epochId, newCycle);
         VelgToast.success(msg('All players ready. Cycle resolved automatically.'));
         this._triggerSweep();
@@ -291,19 +312,19 @@ export class VelgEpochReadyPanel extends LitElement {
   protected render() {
     if (!this._isActivePhase()) return nothing;
 
-    const total = this.participants.length;
-    const readyCount = this._getReadyCount();
+    const humans = this._getHumans();
+    const humanReadyCount = this._getHumanReadyCount();
     const myReady = this._isMyReady();
 
     return html`
       <div class="header">
         <span class="header__label">${msg('Cycle Readiness')}</span>
-        <span class="header__count">${readyCount}/${total}</span>
+        <span class="header__count">${humanReadyCount}/${humans.length}</span>
       </div>
 
-      <!-- Segmented progress bar -->
+      <!-- Segmented progress bar (humans only) -->
       <div class="bar">
-        ${this.participants.map((p, i) => {
+        ${humans.map((p, i) => {
           const ready = this._readyStates[p.simulation_id] ?? false;
           const sweepClass = this._sweeping ? 'bar__seg--sweep' : '';
           return html`<div class="bar__seg ${ready ? 'bar__seg--ready' : 'bar__seg--waiting'} ${sweepClass}" style="--seg-i:${i}"></div>`;
@@ -315,12 +336,21 @@ export class VelgEpochReadyPanel extends LitElement {
         ${this.participants.map((p) => {
           const ready = this._readyStates[p.simulation_id] ?? false;
           const name = (p.simulations as { name: string } | undefined)?.name ?? p.simulation_id;
+          if (p.is_bot) {
+            return html`
+              <div class="participant">
+                <span class="participant__icon participant__icon--waiting">\u2014</span>
+                <span class="participant__name">${name}<span class="participant__bot-tag">${msg('BOT')}</span></span>
+                <span class="participant__tag participant__tag--auto">${msg('Auto')}</span>
+              </div>
+            `;
+          }
           return html`
             <div class="participant">
               <span class="participant__icon ${ready ? 'participant__icon--ready' : 'participant__icon--waiting'}">
                 ${ready ? '\u2713' : '\u2014'}
               </span>
-              <span class="participant__name">${name}${p.is_bot ? html`<span class="participant__bot-tag">${msg('BOT')}</span>` : nothing}</span>
+              <span class="participant__name">${name}</span>
               <span class="participant__tag ${ready ? 'participant__tag--ready' : 'participant__tag--waiting'}">
                 ${ready ? msg('Ready') : msg('Waiting')}
               </span>

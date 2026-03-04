@@ -11,6 +11,7 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, svg as litSvg, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { botApi } from '../../services/api/BotApiService.js';
+import { simulationsApi } from '../../services/api/SimulationsApiService.js';
 import type {
   BotDifficulty,
   BotPersonality,
@@ -679,9 +680,9 @@ export class VelgBotConfigPanel extends LitElement {
 
   @property({ type: Boolean }) open = false;
   @property() epochId = '';
-  @property({ type: Array }) simulations: Simulation[] = [];
   @property({ type: Array }) participants: EpochParticipant[] = [];
 
+  @state() private _allSimulations: Simulation[] = [];
   @state() private _presets: BotPlayer[] = [];
   @state() private _selectedPresetId = '';
   @state() private _name = '';
@@ -697,6 +698,16 @@ export class VelgBotConfigPanel extends LitElement {
   protected willUpdate(changed: Map<PropertyKey, unknown>): void {
     if (changed.has('open') && this.open) {
       this._loadPresets();
+      this._loadAllSimulations();
+    }
+  }
+
+  private async _loadAllSimulations(): Promise<void> {
+    const result = await simulationsApi.listPublic();
+    if (result.success && result.data) {
+      this._allSimulations = (result.data as Simulation[]).filter(
+        (s) => !s.simulation_type || s.simulation_type === 'template',
+      );
     }
   }
 
@@ -709,9 +720,7 @@ export class VelgBotConfigPanel extends LitElement {
 
   private _getAvailableSims(): Simulation[] {
     const joinedSimIds = new Set(this.participants.map((p) => p.simulation_id));
-    return this.simulations.filter(
-      (s) => !joinedSimIds.has(s.id) && (!s.simulation_type || s.simulation_type === 'template'),
-    );
+    return this._allSimulations.filter((s) => !joinedSimIds.has(s.id));
   }
 
   private _getPersonalityMeta(key: BotPersonality): PersonalityMeta {
@@ -781,11 +790,22 @@ export class VelgBotConfigPanel extends LitElement {
 
   private _handleQuickAdd(botId: string, e: Event): void {
     e.stopPropagation();
-    this._selectedPresetId = botId;
     const sims = this._getAvailableSims();
+    if (sims.length === 0) {
+      VelgToast.info(msg('All simulations are already in the epoch.'));
+      return;
+    }
+    this._selectedPresetId = botId;
     if (sims.length === 1) {
       this._selectedSimId = sims[0].id;
       this._handleDeploy();
+    } else {
+      // 2+ sims: select preset and scroll deploy section into view
+      this.updateComplete.then(() => {
+        this.renderRoot
+          .querySelector('.deploy-section')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
     }
   }
 
@@ -861,6 +881,7 @@ export class VelgBotConfigPanel extends LitElement {
                       <button
                         class="deck-btn"
                         title=${msg('Quick deploy')}
+                        aria-label=${msg(str`Quick deploy ${bot.name}`)}
                         @click=${(e: Event) => this._handleQuickAdd(bot.id, e)}
                       >
                         +
@@ -868,6 +889,7 @@ export class VelgBotConfigPanel extends LitElement {
                       <button
                         class="deck-btn deck-btn--danger"
                         title=${msg('Remove from deck')}
+                        aria-label=${msg(str`Remove ${bot.name} from deck`)}
                         @click=${(e: Event) => this._handleDelete(bot.id, e)}
                       >
                         ×

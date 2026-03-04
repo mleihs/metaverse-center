@@ -18,6 +18,7 @@ import { appState } from '../../services/AppStateManager.js';
 import { realtimeService } from '../../services/realtime/RealtimeService.js';
 import type { Epoch, EpochParticipant, Simulation } from '../../types/index.js';
 import { computeTotalCycles } from '../../utils/epoch.js';
+import { icons } from '../../utils/icons.js';
 import './EpochChatPanel.js';
 
 @localized()
@@ -490,6 +491,22 @@ export class VelgEpochOpsBoard extends LitElement {
       font-weight: 600;
     }
 
+    .dossier-card__creator-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 1px 6px;
+      font-family: var(--font-mono, monospace);
+      font-size: 8px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--color-epoch-accent, #f59e0b);
+      border: 1px solid color-mix(in srgb, var(--color-epoch-accent, #f59e0b) 50%, transparent);
+      background: color-mix(in srgb, var(--color-epoch-accent, #f59e0b) 8%, transparent);
+      flex-shrink: 0;
+    }
+
     /* ── Stats row ────────────────────────── */
 
     .dossier-card__stats {
@@ -605,6 +622,27 @@ export class VelgEpochOpsBoard extends LitElement {
     .dossier-join-btn:disabled {
       opacity: 0.4;
       cursor: not-allowed;
+    }
+
+    .dossier-delete-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--color-gray-500);
+      cursor: pointer;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+
+    .dossier-delete-btn:hover {
+      color: var(--color-danger);
+      border-color: var(--color-danger);
+      background: color-mix(in srgb, var(--color-danger) 10%, transparent);
     }
 
     .dossier-card__view-hint {
@@ -1144,6 +1182,7 @@ export class VelgEpochOpsBoard extends LitElement {
   @property({ type: Object }) participantCounts: Record<string, number> = {};
   @property({ type: Object }) commsEpoch: Epoch | null = null;
   @property({ type: Object }) commsParticipant: EpochParticipant | null = null;
+  @property({ type: Array }) allTemplateSimulations: Simulation[] = [];
 
   // ── Local state ─────────────────────────────────
 
@@ -1153,9 +1192,7 @@ export class VelgEpochOpsBoard extends LitElement {
   // ── Render ──────────────────────────────────────
 
   protected render() {
-    const mySims = appState.simulations.value.filter(
-      (s: Simulation) => !s.simulation_type || s.simulation_type === 'template',
-    );
+    const mySims = this.allTemplateSimulations;
     const isAuth = appState.isAuthenticated.value;
     const unreadTotal =
       realtimeService.unreadEpochCount.value + realtimeService.unreadTeamCount.value;
@@ -1182,7 +1219,7 @@ export class VelgEpochOpsBoard extends LitElement {
                     aria-label=${this._showComms ? msg('Close Comms') : msg('Open Comms')}
                     aria-expanded=${this._showComms}
                   >
-                    <span class="comms-toggle__icon">${'\u{1F4E1}'}</span>
+                    <span class="comms-toggle__icon">${icons.antenna(16)}</span>
                     ${msg('Comms')}
                     ${!this._showComms && unreadTotal > 0 ? html`<span class="comms-toggle__unread">${unreadTotal}</span>` : nothing}
                   </button>
@@ -1347,7 +1384,7 @@ export class VelgEpochOpsBoard extends LitElement {
           </div>
           <div class="comms-sidebar__body">
             <div class="comms-empty">
-              <div class="comms-empty__icon">${'\u{1F4E1}'}</div>
+              <div class="comms-empty__icon">${icons.antenna(16)}</div>
               <div class="comms-empty__title">${msg('No Active Channel')}</div>
               <div class="comms-empty__desc">${msg('Join an epoch to access comms')}</div>
             </div>
@@ -1392,6 +1429,7 @@ export class VelgEpochOpsBoard extends LitElement {
     const pCount = this.participantCounts[epoch.id] ?? 0;
     const isCompleted = epoch.status === 'completed';
     const isLobby = epoch.status === 'lobby';
+    const isCreator = epoch.created_by_id === appState.user.value?.id;
 
     // In lobby phase, show join buttons for all user's template sims
     // (exact participation check happens server-side on join)
@@ -1412,9 +1450,12 @@ export class VelgEpochOpsBoard extends LitElement {
       >
         <div class="dossier-card__header">
           <span class="dossier-card__name">${epoch.name}</span>
-          <div class="dossier-card__status">
-            <span class="dossier-card__dot"></span>
-            <span class="dossier-card__status-label">${epoch.status}</span>
+          <div style="display:flex; align-items:center; gap:var(--space-1-5); flex-shrink:0">
+            ${isCreator ? html`<span class="dossier-card__creator-badge">${msg('Creator')}</span>` : nothing}
+            <div class="dossier-card__status">
+              <span class="dossier-card__dot"></span>
+              <span class="dossier-card__status-label">${epoch.status}</span>
+            </div>
           </div>
         </div>
 
@@ -1464,6 +1505,20 @@ export class VelgEpochOpsBoard extends LitElement {
                   >+ ${msg(str`Join as ${sim.name}`)}</button>
                 `,
                 )
+              : nothing
+          }
+          ${
+            isCreator && ['lobby', 'cancelled'].includes(epoch.status)
+              ? html`
+                <button
+                  class="dossier-delete-btn"
+                  aria-label=${msg(str`Delete ${epoch.name}`)}
+                  @click=${(ev: Event) => {
+                    ev.stopPropagation();
+                    this._onDeleteEpoch(epoch);
+                  }}
+                >${icons.trash(14)}</button>
+              `
               : nothing
           }
           <span class="dossier-card__view-hint">${isCompleted ? msg('View Results') : msg('View Details')} &rarr;</span>
@@ -1529,6 +1584,16 @@ export class VelgEpochOpsBoard extends LitElement {
   private _onCreateEpoch() {
     this.dispatchEvent(
       new CustomEvent('create-epoch', {
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
+
+  private _onDeleteEpoch(epoch: Epoch) {
+    this.dispatchEvent(
+      new CustomEvent('delete-epoch', {
+        detail: { epochId: epoch.id, epochName: epoch.name },
         bubbles: true,
         composed: true,
       }),

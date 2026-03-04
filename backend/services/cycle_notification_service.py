@@ -278,13 +278,13 @@ class CycleNotificationService:
         # ── RP balance ──
         rp_resp = (
             admin_supabase.table("epoch_participants")
-            .select("resource_points, team_id")
+            .select("current_rp, team_id")
             .eq("epoch_id", epoch_id)
             .eq("simulation_id", simulation_id)
             .maybe_single()
             .execute()
         )
-        rp_balance = rp_resp.data.get("resource_points", 0) if rp_resp.data else 0
+        rp_balance = rp_resp.data.get("current_rp", 0) if rp_resp.data else 0
         player_team_id = rp_resp.data.get("team_id") if rp_resp.data else None
 
         # ── Threat assessment (B1) — detected inbound ops ──

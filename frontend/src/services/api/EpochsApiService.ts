@@ -67,6 +67,10 @@ export class EpochsApiService extends BaseApiService {
     return this.post(`/epochs/${epochId}/cancel`);
   }
 
+  deleteEpoch(epochId: string): Promise<ApiResponse<Epoch>> {
+    return this.delete(`/epochs/${epochId}`);
+  }
+
   resolveCycle(epochId: string): Promise<ApiResponse<Epoch>> {
     return this.post(`/epochs/${epochId}/resolve-cycle`);
   }
@@ -158,8 +162,14 @@ export class EpochsApiService extends BaseApiService {
     return this.post(`/epochs/${epochId}/operatives?simulation_id=${simulationId}`, data);
   }
 
-  recallOperative(epochId: string, missionId: string): Promise<ApiResponse<OperativeMission>> {
-    return this.post(`/epochs/${epochId}/operatives/${missionId}/recall`);
+  recallOperative(
+    epochId: string,
+    missionId: string,
+    simulationId: string,
+  ): Promise<ApiResponse<OperativeMission>> {
+    return this.post(
+      `/epochs/${epochId}/operatives/${missionId}/recall?simulation_id=${simulationId}`,
+    );
   }
 
   listThreats(epochId: string, simulationId: string): Promise<ApiResponse<OperativeMission[]>> {
@@ -173,6 +183,16 @@ export class EpochsApiService extends BaseApiService {
     simulationId: string,
   ): Promise<ApiResponse<OperativeMission[]>> {
     return this.post(`/epochs/${epochId}/operatives/counter-intel?simulation_id=${simulationId}`);
+  }
+
+  fortifyZone(
+    epochId: string,
+    simulationId: string,
+    zoneId: string,
+  ): Promise<ApiResponse<Record<string, unknown>>> {
+    return this.post(
+      `/epochs/${epochId}/operatives/fortify-zone?simulation_id=${simulationId}&zone_id=${zoneId}`,
+    );
   }
 
   // ── Scores ──────────────────────────────────────────

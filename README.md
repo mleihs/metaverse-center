@@ -78,9 +78,9 @@ Each simulation has its own CSS theme preset, lore (~5,000 words of in-world nar
 LOBBY ──► FOUNDATION ──► COMPETITION ──► RECKONING ──► COMPLETED
   │         │                │               │
   │         │                │               └─ Final scoring, archival
-  │         │                └─ Operative deployment, cycle resolution
-  │         └─ Team formation, agent drafting, RP accumulation
-  └─ Player invitations, bot configuration, epoch creation
+  │         │                └─ All operative types, full warfare
+  │         └─ Spy + Guardian deployment, zone fortification, +50% RP
+  └─ Open join (any user + any sim), draft agents, form teams, add bots
 ```
 
 ### Agent Aptitudes & Draft
@@ -91,7 +91,7 @@ Each agent has aptitude scores (3&ndash;9) across all six operative types, with 
 
 | Type | RP Cost | Effect on Success | Scoring Impact |
 |:-----|:--------|:------------------|:---------------|
-| **Spy** | 4 | Reveals target zone security + guardian deployment | +2 Influence, +1 Diplomatic/success |
+| **Spy** | 4 | Reveals zone security, guardians, and hidden fortifications | +2 Influence, +1 Diplomatic/success |
 | **Guardian** | 4 | Reduces enemy operative success by 6%/unit (cap 15%) | +4 Sovereignty |
 | **Saboteur** | 5 | Downgrades random target zone security by 1 tier | -6 Stability to target |
 | **Propagandist** | 5 | Creates narrative event in target simulation | +5 Influence, -6 Sovereignty to target |
@@ -173,6 +173,7 @@ The epoch simulation library (`scripts/epoch_sim_lib.py`) runs 50&ndash;200 comp
 | **v2.1** | Guardian 0.10&rarr;0.08/unit, cap 0.25&rarr;0.20, alliance +15%, betrayal -25% | `ci_defensive` dropped to ~64% |
 | **v2.2** | Guardian 0.08&rarr;0.06, cap 0.20&rarr;0.15, cost 3&rarr;4 RP; Infiltrator/Assassin rework; RP 10&rarr;12/cycle | Nash equilibrium convergence, operative success rates ~55-58% |
 | **v2.3** | Agent aptitudes (3-9 scores), draft phase, formula `aptitude*0.03` | 18pp success swing between best/worst agents; strategic agent selection matters |
+| **v2.4** | Foundation redesign: spy+guardian+fortification; open epoch participation | Hidden defensive layer, early intel, any user can join any epoch |
 
 ### Intelligence Report
 
@@ -198,16 +199,16 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
            ▼        │
 ┌──────────────┐    │
 │   FastAPI     │    │
-│   256 endpoints│    │
-│   32 routers  │    │
+│   257 endpoints│    │
+│   33 routers  │    │
 │   PyJWT auth  │    │
 └──────┬───────┘    │
        │            │
        ▼            ▼
 ┌──────────────────────┐
 │   Supabase (PostgreSQL)   │
-│   46 tables               │
-│   184+ RLS policies       │
+│   47 tables               │
+│   190+ RLS policies       │
 │   Realtime channels       │
 │   Auth (ES256/HS256)      │
 │   Storage (4 buckets)     │
@@ -258,7 +259,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 
 | Component | Technology |
 |:----------|:-----------|
-| Database | PostgreSQL via Supabase (46 tables, 184+ RLS policies) |
+| Database | PostgreSQL via Supabase (47 tables, 190+ RLS policies) |
 | Auth | Supabase Auth (JWT with ES256 in production, HS256 locally) |
 | Email | SMTP SSL (bilingual tactical briefing emails, fog-of-war compliant) |
 | AI Text | OpenRouter (model fallback chain) |
@@ -274,15 +275,15 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 
 | Metric | Count |
 |:-------|------:|
-| Database tables | 46 |
-| RLS policies | 184+ |
-| SQL migrations | 51 |
-| API endpoints | 256 across 33 routers |
-| Web Components | 113 custom elements |
-| Backend tests | 788 |
-| Frontend tests | 442 |
+| Database tables | 47 |
+| RLS policies | 190+ |
+| SQL migrations | 53 |
+| API endpoints | 257 across 33 routers |
+| Web Components | 116 custom elements |
+| Backend tests | 789 |
+| Frontend tests | 439 |
 | E2E specs | 81 |
-| Localized UI strings | 2,279 (EN/DE) |
+| Localized UI strings | ~2,337 (EN/DE) |
 | Specification documents | 29 |
 | Simulations | 5 (each with ~30 entities) |
 | Operative types | 6 |
@@ -299,7 +300,8 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 - **TCG card system** &mdash; unified collectible card component with 3D tilt, holographic foil, rarity tiers, stat gems, aptitude pips, card-deal animations
 - **Cross-simulation diplomacy** &mdash; embassies, ambassadors, event echoes (narrative bleed between worlds)
 - **Cartographer's Map** &mdash; force-directed multiverse graph with operative trails, health arcs, sparklines, battle feed, leaderboard
-- **Competitive Epochs** &mdash; operative deployment, 5-dimension scoring, cycle-based resolution, alliances & betrayal
+- **Competitive Epochs** &mdash; operative deployment, 5-dimension scoring, cycle-based resolution, alliances & betrayal, open participation (any user + any sim)
+- **Foundation phase ("Nebelkrieg")** &mdash; spies + guardians in early game, hidden zone fortification (+1 security for 5 cycles), intel dossier tab
 - **Agent aptitudes & draft phase** &mdash; pre-match deckbuilding with card-hand draft UI and aptitude-weighted success rates
 - **Bot AI opponents** &mdash; 5 personality archetypes, 3 difficulty levels, fog-of-war compliant, dual-mode chat
 - **AI content generation** &mdash; portraits, building images, descriptions, event reactions, relationship suggestions, invitation lore
@@ -346,11 +348,11 @@ npm run dev                              # Dev server on http://localhost:5173
 
 ```bash
 # Backend (from project root, venv activated)
-python3.13 -m pytest backend/tests/ -v   # 788 tests
+python3.13 -m pytest backend/tests/ -v   # 789 tests
 python3.13 -m ruff check backend/        # Lint
 
 # Frontend (from frontend/)
-npx vitest run                           # 442 tests
+npx vitest run                           # 439 tests
 npx tsc --noEmit                         # Type check
 npx biome check src/                     # Lint
 
@@ -365,8 +367,8 @@ backend/
   app.py                    # FastAPI entry (33 routers registered)
   dependencies.py           # JWT auth, Supabase clients, role checking
   routers/                  # 33 route modules (public, admin, entity, epoch)
-  models/                   # 21 Pydantic model files
-  services/                 # 28+ service modules (BaseService CRUD, AI, email, bots)
+  models/                   # 22 Pydantic model files
+  services/                 # 29+ service modules (BaseService CRUD, AI, email, bots)
   tests/                    # pytest (unit + integration + security)
 frontend/
   src/
@@ -377,7 +379,7 @@ frontend/
     types/                  # TypeScript interfaces + Zod schemas
     locales/                # i18n (XLIFF source + generated output)
 supabase/
-  migrations/               # 51 SQL migration files
+  migrations/               # 53 SQL migration files
   seed/                     # Seed data (7 active, 11 archived)
 scripts/                    # Image generation + epoch simulation library
 docs/                       # 29 specification documents
@@ -393,7 +395,7 @@ The `docs/` directory contains 29 specification documents covering every aspect 
 | Area | Documents |
 |:-----|:----------|
 | Overview & Planning | Project Overview, Implementation Plan (160 tasks, 6 phases) |
-| Data & API | Database Schema (v2.9), Domain Models (v2.9), API Specification (253 endpoints) |
+| Data & API | Database Schema (v3.0), Domain Models (v3.0), API Specification (257 endpoints) |
 | Frontend | Component Hierarchy, Design System, Theming System, Microanimations |
 | Security | Auth & Security (hybrid JWT, RLS strategies) |
 | Game Systems | Game Mechanics, Epochs & Competitive Layer, Game Design Document |

@@ -295,13 +295,14 @@ BEGIN
       SELECT a.id FROM agents a
       WHERE a.simulation_id = sim.id AND a.deleted_at IS NULL
         AND (
-          -- If draft IDs exist, use them; otherwise take all
+          -- If draft IDs exist and non-empty, use them; otherwise take all
           p_drafted_ids IS NULL
+          OR cardinality(p_drafted_ids) = 0
           OR a.id = ANY(p_drafted_ids)
         )
       ORDER BY
         -- If drafted, preserve draft order; otherwise created_at
-        CASE WHEN p_drafted_ids IS NOT NULL
+        CASE WHEN p_drafted_ids IS NOT NULL AND cardinality(p_drafted_ids) > 0
           THEN array_position(p_drafted_ids, a.id)
           ELSE NULL
         END NULLS LAST,

@@ -33,7 +33,8 @@ import type {
   OperativeMission,
   OperativeType,
 } from '../../types/index.js';
-import { computeTotalCycles } from '../../utils/epoch.js';
+import { computePhaseCycles, computeTotalCycles } from '../../utils/epoch.js';
+import { icons } from '../../utils/icons.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { VelgToast } from '../shared/Toast.js';
 import '../shared/LoadingState.js';
@@ -50,6 +51,7 @@ import './EpochOpsBoard.js';
 import './EpochOverviewTab.js';
 import './EpochOperationsTab.js';
 import './EpochAlliancesTab.js';
+import './EpochIntelDossierTab.js';
 import './EpochLobbyActions.js';
 import './BotConfigPanel.js';
 import './DraftRosterPanel.js';
@@ -316,6 +318,87 @@ export class VelgEpochCommandCenter extends LitElement {
     .stepper__intel-val {
       color: var(--stepper-color, var(--color-gray-100));
       font-weight: 700;
+    }
+
+    /* ── Results step (fixed-width terminal) ── */
+
+    .stepper__step--results {
+      flex: 0 0 auto;
+    }
+
+    .stepper__dot--trophy {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 2px solid var(--color-gray-600);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-gray-600);
+    }
+
+    .stepper__dot--trophy-active {
+      border-color: var(--color-warning);
+      background: var(--color-warning);
+      color: var(--color-gray-950);
+      animation: trophy-glow 2.5s ease-in-out infinite;
+    }
+
+    @keyframes trophy-glow {
+      0%, 100% { box-shadow: 0 0 4px rgba(245 158 11 / 0.3); }
+      50% { box-shadow: 0 0 14px rgba(245 158 11 / 0.6); }
+    }
+
+    /* ── Winner Banner ────────────────────── */
+
+    .winner-banner {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-1-5) var(--space-3);
+      border-left: 2px solid var(--color-warning);
+      background: rgba(245 158 11 / 0.05);
+      margin-left: var(--space-2);
+    }
+
+    .winner-banner__icon {
+      color: var(--color-warning);
+      animation: trophy-glow-icon 2.5s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes trophy-glow-icon {
+      0%, 100% { opacity: 0.8; filter: drop-shadow(0 0 2px rgba(245 158 11 / 0.3)); }
+      50% { opacity: 1; filter: drop-shadow(0 0 6px rgba(245 158 11 / 0.6)); }
+    }
+
+    .winner-banner__label {
+      font-family: var(--font-mono, monospace);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--color-gray-400);
+    }
+
+    .winner-banner__name {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-black);
+      font-size: var(--text-sm);
+      color: var(--color-warning);
+    }
+
+    .winner-banner__score {
+      font-family: var(--font-mono, monospace);
+      font-size: var(--text-xs);
+      color: var(--color-gray-300);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .stepper__dot--trophy-active,
+      .winner-banner__icon {
+        animation: none;
+      }
     }
 
     /* ── Microanimations ─────────────────── */
@@ -1162,12 +1245,77 @@ export class VelgEpochCommandCenter extends LitElement {
       100% { transform: scale(1); }
     }
 
+    /* ── Phase Transition Overlay ──────────────── */
+
+    .phase-overlay {
+      position: fixed;
+      top: 80px;
+      left: 0;
+      right: 0;
+      z-index: var(--z-top, 9000);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-4) var(--space-5);
+      pointer-events: none;
+      animation: phase-overlay-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .phase-overlay__lines {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      width: 100%;
+      max-width: 500px;
+    }
+
+    .phase-overlay__line {
+      flex: 1;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--_phase-color), transparent);
+    }
+
+    .phase-overlay__icon {
+      color: var(--_phase-color);
+      filter: drop-shadow(0 0 8px var(--_phase-color));
+    }
+
+    .phase-overlay__name {
+      font-family: var(--font-brutalist);
+      font-weight: 900;
+      font-size: var(--text-lg);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--_phase-color);
+      text-shadow: 0 0 20px var(--_phase-color), 0 0 40px color-mix(in srgb, var(--_phase-color) 40%, transparent);
+    }
+
+    .phase-overlay__subtitle {
+      font-family: var(--font-mono, monospace);
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-gray-300);
+    }
+
+    .phase-overlay--foundation { --_phase-color: var(--color-success); }
+    .phase-overlay--competition { --_phase-color: var(--color-warning); }
+    .phase-overlay--reckoning { --_phase-color: var(--color-danger); }
+
+    @keyframes phase-overlay-in {
+      0% { opacity: 0; transform: scaleX(0.5); }
+      40% { opacity: 1; transform: scaleX(1.05); }
+      100% { opacity: 1; transform: scaleX(1); }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       .cycle-overlay,
       .cycle-overlay__label,
       .cycle-overlay__number,
       .cycle-overlay__divider,
-      .banner__sub--bump {
+      .banner__sub--bump,
+      .phase-overlay {
         animation: none;
         opacity: 1;
         width: 120px;
@@ -1195,13 +1343,18 @@ export class VelgEpochCommandCenter extends LitElement {
   @state() private _showDraftPanel = false;
   @state() private _draftAgents: Agent[] = [];
   @state() private _draftAptitudeMap: Map<string, AptitudeSet> = new Map();
+  @state() private _zones: Array<{ id: string; name: string; security_level: string }> = [];
   @state() private _actionLoading = false;
   @state() private _commsEpoch: Epoch | null = null;
   @state() private _commsParticipant: EpochParticipant | null = null;
+  @state() private _allTemplateSimulations: import('../../types/index.js').Simulation[] = [];
   @state() private _showCycleOverlay = false;
   @state() private _newCycleNumber = 0;
   @state() private _cycleBump = false;
   @state() private _cycleJustResolved = false;
+  @state() private _phaseOverlayPhase = '';
+  @state() private _showPhaseOverlay = false;
+  private _prevEpochStatus = '';
 
   private _disposeCycleEffect?: () => void;
 
@@ -1270,6 +1423,9 @@ export class VelgEpochCommandCenter extends LitElement {
       }
     }
 
+    // Load all template simulations for epoch join (any user can join with any template)
+    await this._loadAllTemplateSimulations();
+
     // Load active epochs (lobby + running)
     const activeResult = await epochsApi.getActiveEpochs();
     if (activeResult.success && activeResult.data) {
@@ -1288,10 +1444,36 @@ export class VelgEpochCommandCenter extends LitElement {
       if (this._epoch) {
         const stillValid = this._activeEpochs.find((e) => e.id === this._epoch?.id);
         if (stillValid) {
+          // Detect phase change for transition overlay
+          if (
+            this._prevEpochStatus &&
+            stillValid.status !== this._prevEpochStatus &&
+            ['competition', 'reckoning'].includes(stillValid.status)
+          ) {
+            this._phaseOverlayPhase = stillValid.status;
+            this._showPhaseOverlay = true;
+            setTimeout(() => {
+              this._showPhaseOverlay = false;
+            }, 2500);
+          }
+          this._prevEpochStatus = stillValid.status;
           this._epoch = stillValid;
           await this._loadEpochDetails(stillValid.id);
         } else {
-          this._epoch = null;
+          // Epoch disappeared from active list — it may have just completed.
+          // Fetch it directly to check; keep it visible for final score display.
+          const directResult = await epochsApi.getEpoch(this._epoch.id);
+          if (directResult.success && directResult.data) {
+            const fetched = directResult.data as Epoch;
+            if (fetched.status === 'completed') {
+              this._epoch = fetched;
+              await this._loadEpochDetails(fetched.id);
+            } else {
+              this._epoch = null;
+            }
+          } else {
+            this._epoch = null;
+          }
         }
       }
     }
@@ -1329,10 +1511,8 @@ export class VelgEpochCommandCenter extends LitElement {
       return;
     }
 
-    const mySimIds = appState.simulations.value
-      .filter((s) => !s.simulation_type || s.simulation_type === 'template')
-      .map((s) => s.id);
-    if (mySimIds.length === 0) {
+    const userId = appState.user.value?.id;
+    if (!userId) {
       this._commsEpoch = null;
       this._commsParticipant = null;
       return;
@@ -1343,14 +1523,7 @@ export class VelgEpochCommandCenter extends LitElement {
       const resp = await epochsApi.listParticipants(epoch.id);
       if (!resp.success) continue;
       const participants = (resp.data as EpochParticipant[]) || [];
-      const myPart = participants.find(
-        (p) =>
-          mySimIds.includes(p.simulation_id) ||
-          mySimIds.includes(
-            (p.simulations as { source_template_id?: string } | undefined)?.source_template_id ??
-              '',
-          ),
-      );
+      const myPart = participants.find((p) => !p.is_bot && p.user_id === userId);
       if (myPart) {
         this._commsEpoch = epoch;
         this._commsParticipant = myPart;
@@ -1358,12 +1531,7 @@ export class VelgEpochCommandCenter extends LitElement {
         // Join Realtime channel for the comms epoch
         const simName =
           (myPart.simulations as { name: string } | undefined)?.name ?? myPart.simulation_id;
-        realtimeService.joinEpoch(
-          epoch.id,
-          appState.user.value?.id ?? '',
-          myPart.simulation_id,
-          simName,
-        );
+        realtimeService.joinEpoch(epoch.id, userId, myPart.simulation_id, simName);
         if (myPart.team_id) {
           realtimeService.joinTeam(epoch.id, myPart.team_id);
         }
@@ -1376,6 +1544,15 @@ export class VelgEpochCommandCenter extends LitElement {
     this._commsParticipant = null;
   }
 
+  private async _loadAllTemplateSimulations(): Promise<void> {
+    const result = await simulationsApi.listPublic();
+    if (result.success && result.data) {
+      this._allTemplateSimulations = (
+        result.data as import('../../types/index.js').Simulation[]
+      ).filter((s) => !s.simulation_type || s.simulation_type === 'template');
+    }
+  }
+
   private async _loadEpochDetails(epochId: string) {
     const [participants, teams, leaderboard, battleLog] = await Promise.all([
       epochsApi.listParticipants(epochId),
@@ -1386,19 +1563,10 @@ export class VelgEpochCommandCenter extends LitElement {
 
     if (participants.success) {
       this._participants = (participants.data as EpochParticipant[]) || [];
-      // Find my participation
-      const mySimIds = appState.simulations.value.map((s) => s.id);
-      // Match participant by direct simulation_id (lobby phase, templates)
-      // OR by source_template_id (active phase, game instances)
+      // Find my participation by direct user_id match
+      const userId = appState.user.value?.id;
       this._myParticipant =
-        this._participants.find(
-          (p) =>
-            mySimIds.includes(p.simulation_id) ||
-            mySimIds.includes(
-              (p.simulations as { source_template_id?: string } | undefined)?.source_template_id ??
-                '',
-            ),
-        ) ?? null;
+        this._participants.find((p) => !p.is_bot && p.user_id === userId) ?? null;
     }
 
     if (teams.success) {
@@ -1428,6 +1596,25 @@ export class VelgEpochCommandCenter extends LitElement {
       );
       if (threatResult.success) {
         this._threats = (threatResult.data as OperativeMission[]) || [];
+      }
+
+      // Load zones for fortification UI (foundation phase)
+      if (this._epoch.status === 'foundation') {
+        try {
+          const { locationsApi } = await import('../../services/api/LocationsApiService.js');
+          const zonesResult = await locationsApi.listZones(this._myParticipant.simulation_id);
+          if (zonesResult.success && zonesResult.data) {
+            this._zones = zonesResult.data as Array<{
+              id: string;
+              name: string;
+              security_level: string;
+            }>;
+          }
+        } catch {
+          /* non-critical */
+        }
+      } else {
+        this._zones = [];
       }
     }
 
@@ -1466,13 +1653,15 @@ export class VelgEpochCommandCenter extends LitElement {
   }
 
   private _getPhaseCycleCounts(): { foundation: number; competition: number; reckoning: number } {
-    const total = this._getTotalCycles();
     const cfg = this._epoch?.config;
-    if (!cfg || total === 0) return { foundation: 0, competition: 0, reckoning: 0 };
-    const foundation = Math.round(total * (cfg.foundation_pct / 100));
-    const reckoning = Math.round(total * (cfg.reckoning_pct / 100));
-    const competition = total - foundation - reckoning;
-    return { foundation, competition, reckoning };
+    if (!cfg) return { foundation: 0, competition: 0, reckoning: 0 };
+    return computePhaseCycles(cfg);
+  }
+
+  private get _winner(): LeaderboardEntry | null {
+    return this._leaderboard.length > 0 && this._leaderboard[0].rank === 1
+      ? this._leaderboard[0]
+      : null;
   }
 
   private _renderPhaseStepper() {
@@ -1480,20 +1669,22 @@ export class VelgEpochCommandCenter extends LitElement {
     const status = this._epoch.status;
     if (['lobby', 'cancelled'].includes(status)) return nothing;
 
-    const phases = ['foundation', 'competition', 'reckoning'] as const;
+    const timedPhases = ['foundation', 'competition', 'reckoning'] as const;
     const phaseLabels: Record<string, string> = {
       foundation: msg('Foundation'),
       competition: msg('Competition'),
       reckoning: msg('Reckoning'),
+      results: msg('Results'),
     };
     const phaseColors: Record<string, string> = {
       foundation: 'var(--color-success)',
       competition: 'var(--color-warning)',
       reckoning: 'var(--color-danger)',
+      results: 'var(--color-warning)',
     };
 
-    const currentIdx = phases.indexOf(status as (typeof phases)[number]);
-    const activeIdx = status === 'completed' ? phases.length : currentIdx;
+    const currentIdx = timedPhases.indexOf(status as (typeof timedPhases)[number]);
+    const activeIdx = status === 'completed' ? timedPhases.length : currentIdx;
 
     const phaseCycles = this._getPhaseCycleCounts();
     const totalCycles = this._getTotalCycles();
@@ -1505,9 +1696,12 @@ export class VelgEpochCommandCenter extends LitElement {
       reckoning: phaseCycles.foundation + phaseCycles.competition + 1,
     };
 
+    const isEpochCompleted = status === 'completed';
+    const winner = this._winner;
+
     return html`
       <div class="stepper">
-        ${phases.map((phase, i) => {
+        ${timedPhases.map((phase, i) => {
           const isCompleted = i < activeIdx;
           const isActive = i === activeIdx;
           const dotClass = isCompleted
@@ -1563,20 +1757,38 @@ export class VelgEpochCommandCenter extends LitElement {
                   : nothing
               }
             </div>
-            ${
-              i < phases.length - 1
-                ? html`
-                  <div class="stepper__track" style="width: ${trackWidth}px">
-                    <div
-                      class="stepper__track-fill ${isCompleted ? 'stepper__track-fill--completed' : 'stepper__track-fill--upcoming'}"
-                      style=${isActive ? `background: ${color}; transform: scaleX(${fillFraction})` : ''}
-                    ></div>
-                  </div>
-                `
-                : nothing
-            }
+            <div class="stepper__track" style="width: ${trackWidth}px">
+              <div
+                class="stepper__track-fill ${isCompleted ? 'stepper__track-fill--completed' : 'stepper__track-fill--upcoming'}"
+                style=${isActive ? `background: ${color}; transform: scaleX(${fillFraction})` : ''}
+              ></div>
+            </div>
           `;
         })}
+
+        <!-- Results step -->
+        ${
+          isEpochCompleted && winner
+            ? html`
+            <div class="winner-banner" aria-live="polite">
+              <span class="winner-banner__icon">${icons.trophy(16)}</span>
+              <span class="winner-banner__label">${msg('Victor')}</span>
+              <span class="winner-banner__name">${winner.simulation_name}</span>
+              <span class="winner-banner__score">${winner.composite.toFixed(1)}</span>
+            </div>
+          `
+            : html`
+            <div
+              class="stepper__step stepper__step--results"
+              style="--stepper-color: var(--color-warning)"
+            >
+              <div class="stepper__dot--trophy ${isEpochCompleted ? 'stepper__dot--trophy-active' : ''}"></div>
+              <span class="stepper__label ${isEpochCompleted ? 'stepper__label--active' : 'stepper__label--upcoming'}">
+                ${phaseLabels.results}
+              </span>
+            </div>
+          `
+        }
       </div>
     `;
   }
@@ -1594,7 +1806,7 @@ export class VelgEpochCommandCenter extends LitElement {
           .epoch=${this._epoch}
           .myParticipant=${this._myParticipant}
           .participants=${this._participants}
-          .simulations=${appState.simulations.value}
+          .simulations=${this._allTemplateSimulations}
           .userId=${appState.user.value?.id ?? ''}
           .actionLoading=${this._actionLoading}
           @join-epoch=${(e: CustomEvent) => this._onJoinEpoch(e.detail.simulationId)}
@@ -1611,6 +1823,7 @@ export class VelgEpochCommandCenter extends LitElement {
           @advance-phase=${() => this._onAdvancePhase()}
           @resolve-cycle=${() => this._onResolveCycle()}
           @cancel-epoch=${() => this._onCancelEpoch()}
+          @delete-epoch=${() => this._onDeleteEpoch()}
         ></velg-epoch-lobby-actions>
         ${this._renderTabs()}
         <div class="content" id="epoch-tabpanel" role="tabpanel">
@@ -1627,6 +1840,23 @@ export class VelgEpochCommandCenter extends LitElement {
           <div class="cycle-overlay__label">${msg('Cycle')}</div>
           <div class="cycle-overlay__number">${this._newCycleNumber}</div>
           <div class="cycle-overlay__divider"></div>
+        </div>
+      `
+          : nothing
+      }
+      ${
+        this._showPhaseOverlay
+          ? html`
+        <div class="phase-overlay phase-overlay--${this._phaseOverlayPhase}">
+          <div class="phase-overlay__lines">
+            <div class="phase-overlay__line"></div>
+            <span class="phase-overlay__icon" aria-hidden="true">${icons.bolt(20)}</span>
+            <div class="phase-overlay__line"></div>
+          </div>
+          <span class="phase-overlay__name">${this._phaseOverlayPhase.toUpperCase()}</span>
+          <span class="phase-overlay__subtitle">
+            ${this._phaseOverlayPhase === 'competition' ? msg('All operatives unlocked') : msg('Final cycles — double points')}
+          </span>
         </div>
       `
           : nothing
@@ -1658,7 +1888,6 @@ export class VelgEpochCommandCenter extends LitElement {
       <velg-bot-config-panel
         .open=${this._showBotPanel}
         .epochId=${this._epoch?.id ?? ''}
-        .simulations=${appState.simulations.value}
         .participants=${this._participants}
         @panel-close=${() => {
           this._showBotPanel = false;
@@ -1690,9 +1919,11 @@ export class VelgEpochCommandCenter extends LitElement {
         .participantCounts=${this._participantCounts}
         .commsEpoch=${this._commsEpoch}
         .commsParticipant=${this._commsParticipant}
+        .allTemplateSimulations=${this._allTemplateSimulations}
         @select-epoch=${(e: CustomEvent) => this._onSelectEpoch(e.detail.epoch)}
         @join-epoch=${(e: CustomEvent) => this._onJoinFromBoard(e.detail.epochId, e.detail.simulationId)}
         @create-epoch=${() => this._createEpoch()}
+        @delete-epoch=${(e: CustomEvent) => this._onDeleteEpochFromBoard(e.detail.epochId, e.detail.epochName)}
       ></velg-epoch-ops-board>
     `;
   }
@@ -1703,6 +1934,7 @@ export class VelgEpochCommandCenter extends LitElement {
       realtimeService.leaveEpoch(this._commsEpoch.id);
     }
     this._epoch = epoch;
+    this._prevEpochStatus = epoch.status;
     this._activeTab = 'overview';
     this._injectEpochSchema(epoch);
     await this._loadEpochDetails(epoch.id);
@@ -1838,11 +2070,13 @@ export class VelgEpochCommandCenter extends LitElement {
             .missions=${this._missions}
             .threats=${this._threats}
             .battleLog=${this._battleLog}
+            .zones=${this._zones}
             .actionLoading=${this._actionLoading}
             @deploy-operative=${() => {
               this._showDeployModal = true;
             }}
             @counter-intel=${this._onCounterIntel}
+            @fortify-zone=${(e: CustomEvent) => this._onFortifyZone(e.detail.zoneId)}
             @recall-operative=${(e: CustomEvent) => this._onRecallOperative(e.detail.missionId)}
           ></velg-epoch-overview-tab>
         `;
@@ -1879,6 +2113,7 @@ export class VelgEpochCommandCenter extends LitElement {
           <velg-epoch-battle-log
             .entries=${this._battleLog}
             .participants=${this._participants}
+            .mySimulationId=${this._myParticipant?.simulation_id ?? ''}
           ></velg-epoch-battle-log>
         `;
       case 'alliances':
@@ -2027,6 +2262,21 @@ export class VelgEpochCommandCenter extends LitElement {
     }
   }
 
+  private async _onFortifyZone(zoneId: string) {
+    if (!this._epoch || !this._myParticipant) return;
+    const result = await epochsApi.fortifyZone(
+      this._epoch.id,
+      this._myParticipant.simulation_id,
+      zoneId,
+    );
+    if (result.success) {
+      VelgToast.success(msg('Zone fortified.'));
+      await this._loadEpochDetails(this._epoch.id);
+    } else {
+      VelgToast.error(msg('Failed to fortify zone.'));
+    }
+  }
+
   // ── Lobby Lifecycle ─────────────────────────────
 
   private async _onJoinEpoch(simulationId: string) {
@@ -2159,6 +2409,52 @@ export class VelgEpochCommandCenter extends LitElement {
     }
   }
 
+  private async _onDeleteEpoch() {
+    if (!this._epoch) return;
+    const confirmed = await VelgConfirmDialog.show({
+      title: msg('Delete Epoch'),
+      message: msg(
+        'This will permanently remove the epoch and all associated data. This cannot be undone.',
+      ),
+      confirmLabel: msg('Delete Epoch'),
+      variant: 'danger',
+    });
+    if (!confirmed) return;
+
+    this._actionLoading = true;
+    const result = await epochsApi.deleteEpoch(this._epoch.id);
+    this._actionLoading = false;
+    if (result.success) {
+      VelgToast.success(msg('Epoch deleted.'));
+      this._epoch = null;
+      await this._loadData();
+    } else {
+      VelgToast.error(msg('Failed to delete epoch.'));
+    }
+  }
+
+  private async _onDeleteEpochFromBoard(epochId: string, epochName: string) {
+    const confirmed = await VelgConfirmDialog.show({
+      title: msg(str`Delete ${epochName}`),
+      message: msg(
+        'This will permanently remove the epoch and all associated data. This cannot be undone.',
+      ),
+      confirmLabel: msg('Delete Epoch'),
+      variant: 'danger',
+    });
+    if (!confirmed) return;
+
+    this._actionLoading = true;
+    const result = await epochsApi.deleteEpoch(epochId);
+    this._actionLoading = false;
+    if (result.success) {
+      VelgToast.success(msg('Epoch deleted.'));
+      await this._loadData();
+    } else {
+      VelgToast.error(msg('Failed to delete epoch.'));
+    }
+  }
+
   // ── Alliance Management ─────────────────────────
 
   private async _onCreateTeam(name: string) {
@@ -2219,9 +2515,13 @@ export class VelgEpochCommandCenter extends LitElement {
   // ── Operative Recall ────────────────────────────
 
   private async _onRecallOperative(missionId: string) {
-    if (!this._epoch) return;
+    if (!this._epoch || !this._myParticipant) return;
     this._actionLoading = true;
-    const result = await epochsApi.recallOperative(this._epoch.id, missionId);
+    const result = await epochsApi.recallOperative(
+      this._epoch.id,
+      missionId,
+      this._myParticipant.simulation_id,
+    );
     this._actionLoading = false;
     if (result.success) {
       VelgToast.success(msg('Operative recalled.'));

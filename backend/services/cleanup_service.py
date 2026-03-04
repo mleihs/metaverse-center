@@ -48,7 +48,7 @@ class CleanupService:
             archived_instances=await cls._count_archived_instances(admin_supabase),
             audit_log_entries=await cls._count_table(admin_supabase, "audit_log", "created_at"),
             bot_decision_entries=await cls._count_table(
-                admin_supabase, "bot_decision_log", "decided_at",
+                admin_supabase, "bot_decision_log", "created_at",
             ),
         )
 
@@ -76,7 +76,7 @@ class CleanupService:
             )
         # bot_decision_log
         return await cls._preview_simple(
-            admin_supabase, "bot_decision_log", "decided_at", cutoff, cleanup_type, min_age_days,
+            admin_supabase, "bot_decision_log", "created_at", cutoff, cleanup_type, min_age_days,
         )
 
     @classmethod
@@ -104,7 +104,7 @@ class CleanupService:
             )
         else:
             result = await cls._execute_simple(
-                admin_supabase, "bot_decision_log", "decided_at",
+                admin_supabase, "bot_decision_log", "created_at",
                 cutoff, cleanup_type, min_age_days,
             )
 

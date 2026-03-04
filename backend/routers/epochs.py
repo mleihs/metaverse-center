@@ -10,7 +10,7 @@ from backend.dependencies import (
     get_current_user,
     get_supabase,
     require_epoch_creator,
-    require_simulation_member,
+    require_epoch_participant,
 )
 from backend.models.aptitude import DraftRequest
 from backend.models.bot import AddBotToEpoch
@@ -212,6 +212,23 @@ async def cancel_epoch(
     return {"success": True, "data": data}
 
 
+@router.delete("/{epoch_id}", response_model=SuccessResponse[EpochResponse])
+async def delete_epoch(
+    epoch_id: UUID,
+    user: CurrentUser = Depends(get_current_user),
+    _creator_check: None = Depends(require_epoch_creator()),
+    supabase: Client = Depends(get_supabase),
+    admin_supabase: Client = Depends(get_admin_supabase),
+) -> dict:
+    """Permanently delete an epoch. Creator only. Only lobby or cancelled epochs."""
+    data = await EpochService.delete_epoch(admin_supabase, epoch_id)
+    await AuditService.safe_log(
+        supabase, None, user.id, "game_epochs", epoch_id, "delete",
+        details={"name": data.get("name"), "status": data.get("status")},
+    )
+    return {"success": True, "data": data}
+
+
 @router.get("/{epoch_id}/instances", response_model=SuccessResponse)
 async def list_instances(
     epoch_id: UUID,
@@ -291,12 +308,12 @@ async def join_epoch(
     user: CurrentUser = Depends(get_current_user),
     supabase: Client = Depends(get_supabase),
 ) -> dict:
-    """Join an epoch with a simulation.
+    """Join an epoch with any template simulation.
 
-    The user must be an editor+ in the simulation they are joining with.
+    Any authenticated user can join. One simulation per epoch, one user per epoch.
     """
     data = await EpochService.join_epoch(supabase, epoch_id, body.simulation_id, user.id)
-    await AuditService.log_action(
+    await AuditService.safe_log(
         supabase, body.simulation_id, user.id, "epoch_participants", data.get("id"), "create",
         details={"epoch_id": str(epoch_id)},
     )
@@ -312,7 +329,7 @@ async def leave_epoch(
 ) -> dict:
     """Leave an epoch (lobby phase only)."""
     await EpochService.leave_epoch(supabase, epoch_id, simulation_id)
-    await AuditService.log_action(
+    await AuditService.safe_log(
         supabase, simulation_id, user.id, "epoch_participants", None, "delete",
         details={"epoch_id": str(epoch_id)},
     )
@@ -357,11 +374,12 @@ async def add_bot_to_epoch(
     epoch_id: UUID,
     body: AddBotToEpoch,
     user: CurrentUser = Depends(get_current_user),
-    _creator_check: None = Depends(require_epoch_creator()),
     supabase: Client = Depends(get_supabase),
+    admin_supabase: Client = Depends(get_admin_supabase),
+    _creator: None = Depends(require_epoch_creator()),
 ) -> dict:
-    """Add a bot participant to an epoch lobby. Creator only."""
-    data = await EpochService.add_bot(supabase, epoch_id, body.simulation_id, body.bot_player_id)
+    """Add a bot participant to an epoch lobby. Only the epoch creator."""
+    data = await EpochService.add_bot(admin_supabase, epoch_id, body.simulation_id, body.bot_player_id)
     await AuditService.safe_log(
         supabase, body.simulation_id, user.id, "epoch_participants", data.get("id"), "create",
         details={"epoch_id": str(epoch_id), "bot_player_id": str(body.bot_player_id), "is_bot": True},
@@ -413,16 +431,16 @@ async def create_team(
     body: TeamCreate,
     simulation_id: UUID = Query(..., description="Your simulation ID"),
     user: CurrentUser = Depends(get_current_user),
-    _member_check: str = Depends(require_simulation_member("editor")),
+    _participant: dict = Depends(require_epoch_participant()),
     supabase: Client = Depends(get_supabase),
 ) -> dict:
-    """Create a new alliance/team. Must be editor+ in your simulation."""
+    """Create a new alliance/team. Must be a participant in the epoch."""
     data = await EpochService.create_team(supabase, epoch_id, simulation_id, body.name)
     epoch = await EpochService.get(supabase, epoch_id)
     await BattleLogService.log_alliance_formed(
         supabase, epoch_id, epoch.get("current_cycle", 0), body.name, [simulation_id]
     )
-    await AuditService.log_action(
+    await AuditService.safe_log(
         supabase, simulation_id, user.id, "epoch_teams", data.get("id"), "create",
         details={"epoch_id": str(epoch_id), "name": body.name},
     )
@@ -435,12 +453,12 @@ async def join_team(
     team_id: UUID,
     simulation_id: UUID = Query(..., description="Your simulation ID"),
     user: CurrentUser = Depends(get_current_user),
-    _member_check: str = Depends(require_simulation_member("editor")),
+    _participant: dict = Depends(require_epoch_participant()),
     supabase: Client = Depends(get_supabase),
 ) -> dict:
-    """Join an existing team. Must be editor+ in your simulation."""
+    """Join an existing team. Must be a participant in the epoch."""
     data = await EpochService.join_team(supabase, epoch_id, team_id, simulation_id)
-    await AuditService.log_action(
+    await AuditService.safe_log(
         supabase, simulation_id, user.id, "epoch_teams", team_id, "update",
         details={"action": "join", "epoch_id": str(epoch_id)},
     )
@@ -452,12 +470,12 @@ async def leave_team(
     epoch_id: UUID,
     simulation_id: UUID = Query(..., description="Your simulation ID"),
     user: CurrentUser = Depends(get_current_user),
-    _member_check: str = Depends(require_simulation_member("editor")),
+    _participant: dict = Depends(require_epoch_participant()),
     supabase: Client = Depends(get_supabase),
 ) -> dict:
-    """Leave your current team. Must be editor+ in your simulation."""
+    """Leave your current team. Must be a participant in the epoch."""
     data = await EpochService.leave_team(supabase, epoch_id, simulation_id)
-    await AuditService.log_action(
+    await AuditService.safe_log(
         supabase, simulation_id, user.id, "epoch_teams", None, "update",
         details={"action": "leave", "epoch_id": str(epoch_id)},
     )

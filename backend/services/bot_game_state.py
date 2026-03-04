@@ -120,7 +120,7 @@ class BotGameState:
             supabase.table("agents")
             .select("id, name, simulation_id, ambassador_blocked_until")
             .eq("simulation_id", sim_id)
-            .eq("is_active", True)
+            .is_("deleted_at", "null")
             .execute()
         )
         self.own_agents = agents_resp.data or []
@@ -144,14 +144,15 @@ class BotGameState:
                 agent["aptitudes"] = apt_map.get(agent["id"], {})
 
         # Own embassies (for offensive operations)
+        # Embassies use simulation_a_id/simulation_b_id (bidirectional)
         embassies_resp = (
             supabase.table("embassies")
             .select(
-                "id, source_simulation_id, target_simulation_id, status,"
+                "id, simulation_a_id, simulation_b_id, status,"
                 " infiltration_penalty, infiltration_penalty_expires_at"
             )
-            .eq("source_simulation_id", sim_id)
             .eq("status", "active")
+            .or_(f"simulation_a_id.eq.{sim_id},simulation_b_id.eq.{sim_id}")
             .execute()
         )
         self.own_embassies = embassies_resp.data or []
@@ -249,7 +250,8 @@ class BotGameState:
     def get_embassy_for_target(self, target_sim_id: str) -> dict | None:
         """Get active embassy connecting to a target simulation."""
         for e in self.own_embassies:
-            if e["target_simulation_id"] == target_sim_id:
+            # Embassies are bidirectional: check both sides
+            if e["simulation_a_id"] == target_sim_id or e["simulation_b_id"] == target_sim_id:
                 return e
         return None
 

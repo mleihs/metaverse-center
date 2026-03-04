@@ -197,8 +197,8 @@ export class VelgDraftRosterPanel extends LitElement {
 
     .slot--filled .slot__remove {
       position: absolute;
-      top: -8px;
-      right: -8px;
+      top: 8px;
+      right: 8px;
       width: 22px;
       height: 22px;
       display: flex;

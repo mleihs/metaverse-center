@@ -200,6 +200,9 @@ class RealtimeServiceImpl {
   // ── Broadcast Cycle Resolution ──────────────────────
 
   broadcastCycleResolved(epochId: string, cycleNumber: number) {
+    // Set locally first so the UI updates immediately
+    this.cycleResolved.value = { epoch_id: epochId, cycle_number: cycleNumber };
+    // Also broadcast to other connected clients
     this._statusChannel?.send({
       type: 'broadcast',
       event: 'cycle_resolved',

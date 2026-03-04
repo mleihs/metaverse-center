@@ -81,7 +81,7 @@ class BattleLogService:
                 else None
             ),
             mission_id=UUID(mission["id"]),
-            is_public=False,
+            is_public=(mission["operative_type"] == "guardian"),
         )
 
     @classmethod

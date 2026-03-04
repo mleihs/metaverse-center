@@ -34,8 +34,8 @@ class EpochConfig(BaseModel):
     cycle_hours: int = Field(8, ge=2, le=24)
     rp_per_cycle: int = Field(12, ge=5, le=25)
     rp_cap: int = Field(40, ge=15, le=75)
-    foundation_pct: int = Field(20, ge=10, le=30)
-    reckoning_pct: int = Field(15, ge=10, le=25)
+    foundation_cycles: int = Field(4, ge=2, le=12)
+    reckoning_cycles: int = Field(8, ge=3, le=16)
     max_team_size: int = Field(3, ge=2, le=8)
     max_agents_per_player: int = Field(6, ge=4, le=8)
     allow_betrayal: bool = True
@@ -100,6 +100,7 @@ class ParticipantResponse(BaseModel):
     id: UUID
     epoch_id: UUID
     simulation_id: UUID
+    user_id: UUID | None = None
     team_id: UUID | None = None
     joined_at: datetime
     current_rp: int
@@ -107,7 +108,11 @@ class ParticipantResponse(BaseModel):
     final_scores: dict | None = None
     drafted_agent_ids: list[UUID] | None = None
     draft_completed_at: datetime | None = None
+    cycle_ready: bool = False
+    is_bot: bool = False
+    bot_player_id: UUID | None = None
     simulations: dict | None = None
+    bot_players: dict | None = None
 
 
 # ── Teams / Alliances ────────────────────────────────────────────
@@ -220,7 +225,7 @@ BattleLogEventType = Literal[
     "detected", "captured", "sabotage", "propaganda", "assassination",
     "infiltration", "alliance_formed", "alliance_dissolved", "betrayal",
     "phase_change", "epoch_start", "epoch_end", "rp_allocated",
-    "building_damaged", "agent_wounded", "counter_intel",
+    "building_damaged", "agent_wounded", "counter_intel", "zone_fortified",
 ]
 
 

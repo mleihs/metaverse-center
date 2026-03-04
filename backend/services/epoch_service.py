@@ -151,14 +151,34 @@ class EpochService:
                 "Need at least 2 participants to start an epoch.",
             )
 
+        # Verify creator has joined the epoch with a simulation
+        creator_id = str(epoch["created_by_id"])
+        member_resp = (
+            supabase.table("simulation_members")
+            .select("simulation_id")
+            .eq("user_id", creator_id)
+            .execute()
+        )
+        creator_sim_ids = {m["simulation_id"] for m in (member_resp.data or [])}
+        human_participant_sims = {
+            str(p["simulation_id"]) for p in participants if not p.get("is_bot")
+        }
+        if not creator_sim_ids & human_participant_sims:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                "Epoch creator must join with a simulation before starting.",
+            )
+
         # Auto-complete drafts for participants who haven't drafted
-        # (backwards compatibility: select first N agents by created_at)
+        # Use admin client to bypass RLS — creator may not be a member of
+        # all participating simulations (e.g. bot-assigned sims).
+        admin = await get_admin_supabase()
         config = {**DEFAULT_CONFIG, **epoch.get("config", {})}
         max_agents = config.get("max_agents_per_player", 6)
         for p in participants:
             if not p.get("drafted_agent_ids"):
                 agent_resp = (
-                    supabase.table("agents")
+                    admin.table("agents")
                     .select("id")
                     .eq("simulation_id", str(p["simulation_id"]))
                     .is_("deleted_at", "null")
@@ -168,19 +188,30 @@ class EpochService:
                 )
                 auto_ids = [a["id"] for a in (agent_resp.data or [])]
                 if auto_ids:
-                    supabase.table("epoch_participants").update({
+                    admin.table("epoch_participants").update({
                         "drafted_agent_ids": auto_ids,
                         "draft_completed_at": datetime.now(UTC).isoformat(),
                     }).eq("id", str(p["id"])).execute()
 
         # Clone simulations into game instances (atomic batch operation)
-        admin = await get_admin_supabase()
         epoch_number = await GameInstanceService.get_epoch_number(supabase)
         instance_mapping = await GameInstanceService.clone_for_epoch(
             admin, epoch_id, user_id, epoch_number
         )
 
         config = {**DEFAULT_CONFIG, **epoch.get("config", {})}
+
+        # Validate phase cycles don't overlap
+        total_cycles = (config["duration_days"] * 24) // config["cycle_hours"]
+        f_cycles = config.get("foundation_cycles", 4)
+        r_cycles = config.get("reckoning_cycles", 8)
+        if f_cycles + r_cycles >= total_cycles:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                f"Phase overlap: foundation ({f_cycles}) + reckoning ({r_cycles}) "
+                f"must be less than total cycles ({total_cycles}).",
+            )
+
         duration = timedelta(days=config["duration_days"])
         now = datetime.now(UTC)
 
@@ -272,6 +303,40 @@ class EpochService:
             raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Failed to cancel epoch.")
         return resp.data[0]
 
+    @classmethod
+    async def delete_epoch(cls, supabase: Client, epoch_id: UUID) -> dict:
+        """Permanently delete an epoch. Only lobby or cancelled epochs can be deleted.
+
+        Deletes child records in reverse FK order, then the epoch row itself.
+        """
+        epoch = await cls.get(supabase, epoch_id)
+        if epoch["status"] not in ("lobby", "cancelled"):
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                f"Cannot delete epoch with status '{epoch['status']}'. Cancel it first.",
+            )
+
+        eid = str(epoch_id)
+
+        # Delete child tables in reverse FK order
+        for table in [
+            "bot_decision_log",
+            "operative_missions",
+            "epoch_scores",
+            "battle_log",
+            "epoch_chat_messages",
+            "epoch_participants",
+            "epoch_teams",
+            "epoch_invitations",
+        ]:
+            supabase.table(table).delete().eq("epoch_id", eid).execute()
+
+        # Delete the epoch row itself
+        resp = supabase.table("game_epochs").delete().eq("id", eid).execute()
+        if not resp.data:
+            raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Failed to delete epoch.")
+        return resp.data[0]
+
     # ── Participants ─────────────────────────────────────────
 
     @classmethod
@@ -303,24 +368,9 @@ class EpochService:
     ) -> dict:
         """Join an epoch with a simulation.
 
-        If user_id is provided, verifies the user is at least an editor
-        in the simulation before allowing them to join.
+        Any authenticated user can join with any template simulation.
+        user_id is stored directly on the participant row.
         """
-        if user_id:
-            member_resp = (
-                supabase.table("simulation_members")
-                .select("member_role")
-                .eq("simulation_id", str(simulation_id))
-                .eq("user_id", str(user_id))
-                .limit(1)
-                .execute()
-            )
-            if not member_resp.data or member_resp.data[0]["member_role"] == "viewer":
-                raise HTTPException(
-                    status.HTTP_403_FORBIDDEN,
-                    "You must be an editor or higher in this simulation to join an epoch.",
-                )
-
         epoch = await cls.get(supabase, epoch_id)
         if epoch["status"] != "lobby":
             raise HTTPException(
@@ -328,7 +378,24 @@ class EpochService:
                 "Can only join epochs in lobby phase.",
             )
 
-        # Check not already joined
+        # Check simulation is a template (not game instance/archived)
+        sim_resp = (
+            supabase.table("simulations")
+            .select("simulation_type")
+            .eq("id", str(simulation_id))
+            .limit(1)
+            .execute()
+        )
+        if not sim_resp.data:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Simulation not found.")
+        sim_type = sim_resp.data[0].get("simulation_type")
+        if sim_type and sim_type != "template":
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                "Can only join with template simulations.",
+            )
+
+        # Check simulation not already in epoch
         existing = (
             supabase.table("epoch_participants")
             .select("id")
@@ -342,11 +409,27 @@ class EpochService:
                 "This simulation is already in the epoch.",
             )
 
+        # Check user not already in epoch (with different sim)
+        if user_id:
+            existing_user = (
+                supabase.table("epoch_participants")
+                .select("id")
+                .eq("epoch_id", str(epoch_id))
+                .eq("user_id", str(user_id))
+                .execute()
+            )
+            if existing_user.data:
+                raise HTTPException(
+                    status.HTTP_409_CONFLICT,
+                    "You are already in this epoch.",
+                )
+
         resp = (
             supabase.table("epoch_participants")
             .insert({
                 "epoch_id": str(epoch_id),
                 "simulation_id": str(simulation_id),
+                **({"user_id": str(user_id)} if user_id else {}),
             })
             .execute()
         )
@@ -585,14 +668,17 @@ class EpochService:
             )
 
         # Auto-draft agents based on bot personality
+        # Use admin client to bypass RLS — the epoch creator may not be a member
+        # of the simulation being assigned to the bot.
         from backend.services.bot_personality import auto_draft
 
+        admin = await get_admin_supabase()
         config = {**DEFAULT_CONFIG, **epoch.get("config", {})}
         max_agents = config.get("max_agents_per_player", 6)
 
         # Load agents with aptitudes for draft selection
         agents_resp = (
-            supabase.table("agents")
+            admin.table("agents")
             .select("id, name")
             .eq("simulation_id", str(simulation_id))
             .is_("deleted_at", "null")
@@ -603,7 +689,7 @@ class EpochService:
 
         # Load aptitudes for all agents in this sim
         aptitudes_resp = (
-            supabase.table("agent_aptitudes")
+            admin.table("agent_aptitudes")
             .select("agent_id, operative_type, aptitude_level")
             .eq("simulation_id", str(simulation_id))
             .execute()
@@ -755,6 +841,46 @@ class EpochService:
 
         return new_rp
 
+    @classmethod
+    async def grant_rp(
+        cls,
+        supabase: Client,
+        epoch_id: UUID,
+        simulation_id: UUID,
+        amount: int,
+    ) -> int:
+        """Grant RP to a single participant, respecting the cap. Returns new balance."""
+        resp = (
+            supabase.table("epoch_participants")
+            .select("id, current_rp")
+            .eq("epoch_id", str(epoch_id))
+            .eq("simulation_id", str(simulation_id))
+            .single()
+            .execute()
+        )
+        if not resp.data:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Not a participant.")
+
+        # Read epoch config for rp_cap
+        epoch_resp = (
+            supabase.table("game_epochs")
+            .select("config")
+            .eq("id", str(epoch_id))
+            .single()
+            .execute()
+        )
+        config = {**DEFAULT_CONFIG, **(epoch_resp.data or {}).get("config", {})}
+        rp_cap = config["rp_cap"]
+
+        current = resp.data["current_rp"]
+        new_rp = min(current + amount, rp_cap)
+
+        supabase.table("epoch_participants").update(
+            {"current_rp": new_rp}
+        ).eq("id", resp.data["id"]).execute()
+
+        return new_rp
+
     # ── Cycle Resolution ─────────────────────────────────────
 
     @classmethod
@@ -764,21 +890,76 @@ class EpochService:
         epoch_id: UUID,
         admin_supabase: Client,
     ) -> dict:
-        """Full cycle resolution pipeline: resolve → bots → scoring → notifications.
+        """Full cycle resolution pipeline: resolve → missions → bots → scoring → notifications.
 
         Extracts the multi-step resolve pipeline so it can be called from both
         the manual resolve endpoint and the auto-resolve trigger (all humans ready).
         Returns updated epoch data.
         """
+        from backend.services.battle_log_service import BattleLogService
         from backend.services.bot_service import BotService
         from backend.services.cycle_notification_service import CycleNotificationService
+        from backend.services.operative_service import OperativeService
         from backend.services.scoring_service import ScoringService
 
         data = await cls.resolve_cycle(supabase, epoch_id, admin_supabase=admin_supabase)
         config = data.get("config", {})
         cycle_number = data.get("current_cycle", 1)
 
-        # Execute bot decisions (after RP grant, before next cycle)
+        # Resolve missions that have passed their resolves_at time
+        # (after timer advancement in resolve_cycle, before bots act)
+        db = admin_supabase or supabase
+        try:
+            resolved = await OperativeService.resolve_pending_missions(db, epoch_id)
+            # Log mission results to battle log
+            for mission in resolved:
+                try:
+                    await BattleLogService.log_mission_result(
+                        db, epoch_id, cycle_number, mission
+                    )
+                except Exception:
+                    logger.debug("Battle log write failed for mission result", exc_info=True)
+        except Exception:
+            logger.warning("Mission resolution failed for epoch %s", epoch_id, exc_info=True)
+
+        # Expire zone fortifications that have passed their expiry cycle
+        try:
+            from backend.services.operative_service import SECURITY_TIER_ORDER
+
+            expired_forts = (
+                db.table("zone_fortifications")
+                .select("id, zone_id, security_bonus")
+                .eq("epoch_id", str(epoch_id))
+                .lte("expires_at_cycle", cycle_number)
+                .execute()
+            )
+            for fort in expired_forts.data or []:
+                # Downgrade zone security back by the bonus amount
+                zone_resp = (
+                    db.table("zones")
+                    .select("id, security_level")
+                    .eq("id", fort["zone_id"])
+                    .single()
+                    .execute()
+                )
+                if zone_resp.data:
+                    current_level = zone_resp.data["security_level"]
+                    try:
+                        idx = SECURITY_TIER_ORDER.index(current_level)
+                        new_idx = max(0, idx - fort["security_bonus"])
+                        new_level = SECURITY_TIER_ORDER[new_idx]
+                    except ValueError:
+                        new_level = current_level
+                    if new_level != current_level:
+                        db.table("zones").update(
+                            {"security_level": new_level}
+                        ).eq("id", fort["zone_id"]).execute()
+                # Delete expired fortification
+                db.table("zone_fortifications").delete().eq("id", fort["id"]).execute()
+        except Exception:
+            logger.warning("Fortification expiry failed for epoch %s", epoch_id, exc_info=True)
+
+        # Execute bot decisions (after RP grant + mission resolution, before next cycle)
         try:
             await BotService.execute_bot_cycle(
                 supabase=supabase,
@@ -832,15 +1013,19 @@ class EpochService:
         config = {**DEFAULT_CONFIG, **epoch.get("config", {})}
         new_cycle = epoch["current_cycle"] + 1
 
+        # Use admin client for all writes to bypass RLS restrictions
+        # (e.g. non-creator triggering auto-resolve via toggle_ready)
+        db = admin_supabase or supabase
+
         # Grant RP to all participants
         rp_amount = config["rp_per_cycle"]
         if epoch["status"] == "foundation":
             rp_amount = int(rp_amount * 1.5)  # Foundation bonus
 
-        await cls._grant_rp_batch(supabase, epoch_id, rp_amount, config["rp_cap"])
+        await cls._grant_rp_batch(db, epoch_id, rp_amount, config["rp_cap"])
 
         # Reset all cycle_ready flags before advancing
-        supabase.table("epoch_participants").update(
+        db.table("epoch_participants").update(
             {"cycle_ready": False}
         ).eq("epoch_id", str(epoch_id)).execute()
 
@@ -848,7 +1033,6 @@ class EpochService:
         # in sync with admin-triggered cycle resolution (not wall-clock time).
         # Subtract cycle_hours from resolves_at for all non-guardian missions.
         cycle_hours = config.get("cycle_hours", 8)
-        db = admin_supabase or supabase
         active_missions = (
             db.table("operative_missions")
             .select("id, resolves_at, operative_type")
@@ -871,7 +1055,7 @@ class EpochService:
 
         # Increment cycle
         resp = (
-            supabase.table("game_epochs")
+            db.table("game_epochs")
             .update({"current_cycle": new_cycle})
             .eq("id", str(epoch_id))
             .execute()
@@ -879,4 +1063,54 @@ class EpochService:
 
         if not resp.data:
             raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Failed to resolve cycle.")
+
+        # Auto-advance phase if cycle crosses a boundary
+        current_status = epoch["status"]
+        total_cycles = (config["duration_days"] * 24) // config["cycle_hours"]
+
+        # Support both new absolute cycles and legacy percentage-based configs
+        if "foundation_cycles" in config:
+            foundation_end = config["foundation_cycles"]
+        else:
+            foundation_end = round(total_cycles * config.get("foundation_pct", 10) / 100)
+
+        if "reckoning_cycles" in config:
+            reckoning_start = total_cycles - config["reckoning_cycles"]
+        else:
+            reckoning_cycles = round(total_cycles * config.get("reckoning_pct", 15) / 100)
+            reckoning_start = total_cycles - reckoning_cycles
+
+        # Validate phases don't overlap
+        if reckoning_start <= foundation_end:
+            logger.warning(
+                "Phase overlap detected for epoch %s: foundation_end=%d, reckoning_start=%d",
+                epoch_id, foundation_end, reckoning_start,
+            )
+
+        new_status = current_status
+        if current_status == "foundation" and new_cycle > foundation_end:
+            new_status = "competition"
+        elif current_status == "competition" and new_cycle > reckoning_start:
+            new_status = "reckoning"
+        elif current_status == "reckoning" and new_cycle >= total_cycles:
+            new_status = "completed"
+
+        if new_status != current_status:
+            logger.info(
+                "Epoch %s auto-advancing phase: %s → %s (cycle %d/%d)",
+                epoch_id, current_status, new_status, new_cycle, total_cycles,
+            )
+            phase_resp = (
+                db.table("game_epochs")
+                .update({"status": new_status})
+                .eq("id", str(epoch_id))
+                .execute()
+            )
+            if phase_resp.data:
+                resp = phase_resp
+                # Archive game instances when epoch completes
+                if new_status == "completed":
+                    admin = admin_supabase or await get_admin_supabase()
+                    await GameInstanceService.archive_instances(admin, epoch_id)
+
         return resp.data[0]

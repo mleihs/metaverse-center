@@ -247,4 +247,223 @@ export const icons = {
       <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.161 22 16.416 22 12c0-5.523-4.477-10-10-10z" />
     </svg>
   `,
+
+  // ── Operative type icons ──────────────────────────────
+
+  operativeSpy: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 3v2" />
+      <path d="M12 19v2" />
+      <path d="M3 12h2" />
+      <path d="M19 12h2" />
+    </svg>
+  `,
+
+  operativeSaboteur: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="15" r="7" />
+      <path d="M12 8v-5" />
+      <path d="M14 3l-2 2-2-2" />
+      <path d="M9 13l2 2 4-4" />
+    </svg>
+  `,
+
+  operativeAssassin: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2l-1 9h2l-1 9" />
+      <path d="M8 11l4-9 4 9" />
+      <path d="M5 20l7-3 7 3" />
+    </svg>
+  `,
+
+  operativeInfiltrator: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 4c-2.5 0-4.5 1.5-5 4-.3 1.5 0 3 .8 4.2" />
+      <path d="M16.2 12.2c.8-1.2 1.1-2.7.8-4.2-.5-2.5-2.5-4-5-4" />
+      <path d="M9 16c0 1.7 1.3 3 3 3s3-1.3 3-3" />
+      <path d="M12 19v2" />
+      <circle cx="12" cy="12" r="2" />
+    </svg>
+  `,
+
+  operativeGuardian: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3l8 4.5v5c0 4.418-3.354 8.074-8 9.5-4.646-1.426-8-5.082-8-9.5v-5L12 3z" />
+      <path d="M9 12l2 2 4-4" />
+    </svg>
+  `,
+
+  // ── Battle event icons ────────────────────────────────
+
+  target: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="12" r="6" />
+      <circle cx="12" cy="12" r="2" />
+    </svg>
+  `,
+
+  checkCircle: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M9 12l2 2 4-4" />
+    </svg>
+  `,
+
+  xCircle: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M15 9l-6 6" />
+      <path d="M9 9l6 6" />
+    </svg>
+  `,
+
+  alertTriangle: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 9v4" />
+      <path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z" />
+      <path d="M12 16h.01" />
+    </svg>
+  `,
+
+  explosion: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2l1 5 4-3-2 5 5 1-4 3 3 4-5-2 1 5-3-4-3 4 1-5-5 2 3-4-4-3 5-1-2-5 4 3z" />
+    </svg>
+  `,
+
+  droplet: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6.8 11a6 6 0 1 0 10.396 0l-5.197 -8l-5.2 8z" />
+    </svg>
+  `,
+
+  handshake: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M11 17l-1-1" />
+      <path d="M14 14l-4 4-3-3 4-4" />
+      <path d="M3 7l3 3 4-4 2 2 5-5 3 3" />
+      <path d="M3 7l0 4h4" />
+      <path d="M21 7l0 4h-4" />
+    </svg>
+  `,
+
+  skull: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 4c4.418 0 8 3.358 8 7.5 0 1.901-.794 3.636-2.1 4.952l.1 2.548a1 1 0 01-1 1h-10a1 1 0 01-1-1l.1-2.548C4.794 15.136 4 13.401 4 11.5 4 7.358 7.582 4 12 4z" />
+      <circle cx="9" cy="11" r="1" />
+      <circle cx="15" cy="11" r="1" />
+      <path d="M10 16h4" />
+      <path d="M12 16v3" />
+    </svg>
+  `,
+
+  radar: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="5" />
+      <circle cx="12" cy="12" r="1" />
+      <path d="M12 3v4" />
+      <path d="M12 12l5-5" />
+    </svg>
+  `,
+
+  clipboard: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" />
+      <rect x="9" y="3" width="6" height="4" rx="2" />
+      <path d="M9 12h6" />
+      <path d="M9 16h6" />
+    </svg>
+  `,
+
+  // ── Misc icons ────────────────────────────────────────
+
+  antenna: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 12l-2-4" />
+      <path d="M12 12l2-4" />
+      <path d="M12 12v9" />
+      <path d="M8 21h8" />
+      <path d="M7 5a5 5 0 0 1 10 0" />
+      <path d="M4 2a10 10 0 0 1 16 0" />
+    </svg>
+  `,
+
+  columns: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 21h18" />
+      <path d="M5 21v-14l7-4 7 4v14" />
+      <path d="M9 21v-8h6v8" />
+      <path d="M3 7h18" />
+    </svg>
+  `,
+
+  crossedSwords: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 19l14-14" />
+      <path d="M15 5h4v4" />
+      <path d="M19 19l-14-14" />
+      <path d="M5 5h4v4" />
+    </svg>
+  `,
+
+  deploy: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 16v5" />
+      <path d="M9 18l3 3 3-3" />
+    </svg>
+  `,
+
+  fortify: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3l8 4.5v5c0 4.418-3.354 8.074-8 9.5-4.646-1.426-8-5.082-8-9.5v-5L12 3z" />
+      <path d="M12 9v4" />
+      <path d="M10 11h4" />
+    </svg>
+  `,
+
+  trophy: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8 21h8" />
+      <path d="M12 17v4" />
+      <path d="M7 4h10v5a5 5 0 0 1-10 0V4z" />
+      <path d="M7 7H4a1 1 0 0 0-1 1v1a3 3 0 0 0 3 3h1" />
+      <path d="M17 7h3a1 1 0 0 1 1 1v1a3 3 0 0 1-3 3h-1" />
+    </svg>
+  `,
+
+  timer: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="13" r="8" />
+      <path d="M12 9v4l2 2" />
+      <path d="M10 2h4" />
+    </svg>
+  `,
 };

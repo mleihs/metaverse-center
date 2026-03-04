@@ -1,7 +1,8 @@
 # 05 - API Specification: Alle Endpoints (Simulation-Scoped)
 
-**Version:** 2.0
-**Datum:** 2026-03-03
+**Version:** 2.1
+**Datum:** 2026-03-04
+**Aenderung v2.1:** **257 Endpoints total (33 Router).** Operatives-Router erweitert um Fortify-Zone-Endpoint (`POST /api/v1/epochs/:epochId/operatives/fortify-zone`). Auth-Modell umgestellt: `require_epoch_participant()` ersetzt `require_simulation_member("editor")` auf allen Competitive-Layer-Endpoints. ParticipantResponse jetzt mit `user_id`-Feld. Migrationen 048+049.
 **Aenderung v2.0:** **256 Endpoints total (33 Router).** Admin-Router erweitert um 3 Data-Cleanup-Endpoints (`GET /api/v1/admin/cleanup/stats`, `POST /api/v1/admin/cleanup/preview`, `POST /api/v1/admin/cleanup/execute`). 6 Cleanup-Typen: completed_epochs, cancelled_epochs, stale_lobbies, archived_instances, audit_log, bot_decision_log. Preview-before-delete Sicherheit. Epoch-Loeschungen kaskadieren ueber 8 Kind-Tabellen + Spielinstanzen.
 **Aenderung v1.9:** **252 Endpoints total (32 Router).** Agent Aptitudes: 2 neue Endpoints auf Agents-Router (`GET/PUT /api/v1/simulations/:simId/agents/:agentId/aptitudes`), 1 neuer Endpoint fuer Simulations-Aptitudes (`GET /api/v1/simulations/:simId/aptitudes`), 2 neue Public-Endpoints. Draft Phase: 1 neuer Endpoint auf Epochs-Router (`POST /api/v1/epochs/:epochId/participants/:simId/draft`).
 **Aenderung v1.8:** **246 Endpoints total (32 Router).** 2 neue Notification-Preferences-Endpoints auf Users-Router (`GET/POST /api/v1/users/me/notification-preferences`).
@@ -1192,7 +1193,7 @@ Alle Teilnehmer einer Epoche auflisten.
 **Auth:** Authentifizierter Benutzer
 
 ### `POST /api/v1/epochs/:epochId/participants`
-Epoche mit einer Simulation beitreten. Benutzer muss `editor+` in der Simulation sein.
+Epoche mit einer Template-Simulation beitreten. Keine Simulations-Mitgliedschaft erforderlich (Migration 049: Open Epoch Participation). Setzt `user_id` auf den authentifizierten Benutzer. Die `user_has_simulation_access()` Funktion gewaehrt dem Teilnehmer automatisch Lesezugriff auf die Simulations-Daten.
 
 **Body:**
 ```json
@@ -1201,7 +1202,26 @@ Epoche mit einer Simulation beitreten. Benutzer muss `editor+` in der Simulation
 }
 ```
 
-**Auth:** Simulation-Editor+
+**Validierung:**
+- Simulation muss `simulation_type = 'template'` sein
+- Benutzer darf nur einmal pro Epoche teilnehmen (UNIQUE Index auf `epoch_id, user_id`)
+
+**Response** enthaelt `user_id`:
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "epoch_id": "uuid",
+    "simulation_id": "uuid",
+    "user_id": "uuid",
+    "current_rp": 0,
+    "is_bot": false
+  }
+}
+```
+
+**Auth:** Authentifizierter Benutzer
 
 ### `DELETE /api/v1/epochs/:epochId/participants/:simulationId`
 Epoche verlassen (nur in `lobby`-Phase).
@@ -1211,7 +1231,7 @@ Epoche verlassen (nur in `lobby`-Phase).
 ### `POST /api/v1/epochs/:epochId/participants/:simulationId/draft`
 Agenten-Draft fuer eine Epoch-Teilnahme abschliessen. Setzt `drafted_agent_ids` und `draft_completed_at` auf dem Participant-Record. Nur in `lobby`-Phase moeglich.
 
-**Auth:** Simulation-Editor+
+**Auth:** Epoch-Participant (via `require_epoch_participant()`)
 
 **Body:**
 ```json
@@ -1253,21 +1273,21 @@ Neues Team/Allianz erstellen.
 }
 ```
 
-**Auth:** Simulation-Editor+
+**Auth:** Epoch-Participant (via `require_epoch_participant()`)
 
 ### `POST /api/v1/epochs/:epochId/teams/:teamId/join`
 Bestehendem Team beitreten.
 
 **Query:** `?simulation_id=uuid`
 
-**Auth:** Simulation-Editor+
+**Auth:** Epoch-Participant (via `require_epoch_participant()`)
 
 ### `POST /api/v1/epochs/:epochId/teams/leave`
 Team verlassen.
 
 **Query:** `?simulation_id=uuid`
 
-**Auth:** Simulation-Editor+
+**Auth:** Epoch-Participant (via `require_epoch_participant()`)
 
 ---
 
@@ -1290,7 +1310,7 @@ Operativen Agenten auf Mission entsenden (kostet RP).
 }
 ```
 
-**Auth:** Simulation-Editor+
+**Auth:** Epoch-Participant
 
 ### `GET /api/v1/epochs/:epochId/operatives`
 Eigene Missionen auflisten (optionaler Filter nach Simulation/Status).
@@ -1316,7 +1336,7 @@ Aktiven Operativen zurueckrufen.
 
 **Query:** `?simulation_id=uuid`
 
-**Auth:** Simulation-Editor+
+**Auth:** Epoch-Participant
 
 ### `POST /api/v1/epochs/:epochId/operatives/resolve`
 Alle faelligen Missionen aufloesen. Nur Epoch-Creator.
@@ -1324,11 +1344,32 @@ Alle faelligen Missionen aufloesen. Nur Epoch-Creator.
 **Auth:** Epoch-Creator
 
 ### `POST /api/v1/epochs/:epochId/operatives/counter-intel`
-Counter-Intelligence-Sweep durchfuehren (kostet 3 RP).
+Counter-Intelligence-Sweep durchfuehren (kostet 4 RP).
 
 **Query:** `?simulation_id=uuid`
 
-**Auth:** Simulation-Editor+
+**Auth:** Epoch-Participant
+
+### `POST /api/v1/epochs/:epochId/operatives/fortify-zone`
+Zone fortifizieren (kostet 2 RP). Nur waehrend Foundation-Phase. Erhoecht Zone-Security um 1 Tier fuer 5 Wettbewerbszyklen. Max 1 Fortifikation pro Zone pro Epoche. Versteckt — nur sichtbar fuer Besitzer und via Spion-Intel.
+
+**Query:** `?simulation_id=uuid&zone_id=uuid`
+
+**Auth:** Epoch-Participant
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "zone_id": "uuid",
+    "security_bonus": 1,
+    "expires_at_cycle": 7,
+    "cost_rp": 2
+  }
+}
+```
 
 ---
 
@@ -1744,11 +1785,11 @@ Alle oeffentlichen Endpoints (ohne Authentifizierung, Rate-Limit: 100/min) unter
 | Epochs | 20 | CRUD + Lifecycle (Start/Advance/Cancel/ResolveCycle) + Participants + Draft + Teams + Ready + AddBot + RemoveBot |
 | Epoch Chat | 3 | Send + List (Epoch-wide) + List (Team) |
 | Epoch Invitations | 4 | Create+Send + List + Revoke + RegenerateLore |
-| Operatives | 7 | Deploy + List + Threats + Get + Recall + Resolve + CounterIntel |
+| Operatives | 8 | Deploy + List + Threats + Get + Recall + Resolve + CounterIntel + FortifyZone |
 | Scores | 4 | Leaderboard + Standings + History + Compute |
 | Game Mechanics | 8 | Health Dashboard + Sim/Buildings/Zones/Embassies + Refresh |
 | Bot Players | 5 | CRUD (List + Get + Create + Update + Delete) |
 | Aptitudes | 3 | GetForAgent + UpdateForAgent + ListForSimulation |
 | Admin | 11 | Settings (2) + Users (3) + Memberships (3) + Cleanup (3) |
 | Public | 48 | Anonymer Lesezugriff (alle GET-only) |
-| **Gesamt** | **256** | **33 Router** |
+| **Gesamt** | **257** | **33 Router** |

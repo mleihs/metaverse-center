@@ -17,10 +17,80 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { epochsApi } from '../../services/api/EpochsApiService.js';
 import type { EpochScoreWeights } from '../../types/index.js';
 import '../shared/BaseModal.js';
-import { DEFAULT_FOUNDATION_PCT, DEFAULT_RECKONING_PCT } from '../../utils/epoch.js';
+import {
+  computePhaseCycles,
+  DEFAULT_FOUNDATION_CYCLES,
+  DEFAULT_RECKONING_CYCLES,
+} from '../../utils/epoch.js';
 import { formStyles } from '../shared/form-styles.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
+
+type TempoPresetId = 'standard' | 'duell' | 'taktisch' | 'blitz' | 'custom';
+
+interface TempoPreset {
+  id: TempoPresetId;
+  label: string;
+  competition: number | null;
+  reckoning: number | null;
+  players: string;
+  description: string;
+}
+
+function getTempoPresets(): TempoPreset[] {
+  return [
+    {
+      id: 'standard',
+      label: msg('Standard'),
+      competition: 30,
+      reckoning: 8,
+      players: '',
+      description: msg('Balanced pacing for most groups.'),
+    },
+    {
+      id: 'duell',
+      label: msg('Duel'),
+      competition: 20,
+      reckoning: 6,
+      players: '',
+      description: msg('Fast-paced head-to-head. Shorter phases prevent snowballing.'),
+    },
+    {
+      id: 'taktisch',
+      label: msg('Tactical'),
+      competition: 36,
+      reckoning: 12,
+      players: '',
+      description: msg('Extended match for large groups. More time for alliances and betrayals.'),
+    },
+    {
+      id: 'blitz',
+      label: msg('Blitz'),
+      competition: 18,
+      reckoning: 6,
+      players: '',
+      description: msg('Quick match. Aggressive play rewarded, minimal buildup.'),
+    },
+    {
+      id: 'custom',
+      label: msg('Custom'),
+      competition: null,
+      reckoning: null,
+      players: '',
+      description: msg('Set duration and reckoning cycles manually.'),
+    },
+  ];
+}
+
+/** Compute ideal duration_days so that total cycles = foundation + competition + reckoning. */
+function computeDurationForPreset(
+  competition: number,
+  reckoning: number,
+  cycleHours: number,
+): number {
+  const totalCycles = DEFAULT_FOUNDATION_CYCLES + competition + reckoning;
+  return Math.ceil((totalCycles * cycleHours) / 24);
+}
 
 type Step = 'designation' | 'economy' | 'doctrine' | 'confirm';
 
@@ -582,6 +652,143 @@ export class VelgEpochCreationWizard extends LitElement {
         100% { transform: translateX(100%); }
       }
 
+      /* ── Tempo Presets ────────────────────── */
+
+      .tempo-section-header {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        margin-bottom: var(--space-3);
+        padding-bottom: var(--space-2);
+        border-bottom: 1px solid var(--color-gray-800);
+      }
+
+      .tempo-section-label {
+        font-family: var(--font-brutalist);
+        font-weight: var(--font-bold);
+        font-size: var(--text-xs);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-wide);
+        color: var(--color-gray-400);
+      }
+
+      .tempo-presets {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 2px;
+        background: var(--color-gray-700);
+        border: 1px solid var(--color-gray-700);
+        margin-bottom: var(--space-3);
+      }
+
+      .tempo-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-1);
+        padding: var(--space-3) var(--space-2);
+        background: var(--color-gray-900);
+        border: none;
+        cursor: pointer;
+        text-align: left;
+        transition: background 0.15s ease, box-shadow 0.2s ease;
+        outline: none;
+        box-shadow: inset 0 2px 0 0 transparent;
+      }
+
+      .tempo-card:hover {
+        background: var(--color-gray-850, #1a1a2e);
+      }
+
+      .tempo-card:focus-visible {
+        z-index: 1;
+        outline: 2px solid var(--color-warning);
+        outline-offset: -2px;
+      }
+
+      .tempo-card--active {
+        background: rgba(245 158 11 / 0.06);
+        box-shadow:
+          inset 0 2px 0 0 var(--color-warning),
+          0 0 12px rgba(245 158 11 / 0.08);
+      }
+
+      .tempo-card--active .tempo-card__label {
+        color: var(--color-warning);
+      }
+
+      .tempo-card__label {
+        font-family: var(--font-mono, monospace);
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--color-gray-300);
+        transition: color 0.15s ease;
+      }
+
+      .tempo-card__players {
+        display: inline-block;
+        width: fit-content;
+        padding: 1px 6px;
+        font-family: var(--font-mono, monospace);
+        font-size: 9px;
+        letter-spacing: 0.05em;
+        color: var(--color-gray-400);
+        background: var(--color-gray-800);
+        border: 1px solid var(--color-gray-700);
+      }
+
+      .tempo-card--active .tempo-card__players {
+        color: var(--color-warning);
+        border-color: rgba(245 158 11 / 0.3);
+        background: rgba(245 158 11 / 0.08);
+      }
+
+      .tempo-card__desc {
+        font-family: var(--font-mono, monospace);
+        font-size: 9px;
+        line-height: 1.5;
+        color: var(--color-gray-500);
+        margin-top: var(--space-1);
+      }
+
+      .tempo-card--active .tempo-card__desc {
+        color: var(--color-gray-400);
+      }
+
+      .tempo-custom-reveal {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 0.25s ease;
+      }
+
+      .tempo-custom-reveal--open {
+        grid-template-rows: 1fr;
+      }
+
+      .tempo-custom-reveal__inner {
+        overflow: hidden;
+      }
+
+      .tempo-custom-reveal__content {
+        padding: var(--space-3) 0 0;
+      }
+
+      @media (max-width: 600px) {
+        .tempo-presets {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .tempo-card:last-child {
+          grid-column: 1 / -1;
+        }
+
+        .tempo-card__desc {
+          display: none;
+        }
+      }
+
       /* ── Error ───────────────────────────── */
 
       .error {
@@ -614,6 +821,10 @@ export class VelgEpochCreationWizard extends LitElement {
   @state() private _maxAgentsPerPlayer = 6;
   @state() private _allowBetrayal = true;
 
+  // Tempo preset
+  @state() private _tempoPreset: TempoPresetId = 'standard';
+  @state() private _reckoningCycles = DEFAULT_RECKONING_CYCLES;
+
   // Step 3: Doctrine (score weights, percentages that sum to 100)
   @state() private _wStability = 25;
   @state() private _wInfluence = 20;
@@ -635,6 +846,8 @@ export class VelgEpochCreationWizard extends LitElement {
       this._maxTeamSize = 3;
       this._maxAgentsPerPlayer = 6;
       this._allowBetrayal = true;
+      this._tempoPreset = 'standard';
+      this._reckoningCycles = DEFAULT_RECKONING_CYCLES;
       this._wStability = 25;
       this._wInfluence = 20;
       this._wSovereignty = 20;
@@ -686,7 +899,54 @@ export class VelgEpochCreationWizard extends LitElement {
     );
   }
 
-  // ── Presets ─────────────────────────────────────────
+  // ── Tempo Presets ──────────────────────────────────
+
+  private _selectTempo(id: TempoPresetId): void {
+    this._tempoPreset = id;
+    const preset = getTempoPresets().find((p) => p.id === id);
+    if (preset?.reckoning != null && preset.competition != null) {
+      this._reckoningCycles = preset.reckoning;
+      this._durationDays = computeDurationForPreset(
+        preset.competition,
+        preset.reckoning,
+        this._cycleHours,
+      );
+    }
+  }
+
+  private _recalcDurationFromPreset(): void {
+    const preset = getTempoPresets().find((p) => p.id === this._tempoPreset);
+    if (preset?.competition != null && preset.reckoning != null) {
+      this._durationDays = computeDurationForPreset(
+        preset.competition,
+        preset.reckoning,
+        this._cycleHours,
+      );
+    }
+  }
+
+  private _handleTempoKeydown(e: KeyboardEvent): void {
+    const presets = getTempoPresets();
+    const currentIdx = presets.findIndex((p) => p.id === this._tempoPreset);
+    let nextIdx = currentIdx;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      nextIdx = (currentIdx + 1) % presets.length;
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      nextIdx = (currentIdx - 1 + presets.length) % presets.length;
+    }
+    if (nextIdx !== currentIdx) {
+      this._selectTempo(presets[nextIdx].id);
+      // Focus the new card after render
+      this.updateComplete.then(() => {
+        const cards = this.shadowRoot?.querySelectorAll('.tempo-card');
+        (cards?.[nextIdx] as HTMLElement)?.focus();
+      });
+    }
+  }
+
+  // ── Doctrine Presets ──────────────────────────────
 
   private _applyPreset(preset: 'balanced' | 'builder' | 'warmonger' | 'diplomat'): void {
     switch (preset) {
@@ -733,8 +993,8 @@ export class VelgEpochCreationWizard extends LitElement {
       cycle_hours: this._cycleHours,
       rp_per_cycle: this._rpPerCycle,
       rp_cap: this._rpCap,
-      foundation_pct: DEFAULT_FOUNDATION_PCT,
-      reckoning_pct: DEFAULT_RECKONING_PCT,
+      foundation_cycles: DEFAULT_FOUNDATION_CYCLES,
+      reckoning_cycles: this._reckoningCycles,
       max_team_size: this._maxTeamSize,
       max_agents_per_player: this._maxAgentsPerPlayer,
       allow_betrayal: this._allowBetrayal,
@@ -817,11 +1077,19 @@ export class VelgEpochCreationWizard extends LitElement {
   // ── Step 1: Designation ─────────────────────────────
 
   private _renderDesignation() {
-    const foundationDays =
-      Math.round(this._durationDays * (DEFAULT_FOUNDATION_PCT / 100) * 10) / 10;
-    const reckoningDays = Math.round(this._durationDays * (DEFAULT_RECKONING_PCT / 100) * 10) / 10;
-    const competitionDays =
-      Math.round((this._durationDays - foundationDays - reckoningDays) * 10) / 10;
+    const phases = computePhaseCycles({
+      duration_days: this._durationDays,
+      cycle_hours: this._cycleHours,
+      foundation_cycles: DEFAULT_FOUNDATION_CYCLES,
+      reckoning_cycles: this._reckoningCycles,
+    });
+    const foundationDays = Math.round(((phases.foundation * this._cycleHours) / 24) * 10) / 10;
+    const reckoningDays = Math.round(((phases.reckoning * this._cycleHours) / 24) * 10) / 10;
+    const competitionDays = Math.round(((phases.competition * this._cycleHours) / 24) * 10) / 10;
+
+    const presets = getTempoPresets();
+    const isCustom = this._tempoPreset === 'custom';
+    const cyclesPerDay = Math.round((24 / this._cycleHours) * 10) / 10;
 
     return html`
       <div class="console-form">
@@ -861,39 +1129,6 @@ export class VelgEpochCreationWizard extends LitElement {
         <div class="range-field">
           <div class="range-field__header">
             <span class="range-field__label">
-              ${msg('Duration')}
-              ${renderInfoBubble(msg('Total epoch length in days. Automatically split into Foundation (20%), Competition (65%), and Reckoning (15%) phases.'))}
-            </span>
-            <span class="range-field__readout">${this._durationDays}d</span>
-          </div>
-          <input
-            type="range"
-            aria-label=${msg('Duration')}
-            min="3"
-            max="60"
-            .value=${String(this._durationDays)}
-            @input=${(e: Event) => {
-              this._durationDays = Number((e.target as HTMLInputElement).value);
-            }}
-          />
-          <span class="field__hint">
-            ${msg(str`Foundation ${foundationDays}d · Competition ${competitionDays}d · Reckoning ${reckoningDays}d`)}
-          </span>
-        </div>
-      </div>
-    `;
-  }
-
-  // ── Step 2: Economy ─────────────────────────────────
-
-  private _renderEconomy() {
-    const cyclesPerDay = Math.round((24 / this._cycleHours) * 10) / 10;
-
-    return html`
-      <div class="console-form">
-        <div class="range-field">
-          <div class="range-field__header">
-            <span class="range-field__label">
               ${msg('Cycle Interval')}
               ${renderInfoBubble(msg('Hours between each game cycle. Each cycle grants RP and resolves operative missions. Shorter cycles = faster gameplay.'))}
             </span>
@@ -907,11 +1142,92 @@ export class VelgEpochCreationWizard extends LitElement {
             .value=${String(this._cycleHours)}
             @input=${(e: Event) => {
               this._cycleHours = Number((e.target as HTMLInputElement).value);
+              this._recalcDurationFromPreset();
             }}
           />
           <span class="field__hint">${msg(str`${cyclesPerDay} cycles per day`)}</span>
         </div>
 
+        <!-- Tempo Presets -->
+        <div class="tempo-section-header">
+          <span class="tempo-section-label">${msg('Match Tempo')}</span>
+          ${renderInfoBubble(msg('Presets set the number of competition and reckoning cycles. Duration is calculated automatically. Use Custom for full manual control.'))}
+        </div>
+
+        <div class="tempo-presets" role="radiogroup" aria-label=${msg('Match Tempo')}>
+          ${presets.map(
+            (p) => html`
+              <button
+                class="tempo-card ${this._tempoPreset === p.id ? 'tempo-card--active' : ''}"
+                role="radio"
+                aria-checked=${this._tempoPreset === p.id}
+                tabindex=${this._tempoPreset === p.id ? 0 : -1}
+                @click=${() => this._selectTempo(p.id)}
+                @keydown=${this._handleTempoKeydown}
+              >
+                <span class="tempo-card__label">${p.label}</span>
+                ${
+                  p.competition != null
+                    ? html`<span class="tempo-card__players">${DEFAULT_FOUNDATION_CYCLES}+${p.competition}+${p.reckoning}</span>`
+                    : nothing
+                }
+                <span class="tempo-card__desc">${p.description}</span>
+              </button>
+            `,
+          )}
+        </div>
+
+        <div class="tempo-custom-reveal ${isCustom ? 'tempo-custom-reveal--open' : ''}">
+          <div class="tempo-custom-reveal__inner">
+            <div class="tempo-custom-reveal__content">
+              <div class="range-field">
+                <div class="range-field__header">
+                  <span class="range-field__label">${msg('Duration')}</span>
+                  <span class="range-field__readout">${this._durationDays}d</span>
+                </div>
+                <input
+                  type="range"
+                  aria-label=${msg('Duration')}
+                  min="3"
+                  max="60"
+                  .value=${String(this._durationDays)}
+                  @input=${(e: Event) => {
+                    this._durationDays = Number((e.target as HTMLInputElement).value);
+                  }}
+                />
+              </div>
+              <div class="range-field">
+                <div class="range-field__header">
+                  <span class="range-field__label">${msg('Reckoning Cycles')}</span>
+                  <span class="range-field__readout">${this._reckoningCycles}</span>
+                </div>
+                <input
+                  type="range"
+                  aria-label=${msg('Reckoning Cycles')}
+                  min="3"
+                  max="16"
+                  .value=${String(this._reckoningCycles)}
+                  @input=${(e: Event) => {
+                    this._reckoningCycles = Number((e.target as HTMLInputElement).value);
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <span class="field__hint">
+          ${msg(str`Foundation ${phases.foundation} · Competition ${phases.competition} · Reckoning ${phases.reckoning} cycles — ${this._durationDays}d (${foundationDays}d + ${competitionDays}d + ${reckoningDays}d)`)}
+        </span>
+      </div>
+    `;
+  }
+
+  // ── Step 2: Economy ─────────────────────────────────
+
+  private _renderEconomy() {
+    return html`
+      <div class="console-form">
         <div class="field-row">
           <div class="range-field">
             <div class="range-field__header">
@@ -1148,9 +1464,14 @@ export class VelgEpochCreationWizard extends LitElement {
   // ── Step 4: Confirm ─────────────────────────────────
 
   private _renderConfirm() {
-    const foundationDays =
-      Math.round(this._durationDays * (DEFAULT_FOUNDATION_PCT / 100) * 10) / 10;
-    const reckoningDays = Math.round(this._durationDays * (DEFAULT_RECKONING_PCT / 100) * 10) / 10;
+    const phases = computePhaseCycles({
+      duration_days: this._durationDays,
+      cycle_hours: this._cycleHours,
+      foundation_cycles: DEFAULT_FOUNDATION_CYCLES,
+      reckoning_cycles: this._reckoningCycles,
+    });
+    const toDays = (cycles: number) => Math.round(((cycles * this._cycleHours) / 24) * 10) / 10;
+    const presetLabel = getTempoPresets().find((p) => p.id === this._tempoPreset)?.label ?? '';
 
     return html`
       <div class="summary">
@@ -1161,25 +1482,33 @@ export class VelgEpochCreationWizard extends LitElement {
             <span class="summary__val">${this._name}</span>
           </div>
           <div class="summary__row">
+            <span class="summary__key">${msg('Match Tempo')}</span>
+            <span class="summary__val">${presetLabel}</span>
+          </div>
+          <div class="summary__row">
             <span class="summary__key">${msg('Duration')}</span>
             <span class="summary__val">${this._durationDays}d</span>
           </div>
           <div class="summary__row">
             <span class="summary__key">${msg('Foundation')}</span>
-            <span class="summary__val">${foundationDays}d</span>
+            <span class="summary__val">${phases.foundation} ${msg('cycles')} (${toDays(phases.foundation)}d)</span>
+          </div>
+          <div class="summary__row">
+            <span class="summary__key">${msg('Competition')}</span>
+            <span class="summary__val">${phases.competition} ${msg('cycles')} (${toDays(phases.competition)}d)</span>
           </div>
           <div class="summary__row">
             <span class="summary__key">${msg('Reckoning')}</span>
-            <span class="summary__val">${reckoningDays}d</span>
+            <span class="summary__val">${phases.reckoning} ${msg('cycles')} (${toDays(phases.reckoning)}d)</span>
+          </div>
+          <div class="summary__row">
+            <span class="summary__key">${msg('Cycle Interval')}</span>
+            <span class="summary__val">${this._cycleHours}h</span>
           </div>
         </div>
 
         <div class="summary__section">
           <div class="summary__title">${msg('Economy')}</div>
-          <div class="summary__row">
-            <span class="summary__key">${msg('Cycle Interval')}</span>
-            <span class="summary__val">${this._cycleHours}h</span>
-          </div>
           <div class="summary__row">
             <span class="summary__key">${msg('RP per Cycle')}</span>
             <span class="summary__val">${this._rpPerCycle}</span>

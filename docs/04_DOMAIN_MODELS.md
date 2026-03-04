@@ -1,7 +1,8 @@
 # 04 - Domain Models: Entitaeten mit Simulation-Scope
 
-**Version:** 2.9
-**Datum:** 2026-03-03
+**Version:** 3.0
+**Datum:** 2026-03-04
+**Aenderung v3.0:** ZoneFortification interface. `user_id` auf EpochParticipant. Open Epoch Participation (keine Mitgliedschaft erforderlich). Migrationen 048+049.
 **Aenderung v2.9:** AgentAptitude interface + AptitudeSet type. `aptitudes?: AgentAptitude[]` auf Agent. `drafted_agent_ids` + `draft_completed_at` auf EpochParticipant. `max_agents_per_player` auf EpochConfig.
 **Aenderung v2.8:** NotificationPreferences interface. SettingCategory + `'notifications'`.
 **Aenderung v2.7:** Bot Player types (BotPlayer, BotPersonality, BotDifficulty). is_bot/bot_player_id/bot_players auf EpochParticipant. sender_type auf EpochChatMessage.
@@ -1010,7 +1011,7 @@ type EpochStatus = 'lobby' | 'foundation' | 'competition' | 'reckoning' | 'compl
 
 type OperativeType = 'spy' | 'saboteur' | 'propagandist' | 'assassin' | 'guardian' | 'infiltrator';
 
-type BattleLogEventType = 'operative_deployed' | 'mission_success' | 'mission_failed' | 'detected' | 'captured' | 'sabotage' | 'propaganda' | 'assassination' | 'infiltration' | 'alliance_formed' | 'alliance_dissolved' | 'betrayal' | 'phase_change' | 'epoch_start' | 'epoch_end' | 'rp_allocated' | 'building_damaged' | 'agent_wounded' | 'counter_intel';
+type BattleLogEventType = 'operative_deployed' | 'mission_success' | 'mission_failed' | 'detected' | 'captured' | 'sabotage' | 'propaganda' | 'assassination' | 'infiltration' | 'alliance_formed' | 'alliance_dissolved' | 'betrayal' | 'phase_change' | 'epoch_start' | 'epoch_end' | 'rp_allocated' | 'building_damaged' | 'agent_wounded' | 'counter_intel' | 'intel_report' | 'zone_fortified';
 
 interface EpochScoreWeights {
   stability: number;
@@ -1052,6 +1053,7 @@ interface EpochParticipant {
   id: UUID;
   epoch_id: UUID;
   simulation_id: UUID;
+  user_id?: UUID;                          // Direct user reference (Migration 049). NULL for bots.
   team_id?: UUID;
   joined_at: string;
   current_rp: number;
@@ -1217,3 +1219,19 @@ interface NotificationPreferences {
 ```
 
 Gespeichert in `notification_preferences` Tabelle (1 Zeile pro User, UNIQUE user_id). Defaults: alle `true`, locale `'en'`. Verwendet in `CycleNotificationService` fuer Recipient-Resolution.
+
+### Zone Fortification
+
+```typescript
+interface ZoneFortification {
+  id: UUID;
+  epoch_id: UUID;
+  zone_id: UUID;
+  source_simulation_id: UUID;
+  security_bonus: number;                // Default 1 (one security tier)
+  expires_at_cycle: number;              // Cycle number when fortification expires
+  created_at: string;
+}
+```
+
+Versteckte Zonenfortifikationen waehrend der Foundation-Phase ("Nebelkrieg"). Erhoehen die Sicherheitsstufe einer Zone um 1 Tier fuer 5 Wettbewerbszyklen. Max 1 pro Zone. Kosten 2 RP. Nur sichtbar fuer den Besitzer und via feindliche Spion-Intel-Reports.

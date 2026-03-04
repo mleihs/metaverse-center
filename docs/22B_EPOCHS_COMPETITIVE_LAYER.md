@@ -1,7 +1,8 @@
 # 22 - Epochs & Competitive Layer
 
-**Version:** 1.8
-**Date:** 2026-03-03
+**Version:** 1.9
+**Date:** 2026-03-04
+**Change v1.9:** Foundation Phase Redesign ("Nebelkrieg") + Open Epoch Participation — Migration 048: `zone_fortifications` table, Foundation phase now allows spies + guardians (was guardian-only), spy intel includes fortifications metadata, bot personalities with per-archetype fortification strategies, `/operatives/fortify-zone` endpoint, `zone_fortified` battle log event type. Migration 049: `user_id` column on `epoch_participants`, any authenticated user can join any template simulation (no membership required), `require_epoch_participant()` dependency replaces `require_simulation_member("editor")` on competitive endpoints, RLS rewritten to direct `user_id` checks, `user_has_simulation_access()` extended for epoch participants, DELETE policy added for `epoch_participants`. Frontend: EpochIntelDossierTab (new), MissionCard (new), operative-icons.ts (new), EpochOverviewTab fortify zone section, EpochLobbyActions sim picker with faction cards, `_myParticipant` matching via `user_id`.
 **Change v1.8:** Email Notification i18n & Template Enhancement — Full German translation coverage across all 4 email templates. 85+ bilingual string keys in `_NOTIF_STRINGS` dict (was ~40). Cycle briefing enriched: threat assessment (localized status ERKANNT/GEFASST), spy intel from structured metadata (zone security NIEDRIG/MITTEL/HOCH + Wächtereinsatz), per-mission log with translated headers (TYP/ZIEL/ERGEBNIS), phase name translation (WETTBEWERB/GRUNDSTEINLEGUNG/ABRECHNUNG), alliance status, rank gap, next cycle preview. Phase change: localized subject prefixes (DRINGEND // LETZTE PHASE, GEHEIM // OPERATIONEN BEGINNEN). Epoch completed: localized leaderboard columns, dimension title race "Du:" label. Invitation: DE block shows "Siehe Geheimdienstbericht oben" instead of duplicating English AI lore. All templates: footer ÜBERTRAGUNGSURSPRUNG localized. Contrast fix: `_TEXT_DIM` #666→#888, `_TEXT_DARK` #444→#666 (WCAG AA compliant). Per-simulation accent colors + narrative voice headers. SMTP delivery (replaced Resend API). Epoch start notification (G1: lobby→foundation fires phase change email). `cycle_notification_service.py` enriched: spy intel includes structured `metadata` + resolved `target_name`.
 **Change v1.7:** Agent Aptitude System + Draft Phase — Migration 047: `agent_aptitudes` table (6 operative types x score 3-9, budget=36 per agent, UNIQUE(agent_id, operative_type)), `drafted_agent_ids UUID[]` + `draft_completed_at` on epoch_participants. Success probability formula updated from `qualification x 0.05` to `aptitude x 0.03`. Backend: AptitudeService (get/set/query), aptitudes router (3 endpoints + 2 public), EpochService.draft_agents(), bot auto_draft() per personality archetype. Frontend: VelgAptitudeBars shared component (3 sizes, editable/readonly, budget tracking), DraftRosterPanel (full-screen overlay, two-column draft UI), AgentDetailsPanel aptitude editor (debounced 800ms auto-save), AgentsView lineup overview strip, DeployOperativeModal fit indicator (Good/Fair/Poor) + sorted agent dropdown, EpochCreationWizard `max_agents_per_player` slider (4-8), EpochLobbyActions draft button + locked status. Clone function reads `drafted_agent_ids` + clones aptitudes AS-IS (no normalization). 35 template agents seeded with lore-appropriate aptitude distributions.
 **Change v1.6:** Epoch Cycle Email Notifications — Migration 044: `notification_preferences` table + `get_user_emails_batch()` SECURITY DEFINER RPC. CycleNotificationService (recipient resolution, fog-of-war player briefings, SMTP delivery). 3 email types: cycle briefing, phase change, epoch completed (bilingual EN/DE with single-language opt-in). 2 new API endpoints (GET/POST `/users/me/notification-preferences`). Frontend: NotificationsSettingsPanel in settings view.
@@ -30,12 +31,13 @@ Epochs represent moments when the multiverse forces its simulations into direct 
 
 ### Database Schema
 
-**11 tables** (migrations 032 + 037 + 041 + 044 + 047):
+**12 tables** (migrations 032 + 037 + 041 + 044 + 047 + 048):
 
 | Table | Purpose | Key Fields |
 |-------|---------|------------|
 | `game_epochs` | Epoch definitions + lifecycle | `name`, `status` (lobby→foundation→competition→reckoning→completed), `config` (JSONB), `current_cycle` |
-| `epoch_participants` | Simulation enrollment per epoch | `epoch_id`, `simulation_id`, `team_id`, `current_rp`, `final_scores`, `is_bot`, `bot_player_id`, `drafted_agent_ids`, `draft_completed_at` |
+| `epoch_participants` | Simulation enrollment per epoch | `epoch_id`, `simulation_id`, `user_id`, `team_id`, `current_rp`, `final_scores`, `is_bot`, `bot_player_id`, `drafted_agent_ids`, `draft_completed_at` |
+| `zone_fortifications` | Hidden zone defensive fortifications (Foundation phase) | `epoch_id`, `zone_id`, `source_simulation_id`, `security_bonus`, `expires_at_cycle`, UNIQUE(epoch_id, zone_id) |
 | `agent_aptitudes` | Per-agent operative-type skill scores | `agent_id`, `simulation_id`, `operative_type`, `aptitude_level` (3-9), UNIQUE(agent_id, operative_type) |
 | `epoch_teams` | Alliance definitions | `name`, `epoch_id`, `created_by_simulation_id`, `dissolved_at`, `dissolved_reason` |
 | `operative_missions` | Deployed operatives + results | `agent_id`, `operative_type`, `source_simulation_id`, `target_simulation_id`, `embassy_id`, `status`, `success_probability`, `mission_result` |
@@ -59,15 +61,15 @@ Epochs represent moments when the multiverse forces its simulations into direct 
 
 | Component | File | Purpose |
 |-----------|------|---------|
-| **Epoch Router** | `routers/epochs.py` (268 lines) | CRUD epochs, join/leave, team management, lifecycle transitions, draft agents, add/remove bots |
+| **Epoch Router** | `routers/epochs.py` (~280 lines) | CRUD epochs, join/leave (open — no membership required), team management, lifecycle transitions, draft agents, add/remove bots. Auth: `require_epoch_participant()` on team/draft endpoints |
 | **Aptitudes Router** | `routers/aptitudes.py` (~70 lines) | Get/set agent aptitude scores (simulation-scoped, editor+ for writes) |
-| **Operatives Router** | `routers/operatives.py` (145 lines) | Deploy, recall, list missions, counter-intelligence |
+| **Operatives Router** | `routers/operatives.py` (~200 lines) | Deploy, recall, list missions, counter-intelligence, fortify-zone. Auth: `require_epoch_participant()` on all write endpoints |
 | **Scores Router** | `routers/scores.py` (79 lines) | Leaderboard, score history, final standings |
 | **Game Mechanics Router** | `routers/game_mechanics.py` (171 lines) | Simulation health, building readiness, zone stability |
 | **Bot Players Router** | `routers/bot_players.py` (~120 lines) | CRUD bot presets (user-scoped) |
 | **Epoch Service** | `services/epoch_service.py` (501 lines) | Lifecycle (create → start → advance → resolve → complete), RP allocation, cycle resolution + bot execution |
 | **Aptitude Service** | `services/aptitude_service.py` (~115 lines) | Get/set agent aptitudes, query single aptitude for operative deployment |
-| **Operative Service** | `services/operative_service.py` (559 lines) | Deploy/recall/resolve missions, success probability calculation (aptitude-based) |
+| **Operative Service** | `services/operative_service.py` (~620 lines) | Deploy/recall/resolve missions, success probability calculation (aptitude-based), zone fortification (Foundation phase) |
 | **Scoring Service** | `services/scoring_service.py` (389 lines) | 5-dimension scoring, normalization, composite weighting |
 | **Battle Log Service** | `services/battle_log_service.py` (259 lines) | Record + query competitive event narratives |
 | **Game Mechanics Service** | `services/game_mechanics_service.py` (310 lines) | Read materialized views, compute live simulation metrics |
@@ -83,10 +85,12 @@ Epochs represent moments when the multiverse forces its simulations into direct 
 |-----------|------|-------|---------|
 | **EpochCommandCenter** | `components/epoch/EpochCommandCenter.ts` | ~1960 | Orchestrator — fetches state, delegates to subcomponents, handles mutations, wires BotConfigPanel |
 | **EpochOpsBoard** | `components/epoch/EpochOpsBoard.ts` | 1065 | Operations board: dossier cards + COMMS sidebar (collapsible chat panel) |
-| **EpochOverviewTab** | `components/epoch/EpochOverviewTab.ts` | 488 | Overview + mission cards, passes participants to leaderboard/battle log for bot cross-referencing |
+| **EpochOverviewTab** | `components/epoch/EpochOverviewTab.ts` | ~550 | Overview + mission cards + fortify zone section + defensive fortifications manifest, passes participants to leaderboard/battle log |
+| **EpochIntelDossierTab** | `components/epoch/EpochIntelDossierTab.ts` | ~350 | Per-opponent intel cards from spy battle log (zone security, guardians, fortifications, staleness indicator) |
+| **MissionCard** | `components/epoch/MissionCard.ts` | ~120 | Reusable operative mission card with status badges and operative-type icons |
 | **EpochOperationsTab** | `components/epoch/EpochOperationsTab.ts` | 355 | Operations tab, dispatches recall events |
 | **EpochAlliancesTab** | `components/epoch/EpochAlliancesTab.ts` | 400 | Alliances tab, dispatches create/join/leave-team events |
-| **EpochLobbyActions** | `components/epoch/EpochLobbyActions.ts` | ~420 | Lobby actions + admin controls + "Add Bots" button, dispatches epoch lifecycle events |
+| **EpochLobbyActions** | `components/epoch/EpochLobbyActions.ts` | ~520 | Lobby actions + admin controls + sim picker with faction cards + deployed state + dismiss button, dispatches epoch lifecycle events |
 | **BotConfigPanel** | `components/epoch/BotConfigPanel.ts` | ~900 | VelgSidePanel slide-out: bot preset CRUD, personality card grid with radar charts, difficulty toggle, deploy to epoch |
 | **DraftRosterPanel** | `components/epoch/DraftRosterPanel.ts` | ~738 | Full-screen agent draft overlay — two-column layout (available roster + deployment lineup), aptitude bars, team stats |
 | **EpochCreationWizard** | `components/epoch/EpochCreationWizard.ts` | 1245 | 3-step epoch setup (Parameters/Economy/Doctrine) + max_agents_per_player slider |
@@ -94,7 +98,7 @@ Epochs represent moments when the multiverse forces its simulations into direct 
 | **EpochLeaderboard** | `components/epoch/EpochLeaderboard.ts` | ~520 | Sortable score table with per-dimension bars + bot personality indicators |
 | **EpochBattleLog** | `components/epoch/EpochBattleLog.ts` | ~350 | Narrative event feed with filtering + bot [BOT] prefix tags |
 | **VelgAptitudeBars** | `components/shared/VelgAptitudeBars.ts` | ~329 | Shared component: 6-bar operative aptitude display (3 sizes: sm/md/lg), editable mode with range sliders + budget tracking, highlight mode for operative type focus |
-| **EpochsApiService** | `services/api/EpochsApiService.ts` | 203 | 27 API methods for epochs + operatives + scores + draft |
+| **EpochsApiService** | `services/api/EpochsApiService.ts` | ~220 | 28 API methods for epochs + operatives + scores + draft + fortify |
 | **AgentsApiService** | `services/api/AgentsApiService.ts` | ~63 | Extended with `getAptitudes()`, `setAptitudes()`, `getAllAptitudes()` methods |
 | **BotApiService** | `services/api/BotApiService.ts` | ~60 | CRUD for bot presets + add/remove bot from epoch |
 
@@ -133,8 +137,8 @@ Epochs represent moments when the multiverse forces its simulations into direct 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | GET | `/epochs/{id}/participants` | optional | List participants |
-| POST | `/epochs/{id}/participants` | owner | Join epoch with simulation |
-| DELETE | `/epochs/{id}/participants/{sim}` | owner | Leave epoch |
+| POST | `/epochs/{id}/participants` | authenticated | Join epoch with any template simulation (no membership required) |
+| DELETE | `/epochs/{id}/participants/{sim}` | participant | Leave epoch |
 | GET | `/epochs/{id}/teams` | optional | List teams |
 | POST | `/epochs/{id}/teams` | owner | Create team |
 | POST | `/epochs/{id}/teams/{tid}/join` | owner | Join team |
@@ -144,12 +148,13 @@ Epochs represent moments when the multiverse forces its simulations into direct 
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/epochs/{id}/operatives` | owner | List your missions |
-| GET | `/epochs/{id}/operatives/{mid}` | owner | Get mission detail |
-| POST | `/epochs/{id}/operatives` | owner | Deploy operative |
-| POST | `/epochs/{id}/operatives/{mid}/recall` | owner | Recall operative |
-| GET | `/epochs/{id}/operatives/threats` | owner | List detected threats |
-| POST | `/epochs/{id}/operatives/counter-intel` | owner | Counter-intelligence sweep (3 RP) |
+| GET | `/epochs/{id}/operatives` | participant | List your missions |
+| GET | `/epochs/{id}/operatives/{mid}` | participant | Get mission detail |
+| POST | `/epochs/{id}/operatives` | participant | Deploy operative |
+| POST | `/epochs/{id}/operatives/{mid}/recall` | participant | Recall operative |
+| GET | `/epochs/{id}/operatives/threats` | participant | List detected threats |
+| POST | `/epochs/{id}/operatives/fortify-zone` | participant | Fortify own zone (2 RP, Foundation only) |
+| POST | `/epochs/{id}/operatives/counter-intel` | participant | Counter-intelligence sweep (4 RP) |
 
 **Scores & Battle Log:**
 
@@ -198,7 +203,7 @@ LOBBY ──→ FOUNDATION ──→ COMPETITION ──→ RECKONING ──→ C
 ```
 
 1. **Lobby** — Epoch created, simulations join, teams form, players draft their agent roster. No game mechanics active.
-2. **Foundation** — +50% RP income. Build infrastructure, staff buildings, establish embassies. No offensive operatives allowed (guardians OK).
+2. **Foundation ("Nebelkrieg")** — +50% RP income. Build infrastructure, staff buildings, establish embassies. Spies and guardians allowed (Migration 048: was guardian-only). Zone fortification available (2 RP, +1 security tier, lasts 5 competition cycles). No offensive operatives (saboteur, propagandist, assassin, infiltrator).
 3. **Competition** — Full mechanics. All 6 operative types available. Alliances locked. Scores snapshot each cycle.
 4. **Reckoning** — Bleed permeability doubled, thresholds reduced by 2, cascade depth +1. Dramatic escalation.
 5. **Completed** — Final scores computed, winner declared, operatives recalled.
@@ -223,6 +228,7 @@ RP is the action economy currency. Each simulation receives RP at the start of e
 | Deploy Saboteur | 5 RP |
 | Deploy Infiltrator | 5 RP |
 | Deploy Assassin | 7 RP |
+| Fortify Zone | 2 RP |
 | Counter-intelligence sweep | 4 RP |
 
 ### Operative Types
@@ -427,12 +433,29 @@ interface AgentAptitude {
 type AptitudeSet = Record<OperativeType, number>;  // { spy: 6, guardian: 6, ... }
 
 interface EpochParticipant {
-  // ... existing fields ...
+  id: UUID;
+  epoch_id: UUID;
+  simulation_id: UUID;
+  user_id?: UUID;              // Direct user reference (Migration 049). NULL for bots.
+  team_id?: UUID;
+  joined_at: string;
+  current_rp: number;
   drafted_agent_ids?: UUID[];
   draft_completed_at?: string;
   is_bot: boolean;
   bot_player_id?: UUID;
   bot_players?: BotPlayer;  // Joined via PostgREST select
+  cycle_ready: boolean;
+}
+
+interface ZoneFortification {
+  id: UUID;
+  epoch_id: UUID;
+  zone_id: UUID;
+  source_simulation_id: UUID;
+  security_bonus: number;      // Default 1 (one security tier)
+  expires_at_cycle: number;    // Cycle number when fortification expires
+  created_at: string;
 }
 ```
 
@@ -447,13 +470,15 @@ interface EpochParticipant {
 | Epoch chat table (migration 037) | Applied locally | NOT pushed to production |
 | Bot players tables (migration 041) | Applied locally | NOT pushed to production |
 | Agent aptitudes + draft (migration 047) | Applied locally | `agent_aptitudes` table + `drafted_agent_ids`/`draft_completed_at` on epoch_participants + clone function update + 35 agent seed profiles |
-| Backend routers (6) | Complete | epochs, **aptitudes**, operatives, scores, epoch_chat, bot_players |
-| Backend services (12) | Complete | epoch, **aptitude**, operative, scoring, battle_log, game_mechanics, epoch_chat, bot_service, bot_game_state, bot_personality, bot_chat_service, cycle_notification |
-| Frontend components (12) | Complete | Command center, wizard, deploy modal, leaderboard, battle log, chat panel, presence indicator, ready panel, invite panel, bot config panel, **draft roster panel**, **aptitude bars** |
-| Frontend API services (3) | Complete | EpochsApiService (27 methods), EpochChatApiService (4 methods), BotApiService (6 methods). AgentsApiService extended with 3 aptitude methods |
+| Foundation redesign (migration 048) | Applied locally | `zone_fortifications` table, `zone_fortified` battle log event type, spy in foundation phase |
+| Open epoch participation (migration 049) | Applied locally | `user_id` on epoch_participants, RLS rewritten to user_id checks, `user_has_simulation_access()` extended, `require_epoch_participant()` dependency |
+| Backend routers (6) | Complete | epochs, **aptitudes**, operatives, scores, epoch_chat, bot_players. Auth: `require_epoch_participant()` on competitive write endpoints |
+| Backend services (12) | Complete | epoch, **aptitude**, operative (incl. fortify_zone), scoring, battle_log, game_mechanics, epoch_chat, bot_service, bot_game_state, bot_personality, bot_chat_service, cycle_notification |
+| Frontend components (14) | Complete | Command center, wizard, deploy modal, leaderboard, battle log, chat panel, presence indicator, ready panel, invite panel, bot config panel, **draft roster panel**, **aptitude bars**, **intel dossier tab**, **mission card** |
+| Frontend API services (3) | Complete | EpochsApiService (28 methods), EpochChatApiService (4 methods), BotApiService (6 methods). AgentsApiService extended with 3 aptitude methods |
 | RealtimeService | Complete | Singleton managing 4 channel types with Preact Signals |
-| TypeScript types | Complete | 19 interfaces + 6 union types (incl. AgentAptitude, AptitudeSet, BotPlayer, BotPersonality, BotDifficulty) |
-| i18n (EN + DE) | Complete | 2073 total strings |
+| TypeScript types | Complete | 21 interfaces + 6 union types (incl. AgentAptitude, AptitudeSet, BotPlayer, ZoneFortification) |
+| i18n (EN + DE) | Complete | ~2300 total strings |
 | Public API endpoints (10) | Complete | Spectator access to leaderboard, battle log, epoch info, **aptitudes** |
 | AI Settings integration | Complete | `bot_chat_mode` toggle + `model_bot_chat` model selector |
 | Production deployment | Pending | Migrations not pushed, code not deployed |
@@ -1019,6 +1044,109 @@ All email sends are best-effort (non-blocking `try/except`) — email failures d
 |--------|------|-------------|
 | GET | `/api/v1/users/me/notification-preferences` | Get preferences (returns defaults if no row) |
 | POST | `/api/v1/users/me/notification-preferences` | Upsert preferences |
+
+---
+
+## Foundation Phase Redesign — "Nebelkrieg" (Migration 048)
+
+The Foundation phase was a boring single-decision round where players could only deploy guardians. The "Nebelkrieg" redesign transforms it into a meaningful Cold War phase with intel-gathering, defensive posturing, and hidden fortifications.
+
+### Changes to Foundation Phase
+
+1. **Spies now allowed** — Previously only guardians could be deployed during Foundation. Now spies are also permitted, enabling early intelligence gathering about opponent zone security and guardian deployments.
+2. **Guardian deployments are public** — Guardian operative missions deployed during Foundation have `is_public = true` in the battle log, making them visible to all participants. This creates strategic tension: fortify visibly or save RP for the Competition phase.
+3. **Zone fortification** — New Foundation-only defensive action (see below).
+
+### Zone Fortifications
+
+Hidden defensive action available only during Foundation phase. Players can spend 2 RP to fortify one of their own zones, increasing its security tier by 1 for 5 competition cycles.
+
+| Property | Value |
+|----------|-------|
+| **Cost** | 2 RP |
+| **Phase restriction** | Foundation only |
+| **Duration** | 5 competition cycles |
+| **Max per zone** | 1 (UNIQUE constraint on epoch_id + zone_id) |
+| **Visibility** | Hidden from opponents — only revealed by enemy spy intel |
+| **Security bonus** | +1 tier (e.g., low → medium) |
+
+**Expiry:** During `resolve_cycle()`, expired fortifications (current_cycle >= expires_at_cycle) are cleaned up. The security bonus is removed when the fortification expires.
+
+**Spy interaction:** When a spy successfully gathers intel on a zone, the intel report in the battle log metadata includes fortification data (if any exist). This is the only way opponents can discover fortifications.
+
+### Bot Fortification Strategies
+
+Each bot personality archetype has a distinct approach to zone fortification during Foundation:
+
+| Personality | Strategy |
+|-------------|----------|
+| **Sentinel** | Fortifies ALL own zones (maximum defensive posture) |
+| **Strategist** | Fortifies 1-2 weakest zones (targeted strengthening) |
+| **Diplomat** | Fortifies 2 zones (moderate defense) |
+| **Chaos** | Random number of fortifications (0-all) |
+| **Warlord** | No fortifications (saves RP for offensive operations) |
+
+### Frontend: Intel Dossier Tab
+
+New tab in EpochCommandCenter (`EpochIntelDossierTab`) showing per-opponent intelligence gathered from spy missions. Each opponent card displays:
+- Zone security level distribution (badges showing low/medium/high counts)
+- Guardian deployment count
+- Fortification indicators (if revealed by spy intel)
+- Staleness indicator (cycles since last intel report)
+
+Cards are only populated when the player has successful spy intel reports in the battle log. Empty state when no intel has been gathered.
+
+### Frontend: EpochOverviewTab Fortify Section
+
+During Foundation phase, the overview tab shows:
+- "FORTIFY ZONE" action button with zone selector dropdown (own zones only)
+- "Defensive Fortifications" manifest section with corner bracket decorative frame
+- Active fortifications: green pulsing status dot, zone name, security bonus, expiry cycle
+- Expired fortifications: dimmed styling
+
+---
+
+## Open Epoch Participation (Migration 049)
+
+Previously, epoch participation required simulation membership -- you could only join an epoch with a simulation where you were an editor/admin/owner. Migration 049 removes this restriction: any authenticated user can join any template simulation in an epoch.
+
+### Motivation
+
+The membership requirement was a barrier to competitive play. New players had to be invited to a simulation, granted editor access, and understand the simulation's content before they could participate. Open participation lets anyone pick a faction and compete immediately.
+
+### Database Changes
+
+**New column on `epoch_participants`:**
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `user_id` | UUID | FK auth.users, CHECK (is_bot OR user_id IS NOT NULL), UNIQUE(epoch_id, user_id) WHERE user_id IS NOT NULL | Direct user reference. NULL for bots. |
+
+**Updated `user_has_simulation_access()`:** Extended with a second `EXISTS` clause -- checks `epoch_participants` in addition to `simulation_members`. This grants epoch participants read access to their simulation's data (agents, buildings, zones, etc.) via the existing RLS infrastructure.
+
+**RLS rewrite:** All competitive-layer RLS policies rewritten to use direct `user_id` checks on `epoch_participants` instead of `simulation_members` JOINs with `resolve_template_id()`. Affected tables: `epoch_participants` (INSERT/DELETE), `epoch_chat_messages` (3 policies), `operative_missions` (3 policies), `battle_log` (SELECT).
+
+**New DELETE policy on `epoch_participants`:** Allows participants to leave an epoch (`user_id = auth.uid()`). This policy was previously missing.
+
+### Backend Changes
+
+**`require_epoch_participant()`** -- New FastAPI dependency in `dependencies.py`. Validates that the current user is an active participant in the specified epoch (via `user_id` match on `epoch_participants`). Replaces `require_simulation_member("editor")` on all competitive-layer endpoints in `operatives.py` and `epochs.py`.
+
+**Participant join flow:** `POST /epochs/{id}/participants` no longer validates simulation membership. It only checks:
+1. Simulation is `simulation_type = 'template'`
+2. User is not already in the epoch (UNIQUE constraint)
+3. Epoch is in lobby phase
+
+### Frontend Changes
+
+**EpochLobbyActions -- Sim Picker:** When joining an epoch, players see a simulation picker with faction cards showing simulation name, banner image, agent count, and theme accent color. Cards have 3 states:
+- **Available:** Clickable, full opacity
+- **Deployed:** Dimmed with "DEPLOYED" badge (already used in another active epoch)
+- **Selected:** Highlighted border, ready to join
+
+Includes a dismiss button to cancel the selection.
+
+**`_myParticipant` matching:** Changed from simulation membership lookup to direct `user_id` match on `epoch_participants`. This is simpler and more reliable -- works regardless of whether the user is a simulation member.
 
 ---
 

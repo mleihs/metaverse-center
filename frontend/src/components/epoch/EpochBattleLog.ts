@@ -7,12 +7,14 @@
  * Microanimations: staggered slide-in, hover glow, type-specific accent pulses.
  */
 
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing, unsafeCSS } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
 import type { BattleLogEntry, BattleLogEventType, EpochParticipant } from '../../types/index.js';
 import { PERSONALITY_COLORS } from '../../utils/bot-colors.js';
+import { icons } from '../../utils/icons.js';
+import { getBattleEventIcon } from '../../utils/operative-icons.js';
 
 @localized()
 @customElement('velg-epoch-battle-log')
@@ -92,14 +94,37 @@ export class VelgEpochBattleLog extends LitElement {
     .entry--phase_change::before            { background: var(--color-warning); }
     .entry--counter_intel::before           { background: var(--color-info); }
     .entry--intel_report::before            { background: var(--color-info); }
+    .entry--zone_fortified::before          { background: var(--color-warning); }
+
+    .entry__intel-fort {
+      margin-top: 4px;
+      padding: 6px 8px;
+      background: rgba(245, 158, 11, 0.10);
+      border-left: 2px solid var(--color-warning);
+      font-size: 0.75rem;
+      color: var(--color-gray-200);
+      font-family: var(--font-mono);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .entry__intel-fort-label {
+      color: var(--color-warning);
+      font-weight: var(--font-bold);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 2px;
+    }
 
     .entry--intel_report .entry__intel {
       margin-top: 4px;
-      padding: 4px 8px;
-      background: rgba(56, 189, 248, 0.08);
+      padding: 6px 8px;
+      background: rgba(56, 189, 248, 0.10);
       border-left: 2px solid var(--color-info);
       font-size: 0.75rem;
-      color: var(--color-text-secondary);
+      color: var(--color-gray-200);
       font-family: var(--font-mono);
     }
 
@@ -111,7 +136,7 @@ export class VelgEpochBattleLog extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 16px;
+      color: var(--color-gray-300);
       border: 1px solid var(--color-gray-700);
       background: var(--color-gray-800);
       flex-shrink: 0;
@@ -162,35 +187,75 @@ export class VelgEpochBattleLog extends LitElement {
 
     .phase-divider {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: var(--space-3);
-      padding: var(--space-3) var(--space-2);
-      animation: entry-slide 0.35s ease-out forwards;
+      gap: 6px;
+      padding: var(--space-5) var(--space-3);
+      position: relative;
+      overflow: hidden;
       opacity: 0;
+      animation: phase-announce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    .phase-divider::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, var(--_phase-glow) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .phase-divider__lines {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
     }
 
     .phase-divider__line {
       flex: 1;
-      height: 1px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent 0%, var(--_phase-color) 40%, var(--_phase-color) 60%, transparent 100%);
     }
 
-    .phase-divider__label {
+    .phase-divider__icon {
+      color: var(--_phase-color);
+      flex-shrink: 0;
+    }
+
+    .phase-divider__name {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
-      font-size: 11px;
+      font-size: var(--text-lg);
       text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
-      white-space: nowrap;
+      letter-spacing: 0.2em;
+      color: var(--_phase-color);
+      text-shadow: 0 0 20px var(--_phase-glow), 0 0 40px var(--_phase-glow);
+      position: relative;
     }
 
-    .phase-divider--foundation .phase-divider__line { background: var(--color-success); }
-    .phase-divider--foundation .phase-divider__label { color: var(--color-success); }
+    .phase-divider__subtitle {
+      font-family: var(--font-mono, monospace);
+      font-size: var(--text-xs);
+      color: var(--color-gray-300);
+      letter-spacing: 0.05em;
+    }
 
-    .phase-divider--competition .phase-divider__line { background: var(--color-warning); }
-    .phase-divider--competition .phase-divider__label { color: var(--color-warning); }
+    @keyframes phase-announce {
+      0% { opacity: 0; transform: scaleX(0.5); }
+      70% { opacity: 1; transform: scaleX(1.05); }
+      100% { opacity: 1; transform: scaleX(1); }
+    }
 
-    .phase-divider--reckoning .phase-divider__line { background: var(--color-danger); }
-    .phase-divider--reckoning .phase-divider__label { color: var(--color-danger); }
+    .phase-divider--foundation { --_phase-color: var(--color-success); --_phase-glow: rgba(74, 222, 128, 0.12); }
+    .phase-divider--competition { --_phase-color: var(--color-warning); --_phase-glow: rgba(245, 158, 11, 0.12); }
+    .phase-divider--reckoning { --_phase-color: var(--color-danger); --_phase-glow: rgba(239, 68, 68, 0.12); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .phase-divider {
+        animation: entry-slide 0.01s ease-out forwards;
+      }
+    }
 
     /* ── Empty ────────────────────────────── */
 
@@ -203,6 +268,13 @@ export class VelgEpochBattleLog extends LitElement {
     }
 
     /* ── Bot indicator ────────────────────── */
+
+    .entry__target {
+      font-family: var(--font-mono, monospace);
+      font-size: 10px;
+      color: var(--color-gray-400);
+      margin-left: 4px;
+    }
 
     .entry__bot-tag {
       display: inline-block;
@@ -234,7 +306,6 @@ export class VelgEpochBattleLog extends LitElement {
     :host([compact]) .entry__icon {
       width: 24px;
       height: 24px;
-      font-size: 12px;
     }
 
     :host([compact]) .entry__narrative {
@@ -252,31 +323,19 @@ export class VelgEpochBattleLog extends LitElement {
 
   @property({ type: Array }) entries: BattleLogEntry[] = [];
   @property({ type: Array }) participants: EpochParticipant[] = [];
+  @property({ type: String }) mySimulationId = '';
   @property({ type: Boolean, reflect: true }) compact = false;
+
+  private _resolveSimName(simId?: string): string | null {
+    if (!simId) return null;
+    const p = this.participants.find((pp) => pp.simulation_id === simId);
+    return p?.simulations?.name ?? null;
+  }
 
   private _getBotPersonality(simId?: string): string | null {
     if (!simId) return null;
     const p = this.participants.find((pp) => pp.simulation_id === simId && pp.is_bot);
     return p?.bot_players?.personality ?? null;
-  }
-
-  private _getIcon(type: BattleLogEventType): string {
-    const icons: Record<string, string> = {
-      operative_deployed: '\u{1F3AF}',
-      mission_success: '\u{2705}',
-      mission_failed: '\u{274C}',
-      detected: '\u{1F6A8}',
-      sabotage: '\u{1F4A5}',
-      propaganda: '\u{1F4E2}',
-      assassination: '\u{1F5E1}',
-      agent_wounded: '\u{1FA78}',
-      alliance_formed: '\u{1F91D}',
-      betrayal: '\u{2620}',
-      phase_change: '\u{26A1}',
-      counter_intel: '\u{1F50E}',
-      intel_report: '\u{1F4CB}',
-    };
-    return icons[type] || '\u{2694}';
   }
 
   private _getTypeLabel(type: BattleLogEventType): string {
@@ -294,6 +353,7 @@ export class VelgEpochBattleLog extends LitElement {
       phase_change: msg('Phase Change'),
       counter_intel: msg('Counter-Intel'),
       intel_report: msg('Intel Report'),
+      zone_fortified: msg('Fortified'),
     };
     return labels[type] || type;
   }
@@ -302,12 +362,26 @@ export class VelgEpochBattleLog extends LitElement {
     if (!metadata) return nothing;
     const zones = metadata.zone_security as string[] | undefined;
     const guardians = metadata.guardian_count as number | undefined;
-    if (!zones && guardians === undefined) return nothing;
+    const fortifications = metadata.fortifications as
+      | Array<{ zone_name: string; security_bonus: number; expires_at_cycle: number }>
+      | undefined;
+    if (!zones && guardians === undefined && !fortifications?.length) return nothing;
     return html`
       <div class="entry__intel">
-        ${guardians !== undefined ? html`${msg('Guardians')}: ${guardians}` : nothing}
-        ${zones ? html`${guardians !== undefined ? ' | ' : ''}${msg('Zones')}: ${zones.join(', ')}` : nothing}
+        ${guardians !== undefined ? html`${msg('Guardians detected')}: ${guardians}` : nothing}
+        ${zones ? html`${guardians !== undefined ? ' | ' : ''}${msg('Zone Security')}: ${zones.join(', ')}` : nothing}
       </div>
+      ${
+        fortifications?.length
+          ? html`<div class="entry__intel-fort">
+            <span class="entry__intel-fort-label">${msg('Fortifications')}</span>
+            ${fortifications.map(
+              (f) =>
+                html`<span>${f.zone_name} +${f.security_bonus} (${msg(str`expires cycle ${f.expires_at_cycle}`)})</span>`,
+            )}
+          </div>`
+          : nothing
+      }
     `;
   }
 
@@ -326,17 +400,27 @@ export class VelgEpochBattleLog extends LitElement {
   private _renderEntry(entry: BattleLogEntry, index: number) {
     const delay = index * 50;
 
-    // Phase change entries render as full-width dividers
+    // Phase change entries render as dramatic full-width announcements
     if (entry.event_type === 'phase_change') {
       const newPhase = (entry.metadata as Record<string, string> | undefined)?.new_phase ?? '';
+      const subtitle =
+        newPhase === 'competition'
+          ? msg('All operatives unlocked')
+          : newPhase === 'reckoning'
+            ? msg('Final cycles — double points')
+            : '';
       return html`
         <div
           class="phase-divider phase-divider--${newPhase}"
           style="animation-delay: ${delay}ms"
         >
-          <div class="phase-divider__line"></div>
-          <span class="phase-divider__label">\u26A1 ${newPhase.toUpperCase()}</span>
-          <div class="phase-divider__line"></div>
+          <div class="phase-divider__lines">
+            <div class="phase-divider__line"></div>
+            <span class="phase-divider__icon">${icons.bolt(16)}</span>
+            <div class="phase-divider__line"></div>
+          </div>
+          <span class="phase-divider__name">${newPhase.toUpperCase()}</span>
+          ${subtitle ? html`<span class="phase-divider__subtitle">${subtitle}</span>` : nothing}
         </div>
       `;
     }
@@ -346,13 +430,16 @@ export class VelgEpochBattleLog extends LitElement {
         class="entry entry--${entry.event_type}"
         style="animation-delay: ${delay}ms"
       >
-        <div class="entry__icon">${this._getIcon(entry.event_type)}</div>
+        <div class="entry__icon">${getBattleEventIcon(entry.event_type)}</div>
         <div class="entry__content">
           <span class="entry__narrative">${(() => {
             const botPersonality = this._getBotPersonality(entry.source_simulation_id);
-            return botPersonality
-              ? html`<span class="entry__bot-tag entry__bot-tag--${botPersonality}">BOT</span>${entry.narrative}`
-              : entry.narrative;
+            const showTarget =
+              this.mySimulationId &&
+              entry.source_simulation_id === this.mySimulationId &&
+              entry.target_simulation_id;
+            const targetName = showTarget ? this._resolveSimName(entry.target_simulation_id) : null;
+            return html`${botPersonality ? html`<span class="entry__bot-tag entry__bot-tag--${botPersonality}">BOT</span>` : nothing}${entry.narrative}${targetName ? html`<span class="entry__target">&rarr; ${targetName}</span>` : nothing}`;
           })()}</span>
           ${
             this.compact

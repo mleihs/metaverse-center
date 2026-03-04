@@ -54,8 +54,8 @@ def _make_state(
         {"simulation_id": "sim-opp2", "composite_score": 40},
     ]
     default_embassies = [
-        {"id": "emb-opp1", "source_simulation_id": sim_id, "target_simulation_id": "sim-opp1", "status": "active"},
-        {"id": "emb-opp2", "source_simulation_id": sim_id, "target_simulation_id": "sim-opp2", "status": "active"},
+        {"id": "emb-opp1", "simulation_a_id": sim_id, "simulation_b_id": "sim-opp1", "status": "active"},
+        {"id": "emb-opp2", "simulation_a_id": sim_id, "simulation_b_id": "sim-opp2", "status": "active"},
     ]
 
     return BotGameState(

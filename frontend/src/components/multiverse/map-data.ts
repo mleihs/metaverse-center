@@ -41,14 +41,3 @@ export const SCORE_DIMENSION_COLORS: Record<string, string> = {
   diplomatic: '#f59e0b', // amber
   military: '#ef4444', // red
 };
-
-/** Vector emoji for compact display */
-export const VECTOR_ICONS: Record<string, string> = {
-  commerce: '\u{1F4B0}',
-  language: '\u{1F4DC}',
-  memory: '\u{1F9E0}',
-  resonance: '\u{1F50A}',
-  architecture: '\u{1F3DB}',
-  dream: '\u{1F311}',
-  desire: '\u{2764}',
-};

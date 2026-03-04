@@ -243,6 +243,38 @@ def require_platform_admin():
     return _check_admin
 
 
+def require_epoch_participant():
+    """Dependency that checks the user is a participant in the epoch.
+
+    Requires `epoch_id` as a path parameter and `simulation_id` as a query parameter.
+    Returns the participant row dict (id, simulation_id, user_id, current_rp).
+    """
+
+    async def _check(
+        epoch_id: Annotated[UUID, Path()],
+        simulation_id: Annotated[UUID, Query()],
+        user: CurrentUser = Depends(get_current_user),
+        supabase: Client = Depends(get_supabase),
+    ) -> dict:
+        resp = (
+            supabase.table("epoch_participants")
+            .select("id, simulation_id, user_id, current_rp")
+            .eq("epoch_id", str(epoch_id))
+            .eq("simulation_id", str(simulation_id))
+            .eq("user_id", str(user.id))
+            .limit(1)
+            .execute()
+        )
+        if not resp.data:
+            raise HTTPException(
+                status.HTTP_403_FORBIDDEN,
+                "You are not a participant in this epoch with this simulation.",
+            )
+        return resp.data[0]
+
+    return _check
+
+
 def require_simulation_member(role: str = "viewer", *, param_name: str = "simulation_id"):
     """Dependency that checks the user has a role in a simulation passed as a query param.
 

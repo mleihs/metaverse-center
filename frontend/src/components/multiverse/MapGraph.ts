@@ -1,5 +1,5 @@
 import { localized, msg } from '@lit/localize';
-import { css, html, LitElement, nothing, svg, unsafeCSS } from 'lit';
+import { css, html, LitElement, nothing, svg } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import {
@@ -155,11 +155,6 @@ export class VelgMapGraph extends LitElement {
     }
 
     .embassy-edge-label {
-      font-family: var(--font-mono, monospace);
-      font-size: 8px;
-      fill: ${unsafeCSS(EMBASSY_EDGE_COLOR)};
-      text-anchor: middle;
-      dominant-baseline: central;
       pointer-events: none;
     }
 
@@ -1276,7 +1271,15 @@ export class VelgMapGraph extends LitElement {
           <title>${tooltip}</title>
         </path>
         <!-- Building icon at midpoint -->
-        <text class="embassy-edge-label" x="${cx}" y="${cy}">\u{1F3DB}</text>
+        <g class="embassy-edge-label" transform="translate(${cx - 8}, ${cy - 8})">
+          <rect width="16" height="16" rx="2" fill="rgba(0,0,0,0.6)" stroke="${EMBASSY_EDGE_COLOR}" stroke-width="0.5" />
+          <g transform="translate(2, 2) scale(0.5)" fill="none" stroke="${EMBASSY_EDGE_COLOR}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 21h18" />
+            <path d="M5 21v-14l7-4 7 4v14" />
+            <path d="M9 21v-8h6v8" />
+            <path d="M3 7h18" />
+          </g>
+        </g>
       </g>
     `;
   }
