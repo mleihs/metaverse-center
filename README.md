@@ -3,9 +3,9 @@
 **Five worlds. One fracture. A multiplayer worldbuilding platform where literary simulations compete, bleed into each other, and evolve.**
 
 [![Python 3.13](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)](https://python.org)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)](https://typescriptlang.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?logo=typescript&logoColor=white)](https://typescriptlang.org)
 [![Lit 3.3](https://img.shields.io/badge/Lit-3.3-324FFF?logo=lit&logoColor=white)](https://lit.dev)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.135-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.129-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3FCF8E?logo=supabase&logoColor=white)](https://supabase.com)
 
 > **Live:** [metaverse.center](https://metaverse.center) &mdash; anonymous browsing, no account required
@@ -231,16 +231,16 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 
 | Library | Version | Purpose |
 |:--------|:--------|:--------|
-| FastAPI | 0.135 | Async web framework, auto-generated OpenAPI docs |
-| Pydantic v2 | 2.12.5 | Request/response validation, settings management |
-| Supabase Python | 2.25 | PostgreSQL client with RLS enforcement |
+| FastAPI | 0.129 | Async web framework, auto-generated OpenAPI docs |
+| Pydantic v2 | 2.12 | Request/response validation, settings management |
+| Supabase Python | 2.28 | PostgreSQL client with RLS enforcement |
 | PyJWT | 2.11 | JWT verification (ES256 production, HS256 local) |
 | Pillow | 12.1 | Image processing, AVIF conversion |
 | Replicate | 1.0 | AI image generation (Flux, Stable Diffusion) |
 | httpx | 0.28 | Async HTTP client for OpenRouter AI calls |
 | slowapi | 0.1 | Tiered rate limiting (30/hr AI, 100/min standard) |
 | cryptography | 46.0 | AES-256 encryption for sensitive settings |
-| cachetools | 7.0 | JWKS + model resolution + map data caching |
+| cachetools | 6.2 | JWKS + model resolution + map data caching |
 
 ### Frontend
 
@@ -248,12 +248,12 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 |:--------|:--------|:--------|
 | Lit | 3.3 | Web Components framework (113 custom elements) |
 | Preact Signals | 1.8 | Fine-grained reactive state management |
-| Supabase JS | 2.98 | Auth, Storage, Realtime channels |
+| Supabase JS | 2.45 | Auth, Storage, Realtime channels |
 | Apache ECharts | 6.0 | Intelligence Report charts (radar, heatmap, bar, line) |
 | 3d-force-graph | 1.79 | Cartographer's Map force-directed visualization |
-| Zod | 4.3 | Runtime schema validation |
-| TypeScript | 5.9 | Type safety |
-| Vite | 7.3 | Build tool with HMR |
+| Zod | 3.23 | Runtime schema validation |
+| TypeScript | 5.5 | Type safety |
+| Vite | 5.4 | Build tool with HMR |
 
 ### Infrastructure
 
@@ -267,7 +267,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 | Hosting | Railway (backend + frontend) + Cloudflare (CDN/DNS) |
 | Analytics | Google Analytics 4 (37 events, consent mode v2) |
 | Testing | pytest + vitest + Playwright |
-| Linting | Ruff (backend) + Biome 2.4 (frontend) |
+| Linting | Ruff (backend) + Biome 2.0 (frontend) |
 
 ---
 
