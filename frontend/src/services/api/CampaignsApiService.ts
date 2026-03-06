@@ -1,4 +1,4 @@
-import type { ApiResponse, Campaign, CampaignEvent, CampaignMetric } from '../../types/index.js';
+import type { ApiResponse, Campaign, CampaignAnalytics, CampaignEvent, CampaignMetric } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
 
 export class CampaignsApiService extends BaseApiService {
@@ -40,6 +40,10 @@ export class CampaignsApiService extends BaseApiService {
 
   getMetrics(simulationId: string, campaignId: string): Promise<ApiResponse<CampaignMetric[]>> {
     return this.get(`/simulations/${simulationId}/campaigns/${campaignId}/metrics`);
+  }
+
+  getAnalytics(simulationId: string, campaignId: string): Promise<ApiResponse<CampaignAnalytics>> {
+    return this.getSimulationData(`/simulations/${simulationId}/campaigns/${campaignId}/analytics`);
   }
 }
 

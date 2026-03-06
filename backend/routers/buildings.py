@@ -14,6 +14,7 @@ from backend.models.common import (
 )
 from backend.services.audit_service import AuditService
 from backend.services.building_service import BuildingService
+from backend.services.translation_service import null_de_fields_for_update, schedule_auto_translation
 from supabase import Client
 
 router = APIRouter(
@@ -83,6 +84,13 @@ async def create_building(
         supabase, simulation_id, user.id, body.model_dump(exclude_none=True)
     )
     await AuditService.log_action(supabase, simulation_id, user.id, "buildings", building["id"], "create")
+    sim = supabase.table("simulations").select("name, theme").eq("id", str(simulation_id)).maybe_single().execute()
+    if sim.data:
+        schedule_auto_translation(
+            supabase, "buildings", building["id"], building,
+            simulation_name=sim.data["name"], simulation_theme=sim.data.get("theme", ""),
+            entity_type="building",
+        )
     return {"success": True, "data": building}
 
 
@@ -97,11 +105,23 @@ async def update_building(
     if_updated_at: str | None = Header(default=None, alias="If-Updated-At"),
 ) -> dict:
     """Update a building."""
+    update_data = body.model_dump(exclude_none=True)
+    de_nulls = null_de_fields_for_update("buildings", update_data)
+    if de_nulls:
+        update_data.update(de_nulls)
     building = await _service.update(
-        supabase, simulation_id, building_id, body.model_dump(exclude_none=True),
+        supabase, simulation_id, building_id, update_data,
         if_updated_at=if_updated_at,
     )
     await AuditService.log_action(supabase, simulation_id, user.id, "buildings", building_id, "update")
+    if de_nulls:
+        sim = supabase.table("simulations").select("name, theme").eq("id", str(simulation_id)).maybe_single().execute()
+        if sim.data:
+            schedule_auto_translation(
+                supabase, "buildings", building["id"], building,
+                simulation_name=sim.data["name"], simulation_theme=sim.data.get("theme", ""),
+                entity_type="building",
+            )
     return {"success": True, "data": building}
 
 

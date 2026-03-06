@@ -5,6 +5,7 @@
 import type {
   ApiResponse,
   BattleLogEntry,
+  BattleSummary,
   Epoch,
   EpochInvitation,
   EpochInvitationPublicInfo,
@@ -13,6 +14,7 @@ import type {
   EpochTeam,
   LeaderboardEntry,
   OperativeMission,
+  Sitrep,
 } from '../../types/index.js';
 import { appState } from '../AppStateManager.js';
 import { BaseApiService } from './BaseApiService.js';
@@ -216,6 +218,28 @@ export class EpochsApiService extends BaseApiService {
 
   getScoreHistory(epochId: string, simulationId: string): Promise<ApiResponse<EpochScore[]>> {
     return this.get(`/epochs/${epochId}/scores/simulations/${simulationId}`);
+  }
+
+  // ── War Room ──────────────────────────────────────
+
+  getCycleSummary(
+    epochId: string,
+    cycle: number,
+    simulationId?: string,
+  ): Promise<ApiResponse<BattleSummary>> {
+    const params: Record<string, string> = { cycle: String(cycle) };
+    if (simulationId) params.simulation_id = simulationId;
+    return this.get(`/epochs/${epochId}/battle-log/summary`, params);
+  }
+
+  getSitrep(
+    epochId: string,
+    cycleNumber: number,
+    simulationId?: string,
+  ): Promise<ApiResponse<Sitrep>> {
+    const params: Record<string, string> = {};
+    if (simulationId) params.simulation_id = simulationId;
+    return this.get(`/epochs/${epochId}/sitrep/${cycleNumber}`, params);
   }
 
   // ── Battle Log ──────────────────────────────────────

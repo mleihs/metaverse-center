@@ -377,7 +377,7 @@ export class VelgGameCard extends LitElement {
       width: 100%;
       height: 100%;
       color: var(--card-text-dim);
-      opacity: 0.3;
+      opacity: 0.55;
     }
 
     /* Inner glow on art frame */
@@ -385,7 +385,7 @@ export class VelgGameCard extends LitElement {
       content: '';
       position: absolute;
       inset: 0;
-      box-shadow: inset 0 0 20px rgba(0,0,0,0.4);
+      box-shadow: inset 0 0 12px rgba(0,0,0,0.25);
       pointer-events: none;
     }
 
@@ -426,7 +426,7 @@ export class VelgGameCard extends LitElement {
     :host([size="xs"]) .card__nameplate { padding: 2px 4px 1px; }
     :host([size="xs"]) .card__name { font-size: 7px; letter-spacing: 0.04em; }
     :host([size="sm"]) .card__nameplate { padding: 4px 6px 2px; }
-    :host([size="sm"]) .card__name { font-size: 9px; }
+    :host([size="sm"]) .card__name { font-size: 10px; }
     :host([size="lg"]) .card__nameplate { padding: 8px 14px 6px; }
     :host([size="lg"]) .card__name { font-size: 16px; }
 
@@ -496,7 +496,7 @@ export class VelgGameCard extends LitElement {
     }
 
     :host([size="xs"]) .card__pips { display: none; }
-    :host([size="sm"]) .pip__dot { width: 12px; height: 12px; font-size: 7px; }
+    :host([size="sm"]) .pip__dot { width: 14px; height: 14px; font-size: 7px; }
     :host([size="sm"]) .pip__label { display: none; }
     :host([size="lg"]) .pip__dot { width: 22px; height: 22px; font-size: 11px; }
     :host([size="lg"]) .pip__label { font-size: 7px; }
@@ -513,7 +513,7 @@ export class VelgGameCard extends LitElement {
     }
 
     :host([size="xs"]) .card__subtitle { display: none; }
-    :host([size="sm"]) .card__subtitle { font-size: 7px; }
+    :host([size="sm"]) .card__subtitle { font-size: 8px; }
     :host([size="lg"]) .card__subtitle { font-size: 12px; }
 
     .card__badges {
@@ -634,6 +634,24 @@ export class VelgGameCard extends LitElement {
       background: var(--color-danger, #dc2626);
     }
 
+    .card__description-edit {
+      width: 100%;
+      height: 80px;
+      margin-top: 4px;
+      background: var(--card-bg-deep);
+      color: var(--card-text);
+      border: 1px solid var(--card-border-color);
+      font-family: var(--card-font-body);
+      font-size: 9px;
+      resize: none;
+      padding: 2px 4px;
+    }
+
+    :host([size="lg"]) .card__description-edit {
+      height: 100px;
+      font-size: 11px;
+    }
+
     /* ── DRAFTED stamp overlay ── */
     .card__stamp {
       position: absolute;
@@ -704,6 +722,8 @@ export class VelgGameCard extends LitElement {
   @property({ type: Boolean }) dimmed = false;
   @property({ type: Boolean }) highlighted = false;
   @property({ type: Boolean, attribute: 'show-actions' }) showActions = false;
+  @property({ type: Boolean }) editable = false;
+  @property() description = '';
 
   @state() private _tilting = false;
   @state() private _settling = false;
@@ -937,6 +957,27 @@ export class VelgGameCard extends LitElement {
       ${this.aptitudes ? this._renderAptitudePips() : nothing}
       ${this.subtitle ? html`<span class="card__subtitle">${this.subtitle}</span>` : nothing}
       ${
+        this.editable
+          ? html`
+          <textarea
+            class="card__description-edit"
+            .value=${this.description}
+            @input=${(e: Event) => {
+              this.description = (e.target as HTMLTextAreaElement).value;
+              this.dispatchEvent(
+                new CustomEvent('description-change', {
+                  detail: { value: this.description },
+                  bubbles: true,
+                  composed: true,
+                }),
+              );
+            }}
+            @click=${(e: Event) => e.stopPropagation()}
+          ></textarea>
+        `
+          : nothing
+      }
+      ${
         this.badges.length > 0
           ? html`
         <div class="card__badges">
@@ -967,6 +1008,27 @@ export class VelgGameCard extends LitElement {
           : nothing
       }
       ${this.subtitle ? html`<span class="card__subtitle">${this.subtitle}</span>` : nothing}
+      ${
+        this.editable
+          ? html`
+          <textarea
+            class="card__description-edit"
+            .value=${this.description}
+            @input=${(e: Event) => {
+              this.description = (e.target as HTMLTextAreaElement).value;
+              this.dispatchEvent(
+                new CustomEvent('description-change', {
+                  detail: { value: this.description },
+                  bubbles: true,
+                  composed: true,
+                }),
+              );
+            }}
+            @click=${(e: Event) => e.stopPropagation()}
+          ></textarea>
+        `
+          : nothing
+      }
       ${
         this.capacityBar
           ? html`

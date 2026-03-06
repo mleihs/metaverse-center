@@ -1,19 +1,37 @@
+import type { ForgeLoreSection } from '../../services/api/ForgeApiService.js';
+import { forgeApi } from '../../services/api/ForgeApiService.js';
+import { localeService } from '../../services/i18n/locale-service.js';
 import type { LoreSection } from '../platform/LoreScroll.js';
-import { getCiteDesDamesLoreSections } from './content/cite-des-dames-lore.js';
-import { getGaslitReachLoreSections } from './content/gaslit-reach-lore.js';
-import { getSperanzaLoreSections } from './content/speranza-lore.js';
-import { getStationNullLoreSections } from './content/station-null-lore.js';
-import { getVelgarienLoreSections } from './content/velgarien-lore.js';
 
-const registry: Record<string, () => LoreSection[]> = {
-  velgarien: getVelgarienLoreSections,
-  'the-gaslit-reach': getGaslitReachLoreSections,
-  'station-null': getStationNullLoreSections,
-  speranza: getSperanzaLoreSections,
-  'cite-des-dames': getCiteDesDamesLoreSections,
-};
+/**
+ * Fetch raw lore sections from the API (all language fields).
+ * Falls back to null if the API call fails or returns empty.
+ */
+export async function fetchRawLoreSections(simulationId: string): Promise<ForgeLoreSection[] | null> {
+  try {
+    const resp = await forgeApi.getSimulationLore(simulationId);
+    if (!resp.success || !resp.data || !Array.isArray(resp.data) || resp.data.length === 0) {
+      return null;
+    }
+    return resp.data;
+  } catch {
+    return null;
+  }
+}
 
-export function getLoreSectionsForSlug(slug: string): LoreSection[] | null {
-  const fn = registry[slug];
-  return fn ? fn() : null;
+/**
+ * Map raw API lore sections to display-ready LoreSection[] using current locale.
+ */
+export function mapLoreSectionsForLocale(raw: ForgeLoreSection[]): LoreSection[] {
+  const useDe = localeService.currentLocale !== 'en';
+  return raw.map((s) => ({
+    id: s.id,
+    chapter: s.chapter,
+    arcanum: s.arcanum,
+    title: (useDe && s.title_de) || s.title,
+    epigraph: (useDe && s.epigraph_de) || s.epigraph || '',
+    body: (useDe && s.body_de) || s.body,
+    imageSlug: s.image_slug ?? undefined,
+    imageCaption: (useDe && s.image_caption_de) || s.image_caption || undefined,
+  }));
 }

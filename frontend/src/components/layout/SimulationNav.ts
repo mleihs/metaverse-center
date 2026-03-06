@@ -14,6 +14,7 @@ interface NavTab {
 function getTabs(): NavTab[] {
   return [
     { label: msg('Lore'), path: 'lore', icon: () => icons.book(14) },
+    { label: msg('Chronicle'), path: 'chronicle', icon: () => icons.newspaper(14) },
     { label: msg('Health'), path: 'health', icon: () => icons.heartbeat(14) },
     { label: msg('Agents'), path: 'agents', icon: () => icons.users(14) },
     { label: msg('Buildings'), path: 'buildings', icon: () => icons.building(14) },

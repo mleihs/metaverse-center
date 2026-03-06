@@ -67,7 +67,49 @@ class AdminUserService:
         )
 
         user_data["memberships"] = memberships_resp.data or []
+
+        # Fetch wallet
+        wallet_resp = (
+            admin_supabase.table("user_wallets")
+            .select("*")
+            .eq("user_id", str(user_id))
+            .single()
+            .execute()
+        )
+        user_data["wallet"] = wallet_resp.data if wallet_resp.data else None
+
         return user_data
+
+    @classmethod
+    async def update_user_wallet(
+        cls,
+        admin_supabase: Client,
+        user_id: UUID,
+        forge_tokens: int | None = None,
+        is_architect: bool | None = None,
+    ) -> dict:
+        """Update or create a user's forge wallet."""
+        update_data = {}
+        if forge_tokens is not None:
+            update_data["forge_tokens"] = forge_tokens
+        if is_architect is not None:
+            update_data["is_architect"] = is_architect
+
+        if not update_data:
+            raise HTTPException(status_code=400, detail="No update data provided.")
+
+        response = (
+            admin_supabase.table("user_wallets")
+            .upsert({
+                "user_id": str(user_id),
+                **update_data,
+                "updated_at": datetime.now(UTC).isoformat(),
+            })
+            .execute()
+        )
+        if not response.data:
+            raise HTTPException(status_code=500, detail="Failed to update wallet.")
+        return response.data[0]
 
     @classmethod
     async def delete_user(cls, admin_supabase: Client, user_id: UUID) -> None:

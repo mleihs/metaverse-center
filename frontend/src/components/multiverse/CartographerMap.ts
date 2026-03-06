@@ -12,6 +12,7 @@ import './MapGraph.js';
 // MapGraph3D is lazy-loaded via dynamic import when '3d' view is selected
 import './MapConnectionPanel.js';
 import './MapBattleFeed.js';
+import './BleedGazetteSidebar.js';
 import './MapLeaderboardPanel.js';
 import type { VelgMapMinimap } from './MapMinimap.js';
 import './MapMinimap.js';
@@ -48,10 +49,22 @@ export class VelgCartographerMap extends LitElement {
       color: var(--color-text-primary);
     }
 
+    .map-with-gazette {
+      display: flex;
+      height: calc(100vh - var(--header-height, 56px));
+    }
+
     .map {
       display: flex;
       flex-direction: column;
-      height: calc(100vh - var(--header-height, 56px));
+      flex: 1;
+      min-width: 0;
+      height: 100%;
+    }
+
+    .gazette-sidebar {
+      flex-shrink: 0;
+      height: 100%;
     }
 
     .map__header {
@@ -209,6 +222,15 @@ export class VelgCartographerMap extends LitElement {
     }
 
     @media (max-width: 768px) {
+      .map-with-gazette {
+        flex-direction: column;
+        height: auto;
+      }
+
+      .gazette-sidebar {
+        display: none;
+      }
+
       .map__graph {
         display: none;
       }
@@ -567,6 +589,7 @@ export class VelgCartographerMap extends LitElement {
     }
 
     return html`
+      <div class="map-with-gazette">
       <div class="map">
         <div class="map__header">
           <div class="map__header-row">
@@ -616,6 +639,8 @@ export class VelgCartographerMap extends LitElement {
         </div>
 
         ${this._renderMobileList()}
+      </div>
+      <velg-bleed-gazette-sidebar class="gazette-sidebar"></velg-bleed-gazette-sidebar>
       </div>
 
       <velg-map-connection-panel

@@ -83,6 +83,8 @@ class ZoneResponse(BaseModel):
     population_estimate: int = 0
     security_level: str
     data_source: str | None = None
+    description_de: str | None = None
+    zone_type_de: str | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -121,5 +123,6 @@ class StreetResponse(BaseModel):
     street_type: str | None = None
     length_km: float | None = None
     geojson: dict | None = None
+    street_type_de: str | None = None
     created_at: datetime
     updated_at: datetime

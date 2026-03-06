@@ -56,3 +56,13 @@ class CampaignMetricResponse(BaseModel):
     metric_value: float
     metric_metadata: dict | None = None
     measured_at: datetime
+
+
+class CampaignAnalyticsResponse(BaseModel):
+    """Aggregated campaign analytics from Postgres function."""
+
+    event_count: int = 0
+    events_by_type: dict[str, int] = {}
+    echo_count: int = 0
+    avg_impact: float | None = None
+    metrics_timeline: list[dict] = []

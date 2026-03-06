@@ -15,6 +15,7 @@ export class AppStateManager {
   // --- Simulations ---
   readonly currentSimulation = signal<Simulation | null>(null);
   readonly simulations = signal<Simulation[]>([]);
+  readonly isArchitect = signal<boolean>(false);
 
   // --- Simulation context ---
   readonly currentRole = signal<SimulationRole | null>(null);
@@ -43,6 +44,8 @@ export class AppStateManager {
 
   readonly isPlatformAdmin = computed(() => this.user.value?.email === 'admin@velgarien.dev');
 
+  readonly canForge = computed(() => this.isArchitect.value || this.isPlatformAdmin.value);
+
   // --- Setters ---
 
   setUser(user: User | null): void {
@@ -51,6 +54,10 @@ export class AppStateManager {
 
   setAccessToken(token: string | null): void {
     this.accessToken.value = token;
+  }
+
+  setArchitectStatus(isArchitect: boolean): void {
+    this.isArchitect.value = isArchitect;
   }
 
   setCurrentSimulation(simulation: Simulation | null): void {

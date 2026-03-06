@@ -75,6 +75,14 @@ PLATFORM_DEFAULT_STYLE_PROMPTS: dict[str, str] = {
         "architectural photograph, cinematic composition, "
         "photorealistic, high detail, dramatic lighting"
     ),
+    "banner": (
+        "cinematic matte painting, epic scale, volumetric lighting, "
+        "high detail, no text, no UI elements"
+    ),
+    "lore": (
+        "atmospheric concept art illustration, moody lighting, "
+        "rich environmental detail, no text, no UI elements"
+    ),
 }
 
 

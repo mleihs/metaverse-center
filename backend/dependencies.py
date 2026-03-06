@@ -243,6 +243,88 @@ def require_platform_admin():
     return _check_admin
 
 
+def require_owner_or_platform_admin():
+    """Dependency that allows simulation owners OR platform admins.
+
+    Returns a tuple of (user, is_admin) so the caller knows whether to use
+    the admin Supabase client for RLS bypass.
+    """
+
+    async def _check(
+        simulation_id: Annotated[UUID, Path()],
+        user: CurrentUser = Depends(get_current_user),
+        supabase: Client = Depends(get_supabase),
+    ) -> tuple[CurrentUser, bool]:
+        # Platform admin bypasses membership check
+        if user.email in PLATFORM_ADMIN_EMAILS:
+            return user, True
+
+        # Otherwise must be an owner member
+        response = (
+            supabase.table("simulation_members")
+            .select("member_role")
+            .eq("simulation_id", str(simulation_id))
+            .eq("user_id", str(user.id))
+            .limit(1)
+            .execute()
+        )
+
+        member = (
+            response.data[0]
+            if response and response.data and isinstance(response.data, list)
+            else (response.data if response and response.data else None)
+        )
+
+        if not member:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are not a member of this simulation.",
+            )
+
+        actual_level = ROLE_HIERARCHY.get(member["member_role"], 0)
+        owner_level = ROLE_HIERARCHY.get("owner", 3)
+
+        if actual_level < owner_level:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Requires 'owner' role. You have '{member['member_role']}'.",
+            )
+
+        return user, False
+
+    return _check
+
+
+def require_architect():
+    """Dependency that checks the user has the 'architect' role in their wallet.
+
+    Platform admins always pass this check.
+    """
+
+    async def _check_architect(
+        user: CurrentUser = Depends(get_current_user),
+        admin_supabase: Client = Depends(get_admin_supabase),
+    ) -> CurrentUser:
+        if user.email in PLATFORM_ADMIN_EMAILS:
+            return user
+
+        wallet_resp = (
+            admin_supabase.table("user_wallets")
+            .select("is_architect")
+            .eq("user_id", str(user.id))
+            .maybe_single()
+            .execute()
+        )
+        if not wallet_resp.data or not wallet_resp.data.get("is_architect"):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Architect privileges required to access the Simulation Forge.",
+            )
+        return user
+
+    return _check_architect
+
+
 def require_epoch_participant():
     """Dependency that checks the user is a participant in the epoch.
 

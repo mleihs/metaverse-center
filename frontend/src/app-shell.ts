@@ -36,6 +36,8 @@ import './components/epoch/EpochCommandCenter.js';
 import './components/epoch/EpochInviteAcceptView.js';
 import './components/how-to-play/HowToPlayView.js';
 import './components/admin/AdminPanel.js';
+import './components/forge/VelgForgeWizard.js';
+import './components/chronicle/ChronicleView.js';
 import './components/shared/CookieConsent.js';
 
 @localized()
@@ -162,6 +164,22 @@ export class VelgApp extends LitElement {
         },
       },
       {
+        path: '/forge',
+        render: () => html`<velg-forge-wizard></velg-forge-wizard>`,
+        enter: async () => {
+          const ok = await this._guardAuth();
+          if (!ok) return false;
+          if (!appState.canForge.value) {
+            this._router.goto('/dashboard');
+            return false;
+          }
+          seoService.setTitle(['The Simulation Forge']);
+          seoService.setCanonical('/forge');
+          analyticsService.trackPageView('/forge', document.title);
+          return true;
+        },
+      },
+      {
         path: '/how-to-play',
         render: () => html`<velg-how-to-play></velg-how-to-play>`,
         enter: async () => {
@@ -229,6 +247,11 @@ export class VelgApp extends LitElement {
       {
         path: '/simulations/:id/lore',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'lore'),
+        enter: async ({ id }) => this._enterSimulationRoute(id),
+      },
+      {
+        path: '/simulations/:id/chronicle',
+        render: ({ id }) => this._renderSimulationView(id ?? '', 'chronicle'),
         enter: async ({ id }) => this._enterSimulationRoute(id),
       },
       {
@@ -521,6 +544,9 @@ export class VelgApp extends LitElement {
     switch (view) {
       case 'lore':
         content = html`<velg-simulation-lore-view .simulationId=${resolvedId}></velg-simulation-lore-view>`;
+        break;
+      case 'chronicle':
+        content = html`<velg-chronicle-view .simulationId=${resolvedId}></velg-chronicle-view>`;
         break;
       case 'health':
         content = html`<velg-simulation-health-view .simulationId=${resolvedId}></velg-simulation-health-view>`;

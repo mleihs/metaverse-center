@@ -19,6 +19,8 @@ Disallow: /register
 Disallow: /profile
 Disallow: /new-simulation
 Disallow: /epoch/join
+Disallow: /admin
+Disallow: /forge
 Disallow: /api/
 
 Sitemap: https://metaverse.center/sitemap.xml

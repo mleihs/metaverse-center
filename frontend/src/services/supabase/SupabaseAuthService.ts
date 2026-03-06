@@ -1,6 +1,7 @@
 import type { AuthError, Session, User } from '@supabase/supabase-js';
 import { analyticsService } from '../AnalyticsService.js';
 import { appState } from '../AppStateManager.js';
+import { forgeApi } from '../api/ForgeApiService.js';
 import { supabase } from './client.js';
 
 export class SupabaseAuthService {
@@ -51,7 +52,7 @@ export class SupabaseAuthService {
     this._initialized = false;
   }
 
-  private _syncAppState(session: Session | null): void {
+  private async _syncAppState(session: Session | null): Promise<void> {
     if (session) {
       if (!this._previouslyAuthenticated) {
         analyticsService.trackEvent('login', { method: 'email' });
@@ -59,6 +60,16 @@ export class SupabaseAuthService {
       this._previouslyAuthenticated = true;
       appState.setUser(session.user);
       appState.setAccessToken(session.access_token);
+
+      // Fetch forge wallet status
+      try {
+        const walletResp = await forgeApi.getWallet();
+        if (walletResp.success && walletResp.data) {
+          appState.setArchitectStatus(walletResp.data.is_architect);
+        }
+      } catch (err) {
+        console.error('Failed to fetch forge wallet:', err);
+      }
     } else {
       if (this._previouslyAuthenticated) {
         analyticsService.trackEvent('logout');
@@ -66,6 +77,7 @@ export class SupabaseAuthService {
       this._previouslyAuthenticated = false;
       appState.setUser(null);
       appState.setAccessToken(null);
+      appState.setArchitectStatus(false);
     }
   }
 

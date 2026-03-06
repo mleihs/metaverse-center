@@ -5,8 +5,10 @@ import { customElement, state } from 'lit/decorators.js';
 import './AdminUsersTab.js';
 import './AdminCachingTab.js';
 import './AdminCleanupTab.js';
+import './AdminForgeTab.js';
+import './AdminSimulationsTab.js';
 
-type AdminTab = 'users' | 'caching' | 'cleanup';
+type AdminTab = 'users' | 'simulations' | 'caching' | 'cleanup' | 'forge';
 
 @localized()
 @customElement('velg-admin-panel')
@@ -180,6 +182,20 @@ export class VelgAdminPanel extends LitElement {
           @click=${() => this._setTab('users')}
         >${msg('Users')}</button>
         <button
+          class="admin-tabs__tab ${this._activeTab === 'simulations' ? 'admin-tabs__tab--active' : ''}"
+          role="tab"
+          aria-selected=${this._activeTab === 'simulations'}
+          aria-controls="admin-tabpanel"
+          @click=${() => this._setTab('simulations')}
+        >${msg('Simulations')}</button>
+        <button
+          class="admin-tabs__tab ${this._activeTab === 'forge' ? 'admin-tabs__tab--active' : ''}"
+          role="tab"
+          aria-selected=${this._activeTab === 'forge'}
+          aria-controls="admin-tabpanel"
+          @click=${() => this._setTab('forge')}
+        >${msg('Forge')}</button>
+        <button
           class="admin-tabs__tab ${this._activeTab === 'caching' ? 'admin-tabs__tab--active' : ''}"
           role="tab"
           aria-selected=${this._activeTab === 'caching'}
@@ -196,15 +212,24 @@ export class VelgAdminPanel extends LitElement {
       </div>
 
       <div class="admin-content" id="admin-tabpanel" role="tabpanel">
-        ${
-          this._activeTab === 'users'
-            ? html`<velg-admin-users-tab></velg-admin-users-tab>`
-            : this._activeTab === 'caching'
-              ? html`<velg-admin-caching-tab></velg-admin-caching-tab>`
-              : html`<velg-admin-cleanup-tab></velg-admin-cleanup-tab>`
-        }
+        ${this._renderActiveTab()}
       </div>
     `;
+  }
+
+  private _renderActiveTab() {
+    switch (this._activeTab) {
+      case 'users':
+        return html`<velg-admin-users-tab></velg-admin-users-tab>`;
+      case 'simulations':
+        return html`<velg-admin-simulations-tab></velg-admin-simulations-tab>`;
+      case 'forge':
+        return html`<velg-admin-forge-tab></velg-admin-forge-tab>`;
+      case 'caching':
+        return html`<velg-admin-caching-tab></velg-admin-caching-tab>`;
+      case 'cleanup':
+        return html`<velg-admin-cleanup-tab></velg-admin-cleanup-tab>`;
+    }
   }
 }
 

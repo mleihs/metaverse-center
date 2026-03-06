@@ -72,6 +72,9 @@ class BuildingResponse(BaseModel):
     special_type: str | None = None
     special_attributes: dict | None = None
     data_source: str | None = None
+    description_de: str | None = None
+    building_type_de: str | None = None
+    building_condition_de: str | None = None
     created_at: datetime
     updated_at: datetime
     deleted_at: datetime | None = None

@@ -16,6 +16,7 @@ from backend.services.admin_user_service import AdminUserService
 from backend.services.cache_config import invalidate as invalidate_cache_config
 from backend.services.cleanup_service import CleanupService
 from backend.services.platform_settings_service import PlatformSettingsService
+from backend.services.simulation_service import SimulationService
 from supabase import Client
 
 router = APIRouter(
@@ -38,6 +39,11 @@ class AddMembershipRequest(BaseModel):
 
 class ChangeMembershipRoleRequest(BaseModel):
     role: str = Field(..., pattern=r"^(owner|admin|editor|viewer)$")
+
+
+class UpdateUserWalletRequest(BaseModel):
+    forge_tokens: int | None = Field(None, ge=0)
+    is_architect: bool | None = None
 
 
 # --- Platform Settings Endpoints ---
@@ -148,6 +154,20 @@ async def remove_membership(
     return {"success": True, "data": data}
 
 
+@router.put("/users/{user_id}/wallet")
+async def update_user_wallet(
+    user_id: UUID,
+    body: UpdateUserWalletRequest,
+    _user: CurrentUser = Depends(require_platform_admin()),
+    admin_supabase: Client = Depends(get_admin_supabase),
+) -> dict:
+    """Update a user's forge wallet settings."""
+    data = await AdminUserService.update_user_wallet(
+        admin_supabase, user_id, body.forge_tokens, body.is_architect,
+    )
+    return {"success": True, "data": data}
+
+
 # --- Data Cleanup Endpoints ---
 
 
@@ -183,6 +203,69 @@ async def execute_cleanup(
         admin_supabase, body.cleanup_type, body.min_age_days, user.id,
     )
     return {"success": True, "data": data.model_dump(mode="json")}
+
+
+# --- Simulation Management Endpoints ---
+
+_sim_service = SimulationService()
+
+
+@router.get("/simulations")
+async def list_simulations(
+    include_deleted: bool = Query(default=False),
+    page: int = Query(default=1, ge=1),
+    per_page: int = Query(default=50, ge=1, le=100),
+    _user: CurrentUser = Depends(require_platform_admin()),
+    admin_supabase: Client = Depends(get_admin_supabase),
+) -> dict:
+    """List all simulations (admin). Optionally include soft-deleted."""
+    offset = (page - 1) * per_page
+    data, total = await _sim_service.list_all_simulations(
+        admin_supabase, include_deleted=include_deleted, limit=per_page, offset=offset,
+    )
+    return {"success": True, "data": data, "meta": {"total": total, "page": page, "per_page": per_page}}
+
+
+@router.get("/simulations/deleted")
+async def list_deleted_simulations(
+    page: int = Query(default=1, ge=1),
+    per_page: int = Query(default=50, ge=1, le=100),
+    _user: CurrentUser = Depends(require_platform_admin()),
+    admin_supabase: Client = Depends(get_admin_supabase),
+) -> dict:
+    """List only soft-deleted simulations (trash view)."""
+    offset = (page - 1) * per_page
+    data, total = await _sim_service.list_deleted_simulations(
+        admin_supabase, limit=per_page, offset=offset,
+    )
+    return {"success": True, "data": data, "meta": {"total": total, "page": page, "per_page": per_page}}
+
+
+@router.post("/simulations/{simulation_id}/restore")
+async def restore_simulation(
+    simulation_id: UUID,
+    _user: CurrentUser = Depends(require_platform_admin()),
+    admin_supabase: Client = Depends(get_admin_supabase),
+) -> dict:
+    """Restore a soft-deleted simulation."""
+    data = await _sim_service.restore_simulation(admin_supabase, simulation_id)
+    return {"success": True, "data": data}
+
+
+@router.delete("/simulations/{simulation_id}")
+async def admin_delete_simulation(
+    simulation_id: UUID,
+    hard: bool = Query(default=False, description="Permanently delete instead of soft-delete"),
+    _user: CurrentUser = Depends(require_platform_admin()),
+    admin_supabase: Client = Depends(get_admin_supabase),
+) -> dict:
+    """Admin delete a simulation. Use hard=true for permanent deletion."""
+    if hard:
+        data = await _sim_service.hard_delete_simulation(admin_supabase, simulation_id)
+        return {"success": True, "data": {"deleted": True, "simulation": data}}
+    else:
+        data = await _sim_service.delete_simulation(admin_supabase, simulation_id)
+        return {"success": True, "data": data}
 
 
 def _invalidate_caches(key: str) -> None:

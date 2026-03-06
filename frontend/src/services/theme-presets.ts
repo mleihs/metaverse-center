@@ -15,7 +15,8 @@ export type ThemePresetName =
   | 'nordic-noir'
   | 'deep-space-horror'
   | 'arc-raiders'
-  | 'illuminated-literary';
+  | 'illuminated-literary'
+  | 'deep-fried-horror';
 
 export const THEME_PRESETS: Record<ThemePresetName, Record<string, string>> = {
   brutalist: {
@@ -369,10 +370,56 @@ export const THEME_PRESETS: Record<ThemePresetName, Record<string, string>> = {
     card_frame_corners: 'floral',
     card_frame_foil: 'gilded',
   },
+
+  'deep-fried-horror': {
+    color_primary: '#FF00FF',
+    color_primary_hover: '#CC00CC',
+    color_primary_active: '#990099',
+    color_secondary: '#00FFFF',
+    color_accent: '#FF0000',
+    color_background: '#FFFF00',
+    color_surface: '#FFFFFF',
+    color_surface_sunken: '#EEEEEE',
+    color_surface_header: '#FFFF00',
+    color_text: '#000000',
+    color_text_secondary: '#333333',
+    color_text_muted: '#666666',
+    color_border: '#000000',
+    color_border_light: '#CCCCCC',
+    color_danger: '#FF0000',
+    color_success: '#00FF00',
+    color_primary_bg: '#FF00FF22',
+    color_info_bg: '#00FFFF22',
+    color_danger_bg: '#FF000022',
+    color_success_bg: '#00FF0022',
+    color_warning_bg: '#FFFF0022',
+    font_heading: "'Comic Sans MS', cursive",
+    font_body: "'Courier New', Courier, monospace",
+    font_mono: "SF Mono, Monaco, Inconsolata, 'Roboto Mono', monospace",
+    heading_weight: '900',
+    heading_transform: 'uppercase',
+    heading_tracking: '0.2em',
+    font_base_size: '16px',
+    border_radius: '0',
+    border_width: '3px',
+    border_width_default: '3px',
+    shadow_style: 'offset',
+    shadow_color: '#FF0000',
+    hover_effect: 'translate',
+    animation_speed: '2.0',
+    animation_easing: 'steps(4, end)',
+    text_inverse: '#FFFFFF',
+    card_frame_texture: 'none',
+    card_frame_nameplate: 'terminal',
+    card_frame_corners: 'none',
+    card_frame_foil: 'holographic',
+  },
 };
 
 /** Maps SimulationTheme types to suggested preset names. */
-export function getPresetForTheme(theme: SimulationTheme): ThemePresetName {
+export function getPresetForTheme(theme: SimulationTheme, slug?: string): ThemePresetName {
+  if (slug === 'spengbabs-whore-house') return 'deep-fried-horror';
+
   switch (theme) {
     case 'dystopian':
       return 'cyberpunk';
@@ -399,4 +446,5 @@ export const PRESET_NAMES: ThemePresetName[] = [
   'deep-space-horror',
   'arc-raiders',
   'illuminated-literary',
+  'deep-fried-horror',
 ];

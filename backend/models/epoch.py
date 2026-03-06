@@ -229,6 +229,27 @@ BattleLogEventType = Literal[
 ]
 
 
+class BattleSummaryResponse(BaseModel):
+    """Cycle-aggregated battle statistics for War Room."""
+
+    cycle_number: int
+    missions_deployed: int = 0
+    successes: int = 0
+    failures: int = 0
+    detections: int = 0
+    events_by_type: dict[str, int] = {}
+    narrative_highlights: list[dict] = []
+
+
+class SitrepResponse(BaseModel):
+    """AI-generated tactical situation report."""
+
+    cycle_number: int
+    sitrep: str
+    summary: dict
+    model_used: str
+
+
 class BattleLogEntry(BaseModel):
     """Battle log entry response."""
 

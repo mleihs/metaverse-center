@@ -11,9 +11,10 @@ from slowapi.errors import RateLimitExceeded
 from backend.config import settings as app_settings
 from backend.middleware.rate_limit import limiter
 from backend.middleware.security import SecurityHeadersMiddleware
-from backend.middleware.seo import enrich_html_for_crawler, get_crawler_redirect, is_crawler
+from backend.middleware.seo import enrich_html_for_crawler, get_crawler_redirect, get_prerendered_html, is_crawler
 from backend.routers import (
     admin,
+    agent_memories,
     agent_professions,
     agents,
     aptitudes,
@@ -21,6 +22,7 @@ from backend.routers import (
     buildings,
     campaigns,
     chat,
+    chronicles,
     connections,
     echoes,
     embassies,
@@ -28,6 +30,7 @@ from backend.routers import (
     epoch_invitations,
     epochs,
     events,
+    forge,
     game_mechanics,
     generation,
     health,
@@ -115,6 +118,9 @@ app.include_router(relationships.router)
 app.include_router(echoes.router)
 app.include_router(embassies.router)
 app.include_router(connections.router)
+app.include_router(forge.router)
+app.include_router(chronicles.router)
+app.include_router(agent_memories.router)
 app.include_router(game_mechanics.router)
 app.include_router(epochs.router)
 app.include_router(bot_players.router)
@@ -137,15 +143,22 @@ if _static_dir.is_dir():
         request: Request, full_path: str
     ) -> FileResponse | HTMLResponse | RedirectResponse:
         """Serve SPA index.html for all non-API, non-asset routes."""
+        if full_path.startswith("api/"):
+            return JSONResponse(status_code=404, content={"success": False, "message": "API route not found"})
+
         file_path = _static_dir / full_path
         if file_path.is_file() and ".." not in full_path:
             return FileResponse(file_path)
-        # For crawlers: 301-redirect UUID simulation URLs to slug URLs
+        # For crawlers: serve prerendered HTML or enriched meta tags
         if is_crawler(request.headers.get("user-agent", "")):
             redirect_path = get_crawler_redirect(request.url.path)
             if redirect_path:
                 return RedirectResponse(url=redirect_path, status_code=301)
-            # Enrich meta tags for crawlers on simulation pages
+            # Check for prerendered static HTML first
+            prerendered = get_prerendered_html(_static_dir, request.url.path)
+            if prerendered:
+                return FileResponse(prerendered, media_type="text/html")
+            # Fallback: dynamic meta enrichment
             enriched = await enrich_html_for_crawler(_static_dir / "index.html", request.url.path)
             if enriched:
                 return HTMLResponse(content=enriched)

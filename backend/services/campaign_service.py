@@ -88,6 +88,26 @@ class CampaignService(BaseService):
         return response.data[0]
 
     @classmethod
+    async def get_analytics(
+        cls,
+        supabase: Client,
+        simulation_id: UUID,
+        campaign_id: UUID,
+    ) -> dict:
+        """Aggregated campaign analytics from Postgres function."""
+        response = supabase.rpc("get_campaign_analytics", {
+            "p_simulation_id": str(simulation_id),
+            "p_campaign_id": str(campaign_id),
+        }).execute()
+        return response.data if response.data else {
+            "event_count": 0,
+            "events_by_type": {},
+            "echo_count": 0,
+            "avg_impact": None,
+            "metrics_timeline": [],
+        }
+
+    @classmethod
     async def get_campaign_metrics(
         cls,
         supabase: Client,

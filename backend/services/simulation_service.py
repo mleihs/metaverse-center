@@ -226,3 +226,99 @@ class SimulationService:
             )
 
         return response.data[0]
+
+    @staticmethod
+    async def hard_delete_simulation(
+        supabase: Client,
+        simulation_id: UUID,
+    ) -> dict:
+        """Permanently delete a simulation and all related data.
+
+        Uses admin (service_role) client to bypass RLS.
+        FK CASCADE handles dependent rows (members, agents, buildings, etc.).
+        """
+        fetch = (
+            supabase.table("simulations")
+            .select("id, name, slug")
+            .eq("id", str(simulation_id))
+            .maybe_single()
+            .execute()
+        )
+        if not fetch.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Simulation '{simulation_id}' not found.",
+            )
+
+        sim_info = fetch.data
+        supabase.table("simulations").delete().eq("id", str(simulation_id)).execute()
+        return sim_info
+
+    @staticmethod
+    async def list_all_simulations(
+        supabase: Client,
+        include_deleted: bool = False,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> tuple[list[dict], int]:
+        """List all simulations (admin). Optionally include soft-deleted."""
+        query = (
+            supabase.table("simulations")
+            .select("id, name, slug, status, theme, simulation_type, owner_id, created_at, deleted_at", count="exact")
+            .eq("simulation_type", "template")
+            .order("created_at", desc=True)
+        )
+
+        if not include_deleted:
+            query = query.is_("deleted_at", "null")
+
+        query = query.range(offset, offset + limit - 1)
+        response = query.execute()
+
+        total = response.count if response.count is not None else len(response.data or [])
+        return response.data or [], total
+
+    @staticmethod
+    async def list_deleted_simulations(
+        supabase: Client,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> tuple[list[dict], int]:
+        """List only soft-deleted simulations (admin trash view)."""
+        query = (
+            supabase.table("simulations")
+            .select("id, name, slug, status, theme, simulation_type, owner_id, created_at, deleted_at", count="exact")
+            .eq("simulation_type", "template")
+            .not_.is_("deleted_at", "null")
+            .order("deleted_at", desc=True)
+            .range(offset, offset + limit - 1)
+        )
+        response = query.execute()
+
+        total = response.count if response.count is not None else len(response.data or [])
+        return response.data or [], total
+
+    @staticmethod
+    async def restore_simulation(
+        supabase: Client,
+        simulation_id: UUID,
+    ) -> dict:
+        """Restore a soft-deleted simulation."""
+        response = (
+            supabase.table("simulations")
+            .update({
+                "deleted_at": None,
+                "status": "active",
+            })
+            .eq("id", str(simulation_id))
+            .not_.is_("deleted_at", "null")
+            .execute()
+        )
+
+        if not response.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Simulation '{simulation_id}' not found or not deleted.",
+            )
+
+        return response.data[0]

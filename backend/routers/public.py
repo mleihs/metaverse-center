@@ -13,6 +13,9 @@ from backend.dependencies import get_anon_supabase
 from backend.middleware.rate_limit import RATE_LIMIT_STANDARD, limiter
 from backend.models.common import PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.services.agent_service import AgentService
+from backend.services.bleed_gazette_service import BleedGazetteService
+from backend.services.agent_memory_service import AgentMemoryService
+from backend.services.chronicle_service import ChronicleService
 from backend.services.aptitude_service import AptitudeService
 from backend.services.battle_log_service import BattleLogService
 from backend.services.building_service import BuildingService
@@ -242,6 +245,79 @@ async def get_event(
     """Get a single event (public)."""
     data = await EventService.get(supabase, simulation_id, event_id)
     return {"success": True, "data": data}
+
+
+# ── Lore ──────────────────────────────────────────────────────────────────
+
+
+@router.get("/simulations/{simulation_id}/lore", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def list_simulation_lore(
+    request: Request,
+    simulation_id: UUID,
+    supabase: Client = Depends(get_anon_supabase),
+) -> dict:
+    """Get lore sections for a simulation (public)."""
+    resp = (
+        supabase.table("simulation_lore")
+        .select("*")
+        .eq("simulation_id", str(simulation_id))
+        .order("sort_order")
+        .execute()
+    )
+    return {"success": True, "data": resp.data or []}
+
+
+# ── Chronicles ────────────────────────────────────────────────────────────
+
+
+@router.get("/simulations/{simulation_id}/chronicles", response_model=PaginatedResponse)
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def list_chronicles_public(
+    request: Request,
+    simulation_id: UUID,
+    supabase: Client = Depends(get_anon_supabase),
+    limit: int = Query(default=25, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+) -> dict:
+    """List chronicle editions (public)."""
+    data, total = await ChronicleService.list(supabase, simulation_id, limit=limit, offset=offset)
+    return _paginated(data, total, limit, offset)
+
+
+@router.get("/simulations/{simulation_id}/chronicles/{chronicle_id}", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def get_chronicle_public(
+    request: Request,
+    simulation_id: UUID,
+    chronicle_id: UUID,
+    supabase: Client = Depends(get_anon_supabase),
+) -> dict:
+    """Get a single chronicle edition (public)."""
+    data = await ChronicleService.get(supabase, simulation_id, chronicle_id)
+    return {"success": True, "data": data}
+
+
+# ── Agent Memories ────────────────────────────────────────────────────────
+
+
+@router.get("/simulations/{simulation_id}/agents/{agent_id}/memories", response_model=PaginatedResponse)
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def list_agent_memories_public(
+    request: Request,
+    simulation_id: UUID,
+    agent_id: UUID,
+    supabase: Client = Depends(get_anon_supabase),
+    memory_type: str | None = Query(default=None),
+    limit: int = Query(default=25, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+) -> dict:
+    """List agent memories (public)."""
+    data, total = await AgentMemoryService.list_memories(
+        supabase, agent_id, simulation_id,
+        memory_type=memory_type, limit=limit, offset=offset,
+    )
+    return _paginated(data, total, limit, offset)
 
 
 # ── Locations ────────────────────────────────────────────────────────────
@@ -599,6 +675,24 @@ async def get_battle_feed(
     max_age = get_ttl("cache_http_battle_feed_max_age")
     http_response.headers["Cache-Control"] = f"public, max-age={max_age}, stale-while-revalidate={max_age * 3}"
     data = await BattleLogService.get_global_public_feed(supabase, limit=limit)
+    return {"success": True, "data": data}
+
+
+# ── Bleed Gazette ──────────────────────────────────────────────────────
+
+
+@router.get("/bleed-gazette", response_model=SuccessResponse[list])
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def get_bleed_gazette(
+    request: Request,
+    http_response: Response,
+    supabase: Client = Depends(get_anon_supabase),
+    limit: int = Query(default=20, ge=1, le=50),
+) -> dict:
+    """Bleed Gazette — multiverse news wire (public, no auth)."""
+    max_age = get_ttl("cache_http_battle_feed_max_age")
+    http_response.headers["Cache-Control"] = f"public, max-age={max_age}, stale-while-revalidate={max_age * 3}"
+    data = await BleedGazetteService.get_feed(supabase, limit=limit)
     return {"success": True, "data": data}
 
 

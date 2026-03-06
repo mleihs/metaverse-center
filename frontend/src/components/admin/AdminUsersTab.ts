@@ -281,6 +281,35 @@ export class VelgAdminUsersTab extends LitElement {
       border-top: 1px solid var(--color-border);
     }
 
+    /* --- Forge Access --- */
+
+    .forge-access {
+      background: var(--color-background);
+      border: 1px solid var(--color-border);
+      padding: var(--space-3);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    .forge-access__field {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .forge-access__label {
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      font-weight: bold;
+      color: var(--color-text-muted);
+      min-width: 120px;
+    }
+
+    .forge-access__input {
+      width: 80px;
+    }
+
     /* --- Loading / empty --- */
 
     .loading,
@@ -441,6 +470,19 @@ export class VelgAdminUsersTab extends LitElement {
     this._confirmDeleteUserId = null;
   }
 
+  private async _updateWallet(userId: string): Promise<void> {
+    if (!this._expandedDetail?.wallet) return;
+    const result = await adminApi.updateUserWallet(userId, {
+      is_architect: this._expandedDetail.wallet.is_architect,
+      forge_tokens: this._expandedDetail.wallet.forge_tokens,
+    });
+    if (result.success) {
+      VelgToast.success(msg('Wallet updated.'));
+    } else {
+      VelgToast.error(result.error?.message ?? msg('Failed to update wallet.'));
+    }
+  }
+
   private get _filteredUsers(): AdminUser[] {
     if (!this._search.trim()) return this._users;
     const term = this._search.toLowerCase();
@@ -592,6 +634,64 @@ export class VelgAdminUsersTab extends LitElement {
           </select>
           <button class="btn-sm btn-sm--primary" @click=${() => this._addMembership(detail.id)}>
             ${msg('Add')}
+          </button>
+        </div>
+
+        <p class="detail-section-title" style="margin-top:var(--space-6)">${msg('Simulation Forge Access')}</p>
+        <div class="forge-access">
+          <div class="forge-access__field">
+            <label class="forge-access__label">${msg('Is Architect')}</label>
+            <input 
+              type="checkbox" 
+              ?checked=${detail.wallet?.is_architect}
+              @change=${(e: Event) => {
+                const checked = (e.target as HTMLInputElement).checked;
+                if (this._expandedDetail) {
+                  this._expandedDetail = {
+                    ...this._expandedDetail,
+                    wallet: {
+                      ...(this._expandedDetail.wallet || {
+                        user_id: detail.id,
+                        forge_tokens: 0,
+                        is_architect: false,
+                        created_at: '',
+                        updated_at: '',
+                      }),
+                      is_architect: checked,
+                    },
+                  };
+                }
+              }}
+            />
+          </div>
+          <div class="forge-access__field">
+            <label class="forge-access__label">${msg('Forge Tokens')}</label>
+            <input 
+              type="number" 
+              class="membership-role-select forge-access__input" 
+              .value=${String(detail.wallet?.forge_tokens ?? 0)}
+              @input=${(e: Event) => {
+                const val = parseInt((e.target as HTMLInputElement).value, 10) || 0;
+                if (this._expandedDetail) {
+                  this._expandedDetail = {
+                    ...this._expandedDetail,
+                    wallet: {
+                      ...(this._expandedDetail.wallet || {
+                        user_id: detail.id,
+                        forge_tokens: 0,
+                        is_architect: false,
+                        created_at: '',
+                        updated_at: '',
+                      }),
+                      forge_tokens: val,
+                    },
+                  };
+                }
+              }}
+            />
+          </div>
+          <button class="btn-sm btn-sm--primary" @click=${() => this._updateWallet(detail.id)}>
+            ${msg('Save Wallet')}
           </button>
         </div>
 

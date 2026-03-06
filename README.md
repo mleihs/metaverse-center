@@ -3,9 +3,9 @@
 **Five worlds. One fracture. A multiplayer worldbuilding platform where literary simulations compete, bleed into each other, and evolve.**
 
 [![Python 3.13](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)](https://python.org)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?logo=typescript&logoColor=white)](https://typescriptlang.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)](https://typescriptlang.org)
 [![Lit 3.3](https://img.shields.io/badge/Lit-3.3-324FFF?logo=lit&logoColor=white)](https://lit.dev)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.129-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.135-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3FCF8E?logo=supabase&logoColor=white)](https://supabase.com)
 
 > **Live:** [metaverse.center](https://metaverse.center) &mdash; anonymous browsing, no account required
@@ -174,6 +174,7 @@ The epoch simulation library (`scripts/epoch_sim_lib.py`) runs 50&ndash;200 comp
 | **v2.2** | Guardian 0.08&rarr;0.06, cap 0.20&rarr;0.15, cost 3&rarr;4 RP; Infiltrator/Assassin rework; RP 10&rarr;12/cycle | Nash equilibrium convergence, operative success rates ~55-58% |
 | **v2.3** | Agent aptitudes (3-9 scores), draft phase, formula `aptitude*0.03` | 18pp success swing between best/worst agents; strategic agent selection matters |
 | **v2.4** | Foundation redesign: spy+guardian+fortification; open epoch participation | Hidden defensive layer, early intel, any user can join any epoch |
+| **v2.5** | The Chronicle (AI newspaper) + Agent Memory & Reflection (pgvector) | Living world systems: worlds narrate themselves, agents remember |
 
 ### Intelligence Report
 
@@ -207,8 +208,8 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
        ▼            ▼
 ┌──────────────────────┐
 │   Supabase (PostgreSQL)   │
-│   47 tables               │
-│   190+ RLS policies       │
+│   49 tables + pgvector     │
+│   194+ RLS policies       │
 │   Realtime channels       │
 │   Auth (ES256/HS256)      │
 │   Storage (4 buckets)     │
@@ -231,35 +232,36 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 
 | Library | Version | Purpose |
 |:--------|:--------|:--------|
-| FastAPI | 0.129 | Async web framework, auto-generated OpenAPI docs |
+| FastAPI | 0.135 | Async web framework, auto-generated OpenAPI docs |
 | Pydantic v2 | 2.12 | Request/response validation, settings management |
-| Supabase Python | 2.28 | PostgreSQL client with RLS enforcement |
+| Supabase Python | 2.25 | PostgreSQL client with RLS enforcement |
 | PyJWT | 2.11 | JWT verification (ES256 production, HS256 local) |
 | Pillow | 12.1 | Image processing, AVIF conversion |
 | Replicate | 1.0 | AI image generation (Flux, Stable Diffusion) |
 | httpx | 0.28 | Async HTTP client for OpenRouter AI calls |
 | slowapi | 0.1 | Tiered rate limiting (30/hr AI, 100/min standard) |
 | cryptography | 46.0 | AES-256 encryption for sensitive settings |
-| cachetools | 6.2 | JWKS + model resolution + map data caching |
+| cachetools | 7.0 | JWKS + model resolution + map data caching |
+| pydantic-ai | 1.66 | AI agent framework for structured generation |
 
 ### Frontend
 
 | Library | Version | Purpose |
 |:--------|:--------|:--------|
-| Lit | 3.3 | Web Components framework (113 custom elements) |
+| Lit | 3.3 | Web Components framework (133 custom elements) |
 | Preact Signals | 1.8 | Fine-grained reactive state management |
 | Supabase JS | 2.45 | Auth, Storage, Realtime channels |
 | Apache ECharts | 6.0 | Intelligence Report charts (radar, heatmap, bar, line) |
 | 3d-force-graph | 1.79 | Cartographer's Map force-directed visualization |
-| Zod | 3.23 | Runtime schema validation |
-| TypeScript | 5.5 | Type safety |
-| Vite | 5.4 | Build tool with HMR |
+| Zod | 4.3 | Runtime schema validation |
+| TypeScript | 5.9 | Type safety |
+| Vite | 7.3 | Build tool with HMR |
 
 ### Infrastructure
 
 | Component | Technology |
 |:----------|:-----------|
-| Database | PostgreSQL via Supabase (47 tables, 190+ RLS policies) |
+| Database | PostgreSQL via Supabase (49 tables, 194+ RLS policies, pgvector embeddings) |
 | Auth | Supabase Auth (JWT with ES256 in production, HS256 locally) |
 | Email | SMTP SSL (bilingual tactical briefing emails, fog-of-war compliant) |
 | AI Text | OpenRouter (model fallback chain) |
@@ -275,15 +277,15 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 
 | Metric | Count |
 |:-------|------:|
-| Database tables | 47 |
-| RLS policies | 190+ |
-| SQL migrations | 53 |
+| Database tables | 49 |
+| RLS policies | 194+ |
+| SQL migrations | 62+ |
 | API endpoints | 257 across 33 routers |
-| Web Components | 116 custom elements |
+| Web Components | 133 custom elements |
 | Backend tests | 789 |
 | Frontend tests | 439 |
 | E2E specs | 81 |
-| Localized UI strings | ~2,337 (EN/DE) |
+| Localized UI strings | ~2,563 (EN/DE) |
 | Specification documents | 29 |
 | Simulations | 5 (each with ~30 entities) |
 | Operative types | 6 |
@@ -304,10 +306,12 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 - **Foundation phase ("Nebelkrieg")** &mdash; spies + guardians in early game, hidden zone fortification (+1 security for 5 cycles), intel dossier tab
 - **Agent aptitudes & draft phase** &mdash; pre-match deckbuilding with card-hand draft UI and aptitude-weighted success rates
 - **Bot AI opponents** &mdash; 5 personality archetypes, 3 difficulty levels, fog-of-war compliant, dual-mode chat
-- **AI content generation** &mdash; portraits, building images, descriptions, event reactions, relationship suggestions, invitation lore
+- **The Chronicle** &mdash; AI-generated per-simulation broadsheet newspaper; aggregates events, echoes, battle log, agent reactions into narrative prose with broadsheet front-page layout (CSS multi-columns, drop cap, theme-responsive masthead)
+- **Agent Memory & Reflection** &mdash; Stanford Generative Agents-style memory loop; pgvector embeddings (1536-dim), retrieval via cosine similarity + importance + recency decay, memories injected into agent chat context
+- **AI content generation** &mdash; portraits, building images, descriptions, event reactions, relationship suggestions, invitation lore, chronicle editions, memory reflections
 - **Bilingual email notifications** &mdash; cycle briefings, phase changes, epoch completion (fog-of-war compliant, per-player data)
 - **Per-simulation theming** &mdash; 5 CSS presets with WCAG 2.1 AA contrast validation, light & dark modes
-- **Full i18n** &mdash; English + German (2,279 localized strings)
+- **Full i18n** &mdash; English + German (2,563 localized strings)
 - **How-to-Play tutorial** &mdash; rules reference, worked match replays, changelog, ECharts Intelligence Report
 - **Platform admin panel** &mdash; user/membership management, runtime cache TTL controls
 - **Bureau auth terminals** &mdash; themed login/register screens with scanlines, corner brackets, amber glow, blinking cursor, styled signup confirmation email
@@ -379,7 +383,7 @@ frontend/
     types/                  # TypeScript interfaces + Zod schemas
     locales/                # i18n (XLIFF source + generated output)
 supabase/
-  migrations/               # 53 SQL migration files
+  migrations/               # 62+ SQL migration files
   seed/                     # Seed data (7 active, 11 archived)
 scripts/                    # Image generation + epoch simulation library
 docs/                       # 29 specification documents

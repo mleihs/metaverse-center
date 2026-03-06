@@ -3,6 +3,7 @@ import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import type { Agent, AptitudeSet } from '../../types/index.js';
+import { t } from '../../utils/locale-fields.js';
 import type { CardBadge, CardRarity } from '../shared/VelgGameCard.js';
 import '../shared/VelgGameCard.js';
 
@@ -93,7 +94,8 @@ export class VelgAgentCard extends LitElement {
 
   private _getSubtitle(): string {
     const parts: string[] = [];
-    if (this.agent?.primary_profession) parts.push(this.agent.primary_profession);
+    const prof = t(this.agent, 'primary_profession');
+    if (prof) parts.push(prof);
     if (this.agent?.gender) parts.push(this.agent.gender);
     return parts.join(' \u00b7 ');
   }

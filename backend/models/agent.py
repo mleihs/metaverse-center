@@ -49,6 +49,9 @@ class AgentResponse(BaseModel):
     data_source: str | None = None
     created_by_id: UUID | None = None
     is_ambassador: bool = False
+    character_de: str | None = None
+    background_de: str | None = None
+    primary_profession_de: str | None = None
     created_at: datetime
     updated_at: datetime
     deleted_at: datetime | None = None

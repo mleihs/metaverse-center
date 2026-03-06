@@ -32,6 +32,7 @@ class SimulationResponse(BaseModel):
     name: str
     slug: str
     description: str | None = None
+    description_de: str | None = None
     theme: str
     status: str
     content_locale: str

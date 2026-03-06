@@ -349,6 +349,7 @@ function getPresetLabels(): Record<ThemePresetName, string> {
     'deep-space-horror': msg('Deep Space Horror'),
     'arc-raiders': msg('Arc Raiders'),
     'illuminated-literary': msg('Illuminated Literary'),
+    'deep-fried-horror': msg('Deep-Fried Horror'),
   };
 }
 

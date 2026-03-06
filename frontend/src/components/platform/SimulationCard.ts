@@ -2,6 +2,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { Simulation, SimulationTheme } from '../../types/index.js';
+import { t } from '../../utils/locale-fields.js';
 import { getThemeColor } from '../../utils/theme-colors.js';
 import '../shared/VelgBadge.js';
 
@@ -261,7 +262,7 @@ export class VelgSimulationCard extends LitElement {
             </velg-badge>
           </div>
 
-          ${sim.description ? html`<p class="shard__description">${sim.description}</p>` : null}
+          ${sim.description ? html`<p class="shard__description">${t(sim, 'description')}</p>` : null}
 
           <div class="shard__stats">
             <div class="shard__stat">

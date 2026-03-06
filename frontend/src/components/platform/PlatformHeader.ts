@@ -978,6 +978,15 @@ l40 16 183 -96 c101 -52 180 -96 176 -96 -4 0 -87 37 -185 81 -160 73 -181 81
           <a href="/how-to-play" class="header__nav-link ${window.location.pathname === '/how-to-play' ? 'header__nav-link--active' : ''}" @click=${this._handleGuideClick}>${msg('Guide')}</a>
 
           ${
+            appState.canForge.value
+              ? html`<a href="/forge" class="header__nav-link ${window.location.pathname === '/forge' ? 'header__nav-link--active' : ''}" @click=${(e: Event) => {
+                  e.preventDefault();
+                  this.dispatchEvent(new CustomEvent('navigate', { detail: '/forge', bubbles: true, composed: true }));
+                }}>${msg('Forge')}</a>`
+              : nothing
+          }
+
+          ${
             appState.isPlatformAdmin.value
               ? html`<a href="/admin" class="header__nav-link header__nav-link--admin ${window.location.pathname === '/admin' ? 'header__nav-link--active' : ''}" @click=${this._handleAdminClick}>${msg('Admin')}</a>`
               : null
@@ -1015,7 +1024,7 @@ l40 16 183 -96 c101 -52 180 -96 176 -96 -4 0 -87 37 -185 81 -160 73 -181 81
             title=${msg('View source on GitHub')}
           >${icons.github(18)}</a>
           <button class="locale-toggle" @click=${this._toggleLocale}>
-            ${localeService.currentLocale === 'en' ? 'DE' : 'EN'}
+            ${localeService.currentLocale === 'en' ? 'EN' : 'DE'}
           </button>
           ${
             appState.isAuthenticated.value

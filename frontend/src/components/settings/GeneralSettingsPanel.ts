@@ -1,9 +1,10 @@
 import { localized, msg } from '@lit/localize';
-import { html, LitElement, nothing } from 'lit';
+import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { simulationsApi } from '../../services/api/index.js';
 import type { Simulation, SimulationTheme } from '../../types/index.js';
+import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { VelgToast } from '../shared/Toast.js';
 import '../shared/VelgSectionHeader.js';
 import { settingsStyles } from '../shared/settings-styles.js';
@@ -29,7 +30,46 @@ interface GeneralFormData {
 @localized()
 @customElement('velg-general-settings-panel')
 export class VelgGeneralSettingsPanel extends LitElement {
-  static styles = [settingsStyles];
+  static styles = [
+    settingsStyles,
+    css`
+      .danger-zone {
+        margin-top: var(--space-8);
+        padding-top: var(--space-6);
+        border-top: 2px solid var(--color-danger);
+      }
+
+      .danger-zone__header {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        margin-bottom: var(--space-3);
+      }
+
+      .danger-zone__title {
+        font-family: var(--font-brutalist);
+        font-weight: var(--font-black);
+        font-size: var(--text-base);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-brutalist);
+        color: var(--color-danger);
+        margin: 0;
+      }
+
+      .danger-zone__description {
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+        line-height: var(--leading-relaxed);
+        margin: 0 0 var(--space-4) 0;
+      }
+
+      .danger-zone__actions {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+      }
+    `,
+  ];
 
   @property({ type: String }) simulationId = '';
 
@@ -50,6 +90,7 @@ export class VelgGeneralSettingsPanel extends LitElement {
   @state() private _loading = true;
   @state() private _saving = false;
   @state() private _error: string | null = null;
+  @state() private _deleting = false;
 
   private get _hasChanges(): boolean {
     return (
@@ -167,6 +208,59 @@ export class VelgGeneralSettingsPanel extends LitElement {
     }
   }
 
+  private _renderDangerZone() {
+    return html`
+      <div class="danger-zone">
+        <div class="danger-zone__header">
+          <h3 class="danger-zone__title">${msg('Danger Zone')}</h3>
+        </div>
+        <p class="danger-zone__description">
+          ${msg('Deleting this simulation will archive it and remove it from the dashboard for all members. Only a platform admin can restore it.')}
+        </p>
+        <div class="danger-zone__actions">
+          <button
+            class="settings-btn settings-btn--danger"
+            @click=${this._handleDeleteSimulation}
+            ?disabled=${this._deleting}
+          >
+            ${this._deleting ? msg('Deleting...') : msg('Delete Simulation')}
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  private async _handleDeleteSimulation(): Promise<void> {
+    const confirmed = await VelgConfirmDialog.show({
+      title: msg('Delete Simulation'),
+      message: msg(
+        'This will archive the simulation and hide it from all users. This action can only be reversed by a platform admin. Are you sure?',
+      ),
+      confirmLabel: msg('Delete Simulation'),
+      cancelLabel: msg('Cancel'),
+      variant: 'danger',
+    });
+
+    if (!confirmed) return;
+
+    this._deleting = true;
+    try {
+      const response = await simulationsApi.remove(this.simulationId);
+      if (!response.success) {
+        VelgToast.error(response.error?.message ?? msg('Failed to delete simulation'));
+        return;
+      }
+
+      VelgToast.success(msg('Simulation deleted.'));
+      window.history.pushState({}, '', '/');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    } catch (err) {
+      VelgToast.error(err instanceof Error ? err.message : msg('An unknown error occurred'));
+    } finally {
+      this._deleting = false;
+    }
+  }
+
   protected render() {
     if (this._loading) {
       return html`<velg-loading-state message=${msg('Loading general settings...')}></velg-loading-state>`;
@@ -244,6 +338,8 @@ export class VelgGeneralSettingsPanel extends LitElement {
             ${this._saving ? msg('Saving...') : msg('Save Changes')}
           </button>
         </div>
+
+        ${appState.isOwner.value || appState.isPlatformAdmin.value ? this._renderDangerZone() : nothing}
       </div>
     `;
   }

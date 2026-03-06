@@ -15,6 +15,7 @@ from backend.models.common import (
 from backend.services.agent_service import AgentService
 from backend.services.audit_service import AuditService
 from backend.services.event_service import EventService
+from backend.services.translation_service import null_de_fields_for_update, schedule_auto_translation
 from supabase import Client
 
 router = APIRouter(
@@ -82,6 +83,14 @@ async def create_agent(
         supabase, simulation_id, user.id, body.model_dump(exclude_none=True)
     )
     await AuditService.log_action(supabase, simulation_id, user.id, "agents", agent["id"], "create")
+    # Auto-translate in background (best-effort)
+    sim = supabase.table("simulations").select("name, theme").eq("id", str(simulation_id)).maybe_single().execute()
+    if sim.data:
+        schedule_auto_translation(
+            supabase, "agents", agent["id"], agent,
+            simulation_name=sim.data["name"], simulation_theme=sim.data.get("theme", ""),
+            entity_type="agent",
+        )
     return {"success": True, "data": agent}
 
 
@@ -96,11 +105,25 @@ async def update_agent(
     if_updated_at: str | None = Header(default=None, alias="If-Updated-At"),
 ) -> dict:
     """Update an existing agent."""
+    update_data = body.model_dump(exclude_none=True)
+    # Null stale _de fields for changed EN fields
+    de_nulls = null_de_fields_for_update("agents", update_data)
+    if de_nulls:
+        update_data.update(de_nulls)
     agent = await _service.update(
-        supabase, simulation_id, agent_id, body.model_dump(exclude_none=True),
+        supabase, simulation_id, agent_id, update_data,
         if_updated_at=if_updated_at,
     )
     await AuditService.log_action(supabase, simulation_id, user.id, "agents", agent_id, "update")
+    # Re-translate in background (best-effort)
+    if de_nulls:
+        sim = supabase.table("simulations").select("name, theme").eq("id", str(simulation_id)).maybe_single().execute()
+        if sim.data:
+            schedule_auto_translation(
+                supabase, "agents", agent["id"], agent,
+                simulation_name=sim.data["name"], simulation_theme=sim.data.get("theme", ""),
+                entity_type="agent",
+            )
     return {"success": True, "data": agent}
 
 

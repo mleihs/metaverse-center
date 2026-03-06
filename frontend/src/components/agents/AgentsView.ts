@@ -403,6 +403,20 @@ export class VelgAgentsView extends LitElement {
     this._selectedAgent = null;
   }
 
+  private _handleLightboxPrev(): void {
+    const idx = this._selectedAgent ? this._agents.indexOf(this._selectedAgent) : -1;
+    if (idx > 0) {
+      this._selectedAgent = this._agents[idx - 1];
+    }
+  }
+
+  private _handleLightboxNext(): void {
+    const idx = this._selectedAgent ? this._agents.indexOf(this._selectedAgent) : -1;
+    if (idx >= 0 && idx < this._agents.length - 1) {
+      this._selectedAgent = this._agents[idx + 1];
+    }
+  }
+
   private _handleRetry(): void {
     this._loadAgents();
   }
@@ -457,7 +471,12 @@ export class VelgAgentsView extends LitElement {
         .agent=${this._selectedAgent}
         .simulationId=${this.simulationId}
         ?open=${this._showDetails}
+        container="lightbox"
+        .totalEntities=${this._agents.length}
+        .currentIndex=${this._selectedAgent ? this._agents.indexOf(this._selectedAgent) : 0}
         @panel-close=${this._handleDetailsPanelClose}
+        @lightbox-prev=${this._handleLightboxPrev}
+        @lightbox-next=${this._handleLightboxNext}
         @agent-edit=${this._handleAgentEdit}
         @agent-delete=${this._handleAgentDelete}
       ></velg-agent-details-panel>

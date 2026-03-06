@@ -2,6 +2,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { CityStreet } from '../../types/index.js';
+import { t } from '../../utils/locale-fields.js';
 
 @localized()
 @customElement('velg-street-list')
@@ -76,7 +77,7 @@ export class VelgStreetList extends LitElement {
               <div class="item__meta">
                 ${
                   street.street_type
-                    ? html`<span class="item__badge">${street.street_type}</span>`
+                    ? html`<span class="item__badge">${t(street, 'street_type')}</span>`
                     : nothing
                 }
                 ${

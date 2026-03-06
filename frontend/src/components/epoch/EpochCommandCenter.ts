@@ -55,8 +55,9 @@ import './EpochIntelDossierTab.js';
 import './EpochLobbyActions.js';
 import './BotConfigPanel.js';
 import './DraftRosterPanel.js';
+import './WarRoomPanel.js';
 
-type TabId = 'overview' | 'leaderboard' | 'operations' | 'battle-log' | 'alliances' | 'chat';
+type TabId = 'overview' | 'leaderboard' | 'operations' | 'battle-log' | 'war-room' | 'alliances' | 'chat';
 
 @localized()
 @customElement('velg-epoch-command-center')
@@ -2033,6 +2034,7 @@ export class VelgEpochCommandCenter extends LitElement {
       { id: 'leaderboard', label: msg('Leaderboard') },
       { id: 'operations', label: msg('Operations') },
       { id: 'battle-log', label: msg('Battle Log') },
+      { id: 'war-room', label: msg('War Room') },
       { id: 'alliances', label: msg('Alliances') },
     ];
 
@@ -2115,6 +2117,15 @@ export class VelgEpochCommandCenter extends LitElement {
             .participants=${this._participants}
             .mySimulationId=${this._myParticipant?.simulation_id ?? ''}
           ></velg-epoch-battle-log>
+        `;
+      case 'war-room':
+        return html`
+          <velg-war-room-panel
+            .epochId=${this._epoch?.id ?? ''}
+            .currentCycle=${this._epoch?.current_cycle ?? 1}
+            .simulationId=${this._myParticipant?.simulation_id ?? ''}
+            .status=${this._epoch?.status ?? ''}
+          ></velg-war-room-panel>
         `;
       case 'alliances':
         return html`

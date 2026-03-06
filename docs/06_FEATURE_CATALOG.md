@@ -2,6 +2,7 @@
 
 **Version:** 2.0
 **Datum:** 2026-03-03
+**Aenderung v2.5:** Chronicle & Agent Memory (Phase B). Per-Simulation AI-Zeitungen mit Broadsheet-Layout. Stanford Generative Agents Memory Loop mit pgvector (1536-dim Embeddings). 62+ Migrationen. Forge-System (Simulation Creation Pipeline). Bleed Gazette. Campaign Analytics. War Room.
 **Aenderung v2.0:** Vollständige Überarbeitung. 5 Simulationen (Velgarien, The Gaslit Reach, Station Null, Speranza, Cité des Dames). 46 Datenbanktabellen, 51 Migrationen, 2279 i18n-Strings (EN/DE). Competitive PvP Epochs, Bot Players, Platform Admin, Agent Aptitudes & Draft, Game Instances, Epoch Invitations, Realtime Chat, Cycle Notifications, How-to-Play Tutorial, ECharts Intelligence Report, Embassies & Ambassadors, Cartographer's Map, Game Systems, SEO/GA4, Slug-URLs, Admin Data Cleanup. Alle Features implementiert und deployed.
 
 ---
@@ -222,6 +223,25 @@ Features die innerhalb einer Simulation existieren. 5 Simulationen: Velgarien (d
 | S45 | **SimulationLoreView** | ✅ IMPL | Mappt Theme-Tokens → Lore-CSS-Variablen mit `effect()` Signal-Subscription für Reload-Resilienz. 12 CSS Custom Properties (Defaults bewahren Dashboard-Appearance). Content-Dateien in `components/lore/content/` (5 Dateien, eine pro Sim). |
 | S46 | **Lore-Bilder** | ✅ IMPL | 16 Lore-Bilder (3 pro Sim + 4 Plattform) in AVIF-Format. VelgLightbox für Bild-Vergrößerung. `lightbox-open` CustomEvent für GA4-Tracking. |
 | S47 | **Schema.org Markup** | ✅ IMPL | JSON-LD `Thing` Structured Data via `SeoService.setStructuredData()`. Entfernung via `removeStructuredData()`. |
+
+#### B11. The Chronicle (Per-Simulation AI-Zeitung)
+
+| # | Feature | Status | Beschreibung |
+|---|---------|--------|-------------|
+| S48 | **Chronicle-Generierung** | ✅ IMPL | AI-generierte Zeitungsausgaben pro Simulation. `ChronicleService` aggregiert Events, Echoes, Battle-Log-Einträge und Agenten-Reaktionen via `get_chronicle_source_data()` RPC. `GenerationService._generate()` mit `chronicle_generation`-Template. Edition-Nummerierung, Mock-Mode-Fallback. Auto-Translation DE. |
+| S49 | **Broadsheet-Layout** | ✅ IMPL | `ChronicleView` LitElement: Viktorianisches Broadsheet-Zeitungslayout. CSS Multi-Column-Text (2 Spalten Desktop, 1 Mobil), Drop Cap auf erstem Absatz, ornamentale Linien (dick/dünn-Kombination), Theme-responsiver Masthead ("The {SimName} Chronicle"). Archiv-Index mit Leaderpoints. `--color-primary`-Akzente passen sich pro Simulation an. |
+| S50 | **Chronicle-API** | ✅ IMPL | `POST /api/v1/simulations/{id}/chronicles` (editor+, admin_supabase). `GET /api/v1/simulations/{id}/chronicles` (paginiert). `GET /api/v1/public/simulations/{id}/chronicles` (anon). `simulation_chronicles`-Tabelle mit RLS (public read, service_role write). |
+
+#### B12. Agent Memory & Reflection
+
+| # | Feature | Status | Beschreibung |
+|---|---------|--------|-------------|
+| S51 | **Memory-Speicherung** | ✅ IMPL | `agent_memories`-Tabelle mit `vector(1536)` Embedding-Spalte (pgvector ivfflat-Index). `memory_type` ENUM (observation/reflection). `memory_source_type` ENUM (chat/event_reaction/system/reflection). `EmbeddingService` ruft OpenRouter text-embedding-3-small auf (Zero-Vector-Fallback bei Mock/Fehler). |
+| S52 | **Stanford-Retrieval** | ✅ IMPL | `retrieve_agent_memories()` PL/pgSQL-Funktion: `score = 0.4 × cosine_similarity + 0.4 × (importance/10) + 0.2 × recency_decay`. Top-K-Retrieval. `last_accessed_at`-Tracking. |
+| S53 | **Chat-Integration** | ✅ IMPL | `ChatAIService.generate_response()`: Vor Prompt-Erstellung werden Memories via `AgentMemoryService.retrieve()` geladen und als `{agent_memories}`-Variable in System-Prompt injiziert. Nach Response: Fire-and-forget `asyncio.create_task(AgentMemoryService.extract_from_chat())` extrahiert bemerkenswerte Beobachtungen. Admin-Client für RLS-kompatible Writes. |
+| S54 | **Reflection** | ✅ IMPL | `AgentMemoryService.reflect()`: Sammelt letzte 20 Beobachtungen, synthetisiert 1-3 höherwertige Reflexionen via `memory_reflection`-Prompt-Template. Mindestens 5 Beobachtungen erforderlich. Editor+-Trigger über API. |
+| S55 | **Memory-Timeline-UI** | ✅ IMPL | `AgentMemorySection` LitElement: Timeline mit Typ-differenzierten Einträgen. Beobachtungen: Monospace, faktisch. Reflexionen: kursiv, erhoben, `--color-primary`-Akzent. Importance-Pips (1-10, gefüllt/leer). Collapsible per Typ. Vertikale Timeline-Linie. "Trigger Reflection"-Button (editor+-gated). Integriert in AgentDetailsPanel nach Relationships. |
+| S56 | **Memory-API** | ✅ IMPL | `GET /api/v1/simulations/{id}/agents/{id}/memories` (paginiert, filterbar nach memory_type). `POST .../memories/reflect` (editor+, admin_supabase). `GET /api/v1/public/simulations/{id}/agents/{id}/memories` (anon). `prompt_templates` für memory_extraction + memory_reflection. |
 
 ---
 

@@ -17,11 +17,13 @@ from backend.models.bot import AddBotToEpoch
 from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.models.epoch import (
     BattleLogEntry,
+    BattleSummaryResponse,
     EpochCreate,
     EpochResponse,
     EpochUpdate,
     ParticipantJoin,
     ParticipantResponse,
+    SitrepResponse,
     TeamCreate,
     TeamResponse,
 )
@@ -32,6 +34,7 @@ from backend.services.cycle_notification_service import CycleNotificationService
 from backend.services.epoch_chat_service import EpochChatService
 from backend.services.epoch_service import EpochService
 from backend.services.game_instance_service import GameInstanceService
+from backend.services.sitrep_service import SitrepService
 from supabase import Client
 
 logger = logging.getLogger(__name__)
@@ -237,6 +240,38 @@ async def list_instances(
 ) -> dict:
     """List all game instances for an epoch."""
     data = await GameInstanceService.list_instances(supabase, epoch_id)
+    return {"success": True, "data": data}
+
+
+@router.get("/{epoch_id}/battle-log/summary", response_model=SuccessResponse[BattleSummaryResponse])
+async def get_cycle_battle_summary(
+    epoch_id: UUID,
+    user: CurrentUser = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase),
+    cycle: int = Query(..., ge=0, description="Cycle number"),
+    simulation_id: UUID | None = Query(default=None),
+) -> dict:
+    """Get aggregated battle stats for a specific cycle (War Room)."""
+    data = await SitrepService.get_cycle_summary(
+        supabase, str(epoch_id), cycle,
+        simulation_id=str(simulation_id) if simulation_id else None,
+    )
+    return {"success": True, "data": data}
+
+
+@router.get("/{epoch_id}/sitrep/{cycle_number}", response_model=SuccessResponse[SitrepResponse])
+async def get_cycle_sitrep(
+    epoch_id: UUID,
+    cycle_number: int,
+    user: CurrentUser = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase),
+    simulation_id: UUID | None = Query(default=None),
+) -> dict:
+    """Generate AI tactical situation report for a cycle (War Room)."""
+    data = await SitrepService.generate_sitrep(
+        supabase, str(epoch_id), cycle_number,
+        simulation_id=str(simulation_id) if simulation_id else None,
+    )
     return {"success": True, "data": data}
 
 

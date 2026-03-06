@@ -3,6 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import type { Building } from '../../types/index.js';
+import { t } from '../../utils/locale-fields.js';
 import type { CapacityBar, CardBadge, CardRarity } from '../shared/VelgGameCard.js';
 import '../shared/VelgGameCard.js';
 
@@ -76,9 +77,9 @@ export class VelgBuildingCard extends LitElement {
     const b = this.building;
     if (!b) return badges;
 
-    if (b.building_type) badges.push({ label: b.building_type });
+    if (b.building_type) badges.push({ label: t(b, 'building_type') });
     if (b.building_condition)
-      badges.push({ label: b.building_condition, variant: this._getConditionVariant() });
+      badges.push({ label: t(b, 'building_condition'), variant: this._getConditionVariant() });
     if (b.special_type === 'embassy') badges.push({ label: msg('Embassy'), variant: 'info' });
     if (this.compromised) badges.push({ label: msg('Compromised'), variant: 'danger' });
 

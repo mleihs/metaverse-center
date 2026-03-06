@@ -19,6 +19,7 @@ import type {
 } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import { getFullResUrl } from '../../utils/image.js';
+import { t } from '../../utils/locale-fields.js';
 import { agentAltText } from '../../utils/text.js';
 import '../buildings/EmbassyLink.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
@@ -31,7 +32,9 @@ import '../shared/VelgAvatar.js';
 import '../shared/VelgAptitudeBars.js';
 import '../shared/VelgBadge.js';
 import '../shared/VelgSectionHeader.js';
+import '../shared/EntityLightbox.js';
 import '../shared/VelgSidePanel.js';
+import './AgentMemorySection.js';
 import './RelationshipCard.js';
 import './RelationshipEditModal.js';
 
@@ -521,6 +524,9 @@ export class VelgAgentDetailsPanel extends LitElement {
   @property({ type: Object }) agent: Agent | null = null;
   @property({ type: String }) simulationId = '';
   @property({ type: Boolean, reflect: true }) open = false;
+  @property({ type: String }) container: 'panel' | 'lightbox' = 'lightbox';
+  @property({ type: Number }) totalEntities = 0;
+  @property({ type: Number }) currentIndex = 0;
 
   @state() private _reactions: EventReaction[] = [];
   @state() private _reactionsLoading = false;
@@ -1248,109 +1254,130 @@ export class VelgAgentDetailsPanel extends LitElement {
     `;
   }
 
-  protected render() {
+  private _renderSlottedContent() {
     const agent = this.agent;
+    if (!agent) return nothing;
 
     return html`
-      <velg-side-panel
-        .open=${this.open}
-        .panelTitle=${agent?.name ?? msg('Agent Details')}
-      >
-        ${
-          agent
-            ? html`
-              <velg-avatar
-                slot="media"
-                .src=${agent.portrait_image_url ?? ''}
-                .name=${agent.name}
-                size="full"
-                ?clickable=${!!agent.portrait_image_url}
-                @avatar-click=${(e: CustomEvent) => {
-                  this._lightboxSrc = (e.detail as { src: string }).src;
-                  this._lightboxAlt = agentAltText(agent);
-                }}
-              ></velg-avatar>
+      <velg-avatar
+        slot="media"
+        .src=${agent.portrait_image_url ?? ''}
+        .name=${agent.name}
+        size="full"
+        ?clickable=${!!agent.portrait_image_url}
+        @avatar-click=${(e: CustomEvent) => {
+          this._lightboxSrc = (e.detail as { src: string }).src;
+          this._lightboxAlt = agentAltText(agent);
+        }}
+      ></velg-avatar>
 
-              <div slot="content">
-                <div class="panel__info">
-                  <div class="panel__badges">
-                    ${agent.system ? html`<velg-badge variant="primary">${agent.system}</velg-badge>` : nothing}
-                    ${agent.gender ? html`<velg-badge>${agent.gender}</velg-badge>` : nothing}
-                    ${agent.is_ambassador ? html`<velg-badge variant="warning">${msg('Ambassador')}</velg-badge>` : nothing}
-                    ${agent.data_source === 'ai' ? html`<velg-badge variant="info">${msg('AI Generated')}</velg-badge>` : nothing}
-                  </div>
+      <div slot="content">
+        <div class="panel__info">
+          <div class="panel__badges">
+            ${agent.system ? html`<velg-badge variant="primary">${agent.system}</velg-badge>` : nothing}
+            ${agent.gender ? html`<velg-badge>${agent.gender}</velg-badge>` : nothing}
+            ${agent.is_ambassador ? html`<velg-badge variant="warning">${msg('Ambassador')}</velg-badge>` : nothing}
+            ${agent.data_source === 'ai' ? html`<velg-badge variant="info">${msg('AI Generated')}</velg-badge>` : nothing}
+          </div>
 
-                  ${this._renderInfluence()}
+          ${this._renderInfluence()}
 
-                  ${this._renderEmbassy()}
+          ${this._renderEmbassy()}
 
-                  ${
-                    agent.character
-                      ? html`
-                      <div class="panel__section">
-                        <velg-section-header>${msg('Character')}</velg-section-header>
-                        <div class="panel__section-content">${agent.character}</div>
-                      </div>
-                    `
-                      : nothing
-                  }
-
-                  ${
-                    agent.background
-                      ? html`
-                      <div class="panel__section">
-                        <velg-section-header>${msg('Background')}</velg-section-header>
-                        <div class="panel__section-content">${agent.background}</div>
-                      </div>
-                    `
-                      : nothing
-                  }
-
-                  <div class="panel__section">
-                    <velg-section-header>${msg('Aptitudes')} ${renderInfoBubble(msg('Drag sliders to set operative strengths. Total budget must equal 36 — raising one type means lowering another. Changes auto-save when the budget balances.'))}</velg-section-header>
-                    ${this._renderAptitudes()}
-                  </div>
-
-                  <div class="panel__section">
-                    <velg-section-header>${msg('Professions')}</velg-section-header>
-                    ${this._renderProfessions()}
-                  </div>
-
-                  <div class="panel__section">
-                    <velg-section-header>${msg('Reactions')}</velg-section-header>
-                    ${this._renderReactions()}
-                  </div>
-
-                  <div class="panel__section">
-                    <velg-section-header>
-                      ${msg('Relationships')}
-                      ${
-                        this._relationships.length > 0
-                          ? html` <velg-badge>${this._relationships.length}</velg-badge>`
-                          : nothing
-                      }
-                    </velg-section-header>
-                    ${this._renderRelationships()}
-                  </div>
-                </div>
+          ${
+            agent.character
+              ? html`
+              <div class="panel__section">
+                <velg-section-header>${msg('Character')}</velg-section-header>
+                <div class="panel__section-content">${t(agent, 'character')}</div>
               </div>
+            `
+              : nothing
+          }
 
+          ${
+            agent.background
+              ? html`
+              <div class="panel__section">
+                <velg-section-header>${msg('Background')}</velg-section-header>
+                <div class="panel__section-content">${t(agent, 'background')}</div>
+              </div>
+            `
+              : nothing
+          }
+
+          <div class="panel__section">
+            <velg-section-header>${msg('Aptitudes')} ${renderInfoBubble(msg('Drag sliders to set operative strengths. Total budget must equal 36 — raising one type means lowering another. Changes auto-save when the budget balances.'))}</velg-section-header>
+            ${this._renderAptitudes()}
+          </div>
+
+          <div class="panel__section">
+            <velg-section-header>${msg('Professions')}</velg-section-header>
+            ${this._renderProfessions()}
+          </div>
+
+          <div class="panel__section">
+            <velg-section-header>${msg('Reactions')}</velg-section-header>
+            ${this._renderReactions()}
+          </div>
+
+          <div class="panel__section">
+            <velg-section-header>
+              ${msg('Relationships')}
               ${
-                appState.canEdit.value
-                  ? html`
-                <button slot="footer" class="panel__btn panel__btn--edit" @click=${this._handleEdit}>
-                  ${icons.edit()} ${msg('Edit')}
-                </button>
-                <button slot="footer" class="panel__btn panel__btn--danger" @click=${this._handleDelete}>
-                  ${icons.trash()} ${msg('Delete')}
-                </button>
-              `
+                this._relationships.length > 0
+                  ? html` <velg-badge>${this._relationships.length}</velg-badge>`
                   : nothing
               }
-            `
-            : nothing
-        }
-      </velg-side-panel>
+            </velg-section-header>
+            ${this._renderRelationships()}
+          </div>
+
+          <div class="panel__section">
+            <velg-section-header>${msg('Memories')}</velg-section-header>
+            <velg-agent-memory-section
+              .simulationId=${this.simulationId}
+              .agentId=${this.agent?.id ?? ''}
+            ></velg-agent-memory-section>
+          </div>
+        </div>
+      </div>
+
+      ${
+        appState.canEdit.value
+          ? html`
+        <button slot="footer" class="panel__btn panel__btn--edit" @click=${this._handleEdit}>
+          ${icons.edit()} ${msg('Edit')}
+        </button>
+        <button slot="footer" class="panel__btn panel__btn--danger" @click=${this._handleDelete}>
+          ${icons.trash()} ${msg('Delete')}
+        </button>
+      `
+          : nothing
+      }
+    `;
+  }
+
+  protected render() {
+    const title = this.agent?.name ?? msg('Agent Details');
+    const content = this._renderSlottedContent();
+
+    const wrapper = this.container === 'lightbox'
+      ? html`
+        <velg-entity-lightbox
+          .open=${this.open}
+          .panelTitle=${title}
+          .totalEntities=${this.totalEntities}
+          .currentIndex=${this.currentIndex}
+        >${content}</velg-entity-lightbox>`
+      : html`
+        <velg-side-panel
+          .open=${this.open}
+          .panelTitle=${title}
+        >${content}</velg-side-panel>`;
+
+    return html`
+      ${wrapper}
 
       <velg-lightbox
         .src=${this._lightboxSrc}

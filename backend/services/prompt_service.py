@@ -86,6 +86,32 @@ HARDCODED_FALLBACKS: dict[str, str] = {
         "Known participants: {participant_names}. "
         "Write one terse paragraph in military intelligence style."
     ),
+    "chronicle_generation": (
+        "Write edition #{edition_number} of the {simulation_name} chronicle "
+        "covering {period_start} to {period_end}. "
+        "Events: {event_summary}. Echoes: {echo_summary}. "
+        "Battle dispatches: {battle_summary}. Reactions: {reaction_summary}. "
+        "Return JSON: {{\"title\": \"...\", \"headline\": \"...\", \"content\": \"...\"}}"
+    ),
+    "memory_extraction": (
+        "Analyze this conversation between a user and {agent_name} in {simulation_name}. "
+        "User: {user_message}. {agent_name}: {agent_response}. "
+        "Extract 0-2 key observations. "
+        "Return JSON: {{\"observations\": [{{\"content\": \"...\", \"importance\": 1-10}}]}}"
+    ),
+    "memory_reflection": (
+        "You are {agent_name} in {simulation_name}. "
+        "Review your recent observations: {observations_text}. "
+        "Synthesize 1-3 higher-level reflections. "
+        "Return JSON: {{\"reflections\": [{{\"content\": \"...\", \"importance\": 1-10}}]}}"
+    ),
+    "chat_system_prompt": (
+        "You are {agent_name}, a character in {simulation_name}. "
+        "Your character: {agent_character}\n"
+        "Your background: {agent_background}\n"
+        "{agent_memories}\n"
+        "Stay in character. Respond in {locale_name}."
+    ),
 }
 
 

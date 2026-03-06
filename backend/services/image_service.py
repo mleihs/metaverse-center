@@ -42,16 +42,10 @@ class ImageService:
         agent_name: str,
         agent_data: dict | None = None,
         description_override: str | None = None,
+        api_key: str | None = None,
     ) -> str:
-        """Generate a portrait for an agent and upload to storage.
-
-        Returns the public URL of the uploaded portrait.
-
-        If description_override is provided, skip LLM generation and use it
-        directly as the image prompt (still appends style prompt).
-        If agent_data contains is_ambassador=True and no override, auto-detect
-        embassy data and use ambassador-specific prompt generation.
-        """
+        """Generate a portrait for an agent and upload to storage."""
+        replicate_client = ReplicateService(api_key=api_key) if api_key else self._replicate
         data = agent_data or {}
 
         if description_override:
@@ -87,7 +81,7 @@ class ImageService:
         image_model = await self._model_resolver.resolve_image_model(
             "agent_portrait",
         )
-        raw_bytes = await self._replicate.generate_image(
+        raw_bytes = await replicate_client.generate_image(
             model=image_model.model,
             prompt=description,
             **image_model.to_replicate_params(),
@@ -116,18 +110,10 @@ class ImageService:
         building_type: str,
         building_data: dict | None = None,
         description_override: str | None = None,
+        api_key: str | None = None,
     ) -> str:
-        """Generate an image for a building and upload to storage.
-
-        Uses a dedicated building_image_description template (same pattern as
-        portrait generation) to produce a proper image-generation prompt that
-        reflects the building's game-state properties.
-
-        If description_override is provided, skip LLM generation and use it
-        directly as the image prompt (still appends style prompt).
-        If building_data contains special_type='embassy' and no override,
-        auto-detect embassy data and use embassy-specific prompt generation.
-        """
+        """Generate an image for a building and upload to storage."""
+        replicate_client = ReplicateService(api_key=api_key) if api_key else self._replicate
         data = building_data or {}
 
         if description_override:
@@ -163,7 +149,7 @@ class ImageService:
         image_model = await self._model_resolver.resolve_image_model(
             "building_image",
         )
-        raw_bytes = await self._replicate.generate_image(
+        raw_bytes = await replicate_client.generate_image(
             model=image_model.model,
             prompt=description,
             **image_model.to_replicate_params(),
@@ -183,6 +169,95 @@ class ImageService:
         ).eq("id", str(building_id)).execute()
 
         logger.info("Image uploaded for building %s: %s", building_id, url)
+        return url
+
+    async def generate_banner_image(
+        self,
+        sim_name: str,
+        sim_description: str,
+        anchor_data: dict | None = None,
+    ) -> str:
+        """Generate a 16:9 banner image for a simulation and upload to storage."""
+        anchor = anchor_data or {}
+        description = (
+            f"Cinematic wide establishing shot of {sim_name}. "
+            f"{sim_description[:200]}. "
+            f"Atmosphere: {anchor.get('title', 'mysterious')}. "
+            f"Epic landscape, 16:9 aspect ratio, no text, no UI elements, "
+            f"dramatic lighting, high detail."
+        )
+
+        style_prompt = await self._model_resolver.resolve_style_prompt("banner")
+        if style_prompt:
+            description = f"{description}, {style_prompt}"
+
+        image_model = await self._model_resolver.resolve_image_model("banner")
+        params = image_model.to_replicate_params()
+        params["aspect_ratio"] = "16:9"
+
+        raw_bytes = await self._replicate.generate_image(
+            model=image_model.model,
+            prompt=description,
+            **params,
+        )
+
+        filename = f"{self._simulation_id}/banner/{uuid4()}.avif"
+        url = await self._upload_dual_resolution(
+            bucket="simulation.assets",
+            base_path=filename,
+            raw_bytes=raw_bytes,
+        )
+
+        self._supabase.table("simulations").update(
+            {"banner_url": url},
+        ).eq("id", str(self._simulation_id)).execute()
+
+        logger.info("Banner uploaded for simulation %s: %s", self._simulation_id, url)
+        return url
+
+    async def generate_lore_image(
+        self,
+        section_title: str,
+        section_body: str,
+        image_slug: str,
+        sim_slug: str,
+    ) -> str:
+        """Generate a 3:2 atmospheric lore image and upload to storage.
+
+        Uploads to simulation.assets/{sim_slug}/lore/{image_slug}.avif
+        matching the LoreScroll._getImageUrl() path convention.
+        """
+        description = (
+            f"Atmospheric scene: {section_title}. "
+            f"{section_body[:300]}. "
+            f"3:2 aspect ratio, moody atmospheric illustration, "
+            f"no text, no UI elements, rich detail."
+        )
+
+        style_prompt = await self._model_resolver.resolve_style_prompt("lore")
+        if style_prompt:
+            description = f"{description}, {style_prompt}"
+
+        image_model = await self._model_resolver.resolve_image_model("lore_image")
+        params = image_model.to_replicate_params()
+        params["aspect_ratio"] = "3:2"
+
+        raw_bytes = await self._replicate.generate_image(
+            model=image_model.model,
+            prompt=description,
+            **params,
+        )
+
+        # Upload path matches LoreScroll convention: /{sim_slug}/lore/{image_slug}.avif
+        path = f"{sim_slug}/lore/{image_slug}.avif"
+        full_avif = _convert_to_avif(raw_bytes, max_dimension=None, quality=AVIF_QUALITY)
+        thumb_avif = _convert_to_avif(raw_bytes, max_dimension=MAX_IMAGE_DIMENSION, quality=AVIF_QUALITY_THUMB)
+
+        full_path = path.replace(".avif", ".full.avif")
+        await self._upload_to_storage("simulation.assets", full_path, full_avif)
+        url = await self._upload_to_storage("simulation.assets", path, thumb_avif)
+
+        logger.info("Lore image uploaded for %s/%s: %s", sim_slug, image_slug, url)
         return url
 
     async def _generate_embassy_description(

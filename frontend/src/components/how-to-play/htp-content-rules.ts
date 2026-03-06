@@ -462,6 +462,42 @@ export function getEchoLifecycle(): { name: string; color: string }[] {
 export function getChangelog(): ChangelogEntry[] {
   return [
     {
+      version: 'v2.5',
+      date: '2026-03-06',
+      title: msg('The Chronicle & Agent Memory'),
+      highlights: [
+        msg('The Chronicle: AI-generated per-simulation broadsheet newspaper'),
+        msg('Agent Memory: Stanford Generative Agents-style observe → store → retrieve → reflect loop'),
+        msg('pgvector semantic embeddings for memory retrieval (1536-dim)'),
+        msg('Memories automatically injected into agent chat context'),
+      ],
+      details: [
+        {
+          category: msg('The Chronicle'),
+          changes: [
+            msg('AI-generated newspaper editions synthesizing events, echoes, battle log, and agent reactions'),
+            msg('Broadsheet front-page layout with CSS multi-column text, drop cap, and ornamental rules'),
+            msg('Theme-responsive masthead: "The {SimName} Chronicle" with simulation\u2019s primary color'),
+            msg('Edition archive index with leader-dot navigation'),
+            msg('Public read access, editor+ role required to generate editions'),
+            msg('Auto-translation to German via existing translation pipeline'),
+          ],
+        },
+        {
+          category: msg('Agent Memory & Reflection'),
+          changes: [
+            msg('Observations extracted from chat exchanges via AI (fire-and-forget)'),
+            msg('pgvector embeddings (text-embedding-3-small, 1536 dimensions) for semantic retrieval'),
+            msg('Stanford retrieval formula: 0.4 \u00D7 cosine_similarity + 0.4 \u00D7 importance/10 + 0.2 \u00D7 recency_decay'),
+            msg('Reflection: synthesize higher-level insights from recent observations (editor+ trigger)'),
+            msg('Memory timeline UI: observations (monospace/factual) vs reflections (italic/elevated)'),
+            msg('Importance pips (1\u201310 scale) for visual memory weight'),
+            msg('Memories formatted and injected into agent system prompts during chat'),
+          ],
+        },
+      ],
+    },
+    {
       version: 'v2.4',
       date: '2026-03-04',
       title: msg('Foundation Phase Redesign & Open Participation'),

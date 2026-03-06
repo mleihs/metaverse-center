@@ -1,6 +1,7 @@
 import type {
   ApiResponse,
   BattleLogEntry,
+  GazetteEntry,
   MapData,
   SimulationConnection,
 } from '../../types/index.js';
@@ -21,6 +22,10 @@ export class ConnectionsApiService extends BaseApiService {
 
   getBattleFeed(limit = 20): Promise<ApiResponse<BattleLogEntry[]>> {
     return this.getPublic(`/battle-feed?limit=${limit}`);
+  }
+
+  getBleedGazette(limit = 20): Promise<ApiResponse<GazetteEntry[]>> {
+    return this.getPublic(`/bleed-gazette?limit=${limit}`);
   }
 }
 

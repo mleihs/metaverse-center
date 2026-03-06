@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "tavily": {
+      "url": "https://mcp.tavily.com/mcp/?tavilyApiKey=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"
+    },
+    "puppeteer": {
+      "command": "npx",
+      "args": ["-y", "@anthropic/mcp-server-puppeteer"]
+    }
+  }
+}

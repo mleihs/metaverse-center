@@ -31,7 +31,8 @@ export class VelgAvatar extends LitElement {
 
     :host([size='full']) .avatar {
       width: 100%;
-      aspect-ratio: 1 / 1;
+      aspect-ratio: var(--avatar-aspect, 1 / 1);
+      height: var(--avatar-height, auto);
       border-bottom: var(--border-medium);
     }
 

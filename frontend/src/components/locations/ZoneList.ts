@@ -2,6 +2,7 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { Zone, ZoneStability } from '../../types/index.js';
+import { t } from '../../utils/locale-fields.js';
 
 @localized()
 @customElement('velg-zone-list')
@@ -181,7 +182,7 @@ export class VelgZoneList extends LitElement {
               <h3 class="item__name">${zone.name}</h3>
               ${
                 zone.description
-                  ? html`<div class="item__description">${zone.description}</div>`
+                  ? html`<div class="item__description">${t(zone, 'description')}</div>`
                   : nothing
               }
               ${
@@ -194,7 +195,7 @@ export class VelgZoneList extends LitElement {
               <div class="item__badges">
                 ${
                   zone.zone_type
-                    ? html`<span class="item__badge">${zone.zone_type}</span>`
+                    ? html`<span class="item__badge">${t(zone, 'zone_type')}</span>`
                     : nothing
                 }
                 ${

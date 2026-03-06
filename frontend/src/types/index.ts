@@ -87,6 +87,7 @@ export interface Simulation {
   name: string;
   slug: string;
   description: string;
+  description_de?: string;
   theme: SimulationTheme;
   status: SimulationStatus;
   simulation_type: SimulationType;
@@ -152,9 +153,12 @@ export interface Agent {
   name: string;
   system?: string;
   character?: string;
+  character_de?: string;
   background?: string;
+  background_de?: string;
   gender?: string;
   primary_profession?: string;
+  primary_profession_de?: string;
   portrait_image_url?: string;
   portrait_description?: string;
   data_source?: string;
@@ -211,7 +215,9 @@ export interface Building {
   simulation_id: UUID;
   name: string;
   building_type: string;
+  building_type_de?: string;
   description?: string;
+  description_de?: string;
   style?: string;
   location?: GeoLocation;
   city_id?: UUID;
@@ -221,6 +227,7 @@ export interface Building {
   population_capacity: number;
   construction_year?: number;
   building_condition?: string;
+  building_condition_de?: string;
   geojson?: Record<string, unknown>;
   image_url?: string;
   image_prompt_text?: string;
@@ -341,7 +348,9 @@ export interface Zone {
   city_id: UUID;
   name: string;
   description?: string;
+  description_de?: string;
   zone_type: string;
+  zone_type_de?: string;
   population_estimate: number;
   security_level: string;
   data_source?: string;
@@ -359,6 +368,7 @@ export interface CityStreet {
   zone_id?: UUID;
   name?: string;
   street_type?: string;
+  street_type_de?: string;
   length_km?: number;
   geojson?: Record<string, unknown>;
   created_at: string;
@@ -409,6 +419,94 @@ export interface CampaignMetric {
   metric_value: number;
   metric_metadata?: Record<string, unknown>;
   measured_at: string;
+}
+
+export interface CampaignAnalytics {
+  event_count: number;
+  events_by_type: Record<string, number>;
+  echo_count: number;
+  avg_impact: number | null;
+  metrics_timeline: Array<{ name: string; value: number; at: string }>;
+}
+
+// --- Battle Summary / Sitrep (War Room) ---
+
+export interface BattleSummary {
+  cycle_number: number;
+  missions_deployed: number;
+  successes: number;
+  failures: number;
+  detections: number;
+  events_by_type: Record<string, number>;
+  narrative_highlights: Array<{
+    event_type: string;
+    narrative: string;
+    is_public: boolean;
+    source_simulation_id?: UUID;
+    target_simulation_id?: UUID;
+    created_at: string;
+  }>;
+}
+
+export interface Sitrep {
+  cycle_number: number;
+  sitrep: string;
+  summary: Record<string, unknown>;
+  model_used: string;
+}
+
+// --- Chronicle ---
+
+export interface Chronicle {
+  id: UUID;
+  simulation_id: UUID;
+  epoch_id?: UUID;
+  edition_number: number;
+  period_start: string;
+  period_end: string;
+  title: string;
+  headline?: string;
+  content: string;
+  title_de?: string;
+  headline_de?: string;
+  content_de?: string;
+  model_used?: string;
+  published_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// --- Agent Memory ---
+
+export type MemoryType = 'observation' | 'reflection';
+export type MemorySourceType = 'chat' | 'event_reaction' | 'system' | 'reflection';
+
+export interface AgentMemory {
+  id: UUID;
+  agent_id: UUID;
+  simulation_id: UUID;
+  memory_type: MemoryType;
+  content: string;
+  content_de?: string;
+  importance: number;
+  source_type: MemorySourceType;
+  source_id?: UUID;
+  created_at: string;
+  last_accessed_at?: string;
+  retrieval_score?: number;
+}
+
+// --- Bleed Gazette ---
+
+export interface GazetteEntry {
+  entry_type: string;
+  source_simulation?: { id: UUID; name: string; slug: string; theme: string } | null;
+  target_simulation?: { id: UUID; name: string; slug: string; theme: string } | null;
+  echo_vector?: string | null;
+  strength?: number | null;
+  narrative: string;
+  dispatch?: string | null;
+  created_at: string;
 }
 
 // --- Social Trends ---
@@ -1139,10 +1237,21 @@ export interface AdminUser {
   email: string;
   created_at: string | null;
   last_sign_in_at: string | null;
+  forge_tokens?: number;
+  is_architect?: boolean;
+}
+
+export interface UserWallet {
+  user_id: string;
+  forge_tokens: number;
+  is_architect: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface AdminUserDetail extends AdminUser {
   memberships: AdminMembership[];
+  wallet?: UserWallet;
 }
 
 export interface AdminMembership {

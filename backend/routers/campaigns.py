@@ -5,7 +5,13 @@ from uuid import UUID
 from fastapi import APIRouter, Body, Depends, Query
 
 from backend.dependencies import get_current_user, get_supabase, require_role
-from backend.models.campaign import CampaignCreate, CampaignMetricResponse, CampaignResponse, CampaignUpdate
+from backend.models.campaign import (
+    CampaignAnalyticsResponse,
+    CampaignCreate,
+    CampaignMetricResponse,
+    CampaignResponse,
+    CampaignUpdate,
+)
 from backend.models.common import (
     CurrentUser,
     PaginatedResponse,
@@ -101,6 +107,19 @@ async def delete_campaign(
     await CampaignService.hard_delete(supabase, simulation_id, campaign_id)
     await AuditService.log_action(supabase, simulation_id, user.id, "campaigns", campaign_id, "delete")
     return {"success": True, "data": {"message": "Campaign deleted."}}
+
+
+@router.get("/{campaign_id}/analytics", response_model=SuccessResponse[CampaignAnalyticsResponse])
+async def get_campaign_analytics(
+    simulation_id: UUID,
+    campaign_id: UUID,
+    user: CurrentUser = Depends(get_current_user),
+    _role_check: str = Depends(require_role("viewer")),
+    supabase: Client = Depends(get_supabase),
+) -> dict:
+    """Get aggregated analytics for a campaign."""
+    data = await CampaignService.get_analytics(supabase, simulation_id, campaign_id)
+    return {"success": True, "data": data}
 
 
 @router.get("/{campaign_id}/events", response_model=SuccessResponse[list])

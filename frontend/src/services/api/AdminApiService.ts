@@ -57,6 +57,13 @@ export class AdminApiService extends BaseApiService {
     return this.delete(`/admin/users/${userId}/memberships/${simulationId}`);
   }
 
+  async updateUserWallet(
+    userId: string,
+    data: { forge_tokens?: number; is_architect?: boolean },
+  ): Promise<ApiResponse<unknown>> {
+    return this.put(`/admin/users/${userId}/wallet`, data);
+  }
+
   async getCleanupStats(): Promise<ApiResponse<CleanupStats>> {
     return this.get('/admin/cleanup/stats');
   }
@@ -80,6 +87,51 @@ export class AdminApiService extends BaseApiService {
       min_age_days: minAgeDays,
     });
   }
+
+  // --- Simulation Management ---
+
+  async listSimulations(
+    page = 1,
+    perPage = 50,
+    includeDeleted = false,
+  ): Promise<ApiResponse<AdminSimulation[]>> {
+    return this.get('/admin/simulations', {
+      page: String(page),
+      per_page: String(perPage),
+      include_deleted: String(includeDeleted),
+    });
+  }
+
+  async listDeletedSimulations(page = 1, perPage = 50): Promise<ApiResponse<AdminSimulation[]>> {
+    return this.get('/admin/simulations/deleted', {
+      page: String(page),
+      per_page: String(perPage),
+    });
+  }
+
+  async softDeleteSimulation(simulationId: string): Promise<ApiResponse<unknown>> {
+    return this.delete(`/admin/simulations/${simulationId}`);
+  }
+
+  async hardDeleteSimulation(simulationId: string): Promise<ApiResponse<unknown>> {
+    return this.delete(`/admin/simulations/${simulationId}?hard=true`);
+  }
+
+  async restoreSimulation(simulationId: string): Promise<ApiResponse<unknown>> {
+    return this.post(`/admin/simulations/${simulationId}/restore`, {});
+  }
+}
+
+export interface AdminSimulation {
+  id: string;
+  name: string;
+  slug: string;
+  status: string;
+  theme: string;
+  simulation_type: string;
+  owner_id: string | null;
+  created_at: string;
+  deleted_at: string | null;
 }
 
 export const adminApi = new AdminApiService();

@@ -227,6 +227,20 @@ export class VelgBuildingsView extends LitElement {
     this._selectedBuilding = null;
   }
 
+  private _handleLightboxPrev(): void {
+    const idx = this._selectedBuilding ? this._buildings.indexOf(this._selectedBuilding) : -1;
+    if (idx > 0) {
+      this._selectedBuilding = this._buildings[idx - 1];
+    }
+  }
+
+  private _handleLightboxNext(): void {
+    const idx = this._selectedBuilding ? this._buildings.indexOf(this._selectedBuilding) : -1;
+    if (idx >= 0 && idx < this._buildings.length - 1) {
+      this._selectedBuilding = this._buildings[idx + 1];
+    }
+  }
+
   private _handleEmbassyEstablish(e: CustomEvent<Building>): void {
     this._embassySourceBuilding = e.detail;
     this._showEmbassyModal = true;
@@ -284,7 +298,12 @@ export class VelgBuildingsView extends LitElement {
           .building=${this._selectedBuilding}
           .simulationId=${this.simulationId}
           ?open=${this._showDetails}
+          container="lightbox"
+          .totalEntities=${this._buildings.length}
+          .currentIndex=${this._selectedBuilding ? this._buildings.indexOf(this._selectedBuilding) : 0}
           @panel-close=${this._handleDetailsClose}
+          @lightbox-prev=${this._handleLightboxPrev}
+          @lightbox-next=${this._handleLightboxNext}
           @building-edit=${this._handleBuildingEdit}
           @building-delete=${this._handleBuildingDelete}
           @embassy-establish=${this._handleEmbassyEstablish}

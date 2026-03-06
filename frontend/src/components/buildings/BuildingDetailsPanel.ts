@@ -11,12 +11,14 @@ import type {
 } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import { getFullResUrl } from '../../utils/image.js';
+import { t } from '../../utils/locale-fields.js';
 import { buildingAltText } from '../../utils/text.js';
 import '../shared/Lightbox.js';
 import { panelButtonStyles } from '../shared/panel-button-styles.js';
 import { panelCascadeStyles } from '../shared/panel-cascade-styles.js';
 import '../shared/VelgBadge.js';
 import '../shared/VelgSectionHeader.js';
+import '../shared/EntityLightbox.js';
 import '../shared/VelgSidePanel.js';
 import './EmbassyLink.js';
 
@@ -33,7 +35,7 @@ export class VelgBuildingDetailsPanel extends LitElement {
 
     .panel__image {
       width: 100%;
-      height: 240px;
+      height: var(--panel-image-height, 240px);
       overflow: hidden;
       background: var(--color-surface-sunken);
       border-bottom: var(--border-default);
@@ -255,6 +257,9 @@ export class VelgBuildingDetailsPanel extends LitElement {
   @property({ attribute: false }) building: Building | null = null;
   @property({ type: String }) simulationId = '';
   @property({ type: Boolean, reflect: true }) open = false;
+  @property({ type: String }) container: 'panel' | 'lightbox' = 'lightbox';
+  @property({ type: Number }) totalEntities = 0;
+  @property({ type: Number }) currentIndex = 0;
 
   @state() private _agents: BuildingAgentRelation[] = [];
   @state() private _loadingAgents = false;
@@ -514,186 +519,195 @@ export class VelgBuildingDetailsPanel extends LitElement {
     `;
   }
 
-  protected render() {
+  private _renderSlottedContent() {
     const b = this.building;
+    if (!b) return nothing;
 
     return html`
-      <velg-side-panel
-        .open=${this.open}
-        .panelTitle=${b?.name ?? msg('Building Details')}
-      >
-        ${
-          b
-            ? html`
-              <div slot="media">
-                <div class="panel__image">
-                  ${
-                    b.image_url
-                      ? html`<img
-                          src=${b.image_url}
-                          alt=${buildingAltText(b)}
-                          @click=${() => {
-                            this._lightboxSrc = b.image_url ?? null;
-                            this._lightboxAlt = buildingAltText(b);
-                          }}
-                        />`
-                      : html`<div class="panel__placeholder">${icons.building(64)}</div>`
-                  }
-                </div>
-              </div>
+      <div slot="media">
+        <div class="panel__image">
+          ${
+            b.image_url
+              ? html`<img
+                  src=${b.image_url}
+                  alt=${buildingAltText(b)}
+                  @click=${() => {
+                    this._lightboxSrc = b.image_url ?? null;
+                    this._lightboxAlt = buildingAltText(b);
+                  }}
+                />`
+              : html`<div class="panel__placeholder">${icons.building(64)}</div>`
+          }
+        </div>
+      </div>
 
-              <div slot="content">
-                <div class="panel__content">
-                  <div class="panel__section">
-                    <velg-section-header>${msg('Identity')}</velg-section-header>
-                    <div class="panel__badges">
-                      ${
-                        b.building_type
-                          ? html`<velg-badge>${b.building_type}</velg-badge>`
-                          : nothing
-                      }
-                      ${
-                        b.building_condition
-                          ? html`<velg-badge variant=${this._getConditionVariant(b.building_condition)}>
-                              ${b.building_condition}
-                            </velg-badge>`
-                          : nothing
-                      }
-                      ${b.style ? html`<velg-badge>${b.style}</velg-badge>` : nothing}
-                      ${b.special_type === 'embassy' ? html`<velg-badge variant="info">${msg('Embassy')}</velg-badge>` : nothing}
-                    </div>
-                  </div>
-
-                  ${
-                    b.description
-                      ? html`
-                        <div class="panel__section">
-                          <velg-section-header>${msg('Description')}</velg-section-header>
-                          <p class="panel__description">${b.description}</p>
-                        </div>
-                      `
-                      : nothing
-                  }
-
-                  <div class="panel__section">
-                    <velg-section-header>${msg('Details')}</velg-section-header>
-                    <div class="panel__detail-grid">
-                      <div class="panel__detail-item">
-                        <span class="panel__detail-label">${msg('Population Capacity')}</span>
-                        <span class="panel__detail-value">${b.population_capacity ?? 0}</span>
-                      </div>
-                      ${
-                        b.construction_year != null
-                          ? html`
-                            <div class="panel__detail-item">
-                              <span class="panel__detail-label">${msg('Construction Year')}</span>
-                              <span class="panel__detail-value">${b.construction_year}</span>
-                            </div>
-                          `
-                          : nothing
-                      }
-                      ${
-                        b.zone?.name
-                          ? html`
-                            <div class="panel__detail-item">
-                              <span class="panel__detail-label">${msg('Zone')}</span>
-                              <span class="panel__detail-value">${b.zone.name}</span>
-                            </div>
-                          `
-                          : nothing
-                      }
-                      ${
-                        b.city?.name
-                          ? html`
-                            <div class="panel__detail-item">
-                              <span class="panel__detail-label">${msg('City')}</span>
-                              <span class="panel__detail-value">${b.city.name}</span>
-                            </div>
-                          `
-                          : nothing
-                      }
-                      ${
-                        b.address
-                          ? html`
-                            <div class="panel__detail-item">
-                              <span class="panel__detail-label">${msg('Address')}</span>
-                              <span class="panel__detail-value">${b.address}</span>
-                            </div>
-                          `
-                          : nothing
-                      }
-                      ${
-                        b.street?.name
-                          ? html`
-                            <div class="panel__detail-item">
-                              <span class="panel__detail-label">${msg('Street')}</span>
-                              <span class="panel__detail-value">${b.street.name}</span>
-                            </div>
-                          `
-                          : nothing
-                      }
-                    </div>
-                  </div>
-
-                  ${
-                    this._readiness
-                      ? html`
-                        <div class="panel__section">
-                          <velg-section-header>${msg('Operations')}</velg-section-header>
-                          ${this._renderReadiness()}
-                        </div>
-                      `
-                      : nothing
-                  }
-
-                  ${
-                    this._embassy
-                      ? html`
-                        <div class="panel__section">
-                          <velg-section-header>${msg('Embassy Link')}</velg-section-header>
-                          ${this._renderAmbassador()}
-                          <velg-embassy-link
-                            .embassy=${this._embassy}
-                            .currentBuildingId=${b.id}
-                            @navigate-embassy=${this._handleNavigateEmbassy}
-                          ></velg-embassy-link>
-                        </div>
-                      `
-                      : nothing
-                  }
-
-                  <div class="panel__section">
-                    <velg-section-header>${msg('Assigned Agents')}</velg-section-header>
-                    ${this._renderAgents()}
-                  </div>
-                </div>
-              </div>
-
+      <div slot="content">
+        <div class="panel__content">
+          <div class="panel__section">
+            <velg-section-header>${msg('Identity')}</velg-section-header>
+            <div class="panel__badges">
+              ${b.building_type ? html`<velg-badge>${t(b, 'building_type')}</velg-badge>` : nothing}
               ${
-                appState.canEdit.value
-                  ? html`
-                <button slot="footer" class="panel__btn panel__btn--edit" @click=${this._handleEdit}>
-                  ${msg('Edit')}
-                </button>
-                <button slot="footer" class="panel__btn panel__btn--danger" @click=${this._handleDelete}>
-                  ${msg('Delete')}
-                </button>
+                b.building_condition
+                  ? html`<velg-badge variant=${this._getConditionVariant(b.building_condition)}>
+                      ${t(b, 'building_condition')}
+                    </velg-badge>`
+                  : nothing
+              }
+              ${b.style ? html`<velg-badge>${b.style}</velg-badge>` : nothing}
+              ${b.special_type === 'embassy' ? html`<velg-badge variant="info">${msg('Embassy')}</velg-badge>` : nothing}
+            </div>
+          </div>
+
+          ${
+            b.description
+              ? html`
+                <div class="panel__section">
+                  <velg-section-header>${msg('Description')}</velg-section-header>
+                  <p class="panel__description">${t(b, 'description')}</p>
+                </div>
               `
+              : nothing
+          }
+
+          <div class="panel__section">
+            <velg-section-header>${msg('Details')}</velg-section-header>
+            <div class="panel__detail-grid">
+              <div class="panel__detail-item">
+                <span class="panel__detail-label">${msg('Population Capacity')}</span>
+                <span class="panel__detail-value">${b.population_capacity ?? 0}</span>
+              </div>
+              ${
+                b.construction_year != null
+                  ? html`
+                    <div class="panel__detail-item">
+                      <span class="panel__detail-label">${msg('Construction Year')}</span>
+                      <span class="panel__detail-value">${b.construction_year}</span>
+                    </div>
+                  `
                   : nothing
               }
               ${
-                appState.canAdmin.value && b.special_type !== 'embassy'
+                b.zone?.name
                   ? html`
-                <button slot="footer" class="panel__btn panel__btn--generate" @click=${this._handleEstablishEmbassy}>
-                  ${msg('Establish Embassy')}
-                </button>
-              `
+                    <div class="panel__detail-item">
+                      <span class="panel__detail-label">${msg('Zone')}</span>
+                      <span class="panel__detail-value">${b.zone.name}</span>
+                    </div>
+                  `
                   : nothing
               }
-            `
-            : nothing
-        }
-      </velg-side-panel>
+              ${
+                b.city?.name
+                  ? html`
+                    <div class="panel__detail-item">
+                      <span class="panel__detail-label">${msg('City')}</span>
+                      <span class="panel__detail-value">${b.city.name}</span>
+                    </div>
+                  `
+                  : nothing
+              }
+              ${
+                b.address
+                  ? html`
+                    <div class="panel__detail-item">
+                      <span class="panel__detail-label">${msg('Address')}</span>
+                      <span class="panel__detail-value">${b.address}</span>
+                    </div>
+                  `
+                  : nothing
+              }
+              ${
+                b.street?.name
+                  ? html`
+                    <div class="panel__detail-item">
+                      <span class="panel__detail-label">${msg('Street')}</span>
+                      <span class="panel__detail-value">${b.street.name}</span>
+                    </div>
+                  `
+                  : nothing
+              }
+            </div>
+          </div>
+
+          ${
+            this._readiness
+              ? html`
+                <div class="panel__section">
+                  <velg-section-header>${msg('Operations')}</velg-section-header>
+                  ${this._renderReadiness()}
+                </div>
+              `
+              : nothing
+          }
+
+          ${
+            this._embassy
+              ? html`
+                <div class="panel__section">
+                  <velg-section-header>${msg('Embassy Link')}</velg-section-header>
+                  ${this._renderAmbassador()}
+                  <velg-embassy-link
+                    .embassy=${this._embassy}
+                    .currentBuildingId=${b.id}
+                    @navigate-embassy=${this._handleNavigateEmbassy}
+                  ></velg-embassy-link>
+                </div>
+              `
+              : nothing
+          }
+
+          <div class="panel__section">
+            <velg-section-header>${msg('Assigned Agents')}</velg-section-header>
+            ${this._renderAgents()}
+          </div>
+        </div>
+      </div>
+
+      ${
+        appState.canEdit.value
+          ? html`
+        <button slot="footer" class="panel__btn panel__btn--edit" @click=${this._handleEdit}>
+          ${msg('Edit')}
+        </button>
+        <button slot="footer" class="panel__btn panel__btn--danger" @click=${this._handleDelete}>
+          ${msg('Delete')}
+        </button>
+      `
+          : nothing
+      }
+      ${
+        appState.canAdmin.value && b.special_type !== 'embassy'
+          ? html`
+        <button slot="footer" class="panel__btn panel__btn--generate" @click=${this._handleEstablishEmbassy}>
+          ${msg('Establish Embassy')}
+        </button>
+      `
+          : nothing
+      }
+    `;
+  }
+
+  protected render() {
+    const title = this.building?.name ?? msg('Building Details');
+    const content = this._renderSlottedContent();
+
+    const wrapper = this.container === 'lightbox'
+      ? html`
+        <velg-entity-lightbox
+          .open=${this.open}
+          .panelTitle=${title}
+          .totalEntities=${this.totalEntities}
+          .currentIndex=${this.currentIndex}
+        >${content}</velg-entity-lightbox>`
+      : html`
+        <velg-side-panel
+          .open=${this.open}
+          .panelTitle=${title}
+        >${content}</velg-side-panel>`;
+
+    return html`
+      ${wrapper}
 
       <velg-lightbox
         .src=${this._lightboxSrc}

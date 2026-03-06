@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from uuid import UUID
 
+from backend.services.agent_memory_service import AgentMemoryService
 from backend.services.external.openrouter import OpenRouterService
 from backend.services.model_resolver import ModelResolver
 from backend.services.prompt_service import LOCALE_NAMES, PromptResolver
@@ -48,8 +50,16 @@ class ChatAIService:
         simulation = await self._load_simulation()
         locale = await self._get_locale()
 
+        # Retrieve agent memories relevant to the user message
+        memories = await AgentMemoryService.retrieve(
+            self._supabase, UUID(agent["id"]), self._simulation_id,
+            query_text=user_message, top_k=8,
+        )
+        memory_text = AgentMemoryService.format_for_prompt(memories)
+
         prompt = await self._prompt_resolver.resolve("chat_system_prompt", locale)
         variables = self._build_agent_variables(agent, simulation, locale)
+        variables["agent_memories"] = memory_text
         system_prompt = self._prompt_resolver.fill_template(prompt, variables)
         system_prompt += PromptResolver.build_language_instruction(locale)
 
@@ -79,6 +89,12 @@ class ChatAIService:
                 "source": model.source,
             },
         }).execute()
+
+        # Fire-and-forget: extract memorable observations from this exchange
+        asyncio.create_task(AgentMemoryService.extract_from_chat(
+            self._supabase, self._simulation_id, UUID(agent["id"]),
+            user_message, response_text,
+        ))
 
         return response_text
 

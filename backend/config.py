@@ -14,6 +14,12 @@ class Settings(BaseSettings):
     # AI
     openrouter_api_key: str = ""
     replicate_api_token: str = ""
+    tavily_api_key: str = ""
+    forge_mock_mode: bool = False
+
+    # Translation
+    translation_backend: str = "claude"  # "claude" or "deepl"
+    deepl_api_key: str = ""
 
     # Security
     settings_encryption_key: str = ""
