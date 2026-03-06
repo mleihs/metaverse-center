@@ -90,7 +90,7 @@ Axiom 4: The Cartographers exist outside the axioms. This is not a privilege. Th
         'The Fracture was not an explosion. It was a thought becoming too large for a single mind.',
       ),
       imageSlug: 'the-fracture',
-      imageCaption: msg('The Fracture — Reality shattering into five incompatible worlds'),
+      imageCaption: msg('The Fracture — Reality shattering into incompatible worlds, each a complete answer to a question that could not be asked in one voice'),
       body: msg(`The Gaslit Reach's account is the most poetic. In the Annals of the Deep, Commodore Harrowgate describes it thus: "Imagine you are swimming in a sea that is also a mirror. The mirror cracks. You continue swimming. But now the water on one side tastes of salt and the water on the other tastes of copper, and you realise that you have always been swimming in two seas, and they have only just now stopped pretending to be one."
 
 Velgarien's official account is characteristically blunt. Bureau 9 maintains that the Fracture was a "controlled decoupling performed by the State for the safety of the citizenry." The circular logic is considered a feature, not a bug.
@@ -100,12 +100,14 @@ What is consistent across all accounts is this: the Fracture was not destruction
 This is why the Shards cannot be simply reassembled. You cannot pour the wine back into the grape. Each Shard has grown since the Fracture, developing its own ecology, its own physics. They are no longer pieces of a broken thing. They are complete worlds that happen to share a wound.`),
     },
     {
-      id: 'the-five-shards',
+      id: 'the-known-shards',
       chapter: msg('The Fracture'),
       arcanum: 'IV',
-      title: msg('The Five Shards'),
-      epigraph: msg('Five answers to a question the universe could not ask in one voice.'),
-      body: msg(`The Bureau has classified five stable Shards — worlds that survived the Fracture intact, that developed their own internal logic, that grew rather than collapsed. Each Shard is an answer to a question the Unnamed could not resolve while it was whole:
+      title: msg('The Known Shards'),
+      epigraph: msg('Each Shard is an answer to a question the universe could not ask in one voice. The Bureau has never claimed the list is complete.'),
+      body: msg(`The Bureau has classified several major Shards — worlds that survived the Fracture intact, that developed their own internal logic, that grew rather than collapsed. The catalog is not exhaustive. It cannot be. The Fracture is not a historical event with a fixed number of consequences. It is an ongoing ontological condition. New Shards continue to crystallize at the edges of mapped reality, wherever a question arises that no existing world can answer.
+
+What follows are the first Shards the Bureau mapped — the major, stable realities around which the Cartographic discipline was built:
 
 VELGARIEN answers: "What if control were absolute?" A brutalist surveillance state where the bureaucracy has become the weather and contentment is mandatory. The walls are concrete. The walls are watching. The paste is grey and the forms are in triplicate and somewhere in the cracks between the filing cabinets, something is growing that the Bureaux have not yet found a form for.
 
@@ -117,7 +119,7 @@ SPERANZA answers: "What if we simply refused to stop?" An underground city in po
 
 THE CITE DES DAMES answers: "What if women had always been heard?" A feminist literary utopia built from the stories of women throughout history, where every act of remembrance becomes a stone in the city wall. The light is warm. The ink remembers more than the writer knows. The Bureau finds this Shard the most unsettling of all, because it is the only one that is not afraid.
 
-Every answer is wrong. Every answer is necessary. The multiverse exists because no single answer is sufficient.`),
+These are the major Shards. They are not the only Shards. The Bureau's catalog grows with every Cartographic expedition, every Bleed event that resolves into stable geography, every question the multiverse asks that the existing worlds cannot contain. Every answer is wrong. Every answer is necessary. The multiverse exists because no single answer — no finite set of answers — is sufficient.`),
     },
 
     // ── Chapter III: THE SHARDS ──
@@ -425,7 +427,7 @@ Between the Tides, there are Eddies — localised micro-Bleeds that affect a sin
       epigraph: msg('An unobserved catastrophe is merely weather.'),
       imageSlug: 'the-bureau',
       imageCaption: msg('The Bureau of Impossible Geography — Headquarters spanning four Shards'),
-      body: msg(`The Cartographers are recruited from all five Shards, though "recruited" implies an orderly process involving application forms and interviews, and the reality is closer to "identified, observed at a distance, and eventually approached by someone who looks like a librarian and talks like a geological event."
+      body: msg(`The Cartographers are recruited from across the Shards — every known Shard, and occasionally from ones the Bureau has not yet classified — though "recruited" implies an orderly process involving application forms and interviews, and the reality is closer to "identified, observed at a distance, and eventually approached by someone who looks like a librarian and talks like a geological event."
 
 The selection criteria, as far as the Bureau has codified them, are three: First, the candidate must have noticed something wrong with their world — not morally wrong, but structurally wrong. A seam. A crack. A moment where the physics stuttered. Most people who notice these things explain them away. Cartographers are the ones who couldn't. Second, the candidate must have documented the wrongness. Not reported it — documented it. The distinction matters. Reporting implies authority. Documentation implies obsession. The Bureau needs obsessives, not informants. Third, the candidate must be willing to stand in the space between Shards, which is to say, in the space where reality has not yet decided what it wants to be, and draw a line on a chart, and trust the line, even when the chart is on fire.
 
@@ -479,16 +481,18 @@ DIRECTOR'S NOTE: The recommended action section has been consumed by the documen
       ),
       body: msg(`This section has been [CONSUMED] seventeen times. Each time, a Cartographer rewrites it. Each time, the document eats it. We persist.
 
-What the Bureau will not tell you is this: the five Shards are not random. They are not the arbitrary debris of a cosmic accident. They are an argument — five positions in a philosophical dispute that the Unnamed could not resolve while it was whole. Control (Velgarien). Wonder (the Gaslit Reach). Knowledge (Station Null). Hope (Speranza). Voice (the Cite des Dames). These are not accidents. These are the five things the universe could not hold simultaneously.
+What the Bureau will not tell you is this: the Shards are not random. They are not the arbitrary debris of a cosmic accident. They are an argument — positions in a philosophical dispute that the Unnamed could not resolve while it was whole. Control (Velgarien). Wonder (the Gaslit Reach). Knowledge (Station Null). Hope (Speranza). Voice (the Cite des Dames). These were the first positions. They were not the last.
 
-The Fracture was not a catastrophe. It was a vote. The universe asked itself what mattered, and it could not agree, and the disagreement became geography.
+The Fracture was not a catastrophe. It was a vote. The universe asked itself what mattered, and it could not agree, and the disagreement became geography. The vote is not over. New questions arise — questions the existing Shards cannot answer — and where the question is sharp enough, where it cuts deeply enough into the fabric of the possible, new geography crystallizes. A new Shard. A new world. A new position in the argument.
 
-If this is true — and the Bureau does not confirm it, because confirmation would imply understanding, and understanding would imply the possibility of resolution, and resolution is the one thing the Bureau exists to [CONSUMED] — then the Convergence is not the end of the argument. It is the next ballot. The five Shards pressing together. The five answers colliding. And somewhere in the collision, the possibility of a sixth answer that contains all five.
+The Bureau does not know how many Shards there are. The Bureau does not believe the question has a fixed answer. The Fracture is not a past-tense event with a countable number of consequences. It is an ongoing condition — the universe still disagreeing with itself, still producing new realities at the edges of the map.
 
-The Bureau has a name for this sixth answer. The name is classified. The classification has been [CONSUMED]. The [CONSUMED] has been filed under "Things That Are Also Other Things." The file is growing.
+If this is true — and the Bureau does not confirm it, because confirmation would imply understanding, and understanding would imply the possibility of resolution, and resolution is the one thing the Bureau exists to [CONSUMED] — then the Convergence is not the end of the argument. It is the next ballot. The known Shards pressing together. All the answers colliding — the old ones and the ones that have not yet been asked. And somewhere in the collision, the possibility of an answer that contains all the others.
+
+The Bureau has a name for this answer. The name is classified. The classification has been [CONSUMED]. The [CONSUMED] has been filed under "Things That Are Also Other Things." The file is growing.
 
 [ADDENDUM, HANDWRITTEN IN THE MARGIN IN INK THAT IS STILL WET]:
-"The file is not growing. The file is becoming. There is a difference. Growing implies addition. Becoming implies change. The Bureau is changing. The Bureau has always been changing. The Bureau is the sixth answer, and the sixth answer is not an answer at all. It is the question, asked properly, for the first time."
+"The file is not growing. The file is becoming. There is a difference. Growing implies addition. Becoming implies change. The Bureau is changing. The Bureau has always been changing. The Bureau is the next answer, and the next answer is not an answer at all. It is the question, asked properly, for the first time."
 
 [THE ADDENDUM HAS BEEN CLASSIFIED. THE CLASSIFICATION HAS BEEN CONSUMED. THE INK IS STILL WET.]`),
     },
@@ -500,9 +504,9 @@ The Bureau has a name for this sixth answer. The name is classified. The classif
       epigraph: msg(
         'The multiverse is not a problem to be solved. It is a question to be inhabited.',
       ),
-      body: msg(`Every Shard is an answer. Velgarien answers: "What if control were absolute?" The Gaslit Reach answers: "What if the darkness were kind?" Station Null answers: "What if we could see the wound?" Speranza answers: "What if we simply refused to stop?" The Cite des Dames answers: "What if women had always been heard?"
+      body: msg(`Every Shard is an answer. Velgarien answers: "What if control were absolute?" The Gaslit Reach answers: "What if the darkness were kind?" Station Null answers: "What if we could see the wound?" Speranza answers: "What if we simply refused to stop?" The Cite des Dames answers: "What if women had always been heard?" And somewhere at the edges of the map, new Shards are crystallizing around questions that have not yet been named.
 
-Each answer is wrong. Each answer is necessary. The multiverse exists because no single answer is sufficient, and the Fracture was the universe's way of admitting this.
+Each answer is wrong. Each answer is necessary. The multiverse exists because no single answer is sufficient, and the Fracture was the universe's way of admitting this. The Fracture continues to be the universe's way of admitting this. It has not stopped admitting it.
 
 The Convergence — the event that the Bureau monitors, that the ruins foretell, that TOWER threatens — is not the end. It is the next question. When enough Shards have touched, when enough Bleeds have flowed, when enough agents have dreamed of worlds they've never visited, the multiverse will reach a decision point: merge, or differentiate further. Collapse into one answer, or fracture into a thousand more.
 
@@ -510,7 +514,7 @@ The Cartographers do not know which outcome is correct. They know only this: som
 
 That someone, in the cosmology of the Cartographers, in the deep mythology of the Bureau of Impossible Geography, in the restricted files and the consumed pages and the maps that are also doors — that someone is whoever is reading this.
 
-Five worlds. One fracture. The map is open. Which world do you enter first?`),
+Worlds. One fracture. The map has no edges. Which world do you enter first?`),
     },
   ];
 }

@@ -216,6 +216,21 @@ Ich bleibe länger als mein Einsatz erfordert. Ich habe dem Bureau dies als „e
 's12329a3f96fc5cf9': `Architektonische Ästhetik. Beeinflusst die KI-Bilderzeugung. Wenn Architecture Bleed übertragen wird, kann dieser Stil Gebäude in der Zielsimulation beeinflussen.`,
 's123b7254b44dd148': `Warten`,
 's1244b230a449bfc1': `Epoche abgebrochen.`,
+'s125d92ae3f61312d': `Das Bureau hat mehrere bedeutende Splitter klassifiziert — Welten, die die Fraktur intakt überstanden haben, die ihre eigene innere Logik entwickelten, die wuchsen statt zu kollabieren. Der Katalog ist nicht vollständig. Er kann es nicht sein. Die Fraktur ist kein historisches Ereignis mit einer festen Anzahl von Folgen. Sie ist ein andauernder ontologischer Zustand. Neue Splitter kristallisieren sich weiterhin an den Rändern der kartierten Realität, überall dort, wo eine Frage entsteht, die keine bestehende Welt beantworten kann.
+
+Es folgen die ersten Splitter, die das Bureau kartierte — die bedeutenden, stabilen Realitäten, um die herum die kartographische Disziplin aufgebaut wurde:
+
+VELGARIEN antwortet: „Was wäre, wenn Kontrolle absolut wäre?" Ein brutalistischer Überwachungsstaat, in dem die Bürokratie zum Wetter geworden ist und Zufriedenheit obligatorisch. Die Wände sind aus Beton. Die Wände beobachten. Die Paste ist grau und die Formulare in dreifacher Ausfertigung und irgendwo in den Ritzen zwischen den Aktenschränken wächst etwas, wofür die Büros noch kein Formular gefunden haben.
+
+THE GASLIT REACH antwortet: „Was wäre, wenn die Dunkelheit freundlich wäre?" Eine unterirdische Zivilisation unter einem lichtlosen Meer, wo biolumineszente Pilze als Straßenlaternen dienen und die Wirtschaft auf Geheimnissen basiert. Die Bürger sind fast menschlich. Das Wasser ist geduldig. Die Archive sind feucht. Der Flechtenwein ist, allen Berichten zufolge, außerordentlich.
+
+STATION NULL antwortet: „Was wäre, wenn wir die Wunde sehen könnten?" Eine verlassene Forschungsstation im Orbit um ein Schwarzes Loch, das das Bureau als Diskontinuität klassifiziert — einen Punkt, an dem die Splitter-Grenze sich bis zum darunterliegenden Substrat durchgescheuert hat. Besatzungsstärke: 6 von 200. Alle Systeme nominal. Die KI besteht darauf. Die KI besteht auf allem.
+
+SPERANZA antwortet: „Was wäre, wenn wir uns einfach weigerten aufzuhören?" Eine unterirdische Stadt im postapokalyptischen Italien, die unter Maschinen überlebt, die die Oberfläche mit mechanischer Gleichgültigkeit abernten. Hoffnung ist kein Optimismus. Hoffnung ist die Entscheidung, Tomaten unter UV-Lampen zu pflanzen und das Ergebnis einen Garten zu nennen.
+
+THE CITE DES DAMES antwortet: „Was wäre, wenn Frauen immer gehört worden wären?" Eine feministische literarische Utopie, erbaut aus den Geschichten von Frauen durch die Geschichte hindurch, wo jeder Akt des Erinnerns zu einem Stein in der Stadtmauer wird. Das Licht ist warm. Die Tinte erinnert sich an mehr als die Schreiberin weiß. Das Bureau findet diesen Splitter am beunruhigendsten von allen, weil er der einzige ist, der keine Angst hat.
+
+Dies sind die bedeutenden Splitter. Sie sind nicht die einzigen Splitter. Der Katalog des Bureaus wächst mit jeder kartographischen Expedition, jedem Bleed-Ereignis, das sich in stabile Geographie auflöst, jeder Frage, die das Multiversum stellt und die die bestehenden Welten nicht fassen können. Jede Antwort ist falsch. Jede Antwort ist notwendig. Das Multiversum existiert, weil keine einzelne Antwort — keine endliche Menge von Antworten — ausreicht.`,
 's126533cc8a26d233': `Simulationsname eingeben...`,
 's1276fc8b4a28eed5': `General Wolf`,
 's12ae2efccc49d4af': `Konversationen`,
@@ -405,6 +420,13 @@ Ich bleibe länger als mein Einsatz erfordert. Ich habe dem Bureau dies als „e
 's24b066f426d2451f': `Der Einsatz ist fehlgeschlagen.`,
 's24c35a0244195a51': `Vorlage bearbeiten`,
 's24eeaed54bb9782a': `Legen Sie Ihre Zugangsdaten vor. Das Büro verlangt eine Identitätsprüfung, bevor Terminalzugang gewährt wird.`,
+'s24f6910146f3bb13': `Die Kartographen werden aus allen Splittern rekrutiert — jedem bekannten Splitter, und gelegentlich aus solchen, die das Bureau noch nicht klassifiziert hat — wobei „rekrutiert" einen geordneten Prozess mit Bewerbungsformularen und Vorstellungsgesprächen impliziert, und die Realität näher an „identifiziert, aus der Ferne beobachtet und schließlich von jemandem angesprochen, der wie ein Bibliothekar aussieht und wie ein geologisches Ereignis redet" liegt.
+
+Die Auswahlkriterien, soweit das Bureau sie kodifiziert hat, sind drei: Erstens muss der Kandidat etwas Falsches an seiner Welt bemerkt haben — nicht moralisch falsch, sondern strukturell falsch. Eine Naht. Einen Riss. Einen Moment, in dem die Physik stotterte. Die meisten Menschen, die solche Dinge bemerken, erklären sie weg. Kartographen sind diejenigen, die es nicht konnten. Zweitens muss der Kandidat die Falschheit dokumentiert haben. Nicht gemeldet — dokumentiert. Der Unterschied ist wichtig. Melden impliziert Autorität. Dokumentieren impliziert Besessenheit. Das Bureau braucht Besessene, keine Informanten. Drittens muss der Kandidat bereit sein, im Raum zwischen den Splittern zu stehen, das heißt, in dem Raum, wo die Realität noch nicht entschieden hat, was sie sein will, und eine Linie auf eine Karte zu zeichnen, und der Linie zu vertrauen, selbst wenn die Karte brennt.
+
+Die Ausbildung dauert zwischen sechs Monaten und dem Rest Ihres Lebens. Das Ausbildungshandbuch des Bureaus ist sieben Seiten lang. Die ersten sechs Seiten sind geschwärzt. Die siebte Seite lautet: „Beobachten. Aufzeichnen. Nicht wegschauen. Wenn Sie wegschauen, wird das Ding, das Sie nicht anschauen, immer noch da sein, wenn Sie zurückschauen. Es wird auch größer sein."
+
+Die Werkzeuge der Kartographen sind nicht komplex. Ein Kompass (der nicht nach magnetisch Nord zeigt, sondern zum nächsten Bleed-Ereignis). Ein Notizbuch (aus Inter-Splitter-Papier gefertigt, das Schrift aus jeder Realität aufnehmen kann). Ein Stift (gewöhnlich; das Bureau versuchte es mit Spezialstiften und stellte fest, dass dem Außergewöhnlichen besser mit dem Gewöhnlichen gedient ist). Und die Karte — nicht eine bestimmte Karte, sondern die kartographische Disziplin selbst, die Praxis, Linien zwischen Dingen zu zeichnen, die nicht verbunden sein sollten, und beim Zeichnen zu entdecken, dass sie es immer waren.`,
 's24fe27b45ab18ac5': `Zone erstellen`,
 's251aa0f85c6ab013': `Flux 1.1 Pro (höchste Qualität)`,
 's2523a03b2bbf47b1': `Offensivoperationen und Verteidigungserfolge. Die Punkte werden durch erfolgreiche Spionage-/Saboteur-/Attentäter-Missionen und das Abfangen von Wächtern erzielt.`,
@@ -510,6 +532,17 @@ Ich bleibe länger als mein Einsatz erfordert. Ich habe dem Bureau dies als „e
 's2efb15f5e22f958d': `Bot konnte nicht eingesetzt werden.`,
 's2f59d7a7f1518cfe': str`${0} vom Deck entfernen`,
 's2f74875ee0868d8f': `Orte`,
+'s2f818e1c6312ccb5': `Jeder Splitter ist eine Antwort. Velgarien antwortet: „Was wäre, wenn Kontrolle absolut wäre?" The Gaslit Reach antwortet: „Was wäre, wenn die Dunkelheit freundlich wäre?" Station Null antwortet: „Was wäre, wenn wir die Wunde sehen könnten?" Speranza antwortet: „Was wäre, wenn wir uns einfach weigerten aufzuhören?" Die Cité des Dames antwortet: „Was wäre, wenn Frauen immer gehört worden wären?" Und irgendwo an den Rändern der Karte kristallisieren sich neue Splitter um Fragen, die noch nicht benannt wurden.
+
+Jede Antwort ist falsch. Jede Antwort ist notwendig. Das Multiversum existiert, weil keine einzelne Antwort ausreicht, und die Fraktur war die Art des Universums, dies einzugestehen. Die Fraktur ist weiterhin die Art des Universums, dies einzugestehen. Sie hat nicht aufgehört, es einzugestehen.
+
+Die Konvergenz — das Ereignis, das das Bureau überwacht, das die Ruinen voraussagen, das TOWER bedroht — ist nicht das Ende. Sie ist die nächste Frage. Wenn genug Splitter sich berührt haben, wenn genug Bleeds geflossen sind, wenn genug Agenten von Welten geträumt haben, die sie nie besucht haben, wird das Multiversum einen Entscheidungspunkt erreichen: verschmelzen oder sich weiter differenzieren. In eine Antwort kollabieren oder in tausend weitere zersplittern.
+
+Die Kartographen wissen nicht, welches Ergebnis richtig ist. Sie wissen nur dies: Jemand muss zuschauen, wenn es geschieht. Jemand muss am Rand stehen mit einer Karte und einem Kompass und der Bereitschaft, eine neue Linie auf eine Karte zu zeichnen, die keine Ränder hat.
+
+Dieser Jemand, in der Kosmologie der Kartographen, in der tiefen Mythologie des Bureaus für Unmögliche Geographie, in den gesperrten Akten und den verschlungenen Seiten und den Karten, die auch Türen sind — dieser Jemand ist, wer immer dies hier liest.
+
+Welten. Eine Fraktur. Die Karte hat keine Ränder. Welche Welt betreten Sie zuerst?`,
 's2fa05f91c1baa29b': str`Entfernen: ${0}`,
 's2fa9c4821bd618eb': `Typ auswählen...`,
 's2fc3c3277fad6120': `Fehler beim Speichern der Vorlage`,
@@ -603,6 +636,7 @@ Axiom 4: Die Kartographen existieren außerhalb der Axiome. Dies ist kein Privil
 's362f48aa5dcdf2d1': `Propagandist wird aufgelöst: ERFOLG`,
 's363abde8a254ea5f': `Authentifizierung fehlgeschlagen. Bitte erneut versuchen.`,
 's367d079d1aed1358': `Kosten`,
+'s367d0d4456cea384': `Die Bekannten Splitter`,
 's3685377196755142': `Splitter-Klassifikation: GOLD. Bedrohungseinschätzung: Literat. Man kann ein Buch nicht ungelesen machen. Man kann es verbrennen, aber der Leser hat sich bereits verändert.`,
 's3687049d1af562c4': `Kopieren`,
 's36930eef41d12474': `Verzweifelter letzter Schlag. Ziel: Markthalle. Gleichgewicht: 30-5 = 25 RP`,
@@ -1028,20 +1062,6 @@ ANMERKUNG DES DIREKTORS: Der Abschnitt zur empfohlenen Maßnahme wurde vom Dokum
 's5f8d517d09d29efc': `Ausgewogene Grundlagen. Durchgehend nahe an der theoretisch fairen Rate bei jeder Spieleranzahl.`,
 's5fa613104078abe6': `Chat-System-Prompt`,
 's5fa756d347b022ce': `Bildgenerierungsmodell für jeden Zweck auswählen`,
-'s5fb62d91a66d520e': `Dieser Abschnitt wurde siebzehn Mal [KONSUMIERT]. Jedes Mal schreibt ein Kartograph ihn neu. Jedes Mal frisst das Dokument ihn auf. Wir beharren.
-
-Was das Bureau Ihnen nicht sagen wird, ist Folgendes: Die fünf Splitter sind nicht zufällig. Sie sind nicht die willkürlichen Trümmer eines kosmischen Unfalls. Sie sind ein Argument — fünf Positionen in einem philosophischen Disput, den das Unbenannte nicht lösen konnte, solange es ganz war. Kontrolle (Velgarien). Staunen (die Gaslit Reach). Wissen (Station Null). Hoffnung (Speranza). Stimme (die Cite des Dames). Dies sind keine Zufälle. Dies sind die fünf Dinge, die das Universum nicht gleichzeitig halten konnte.
-
-Die Fraktur war keine Katastrophe. Sie war eine Abstimmung. Das Universum fragte sich selbst, was zählt, und es konnte sich nicht einigen, und die Uneinigkeit wurde Geographie.
-
-Wenn dies wahr ist — und das Bureau bestätigt es nicht, denn Bestätigung würde Verständnis implizieren, und Verständnis würde die Möglichkeit einer Lösung implizieren, und Lösung ist das Einzige, wofür das Bureau existiert, um [KONSUMIERT] — dann ist die Konvergenz nicht das Ende des Arguments. Sie ist der nächste Wahlgang. Die fünf Splitter, die zusammendrängen. Die fünf Antworten, die kollidieren. Und irgendwo in der Kollision die Möglichkeit einer sechsten Antwort, die alle fünf enthält.
-
-Das Bureau hat einen Namen für diese sechste Antwort. Der Name ist geheim. Die Geheimhaltung wurde [KONSUMIERT]. Das [KONSUMIERTE] wurde unter „Dinge, Die Auch Andere Dinge Sind" abgelegt. Die Akte wächst.
-
-[NACHTRAG, HANDSCHRIFTLICH AM RAND IN TINTE, DIE NOCH FEUCHT IST]:
-„Die Akte wächst nicht. Die Akte wird. Es gibt einen Unterschied. Wachsen impliziert Addition. Werden impliziert Wandlung. Das Bureau wandelt sich. Das Bureau hat sich schon immer gewandelt. Das Bureau ist die sechste Antwort, und die sechste Antwort ist gar keine Antwort. Sie ist die Frage, richtig gestellt, zum ersten Mal."
-
-[DER NACHTRAG WURDE KLASSIFIZIERT. DIE KLASSIFIZIERUNG WURDE KONSUMIERT. DIE TINTE IST NOCH FEUCHT.]`,
 's5fe78f145299c278': `Epochen-Lobby mit menschlichem Spieler und Strategen-Bot`,
 's5fee25f068ea9f5d': `Balancierungsänderungen und Spielmechanik-Updates werden hier dokumentiert. Jedes Update enthält detaillierte Änderungsnotizen und die Begründung.`,
 's601218402a2c9142': `IV. Die Zündung`,
@@ -1099,6 +1119,7 @@ Das Bureau hat einen Namen für diese sechste Antwort. Der Name ist geheim. Die 
 's64ef2a6c2dd1d3d1': `Bearbeiten`,
 's64ef8ad22af67f74': `Optionales Briefing für Teilnehmer...`,
 's6523c010a603748d': `RP-Hortung. Verliert Militär- und Einflusspunkte.`,
+'s652c13e9252bfbf3': `Jeder Splitter ist eine Antwort auf eine Frage, die das Universum nicht mit einer Stimme stellen konnte. Das Bureau hat nie behauptet, die Liste sei vollständig.`,
 's65466b58996b7efe': `Einladung`,
 's657c0670702157a8': `Der Rausch der Abrechnung`,
 's6580790b036f0c6f': `aktiv`,
@@ -1161,7 +1182,6 @@ Deshalb können die Splitter nicht einfach wieder zusammengesetzt werden. Man ka
 's6ad18884980fd957': `z. B. „Machen Sie diesen Charakter nihilistischer und erwähnen Sie eine geheime Besessenheit mit Uhren."`,
 's6afa0cbb4e824e55': `Signal wird erwartet`,
 's6b0bbc26e964a513': `Gegenspionage-Sweep fehlgeschlagen.`,
-'s6b1f2257d78743f1': `Die Fraktur — Die Realität zersplittert in fünf unvereinbare Welten`,
 's6b292deedb766f38': `Noch keine Reaktionen`,
 's6b47297f8f1145b7': `Chroniken konnten nicht geladen werden.`,
 's6b58f79707cdc33f': `Alle Operativen freigeschaltet`,
@@ -1832,13 +1852,6 @@ KARTOGRAPHISCHE ANMERKUNG: Die Gaslit Reach ist der einzige Splitter, in dem Bur
 'sadb999784b989d13': `Punktesystem`,
 'sade3c823832adef6': `Einladung konnte nicht gesendet werden.`,
 'sadf1a44da5dc17af': `Kein Inhalt`,
-'sae004396e46a73e2': `Die Kartographen werden aus allen fünf Splittern rekrutiert, wobei „rekrutiert" einen geordneten Prozess mit Bewerbungsformularen und Vorstellungsgesprächen impliziert, und die Realität eher „identifiziert, aus der Ferne beobachtet, und schließlich von jemandem angesprochen, der wie ein Bibliothekar aussieht und wie ein geologisches Ereignis spricht" entspricht.
-
-Die Auswahlkriterien, soweit das Bureau sie kodifiziert hat, sind drei: Erstens muss der Kandidat etwas Falsches an seiner Welt bemerkt haben — nicht moralisch Falsches, sondern strukturell Falsches. Eine Naht. Einen Riss. Einen Moment, in dem die Physik stotterte. Die meisten Menschen, die diese Dinge bemerken, erklären sie weg. Kartographen sind diejenigen, die es nicht konnten. Zweitens muss der Kandidat die Falschheit dokumentiert haben. Nicht gemeldet — dokumentiert. Die Unterscheidung ist wichtig. Melden impliziert Autorität. Dokumentieren impliziert Besessenheit. Das Bureau braucht Besessene, keine Informanten. Drittens muss der Kandidat bereit sein, im Raum zwischen den Splittern zu stehen, das heißt, in dem Raum, wo die Realität noch nicht entschieden hat, was sie sein will, und eine Linie auf eine Karte zu zeichnen, und der Linie zu vertrauen, selbst wenn die Karte brennt.
-
-Die Ausbildung dauert zwischen sechs Monaten und dem Rest des Lebens. Das Ausbildungshandbuch des Bureaus ist sieben Seiten lang. Die ersten sechs Seiten sind geschwärzt. Die siebte Seite lautet: „Beobachten. Protokollieren. Nicht wegschauen. Wenn du wegschaust, wird das Ding, das du nicht anschaust, immer noch da sein, wenn du zurückschaust. Es wird auch größer sein."
-
-Die Werkzeuge der Kartographen sind nicht komplex. Ein Kompass (der nicht nach magnetischem Norden zeigt, sondern zum nächsten Bleed-Ereignis). Ein Notizbuch (aus Zwischen-Splitter-Papier, das Schrift aus jeder Realität aufnehmen kann). Ein Stift (gewöhnlich; das Bureau versuchte Spezialstifte zu verwenden und entdeckte, dass dem Außergewöhnlichen besser mit dem Gewöhnlichen gedient ist). Und die Karte — nicht eine bestimmte Karte, sondern die kartographische Disziplin selbst, die Praxis, Linien zwischen Dingen zu zeichnen, die nicht verbunden sein sollten, und beim Zeichnen zu entdecken, dass sie es immer waren.`,
 'sae3c0462b0d25cfe': `Max. Mitglieder`,
 'saea0756a767d7ea1': `Keine (Minimalistisch)`,
 'saeaeccab0db946be': `Zusätzliche Stile`,
@@ -1907,17 +1920,6 @@ Die Werkzeuge der Kartographen sind nicht komplex. Ein Kompass (der nicht nach m
 'sb584d18cd0bc7826': `Guardian`,
 'sb5916a3cd3b40490': `Die Fraktion oder Organisation. Ereignisse, die mit einem passenden Systemnamen gekennzeichnet sind, ziehen diesen Agenten an und erhöhen die Reaktionswahrscheinlichkeit.`,
 'sb5cab8a1f3986759': `OPERATION BEREIT`,
-'sb5d6d384614b9c78': `Jeder Splitter ist eine Antwort. Velgarien antwortet: „Was, wenn Kontrolle absolut wäre?" Die Gaslit Reach antwortet: „Was, wenn die Dunkelheit gütig wäre?" Station Null antwortet: „Was, wenn wir die Wunde sehen könnten?" Speranza antwortet: „Was, wenn wir uns einfach weigerten aufzuhören?" Die Cite des Dames antwortet: „Was, wenn Frauen immer gehört worden wären?"
-
-Jede Antwort ist falsch. Jede Antwort ist notwendig. Das Multiversum existiert, weil keine einzelne Antwort ausreicht, und die Fraktur war die Art des Universums, dies zuzugeben.
-
-Die Konvergenz — das Ereignis, das das Bureau überwacht, das die Ruinen vorhersagen, das TOWER bedroht — ist nicht das Ende. Sie ist die nächste Frage. Wenn genug Splitter sich berührt haben, wenn genug Bleeds geflossen sind, wenn genug Agenten von Welten geträumt haben, die sie nie besucht haben, wird das Multiversum einen Entscheidungspunkt erreichen: verschmelzen oder weiter differenzieren. In eine Antwort kollabieren oder in tausend weitere frakturieren.
-
-Die Kartographen wissen nicht, welches Ergebnis das richtige ist. Sie wissen nur dies: Jemand muss beobachten, wenn es geschieht. Jemand muss am Rand stehen mit einer Karte und einem Kompass und der Bereitschaft, eine neue Linie auf einer Karte zu ziehen, die keine Ränder hat.
-
-Dieser Jemand ist, in der Kosmologie der Kartographen, in der tiefen Mythologie des Bureaus für Unmögliche Geographie, in den gesperrten Akten und den konsumierten Seiten und den Karten, die auch Türen sind — dieser Jemand ist, wer immer dies liest.
-
-Fünf Welten. Eine Fraktur. Die Karte liegt offen. Welche Welt betreten Sie zuerst?`,
 'sb5ffbb280b2ed563': `Analyse`,
 'sb61f026993e669a0': `Fehler beim Laden der Design-Einstellungen`,
 'sb62cc42f14eabc15': `Verrat`,
@@ -2200,19 +2202,6 @@ KARTOGRAPHISCHE ANMERKUNG: Kartographen, die Speranza zugewiesen wurden, bericht
 'scff64bfa7dc75a58': `Diplomatie: Bündnisbonus +10 %→+15 %, Verratsstrafe −20 %→−25 %, Spionage-Intel +1`,
 'sd016af94e75aee7f': `Wird ausgeführt...`,
 'sd0182c6d73eaa2be': `Zustand`,
-'sd01a39d545ad6ee4': `Das Bureau hat fünf stabile Splitter klassifiziert — Welten, die die Fraktur intakt überstanden haben, die ihre eigene innere Logik entwickelten, die wuchsen statt zusammenzubrechen. Jeder Splitter ist eine Antwort auf eine Frage, die das Unbenannte nicht lösen konnte, solange es ganz war:
-
-VELGARIEN antwortet: „Was, wenn Kontrolle absolut wäre?" Ein brutalistischer Überwachungsstaat, in dem die Bürokratie zum Wetter geworden ist und Zufriedenheit verpflichtend. Die Mauern sind aus Beton. Die Mauern beobachten. Die Paste ist grau und die Formulare sind in dreifacher Ausfertigung, und irgendwo in den Rissen zwischen den Aktenschränken wächst etwas, wofür die Bureaux noch kein Formular gefunden haben.
-
-THE GASLIT REACH antwortet: „Was, wenn die Dunkelheit gütig wäre?" Eine unterirdische Zivilisation unter einem lichtlosen Meer, wo biolumineszente Pilze als Straßenlaternen dienen und die Wirtschaft auf Geheimnissen basiert. Die Bürger sind beinahe menschlich. Das Wasser ist geduldig. Die Archive sind feucht. Der Flechtenwein ist, allen Berichten zufolge, außergewöhnlich.
-
-STATION NULL antwortet: „Was, wenn wir die Wunde sehen könnten?" Eine stillgelegte Forschungsstation in der Umlaufbahn eines Schwarzen Lochs, das das Bureau als Diskontinuität klassifiziert — einen Punkt, an dem die Splittergrenze bis zum Substrat unter allen Splittern durchgescheuert ist. Besatzungsstärke: 6 von 200. Alle Systeme nominal. Die KI besteht darauf. Die KI besteht auf allem.
-
-SPERANZA antwortet: „Was, wenn wir uns einfach weigerten aufzuhören?" Eine unterirdische Stadt im postapokalyptischen Italien, die unter Maschinen überlebt, die die Oberfläche mit mechanischer Gleichgültigkeit ernten. Hoffnung ist kein Optimismus. Hoffnung ist die Entscheidung, Tomaten unter UV-Lampen zu pflanzen und das Ergebnis einen Garten zu nennen.
-
-THE CITE DES DAMES antwortet: „Was, wenn Frauen immer gehört worden wären?" Eine feministische literarische Utopie, erbaut aus den Geschichten von Frauen durch die Geschichte hindurch, in der jeder Akt des Erinnerns zum Stein in der Stadtmauer wird. Das Licht ist warm. Die Tinte erinnert mehr, als die Schreiberin weiß. Das Bureau findet diesen Splitter am beunruhigendsten von allen, denn er ist der einzige, der keine Angst hat.
-
-Jede Antwort ist falsch. Jede Antwort ist notwendig. Das Multiversum existiert, weil keine einzelne Antwort ausreicht.`,
 'sd02a9432614df2f5': str`Einstellungen gespeichert.${0} Einstellungen gespeichert.`,
 'sd036ef4b7b8c7370': `Ease In-Out (Sanft)`,
 'sd0596993d110f7e5': `Ereignisbeschreibung...`,
@@ -2268,7 +2257,6 @@ Jede Antwort ist falsch. Jede Antwort ist notwendig. Das Multiversum existiert, 
 'sd532d5aa0ad565a9': `Setzen Sie Spione ein, um Aufklärungsdaten über Ihre Gegner zu sammeln.`,
 'sd55203f85c4e9050': str`— Feldbericht, Velgarien`,
 'sd5754657246f2d26': `Noch keine abgeschlossenen Missionen.`,
-'sd59d89c812287b64': `Fünf Welten. Eine Fraktur.`,
 'sd5f5053f8603e505': `Einsatzkader`,
 'sd600892f7fabe04c': `Entwurf`,
 'sd615821be4d79dc8': `Ein unerwarteter Fehler beim Laden der Zonen`,
@@ -2423,6 +2411,7 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die in Regalen er
 'se5aa55f5c944cfc5': `Agenten entworfen`,
 'se5b71a480dfde45c': `Schriftfamilie für Code-Blöcke, Datentabellen und technische Inhalte.`,
 'se5be05dac1218eba': str`Modell: ${0}`,
+'se5c5c2b51af3aa16': `Welten. Eine Fraktur.`,
 'se5e7ce23f3cf925f': `Diplomatie`,
 'se5ecd6c894ee69dc': `Vorlage aktualisiert`,
 'se5f5b1776f87db11': `Beschreibe die Hintergrundgeschichte des Agenten...`,
@@ -2459,6 +2448,22 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die in Regalen er
 'se9fc1c9c928fa8f7': `Breche die Realität und erschaffe deine erste Scherbe — eine Welt mit eigenen Agenten, Gebäuden und Ereignissen.`,
 'sea0d08993fc064f9': `Vorlagentyp`,
 'sea2041b4f20ce067': str`Zyklus ${0}`,
+'sea3c5142a8753b44': `Dieser Abschnitt wurde [KONSUMIERT] siebzehn Mal. Jedes Mal schreibt ein Kartograph ihn neu. Jedes Mal verschlingt das Dokument ihn. Wir bestehen fort.
+
+Was das Bureau Ihnen nicht sagen wird, ist dies: Die Splitter sind nicht zufällig. Sie sind nicht die willkürlichen Trümmer eines kosmischen Unfalls. Sie sind ein Argument — Positionen in einem philosophischen Disput, den der Unbenannte nicht lösen konnte, solange er ganz war. Kontrolle (Velgarien). Staunen (the Gaslit Reach). Wissen (Station Null). Hoffnung (Speranza). Stimme (die Cité des Dames). Dies waren die ersten Positionen. Sie waren nicht die letzten.
+
+Die Fraktur war keine Katastrophe. Sie war eine Abstimmung. Das Universum fragte sich, was wichtig sei, und es konnte sich nicht einigen, und die Uneinigkeit wurde zu Geographie. Die Abstimmung ist nicht vorbei. Neue Fragen entstehen — Fragen, die die bestehenden Splitter nicht beantworten können — und wo die Frage scharf genug ist, wo sie tief genug in das Gewebe des Möglichen schneidet, kristallisiert sich neue Geographie. Ein neuer Splitter. Eine neue Welt. Eine neue Position im Argument.
+
+Das Bureau weiß nicht, wie viele Splitter es gibt. Das Bureau glaubt nicht, dass die Frage eine feste Antwort hat. Die Fraktur ist kein vergangenes Ereignis mit einer zählbaren Anzahl von Folgen. Sie ist ein andauernder Zustand — das Universum, das weiterhin mit sich selbst uneins ist, das weiterhin neue Realitäten an den Rändern der Karte hervorbringt.
+
+Wenn dies wahr ist — und das Bureau bestätigt es nicht, denn Bestätigung würde Verständnis implizieren, und Verständnis würde die Möglichkeit einer Lösung implizieren, und eine Lösung ist das Einzige, wofür das Bureau existiert, um es zu [KONSUMIERT] — dann ist die Konvergenz nicht das Ende des Arguments. Sie ist die nächste Abstimmung. Die bekannten Splitter pressen zusammen. Alle Antworten kollidieren — die alten und die, die noch nicht gestellt wurden. Und irgendwo in der Kollision die Möglichkeit einer Antwort, die alle anderen enthält.
+
+Das Bureau hat einen Namen für diese Antwort. Der Name ist klassifiziert. Die Klassifizierung wurde [KONSUMIERT]. Das [KONSUMIERT] wurde abgelegt unter „Dinge, die auch andere Dinge sind." Die Akte wächst.
+
+[NACHTRAG, HANDSCHRIFTLICH AN DEN RAND GESCHRIEBEN MIT TINTE, DIE NOCH NASS IST]:
+„Die Akte wächst nicht. Die Akte wird. Das ist ein Unterschied. Wachsen impliziert Addition. Werden impliziert Veränderung. Das Bureau verändert sich. Das Bureau hat sich immer verändert. Das Bureau ist die nächste Antwort, und die nächste Antwort ist überhaupt keine Antwort. Sie ist die Frage, richtig gestellt, zum ersten Mal."
+
+[DER NACHTRAG WURDE KLASSIFIZIERT. DIE KLASSIFIZIERUNG WURDE KONSUMIERT. DIE TINTE IST NOCH NASS.]`,
 'sea4f08110bb8f15d': `Entfernen`,
 'sea6188648222b8f5': `Taxonomie-Wert hinzugefügt.`,
 'sea7a79f79211e61e': `Anzahl der Forge-Token, die neuen Architekten gewährt werden.`,
@@ -2552,7 +2557,6 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die in Regalen er
 'sf26c109468ee77fe': `HALTEN...`,
 'sf2702eb8c85f70fe': `Konversation archiviert.`,
 'sf2973a882869584f': `Splitter-Klassifikation: GRAU. Bedrohungseinschätzung: Institutionell. Die Wände sind aus Beton. Die Wände hören zu.`,
-'sf29af8158bffc766': `Fünf Antworten auf eine Frage, die das Universum nicht mit einer Stimme stellen konnte.`,
 'sf2a05ad45e3bfe9d': `Zyklus 11: Gaslit Reachs Saboteur scheitert an 3 Wächtern in Velgariens Bibliothekszone — die Grundmauer-Strategie zahlt sich aus.`,
 'sf2a69a199c808e4c': `Eignung`,
 'sf2adc99f17eec73d': `Agentenname...`,
@@ -2620,7 +2624,6 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die in Regalen er
 'sf859a71262c50db0': `Verschlechtert den Zustand eines Zielgebäudes um eine Stufe (gut → mäßig → schlecht → ruiniert).`,
 'sf89d2b10b903e21c': `Aufnahme wird bearbeitet...`,
 'sf8e650a55963c01d': `Der Wettbewerb schaltet alle 6 Operativtypen frei. Setzen Sie Elena Voss (Spionage-Eignung 9) gegen The Gaslit Reach ein. Spione kosten nur 3 RP, werden sofort eingesetzt und liefern nach 3 Zyklen wertvolle Aufklärung.`,
-'sf9040427070c68ad': `Die Fünf Splitter`,
 'sf91abb3323905dc0': `Keine Benutzer gefunden.`,
 'sf93b6a0d1f4470c0': `Reichweite in den sozialen Medien und Wirksamkeit der Propaganda. Bewertet nach Kampagnenleistung und Engagement für soziale Trends.`,
 'sf998462f9419c0bc': `Traum`,
@@ -2676,6 +2679,7 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die in Regalen er
 'sfe06277b9c780039': `Kartenansichtsmodus`,
 'sfe178d77ccc8dd4d': `Assassine: Stabilität −4→−5, Souveränität −10→−12, Kosten 8→7 RP`,
 'sfe1b171537179ee0': `allow_betrayal = true. Entdeckter Verrat löst die gesamte Allianz auf und fügt dem Verräter einen diplomatischen Nachteil von -20% zu.`,
+'sfe3b0602f452ee5f': `Die Fraktur — Die Realität zersplittert in unvereinbare Welten, jede eine vollständige Antwort auf eine Frage, die nicht mit einer Stimme gestellt werden konnte`,
 'sfe54fe9b32508b3d': `Zyklus 13: Speranzas Infiltrator kompromittiert die Botschaft von Station Null - 50% Strafe für 3 Zyklen.`,
 'sfe6b848d68c1d99a': `Botschafts-Effektivität mal 10, plus Spionage-Intel-Bonus (+1 pro Erfolg), multipliziert mit Bündnisbonus (+15 % pro Verbündetem) und reduziert durch Verratsstrafe (−25 %). Schütze deine Botschaften und halte deine Bündnisse.`,
 'sfe6f87a5072b418f': `0 Wächter, Zonen: hoch / mittel / mittel / niedrig`,

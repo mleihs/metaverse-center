@@ -506,7 +506,7 @@ export class VelgSimulationsDashboard extends LitElement {
         }
         <div class="hero__noise"></div>
         <div class="hero__overlay">
-          <h1 class="hero__title">${msg('Five Worlds. One Fracture.')}</h1>
+          <h1 class="hero__title">${msg('Worlds. One Fracture.')}</h1>
           <p class="hero__lore">
             ${msg('There was once a single world. It broke into shards — each a complete reality with its own physics, its own history, its own answer to a question the universe could not ask in one voice. The edges do not fit together. But they do touch.')}
           </p>
