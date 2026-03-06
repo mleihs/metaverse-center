@@ -208,7 +208,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
        ▼            ▼
 ┌──────────────────────┐
 │   Supabase (PostgreSQL)   │
-│   49 tables + pgvector     │
+│   52 tables + pgvector     │
 │   194+ RLS policies       │
 │   Realtime channels       │
 │   Auth (ES256/HS256)      │
@@ -261,7 +261,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 
 | Component | Technology |
 |:----------|:-----------|
-| Database | PostgreSQL via Supabase (49 tables, 194+ RLS policies, pgvector embeddings) |
+| Database | PostgreSQL via Supabase (52 tables, 194+ RLS policies, pgvector embeddings) |
 | Auth | Supabase Auth (JWT with ES256 in production, HS256 locally) |
 | Email | SMTP SSL (bilingual tactical briefing emails, fog-of-war compliant) |
 | AI Text | OpenRouter (model fallback chain) |
@@ -277,9 +277,9 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 
 | Metric | Count |
 |:-------|------:|
-| Database tables | 49 |
+| Database tables | 52 |
 | RLS policies | 194+ |
-| SQL migrations | 62+ |
+| SQL migrations | 72 |
 | API endpoints | 257 across 33 routers |
 | Web Components | 133 custom elements |
 | Backend tests | 789 |
