@@ -247,12 +247,12 @@
   <target>Agent löschen</target>
 </trans-unit>
 <trans-unit id="s02f08b8f4c49b948">
-  <source>Are you sure you want to delete "<x id="0" equiv-text="${agent.name}"/>"? This action cannot be undone.</source>
-  <target>Bist du sicher, dass du "<x id="0" equiv-text="${agent.name}"/>" löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.</target>
+  <source>Are you sure you want to delete "<x id="0" equiv-text="${agent.name}" />"? This action cannot be undone.</source>
+  <target>Bist du sicher, dass du "<x id="0" equiv-text="${agent.name}" />" löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.</target>
 </trans-unit>
 <trans-unit id="s7b1cbc0600f84568">
-  <source>Agent "<x id="0" equiv-text="${agent.name}"/>" deleted successfully.</source>
-  <target>Agent "<x id="0" equiv-text="${agent.name}"/>" erfolgreich gelöscht.</target>
+  <source>Agent "<x id="0" equiv-text="${agent.name}" />" deleted successfully.</source>
+  <target>Agent "<x id="0" equiv-text="${agent.name}" />" erfolgreich gelöscht.</target>
 </trans-unit>
 <trans-unit id="s3f6ddd7fde652c49">
   <source>Failed to delete agent.</source>
@@ -291,8 +291,8 @@
   <target>Ersten Agenten erstellen</target>
 </trans-unit>
 <trans-unit id="s9a75aea85d85be7a">
-  <source><x id="0" equiv-text="${this._total}"/> Agent<x id="1" equiv-text="${this._total !== 1 ? 's' : ''}"/></source>
-  <target>Agent<x id="0" equiv-text="${this._total}"/> Agent<x id="1" equiv-text="${this._total !== 1 ? 's' : ''}"/></target>
+  <source><x id="0" equiv-text="${this._total}" /> Agent<x id="1" equiv-text="${this._total !== 1 ? 's' : ''}" /></source>
+  <target>Agent<x id="0" equiv-text="${this._total}" /> Agent<x id="1" equiv-text="${this._total !== 1 ? 's' : ''}" /></target>
 </trans-unit>
 <trans-unit id="see08734dfee6e873">
   <source>An unexpected error occurred. Please try again.</source>
@@ -331,8 +331,8 @@
   <target>Keine Agenten diesem Gebäude zugewiesen.</target>
 </trans-unit>
 <trans-unit id="sf628c218795d33ba">
-  <source>Agent <x id="0" equiv-text="${rel.agent_id.slice(0, 8)}"/>...</source>
-  <target>Agent <x id="0" equiv-text="${rel.agent_id.slice(0, 8)}"/>...</target>
+  <source>Agent <x id="0" equiv-text="${rel.agent_id.slice(0, 8)}" />...</source>
+  <target>Agent <x id="0" equiv-text="${rel.agent_id.slice(0, 8)}" />...</target>
 </trans-unit>
 <trans-unit id="s4334827f0cc60a87">
   <source>Building Details</source>
@@ -555,8 +555,8 @@
   <target>Gebäude löschen</target>
 </trans-unit>
 <trans-unit id="s05d059c94d5c3d4c">
-  <source>"<x id="0" equiv-text="${building.name}"/>" has been deleted</source>
-  <target>"<x id="0" equiv-text="${building.name}"/>" wurde gelöscht</target>
+  <source>"<x id="0" equiv-text="${building.name}" />" has been deleted</source>
+  <target>"<x id="0" equiv-text="${building.name}" />" wurde gelöscht</target>
 </trans-unit>
 <trans-unit id="s5cd6e615c956bbe4">
   <source>Failed to delete building</source>
@@ -583,12 +583,12 @@
   <target>Keine Gebäude gefunden. Erstelle eines, um loszulegen.</target>
 </trans-unit>
 <trans-unit id="s0b7e8f388caf2b36">
-  <source><x id="0" equiv-text="${this._total}"/> buildings total</source>
-  <target>Gebäude insgesamt<x id="0" equiv-text="${this._total}"/> Gebäude insgesamt</target>
+  <source><x id="0" equiv-text="${this._total}" /> buildings total</source>
+  <target>Gebäude insgesamt<x id="0" equiv-text="${this._total}" /> Gebäude insgesamt</target>
 </trans-unit>
 <trans-unit id="s9289a1008fa7df3d">
-  <source><x id="0" equiv-text="${this._total}"/> building total</source>
-  <target>Gebäude insgesamt<x id="0" equiv-text="${this._total}"/> Gebäude insgesamt</target>
+  <source><x id="0" equiv-text="${this._total}" /> building total</source>
+  <target>Gebäude insgesamt<x id="0" equiv-text="${this._total}" /> Gebäude insgesamt</target>
 </trans-unit>
 <trans-unit id="se6ce9f50ddd15633">
   <source>Failed to load agents.</source>
@@ -627,12 +627,12 @@
   <target>Ein unerwarteter Fehler beim Archivieren der Konversation.</target>
 </trans-unit>
 <trans-unit id="s0a552e96950fee13">
-  <source>Chat with <x id="0" equiv-text="${names[0]}"/></source>
-  <target>Chat mit <x id="0" equiv-text="${agent.name}"/></target>
+  <source>Chat with <x id="0" equiv-text="${names[0]}" /></source>
+  <target>Chat mit <x id="0" equiv-text="${agent.name}" /></target>
 </trans-unit>
 <trans-unit id="s8d746648f3712457">
-  <source>Conversation started with <x id="0" equiv-text="${names[0]}"/>.</source>
-  <target>Konversation gestartet mit <x id="0" equiv-text="${agent.name}"/>.</target>
+  <source>Conversation started with <x id="0" equiv-text="${names[0]}" />.</source>
+  <target>Konversation gestartet mit <x id="0" equiv-text="${agent.name}" />.</target>
 </trans-unit>
 <trans-unit id="sd372b232ee1d8588">
   <source>Failed to create conversation.</source>
@@ -679,8 +679,8 @@
   <target>Wähle eine Konversation aus der Liste oder starte eine neue, indem du einen Agenten auswählst.</target>
 </trans-unit>
 <trans-unit id="sd94e4de48e8973cb">
-  <source><x id="0" equiv-text="${this.conversation.message_count}"/> messages</source>
-  <target>Nachrichten<x id="0" equiv-text="${this.conversation.message_count}"/> Nachrichten</target>
+  <source><x id="0" equiv-text="${this.conversation.message_count}" /> messages</source>
+  <target>Nachrichten<x id="0" equiv-text="${this.conversation.message_count}" /> Nachrichten</target>
 </trans-unit>
 <trans-unit id="se3b62a22fe3df419">
   <source>Loading messages...</source>
@@ -723,16 +723,16 @@
   <target>Gerade eben</target>
 </trans-unit>
 <trans-unit id="s8c1837e74a81ad0d">
-  <source><x id="0" equiv-text="${diffMins}"/>m ago</source>
-  <target>vor <x id="0" equiv-text="${diffMins}"/>m</target>
+  <source><x id="0" equiv-text="${diffMins}" />m ago</source>
+  <target>vor <x id="0" equiv-text="${diffMins}" />m</target>
 </trans-unit>
 <trans-unit id="sa86ea054ad5277ce">
-  <source><x id="0" equiv-text="${diffHours}"/>h ago</source>
-  <target>vor <x id="0" equiv-text="${diffHours}"/>h</target>
+  <source><x id="0" equiv-text="${diffHours}" />h ago</source>
+  <target>vor <x id="0" equiv-text="${diffHours}" />h</target>
 </trans-unit>
 <trans-unit id="s4abcddbf0c24a4e2">
-  <source><x id="0" equiv-text="${diffDays}"/>d ago</source>
-  <target>vor <x id="0" equiv-text="${diffDays}"/>d</target>
+  <source><x id="0" equiv-text="${diffDays}" />d ago</source>
+  <target>vor <x id="0" equiv-text="${diffDays}" />d</target>
 </trans-unit>
 <trans-unit id="scb6a9c1a1757adbc">
   <source>You</source>
@@ -743,8 +743,8 @@
   <target>Noch keine Nachrichten. Starte die Konversation.</target>
 </trans-unit>
 <trans-unit id="sdad9a8331eaf87b9">
-  <source><x id="0" equiv-text="${reactionCount}"/> Reactions</source>
-  <target>Reaktionen<x id="0" equiv-text="${reactionCount}"/> Reaktionen</target>
+  <source><x id="0" equiv-text="${reactionCount}" /> Reactions</source>
+  <target>Reaktionen<x id="0" equiv-text="${reactionCount}" /> Reaktionen</target>
 </trans-unit>
 <trans-unit id="se44a1146a7e00fd1">
   <source>Edit event</source>
@@ -771,8 +771,8 @@
   <target>Auswirkungsstufe</target>
 </trans-unit>
 <trans-unit id="s0abfa55578dfaa92">
-  <source>Reactions (<x id="0" equiv-text="${this._reactions.length}"/>)</source>
-  <target>Reaktionen (<x id="0" equiv-text="${this._reactions.length}"/>)</target>
+  <source>Reactions (<x id="0" equiv-text="${this._reactions.length}" />)</source>
+  <target>Reaktionen (<x id="0" equiv-text="${this._reactions.length}" />)</target>
 </trans-unit>
 <trans-unit id="s0852c030839ee3db">
   <source>No event selected.</source>
@@ -835,8 +835,8 @@
   <target>Optionaler Ort</target>
 </trans-unit>
 <trans-unit id="s73de114e5f85f526">
-  <source>Impact Level (<x id="0" equiv-text="${this._impactLevel}"/>/10)</source>
-  <target>Auswirkungsstufe (<x id="0" equiv-text="${this._impactLevel}"/>/10)</target>
+  <source>Impact Level (<x id="0" equiv-text="${this._impactLevel}" />/10)</source>
+  <target>Auswirkungsstufe (<x id="0" equiv-text="${this._impactLevel}" />/10)</target>
 </trans-unit>
 <trans-unit id="s03aa3cfb08dff960">
   <source>Tags</source>
@@ -899,32 +899,32 @@
   <target>Einstellungen</target>
 </trans-unit>
 <trans-unit id="sc8f1cc9b4bbf0a02">
-  <source>Population: <x id="0" equiv-text="${city.population.toLocaleString()}"/></source>
-  <target>Bevölkerung: <x id="0" equiv-text="${city.population.toLocaleString()}"/></target>
+  <source>Population: <x id="0" equiv-text="${city.population.toLocaleString()}" /></source>
+  <target>Bevölkerung: <x id="0" equiv-text="${city.population.toLocaleString()}" /></target>
 </trans-unit>
 <trans-unit id="s9914f7f7bed983b3">
-  <source><x id="0" equiv-text="${this._typeLabel}"/> updated successfully</source>
-  <target>erfolgreich aktualisiert<x id="0" equiv-text="${this._typeLabel}"/> erfolgreich aktualisiert</target>
+  <source><x id="0" equiv-text="${this._typeLabel}" /> updated successfully</source>
+  <target>erfolgreich aktualisiert<x id="0" equiv-text="${this._typeLabel}" /> erfolgreich aktualisiert</target>
 </trans-unit>
 <trans-unit id="sa73b997642f65846">
-  <source><x id="0" equiv-text="${this._typeLabel}"/> created successfully</source>
-  <target>erfolgreich erstellt<x id="0" equiv-text="${this._typeLabel}"/> erfolgreich erstellt</target>
+  <source><x id="0" equiv-text="${this._typeLabel}" /> created successfully</source>
+  <target>erfolgreich erstellt<x id="0" equiv-text="${this._typeLabel}" /> erfolgreich erstellt</target>
 </trans-unit>
 <trans-unit id="sa80933980d6bd0c7">
-  <source>Edit <x id="0" equiv-text="${this._typeLabel}"/></source>
-  <target>Bearbeiten<x id="0" equiv-text="${this._typeLabel}"/> bearbeiten</target>
+  <source>Edit <x id="0" equiv-text="${this._typeLabel}" /></source>
+  <target>Bearbeiten<x id="0" equiv-text="${this._typeLabel}" /> bearbeiten</target>
 </trans-unit>
 <trans-unit id="s5d6af4c100ad321b">
-  <source>Create <x id="0" equiv-text="${this._typeLabel}"/></source>
-  <target>Erstellen<x id="0" equiv-text="${this._typeLabel}"/> erstellen</target>
+  <source>Create <x id="0" equiv-text="${this._typeLabel}" /></source>
+  <target>Erstellen<x id="0" equiv-text="${this._typeLabel}" /> erstellen</target>
 </trans-unit>
 <trans-unit id="s1148def0112d096a">
-  <source>Enter <x id="0" equiv-text="${this.type}"/> name</source>
-  <target>Name <x id="0" equiv-text="${this.type}"/> eingeben</target>
+  <source>Enter <x id="0" equiv-text="${this.type}" /> name</source>
+  <target>Name <x id="0" equiv-text="${this.type}" /> eingeben</target>
 </trans-unit>
 <trans-unit id="s57b9a8cb0c1fd049">
-  <source>Describe the <x id="0" equiv-text="${this.type}"/>...</source>
-  <target>Beschreibe <x id="0" equiv-text="${this.type}"/>...</target>
+  <source>Describe the <x id="0" equiv-text="${this.type}" />...</source>
+  <target>Beschreibe <x id="0" equiv-text="${this.type}" />...</target>
 </trans-unit>
 <trans-unit id="s697d9f0a4d8350d2">
   <source>Failed to load cities</source>
@@ -983,24 +983,24 @@
   <target>Straße erstellen</target>
 </trans-unit>
 <trans-unit id="s763db5db763a5f30">
-  <source>+ Create <x id="0" equiv-text="${levelLabels[this._level]}"/></source>
-  <target>+ <x id="0" equiv-text="${levelLabels[this._level]}"/> erstellen</target>
+  <source>+ Create <x id="0" equiv-text="${levelLabels[this._level]}" /></source>
+  <target>+ <x id="0" equiv-text="${levelLabels[this._level]}" /> erstellen</target>
 </trans-unit>
 <trans-unit id="s1acd3fb8f42de406">
   <source>Unnamed Street</source>
   <target>Unbenannte Straße</target>
 </trans-unit>
 <trans-unit id="sd6a7f6d64037f1ae">
-  <source>Est. Population: <x id="0" equiv-text="${zone.population_estimate.toLocaleString()}"/></source>
-  <target>Geschätzte Bevölkerung: <x id="0" equiv-text="${zone.population_estimate.toLocaleString()}"/></target>
+  <source>Est. Population: <x id="0" equiv-text="${zone.population_estimate.toLocaleString()}" /></source>
+  <target>Geschätzte Bevölkerung: <x id="0" equiv-text="${zone.population_estimate.toLocaleString()}" /></target>
 </trans-unit>
 <trans-unit id="s35396e2f40c21cb3">
   <source>Slug is required</source>
   <target>Slug ist erforderlich</target>
 </trans-unit>
 <trans-unit id="s0c7dffd240ca1092">
-  <source>Simulation "<x id="0" equiv-text="${response.data.name}"/>" created.</source>
-  <target>Simulation "<x id="0" equiv-text="${response.data.name}"/>" erstellt.</target>
+  <source>Simulation "<x id="0" equiv-text="${response.data.name}" />" created.</source>
+  <target>Simulation "<x id="0" equiv-text="${response.data.name}" />" erstellt.</target>
 </trans-unit>
 <trans-unit id="s6a1b50bed7ff39b8">
   <source>Failed to create simulation.</source>
@@ -1211,8 +1211,8 @@
   <target>Du bist noch kein Mitglied einer Simulation.</target>
 </trans-unit>
 <trans-unit id="s0561bb86953cba6a">
-  <source>Joined <x id="0" equiv-text="${this._formatDate(m.joined_at)}"/></source>
-  <target>Beigetreten <x id="0" equiv-text="${this._formatDate(m.joined_at)}"/></target>
+  <source>Joined <x id="0" equiv-text="${this._formatDate(m.joined_at)}" /></source>
+  <target>Beigetreten <x id="0" equiv-text="${this._formatDate(m.joined_at)}" /></target>
 </trans-unit>
 <trans-unit id="sb061ff5a347a296e">
   <source>Profile</source>
@@ -1227,8 +1227,8 @@
   <target>Zugangs-Einstellungen erfolgreich gespeichert.</target>
 </trans-unit>
 <trans-unit id="s784363bffc053c01">
-  <source>Role updated to <x id="0" equiv-text="${newRole}"/>.</source>
-  <target>Rolle aktualisiert auf <x id="0" equiv-text="${newRole}"/>.</target>
+  <source>Role updated to <x id="0" equiv-text="${newRole}" />.</source>
+  <target>Rolle aktualisiert auf <x id="0" equiv-text="${newRole}" />.</target>
 </trans-unit>
 <trans-unit id="s79268a5304465029">
   <source>Failed to change role.</source>
@@ -1243,16 +1243,16 @@
   <target>Mitglied entfernen</target>
 </trans-unit>
 <trans-unit id="sd0996bc3a8b5df93">
-  <source>Are you sure you want to remove <x id="0" equiv-text="${displayName}"/> from this simulation?</source>
-  <target>Bist du sicher, dass du <x id="0" equiv-text="${displayName}"/> aus dieser Simulation entfernen möchtest?</target>
+  <source>Are you sure you want to remove <x id="0" equiv-text="${displayName}" /> from this simulation?</source>
+  <target>Bist du sicher, dass du <x id="0" equiv-text="${displayName}" /> aus dieser Simulation entfernen möchtest?</target>
 </trans-unit>
 <trans-unit id="sea4f08110bb8f15d">
   <source>Remove</source>
   <target>Entfernen</target>
 </trans-unit>
 <trans-unit id="s0bcd877483a23da5">
-  <source><x id="0" equiv-text="${displayName}"/> has been removed.</source>
-  <target>wurde entfernt.<x id="0" equiv-text="${displayName}"/> wurde entfernt.</target>
+  <source><x id="0" equiv-text="${displayName}" /> has been removed.</source>
+  <target>wurde entfernt.<x id="0" equiv-text="${displayName}" /> wurde entfernt.</target>
 </trans-unit>
 <trans-unit id="s58791d830f346d4b">
   <source>Failed to remove member.</source>
@@ -1543,8 +1543,8 @@
   <target>Fehler beim Laden der Design-Einstellungen</target>
 </trans-unit>
 <trans-unit id="scd0bfa2bff811826">
-  <source>Custom CSS exceeds maximum of <x id="0" equiv-text="${MAX_CUSTOM_CSS_LENGTH / 1024}"/>KB.</source>
-  <target>Benutzerdefiniertes CSS überschreitet das Maximum von <x id="0" equiv-text="${MAX_CUSTOM_CSS_LENGTH / 1024}"/>KB.</target>
+  <source>Custom CSS exceeds maximum of <x id="0" equiv-text="${MAX_CUSTOM_CSS_LENGTH / 1024}" />KB.</source>
+  <target>Benutzerdefiniertes CSS überschreitet das Maximum von <x id="0" equiv-text="${MAX_CUSTOM_CSS_LENGTH / 1024}" />KB.</target>
 </trans-unit>
 <trans-unit id="s9419de2e7561341a">
   <source>Design settings saved successfully.</source>
@@ -1571,12 +1571,12 @@
   <target>Zusätzliche Stile</target>
 </trans-unit>
 <trans-unit id="s6496d792d13b37bc">
-  <source>Max <x id="0" equiv-text="${MAX_CUSTOM_CSS_LENGTH / 1024}"/>KB.</source>
-  <target>Max. <x id="0" equiv-text="${MAX_CUSTOM_CSS_LENGTH / 1024}"/>KB.</target>
+  <source>Max <x id="0" equiv-text="${MAX_CUSTOM_CSS_LENGTH / 1024}" />KB.</source>
+  <target>Max. <x id="0" equiv-text="${MAX_CUSTOM_CSS_LENGTH / 1024}" />KB.</target>
 </trans-unit>
 <trans-unit id="sf12516a6ba47b093">
-  <source>Current: <x id="0" equiv-text="${((this._values.custom_css ?? '').length / 1024).toFixed(1)}"/>KB</source>
-  <target>Aktuell: <x id="0" equiv-text="${((this._values.custom_css ?? '').length / 1024).toFixed(1)}"/>KB</target>
+  <source>Current: <x id="0" equiv-text="${((this._values.custom_css ?? '').length / 1024).toFixed(1)}" />KB</source>
+  <target>Aktuell: <x id="0" equiv-text="${((this._values.custom_css ?? '').length / 1024).toFixed(1)}" />KB</target>
 </trans-unit>
 <trans-unit id="sfd45ce497f1d354f">
   <source>Live Preview</source>
@@ -1631,8 +1631,8 @@
   <target>Fehler beim Laden der Einstellungen</target>
 </trans-unit>
 <trans-unit id="sabca4cadd0e18910">
-  <source>Failed to save <x id="0" equiv-text="${key}"/></source>
-  <target>Fehler beim Speichern von <x id="0" equiv-text="${field.key}"/></target>
+  <source>Failed to save <x id="0" equiv-text="${key}" /></source>
+  <target>Fehler beim Speichern von <x id="0" equiv-text="${field.key}" /></target>
 </trans-unit>
 <trans-unit id="sa97c26fbad888226">
   <source>General settings saved successfully.</source>
@@ -1743,8 +1743,8 @@
   <target>Fehler beim Laden der Integrations-Einstellungen</target>
 </trans-unit>
 <trans-unit id="sd02a9432614df2f5">
-  <source><x id="0" equiv-text="${section.title}"/> settings saved.</source>
-  <target>Einstellungen gespeichert.<x id="0" equiv-text="${section.title}"/> Einstellungen gespeichert.</target>
+  <source><x id="0" equiv-text="${section.title}" /> settings saved.</source>
+  <target>Einstellungen gespeichert.<x id="0" equiv-text="${section.title}" /> Einstellungen gespeichert.</target>
 </trans-unit>
 <trans-unit id="s33994aa90c1bad30">
   <source>Values are encrypted at rest</source>
@@ -1871,8 +1871,8 @@
   <target>Vorlage deaktivieren</target>
 </trans-unit>
 <trans-unit id="s69d0d905cda1e7aa">
-  <source>Are you sure you want to deactivate "<x id="0" equiv-text="${template.template_name}"/>"?</source>
-  <target>Bist du sicher, dass du "<x id="0" equiv-text="${template.template_name}"/>" deaktivieren möchtest?</target>
+  <source>Are you sure you want to deactivate "<x id="0" equiv-text="${template.template_name}" />"?</source>
+  <target>Bist du sicher, dass du "<x id="0" equiv-text="${template.template_name}" />" deaktivieren möchtest?</target>
 </trans-unit>
 <trans-unit id="s1a9c6b9c8cb6bbf1">
   <source>Template deactivated</source>
@@ -1967,8 +1967,8 @@
   <target>z.B. meta-llama/llama-3.1-8b-instruct</target>
 </trans-unit>
 <trans-unit id="s820f8a6f13d4e378">
-  <source>Temperature (<x id="0" equiv-text="${this._temperature}"/>)</source>
-  <target>Temperatur (<x id="0" equiv-text="${this._temperature}"/>)</target>
+  <source>Temperature (<x id="0" equiv-text="${this._temperature}" />)</source>
+  <target>Temperatur (<x id="0" equiv-text="${this._temperature}" />)</target>
 </trans-unit>
 <trans-unit id="sa3a2de5eef189c11">
   <source>Max Tokens</source>
@@ -2159,8 +2159,8 @@
   <target>Aktivieren</target>
 </trans-unit>
 <trans-unit id="sfb73892965d2b361">
-  <source>Add New <x id="0" equiv-text="${this._selectedType.replace(/_/g, ' ')}"/> Value</source>
-  <target>Neuen <x id="0" equiv-text="${this._selectedType.replace(/_/g, ' ')}"/>-Wert hinzufügen</target>
+  <source>Add New <x id="0" equiv-text="${this._selectedType.replace(/_/g, ' ')}" /> Value</source>
+  <target>Neuen <x id="0" equiv-text="${this._selectedType.replace(/_/g, ' ')}" />-Wert hinzufügen</target>
 </trans-unit>
 <trans-unit id="scef70ed367a87332">
   <source>Value (code)</source>
@@ -2223,8 +2223,8 @@
   <target>Laden...</target>
 </trans-unit>
 <trans-unit id="s1e983dceeed1e078">
-  <source>Showing <x id="0" equiv-text="${this._showingStart}"/>-<x id="1" equiv-text="${this._showingEnd}"/> of <x id="2" equiv-text="${this.total}"/></source>
-  <target>Zeige <x id="0" equiv-text="${this._showingStart}"/>-<x id="1" equiv-text="${this._showingEnd}"/> von <x id="2" equiv-text="${this.total}"/></target>
+  <source>Showing <x id="0" equiv-text="${this._showingStart}" />-<x id="1" equiv-text="${this._showingEnd}" /> of <x id="2" equiv-text="${this.total}" /></source>
+  <target>Zeige <x id="0" equiv-text="${this._showingStart}" />-<x id="1" equiv-text="${this._showingEnd}" /> von <x id="2" equiv-text="${this.total}" /></target>
 </trans-unit>
 <trans-unit id="safec7f1a369755f0">
   <source>Prev</source>
@@ -2383,8 +2383,8 @@
   <target>Transformiert</target>
 </trans-unit>
 <trans-unit id="se5be05dac1218eba">
-  <source>Model: <x id="0" equiv-text="${this._modelUsed}"/></source>
-  <target>Modell: <x id="0" equiv-text="${this._modelUsed}"/></target>
+  <source>Model: <x id="0" equiv-text="${this._modelUsed}" /></source>
+  <target>Modell: <x id="0" equiv-text="${this._modelUsed}" /></target>
 </trans-unit>
 <trans-unit id="s2b631bf5b4abd6e1">
   <source>Event Title</source>
@@ -2439,12 +2439,12 @@
   <target>Verarbeitet</target>
 </trans-unit>
 <trans-unit id="s092f5d61ee596839">
-  <source>Volume: <x id="0" equiv-text="${t.volume}"/></source>
-  <target>Volumen: <x id="0" equiv-text="${t.volume}"/></target>
+  <source>Volume: <x id="0" equiv-text="${t.volume}" /></source>
+  <target>Volumen: <x id="0" equiv-text="${t.volume}" /></target>
 </trans-unit>
 <trans-unit id="sdf9fac68c991ff20">
-  <source>Relevance: <x id="0" equiv-text="${t.relevance_score}"/>/10</source>
-  <target>Relevanz: <x id="0" equiv-text="${t.relevance_score}"/>/10</target>
+  <source>Relevance: <x id="0" equiv-text="${t.relevance_score}" />/10</source>
+  <target>Relevanz: <x id="0" equiv-text="${t.relevance_score}" />/10</target>
 </trans-unit>
 <trans-unit id="sc1fff4f356dfb2fb">
   <source>Transform</source>
@@ -2515,12 +2515,12 @@
   <target>Reaktionen werden verarbeitet...</target>
 </trans-unit>
 <trans-unit id="s6d936d8dcc053ab0">
-  <source><x id="0" equiv-text="${response.data.length}"/> reactions generated</source>
-  <target>Reaktionen generiert<x id="0" equiv-text="${response.data.length}"/> Reaktionen generiert</target>
+  <source><x id="0" equiv-text="${response.data.length}" /> reactions generated</source>
+  <target>Reaktionen generiert<x id="0" equiv-text="${response.data.length}" /> Reaktionen generiert</target>
 </trans-unit>
 <trans-unit id="s7dcfa30133c26319">
-  <source><x id="0" equiv-text="${response.data.length}"/> agent reactions generated</source>
-  <target>Agentenreaktionen generiert<x id="0" equiv-text="${response.data.length}"/> Agentenreaktionen generiert</target>
+  <source><x id="0" equiv-text="${response.data.length}" /> agent reactions generated</source>
+  <target>Agentenreaktionen generiert<x id="0" equiv-text="${response.data.length}" /> Agentenreaktionen generiert</target>
 </trans-unit>
 <trans-unit id="sc02725662448fb75">
   <source>Reaction generation failed</source>
@@ -2555,8 +2555,8 @@
   <target>Reaktion löschen</target>
 </trans-unit>
 <trans-unit id="s7e3cbbae942c94dc">
-  <source>Delete reaction of <x id="0" equiv-text="${this.agent.name}"/> to "<x id="1" equiv-text="${eventTitle}"/>"?</source>
-  <target>Reaktion von <x id="0" equiv-text="${this.agent.name}"/> auf „<x id="1" equiv-text="${eventTitle}"/>" löschen?</target>
+  <source>Delete reaction of <x id="0" equiv-text="${this.agent.name}" /> to "<x id="1" equiv-text="${eventTitle}" />"?</source>
+  <target>Reaktion von <x id="0" equiv-text="${this.agent.name}" /> auf „<x id="1" equiv-text="${eventTitle}" />" löschen?</target>
 </trans-unit>
 <trans-unit id="s8fd49ef6054b1197">
   <source>Reaction deleted</source>
@@ -2567,8 +2567,8 @@
   <target>Reaktion konnte nicht gelöscht werden</target>
 </trans-unit>
 <trans-unit id="sef72ba000d7f7124">
-  <source><x id="0" equiv-text="${displayName}"/> is typing...</source>
-  <target>schreibt…<x id="0" equiv-text="${displayName}"/> tippt...</target>
+  <source><x id="0" equiv-text="${displayName}" /> is typing...</source>
+  <target>schreibt…<x id="0" equiv-text="${displayName}" /> tippt...</target>
 </trans-unit>
 <trans-unit id="s10361832e7a4e3e2">
   <source>Shift+Enter for line break</source>
@@ -2587,8 +2587,8 @@
   <target>Konversation löschen</target>
 </trans-unit>
 <trans-unit id="s7841bb6037c4563e">
-  <source>Are you sure you want to permanently delete the conversation with <x id="0" equiv-text="${agentName}"/>? All messages will be lost.</source>
-  <target>Möchtest du die Konversation mit <x id="0" equiv-text="${agentName}"/> wirklich endgültig löschen? Alle Nachrichten gehen verloren.</target>
+  <source>Are you sure you want to permanently delete the conversation with <x id="0" equiv-text="${agentName}" />? All messages will be lost.</source>
+  <target>Möchtest du die Konversation mit <x id="0" equiv-text="${agentName}" /> wirklich endgültig löschen? Alle Nachrichten gehen verloren.</target>
 </trans-unit>
 <trans-unit id="s40fc621a022dc51f">
   <source>Conversation deleted.</source>
@@ -2603,8 +2603,8 @@
   <target>Ein unerwarteter Fehler beim Löschen der Konversation.</target>
 </trans-unit>
 <trans-unit id="se407983ffa8cd99d">
-  <source>Selected (<x id="0" equiv-text="${selected.length}"/>)</source>
-  <target>Ausgewählt (<x id="0" equiv-text="${selected.length}"/>)</target>
+  <source>Selected (<x id="0" equiv-text="${selected.length}" />)</source>
+  <target>Ausgewählt (<x id="0" equiv-text="${selected.length}" />)</target>
 </trans-unit>
 <trans-unit id="sda972e1524e96cb2">
   <source>Add Agents</source>
@@ -2615,32 +2615,32 @@
   <target>Agenten auswählen</target>
 </trans-unit>
 <trans-unit id="s76402dc74efa459d">
-  <source>Add (<x id="0" equiv-text="${this._selectedIds.size}"/>)</source>
-  <target>Hinzufügen (<x id="0" equiv-text="${this._selectedIds.size}"/>)</target>
+  <source>Add (<x id="0" equiv-text="${this._selectedIds.size}" />)</source>
+  <target>Hinzufügen (<x id="0" equiv-text="${this._selectedIds.size}" />)</target>
 </trans-unit>
 <trans-unit id="s780d47c5d94eaca5">
-  <source>Start Conversation (<x id="0" equiv-text="${this._selectedIds.size}"/> Agents)</source>
-  <target>Gespräch starten (<x id="0" equiv-text="${this._selectedIds.size}"/> Agenten)</target>
+  <source>Start Conversation (<x id="0" equiv-text="${this._selectedIds.size}" /> Agents)</source>
+  <target>Gespräch starten (<x id="0" equiv-text="${this._selectedIds.size}" /> Agenten)</target>
 </trans-unit>
 <trans-unit id="s2e1246a8a0f9f582">
-  <source>Group: <x id="0" equiv-text="${names.slice(0, 3).join(', ')}${names.length &gt; 3 ? ` +${names.length - 3}` : ''}"/></source>
-  <target>Gruppe: <x id="0" equiv-text="${names.slice(0, 3).join(', ')}${names.length &gt; 3 ? ` +${names.length - 3}` : ''}"/></target>
+  <source>Group: <x id="0" equiv-text="${names.slice(0, 3).join(', ')}${names.length &gt; 3 ? ` +${names.length - 3}` : ''}" /></source>
+  <target>Gruppe: <x id="0" equiv-text="${names.slice(0, 3).join(', ')}${names.length &gt; 3 ? ` +${names.length - 3}` : ''}" /></target>
 </trans-unit>
 <trans-unit id="sce4b0b13cd896498">
-  <source>Group conversation started with <x id="0" equiv-text="${names.length}"/> agents.</source>
-  <target>Gruppengespräch mit <x id="0" equiv-text="${names.length}"/> Agenten gestartet.</target>
+  <source>Group conversation started with <x id="0" equiv-text="${names.length}" /> agents.</source>
+  <target>Gruppengespräch mit <x id="0" equiv-text="${names.length}" /> Agenten gestartet.</target>
 </trans-unit>
 <trans-unit id="s138591852cc6d90a">
-  <source>Failed to add <x id="0" equiv-text="${agent.name}"/>.</source>
-  <target>Fehler beim Hinzufügen von <x id="0" equiv-text="${agent.name}"/>.</target>
+  <source>Failed to add <x id="0" equiv-text="${agent.name}" />.</source>
+  <target>Fehler beim Hinzufügen von <x id="0" equiv-text="${agent.name}" />.</target>
 </trans-unit>
 <trans-unit id="s1feb2c0afcc4660c">
-  <source><x id="0" equiv-text="${agents.length}"/> agent(s) added.</source>
-  <target>Agent(en) hinzugefügt.<x id="0" equiv-text="${agents.length}"/> Agent(en) hinzugefügt.</target>
+  <source><x id="0" equiv-text="${agents.length}" /> agent(s) added.</source>
+  <target>Agent(en) hinzugefügt.<x id="0" equiv-text="${agents.length}" /> Agent(en) hinzugefügt.</target>
 </trans-unit>
 <trans-unit id="s4095b60011d6e4ae">
-  <source>Event "<x id="0" equiv-text="${event.title}"/>" referenced.</source>
-  <target>Event "<x id="0" equiv-text="${event.title}"/>" referenziert.</target>
+  <source>Event "<x id="0" equiv-text="${event.title}" />" referenced.</source>
+  <target>Event "<x id="0" equiv-text="${event.title}" />" referenziert.</target>
 </trans-unit>
 <trans-unit id="s588ec63806be19a6">
   <source>Failed to reference event.</source>
@@ -2655,12 +2655,12 @@
   <target>Event hinzufügen</target>
 </trans-unit>
 <trans-unit id="sabc6f5601ffed38c">
-  <source><x id="0" equiv-text="${agentCount}"/> agents are responding...</source>
-  <target>Agenten antworten…<x id="0" equiv-text="${agentCount}"/> Agenten antworten...</target>
+  <source><x id="0" equiv-text="${agentCount}" /> agents are responding...</source>
+  <target>Agenten antworten…<x id="0" equiv-text="${agentCount}" /> Agenten antworten...</target>
 </trans-unit>
 <trans-unit id="s61b59619104804be">
-  <source><x id="0" equiv-text="${agentCount}"/> agents · <x id="1" equiv-text="${this.conversation.message_count}"/> messages</source>
-  <target><x id="0" equiv-text="${agentCount}"/> agents · <x id="1" equiv-text="${this.conversation.message_count}"/> messages</target>
+  <source><x id="0" equiv-text="${agentCount}" /> agents · <x id="1" equiv-text="${this.conversation.message_count}" /> messages</source>
+  <target><x id="0" equiv-text="${agentCount}" /> agents · <x id="1" equiv-text="${this.conversation.message_count}" /> messages</target>
 </trans-unit>
 <trans-unit id="s2a9a0cbeb976d3f5">
   <source>Add Agent</source>
@@ -2739,8 +2739,8 @@
   <target>Keine Artikel gefunden</target>
 </trans-unit>
 <trans-unit id="s0f51454f932e2e46">
-  <source>Event created with <x id="0" equiv-text="${result.reactions_count}"/> agent reactions</source>
-  <target>Event erstellt mit <x id="0" equiv-text="${result.reactions_count}"/> Agenten-Reaktionen</target>
+  <source>Event created with <x id="0" equiv-text="${result.reactions_count}" /> agent reactions</source>
+  <target>Event erstellt mit <x id="0" equiv-text="${result.reactions_count}" /> Agenten-Reaktionen</target>
 </trans-unit>
 <trans-unit id="s6d90940f8abe4a87">
   <source>Generate agent reactions</source>
@@ -3374,8 +3374,8 @@
   <source>Arc Raiders</source>
 <target>Arc Raiders</target></trans-unit>
 <trans-unit id="s8b7fe0de5711e3b3">
-  <source>Delete relationship with <x id="0" equiv-text="${otherName}"/>?</source>
-<target>Beziehung zu <x id="0" equiv-text="${otherName}"/> löschen?</target></trans-unit>
+  <source>Delete relationship with <x id="0" equiv-text="${otherName}" />?</source>
+<target>Beziehung zu <x id="0" equiv-text="${otherName}" /> löschen?</target></trans-unit>
 <trans-unit id="sb09760df3317fa96">
   <source>Relationship deleted</source>
 <target>Beziehung gelöscht</target></trans-unit>
@@ -3440,11 +3440,11 @@
   <source>Describe the nature of this relationship...</source>
 <target>Beschreiben Sie die Art dieser Beziehung...</target></trans-unit>
 <trans-unit id="s4a9040f690f32f4b">
-  <source>Strength: <x id="0" equiv-text="${strengthPercent}"/>%</source>
-<target>Stärke: <x id="0" equiv-text="${strengthPercent}"/>%</target></trans-unit>
+  <source>Strength: <x id="0" equiv-text="${strengthPercent}" />%</source>
+<target>Stärke: <x id="0" equiv-text="${strengthPercent}" />%</target></trans-unit>
 <trans-unit id="s4735a3d8edbe6a6a">
-  <source>Depth <x id="0" equiv-text="${echo.echo_depth}"/>/3</source>
-<target>Tiefe <x id="0" equiv-text="${echo.echo_depth}"/>/3</target></trans-unit>
+  <source>Depth <x id="0" equiv-text="${echo.echo_depth}" />/3</source>
+<target>Tiefe <x id="0" equiv-text="${echo.echo_depth}" />/3</target></trans-unit>
 <trans-unit id="sed9fa982ea6c6f9a">
   <source>Target simulation is required</source>
 <target>Zielsimulation ist erforderlich</target></trans-unit>
@@ -3491,8 +3491,8 @@
   <source>-- Select Vector --</source>
 <target>-- Vektor auswählen --</target></trans-unit>
 <trans-unit id="s5ef81dc86d97e0d4">
-  <source>Strength Override (<x id="0" equiv-text="${strengthPercent}"/>%)</source>
-<target>Stärke überschreiben (<x id="0" equiv-text="${strengthPercent}"/>%)</target></trans-unit>
+  <source>Strength Override (<x id="0" equiv-text="${strengthPercent}" />%)</source>
+<target>Stärke überschreiben (<x id="0" equiv-text="${strengthPercent}" />%)</target></trans-unit>
 <trans-unit id="sf5e1db1a2e189b29">
   <source>Triggering...</source>
 <target>Auslösen...</target></trans-unit>
@@ -3506,11 +3506,11 @@
   <source>Bleed Origin</source>
 <target>Bleed-Ursprung</target></trans-unit>
 <trans-unit id="s792c6e5dfb1db352">
-  <source>Originated in <x id="0" equiv-text="${sourceName}${echoVector ? ` via ${echoVector}` : ''}"/></source>
-<target>Entstanden in <x id="0" equiv-text="${sourceName}${echoVector ? ` via ${echoVector}` : ''}"/></target></trans-unit>
+  <source>Originated in <x id="0" equiv-text="${sourceName}${echoVector ? ` via ${echoVector}` : ''}" /></source>
+<target>Entstanden in <x id="0" equiv-text="${sourceName}${echoVector ? ` via ${echoVector}` : ''}" /></target></trans-unit>
 <trans-unit id="sb0c67156cc5c5f81">
-  <source>Echoes (<x id="0" equiv-text="${this._echoes.length}"/>)</source>
-<target>Echos (<x id="0" equiv-text="${this._echoes.length}"/>)</target></trans-unit>
+  <source>Echoes (<x id="0" equiv-text="${this._echoes.length}" />)</source>
+<target>Echos (<x id="0" equiv-text="${this._echoes.length}" />)</target></trans-unit>
 <trans-unit id="saf512757f366bf25">
   <source>No echoes yet</source>
 <target>Noch keine Echos</target></trans-unit>
@@ -4082,8 +4082,8 @@
   <source>Cycle Interval</source>
 <target>Zyklus-Intervall</target></trans-unit>
 <trans-unit id="s567a3193a6ad8025">
-  <source><x id="0" equiv-text="${cyclesPerDay}"/> cycles per day</source>
-<target>Zyklen pro Tag<x id="0" equiv-text="${cyclesPerDay}"/> Zyklen pro Tag</target></trans-unit>
+  <source><x id="0" equiv-text="${cyclesPerDay}" /> cycles per day</source>
+<target>Zyklen pro Tag<x id="0" equiv-text="${cyclesPerDay}" /> Zyklen pro Tag</target></trans-unit>
 <trans-unit id="s4d2d7498eb8ea64a">
   <source>RP per Cycle</source>
 <target>RP pro Zyklus</target></trans-unit>
@@ -4181,8 +4181,8 @@
             <target>Ziel</target>
 </trans-unit>
 <trans-unit id="s28c479d90d98669f">
-  <source>Operative deployed. Mission <x id="0" equiv-text="${(resp.data as OperativeMission).operative_type}"/> initiated.</source>
-            <target>Agent eingesetzt. Mission <x id="0" equiv-text="${(resp.data as OperativeMission).operative_type}"/> eingeleitet.</target>
+  <source>Operative deployed. Mission <x id="0" equiv-text="${(resp.data as OperativeMission).operative_type}" /> initiated.</source>
+            <target>Agent eingesetzt. Mission <x id="0" equiv-text="${(resp.data as OperativeMission).operative_type}" /> eingeleitet.</target>
 </trans-unit>
 <trans-unit id="s24b066f426d2451f">
   <source>Deployment failed.</source>
@@ -4236,8 +4236,8 @@
   <source>Recall</source>
 <target>Zurückrufen</target></trans-unit>
 <trans-unit id="sc7917496fcdac3c1">
-  <source>Join as <x id="0" equiv-text="${sim.name}"/></source>
-<target>Beitreten als <x id="0" equiv-text="${sim.name}"/></target></trans-unit>
+  <source>Join as <x id="0" equiv-text="${sim.name}" /></source>
+<target>Beitreten als <x id="0" equiv-text="${sim.name}" /></target></trans-unit>
 <trans-unit id="s05f002f9b4d51185">
   <source>Leave Epoch</source>
 <target>Epoche verlassen</target></trans-unit>
@@ -4248,8 +4248,8 @@
   <source>Admin Controls</source>
 <target>Admin-Kontrollen</target></trans-unit>
 <trans-unit id="s37126756ae8cd2b8">
-  <source>Advance to <x id="0" equiv-text="${nextPhase}"/></source>
-<target>Vorrücken zu <x id="0" equiv-text="${nextPhase}"/></target></trans-unit>
+  <source>Advance to <x id="0" equiv-text="${nextPhase}" /></source>
+<target>Vorrücken zu <x id="0" equiv-text="${nextPhase}" /></target></trans-unit>
 <trans-unit id="s4a7e72a40252ae9d">
   <source>Resolve Cycle</source>
 <target>Zyklus auflösen</target></trans-unit>
@@ -4257,8 +4257,8 @@
   <source>Cancel Epoch</source>
 <target>Epoche abbrechen</target></trans-unit>
 <trans-unit id="s3f1c5eba029d4e0b">
-  <source>Sweep complete: <x id="0" equiv-text="${detected.length}"/> threats detected</source>
-<target>Sweep abgeschlossen: <x id="0" equiv-text="${detected.length}"/> Bedrohungen erkannt</target></trans-unit>
+  <source>Sweep complete: <x id="0" equiv-text="${detected.length}" /> threats detected</source>
+<target>Sweep abgeschlossen: <x id="0" equiv-text="${detected.length}" /> Bedrohungen erkannt</target></trans-unit>
 <trans-unit id="s6b0bbc26e964a513">
   <source>Counter-intel sweep failed.</source>
 <target>Gegenspionage-Sweep fehlgeschlagen.</target></trans-unit>
@@ -4341,8 +4341,8 @@
   <source>Cycles</source>
 <target>Zyklen</target></trans-unit>
 <trans-unit id="s9a8758a0c98cfb49">
-  <source><x id="0" equiv-text="${this._suggestions.length}"/> suggestions generated</source>
-<target>Vorschläge generiert<x id="0" equiv-text="${this._suggestions.length}"/> Vorschläge generiert</target></trans-unit>
+  <source><x id="0" equiv-text="${this._suggestions.length}" /> suggestions generated</source>
+<target>Vorschläge generiert<x id="0" equiv-text="${this._suggestions.length}" /> Vorschläge generiert</target></trans-unit>
 <trans-unit id="sea8f4c8095b57166">
   <source>No suggestions generated</source>
 <target>Keine Vorschläge generiert</target></trans-unit>
@@ -4350,8 +4350,8 @@
   <source>Generation failed</source>
 <target>Generierung fehlgeschlagen</target></trans-unit>
 <trans-unit id="sc2a2ef3edfd49261">
-  <source><x id="0" equiv-text="${saved}"/> relationships saved</source>
-<target>Beziehungen gespeichert<x id="0" equiv-text="${saved}"/> Beziehungen gespeichert</target></trans-unit>
+  <source><x id="0" equiv-text="${saved}" /> relationships saved</source>
+<target>Beziehungen gespeichert<x id="0" equiv-text="${saved}" /> Beziehungen gespeichert</target></trans-unit>
 <trans-unit id="s2dc335265b16339d">
   <source>Failed to save relationships</source>
 <target>Beziehungen konnten nicht gespeichert werden</target></trans-unit>
@@ -4416,11 +4416,11 @@
   <source>Instant</source>
 <target>Sofort</target></trans-unit>
 <trans-unit id="s8959726a6f1a181b">
-  <source><x id="0" equiv-text="${op.deployCycles}"/> cycle</source>
-<target>Zyklus<x id="0" equiv-text="${op.deployCycles}"/> Zyklus</target></trans-unit>
+  <source><x id="0" equiv-text="${op.deployCycles}" /> cycle</source>
+<target>Zyklus<x id="0" equiv-text="${op.deployCycles}" /> Zyklus</target></trans-unit>
 <trans-unit id="s7d15d2dac95778b8">
-  <source><x id="0" equiv-text="${op.missionCycles}"/> cycles</source>
-<target>Zyklen<x id="0" equiv-text="${op.missionCycles}"/> Zyklen</target></trans-unit>
+  <source><x id="0" equiv-text="${op.missionCycles}" /> cycles</source>
+<target>Zyklen<x id="0" equiv-text="${op.missionCycles}" /> Zyklen</target></trans-unit>
 <trans-unit id="sf0b1ea194defb1c3">
   <source>Scores are computed across 5 dimensions, normalized against other participants, then weighted by the epoch preset to produce a composite score. Highest composite wins.</source>
 <target>Die Punkte werden in 5 Dimensionen berechnet, im Vergleich zu den anderen Teilnehmern normalisiert und dann mit der Epochenvorgabe gewichtet, um eine zusammengesetzte Punktzahl zu erhalten. Die höchste zusammengesetzte Punktzahl gewinnt.</target></trans-unit>
@@ -4434,8 +4434,8 @@
   <source>Alliance Bonus</source>
 <target>Allianz-Bonus</target></trans-unit>
 <trans-unit id="s087d1c07b52aa3e3">
-  <source><x id="0" equiv-text="${match.players.length}"/>P</source>
-<target>P<x id="0" equiv-text="${match.players.length}"/>P</target></trans-unit>
+  <source><x id="0" equiv-text="${match.players.length}" />P</source>
+<target>P<x id="0" equiv-text="${match.players.length}" />P</target></trans-unit>
 <trans-unit id="s3f0abb6b668a1747">
   <source>Special Rules</source>
 <target>Besondere Regeln</target></trans-unit>
@@ -5131,8 +5131,8 @@
           <target>Authentifizieren</target>
 </trans-unit>
 <trans-unit id="sf36d476b4ff68301">
-  <source>Summons dispatched to <x id="0" equiv-text="${this._email}"/></source>
-          <target>Einberufung gesendet an <x id="0" equiv-text="${this._email}"/></target>
+  <source>Summons dispatched to <x id="0" equiv-text="${this._email}" /></source>
+          <target>Einberufung gesendet an <x id="0" equiv-text="${this._email}" /></target>
 </trans-unit>
 <trans-unit id="sade3c823832adef6">
   <source>Failed to send invitation.</source>
@@ -5800,20 +5800,20 @@
   <source>HTTP Cache-Control max-age for the public connections endpoint.</source>
 <target>HTTP Cache-Control max-age für den öffentlichen Verbindungen-Endpunkt.</target></trans-unit>
 <trans-unit id="s9db7104817361c0e">
-  <source>Invalid value for <x id="0" equiv-text="${s.setting_key}"/>.</source>
-<target>Ungültiger Wert für <x id="0" equiv-text="${s.setting_key}"/>.</target></trans-unit>
+  <source>Invalid value for <x id="0" equiv-text="${s.setting_key}" />.</source>
+<target>Ungültiger Wert für <x id="0" equiv-text="${s.setting_key}" />.</target></trans-unit>
 <trans-unit id="sf023069cdf630239">
   <source>Save failed.</source>
 <target>Speichern fehlgeschlagen.</target></trans-unit>
 <trans-unit id="s98271ceaf8dc97b9">
-  <source><x id="0" equiv-text="${errorCount}"/> settings failed to save.</source>
-<target>Einstellungen konnten nicht gespeichert werden.<x id="0" equiv-text="${errorCount}"/> Einstellungen konnten nicht gespeichert werden.</target></trans-unit>
+  <source><x id="0" equiv-text="${errorCount}" /> settings failed to save.</source>
+<target>Einstellungen konnten nicht gespeichert werden.<x id="0" equiv-text="${errorCount}" /> Einstellungen konnten nicht gespeichert werden.</target></trans-unit>
 <trans-unit id="s1c171f24624e11de">
   <source>Loading settings...</source>
 <target>Einstellungen werden geladen...</target></trans-unit>
 <trans-unit id="sf21761e7f8e0550e">
-  <source>Default: <x id="0" equiv-text="${defaultVal}"/></source>
-<target>Standard: <x id="0" equiv-text="${defaultVal}"/></target></trans-unit>
+  <source>Default: <x id="0" equiv-text="${defaultVal}" /></source>
+<target>Standard: <x id="0" equiv-text="${defaultVal}" /></target></trans-unit>
 <trans-unit id="s76c11f3845111b1d">
   <source>Reset to Defaults</source>
 <target>Auf Standardwerte zurücksetzen</target></trans-unit>
@@ -5857,8 +5857,8 @@
   <source>Search users by email...</source>
 <target>Benutzer nach E-Mail suchen...</target></trans-unit>
 <trans-unit id="s279b9e6f821888b9">
-  <source><x id="0" equiv-text="${users.length}"/> users</source>
-<target>Benutzer<x id="0" equiv-text="${users.length}"/> Benutzer</target></trans-unit>
+  <source><x id="0" equiv-text="${users.length}" /> users</source>
+<target>Benutzer<x id="0" equiv-text="${users.length}" /> Benutzer</target></trans-unit>
 <trans-unit id="sf91abb3323905dc0">
   <source>No users found.</source>
 <target>Keine Benutzer gefunden.</target></trans-unit>
@@ -5866,8 +5866,8 @@
   <source>Previous</source>
 <target>Zurück</target></trans-unit>
 <trans-unit id="sc2b31c8d71636c74">
-  <source>Page <x id="0" equiv-text="${this._page}"/></source>
-<target>Seite <x id="0" equiv-text="${this._page}"/></target></trans-unit>
+  <source>Page <x id="0" equiv-text="${this._page}" /></source>
+<target>Seite <x id="0" equiv-text="${this._page}" /></target></trans-unit>
 <trans-unit id="sded98bf152dbfab1">
   <source>Delete User</source>
 <target>Benutzer löschen</target></trans-unit>
@@ -5878,8 +5878,8 @@
   <source>Never</source>
 <target>Nie</target></trans-unit>
 <trans-unit id="s14dc9e6060d8add3">
-  <source>Last sign in: <x id="0" equiv-text="${lastSign}"/></source>
-<target>Letzte Anmeldung: <x id="0" equiv-text="${lastSign}"/></target></trans-unit>
+  <source>Last sign in: <x id="0" equiv-text="${lastSign}" /></source>
+<target>Letzte Anmeldung: <x id="0" equiv-text="${lastSign}" /></target></trans-unit>
 <trans-unit id="s7e466b2f459f80a7">
   <source>No memberships.</source>
 <target>Keine Mitgliedschaften.</target></trans-unit>
@@ -6263,8 +6263,8 @@
   <source>View source on GitHub</source>
 <target>Quellcode auf GitHub ansehen</target></trans-unit>
 <trans-unit id="s92b3a297a0e16e07">
-  <source>Lvl <x id="0" equiv-text="${p.qualification_level}"/></source>
-<target>Stufe <x id="0" equiv-text="${p.qualification_level}"/></target>
+  <source>Lvl <x id="0" equiv-text="${p.qualification_level}" /></source>
+<target>Stufe <x id="0" equiv-text="${p.qualification_level}" /></target>
 </trans-unit>
 <trans-unit id="s20baecbbf1953c2e">
   <source>Defensive specialist. Deploys guardians and spies. Seeks alliances early, never betrays. Wins by outlasting.</source>
@@ -6282,8 +6282,8 @@
   <source>Unpredictable wildcard. Random strategies each cycle. Forms and breaks alliances on a whim.</source>
 <target>Unberechenbarer Joker. Zufällige Strategien pro Zyklus. Schließt und bricht Allianzen nach Laune.</target></trans-unit>
 <trans-unit id="s1e13e26fd436c05c">
-  <source>Unit "<x id="0" equiv-text="${created.name}"/>" forged.</source>
-<target>Einheit „<x id="0" equiv-text="${created.name}"/>“ geschmiedet.</target>
+  <source>Unit "<x id="0" equiv-text="${created.name}" />" forged.</source>
+<target>Einheit „<x id="0" equiv-text="${created.name}" />“ geschmiedet.</target>
 </trans-unit>
 <trans-unit id="s7a8a577a24e77100">
   <source>Failed to create bot.</source>
@@ -6292,8 +6292,8 @@
   <source>Bot removed from deck.</source>
 <target>Bot aus dem Deck entfernt.</target></trans-unit>
 <trans-unit id="s30c1f52c02507415">
-  <source><x id="0" equiv-text="${preset.name}"/> deployed.</source>
-<target>bereitgestellt.<x id="0" equiv-text="${preset.name}"/> eingesetzt.</target>
+  <source><x id="0" equiv-text="${preset.name}" /> deployed.</source>
+<target>bereitgestellt.<x id="0" equiv-text="${preset.name}" /> eingesetzt.</target>
 </trans-unit>
 <trans-unit id="s2efb15f5e22f958d">
   <source>Failed to deploy bot.</source>
@@ -6353,8 +6353,8 @@
   <source>Assign Simulation</source>
 <target>Simulation zuweisen</target></trans-unit>
 <trans-unit id="s8aa134cdee0317ac">
-  <source>Deploy <x id="0" equiv-text="${preset.name}"/></source>
-<target>Bereitstellen<x id="0" equiv-text="${preset.name}"/> einsetzen</target>
+  <source>Deploy <x id="0" equiv-text="${preset.name}" /></source>
+<target>Bereitstellen<x id="0" equiv-text="${preset.name}" /> einsetzen</target>
 </trans-unit>
 <trans-unit id="s2a24b018d7e50427">
   <source>All simulations are already in the epoch.</source>
@@ -6375,8 +6375,8 @@
   <source>BOT</source>
 <target>BOT</target></trans-unit>
 <trans-unit id="s5362f1ecc6a1354b">
-  <source>Remove tag <x id="0" equiv-text="${tag}"/></source>
-<target>Tag <x id="0" equiv-text="${tag}"/> entfernen</target>
+  <source>Remove tag <x id="0" equiv-text="${tag}" /></source>
+<target>Tag <x id="0" equiv-text="${tag}" /> entfernen</target>
 </trans-unit>
 <trans-unit id="s6921dc2c70d691c8">
   <source>Simulation navigation</source>
@@ -7151,8 +7151,8 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
   <source>Fit</source>
 <target>Eignung</target></trans-unit>
 <trans-unit id="s2fa05f91c1baa29b">
-  <source>Remove <x id="0" equiv-text="${label}"/></source>
-<target>Entfernen: <x id="0" equiv-text="${agent.name}"/></target></trans-unit>
+  <source>Remove <x id="0" equiv-text="${label}" /></source>
+<target>Entfernen: <x id="0" equiv-text="${agent.name}" /></target></trans-unit>
 <trans-unit id="s592d3177bd1108ca">
   <source>Strongest</source>
 <target>Stärkste</target></trans-unit>
@@ -7181,8 +7181,8 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
   <source>How many agents each player drafts into the match. Players with more agents in their simulation can choose their best lineup.</source>
 <target>Wie viele Agenten jeder Spieler für das Match aufstellt. Spieler mit mehr Agenten in ihrer Simulation können die beste Aufstellung wählen.</target></trans-unit>
 <trans-unit id="s5f5885990ee7818e">
-  <source>Roster Locked (<x id="0" equiv-text="${this.myParticipant.drafted_agent_ids?.length ?? 0}"/>/<x id="1" equiv-text="${this.epoch?.config?.max_agents_per_player ?? 6}"/>)</source>
-<target>Kader festgelegt (<x id="0" equiv-text="${this.myParticipant.drafted_agent_ids?.length ?? 0}"/>/<x id="1" equiv-text="${this.epoch?.config?.max_agents_per_player ?? 6}"/>)</target></trans-unit>
+  <source>Roster Locked (<x id="0" equiv-text="${this.myParticipant.drafted_agent_ids?.length ?? 0}" />/<x id="1" equiv-text="${this.epoch?.config?.max_agents_per_player ?? 6}" />)</source>
+<target>Kader festgelegt (<x id="0" equiv-text="${this.myParticipant.drafted_agent_ids?.length ?? 0}" />/<x id="1" equiv-text="${this.epoch?.config?.max_agents_per_player ?? 6}" />)</target></trans-unit>
 <trans-unit id="s6bb1380c4b3cdcbf">
   <source>Draft Roster</source>
 <target>Kader aufstellen</target></trans-unit>
@@ -7655,8 +7655,8 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
   <source>Scan failed.</source>
 <target>Scan fehlgeschlagen.</target></trans-unit>
 <trans-unit id="s1445ad768e9f271c">
-  <source>Purge complete: <x id="0" equiv-text="${count}"/> records deleted.</source>
-<target>Bereinigung abgeschlossen: <x id="0" equiv-text="${count}"/> Datensätze gelöscht.</target></trans-unit>
+  <source>Purge complete: <x id="0" equiv-text="${count}" /> records deleted.</source>
+<target>Bereinigung abgeschlossen: <x id="0" equiv-text="${count}" /> Datensätze gelöscht.</target></trans-unit>
 <trans-unit id="sed4191f51a738abd">
   <source>Purge failed.</source>
 <target>Bereinigung fehlgeschlagen.</target></trans-unit>
@@ -7664,17 +7664,17 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
   <source>&lt; 1d</source>
 <target>&lt; 1T</target></trans-unit>
 <trans-unit id="s087d3007b52ac5df">
-  <source><x id="0" equiv-text="${days}"/>d</source>
-<target>T<x id="0" equiv-text="${days}"/>T</target></trans-unit>
+  <source><x id="0" equiv-text="${days}" />d</source>
+<target>T<x id="0" equiv-text="${days}" />T</target></trans-unit>
 <trans-unit id="s97962d18d7c24591">
-  <source><x id="0" equiv-text="${months}"/>mo</source>
-<target>Mo<x id="0" equiv-text="${months}"/>Mo.</target></trans-unit>
+  <source><x id="0" equiv-text="${months}" />mo</source>
+<target>Mo<x id="0" equiv-text="${months}" />Mo.</target></trans-unit>
 <trans-unit id="s201bd6cdc5dfa9d8">
   <source>Data Overview</source>
 <target>Datenübersicht</target></trans-unit>
 <trans-unit id="s9b4e8257b52ea91e">
-  <source>oldest: <x id="0" equiv-text="${this._formatAge(cat.oldest_at)}"/></source>
-<target>Ältester: <x id="0" equiv-text="${this._formatAge(cat.oldest_at)}"/></target></trans-unit>
+  <source>oldest: <x id="0" equiv-text="${this._formatAge(cat.oldest_at)}" /></source>
+<target>Ältester: <x id="0" equiv-text="${this._formatAge(cat.oldest_at)}" /></target></trans-unit>
 <trans-unit id="sd89d04d8623b9f5d">
   <source>TOTAL</source>
 <target>GESAMT</target></trans-unit>
@@ -7715,8 +7715,8 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
   <source>Confirm Purge</source>
 <target>Bereinigung bestätigen</target></trans-unit>
 <trans-unit id="s5d957098064456d3">
-  <source>Permanently delete <x id="0" equiv-text="${purgePreview.primary_count} ${meta.label.toLowerCase()}"/> older than <x id="1" equiv-text="${this._thresholds[purgeType]}"/> days? This cannot be undone.</source>
-<target>P<x id="0" equiv-text="${purgePreview.primary_count} ${meta.label.toLowerCase()}"/> älter als <x id="1" equiv-text="${this._thresholds[purgeType]}"/> Tage endgültig löschen? Dies kann nicht rückgängig gemacht werden.</target></trans-unit>
+  <source>Permanently delete <x id="0" equiv-text="${purgePreview.primary_count} ${meta.label.toLowerCase()}" /> older than <x id="1" equiv-text="${this._thresholds[purgeType]}" /> days? This cannot be undone.</source>
+<target>P<x id="0" equiv-text="${purgePreview.primary_count} ${meta.label.toLowerCase()}" /> älter als <x id="1" equiv-text="${this._thresholds[purgeType]}" /> Tage endgültig löschen? Dies kann nicht rückgängig gemacht werden.</target></trans-unit>
 <trans-unit id="s9aec5b508ac6ce64">
   <source>Manage users, memberships, platform settings, and data cleanup.</source>
 <target>Benutzer, Mitgliedschaften, Plattformeinstellungen und Datenbereinigung verwalten.</target></trans-unit>
@@ -7788,12 +7788,12 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
   <source>Already cleared?</source>
 <target>Bereits freigeschaltet?</target></trans-unit>
 <trans-unit id="s854d811ad443d551">
-  <source>Quick deploy <x id="0" equiv-text="${bot.name}"/></source>
-  <target>Schnelleinsatz <x id="0" equiv-text="${bot.name}"/></target>
+  <source>Quick deploy <x id="0" equiv-text="${bot.name}" /></source>
+  <target>Schnelleinsatz <x id="0" equiv-text="${bot.name}" /></target>
 </trans-unit>
 <trans-unit id="s2f59d7a7f1518cfe">
-  <source>Remove <x id="0" equiv-text="${bot.name}"/> from deck</source>
-  <target><x id="0" equiv-text="${bot.name}"/> vom Deck entfernen</target>
+  <source>Remove <x id="0" equiv-text="${bot.name}" /> from deck</source>
+  <target><x id="0" equiv-text="${bot.name}" /> vom Deck entfernen</target>
 </trans-unit>
 <trans-unit id="sd43500c8bc405e08">
   <source>MISSION DISPATCHED</source>
@@ -7870,8 +7870,8 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
   <source>Fortifications</source>
 <target>Befestigungen</target></trans-unit>
 <trans-unit id="s17ef537a91f13c3b">
-  <source>expires cycle <x id="0" equiv-text="${f.expires_at_cycle}"/></source>
-  <target>verfällt Zyklus <x id="0" equiv-text="${f.expires_at_cycle}"/></target>
+  <source>expires cycle <x id="0" equiv-text="${f.expires_at_cycle}" /></source>
+  <target>verfällt Zyklus <x id="0" equiv-text="${f.expires_at_cycle}" /></target>
 </trans-unit>
 <trans-unit id="s6b58f79707cdc33f">
   <source>All operatives unlocked</source>
@@ -7956,8 +7956,8 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
   <target>Abrechnungszyklen</target>
 </trans-unit>
 <trans-unit id="sd16137be8a7709ef">
-  <source>Foundation <x id="0" equiv-text="${phases.foundation}"/> · Competition <x id="1" equiv-text="${phases.competition}"/> · Reckoning <x id="2" equiv-text="${phases.reckoning}"/> cycles — <x id="3" equiv-text="${this._durationDays}"/>d (<x id="4" equiv-text="${foundationDays}"/>d + <x id="5" equiv-text="${competitionDays}"/>d + <x id="6" equiv-text="${reckoningDays}"/>d)</source>
-  <target>Gründung <x id="0" equiv-text="${phases.foundation}"/> · Wettbewerb <x id="1" equiv-text="${phases.competition}"/> · Abrechnung <x id="2" equiv-text="${phases.reckoning}"/> Zyklen — <x id="3" equiv-text="${this._durationDays}"/>d (<x id="4" equiv-text="${foundationDays}"/>d + <x id="5" equiv-text="${competitionDays}"/>d + <x id="6" equiv-text="${reckoningDays}"/>d)</target>
+  <source>Foundation <x id="0" equiv-text="${phases.foundation}" /> · Competition <x id="1" equiv-text="${phases.competition}" /> · Reckoning <x id="2" equiv-text="${phases.reckoning}" /> cycles — <x id="3" equiv-text="${this._durationDays}" />d (<x id="4" equiv-text="${foundationDays}" />d + <x id="5" equiv-text="${competitionDays}" />d + <x id="6" equiv-text="${reckoningDays}" />d)</source>
+  <target>Gründung <x id="0" equiv-text="${phases.foundation}" /> · Wettbewerb <x id="1" equiv-text="${phases.competition}" /> · Abrechnung <x id="2" equiv-text="${phases.reckoning}" /> Zyklen — <x id="3" equiv-text="${this._durationDays}" />d (<x id="4" equiv-text="${foundationDays}" />d + <x id="5" equiv-text="${competitionDays}" />d + <x id="6" equiv-text="${reckoningDays}" />d)</target>
 </trans-unit>
 <trans-unit id="s28061b3d1339237a">
   <source>Intel Dossier</source>
@@ -7980,8 +7980,8 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
   <target>Letzte Aufklärung</target>
 </trans-unit>
 <trans-unit id="sea2041b4f20ce067">
-  <source>Cycle <x id="0" equiv-text="${dossier.lastIntelCycle}"/></source>
-  <target>Zyklus <x id="0" equiv-text="${dossier.lastIntelCycle}"/></target>
+  <source>Cycle <x id="0" equiv-text="${dossier.lastIntelCycle}" /></source>
+  <target>Zyklus <x id="0" equiv-text="${dossier.lastIntelCycle}" /></target>
 </trans-unit>
 <trans-unit id="s8fe117a34cd72125">
   <source>Intel may be outdated</source>
@@ -8023,12 +8023,12 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
   <target>Lobby-Teilnehmer</target>
 </trans-unit>
 <trans-unit id="s69a1bc58a74f384e">
-  <source>Bot: <x id="0" equiv-text="${simName}"/></source>
-  <target>Bot: <x id="0" equiv-text="${simName}"/></target>
+  <source>Bot: <x id="0" equiv-text="${simName}" /></source>
+  <target>Bot: <x id="0" equiv-text="${simName}" /></target>
 </trans-unit>
 <trans-unit id="s288c40a84674b8bc">
-  <source>Player: <x id="0" equiv-text="${simName}"/></source>
-  <target>Spieler: <x id="0" equiv-text="${simName}"/></target>
+  <source>Player: <x id="0" equiv-text="${simName}" /></source>
+  <target>Spieler: <x id="0" equiv-text="${simName}" /></target>
 </trans-unit>
 <trans-unit id="sc4801f580ac4e73d">
   <source>Operator</source>
@@ -8047,8 +8047,8 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
   <target>Ersteller</target>
 </trans-unit>
 <trans-unit id="s039b6434e8a75560">
-  <source>Delete <x id="0" equiv-text="${epoch.name}"/></source>
-  <target><x id="0" equiv-text="${epoch.name}"/> löschen</target>
+  <source>Delete <x id="0" equiv-text="${epoch.name}" /></source>
+  <target><x id="0" equiv-text="${epoch.name}" /> löschen</target>
 </trans-unit>
 <trans-unit id="s4703acf0081a9e92">
   <source>Deploy Guardian / Spy</source>
@@ -8071,8 +8071,8 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
   <source>Defensive Fortifications</source>
 <target>Defensivbefestigungen</target></trans-unit>
 <trans-unit id="s6fc9b6fe088f0447">
-  <source>cycle <x id="0" equiv-text="${f.expiresAtCycle}"/></source>
-  <target>Zyklus <x id="0" equiv-text="${f.expiresAtCycle}"/></target>
+  <source>cycle <x id="0" equiv-text="${f.expiresAtCycle}" /></source>
+  <target>Zyklus <x id="0" equiv-text="${f.expiresAtCycle}" /></target>
 </trans-unit>
 <trans-unit id="sb1b236f06bb1bc52">
   <source>expired</source>
@@ -8702,8 +8702,8 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
   <source>Soft Delete Simulation</source>
 <target>Simulation archivieren</target></trans-unit>
 <trans-unit id="s5b358b31d379bf8c">
-  <source>Archive "<x id="0" equiv-text="${sim.name}"/>"? It will be hidden from users but can be restored later.</source>
-<target>Archivieren Sie „<x id="0" equiv-text="${sim.name}"/>"? Sie wird für Benutzer ausgeblendet, kann aber später wiederhergestellt werden.</target>
+  <source>Archive "<x id="0" equiv-text="${sim.name}" />"? It will be hidden from users but can be restored later.</source>
+<target>Archivieren Sie „<x id="0" equiv-text="${sim.name}" />"? Sie wird für Benutzer ausgeblendet, kann aber später wiederhergestellt werden.</target>
 </trans-unit>
 <trans-unit id="s7b57b325b4d3706e">
   <source>Simulation archived.</source>
@@ -8718,8 +8718,8 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
   <source>Permanently Delete Simulation</source>
 <target>Simulation endgültig löschen</target></trans-unit>
 <trans-unit id="s6d4c8c56779b5a06">
-  <source>This will permanently destroy "<x id="0" equiv-text="${sim.name}"/>" and ALL related data (agents, buildings, epochs, lore, images). This cannot be undone.</source>
-<target>Dies wird „<x id="0" equiv-text="${sim.name}"/>" und ALLE zugehörigen Daten (Agenten, Gebäude, Epochen, Lore, Bilder) endgültig zerstören. Dies kann nicht rückgängig gemacht werden.</target>
+  <source>This will permanently destroy "<x id="0" equiv-text="${sim.name}" />" and ALL related data (agents, buildings, epochs, lore, images). This cannot be undone.</source>
+<target>Dies wird „<x id="0" equiv-text="${sim.name}" />" und ALLE zugehörigen Daten (Agenten, Gebäude, Epochen, Lore, Bilder) endgültig zerstören. Dies kann nicht rückgängig gemacht werden.</target>
 </trans-unit>
 <trans-unit id="scc690e15c93a1900">
   <source>Destroy Permanently</source>
@@ -8740,12 +8740,12 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
   <source>Trash</source>
 <target>Papierkorb</target></trans-unit>
 <trans-unit id="s36005f297eb5d949">
-  <source><x id="0" equiv-text="${this._filteredActive.length}"/> simulations</source>
-<target><x id="0" equiv-text="${this._filteredActive.length}"/> Simulationen</target>
+  <source><x id="0" equiv-text="${this._filteredActive.length}" /> simulations</source>
+<target><x id="0" equiv-text="${this._filteredActive.length}" /> Simulationen</target>
 </trans-unit>
 <trans-unit id="s574f78c4f6c79d8a">
-  <source><x id="0" equiv-text="${this._filteredDeleted.length}"/> in trash</source>
-<target><x id="0" equiv-text="${this._filteredDeleted.length}"/> im Papierkorb</target>
+  <source><x id="0" equiv-text="${this._filteredDeleted.length}" /> in trash</source>
+<target><x id="0" equiv-text="${this._filteredDeleted.length}" /> im Papierkorb</target>
 </trans-unit>
 <trans-unit id="s5e248d0736a3698b">
   <source>Loading simulations...</source>
@@ -8785,46 +8785,46 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
 <target>Simulation gelöscht.</target></trans-unit>
 <trans-unit id="scb41fea4f8c2f952">
   <source>Seed prompt</source>
-</trans-unit>
+<target>Ausgangsprompt</target></trans-unit>
 <trans-unit id="se0807e570eaacc48">
   <source>Bureau Signal Intelligence</source>
-</trans-unit>
+<target>Bureau-Signalaufklärung</target></trans-unit>
 <trans-unit id="s00a84204340a1db4">
   <source>Selected</source>
-</trans-unit>
+<target>Ausgewählt</target></trans-unit>
 <trans-unit id="s526549aa3dcc161c">
   <source>Image Style Prompts</source>
-</trans-unit>
+<target>Bildstil-Prompts</target></trans-unit>
 <trans-unit id="sb2c4cf3215fcb4ab">
   <source>Portraits</source>
-</trans-unit>
+<target>Porträts</target></trans-unit>
 <trans-unit id="s19d2eec596039850">
   <source>Style for character portraits...</source>
-</trans-unit>
+<target>Stil für Charakterporträts …</target></trans-unit>
 <trans-unit id="sc57ee31344162648">
   <source>Style for architecture images...</source>
-</trans-unit>
+<target>Stil für Architekturbilder …</target></trans-unit>
 <trans-unit id="s00e1a56a841e83af">
   <source>Banner</source>
-</trans-unit>
+<target>Banner</target></trans-unit>
 <trans-unit id="s2ce9b91863435df6">
   <source>Style for the world banner...</source>
-</trans-unit>
+<target>Stil für das Weltenbanner …</target></trans-unit>
 <trans-unit id="sf074196551ba3f32">
   <source>Lore Illustrations</source>
-</trans-unit>
+<target>Lore-Illustrationen</target></trans-unit>
 <trans-unit id="s2185953c10bd1bb2">
   <source>Style for lore illustrations...</source>
-</trans-unit>
+<target>Stil für Lore-Illustrationen …</target></trans-unit>
 <trans-unit id="sd95bfc06bbf497b8">
   <source>Accept agent</source>
-</trans-unit>
+<target>Agent übernehmen</target></trans-unit>
 <trans-unit id="sa5807281a2dd867f">
   <source>Accept building</source>
-</trans-unit>
+<target>Gebäude übernehmen</target></trans-unit>
 <trans-unit id="s55cd3de7e716ec11">
   <source>Loading lore...</source>
-</trans-unit>
+<target>Lore wird geladen …</target></trans-unit>
 <trans-unit id="s0f9ca866ccc72ad8">
   <source>War Room</source>
   <target>Kriegsraum</target>
@@ -8883,229 +8883,229 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
 </trans-unit>
 <trans-unit id="s59ddd5e090ef9d97">
   <source>Anchor 1</source>
-</trans-unit>
+<target>Anker 1</target></trans-unit>
 <trans-unit id="s59ddd6e090ef9f4a">
   <source>Anchor 2</source>
-</trans-unit>
+<target>Anker 2</target></trans-unit>
 <trans-unit id="s59ddd7e090efa0fd">
   <source>Anchor 3</source>
-</trans-unit>
+<target>Anker 3</target></trans-unit>
 <trans-unit id="se2e3ba23b3b1a8cc">
   <source>Sampling Chromatic Frequencies</source>
-</trans-unit>
+<target>Chromatische Frequenzen abtasten</target></trans-unit>
 <trans-unit id="s6a853a91f8414e27">
   <source>Calibrating Visual Identity</source>
-</trans-unit>
+<target>Visuelle Identität kalibrieren</target></trans-unit>
 <trans-unit id="s946f06808dcc77f6">
   <source>Synthesizing Design Language</source>
-</trans-unit>
+<target>Designsprache synthetisieren</target></trans-unit>
 <trans-unit id="s26d73395d5b1929c">
   <source>Rendering Aesthetic Profile</source>
-</trans-unit>
+<target>Ästhetisches Profil rendern</target></trans-unit>
 <trans-unit id="s84b39bbacf182a92">
   <source>Encoding Theme Matrix</source>
-</trans-unit>
+<target>Themenmatrix kodieren</target></trans-unit>
 <trans-unit id="s344ea8f4939cdc98">
   <source>Color</source>
-</trans-unit>
+<target>Farbe</target></trans-unit>
 <trans-unit id="s2f02c651b5b7fc85">
   <source>Aesthetic Calibration Bureau</source>
-</trans-unit>
+<target>Büro für Ästhetische Kalibrierung</target></trans-unit>
 <trans-unit id="sd640f3fc3d7e6668">
   <source>Return to Table</source>
-</trans-unit>
+<target>Zurück zum Tisch</target></trans-unit>
 <trans-unit id="s8722d1d05071506b">
   <source>Return to Darkroom</source>
-</trans-unit>
+<target>Zurück zur Dunkelkammer</target></trans-unit>
 <trans-unit id="sf860cc546003e02d">
   <source>Return to Astrolabe</source>
-</trans-unit>
+<target>Zurück zum Astrolabium</target></trans-unit>
 <trans-unit id="sab5bcb32cd3ceb35">
   <source>Surveying Dimensional Topology</source>
-</trans-unit>
+<target>Dimensionale Topologie vermessen</target></trans-unit>
 <trans-unit id="s6b026dc46da528f2">
   <source>Plotting Zone Boundaries</source>
-</trans-unit>
+<target>Zonengrenzen kartieren</target></trans-unit>
 <trans-unit id="s3584b8e395ecb7ad">
   <source>Charting Transit Corridors</source>
-</trans-unit>
+<target>Transitkorridore erfassen</target></trans-unit>
 <trans-unit id="sd81863d8f6f4616f">
   <source>Mapping Cartographic Anomalies</source>
-</trans-unit>
+<target>Kartographische Anomalien verzeichnen</target></trans-unit>
 <trans-unit id="s734e24e927dca999">
   <source>Crystallizing City Grid</source>
-</trans-unit>
+<target>Stadtraster kristallisieren</target></trans-unit>
 <trans-unit id="s83c05f4eebe34437">
   <source>Streets</source>
-</trans-unit>
+<target>Straßen</target></trans-unit>
 <trans-unit id="s25e1a07e454c2c11">
   <source>Grid</source>
-</trans-unit>
+<target>Raster</target></trans-unit>
 <trans-unit id="s174901486b49e871">
   <source>Dimensional Cartography Division</source>
-</trans-unit>
+<target>Abteilung für Dimensionale Kartographie</target></trans-unit>
 <trans-unit id="sbc385a628a0c82e5">
   <source>Scanning Personnel Archives</source>
-</trans-unit>
+<target>Personalarchive durchsuchen</target></trans-unit>
 <trans-unit id="s85436b29eec61576">
   <source>Profiling Operative Candidates</source>
-</trans-unit>
+<target>Agentenkandidaten profilieren</target></trans-unit>
 <trans-unit id="s6b074a8e6e518fae">
   <source>Cross-Referencing Dossier Files</source>
-</trans-unit>
+<target>Dossier-Akten abgleichen</target></trans-unit>
 <trans-unit id="s9bd0a8bad8f6acdd">
   <source>Analyzing Psychological Matrices</source>
-</trans-unit>
+<target>Psychologische Matrizen analysieren</target></trans-unit>
 <trans-unit id="s04770c9cf47ec4d6">
   <source>Assembling Operative Roster</source>
-</trans-unit>
+<target>Agentenkader zusammenstellen</target></trans-unit>
 <trans-unit id="s80d4717fefb5ce1c">
   <source>Psych</source>
-</trans-unit>
+<target>Psyche</target></trans-unit>
 <trans-unit id="s01b09ac2bd6fcb1f">
   <source>Skills</source>
-</trans-unit>
+<target>Fähigkeiten</target></trans-unit>
 <trans-unit id="s69d88ef4b2618980">
   <source>Cover</source>
-</trans-unit>
+<target>Tarnung</target></trans-unit>
 <trans-unit id="s2389ffe8e074656a">
   <source>Bureau Personnel Division</source>
-</trans-unit>
+<target>Bureau-Personalabteilung</target></trans-unit>
 <trans-unit id="sc8f6fe36ae8b5b81">
   <source>Analyzing Structural Foundations</source>
-</trans-unit>
+<target>Tragwerksgrundlagen analysieren</target></trans-unit>
 <trans-unit id="s4ce88e7ec87a953b">
   <source>Drafting Architectural Blueprints</source>
-</trans-unit>
+<target>Architekturpläne entwerfen</target></trans-unit>
 <trans-unit id="s6d2dcab179442003">
   <source>Calculating Load-Bearing Vectors</source>
-</trans-unit>
+<target>Traglastvektoren berechnen</target></trans-unit>
 <trans-unit id="sd3e38b3ec075424a">
   <source>Simulating Infrastructure Networks</source>
-</trans-unit>
+<target>Infrastrukturnetzwerke simulieren</target></trans-unit>
 <trans-unit id="s93986eef4b3ddeef">
   <source>Materializing Structural Footprint</source>
-</trans-unit>
+<target>Baulichen Grundriss materialisieren</target></trans-unit>
 <trans-unit id="sc1a4e2a7a8e20d58">
   <source>Base</source>
-</trans-unit>
+<target>Basis</target></trans-unit>
 <trans-unit id="sef191ab7b2c9f986">
   <source>Frame</source>
-</trans-unit>
+<target>Rahmen</target></trans-unit>
 <trans-unit id="sca7d0c2bef51ca6f">
   <source>Roof</source>
-</trans-unit>
+<target>Dach</target></trans-unit>
 <trans-unit id="s09a466af3325416c">
   <source>Infrastructure Engineering Corps</source>
-</trans-unit>
+<target>Korps für Infrastrukturtechnik</target></trans-unit>
 <trans-unit id="se9a2ebb453577a5a">
   <source>Click ✓ to deploy or ✎ to edit</source>
-</trans-unit>
+<target>Klicke ✓ zum Einsetzen oder ✎ zum Bearbeiten</target></trans-unit>
 <trans-unit id="s56d1b711b7909810">
   <source>Edit agent</source>
-</trans-unit>
+<target>Agent bearbeiten</target></trans-unit>
 <trans-unit id="scb249e1a0bc04d37">
   <source>Edit building</source>
-</trans-unit>
+<target>Gebäude bearbeiten</target></trans-unit>
 <trans-unit id="sad156640ceac73fb">
   <source>Agent Dossier</source>
-</trans-unit>
+<target>Agenten-Dossier</target></trans-unit>
 <trans-unit id="s6cdaf989c6c82970">
   <source>Building Dossier</source>
-</trans-unit>
+<target>Gebäude-Dossier</target></trans-unit>
 <trans-unit id="s623b0d3421bff1aa">
   <source>AI Mutation</source>
-</trans-unit>
+<target>KI-Mutation</target></trans-unit>
 <trans-unit id="s897972e2944cbd4c">
   <source>Mutation Prompt</source>
-</trans-unit>
+<target>Mutations-Prompt</target></trans-unit>
 <trans-unit id="s7544a5916292e23c">
   <source>Return to</source>
-</trans-unit>
+<target>Zurück zu</target></trans-unit>
 <trans-unit id="s4fcd634b4ebc761b">
   <source>Add Section</source>
-</trans-unit>
+<target>Abschnitt hinzufügen</target></trans-unit>
 <trans-unit id="s4ea0f21fc2a338a1">
   <source>Move up</source>
-</trans-unit>
+<target>Nach oben</target></trans-unit>
 <trans-unit id="sb233557012dcb328">
   <source>Move down</source>
-</trans-unit>
+<target>Nach unten</target></trans-unit>
 <trans-unit id="sfb27e24f093c4a76">
   <source>Edit section</source>
-</trans-unit>
+<target>Abschnitt bearbeiten</target></trans-unit>
 <trans-unit id="s728a4f548c11b0e1">
   <source>Delete section</source>
-</trans-unit>
+<target>Abschnitt löschen</target></trans-unit>
 <trans-unit id="s52c0789f0ebf20d0">
   <source>New Lore Section</source>
-</trans-unit>
+<target>Neuer Lore-Abschnitt</target></trans-unit>
 <trans-unit id="sbf7d68b55a00a210">
   <source>Edit Lore Section</source>
-</trans-unit>
+<target>Lore-Abschnitt bearbeiten</target></trans-unit>
 <trans-unit id="s178bb121d5131532">
   <source>Chapter</source>
-</trans-unit>
+<target>Kapitel</target></trans-unit>
 <trans-unit id="s7db55c49d7838365">
   <source>e.g. The First Age</source>
-</trans-unit>
+<target>z. B. Das Erste Zeitalter</target></trans-unit>
 <trans-unit id="s008b4e588cbad906">
   <source>Arcanum</source>
-</trans-unit>
+<target>Arkanum</target></trans-unit>
 <trans-unit id="s6c0d3df51c09a6d8">
   <source>e.g. I</source>
-</trans-unit>
+<target>z. B. I</target></trans-unit>
 <trans-unit id="s527114ceacfe5089">
   <source>Epigraph</source>
-</trans-unit>
+<target>Epigraph</target></trans-unit>
 <trans-unit id="s10c61fe456362129">
   <source>Optional opening quote or flavor text</source>
-</trans-unit>
+<target>Optionales Eingangszitat oder Stimmungstext</target></trans-unit>
 <trans-unit id="sf7dbe8a7c839a675">
   <source>Body</source>
-</trans-unit>
+<target>Inhalt</target></trans-unit>
 <trans-unit id="sb0ebb949d46fb911">
   <source>Image Slug</source>
-</trans-unit>
+<target>Bild-Slug</target></trans-unit>
 <trans-unit id="scc7a3682dd25ae19">
   <source>Optional</source>
-</trans-unit>
+<target>Optional</target></trans-unit>
 <trans-unit id="sf746471031bac488">
   <source>Image Caption</source>
-</trans-unit>
+<target>Bildunterschrift</target></trans-unit>
 <trans-unit id="s65672d6097330963">
   <source>Section saved. Translation will be regenerated.</source>
-</trans-unit>
+<target>Abschnitt gespeichert. Übersetzung wird neu generiert.</target></trans-unit>
 <trans-unit id="sec8cf7626b7d86ed">
   <source>Failed to save section.</source>
-</trans-unit>
+<target>Abschnitt konnte nicht gespeichert werden.</target></trans-unit>
 <trans-unit id="sa5bb46893d719a36">
   <source>Section created.</source>
-</trans-unit>
+<target>Abschnitt erstellt.</target></trans-unit>
 <trans-unit id="sf4277dfbbc57db96">
   <source>Failed to create section.</source>
-</trans-unit>
+<target>Abschnitt konnte nicht erstellt werden.</target></trans-unit>
 <trans-unit id="sed6828fd58669641">
   <source>Delete this lore section? This cannot be undone.</source>
-</trans-unit>
+<target>Diesen Lore-Abschnitt löschen? Dies kann nicht rückgängig gemacht werden.</target></trans-unit>
 <trans-unit id="s0720f1797dcd244d">
   <source>Section deleted.</source>
-</trans-unit>
+<target>Abschnitt gelöscht.</target></trans-unit>
 <trans-unit id="s91b15c7e17d70717">
   <source>Failed to delete section.</source>
-</trans-unit>
+<target>Abschnitt konnte nicht gelöscht werden.</target></trans-unit>
 <trans-unit id="s0ea66b4013211bd4">
   <source>Failed to reorder sections.</source>
-</trans-unit>
+<target>Abschnitte konnten nicht umsortiert werden.</target></trans-unit>
 <trans-unit id="s72bdb95b3b3ce026">
   <source>Exit edit mode</source>
-</trans-unit>
+<target>Bearbeitungsmodus verlassen</target></trans-unit>
 <trans-unit id="s452f9f1bae21e66b">
   <source>Edit lore</source>
-</trans-unit>
+<target>Lore bearbeiten</target></trans-unit>
 <trans-unit id="s0379fc73608ab971">
   <source>Done</source>
-</trans-unit>
+<target>Fertig</target></trans-unit>
 <trans-unit id="s88ea71eff91fc3ad">
   <source>Established</source>
   <target>Errichtet</target>
@@ -9136,16 +9136,16 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
 </trans-unit>
 <trans-unit id="sc0267634b7777aa4">
   <source>Entity viewer</source>
-</trans-unit>
+<target>Entitäten-Ansicht</target></trans-unit>
 <trans-unit id="s3e43647b140c6324">
   <source>Entity navigation</source>
-</trans-unit>
+<target>Entitäten-Navigation</target></trans-unit>
 <trans-unit id="s3e9807f9fc2f16c3">
   <source>Previous entity</source>
-</trans-unit>
+<target>Vorherige Entität</target></trans-unit>
 <trans-unit id="s19d846490a11f023">
   <source>Next entity</source>
-</trans-unit>
+<target>Nächste Entität</target></trans-unit>
 <trans-unit id="scb91a1e4ae94d46b">
   <source>Failed to load analytics</source>
   <target>Analyse konnte nicht geladen werden</target>
@@ -9276,80 +9276,80 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
 </trans-unit>
 <trans-unit id="s0d2e1ac7d05440bf">
   <source>Cartographic Division</source>
-</trans-unit>
+<target>Kartographische Abteilung</target></trans-unit>
 <trans-unit id="sd1d4d9ec8a50ce94">
   <source>Survey dimensional topology and chart transit corridors from your seed vision.</source>
-</trans-unit>
+<target>Dimensionale Topologie vermessen und Transitkorridore aus Ihrer Ausgangsvision kartieren.</target></trans-unit>
 <trans-unit id="s6cdffcbb5936b488">
   <source>Initiate Survey</source>
-</trans-unit>
+<target>Vermessung starten</target></trans-unit>
 <trans-unit id="s75adf229523548de">
   <source>Re-scan</source>
-</trans-unit>
+<target>Erneut scannen</target></trans-unit>
 <trans-unit id="s63874db8ea301be6">
   <source>Surveyed</source>
-</trans-unit>
+<target>Vermessen</target></trans-unit>
 <trans-unit id="sadb4e5d474369016">
   <source>Surveys dimensional topology and charts transit corridors based on your seed vision.</source>
-</trans-unit>
+<target>Vermesst die dimensionale Topologie und kartiert Transitkorridore basierend auf Ihrer Ausgangsvision.</target></trans-unit>
 <trans-unit id="se02179ea8ddc56d5">
   <source>Generates 5 zones and 5 streets with unique names and characteristics.</source>
-</trans-unit>
+<target>Generiert 5 Zonen und 5 Straßen mit einzigartigen Namen und Eigenschaften.</target></trans-unit>
 <trans-unit id="s5d699b3d7b00c5f3">
   <source>Personnel Bureau</source>
-</trans-unit>
+<target>Personalbüro</target></trans-unit>
 <trans-unit id="sfb61ef5f7a7bf926">
   <source>Recruit operative candidates — AI-generated characters with names, professions, and backstories.</source>
-</trans-unit>
+<target>Agentenkandidaten rekrutieren — KI-generierte Charaktere mit Namen, Berufen und Hintergrundgeschichten.</target></trans-unit>
 <trans-unit id="s244b9ad960eb982c">
   <source>Begin Recruitment</source>
-</trans-unit>
+<target>Rekrutierung starten</target></trans-unit>
 <trans-unit id="s8c68c9bfddfd8ea2">
   <source>Re-draft</source>
-</trans-unit>
+<target>Neu entwerfen</target></trans-unit>
 <trans-unit id="s4814afb3bc07da98">
   <source>Recruited</source>
-</trans-unit>
+<target>Rekrutiert</target></trans-unit>
 <trans-unit id="sa20e4717540c74bb">
   <source>Recruits operative candidates — AI-generated characters with names, professions, and backstories.</source>
-</trans-unit>
+<target>Rekrutiert Agentenkandidaten — KI-generierte Charaktere mit Namen, Berufen und Hintergrundgeschichten.</target></trans-unit>
 <trans-unit id="sb4436f4f4e61aeba">
   <source>Drafts 6 agents that appear in your staging hand for review.</source>
-</trans-unit>
+<target>Entwirft 6 Agenten, die in Ihrer Vorauswahl zur Prüfung erscheinen.</target></trans-unit>
 <trans-unit id="secb3f299d5678537">
   <source>Infrastructure Corps</source>
-</trans-unit>
+<target>Infrastrukturkorps</target></trans-unit>
 <trans-unit id="s22fb16acceeb1cbd">
   <source>Engineer structural blueprints for the simulation's key locations.</source>
-</trans-unit>
+<target>Strukturelle Baupläne für die Schlüsselorte der Simulation entwerfen.</target></trans-unit>
 <trans-unit id="saa22cf4ff8a23ba4">
   <source>Draft Blueprints</source>
-</trans-unit>
+<target>Baupläne entwerfen</target></trans-unit>
 <trans-unit id="s0426764eb6d497c1">
   <source>Blueprinted</source>
-</trans-unit>
+<target>Geplant</target></trans-unit>
 <trans-unit id="s2637e5e454429b28">
   <source>Engineers structural blueprints for the simulation's key locations.</source>
-</trans-unit>
+<target>Entwirft strukturelle Baupläne für die Schlüsselorte der Simulation.</target></trans-unit>
 <trans-unit id="sd5dd8c434f44bbbb">
   <source>Creates 7 buildings with types, descriptions, and zone assignments.</source>
-</trans-unit>
+<target>Erstellt 7 Gebäude mit Typen, Beschreibungen und Zonenzuweisungen.</target></trans-unit>
 <trans-unit id="s0b2036d33fbf3274">
   <source>Complete all three divisions to advance</source>
-</trans-unit>
+<target>Alle drei Abteilungen abschließen, um fortzufahren</target></trans-unit>
 <trans-unit id="sa58b11b82fecc4a2">
   <source>Chronicle</source>
   <target>Chronik</target>
 </trans-unit>
 <trans-unit id="sd33fc192a6a60351">
   <source>Failed to generate chronicle.</source>
-</trans-unit>
+<target>Chronik konnte nicht generiert werden.</target></trans-unit>
 <trans-unit id="s6cfee919e21ae1dc">
   <source>The</source>
-</trans-unit>
+<target>Die</target></trans-unit>
 <trans-unit id="s3b4aff732fbdf4eb">
   <source>Previous Editions</source>
-</trans-unit>
+<target>Frühere Ausgaben</target></trans-unit>
 <trans-unit id="s2dd547d3bdb1b51d">
   <source>The Chronicle &amp; Agent Memory</source>
   <target>Die Chronik &amp; Agenten-Gedächtnis</target>
