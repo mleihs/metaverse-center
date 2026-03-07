@@ -52,3 +52,4 @@ pydantic-ai==1.66.0
 tavily-python==0.5.0
 deepl==1.21.0
 structlog==25.5.0
+# Deploy trigger
