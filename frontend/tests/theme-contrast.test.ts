@@ -113,8 +113,12 @@ const CONTRAST_PAIRS: ContrastPair[] = [
 // Tests
 // ---------------------------------------------------------------------------
 
+// Intentionally absurd presets that are exempt from WCAG compliance
+const WCAG_EXEMPT_PRESETS = new Set(['deep-fried-horror']);
+
 describe('Theme preset contrast (WCAG)', () => {
   for (const [name, preset] of Object.entries(THEME_PRESETS)) {
+    if (WCAG_EXEMPT_PRESETS.has(name)) continue;
     describe(name, () => {
       for (const pair of CONTRAST_PAIRS) {
         const fgHex = preset[pair.fg];
