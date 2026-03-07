@@ -12,5 +12,5 @@ e2e
 docs/
 *.md
 supabase
-scripts
+scripts/*
 !scripts/prerender.py
