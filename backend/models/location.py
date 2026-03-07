@@ -79,9 +79,9 @@ class ZoneResponse(BaseModel):
     city_id: UUID
     name: str
     description: str | None = None
-    zone_type: str
+    zone_type: str | None = None
     population_estimate: int = 0
-    security_level: str
+    security_level: str | None = None
     data_source: str | None = None
     description_de: str | None = None
     zone_type_de: str | None = None
