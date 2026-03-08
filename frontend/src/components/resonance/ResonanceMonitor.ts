@@ -29,7 +29,6 @@ export class ResonanceMonitor extends LitElement {
   static styles = css`
     :host {
       display: block;
-      contain: layout;
     }
 
     /* ── Monitor Shell ─────────────────────────────────────── */
