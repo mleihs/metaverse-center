@@ -1,8 +1,8 @@
 ---
 title: "Feature Catalog"
 id: feature-catalog
-version: "2.2"
-date: 2026-03-07
+version: "2.3"
+date: 2026-03-08
 lang: de
 type: reference
 status: active
@@ -109,7 +109,7 @@ Features die auf Plattform-Ebene existieren, unabhängig von einzelnen Simulatio
 
 | # | Feature | Status | Beschreibung |
 |---|---------|--------|-------------|
-| P19 | **Tutorial-Seite** | ✅ IMPL | `/how-to-play`-Route. Dark military-console Ästhetik. Sticky Sidebar-TOC mit Scroll-Spy. 12 Sektionen (inkl. Updates & Changelog mit v2.0-v2.3). 6 Operativ-Karten mit Details. 4 vollständig ausgearbeitete Match-Replays. Keyboard-Accessibility (aria-expanded, focus-visible). htp-styles.ts (~1100 Zeilen extrahiertes CSS). |
+| P19 | **Tutorial-Seite** | ✅ IMPL | `/how-to-play`-Route. Dark military-console Ästhetik. Sticky Sidebar-TOC mit Scroll-Spy. 28 Sektionen in 4 Kategorien (The World: Intro, Lore, Forge, Agent Chat, Events, Social Trends, Multiverse Map, Simulation Health; Competitive: Epochs, Getting Started, Phases, RP, Operatives, Embassies, Scoring, Alliances, Bot Players, COMMS; Advanced: Bleed, Resonances, Zone Dynamics, Agent Memory, Chronicle; Reference: Tactics, Demo Run, Matches, Intelligence Report, Updates). 6 Operativ-Karten mit Details. 5 vollständig ausgearbeitete Match-Replays. Keyboard-Accessibility (aria-expanded, focus-visible). htp-styles.ts (~1100 Zeilen extrahiertes CSS). |
 
 #### A11. ECharts Intelligence Report
 
@@ -364,6 +364,7 @@ Features die innerhalb einer Simulation existieren. Benutzer können beliebig vi
 | J5 | **Resonance Monitor** | ✅ IMPL | Platform-Level Dashboard (`<resonance-monitor>`). Status-Filter, Signatur-Filter, Auto-Refresh 60s. Magnitude-Farbkodierung (cyan/amber/rot). |
 | J6 | **Admin Resonances Panel** | ✅ IMPL | Vollstaendiges Admin-Panel (`<velg-admin-resonances-tab>`). CRUD + Status-Transition + Impact-Verarbeitung + Soft-Delete/Restore. Formular-Modal mit Derivation-Preview. |
 | J7 | **Balance Fixes v2** | ✅ IMPL | Infiltrator-Oppositionen (The Entropy + The Devouring Mother). Subsiding-Resonanzen 0.5x Decay. Caps reduziert (0.06→0.04 fuer Pressure + Modifier). Attacker-Pressure-Penalty (`fn_attacker_pressure_penalty`, max -0.04). `active_resonances`-View schliesst archivierte aus. `fn_target_zone_pressure` NULL-Bug Fix. |
+| J8 | **Auto-Processing Scheduler** | ✅ IMPL | `ResonanceScheduler` asyncio Background-Task (Lifespan-managed). Periodisch auf faellige Resonanzen pruefen (`status='detected'` + `impacts_at <= now()`). Auto-Process via `ResonanceService.process_impact()`. System-Actor-Pattern (Admin-Client, Zero-UUID). Konfigurierbar via `platform_settings` (`resonance_auto_process_enabled`, `resonance_auto_process_interval_seconds`). Fehlertoleranz: loggt Fehler pro Resonanz, setzt Loop fort. |
 
 ---
 
@@ -387,10 +388,11 @@ Features die innerhalb einer Simulation existieren. Benutzer können beliebig vi
 | **Trigger** | 41+ |
 | **Views** | 8 Standard + 6 Materialized |
 | **API-Endpoints** | ~305 (über 37 Router) |
-| **Backend-Tests** | 788 (pytest: unit + integration + security + performance) |
-| **Frontend-Tests** | 442 (vitest: validation + API + theme contrast + SEO) |
+| **Backend-Tests** | 912 (pytest: unit + integration + security + performance) |
+| **Frontend-Tests** | 453 (vitest: validation + API + theme contrast + SEO) |
 | **E2E-Tests** | 81 (Playwright: 12 Dateien) |
-| **i18n-Strings** | 2279 (EN/DE) |
+| **i18n-Strings** | 3160 (EN/DE) |
+| **Background-Tasks** | 1 (ResonanceScheduler) |
 | **Storage Buckets** | 4 (agent.portraits, building.images, user.agent.portraits, simulation.assets) |
 | **Theme-Presets** | 6 (dark-brutalist, deep-space-horror, arc-raiders, gaslit-reach, illuminated-literary, custom) |
 | **Shared Components** | 16 + 10 Shared CSS Modules + BaseSettingsPanel |
@@ -452,5 +454,5 @@ Alle 6 Phasen abgeschlossen. 160 Tasks implementiert.
 
 ### Phase 7: Event Pressure & Resonance Gameplay
 - I1-I7 (Graduated Event Pressure, Event Lifecycle, Zone Gravity/Vulnerability, Cascade Events, Zone Actions, Event Seismograph)
-- J1-J7 (Substrate Resonances: Detection, Susceptibility, Impact Processing, Operative Integration, Monitor, Admin Panel, Balance Fixes)
+- J1-J8 (Substrate Resonances: Detection, Susceptibility, Impact Processing, Operative Integration, Monitor, Admin Panel, Balance Fixes, Auto-Processing Scheduler)
 - K1-K2 (API Key Management, Font Picker)

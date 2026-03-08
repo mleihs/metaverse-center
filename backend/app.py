@@ -3,6 +3,7 @@ from backend.logging_config import setup_logging
 setup_logging()
 
 import logging
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, Request
@@ -13,6 +14,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from backend.config import settings as app_settings
+from backend.services.resonance_scheduler import ResonanceScheduler
 from backend.middleware.logging_context import LoggingContextMiddleware
 from backend.middleware.rate_limit import limiter
 from backend.middleware.security import SecurityHeadersMiddleware
@@ -53,16 +55,25 @@ from backend.routers import (
     simulations,
     social_media,
     social_trends,
+    style_references,
     taxonomies,
     users,
     zone_actions,
 )
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    task = await ResonanceScheduler.start()
+    yield
+    task.cancel()
+
 
 app = FastAPI(
     title="Velgarien Platform API",
     version="2.0.0",
     docs_url="/api/docs",
     redoc_url="/api/redoc",
+    lifespan=lifespan,
 )
 
 # --- Middleware (applied in reverse order — last registered = outermost) ---
@@ -140,6 +151,7 @@ app.include_router(operatives.router)
 app.include_router(scores.router)
 app.include_router(zone_actions.router)
 app.include_router(resonances.router)
+app.include_router(style_references.router)
 app.include_router(public.router)
 app.include_router(seo.router)
 

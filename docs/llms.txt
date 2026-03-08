@@ -17,7 +17,7 @@
 - [Platform Architecture: Multi-Simulations-Plattform](specs/platform-architecture.md)
 - [Relationships, Echoes & Map](specs/relationships-echoes-map.md)
 - [Simulation Settings](specs/simulation-settings.md)
-- [Substrate Resonances](specs/substrate-resonances.md): Platform-level event propagation — 8 archetypes, susceptibility profiles, operative integration
+- [Substrate Resonances](specs/substrate-resonances.md): Platform-level event propagation — 8 archetypes, susceptibility profiles, operative integration, automatic impact processing via background scheduler
 - [Theming System](specs/theming-system.md)
 
 ## References

@@ -177,7 +177,7 @@ The epoch simulation library (`scripts/epoch_sim_lib.py`) runs 50&ndash;200 comp
 | **v2.3** | Agent aptitudes (3-9 scores), draft phase, formula `aptitude*0.03` | 18pp success swing between best/worst agents; strategic agent selection matters |
 | **v2.4** | Foundation redesign: spy+guardian+fortification; open epoch participation | Hidden defensive layer, early intel, any user can join any epoch |
 | **v2.5** | The Chronicle (AI newspaper) + Agent Memory & Reflection (pgvector) | Living world systems: worlds narrate themselves, agents remember |
-| **v2.6** | Substrate resonance integration: 8-term success formula, archetype-operative affinities, zone pressure modifier, attacker penalty, saboteur diminishing returns | Shared narrative layer feeds into competitive mechanics; caps reduced for tighter balance |
+| **v2.6** | Substrate resonance integration: 8-term success formula, archetype-operative affinities, zone pressure modifier, attacker penalty, saboteur diminishing returns; automatic resonance impact processing via background scheduler; How-to-Play restructured to 28 sections in 4 categories | Shared narrative layer feeds into competitive mechanics; caps reduced for tighter balance; auto-processing eliminates manual admin intervention |
 
 ### Intelligence Report
 
@@ -295,10 +295,10 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 | SQL migrations | 86 |
 | API endpoints | ~305 across 37 routers |
 | Web Components | 133 custom elements |
-| Backend tests | 866 |
+| Backend tests | 912 |
 | Frontend tests | 453 |
 | E2E specs | 81 |
-| Localized UI strings | 2,563 (EN/DE, 0 missing) |
+| Localized UI strings | 3,160 (EN/DE, 0 missing) |
 | Documentation files | 39 (Divio structure + ADRs) |
 | Flagship simulations | 5 (users can create more) |
 | Operative types | 6 |
@@ -326,10 +326,10 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 - **Bilingual email notifications** &mdash; cycle briefings, phase changes, epoch completion (fog-of-war compliant, per-player data)
 - **Per-simulation theming** &mdash; CSS presets per world with WCAG 2.1 AA contrast validation, light & dark modes
 - **Structured logging** &mdash; JSON production logs with request context, structured extra fields, per-service observability
-- **Full i18n** &mdash; English + German (2,563 localized strings, 0 missing translations)
-- **How-to-Play tutorial** &mdash; rules reference, worked match replays, changelog, ECharts Intelligence Report
+- **Full i18n** &mdash; English + German (3,160 localized strings, 0 missing translations)
+- **How-to-Play tutorial** &mdash; 28-section interactive guide (World, Competitive Play, Advanced Mechanics, Reference), worked match replays, changelog, ECharts Intelligence Report
 - **Substrate Resonances** &mdash; platform-level event propagation through 8 archetypes that modify operative effectiveness during competitive epochs, with zone pressure bonuses, attacker penalties, and bot awareness
-- **Platform admin panel** &mdash; user/membership management, runtime cache TTL controls
+- **Platform admin panel** &mdash; user/membership management, runtime cache TTL controls, resonance auto-processing scheduler
 - **Bureau auth terminals** &mdash; themed login/register screens with scanlines, corner brackets, amber glow, blinking cursor, styled signup confirmation email
 - **SEO** &mdash; JSON-LD structured data, dynamic sitemap, slug-based URLs, crawler meta injection
 - **Public-first browsing** &mdash; full read access without authentication
@@ -368,7 +368,7 @@ npm run dev                              # Dev server on http://localhost:5173
 
 ```bash
 # Backend (from project root, venv activated)
-python -m pytest backend/tests/ -v              # 866 tests
+python -m pytest backend/tests/ -v              # 912 tests
 python -m pytest backend/tests/ --cov           # With coverage report
 python -m ruff check backend/                   # Lint
 

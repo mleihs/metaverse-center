@@ -1,8 +1,8 @@
 ---
 title: "Platform Architecture: Multi-Simulations-Plattform"
 id: platform-architecture
-version: "2.0"
-date: 2026-03-03
+version: "2.1"
+date: 2026-03-08
 lang: de
 type: spec
 status: active
@@ -440,13 +440,20 @@ Platform Admin (Email-Allowlist: admin@velgarien.dev)
 │   ├── CacheConfigService (Singleton TTL-Reader)
 │   └── Beeinflusst: Map-Daten, SEO, HTTP Cache-Control
 │
-└── Daten-Bereinigung (6 Kategorien)
-    ├── Abgeschlossene Epochs
-    ├── Abgebrochene Epochs
-    ├── Verwaiste Lobbies
-    ├── Archivierte Game Instances
-    ├── Audit-Log
-    └── Bot-Entscheidungsprotokoll
+├── Daten-Bereinigung (6 Kategorien)
+│   ├── Abgeschlossene Epochs
+│   ├── Abgebrochene Epochs
+│   ├── Verwaiste Lobbies
+│   ├── Archivierte Game Instances
+│   ├── Audit-Log
+│   └── Bot-Entscheidungsprotokoll
+│
+└── Resonance Auto-Processing
+    ├── ResonanceScheduler (asyncio Background-Task)
+    ├── Konfigurierbar via platform_settings
+    │   ├── resonance_auto_process_enabled (bool, default: true)
+    │   └── resonance_auto_process_interval_seconds (int, default: 60)
+    └── System-Actor-Pattern (service_role Client)
 ```
 
 ### Zusätzliche Tabellen

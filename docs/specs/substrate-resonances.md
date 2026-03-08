@@ -1,8 +1,8 @@
 ---
 title: "Substrate Resonances: Platform-Level Event Propagation"
 id: substrate-resonances
-version: "1.1"
-date: 2026-03-07
+version: "1.2"
+date: 2026-03-08
 lang: en
 type: spec
 status: active
@@ -489,6 +489,31 @@ Modal form for creating/editing resonances.
 Singleton API service (`resonanceApi`).
 
 **Methods:** `list()`, `getById()`, `create()`, `update()`, `processImpact()`, `listImpacts()`, `updateStatus()`, `restore()`, `remove()`
+
+---
+
+## Automatic Impact Processing
+
+The `ResonanceScheduler` (`backend/services/resonance_scheduler.py`) runs as a background asyncio task during the FastAPI application lifespan. It periodically checks for due resonances and auto-processes them without requiring manual admin intervention.
+
+### Configuration
+
+| Setting (platform_settings) | Type | Default | Description |
+|------------------------------|------|---------|-------------|
+| `resonance_auto_process_enabled` | bool | `true` | Enable/disable auto-processing |
+| `resonance_auto_process_interval_seconds` | int | `60` | Check interval (floor: 10s) |
+
+### Behavior
+
+1. On app startup, `ResonanceScheduler.start()` launches an infinite asyncio loop
+2. Every N seconds: query `substrate_resonances` where `status = 'detected' AND impacts_at <= now() AND deleted_at IS NULL`
+3. For each due resonance: call `ResonanceService.process_impact()` using system actor (zero UUID, admin supabase client)
+4. Log results per-resonance; one failure does not block others
+5. On app shutdown: task is gracefully cancelled via `task.cancel()`
+
+### System Actor Pattern
+
+The scheduler uses `get_admin_supabase()` (service_role client) — the same pattern as bot architecture. This is a system actor, not a user operation, so no user JWT is involved. The zero UUID (`00000000-0000-0000-0000-000000000000`) indicates automated processing in audit logs.
 
 ---
 

@@ -23,6 +23,16 @@ import type {
 
 export function getTocSections(): TocSection[] {
   return [
+    // ── The World ──
+    { id: 'intro', label: msg('What is metaverse.center?') },
+    { id: 'simulation-lore', label: msg('Simulation Lore') },
+    { id: 'forge-guide', label: msg('The Simulation Forge') },
+    { id: 'agent-chat', label: msg('Agent Chat') },
+    { id: 'events', label: msg('Events & Reactions') },
+    { id: 'social-trends', label: msg('Social Trends & Campaigns') },
+    { id: 'multiverse-map', label: msg('The Multiverse Map') },
+    { id: 'simulation-health', label: msg('Simulation Health') },
+    // ── Competitive Play ──
     { id: 'epochs', label: msg('What is an Epoch?') },
     { id: 'getting-started', label: msg('Getting Started') },
     { id: 'phases', label: msg('Phases & Timeline') },
@@ -31,17 +41,20 @@ export function getTocSections(): TocSection[] {
     { id: 'embassies', label: msg('Embassies & Ambassadors') },
     { id: 'scoring', label: msg('Scoring System') },
     { id: 'alliances', label: msg('Alliances & Diplomacy') },
+    { id: 'bot-players', label: msg('Bot Players') },
+    { id: 'epoch-comms', label: msg('COMMS & Notifications') },
+    // ── Advanced Mechanics ──
     { id: 'bleed', label: msg('Bleed & Echoes') },
-    { id: 'tactics', label: msg('Tactics & Strategies') },
-    { id: 'demo-run', label: msg('Demo Run') },
-    { id: 'matches', label: msg('Example Matches') },
-    { id: 'updates', label: msg('Updates') },
-    { id: 'analytics', label: msg('Intelligence Report') },
-    { id: 'forge-guide', label: msg('The Simulation Forge') },
-    { id: 'chronicle-guide', label: msg('The Chronicle') },
     { id: 'resonance-guide', label: msg('Substrate Resonances') },
     { id: 'zone-dynamics', label: msg('Event Pressure & Zones') },
     { id: 'agent-memory', label: msg('Agent Memory') },
+    { id: 'chronicle-guide', label: msg('The Chronicle') },
+    // ── Reference ──
+    { id: 'tactics', label: msg('Tactics & Strategies') },
+    { id: 'demo-run', label: msg('Demo Run') },
+    { id: 'matches', label: msg('Example Matches') },
+    { id: 'analytics', label: msg('Intelligence Report') },
+    { id: 'updates', label: msg('Updates') },
   ];
 }
 
@@ -466,6 +479,50 @@ export function getEchoLifecycle(): { name: string; color: string }[] {
 
 export function getChangelog(): ChangelogEntry[] {
   return [
+    {
+      version: 'v2.6',
+      date: '2026-03-08',
+      title: msg('Complete Guide & Auto-Processing'),
+      highlights: [
+        msg('Guide restructured: World \u2192 Competitive \u2192 Advanced \u2192 Reference progression'),
+        msg('9 new guide sections: Intro, Lore, Events, Agent Chat, Social Trends, Map, Health, Bots, COMMS'),
+        msg('Automatic resonance impact processing when impacts_at timestamp arrives'),
+      ],
+      details: [
+        {
+          category: msg('Guide Restructure'),
+          changes: [
+            msg('Reorganized from 19 to 28 sections with logical learning progression'),
+            msg('New intro: What is metaverse.center? \u2014 sandbox vs competitive modes'),
+            msg('World sections first: Lore, Forge, Chat, Events, Social Trends, Map, Health'),
+            msg('Then competitive rules: Epochs, Operatives, Scoring, Alliances, Bots, COMMS'),
+            msg('Advanced mechanics: Bleed, Resonances, Zone Dynamics, Agent Memory, Chronicle'),
+            msg('Reference: Tactics, Demo Run, Example Matches, Intelligence Report, Changelog'),
+          ],
+        },
+        {
+          category: msg('New Sections'),
+          changes: [
+            msg('Events & Reactions: event creation, AI generation, agent reactions, mechanical impact'),
+            msg('The Multiverse Map: interactive force-directed graph, game instance visualization, battle feed'),
+            msg('Bot Players: 5 personality archetypes, difficulty levels, dual-mode chat'),
+            msg('Agent Chat: memory-augmented AI conversations, semantic retrieval'),
+            msg('Simulation Lore: per-simulation worldbuilding narrative, Forge-generated content'),
+            msg('Simulation Health: building readiness, zone stability, embassy effectiveness dashboard'),
+            msg('Social Trends & Campaigns: real-world news integration pipeline'),
+            msg('COMMS & Notifications: epoch chat, presence, ready signals, tactical email briefings'),
+          ],
+        },
+        {
+          category: msg('Resonance Auto-Processing'),
+          changes: [
+            msg('Background scheduler auto-processes resonances when impacts_at timestamp arrives'),
+            msg('Configurable via platform_settings: resonance_auto_process_enabled, resonance_auto_process_interval_seconds'),
+            msg('Uses service_role admin client (system actor pattern)'),
+          ],
+        },
+      ],
+    },
     {
       version: 'v2.5',
       date: '2026-03-06',

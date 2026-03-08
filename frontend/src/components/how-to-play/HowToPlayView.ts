@@ -19,10 +19,18 @@ import '../shared/EchartsChart.js';
 import '../shared/Lightbox.js';
 import { getDemoSteps } from './htp-content-demo.js';
 import {
+  getAgentChatGuideSteps,
   getAgentMemoryGuideSteps,
+  getBotPlayersGuideSteps,
   getChronicleGuideSteps,
+  getEpochCommsGuideSteps,
+  getEventsGuideSteps,
   getForgeGuideSteps,
+  getMultiverseMapGuideSteps,
   getResonanceGuideSteps,
+  getSimulationHealthGuideSteps,
+  getSimulationLoreGuideSteps,
+  getSocialTrendsGuideSteps,
   getZoneDynamicsGuideSteps,
 } from './htp-content-features.js';
 import type { ForgeStep } from './htp-content-features.js';
@@ -74,7 +82,7 @@ export class VelgHowToPlay extends LitElement {
 
   /* ── State ──────────────────────────────────────── */
 
-  @state() private _activeSection = 'epochs';
+  @state() private _activeSection = 'intro';
   @state() private _expandedMatches = new Set<number>();
   @state() private _expandedUpdates = new Set<number>();
   @state() private _lightboxSrc: string | null = null;
@@ -178,6 +186,30 @@ export class VelgHowToPlay extends LitElement {
             text: 'Game instances are normalized when an epoch starts: agents capped at 6, buildings at 8, all conditions set to good, capacities to 30, qualifications to 5, and zone security distributed as 1x high, 2x medium, 1x low. Embassies are auto-generated between all participants. This ensures every simulation starts on equal footing.',
           },
         },
+        {
+          '@type': 'Question',
+          name: 'What is the Multiverse Map?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'The Multiverse Map is an interactive force-directed graph that visualizes all simulations and their connections. During epochs, game instances orbit their template nodes with phase-colored rings. Click nodes for leaderboard data, edges for connection details, and use the battle feed ticker for real-time event updates.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How do bot players work?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Bot players are AI opponents with five personality archetypes (Sentinel, Warlord, Diplomat, Strategist, Chaos) and three difficulty levels. They use the same deployment mechanics as humans, auto-draft based on personality, and can chat in template or LLM mode.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Can I chat with agents in my simulation?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. Agent Chat lets you have AI-generated conversations with any agent. Responses are shaped by the agent\u2019s personality, profession, and accumulated memories. The system retrieves relevant memories via semantic similarity, so agents reference past events and conversations.',
+          },
+        },
       ],
     });
   }
@@ -239,6 +271,16 @@ export class VelgHowToPlay extends LitElement {
         ${this._renderToc(toc)}
 
         <main class="content">
+          <!-- The World -->
+          ${this._renderIntro()}
+          ${this._renderSimulationLoreGuide()}
+          ${this._renderForgeGuide()}
+          ${this._renderAgentChatGuide()}
+          ${this._renderEventsGuide()}
+          ${this._renderSocialTrendsGuide()}
+          ${this._renderMultiverseMapGuide()}
+          ${this._renderSimulationHealthGuide()}
+          <!-- Competitive Play -->
           ${this._renderEpochs()}
           ${this._renderGettingStarted()}
           ${this._renderPhases()}
@@ -247,17 +289,20 @@ export class VelgHowToPlay extends LitElement {
           ${this._renderEmbassies()}
           ${this._renderScoring()}
           ${this._renderAlliances()}
+          ${this._renderBotPlayersGuide()}
+          ${this._renderEpochCommsGuide()}
+          <!-- Advanced Mechanics -->
           ${this._renderBleed()}
-          ${this._renderTactics()}
-          ${this._renderDemoRun()}
-          ${this._renderMatches()}
-          ${this._renderUpdates()}
-          ${this._renderAnalytics()}
-          ${this._renderForgeGuide()}
-          ${this._renderChronicleGuide()}
           ${this._renderResonanceGuide()}
           ${this._renderZoneDynamicsGuide()}
           ${this._renderAgentMemoryGuide()}
+          ${this._renderChronicleGuide()}
+          <!-- Reference -->
+          ${this._renderTactics()}
+          ${this._renderDemoRun()}
+          ${this._renderMatches()}
+          ${this._renderAnalytics()}
+          ${this._renderUpdates()}
         </main>
       </div>
 
@@ -319,7 +364,7 @@ export class VelgHowToPlay extends LitElement {
     `;
   }
 
-  /* ── Section 1: Epochs ───────────────────────────── */
+  /* ── Shared ────────────────────────────────────────── */
 
   private _renderSectionHeader(num: string, title: string) {
     return html`
@@ -331,10 +376,59 @@ export class VelgHowToPlay extends LitElement {
     `;
   }
 
+  /* ── Section 01: Intro ──────────────────────────── */
+
+  private _renderIntro() {
+    return html`
+      <section class="section" id="intro">
+        ${this._renderSectionHeader('01', msg('What is metaverse.center?'))}
+        <p class="section__text">
+          ${msg('metaverse.center is a platform for creating and managing AI-driven simulations \u2014 fictional worlds with agents, buildings, events, geography, and lore. Each simulation is a living sandbox: agents have personalities and memories, events shape the narrative, and AI generates everything from character dialogue to newspaper editions.')}
+        </p>
+        <p class="section__text">
+          ${msg('Simulations can be connected to form a multiverse. Events bleed across connections, echoing through dimensional barriers. Embassies establish diplomatic links. The Cartographer\u2019s Map visualizes the entire network as an interactive force-directed graph.')}
+        </p>
+
+        <div class="callout callout--info">
+          <div class="callout__label">${msg('Two Modes of Play')}</div>
+          <div class="callout__text">
+            ${msg('In sandbox mode, you build and explore your world \u2014 create agents, generate events, chat with characters, import real-world news, and craft lore. In competitive mode, simulations enter Epochs: time-limited PvP matches where players deploy operatives, form alliances, and compete across five scoring dimensions.')}
+          </div>
+        </div>
+
+        <div class="callout callout--tip">
+          <div class="callout__label">${msg('Getting Started')}</div>
+          <div class="callout__text">
+            ${msg('Use the Simulation Forge to create your first world from a single seed idea. The AI generates geography, agents, buildings, a visual identity, and full lore in about 15 minutes. Then explore the sections below to learn what you can do with your world.')}
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  /* ── Section 05: Events & Reactions ──────────────── */
+
+  private _renderEventsGuide() {
+    const steps = getEventsGuideSteps();
+    return html`
+      <section class="section" id="events">
+        ${this._renderSectionHeader('05', msg('Events & Reactions'))}
+        <p class="section__text">
+          ${msg('Events are the narrative engine of every simulation. They can be created manually, generated by AI, spawned by operative missions, or echoed from connected worlds. Agents react in character, and high-impact events trigger zone pressure, cascade mechanics, and cross-simulation bleed.')}
+        </p>
+        <div class="demo-steps">
+          ${steps.map((step, i) => this._renderDemoStep(step, i))}
+        </div>
+      </section>
+    `;
+  }
+
+  /* ── Section 09: Epochs ───────────────────────────── */
+
   private _renderEpochs() {
     return html`
       <section class="section" id="epochs">
-        ${this._renderSectionHeader('01', msg('What is an Epoch?'))}
+        ${this._renderSectionHeader('09', msg('What is an Epoch?'))}
         <p class="section__text">
           ${msg('An Epoch is a competitive season where simulations battle across five dimensions: Stability, Influence, Sovereignty, Diplomatic, and Military. Each epoch is time-limited, divided into phases, and scored in real time. Deploy operatives, forge alliances, sabotage rivals, and climb the leaderboard. Anyone can spectate; only participants can act.')}
         </p>
@@ -355,7 +449,7 @@ export class VelgHowToPlay extends LitElement {
     const rules = getNormalizationRules();
     return html`
       <section class="section" id="getting-started">
-        ${this._renderSectionHeader('02', msg('Getting Started'))}
+        ${this._renderSectionHeader('10', msg('Getting Started'))}
         <p class="section__text">
           ${msg('Any simulation owner can create an epoch. Other players join by accepting an invitation or entering the lobby before it closes.')}
         </p>
@@ -405,7 +499,7 @@ export class VelgHowToPlay extends LitElement {
     const phases = getPhases();
     return html`
       <section class="section" id="phases">
-        ${this._renderSectionHeader('03', msg('Phases & Timeline'))}
+        ${this._renderSectionHeader('11', msg('Phases & Timeline'))}
         <p class="section__text">
           ${msg('Every epoch progresses through 5 phases. Each phase changes what actions are available and how scores are calculated.')}
         </p>
@@ -434,7 +528,7 @@ export class VelgHowToPlay extends LitElement {
     const rules = getRpRules();
     return html`
       <section class="section" id="rp">
-        ${this._renderSectionHeader('04', msg('Resonance Points (RP)'))}
+        ${this._renderSectionHeader('12', msg('Resonance Points (RP)'))}
         <p class="section__text">
           ${msg('RP is your action economy. Every cycle, each participant receives RP to spend on deploying operatives or running counter-intelligence sweeps. Unspent RP carries over, capped at 30.')}
         </p>
@@ -458,7 +552,7 @@ export class VelgHowToPlay extends LitElement {
     const ops = getOperativeCards();
     return html`
       <section class="section" id="operatives">
-        ${this._renderSectionHeader('05', msg('Operatives'))}
+        ${this._renderSectionHeader('13', msg('Operatives'))}
         <p class="section__text">
           ${msg('Six operative types, each with different costs, timings, and effects. Choose wisely — RP is scarce.')}
         </p>
@@ -521,7 +615,7 @@ export class VelgHowToPlay extends LitElement {
     const info = getEmbassyInfo();
     return html`
       <section class="section" id="embassies">
-        ${this._renderSectionHeader('06', msg('Embassies & Ambassadors'))}
+        ${this._renderSectionHeader('14', msg('Embassies & Ambassadors'))}
         <p class="section__text">
           ${msg('Embassies are diplomatic buildings that connect two simulations. They serve as deployment channels for operatives, boost diplomatic scoring, and increase bleed echo strength. Every embassy has an ambassador \u2014 a designated agent who represents your simulation abroad.')}
         </p>
@@ -570,7 +664,7 @@ export class VelgHowToPlay extends LitElement {
 
     return html`
       <section class="section" id="scoring">
-        ${this._renderSectionHeader('07', msg('Scoring System'))}
+        ${this._renderSectionHeader('15', msg('Scoring System'))}
         <p class="section__text">
           ${msg('Scores are computed across 5 dimensions, normalized against other participants, then weighted by the epoch preset to produce a composite score. Highest composite wins.')}
         </p>
@@ -644,7 +738,7 @@ export class VelgHowToPlay extends LitElement {
   private _renderAlliances() {
     return html`
       <section class="section" id="alliances">
-        ${this._renderSectionHeader('08', msg('Alliances & Diplomacy'))}
+        ${this._renderSectionHeader('16', msg('Alliances & Diplomacy'))}
         <p class="section__text">
           ${msg('Form teams with other simulations. Allies share no direct resources, but gain diplomatic scoring bonuses and can coordinate strikes. Embassies serve as deployment channels for operatives.')}
         </p>
@@ -674,7 +768,7 @@ export class VelgHowToPlay extends LitElement {
     const lifecycle = getEchoLifecycle();
     return html`
       <section class="section" id="bleed">
-        ${this._renderSectionHeader('09', msg('Bleed & Echoes'))}
+        ${this._renderSectionHeader('19', msg('Bleed & Echoes'))}
         <p class="section__text">
           ${msg('The Bleed is the cross-simulation influence that connects the multiverse. When an event occurs in one simulation, it may "bleed" into connected simulations as an echo \u2014 a weaker copy that carries thematic resonance. Bleed is the engine that drives the Influence and Sovereignty dimensions.')}
         </p>
@@ -769,7 +863,7 @@ export class VelgHowToPlay extends LitElement {
     const tactics = getTactics();
     return html`
       <section class="section" id="tactics">
-        ${this._renderSectionHeader('10', msg('Tactics & Strategies'))}
+        ${this._renderSectionHeader('24', msg('Tactics & Strategies'))}
         <p class="section__text">
           ${msg('Proven strategies for each phase, economy management, counter-play patterns, and preset-specific approaches. Study these before your first deployment.')}
         </p>
@@ -816,7 +910,7 @@ export class VelgHowToPlay extends LitElement {
 
     return html`
       <section class="section" id="demo-run">
-        ${this._renderSectionHeader('11', msg('Demo Run'))}
+        ${this._renderSectionHeader('25', msg('Demo Run'))}
         <p class="section__text">
           ${msg('A complete epoch walkthrough from creation to final standings. Follow along to see every phase, decision point, and outcome in a real 2-player match: Velgarien (human) vs. The Gaslit Reach (Strategist bot).')}
         </p>
@@ -928,7 +1022,7 @@ export class VelgHowToPlay extends LitElement {
     const matches = getMatches();
     return html`
       <section class="section" id="matches">
-        ${this._renderSectionHeader('12', msg('Example Matches'))}
+        ${this._renderSectionHeader('26', msg('Example Matches'))}
         <p class="section__text">
           ${msg('Five fully worked-out matches showing different strategies, presets, and mechanics in action. Expand each match to see cycle-by-cycle replays.')}
         </p>
@@ -1120,7 +1214,7 @@ export class VelgHowToPlay extends LitElement {
     const entries = getChangelog();
     return html`
       <section class="section" id="updates">
-        ${this._renderSectionHeader('13', msg('Updates & Changelog'))}
+        ${this._renderSectionHeader('28', msg('Updates & Changelog'))}
         <p class="section__text">
           ${msg('Balance patches and game mechanic changes are documented here. Each update includes detailed change notes and the reasoning behind adjustments.')}
         </p>
@@ -1192,7 +1286,7 @@ export class VelgHowToPlay extends LitElement {
 
     return html`
       <section class="section" id="analytics">
-        ${this._renderSectionHeader('14', msg('Intelligence Report'))}
+        ${this._renderSectionHeader('27', msg('Intelligence Report'))}
         <p class="section__text">
           ${msg('Compiled from 200 simulated epoch games (50 per player count, 2P through 5P) using v2.1 balance tuning. All data drawn from automated Monte Carlo simulation against the live game engine. 188 games produced valid results (12 empty leaderboards excluded).')}
         </p>
@@ -1706,7 +1800,7 @@ export class VelgHowToPlay extends LitElement {
 
     return html`
       <section class="section" id="forge-guide">
-        ${this._renderSectionHeader('15', msg('The Simulation Forge'))}
+        ${this._renderSectionHeader('03', msg('The Simulation Forge'))}
         <p class="section__text">
           ${msg('The Forge is a four-phase wizard that creates an entire simulation from scratch using AI generation. Enter a seed idea, and the Forge produces geography, agents, buildings, a visual identity, and AI-generated artwork \u2014 a complete world ready for competitive play.')}
         </p>
@@ -1736,7 +1830,7 @@ export class VelgHowToPlay extends LitElement {
     const steps = getChronicleGuideSteps();
     return html`
       <section class="section" id="chronicle-guide">
-        ${this._renderSectionHeader('16', msg('The Chronicle'))}
+        ${this._renderSectionHeader('23', msg('The Chronicle'))}
         <p class="section__text">
           ${msg('A living newspaper generated by AI after each epoch cycle. The Chronicle transforms raw game events into narrative journalism \u2014 battle reports, political analysis, and intelligence dispatches styled as a Victorian-era broadsheet.')}
         </p>
@@ -1753,7 +1847,7 @@ export class VelgHowToPlay extends LitElement {
     const steps = getResonanceGuideSteps();
     return html`
       <section class="section" id="resonance-guide">
-        ${this._renderSectionHeader('17', msg('Substrate Resonances'))}
+        ${this._renderSectionHeader('20', msg('Substrate Resonances'))}
         <p class="section__text">
           ${msg('Emergent phenomena that arise when a simulation\u2019s computational substrate vibrates in response to concentrated in-game activity. Resonances modify gameplay mechanics and can cascade during high-pressure phases.')}
         </p>
@@ -1770,7 +1864,7 @@ export class VelgHowToPlay extends LitElement {
     const steps = getZoneDynamicsGuideSteps();
     return html`
       <section class="section" id="zone-dynamics">
-        ${this._renderSectionHeader('18', msg('Event Pressure & Zones'))}
+        ${this._renderSectionHeader('21', msg('Event Pressure & Zones'))}
         <p class="section__text">
           ${msg('Track event intensity and zone security through the Event Seismograph and Zone Dynamics panel. Understanding pressure patterns and security levels is essential for timing deployments and identifying vulnerable targets.')}
         </p>
@@ -1787,9 +1881,128 @@ export class VelgHowToPlay extends LitElement {
     const steps = getAgentMemoryGuideSteps();
     return html`
       <section class="section" id="agent-memory">
-        ${this._renderSectionHeader('19', msg('Agent Memory'))}
+        ${this._renderSectionHeader('22', msg('Agent Memory'))}
         <p class="section__text">
           ${msg('Every agent maintains a persistent memory system of observations and AI-synthesized reflections. Memories accumulate over cycles, creating evolving psychological profiles that influence bot decision-making and provide narrative depth.')}
+        </p>
+        <div class="demo-steps">
+          ${steps.map((step, i) => this._renderDemoStep(step, i))}
+        </div>
+      </section>
+    `;
+  }
+
+  /* ── Section 20: The Multiverse Map ───────────────── */
+
+  private _renderMultiverseMapGuide() {
+    const steps = getMultiverseMapGuideSteps();
+    return html`
+      <section class="section" id="multiverse-map">
+        ${this._renderSectionHeader('07', msg('The Multiverse Map'))}
+        <p class="section__text">
+          ${msg('An interactive force-directed graph that visualizes all simulations and their connections. Template nodes glow with ambient energy, game instances orbit during epochs, and energy pulses flow along edges to show bleed and operative activity across the multiverse.')}
+        </p>
+        <div class="demo-steps">
+          ${steps.map((step, i) => this._renderDemoStep(step, i))}
+        </div>
+      </section>
+    `;
+  }
+
+  /* ── Section 21: Bot Players ──────────────────────── */
+
+  private _renderBotPlayersGuide() {
+    const steps = getBotPlayersGuideSteps();
+    return html`
+      <section class="section" id="bot-players">
+        ${this._renderSectionHeader('17', msg('Bot Players'))}
+        <p class="section__text">
+          ${msg('AI opponents with five personality archetypes \u2014 Sentinel, Warlord, Diplomat, Strategist, and Chaos \u2014 each with distinct strategic behavior. Bots use the same deployment and scoring mechanics as human players, configurable at three difficulty levels.')}
+        </p>
+        <div class="demo-steps">
+          ${steps.map((step, i) => this._renderDemoStep(step, i))}
+        </div>
+      </section>
+    `;
+  }
+
+  /* ── Section 22: Agent Chat ───────────────────────── */
+
+  private _renderAgentChatGuide() {
+    const steps = getAgentChatGuideSteps();
+    return html`
+      <section class="section" id="agent-chat">
+        ${this._renderSectionHeader('04', msg('Agent Chat'))}
+        <p class="section__text">
+          ${msg('Converse with the agents in your simulation through AI-generated dialogue. Each agent responds in character, shaped by their personality, profession, and accumulated memories \u2014 creating persistent, evolving conversations that deepen over time.')}
+        </p>
+        <div class="demo-steps">
+          ${steps.map((step, i) => this._renderDemoStep(step, i))}
+        </div>
+      </section>
+    `;
+  }
+
+  /* ── Section 23: Simulation Lore ──────────────────── */
+
+  private _renderSimulationLoreGuide() {
+    const steps = getSimulationLoreGuideSteps();
+    return html`
+      <section class="section" id="simulation-lore">
+        ${this._renderSectionHeader('02', msg('Simulation Lore'))}
+        <p class="section__text">
+          ${msg('Every simulation has a dedicated lore narrative \u2014 thousands of words of in-world history, culture, and tension organized into six chapters. Lore is the world\u2019s identity, generated by the Forge or written by hand, and publicly visible to all visitors.')}
+        </p>
+        <div class="demo-steps">
+          ${steps.map((step, i) => this._renderDemoStep(step, i))}
+        </div>
+      </section>
+    `;
+  }
+
+  /* ── Section 24: Simulation Health ────────────────── */
+
+  private _renderSimulationHealthGuide() {
+    const steps = getSimulationHealthGuideSteps();
+    return html`
+      <section class="section" id="simulation-health">
+        ${this._renderSectionHeader('08', msg('Simulation Health'))}
+        <p class="section__text">
+          ${msg('Four computed metrics \u2014 Building Readiness, Zone Stability, Embassy Effectiveness, and overall Simulation Health \u2014 that directly feed into epoch scoring. Monitor these to understand your world\u2019s mechanical state and respond to threats.')}
+        </p>
+        <div class="demo-steps">
+          ${steps.map((step, i) => this._renderDemoStep(step, i))}
+        </div>
+      </section>
+    `;
+  }
+
+  /* ── Section 25: Social Trends & Campaigns ────────── */
+
+  private _renderSocialTrendsGuide() {
+    const steps = getSocialTrendsGuideSteps();
+    return html`
+      <section class="section" id="social-trends">
+        ${this._renderSectionHeader('06', msg('Social Trends & Campaigns'))}
+        <p class="section__text">
+          ${msg('Import real-world news and transform it into simulation-contextual events using AI. A political crisis becomes a coup in your dystopia. A scientific discovery becomes a forbidden ritual. Group related events into campaigns to track thematic narratives.')}
+        </p>
+        <div class="demo-steps">
+          ${steps.map((step, i) => this._renderDemoStep(step, i))}
+        </div>
+      </section>
+    `;
+  }
+
+  /* ── Section 26: COMMS & Notifications ────────────── */
+
+  private _renderEpochCommsGuide() {
+    const steps = getEpochCommsGuideSteps();
+    return html`
+      <section class="section" id="epoch-comms">
+        ${this._renderSectionHeader('18', msg('COMMS & Notifications'))}
+        <p class="section__text">
+          ${msg('Real-time communication during competitive play. The COMMS sidebar offers epoch-wide and team-only channels via WebSocket. Presence indicators, ready signals, and bilingual tactical email briefings keep all participants informed between cycles.')}
         </p>
         <div class="demo-steps">
           ${steps.map((step, i) => this._renderDemoStep(step, i))}

@@ -366,3 +366,349 @@ export function getAgentMemoryGuideSteps(): DemoStep[] {
     },
   ];
 }
+
+/* ── The Multiverse Map ──────────────────────────── */
+
+export function getMultiverseMapGuideSteps(): DemoStep[] {
+  return [
+    {
+      phase: 'competition',
+      title: msg('What is the Multiverse Map?'),
+      narration: msg(
+        'The Cartographer\u2019s Map is an interactive force-directed graph that visualizes the entire multiverse \u2014 every simulation, their connections, and active game instances. Nodes represent simulations, edges represent cross-dimensional connections, and energy pulses flow along the connections to show bleed activity.',
+      ),
+      detail: msg(
+        'Template simulations appear as solid nodes with ambient glow. When an epoch is active, game instances orbit their parent template with dashed rotating borders and phase-colored rings (green for foundation, amber for competition, red for reckoning). The map auto-refreshes every 30 seconds during active epochs.',
+      ),
+      readout: [
+        { label: msg('Nodes'), value: msg('Simulations (template + instances)') },
+        { label: msg('Edges'), value: msg('Cross-simulation connections') },
+        { label: msg('Pulses'), value: msg('Bleed & operative activity') },
+        { label: msg('Refresh'), value: msg('30 seconds (auto)') },
+      ],
+    },
+    {
+      phase: 'competition',
+      title: msg('Interactive Features'),
+      narration: msg(
+        'Click any simulation node to open a side panel with epoch scores and leaderboard data. Click an edge to see connection details including strength, embassy links, and operative flow. Double-click a game instance cluster to zoom in. Use the minimap in the bottom-right corner for viewport orientation. A search bar lets you find simulations by name, fading unmatched nodes.',
+      ),
+      readout: [
+        { label: msg('Node click'), value: msg('Leaderboard panel') },
+        { label: msg('Edge click'), value: msg('Connection details') },
+        { label: msg('Double-click'), value: msg('Zoom to cluster') },
+        { label: msg('Search'), value: msg('Filter by name') },
+      ],
+      tip: msg(
+        'The battle feed ticker at the bottom of the map shows a scrolling log of public battle events across all active epochs \u2014 useful for spectators following multiple matches.',
+      ),
+    },
+    {
+      phase: 'competition',
+      title: msg('Game Instance Visualization'),
+      narration: msg(
+        'During an active epoch, game instances display rich visual data: 5-dimension health arcs around the node show stability, influence, sovereignty, diplomatic, and military scores at a glance. Sparkline composite scores on template nodes show overall performance trends. Operative trails along edges indicate which simulations are targeting each other, with edge width and opacity reflecting operative volume.',
+      ),
+      readout: [
+        { label: msg('Health arcs'), value: msg('5 score dimensions') },
+        { label: msg('Sparklines'), value: msg('Composite score trends') },
+        { label: msg('Operative trails'), value: msg('Attack/defense flow') },
+        { label: msg('Phase rings'), value: msg('Color-coded epoch phase') },
+      ],
+    },
+  ];
+}
+
+/* ── Bot Players & Personalities ─────────────────── */
+
+export function getBotPlayersGuideSteps(): DemoStep[] {
+  return [
+    {
+      phase: 'lobby',
+      title: msg('What are Bot Players?'),
+      narration: msg(
+        'Bot players are AI opponents that can be added to any epoch. Each bot has a personality archetype that determines its strategic behavior \u2014 from defensive fortress-builders to chaotic wild cards. Bots use the exact same deployment and scoring mechanics as human players, ensuring fair competition.',
+      ),
+      detail: msg(
+        'Bots are configured through reusable presets with a name, personality, and difficulty level. The epoch creator adds bots from the Bot Deployment Console during the lobby phase. Bots auto-draft their agent roster based on their personality preferences and make decisions synchronously during cycle resolution.',
+      ),
+      readout: [
+        { label: msg('Personalities'), value: '5' },
+        { label: msg('Difficulty'), value: msg('Easy / Medium / Hard') },
+        { label: msg('Presets'), value: msg('Reusable across epochs') },
+        { label: msg('Fairness'), value: msg('Same rules as humans') },
+      ],
+    },
+    {
+      phase: 'lobby',
+      title: msg('Personality Archetypes'),
+      narration: msg(
+        'Each personality shapes how the bot allocates RP, chooses targets, and responds to threats. The Sentinel prioritizes defense with guardian stacking and counter-intel sweeps. The Warlord maximizes offensive pressure with assassins and saboteurs. The Diplomat builds embassy networks and avoids betrayal. The Strategist adapts dynamically based on game state. The Chaos agent acts unpredictably, mixing strategies each cycle.',
+      ),
+      readout: [
+        { label: msg('Sentinel'), value: msg('Defensive \u2014 guardians + sweeps') },
+        { label: msg('Warlord'), value: msg('Aggressive \u2014 assassins + saboteurs') },
+        { label: msg('Diplomat'), value: msg('Alliance-focused \u2014 embassy network') },
+        { label: msg('Strategist'), value: msg('Adaptive \u2014 reads game state') },
+        { label: msg('Chaos'), value: msg('Unpredictable \u2014 random mix') },
+      ],
+      tip: msg(
+        'Difficulty affects decision quality: easy bots make suboptimal choices and waste RP, medium bots play competently, and hard bots optimize their strategy and exploit weaknesses.',
+      ),
+    },
+    {
+      phase: 'competition',
+      title: msg('Bot Chat'),
+      narration: msg(
+        'Bots can participate in epoch chat with two modes. Template mode generates instant, cost-free responses based on personality templates. LLM mode uses OpenRouter to produce context-aware, strategically nuanced messages \u2014 bots will taunt, negotiate, and bluff based on the game state. The mode is configurable per simulation in AI Settings.',
+      ),
+      readout: [
+        { label: msg('Template mode'), value: msg('Free, instant, personality-based') },
+        { label: msg('LLM mode'), value: msg('AI-generated, context-aware') },
+        { label: msg('Config'), value: msg('AI Settings \u2192 Bot Chat Mode') },
+      ],
+    },
+  ];
+}
+
+/* ── Agent Chat ──────────────────────────────────── */
+
+export function getAgentChatGuideSteps(): DemoStep[] {
+  return [
+    {
+      phase: 'competition',
+      title: msg('What is Agent Chat?'),
+      narration: msg(
+        'Agent Chat lets you have conversations with the agents in your simulation. Each agent responds with AI-generated dialogue shaped by their personality, profession, background, and accumulated memories. Conversations persist across sessions, building a rich history of interactions.',
+      ),
+      detail: msg(
+        'The chat system uses a full context window of up to 50 previous messages plus the agent\u2019s relevant memories (retrieved via semantic similarity). This means agents remember what you\u2019ve discussed and can reference past conversations, creating a sense of continuity and depth.',
+      ),
+      readout: [
+        { label: msg('Context'), value: msg('50 messages + memories') },
+        { label: msg('AI Engine'), value: msg('OpenRouter (configurable model)') },
+        { label: msg('Persistence'), value: msg('Full conversation history') },
+        { label: msg('Access'), value: msg('Simulation \u2192 Chat tab') },
+      ],
+    },
+    {
+      phase: 'competition',
+      title: msg('Memory-Augmented Responses'),
+      narration: msg(
+        'When an agent responds, the system retrieves their most relevant memories using a Stanford Generative Agents-style retrieval formula that balances semantic similarity, importance, and recency. These memories are injected into the agent\u2019s system prompt, so their responses reflect what they\u2019ve experienced \u2014 events they witnessed, missions they participated in, and reflections they\u2019ve formed.',
+      ),
+      tip: msg(
+        'After each chat exchange, the system automatically extracts noteworthy observations from the conversation and stores them as new agent memories. Over time, agents develop richer, more nuanced personalities through accumulated interactions.',
+      ),
+    },
+    {
+      phase: 'competition',
+      title: msg('Starting a Conversation'),
+      narration: msg(
+        'Navigate to the Chat tab in your simulation and select an agent from the agent selector. Each conversation is a separate thread \u2014 you can maintain multiple ongoing conversations with different agents. Messages appear with directional animations, and AI responses are generated in real time via OpenRouter.',
+      ),
+      readout: [
+        { label: msg('Rate limit'), value: msg('10 messages per minute') },
+        { label: msg('Agent selector'), value: msg('Choose any simulation agent') },
+        { label: msg('Threads'), value: msg('One per agent, persistent') },
+      ],
+    },
+  ];
+}
+
+/* ── Events & Reactions ──────────────────────────── */
+
+export function getEventsGuideSteps(): DemoStep[] {
+  return [
+    {
+      phase: 'competition',
+      title: msg('What are Events?'),
+      narration: msg(
+        'Events are the narrative heartbeat of every simulation. They represent things that happen in the world \u2014 political upheavals, economic crises, military conflicts, cultural shifts, natural disasters. Events can be created manually, generated by AI, or produced automatically through game mechanics like operative missions and bleed echoes.',
+      ),
+      detail: msg(
+        'Each event has a type (from the simulation\u2019s taxonomy), an impact level (1\u201310), tags for categorization, and a status lifecycle (active \u2192 escalating \u2192 resolving \u2192 resolved \u2192 archived). High-impact events trigger zone pressure, cascade mechanics, and bleed echoes to connected simulations.',
+      ),
+      readout: [
+        { label: msg('Sources'), value: msg('Manual, AI, missions, bleed') },
+        { label: msg('Impact'), value: msg('1\u201310 scale') },
+        { label: msg('Status'), value: msg('Active \u2192 Resolved \u2192 Archived') },
+        { label: msg('Access'), value: msg('Simulation \u2192 Events tab') },
+      ],
+    },
+    {
+      phase: 'competition',
+      title: msg('AI Event Generation'),
+      narration: msg(
+        'Generate complete events using AI through the event creation modal. The AI produces a title, description, impact level, and tags \u2014 all contextually appropriate to your simulation\u2019s theme and current state. Each simulation can configure its own AI model and prompt templates to control the tone and style of generated events.',
+      ),
+      readout: [
+        { label: msg('AI Engine'), value: msg('OpenRouter (configurable model)') },
+        { label: msg('Rate limit'), value: msg('30 per hour') },
+        { label: msg('Customizable'), value: msg('Per-simulation prompt templates') },
+      ],
+    },
+    {
+      phase: 'competition',
+      title: msg('Agent Reactions'),
+      narration: msg(
+        'After an event occurs, agents can react to it based on their personality, profession, and background. Agent reactions are AI-generated character-driven responses \u2014 a military general reacts differently to an invasion than a merchant or a priest. Reactions appear as expandable cards below the event details.',
+      ),
+      tip: msg(
+        'Events with high impact levels (8+) can trigger bleed echoes to connected simulations, cascade events in stressed zones, and shift epoch scoring dimensions. They\u2019re not just narrative \u2014 they have real mechanical consequences.',
+      ),
+    },
+  ];
+}
+
+/* ── Simulation Lore ─────────────────────────────── */
+
+export function getSimulationLoreGuideSteps(): DemoStep[] {
+  return [
+    {
+      phase: 'lobby',
+      title: msg('What is Simulation Lore?'),
+      narration: msg(
+        'Every simulation has a dedicated Lore section \u2014 an in-world narrative of 3,000\u20135,000 words organized into six chapters. Lore describes the world\u2019s history, geography, political systems, culture, and defining tensions. It\u2019s the first thing visitors see when entering a simulation, setting the tone for everything that follows.',
+      ),
+      detail: msg(
+        'Lore is displayed through the LoreScroll component: an elegantly typeset reading experience using the Bureau font (Spectral serif) with themed section headers, paragraph spacing, and optional lore illustrations. The visual design adapts to each simulation\u2019s theme \u2014 dark brutalist for Velgarien, Victorian gaslight for The Gaslit Reach, deep-space horror for Station Null.',
+      ),
+      readout: [
+        { label: msg('Length'), value: msg('3,000\u20135,000 words') },
+        { label: msg('Chapters'), value: '6' },
+        { label: msg('Illustrations'), value: msg('AI-generated (AVIF)') },
+        { label: msg('Access'), value: msg('Simulation \u2192 Lore tab (default)') },
+      ],
+    },
+    {
+      phase: 'lobby',
+      title: msg('Forge-Generated vs. Manual'),
+      narration: msg(
+        'Simulations created through the Forge receive AI-generated lore that weaves together the seed prompt, philosophical anchor, geography, agents, and buildings into a cohesive narrative. Lore is auto-translated to German. Simulations created manually can have lore written and edited by the owner through the Lore editor.',
+      ),
+      tip: msg(
+        'Lore is publicly visible \u2014 anyone can browse a simulation\u2019s lore without logging in. It serves as the world\u2019s identity and helps players understand the thematic context before joining an epoch.',
+      ),
+    },
+  ];
+}
+
+/* ── Simulation Health Dashboard ─────────────────── */
+
+export function getSimulationHealthGuideSteps(): DemoStep[] {
+  return [
+    {
+      phase: 'competition',
+      title: msg('What is Simulation Health?'),
+      narration: msg(
+        'The Simulation Health dashboard shows the mechanical state of your world through four computed metrics: Building Readiness, Zone Stability, Embassy Effectiveness, and overall Simulation Health. These metrics directly feed into epoch scoring \u2014 they\u2019re not just flavor, they determine your score.',
+      ),
+      readout: [
+        { label: msg('Building Readiness'), value: msg('Avg. building condition') },
+        { label: msg('Zone Stability'), value: msg('Avg. zone security level') },
+        { label: msg('Embassy Effectiveness'), value: msg('Diplomatic link strength') },
+        { label: msg('Simulation Health'), value: msg('Composite of all metrics') },
+      ],
+    },
+    {
+      phase: 'competition',
+      title: msg('How Metrics Change'),
+      narration: msg(
+        'Building Readiness drops when saboteurs damage your buildings (good \u2192 moderate \u2192 poor \u2192 ruined). Zone Stability decreases when enemy operatives succeed or cascade events fire. Embassy Effectiveness falls when infiltrators compromise your diplomatic links. All metrics recover over time but can be boosted by deploying guardians and fortifying zones.',
+      ),
+      detail: msg(
+        'These metrics are computed from materialized database views that aggregate across all your buildings, zones, and embassies. They update automatically after each cycle resolution. The dashboard uses info bubbles to explain each metric\u2019s formula.',
+      ),
+      tip: msg(
+        'Monitor your health dashboard between cycles to identify which metrics are under pressure. If zone stability is dropping, deploy guardians. If embassy effectiveness is falling, watch for infiltrators. The dashboard is your early warning system.',
+      ),
+    },
+  ];
+}
+
+/* ── Social Trends & Campaigns ───────────────────── */
+
+export function getSocialTrendsGuideSteps(): DemoStep[] {
+  return [
+    {
+      phase: 'lobby',
+      title: msg('What are Social Trends?'),
+      narration: msg(
+        'Social Trends lets you import real-world news from The Guardian and NewsAPI, then transform those articles into simulation-contextual events using AI. A news story about political unrest becomes a coup attempt in your dystopian city. A technology breakthrough becomes a forbidden invention in your steampunk world. This bridges the real and fictional.',
+      ),
+      readout: [
+        { label: msg('Sources'), value: msg('The Guardian, NewsAPI') },
+        { label: msg('Transform'), value: msg('AI contextual adaptation') },
+        { label: msg('Output'), value: msg('Simulation events') },
+        { label: msg('Access'), value: msg('Simulation \u2192 Social Trends tab') },
+      ],
+    },
+    {
+      phase: 'lobby',
+      title: msg('The Transform Pipeline'),
+      narration: msg(
+        'The workflow is: Fetch \u2192 Transform \u2192 Integrate. First, browse or search real-world articles. Then, select an article and transform it \u2014 the AI rewrites the story through your simulation\u2019s lens, matching its theme, tone, and internal logic. Finally, integrate the transformed content as a new simulation event, optionally linking it to a campaign.',
+      ),
+      tip: msg(
+        'Batch transform lets you process multiple articles at once. This is useful for creating a cluster of related events that simulate a real-world news cycle filtered through your simulation\u2019s worldview.',
+      ),
+    },
+    {
+      phase: 'lobby',
+      title: msg('Campaigns'),
+      narration: msg(
+        'Campaigns group related events into thematic narratives \u2014 a propaganda initiative, an influence operation, or a social movement. Each campaign tracks engagement metrics and links back to its source events. The campaign dashboard shows an overview of all active campaigns with performance analytics.',
+      ),
+      readout: [
+        { label: msg('Types'), value: msg('Marketing, political, social') },
+        { label: msg('Metrics'), value: msg('Engagement, reach, impact') },
+        { label: msg('Source'), value: msg('Manual, imported, social') },
+        { label: msg('Dashboard'), value: msg('Simulation \u2192 Campaigns tab') },
+      ],
+    },
+  ];
+}
+
+/* ── Epoch COMMS & Notifications ─────────────────── */
+
+export function getEpochCommsGuideSteps(): DemoStep[] {
+  return [
+    {
+      phase: 'competition',
+      title: msg('What is the COMMS System?'),
+      narration: msg(
+        'The COMMS sidebar on the Epoch Operations Board provides real-time communication during competitive play. Two channels are available: ALL CHANNELS broadcasts to every participant, while TEAM FREQ is restricted to your alliance members. Messages update in real time via WebSocket \u2014 no page refresh needed.',
+      ),
+      readout: [
+        { label: msg('ALL CHANNELS'), value: msg('Epoch-wide broadcast') },
+        { label: msg('TEAM FREQ'), value: msg('Alliance-only channel') },
+        { label: msg('Delivery'), value: msg('Real-time (WebSocket)') },
+        { label: msg('History'), value: msg('Cursor-based pagination') },
+      ],
+    },
+    {
+      phase: 'competition',
+      title: msg('Presence & Ready Signals'),
+      narration: msg(
+        'The presence indicator shows which players are currently online with a green dot. The ready signal system lets you indicate when you\u2019ve completed your actions for the current cycle. When all human participants signal ready, the cycle auto-resolves \u2014 no waiting for the timer.',
+      ),
+      tip: msg(
+        'Use the COMMS to coordinate alliance strategy, negotiate truces, or bluff about your next move. Everything said in ALL CHANNELS is visible to all players \u2014 use TEAM FREQ for sensitive coordination.',
+      ),
+    },
+    {
+      phase: 'competition',
+      title: msg('Email Briefings'),
+      narration: msg(
+        'After each cycle resolves, all participants receive a tactical briefing email. The email is bilingual (EN/DE), fog-of-war compliant (you only see your own operations), and includes your current rank, score gaps, mission outcomes, spy intel summaries, threat assessments, and a preview of the next cycle phase. Emails respect notification preferences \u2014 opt out anytime in Settings.',
+      ),
+      readout: [
+        { label: msg('Triggers'), value: msg('Cycle resolve, phase change, epoch start') },
+        { label: msg('Content'), value: msg('Fog-of-war compliant briefing') },
+        { label: msg('Languages'), value: msg('EN + DE (bilingual)') },
+        { label: msg('Opt-out'), value: msg('Settings \u2192 Notifications') },
+      ],
+    },
+  ];
+}
