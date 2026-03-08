@@ -193,6 +193,7 @@ class ResonanceService(BaseService):
         *,
         simulation_ids: list[UUID] | None = None,
         generate_narratives: bool = True,
+        generate_reactions: bool = True,
         locale: str = "de",
     ) -> list[dict]:
         """Process resonance impact across simulations.
@@ -246,6 +247,7 @@ class ResonanceService(BaseService):
                     signature=signature,
                     user_id=user_id,
                     generate_narratives=generate_narratives,
+                    generate_reactions=generate_reactions,
                     locale=locale,
                 )
                 impacts.append(impact)
@@ -284,6 +286,7 @@ class ResonanceService(BaseService):
         signature: str,
         user_id: UUID,
         generate_narratives: bool,
+        generate_reactions: bool,
         locale: str,
     ) -> dict:
         """Process resonance impact for a single simulation."""
@@ -346,6 +349,7 @@ class ResonanceService(BaseService):
                     exc_info=True,
                 )
 
+        spawned_events: list[dict] = []
         for event_type in event_types[:3]:
             try:
                 event = await cls._spawn_resonance_event(
@@ -356,9 +360,9 @@ class ResonanceService(BaseService):
                     effective_magnitude=effective_mag,
                     user_id=user_id,
                     gen_service=gen_service,
-                    locale=locale,
                 )
                 spawned_ids.append(event["id"])
+                spawned_events.append(event)
             except Exception:
                 logger.exception(
                     "Failed to spawn %s event for simulation %s",
@@ -387,6 +391,24 @@ class ResonanceService(BaseService):
                     exc_info=True,
                 )
 
+        # Auto-generate agent reactions for spawned events
+        if generate_reactions and gen_service and spawned_events:
+            for event in spawned_events:
+                try:
+                    await EventService.generate_reactions(
+                        supabase, UUID(sim_id), event, gen_service,
+                    )
+                    logger.info(
+                        "Auto-generated reactions for resonance event %s",
+                        event["id"],
+                    )
+                except Exception:
+                    logger.warning(
+                        "Auto-reaction generation failed for event %s",
+                        event["id"],
+                        exc_info=True,
+                    )
+
         return update_resp.data[0] if update_resp.data else impact
 
     @classmethod
@@ -400,31 +422,56 @@ class ResonanceService(BaseService):
         effective_magnitude: float,
         user_id: UUID,
         gen_service: GenerationService | None,
-        locale: str,
     ) -> dict:
-        """Spawn a single event from resonance impact."""
+        """Spawn a single event from resonance impact.
+
+        Generates English content first (title, description), then a German
+        translation (title_de, description_de) — same pattern as agents/buildings.
+        """
         archetype = resonance["archetype"]
         impact_level = min(10, max(1, round(effective_magnitude * 10)))
 
         # Generate title and description via AI or fallback template
         title: str
         description: str | None
+        title_de: str | None = None
+        description_de: str | None = None
 
         if gen_service:
             try:
-                generated = await gen_service.generate_resonance_event(
+                # 1. Generate English version
+                generated_en = await gen_service.generate_resonance_event(
                     archetype_name=archetype,
                     archetype_description=ARCHETYPE_DESCRIPTIONS.get(archetype, ""),
                     resonance_title=resonance["title"],
                     resonance_description=resonance.get("description", ""),
                     event_type=event_type,
                     magnitude=effective_magnitude,
-                    locale=locale,
+                    locale="en",
                 )
-                title = generated.get("title", f"{archetype} — {event_type}")
-                description = generated.get("description")
-                if generated.get("impact_level"):
-                    impact_level = min(10, max(1, int(generated["impact_level"])))
+                title = generated_en.get("title", f"{archetype} — {event_type}")
+                description = generated_en.get("description")
+                if generated_en.get("impact_level"):
+                    impact_level = min(10, max(1, int(generated_en["impact_level"])))
+
+                # 2. Generate German translation
+                try:
+                    generated_de = await gen_service.generate_resonance_event(
+                        archetype_name=archetype,
+                        archetype_description=ARCHETYPE_DESCRIPTIONS.get(archetype, ""),
+                        resonance_title=resonance["title"],
+                        resonance_description=resonance.get("description", ""),
+                        event_type=event_type,
+                        magnitude=effective_magnitude,
+                        locale="de",
+                    )
+                    title_de = generated_de.get("title")
+                    description_de = generated_de.get("description")
+                except Exception:
+                    logger.warning(
+                        "German translation failed for resonance event, EN only",
+                        exc_info=True,
+                    )
             except Exception:
                 logger.warning(
                     "AI generation failed for resonance event, using template",
@@ -450,6 +497,10 @@ class ResonanceService(BaseService):
                 "archetype": archetype,
             },
         }
+        if title_de:
+            event_data["title_de"] = title_de
+        if description_de:
+            event_data["description_de"] = description_de
 
         sim_id = UUID(simulation["id"])
         event = await EventService.create(

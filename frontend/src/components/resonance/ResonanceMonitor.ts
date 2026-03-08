@@ -8,6 +8,7 @@ import { resonanceApi } from '../../services/api/index.js';
 import { icons } from '../../utils/icons.js';
 import { appState } from '../../services/AppStateManager.js';
 import './ResonanceCard.js';
+import './ResonanceDetailsPanel.js';
 
 const SIGNATURE_LABELS: Record<string, string> = {
   economic_tremor: 'Economic Tremor',
@@ -149,8 +150,8 @@ export class ResonanceMonitor extends LitElement {
 
     .filter-chip.active {
       background: var(--color-primary);
-      color: var(--color-text-inverse);
-      border-color: var(--color-primary);
+      color: var(--color-primary-text, var(--color-text-inverse));
+      border-color: var(--color-primary-text, var(--color-text-inverse));
     }
 
     .filter-separator {
@@ -272,7 +273,7 @@ export class ResonanceMonitor extends LitElement {
       font-weight: var(--font-bold);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wider);
-      color: var(--color-text-inverse);
+      color: var(--color-primary-text, var(--color-text-inverse));
       background: var(--color-primary);
       border: var(--border-width-default) solid var(--color-border);
       cursor: pointer;
@@ -328,6 +329,8 @@ export class ResonanceMonitor extends LitElement {
   @state() private _error = '';
   @state() private _statusFilter: StatusFilter = 'all';
   @state() private _signatureFilter: ResonanceSignature | '' = '';
+  @state() private _selectedResonance: Resonance | null = null;
+  @state() private _showDetails = false;
   private _refreshTimer?: ReturnType<typeof setInterval>;
 
   connectedCallback(): void {
@@ -399,6 +402,32 @@ export class ResonanceMonitor extends LitElement {
     }
   }
 
+  private _handleResonanceClick(e: CustomEvent<Resonance>): void {
+    this._selectedResonance = e.detail;
+    this._showDetails = true;
+  }
+
+  private _handleDetailsPanelClose(): void {
+    this._showDetails = false;
+    this._selectedResonance = null;
+  }
+
+  private _handleLightboxPrev(): void {
+    const list = this._filteredResonances;
+    const idx = list.findIndex((r) => r.id === this._selectedResonance?.id);
+    if (idx > 0) {
+      this._selectedResonance = list[idx - 1];
+    }
+  }
+
+  private _handleLightboxNext(): void {
+    const list = this._filteredResonances;
+    const idx = list.findIndex((r) => r.id === this._selectedResonance?.id);
+    if (idx >= 0 && idx < list.length - 1) {
+      this._selectedResonance = list[idx + 1];
+    }
+  }
+
   private get _isPlatformAdmin(): boolean {
     return appState.isPlatformAdmin?.value ?? false;
   }
@@ -463,6 +492,19 @@ export class ResonanceMonitor extends LitElement {
                 : this._renderCards()}
         </div>
       </div>
+
+      <velg-resonance-details-panel
+        .resonance=${this._selectedResonance}
+        ?open=${this._showDetails}
+        .totalEntities=${this._filteredResonances.length}
+        .currentIndex=${this._selectedResonance
+          ? this._filteredResonances.findIndex((r) => r.id === this._selectedResonance!.id)
+          : 0}
+        @panel-close=${this._handleDetailsPanelClose}
+        @lightbox-prev=${this._handleLightboxPrev}
+        @lightbox-next=${this._handleLightboxNext}
+        @resonance-process=${this._handleProcess}
+      ></velg-resonance-details-panel>
     `;
   }
 
@@ -487,6 +529,7 @@ export class ResonanceMonitor extends LitElement {
               .resonance=${r}
               .impactCount=${this._impactCounts[r.id] ?? 0}
               .showProcessButton=${this._isPlatformAdmin}
+              @resonance-click=${this._handleResonanceClick}
               @resonance-process=${this._handleProcess}
             ></resonance-card>
           `,

@@ -37,6 +37,11 @@ export function getTocSections(): TocSection[] {
     { id: 'matches', label: msg('Example Matches') },
     { id: 'updates', label: msg('Updates') },
     { id: 'analytics', label: msg('Intelligence Report') },
+    { id: 'forge-guide', label: msg('The Simulation Forge') },
+    { id: 'chronicle-guide', label: msg('The Chronicle') },
+    { id: 'resonance-guide', label: msg('Substrate Resonances') },
+    { id: 'zone-dynamics', label: msg('Event Pressure & Zones') },
+    { id: 'agent-memory', label: msg('Agent Memory') },
   ];
 }
 

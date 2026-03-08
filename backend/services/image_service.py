@@ -170,14 +170,31 @@ class ImageService:
         sim_description: str,
         anchor_data: dict | None = None,
     ) -> str:
-        """Generate a 16:9 banner image for a simulation and upload to storage."""
-        anchor = anchor_data or {}
-        description = (
-            f"Cinematic wide establishing shot of {sim_name}. "
-            f"{sim_description[:200]}. "
-            f"Atmosphere: {anchor.get('title', 'mysterious')}. "
-            f"Epic landscape, 16:9 aspect ratio, no text, no UI elements, "
-            f"dramatic lighting, high detail."
+        """Generate a 16:9 banner image for a simulation and upload to storage.
+
+        Uses the banner_description prompt template (via GenerationService)
+        so each simulation can define its own banner art direction — matching
+        the same per-simulation customization used for portraits and buildings.
+        """
+        # Fetch zone descriptions for thematic context
+        zones_resp = (
+            self._supabase.table("zones")
+            .select("name, description")
+            .eq("simulation_id", str(self._simulation_id))
+            .limit(10)
+            .execute()
+        )
+        zone_summaries = [
+            f"{z['name']}: {z['description']}"
+            for z in (zones_resp.data or [])
+            if z.get("description")
+        ]
+
+        description = await self._generation.generate_banner_description(
+            sim_name=sim_name,
+            sim_description=sim_description,
+            zone_summaries=zone_summaries,
+            anchor_data=anchor_data,
         )
 
         style_prompt = await self._model_resolver.resolve_style_prompt("banner")

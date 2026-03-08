@@ -100,9 +100,19 @@ export class VelgForgeDarkroom extends LitElement {
       .color-field__label {
         font-family: var(--font-mono, monospace);
         font-size: 11px;
+        display: flex;
+        align-items: baseline;
+        gap: var(--space-1);
         text-transform: uppercase;
         letter-spacing: 0.05em;
         color: var(--color-gray-300, #d1d5db);
+      }
+
+      .color-field__hint {
+        font-size: 9px;
+        text-transform: none;
+        letter-spacing: normal;
+        color: var(--color-gray-500, #6b7280);
       }
 
       .color-field__row {
@@ -408,11 +418,11 @@ export class VelgForgeDarkroom extends LitElement {
     return renderInfoBubble(text, example);
   }
 
-  private _renderColorField(key: string, label: string) {
+  private _renderColorField(key: string, label: string, hint?: string) {
     const value = this._themeConfig[key] || '#000000';
     return html`
       <div class="color-field">
-        <span class="color-field__label">${label}</span>
+        <span class="color-field__label">${label}${hint ? html` <span class="color-field__hint">${hint}</span>` : nothing}</span>
         <div class="color-field__row">
           <input type="color" .value=${value}
             @input=${(e: Event) => this._updateThemeKey(key, (e.target as HTMLInputElement).value)} />
@@ -505,12 +515,12 @@ export class VelgForgeDarkroom extends LitElement {
           </div>
 
           <div class="color-grid">
-            ${this._renderColorField('color_primary', msg('Primary'))}
-            ${this._renderColorField('color_secondary', msg('Secondary'))}
-            ${this._renderColorField('color_accent', msg('Accent'))}
-            ${this._renderColorField('color_background', msg('Background'))}
-            ${this._renderColorField('color_surface', msg('Surface'))}
-            ${this._renderColorField('color_text', msg('Text'))}
+            ${this._renderColorField('color_primary', msg('Primary'), msg('Buttons, links, active states'))}
+            ${this._renderColorField('color_secondary', msg('Secondary'), msg('Badges, secondary actions'))}
+            ${this._renderColorField('color_accent', msg('Accent'), msg('Highlights, borders, emphasis'))}
+            ${this._renderColorField('color_background', msg('Background'), msg('Page background'))}
+            ${this._renderColorField('color_surface', msg('Surface'), msg('Cards, panels, overlays'))}
+            ${this._renderColorField('color_text', msg('Text'), msg('Body text, headings'))}
           </div>
 
           <div style="display:flex;justify-content:space-between;align-items:center;margin-top:var(--space-4)">
@@ -548,7 +558,13 @@ export class VelgForgeDarkroom extends LitElement {
 
           <div class="range-field">
             <div class="range-field__header">
-              <label class="range-field__label">${msg('Border Radius')}</label>
+              <label class="range-field__label">
+                ${msg('Border Radius')}
+                ${this._renderInfoBubble(
+                  msg('Corner rounding on cards, buttons, and panels. 0 for sharp brutalist edges.'),
+                  msg('0px for military precision. 8px for softer, modern feel.'),
+                )}
+              </label>
               <span class="range-field__readout">${tc.border_radius || '0'}</span>
             </div>
             <input type="range" min="0" max="16" step="1"
@@ -675,10 +691,16 @@ export class VelgForgeDarkroom extends LitElement {
           </div>
 
           <div style="display:flex;flex-direction:column;gap:var(--space-3)">
-            <label class="field__label">${msg('Image Style Prompts')}</label>
+            <label class="field__label">
+              ${msg('Image Style Prompts')}
+              ${this._renderInfoBubble(
+                msg('Text prompts that guide AI image generation for each category. More specific prompts produce more consistent results.'),
+                msg("Try 'oil painting, dramatic chiaroscuro, renaissance' for a classical aesthetic."),
+              )}
+            </label>
 
             <div style="display:flex;flex-direction:column;gap:var(--space-1)">
-              <label class="field__label" style="font-size:var(--text-xs);color:var(--color-text-muted)">${msg('Portraits')}</label>
+              <label class="field__label" style="font-size:var(--text-xs);color:var(--color-text-muted)">${msg('Portraits')} — ${msg('agent character images')}</label>
               <textarea class="field__textarea" rows="2"
                 .value=${this._stylePromptPortrait}
                 @input=${(e: Event) => {
@@ -690,7 +712,7 @@ export class VelgForgeDarkroom extends LitElement {
             </div>
 
             <div style="display:flex;flex-direction:column;gap:var(--space-1)">
-              <label class="field__label" style="font-size:var(--text-xs);color:var(--color-text-muted)">${msg('Buildings')}</label>
+              <label class="field__label" style="font-size:var(--text-xs);color:var(--color-text-muted)">${msg('Buildings')} — ${msg('location and structure images')}</label>
               <textarea class="field__textarea" rows="2"
                 .value=${this._stylePromptBuilding}
                 @input=${(e: Event) => {
@@ -702,7 +724,7 @@ export class VelgForgeDarkroom extends LitElement {
             </div>
 
             <div style="display:flex;flex-direction:column;gap:var(--space-1)">
-              <label class="field__label" style="font-size:var(--text-xs);color:var(--color-text-muted)">${msg('Banner')}</label>
+              <label class="field__label" style="font-size:var(--text-xs);color:var(--color-text-muted)">${msg('Banner')} — ${msg('simulation hero image')}</label>
               <textarea class="field__textarea" rows="2"
                 .value=${this._stylePromptBanner}
                 @input=${(e: Event) => {
@@ -714,7 +736,7 @@ export class VelgForgeDarkroom extends LitElement {
             </div>
 
             <div style="display:flex;flex-direction:column;gap:var(--space-1)">
-              <label class="field__label" style="font-size:var(--text-xs);color:var(--color-text-muted)">${msg('Lore Illustrations')}</label>
+              <label class="field__label" style="font-size:var(--text-xs);color:var(--color-text-muted)">${msg('Lore Illustrations')} — ${msg('world lore section art')}</label>
               <textarea class="field__textarea" rows="2"
                 .value=${this._stylePromptLore}
                 @input=${(e: Event) => {

@@ -77,7 +77,7 @@ class GenerateImageRequest(BaseModel):
     """Request to generate an image for an entity."""
 
     entity_type: str = Field(
-        ..., pattern="^(agent|building)$", description="Entity kind: 'agent' or 'building'."
+        ..., pattern="^(agent|building|banner)$", description="Entity kind: 'agent', 'building', or 'banner'."
     )
     entity_id: UUID = Field(..., description="UUID of the entity to generate an image for.")
     entity_name: str = Field(..., min_length=1, description="Display name of the entity (used in the image prompt).")
@@ -318,7 +318,7 @@ async def generate_image(
     _role_check: str = Depends(require_role("editor")),
     supabase: Client = Depends(get_supabase),
 ) -> dict:
-    """Generate an image for an agent portrait or building."""
+    """Generate an image for an agent portrait, building, or simulation banner."""
     try:
         service = await _get_image_service(simulation_id, supabase)
 
@@ -331,6 +331,12 @@ async def generate_image(
                 agent_name=body.entity_name,
                 agent_data=extra or None,
                 description_override=description_override,
+            )
+        elif body.entity_type == "banner":
+            url = await service.generate_banner_image(
+                sim_name=body.entity_name,
+                sim_description=extra.get("description", ""),
+                anchor_data=extra.get("anchor_data"),
             )
         else:
             building_type = extra.get("building_type", "residential")

@@ -3,7 +3,9 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
-import type { Resonance } from '../../types/index.js';
+import type { Resonance, ResonanceImpact } from '../../types/index.js';
+import { resonanceApi } from '../../services/api/index.js';
+import { appState } from '../../services/AppStateManager.js';
 import { icons } from '../../utils/icons.js';
 
 /** Human-readable archetype labels. */
@@ -17,6 +19,12 @@ const ARCHETYPE_LABELS: Record<string, string> = {
   consciousness_drift: 'The Awakening',
   decay_bloom: 'The Entropy',
 };
+
+/** Resolved impact with simulation metadata. */
+interface ResolvedImpact extends ResonanceImpact {
+  _simName: string;
+  _simSlug: string;
+}
 
 @localized()
 @customElement('resonance-card')
@@ -53,8 +61,8 @@ export class ResonanceCard extends LitElement {
         0deg,
         transparent,
         transparent 2px,
-        rgba(0, 0, 0, 0.015) 2px,
-        rgba(0, 0, 0, 0.015) 4px
+        rgba(128, 128, 128, 0.06) 2px,
+        rgba(128, 128, 128, 0.06) 4px
       );
       pointer-events: none;
       z-index: 1;
@@ -396,17 +404,40 @@ export class ResonanceCard extends LitElement {
       border-top: var(--border-width-thin) solid var(--color-border-light);
     }
 
-    .impact-count {
+    .impact-toggle {
       display: inline-flex;
       align-items: center;
       gap: var(--space-1);
       font-family: var(--font-mono);
       font-size: var(--text-xs);
       color: var(--color-text-secondary);
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      transition: color var(--transition-fast);
     }
 
-    .impact-count strong {
+    .impact-toggle:hover {
       color: var(--color-text-primary);
+    }
+
+    .impact-toggle:focus-visible {
+      outline: none;
+      box-shadow: var(--ring-focus);
+    }
+
+    .impact-toggle strong {
+      color: var(--color-text-primary);
+    }
+
+    .impact-toggle__chevron {
+      transition: transform var(--duration-normal) var(--ease-out);
+      flex-shrink: 0;
+    }
+
+    .impact-toggle__chevron.expanded {
+      transform: rotate(90deg);
     }
 
     .process-btn {
@@ -416,7 +447,7 @@ export class ResonanceCard extends LitElement {
       font-weight: var(--font-bold);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wider);
-      color: var(--color-text-inverse);
+      color: var(--color-primary-text, var(--color-text-inverse));
       background: var(--color-primary);
       border: var(--border-width-default) solid var(--color-border);
       cursor: pointer;
@@ -440,6 +471,235 @@ export class ResonanceCard extends LitElement {
     .process-btn:focus-visible {
       outline: none;
       box-shadow: var(--ring-focus);
+    }
+
+    /* ── Impact Panel ──────────────────────────────────────── */
+
+    .impact-panel {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height var(--duration-slow) var(--ease-dramatic);
+    }
+
+    .impact-panel.expanded {
+      max-height: 800px;
+    }
+
+    .impact-list {
+      padding-top: var(--space-3);
+    }
+
+    .impact-list__header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding-bottom: var(--space-2);
+      margin-bottom: var(--space-1);
+      border-bottom: var(--border-width-thin) solid var(--color-border-light);
+    }
+
+    .impact-list__label {
+      font-family: var(--font-brutalist);
+      font-size: 0.6rem;
+      font-weight: var(--font-bold);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-widest);
+      color: var(--color-text-muted);
+      flex: 1;
+    }
+
+    .impact-list__col {
+      font-family: var(--font-mono);
+      font-size: 0.55rem;
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wider);
+      color: var(--color-text-muted);
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .impact-list__col--mag {
+      width: 56px;
+    }
+
+    .impact-list__col--events {
+      width: 44px;
+    }
+
+    /* ── Impact Row ────────────────────────────────────────── */
+
+    .impact-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-1-5) 0;
+      border-bottom: var(--border-width-thin) solid
+        color-mix(in srgb, var(--color-border-light) 40%, transparent);
+      cursor: pointer;
+      transition: background var(--transition-fast);
+      opacity: 0;
+      animation: impact-row-enter 250ms var(--ease-dramatic) forwards;
+      animation-delay: calc(var(--row-i, 0) * 50ms);
+    }
+
+    .impact-row:last-child {
+      border-bottom: none;
+    }
+
+    .impact-row:hover {
+      background: var(--color-surface-sunken);
+    }
+
+    .impact-row__status {
+      width: 5px;
+      height: 5px;
+      border-radius: var(--border-radius-full);
+      flex-shrink: 0;
+    }
+
+    .impact-row__status--completed {
+      background: var(--color-success, #22c55e);
+    }
+
+    .impact-row__status--pending,
+    .impact-row__status--generating {
+      background: var(--color-warning);
+      animation: status-pulse 1.5s ease-in-out infinite alternate;
+    }
+
+    .impact-row__status--failed {
+      background: var(--color-danger);
+    }
+
+    .impact-row__status--skipped {
+      background: var(--color-text-muted);
+    }
+
+    .impact-row__name {
+      flex: 1;
+      min-width: 0;
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--color-text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: color var(--transition-fast);
+    }
+
+    .impact-row:hover .impact-row__name {
+      color: var(--color-primary-text, var(--color-info));
+    }
+
+    .impact-row__mag {
+      width: 56px;
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+      flex-shrink: 0;
+      justify-content: flex-end;
+    }
+
+    .impact-row__mag-bar {
+      width: 28px;
+      height: 3px;
+      background: var(--color-surface-sunken);
+      border: var(--border-width-thin) solid
+        color-mix(in srgb, var(--color-border-light) 50%, transparent);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .impact-row__mag-fill {
+      height: 100%;
+    }
+
+    .impact-row__mag-fill.low {
+      background: #06b6d4;
+    }
+    .impact-row__mag-fill.medium {
+      background: #f59e0b;
+    }
+    .impact-row__mag-fill.high {
+      background: #ef4444;
+    }
+
+    .impact-row__mag-val {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: var(--color-text-secondary);
+      min-width: 20px;
+      text-align: right;
+    }
+
+    .impact-row__events {
+      width: 44px;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: var(--color-text-muted);
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .impact-row__arrow {
+      flex-shrink: 0;
+      color: var(--color-text-muted);
+      opacity: 0;
+      transform: translateX(-4px);
+      transition:
+        opacity var(--transition-fast),
+        transform var(--transition-fast);
+    }
+
+    .impact-row:hover .impact-row__arrow {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* ── Impact Loading ────────────────────────────────────── */
+
+    .impact-loading {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-3) 0;
+    }
+
+    .impact-loading__dots {
+      display: flex;
+      gap: 3px;
+    }
+
+    .impact-loading__dot {
+      width: 4px;
+      height: 4px;
+      background: var(--color-text-muted);
+      border-radius: var(--border-radius-full);
+      animation: loading-dot 1s ease-in-out infinite;
+    }
+
+    .impact-loading__dot:nth-child(2) {
+      animation-delay: 150ms;
+    }
+
+    .impact-loading__dot:nth-child(3) {
+      animation-delay: 300ms;
+    }
+
+    .impact-loading__text {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-widest);
+    }
+
+    .impact-empty {
+      padding: var(--space-3) 0;
+      font-family: var(--font-bureau);
+      font-size: var(--text-xs);
+      font-style: italic;
+      color: var(--color-text-muted);
     }
 
     /* ── Keyframes ─────────────────────────────────────────── */
@@ -479,15 +739,34 @@ export class ResonanceCard extends LitElement {
       50% { opacity: 0.6; }
     }
 
+    @keyframes impact-row-enter {
+      from {
+        opacity: 0;
+        transform: translateX(-6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes loading-dot {
+      0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+      40% { opacity: 1; transform: scale(1); }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       .card,
       .status-dot,
       .icon-wrap,
       .magnitude-fill::after,
-      .countdown.urgent {
+      .countdown.urgent,
+      .impact-row,
+      .impact-loading__dot {
         animation: none !important;
       }
-      .card {
+      .card,
+      .impact-row {
         opacity: 1;
       }
     }
@@ -498,6 +777,10 @@ export class ResonanceCard extends LitElement {
   @property({ type: Boolean }) showProcessButton = false;
 
   @state() private _dispatchExpanded = false;
+  @state() private _impactsExpanded = false;
+  @state() private _impacts: ResolvedImpact[] = [];
+  @state() private _impactsLoading = false;
+  @state() private _impactsLoaded = false;
   @state() private _countdown = '';
   private _countdownTimer?: ReturnType<typeof setInterval>;
 
@@ -556,8 +839,48 @@ export class ResonanceCard extends LitElement {
     this._dispatchExpanded = !this._dispatchExpanded;
   }
 
-  private _getMagnitudeClass(): string {
-    const m = this.resonance.magnitude;
+  private async _toggleImpacts(e: Event): Promise<void> {
+    e.stopPropagation();
+    this._impactsExpanded = !this._impactsExpanded;
+    if (this._impactsExpanded && !this._impactsLoaded) {
+      await this._loadImpacts();
+    }
+  }
+
+  private async _loadImpacts(): Promise<void> {
+    this._impactsLoading = true;
+    try {
+      const res = await resonanceApi.listImpacts(this.resonance.id);
+      if (res.success && res.data) {
+        const sims = appState.simulations.value;
+        this._impacts = res.data.map((impact) => {
+          const sim = sims.find((s) => s.id === impact.simulation_id);
+          return {
+            ...impact,
+            _simName: sim?.name ?? impact.simulation_id.slice(0, 8),
+            _simSlug: sim?.slug ?? '',
+          };
+        });
+        // Sort by effective_magnitude descending
+        this._impacts.sort((a, b) => b.effective_magnitude - a.effective_magnitude);
+        this._impactsLoaded = true;
+      }
+    } catch {
+      // Silently handle — panel just stays empty
+    } finally {
+      this._impactsLoading = false;
+    }
+  }
+
+  private _navigateToSim(e: Event, slug: string): void {
+    e.stopPropagation();
+    if (!slug) return;
+    window.history.pushState({}, '', `/simulations/${slug}/events`);
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  }
+
+  private _getMagnitudeClass(mag?: number): string {
+    const m = mag ?? this.resonance.magnitude;
     if (m <= 0.4) return 'low';
     if (m <= 0.7) return 'medium';
     return 'high';
@@ -663,10 +986,20 @@ export class ResonanceCard extends LitElement {
 
         <!-- Footer -->
         <div class="footer">
-          <span class="impact-count">
-            ${icons.substrateTremor(12)}
-            <strong>${this.impactCount}</strong> ${msg('impacts')}
-          </span>
+          ${this.impactCount > 0
+            ? html`<button class="impact-toggle"
+                @click=${this._toggleImpacts}
+                aria-expanded=${this._impactsExpanded}
+                aria-controls="impact-panel">
+                <span class="impact-toggle__chevron ${this._impactsExpanded ? 'expanded' : ''}"
+                  aria-hidden="true">${icons.chevronRight(10)}</span>
+                ${icons.substrateTremor(12)}
+                <strong>${this.impactCount}</strong> ${msg('impacts')}
+              </button>`
+            : html`<span class="impact-toggle">
+                ${icons.substrateTremor(12)}
+                <strong>0</strong> ${msg('impacts')}
+              </span>`}
           ${this.showProcessButton && r.status === 'detected'
             ? html`<button class="process-btn"
                 @click=${this._handleProcess}
@@ -675,6 +1008,70 @@ export class ResonanceCard extends LitElement {
               </button>`
             : nothing}
         </div>
+
+        <!-- Impact Panel -->
+        <div id="impact-panel"
+          class=${classMap({ 'impact-panel': true, expanded: this._impactsExpanded })}>
+          ${this._impactsExpanded ? this._renderImpactList() : nothing}
+        </div>
+      </div>
+    `;
+  }
+
+  private _renderImpactList() {
+    if (this._impactsLoading) {
+      return html`
+        <div class="impact-list">
+          <div class="impact-loading">
+            <div class="impact-loading__dots">
+              <span class="impact-loading__dot"></span>
+              <span class="impact-loading__dot"></span>
+              <span class="impact-loading__dot"></span>
+            </div>
+            <span class="impact-loading__text">${msg('Scanning affected shards...')}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    if (this._impacts.length === 0) {
+      return html`
+        <div class="impact-list">
+          <div class="impact-empty">${msg('No impact records found.')}</div>
+        </div>
+      `;
+    }
+
+    return html`
+      <div class="impact-list">
+        <div class="impact-list__header">
+          <span class="impact-list__label">${msg('Affected Shards')}</span>
+          <span class="impact-list__col impact-list__col--mag">${msg('Mag')}</span>
+          <span class="impact-list__col impact-list__col--events">${msg('Evts')}</span>
+        </div>
+        ${this._impacts.map(
+          (impact, i) => html`
+            <div class="impact-row"
+              style="--row-i: ${i}"
+              role="link"
+              tabindex="0"
+              aria-label="${impact._simName} — ${msg('magnitude')} ${impact.effective_magnitude.toFixed(2)}"
+              @click=${(e: Event) => this._navigateToSim(e, impact._simSlug)}
+              @keydown=${(e: KeyboardEvent) => { if (e.key === 'Enter') this._navigateToSim(e, impact._simSlug); }}>
+              <span class="impact-row__status impact-row__status--${impact.status}"></span>
+              <span class="impact-row__name">${impact._simName}</span>
+              <span class="impact-row__mag">
+                <span class="impact-row__mag-bar">
+                  <span class="impact-row__mag-fill ${this._getMagnitudeClass(impact.effective_magnitude)}"
+                    style="width: ${Math.round(impact.effective_magnitude * 100)}%"></span>
+                </span>
+                <span class="impact-row__mag-val">${impact.effective_magnitude.toFixed(2)}</span>
+              </span>
+              <span class="impact-row__events">${impact.spawned_event_ids?.length ?? 0}</span>
+              <span class="impact-row__arrow" aria-hidden="true">${icons.chevronRight(10)}</span>
+            </div>
+          `,
+        )}
       </div>
     `;
   }

@@ -156,4 +156,5 @@ class ProcessImpactRequest(BaseModel):
 
     simulation_ids: list[UUID] | None = None
     generate_narratives: bool = True
+    generate_reactions: bool = True
     locale: str = "de"

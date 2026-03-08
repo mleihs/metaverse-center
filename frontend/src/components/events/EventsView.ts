@@ -4,6 +4,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { eventsApi } from '../../services/api/index.js';
 import type { Event as SimEvent } from '../../types/index.js';
+import { t } from '../../utils/locale-fields.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import type { FilterChangeDetail } from '../shared/SharedFilterBar.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -180,7 +181,7 @@ export class VelgEventsView extends LitElement {
     const confirmed = await VelgConfirmDialog.show({
       title: msg('Delete Event'),
       message: msg(
-        str`Are you sure you want to delete "${evt.title}"? This action cannot be undone.`,
+        str`Are you sure you want to delete "${t(evt, 'title')}"? This action cannot be undone.`,
       ),
       confirmLabel: msg('Delete'),
       variant: 'danger',

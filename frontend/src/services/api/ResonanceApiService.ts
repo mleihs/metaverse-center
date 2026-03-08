@@ -71,6 +71,9 @@ export class ResonanceApiService extends BaseApiService {
    * List impact records for a resonance.
    */
   listImpacts(resonanceId: string): Promise<ApiResponse<ResonanceImpact[]>> {
+    if (!appState.isAuthenticated.value) {
+      return this.getPublic(`/resonances/${resonanceId}/impacts`);
+    }
     return this.get(`/resonances/${resonanceId}/impacts`);
   }
 

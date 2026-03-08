@@ -256,9 +256,33 @@ export class VelgSimulationsDashboard extends LitElement {
     }
 
     /* ── Resonance Monitor Section ── */
+    /* Override semantic tokens for dark context — components inherit
+       inverted palette through the CSS custom property cascade. */
 
     .resonance-section {
       padding: var(--space-6) var(--space-6) 0;
+
+      --color-surface: var(--color-gray-900);
+      --color-surface-raised: var(--color-gray-800);
+      --color-surface-sunken: var(--color-gray-950);
+      --color-surface-overlay: var(--color-gray-800);
+      --color-surface-header: var(--color-gray-800);
+      --color-surface-inverse: var(--color-gray-800);
+
+      --color-text-primary: var(--color-gray-100);
+      --color-text-secondary: var(--color-gray-400);
+      --color-text-muted: var(--color-gray-500);
+      --color-text-inverse: var(--color-gray-100);
+
+      --color-border: var(--color-gray-600);
+      --color-border-light: var(--color-gray-700);
+
+      --color-primary: rgba(217, 175, 95, 0.15);
+      --color-primary-hover: rgba(217, 175, 95, 0.25);
+      --color-primary-bg: var(--color-gray-800);
+      --color-primary-text: #d9af5f;
+
+      --color-danger-bg: rgba(239, 68, 68, 0.1);
     }
 
     @media (max-width: 640px) {
@@ -514,7 +538,7 @@ export class VelgSimulationsDashboard extends LitElement {
       const res = await resonanceApi.list({ limit: '10' });
       if (res.success && res.data) {
         this._activeResonances = (res.data as Resonance[]).filter(
-          (r) => r.status === 'detected' || r.status === 'impacting',
+          (r) => r.status === 'detected' || r.status === 'impacting' || r.status === 'subsiding',
         );
       }
     } catch {
@@ -537,6 +561,47 @@ export class VelgSimulationsDashboard extends LitElement {
     appState.setCurrentSimulation(simulation);
     window.history.pushState({}, '', `/simulations/${simulation.slug}/lore`);
     window.dispatchEvent(new PopStateEvent('popstate'));
+  }
+
+  private _getTremorMessage(): string {
+    const rs = this._activeResonances;
+    const count = rs.length;
+    const impacting = rs.filter((r) => r.status === 'impacting').length;
+    const maxMag = Math.max(...rs.map((r) => r.magnitude), 0);
+    const allSubsiding = rs.every((r) => r.status === 'subsiding');
+
+    // All fading
+    if (allSubsiding) {
+      return count === 1
+        ? msg('residual substrate displacement — monitoring decay curve')
+        : msg('multiple tremors entering decay phase — substrate settling');
+    }
+
+    // High magnitude
+    if (maxMag >= 8) {
+      return msg('severe substrate distortion — local geometry unreliable');
+    }
+
+    // Multiple actively impacting
+    if (impacting >= 3) {
+      return msg('concurrent substrate fractures — recommend caution in affected zones');
+    }
+    if (impacting >= 2) {
+      return msg('overlapping tremor signatures — interference patterns forming');
+    }
+
+    // Single impacting
+    if (impacting === 1) {
+      return msg('active substrate displacement — affected zones may behave unpredictably');
+    }
+
+    // Multiple detected but not yet impacting
+    if (count >= 3) {
+      return msg('multiple signatures detected — the substrate is restless');
+    }
+
+    // Default
+    return msg('substrate anomaly detected — origin unclear');
   }
 
   private _getHeroImageUrl(): string | null {
@@ -594,22 +659,13 @@ export class VelgSimulationsDashboard extends LitElement {
           <div class="tremor-banner" role="alert">
             <span class="tremor-banner__icon" aria-hidden="true">${icons.substrateTremor(18)}</span>
             <span class="tremor-banner__count">${this._activeResonances.length}</span>
-            ${msg('substrate tremors detected — the space between worlds is afraid')}
+            ${this._getTremorMessage()}
           </div>
         `
         : nothing}
 
       <!-- Lore Scroll -->
       <velg-lore-scroll .pullQuotes=${getPlatformPullQuotes()}></velg-lore-scroll>
-
-      <!-- Resonance Monitor -->
-      ${this._activeResonances.length > 0
-        ? html`
-          <section class="resonance-section">
-            <resonance-monitor></resonance-monitor>
-          </section>
-        `
-        : nothing}
 
       <!-- Shards -->
       ${
@@ -666,6 +722,15 @@ export class VelgSimulationsDashboard extends LitElement {
           </div>
         `
       }
+
+      <!-- Resonance Monitor -->
+      ${this._activeResonances.length > 0
+        ? html`
+          <section class="resonance-section">
+            <resonance-monitor></resonance-monitor>
+          </section>
+        `
+        : nothing}
 
       ${this._renderScrollNav()}
     `;

@@ -7,6 +7,7 @@ import { echoesApi, eventsApi, simulationsApi } from '../../services/api/index.j
 import { generationProgress } from '../../services/GenerationProgressService.js';
 import type { EventChain, EventEcho, EventReaction, EventStatus, EventZoneLink, Event as SimEvent, Simulation } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
+import { t } from '../../utils/locale-fields.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { panelButtonStyles } from '../shared/panel-button-styles.js';
 import { panelCascadeStyles } from '../shared/panel-cascade-styles.js';
@@ -1362,11 +1363,11 @@ export class VelgEventDetailsPanel extends LitElement {
 
                   <!-- Description -->
                   ${
-                    evt.description
+                    t(evt, 'description')
                       ? html`
                       <div class="panel__section">
                         <velg-section-header>${msg('Description')}</velg-section-header>
-                        <div class="panel__text">${this._renderMarkdown(evt.description)}</div>
+                        <div class="panel__text">${this._renderMarkdown(t(evt, 'description'))}</div>
                       </div>
                     `
                       : null

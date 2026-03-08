@@ -977,6 +977,18 @@ async def get_resonance_public(
     return {"success": True, "data": data}
 
 
+@router.get("/resonances/{resonance_id}/impacts", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def list_resonance_impacts_public(
+    request: Request,
+    resonance_id: UUID,
+    supabase: Client = Depends(get_anon_supabase),
+) -> dict:
+    """List impact records for a resonance (public)."""
+    data = await ResonanceService.list_impacts(supabase, resonance_id)
+    return {"success": True, "data": data}
+
+
 # ── Epoch Invitations (Public) ──────────────────────────────────────
 
 

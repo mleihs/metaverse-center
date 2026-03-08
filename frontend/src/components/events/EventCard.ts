@@ -4,6 +4,7 @@ import { customElement, property } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import type { Event as SimEvent, EventStatus } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
+import { t } from '../../utils/locale-fields.js';
 import '../shared/VelgBadge.js';
 import '../shared/VelgIconButton.js';
 
@@ -354,7 +355,7 @@ export class VelgEventCard extends LitElement {
             role="img"
             aria-label=${msg(str`Status: ${evt.event_status ?? 'active'}`)}
           ></span>
-          <h3 class="card__title">${evt.title}</h3>
+          <h3 class="card__title">${t(evt, 'title')}</h3>
           ${this._renderImpactBar()}
         </div>
 

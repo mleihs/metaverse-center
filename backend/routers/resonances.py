@@ -135,6 +135,7 @@ async def process_impact(
         user.id,
         simulation_ids=body.simulation_ids,
         generate_narratives=body.generate_narratives,
+        generate_reactions=body.generate_reactions,
         locale=body.locale,
     )
     return {"success": True, "data": impacts}

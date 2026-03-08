@@ -149,6 +149,49 @@ class GenerationService:
                 result["building_condition"] = parsed["building_condition"]
         return result
 
+    async def generate_banner_description(
+        self,
+        sim_name: str,
+        sim_description: str,
+        zone_summaries: list[str] | None = None,
+        anchor_data: dict | None = None,
+    ) -> str:
+        """Generate a banner image description for image generation.
+
+        Uses the banner_description prompt template so each simulation
+        can define its own visual style for banners. Falls back to a
+        hardcoded prompt if no template exists.
+        """
+        anchor = anchor_data or {}
+        variables: dict[str, str] = {
+            "simulation_name": sim_name,
+            "simulation_description": sim_description,
+            "atmosphere": anchor.get("title", "mysterious"),
+            "zones": ", ".join(zone_summaries) if zone_summaries else "",
+        }
+
+        try:
+            result = await self._generate(
+                template_type="banner_description",
+                model_purpose="agent_description",
+                variables=variables,
+                locale="en",
+            )
+            description = result.get("content", "")
+            if description:
+                return description
+        except Exception:
+            logger.debug("No banner_description template — using hardcoded prompt")
+
+        # Fallback: hardcoded prompt (backwards-compatible)
+        return (
+            f"Cinematic wide establishing shot of {sim_name}. "
+            f"{sim_description[:200]}. "
+            f"Atmosphere: {anchor.get('title', 'mysterious')}. "
+            f"Epic landscape, 16:9 aspect ratio, no text, no UI elements, "
+            f"dramatic lighting, high detail."
+        )
+
     async def generate_portrait_description(
         self,
         agent_name: str,

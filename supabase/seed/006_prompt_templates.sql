@@ -1,7 +1,7 @@
 -- =============================================================================
 -- SEED 006: Platform-Default Prompt Templates
 -- =============================================================================
--- 22 prompt templates × 2 locales (DE + EN) = 44 platform defaults.
+-- 16 prompt template types × 2 locales (DE + EN) = 32 platform defaults.
 -- Plus 7 mock template categories for testing/development.
 --
 -- simulation_id IS NULL = Platform default (used by all simulations via fallback).
@@ -730,7 +730,73 @@ Gib ein JSON-Objekt zurück mit:
     'meta-llama/llama-3.2-3b-instruct:free', 0.3, 150, true, admin_id
 ) ON CONFLICT DO NOTHING;
 
-RAISE NOTICE 'Inserted 30 platform-default prompt templates (15 types × 2 locales)';
+-- =============================================================================
+-- RESONANCE TRANSFORMATION TEMPLATES (1 type × 2 locales = 2)
+-- =============================================================================
+
+-- 16. resonance_transformation (EN)
+INSERT INTO prompt_templates (
+    simulation_id, template_type, prompt_category, locale, template_name,
+    prompt_content, system_prompt, variables, default_model,
+    temperature, max_tokens, is_system_default, created_by_id
+) VALUES (
+    NULL, 'resonance_transformation', 'social', 'en', 'Resonance Transformation (EN)',
+    'Transform this substrate resonance into an in-world event for "{simulation_name}".
+
+Resonance: {resonance_title}
+{resonance_description}
+
+Archetype: {archetype_name} — {archetype_description}
+Event type: {event_type}
+Magnitude: {magnitude}/10
+
+Write the event AS IF it is happening inside the simulation world.
+The archetype is metaphorical context, NOT the event itself.
+Do NOT write an essay or explanation — write a narrative event report.
+
+Generate a JSON object:
+- "title": Compelling event headline (max 120 chars)
+- "description": Vivid narrative description (150-300 words) grounded in the simulation world
+- "impact_level": 1-10
+
+Respond in {locale_name}.',
+    'You are a world-building narrator. You report events as in-world occurrences, never as meta-commentary or essays.',
+    '[{"name": "simulation_name"}, {"name": "resonance_title"}, {"name": "resonance_description"}, {"name": "archetype_name"}, {"name": "archetype_description"}, {"name": "event_type"}, {"name": "magnitude"}, {"name": "locale_name"}]',
+    'deepseek/deepseek-chat-v3-0324', 0.8, 600, true, admin_id
+) ON CONFLICT DO NOTHING;
+
+-- 16. resonance_transformation (DE)
+INSERT INTO prompt_templates (
+    simulation_id, template_type, prompt_category, locale, template_name,
+    prompt_content, system_prompt, variables, default_model,
+    temperature, max_tokens, is_system_default, created_by_id
+) VALUES (
+    NULL, 'resonance_transformation', 'social', 'de', 'Resonanz-Transformation (DE)',
+    'Transformiere diese Substrat-Resonanz in ein Weltereignis für "{simulation_name}".
+
+Resonanz: {resonance_title}
+{resonance_description}
+
+Archetyp: {archetype_name} — {archetype_description}
+Ereignistyp: {event_type}
+Magnitude: {magnitude}/10
+
+Schreibe das Ereignis SO, ALS OB es in der Simulationswelt passiert.
+Der Archetyp ist metaphorischer Kontext, NICHT das Ereignis selbst.
+Schreibe KEINEN Aufsatz oder keine Erklärung — schreibe einen narrativen Ereignisbericht.
+
+Generiere ein JSON-Objekt:
+- "title": Packende Ereignis-Schlagzeile (max 120 Zeichen)
+- "description": Lebendige narrative Beschreibung (150-300 Wörter), verankert in der Simulationswelt
+- "impact_level": 1-10
+
+Antworte auf {locale_name}.',
+    'Du bist ein Weltenbau-Erzähler. Du berichtest über Ereignisse als Geschehnisse in der Welt, niemals als Meta-Kommentar oder Aufsätze.',
+    '[{"name": "simulation_name"}, {"name": "resonance_title"}, {"name": "resonance_description"}, {"name": "archetype_name"}, {"name": "archetype_description"}, {"name": "event_type"}, {"name": "magnitude"}, {"name": "locale_name"}]',
+    'deepseek/deepseek-chat-v3-0324', 0.8, 600, true, admin_id
+) ON CONFLICT DO NOTHING;
+
+RAISE NOTICE 'Inserted 32 platform-default prompt templates (16 types × 2 locales)';
 
 END;
 $$;

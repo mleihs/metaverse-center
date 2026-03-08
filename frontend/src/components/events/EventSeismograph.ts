@@ -2,6 +2,7 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import type { Event as SimEvent } from '../../types/index.js';
+import { t } from '../../utils/locale-fields.js';
 
 const RANGE_OPTIONS = [30, 90, 180, 365] as const;
 type RangeDays = (typeof RANGE_OPTIONS)[number];
@@ -481,7 +482,7 @@ export class VelgEventSeismograph extends LitElement {
           class=${spikeClass}
           tabindex="0"
           role="img"
-          aria-label=${`${evt.title}: ${msg('impact')} ${impact}, ${evt.event_type ?? ''}${sourceLabel}`}
+          aria-label=${`${t(evt, 'title')}: ${msg('impact')} ${impact}, ${evt.event_type ?? ''}${sourceLabel}`}
         >
           ${isResonance ? svg`
             <circle cx=${x} cy=${y} r="8" fill="none"
@@ -513,7 +514,7 @@ export class VelgEventSeismograph extends LitElement {
               stroke-width=${isCascade ? '2' : '1.5'}
             />
           `}
-          <title>${evt.title} — ${msg('impact')} ${impact}${sourceLabel}</title>
+          <title>${t(evt, 'title')} — ${msg('impact')} ${impact}${sourceLabel}</title>
         </g>
       `;
     });
