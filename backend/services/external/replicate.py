@@ -33,6 +33,7 @@ class ReplicateService:
         self,
         model: str,
         prompt: str,
+        prompt_key: str = "prompt",
         **params: Any,
     ) -> bytes:
         """Generate an image and return raw bytes.
@@ -42,6 +43,8 @@ class ReplicateService:
                 - Official: "black-forest-labs/flux-dev" (no version needed)
                 - Version-hash: "stability-ai/stable-diffusion:ac732d..." (SDK convention)
             prompt: Text prompt for image generation.
+            prompt_key: Input parameter name for the prompt (default "prompt").
+                Some models use "positive_prompt" instead.
             **params: Model-specific parameters (guidance_scale, width, height, etc.).
 
         Returns:
@@ -55,7 +58,7 @@ class ReplicateService:
 
             output = await self._client.async_run(
                 model,
-                input={"prompt": prompt, **params},
+                input={prompt_key: prompt, **params},
             )
 
             # Output is either a FileOutput or a list of FileOutput

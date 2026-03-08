@@ -25,6 +25,7 @@ export { SettingsApiService, settingsApi } from './SettingsApiService.js';
 export { SimulationsApiService, simulationsApi } from './SimulationsApiService.js';
 export { SocialMediaApiService, socialMediaApi } from './SocialMediaApiService.js';
 export { SocialTrendsApiService, socialTrendsApi } from './SocialTrendsApiService.js';
+export { StyleReferenceApiService, styleReferenceApi } from './StyleReferenceApiService.js';
 export { TaxonomiesApiService, taxonomiesApi } from './TaxonomiesApiService.js';
 export { UsersApiService, usersApi } from './UsersApiService.js';
 export { ZoneActionApiService, zoneActionsApi } from './ZoneActionApiService.js';

@@ -10,7 +10,12 @@
     },
     "mcp-webmcp": {
       "command": "npx",
-      "args": ["-y", "@tech-sumit/mcp-webmcp", "--launch", "--channel=chrome-beta"]
+      "args": [
+        "-y",
+        "@tech-sumit/mcp-webmcp",
+        "--launch",
+        "--channel=chrome-beta"
+      ]
     }
   }
 }

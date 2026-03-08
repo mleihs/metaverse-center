@@ -1266,6 +1266,20 @@ export interface PaginatedResponse<T> {
   error?: ApiError;
 }
 
+// --- Style References ---
+
+export type StyleReferenceScope = 'global' | 'entity';
+export type StyleReferenceEntityType = 'portrait' | 'building';
+
+export interface StyleReferenceInfo {
+  entity_type: StyleReferenceEntityType;
+  scope: StyleReferenceScope;
+  reference_image_url: string;
+  strength: number;
+  entity_id?: string;
+  entity_name?: string;
+}
+
 // --- Platform Admin ---
 
 export interface PlatformSetting {

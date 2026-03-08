@@ -16,6 +16,7 @@ import { renderInfoBubble } from './forge-utils.js';
 
 import '../shared/VelgFontPicker.js';
 import '../shared/VelgGameCard.js';
+import '../shared/VelgStyleReferenceUpload.js';
 import './VelgForgeScanOverlay.js';
 
 /**
@@ -329,6 +330,10 @@ export class VelgForgeDarkroom extends LitElement {
   @state() private _stylePromptLore = '';
   @state() private _guidanceScale = 7.5;
   @state() private _inferenceSteps = 28;
+  @state() private _styleRefPortrait = '';
+  @state() private _styleRefBuilding = '';
+  @state() private _styleRefPortraitLoading = false;
+  @state() private _styleRefBuildingLoading = false;
   private _disposeEffects: (() => void)[] = [];
 
   connectedCallback() {
@@ -359,6 +364,8 @@ export class VelgForgeDarkroom extends LitElement {
           '';
         this._guidanceScale = (settings?.image_guidance_scale as number) ?? 7.5;
         this._inferenceSteps = (settings?.image_num_inference_steps as number) ?? 28;
+        this._styleRefPortrait = (settings?.image_style_ref_portrait as string) || '';
+        this._styleRefBuilding = (settings?.image_style_ref_building as string) || '';
       }),
       effect(() => {
         this._isGeneratingTheme = forgeStateManager.isGeneratingTheme.value;
@@ -405,8 +412,41 @@ export class VelgForgeDarkroom extends LitElement {
         image_style_prompt_lore: this._stylePromptLore,
         image_guidance_scale: this._guidanceScale,
         image_num_inference_steps: this._inferenceSteps,
+        image_style_ref_portrait: this._styleRefPortrait,
+        image_style_ref_building: this._styleRefBuilding,
       },
     });
+  }
+
+  private async _handleStyleRefChange(
+    type: 'portrait' | 'building',
+    e: CustomEvent<{ file?: File; url?: string; action: string }>,
+  ) {
+    const { file, url, action } = e.detail;
+    if (action === 'delete') {
+      if (type === 'portrait') this._styleRefPortrait = '';
+      else this._styleRefBuilding = '';
+      this._updateSettings();
+      return;
+    }
+    if (action === 'upload' && file) {
+      // Create a local preview URL immediately
+      const previewUrl = URL.createObjectURL(file);
+      if (type === 'portrait') {
+        this._styleRefPortrait = previewUrl;
+        this._styleRefPortraitLoading = false;
+      } else {
+        this._styleRefBuilding = previewUrl;
+        this._styleRefBuildingLoading = false;
+      }
+      // Note: actual upload to storage happens at ignition time via the forge orchestrator.
+      // For now, store the blob URL in ai_settings as a placeholder.
+      this._updateSettings();
+    } else if (action === 'url' && url) {
+      if (type === 'portrait') this._styleRefPortrait = url;
+      else this._styleRefBuilding = url;
+      this._updateSettings();
+    }
   }
 
   private _handleIgnite() {
@@ -745,6 +785,38 @@ export class VelgForgeDarkroom extends LitElement {
                 }}
                 placeholder=${msg('Style for lore illustrations...')}
               ></textarea>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:var(--space-3)">
+            <label class="field__label">
+              ${msg('Reference Images (optional)')}
+              ${this._renderInfoBubble(
+                msg('Upload a reference image to guide the AI art style via img2img. The generated images will visually resemble the reference.'),
+                msg('Upload a painting or photo — portraits and buildings will inherit its visual style.'),
+              )}
+            </label>
+            <div class="color-grid">
+              <div style="display:flex;flex-direction:column;gap:var(--space-1)">
+                <label class="field__label" style="font-size:var(--text-xs);color:var(--color-text-muted)">${msg('Portrait Reference')}</label>
+                <velg-style-reference-upload
+                  .referenceUrl=${this._styleRefPortrait}
+                  entityType="portrait"
+                  .loading=${this._styleRefPortraitLoading}
+                  aspectHint=${msg('3:4 aspect ratio')}
+                  @reference-change=${(e: CustomEvent) => this._handleStyleRefChange('portrait', e)}
+                ></velg-style-reference-upload>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:var(--space-1)">
+                <label class="field__label" style="font-size:var(--text-xs);color:var(--color-text-muted)">${msg('Building Reference')}</label>
+                <velg-style-reference-upload
+                  .referenceUrl=${this._styleRefBuilding}
+                  entityType="building"
+                  .loading=${this._styleRefBuildingLoading}
+                  aspectHint=${msg('4:3 aspect ratio')}
+                  @reference-change=${(e: CustomEvent) => this._handleStyleRefChange('building', e)}
+                ></velg-style-reference-upload>
+              </div>
             </div>
           </div>
 

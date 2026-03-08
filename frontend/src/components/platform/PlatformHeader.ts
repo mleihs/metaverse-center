@@ -480,6 +480,22 @@ export class VelgPlatformHeader extends LitElement {
       box-shadow: 0 0 8px color-mix(in srgb, var(--color-primary) 30%, transparent);
     }
 
+    /* --- Mock mode badge --- */
+
+    .header__mock-badge {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-black);
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+      padding: var(--space-0-5) var(--space-2);
+      background: color-mix(in srgb, var(--color-warning) 20%, transparent);
+      color: var(--color-warning);
+      border: 1px solid var(--color-warning);
+      border-radius: var(--border-radius);
+      cursor: default;
+    }
+
     /* --- Right side --- */
 
     .header__right {
@@ -1014,6 +1030,7 @@ l40 16 183 -96 c101 -52 180 -96 176 -96 -4 0 -87 37 -185 81 -160 73 -181 81
         </div>
 
         <div class="header__right">
+          ${appState.mockMode.value ? html`<span class="header__mock-badge" title=${msg('Mock Mode')}>MOCK</span>` : nothing}
           ${html`<velg-dev-account-switcher></velg-dev-account-switcher>`}
           <a
             class="header__github"

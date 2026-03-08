@@ -160,7 +160,37 @@ export class BaseApiService {
     return this.request<T>('PATCH', path, body);
   }
 
-  protected delete<T>(path: string): Promise<ApiResponse<T>> {
-    return this.request<T>('DELETE', path);
+  protected delete<T>(path: string, params?: Record<string, string>): Promise<ApiResponse<T>> {
+    return this.request<T>('DELETE', path, undefined, params);
+  }
+
+  /**
+   * POST with multipart/form-data body.
+   * Does NOT set Content-Type header — browser auto-sets boundary.
+   */
+  protected async postFormData<T>(
+    path: string,
+    formData: FormData,
+  ): Promise<ApiResponse<T>> {
+    try {
+      const url = this.buildUrl(path);
+      const headers: Record<string, string> = {};
+      const token = appState.accessToken.value;
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
+      return this.handleResponse<T>(response);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'An unknown error occurred';
+      return {
+        success: false,
+        error: { code: 'NETWORK_ERROR', message },
+      };
+    }
   }
 }

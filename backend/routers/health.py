@@ -2,6 +2,8 @@ from datetime import UTC, datetime
 
 from fastapi import APIRouter
 
+from backend.config import settings
+
 router = APIRouter(prefix="/api/v1", tags=["health"])
 
 
@@ -12,4 +14,5 @@ async def health_check() -> dict:
         "status": "healthy",
         "version": "2.0.0",
         "timestamp": datetime.now(UTC).isoformat(),
+        "mock_mode": settings.forge_mock_mode,
     }

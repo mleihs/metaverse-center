@@ -431,9 +431,22 @@ export class VelgApp extends LitElement {
   private async _initAuth(): Promise<void> {
     try {
       await authService.initialize();
+      this._fetchMockMode();
     } finally {
       this._initializing = false;
       this._resolveAuthReady();
+    }
+  }
+
+  private async _fetchMockMode(): Promise<void> {
+    try {
+      const res = await fetch('/api/v1/health');
+      if (res.ok) {
+        const data = await res.json();
+        appState.setMockMode(data.mock_mode === true);
+      }
+    } catch {
+      // Health check failure is non-critical
     }
   }
 

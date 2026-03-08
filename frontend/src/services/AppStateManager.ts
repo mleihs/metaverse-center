@@ -24,6 +24,7 @@ export class AppStateManager {
 
   // --- UI ---
   readonly loading = signal<boolean>(false);
+  readonly mockMode = signal<boolean>(false);
 
   // --- Computed ---
   readonly isAuthenticated = computed(() => this.user.value !== null);
@@ -80,6 +81,10 @@ export class AppStateManager {
 
   setTaxonomies(taxonomies: SimulationTaxonomy[]): void {
     this.taxonomies.value = taxonomies;
+  }
+
+  setMockMode(value: boolean): void {
+    this.mockMode.value = value;
   }
 
   setSettings(settings: SimulationSetting[]): void {

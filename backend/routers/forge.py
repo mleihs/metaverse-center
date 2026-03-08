@@ -278,3 +278,33 @@ async def purge_stale_drafts(
         {"days": days, "deleted_count": deleted_count},
     )
     return {"success": True, "data": {"deleted_count": deleted_count}}
+
+
+@router.post("/admin/regenerate-images/{simulation_id}", response_model=SuccessResponse[dict])
+@limiter.limit(RATE_LIMIT_AI_GENERATION)
+async def regenerate_images(
+    request: Request,
+    simulation_id: UUID,
+    background_tasks: BackgroundTasks,
+    admin: CurrentUser = Depends(require_platform_admin()),
+    admin_supabase=Depends(get_admin_supabase),
+):
+    """Trigger batch image generation for an existing simulation (admin only)."""
+    # Verify simulation exists
+    sim = admin_supabase.table("simulations").select("id, name").eq("id", str(simulation_id)).maybe_single().execute()
+    if not sim.data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Simulation not found.")
+
+    background_tasks.add_task(
+        _orchestrator_service.run_batch_generation,
+        admin_supabase,
+        simulation_id,
+        admin.id,
+    )
+
+    await AuditService.safe_log(
+        admin_supabase, str(simulation_id), admin.id, "simulation", str(simulation_id),
+        "regenerate_images", {"simulation_name": sim.data["name"]},
+    )
+
+    return {"success": True, "data": {"message": f"Image generation started for '{sim.data['name']}'."}}

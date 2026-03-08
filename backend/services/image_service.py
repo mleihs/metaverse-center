@@ -6,9 +6,12 @@ import io
 import logging
 from uuid import UUID, uuid4
 
+import httpx
+
 from backend.services.external.replicate import ReplicateService
 from backend.services.generation_service import GenerationService
 from backend.services.model_resolver import ModelResolver
+from backend.services.style_reference_service import StyleReferenceService
 from supabase import Client
 
 logger = logging.getLogger(__name__)
@@ -35,6 +38,28 @@ class ImageService:
             supabase, simulation_id, openrouter_api_key=openrouter_api_key,
         )
         self._model_resolver = ModelResolver(supabase, simulation_id)
+
+    @staticmethod
+    async def _download_reference_image(url: str) -> io.BytesIO:
+        """Download a reference image, convert to PNG, and return as BytesIO.
+
+        Two conversions happen:
+        1. Replicate runs remotely and cannot access local URLs
+           (e.g. localhost Supabase storage), so we download the image.
+        2. Storage uses AVIF for efficiency, but many Replicate models
+           only support PNG/JPEG/WebP — convert to PNG for compatibility.
+        """
+        from PIL import Image
+
+        async with httpx.AsyncClient(timeout=30) as client:
+            resp = await client.get(url)
+            resp.raise_for_status()
+        img = Image.open(io.BytesIO(resp.content))
+        buf = io.BytesIO()
+        img.save(buf, format="PNG")
+        buf.seek(0)
+        buf.name = "reference.png"  # Replicate SDK uses .name for content-type
+        return buf
 
     async def generate_agent_portrait(
         self,
@@ -72,15 +97,39 @@ class ImageService:
         if style_prompt:
             description = f"{description}, {style_prompt}"
 
-        # 3. Generate image via Replicate
-        image_model = await self._model_resolver.resolve_image_model(
-            "agent_portrait",
+        # 3. Resolve style reference (img2img) or standard model
+        ref = await StyleReferenceService.resolve_reference(
+            self._supabase, self._simulation_id, "portrait", agent_id,
         )
-        raw_bytes = await replicate_client.generate_image(
-            model=image_model.model,
-            prompt=description,
-            **image_model.to_replicate_params(),
-        )
+        if ref:
+            image_model = await self._model_resolver.resolve_img2img_model("agent_portrait")
+            image_model.reference_image_url = ref["url"]
+            image_model.img2img_strength = ref["strength"]
+            logger.info(
+                "Using img2img with style reference",
+                extra={"entity_type": "agent", "entity_id": str(agent_id), "scope": ref["scope"]},
+            )
+            # Download reference image so Replicate can access it
+            # (local Supabase URLs are not reachable from Replicate's servers)
+            ref_bytes = await self._download_reference_image(ref["url"])
+            params = image_model.to_replicate_params()
+            params["image"] = ref_bytes  # override URL with file-like object
+            raw_bytes = await replicate_client.generate_image(
+                model=image_model.model,
+                prompt=description,
+                prompt_key=image_model.prompt_param_name,
+                **params,
+            )
+        else:
+            image_model = await self._model_resolver.resolve_image_model(
+                "agent_portrait",
+            )
+            raw_bytes = await replicate_client.generate_image(
+                model=image_model.model,
+                prompt=description,
+                prompt_key=image_model.prompt_param_name,
+                **image_model.to_replicate_params(),
+            )
 
         # 4. Upload dual-resolution AVIF (full-res + thumbnail)
         filename = f"{self._simulation_id}/{agent_id}/{uuid4()}.avif"
@@ -138,15 +187,37 @@ class ImageService:
         if style_prompt:
             description = f"{description}, {style_prompt}"
 
-        # 3. Generate image
-        image_model = await self._model_resolver.resolve_image_model(
-            "building_image",
+        # 3. Resolve style reference (img2img) or standard model
+        ref = await StyleReferenceService.resolve_reference(
+            self._supabase, self._simulation_id, "building", building_id,
         )
-        raw_bytes = await replicate_client.generate_image(
-            model=image_model.model,
-            prompt=description,
-            **image_model.to_replicate_params(),
-        )
+        if ref:
+            image_model = await self._model_resolver.resolve_img2img_model("building_image")
+            image_model.reference_image_url = ref["url"]
+            image_model.img2img_strength = ref["strength"]
+            logger.info(
+                "Using img2img with style reference",
+                extra={"entity_type": "building", "entity_id": str(building_id), "scope": ref["scope"]},
+            )
+            ref_bytes = await self._download_reference_image(ref["url"])
+            params = image_model.to_replicate_params()
+            params["image"] = ref_bytes
+            raw_bytes = await replicate_client.generate_image(
+                model=image_model.model,
+                prompt=description,
+                prompt_key=image_model.prompt_param_name,
+                **params,
+            )
+        else:
+            image_model = await self._model_resolver.resolve_image_model(
+                "building_image",
+            )
+            raw_bytes = await replicate_client.generate_image(
+                model=image_model.model,
+                prompt=description,
+                prompt_key=image_model.prompt_param_name,
+                **image_model.to_replicate_params(),
+            )
 
         # 4. Upload dual-resolution AVIF (full-res + thumbnail)
         filename = f"{self._simulation_id}/{building_id}/{uuid4()}.avif"

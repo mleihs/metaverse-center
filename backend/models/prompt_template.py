@@ -3,7 +3,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class PromptTemplateCreate(BaseModel):
@@ -53,6 +53,17 @@ class PromptTemplateResponse(BaseModel):
     prompt_content: str
     system_prompt: str | None = None
     variables: list[dict] = Field(default_factory=list)
+
+    @field_validator("variables", mode="before")
+    @classmethod
+    def coerce_variables(cls, v: list) -> list[dict]:
+        """Accept both string and dict entries in variables."""
+        if not isinstance(v, list):
+            return []
+        return [
+            item if isinstance(item, dict) else {"name": item}
+            for item in v
+        ]
     description: str | None = None
     default_model: str | None = None
     temperature: float = 0.7

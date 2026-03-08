@@ -3,6 +3,7 @@ import { css, html, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { BaseSettingsPanel } from '../shared/BaseSettingsPanel.js';
 import '../shared/VelgSectionHeader.js';
+import '../shared/VelgStyleReferencePanel.js';
 import { settingsStyles } from '../shared/settings-styles.js';
 
 /** The 8 AI model purpose keys used in the settings. */
@@ -325,6 +326,17 @@ export class VelgAISettingsPanel extends BaseSettingsPanel {
               ></textarea>
             </div>
           </div>
+        </div>
+
+        <!-- Style Reference Images -->
+        <div class="settings-section">
+          <velg-section-header variant="large">${msg('Style Reference Images')}</velg-section-header>
+          <p class="settings-section__help">
+            ${msg('Upload reference images to guide AI image generation via img2img. Generated portraits and buildings will visually resemble the reference.')}
+          </p>
+          <velg-style-reference-panel
+            .simulationId=${this.simulationId}
+          ></velg-style-reference-panel>
         </div>
 
         <!-- LoRA (conditional) -->

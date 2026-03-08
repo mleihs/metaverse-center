@@ -29,6 +29,7 @@ PLATFORM_DEFAULT_MODELS: dict[str, str] = {
 PLATFORM_DEFAULT_IMAGE_MODELS: dict[str, str] = {
     "agent_portrait": "stability-ai/stable-diffusion:ac732df83cea7fff18b8472768c88ad041fa750ff7682a21affe81863cbe77e4",
     "building_image": "stability-ai/stable-diffusion:ac732df83cea7fff18b8472768c88ad041fa750ff7682a21affe81863cbe77e4",
+    "lore_image": "stability-ai/stable-diffusion:ac732df83cea7fff18b8472768c88ad041fa750ff7682a21affe81863cbe77e4",
     "fallback": "stability-ai/stable-diffusion:ac732df83cea7fff18b8472768c88ad041fa750ff7682a21affe81863cbe77e4",
 }
 
@@ -120,6 +121,9 @@ class ResolvedImageModel:
     # LoRA (Flux only)
     lora_url: str = ""
     lora_scale: float = 0.85
+    # img2img reference
+    reference_image_url: str = ""
+    img2img_strength: float = 0.75
     # Metadata
     source: str = "platform_default"
 
@@ -128,10 +132,46 @@ class ResolvedImageModel:
         """Check if this is a Flux model."""
         return "flux" in self.model.lower()
 
+    @property
+    def is_img2img(self) -> bool:
+        """Check if this model should use img2img pipeline."""
+        return bool(self.reference_image_url)
+
+    @property
+    def prompt_param_name(self) -> str:
+        """Return the prompt parameter name for the current model.
+
+        bxclib2/flux_img2img uses ``positive_prompt``;
+        most other models use ``prompt``.
+        """
+        if self.is_img2img and "flux_img2img" in self.model:
+            return "positive_prompt"
+        return "prompt"
+
     def to_replicate_params(self) -> dict:
         """Build params dict for ReplicateService.generate_image()."""
-        if self.is_flux:
+        if self.is_img2img:
+            # bxclib2/flux_img2img specific params
+            if "flux_img2img" in self.model:
+                return {
+                    "image": self.reference_image_url,
+                    "denoising": self.img2img_strength,
+                    "steps": self.num_inference_steps,
+                }
+            # Generic img2img fallback for other models
             params: dict = {
+                "image": self.reference_image_url,
+                "prompt_strength": self.img2img_strength,
+                "num_inference_steps": self.num_inference_steps,
+                "output_format": self.output_format or "png",
+                "output_quality": self.output_quality,
+            }
+            if self.aspect_ratio:
+                params["aspect_ratio"] = self.aspect_ratio
+            return params
+
+        if self.is_flux:
+            params = {
                 "megapixels": "1",
                 "guidance": self.guidance_scale,
                 "num_inference_steps": self.num_inference_steps,
@@ -346,6 +386,32 @@ class ModelResolver:
             scheduler=scheduler,
             negative_prompt=negative,
             source="simulation" if ai_settings.get(f"image_model_{purpose}") else "platform",
+        )
+
+    async def resolve_img2img_model(self, purpose: str) -> ResolvedImageModel:
+        """Resolve the img2img model for style-reference generation.
+
+        Checks simulation setting `image_ref_model`, falls back to
+        platform default img2img model.
+        """
+        ai_settings = await self._load_settings()
+        model_id = ai_settings.get(
+            "image_ref_model",
+            "bxclib2/flux_img2img:0ce45202d83c6bd379dfe58f4c0c41e6cadf93ebbd9d938cc63cc0f2fcb729a5",
+        )
+
+        is_portrait = "portrait" in purpose
+        ar_key = "portrait" if is_portrait else "building"
+        default_ar = str(PLATFORM_DEFAULT_PARAMS.get(f"flux_aspect_ratio_{ar_key}", "3:4"))
+
+        return ResolvedImageModel(
+            model=model_id,
+            guidance_scale=self._get_float(ai_settings, "image_guidance_scale", 3.5),
+            num_inference_steps=self._get_int(ai_settings, "image_num_inference_steps", 28),
+            aspect_ratio=ai_settings.get("image_aspect_ratio", default_ar),
+            output_format=ai_settings.get("image_output_format", "png"),
+            output_quality=self._get_int(ai_settings, "image_output_quality", 100),
+            source="img2img",
         )
 
     async def resolve_style_prompt(self, purpose: str) -> str:
