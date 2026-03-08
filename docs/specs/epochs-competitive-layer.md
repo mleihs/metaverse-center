@@ -76,9 +76,14 @@ Epochs represent moments when the multiverse forces its simulations into direct 
 | **Scores Router** | `routers/scores.py` (79 lines) | Leaderboard, score history, final standings |
 | **Game Mechanics Router** | `routers/game_mechanics.py` (171 lines) | Simulation health, building readiness, zone stability |
 | **Bot Players Router** | `routers/bot_players.py` (~120 lines) | CRUD bot presets (user-scoped) |
-| **Epoch Service** | `services/epoch_service.py` (501 lines) | Lifecycle (create → start → advance → resolve → complete), RP allocation, cycle resolution + bot execution |
+| **Epoch Service** | `services/epoch_service.py` (172 lines) | CRUD: list, get, create, update epochs |
+| **Epoch Lifecycle Service** | `services/epoch_lifecycle_service.py` (243 lines) | Lifecycle transitions: start, advance_phase, cancel. Admin client via DI |
+| **Epoch Participation Service** | `services/epoch_participation_service.py` (447 lines) | Join, leave, bots, drafting, teams, RP allocation |
+| **Cycle Resolution Service** | `services/cycle_resolution_service.py` (389 lines) | Full cycle resolution: resolve_cycle(), bot execution, scoring |
 | **Aptitude Service** | `services/aptitude_service.py` (~115 lines) | Get/set agent aptitudes, query single aptitude for operative deployment |
-| **Operative Service** | `services/operative_service.py` (~620 lines) | Deploy/recall/resolve missions, success probability calculation (aptitude-based), zone fortification (Foundation phase) |
+| **Operative Service** | `services/operative_service.py` (142 lines) | Operative CRUD: list, get, recall |
+| **Operative Mission Service** | `services/operative_mission_service.py` (1089 lines) | Deploy, resolve missions, success probability, 6 operative effects, zone fortification |
+| **Constants** | `services/constants.py` (111 lines) | Shared constants: RP costs, security levels, mission scores, operative metadata (colors, cycles, targets) |
 | **Scoring Service** | `services/scoring_service.py` (389 lines) | 5-dimension scoring, normalization, composite weighting |
 | **Battle Log Service** | `services/battle_log_service.py` (259 lines) | Record + query competitive event narratives |
 | **Game Mechanics Service** | `services/game_mechanics_service.py` (310 lines) | Read materialized views, compute live simulation metrics |

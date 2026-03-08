@@ -136,12 +136,14 @@ class ExternalServiceResolver:
     async def get_guardian_config(self) -> NewsConfig | None:
         """Get Guardian API config if enabled.
 
-        Fallback: sim-level key -> platform_settings -> None.
+        Fallback: sim-level enabled+key -> platform_settings key -> None.
+        If no sim-level setting exists, still check platform-level key.
         """
         settings = await self._load_integration_settings()
 
         enabled = settings.get("guardian_enabled")
-        if not enabled or str(enabled).lower() not in ("true", "1"):
+        if enabled is not None and str(enabled).lower() not in ("true", "1"):
+            # Explicitly disabled at simulation level
             return None
 
         api_key = self._get_decrypted(settings, "guardian_api_key")
@@ -156,12 +158,14 @@ class ExternalServiceResolver:
     async def get_newsapi_config(self) -> NewsConfig | None:
         """Get NewsAPI config if enabled.
 
-        Fallback: sim-level key -> platform_settings -> None.
+        Fallback: sim-level enabled+key -> platform_settings key -> None.
+        If no sim-level setting exists, still check platform-level key.
         """
         settings = await self._load_integration_settings()
 
         enabled = settings.get("newsapi_enabled")
-        if not enabled or str(enabled).lower() not in ("true", "1"):
+        if enabled is not None and str(enabled).lower() not in ("true", "1"):
+            # Explicitly disabled at simulation level
             return None
 
         api_key = self._get_decrypted(settings, "newsapi_api_key")

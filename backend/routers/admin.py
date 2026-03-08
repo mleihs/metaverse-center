@@ -18,6 +18,7 @@ from backend.services.cache_config import invalidate as invalidate_cache_config
 from backend.services.cleanup_service import CleanupService
 from backend.services.platform_api_keys import invalidate as invalidate_api_key_cache
 from backend.services.platform_settings_service import PlatformSettingsService
+from backend.services.audit_service import AuditService
 from backend.services.simulation_service import SimulationService
 from backend.utils.encryption import encrypt as encrypt_value
 from supabase import Client
@@ -76,6 +77,10 @@ async def update_setting(
         value = encrypt_value(value)
 
     data = await PlatformSettingsService.update(admin_supabase, key, value, user.id)
+    await AuditService.safe_log(
+        admin_supabase, None, user.id, "platform_settings", key, "update",
+        details={"key": key},
+    )
 
     # Invalidate relevant caches when cache TTLs change
     if key.startswith("cache_"):
@@ -122,6 +127,9 @@ async def delete_user(
 ) -> dict:
     """Delete a user from the platform."""
     await AdminUserService.delete_user(admin_supabase, user_id)
+    await AuditService.safe_log(
+        admin_supabase, None, _user.id, "users", user_id, "delete",
+    )
     return {"success": True, "data": {"deleted": True}}
 
 
@@ -135,6 +143,10 @@ async def add_membership(
     """Add a user to a simulation with a role."""
     data = await AdminUserService.add_membership(
         admin_supabase, user_id, body.simulation_id, body.role,
+    )
+    await AuditService.safe_log(
+        admin_supabase, body.simulation_id, _user.id, "simulation_members", user_id, "create",
+        details={"role": body.role},
     )
     return {"success": True, "data": data}
 
@@ -151,6 +163,10 @@ async def change_membership_role(
     data = await AdminUserService.change_membership_role(
         admin_supabase, user_id, simulation_id, body.role,
     )
+    await AuditService.safe_log(
+        admin_supabase, simulation_id, _user.id, "simulation_members", user_id, "update",
+        details={"new_role": body.role},
+    )
     return {"success": True, "data": data}
 
 
@@ -163,6 +179,9 @@ async def remove_membership(
 ) -> dict:
     """Remove a user from a simulation."""
     data = await AdminUserService.remove_membership(admin_supabase, user_id, simulation_id)
+    await AuditService.safe_log(
+        admin_supabase, simulation_id, _user.id, "simulation_members", user_id, "delete",
+    )
     return {"success": True, "data": data}
 
 
@@ -176,6 +195,10 @@ async def update_user_wallet(
     """Update a user's forge wallet settings."""
     data = await AdminUserService.update_user_wallet(
         admin_supabase, user_id, body.forge_tokens, body.is_architect,
+    )
+    await AuditService.safe_log(
+        admin_supabase, None, _user.id, "user_wallets", user_id, "update",
+        details={"forge_tokens": body.forge_tokens, "is_architect": body.is_architect},
     )
     return {"success": True, "data": data}
 
@@ -213,6 +236,10 @@ async def execute_cleanup(
     """Execute data cleanup. Requires prior preview for safety."""
     data = await CleanupService.execute(
         admin_supabase, body.cleanup_type, body.min_age_days, user.id,
+    )
+    await AuditService.safe_log(
+        admin_supabase, None, user.id, "cleanup", None, "execute",
+        details={"cleanup_type": body.cleanup_type, "min_age_days": body.min_age_days},
     )
     return {"success": True, "data": data.model_dump(mode="json")}
 
@@ -261,6 +288,9 @@ async def restore_simulation(
 ) -> dict:
     """Restore a soft-deleted simulation."""
     data = await _sim_service.restore_simulation(admin_supabase, simulation_id)
+    await AuditService.safe_log(
+        admin_supabase, simulation_id, _user.id, "simulations", simulation_id, "restore",
+    )
     return {"success": True, "data": data}
 
 
@@ -274,9 +304,15 @@ async def admin_delete_simulation(
     """Admin delete a simulation. Use hard=true for permanent deletion."""
     if hard:
         data = await _sim_service.hard_delete_simulation(admin_supabase, simulation_id)
+        await AuditService.safe_log(
+            admin_supabase, simulation_id, _user.id, "simulations", simulation_id, "hard_delete",
+        )
         return {"success": True, "data": {"deleted": True, "simulation": data}}
     else:
         data = await _sim_service.delete_simulation(admin_supabase, simulation_id)
+        await AuditService.safe_log(
+            admin_supabase, simulation_id, _user.id, "simulations", simulation_id, "delete",
+        )
         return {"success": True, "data": data}
 
 
@@ -286,7 +322,7 @@ def _invalidate_caches(key: str) -> None:
     invalidate_cache_config()
 
     if key == "cache_map_data_ttl":
-        from backend.services.echo_service import ConnectionService
+        from backend.services.connection_service import ConnectionService
         ConnectionService._map_data_cache.clear()
     elif key == "cache_seo_metadata_ttl":
         from backend.middleware.seo import _sim_meta_cache

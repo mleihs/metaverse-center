@@ -82,6 +82,27 @@ class AgentService(BaseService):
         return (query.execute()).data or []
 
     @classmethod
+    async def list_for_relationships(
+        cls,
+        supabase: Client,
+        simulation_id: UUID,
+        exclude_agent_id: UUID,
+        *,
+        limit: int = 20,
+    ) -> list[dict]:
+        """Fetch other agents in a simulation for relationship generation."""
+        response = (
+            supabase.table(cls._read_table())
+            .select("id, name, system, character, background")
+            .eq("simulation_id", str(simulation_id))
+            .neq("id", str(exclude_agent_id))
+            .is_("deleted_at", "null")
+            .limit(limit)
+            .execute()
+        )
+        return response.data or []
+
+    @classmethod
     async def get_reactions(
         cls,
         supabase: Client,

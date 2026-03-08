@@ -8,21 +8,12 @@ from uuid import UUID
 
 from supabase import Client
 
+from backend.services.constants import PLATFORM_DEFAULT_MODELS
+
 logger = logging.getLogger(__name__)
 
-# Platform defaults — used when simulation has no model configured
-PLATFORM_DEFAULT_MODELS: dict[str, str] = {
-    "agent_description": "deepseek/deepseek-v3.2",
-    "agent_reactions": "deepseek/deepseek-v3.2",
-    "building_description": "deepseek/deepseek-v3.2",
-    "event_generation": "deepseek/deepseek-v3.2",
-    "chat_response": "deepseek/deepseek-v3.2",
-    "news_transformation": "deepseek/deepseek-v3.2",
-    "social_trends": "deepseek/deepseek-v3.2",
-    "bot_chat": "deepseek/deepseek-v3.2",
-    "default": "deepseek/deepseek-v3.2",
-    "fallback": "deepseek/deepseek-r1-0528:free",
-}
+# Re-export for backwards compatibility
+__all__ = ["PLATFORM_DEFAULT_MODELS", "ModelResolver", "ResolvedModel", "ResolvedImageModel"]
 
 # Platform default image models — SD 1.5 as cheap default ($0.002/img)
 # Simulations can override to Flux Dev ($0.025/img) via settings
@@ -316,9 +307,12 @@ class ModelResolver:
             # Flux parameters
             ar_key = "portrait" if is_portrait else "building"
             default_ar = str(PLATFORM_DEFAULT_PARAMS.get(f"flux_aspect_ratio_{ar_key}", "3:4"))
-            guidance = self._get_float(
-                ai_settings, "image_guidance_scale",
-                float(PLATFORM_DEFAULT_PARAMS.get("flux_guidance", 3.5)),
+            guidance = min(
+                self._get_float(
+                    ai_settings, "image_guidance_scale",
+                    float(PLATFORM_DEFAULT_PARAMS.get("flux_guidance", 3.5)),
+                ),
+                10.0,  # Flux-dev hard max
             )
             steps = self._get_int(
                 ai_settings, "image_num_inference_steps",
@@ -404,9 +398,13 @@ class ModelResolver:
         ar_key = "portrait" if is_portrait else "building"
         default_ar = str(PLATFORM_DEFAULT_PARAMS.get(f"flux_aspect_ratio_{ar_key}", "3:4"))
 
+        guidance = self._get_float(ai_settings, "image_guidance_scale", 3.5)
+        if "flux" in model_id.lower():
+            guidance = min(guidance, 10.0)
+
         return ResolvedImageModel(
             model=model_id,
-            guidance_scale=self._get_float(ai_settings, "image_guidance_scale", 3.5),
+            guidance_scale=guidance,
             num_inference_steps=self._get_int(ai_settings, "image_num_inference_steps", 28),
             aspect_ratio=ai_settings.get("image_aspect_ratio", default_ar),
             output_format=ai_settings.get("image_output_format", "png"),

@@ -368,10 +368,10 @@ Die Competitive Layer ist das zentrale PvP-System der Plattform. Spieler treten 
 
 | Typ | Effekt | RP-Kosten |
 |-----|--------|-----------|
-| **Spy** | Enthüllt Zone-Sicherheit + Guardian-Zahl des Ziels | 4 |
+| **Spy** | Enthüllt Zone-Sicherheit + Guardian-Zahl des Ziels | 3 |
 | **Guardian** | Verteidigt eigene Simulation (−0.06/Einheit, Cap 0.15) | 4 |
-| **Saboteur** | Stuft Zone-Sicherheit des Ziels herab + Stabilitäts-Schaden | 6 |
-| **Propagandist** | Erzeugt negatives Event in Ziel-Simulation + Einfluss-Gewinn | 5 |
+| **Saboteur** | Stuft Zone-Sicherheit des Ziels herab + Stabilitäts-Schaden | 5 |
+| **Propagandist** | Erzeugt negatives Event in Ziel-Simulation + Einfluss-Gewinn | 4 |
 | **Infiltrator** | Reduziert Botschafts-Effektivität um 65% für 3 Zyklen | 5 |
 | **Assassin** | Blockiert Botschafter für 3 Zyklen + Souveränitäts-Schaden | 7 |
 
@@ -427,7 +427,7 @@ Bot-Entscheidungen werden synchron während `resolve_cycle()` via Admin-Supabase
 ```
 Platform Admin (Email-Allowlist: admin@velgarien.dev)
 ├── require_platform_admin() Dependency
-├── get_admin_supabase() — service_role Client
+├── get_admin_supabase() — service_role Client (injected via Depends())
 │
 ├── Benutzer-Verwaltung
 │   ├── admin_list_users() — SECURITY DEFINER RPC
@@ -486,7 +486,7 @@ require_platform_admin()            # → Depends(), prüft email + get_admin_su
 
 ### Public-First-Architektur
 
-48 GET-only Endpoints unter `/api/v1/public/*`:
+58 Endpoints unter `/api/v1/public/*`:
 - Keine Authentifizierung erforderlich
 - Rate-Limited (100/min)
 - Nutzt `get_anon_supabase()` (anon-RLS-Policies)

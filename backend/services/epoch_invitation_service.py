@@ -7,6 +7,7 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 
+from backend.config import settings
 from backend.services.email_service import EmailService
 from backend.services.email_templates import epoch_invitation_subject, render_epoch_invitation
 from backend.services.external.openrouter import OpenRouterService
@@ -247,6 +248,19 @@ class EpochInvitationService:
         cached_lore = config.get("invitation_lore")
         if cached_lore:
             return cached_lore
+
+        if settings.forge_mock_mode:
+            logger.info("MOCK_MODE: returning mock epoch invitation lore")
+            mock_lore = (
+                f"The epoch '{epoch.get('name', 'Unknown')}' beckons. "
+                "Across the multiverse, factions stir. The Bureau has issued the summons. "
+                "Will you answer the call? [MOCK LORE]"
+            )
+            config["invitation_lore"] = mock_lore
+            supabase.table("game_epochs").update({"config": config}).eq(
+                "id", str(epoch_id)
+            ).execute()
+            return mock_lore
 
         # Fetch participant names
         participants_response = (

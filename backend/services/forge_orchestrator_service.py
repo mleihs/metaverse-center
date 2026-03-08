@@ -15,6 +15,7 @@ from backend.models.forge import (
     ForgeDraftUpdate,
     ForgeGenerationConfig,
     ForgeGeographyDraft,
+    PhilosophicalAnchor,
 )
 from backend.services import forge_mock_service as mock
 from backend.services.ai_utils import get_openrouter_model
@@ -188,7 +189,6 @@ class ForgeOrchestratorService:
         if settings.forge_mock_mode:
             logger.debug("FORGE_MOCK_MODE: using mock research + anchors")
             context = mock.mock_research_context(seed)
-            from backend.models.forge import PhilosophicalAnchor
             anchors = [PhilosophicalAnchor(**a) for a in mock.mock_anchors(seed)]
         else:
             or_key, _ = await ForgeOrchestratorService._get_user_keys(supabase, user_id)

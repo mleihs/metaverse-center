@@ -93,10 +93,10 @@ Each agent has aptitude scores (3&ndash;9) across all six operative types, with 
 
 | Type | RP Cost | Effect on Success | Scoring Impact |
 |:-----|:--------|:------------------|:---------------|
-| **Spy** | 4 | Reveals zone security, guardians, and hidden fortifications | +2 Influence, +1 Diplomatic/success |
+| **Spy** | 3 | Reveals zone security, guardians, and hidden fortifications | +2 Influence, +1 Diplomatic/success |
 | **Guardian** | 4 | Reduces enemy operative success by 6%/unit (cap 15%) | +4 Sovereignty |
 | **Saboteur** | 5 | Downgrades random target zone security by 1 tier | -6 Stability to target |
-| **Propagandist** | 5 | Creates narrative event in target simulation | +5 Influence, -6 Sovereignty to target |
+| **Propagandist** | 4 | Creates narrative event in target simulation | +5 Influence, -6 Sovereignty to target |
 | **Infiltrator** | 5 | Reduces target embassy effectiveness by 65% for 3 cycles | +3 Influence, -8 Sovereignty to target |
 | **Assassin** | 7 | Blocks target ambassador for 3 cycles | -5 Stability to target, -12 Sovereignty to target |
 
@@ -295,7 +295,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 | SQL migrations | 86 |
 | API endpoints | ~305 across 37 routers |
 | Web Components | 133 custom elements |
-| Backend tests | 912 |
+| Backend tests | 1,052 |
 | Frontend tests | 453 |
 | E2E specs | 81 |
 | Localized UI strings | 3,160 (EN/DE, 0 missing) |
@@ -368,7 +368,7 @@ npm run dev                              # Dev server on http://localhost:5173
 
 ```bash
 # Backend (from project root, venv activated)
-python -m pytest backend/tests/ -v              # 912 tests
+python -m pytest backend/tests/ -v              # 1,052 tests
 python -m pytest backend/tests/ --cov           # With coverage report
 python -m ruff check backend/                   # Lint
 

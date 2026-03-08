@@ -16,6 +16,7 @@ from backend.services.email_templates import (
     render_epoch_completed,
     render_phase_change,
 )
+from backend.services.scoring_service import ScoringService
 from supabase import Client
 
 logger = logging.getLogger(__name__)
@@ -720,8 +721,6 @@ class CycleNotificationService:
             return 0
 
         # Get final leaderboard
-        from backend.services.scoring_service import ScoringService
-
         leaderboard = await ScoringService.get_final_standings(admin_supabase, epoch_id)
 
         cta_url = f"https://metaverse.center/epoch/{epoch_id}"

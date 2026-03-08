@@ -2,311 +2,129 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { authService } from '../../services/supabase/SupabaseAuthService.js';
+import { icons } from '../../utils/icons.js';
+import {
+  terminalAnimations,
+  terminalFormStyles,
+  terminalFrameStyles,
+  terminalOAuthStyles,
+  terminalTokens,
+} from '../shared/terminal-theme-styles.js';
 
 @localized()
 @customElement('velg-login-view')
 export class VelgLoginView extends LitElement {
-  static styles = css`
-    :host {
-      --amber: #f59e0b;
-      --amber-dim: #b45309;
-      --amber-glow: rgba(245, 158, 11, 0.15);
-      --hud-bg: #0a0a0a;
-      --hud-surface: #111;
-      --hud-border: #333;
-      --hud-text: #ccc;
-      --hud-text-dim: #888;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 80vh;
-      padding: var(--space-4);
-    }
-
-    /* ── Entrance ── */
-    @keyframes terminal-boot {
-      0% {
-        opacity: 0;
-        transform: translateY(12px) scale(0.98);
-        filter: brightness(1.5);
+  static styles = [
+    terminalTokens,
+    terminalAnimations,
+    terminalFormStyles,
+    terminalOAuthStyles,
+    terminalFrameStyles,
+    css`
+      :host {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: calc(100vh - var(--header-height, 56px));
+        padding: var(--space-4);
+        background: var(--hud-bg);
       }
-      40% { opacity: 1; filter: brightness(1.2); }
-      100% { transform: translateY(0) scale(1); filter: brightness(1); }
-    }
 
-    @keyframes cursor-blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0; }
-    }
+      /* ── Header ── */
+      .header {
+        padding: 20px 28px;
+        border-bottom: 1px dashed var(--hud-border);
+      }
 
-    @keyframes field-reveal {
-      from { opacity: 0; transform: translateX(-8px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
+      .header__classification {
+        font-family: var(--font-brutalist, 'Courier New', monospace);
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--amber);
+        margin: 0 0 8px;
+      }
 
-    @media (prefers-reduced-motion: reduce) {
-      .terminal, .form-group { animation: none !important; }
-      .header__cursor { animation: none !important; }
-    }
+      .header__title {
+        font-family: var(--font-brutalist, 'Courier New', monospace);
+        font-weight: 900;
+        font-size: var(--text-xl, 1.563rem);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--hud-text);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
 
-    /* ── Terminal Frame ── */
-    .terminal {
-      width: 100%;
-      max-width: 460px;
-      background: var(--hud-surface);
-      border: 1px dashed var(--hud-border);
-      position: relative;
-      animation: terminal-boot 600ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) both;
-    }
+      .header__cursor {
+        display: inline-block;
+        width: 8px;
+        height: 18px;
+        background: var(--amber);
+        animation: cursor-blink 1s step-end infinite;
+        vertical-align: middle;
+        margin-left: 2px;
+      }
 
-    /* Corner brackets */
-    .terminal::before,
-    .terminal::after {
-      content: '';
-      position: absolute;
-      width: 16px;
-      height: 16px;
-      border-color: var(--amber);
-      border-style: solid;
-      pointer-events: none;
-    }
-    .terminal::before {
-      top: -1px; left: -1px;
-      border-width: 2px 0 0 2px;
-    }
-    .terminal::after {
-      top: -1px; right: -1px;
-      border-width: 2px 2px 0 0;
-    }
+      .header__ref {
+        font-family: var(--font-brutalist, 'Courier New', monospace);
+        font-size: 10px;
+        color: var(--hud-text-dim);
+        margin: 6px 0 0;
+        letter-spacing: 1px;
+      }
 
-    .terminal__bottom-corners {
-      position: absolute;
-      bottom: -1px;
-      left: 0;
-      right: 0;
-      height: 0;
-      pointer-events: none;
-    }
-    .terminal__bottom-corners::before,
-    .terminal__bottom-corners::after {
-      content: '';
-      position: absolute;
-      width: 16px;
-      height: 16px;
-      border-color: var(--amber);
-      border-style: solid;
-    }
-    .terminal__bottom-corners::before {
-      bottom: 0; left: -1px;
-      border-width: 0 0 2px 2px;
-    }
-    .terminal__bottom-corners::after {
-      bottom: 0; right: -1px;
-      border-width: 0 2px 2px 0;
-    }
+      /* ── Lore Briefing ── */
+      .briefing {
+        padding: 20px 28px;
+        border-bottom: 1px dashed var(--hud-border);
+      }
 
-    /* Scanline overlay */
-    .terminal__scanlines {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 3px,
-        rgba(245, 158, 11, 0.012) 3px,
-        rgba(245, 158, 11, 0.012) 6px
-      );
-      z-index: 1;
-    }
+      .briefing__text {
+        font-family: var(--font-brutalist, 'Courier New', monospace);
+        font-size: 12px;
+        line-height: 1.7;
+        color: var(--hud-text-dim);
+        margin: 0;
+      }
 
-    .terminal > *:not(.terminal__scanlines):not(.terminal__bottom-corners) {
-      position: relative;
-      z-index: 2;
-    }
+      /* ── Body / Form ── */
+      .body {
+        padding: 24px 28px;
+      }
 
-    /* ── Header ── */
-    .header {
-      padding: 20px 28px;
-      border-bottom: 1px dashed var(--hud-border);
-    }
+      /* ── Footer ── */
+      .footer {
+        padding: 16px 28px;
+        border-top: 1px dashed var(--hud-border);
+        text-align: center;
+        font-family: var(--font-brutalist, 'Courier New', monospace);
+        font-size: 11px;
+        color: var(--hud-text-dim);
+      }
 
-    .header__classification {
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-size: 10px;
-      font-weight: 900;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      color: var(--amber);
-      margin: 0 0 8px;
-    }
+      .footer a {
+        color: var(--amber);
+        text-decoration: none;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
 
-    .header__title {
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-weight: 900;
-      font-size: var(--text-xl, 1.563rem);
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      color: var(--hud-text);
-      margin: 0;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
+      .footer a:hover {
+        text-decoration: underline;
+      }
 
-    .header__cursor {
-      display: inline-block;
-      width: 8px;
-      height: 18px;
-      background: var(--amber);
-      animation: cursor-blink 1s step-end infinite;
-      vertical-align: middle;
-      margin-left: 2px;
-    }
-
-    .header__ref {
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-size: 10px;
-      color: var(--hud-text-dim);
-      margin: 6px 0 0;
-      letter-spacing: 1px;
-    }
-
-    /* ── Lore Briefing ── */
-    .briefing {
-      padding: 20px 28px;
-      border-bottom: 1px dashed var(--hud-border);
-    }
-
-    .briefing__text {
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-size: 12px;
-      line-height: 1.7;
-      color: var(--hud-text-dim);
-      margin: 0;
-    }
-
-    /* ── Body / Form ── */
-    .body {
-      padding: 24px 28px;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin-bottom: 20px;
-      animation: field-reveal 400ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) both;
-    }
-    .form-group:nth-child(1) { animation-delay: 150ms; }
-    .form-group:nth-child(2) { animation-delay: 220ms; }
-
-    .form-label {
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-weight: 900;
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 3px;
-      color: var(--hud-text-dim);
-    }
-
-    .form-input {
-      font-family: var(--font-mono, 'SF Mono', monospace);
-      font-size: var(--text-sm, 0.8rem);
-      padding: 10px 14px;
-      border: 1px solid var(--hud-border);
-      border-radius: 0;
-      background: var(--hud-bg);
-      color: var(--hud-text);
-      transition: border-color 150ms, box-shadow 150ms;
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    .form-input:focus {
-      outline: none;
-      border-color: var(--amber);
-      box-shadow: 0 0 0 1px var(--amber-glow), inset 0 0 12px var(--amber-glow);
-    }
-
-    .form-input::placeholder {
-      color: #555;
-    }
-
-    /* ── CTA Button ── */
-    .btn-submit {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      padding: 14px 24px;
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-weight: 900;
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: 3px;
-      background: var(--amber);
-      color: var(--hud-bg);
-      border: 1px solid var(--amber-dim);
-      border-radius: 0;
-      cursor: pointer;
-      transition: all 150ms;
-      margin-top: 4px;
-    }
-
-    .btn-submit:hover {
-      background: #fbbf24;
-      box-shadow: 0 0 20px var(--amber-glow);
-    }
-
-    .btn-submit:active {
-      transform: scale(0.98);
-    }
-
-    .btn-submit:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-      pointer-events: none;
-    }
-
-    /* ── Error Message ── */
-    .msg--error {
-      padding: 12px 14px;
-      margin-bottom: 20px;
-      background: rgba(239, 68, 68, 0.08);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      border-left: 3px solid #ef4444;
-      color: #fca5a5;
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-weight: 700;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    /* ── Footer ── */
-    .footer {
-      padding: 16px 28px;
-      border-top: 1px dashed var(--hud-border);
-      text-align: center;
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-size: 11px;
-      color: var(--hud-text-dim);
-    }
-
-    .footer a {
-      color: var(--amber);
-      text-decoration: none;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      cursor: pointer;
-    }
-
-    .footer a:hover {
-      text-decoration: underline;
-    }
-  `;
+      .footer a:focus-visible {
+        outline: 2px solid var(--amber);
+        outline-offset: 2px;
+      }
+    `,
+  ];
 
   @state() private _email = import.meta.env.DEV ? (import.meta.env.VITE_DEV_EMAIL ?? '') : '';
   @state() private _password = import.meta.env.DEV ? (import.meta.env.VITE_DEV_PASSWORD ?? '') : '';
@@ -341,6 +159,22 @@ export class VelgLoginView extends LitElement {
     this._password = (e.target as HTMLInputElement).value;
   }
 
+  private async _handleGoogleLogin(): Promise<void> {
+    try {
+      await authService.signInWithGoogle();
+    } catch {
+      this._error = msg('Failed to initiate Google sign-in.');
+    }
+  }
+
+  private async _handleDiscordLogin(): Promise<void> {
+    try {
+      await authService.signInWithDiscord();
+    } catch {
+      this._error = msg('Failed to initiate Discord sign-in.');
+    }
+  }
+
   private _handleRegisterClick(e: Event): void {
     e.preventDefault();
     window.history.pushState({}, '', '/register');
@@ -358,7 +192,7 @@ export class VelgLoginView extends LitElement {
           <h1 class="header__title">
             ${msg('Authentication Terminal')}<span class="header__cursor"></span>
           </h1>
-          <p class="header__ref">BUREAU OF MULTIVERSE OBSERVATION</p>
+          <p class="header__ref">${msg('Bureau of Multiverse Observation')}</p>
         </div>
 
         <div class="briefing">
@@ -407,6 +241,32 @@ export class VelgLoginView extends LitElement {
               ${this._loading ? msg('Verifying...') : msg('Authenticate')}
             </button>
           </form>
+        </div>
+
+        <div class="oauth-section">
+          <div class="oauth-divider">
+            <div class="oauth-divider__line"></div>
+            <span class="oauth-divider__text">${msg('or')}</span>
+            <div class="oauth-divider__line"></div>
+          </div>
+
+          <button
+            class="oauth-btn oauth-btn--google"
+            @click=${this._handleGoogleLogin}
+            aria-label=${msg('Sign in with Google')}
+          >
+            ${icons.googleOAuth(18)}
+            ${msg('Sign in with Google')}
+          </button>
+
+          <button
+            class="oauth-btn oauth-btn--discord"
+            @click=${this._handleDiscordLogin}
+            aria-label=${msg('Sign in with Discord')}
+          >
+            ${icons.discordOAuth(18)}
+            ${msg('Sign in with Discord')}
+          </button>
         </div>
 
         <div class="footer">

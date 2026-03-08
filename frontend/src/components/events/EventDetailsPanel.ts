@@ -3,9 +3,9 @@ import { css, html, LitElement, nothing } from 'lit';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
-import { echoesApi, eventsApi, simulationsApi } from '../../services/api/index.js';
+import { connectionsApi, echoesApi, eventsApi, simulationsApi } from '../../services/api/index.js';
 import { generationProgress } from '../../services/GenerationProgressService.js';
-import type { EventChain, EventEcho, EventReaction, EventStatus, EventZoneLink, Event as SimEvent, Simulation } from '../../types/index.js';
+import type { EventChain, EventEcho, EventReaction, EventStatus, EventZoneLink, Event as SimEvent, Simulation, SimulationConnection } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import { t } from '../../utils/locale-fields.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
@@ -671,6 +671,7 @@ export class VelgEventDetailsPanel extends LitElement {
   @state() private _echoes: EventEcho[] = [];
   @state() private _zoneLinks: EventZoneLink[] = [];
   @state() private _simulations: Simulation[] = [];
+  @state() private _connections: SimulationConnection[] = [];
   @state() private _echoTriggerOpen = false;
 
   protected willUpdate(changedProperties: Map<PropertyKey, unknown>): void {
@@ -683,6 +684,7 @@ export class VelgEventDetailsPanel extends LitElement {
         this._loadChains();
         this._loadEchoes();
         this._loadSimulations();
+        this._loadConnections();
         this._loadZoneLinks();
       }
     }
@@ -813,6 +815,18 @@ export class VelgEventDetailsPanel extends LitElement {
       }
     } catch {
       // Simulations list is optional context
+    }
+  }
+
+  private async _loadConnections(): Promise<void> {
+    if (this._connections.length > 0) return;
+    try {
+      const response = await connectionsApi.listAll();
+      if (response.success && response.data) {
+        this._connections = response.data;
+      }
+    } catch {
+      // Connections list is optional context
     }
   }
 
@@ -1488,6 +1502,7 @@ export class VelgEventDetailsPanel extends LitElement {
         .event=${this.event}
         .simulationId=${this.simulationId}
         .simulations=${this._simulations}
+        .connections=${this._connections}
         ?open=${this._echoTriggerOpen}
         @modal-close=${this._handleEchoTriggerClose}
         @echo-triggered=${this._handleEchoTriggered}

@@ -25,3 +25,5 @@ class UserWithMemberships(BaseModel):
     id: UUID
     email: str
     memberships: list[MembershipInfo] = []
+    onboarding_completed: bool = True
+    academy_epochs_played: int = 0

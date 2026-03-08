@@ -23,7 +23,7 @@ tags: [testing, pytest, vitest, playwright, coverage]
          │ Integration │  ~250 Tests (pytest + vitest)
          │  API + DB   │  Router ↔ Service ↔ DB
         ┌┴────────────┴┐
-        │     Unit      │  ~1069 Tests (pytest + vitest)
+        │     Unit      │  ~1200 Tests (pytest + vitest)
         │ Services, Utils│  Isolierte Logik
         └───────────────┘
 ```
@@ -117,7 +117,15 @@ backend/tests/
 │   ├── test_simulation_service.py # Simulation CRUD + Logging
 │   ├── test_member_service.py     # Member CRUD + LastOwner-Schutz + Logging
 │   ├── test_invitation_service.py # Einladungs-Lifecycle + Logging
-│   └── test_epoch_invitation_service.py   # Epoch-Einladungen + Logging
+│   ├── test_epoch_invitation_service.py   # Epoch-Einladungen + Logging
+│   ├── test_paginate_response.py  # paginate_response() Hilfsfunktion (6 Tests)
+│   ├── test_public_service_methods.py  # Public-Query-Service-Methoden (19 Tests)
+│   ├── test_operative_constants.py     # Operative-Konstanten + /public/operative-types (9 Tests)
+│   ├── test_news_scanner.py       # News-Scanner + Adapter
+│   ├── test_scan_adapters.py      # Scan-Adapter-Logik
+│   ├── test_style_reference_service.py # Style-Referenz-Service
+│   ├── test_model_resolver_img2img.py  # Bild-Modell-Resolver
+│   └── test_output_repair.py      # JSON-Output-Reparatur
 ├── integration/
 │   ├── conftest.py                # Supabase Test-Client, Fixtures
 │   ├── test_routes.py             # Router-Integrationstests

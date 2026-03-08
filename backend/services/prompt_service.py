@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass
 from uuid import UUID
 
@@ -293,7 +294,6 @@ class PromptResolver:
 
 def _safe_format(template: str, variables: dict[str, str]) -> str:
     """Format a string, leaving unknown variables as {name}."""
-    import re
 
     def replace(match: re.Match) -> str:
         key = match.group(1)

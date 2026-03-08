@@ -28,6 +28,7 @@ from backend.models.epoch import (
     TeamResponse,
 )
 from backend.models.epoch_chat import ReadySignal
+from backend.services.academy_service import AcademyService
 from backend.services.audit_service import AuditService
 from backend.services.battle_log_service import BattleLogService
 from backend.services.cycle_notification_service import CycleNotificationService
@@ -98,6 +99,7 @@ async def create_epoch(
         name=body.name,
         description=body.description,
         config=body.config.model_dump() if body.config else None,
+        epoch_type=body.epoch_type,
     )
     await AuditService.safe_log(
         supabase, None, user.id, "game_epochs", data["id"], "create",
@@ -122,6 +124,24 @@ async def update_epoch(
     return {"success": True, "data": data}
 
 
+@router.post("/quick-academy", response_model=SuccessResponse[EpochResponse], status_code=201)
+async def create_quick_academy(
+    user: CurrentUser = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase),
+    admin_supabase: Client = Depends(get_admin_supabase),
+) -> dict:
+    """One-click academy epoch creation with auto-configured bots.
+
+    Creates a sprint-format academy epoch, selects platform template
+    simulations for bots, creates temporary bot players, and adds them.
+    """
+    epoch = await AcademyService.create_academy_epoch(supabase, admin_supabase, user.id)
+    await AuditService.safe_log(
+        supabase, None, user.id, "game_epochs", epoch["id"], "create_academy",
+    )
+    return {"success": True, "data": epoch}
+
+
 # ── Lifecycle ───────────────────────────────────────────
 
 
@@ -138,7 +158,7 @@ async def start_epoch(
     This clones all participating simulations into game instances
     with normalized gameplay values.
     """
-    data = await EpochService.start_epoch(supabase, epoch_id, user.id)
+    data = await EpochService.start_epoch(supabase, epoch_id, user.id, admin_supabase)
     await BattleLogService.log_phase_change(
         supabase, epoch_id, 1, "lobby", "foundation"
     )
@@ -169,7 +189,7 @@ async def advance_phase(
     """Advance to next epoch phase. Creator only."""
     epoch = await EpochService.get(supabase, epoch_id)
     old_status = epoch["status"]
-    data = await EpochService.advance_phase(supabase, epoch_id)
+    data = await EpochService.advance_phase(supabase, epoch_id, admin_supabase)
     new_status = data["status"]
     await BattleLogService.log_phase_change(
         supabase, epoch_id, epoch.get("current_cycle", 1), old_status, new_status
@@ -201,10 +221,11 @@ async def cancel_epoch(
     user: CurrentUser = Depends(get_current_user),
     _creator_check: None = Depends(require_epoch_creator()),
     supabase: Client = Depends(get_supabase),
+    admin_supabase: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Cancel an epoch. Creator only."""
     epoch = await EpochService.get(supabase, epoch_id)
-    data = await EpochService.cancel_epoch(supabase, epoch_id)
+    data = await EpochService.cancel_epoch(supabase, epoch_id, admin_supabase)
     await BattleLogService.log_phase_change(
         supabase, epoch_id, epoch.get("current_cycle", 0), epoch["status"], "cancelled"
     )

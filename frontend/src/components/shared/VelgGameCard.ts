@@ -12,16 +12,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import type { AptitudeSet, OperativeType } from '../../types/index.js';
-
-// ── Operative type colors (shared with VelgAptitudeBars) ──
-const OP_COLORS: Record<OperativeType, string> = {
-  spy: '#64748b',
-  guardian: '#10b981',
-  saboteur: '#ef4444',
-  propagandist: '#f59e0b',
-  infiltrator: '#a78bfa',
-  assassin: '#dc2626',
-};
+import { OPERATIVE_COLORS as OP_COLORS } from '../../utils/operative-constants.js';
 
 const OP_LABELS: OperativeType[] = [
   'spy',

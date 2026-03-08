@@ -1066,6 +1066,8 @@ export interface EpochConfig {
   referee_mode: boolean;
 }
 
+export type EpochType = 'competitive' | 'academy';
+
 export interface Epoch {
   id: UUID;
   name: string;
@@ -1076,8 +1078,11 @@ export interface Epoch {
   current_cycle: number;
   status: EpochStatus;
   config: EpochConfig;
+  epoch_type: EpochType;
   created_at: string;
   updated_at: string;
+  participant_count?: number;
+  team_count?: number;
 }
 
 export interface EpochInvitation {

@@ -32,7 +32,7 @@ Features die auf Plattform-Ebene existieren, unabhängig von einzelnen Simulatio
 | P7 | **Mitglieder verwalten** | ✅ IMPL | Rollen ändern, Mitglieder entfernen. Access-Settings-Panel. Letzter Owner kann nicht entfernt werden. |
 | P8 | **Simulation archivieren** | ✅ IMPL | Archivierung via `simulation_type='archived'`. Game Instances werden nach Epoch-Ende automatisch archiviert. Restore (`archived→active`) via Admin-Panel. Hard-Delete (PURGE) mit Cascade auf alle Kind-Entitaeten. |
 | P9 | **Simulation klonen** | ✅ IMPL | `clone_simulations_for_epoch()` PL/pgSQL-Funktion (~250 Zeilen). Atomisches Klonen mit Agent-Capping (max 6), Building-Capping (max 8), Normalisierung, Embassy-Remapping. |
-| P10 | **Public-First-Architektur** | ✅ IMPL | Anonymer Lesezugriff ohne Login. 21 Anon-RLS-Policies. 46 Public-API-Endpoints (`/api/v1/public/*`). `BaseApiService.getSimulationData()` routet automatisch zwischen public/authenticated. Rate-Limiting 100/min. |
+| P10 | **Public-First-Architektur** | ✅ IMPL | Anonymer Lesezugriff ohne Login. 21 Anon-RLS-Policies. 58 Public-API-Endpoints (`/api/v1/public/*`). `BaseApiService.getSimulationData()` routet automatisch zwischen public/authenticated. Rate-Limiting 100/min. |
 
 #### A2. Competitive Epochs (PvP-System)
 
@@ -51,7 +51,7 @@ Features die auf Plattform-Ebene existieren, unabhängig von einzelnen Simulatio
 | # | Feature | Status | Beschreibung |
 |---|---------|--------|-------------|
 | P12 | **Bot-Presets** | ✅ IMPL | `bot_players`-Tabelle: Wiederverwendbare Bot-Konfigurationen. 5 Persönlichkeits-Archetypen (Sentinel, Warlord, Diplomat, Strategist, Chaos) mit persönlichkeitsspezifischen Akzentfarben. 3 Schwierigkeitsstufen (easy/medium/hard). |
-| P12a | **Deterministic Decision Engine** | ✅ IMPL | `BotPersonality` (abstrakte Basis + 5 Implementierungen). Fog-of-War-konforme `BotGameState`-Erstellung. Bots nutzen dieselben `OperativeService.deploy()` + `spend_rp()`-Methoden wie Spieler — kein Code-Duplikat. Synchrone Ausführung während `resolve_cycle()` via Admin-Supabase. |
+| P12a | **Deterministic Decision Engine** | ✅ IMPL | `BotPersonality` (abstrakte Basis + 5 Implementierungen). Fog-of-War-konforme `BotGameState`-Erstellung. Bots nutzen dieselben `OperativeService.deploy()` + `spend_rp()`-Methoden wie Spieler — kein Code-Duplikat. Synchrone Ausführung während `resolve_cycle()` via DI-injiziertem Admin-Supabase. |
 | P12b | **Dual-Mode Chat** | ✅ IMPL | Template-basiert (kostenlos, sofort) + LLM via OpenRouter (konfigurierbar pro Simulation). `BotChatService` mit `bot_chat_mode`-Toggle in AI-Settings. `sender_type`-Spalte auf `epoch_chat_messages`. |
 | P12c | **BotConfigPanel** | ✅ IMPL | VelgSidePanel "Bot Deployment Console". Collectible-Card-Deck-Builder-Ästhetik: Persönlichkeitskarten-Grid mit SVG-Radar-Charts, Difficulty Segmented Toggle, Behavior-Matrix-Bars, Stagger-Reveal-Animationen. `bot_decision_log`-Tabelle für Zyklus-Audit-Trail. |
 | P12d | **Auto-Draft** | ✅ IMPL | Persönlichkeitsgewichteter `auto_draft()`: Bots wählen Agenten basierend auf Archetyp-Präferenzen (z.B. Warlord bevorzugt hohe Assassin/Saboteur-Aptitudes). |

@@ -16,6 +16,13 @@ from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta
 from backend.models.epoch import MissionResponse, OperativeDeploy
 from backend.services.audit_service import AuditService
 from backend.services.battle_log_service import BattleLogService
+from backend.services.constants import (
+    OPERATIVE_DEPLOY_CYCLES,
+    OPERATIVE_MISSION_CYCLES,
+    OPERATIVE_RP_COSTS,
+    OPERATIVE_TARGET_TYPE,
+    OPERATIVE_TYPE_COLORS,
+)
 from backend.services.epoch_service import EpochService
 from backend.services.operative_service import OperativeService
 from supabase import Client
@@ -36,9 +43,10 @@ async def deploy_operative(
     user: CurrentUser = Depends(get_current_user),
     _participant: dict = Depends(require_epoch_participant()),
     supabase: Client = Depends(get_supabase),
+    admin_supabase: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Deploy an operative agent on a mission. Must be a participant in the epoch."""
-    mission = await OperativeService.deploy(supabase, epoch_id, simulation_id, body)
+    mission = await OperativeService.deploy(supabase, epoch_id, simulation_id, body, admin_supabase)
 
     await AuditService.safe_log(
         supabase, simulation_id, user.id, "operative_missions", mission["id"], "create",

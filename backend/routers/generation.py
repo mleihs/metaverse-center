@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from backend.dependencies import get_current_user, get_supabase, require_role
 from backend.middleware.rate_limit import RATE_LIMIT_AI_GENERATION, limiter
 from backend.models.common import CurrentUser, SuccessResponse
+from backend.services.agent_service import AgentService
 from backend.services.external.openrouter import OpenRouterError
 from backend.services.external_service_resolver import ExternalServiceResolver
 from backend.services.game_mechanics_service import GameMechanicsService
@@ -260,35 +261,17 @@ async def generate_relationships(
     """Generate relationship suggestions for an agent using AI."""
     try:
         # Get agent data
-        agent_resp = (
-            supabase.table("agents")
-            .select("*")
-            .eq("simulation_id", str(simulation_id))
-            .eq("id", str(body.agent_id))
-            .single()
-            .execute()
-        )
-        if not agent_resp.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Agent not found.",
-            )
+        agent_data = await AgentService.get(supabase, simulation_id, body.agent_id)
 
         # Get other agents in the simulation
-        others_resp = (
-            supabase.table("agents")
-            .select("id, name, system, character, background")
-            .eq("simulation_id", str(simulation_id))
-            .neq("id", str(body.agent_id))
-            .is_("deleted_at", "null")
-            .limit(20)
-            .execute()
+        other_agents = await AgentService.list_for_relationships(
+            supabase, simulation_id, body.agent_id,
         )
 
         service = await _get_generation_service(simulation_id, supabase)
         result = await service.generate_agent_relationships(
-            agent_data=agent_resp.data,
-            other_agents=others_resp.data or [],
+            agent_data=agent_data,
+            other_agents=other_agents,
             locale=body.locale,
         )
         return {"success": True, "data": result}

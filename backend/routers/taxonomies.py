@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, Query
 from backend.dependencies import get_current_user, get_supabase, require_role
 from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.taxonomy import TaxonomyCreate, TaxonomyResponse, TaxonomyUpdate
+from backend.services.audit_service import AuditService
 from backend.services.taxonomy_service import TaxonomyService
 from supabase import Client
 
@@ -57,6 +58,10 @@ async def create_taxonomy(
 ) -> dict:
     """Create a new taxonomy value. Requires admin role."""
     taxonomy = await _service.create_taxonomy(supabase, simulation_id, body.model_dump(exclude_none=True))
+    await AuditService.safe_log(
+        supabase, simulation_id, user.id, "taxonomies", taxonomy.get("id"), "create",
+        details={"taxonomy_type": body.taxonomy_type if hasattr(body, "taxonomy_type") else None},
+    )
     return {"success": True, "data": taxonomy}
 
 
@@ -73,6 +78,9 @@ async def update_taxonomy(
     taxonomy = await _service.update_taxonomy(
         supabase, simulation_id, taxonomy_id, body.model_dump(exclude_none=True),
     )
+    await AuditService.safe_log(
+        supabase, simulation_id, user.id, "taxonomies", taxonomy_id, "update",
+    )
     return {"success": True, "data": taxonomy}
 
 
@@ -86,4 +94,7 @@ async def deactivate_taxonomy(
 ) -> dict:
     """Soft-delete (deactivate) a taxonomy value."""
     taxonomy = await _service.deactivate_taxonomy(supabase, simulation_id, taxonomy_id)
+    await AuditService.safe_log(
+        supabase, simulation_id, user.id, "taxonomies", taxonomy_id, "deactivate",
+    )
     return {"success": True, "data": taxonomy}

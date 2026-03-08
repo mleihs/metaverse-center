@@ -47,8 +47,13 @@ export class EpochsApiService extends BaseApiService {
     name: string;
     description?: string;
     config?: Partial<Epoch['config']>;
+    epoch_type?: Epoch['epoch_type'];
   }): Promise<ApiResponse<Epoch>> {
     return this.post('/epochs', data);
+  }
+
+  createQuickAcademy(): Promise<ApiResponse<Epoch>> {
+    return this.post('/epochs/quick-academy');
   }
 
   updateEpoch(epochId: string, data: Record<string, unknown>): Promise<ApiResponse<Epoch>> {

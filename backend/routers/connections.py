@@ -7,7 +7,8 @@ from fastapi import APIRouter, Depends
 from backend.dependencies import get_admin_supabase, get_current_user, get_supabase, require_platform_admin
 from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.echo import ConnectionCreate, ConnectionResponse, ConnectionUpdate
-from backend.services.echo_service import ConnectionService
+from backend.services.audit_service import AuditService
+from backend.services.connection_service import ConnectionService
 from supabase import Client
 
 router = APIRouter(
@@ -37,6 +38,10 @@ async def create_connection(
     result = await ConnectionService.create_connection(
         admin_supabase, body.model_dump(exclude_none=True)
     )
+    await AuditService.safe_log(
+        admin_supabase, None, user.id, "simulation_connections", result.get("id"), "create",
+        details={"source_id": str(body.source_id) if hasattr(body, "source_id") else None},
+    )
     return {"success": True, "data": result}
 
 
@@ -52,6 +57,9 @@ async def update_connection(
     result = await ConnectionService.update_connection(
         admin_supabase, connection_id, body.model_dump(exclude_none=True)
     )
+    await AuditService.safe_log(
+        admin_supabase, None, user.id, "simulation_connections", connection_id, "update",
+    )
     return {"success": True, "data": result}
 
 
@@ -64,4 +72,7 @@ async def delete_connection(
 ) -> dict:
     """Delete a simulation connection (platform admin only)."""
     await ConnectionService.delete_connection(admin_supabase, connection_id)
+    await AuditService.safe_log(
+        admin_supabase, None, user.id, "simulation_connections", connection_id, "delete",
+    )
     return {"success": True, "data": {"message": "Connection deleted."}}

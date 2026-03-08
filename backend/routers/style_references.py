@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from backend.dependencies import get_current_user, get_supabase, require_role
 from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.style_reference import StyleReferenceInfo, StyleReferenceUploadResponse
+from backend.services.audit_service import AuditService
 from backend.services.style_reference_service import (
     ALLOWED_CONTENT_TYPES,
     MAX_FILE_SIZE,
@@ -74,6 +75,11 @@ async def upload_reference(
             strength=strength,
         )
 
+        await AuditService.safe_log(
+            supabase, simulation_id, user.id, "style_references", None, "upload",
+            details={"entity_type": entity_type, "scope": scope, "entity_id": str(entity_id) if entity_id else None},
+        )
+
         return {
             "success": True,
             "data": {
@@ -136,4 +142,8 @@ async def delete_reference(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
 
+    await AuditService.safe_log(
+        supabase, simulation_id, user.id, "style_references", None, "delete",
+        details={"entity_type": entity_type, "scope": scope, "entity_id": str(entity_id) if entity_id else None},
+    )
     return {"success": True, "data": {"deleted": True}}

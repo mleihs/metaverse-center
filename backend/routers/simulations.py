@@ -16,6 +16,7 @@ from backend.models.simulation import (
     SimulationResponse,
     SimulationUpdate,
 )
+from backend.services.audit_service import AuditService
 from backend.services.lore_service import LoreService
 from backend.services.simulation_service import SimulationService
 from supabase import Client
@@ -67,6 +68,10 @@ async def create_simulation(
         user_id=user.id,
         data=body,
     )
+    await AuditService.safe_log(
+        supabase, UUID(simulation["id"]), user.id, "simulations", simulation["id"], "create",
+        details={"name": body.name},
+    )
 
     return {"success": True, "data": simulation}
 
@@ -100,6 +105,9 @@ async def update_simulation(
         simulation_id=simulation_id,
         data=body,
     )
+    await AuditService.safe_log(
+        supabase, simulation_id, user.id, "simulations", simulation_id, "update",
+    )
 
     return {"success": True, "data": simulation}
 
@@ -118,6 +126,9 @@ async def delete_simulation(
     simulation = await _service.delete_simulation(
         supabase=client,
         simulation_id=simulation_id,
+    )
+    await AuditService.safe_log(
+        client, simulation_id, _user.id, "simulations", simulation_id, "delete",
     )
 
     return {"success": True, "data": simulation}
@@ -138,6 +149,10 @@ async def create_lore_section(
     section = await _lore_service.create_section(
         supabase, simulation_id, body.model_dump(exclude_none=True)
     )
+    await AuditService.safe_log(
+        supabase, simulation_id, user.id, "lore_sections", section.get("id"), "create",
+        details={"title": body.title if hasattr(body, "title") else None},
+    )
     return {"success": True, "data": section}
 
 
@@ -154,6 +169,9 @@ async def update_lore_section(
     section = await _lore_service.update_section(
         supabase, simulation_id, section_id, body.model_dump(exclude_none=True)
     )
+    await AuditService.safe_log(
+        supabase, simulation_id, user.id, "lore_sections", section_id, "update",
+    )
     return {"success": True, "data": section}
 
 
@@ -167,6 +185,9 @@ async def delete_lore_section(
 ) -> dict:
     """Delete a lore section and re-sort remaining sections."""
     deleted = await _lore_service.delete_section(supabase, simulation_id, section_id)
+    await AuditService.safe_log(
+        supabase, simulation_id, user.id, "lore_sections", section_id, "delete",
+    )
     return {"success": True, "data": deleted}
 
 
@@ -181,5 +202,9 @@ async def reorder_lore_sections(
     """Bulk reorder lore sections by providing ordered section IDs."""
     sections = await _lore_service.reorder_sections(
         supabase, simulation_id, body.section_ids
+    )
+    await AuditService.safe_log(
+        supabase, simulation_id, user.id, "lore_sections", None, "reorder",
+        details={"section_count": len(body.section_ids)},
     )
     return {"success": True, "data": sections}

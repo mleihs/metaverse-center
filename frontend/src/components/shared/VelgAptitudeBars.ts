@@ -2,6 +2,7 @@ import { msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { AptitudeSet, OperativeType } from '../../types/index.js';
+import { OPERATIVE_COLORS } from '../../utils/operative-constants.js';
 
 const OPERATIVE_TYPES: OperativeType[] = [
   'spy',
@@ -11,15 +12,6 @@ const OPERATIVE_TYPES: OperativeType[] = [
   'infiltrator',
   'assassin',
 ];
-
-const OPERATIVE_COLORS: Record<OperativeType, string> = {
-  spy: '#64748b',
-  guardian: '#10b981',
-  saboteur: '#ef4444',
-  propagandist: '#f59e0b',
-  infiltrator: '#a78bfa',
-  assassin: '#dc2626',
-};
 
 function getOperativeLabel(type: OperativeType): string {
   const labels: Record<OperativeType, () => string> = {

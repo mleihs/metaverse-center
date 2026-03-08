@@ -12,6 +12,8 @@ import logging
 import re
 from typing import TYPE_CHECKING
 
+from backend.config import settings
+
 if TYPE_CHECKING:
     from pydantic import BaseModel
 
@@ -39,6 +41,10 @@ async def repair_json_output(
         return json.loads(malformed_output)
     except (json.JSONDecodeError, ValueError):
         pass
+
+    if settings.forge_mock_mode:
+        logger.info("MOCK_MODE: skipping LLM repair for malformed JSON")
+        return None
 
     schema_str = json.dumps(pydantic_model.model_json_schema(), indent=2)
     repair_prompt = (

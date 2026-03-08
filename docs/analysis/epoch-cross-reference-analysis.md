@@ -482,4 +482,4 @@ Each game is generated with varied parameters:
 - `epoch-5p-analysis.md` — 50-game 5P analysis (v2.1 balance)
 - `scripts/epoch_sim_lib.py` — Simulation engine with parametric game generation
 - `backend/services/scoring_service.py` — Scoring dimension calculations
-- `backend/services/operative_service.py` — Operative effects (6 types + 2 game state effects)
+- `backend/services/operative_mission_service.py` — Operative effects (6 types + 2 game state effects)

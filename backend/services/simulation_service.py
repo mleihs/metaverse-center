@@ -314,6 +314,60 @@ class SimulationService:
         total = response.count if response.count is not None else len(response.data or [])
         return response.data or [], total
 
+    @classmethod
+    async def get_simulation_context(
+        cls,
+        supabase: Client,
+        simulation_id: UUID,
+    ) -> dict | None:
+        """Get lightweight simulation context (name + theme) for auto-translation.
+
+        Returns {"name": ..., "theme": ...} or None if not found.
+        """
+        response = (
+            supabase.table("simulations")
+            .select("name, theme")
+            .eq("id", str(simulation_id))
+            .maybe_single()
+            .execute()
+        )
+        return response.data
+
+    @classmethod
+    async def check_exists(
+        cls,
+        supabase: Client,
+        simulation_id: UUID,
+    ) -> dict:
+        """Verify a simulation exists and return its row, or raise 404."""
+        response = (
+            supabase.table("simulations")
+            .select("id, name")
+            .eq("id", str(simulation_id))
+            .maybe_single()
+            .execute()
+        )
+        if not response.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Simulation not found.",
+            )
+        return response.data
+
+    @classmethod
+    async def list_active_slugs(
+        cls,
+        supabase: Client,
+    ) -> list[dict]:
+        """List slugs and updated_at for all active simulations (sitemap)."""
+        response = (
+            supabase.table("simulations")
+            .select("slug, updated_at")
+            .eq("status", "active")
+            .execute()
+        )
+        return response.data or []
+
     @staticmethod
     async def restore_simulation(
         supabase: Client,
@@ -339,3 +393,100 @@ class SimulationService:
 
         logger.info("Simulation restored", extra={"simulation_id": str(simulation_id)})
         return response.data[0]
+
+    # ── Public query methods ─────────────────────────────
+
+    @staticmethod
+    async def get_platform_stats(supabase: Client) -> dict:
+        """Aggregated platform statistics for landing page."""
+        sims = (
+            supabase.table("simulations")
+            .select("id", count="exact")
+            .eq("simulation_type", "template")
+            .is_("deleted_at", "null")
+            .execute()
+        )
+        epochs = (
+            supabase.table("game_epochs")
+            .select("id", count="exact")
+            .in_("status", ["lobby", "foundation", "competition", "reckoning"])
+            .execute()
+        )
+        resonances = (
+            supabase.table("substrate_resonances")
+            .select("id", count="exact")
+            .is_("deleted_at", "null")
+            .execute()
+        )
+        return {
+            "simulation_count": sims.count or 0,
+            "active_epoch_count": epochs.count or 0,
+            "resonance_count": resonances.count or 0,
+        }
+
+    @staticmethod
+    def enrich_with_counts(supabase: Client, simulations: list[dict]) -> None:
+        """Enrich simulation dicts with counts from the simulation_dashboard view."""
+        if not simulations:
+            return
+        ids = [s["id"] for s in simulations]
+        count_response = (
+            supabase.table("simulation_dashboard")
+            .select("simulation_id, agent_count, building_count, event_count, member_count")
+            .in_("simulation_id", ids)
+            .execute()
+        )
+        counts_map = {row["simulation_id"]: row for row in (count_response.data or [])}
+        for sim in simulations:
+            counts = counts_map.get(sim["id"], {})
+            sim["agent_count"] = counts.get("agent_count", 0)
+            sim["building_count"] = counts.get("building_count", 0)
+            sim["event_count"] = counts.get("event_count", 0)
+            sim["member_count"] = counts.get("member_count", 0)
+
+    @staticmethod
+    async def list_active_public(
+        supabase: Client,
+        *,
+        limit: int = 25,
+        offset: int = 0,
+    ) -> tuple[list[dict], int]:
+        """List active template simulations (public, no auth)."""
+        response = (
+            supabase.table("simulations")
+            .select("*", count="exact")
+            .eq("status", "active")
+            .eq("simulation_type", "template")
+            .order("created_at", desc=True)
+            .range(offset, offset + limit - 1)
+            .execute()
+        )
+        data = response.data or []
+        total = response.count if response.count is not None else len(data)
+        return data, total
+
+    @staticmethod
+    async def get_by_slug(supabase: Client, slug: str) -> dict | None:
+        """Get a single active simulation by slug (public)."""
+        response = (
+            supabase.table("simulations")
+            .select("*")
+            .eq("slug", slug)
+            .eq("status", "active")
+            .limit(1)
+            .execute()
+        )
+        return response.data[0] if response.data else None
+
+    @staticmethod
+    async def get_active_by_id(supabase: Client, simulation_id: UUID) -> dict | None:
+        """Get a single active simulation by ID (public)."""
+        response = (
+            supabase.table("simulations")
+            .select("*")
+            .eq("id", str(simulation_id))
+            .eq("status", "active")
+            .limit(1)
+            .execute()
+        )
+        return response.data[0] if response.data else None

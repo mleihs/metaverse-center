@@ -365,3 +365,41 @@ class ChatService:
         ).execute()
 
         return conversation
+
+    # ── Public query methods ─────────────────────────────
+
+    @staticmethod
+    async def list_conversations_public(
+        supabase: Client,
+        simulation_id: UUID,
+    ) -> list[dict]:
+        """List all conversations for a simulation (public, no user filter)."""
+        response = (
+            supabase.table("chat_conversations")
+            .select("*")
+            .eq("simulation_id", str(simulation_id))
+            .order("last_message_at", desc=True)
+            .execute()
+        )
+        return response.data or []
+
+    @staticmethod
+    async def list_messages_public(
+        supabase: Client,
+        conversation_id: UUID,
+        *,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> tuple[list[dict], int]:
+        """List messages in a conversation (public, paginated)."""
+        response = (
+            supabase.table("chat_messages")
+            .select("*", count="exact")
+            .eq("conversation_id", str(conversation_id))
+            .order("created_at", desc=False)
+            .range(offset, offset + limit - 1)
+            .execute()
+        )
+        data = response.data or []
+        total = response.count if response.count is not None else len(data)
+        return data, total

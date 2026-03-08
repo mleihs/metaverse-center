@@ -7,6 +7,7 @@ import logging
 import re
 from uuid import UUID
 
+from backend.config import settings
 from backend.services.embassy_prompts import (
     VECTOR_PERSON_EFFECTS,
     VECTOR_VISUAL_LANGUAGE,
@@ -16,6 +17,7 @@ from backend.services.external.openrouter import (
     OpenRouterService,
     RateLimitError,
 )
+from backend.services.constants import PLATFORM_DEFAULT_MODELS
 from backend.services.external.output_repair import repair_json_output
 from backend.services.model_resolver import ModelResolver, ResolvedModel
 from backend.services.prompt_service import LOCALE_NAMES, PromptResolver
@@ -693,6 +695,19 @@ class GenerationService:
                 a structured context block is appended to the user prompt so the
                 LLM can incorporate simulation state into its narrative.
         """
+        # Excluded from mock mode:
+        # - agent/building: image pipeline (description → Replicate) needs real text
+        # - news_transformation: resonance events need structured JSON for proper creation
+        _MOCK_EXCLUDED_PURPOSES = {"agent_description", "building_description", "news_transformation"}
+        if settings.forge_mock_mode and model_purpose not in _MOCK_EXCLUDED_PURPOSES:
+            logger.info("MOCK_MODE: returning template %s content", template_type)
+            return {
+                "content": f"[MOCK {template_type}] Generated content for {variables.get('simulation_name', 'simulation')}.",
+                "model_used": "mock",
+                "template_source": "mock",
+                "locale": locale,
+            }
+
         # 1. Resolve prompt template
         prompt = await self._prompt_resolver.resolve(template_type, locale)
 
@@ -756,8 +771,6 @@ class GenerationService:
                 "Model %s unavailable, using platform default",
                 model.model_id,
             )
-            from backend.services.model_resolver import PLATFORM_DEFAULT_MODELS
-
             default_model = PLATFORM_DEFAULT_MODELS["default"]
             return await self._openrouter.generate_with_system(
                 model=default_model,

@@ -15,13 +15,15 @@ from backend.models.common import PaginatedResponse, PaginationMeta, SuccessResp
 from backend.services.agent_service import AgentService
 from backend.services.bleed_gazette_service import BleedGazetteService
 from backend.services.agent_memory_service import AgentMemoryService
+from backend.services.chat_service import ChatService
 from backend.services.chronicle_service import ChronicleService
 from backend.services.aptitude_service import AptitudeService
 from backend.services.battle_log_service import BattleLogService
 from backend.services.building_service import BuildingService
 from backend.services.cache_config import get_ttl
 from backend.services.campaign_service import CampaignService
-from backend.services.echo_service import ConnectionService, EchoService
+from backend.services.connection_service import ConnectionService
+from backend.services.echo_service import EchoService
 from backend.services.embassy_service import EmbassyService
 from backend.services.epoch_invitation_service import EpochInvitationService
 from backend.services.epoch_service import EpochService
@@ -30,10 +32,19 @@ from backend.services.resonance_service import ResonanceService
 from backend.services.game_mechanics_service import GameMechanicsService
 from backend.services.location_service import LocationService
 from backend.services.relationship_service import RelationshipService
+from backend.services.constants import (
+    OPERATIVE_DEPLOY_CYCLES,
+    OPERATIVE_MISSION_CYCLES,
+    OPERATIVE_RP_COSTS,
+    OPERATIVE_TARGET_TYPE,
+    OPERATIVE_TYPE_COLORS,
+)
 from backend.services.scoring_service import ScoringService
 from backend.services.settings_service import SettingsService
+from backend.services.simulation_service import SimulationService
 from backend.services.social_media_service import SocialMediaService
 from backend.services.social_trends_service import SocialTrendsService
+from backend.services.taxonomy_service import TaxonomyService
 from supabase import Client
 
 router = APIRouter(prefix="/api/v1/public", tags=["Public"])
@@ -53,27 +64,26 @@ def _paginated(data: list[dict], total: int, limit: int, offset: int) -> dict:
     }
 
 
+# ── Platform Stats ───────────────────────────────────────────────────────
+
+
+@router.get("/platform-stats", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def get_platform_stats(
+    request: Request,
+    anon: Client = Depends(get_anon_supabase),
+) -> dict:
+    """Aggregated platform statistics for landing page."""
+    data = await SimulationService.get_platform_stats(anon)
+    return {"success": True, "data": data}
+
+
 # ── Simulations ──────────────────────────────────────────────────────────
 
 
 def _enrich_with_counts(supabase: Client, simulations: list[dict]) -> None:
     """Enrich simulation dicts with counts from the simulation_dashboard view."""
-    if not simulations:
-        return
-    ids = [s["id"] for s in simulations]
-    count_response = (
-        supabase.table("simulation_dashboard")
-        .select("simulation_id, agent_count, building_count, event_count, member_count")
-        .in_("simulation_id", ids)
-        .execute()
-    )
-    counts_map = {row["simulation_id"]: row for row in (count_response.data or [])}
-    for sim in simulations:
-        counts = counts_map.get(sim["id"], {})
-        sim["agent_count"] = counts.get("agent_count", 0)
-        sim["building_count"] = counts.get("building_count", 0)
-        sim["event_count"] = counts.get("event_count", 0)
-        sim["member_count"] = counts.get("member_count", 0)
+    SimulationService.enrich_with_counts(supabase, simulations)
 
 
 @router.get("/simulations", response_model=PaginatedResponse)
@@ -88,17 +98,7 @@ async def list_simulations(
     """List all active template simulations (public). Excludes game instances."""
     max_age = get_ttl("cache_http_simulations_max_age")
     http_response.headers["Cache-Control"] = f"public, max-age={max_age}, stale-while-revalidate={max_age * 5}"
-    response = (
-        supabase.table("simulations")
-        .select("*", count="exact")
-        .eq("status", "active")
-        .eq("simulation_type", "template")
-        .order("created_at", desc=True)
-        .range(offset, offset + limit - 1)
-        .execute()
-    )
-    data = response.data or []
-    total = response.count if response.count is not None else len(data)
+    data, total = await SimulationService.list_active_public(supabase, limit=limit, offset=offset)
     _enrich_with_counts(supabase, data)
     return _paginated(data, total, limit, offset)
 
@@ -111,17 +111,10 @@ async def get_simulation_by_slug(
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
     """Get a single active simulation by its slug (public)."""
-    response = (
-        supabase.table("simulations")
-        .select("*")
-        .eq("slug", slug)
-        .eq("status", "active")
-        .limit(1)
-        .execute()
-    )
-    if not response.data:
+    sim = await SimulationService.get_by_slug(supabase, slug)
+    if not sim:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Simulation not found.")
-    data = response.data
+    data = [sim]
     _enrich_with_counts(supabase, data)
     return {"success": True, "data": data[0]}
 
@@ -134,17 +127,10 @@ async def get_simulation(
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
     """Get a single active simulation (public)."""
-    response = (
-        supabase.table("simulations")
-        .select("*")
-        .eq("id", str(simulation_id))
-        .eq("status", "active")
-        .limit(1)
-        .execute()
-    )
-    if not response.data:
+    sim = await SimulationService.get_active_by_id(supabase, simulation_id)
+    if not sim:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Simulation not found.")
-    data = response.data
+    data = [sim]
     _enrich_with_counts(supabase, data)
     return {"success": True, "data": data[0]}
 
@@ -405,14 +391,8 @@ async def list_conversations(
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
     """List chat conversations (public, read-only)."""
-    response = (
-        supabase.table("chat_conversations")
-        .select("*")
-        .eq("simulation_id", str(simulation_id))
-        .order("last_message_at", desc=True)
-        .execute()
-    )
-    return {"success": True, "data": response.data or []}
+    data = await ChatService.list_conversations_public(supabase, simulation_id)
+    return {"success": True, "data": data}
 
 
 @router.get(
@@ -429,21 +409,11 @@ async def list_messages(
     offset: int = Query(default=0, ge=0),
 ) -> dict:
     """List messages in a conversation (public, read-only)."""
-    response = (
-        supabase.table("chat_messages")
-        .select("*", count="exact")
-        .eq("conversation_id", str(conversation_id))
-        .order("created_at", desc=False)
-        .range(offset, offset + limit - 1)
-        .execute()
-    )
-    data = response.data or []
-    total = response.count if response.count is not None else len(data)
+    data, total = await ChatService.list_messages_public(supabase, conversation_id, limit=limit, offset=offset)
     return _paginated(data, total, limit, offset)
 
 
 # ── Taxonomies ───────────────────────────────────────────────────────────
-# No dedicated service — kept as inline query.
 
 
 @router.get("/simulations/{simulation_id}/taxonomies", response_model=PaginatedResponse)
@@ -457,18 +427,9 @@ async def list_taxonomies(
     offset: int = Query(default=0, ge=0),
 ) -> dict:
     """List taxonomies (public)."""
-    query = (
-        supabase.table("simulation_taxonomies")
-        .select("*", count="exact")
-        .eq("simulation_id", str(simulation_id))
-        .order("taxonomy_type")
-        .range(offset, offset + limit - 1)
+    data, total = await TaxonomyService.list_taxonomies_paginated(
+        supabase, simulation_id, taxonomy_type=taxonomy_type, limit=limit, offset=offset,
     )
-    if taxonomy_type:
-        query = query.eq("taxonomy_type", taxonomy_type)
-    response = query.execute()
-    data = response.data or []
-    total = response.count if response.count is not None else len(data)
     return _paginated(data, total, limit, offset)
 
 
@@ -987,6 +948,26 @@ async def list_resonance_impacts_public(
     """List impact records for a resonance (public)."""
     data = await ResonanceService.list_impacts(supabase, resonance_id)
     return {"success": True, "data": data}
+
+
+# ── Game Metadata (Public) ───────────────────────────────────────────
+
+
+@router.get("/operative-types", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def get_operative_types(request: Request) -> dict:
+    """Operative type metadata: costs, colors, durations, target requirements."""
+    types = []
+    for op_type in OPERATIVE_RP_COSTS:
+        types.append({
+            "type": op_type,
+            "cost_rp": OPERATIVE_RP_COSTS[op_type],
+            "color": OPERATIVE_TYPE_COLORS.get(op_type, "#6b7280"),
+            "deploy_cycles": OPERATIVE_DEPLOY_CYCLES.get(op_type, 1),
+            "mission_cycles": OPERATIVE_MISSION_CYCLES.get(op_type, 1),
+            "needs_target": OPERATIVE_TARGET_TYPE.get(op_type, "none"),
+        })
+    return {"success": True, "data": types}
 
 
 # ── Epoch Invitations (Public) ──────────────────────────────────────

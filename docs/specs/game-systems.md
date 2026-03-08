@@ -1302,8 +1302,8 @@ Platform-level phenomena that propagate across all simulations. Real-world event
 7. **Map:** Line thickness = embassy count, node pulse = stability
 
 ### Competitive Layer
-8. **Backend tests:** `test_epoch_service.py` — lifecycle transitions, RP allocation, phase timing
-9. **Backend tests:** `test_operative_service.py` — success probability calculation, failure consequences
+8. **Backend tests:** `test_epoch_service.py` — lifecycle transitions, phase timing
+9. **Backend tests:** `test_operative_service.py` — success probability calculation, deploy/resolve, 6 operative effects
 10. **Backend tests:** `test_scoring_service.py` — all 5 dimensions, normalization, composite
 11. **Manual:** Create epoch -> join with 2 simulations -> foundation phase (no attacks) -> competition phase
 12. **Manual:** Deploy spy -> wait cycle -> verify intel revealed

@@ -9,6 +9,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 
+from backend.services.constants import SECURITY_LEVEL_MAP
 from supabase import Client
 
 logger = logging.getLogger(__name__)
@@ -363,8 +364,6 @@ class BotGameState:
 
     def get_target_zone_security(self, target_sim_id: str) -> float:
         """Get average zone security for target sim from spy intel."""
-        from backend.services.operative_service import SECURITY_LEVEL_MAP
-
         for report in self.spy_intel_reports:
             meta = report.get("metadata", {})
             if report.get("target_simulation_id") == target_sim_id and "zone_security" in meta:
@@ -422,8 +421,6 @@ class BotGameState:
             return None
 
         # Check spy intel for zone security data (lower = more vulnerable)
-        from backend.services.operative_service import SECURITY_LEVEL_MAP
-
         best_target: str | None = None
         lowest_security = 10.0
 

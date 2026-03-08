@@ -17,79 +17,90 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { epochsApi } from '../../services/api/EpochsApiService.js';
 import type { EpochScoreWeights } from '../../types/index.js';
 import '../shared/BaseModal.js';
-import {
-  computePhaseCycles,
-  DEFAULT_FOUNDATION_CYCLES,
-  DEFAULT_RECKONING_CYCLES,
-} from '../../utils/epoch.js';
+import { computePhaseCycles, DEFAULT_RECKONING_CYCLES } from '../../utils/epoch.js';
 import { formStyles } from '../shared/form-styles.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
+import { icons } from '../../utils/icons.js';
 
-type TempoPresetId = 'standard' | 'duell' | 'taktisch' | 'blitz' | 'custom';
+type FormatPresetId = 'blitz' | 'sprint' | 'standard' | 'marathon' | 'custom';
 
-interface TempoPreset {
-  id: TempoPresetId;
+interface FormatPreset {
+  id: FormatPresetId;
   label: string;
-  competition: number | null;
-  reckoning: number | null;
-  players: string;
   description: string;
+  duration_days: number | null;
+  cycle_hours: number | null;
+  foundation_cycles: number | null;
+  reckoning_cycles: number | null;
+  rp_per_cycle: number | null;
+  rp_cap: number | null;
+  icon: ReturnType<typeof icons.bolt> | null;
 }
 
-function getTempoPresets(): TempoPreset[] {
+function getFormatPresets(): FormatPreset[] {
   return [
-    {
-      id: 'standard',
-      label: msg('Standard'),
-      competition: 30,
-      reckoning: 8,
-      players: '',
-      description: msg('Balanced pacing for most groups.'),
-    },
-    {
-      id: 'duell',
-      label: msg('Duel'),
-      competition: 20,
-      reckoning: 6,
-      players: '',
-      description: msg('Fast-paced head-to-head. Shorter phases prevent snowballing.'),
-    },
-    {
-      id: 'taktisch',
-      label: msg('Tactical'),
-      competition: 36,
-      reckoning: 12,
-      players: '',
-      description: msg('Extended match for large groups. More time for alliances and betrayals.'),
-    },
     {
       id: 'blitz',
       label: msg('Blitz'),
-      competition: 18,
-      reckoning: 6,
-      players: '',
-      description: msg('Quick match. Aggressive play rewarded, minimal buildup.'),
+      description: msg('Fast-paced 1-2 day match. 2-hour cycles, rapid decisions.'),
+      duration_days: 1,
+      cycle_hours: 2,
+      foundation_cycles: 1,
+      reckoning_cycles: 2,
+      rp_per_cycle: 15,
+      rp_cap: 30,
+      icon: icons.bolt(18),
+    },
+    {
+      id: 'sprint',
+      label: msg('Sprint'),
+      description: msg('3-5 day match. 4-hour cycles, balanced pacing.'),
+      duration_days: 3,
+      cycle_hours: 4,
+      foundation_cycles: 2,
+      reckoning_cycles: 3,
+      rp_per_cycle: 12,
+      rp_cap: 36,
+      icon: icons.timer(18),
+    },
+    {
+      id: 'standard',
+      label: msg('Standard'),
+      description: msg('Classic 14-day epoch. 8-hour cycles, full strategic depth.'),
+      duration_days: 14,
+      cycle_hours: 8,
+      foundation_cycles: 4,
+      reckoning_cycles: 8,
+      rp_per_cycle: 12,
+      rp_cap: 40,
+      icon: icons.crossedSwords(18),
+    },
+    {
+      id: 'marathon',
+      label: msg('Marathon'),
+      description: msg('Extended 21+ day epoch. Maximum strategic depth.'),
+      duration_days: 28,
+      cycle_hours: 8,
+      foundation_cycles: 6,
+      reckoning_cycles: 12,
+      rp_per_cycle: 12,
+      rp_cap: 40,
+      icon: icons.trophy(18),
     },
     {
       id: 'custom',
       label: msg('Custom'),
-      competition: null,
-      reckoning: null,
-      players: '',
-      description: msg('Set duration and reckoning cycles manually.'),
+      description: msg('Configure everything manually.'),
+      duration_days: null,
+      cycle_hours: null,
+      foundation_cycles: null,
+      reckoning_cycles: null,
+      rp_per_cycle: null,
+      rp_cap: null,
+      icon: icons.gear(18),
     },
   ];
-}
-
-/** Compute ideal duration_days so that total cycles = foundation + competition + reckoning. */
-function computeDurationForPreset(
-  competition: number,
-  reckoning: number,
-  cycleHours: number,
-): number {
-  const totalCycles = DEFAULT_FOUNDATION_CYCLES + competition + reckoning;
-  return Math.ceil((totalCycles * cycleHours) / 24);
 }
 
 type Step = 'designation' | 'economy' | 'doctrine' | 'confirm';
@@ -652,9 +663,14 @@ export class VelgEpochCreationWizard extends LitElement {
         100% { transform: translateX(100%); }
       }
 
-      /* ── Tempo Presets ────────────────────── */
+      /* ── Format Presets ────────────────────── */
 
-      .tempo-section-header {
+      @keyframes card-enter {
+        from { opacity: 0; transform: translateY(12px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
+      .format-section-header {
         display: flex;
         align-items: center;
         gap: var(--space-2);
@@ -663,7 +679,7 @@ export class VelgEpochCreationWizard extends LitElement {
         border-bottom: 1px solid var(--color-gray-800);
       }
 
-      .tempo-section-label {
+      .format-section-label {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: var(--text-xs);
@@ -672,7 +688,7 @@ export class VelgEpochCreationWizard extends LitElement {
         color: var(--color-gray-400);
       }
 
-      .tempo-presets {
+      .format-presets {
         display: grid;
         grid-template-columns: repeat(5, 1fr);
         gap: 2px;
@@ -681,7 +697,7 @@ export class VelgEpochCreationWizard extends LitElement {
         margin-bottom: var(--space-3);
       }
 
-      .tempo-card {
+      .format-card {
         position: relative;
         display: flex;
         flex-direction: column;
@@ -691,33 +707,61 @@ export class VelgEpochCreationWizard extends LitElement {
         border: none;
         cursor: pointer;
         text-align: left;
-        transition: background 0.15s ease, box-shadow 0.2s ease;
         outline: none;
         box-shadow: inset 0 2px 0 0 transparent;
+        opacity: 0;
+        animation: card-enter 350ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        animation-delay: calc(var(--i, 0) * 40ms);
+        transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1),
+                    background 0.15s ease,
+                    box-shadow 0.2s ease;
       }
 
-      .tempo-card:hover {
+      .format-card:hover {
         background: var(--color-gray-850, #1a1a2e);
       }
 
-      .tempo-card:focus-visible {
+      .format-card:focus-visible {
         z-index: 1;
         outline: 2px solid var(--color-warning);
         outline-offset: -2px;
       }
 
-      .tempo-card--active {
+      .format-card[aria-selected="true"] {
         background: rgba(245 158 11 / 0.06);
         box-shadow:
           inset 0 2px 0 0 var(--color-warning),
           0 0 12px rgba(245 158 11 / 0.08);
+        transform: scale(1.02);
       }
 
-      .tempo-card--active .tempo-card__label {
+      .format-card[aria-selected="true"] .format-card__label {
         color: var(--color-warning);
       }
 
-      .tempo-card__label {
+      .format-card__header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .format-card__icon {
+        color: var(--color-gray-500);
+        transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1),
+                    color 0.15s ease;
+        display: flex;
+        align-items: center;
+      }
+
+      .format-card:hover .format-card__icon {
+        transform: scale(1.1);
+      }
+
+      .format-card[aria-selected="true"] .format-card__icon {
+        color: var(--color-warning);
+      }
+
+      .format-card__label {
         font-family: var(--font-mono, monospace);
         font-size: 10px;
         font-weight: 700;
@@ -727,7 +771,7 @@ export class VelgEpochCreationWizard extends LitElement {
         transition: color 0.15s ease;
       }
 
-      .tempo-card__players {
+      .format-card__stats {
         display: inline-block;
         width: fit-content;
         padding: 1px 6px;
@@ -739,13 +783,13 @@ export class VelgEpochCreationWizard extends LitElement {
         border: 1px solid var(--color-gray-700);
       }
 
-      .tempo-card--active .tempo-card__players {
+      .format-card[aria-selected="true"] .format-card__stats {
         color: var(--color-warning);
         border-color: rgba(245 158 11 / 0.3);
         background: rgba(245 158 11 / 0.08);
       }
 
-      .tempo-card__desc {
+      .format-card__desc {
         font-family: var(--font-mono, monospace);
         font-size: 9px;
         line-height: 1.5;
@@ -753,38 +797,41 @@ export class VelgEpochCreationWizard extends LitElement {
         margin-top: var(--space-1);
       }
 
-      .tempo-card--active .tempo-card__desc {
+      .format-card[aria-selected="true"] .format-card__desc {
         color: var(--color-gray-400);
       }
 
-      .tempo-custom-reveal {
+      .format-custom-reveal {
         display: grid;
         grid-template-rows: 0fr;
         transition: grid-template-rows 0.25s ease;
       }
 
-      .tempo-custom-reveal--open {
+      .format-custom-reveal--open {
         grid-template-rows: 1fr;
       }
 
-      .tempo-custom-reveal__inner {
+      .format-custom-reveal__inner {
         overflow: hidden;
       }
 
-      .tempo-custom-reveal__content {
+      .format-custom-reveal__content {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
         padding: var(--space-3) 0 0;
       }
 
       @media (max-width: 600px) {
-        .tempo-presets {
+        .format-presets {
           grid-template-columns: repeat(2, 1fr);
         }
 
-        .tempo-card:last-child {
+        .format-card:last-child {
           grid-column: 1 / -1;
         }
 
-        .tempo-card__desc {
+        .format-card__desc {
           display: none;
         }
       }
@@ -821,8 +868,9 @@ export class VelgEpochCreationWizard extends LitElement {
   @state() private _maxAgentsPerPlayer = 6;
   @state() private _allowBetrayal = true;
 
-  // Tempo preset
-  @state() private _tempoPreset: TempoPresetId = 'standard';
+  // Format preset
+  @state() private _formatPreset: FormatPresetId = 'standard';
+  @state() private _foundationCycles = 4;
   @state() private _reckoningCycles = DEFAULT_RECKONING_CYCLES;
 
   // Step 3: Doctrine (score weights, percentages that sum to 100)
@@ -846,7 +894,8 @@ export class VelgEpochCreationWizard extends LitElement {
       this._maxTeamSize = 3;
       this._maxAgentsPerPlayer = 6;
       this._allowBetrayal = true;
-      this._tempoPreset = 'standard';
+      this._formatPreset = 'standard';
+      this._foundationCycles = 4;
       this._reckoningCycles = DEFAULT_RECKONING_CYCLES;
       this._wStability = 25;
       this._wInfluence = 20;
@@ -899,35 +948,24 @@ export class VelgEpochCreationWizard extends LitElement {
     );
   }
 
-  // ── Tempo Presets ──────────────────────────────────
+  // ── Format Presets ──────────────────────────────────
 
-  private _selectTempo(id: TempoPresetId): void {
-    this._tempoPreset = id;
-    const preset = getTempoPresets().find((p) => p.id === id);
-    if (preset?.reckoning != null && preset.competition != null) {
-      this._reckoningCycles = preset.reckoning;
-      this._durationDays = computeDurationForPreset(
-        preset.competition,
-        preset.reckoning,
-        this._cycleHours,
-      );
+  private _selectFormat(id: FormatPresetId): void {
+    this._formatPreset = id;
+    const preset = getFormatPresets().find((p) => p.id === id);
+    if (preset && id !== 'custom') {
+      if (preset.duration_days != null) this._durationDays = preset.duration_days;
+      if (preset.cycle_hours != null) this._cycleHours = preset.cycle_hours;
+      if (preset.foundation_cycles != null) this._foundationCycles = preset.foundation_cycles;
+      if (preset.reckoning_cycles != null) this._reckoningCycles = preset.reckoning_cycles;
+      if (preset.rp_per_cycle != null) this._rpPerCycle = preset.rp_per_cycle;
+      if (preset.rp_cap != null) this._rpCap = preset.rp_cap;
     }
   }
 
-  private _recalcDurationFromPreset(): void {
-    const preset = getTempoPresets().find((p) => p.id === this._tempoPreset);
-    if (preset?.competition != null && preset.reckoning != null) {
-      this._durationDays = computeDurationForPreset(
-        preset.competition,
-        preset.reckoning,
-        this._cycleHours,
-      );
-    }
-  }
-
-  private _handleTempoKeydown(e: KeyboardEvent): void {
-    const presets = getTempoPresets();
-    const currentIdx = presets.findIndex((p) => p.id === this._tempoPreset);
+  private _handleFormatKeydown(e: KeyboardEvent): void {
+    const presets = getFormatPresets();
+    const currentIdx = presets.findIndex((p) => p.id === this._formatPreset);
     let nextIdx = currentIdx;
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
       e.preventDefault();
@@ -937,10 +975,9 @@ export class VelgEpochCreationWizard extends LitElement {
       nextIdx = (currentIdx - 1 + presets.length) % presets.length;
     }
     if (nextIdx !== currentIdx) {
-      this._selectTempo(presets[nextIdx].id);
-      // Focus the new card after render
+      this._selectFormat(presets[nextIdx].id);
       this.updateComplete.then(() => {
-        const cards = this.shadowRoot?.querySelectorAll('.tempo-card');
+        const cards = this.shadowRoot?.querySelectorAll('.format-card');
         (cards?.[nextIdx] as HTMLElement)?.focus();
       });
     }
@@ -993,7 +1030,7 @@ export class VelgEpochCreationWizard extends LitElement {
       cycle_hours: this._cycleHours,
       rp_per_cycle: this._rpPerCycle,
       rp_cap: this._rpCap,
-      foundation_cycles: DEFAULT_FOUNDATION_CYCLES,
+      foundation_cycles: this._foundationCycles,
       reckoning_cycles: this._reckoningCycles,
       max_team_size: this._maxTeamSize,
       max_agents_per_player: this._maxAgentsPerPlayer,
@@ -1080,15 +1117,15 @@ export class VelgEpochCreationWizard extends LitElement {
     const phases = computePhaseCycles({
       duration_days: this._durationDays,
       cycle_hours: this._cycleHours,
-      foundation_cycles: DEFAULT_FOUNDATION_CYCLES,
+      foundation_cycles: this._foundationCycles,
       reckoning_cycles: this._reckoningCycles,
     });
     const foundationDays = Math.round(((phases.foundation * this._cycleHours) / 24) * 10) / 10;
     const reckoningDays = Math.round(((phases.reckoning * this._cycleHours) / 24) * 10) / 10;
     const competitionDays = Math.round(((phases.competition * this._cycleHours) / 24) * 10) / 10;
 
-    const presets = getTempoPresets();
-    const isCustom = this._tempoPreset === 'custom';
+    const presets = getFormatPresets();
+    const isCustom = this._formatPreset === 'custom';
     const cyclesPerDay = Math.round((24 / this._cycleHours) * 10) / 10;
 
     return html`
@@ -1126,60 +1163,58 @@ export class VelgEpochCreationWizard extends LitElement {
           ></textarea>
         </div>
 
-        <div class="range-field">
-          <div class="range-field__header">
-            <span class="range-field__label">
-              ${msg('Cycle Interval')}
-              ${renderInfoBubble(msg('Hours between each game cycle. Each cycle grants RP and resolves operative missions. Shorter cycles = faster gameplay.'))}
-            </span>
-            <span class="range-field__readout">${this._cycleHours}h</span>
-          </div>
-          <input
-            type="range"
-            aria-label=${msg('Cycle Interval')}
-            min="2"
-            max="24"
-            .value=${String(this._cycleHours)}
-            @input=${(e: Event) => {
-              this._cycleHours = Number((e.target as HTMLInputElement).value);
-              this._recalcDurationFromPreset();
-            }}
-          />
-          <span class="field__hint">${msg(str`${cyclesPerDay} cycles per day`)}</span>
+        <!-- Format Presets -->
+        <div class="format-section-header">
+          <span class="format-section-label">${msg('Match Format')}</span>
+          ${renderInfoBubble(msg('Presets configure duration, cycle interval, phase lengths, and RP economy. Use Custom for full manual control.'))}
         </div>
 
-        <!-- Tempo Presets -->
-        <div class="tempo-section-header">
-          <span class="tempo-section-label">${msg('Match Tempo')}</span>
-          ${renderInfoBubble(msg('Presets set the number of competition and reckoning cycles. Duration is calculated automatically. Use Custom for full manual control.'))}
-        </div>
-
-        <div class="tempo-presets" role="radiogroup" aria-label=${msg('Match Tempo')}>
+        <div class="format-presets" role="radiogroup" aria-label=${msg('Match Format')}>
           ${presets.map(
-            (p) => html`
+            (p, i) => html`
               <button
-                class="tempo-card ${this._tempoPreset === p.id ? 'tempo-card--active' : ''}"
+                class="format-card"
+                style="--i: ${i}"
                 role="radio"
-                aria-checked=${this._tempoPreset === p.id}
-                tabindex=${this._tempoPreset === p.id ? 0 : -1}
-                @click=${() => this._selectTempo(p.id)}
-                @keydown=${this._handleTempoKeydown}
+                aria-selected=${this._formatPreset === p.id}
+                aria-checked=${this._formatPreset === p.id}
+                tabindex=${this._formatPreset === p.id ? 0 : -1}
+                @click=${() => this._selectFormat(p.id)}
+                @keydown=${this._handleFormatKeydown}
               >
-                <span class="tempo-card__label">${p.label}</span>
-                ${
-                  p.competition != null
-                    ? html`<span class="tempo-card__players">${DEFAULT_FOUNDATION_CYCLES}+${p.competition}+${p.reckoning}</span>`
-                    : nothing
-                }
-                <span class="tempo-card__desc">${p.description}</span>
+                <div class="format-card__header">
+                  ${p.icon ? html`<span class="format-card__icon">${p.icon}</span>` : nothing}
+                  <span class="format-card__label">${p.label}</span>
+                </div>
+                ${p.duration_days != null
+                  ? html`<span class="format-card__stats">${p.duration_days}d · ${p.cycle_hours}h</span>`
+                  : nothing}
+                <span class="format-card__desc">${p.description}</span>
               </button>
             `,
           )}
         </div>
 
-        <div class="tempo-custom-reveal ${isCustom ? 'tempo-custom-reveal--open' : ''}">
-          <div class="tempo-custom-reveal__inner">
-            <div class="tempo-custom-reveal__content">
+        <div class="format-custom-reveal ${isCustom ? 'format-custom-reveal--open' : ''}">
+          <div class="format-custom-reveal__inner">
+            <div class="format-custom-reveal__content">
+              <div class="range-field">
+                <div class="range-field__header">
+                  <span class="range-field__label">${msg('Cycle Interval')}</span>
+                  <span class="range-field__readout">${this._cycleHours}h</span>
+                </div>
+                <input
+                  type="range"
+                  aria-label=${msg('Cycle Interval')}
+                  min="2"
+                  max="24"
+                  .value=${String(this._cycleHours)}
+                  @input=${(e: Event) => {
+                    this._cycleHours = Number((e.target as HTMLInputElement).value);
+                  }}
+                />
+                <span class="field__hint">${msg(str`${cyclesPerDay} cycles per day`)}</span>
+              </div>
               <div class="range-field">
                 <div class="range-field__header">
                   <span class="range-field__label">${msg('Duration')}</span>
@@ -1188,7 +1223,7 @@ export class VelgEpochCreationWizard extends LitElement {
                 <input
                   type="range"
                   aria-label=${msg('Duration')}
-                  min="3"
+                  min="1"
                   max="60"
                   .value=${String(this._durationDays)}
                   @input=${(e: Event) => {
@@ -1196,21 +1231,39 @@ export class VelgEpochCreationWizard extends LitElement {
                   }}
                 />
               </div>
-              <div class="range-field">
-                <div class="range-field__header">
-                  <span class="range-field__label">${msg('Reckoning Cycles')}</span>
-                  <span class="range-field__readout">${this._reckoningCycles}</span>
+              <div class="field-row">
+                <div class="range-field">
+                  <div class="range-field__header">
+                    <span class="range-field__label">${msg('Foundation Cycles')}</span>
+                    <span class="range-field__readout">${this._foundationCycles}</span>
+                  </div>
+                  <input
+                    type="range"
+                    aria-label=${msg('Foundation Cycles')}
+                    min="1"
+                    max="12"
+                    .value=${String(this._foundationCycles)}
+                    @input=${(e: Event) => {
+                      this._foundationCycles = Number((e.target as HTMLInputElement).value);
+                    }}
+                  />
                 </div>
-                <input
-                  type="range"
-                  aria-label=${msg('Reckoning Cycles')}
-                  min="3"
-                  max="16"
-                  .value=${String(this._reckoningCycles)}
-                  @input=${(e: Event) => {
-                    this._reckoningCycles = Number((e.target as HTMLInputElement).value);
-                  }}
-                />
+                <div class="range-field">
+                  <div class="range-field__header">
+                    <span class="range-field__label">${msg('Reckoning Cycles')}</span>
+                    <span class="range-field__readout">${this._reckoningCycles}</span>
+                  </div>
+                  <input
+                    type="range"
+                    aria-label=${msg('Reckoning Cycles')}
+                    min="2"
+                    max="16"
+                    .value=${String(this._reckoningCycles)}
+                    @input=${(e: Event) => {
+                      this._reckoningCycles = Number((e.target as HTMLInputElement).value);
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -1467,11 +1520,11 @@ export class VelgEpochCreationWizard extends LitElement {
     const phases = computePhaseCycles({
       duration_days: this._durationDays,
       cycle_hours: this._cycleHours,
-      foundation_cycles: DEFAULT_FOUNDATION_CYCLES,
+      foundation_cycles: this._foundationCycles,
       reckoning_cycles: this._reckoningCycles,
     });
     const toDays = (cycles: number) => Math.round(((cycles * this._cycleHours) / 24) * 10) / 10;
-    const presetLabel = getTempoPresets().find((p) => p.id === this._tempoPreset)?.label ?? '';
+    const presetLabel = getFormatPresets().find((p) => p.id === this._formatPreset)?.label ?? '';
 
     return html`
       <div class="summary">
@@ -1482,7 +1535,7 @@ export class VelgEpochCreationWizard extends LitElement {
             <span class="summary__val">${this._name}</span>
           </div>
           <div class="summary__row">
-            <span class="summary__key">${msg('Match Tempo')}</span>
+            <span class="summary__key">${msg('Match Format')}</span>
             <span class="summary__val">${presetLabel}</span>
           </div>
           <div class="summary__row">

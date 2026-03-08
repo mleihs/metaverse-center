@@ -10,6 +10,7 @@ from fastapi import HTTPException, status
 
 from backend.services.agent_service import AgentService
 from backend.services.base_service import BaseService
+from backend.services.constants import EVENT_STATUSES
 from backend.services.game_mechanics_service import GameMechanicsService
 from backend.utils.search import apply_search_filter
 from supabase import Client
@@ -189,8 +190,6 @@ class EventService(BaseService):
         new_status: str,
     ) -> dict:
         """Transition an event to a new lifecycle status."""
-        from backend.models.event import EVENT_STATUSES
-
         if new_status not in EVENT_STATUSES:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -343,6 +342,28 @@ class EventService(BaseService):
         # recompute_reaction_modifier() Postgres trigger on event_reactions.
 
         return reactions
+
+    @classmethod
+    async def get_zone_links(
+        cls,
+        supabase: Client,
+        event_id: UUID,
+    ) -> list[dict]:
+        """Get zone links for an event, flattening zone name/type into each link."""
+        response = (
+            supabase.table("event_zone_links")
+            .select("*, zones(name, zone_type)")
+            .eq("event_id", str(event_id))
+            .order("affinity_weight", desc=True)
+            .execute()
+        )
+        links = []
+        for row in response.data or []:
+            zone_data = row.pop("zones", None) or {}
+            row["zone_name"] = zone_data.get("name")
+            row["zone_type"] = zone_data.get("zone_type")
+            links.append(row)
+        return links
 
     @classmethod
     async def _post_event_mutation(

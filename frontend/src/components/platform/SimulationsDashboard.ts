@@ -7,10 +7,13 @@ import { resonanceApi } from '../../services/api/index.js';
 import type { Resonance, Simulation } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 
+import { epochsApi } from '../../services/api/EpochsApiService.js';
+import { VelgToast } from '../shared/Toast.js';
 import { getPlatformPullQuotes } from './LoreScroll.js';
 import './SimulationCard.js';
 import './LoreScroll.js';
 import '../resonance/ResonanceMonitor.js';
+import '../epoch/AcademyEpochCard.js';
 
 /**
  * Hero background image path in simulation.assets bucket.
@@ -202,6 +205,13 @@ export class VelgSimulationsDashboard extends LitElement {
       .shards-grid {
         grid-template-columns: 1fr;
       }
+    }
+
+    /* ── Academy CTA ── */
+
+    .academy-cta {
+      padding: var(--space-6);
+      max-width: 600px;
     }
 
     /* ── Footer Lore ── */
@@ -556,6 +566,21 @@ export class VelgSimulationsDashboard extends LitElement {
     );
   }
 
+  private async _handleStartAcademy(): Promise<void> {
+    try {
+      const resp = await epochsApi.createQuickAcademy();
+      if (resp.success && resp.data) {
+        VelgToast.success(msg('Academy epoch created. Preparing training simulation.'));
+        window.history.pushState({}, '', `/epochs/${resp.data.id}`);
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      } else {
+        VelgToast.error(resp.error?.message ?? msg('Failed to create academy epoch.'));
+      }
+    } catch {
+      VelgToast.error(msg('Failed to create academy epoch.'));
+    }
+  }
+
   private _handleSimulationClick(e: CustomEvent<Simulation>): void {
     const simulation = e.detail;
     appState.setCurrentSimulation(simulation);
@@ -666,6 +691,16 @@ export class VelgSimulationsDashboard extends LitElement {
 
       <!-- Lore Scroll -->
       <velg-lore-scroll .pullQuotes=${getPlatformPullQuotes()}></velg-lore-scroll>
+
+      <!-- Academy CTA (shown for authenticated users with no epoch experience) -->
+      ${appState.isAuthenticated.value ? html`
+        <section class="academy-cta">
+          <velg-academy-epoch-card
+            .academyEpochsPlayed=${0}
+            @start-academy=${this._handleStartAcademy}
+          ></velg-academy-epoch-card>
+        </section>
+      ` : nothing}
 
       <!-- Shards -->
       ${

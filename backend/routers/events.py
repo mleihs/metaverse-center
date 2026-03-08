@@ -356,20 +356,7 @@ async def get_event_zone_links(
     supabase: Client = Depends(get_supabase),
 ) -> dict:
     """Get zone links for an event (auto-assigned + manual)."""
-    response = (
-        supabase.table("event_zone_links")
-        .select("*, zones(name, zone_type)")
-        .eq("event_id", str(event_id))
-        .order("affinity_weight", desc=True)
-        .execute()
-    )
-    # Flatten zone name/type into link objects
-    links = []
-    for row in response.data or []:
-        zone_data = row.pop("zones", None) or {}
-        row["zone_name"] = zone_data.get("name")
-        row["zone_type"] = zone_data.get("zone_type")
-        links.append(row)
+    links = await EventService.get_zone_links(supabase, event_id)
     return {"success": True, "data": links}
 
 

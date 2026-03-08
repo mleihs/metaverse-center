@@ -36,6 +36,30 @@ class TaxonomyService:
         return response.data or []
 
     @staticmethod
+    async def list_taxonomies_paginated(
+        supabase: Client,
+        simulation_id: UUID,
+        *,
+        taxonomy_type: str | None = None,
+        limit: int = 500,
+        offset: int = 0,
+    ) -> tuple[list[dict], int]:
+        """List taxonomies with pagination (public)."""
+        query = (
+            supabase.table("simulation_taxonomies")
+            .select("*", count="exact")
+            .eq("simulation_id", str(simulation_id))
+            .order("taxonomy_type")
+            .range(offset, offset + limit - 1)
+        )
+        if taxonomy_type:
+            query = query.eq("taxonomy_type", taxonomy_type)
+        response = query.execute()
+        data = response.data or []
+        total = response.count if response.count is not None else len(data)
+        return data, total
+
+    @staticmethod
     async def create_taxonomy(supabase: Client, simulation_id: UUID, data: dict) -> dict:
         """Create a new taxonomy value."""
         response = (

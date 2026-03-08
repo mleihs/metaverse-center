@@ -1439,8 +1439,13 @@ backend/routers/epochs.py          (268)  Epoch CRUD + lifecycle
 backend/routers/operatives.py      (145)  Deploy/recall/list
 backend/routers/scores.py           (79)  Leaderboard/history
 backend/routers/game_mechanics.py  (171)  Health/readiness/stability
-backend/services/epoch_service.py  (501)  Lifecycle, RP, cycles
-backend/services/operative_service.py (559) Deploy, resolve, recall
+backend/services/epoch_service.py  (172)  CRUD: list, get, create, update
+backend/services/epoch_lifecycle_service.py (243) Lifecycle: start, advance, cancel
+backend/services/epoch_participation_service.py (447) Join, leave, draft, bots, teams
+backend/services/cycle_resolution_service.py (389) Full cycle resolution + bot execution
+backend/services/operative_service.py (142) Operative CRUD: list, get, recall
+backend/services/operative_mission_service.py (1089) Deploy, resolve, effects, probability
+backend/services/constants.py (111) Shared constants: RP costs, security, operative metadata
 backend/services/scoring_service.py (389)  5-dimension scoring
 backend/services/battle_log_service.py (259) Event narratives
 backend/services/game_mechanics_service.py (310) Materialized view queries

@@ -15,6 +15,7 @@ from backend.models.common import (
 from backend.services.agent_service import AgentService
 from backend.services.audit_service import AuditService
 from backend.services.event_service import EventService
+from backend.services.simulation_service import SimulationService
 from backend.services.translation_service import null_de_fields_for_update, schedule_auto_translation
 from supabase import Client
 
@@ -84,11 +85,11 @@ async def create_agent(
     )
     await AuditService.log_action(supabase, simulation_id, user.id, "agents", agent["id"], "create")
     # Auto-translate in background (best-effort)
-    sim = supabase.table("simulations").select("name, theme").eq("id", str(simulation_id)).maybe_single().execute()
-    if sim.data:
+    sim = await SimulationService.get_simulation_context(supabase, simulation_id)
+    if sim:
         schedule_auto_translation(
             supabase, "agents", agent["id"], agent,
-            simulation_name=sim.data["name"], simulation_theme=sim.data.get("theme", ""),
+            simulation_name=sim["name"], simulation_theme=sim.get("theme", ""),
             entity_type="agent",
         )
     return {"success": True, "data": agent}
@@ -117,11 +118,11 @@ async def update_agent(
     await AuditService.log_action(supabase, simulation_id, user.id, "agents", agent_id, "update")
     # Re-translate in background (best-effort)
     if de_nulls:
-        sim = supabase.table("simulations").select("name, theme").eq("id", str(simulation_id)).maybe_single().execute()
-        if sim.data:
+        sim = await SimulationService.get_simulation_context(supabase, simulation_id)
+        if sim:
             schedule_auto_translation(
                 supabase, "agents", agent["id"], agent,
-                simulation_name=sim.data["name"], simulation_theme=sim.data.get("theme", ""),
+                simulation_name=sim["name"], simulation_theme=sim.get("theme", ""),
                 entity_type="agent",
             )
     return {"success": True, "data": agent}

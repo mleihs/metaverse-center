@@ -28,6 +28,20 @@ def serialize_for_json(data: dict) -> dict:
     return result
 
 
+def paginate_response(response: object) -> tuple[list[dict], int]:
+    """Extract paginated data and total count from a Supabase response.
+
+    Usage:
+        query = supabase.table("t").select("*", count="exact")...
+        query = query.range(offset, offset + limit - 1)
+        data, total = paginate_response(query.execute())
+    """
+    resp_data = getattr(response, "data", None) or []
+    resp_count = getattr(response, "count", None)
+    total = resp_count if resp_count is not None else len(resp_data)
+    return resp_data, total
+
+
 class BaseService:
     """Base service providing standard CRUD operations for simulation-scoped entities.
 

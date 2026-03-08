@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, Query
 from backend.dependencies import get_current_user, get_supabase, require_role
 from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.settings import SettingCreate, SettingResponse, SettingUpdate
+from backend.services.audit_service import AuditService
 from backend.services.settings_service import SettingsService
 from supabase import Client
 
@@ -69,6 +70,10 @@ async def upsert_setting(
     setting = await _service.upsert_setting(
         supabase, simulation_id, user.id, body.model_dump(),
     )
+    await AuditService.safe_log(
+        supabase, simulation_id, user.id, "simulation_settings", setting.get("id"), "upsert",
+        details={"key": body.setting_key if hasattr(body, "setting_key") else None},
+    )
     return {"success": True, "data": setting}
 
 
@@ -94,6 +99,10 @@ async def update_setting(
             "setting_value": body.setting_value,
         },
     )
+    await AuditService.safe_log(
+        supabase, simulation_id, user.id, "simulation_settings", setting_id, "update",
+        details={"key": existing["setting_key"]},
+    )
     return {"success": True, "data": setting}
 
 
@@ -107,4 +116,7 @@ async def delete_setting(
 ) -> dict:
     """Delete a setting."""
     await _service.delete_setting(supabase, simulation_id, setting_id)
+    await AuditService.safe_log(
+        supabase, simulation_id, user.id, "simulation_settings", setting_id, "delete",
+    )
     return {"success": True, "data": {"message": "Setting deleted."}}

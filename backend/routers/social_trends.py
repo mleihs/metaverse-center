@@ -48,7 +48,7 @@ async def _resolve_news_service(
         if not config:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Guardian API not configured for this simulation.",
+                detail="Guardian API key not configured. Set 'guardian_api_key' in platform settings.",
             )
         return GuardianService(config.api_key)
 
@@ -57,7 +57,7 @@ async def _resolve_news_service(
         if not config:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="NewsAPI not configured for this simulation.",
+                detail="NewsAPI key not configured. Set 'newsapi_api_key' in platform settings.",
             )
         return NewsAPIService(config.api_key)
 
@@ -123,6 +123,10 @@ async def fetch_trends(
 
     stored = await SocialTrendsService.store_fetched_trends(
         supabase, simulation_id, raw_trends
+    )
+    await AuditService.safe_log(
+        supabase, simulation_id, user.id, "social_trends", None, "fetch",
+        details={"source": body.source, "query": body.query, "stored_count": len(stored)},
     )
     return {"success": True, "data": stored}
 
@@ -265,6 +269,10 @@ async def workflow(
 
     stored = await SocialTrendsService.store_fetched_trends(
         supabase, simulation_id, raw_trends
+    )
+    await AuditService.safe_log(
+        supabase, simulation_id, user.id, "social_trends", None, "workflow",
+        details={"source": body.source, "query": body.query, "fetched": len(raw_trends), "stored": len(stored)},
     )
 
     return {

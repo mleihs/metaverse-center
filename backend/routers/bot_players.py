@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends
 from backend.dependencies import get_current_user, get_supabase
 from backend.models.bot import BotPlayerCreate, BotPlayerResponse, BotPlayerUpdate
 from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.services.audit_service import AuditService
 from backend.services.bot_player_service import BotPlayerService
 from supabase import Client
 
@@ -51,6 +52,10 @@ async def create_bot_player(
         "difficulty": body.difficulty,
         "config": body.config,
     })
+    await AuditService.safe_log(
+        supabase, None, user.id, "bot_players", data.get("id"), "create",
+        details={"name": body.name},
+    )
     return {"success": True, "data": data}
 
 
@@ -63,6 +68,9 @@ async def update_bot_player(
 ) -> dict:
     """Update a bot player preset (own bots only)."""
     data = await BotPlayerService.update(supabase, bot_id, user.id, body.model_dump(exclude_none=True))
+    await AuditService.safe_log(
+        supabase, None, user.id, "bot_players", bot_id, "update",
+    )
     return {"success": True, "data": data}
 
 
@@ -74,4 +82,7 @@ async def delete_bot_player(
 ) -> dict:
     """Delete a bot player preset (own bots only)."""
     await BotPlayerService.delete(supabase, bot_id, user.id)
+    await AuditService.safe_log(
+        supabase, None, user.id, "bot_players", bot_id, "delete",
+    )
     return {"success": True, "data": {"message": "Bot player deleted."}}

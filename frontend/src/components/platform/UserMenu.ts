@@ -23,14 +23,17 @@ export class VelgUserMenu extends LitElement {
       font-size: var(--text-sm);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      border: var(--border-default);
+      border: 1px solid #333;
+      color: #ccc;
       background: transparent;
       cursor: pointer;
-      transition: all var(--transition-fast);
+      transition: background var(--transition-fast),
+                  border-color var(--transition-fast);
     }
 
     .user-btn:hover {
-      background: var(--color-surface-sunken);
+      background: rgba(245, 158, 11, 0.08);
+      border-color: rgba(245, 158, 11, 0.3);
     }
 
     .dropdown {
@@ -38,9 +41,9 @@ export class VelgUserMenu extends LitElement {
       top: calc(100% + var(--space-1));
       right: 0;
       min-width: 180px;
-      background: var(--color-surface-raised);
-      border: var(--border-default);
-      box-shadow: var(--shadow-lg);
+      background: #111;
+      border: 1px solid #333;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
       z-index: var(--z-dropdown);
       display: none;
     }
@@ -58,16 +61,19 @@ export class VelgUserMenu extends LitElement {
       text-align: left;
       background: transparent;
       border: none;
+      color: #ccc;
       cursor: pointer;
-      transition: background var(--transition-fast);
+      transition: background var(--transition-fast),
+                  color var(--transition-fast);
     }
 
     .dropdown__item:hover {
-      background: var(--color-surface-sunken);
+      background: rgba(245, 158, 11, 0.08);
+      color: #f59e0b;
     }
 
     .dropdown__divider {
-      border-top: var(--border-default);
+      border-top: 1px solid #222;
       margin: var(--space-1) 0;
     }
   `;
@@ -85,7 +91,7 @@ export class VelgUserMenu extends LitElement {
   }
 
   private _handleOutsideClick = (e: Event): void => {
-    if (!this.contains(e.target as Node)) {
+    if (!e.composedPath().includes(this)) {
       this._open = false;
     }
   };

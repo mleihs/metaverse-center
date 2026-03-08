@@ -5,6 +5,7 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 
+from backend.services.epoch_service import EpochService
 from supabase import Client
 
 logger = logging.getLogger(__name__)
@@ -165,8 +166,6 @@ class EpochChatService:
         automatically resolves the cycle (bots, scoring, notifications).
         Returns the participant row with optional `auto_resolved` and `new_cycle` fields.
         """
-        from backend.services.epoch_service import EpochService
-
         # Validate epoch is in an active phase
         epoch_resp = (
             supabase.table("game_epochs")

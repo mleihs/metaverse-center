@@ -8,9 +8,10 @@ import './AdminCachingTab.js';
 import './AdminCleanupTab.js';
 import './AdminForgeTab.js';
 import './AdminResonancesTab.js';
+import './AdminScannerTab.js';
 import './AdminSimulationsTab.js';
 
-type AdminTab = 'users' | 'simulations' | 'resonances' | 'forge' | 'apikeys' | 'caching' | 'cleanup';
+type AdminTab = 'users' | 'simulations' | 'resonances' | 'scanner' | 'forge' | 'apikeys' | 'caching' | 'cleanup';
 
 @localized()
 @customElement('velg-admin-panel')
@@ -198,6 +199,13 @@ export class VelgAdminPanel extends LitElement {
           @click=${() => this._setTab('resonances')}
         >${msg('Resonances')}</button>
         <button
+          class="admin-tabs__tab ${this._activeTab === 'scanner' ? 'admin-tabs__tab--active' : ''}"
+          role="tab"
+          aria-selected=${this._activeTab === 'scanner'}
+          aria-controls="admin-tabpanel"
+          @click=${() => this._setTab('scanner')}
+        >${msg('Scanner')}</button>
+        <button
           class="admin-tabs__tab ${this._activeTab === 'forge' ? 'admin-tabs__tab--active' : ''}"
           role="tab"
           aria-selected=${this._activeTab === 'forge'}
@@ -241,6 +249,8 @@ export class VelgAdminPanel extends LitElement {
         return html`<velg-admin-simulations-tab></velg-admin-simulations-tab>`;
       case 'resonances':
         return html`<velg-admin-resonances-tab></velg-admin-resonances-tab>`;
+      case 'scanner':
+        return html`<velg-admin-scanner-tab></velg-admin-scanner-tab>`;
       case 'forge':
         return html`<velg-admin-forge-tab></velg-admin-forge-tab>`;
       case 'apikeys':

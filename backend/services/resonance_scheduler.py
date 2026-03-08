@@ -11,6 +11,7 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
+from backend.services.resonance_service import ResonanceService
 from supabase import Client
 
 from backend.dependencies import get_admin_supabase
@@ -97,8 +98,6 @@ class ResonanceScheduler:
             return
 
         logger.info("Found %d due resonance(s) to auto-process", len(due))
-
-        from backend.services.resonance_service import ResonanceService
 
         for row in due:
             resonance_id = UUID(row["id"])

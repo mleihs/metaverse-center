@@ -30,12 +30,12 @@ class EpochScoreWeights(BaseModel):
 class EpochConfig(BaseModel):
     """Epoch configuration stored as JSONB in game_epochs.config."""
 
-    duration_days: int = Field(14, ge=3, le=60)
+    duration_days: int = Field(14, ge=1, le=60)
     cycle_hours: int = Field(8, ge=2, le=24)
     rp_per_cycle: int = Field(12, ge=5, le=25)
     rp_cap: int = Field(40, ge=15, le=75)
-    foundation_cycles: int = Field(4, ge=2, le=12)
-    reckoning_cycles: int = Field(8, ge=3, le=16)
+    foundation_cycles: int = Field(4, ge=1, le=12)
+    reckoning_cycles: int = Field(8, ge=2, le=16)
     max_team_size: int = Field(3, ge=2, le=8)
     max_agents_per_player: int = Field(6, ge=4, le=8)
     allow_betrayal: bool = True
@@ -46,12 +46,22 @@ class EpochConfig(BaseModel):
 # ── Epoch CRUD ───────────────────────────────────────────────────
 
 
+class AcademyConfig(BaseModel):
+    """Configuration for academy (solo training) epochs."""
+
+    difficulty: Literal["easy", "medium", "hard"] = "easy"
+    bot_count: int = Field(default=3, ge=2, le=4)
+    scenario: str | None = None
+
+
 class EpochCreate(BaseModel):
     """Schema for creating a new epoch."""
 
     name: str = Field(..., min_length=1, max_length=200)
     description: str | None = None
     config: EpochConfig = Field(default_factory=EpochConfig)
+    epoch_type: Literal["competitive", "academy"] = "competitive"
+    academy_config: AcademyConfig | None = None
 
 
 class EpochUpdate(BaseModel):
@@ -79,6 +89,7 @@ class EpochResponse(BaseModel):
     current_cycle: int
     status: str
     config: dict
+    epoch_type: str = "competitive"
     created_at: datetime
     updated_at: datetime
     participant_count: int | None = None

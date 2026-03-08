@@ -14,6 +14,7 @@ from backend.models.common import (
 )
 from backend.services.audit_service import AuditService
 from backend.services.building_service import BuildingService
+from backend.services.simulation_service import SimulationService
 from backend.services.translation_service import null_de_fields_for_update, schedule_auto_translation
 from supabase import Client
 
@@ -84,11 +85,11 @@ async def create_building(
         supabase, simulation_id, user.id, body.model_dump(exclude_none=True)
     )
     await AuditService.log_action(supabase, simulation_id, user.id, "buildings", building["id"], "create")
-    sim = supabase.table("simulations").select("name, theme").eq("id", str(simulation_id)).maybe_single().execute()
-    if sim.data:
+    sim = await SimulationService.get_simulation_context(supabase, simulation_id)
+    if sim:
         schedule_auto_translation(
             supabase, "buildings", building["id"], building,
-            simulation_name=sim.data["name"], simulation_theme=sim.data.get("theme", ""),
+            simulation_name=sim["name"], simulation_theme=sim.get("theme", ""),
             entity_type="building",
         )
     return {"success": True, "data": building}
@@ -115,11 +116,11 @@ async def update_building(
     )
     await AuditService.log_action(supabase, simulation_id, user.id, "buildings", building_id, "update")
     if de_nulls:
-        sim = supabase.table("simulations").select("name, theme").eq("id", str(simulation_id)).maybe_single().execute()
-        if sim.data:
+        sim = await SimulationService.get_simulation_context(supabase, simulation_id)
+        if sim:
             schedule_auto_translation(
                 supabase, "buildings", building["id"], building,
-                simulation_name=sim.data["name"], simulation_theme=sim.data.get("theme", ""),
+                simulation_name=sim["name"], simulation_theme=sim.get("theme", ""),
                 entity_type="building",
             )
     return {"success": True, "data": building}

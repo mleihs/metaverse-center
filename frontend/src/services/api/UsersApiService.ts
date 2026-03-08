@@ -13,6 +13,10 @@ export class UsersApiService extends BaseApiService {
   getMemberships(): Promise<ApiResponse<MembershipInfo[]>> {
     return this.get('/users/me/memberships');
   }
+
+  completeOnboarding(): Promise<ApiResponse<{ onboarding_completed: boolean }>> {
+    return this.patch('/users/me/onboarding');
+  }
 }
 
 export const usersApi = new UsersApiService();

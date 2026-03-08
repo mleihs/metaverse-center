@@ -93,6 +93,10 @@ class TranslationService:
         openrouter_key: str | None = None,
     ) -> str:
         """Translate a single text string."""
+        if settings.forge_mock_mode:
+            logger.info("MOCK_MODE: returning untranslated text")
+            return text
+
         if settings.translation_backend == "deepl":
             return await TranslationService._translate_deepl(
                 text, source_lang, target_lang, context
@@ -115,6 +119,10 @@ class TranslationService:
         """
         if not fields:
             return {}
+
+        if settings.forge_mock_mode:
+            logger.info("MOCK_MODE: returning untranslated fields")
+            return dict(fields)
 
         if settings.translation_backend == "deepl":
             return await TranslationService._translate_fields_deepl(

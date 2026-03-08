@@ -12,7 +12,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
 from backend.services.bot_game_state import BotGameState
-from backend.services.epoch_service import OPERATIVE_RP_COSTS
+from backend.services.constants import OPERATIVE_RP_COSTS, SECURITY_TIER_ORDER
 
 logger = logging.getLogger(__name__)
 
@@ -584,8 +584,6 @@ class StrategistPersonality(BotPersonality):
         """Strategist fortifies 1-2 weakest (lowest security) zones."""
         if state.epoch_phase != "foundation":
             return []
-        from backend.services.operative_service import SECURITY_TIER_ORDER
-
         plans: list[FortificationPlan] = []
         rp = available_rp
         # Sort zones by security level (weakest first)

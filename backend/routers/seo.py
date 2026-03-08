@@ -6,6 +6,7 @@ from fastapi.responses import PlainTextResponse
 
 from backend.config import settings
 from backend.dependencies import get_anon_supabase
+from backend.services.simulation_service import SimulationService
 from supabase import Client
 
 router = APIRouter(tags=["seo"])
@@ -36,8 +37,7 @@ async def robots_txt() -> PlainTextResponse:
 
 @router.get("/sitemap.xml")
 async def sitemap_xml(supabase: Client = Depends(get_anon_supabase)) -> Response:
-    response = supabase.table("simulations").select("slug,updated_at").eq("status", "active").execute()
-    simulations = response.data or []
+    simulations = await SimulationService.list_active_slugs(supabase)
 
     urlset = Element("urlset")
     urlset.set("xmlns", "http://www.sitemaps.org/schemas/sitemap/0.9")

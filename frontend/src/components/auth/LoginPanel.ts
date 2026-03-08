@@ -2,6 +2,11 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { authService } from '../../services/supabase/SupabaseAuthService.js';
+import {
+  terminalAnimations,
+  terminalFormStyles,
+  terminalTokens,
+} from '../shared/terminal-theme-styles.js';
 
 import '../shared/VelgSidePanel.js';
 
@@ -13,190 +18,109 @@ import '../shared/VelgSidePanel.js';
 @localized()
 @customElement('velg-login-panel')
 export class VelgLoginPanel extends LitElement {
-  static styles = css`
-    :host {
-      --amber: #f59e0b;
-      --amber-dim: #b45309;
-      --amber-glow: rgba(245, 158, 11, 0.15);
-      --hud-bg: #0a0a0a;
-      --hud-surface: #111;
-      --hud-border: #333;
-      --hud-text: #ccc;
-      --hud-text-dim: #888;
-    }
+  static styles = [
+    terminalTokens,
+    terminalAnimations,
+    terminalFormStyles,
+    css`
+      /* Override shared side-panel tokens for dark theme */
+      velg-side-panel {
+        --color-surface-raised: var(--hud-surface);
+        --color-surface-header: var(--hud-bg);
+        --color-text-primary: var(--hud-text);
+        --color-text-inverse: var(--hud-bg);
+        --color-primary: var(--amber);
+        --border-default: 1px solid var(--hud-border);
+        --border-medium: 1px solid var(--hud-border);
+        --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.6);
+      }
 
-    @keyframes cursor-blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0; }
-    }
+      @media (prefers-reduced-motion: reduce) {
+        .panel-cursor { animation: none !important; }
+      }
 
-    @keyframes field-reveal {
-      from { opacity: 0; transform: translateX(-8px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
+      /* ── Briefing below panel header ── */
+      .panel-briefing {
+        padding: 16px 24px;
+        border-bottom: 1px dashed var(--hud-border);
+        background: var(--hud-surface);
+      }
 
-    @media (prefers-reduced-motion: reduce) {
-      .form-group { animation: none !important; }
-      .panel-cursor { animation: none !important; }
-    }
+      .panel-briefing__classification {
+        font-family: var(--font-brutalist, 'Courier New', monospace);
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--amber);
+        margin: 0 0 8px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
 
-    /* ── Briefing below panel header ── */
-    .panel-briefing {
-      padding: 16px 24px;
-      border-bottom: 1px dashed var(--hud-border);
-      background: var(--hud-surface);
-    }
+      .panel-cursor {
+        display: inline-block;
+        width: 6px;
+        height: 12px;
+        background: var(--amber);
+        animation: cursor-blink 1s step-end infinite;
+      }
 
-    .panel-briefing__classification {
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-size: 10px;
-      font-weight: 900;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      color: var(--amber);
-      margin: 0 0 8px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
+      .panel-briefing__text {
+        font-family: var(--font-brutalist, 'Courier New', monospace);
+        font-size: 11px;
+        line-height: 1.7;
+        color: var(--hud-text-dim);
+        margin: 0;
+      }
 
-    .panel-cursor {
-      display: inline-block;
-      width: 6px;
-      height: 12px;
-      background: var(--amber);
-      animation: cursor-blink 1s step-end infinite;
-    }
+      /* ── Form layout overrides ── */
+      .login-form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        padding: 24px;
+      }
 
-    .panel-briefing__text {
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-size: 11px;
-      line-height: 1.7;
-      color: var(--hud-text-dim);
-      margin: 0;
-    }
+      .login-form .form-group {
+        margin-bottom: 0;
+      }
+      .login-form .form-group:nth-child(1) { animation-delay: 100ms; }
+      .login-form .form-group:nth-child(2) { animation-delay: 170ms; }
 
-    /* ── Form ── */
-    .login-form {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      padding: 24px;
-    }
+      .login-form .msg--error {
+        margin-bottom: 0;
+      }
 
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      animation: field-reveal 400ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) both;
-    }
-    .form-group:nth-child(1) { animation-delay: 100ms; }
-    .form-group:nth-child(2) { animation-delay: 170ms; }
+      /* ── Footer ── */
+      .login-footer {
+        padding: 16px 24px;
+        text-align: center;
+        font-family: var(--font-brutalist, 'Courier New', monospace);
+        font-size: 11px;
+        color: var(--hud-text-dim);
+      }
 
-    .form-label {
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-weight: 900;
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 3px;
-      color: var(--hud-text-dim);
-    }
+      .login-footer a {
+        color: var(--amber);
+        text-decoration: none;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
 
-    .form-input {
-      font-family: var(--font-mono, 'SF Mono', monospace);
-      font-size: var(--text-sm, 0.8rem);
-      padding: 10px 14px;
-      border: 1px solid var(--hud-border);
-      border-radius: 0;
-      background: var(--hud-bg);
-      color: var(--hud-text);
-      transition: border-color 150ms, box-shadow 150ms;
-      width: 100%;
-      box-sizing: border-box;
-    }
+      .login-footer a:hover {
+        text-decoration: underline;
+      }
 
-    .form-input:focus {
-      outline: none;
-      border-color: var(--amber);
-      box-shadow: 0 0 0 1px var(--amber-glow), inset 0 0 12px var(--amber-glow);
-    }
-
-    .form-input::placeholder {
-      color: #555;
-    }
-
-    /* ── CTA Button ── */
-    .btn-submit {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      padding: 14px 24px;
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-weight: 900;
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: 3px;
-      background: var(--amber);
-      color: var(--hud-bg);
-      border: 1px solid var(--amber-dim);
-      border-radius: 0;
-      cursor: pointer;
-      transition: all 150ms;
-      margin-top: 4px;
-    }
-
-    .btn-submit:hover {
-      background: #fbbf24;
-      box-shadow: 0 0 20px var(--amber-glow);
-    }
-
-    .btn-submit:active {
-      transform: scale(0.98);
-    }
-
-    .btn-submit:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-      pointer-events: none;
-    }
-
-    /* ── Error Message ── */
-    .msg--error {
-      padding: 12px 14px;
-      background: rgba(239, 68, 68, 0.08);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      border-left: 3px solid #ef4444;
-      color: #fca5a5;
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-weight: 700;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    /* ── Footer ── */
-    .login-footer {
-      padding: 16px 24px;
-      text-align: center;
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-size: 11px;
-      color: var(--hud-text-dim);
-    }
-
-    .login-footer a {
-      color: var(--amber);
-      text-decoration: none;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      cursor: pointer;
-    }
-
-    .login-footer a:hover {
-      text-decoration: underline;
-    }
-  `;
+      .login-footer a:focus-visible {
+        outline: 2px solid var(--amber);
+        outline-offset: 2px;
+      }
+    `,
+  ];
 
   @state() private _email = import.meta.env.DEV ? (import.meta.env.VITE_DEV_EMAIL ?? '') : '';
   @state() private _password = import.meta.env.DEV ? (import.meta.env.VITE_DEV_PASSWORD ?? '') : '';

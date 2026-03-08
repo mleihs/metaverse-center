@@ -55,7 +55,8 @@ export class SupabaseAuthService {
   private async _syncAppState(session: Session | null): Promise<void> {
     if (session) {
       if (!this._previouslyAuthenticated) {
-        analyticsService.trackEvent('login', { method: 'email' });
+        const provider = session.user?.app_metadata?.provider ?? 'email';
+        analyticsService.trackEvent('login', { method: provider });
       }
       this._previouslyAuthenticated = true;
       appState.setUser(session.user);
@@ -101,6 +102,20 @@ export class SupabaseAuthService {
       password,
     });
     return { user: data.user, error };
+  }
+
+  async signInWithGoogle(): Promise<void> {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/dashboard` },
+    });
+  }
+
+  async signInWithDiscord(): Promise<void> {
+    await supabase.auth.signInWithOAuth({
+      provider: 'discord',
+      options: { redirectTo: `${window.location.origin}/dashboard` },
+    });
   }
 
   async signOut(): Promise<{ error: AuthError | null }> {

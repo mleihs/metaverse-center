@@ -5,6 +5,7 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 
+from backend.services.constants import DETECTION_PENALTY, MISSION_SCORE_VALUES
 from backend.services.epoch_service import DEFAULT_CONFIG, EpochService
 from supabase import Client
 
@@ -332,8 +333,6 @@ class ScoringService:
 
         Rewards successful covert operations.
         """
-        from backend.services.operative_service import DETECTION_PENALTY, MISSION_SCORE_VALUES
-
         resp = (
             supabase.table("operative_missions")
             .select("operative_type, status")

@@ -399,14 +399,9 @@ class TestSuccessProbability:
         admin_mock.table.return_value = chain
 
         body = _make_deploy_body("spy", TARGET_SIM_ID, EMBASSY_ID)
-        with patch(
-            "backend.services.operative_service.get_admin_supabase",
-            new_callable=AsyncMock,
-            return_value=admin_mock,
-        ):
-            prob = await OperativeService._calculate_success_probability(
-                sb, body, SIM_ID
-            )
+        prob = await OperativeService._calculate_success_probability(
+            sb, body, SIM_ID, admin_supabase=admin_mock
+        )
         # base=0.55, aptitude=6 (default, no rows), zone_security=5.0 default, guardian=0, embassy=0.5
         # 0.55 + 6*0.03 - 5.0*0.05 - 0 + 0.5*0.15 = 0.55 + 0.18 - 0.25 + 0.075 = 0.555
         assert 0.05 <= prob <= 0.95
@@ -432,14 +427,9 @@ class TestSuccessProbability:
         body = _make_deploy_body(
             "spy", TARGET_SIM_ID, EMBASSY_ID, target_zone_id=ZONE_ID,
         )
-        with patch(
-            "backend.services.operative_service.get_admin_supabase",
-            new_callable=AsyncMock,
-            return_value=admin_mock,
-        ):
-            prob = await OperativeService._calculate_success_probability(
-                sb, body, SIM_ID
-            )
+        prob = await OperativeService._calculate_success_probability(
+            sb, body, SIM_ID, admin_supabase=admin_mock
+        )
         assert prob >= 0.05
 
     @pytest.mark.asyncio
@@ -497,14 +487,9 @@ class TestSuccessProbability:
         body = _make_deploy_body(
             "spy", TARGET_SIM_ID, EMBASSY_ID, target_zone_id=ZONE_ID,
         )
-        with patch(
-            "backend.services.operative_service.get_admin_supabase",
-            new_callable=AsyncMock,
-            return_value=admin_mock,
-        ):
-            prob = await OperativeService._calculate_success_probability(
-                sb, body, SIM_ID
-            )
+        prob = await OperativeService._calculate_success_probability(
+            sb, body, SIM_ID, admin_supabase=admin_mock
+        )
         assert prob <= 0.95
 
     @pytest.mark.asyncio
@@ -548,15 +533,15 @@ class TestSuccessProbability:
 
         admin_mock.table.side_effect = admin_router
 
+        # Mock RPC calls for resonance modifiers (return 0 = no resonance effect)
+        rpc_chain = MagicMock()
+        rpc_chain.execute.return_value = MagicMock(data=0)
+        admin_mock.rpc.return_value = rpc_chain
+
         body = _make_deploy_body("spy", TARGET_SIM_ID, EMBASSY_ID)
-        with patch(
-            "backend.services.operative_service.get_admin_supabase",
-            new_callable=AsyncMock,
-            return_value=admin_mock,
-        ):
-            prob = await OperativeService._calculate_success_probability(
-                sb, body, SIM_ID
-            )
+        prob = await OperativeService._calculate_success_probability(
+            sb, body, SIM_ID, admin_supabase=admin_mock
+        )
         # base=0.55 + 6*0.03 - 5.0*0.05 - 0.15 + 0.6*0.15 = 0.55 + 0.18 - 0.25 - 0.15 + 0.09 = 0.42
         assert 0.35 <= prob <= 0.50
 
@@ -600,15 +585,15 @@ class TestSuccessProbability:
 
         admin_mock.table.side_effect = admin_router
 
+        # Mock RPC calls for resonance modifiers (return 0 = no resonance effect)
+        rpc_chain = MagicMock()
+        rpc_chain.execute.return_value = MagicMock(data=0)
+        admin_mock.rpc.return_value = rpc_chain
+
         body = _make_deploy_body("spy", TARGET_SIM_ID, EMBASSY_ID)
-        with patch(
-            "backend.services.operative_service.get_admin_supabase",
-            new_callable=AsyncMock,
-            return_value=admin_mock,
-        ):
-            prob = await OperativeService._calculate_success_probability(
-                sb, body, SIM_ID
-            )
+        prob = await OperativeService._calculate_success_probability(
+            sb, body, SIM_ID, admin_supabase=admin_mock
+        )
         # base=0.55 + 9*0.03 - 5.0*0.05 - 0 + 0.6*0.15 = 0.55 + 0.27 - 0.25 + 0.09 = 0.66
         assert 0.60 <= prob <= 0.70
 
@@ -780,20 +765,15 @@ class TestPropagandistEffect:
         events_chain.execute.return_value = MagicMock(data=[{"id": "e1"}])
         admin_mock.table.return_value = events_chain
 
-        with patch(
-            "backend.services.operative_service.get_admin_supabase",
-            new_callable=AsyncMock,
-            return_value=admin_mock,
-        ):
-            mission = {
-                "id": str(uuid4()),
-                "epoch_id": str(EPOCH_ID),
-                "operative_type": "propagandist",
-                "source_simulation_id": str(SIM_ID),
-                "target_simulation_id": str(TARGET_SIM_ID),
-            }
+        mission = {
+            "id": str(uuid4()),
+            "epoch_id": str(EPOCH_ID),
+            "operative_type": "propagandist",
+            "source_simulation_id": str(SIM_ID),
+            "target_simulation_id": str(TARGET_SIM_ID),
+        }
 
-            result = await OperativeService._apply_propagandist_effect(MagicMock(), mission)
+        result = await OperativeService._apply_propagandist_effect(admin_mock, mission)
 
         assert result["outcome"] == "success"
         assert result["event_created"] is True
@@ -982,7 +962,7 @@ class TestRecall:
 
         sb.table.side_effect = table_router
 
-        with patch("backend.services.operative_service.EpochService.grant_rp", new_callable=AsyncMock):
+        with patch("backend.services.operative_mission_service.EpochService.grant_rp", new_callable=AsyncMock):
             result = await OperativeService.recall(
                 sb, UUID(mission_data["id"]), SIM_ID,
             )

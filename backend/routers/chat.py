@@ -16,6 +16,7 @@ from backend.models.chat import (
     MessageResponse,
 )
 from backend.models.common import CurrentUser, SuccessResponse
+from backend.services.audit_service import AuditService
 from backend.services.chat_ai_service import ChatAIService
 from backend.services.chat_service import ChatService
 from backend.services.external_service_resolver import ExternalServiceResolver
@@ -52,6 +53,10 @@ async def create_conversation(
     """Start a new conversation with one or more agents."""
     conversation = await _service.create_conversation(
         supabase, simulation_id, user.id, body.agent_ids, body.title,
+    )
+    await AuditService.safe_log(
+        supabase, simulation_id, user.id, "chat_conversations", conversation.get("id"), "create",
+        details={"title": body.title, "agent_count": len(body.agent_ids)},
     )
     return {"success": True, "data": conversation}
 
@@ -93,6 +98,10 @@ async def send_message(
     # Save user message
     user_message = await _service.send_message(
         supabase, conversation_id, body.content, body.sender_role, body.metadata,
+    )
+    await AuditService.safe_log(
+        supabase, simulation_id, user.id, "chat_messages", user_message.get("id"), "create",
+        details={"conversation_id": str(conversation_id)},
     )
 
     if not body.generate_response:
@@ -139,6 +148,10 @@ async def add_agent(
 ) -> dict:
     """Add an agent to a conversation."""
     result = await _service.add_agent(supabase, conversation_id, body.agent_id)
+    await AuditService.safe_log(
+        supabase, simulation_id, user.id, "chat_conversation_agents", body.agent_id, "create",
+        details={"conversation_id": str(conversation_id)},
+    )
     return {"success": True, "data": result}
 
 
@@ -156,6 +169,10 @@ async def remove_agent(
 ) -> dict:
     """Remove an agent from a conversation."""
     await _service.remove_agent(supabase, conversation_id, agent_id)
+    await AuditService.safe_log(
+        supabase, simulation_id, user.id, "chat_conversation_agents", agent_id, "delete",
+        details={"conversation_id": str(conversation_id)},
+    )
     return {"success": True, "data": {"removed": True}}
 
 
@@ -192,6 +209,10 @@ async def add_event_reference(
     ref = await _service.add_event_reference(
         supabase, conversation_id, body.event_id, user.id,
     )
+    await AuditService.safe_log(
+        supabase, simulation_id, user.id, "chat_event_references", body.event_id, "create",
+        details={"conversation_id": str(conversation_id)},
+    )
     return {"success": True, "data": ref}
 
 
@@ -209,6 +230,10 @@ async def remove_event_reference(
 ) -> dict:
     """Remove an event reference from a conversation."""
     await _service.remove_event_reference(supabase, conversation_id, event_id)
+    await AuditService.safe_log(
+        supabase, simulation_id, user.id, "chat_event_references", event_id, "delete",
+        details={"conversation_id": str(conversation_id)},
+    )
     return {"success": True, "data": {"removed": True}}
 
 
@@ -222,6 +247,9 @@ async def archive_conversation(
 ) -> dict:
     """Archive a conversation (soft-delete)."""
     conversation = await _service.archive_conversation(supabase, conversation_id)
+    await AuditService.safe_log(
+        supabase, simulation_id, user.id, "chat_conversations", conversation_id, "archive",
+    )
     return {"success": True, "data": conversation}
 
 
@@ -235,4 +263,7 @@ async def delete_conversation(
 ) -> dict:
     """Permanently delete a conversation and all its messages."""
     conversation = await _service.delete_conversation(supabase, conversation_id)
+    await AuditService.safe_log(
+        supabase, simulation_id, user.id, "chat_conversations", conversation_id, "delete",
+    )
     return {"success": True, "data": conversation}

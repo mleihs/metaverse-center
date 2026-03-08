@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from pydantic import BaseModel
@@ -40,6 +40,7 @@ class TestRepairJsonOutput:
         # LLM should NOT have been called
         mock_openrouter.generate.assert_not_called()
 
+    @patch("backend.services.external.output_repair.settings", MagicMock(forge_mock_mode=False))
     async def test_malformed_json_triggers_llm_repair(self, mock_openrouter):
         """Malformed JSON should trigger an LLM call to repair it."""
         malformed = '{"title": "Test", "description": "Desc", "score": 5'  # Missing closing brace
@@ -58,6 +59,7 @@ class TestRepairJsonOutput:
         assert result["score"] == 5
         mock_openrouter.generate.assert_called_once()
 
+    @patch("backend.services.external.output_repair.settings", MagicMock(forge_mock_mode=False))
     async def test_llm_returns_fenced_json(self, mock_openrouter):
         """LLM repair output with markdown fences should be handled."""
         malformed = "not json at all"
@@ -73,6 +75,7 @@ class TestRepairJsonOutput:
         assert result is not None
         assert result["title"] == "Fixed"
 
+    @patch("backend.services.external.output_repair.settings", MagicMock(forge_mock_mode=False))
     async def test_llm_repair_fails_returns_none(self, mock_openrouter):
         """If LLM repair also fails, return None."""
         malformed = "totally broken"
@@ -85,6 +88,7 @@ class TestRepairJsonOutput:
 
         assert result is None
 
+    @patch("backend.services.external.output_repair.settings", MagicMock(forge_mock_mode=False))
     async def test_llm_exception_returns_none(self, mock_openrouter):
         """If LLM call raises an exception, return None gracefully."""
         malformed = "broken json"
@@ -97,6 +101,7 @@ class TestRepairJsonOutput:
 
         assert result is None
 
+    @patch("backend.services.external.output_repair.settings", MagicMock(forge_mock_mode=False))
     async def test_schema_included_in_repair_prompt(self, mock_openrouter):
         """The repair prompt should include the Pydantic model's JSON schema."""
         malformed = "bad json"

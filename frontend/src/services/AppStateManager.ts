@@ -22,6 +22,9 @@ export class AppStateManager {
   readonly taxonomies = signal<SimulationTaxonomy[]>([]);
   readonly settings = signal<SimulationSetting[]>([]);
 
+  // --- Onboarding ---
+  readonly onboardingCompleted = signal<boolean>(true); // default true to avoid flash
+
   // --- UI ---
   readonly loading = signal<boolean>(false);
   readonly mockMode = signal<boolean>(false);
@@ -81,6 +84,10 @@ export class AppStateManager {
 
   setTaxonomies(taxonomies: SimulationTaxonomy[]): void {
     this.taxonomies.value = taxonomies;
+  }
+
+  setOnboardingCompleted(value: boolean): void {
+    this.onboardingCompleted.value = value;
   }
 
   setMockMode(value: boolean): void {

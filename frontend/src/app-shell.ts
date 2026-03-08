@@ -5,7 +5,9 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { analyticsService } from './services/AnalyticsService.js';
 import { appState } from './services/AppStateManager.js';
+import { epochsApi } from './services/api/EpochsApiService.js';
 import { membersApi, settingsApi, simulationsApi, taxonomiesApi } from './services/api/index.js';
+import { usersApi } from './services/api/UsersApiService.js';
 import { localeService } from './services/i18n/locale-service.js';
 import { seoService } from './services/SeoService.js';
 import { authService } from './services/supabase/SupabaseAuthService.js';
@@ -39,6 +41,9 @@ import './components/admin/AdminPanel.js';
 import './components/forge/VelgForgeWizard.js';
 import './components/chronicle/ChronicleView.js';
 import './components/shared/CookieConsent.js';
+import './components/shared/GuestBanner.js';
+import './components/landing/LandingPage.js';
+import './components/onboarding/OnboardingWizard.js';
 
 @localized()
 @customElement('velg-app')
@@ -103,6 +108,8 @@ export class VelgApp extends LitElement {
           const ok = await this._guardGuest();
           if (ok) {
             seoService.setTitle(['Sign In']);
+            seoService.setDescription('Sign in to metaverse.center — access your operative terminal and explore simulated worlds.');
+            seoService.setCanonical('/login');
             analyticsService.trackPageView('/login', document.title);
           }
           return ok;
@@ -115,6 +122,8 @@ export class VelgApp extends LitElement {
           const ok = await this._guardGuest();
           if (ok) {
             seoService.setTitle(['Register']);
+            seoService.setDescription('Create your operative account on metaverse.center — join the Bureau of Multiverse Observation.');
+            seoService.setCanonical('/register');
             analyticsService.trackPageView('/register', document.title);
           }
           return ok;
@@ -126,6 +135,7 @@ export class VelgApp extends LitElement {
         enter: async () => {
           await this._authReady;
           seoService.reset();
+          seoService.setDescription('Access your operative terminal, browse simulations, manage teams, and explore the multiverse.');
           seoService.setCanonical('/dashboard');
           analyticsService.trackPageView('/dashboard', document.title);
           return true;
@@ -137,6 +147,7 @@ export class VelgApp extends LitElement {
         enter: async () => {
           await this._authReady;
           seoService.setTitle(['Multiverse Map']);
+          seoService.setDescription('Explore the multiverse map — view active simulations, connections, and live battle statistics.');
           seoService.setCanonical('/multiverse');
           analyticsService.trackPageView('/multiverse', document.title);
           return true;
@@ -159,6 +170,8 @@ export class VelgApp extends LitElement {
         enter: async () => {
           await this._authReady;
           seoService.setTitle(['Epoch Summons']);
+          seoService.setDescription('Accept an epoch invitation — join competitive PvP operations and deploy your simulation.');
+          seoService.setCanonical('/epoch/join');
           analyticsService.trackPageView('/epoch/join', document.title);
           return true;
         },
@@ -174,6 +187,7 @@ export class VelgApp extends LitElement {
             return false;
           }
           seoService.setTitle(['The Simulation Forge']);
+          seoService.setDescription('Create new simulations with the Simulation Forge — design worlds, set parameters, and launch your game.');
           seoService.setCanonical('/forge');
           analyticsService.trackPageView('/forge', document.title);
           return true;
@@ -197,6 +211,8 @@ export class VelgApp extends LitElement {
         enter: async () => {
           await this._authReady;
           seoService.setTitle(['Invitation']);
+          seoService.setDescription('Accept your invitation to join a simulation on metaverse.center.');
+          seoService.setCanonical('/invitations');
           analyticsService.trackPageView('/invitations', document.title);
           return true;
         },
@@ -208,6 +224,7 @@ export class VelgApp extends LitElement {
           const ok = await this._guardAuth();
           if (ok) {
             seoService.setTitle(['Profile']);
+            seoService.setDescription('Manage your operative profile, wallet, preferences, and account settings.');
             seoService.setCanonical('/profile');
             analyticsService.trackPageView('/profile', document.title);
           }
@@ -221,6 +238,7 @@ export class VelgApp extends LitElement {
           const ok = await this._guardAuth();
           if (ok) {
             seoService.setTitle(['New Simulation']);
+            seoService.setDescription('Create a new simulation — build your world and launch it to the multiverse.');
             seoService.setCanonical('/new-simulation');
             analyticsService.trackPageView('/new-simulation', document.title);
           }
@@ -238,6 +256,7 @@ export class VelgApp extends LitElement {
             return false;
           }
           seoService.setTitle(['Admin']);
+          seoService.setDescription('Platform administration — manage users, simulations, settings, and system health.');
           seoService.setCanonical('/admin');
           analyticsService.trackPageView('/admin', document.title);
           return true;
@@ -310,11 +329,18 @@ export class VelgApp extends LitElement {
       },
       {
         path: '/',
-        render: () => html``,
+        render: () => html`<velg-landing-page></velg-landing-page>`,
         enter: async () => {
           await this._authReady;
-          this._router.goto('/dashboard');
-          return false;
+          if (appState.isAuthenticated.value) {
+            this._router.goto('/dashboard');
+            return false;
+          }
+          seoService.setTitle(['Multiplayer Worldbuilding & Strategy Platform']);
+          seoService.setDescription('Build civilizations, deploy operatives, shape the multiverse. A multiplayer worldbuilding and strategy platform.');
+          seoService.setCanonical('/');
+          analyticsService.trackPageView('/', document.title);
+          return true;
         },
       },
     ],
@@ -327,6 +353,7 @@ export class VelgApp extends LitElement {
 
   @state() private _initializing = true;
   @state() private _showLoginPanel = false;
+  @state() private _showOnboarding = false;
 
   // Auth-ready gate: route guards await this before checking isAuthenticated.
   // Resolves after authService.initialize() completes (session restored or absent).
@@ -430,11 +457,33 @@ export class VelgApp extends LitElement {
 
   private async _initAuth(): Promise<void> {
     try {
-      await authService.initialize();
-      this._fetchMockMode();
+      await Promise.all([
+        authService.initialize(),
+        this._fetchMockMode(),
+      ]);
+      // After auth is ready, check onboarding state for authenticated users
+      if (appState.isAuthenticated.value) {
+        this._fetchOnboardingState();
+      }
     } finally {
       this._initializing = false;
       this._resolveAuthReady();
+    }
+  }
+
+  private async _fetchOnboardingState(): Promise<void> {
+    try {
+      const resp = await usersApi.getMe();
+      if (resp.success && resp.data) {
+        const data = resp.data as unknown as Record<string, unknown>;
+        const completed = data.onboarding_completed !== false;
+        appState.setOnboardingCompleted(completed);
+        if (!completed) {
+          this._showOnboarding = true;
+        }
+      }
+    } catch {
+      // Non-critical — default to onboarding completed
     }
   }
 
@@ -608,14 +657,54 @@ export class VelgApp extends LitElement {
       return html`<div class="loading-container">${msg('Loading...')}</div>`;
     }
 
+    const isGuest = !appState.isAuthenticated.value;
+    const isLanding = window.location.pathname === '/';
+
     return html`
+      ${isGuest && !isLanding ? html`<velg-guest-banner></velg-guest-banner>` : nothing}
       <velg-platform-header></velg-platform-header>
       <main class="app-main">
         ${this._router.outlet()}
       </main>
       ${this._showLoginPanel ? html`<velg-login-panel></velg-login-panel>` : nothing}
+      ${this._showOnboarding ? html`
+        <velg-onboarding-wizard
+          .open=${true}
+          @onboarding-complete=${this._handleOnboardingComplete}
+          @onboarding-start-academy=${this._handleOnboardingAcademy}
+          @onboarding-create-simulation=${this._handleOnboardingCreateSim}
+          @onboarding-browse=${this._handleOnboardingBrowse}
+        ></velg-onboarding-wizard>
+      ` : nothing}
       <velg-cookie-consent></velg-cookie-consent>
     `;
+  }
+
+  private _handleOnboardingComplete(): void {
+    this._showOnboarding = false;
+  }
+
+  private _handleOnboardingAcademy(): void {
+    this._showOnboarding = false;
+    epochsApi.createQuickAcademy().then((resp) => {
+      if (resp.success && resp.data) {
+        window.history.pushState({}, '', `/epochs/${resp.data.id}`);
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      }
+    }).catch(() => {});
+  }
+
+  private _handleOnboardingCreateSim(): void {
+    this._showOnboarding = false;
+    window.history.pushState({}, '', '/dashboard');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+    // CreateSimulationWizard is opened from the dashboard
+  }
+
+  private _handleOnboardingBrowse(): void {
+    this._showOnboarding = false;
+    window.history.pushState({}, '', '/dashboard');
+    window.dispatchEvent(new PopStateEvent('popstate'));
   }
 }
 

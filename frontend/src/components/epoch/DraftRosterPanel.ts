@@ -11,6 +11,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import type { Agent, AptitudeSet, OperativeType } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
+import { OPERATIVE_COLORS as OP_COLORS } from '../../utils/operative-constants.js';
 import '../shared/VelgGameCard.js';
 
 const OP_TYPES: OperativeType[] = [
@@ -21,15 +22,6 @@ const OP_TYPES: OperativeType[] = [
   'infiltrator',
   'assassin',
 ];
-
-const OP_COLORS: Record<OperativeType, string> = {
-  spy: '#64748b',
-  guardian: '#10b981',
-  saboteur: '#ef4444',
-  propagandist: '#f59e0b',
-  infiltrator: '#a78bfa',
-  assassin: '#dc2626',
-};
 
 const OP_SHORT: Record<OperativeType, string> = {
   spy: 'SPY',

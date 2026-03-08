@@ -10,6 +10,7 @@ from __future__ import annotations
 import logging
 import secrets
 
+from backend.config import settings
 from backend.services.bot_game_state import BotGameState
 from backend.services.external.openrouter import OpenRouterService
 from backend.services.model_resolver import ModelResolver
@@ -252,8 +253,10 @@ class BotChatService:
         bot_player = participant.get("bot_player") or participant.get("bot_players") or {}
         personality = bot_player.get("personality", "sentinel")
 
-        # Check chat mode setting
+        # Check chat mode setting — force template mode under mock
         chat_mode = await cls._get_chat_mode(admin_supabase, participant["simulation_id"])
+        if settings.forge_mock_mode:
+            chat_mode = "template"
 
         if chat_mode == "llm":
             content = await cls._generate_llm_message(

@@ -6,6 +6,7 @@ import asyncio
 import logging
 from uuid import UUID
 
+from backend.config import settings
 from backend.services.agent_memory_service import AgentMemoryService
 from backend.services.external.openrouter import OpenRouterService
 from backend.services.model_resolver import ModelResolver
@@ -45,6 +46,17 @@ class ChatAIService:
 
         Returns the generated response text.
         """
+        if settings.forge_mock_mode:
+            logger.info("MOCK_MODE: returning mock chat response")
+            mock_text = "[MOCK] I acknowledge your message. This is a simulated response."
+            self._supabase.table("chat_messages").insert({
+                "conversation_id": str(conversation_id),
+                "content": mock_text,
+                "sender_role": "assistant",
+                "metadata": {"model": "mock", "source": "mock"},
+            }).execute()
+            return mock_text
+
         conversation = await self._load_conversation(conversation_id)
         agent = await self._load_agent(conversation["agent_id"])
         simulation = await self._load_simulation()
@@ -108,6 +120,23 @@ class ChatAIService:
         Each agent responds sequentially, seeing previous agents' responses.
         Returns list of saved message dicts.
         """
+        if settings.forge_mock_mode:
+            logger.info("MOCK_MODE: returning mock group chat responses")
+            agents = await self._load_conversation_agents(conversation_id)
+            saved: list[dict] = []
+            for agent in agents:
+                mock_text = f"[MOCK] {agent.get('name', 'Agent')} responds to the conversation."
+                resp = self._supabase.table("chat_messages").insert({
+                    "conversation_id": str(conversation_id),
+                    "content": mock_text,
+                    "sender_role": "assistant",
+                    "agent_id": str(agent["id"]),
+                    "metadata": {"model": "mock", "source": "mock"},
+                }).execute()
+                if resp.data:
+                    saved.append(resp.data[0])
+            return saved
+
         # Load context
         agents = await self._load_conversation_agents(conversation_id)
         event_refs = await self._load_event_references(conversation_id)

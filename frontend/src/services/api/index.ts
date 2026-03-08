@@ -21,6 +21,7 @@ export { MembersApiService, membersApi } from './MembersApiService.js';
 export { PromptTemplatesApiService, promptTemplatesApi } from './PromptTemplatesApiService.js';
 export { RelationshipsApiService, relationshipsApi } from './RelationshipsApiService.js';
 export { ResonanceApiService, resonanceApi } from './ResonanceApiService.js';
+export { ScannerApiService, scannerApi } from './ScannerApiService.js';
 export { SettingsApiService, settingsApi } from './SettingsApiService.js';
 export { SimulationsApiService, simulationsApi } from './SimulationsApiService.js';
 export { SocialMediaApiService, socialMediaApi } from './SocialMediaApiService.js';

@@ -13,16 +13,8 @@ import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import type { OperativeType } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
+import { OPERATIVE_COLORS as OP_COLORS } from '../../utils/operative-constants.js';
 import { getOperativeIcon } from '../../utils/operative-icons.js';
-
-const OP_COLORS: Record<OperativeType, string> = {
-  spy: '#64748b',
-  guardian: '#10b981',
-  saboteur: '#ef4444',
-  propagandist: '#f59e0b',
-  infiltrator: '#a78bfa',
-  assassin: '#dc2626',
-};
 
 @customElement('velg-mission-card')
 export class VelgMissionCard extends LitElement {

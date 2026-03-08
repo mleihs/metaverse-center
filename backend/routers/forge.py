@@ -20,6 +20,7 @@ from backend.models.forge import ForgeDraft, ForgeDraftCreate, ForgeDraftUpdate,
 from backend.services.audit_service import AuditService
 from backend.services.forge_draft_service import ForgeDraftService
 from backend.services.forge_orchestrator_service import ForgeOrchestratorService
+from backend.services.simulation_service import SimulationService
 
 logger = logging.getLogger(__name__)
 
@@ -290,10 +291,8 @@ async def regenerate_images(
     admin_supabase=Depends(get_admin_supabase),
 ):
     """Trigger batch image generation for an existing simulation (admin only)."""
-    # Verify simulation exists
-    sim = admin_supabase.table("simulations").select("id, name").eq("id", str(simulation_id)).maybe_single().execute()
-    if not sim.data:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Simulation not found.")
+    # Verify simulation exists (raises 404 if not found)
+    sim = await SimulationService.check_exists(admin_supabase, simulation_id)
 
     background_tasks.add_task(
         _orchestrator_service.run_batch_generation,
@@ -304,7 +303,7 @@ async def regenerate_images(
 
     await AuditService.safe_log(
         admin_supabase, str(simulation_id), admin.id, "simulation", str(simulation_id),
-        "regenerate_images", {"simulation_name": sim.data["name"]},
+        "regenerate_images", {"simulation_name": sim["name"]},
     )
 
-    return {"success": True, "data": {"message": f"Image generation started for '{sim.data['name']}'."}}
+    return {"success": True, "data": {"message": f"Image generation started for '{sim['name']}'."}}

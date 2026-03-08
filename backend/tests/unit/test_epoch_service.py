@@ -191,13 +191,12 @@ class TestLifecycleTransitions:
         assert update_call["status"] == "reckoning"
 
     @pytest.mark.asyncio
-    @patch("backend.services.epoch_service.get_admin_supabase", new_callable=AsyncMock)
-    @patch("backend.services.epoch_service.GameInstanceService")
-    async def test_advance_reckoning_to_completed_archives_instances(self, mock_gis, mock_admin):
-        mock_admin.return_value = MagicMock()
+    @patch("backend.services.epoch_lifecycle_service.GameInstanceService")
+    async def test_advance_reckoning_to_completed_archives_instances(self, mock_gis):
         mock_gis.archive_instances = AsyncMock()
 
         sb = MagicMock()
+        admin_sb = MagicMock()
         chain = _make_chain()
         chain.execute.side_effect = [
             MagicMock(data={"id": str(EPOCH_ID), "status": "reckoning", "config": {}}),
@@ -205,7 +204,7 @@ class TestLifecycleTransitions:
         ]
         sb.table.return_value = chain
 
-        await EpochService.advance_phase(sb, EPOCH_ID)
+        await EpochService.advance_phase(sb, EPOCH_ID, admin_supabase=admin_sb)
 
         mock_gis.archive_instances.assert_called_once()
 
@@ -269,13 +268,12 @@ class TestCancelEpoch:
         assert update_call["status"] == "cancelled"
 
     @pytest.mark.asyncio
-    @patch("backend.services.epoch_service.get_admin_supabase", new_callable=AsyncMock)
-    @patch("backend.services.epoch_service.GameInstanceService")
-    async def test_cancel_active_epoch_deletes_instances(self, mock_gis, mock_admin):
-        mock_admin.return_value = MagicMock()
+    @patch("backend.services.epoch_lifecycle_service.GameInstanceService")
+    async def test_cancel_active_epoch_deletes_instances(self, mock_gis):
         mock_gis.delete_instances = AsyncMock()
 
         sb = MagicMock()
+        admin_sb = MagicMock()
         chain = _make_chain()
         chain.execute.side_effect = [
             MagicMock(data={"id": str(EPOCH_ID), "status": "competition"}),
@@ -283,7 +281,7 @@ class TestCancelEpoch:
         ]
         sb.table.return_value = chain
 
-        await EpochService.cancel_epoch(sb, EPOCH_ID)
+        await EpochService.cancel_epoch(sb, EPOCH_ID, admin_supabase=admin_sb)
 
         mock_gis.delete_instances.assert_called_once()
 

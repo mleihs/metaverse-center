@@ -16,6 +16,7 @@ from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta
 from backend.models.echo import EchoCreate, EchoResponse
 from backend.services.audit_service import AuditService
 from backend.services.echo_service import EchoService
+from backend.services.event_service import EventService
 from backend.services.external.openrouter import OpenRouterError
 from backend.services.external_service_resolver import ExternalServiceResolver
 from backend.services.game_mechanics_service import GameMechanicsService
@@ -104,23 +105,11 @@ async def trigger_echo(
     embassy effectiveness, tag resonance, source instability) rather
     than using the raw user-provided strength directly.
     """
-    # Fetch the source event
-    event_resp = (
-        supabase.table("events")
-        .select("*")
-        .eq("id", str(body.source_event_id))
-        .eq("simulation_id", str(simulation_id))
-        .single()
-        .execute()
-    )
-    if not event_resp.data:
-        raise HTTPException(
-            status_code=http_status.HTTP_404_NOT_FOUND,
-            detail="Source event not found in this simulation.",
-        )
+    # Fetch the source event (raises 404 if not found)
+    event_data = await EventService.get(supabase, simulation_id, body.source_event_id)
 
     # Compute echo strength from game metrics
-    event_tags = event_resp.data.get("tags") or []
+    event_tags = event_data.get("tags") or []
     computed_strength = await EchoService.compute_strength_for_manual_trigger(
         supabase,
         source_simulation_id=simulation_id,
@@ -132,7 +121,7 @@ async def trigger_echo(
 
     result = await EchoService.create_echo(
         admin_supabase,
-        source_event=event_resp.data,
+        source_event=event_data,
         source_simulation_id=simulation_id,
         target_simulation_id=body.target_simulation_id,
         echo_vector=body.echo_vector,

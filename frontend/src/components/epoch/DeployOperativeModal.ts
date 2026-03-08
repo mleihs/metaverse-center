@@ -33,6 +33,7 @@ import type {
   Zone,
 } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
+import { OPERATIVE_COLORS as OP_COLORS, OPERATIVE_RP_COSTS } from '../../utils/operative-constants.js';
 import { focusFirstElement, trapFocus } from '../shared/focus-trap.js';
 import '../shared/VelgGameCard.js';
 import './MissionCard.js';
@@ -53,55 +54,46 @@ interface OperativeTypeInfo {
   needsTarget: 'building' | 'agent' | 'embassy' | 'zone' | 'none';
 }
 
-const OP_COLORS: Record<OperativeType, string> = {
-  spy: '#64748b',
-  guardian: '#10b981',
-  saboteur: '#ef4444',
-  propagandist: '#f59e0b',
-  infiltrator: '#a78bfa',
-  assassin: '#dc2626',
-};
-
 function getOperativeTypes(): OperativeTypeInfo[] {
   return [
     {
       type: 'spy',
-      cost: 3,
+      cost: OPERATIVE_RP_COSTS.spy,
       duration: msg('3 cycles'),
       effect: msg('Reveals target health metrics, zone stability, and active operatives.'),
       needsTarget: 'none',
     },
     {
       type: 'saboteur',
-      cost: 5,
+      cost: OPERATIVE_RP_COSTS.saboteur,
       duration: msg('1 cycle deploy'),
       effect: msg('Degrades one target building condition by one step.'),
       needsTarget: 'building',
     },
     {
       type: 'propagandist',
-      cost: 4,
+      cost: OPERATIVE_RP_COSTS.propagandist,
       duration: msg('2 cycles'),
       effect: msg('Generates a destabilizing event (impact 6-8) in target zone.'),
       needsTarget: 'zone',
     },
     {
       type: 'assassin',
-      cost: 7,
+      cost: OPERATIVE_RP_COSTS.assassin,
       duration: msg('2 cycle deploy'),
       effect: msg('Wounds target agent — reduces relationships by 2, removes ambassador status.'),
       needsTarget: 'agent',
     },
     {
       type: 'infiltrator',
-      cost: 5,
+      cost: OPERATIVE_RP_COSTS.infiltrator,
       duration: msg('3 cycles'),
       effect: msg('Reduces target embassy effectiveness by 50% for 3 cycles.'),
       needsTarget: 'embassy',
     },
     {
       type: 'guardian',
-      cost: 4,
+      cost: OPERATIVE_RP_COSTS.guardian,
       duration: msg('Permanent'),
       effect: msg(
         'Detects hostile operatives entering your simulation. +15% counter-intel success.',

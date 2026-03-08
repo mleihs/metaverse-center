@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends
 
-from backend.dependencies import get_current_user, get_supabase
+from backend.dependencies import get_admin_supabase, get_current_user, get_supabase
 from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.notification import NotificationPreferencesResponse, NotificationPreferencesUpdate
 from backend.models.user import MembershipInfo, UserWithMemberships
 from backend.services.member_service import MemberService
+from backend.services.user_profile_service import UserProfileService
 from supabase import Client
 
 router = APIRouter(prefix="/api/v1/users", tags=["users"])
@@ -14,6 +15,7 @@ router = APIRouter(prefix="/api/v1/users", tags=["users"])
 async def get_me(
     user: CurrentUser = Depends(get_current_user),
     supabase: Client = Depends(get_supabase),
+    admin: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Get the current user's profile with simulation memberships."""
     rows = await MemberService.get_user_memberships(supabase, user.id)
@@ -30,10 +32,14 @@ async def get_me(
             )
         )
 
+    profile = await UserProfileService.get_profile_extras(admin, user.id)
+
     user_data = UserWithMemberships(
         id=user.id,
         email=user.email,
         memberships=memberships,
+        onboarding_completed=profile.get("onboarding_completed", True),
+        academy_epochs_played=profile.get("academy_epochs_played", 0),
     )
 
     return {"success": True, "data": user_data}
@@ -51,25 +57,7 @@ async def get_notification_preferences(
 
     Returns defaults if no preferences have been saved yet.
     """
-    resp = (
-        supabase.table("notification_preferences")
-        .select("cycle_resolved, phase_changed, epoch_completed, email_locale")
-        .eq("user_id", str(user.id))
-        .maybe_single()
-        .execute()
-    )
-
-    if resp.data:
-        prefs = resp.data
-    else:
-        # Return defaults
-        prefs = {
-            "cycle_resolved": True,
-            "phase_changed": True,
-            "epoch_completed": True,
-            "email_locale": "en",
-        }
-
+    prefs = await UserProfileService.get_notification_preferences(supabase, user.id)
     return {"success": True, "data": prefs}
 
 
@@ -83,27 +71,19 @@ async def update_notification_preferences(
     supabase: Client = Depends(get_supabase),
 ) -> dict:
     """Update the current user's notification preferences (upsert)."""
-    data = {
-        "user_id": str(user.id),
-        "cycle_resolved": body.cycle_resolved,
-        "phase_changed": body.phase_changed,
-        "epoch_completed": body.epoch_completed,
-        "email_locale": body.email_locale,
-    }
-
-    resp = (
-        supabase.table("notification_preferences")
-        .upsert(data, on_conflict="user_id")
-        .execute()
+    result = await UserProfileService.upsert_notification_preferences(
+        supabase,
+        user.id,
+        body.model_dump(),
     )
+    return {"success": True, "data": result}
 
-    result = resp.data[0] if resp.data else data
-    return {
-        "success": True,
-        "data": {
-            "cycle_resolved": result["cycle_resolved"],
-            "phase_changed": result["phase_changed"],
-            "epoch_completed": result["epoch_completed"],
-            "email_locale": result["email_locale"],
-        },
-    }
+
+@router.patch("/me/onboarding", response_model=SuccessResponse)
+async def complete_onboarding(
+    user: CurrentUser = Depends(get_current_user),
+    admin: Client = Depends(get_admin_supabase),
+) -> dict:
+    """Mark the current user's onboarding as completed."""
+    await UserProfileService.complete_onboarding(admin, user.id)
+    return {"success": True, "data": {"onboarding_completed": True}}

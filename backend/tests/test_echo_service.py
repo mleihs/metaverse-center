@@ -6,7 +6,8 @@ from uuid import UUID, uuid4
 import pytest
 from fastapi import HTTPException
 
-from backend.services.echo_service import ConnectionService, EchoService
+from backend.services.connection_service import ConnectionService
+from backend.services.echo_service import EchoService
 
 SIM_A = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
 SIM_B = UUID("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")

@@ -15,6 +15,7 @@ from slowapi.errors import RateLimitExceeded
 
 from backend.config import settings as app_settings
 from backend.services.resonance_scheduler import ResonanceScheduler
+from backend.services.scanning.scanner_service import ScannerService
 from backend.middleware.logging_context import LoggingContextMiddleware
 from backend.middleware.rate_limit import limiter
 from backend.middleware.security import SecurityHeadersMiddleware
@@ -58,14 +59,17 @@ from backend.routers import (
     style_references,
     taxonomies,
     users,
+    news_scanner,
     zone_actions,
 )
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    task = await ResonanceScheduler.start()
+    resonance_task = await ResonanceScheduler.start()
+    scanner_task = await ScannerService.start()
     yield
-    task.cancel()
+    scanner_task.cancel()
+    resonance_task.cancel()
 
 
 app = FastAPI(
@@ -151,6 +155,7 @@ app.include_router(operatives.router)
 app.include_router(scores.router)
 app.include_router(zone_actions.router)
 app.include_router(resonances.router)
+app.include_router(news_scanner.router)
 app.include_router(style_references.router)
 app.include_router(public.router)
 app.include_router(seo.router)
