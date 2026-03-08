@@ -1154,10 +1154,6 @@
   <source>An unexpected error occurred while loading simulations.</source>
   <target>Ein unerwarteter Fehler beim Laden der Simulationen.</target>
 </trans-unit>
-<trans-unit id="s220157cb442df52b">
-  <source>Loading Simulations...</source>
-  <target>Simulationen werden geladen...</target>
-</trans-unit>
 <trans-unit id="sa48f81f001b893d2">
   <source>User</source>
   <target>Benutzer</target>
@@ -2841,14 +2837,6 @@
 <trans-unit id="s9142aa57b3ac34ae">
   <source>Fracture a New Shard</source>
   <target>Eine neue Scherbe brechen</target>
-</trans-unit>
-<trans-unit id="s0fd90cce6341b9f0">
-  <source>Active Shards</source>
-  <target>Aktive Scherben</target>
-</trans-unit>
-<trans-unit id="se2776d7d7e4f5780">
-  <source>worlds</source>
-  <target>Welten</target>
 </trans-unit>
 <trans-unit id="s15ce0428eefa7b00">
   <source>The Unnamed</source>
@@ -4939,10 +4927,6 @@
   <source>Optional briefing text shown in the lobby. Set the narrative tone for the competition.</source>
 <target>Optionaler Briefing-Text, der in der Lobby angezeigt wird. Legt den erzählerischen Ton für den Wettbewerb fest.</target>
 </trans-unit>
-<trans-unit id="s2cff39686248cd7d">
-  <source>Hours between each game cycle. Each cycle grants RP and resolves operative missions. Shorter cycles = faster gameplay.</source>
-<target>Stunden zwischen den einzelnen Spielzyklen. Jeder Zyklus gewährt RP und löst operative Missionen auf. Kürzere Zyklen = schnelleres Gameplay.</target>
-</trans-unit>
 <trans-unit id="s0e2cfd4c80adda34">
   <source>Resonance Points granted each cycle. RP is spent to deploy operatives (spies, saboteurs, assassins, etc.). Foundation phase grants 1.5x.</source>
 <target>Resonanzpunkte werden in jedem Zyklus vergeben. RP werden ausgegeben, um Agenten (Spione, Saboteure, Attentäter usw.) einzusetzen. Die Gründungsphase gewährt 1,5x.</target>
@@ -6664,15 +6648,6 @@ ANMERKUNG DES DIREKTORS: Der Abschnitt zur empfohlenen Maßnahme wurde vom Dokum
 <trans-unit id="sf7f6588162d1b655">
   <source>There is a pattern in the Fractures. The Bureau has seen it. The Bureau will not say.</source>
 <target>Es gibt ein Muster in den Frakturen. Das Bureau hat es gesehen. Das Bureau wird es nicht sagen.</target></trans-unit>
-<trans-unit id="s4b1f193d31bb36e4">
-  <source>There was once a single world. It broke into shards — each a complete reality with its own physics, its own history, its own answer to a question the universe could not ask in one voice. The edges do not fit together. But they do touch.</source>
-<target>Es gab einst eine einzige Welt. Sie zerbrach in Splitter — jeder eine vollständige Realität mit eigener Physik, eigener Geschichte, eigener Antwort auf eine Frage, die das Universum nicht mit einer Stimme stellen konnte. Die Ränder passen nicht zusammen. Aber sie berühren sich.</target></trans-unit>
-<trans-unit id="saf13bac1f9d01e22">
-  <source>Bureau of Impossible Geography — Mapping the spaces between realities since the Fracture</source>
-<target>Bureau für Unmögliche Geographie — Kartierung der Räume zwischen Realitäten seit der Fraktur</target></trans-unit>
-<trans-unit id="sba856b85ab3f62e0">
-  <source>The map is open. The Shards are waiting. The Cartographers are watching. Which world do you enter first?</source>
-<target>Die Karte ist offen. Die Splitter warten. Die Kartographen beobachten. Welche Welt betrittst du zuerst?</target></trans-unit>
 <trans-unit id="s6d8bf267adcd55e4">
   <source>Bot Chat</source>
 <target>Bot-Chat</target></trans-unit>
@@ -7294,12 +7269,6 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
 <trans-unit id="s1e8b0f23f9bd0481">
   <source>You are performing an act of Cartography.</source>
 <target>Sie vollziehen einen Akt der Kartographie.</target></trans-unit>
-<trans-unit id="s502c29322bdc4fd6">
-  <source>Scroll to top</source>
-<target>Nach oben scrollen</target></trans-unit>
-<trans-unit id="se7a9aafed2d1ce88">
-  <source>Scroll to bottom</source>
-<target>Nach unten scrollen</target></trans-unit>
 <trans-unit id="sd600892f7fabe04c">
   <source>Draft</source>
 <target>Entwurf</target></trans-unit>
@@ -7899,45 +7868,9 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
   <source>Standard</source>
   <target>Standard</target>
 </trans-unit>
-<trans-unit id="s1c589eed60200e0d">
-  <source>Balanced pacing for most groups.</source>
-  <target>Ausgewogenes Tempo für die meisten Gruppen.</target>
-</trans-unit>
-<trans-unit id="s47728b72f6c25e3b">
-  <source>Duel</source>
-  <target>Duell</target>
-</trans-unit>
-<trans-unit id="s582ca5cbd8e6e70d">
-  <source>Fast-paced head-to-head. Shorter phases prevent snowballing.</source>
-  <target>Schnelles Kopf-an-Kopf-Rennen. Kürzere Phasen verhindern Dominanzeffekte.</target>
-</trans-unit>
-<trans-unit id="s42f910e9846c3ed4">
-  <source>Tactical</source>
-  <target>Taktisch</target>
-</trans-unit>
-<trans-unit id="saf5cc910e807e92e">
-  <source>Extended match for large groups. More time for alliances and betrayals.</source>
-  <target>Verlängerte Partie für große Gruppen. Mehr Zeit für Allianzen und Verrat.</target>
-</trans-unit>
 <trans-unit id="s191d7f0d1c899404">
   <source>Blitz</source>
   <target>Blitz</target>
-</trans-unit>
-<trans-unit id="s4ac9d8217672f82b">
-  <source>Quick match. Aggressive play rewarded, minimal buildup.</source>
-  <target>Schnelle Partie. Aggressives Spiel wird belohnt, minimaler Aufbau.</target>
-</trans-unit>
-<trans-unit id="sf71aa012badaa720">
-  <source>Set duration and reckoning cycles manually.</source>
-  <target>Dauer und Abrechnungszyklen manuell festlegen.</target>
-</trans-unit>
-<trans-unit id="sc2a3d8364d04d295">
-  <source>Match Tempo</source>
-  <target>Spieltempo</target>
-</trans-unit>
-<trans-unit id="s2e6394d771dc8691">
-  <source>Presets set the number of competition and reckoning cycles. Duration is calculated automatically. Use Custom for full manual control.</source>
-  <target>Voreinstellungen bestimmen die Anzahl der Wettbewerbs- und Abrechnungszyklen. Die Dauer wird automatisch berechnet. Verwenden Sie Benutzerdefiniert für volle manuelle Kontrolle.</target>
 </trans-unit>
 <trans-unit id="s4ef8011f3c7ddd00">
   <source>Reckoning Cycles</source>
@@ -9634,10 +9567,6 @@ Dieser Jemand ist, in der Kosmologie der Kartographen, in der tiefen Mythologie 
 
 Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt betrittst du zuerst?</target>
 </trans-unit>
-<trans-unit id="sece2c95eb67613f1">
-  <source>Shattered Worlds. Bleeding Borders.</source>
-  <target>Gesplitterte Welten. Blutende Grenzen.</target>
-</trans-unit>
 <trans-unit id="se21b5a92ee96634c">
   <source>Batch transformation</source>
   <target>Stapel-Transformation</target>
@@ -11147,17 +11076,8 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 <trans-unit id="sf60fad6f55d6aba9">
   <source>Complete Guide &amp; Auto-Processing</source>
 </trans-unit>
-<trans-unit id="sd5dc462669f2aed6">
-  <source>7 new guide sections: Multiverse Map, Bot Players, Agent Chat, Simulation Lore, Simulation Health, Social Trends, COMMS</source>
-</trans-unit>
 <trans-unit id="s68d92f8d2b8428f8">
   <source>Automatic resonance impact processing when impacts_at timestamp arrives</source>
-</trans-unit>
-<trans-unit id="s54bd7d2e96b3123a">
-  <source>Configurable via platform_settings: enable/disable, check interval</source>
-</trans-unit>
-<trans-unit id="s9cf3434940c74ec6">
-  <source>Guide Expansion</source>
 </trans-unit>
 <trans-unit id="s2c64bb855eeeeefd">
   <source>The Multiverse Map: interactive force-directed graph, game instance visualization, battle feed</source>
@@ -11404,6 +11324,678 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 </trans-unit>
 <trans-unit id="scd78cd386b2f6a0a">
   <source>Events &amp; Reactions</source>
+</trans-unit>
+<trans-unit id="s3cb1e63472a1a825">
+  <source>Scanner</source>
+</trans-unit>
+<trans-unit id="saf4a705d0304a949">
+  <source>Failed to load scanner dashboard</source>
+</trans-unit>
+<trans-unit id="s2f53cffbada64067">
+  <source>Failed to load</source>
+</trans-unit>
+<trans-unit id="s0ce9dd83973670eb">
+  <source>Failed to load candidates</source>
+</trans-unit>
+<trans-unit id="s373fd7e9b441d18a">
+  <source>Failed to load scan log</source>
+</trans-unit>
+<trans-unit id="sfa9c7f74f30b3740">
+  <source>Scan complete: <x id="0" equiv-text="${m.total_fetched}"/> fetched, <x id="1" equiv-text="${m.total_new}"/> new, <x id="2" equiv-text="${m.resonances_created + m.candidates_staged}"/> staged</source>
+</trans-unit>
+<trans-unit id="s29bc6ae235a2e50d">
+  <source>Scan failed</source>
+</trans-unit>
+<trans-unit id="s230c42b13476757f">
+  <source>Approve Candidate</source>
+</trans-unit>
+<trans-unit id="s0a44274762f1488c">
+  <source>Approve "<x id="0" equiv-text="${candidate.title}"/>" and create a substrate resonance?</source>
+</trans-unit>
+<trans-unit id="se5d01bef737e2e3a">
+  <source>Approve</source>
+</trans-unit>
+<trans-unit id="s7b40244acf1cfb75">
+  <source>Candidate approved — resonance created.</source>
+</trans-unit>
+<trans-unit id="s5bc6df24e9ce6ff4">
+  <source>Failed to approve</source>
+</trans-unit>
+<trans-unit id="sc77ff8821ed4a2e3">
+  <source>Reject Candidate</source>
+</trans-unit>
+<trans-unit id="s5bacbb718a823540">
+  <source>Reject "<x id="0" equiv-text="${candidate.title}"/>"? This cannot be undone.</source>
+</trans-unit>
+<trans-unit id="s123da0f92f97dd86">
+  <source>Reject</source>
+</trans-unit>
+<trans-unit id="s4d060f32ebb1a52e">
+  <source>Candidate rejected.</source>
+</trans-unit>
+<trans-unit id="sdef1c0feffa3c30c">
+  <source>Failed to reject</source>
+</trans-unit>
+<trans-unit id="s2f38c5c858e763a6">
+  <source>Substrate Scanner</source>
+</trans-unit>
+<trans-unit id="s52e1dd47ad44b79f">
+  <source>Bureau of Substrate Monitoring</source>
+</trans-unit>
+<trans-unit id="s00f163201d8429db">
+  <source>Scanner views</source>
+</trans-unit>
+<trans-unit id="s81983e8e3023c94b">
+  <source>Candidates</source>
+</trans-unit>
+<trans-unit id="s89d186b78cf7a3b2">
+  <source><x id="0" equiv-text="${pendingCount}"/> pending</source>
+</trans-unit>
+<trans-unit id="sa0581a443a2a2a4a">
+  <source>Scan Log</source>
+</trans-unit>
+<trans-unit id="sd03288484ece1108">
+  <source>Scanner content</source>
+</trans-unit>
+<trans-unit id="s2ea831a110292f97">
+  <source>Initializing sensors...</source>
+</trans-unit>
+<trans-unit id="s36a2194995663e74">
+  <source>Trigger Scan</source>
+</trans-unit>
+<trans-unit id="sd2455a1f4b4a9c10">
+  <source>Last scan:</source>
+</trans-unit>
+<trans-unit id="s55b4cbe657619772">
+  <source>No scans yet</source>
+</trans-unit>
+<trans-unit id="s95127d1eea253fa1">
+  <source>Sensor Network</source>
+</trans-unit>
+<trans-unit id="s058a75509a690bf2">
+  <source>Articles Scanned</source>
+</trans-unit>
+<trans-unit id="s0ffc514cfa672dbd">
+  <source>Resonances Today</source>
+</trans-unit>
+<trans-unit id="sce89120a7a319b28">
+  <source>Pending Review</source>
+</trans-unit>
+<trans-unit id="sc75b238eb649d526">
+  <source>Structured</source>
+</trans-unit>
+<trans-unit id="s96cd847a4df8ffc1">
+  <source>LLM Required</source>
+</trans-unit>
+<trans-unit id="s49dca79059586455">
+  <source>No API Key</source>
+</trans-unit>
+<trans-unit id="sfecdd5e13f68c9ba">
+  <source>Approved</source>
+</trans-unit>
+<trans-unit id="s03d3dae15ddcb004">
+  <source>◆ <x id="0" equiv-text="${recommendedCount}"/> recommended</source>
+</trans-unit>
+<trans-unit id="se6051ed0390dba5a">
+  <source>Scanning records...</source>
+</trans-unit>
+<trans-unit id="sa93451853abebc0a">
+  <source>No candidates found.</source>
+</trans-unit>
+<trans-unit id="s12f6b3b9aa6fe76c">
+  <source>Recommended</source>
+</trans-unit>
+<trans-unit id="s1e856a19b582f254">
+  <source>MAG</source>
+</trans-unit>
+<trans-unit id="s5fa511bebe4a7390">
+  <source>Approve <x id="0" equiv-text="${c.title}"/></source>
+</trans-unit>
+<trans-unit id="seed03a4c0428a764">
+  <source>Reject <x id="0" equiv-text="${c.title}"/></source>
+</trans-unit>
+<trans-unit id="s8daa1db5187d4ad4">
+  <source>Detail</source>
+</trans-unit>
+<trans-unit id="s8568e8bc900eabab">
+  <source>Raw Data</source>
+</trans-unit>
+<trans-unit id="sb0c37d8d8f8b93b1">
+  <source>Loading records...</source>
+</trans-unit>
+<trans-unit id="sc09ab89466d993cf">
+  <source>No scan log entries yet.</source>
+</trans-unit>
+<trans-unit id="sc4985097e629b822">
+  <source>Scan history log</source>
+</trans-unit>
+<trans-unit id="s3cb1f03472a1b923">
+  <source>Scanned</source>
+</trans-unit>
+<trans-unit id="s84126fa92f00b4ef">
+  <source>just now</source>
+</trans-unit>
+<trans-unit id="s4ea9b2ec2de4dfbc">
+  <source><x id="0" equiv-text="${Math.round(seconds / 3600)}"/>h interval</source>
+</trans-unit>
+<trans-unit id="sa90f9c011ab03c1d">
+  <source><x id="0" equiv-text="${Math.round(seconds / 60)}"/>m interval</source>
+</trans-unit>
+<trans-unit id="s3545c5f59ad9008a">
+  <source>Failed to initiate Google sign-in.</source>
+</trans-unit>
+<trans-unit id="scf5a0f9860ebb4ff">
+  <source>Failed to initiate Discord sign-in.</source>
+</trans-unit>
+<trans-unit id="seab0a621705eb848">
+  <source>Bureau of Multiverse Observation</source>
+</trans-unit>
+<trans-unit id="s08b05407b5565ca4">
+  <source>or</source>
+</trans-unit>
+<trans-unit id="s334af6a212abee58">
+  <source>Sign in with Google</source>
+</trans-unit>
+<trans-unit id="sc9abfdb64c930685">
+  <source>Sign in with Discord</source>
+</trans-unit>
+<trans-unit id="s880191f538b3ad38">
+  <source>Failed to initiate Google sign-up.</source>
+</trans-unit>
+<trans-unit id="sdd6d3397d8111f35">
+  <source>Failed to initiate Discord sign-up.</source>
+</trans-unit>
+<trans-unit id="se85ecdcfaa3a92f2">
+  <source>Sign up with Google</source>
+</trans-unit>
+<trans-unit id="sba126506ee6c838b">
+  <source>Sign up with Discord</source>
+</trans-unit>
+<trans-unit id="se295602acd84a7c7">
+  <source>Academy // Training Protocol</source>
+</trans-unit>
+<trans-unit id="sfdde30c24ce38292">
+  <source>completed</source>
+</trans-unit>
+<trans-unit id="sf8bb4df310c668ac">
+  <source>Uninitialized</source>
+</trans-unit>
+<trans-unit id="sfdb53a8181bba926">
+  <source>Initialize your first training simulation. Solo training vs 3 AI opponents — learn operative deployment, score mechanics, and alliance tactics.</source>
+</trans-unit>
+<trans-unit id="se2dd8601c60fa641">
+  <source>Continue your training regimen. Solo training vs 3 AI opponents — refine your operative strategy and score optimization.</source>
+</trans-unit>
+<trans-unit id="sd00609e4e2a63bad">
+  <source>AI Opponents</source>
+</trans-unit>
+<trans-unit id="saf71575fb7b5445a">
+  <source>Hostiles</source>
+</trans-unit>
+<trans-unit id="sce11649f645a20c4">
+  <source>Difficulty: Easy</source>
+</trans-unit>
+<trans-unit id="s0b575172bb7f5650">
+  <source>Sprint 3d</source>
+</trans-unit>
+<trans-unit id="s9c55c5fc5ff337ea">
+  <source>Start your first training</source>
+</trans-unit>
+<trans-unit id="sd1e25a5361ca0d4d">
+  <source>Start new training</source>
+</trans-unit>
+<trans-unit id="sc9d11ba788fd6aff">
+  <source>Start Training</source>
+</trans-unit>
+<trans-unit id="s7638b995163440d5">
+  <source>New Training</source>
+</trans-unit>
+<trans-unit id="sf56fc8c786ea172d">
+  <source>Fast-paced 1-2 day match. 2-hour cycles, rapid decisions.</source>
+</trans-unit>
+<trans-unit id="sf3b65f24b2611635">
+  <source>Sprint</source>
+</trans-unit>
+<trans-unit id="s948eccc05207eb05">
+  <source>3-5 day match. 4-hour cycles, balanced pacing.</source>
+</trans-unit>
+<trans-unit id="sce516eeba792f8dc">
+  <source>Classic 14-day epoch. 8-hour cycles, full strategic depth.</source>
+</trans-unit>
+<trans-unit id="s7344e26d5da2d23b">
+  <source>Marathon</source>
+</trans-unit>
+<trans-unit id="s5b5b2ca8a799410a">
+  <source>Extended 21+ day epoch. Maximum strategic depth.</source>
+</trans-unit>
+<trans-unit id="s68a77060b0deac85">
+  <source>Configure everything manually.</source>
+</trans-unit>
+<trans-unit id="sdb3f506e30cb5941">
+  <source>Match Format</source>
+</trans-unit>
+<trans-unit id="s7189b405b8545840">
+  <source>Presets configure duration, cycle interval, phase lengths, and RP economy. Use Custom for full manual control.</source>
+</trans-unit>
+<trans-unit id="se7688efcd1795333">
+  <source>Foundation Cycles</source>
+</trans-unit>
+<trans-unit id="s28bfb9ec8d5a9c66">
+  <source>Guide restructured: World → Competitive → Advanced → Reference progression</source>
+</trans-unit>
+<trans-unit id="scb6d08417d7fefbc">
+  <source>9 new guide sections: Intro, Lore, Events, Agent Chat, Social Trends, Map, Health, Bots, COMMS</source>
+</trans-unit>
+<trans-unit id="se66bb0aa9e5992d9">
+  <source>Guide Restructure</source>
+</trans-unit>
+<trans-unit id="sbffde4e46d389144">
+  <source>Reorganized from 19 to 28 sections with logical learning progression</source>
+</trans-unit>
+<trans-unit id="s3efe488f126d44bc">
+  <source>New intro: What is metaverse.center? — sandbox vs competitive modes</source>
+</trans-unit>
+<trans-unit id="s4c7b91b9d9fae2c4">
+  <source>World sections first: Lore, Forge, Chat, Events, Social Trends, Map, Health</source>
+</trans-unit>
+<trans-unit id="s89eb409b87224fcc">
+  <source>Then competitive rules: Epochs, Operatives, Scoring, Alliances, Bots, COMMS</source>
+</trans-unit>
+<trans-unit id="s141f043d5c19aa52">
+  <source>Advanced mechanics: Bleed, Resonances, Zone Dynamics, Agent Memory, Chronicle</source>
+</trans-unit>
+<trans-unit id="s5da5d4e9ec32c395">
+  <source>Reference: Tactics, Demo Run, Example Matches, Intelligence Report, Changelog</source>
+</trans-unit>
+<trans-unit id="seef4fd816d9804df">
+  <source>New Sections</source>
+</trans-unit>
+<trans-unit id="sdf75a2eca6b238bb">
+  <source>Events &amp; Reactions: event creation, AI generation, agent reactions, mechanical impact</source>
+</trans-unit>
+<trans-unit id="sd5e9b70ffb7a8b46">
+  <source>Skip to content</source>
+</trans-unit>
+<trans-unit id="scdb1bac161852c73">
+  <source>Welcome</source>
+</trans-unit>
+<trans-unit id="s4940bf625118bbdd">
+  <source>Metaverse</source>
+</trans-unit>
+<trans-unit id="s460509d8be1e9360">
+  <source>.Center</source>
+</trans-unit>
+<trans-unit id="s88a21c12585b2008">
+  <source>Multiplayer Worldbuilding &amp; Strategy Platform. Build civilizations. Deploy operatives. Shape the multiverse.</source>
+</trans-unit>
+<trans-unit id="sc291abf469a4a44c">
+  <source>Enter the Multiverse — Create your account</source>
+</trans-unit>
+<trans-unit id="s33d0393e1acee1ac">
+  <source>Enter the Multiverse</source>
+</trans-unit>
+<trans-unit id="sa7698b3d20a6d1ec">
+  <source>Scroll</source>
+</trans-unit>
+<trans-unit id="s6a0bc0ce56a9ae4a">
+  <source>Features</source>
+</trans-unit>
+<trans-unit id="s694017afa8d626ff">
+  <source>Capabilities</source>
+</trans-unit>
+<trans-unit id="s9e66c25ab35db24a">
+  <source>AI-powered worldbuilding visualization</source>
+</trans-unit>
+<trans-unit id="sa951a4ab10b8c427">
+  <source>Worldbuilding</source>
+</trans-unit>
+<trans-unit id="s6c103f846e1bb277">
+  <source>Create living worlds with AI-powered agents, sprawling cities, and evolving lore. Every simulation is a sovereign civilization with its own history.</source>
+</trans-unit>
+<trans-unit id="s0b4d6d84574e2fe7">
+  <source>Espionage war room with operative deployment</source>
+</trans-unit>
+<trans-unit id="s23eee916e02dc7e5">
+  <source>Join Epochs: strategic seasons where civilizations clash. Deploy spies, form alliances, betray rivals. Every decision reshapes the balance of power.</source>
+</trans-unit>
+<trans-unit id="s33cb0480084f9fb7">
+  <source>Reality fracturing as real-world events bleed through</source>
+</trans-unit>
+<trans-unit id="sa17ad577d33ed7c3">
+  <source>The Substrate</source>
+</trans-unit>
+<trans-unit id="s49d920f916b6973a">
+  <source>Real-world events ripple through the multiverse as Resonances. Earthquakes, elections, discoveries — the boundary between worlds is thinner than you think.</source>
+</trans-unit>
+<trans-unit id="se74621a2152b95a1">
+  <source>Platform Statistics</source>
+</trans-unit>
+<trans-unit id="s15a179f960202fb8">
+  <source>Live Telemetry</source>
+</trans-unit>
+<trans-unit id="sf51439e460ee8a58">
+  <source>Active Worlds</source>
+</trans-unit>
+<trans-unit id="sba44e6e0ee45e1d8">
+  <source>Active world count</source>
+</trans-unit>
+<trans-unit id="sa30137655a08a002">
+  <source>simulations online</source>
+</trans-unit>
+<trans-unit id="s1dcd554a5f0faf27">
+  <source>Live Epochs</source>
+</trans-unit>
+<trans-unit id="s0fb7bb3b3bfd7161">
+  <source>Active epoch count</source>
+</trans-unit>
+<trans-unit id="s52f80f73f2b4dd1e">
+  <source>competitive seasons</source>
+</trans-unit>
+<trans-unit id="sfada26dfbcb1b3ac">
+  <source>Resonance count</source>
+</trans-unit>
+<trans-unit id="s61b60d7c17fc20c1">
+  <source>substrate events</source>
+</trans-unit>
+<trans-unit id="s86dd5f93c6591510">
+  <source>How It Works</source>
+</trans-unit>
+<trans-unit id="s12952c7940c53aed">
+  <source>Operations Protocol</source>
+</trans-unit>
+<trans-unit id="scd3a0b78356df9c8">
+  <source>Create Your World</source>
+</trans-unit>
+<trans-unit id="s6eddc5bacd27225c">
+  <source>Build a simulation with agents, buildings, and lore. Your world evolves through AI-driven conversations and events.</source>
+</trans-unit>
+<trans-unit id="s51f14bf2c33a3c05">
+  <source>Join an Epoch</source>
+</trans-unit>
+<trans-unit id="s56fc4f6e2d93254b">
+  <source>Enter competitive seasons. Draft agents, deploy operatives, forge alliances — or betray them.</source>
+</trans-unit>
+<trans-unit id="s565850fe79ca57e9">
+  <source>Shape the Multiverse</source>
+</trans-unit>
+<trans-unit id="sd74131a79b0b7146">
+  <source>Your actions ripple across worlds. Build embassies, establish connections, and leave your mark on the substrate.</source>
+</trans-unit>
+<trans-unit id="s15361efa1eef6aee">
+  <source>Get Started</source>
+</trans-unit>
+<trans-unit id="s8303b711012eea4a">
+  <source>Clearance Required</source>
+</trans-unit>
+<trans-unit id="sbaa81e23639b2a42">
+  <source>Ready to Observe?</source>
+</trans-unit>
+<trans-unit id="sba082a04dd3bb10c">
+  <source>The Bureau is accepting new operatives. Your signal has been detected across the fracture. Request clearance to begin.</source>
+</trans-unit>
+<trans-unit id="s20fc4a342c233802">
+  <source>Create your world — Sign up</source>
+</trans-unit>
+<trans-unit id="s69f800801812a5f0">
+  <source>files</source>
+</trans-unit>
+<trans-unit id="s7168290f04f54427">
+  <source>Return to Operative Terminal</source>
+</trans-unit>
+<trans-unit id="s7a517c511aa01035">
+  <source>DECLASSIFIED</source>
+</trans-unit>
+<trans-unit id="s83104f6753ceb97c">
+  <source>Chapter navigation</source>
+</trans-unit>
+<trans-unit id="sa617015d18b2af8e">
+  <source>ARTIFACT REF</source>
+</trans-unit>
+<trans-unit id="se79412858c13b923">
+  <source>FILE</source>
+</trans-unit>
+<trans-unit id="s432579c7169faaea">
+  <source>ACCESSED</source>
+</trans-unit>
+<trans-unit id="sac88fb2634e4b1c8">
+  <source>INTERCEPTED TRANSMISSION</source>
+</trans-unit>
+<trans-unit id="s498983d0804a0f8b">
+  <source>FIELD REPORT</source>
+</trans-unit>
+<trans-unit id="sb7efe2955d7a41f8">
+  <source>Onboarding</source>
+</trans-unit>
+<trans-unit id="s575e795c45e2d97e">
+  <source>Go back</source>
+</trans-unit>
+<trans-unit id="s745226235d749103">
+  <source>Skip onboarding</source>
+</trans-unit>
+<trans-unit id="s88f89e80a4a7c805">
+  <source>Skip all</source>
+</trans-unit>
+<trans-unit id="s4160a5de7b3a69c9">
+  <source>Let's Begin</source>
+</trans-unit>
+<trans-unit id="sbcb3a2111dc9230a">
+  <source>Got It</source>
+</trans-unit>
+<trans-unit id="s1bc8093b59d1973b">
+  <source>Onboarding progress</source>
+</trans-unit>
+<trans-unit id="s7d7d952d9be64e10">
+  <source>Classified Briefing // Eyes Only</source>
+</trans-unit>
+<trans-unit id="s91d83f2e576b5e23">
+  <source>Welcome to the Multiverse</source>
+</trans-unit>
+<trans-unit id="sbf64de85291f8930">
+  <source>Build a world with its own agents, buildings, factions, and events.</source>
+</trans-unit>
+<trans-unit id="sde46f0f16a73968f">
+  <source>Deploy operatives against rival civilizations in competitive epochs.</source>
+</trans-unit>
+<trans-unit id="s847be432b2d1c25e">
+  <source>Real-world events bleed through the Substrate and reshape every shard.</source>
+</trans-unit>
+<trans-unit id="saf64bfdd1513c1e4">
+  <source>Create a New World</source>
+</trans-unit>
+<trans-unit id="s95ab2173160796d9">
+  <source>Start with a blank shard and build from scratch.</source>
+</trans-unit>
+<trans-unit id="s7e3b452c90c25dd9">
+  <source>Browse Existing Worlds</source>
+</trans-unit>
+<trans-unit id="s94ecba01f5292a80">
+  <source>Explore flagship simulations and request access.</source>
+</trans-unit>
+<trans-unit id="sa1e2fe2de1307978">
+  <source>I'll do this later</source>
+</trans-unit>
+<trans-unit id="se8548ab1aff1e82a">
+  <source>Skip for now and head to the dashboard.</source>
+</trans-unit>
+<trans-unit id="sf2025124ca6a7ab0">
+  <source>Your First World</source>
+</trans-unit>
+<trans-unit id="sf1edf9e5cd457abc">
+  <source>Every agent needs a home base. How would you like to start?</source>
+</trans-unit>
+<trans-unit id="sabdc759ce7fe6eba">
+  <source>Choose your path</source>
+</trans-unit>
+<trans-unit id="s651f41872b89c231">
+  <source>Your Simulation</source>
+</trans-unit>
+<trans-unit id="sfe5b0251ac233cce">
+  <source>Agents, buildings, and zones form a living world.</source>
+</trans-unit>
+<trans-unit id="se41a83cf955e62d3">
+  <source>The Forge</source>
+</trans-unit>
+<trans-unit id="sb8d9019f5cb4193f">
+  <source>AI-powered worldbuilding tools shape your reality.</source>
+</trans-unit>
+<trans-unit id="s900c980bdb200fcf">
+  <source>Epochs</source>
+</trans-unit>
+<trans-unit id="sc99e3226b90d10f8">
+  <source>Competitive seasons where civilizations clash.</source>
+</trans-unit>
+<trans-unit id="s84e719c78baf67a3">
+  <source>Spies, saboteurs, and guardians carry out covert missions.</source>
+</trans-unit>
+<trans-unit id="sd7ca368552438d3a">
+  <source>Real-world events bleed through and reshape every shard.</source>
+</trans-unit>
+<trans-unit id="s2144a01f20b868a0">
+  <source>Systems Overview</source>
+</trans-unit>
+<trans-unit id="sd37ec05cc8de44d0">
+  <source>Five core systems power the multiverse.</source>
+</trans-unit>
+<trans-unit id="s219349e7a9fd55e0">
+  <source>Feature overview</source>
+</trans-unit>
+<trans-unit id="s8c7a68874003ec63">
+  <source>First Mission</source>
+</trans-unit>
+<trans-unit id="s499a063eababfcde">
+  <source>Ready to test your strategic instincts? Start a solo training match against 3 AI opponents, or explore the platform at your own pace.</source>
+</trans-unit>
+<trans-unit id="s1e8863a6d1b01c44">
+  <source>Start Academy Epoch</source>
+</trans-unit>
+<trans-unit id="s5d3971994214da9f">
+  <source>Solo training vs 3 AI opponents. Sprint format, 3 days.</source>
+</trans-unit>
+<trans-unit id="s4d348ed3edd575f1">
+  <source>Explore on my own</source>
+</trans-unit>
+<trans-unit id="s1f9441e72a57cf71">
+  <source>Explore on My Own</source>
+</trans-unit>
+<trans-unit id="sc0e7ade733e8be5a">
+  <source>Head to the dashboard and discover at your own pace.</source>
+</trans-unit>
+<trans-unit id="s666a66398e66846e">
+  <source>Mock Mode</source>
+</trans-unit>
+<trans-unit id="s1015e219880ba4ff">
+  <source>Academy epoch created. Preparing training simulation.</source>
+</trans-unit>
+<trans-unit id="s19cadac767e71136">
+  <source>Failed to create academy epoch.</source>
+</trans-unit>
+<trans-unit id="sc24b33fb8e35a391">
+  <source>Operative status bar</source>
+</trans-unit>
+<trans-unit id="sa9a33b5711eedc10">
+  <source>OBSERVATION MODE</source>
+</trans-unit>
+<trans-unit id="sff2f201f166c4ace">
+  <source>CLEARANCE: RESTRICTED</source>
+</trans-unit>
+<trans-unit id="s7c644d21f322a9aa">
+  <source>OPERATIVE TERMINAL</source>
+</trans-unit>
+<trans-unit id="s71588f76ffdb4c96">
+  <source>SHARDS:</source>
+</trans-unit>
+<trans-unit id="saf4511c4fb1689cb">
+  <source>ACTIVE OPS:</source>
+</trans-unit>
+<trans-unit id="s9bbab7bbb16c39ce">
+  <source>SUBSTRATE:</source>
+</trans-unit>
+<trans-unit id="scdbadb8653c94924">
+  <source>ANOMALOUS</source>
+</trans-unit>
+<trans-unit id="sa836a227b97b9596">
+  <source>STABLE</source>
+</trans-unit>
+<trans-unit id="s0e2e9cd0c7ba2c51">
+  <source>SIGN UP</source>
+</trans-unit>
+<trans-unit id="sf99db8b6c5d11a9a">
+  <source>Admin Panel</source>
+</trans-unit>
+<trans-unit id="s07a18062a2fcd6fc">
+  <source>Create Epoch</source>
+</trans-unit>
+<trans-unit id="s28acbc2d7ab2f325">
+  <source>Start Academy</source>
+</trans-unit>
+<trans-unit id="s559dd7d866660e75">
+  <source>Create World</source>
+</trans-unit>
+<trans-unit id="s1b44bf07a4641048">
+  <source>Browse Shards</source>
+</trans-unit>
+<trans-unit id="s14bed5eb55a6e644">
+  <source>Active epoch operations</source>
+</trans-unit>
+<trans-unit id="s9e325abb95aa1127">
+  <source>ACTIVE OPERATIONS</source>
+</trans-unit>
+<trans-unit id="s17de71d75fb7026c">
+  <source>Your Epochs</source>
+</trans-unit>
+<trans-unit id="s3c08b65ce0fed12f">
+  <source>NO ACTIVE DEPLOYMENT</source>
+</trans-unit>
+<trans-unit id="sf28d57544d1a2eb1">
+  <source>CYCLE</source>
+</trans-unit>
+<trans-unit id="s09496407b5d8849f">
+  <source>RP</source>
+</trans-unit>
+<trans-unit id="s088daa83c3de37d6">
+  <source>ENTER WAR ROOM</source>
+</trans-unit>
+<trans-unit id="s74f7552ffc0adadd">
+  <source>SIMULATION ROSTER</source>
+</trans-unit>
+<trans-unit id="s4c3ad877443f3474">
+  <source>My Worlds</source>
+</trans-unit>
+<trans-unit id="s1d1334beec093677">
+  <source>Simulation worlds</source>
+</trans-unit>
+<trans-unit id="s017d2f6e1cd81862">
+  <source>SHARD REGISTRY</source>
+</trans-unit>
+<trans-unit id="sf075c482c215fcc8">
+  <source>Shards</source>
+</trans-unit>
+<trans-unit id="s79d594675e391090">
+  <source>members</source>
+</trans-unit>
+<trans-unit id="s2038e03eed1db165">
+  <source>DOSSIER // FIELD OPERATIVE</source>
+</trans-unit>
+<trans-unit id="sccde979903f46472">
+  <source>DOSSIER LOADING</source>
+</trans-unit>
+<trans-unit id="sb77022c6b47fc864">
+  <source>Agent spotlight coming soon</source>
+</trans-unit>
+<trans-unit id="sc93c99cdd6b2c485">
+  <source>Active substrate anomalies</source>
+</trans-unit>
+<trans-unit id="s4addd6b12eac01d6">
+  <source>SUBSTRATE MONITOR</source>
+</trans-unit>
+<trans-unit id="s15aba5e9dd349c2e">
+  <source>SUBSTRATE: NOMINAL</source>
+</trans-unit>
+<trans-unit id="s2146a80a001fb396">
+  <source>You're browsing as a guest.</source>
+</trans-unit>
+<trans-unit id="s5ed8698a2f254511">
+  <source>Sign Up</source>
 </trans-unit>
 
 </body>

@@ -44,6 +44,7 @@ import './components/shared/CookieConsent.js';
 import './components/shared/GuestBanner.js';
 import './components/landing/LandingPage.js';
 import './components/onboarding/OnboardingWizard.js';
+import './components/lore/BureauArchives.js';
 
 @localized()
 @customElement('velg-app')
@@ -134,8 +135,8 @@ export class VelgApp extends LitElement {
         render: () => html`<velg-simulations-dashboard></velg-simulations-dashboard>`,
         enter: async () => {
           await this._authReady;
-          seoService.reset();
-          seoService.setDescription('Access your operative terminal, browse simulations, manage teams, and explore the multiverse.');
+          seoService.setTitle(['Operative Terminal']);
+          seoService.setDescription('Your operative command center — monitor active epochs, browse simulation worlds, and track substrate anomalies.');
           seoService.setCanonical('/dashboard');
           analyticsService.trackPageView('/dashboard', document.title);
           return true;
@@ -201,6 +202,18 @@ export class VelgApp extends LitElement {
           seoService.setTitle(['How to Play']);
           seoService.setCanonical('/how-to-play');
           analyticsService.trackPageView('/how-to-play', document.title);
+          return true;
+        },
+      },
+      {
+        path: '/archives',
+        render: () => html`<velg-bureau-archives></velg-bureau-archives>`,
+        enter: async () => {
+          await this._authReady;
+          seoService.setTitle(['Bureau Archives']);
+          seoService.setDescription('Declassified archives of the Bureau of Impossible Geography — the complete mythology of the Fracture, the Bleed, and the Convergence.');
+          seoService.setCanonical('/archives');
+          analyticsService.trackPageView('/archives', document.title);
           return true;
         },
       },

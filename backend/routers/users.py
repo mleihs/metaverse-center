@@ -3,12 +3,24 @@ from fastapi import APIRouter, Depends
 from backend.dependencies import get_admin_supabase, get_current_user, get_supabase
 from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.notification import NotificationPreferencesResponse, NotificationPreferencesUpdate
-from backend.models.user import MembershipInfo, UserWithMemberships
+from backend.models.user import DashboardData, MembershipInfo, UserWithMemberships
 from backend.services.member_service import MemberService
+from backend.services.user_dashboard_service import UserDashboardService
 from backend.services.user_profile_service import UserProfileService
 from supabase import Client
 
 router = APIRouter(prefix="/api/v1/users", tags=["users"])
+
+
+@router.get("/me/dashboard", response_model=SuccessResponse[DashboardData])
+async def get_dashboard(
+    user: CurrentUser = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase),
+    admin: Client = Depends(get_admin_supabase),
+) -> dict:
+    """Get aggregated dashboard data for the authenticated user."""
+    data = await UserDashboardService.get_dashboard(supabase, admin, user.id)
+    return {"success": True, "data": data}
 
 
 @router.get("/me", response_model=SuccessResponse[UserWithMemberships])

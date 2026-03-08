@@ -1,4 +1,4 @@
-import type { ApiResponse, MembershipInfo, UserProfile } from '../../types/index.js';
+import type { ApiResponse, DashboardData, MembershipInfo, UserProfile } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
 
 export class UsersApiService extends BaseApiService {
@@ -12,6 +12,10 @@ export class UsersApiService extends BaseApiService {
 
   getMemberships(): Promise<ApiResponse<MembershipInfo[]>> {
     return this.get('/users/me/memberships');
+  }
+
+  getDashboard(): Promise<ApiResponse<DashboardData>> {
+    return this.get('/users/me/dashboard');
   }
 
   completeOnboarding(): Promise<ApiResponse<{ onboarding_completed: boolean }>> {

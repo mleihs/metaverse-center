@@ -28,7 +28,7 @@ export interface PullQuote {
  * Returns lore sections at render time so msg() evaluates with the current locale.
  * All content — titles, epigraphs, body text, and captions — is localised via msg().
  */
-function getLoreSections(): LoreSection[] {
+export function getPlatformLoreSections(): LoreSection[] {
   return [
     // ── Chapter I: BEFORE THE FRACTURE ──
     {
@@ -1222,7 +1222,7 @@ export class VelgLoreScroll extends LitElement {
     // Initialise _expanded to the first 3 section IDs on first render
     // or when the sections property changes
     if (changedProperties.has('sections') || !this._expandedInitialised) {
-      const allSections = this.sections ?? getLoreSections();
+      const allSections = this.sections ?? getPlatformLoreSections();
       this._expanded = new Set(allSections.slice(0, 3).map((s) => s.id));
       this._expandedInitialised = true;
     }
@@ -1269,7 +1269,7 @@ export class VelgLoreScroll extends LitElement {
   }
 
   protected render() {
-    const sections = this.sections ?? getLoreSections();
+    const sections = this.sections ?? getPlatformLoreSections();
     const visibleSections = this._revealedAll ? sections : sections.slice(0, this._initialCount);
     const hasMore = !this._revealedAll && sections.length > this._initialCount;
 

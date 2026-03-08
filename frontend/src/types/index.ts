@@ -719,6 +719,26 @@ export interface MembershipInfo {
   joined_at: string;
 }
 
+export interface ActiveEpochParticipation {
+  epoch_id: UUID;
+  epoch_name: string;
+  epoch_status: EpochStatus;
+  current_cycle: number;
+  total_cycles: number;
+  current_rp: number;
+  rp_cap: number;
+  simulation_name: string;
+  rank: number;
+  participant_count: number;
+}
+
+export interface DashboardData {
+  memberships: MembershipInfo[];
+  active_epoch_participations: ActiveEpochParticipation[];
+  academy_epochs_played: number;
+  active_resonance_count: number;
+}
+
 // --- Agent Relationships ---
 
 export interface AgentRelationship {

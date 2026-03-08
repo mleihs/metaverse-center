@@ -27,3 +27,27 @@ class UserWithMemberships(BaseModel):
     memberships: list[MembershipInfo] = []
     onboarding_completed: bool = True
     academy_epochs_played: int = 0
+
+
+class ActiveEpochParticipation(BaseModel):
+    """Active epoch participation summary for the dashboard."""
+
+    epoch_id: UUID
+    epoch_name: str
+    epoch_status: str
+    current_cycle: int
+    total_cycles: int
+    current_rp: int
+    rp_cap: int
+    simulation_name: str
+    rank: int = 0
+    participant_count: int = 0
+
+
+class DashboardData(BaseModel):
+    """Aggregated dashboard data for the authenticated user."""
+
+    memberships: list[MembershipInfo] = []
+    active_epoch_participations: list[ActiveEpochParticipation] = []
+    academy_epochs_played: int = 0
+    active_resonance_count: int = 0
