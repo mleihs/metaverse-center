@@ -68,7 +68,7 @@ export class VelgPlatformHeader extends LitElement {
       );
       background-size: 200% 100%;
       animation: header-border-flow 4s linear infinite;
-      z-index: 3;
+      z-index: 1;
     }
 
     .header {

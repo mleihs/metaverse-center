@@ -511,12 +511,12 @@ export class VelgLandingPage extends LitElement {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      filter: brightness(0.6) saturate(0.85);
+      filter: brightness(0.75) saturate(0.9);
       transition: filter 0.5s, transform 0.5s var(--ease-dramatic);
     }
 
     .feature-card:hover .feature-card__img {
-      filter: brightness(0.75) saturate(1);
+      filter: brightness(0.88) saturate(1);
       transform: scale(1.04);
     }
 
