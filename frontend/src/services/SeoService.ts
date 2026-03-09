@@ -1,10 +1,10 @@
 const SITE_NAME = 'metaverse.center';
-const DEFAULT_TITLE = 'metaverse.center — a worldbuilding framework';
+const DEFAULT_TITLE = 'metaverse.center — Multiplayer Worldbuilding & Strategy Platform';
 const DEFAULT_DESCRIPTION =
-  'Build and explore simulated worlds. Create agents, buildings, events, and social dynamics in interconnected shards of reality.';
+  'Build civilizations, deploy operatives, shape the multiverse. A multiplayer worldbuilding and strategy platform with AI-powered agents, competitive epochs, and real-world resonances.';
 const BASE_URL = 'https://metaverse.center';
 const DEFAULT_OG_IMAGE =
-  'https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/dashboard-hero.avif';
+  'https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/og-image.jpg';
 
 class SeoService {
   /** Set page title from parts: ['Agents', 'Station Null'] → "Agents — Station Null | metaverse.center" */
@@ -53,6 +53,33 @@ class SeoService {
     document.getElementById('velg-structured-data')?.remove();
   }
 
+  /** Set BreadcrumbList structured data for current page. */
+  setBreadcrumbs(items: Array<{ name: string; url: string }>): void {
+    if (items.length === 0) return;
+    const breadcrumbList = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: items.map((item, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: item.name,
+        item: item.url,
+      })),
+    };
+    // Remove existing breadcrumb schema
+    document.getElementById('velg-breadcrumbs')?.remove();
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.id = 'velg-breadcrumbs';
+    script.textContent = JSON.stringify(breadcrumbList);
+    document.head.appendChild(script);
+  }
+
+  /** Remove breadcrumb schema. */
+  removeBreadcrumbs(): void {
+    document.getElementById('velg-breadcrumbs')?.remove();
+  }
+
   /** Reset all SEO tags to defaults (for dashboard/homepage). */
   reset(): void {
     document.title = DEFAULT_TITLE;
@@ -69,6 +96,7 @@ class SeoService {
       canonical.href = `${BASE_URL}/`;
     }
     this.removeStructuredData();
+    this.removeBreadcrumbs();
   }
 
   private _setMeta(name: string, content: string): void {

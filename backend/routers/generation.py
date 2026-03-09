@@ -85,6 +85,15 @@ class GenerateImageRequest(BaseModel):
     extra: dict | None = Field(None, description="Additional entity metadata passed to the image generation pipeline.")
 
 
+class GenerateLoreImageRequest(BaseModel):
+    """Request to generate a lore section image."""
+
+    section_title: str = Field(..., min_length=1, description="Title of the lore section.")
+    section_body: str = Field(..., description="Body text of the lore section (truncated for prompt).")
+    image_slug: str = Field(..., min_length=1, description="Slug for the output file path.")
+    sim_slug: str = Field(..., min_length=1, description="Simulation slug for the storage path.")
+
+
 # --- Helpers ---
 
 
@@ -288,6 +297,38 @@ async def generate_relationships(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Relationship generation failed. Please try again.",
+        ) from e
+
+
+@router.post("/lore-image", response_model=SuccessResponse[dict])
+@limiter.limit(RATE_LIMIT_AI_GENERATION)
+async def generate_lore_image(
+    request: Request,
+    simulation_id: UUID,
+    body: GenerateLoreImageRequest,
+    user: CurrentUser = Depends(get_current_user),
+    _role_check: str = Depends(require_role("editor")),
+    supabase: Client = Depends(get_supabase),
+) -> dict:
+    """Generate a lore section image (3:2 aspect ratio, simulation style)."""
+    try:
+        service = await _get_image_service(simulation_id, supabase)
+        url = await service.generate_lore_image(
+            section_title=body.section_title,
+            section_body=body.section_body,
+            image_slug=body.image_slug,
+            sim_slug=body.sim_slug,
+        )
+        return {"success": True, "data": {"image_url": url}}
+    except OpenRouterError as e:
+        logger.warning("AI service unavailable", extra={"endpoint": "generate_lore_image", "error": str(e)})
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="AI service temporarily unavailable.",
+        ) from None
+    except Exception as e:
+        logger.exception("Lore image generation failed")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Lore image generation failed.",
         ) from e
 
 

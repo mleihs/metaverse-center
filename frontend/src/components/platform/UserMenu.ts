@@ -41,10 +41,10 @@ export class VelgUserMenu extends LitElement {
       top: calc(100% + var(--space-1));
       right: 0;
       min-width: 180px;
-      background: #111;
-      border: 1px solid #333;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
-      z-index: var(--z-dropdown);
+      background: var(--color-gray-900, #111827);
+      border: 1px solid var(--color-gray-700, #374151);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.8);
+      z-index: var(--z-dropdown, 300);
       display: none;
     }
 

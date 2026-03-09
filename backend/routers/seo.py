@@ -14,6 +14,10 @@ router = APIRouter(tags=["seo"])
 ROBOTS_TXT = """User-agent: *
 Allow: /
 Allow: /dashboard
+Allow: /multiverse
+Allow: /how-to-play
+Allow: /epoch
+Allow: /archives
 Allow: /simulations/
 Disallow: /login
 Disallow: /register
@@ -58,6 +62,9 @@ async def sitemap_xml(supabase: Client = Depends(get_anon_supabase)) -> Response
 
     # Epoch lobby
     _add_url(urlset, "https://metaverse.center/epoch", now, "0.6", "daily")
+
+    # Bureau Archives
+    _add_url(urlset, "https://metaverse.center/archives", now, "0.5", "monthly")
 
     # Per-simulation views
     for sim in simulations:

@@ -256,6 +256,44 @@ class GenerationService:
         )
         return result.get("content", "")
 
+    async def generate_lore_image_description(
+        self,
+        section_title: str,
+        section_body: str,
+    ) -> str:
+        """Generate a lore image description for image generation.
+
+        Uses the lore_image_description template if available, otherwise
+        falls back to a hardcoded prompt from the section content.
+        Always returns English (image models expect English prompts).
+        """
+        variables: dict[str, str] = {
+            "section_title": section_title,
+            "section_body": section_body[:500],
+            "simulation_name": await self._get_simulation_name(),
+        }
+
+        try:
+            result = await self._generate(
+                template_type="lore_image_description",
+                model_purpose="agent_description",
+                variables=variables,
+                locale="en",
+            )
+            description = result.get("content", "")
+            if description:
+                return description
+        except Exception:
+            logger.debug("No lore_image_description template — using fallback")
+
+        # Fallback: compose from section content directly
+        return (
+            f"Atmospheric scene depicting: {section_title}. "
+            f"{section_body[:300]}. "
+            f"Moody atmospheric illustration, rich detail, "
+            f"no text, no UI elements, no labels."
+        )
+
     async def generate_embassy_building_image_description(
         self,
         building_name: str,

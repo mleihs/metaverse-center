@@ -15,6 +15,7 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import { seoService } from '../../services/SeoService.js';
 
 interface PlatformStats {
   simulation_count: number;
@@ -998,6 +999,53 @@ export class VelgLandingPage extends LitElement {
   async connectedCallback(): Promise<void> {
     super.connectedCallback();
     this._fetchStats();
+    this._injectStructuredData();
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    seoService.removeStructuredData();
+  }
+
+  private _injectStructuredData(): void {
+    seoService.setStructuredData({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'What is metaverse.center?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'metaverse.center is a free multiplayer worldbuilding and strategy platform. Create living worlds with AI-powered agents, sprawling cities, and evolving lore. Join competitive Epochs where civilizations clash through espionage, alliances, and strategic deployment.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How do Epochs work?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Epochs are competitive PvP seasons where simulation owners deploy operatives, form alliances, and compete across five scoring dimensions: stability, influence, sovereignty, diplomatic, and military. Each cycle, players choose missions and targets, with results determined by agent aptitudes and strategic decisions.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'What are Resonances?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Resonances are real-world events (earthquakes, elections, discoveries) that ripple through the simulated multiverse, affecting gameplay and world dynamics. They blur the boundary between simulated worlds and reality.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Is metaverse.center free to use?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes, metaverse.center is completely free. Create simulations, join Epochs, and explore the multiverse at no cost. Advanced AI features like image generation use optional API keys.',
+          },
+        },
+      ],
+    });
   }
 
   protected firstUpdated(): void {
@@ -1096,7 +1144,7 @@ export class VelgLandingPage extends LitElement {
         <img
           class="hero__bg"
           src=${this._getStorageUrl('platform/landing/hero.avif')}
-          alt=""
+          alt=${msg('Multiverse observation terminal overlooking interconnected simulation worlds')}
           fetchpriority="high"
           decoding="async"
         />

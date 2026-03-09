@@ -11,16 +11,21 @@
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="metaverse.center" />
-    <meta property="og:title" content="metaverse.center — a worldbuilding framework" />
-    <meta property="og:description" content="Build and explore simulated worlds. Create agents, buildings, events, and social dynamics in interconnected shards of reality." />
+    <meta property="og:title" content="metaverse.center — Multiplayer Worldbuilding & Strategy Platform" />
+    <meta property="og:description" content="Build civilizations, deploy operatives, shape the multiverse. A multiplayer worldbuilding and strategy platform with AI-powered agents, competitive epochs, and real-world resonances." />
     <meta property="og:url" content="https://metaverse.center/" />
-    <meta property="og:image" content="https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/dashboard-hero.avif" />
+    <meta property="og:image" content="https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/og-image.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="de_DE" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="metaverse.center — a worldbuilding framework" />
-    <meta name="twitter:description" content="Build and explore simulated worlds. Create agents, buildings, events, and social dynamics in interconnected shards of reality." />
-    <meta name="twitter:image" content="https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/dashboard-hero.avif" />
+    <meta name="twitter:title" content="metaverse.center — Multiplayer Worldbuilding & Strategy Platform" />
+    <meta name="twitter:description" content="Build civilizations, deploy operatives, shape the multiverse. A multiplayer worldbuilding and strategy platform with AI-powered agents, competitive epochs, and real-world resonances." />
+    <meta name="twitter:image" content="https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/og-image.jpg" />
 
     <!-- hreflang (client-side locale, not path-based) -->
     <link rel="alternate" hreflang="en" href="https://metaverse.center/" />
@@ -31,17 +36,45 @@
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "metaverse.center",
-      "url": "https://metaverse.center/",
-      "description": "Build civilizations, deploy operatives, shape the multiverse. A multiplayer worldbuilding and strategy platform.",
-      "applicationCategory": "GameApplication",
-      "operatingSystem": "Web",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      }
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://metaverse.center/#organization",
+          "name": "metaverse.center",
+          "url": "https://metaverse.center/",
+          "logo": "https://metaverse.center/favicon-512.png"
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://metaverse.center/#website",
+          "name": "metaverse.center",
+          "url": "https://metaverse.center/",
+          "publisher": { "@id": "https://metaverse.center/#organization" },
+          "inLanguage": ["en", "de"]
+        },
+        {
+          "@type": "WebApplication",
+          "@id": "https://metaverse.center/#app",
+          "name": "metaverse.center",
+          "url": "https://metaverse.center/",
+          "description": "Build civilizations, deploy operatives, shape the multiverse. A multiplayer worldbuilding and strategy platform with AI-powered agents, competitive epochs, and real-world resonances.",
+          "applicationCategory": "GameApplication",
+          "operatingSystem": "Web",
+          "inLanguage": ["en", "de"],
+          "image": "https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/og-image.jpg",
+          "screenshot": [
+            "https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/landing/feature-worldbuilding.avif",
+            "https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/landing/feature-competition.avif",
+            "https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/landing/feature-substrate.avif"
+          ],
+          "author": { "@id": "https://metaverse.center/#organization" },
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          }
+        }
+      ]
     }
     </script>
 

@@ -93,16 +93,25 @@ def get_crawler_redirect(url_path: str) -> str | None:
 
 # Static meta tags for platform-level routes (no DB query needed)
 _PLATFORM_META: dict[str, dict[str, str]] = {
-    "/dashboard": {
-        "title": "Dashboard | metaverse.center",
+    "/": {
+        "title": "metaverse.center — Multiplayer Worldbuilding & Strategy Platform",
         "description": (
-            "Explore simulated worlds — Velgarien, The Gaslit Reach,"
-            " Station Null, Speranza, and Cité des Dames."
+            "Build civilizations, deploy operatives, shape the multiverse."
+            " A multiplayer worldbuilding and strategy platform with AI-powered agents,"
+            " competitive epochs, and real-world resonances."
+        ),
+        "canonical": "https://metaverse.center/",
+    },
+    "/dashboard": {
+        "title": "Operative Terminal | metaverse.center",
+        "description": (
+            "Your operative command center — monitor active epochs,"
+            " browse simulation worlds, and track substrate anomalies."
         ),
         "canonical": "https://metaverse.center/dashboard",
     },
     "/multiverse": {
-        "title": "Cartographer's Map | metaverse.center",
+        "title": "Multiverse Map | metaverse.center",
         "description": "Interactive force-directed graph of the multiverse — simulation connections and epoch battles.",
         "canonical": "https://metaverse.center/multiverse",
     },
@@ -110,6 +119,16 @@ _PLATFORM_META: dict[str, dict[str, str]] = {
         "title": "How to Play | metaverse.center",
         "description": "Complete guide to epoch gameplay — operatives, scoring, alliances, and strategy.",
         "canonical": "https://metaverse.center/how-to-play",
+    },
+    "/epoch": {
+        "title": "Epoch Command Center | metaverse.center",
+        "description": "Join competitive PvP epochs — deploy operatives, form alliances, and compete for multiverse dominance.",
+        "canonical": "https://metaverse.center/epoch",
+    },
+    "/archives": {
+        "title": "Bureau Archives | metaverse.center",
+        "description": "Declassified archives of the Bureau of Impossible Geography — the complete mythology of the Fracture, the Bleed, and the Convergence.",
+        "canonical": "https://metaverse.center/archives",
     },
 }
 
@@ -180,9 +199,38 @@ async def enrich_html_for_crawler(index_path: Path, url_path: str) -> str | None
     description = sim_desc or "Build and explore simulated worlds on metaverse.center."
     canonical = f"https://metaverse.center/simulations/{slug}/{view}"
 
+    # Build breadcrumb JSON-LD for simulation pages
+    breadcrumb_json = _build_breadcrumb_json(sim_name, slug, view, view_label)
+
     return _inject_meta(
-        _index_html_cache, title=title, description=description, canonical=canonical, og_image=banner_url,
+        _index_html_cache, title=title, description=description, canonical=canonical,
+        og_image=banner_url, extra_jsonld=breadcrumb_json,
     )
+
+
+def _build_breadcrumb_json(sim_name: str, slug: str, view: str, view_label: str) -> str:
+    """Build BreadcrumbList JSON-LD for a simulation page."""
+    import json
+    items = [
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://metaverse.center/"},
+        {"@type": "ListItem", "position": 2, "name": "Dashboard", "item": "https://metaverse.center/dashboard"},
+    ]
+    if sim_name:
+        items.append({
+            "@type": "ListItem", "position": 3, "name": sim_name,
+            "item": f"https://metaverse.center/simulations/{slug}/lore",
+        })
+        items.append({
+            "@type": "ListItem", "position": 4, "name": view_label,
+            "item": f"https://metaverse.center/simulations/{slug}/{view}",
+        })
+    else:
+        items.append({
+            "@type": "ListItem", "position": 3, "name": view_label,
+            "item": f"https://metaverse.center/simulations/{slug}/{view}",
+        })
+    breadcrumb = {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": items}
+    return json.dumps(breadcrumb)
 
 
 def _inject_meta(
@@ -192,6 +240,7 @@ def _inject_meta(
     description: str,
     canonical: str,
     og_image: str = "",
+    extra_jsonld: str = "",
 ) -> str:
     """Inject meta tags into cached index.html."""
     html = base_html
@@ -211,6 +260,10 @@ def _inject_meta(
     if og_image:
         html = _replace_meta(html, 'name', 'twitter:image', _escape(og_image))
     html = re.sub(r'<link rel="canonical" href="[^"]*"', f'<link rel="canonical" href="{_escape(canonical)}"', html)
+    # Inject extra JSON-LD (breadcrumbs) before </head>
+    if extra_jsonld:
+        jsonld_tag = f'<script type="application/ld+json">{extra_jsonld}</script>'
+        html = html.replace("</head>", f"    {jsonld_tag}\n  </head>")
     return html
 
 

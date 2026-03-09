@@ -310,12 +310,14 @@ class ImageService:
 
         Uploads to simulation.assets/{sim_slug}/lore/{image_slug}.avif
         matching the LoreScroll._getImageUrl() path convention.
+
+        Uses GenerationService for LLM-powered description generation
+        (same pipeline as portraits and buildings) so simulation-specific
+        prompt templates can shape the output.
         """
-        description = (
-            f"Atmospheric scene: {section_title}. "
-            f"{section_body[:300]}. "
-            f"3:2 aspect ratio, moody atmospheric illustration, "
-            f"no text, no UI elements, rich detail."
+        description = await self._generation.generate_lore_image_description(
+            section_title=section_title,
+            section_body=section_body,
         )
 
         style_prompt = await self._model_resolver.resolve_style_prompt("lore")

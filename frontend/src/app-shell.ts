@@ -607,6 +607,16 @@ export class VelgApp extends LitElement {
     if (sim?.banner_url) {
       seoService.setOgImage(sim.banner_url);
     }
+    // Breadcrumbs: Home > Dashboard > SimName > View
+    const breadcrumbs = [
+      { name: 'Home', url: 'https://metaverse.center/' },
+      { name: 'Dashboard', url: 'https://metaverse.center/dashboard' },
+    ];
+    if (simName) {
+      breadcrumbs.push({ name: simName, url: `https://metaverse.center/simulations/${slug}/lore` });
+    }
+    breadcrumbs.push({ name: viewLabel, url: `https://metaverse.center/simulations/${slug}/${view}` });
+    seoService.setBreadcrumbs(breadcrumbs);
     analyticsService.trackPageView(`/simulations/${slug}/${view}`, document.title);
 
     // Safety fallback: if slug resolution somehow failed, show bare loading spinner
