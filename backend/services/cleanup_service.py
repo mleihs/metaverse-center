@@ -14,6 +14,7 @@ from uuid import UUID
 from backend.models.cleanup import (
     CleanupCategoryStats,
     CleanupExecuteResult,
+    CleanupPreviewItem,
     CleanupPreviewResult,
     CleanupStats,
     CleanupType,
@@ -58,6 +59,7 @@ class CleanupService:
         admin_supabase: Client,
         cleanup_type: CleanupType,
         min_age_days: int,
+        epoch_ids: list[str] | None = None,
     ) -> CleanupPreviewResult:
         """Count what would be deleted without actually deleting."""
         cutoff = datetime.now(UTC) - timedelta(days=min_age_days)
@@ -65,10 +67,12 @@ class CleanupService:
         if cleanup_type in ("completed_epochs", "cancelled_epochs", "stale_lobbies"):
             return await cls._preview_epochs(
                 admin_supabase, cleanup_type, cutoff, min_age_days,
+                epoch_ids=epoch_ids,
             )
         if cleanup_type == "archived_instances":
             return await cls._preview_archived_instances(
                 admin_supabase, cutoff, min_age_days,
+                instance_ids=epoch_ids,
             )
         if cleanup_type == "audit_log":
             return await cls._preview_simple(
@@ -86,6 +90,7 @@ class CleanupService:
         cleanup_type: CleanupType,
         min_age_days: int,
         user_id: UUID,
+        epoch_ids: list[str] | None = None,
     ) -> CleanupExecuteResult:
         """Execute cleanup and return summary."""
         cutoff = datetime.now(UTC) - timedelta(days=min_age_days)
@@ -93,10 +98,12 @@ class CleanupService:
         if cleanup_type in ("completed_epochs", "cancelled_epochs", "stale_lobbies"):
             result = await cls._execute_epochs(
                 admin_supabase, cleanup_type, cutoff, min_age_days,
+                epoch_ids=epoch_ids,
             )
         elif cleanup_type == "archived_instances":
             result = await cls._execute_archived_instances(
                 admin_supabase, cutoff, min_age_days,
+                instance_ids=epoch_ids,
             )
         elif cleanup_type == "audit_log":
             result = await cls._execute_simple(
@@ -138,18 +145,30 @@ class CleanupService:
         }[cleanup_type]
 
     @classmethod
-    async def _get_epoch_ids(
-        cls, admin_supabase: Client, status: str, cutoff: datetime,
-    ) -> list[str]:
-        """Get epoch IDs matching status + age cutoff."""
-        resp = (
+    async def _get_matching_epochs(
+        cls,
+        admin_supabase: Client,
+        status: str,
+        cutoff: datetime,
+        epoch_ids: list[str] | None = None,
+    ) -> list[CleanupPreviewItem]:
+        """Get epochs matching status + age cutoff (or explicit IDs)."""
+        query = (
             admin_supabase.table("game_epochs")
-            .select("id")
+            .select("id, name, updated_at")
             .eq("status", status)
-            .lt("updated_at", cutoff.isoformat())
-            .execute()
         )
-        return [row["id"] for row in (resp.data or [])]
+        if epoch_ids:
+            query = query.in_("id", epoch_ids)
+        else:
+            query = query.lt("updated_at", cutoff.isoformat())
+        resp = query.order("updated_at", desc=False).execute()
+        return [
+            CleanupPreviewItem(
+                id=row["id"], name=row["name"], updated_at=row.get("updated_at"),
+            )
+            for row in (resp.data or [])
+        ]
 
     @classmethod
     async def _count_cascade_targets(
@@ -194,15 +213,20 @@ class CleanupService:
         cleanup_type: CleanupType,
         cutoff: datetime,
         min_age_days: int,
+        epoch_ids: list[str] | None = None,
     ) -> CleanupPreviewResult:
         status = cls._epoch_status_for_type(cleanup_type)
-        epoch_ids = await cls._get_epoch_ids(admin_supabase, status, cutoff)
-        cascade_counts = await cls._count_cascade_targets(admin_supabase, epoch_ids)
+        items = await cls._get_matching_epochs(
+            admin_supabase, status, cutoff, epoch_ids=epoch_ids,
+        )
+        matched_ids = [item.id for item in items]
+        cascade_counts = await cls._count_cascade_targets(admin_supabase, matched_ids)
         return CleanupPreviewResult(
             cleanup_type=cleanup_type,
             min_age_days=min_age_days,
-            primary_count=len(epoch_ids),
+            primary_count=len(items),
             cascade_counts=cascade_counts,
+            items=items,
         )
 
     @classmethod
@@ -212,11 +236,15 @@ class CleanupService:
         cleanup_type: CleanupType,
         cutoff: datetime,
         min_age_days: int,
+        epoch_ids: list[str] | None = None,
     ) -> CleanupExecuteResult:
         status = cls._epoch_status_for_type(cleanup_type)
-        epoch_ids = await cls._get_epoch_ids(admin_supabase, status, cutoff)
+        items = await cls._get_matching_epochs(
+            admin_supabase, status, cutoff, epoch_ids=epoch_ids,
+        )
+        matched_ids = [item.id for item in items]
 
-        if not epoch_ids:
+        if not matched_ids:
             return CleanupExecuteResult(
                 cleanup_type=cleanup_type,
                 min_age_days=min_age_days,
@@ -224,72 +252,97 @@ class CleanupService:
             )
 
         # Count cascade targets before deletion (for reporting)
-        cascade_counts = await cls._count_cascade_targets(admin_supabase, epoch_ids)
+        cascade_counts = await cls._count_cascade_targets(admin_supabase, matched_ids)
 
         # Step 1: Delete game instance simulations first (ON DELETE SET NULL on epoch_id)
         admin_supabase.table("simulations").delete().in_(
-            "epoch_id", epoch_ids,
+            "epoch_id", matched_ids,
         ).in_(
             "simulation_type", ["game_instance", "archived"],
         ).execute()
 
         # Step 2: Delete epoch rows — child tables cascade automatically
-        admin_supabase.table("game_epochs").delete().in_("id", epoch_ids).execute()
+        admin_supabase.table("game_epochs").delete().in_("id", matched_ids).execute()
 
         logger.info(
             "Cleanup completed",
-            extra={"cleanup_type": cleanup_type, "deleted_count": len(epoch_ids)},
+            extra={"cleanup_type": cleanup_type, "deleted_count": len(matched_ids)},
         )
 
         return CleanupExecuteResult(
             cleanup_type=cleanup_type,
             min_age_days=min_age_days,
-            deleted_count=len(epoch_ids),
+            deleted_count=len(matched_ids),
             cascade_counts=cascade_counts,
         )
 
     # ── Archived instances ─────────────────────────────────────────
 
     @classmethod
-    async def _preview_archived_instances(
-        cls, admin_supabase: Client, cutoff: datetime, min_age_days: int,
-    ) -> CleanupPreviewResult:
-        resp = (
+    async def _get_matching_archived(
+        cls,
+        admin_supabase: Client,
+        cutoff: datetime,
+        instance_ids: list[str] | None = None,
+    ) -> list[CleanupPreviewItem]:
+        """Get archived instances matching age cutoff (or explicit IDs)."""
+        query = (
             admin_supabase.table("simulations")
-            .select("id", count="exact")
+            .select("id, name, updated_at")
             .eq("simulation_type", "archived")
-            .lt("updated_at", cutoff.isoformat())
-            .limit(0)
-            .execute()
+        )
+        if instance_ids:
+            query = query.in_("id", instance_ids)
+        else:
+            query = query.lt("updated_at", cutoff.isoformat())
+        resp = query.order("updated_at", desc=False).execute()
+        return [
+            CleanupPreviewItem(
+                id=row["id"], name=row["name"], updated_at=row.get("updated_at"),
+            )
+            for row in (resp.data or [])
+        ]
+
+    @classmethod
+    async def _preview_archived_instances(
+        cls,
+        admin_supabase: Client,
+        cutoff: datetime,
+        min_age_days: int,
+        instance_ids: list[str] | None = None,
+    ) -> CleanupPreviewResult:
+        items = await cls._get_matching_archived(
+            admin_supabase, cutoff, instance_ids=instance_ids,
         )
         return CleanupPreviewResult(
             cleanup_type="archived_instances",
             min_age_days=min_age_days,
-            primary_count=resp.count or 0,
+            primary_count=len(items),
+            items=items,
         )
 
     @classmethod
     async def _execute_archived_instances(
-        cls, admin_supabase: Client, cutoff: datetime, min_age_days: int,
+        cls,
+        admin_supabase: Client,
+        cutoff: datetime,
+        min_age_days: int,
+        instance_ids: list[str] | None = None,
     ) -> CleanupExecuteResult:
-        resp = (
-            admin_supabase.table("simulations")
-            .select("id", count="exact")
-            .eq("simulation_type", "archived")
-            .lt("updated_at", cutoff.isoformat())
-            .execute()
+        items = await cls._get_matching_archived(
+            admin_supabase, cutoff, instance_ids=instance_ids,
         )
-        deleted = len(resp.data or [])
+        matched_ids = [item.id for item in items]
 
-        if deleted > 0:
-            admin_supabase.table("simulations").delete().eq(
-                "simulation_type", "archived",
-            ).lt("updated_at", cutoff.isoformat()).execute()
+        if matched_ids:
+            admin_supabase.table("simulations").delete().in_(
+                "id", matched_ids,
+            ).execute()
 
         return CleanupExecuteResult(
             cleanup_type="archived_instances",
             min_age_days=min_age_days,
-            deleted_count=deleted,
+            deleted_count=len(matched_ids),
         )
 
     # ── Simple table helpers ───────────────────────────────────────

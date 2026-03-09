@@ -66,6 +66,7 @@ class ConnectionService:
             return cached
 
         simulations = await cls._fetch_map_simulations(supabase)
+
         all_connections = await cls.list_all(supabase, active_only=True)
 
         # Filter connections: remove orphans (pointing to archived/deleted sims).
@@ -113,50 +114,20 @@ class ConnectionService:
 
     @classmethod
     async def _fetch_map_simulations(cls, supabase: Client) -> list[dict]:
-        """Fetch simulations with epoch status and dashboard counts."""
-        sims_resp = (
-            supabase.table("simulations")
-            .select(
-                "id, name, slug, theme, description, banner_url, status,"
-                " simulation_type, source_template_id, epoch_id"
-            )
-            .eq("status", "active")
-            .neq("simulation_type", "archived")
-            .is_("deleted_at", "null")
-            .order("created_at", desc=False)
+        """Fetch simulations for the map via the ``map_simulations`` Postgres view.
+
+        The view (migration 091) consolidates three former queries into a single
+        SELECT and handles epoch-status filtering + dashboard-count joins in SQL:
+        - Joins game_epochs for ``epoch_status``
+        - Joins simulation_dashboard for agent/building/event counts
+        - Excludes game instances from completed/cancelled epochs
+        """
+        resp = (
+            supabase.table("map_simulations")
+            .select("*")
             .execute()
         )
-        simulations = sims_resp.data or []
-
-        # Enrich with epoch status
-        epoch_ids = {s["epoch_id"] for s in simulations if s.get("epoch_id")}
-        epoch_status_map: dict[str, str] = {}
-        if epoch_ids:
-            epoch_resp = (
-                supabase.table("game_epochs")
-                .select("id, status")
-                .in_("id", list(epoch_ids))
-                .execute()
-            )
-            for ep in epoch_resp.data or []:
-                epoch_status_map[ep["id"]] = ep["status"]
-        for sim in simulations:
-            sim["epoch_status"] = epoch_status_map.get(sim.get("epoch_id"), None)
-
-        # Enrich with dashboard counts
-        dash_resp = (
-            supabase.table("simulation_dashboard")
-            .select("simulation_id, agent_count, building_count, event_count")
-            .execute()
-        )
-        counts_map = {d["simulation_id"]: d for d in (dash_resp.data or [])}
-        for sim in simulations:
-            counts = counts_map.get(sim["id"], {})
-            sim["agent_count"] = counts.get("agent_count", 0)
-            sim["building_count"] = counts.get("building_count", 0)
-            sim["event_count"] = counts.get("event_count", 0)
-
-        return simulations
+        return resp.data or []
 
     @staticmethod
     def _compute_active_instance_counts(simulations: list[dict]) -> dict[str, int]:

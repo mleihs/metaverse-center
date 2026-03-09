@@ -563,6 +563,26 @@ _NOTIF_STRINGS: dict[str, dict[str, str]] = {
         "en": "Operating independently \u2014 no active alliance.",
         "de": "Unabhängig operierend \u2014 keine aktive Allianz.",
     },
+    "alliance_dissolved": {
+        "en": "Alliance '{name}' has collapsed under internal tensions!",
+        "de": "Allianz \u201E{name}\u201C ist unter internen Spannungen zerbrochen!",
+    },
+    "alliance_dissolved_hint": {
+        "en": "All former members are now operating independently. Overlapping operations caused irreconcilable friction.",
+        "de": "Alle ehemaligen Mitglieder operieren jetzt unabh\u00e4ngig. \u00dcberlappende Operationen f\u00fchrten zu un\u00fcberbr\u00fcckbaren Spannungen.",
+    },
+    "pending_proposals_label": {
+        "en": "{n} alliance proposals await your vote",
+        "de": "{n} B\u00fcndnisantr\u00e4ge warten auf Abstimmung",
+    },
+    "team_tension": {
+        "en": "Alliance tension: {t}/100",
+        "de": "Allianzspannung: {t}/100",
+    },
+    "alliance_upkeep_label": {
+        "en": "Alliance upkeep: -{cost} RP this cycle",
+        "de": "Allianzunterhalt: -{cost} RP diesen Zyklus",
+    },
     "alliance_bonus": {
         "en": "+15% DIPLOMATIC BONUS ACTIVE",
         "de": "+15% DIPLOMATIEBONUS AKTIV",
@@ -600,6 +620,10 @@ _NOTIF_STRINGS: dict[str, dict[str, str]] = {
         "en": "CYCLES ELAPSED",
         "de": "VERGANGENE ZYKLEN",
     },
+    "phase_lobby": {
+        "en": "LOBBY",
+        "de": "LOBBY",
+    },
     "phase_foundation": {
         "en": "FOUNDATION",
         "de": "GRUNDSTEINLEGUNG",
@@ -615,6 +639,10 @@ _NOTIF_STRINGS: dict[str, dict[str, str]] = {
     "phase_completed": {
         "en": "COMPLETED",
         "de": "ABGESCHLOSSEN",
+    },
+    "phase_cancelled": {
+        "en": "CANCELLED",
+        "de": "ABGEBROCHEN",
     },
     "what_changes": {
         "en": "OPERATIONAL CHANGES",
@@ -909,11 +937,17 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
     rank_str = f"#{data['rank']} / {data['total_players']}"
     rank_delta = _rank_arrow(data["rank"], data.get("prev_rank", 0))
 
-    # Rank gap indicator (B3)
+    # Rank gap indicator (B3) — uses _nt() for proper i18n
     rank_gap_html = ""
     rank_gap = data.get("rank_gap")
     if rank_gap:
-        gap_text = rank_gap.get(lang, rank_gap.get("en", ""))
+        if rank_gap.get("type") == "leading":
+            gap_text = _nt("rank_gap_leading", lang, gap=rank_gap["gap"])
+        elif rank_gap.get("type") == "trailing":
+            gap_text = _nt("rank_gap_trailing", lang, gap=rank_gap["gap"], pos=rank_gap["pos"])
+        else:
+            # Legacy format: pre-formatted bilingual dict
+            gap_text = rank_gap.get(lang, rank_gap.get("en", ""))
         if gap_text:
             gap_color = _GREEN if data.get("rank") == 1 else _TEXT
             rank_gap_html = f"""\
@@ -1109,6 +1143,29 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
     if alliance_name:
         ally_names = ", ".join(_esc(n) for n in data.get("ally_names", []))
         bonus_tag = f' <span style="color:{_GREEN};font-size:10px;">&#9679; {_nt("alliance_bonus", lang)}</span>' if data.get("alliance_bonus_active") else ""
+
+        # Alliance enrichment: proposals, tension, upkeep
+        alliance_details = ""
+        pp_count = data.get("pending_proposals_count", 0)
+        tension = data.get("alliance_tension", 0)
+        upkeep = data.get("alliance_upkeep_cost", 0)
+
+        detail_parts = []
+        if pp_count > 0:
+            detail_parts.append(f'<span style="color:{_AMBER};">&#9888; {_nt("pending_proposals_label", lang, n=pp_count)}</span>')
+        if tension > 0:
+            tension_color = _GREEN if tension < 30 else (_AMBER if tension < 60 else _RED)
+            detail_parts.append(f'<span style="color:{tension_color};">{_nt("team_tension", lang, t=tension)}</span>')
+        if upkeep > 0:
+            detail_parts.append(f'{_nt("alliance_upkeep_label", lang, cost=upkeep)}')
+
+        if detail_parts:
+            alliance_details = '<br>'.join(detail_parts)
+            alliance_details = f"""
+                <p style="margin:8px 0 0;font-size:11px;color:{_TEXT_DIM};line-height:1.8;">
+                  {alliance_details}
+                </p>"""
+
         alliance_html = f"""\
 {_section_header(_nt('alliance_status', lang))}
           <tr>
@@ -1119,12 +1176,29 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
                 </p>
                 <p style="margin:4px 0 0;font-size:12px;color:{_TEXT};line-height:1.6;">
                   {ally_names}
-                </p>
+                </p>{alliance_details}
               </div>
             </td>
           </tr>"""
     else:
-        alliance_html = f"""\
+        dissolved_name = data.get("dissolved_alliance_name")
+        if dissolved_name:
+            alliance_html = f"""\
+{_section_header(_nt('alliance_status', lang))}
+          <tr>
+            <td style="padding:0 32px 16px;">
+              <div style="border:1px dashed {_RED};padding:12px 16px;background-color:rgba(239,68,68,0.06);">
+                <p style="margin:0;font-size:13px;color:{_RED};font-weight:bold;line-height:1.6;">
+                  &#9888; {_nt('alliance_dissolved', lang, name=_esc(dissolved_name))}
+                </p>
+                <p style="margin:4px 0 0;font-size:11px;color:{_TEXT_DIM};line-height:1.6;">
+                  {_nt('alliance_dissolved_hint', lang)}
+                </p>
+              </div>
+            </td>
+          </tr>"""
+        else:
+            alliance_html = f"""\
 {_section_header(_nt('alliance_status', lang))}
           <tr>
             <td style="padding:0 32px 16px;">
@@ -1279,17 +1353,14 @@ def _render_phase_block(
     standing_data: dict | None = None,
 ) -> str:
     """Render a single language block for the phase change email."""
-    phase_names = {
-        "lobby": {"en": "LOBBY", "de": "LOBBY"},
-        "foundation": {"en": "FOUNDATION", "de": "GRUNDSTEINLEGUNG"},
-        "competition": {"en": "COMPETITION", "de": "WETTBEWERB"},
-        "reckoning": {"en": "RECKONING", "de": "ABRECHNUNG"},
-        "completed": {"en": "COMPLETED", "de": "ABGESCHLOSSEN"},
-        "cancelled": {"en": "CANCELLED", "de": "ABGEBROCHEN"},
-    }
+    def _phase_label(phase: str) -> str:
+        key = f"phase_{phase}"
+        if key in _NOTIF_STRINGS:
+            return _nt(key, lang)
+        return phase.upper()
 
-    old_name = phase_names.get(old_phase, {}).get(lang, old_phase.upper())
-    new_name = phase_names.get(new_phase, {}).get(lang, new_phase.upper())
+    old_name = _phase_label(old_phase)
+    new_name = _phase_label(new_phase)
 
     descriptions = _PHASE_DESCRIPTIONS.get(new_phase, {}).get(lang, [])
     desc_items = ""
@@ -1512,7 +1583,7 @@ def _render_completed_block(
         by_type = campaign_stats.get("by_type", {})
 
         type_parts = []
-        for op_type in ["spy", "guardian", "saboteur", "propagandist", "infiltrator", "assassin"]:
+        for op_type in ["spy", "guardian", "saboteur", "propagandist", "infiltrator", "assassin", "counter_intel"]:
             count = by_type.get(op_type, 0)
             if count > 0:
                 label = _OP_TYPE_LABELS.get(op_type, {}).get(lang, op_type[:3].upper())

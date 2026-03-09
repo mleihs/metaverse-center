@@ -25,6 +25,12 @@ const EVENT_COLORS: Record<string, string> = {
   agent_wounded: 'var(--color-danger)',
   rp_allocated: 'var(--color-gray-500)',
   zone_fortified: 'var(--color-warning)',
+  alliance_proposal: 'var(--color-epoch-accent, #f59e0b)',
+  alliance_proposal_accepted: 'var(--color-success)',
+  alliance_proposal_rejected: 'var(--color-danger)',
+  alliance_tension_increase: 'var(--color-warning)',
+  alliance_dissolved_tension: 'var(--color-danger)',
+  alliance_upkeep: 'var(--color-gray-500)',
 };
 
 const PHASE_COLORS: Record<string, string> = {
@@ -389,6 +395,21 @@ export class VelgWarRoomPanel extends LitElement {
       text-transform: uppercase;
     }
 
+    .allied-intel-badge {
+      display: inline-block;
+      font-family: var(--font-brutalist);
+      font-size: 8px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-info);
+      border: 1px solid rgba(56 189 248 / 0.3);
+      background: rgba(56 189 248 / 0.08);
+      padding: 1px 6px;
+      margin-left: var(--space-1);
+      vertical-align: middle;
+    }
+
     .bl-entry__time {
       font-size: 10px;
       color: var(--color-gray-600);
@@ -512,7 +533,9 @@ export class VelgWarRoomPanel extends LitElement {
   }
 
   private async _loadBattleLog(): Promise<void> {
-    const res = await epochsApi.getBattleLog(this.epochId, { limit: '100' });
+    const params: Record<string, string> = { limit: '100' };
+    if (this.simulationId) params.simulation_id = this.simulationId;
+    const res = await epochsApi.getBattleLog(this.epochId, params);
     if (res.success && res.data) {
       this._entries = (Array.isArray(res.data) ? res.data : []) as BattleLogEntry[];
     }
@@ -591,6 +614,7 @@ export class VelgWarRoomPanel extends LitElement {
 
   private _isClassified(entry: BattleLogEntry): boolean {
     if (entry.is_public) return false;
+    if ((entry.metadata as Record<string, unknown> | undefined)?.allied_intel) return false;
     if (!this.simulationId) return true;
     return (
       entry.source_simulation_id !== this.simulationId &&
@@ -725,6 +749,7 @@ export class VelgWarRoomPanel extends LitElement {
                 const classified = this._isClassified(entry);
                 const isPhase = entry.event_type === 'phase_change';
                 const isBetrayal = entry.event_type === 'betrayal';
+                const isAlliedIntel = !!(entry.metadata as Record<string, unknown> | undefined)?.allied_intel;
                 const delay = entryIdx * 50;
                 entryIdx++;
                 return html`
@@ -734,7 +759,10 @@ export class VelgWarRoomPanel extends LitElement {
                   >
                     <span class="bl-entry__time">${this._formatTime(entry.created_at)}</span>
                     <div class="bl-entry__body">
-                      <div class="bl-entry__type">${entry.event_type.replace(/_/g, ' ')}</div>
+                      <div class="bl-entry__type">
+                        ${entry.event_type.replace(/_/g, ' ')}
+                        ${isAlliedIntel ? html`<span class="allied-intel-badge" title=${msg('Intelligence shared through your alliance')}>${msg('ALLIED INTEL')}</span>` : nothing}
+                      </div>
                       <div class="bl-entry__narrative">${entry.narrative}</div>
                     </div>
                   </div>

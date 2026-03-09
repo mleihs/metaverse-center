@@ -1332,6 +1332,7 @@ export class VelgEpochCommandCenter extends LitElement {
   @state() private _participantCounts: Record<string, number> = {};
   @state() private _participants: EpochParticipant[] = [];
   @state() private _teams: EpochTeam[] = [];
+  @state() private _proposals: import('../../types/index.js').AllianceProposal[] = [];
   @state() private _leaderboard: LeaderboardEntry[] = [];
   @state() private _missions: OperativeMission[] = [];
   @state() private _threats: OperativeMission[] = [];
@@ -1556,11 +1557,11 @@ export class VelgEpochCommandCenter extends LitElement {
   }
 
   private async _loadEpochDetails(epochId: string) {
-    const [participants, teams, leaderboard, battleLog] = await Promise.all([
+    const [participants, teams, leaderboard, proposals] = await Promise.all([
       epochsApi.listParticipants(epochId),
       epochsApi.listTeams(epochId),
       epochsApi.getLeaderboard(epochId),
-      epochsApi.getBattleLog(epochId),
+      epochsApi.listProposals(epochId),
     ]);
 
     if (participants.success) {
@@ -1579,6 +1580,16 @@ export class VelgEpochCommandCenter extends LitElement {
       this._leaderboard = (leaderboard.data as LeaderboardEntry[]) || [];
     }
 
+    if (proposals.success && proposals.data) {
+      this._proposals = proposals.data as import('../../types/index.js').AllianceProposal[];
+    }
+
+    // Fetch battle log AFTER participants are parsed so simulation_id is available for allied intel tagging
+    const battleLogParams: Record<string, string> = {};
+    if (this._myParticipant?.simulation_id) {
+      battleLogParams.simulation_id = this._myParticipant.simulation_id;
+    }
+    const battleLog = await epochsApi.getBattleLog(epochId, Object.keys(battleLogParams).length ? battleLogParams : undefined);
     if (battleLog.success && battleLog.data) {
       this._battleLog = battleLog.data;
     }
@@ -2142,11 +2153,15 @@ export class VelgEpochCommandCenter extends LitElement {
             .myParticipant=${this._myParticipant}
             .participants=${this._participants}
             .teams=${this._teams}
+            .proposals=${this._proposals}
+            .currentCycle=${this._epoch?.current_cycle ?? 0}
             .actionLoading=${this._actionLoading}
             @create-team=${(e: CustomEvent) => this._onCreateTeam(e.detail.name)}
             @join-team=${(e: CustomEvent) => this._onJoinTeam(e.detail.teamId)}
+            @request-join-team=${(e: CustomEvent) => this._onRequestJoinTeam(e.detail.teamId)}
+            @vote-proposal=${(e: CustomEvent) => this._onVoteProposal(e.detail.proposalId, e.detail.vote)}
             @leave-team=${() => this._onLeaveTeam()}
-            @invite-player=${(e: CustomEvent) => this._onInvitePlayer(e.detail.simulationName)}
+            @invite-player=${(e: CustomEvent) => this._onInvitePlayer(e.detail.simulationId, e.detail.simulationName)}
           ></velg-epoch-alliances-tab>
         `;
       case 'results':
@@ -2171,6 +2186,7 @@ export class VelgEpochCommandCenter extends LitElement {
     this._epoch = null;
     this._participants = [];
     this._teams = [];
+    this._proposals = [];
     this._leaderboard = [];
     this._missions = [];
     this._threats = [];
@@ -2540,11 +2556,61 @@ export class VelgEpochCommandCenter extends LitElement {
     }
   }
 
-  private _onInvitePlayer(simulationName: string) {
-    const teamName = this._teams.find((t) => t.id === this._myParticipant?.team_id)?.name ?? '';
-    VelgToast.info(
-      msg(str`Alliance invitation sent to ${simulationName} for "${teamName}".`),
+  private async _onRequestJoinTeam(teamId: string) {
+    if (!this._epoch || !this._myParticipant) return;
+    this._actionLoading = true;
+    const result = await epochsApi.createProposal(
+      this._epoch.id,
+      this._myParticipant.simulation_id,
+      teamId,
     );
+    this._actionLoading = false;
+    if (result.success) {
+      VelgToast.success(msg('Alliance proposal sent.'));
+      await this._loadEpochDetails(this._epoch.id);
+    } else {
+      VelgToast.error(result.error?.message ?? msg('Failed to send proposal.'));
+    }
+  }
+
+  private async _onVoteProposal(proposalId: string, vote: 'accept' | 'reject') {
+    if (!this._epoch || !this._myParticipant) return;
+    this._actionLoading = true;
+    const result = await epochsApi.voteOnProposal(
+      this._epoch.id,
+      proposalId,
+      this._myParticipant.simulation_id,
+      vote,
+    );
+    this._actionLoading = false;
+    if (result.success) {
+      VelgToast.success(vote === 'accept' ? msg('Vote: Accept') : msg('Vote: Reject'));
+      await this._loadEpochDetails(this._epoch.id);
+    } else {
+      VelgToast.error(result.error?.message ?? msg('Failed to vote.'));
+    }
+  }
+
+  private async _onInvitePlayer(simulationId: string, simulationName: string) {
+    if (!this._epoch || !this._myParticipant?.team_id) return;
+    this._actionLoading = true;
+    const result = await epochsApi.inviteToTeam(
+      this._epoch.id,
+      this._myParticipant.team_id,
+      this._myParticipant.simulation_id,
+      simulationId,
+    );
+    this._actionLoading = false;
+    if (result.success) {
+      const teamName =
+        this._teams.find((t) => t.id === this._myParticipant?.team_id)?.name ?? '';
+      VelgToast.success(
+        msg(str`Alliance invitation sent to ${simulationName} for "${teamName}".`),
+      );
+      await this._loadEpochDetails(this._epoch.id);
+    } else {
+      VelgToast.error(result.error?.message ?? msg('Failed to send invitation.'));
+    }
   }
 
   // ── Operative Recall ────────────────────────────

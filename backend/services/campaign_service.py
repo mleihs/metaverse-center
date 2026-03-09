@@ -94,7 +94,7 @@ class CampaignService(BaseService):
         simulation_id: UUID,
         campaign_id: UUID,
     ) -> dict:
-        """Aggregated campaign analytics from Postgres function."""
+        """Aggregated campaign analytics via Postgres ``get_campaign_analytics`` (migration 065)."""
         response = supabase.rpc("get_campaign_analytics", {
             "p_simulation_id": str(simulation_id),
             "p_campaign_id": str(campaign_id),

@@ -94,6 +94,27 @@ export class VelgEpochBattleLog extends LitElement {
     .entry--phase_change::before            { background: var(--color-warning); }
     .entry--counter_intel::before           { background: var(--color-info); }
     .entry--intel_report::before            { background: var(--color-info); }
+    .entry--alliance_proposal::before        { background: var(--color-epoch-accent, #f59e0b); }
+    .entry--alliance_proposal_accepted::before { background: var(--color-success); }
+    .entry--alliance_proposal_rejected::before { background: var(--color-danger); }
+    .entry--alliance_tension_increase::before { background: var(--color-warning); }
+    .entry--alliance_dissolved_tension::before { background: var(--color-danger); width: 4px; opacity: 1; }
+    .entry--alliance_upkeep::before          { background: var(--color-gray-500); }
+
+    .allied-intel-badge {
+      display: inline-block;
+      font-family: var(--font-brutalist);
+      font-size: 8px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-info);
+      border: 1px solid rgba(56 189 248 / 0.3);
+      background: rgba(56 189 248 / 0.08);
+      padding: 1px 6px;
+      margin-left: var(--space-1);
+      vertical-align: middle;
+    }
     .entry--zone_fortified::before          { background: var(--color-warning); }
 
     .entry__intel-fort {
@@ -349,6 +370,12 @@ export class VelgEpochBattleLog extends LitElement {
       assassination: msg('Assassination'),
       agent_wounded: msg('Agent Wounded'),
       alliance_formed: msg('Alliance'),
+      alliance_proposal: msg('Proposal'),
+      alliance_proposal_accepted: msg('Accepted'),
+      alliance_proposal_rejected: msg('Rejected'),
+      alliance_tension_increase: msg('Tension'),
+      alliance_dissolved_tension: msg('Dissolved'),
+      alliance_upkeep: msg('Upkeep'),
       betrayal: msg('Betrayal'),
       phase_change: msg('Phase Change'),
       counter_intel: msg('Counter-Intel'),
@@ -465,7 +492,8 @@ export class VelgEpochBattleLog extends LitElement {
 
             const showTarget = isOwnAction && entry.target_simulation_id;
             const targetName = showTarget ? this._resolveSimName(entry.target_simulation_id) : null;
-            return html`${botPersonality ? html`<span class="entry__bot-tag entry__bot-tag--${botPersonality}">BOT</span>` : nothing}${narrative}${targetName && !meta?.target_sim_name ? html`<span class="entry__target">&rarr; ${targetName}</span>` : nothing}`;
+            const alliedIntel = !!(meta as Record<string, unknown> | undefined)?.allied_intel;
+            return html`${botPersonality ? html`<span class="entry__bot-tag entry__bot-tag--${botPersonality}">BOT</span>` : nothing}${narrative}${targetName && !meta?.target_sim_name ? html`<span class="entry__target">&rarr; ${targetName}</span>` : nothing}${alliedIntel ? html`<span class="allied-intel-badge" title=${msg('This intelligence was gathered by an allied operative, not your own. Shared automatically through your alliance.')} aria-label=${msg('Allied intelligence')}>${msg('ALLIED INTEL')}</span>` : nothing}`;
           })()}</span>
           ${
             this.compact

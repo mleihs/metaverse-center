@@ -89,7 +89,11 @@ class OperativeMissionService:
         body: OperativeDeploy,
         admin_supabase: Client | None = None,
     ) -> dict:
-        """Deploy an operative agent on a mission."""
+        """Deploy an operative agent on a mission.
+
+        Sets ``deployed_cycle`` (migration 090) for cycle-based tension
+        computation in ``fn_compute_alliance_tension``.
+        """
         epoch = await EpochService.get(supabase, epoch_id)
 
         # Phase restrictions
@@ -236,6 +240,7 @@ class OperativeMissionService:
             "cost_rp": cost,
             "success_probability": float(success_prob),
             "resolves_at": resolves_at.isoformat(),
+            "deployed_cycle": epoch.get("current_cycle", 1),
         }
 
         resp = supabase.table("operative_missions").insert(mission_data).execute()
@@ -423,6 +428,7 @@ class OperativeMissionService:
     ) -> float:
         """Get zone pressure modifier: pressured zones are easier to infiltrate.
 
+        Uses Postgres ``fn_target_zone_pressure`` (migration 078).
         Returns +0.00 to +0.04 (pressure * cap).
         """
         try:
@@ -441,6 +447,7 @@ class OperativeMissionService:
     ) -> float:
         """Get net resonance archetype modifier for an operative type.
 
+        Uses Postgres ``fn_resonance_operative_modifier`` (migration 078).
         Returns clamped [-0.04, +0.04] based on active resonances.
         Subsiding resonances apply at 50% strength.
         """
@@ -460,6 +467,7 @@ class OperativeMissionService:
     ) -> float:
         """Get attacker's own pressure penalty: own instability hurts outbound ops.
 
+        Uses Postgres ``fn_attacker_pressure_penalty`` (migration 078).
         Returns -0.04 to 0.00 (defender compensation).
         """
         try:
@@ -610,7 +618,9 @@ class OperativeMissionService:
             # Dissolve alliance -- remove all members from team
             supabase.table("epoch_participants").update(
                 {"team_id": None}
-            ).eq("team_id", source_team).execute()
+            ).eq("epoch_id", mission["epoch_id"]).eq(
+                "team_id", source_team
+            ).execute()
 
             # Apply -25% diplomatic penalty to betrayer
             supabase.table("epoch_participants").update(

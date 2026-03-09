@@ -229,10 +229,10 @@ class EpochParticipationService:
         from backend.services.epoch_service import EpochService
 
         epoch = await EpochService.get(supabase, epoch_id)
-        if epoch["status"] not in ("lobby", "foundation"):
+        if epoch["status"] not in ("lobby", "foundation", "competition"):
             raise HTTPException(
                 status.HTTP_400_BAD_REQUEST,
-                "Alliances can only be formed during lobby or foundation phase.",
+                "Alliances can only be formed during lobby, foundation, or competition phase.",
             )
 
         resp = (
@@ -270,10 +270,17 @@ class EpochParticipationService:
         epoch = await EpochService.get(supabase, epoch_id)
         config = {**DEFAULT_CONFIG, **epoch.get("config", {})}
 
-        if epoch["status"] not in ("lobby", "foundation"):
+        if epoch["status"] not in ("lobby", "foundation", "competition"):
             raise HTTPException(
                 status.HTTP_400_BAD_REQUEST,
-                "Alliances can only be joined during lobby or foundation phase.",
+                "Cannot join alliances during reckoning or after completion.",
+            )
+
+        # During competition, require alliance proposals instead of instant join
+        if epoch["status"] == "competition":
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                "During active competition, use alliance proposals to request joining a team.",
             )
 
         # Check team size limit

@@ -2,7 +2,7 @@
 title: "Feature Catalog"
 id: feature-catalog
 version: "2.3"
-date: 2026-03-08
+date: 2026-03-09
 lang: de
 type: reference
 status: active
@@ -44,7 +44,7 @@ Features die auf Plattform-Ebene existieren, unabhängig von einzelnen Simulatio
 | P11c | **Scoring-System** | ✅ IMPL | 5-Dimensionen: Stability, Influence, Sovereignty, Diplomatic, Military. Alliance-Bonus (+15%), Betrayal-Penalty (-25%), Spy-Bonuspunkte. `ScoringService` mit Materialized Views. |
 | P11d | **Battle Log** | ✅ IMPL | Chronologischer Kampfbericht. Fog-of-War: Nur eigene und öffentliche Events sichtbar. Öffentlicher Battle-Feed (`/api/v1/public/battle-feed`). EpochBattleLog-Komponente mit Bot-Indikatoren und Persönlichkeits-Farben. |
 | P11e | **Leaderboard** | ✅ IMPL | Echtzeit-Rangliste mit 5-Dimensionen-Scores, Rang-Gap-Indikator, TRAITOR-Badge bei Verrat. EpochLeaderboard + MapLeaderboardPanel. Batch-Fetch für N+1-Optimierung. |
-| P11f | **Allianzen & Verrat** | ✅ IMPL | Diplomatische Allianzen (1 + 0.15 × ally_count Multiplikator). Verrats-Erkennung mit `betrayal_penalty`-Spalte. Alliance-Dissolve + -25% Diplomatic Score. EpochAlliancesTab. |
+| P11f | **Allianzen & Verrat** | ✅ IMPL | Allianz-Vorschläge mit einstimmiger Abstimmung während Competition-Phase. Shared Intelligence (RLS-basiertes Allied Intel Sharing). Upkeep: 1 RP/Mitglied/Zyklus. Tension-Mechanik: +10 pro überlappende Zielangriffe, -5 Decay/Zyklus, Auto-Auflösung bei 80. Verrats-Erkennung mit `betrayal_penalty`-Spalte, -25% Diplomatic Score. 2 neue Tabellen: `epoch_alliance_proposals`, `epoch_alliance_votes`. `tension`-Spalte auf `epoch_teams`. 3 API-Endpoints (GET/POST Proposals, POST Vote). EpochAlliancesTab. |
 
 #### A3. Bot Players (KI-Gegner)
 
@@ -63,7 +63,7 @@ Features die auf Plattform-Ebene existieren, unabhängig von einzelnen Simulatio
 | P13 | **Admin-Route** | ✅ IMPL | `/admin` mit Email-Allowlist-Auth (`admin@velgarien.dev`). `require_platform_admin()`-Dependency. `isPlatformAdmin` Computed Signal. Dark tactical HUD-Ästhetik (gray-950 bg, Scanlines, "RESTRICTED ACCESS"-Badge). |
 | P13a | **User Management** | ✅ IMPL | AdminUsersTab: Suche, expandierbare Zeilen, Rollen-Dropdowns, Mitgliedschafts-Verwaltung, Simulation-Zuweisung, Löschen mit Bestätigung. 3 SECURITY DEFINER RPC-Funktionen (`admin_list_users`, `admin_get_user`, `admin_delete_user`) — umgeht GoTrue Admin API HS256-Inkompatibilität. |
 | P13b | **Cache TTL Controls** | ✅ IMPL | AdminCachingTab: Card-basierte TTL-Inputs, Dirty-Tracking, Save/Reset. `platform_settings`-Tabelle (Key-Value Runtime-Config). `CacheConfigService`-Singleton für Map-Data, SEO-Metadata, HTTP Cache-Control. |
-| P13c | **Data Cleanup** | ✅ IMPL | AdminCleanupTab: 6 Daten-Kategorien (completed_epochs, cancelled_epochs, stale_lobbies, archived_instances, audit_log, bot_decision_log). Preview-Before-Delete-Workflow (Stats → Scan → Preview → Execute). Cascade-aware Epoch-Deletion (Game Instances zuerst, dann Epoch-Zeilen mit 8 Kind-Tabellen). Monospace-Cascade-Tree-Anzeige. |
+| P13c | **Data Cleanup** | ✅ IMPL | AdminCleanupTab: 6 Daten-Kategorien (completed_epochs, cancelled_epochs, stale_lobbies, archived_instances, audit_log, bot_decision_log). Preview-Before-Delete-Workflow (Stats → Scan → Preview → Execute). Cascade-aware Epoch-Deletion (Game Instances zuerst, dann Epoch-Zeilen mit 8 Kind-Tabellen). Monospace-Cascade-Tree-Anzeige. Item-Selektion: Scan liefert individuelle Epoch/Instanz-Einträge mit Checkboxen — Cascade-Counts aktualisieren sich live per debounced Re-Preview. `min_age_days` erlaubt 0 (sofort). Optional `epoch_ids` Parameter umgeht Altersfilter für gezielte Löschung. |
 
 #### A5. Agent Aptitudes & Draft Phase
 
@@ -291,7 +291,7 @@ Features die innerhalb einer Simulation existieren. Benutzer können beliebig vi
 | D5 | **MapLeaderboardPanel** | ✅ IMPL | VelgSidePanel für Epoch-Scores bei Instance-Klick. 5-Dimensionen-Scores. |
 | D6 | **MapMinimap** | ✅ IMPL | 150×100px Viewport-Übersicht unten rechts. |
 | D7 | **MapConnectionPanel** | ✅ IMPL | Connection-Details bei Edge-Klick. MapTooltip für Game-Instance-Tooltips mit Score-Dimensionen-Bars. |
-| D8 | **Auto-Refresh** | ✅ IMPL | 30s automatischer Refresh während aktiver Epochs. `ConnectionService.get_map_data()` angereichert mit active_instance_counts, operative_flow, score_dimensions, sparklines. |
+| D8 | **Auto-Refresh** | ✅ IMPL | 30s automatischer Refresh während aktiver Epochs. `ConnectionService.get_map_data()` angereichert mit active_instance_counts, operative_flow, score_dimensions, sparklines. `_fetch_map_simulations` liest die `map_simulations` Postgres-View (migration 091) — filtert completed/cancelled Game-Instances serverseitig heraus. |
 
 ---
 
@@ -325,7 +325,7 @@ Features die innerhalb einer Simulation existieren. Benutzer können beliebig vi
 |---|---------|--------|-------------|
 | G1 | **Lit Localize (Runtime)** | ✅ IMPL | 2279 lokalisierte UI-Strings (EN/DE). `msg()` + `str` Template Literals. XLIFF-Workflow (extract → translate → build). Claude 4.6 für Übersetzungen. `&amp;`-Bug-Fix via sed. |
 | G2 | **Per-Simulation Theming** | ✅ IMPL | 6 Theme-Presets mit 37 Token-Overrides. `ThemeService` mit `animation_speed`-Multiplikator (7 Duration-Tokens). `hover_effect`-Bridge schreibt `--hover-transform` CSS Property. WCAG 2.1 AA validiert (4.5:1 Text, 3.0:1 Muted/Buttons/Badges). |
-| G3 | **Spectral Bureau Font** | ✅ IMPL | `--font-bureau` CSS Property (Spectral Serif). 19th-Century French Academic für Bureau-Level Plattform-Content (LoreScroll, Dashboard). Google Fonts Integration (+ Libre Baskerville, Barlow). |
+| G3 | **Spectral Bureau Font** | ✅ IMPL | `--font-bureau` CSS Property (Spectral Serif). 19th-Century French Academic für Bureau-Level Plattform-Content (LoreScroll narrative text, Dashboard). Google Fonts Integration (+ Libre Baskerville, Barlow). LoreScroll `.section__title` verwendet `--font-brutalist` (+ `--heading-weight`, `--heading-transform`, `--heading-tracking` Tokens) um Simulations-Theme-Fonts zu respektieren. |
 
 ---
 
@@ -383,7 +383,7 @@ Features die innerhalb einer Simulation existieren. Benutzer können beliebig vi
 |----------|------|
 | **Simulationen** | 5 (Velgarien, The Gaslit Reach, Station Null, Speranza, Cité des Dames) |
 | **Datenbanktabellen** | 56 |
-| **SQL-Migrationen** | 86 |
+| **SQL-Migrationen** | 91 |
 | **RLS-Policies** | 150+ |
 | **Trigger** | 41+ |
 | **Views** | 8 Standard + 6 Materialized |
@@ -397,6 +397,7 @@ Features die innerhalb einer Simulation existieren. Benutzer können beliebig vi
 | **Theme-Presets** | 6 (dark-brutalist, deep-space-horror, arc-raiders, gaslit-reach, illuminated-literary, custom) |
 | **Shared Components** | 16 + 10 Shared CSS Modules + BaseSettingsPanel |
 | **Backend Services** | 29 Entity + Audit + Simulation + External + Email + Admin + Bot + Notification + Cleanup |
+| **Postgres-Docstring-Convention** | Alle 16 Services mit Postgres-RPC/View-Aufrufen dokumentieren Migration-Nummern im Docstring (siehe ADR-007) |
 
 ---
 

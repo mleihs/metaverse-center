@@ -737,11 +737,11 @@ export class VelgLoreScroll extends LitElement {
     }
 
     .section__title {
-      font-family: var(--font-bureau);
-      font-weight: var(--font-bold);
+      font-family: var(--font-brutalist);
+      font-weight: var(--heading-weight, var(--font-bold));
       font-size: var(--text-lg);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
+      text-transform: var(--heading-transform, uppercase);
+      letter-spacing: var(--heading-tracking, var(--tracking-wide));
       color: var(--lore-heading);
       margin: 0;
       flex: 1;
@@ -749,7 +749,7 @@ export class VelgLoreScroll extends LitElement {
     }
 
     .section__header:hover .section__title {
-      letter-spacing: calc(var(--tracking-wide) + 0.02em);
+      letter-spacing: calc(var(--heading-tracking, var(--tracking-wide)) + 0.02em);
     }
 
     .section__toggle {

@@ -18,6 +18,7 @@ from uuid import UUID
 from backend.models.epoch import OperativeDeploy
 from backend.services.bot_chat_service import BotChatService
 from backend.services.bot_game_state import BotGameState
+from backend.services.alliance_service import AllianceService
 from backend.services.bot_personality import create_personality
 from backend.services.epoch_service import EpochService
 from backend.services.operative_service import OperativeService
@@ -175,6 +176,28 @@ class BotService:
             admin_supabase, epoch_id, participant, decisions.alliances
         )
 
+        # 4b. Vote on pending alliance proposals
+        for pv in decisions.proposal_votes:
+            try:
+                await AllianceService.vote_on_proposal(
+                    admin_supabase,
+                    UUID(pv.proposal_id),
+                    UUID(participant["simulation_id"]),
+                    pv.vote,
+                )
+                logger.info(
+                    "Bot cast alliance vote",
+                    extra={"bot_id": participant.get("simulation_id"),
+                           "proposal_id": pv.proposal_id, "vote": pv.vote},
+                )
+            except Exception:
+                logger.warning(
+                    "Bot proposal vote failed",
+                    extra={"bot_id": participant.get("simulation_id"),
+                           "proposal_id": pv.proposal_id, "vote": pv.vote},
+                    exc_info=True,
+                )
+
         # 5. Log decisions for transparency
         await cls._log_decisions(
             admin_supabase, epoch_id, participant["id"], cycle_number, decisions, deployed, fortified
@@ -245,9 +268,9 @@ class BotService:
                             results.append({"action": "join", "team_id": t["id"]})
                             break
 
-                elif action.action == "leave":
+                elif action.action in ("leave", "betray"):
                     await EpochService.leave_team(admin_supabase, UUID(epoch_id), UUID(sim_id))
-                    results.append({"action": "leave"})
+                    results.append({"action": action.action})
 
             except Exception:
                 logger.debug("Bot alliance action failed: %s", action.action, exc_info=True)
@@ -290,6 +313,10 @@ class BotService:
                 "alliance_actions": [
                     {"action": a.action, "target": a.target_simulation_id}
                     for a in decisions.alliances
+                ],
+                "proposal_votes": [
+                    {"proposal_id": v.proposal_id, "vote": v.vote}
+                    for v in decisions.proposal_votes
                 ],
                 "rp_spent": decisions.rp_spent,
             },

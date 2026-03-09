@@ -3985,9 +3985,6 @@
 <trans-unit id="sa264b8e9c4d1ec31">
   <source>Active Alliances</source>
 <target>Aktive Allianzen</target></trans-unit>
-<trans-unit id="sf17f065acf9e49b7">
-  <source>No alliances formed.</source>
-<target>Keine Allianzen gebildet.</target></trans-unit>
 <trans-unit id="s18d9277a5ac87167">
   <source>Participants</source>
 <target>Teilnehmer</target></trans-unit>
@@ -7637,9 +7634,6 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
 <trans-unit id="seed5bec1139d42ef">
   <source>No records match the criteria.</source>
 <target>Keine Einträge entsprechen den Kriterien.</target></trans-unit>
-<trans-unit id="s3a49e30281399a10">
-  <source>eligible</source>
-<target>betroffen</target></trans-unit>
 <trans-unit id="sf4b13b74e551e9eb">
   <source>Cleanup Operations</source>
 <target>Bereinigungsoperationen</target></trans-unit>
@@ -7667,9 +7661,6 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
 <trans-unit id="s3378f13303dd8cec">
   <source>Confirm Purge</source>
 <target>Bereinigung bestätigen</target></trans-unit>
-<trans-unit id="s5d957098064456d3">
-  <source>Permanently delete <x id="0" equiv-text="${purgePreview.primary_count} ${meta.label.toLowerCase()}"/> older than <x id="1" equiv-text="${this._thresholds[purgeType]}"/> days? This cannot be undone.</source>
-<target>P<x id="0" equiv-text="${purgePreview.primary_count} ${meta.label.toLowerCase()}"/> älter als <x id="1" equiv-text="${this._thresholds[purgeType]}"/> Tage endgültig löschen? Dies kann nicht rückgängig gemacht werden.</target></trans-unit>
 <trans-unit id="s9aec5b508ac6ce64">
   <source>Manage users, memberships, platform settings, and data cleanup.</source>
 <target>Benutzer, Mitgliedschaften, Plattformeinstellungen und Datenbereinigung verwalten.</target></trans-unit>
@@ -10281,7 +10272,7 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 </trans-unit>
 <trans-unit id="s28c572c5f7f4af38">
   <source>Review &amp; Accept Entities</source>
-  <target>Entitäten überprüfen & akzeptieren</target>
+  <target>Entitäten überprüfen &amp; akzeptieren</target>
 </trans-unit>
 <trans-unit id="s87a7e656ebddb514">
   <source>Generated entities appear in a staging hand at the bottom of the page. Each card shows the entity’s name, type, and a preview of its description. Click the checkmark to accept an entity into the final roster, or click the edit icon to modify it before accepting.</source>
@@ -10705,7 +10696,7 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 </trans-unit>
 <trans-unit id="sdd8b42bc6fb64b82">
   <source>Event Cards &amp; History</source>
-  <target>Ereigniskarten & Verlauf</target>
+  <target>Ereigniskarten &amp; Verlauf</target>
 </trans-unit>
 <trans-unit id="s04b2f900c1dc89a4">
   <source>Below the seismograph, individual event cards show the full history of what happened in each cycle. Each card displays the event type (deployment, mission resolution, bleed, score change), the actors involved, and the outcome. Events are color-coded by type and can be filtered by zone.</source>
@@ -10773,7 +10764,7 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 </trans-unit>
 <trans-unit id="se796af1bcdc1ca93">
   <source>Importance &amp; Decay</source>
-  <target>Wichtigkeit & Verfall</target>
+  <target>Wichtigkeit &amp; Verfall</target>
 </trans-unit>
 <trans-unit id="sb5ac8aba9299ab97">
   <source>Each memory entry has an importance rating from 1 to 5, shown as pips. High-importance memories (mission outcomes, major score shifts) persist longer and weigh more heavily in AI reflections. Low-importance memories may decay over time, simulating the natural fading of routine observations.</source>
@@ -10849,7 +10840,7 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 </trans-unit>
 <trans-unit id="sba73d4462647603d">
   <source>Bleed &amp; operative activity</source>
-  <target>Bleeding- & Operativaktivität</target>
+  <target>Bleeding- &amp; Operativaktivität</target>
 </trans-unit>
 <trans-unit id="s7b7163270e57e8b4">
   <source>Refresh</source>
@@ -11339,7 +11330,7 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 </trans-unit>
 <trans-unit id="s2bc0746ea5c18080">
   <source>Presence &amp; Ready Signals</source>
-  <target>Präsenz & Bereitschaftssignale</target>
+  <target>Präsenz &amp; Bereitschaftssignale</target>
 </trans-unit>
 <trans-unit id="sfec4bdeceae0844d">
   <source>The presence indicator shows which players are currently online with a green dot. The ready signal system lets you indicate when you’ve completed your actions for the current cycle. When all human participants signal ready, the cycle auto-resolves — no waiting for the timer.</source>
@@ -11387,7 +11378,7 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 </trans-unit>
 <trans-unit id="s5ea3cabe7f522247">
   <source>Event Pressure &amp; Zones</source>
-  <target>Ereignisdruck & Zonen</target>
+  <target>Ereignisdruck &amp; Zonen</target>
 </trans-unit>
 <trans-unit id="se65cfd7934c7175d">
   <source>Agent Memory</source>
@@ -11411,15 +11402,15 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 </trans-unit>
 <trans-unit id="s0f67d2c3b88ac30f">
   <source>Social Trends &amp; Campaigns</source>
-  <target>Gesellschaftliche Trends & Kampagnen</target>
+  <target>Gesellschaftliche Trends &amp; Kampagnen</target>
 </trans-unit>
 <trans-unit id="s2717e6464a4814e0">
   <source>COMMS &amp; Notifications</source>
-  <target>KOMM & Benachrichtigungen</target>
+  <target>KOMM &amp; Benachrichtigungen</target>
 </trans-unit>
 <trans-unit id="sf60fad6f55d6aba9">
   <source>Complete Guide &amp; Auto-Processing</source>
-  <target>Vollständiger Leitfaden & Automatische Verarbeitung</target>
+  <target>Vollständiger Leitfaden &amp; Automatische Verarbeitung</target>
 </trans-unit>
 <trans-unit id="s68d92f8d2b8428f8">
   <source>Automatic resonance impact processing when impacts_at timestamp arrives</source>
@@ -11751,7 +11742,7 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 </trans-unit>
 <trans-unit id="scd78cd386b2f6a0a">
   <source>Events &amp; Reactions</source>
-  <target>Ereignisse & Reaktionen</target>
+  <target>Ereignisse &amp; Reaktionen</target>
 </trans-unit>
 <trans-unit id="s3cb1e63472a1a825">
   <source>Scanner</source>
@@ -11775,6 +11766,7 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 </trans-unit>
 <trans-unit id="sfa9c7f74f30b3740">
   <source>Scan complete: <x id="0" equiv-text="${m.total_fetched}"/> fetched, <x id="1" equiv-text="${m.total_new}"/> new, <x id="2" equiv-text="${m.resonances_created + m.candidates_staged}"/> staged</source>
+<target>Scan abgeschlossen: <x id="0" equiv-text="${m.total_fetched}"/> abgerufen, <x id="1" equiv-text="${m.total_new}"/> neu, <x id="2" equiv-text="${m.resonances_created + m.candidates_staged}"/> bereitgestellt</target>
 </trans-unit>
 <trans-unit id="s29bc6ae235a2e50d">
   <source>Scan failed</source>
@@ -11786,6 +11778,7 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 </trans-unit>
 <trans-unit id="s0a44274762f1488c">
   <source>Approve "<x id="0" equiv-text="${candidate.title}"/>" and create a substrate resonance?</source>
+<target>„<x id="0" equiv-text="${candidate.title}"/>" genehmigen und eine Substrat-Resonanz erstellen?</target>
 </trans-unit>
 <trans-unit id="se5d01bef737e2e3a">
   <source>Approve</source>
@@ -11805,6 +11798,7 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 </trans-unit>
 <trans-unit id="s5bacbb718a823540">
   <source>Reject "<x id="0" equiv-text="${candidate.title}"/>"? This cannot be undone.</source>
+<target>„<x id="0" equiv-text="${candidate.title}"/>" ablehnen? Dies kann nicht rückgängig gemacht werden.</target>
 </trans-unit>
 <trans-unit id="s123da0f92f97dd86">
   <source>Reject</source>
@@ -11836,6 +11830,7 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 </trans-unit>
 <trans-unit id="s89d186b78cf7a3b2">
   <source><x id="0" equiv-text="${pendingCount}"/> pending</source>
+<target><x id="0" equiv-text="${pendingCount}"/> ausstehend</target>
 </trans-unit>
 <trans-unit id="sa0581a443a2a2a4a">
   <source>Scan Log</source>
@@ -11895,6 +11890,7 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 </trans-unit>
 <trans-unit id="s03d3dae15ddcb004">
   <source>◆ <x id="0" equiv-text="${recommendedCount}"/> recommended</source>
+<target>◆ <x id="0" equiv-text="${recommendedCount}"/> empfohlen</target>
 </trans-unit>
 <trans-unit id="se6051ed0390dba5a">
   <source>Scanning records...</source>
@@ -11914,9 +11910,11 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 </trans-unit>
 <trans-unit id="s5fa511bebe4a7390">
   <source>Approve <x id="0" equiv-text="${c.title}"/></source>
+<target><x id="0" equiv-text="${c.title}"/> genehmigen</target>
 </trans-unit>
 <trans-unit id="seed03a4c0428a764">
   <source>Reject <x id="0" equiv-text="${c.title}"/></source>
+<target>Ablehnen<x id="0" equiv-text="${c.title}"/> ablehnen</target>
 </trans-unit>
 <trans-unit id="s8daa1db5187d4ad4">
   <source>Detail</source>
@@ -11948,9 +11946,11 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 </trans-unit>
 <trans-unit id="s4ea9b2ec2de4dfbc">
   <source><x id="0" equiv-text="${Math.round(seconds / 3600)}"/>h interval</source>
+<target><x id="0" equiv-text="${Math.round(seconds / 3600)}"/>h Intervall</target>
 </trans-unit>
 <trans-unit id="sa90f9c011ab03c1d">
   <source><x id="0" equiv-text="${Math.round(seconds / 60)}"/>m interval</source>
+<target><x id="0" equiv-text="${Math.round(seconds / 60)}"/>m Intervall</target>
 </trans-unit>
 <trans-unit id="s3545c5f59ad9008a">
   <source>Failed to initiate Google sign-in.</source>
@@ -12642,6 +12642,7 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 </trans-unit>
 <trans-unit id="sd595b7cfe63e1290">
   <source>DISPATCH CONFIRMED: <x id="0" equiv-text="${agentName}"/> → <x id="1" equiv-text="${target}${prob}"/></source>
+<target>EINSATZ BESTÄTIGT: <x id="0" equiv-text="${agentName}"/> → <x id="1" equiv-text="${target}${prob}"/></target>
 </trans-unit>
 <trans-unit id="s2cc131aea76fda2c">
   <source>Select embassy route</source>
@@ -12655,10 +12656,6 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
   <source>Agent aptitudes</source>
   <target>Agenten-Eignungen</target>
 </trans-unit>
-<trans-unit id="s8c998e57a98f6d60">
-  <source>Form an alliance to gain +15% diplomatic bonus per ally. Alliances can be formed during lobby and foundation phases.</source>
-  <target>Gründe eine Allianz für +15% Diplomatiebonus pro Verbündetem. Allianzen können in der Lobby- und Gründungsphase gebildet werden.</target>
-</trans-unit>
 <trans-unit id="s2afc9a717c161490">
   <source>Invite</source>
   <target>Einladen</target>
@@ -12669,6 +12666,7 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 </trans-unit>
 <trans-unit id="sa3fd72087e45859b">
   <source>Alliance invitation sent to <x id="0" equiv-text="${simulationName}"/> for "<x id="1" equiv-text="${teamName}"/>".</source>
+<target>Bündniseinladung an <x id="0" equiv-text="${simulationName}"/> für „<x id="1" equiv-text="${teamName}"/>" gesendet.</target>
 </trans-unit>
 <trans-unit id="scbd77c1a17b4493c">
   <source>YOU</source>
@@ -12770,6 +12768,200 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
   <source>Snapshot</source>
   <target>Momentaufnahme</target>
 </trans-unit>
+<trans-unit id="s5cdddfd216fdfd8f">
+  <source>Form an alliance to share intelligence and gain +15% diplomatic bonus per ally. Costs 1 RP per member each cycle. Tension builds when allies attack the same target — if it reaches 80, the alliance dissolves.</source>
+<target>Gründe ein Bündnis, um Aufklärung zu teilen und +15% Diplomatiebonus pro Verbündetem zu erhalten. Kostet 1 RP pro Mitglied pro Zyklus. Spannung steigt, wenn Verbündete dasselbe Ziel angreifen — bei 80 löst sich das Bündnis auf.</target>
+</trans-unit>
+<trans-unit id="s8b641eaff32724af">
+  <source>No alliances formed yet. Create one to share intelligence with allies and gain diplomatic bonuses — but watch the upkeep cost.</source>
+<target>Noch keine Bündnisse gegründet. Gründe eins, um Aufklärung mit Verbündeten zu teilen und Diplomatieboni zu erhalten — aber achte auf die Unterhaltskosten.</target>
+</trans-unit>
+<trans-unit id="s46e670f93e615b51">
+  <source>cycle</source>
+<target>Zyklus</target>
+</trans-unit>
+<trans-unit id="s51e419a662aeb1ec">
+  <source>Each alliance member pays 1 RP per member per cycle. A 3-member alliance costs each member 3 RP/cycle. If your RP reaches 0, upkeep is waived — you will not go into debt.</source>
+<target>Jedes Bündnismitglied zahlt 1 RP pro Mitglied pro Zyklus. Ein 3er-Bündnis kostet jedes Mitglied 3 RP/Zyklus. Bei 0 RP entfällt der Unterhalt — keine Verschuldung möglich.</target>
+</trans-unit>
+<trans-unit id="sd71681d67d7e2802">
+  <source>Alliance tension</source>
+<target>Bündnisspannung</target>
+</trans-unit>
+<trans-unit id="sdeb3f70854934110">
+  <source>Tension increases when allies attack the same target (+10). Decays naturally each cycle (-5). Alliance dissolves at 80.</source>
+<target>Spannung steigt, wenn Verbündete dasselbe Ziel angreifen (+10). Sinkt natürlich pro Zyklus (-5). Bündnis löst sich bei 80 auf.</target>
+</trans-unit>
+<trans-unit id="scb6f733b308ae68b">
+  <source>Critical!</source>
+<target>Kritisch!</target>
+</trans-unit>
+<trans-unit id="sfacdd7661d62355b">
+  <source>Elevated</source>
+<target>Erhöht</target>
+</trans-unit>
+<trans-unit id="s615d9bf5967c3f77">
+  <source>No pending proposals. Unaligned players can request to join your alliance.</source>
+<target>Keine ausstehenden Anträge. Bündnislose Spieler können einen Beitritt beantragen.</target>
+</trans-unit>
+<trans-unit id="s0e5bb886768e0f2a">
+  <source>Your request is pending</source>
+<target>Dein Antrag wird geprüft</target>
+</trans-unit>
+<trans-unit id="s4bab75df2d1070da">
+  <source>approved</source>
+<target>genehmigt</target>
+</trans-unit>
+<trans-unit id="s7b23cc3bbf441e7f">
+  <source>Team members are reviewing your request. The proposal expires after 2 cycles.</source>
+<target>Teammitglieder prüfen deinen Antrag. Der Antrag verfällt nach 2 Zyklen.</target>
+</trans-unit>
+<trans-unit id="s1605adadee6b4102">
+  <source>During lobby and foundation phases, you can join instantly without a vote.</source>
+<target>In der Lobby- und Gründungsphase kannst du sofort beitreten, ohne Abstimmung.</target>
+</trans-unit>
+<trans-unit id="s30a95aad4d8b4112">
+  <source>During active competition, joining requires team approval. Your request will be voted on by current members.</source>
+<target>Im aktiven Wettbewerb ist eine Teamzustimmung erforderlich. Dein Antrag wird von den aktuellen Mitgliedern abgestimmt.</target>
+</trans-unit>
+<trans-unit id="s7a60207c75ee8815">
+  <source>Request to Join</source>
+<target>Beitritt beantragen</target>
+</trans-unit>
+<trans-unit id="sfb28c95127732897">
+  <source>Incoming Transmission</source>
+<target>Eingehende Übermittlung</target>
+</trans-unit>
+<trans-unit id="s287cfb162dfe2438">
+  <source>requests to join</source>
+<target>beantragt Beitritt</target>
+</trans-unit>
+<trans-unit id="sc3467ebcf486d484">
+  <source>Unanimous approval required</source>
+<target>Einstimmige Zustimmung erforderlich</target>
+</trans-unit>
+<trans-unit id="s387dc4d9e56382e8">
+  <source>All current members must vote Accept for the proposal to pass. A single Reject immediately declines.</source>
+<target>Alle aktuellen Mitglieder müssen mit Annehmen stimmen, damit der Antrag durchgeht. Eine einzige Ablehnung führt sofort zur Zurückweisung.</target>
+</trans-unit>
+<trans-unit id="s3e8abd833c6e94c7">
+  <source>Expires in <x id="0" equiv-text="${expiresInCycles}"/> cycles</source>
+<target>Verfällt in <x id="0" equiv-text="${expiresInCycles}"/> Zyklen</target>
+</trans-unit>
+<trans-unit id="s6a5c67e838e22814">
+  <source><x id="0" equiv-text="${acceptCount}"/> of <x id="1" equiv-text="${memberCount}"/> votes cast</source>
+<target><x id="0" equiv-text="${acceptCount}"/> von <x id="1" equiv-text="${memberCount}"/> Stimmen abgegeben</target>
+</trans-unit>
+<trans-unit id="sce6fcb82243a7e72">
+  <source>votes</source>
+<target>Stimmen</target>
+</trans-unit>
+<trans-unit id="s7c206c1705a9db1a">
+  <source>Accept alliance proposal from <x id="0" equiv-text="${proposerName}"/></source>
+<target>Bündnisantrag von <x id="0" equiv-text="${proposerName}"/> annehmen</target>
+</trans-unit>
+<trans-unit id="sdf0f9475e1af92f7">
+  <source>Reject alliance proposal from <x id="0" equiv-text="${proposerName}"/></source>
+<target>Bündnisantrag von <x id="0" equiv-text="${proposerName}"/> ablehnen</target>
+</trans-unit>
+<trans-unit id="sd3962e4ad911d250">
+  <source>Vote cast</source>
+<target>Stimme abgegeben</target>
+</trans-unit>
+<trans-unit id="sf0ad7979502e0083">
+  <source>→ <x id="0" equiv-text="${pendingTeamName}"/></source>
+<target>→ <x id="0" equiv-text="${pendingTeamName}"/></target>
+</trans-unit>
+<trans-unit id="sa52d4bbde1f4fa3f">
+  <source>Proposal</source>
+<target>Antrag</target>
+</trans-unit>
+<trans-unit id="s2153b6a1d68d08ed">
+  <source>Tension</source>
+<target>Spannung</target>
+</trans-unit>
+<trans-unit id="sf0302f22af4d9aea">
+  <source>Dissolved</source>
+<target>Aufgelöst</target>
+</trans-unit>
+<trans-unit id="s287d102a6cc29d71">
+  <source>Upkeep</source>
+<target>Unterhalt</target>
+</trans-unit>
+<trans-unit id="s0163147a983431f4">
+  <source>This intelligence was gathered by an allied operative, not your own. Shared automatically through your alliance.</source>
+<target>Dieser Aufklärungsbericht stammt von einem verbündeten Agenten, nicht von deinem eigenen. Automatisch durch dein Bündnis geteilt.</target>
+</trans-unit>
+<trans-unit id="s0aff681d2382c991">
+  <source>Allied intelligence</source>
+<target>Verbündete Aufklärung</target>
+</trans-unit>
+<trans-unit id="s19d996f2e34d0c62">
+  <source>ALLIED INTEL</source>
+<target>VERBÜNDETE AUFKLÄRUNG</target>
+</trans-unit>
+<trans-unit id="s9c96d68c31a7193a">
+  <source>Alliance proposal sent.</source>
+<target>Bündnisantrag gesendet.</target>
+</trans-unit>
+<trans-unit id="s9aa90eb375d88e51">
+  <source>Failed to send proposal.</source>
+<target>Antrag konnte nicht gesendet werden.</target>
+</trans-unit>
+<trans-unit id="s9ea75ad6d7d3f48b">
+  <source>Vote: Accept</source>
+<target>Abstimmung: Annehmen</target>
+</trans-unit>
+<trans-unit id="sdef936ef8be63394">
+  <source>Vote: Reject</source>
+<target>Abstimmung: Ablehnen</target>
+</trans-unit>
+<trans-unit id="s19615843dbbb4a6b">
+  <source>Failed to vote.</source>
+<target>Abstimmung fehlgeschlagen.</target>
+</trans-unit>
+<trans-unit id="s7a92984b86ca270f">
+  <source>Alliance Proposals</source>
+<target>Bündnisanträge</target>
+</trans-unit>
+<trans-unit id="sded526baf9060b48">
+  <source>During lobby and foundation phases, players can join alliances instantly. During competition and reckoning, joining requires a proposal that all existing members must unanimously accept. A single rejection immediately declines the proposal. Proposals expire after 2 cycles.</source>
+<target>In der Lobby- und Gründungsphase können Spieler sofort Bündnissen beitreten. Im Wettbewerb und in der Abrechnung ist ein Antrag erforderlich, dem alle bestehenden Mitglieder einstimmig zustimmen müssen. Eine einzige Ablehnung weist den Antrag sofort zurück. Anträge verfallen nach 2 Zyklen.</target>
+</trans-unit>
+<trans-unit id="s863fda0e74c1a0dc">
+  <source>Alliances cost RP to maintain. Each member pays 1 RP per member per cycle. A 2-member alliance costs 2 RP/cycle each; a 3-member alliance costs 3 RP/cycle each. If your RP reaches 0, upkeep is waived — you will not go into debt, but you cannot deploy operatives until you earn more RP.</source>
+<target>Bündnisse kosten RP im Unterhalt. Jedes Mitglied zahlt 1 RP pro Mitglied pro Zyklus. Ein 2er-Bündnis kostet 2 RP/Zyklus pro Person; ein 3er-Bündnis 3 RP/Zyklus. Bei 0 RP entfällt der Unterhalt — keine Verschuldung möglich, aber es können keine Agenten eingesetzt werden, bis neue RP verdient werden.</target>
+</trans-unit>
+<trans-unit id="sbaa6db5665ff1694">
+  <source>Alliance tension rises when allies attack the same target (+10 per overlap). It decays naturally each cycle (-5). If tension reaches 80, the alliance automatically dissolves and all members become unaligned. Coordinate your targets to keep tension low.</source>
+<target>Die Bündnisspannung steigt, wenn Verbündete dasselbe Ziel angreifen (+10 pro Überschneidung). Sie sinkt natürlich pro Zyklus (-5). Bei Spannung 80 löst sich das Bündnis automatisch auf und alle Mitglieder werden bündnislos. Koordiniert eure Ziele, um die Spannung niedrig zu halten.</target>
+</trans-unit>
+<trans-unit id="s2167ba78c14612c3">
+  <source>Shared Intelligence</source>
+<target>Geteilte Aufklärung</target>
+</trans-unit>
+<trans-unit id="s8e17ea57e4630d0f">
+  <source>Alliance members automatically share battle log intelligence. You can see operations involving your allies — marked with an [ALLIED INTEL] badge — giving you broader awareness of the battlefield.</source>
+<target>Bündnismitglieder teilen automatisch Aufklärungsdaten im Kampfprotokoll. Operationen, an denen Verbündete beteiligt sind, werden mit einem [VERBÜNDETE AUFKLÄRUNG]-Abzeichen markiert und geben dir einen breiteren Überblick über das Schlachtfeld.</target>
+</trans-unit>
+<trans-unit id="s9e069376b856e87a">
+  <source>Your request was rejected.</source>
+<target>Dein Antrag wurde abgelehnt.</target></trans-unit>
+<trans-unit id="scfdf55c287274b0c">
+  <source>Your request has expired.</source>
+<target>Dein Antrag ist abgelaufen.</target></trans-unit>
+<trans-unit id="s060ed9d265f34eee">
+  <source>Expires in <x id="0" equiv-text="${expiresInCycles}"/> cycle</source>
+<target>Läuft in <x id="0" equiv-text="${expiresInCycles}"/> Zyklus ab</target></trans-unit>
+<trans-unit id="s60cd834582ba1572">
+  <source>Intelligence shared through your alliance</source>
+<target>Über Ihre Allianz geteilte Aufklärung</target></trans-unit>
+<trans-unit id="s03c44f5a1b0581d4">
+  <source>selected</source>
+<target>ausgewählt</target></trans-unit>
+<trans-unit id="s57a9fe983a719d41">
+  <source>Permanently delete <x id="0" equiv-text="${purgeCount} ${meta.label.toLowerCase()}"/>? This cannot be undone.</source>
+<target><x id="0" equiv-text="${purgeCount} ${meta.label.toLowerCase()}"/> unwiderruflich löschen? Dies kann nicht rückgängig gemacht werden.</target></trans-unit>
 
 </body>
 </file>

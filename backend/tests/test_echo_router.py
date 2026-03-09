@@ -163,7 +163,8 @@ class TestListEventEchoes:
 class TestTriggerEcho:
     @patch("backend.routers.echoes.AuditService.log_action", new_callable=AsyncMock)
     @patch("backend.routers.echoes.EchoService.create_echo", new_callable=AsyncMock)
-    def test_triggers_echo_successfully(self, mock_create, mock_audit, client):
+    @patch("backend.routers.echoes.EchoService.compute_strength_for_manual_trigger", new_callable=AsyncMock, return_value=0.75)
+    def test_triggers_echo_successfully(self, mock_strength, mock_create, mock_audit, client):
         # Override supabase to return role + event data
         mock_supabase = MagicMock()
         call_count = [0]
@@ -179,7 +180,7 @@ class TestTriggerEcho:
             call_count[0] += 1
             if table_name == "simulation_members":
                 r.data = [{"member_role": "admin"}]
-            elif table_name == "events":
+            elif table_name in ("events", "active_events"):
                 r.data = {
                     "id": str(EVENT_ID),
                     "title": "Big Event",

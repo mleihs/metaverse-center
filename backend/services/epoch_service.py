@@ -142,6 +142,7 @@ class EpochService:
 # These imports happen after EpochService is fully defined, breaking
 # the circular import chain (sub-services import EpochService.get() etc.)
 
+from backend.services.alliance_service import AllianceService  # noqa: E402
 from backend.services.cycle_resolution_service import CycleResolutionService  # noqa: E402
 from backend.services.epoch_lifecycle_service import EpochLifecycleService  # noqa: E402
 from backend.services.epoch_participation_service import EpochParticipationService  # noqa: E402
@@ -163,6 +164,12 @@ EpochService.join_team = EpochParticipationService.join_team  # type: ignore[att
 EpochService.leave_team = EpochParticipationService.leave_team  # type: ignore[attr-defined]
 EpochService.add_bot = EpochParticipationService.add_bot  # type: ignore[attr-defined]
 EpochService.remove_bot = EpochParticipationService.remove_bot  # type: ignore[attr-defined]
+
+# Cycle resolution
+# Alliance proposals
+EpochService.create_proposal = AllianceService.create_proposal  # type: ignore[attr-defined]
+EpochService.vote_on_proposal = AllianceService.vote_on_proposal  # type: ignore[attr-defined]
+EpochService.list_proposals = AllianceService.list_proposals  # type: ignore[attr-defined]
 
 # Cycle resolution
 EpochService.resolve_cycle_full = CycleResolutionService.resolve_cycle_full  # type: ignore[attr-defined]

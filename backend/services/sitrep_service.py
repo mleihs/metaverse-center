@@ -31,7 +31,7 @@ class SitrepService:
         *,
         simulation_id: str | None = None,
     ) -> dict:
-        """Get aggregated battle stats for a cycle from Postgres function."""
+        """Get aggregated battle stats for a cycle via Postgres ``get_cycle_battle_summary`` (migration 065b)."""
         params: dict = {
             "p_epoch_id": epoch_id,
             "p_cycle_number": cycle_number,

@@ -88,6 +88,10 @@ class BotGameState:
     resonance_aligned_types: list[str] = field(default_factory=list)
     resonance_opposed_types: list[str] = field(default_factory=list)
 
+    # Alliance awareness
+    pending_proposals: list[dict] = field(default_factory=list)
+    own_team_tension: int = 0
+
     # Derived
     own_team_id: str | None = None
     allies: list[str] = field(default_factory=list)
@@ -119,12 +123,14 @@ class BotGameState:
             own_team_id=participant.get("team_id"),
         )
 
-        # Parallel-safe sequential queries (supabase-py is sync under the hood)
+        # Load public + alliance data first so we know who our allies are
         await state._load_own_data(supabase, epoch_id, sim_id)
-        await state._load_detected_intel(supabase, epoch_id, sim_id)
         await state._load_public_data(supabase, epoch_id)
-        await state._load_world_state(supabase, sim_id)
+        await state._load_alliance_data(supabase, epoch_id)
         state._derive_allies()
+        # Intel loading uses allies list to include shared intelligence
+        await state._load_detected_intel(supabase, epoch_id, sim_id)
+        await state._load_world_state(supabase, sim_id)
 
         return state
 
@@ -196,7 +202,11 @@ class BotGameState:
         self.own_embassies = embassies_resp.data or []
 
     async def _load_detected_intel(self, supabase: Client, epoch_id: str, sim_id: str) -> None:
-        """Load intel from detection mechanics (detected inbound ops + spy reports)."""
+        """Load intel from detection mechanics (detected inbound ops + spy reports).
+
+        Includes allied spy reports (shared intelligence) — allies are derived
+        before this method is called.
+        """
         # Detected enemy operations targeting us
         detected_resp = (
             supabase.table("operative_missions")
@@ -208,18 +218,28 @@ class BotGameState:
         )
         self.detected_enemy_ops = detected_resp.data or []
 
-        # Spy intel from our successful spy missions (stored in battle_log)
+        # Spy intel: own + allied reports (alliance = shared fog-of-war)
+        intel_sources = [sim_id] + self.allies
         intel_resp = (
             supabase.table("battle_log")
             .select("*")
             .eq("epoch_id", epoch_id)
-            .eq("source_simulation_id", sim_id)
+            .in_("source_simulation_id", intel_sources)
             .eq("event_type", "intel_report")
             .order("created_at", desc=True)
-            .limit(10)
+            .limit(20)
             .execute()
         )
-        self.spy_intel_reports = intel_resp.data or []
+        # Deduplicate by target: keep most recent report per target
+        # (own intel naturally ranks first since it's interleaved by created_at)
+        seen_targets: set[str] = set()
+        reports: list[dict] = []
+        for report in (intel_resp.data or []):
+            target = report.get("target_simulation_id")
+            if target not in seen_targets:
+                reports.append(report)
+                seen_targets.add(target)
+        self.spy_intel_reports = reports
 
     async def _load_public_data(self, supabase: Client, epoch_id: str) -> None:
         """Load publicly visible data (all players see this)."""
@@ -264,6 +284,34 @@ class BotGameState:
         )
         self.participants = parts_resp.data or []
 
+    async def _load_alliance_data(self, supabase: Client, epoch_id: str) -> None:
+        """Load pending alliance proposals and own team tension."""
+        try:
+            proposals_resp = (
+                supabase.table("epoch_alliance_proposals")
+                .select("id, team_id, proposer_simulation_id, expires_at_cycle")
+                .eq("epoch_id", epoch_id)
+                .eq("status", "pending")
+                .execute()
+            )
+            self.pending_proposals = proposals_resp.data or []
+        except Exception:
+            logger.debug("Alliance proposals load failed", exc_info=True)
+
+        if self.own_team_id:
+            try:
+                tension_resp = (
+                    supabase.table("epoch_teams")
+                    .select("tension")
+                    .eq("id", self.own_team_id)
+                    .maybe_single()
+                    .execute()
+                )
+                if tension_resp.data:
+                    self.own_team_tension = tension_resp.data.get("tension", 0)
+            except Exception:
+                logger.debug("Team tension load failed", exc_info=True)
+
     def _derive_allies(self) -> None:
         """Compute allied simulation IDs from team membership."""
         if not self.own_team_id:
@@ -276,8 +324,11 @@ class BotGameState:
         ]
 
     async def _load_world_state(self, supabase: Client, sim_id: str) -> None:
-        """Load zone stability and active resonances (publicly visible data)."""
-        # Zone stability for own simulation
+        """Load zone stability and active resonances (publicly visible data).
+
+        Uses ``mv_zone_stability`` (migration 031) and ``active_resonances`` view (migration 011).
+        """
+        # Zone stability for own simulation (mv_zone_stability, migration 031)
         try:
             stability_resp = (
                 supabase.table("mv_zone_stability")
@@ -293,7 +344,7 @@ class BotGameState:
         except Exception:
             logger.debug("Zone stability load failed", exc_info=True)
 
-        # Active resonances (public — all players can see these)
+        # Active resonances view (migration 011) — public, all players can see
         try:
             resonance_resp = (
                 supabase.table("active_resonances")
@@ -344,9 +395,10 @@ class BotGameState:
         return len(self.participants)
 
     def get_leader_sim_id(self) -> str | None:
-        """Get simulation_id of the current score leader (not self)."""
+        """Get simulation_id of the current score leader (excluding self and allies)."""
+        opponents = set(self.get_opponent_sim_ids())
         for s in self.scores:
-            if s.get("simulation_id") != self.simulation_id:
+            if s.get("simulation_id") in opponents:
                 return s["simulation_id"]
         return None
 

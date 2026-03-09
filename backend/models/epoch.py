@@ -6,6 +6,12 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, model_validator
 
+# ── Scoring Dimensions (canonical list) ──────────────────────────
+
+SCORING_DIMENSIONS: list[str] = [
+    "stability", "influence", "sovereignty", "diplomatic", "military",
+]
+
 # ── Epoch Configuration ──────────────────────────────────────────
 
 
@@ -145,7 +151,54 @@ class TeamResponse(BaseModel):
     created_at: datetime
     dissolved_at: datetime | None = None
     dissolved_reason: str | None = None
+    tension: int = 0
     members: list[dict] | None = None
+
+
+# ── Alliance Proposals ───────────────────────────────────────
+
+
+class AllianceProposalCreate(BaseModel):
+    """Schema for creating an alliance join proposal."""
+
+    team_id: UUID
+
+
+class AllianceInviteCreate(BaseModel):
+    """Schema for inviting a player to your team."""
+
+    target_simulation_id: UUID
+
+
+class AllianceVoteCreate(BaseModel):
+    """Schema for voting on an alliance proposal."""
+
+    vote: Literal["accept", "reject"]
+
+
+class AllianceProposalResponse(BaseModel):
+    """Alliance proposal response."""
+
+    id: UUID
+    epoch_id: UUID
+    team_id: UUID
+    proposer_simulation_id: UUID
+    proposed_at: datetime
+    expires_at_cycle: int
+    status: str
+    resolved_at: datetime | None = None
+    votes: list[dict] | None = None
+    proposer_name: str | None = None
+
+
+class AllianceVoteResponse(BaseModel):
+    """Alliance vote response."""
+
+    id: UUID
+    proposal_id: UUID
+    voter_simulation_id: UUID
+    vote: str
+    voted_at: datetime
 
 
 # ── Operative Missions ───────────────────────────────────────────
@@ -237,6 +290,9 @@ BattleLogEventType = Literal[
     "infiltration", "alliance_formed", "alliance_dissolved", "betrayal",
     "phase_change", "epoch_start", "epoch_end", "rp_allocated",
     "building_damaged", "agent_wounded", "counter_intel", "zone_fortified",
+    "alliance_proposal", "alliance_proposal_accepted",
+    "alliance_proposal_rejected", "alliance_tension_increase",
+    "alliance_dissolved_tension", "alliance_upkeep",
 ]
 
 

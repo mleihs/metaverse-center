@@ -30,7 +30,7 @@ class AdminUserService:
         page: int = 1,
         per_page: int = 50,
     ) -> dict:
-        """List all auth users with pagination via RPC."""
+        """List all auth users with pagination via Postgres ``admin_list_users`` (migration 040, updated 057)."""
         response = admin_supabase.rpc(
             "admin_list_users",
             {"p_page": page, "p_per_page": per_page},
@@ -44,7 +44,7 @@ class AdminUserService:
         user_id: UUID,
     ) -> dict:
         """Get a single user with all their simulation memberships."""
-        # Fetch user via RPC
+        # Fetch user via Postgres admin_get_user (migration 040, updated 057)
         user_resp = admin_supabase.rpc(
             "admin_get_user",
             {"p_user_id": str(user_id)},
@@ -113,7 +113,7 @@ class AdminUserService:
 
     @classmethod
     async def delete_user(cls, admin_supabase: Client, user_id: UUID) -> None:
-        """Delete a user via RPC (cascades membership via FK)."""
+        """Delete a user via Postgres ``admin_delete_user`` (migration 040, updated 057). Cascades membership via FK."""
         try:
             admin_supabase.rpc(
                 "admin_delete_user",

@@ -26,7 +26,7 @@ class BleedGazetteService:
         *,
         limit: int = 20,
     ) -> list[dict]:
-        """Get Bleed Gazette entries from Postgres aggregation function.
+        """Get Bleed Gazette entries via Postgres ``get_bleed_gazette_feed`` (migration 065c).
 
         Uses a 60s in-process cache since multiverse updates are not realtime.
         """

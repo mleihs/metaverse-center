@@ -750,6 +750,34 @@ export class VelgHowToPlay extends LitElement {
           </div>
         </div>
 
+        <div class="callout callout--info">
+          <div class="callout__label">${msg('Alliance Proposals')}</div>
+          <div class="callout__text">
+            ${msg('During lobby and foundation phases, players can join alliances instantly. During competition and reckoning, joining requires a proposal that all existing members must unanimously accept. A single rejection immediately declines the proposal. Proposals expire after 2 cycles.')}
+          </div>
+        </div>
+
+        <div class="callout callout--warning">
+          <div class="callout__label">${msg('Upkeep')}</div>
+          <div class="callout__text">
+            ${msg('Alliances cost RP to maintain. Each member pays 1 RP per member per cycle. A 2-member alliance costs 2 RP/cycle each; a 3-member alliance costs 3 RP/cycle each. If your RP reaches 0, upkeep is waived — you will not go into debt, but you cannot deploy operatives until you earn more RP.')}
+          </div>
+        </div>
+
+        <div class="callout callout--warning">
+          <div class="callout__label">${msg('Tension')}</div>
+          <div class="callout__text">
+            ${msg('Alliance tension rises when allies attack the same target (+10 per overlap). It decays naturally each cycle (-5). If tension reaches 80, the alliance automatically dissolves and all members become unaligned. Coordinate your targets to keep tension low.')}
+          </div>
+        </div>
+
+        <div class="callout callout--tip">
+          <div class="callout__label">${msg('Shared Intelligence')}</div>
+          <div class="callout__text">
+            ${msg('Alliance members automatically share battle log intelligence. You can see operations involving your allies — marked with an [ALLIED INTEL] badge — giving you broader awareness of the battlefield.')}
+          </div>
+        </div>
+
         <div class="callout callout--danger">
           <div class="callout__label">${msg('Betrayal')}</div>
           <div class="callout__text">

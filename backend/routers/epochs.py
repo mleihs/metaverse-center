@@ -16,6 +16,11 @@ from backend.models.aptitude import DraftRequest
 from backend.models.bot import AddBotToEpoch
 from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.models.epoch import (
+    AllianceInviteCreate,
+    AllianceProposalCreate,
+    AllianceProposalResponse,
+    AllianceVoteCreate,
+    AllianceVoteResponse,
     BattleLogEntry,
     BattleSummaryResponse,
     EpochCreate,
@@ -29,6 +34,7 @@ from backend.models.epoch import (
 )
 from backend.models.epoch_chat import ReadySignal
 from backend.services.academy_service import AcademyService
+from backend.services.alliance_service import AllianceService
 from backend.services.audit_service import AuditService
 from backend.services.battle_log_service import BattleLogService
 from backend.services.epoch_chat_service import EpochChatService
@@ -266,15 +272,33 @@ async def get_battle_log(
     user: CurrentUser = Depends(get_current_user),
     supabase: Client = Depends(get_supabase),
     event_type: str | None = Query(default=None),
+    simulation_id: UUID | None = Query(default=None, description="Your simulation ID for allied intel tagging"),
     limit: int = Query(default=50, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
 ) -> dict:
-    """Get battle log entries (authenticated — includes private entries)."""
+    """Get battle log entries (authenticated — includes private entries).
+
+    Pass simulation_id to tag entries visible only via alliance as allied_intel.
+    """
     data, total = await BattleLogService.list_entries(
         supabase, epoch_id,
         event_type=event_type,
         limit=limit, offset=offset,
     )
+
+    # Tag allied intel entries (computed at read time, not stored)
+    if simulation_id:
+        sim_str = str(simulation_id)
+        for entry in data:
+            is_own_source = entry.get("source_simulation_id") == sim_str
+            is_own_target = entry.get("target_simulation_id") == sim_str
+            is_public = entry.get("is_public", False)
+            if not is_own_source and not is_own_target and not is_public:
+                entry["metadata"] = {
+                    **(entry.get("metadata") or {}),
+                    "allied_intel": True,
+                }
+
     return {
         "success": True,
         "data": data,
@@ -510,6 +534,108 @@ async def leave_team(
     await AuditService.safe_log(
         supabase, simulation_id, user.id, "epoch_teams", None, "update",
         details={"action": "leave", "epoch_id": str(epoch_id)},
+    )
+    return {"success": True, "data": data}
+
+
+# ── Alliance Proposals ─────────────────────────────────
+
+
+@router.get(
+    "/{epoch_id}/proposals",
+    response_model=SuccessResponse[list[AllianceProposalResponse]],
+)
+async def list_proposals(
+    epoch_id: UUID,
+    user: CurrentUser = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase),
+    team_id: UUID | None = Query(default=None),
+    status: str | None = Query(default=None, alias="proposal_status"),
+) -> dict:
+    """List alliance proposals for an epoch."""
+    data = await AllianceService.list_proposals(
+        supabase, epoch_id, team_id=team_id, status_filter=status,
+    )
+    return {"success": True, "data": data}
+
+
+@router.post(
+    "/{epoch_id}/proposals",
+    response_model=SuccessResponse[AllianceProposalResponse],
+    status_code=201,
+)
+async def create_proposal(
+    epoch_id: UUID,
+    body: AllianceProposalCreate,
+    simulation_id: UUID = Query(..., description="Your simulation ID"),
+    user: CurrentUser = Depends(get_current_user),
+    _participant: dict = Depends(require_epoch_participant()),
+    supabase: Client = Depends(get_supabase),
+) -> dict:
+    """Request to join a team. Requires unanimous member approval."""
+    data = await AllianceService.create_proposal(
+        supabase, epoch_id, body.team_id, simulation_id,
+    )
+    await AuditService.safe_log(
+        supabase, simulation_id, user.id, "epoch_alliance_proposals",
+        data.get("id"), "create",
+        details={"epoch_id": str(epoch_id), "team_id": str(body.team_id)},
+    )
+    return {"success": True, "data": data}
+
+
+@router.post(
+    "/{epoch_id}/teams/{team_id}/invite",
+    response_model=SuccessResponse[AllianceProposalResponse],
+    status_code=201,
+)
+async def invite_to_team(
+    epoch_id: UUID,
+    team_id: UUID,
+    body: AllianceInviteCreate,
+    simulation_id: UUID = Query(..., description="Your simulation ID"),
+    user: CurrentUser = Depends(get_current_user),
+    _participant: dict = Depends(require_epoch_participant()),
+    supabase: Client = Depends(get_supabase),
+) -> dict:
+    """Invite a player to your team. Caller must be a team member."""
+    data = await AllianceService.invite_to_team(
+        supabase, epoch_id, team_id, simulation_id, body.target_simulation_id,
+    )
+    await AuditService.safe_log(
+        supabase, simulation_id, user.id, "epoch_alliance_proposals",
+        data.get("id"), "create",
+        details={
+            "epoch_id": str(epoch_id),
+            "team_id": str(team_id),
+            "target": str(body.target_simulation_id),
+            "action": "invite",
+        },
+    )
+    return {"success": True, "data": data}
+
+
+@router.post(
+    "/{epoch_id}/proposals/{proposal_id}/vote",
+    response_model=SuccessResponse[AllianceVoteResponse],
+)
+async def vote_on_proposal(
+    epoch_id: UUID,
+    proposal_id: UUID,
+    body: AllianceVoteCreate,
+    simulation_id: UUID = Query(..., description="Your simulation ID"),
+    user: CurrentUser = Depends(get_current_user),
+    _participant: dict = Depends(require_epoch_participant()),
+    supabase: Client = Depends(get_supabase),
+) -> dict:
+    """Vote accept/reject on an alliance proposal. Team members only."""
+    data = await AllianceService.vote_on_proposal(
+        supabase, proposal_id, simulation_id, body.vote,
+    )
+    await AuditService.safe_log(
+        supabase, simulation_id, user.id, "epoch_alliance_votes",
+        data.get("id"), "create",
+        details={"proposal_id": str(proposal_id), "vote": body.vote},
     )
     return {"success": True, "data": data}
 

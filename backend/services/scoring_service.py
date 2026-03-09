@@ -5,6 +5,7 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 
+from backend.models.epoch import SCORING_DIMENSIONS
 from backend.services.constants import DETECTION_PENALTY, MISSION_SCORE_VALUES
 from backend.services.epoch_service import DEFAULT_CONFIG, EpochService
 from supabase import Client
@@ -26,7 +27,7 @@ class ScoringService:
     ) -> list[dict]:
         """Compute and store scores for all participants in the current cycle."""
         logger.info("Computing cycle scores", extra={"epoch_id": str(epoch_id), "cycle_number": cycle_number})
-        # Refresh materialized views so freshly cloned game instances have data
+        # Refresh materialized views (migration 031) so freshly cloned game instances have data
         try:
             supabase.rpc("refresh_all_game_metrics").execute()
         except Exception:
@@ -100,7 +101,7 @@ class ScoringService:
     ) -> float:
         """Stability = avg(zone_stability) × 100 - propaganda×3 - saboteur×6 - assassin×5.
 
-        Rewards keeping infrastructure healthy.
+        Uses ``mv_zone_stability`` (migration 031). Rewards keeping infrastructure healthy.
         Penalized by inbound propaganda events, sabotage, and assassinations.
         """
         resp = (
@@ -251,7 +252,7 @@ class ScoringService:
         Alliance bonus (+15% per ally) rewards cooperation; betrayal penalty (-25%) punishes treachery.
         Spy intel bonus (+1 per successful spy mission) adds diplomatic leverage.
         """
-        # Embassy effectiveness from materialized view
+        # Embassy effectiveness from mv_embassy_effectiveness (migration 031)
         # MV has simulation_a_id and simulation_b_id, not simulation_id
         resp = (
             supabase.table("mv_embassy_effectiveness")
@@ -409,7 +410,7 @@ class ScoringService:
         # Each dimension is independently scaled so that the best performer
         # scores 100 and others are proportional. A floor of 1.0 prevents
         # division by zero when all participants score 0 in a dimension.
-        dimensions = ["stability", "influence", "sovereignty", "diplomatic", "military"]
+        dimensions = SCORING_DIMENSIONS
         maxes = {}
         for dim in dimensions:
             col = f"{dim}_score"

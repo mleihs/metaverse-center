@@ -1,8 +1,8 @@
 ---
 title: "Database Schema: Neues Multi-Simulations-Schema"
 id: database-schema
-version: "3.3"
-date: 2026-03-07
+version: "3.4"
+date: 2026-03-09
 lang: de
 type: reference
 status: active
@@ -50,6 +50,8 @@ Triggers schuetzen Zustaende, die unter keinen Umstaenden verletzt werden duerfe
 - **Primaer-Profession-Exklusivitaet:** `enforce_single_primary_profession()` — Genau eine `is_primary=true` pro Agent
 - **Reaction-Modifier:** `recompute_reaction_modifier()` — Automatische Neuberechnung bei Event-Reactions-Aenderungen
 - **Resonanz-Ableitung:** `fn_derive_resonance_fields()` — Signature/Archetype automatisch aus source_category abgeleitet
+- **Allianz-Abstimmung:** `fn_resolve_alliance_proposal()` — Automatische Antragsentscheidung bei Vote-Eingang (Reject → sofort, Unanimity → Beitritt)
+- **Allianz-Tension:** `fn_check_alliance_tension()` — Automatische Team-Aufloesung bei Tension >= 80
 
 **2. Abgeleitete Daten (Materialized Views, Trigger-berechnete Felder)**
 
@@ -1052,6 +1054,38 @@ CREATE OR REPLACE FUNCTION delete_epoch_instances(p_epoch_id UUID)
 RETURNS void LANGUAGE plpgsql SECURITY DEFINER;
 ```
 
+### Alliance Functions (Migration 081)
+
+```sql
+-- Trigger Function: Automatische Antragsentscheidung bei Vote-Eingang
+-- Ablehnung (reject) → sofortige Zurueckweisung (status='rejected')
+-- Einstimmige Annahme (alle Team-Mitglieder accept) → Antragsteller tritt Team bei
+CREATE OR REPLACE FUNCTION fn_resolve_alliance_proposal()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger Function: Automatische Team-Aufloesung bei Tension >= 80
+-- Setzt dissolved_at + dissolved_reason, entfernt team_id von allen Mitgliedern
+CREATE OR REPLACE FUNCTION fn_check_alliance_tension()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Laesst abgelaufene Allianz-Antraege verfallen (status → 'expired')
+-- Aufgerufen waehrend Zyklusaufloesung
+CREATE OR REPLACE FUNCTION fn_expire_alliance_proposals(
+    p_epoch_id UUID, p_current_cycle INTEGER
+) RETURNS void LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Zieht Allianz-Unterhaltskosten ab: 1 RP pro Mitglied von jedem Allianz-Mitglied
+-- Aufgerufen waehrend Zyklusaufloesung
+CREATE OR REPLACE FUNCTION fn_deduct_alliance_upkeep(p_epoch_id UUID)
+RETURNS void LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Berechnet Allianz-Tension aus ueberlappenden Angriffen
+-- Wenn Team-Mitglieder dieselben Ziele angreifen oder sich gegenseitig angreifen → Tension steigt
+CREATE OR REPLACE FUNCTION fn_compute_alliance_tension(
+    p_epoch_id UUID, p_cycle_number INTEGER
+) RETURNS void LANGUAGE plpgsql SECURITY DEFINER;
+```
+
 ### Forge-Materialisierung (Migrationen 055/056/058)
 
 ```sql
@@ -1376,6 +1410,14 @@ CREATE TRIGGER trg_check_resonance_completion BEFORE UPDATE ON substrate_resonan
 CREATE TRIGGER trg_compute_effective_magnitude BEFORE INSERT OR UPDATE ON substrate_resonances
     FOR EACH ROW EXECUTE FUNCTION compute_effective_magnitude();
 
+-- Alliance proposal resolution (Migration 081)
+CREATE TRIGGER trg_resolve_alliance_proposal AFTER INSERT ON epoch_alliance_votes
+    FOR EACH ROW EXECUTE FUNCTION fn_resolve_alliance_proposal();
+
+-- Alliance tension dissolution check (Migration 081)
+CREATE TRIGGER trg_alliance_tension_check AFTER UPDATE OF tension ON epoch_teams
+    FOR EACH ROW EXECUTE FUNCTION fn_check_alliance_tension();
+
 -- updated_at Triggers fuer neuere Tabellen (Migrationen 055, 074)
 CREATE TRIGGER trg_user_wallets_updated_at BEFORE UPDATE ON user_wallets
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
@@ -1658,6 +1700,8 @@ CREATE POLICY agents_delete ON agents FOR DELETE
 | `game_epochs` | Anon/Member | Auth | Auth | - |
 | `epoch_teams` | Anon/Member | Auth | Auth | - |
 | `epoch_participants` | Anon/Member | Auth (user_id=uid) | Auth | Own (user_id=uid) |
+| `epoch_alliance_proposals` | Anon/Member | Participant | - | - |
+| `epoch_alliance_votes` | Team+Proposer | Team Member | - | - |
 | `operative_missions` | Source/Target Member | Source Member | Source Owner | - |
 | `epoch_scores` | Anon/Member | Auth | - | - |
 | `battle_log` | Public/Member | Auth | - | - |
@@ -1735,20 +1779,20 @@ CREATE POLICY simulation_assets_insert ON storage.objects FOR INSERT
 
 | Metrik | Wert |
 |--------|------|
-| Tabellen | 52 (inkl. Forge, Chronicle, Agent Memory, Substrate Resonance) |
-| Trigger Functions | 17 (set_updated_at, update_conversation_stats, enforce_single_primary_profession, validate_simulation_status_transition, immutable_slug, prevent_last_owner_removal, notify_game_metrics_stale, validate_epoch_status_transition, broadcast_epoch_chat, broadcast_ready_signal, fn_enforce_forge_quota, recompute_reaction_modifier, assign_event_zones, fn_derive_resonance_fields, update_resonance_updated_at, check_resonance_impact_time, compute_effective_magnitude) |
+| Tabellen | 54 (inkl. Forge, Chronicle, Agent Memory, Substrate Resonance, Alliance) |
+| Trigger Functions | 19 (set_updated_at, update_conversation_stats, enforce_single_primary_profession, validate_simulation_status_transition, immutable_slug, prevent_last_owner_removal, notify_game_metrics_stale, validate_epoch_status_transition, broadcast_epoch_chat, broadcast_ready_signal, fn_enforce_forge_quota, recompute_reaction_modifier, assign_event_zones, fn_derive_resonance_fields, update_resonance_updated_at, check_resonance_impact_time, compute_effective_magnitude, fn_resolve_alliance_proposal, fn_check_alliance_tension) |
 | Utility Functions | 12 (role_meets_minimum, generate_slug, validate_taxonomy_value, game_weight_fallback, refresh_all_game_metrics, refresh_building_readiness, refresh_embassy_effectiveness, refresh_zone_stability, resolve_template_id, is_platform_admin, get_user_emails_batch, get_bleed_gazette_feed) |
-| Epoch/Forge/Chronicle Functions | 12 (clone_simulations_for_epoch, archive_epoch_instances, delete_epoch_instances, fn_materialize_shard, get_chronicle_source_data, retrieve_agent_memories, get_campaign_analytics, get_cycle_battle_summary, process_cascade_events, fn_get_resonance_susceptibility, fn_get_resonance_event_types, assign_event_zones) |
+| Epoch/Forge/Chronicle Functions | 15 (clone_simulations_for_epoch, archive_epoch_instances, delete_epoch_instances, fn_materialize_shard, get_chronicle_source_data, retrieve_agent_memories, get_campaign_analytics, get_cycle_battle_summary, process_cascade_events, fn_get_resonance_susceptibility, fn_get_resonance_event_types, assign_event_zones, fn_expire_alliance_proposals, fn_deduct_alliance_upkeep, fn_compute_alliance_tension) |
 | Admin RPC Functions | 3 (admin_list_users, admin_get_user, admin_delete_user) |
 | RLS Functions | 4 (user_has_simulation_access, user_has_simulation_role, user_simulation_role, role_meets_minimum) |
-| Functions gesamt | ~48 (ohne unaccent-Varianten und interne Helfer) |
-| Triggers | 53 Eintraege (16 unique Trigger-Functions auf 53 Tabellen/Spalten-Kombinationen) |
+| Functions gesamt | ~53 (ohne unaccent-Varianten und interne Helfer) |
+| Triggers | 55 Eintraege (18 unique Trigger-Functions auf 55 Tabellen/Spalten-Kombinationen) |
 | Regular Views | 8 (4x active_* + simulation_dashboard + conversation_summaries + agent_statistics + campaign_performance) |
 | Materialized Views | 4 (mv_building_readiness + mv_zone_stability + mv_embassy_effectiveness + mv_simulation_health) |
-| RLS-Policies | 230+ (inkl. anon SELECT + Forge + Chronicle + Resonance + alle frueheren Policies) |
+| RLS-Policies | 234+ (inkl. anon SELECT + Forge + Chronicle + Resonance + Alliance + alle frueheren Policies) |
 | Indexes | ~90 (inkl. partial, GIN, pgvector IVFFlat, unique) |
 | Storage Buckets | 4 |
-| SQL Migrationen | 77 |
+| SQL Migrationen | 81 |
 
 ---
 
@@ -1926,6 +1970,8 @@ process_cascade_events() kann neue Events spawnen (wenn pressure > threshold)
 | `epoch_chat_messages` | In-Game Chat (epoch-weit + team-only) mit Realtime-Broadcast (Migration 037) |
 | `bot_players` | Wiederverwendbare Bot-Presets mit Persoenlichkeits-Archetypen (Migration 041) |
 | `bot_decision_log` | Audit-Trail aller Bot-Entscheidungen pro Zyklus (Migration 041) |
+| `epoch_alliance_proposals` | Allianz-Beitrittsantraege mit Abstimmungsmechanik (Migration 081) |
+| `epoch_alliance_votes` | Abstimmungen ueber Allianz-Antraege (Migration 081) |
 
 ### Typ-Korrekturen
 
@@ -2237,12 +2283,18 @@ Allianzen innerhalb einer Epoche. Simulationen koennen Teams bilden.
 | `name` | text | NO | |
 | `created_by_simulation_id` | uuid | NO | |
 | `created_at` | timestamptz | NO | `now()` |
+| `tension` | integer | NO | `0` |
 | `dissolved_at` | timestamptz | YES | |
 | `dissolved_reason` | text | YES | |
 
 **Foreign Keys:**
 - `epoch_id` → `game_epochs(id) ON DELETE CASCADE`
 - `created_by_simulation_id` → `simulations(id)`
+
+**CHECK Constraints:**
+- `tension BETWEEN 0 AND 100`
+
+**Trigger:** `trg_alliance_tension_check` — AFTER UPDATE OF tension: Loest automatische Team-Aufloesung aus wenn Tension >= 80 (`fn_check_alliance_tension()`).
 
 **RLS:** 4 Policies (anon_select, select, insert, update).
 
@@ -2291,6 +2343,64 @@ Simulationen, die an einer Epoche teilnehmen. Trackt Resource Points (RP) und op
 
 **RLS:** 5 Policies (anon_select, select, insert mit `user_id = auth.uid()`, update, delete mit `user_id = auth.uid()`).
 
+### `epoch_alliance_proposals`
+
+Vorschlaege zum Beitritt in ein bestehendes Allianz-Team. Ein Teilnehmer kann einen Antrag stellen, einem Team beizutreten. Bestehende Team-Mitglieder stimmen ab.
+
+| Spalte | Typ | Nullable | Default |
+|--------|-----|----------|---------|
+| `id` | uuid | NO | `gen_random_uuid()` |
+| `epoch_id` | uuid | NO | |
+| `team_id` | uuid | NO | |
+| `proposer_simulation_id` | uuid | NO | |
+| `proposed_at` | timestamptz | NO | `now()` |
+| `expires_at_cycle` | integer | NO | |
+| `status` | text | NO | `'pending'` |
+| `resolved_at` | timestamptz | YES | |
+
+**Foreign Keys:**
+- `epoch_id` → `game_epochs(id) ON DELETE CASCADE`
+- `team_id` → `epoch_teams(id) ON DELETE CASCADE`
+- `proposer_simulation_id` → `simulations(id)`
+
+**Indexes:**
+- `idx_alliance_proposals_unique_pending` — `UNIQUE(team_id, proposer_simulation_id) WHERE status = 'pending'` — Maximal ein aktiver Antrag pro Simulation pro Team (Partial Unique Index)
+
+**CHECK Constraints:**
+- `status IN ('pending', 'accepted', 'rejected', 'expired')`
+
+**Trigger:** `trg_resolve_alliance_proposal` — AFTER INSERT auf `epoch_alliance_votes`: Automatische Antragsentscheidung bei Abstimmung. Ablehnung → sofortige Zurueckweisung. Einstimmige Annahme → Beitritt (`fn_resolve_alliance_proposal()`).
+
+**RLS:** 2 Policies:
+- `epoch_alliance_proposals_select` — SELECT fuer alle (oeffentlich lesbar, wie andere Epoch-Daten)
+- `epoch_alliance_proposals_insert` — INSERT fuer Epoch-Teilnehmer (`auth.uid()` via `epoch_participants`)
+
+### `epoch_alliance_votes`
+
+Abstimmungen ueber Allianz-Antraege. Jedes bestehende Team-Mitglied kann pro Antrag genau einmal abstimmen.
+
+| Spalte | Typ | Nullable | Default |
+|--------|-----|----------|---------|
+| `id` | uuid | NO | `gen_random_uuid()` |
+| `proposal_id` | uuid | NO | |
+| `voter_simulation_id` | uuid | NO | |
+| `vote` | text | NO | |
+| `voted_at` | timestamptz | NO | `now()` |
+
+**Foreign Keys:**
+- `proposal_id` → `epoch_alliance_proposals(id) ON DELETE CASCADE`
+- `voter_simulation_id` → `simulations(id)`
+
+**UNIQUE Constraint:**
+- `(proposal_id, voter_simulation_id)` — Ein Vote pro Simulation pro Antrag
+
+**CHECK Constraints:**
+- `vote IN ('accept', 'reject')`
+
+**RLS:** 2 Policies:
+- `epoch_alliance_votes_select` — SELECT fuer Team-Mitglieder und den Antragsteller (via `epoch_participants.team_id` + `epoch_alliance_proposals.proposer_simulation_id`)
+- `epoch_alliance_votes_insert` — INSERT fuer Team-Mitglieder des betroffenen Teams (via `epoch_participants.team_id`)
+
 ### `operative_missions`
 
 Agenten-basierte Missionen: Spionage, Diplomatie, Sabotage. Jede Mission hat Kosten (RP), Erfolgswahrscheinlichkeit und Aufloesung.
@@ -2311,6 +2421,7 @@ Agenten-basierte Missionen: Spionage, Diplomatie, Sabotage. Jede Mission hat Kos
 | `cost_rp` | integer | NO | |
 | `success_probability` | numeric | YES | |
 | `deployed_at` | timestamptz | NO | `now()` |
+| `deployed_cycle` | integer | YES | | Zyklus der Entsendung — fuer Tension-Berechnung (Migration 090) |
 | `resolves_at` | timestamptz | NO | |
 | `resolved_at` | timestamptz | YES | |
 | `mission_result` | jsonb | YES | |
@@ -2998,3 +3109,42 @@ Platform-Level Phaenomene die ueber alle Simulationen propagieren. Vollstaendige
 - **epoch_chat_messages:** 3 Policies umgeschrieben (epoch SELECT, team SELECT, INSERT) — alle via `epoch_participants.user_id` statt `simulation_members` JOIN + `resolve_template_id()`.
 - **operative_missions:** 3 Policies umgeschrieben (SELECT, INSERT, UPDATE) — alle via `epoch_participants.user_id`.
 - **battle_log:** SELECT umgeschrieben — via `epoch_participants.user_id` + `epoch_participants.simulation_id`.
+
+---
+
+## Alliance-System (Migration 081)
+
+Migration 081 fuehrt das Allianz-Antragssystem ein: formalisierte Beitrittsantraege mit Abstimmungsmechanik, Tension-Tracking und automatische Aufloesung bei Konflikten. Ergaenzt das bestehende Team-System (Migration 032) um demokratische Beitrittskontrolle und dynamische Allianz-Stabilitaet.
+
+### Neue Tabellen
+
+- **`epoch_alliance_proposals`** — Antraege zum Beitritt in ein bestehendes Allianz-Team. Partial Unique Index verhindert doppelte aktive Antraege. Status-Lifecycle: `pending` → `accepted`/`rejected`/`expired`.
+- **`epoch_alliance_votes`** — Abstimmungen der Team-Mitglieder ueber Beitrittsantraege. Ein Vote pro Simulation pro Antrag.
+
+Vollstaendige Spaltendefinitionen: siehe [epoch_alliance_proposals](#epoch_alliance_proposals) und [epoch_alliance_votes](#epoch_alliance_votes).
+
+### Neue Spalte
+
+- **`epoch_teams.tension`** — `INTEGER NOT NULL DEFAULT 0 CHECK (tension BETWEEN 0 AND 100)`. Misst die interne Spannung eines Teams. Steigt durch ueberlappende Angriffe auf gleiche Ziele oder gegenseitige Angriffe zwischen Team-Mitgliedern.
+
+### Neue Triggers
+
+| Trigger | Tabelle | Event | Funktion | Beschreibung |
+|---------|---------|-------|----------|-------------|
+| `trg_resolve_alliance_proposal` | `epoch_alliance_votes` | AFTER INSERT | `fn_resolve_alliance_proposal()` | Automatische Antragsentscheidung: Ablehnung → sofortige Zurueckweisung, einstimmige Annahme → Beitritt |
+| `trg_alliance_tension_check` | `epoch_teams` | AFTER UPDATE OF tension | `fn_check_alliance_tension()` | Automatische Team-Aufloesung wenn Tension >= 80 |
+
+### Neue Functions
+
+| Funktion | Parameter | Returns | Beschreibung |
+|----------|-----------|---------|-------------|
+| `fn_resolve_alliance_proposal()` | trigger | trigger | Prueft alle Votes: ein Reject → `status='rejected'`. Alle Members accept → `status='accepted'`, Antragsteller erhaelt `team_id`. |
+| `fn_check_alliance_tension()` | trigger | trigger | Bei `tension >= 80`: setzt `dissolved_at`, `dissolved_reason='tension_threshold'`, entfernt `team_id` von allen Mitgliedern. |
+| `fn_expire_alliance_proposals()` | `(p_epoch_id, p_current_cycle)` | void | Setzt `status='expired'` fuer alle Antraege mit `expires_at_cycle <= p_current_cycle`. |
+| `fn_deduct_alliance_upkeep()` | `(p_epoch_id)` | void | Zieht 1 RP pro Team-Mitglied von jedem Allianz-Mitglied ab. Aufruf in `resolve_cycle()`. |
+| `fn_compute_alliance_tension()` | `(p_epoch_id, p_cycle_number)` | void | Analysiert `operative_missions` des Zyklus: ueberlappende Ziele zwischen Team-Mitgliedern erhoehen Tension, friedliche Koexistenz reduziert sie. |
+
+### RLS
+
+- **`epoch_alliance_proposals`:** Oeffentlich lesbar (wie andere Epoch-Daten). INSERT nur fuer Epoch-Teilnehmer.
+- **`epoch_alliance_votes`:** SELECT fuer Team-Mitglieder und Antragsteller. INSERT nur fuer Team-Mitglieder des betroffenen Teams.

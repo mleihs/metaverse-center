@@ -159,10 +159,22 @@ class CycleResolutionService:
         epoch_id: UUID,
         admin_supabase: Client,
     ) -> dict:
-        """Full cycle resolution pipeline: resolve -> missions -> bots -> scoring -> notifications.
+        """Full cycle resolution pipeline (migration 090 alliance steps marked ★).
 
-        Extracts the multi-step resolve pipeline so it can be called from both
-        the manual resolve endpoint and the auto-resolve trigger (all humans ready).
+        Pipeline order:
+        1. RP grant
+        2. ★ Alliance upkeep — ``fn_deduct_alliance_upkeep`` (migration 090)
+        3. ★ Expire stale proposals — ``fn_expire_alliance_proposals`` (migration 090)
+        4. Reset cycle_ready flags
+        5. Advance mission timers
+        6. Expire fortifications
+        7. Resolve missions
+        8. Bot execution (includes proposal voting)
+        9. Scoring
+        10. ★ Tension computation — ``fn_compute_alliance_tension`` (migration 090)
+        11. Notifications
+        12. ★ Clear dissolved team_ids
+
         Returns updated epoch data.
         """
         # Late imports to avoid circular dependency:
@@ -173,13 +185,32 @@ class CycleResolutionService:
         from backend.services.operative_service import OperativeService
         from backend.services.scoring_service import ScoringService
 
+        from backend.services.alliance_service import AllianceService
+
         data = await cls.resolve_cycle(supabase, epoch_id, admin_supabase=admin_supabase)
         config = data.get("config", {})
         cycle_number = data.get("current_cycle", 1)
 
+        db = admin_supabase or supabase
+
+        # Alliance upkeep deduction (after RP grant, before missions)
+        try:
+            upkeep_teams = await AllianceService.deduct_upkeep(db, epoch_id, cycle_number)
+            if upkeep_teams:
+                logger.info("Alliance upkeep step complete", extra={"epoch_id": str(epoch_id), "teams": len(upkeep_teams)})
+        except Exception:
+            logger.warning("Alliance upkeep deduction failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
+
+        # Expire stale alliance proposals
+        try:
+            expired = await AllianceService.expire_proposals(db, epoch_id, cycle_number)
+            if expired:
+                logger.info("Alliance proposals expired", extra={"epoch_id": str(epoch_id), "count": expired})
+        except Exception:
+            logger.warning("Alliance proposal expiry failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
+
         # Resolve missions that have passed their resolves_at time
         # (after timer advancement in resolve_cycle, before bots act)
-        db = admin_supabase or supabase
         try:
             resolved = await OperativeService.resolve_pending_missions(db, epoch_id)
             # Log mission results to battle log
@@ -248,6 +279,18 @@ class CycleResolutionService:
                 "Scoring failed", extra={"epoch_id": str(epoch_id), "cycle_number": cycle_number}, exc_info=True
             )
 
+        # Compute alliance tension (after missions — counts same-target attacks)
+        try:
+            tension_results = await AllianceService.compute_tension(db, epoch_id, cycle_number)
+            dissolved = [r for r in tension_results if r.get("dissolved")]
+            if dissolved:
+                logger.info("Alliance tension dissolved teams", extra={
+                    "epoch_id": str(epoch_id), "dissolved_count": len(dissolved),
+                    "teams": [r.get("team_name") for r in dissolved],
+                })
+        except Exception:
+            logger.warning("Alliance tension computation failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
+
         # Send cycle notification emails (best-effort, non-blocking)
         try:
             await CycleNotificationService.send_cycle_notifications(
@@ -257,6 +300,12 @@ class CycleResolutionService:
             )
         except Exception:
             logger.warning("Cycle notification failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
+
+        # Clear team_ids for dissolved alliances (AFTER notifications have read them)
+        try:
+            await AllianceService.clear_dissolved_team_ids(db, epoch_id)
+        except Exception:
+            logger.warning("Dissolved team cleanup failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
 
         return data
 

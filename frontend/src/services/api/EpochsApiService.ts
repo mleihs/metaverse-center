@@ -3,6 +3,8 @@
  */
 
 import type {
+  AllianceProposal,
+  AllianceVote,
   ApiResponse,
   BattleLogEntry,
   BattleSummary,
@@ -139,6 +141,46 @@ export class EpochsApiService extends BaseApiService {
 
   leaveTeam(epochId: string, simulationId: string): Promise<ApiResponse<void>> {
     return this.post(`/epochs/${epochId}/teams/leave?simulation_id=${simulationId}`);
+  }
+
+  // ── Alliance Proposals ─────────────────────────────
+
+  listProposals(epochId: string): Promise<ApiResponse<AllianceProposal[]>> {
+    return this.get(`/epochs/${epochId}/proposals`);
+  }
+
+  createProposal(
+    epochId: string,
+    simulationId: string,
+    teamId: string,
+  ): Promise<ApiResponse<AllianceProposal>> {
+    return this.post(`/epochs/${epochId}/proposals?simulation_id=${simulationId}`, {
+      team_id: teamId,
+    });
+  }
+
+  inviteToTeam(
+    epochId: string,
+    teamId: string,
+    simulationId: string,
+    targetSimulationId: string,
+  ): Promise<ApiResponse<AllianceProposal>> {
+    return this.post(
+      `/epochs/${epochId}/teams/${teamId}/invite?simulation_id=${simulationId}`,
+      { target_simulation_id: targetSimulationId },
+    );
+  }
+
+  voteOnProposal(
+    epochId: string,
+    proposalId: string,
+    simulationId: string,
+    vote: 'accept' | 'reject',
+  ): Promise<ApiResponse<AllianceVote>> {
+    return this.post(
+      `/epochs/${epochId}/proposals/${proposalId}/vote?simulation_id=${simulationId}`,
+      { vote },
+    );
   }
 
   // ── Operatives ──────────────────────────────────────

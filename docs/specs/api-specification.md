@@ -1039,7 +1039,7 @@ Alle aktiven Simulation-Connections (oeffentlich, fuer Map).
 **Response:** `SuccessResponse[list[ConnectionResponse]]`
 
 ### `GET /api/v1/public/map-data`
-Aggregierter Endpoint fuer die Cartographer's Map — liefert alle Daten fuer die Kartenansicht in einem Request.
+Aggregierter Endpoint fuer die Cartographer's Map — liefert alle Daten fuer die Kartenansicht in einem Request. Game Instances mit `epoch_status` = `completed` oder `cancelled` werden herausgefiltert — nur Templates und aktive Epoch-Instanzen erscheinen.
 
 **Response:**
 ```json
@@ -1285,6 +1285,61 @@ Team verlassen.
 **Query:** `?simulation_id=uuid`
 
 **Auth:** Epoch-Participant (via `require_epoch_participant()`)
+
+### `GET /api/v1/epochs/:epochId/proposals`
+Allianz-Beitrittsantraege auflisten.
+
+**Query:** `?team_id=uuid` (optional), `?status=pending|accepted|rejected|expired` (optional)
+
+**Auth:** Epoch-Participant (via `require_epoch_participant()`)
+
+**Response:** `SuccessResponse` mit `AllianceProposal[]` (inkl. `votes`, `proposer_name`)
+
+### `POST /api/v1/epochs/:epochId/proposals`
+Beitrittsantrag an ein bestehendes Team stellen.
+
+**Query:** `?simulation_id=uuid`
+
+**Body:**
+```json
+{
+  "team_id": "uuid"
+}
+```
+
+**Validierung:** Antragsteller muss ohne Team sein, Epoch nicht in reckoning/completed, Team aktiv und nicht voll, kein doppelter Antrag. Solo-Teams (1 Mitglied) werden automatisch akzeptiert.
+
+**Auth:** Epoch-Participant (via `require_epoch_participant()`)
+
+### `POST /api/v1/epochs/:epochId/proposals/:proposalId/vote`
+Ueber einen Beitrittsantrag abstimmen (accept/reject).
+
+**Query:** `?simulation_id=uuid`
+
+**Body:**
+```json
+{
+  "vote": "accept"
+}
+```
+
+**Validierung:** Abstimmender muss Team-Mitglied sein. Ein Reject beendet den Antrag sofort. Einstimmiges Accept fuehrt zur Aufnahme. DB-Trigger `fn_resolve_alliance_proposal` (Migration 090) loest die Abstimmung automatisch auf.
+
+**Auth:** Epoch-Participant (via `require_epoch_participant()`)
+
+### `POST /api/v1/epochs/:epochId/teams/:teamId/invite`
+Spieler ins eigene Team einladen (delegiert an Proposal-System).
+
+**Query:** `?simulation_id=uuid` (Einladender)
+
+**Body:**
+```json
+{
+  "target_simulation_id": "uuid"
+}
+```
+
+**Auth:** Epoch-Participant + muss Mitglied des Teams sein
 
 ---
 

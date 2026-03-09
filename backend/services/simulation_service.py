@@ -70,7 +70,7 @@ class SimulationService:
         total = response.count if response.count is not None else len(response.data or [])
         data = response.data or []
 
-        # Enrich with counts from the simulation_dashboard view
+        # Enrich with counts from the simulation_dashboard view (migration 011, updated 035)
         if data:
             ids = [s["id"] for s in data]
             count_response = (
@@ -159,7 +159,7 @@ class SimulationService:
         supabase: Client,
         simulation_id: UUID,
     ) -> dict:
-        """Get a single simulation from the simulation_dashboard view."""
+        """Get a single simulation from the ``simulation_dashboard`` view (migration 011, updated 035)."""
         response = (
             supabase.table("simulation_dashboard")
             .select("*")
@@ -426,7 +426,7 @@ class SimulationService:
 
     @staticmethod
     def enrich_with_counts(supabase: Client, simulations: list[dict]) -> None:
-        """Enrich simulation dicts with counts from the simulation_dashboard view."""
+        """Enrich simulation dicts with counts from the ``simulation_dashboard`` view (migration 011, updated 035)."""
         if not simulations:
             return
         ids = [s["id"] for s in simulations]

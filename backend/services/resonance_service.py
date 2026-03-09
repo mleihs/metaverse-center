@@ -293,14 +293,14 @@ class ResonanceService(BaseService):
         sim_id = simulation["id"]
         resonance_id = resonance["id"]
 
-        # Get susceptibility via Postgres function
+        # Get susceptibility via Postgres fn_get_resonance_susceptibility (migration 076)
         susc_resp = supabase.rpc(
             "fn_get_resonance_susceptibility",
             {"p_simulation_id": sim_id, "p_signature": signature},
         ).execute()
         susceptibility = float(susc_resp.data) if susc_resp.data is not None else 1.0
 
-        # Get event types via Postgres function
+        # Get event types via Postgres fn_get_resonance_event_types (migration 076)
         types_resp = supabase.rpc(
             "fn_get_resonance_event_types",
             {"p_simulation_id": sim_id, "p_signature": signature},

@@ -1,8 +1,8 @@
 ---
 title: "Epochs & Competitive Layer"
 id: epochs-competitive-layer
-version: "2.0"
-date: 2026-03-07
+version: "2.1"
+date: 2026-03-09
 lang: de
 type: spec
 status: active
@@ -11,6 +11,7 @@ tags: [epochs, competitive, pvp, operatives, scoring]
 
 # 22 - Epochs & Competitive Layer
 
+**Change v2.1:** Alliance Redesign — Proposal-basiertes Beitreten (einstimmige Abstimmung), Shared Intelligence (RLS), Upkeep (1 RP/Mitglied/Zyklus), Tension (Auto-Auflösung bei 80). Neue Tabellen: `epoch_alliance_proposals`, `epoch_alliance_votes`. Neue Spalte: `epoch_teams.tension`. 5 Postgres-Funktionen, 2 Trigger, 5 RLS-Policies. 3 neue API-Endpunkte. 6 neue `battle_log`-Event-Typen. Bot-Abstimmungsstrategien pro Persönlichkeitsarchetyp.
 **Change v1.9:** Foundation Phase Redesign ("Nebelkrieg") + Open Epoch Participation — Migration 048: `zone_fortifications` table, Foundation phase now allows spies + guardians (was guardian-only), spy intel includes fortifications metadata, bot personalities with per-archetype fortification strategies, `/operatives/fortify-zone` endpoint, `zone_fortified` battle log event type. Migration 049: `user_id` column on `epoch_participants`, any authenticated user can join any template simulation (no membership required), `require_epoch_participant()` dependency replaces `require_simulation_member("editor")` on competitive endpoints, RLS rewritten to direct `user_id` checks, `user_has_simulation_access()` extended for epoch participants, DELETE policy added for `epoch_participants`. Frontend: EpochIntelDossierTab (new), MissionCard (new), operative-icons.ts (new), EpochOverviewTab fortify zone section, EpochLobbyActions sim picker with faction cards, `_myParticipant` matching via `user_id`.
 **Change v1.8:** Email Notification i18n & Template Enhancement — Full German translation coverage across all 4 email templates. 85+ bilingual string keys in `_NOTIF_STRINGS` dict (was ~40). Cycle briefing enriched: threat assessment (localized status ERKANNT/GEFASST), spy intel from structured metadata (zone security NIEDRIG/MITTEL/HOCH + Wächtereinsatz), per-mission log with translated headers (TYP/ZIEL/ERGEBNIS), phase name translation (WETTBEWERB/GRUNDSTEINLEGUNG/ABRECHNUNG), alliance status, rank gap, next cycle preview. Phase change: localized subject prefixes (DRINGEND // LETZTE PHASE, GEHEIM // OPERATIONEN BEGINNEN). Epoch completed: localized leaderboard columns, dimension title race "Du:" label. Invitation: DE block shows "Siehe Geheimdienstbericht oben" instead of duplicating English AI lore. All templates: footer ÜBERTRAGUNGSURSPRUNG localized. Contrast fix: `_TEXT_DIM` #666→#888, `_TEXT_DARK` #444→#666 (WCAG AA compliant). Per-simulation accent colors + narrative voice headers. SMTP delivery (replaced Resend API). Epoch start notification (G1: lobby→foundation fires phase change email). `cycle_notification_service.py` enriched: spy intel includes structured `metadata` + resolved `target_name`.
 **Change v1.7:** Agent Aptitude System + Draft Phase — Migration 047: `agent_aptitudes` table (6 operative types x score 3-9, budget=36 per agent, UNIQUE(agent_id, operative_type)), `drafted_agent_ids UUID[]` + `draft_completed_at` on epoch_participants. Success probability formula updated from `qualification x 0.05` to `aptitude x 0.03`. Backend: AptitudeService (get/set/query), aptitudes router (3 endpoints + 2 public), EpochService.draft_agents(), bot auto_draft() per personality archetype. Frontend: VelgAptitudeBars shared component (3 sizes, editable/readonly, budget tracking), DraftRosterPanel (full-screen overlay, two-column draft UI), AgentDetailsPanel aptitude editor (debounced 800ms auto-save), AgentsView lineup overview strip, DeployOperativeModal fit indicator (Good/Fair/Poor) + sorted agent dropdown, EpochCreationWizard `max_agents_per_player` slider (4-8), EpochLobbyActions draft button + locked status. Clone function reads `drafted_agent_ids` + clones aptitudes AS-IS (no normalization). 35 template agents seeded with lore-appropriate aptitude distributions.
@@ -40,7 +41,7 @@ Epochs represent moments when the multiverse forces its simulations into direct 
 
 ### Database Schema
 
-**12 tables** (migrations 032 + 037 + 041 + 044 + 047 + 048):
+**14 tables** (migrations 032 + 037 + 041 + 044 + 047 + 048 + 050):
 
 | Table | Purpose | Key Fields |
 |-------|---------|------------|
@@ -48,7 +49,9 @@ Epochs represent moments when the multiverse forces its simulations into direct 
 | `epoch_participants` | Simulation enrollment per epoch | `epoch_id`, `simulation_id`, `user_id`, `team_id`, `current_rp`, `final_scores`, `is_bot`, `bot_player_id`, `drafted_agent_ids`, `draft_completed_at` |
 | `zone_fortifications` | Hidden zone defensive fortifications (Foundation phase) | `epoch_id`, `zone_id`, `source_simulation_id`, `security_bonus`, `expires_at_cycle`, UNIQUE(epoch_id, zone_id) |
 | `agent_aptitudes` | Per-agent operative-type skill scores | `agent_id`, `simulation_id`, `operative_type`, `aptitude_level` (3-9), UNIQUE(agent_id, operative_type) |
-| `epoch_teams` | Alliance definitions | `name`, `epoch_id`, `created_by_simulation_id`, `dissolved_at`, `dissolved_reason` |
+| `epoch_teams` | Alliance definitions | `name`, `epoch_id`, `created_by_simulation_id`, `dissolved_at`, `dissolved_reason`, `tension` |
+| `epoch_alliance_proposals` | Allianz-Beitrittsanträge | `epoch_id`, `proposer_simulation_id`, `target_team_id`, `status` (pending/accepted/rejected/expired), `expires_at_cycle` |
+| `epoch_alliance_votes` | Abstimmungen über Allianz-Anträge | `proposal_id`, `voter_simulation_id`, `vote` (accept/reject), `voted_at` |
 | `operative_missions` | Deployed operatives + results | `agent_id`, `operative_type`, `source_simulation_id`, `target_simulation_id`, `embassy_id`, `status`, `success_probability`, `mission_result` |
 | `epoch_scores` | Score snapshots per cycle | `cycle_number`, 5 dimension scores + composite, unique per (epoch, simulation, cycle) |
 | `battle_log` | Narrative event feed | `event_type`, `narrative`, `is_public`, `metadata` |
@@ -157,6 +160,9 @@ Epochs represent moments when the multiverse forces its simulations into direct 
 | POST | `/epochs/{id}/teams` | owner | Create team |
 | POST | `/epochs/{id}/teams/{tid}/join` | owner | Join team |
 | POST | `/epochs/{id}/teams/leave` | owner | Leave team |
+| GET | `/epochs/{id}/proposals` | participant | Allianz-Proposals auflisten |
+| POST | `/epochs/{id}/proposals` | participant | Allianz-Proposal erstellen (body: `{team_id}`) |
+| POST | `/epochs/{id}/proposals/{pid}/vote` | participant | Über Proposal abstimmen (body: `{vote: "accept"\|"reject"}`) |
 
 **Operatives:**
 
@@ -218,7 +224,7 @@ LOBBY ──→ FOUNDATION ──→ COMPETITION ──→ RECKONING ──→ C
 
 1. **Lobby** — Epoch created, simulations join, teams form, players draft their agent roster. No game mechanics active.
 2. **Foundation ("Nebelkrieg")** — +50% RP income. Build infrastructure, staff buildings, establish embassies. Spies and guardians allowed (Migration 048: was guardian-only). Zone fortification available (2 RP, +1 security tier, lasts 5 competition cycles). No offensive operatives (saboteur, propagandist, assassin, infiltrator).
-3. **Competition** — Full mechanics. All 6 operative types available. Alliances locked. Scores snapshot each cycle.
+3. **Competition** — Full mechanics. All 6 operative types available. Allianz-Beitritt nur via Proposal (einstimmige Abstimmung). Scores snapshot each cycle.
 4. **Reckoning** — Bleed permeability doubled, thresholds reduced by 2, cascade depth +1. Dramatic escalation.
 5. **Completed** — Final scores computed, winner declared, operatives recalled.
 
@@ -301,10 +307,66 @@ This gives an 18 percentage-point swing range between the weakest and strongest 
 ### Alliances & Betrayal
 
 - Teams form during lobby/foundation. Max team size configurable (default 3).
-- Alliances lock when competition phase begins (no new teams).
 - If `allow_betrayal = true`: allied simulations can covertly attack each other.
   - **Detected betrayal** → alliance immediately dissolves, betrayer gets -25% Diplomatic Score.
   - **Undetected betrayal** → normal operative effects, alliance intact.
+
+#### Allianz-Beitritt: Proposal-Workflow
+
+Der Beitritt zu einer Allianz folgt einem phasenabhängigen Workflow:
+
+**Phase Guard:**
+
+| Phase | Beitrittsmodus | Beschreibung |
+|-------|---------------|-------------|
+| **Lobby / Foundation** | Sofortiger Beitritt | Spieler tritt direkt bei, keine Abstimmung erforderlich |
+| **Competition / Reckoning** | Proposal-basiert | Einstimmige Abstimmung aller bestehenden Mitglieder erforderlich |
+
+**Proposal-Ablauf (Competition / Reckoning):**
+
+```
+Antragsteller erstellt Proposal → bestehende Mitglieder stimmen ab → Ergebnis
+```
+
+1. **Proposal erstellen** — Spieler stellt Antrag auf Beitritt zu einem Team. Ein Proposal-Eintrag wird in `epoch_alliance_proposals` erstellt (Status: `pending`). Verfallsfrist: aktueller Zyklus + 2.
+2. **Abstimmung** — Jedes bestehende Teammitglied gibt eine Stimme ab (`accept` oder `reject`). Stimmen werden in `epoch_alliance_votes` gespeichert.
+3. **Ergebnis:**
+   - **Einstimmig angenommen** — Alle Mitglieder stimmen `accept` → Antragsteller tritt dem Team bei, Status wird `accepted`. Battle-Log-Event: `alliance_proposal_accepted`.
+   - **Abgelehnt** — Ein einziges `reject` genügt → Proposal sofort abgelehnt, Status wird `rejected`. Battle-Log-Event: `alliance_proposal_rejected`.
+   - **Verfallen** — Keine vollständige Abstimmung innerhalb von 2 Zyklen → Status wird `expired`.
+
+**Solo-Team Auto-Accept:** Wenn das Zielteam nur 1 Mitglied hat, wird die Abstimmung übersprungen — der Antrag wird automatisch angenommen (das einzige Mitglied gilt als implizit einverstanden).
+
+#### Shared Intelligence (RLS-basiert)
+
+Alliierte teilen Aufklärungsdaten über eine erweiterte RLS SELECT-Policy auf `battle_log`:
+
+- Alliierte Simulationen sehen gegenseitig ihre `battle_log`-Einträge, die normalerweise nur für den Eigentümer sichtbar wären (z.B. Spion-Intel, Operative-Ergebnisse).
+- Die erweiterte SELECT-Policy prüft: `source_simulation_id` gehört demselben Team (JOIN über `epoch_participants.team_id`).
+- **Kennzeichnung zur Lesezeit:** Alliierter Intel wird bei Abfrage mit `allied_intel: true` im Metadata-Feld getaggt. Dies geschieht auf Leseebene — die gespeicherten `battle_log`-Einträge bleiben unverändert.
+- Bei Allianz-Auflösung entfällt der Intel-Zugriff sofort (RLS prüft aktiven Team-Status).
+
+#### Upkeep & Tension
+
+**Upkeep (Unterhaltskosten):**
+
+- Pro Zyklus werden jedem Team **1 RP pro Mitglied** von den RP aller Mitglieder abgezogen.
+- Berechnung: `current_rp = MAX(0, current_rp - 1)` pro Teilnehmer im Team.
+- Floor bei 0 — ein Teilnehmer kann nicht in negative RP fallen.
+- Battle-Log-Event: `alliance_upkeep` (pro Team, mit Gesamtkosten im Metadata).
+
+**Tension (Spannung):**
+
+Allianzen akkumulieren Spannung bei koordinierten Angriffen:
+
+| Ereignis | Tension-Änderung |
+|----------|-----------------|
+| Einzigartiges Ziel, angegriffen von 2+ Alliierten im selben Zyklus | +10 pro Ziel |
+| Natürlicher Abbau pro Zyklus | −5 |
+| Clamping | 0–100 |
+
+- **Auto-Auflösung:** Bei `tension >= 80` wird die Allianz automatisch aufgelöst (`dissolved_reason = 'tension'`). Battle-Log-Event: `alliance_dissolved_tension`.
+- **Tension-Anstieg:** Battle-Log-Event: `alliance_tension_increase` (mit aktuellem Tension-Wert und auslösenden Zielen im Metadata).
 
 ### Embassy Requirement
 
@@ -315,6 +377,19 @@ Embassies are the **only channel** for deploying operatives. You cannot attack a
 - Dissolving an embassy immediately recalls all your operatives through that channel
 - An enemy can dissolve their embassy to cut off your operative pipeline
 - But dissolving also kills your own offensive capability and diplomatic score
+
+### Battle Log Event-Typen (Allianz)
+
+Die folgenden Event-Typen wurden für das Allianz-System hinzugefügt:
+
+| Event-Typ | Beschreibung | Sichtbarkeit |
+|-----------|-------------|-------------|
+| `alliance_proposal` | Allianz-Beitrittsantrag erstellt | Team-intern |
+| `alliance_proposal_accepted` | Proposal einstimmig angenommen, Spieler tritt bei | Team-intern + öffentlich |
+| `alliance_proposal_rejected` | Proposal abgelehnt (mindestens eine Reject-Stimme) | Team-intern |
+| `alliance_tension_increase` | Tension-Anstieg durch koordinierte Angriffe | Team-intern |
+| `alliance_dissolved_tension` | Allianz automatisch aufgelöst bei Tension ≥ 80 | Öffentlich |
+| `alliance_upkeep` | RP-Abzug für Allianz-Unterhaltskosten | Team-intern |
 
 ---
 
@@ -559,13 +634,13 @@ Bot players are AI-controlled opponents that allow solo or low-player-count epoc
 
 ### Personality Archetypes
 
-| Personality | Strategy | RP Allocation | Alliance Behavior | Risk | Accent Color |
-|-------------|----------|---------------|-------------------|------|-------------|
-| **Sentinel** | Defensive | 50% DEF, 25% INT, 25% situational | Seeks early, loyal, never betrays first | Low | `#4ade80` (green) |
-| **Warlord** | Aggressive | 60% OFF, 20% INT, 20% DEF | Reluctant, betrays when ally threatens | High | `#ef4444` (red) |
-| **Diplomat** | Diplomatic | 30% DIP, 30% INF, 20% INT, 20% DEF | Active alliance seeker, maintains bonds | Medium | `#a78bfa` (purple) |
-| **Strategist** | Adaptive | Dynamic — counter-builds opponent strategy | Strategic alliances against leader | Medium-High | `#38bdf8` (blue) |
-| **Chaos** | Unpredictable | Random weighted each cycle | Forms/breaks randomly (30% betray/cycle) | Variable | `#fbbf24` (amber) |
+| Personality | Strategy | RP Allocation | Alliance Behavior | Proposal-Voting | Risk | Accent Color |
+|-------------|----------|---------------|-------------------|-----------------|------|-------------|
+| **Sentinel** | Defensive | 50% DEF, 25% INT, 25% situational | Seeks early, loyal, never betrays first | Accept all | Low | `#4ade80` (green) |
+| **Warlord** | Aggressive | 60% OFF, 20% INT, 20% DEF | Reluctant, betrays when ally threatens | Reject Top-2, 50% weak; leave bei Tension ≥ 50 | High | `#ef4444` (red) |
+| **Diplomat** | Diplomatic | 30% DIP, 30% INF, 20% INT, 20% DEF | Active alliance seeker, maintains bonds | Accept all | Medium | `#a78bfa` (purple) |
+| **Strategist** | Adaptive | Dynamic — counter-builds opponent strategy | Strategic alliances against leader | Accept weak, reject leader | Medium-High | `#38bdf8` (blue) |
+| **Chaos** | Unpredictable | Random weighted each cycle | Forms/breaks randomly (30% betray/cycle) | 60% accept, 40% reject | Variable | `#fbbf24` (amber) |
 
 ### Difficulty Scaling
 
@@ -580,7 +655,19 @@ Bot players are AI-controlled opponents that allow solo or low-player-count epoc
 
 ### Bot Execution Flow
 
-During `resolve_cycle()`, after RP grant + mission resolution, before scoring:
+During `resolve_cycle()`, nach RP-Grant + Mission-Resolution, vor Scoring. Erweiterte Pipeline mit Allianz-Schritten:
+
+```
+── RP Grant ──
+── Alliance Upkeep (1 RP pro Mitglied abziehen, Floor 0) ──
+── Expire stale Proposals (Status → 'expired' wenn current_cycle >= expires_at_cycle) ──
+── Mission Resolution ──
+── Bot Execution (siehe unten) ──
+── Scoring ──
+── Tension Computation (+10 pro shared target, −5 Decay, Clamp 0-100, Auto-Dissolve bei ≥80) ──
+```
+
+Bot-Execution im Detail:
 
 ```
 1. Get all bot participants for the epoch
@@ -617,6 +704,7 @@ Each personality implements `_plan_deployments()` and `manage_alliances()` with 
 - **Targeting:** Leader (only when own rank is #1)
 - **Fortification:** Fortifies all 4 zones in Foundation phase
 - **Alliances:** Seeks alliances early, never betrays unless betrayed first
+- **Proposal-Abstimmung:** Akzeptiert alle Proposals (kooperativer Archetypus)
 - **Draft priorities:** guardian (3x), spy (2x), saboteur (1x)
 
 #### Warlord (Aggressive)
@@ -627,6 +715,7 @@ Each personality implements `_plan_deployments()` and `manage_alliances()` with 
 - **Targeting:** Leader, or weakest if tied for lead
 - **Fortification:** None outside Foundation phase
 - **Alliances:** Reluctant to ally, betrays threat-level allies
+- **Proposal-Abstimmung:** Lehnt Top-2-Platzierte ab, 50% Chance auf Accept bei schwächeren Spielern. Verlässt Allianz bei Tension ≥ 50
 - **Draft priorities:** assassin (3x), saboteur (2x), guardian (1x)
 
 #### Diplomat (Alliance Builder)
@@ -637,6 +726,7 @@ Each personality implements `_plan_deployments()` and `manage_alliances()` with 
 - **Targeting:** Spreads operatives across all targets
 - **Fortification:** 2 zones in Foundation phase
 - **Alliances:** Actively seeks alliances, never betrays
+- **Proposal-Abstimmung:** Akzeptiert alle Proposals (maximale Koalitionsbildung)
 - **Draft priorities:** propagandist (3x), infiltrator (2x), spy (1x)
 
 #### Strategist (Counter-Strategy)
@@ -647,6 +737,7 @@ Each personality implements `_plan_deployments()` and `manage_alliances()` with 
 - **Targeting:** Counter-targets based on detected dominant strategy
 - **Fortification:** Weakest zones (lowest security), 1-2 randomly
 - **Alliances:** Forms strategic alliances with weak players against leader
+- **Proposal-Abstimmung:** Akzeptiert schwächere Spieler, lehnt den Führenden ab
 - **Resonance integration:** Applies resonance-preferred operative type to selection
 - **Draft priorities:** spy (3x), infiltrator (2x), assassin (1x)
 
@@ -658,6 +749,7 @@ Each personality implements `_plan_deployments()` and `manage_alliances()` with 
 - **Targeting:** Random opponent selection
 - **Fortification:** Random 0-2 zones
 - **Alliances:** 30% chance to betray, 40% chance to form/join
+- **Proposal-Abstimmung:** 60% Accept, 40% Reject (zufällig)
 - **Draft priorities:** saboteur (3x), propagandist (2x), assassin (1x)
 
 ### Bot Resonance Awareness

@@ -40,7 +40,7 @@ class ChronicleService:
         period_start: datetime,
         period_end: datetime,
     ) -> dict:
-        """Fetch aggregated chronicle source data via Postgres function."""
+        """Fetch aggregated chronicle source data via Postgres ``get_chronicle_source_data`` (migration 066)."""
         response = supabase.rpc(
             "get_chronicle_source_data",
             {

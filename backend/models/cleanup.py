@@ -19,12 +19,18 @@ CleanupType = Literal[
 
 class CleanupPreviewRequest(BaseModel):
     cleanup_type: CleanupType
-    min_age_days: int = Field(..., ge=1, le=3650, description="Minimum age in days")
+    min_age_days: int = Field(..., ge=0, le=3650, description="Minimum age in days")
+    epoch_ids: list[str] | None = Field(
+        None, description="Specific epoch IDs to target (bypasses age filter)",
+    )
 
 
 class CleanupExecuteRequest(BaseModel):
     cleanup_type: CleanupType
-    min_age_days: int = Field(..., ge=1, le=3650, description="Minimum age in days")
+    min_age_days: int = Field(..., ge=0, le=3650, description="Minimum age in days")
+    epoch_ids: list[str] | None = Field(
+        None, description="Specific epoch IDs to target (bypasses age filter)",
+    )
 
 
 class CleanupCategoryStats(BaseModel):
@@ -41,11 +47,18 @@ class CleanupStats(BaseModel):
     bot_decision_entries: CleanupCategoryStats
 
 
+class CleanupPreviewItem(BaseModel):
+    id: str
+    name: str
+    updated_at: datetime | None = None
+
+
 class CleanupPreviewResult(BaseModel):
     cleanup_type: CleanupType
     min_age_days: int
     primary_count: int
     cascade_counts: dict[str, int] = Field(default_factory=dict)
+    items: list[CleanupPreviewItem] = Field(default_factory=list)
 
 
 class CleanupExecuteResult(BaseModel):

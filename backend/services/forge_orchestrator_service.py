@@ -316,7 +316,10 @@ class ForgeOrchestratorService:
         draft_id: UUID,
         admin_supabase: Client | None = None,
     ) -> dict:
-        """Finalize the draft and create production records (Phase 4)."""
+        """Finalize the draft and create production records (Phase 4).
+
+        Calls Postgres ``fn_materialize_shard`` RPC (migration 056, updated 058).
+        """
         logger.info("Materializing shard", extra={"user_id": str(user_id), "draft_id": str(draft_id)})
 
         # Mark draft as processing

@@ -469,7 +469,7 @@ The "Map" / "Karte" nav link in `PlatformHeader` toggles — clicking it while o
 
 ### Map Data Endpoint
 
-**`GET /api/v1/public/map-data`** returns a single payload for map rendering. Since v2.1, this endpoint is enriched with game instance data when active epochs exist: `active_instance_counts` per template, `operative_flow` per connection edge, `score_dimensions` per game instance, and `sparklines` (last 10 composite scores) per template node. The `MapGraph` component uses this data to render game instance nodes with phase status rings, health arcs, operative trails on edges, and sparkline overlays on template nodes.
+**`GET /api/v1/public/map-data`** returns a single payload for map rendering. Since v2.1, this endpoint is enriched with game instance data when active epochs exist: `active_instance_counts` per template, `operative_flow` per connection edge, `score_dimensions` per game instance, and `sparklines` (last 10 composite scores) per template node. The `MapGraph` component uses this data to render game instance nodes with phase status rings, health arcs, operative trails on edges, and sparkline overlays on template nodes. `_fetch_map_simulations` excludes game instances whose parent epoch has status `completed` or `cancelled` — only active epoch instances appear on the map.
 
 ```json
 {

@@ -1178,6 +1178,28 @@ export interface EpochTeam {
   created_at: string;
   dissolved_at?: string;
   dissolved_reason?: string;
+  tension?: number;
+}
+
+export interface AllianceProposal {
+  id: UUID;
+  epoch_id: UUID;
+  team_id: UUID;
+  proposer_simulation_id: UUID;
+  proposed_at: string;
+  expires_at_cycle: number;
+  status: 'pending' | 'accepted' | 'rejected' | 'expired';
+  resolved_at?: string;
+  votes?: AllianceVote[];
+  proposer_name?: string;
+}
+
+export interface AllianceVote {
+  id: UUID;
+  proposal_id: UUID;
+  voter_simulation_id: UUID;
+  vote: 'accept' | 'reject';
+  voted_at: string;
 }
 
 export interface OperativeMission {
@@ -1413,11 +1435,18 @@ export interface CleanupStats {
   bot_decision_entries: CleanupCategoryStats;
 }
 
+export interface CleanupPreviewItem {
+  id: string;
+  name: string;
+  updated_at: string | null;
+}
+
 export interface CleanupPreviewResult {
   cleanup_type: CleanupType;
   min_age_days: number;
   primary_count: number;
   cascade_counts: Record<string, number>;
+  items: CleanupPreviewItem[];
 }
 
 export interface CleanupExecuteResult {

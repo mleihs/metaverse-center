@@ -1,9 +1,12 @@
-"""Service for reading game mechanics materialized views.
+"""Service for reading game mechanics materialized views (migration 031).
 
 Does NOT extend BaseService — materialized views are read-only and
 not simulation-scoped in the usual CRUD sense. Uses admin client
 for reads (materialized views don't have per-row RLS) and filters
 by simulation_id in the query.
+
+Views: ``mv_simulation_health``, ``mv_building_readiness``, ``mv_zone_stability``,
+``mv_embassy_effectiveness``. Refreshed via ``refresh_all_game_metrics`` RPC.
 """
 
 from __future__ import annotations

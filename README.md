@@ -123,7 +123,9 @@ All animations respect `prefers-reduced-motion`. API: `GET /api/v1/epochs/{epoch
 
 ### Alliance System
 
-Participants can form and manage alliances during competitive epochs. Allies receive a +15% diplomatic score bonus; betrayal (if enabled) applies a -25% diplomatic penalty. The alliance tab surfaces unaligned players for recruitment.
+Alliances are proposal-based during competition: any participant can propose, but all existing members must unanimously approve before a new team joins. Once formed, allies share intelligence &mdash; battle log entries from allied operations are visible to all members, giving coalitions an information edge.
+
+Alliances carry a resource cost: **1 RP per member per cycle** in upkeep, deducted automatically at cycle resolution. Overlapping attacks between allies build **tension** (incremented when allies target the same simulation in the same cycle); if tension reaches 80, the alliance auto-dissolves. Allies receive a **+15% diplomatic score bonus** per ally; betrayal (leaving an alliance mid-epoch, if enabled) applies a **-25% diplomatic penalty**. The alliance tab surfaces unaligned players for recruitment and displays current tension levels.
 
 ### Academy Mode
 
@@ -199,6 +201,7 @@ The epoch simulation library (`scripts/epoch_sim_lib.py`) runs 50&ndash;200 comp
 | **v2.4** | Foundation redesign: spy+guardian+fortification; open epoch participation | Hidden defensive layer, early intel, any user can join any epoch |
 | **v2.5** | The Chronicle (AI newspaper) + Agent Memory & Reflection (pgvector) | Living world systems: worlds narrate themselves, agents remember |
 | **v2.6** | Substrate resonance integration: 8-term success formula, archetype-operative affinities, zone pressure modifier, attacker penalty, saboteur diminishing returns; automatic resonance impact processing via background scheduler; How-to-Play restructured to 28 sections in 4 categories | Shared narrative layer feeds into competitive mechanics; caps reduced for tighter balance; auto-processing eliminates manual admin intervention |
+| **v2.7** | Alliance redesign: proposal-based joining, shared intelligence, upkeep (1 RP/member/cycle), tension mechanic (auto-dissolve at 80) | Alliances become strategic cost-benefit decisions, not free bonuses |
 
 ### Intelligence Report
 
@@ -232,9 +235,9 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
        ▼            ▼
 ┌──────────────────────────┐
 │   Supabase (PostgreSQL)       │
-│   56 tables + pgvector         │
-│   ~60 functions, 23 triggers   │
-│   240+ RLS policies           │
+│   60 tables + pgvector         │
+│   ~68 functions, 27 triggers   │
+│   250+ RLS policies           │
 │   4 materialized views        │
 │   Realtime channels           │
 │   Auth (ES256/HS256)          │
@@ -250,7 +253,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 - **Per-Simulation Theming** &mdash; CSS custom properties cascade through shadow DOM. Each simulation gets its own theme preset, all validated against WCAG 2.1 AA contrast ratios.
 - **Structured Logging** &mdash; structlog on top of stdlib logging. JSON output in production, console renderer locally. Request context (user_id, request_id, method, path) injected via middleware. All mutations log with structured `extra={}` fields for observability.
 - **Game Instance Isolation** &mdash; When an epoch starts, participating simulations are atomically cloned into balanced game instances. Templates remain untouched. Clones are archived on completion, deleted on cancellation.
-- **Database-First Logic** &mdash; Business invariants enforced in PostgreSQL via ~60 functions and 23 trigger functions. Complex operations like epoch cloning (~250 lines PL/pgSQL) and forge materialization run as atomic transactions. Derived game metrics computed via 4 materialized views with stale-notification triggers.
+- **Database-First Logic** &mdash; Business invariants enforced in PostgreSQL via ~65 functions and 25 trigger functions. Complex operations like epoch cloning (~250 lines PL/pgSQL) and forge materialization run as atomic transactions. Derived game metrics computed via 4 materialized views with stale-notification triggers.
 
 ---
 
@@ -292,7 +295,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 
 | Component | Technology |
 |:----------|:-----------|
-| Database | PostgreSQL via Supabase (56 tables, ~60 functions, 240+ RLS policies, pgvector embeddings) |
+| Database | PostgreSQL via Supabase (60 tables, ~68 functions, 250+ RLS policies, pgvector embeddings) |
 | Auth | Supabase Auth (JWT with ES256 in production, HS256 locally) |
 | Email | SMTP SSL (bilingual tactical briefing emails, fog-of-war compliant) |
 | AI Text | OpenRouter (model fallback chain) |
@@ -308,12 +311,12 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 
 | Metric | Count |
 |:-------|------:|
-| Database tables | 56 |
-| PostgreSQL functions | ~60 |
-| Database trigger functions | 23 |
+| Database tables | 60 |
+| PostgreSQL functions | ~68 |
+| Database trigger functions | 27 |
 | Views (regular + materialized) | 9 + 4 |
-| RLS policies | 240+ |
-| SQL migrations | 86 |
+| RLS policies | 250+ |
+| SQL migrations | 91 |
 | API endpoints | ~305 across 37 routers |
 | Web Components | 133 custom elements |
 | Backend tests | 1,052 |
@@ -337,7 +340,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 - **TCG card system** &mdash; unified collectible card component with 3D tilt, holographic foil, rarity tiers, stat gems, aptitude pips, card-deal animations
 - **Cross-simulation diplomacy** &mdash; embassies, ambassadors, event echoes (narrative bleed between worlds)
 - **Cartographer's Map** &mdash; force-directed multiverse graph with operative trails, health arcs, sparklines, battle feed, leaderboard
-- **Competitive Epochs** &mdash; operative deployment, 5-dimension scoring, cycle-based resolution, alliances & betrayal, open participation (any user + any sim), DECLASSIFIED results screen with podium/MVP commendations, academy solo training mode
+- **Competitive Epochs** &mdash; operative deployment, 5-dimension scoring, cycle-based resolution, proposal-based alliances with shared intel &amp; tension mechanic, betrayal penalties, open participation (any user + any sim), DECLASSIFIED results screen with podium/MVP commendations, academy solo training mode
 - **Foundation phase ("Nebelkrieg")** &mdash; spies + guardians in early game, hidden zone fortification (+1 security for 5 cycles), intel dossier tab
 - **Agent aptitudes & draft phase** &mdash; pre-match deckbuilding with card-hand draft UI and aptitude-weighted success rates
 - **Bot AI opponents** &mdash; 5 personality archetypes, 3 difficulty levels, fog-of-war compliant, dual-mode chat
@@ -423,7 +426,7 @@ frontend/
     types/                  # TypeScript interfaces + Zod schemas
     locales/                # i18n (XLIFF source + generated output)
 supabase/
-  migrations/               # 86 SQL migration files
+  migrations/               # 91 SQL migration files
   seed/                     # Seed data (7 active, 11 archived)
 scripts/                    # Image generation, epoch simulation, doc index generation
 docs/                       # 39 documents (Divio structure)
@@ -449,7 +452,7 @@ The `docs/` directory contains 40 documents organized in [Divio](https://docs.di
 | Category | Count | Contents |
 |:---------|------:|:---------|
 | **specs/** | 14 | Platform Architecture, API (~305 endpoints), Auth, AI, Theming, Embassies, Epochs, Game Systems, Substrate Resonances |
-| **references/** | 5 | Database Schema (v3.3, 56 tables), Domain Models, Feature Catalog, Components, Design System |
+| **references/** | 5 | Database Schema (v3.3, 58 tables), Domain Models, Feature Catalog, Components, Design System |
 | **guides/** | 7 | Deployment (v1.3, 15 migration lessons), Testing, Migration, Implementation Plan (160 tasks), Simulation Blueprint, Playtest, Epoch Gameplay Guide |
 | **explanations/** | 5 | Project Overview, Techstack, Game Design Document, Concept Lore, TCG Card System |
 | **analysis/** | 6 | Epoch balance reports (2P-5P + cross-reference + playthrough verification) |

@@ -73,12 +73,21 @@ class FortificationPlan:
 
 
 @dataclass
+class ProposalVote:
+    """A vote on an alliance proposal."""
+
+    proposal_id: str
+    vote: str  # "accept" or "reject"
+
+
+@dataclass
 class BotDecisions:
     """Complete set of decisions for a bot's cycle turn."""
 
     deployments: list[DeploymentPlan] = field(default_factory=list)
     fortifications: list[FortificationPlan] = field(default_factory=list)
     alliances: list[AllianceAction] = field(default_factory=list)
+    proposal_votes: list[ProposalVote] = field(default_factory=list)
     rp_spent: int = 0
     reasoning: str = ""
 
@@ -94,7 +103,7 @@ class BotPersonality(ABC):
         self.params = DIFFICULTY_PARAMS.get(difficulty, DIFFICULTY_PARAMS["medium"])
 
     def decide(self, state: BotGameState) -> BotDecisions:
-        """Full decision pipeline: allocate → fortify → deploy → alliance."""
+        """Full decision pipeline: allocate → fortify → deploy → alliance → vote."""
         available_rp = state.current_rp
         available_rp = self._apply_difficulty_waste(available_rp)
 
@@ -105,12 +114,14 @@ class BotPersonality(ABC):
 
         deployments = self._plan_deployments(state, remaining_rp)
         alliances = self.manage_alliances(state)
+        proposal_votes = self.vote_on_proposals(state)
 
         total_spent = sum(d.cost_rp for d in deployments) + fort_cost
         return BotDecisions(
             deployments=deployments,
             fortifications=fortifications,
             alliances=alliances,
+            proposal_votes=proposal_votes,
             rp_spent=total_spent,
             reasoning=self._explain(state, deployments, alliances, fortifications),
         )
@@ -126,6 +137,22 @@ class BotPersonality(ABC):
     @abstractmethod
     def manage_alliances(self, state: BotGameState) -> list[AllianceAction]:
         """Decide alliance actions (form/join/betray/leave)."""
+
+    def vote_on_proposals(self, state: BotGameState) -> list[ProposalVote]:
+        """Vote on pending alliance proposals targeting this bot's team.
+
+        Default: accept all. Override per personality for custom strategy.
+        """
+        if not state.own_team_id:
+            return []
+        votes: list[ProposalVote] = []
+        for proposal in state.pending_proposals:
+            if proposal.get("team_id") == state.own_team_id:
+                votes.append(ProposalVote(
+                    proposal_id=proposal["id"],
+                    vote="accept",
+                ))
+        return votes
 
     def _apply_difficulty_waste(self, rp: int) -> int:
         """Easy bots randomly waste a portion of their RP."""
@@ -429,8 +456,32 @@ class WarlordPersonality(BotPersonality):
 
         return plans
 
+    def vote_on_proposals(self, state: BotGameState) -> list[ProposalVote]:
+        """Warlord: reject top-2 ranked sims (threats). Accept weak (50% chance)."""
+        if not state.own_team_id:
+            return []
+        votes: list[ProposalVote] = []
+        # Get top-2 ranked sim IDs
+        top_sims = {s["simulation_id"] for s in state.scores[:2]}
+        for proposal in state.pending_proposals:
+            if proposal.get("team_id") != state.own_team_id:
+                continue
+            proposer = proposal.get("proposer_simulation_id")
+            if proposer in top_sims:
+                votes.append(ProposalVote(proposal_id=proposal["id"], vote="reject"))
+            elif _rng.random() < 0.5:
+                votes.append(ProposalVote(proposal_id=proposal["id"], vote="accept"))
+            else:
+                votes.append(ProposalVote(proposal_id=proposal["id"], vote="reject"))
+        return votes
+
     def manage_alliances(self, state: BotGameState) -> list[AllianceAction]:
         actions: list[AllianceAction] = []
+
+        # Warlord leaves alliance if tension >= 50 (doesn't tolerate friction)
+        if state.own_team_id and state.own_team_tension >= 50:
+            actions.append(AllianceAction(action="leave"))
+            return actions
 
         # Reluctant to ally — only if losing badly
         rank = state.get_my_score_rank()
@@ -675,6 +726,22 @@ class StrategistPersonality(BotPersonality):
                 result.append(op)
         return result
 
+    def vote_on_proposals(self, state: BotGameState) -> list[ProposalVote]:
+        """Strategist: accept weak players (anti-leader coalition). Reject the leader."""
+        if not state.own_team_id:
+            return []
+        votes: list[ProposalVote] = []
+        leader = state.get_leader_sim_id()
+        for proposal in state.pending_proposals:
+            if proposal.get("team_id") != state.own_team_id:
+                continue
+            proposer = proposal.get("proposer_simulation_id")
+            if proposer == leader:
+                votes.append(ProposalVote(proposal_id=proposal["id"], vote="reject"))
+            else:
+                votes.append(ProposalVote(proposal_id=proposal["id"], vote="accept"))
+        return votes
+
     def manage_alliances(self, state: BotGameState) -> list[AllianceAction]:
         actions: list[AllianceAction] = []
 
@@ -775,6 +842,18 @@ class ChaosPersonality(BotPersonality):
                 rp -= plan.cost_rp
 
         return plans
+
+    def vote_on_proposals(self, state: BotGameState) -> list[ProposalVote]:
+        """Chaos: 60% accept, 40% reject (random)."""
+        if not state.own_team_id:
+            return []
+        votes: list[ProposalVote] = []
+        for proposal in state.pending_proposals:
+            if proposal.get("team_id") != state.own_team_id:
+                continue
+            vote = "accept" if _rng.random() < 0.60 else "reject"
+            votes.append(ProposalVote(proposal_id=proposal["id"], vote=vote))
+        return votes
 
     def manage_alliances(self, state: BotGameState) -> list[AllianceAction]:
         actions: list[AllianceAction] = []

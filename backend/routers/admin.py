@@ -223,7 +223,9 @@ async def preview_cleanup(
     admin_supabase: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Preview what would be deleted without actually deleting."""
-    data = await CleanupService.preview(admin_supabase, body.cleanup_type, body.min_age_days)
+    data = await CleanupService.preview(
+        admin_supabase, body.cleanup_type, body.min_age_days, epoch_ids=body.epoch_ids,
+    )
     return {"success": True, "data": data.model_dump(mode="json")}
 
 
@@ -236,6 +238,7 @@ async def execute_cleanup(
     """Execute data cleanup. Requires prior preview for safety."""
     data = await CleanupService.execute(
         admin_supabase, body.cleanup_type, body.min_age_days, user.id,
+        epoch_ids=body.epoch_ids,
     )
     await AuditService.safe_log(
         admin_supabase, None, user.id, "cleanup", None, "execute",

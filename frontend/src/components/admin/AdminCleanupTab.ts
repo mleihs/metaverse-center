@@ -2,7 +2,12 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { adminApi } from '../../services/api/index.js';
-import type { CleanupPreviewResult, CleanupStats, CleanupType } from '../../types/index.js';
+import type {
+  CleanupPreviewItem,
+  CleanupPreviewResult,
+  CleanupStats,
+  CleanupType,
+} from '../../types/index.js';
 import { VelgToast } from '../shared/Toast.js';
 
 import '../shared/ConfirmDialog.js';
@@ -372,6 +377,46 @@ export class VelgAdminCleanupTab extends LitElement {
       font-weight: var(--font-bold);
     }
 
+    /* ── Item selection list ────────────────────────── */
+
+    .item-list {
+      margin: var(--space-2) 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .item-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-1) var(--space-2);
+      background: color-mix(in srgb, var(--color-surface) 50%, transparent);
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .item-row:hover {
+      background: color-mix(in srgb, var(--color-text-primary) 6%, transparent);
+    }
+
+    .item-row__check {
+      accent-color: var(--color-warning);
+      cursor: pointer;
+    }
+
+    .item-row__name {
+      flex: 1;
+      color: var(--color-text-primary);
+      font-size: var(--text-xs);
+    }
+
+    .item-row__age {
+      color: var(--color-text-muted);
+      font-size: 10px;
+      white-space: nowrap;
+    }
+
     /* ── Loading / empty ─────────────────────────── */
 
     .loading {
@@ -409,6 +454,7 @@ export class VelgAdminCleanupTab extends LitElement {
     bot_decision_log: DEFAULT_THRESHOLD,
   };
   @state() private _previews: Partial<Record<CleanupType, CleanupPreviewResult>> = {};
+  @state() private _selectedIds: Partial<Record<CleanupType, Set<string>>> = {};
   @state() private _scanning: CleanupType | null = null;
   @state() private _executing: CleanupType | null = null;
   @state() private _confirmPurge: CleanupType | null = null;
@@ -431,7 +477,15 @@ export class VelgAdminCleanupTab extends LitElement {
     this._scanning = type;
     const result = await adminApi.previewCleanup(type, this._thresholds[type]);
     if (result.success && result.data) {
-      this._previews = { ...this._previews, [type]: result.data as CleanupPreviewResult };
+      const preview = result.data as CleanupPreviewResult;
+      this._previews = { ...this._previews, [type]: preview };
+      // Select all items by default
+      if (preview.items?.length) {
+        this._selectedIds = {
+          ...this._selectedIds,
+          [type]: new Set(preview.items.map((it: CleanupPreviewItem) => it.id)),
+        };
+      }
     } else {
       VelgToast.error(result.error?.message ?? msg('Scan failed.'));
     }
@@ -441,14 +495,19 @@ export class VelgAdminCleanupTab extends LitElement {
   private async _executePurge(type: CleanupType): Promise<void> {
     this._confirmPurge = null;
     this._executing = type;
-    const result = await adminApi.executeCleanup(type, this._thresholds[type]);
+    const selected = this._selectedIds[type];
+    const epochIds = selected?.size ? [...selected] : undefined;
+    const result = await adminApi.executeCleanup(type, this._thresholds[type], epochIds);
     if (result.success && result.data) {
       const count = (result.data as { deleted_count: number }).deleted_count;
       VelgToast.success(msg(str`Purge complete: ${count} records deleted.`));
-      // Clear preview and refresh stats
+      // Clear preview, selection, and refresh stats
       const newPreviews = { ...this._previews };
       delete newPreviews[type];
       this._previews = newPreviews;
+      const newSelected = { ...this._selectedIds };
+      delete newSelected[type];
+      this._selectedIds = newSelected;
       await this._loadStats();
     } else {
       VelgToast.error(result.error?.message ?? msg('Purge failed.'));
@@ -521,6 +580,59 @@ export class VelgAdminCleanupTab extends LitElement {
     `;
   }
 
+  private _refreshTimer: ReturnType<typeof setTimeout> | null = null;
+
+  private _toggleItem(type: CleanupType, id: string): void {
+    const current = this._selectedIds[type] ?? new Set<string>();
+    const next = new Set(current);
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    this._selectedIds = { ...this._selectedIds, [type]: next };
+
+    // Debounce re-preview to update cascade counts
+    if (this._refreshTimer) clearTimeout(this._refreshTimer);
+    this._refreshTimer = setTimeout(() => this._refreshPreview(type), 300);
+  }
+
+  private async _refreshPreview(type: CleanupType): Promise<void> {
+    const selected = this._selectedIds[type];
+    if (!selected?.size) return;
+    const result = await adminApi.previewCleanup(
+      type,
+      this._thresholds[type],
+      [...selected],
+    );
+    if (result.success && result.data) {
+      this._previews = { ...this._previews, [type]: result.data as CleanupPreviewResult };
+    }
+  }
+
+  private _renderItemList(type: CleanupType, items: CleanupPreviewItem[]): unknown {
+    if (!items.length) return nothing;
+    const selected = this._selectedIds[type] ?? new Set<string>();
+    return html`
+      <div class="item-list">
+        ${items.map(
+          (item) => html`
+          <label class="item-row">
+            <input
+              type="checkbox"
+              class="item-row__check"
+              .checked=${selected.has(item.id)}
+              @change=${() => this._toggleItem(type, item.id)}
+            />
+            <span class="item-row__name">${item.name}</span>
+            <span class="item-row__age">${this._formatAge(item.updated_at)}</span>
+          </label>
+        `,
+        )}
+      </div>
+    `;
+  }
+
   private _renderPreview(type: CleanupType): unknown {
     const preview = this._previews[type];
     if (!preview) return nothing;
@@ -535,12 +647,15 @@ export class VelgAdminCleanupTab extends LitElement {
 
     const meta = getCleanupMeta();
     const label = meta[type].label.toUpperCase();
+    const selected = this._selectedIds[type];
+    const selectedCount = selected?.size ?? preview.primary_count;
 
     return html`
       <div class="preview">
         <span class="preview__corner preview__corner--tl">\u250C</span>
         <span class="preview__corner preview__corner--br">\u2518</span>
-        <div class="preview__headline">${preview.primary_count} ${label} ${msg('eligible')}</div>
+        <div class="preview__headline">${selectedCount} / ${preview.primary_count} ${label} ${msg('selected')}</div>
+        ${this._renderItemList(type, preview.items ?? [])}
         ${this._renderCascadeTree(preview)}
       </div>
     `;
@@ -560,7 +675,11 @@ export class VelgAdminCleanupTab extends LitElement {
           const preview = this._previews[type];
           const isScanning = this._scanning === type;
           const isExecuting = this._executing === type;
-          const canPurge = preview && preview.primary_count > 0 && !isExecuting;
+          const selected = this._selectedIds[type];
+          const hasSelection = preview?.items?.length
+            ? (selected?.size ?? 0) > 0
+            : preview && preview.primary_count > 0;
+          const canPurge = hasSelection && !isExecuting;
           const hasScanned = !!preview;
 
           return html`
@@ -576,18 +695,21 @@ export class VelgAdminCleanupTab extends LitElement {
                 <input
                   type="number"
                   class="controls-row__input"
-                  min="1"
+                  min="0"
                   max="3650"
                   .value=${String(this._thresholds[type])}
                   @input=${(e: Event) => {
                     const val = Number.parseInt((e.target as HTMLInputElement).value, 10);
-                    if (!Number.isNaN(val) && val >= 1) {
+                    if (!Number.isNaN(val) && val >= 0) {
                       this._thresholds = { ...this._thresholds, [type]: val };
-                      // Clear stale preview when threshold changes
+                      // Clear stale preview + selection when threshold changes
                       if (this._previews[type]) {
                         const newPreviews = { ...this._previews };
                         delete newPreviews[type];
                         this._previews = newPreviews;
+                        const newSelected = { ...this._selectedIds };
+                        delete newSelected[type];
+                        this._selectedIds = newSelected;
                       }
                     }
                   }}
@@ -630,18 +752,22 @@ export class VelgAdminCleanupTab extends LitElement {
     const purgeType = this._confirmPurge;
     const purgePreview = purgeType ? this._previews[purgeType] : null;
     const meta = purgeType ? getCleanupMeta()[purgeType] : null;
+    const purgeSelected = purgeType ? this._selectedIds[purgeType] : null;
+    const purgeCount = purgePreview?.items?.length
+      ? (purgeSelected?.size ?? 0)
+      : (purgePreview?.primary_count ?? 0);
 
     return html`
       ${this._renderOverview()}
       ${this._renderOperations()}
 
       ${
-        purgeType && purgePreview && meta
+        purgeType && purgePreview && meta && purgeCount > 0
           ? html`
         <velg-confirm-dialog
           .open=${true}
           .title=${msg('Confirm Purge')}
-          .message=${msg(str`Permanently delete ${purgePreview.primary_count} ${meta.label.toLowerCase()} older than ${this._thresholds[purgeType]} days? This cannot be undone.`)}
+          .message=${msg(str`Permanently delete ${purgeCount} ${meta.label.toLowerCase()}? This cannot be undone.`)}
           .confirmLabel=${msg('Execute Purge')}
           variant="danger"
           @confirm=${() => this._executePurge(purgeType)}

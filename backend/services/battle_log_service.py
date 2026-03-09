@@ -262,6 +262,124 @@ class BattleLogService:
             metadata={"rp_amount": amount, "participant_count": participant_count},
         )
 
+    # ── Alliance Event Loggers ────────────────────────────
+
+    @classmethod
+    async def log_alliance_proposal(
+        cls,
+        supabase: Client,
+        epoch_id: UUID,
+        cycle_number: int,
+        proposer_simulation_id: UUID,
+        team_name: str,
+    ) -> dict:
+        """Log an alliance join proposal."""
+        return await cls.log_event(
+            supabase, epoch_id, cycle_number,
+            "alliance_proposal",
+            f"A simulation has requested to join '{team_name}'.",
+            source_simulation_id=proposer_simulation_id,
+            is_public=True,
+            metadata={"team_name": team_name},
+        )
+
+    @classmethod
+    async def log_alliance_proposal_resolved(
+        cls,
+        supabase: Client,
+        epoch_id: UUID,
+        cycle_number: int,
+        proposer_simulation_id: UUID,
+        team_name: str,
+        resolution: str,
+    ) -> dict:
+        """Log proposal accepted or rejected."""
+        event_type = f"alliance_proposal_{resolution}"
+        if resolution == "accepted":
+            narrative = f"A new member has been admitted to '{team_name}'. Alliance strengthened."
+        else:
+            narrative = f"'{team_name}' has denied a membership request. Diplomatic relations strained."
+
+        return await cls.log_event(
+            supabase, epoch_id, cycle_number,
+            event_type, narrative,
+            source_simulation_id=proposer_simulation_id,
+            is_public=True,
+            metadata={"team_name": team_name, "resolution": resolution},
+        )
+
+    @classmethod
+    async def log_tension_change(
+        cls,
+        supabase: Client,
+        epoch_id: UUID,
+        cycle_number: int,
+        team_name: str,
+        old_tension: int,
+        new_tension: int,
+    ) -> dict:
+        """Log alliance tension increase."""
+        return await cls.log_event(
+            supabase, epoch_id, cycle_number,
+            "alliance_tension_increase",
+            f"Internal tensions rising within '{team_name}'. Overlapping operations detected.",
+            is_public=(new_tension >= 50),
+            metadata={
+                "team_name": team_name,
+                "old_tension": old_tension,
+                "new_tension": new_tension,
+            },
+        )
+
+    @classmethod
+    async def log_tension_dissolution(
+        cls,
+        supabase: Client,
+        epoch_id: UUID,
+        cycle_number: int,
+        team_name: str,
+        affected_simulation_ids: list[str] | None = None,
+    ) -> dict:
+        """Log alliance dissolved due to tension.
+
+        Includes affected_simulation_ids in metadata so downstream consumers
+        (e.g. cycle notification emails) can identify which players were in
+        the dissolved alliance.
+        """
+        metadata: dict = {"team_name": team_name, "reason": "tension"}
+        if affected_simulation_ids:
+            metadata["affected_simulation_ids"] = affected_simulation_ids
+        return await cls.log_event(
+            supabase, epoch_id, cycle_number,
+            "alliance_dissolved_tension",
+            f"'{team_name}' has collapsed under internal tensions. All members are now unaligned.",
+            is_public=True,
+            metadata=metadata,
+        )
+
+    @classmethod
+    async def log_alliance_upkeep(
+        cls,
+        supabase: Client,
+        epoch_id: UUID,
+        cycle_number: int,
+        team_name: str,
+        cost_per_member: int,
+        member_count: int,
+    ) -> dict:
+        """Log alliance upkeep deduction (team-only, not public)."""
+        return await cls.log_event(
+            supabase, epoch_id, cycle_number,
+            "alliance_upkeep",
+            f"Alliance maintenance: {cost_per_member} RP deducted from '{team_name}' operations budget.",
+            is_public=False,
+            metadata={
+                "team_name": team_name,
+                "cost_per_member": cost_per_member,
+                "member_count": member_count,
+            },
+        )
+
     # ── Query ─────────────────────────────────────────────
 
     @classmethod

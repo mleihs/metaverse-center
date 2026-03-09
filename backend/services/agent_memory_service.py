@@ -176,7 +176,10 @@ class AgentMemoryService:
         top_k: int = 10,
         api_key: str | None = None,
     ) -> list[dict]:
-        """Retrieve memories ranked by semantic similarity + importance + recency."""
+        """Retrieve memories ranked by semantic similarity + importance + recency.
+
+        Uses Postgres ``retrieve_agent_memories`` RPC (migration 067).
+        """
         embedding = None
         if query_text:
             embedding = await EmbeddingService.embed(query_text, api_key=api_key)

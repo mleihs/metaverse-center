@@ -1,8 +1,8 @@
 ---
 title: "Testing Strategy"
 id: testing-strategy
-version: "2.2"
-date: 2026-03-07
+version: "2.3"
+date: 2026-03-09
 lang: de
 type: guide
 status: active
@@ -124,6 +124,7 @@ backend/tests/
 │   ├── test_news_scanner.py       # News-Scanner + Adapter
 │   ├── test_scan_adapters.py      # Scan-Adapter-Logik
 │   ├── test_style_reference_service.py # Style-Referenz-Service
+│   ├── test_alliance_service.py   # Allianz-Proposals, Voting, Tension, Upkeep, Dissolution (28 Tests)
 │   ├── test_model_resolver_img2img.py  # Bild-Modell-Resolver
 │   └── test_output_repair.py      # JSON-Output-Reparatur
 ├── integration/
@@ -423,6 +424,7 @@ frontend/tests/
 ├── api-services.test.ts              # API-Service-Layer Tests
 ├── echo-api.test.ts                  # Echo-API-Service
 ├── embassy-api.test.ts               # Embassy-API-Service
+├── epoch-alliance-api.test.ts         # Allianz-Proposal/Vote-API (12 Tests)
 ├── epoch-chat-api.test.ts            # Epoch-Chat-API
 ├── map-data.test.ts                  # Kartendaten-Transformation
 ├── map-force.test.ts                 # Force-Simulation Physik
@@ -986,12 +988,13 @@ jobs:
 | `test_epoch_service.py` | Epoch-Lifecycle (create → start → resolve_cycle → advance_phase → complete), Game-Instance-Integration (clone → archive → delete), Draft-Phase-Validierung, Bot-Integration bei resolve_cycle | Epoch-Orchestrierung |
 | `test_bot_personality.py` | 5 KI-Archetypen (Sentinel, Warlord, Diplomat, Strategist, Chaos), Entscheidungslogik pro Persoenlichkeit, Difficulty-Skalierung (easy/medium/hard), Auto-Draft mit Persoenlichkeits-Gewichtung | Bot-Entscheidungs-Engine |
 | `test_bot_player_service.py` | Bot-CRUD, Bot zu Epoch hinzufuegen/entfernen, Epoch-Management, Participant-Erstellung mit `is_bot=true` | Bot-Verwaltung |
+| `test_alliance_service.py` | Proposal-Erstellung (Phasen-Guard, Solo-Auto-Accept, Team-Kapazitaet), Voting (Accept/Reject/Resolution), Tension-Tracking (+10 Overlap, -5 Decay, Auto-Dissolve bei 80), Upkeep-Deduction (1 RP/Mitglied), Proposal-Expiry, Team-Dissolution, Structlog-Verifikation | Allianz-Redesign (28 Tests) |
 
 ### Backend: Infrastruktur + Email
 
 | Datei | Tests | Beschreibung |
 |-------|-------|-------------|
-| `test_cleanup_service.py` | Stats-Abfrage (6 Daten-Kategorien), Preview-vor-Delete (Cascade-Baum), Execute mit FK-Reihenfolge, Epoch-Loeschung (game_instances zuerst, dann 8 Child-Tabellen) | Admin-Datenbereinigung |
+| `test_cleanup_service.py` | Stats-Abfrage (6 Daten-Kategorien), Preview-vor-Delete (Cascade-Baum mit Item-Liste), Execute mit FK-Reihenfolge, Epoch-Loeschung (game_instances zuerst, dann 8 Child-Tabellen), Selektive Löschung via `epoch_ids`-Parameter, `min_age_days=0` erlaubt | Admin-Datenbereinigung |
 | `test_email_templates.py` | Zweisprachige Email-Rendering (EN/DE), Per-Simulation-Akzentfarben, WCAG-AA-Kontrast, 4 Template-Typen (Invitation, Cycle-Resolved, Phase-Changed, Epoch-Completed), 85+ lokalisierte Strings | Email-Templates |
 | `test_cycle_notification_service.py` | 6-Schritt-Empfaenger-Auflosung (Participants → Templates → Members → Emails → Preferences → Slug), Per-Player-Briefing-Daten (Rank-Gap, Missions, Spy-Intel, Threats, Alliances), Fog-of-War-Compliance | Cycle-Benachrichtigungen |
 | `test_email_service.py` | SMTP-SSL-Verbindung (Port 465), asyncio.to_thread-Integration, Fehlerbehandlung, Logging-Verifikation (PII-Check) | Email-Versand |
@@ -1021,6 +1024,7 @@ jobs:
 | `validation/aptitude.test.ts` | Budget-Validierung (36 Punkte), Bereichs-Validierung (3-9 pro Dimension), 6 Operative-Typen | Aptitude-Schemas |
 | `map-force.test.ts` | Force-Simulation Physik, Template/Instance-Orbit, Repulsion/Attraction-Balance, Equilibrium-Distance | Kartograph-Physik |
 | `realtime-service.test.ts` | 4 Supabase-Realtime-Channels (chat, presence, status, team), Signal-Subscriptions, Channel-Lifecycle | Realtime-Integration |
+| `epoch-alliance-api.test.ts` | listProposals (3 Tests), createProposal (4 Tests: POST, pending-Status, 400-TeamFull, 409-Duplicate), voteOnProposal (5 Tests: Accept, Reject, 403-NotMember, 400-AlreadyResolved) | Allianz-API-Vertrag (12 Tests) |
 | `notification-preferences.test.ts` | Opt-in/Opt-out-Toggles, API-Service-Aufrufe, Locale-Praeferenz | Benachrichtigungs-Praeferenzen |
 
 ---

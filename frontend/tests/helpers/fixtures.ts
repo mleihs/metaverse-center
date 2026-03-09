@@ -1,5 +1,7 @@
 import type {
   Agent,
+  AllianceProposal,
+  AllianceVote,
   Building,
   Campaign,
   CampaignEvent,
@@ -277,6 +279,36 @@ export function createEmbassy(overrides: Partial<Embassy> = {}): Embassy {
     },
     created_at: '2026-01-01T00:00:00Z',
     updated_at: '2026-01-01T00:00:00Z',
+    ...overrides,
+  };
+}
+
+// --- AllianceProposal ---
+
+export function createAllianceProposal(
+  overrides: Partial<AllianceProposal> = {},
+): AllianceProposal {
+  return {
+    id: crypto.randomUUID(),
+    epoch_id: '00000000-0000-0000-0000-000000000100',
+    team_id: '00000000-0000-0000-0000-000000000200',
+    proposer_simulation_id: '00000000-0000-0000-0000-000000000001',
+    proposed_at: '2026-02-01T12:00:00Z',
+    expires_at_cycle: 5,
+    status: 'pending',
+    ...overrides,
+  };
+}
+
+// --- AllianceVote ---
+
+export function createAllianceVote(overrides: Partial<AllianceVote> = {}): AllianceVote {
+  return {
+    id: crypto.randomUUID(),
+    proposal_id: '00000000-0000-0000-0000-000000000300',
+    voter_simulation_id: '00000000-0000-0000-0000-000000000001',
+    vote: 'accept',
+    voted_at: '2026-02-01T13:00:00Z',
     ...overrides,
   };
 }

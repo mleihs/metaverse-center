@@ -611,8 +611,8 @@ class TestSpyEffect:
         zones_chain.eq.return_value = zones_chain
         zones_chain.execute.return_value = MagicMock(
             data=[
-                {"security_level": "high"},
-                {"security_level": "moderate"},
+                {"name": "The Iron Bastion", "security_level": "high"},
+                {"name": "The Undertide Docks", "security_level": "moderate"},
             ]
         )
 
@@ -994,17 +994,30 @@ class TestRecall:
     @pytest.mark.asyncio
     async def test_recall_rejects_completed_mission(self):
         sb = MagicMock()
+        epoch_id = str(uuid4())
         mission_data = {
             "id": str(uuid4()),
+            "epoch_id": epoch_id,
             "source_simulation_id": str(SIM_ID),
             "status": "success",
         }
-        chain = MagicMock()
-        chain.select.return_value = chain
-        chain.eq.return_value = chain
-        chain.single.return_value = chain
-        chain.execute.return_value = MagicMock(data=mission_data)
-        sb.table.return_value = chain
+
+        def table_router(name):
+            chain = MagicMock()
+            chain.select.return_value = chain
+            chain.eq.return_value = chain
+            chain.single.return_value = chain
+            if name == "operative_missions":
+                chain.execute.return_value = MagicMock(data=mission_data)
+            elif name == "game_epochs":
+                chain.execute.return_value = MagicMock(
+                    data={"id": epoch_id, "status": "competition"}
+                )
+            else:
+                chain.execute.return_value = MagicMock(data=None)
+            return chain
+
+        sb.table.side_effect = table_router
 
         with pytest.raises(HTTPException) as exc:
             await OperativeService.recall(

@@ -71,20 +71,24 @@ export class AdminApiService extends BaseApiService {
   async previewCleanup(
     cleanupType: CleanupType,
     minAgeDays: number,
+    epochIds?: string[],
   ): Promise<ApiResponse<CleanupPreviewResult>> {
     return this.post('/admin/cleanup/preview', {
       cleanup_type: cleanupType,
       min_age_days: minAgeDays,
+      ...(epochIds ? { epoch_ids: epochIds } : {}),
     });
   }
 
   async executeCleanup(
     cleanupType: CleanupType,
     minAgeDays: number,
+    epochIds?: string[],
   ): Promise<ApiResponse<CleanupExecuteResult>> {
     return this.post('/admin/cleanup/execute', {
       cleanup_type: cleanupType,
       min_age_days: minAgeDays,
+      ...(epochIds ? { epoch_ids: epochIds } : {}),
     });
   }
 

@@ -136,17 +136,43 @@ Intel is displayed in the **Intel Dossier** tab, grouped by opponent. Each dossi
 
 ## 4. Alliance System
 
-### Creating Alliances
+Alliances are teams of epoch participants who share intelligence and earn diplomatic bonuses -- but at a cost. The Alliances tab on the epoch detail page shows existing teams, unaligned participants, and pending proposals.
 
-Any epoch participant can create an alliance. The Alliances tab on the epoch detail page shows:
+### Joining a Team
 
-- Existing alliances with their members
-- Unaligned participants available for recruitment
-- A "Propose Alliance" option to invite other players
+How you join a team depends on the current epoch phase:
+
+| Phase | Join Mechanic |
+|:------|:--------------|
+| **Lobby / Foundation** | Instant join -- click a team and you are in immediately |
+| **Competition / Reckoning** | Proposal required -- all current team members must unanimously approve. Proposals expire after **2 cycles** if not fully approved |
+
+Proposals that expire are silently removed. You can re-propose after expiry.
+
+### Shared Intelligence
+
+Allies automatically share fog-of-war intel:
+
+- Battle log entries from allied operatives appear in your log with an **"ALLIED INTEL"** badge
+- You see your allies' operations and the threats targeting them -- extending your fog-of-war visibility without deploying your own spies
+- Intel sharing is automatic and immediate; no action required
+
+### Upkeep & Tension
+
+Alliances are not free. Every cycle, each member pays an RP upkeep cost, and careless coordination can generate tension that tears the alliance apart.
+
+| Mechanic | Rule |
+|:---------|:-----|
+| **RP upkeep** | 1 RP per member per cycle. A 3-member team costs each member **3 RP/cycle** |
+| **Tension buildup** | +10 tension when 2+ allies attack the same target in the same cycle (per overlap) |
+| **Natural decay** | -5 tension per cycle |
+| **Auto-dissolve** | If tension reaches **80**, the alliance dissolves immediately |
+
+Coordinate your targets to avoid tension spikes. The alliance panel displays the current tension level.
 
 ### Benefits
 
-- **+15% diplomatic score bonus** for each active ally
+- **+15% diplomatic score bonus** per active ally
 - Diplomatic dimension rewards cooperation and coalition-building
 - Alliance membership is visible to all participants (public event)
 
@@ -156,10 +182,6 @@ Any epoch participant can create an alliance. The Alliances tab on the epoch det
 - If enabled, a player can leave an alliance mid-epoch
 - **Betrayal penalty**: -25% diplomatic score multiplier for the betrayer
 - Betrayal events are broadcast to all participants
-
-### Alliance Tab
-
-The alliance interface shows your current alliance status, allied nations, and -- if you have no alliance -- the list of unaligned participants you can recruit or join.
 
 ---
 

@@ -244,3 +244,5 @@ The 8 token files in `frontend/src/styles/tokens/` define the base design system
 - Simulations without design settings also use base tokens
 - Only simulations with explicit design settings get themed
 - The base token files remain the single source of truth for the default aesthetic
+
+**Theme-aware platform components:** `LoreScroll` `.section__title` uses `var(--font-brutalist)` with fallback tokens (`--heading-weight`, `--heading-transform`, `--heading-tracking`) so section titles inherit the simulation's custom heading font when rendered inside a themed shell. Narrative text (`.section__epigraph`, `.section__text`, pullquotes) stays on `var(--font-bureau)` as body/prose.

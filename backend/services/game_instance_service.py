@@ -28,8 +28,8 @@ class GameInstanceService:
     ) -> list[dict]:
         """Clone all participating simulations into game instances.
 
-        Uses the clone_simulations_for_epoch() SQL function for atomic
-        batch cloning with embassy/connection remapping and normalized
+        Uses Postgres ``clone_simulations_for_epoch`` (migration 035, updated 038/047/060)
+        for atomic batch cloning with embassy/connection remapping and normalized
         gameplay values.
 
         Args:
@@ -79,7 +79,7 @@ class GameInstanceService:
         admin_supabase: Client,
         epoch_id: UUID,
     ) -> None:
-        """Mark all game instances as archived after epoch completion."""
+        """Mark all game instances as archived via Postgres ``archive_epoch_instances`` (migration 035)."""
         admin_supabase.rpc(
             "archive_epoch_instances",
             {"p_epoch_id": str(epoch_id)},
@@ -93,7 +93,7 @@ class GameInstanceService:
         admin_supabase: Client,
         epoch_id: UUID,
     ) -> None:
-        """Delete all game instances for a cancelled epoch."""
+        """Delete all game instances for a cancelled epoch via Postgres ``delete_epoch_instances`` (migration 035)."""
         admin_supabase.rpc(
             "delete_epoch_instances",
             {"p_epoch_id": str(epoch_id)},
@@ -139,7 +139,7 @@ class GameInstanceService:
 
     @classmethod
     async def _refresh_game_metrics(cls, admin_supabase: Client) -> None:
-        """Refresh all game materialized views after cloning."""
+        """Refresh all game materialized views after cloning via ``refresh_all_game_metrics`` (migration 031)."""
         admin_supabase.rpc("refresh_all_game_metrics", {}).execute()
         logger.debug("Refreshed game materialized views")
 

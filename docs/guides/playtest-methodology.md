@@ -111,7 +111,9 @@ Before starting a playtest:
 
 ### Epoch Cleanup (if needed)
 
-Delete in reverse FK order:
+**Preferred:** Use Admin Panel → Data Cleanup tab. Scan shows individual epochs with checkboxes — select specific ones and purge. Cascade counts update live. Set `min_age_days` to `0` for immediate cleanup.
+
+**Manual SQL** (reverse FK order):
 
 ```sql
 DELETE FROM bot_decision_log WHERE epoch_id = 'UUID';

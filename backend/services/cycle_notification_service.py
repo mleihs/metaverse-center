@@ -9,6 +9,7 @@ via email_locale and per-simulation accent colors.
 import asyncio
 import logging
 
+from backend.models.epoch import SCORING_DIMENSIONS
 from backend.services.email_service import EmailService
 from backend.services.email_templates import (
     get_sim_accent,
@@ -82,7 +83,7 @@ class CycleNotificationService:
         if not members:
             return []
 
-        # 3. Get email addresses via SECURITY DEFINER RPC
+        # 3. Get email addresses via SECURITY DEFINER RPC (get_user_emails_batch, migration 044)
         user_ids = list({m["user_id"] for m in members})
         email_resp = admin_supabase.rpc(
             "get_user_emails_batch", {"user_ids": user_ids}
@@ -204,22 +205,19 @@ class CycleNotificationService:
                 player_score = s
                 player_rank = idx
 
-        # Compute previous rank
-        if prev_cycle >= 1:
-            prev_all = (
-                admin_supabase.table("epoch_scores")
-                .select("simulation_id, composite_score")
-                .eq("epoch_id", epoch_id)
-                .eq("cycle_number", prev_cycle)
-                .order("composite_score", desc=True)
-                .execute()
+        # Compute previous rank from already-fetched prev_scores_map
+        if prev_cycle >= 1 and prev_scores_map:
+            prev_sorted = sorted(
+                prev_scores_map.values(),
+                key=lambda s: float(s.get("composite_score", 0)),
+                reverse=True,
             )
-            for idx, s in enumerate(prev_all.data or [], start=1):
+            for idx, s in enumerate(prev_sorted, start=1):
                 if s["simulation_id"] == simulation_id:
                     prev_rank = idx
 
         prev_score = prev_scores_map.get(simulation_id, {})
-        dimensions = ["stability", "influence", "sovereignty", "diplomatic", "military"]
+        dimensions = SCORING_DIMENSIONS
 
         dim_data = []
         if player_score:
@@ -361,47 +359,78 @@ class CycleNotificationService:
         alliance_name = None
         ally_names: list[str] = []
         alliance_bonus_active = False
+        dissolved_alliance_name = None
         if player_team_id:
+            # Fetch team — check dissolved_at to distinguish active vs dissolved
             team_resp = (
                 admin_supabase.table("epoch_teams")
-                .select("name")
+                .select("name, dissolved_at, dissolved_reason")
                 .eq("id", player_team_id)
-                .is_("dissolved_at", "null")
                 .maybe_single()
                 .execute()
             )
             if team_resp.data:
-                alliance_name = team_resp.data["name"]
-                alliance_bonus_active = True
-                # Get ally names
-                ally_resp = (
-                    admin_supabase.table("epoch_participants")
-                    .select("simulation_id, simulations(name)")
+                if team_resp.data.get("dissolved_at"):
+                    # Team was dissolved this cycle — team_id still set
+                    dissolved_alliance_name = team_resp.data["name"]
+                else:
+                    alliance_name = team_resp.data["name"]
+                    alliance_bonus_active = True
+                    # Get ally names
+                    ally_resp = (
+                        admin_supabase.table("epoch_participants")
+                        .select("simulation_id, simulations(name)")
+                        .eq("epoch_id", epoch_id)
+                        .eq("team_id", player_team_id)
+                        .execute()
+                    )
+                    ally_names = [
+                        (p.get("simulations") or {}).get("name", "?")
+                        for p in (ally_resp.data or [])
+                        if p["simulation_id"] != simulation_id
+                    ]
+
+        # ── Alliance proposals & tension (B6b) ──
+        pending_proposals_count = 0
+        alliance_tension = 0
+        alliance_upkeep_cost = 0
+        if player_team_id and alliance_bonus_active:
+            try:
+                # Count pending proposals for this player's team
+                team_proposals = (
+                    admin_supabase.table("epoch_alliance_proposals")
+                    .select("id", count="exact")
                     .eq("epoch_id", epoch_id)
                     .eq("team_id", player_team_id)
+                    .eq("status", "pending")
                     .execute()
                 )
-                ally_names = [
-                    (p.get("simulations") or {}).get("name", "?")
-                    for p in (ally_resp.data or [])
-                    if p["simulation_id"] != simulation_id
-                ]
+                pending_proposals_count = team_proposals.count or 0
+                # Get tension from team
+                tension_resp = (
+                    admin_supabase.table("epoch_teams")
+                    .select("tension")
+                    .eq("id", player_team_id)
+                    .maybe_single()
+                    .execute()
+                )
+                if tension_resp.data:
+                    alliance_tension = tension_resp.data.get("tension", 0)
+                # Compute upkeep cost
+                member_count = len(ally_names) + 1  # +1 for self
+                alliance_upkeep_cost = member_count
+            except Exception:
+                pass  # Best-effort
 
-        # ── Rank gap (B3) ──
+        # ── Rank gap (B3) — pass raw data, template handles i18n ──
         rank_gap = None
         if player_rank == 1 and len(current_scores) > 1:
             gap = round(composite - float(current_scores[1]["composite_score"]), 1)
-            rank_gap = {
-                "en": f"Leading by {gap} points",
-                "de": f"F\u00fchrt mit {gap} Punkten Vorsprung",
-            }
+            rank_gap = {"type": "leading", "gap": gap}
         elif player_rank > 1 and current_scores:
             gap = round(float(current_scores[player_rank - 2]["composite_score"]) - composite, 1)
             ahead_rank = player_rank - 1
-            rank_gap = {
-                "en": f"{gap} points behind #{ahead_rank}",
-                "de": f"{gap} Punkte hinter #{ahead_rank}",
-            }
+            rank_gap = {"type": "trailing", "gap": gap, "pos": ahead_rank}
 
         # ── Next cycle preview (B4) ──
         pending_missions = sum(1 for o in ops if o["status"] == "active")
@@ -457,6 +486,10 @@ class CycleNotificationService:
             "alliance_name": alliance_name,
             "ally_names": ally_names,
             "alliance_bonus_active": alliance_bonus_active,
+            "pending_proposals_count": pending_proposals_count,
+            "alliance_tension": alliance_tension,
+            "alliance_upkeep_cost": alliance_upkeep_cost,
+            "dissolved_alliance_name": dissolved_alliance_name,
             "next_cycle_missions": pending_missions,
             "next_cycle_rp_projection": rp_projection,
         }

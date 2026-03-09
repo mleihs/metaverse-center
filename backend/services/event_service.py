@@ -373,6 +373,7 @@ class EventService(BaseService):
     ) -> list[dict]:
         """Refresh game metrics and process cascade events after any event mutation.
 
+        Uses Postgres ``process_cascade_events`` (migration 073).
         Returns list of cascade events created (empty if none).
         """
         await GameMechanicsService.refresh_metrics(supabase)
