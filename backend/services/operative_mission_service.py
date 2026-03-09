@@ -247,14 +247,52 @@ class OperativeMissionService:
 
         mission = resp.data[0]
 
-        # Log deployment to battle log (both human and bot paths)
+        # Build context from data already available in this method
+        # Agent name already fetched at line 172 (validation query)
+        context = {
+            "agent_name": agent.data.get("name"),
+            "target_sim_name": None,
+            "target_zone_name": None,
+        }
+        try:
+            if body.target_simulation_id:
+                sim_resp = (
+                    supabase.table("simulations")
+                    .select("name")
+                    .eq("id", str(body.target_simulation_id))
+                    .maybe_single()
+                    .execute()
+                )
+                if sim_resp.data:
+                    context["target_sim_name"] = sim_resp.data["name"]
+            if body.target_zone_id:
+                zone_resp = (
+                    supabase.table("zones")
+                    .select("name")
+                    .eq("id", str(body.target_zone_id))
+                    .maybe_single()
+                    .execute()
+                )
+                if zone_resp.data:
+                    context["target_zone_name"] = zone_resp.data["name"]
+        except Exception:
+            logger.debug("Context lookup failed", exc_info=True)
+
+        # Log deployment to battle log with pre-fetched context
         try:
             await BattleLogService.log_operative_deployed(
-                supabase, epoch_id, epoch.get("current_cycle", 1), mission
+                supabase, epoch_id, epoch.get("current_cycle", 1),
+                mission, context=context,
             )
         except Exception:
             logger.debug("Battle log write failed for deployment", exc_info=True)
 
+        # Attach context to response for frontend toast (no re-query needed)
+        mission["agents"] = {"name": context["agent_name"]}
+        if context["target_sim_name"]:
+            mission["target_sim"] = {"name": context["target_sim_name"]}
+        if context["target_zone_name"]:
+            mission["target_zone"] = {"name": context["target_zone_name"]}
         return mission
 
     # ── Success Probability ───────────────────────────────
@@ -619,7 +657,7 @@ class OperativeMissionService:
         if target_sim_id:
             zones_resp = (
                 supabase.table("zones")
-                .select("security_level")
+                .select("name, security_level")
                 .eq("simulation_id", target_sim_id)
                 .execute()
             )
@@ -631,9 +669,18 @@ class OperativeMissionService:
                 .eq("status", "active")
                 .execute()
             )
-            zone_levels = [z["security_level"] for z in (zones_resp.data or [])]
+            zones_data = zones_resp.data or []
+            zone_levels = [z["security_level"] for z in zones_data]
+            zone_details = [
+                {"name": z["name"], "security_level": z["security_level"]}
+                for z in zones_data
+            ]
             guardian_count = guardian_resp.count or 0
-            intel: dict = {"zone_security": zone_levels, "guardian_count": guardian_count}
+            intel: dict = {
+                "zone_security": zone_levels,
+                "zone_details": zone_details,
+                "guardian_count": guardian_count,
+            }
 
             # Check for zone fortifications in target simulation
             fort_resp = (
@@ -677,7 +724,8 @@ class OperativeMissionService:
                 UUID(mission["epoch_id"]),
                 cycle,
                 "intel_report",
-                f"Spy intel: {guardian_count} guardians, zones: {', '.join(zone_levels)}",
+                f"Spy intel: {guardian_count} guardians, "
+                f"zones: {', '.join(f'{z['name']}: {z['security_level']}' for z in zone_details)}",
                 source_simulation_id=UUID(mission["source_simulation_id"]),
                 target_simulation_id=UUID(target_sim_id),
                 mission_id=UUID(mission["id"]),
@@ -919,6 +967,15 @@ class OperativeMissionService:
                 status.HTTP_403_FORBIDDEN,
                 "You can only recall operatives from your own simulation.",
             )
+
+        # Guard: prevent recall on completed/cancelled epochs
+        epoch = await EpochService.get(supabase, UUID(mission["epoch_id"]))
+        if epoch["status"] in ("completed", "cancelled"):
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                "Cannot recall operatives from a completed or cancelled epoch.",
+            )
+
         if mission["status"] not in ("deploying", "active"):
             raise HTTPException(
                 status.HTTP_400_BAD_REQUEST,
@@ -958,6 +1015,20 @@ class OperativeMissionService:
 
         Returns list of detected missions.
         """
+        epoch = await EpochService.get(supabase, epoch_id)
+
+        if epoch["status"] not in ("foundation", "competition", "reckoning"):
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                "Counter-intel sweep is only available during active phases.",
+            )
+
+        if epoch.get("current_cycle", 1) < 2:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                "Counter-intel sweep is not available in the first cycle.",
+            )
+
         # Spend 4 RP
         await EpochService.spend_rp(supabase, epoch_id, simulation_id, 4)
 

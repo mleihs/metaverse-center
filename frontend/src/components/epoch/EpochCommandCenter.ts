@@ -56,8 +56,9 @@ import './EpochLobbyActions.js';
 import './BotConfigPanel.js';
 import './DraftRosterPanel.js';
 import './WarRoomPanel.js';
+import './EpochResultsView.js';
 
-type TabId = 'overview' | 'leaderboard' | 'operations' | 'battle-log' | 'war-room' | 'alliances' | 'chat';
+type TabId = 'overview' | 'leaderboard' | 'operations' | 'battle-log' | 'war-room' | 'alliances' | 'chat' | 'results';
 
 @localized()
 @customElement('velg-epoch-command-center')
@@ -1936,7 +1937,7 @@ export class VelgEpochCommandCenter extends LitElement {
     }
     this._epoch = epoch;
     this._prevEpochStatus = epoch.status;
-    this._activeTab = 'overview';
+    this._activeTab = epoch.status === 'completed' ? 'results' : 'overview';
     this._injectEpochSchema(epoch);
     await this._loadEpochDetails(epoch.id);
   }
@@ -1991,7 +1992,9 @@ export class VelgEpochCommandCenter extends LitElement {
               ${msg('Cycle')} ${this._epoch.current_cycle}${this._epoch.config ? `/${this._getTotalCycles()}` : ''}
               ${
                 this._epoch.config
-                  ? html`&nbsp;&middot;&nbsp;${this._epoch.config.cycle_hours}h ${msg('cycles')}`
+                  ? this._epoch.epoch_type === 'academy'
+                    ? html`&nbsp;&middot;&nbsp;${msg('Auto-resolve')}`
+                    : html`&nbsp;&middot;&nbsp;${this._epoch.config.cycle_hours}h ${msg('cycles')}`
                   : nothing
               }
             </p>
@@ -2036,6 +2039,9 @@ export class VelgEpochCommandCenter extends LitElement {
       { id: 'battle-log', label: msg('Battle Log') },
       { id: 'war-room', label: msg('War Room') },
       { id: 'alliances', label: msg('Alliances') },
+      ...(this._epoch?.status === 'completed'
+        ? [{ id: 'results' as TabId, label: msg('Results') }]
+        : []),
     ];
 
     return html`
@@ -2097,6 +2103,7 @@ export class VelgEpochCommandCenter extends LitElement {
             .entries=${this._leaderboard}
             .epoch=${this._epoch}
             .participants=${this._participants}
+            .mySimulationId=${this._myParticipant?.simulation_id ?? ''}
           ></velg-epoch-leaderboard>
         `;
       case 'operations':
@@ -2107,6 +2114,7 @@ export class VelgEpochCommandCenter extends LitElement {
             .threats=${this._threats}
             .actionLoading=${this._actionLoading}
             .cycleJustResolved=${this._cycleJustResolved}
+            .epochStatus=${this._epoch?.status ?? ''}
             @recall-operative=${(e: CustomEvent) => this._onRecallOperative(e.detail.missionId)}
           ></velg-epoch-operations-tab>
         `;
@@ -2138,7 +2146,16 @@ export class VelgEpochCommandCenter extends LitElement {
             @create-team=${(e: CustomEvent) => this._onCreateTeam(e.detail.name)}
             @join-team=${(e: CustomEvent) => this._onJoinTeam(e.detail.teamId)}
             @leave-team=${() => this._onLeaveTeam()}
+            @invite-player=${(e: CustomEvent) => this._onInvitePlayer(e.detail.simulationName)}
           ></velg-epoch-alliances-tab>
+        `;
+      case 'results':
+        return html`
+          <velg-epoch-results-view
+            .epoch=${this._epoch}
+            .participants=${this._participants}
+            .mySimulationId=${this._myParticipant?.simulation_id ?? ''}
+          ></velg-epoch-results-view>
         `;
       default:
         return nothing;
@@ -2521,6 +2538,13 @@ export class VelgEpochCommandCenter extends LitElement {
     } else {
       VelgToast.error(msg('Failed to leave alliance.'));
     }
+  }
+
+  private _onInvitePlayer(simulationName: string) {
+    const teamName = this._teams.find((t) => t.id === this._myParticipant?.team_id)?.name ?? '';
+    VelgToast.info(
+      msg(str`Alliance invitation sent to ${simulationName} for "${teamName}".`),
+    );
   }
 
   // ── Operative Recall ────────────────────────────

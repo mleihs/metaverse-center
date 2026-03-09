@@ -178,7 +178,7 @@ export class VelgWarRoomPanel extends LitElement {
       animation: statEnter 0.35s ease-out both;
     }
 
-    .stat-box:nth-child(1) { --stat-color: var(--color-primary); animation-delay: 0ms; }
+    .stat-box:nth-child(1) { --stat-color: var(--color-info); animation-delay: 0ms; }
     .stat-box:nth-child(2) { --stat-color: var(--color-success); animation-delay: 60ms; }
     .stat-box:nth-child(3) { --stat-color: var(--color-danger); animation-delay: 120ms; }
     .stat-box:nth-child(4) { --stat-color: var(--color-warning); animation-delay: 180ms; }

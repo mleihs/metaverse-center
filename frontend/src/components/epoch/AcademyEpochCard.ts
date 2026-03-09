@@ -280,6 +280,7 @@ export class VelgAcademyEpochCard extends LitElement {
   `;
 
   @property({ type: Number }) academyEpochsPlayed = 0;
+  @property({ type: Boolean }) hasActiveEpoch = false;
 
   private _handleStart(): void {
     this.dispatchEvent(
@@ -339,16 +340,16 @@ export class VelgAcademyEpochCard extends LitElement {
                 <div class="difficulty__pip"></div>
               </div>
             </div>
-            <span class="format-tag">${msg('Sprint 3d')}</span>
+            <span class="format-tag">${msg('Quick Match')}</span>
           </div>
 
           <button
             class="btn-train"
             @click=${this._handleStart}
-            aria-label=${this.academyEpochsPlayed === 0 ? msg('Start your first training') : msg('Start new training')}
+            aria-label=${this.hasActiveEpoch ? msg('Resume active training') : this.academyEpochsPlayed === 0 ? msg('Start your first training') : msg('Start new training')}
           >
             ${icons.crossedSwords(14)}
-            ${this.academyEpochsPlayed === 0 ? msg('Start Training') : msg('New Training')}
+            ${this.hasActiveEpoch ? msg('Resume Training') : this.academyEpochsPlayed === 0 ? msg('Start Training') : msg('New Training')}
           </button>
         </div>
       </div>

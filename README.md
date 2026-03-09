@@ -110,6 +110,27 @@ Each dimension aggregates from materialized views (building readiness, zone stab
 
 Five personality archetypes &mdash; **Sentinel**, **Warlord**, **Diplomat**, **Strategist**, **Chaos** &mdash; each at three difficulty levels (easy/medium/hard). Bots make fog-of-war-compliant decisions using the same `OperativeService.deploy()` pipeline as human players. Dual-mode chat: instant template-based messages or LLM-generated tactical banter via OpenRouter.
 
+### Results Screen &amp; Commendations
+
+When an epoch completes, the fog of war lifts and a **DECLASSIFIED** results view presents the full picture:
+- **Top-3 podium** with gold/silver/bronze accents, score count-up animations, and dimension titles
+- **Personal operation report** &mdash; total operations, successes, detections, and success rate with animated stat bars
+- **MVP commendations** &mdash; Master Spy (military), Iron Guardian (sovereignty), The Diplomat (diplomatic), Most Lethal (success rate), Cultural Domination (influence)
+- **5-dimension comparison bars** &mdash; Stability, Influence, Sovereignty, Diplomacy, Military with per-participant animated breakdowns
+- Full standings table with your own row highlighted
+
+All animations respect `prefers-reduced-motion`. API: `GET /api/v1/epochs/{epoch_id}/results-summary`.
+
+### Alliance System
+
+Participants can form and manage alliances during competitive epochs. Allies receive a +15% diplomatic score bonus; betrayal (if enabled) applies a -25% diplomatic penalty. The alliance tab surfaces unaligned players for recruitment.
+
+### Academy Mode
+
+Solo training against 2&ndash;4 AI bot opponents in a sprint format (3-day duration, 4-hour cycles). One-click creation from the dashboard auto-joins the player's simulation, adds bots with rotated personalities, and starts the match. One active academy epoch per player.
+
+> See [`docs/guides/epoch-gameplay-guide.md`](docs/guides/epoch-gameplay-guide.md) for the full player-facing gameplay guide.
+
 ---
 
 ## TCG Card System
@@ -299,7 +320,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 | Frontend tests | 453 |
 | E2E specs | 81 |
 | Localized UI strings | 3,160 (EN/DE, 0 missing) |
-| Documentation files | 39 (Divio structure + ADRs) |
+| Documentation files | 40 (Divio structure + ADRs) |
 | Flagship simulations | 5 (users can create more) |
 | Operative types | 6 |
 | Scoring dimensions | 5 |
@@ -316,7 +337,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 - **TCG card system** &mdash; unified collectible card component with 3D tilt, holographic foil, rarity tiers, stat gems, aptitude pips, card-deal animations
 - **Cross-simulation diplomacy** &mdash; embassies, ambassadors, event echoes (narrative bleed between worlds)
 - **Cartographer's Map** &mdash; force-directed multiverse graph with operative trails, health arcs, sparklines, battle feed, leaderboard
-- **Competitive Epochs** &mdash; operative deployment, 5-dimension scoring, cycle-based resolution, alliances & betrayal, open participation (any user + any sim)
+- **Competitive Epochs** &mdash; operative deployment, 5-dimension scoring, cycle-based resolution, alliances & betrayal, open participation (any user + any sim), DECLASSIFIED results screen with podium/MVP commendations, academy solo training mode
 - **Foundation phase ("Nebelkrieg")** &mdash; spies + guardians in early game, hidden zone fortification (+1 security for 5 cycles), intel dossier tab
 - **Agent aptitudes & draft phase** &mdash; pre-match deckbuilding with card-hand draft UI and aptitude-weighted success rates
 - **Bot AI opponents** &mdash; 5 personality archetypes, 3 difficulty levels, fog-of-war compliant, dual-mode chat
@@ -423,13 +444,13 @@ e2e/                        # Playwright E2E tests (13 spec files)
 
 ## Documentation
 
-The `docs/` directory contains 39 documents organized in [Divio](https://docs.divio.com/documentation-system/) structure with YAML frontmatter. See [`docs/INDEX.md`](docs/INDEX.md) for the full catalog or [`docs/llms.txt`](docs/llms.txt) for AI-friendly consumption. See [`CHANGELOG.md`](CHANGELOG.md) for recent changes.
+The `docs/` directory contains 40 documents organized in [Divio](https://docs.divio.com/documentation-system/) structure with YAML frontmatter. See [`docs/INDEX.md`](docs/INDEX.md) for the full catalog or [`docs/llms.txt`](docs/llms.txt) for AI-friendly consumption. See [`CHANGELOG.md`](CHANGELOG.md) for recent changes.
 
 | Category | Count | Contents |
 |:---------|------:|:---------|
 | **specs/** | 14 | Platform Architecture, API (~305 endpoints), Auth, AI, Theming, Embassies, Epochs, Game Systems, Substrate Resonances |
 | **references/** | 5 | Database Schema (v3.3, 56 tables), Domain Models, Feature Catalog, Components, Design System |
-| **guides/** | 6 | Deployment (v1.3, 15 migration lessons), Testing, Migration, Implementation Plan (160 tasks), Simulation Blueprint, Playtest |
+| **guides/** | 7 | Deployment (v1.3, 15 migration lessons), Testing, Migration, Implementation Plan (160 tasks), Simulation Blueprint, Playtest, Epoch Gameplay Guide |
 | **explanations/** | 5 | Project Overview, Techstack, Game Design Document, Concept Lore, TCG Card System |
 | **analysis/** | 6 | Epoch balance reports (2P-5P + cross-reference + playthrough verification) |
 | **audits/** | 1 | Simulation Forge live playthrough audit (UX, content quality, game design) |

@@ -386,4 +386,21 @@ class CycleResolutionService:
                     admin = admin_supabase or supabase
                     await GameInstanceService.archive_instances(admin, epoch_id)
 
+                # Log auto-phase transition
+                await BattleLogService.log_phase_change(
+                    db, epoch_id, new_cycle, current_status, new_status,
+                )
+                try:
+                    from backend.services.cycle_notification_service import CycleNotificationService
+                    if new_status == "completed":
+                        await CycleNotificationService.send_epoch_completed_notifications(
+                            admin_supabase or supabase, str(epoch_id),
+                        )
+                    else:
+                        await CycleNotificationService.send_phase_change_notifications(
+                            admin_supabase or supabase, str(epoch_id), current_status, new_status,
+                        )
+                except Exception:
+                    logger.warning("Auto-phase notification failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
+
         return resp.data[0]

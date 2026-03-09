@@ -64,10 +64,53 @@ class BattleLogService:
         epoch_id: UUID,
         cycle_number: int,
         mission: dict,
+        context: dict | None = None,
     ) -> dict:
-        """Log an operative deployment."""
+        """Log an operative deployment with enriched metadata.
+
+        Args:
+            context: Pre-fetched names dict with keys agent_name,
+                     target_sim_name, target_zone_name. If None, falls
+                     back to querying the DB (for callers that don't
+                     have context pre-fetched, e.g. bot deploy path).
+        """
         op_type = mission["operative_type"]
         article = "An" if op_type[0] in "aeiou" else "A"
+
+        metadata: dict = {"operative_type": op_type}
+
+        if context:
+            # Use pre-fetched context (no extra DB queries)
+            if context.get("agent_name"):
+                metadata["agent_name"] = context["agent_name"]
+            if context.get("target_zone_name"):
+                metadata["target_zone_name"] = context["target_zone_name"]
+            if context.get("target_sim_name"):
+                metadata["target_sim_name"] = context["target_sim_name"]
+        else:
+            # Fallback: fetch from DB (used by bot deploy path)
+            try:
+                if mission.get("agent_id"):
+                    agent_resp = supabase.table("agents").select("name").eq(
+                        "id", str(mission["agent_id"])
+                    ).maybe_single().execute()
+                    if agent_resp.data:
+                        metadata["agent_name"] = agent_resp.data["name"]
+                if mission.get("target_zone_id"):
+                    zone_resp = supabase.table("zones").select("name").eq(
+                        "id", str(mission["target_zone_id"])
+                    ).maybe_single().execute()
+                    if zone_resp.data:
+                        metadata["target_zone_name"] = zone_resp.data["name"]
+                if mission.get("target_simulation_id"):
+                    sim_resp = supabase.table("simulations").select("name").eq(
+                        "id", str(mission["target_simulation_id"])
+                    ).maybe_single().execute()
+                    if sim_resp.data:
+                        metadata["target_sim_name"] = sim_resp.data["name"]
+            except Exception:
+                pass  # Best-effort enrichment
+
         return await cls.log_event(
             supabase,
             epoch_id,
@@ -82,6 +125,7 @@ class BattleLogService:
             ),
             mission_id=UUID(mission["id"]),
             is_public=(mission["operative_type"] == "guardian"),
+            metadata=metadata,
         )
 
     @classmethod
@@ -119,7 +163,11 @@ class BattleLogService:
             ),
             mission_id=UUID(mission["id"]),
             is_public=is_public,
-            metadata={"operative_type": mission["operative_type"], "outcome": outcome},
+            metadata={
+                "operative_type": mission["operative_type"],
+                "outcome": outcome,
+                "agent_name": mission.get("agents", {}).get("name") if isinstance(mission.get("agents"), dict) else None,
+            },
         )
 
     @classmethod

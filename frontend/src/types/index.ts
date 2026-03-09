@@ -723,6 +723,7 @@ export interface ActiveEpochParticipation {
   epoch_id: UUID;
   epoch_name: string;
   epoch_status: EpochStatus;
+  epoch_type: EpochType;
   current_cycle: number;
   total_cycles: number;
   current_rp: number;
@@ -1200,6 +1201,7 @@ export interface OperativeMission {
   created_at: string;
   agents?: { name: string; portrait_image_url?: string };
   target_sim?: { name: string };
+  target_zone?: { name: string };
 }
 
 export interface LeaderboardEntry {
@@ -1220,6 +1222,38 @@ export interface LeaderboardEntry {
   sovereignty_title?: string;
   diplomatic_title?: string;
   military_title?: string;
+}
+
+export interface ParticipantStats {
+  simulation_id: UUID;
+  total_operations: number;
+  successes: number;
+  failures: number;
+  detections: number;
+  captured: number;
+  success_rate: number;
+}
+
+export interface MVPAward {
+  title: string;
+  description: string;
+  simulation_id: UUID;
+  simulation_name: string;
+  value: number;
+}
+
+export interface ResultsSummary {
+  epoch: {
+    id: UUID;
+    name: string;
+    epoch_type: string;
+    status: string;
+    current_cycle: number;
+  };
+  standings: LeaderboardEntry[];
+  participant_stats: ParticipantStats[];
+  mvp_awards: MVPAward[];
+  score_history: Record<UUID, EpochScore[]>;
 }
 
 export interface EpochScore {

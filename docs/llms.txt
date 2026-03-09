@@ -30,6 +30,7 @@
 
 ## Guides
 - [Deployment Infrastructure](guides/deployment-infrastructure.md)
+- [Epoch Gameplay Guide](guides/epoch-gameplay-guide.md): Player-facing guide — operative types, fog of war, alliances, scoring dimensions, DECLASSIFIED results screen, MVP commendations, academy training mode
 - [Implementation Plan](guides/implementation-plan.md)
 - [Migration Strategy](guides/migration-strategy.md)
 - [Epoch Playtest Methodology](guides/playtest-methodology.md)

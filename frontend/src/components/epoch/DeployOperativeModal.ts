@@ -653,9 +653,12 @@ export class VelgDeployOperativeModal extends LitElement {
 			margin-bottom: var(--space-3);
 			/* Allow enlarged cards to paint over siblings */
 			position: relative;
+			isolation: isolate;
 		}
 
 		.mission-grid velg-mission-card {
+			position: relative;
+			z-index: 1;
 			opacity: 0;
 			animation: mission-deal 350ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 			transition:
@@ -1181,8 +1184,8 @@ export class VelgDeployOperativeModal extends LitElement {
 			margin-left: -12px;
 			transform: translateY(var(--fan-y, 0px)) rotateZ(var(--fan-rot, 0deg));
 			/* Invisible hover buffer prevents flicker when card scales beyond wrapper */
-			padding: 60px 30px 10px;
-			margin-top: -60px;
+			padding: 100px 30px 10px;
+			margin-top: -100px;
 			margin-bottom: -10px;
 		}
 
@@ -1193,8 +1196,8 @@ export class VelgDeployOperativeModal extends LitElement {
 		/* Scale the card INSIDE the wrapper, not the wrapper itself */
 		.hand__card-wrapper velg-game-card {
 			transition:
-				transform 380ms cubic-bezier(0.34, 1.56, 0.64, 1),
-				filter 250ms ease;
+				transform 380ms cubic-bezier(0.34, 1.56, 0.64, 1) 60ms,
+				filter 250ms ease 60ms;
 			transform-origin: bottom center;
 		}
 
@@ -1203,11 +1206,12 @@ export class VelgDeployOperativeModal extends LitElement {
 		}
 
 		.hand__card-wrapper:hover velg-game-card {
-			transform: translateY(-60px) rotateZ(0deg) scale(2);
+			transform: translateY(-30px) rotateZ(0deg) scale(1.4);
+			transition-delay: 0ms;
 			filter:
-				drop-shadow(0 0 24px rgba(245 158 11 / 0.45))
-				drop-shadow(0 0 52px rgba(245 158 11 / 0.2))
-				drop-shadow(0 30px 60px rgba(0 0 0 / 0.85));
+				drop-shadow(0 0 16px rgba(245 158 11 / 0.35))
+				drop-shadow(0 0 36px rgba(245 158 11 / 0.15))
+				drop-shadow(0 20px 40px rgba(0 0 0 / 0.7));
 		}
 
 		.hand__card-wrapper:hover ~ .hand__card-wrapper {
@@ -1271,6 +1275,125 @@ export class VelgDeployOperativeModal extends LitElement {
 			white-space: nowrap;
 			pointer-events: none;
 			z-index: 3;
+		}
+
+		/* ══════════════════════════════════════════════════
+		   AGENT DETAIL STRIP — aptitude readout
+		   ══════════════════════════════════════════════════ */
+		/* ── Agent Detail Strip ── */
+		.agent-detail-slot {
+			width: 100%;
+			max-width: 520px;
+			min-height: 42px;
+			flex-shrink: 0;
+			z-index: 25;
+			position: relative;
+			margin-bottom: var(--space-2);
+		}
+
+		.agent-detail-slot__hint {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			height: 42px;
+			font-family: var(--font-mono, monospace);
+			font-size: 10px;
+			text-transform: uppercase;
+			letter-spacing: 0.08em;
+			color: var(--color-gray-600);
+			border: 1px dashed var(--color-gray-800);
+		}
+
+		.agent-detail {
+			display: flex;
+			align-items: center;
+			gap: var(--space-4);
+			padding: var(--space-2) var(--space-4);
+			background:
+				linear-gradient(90deg, rgba(255 255 255 / 0.02) 0%, transparent 60%),
+				var(--color-gray-900, #0f172a);
+			border: 1px solid var(--color-gray-800, #1f2937);
+			border-left: 3px solid var(--agent-accent, var(--color-epoch-accent, #f59e0b));
+			animation: detail-fade-in 200ms ease both;
+		}
+
+		@keyframes detail-fade-in {
+			from { opacity: 0; }
+			to { opacity: 1; }
+		}
+
+		.agent-detail__identity {
+			display: flex;
+			align-items: center;
+			gap: var(--space-2);
+			flex-shrink: 0;
+		}
+
+		.agent-detail__name {
+			font-family: var(--font-brutalist);
+			font-weight: 900;
+			font-size: 11px;
+			text-transform: uppercase;
+			letter-spacing: 0.08em;
+			color: var(--color-gray-100);
+			white-space: nowrap;
+		}
+
+		.agent-detail__bars {
+			flex: 1;
+			min-width: 0;
+			max-width: 280px;
+		}
+
+		.agent-detail__fit {
+			flex-shrink: 0;
+			font-family: var(--font-mono, monospace);
+			font-size: 10px;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.06em;
+			padding: 2px 8px;
+			border: 1px solid;
+		}
+
+		.agent-detail__fit--good {
+			color: var(--color-success, #10b981);
+			border-color: color-mix(in srgb, var(--color-success) 40%, transparent);
+			background: color-mix(in srgb, var(--color-success) 8%, transparent);
+		}
+
+		.agent-detail__fit--fair {
+			color: var(--color-warning, #f59e0b);
+			border-color: color-mix(in srgb, var(--color-warning) 40%, transparent);
+			background: color-mix(in srgb, var(--color-warning) 8%, transparent);
+		}
+
+		.agent-detail__fit--poor {
+			color: var(--color-danger, #ef4444);
+			border-color: color-mix(in srgb, var(--color-danger) 40%, transparent);
+			background: color-mix(in srgb, var(--color-danger) 8%, transparent);
+		}
+
+		@media (max-width: 768px) {
+			.agent-detail {
+				flex-direction: column;
+				align-items: stretch;
+				gap: var(--space-2);
+			}
+
+			.agent-detail__bars {
+				max-width: none;
+			}
+
+			.agent-detail-slot {
+				max-width: none;
+			}
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			.agent-detail {
+				animation: none;
+			}
 		}
 
 		/* ══════════════════════════════════════════════════
@@ -1628,6 +1751,7 @@ export class VelgDeployOperativeModal extends LitElement {
   // Asset
   @state() private _agents: Agent[] = [];
   @state() private _selectedAgentId = '';
+  @state() private _hoveredAgentId = '';
   @state() private _aptitudeMap: Map<string, AptitudeSet> = new Map();
 
   // Mission
@@ -1679,6 +1803,7 @@ export class VelgDeployOperativeModal extends LitElement {
       this._error = '';
       this._dealt = false;
       this._selectedAgentId = '';
+      this._hoveredAgentId = '';
       this._selectedType = '';
       this._selectedEmbassyId = '';
       this._selectedZoneId = '';
@@ -1861,6 +1986,7 @@ export class VelgDeployOperativeModal extends LitElement {
     aptBonus: number;
     zonePenalty: number;
     embBonus: number;
+    hasHiddenModifiers: boolean;
   } {
     const base = 0.55;
     let aptBonus = 0;
@@ -1872,7 +1998,7 @@ export class VelgDeployOperativeModal extends LitElement {
       if (apt) {
         const val = apt[this._selectedType as keyof AptitudeSet] as number | undefined;
         if (typeof val === 'number') {
-          aptBonus = (val - 5) * 0.03;
+          aptBonus = val * 0.03;
         }
       }
     }
@@ -1880,15 +2006,25 @@ export class VelgDeployOperativeModal extends LitElement {
     if (this._selectedZoneId) {
       const zone = this._targetZones.find((z) => z.id === this._selectedZoneId);
       if (zone) {
-        const secMap: Record<string, number> = { low: 1, medium: 2, high: 3 };
-        zonePenalty = (secMap[zone.security_level] ?? 2) * 0.05;
+        const SECURITY_MAP: Record<string, number> = {
+          fortress: 10.0, maximum: 10.0, high: 8.5, guarded: 7.0,
+          moderate: 5.5, medium: 5.5, low: 4.0, contested: 3.0, lawless: 2.0,
+        };
+        zonePenalty = (SECURITY_MAP[zone.security_level] ?? 5.5) * 0.05;
       }
     }
 
-    if (this._selectedEmbassyId) embBonus = 0.15;
+    if (this._selectedEmbassyId) {
+      const emb = this._getSelectedEmbassy?.();
+      const embAny = emb as unknown as { effectiveness?: number } | undefined;
+      embBonus = embAny?.effectiveness != null
+        ? embAny.effectiveness * 0.15
+        : 0.15;
+    }
 
+    // Guardian + resonance modifiers intentionally hidden (fog of war)
     const total = Math.max(0.05, Math.min(0.95, base + aptBonus - zonePenalty + embBonus));
-    return { total, base, aptBonus, zonePenalty, embBonus };
+    return { total, base, aptBonus, zonePenalty, embBonus, hasHiddenModifiers: true };
   }
 
   private _getFitLevel(aptitude: number): { label: string; css: string } {
@@ -1943,6 +2079,7 @@ export class VelgDeployOperativeModal extends LitElement {
   private _selectAgent(agentId: string): void {
     if (this.deployedAgentIds.includes(agentId)) return;
     this._selectedAgentId = agentId;
+    this._hoveredAgentId = '';
     this._step = 'mission';
     this._triggerSlam('asset', '');
   }
@@ -2131,10 +2268,16 @@ export class VelgDeployOperativeModal extends LitElement {
       ]);
 
       if (resp.success) {
+        const m = resp.data as OperativeMission;
+        const agentName = m.agents?.name ?? msg('Operative');
+        const targetName = (m as OperativeMission & { target_sim?: { name: string } }).target_sim?.name;
+        const zoneName = (m as OperativeMission & { target_zone?: { name: string } }).target_zone?.name;
+        const prob = m.success_probability != null
+          ? ` — ${Math.round(m.success_probability * 100)}%` : '';
+        const target = zoneName && targetName
+          ? `${zoneName}, ${targetName}` : targetName ?? '';
         VelgToast.success(
-          msg(
-            str`Operative deployed. Mission ${(resp.data as OperativeMission).operative_type} initiated.`,
-          ),
+          msg(str`DISPATCH CONFIRMED: ${agentName} → ${target}${prob}`),
         );
         this.dispatchEvent(
           new CustomEvent('operative-deployed', {
@@ -2206,11 +2349,16 @@ export class VelgDeployOperativeModal extends LitElement {
   // ── Header ──────────────────────────────────────────
 
   private _renderHeader() {
+    const needsEmbassy = this._selectedType
+      && !['guardian'].includes(this._selectedType)
+      && !this._selectedEmbassyId;
     const stepLabel =
       this._step === 'asset'
         ? msg('Select an agent from your roster')
         : this._step === 'mission'
-          ? msg('Choose a mission type')
+          ? (needsEmbassy && this._selectedType
+            ? msg('Select embassy route')
+            : msg('Choose a mission type'))
           : msg('Select a target');
 
     return html`
@@ -2281,8 +2429,7 @@ export class VelgDeployOperativeModal extends LitElement {
 									size="sm"
 									name=${agent.name}
 									.imageUrl=${agent.portrait_image_url ?? ''}
-									.primaryStat=${36}
-									.secondaryStat=${best?.level ?? null}
+									.primaryStat=${best?.level ?? null}
 									.rarity=${this._getAgentRarity(agent)}
 									.aptitudes=${apt}
 									.subtitle=${subtitle}
@@ -2422,6 +2569,14 @@ export class VelgDeployOperativeModal extends LitElement {
 
 				${this._error ? html`<div class="error">${this._error}</div>` : nothing}
 
+				${this._step === 'asset' ? html`
+					<div class="agent-detail-slot">
+						${this._hoveredAgentId
+              ? this._renderAgentDetail()
+              : html`<div class="agent-detail-slot__hint">${msg('Hover over an agent to compare aptitudes')}</div>`
+            }
+					</div>
+				` : nothing}
 				${this._step === 'asset' ? this._renderHand() : nothing}
 				${this._step === 'mission' ? this._renderMissionSelection() : nothing}
 				${this._step === 'target' && !this._needsNoTarget() && !this._isEmbassyTarget() ? this._renderTargetSelection() : nothing}
@@ -2655,6 +2810,10 @@ export class VelgDeployOperativeModal extends LitElement {
 								draggable=${isDeployed ? 'false' : 'true'}
 								@dragstart=${(e: DragEvent) => this._onAgentDragStart(e, agent.id)}
 								@click=${() => this._selectAgent(agent.id)}
+								@mouseenter=${() => { if (!isDeployed) this._hoveredAgentId = agent.id; }}
+								@mouseleave=${() => { if (this._hoveredAgentId === agent.id) this._hoveredAgentId = ''; }}
+								@focus=${() => { if (!isDeployed) this._hoveredAgentId = agent.id; }}
+								@blur=${() => { if (this._hoveredAgentId === agent.id) this._hoveredAgentId = ''; }}
 								role="button"
 								tabindex=${isDeployed ? -1 : 0}
 								aria-label=${agent.name}
@@ -2670,8 +2829,7 @@ export class VelgDeployOperativeModal extends LitElement {
 									size="sm"
 									name=${agent.name}
 									.imageUrl=${agent.portrait_image_url ?? ''}
-									.primaryStat=${36}
-									.secondaryStat=${best?.level ?? null}
+									.primaryStat=${best?.level ?? null}
 									.rarity=${this._getAgentRarity(agent)}
 									.aptitudes=${apt}
 									.subtitle=${subtitle}
@@ -2682,6 +2840,57 @@ export class VelgDeployOperativeModal extends LitElement {
 						`;
           })}
 				</div>
+			</div>
+		`;
+  }
+
+  // ── Agent Detail Strip (aptitude readout) ──────────
+
+  private _renderAgentDetail() {
+    const agentId = this._hoveredAgentId || this._selectedAgentId;
+    if (!agentId) return nothing;
+    const agent = this._agents.find((a) => a.id === agentId);
+    if (!agent) return nothing;
+    const apt = this._aptitudeMap.get(agent.id);
+    if (!apt) return nothing;
+
+    const selectedType = this._selectedType || null;
+    const fit =
+      selectedType
+        ? this._getFitLevel(apt[selectedType as OperativeType])
+        : null;
+    const accentColor = selectedType
+      ? OP_COLORS[selectedType as OperativeType] ?? 'var(--color-epoch-accent)'
+      : 'var(--color-epoch-accent)';
+
+    return html`
+			<div
+				class="agent-detail"
+				style="--agent-accent: ${accentColor}"
+				role="group"
+				aria-label=${msg('Agent aptitudes')}
+			>
+				<div class="agent-detail__identity">
+					<velg-avatar
+						.name=${agent.name}
+						.imageUrl=${agent.portrait_image_url ?? ''}
+						size="xs"
+					></velg-avatar>
+					<span class="agent-detail__name">${agent.name}</span>
+				</div>
+				<div class="agent-detail__bars">
+					<velg-aptitude-bars
+						size="sm"
+						.aptitudes=${apt}
+						.highlight=${selectedType as OperativeType | null}
+					></velg-aptitude-bars>
+				</div>
+				${fit
+          ? html`<span class="agent-detail__fit agent-detail__fit--${fit.css}">
+						${msg('Fit')}: ${fit.label}
+					</span>`
+          : nothing
+        }
 			</div>
 		`;
   }

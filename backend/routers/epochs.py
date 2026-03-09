@@ -31,7 +31,6 @@ from backend.models.epoch_chat import ReadySignal
 from backend.services.academy_service import AcademyService
 from backend.services.audit_service import AuditService
 from backend.services.battle_log_service import BattleLogService
-from backend.services.cycle_notification_service import CycleNotificationService
 from backend.services.epoch_chat_service import EpochChatService
 from backend.services.epoch_service import EpochService
 from backend.services.game_instance_service import GameInstanceService
@@ -159,18 +158,6 @@ async def start_epoch(
     with normalized gameplay values.
     """
     data = await EpochService.start_epoch(supabase, epoch_id, user.id, admin_supabase)
-    await BattleLogService.log_phase_change(
-        supabase, epoch_id, 1, "lobby", "foundation"
-    )
-
-    # Send epoch start notification (G1 — lobby → foundation)
-    try:
-        await CycleNotificationService.send_phase_change_notifications(
-            admin_supabase, str(epoch_id), "lobby", "foundation",
-        )
-    except Exception:
-        logger.warning("Epoch start notification failed for epoch %s", epoch_id, exc_info=True)
-
     await AuditService.safe_log(
         supabase, None, user.id, "game_epochs", epoch_id, "update",
         details={"action": "start", "new_status": "foundation"},
@@ -187,30 +174,10 @@ async def advance_phase(
     admin_supabase: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Advance to next epoch phase. Creator only."""
-    epoch = await EpochService.get(supabase, epoch_id)
-    old_status = epoch["status"]
     data = await EpochService.advance_phase(supabase, epoch_id, admin_supabase)
-    new_status = data["status"]
-    await BattleLogService.log_phase_change(
-        supabase, epoch_id, epoch.get("current_cycle", 1), old_status, new_status
-    )
-
-    # Send notification emails (best-effort, non-blocking)
-    try:
-        if new_status == "completed":
-            await CycleNotificationService.send_epoch_completed_notifications(
-                admin_supabase, str(epoch_id),
-            )
-        else:
-            await CycleNotificationService.send_phase_change_notifications(
-                admin_supabase, str(epoch_id), old_status, new_status,
-            )
-    except Exception:
-        logger.warning("Phase notification failed for epoch %s", epoch_id, exc_info=True)
-
     await AuditService.safe_log(
         supabase, None, user.id, "game_epochs", epoch_id, "update",
-        details={"action": "advance", "old_status": old_status, "new_status": new_status},
+        details={"action": "advance", "new_status": data["status"]},
     )
     return {"success": True, "data": data}
 
@@ -226,9 +193,6 @@ async def cancel_epoch(
     """Cancel an epoch. Creator only."""
     epoch = await EpochService.get(supabase, epoch_id)
     data = await EpochService.cancel_epoch(supabase, epoch_id, admin_supabase)
-    await BattleLogService.log_phase_change(
-        supabase, epoch_id, epoch.get("current_cycle", 0), epoch["status"], "cancelled"
-    )
     await AuditService.safe_log(
         supabase, None, user.id, "game_epochs", epoch_id, "update",
         details={"action": "cancel", "old_status": epoch["status"]},
@@ -316,6 +280,18 @@ async def get_battle_log(
         "data": data,
         "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
     }
+
+
+@router.get("/{epoch_id}/results-summary")
+async def get_results_summary(
+    epoch_id: UUID,
+    supabase: Client = Depends(get_supabase),
+) -> dict:
+    """Get comprehensive results summary for a completed epoch."""
+    from backend.services.scoring_service import ScoringService
+
+    data = await ScoringService.get_results_summary(supabase, epoch_id)
+    return {"success": True, "data": data}
 
 
 @router.post("/{epoch_id}/resolve-cycle", response_model=SuccessResponse[EpochResponse])

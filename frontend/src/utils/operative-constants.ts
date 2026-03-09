@@ -27,3 +27,17 @@ export const OPERATIVE_RP_COSTS: Record<OperativeType, number> = {
   guardian: 4,
   infiltrator: 5,
 };
+
+/** Security level → numeric value for success probability calculation.
+ *  Mirrors backend/services/constants.py SECURITY_LEVEL_MAP. */
+export const SECURITY_LEVEL_MAP: Record<string, number> = {
+  fortress: 10.0,
+  maximum: 10.0,
+  high: 8.5,
+  guarded: 7.0,
+  moderate: 5.5,
+  medium: 5.5,
+  low: 4.0,
+  contested: 3.0,
+  lawless: 2.0,
+};

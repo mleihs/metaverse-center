@@ -4156,10 +4156,6 @@
   <source>Target</source>
             <target>Ziel</target>
 </trans-unit>
-<trans-unit id="s28c479d90d98669f">
-  <source>Operative deployed. Mission <x id="0" equiv-text="${(resp.data as OperativeMission).operative_type}"/> initiated.</source>
-            <target>Agent eingesetzt. Mission <x id="0" equiv-text="${(resp.data as OperativeMission).operative_type}"/> eingeleitet.</target>
-</trans-unit>
 <trans-unit id="s24b066f426d2451f">
   <source>Deployment failed.</source>
             <target>Der Einsatz ist fehlgeschlagen.</target>
@@ -4395,7 +4391,7 @@
   <source><x id="0" equiv-text="${op.deployCycles}"/> cycle</source>
 <target>Zyklus<x id="0" equiv-text="${op.deployCycles}"/> Zyklus</target></trans-unit>
 <trans-unit id="s7d15d2dac95778b8">
-  <source><x id="0" equiv-text="${op.missionCycles}"/> cycles</source>
+  <source><x id="0" equiv-text="${this.epoch?.current_cycle ?? 0}"/> cycles</source>
 <target>Zyklen<x id="0" equiv-text="${op.missionCycles}"/> Zyklen</target></trans-unit>
 <trans-unit id="sf0b1ea194defb1c3">
   <source>Scores are computed across 5 dimensions, normalized against other participants, then weighted by the epoch preset to produce a composite score. Highest composite wins.</source>
@@ -7888,10 +7884,6 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
   <source>No intelligence gathered yet.</source>
   <target>Noch keine Aufklärungsdaten gesammelt.</target>
 </trans-unit>
-<trans-unit id="sd532d5aa0ad565a9">
-  <source>Deploy spies to gather intelligence on your opponents.</source>
-  <target>Setzen Sie Spione ein, um Aufklärungsdaten über Ihre Gegner zu sammeln.</target>
-</trans-unit>
 <trans-unit id="s458cc52a2e35cd77">
   <source>Opponent intelligence dossiers</source>
   <target>Aufklärungsdossiers der Gegner</target>
@@ -10013,1440 +10005,1912 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 <target>Kartografische Vermessung ausstehend...</target></trans-unit>
 <trans-unit id="sdbb778991400cced">
   <source>Buttons, links, active states</source>
+  <target>Schaltflächen, Links, aktive Zustände</target>
 </trans-unit>
 <trans-unit id="s9322c13ec3f91546">
   <source>Badges, secondary actions</source>
+  <target>Abzeichen, sekundäre Aktionen</target>
 </trans-unit>
 <trans-unit id="s85c44feb44f7b6b5">
   <source>Highlights, borders, emphasis</source>
+  <target>Hervorhebungen, Rahmen, Betonungen</target>
 </trans-unit>
 <trans-unit id="s2cd8d9dfb2909a92">
   <source>Page background</source>
+  <target>Seitenhintergrund</target>
 </trans-unit>
 <trans-unit id="s0424e52848cc129e">
   <source>Cards, panels, overlays</source>
+  <target>Karten, Panels, Overlays</target>
 </trans-unit>
 <trans-unit id="sb676825b3dd8cd7b">
   <source>Body text, headings</source>
+  <target>Fließtext, Überschriften</target>
 </trans-unit>
 <trans-unit id="s149464a8a875efcc">
   <source>Corner rounding on cards, buttons, and panels. 0 for sharp brutalist edges.</source>
+  <target>Eckenabrundung bei Karten, Schaltflächen und Panels. 0 für scharfe brutalistische Kanten.</target>
 </trans-unit>
 <trans-unit id="s03d42346e41cfaca">
   <source>0px for military precision. 8px for softer, modern feel.</source>
+  <target>0px für militärische Präzision. 8px für ein weicheres, modernes Erscheinungsbild.</target>
 </trans-unit>
 <trans-unit id="s277a6752eee7200e">
   <source>Text prompts that guide AI image generation for each category. More specific prompts produce more consistent results.</source>
+  <target>Textanweisungen, die die KI-Bildgenerierung für jede Kategorie steuern. Präzisere Anweisungen erzeugen konsistentere Ergebnisse.</target>
 </trans-unit>
 <trans-unit id="sc6c83d15711fb09c">
   <source>Try 'oil painting, dramatic chiaroscuro, renaissance' for a classical aesthetic.</source>
+  <target>Versuchen Sie 'Ölgemälde, dramatisches Chiaroscuro, Renaissance' für eine klassische Ästhetik.</target>
 </trans-unit>
 <trans-unit id="s69b56106c3784275">
   <source>agent character images</source>
+  <target>Agentencharakter-Bilder</target>
 </trans-unit>
 <trans-unit id="sac309fbc8990c8e0">
   <source>location and structure images</source>
+  <target>Orts- und Gebäudebilder</target>
 </trans-unit>
 <trans-unit id="sd8e4347c5f08375b">
   <source>simulation hero image</source>
+  <target>Simulationstitelbild</target>
 </trans-unit>
 <trans-unit id="s79ec3d37d7b23d37">
   <source>world lore section art</source>
+  <target>Weltgeschichte-Illustrationen</target>
 </trans-unit>
 <trans-unit id="s7932349c4f61ce97">
   <source>Reference Images (optional)</source>
+  <target>Referenzbilder (optional)</target>
 </trans-unit>
 <trans-unit id="s1bccc125bc159563">
   <source>Upload a reference image to guide the AI art style via img2img. The generated images will visually resemble the reference.</source>
+  <target>Laden Sie ein Referenzbild hoch, um den KI-Kunststil per img2img zu steuern. Die generierten Bilder werden dem Referenzbild visuell ähneln.</target>
 </trans-unit>
 <trans-unit id="sff771f86b871c3da">
   <source>Upload a painting or photo — portraits and buildings will inherit its visual style.</source>
+  <target>Laden Sie ein Gemälde oder Foto hoch — Porträts und Gebäude übernehmen den visuellen Stil.</target>
 </trans-unit>
 <trans-unit id="s6cd3d3639e08cf9b">
   <source>Portrait Reference</source>
+  <target>Porträtreferenz</target>
 </trans-unit>
 <trans-unit id="s0a2cc9bc0eba7f2f">
   <source>3:4 aspect ratio</source>
+  <target>3:4 Seitenverhältnis</target>
 </trans-unit>
 <trans-unit id="s1882242601c462dc">
   <source>Building Reference</source>
+  <target>Gebäudereferenz</target>
 </trans-unit>
 <trans-unit id="s37ef13f338b7efab">
   <source>4:3 aspect ratio</source>
+  <target>4:3 Seitenverhältnis</target>
 </trans-unit>
 <trans-unit id="sc4bacd7bb9ca82b0">
   <source>Ignition failed. Please try again.</source>
+  <target>Zündung fehlgeschlagen. Bitte versuchen Sie es erneut.</target>
 </trans-unit>
 <trans-unit id="scaa9531fa420f9ea">
   <source>Ignition sequence failed.</source>
+  <target>Zündsequenz fehlgeschlagen.</target>
 </trans-unit>
 <trans-unit id="s08f8b55b8dd01292">
   <source>Astrolabe</source>
+  <target>Astrolabium</target>
 </trans-unit>
 <trans-unit id="s337a1e9022a8d19f">
   <source>Table</source>
+  <target>Zeichentisch</target>
 </trans-unit>
 <trans-unit id="s97f95933a48b3a7a">
   <source>Darkroom</source>
+  <target>Dunkelkammer</target>
 </trans-unit>
 <trans-unit id="s250bde15254b34c6">
   <source>Ignition</source>
+  <target>Zündung</target>
 </trans-unit>
 <trans-unit id="s66774034e346a25d">
   <source>The Forge is a four-phase wizard that creates an entire simulation from scratch using AI generation. Enter a seed idea, and the Forge produces geography, agents, buildings, a visual identity, and AI-generated artwork — a complete world ready for competitive play.</source>
+  <target>Die Schmiede ist ein vierphasiger Assistent, der eine komplette Simulation von Grund auf mittels KI-Generierung erstellt. Geben Sie eine Ausgangsidee ein, und die Schmiede erzeugt Geografie, Agenten, Gebäude, eine visuelle Identität und KI-generierte Kunstwerke — eine vollständige Welt, bereit für den Wettkampf.</target>
 </trans-unit>
 <trans-unit id="s76fcccbfbaab5567">
   <source>A living newspaper generated by AI after each epoch cycle. The Chronicle transforms raw game events into narrative journalism — battle reports, political analysis, and intelligence dispatches styled as a Victorian-era broadsheet.</source>
+  <target>Eine lebende Zeitung, die nach jedem Epochenzyklus von der KI generiert wird. Die Chronik verwandelt Spielereignisse in narrative Berichterstattung — Gefechtsberichte, politische Analysen und Geheimdienstdepeschen im Stil eines viktorianischen Nachrichtenblatts.</target>
 </trans-unit>
 <trans-unit id="s2d88ff9c1d7512e9">
   <source>Emergent phenomena that arise when a simulation’s computational substrate vibrates in response to concentrated in-game activity. Resonances modify gameplay mechanics and can cascade during high-pressure phases.</source>
+  <target>Emergente Phänomene, die auftreten, wenn das Rechensubstrat einer Simulation als Reaktion auf konzentrierte Spielaktivität vibriert. Resonanzen modifizieren die Spielmechanik und können während Hochdruckphasen kaskadieren.</target>
 </trans-unit>
 <trans-unit id="sc968b3fb47479cc3">
   <source>Track event intensity and zone security through the Event Seismograph and Zone Dynamics panel. Understanding pressure patterns and security levels is essential for timing deployments and identifying vulnerable targets.</source>
+  <target>Verfolgen Sie Ereignisintensität und Zonensicherheit über den Ereignis-Seismographen und das Zonendynamik-Panel. Das Verständnis von Druckmustern und Sicherheitsstufen ist entscheidend für die zeitliche Planung von Einsätzen und die Identifizierung verwundbarer Ziele.</target>
 </trans-unit>
 <trans-unit id="s99ec2908e176c843">
   <source>Every agent maintains a persistent memory system of observations and AI-synthesized reflections. Memories accumulate over cycles, creating evolving psychological profiles that influence bot decision-making and provide narrative depth.</source>
+  <target>Jeder Agent unterhält ein persistentes Gedächtnissystem aus Beobachtungen und KI-synthetisierten Reflexionen. Erinnerungen sammeln sich über Zyklen an und erzeugen sich entwickelnde psychologische Profile, die Bot-Entscheidungen beeinflussen und narrative Tiefe bieten.</target>
 </trans-unit>
 <trans-unit id="s215e67c292442d29">
   <source>An interactive force-directed graph that visualizes all simulations and their connections. Template nodes glow with ambient energy, game instances orbit during epochs, and energy pulses flow along edges to show bleed and operative activity across the multiverse.</source>
+  <target>Ein interaktiver kräftebasierter Graph, der alle Simulationen und ihre Verbindungen visualisiert. Vorlagenknoten leuchten mit Umgebungsenergie, Spielinstanzen umkreisen während Epochen, und Energieimpulse fließen entlang der Kanten, um Bleeding- und Operativaktivität im Multiversum anzuzeigen.</target>
 </trans-unit>
 <trans-unit id="s08888df1e4e18089">
   <source>AI opponents with five personality archetypes — Sentinel, Warlord, Diplomat, Strategist, and Chaos — each with distinct strategic behavior. Bots use the same deployment and scoring mechanics as human players, configurable at three difficulty levels.</source>
+  <target>KI-Gegner mit fünf Persönlichkeitsarchetypen — Wächter, Kriegsherr, Diplomat, Stratege und Chaos — jeweils mit eigenständigem strategischen Verhalten. Bots nutzen dieselben Einsatz- und Bewertungsmechaniken wie menschliche Spieler, konfigurierbar auf drei Schwierigkeitsstufen.</target>
 </trans-unit>
 <trans-unit id="s2562348db9f9fede">
   <source>Converse with the agents in your simulation through AI-generated dialogue. Each agent responds in character, shaped by their personality, profession, and accumulated memories — creating persistent, evolving conversations that deepen over time.</source>
+  <target>Unterhalten Sie sich mit den Agenten Ihrer Simulation durch KI-generierten Dialog. Jeder Agent antwortet charaktergetreu, geprägt von seiner Persönlichkeit, seinem Beruf und gesammelten Erinnerungen — so entstehen beständige, sich entwickelnde Gespräche.</target>
 </trans-unit>
 <trans-unit id="s3b2b2bcae038356e">
   <source>Every simulation has a dedicated lore narrative — thousands of words of in-world history, culture, and tension organized into six chapters. Lore is the world’s identity, generated by the Forge or written by hand, and publicly visible to all visitors.</source>
+  <target>Jede Simulation hat eine eigene Weltgeschichte — Tausende Wörter an Geschichte, Kultur und Spannung, organisiert in sechs Kapiteln. Die Überlieferung ist die Identität der Welt, von der Schmiede generiert oder von Hand geschrieben, und öffentlich für alle Besucher sichtbar.</target>
 </trans-unit>
 <trans-unit id="sa77c8e5f9d64f95f">
   <source>Four computed metrics — Building Readiness, Zone Stability, Embassy Effectiveness, and overall Simulation Health — that directly feed into epoch scoring. Monitor these to understand your world’s mechanical state and respond to threats.</source>
+  <target>Vier berechnete Kennzahlen — Gebäudebereitschaft, Zonenstabilität, Botschaftseffektivität und allgemeiner Simulationszustand — die direkt in die Epochenbewertung einfließen. Überwachen Sie diese, um den mechanischen Zustand Ihrer Welt zu verstehen und auf Bedrohungen zu reagieren.</target>
 </trans-unit>
 <trans-unit id="s05e73d6f8d862b1b">
   <source>Import real-world news and transform it into simulation-contextual events using AI. A political crisis becomes a coup in your dystopia. A scientific discovery becomes a forbidden ritual. Group related events into campaigns to track thematic narratives.</source>
+  <target>Importieren Sie reale Nachrichten und verwandeln Sie diese mittels KI in simulationskontextuelle Ereignisse. Eine politische Krise wird zum Staatsstreich in Ihrer Dystopie. Eine wissenschaftliche Entdeckung wird zum verbotenen Ritual. Gruppieren Sie verwandte Ereignisse in Kampagnen, um thematische Narrative zu verfolgen.</target>
 </trans-unit>
 <trans-unit id="se25d8abe613f49bd">
   <source>Real-time communication during competitive play. The COMMS sidebar offers epoch-wide and team-only channels via WebSocket. Presence indicators, ready signals, and bilingual tactical email briefings keep all participants informed between cycles.</source>
+  <target>Echtzeitkommunikation während des Wettkampfs. Die KOMM-Seitenleiste bietet epochenweite und teamexklusive Kanäle per WebSocket. Präsenzanzeigen, Bereitschaftssignale und zweisprachige taktische E-Mail-Briefings halten alle Teilnehmer zwischen den Zyklen informiert.</target>
 </trans-unit>
 <trans-unit id="s7f1ea2d968496b41">
   <source>Enter the Forge</source>
+  <target>Die Schmiede betreten</target>
 </trans-unit>
 <trans-unit id="s54e33b91b0af6565">
   <source>Navigate to the Forge from the main navigation. The Forge is the Bureau of Impossible Geography — a four-phase wizard that materializes an entirely new simulation through AI-assisted procedural generation. Each phase builds on the previous, culminating in a fully realized world with geography, agents, buildings, lore, and a unique visual identity.</source>
+  <target>Navigieren Sie über die Hauptnavigation zur Schmiede. Die Schmiede ist das Büro für Unmögliche Geographie — ein vierphasiger Assistent, der durch KI-gestützte prozedurale Generierung eine vollständig neue Simulation materialisiert.</target>
 </trans-unit>
 <trans-unit id="se4ad372eccea1ed1">
   <source>Phases</source>
+  <target>Phasen</target>
 </trans-unit>
 <trans-unit id="s44921724cca04cd3">
   <source>AI Engine</source>
+  <target>KI-Engine</target>
 </trans-unit>
 <trans-unit id="sfd77270c3f54f664">
   <source>Output</source>
+  <target>Ergebnis</target>
 </trans-unit>
 <trans-unit id="s4025b4a7f946d359">
   <source>Complete simulation</source>
+  <target>Vollständige Simulation</target>
 </trans-unit>
 <trans-unit id="sfdf9938d9d86ba42">
   <source>The Forge uses real AI generation at every step. Each scan, draft, and calibration is a live API call — results are unique every time. Budget 10–15 minutes for a full forge run.</source>
+  <target>Die Schmiede verwendet bei jedem Schritt echte KI-Generierung. Jeder Scan, Entwurf und jede Kalibrierung ist ein Live-API-Aufruf — die Ergebnisse sind jedes Mal einzigartig. Planen Sie 10–15 Minuten für einen vollständigen Schmiedeprozess ein.</target>
 </trans-unit>
 <trans-unit id="s4bbf963a00dd9d9f">
   <source>The Simulation Forge seed input and suggestion cards</source>
+  <target>Die Eingabe des Simulationsschmiede-Seeds und Vorschlagskarten</target>
 </trans-unit>
 <trans-unit id="s0576751f2821ea0d">
   <source>Phase I — The Astrolabe</source>
+  <target>Phase I — Das Astrolabium</target>
 </trans-unit>
 <trans-unit id="s1fe74cdc94d6f8c1">
   <source>Enter a seed prompt describing the world you want to create. This can be as simple as "a cyberpunk megacity" or as evocative as "a floating archipelago where memories solidify into islands." Click Scan Multiverse to generate three philosophical anchor cards — each offers a distinct thematic interpretation of your seed.</source>
+  <target>Geben Sie einen Seed-Prompt ein, der die Welt beschreibt, die Sie erschaffen möchten. Dies kann so einfach sein wie „eine Cyberpunk-Megastadt“ oder so stimmungsvoll wie „ein schwebendes Archipel, auf dem sich Erinnerungen zu Inseln verfestigen.“ Klicken Sie auf Scannen, um die KI-Analyse zu starten.</target>
 </trans-unit>
 <trans-unit id="sff1e815efadd5a16">
   <source>The AI analyzes your seed and produces three anchors with names, philosophical tenets, and worldbuilding implications. Each anchor shapes the entire simulation differently — the same seed with different anchors creates radically different worlds.</source>
+  <target>Die KI analysiert Ihren Seed und erzeugt drei Anker mit Namen, philosophischen Leitsätzen und Worldbuilding-Implikationen. Jeder Anker formt die gesamte Simulation unterschiedlich — derselbe Seed mit verschiedenen Ankern ergibt völlig unterschiedliche Welten.</target>
 </trans-unit>
 <trans-unit id="sdb1595f5c742dfbb">
   <source>Input</source>
+  <target>Eingabe</target>
 </trans-unit>
 <trans-unit id="s8d71f930f72b1e4a">
   <source>Seed prompt (free text)</source>
+  <target>Ausgangsprompt (Freitext)</target>
 </trans-unit>
 <trans-unit id="s6907bd053066c984">
   <source>3 anchor cards</source>
+  <target>3 Ankerkarten</target>
 </trans-unit>
 <trans-unit id="s0380652457f8ba15">
   <source>Selection</source>
+  <target>Auswahl</target>
 </trans-unit>
 <trans-unit id="s7d3c669d7e8fba98">
   <source>Choose 1 anchor</source>
+  <target>1 Anker wählen</target>
 </trans-unit>
 <trans-unit id="s3460d51f655df829">
   <source>Astrolabe phase showing three AI-generated philosophical anchor cards</source>
+  <target>Astrolabe-Phase mit drei KI-generierten philosophischen Ankerkarten</target>
 </trans-unit>
 <trans-unit id="sf42486ae8ac857e6">
   <source>Phase II — The Drafting Table</source>
+  <target>Phase II — Der Zeichentisch</target>
 </trans-unit>
 <trans-unit id="sfccea61d335c8230">
   <source>The Table has three divisions that can be completed in any order. The Cartographic Division generates geography (zones and transit arteries). The Personnel Bureau recruits AI-generated agents with names, professions, and detailed backstories. The Infrastructure Corps blueprints buildings with rich architectural descriptions.</source>
+  <target>Die Tafel hat drei Abteilungen, die in beliebiger Reihenfolge abgeschlossen werden können. Die Kartographische Abteilung generiert Geographie (Zonen und Transitrouten). Das Personalbüro rekrutiert KI-generierte Agenten mit Namen, Persönlichkeiten, Berufen und Hintergrundgeschichten.</target>
 </trans-unit>
 <trans-unit id="s8152a638b5079ffb">
   <source>Each division produces content in a staging hand. Review each entity, then accept or edit it before it enters the final roster. All three divisions must show a green checkmark before you can advance.</source>
+  <target>Jede Abteilung erzeugt Inhalte in einer Staging-Hand. Überprüfen Sie jede Entität, dann akzeptieren oder bearbeiten Sie sie, bevor sie in den endgültigen Kader aufgenommen wird. Alle drei Abteilungen müssen ein grünes Häkchen zeigen, bevor Sie fortfahren können.</target>
 </trans-unit>
 <trans-unit id="s8a3dbd4b75420b5c">
   <source>Cartographic</source>
+  <target>Kartographisch</target>
 </trans-unit>
 <trans-unit id="se691a6c44cb7f5bd">
   <source>5 zones + 5 streets</source>
+  <target>5 Zonen + 5 Straßen</target>
 </trans-unit>
 <trans-unit id="se149b80b1c689923">
   <source>Personnel</source>
+  <target>Personal</target>
 </trans-unit>
 <trans-unit id="sfc586dc0bd8cefd1">
   <source>6 agents</source>
+  <target>6 Agenten</target>
 </trans-unit>
 <trans-unit id="s0faa848dd8cc3ace">
   <source>Infrastructure</source>
+  <target>Infrastruktur</target>
 </trans-unit>
 <trans-unit id="sdd3206e4ee1fd78f">
   <source>7 buildings</source>
+  <target>7 Gebäude</target>
 </trans-unit>
 <trans-unit id="sfc53e352afbca881">
   <source>Review</source>
+  <target>Überprüfung</target>
 </trans-unit>
 <trans-unit id="s70ff3a3fa541663b">
   <source>Accept, edit, or re-draft</source>
+  <target>Akzeptieren, bearbeiten oder neu entwerfen</target>
 </trans-unit>
 <trans-unit id="s7c470dded6ac588c">
   <source>You can re-scan or re-draft any division without losing progress in the others. If a generated agent doesn’t fit your vision, delete it and re-draft for a fresh set.</source>
+  <target>Sie können jede Abteilung erneut scannen oder entwerfen, ohne den Fortschritt in den anderen zu verlieren. Wenn ein generierter Agent nicht zu Ihrer Vision passt, löschen Sie ihn und entwerfen Sie einen neuen Satz.</target>
 </trans-unit>
 <trans-unit id="sf065fa5b3cde16be">
   <source>Drafting Table command console with three division panels</source>
+  <target>Befehlskonsole der Entwurfstafel mit drei Abteilungspanelen</target>
 </trans-unit>
 <trans-unit id="s28c572c5f7f4af38">
   <source>Review &amp; Accept Entities</source>
+  <target>Entitäten überprüfen & akzeptieren</target>
 </trans-unit>
 <trans-unit id="s87a7e656ebddb514">
   <source>Generated entities appear in a staging hand at the bottom of the page. Each card shows the entity’s name, type, and a preview of its description. Click the checkmark to accept an entity into the final roster, or click the edit icon to modify it before accepting.</source>
+  <target>Generierte Entitäten erscheinen in einer Staging-Hand am unteren Seitenrand. Jede Karte zeigt den Namen, Typ und eine Vorschau der Beschreibung der Entität. Klicken Sie auf das Häkchen, um eine Entität in den endgültigen Kader aufzunehmen.</target>
 </trans-unit>
 <trans-unit id="saa026b4a54450d14">
   <source>Name, profession, backstory</source>
+  <target>Name, Beruf, Hintergrundgeschichte</target>
 </trans-unit>
 <trans-unit id="sde7cb242bc5b828e">
   <source>Type, architecture, atmosphere</source>
+  <target>Typ, Architektur, Atmosphäre</target>
 </trans-unit>
 <trans-unit id="s73354b64d8f38ab7">
   <source>Theme, tags, description</source>
+  <target>Thema, Schlagwörter, Beschreibung</target>
 </trans-unit>
 <trans-unit id="sb620e2c63814ecda">
   <source>Staging hand showing entity cards with accept and edit buttons</source>
+  <target>Staging-Hand mit Entitätskarten und Akzeptieren-/Bearbeiten-Schaltflächen</target>
 </trans-unit>
 <trans-unit id="s31961ffea8076bc5">
   <source>Phase III — The Darkroom</source>
+  <target>Phase III — Die Dunkelkammer</target>
 </trans-unit>
 <trans-unit id="scb0a82e88b1e1746">
   <source>The Aesthetic Calibration Bureau generates a complete visual identity for your simulation. An AI-generated color palette (primary, secondary, accent, background, surface, text), typography selection (heading and body fonts), and character styling (border radius, shadow, hover effects, card texture, nameplate style, corner decorations, foil effects) are all auto-calibrated from your world’s theme.</source>
+  <target>Das Ästhetische Kalibrierungsbüro generiert eine vollständige visuelle Identität für Ihre Simulation. Eine KI-generierte Farbpalette (Primär, Sekundär, Akzent, Hintergrund, Oberfläche, Text), Typografieauswahl und thematische Stilrichtung.</target>
 </trans-unit>
 <trans-unit id="s2658ef4153294d9a">
   <source>A live preview panel on the right shows how your theme will look in practice — color swatches, sample headings, buttons, and a mock agent card. Every parameter is editable if you want to fine-tune the AI’s choices.</source>
+  <target>Ein Live-Vorschaupanel auf der rechten Seite zeigt, wie Ihr Thema in der Praxis aussehen wird — Farbmuster, Beispielüberschriften, Schaltflächen und eine Beispiel-Agentenkarte. Jeder Parameter ist editierbar, wenn Sie das KI-generierte Ergebnis feinabstimmen möchten.</target>
 </trans-unit>
 <trans-unit id="s026944e00bc036b4">
   <source>6-color palette</source>
+  <target>6-Farben-Palette</target>
 </trans-unit>
 <trans-unit id="s0082c101c675ca3a">
   <source>Heading + body fonts</source>
+  <target>Überschriften- + Fließtextschriften</target>
 </trans-unit>
 <trans-unit id="s75625c278052b3ab">
   <source>8 styling parameters</source>
+  <target>8 Styling-Parameter</target>
 </trans-unit>
 <trans-unit id="s417b90913e05bc17">
   <source>Preview</source>
+  <target>Vorschau</target>
 </trans-unit>
 <trans-unit id="s86da6a82051bb613">
   <source>Live agent card mockup</source>
+  <target>Live-Agentenkarten-Mockup</target>
 </trans-unit>
 <trans-unit id="s687413932020020c">
   <source>Click "Regenerate Theme" to get a completely new aesthetic interpretation of your world. The AI draws on the simulation’s lore, geography, and agent descriptions to inform its choices.</source>
+  <target>Klicken Sie auf „Thema regenerieren“, um eine völlig neue ästhetische Interpretation Ihrer Welt zu erhalten. Die KI bezieht die Lore, Geographie und Agentenbeschreibungen der Simulation in ihre Entscheidungen ein.</target>
 </trans-unit>
 <trans-unit id="s44eb22335eea4faa">
   <source>Darkroom showing AI-generated color palette and live preview</source>
+  <target>Dunkelkammer mit KI-generierter Farbpalette und Live-Vorschau</target>
 </trans-unit>
 <trans-unit id="s0b7728f8aa9902f2">
   <source>Below the theme controls, configure the AI image generation style. Four editable style prompts control how portraits, buildings, banners, and lore illustrations will be rendered. Guidance scale and inference steps control image quality and adherence to the prompt.</source>
+  <target>Unterhalb der Themensteuerung konfigurieren Sie den KI-Bildgenerierungsstil. Vier editierbare Stil-Prompts steuern, wie Porträts, Gebäude, Banner und Lore-Illustrationen gerendert werden. Führungsskala und Interferenzeinstellungen bieten weitere Kontrolle.</target>
 </trans-unit>
 <trans-unit id="s81bde6e5ba59ce90">
   <source>Character art style</source>
+  <target>Charakter-Kunststil</target>
 </trans-unit>
 <trans-unit id="s521b74ff7477005a">
   <source>Architecture art style</source>
+  <target>Architektur-Kunststil</target>
 </trans-unit>
 <trans-unit id="s1290aadfa8fd69df">
   <source>World panorama style</source>
+  <target>Weltpanorama-Stil</target>
 </trans-unit>
 <trans-unit id="se7529b0ea06b2d8a">
   <source>Illustration style</source>
+  <target>Illustrationsstil</target>
 </trans-unit>
 <trans-unit id="s5359a9016fade4a3">
   <source>Image generation parameters with style prompts and guidance controls</source>
+  <target>Bildgenerierungsparameter mit Stil-Prompts und Steuerungsreglern</target>
 </trans-unit>
 <trans-unit id="sa55c47d542ac3527">
   <source>Phase IV — The Ignition</source>
+  <target>Phase IV — Die Zündung</target>
 </trans-unit>
 <trans-unit id="s639a67fb414d283f">
   <source>The final phase presents an Ignition Summary readout: seed prompt, philosophical anchor, agent count, building count, zone count, and theme type. Below, an image generation estimate shows how many images will be created (typically 15–20: 1 banner + portraits + building images + lore illustrations).</source>
+  <target>Die letzte Phase präsentiert eine Zündungszusammenfassung: Seed-Prompt, philosophischer Anker, Agentenanzahl, Gebäudeanzahl, Zonenanzahl und Thementyp. Darunter zeigt eine Bildgenerierungsschätzung, wie viele Bilder generiert werden.</target>
 </trans-unit>
 <trans-unit id="sd66ed07ba3d06055">
   <source>The "Final Materialization" panel requires a 2-second hold on the ignition button to confirm. This deliberate friction prevents accidental creation. Once ignited, the simulation is permanently added to the multiverse and image generation begins in the background.</source>
+  <target>Das Panel „Finale Materialisierung“ erfordert ein 2-Sekunden-Halten des Zündknopfes zur Bestätigung. Diese bewusste Verzögerung verhindert versehentliche Erstellung. Nach der Zündung wird die Simulation dauerhaft Ihrem Konto hinzugefügt.</target>
 </trans-unit>
 <trans-unit id="s3eef113de1cc789f">
   <source>Hold 2 seconds</source>
+  <target>2 Sekunden halten</target>
 </trans-unit>
 <trans-unit id="sfc8531b2fd0f31cb">
   <source>Images</source>
+  <target>Bilder</target>
 </trans-unit>
 <trans-unit id="s7e1c6ff18b142a24">
   <source>~17 generated</source>
+  <target>~17 generiert</target>
 </trans-unit>
 <trans-unit id="s48e186fb300e5464">
   <source>Time</source>
+  <target>Zeit</target>
 </trans-unit>
 <trans-unit id="s2efc429878cd65e9">
   <source>3–5 min (background)</source>
+  <target>3–5 Min. (Hintergrund)</target>
 </trans-unit>
 <trans-unit id="s890e983a7be64da4">
   <source>Result</source>
+  <target>Ergebnis</target>
 </trans-unit>
 <trans-unit id="sf15edbcc8cd94a6e">
   <source>Live simulation</source>
+  <target>Live-Simulation</target>
 </trans-unit>
 <trans-unit id="s4de39b69d8cf3ad0">
   <source>Ignition is permanent and consumes 1 Forge Token. Double-check your summary before holding the ignition button. Once materialized, the simulation cannot be un-created.</source>
+  <target>Die Zündung ist permanent und verbraucht 1 Schmiede-Token. Überprüfen Sie Ihre Zusammenfassung, bevor Sie den Zündknopf gedrückt halten. Einmal materialisiert, kann die Simulation nicht rückgängig gemacht werden.</target>
 </trans-unit>
 <trans-unit id="s6b05e6bff157706f">
   <source>Ignition summary with hold-to-confirm materialization button</source>
+  <target>Zündungszusammenfassung mit Halten-zum-Bestätigen-Materialisierungsknopf</target>
 </trans-unit>
 <trans-unit id="s46b53bd6f512795c">
   <source>What is the Chronicle?</source>
+  <target>Was ist die Chronik?</target>
 </trans-unit>
 <trans-unit id="s9f831884dc43bbe2">
   <source>The Chronicle is a living newspaper generated by AI after each epoch cycle. Styled as a Victorian-era broadsheet, it reports on in-game events through the lens of fictional journalism — complete with dramatic headlines, editorial commentary, and intelligence dispatches.</source>
+  <target>Die Chronik ist eine lebende Zeitung, die nach jedem Epochenzyklus von KI generiert wird. Im Stil einer viktorianischen Druckschrift berichtet sie über Spielereignisse durch die Linse fiktiven Journalismus — komplett mit dramatischen Schlagzeilen und atmosphärischer Prosa.</target>
 </trans-unit>
 <trans-unit id="s97b3b83a3bb74a6d">
   <source>Each edition covers one cycle’s worth of events: operative deployments, mission outcomes, score changes, and diplomatic shifts. The AI weaves these mechanical events into narrative prose, giving your simulation a sense of history and drama.</source>
+  <target>Jede Ausgabe deckt die Ereignisse eines Zyklus ab: Operative Einsätze, Missionsergebnisse, Punkteänderungen und diplomatische Verschiebungen. Die KI verwebt diese mechanischen Ereignisse zu narrativer Prosa und verleiht Ihrer Simulation ein lebendiges Geschichtsgefühl.</target>
 </trans-unit>
 <trans-unit id="s4bfaefac9bc26241">
   <source>Frequency</source>
+  <target>Häufigkeit</target>
 </trans-unit>
 <trans-unit id="s94b83960cd2038bb">
   <source>1 edition per cycle</source>
+  <target>1 Ausgabe pro Zyklus</target>
 </trans-unit>
 <trans-unit id="s642a4070f6bcfee2">
   <source>Content</source>
+  <target>Inhalt</target>
 </trans-unit>
 <trans-unit id="sc915b1e606c3ae1c">
   <source>AI-narrated events</source>
+  <target>KI-erzählte Ereignisse</target>
 </trans-unit>
 <trans-unit id="s2e009846cb172939">
   <source>Victorian broadsheet</source>
+  <target>Viktorianisches Nachrichtenblatt</target>
 </trans-unit>
 <trans-unit id="s5c0e9ed92088fbbe">
   <source>Simulation → Chronicle tab</source>
+  <target>Simulation → Chronik-Reiter</target>
 </trans-unit>
 <trans-unit id="sb9e10f206aa61a02">
   <source>Chronicle broadsheet layout with masthead and article columns</source>
+  <target>Chronik-Druckschrift-Layout mit Kopfzeile und Artikelspalten</target>
 </trans-unit>
 <trans-unit id="sa015892cecf1c51c">
   <source>Reading an Edition</source>
+  <target>Eine Ausgabe lesen</target>
 </trans-unit>
 <trans-unit id="scd0c72a24681aa38">
   <source>Each Chronicle edition opens with a masthead showing the simulation name, edition number, and cycle date. Below, articles are arranged in newspaper columns. Headlines range from battlefield reports ("SABOTEUR STRIKES THE INDUSTRIAL QUARTER") to political analysis ("DIPLOMATIC TENSIONS RISE AS EMBASSY EFFECTIVENESS WANES").</source>
+  <target>Jede Chronik-Ausgabe beginnt mit einer Kopfzeile, die den Simulationsnamen, die Ausgabennummer und das Zyklusdatum zeigt. Darunter sind Artikel in Zeitungsspalten angeordnet. Schlagzeilen reichen von Schlachtfeldberichten bis zu diplomatischen Analysen.</target>
 </trans-unit>
 <trans-unit id="sd73bbcbdb6586260">
   <source>The Chronicle is publicly visible — anyone browsing the simulation can read it. Use it to understand the narrative arc of an epoch, even as a spectator.</source>
+  <target>Die Chronik ist öffentlich sichtbar — jeder, der die Simulation durchstöbert, kann sie lesen. Nutzen Sie sie, um den narrativen Verlauf einer Epoche zu verstehen, auch als Zuschauer.</target>
 </trans-unit>
 <trans-unit id="sbbeea0c6196c7b4d">
   <source>Chronicle edition with headlines and article columns</source>
+  <target>Chronik-Ausgabe mit Schlagzeilen und Artikelspalten</target>
 </trans-unit>
 <trans-unit id="s27faacd64db3b6ed">
   <source>Chronicle as Intelligence</source>
+  <target>Die Chronik als Aufklärungsinstrument</target>
 </trans-unit>
 <trans-unit id="scd0abc535f09fa92">
   <source>Beyond narrative flavor, the Chronicle serves as a strategic tool. It reveals which players made bold moves, which zones were targeted, and how scores shifted. Experienced players read between the lines to anticipate enemy strategy for the next cycle.</source>
+  <target>Über den narrativen Charakter hinaus dient die Chronik als strategisches Werkzeug. Sie enthüllt, welche Spieler mutige Züge machten, welche Zonen angegriffen wurden und wie sich Punktestände verschoben. Erfahrene Spieler lesen zwischen den Zeilen.</target>
 </trans-unit>
 <trans-unit id="sbcc99952b274b658">
   <source>Battle reports</source>
+  <target>Gefechtsberichte</target>
 </trans-unit>
 <trans-unit id="s0273931ad9e05b2e">
   <source>Mission outcomes</source>
+  <target>Missionsergebnisse</target>
 </trans-unit>
 <trans-unit id="s1fd94e1d73229df1">
   <source>Score analysis</source>
+  <target>Punktestandanalyse</target>
 </trans-unit>
 <trans-unit id="sc0ed00d982724ee0">
   <source>Dimension shifts</source>
+  <target>Dimensionsverschiebungen</target>
 </trans-unit>
 <trans-unit id="s70205cf2eaa4657c">
   <source>Political intel</source>
+  <target>Politische Aufklärung</target>
 </trans-unit>
 <trans-unit id="sebd969d82da59711">
   <source>Alliance changes</source>
+  <target>Allianzänderungen</target>
 </trans-unit>
 <trans-unit id="s97cdd44297e15732">
   <source>Tactical clues</source>
+  <target>Taktische Hinweise</target>
 </trans-unit>
 <trans-unit id="s1ff2e157c84a54ea">
   <source>Enemy patterns</source>
+  <target>Feindliche Muster</target>
 </trans-unit>
 <trans-unit id="s0cf5b90d2a64d917">
   <source>Chronicle articles revealing strategic intelligence</source>
+  <target>Chronik-Artikel mit strategischen Geheimdienstinformationen</target>
 </trans-unit>
 <trans-unit id="sa81021fbcf85f528">
   <source>What are Substrate Resonances?</source>
+  <target>Was sind Substratresonanzen?</target>
 </trans-unit>
 <trans-unit id="sc5663e158fd298e3">
   <source>Substrate Resonances are emergent phenomena that arise when a simulation’s substrate — its underlying computational fabric — vibrates in response to in-game activity. Think of them as the world’s immune system: when events cluster too densely or score dimensions become imbalanced, the substrate begins to resonate.</source>
+  <target>Substratresonanzen sind emergente Phänomene, die auftreten, wenn das Substrat einer Simulation — ihr zugrunde liegendes rechnerisches Gewebe — als Reaktion auf Spielaktivität vibriert. Betrachten Sie sie als das Immunsystem der Welt.</target>
 </trans-unit>
 <trans-unit id="s9e7195c07946fbef">
   <source>Each resonance has a signature (a unique waveform identifier), a magnitude (how strong the effect), and a decay rate (how quickly it fades). Active resonances modify gameplay mechanics: they can boost or suppress certain operative types, alter RP generation, or shift score weights temporarily.</source>
+  <target>Jede Resonanz hat eine Signatur (eine eindeutige Wellenformkennung), eine Magnitude (wie stark der Effekt) und eine Abklingrate (wie schnell sie nachlässt). Aktive Resonanzen modifizieren Spielmechaniken: sie können Erfolgsraten steigern oder senken.</target>
 </trans-unit>
 <trans-unit id="s15b9b9182b968e23">
   <source>Trigger</source>
+  <target>Auslöser</target>
 </trans-unit>
 <trans-unit id="sc3fea9473dda020c">
   <source>Event clustering / imbalance</source>
+  <target>Ereignishäufung / Ungleichgewicht</target>
 </trans-unit>
 <trans-unit id="s835f8908597bfa7f">
   <source>Gameplay modifiers</source>
+  <target>Spielmechanik-Modifikatoren</target>
 </trans-unit>
 <trans-unit id="sda3ec9929c851793">
   <source>Decays over cycles</source>
+  <target>Klingt über Zyklen ab</target>
 </trans-unit>
 <trans-unit id="s762a6be0f37c53b6">
   <source>Simulation health panel</source>
+  <target>Simulationszustands-Panel</target>
 </trans-unit>
 <trans-unit id="s3957543b9b447852">
   <source>Simulation health dashboard showing substrate resonance indicators</source>
+  <target>Simulationsgesundheits-Dashboard mit Substratresonanz-Indikatoren</target>
 </trans-unit>
 <trans-unit id="s35c301834afb1a22">
   <source>The Resonance Monitor</source>
+  <target>Der Resonanzmonitor</target>
 </trans-unit>
 <trans-unit id="sb7bdada1ec9f0643">
   <source>The Substrate Tremor Monitor displays all active resonances in real time. Each resonance is shown as a card with its signature label, magnitude bar, and remaining decay cycles. The monitor also shows the simulation’s overall substrate stability — a composite measure of how far the world’s fabric has been stressed.</source>
+  <target>Der Substrat-Tremor-Monitor zeigt alle aktiven Resonanzen in Echtzeit an. Jede Resonanz wird als Karte mit Signaturbezeichnung, Magnitudenbalken und verbleibenden Abklingzyklen dargestellt. Der Monitor zeigt auch historische Daten.</target>
 </trans-unit>
 <trans-unit id="s723f32acfe7009a9">
   <source>High substrate instability means resonances are more likely to trigger and cascade. Plan your deployments carefully during unstable periods — a single saboteur mission could trigger a resonance that rebounds against you.</source>
+  <target>Hohe Substratinstabilität bedeutet, dass Resonanzen eher ausgelöst werden und kaskadieren. Planen Sie Ihre Einsätze während instabiler Perioden sorgfältig — eine einzelne Saboteurmission könnte eine Resonanz auslösen, die alles verändert.</target>
 </trans-unit>
 <trans-unit id="s37a97af4728685c6">
   <source>Substrate Tremor Monitor with active resonance cards</source>
+  <target>Substrat-Tremor-Monitor mit aktiven Resonanzkarten</target>
 </trans-unit>
 <trans-unit id="s00ef6081718a382b">
   <source>Strategic Implications</source>
+  <target>Strategische Auswirkungen</target>
 </trans-unit>
 <trans-unit id="s86cd86597dbd4ac8">
   <source>Resonances are not just atmospheric — they have direct mechanical impact. A "Military Surge" resonance might increase assassin success rates by 10% for 3 cycles, while a "Diplomatic Dampener" could reduce embassy effectiveness. Understanding which actions trigger which resonances is key to advanced strategy.</source>
+  <target>Resonanzen sind nicht nur atmosphärisch — sie haben direkte mechanische Auswirkungen. Eine „Militäroffensive“-Resonanz könnte die Erfolgsrate von Attentätern um 10% für 3 Zyklen erhöhen, während ein „Diplomatischer Dämpfer“ die Diplomatiepunkte reduzieren könnte.</target>
 </trans-unit>
 <trans-unit id="sbeea594eb0cb2050">
   <source>Military Surge</source>
+  <target>Militärstoß</target>
 </trans-unit>
 <trans-unit id="s161843633765da84">
   <source>+10% assassin success</source>
+  <target>+10% Attentätererfolg</target>
 </trans-unit>
 <trans-unit id="s16a6678456edefb9">
   <source>Stability Echo</source>
+  <target>Stabilitätsecho</target>
 </trans-unit>
 <trans-unit id="s93898c97c3777008">
   <source>+5% guardian effect</source>
+  <target>+5% Wächtereffekt</target>
 </trans-unit>
 <trans-unit id="s18a97ef9783a2a0b">
   <source>Diplomatic Dampener</source>
+  <target>Diplomatischer Dämpfer</target>
 </trans-unit>
 <trans-unit id="s47f22e6e554daeef">
   <source>−15% embassy power</source>
+  <target>−15% Botschaftsmacht</target>
 </trans-unit>
 <trans-unit id="s039206dea46d07df">
   <source>Entropy Wave</source>
+  <target>Entropiewelle</target>
 </trans-unit>
 <trans-unit id="s8a8a6c30d20e94ac">
   <source>Random score bleed</source>
+  <target>Zufälliger Punkteverlust</target>
 </trans-unit>
 <trans-unit id="s9ec4ac7921d6a863">
   <source>Resonances can cascade: one resonance triggering conditions for another. During Reckoning phase, cascade depth increases, making chain reactions more likely.</source>
+  <target>Resonanzen können kaskadieren: eine Resonanz löst Bedingungen für eine weitere aus. Während der Reckoning-Phase erhöht sich die Kaskadentiefe, wodurch Kettenreaktionen wahrscheinlicher werden.</target>
 </trans-unit>
 <trans-unit id="s03dc2ecbbc43ce49">
   <source>Resonance cards showing signatures and magnitude indicators</source>
+  <target>Resonanzkarten mit Signaturen und Magnitudenindikatoren</target>
 </trans-unit>
 <trans-unit id="s6ef0c7a3bad2e384">
   <source>The Event Seismograph</source>
+  <target>Der Ereignis-Seismograph</target>
 </trans-unit>
 <trans-unit id="sc05f813be82083f0">
   <source>Every simulation tracks event pressure across its zones through the Event Seismograph — an SVG visualization that plots event intensity over time. The seismograph shows spikes when missions resolve, guardians deploy, or bleed events cascade. Hover over any point to see the exact event details.</source>
+  <target>Jede Simulation verfolgt den Ereignisdruck über ihre Zonen mittels des Ereignis-Seismographen — einer SVG-Visualisierung, die die Ereignisintensität über die Zeit darstellt. Der Seismograph zeigt Spitzen an, wenn Missionen abgeschlossen werden.</target>
 </trans-unit>
 <trans-unit id="se12350bd3029f433">
   <source>X-axis</source>
+  <target>X-Achse</target>
 </trans-unit>
 <trans-unit id="s825b909f79c8c8d8">
   <source>Cycle timeline</source>
+  <target>Zykluszeitachse</target>
 </trans-unit>
 <trans-unit id="s359a04a5e9c092e6">
   <source>Y-axis</source>
+  <target>Y-Achse</target>
 </trans-unit>
 <trans-unit id="sb186b874a8947b4a">
   <source>Event pressure</source>
+  <target>Ereignisdruck</target>
 </trans-unit>
 <trans-unit id="s6fa430a5a501eb4b">
   <source>Interaction</source>
+  <target>Interaktion</target>
 </trans-unit>
 <trans-unit id="se5eb62a9be47eae9">
   <source>Hover crosshair</source>
+  <target>Fadenkreuz bei Hover</target>
 </trans-unit>
 <trans-unit id="s7c95876637f6a9d7">
   <source>Filter</source>
+  <target>Filter</target>
 </trans-unit>
 <trans-unit id="s1aa353845dc34d81">
   <source>By zone or event type</source>
+  <target>Nach Zone oder Ereignistyp</target>
 </trans-unit>
 <trans-unit id="saabdca683668db0c">
   <source>Event Seismograph SVG showing pressure spikes across cycles</source>
+  <target>Ereignis-Seismograph-SVG mit Druckspitzen über Zyklen</target>
 </trans-unit>
 <trans-unit id="sa24185355b0cee2e">
   <source>Zone Security Levels</source>
+  <target>Zonensicherheitsstufen</target>
 </trans-unit>
 <trans-unit id="s3de33683648474fd">
   <source>Each zone maintains a security level that affects operative success rates. Security ranges from Low to Critical and changes based on guardian deployments, fortification actions, and successful enemy infiltrations. The zone dynamics panel shows current security levels with color-coded indicators.</source>
+  <target>Jede Zone hat ein Sicherheitsniveau, das die Erfolgsraten von Operativen beeinflusst. Die Sicherheit reicht von Niedrig bis Kritisch und ändert sich basierend auf Guardian-Einsätzen, Befestigungsaktionen und erfolgreichen feindlichen Infiltrationen.</target>
 </trans-unit>
 <trans-unit id="s0212f4b74bdb3269">
   <source>Zone security is the primary defensive mechanic. A zone at Critical security reduces enemy operative success by up to 25%. Conversely, a Low security zone is a soft target — spy intel that reveals zone security levels is enormously valuable for planning strikes.</source>
+  <target>Zonensicherheit ist die primäre Defensivmechanik. Eine Zone auf Kritisch-Sicherheit reduziert den Erfolg feindlicher Operative um bis zu 25%. Umgekehrt ist eine Zone mit niedriger Sicherheit ein leichtes Ziel — Spionage-Aufklärung, die Zonensicherheit enthüllt, ist daher strategisch wertvoll.</target>
 </trans-unit>
 <trans-unit id="s24f3a319b88552c1">
   <source>Low</source>
+  <target>Niedrig</target>
 </trans-unit>
 <trans-unit id="s66bff3645cad857c">
   <source>Minimal defense</source>
+  <target>Minimale Verteidigung</target>
 </trans-unit>
 <trans-unit id="sac6bdc71f750ac96">
   <source>Medium</source>
+  <target>Mittel</target>
 </trans-unit>
 <trans-unit id="s6609425fbb6bf960">
   <source>−10% enemy success</source>
+  <target>−10% Feinderfolgschance</target>
 </trans-unit>
 <trans-unit id="sadfe162af080c188">
   <source>−18% enemy success</source>
+  <target>−18% Feinderfolgschance</target>
 </trans-unit>
 <trans-unit id="sd77a87c8de73e50c">
   <source>−25% enemy success</source>
+  <target>−25% Feinderfolgschance</target>
 </trans-unit>
 <trans-unit id="sddcab4b07185b471">
   <source>Deploy spies first to reveal enemy zone security, then target the weakest zone with saboteurs or assassins. This "spy → strike" combo is the most efficient use of RP.</source>
+  <target>Setzen Sie zuerst Spione ein, um die feindliche Zonensicherheit zu enthüllen, dann greifen Sie die schwächste Zone mit Saboteuren oder Attentätern an. Diese „Spion → Angriff“-Kombination ist die effizienteste Nutzung von RP.</target>
 </trans-unit>
 <trans-unit id="s8398f0c4492d3e72">
   <source>Zone dynamics panel with event pressure chart</source>
+  <target>Zonendynamik-Panel mit Ereignisdruckdiagramm</target>
 </trans-unit>
 <trans-unit id="sdd8b42bc6fb64b82">
   <source>Event Cards &amp; History</source>
+  <target>Ereigniskarten & Verlauf</target>
 </trans-unit>
 <trans-unit id="s04b2f900c1dc89a4">
   <source>Below the seismograph, individual event cards show the full history of what happened in each cycle. Each card displays the event type (deployment, mission resolution, bleed, score change), the actors involved, and the outcome. Events are color-coded by type and can be filtered by zone.</source>
+  <target>Unterhalb des Seismographen zeigen einzelne Ereigniskarten die vollständige Historie dessen, was in jedem Zyklus geschah. Jede Karte zeigt den Ereignistyp (Einsatz, Missionsauflösung, Blutung, Punkteänderung), die Akteure und den Zeitstempel.</target>
 </trans-unit>
 <trans-unit id="s6af4e62c8304f8eb">
   <source>Event seismograph with pressure timeline</source>
+  <target>Ereignis-Seismograph mit Druckzeitlinie</target>
 </trans-unit>
 <trans-unit id="s692742e86fd3c8a8">
   <source>What is Agent Memory?</source>
+  <target>Was ist das Agentengedächtnis?</target>
 </trans-unit>
 <trans-unit id="sb33cdbea82bbf6a0">
   <source>Every agent in a simulation maintains a persistent memory system. As events unfold, agents form observations about what they witness and reflections about what those events mean. This creates a living psychological profile that evolves over the course of an epoch.</source>
+  <target>Jeder Agent in einer Simulation verfügt über ein persistentes Gedächtnissystem. Während sich Ereignisse entfalten, bilden Agenten Beobachtungen über das Erlebte und Reflexionen über die Bedeutung dieser Ereignisse. Dies erzeugt eine lebendige Erinnerungshistorie.</target>
 </trans-unit>
 <trans-unit id="s68ae4133084dee9b">
   <source>Agent memory uses a dual-layer architecture: observations are raw factual records ("I deployed as a spy against The Gaslit Reach"), while reflections are synthesized interpretations ("My infiltration revealed a pattern of weak northern defenses — the enemy is concentrating forces in the south"). Reflections are AI-generated from accumulated observations.</source>
+  <target>Das Agentengedächtnis verwendet eine Zweischicht-Architektur: Beobachtungen sind rohe Faktenaufzeichnungen („Ich wurde als Spion gegen The Gaslit Reach eingesetzt“), während Reflexionen synthetisierte Interpretationen sind („Meine Infiltration hat strategische Verwundbarkeiten aufgedeckt“).</target>
 </trans-unit>
 <trans-unit id="se1ba9f3b4ae241a1">
   <source>Factual event records</source>
+  <target>Faktische Ereignisaufzeichnungen</target>
 </trans-unit>
 <trans-unit id="s06361d76131e55a7">
   <source>AI-synthesized insights</source>
+  <target>KI-synthetisierte Erkenntnisse</target>
 </trans-unit>
 <trans-unit id="s37e1ba11156a064f">
   <source>Importance</source>
+  <target>Wichtigkeit</target>
 </trans-unit>
 <trans-unit id="s45c6e69e4f605552">
   <source>1–5 pip rating</source>
+  <target>1–5 Punkte-Bewertung</target>
 </trans-unit>
 <trans-unit id="s78177eba4bd9de50">
   <source>Persistence</source>
+  <target>Persistenz</target>
 </trans-unit>
 <trans-unit id="s7008ef8c3099eeb2">
   <source>Survives across cycles</source>
+  <target>Überdauert Zyklen</target>
 </trans-unit>
 <trans-unit id="sed0ab4794ceb0e33">
   <source>Agent list showing memory indicators and aptitude profiles</source>
+  <target>Agentenliste mit Gedächtnisindikatoren und Eignungsprofilen</target>
 </trans-unit>
 <trans-unit id="s3eb616e95127cee1">
   <source>Memory Timeline</source>
+  <target>Gedächtniszeitachse</target>
 </trans-unit>
 <trans-unit id="s236dccab8ffddfcc">
   <source>Each agent’s detail page shows a chronological memory timeline. Entries are displayed as cards with timestamps, memory type (observation or reflection), importance pips, and the full text content. High-importance memories are visually highlighted.</source>
+  <target>Die Detailseite jedes Agenten zeigt eine chronologische Gedächtniszeitlinie. Einträge werden als Karten mit Zeitstempeln, Gedächtnistyp (Beobachtung oder Reflexion), Wichtigkeitspunkten und dem vollständigen Textinhalt angezeigt.</target>
 </trans-unit>
 <trans-unit id="s6306ac9d606a5a9a">
   <source>Agent memories influence bot decision-making. A bot whose agents have observed repeated attacks on a specific zone will prioritize defending that zone. Understanding agent memory helps predict bot behavior.</source>
+  <target>Agentengedächtnisse beeinflussen die Entscheidungsfindung von Bots. Ein Bot, dessen Agenten wiederholte Angriffe auf eine bestimmte Zone beobachtet haben, wird die Verteidigung dieser Zone priorisieren. Das Verständnis des Agentengedächtnisses hilft, Bot-Verhalten vorherzusagen.</target>
 </trans-unit>
 <trans-unit id="s57bbb3ddbd1dc62b">
   <source>Agent memory list with observation and reflection entries</source>
+  <target>Agentengedächtnisliste mit Beobachtungs- und Reflexionseinträgen</target>
 </trans-unit>
 <trans-unit id="se796af1bcdc1ca93">
   <source>Importance &amp; Decay</source>
+  <target>Wichtigkeit & Verfall</target>
 </trans-unit>
 <trans-unit id="sb5ac8aba9299ab97">
   <source>Each memory entry has an importance rating from 1 to 5, shown as pips. High-importance memories (mission outcomes, major score shifts) persist longer and weigh more heavily in AI reflections. Low-importance memories may decay over time, simulating the natural fading of routine observations.</source>
+  <target>Jeder Gedächtniseintrag hat eine Wichtigkeitsbewertung von 1 bis 5, dargestellt als Punkte. Hochbedeutsame Erinnerungen (Missionsergebnisse, große Punkteverschiebungen) bleiben länger bestehen und wiegen schwerer bei KI-Reflexionen.</target>
 </trans-unit>
 <trans-unit id="s62c66401ede9b4d6">
   <source>5 pips</source>
+  <target>5 Punkte</target>
 </trans-unit>
 <trans-unit id="s4c501137a163f7e1">
   <source>Critical — never decays</source>
+  <target>Kritisch — verfällt nie</target>
 </trans-unit>
 <trans-unit id="scf25de20301c1623">
   <source>4 pips</source>
+  <target>4 Punkte</target>
 </trans-unit>
 <trans-unit id="s3d8f0849d75229a2">
   <source>High — long persistence</source>
+  <target>Hoch — lange Persistenz</target>
 </trans-unit>
 <trans-unit id="sb5e11a3f807d6040">
   <source>3 pips</source>
+  <target>3 Punkte</target>
 </trans-unit>
 <trans-unit id="sf65094bd88f4ee3d">
   <source>Medium — standard decay</source>
+  <target>Mittel — normaler Verfall</target>
 </trans-unit>
 <trans-unit id="s7ae2c3182e78b44d">
   <source>1–2 pips</source>
+  <target>1–2 Punkte</target>
 </trans-unit>
 <trans-unit id="s0887e397b1cac2d6">
   <source>Low — fades quickly</source>
+  <target>Niedrig — verblasst schnell</target>
 </trans-unit>
 <trans-unit id="s7c92667f4292fff7">
   <source>Memory entries with importance pip ratings</source>
+  <target>Gedächtniseinträge mit Wichtigkeitspunkt-Bewertungen</target>
 </trans-unit>
 <trans-unit id="s0f60f77fd7eb66ff">
   <source>What is the Multiverse Map?</source>
+  <target>Was ist die Multiversumskarte?</target>
 </trans-unit>
 <trans-unit id="s6d19188b23118b04">
   <source>The Cartographer’s Map is an interactive force-directed graph that visualizes the entire multiverse — every simulation, their connections, and active game instances. Nodes represent simulations, edges represent cross-dimensional connections, and energy pulses flow along the connections to show bleed activity.</source>
+  <target>Die Kartographen-Karte ist ein interaktiver kraftgerichteter Graph, der das gesamte Multiversum visualisiert — jede Simulation, ihre Verbindungen und aktive Spielinstanzen. Knoten repräsentieren Simulationen, Kanten zeigen Verbindungen.</target>
 </trans-unit>
 <trans-unit id="se6590729b6ba3ee2">
   <source>Template simulations appear as solid nodes with ambient glow. When an epoch is active, game instances orbit their parent template with dashed rotating borders and phase-colored rings (green for foundation, amber for competition, red for reckoning). The map auto-refreshes every 30 seconds during active epochs.</source>
+  <target>Vorlagen-Simulationen erscheinen als solide Knoten mit Umgebungsleuchten. Wenn eine Epoche aktiv ist, umkreisen Spielinstanzen ihre Elternvorlage mit gestrichelten rotierenden Rändern und phasenfarbigen Ringen (grün für Foundation, blau für Competition).</target>
 </trans-unit>
 <trans-unit id="s8a0ee3d87938f19a">
   <source>Nodes</source>
+  <target>Knoten</target>
 </trans-unit>
 <trans-unit id="s89a8d9826fb3b7ff">
   <source>Simulations (template + instances)</source>
+  <target>Simulationen (Vorlagen + Instanzen)</target>
 </trans-unit>
 <trans-unit id="s86ccc5d1f7cb6bdd">
   <source>Edges</source>
+  <target>Kanten</target>
 </trans-unit>
 <trans-unit id="s0347db4455c73bbc">
   <source>Cross-simulation connections</source>
+  <target>Simulationsübergreifende Verbindungen</target>
 </trans-unit>
 <trans-unit id="sfbca8326a775cc77">
   <source>Pulses</source>
+  <target>Impulse</target>
 </trans-unit>
 <trans-unit id="sba73d4462647603d">
   <source>Bleed &amp; operative activity</source>
+  <target>Bleeding- & Operativaktivität</target>
 </trans-unit>
 <trans-unit id="s7b7163270e57e8b4">
   <source>Refresh</source>
+  <target>Aktualisierung</target>
 </trans-unit>
 <trans-unit id="s5c2f97f52197eca7">
   <source>30 seconds (auto)</source>
+  <target>30 Sekunden (automatisch)</target>
 </trans-unit>
 <trans-unit id="se9332dd779340cce">
   <source>Interactive Features</source>
+  <target>Interaktive Funktionen</target>
 </trans-unit>
 <trans-unit id="s21f81968b914aa6b">
   <source>Click any simulation node to open a side panel with epoch scores and leaderboard data. Click an edge to see connection details including strength, embassy links, and operative flow. Double-click a game instance cluster to zoom in. Use the minimap in the bottom-right corner for viewport orientation. A search bar lets you find simulations by name, fading unmatched nodes.</source>
+  <target>Klicken Sie auf einen Simulationsknoten, um ein Seitenpanel mit Epochenpunkteständen und Bestenlisten-Daten zu öffnen. Klicken Sie auf eine Kante, um Verbindungsdetails einschließlich Stärke, Botschaftslinks und Operativfluss zu sehen.</target>
 </trans-unit>
 <trans-unit id="s93e6a1a7e12fe8b9">
   <source>Node click</source>
+  <target>Knotenklick</target>
 </trans-unit>
 <trans-unit id="s3b30cf95c0f1ea52">
   <source>Leaderboard panel</source>
+  <target>Ranglistenpanel</target>
 </trans-unit>
 <trans-unit id="s626a02b6bbfb0b0c">
   <source>Edge click</source>
+  <target>Kantenklick</target>
 </trans-unit>
 <trans-unit id="s06c3e65804314b3b">
   <source>Connection details</source>
+  <target>Verbindungsdetails</target>
 </trans-unit>
 <trans-unit id="s391cdaa27327e441">
   <source>Double-click</source>
+  <target>Doppelklick</target>
 </trans-unit>
 <trans-unit id="s7b82537f3564e011">
   <source>Zoom to cluster</source>
+  <target>Zum Cluster zoomen</target>
 </trans-unit>
 <trans-unit id="s5d929ff1619ac0c9">
   <source>Search</source>
+  <target>Suche</target>
 </trans-unit>
 <trans-unit id="s52d81506be796d67">
   <source>Filter by name</source>
+  <target>Nach Name filtern</target>
 </trans-unit>
 <trans-unit id="s39c49a303b1114ff">
   <source>The battle feed ticker at the bottom of the map shows a scrolling log of public battle events across all active epochs — useful for spectators following multiple matches.</source>
+  <target>Der Kampfmeldungsticker am unteren Kartenrand zeigt ein scrollendes Protokoll öffentlicher Kampfereignisse über alle aktiven Epochen — nützlich für Zuschauer, die mehrere Matches verfolgen.</target>
 </trans-unit>
 <trans-unit id="sc711a1bb290fc772">
   <source>Game Instance Visualization</source>
+  <target>Spielinstanz-Visualisierung</target>
 </trans-unit>
 <trans-unit id="s57b1f3d718795525">
   <source>During an active epoch, game instances display rich visual data: 5-dimension health arcs around the node show stability, influence, sovereignty, diplomatic, and military scores at a glance. Sparkline composite scores on template nodes show overall performance trends. Operative trails along edges indicate which simulations are targeting each other, with edge width and opacity reflecting operative volume.</source>
+  <target>Während einer aktiven Epoche zeigen Spielinstanzen reichhaltige visuelle Daten: 5-Dimensionen-Gesundheitsbögen um den Knoten zeigen Stabilität, Einfluss, Souveränität, Diplomatie und Militär auf einen Blick. Sparklines zeigen den Scoreverlauf.</target>
 </trans-unit>
 <trans-unit id="sd030bded523dbc90">
   <source>Health arcs</source>
+  <target>Zustandsbögen</target>
 </trans-unit>
 <trans-unit id="s1a0d70e56c6b66af">
   <source>5 score dimensions</source>
+  <target>5 Bewertungsdimensionen</target>
 </trans-unit>
 <trans-unit id="sa9e5f864da269241">
   <source>Sparklines</source>
+  <target>Sparklines</target>
 </trans-unit>
 <trans-unit id="se84472f84347c8a2">
   <source>Composite score trends</source>
+  <target>Gesamtpunkte-Trends</target>
 </trans-unit>
 <trans-unit id="s088f4374ae33fa8f">
   <source>Operative trails</source>
+  <target>Operativpfade</target>
 </trans-unit>
 <trans-unit id="s6727c45a0f50f752">
   <source>Attack/defense flow</source>
+  <target>Angriffs-/Verteidigungsfluss</target>
 </trans-unit>
 <trans-unit id="s1e5f865268607d23">
   <source>Phase rings</source>
+  <target>Phasenringe</target>
 </trans-unit>
 <trans-unit id="s02ccbc9fd4ca61b4">
   <source>Color-coded epoch phase</source>
+  <target>Farbcodierte Epochenphase</target>
 </trans-unit>
 <trans-unit id="s1bcd84a9df686f9b">
   <source>What are Bot Players?</source>
+  <target>Was sind Bot-Spieler?</target>
 </trans-unit>
 <trans-unit id="s3833e122e34c65f8">
   <source>Bot players are AI opponents that can be added to any epoch. Each bot has a personality archetype that determines its strategic behavior — from defensive fortress-builders to chaotic wild cards. Bots use the exact same deployment and scoring mechanics as human players, ensuring fair competition.</source>
+  <target>Bot-Spieler sind KI-Gegner, die jeder Epoche hinzugefügt werden können. Jeder Bot hat einen Persönlichkeitsarchetyp, der sein strategisches Verhalten bestimmt — von defensiven Festungsbauern bis zu chaotischen Wildcards. Bots nutzen dieselben Dienste wie menschliche Spieler.</target>
 </trans-unit>
 <trans-unit id="s4d6ca86fe306a9b8">
   <source>Bots are configured through reusable presets with a name, personality, and difficulty level. The epoch creator adds bots from the Bot Deployment Console during the lobby phase. Bots auto-draft their agent roster based on their personality preferences and make decisions synchronously during cycle resolution.</source>
+  <target>Bots werden über wiederverwendbare Voreinstellungen mit Name, Persönlichkeit und Schwierigkeitsgrad konfiguriert. Der Epochenersteller fügt Bots über die Bot-Einsatzkonsole während der Lobby-Phase hinzu. Bots draften ihre Agenten automatisch.</target>
 </trans-unit>
 <trans-unit id="sab8fd1c3dde375c3">
   <source>Personalities</source>
+  <target>Persönlichkeiten</target>
 </trans-unit>
 <trans-unit id="s2da621de81aa1cfd">
   <source>Easy / Medium / Hard</source>
+  <target>Leicht / Mittel / Schwer</target>
 </trans-unit>
 <trans-unit id="se7ce04baa8200e17">
   <source>Presets</source>
+  <target>Voreinstellungen</target>
 </trans-unit>
 <trans-unit id="s15fb950251f20a0d">
   <source>Reusable across epochs</source>
+  <target>Wiederverwendbar über Epochen</target>
 </trans-unit>
 <trans-unit id="s167c34fcb80edfd4">
   <source>Fairness</source>
+  <target>Fairness</target>
 </trans-unit>
 <trans-unit id="s9a3327547b3e4112">
   <source>Same rules as humans</source>
+  <target>Dieselben Regeln wie Menschen</target>
 </trans-unit>
 <trans-unit id="s9b8a3b7138f15dd9">
   <source>Personality Archetypes</source>
+  <target>Persönlichkeitsarchetypen</target>
 </trans-unit>
 <trans-unit id="sc4400581daa78a19">
   <source>Each personality shapes how the bot allocates RP, chooses targets, and responds to threats. The Sentinel prioritizes defense with guardian stacking and counter-intel sweeps. The Warlord maximizes offensive pressure with assassins and saboteurs. The Diplomat builds embassy networks and avoids betrayal. The Strategist adapts dynamically based on game state. The Chaos agent acts unpredictably, mixing strategies each cycle.</source>
+  <target>Jede Persönlichkeit bestimmt, wie der Bot RP zuweist, Ziele auswählt und auf Bedrohungen reagiert. Der Sentinel priorisiert Verteidigung mit Guardian-Stacking und Gegenaufklärungseinsätzen. Der Warlord maximiert Offensivoperationen.</target>
 </trans-unit>
 <trans-unit id="sa75beb47f022234d">
   <source>Sentinel</source>
-</trans-unit>
+<target>Wächter</target></trans-unit>
 <trans-unit id="s007346811bbe2894">
   <source>Defensive — guardians + sweeps</source>
+  <target>Defensiv — Wächter + Aufklärungsabwehr</target>
 </trans-unit>
 <trans-unit id="s53f65db48934571a">
   <source>Warlord</source>
-</trans-unit>
+<target>Kriegsherr</target></trans-unit>
 <trans-unit id="se94fca73062284ee">
   <source>Aggressive — assassins + saboteurs</source>
+  <target>Aggressiv — Attentäter + Saboteure</target>
 </trans-unit>
 <trans-unit id="s4c7ceefd99a7b23e">
   <source>Alliance-focused — embassy network</source>
+  <target>Allianzorientiert — Botschaftsnetzwerk</target>
 </trans-unit>
 <trans-unit id="s9a29d690dc56eb63">
   <source>Strategist</source>
+  <target>Stratege</target>
 </trans-unit>
 <trans-unit id="s2b1af4d31c339be1">
   <source>Adaptive — reads game state</source>
+  <target>Adaptiv — liest Spielstand</target>
 </trans-unit>
 <trans-unit id="s66fc64dcbe2943bf">
   <source>Chaos</source>
+  <target>Chaos</target>
 </trans-unit>
 <trans-unit id="s6edc0c0d0429e0b4">
   <source>Unpredictable — random mix</source>
+  <target>Unberechenbar — zufällige Mischung</target>
 </trans-unit>
 <trans-unit id="s83a55e318a69a5ca">
   <source>Difficulty affects decision quality: easy bots make suboptimal choices and waste RP, medium bots play competently, and hard bots optimize their strategy and exploit weaknesses.</source>
+  <target>Der Schwierigkeitsgrad beeinflusst die Entscheidungsqualität: einfache Bots treffen suboptimale Entscheidungen und verschwenden RP, mittlere Bots spielen kompetent, und schwere Bots optimieren ihre Strategie und nutzen Schwächen aus.</target>
 </trans-unit>
 <trans-unit id="s80694e92e8ae5a87">
   <source>Bots can participate in epoch chat with two modes. Template mode generates instant, cost-free responses based on personality templates. LLM mode uses OpenRouter to produce context-aware, strategically nuanced messages — bots will taunt, negotiate, and bluff based on the game state. The mode is configurable per simulation in AI Settings.</source>
+  <target>Bots können mit zwei Modi am Epochen-Chat teilnehmen. Der Vorlagenmodus generiert sofortige, kostenfreie Antworten basierend auf Persönlichkeitsvorlagen. Der LLM-Modus verwendet OpenRouter für kontextbewusste, strategisch nuancierte Nachrichten.</target>
 </trans-unit>
 <trans-unit id="s0af2d24c6116ff8e">
   <source>Template mode</source>
+  <target>Vorlagenmodus</target>
 </trans-unit>
 <trans-unit id="s359345c12fbf3176">
   <source>Free, instant, personality-based</source>
+  <target>Kostenlos, sofort, persönlichkeitsbasiert</target>
 </trans-unit>
 <trans-unit id="s30f027fa612af3fb">
   <source>LLM mode</source>
+  <target>LLM-Modus</target>
 </trans-unit>
 <trans-unit id="s3f44d51f75fb3db9">
   <source>AI-generated, context-aware</source>
+  <target>KI-generiert, kontextbewusst</target>
 </trans-unit>
 <trans-unit id="s606c6789a0e06b07">
   <source>Config</source>
+  <target>Konfiguration</target>
 </trans-unit>
 <trans-unit id="s2fc116510da1359a">
   <source>AI Settings → Bot Chat Mode</source>
+  <target>KI-Einstellungen → Bot-Chat-Modus</target>
 </trans-unit>
 <trans-unit id="s31aeda173f5ba7a7">
   <source>What is Agent Chat?</source>
+  <target>Was ist der Agenten-Chat?</target>
 </trans-unit>
 <trans-unit id="s8909045ff6902234">
   <source>Agent Chat lets you have conversations with the agents in your simulation. Each agent responds with AI-generated dialogue shaped by their personality, profession, background, and accumulated memories. Conversations persist across sessions, building a rich history of interactions.</source>
+  <target>Agenten-Chat ermöglicht Gespräche mit den Agenten in Ihrer Simulation. Jeder Agent antwortet mit KI-generiertem Dialog, der durch seine Persönlichkeit, seinen Beruf, seinen Hintergrund und seine angesammelten Erinnerungen geprägt ist.</target>
 </trans-unit>
 <trans-unit id="s5d30c514325c038f">
   <source>The chat system uses a full context window of up to 50 previous messages plus the agent’s relevant memories (retrieved via semantic similarity). This means agents remember what you’ve discussed and can reference past conversations, creating a sense of continuity and depth.</source>
+  <target>Das Chat-System verwendet ein volles Kontextfenster von bis zu 50 vorherigen Nachrichten plus die relevanten Erinnerungen des Agenten (abgerufen über semantische Ähnlichkeit). Das bedeutet, Agenten erinnern sich an Besprochenes und können darauf Bezug nehmen.</target>
 </trans-unit>
 <trans-unit id="s63e03c70f67ebf9c">
   <source>Context</source>
+  <target>Kontext</target>
 </trans-unit>
 <trans-unit id="s823e578233e44bb4">
   <source>50 messages + memories</source>
+  <target>50 Nachrichten + Erinnerungen</target>
 </trans-unit>
 <trans-unit id="s63fb901c0d08dd03">
   <source>OpenRouter (configurable model)</source>
+  <target>OpenRouter (konfigurierbares Modell)</target>
 </trans-unit>
 <trans-unit id="sfd0118ca0ce1566b">
   <source>Full conversation history</source>
+  <target>Vollständiger Gesprächsverlauf</target>
 </trans-unit>
 <trans-unit id="see491aecb38df4b1">
   <source>Simulation → Chat tab</source>
+  <target>Simulation → Chat-Reiter</target>
 </trans-unit>
 <trans-unit id="s4c604b0e25ab362d">
   <source>Memory-Augmented Responses</source>
+  <target>Gedächtnisgestützte Antworten</target>
 </trans-unit>
 <trans-unit id="s281737b5cb17e645">
   <source>When an agent responds, the system retrieves their most relevant memories using a Stanford Generative Agents-style retrieval formula that balances semantic similarity, importance, and recency. These memories are injected into the agent’s system prompt, so their responses reflect what they’ve experienced — events they witnessed, missions they participated in, and reflections they’ve formed.</source>
+  <target>Wenn ein Agent antwortet, ruft das System seine relevantesten Erinnerungen ab, unter Verwendung einer Abrufformel nach Stanford Generative Agents, die semantische Ähnlichkeit, Wichtigkeit und Aktualität ausbalanciert. Diese Erinnerungen werden in die Antwort eingewoben.</target>
 </trans-unit>
 <trans-unit id="sec5c6f7bc11f5ea3">
   <source>After each chat exchange, the system automatically extracts noteworthy observations from the conversation and stores them as new agent memories. Over time, agents develop richer, more nuanced personalities through accumulated interactions.</source>
+  <target>Nach jedem Chat-Austausch extrahiert das System automatisch bemerkenswerte Beobachtungen aus dem Gespräch und speichert sie als neue Agentenerinnerungen. Im Laufe der Zeit entwickeln Agenten reichere, nuanciertere Persönlichkeiten.</target>
 </trans-unit>
 <trans-unit id="s7b59f7665fe04ce9">
   <source>Starting a Conversation</source>
+  <target>Ein Gespräch beginnen</target>
 </trans-unit>
 <trans-unit id="s789639ab0efcd50b">
   <source>Navigate to the Chat tab in your simulation and select an agent from the agent selector. Each conversation is a separate thread — you can maintain multiple ongoing conversations with different agents. Messages appear with directional animations, and AI responses are generated in real time via OpenRouter.</source>
+  <target>Navigieren Sie zum Chat-Tab in Ihrer Simulation und wählen Sie einen Agenten aus dem Agentenwähler. Jedes Gespräch ist ein separater Thread — Sie können mehrere laufende Gespräche mit verschiedenen Agenten führen.</target>
 </trans-unit>
 <trans-unit id="s23584c1df898c614">
   <source>Rate limit</source>
+  <target>Ratenbegrenzung</target>
 </trans-unit>
 <trans-unit id="sb06f197f79352511">
   <source>10 messages per minute</source>
+  <target>10 Nachrichten pro Minute</target>
 </trans-unit>
 <trans-unit id="s6a81a6e9d715b9f7">
   <source>Agent selector</source>
+  <target>Agentenauswahl</target>
 </trans-unit>
 <trans-unit id="sb385a6438c18ad40">
   <source>Choose any simulation agent</source>
+  <target>Beliebigen Simulationsagenten wählen</target>
 </trans-unit>
 <trans-unit id="s8b60bf2db1580306">
   <source>Threads</source>
+  <target>Gesprächsverläufe</target>
 </trans-unit>
 <trans-unit id="sf5ef3237dbea08bc">
   <source>One per agent, persistent</source>
+  <target>Einer pro Agent, persistent</target>
 </trans-unit>
 <trans-unit id="s39970bd082d0fcf5">
   <source>What is Simulation Lore?</source>
+  <target>Was ist die Simulationsüberlieferung?</target>
 </trans-unit>
 <trans-unit id="s2bbfc0386c70f28d">
   <source>Every simulation has a dedicated Lore section — an in-world narrative of 3,000–5,000 words organized into six chapters. Lore describes the world’s history, geography, political systems, culture, and defining tensions. It’s the first thing visitors see when entering a simulation, setting the tone for everything that follows.</source>
+  <target>Jede Simulation hat eine eigene Weltgeschichte — Tausende Wörter an Geschichte, Kultur und Spannung, organisiert in sechs Kapiteln. Die Überlieferung ist die Identität der Welt, von der Schmiede generiert oder von Hand geschrieben, und öffentlich für alle Besucher sichtbar.</target>
 </trans-unit>
 <trans-unit id="s6427b9858d0d7db1">
   <source>Lore is displayed through the LoreScroll component: an elegantly typeset reading experience using the Bureau font (Spectral serif) with themed section headers, paragraph spacing, and optional lore illustrations. The visual design adapts to each simulation’s theme — dark brutalist for Velgarien, Victorian gaslight for The Gaslit Reach, deep-space horror for Station Null.</source>
+  <target>Lore wird durch die LoreScroll-Komponente angezeigt: ein elegant gesetztes Leseerlebnis mit der Bureau-Schriftart (Spectral Serif) mit thematischen Abschnittsüberschriften, Absatzabständen und optionalen Lore-Illustrationen.</target>
 </trans-unit>
 <trans-unit id="s202fffd5a2e1c595">
   <source>Length</source>
+  <target>Länge</target>
 </trans-unit>
 <trans-unit id="s0a0294dbbab9e1bb">
   <source>3,000–5,000 words</source>
+  <target>3.000–5.000 Wörter</target>
 </trans-unit>
 <trans-unit id="s15733d7d0f6d1d73">
   <source>Chapters</source>
+  <target>Kapitel</target>
 </trans-unit>
 <trans-unit id="s60a55ec5f815ad30">
   <source>Illustrations</source>
+  <target>Illustrationen</target>
 </trans-unit>
 <trans-unit id="sb2f6dbd9cc2dc136">
   <source>AI-generated (AVIF)</source>
+  <target>KI-generiert (AVIF)</target>
 </trans-unit>
 <trans-unit id="s7fcbcbffaf80605f">
   <source>Simulation → Lore tab (default)</source>
+  <target>Simulation → Überlieferungs-Reiter (Standard)</target>
 </trans-unit>
 <trans-unit id="s6fcfc37f9577f417">
   <source>Forge-Generated vs. Manual</source>
+  <target>Schmiede-generiert vs. manuell</target>
 </trans-unit>
 <trans-unit id="s72a5128039f3a42f">
   <source>Simulations created through the Forge receive AI-generated lore that weaves together the seed prompt, philosophical anchor, geography, agents, and buildings into a cohesive narrative. Lore is auto-translated to German. Simulations created manually can have lore written and edited by the owner through the Lore editor.</source>
+  <target>Durch die Schmiede erstellte Simulationen erhalten KI-generierte Lore, die den Seed-Prompt, den philosophischen Anker, die Geographie, Agenten und Gebäude zu einer zusammenhängenden Erzählung verwebt. Lore wird automatisch übersetzt.</target>
 </trans-unit>
 <trans-unit id="s64378741447ab3e2">
   <source>Lore is publicly visible — anyone can browse a simulation’s lore without logging in. It serves as the world’s identity and helps players understand the thematic context before joining an epoch.</source>
+  <target>Lore ist öffentlich sichtbar — jeder kann die Lore einer Simulation durchstöbern, ohne sich anzumelden. Sie dient als Weltidentität und hilft Spielern, den thematischen Kontext vor dem Beitritt zu einer Epoche zu verstehen.</target>
 </trans-unit>
 <trans-unit id="s59080759d0ad8f4f">
   <source>What is Simulation Health?</source>
+  <target>Was ist der Simulationszustand?</target>
 </trans-unit>
 <trans-unit id="sbe056096b8d2e878">
   <source>The Simulation Health dashboard shows the mechanical state of your world through four computed metrics: Building Readiness, Zone Stability, Embassy Effectiveness, and overall Simulation Health. These metrics directly feed into epoch scoring — they’re not just flavor, they determine your score.</source>
+  <target>Das Simulationsgesundheits-Dashboard zeigt den mechanischen Zustand Ihrer Welt durch vier berechnete Metriken: Gebäudebereitschaft, Zonenstabilität, Botschaftseffektivität und Gesamtsimulationsgesundheit. Diese Metriken reagieren auf Gameplay-Ereignisse.</target>
 </trans-unit>
 <trans-unit id="sc793076b0b5e7215">
   <source>Building Readiness</source>
+  <target>Gebäudebereitschaft</target>
 </trans-unit>
 <trans-unit id="sa848752c300e2f20">
   <source>Avg. building condition</source>
+  <target>Durchschn. Gebäudezustand</target>
 </trans-unit>
 <trans-unit id="s7c9fe21bb4b04911">
   <source>Avg. zone security level</source>
+  <target>Durchschn. Zonensicherheitsstufe</target>
 </trans-unit>
 <trans-unit id="s79ca0911b0086bfd">
   <source>Embassy Effectiveness</source>
+  <target>Botschaftseffektivität</target>
 </trans-unit>
 <trans-unit id="sa713dc89c913c146">
   <source>Diplomatic link strength</source>
+  <target>Diplomatische Verbindungsstärke</target>
 </trans-unit>
 <trans-unit id="s9f1bfa9ee65673a3">
   <source>Composite of all metrics</source>
+  <target>Zusammensetzung aller Kennzahlen</target>
 </trans-unit>
 <trans-unit id="s59254f5d5c86bd80">
   <source>How Metrics Change</source>
+  <target>Wie sich Kennzahlen ändern</target>
 </trans-unit>
 <trans-unit id="sc5825dd4b60effc1">
   <source>Building Readiness drops when saboteurs damage your buildings (good → moderate → poor → ruined). Zone Stability decreases when enemy operatives succeed or cascade events fire. Embassy Effectiveness falls when infiltrators compromise your diplomatic links. All metrics recover over time but can be boosted by deploying guardians and fortifying zones.</source>
+  <target>Gebäudebereitschaft sinkt, wenn Saboteure Ihre Gebäude beschädigen (gut → mäßig → schlecht → zerstört). Zonenstabilität nimmt ab, wenn feindliche Operative Erfolg haben oder Kaskadenereignisse ausgelöst werden. Botschaftseffektivität fällt nach Infiltratormissionen.</target>
 </trans-unit>
 <trans-unit id="sd179b0a3e2791a70">
   <source>These metrics are computed from materialized database views that aggregate across all your buildings, zones, and embassies. They update automatically after each cycle resolution. The dashboard uses info bubbles to explain each metric’s formula.</source>
+  <target>Diese Metriken werden aus materialisierten Datenbankansichten berechnet, die über alle Ihre Gebäude, Zonen und Botschaften aggregieren. Sie aktualisieren sich automatisch nach jeder Zyklusauflösung. Das Dashboard verwendet Inline-Sparklines für Trendvisualisierung.</target>
 </trans-unit>
 <trans-unit id="s6049392fa410f652">
   <source>Monitor your health dashboard between cycles to identify which metrics are under pressure. If zone stability is dropping, deploy guardians. If embassy effectiveness is falling, watch for infiltrators. The dashboard is your early warning system.</source>
+  <target>Überwachen Sie Ihr Gesundheits-Dashboard zwischen den Zyklen, um zu identifizieren, welche Metriken unter Druck stehen. Wenn die Zonenstabilität sinkt, setzen Sie Guardians ein. Wenn die Botschaftseffektivität fällt, achten Sie auf Infiltratoren.</target>
 </trans-unit>
 <trans-unit id="s9371e9160913e4d1">
   <source>What are Social Trends?</source>
+  <target>Was sind Gesellschaftliche Trends?</target>
 </trans-unit>
 <trans-unit id="s0068188f86558066">
   <source>Social Trends lets you import real-world news from The Guardian and NewsAPI, then transform those articles into simulation-contextual events using AI. A news story about political unrest becomes a coup attempt in your dystopian city. A technology breakthrough becomes a forbidden invention in your steampunk world. This bridges the real and fictional.</source>
+  <target>Social Trends ermöglicht den Import realer Nachrichten von The Guardian und NewsAPI, die dann durch KI in simulationskontextuelle Ereignisse transformiert werden. Eine Nachricht über politische Unruhen wird zu einem Staatsstreich in Ihrer Welt.</target>
 </trans-unit>
 <trans-unit id="s91e3a47599412f51">
   <source>Sources</source>
+  <target>Quellen</target>
 </trans-unit>
 <trans-unit id="sb39d23a7088b3280">
   <source>The Guardian, NewsAPI</source>
+  <target>The Guardian, NewsAPI</target>
 </trans-unit>
 <trans-unit id="sa8279f4ec68eab0f">
   <source>AI contextual adaptation</source>
+  <target>KI-kontextuelle Anpassung</target>
 </trans-unit>
 <trans-unit id="s05918c8410482517">
   <source>Simulation events</source>
+  <target>Simulationsereignisse</target>
 </trans-unit>
 <trans-unit id="sa148e43198b60abe">
   <source>Simulation → Social Trends tab</source>
+  <target>Simulation → Gesellschaftliche-Trends-Reiter</target>
 </trans-unit>
 <trans-unit id="s6cd142bd8c80477e">
   <source>The Transform Pipeline</source>
+  <target>Die Transformationspipeline</target>
 </trans-unit>
 <trans-unit id="sa369bc01524b0c5d">
   <source>The workflow is: Fetch → Transform → Integrate. First, browse or search real-world articles. Then, select an article and transform it — the AI rewrites the story through your simulation’s lens, matching its theme, tone, and internal logic. Finally, integrate the transformed content as a new simulation event, optionally linking it to a campaign.</source>
+  <target>Der Workflow ist: Abrufen → Transformieren → Integrieren. Zunächst durchsuchen Sie reale Artikel. Dann wählen Sie einen Artikel aus und transformieren ihn — die KI schreibt die Geschichte durch die Linse Ihrer Simulation um.</target>
 </trans-unit>
 <trans-unit id="s5d00e10c804c8cc1">
   <source>Batch transform lets you process multiple articles at once. This is useful for creating a cluster of related events that simulate a real-world news cycle filtered through your simulation’s worldview.</source>
+  <target>Stapelverarbeitung ermöglicht die gleichzeitige Verarbeitung mehrerer Artikel. Dies ist nützlich, um einen Cluster verwandter Ereignisse zu erstellen, die einen realen Nachrichtenzyklus durch die Weltanschauung Ihrer Simulation filtern.</target>
 </trans-unit>
 <trans-unit id="s66f32893d93da78d">
   <source>Campaigns group related events into thematic narratives — a propaganda initiative, an influence operation, or a social movement. Each campaign tracks engagement metrics and links back to its source events. The campaign dashboard shows an overview of all active campaigns with performance analytics.</source>
+  <target>Kampagnen bündeln verwandte Ereignisse zu thematischen Narrativen — eine Propagandainitiative, eine Einflussoperation oder eine soziale Bewegung. Jede Kampagne verfolgt Engagement-Metriken und verlinkt zurück zu ihren Quellereignissen.</target>
 </trans-unit>
 <trans-unit id="s7b3ab7561ced061a">
   <source>Types</source>
+  <target>Typen</target>
 </trans-unit>
 <trans-unit id="s7a9705b49dfca459">
   <source>Marketing, political, social</source>
+  <target>Marketing, politisch, sozial</target>
 </trans-unit>
 <trans-unit id="s97aa76056a81bd36">
   <source>Metrics</source>
+  <target>Kennzahlen</target>
 </trans-unit>
 <trans-unit id="s82f6af51229ac91f">
   <source>Engagement, reach, impact</source>
+  <target>Engagement, Reichweite, Wirkung</target>
 </trans-unit>
 <trans-unit id="s89d232de7f9416ec">
   <source>Manual, imported, social</source>
+  <target>Manuell, importiert, sozial</target>
 </trans-unit>
 <trans-unit id="s7fee95b66225e1fb">
   <source>Dashboard</source>
+  <target>Dashboard</target>
 </trans-unit>
 <trans-unit id="s4837d23dd38f4e28">
   <source>Simulation → Campaigns tab</source>
+  <target>Simulation → Kampagnen-Reiter</target>
 </trans-unit>
 <trans-unit id="saf71fd669a443b09">
   <source>What is the COMMS System?</source>
+  <target>Was ist das KOMM-System?</target>
 </trans-unit>
 <trans-unit id="s8b0d8709e77ae03e">
   <source>The COMMS sidebar on the Epoch Operations Board provides real-time communication during competitive play. Two channels are available: ALL CHANNELS broadcasts to every participant, while TEAM FREQ is restricted to your alliance members. Messages update in real time via WebSocket — no page refresh needed.</source>
+  <target>Die COMMS-Seitenleiste auf dem Epochen-Operationsbrett bietet Echtzeitkommunikation während des Wettkampfspiels. Zwei Kanäle sind verfügbar: ALLE KANÄLE sendet an jeden Teilnehmer, während TEAM FREQ auf Ihr Allianzteam beschränkt ist.</target>
 </trans-unit>
 <trans-unit id="s635423418a66e334">
   <source>ALL CHANNELS</source>
+  <target>ALLE KANÄLE</target>
 </trans-unit>
 <trans-unit id="scbff29087551476d">
   <source>Epoch-wide broadcast</source>
+  <target>Epochenweiter Rundfunk</target>
 </trans-unit>
 <trans-unit id="sd9e0ddc9893fd0be">
   <source>TEAM FREQ</source>
+  <target>TEAMFREQUENZ</target>
 </trans-unit>
 <trans-unit id="seae62642229ded52">
   <source>Alliance-only channel</source>
+  <target>Nur-Allianz-Kanal</target>
 </trans-unit>
 <trans-unit id="s13958f723f45a995">
   <source>Delivery</source>
+  <target>Zustellung</target>
 </trans-unit>
 <trans-unit id="sad7df0765519b807">
   <source>Real-time (WebSocket)</source>
+  <target>Echtzeit (WebSocket)</target>
 </trans-unit>
 <trans-unit id="s58c754018ec47b5f">
   <source>History</source>
+  <target>Verlauf</target>
 </trans-unit>
 <trans-unit id="sebc8b4a3b012a3f3">
   <source>Cursor-based pagination</source>
+  <target>Cursorbasierte Paginierung</target>
 </trans-unit>
 <trans-unit id="s2bc0746ea5c18080">
   <source>Presence &amp; Ready Signals</source>
+  <target>Präsenz & Bereitschaftssignale</target>
 </trans-unit>
 <trans-unit id="sfec4bdeceae0844d">
   <source>The presence indicator shows which players are currently online with a green dot. The ready signal system lets you indicate when you’ve completed your actions for the current cycle. When all human participants signal ready, the cycle auto-resolves — no waiting for the timer.</source>
+  <target>Der Präsenzindikator zeigt, welche Spieler gerade online sind, mit einem grünen Punkt. Das Bereitschaftssignal-System ermöglicht es Ihnen anzuzeigen, wann Sie Ihre Aktionen für den aktuellen Zyklus abgeschlossen haben. Wenn alle Teilnehmer bereit sind, wird der Zyklus aufgelöst.</target>
 </trans-unit>
 <trans-unit id="s22ef3154c5c2d9d5">
   <source>Use the COMMS to coordinate alliance strategy, negotiate truces, or bluff about your next move. Everything said in ALL CHANNELS is visible to all players — use TEAM FREQ for sensitive coordination.</source>
+  <target>Nutzen Sie COMMS, um Allianzstrategie zu koordinieren, Waffenstillstände zu verhandeln oder über Ihren nächsten Zug zu bluffen. Alles in ALLE KANÄLE Gesagte ist für alle Spieler sichtbar — verwenden Sie TEAM FREQ für vertrauliche Koordination.</target>
 </trans-unit>
 <trans-unit id="sfb4ed0db9eeb66fe">
   <source>Email Briefings</source>
+  <target>E-Mail-Briefings</target>
 </trans-unit>
 <trans-unit id="s238f17d1711b1220">
   <source>After each cycle resolves, all participants receive a tactical briefing email. The email is bilingual (EN/DE), fog-of-war compliant (you only see your own operations), and includes your current rank, score gaps, mission outcomes, spy intel summaries, threat assessments, and a preview of the next cycle phase. Emails respect notification preferences — opt out anytime in Settings.</source>
+  <target>Nach jeder Zyklusauflösung erhalten alle Teilnehmer eine taktische Lagebesprechungs-E-Mail. Die E-Mail ist zweisprachig (EN/DE), Fog-of-War-konform (Sie sehen nur Ihre eigenen Operationen) und enthält Ihren aktuellen Rang und Missionsstatus.</target>
 </trans-unit>
 <trans-unit id="s8123d41210d3d1f0">
   <source>Triggers</source>
+  <target>Auslöser</target>
 </trans-unit>
 <trans-unit id="saf846d4c762d4c0d">
   <source>Cycle resolve, phase change, epoch start</source>
+  <target>Zyklusauflösung, Phasenwechsel, Epochenstart</target>
 </trans-unit>
 <trans-unit id="s3c1553ecb6b1525f">
   <source>Fog-of-war compliant briefing</source>
+  <target>Nebel-des-Krieges-konformes Briefing</target>
 </trans-unit>
 <trans-unit id="s42b68a1842b8ae58">
   <source>Languages</source>
+  <target>Sprachen</target>
 </trans-unit>
 <trans-unit id="sf113fc1c8cb63d7a">
   <source>EN + DE (bilingual)</source>
+  <target>EN + DE (zweisprachig)</target>
 </trans-unit>
 <trans-unit id="s0a27a985a00475cf">
   <source>Opt-out</source>
+  <target>Abmeldung</target>
 </trans-unit>
 <trans-unit id="se2f0ce34bad7d06e">
   <source>Settings → Notifications</source>
+  <target>Einstellungen → Benachrichtigungen</target>
 </trans-unit>
 <trans-unit id="s5ea3cabe7f522247">
   <source>Event Pressure &amp; Zones</source>
+  <target>Ereignisdruck & Zonen</target>
 </trans-unit>
 <trans-unit id="se65cfd7934c7175d">
   <source>Agent Memory</source>
+  <target>Agentengedächtnis</target>
 </trans-unit>
 <trans-unit id="sc1c247ad3228b404">
   <source>The Multiverse Map</source>
+  <target>Die Multiversumskarte</target>
 </trans-unit>
 <trans-unit id="s22a18544adbe6f40">
   <source>Bot Players</source>
+  <target>Bot-Spieler</target>
 </trans-unit>
 <trans-unit id="sff5ca62b6ba8cb4c">
   <source>Agent Chat</source>
+  <target>Agenten-Chat</target>
 </trans-unit>
 <trans-unit id="s87c08c1c0e053c56">
   <source>Simulation Lore</source>
+  <target>Simulationsüberlieferung</target>
 </trans-unit>
 <trans-unit id="s0f67d2c3b88ac30f">
   <source>Social Trends &amp; Campaigns</source>
+  <target>Gesellschaftliche Trends & Kampagnen</target>
 </trans-unit>
 <trans-unit id="s2717e6464a4814e0">
   <source>COMMS &amp; Notifications</source>
+  <target>KOMM & Benachrichtigungen</target>
 </trans-unit>
 <trans-unit id="sf60fad6f55d6aba9">
   <source>Complete Guide &amp; Auto-Processing</source>
+  <target>Vollständiger Leitfaden & Automatische Verarbeitung</target>
 </trans-unit>
 <trans-unit id="s68d92f8d2b8428f8">
   <source>Automatic resonance impact processing when impacts_at timestamp arrives</source>
+  <target>Automatische Resonanzwirkungsverarbeitung, wenn der impacts_at-Zeitstempel eintritt</target>
 </trans-unit>
 <trans-unit id="s2c64bb855eeeeefd">
   <source>The Multiverse Map: interactive force-directed graph, game instance visualization, battle feed</source>
+  <target>Die Multiversum-Karte: interaktiver kraftgerichteter Graph, Spielinstanz-Visualisierung, Kampfmeldungsfeed</target>
 </trans-unit>
 <trans-unit id="sc966e3ac24ee34e5">
   <source>Bot Players: 5 personality archetypes, difficulty levels, dual-mode chat</source>
+  <target>Bot-Spieler: 5 Persönlichkeitsarchetypen, Schwierigkeitsgrade, Dual-Modus-Chat</target>
 </trans-unit>
 <trans-unit id="sa83494b84b3e1b90">
   <source>Agent Chat: memory-augmented AI conversations, semantic retrieval</source>
+  <target>Agenten-Chat: gedächtnisgestützte KI-Gespräche, semantischer Abruf</target>
 </trans-unit>
 <trans-unit id="s2dcbf1fe4c909013">
   <source>Simulation Lore: per-simulation worldbuilding narrative, Forge-generated content</source>
+  <target>Simulations-Lore: simulationsspezifische Worldbuilding-Erzählung, Schmiede-generierter Inhalt</target>
 </trans-unit>
 <trans-unit id="s88f045172a0c9033">
   <source>Simulation Health: building readiness, zone stability, embassy effectiveness dashboard</source>
+  <target>Simulationsgesundheit: Gebäudebereitschaft, Zonenstabilität, Botschaftseffektivität-Dashboard</target>
 </trans-unit>
 <trans-unit id="s45b523bfd8a65b7d">
   <source>Social Trends &amp; Campaigns: real-world news integration pipeline</source>
+  <target>Social Trends &amp; Kampagnen: Pipeline zur Integration realer Nachrichten</target>
 </trans-unit>
 <trans-unit id="s6e53bb34a53af89c">
   <source>COMMS &amp; Notifications: epoch chat, presence, ready signals, tactical email briefings</source>
+  <target>COMMS &amp; Benachrichtigungen: Epochen-Chat, Präsenz, Bereitschaftssignale, taktische E-Mail-Briefings</target>
 </trans-unit>
 <trans-unit id="s4b6bb28a36f6a32a">
   <source>Resonance Auto-Processing</source>
+  <target>Automatische Resonanzverarbeitung</target>
 </trans-unit>
 <trans-unit id="s7726e982068ef655">
   <source>Background scheduler auto-processes resonances when impacts_at timestamp arrives</source>
+  <target>Hintergrund-Scheduler verarbeitet Resonanzen automatisch, wenn der impacts_at-Zeitstempel eintritt</target>
 </trans-unit>
 <trans-unit id="s55ddb4cf52b39749">
   <source>Configurable via platform_settings: resonance_auto_process_enabled, resonance_auto_process_interval_seconds</source>
+  <target>Konfigurierbar über platform_settings: resonance_auto_process_enabled, resonance_auto_process_interval_seconds</target>
 </trans-unit>
 <trans-unit id="sa62ee3d2e1c9f944">
   <source>Uses service_role admin client (system actor pattern)</source>
+  <target>Verwendet service_role-Admin-Client (System-Akteur-Muster)</target>
 </trans-unit>
 <trans-unit id="s78f0fb70fe78e3e7">
   <source>residual substrate displacement — monitoring decay curve</source>
+  <target>residuale Substratverschiebung — Abklingkurve wird überwacht</target>
 </trans-unit>
 <trans-unit id="s10788f5cc89408bf">
   <source>multiple tremors entering decay phase — substrate settling</source>
+  <target>mehrere Erschütterungen in Abklingphase — Substrat beruhigt sich</target>
 </trans-unit>
 <trans-unit id="s8f46813f4ebcf603">
   <source>severe substrate distortion — local geometry unreliable</source>
+  <target>schwere Substratverzerrung — lokale Geometrie unzuverlässig</target>
 </trans-unit>
 <trans-unit id="s7cfaa77355fed0f1">
   <source>concurrent substrate fractures — recommend caution in affected zones</source>
+  <target>gleichzeitige Substratbrüche — Vorsicht in betroffenen Zonen empfohlen</target>
 </trans-unit>
 <trans-unit id="s8f9309fc83825759">
   <source>overlapping tremor signatures — interference patterns forming</source>
+  <target>überlappende Erschütterungssignaturen — Interferenzmuster bilden sich</target>
 </trans-unit>
 <trans-unit id="sade31dcec4d2cc1e">
   <source>active substrate displacement — affected zones may behave unpredictably</source>
+  <target>aktive Substratverschiebung — betroffene Zonen können unberechenbar reagieren</target>
 </trans-unit>
 <trans-unit id="sbae1844101381d95">
   <source>multiple signatures detected — the substrate is restless</source>
+  <target>mehrere Signaturen erkannt — das Substrat ist unruhig</target>
 </trans-unit>
 <trans-unit id="s2500a93238b58545">
   <source>substrate anomaly detected — origin unclear</source>
+  <target>Substratanomalie erkannt — Ursprung unklar</target>
 </trans-unit>
 <trans-unit id="sc015a51e31f8db97">
   <source>Scanning affected shards...</source>
+  <target>Betroffene Scherben werden gescannt...</target>
 </trans-unit>
 <trans-unit id="sac4f21e6dc5b92a8">
   <source>No impact records found.</source>
+  <target>Keine Wirkungsdatensätze gefunden.</target>
 </trans-unit>
 <trans-unit id="s52de1f04f0a20e42">
   <source>Affected Shards</source>
+  <target>Betroffene Scherben</target>
 </trans-unit>
 <trans-unit id="s1e188a19b52656d4">
   <source>Mag</source>
+  <target>Mag</target>
 </trans-unit>
 <trans-unit id="s005bf56c85b6b5a3">
   <source>Evts</source>
+  <target>Erg</target>
 </trans-unit>
 <trans-unit id="s51bb22db9bbc7b95">
   <source>magnitude</source>
+  <target>Magnitude</target>
 </trans-unit>
 <trans-unit id="s1f34a659d3c109c0">
   <source>Affected Event Types</source>
+  <target>Betroffene Ereignistypen</target>
 </trans-unit>
 <trans-unit id="s680fc90489553ed6">
   <source>Timeline</source>
+  <target>Zeitachse</target>
 </trans-unit>
 <trans-unit id="s4c6366cec535f831">
   <source>Impacts at</source>
+  <target>Wirkt auf</target>
 </trans-unit>
 <trans-unit id="s405ab7eaf621dba8">
   <source>Subsides at</source>
+  <target>Klingt ab um</target>
 </trans-unit>
 <trans-unit id="s2df076aface0dc6b">
   <source>Shard</source>
+  <target>Scherbe</target>
 </trans-unit>
 <trans-unit id="scd885b6786111c7d">
   <source>Resonance Details</source>
+  <target>Resonanzdetails</target>
 </trans-unit>
 <trans-unit id="sec704d88c62f6c1b">
   <source>Style Reference Images</source>
+  <target>Stilreferenzbilder</target>
 </trans-unit>
 <trans-unit id="sf001c2a32e7c2b4e">
   <source>Upload reference images to guide AI image generation via img2img. Generated portraits and buildings will visually resemble the reference.</source>
+  <target>Laden Sie Referenzbilder hoch, um die KI-Bildgenerierung via img2img zu lenken. Generierte Porträts und Gebäude werden dem Referenzbild visuell ähneln.</target>
 </trans-unit>
 <trans-unit id="sd3028baede1493d7">
   <source>Please select an entity.</source>
+  <target>Bitte wählen Sie eine Entität.</target>
 </trans-unit>
 <trans-unit id="s07c8a5180aed09ce">
   <source>Style reference saved.</source>
+  <target>Stilreferenz gespeichert.</target>
 </trans-unit>
 <trans-unit id="sae8b0a2afb97184f">
   <source>Failed to save reference.</source>
+  <target>Referenz konnte nicht gespeichert werden.</target>
 </trans-unit>
 <trans-unit id="se63783ea3d6acc68">
   <source>Add Style Reference</source>
+  <target>Stilreferenz hinzufügen</target>
 </trans-unit>
 <trans-unit id="s91291af05c9cc9c6">
   <source>Image Category</source>
+  <target>Bildkategorie</target>
 </trans-unit>
 <trans-unit id="s7d61376257220dab">
   <source>Scope</source>
+  <target>Geltungsbereich</target>
 </trans-unit>
 <trans-unit id="s681c086b8f7afcae">
   <source>Global</source>
+  <target>Global</target>
 </trans-unit>
 <trans-unit id="scd3985c629931a64">
   <source>Specific Entity</source>
+  <target>Bestimmte Entität</target>
 </trans-unit>
 <trans-unit id="s3e9a77388ae374d6">
   <source>Select entity...</source>
+  <target>Entität wählen...</target>
 </trans-unit>
 <trans-unit id="sd509dc15bcdc7d23">
   <source>Reference Image</source>
+  <target>Referenzbild</target>
 </trans-unit>
 <trans-unit id="sc0dce19eb89f4cfc">
   <source>Recommended: 3:4 aspect ratio</source>
+  <target>Empfohlen: 3:4 Seitenverhältnis</target>
 </trans-unit>
 <trans-unit id="sf6c1ed303a8b2008">
   <source>Recommended: 4:3 aspect ratio</source>
+  <target>Empfohlen: 4:3 Seitenverhältnis</target>
 </trans-unit>
 <trans-unit id="sb75394428f4cf677">
   <source>Reference Strength</source>
+  <target>Referenzstärke</target>
 </trans-unit>
 <trans-unit id="s38d08316496e0954">
   <source>Lower values use the reference loosely. Higher values match it closely.</source>
+  <target>Niedrigere Werte nutzen die Referenz locker. Höhere Werte entsprechen ihr genauer.</target>
 </trans-unit>
 <trans-unit id="s4e7f294cb290458c">
   <source>Reference removed.</source>
+  <target>Referenz entfernt.</target>
 </trans-unit>
 <trans-unit id="s2bc3c638c3200558">
   <source>Failed to remove reference.</source>
+  <target>Referenz konnte nicht entfernt werden.</target>
 </trans-unit>
 <trans-unit id="sb978449e5d7bb5cc">
   <source>Style References</source>
+  <target>Stilreferenzen</target>
 </trans-unit>
 <trans-unit id="s3d2b21bdb0a391f1">
   <source>Add Reference</source>
+  <target>Referenz hinzufügen</target>
 </trans-unit>
 <trans-unit id="sd376d8c914b64f15">
   <source>No style references configured</source>
+  <target>Keine Stilreferenzen konfiguriert</target>
 </trans-unit>
 <trans-unit id="s7766572dface23cf">
   <source>Unsupported file type. Use PNG, JPEG, WebP, or AVIF.</source>
+  <target>Nicht unterstützter Dateityp. Verwenden Sie PNG, JPEG, WebP oder AVIF.</target>
 </trans-unit>
 <trans-unit id="s1642d1bc999c36a0">
   <source>File too large. Maximum 10 MB.</source>
+  <target>Datei zu groß. Maximum 10 MB.</target>
 </trans-unit>
 <trans-unit id="seec0b045f27c49bd">
   <source>Invalid URL.</source>
+  <target>Ungültige URL.</target>
 </trans-unit>
 <trans-unit id="s268496ec5c0c32a7">
   <source>or paste image URL</source>
+  <target>oder Bild-URL einfügen</target>
 </trans-unit>
 <trans-unit id="s12b427464794ca03">
   <source>Fetch</source>
+  <target>Abrufen</target>
 </trans-unit>
 <trans-unit id="s620fb492264a19ac">
   <source>Drop image or click to upload</source>
+  <target>Bild ablegen oder zum Hochladen klicken</target>
 </trans-unit>
 <trans-unit id="scf9d8a087c1c0ad7">
   <source>Style reference</source>
+  <target>Stilreferenz</target>
 </trans-unit>
 <trans-unit id="s2a8434b16dc214a3">
   <source>Replace</source>
+  <target>Ersetzen</target>
 </trans-unit>
 <trans-unit id="s93bd4e06ed886977">
   <source>metaverse.center is a platform for creating and managing AI-driven simulations — fictional worlds with agents, buildings, events, geography, and lore. Each simulation is a living sandbox: agents have personalities and memories, events shape the narrative, and AI generates everything from character dialogue to newspaper editions.</source>
+  <target>metaverse.center ist eine Plattform zum Erstellen und Verwalten KI-gesteuerter Simulationen — fiktive Welten mit Agenten, Gebäuden, Ereignissen, Geographie und Lore. Jede Simulation ist ein lebendiger Sandkasten: Agenten haben Erinnerungen und Gespräche.</target>
 </trans-unit>
 <trans-unit id="sb2256834c2a7e04a">
   <source>Simulations can be connected to form a multiverse. Events bleed across connections, echoing through dimensional barriers. Embassies establish diplomatic links. The Cartographer’s Map visualizes the entire network as an interactive force-directed graph.</source>
+  <target>Simulationen können verbunden werden, um ein Multiversum zu bilden. Ereignisse bluten über Verbindungen hinweg und hallen durch dimensionale Barrieren. Botschaften stellen diplomatische Verbindungen her. Die Kartographen-Karte visualisiert das gesamte Netzwerk.</target>
 </trans-unit>
 <trans-unit id="sed57b552ffaf7f38">
   <source>Two Modes of Play</source>
+  <target>Zwei Spielmodi</target>
 </trans-unit>
 <trans-unit id="s6fb904e94238774b">
   <source>In sandbox mode, you build and explore your world — create agents, generate events, chat with characters, import real-world news, and craft lore. In competitive mode, simulations enter Epochs: time-limited PvP matches where players deploy operatives, form alliances, and compete across five scoring dimensions.</source>
+  <target>Im Sandbox-Modus bauen und erkunden Sie Ihre Welt — erstellen Sie Agenten, generieren Sie Ereignisse, chatten Sie mit Charakteren, importieren Sie reale Nachrichten und verfassen Sie Lore. Im Wettkampfmodus treten Simulationen in Epochen an: zeitlich begrenzte strategische Wettkämpfe.</target>
 </trans-unit>
 <trans-unit id="sa03a3926237ba95c">
   <source>Use the Simulation Forge to create your first world from a single seed idea. The AI generates geography, agents, buildings, a visual identity, and full lore in about 15 minutes. Then explore the sections below to learn what you can do with your world.</source>
+  <target>Verwenden Sie die Simulationsschmiede, um Ihre erste Welt aus einer einzigen Seed-Idee zu erstellen. Die KI generiert Geographie, Agenten, Gebäude, eine visuelle Identität und vollständige Lore in etwa 15 Minuten. Erkunden Sie dann die Abschnitte dieser Anleitung.</target>
 </trans-unit>
 <trans-unit id="s44782ac9499f046f">
   <source>Events are the narrative engine of every simulation. They can be created manually, generated by AI, spawned by operative missions, or echoed from connected worlds. Agents react in character, and high-impact events trigger zone pressure, cascade mechanics, and cross-simulation bleed.</source>
+  <target>Ereignisse sind der narrative Motor jeder Simulation. Sie können manuell erstellt, von KI generiert, durch Operativmissionen ausgelöst oder aus verbundenen Welten übertragen werden. Agenten reagieren charaktergetreu.</target>
 </trans-unit>
 <trans-unit id="sdc04f3afa87ccf7f">
   <source>What are Events?</source>
+  <target>Was sind Ereignisse?</target>
 </trans-unit>
 <trans-unit id="s3350df54b35267a0">
   <source>Events are the narrative heartbeat of every simulation. They represent things that happen in the world — political upheavals, economic crises, military conflicts, cultural shifts, natural disasters. Events can be created manually, generated by AI, or produced automatically through game mechanics like operative missions and bleed echoes.</source>
+  <target>Ereignisse sind der narrative Herzschlag jeder Simulation. Sie repräsentieren Dinge, die in der Welt geschehen — politische Umwälzungen, Wirtschaftskrisen, militärische Konflikte, kulturelle Verschiebungen, Naturkatastrophen.</target>
 </trans-unit>
 <trans-unit id="sd5a5c2d3cb5843c6">
   <source>Each event has a type (from the simulation’s taxonomy), an impact level (1–10), tags for categorization, and a status lifecycle (active → escalating → resolving → resolved → archived). High-impact events trigger zone pressure, cascade mechanics, and bleed echoes to connected simulations.</source>
+  <target>Jedes Ereignis hat einen Typ (aus der Taxonomie der Simulation), eine Wirkungsstufe (1–10), Tags zur Kategorisierung und einen Statuslebenszyklus (aktiv → eskalierend → sich lösend → gelöst → archiviert). Ereignisse mit hoher Wirkung lösen Kaskaden aus.</target>
 </trans-unit>
 <trans-unit id="s953ce65a0b48de42">
   <source>Manual, AI, missions, bleed</source>
+  <target>Manuell, KI, Missionen, Bleeding</target>
 </trans-unit>
 <trans-unit id="s52abdb093faefd4e">
   <source>1–10 scale</source>
+  <target>1–10 Skala</target>
 </trans-unit>
 <trans-unit id="s04707b66287dd999">
   <source>Active → Resolved → Archived</source>
+  <target>Aktiv → Gelöst → Archiviert</target>
 </trans-unit>
 <trans-unit id="sf73278fb18aa2a1a">
   <source>Simulation → Events tab</source>
+  <target>Simulation → Ereignisse-Reiter</target>
 </trans-unit>
 <trans-unit id="s0b59d9a5b93f17f7">
   <source>AI Event Generation</source>
+  <target>KI-Ereignisgenerierung</target>
 </trans-unit>
 <trans-unit id="s5bc5dbc67a9466df">
   <source>Generate complete events using AI through the event creation modal. The AI produces a title, description, impact level, and tags — all contextually appropriate to your simulation’s theme and current state. Each simulation can configure its own AI model and prompt templates to control the tone and style of generated events.</source>
+  <target>Generieren Sie vollständige Ereignisse mit KI über das Ereigniserstellungsmodal. Die KI erzeugt Titel, Beschreibung, Wirkungsstufe und Tags — alles kontextuell passend zum Thema und aktuellen Zustand Ihrer Simulation.</target>
 </trans-unit>
 <trans-unit id="s368653cf3986806d">
   <source>30 per hour</source>
+  <target>30 pro Stunde</target>
 </trans-unit>
 <trans-unit id="s75e517bd7a57426d">
   <source>Customizable</source>
+  <target>Anpassbar</target>
 </trans-unit>
 <trans-unit id="s6a062bcba8f7f6dd">
   <source>Per-simulation prompt templates</source>
+  <target>Simulationsspezifische Prompt-Vorlagen</target>
 </trans-unit>
 <trans-unit id="sa6e2e97ec1d2b1c8">
   <source>After an event occurs, agents can react to it based on their personality, profession, and background. Agent reactions are AI-generated character-driven responses — a military general reacts differently to an invasion than a merchant or a priest. Reactions appear as expandable cards below the event details.</source>
+  <target>Nachdem ein Ereignis eingetreten ist, können Agenten darauf basierend auf ihrer Persönlichkeit, ihrem Beruf und Hintergrund reagieren. Agentenreaktionen sind KI-generierte, charaktergetriebene Antworten — ein Militärgeneral reagiert anders als ein Diplomat.</target>
 </trans-unit>
 <trans-unit id="s39fcd1c5be578394">
   <source>Events with high impact levels (8+) can trigger bleed echoes to connected simulations, cascade events in stressed zones, and shift epoch scoring dimensions. They’re not just narrative — they have real mechanical consequences.</source>
+  <target>Ereignisse mit hoher Wirkungsstufe (8+) können Blutungsechos zu verbundenen Simulationen auslösen, Kaskadenereignisse in belasteten Zonen starten und Epochen-Bewertungsdimensionen verschieben. Sie sind nicht nur narrativ — sie haben echte mechanische Konsequenzen.</target>
 </trans-unit>
 <trans-unit id="s7a30f29e95075fab">
   <source>What is metaverse.center?</source>
+  <target>Was ist metaverse.center?</target>
 </trans-unit>
 <trans-unit id="scd78cd386b2f6a0a">
   <source>Events &amp; Reactions</source>
+  <target>Ereignisse & Reaktionen</target>
 </trans-unit>
 <trans-unit id="s3cb1e63472a1a825">
   <source>Scanner</source>
+  <target>Scanner</target>
 </trans-unit>
 <trans-unit id="saf4a705d0304a949">
   <source>Failed to load scanner dashboard</source>
+  <target>Scanner-Dashboard konnte nicht geladen werden</target>
 </trans-unit>
 <trans-unit id="s2f53cffbada64067">
   <source>Failed to load</source>
+  <target>Laden fehlgeschlagen</target>
 </trans-unit>
 <trans-unit id="s0ce9dd83973670eb">
   <source>Failed to load candidates</source>
+  <target>Kandidaten konnten nicht geladen werden</target>
 </trans-unit>
 <trans-unit id="s373fd7e9b441d18a">
   <source>Failed to load scan log</source>
+  <target>Scan-Protokoll konnte nicht geladen werden</target>
 </trans-unit>
 <trans-unit id="sfa9c7f74f30b3740">
   <source>Scan complete: <x id="0" equiv-text="${m.total_fetched}"/> fetched, <x id="1" equiv-text="${m.total_new}"/> new, <x id="2" equiv-text="${m.resonances_created + m.candidates_staged}"/> staged</source>
 </trans-unit>
 <trans-unit id="s29bc6ae235a2e50d">
   <source>Scan failed</source>
+  <target>Scan fehlgeschlagen</target>
 </trans-unit>
 <trans-unit id="s230c42b13476757f">
   <source>Approve Candidate</source>
+  <target>Kandidat genehmigen</target>
 </trans-unit>
 <trans-unit id="s0a44274762f1488c">
   <source>Approve "<x id="0" equiv-text="${candidate.title}"/>" and create a substrate resonance?</source>
 </trans-unit>
 <trans-unit id="se5d01bef737e2e3a">
   <source>Approve</source>
+  <target>Genehmigen</target>
 </trans-unit>
 <trans-unit id="s7b40244acf1cfb75">
   <source>Candidate approved — resonance created.</source>
+  <target>Kandidat genehmigt — Resonanz erstellt.</target>
 </trans-unit>
 <trans-unit id="s5bc6df24e9ce6ff4">
   <source>Failed to approve</source>
+  <target>Genehmigung fehlgeschlagen</target>
 </trans-unit>
 <trans-unit id="sc77ff8821ed4a2e3">
   <source>Reject Candidate</source>
+  <target>Kandidat ablehnen</target>
 </trans-unit>
 <trans-unit id="s5bacbb718a823540">
   <source>Reject "<x id="0" equiv-text="${candidate.title}"/>"? This cannot be undone.</source>
 </trans-unit>
 <trans-unit id="s123da0f92f97dd86">
   <source>Reject</source>
+  <target>Ablehnen</target>
 </trans-unit>
 <trans-unit id="s4d060f32ebb1a52e">
   <source>Candidate rejected.</source>
+  <target>Kandidat abgelehnt.</target>
 </trans-unit>
 <trans-unit id="sdef1c0feffa3c30c">
   <source>Failed to reject</source>
+  <target>Ablehnung fehlgeschlagen</target>
 </trans-unit>
 <trans-unit id="s2f38c5c858e763a6">
   <source>Substrate Scanner</source>
+  <target>Substratscanner</target>
 </trans-unit>
 <trans-unit id="s52e1dd47ad44b79f">
   <source>Bureau of Substrate Monitoring</source>
+  <target>Büro für Substratüberwachung</target>
 </trans-unit>
 <trans-unit id="s00f163201d8429db">
   <source>Scanner views</source>
+  <target>Scanner-Ansichten</target>
 </trans-unit>
 <trans-unit id="s81983e8e3023c94b">
   <source>Candidates</source>
+  <target>Kandidaten</target>
 </trans-unit>
 <trans-unit id="s89d186b78cf7a3b2">
   <source><x id="0" equiv-text="${pendingCount}"/> pending</source>
 </trans-unit>
 <trans-unit id="sa0581a443a2a2a4a">
   <source>Scan Log</source>
+  <target>Scan-Protokoll</target>
 </trans-unit>
 <trans-unit id="sd03288484ece1108">
   <source>Scanner content</source>
+  <target>Scanner-Inhalt</target>
 </trans-unit>
 <trans-unit id="s2ea831a110292f97">
   <source>Initializing sensors...</source>
+  <target>Sensoren werden initialisiert...</target>
 </trans-unit>
 <trans-unit id="s36a2194995663e74">
   <source>Trigger Scan</source>
+  <target>Scan auslösen</target>
 </trans-unit>
 <trans-unit id="sd2455a1f4b4a9c10">
   <source>Last scan:</source>
+  <target>Letzter Scan:</target>
 </trans-unit>
 <trans-unit id="s55b4cbe657619772">
   <source>No scans yet</source>
+  <target>Noch keine Scans</target>
 </trans-unit>
 <trans-unit id="s95127d1eea253fa1">
   <source>Sensor Network</source>
+  <target>Sensornetzwerk</target>
 </trans-unit>
 <trans-unit id="s058a75509a690bf2">
   <source>Articles Scanned</source>
+  <target>Artikel gescannt</target>
 </trans-unit>
 <trans-unit id="s0ffc514cfa672dbd">
   <source>Resonances Today</source>
+  <target>Resonanzen heute</target>
 </trans-unit>
 <trans-unit id="sce89120a7a319b28">
   <source>Pending Review</source>
+  <target>Ausstehende Überprüfung</target>
 </trans-unit>
 <trans-unit id="sc75b238eb649d526">
   <source>Structured</source>
+  <target>Strukturiert</target>
 </trans-unit>
 <trans-unit id="s96cd847a4df8ffc1">
   <source>LLM Required</source>
+  <target>LLM erforderlich</target>
 </trans-unit>
 <trans-unit id="s49dca79059586455">
   <source>No API Key</source>
+  <target>Kein API-Schlüssel</target>
 </trans-unit>
 <trans-unit id="sfecdd5e13f68c9ba">
   <source>Approved</source>
+  <target>Genehmigt</target>
 </trans-unit>
 <trans-unit id="s03d3dae15ddcb004">
   <source>◆ <x id="0" equiv-text="${recommendedCount}"/> recommended</source>
 </trans-unit>
 <trans-unit id="se6051ed0390dba5a">
   <source>Scanning records...</source>
+  <target>Datensätze werden gescannt...</target>
 </trans-unit>
 <trans-unit id="sa93451853abebc0a">
   <source>No candidates found.</source>
+  <target>Keine Kandidaten gefunden.</target>
 </trans-unit>
 <trans-unit id="s12f6b3b9aa6fe76c">
   <source>Recommended</source>
+  <target>Empfohlen</target>
 </trans-unit>
 <trans-unit id="s1e856a19b582f254">
   <source>MAG</source>
+  <target>MAG</target>
 </trans-unit>
 <trans-unit id="s5fa511bebe4a7390">
   <source>Approve <x id="0" equiv-text="${c.title}"/></source>
@@ -11456,24 +11920,31 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 </trans-unit>
 <trans-unit id="s8daa1db5187d4ad4">
   <source>Detail</source>
+  <target>Detail</target>
 </trans-unit>
 <trans-unit id="s8568e8bc900eabab">
   <source>Raw Data</source>
+  <target>Rohdaten</target>
 </trans-unit>
 <trans-unit id="sb0c37d8d8f8b93b1">
   <source>Loading records...</source>
+  <target>Datensätze werden geladen...</target>
 </trans-unit>
 <trans-unit id="sc09ab89466d993cf">
   <source>No scan log entries yet.</source>
+  <target>Noch keine Scan-Protokolleinträge.</target>
 </trans-unit>
 <trans-unit id="sc4985097e629b822">
   <source>Scan history log</source>
+  <target>Scan-Verlaufsprotokoll</target>
 </trans-unit>
 <trans-unit id="s3cb1f03472a1b923">
   <source>Scanned</source>
+  <target>Gescannt</target>
 </trans-unit>
 <trans-unit id="s84126fa92f00b4ef">
   <source>just now</source>
+  <target>gerade eben</target>
 </trans-unit>
 <trans-unit id="s4ea9b2ec2de4dfbc">
   <source><x id="0" equiv-text="${Math.round(seconds / 3600)}"/>h interval</source>
@@ -11483,519 +11954,821 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 </trans-unit>
 <trans-unit id="s3545c5f59ad9008a">
   <source>Failed to initiate Google sign-in.</source>
+  <target>Google-Anmeldung konnte nicht gestartet werden.</target>
 </trans-unit>
 <trans-unit id="scf5a0f9860ebb4ff">
   <source>Failed to initiate Discord sign-in.</source>
+  <target>Discord-Anmeldung konnte nicht gestartet werden.</target>
 </trans-unit>
 <trans-unit id="seab0a621705eb848">
   <source>Bureau of Multiverse Observation</source>
+  <target>Büro für Multiversumsbeobachtung</target>
 </trans-unit>
 <trans-unit id="s08b05407b5565ca4">
   <source>or</source>
+  <target>oder</target>
 </trans-unit>
 <trans-unit id="s334af6a212abee58">
   <source>Sign in with Google</source>
+  <target>Mit Google anmelden</target>
 </trans-unit>
 <trans-unit id="sc9abfdb64c930685">
   <source>Sign in with Discord</source>
+  <target>Mit Discord anmelden</target>
 </trans-unit>
 <trans-unit id="s880191f538b3ad38">
   <source>Failed to initiate Google sign-up.</source>
+  <target>Google-Registrierung konnte nicht gestartet werden.</target>
 </trans-unit>
 <trans-unit id="sdd6d3397d8111f35">
   <source>Failed to initiate Discord sign-up.</source>
+  <target>Discord-Registrierung konnte nicht gestartet werden.</target>
 </trans-unit>
 <trans-unit id="se85ecdcfaa3a92f2">
   <source>Sign up with Google</source>
+  <target>Mit Google registrieren</target>
 </trans-unit>
 <trans-unit id="sba126506ee6c838b">
   <source>Sign up with Discord</source>
+  <target>Mit Discord registrieren</target>
 </trans-unit>
 <trans-unit id="se295602acd84a7c7">
   <source>Academy // Training Protocol</source>
+  <target>Akademie // Trainingsprotokoll</target>
 </trans-unit>
 <trans-unit id="sfdde30c24ce38292">
   <source>completed</source>
-</trans-unit>
+<target>abgeschlossen</target></trans-unit>
 <trans-unit id="sf8bb4df310c668ac">
   <source>Uninitialized</source>
-</trans-unit>
+<target>Nicht initialisiert</target></trans-unit>
 <trans-unit id="sfdb53a8181bba926">
   <source>Initialize your first training simulation. Solo training vs 3 AI opponents — learn operative deployment, score mechanics, and alliance tactics.</source>
+  <target>Starte deine erste Trainingssimulation. Solotraining gegen 3 KI-Gegner — lerne Operativeinsatz, Punktemechanik und Allianztaktiken.</target>
 </trans-unit>
 <trans-unit id="se2dd8601c60fa641">
   <source>Continue your training regimen. Solo training vs 3 AI opponents — refine your operative strategy and score optimization.</source>
+  <target>Setze dein Training fort. Solotraining gegen 3 KI-Gegner — verfeinere deine Operativstrategie und Punkteoptimierung.</target>
 </trans-unit>
 <trans-unit id="sd00609e4e2a63bad">
   <source>AI Opponents</source>
+  <target>KI-Gegner</target>
 </trans-unit>
 <trans-unit id="saf71575fb7b5445a">
   <source>Hostiles</source>
-</trans-unit>
+<target>Feindliche</target></trans-unit>
 <trans-unit id="sce11649f645a20c4">
   <source>Difficulty: Easy</source>
-</trans-unit>
-<trans-unit id="s0b575172bb7f5650">
-  <source>Sprint 3d</source>
+  <target>Schwierigkeit: Einfach</target>
 </trans-unit>
 <trans-unit id="s9c55c5fc5ff337ea">
   <source>Start your first training</source>
+  <target>Erstes Training starten</target>
 </trans-unit>
 <trans-unit id="sd1e25a5361ca0d4d">
   <source>Start new training</source>
+  <target>Neues Training starten</target>
 </trans-unit>
 <trans-unit id="sc9d11ba788fd6aff">
   <source>Start Training</source>
+  <target>Training starten</target>
 </trans-unit>
 <trans-unit id="s7638b995163440d5">
   <source>New Training</source>
+  <target>Neues Training</target>
 </trans-unit>
 <trans-unit id="sf56fc8c786ea172d">
   <source>Fast-paced 1-2 day match. 2-hour cycles, rapid decisions.</source>
+  <target>Temporeicher 1-2-Tage-Kampf. 2-Stunden-Zyklen, schnelle Entscheidungen.</target>
 </trans-unit>
 <trans-unit id="sf3b65f24b2611635">
   <source>Sprint</source>
+  <target>Sprint</target>
 </trans-unit>
 <trans-unit id="s948eccc05207eb05">
   <source>3-5 day match. 4-hour cycles, balanced pacing.</source>
+  <target>3-5-Tage-Kampf. 4-Stunden-Zyklen, ausgewogenes Tempo.</target>
 </trans-unit>
 <trans-unit id="sce516eeba792f8dc">
   <source>Classic 14-day epoch. 8-hour cycles, full strategic depth.</source>
+  <target>Klassische 14-Tage-Epoche. 8-Stunden-Zyklen, volle strategische Tiefe.</target>
 </trans-unit>
 <trans-unit id="s7344e26d5da2d23b">
   <source>Marathon</source>
+  <target>Marathon</target>
 </trans-unit>
 <trans-unit id="s5b5b2ca8a799410a">
   <source>Extended 21+ day epoch. Maximum strategic depth.</source>
+  <target>Erweiterter 21+-Tage-Kampf. Maximale strategische Tiefe.</target>
 </trans-unit>
 <trans-unit id="s68a77060b0deac85">
   <source>Configure everything manually.</source>
+  <target>Alles manuell konfigurieren.</target>
 </trans-unit>
 <trans-unit id="sdb3f506e30cb5941">
   <source>Match Format</source>
+  <target>Kampfformat</target>
 </trans-unit>
 <trans-unit id="s7189b405b8545840">
   <source>Presets configure duration, cycle interval, phase lengths, and RP economy. Use Custom for full manual control.</source>
+  <target>Voreinstellungen konfigurieren Dauer, Zyklusintervall, Phasenlängen und RP-Ökonomie. Verwenden Sie Benutzerdefiniert für volle manuelle Kontrolle.</target>
 </trans-unit>
 <trans-unit id="se7688efcd1795333">
   <source>Foundation Cycles</source>
+  <target>Gründungszyklen</target>
 </trans-unit>
 <trans-unit id="s28bfb9ec8d5a9c66">
   <source>Guide restructured: World → Competitive → Advanced → Reference progression</source>
+  <target>Anleitung umstrukturiert: Welt → Wettkampf → Fortgeschritten → Referenz-Progression</target>
 </trans-unit>
 <trans-unit id="scb6d08417d7fefbc">
   <source>9 new guide sections: Intro, Lore, Events, Agent Chat, Social Trends, Map, Health, Bots, COMMS</source>
+  <target>9 neue Anleitungsabschnitte: Intro, Lore, Ereignisse, Agenten-Chat, Social Trends, Karte, Gesundheit, Bots, COMMS</target>
 </trans-unit>
 <trans-unit id="se66bb0aa9e5992d9">
   <source>Guide Restructure</source>
+  <target>Leitfaden-Umstrukturierung</target>
 </trans-unit>
 <trans-unit id="sbffde4e46d389144">
   <source>Reorganized from 19 to 28 sections with logical learning progression</source>
+  <target>Neu organisiert von 19 auf 28 Abschnitte mit logischer Lernprogression</target>
 </trans-unit>
 <trans-unit id="s3efe488f126d44bc">
   <source>New intro: What is metaverse.center? — sandbox vs competitive modes</source>
+  <target>Neues Intro: Was ist metaverse.center? — Sandbox vs. Wettkampfmodi</target>
 </trans-unit>
 <trans-unit id="s4c7b91b9d9fae2c4">
   <source>World sections first: Lore, Forge, Chat, Events, Social Trends, Map, Health</source>
+  <target>Welt-Abschnitte zuerst: Lore, Schmiede, Chat, Ereignisse, Social Trends, Karte, Gesundheit</target>
 </trans-unit>
 <trans-unit id="s89eb409b87224fcc">
   <source>Then competitive rules: Epochs, Operatives, Scoring, Alliances, Bots, COMMS</source>
+  <target>Dann Wettkampfregeln: Epochen, Operative, Wertung, Allianzen, Bots, COMMS</target>
 </trans-unit>
 <trans-unit id="s141f043d5c19aa52">
   <source>Advanced mechanics: Bleed, Resonances, Zone Dynamics, Agent Memory, Chronicle</source>
+  <target>Fortgeschrittene Mechaniken: Blutung, Resonanzen, Zonendynamik, Agentengedächtnis, Chronik</target>
 </trans-unit>
 <trans-unit id="s5da5d4e9ec32c395">
   <source>Reference: Tactics, Demo Run, Example Matches, Intelligence Report, Changelog</source>
+  <target>Referenz: Taktiken, Demo-Durchlauf, Beispielmatches, Geheimdienstbericht, Änderungsprotokoll</target>
 </trans-unit>
 <trans-unit id="seef4fd816d9804df">
   <source>New Sections</source>
+  <target>Neue Abschnitte</target>
 </trans-unit>
 <trans-unit id="sdf75a2eca6b238bb">
   <source>Events &amp; Reactions: event creation, AI generation, agent reactions, mechanical impact</source>
+  <target>Ereignisse &amp; Reaktionen: Ereigniserstellung, KI-Generierung, Agentenreaktionen, mechanische Wirkung</target>
 </trans-unit>
 <trans-unit id="sd5e9b70ffb7a8b46">
   <source>Skip to content</source>
+  <target>Zum Inhalt springen</target>
 </trans-unit>
 <trans-unit id="scdb1bac161852c73">
   <source>Welcome</source>
+  <target>Willkommen</target>
 </trans-unit>
 <trans-unit id="s4940bf625118bbdd">
   <source>Metaverse</source>
+  <target>Metaverse</target>
 </trans-unit>
 <trans-unit id="s460509d8be1e9360">
   <source>.Center</source>
+  <target>.Center</target>
 </trans-unit>
 <trans-unit id="s88a21c12585b2008">
   <source>Multiplayer Worldbuilding &amp; Strategy Platform. Build civilizations. Deploy operatives. Shape the multiverse.</source>
+  <target>Multiplayer Worldbuilding &amp; Strategieplattform. Bauen Sie Zivilisationen. Setzen Sie Operative ein. Formen Sie das Multiversum.</target>
 </trans-unit>
 <trans-unit id="sc291abf469a4a44c">
   <source>Enter the Multiverse — Create your account</source>
+  <target>Das Multiversum betreten — Konto erstellen</target>
 </trans-unit>
 <trans-unit id="s33d0393e1acee1ac">
   <source>Enter the Multiverse</source>
+  <target>Das Multiversum betreten</target>
 </trans-unit>
 <trans-unit id="sa7698b3d20a6d1ec">
   <source>Scroll</source>
+  <target>Scrollen</target>
 </trans-unit>
 <trans-unit id="s6a0bc0ce56a9ae4a">
   <source>Features</source>
+  <target>Funktionen</target>
 </trans-unit>
 <trans-unit id="s694017afa8d626ff">
   <source>Capabilities</source>
+  <target>Fähigkeiten</target>
 </trans-unit>
 <trans-unit id="s9e66c25ab35db24a">
   <source>AI-powered worldbuilding visualization</source>
+  <target>KI-gestützte Worldbuilding-Visualisierung</target>
 </trans-unit>
 <trans-unit id="sa951a4ab10b8c427">
   <source>Worldbuilding</source>
+  <target>Weltenbau</target>
 </trans-unit>
 <trans-unit id="s6c103f846e1bb277">
   <source>Create living worlds with AI-powered agents, sprawling cities, and evolving lore. Every simulation is a sovereign civilization with its own history.</source>
+  <target>Erschaffen Sie lebende Welten mit KI-gesteuerten Agenten, weitläufigen Städten und sich entwickelnder Lore. Jede Simulation ist eine souveräne Zivilisation mit eigener Geschichte.</target>
 </trans-unit>
 <trans-unit id="s0b4d6d84574e2fe7">
   <source>Espionage war room with operative deployment</source>
+  <target>Spionage-Kriegsraum mit Operativeinsatz</target>
 </trans-unit>
 <trans-unit id="s23eee916e02dc7e5">
   <source>Join Epochs: strategic seasons where civilizations clash. Deploy spies, form alliances, betray rivals. Every decision reshapes the balance of power.</source>
+  <target>Treten Sie Epochen bei: strategische Saisons, in denen Zivilisationen aufeinanderprallen. Setzen Sie Spione ein, schmieden Sie Allianzen, verraten Sie Rivalen. Jede Entscheidung verändert das Machtgleichgewicht.</target>
 </trans-unit>
 <trans-unit id="s33cb0480084f9fb7">
   <source>Reality fracturing as real-world events bleed through</source>
+  <target>Realität zerbricht, während reale Ereignisse durchbluten</target>
 </trans-unit>
 <trans-unit id="sa17ad577d33ed7c3">
   <source>The Substrate</source>
+  <target>Das Substrat</target>
 </trans-unit>
 <trans-unit id="s49d920f916b6973a">
   <source>Real-world events ripple through the multiverse as Resonances. Earthquakes, elections, discoveries — the boundary between worlds is thinner than you think.</source>
+  <target>Reale Ereignisse breiten sich als Resonanzen durch das Multiversum aus. Erdbeben, Wahlen, Entdeckungen — die Grenze zwischen den Welten ist dünner, als Sie denken.</target>
 </trans-unit>
 <trans-unit id="se74621a2152b95a1">
   <source>Platform Statistics</source>
+  <target>Plattformstatistiken</target>
 </trans-unit>
 <trans-unit id="s15a179f960202fb8">
   <source>Live Telemetry</source>
+  <target>Live-Telemetrie</target>
 </trans-unit>
 <trans-unit id="sf51439e460ee8a58">
   <source>Active Worlds</source>
+  <target>Aktive Welten</target>
 </trans-unit>
 <trans-unit id="sba44e6e0ee45e1d8">
   <source>Active world count</source>
+  <target>Anzahl aktiver Welten</target>
 </trans-unit>
 <trans-unit id="sa30137655a08a002">
   <source>simulations online</source>
+  <target>Simulationen online</target>
 </trans-unit>
 <trans-unit id="s1dcd554a5f0faf27">
   <source>Live Epochs</source>
+  <target>Aktive Epochen</target>
 </trans-unit>
 <trans-unit id="s0fb7bb3b3bfd7161">
   <source>Active epoch count</source>
+  <target>Anzahl aktiver Epochen</target>
 </trans-unit>
 <trans-unit id="s52f80f73f2b4dd1e">
   <source>competitive seasons</source>
+  <target>Wettbewerbsstaffeln</target>
 </trans-unit>
 <trans-unit id="sfada26dfbcb1b3ac">
   <source>Resonance count</source>
+  <target>Resonanzanzahl</target>
 </trans-unit>
 <trans-unit id="s61b60d7c17fc20c1">
   <source>substrate events</source>
+  <target>Substratereignisse</target>
 </trans-unit>
 <trans-unit id="s86dd5f93c6591510">
   <source>How It Works</source>
+  <target>So funktioniert es</target>
 </trans-unit>
 <trans-unit id="s12952c7940c53aed">
   <source>Operations Protocol</source>
+  <target>Operationsprotokoll</target>
 </trans-unit>
 <trans-unit id="scd3a0b78356df9c8">
   <source>Create Your World</source>
+  <target>Erschaffen Sie Ihre Welt</target>
 </trans-unit>
 <trans-unit id="s6eddc5bacd27225c">
   <source>Build a simulation with agents, buildings, and lore. Your world evolves through AI-driven conversations and events.</source>
+  <target>Bauen Sie eine Simulation mit Agenten, Gebäuden und Lore. Ihre Welt entwickelt sich durch KI-gesteuerte Gespräche und Ereignisse.</target>
 </trans-unit>
 <trans-unit id="s51f14bf2c33a3c05">
   <source>Join an Epoch</source>
+  <target>Einer Epoche beitreten</target>
 </trans-unit>
 <trans-unit id="s56fc4f6e2d93254b">
   <source>Enter competitive seasons. Draft agents, deploy operatives, forge alliances — or betray them.</source>
+  <target>Treten Sie in Wettkampfsaisons an. Draften Sie Agenten, setzen Sie Operative ein, schmieden Sie Allianzen — oder verraten Sie sie.</target>
 </trans-unit>
 <trans-unit id="s565850fe79ca57e9">
   <source>Shape the Multiverse</source>
+  <target>Formen Sie das Multiversum</target>
 </trans-unit>
 <trans-unit id="sd74131a79b0b7146">
   <source>Your actions ripple across worlds. Build embassies, establish connections, and leave your mark on the substrate.</source>
+  <target>Ihre Aktionen hallen über Welten hinweg. Bauen Sie Botschaften, knüpfen Sie Verbindungen und hinterlassen Sie Ihre Spuren im Substrat.</target>
 </trans-unit>
 <trans-unit id="s15361efa1eef6aee">
   <source>Get Started</source>
+  <target>Loslegen</target>
 </trans-unit>
 <trans-unit id="s8303b711012eea4a">
   <source>Clearance Required</source>
+  <target>Freigabe erforderlich</target>
 </trans-unit>
 <trans-unit id="sbaa81e23639b2a42">
   <source>Ready to Observe?</source>
+  <target>Bereit zur Beobachtung?</target>
 </trans-unit>
 <trans-unit id="sba082a04dd3bb10c">
   <source>The Bureau is accepting new operatives. Your signal has been detected across the fracture. Request clearance to begin.</source>
+  <target>Das Büro nimmt neue Operative auf. Ihr Signal wurde über die Fraktur hinweg erkannt. Beantragen Sie Freigabe, um zu beginnen.</target>
 </trans-unit>
 <trans-unit id="s20fc4a342c233802">
   <source>Create your world — Sign up</source>
+  <target>Erschaffen Sie Ihre Welt — Registrieren</target>
 </trans-unit>
 <trans-unit id="s69f800801812a5f0">
   <source>files</source>
+  <target>Dateien</target>
 </trans-unit>
 <trans-unit id="s7168290f04f54427">
   <source>Return to Operative Terminal</source>
+  <target>Zum Operativ-Terminal zurückkehren</target>
 </trans-unit>
 <trans-unit id="s7a517c511aa01035">
   <source>DECLASSIFIED</source>
-</trans-unit>
+<target>FREIGEGEBEN</target></trans-unit>
 <trans-unit id="s83104f6753ceb97c">
   <source>Chapter navigation</source>
+  <target>Kapitelnavigation</target>
 </trans-unit>
 <trans-unit id="sa617015d18b2af8e">
   <source>ARTIFACT REF</source>
+  <target>ARTEFAKT-REF</target>
 </trans-unit>
 <trans-unit id="se79412858c13b923">
   <source>FILE</source>
+  <target>DATEI</target>
 </trans-unit>
 <trans-unit id="s432579c7169faaea">
   <source>ACCESSED</source>
+  <target>ZUGRIFF</target>
 </trans-unit>
 <trans-unit id="sac88fb2634e4b1c8">
   <source>INTERCEPTED TRANSMISSION</source>
+  <target>ABGEFANGENE ÜBERTRAGUNG</target>
 </trans-unit>
 <trans-unit id="s498983d0804a0f8b">
   <source>FIELD REPORT</source>
+  <target>FELDBERICHT</target>
 </trans-unit>
 <trans-unit id="sb7efe2955d7a41f8">
   <source>Onboarding</source>
+  <target>Einführung</target>
 </trans-unit>
 <trans-unit id="s575e795c45e2d97e">
   <source>Go back</source>
+  <target>Zurück</target>
 </trans-unit>
 <trans-unit id="s745226235d749103">
   <source>Skip onboarding</source>
+  <target>Einführung überspringen</target>
 </trans-unit>
 <trans-unit id="s88f89e80a4a7c805">
   <source>Skip all</source>
+  <target>Alles überspringen</target>
 </trans-unit>
 <trans-unit id="s4160a5de7b3a69c9">
   <source>Let's Begin</source>
+  <target>Los geht’s</target>
 </trans-unit>
 <trans-unit id="sbcb3a2111dc9230a">
   <source>Got It</source>
+  <target>Verstanden</target>
 </trans-unit>
 <trans-unit id="s1bc8093b59d1973b">
   <source>Onboarding progress</source>
+  <target>Einführungsfortschritt</target>
 </trans-unit>
 <trans-unit id="s7d7d952d9be64e10">
   <source>Classified Briefing // Eyes Only</source>
+  <target>Geheime Lageeinweisung // Nur für Ihre Augen</target>
 </trans-unit>
 <trans-unit id="s91d83f2e576b5e23">
   <source>Welcome to the Multiverse</source>
+  <target>Willkommen im Multiversum</target>
 </trans-unit>
 <trans-unit id="sbf64de85291f8930">
   <source>Build a world with its own agents, buildings, factions, and events.</source>
+  <target>Bauen Sie eine Welt mit eigenen Agenten, Gebäuden, Fraktionen und Ereignissen.</target>
 </trans-unit>
 <trans-unit id="sde46f0f16a73968f">
   <source>Deploy operatives against rival civilizations in competitive epochs.</source>
+  <target>Setzen Sie Operative gegen rivalisierende Zivilisationen in Wettkampf-Epochen ein.</target>
 </trans-unit>
 <trans-unit id="s847be432b2d1c25e">
   <source>Real-world events bleed through the Substrate and reshape every shard.</source>
+  <target>Reale Ereignisse bluten durch das Substrat und formen jeden Splitter um.</target>
 </trans-unit>
 <trans-unit id="saf64bfdd1513c1e4">
   <source>Create a New World</source>
+  <target>Neue Welt erschaffen</target>
 </trans-unit>
 <trans-unit id="s95ab2173160796d9">
   <source>Start with a blank shard and build from scratch.</source>
+  <target>Beginnen Sie mit einem leeren Splitter und bauen Sie von Grund auf.</target>
 </trans-unit>
 <trans-unit id="s7e3b452c90c25dd9">
   <source>Browse Existing Worlds</source>
+  <target>Bestehende Welten durchsuchen</target>
 </trans-unit>
 <trans-unit id="s94ecba01f5292a80">
   <source>Explore flagship simulations and request access.</source>
+  <target>Erkunden Sie Flaggschiff-Simulationen und beantragen Sie Zugang.</target>
 </trans-unit>
 <trans-unit id="sa1e2fe2de1307978">
   <source>I'll do this later</source>
+  <target>Das mache ich später</target>
 </trans-unit>
 <trans-unit id="se8548ab1aff1e82a">
   <source>Skip for now and head to the dashboard.</source>
+  <target>Überspringen und zum Dashboard gehen.</target>
 </trans-unit>
 <trans-unit id="sf2025124ca6a7ab0">
   <source>Your First World</source>
+  <target>Ihre erste Welt</target>
 </trans-unit>
 <trans-unit id="sf1edf9e5cd457abc">
   <source>Every agent needs a home base. How would you like to start?</source>
+  <target>Jeder Agent braucht einen Heimatstützpunkt. Wie möchten Sie beginnen?</target>
 </trans-unit>
 <trans-unit id="sabdc759ce7fe6eba">
   <source>Choose your path</source>
+  <target>Wählen Sie Ihren Weg</target>
 </trans-unit>
 <trans-unit id="s651f41872b89c231">
   <source>Your Simulation</source>
+  <target>Ihre Simulation</target>
 </trans-unit>
 <trans-unit id="sfe5b0251ac233cce">
   <source>Agents, buildings, and zones form a living world.</source>
+  <target>Agenten, Gebäude und Zonen bilden eine lebende Welt.</target>
 </trans-unit>
 <trans-unit id="se41a83cf955e62d3">
   <source>The Forge</source>
+  <target>Die Schmiede</target>
 </trans-unit>
 <trans-unit id="sb8d9019f5cb4193f">
   <source>AI-powered worldbuilding tools shape your reality.</source>
+  <target>KI-gestützte Worldbuilding-Werkzeuge formen Ihre Realität.</target>
 </trans-unit>
 <trans-unit id="s900c980bdb200fcf">
   <source>Epochs</source>
+  <target>Epochen</target>
 </trans-unit>
 <trans-unit id="sc99e3226b90d10f8">
   <source>Competitive seasons where civilizations clash.</source>
+  <target>Wettkampfsaisons, in denen Zivilisationen aufeinanderprallen.</target>
 </trans-unit>
 <trans-unit id="s84e719c78baf67a3">
   <source>Spies, saboteurs, and guardians carry out covert missions.</source>
+  <target>Spione, Saboteure und Guardians führen verdeckte Missionen aus.</target>
 </trans-unit>
 <trans-unit id="sd7ca368552438d3a">
   <source>Real-world events bleed through and reshape every shard.</source>
+  <target>Reale Ereignisse bluten durch und formen jeden Splitter um.</target>
 </trans-unit>
 <trans-unit id="s2144a01f20b868a0">
   <source>Systems Overview</source>
+  <target>Systemübersicht</target>
 </trans-unit>
 <trans-unit id="sd37ec05cc8de44d0">
   <source>Five core systems power the multiverse.</source>
+  <target>Fünf Kernsysteme treiben das Multiversum an.</target>
 </trans-unit>
 <trans-unit id="s219349e7a9fd55e0">
   <source>Feature overview</source>
+  <target>Funktionsübersicht</target>
 </trans-unit>
 <trans-unit id="s8c7a68874003ec63">
   <source>First Mission</source>
+  <target>Erste Mission</target>
 </trans-unit>
 <trans-unit id="s499a063eababfcde">
   <source>Ready to test your strategic instincts? Start a solo training match against 3 AI opponents, or explore the platform at your own pace.</source>
+  <target>Bereit, Ihre strategischen Instinkte zu testen? Starten Sie ein Solo-Trainingsmatch gegen 3 KI-Gegner oder erkunden Sie die Plattform in Ihrem eigenen Tempo.</target>
 </trans-unit>
 <trans-unit id="s1e8863a6d1b01c44">
   <source>Start Academy Epoch</source>
-</trans-unit>
-<trans-unit id="s5d3971994214da9f">
-  <source>Solo training vs 3 AI opponents. Sprint format, 3 days.</source>
+  <target>Akademie-Epoche starten</target>
 </trans-unit>
 <trans-unit id="s4d348ed3edd575f1">
   <source>Explore on my own</source>
+  <target>Selbst erkunden</target>
 </trans-unit>
 <trans-unit id="s1f9441e72a57cf71">
   <source>Explore on My Own</source>
+  <target>Selbst erkunden</target>
 </trans-unit>
 <trans-unit id="sc0e7ade733e8be5a">
   <source>Head to the dashboard and discover at your own pace.</source>
+  <target>Gehen Sie zum Dashboard und entdecken Sie in Ihrem eigenen Tempo.</target>
 </trans-unit>
 <trans-unit id="s666a66398e66846e">
   <source>Mock Mode</source>
+  <target>Testmodus</target>
 </trans-unit>
 <trans-unit id="s1015e219880ba4ff">
   <source>Academy epoch created. Preparing training simulation.</source>
+  <target>Akademie-Epoche erstellt. Trainingssimulation wird vorbereitet.</target>
 </trans-unit>
 <trans-unit id="s19cadac767e71136">
   <source>Failed to create academy epoch.</source>
+  <target>Akademie-Epoche konnte nicht erstellt werden.</target>
 </trans-unit>
 <trans-unit id="sc24b33fb8e35a391">
   <source>Operative status bar</source>
+  <target>Operativ-Statusleiste</target>
 </trans-unit>
 <trans-unit id="sa9a33b5711eedc10">
   <source>OBSERVATION MODE</source>
+  <target>BEOBACHTUNGSMODUS</target>
 </trans-unit>
 <trans-unit id="sff2f201f166c4ace">
   <source>CLEARANCE: RESTRICTED</source>
+  <target>FREIGABE: EINGESCHRÄNKT</target>
 </trans-unit>
 <trans-unit id="s7c644d21f322a9aa">
   <source>OPERATIVE TERMINAL</source>
+  <target>OPERATIV-TERMINAL</target>
 </trans-unit>
 <trans-unit id="s71588f76ffdb4c96">
   <source>SHARDS:</source>
+  <target>SCHERBEN:</target>
 </trans-unit>
 <trans-unit id="saf4511c4fb1689cb">
   <source>ACTIVE OPS:</source>
+  <target>AKTIVE OPS:</target>
 </trans-unit>
 <trans-unit id="s9bbab7bbb16c39ce">
   <source>SUBSTRATE:</source>
+  <target>SUBSTRAT:</target>
 </trans-unit>
 <trans-unit id="scdbadb8653c94924">
   <source>ANOMALOUS</source>
+  <target>ANOMAL</target>
 </trans-unit>
 <trans-unit id="sa836a227b97b9596">
   <source>STABLE</source>
+  <target>STABIL</target>
 </trans-unit>
 <trans-unit id="s0e2e9cd0c7ba2c51">
   <source>SIGN UP</source>
+  <target>REGISTRIEREN</target>
 </trans-unit>
 <trans-unit id="sf99db8b6c5d11a9a">
   <source>Admin Panel</source>
+  <target>Admin-Panel</target>
 </trans-unit>
 <trans-unit id="s07a18062a2fcd6fc">
   <source>Create Epoch</source>
+  <target>Epoche erstellen</target>
 </trans-unit>
 <trans-unit id="s28acbc2d7ab2f325">
   <source>Start Academy</source>
+  <target>Akademie starten</target>
 </trans-unit>
 <trans-unit id="s559dd7d866660e75">
   <source>Create World</source>
+  <target>Welt erschaffen</target>
 </trans-unit>
 <trans-unit id="s1b44bf07a4641048">
   <source>Browse Shards</source>
+  <target>Scherben durchsuchen</target>
 </trans-unit>
 <trans-unit id="s14bed5eb55a6e644">
   <source>Active epoch operations</source>
+  <target>Aktive Epochenoperationen</target>
 </trans-unit>
 <trans-unit id="s9e325abb95aa1127">
   <source>ACTIVE OPERATIONS</source>
+  <target>AKTIVE OPERATIONEN</target>
 </trans-unit>
 <trans-unit id="s17de71d75fb7026c">
   <source>Your Epochs</source>
+  <target>Ihre Epochen</target>
 </trans-unit>
 <trans-unit id="s3c08b65ce0fed12f">
   <source>NO ACTIVE DEPLOYMENT</source>
+  <target>KEIN AKTIVER EINSATZ</target>
 </trans-unit>
 <trans-unit id="sf28d57544d1a2eb1">
   <source>CYCLE</source>
+  <target>ZYKLUS</target>
 </trans-unit>
 <trans-unit id="s09496407b5d8849f">
   <source>RP</source>
+  <target>RP</target>
 </trans-unit>
 <trans-unit id="s088daa83c3de37d6">
   <source>ENTER WAR ROOM</source>
+  <target>LAGEZENTRUM BETRETEN</target>
 </trans-unit>
 <trans-unit id="s74f7552ffc0adadd">
   <source>SIMULATION ROSTER</source>
+  <target>SIMULATIONSAUFSTELLUNG</target>
 </trans-unit>
 <trans-unit id="s4c3ad877443f3474">
   <source>My Worlds</source>
+  <target>Meine Welten</target>
 </trans-unit>
 <trans-unit id="s1d1334beec093677">
   <source>Simulation worlds</source>
+  <target>Simulationswelten</target>
 </trans-unit>
 <trans-unit id="s017d2f6e1cd81862">
   <source>SHARD REGISTRY</source>
+  <target>SCHERBENREGISTER</target>
 </trans-unit>
 <trans-unit id="sf075c482c215fcc8">
   <source>Shards</source>
+  <target>Scherben</target>
 </trans-unit>
 <trans-unit id="s79d594675e391090">
   <source>members</source>
+  <target>Mitglieder</target>
 </trans-unit>
 <trans-unit id="s2038e03eed1db165">
   <source>DOSSIER // FIELD OPERATIVE</source>
+  <target>DOSSIER // FELDOPERATIV</target>
 </trans-unit>
 <trans-unit id="sccde979903f46472">
   <source>DOSSIER LOADING</source>
+  <target>DOSSIER WIRD GELADEN</target>
 </trans-unit>
 <trans-unit id="sb77022c6b47fc864">
   <source>Agent spotlight coming soon</source>
+  <target>Agenten-Spotlight kommt bald</target>
 </trans-unit>
 <trans-unit id="sc93c99cdd6b2c485">
   <source>Active substrate anomalies</source>
+  <target>Aktive Substratanomalien</target>
 </trans-unit>
 <trans-unit id="s4addd6b12eac01d6">
   <source>SUBSTRATE MONITOR</source>
+  <target>SUBSTRATMONITOR</target>
 </trans-unit>
 <trans-unit id="s15aba5e9dd349c2e">
   <source>SUBSTRATE: NOMINAL</source>
+  <target>SUBSTRAT: NOMINAL</target>
 </trans-unit>
 <trans-unit id="s2146a80a001fb396">
   <source>You're browsing as a guest.</source>
+  <target>Sie durchstöbern als Gast.</target>
 </trans-unit>
 <trans-unit id="s5ed8698a2f254511">
   <source>Sign Up</source>
+  <target>Registrieren</target>
+</trans-unit>
+<trans-unit id="s5af157cad15b8c36">
+  <source>Resume active training</source>
+  <target>Aktives Training fortsetzen</target>
+</trans-unit>
+<trans-unit id="s713c7464fa2a84f4">
+  <source>Resume Training</source>
+  <target>Training fortsetzen</target>
+</trans-unit>
+<trans-unit id="s77e9789a30397866">
+  <source>Operative</source>
+  <target>Operativ</target>
+</trans-unit>
+<trans-unit id="sd595b7cfe63e1290">
+  <source>DISPATCH CONFIRMED: <x id="0" equiv-text="${agentName}"/> → <x id="1" equiv-text="${target}${prob}"/></source>
+</trans-unit>
+<trans-unit id="s2cc131aea76fda2c">
+  <source>Select embassy route</source>
+  <target>Botschaftsroute wählen</target>
+</trans-unit>
+<trans-unit id="s100f626c91e525b2">
+  <source>Hover over an agent to compare aptitudes</source>
+  <target>Zeige auf einen Agenten um Eignungen zu vergleichen</target>
+</trans-unit>
+<trans-unit id="s727bc420a2f989f5">
+  <source>Agent aptitudes</source>
+  <target>Agenten-Eignungen</target>
+</trans-unit>
+<trans-unit id="s8c998e57a98f6d60">
+  <source>Form an alliance to gain +15% diplomatic bonus per ally. Alliances can be formed during lobby and foundation phases.</source>
+  <target>Gründe eine Allianz für +15% Diplomatiebonus pro Verbündetem. Allianzen können in der Lobby- und Gründungsphase gebildet werden.</target>
+</trans-unit>
+<trans-unit id="s2afc9a717c161490">
+  <source>Invite</source>
+  <target>Einladen</target>
+</trans-unit>
+<trans-unit id="s398605915210a60f">
+  <source>Auto-resolve</source>
+  <target>Automatische Auflösung</target>
+</trans-unit>
+<trans-unit id="sa3fd72087e45859b">
+  <source>Alliance invitation sent to <x id="0" equiv-text="${simulationName}"/> for "<x id="1" equiv-text="${teamName}"/>".</source>
+</trans-unit>
+<trans-unit id="scbd77c1a17b4493c">
+  <source>YOU</source>
+  <target>DU</target>
+</trans-unit>
+<trans-unit id="s50308063f26bcb90">
+  <source>Available from cycle 2</source>
+  <target>Verfügbar ab Zyklus 2</target>
+</trans-unit>
+<trans-unit id="s13a278932650d0e5">
+  <source>Final Results</source>
+  <target>Endergebnisse</target>
+</trans-unit>
+<trans-unit id="sa7758623b3e30ec4">
+  <source>This epoch has concluded. View the leaderboard for final standings.</source>
+  <target>Diese Epoche ist beendet. Sieh dir die Rangliste für den Endstand an.</target>
+</trans-unit>
+<trans-unit id="sde7a2dc512369200">
+  <source>Declassifying results...</source>
+  <target>Ergebnisse werden freigegeben...</target>
+</trans-unit>
+<trans-unit id="s84051b5b97d899c5">
+  <source>No results available for this epoch.</source>
+  <target>Keine Ergebnisse für diese Epoche verfügbar.</target>
+</trans-unit>
+<trans-unit id="s4bdea2cb421b4179">
+  <source>OPERATION CONCLUDED</source>
+  <target>OPERATION BEENDET</target>
+</trans-unit>
+<trans-unit id="s55403f5bb215f2b5">
+  <source><x id="0" equiv-text="${this._standings.length}"/> combatants</source>
+<target><x id="0" equiv-text="${this._standings.length}"/> Teilnehmer</target>
+</trans-unit>
+<trans-unit id="s356c8c45c8ef2987">
+  <source>YOUR OPERATION REPORT</source>
+  <target>DEIN OPERATIONSBERICHT</target>
+</trans-unit>
+<trans-unit id="s2e1d26c944901245">
+  <source>Total Operations</source>
+  <target>Gesamtoperationen</target>
+</trans-unit>
+<trans-unit id="sbe9a51f29a4a2c5b">
+  <source>Successful</source>
+  <target>Erfolgreich</target>
+</trans-unit>
+<trans-unit id="sa1185f535c807530">
+  <source>Detected / Captured</source>
+  <target>Entdeckt / Gefangen</target>
+</trans-unit>
+<trans-unit id="sf8720d89f41355d2">
+  <source>Success Rate</source>
+  <target>Erfolgsrate</target>
+</trans-unit>
+<trans-unit id="seba8c206cf9b3e84">
+  <source>COMMENDATIONS</source>
+  <target>AUSZEICHNUNGEN</target>
+</trans-unit>
+<trans-unit id="s4646d08a05fff647">
+  <source>DIMENSION ANALYSIS</source>
+  <target>DIMENSIONSANALYSE</target>
+</trans-unit>
+<trans-unit id="s1e978e8a43391642">
+  <source>FINAL STANDINGS</source>
+  <target>ENDSTAND</target>
+</trans-unit>
+<trans-unit id="s4bfc62609ee1cee2">
+  <source>Archives</source>
+  <target>Archiv</target>
+</trans-unit>
+<trans-unit id="s8dcbdb53fc7c3ef0">
+  <source>Resume Academy</source>
+  <target>Akademie fortsetzen</target>
+</trans-unit>
+<trans-unit id="sed0bbb8cffe03ccd">
+  <source>Quick Match</source>
+  <target>Schnellspiel</target>
+</trans-unit>
+<trans-unit id="sfd72d8d4ca25b364">
+  <source>resolving</source>
+  <target>wird aufgelöst</target>
+</trans-unit>
+<trans-unit id="sf9ee45f8f08149da">
+  <source>cycle left</source>
+  <target>Zyklus verbleibend</target>
+</trans-unit>
+<trans-unit id="s2043210fdf7d69df">
+  <source>cycles left</source>
+  <target>Zyklen verbleibend</target>
+</trans-unit>
+<trans-unit id="s2beaed0a9d1c8966">
+  <source>Solo training vs 3 AI opponents. Quick match, auto-resolve.</source>
+  <target>Solo-Training gegen 3 KI-Gegner. Schnellspiel, automatische Auflösung.</target>
+</trans-unit>
+<trans-unit id="s1d90a39a778719c0">
+  <source>Deploy spies to gather point-in-time intelligence snapshots on your opponents. Intel may become outdated as conditions change.</source>
+  <target>Entsenden Sie Spione, um zeitpunktbezogene Aufklärungssnapshots über Ihre Gegner zu sammeln. Aufklärung kann veralten, wenn sich die Bedingungen ändern.</target>
+</trans-unit>
+<trans-unit id="sce256a8918a7f18d">
+  <source>Snapshot</source>
+  <target>Momentaufnahme</target>
 </trans-unit>
 
 </body>

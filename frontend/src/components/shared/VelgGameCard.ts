@@ -93,7 +93,6 @@ export class VelgGameCard extends LitElement {
       border-radius: calc(var(--card-radius) + 6px);
       overflow: hidden;
       cursor: pointer;
-      transform-style: preserve-3d;
       will-change: transform;
       transition: transform 200ms var(--ease-out, ease-out),
                   box-shadow 200ms var(--ease-out, ease-out);
@@ -127,6 +126,7 @@ export class VelgGameCard extends LitElement {
     }
 
     .card--interactive.card--tilting {
+      transform-style: preserve-3d;
       transition: box-shadow 200ms var(--ease-out, ease-out);
       transform: scale(1.05) translateY(-8px)
                  rotateX(calc((0.5 - var(--my, 0.5)) * 24deg))

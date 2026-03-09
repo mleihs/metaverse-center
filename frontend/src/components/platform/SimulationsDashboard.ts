@@ -1249,15 +1249,26 @@ export class VelgSimulationsDashboard extends LitElement {
 
   private _handleCreateClick(): void {
     this.dispatchEvent(
-      new CustomEvent('navigate', { detail: '/new-simulation', bubbles: true, composed: true }),
+      new CustomEvent('navigate', { detail: '/forge', bubbles: true, composed: true }),
     );
   }
 
   private async _handleStartAcademy(): Promise<void> {
+    // If there's already an active academy epoch, navigate to it instead
+    const activeAcademy = this._dashboardData?.active_epoch_participations
+      ?.find(ep => ep.epoch_type === 'academy');
+    if (activeAcademy) {
+      window.history.pushState({}, '', `/epochs/${activeAcademy.epoch_id}`);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+      return;
+    }
+
     try {
       const resp = await epochsApi.createQuickAcademy();
       if (resp.success && resp.data) {
         VelgToast.success(msg('Academy epoch created. Preparing training simulation.'));
+        // Refresh dashboard data so "Your Epochs" updates
+        this._loadDashboard();
         window.history.pushState({}, '', `/epochs/${resp.data.id}`);
         window.dispatchEvent(new PopStateEvent('popstate'));
       } else {
@@ -1430,7 +1441,7 @@ export class VelgSimulationsDashboard extends LitElement {
     return html`
       <div class="welcome-strip">
         <button class="welcome-strip__btn welcome-strip__btn--primary" @click=${this._handleStartAcademy}>
-          ${msg('Start Academy')}
+          ${this._hasActiveAcademy() ? msg('Resume Academy') : msg('Start Academy')}
         </button>
         <button class="welcome-strip__btn" @click=${this._handleCreateClick}>
           ${msg('Create World')}
@@ -1697,15 +1708,22 @@ export class VelgSimulationsDashboard extends LitElement {
     `;
   }
 
+  private _hasActiveAcademy(): boolean {
+    return !!this._dashboardData?.active_epoch_participations
+      ?.some(ep => ep.epoch_type === 'academy');
+  }
+
   private _renderAcademyCta(userState: DashboardState) {
     if (userState === 'guest') return nothing;
     const played = this._dashboardData?.academy_epochs_played ?? 0;
-    if (played >= 3) return nothing;
+    const hasActive = this._hasActiveAcademy();
+    if (played >= 3 && !hasActive) return nothing;
 
     return html`
       <section class="academy-cta">
         <velg-academy-epoch-card
           .academyEpochsPlayed=${played}
+          ?hasActiveEpoch=${hasActive}
           @start-academy=${this._handleStartAcademy}
         ></velg-academy-epoch-card>
       </section>

@@ -9,7 +9,7 @@ tags: [index, catalog, documentation]
 
 # Documentation Index
 
-> Auto-generated from frontmatter. 39 documents, 6 categories + 8 ADRs.
+> Auto-generated from frontmatter. 40 documents, 6 categories + 8 ADRs.
 
 ## Specifications (14)
 
@@ -40,11 +40,12 @@ tags: [index, catalog, documentation]
 | [Feature Catalog](references/feature-catalog.md) | 2.3 | 2026-03-08 | de | active |
 | [Frontend Components](references/frontend-components.md) | 2.4 | 2026-03-04 | de | active |
 
-## Guides (6)
+## Guides (7)
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
 | [Deployment Infrastructure](guides/deployment-infrastructure.md) | 1.3 | 2026-03-07 | de | active |
+| [Epoch Gameplay Guide](guides/epoch-gameplay-guide.md) | 1.0 | 2026-03-09 | en | active |
 | [Implementation Plan](guides/implementation-plan.md) | 2.9 | 2026-02-26 | de | active |
 | [Migration Strategy](guides/migration-strategy.md) | 1.2 | 2026-02-25 | de | active |
 | [Epoch Playtest Methodology](guides/playtest-methodology.md) | 1.0 | — | en | active |

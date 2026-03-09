@@ -55,7 +55,7 @@ class UserDashboardService:
             supabase.table("epoch_participants")
             .select(
                 "epoch_id, current_rp, "
-                "game_epochs(id, name, status, current_cycle, config), "
+                "game_epochs(id, name, status, epoch_type, current_cycle, config), "
                 "simulations(name)"
             )
             .eq("user_id", user_id_str)
@@ -80,6 +80,7 @@ class UserDashboardService:
                     epoch_id=epoch["id"],
                     epoch_name=epoch.get("name", ""),
                     epoch_status=epoch["status"],
+                    epoch_type=epoch.get("epoch_type", "competitive"),
                     current_cycle=epoch.get("current_cycle", 0),
                     total_cycles=total_cycles,
                     current_rp=row.get("current_rp", 0),
@@ -102,7 +103,7 @@ class UserDashboardService:
 
         # ── Active resonance count ──
         res_resp = (
-            supabase.table("resonance_events")
+            supabase.table("substrate_resonances")
             .select("id", count="exact")
             .in_("status", ["detected", "impacting", "subsiding"])
             .is_("deleted_at", "null")

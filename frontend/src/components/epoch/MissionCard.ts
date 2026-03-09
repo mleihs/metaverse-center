@@ -33,13 +33,13 @@ export class VelgMissionCard extends LitElement {
 			background: var(--color-gray-950, #0a0a0f);
 			overflow: hidden;
 			cursor: pointer;
-			transition: all 200ms ease;
-			transform-style: preserve-3d;
+			transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+			backface-visibility: hidden;
 			user-select: none;
 		}
 
 		.card:hover:not(.card--disabled) {
-			transform: translateY(-4px) scale(1.04);
+			transform: translateY(-4px);
 			box-shadow: 0 8px 24px rgba(0 0 0 / 0.5),
 				0 0 16px color-mix(in srgb, var(--mc-color) 25%, transparent);
 		}
@@ -159,6 +159,11 @@ export class VelgMissionCard extends LitElement {
 			font-size: 8px;
 			line-height: 1.3;
 			color: var(--color-gray-400, #999);
+			max-height: 44px;
+			overflow: hidden;
+			display: -webkit-box;
+			-webkit-line-clamp: 4;
+			-webkit-box-orient: vertical;
 		}
 
 		.card__duration {

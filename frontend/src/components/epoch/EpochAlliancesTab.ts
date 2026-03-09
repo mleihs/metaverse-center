@@ -204,6 +204,51 @@ export class VelgEpochAlliancesTab extends LitElement {
       color: var(--color-gray-950);
     }
 
+    /* ── Prominent CTA for unaligned ──────── */
+
+    .alliance-cta {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-5) var(--space-4);
+      border: 2px dashed var(--color-gray-700);
+      margin-bottom: var(--space-4);
+      text-align: center;
+      transition: border-color var(--transition-normal);
+    }
+
+    .alliance-cta:hover {
+      border-color: var(--color-success);
+    }
+
+    .alliance-cta__hint {
+      font-family: var(--font-mono, monospace);
+      font-size: var(--text-xs);
+      color: var(--color-gray-400);
+      max-width: 280px;
+    }
+
+    /* ── Invite button ───────────────────────── */
+
+    .alliance-btn--invite {
+      color: var(--color-info);
+      border-color: var(--color-info);
+      background: transparent;
+    }
+
+    .alliance-btn--invite:hover {
+      background: rgba(56 189 248 / 0.15);
+    }
+
+    /* ── Unaligned tag ─────────────────────── */
+
+    .participant__unaligned {
+      font-family: var(--font-mono, monospace);
+      font-size: 10px;
+      color: var(--color-gray-500);
+    }
+
     /* ── Empty ───────────────────────────────── */
 
     .empty-hint {
@@ -243,47 +288,49 @@ export class VelgEpochAlliancesTab extends LitElement {
             ${
               canCreateTeam
                 ? html`
-              <div class="alliance-actions">
-                ${
-                  this._creatingTeam
-                    ? html`
-                  <div class="team-form">
-                    <input
-                      class="team-form__input"
-                      type="text"
-                      aria-label=${msg('Alliance team name')}
-                      placeholder=${msg('Alliance name...')}
-                      .value=${this._teamName}
-                      @input=${(e: Event) => {
-                        this._teamName = (e.target as HTMLInputElement).value;
-                      }}
-                      @keydown=${(e: KeyboardEvent) => {
-                        if (e.key === 'Enter') this._onCreateTeam();
-                      }}
-                    />
-                    <button
-                      class="alliance-btn alliance-btn--join"
-                      ?disabled=${!this._teamName.trim() || this.actionLoading}
-                      @click=${this._onCreateTeam}
-                    >${msg('Create')}</button>
-                    <button
-                      class="alliance-btn alliance-btn--leave"
-                      @click=${() => {
-                        this._creatingTeam = false;
-                        this._teamName = '';
-                      }}
-                    >${msg('Cancel')}</button>
+              ${this._creatingTeam
+                ? html`
+                  <div class="alliance-actions">
+                    <div class="team-form">
+                      <input
+                        class="team-form__input"
+                        type="text"
+                        aria-label=${msg('Alliance team name')}
+                        placeholder=${msg('Alliance name...')}
+                        .value=${this._teamName}
+                        @input=${(e: Event) => {
+                          this._teamName = (e.target as HTMLInputElement).value;
+                        }}
+                        @keydown=${(e: KeyboardEvent) => {
+                          if (e.key === 'Enter') this._onCreateTeam();
+                        }}
+                      />
+                      <button
+                        class="alliance-btn alliance-btn--join"
+                        ?disabled=${!this._teamName.trim() || this.actionLoading}
+                        @click=${this._onCreateTeam}
+                      >${msg('Create')}</button>
+                      <button
+                        class="alliance-btn alliance-btn--leave"
+                        @click=${() => {
+                          this._creatingTeam = false;
+                          this._teamName = '';
+                        }}
+                      >${msg('Cancel')}</button>
+                    </div>
                   </div>
                 `
-                    : html`
-                  <button class="lobby-btn lobby-btn--join" @click=${() => {
-                    this._creatingTeam = true;
-                  }}>
-                    + ${msg('Create Alliance')}
-                  </button>
+                : html`
+                  <div class="alliance-cta">
+                    <button class="lobby-btn lobby-btn--join" @click=${() => {
+                      this._creatingTeam = true;
+                    }}>
+                      + ${msg('Create Alliance')}
+                    </button>
+                    <p class="alliance-cta__hint">${msg('Form an alliance to gain +15% diplomatic bonus per ally. Alliances can be formed during lobby and foundation phases.')}</p>
+                  </div>
                 `
-                }
-              </div>
+              }
             `
                 : nothing
             }
@@ -351,7 +398,18 @@ export class VelgEpochAlliancesTab extends LitElement {
               <div class="alliance__member">
                 <velg-epoch-presence .simulationId=${p.simulation_id}></velg-epoch-presence>
                 ${(p.simulations as { name: string } | undefined)?.name ?? p.simulation_id}
-                ${p.team_id ? '' : html` <span style="color: var(--color-gray-400)">(${msg('unaligned')})</span>`}
+                ${p.team_id
+                  ? nothing
+                  : html` <span class="participant__unaligned">(${msg('unaligned')})</span>
+                    ${isAligned && p.simulation_id !== this.myParticipant?.simulation_id && this.epoch && ['lobby', 'foundation'].includes(this.epoch.status)
+                      ? html`<button
+                          class="alliance-btn alliance-btn--invite"
+                          ?disabled=${this.actionLoading}
+                          @click=${() => this._onInvitePlayer(p)}
+                        >${msg('Invite')}</button>`
+                      : nothing
+                    }`
+                }
               </div>
             `,
             )}
@@ -387,6 +445,17 @@ export class VelgEpochAlliancesTab extends LitElement {
   private _onLeaveTeam() {
     this.dispatchEvent(
       new CustomEvent('leave-team', {
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
+
+  private _onInvitePlayer(participant: EpochParticipant) {
+    const simName = (participant.simulations as { name: string } | undefined)?.name ?? '';
+    this.dispatchEvent(
+      new CustomEvent('invite-player', {
+        detail: { simulationId: participant.simulation_id, simulationName: simName },
         bubbles: true,
         composed: true,
       }),

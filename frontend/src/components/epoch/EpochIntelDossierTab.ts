@@ -20,6 +20,7 @@ interface OpponentDossier {
   simulationId: string;
   simulationName: string;
   zoneSecurityLevels: string[];
+  zoneDetails: Array<{ name: string; security_level: string }>;
   guardianCount: number;
   fortifications: Array<{
     zone_name: string;
@@ -475,6 +476,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
         simulationId: targetSimId,
         simulationName: simName,
         zoneSecurityLevels: (meta.zone_security as string[]) ?? [],
+        zoneDetails: (meta.zone_details as Array<{ name: string; security_level: string }>) ?? [],
         guardianCount: (meta.guardian_count as number) ?? 0,
         fortifications: (meta.fortifications as OpponentDossier['fortifications']) ?? [],
         lastIntelCycle: latest.cycle_number,
@@ -527,7 +529,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
           <div class="empty__icon" aria-hidden="true">${icons.operativeSpy(40)}</div>
           <h3 class="empty__title">${msg('No intelligence gathered yet.')}</h3>
           <p class="empty__hint">
-            ${msg('Deploy spies to gather intelligence on your opponents.')}
+            ${msg('Deploy spies to gather point-in-time intelligence snapshots on your opponents. Intel may become outdated as conditions change.')}
           </p>
         </div>
       `;
@@ -563,19 +565,29 @@ export class VelgEpochIntelDossierTab extends LitElement {
         <div class="card__body">
           <!-- Zone Security -->
           ${
-            dossier.zoneSecurityLevels.length > 0
+            dossier.zoneDetails.length > 0 || dossier.zoneSecurityLevels.length > 0
               ? html`
               <div class="intel-row">
                 <span class="intel-row__label">${msg('Zone Security')}</span>
                 <span class="intel-row__value">
-                  ${dossier.zoneSecurityLevels.map(
-                    (level) => html`
-                      <span
-                        class="zone-badge"
-                        style="color: ${SECURITY_COLORS[level] ?? 'var(--color-gray-300)'}; border-color: ${SECURITY_COLORS[level] ?? 'var(--color-gray-500)'}"
-                      >${level}</span>
-                    `,
-                  )}
+                  ${dossier.zoneDetails.length > 0
+                    ? dossier.zoneDetails.map(
+                        (z) => html`
+                          <span
+                            class="zone-badge"
+                            style="color: ${SECURITY_COLORS[z.security_level] ?? 'var(--color-gray-300)'}; border-color: ${SECURITY_COLORS[z.security_level] ?? 'var(--color-gray-500)'}"
+                          >${z.name}: ${z.security_level}</span>
+                        `,
+                      )
+                    : dossier.zoneSecurityLevels.map(
+                        (level) => html`
+                          <span
+                            class="zone-badge"
+                            style="color: ${SECURITY_COLORS[level] ?? 'var(--color-gray-300)'}; border-color: ${SECURITY_COLORS[level] ?? 'var(--color-gray-500)'}"
+                          >${level}</span>
+                        `,
+                      )
+                  }
                 </span>
               </div>
             `
@@ -614,7 +626,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
 
         <div class="card__footer">
           <span class="card__reports">
-            ${dossier.reportCount} ${dossier.reportCount === 1 ? msg('report') : msg('reports')}
+            ${msg('Snapshot')} &middot; ${dossier.reportCount} ${dossier.reportCount === 1 ? msg('report') : msg('reports')}
           </span>
         </div>
       </article>

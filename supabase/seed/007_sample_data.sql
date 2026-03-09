@@ -24,13 +24,15 @@ INSERT INTO agents (simulation_id, name, system, gender, character, background, 
 -- ============ CITIES ============
 INSERT INTO cities (id, simulation_id, name, description, population) VALUES
   ('c0000001-0000-4000-a000-000000000001', sim_id, 'Velgarien-Stadt', 'Die Hauptstadt und das politische Zentrum des Landes', 850000),
-  ('c0000002-0000-0000-0000-000000000001', sim_id, 'Hafenstadt Korrin', 'Wichtiger Handelshafen im Sueden', 320000);
+  ('c0000002-0000-0000-0000-000000000001', sim_id, 'Hafenstadt Korrin', 'Wichtiger Handelshafen im Sueden', 320000)
+ON CONFLICT (id) DO NOTHING;
 
 -- ============ ZONES ============
 INSERT INTO zones (id, simulation_id, city_id, name, zone_type, description) VALUES
   ('a0000001-0000-0000-0000-000000000001', sim_id, 'c0000001-0000-4000-a000-000000000001', 'Regierungsviertel', 'government', 'Das politische Herz der Hauptstadt'),
   ('a0000002-0000-0000-0000-000000000001', sim_id, 'c0000001-0000-4000-a000-000000000001', 'Industriegebiet Nord', 'industrial', 'Schwerindustrie und Fabriken'),
-  ('a0000003-0000-0000-0000-000000000001', sim_id, 'c0000001-0000-4000-a000-000000000001', 'Altstadt', 'residential', 'Historisches Wohnviertel mit enger Bebauung');
+  ('a0000003-0000-0000-0000-000000000001', sim_id, 'c0000001-0000-4000-a000-000000000001', 'Altstadt', 'residential', 'Historisches Wohnviertel mit enger Bebauung')
+ON CONFLICT (id) DO NOTHING;
 
 -- ============ BUILDINGS ============
 INSERT INTO buildings (simulation_id, name, building_type, building_condition, description, zone_id, population_capacity) VALUES

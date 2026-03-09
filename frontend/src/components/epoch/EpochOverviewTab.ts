@@ -177,6 +177,14 @@ export class VelgEpochOverviewTab extends LitElement {
     .action-btn--sweep   { --_accent: var(--color-info, #38bdf8); }
     .action-btn--fortify { --_accent: var(--color-warning, #f59e0b); }
 
+    .action-btn:disabled {
+      opacity: 0.5;
+      color: var(--color-gray-500);
+      cursor: not-allowed;
+      pointer-events: none;
+      border-left-color: var(--color-gray-700);
+    }
+
     .action-btn__icon {
       display: flex;
       align-items: center;
@@ -633,6 +641,7 @@ export class VelgEpochOverviewTab extends LitElement {
               .entries=${this.leaderboard.slice(0, 5)}
               .epoch=${this.epoch}
               .participants=${this.participants}
+              .mySimulationId=${this.myParticipant?.simulation_id ?? ''}
               compact
             ></velg-epoch-leaderboard>
           </div>
@@ -654,7 +663,13 @@ export class VelgEpochOverviewTab extends LitElement {
                     <span class="action-btn__label">${this.epoch?.status === 'foundation' ? msg('Deploy Guardian / Spy') : msg('Deploy Operative')}</span>
                     <span class="action-btn__cost">${this.epoch?.status === 'foundation' ? '3-4 RP' : '3-7 RP'}</span>
                   </button>
-                  <button class="action-btn action-btn--sweep" @click=${this._onCounterIntel}>
+                  <button
+                    class="action-btn action-btn--sweep"
+                    ?disabled=${(this.epoch?.current_cycle ?? 1) < 2}
+                    aria-disabled=${(this.epoch?.current_cycle ?? 1) < 2 ? 'true' : 'false'}
+                    title=${(this.epoch?.current_cycle ?? 1) < 2 ? msg('Available from cycle 2') : ''}
+                    @click=${this._onCounterIntel}
+                  >
                     <span class="action-btn__icon" aria-hidden="true">${icons.radar(16)}</span>
                     <span class="action-btn__label">${msg('Counter-Intel Sweep')}</span>
                     <span class="action-btn__cost">4 RP</span>
@@ -711,7 +726,18 @@ export class VelgEpochOverviewTab extends LitElement {
               </div>
             </div>
           `
-              : html`
+              : this.myParticipant && this.epoch?.status === 'completed'
+                ? html`
+            <div class="panel">
+              <div class="panel__header">
+                <h3 class="panel__title">${msg('Final Results')}</h3>
+              </div>
+              <div class="panel__body">
+                <p class="empty-hint">${msg('This epoch has concluded. View the leaderboard for final standings.')}</p>
+              </div>
+            </div>
+          `
+                : html`
             <div class="panel">
               <div class="panel__header">
                 <h3 class="panel__title">${msg('Spectating')}</h3>
@@ -806,7 +832,8 @@ export class VelgEpochOverviewTab extends LitElement {
   }
 
   private _renderMission(m: OperativeMission) {
-    const canRecall = ['deploying', 'active'].includes(m.status);
+    const canRecall = ['deploying', 'active'].includes(m.status)
+      && !['completed', 'cancelled'].includes(this.epoch?.status ?? '');
     return html`
       <div class="mission">
         <div class="mission__icon">${getOperativeIcon(m.operative_type)}</div>
@@ -817,12 +844,15 @@ export class VelgEpochOverviewTab extends LitElement {
             ${m.target_sim?.name ? html` &rarr; ${m.target_sim.name}` : nothing}
           </div>
           <div class="mission__detail">
-            ${
-              m.success_probability != null
-                ? html`${Math.round(m.success_probability * 100)}% ${msg('success')}`
-                : nothing
-            }
-            ${m.cost_rp ? html` &middot; ${m.cost_rp} RP` : nothing}
+            ${m.operative_type === 'guardian'
+              ? html`${msg('Permanent')} &middot; ${m.cost_rp} RP`
+              : html`
+                ${m.success_probability != null
+                  ? html`${Math.round(m.success_probability * 100)}% ${msg('success')}`
+                  : nothing}
+                ${m.cost_rp ? html` &middot; ${m.cost_rp} RP` : nothing}
+                ${this._getRemainingCycles(m)}
+              `}
           </div>
         </div>
         ${
@@ -841,6 +871,16 @@ export class VelgEpochOverviewTab extends LitElement {
         </span>
       </div>
     `;
+  }
+
+  private _getRemainingCycles(m: OperativeMission) {
+    if (!m.resolves_at || !['deploying', 'active'].includes(m.status)) return nothing;
+    const cycleHours = this.epoch?.config?.cycle_hours ?? 8;
+    const now = Date.now();
+    const resolves = new Date(m.resolves_at).getTime();
+    const remaining = Math.max(0, Math.ceil((resolves - now) / (cycleHours * 3600_000)));
+    if (remaining <= 0) return html` &middot; ${msg('resolving')}`;
+    return html` &middot; ${remaining} ${remaining === 1 ? msg('cycle left') : msg('cycles left')}`;
   }
 
   private _getMissionStatusClass(status: string): string {
@@ -905,6 +945,7 @@ export class VelgEpochOverviewTab extends LitElement {
   }
 
   private _onCounterIntel() {
+    if ((this.epoch?.current_cycle ?? 1) < 2) return;
     this.dispatchEvent(
       new CustomEvent('counter-intel', {
         bubbles: true,

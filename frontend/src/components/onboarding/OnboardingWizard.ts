@@ -983,7 +983,7 @@ export class VelgOnboardingWizard extends LitElement {
             <div class="mission-card__icon" aria-hidden="true">${icons.crossedSwords(20)}</div>
             <div class="mission-card__text">
               <div class="mission-card__title">${msg('Start Academy Epoch')}</div>
-              <div class="mission-card__desc">${msg('Solo training vs 3 AI opponents. Sprint format, 3 days.')}</div>
+              <div class="mission-card__desc">${msg('Solo training vs 3 AI opponents. Quick match, auto-resolve.')}</div>
             </div>
             <div class="mission-card__arrow" aria-hidden="true">${icons.chevronRight(14)}</div>
           </div>

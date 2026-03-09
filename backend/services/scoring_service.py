@@ -544,6 +544,163 @@ class ScoringService:
         return resp.data or []
 
     @classmethod
+    async def get_results_summary(
+        cls,
+        supabase: Client,
+        epoch_id: UUID,
+    ) -> dict:
+        """Get comprehensive results summary for a completed epoch.
+
+        Returns declassified data: standings, per-participant operation
+        statistics, MVP awards, and score history. Only available for
+        completed epochs (fog of war lifted).
+        """
+        epoch = await EpochService.get(supabase, epoch_id)
+        if epoch["status"] != "completed":
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                "Results summary only available for completed epochs.",
+            )
+
+        standings = await cls.get_final_standings(supabase, epoch_id)
+
+        # Per-participant operation statistics
+        participants = await EpochService.list_participants(supabase, epoch_id)
+        participant_stats = []
+        for p in participants:
+            sim_id = p["simulation_id"]
+            missions_resp = (
+                supabase.table("operative_missions")
+                .select("operative_type, status")
+                .eq("epoch_id", str(epoch_id))
+                .eq("source_simulation_id", sim_id)
+                .execute()
+            )
+            missions = missions_resp.data or []
+            total_ops = len(missions)
+            successes = sum(1 for m in missions if m["status"] == "success")
+            failures = sum(1 for m in missions if m["status"] in ("failed", "detected", "captured"))
+            detections = sum(1 for m in missions if m["status"] in ("detected", "captured"))
+            success_rate = round(successes / total_ops, 2) if total_ops > 0 else 0.0
+
+            # Agents lost (captured status)
+            captured = sum(1 for m in missions if m["status"] == "captured")
+
+            participant_stats.append({
+                "simulation_id": sim_id,
+                "total_operations": total_ops,
+                "successes": successes,
+                "failures": failures,
+                "detections": detections,
+                "captured": captured,
+                "success_rate": success_rate,
+            })
+
+        # MVP Awards
+        mvp_awards = cls._compute_mvp_awards(standings, participant_stats)
+
+        # Score history for all participants
+        score_history = {}
+        for p in participants:
+            history = await cls.get_score_history(supabase, epoch_id, UUID(p["simulation_id"]))
+            score_history[p["simulation_id"]] = history
+
+        return {
+            "epoch": {
+                "id": str(epoch_id),
+                "name": epoch.get("name", ""),
+                "epoch_type": epoch.get("epoch_type", "competitive"),
+                "status": epoch["status"],
+                "current_cycle": epoch.get("current_cycle", 1),
+            },
+            "standings": standings,
+            "participant_stats": participant_stats,
+            "mvp_awards": mvp_awards,
+            "score_history": score_history,
+        }
+
+    @staticmethod
+    def _compute_mvp_awards(
+        standings: list[dict],
+        participant_stats: list[dict],
+    ) -> list[dict]:
+        """Compute MVP awards based on final standings and operation stats."""
+        awards: list[dict] = []
+        if not standings:
+            return awards
+
+        stats_by_sim: dict[str, dict] = {
+            s["simulation_id"]: s for s in participant_stats
+        }
+
+        # Master Spy — highest military score
+        best_military = max(standings, key=lambda e: e.get("military", 0))
+        if best_military.get("military", 0) > 0:
+            awards.append({
+                "title": "Master Spy",
+                "description": "Highest military score — supreme covert operations.",
+                "simulation_id": best_military["simulation_id"],
+                "simulation_name": best_military.get("simulation_name", ""),
+                "value": best_military["military"],
+            })
+
+        # Iron Guardian — highest sovereignty score
+        best_sovereignty = max(standings, key=lambda e: e.get("sovereignty", 0))
+        if best_sovereignty.get("sovereignty", 0) > 0:
+            awards.append({
+                "title": "Iron Guardian",
+                "description": "Highest sovereignty — impenetrable defenses.",
+                "simulation_id": best_sovereignty["simulation_id"],
+                "simulation_name": best_sovereignty.get("simulation_name", ""),
+                "value": best_sovereignty["sovereignty"],
+            })
+
+        # The Diplomat — highest diplomatic score
+        best_diplomatic = max(standings, key=lambda e: e.get("diplomatic", 0))
+        if best_diplomatic.get("diplomatic", 0) > 0:
+            awards.append({
+                "title": "The Diplomat",
+                "description": "Highest diplomatic score — master of alliances.",
+                "simulation_id": best_diplomatic["simulation_id"],
+                "simulation_name": best_diplomatic.get("simulation_name", ""),
+                "value": best_diplomatic["diplomatic"],
+            })
+
+        # Most Lethal — highest success rate with minimum operations
+        best_rate = None
+        best_rate_val = 0.0
+        for stat in participant_stats:
+            if stat["total_operations"] >= 3 and stat["success_rate"] > best_rate_val:
+                best_rate_val = stat["success_rate"]
+                best_rate = stat
+        if best_rate:
+            sim_name = next(
+                (s.get("simulation_name", "") for s in standings
+                 if s["simulation_id"] == best_rate["simulation_id"]),
+                "",
+            )
+            awards.append({
+                "title": "Most Lethal",
+                "description": "Highest success rate — surgical precision.",
+                "simulation_id": best_rate["simulation_id"],
+                "simulation_name": sim_name,
+                "value": round(best_rate_val * 100),
+            })
+
+        # Cultural Domination — highest influence score
+        best_influence = max(standings, key=lambda e: e.get("influence", 0))
+        if best_influence.get("influence", 0) > 0:
+            awards.append({
+                "title": "Cultural Domination",
+                "description": "Highest influence — reshaping the narrative.",
+                "simulation_id": best_influence["simulation_id"],
+                "simulation_name": best_influence.get("simulation_name", ""),
+                "value": best_influence["influence"],
+            })
+
+        return awards
+
+    @classmethod
     async def get_final_standings(
         cls,
         supabase: Client,

@@ -7,6 +7,7 @@ from uuid import UUID
 from fastapi import HTTPException, status
 
 from backend.models.epoch import EpochConfig
+from backend.services.battle_log_service import BattleLogService
 from backend.services.game_instance_service import GameInstanceService
 from supabase import Client
 
@@ -49,22 +50,24 @@ class EpochLifecycleService:
             )
 
         # Verify creator has joined the epoch with a simulation
-        creator_id = str(epoch["created_by_id"])
-        member_resp = (
-            supabase.table("simulation_members")
-            .select("simulation_id")
-            .eq("user_id", creator_id)
-            .execute()
-        )
-        creator_sim_ids = {m["simulation_id"] for m in (member_resp.data or [])}
-        human_participant_sims = {
-            str(p["simulation_id"]) for p in participants if not p.get("is_bot")
-        }
-        if not creator_sim_ids & human_participant_sims:
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                "Epoch creator must join with a simulation before starting.",
+        # (Skip for academy epochs — human is joined via admin client)
+        if epoch.get("epoch_type") != "academy":
+            creator_id = str(epoch["created_by_id"])
+            member_resp = (
+                supabase.table("simulation_members")
+                .select("simulation_id")
+                .eq("user_id", creator_id)
+                .execute()
             )
+            creator_sim_ids = {m["simulation_id"] for m in (member_resp.data or [])}
+            human_participant_sims = {
+                str(p["simulation_id"]) for p in participants if not p.get("is_bot")
+            }
+            if not creator_sim_ids & human_participant_sims:
+                raise HTTPException(
+                    status.HTTP_400_BAD_REQUEST,
+                    "Epoch creator must join with a simulation before starting.",
+                )
 
         # Auto-complete drafts for participants who haven't drafted
         # Use admin client to bypass RLS — creator may not be a member of
@@ -136,6 +139,20 @@ class EpochLifecycleService:
 
         if not resp.data:
             raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Failed to start epoch.")
+
+        # Log phase transition + notify participants
+        await BattleLogService.log_phase_change(
+            supabase, epoch_id, 1, "lobby", "foundation",
+        )
+        if epoch.get("epoch_type") != "academy":
+            try:
+                from backend.services.cycle_notification_service import CycleNotificationService
+                await CycleNotificationService.send_phase_change_notifications(
+                    admin or supabase, str(epoch_id), "lobby", "foundation",
+                )
+            except Exception:
+                logger.warning("Epoch start notification failed for epoch %s", epoch_id, exc_info=True)
+
         return resp.data[0]
 
     @classmethod
@@ -147,12 +164,13 @@ class EpochLifecycleService:
         from backend.services.epoch_service import EpochService
 
         epoch = await EpochService.get(supabase, epoch_id)
+        old_status = epoch["status"]
         next_status_map = {
             "foundation": "competition",
             "competition": "reckoning",
             "reckoning": "completed",
         }
-        next_status = next_status_map.get(epoch["status"])
+        next_status = next_status_map.get(old_status)
         if not next_status:
             raise HTTPException(
                 status.HTTP_400_BAD_REQUEST,
@@ -171,8 +189,41 @@ class EpochLifecycleService:
             admin = admin_supabase or supabase
             await GameInstanceService.archive_instances(admin, epoch_id)
 
+            # Increment academy_epochs_played for academy epochs
+            if epoch.get("epoch_type") == "academy":
+                profile = (
+                    admin.table("user_profiles")
+                    .select("academy_epochs_played")
+                    .eq("id", str(epoch["created_by_id"]))
+                    .maybe_single()
+                    .execute()
+                )
+                if profile.data:
+                    count = (profile.data.get("academy_epochs_played") or 0) + 1
+                    admin.table("user_profiles").update(
+                        {"academy_epochs_played": count}
+                    ).eq("id", str(epoch["created_by_id"])).execute()
+
         if not resp.data:
             raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Failed to advance phase.")
+
+        # Log phase transition + notify participants
+        await BattleLogService.log_phase_change(
+            supabase, epoch_id, epoch.get("current_cycle", 1), old_status, next_status,
+        )
+        try:
+            from backend.services.cycle_notification_service import CycleNotificationService
+            if next_status == "completed":
+                await CycleNotificationService.send_epoch_completed_notifications(
+                    admin_supabase or supabase, str(epoch_id),
+                )
+            else:
+                await CycleNotificationService.send_phase_change_notifications(
+                    admin_supabase or supabase, str(epoch_id), old_status, next_status,
+                )
+        except Exception:
+            logger.warning("Phase notification failed for epoch %s", epoch_id, exc_info=True)
+
         return resp.data[0]
 
     @classmethod
@@ -201,6 +252,11 @@ class EpochLifecycleService:
         if epoch["status"] != "lobby":
             admin = admin_supabase or supabase
             await GameInstanceService.delete_instances(admin, epoch_id)
+
+        # Log cancellation
+        await BattleLogService.log_phase_change(
+            supabase, epoch_id, epoch.get("current_cycle", 0), epoch["status"], "cancelled",
+        )
 
         if not resp.data:
             raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Failed to cancel epoch.")

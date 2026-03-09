@@ -93,6 +93,29 @@ export class VelgEpochLeaderboard extends LitElement {
       transform: translateX(2px);
     }
 
+    .row--self {
+      background: rgba(245 158 11 / 0.06);
+      border-left: 3px solid var(--color-epoch-accent, #f59e0b);
+    }
+
+    .row--self:hover {
+      background: rgba(245 158 11 / 0.10);
+    }
+
+    .self-badge {
+      display: inline-block;
+      font-family: var(--font-brutalist);
+      font-weight: 900;
+      font-size: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-epoch-accent, #f59e0b);
+      border: 1px solid var(--color-epoch-accent, #f59e0b);
+      padding: 0 4px;
+      margin-left: 4px;
+      vertical-align: middle;
+    }
+
     @keyframes row-enter {
       to {
         opacity: 1;
@@ -316,6 +339,7 @@ export class VelgEpochLeaderboard extends LitElement {
   @property({ type: Object }) epoch: Epoch | null = null;
   @property({ type: Array }) participants: EpochParticipant[] = [];
   @property({ type: Boolean, reflect: true }) compact = false;
+  @property({ attribute: 'my-simulation-id' }) mySimulationId = '';
 
   @state() private _sortKey: SortKey = 'rank';
   @state() private _sortAsc = true;
@@ -446,7 +470,7 @@ export class VelgEpochLeaderboard extends LitElement {
                     this._sort('stability');
                   }
                 }}>
-                  ${msg('Stab')}${this._renderSortArrow('stability')}
+                  <span title=${msg('Stability')} aria-label=${msg('Stability')}>${msg('Stab')}</span>${this._renderSortArrow('stability')}
                 </th>
                 <th class="bar-col" role="columnheader" tabindex="0" aria-sort=${this._sortKey === 'influence' ? (this._sortAsc ? 'ascending' : 'descending') : 'none'} @click=${() => this._sort('influence')} @keydown=${(
                   e: KeyboardEvent,
@@ -456,7 +480,7 @@ export class VelgEpochLeaderboard extends LitElement {
                     this._sort('influence');
                   }
                 }}>
-                  ${msg('Infl')}${this._renderSortArrow('influence')}
+                  <span title=${msg('Influence')} aria-label=${msg('Influence')}>${msg('Infl')}</span>${this._renderSortArrow('influence')}
                 </th>
                 <th class="bar-col" role="columnheader" tabindex="0" aria-sort=${this._sortKey === 'sovereignty' ? (this._sortAsc ? 'ascending' : 'descending') : 'none'} @click=${() => this._sort('sovereignty')} @keydown=${(
                   e: KeyboardEvent,
@@ -466,7 +490,7 @@ export class VelgEpochLeaderboard extends LitElement {
                     this._sort('sovereignty');
                   }
                 }}>
-                  ${msg('Sovr')}${this._renderSortArrow('sovereignty')}
+                  <span title=${msg('Sovereignty')} aria-label=${msg('Sovereignty')}>${msg('Sovr')}</span>${this._renderSortArrow('sovereignty')}
                 </th>
                 <th class="bar-col" role="columnheader" tabindex="0" aria-sort=${this._sortKey === 'diplomatic' ? (this._sortAsc ? 'ascending' : 'descending') : 'none'} @click=${() => this._sort('diplomatic')} @keydown=${(
                   e: KeyboardEvent,
@@ -476,7 +500,7 @@ export class VelgEpochLeaderboard extends LitElement {
                     this._sort('diplomatic');
                   }
                 }}>
-                  ${msg('Dipl')}${this._renderSortArrow('diplomatic')}
+                  <span title=${msg('Diplomacy')} aria-label=${msg('Diplomacy')}>${msg('Dipl')}</span>${this._renderSortArrow('diplomatic')}
                 </th>
                 <th class="bar-col" role="columnheader" tabindex="0" aria-sort=${this._sortKey === 'military' ? (this._sortAsc ? 'ascending' : 'descending') : 'none'} @click=${() => this._sort('military')} @keydown=${(
                   e: KeyboardEvent,
@@ -486,7 +510,7 @@ export class VelgEpochLeaderboard extends LitElement {
                     this._sort('military');
                   }
                 }}>
-                  ${msg('Milt')}${this._renderSortArrow('military')}
+                  <span title=${msg('Military')} aria-label=${msg('Military')}>${msg('Milt')}</span>${this._renderSortArrow('military')}
                 </th>
               </tr>
             </thead>
@@ -517,13 +541,16 @@ export class VelgEpochLeaderboard extends LitElement {
     const personality = botPlayer?.personality ?? '';
     const difficulty = botPlayer?.difficulty ?? '';
 
+    const isSelf = this.mySimulationId && entry.simulation_id === this.mySimulationId;
+
     return html`
-      <tr class="row" style="animation-delay: ${delay}ms">
+      <tr class="row ${isSelf ? 'row--self' : ''}" style="animation-delay: ${delay}ms">
         <td><span class="rank ${rankClass}">${entry.rank}</span></td>
         <td>
           <div class="sim">
             <span class="sim__name">
               ${entry.simulation_name}
+              ${isSelf ? html`<span class="self-badge" aria-label=${msg('Your simulation')}>${msg('YOU')}</span>` : nothing}
               ${hasBetrayal ? html`<span class="sim__traitor">${msg('Traitor')}</span>` : nothing}
               ${botPlayer ? html`<span class="sim__bot sim__bot--${personality}">${this._getBotIcon(personality)}BOT</span><span class="sim__difficulty sim__difficulty--${difficulty}">${difficulty}</span>` : nothing}
             </span>

@@ -14,6 +14,7 @@ import type {
   EpochTeam,
   LeaderboardEntry,
   OperativeMission,
+  ResultsSummary,
   Sitrep,
 } from '../../types/index.js';
 import { appState } from '../AppStateManager.js';
@@ -223,6 +224,10 @@ export class EpochsApiService extends BaseApiService {
 
   getScoreHistory(epochId: string, simulationId: string): Promise<ApiResponse<EpochScore[]>> {
     return this.get(`/epochs/${epochId}/scores/simulations/${simulationId}`);
+  }
+
+  getResultsSummary(epochId: string): Promise<ApiResponse<ResultsSummary>> {
+    return this.get(`/epochs/${epochId}/results-summary`);
   }
 
   // ── War Room ──────────────────────────────────────

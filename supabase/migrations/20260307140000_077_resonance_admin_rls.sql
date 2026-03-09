@@ -6,10 +6,10 @@
 -- This follows the same pattern as user_wallets (migration 055).
 -- ============================================================================
 
--- 1. Set platform admin email for is_platform_admin() function
-ALTER DATABASE postgres SET app.platform_admin_email = 'admin@velgarien.dev';
+-- 1. Platform admin email — now lives in platform_settings (migration 087).
+--    ALTER DATABASE SET is blocked on Supabase hosted and local.
 
--- 2. Ensure is_platform_admin() exists (idempotent)
+-- 2. Ensure is_platform_admin() exists (idempotent, rewritten by migration 087)
 CREATE OR REPLACE FUNCTION public.is_platform_admin()
 RETURNS boolean AS $$
     SELECT EXISTS (

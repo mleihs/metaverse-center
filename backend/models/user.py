@@ -35,6 +35,7 @@ class ActiveEpochParticipation(BaseModel):
     epoch_id: UUID
     epoch_name: str
     epoch_status: str
+    epoch_type: str = "competitive"
     current_cycle: int
     total_cycles: int
     current_rp: int

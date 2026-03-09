@@ -361,15 +361,19 @@ export class VelgEpochBattleLog extends LitElement {
   private _renderIntelData(metadata: Record<string, unknown> | undefined) {
     if (!metadata) return nothing;
     const zones = metadata.zone_security as string[] | undefined;
+    const zoneDetails = metadata.zone_details as Array<{ name: string; security_level: string }> | undefined;
     const guardians = metadata.guardian_count as number | undefined;
     const fortifications = metadata.fortifications as
       | Array<{ zone_name: string; security_bonus: number; expires_at_cycle: number }>
       | undefined;
-    if (!zones && guardians === undefined && !fortifications?.length) return nothing;
+    if (!zones && !zoneDetails && guardians === undefined && !fortifications?.length) return nothing;
+    const zoneDisplay = zoneDetails
+      ? zoneDetails.map((z) => `${z.name}: ${z.security_level}`).join(', ')
+      : zones?.join(', ') ?? '';
     return html`
       <div class="entry__intel">
         ${guardians !== undefined ? html`${msg('Guardians detected')}: ${guardians}` : nothing}
-        ${zones ? html`${guardians !== undefined ? ' | ' : ''}${msg('Zone Security')}: ${zones.join(', ')}` : nothing}
+        ${zoneDisplay ? html`${guardians !== undefined ? ' | ' : ''}${msg('Zone Security')}: ${zoneDisplay}` : nothing}
       </div>
       ${
         fortifications?.length
@@ -433,13 +437,35 @@ export class VelgEpochBattleLog extends LitElement {
         <div class="entry__icon">${getBattleEventIcon(entry.event_type)}</div>
         <div class="entry__content">
           <span class="entry__narrative">${(() => {
+            const meta = entry.metadata as Record<string, unknown> | undefined;
             const botPersonality = this._getBotPersonality(entry.source_simulation_id);
-            const showTarget =
-              this.mySimulationId &&
-              entry.source_simulation_id === this.mySimulationId &&
-              entry.target_simulation_id;
+            const isOwnAction = this.mySimulationId && entry.source_simulation_id === this.mySimulationId;
+            const isIncomingThreat = this.mySimulationId && entry.target_simulation_id === this.mySimulationId && !isOwnAction;
+
+            // Context-aware narrative (fog of war)
+            let narrative = entry.narrative;
+            if (isOwnAction && meta) {
+              // Own events: full details from metadata
+              const agentName = meta.agent_name as string | undefined;
+              const zoneName = meta.target_zone_name as string | undefined;
+              const simName = meta.target_sim_name as string | undefined;
+              if (agentName) {
+                const target = zoneName && simName ? `${zoneName}, ${simName}` : simName ?? '';
+                narrative = `${agentName} deployed${target ? ` → ${target}` : ''}`;
+              }
+            } else if (isIncomingThreat && meta) {
+              // Incoming threats: type + zone (no agent name — fog of war)
+              const opType = meta.operative_type as string | undefined;
+              const zoneName = meta.target_zone_name as string | undefined;
+              if (opType) {
+                const article = opType[0] && 'aeiou'.includes(opType[0]) ? 'An' : 'A';
+                narrative = `${article} ${opType} detected${zoneName ? ` in ${zoneName}` : ''}`;
+              }
+            }
+
+            const showTarget = isOwnAction && entry.target_simulation_id;
             const targetName = showTarget ? this._resolveSimName(entry.target_simulation_id) : null;
-            return html`${botPersonality ? html`<span class="entry__bot-tag entry__bot-tag--${botPersonality}">BOT</span>` : nothing}${entry.narrative}${targetName ? html`<span class="entry__target">&rarr; ${targetName}</span>` : nothing}`;
+            return html`${botPersonality ? html`<span class="entry__bot-tag entry__bot-tag--${botPersonality}">BOT</span>` : nothing}${narrative}${targetName && !meta?.target_sim_name ? html`<span class="entry__target">&rarr; ${targetName}</span>` : nothing}`;
           })()}</span>
           ${
             this.compact
