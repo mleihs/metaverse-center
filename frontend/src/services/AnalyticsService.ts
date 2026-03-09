@@ -153,6 +153,18 @@ const EVENT_MAP: EventMapping[] = [
 
   // Auth UI
   { domEvent: 'login-panel-open', gaEvent: 'open_login_panel' },
+
+  // Landing page
+  {
+    domEvent: 'landing-cta-click',
+    gaEvent: 'landing_cta_click',
+    params: (d) => ({ location: _s(d, 'location') }),
+  },
+  {
+    domEvent: 'landing-section-view',
+    gaEvent: 'landing_section_view',
+    params: (d) => ({ section: _s(d, 'section') }),
+  },
 ];
 
 class AnalyticsService {

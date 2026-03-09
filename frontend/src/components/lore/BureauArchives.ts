@@ -309,7 +309,7 @@ export class VelgBureauArchives extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-widest);
-      color: rgba(245, 158, 11, 0.7);
+      color: rgba(245, 158, 11, 0.75);
       margin-bottom: var(--space-3);
     }
 

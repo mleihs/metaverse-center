@@ -747,6 +747,14 @@ export class VelgPlatformHeader extends LitElement {
     );
   }
 
+  private _handleArchivesClick(e: Event): void {
+    e.preventDefault();
+    this._closeMenu();
+    this.dispatchEvent(
+      new CustomEvent('navigate', { detail: '/archives', bubbles: true, composed: true }),
+    );
+  }
+
   private _handleAdminClick(e: Event): void {
     e.preventDefault();
     this._closeMenu();
@@ -808,6 +816,11 @@ export class VelgPlatformHeader extends LitElement {
           class="header__menu-item ${path === '/how-to-play' ? 'header__menu-item--active' : ''}"
           style="--i:${navIdx++}"
           @click=${this._handleGuideClick}>${msg('Guide')}</a>
+
+        <a href="/archives"
+          class="header__menu-item ${path === '/archives' ? 'header__menu-item--active' : ''}"
+          style="--i:${navIdx++}"
+          @click=${this._handleArchivesClick}>${msg('Archives')}</a>
 
         ${
           isAdmin
@@ -965,6 +978,8 @@ l40 16 183 -96 c101 -52 180 -96 176 -96 -4 0 -87 37 -185 81 -160 73 -181 81
           <a href="/epoch" class="header__nav-link ${window.location.pathname === '/epoch' ? 'header__nav-link--active' : ''}" @click=${this._handleEpochClick}>${msg('Epoch')}</a>
 
           <a href="/how-to-play" class="header__nav-link ${window.location.pathname === '/how-to-play' ? 'header__nav-link--active' : ''}" @click=${this._handleGuideClick}>${msg('Guide')}</a>
+
+          <a href="/archives" class="header__nav-link ${window.location.pathname === '/archives' ? 'header__nav-link--active' : ''}" @click=${this._handleArchivesClick}>${msg('Archives')}</a>
 
           ${
             appState.canForge.value

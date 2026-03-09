@@ -933,6 +933,64 @@ export class VelgLandingPage extends LitElement {
         padding: 32px 24px;
       }
     }
+
+    /* ── Widescreen (1440px+) ── */
+    @media (min-width: 1440px) {
+      .features,
+      .live-data,
+      .how-it-works,
+      .cta-footer {
+        max-width: 1400px;
+        margin-inline: auto;
+        padding-inline: var(--space-8, 32px);
+      }
+
+      .hero__title {
+        font-size: 5.5rem;
+      }
+
+      .features__grid {
+        gap: 3px;
+      }
+
+      .feature-card__body {
+        padding: 32px 36px 36px;
+      }
+
+      .feature-card__title {
+        font-size: 14px;
+        letter-spacing: 4px;
+      }
+
+      .feature-card__desc {
+        font-size: 13px;
+      }
+
+      .stat-cell {
+        padding: 56px 40px;
+      }
+
+      .cta-frame {
+        max-width: 800px;
+        padding: 64px 56px;
+      }
+    }
+
+    /* ── Ultrawide (2560px+) ── */
+    @media (min-width: 2560px) {
+      :host {
+        background:
+          radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.4) 100%),
+          var(--surface);
+      }
+
+      .features,
+      .live-data,
+      .how-it-works,
+      .cta-footer {
+        max-width: 1800px;
+      }
+    }
   `;
 
   @state() private _stats: PlatformStats | null = null;
@@ -944,6 +1002,7 @@ export class VelgLandingPage extends LitElement {
 
   protected firstUpdated(): void {
     this._setupScrollAnimations();
+    this._setupSectionTracking();
   }
 
   private async _fetchStats(): Promise<void> {
@@ -981,6 +1040,42 @@ export class VelgLandingPage extends LitElement {
     window.dispatchEvent(new PopStateEvent('popstate'));
   }
 
+  private _getStorageUrl(path: string): string {
+    return `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/simulation.assets/${path}`;
+  }
+
+  private _trackCta(location: string): void {
+    this.dispatchEvent(new CustomEvent('landing-cta-click', {
+      bubbles: true, composed: true,
+      detail: { location },
+    }));
+  }
+
+  private _setupSectionTracking(): void {
+    const sectionObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const section = (entry.target as HTMLElement).dataset.section;
+            if (section) {
+              this.dispatchEvent(new CustomEvent('landing-section-view', {
+                bubbles: true, composed: true,
+                detail: { section },
+              }));
+            }
+            sectionObserver.unobserve(entry.target);
+          }
+        }
+      },
+      { threshold: 0.2 },
+    );
+
+    const sections = this.renderRoot.querySelectorAll('[data-section]');
+    for (const el of sections) {
+      sectionObserver.observe(el);
+    }
+  }
+
   protected render() {
     return html`
       <a class="skip-link" href="#main-content">${msg('Skip to content')}</a>
@@ -1000,7 +1095,7 @@ export class VelgLandingPage extends LitElement {
       <section class="hero landing-section" aria-label=${msg('Welcome')}>
         <img
           class="hero__bg"
-          src="/storage/v1/object/public/simulation.assets/platform/landing/hero.avif"
+          src=${this._getStorageUrl('platform/landing/hero.avif')}
           alt=""
           fetchpriority="high"
           decoding="async"
@@ -1031,7 +1126,7 @@ export class VelgLandingPage extends LitElement {
             <a
               class="hero__cta"
               href="/register"
-              @click=${(e: Event) => { e.preventDefault(); this._navigate('/register'); }}
+              @click=${(e: Event) => { e.preventDefault(); this._trackCta('hero'); this._navigate('/register'); }}
               aria-label=${msg('Enter the Multiverse — Create your account')}
             >
               ${msg('Enter the Multiverse')}
@@ -1050,7 +1145,7 @@ export class VelgLandingPage extends LitElement {
 
   private _renderFeatures() {
     return html`
-      <section class="features landing-section" aria-label=${msg('Features')}>
+      <section class="features landing-section" data-section="features" aria-label=${msg('Features')}>
         <div class="landing-inner">
           <div class="section-label">${msg('Capabilities')}</div>
 
@@ -1059,7 +1154,7 @@ export class VelgLandingPage extends LitElement {
               <div class="feature-card__img-wrap">
                 <img
                   class="feature-card__img"
-                  src="/storage/v1/object/public/simulation.assets/platform/landing/feature-worldbuilding.avif"
+                  src=${this._getStorageUrl('platform/landing/feature-worldbuilding.avif')}
                   alt=${msg('AI-powered worldbuilding visualization')}
                   loading="lazy"
                   decoding="async"
@@ -1081,7 +1176,7 @@ export class VelgLandingPage extends LitElement {
               <div class="feature-card__img-wrap">
                 <img
                   class="feature-card__img"
-                  src="/storage/v1/object/public/simulation.assets/platform/landing/feature-competition.avif"
+                  src=${this._getStorageUrl('platform/landing/feature-competition.avif')}
                   alt=${msg('Espionage war room with operative deployment')}
                   loading="lazy"
                   decoding="async"
@@ -1103,7 +1198,7 @@ export class VelgLandingPage extends LitElement {
               <div class="feature-card__img-wrap">
                 <img
                   class="feature-card__img"
-                  src="/storage/v1/object/public/simulation.assets/platform/landing/feature-substrate.avif"
+                  src=${this._getStorageUrl('platform/landing/feature-substrate.avif')}
                   alt=${msg('Reality fracturing as real-world events bleed through')}
                   loading="lazy"
                   decoding="async"
@@ -1132,7 +1227,7 @@ export class VelgLandingPage extends LitElement {
     const resonances = this._stats?.resonance_count ?? null;
 
     return html`
-      <section class="live-data landing-section" aria-label=${msg('Platform Statistics')}>
+      <section class="live-data landing-section" data-section="live-data" aria-label=${msg('Platform Statistics')}>
         <div class="landing-inner">
           <div class="section-label">${msg('Live Telemetry')}</div>
 
@@ -1171,7 +1266,7 @@ export class VelgLandingPage extends LitElement {
 
   private _renderHowItWorks() {
     return html`
-      <section class="how-it-works landing-section" aria-label=${msg('How It Works')}>
+      <section class="how-it-works landing-section" data-section="how-it-works" aria-label=${msg('How It Works')}>
         <div class="landing-inner">
           <div class="section-label">${msg('Operations Protocol')}</div>
 
@@ -1215,7 +1310,7 @@ export class VelgLandingPage extends LitElement {
 
   private _renderCtaFooter() {
     return html`
-      <section class="cta-footer landing-section scroll-reveal" aria-label=${msg('Get Started')}>
+      <section class="cta-footer landing-section scroll-reveal" data-section="cta-footer" aria-label=${msg('Get Started')}>
         <div class="landing-inner">
           <div class="cta-frame">
             <div class="cta-frame__corners"></div>
@@ -1229,7 +1324,7 @@ export class VelgLandingPage extends LitElement {
             <a
               class="cta-frame__btn"
               href="/register"
-              @click=${(e: Event) => { e.preventDefault(); this._navigate('/register'); }}
+              @click=${(e: Event) => { e.preventDefault(); this._trackCta('footer'); this._navigate('/register'); }}
               aria-label=${msg('Create your world — Sign up')}
             >
               ${msg('Create Your World')}

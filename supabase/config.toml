@@ -225,7 +225,7 @@ otp_expiry = 3600
 # Custom email templates
 [auth.email.template.confirmation]
 subject = "CLASSIFIED // Identity Verification"
-content_path = "./templates/confirmation.html"
+content_path = "./supabase/templates/confirmation.html"
 
 # [auth.email.template.invite]
 # subject = "You have been invited"
