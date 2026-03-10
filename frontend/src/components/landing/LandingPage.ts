@@ -129,11 +129,6 @@ export class VelgLandingPage extends LitElement {
       100% { transform: translateY(100vh); }
     }
 
-    @keyframes cursor-blink {
-      0%, 100% { opacity: 1; }
-      50%      { opacity: 0; }
-    }
-
     @keyframes grid-pulse {
       0%, 100% { opacity: 0.015; }
       50%      { opacity: 0.04; }
@@ -353,16 +348,6 @@ export class VelgLandingPage extends LitElement {
       color: var(--amber);
     }
 
-    .hero__cursor {
-      display: inline-block;
-      width: 3px;
-      height: 0.85em;
-      background: var(--amber);
-      animation: cursor-blink 1s step-end infinite;
-      vertical-align: baseline;
-      margin-left: 4px;
-    }
-
     .hero__subtitle {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: clamp(0.75rem, 1.5vw, 0.95rem);
@@ -465,6 +450,125 @@ export class VelgLandingPage extends LitElement {
     @keyframes scroll-pulse {
       0%, 100% { opacity: 0.3; height: 32px; }
       50%      { opacity: 0.8; height: 48px; }
+    }
+
+    /* ── Hero Signal Intercept variant ────────── */
+    .hero--variant {
+      opacity: 1;
+    }
+
+    .hero--variant .hero__content {
+      opacity: 1;
+    }
+
+    /* Override default entrance animations for variants — they control their own */
+    .hero--variant .hero__classification,
+    .hero--variant .hero__subtitle,
+    .hero--variant .hero__cta-area {
+      opacity: 0;
+    }
+
+    .hero--variant .hero__title {
+      opacity: 0;
+      animation: none;
+    }
+
+    .hero--variant.in-view .hero__classification {
+      animation: content-fade 400ms var(--ease-dramatic) both 100ms;
+    }
+
+    .hero--variant.in-view .hero__subtitle {
+      animation: content-fade 400ms var(--ease-dramatic) both 500ms;
+    }
+
+    .hero--variant.in-view .hero__cta-area {
+      animation: btn-materialize 500ms var(--ease-dramatic) both 800ms;
+    }
+
+    .hero--variant.in-view .hero__title {
+      animation: hero-title-enter 800ms var(--ease-dramatic) both 200ms;
+    }
+
+    /* ── V03: SIGNAL INTERCEPT ─────────────────── */
+
+    .hero--v03 .hero__title {
+      font-variant-numeric: tabular-nums;
+      animation: none !important;
+      opacity: 1;
+    }
+
+    .hero--v03.in-view .hero__title {
+      animation: none !important;
+      opacity: 1;
+    }
+
+    .hero--v03 .decode-progress {
+      position: absolute;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 5;
+      width: min(400px, 80vw);
+    }
+
+    .hero--v03 .decode-progress__label {
+      font-family: var(--font-mono, 'SF Mono', monospace);
+      font-size: 9px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .hero--v03 .decode-progress__bar {
+      height: 2px;
+      background: rgba(245, 158, 11, 0.15);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero--v03 .decode-progress__fill {
+      height: 100%;
+      background: var(--amber);
+      width: 0%;
+      transition: width 50ms linear;
+      box-shadow: 0 0 8px var(--amber);
+    }
+
+    .hero--v03 .hero__title-underline {
+      display: block;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--amber), transparent);
+      opacity: 0;
+      margin-top: 8px;
+      transition: opacity 300ms;
+    }
+
+    .hero--v03 .decode-complete .hero__title-underline {
+      opacity: 0.3;
+    }
+
+    .hero--v03 .waveform {
+      display: flex;
+      gap: 2px;
+      justify-content: center;
+      margin-top: 12px;
+      height: 16px;
+      align-items: flex-end;
+      opacity: 0.3;
+    }
+
+    .hero--v03 .waveform__bar {
+      width: 2px;
+      background: var(--amber);
+      animation: waveform-bar 1.5s ease-in-out infinite;
+    }
+
+    @keyframes waveform-bar {
+      0%, 100% { height: 4px; }
+      50%      { height: 16px; }
     }
 
     /* ═══════════════════════════════════════════
@@ -1051,6 +1155,7 @@ export class VelgLandingPage extends LitElement {
   protected firstUpdated(): void {
     this._setupScrollAnimations();
     this._setupSectionTracking();
+    this._setupSignalDecodeHero();
   }
 
   private async _fetchStats(): Promise<void> {
@@ -1139,15 +1244,15 @@ export class VelgLandingPage extends LitElement {
   }
 
   private _renderHero() {
+    const waveformBars = Array.from({ length: 24 }, (_, i) =>
+      html`<div class="waveform__bar" style="animation-delay: ${i * 0.06}s; height: ${4 + Math.random() * 12}px"></div>`,
+    );
+
     return html`
-      <section class="hero landing-section" aria-label=${msg('Welcome')}>
-        <img
-          class="hero__bg"
-          src=${this._getStorageUrl('platform/landing/hero.avif')}
+      <section class="hero hero--variant hero--v03 landing-section" data-hero="03" aria-label=${msg('Welcome')}>
+        <img class="hero__bg" src=${this._getStorageUrl('platform/landing/hero.avif')}
           alt=${msg('Multiverse observation terminal overlooking interconnected simulation worlds')}
-          fetchpriority="high"
-          decoding="async"
-        />
+          fetchpriority="high" decoding="async" />
         <div class="hero__viz"></div>
         <div class="hero__scanlines"></div>
         <div class="hero__scanbeam"></div>
@@ -1163,10 +1268,12 @@ export class VelgLandingPage extends LitElement {
         <span class="hero__coord hero__coord--bl">SIGNAL: NOMINAL</span>
 
         <div class="hero__content">
-          <p class="hero__classification">${msg('Bureau of Multiverse Observation')}</p>
-          <h1 class="hero__title">
-            <span class="hero__title-accent">${msg('Metaverse')}</span>${msg('.Center')}<span class="hero__cursor"></span>
+          <p class="hero__classification">INTERCEPTED TRANSMISSION // DECRYPTING...</p>
+          <h1 class="hero__title" data-decode="Metaverse.Center">
+            <span class="hero__title-accent" data-decode-part="accent">&#x2588;&#x2593;&#x2591;&#x2592;&#x2588;&#x2593;&#x2591;&#x2592;&#x2588;</span><span data-decode-part="rest">&#x2591;&#x2592;&#x2588;&#x2593;&#x2591;&#x2592;&#x2588;</span>
+            <span class="hero__title-underline"></span>
           </h1>
+          <div class="waveform" aria-hidden="true">${waveformBars}</div>
           <p class="hero__subtitle">
             ${msg('Multiplayer Worldbuilding & Strategy Platform. Build civilizations. Deploy operatives. Shape the multiverse.')}
           </p>
@@ -1183,6 +1290,16 @@ export class VelgLandingPage extends LitElement {
           </div>
         </div>
 
+        <div class="decode-progress">
+          <div class="decode-progress__label">
+            <span>SIGNAL LOCK</span>
+            <span class="decode-pct">0%</span>
+          </div>
+          <div class="decode-progress__bar">
+            <div class="decode-progress__fill"></div>
+          </div>
+        </div>
+
         <div class="hero__scroll-hint" aria-hidden="true">
           <span class="hero__scroll-text">${msg('Scroll')}</span>
           <div class="hero__scroll-line"></div>
@@ -1191,6 +1308,68 @@ export class VelgLandingPage extends LitElement {
     `;
   }
 
+  /* Signal decode hero animation */
+  private _setupSignalDecodeHero(): void {
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) return;
+
+    const hero = this.renderRoot.querySelector('[data-hero="03"]') as HTMLElement | null;
+    if (!hero) return;
+
+    hero.classList.add('in-view');
+    this._animateSignalDecode(hero);
+  }
+
+  private _animateSignalDecode(section: HTMLElement): void {
+    const accentEl = section.querySelector('[data-decode-part="accent"]') as HTMLElement | null;
+    const restEl = section.querySelector('[data-decode-part="rest"]') as HTMLElement | null;
+    const progressFill = section.querySelector('.decode-progress__fill') as HTMLElement | null;
+    const progressPct = section.querySelector('.decode-pct') as HTMLElement | null;
+
+    if (!accentEl || !restEl) return;
+
+    const targetAccent = 'Metaverse';
+    const targetRest = '.Center';
+    const scrambleChars = '\u2588\u2593\u2591\u2592\u2580\u2584\u258C\u2590';
+    const totalSteps = 30;
+    let step = 0;
+
+    const interval = setInterval(() => {
+      step++;
+      const progress = step / totalSteps;
+
+      if (progressFill) progressFill.style.width = `${Math.round(progress * 100)}%`;
+      if (progressPct) progressPct.textContent = `${Math.round(progress * 100)}%`;
+
+      const accentRevealed = Math.floor(progress * targetAccent.length);
+      const restRevealed = Math.floor(Math.max(0, (progress - 0.5) * 2) * targetRest.length);
+
+      let accentText = '';
+      for (let j = 0; j < targetAccent.length; j++) {
+        accentText += j < accentRevealed
+          ? targetAccent[j]
+          : scrambleChars[Math.floor(Math.random() * scrambleChars.length)];
+      }
+      accentEl.textContent = accentText;
+
+      let restText = '';
+      for (let j = 0; j < targetRest.length; j++) {
+        restText += j < restRevealed
+          ? targetRest[j]
+          : scrambleChars[Math.floor(Math.random() * scrambleChars.length)];
+      }
+      restEl.textContent = restText;
+
+      if (step >= totalSteps) {
+        clearInterval(interval);
+        accentEl.textContent = targetAccent;
+        restEl.textContent = targetRest;
+        section.querySelector('.hero__content')?.classList.add('decode-complete');
+      }
+    }, 60);
+  }
+
+  // Showcase variations backed up in LandingPage.showcase-backup.ts
   private _renderFeatures() {
     return html`
       <section class="features landing-section" data-section="features" aria-label=${msg('Features')}>

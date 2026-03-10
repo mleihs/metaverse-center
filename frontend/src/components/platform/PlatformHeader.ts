@@ -100,16 +100,6 @@ export class VelgPlatformHeader extends LitElement {
       text-decoration: none;
     }
 
-    .header__cursor {
-      display: inline-block;
-      width: 0.5em;
-      height: 1.1em;
-      background: var(--hdr-amber);
-      vertical-align: text-bottom;
-      margin-left: 2px;
-      animation: cursor-blink 1s step-end infinite;
-    }
-
     /* --- Favicon mark (mobile only) --- */
 
     .header__mark {
@@ -137,8 +127,8 @@ export class VelgPlatformHeader extends LitElement {
       display: none;
       align-items: center;
       justify-content: center;
-      width: 36px;
-      height: 36px;
+      width: 44px;
+      height: 44px;
       flex-shrink: 0;
       background: none;
       border: 1px solid transparent;
@@ -152,6 +142,11 @@ export class VelgPlatformHeader extends LitElement {
     .header__menu-btn:hover {
       color: var(--hdr-amber);
       border-color: rgba(245, 158, 11, 0.3);
+    }
+
+    .header__menu-btn:active {
+      color: var(--hdr-amber);
+      border-color: var(--hdr-amber);
     }
 
     /* --- Mobile menu panel --- */
@@ -616,19 +611,13 @@ export class VelgPlatformHeader extends LitElement {
       100% { background-position: 200% 0; }
     }
 
-    @keyframes cursor-blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0; }
-    }
-
     /* === Reduced motion === */
 
     @media (prefers-reduced-motion: reduce) {
       :host::before,
       :host::after,
       .header__nav-link::before,
-      .header__menu-item::before,
-      .header__cursor {
+      .header__menu-item::before {
         animation: none !important;
       }
       .header__nav-link,
@@ -971,7 +960,7 @@ l40 16 183 -96 c101 -52 180 -96 176 -96 -4 0 -87 37 -185 81 -160 73 -181 81
             aria-expanded=${this._menuOpen}
           >${this._menuOpen ? icons.close(16) : icons.menu(20)}</button>
 
-          <a href="/dashboard" class="header__title" @click=${this._handleTitleClick}>${msg('metaverse.center')}<span class="header__cursor"></span></a>
+          <a href="/dashboard" class="header__title" @click=${this._handleTitleClick}>${msg('metaverse.center')}</a>
 
           <a href="/multiverse" class="header__nav-link ${window.location.pathname === '/multiverse' ? 'header__nav-link--active' : ''}" @click=${this._handleMapClick}>${msg('Map')}</a>
 

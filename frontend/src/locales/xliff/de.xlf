@@ -12962,6 +12962,9 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 <trans-unit id="s57a9fe983a719d41">
   <source>Permanently delete <x id="0" equiv-text="${purgeCount} ${meta.label.toLowerCase()}"/>? This cannot be undone.</source>
 <target><x id="0" equiv-text="${purgeCount} ${meta.label.toLowerCase()}"/> unwiderruflich löschen? Dies kann nicht rückgängig gemacht werden.</target></trans-unit>
+<trans-unit id="s6c976fb749d183c5">
+  <source>Multiverse observation terminal overlooking interconnected simulation worlds</source>
+</trans-unit>
 
 </body>
 </file>

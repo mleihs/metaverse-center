@@ -25,6 +25,19 @@ export class VelgSimulationShell extends LitElement {
       padding: var(--content-padding);
       min-width: 0;
       overflow: hidden;
+      max-width: var(--container-2xl, 1400px);
+      margin-inline: auto;
+    }
+
+    @media (min-width: 2560px) {
+      :host {
+        background:
+          radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.3) 100%),
+          var(--color-surface);
+      }
+      .shell__content {
+        max-width: var(--container-max, 1600px);
+      }
     }
   `;
 

@@ -68,6 +68,11 @@ export class VelgSettingsView extends LitElement {
       gap: 0;
       border-bottom: var(--border-default);
       overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .settings__tabs::-webkit-scrollbar {
+      display: none;
     }
 
     .settings__tab {

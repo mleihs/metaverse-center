@@ -35,6 +35,9 @@ export class VelgEpochResultsView extends LitElement {
       --silver: #94a3b8;
       --bronze: #d97706;
       --declassified-red: #dc2626;
+      max-width: var(--container-2xl, 1400px);
+      margin-inline: auto;
+      padding-inline: var(--content-padding, var(--space-4));
     }
 
     /* ═══════════════════════════════════════════
@@ -635,6 +638,14 @@ export class VelgEpochResultsView extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
       color: var(--color-gray-400);
+    }
+
+    /* ═══════════════════════════════════════════
+       WIDESCREEN
+       ═══════════════════════════════════════════ */
+
+    @media (min-width: 2560px) {
+      :host { max-width: var(--container-max, 1600px); }
     }
 
     /* ═══════════════════════════════════════════

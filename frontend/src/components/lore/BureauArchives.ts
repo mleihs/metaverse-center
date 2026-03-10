@@ -89,6 +89,11 @@ export class VelgBureauArchives extends LitElement {
       display: flex;
       gap: var(--space-4);
       overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .chapter-nav::-webkit-scrollbar {
+      display: none;
     }
 
     .chapter-nav__item {

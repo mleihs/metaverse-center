@@ -214,6 +214,13 @@ export class VelgForgeDarkroom extends LitElement {
         gap: var(--space-3);
       }
 
+      @media (max-width: 480px) {
+        .color-grid,
+        .chip-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
       /* ── Preview Pane ────────────────────── */
 
       .preview-pane {

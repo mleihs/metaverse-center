@@ -234,7 +234,7 @@ export class VelgForgeAstrolabe extends LitElement {
 
       .dossier__class-label {
         font-family: var(--font-mono, monospace);
-        font-size: 8px;
+        font-size: 9px;
         text-transform: uppercase;
         letter-spacing: 0.2em;
         color: var(--color-success, #22c55e);
@@ -242,7 +242,7 @@ export class VelgForgeAstrolabe extends LitElement {
 
       .dossier__class-id {
         font-family: var(--font-mono, monospace);
-        font-size: 8px;
+        font-size: 9px;
         color: var(--color-gray-400, #9ca3af);
       }
 
@@ -376,7 +376,7 @@ export class VelgForgeAstrolabe extends LitElement {
 
       .dossier__status {
         font-family: var(--font-mono, monospace);
-        font-size: 8px;
+        font-size: 10px;
         text-transform: uppercase;
         letter-spacing: 0.15em;
         color: var(--color-gray-400, #9ca3af);
@@ -482,7 +482,7 @@ export class VelgForgeAstrolabe extends LitElement {
 
       /* ── Responsive ──────────────────────── */
 
-      @media (max-width: 600px) {
+      @media (max-width: 640px) {
         .anchor-fan {
           flex-wrap: wrap;
           padding: var(--space-6) 0;
@@ -505,6 +505,12 @@ export class VelgForgeAstrolabe extends LitElement {
 
         .dossier__title {
           font-size: 12px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .seed-suggestions {
+          grid-template-columns: 1fr;
         }
       }
     `,

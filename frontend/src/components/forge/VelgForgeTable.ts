@@ -577,8 +577,8 @@ export class VelgForgeTable extends LitElement {
       }
 
       .staging-action {
-        width: 24px;
-        height: 24px;
+        width: 36px;
+        height: 36px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -712,7 +712,7 @@ export class VelgForgeTable extends LitElement {
 
       /* ── Responsive ──────────────────────── */
 
-      @media (max-width: 600px) {
+      @media (max-width: 640px) {
         .staging-hand {
           overflow-x: auto;
           justify-content: flex-start;

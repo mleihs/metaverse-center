@@ -209,6 +209,7 @@ export class VelgEpochOpsBoard extends LitElement {
 
     .ops-board__readout {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       gap: var(--space-3);
       font-family: var(--font-mono, monospace);
@@ -271,7 +272,7 @@ export class VelgEpochOpsBoard extends LitElement {
 
     .dossier-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
       gap: var(--space-4);
     }
 
@@ -1135,6 +1136,12 @@ export class VelgEpochOpsBoard extends LitElement {
       .comms-sidebar__bar {
         animation: none;
       }
+    }
+
+    /* ── Widescreen ─────────────────────────── */
+
+    @media (min-width: 2560px) {
+      .ops-board { max-width: var(--container-max, 1600px); }
     }
 
     /* ── Mobile ────────────────────────────── */

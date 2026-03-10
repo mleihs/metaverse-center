@@ -5,8 +5,10 @@ import { authService } from '../../services/supabase/SupabaseAuthService.js';
 import {
   terminalAnimations,
   terminalFormStyles,
+  terminalOAuthStyles,
   terminalTokens,
 } from '../shared/terminal-theme-styles.js';
+import { icons } from '../../utils/icons.js';
 
 import '../shared/VelgSidePanel.js';
 
@@ -22,6 +24,7 @@ export class VelgLoginPanel extends LitElement {
     terminalTokens,
     terminalAnimations,
     terminalFormStyles,
+    terminalOAuthStyles,
     css`
       /* Override shared side-panel tokens for dark theme */
       velg-side-panel {
@@ -156,6 +159,22 @@ export class VelgLoginPanel extends LitElement {
     this._password = (e.target as HTMLInputElement).value;
   }
 
+  private async _handleGoogleLogin(): Promise<void> {
+    try {
+      await authService.signInWithGoogle();
+    } catch {
+      this._error = msg('Failed to initiate Google sign-in.');
+    }
+  }
+
+  private async _handleDiscordLogin(): Promise<void> {
+    try {
+      await authService.signInWithDiscord();
+    } catch {
+      this._error = msg('Failed to initiate Discord sign-in.');
+    }
+  }
+
   private _handleRegisterClick(e: Event): void {
     e.preventDefault();
     this._close();
@@ -224,6 +243,30 @@ export class VelgLoginPanel extends LitElement {
               ${this._loading ? msg('Verifying...') : msg('Authenticate')}
             </button>
           </form>
+
+          <div class="oauth-section">
+            <div class="oauth-divider">
+              <div class="oauth-divider__line"></div>
+              <span class="oauth-divider__text">${msg('or')}</span>
+              <div class="oauth-divider__line"></div>
+            </div>
+            <button
+              class="oauth-btn oauth-btn--google"
+              @click=${this._handleGoogleLogin}
+              aria-label=${msg('Sign in with Google')}
+            >
+              ${icons.googleOAuth(18)}
+              ${msg('Sign in with Google')}
+            </button>
+            <button
+              class="oauth-btn oauth-btn--discord"
+              @click=${this._handleDiscordLogin}
+              aria-label=${msg('Sign in with Discord')}
+            >
+              ${icons.discordOAuth(18)}
+              ${msg('Sign in with Discord')}
+            </button>
+          </div>
 
           <div class="login-footer">
             ${msg('No clearance?')}

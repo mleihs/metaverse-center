@@ -121,6 +121,11 @@ export const formStyles = css`
     color: var(--color-primary);
   }
 
+  .gen-btn:active {
+    transform: translate(0);
+    box-shadow: var(--shadow-pressed, none);
+  }
+
   .gen-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;

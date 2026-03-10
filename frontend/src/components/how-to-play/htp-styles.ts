@@ -122,6 +122,10 @@ export const htpStyles = css`
     gap: 0;
   }
 
+  @media (min-width: 1440px) {
+    .layout { max-width: 1400px; }
+  }
+
   /* ═══ TOC SIDEBAR ════════════════════════════════ */
 
   .toc {

@@ -1,11 +1,11 @@
-"""Generate landing page images: 1 hero + 3 feature visuals.
+"""Generate hero background image variations for landing page showcase.
 
-Uses Replicate Flux Dev directly, converts to AVIF (dual-resolution: full-res + thumbnail),
-uploads to Supabase Storage (simulation.assets/platform/landing/ path).
+3 moods: Fractured Observatory (A), War Room (B), Cosmic Fracture (C).
+All 1920x900, AVIF quality 85/80 (full + thumb).
 
 Usage:
-  python3.13 scripts/generate_landing_images.py              # Generate all
-  python3.13 scripts/generate_landing_images.py hero          # Generate one by name
+  python3.13 scripts/generate_landing_hero_variations.py         # Generate all
+  python3.13 scripts/generate_landing_hero_variations.py hero-b   # Generate one
 
 Requires:
   - Backend .venv activated (for replicate + Pillow)
@@ -21,7 +21,6 @@ import sys
 import time
 from pathlib import Path
 
-# Load .env from project root
 from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
@@ -48,7 +47,6 @@ def get_service_key() -> str:
             for part in line.split():
                 if part.startswith("sb_secret_"):
                     return part
-    # Fallback: legacy JWT service_role key
     return (
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
         ".eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0"
@@ -68,66 +66,93 @@ AVIF_QUALITY_THUMB = 80
 
 IMAGES = [
     {
-        "name": "Landing Hero",
-        "storage_path": "platform/landing/hero.avif",
+        "name": "hero-a",
+        "storage_path": "platform/landing/hero-a.avif",
         "prompt": (
             "Panoramic dark fantasy concept art of an interdimensional observation station, "
-            "a vast hexagonal command console in the foreground with holographic amber-gold "
-            "displays showing different fractured worlds, through a massive cracked viewport "
-            "fragments of different realities float in a dark void — a brutalist concrete "
-            "city shard, a bioluminescent underground cavern shard, a derelict space station "
-            "shard, amber energy crackling between the fragments, deep blacks with amber and "
-            "gold highlights, surveillance terminal aesthetic, concept art quality, "
-            "cinematic wide composition, atmospheric depth, volumetric lighting through the "
-            "cracks between worlds, not photorealistic, not bright, dramatic chiaroscuro"
+            "vast hexagonal command console with cracked viewport showing fractured world shards "
+            "floating in void, amber-gold holographic displays casting light on dark surfaces, "
+            "surveillance terminal aesthetic, deep blacks with amber highlights, "
+            "atmospheric depth, volumetric amber light through dimensional cracks, "
+            "cinematic wide composition, concept art quality, dramatic chiaroscuro, "
+            "not photorealistic, not bright"
         ),
         "width": 1920,
         "height": 900,
     },
     {
-        "name": "Feature Worldbuilding",
-        "storage_path": "platform/landing/feature-worldbuilding.avif",
+        "name": "hero-b",
+        "storage_path": "platform/landing/hero-b.avif",
         "prompt": (
-            "Dark atmospheric concept art of a living simulation city seen through a "
-            "surveillance monitor frame, AI agents walking through brutalist streets with "
-            "amber streetlights, tall concrete towers with glowing windows, a holographic "
-            "city map overlay floating above the scene, data streams and building blueprints "
-            "visible as ghostly overlays, cinematic establishing shot, dark palette with "
-            "warm amber accents, concept art quality, oil painting texture, not photorealistic, "
-            "not bright, surveillance camera perspective, vignette"
+            "Dark military command bunker interior, massive wall of amber-glowing tactical "
+            "screens and monitors, holographic globe in center showing fracture lines between "
+            "realities, silhouettes of bureau officers standing at attention, volumetric amber "
+            "light cutting through atmospheric smoke, war room aesthetic, deep shadows with "
+            "amber instrument glow, dramatic chiaroscuro lighting, concept art quality, "
+            "cinematic wide composition, not photorealistic, not bright, brutalist architecture"
         ),
-        "width": 800,
-        "height": 600,
+        "width": 1920,
+        "height": 900,
     },
     {
-        "name": "Feature Competition",
-        "storage_path": "platform/landing/feature-competition.avif",
+        "name": "hero-c",
+        "storage_path": "platform/landing/hero-c.avif",
         "prompt": (
-            "Dark atmospheric concept art of an espionage war room, a tactical operations "
-            "table showing a holographic map of competing civilizations, chess-piece-like "
-            "operative figurines on the board — spies, saboteurs, assassins — amber and "
-            "red markers showing alliances and betrayals, shadowy figures in military coats "
-            "observing from the edges, candlelight and amber monitor glow, dark palette, "
-            "top-secret classified dossier aesthetic, concept art quality, oil painting "
-            "texture, not photorealistic, not bright, dramatic shadows"
+            "Epic scale concept art of a massive dimensional rift tearing through dark space, "
+            "amber-gold energy crackling along the jagged fracture edges, through the tear "
+            "fragments of different civilizations are visible — brutalist concrete towers, "
+            "crystalline underground caves, derelict space stations — void and starfield "
+            "background, the rift is the brightest element with amber lightning arcs, "
+            "cosmic scale, concept art quality, cinematic composition, atmospheric, "
+            "not photorealistic, not bright, deep blacks with amber energy highlights"
         ),
-        "width": 800,
-        "height": 600,
+        "width": 1920,
+        "height": 900,
     },
     {
-        "name": "Feature Substrate",
-        "storage_path": "platform/landing/feature-substrate.avif",
+        "name": "hero-c2",
+        "storage_path": "platform/landing/hero-c2.avif",
         "prompt": (
-            "Dark atmospheric concept art of reality fracturing, a seismograph-like device "
-            "in the foreground detecting tremors between worlds, through the cracks in a "
-            "dark wall real-world imagery bleeds into a fantasy landscape — newspaper "
-            "headlines dissolving into scrolls, a modern earthquake cracking medieval stone "
-            "walls, satellite dishes morphing into crystal towers, the boundary between "
-            "realities shown as amber-gold lightning, dark void background, surveillance "
-            "aesthetic, concept art quality, not photorealistic, not bright, eerie atmosphere"
+            "Epic dark concept art of a shattered dimensional barrier viewed from below, "
+            "looking up through concentric rings of fractured reality, each ring showing a "
+            "different world — a burning city, an arctic wasteland, a fungal jungle — amber-gold "
+            "energy veins threading between the layers like a cracked stained glass window, "
+            "debris and dust particles caught in amber light beams, cosmic void beyond, "
+            "vertigo-inducing perspective, concept art quality, cinematic, "
+            "not photorealistic, not bright, deep blacks with amber energy veins"
         ),
-        "width": 800,
-        "height": 600,
+        "width": 1920,
+        "height": 900,
+    },
+    {
+        "name": "hero-c3",
+        "storage_path": "platform/landing/hero-c3.avif",
+        "prompt": (
+            "Dark cosmic concept art of twin colliding dimensions, two massive continental "
+            "landmasses crashing into each other in slow motion through the void of space, "
+            "amber-gold shockwave energy radiating from the collision point, fragments and "
+            "debris spiraling outward, one dimension is brutalist industrial the other is "
+            "crystalline organic, the impact zone glows with intense amber plasma, "
+            "epic scale dwarfing the viewer, concept art quality, cinematic wide composition, "
+            "not photorealistic, not bright, deep blacks with amber collision energy"
+        ),
+        "width": 1920,
+        "height": 900,
+    },
+    {
+        "name": "hero-c4",
+        "storage_path": "platform/landing/hero-c4.avif",
+        "prompt": (
+            "Vast dark concept art of a dimensional wound in the fabric of space, viewed from "
+            "the edge of an observation platform, the wound is a spiraling vortex of amber-gold "
+            "energy pulling in fragments of broken worlds like a cosmic whirlpool, silhouettes "
+            "of watchtowers on the platform edge, amber searchlights piercing the darkness, "
+            "swirling debris and dust clouds, surveillance aesthetic meets cosmic horror, "
+            "extreme depth and scale, concept art quality, cinematic composition, "
+            "not photorealistic, not bright, deep blacks with amber vortex glow"
+        ),
+        "width": 1920,
+        "height": 900,
     },
 ]
 
@@ -150,9 +175,11 @@ def convert_to_avif(
         target_ratio = max_width / max_height
         src_ratio = src_w / src_h
         if src_ratio > target_ratio:
+            # Source is wider — scale by height, crop width
             new_h = max_height
             new_w = int(src_w * (max_height / src_h))
         else:
+            # Source is taller — scale by width, crop height
             new_w = max_width
             new_h = int(src_h * (max_width / src_w))
         img = img.resize((new_w, new_h), Image.LANCZOS)
@@ -187,6 +214,7 @@ def generate_image(prompt: str) -> bytes:
         FLUX_MODEL,
         input={
             "prompt": prompt,
+            "aspect_ratio": "21:9",
             "megapixels": "1",
             "guidance": 3.5,
             "num_inference_steps": 28,
@@ -195,7 +223,6 @@ def generate_image(prompt: str) -> bytes:
         },
     )
 
-    # Output is FileOutput or list of FileOutput
     if isinstance(output, list):
         return output[0].read()
     return output.read()
@@ -205,9 +232,8 @@ def generate_image(prompt: str) -> bytes:
 
 
 def main() -> None:
-    print("=== Landing Page Image Generation ===\n")
+    print("=== Hero Background Variations ===\n")
 
-    # Check for Replicate token
     token = os.environ.get("REPLICATE_API_TOKEN") or os.environ.get("REPLICATE_API_KEY")
     if not token:
         print("ERROR: REPLICATE_API_TOKEN not set in environment or .env")
@@ -216,7 +242,6 @@ def main() -> None:
     print(f"Replicate token: {token[:8]}...")
     print(f"Service key: {SUPABASE_SERVICE_KEY[:15]}...\n")
 
-    # Filter by name if argument provided
     images = IMAGES
     if len(sys.argv) > 1:
         filter_name = sys.argv[1].lower().replace("_", " ").replace("-", " ")
@@ -233,19 +258,18 @@ def main() -> None:
         print(f"  Prompt: {img['prompt'][:80]}...")
         print(f"  Target: {img['width']}x{img['height']}")
 
-        # Generate
         print("  Generating via Flux Dev...")
         raw_bytes = generate_image(img["prompt"])
         print(f"  Raw output: {len(raw_bytes)} bytes")
 
-        # Full-res: native resolution, quality 85
+        # Full-res
         full_avif = convert_to_avif(raw_bytes, quality=AVIF_QUALITY)
         full_path = img["storage_path"].replace(".avif", ".full.avif")
         print(f"  Full-res AVIF: {len(full_avif)} bytes")
         upload_to_storage(full_path, full_avif)
         print(f"  Uploaded full-res: {BUCKET}/{full_path}")
 
-        # Thumbnail: resized, quality 80
+        # Thumbnail
         thumb_avif = convert_to_avif(raw_bytes, img["width"], img["height"], quality=AVIF_QUALITY_THUMB)
         print(f"  Thumbnail AVIF: {len(thumb_avif)} bytes")
         print(f"  Uploading thumbnail to {BUCKET}/{img['storage_path']}...")
@@ -253,13 +277,12 @@ def main() -> None:
         print(f"  Public URL: {public_url}")
 
         print()
-        time.sleep(2)  # Brief pause between API calls
+        time.sleep(2)
 
     print("=== Done ===")
     print("\nImage paths:")
     for img in images:
         print(f"  {img['name']}: {BUCKET}/{img['storage_path']}")
-    print("\nUpdate LandingPage.ts to reference these paths.")
 
 
 if __name__ == "__main__":

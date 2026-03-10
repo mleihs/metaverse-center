@@ -94,6 +94,11 @@ export class VelgBaseModal extends LitElement {
       box-shadow: var(--shadow-md);
     }
 
+    .modal__close:active {
+      transform: translate(0);
+      box-shadow: var(--shadow-pressed, none);
+    }
+
     .modal__body {
       padding: var(--space-6);
       overflow-y: auto;

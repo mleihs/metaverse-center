@@ -641,6 +641,12 @@ export class VelgGameCard extends LitElement {
       background: var(--color-danger, #dc2626);
     }
 
+    /* Touch devices: always show action buttons (no hover) */
+    @media (hover: none) {
+      .card__actions { opacity: 1; }
+      .card__action-btn { transform: scale(1); }
+    }
+
     .card__description-edit {
       width: 100%;
       height: 80px;

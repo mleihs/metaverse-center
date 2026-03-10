@@ -3702,6 +3702,6 @@ Die Bleed-Sensoren des Bureaus zeigen ein konstantes Summen in ganz Speranza. Ke
 'sffed52a48ecea462': `Neuer Tab in der Epochenansicht: Aufklärungskarten pro Gegner`,
 'sffef1a8596bc58bb': `Authentifizierung...`,
 'sfffebd09c49607db': `Rundfunknachricht`,
-'s6c976fb749d183c5': `Multiversum-Beobachtungsterminal mit Blick auf vernetzte Simulationswelten`,
+'s6c976fb749d183c5': `Multiverse observation terminal overlooking interconnected simulation worlds`,
     };
   

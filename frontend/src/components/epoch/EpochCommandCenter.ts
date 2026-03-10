@@ -511,6 +511,12 @@ export class VelgEpochCommandCenter extends LitElement {
       display: flex;
       gap: 0;
       border-bottom: 1px solid var(--color-gray-800);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .tabs::-webkit-scrollbar {
+      display: none;
     }
 
     .tab {
@@ -1132,6 +1138,32 @@ export class VelgEpochCommandCenter extends LitElement {
     .mission__recall:disabled {
       opacity: 0.4;
       cursor: not-allowed;
+    }
+
+    /* === Widescreen === */
+    @media (min-width: 2560px) {
+      :host {
+        background:
+          radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.4) 100%),
+          var(--color-gray-950);
+      }
+      .content {
+        max-width: var(--container-max, 1600px);
+      }
+      .tabs {
+        max-width: var(--container-max, 1600px);
+      }
+      .banner__inner {
+        max-width: var(--container-max, 1600px);
+      }
+    }
+
+    /* === Touch targets === */
+    @media (hover: none) {
+      .mission__icon {
+        width: 40px;
+        height: 40px;
+      }
     }
 
     /* === Mobile overrides === */

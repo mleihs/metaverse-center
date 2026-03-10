@@ -14,10 +14,10 @@ interface NavTab {
 function getTabs(): NavTab[] {
   return [
     { label: msg('Lore'), path: 'lore', icon: () => icons.book(14) },
-    { label: msg('Chronicle'), path: 'chronicle', icon: () => icons.newspaper(14) },
-    { label: msg('Health'), path: 'health', icon: () => icons.heartbeat(14) },
     { label: msg('Agents'), path: 'agents', icon: () => icons.users(14) },
     { label: msg('Buildings'), path: 'buildings', icon: () => icons.building(14) },
+    { label: msg('Chronicle'), path: 'chronicle', icon: () => icons.newspaper(14) },
+    { label: msg('Health'), path: 'health', icon: () => icons.heartbeat(14) },
     { label: msg('Events'), path: 'events', icon: () => icons.bolt(14) },
     { label: msg('Chat'), path: 'chat', icon: () => icons.messageCircle(14) },
     { label: msg('Social'), path: 'social', icon: () => icons.megaphone(14) },
