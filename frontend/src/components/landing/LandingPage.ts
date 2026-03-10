@@ -31,6 +31,7 @@ export class VelgLandingPage extends LitElement {
 
     :host {
       --amber: #f59e0b;
+      --amber-hover: #fbbf24;
       --amber-dim: #b45309;
       --amber-glow: rgba(245, 158, 11, 0.15);
       --amber-ghost: rgba(245, 158, 11, 0.04);
@@ -42,8 +43,8 @@ export class VelgLandingPage extends LitElement {
       --border: #222;
       --border-dim: #1a1a1a;
       --text-primary: #e5e5e5;
-      --text-secondary: #999;
-      --text-dim: #888;
+      --text-secondary: #a0a0a0;
+      --text-dim: #888888;
       --ease-dramatic: cubic-bezier(0.22, 1, 0.36, 1);
       --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
@@ -386,7 +387,7 @@ export class VelgLandingPage extends LitElement {
     }
 
     .hero__cta:hover {
-      background: #fbbf24;
+      background: var(--amber-hover);
       box-shadow: 0 0 30px var(--amber-glow), 0 0 60px rgba(245, 158, 11, 0.08);
       transform: translateY(-2px);
     }
@@ -999,7 +1000,7 @@ export class VelgLandingPage extends LitElement {
     }
 
     .cta-frame__btn:hover {
-      background: #fbbf24;
+      background: var(--amber-hover);
       box-shadow: 0 0 30px var(--amber-glow);
       transform: translateY(-2px);
     }

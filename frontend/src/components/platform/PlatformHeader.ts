@@ -1,4 +1,5 @@
 import { localized, msg } from '@lit/localize';
+import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
@@ -10,7 +11,7 @@ import './UserMenu.js';
 
 @localized()
 @customElement('velg-platform-header')
-export class VelgPlatformHeader extends LitElement {
+export class VelgPlatformHeader extends SignalWatcher(LitElement) {
   static styles = css`
     :host {
       --hdr-bg: #0a0a0a;
@@ -1018,7 +1019,7 @@ l40 16 183 -96 c101 -52 180 -96 176 -96 -4 0 -87 37 -185 81 -160 73 -181 81
             title=${msg('View source on GitHub')}
           >${icons.github(18)}</a>
           <button class="locale-toggle" @click=${this._toggleLocale}>
-            ${localeService.currentLocale === 'en' ? 'EN' : 'DE'}
+            ${localeService.currentLocale === 'en' ? 'DE' : 'EN'}
           </button>
           ${
             appState.isAuthenticated.value

@@ -1,7 +1,9 @@
 import { localized, msg } from '@lit/localize';
+import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
+import { simulationsApi } from '../../services/api/SimulationsApiService.js';
 import { themeService } from '../../services/ThemeService.js';
 import { icons } from '../../utils/icons.js';
 
@@ -27,7 +29,7 @@ function getTabLabel(path: string): string {
 
 @localized()
 @customElement('velg-simulation-shell')
-export class VelgSimulationShell extends LitElement {
+export class VelgSimulationShell extends SignalWatcher(LitElement) {
   static styles = css`
     :host {
       display: block;
@@ -300,6 +302,15 @@ export class VelgSimulationShell extends LitElement {
     super.connectedCallback();
     if (this.simulationId) {
       await this._applyTheme();
+    }
+    // Ensure simulations list is populated for the breadcrumb switcher.
+    // On direct navigation / page refresh, the dashboard hasn't mounted
+    // yet, so appState.simulations may be empty.
+    if (appState.isAuthenticated.value && appState.simulations.value.length === 0) {
+      const result = await simulationsApi.list();
+      if (result.success && result.data) {
+        appState.setSimulations(result.data);
+      }
     }
   }
 
