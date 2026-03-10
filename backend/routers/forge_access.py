@@ -30,7 +30,7 @@ router = APIRouter(
 )
 
 
-@router.post("/", response_model=SuccessResponse[ForgeAccessRequestResponse])
+@router.post("", response_model=SuccessResponse[ForgeAccessRequestResponse])
 async def create_access_request(
     body: ForgeAccessRequestCreate,
     user: CurrentUser = Depends(get_current_user),
