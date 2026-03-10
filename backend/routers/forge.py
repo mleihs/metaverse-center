@@ -209,7 +209,8 @@ async def ignite_shard(
         {"simulation_id": str(sim_id)} if sim_id else None,
     )
 
-    # Background image generation uses admin client (user JWT may expire)
+    # Background: lore generation + translations + image generation
+    # Uses admin client (user JWT may expire during long-running tasks)
     if sim_id:
         background_tasks.add_task(
             _orchestrator_service.run_batch_generation,
@@ -217,9 +218,12 @@ async def ignite_shard(
             sim_id,
             user.id,
             anchor_data=result.get("anchor"),
+            draft_data=result.get("draft_data"),
         )
 
-    return {"success": True, "data": result}
+    # Strip internal fields from the client response
+    response_data = {k: v for k, v in result.items() if k != "draft_data"}
+    return {"success": True, "data": response_data}
 
 
 @router.get("/wallet", response_model=SuccessResponse[dict])

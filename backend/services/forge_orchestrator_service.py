@@ -374,163 +374,16 @@ class ForgeOrchestratorService:
                 except Exception:
                     logger.exception("Theme application failed", extra={"simulation_id": str(sim_id)})
 
-            # Generate and persist lore + translations
+            # Pass draft_data through for background lore generation
             anchor = draft_data.get("philosophical_anchor", {}).get("selected", {})
-            geography = draft_data.get("geography", {})
-            agents = draft_data.get("agents", [])
-            buildings = draft_data.get("buildings", [])
             seed = draft_data.get("seed_prompt", "")
-
-            if settings.forge_mock_mode:
-                logger.debug("FORGE_MOCK_MODE: using mock lore + translations")
-                try:
-                    lore_sections = mock.mock_lore_sections(seed)
-                    translations = mock.mock_lore_translations(lore_sections)
-                    await ForgeLoreService.persist_lore(
-                        write_client, sim_id, lore_sections, translations,
-                    )
-                except Exception:
-                    logger.exception("Mock lore persist failed", extra={"simulation_id": str(sim_id)})
-
-                # Mock entity translations
-                try:
-                    mat_agents = (
-                        write_client.table("agents")
-                        .select("name, character, background, primary_profession")
-                        .eq("simulation_id", str(sim_id))
-                        .execute()
-                    ).data or []
-                    mat_buildings = (
-                        write_client.table("buildings")
-                        .select("name, description, building_type, building_condition")
-                        .eq("simulation_id", str(sim_id))
-                        .execute()
-                    ).data or []
-                    mat_zones = (
-                        write_client.table("zones")
-                        .select("name, description, zone_type")
-                        .eq("simulation_id", str(sim_id))
-                        .execute()
-                    ).data or []
-                    mat_streets = (
-                        write_client.table("city_streets")
-                        .select("name, street_type")
-                        .eq("simulation_id", str(sim_id))
-                        .execute()
-                    ).data or []
-
-                    sim_desc = geography.get("description", "") or seed
-                    mock_trans = mock.mock_entity_translations(
-                        mat_agents, mat_buildings, mat_zones, mat_streets, sim_desc,
-                    )
-                    await ForgeEntityTranslationService.persist_translations(
-                        write_client, sim_id, mock_trans,
-                    )
-                except Exception:
-                    logger.exception("Mock entity translation failed", extra={"simulation_id": str(sim_id)})
-            else:
-                or_key, _ = await ForgeOrchestratorService._get_user_keys(supabase, user_id)
-
-                # Extract Astrolabe research from draft
-                astrolabe_ctx = ""
-                raw_research = draft_data.get("research_context") or {}
-                if isinstance(raw_research, dict):
-                    astrolabe_ctx = raw_research.get("raw_data", "")
-
-                # Deep research: dedicated LLM call (cheap model) to
-                # produce literary/philosophical/architectural grounding.
-                # User-togglable via generation_config.deep_research.
-                raw_config = draft_data.get("generation_config") or {}
-                gen_config = ForgeGenerationConfig(**raw_config)
-
-                research_context = astrolabe_ctx
-                if gen_config.deep_research:
-                    try:
-                        research_context = await ResearchService.research_for_lore(
-                            seed=seed,
-                            anchor=anchor,
-                            astrolabe_context=astrolabe_ctx,
-                            openrouter_key=or_key,
-                        )
-                    except Exception:
-                        logger.exception(
-                            "Deep research failed — using Astrolabe context only",
-                            extra={"simulation_id": str(sim_id)},
-                        )
-
-                try:
-                    lore_sections = await ForgeLoreService.generate_lore(
-                        seed=seed,
-                        anchor=anchor,
-                        geography=geography,
-                        agents=agents,
-                        buildings=buildings,
-                        openrouter_key=or_key,
-                        research_context=research_context,
-                    )
-                    # Translate lore to German
-                    translations = None
-                    try:
-                        translations = await ForgeLoreService.translate_lore(
-                            lore_sections, openrouter_key=or_key,
-                        )
-                    except Exception:
-                        logger.exception("Lore translation failed", extra={"simulation_id": str(sim_id)})
-
-                    await ForgeLoreService.persist_lore(
-                        write_client, sim_id, lore_sections, translations,
-                    )
-                except Exception:
-                    logger.exception("Lore generation failed", extra={"simulation_id": str(sim_id)})
-
-                # Translate entity fields (agents, buildings, zones, streets, sim description)
-                try:
-                    mat_agents = (
-                        write_client.table("agents")
-                        .select("name, character, background, primary_profession")
-                        .eq("simulation_id", str(sim_id))
-                        .execute()
-                    ).data or []
-                    mat_buildings = (
-                        write_client.table("buildings")
-                        .select("name, description, building_type, building_condition")
-                        .eq("simulation_id", str(sim_id))
-                        .execute()
-                    ).data or []
-                    mat_zones = (
-                        write_client.table("zones")
-                        .select("name, description, zone_type")
-                        .eq("simulation_id", str(sim_id))
-                        .execute()
-                    ).data or []
-                    mat_streets = (
-                        write_client.table("city_streets")
-                        .select("name, street_type")
-                        .eq("simulation_id", str(sim_id))
-                        .execute()
-                    ).data or []
-
-                    sim_desc = geography.get("description", "") or seed
-
-                    entity_translations = await ForgeEntityTranslationService.translate_entities(
-                        agents=mat_agents,
-                        buildings=mat_buildings,
-                        zones=mat_zones,
-                        streets=mat_streets,
-                        simulation_description=sim_desc,
-                        openrouter_key=or_key,
-                    )
-                    await ForgeEntityTranslationService.persist_translations(
-                        write_client, sim_id, entity_translations,
-                    )
-                except Exception:
-                    logger.exception("Entity translation failed", extra={"simulation_id": str(sim_id)})
 
             return {
                 "simulation_id": sim_id,
                 "slug": slug,
                 "anchor": anchor,
                 "seed_prompt": seed,
+                "draft_data": draft_data,
             }
         except HTTPException:
             raise
@@ -581,19 +434,135 @@ class ForgeOrchestratorService:
         return theme_data
 
     @classmethod
+    async def _generate_lore_and_translations(
+        cls,
+        supabase: Client,
+        simulation_id: UUID,
+        user_id: UUID,
+        or_key: str | None,
+        draft_data: dict,
+    ) -> None:
+        """Generate lore, lore translations, and entity translations.
+
+        Runs in the background task to avoid Cloudflare timeout (~100s).
+        """
+        anchor = draft_data.get("philosophical_anchor", {}).get("selected", {})
+        geography = draft_data.get("geography", {})
+        agents = draft_data.get("agents", [])
+        buildings = draft_data.get("buildings", [])
+        seed = draft_data.get("seed_prompt", "")
+
+        if settings.forge_mock_mode:
+            logger.debug("FORGE_MOCK_MODE: using mock lore + translations")
+            try:
+                lore_sections = mock.mock_lore_sections(seed)
+                translations = mock.mock_lore_translations(lore_sections)
+                await ForgeLoreService.persist_lore(
+                    supabase, simulation_id, lore_sections, translations,
+                )
+            except Exception:
+                logger.exception("Mock lore persist failed", extra={"simulation_id": str(simulation_id)})
+
+            try:
+                mat_agents = (supabase.table("agents").select("name, character, background, primary_profession").eq("simulation_id", str(simulation_id)).execute()).data or []
+                mat_buildings = (supabase.table("buildings").select("name, description, building_type, building_condition").eq("simulation_id", str(simulation_id)).execute()).data or []
+                mat_zones = (supabase.table("zones").select("name, description, zone_type").eq("simulation_id", str(simulation_id)).execute()).data or []
+                mat_streets = (supabase.table("city_streets").select("name, street_type").eq("simulation_id", str(simulation_id)).execute()).data or []
+                sim_desc = geography.get("description", "") or seed
+                mock_trans = mock.mock_entity_translations(mat_agents, mat_buildings, mat_zones, mat_streets, sim_desc)
+                await ForgeEntityTranslationService.persist_translations(supabase, simulation_id, mock_trans)
+            except Exception:
+                logger.exception("Mock entity translation failed", extra={"simulation_id": str(simulation_id)})
+            return
+
+        # Extract Astrolabe research from draft
+        astrolabe_ctx = ""
+        raw_research = draft_data.get("research_context") or {}
+        if isinstance(raw_research, dict):
+            astrolabe_ctx = raw_research.get("raw_data", "")
+
+        # Deep research: dedicated LLM call (cheap model) for
+        # literary/philosophical/architectural grounding.
+        raw_config = draft_data.get("generation_config") or {}
+        gen_config = ForgeGenerationConfig(**raw_config)
+
+        research_context = astrolabe_ctx
+        if gen_config.deep_research:
+            try:
+                research_context = await ResearchService.research_for_lore(
+                    seed=seed,
+                    anchor=anchor,
+                    astrolabe_context=astrolabe_ctx,
+                    openrouter_key=or_key,
+                )
+            except Exception:
+                logger.exception(
+                    "Deep research failed — using Astrolabe context only",
+                    extra={"simulation_id": str(simulation_id)},
+                )
+
+        try:
+            lore_sections = await ForgeLoreService.generate_lore(
+                seed=seed,
+                anchor=anchor,
+                geography=geography,
+                agents=agents,
+                buildings=buildings,
+                openrouter_key=or_key,
+                research_context=research_context,
+            )
+            translations = None
+            try:
+                translations = await ForgeLoreService.translate_lore(
+                    lore_sections, openrouter_key=or_key,
+                )
+            except Exception:
+                logger.exception("Lore translation failed", extra={"simulation_id": str(simulation_id)})
+
+            await ForgeLoreService.persist_lore(
+                supabase, simulation_id, lore_sections, translations,
+            )
+        except Exception:
+            logger.exception("Lore generation failed", extra={"simulation_id": str(simulation_id)})
+
+        # Translate entity fields
+        try:
+            mat_agents = (supabase.table("agents").select("name, character, background, primary_profession").eq("simulation_id", str(simulation_id)).execute()).data or []
+            mat_buildings = (supabase.table("buildings").select("name, description, building_type, building_condition").eq("simulation_id", str(simulation_id)).execute()).data or []
+            mat_zones = (supabase.table("zones").select("name, description, zone_type").eq("simulation_id", str(simulation_id)).execute()).data or []
+            mat_streets = (supabase.table("city_streets").select("name, street_type").eq("simulation_id", str(simulation_id)).execute()).data or []
+            sim_desc = geography.get("description", "") or seed
+
+            entity_translations = await ForgeEntityTranslationService.translate_entities(
+                agents=mat_agents,
+                buildings=mat_buildings,
+                zones=mat_zones,
+                streets=mat_streets,
+                simulation_description=sim_desc,
+                openrouter_key=or_key,
+            )
+            await ForgeEntityTranslationService.persist_translations(
+                supabase, simulation_id, entity_translations,
+            )
+        except Exception:
+            logger.exception("Entity translation failed", extra={"simulation_id": str(simulation_id)})
+
+    @classmethod
     async def run_batch_generation(
         cls,
         supabase: Client,
         simulation_id: UUID,
         user_id: UUID,
         anchor_data: dict | None = None,
+        draft_data: dict | None = None,
     ) -> None:
-        """Background task for sequential image generation.
+        """Background task: lore generation → image generation.
 
+        Runs research + lore + translations first (needed for world_context),
+        then sequential image generation (banner → portraits → buildings → lore).
         Optimized for 512MB RAM: processes one image at a time.
-        Order: banner → agent portraits → building images → lore images.
         """
-        logger.info("Starting batch image generation", extra={"simulation_id": str(simulation_id)})
+        logger.info("Starting background generation", extra={"simulation_id": str(simulation_id)})
 
         try:
             or_key, rep_key = await ForgeOrchestratorService._get_user_keys(supabase, user_id)
@@ -601,8 +570,14 @@ class ForgeOrchestratorService:
             logger.exception("Failed to fetch BYOK keys — using platform keys", extra={"simulation_id": str(simulation_id)})
             or_key, rep_key = None, None
 
-        # 1. Build world context from persisted lore + anchor
-        #    This is the research output that informs ALL image generation.
+        # ── Phase A: Lore + translations (must complete before images) ──
+        await cls._generate_lore_and_translations(
+            supabase, simulation_id, user_id, or_key, draft_data or {},
+        )
+
+        # ── Phase B: Image generation ──
+        logger.info("Starting image generation", extra={"simulation_id": str(simulation_id)})
+
         sim_resp = (
             supabase.table("simulations")
             .select("name, description, slug")
