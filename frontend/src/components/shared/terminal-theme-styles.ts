@@ -7,17 +7,17 @@ import { css } from 'lit';
  *   static styles = [terminalTokens, terminalAnimations, terminalFormStyles, css`...`];
  */
 
-/* ── Design tokens (set on :host) ── */
+/* ── Design tokens (aliases to platform tokens — :root is now dark) ── */
 export const terminalTokens = css`
   :host {
-    --amber: #f59e0b;
-    --amber-dim: #b45309;
-    --amber-glow: rgba(245, 158, 11, 0.15);
-    --hud-bg: #0a0a0a;
-    --hud-surface: #111;
-    --hud-border: #333;
-    --hud-text: #ccc;
-    --hud-text-dim: #888;
+    --amber: var(--color-accent-amber);
+    --amber-dim: var(--color-accent-amber-dim);
+    --amber-glow: var(--color-accent-amber-glow);
+    --hud-bg: var(--color-surface);
+    --hud-surface: var(--color-surface-raised);
+    --hud-border: var(--color-border);
+    --hud-text: var(--color-text-primary);
+    --hud-text-dim: var(--color-text-muted);
   }
 `;
 

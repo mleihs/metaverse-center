@@ -34,8 +34,8 @@ export class VelgSimulationsDashboard extends LitElement {
   static styles = css`
     :host {
       display: block;
-      background: var(--color-gray-950);
-      color: #fff;
+      background: var(--color-surface-sunken);
+      color: var(--color-text-primary);
       min-height: calc(100vh - var(--header-height));
     }
 
@@ -144,7 +144,7 @@ export class VelgSimulationsDashboard extends LitElement {
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: var(--tracking-widest);
-      background: #f59e0b;
+      background: var(--color-accent-amber);
       color: var(--color-gray-950);
       border: none;
       cursor: pointer;
@@ -152,7 +152,7 @@ export class VelgSimulationsDashboard extends LitElement {
     }
 
     .command-strip__cta:hover {
-      background: #fbbf24;
+      background: var(--color-accent-amber-hover);
     }
 
     /* ── Tremor Warning Banner ── */
@@ -179,7 +179,7 @@ export class VelgSimulationsDashboard extends LitElement {
 
     .tremor-banner__count {
       font-weight: var(--font-bold);
-      color: #ef4444;
+      color: var(--color-danger);
     }
 
     @keyframes banner-pulse {
@@ -212,7 +212,7 @@ export class VelgSimulationsDashboard extends LitElement {
       text-transform: uppercase;
       letter-spacing: var(--tracking-wider);
       background: transparent;
-      color: #f59e0b;
+      color: var(--color-accent-amber);
       border: 1px solid rgba(245, 158, 11, 0.3);
       cursor: pointer;
       transition: all var(--transition-fast);
@@ -253,15 +253,15 @@ export class VelgSimulationsDashboard extends LitElement {
     }
 
     .welcome-strip__btn:hover {
-      border-color: #f59e0b;
-      color: #f59e0b;
+      border-color: var(--color-accent-amber);
+      color: var(--color-accent-amber);
       transform: translate(-2px, -2px);
       box-shadow: 4px 4px 0 rgba(245, 158, 11, 0.15);
     }
 
     .welcome-strip__btn--primary {
-      border-color: #f59e0b;
-      color: #f59e0b;
+      border-color: var(--color-accent-amber);
+      color: var(--color-accent-amber);
       position: relative;
       animation: training-pulse 2.5s ease-in-out infinite;
     }
@@ -395,7 +395,7 @@ export class VelgSimulationsDashboard extends LitElement {
       font-size: var(--text-xl);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: #fff;
+      color: var(--color-text-primary);
       margin: 0;
       display: flex;
       align-items: baseline;
@@ -624,7 +624,7 @@ export class VelgSimulationsDashboard extends LitElement {
     }
 
     .ops-more:hover {
-      color: #f59e0b;
+      color: var(--color-accent-amber);
     }
 
     /* ── My Worlds (1440p+ left column) ── */
@@ -722,7 +722,7 @@ export class VelgSimulationsDashboard extends LitElement {
       font-size: var(--text-2xl);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: #fff;
+      color: var(--color-text-primary);
       margin: 0 0 var(--space-2);
     }
 
@@ -777,9 +777,9 @@ export class VelgSimulationsDashboard extends LitElement {
       font-size: var(--text-sm);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      background: #fff;
+      background: var(--color-surface-inverse);
       color: var(--color-gray-900);
-      border: 2px solid #fff;
+      border: 2px solid var(--color-surface-inverse);
       border-radius: var(--border-radius);
       box-shadow: 4px 4px 0 rgba(255, 255, 255, 0.2);
       cursor: pointer;
@@ -863,8 +863,8 @@ export class VelgSimulationsDashboard extends LitElement {
       flex-shrink: 0;
     }
 
-    .resonance-item__pip--detected { background: #f59e0b; }
-    .resonance-item__pip--impacting { background: #ef4444; }
+    .resonance-item__pip--detected { background: var(--color-accent-amber); }
+    .resonance-item__pip--impacting { background: var(--color-danger); }
     .resonance-item__pip--subsiding { background: var(--color-gray-500); }
 
     .resonance-item__name {
@@ -890,8 +890,8 @@ export class VelgSimulationsDashboard extends LitElement {
       transition: width var(--transition-fast);
     }
 
-    .resonance-item__bar-fill--detected { background: #f59e0b; }
-    .resonance-item__bar-fill--impacting { background: #ef4444; }
+    .resonance-item__bar-fill--detected { background: var(--color-accent-amber); }
+    .resonance-item__bar-fill--impacting { background: var(--color-danger); }
     .resonance-item__bar-fill--subsiding { background: var(--color-gray-500); }
 
     .resonance-item__time {
@@ -1033,7 +1033,7 @@ export class VelgSimulationsDashboard extends LitElement {
       font-size: var(--text-xl);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: #fff;
+      color: var(--color-text-primary);
     }
 
     .empty-state__text {

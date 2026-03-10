@@ -16,7 +16,7 @@ export class VelgBadge extends LitElement {
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
       border: var(--border-width-default) solid var(--color-border);
-      background: var(--color-surface-header);
+      background: var(--color-surface-raised);
       color: var(--color-text-secondary);
       line-height: 1.4;
       animation: badge-pop 200ms var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) both;

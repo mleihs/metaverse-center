@@ -2,16 +2,18 @@
  * ThemeService — Loads simulation design settings and applies them
  * as CSS Custom Property overrides on the SimulationShell host element.
  *
- * Architecture: Base tokens on :root stay untouched. ThemeService overrides
- * them on the shell element, so CSS inheritance cascades to all children
- * (including through Shadow DOM boundaries). Platform-level views always
- * use the base (brutalist) tokens.
+ * Architecture: :root tokens are platform-dark (amber accent, dark surfaces).
+ * ThemeService overrides them on the shell element, so CSS inheritance
+ * cascades to all children (including through Shadow DOM boundaries).
+ * Simulations with no saved settings get the brutalist (light) preset
+ * as default to prevent inheriting the dark platform tokens.
  *
  * Setting keys are flat (e.g. `color_primary`, `shadow_style`) matching
  * how DesignSettingsPanel saves them.
  */
 
 import { settingsApi } from './api/index.js';
+import { THEME_PRESETS } from './theme-presets.js';
 
 /** Maximum allowed size for custom CSS (bytes). */
 const MAX_CUSTOM_CSS_BYTES = 10_240;
@@ -187,7 +189,12 @@ class ThemeService {
       }
     }
 
-    this.applyConfig(config, hostElement);
+    // Merge brutalist defaults with saved settings (saved settings win).
+    // This ensures simulations always get a complete light base even with
+    // partial settings, preventing dark platform tokens from bleeding through.
+    const mergedConfig = { ...THEME_PRESETS.brutalist, ...config };
+
+    this.applyConfig(mergedConfig, hostElement);
 
     // Set data-simulation attribute for custom CSS targeting
     hostElement.dataset.simulation = simulationId;

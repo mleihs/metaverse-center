@@ -109,73 +109,77 @@ styles/
 
 ## 1. Foundation Tokens
 
-### 1.1 Farb-Palette
+### 1.1 Farb-Palette (Platform-Dark)
+
+Die Platform ist grundsatzlich dunkel gestaltet (Header, Dashboard, Forge, Admin).
+Simulation-Views uberschreiben die Tokens via ThemeService auf dem `<velg-simulation-shell>` Element.
 
 ```css
 :root {
-  /* === GRAY SCALE (vollstandig) === */
+  color-scheme: dark;
+
+  /* === GRAY SCALE (Palette — nicht semantisch, immer Tokens unten verwenden) === */
   --color-gray-0: #ffffff;
-  --color-gray-50: #f9fafb;
-  --color-gray-100: #f3f4f6;
-  --color-gray-200: #e5e7eb;
-  --color-gray-300: #d1d5db;
-  --color-gray-400: #9ca3af;
-  --color-gray-500: #6b7280;
-  --color-gray-600: #4b5563;
-  --color-gray-700: #374151;
-  --color-gray-800: #1f2937;
-  --color-gray-900: #111827;
-  --color-gray-950: #030712;
+  /* ... (vollstandige 12-Stufen-Skala, unverandert) ... */
   --color-gray-1000: #000000;
 
   /* === SEMANTIC COLORS === */
-  --color-primary: #000000;
-  --color-primary-hover: #1f2937;
-  --color-primary-active: #374151;
+  --color-primary: #f59e0b;           /* Amber — Platform-Akzent */
+  --color-primary-hover: #fbbf24;
+  --color-primary-active: #d97706;
+  --color-primary-bg: rgba(245, 158, 11, 0.08);
 
   --color-danger: #ef4444;
-  --color-danger-hover: #dc2626;
-  --color-danger-bg: #fef2f2;
-  --color-danger-border: #fecaca;
+  --color-danger-bg: #2a1010;          /* Dunkler Rot-Tint */
+  --color-danger-border: rgba(239, 68, 68, 0.3);
 
   --color-success: #22c55e;
-  --color-success-hover: #16a34a;
-  --color-success-bg: #f0fdf4;
-  --color-success-border: #bbf7d0;
+  --color-success-bg: #0f2a10;         /* Dunkler Grun-Tint */
+  --color-success-border: rgba(34, 197, 94, 0.3);
 
   --color-warning: #f59e0b;
-  --color-warning-hover: #d97706;
-  --color-warning-bg: #fffbeb;
-  --color-warning-border: #fde68a;
+  --color-warning-bg: #2a1f0f;         /* Dunkler Amber-Tint */
+  --color-warning-border: rgba(245, 158, 11, 0.3);
 
   --color-info: #3b82f6;
-  --color-info-hover: #2563eb;
-  --color-info-bg: #eff6ff;
-  --color-info-border: #bfdbfe;
+  --color-info-bg: #0f1a2a;            /* Dunkler Blau-Tint */
+  --color-info-border: rgba(59, 130, 246, 0.3);
 
   /* === SURFACE COLORS === */
-  --color-surface: var(--color-gray-0);
-  --color-surface-raised: var(--color-gray-0);
-  --color-surface-sunken: var(--color-gray-50);
-  --color-surface-overlay: var(--color-gray-0);
-  --color-surface-header: var(--color-gray-100);
-  --color-surface-inverse: var(--color-gray-1000);
+  --color-surface: #0a0a0a;
+  --color-surface-raised: #111111;
+  --color-surface-sunken: #060606;
+  --color-surface-overlay: #111111;
+  --color-surface-header: #0a0a0a;
+  --color-surface-inverse: #ffffff;
 
   /* === TEXT COLORS === */
-  --color-text-primary: var(--color-gray-900);
-  --color-text-secondary: var(--color-gray-600);
-  --color-text-muted: var(--color-gray-400);
-  --color-text-inverse: var(--color-gray-0);
+  --color-text-primary: #e5e5e5;       /* WCAG: 15.4:1 auf surface */
+  --color-text-secondary: #a0a0a0;     /* WCAG: 7.4:1 auf surface */
+  --color-text-muted: #888888;         /* WCAG: 5.5:1 auf surface */
+  --color-text-inverse: #0a0a0a;
   --color-text-link: var(--color-info);
   --color-text-danger: var(--color-danger);
 
   /* === BORDER COLORS === */
-  --color-border: var(--color-gray-1000);
-  --color-border-light: var(--color-gray-200);
-  --color-border-focus: var(--color-info);
+  --color-border: #333333;
+  --color-border-light: #222222;
+  --color-border-focus: var(--color-primary);
   --color-border-danger: var(--color-danger);
+
+  /* === PLATFORM ACCENT (nicht themenbar — immer Amber) === */
+  --color-accent-amber: #f59e0b;
+  --color-accent-amber-hover: #fbbf24;
+  --color-accent-amber-dim: #b45309;
+  --color-accent-amber-glow: rgba(245, 158, 11, 0.15);
+  --color-accent-green: #4ade80;
 }
 ```
+
+**Architektur-Split:**
+- `:root` = Platform-Dark (immer dunkel, Amber-Akzent)
+- `<velg-simulation-shell>` = ThemeService-Override (kann hell oder dunkel sein)
+- Simulationen ohne gespeicherte Design-Settings erhalten automatisch das Brutalist-Preset (hell) als Fallback
 
 ### 1.2 Typography
 

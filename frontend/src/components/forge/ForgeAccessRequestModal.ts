@@ -6,7 +6,8 @@
  *
  * Classified intelligence dossier aesthetic matching ClearanceApplicationCard:
  * amber monospace typography, scan-line overlay, brutalist button treatment.
- * Overrides BaseModal surface tokens to enforce dark dossier appearance.
+ * Platform tokens (:root is dark) provide the base; only modal-specific
+ * overrides (border accents, shadow, font) are set here.
  */
 
 import { localized, msg } from '@lit/localize';
@@ -21,27 +22,18 @@ import '../shared/BaseModal.js';
 @customElement('velg-forge-access-modal')
 export class VelgForgeAccessModal extends LitElement {
   static styles = css`
-    /* ── Override BaseModal tokens to force dark dossier appearance ── */
+    /* ── Override BaseModal tokens for dossier appearance ── */
     velg-base-modal {
       --modal-max-width: 480px;
 
-      /* Surface overrides — dark dossier paper */
-      --color-surface-raised: #0c0c0c;
-      --color-surface-header: #080808;
-      --color-text-primary: #e5e5e5;
-      --color-text-inverse: #080808;
-
       /* Border overrides — amber-accented */
-      --border-default: 1px solid #292524;
-      --border-medium: 1px solid #f59e0b;
-      --border-light: 1px solid #1c1917;
+      --border-default: 1px solid var(--color-border);
+      --border-medium: 1px solid var(--color-accent-amber);
+      --border-light: 1px solid var(--color-border-light);
 
       /* Shadow — deep classified drop */
-      --shadow-xl: 0 0 0 1px rgba(245, 158, 11, 0.08),
+      --shadow-xl: 0 0 0 1px var(--color-accent-amber-glow),
         0 25px 60px -12px rgba(0, 0, 0, 0.9);
-
-      /* Button token overrides */
-      --color-primary: #f59e0b;
 
       /* Typography */
       --font-brutalist: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
@@ -94,12 +86,12 @@ export class VelgForgeAccessModal extends LitElement {
       font-weight: 700;
       letter-spacing: 3px;
       text-transform: uppercase;
-      color: #f59e0b;
+      color: var(--color-accent-amber);
       text-align: center;
       margin-bottom: 24px;
       padding: 16px 12px;
       line-height: 1.8;
-      border: 1px dashed #292524;
+      border: 1px dashed var(--color-border);
       background: rgba(245, 158, 11, 0.02);
     }
 
@@ -113,8 +105,8 @@ export class VelgForgeAccessModal extends LitElement {
       background: linear-gradient(
         90deg,
         transparent,
-        #f59e0b 30%,
-        #f59e0b 70%,
+        var(--color-accent-amber) 30%,
+        var(--color-accent-amber) 70%,
         transparent
       );
     }
@@ -140,9 +132,9 @@ export class VelgForgeAccessModal extends LitElement {
       justify-content: center;
       gap: 16px;
       padding: 14px 16px;
-      background: #0a0a0a;
-      border: 1px solid #1c1917;
-      border-left: 3px solid #f59e0b;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-light);
+      border-left: 3px solid var(--color-accent-amber);
       margin-bottom: 24px;
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 12px;
@@ -151,17 +143,17 @@ export class VelgForgeAccessModal extends LitElement {
     }
 
     .tier-upgrade__current {
-      color: #78716c;
+      color: var(--color-text-muted);
     }
 
     .tier-upgrade__arrow {
-      color: #f59e0b;
+      color: var(--color-accent-amber);
       font-weight: 700;
       font-size: 14px;
     }
 
     .tier-upgrade__target {
-      color: #f59e0b;
+      color: var(--color-accent-amber);
       font-weight: 700;
     }
 
@@ -170,7 +162,7 @@ export class VelgForgeAccessModal extends LitElement {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 13px;
       line-height: 1.7;
-      color: #a8a29e;
+      color: var(--color-text-secondary);
       margin: 0 0 24px;
     }
 
@@ -186,7 +178,7 @@ export class VelgForgeAccessModal extends LitElement {
       font-weight: 700;
       letter-spacing: 2px;
       text-transform: uppercase;
-      color: #a8a29e;
+      color: var(--color-text-secondary);
       margin-bottom: 8px;
     }
 
@@ -194,7 +186,7 @@ export class VelgForgeAccessModal extends LitElement {
       font-weight: 400;
       text-transform: none;
       letter-spacing: normal;
-      color: #57534e;
+      color: var(--color-text-muted);
     }
 
     .field-textarea {
@@ -205,33 +197,34 @@ export class VelgForgeAccessModal extends LitElement {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 13px;
       line-height: 1.6;
-      color: #d6d3d1;
-      background: #0a0a0a;
-      border: 1px solid #292524;
+      color: var(--color-text-primary);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
       resize: vertical;
       transition: border-color 200ms, box-shadow 200ms;
       box-sizing: border-box;
     }
 
     .field-textarea::placeholder {
-      color: #44403c;
+      color: var(--color-text-muted);
+      opacity: 0.5;
     }
 
     .field-textarea:focus {
       outline: none;
-      border-color: #f59e0b;
-      box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.3);
+      border-color: var(--color-accent-amber);
+      box-shadow: 0 0 0 1px var(--color-accent-amber-glow);
     }
 
     .field-textarea:focus-visible {
-      outline: 2px solid #f59e0b;
+      outline: 2px solid var(--color-accent-amber);
       outline-offset: 2px;
     }
 
     .char-count {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 10px;
-      color: #78716c;
+      color: var(--color-text-muted);
       text-align: right;
       margin-top: 6px;
       letter-spacing: 1px;
@@ -239,7 +232,7 @@ export class VelgForgeAccessModal extends LitElement {
     }
 
     .char-count--active {
-      color: #f59e0b;
+      color: var(--color-accent-amber);
     }
 
     /* ── Footer actions ── */
@@ -262,46 +255,46 @@ export class VelgForgeAccessModal extends LitElement {
     }
 
     .btn:focus-visible {
-      outline: 2px solid #f59e0b;
+      outline: 2px solid var(--color-accent-amber);
       outline-offset: 2px;
     }
 
     /* Cancel — ghost */
     .btn--cancel {
       padding: 8px 16px;
-      color: #78716c;
+      color: var(--color-text-muted);
       background: transparent;
-      border: 1px solid #292524;
+      border: 1px solid var(--color-border);
     }
 
     .btn--cancel:hover {
-      color: #f59e0b;
-      border-color: #f59e0b;
+      color: var(--color-accent-amber);
+      border-color: var(--color-accent-amber);
     }
 
     .btn--cancel:active {
-      color: #fbbf24;
-      border-color: #fbbf24;
+      color: var(--color-accent-amber-hover);
+      border-color: var(--color-accent-amber-hover);
     }
 
     /* Submit — amber brutalist */
     .btn--submit {
       padding: 8px 20px;
-      color: #0a0a0a;
-      background: #f59e0b;
+      color: var(--color-text-inverse);
+      background: var(--color-accent-amber);
       border: none;
-      box-shadow: 3px 3px 0 rgba(245, 158, 11, 0.15);
+      box-shadow: 3px 3px 0 var(--color-accent-amber-glow);
     }
 
     .btn--submit:hover {
-      background: #fbbf24;
+      background: var(--color-accent-amber-hover);
       transform: translate(-2px, -2px);
-      box-shadow: 5px 5px 0 rgba(245, 158, 11, 0.2);
+      box-shadow: 5px 5px 0 var(--color-accent-amber-glow);
     }
 
     .btn--submit:active {
       transform: translate(0);
-      box-shadow: 2px 2px 0 rgba(245, 158, 11, 0.1);
+      box-shadow: 2px 2px 0 var(--color-accent-amber-glow);
     }
 
     .btn--submit:disabled {
@@ -312,7 +305,7 @@ export class VelgForgeAccessModal extends LitElement {
     }
 
     .btn--submit:disabled:hover {
-      background: #f59e0b;
+      background: var(--color-accent-amber);
       transform: none;
       box-shadow: none;
     }

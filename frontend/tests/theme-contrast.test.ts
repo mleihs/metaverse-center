@@ -140,6 +140,60 @@ describe('Theme preset contrast (WCAG)', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Platform dark token contrast (always-dark platform chrome)
+// ---------------------------------------------------------------------------
+
+describe('Platform dark token contrast (WCAG)', () => {
+  const platform: Record<string, string> = {
+    color_text: '#e5e5e5',
+    color_text_secondary: '#a0a0a0',
+    color_text_muted: '#888888',
+    text_inverse: '#0a0a0a',
+    color_surface: '#0a0a0a',
+    color_surface_raised: '#111111',
+    color_primary: '#f59e0b',
+    color_danger: '#ef4444',
+    color_success: '#22c55e',
+    color_info: '#3b82f6',
+    color_info_bg: '#0f1a2a',
+    color_danger_bg: '#2a1010',
+    color_success_bg: '#0f2a10',
+    color_warning_bg: '#2a1f0f',
+    color_primary_bg: '#141004',
+    color_accent_amber: '#f59e0b',
+  };
+
+  const platformPairs: ContrastPair[] = [
+    { fg: 'color_text', bg: 'color_surface', label: 'primary text on surface', minRatio: 4.5 },
+    { fg: 'color_text', bg: 'color_surface_raised', label: 'primary text on raised', minRatio: 4.5 },
+    { fg: 'color_text_secondary', bg: 'color_surface', label: 'secondary text on surface', minRatio: 4.5 },
+    { fg: 'color_text_secondary', bg: 'color_surface_raised', label: 'secondary on raised', minRatio: 4.5 },
+    { fg: 'color_text_muted', bg: 'color_surface', label: 'muted text on surface', minRatio: 3.0 },
+    { fg: 'color_text_muted', bg: 'color_surface_raised', label: 'muted text on raised', minRatio: 3.0 },
+    { fg: 'color_accent_amber', bg: 'color_surface', label: 'amber accent on surface', minRatio: 3.0 },
+    { fg: 'text_inverse', bg: 'color_primary', label: 'text on amber button', minRatio: 4.5 },
+    { fg: 'color_info', bg: 'color_info_bg', label: 'info badge (platform)', minRatio: 3.0 },
+    { fg: 'color_danger', bg: 'color_danger_bg', label: 'danger badge (platform)', minRatio: 3.0 },
+    { fg: 'color_success', bg: 'color_success_bg', label: 'success badge (platform)', minRatio: 3.0 },
+    { fg: 'color_primary', bg: 'color_warning_bg', label: 'warning badge (platform)', minRatio: 3.0 },
+  ];
+
+  for (const pair of platformPairs) {
+    const fgHex = platform[pair.fg];
+    const bgHex = platform[pair.bg];
+    if (!fgHex || !bgHex) continue;
+
+    it(`${pair.label} (${fgHex} on ${bgHex}) >= ${pair.minRatio}:1`, () => {
+      const ratio = contrastRatio(fgHex, bgHex);
+      expect(
+        ratio,
+        `${fgHex} on ${bgHex} = ${ratio.toFixed(2)}:1, need >= ${pair.minRatio}:1`,
+      ).toBeGreaterThanOrEqual(pair.minRatio);
+    });
+  }
+});
+
+// ---------------------------------------------------------------------------
 // Utility tests — verify the math is correct
 // ---------------------------------------------------------------------------
 
