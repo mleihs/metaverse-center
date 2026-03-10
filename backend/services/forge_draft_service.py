@@ -176,7 +176,7 @@ class ForgeDraftService:
             supabase.table("user_wallets")
             .select("forge_tokens, is_architect")
             .eq("user_id", str(user_id))
-            .single()
+            .maybe_single()
             .execute()
         )
         return response.data or {"forge_tokens": 0, "is_architect": False}
