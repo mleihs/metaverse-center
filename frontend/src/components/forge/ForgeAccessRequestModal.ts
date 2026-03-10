@@ -6,6 +6,7 @@
  *
  * Classified intelligence dossier aesthetic matching ClearanceApplicationCard:
  * amber monospace typography, scan-line overlay, brutalist button treatment.
+ * Overrides BaseModal surface tokens to enforce dark dossier appearance.
  */
 
 import { localized, msg } from '@lit/localize';
@@ -20,20 +21,43 @@ import '../shared/BaseModal.js';
 @customElement('velg-forge-access-modal')
 export class VelgForgeAccessModal extends LitElement {
   static styles = css`
-    /* ── Modal width override ── */
+    /* ── Override BaseModal tokens to force dark dossier appearance ── */
     velg-base-modal {
       --modal-max-width: 480px;
+
+      /* Surface overrides — dark dossier paper */
+      --color-surface-raised: #0c0c0c;
+      --color-surface-header: #080808;
+      --color-text-primary: #e5e5e5;
+      --color-text-inverse: #080808;
+
+      /* Border overrides — amber-accented */
+      --border-default: 1px solid #292524;
+      --border-medium: 1px solid #f59e0b;
+      --border-light: 1px solid #1c1917;
+
+      /* Shadow — deep classified drop */
+      --shadow-xl: 0 0 0 1px rgba(245, 158, 11, 0.08),
+        0 25px 60px -12px rgba(0, 0, 0, 0.9);
+
+      /* Button token overrides */
+      --color-primary: #f59e0b;
+
+      /* Typography */
+      --font-brutalist: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
     }
 
     /* ── Staggered entry animations ── */
-    @keyframes fade-in {
+    @keyframes declassify {
       from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(8px);
+        filter: blur(2px);
       }
       to {
         opacity: 1;
         transform: translateY(0);
+        filter: blur(0);
       }
     }
 
@@ -43,23 +67,23 @@ export class VelgForgeAccessModal extends LitElement {
     .field-group,
     .actions {
       opacity: 0;
-      animation: fade-in 400ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: declassify 500ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
 
     .classification {
-      animation-delay: 80ms;
+      animation-delay: 60ms;
     }
     .tier-upgrade {
-      animation-delay: 160ms;
+      animation-delay: 140ms;
     }
     .description {
-      animation-delay: 240ms;
+      animation-delay: 220ms;
     }
     .field-group {
-      animation-delay: 320ms;
+      animation-delay: 300ms;
     }
     .actions {
-      animation-delay: 400ms;
+      animation-delay: 380ms;
     }
 
     /* ── Classification header with scan-line overlay ── */
@@ -68,13 +92,31 @@ export class VelgForgeAccessModal extends LitElement {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 10px;
       font-weight: 700;
-      letter-spacing: 2px;
+      letter-spacing: 3px;
       text-transform: uppercase;
       color: #f59e0b;
       text-align: center;
-      margin-bottom: 20px;
-      padding: 12px;
+      margin-bottom: 24px;
+      padding: 16px 12px;
       line-height: 1.8;
+      border: 1px dashed #292524;
+      background: rgba(245, 158, 11, 0.02);
+    }
+
+    .classification::before {
+      content: '';
+      position: absolute;
+      top: -1px;
+      left: 24px;
+      right: 24px;
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        #f59e0b 30%,
+        #f59e0b 70%,
+        transparent
+      );
     }
 
     .classification::after {
@@ -85,8 +127,8 @@ export class VelgForgeAccessModal extends LitElement {
         0deg,
         transparent,
         transparent 3px,
-        rgba(255, 255, 255, 0.01) 3px,
-        rgba(255, 255, 255, 0.01) 4px
+        rgba(245, 158, 11, 0.015) 3px,
+        rgba(245, 158, 11, 0.015) 4px
       );
       pointer-events: none;
     }
@@ -96,12 +138,12 @@ export class VelgForgeAccessModal extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
-      padding: 12px 16px;
-      background: var(--color-gray-950, #0a0a0a);
-      border: 1px solid var(--color-gray-800, #1f1f1f);
+      gap: 16px;
+      padding: 14px 16px;
+      background: #0a0a0a;
+      border: 1px solid #1c1917;
       border-left: 3px solid #f59e0b;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 12px;
       letter-spacing: 2px;
@@ -109,12 +151,13 @@ export class VelgForgeAccessModal extends LitElement {
     }
 
     .tier-upgrade__current {
-      color: var(--color-gray-400, #9ca3af);
+      color: #78716c;
     }
 
     .tier-upgrade__arrow {
       color: #f59e0b;
       font-weight: 700;
+      font-size: 14px;
     }
 
     .tier-upgrade__target {
@@ -127,8 +170,8 @@ export class VelgForgeAccessModal extends LitElement {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 13px;
       line-height: 1.7;
-      color: var(--color-gray-400, #9ca3af);
-      margin: 0 0 20px;
+      color: #a8a29e;
+      margin: 0 0 24px;
     }
 
     /* ── Form field ── */
@@ -143,7 +186,7 @@ export class VelgForgeAccessModal extends LitElement {
       font-weight: 700;
       letter-spacing: 2px;
       text-transform: uppercase;
-      color: var(--color-gray-400, #9ca3af);
+      color: #a8a29e;
       margin-bottom: 8px;
     }
 
@@ -151,7 +194,7 @@ export class VelgForgeAccessModal extends LitElement {
       font-weight: 400;
       text-transform: none;
       letter-spacing: normal;
-      color: var(--color-gray-600, #555);
+      color: #57534e;
     }
 
     .field-textarea {
@@ -162,22 +205,22 @@ export class VelgForgeAccessModal extends LitElement {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 13px;
       line-height: 1.6;
-      color: var(--color-gray-300, #d4d4d4);
-      background: var(--color-gray-950, #0a0a0a);
-      border: 1px solid var(--color-gray-700, #333);
+      color: #d6d3d1;
+      background: #0a0a0a;
+      border: 1px solid #292524;
       resize: vertical;
-      transition: border-color 150ms, box-shadow 150ms;
+      transition: border-color 200ms, box-shadow 200ms;
       box-sizing: border-box;
     }
 
     .field-textarea::placeholder {
-      color: var(--color-gray-600, #555);
+      color: #44403c;
     }
 
     .field-textarea:focus {
       outline: none;
       border-color: #f59e0b;
-      box-shadow: 0 0 0 1px #f59e0b;
+      box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.3);
     }
 
     .field-textarea:focus-visible {
@@ -188,9 +231,15 @@ export class VelgForgeAccessModal extends LitElement {
     .char-count {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 10px;
-      color: #f59e0b;
+      color: #78716c;
       text-align: right;
       margin-top: 6px;
+      letter-spacing: 1px;
+      transition: color 200ms;
+    }
+
+    .char-count--active {
+      color: #f59e0b;
     }
 
     /* ── Footer actions ── */
@@ -202,8 +251,8 @@ export class VelgForgeAccessModal extends LitElement {
     }
 
     .btn {
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-weight: 900;
+      font-family: var(--font-mono, 'SF Mono', monospace);
+      font-weight: 700;
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 2px;
@@ -220,9 +269,9 @@ export class VelgForgeAccessModal extends LitElement {
     /* Cancel — ghost */
     .btn--cancel {
       padding: 8px 16px;
-      color: var(--color-gray-400, #9ca3af);
+      color: #78716c;
       background: transparent;
-      border: 1px solid var(--color-gray-600, #555);
+      border: 1px solid #292524;
     }
 
     .btn--cancel:hover {
@@ -241,31 +290,31 @@ export class VelgForgeAccessModal extends LitElement {
       color: #0a0a0a;
       background: #f59e0b;
       border: none;
-      box-shadow: 3px 3px 0 rgba(245, 158, 11, 0.2);
+      box-shadow: 3px 3px 0 rgba(245, 158, 11, 0.15);
     }
 
     .btn--submit:hover {
       background: #fbbf24;
       transform: translate(-2px, -2px);
-      box-shadow: 5px 5px 0 rgba(245, 158, 11, 0.25);
+      box-shadow: 5px 5px 0 rgba(245, 158, 11, 0.2);
     }
 
     .btn--submit:active {
       transform: translate(0);
-      box-shadow: 2px 2px 0 rgba(245, 158, 11, 0.15);
+      box-shadow: 2px 2px 0 rgba(245, 158, 11, 0.1);
     }
 
     .btn--submit:disabled {
-      opacity: 0.5;
+      opacity: 0.4;
       cursor: not-allowed;
       transform: none;
-      box-shadow: 3px 3px 0 rgba(245, 158, 11, 0.1);
+      box-shadow: none;
     }
 
     .btn--submit:disabled:hover {
       background: #f59e0b;
       transform: none;
-      box-shadow: 3px 3px 0 rgba(245, 158, 11, 0.1);
+      box-shadow: none;
     }
   `;
 
@@ -329,7 +378,7 @@ export class VelgForgeAccessModal extends LitElement {
             .value=${this._message}
             @input=${(e: Event) => { this._message = (e.target as HTMLTextAreaElement).value; }}
           ></textarea>
-          <div class="char-count">${this._message.length}/500</div>
+          <div class="char-count ${this._message.length > 0 ? 'char-count--active' : ''}">${this._message.length}/500</div>
         </div>
 
         <div slot="footer" class="actions">
