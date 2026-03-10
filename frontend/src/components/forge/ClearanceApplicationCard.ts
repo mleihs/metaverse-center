@@ -11,6 +11,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
+import './ForgeAccessRequestModal.js';
 
 @localized()
 @customElement('velg-clearance-card')
