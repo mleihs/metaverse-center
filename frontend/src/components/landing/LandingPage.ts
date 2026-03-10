@@ -217,7 +217,7 @@ export class VelgLandingPage extends LitElement {
       object-fit: cover;
       object-position: center;
       filter: brightness(0.35) saturate(0.8);
-      animation: hero-drift 30s ease-in-out infinite alternate;
+      animation: hero-bg-drift 30s ease-in-out infinite alternate;
       z-index: 0;
     }
 

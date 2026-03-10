@@ -669,7 +669,7 @@ export class VelgApp extends LitElement {
     }
 
     return html`
-      <velg-simulation-shell .simulationId=${resolvedId}>
+      <velg-simulation-shell .simulationId=${resolvedId} .view=${view}>
         ${content}
       </velg-simulation-shell>
     `;

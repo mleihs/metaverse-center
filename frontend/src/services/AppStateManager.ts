@@ -1,6 +1,7 @@
 import { computed, signal } from '@preact/signals-core';
 import type { User } from '@supabase/supabase-js';
 import type {
+  ForgeAccessStatus,
   Simulation,
   SimulationRole,
   SimulationSetting,
@@ -21,6 +22,10 @@ export class AppStateManager {
   readonly currentRole = signal<SimulationRole | null>(null);
   readonly taxonomies = signal<SimulationTaxonomy[]>([]);
   readonly settings = signal<SimulationSetting[]>([]);
+
+  // --- Forge Access Requests ---
+  readonly forgeRequestStatus = signal<'none' | ForgeAccessStatus>('none');
+  readonly pendingForgeRequestCount = signal<number>(0);
 
   // --- Onboarding ---
   readonly onboardingCompleted = signal<boolean>(true); // default true to avoid flash
@@ -50,6 +55,10 @@ export class AppStateManager {
 
   readonly canForge = computed(() => this.isArchitect.value || this.isPlatformAdmin.value);
 
+  readonly canRequestForgeAccess = computed(() =>
+    this.isAuthenticated.value && !this.canForge.value && this.forgeRequestStatus.value === 'none'
+  );
+
   // --- Setters ---
 
   setUser(user: User | null): void {
@@ -62,6 +71,14 @@ export class AppStateManager {
 
   setArchitectStatus(isArchitect: boolean): void {
     this.isArchitect.value = isArchitect;
+  }
+
+  setForgeRequestStatus(status: 'none' | ForgeAccessStatus): void {
+    this.forgeRequestStatus.value = status;
+  }
+
+  setPendingForgeRequestCount(count: number): void {
+    this.pendingForgeRequestCount.value = count;
   }
 
   setCurrentSimulation(simulation: Simulation | null): void {

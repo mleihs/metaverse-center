@@ -1,8 +1,8 @@
 ---
 title: "Feature Catalog"
 id: feature-catalog
-version: "2.3"
-date: 2026-03-09
+version: "2.4"
+date: 2026-03-10
 lang: de
 type: reference
 status: active
@@ -377,17 +377,26 @@ Features die innerhalb einer Simulation existieren. Benutzer können beliebig vi
 
 ---
 
+### L. Forge Access & Bureau Clearance
+
+| # | Feature | Status | Beschreibung |
+|---|---------|--------|-------------|
+| L1 | **Forge Access Control / Bureau Clearance System** | ✅ IMPL | Account-Tier-System (observer → architect → director) mit Request/Approve/Reject-Workflow. DB: `forge_access_requests`-Tabelle, SECURITY DEFINER RPC-Funktionen, `v_pending_forge_requests`-View (Migration 093). Frontend: ClearanceApplicationCard (Dashboard), ForgeAccessRequestModal, AdminForgeTab Clearance-Management. Bilinguale Email-Benachrichtigungen bei Genehmigung/Ablehnung. 5 API-Endpoints (`/api/v1/forge/access-requests/`). |
+| L2 | **Breadcrumb Simulation Switcher** | ✅ IMPL | Dropdown in SimulationShell-Breadcrumb fuer schnelles Wechseln zwischen Simulationen. Keyboard-navigierbar, `position: fixed` um Overflow zu umgehen. View-Property vom Router uebergeben (behebt veraltete Breadcrumb bei Tab-Wechsel). |
+
+---
+
 ## Technische Infrastruktur-Übersicht
 
 | Kennzahl | Wert |
 |----------|------|
 | **Simulationen** | 5 (Velgarien, The Gaslit Reach, Station Null, Speranza, Cité des Dames) |
-| **Datenbanktabellen** | 56 |
-| **SQL-Migrationen** | 91 |
+| **Datenbanktabellen** | 57 |
+| **SQL-Migrationen** | 93 |
 | **RLS-Policies** | 150+ |
 | **Trigger** | 41+ |
 | **Views** | 8 Standard + 6 Materialized |
-| **API-Endpoints** | ~305 (über 37 Router) |
+| **API-Endpoints** | ~310 (über 38 Router) |
 | **Backend-Tests** | 912 (pytest: unit + integration + security + performance) |
 | **Frontend-Tests** | 453 (vitest: validation + API + theme contrast + SEO) |
 | **E2E-Tests** | 81 (Playwright: 12 Dateien) |

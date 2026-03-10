@@ -1,6 +1,7 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import { appState } from '../../services/AppStateManager.js';
 
 import './AdminApiKeysTab.js';
 import './AdminUsersTab.js';
@@ -126,6 +127,21 @@ export class VelgAdminPanel extends LitElement {
       background: var(--color-danger);
     }
 
+    .admin-tabs__badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 4px;
+      margin-left: var(--space-1);
+      font-size: 10px;
+      font-weight: var(--font-black);
+      background: var(--color-warning);
+      color: var(--color-gray-950);
+      border-radius: 9px;
+    }
+
     .admin-content {
       max-width: 1200px;
       margin: 0 auto;
@@ -211,7 +227,9 @@ export class VelgAdminPanel extends LitElement {
           aria-selected=${this._activeTab === 'forge'}
           aria-controls="admin-tabpanel"
           @click=${() => this._setTab('forge')}
-        >${msg('Forge')}</button>
+        >${msg('Forge')}${appState.pendingForgeRequestCount.value > 0
+          ? html`<span class="admin-tabs__badge">${appState.pendingForgeRequestCount.value}</span>`
+          : ''}</button>
         <button
           class="admin-tabs__tab ${this._activeTab === 'apikeys' ? 'admin-tabs__tab--active' : ''}"
           role="tab"

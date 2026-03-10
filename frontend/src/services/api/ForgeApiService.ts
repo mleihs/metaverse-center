@@ -1,4 +1,4 @@
-import type { ApiResponse, PaginatedResponse } from '../../types/index.js';
+import type { ApiResponse, ForgeAccessRequest, ForgeAccessRequestWithEmail, PaginatedResponse } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
 
 export interface PhilosophicalAnchor {
@@ -121,6 +121,33 @@ export class ForgeApiService extends BaseApiService {
   }): Promise<ApiResponse<unknown>> {
     return this.put('/forge/wallet/keys', data);
   }
+
+  // --- Access Requests (Clearance) ---
+
+  requestAccess(message?: string): Promise<ApiResponse<ForgeAccessRequest>> {
+    return this.post('/forge/access-requests', { message: message ?? null });
+  }
+
+  getMyAccessRequest(): Promise<ApiResponse<ForgeAccessRequest | null>> {
+    return this.get('/forge/access-requests/me');
+  }
+
+  listPendingRequests(): Promise<ApiResponse<ForgeAccessRequestWithEmail[]>> {
+    return this.get('/forge/access-requests/pending');
+  }
+
+  getPendingRequestCount(): Promise<ApiResponse<number>> {
+    return this.get('/forge/access-requests/pending/count');
+  }
+
+  reviewRequest(id: string, action: 'approve' | 'reject', adminNotes?: string): Promise<ApiResponse<unknown>> {
+    return this.post(`/forge/access-requests/${id}/review`, {
+      action,
+      admin_notes: adminNotes ?? null,
+    });
+  }
+
+  // --- Admin Stats ---
 
   getAdminStats(): Promise<
     ApiResponse<{ active_drafts: number; total_tokens: number; total_materialized: number }>

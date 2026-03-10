@@ -822,6 +822,43 @@ _NOTIF_STRINGS: dict[str, dict[str, str]] = {
         "en": "CLASSIFIED // PHASE TRANSITION",
         "de": "GEHEIM // PHASENÜBERGANG",
     },
+    # ── Clearance request emails ──
+    "clearance_granted_header": {
+        "en": "CLEARANCE UPGRADE APPROVED",
+        "de": "FREIGABE-UPGRADE GENEHMIGT",
+    },
+    "clearance_granted_intro": {
+        "en": "Your application for Reality Architect clearance has been approved. You now have access to the Simulation Forge — create worlds with AI-driven agents, buildings, and events.",
+        "de": "Dein Antrag auf die Freigabestufe Realitätsarchitekt wurde genehmigt. Du hast jetzt Zugang zur Simulationsschmiede — erschaffe Welten mit KI-gesteuerten Agenten, Gebäuden und Ereignissen.",
+    },
+    "clearance_granted_cta": {
+        "en": "ENTER THE FORGE",
+        "de": "ZUR SCHMIEDE",
+    },
+    "clearance_denied_header": {
+        "en": "CLEARANCE REVIEW COMPLETE",
+        "de": "FREIGABEPRÜFUNG ABGESCHLOSSEN",
+    },
+    "clearance_denied_intro": {
+        "en": "Your clearance application has been reviewed. At this time, your request for Reality Architect clearance has not been approved.",
+        "de": "Dein Freigabeantrag wurde geprüft. Dein Antrag auf die Freigabestufe Realitätsarchitekt wurde derzeit nicht genehmigt.",
+    },
+    "clearance_admin_notes": {
+        "en": "REVIEWER NOTES",
+        "de": "ANMERKUNGEN DES PRÜFERS",
+    },
+    "clearance_tier_label": {
+        "en": "CLEARANCE LEVEL",
+        "de": "FREIGABESTUFE",
+    },
+    "clearance_observer": {
+        "en": "FIELD OBSERVER",
+        "de": "FELDBEOBACHTER",
+    },
+    "clearance_architect": {
+        "en": "REALITY ARCHITECT",
+        "de": "REALITÄTSARCHITEKT",
+    },
 }
 
 
@@ -1736,3 +1773,172 @@ def render_epoch_completed(
 
     content = "\n".join(blocks)
     return _email_shell(f"CLASSIFIED // OPERATION COMPLETE \u2014 {safe_name}", content)
+
+
+# ── Clearance Upgrade Templates ──────────────────────────────────────────
+
+
+def _render_clearance_block(
+    lang: str,
+    *,
+    approved: bool,
+    admin_notes: str | None = None,
+    accent: str = _AMBER,
+) -> str:
+    """Render a single language block for the clearance email."""
+    header_key = "clearance_granted_header" if approved else "clearance_denied_header"
+    intro_key = "clearance_granted_intro" if approved else "clearance_denied_intro"
+
+    header = f"""\
+          <tr>
+            <td style="padding:20px 32px 8px;">
+              <p style="margin:0;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
+                // {_nt('clearance_tier_label', lang)} //
+              </p>
+            </td>
+          </tr>"""
+
+    # Tier upgrade indicator
+    observer_label = _nt("clearance_observer", lang)
+    architect_label = _nt("clearance_architect", lang)
+    tier_color = accent if approved else _TEXT_DIM
+    tier_html = f"""\
+          <tr>
+            <td style="padding:8px 32px 16px;">
+              <div style="border:1px dashed {_BORDER};padding:16px 20px;background-color:{_SURFACE};text-align:center;">
+                <p style="margin:0;font-size:14px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
+                  {observer_label} &nbsp;&#10132;&nbsp; <span style="color:{tier_color};font-weight:900;">{architect_label}</span>
+                </p>
+              </div>
+            </td>
+          </tr>"""
+
+    # Intro
+    intro = f"""\
+          <tr>
+            <td style="padding:8px 32px 16px;">
+              <p style="margin:0;font-size:14px;line-height:1.7;color:{_TEXT};">
+                {_nt(intro_key, lang)}
+              </p>
+            </td>
+          </tr>"""
+
+    # Admin notes (if any)
+    notes_html = ""
+    if admin_notes:
+        notes_html = f"""\
+{_section_header(_nt('clearance_admin_notes', lang))}
+          <tr>
+            <td style="padding:0 32px 16px;">
+              <div style="border:1px dashed {_BORDER};padding:12px 16px;background-color:{_SURFACE};">
+                <p style="margin:0;font-size:13px;color:{_TEXT};line-height:1.6;font-style:italic;">
+                  &ldquo;{_esc(admin_notes)}&rdquo;
+                </p>
+              </div>
+            </td>
+          </tr>"""
+
+    return f"{header}\n{tier_html}\n{intro}\n{notes_html}"
+
+
+def render_clearance_granted(
+    *,
+    email_locale: str | None = None,
+    forge_url: str,
+    admin_notes: str | None = None,
+) -> str:
+    """Render the clearance granted email (bilingual or single-language)."""
+    langs = _resolve_langs(email_locale)
+    accent = _AMBER
+
+    blocks: list[str] = []
+    for i, lang in enumerate(langs):
+        is_primary = i == 0
+        heading_tag = "h1" if is_primary else "h2"
+        heading_size = "22px" if is_primary else "20px"
+
+        if is_primary:
+            top = f"""\
+          <tr>
+            <td style="padding:24px 32px;border-bottom:2px solid {accent};">
+              <p style="margin:0;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
+                BUREAU OF MULTIVERSE OBSERVATION
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 32px 8px;">
+              <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
+                {_nt('clearance_granted_header', lang)}
+              </{heading_tag}>
+            </td>
+          </tr>"""
+        else:
+            blocks.append(_language_divider())
+            top = f"""\
+          <tr>
+            <td style="padding:24px 32px 8px;">
+              <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
+                {_nt('clearance_granted_header', lang)}
+              </{heading_tag}>
+            </td>
+          </tr>"""
+
+        blocks.append(top)
+        blocks.append(_render_clearance_block(lang, approved=True, admin_notes=admin_notes, accent=accent))
+        blocks.append(_cta_button(forge_url, _nt("clearance_granted_cta", lang), accent=accent))
+
+    blocks.append(_footer_row(email_locale))
+
+    content = "\n".join(blocks)
+    return _email_shell("CLASSIFIED // CLEARANCE GRANTED", content)
+
+
+def render_clearance_denied(
+    *,
+    email_locale: str | None = None,
+    admin_notes: str | None = None,
+) -> str:
+    """Render the clearance denied email (bilingual or single-language)."""
+    langs = _resolve_langs(email_locale)
+
+    blocks: list[str] = []
+    for i, lang in enumerate(langs):
+        is_primary = i == 0
+        heading_tag = "h1" if is_primary else "h2"
+        heading_size = "22px" if is_primary else "20px"
+
+        if is_primary:
+            top = f"""\
+          <tr>
+            <td style="padding:24px 32px;border-bottom:2px solid {_BORDER};">
+              <p style="margin:0;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
+                BUREAU OF MULTIVERSE OBSERVATION
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 32px 8px;">
+              <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{_TEXT};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
+                {_nt('clearance_denied_header', lang)}
+              </{heading_tag}>
+            </td>
+          </tr>"""
+        else:
+            blocks.append(_language_divider())
+            top = f"""\
+          <tr>
+            <td style="padding:24px 32px 8px;">
+              <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{_TEXT};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
+                {_nt('clearance_denied_header', lang)}
+              </{heading_tag}>
+            </td>
+          </tr>"""
+
+        blocks.append(top)
+        blocks.append(_render_clearance_block(lang, approved=False, admin_notes=admin_notes))
+
+    blocks.append(_footer_row(email_locale))
+
+    content = "\n".join(blocks)
+    return _email_shell("CLASSIFIED // CLEARANCE REVIEW", content)

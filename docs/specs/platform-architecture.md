@@ -1,8 +1,8 @@
 ---
 title: "Platform Architecture: Multi-Simulations-Plattform"
 id: platform-architecture
-version: "2.1"
-date: 2026-03-08
+version: "2.2"
+date: 2026-03-10
 lang: de
 type: spec
 status: active
@@ -463,6 +463,53 @@ Platform Admin (Email-Allowlist: admin@velgarien.dev)
 | `platform_settings` | Key-Value Runtime-Konfiguration (RLS: nur service_role) |
 | `notification_preferences` | Pro-Benutzer E-Mail-Opt-in/Opt-out (cycle_resolved, phase_changed, epoch_completed) |
 | `agent_aptitudes` | Aptitude-Werte pro Agent für 6 Operativ-Typen (3–9, Budget 36) |
+
+---
+
+## Account Tier System
+
+### Plattform-Level Zugangssteuerung
+
+Account Tiers steuern den Zugang zur Forge (Simulations-Erstellung) und sind **plattform-weit** — unabhaengig von Simulation Roles (owner/admin/editor/viewer), die simulationsbezogen sind.
+
+```
+Observer (Default)          → Read-Only, Browsing, Community-Teilnahme
+     │
+     ▼  [Forge Access Request]
+Architect                   → Forge-Zugang, Simulation-Erstellung, AI-Generierung
+     │
+     ▼  [Future]
+Director                    → Erweiterte Admin-Faehigkeiten (zukuenftig)
+```
+
+### Request/Approve/Reject Workflow
+
+1. Benutzer stellt Antrag via `forge_access_requests` Tabelle (Status: `pending`)
+2. Platform Admin prueft Antraege ueber Admin Panel (`v_pending_forge_requests` View)
+3. Genehmigung erfolgt atomar via `fn_approve_forge_access` (SECURITY DEFINER RPC):
+   - Setzt `forge_access_requests.status = 'approved'`
+   - Aktualisiert `user_wallets.account_tier`
+   - `is_architect` Boolean wird per DB-Trigger gepflegt (Backward Compat)
+4. Bilingual E-Mail-Benachrichtigung (EN/DE) bei Genehmigung oder Ablehnung
+
+### Datenmodell
+
+| Tabelle / View | Beschreibung |
+|----------------|-------------|
+| `user_wallets.account_tier` | Aktueller Tier des Benutzers (`observer` / `architect` / `director`) |
+| `forge_access_requests` | Antraege mit Status-Tracking und Admin-Notizen |
+| `v_pending_forge_requests` | View: Offene Antraege mit `user_email` (Admin-Ansicht) |
+| `fn_approve_forge_access` | SECURITY DEFINER RPC fuer atomare Genehmigung |
+
+### Abgrenzung: Account Tier vs. Simulation Roles
+
+| Aspekt | Account Tier | Simulation Role |
+|--------|-------------|-----------------|
+| Scope | Plattform-weit | Pro Simulation |
+| Steuert | Forge-Zugang, Simulations-Erstellung | CRUD-Berechtigungen innerhalb einer Simulation |
+| Gespeichert in | `user_wallets.account_tier` | `simulation_members.member_role` |
+| Verwaltet durch | Platform Admin (Request/Approve) | Simulation Owner/Admin (Einladung) |
+| Werte | observer, architect, director | owner, admin, editor, viewer |
 
 ---
 

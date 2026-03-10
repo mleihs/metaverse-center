@@ -4,6 +4,9 @@ import { appState } from '../AppStateManager.js';
 import { forgeApi } from '../api/ForgeApiService.js';
 import { supabase } from './client.js';
 
+const CLEARANCE_TOAST_KEY = 'velg_clearance_toast_shown';
+const ADMIN_PENDING_TOAST_KEY = 'velg_admin_pending_toast_shown';
+
 export class SupabaseAuthService {
   private _initialized = false;
   private _previouslyAuthenticated = false;
@@ -67,9 +70,58 @@ export class SupabaseAuthService {
         const walletResp = await forgeApi.getWallet();
         if (walletResp.success && walletResp.data) {
           appState.setArchitectStatus(walletResp.data.is_architect);
+
+          // If not architect, check for pending/approved clearance request
+          if (!walletResp.data.is_architect) {
+            try {
+              const reqResp = await forgeApi.getMyAccessRequest();
+              if (reqResp.success && reqResp.data) {
+                appState.setForgeRequestStatus(reqResp.data.status);
+              } else {
+                appState.setForgeRequestStatus('none');
+              }
+            } catch {
+              // Non-critical
+            }
+          } else {
+            // Check if the user was just approved (has an approved request)
+            if (appState.forgeRequestStatus.value === 'pending' || !sessionStorage.getItem(CLEARANCE_TOAST_KEY)) {
+              try {
+                const reqResp = await forgeApi.getMyAccessRequest();
+                if (reqResp.success && reqResp.data?.status === 'approved') {
+                  // Show toast only once per session for newly approved architects
+                  if (!sessionStorage.getItem(CLEARANCE_TOAST_KEY)) {
+                    const { VelgToast } = await import('../../components/shared/Toast.js');
+                    VelgToast.success('Clearance granted \u2014 welcome to the Forge, Architect');
+                  }
+                }
+              } catch {
+                // Non-critical
+              }
+              sessionStorage.setItem(CLEARANCE_TOAST_KEY, '1');
+            }
+            appState.setForgeRequestStatus('none');
+          }
         }
       } catch (err) {
         console.error('Failed to fetch forge wallet:', err);
+      }
+
+      // Admin: check pending clearance requests
+      if (appState.isPlatformAdmin.value) {
+        try {
+          const countResp = await forgeApi.getPendingRequestCount();
+          if (countResp.success && typeof countResp.data === 'number') {
+            appState.setPendingForgeRequestCount(countResp.data);
+            if (countResp.data > 0 && !sessionStorage.getItem(ADMIN_PENDING_TOAST_KEY)) {
+              const { VelgToast } = await import('../../components/shared/Toast.js');
+              VelgToast.info(`${countResp.data} pending clearance request(s)`);
+              sessionStorage.setItem(ADMIN_PENDING_TOAST_KEY, '1');
+            }
+          }
+        } catch {
+          // Non-critical
+        }
       }
     } else {
       if (this._previouslyAuthenticated) {
@@ -79,6 +131,10 @@ export class SupabaseAuthService {
       appState.setUser(null);
       appState.setAccessToken(null);
       appState.setArchitectStatus(false);
+      appState.setForgeRequestStatus('none');
+      appState.setPendingForgeRequestCount(0);
+      sessionStorage.removeItem(CLEARANCE_TOAST_KEY);
+      sessionStorage.removeItem(ADMIN_PENDING_TOAST_KEY);
     }
   }
 

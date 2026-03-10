@@ -1,8 +1,8 @@
 ---
 title: "Database Schema: Neues Multi-Simulations-Schema"
 id: database-schema
-version: "3.4"
-date: 2026-03-09
+version: "3.5"
+date: 2026-03-10
 lang: de
 type: reference
 status: active
@@ -60,6 +60,7 @@ Abgeleitete Metriken werden einmal berechnet und bei Quelldaten-Aenderung invali
 - **4 Materialized Views:** `mv_building_readiness`, `mv_zone_stability`, `mv_embassy_effectiveness`, `mv_simulation_health` — Single Source of Truth fuer Spiel-Metriken
 - **11 Stale-Notification-Triggers:** Bei Aenderung an Quell-Tabellen → `pg_notify('game_metrics_stale')` → Backend refresht MVs
 - **Effektive Magnitude:** `compute_effective_magnitude()` — Trigger-basierte Resonanz-Staerke-Berechnung
+- **Architect-Flag-Sync:** `fn_sync_architect_flag()` — Leitet `is_architect` Boolean aus `account_tier` ab (Abwaertskompatibilitaet)
 
 **3. Atomare Komplex-Operationen (PL/pgSQL Functions)**
 
@@ -67,6 +68,8 @@ Operationen, die mehrere Tabellen atomar modifizieren muessen:
 
 - **`clone_simulations_for_epoch()`** (~250 Zeilen) — Klont Template-Simulationen inkl. Settings, Taxonomien, Stadt, Zonen, Strassen, Agenten, Gebaeude + normalisiert Werte fuer PvP-Balance
 - **`fn_materialize_shard()`** — Konvertiert Forge-Entwurf in Live-Simulation (Simulation + Settings + Taxonomien + Stadt + Zonen + Strassen + Agenten + Gebaeude atomar)
+- **`fn_approve_forge_access()`** — Atomare Genehmigung: Request sperren + Wallet-Tier upgraden + User-Details zurueckgeben
+- **`fn_reject_forge_access()`** — Atomare Ablehnung: Request sperren + Status setzen + User-Details zurueckgeben
 - **`process_cascade_events()`** — Auto-Spawn von Kaskaden-Events bei Zone-Druck-Ueberschreitung, rate-limited pro Zone
 
 ### Entscheidungsmatrix: Wo lebt die Logik?
@@ -1100,6 +1103,28 @@ CREATE OR REPLACE FUNCTION public.fn_enforce_forge_quota()
 RETURNS TRIGGER LANGUAGE plpgsql;
 ```
 
+### Forge Access Functions (Migration 093)
+
+```sql
+-- Atomare Genehmigung: Sperrt Request (FOR UPDATE), setzt status='approved',
+-- Upsert user_wallets mit neuem account_tier (Trigger synct is_architect),
+-- Gibt {request_id, user_id, user_email, email_locale, requested_tier, status} zurueck.
+CREATE OR REPLACE FUNCTION public.fn_approve_forge_access(
+    p_request_id uuid, p_admin_notes text DEFAULT NULL, p_reviewer_id uuid DEFAULT NULL
+) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Ablehnung: Sperrt Request, setzt status='rejected',
+-- Gibt User-Details fuer E-Mail-Benachrichtigung zurueck.
+CREATE OR REPLACE FUNCTION public.fn_reject_forge_access(
+    p_request_id uuid, p_admin_notes text DEFAULT NULL, p_reviewer_id uuid DEFAULT NULL
+) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger: Synchronisiert is_architect aus account_tier (Abwaertskompatibilitaet)
+-- is_architect := (account_tier != 'observer')
+CREATE OR REPLACE FUNCTION public.fn_sync_architect_flag()
+RETURNS TRIGGER LANGUAGE plpgsql;
+```
+
 ### Chronicle & Memory Functions (Migrationen 066/067)
 
 ```sql
@@ -1418,6 +1443,10 @@ CREATE TRIGGER trg_resolve_alliance_proposal AFTER INSERT ON epoch_alliance_vote
 CREATE TRIGGER trg_alliance_tension_check AFTER UPDATE OF tension ON epoch_teams
     FOR EACH ROW EXECUTE FUNCTION fn_check_alliance_tension();
 
+-- Account tier → is_architect sync (Migration 093)
+CREATE TRIGGER trg_sync_architect_flag BEFORE INSERT OR UPDATE OF account_tier ON user_wallets
+    FOR EACH ROW EXECUTE FUNCTION fn_sync_architect_flag();
+
 -- updated_at Triggers fuer neuere Tabellen (Migrationen 055, 074)
 CREATE TRIGGER trg_user_wallets_updated_at BEFORE UPDATE ON user_wallets
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
@@ -1483,6 +1512,28 @@ CREATE VIEW public.conversation_summaries AS
         cc.created_at
     FROM chat_conversations cc
     JOIN agents a ON cc.agent_id = a.id;
+```
+
+### Forge Access View (Migration 093)
+
+```sql
+-- Admin-View: Offene Forge-Zugangsantraege mit User-E-Mail
+CREATE OR REPLACE VIEW public.v_pending_forge_requests AS
+SELECT
+    far.id,
+    far.user_id,
+    u.email AS user_email,
+    far.requested_tier,
+    far.status,
+    far.message,
+    far.admin_notes,
+    far.reviewed_by,
+    far.created_at,
+    far.reviewed_at
+FROM public.forge_access_requests far
+JOIN auth.users u ON u.id = far.user_id
+WHERE far.status = 'pending'
+ORDER BY far.created_at ASC;
 ```
 
 ### Materialized Views (Refresh Periodically)
@@ -1710,6 +1761,7 @@ CREATE POLICY agents_delete ON agents FOR DELETE
 | `notification_preferences` | Own (auth) | Own (auth) | Own (auth) | - |
 | `zone_fortifications` | Epoch-Participant (own sim) | Editor+ (own sim) | - | - |
 | `agent_aptitudes` | Anon/Member | Editor+ | Editor+ | Admin+ |
+| `forge_access_requests` | Own (auth) + Admin | Own (auth) | Admin | - |
 | `audit_log` | Admin+ | Service only | - | - |
 
 ---
@@ -1779,20 +1831,20 @@ CREATE POLICY simulation_assets_insert ON storage.objects FOR INSERT
 
 | Metrik | Wert |
 |--------|------|
-| Tabellen | 54 (inkl. Forge, Chronicle, Agent Memory, Substrate Resonance, Alliance) |
-| Trigger Functions | 19 (set_updated_at, update_conversation_stats, enforce_single_primary_profession, validate_simulation_status_transition, immutable_slug, prevent_last_owner_removal, notify_game_metrics_stale, validate_epoch_status_transition, broadcast_epoch_chat, broadcast_ready_signal, fn_enforce_forge_quota, recompute_reaction_modifier, assign_event_zones, fn_derive_resonance_fields, update_resonance_updated_at, check_resonance_impact_time, compute_effective_magnitude, fn_resolve_alliance_proposal, fn_check_alliance_tension) |
+| Tabellen | 55 (inkl. Forge, Chronicle, Agent Memory, Substrate Resonance, Alliance, Forge Access) |
+| Trigger Functions | 20 (set_updated_at, update_conversation_stats, enforce_single_primary_profession, validate_simulation_status_transition, immutable_slug, prevent_last_owner_removal, notify_game_metrics_stale, validate_epoch_status_transition, broadcast_epoch_chat, broadcast_ready_signal, fn_enforce_forge_quota, recompute_reaction_modifier, assign_event_zones, fn_derive_resonance_fields, update_resonance_updated_at, check_resonance_impact_time, compute_effective_magnitude, fn_resolve_alliance_proposal, fn_check_alliance_tension, fn_sync_architect_flag) |
 | Utility Functions | 12 (role_meets_minimum, generate_slug, validate_taxonomy_value, game_weight_fallback, refresh_all_game_metrics, refresh_building_readiness, refresh_embassy_effectiveness, refresh_zone_stability, resolve_template_id, is_platform_admin, get_user_emails_batch, get_bleed_gazette_feed) |
-| Epoch/Forge/Chronicle Functions | 15 (clone_simulations_for_epoch, archive_epoch_instances, delete_epoch_instances, fn_materialize_shard, get_chronicle_source_data, retrieve_agent_memories, get_campaign_analytics, get_cycle_battle_summary, process_cascade_events, fn_get_resonance_susceptibility, fn_get_resonance_event_types, assign_event_zones, fn_expire_alliance_proposals, fn_deduct_alliance_upkeep, fn_compute_alliance_tension) |
+| Epoch/Forge/Chronicle Functions | 17 (clone_simulations_for_epoch, archive_epoch_instances, delete_epoch_instances, fn_materialize_shard, get_chronicle_source_data, retrieve_agent_memories, get_campaign_analytics, get_cycle_battle_summary, process_cascade_events, fn_get_resonance_susceptibility, fn_get_resonance_event_types, assign_event_zones, fn_expire_alliance_proposals, fn_deduct_alliance_upkeep, fn_compute_alliance_tension, fn_approve_forge_access, fn_reject_forge_access) |
 | Admin RPC Functions | 3 (admin_list_users, admin_get_user, admin_delete_user) |
 | RLS Functions | 4 (user_has_simulation_access, user_has_simulation_role, user_simulation_role, role_meets_minimum) |
-| Functions gesamt | ~53 (ohne unaccent-Varianten und interne Helfer) |
-| Triggers | 55 Eintraege (18 unique Trigger-Functions auf 55 Tabellen/Spalten-Kombinationen) |
-| Regular Views | 8 (4x active_* + simulation_dashboard + conversation_summaries + agent_statistics + campaign_performance) |
+| Functions gesamt | ~56 (ohne unaccent-Varianten und interne Helfer) |
+| Triggers | 56 Eintraege (19 unique Trigger-Functions auf 56 Tabellen/Spalten-Kombinationen) |
+| Regular Views | 9 (4x active_* + simulation_dashboard + conversation_summaries + agent_statistics + campaign_performance + v_pending_forge_requests) |
 | Materialized Views | 4 (mv_building_readiness + mv_zone_stability + mv_embassy_effectiveness + mv_simulation_health) |
-| RLS-Policies | 234+ (inkl. anon SELECT + Forge + Chronicle + Resonance + Alliance + alle frueheren Policies) |
-| Indexes | ~90 (inkl. partial, GIN, pgvector IVFFlat, unique) |
+| RLS-Policies | 238+ (inkl. anon SELECT + Forge + Chronicle + Resonance + Alliance + Forge Access + alle frueheren Policies) |
+| Indexes | ~92 (inkl. partial, GIN, pgvector IVFFlat, unique) |
 | Storage Buckets | 4 |
-| SQL Migrationen | 81 |
+| SQL Migrationen | 93 |
 
 ---
 
@@ -1972,6 +2024,7 @@ process_cascade_events() kann neue Events spawnen (wenn pressure > threshold)
 | `bot_decision_log` | Audit-Trail aller Bot-Entscheidungen pro Zyklus (Migration 041) |
 | `epoch_alliance_proposals` | Allianz-Beitrittsantraege mit Abstimmungsmechanik (Migration 081) |
 | `epoch_alliance_votes` | Abstimmungen ueber Allianz-Antraege (Migration 081) |
+| `forge_access_requests` | Forge-Zugangsantraege fuer Tier-Upgrades (Observer→Architect/Director) (Migration 093) |
 
 ### Typ-Korrekturen
 
@@ -3148,3 +3201,63 @@ Vollstaendige Spaltendefinitionen: siehe [epoch_alliance_proposals](#epoch_allia
 
 - **`epoch_alliance_proposals`:** Oeffentlich lesbar (wie andere Epoch-Daten). INSERT nur fuer Epoch-Teilnehmer.
 - **`epoch_alliance_votes`:** SELECT fuer Team-Mitglieder und Antragsteller. INSERT nur fuer Team-Mitglieder des betroffenen Teams.
+
+---
+
+## Forge Access & Account-Tier-System (Migration 093)
+
+Migration 093 fuehrt das Account-Tier-System und den Forge-Zugangsantragsprozess ein: User beantragen Tier-Upgrades (Observer → Architect/Director), Admins pruefen und genehmigen/ablehnen atomar via SECURITY DEFINER Functions. Die bestehende `user_wallets.is_architect`-Spalte wird per Trigger aus dem neuen `account_tier`-Feld abgeleitet (Abwaertskompatibilitaet).
+
+### Neue Tabelle
+
+#### `forge_access_requests`
+
+```sql
+CREATE TABLE public.forge_access_requests (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    requested_tier text NOT NULL DEFAULT 'architect'
+        CHECK (requested_tier IN ('architect', 'director')),
+    status text NOT NULL DEFAULT 'pending'
+        CHECK (status IN ('pending', 'approved', 'rejected')),
+    message text,                                        -- User-Begruendung, max 500 Zeichen
+    admin_notes text,                                    -- Reviewer-Feedback
+    reviewed_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    reviewed_at timestamptz
+);
+
+-- Nur ein offener Antrag pro User
+CREATE UNIQUE INDEX idx_forge_access_one_pending
+    ON public.forge_access_requests (user_id) WHERE status = 'pending';
+
+-- Schnelle Admin-Abfragen
+CREATE INDEX idx_forge_access_pending
+    ON public.forge_access_requests (status) WHERE status = 'pending';
+```
+
+### Neue Spalte
+
+- **`user_wallets.account_tier`** — `text NOT NULL DEFAULT 'observer'` CHECK (`'observer'`, `'architect'`, `'director'`). Ersetzt `is_architect` als primaere Tier-Bestimmung. Backfill bei Migration: `is_architect = true` → `account_tier = 'architect'`.
+
+### Neue Triggers
+
+| Trigger | Tabelle | Event | Funktion | Beschreibung |
+|---------|---------|-------|----------|-------------|
+| `trg_sync_architect_flag` | `user_wallets` | BEFORE INSERT OR UPDATE OF account_tier | `fn_sync_architect_flag()` | Synchronisiert `is_architect` Boolean aus `account_tier` fuer Abwaertskompatibilitaet |
+
+### Neue Functions
+
+| Funktion | Parameter | Returns | Beschreibung |
+|----------|-----------|---------|-------------|
+| `fn_approve_forge_access()` | `(p_request_id uuid, p_admin_notes text, p_reviewer_id uuid)` | jsonb | Atomare Genehmigung: Sperrt Request, setzt `status='approved'`, Upsert `user_wallets.account_tier`, gibt `{request_id, user_id, user_email, email_locale, requested_tier, status}` zurueck. SECURITY DEFINER. |
+| `fn_reject_forge_access()` | `(p_request_id uuid, p_admin_notes text, p_reviewer_id uuid)` | jsonb | Ablehnung: Sperrt Request, setzt `status='rejected'`, gibt User-Details zurueck. SECURITY DEFINER. |
+| `fn_sync_architect_flag()` | trigger | trigger | Setzt `NEW.is_architect := (NEW.account_tier != 'observer')`. BEFORE INSERT/UPDATE Trigger auf `user_wallets`. |
+
+### Neue View
+
+- **`v_pending_forge_requests`** — Joind `forge_access_requests` + `auth.users`, filtert `WHERE status='pending'`, sortiert nach `created_at ASC`. Spalten: `id`, `user_id`, `user_email`, `requested_tier`, `status`, `message`, `admin_notes`, `reviewed_by`, `created_at`, `reviewed_at`.
+
+### RLS
+
+- **`forge_access_requests`:** User SELECT/INSERT eigene Antraege (`auth.uid() = user_id`). Admin SELECT/UPDATE alle (`is_platform_admin()`).

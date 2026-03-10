@@ -1,8 +1,8 @@
 ---
 title: "API Specification"
 id: api-specification
-version: "2.1"
-date: 2026-03-04
+version: "2.2"
+date: 2026-03-10
 lang: de
 type: spec
 status: active
@@ -1938,6 +1938,64 @@ Resonanz soft-deleten.
 
 ---
 
+## 33. Forge Access Requests (Platform-Level)
+
+Account-Tier-System (observer → architect → director) mit Request/Approve/Reject-Workflow. Bureau Clearance fuer Forge-Zugang.
+
+### `POST /api/v1/forge/access-requests/`
+Clearance-Antrag erstellen. 409 bei bereits vorhandenem pendingem Antrag.
+
+**Auth:** Authentifizierter Benutzer
+
+**Body:**
+```json
+{
+  "message": "Optional: Begruendung fuer Forge-Zugang"
+}
+```
+
+**Response:** `SuccessResponse[ForgeAccessRequest]` (Status 201)
+
+### `GET /api/v1/forge/access-requests/me`
+Letzten eigenen Antrag abrufen.
+
+**Auth:** Authentifizierter Benutzer
+
+**Response:** `SuccessResponse[ForgeAccessRequest | null]`
+
+### `GET /api/v1/forge/access-requests/pending`
+Alle offenen Antraege mit Benutzer-Emails auflisten.
+
+**Auth:** Platform-Admin (`require_platform_admin()`)
+
+**Response:** `SuccessResponse[ForgeAccessRequestWithEmail[]]`
+
+### `GET /api/v1/forge/access-requests/pending/count`
+Anzahl offener Antraege.
+
+**Auth:** Platform-Admin (`require_platform_admin()`)
+
+**Response:** `SuccessResponse[{ count: number }]`
+
+### `POST /api/v1/forge/access-requests/{request_id}/review`
+Antrag genehmigen oder ablehnen. Ruft SECURITY DEFINER RPC auf, loest bilinguale Email-Benachrichtigung aus.
+
+**Auth:** Platform-Admin (`require_platform_admin()`)
+
+**Body:**
+```json
+{
+  "action": "approve",
+  "admin_notes": "Optional: Anmerkungen des Admins"
+}
+```
+
+`action` akzeptiert `"approve"` oder `"reject"`.
+
+**Response:** `SuccessResponse[ForgeAccessRequest]`
+
+---
+
 ## Endpoint-Zusammenfassung
 
 | Bereich | Endpoints | Methoden |
@@ -1975,6 +2033,7 @@ Resonanz soft-deleten.
 | Aptitudes | 3 | GetForAgent + UpdateForAgent + ListForSimulation |
 | Zone Actions | 3 | List + Create + Cancel |
 | Resonances | 9 | CRUD + ProcessImpact + Impacts + Status + Restore |
+| Forge Access | 5 | Create + Me + Pending + PendingCount + Review |
 | Admin | 11 | Settings (2) + Users (3) + Memberships (3) + Cleanup (3) |
 | Public | 48 | Anonymer Lesezugriff (alle GET-only) |
-| **Gesamt** | **269** | **35 Router** |
+| **Gesamt** | **274** | **36 Router** |

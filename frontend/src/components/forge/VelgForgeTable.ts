@@ -298,6 +298,10 @@ export class VelgForgeTable extends LitElement {
         margin-bottom: var(--space-10);
       }
 
+      .deployment-section:has(velg-forge-scan-overlay[active]) {
+        min-height: 340px;
+      }
+
       .deployment-section velg-forge-scan-overlay {
         position: absolute;
         inset: 0;

@@ -1411,6 +1411,26 @@ export interface NotificationPreferences {
   email_locale: string;
 }
 
+// --- Forge Access Requests ---
+
+export type ForgeAccessStatus = 'pending' | 'approved' | 'rejected';
+
+export interface ForgeAccessRequest {
+  id: string;
+  user_id: string;
+  requested_tier: string;
+  status: ForgeAccessStatus;
+  message: string | null;
+  admin_notes: string | null;
+  reviewed_by: string | null;
+  created_at: string;
+  reviewed_at: string | null;
+}
+
+export interface ForgeAccessRequestWithEmail extends ForgeAccessRequest {
+  user_email: string;
+}
+
 // --- Admin Data Cleanup ---
 
 export type CleanupType =

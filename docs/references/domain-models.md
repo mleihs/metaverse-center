@@ -1,8 +1,8 @@
 ---
 title: "Domain Models"
 id: domain-models
-version: "3.1"
-date: 2026-03-07
+version: "3.2"
+date: 2026-03-10
 lang: de
 type: reference
 status: active
@@ -1411,3 +1411,42 @@ Additional template types beyond the base set:
 | `memory_reflection` | Synthesize memories into insights |
 | `event_echo_transformation` | Transform events across simulations (bleed) |
 | `resonance_impact_generation` | Generate events when resonance impacts a simulation |
+
+---
+
+## 24. Account Tiers & Forge Access
+
+**Platform-level access control.** Account Tiers govern Forge access and simulation creation. Separate from Simulation Roles (owner/admin/editor/viewer), which are simulation-scoped.
+
+```typescript
+type AccountTier = 'observer' | 'architect' | 'director';
+
+type ForgeAccessStatus = 'pending' | 'approved' | 'rejected';
+
+interface ForgeAccessRequest {
+  id: UUID;
+  user_id: UUID;
+  requested_tier: AccountTier;
+  status: ForgeAccessStatus;
+  message?: string;                   // User's application message
+  admin_notes?: string;               // Platform admin review notes
+  reviewed_by?: UUID;                 // Admin who reviewed the request
+  created_at: string;                 // ISO 8601
+  reviewed_at?: string;               // ISO 8601
+}
+
+interface ForgeAccessRequestWithEmail extends ForgeAccessRequest {
+  user_email: string;                 // From v_pending_forge_requests view (admin use)
+}
+```
+
+**UserWallet (updated):**
+
+```typescript
+interface UserWallet {
+  // ... existing fields ...
+  account_tier: AccountTier;          // Default 'observer'. Controls Forge access.
+  is_architect: boolean;              // Maintained via DB trigger for backward compat.
+                                      // TRUE when account_tier IN ('architect', 'director').
+}
+```

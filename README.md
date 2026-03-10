@@ -227,16 +227,16 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
            ▼        │
 ┌──────────────┐    │
 │   FastAPI     │    │
-│  ~305 endpoints│    │
-│   37 routers  │    │
+│  ~310 endpoints│    │
+│   38 routers  │    │
 │   PyJWT auth  │    │
 └──────┬───────┘    │
        │            │
        ▼            ▼
 ┌──────────────────────────┐
 │   Supabase (PostgreSQL)       │
-│   60 tables + pgvector         │
-│   ~68 functions, 27 triggers   │
+│   61 tables + pgvector         │
+│   ~71 functions, 28 triggers   │
 │   250+ RLS policies           │
 │   4 materialized views        │
 │   Realtime channels           │
@@ -295,7 +295,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 
 | Component | Technology |
 |:----------|:-----------|
-| Database | PostgreSQL via Supabase (60 tables, ~68 functions, 250+ RLS policies, pgvector embeddings) |
+| Database | PostgreSQL via Supabase (61 tables, ~71 functions, 250+ RLS policies, pgvector embeddings) |
 | Auth | Supabase Auth (JWT with ES256 in production, HS256 locally) |
 | Email | SMTP SSL (bilingual tactical briefing emails, fog-of-war compliant) |
 | AI Text | OpenRouter (model fallback chain) |
@@ -311,13 +311,13 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 
 | Metric | Count |
 |:-------|------:|
-| Database tables | 60 |
-| PostgreSQL functions | ~68 |
-| Database trigger functions | 27 |
-| Views (regular + materialized) | 9 + 4 |
+| Database tables | 61 |
+| PostgreSQL functions | ~71 |
+| Database trigger functions | 28 |
+| Views (regular + materialized) | 10 + 4 |
 | RLS policies | 250+ |
-| SQL migrations | 91 |
-| API endpoints | ~305 across 37 routers |
+| SQL migrations | 94 |
+| API endpoints | ~310 across 38 routers |
 | Web Components | 133 custom elements |
 | Backend tests | 1,052 |
 | Frontend tests | 453 |
@@ -329,7 +329,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 | Scoring dimensions | 5 |
 | Bot personalities | 5 archetypes x 3 difficulty levels |
 | Theme presets | 6 (WCAG 2.1 AA validated, 1 exempt joke preset) |
-| Email templates | 5 (bilingual, per-simulation themed + signup confirmation) |
+| Email templates | 7 (bilingual, per-simulation themed + signup confirmation + clearance granted/denied) |
 
 ---
 
@@ -353,7 +353,9 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 - **Full i18n** &mdash; English + German (3,160 localized strings, 0 missing translations)
 - **How-to-Play tutorial** &mdash; 28-section interactive guide (World, Competitive Play, Advanced Mechanics, Reference), worked match replays, changelog, ECharts Intelligence Report
 - **Substrate Resonances** &mdash; platform-level event propagation through 8 archetypes that modify operative effectiveness during competitive epochs, with zone pressure bonuses, attacker penalties, and bot awareness
-- **Platform admin panel** &mdash; user/membership management, runtime cache TTL controls, resonance auto-processing scheduler
+- **Forge access control** &mdash; three-tier account system (Field Observer &rarr; Reality Architect &rarr; Director) with request/approve/reject workflow, admin clearance management panel, bilingual email notifications, atomic SECURITY DEFINER RPC approval
+- **Breadcrumb simulation switcher** &mdash; dropdown in the simulation shell breadcrumb for quick switching between simulations while staying on the current tab; keyboard-navigable (arrow keys, Home/End, Escape), ARIA listbox pattern
+- **Platform admin panel** &mdash; user/membership management, runtime cache TTL controls, resonance auto-processing scheduler, forge clearance request management with pending badge
 - **Bureau auth terminals** &mdash; themed login/register screens with scanlines, corner brackets, amber glow, blinking cursor, styled signup confirmation email
 - **SEO** &mdash; JSON-LD structured data, dynamic sitemap, slug-based URLs, crawler meta injection
 - **Public-first browsing** &mdash; full read access without authentication
@@ -409,10 +411,10 @@ npx playwright test                      # 81 specs
 
 ```
 backend/
-  app.py                    # FastAPI entry (37 routers registered)
+  app.py                    # FastAPI entry (38 routers registered)
   logging_config.py         # structlog setup (JSON/console, noisy logger suppression)
   dependencies.py           # JWT auth, Supabase clients, role checking
-  routers/                  # 37 route modules (public, admin, entity, epoch)
+  routers/                  # 38 route modules (public, admin, entity, epoch, forge access)
   models/                   # Pydantic model files
   services/                 # Service modules (BaseService CRUD, AI, email, bots, logging)
   middleware/               # SEO injection, logging context (request_id, user_id)
@@ -426,7 +428,7 @@ frontend/
     types/                  # TypeScript interfaces + Zod schemas
     locales/                # i18n (XLIFF source + generated output)
 supabase/
-  migrations/               # 91 SQL migration files
+  migrations/               # 94 SQL migration files
   seed/                     # Seed data (7 active, 11 archived)
 scripts/                    # Image generation, epoch simulation, doc index generation
 docs/                       # 39 documents (Divio structure)
@@ -451,8 +453,8 @@ The `docs/` directory contains 40 documents organized in [Divio](https://docs.di
 
 | Category | Count | Contents |
 |:---------|------:|:---------|
-| **specs/** | 14 | Platform Architecture, API (~305 endpoints), Auth, AI, Theming, Embassies, Epochs, Game Systems, Substrate Resonances |
-| **references/** | 5 | Database Schema (v3.3, 58 tables), Domain Models, Feature Catalog, Components, Design System |
+| **specs/** | 14 | Platform Architecture, API (~310 endpoints), Auth, AI, Theming, Embassies, Epochs, Game Systems, Substrate Resonances |
+| **references/** | 5 | Database Schema (v3.5, 61 tables), Domain Models, Feature Catalog, Components, Design System |
 | **guides/** | 7 | Deployment (v1.3, 15 migration lessons), Testing, Migration, Implementation Plan (160 tasks), Simulation Blueprint, Playtest, Epoch Gameplay Guide |
 | **explanations/** | 5 | Project Overview, Techstack, Game Design Document, Concept Lore, TCG Card System |
 | **analysis/** | 6 | Epoch balance reports (2P-5P + cross-reference + playthrough verification) |

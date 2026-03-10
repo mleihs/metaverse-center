@@ -39,6 +39,7 @@ from backend.routers import (
     epochs,
     events,
     forge,
+    forge_access,
     game_mechanics,
     generation,
     health,
@@ -144,6 +145,7 @@ app.include_router(echoes.router)
 app.include_router(embassies.router)
 app.include_router(connections.router)
 app.include_router(forge.router)
+app.include_router(forge_access.router)
 app.include_router(chronicles.router)
 app.include_router(agent_memories.router)
 app.include_router(game_mechanics.router)
