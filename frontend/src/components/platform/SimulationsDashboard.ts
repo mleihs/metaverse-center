@@ -1220,17 +1220,23 @@ export class VelgSimulationsDashboard extends LitElement {
     this._error = null;
 
     try {
+      const isAuth = appState.isAuthenticated.value;
       const promises: Promise<void>[] = [
         this._loadSimulations(),
         this._loadActiveResonances(),
       ];
 
-      if (appState.isAuthenticated.value) {
+      if (isAuth) {
         promises.push(this._loadDashboard());
         promises.push(this._loadAllSimulations());
       }
 
       await Promise.all(promises);
+
+      // For guests, use the (only) simulations list as the community pool, shuffled
+      if (!isAuth) {
+        this._allSimulations = [...this._simulations].sort(() => Math.random() - 0.5);
+      }
     } finally {
       this._loading = false;
     }
@@ -1256,7 +1262,8 @@ export class VelgSimulationsDashboard extends LitElement {
       const response = await simulationsApi.listPublic();
       const items = Array.isArray(response.data) ? response.data : [];
       if (response.success) {
-        this._allSimulations = items;
+        // Shuffle so community shards appear in random order each page load
+        this._allSimulations = items.sort(() => Math.random() - 0.5);
       }
     } catch {
       // Non-critical — community shards just won't show
@@ -1642,8 +1649,7 @@ export class VelgSimulationsDashboard extends LitElement {
     const isAuth = appState.isAuthenticated.value;
     const myShards = isAuth ? this._simulations : [];
     const memberIds = new Set(myShards.map((s) => s.id));
-    const publicSims = isAuth ? this._allSimulations : this._simulations;
-    const communityShards = publicSims.filter((s) => !memberIds.has(s.id));
+    const communityShards = this._allSimulations.filter((s) => !memberIds.has(s.id));
 
     return html`
       ${isAuth ? this._renderMyShards(myShards) : nothing}
