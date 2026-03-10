@@ -30,12 +30,15 @@ class ImageService:
         simulation_id: UUID,
         replicate_api_key: str | None = None,
         openrouter_api_key: str | None = None,
+        world_context: str = "",
     ):
         self._supabase = supabase
         self._simulation_id = simulation_id
         self._replicate = ReplicateService(api_key=replicate_api_key)
         self._generation = GenerationService(
-            supabase, simulation_id, openrouter_api_key=openrouter_api_key,
+            supabase, simulation_id,
+            openrouter_api_key=openrouter_api_key,
+            world_context=world_context,
         )
         self._model_resolver = ModelResolver(supabase, simulation_id)
 
@@ -331,6 +334,7 @@ class ImageService:
         raw_bytes = await self._replicate.generate_image(
             model=image_model.model,
             prompt=description,
+            prompt_key=image_model.prompt_param_name,
             **params,
         )
 

@@ -16,11 +16,19 @@ ForgeStatus = Literal["draft", "processing", "completed", "failed"]
 
 
 class ForgeGenerationConfig(BaseModel):
-    """User-chosen entity counts for world generation."""
+    """User-chosen entity counts and quality settings for world generation."""
     agent_count: int = Field(default=6, ge=3, le=12)
     building_count: int = Field(default=7, ge=3, le=12)
     zone_count: int = Field(default=5, ge=3, le=8)
     street_count: int = Field(default=5, ge=3, le=8)
+    deep_research: bool = Field(
+        default=True,
+        description=(
+            "Run a dedicated LLM research step before lore generation. "
+            "Produces concept-lore-quality output grounded in real literary, "
+            "philosophical, and architectural traditions. Costs ~$0.002 extra."
+        ),
+    )
 
 
 # ── Lore Models ────────────────────────────────────────────────────────

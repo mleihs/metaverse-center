@@ -14,7 +14,7 @@ from tavily import TavilyClient
 
 from backend.config import settings
 from backend.models.forge import PhilosophicalAnchor
-from backend.services.ai_utils import get_openrouter_model
+from backend.services.ai_utils import RESEARCH_MODEL, get_openrouter_model
 
 logger = logging.getLogger(__name__)
 
@@ -145,6 +145,103 @@ class ResearchService:
         except Exception:
             logger.exception("Tavily search failed")
             return f"Search failed for '{seed}'. Fallback to base seed concepts."
+
+    @classmethod
+    async def research_for_lore(
+        cls,
+        seed: str,
+        anchor: dict,
+        astrolabe_context: str = "",
+        openrouter_key: str | None = None,
+    ) -> str:
+        """Run deep LLM-based research to produce concept-lore-quality context.
+
+        Uses a dedicated research agent to identify specific literary works,
+        philosophical frameworks, and architectural vocabularies relevant to
+        the world being created. Optionally augments with Tavily web search
+        if a key is configured.
+
+        Returns a synthesized research brief that feeds the BUREAU_ARCHIVIST_PROMPT.
+        """
+        title = anchor.get("title", "")
+        core_question = anchor.get("core_question", "")
+        literary_influence = anchor.get("literary_influence", "")
+        description = anchor.get("description", "")
+
+        parts: list[str] = []
+
+        # Carry forward Astrolabe research if available
+        if astrolabe_context:
+            parts.append(f"[PRIOR ASTROLABE RESEARCH]\n{astrolabe_context}")
+
+        # ── Primary: LLM research agent (cheap model) ────────────────
+        research_agent = Agent(
+            get_openrouter_model(openrouter_key, model_id=RESEARCH_MODEL),
+            system_prompt=(
+                "You are a research librarian specializing in comparative literature, "
+                "philosophy, and architectural history. Your task is to produce a "
+                "research brief that will ground worldbuilding lore in real intellectual "
+                "traditions.\n\n"
+                "For each research axis, cite SPECIFIC works, authors, movements, and "
+                "dates. Do not invent references — only cite real sources. Be precise: "
+                "author name, work title, year, and the specific concept or technique "
+                "that applies.\n\n"
+                "Format your output as three labeled sections:\n"
+                "[LITERARY GENEALOGY] — 3-5 specific literary works/authors and what "
+                "narrative techniques they contribute (e.g., unreliable narration, "
+                "document fiction, competing accounts, institutional voice)\n\n"
+                "[PHILOSOPHICAL FRAMEWORK] — 2-3 philosophical traditions or thinkers "
+                "and how their concepts map to worldbuilding mechanics (e.g., "
+                "epistemological instability → competing origin stories)\n\n"
+                "[ARCHITECTURAL & VISUAL VOCABULARY] — 2-3 specific architectural "
+                "movements, materials, and visual references with dates "
+                "(e.g., Soviet Constructivism 1920s: Tatlin's Tower, El Lissitzky "
+                "poster art; or Art Nouveau ironwork: Hector Guimard Métro entrances)\n\n"
+                "Be rigorous. Cite real works. Connect each reference to a specific "
+                "worldbuilding application."
+            ),
+        )
+
+        research_prompt = (
+            f"Research the following world concept for a simulation lore scroll:\n\n"
+            f"SEED: {seed}\n"
+            f"ANCHOR TITLE: {title}\n"
+            f"CORE QUESTION: {core_question}\n"
+            f"LITERARY INFLUENCE: {literary_influence}\n"
+            f"DESCRIPTION: {description}\n\n"
+            f"Produce a research brief covering literary genealogy, philosophical "
+            f"framework, and architectural/visual vocabulary for this world."
+        )
+
+        try:
+            result = await research_agent.run(research_prompt)
+            parts.append(f"[LLM RESEARCH]\n{result.output}")
+            logger.debug("LLM lore research completed")
+        except Exception:
+            logger.exception("LLM lore research failed")
+
+        # ── Optional: Tavily web search augmentation ────────────────
+        if tavily:
+            query = (
+                f"{literary_influence} {core_question} {seed}"
+                if literary_influence
+                else f"{title} {core_question} literature philosophy"
+            )
+            try:
+                def _search(q=query):
+                    return tavily.search(
+                        query=q, search_depth="advanced", include_answer=True,
+                    )
+
+                result = await anyio.to_thread.run_sync(_search)
+                answer = result.get("answer", "")
+                if answer:
+                    parts.append(f"[WEB SEARCH AUGMENTATION]\n{answer}")
+                    logger.debug("Tavily augmentation completed")
+            except Exception:
+                logger.exception("Tavily augmentation failed — continuing without")
+
+        return "\n\n".join(parts)
 
     @classmethod
     async def generate_anchors(

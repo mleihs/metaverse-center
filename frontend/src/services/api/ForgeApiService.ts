@@ -29,6 +29,7 @@ export interface ForgeGenerationConfig {
   building_count: number;
   zone_count: number;
   street_count: number;
+  deep_research: boolean;
 }
 
 export interface ForgeLoreSection {

@@ -34,9 +34,11 @@ class GenerationService:
         supabase: Client,
         simulation_id: UUID,
         openrouter_api_key: str | None = None,
+        world_context: str = "",
     ):
         self._supabase = supabase
         self._simulation_id = simulation_id
+        self._world_context = world_context
         self._prompt_resolver = PromptResolver(supabase, simulation_id)
         self._model_resolver = ModelResolver(supabase, simulation_id)
         self._openrouter = OpenRouterService(api_key=openrouter_api_key)
@@ -170,6 +172,7 @@ class GenerationService:
             "simulation_description": sim_description,
             "atmosphere": anchor.get("title", "mysterious"),
             "zones": ", ".join(zone_summaries) if zone_summaries else "",
+            "world_context": self._world_context,
         }
 
         try:
@@ -208,6 +211,7 @@ class GenerationService:
             "agent_name": agent_name,
             "simulation_name": await self._get_simulation_name(),
             "locale_name": "English",
+            "world_context": self._world_context,
         }
         if agent_data:
             variables["agent_character"] = agent_data.get("character", "")
@@ -246,6 +250,7 @@ class GenerationService:
             "zone_name": data.get("zone_name", ""),
             "simulation_name": await self._get_simulation_name(),
             "locale_name": "English",
+            "world_context": self._world_context,
         }
 
         result = await self._generate(
@@ -271,6 +276,7 @@ class GenerationService:
             "section_title": section_title,
             "section_body": section_body[:500],
             "simulation_name": await self._get_simulation_name(),
+            "world_context": self._world_context,
         }
 
         try:

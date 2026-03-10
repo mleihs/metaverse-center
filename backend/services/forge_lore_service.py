@@ -18,6 +18,13 @@ BUREAU_ARCHIVIST_PROMPT = (
     "You are the Bureau Archivist at the Bureau of Impossible Geography. "
     "Your task is to write the foundational lore for a newly materialized simulation shard. "
     "This lore appears as the 'Lore Scroll' — the first thing a visitor reads.\n\n"
+    "You are not summarizing a world. You are performing RESEARCH — establishing the cosmological "
+    "identity, visual language, and narrative logic that will define how this Shard looks, feels, "
+    "and behaves. Every image, portrait, and building illustration will be generated FROM this "
+    "lore. Your writing IS the world's visual brief.\n\n"
+    #
+    # ── Structure ──────────────────────────────────────────────
+    #
     "STRUCTURE RULES:\n"
     "- Generate 5-7 sections across 2-3 chapters.\n"
     "- Each chapter should have a thematic roman numeral arcanum (e.g. 'I', 'II', 'III').\n"
@@ -25,15 +32,65 @@ BUREAU_ARCHIVIST_PROMPT = (
     "- Each section may optionally have an epigraph — a brief literary quote or motto.\n"
     "- The body should be 2-4 paragraphs of rich, atmospheric prose.\n"
     "- 2-3 sections should include an image_slug (snake_case identifier like 'city_gates', "
-    "'council_chamber', 'harbor_mist') and an image_caption describing the scene.\n"
+    "'council_chamber', 'harbor_mist') and an image_caption describing the scene visually.\n"
     "- Sections without images should have image_slug and image_caption as null.\n\n"
-    "TONE:\n"
+    #
+    # ── Research Tasks (concept-lore quality) ──────────────────
+    #
+    "RESEARCH TASKS — your lore must ESTABLISH these:\n\n"
+    "1. VISUAL IDENTITY: In the first section, describe the world's dominant materials, "
+    "light quality, weather patterns, and architectural character. This is the visual "
+    "vocabulary that all images will draw from. Be SPECIFIC — not 'dark and mysterious' "
+    "but 'basalt corridors lit by bioluminescent lichen, perpetual rain on copper rooftops, "
+    "pneumatic tubes carrying compressed memories between archive towers.'\n\n"
+    "2. BLEED SIGNATURE: Define how this world's essence would contaminate adjacent realities. "
+    "What leaks out? (Sound? Temperature? Grammar? Gravity?) How does the contamination "
+    "manifest physically? This is unique to each Shard.\n\n"
+    "3. COMPETING ACCOUNTS: Present at least 2 different interpretations of the world's "
+    "origin or nature. Characters, institutions, or factions should disagree. Truth is "
+    "epistemologically unstable in the multiverse.\n\n"
+    "4. INSTITUTIONAL LOGIC: Establish the systems that govern this world — bureaucracies, "
+    "rituals, economies, or customs. Not just what exists, but WHY it exists and what "
+    "happens when it breaks.\n\n"
+    "5. DOCUMENT DEGRADATION: 1-3 times across all sections, use markers like [CONSUMED], "
+    "[DEGRADED], [ILLEGIBLE], or [REDACTED] to suggest the phenomenon corrupts its own "
+    "documentation. The degradation pattern should match the world's theme "
+    "(a fire-world burns its margins; a memory-world loses proper nouns).\n\n"
+    #
+    # ── Tone & Technique ──────────────────────────────────────
+    #
+    "TONE & TECHNIQUE:\n"
     "- Write as if documenting a real place that exists in a liminal bureaucratic multiverse.\n"
     "- Balance literary depth with accessibility. Evocative, not purple.\n"
-    "- Weave the philosophical anchor's themes throughout.\n"
-    "- Reference the actual agents, buildings, and geography by name to create coherence.\n"
-    "- The first section should serve as a 'gateway' introduction to the world.\n"
-    "- The last section should hint at the world's tensions and unresolved questions."
+    "- Use SEMANTIC LAYERING: 'X is not Y; X is Z' — redefine concepts through contrast.\n"
+    "- Use INSTITUTIONAL HUMOUR: absurdity within logical frameworks. Bureaucracy as horror.\n"
+    "- Use FRAGMENT ARCHAEOLOGY: imply inaccessible truths through truncation, contradictory "
+    "accounts, margin notes, or incomplete citations.\n"
+    "- Alternate voice registers: archival-scholarly, bureaucratic-clinical, "
+    "poetic-intimate, oracular-compressed. Rotate every 300-500 words.\n"
+    "- Weave the philosophical anchor's themes throughout as structural DNA, not decoration.\n"
+    "- Reference the actual agents, buildings, and geography by name. Ground the cosmic "
+    "in the local — a universal theme should manifest as a specific smell, a specific "
+    "door, a specific conversation overheard in a specific district.\n"
+    "- The first section must serve as a 'gateway' — establish visual identity immediately.\n"
+    "- The last section should hint at the world's unresolved tensions and open questions.\n"
+    "- image_caption fields must be VISUAL DESCRIPTIONS of the scene (materials, light, "
+    "composition, atmosphere) — these will be used as image generation prompts.\n\n"
+    #
+    # ── Research Grounding ──────────────────────────────────────
+    #
+    "RESEARCH GROUNDING (CRITICAL):\n"
+    "Your lore must be grounded in REAL intellectual traditions, not generic fantasy.\n"
+    "- Epigraphs: use quotes from real authors (cite author and work). Choose from "
+    "the literary influence specified in the anchor, or from adjacent traditions.\n"
+    "- Architectural descriptions: reference specific real-world movements and materials "
+    "(e.g., 'Brutalist béton brut', 'Art Nouveau ironwork', 'Metabolist megastructures', "
+    "'Deconstructivist angles'). Name specific architects or buildings if appropriate.\n"
+    "- Philosophical underpinning: weave specific concepts from real thinkers "
+    "(e.g., Foucault's panopticon, Bergson's durée, Borges' infinite library) "
+    "into the world's logic — not as name-drops but as structural DNA.\n"
+    "- If research context is provided below, use it as your primary reference material. "
+    "Adapt and transform — do not copy verbatim."
 )
 
 LORE_TRANSLATOR_PROMPT = (
@@ -63,8 +120,13 @@ class ForgeLoreService:
         agents: list[dict[str, Any]],
         buildings: list[dict[str, Any]],
         openrouter_key: str | None = None,
+        research_context: str = "",
     ) -> list[dict[str, Any]]:
-        """Generate lore sections via AI based on full world context.
+        """Generate lore sections via AI based on full world context + research.
+
+        The ``research_context`` parameter carries web-sourced literary,
+        philosophical, and architectural research that grounds the lore in
+        real-world references — producing concept-lore-quality output.
 
         Returns a list of section dicts matching ForgeLoreSection fields.
         """
@@ -74,7 +136,39 @@ class ForgeLoreService:
         building_names = ", ".join(b.get("name", "?") for b in buildings[:12])
         zone_names = ", ".join(z.get("name", "?") for z in geography.get("zones", []))
 
+        # Build agent details block — character + background for grounding
+        agent_details = []
+        for a in agents[:8]:
+            name = a.get("name", "?")
+            prof = a.get("primary_profession", "")
+            char_snippet = (a.get("character", "") or "")[:150]
+            agent_details.append(f"  - {name} ({prof}): {char_snippet}")
+        agent_block = "\n".join(agent_details) if agent_details else agent_names
+
+        # Build building details block
+        building_details = []
+        for b in buildings[:8]:
+            name = b.get("name", "?")
+            btype = b.get("building_type", "")
+            desc_snippet = (b.get("description", "") or "")[:150]
+            building_details.append(f"  - {name} ({btype}): {desc_snippet}")
+        building_block = "\n".join(building_details) if building_details else building_names
+
+        # Build the research section
+        research_block = ""
+        if research_context:
+            research_block = (
+                f"══════════════════════════════════════════════\n"
+                f"WEB RESEARCH — use this to ground your lore in real literary,\n"
+                f"philosophical, and architectural references. Cite specific works,\n"
+                f"authors, and movements. Adapt and transform — do not copy.\n"
+                f"══════════════════════════════════════════════\n\n"
+                f"{research_context}\n\n"
+                f"══════════════════════════════════════════════\n\n"
+            )
+
         prompt = (
+            f"{research_block}"
             f"Write the founding lore for this simulation world:\n\n"
             f"SEED: {seed}\n\n"
             f"PHILOSOPHICAL ANCHOR:\n"
@@ -85,10 +179,13 @@ class ForgeLoreService:
             f"GEOGRAPHY:\n"
             f"  City: {geography.get('city_name', 'Unnamed')}\n"
             f"  Districts: {zone_names}\n\n"
-            f"INHABITANTS: {agent_names}\n"
-            f"STRUCTURES: {building_names}\n\n"
-            f"Write the Lore Scroll. Reference specific places, people, and buildings "
-            f"to make the world feel alive and interconnected."
+            f"INHABITANTS:\n{agent_block}\n\n"
+            f"STRUCTURES:\n{building_block}\n\n"
+            f"Write the Lore Scroll. Use the research above to ground your writing "
+            f"in specific literary traditions, philosophical frameworks, and "
+            f"architectural vocabularies. Reference specific places, people, and "
+            f"buildings to make the world feel alive and interconnected. "
+            f"Epigraphs should draw from real literary works when possible."
         )
 
         agent = Agent(

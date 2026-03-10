@@ -431,6 +431,33 @@ class ForgeOrchestratorService:
             else:
                 or_key, _ = await ForgeOrchestratorService._get_user_keys(supabase, user_id)
 
+                # Extract Astrolabe research from draft
+                astrolabe_ctx = ""
+                raw_research = draft_data.get("research_context") or {}
+                if isinstance(raw_research, dict):
+                    astrolabe_ctx = raw_research.get("raw_data", "")
+
+                # Deep research: dedicated LLM call (cheap model) to
+                # produce literary/philosophical/architectural grounding.
+                # User-togglable via generation_config.deep_research.
+                raw_config = draft_data.get("generation_config") or {}
+                gen_config = ForgeGenerationConfig(**raw_config)
+
+                research_context = astrolabe_ctx
+                if gen_config.deep_research:
+                    try:
+                        research_context = await ResearchService.research_for_lore(
+                            seed=seed,
+                            anchor=anchor,
+                            astrolabe_context=astrolabe_ctx,
+                            openrouter_key=or_key,
+                        )
+                    except Exception:
+                        logger.exception(
+                            "Deep research failed — using Astrolabe context only",
+                            extra={"simulation_id": str(sim_id)},
+                        )
+
                 try:
                     lore_sections = await ForgeLoreService.generate_lore(
                         seed=seed,
@@ -439,6 +466,7 @@ class ForgeOrchestratorService:
                         agents=agents,
                         buildings=buildings,
                         openrouter_key=or_key,
+                        research_context=research_context,
                     )
                     # Translate lore to German
                     translations = None
@@ -567,16 +595,14 @@ class ForgeOrchestratorService:
         """
         logger.info("Starting batch image generation", extra={"simulation_id": str(simulation_id)})
 
-        or_key, rep_key = await ForgeOrchestratorService._get_user_keys(supabase, user_id)
+        try:
+            or_key, rep_key = await ForgeOrchestratorService._get_user_keys(supabase, user_id)
+        except Exception:
+            logger.exception("Failed to fetch BYOK keys — using platform keys", extra={"simulation_id": str(simulation_id)})
+            or_key, rep_key = None, None
 
-        image_service = ImageService(
-            supabase,
-            simulation_id,
-            replicate_api_key=rep_key,
-            openrouter_api_key=or_key,
-        )
-
-        # 1. Banner image (most visible on dashboard)
+        # 1. Build world context from persisted lore + anchor
+        #    This is the research output that informs ALL image generation.
         sim_resp = (
             supabase.table("simulations")
             .select("name, description, slug")
@@ -585,6 +611,18 @@ class ForgeOrchestratorService:
             .execute()
         )
         sim_data = sim_resp.data or {}
+
+        world_context = cls._build_world_context(
+            supabase, simulation_id, sim_data, anchor_data,
+        )
+
+        image_service = ImageService(
+            supabase,
+            simulation_id,
+            replicate_api_key=rep_key,
+            openrouter_api_key=or_key,
+            world_context=world_context,
+        )
 
         try:
             await image_service.generate_banner_image(
@@ -618,17 +656,26 @@ class ForgeOrchestratorService:
         # 3. Building images
         buildings = (
             supabase.table("buildings")
-            .select("id, name, description, building_type")
+            .select("id, name, description, building_type, building_condition, building_style, special_type, construction_year, population_capacity, zones(name)")
             .eq("simulation_id", str(simulation_id))
             .execute()
         )
         for building in buildings.data or []:
+            zone_data = building.get("zones") or {}
             try:
                 await image_service.generate_building_image(
                     building_id=building["id"],
                     building_name=building["name"],
                     building_type=building["building_type"],
-                    building_data={"description": building["description"]},
+                    building_data={
+                        "description": building.get("description", ""),
+                        "building_condition": building.get("building_condition", ""),
+                        "building_style": building.get("building_style", ""),
+                        "special_type": building.get("special_type", ""),
+                        "construction_year": building.get("construction_year", ""),
+                        "population_capacity": building.get("population_capacity", ""),
+                        "zone_name": zone_data.get("name", ""),
+                    },
                 )
             except Exception:
                 logger.exception(
@@ -661,3 +708,57 @@ class ForgeOrchestratorService:
                 )
 
         logger.info("Batch generation completed", extra={"simulation_id": str(simulation_id)})
+
+    @staticmethod
+    def _build_world_context(
+        supabase: Client,
+        simulation_id: UUID,
+        sim_data: dict,
+        anchor_data: dict | None,
+    ) -> str:
+        """Build a world context brief from persisted lore + anchor.
+
+        This brief feeds into ALL image description generators so that
+        portraits, buildings, banners, and lore images share a coherent
+        visual identity derived from the lore research.
+        """
+        anchor = anchor_data or {}
+        sim_name = sim_data.get("name", "Unknown")
+
+        # Fetch the first 2 lore sections (gateway + second section)
+        lore_resp = (
+            supabase.table("simulation_lore")
+            .select("title, body")
+            .eq("simulation_id", str(simulation_id))
+            .order("sort_order")
+            .limit(2)
+            .execute()
+        )
+        lore_sections = lore_resp.data or []
+
+        # Compose the world brief
+        parts = [f"WORLD: {sim_name}"]
+
+        if anchor.get("title"):
+            parts.append(
+                f"PHILOSOPHICAL ANCHOR: {anchor['title']}\n"
+                f"  Core Question: {anchor.get('core_question', '')}\n"
+                f"  Literary Influence: {anchor.get('literary_influence', '')}"
+            )
+
+        if sim_data.get("description"):
+            parts.append(f"DESCRIPTION: {sim_data['description']}")
+
+        for section in lore_sections:
+            body = section.get("body", "")
+            # First ~600 chars of each section — enough for visual identity
+            parts.append(
+                f"LORE — {section.get('title', '')}:\n{body[:600]}"
+            )
+
+        context = "\n\n".join(parts)
+        logger.debug(
+            "World context built",
+            extra={"simulation_id": str(simulation_id), "context_length": len(context)},
+        )
+        return context

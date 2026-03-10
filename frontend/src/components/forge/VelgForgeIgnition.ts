@@ -13,6 +13,7 @@ import {
 
 import '../shared/GenerationProgress.js';
 import '../shared/VelgGameCard.js';
+import './VelgForgeCeremony.js';
 
 /**
  * Phase IV: The Ignition.
@@ -191,77 +192,6 @@ export class VelgForgeIgnition extends LitElement {
         cursor: not-allowed;
       }
 
-      /* ── Success Box ─────────────────────── */
-
-      .success-box {
-        background: var(--color-gray-900, #111827);
-        border: 1px solid var(--color-success, #22c55e);
-        padding: var(--space-8);
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-4);
-        align-items: center;
-        text-align: center;
-      }
-
-      .success-box__title {
-        color: var(--color-success, #22c55e);
-        font-family: var(--font-brutalist);
-        font-weight: var(--font-black, 900);
-        font-size: var(--text-2xl);
-        text-transform: uppercase;
-        letter-spacing: var(--tracking-wide, 0.05em);
-      }
-
-      .success-box__text {
-        font-family: var(--font-mono, monospace);
-        font-size: var(--text-sm);
-        color: var(--color-gray-400, #9ca3af);
-        margin: 0;
-      }
-
-      /* ── Post-Ignition Card Fan ────────── */
-
-      .post-fan {
-        display: flex;
-        justify-content: center;
-        gap: 0;
-        padding: var(--space-6) 0;
-        perspective: 800px;
-        flex-wrap: wrap;
-      }
-
-      .post-fan__card {
-        margin-left: -6px;
-        animation: post-deal 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-      }
-
-      .post-fan__card:first-child { margin-left: 0; }
-
-      @keyframes post-deal {
-        from {
-          opacity: 0;
-          transform: translateY(-30px) rotateZ(0deg) scale(0.85);
-        }
-        to {
-          opacity: 1;
-        }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        .post-fan__card {
-          animation: none;
-        }
-      }
-
-      /* Override btn--launch sizing for the compact Enter Shard button */
-      .ignition .btn--launch {
-        width: auto;
-        height: auto;
-        padding: var(--space-2-5, 10px) var(--space-6);
-        font-size: var(--text-sm);
-      }
-
       /* ── Error Box ───────────────────────── */
 
       .error-box {
@@ -385,7 +315,21 @@ export class VelgForgeIgnition extends LitElement {
     if (!this._hasDraft) return nothing;
 
     if (this._materializedSlug) {
-      return this._renderSuccess();
+      const draft = forgeStateManager.draft.value;
+      const anchor = draft?.philosophical_anchor?.selected;
+      const zones = (draft?.geography as { zones?: unknown[] })?.zones ?? [];
+      return html`
+        <velg-forge-ceremony
+          .shardName=${draft?.seed_prompt ?? ''}
+          .slug=${this._materializedSlug}
+          .seedPrompt=${draft?.seed_prompt ?? ''}
+          .anchorTitle=${anchor?.title ?? ''}
+          .agents=${draft?.agents ?? []}
+          .buildings=${draft?.buildings ?? []}
+          .zoneCount=${zones.length}
+          @ceremony-enter=${this._handleFinish}
+        ></velg-forge-ceremony>
+      `;
     }
 
     const draft = forgeStateManager.draft.value;
@@ -507,76 +451,6 @@ export class VelgForgeIgnition extends LitElement {
     `;
   }
 
-  private _renderSuccess() {
-    const agents = forgeStateManager.draft.value?.agents ?? [];
-    const buildings = forgeStateManager.draft.value?.buildings ?? [];
-
-    return html`
-      <div class="ignition">
-        <div class="success-box" role="status" aria-live="polite">
-          <div class="success-box__title">${msg('Materialization Complete')}</div>
-          <p class="success-box__text">${msg('The Shard has been successfully woven into the multiverse.')}</p>
-        </div>
-
-        <!-- Post-ignition card fan reveal -->
-        ${
-          agents.length > 0
-            ? html`
-          <div class="post-fan">
-            ${agents.map(
-              (a, i) => html`
-              <div class="post-fan__card" style="animation-delay: ${i * 120}ms">
-                <velg-game-card
-                  .name=${a.name}
-                  .subtitle=${a.primary_profession}
-                  .rarity=${'common'}
-                  theme="brutalist"
-                  size="sm"
-                ></velg-game-card>
-              </div>
-            `,
-            )}
-          </div>
-        `
-            : nothing
-        }
-
-        ${
-          buildings.length > 0
-            ? html`
-          <div class="post-fan">
-            ${buildings.map(
-              (b, i) => html`
-              <div class="post-fan__card" style="animation-delay: ${(agents.length + i) * 120}ms">
-                <velg-game-card
-                  .name=${b.name}
-                  .subtitle=${b.building_type}
-                  .rarity=${'common'}
-                  theme="brutalist"
-                  size="sm"
-                ></velg-game-card>
-              </div>
-            `,
-            )}
-          </div>
-        `
-            : nothing
-        }
-
-        <velg-generation-progress
-          .status=${msg('Materializing Visual Assets...')}
-          .progress=${100}
-          .logs=${[msg('Database Materialized'), msg('Theme Applied'), msg('Lore Generated'), msg('Asset Generation Queued')]}
-        ></velg-generation-progress>
-
-        <div style="text-align:center">
-          <button class="btn btn--launch" @click=${this._handleFinish}>
-            ${msg('Enter New Shard')} &ensp; &rarr;
-          </button>
-        </div>
-      </div>
-    `;
-  }
 }
 
 declare global {

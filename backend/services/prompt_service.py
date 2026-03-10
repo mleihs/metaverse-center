@@ -47,16 +47,19 @@ HARDCODED_FALLBACKS: dict[str, str] = {
         "for the simulation {simulation_name}. Respond in {locale_name}."
     ),
     "portrait_description": (
-        "Describe a photorealistic portrait of {agent_name}. "
-        "Include age, facial features, clothing, and mood. Respond in English."
+        "Describe a photorealistic portrait of {agent_name} "
+        "who inhabits the world of {simulation_name}.\n\n"
+        "Character: {agent_character}\n"
+        "Background: {agent_background}\n\n"
+        "{world_context}\n\n"
+        "Write a concise image prompt (2-3 sentences) for a portrait photograph. "
+        "Include age, facial features, clothing appropriate to the world, and mood. "
+        "The portrait must feel like it belongs in THIS world — use the visual "
+        "identity from the lore context above. Respond in English."
     ),
     "event_generation": (
         "Create an event of type {event_type} "
         "for the simulation {simulation_name}. Respond in {locale_name}."
-    ),
-    "chat_system_prompt": (
-        "You are {agent_name}, a character in {simulation_name}. "
-        "Stay in character. Respond in {locale_name}."
     ),
     "news_transformation": (
         "Transform the following news article into the narrative "
@@ -112,6 +115,33 @@ HARDCODED_FALLBACKS: dict[str, str] = {
         "Your background: {agent_background}\n"
         "{agent_memories}\n"
         "Stay in character. Respond in {locale_name}."
+    ),
+    "building_image_description": (
+        "Describe an architectural photograph of a building for image generation.\n\n"
+        "Building: {building_name}\n"
+        "Type: {building_type}\n"
+        "Condition: {building_condition}\n"
+        "Style: {building_style}\n"
+        "Description: {building_description}\n"
+        "Zone: {zone_name}\n"
+        "World: {simulation_name}\n\n"
+        "{world_context}\n\n"
+        "Write a vivid, cinematic image prompt (2-3 sentences) describing the building's "
+        "exterior or most striking interior space. The building must feel like it belongs "
+        "in THIS world — use the materials, light quality, and architectural vocabulary "
+        "from the lore context above. Include condition indicators, atmosphere, and scale. "
+        "Do not mention characters or people."
+    ),
+    "lore_image_description": (
+        "Describe a cinematic scene for lore illustration in the world of {simulation_name}.\n\n"
+        "Chapter: {section_title}\n"
+        "Context: {section_body}\n\n"
+        "{world_context}\n\n"
+        "Write a vivid, atmospheric image prompt (2-3 sentences) depicting a key moment "
+        "or landscape from this lore passage. The scene must use the visual identity "
+        "established in the world context — same materials, light quality, weather, "
+        "architectural character. Focus on environment, light, scale, and mood. "
+        "No text, no characters in focus, no UI elements. Painterly, cinematic composition."
     ),
 }
 

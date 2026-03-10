@@ -230,6 +230,61 @@ export const forgeRangeStyles = css`
     border-radius: 0;
     cursor: pointer;
   }
+
+  /* Toggle checkbox field (e.g., Deep Research) */
+  .toggle-field {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    margin-top: var(--space-3);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-gray-800, #1f2937);
+    cursor: pointer;
+  }
+
+  .toggle-field input[type='checkbox'] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--color-gray-600, #4b5563);
+    background: transparent;
+    cursor: pointer;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .toggle-field input[type='checkbox']:checked {
+    border-color: var(--color-success, #22c55e);
+    background: var(--color-success, #22c55e);
+  }
+
+  .toggle-field input[type='checkbox']:checked::after {
+    content: '\\2713';
+    position: absolute;
+    top: -2px;
+    left: 1px;
+    font-size: 12px;
+    color: var(--color-gray-950, #030712);
+    font-weight: 900;
+  }
+
+  .toggle-field__label {
+    font-family: var(--font-mono, monospace);
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-gray-300, #d1d5db);
+  }
+
+  .toggle-field__hint {
+    width: 100%;
+    font-family: var(--font-mono, monospace);
+    font-size: var(--text-xs);
+    color: var(--color-gray-500, #6b7280);
+    line-height: 1.4;
+  }
 `;
 
 export const forgeStatusStyles = css`

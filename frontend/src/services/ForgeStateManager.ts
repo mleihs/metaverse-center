@@ -12,6 +12,7 @@ const DEFAULT_GENERATION_CONFIG: ForgeGenerationConfig = {
   building_count: 7,
   zone_count: 5,
   street_count: 5,
+  deep_research: true,
 };
 
 const DRAFT_STORAGE_KEY = 'forge_draft_id';

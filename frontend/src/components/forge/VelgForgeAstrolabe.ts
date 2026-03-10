@@ -828,6 +828,15 @@ export class VelgForgeAstrolabe extends LitElement {
                   @input=${(e: Event) => this._updateGenConfig('street_count', Number.parseInt((e.target as HTMLInputElement).value, 10))}
                 />
               </div>
+
+              <label class="toggle-field">
+                <input type="checkbox"
+                  .checked=${this._genConfig.deep_research}
+                  @change=${(e: Event) => forgeStateManager.updateGenerationConfig({ deep_research: (e.target as HTMLInputElement).checked })}
+                />
+                <span class="toggle-field__label">${msg('Deep Research')}</span>
+                <span class="toggle-field__hint">${msg('Run literary & philosophical research before lore generation. Produces richer, citation-grounded worldbuilding.')}</span>
+              </label>
             </div>
 
             <div class="astrolabe__footer">
