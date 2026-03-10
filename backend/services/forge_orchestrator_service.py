@@ -631,7 +631,7 @@ class ForgeOrchestratorService:
         # 3. Building images
         buildings = (
             supabase.table("buildings")
-            .select("id, name, description, building_type, building_condition, building_style, special_type, construction_year, population_capacity, zones(name)")
+            .select("id, name, description, building_type, building_condition, style, special_type, construction_year, population_capacity, zones(name)")
             .eq("simulation_id", str(simulation_id))
             .execute()
         )
@@ -645,7 +645,7 @@ class ForgeOrchestratorService:
                     building_data={
                         "description": building.get("description", ""),
                         "building_condition": building.get("building_condition", ""),
-                        "building_style": building.get("building_style", ""),
+                        "building_style": building.get("style", ""),
                         "special_type": building.get("special_type", ""),
                         "construction_year": building.get("construction_year", ""),
                         "population_capacity": building.get("population_capacity", ""),

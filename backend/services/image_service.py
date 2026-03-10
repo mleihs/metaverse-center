@@ -142,9 +142,9 @@ class ImageService:
             raw_bytes=raw_bytes,
         )
 
-        # 5. Update agent record
+        # 5. Update agent record (persist both URL and description for debugging)
         self._supabase.table("agents").update(
-            {"portrait_image_url": url},
+            {"portrait_image_url": url, "portrait_description": description[:2000]},
         ).eq("id", str(agent_id)).execute()
 
         logger.info("Portrait uploaded", extra={"entity_type": "agent", "entity_id": str(agent_id), "path": url})
@@ -230,9 +230,9 @@ class ImageService:
             raw_bytes=raw_bytes,
         )
 
-        # 5. Update building record
+        # 5. Update building record (persist both URL and prompt for debugging)
         self._supabase.table("buildings").update(
-            {"image_url": url},
+            {"image_url": url, "image_prompt_text": description[:2000]},
         ).eq("id", str(building_id)).execute()
 
         logger.info("Image uploaded", extra={"entity_type": "building", "entity_id": str(building_id), "path": url})

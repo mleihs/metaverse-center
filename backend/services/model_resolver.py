@@ -15,13 +15,14 @@ logger = logging.getLogger(__name__)
 # Re-export for backwards compatibility
 __all__ = ["PLATFORM_DEFAULT_MODELS", "ModelResolver", "ResolvedModel", "ResolvedImageModel"]
 
-# Platform default image models — SD 1.5 as cheap default ($0.002/img)
-# Simulations can override to Flux Dev ($0.025/img) via settings
+# Platform default image models — Flux Dev for quality ($0.025/img)
+# Simulations can override via settings
 PLATFORM_DEFAULT_IMAGE_MODELS: dict[str, str] = {
-    "agent_portrait": "stability-ai/stable-diffusion:ac732df83cea7fff18b8472768c88ad041fa750ff7682a21affe81863cbe77e4",
-    "building_image": "stability-ai/stable-diffusion:ac732df83cea7fff18b8472768c88ad041fa750ff7682a21affe81863cbe77e4",
-    "lore_image": "stability-ai/stable-diffusion:ac732df83cea7fff18b8472768c88ad041fa750ff7682a21affe81863cbe77e4",
-    "fallback": "stability-ai/stable-diffusion:ac732df83cea7fff18b8472768c88ad041fa750ff7682a21affe81863cbe77e4",
+    "agent_portrait": "black-forest-labs/flux-dev",
+    "building_image": "black-forest-labs/flux-dev",
+    "lore_image": "black-forest-labs/flux-dev",
+    "banner": "black-forest-labs/flux-dev",
+    "fallback": "black-forest-labs/flux-dev",
 }
 
 PLATFORM_DEFAULT_PARAMS: dict[str, float | int | str] = {
@@ -36,17 +37,14 @@ PLATFORM_DEFAULT_PARAMS: dict[str, float | int | str] = {
     "image_num_inference_steps": 50,
     "image_scheduler": "K_EULER",
     "negative_prompt_agent": (
-        "cartoon, anime, illustration, painting, drawing, artistic, "
+        "cartoon, anime, illustration, painting, drawing, "
         "distorted, deformed, low quality, blurry, text, watermark, signature, "
         "multiple people, group, crowd, couple, two people, two faces, "
-        "extra limbs, extra fingers, cropped, out of frame, full body, "
-        "bright colors, cheerful, happy, colorful, vibrant, sunny"
+        "extra limbs, extra fingers, cropped, out of frame, full body"
     ),
     "negative_prompt_building": (
         "people, humans, characters, faces, text, watermark, "
-        "cartoon, anime, low quality, blurry, distorted, "
-        "bright colors, cheerful, happy, colorful, vibrant, sunny, "
-        "modern glass, clean minimalist, utopian"
+        "cartoon, anime, low quality, blurry, distorted"
     ),
     # Flux defaults (used when model contains "flux")
     "flux_guidance": 3.5,
@@ -57,23 +55,25 @@ PLATFORM_DEFAULT_PARAMS: dict[str, float | int | str] = {
     "flux_output_quality": 100,
 }
 
-# Generic platform default style prompts (neutral, no brutalist)
+# Generic platform default style prompts (neutral, world-adaptive)
 PLATFORM_DEFAULT_STYLE_PROMPTS: dict[str, str] = {
     "portrait": (
         "photorealistic portrait photograph, cinematic lighting, "
-        "shallow depth of field, single subject, high detail"
+        "shallow depth of field, single subject, high detail, "
+        "rich color palette, environmental context visible"
     ),
     "building": (
         "architectural photograph, cinematic composition, "
-        "photorealistic, high detail, dramatic lighting"
+        "photorealistic, high detail, dramatic lighting, "
+        "atmospheric perspective, rich textures and materials"
     ),
     "banner": (
         "cinematic matte painting, epic scale, volumetric lighting, "
-        "high detail, no text, no UI elements"
+        "rich color, high detail, no text, no UI elements"
     ),
     "lore": (
-        "atmospheric concept art illustration, moody lighting, "
-        "rich environmental detail, no text, no UI elements"
+        "atmospheric concept art, painterly composition, moody lighting, "
+        "rich environmental detail, vivid color, no text, no UI elements"
     ),
 }
 
