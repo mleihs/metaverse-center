@@ -1168,6 +1168,7 @@ export class VelgSimulationsDashboard extends LitElement {
   `;
 
   @state() private _simulations: Simulation[] = [];
+  @state() private _allSimulations: Simulation[] = [];
   @state() private _loading = true;
   @state() private _error: string | null = null;
   @state() private _activeResonances: Resonance[] = [];
@@ -1219,6 +1220,7 @@ export class VelgSimulationsDashboard extends LitElement {
 
       if (appState.isAuthenticated.value) {
         promises.push(this._loadDashboard());
+        promises.push(this._loadAllSimulations());
       }
 
       await Promise.all(promises);
@@ -1239,6 +1241,18 @@ export class VelgSimulationsDashboard extends LitElement {
       }
     } catch {
       this._error = msg('An unexpected error occurred while loading simulations.');
+    }
+  }
+
+  private async _loadAllSimulations(): Promise<void> {
+    try {
+      const response = await simulationsApi.listPublic();
+      const items = Array.isArray(response.data) ? response.data : [];
+      if (response.success) {
+        this._allSimulations = items;
+      }
+    } catch {
+      // Non-critical — community shards just won't show
     }
   }
 
@@ -1615,14 +1629,11 @@ export class VelgSimulationsDashboard extends LitElement {
   }
 
   private _renderShardSection() {
-    const allSims = this._simulations;
     const isAuth = appState.isAuthenticated.value;
-    const memberSimIds = new Set(
-      (this._dashboardData?.memberships ?? []).map((m) => m.simulation_id),
-    );
-
-    const myShards = isAuth ? allSims.filter((s) => memberSimIds.has(s.id)) : [];
-    const communityShards = isAuth ? allSims.filter((s) => !memberSimIds.has(s.id)) : allSims;
+    const myShards = isAuth ? this._simulations : [];
+    const memberIds = new Set(myShards.map((s) => s.id));
+    const publicSims = isAuth ? this._allSimulations : this._simulations;
+    const communityShards = publicSims.filter((s) => !memberIds.has(s.id));
 
     return html`
       ${isAuth ? this._renderMyShards(myShards) : nothing}
