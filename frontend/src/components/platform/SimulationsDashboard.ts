@@ -261,6 +261,29 @@ export class VelgSimulationsDashboard extends LitElement {
     .welcome-strip__btn--primary {
       border-color: #f59e0b;
       color: #f59e0b;
+      position: relative;
+      animation: training-pulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes training-pulse {
+      0%, 100% {
+        box-shadow: 4px 4px 0 rgba(245, 158, 11, 0.15), 0 0 0 0 rgba(245, 158, 11, 0.3);
+      }
+      50% {
+        box-shadow: 4px 4px 0 rgba(245, 158, 11, 0.15), 0 0 20px 4px rgba(245, 158, 11, 0.15);
+      }
+    }
+
+    .welcome-strip__btn--primary::after {
+      content: '◀';
+      margin-left: var(--space-1);
+      font-size: 8px;
+      animation: arrow-nudge 1.5s ease-in-out infinite;
+    }
+
+    @keyframes arrow-nudge {
+      0%, 100% { transform: translateX(0); opacity: 0.6; }
+      50% { transform: translateX(-3px); opacity: 1; }
     }
 
     /* ── Dashboard Body (split-frame) ── */
@@ -991,7 +1014,7 @@ export class VelgSimulationsDashboard extends LitElement {
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 30vh;
+      min-height: 20vh;
       gap: var(--space-4);
       text-align: center;
       padding: var(--space-8) var(--space-6);
@@ -1010,6 +1033,20 @@ export class VelgSimulationsDashboard extends LitElement {
       font-size: var(--text-base);
       color: var(--color-gray-400);
       max-width: 480px;
+    }
+
+    .community-shards__note {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      margin-bottom: var(--space-4);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--color-gray-400);
+      letter-spacing: var(--tracking-wide);
+      text-transform: uppercase;
+      border-left: 2px solid var(--color-gray-600);
     }
 
     /* ── Boot Sequence ── */
@@ -1441,11 +1478,12 @@ export class VelgSimulationsDashboard extends LitElement {
     return html`
       <div class="welcome-strip">
         <button class="welcome-strip__btn welcome-strip__btn--primary" @click=${this._handleStartAcademy}>
-          ${this._hasActiveAcademy() ? msg('Resume Academy') : msg('Start Academy')}
+          ${this._hasActiveAcademy() ? msg('Resume Academy') : msg('Start Training')}
         </button>
-        <button class="welcome-strip__btn" @click=${this._handleCreateClick}>
-          ${msg('Create World')}
-        </button>
+        ${appState.canForge.value
+          ? html`<button class="welcome-strip__btn" @click=${this._handleCreateClick}>${msg('Create World')}</button>`
+          : nothing
+        }
         <button class="welcome-strip__btn" @click=${() => window.scrollTo({ top: 400, behavior: 'smooth' })}>
           ${msg('Browse Shards')}
         </button>
@@ -1577,59 +1615,120 @@ export class VelgSimulationsDashboard extends LitElement {
   }
 
   private _renderShardSection() {
-    const sims = this._simulations;
-    const count = sims.length;
+    const allSims = this._simulations;
+    const isAuth = appState.isAuthenticated.value;
+    const memberSimIds = new Set(
+      (this._dashboardData?.memberships ?? []).map((m) => m.simulation_id),
+    );
 
-    if (count === 0) {
+    const myShards = isAuth ? allSims.filter((s) => memberSimIds.has(s.id)) : [];
+    const communityShards = isAuth ? allSims.filter((s) => !memberSimIds.has(s.id)) : allSims;
+
+    return html`
+      ${isAuth ? this._renderMyShards(myShards) : nothing}
+      ${this._renderCommunityShards(communityShards, isAuth)}
+    `;
+  }
+
+  private _renderMyShards(sims: Simulation[]) {
+    if (sims.length === 0) {
       return html`
         <div class="empty-state">
-          <div class="empty-state__title">${msg('No Shards Yet')}</div>
+          <div class="empty-state__title">${msg('No Own Shards Yet')}</div>
           <div class="empty-state__text">
-            ${msg('Fracture reality and create your first shard — a world with its own agents, buildings, and events.')}
+            ${msg('Join an existing shard or start training to learn the ropes.')}
           </div>
-          ${appState.isAuthenticated.value
-            ? html`<button class="btn-fracture" @click=${this._handleCreateClick}>${msg('Fracture a New Shard')}</button>`
-            : nothing
-          }
         </div>
       `;
     }
 
-    // Featured shard: first simulation with a banner, or just the first
     const featured = sims.find((s) => s.banner_url) ?? sims[0];
     const rest = sims.filter((s) => s !== featured);
 
     return html`
-      <section aria-label="${msg('Simulation worlds')}">
+      <section aria-label="${msg('Your simulation worlds')}">
         <div class="shards-header">
           <div class="section-header" style="margin-bottom: 0;">
-            <span class="section-header__surtitle">${msg('SHARD REGISTRY')}</span>
+            <span class="section-header__surtitle">${msg('YOUR SHARDS')}</span>
             <h2 class="section-header__title">
-              ${msg('Shards')}
-              <span class="section-header__count">${count}</span>
+              ${msg('My Worlds')}
+              <span class="section-header__count">${sims.length}</span>
             </h2>
           </div>
           <div class="shards-header__spacer"></div>
-          ${appState.isAuthenticated.value
+          ${appState.canForge.value
             ? html`<button class="btn-fracture" @click=${this._handleCreateClick}>${msg('Fracture a New Shard')}</button>`
             : nothing
           }
         </div>
-
         ${this._renderFeaturedShard(featured)}
+        ${rest.length > 0 ? html`
+          <div class="shards-grid" role="list">
+            ${rest.map(
+              (sim, i) => html`
+                <velg-simulation-card
+                  role="listitem"
+                  style="--i: ${i}"
+                  .simulation=${sim}
+                  @simulation-click=${this._handleSimulationClick}
+                ></velg-simulation-card>
+              `,
+            )}
+          </div>
+        ` : nothing}
+      </section>
+    `;
+  }
 
-        <div class="shards-grid" role="list">
-          ${rest.map(
-            (sim, i) => html`
-              <velg-simulation-card
-                role="listitem"
-                style="--i: ${i}"
-                .simulation=${sim}
-                @simulation-click=${this._handleSimulationClick}
-              ></velg-simulation-card>
-            `,
-          )}
+  private _renderCommunityShards(sims: Simulation[], isAuth: boolean) {
+    if (sims.length === 0) {
+      if (!isAuth) {
+        return html`
+          <div class="empty-state">
+            <div class="empty-state__title">${msg('No Shards Yet')}</div>
+            <div class="empty-state__text">
+              ${msg('The multiverse awaits its first fracture.')}</div>
+          </div>
+        `;
+      }
+      return nothing;
+    }
+
+    const featured = sims.find((s) => s.banner_url) ?? sims[0];
+    const rest = sims.filter((s) => s !== featured);
+
+    return html`
+      <section aria-label="${msg('Community simulation worlds')}">
+        <div class="shards-header">
+          <div class="section-header" style="margin-bottom: 0;">
+            <span class="section-header__surtitle">${msg('SHARD REGISTRY')}</span>
+            <h2 class="section-header__title">
+              ${isAuth ? msg('Community Shards') : msg('Shards')}
+              <span class="section-header__count">${sims.length}</span>
+            </h2>
+          </div>
+          <div class="shards-header__spacer"></div>
         </div>
+        ${isAuth ? html`
+          <div class="community-shards__note">
+            ${msg('Shards created and managed by other observers. Browse freely.')}
+          </div>
+        ` : nothing}
+        ${this._renderFeaturedShard(featured)}
+        ${rest.length > 0 ? html`
+          <div class="shards-grid" role="list">
+            ${rest.map(
+              (sim, i) => html`
+                <velg-simulation-card
+                  role="listitem"
+                  style="--i: ${i}"
+                  .simulation=${sim}
+                  @simulation-click=${this._handleSimulationClick}
+                ></velg-simulation-card>
+              `,
+            )}
+          </div>
+        ` : nothing}
       </section>
     `;
   }

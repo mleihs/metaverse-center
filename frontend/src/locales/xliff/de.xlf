@@ -2830,10 +2830,6 @@
   <source>No Shards Yet</source>
   <target>Noch keine Scherben</target>
 </trans-unit>
-<trans-unit id="se9fc1c9c928fa8f7">
-  <source>Fracture reality and create your first shard — a world with its own agents, buildings, and events.</source>
-  <target>Breche die Realität und erschaffe deine erste Scherbe — eine Welt mit eigenen Agenten, Gebäuden und Ereignissen.</target>
-</trans-unit>
 <trans-unit id="s9142aa57b3ac34ae">
   <source>Fracture a New Shard</source>
   <target>Eine neue Scherbe brechen</target>
@@ -12129,14 +12125,6 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
   <source>Welcome</source>
   <target>Willkommen</target>
 </trans-unit>
-<trans-unit id="s4940bf625118bbdd">
-  <source>Metaverse</source>
-  <target>Metaverse</target>
-</trans-unit>
-<trans-unit id="s460509d8be1e9360">
-  <source>.Center</source>
-  <target>.Center</target>
-</trans-unit>
 <trans-unit id="s88a21c12585b2008">
   <source>Multiplayer Worldbuilding &amp; Strategy Platform. Build civilizations. Deploy operatives. Shape the multiverse.</source>
   <target>Multiplayer Worldbuilding &amp; Strategieplattform. Bauen Sie Zivilisationen. Setzen Sie Operative ein. Formen Sie das Multiversum.</target>
@@ -12532,10 +12520,6 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
   <source>Create Epoch</source>
   <target>Epoche erstellen</target>
 </trans-unit>
-<trans-unit id="s28acbc2d7ab2f325">
-  <source>Start Academy</source>
-  <target>Akademie starten</target>
-</trans-unit>
 <trans-unit id="s559dd7d866660e75">
   <source>Create World</source>
   <target>Welt erschaffen</target>
@@ -12579,10 +12563,6 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 <trans-unit id="s4c3ad877443f3474">
   <source>My Worlds</source>
   <target>Meine Welten</target>
-</trans-unit>
-<trans-unit id="s1d1334beec093677">
-  <source>Simulation worlds</source>
-  <target>Simulationswelten</target>
 </trans-unit>
 <trans-unit id="s017d2f6e1cd81862">
   <source>SHARD REGISTRY</source>
@@ -12964,6 +12944,38 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 <target><x id="0" equiv-text="${purgeCount} ${meta.label.toLowerCase()}"/> unwiderruflich löschen? Dies kann nicht rückgängig gemacht werden.</target></trans-unit>
 <trans-unit id="s6c976fb749d183c5">
   <source>Multiverse observation terminal overlooking interconnected simulation worlds</source>
+</trans-unit>
+<trans-unit id="s971b5056b8e6107d">
+  <source>No Own Shards Yet</source>
+  <target>Noch keine eigenen Shards</target>
+</trans-unit>
+<trans-unit id="s4a6878c92a611fa5">
+  <source>Join an existing shard or start training to learn the ropes.</source>
+  <target>Tritt einem bestehenden Shard bei oder starte das Training, um dich einzuarbeiten.</target>
+</trans-unit>
+<trans-unit id="s14d480aae21a7eee">
+  <source>Your simulation worlds</source>
+  <target>Deine Simulationswelten</target>
+</trans-unit>
+<trans-unit id="s3e5e2427f266a6d3">
+  <source>YOUR SHARDS</source>
+  <target>DEINE SHARDS</target>
+</trans-unit>
+<trans-unit id="s45163d25fb7ea2f1">
+  <source>The multiverse awaits its first fracture.</source>
+  <target>Das Multiversum wartet auf seinen ersten Bruch.</target>
+</trans-unit>
+<trans-unit id="sb4dfbf065056eef2">
+  <source>Community simulation worlds</source>
+  <target>Community-Simulationswelten</target>
+</trans-unit>
+<trans-unit id="sb68cf10d4cbb3c87">
+  <source>Community Shards</source>
+  <target>Community-Shards</target>
+</trans-unit>
+<trans-unit id="s4de3e542bc89c61d">
+  <source>Shards created and managed by other observers. Browse freely.</source>
+  <target>Shards, die von anderen Beobachtern erstellt und verwaltet werden. Frei durchstöbern.</target>
 </trans-unit>
 
 </body>
