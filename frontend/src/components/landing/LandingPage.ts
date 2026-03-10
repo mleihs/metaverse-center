@@ -30,27 +30,16 @@ export class VelgLandingPage extends LitElement {
     /* ── Reset & Host ─────────────────────────── */
 
     :host {
-      --amber: #f59e0b;
-      --amber-hover: #fbbf24;
-      --amber-dim: #b45309;
-      --amber-glow: rgba(245, 158, 11, 0.15);
-      --amber-ghost: rgba(245, 158, 11, 0.04);
-      --green: #4ade80;
+      /* Landing-page-only tokens (no platform equivalent) */
       --green-dim: rgba(74, 222, 128, 0.15);
-      --surface: #0a0a0a;
-      --surface-raised: #111;
       --surface-card: #0d0d0d;
-      --border: #222;
       --border-dim: #1a1a1a;
-      --text-primary: #e5e5e5;
-      --text-secondary: #a0a0a0;
-      --text-dim: #888888;
       --ease-dramatic: cubic-bezier(0.22, 1, 0.36, 1);
       --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
       display: block;
-      background: var(--surface);
-      color: var(--text-primary);
+      background: var(--color-surface);
+      color: var(--color-text-primary);
       overflow-x: hidden;
     }
 
@@ -64,8 +53,8 @@ export class VelgLandingPage extends LitElement {
       left: 16px;
       z-index: 100;
       padding: 8px 16px;
-      background: var(--amber);
-      color: var(--surface);
+      background: var(--color-accent-amber);
+      color: var(--color-surface);
       font-family: var(--font-brutalist, 'Courier New', monospace);
       font-weight: 900;
       font-size: 12px;
@@ -183,7 +172,7 @@ export class VelgLandingPage extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: 4px;
-      color: var(--amber);
+      color: var(--color-accent-amber);
       margin-bottom: 32px;
     }
 
@@ -191,7 +180,7 @@ export class VelgLandingPage extends LitElement {
       content: '';
       width: 24px;
       height: 1px;
-      background: var(--amber);
+      background: var(--color-accent-amber);
     }
 
     /* ═══════════════════════════════════════════
@@ -290,7 +279,7 @@ export class VelgLandingPage extends LitElement {
       position: absolute;
       width: 40px;
       height: 40px;
-      border-color: var(--amber);
+      border-color: var(--color-accent-amber);
       border-style: solid;
       opacity: 0.4;
       z-index: 3;
@@ -305,7 +294,7 @@ export class VelgLandingPage extends LitElement {
       position: absolute;
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 9px;
-      color: var(--text-dim);
+      color: var(--color-text-muted);
       letter-spacing: 1px;
       animation: coord-drift 4s ease-in-out infinite;
       z-index: 3;
@@ -328,7 +317,7 @@ export class VelgLandingPage extends LitElement {
       font-size: 10px;
       letter-spacing: 5px;
       text-transform: uppercase;
-      color: var(--amber);
+      color: var(--color-accent-amber);
       margin: 0 0 24px;
       opacity: 0;
       animation: content-fade 400ms var(--ease-dramatic) both 100ms;
@@ -339,20 +328,20 @@ export class VelgLandingPage extends LitElement {
       font-weight: 900;
       font-size: clamp(2rem, 6vw, 4.5rem);
       text-transform: uppercase;
-      color: var(--text-primary);
+      color: var(--color-text-primary);
       margin: 0;
       line-height: 1.05;
       animation: hero-title-enter 800ms var(--ease-dramatic) both 200ms;
     }
 
     .hero__title-accent {
-      color: var(--amber);
+      color: var(--color-accent-amber);
     }
 
     .hero__subtitle {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: clamp(0.75rem, 1.5vw, 0.95rem);
-      color: var(--text-secondary);
+      color: var(--color-text-secondary);
       margin: 20px 0 0;
       letter-spacing: 1px;
       line-height: 1.6;
@@ -376,9 +365,9 @@ export class VelgLandingPage extends LitElement {
       font-size: 12px;
       text-transform: uppercase;
       letter-spacing: 3px;
-      color: var(--surface);
-      background: var(--amber);
-      border: 1px solid var(--amber-dim);
+      color: var(--color-surface);
+      background: var(--color-accent-amber);
+      border: 1px solid var(--color-accent-amber-dim);
       cursor: pointer;
       text-decoration: none;
       transition: all 200ms;
@@ -387,8 +376,8 @@ export class VelgLandingPage extends LitElement {
     }
 
     .hero__cta:hover {
-      background: var(--amber-hover);
-      box-shadow: 0 0 30px var(--amber-glow), 0 0 60px rgba(245, 158, 11, 0.08);
+      background: var(--color-accent-amber-hover);
+      box-shadow: 0 0 30px var(--color-accent-amber-glow), 0 0 60px rgba(245, 158, 11, 0.08);
       transform: translateY(-2px);
     }
 
@@ -438,13 +427,13 @@ export class VelgLandingPage extends LitElement {
       font-size: 9px;
       letter-spacing: 3px;
       text-transform: uppercase;
-      color: var(--text-dim);
+      color: var(--color-text-muted);
     }
 
     .hero__scroll-line {
       width: 1px;
       height: 32px;
-      background: linear-gradient(180deg, var(--amber), transparent);
+      background: linear-gradient(180deg, var(--color-accent-amber), transparent);
       animation: scroll-pulse 2s ease-in-out infinite;
     }
 
@@ -517,7 +506,7 @@ export class VelgLandingPage extends LitElement {
       font-size: 9px;
       letter-spacing: 3px;
       text-transform: uppercase;
-      color: var(--amber);
+      color: var(--color-accent-amber);
       margin-bottom: 6px;
       display: flex;
       justify-content: space-between;
@@ -532,16 +521,16 @@ export class VelgLandingPage extends LitElement {
 
     .hero--v03 .decode-progress__fill {
       height: 100%;
-      background: var(--amber);
+      background: var(--color-accent-amber);
       width: 0%;
       transition: width 50ms linear;
-      box-shadow: 0 0 8px var(--amber);
+      box-shadow: 0 0 8px var(--color-accent-amber);
     }
 
     .hero--v03 .hero__title-underline {
       display: block;
       height: 2px;
-      background: linear-gradient(90deg, transparent, var(--amber), transparent);
+      background: linear-gradient(90deg, transparent, var(--color-accent-amber), transparent);
       opacity: 0;
       margin-top: 8px;
       transition: opacity 300ms;
@@ -563,7 +552,7 @@ export class VelgLandingPage extends LitElement {
 
     .hero--v03 .waveform__bar {
       width: 2px;
-      background: var(--amber);
+      background: var(--color-accent-amber);
       animation: waveform-bar 1.5s ease-in-out infinite;
     }
 
@@ -585,7 +574,7 @@ export class VelgLandingPage extends LitElement {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 2px;
-      background: var(--border);
+      background: var(--color-border-light);
     }
 
     .feature-card {
@@ -646,7 +635,7 @@ export class VelgLandingPage extends LitElement {
       left: 0;
       right: 0;
       height: 2px;
-      background: var(--amber);
+      background: var(--color-accent-amber);
       transform: scaleX(0);
       transform-origin: left;
       transition: transform 0.4s var(--ease-dramatic);
@@ -667,7 +656,7 @@ export class VelgLandingPage extends LitElement {
       font-size: 8px;
       letter-spacing: 2px;
       text-transform: uppercase;
-      color: var(--amber);
+      color: var(--color-accent-amber);
       background: rgba(10, 10, 10, 0.7);
       padding: 3px 8px;
       border: 1px solid rgba(245, 158, 11, 0.2);
@@ -684,7 +673,7 @@ export class VelgLandingPage extends LitElement {
       font-size: 13px;
       text-transform: uppercase;
       letter-spacing: 3px;
-      color: var(--text-primary);
+      color: var(--color-text-primary);
       margin: 0 0 12px;
     }
 
@@ -692,7 +681,7 @@ export class VelgLandingPage extends LitElement {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 12px;
       line-height: 1.7;
-      color: var(--text-secondary);
+      color: var(--color-text-secondary);
       margin: 0;
     }
 
@@ -701,7 +690,7 @@ export class VelgLandingPage extends LitElement {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 9px;
       letter-spacing: 1px;
-      color: var(--text-dim);
+      color: var(--color-text-muted);
     }
 
     @media (max-width: 768px) {
@@ -724,7 +713,7 @@ export class VelgLandingPage extends LitElement {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 2px;
-      background: var(--border);
+      background: var(--color-border-light);
     }
 
     .stat-cell {
@@ -745,7 +734,7 @@ export class VelgLandingPage extends LitElement {
       right: 16px;
       width: 6px;
       height: 6px;
-      background: var(--green);
+      background: var(--color-accent-green);
       border-radius: 50%;
     }
 
@@ -753,7 +742,7 @@ export class VelgLandingPage extends LitElement {
       content: '';
       position: absolute;
       inset: -3px;
-      border: 1px solid var(--green);
+      border: 1px solid var(--color-accent-green);
       border-radius: 50%;
       animation: signal-ping 2s ease-out infinite;
       animation-delay: calc(var(--i, 0) * 300ms);
@@ -765,7 +754,7 @@ export class VelgLandingPage extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: 4px;
-      color: var(--text-dim);
+      color: var(--color-text-muted);
       margin: 0 0 16px;
     }
 
@@ -773,7 +762,7 @@ export class VelgLandingPage extends LitElement {
       font-family: var(--font-brutalist, 'Courier New', monospace);
       font-weight: 900;
       font-size: clamp(2.5rem, 5vw, 4rem);
-      color: var(--green);
+      color: var(--color-accent-green);
       margin: 0;
       line-height: 1;
       animation: stat-glow 3s ease-in-out infinite;
@@ -783,7 +772,7 @@ export class VelgLandingPage extends LitElement {
     .stat-cell__unit {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 11px;
-      color: var(--text-dim);
+      color: var(--color-text-muted);
       margin-top: 8px;
       letter-spacing: 1px;
     }
@@ -826,11 +815,11 @@ export class VelgLandingPage extends LitElement {
       justify-content: center;
       width: 48px;
       height: 48px;
-      border: 2px solid var(--amber);
+      border: 2px solid var(--color-accent-amber);
       font-family: var(--font-brutalist, 'Courier New', monospace);
       font-weight: 900;
       font-size: 18px;
-      color: var(--amber);
+      color: var(--color-accent-amber);
       margin-bottom: 20px;
       position: relative;
     }
@@ -846,7 +835,7 @@ export class VelgLandingPage extends LitElement {
       font-size: 12px;
       text-transform: uppercase;
       letter-spacing: 2px;
-      color: var(--text-primary);
+      color: var(--color-text-primary);
       margin: 0 0 12px;
     }
 
@@ -854,7 +843,7 @@ export class VelgLandingPage extends LitElement {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 11px;
       line-height: 1.7;
-      color: var(--text-secondary);
+      color: var(--color-text-secondary);
       margin: 0;
     }
 
@@ -869,7 +858,7 @@ export class VelgLandingPage extends LitElement {
       width: 100%;
       min-width: 40px;
       height: 1px;
-      background: var(--border);
+      background: var(--color-border-light);
       position: relative;
       transform-origin: left;
     }
@@ -886,8 +875,8 @@ export class VelgLandingPage extends LitElement {
       top: -3px;
       width: 6px;
       height: 6px;
-      border-right: 1px solid var(--amber);
-      border-top: 1px solid var(--amber);
+      border-right: 1px solid var(--color-accent-amber);
+      border-top: 1px solid var(--color-accent-amber);
       transform: rotate(45deg);
     }
 
@@ -914,7 +903,7 @@ export class VelgLandingPage extends LitElement {
     .cta-frame {
       max-width: 640px;
       margin: 0 auto;
-      border: 1px dashed var(--border);
+      border: 1px dashed var(--color-border-light);
       position: relative;
       padding: 48px 40px;
       text-align: center;
@@ -927,7 +916,7 @@ export class VelgLandingPage extends LitElement {
       position: absolute;
       width: 16px;
       height: 16px;
-      border-color: var(--amber);
+      border-color: var(--color-accent-amber);
       border-style: solid;
     }
     .cta-frame::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
@@ -947,7 +936,7 @@ export class VelgLandingPage extends LitElement {
       position: absolute;
       width: 16px;
       height: 16px;
-      border-color: var(--amber);
+      border-color: var(--color-accent-amber);
       border-style: solid;
     }
     .cta-frame__corners::before { bottom: 0; left: -1px; border-width: 0 0 2px 2px; }
@@ -959,7 +948,7 @@ export class VelgLandingPage extends LitElement {
       font-size: 9px;
       letter-spacing: 5px;
       text-transform: uppercase;
-      color: var(--amber);
+      color: var(--color-accent-amber);
       margin: 0 0 20px;
     }
 
@@ -969,7 +958,7 @@ export class VelgLandingPage extends LitElement {
       font-size: clamp(1.2rem, 3vw, 1.8rem);
       text-transform: uppercase;
       letter-spacing: 2px;
-      color: var(--text-primary);
+      color: var(--color-text-primary);
       margin: 0 0 12px;
     }
 
@@ -977,7 +966,7 @@ export class VelgLandingPage extends LitElement {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 12px;
       line-height: 1.7;
-      color: var(--text-secondary);
+      color: var(--color-text-secondary);
       margin: 0 0 32px;
     }
 
@@ -991,17 +980,17 @@ export class VelgLandingPage extends LitElement {
       font-size: 12px;
       text-transform: uppercase;
       letter-spacing: 3px;
-      color: var(--surface);
-      background: var(--amber);
-      border: 1px solid var(--amber-dim);
+      color: var(--color-surface);
+      background: var(--color-accent-amber);
+      border: 1px solid var(--color-accent-amber-dim);
       cursor: pointer;
       text-decoration: none;
       transition: all 200ms;
     }
 
     .cta-frame__btn:hover {
-      background: var(--amber-hover);
-      box-shadow: 0 0 30px var(--amber-glow);
+      background: var(--color-accent-amber-hover);
+      box-shadow: 0 0 30px var(--color-accent-amber-glow);
       transform: translateY(-2px);
     }
 
@@ -1013,7 +1002,7 @@ export class VelgLandingPage extends LitElement {
       margin-top: 24px;
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 9px;
-      color: var(--text-dim);
+      color: var(--color-text-muted);
       letter-spacing: 1px;
     }
 
@@ -1087,7 +1076,7 @@ export class VelgLandingPage extends LitElement {
       :host {
         background:
           radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.4) 100%),
-          var(--surface);
+          var(--color-surface);
       }
 
       .features,
