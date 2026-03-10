@@ -1943,7 +1943,7 @@ Resonanz soft-deleten.
 Account-Tier-System (observer → architect → director) mit Request/Approve/Reject-Workflow. Bureau Clearance fuer Forge-Zugang.
 
 ### `POST /api/v1/forge/access-requests/`
-Clearance-Antrag erstellen. 409 bei bereits vorhandenem pendingem Antrag.
+Clearance-Antrag erstellen. 409 bei bereits vorhandenem pendingem Antrag. Loest Admin-Benachrichtigungs-Email aus (best-effort, non-blocking).
 
 **Auth:** Authentifizierter Benutzer
 
@@ -1955,6 +1955,8 @@ Clearance-Antrag erstellen. 409 bei bereits vorhandenem pendingem Antrag.
 ```
 
 **Response:** `SuccessResponse[ForgeAccessRequest]` (Status 201)
+
+**Side Effects:** Admin-Email-Benachrichtigung an Platform-Admin mit Applicant-Email und Begruendung.
 
 ### `GET /api/v1/forge/access-requests/me`
 Letzten eigenen Antrag abrufen.

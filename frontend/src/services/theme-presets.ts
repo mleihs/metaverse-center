@@ -418,7 +418,7 @@ export const THEME_PRESETS: Record<ThemePresetName, Record<string, string>> = {
 
 /** Maps SimulationTheme types to suggested preset names. */
 export function getPresetForTheme(theme: SimulationTheme, slug?: string): ThemePresetName {
-  if (slug === 'spengbabs-whore-house') return 'deep-fried-horror';
+  if (slug === 'spengbabs-grease-pit') return 'deep-fried-horror';
 
   switch (theme) {
     case 'dystopian':

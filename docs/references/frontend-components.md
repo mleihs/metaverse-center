@@ -1674,12 +1674,13 @@ Modal for submitting a clearance upgrade request from Field Observer to Reality 
 | `_message` | `string` | Optional justification text |
 | `_submitting` | `boolean` | Submission in progress |
 
-**Layout:**
-- **Classification banner:** Bilingual bureau header in monospace uppercase with letter-spacing (`// Bureau of Multiverse Observation // Clearance Upgrade Request //`)
-- **Tier upgrade display:** `Field Observer → Reality Architect` with arrow separator, amber accent on target tier
+**Layout:** Classified intelligence dossier aesthetic matching ClearanceApplicationCard.
+- **Classification banner:** Bilingual bureau header in amber monospace uppercase with scan-line overlay (`::after` pseudo-element)
+- **Tier upgrade display:** `Field Observer → Reality Architect` with arrow separator, amber left-border accent, dark surface background
 - **Description:** Explanation of Architect clearance capabilities
-- **Justification textarea:** Optional, 500 character limit with live char counter
-- **Footer:** Cancel + Submit buttons
+- **Justification textarea:** Optional, 500 character limit with live char counter, monospace styling, amber focus ring
+- **Footer:** Cancel (ghost) + Submit (amber brutalist with offset shadow hover) buttons
+- **Entry animations:** Staggered fade-in (80ms increments) per section via CSS `animation-delay`
 
 **Events:**
 | Event | Detail | Beschreibung |
@@ -1689,7 +1690,7 @@ Modal for submitting a clearance upgrade request from Field Observer to Reality 
 
 **API:** `forgeApi.requestAccess(message?)`. On success, calls `appState.setForgeRequestStatus('pending')`.
 
-**Styles:** Uses shared `formStyles` CSS module.
+**Styles:** Self-contained CSS (no shared `formStyles`). Custom field styling with amber accent (`#f59e0b`), brutalist button treatment, focus-visible outlines.
 
 ### VelgClearanceCard (`velg-clearance-card`)
 

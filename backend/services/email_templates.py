@@ -1942,3 +1942,73 @@ def render_clearance_denied(
 
     content = "\n".join(blocks)
     return _email_shell("CLASSIFIED // CLEARANCE REVIEW", content)
+
+
+def render_clearance_request_admin_notification(
+    *,
+    user_email: str,
+    message: str | None = None,
+    admin_panel_url: str = "https://metaverse.center/admin",
+) -> str:
+    """Render admin notification email for a new clearance request.
+
+    Single-language (EN only) — admin email is fixed.
+    """
+    accent = _AMBER
+    safe_email = _esc(user_email)
+    safe_message = _esc(message) if message else None
+
+    top = f"""\
+          <tr>
+            <td style="padding:24px 32px;border-bottom:2px solid {accent};">
+              <p style="margin:0;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
+                BUREAU OF MULTIVERSE OBSERVATION
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 32px 8px;">
+              <h1 style="margin:0;font-size:22px;font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
+                NEW CLEARANCE REQUEST
+              </h1>
+            </td>
+          </tr>"""
+
+    body = f"""\
+          <tr>
+            <td style="padding:16px 32px;">
+              <p style="margin:0 0 16px;font-size:14px;line-height:1.7;color:{_TEXT};">
+                A new clearance upgrade request has been submitted.
+              </p>
+              <div style="border:1px solid {_BORDER};border-left:3px solid {accent};padding:16px;background:{_SURFACE};">
+                <p style="margin:0 0 4px;font-size:10px;letter-spacing:3px;color:{_TEXT_DIM};text-transform:uppercase;">
+                  APPLICANT
+                </p>
+                <p style="margin:0;font-size:14px;color:{accent};font-family:{_MONO};">
+                  {safe_email}
+                </p>
+              </div>
+            </td>
+          </tr>"""
+
+    if safe_message:
+        body += f"""\
+          <tr>
+            <td style="padding:0 32px 16px;">
+              <div style="border:1px dashed {_BORDER};padding:16px;background:{_SURFACE};margin-top:8px;">
+                <p style="margin:0 0 4px;font-size:10px;letter-spacing:3px;color:{_TEXT_DIM};text-transform:uppercase;">
+                  OPERATIONAL JUSTIFICATION
+                </p>
+                <p style="margin:0;font-size:13px;line-height:1.7;color:{_TEXT};font-style:italic;">
+                  {safe_message}
+                </p>
+              </div>
+            </td>
+          </tr>"""
+
+    blocks = [top, body]
+    blocks.append(_cta_button(admin_panel_url, "REVIEW IN ADMIN PANEL", accent=accent))
+    blocks.append(_footer_row("en"))
+
+    content = "\n".join(blocks)
+    return _email_shell("BUREAU ALERT // NEW CLEARANCE REQUEST", content)

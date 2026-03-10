@@ -20,6 +20,7 @@ from backend.services.email_service import EmailService
 from backend.services.email_templates import (
     render_clearance_denied,
     render_clearance_granted,
+    render_clearance_request_admin_notification,
 )
 
 logger = logging.getLogger(__name__)
@@ -28,12 +29,15 @@ logger = logging.getLogger(__name__)
 class ForgeAccessService:
     """Forge access request operations."""
 
+    _ADMIN_EMAIL = "matthias.leihs@gmail.com"
+
     @classmethod
     async def create_request(
         cls,
         supabase: Client,
         user_id: UUID,
         message: str | None = None,
+        user_email: str | None = None,
     ) -> dict:
         """Create a clearance upgrade request (RLS enforced)."""
         insert_data: dict = {
@@ -59,7 +63,35 @@ class ForgeAccessService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to create request.",
             )
+
+        # Notify admin (best-effort, non-blocking)
+        if user_email:
+            asyncio.create_task(
+                cls._send_admin_notification(user_email, message)
+            )
+
         return response.data[0]
+
+    @classmethod
+    async def _send_admin_notification(
+        cls,
+        user_email: str,
+        message: str | None,
+    ) -> None:
+        """Send admin notification for new clearance request (best-effort)."""
+        try:
+            html_body = render_clearance_request_admin_notification(
+                user_email=user_email,
+                message=message,
+            )
+            await EmailService.send(
+                to=cls._ADMIN_EMAIL,
+                subject="BUREAU ALERT // NEW CLEARANCE REQUEST",
+                html_body=html_body,
+            )
+            logger.info("Admin clearance notification sent for %s", user_email)
+        except Exception:
+            logger.exception("Failed to send admin clearance notification")
 
     @classmethod
     async def get_user_status(

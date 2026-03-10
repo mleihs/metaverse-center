@@ -479,9 +479,23 @@ export class VelgEpochChatPanel extends LitElement {
       team_id: this._activeChannel === 'team' ? this.myTeamId : undefined,
     });
 
-    if (result.success) {
+    if (result.success && result.data) {
       this._inputText = '';
-    } else {
+      // Optimistic: inject into realtime signal so the message appears immediately
+      // (Realtime broadcast may arrive later and will be deduplicated by id)
+      const sent = result.data;
+      if (this._activeChannel === 'team') {
+        const msgs = realtimeService.teamMessages.value;
+        if (!msgs.some((m) => m.id === sent.id)) {
+          realtimeService.teamMessages.value = [...msgs, sent];
+        }
+      } else {
+        const msgs = realtimeService.epochMessages.value;
+        if (!msgs.some((m) => m.id === sent.id)) {
+          realtimeService.epochMessages.value = [...msgs, sent];
+        }
+      }
+    } else if (!result.success) {
       VelgToast.error(msg('Failed to send message.'));
     }
     this._sending = false;

@@ -57,6 +57,7 @@ class RealtimeServiceImpl {
       .channel(`epoch:${epochId}:chat`, { config: { private: true } })
       .on('broadcast', { event: 'new_message' }, (payload) => {
         const msg = payload.payload as EpochChatMessage;
+        if (this.epochMessages.value.some((m) => m.id === msg.id)) return;
         this.epochMessages.value = [...this.epochMessages.value, msg];
         if (!this._epochChatFocused) {
           this.unreadEpochCount.value += 1;
@@ -130,6 +131,7 @@ class RealtimeServiceImpl {
       .channel(`epoch:${epochId}:team:${teamId}:chat`, { config: { private: true } })
       .on('broadcast', { event: 'new_message' }, (payload) => {
         const msg = payload.payload as EpochChatMessage;
+        if (this.teamMessages.value.some((m) => m.id === msg.id)) return;
         this.teamMessages.value = [...this.teamMessages.value, msg];
         if (!this._teamChatFocused) {
           this.unreadTeamCount.value += 1;

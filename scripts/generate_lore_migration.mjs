@@ -18,7 +18,7 @@ const SIMULATIONS = [
   { id: '30000000-0000-0000-0000-000000000001', slug: 'station-null', file: 'station-null-lore.ts' },
   { id: '40000000-0000-0000-0000-000000000001', slug: 'speranza', file: 'speranza-lore.ts' },
   { id: '50000000-0000-0000-0000-000000000001', slug: 'cite-des-dames', file: 'cite-des-dames-lore.ts' },
-  { id: '60000000-0000-0000-0000-000000000001', slug: 'spengbabs-whore-house', file: 'spengbab-lore.ts' },
+  { id: '60000000-0000-0000-0000-000000000001', slug: 'spengbabs-grease-pit', file: 'spengbab-lore.ts' },
 ];
 
 // Load XLIFF translations into a map: normalized_english -> german

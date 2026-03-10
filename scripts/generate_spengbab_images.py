@@ -30,7 +30,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 SIM_ID = "60000000-0000-0000-0000-000000000001"
-SIM_SLUG = "spengbabs-whore-house"
+SIM_SLUG = "spengbabs-grease-pit"
 
 # Environment configs
 LOCAL = {

@@ -21,7 +21,6 @@ import './SimulationCard.js';
 import '../resonance/ResonanceMonitor.js';
 import '../epoch/AcademyEpochCard.js';
 import '../forge/ClearanceApplicationCard.js';
-import '../forge/ForgeAccessRequestModal.js';
 import '../shared/VelgGameCard.js';
 
 type DashboardState = 'guest' | 'new_member' | 'active_player' | 'power_user';
@@ -1022,6 +1021,12 @@ export class VelgSimulationsDashboard extends LitElement {
       padding: var(--space-8) var(--space-6);
     }
 
+    .empty-state velg-clearance-card {
+      width: 100%;
+      max-width: 400px;
+      margin-top: var(--space-4);
+    }
+
     .empty-state__title {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
@@ -1530,7 +1535,9 @@ export class VelgSimulationsDashboard extends LitElement {
           ${!isGuest ? this._renderAgentSpotlight() : nothing}
           ${this._renderResonanceTicker()}
           ${this._renderAcademyCta(userState)}
-          ${!isGuest ? html`<velg-clearance-card style="--i: 3"></velg-clearance-card>` : nothing}
+          ${!isGuest && this._simulations.length > 0
+            ? html`<velg-clearance-card style="--i: 3"></velg-clearance-card>`
+            : nothing}
         </div>
       </div>
     `;
@@ -1644,39 +1651,16 @@ export class VelgSimulationsDashboard extends LitElement {
     `;
   }
 
-  @state() private _clearanceModalOpen = false;
-
   private _renderMyShards(sims: Simulation[]) {
     if (sims.length === 0) {
-      const reqStatus = appState.forgeRequestStatus.value;
       return html`
         <div class="empty-state">
           <div class="empty-state__title">${msg('No Own Shards Yet')}</div>
           <div class="empty-state__text">
-            ${reqStatus === 'pending'
-              ? msg('Your clearance application is under review.')
-              : html`
-                  ${msg('Join an existing shard or start training to learn the ropes.')}
-                  ${appState.canRequestForgeAccess.value
-                    ? html`<br /><a
-                        href="#"
-                        style="color: var(--color-gray-400); text-decoration: underline; cursor: pointer;"
-                        @mouseover=${(e: Event) => { (e.target as HTMLElement).style.color = '#f59e0b'; }}
-                        @mouseout=${(e: Event) => { (e.target as HTMLElement).style.color = 'var(--color-gray-400)'; }}
-                        @click=${(e: Event) => { e.preventDefault(); this._clearanceModalOpen = true; }}
-                      >${msg('Want to create your own? Apply for Architect clearance')}</a>`
-                    : nothing
-                  }
-                `
-            }
+            ${msg('Join an existing shard or start training to learn the ropes.')}
           </div>
+          <velg-clearance-card style="--i: 1"></velg-clearance-card>
         </div>
-        ${this._clearanceModalOpen ? html`
-          <velg-forge-access-modal
-            open
-            @modal-close=${() => { this._clearanceModalOpen = false; }}
-          ></velg-forge-access-modal>
-        ` : nothing}
       `;
     }
 

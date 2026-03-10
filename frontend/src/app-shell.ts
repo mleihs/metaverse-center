@@ -251,7 +251,7 @@ export class VelgApp extends LitElement {
           const ok = await this._guardAuth();
           if (ok) {
             seoService.setTitle(['New Simulation']);
-            seoService.setDescription('Create a new simulation — build your world and launch it to the multiverse.');
+            seoService.setDescription('Create a new simulation — build your world and launch it to the metaverse.');
             seoService.setCanonical('/new-simulation');
             analyticsService.trackPageView('/new-simulation', document.title);
           }
@@ -350,7 +350,7 @@ export class VelgApp extends LitElement {
             return false;
           }
           seoService.setTitle(['Multiplayer Worldbuilding & Strategy Platform']);
-          seoService.setDescription('Build civilizations, deploy operatives, shape the multiverse. A multiplayer worldbuilding and strategy platform.');
+          seoService.setDescription('Build civilizations, deploy operatives, shape the metaverse. A multiplayer worldbuilding and strategy platform.');
           seoService.setCanonical('/');
           analyticsService.trackPageView('/', document.title);
           return true;

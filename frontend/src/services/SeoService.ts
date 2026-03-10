@@ -1,7 +1,7 @@
 const SITE_NAME = 'metaverse.center';
 const DEFAULT_TITLE = 'metaverse.center — Multiplayer Worldbuilding & Strategy Platform';
 const DEFAULT_DESCRIPTION =
-  'Build civilizations, deploy operatives, shape the multiverse. A multiplayer worldbuilding and strategy platform with AI-powered agents, competitive epochs, and real-world resonances.';
+  'Build civilizations, deploy operatives, shape the metaverse. A multiplayer worldbuilding and strategy platform with AI-powered agents, competitive epochs, and real-world resonances.';
 const BASE_URL = 'https://metaverse.center';
 const DEFAULT_OG_IMAGE =
   'https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/og-image.jpg';

@@ -38,7 +38,7 @@ async def create_access_request(
 ):
     """Submit a clearance upgrade request."""
     data = await ForgeAccessService.create_request(
-        supabase, user.id, body.message,
+        supabase, user.id, body.message, user_email=user.email,
     )
     await AuditService.safe_log(
         supabase, None, user.id,

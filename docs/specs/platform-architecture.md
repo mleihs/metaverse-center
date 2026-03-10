@@ -485,12 +485,13 @@ Director                    → Erweiterte Admin-Faehigkeiten (zukuenftig)
 ### Request/Approve/Reject Workflow
 
 1. Benutzer stellt Antrag via `forge_access_requests` Tabelle (Status: `pending`)
-2. Platform Admin prueft Antraege ueber Admin Panel (`v_pending_forge_requests` View)
-3. Genehmigung erfolgt atomar via `fn_approve_forge_access` (SECURITY DEFINER RPC):
+2. Admin-Benachrichtigungs-Email wird ausgeloest (best-effort, non-blocking) mit Applicant-Email und Begruendung
+3. Platform Admin prueft Antraege ueber Admin Panel (`v_pending_forge_requests` View)
+4. Genehmigung erfolgt atomar via `fn_approve_forge_access` (SECURITY DEFINER RPC):
    - Setzt `forge_access_requests.status = 'approved'`
    - Aktualisiert `user_wallets.account_tier`
    - `is_architect` Boolean wird per DB-Trigger gepflegt (Backward Compat)
-4. Bilingual E-Mail-Benachrichtigung (EN/DE) bei Genehmigung oder Ablehnung
+5. Bilingual E-Mail-Benachrichtigung (EN/DE) bei Genehmigung oder Ablehnung
 
 ### Datenmodell
 

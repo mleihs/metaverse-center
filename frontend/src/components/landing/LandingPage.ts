@@ -1275,16 +1275,16 @@ export class VelgLandingPage extends LitElement {
           </h1>
           <div class="waveform" aria-hidden="true">${waveformBars}</div>
           <p class="hero__subtitle">
-            ${msg('Multiplayer Worldbuilding & Strategy Platform. Build civilizations. Deploy operatives. Shape the multiverse.')}
+            ${msg('Multiplayer Worldbuilding & Strategy Platform. Build civilizations. Deploy operatives. Shape the metaverse.')}
           </p>
           <div class="hero__cta-area">
             <a
               class="hero__cta"
               href="/register"
               @click=${(e: Event) => { e.preventDefault(); this._trackCta('hero'); this._navigate('/register'); }}
-              aria-label=${msg('Enter the Multiverse — Create your account')}
+              aria-label=${msg('Enter the Metaverse — Create your account')}
             >
-              ${msg('Enter the Multiverse')}
+              ${msg('Enter the Metaverse')}
               <span class="hero__cta-arrow" aria-hidden="true">\u2192</span>
             </a>
           </div>
@@ -1524,7 +1524,7 @@ export class VelgLandingPage extends LitElement {
 
             <div class="step scroll-reveal" style="--i: 2">
               <div class="step__badge">03</div>
-              <h3 class="step__title">${msg('Shape the Multiverse')}</h3>
+              <h3 class="step__title">${msg('Shape the Metaverse')}</h3>
               <p class="step__desc">
                 ${msg('Your actions ripple across worlds. Build embassies, establish connections, and leave your mark on the substrate.')}
               </p>

@@ -381,7 +381,7 @@ Features die innerhalb einer Simulation existieren. Benutzer können beliebig vi
 
 | # | Feature | Status | Beschreibung |
 |---|---------|--------|-------------|
-| L1 | **Forge Access Control / Bureau Clearance System** | ✅ IMPL | Account-Tier-System (observer → architect → director) mit Request/Approve/Reject-Workflow. DB: `forge_access_requests`-Tabelle, SECURITY DEFINER RPC-Funktionen, `v_pending_forge_requests`-View (Migration 093). Frontend: ClearanceApplicationCard (Dashboard), ForgeAccessRequestModal, AdminForgeTab Clearance-Management. Bilinguale Email-Benachrichtigungen bei Genehmigung/Ablehnung. 5 API-Endpoints (`/api/v1/forge/access-requests/`). |
+| L1 | **Forge Access Control / Bureau Clearance System** | ✅ IMPL | Account-Tier-System (observer → architect → director) mit Request/Approve/Reject-Workflow. DB: `forge_access_requests`-Tabelle, SECURITY DEFINER RPC-Funktionen, `v_pending_forge_requests`-View (Migration 093). Frontend: ClearanceApplicationCard (Dashboard — primaer in leerem "My Shards", sekundaer in Sidebar), ForgeAccessRequestModal (Classified-Dossier-Aesthetic mit Scan-Line-Overlay, gestaffelten Einblendungen, Brutalist-Buttons), AdminForgeTab Clearance-Management. Admin-Benachrichtigungs-Email bei neuen Antraegen. Bilinguale Email-Benachrichtigungen bei Genehmigung/Ablehnung. 5 API-Endpoints (`/api/v1/forge/access-requests/`). |
 | L2 | **Breadcrumb Simulation Switcher** | ✅ IMPL | Dropdown in SimulationShell-Breadcrumb fuer schnelles Wechseln zwischen Simulationen. Keyboard-navigierbar, `position: fixed` um Overflow zu umgehen. View-Property vom Router uebergeben (behebt veraltete Breadcrumb bei Tab-Wechsel). |
 
 ---
