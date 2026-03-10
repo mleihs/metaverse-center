@@ -156,6 +156,16 @@ export class VelgDevAccountSwitcher extends LitElement {
       white-space: nowrap;
     }
 
+    .switcher__error {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: 4px;
+      font-size: 9px;
+      color: #ef4444;
+      white-space: nowrap;
+    }
+
     @media (max-width: 640px) {
       :host {
         display: none;
@@ -167,6 +177,7 @@ export class VelgDevAccountSwitcher extends LitElement {
   @state() private _unlocked = sessionStorage.getItem(GATE_STORAGE_KEY) === 'true';
   @state() private _gateOpen = false;
   @state() private _gateError = '';
+  @state() private _switchError = '';
 
   @query('.gate__input') private _gateInput!: HTMLInputElement;
 
@@ -182,9 +193,9 @@ export class VelgDevAccountSwitcher extends LitElement {
     if (!email || email === this._getCurrentEmail()) return;
 
     this._switching = true;
+    this._switchError = '';
     this.classList.add('switching');
 
-    await supabase.auth.signOut();
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password: DEV_PASSWORD,
@@ -192,8 +203,11 @@ export class VelgDevAccountSwitcher extends LitElement {
 
     if (error) {
       console.error('[DevSwitcher] Sign-in failed:', error.message);
+      this._switchError = error.message;
       this._switching = false;
       this.classList.remove('switching');
+      select.value = this._getCurrentEmail();
+      setTimeout(() => { this._switchError = ''; }, 4000);
       return;
     }
 
@@ -256,6 +270,7 @@ export class VelgDevAccountSwitcher extends LitElement {
           `,
         )}
       </select>
+      ${this._switchError ? html`<span class="switcher__error">${this._switchError}</span>` : nothing}
     `;
   }
 
