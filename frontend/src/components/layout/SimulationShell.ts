@@ -38,6 +38,13 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
       color: var(--color-text-primary);
     }
 
+    /* Shadow DOM doesn't inherit global box-sizing reset */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
     .shell {
       display: grid;
       grid-template-rows: auto auto auto 1fr;
