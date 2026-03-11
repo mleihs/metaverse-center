@@ -1375,6 +1375,7 @@ export interface PlatformSetting {
 export interface AdminUser {
   id: string;
   email: string;
+  raw_user_meta_data?: Record<string, unknown>;
   created_at: string | null;
   last_sign_in_at: string | null;
   forge_tokens?: number;
