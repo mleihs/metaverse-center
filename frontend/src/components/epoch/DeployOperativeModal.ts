@@ -233,6 +233,7 @@ export class VelgDeployOperativeModal extends LitElement {
 			display: flex;
 			align-items: center;
 			gap: var(--space-3);
+			padding-top: var(--space-4);
 			margin-bottom: var(--space-4);
 		}
 

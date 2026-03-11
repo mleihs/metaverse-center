@@ -213,7 +213,7 @@ async def generate_portrait_description(
     except OpenRouterError as e:
         logger.warning("AI service unavailable", extra={"endpoint": "generate_portrait_description", "error": str(e)})
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="AI service temporarily unavailable.",
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"AI service temporarily unavailable: {e}",
         ) from None
     except Exception as e:
         logger.exception("Portrait description generation failed")

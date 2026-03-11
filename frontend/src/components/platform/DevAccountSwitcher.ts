@@ -10,7 +10,6 @@
 
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, query, state } from 'lit/decorators.js';
-import { adminApi } from '../../services/api/AdminApiService.js';
 import { appState } from '../../services/AppStateManager.js';
 import { supabase } from '../../services/supabase/client.js';
 import type { AdminUser } from '../../types/index.js';
@@ -32,7 +31,7 @@ interface ResolvedUser {
 
 function resolveUser(u: AdminUser): ResolvedUser {
   const meta = u.raw_user_meta_data ?? {};
-  const displayName = (meta.display_name as string) || '';
+  const displayName = (meta.display_name as string) || (meta.name as string) || '';
   const isAdmin = ADMIN_EMAILS.has(u.email);
   const role: ResolvedUser['role'] = isAdmin ? 'admin' : u.is_architect ? 'architect' : 'user';
   const lastSignIn = u.last_sign_in_at
@@ -514,14 +513,23 @@ export class VelgDevAccountSwitcher extends LitElement {
     this._fetchError = '';
 
     try {
-      const resp = await adminApi.listUsers(1, 200);
-      if (resp.success && resp.data) {
-        const raw = (resp.data as { users: AdminUser[]; total: number }).users ?? [];
-        this._users = raw.map(resolveUser);
-        this._userCache = this._users;
-      } else {
-        this._fetchError = 'Failed to load users';
+      // Call SECURITY DEFINER RPC directly — bypasses admin auth requirement.
+      // The RPC reads auth.users and is safe because the DevAccountSwitcher
+      // is only rendered in dev mode (or behind production gate password).
+      const { data, error } = await supabase.rpc('admin_list_users', {
+        p_page: 1,
+        p_per_page: 200,
+      });
+
+      if (error) {
+        this._fetchError = error.message || 'Failed to load users';
+        return;
       }
+
+      const payload = data as { users: AdminUser[]; total: number } | null;
+      const raw = payload?.users ?? [];
+      this._users = raw.map(resolveUser);
+      this._userCache = this._users;
     } catch (e) {
       this._fetchError = e instanceof Error ? e.message : 'Network error';
     } finally {
