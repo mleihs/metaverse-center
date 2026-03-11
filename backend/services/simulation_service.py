@@ -242,8 +242,10 @@ class SimulationService:
     ) -> dict:
         """Permanently delete a simulation and all related data.
 
+        1. Clean up Storage files (portraits, building images, banners, lore images).
+        2. DELETE the simulation row — FK CASCADE handles dependent DB rows.
+
         Uses admin (service_role) client to bypass RLS.
-        FK CASCADE handles dependent rows (members, agents, buildings, etc.).
         """
         fetch = (
             supabase.table("simulations")
@@ -259,16 +261,58 @@ class SimulationService:
             )
 
         sim_info = fetch.data
+        sim_id_str = str(simulation_id)
+        slug = sim_info.get("slug", "")
+
+        # ── Storage cleanup (best-effort) ────────────────────────────
+        SimulationService._purge_storage_folder(supabase, "agent.portraits", sim_id_str)
+        SimulationService._purge_storage_folder(supabase, "building.images", sim_id_str)
+        SimulationService._purge_storage_folder(supabase, "simulation.assets", sim_id_str)
+        if slug:
+            SimulationService._purge_storage_folder(supabase, "simulation.assets", slug)
+
+        # ── DB delete (cascades to all dependent tables) ─────────────
         logger.warning(
             "Simulation hard-deleted",
             extra={
-                "simulation_id": str(simulation_id),
+                "simulation_id": sim_id_str,
                 "simulation_name": sim_info.get("name"),
-                "slug": sim_info.get("slug"),
+                "slug": slug,
             },
         )
-        supabase.table("simulations").delete().eq("id", str(simulation_id)).execute()
+        supabase.table("simulations").delete().eq("id", sim_id_str).execute()
         return sim_info
+
+    @staticmethod
+    def _purge_storage_folder(supabase: Client, bucket: str, prefix: str) -> None:
+        """Recursively delete all files under a storage prefix (best-effort)."""
+        try:
+            files = supabase.storage.from_(bucket).list(prefix)
+            if not files:
+                return
+
+            # Separate actual files from nested folders
+            file_paths: list[str] = []
+            for item in files:
+                name = item.get("name", "") if isinstance(item, dict) else getattr(item, "name", "")
+                if not name or name == ".emptyFolderPlaceholder":
+                    continue
+                item_id = item.get("id") if isinstance(item, dict) else getattr(item, "id", None)
+                if item_id:
+                    # Regular file
+                    file_paths.append(f"{prefix}/{name}")
+                else:
+                    # Subfolder — recurse
+                    SimulationService._purge_storage_folder(supabase, bucket, f"{prefix}/{name}")
+
+            if file_paths:
+                supabase.storage.from_(bucket).remove(file_paths)
+                logger.info(
+                    "Purged storage files",
+                    extra={"bucket": bucket, "prefix": prefix, "count": len(file_paths)},
+                )
+        except Exception:
+            logger.warning("Storage cleanup failed for %s/%s", bucket, prefix, exc_info=True)
 
     @staticmethod
     async def list_all_simulations(
