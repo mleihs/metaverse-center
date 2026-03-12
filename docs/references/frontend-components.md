@@ -1,8 +1,8 @@
 ---
 title: "Frontend Components"
 id: frontend-components
-version: "2.5"
-date: 2026-03-10
+version: "2.6"
+date: 2026-03-12
 lang: de
 type: reference
 status: active
@@ -121,6 +121,18 @@ SimulationShell (Layout mit Navigation + Breadcrumb Simulation-Switcher)
 ├── SimulationLoreView
 │   └── Lore Content (4 per-simulation content files)
 ├── SimulationHealthView (Game Metrics Dashboard)
+│   ├── AscendancyAura (golden glow overlay for ascendant threshold)
+│   ├── DesperateActionsPanel (3 emergency actions fan: scorched_earth, emergency_draft, reality_anchor)
+│   ├── EntropyOverlay (vignette + red pulse + grain for critical threshold)
+│   └── EntropyTimer (digital countdown display, fixed bottom-left)
+├── BleedPalimpsestOverlay (full-page palimpsest when active bleeds)
+│   ├── BleedMarginalia (foreign-theme-colored margin entries with lore quotes)
+│   └── BleedRedaction (censored text strips)
+├── CartographersDesk (Intelligence Light Table — bureau drafting table)
+│   ├── CartographicMap (SVG zone map with pan/zoom, stability coloring)
+│   ├── MapLayerToggle (4 switchable layers: infrastructure, bleed, military, history)
+│   └── MapAnnotationTool (toggle-based annotation system)
+├── SvgFilters (shared SVG filter definitions for visual effects)
 ├── EpochCommandCenter (Competitive PvP — orchestrator, delegates to subcomponents)
 │   ├── EpochOpsBoard (dossier cards + COMMS sidebar, dispatches select/join/create events)
 │   ├── EpochOverviewTab (overview + mission render + fortify zone, dispatches deploy/counter/recall/fortify events)
@@ -542,7 +554,7 @@ frontend/src/services/api/
 ├── EpochsApiService.ts             # Competitive epochs, operatives, scoring
 ├── EpochChatApiService.ts          # Epoch chat messages (REST catch-up) + ready signals
 ├── ForgeApiService.ts              # Simulation Forge CRUD, BYOK keys, access requests + admin review
-├── HealthApiService.ts             # Simulation health + game mechanics
+├── HealthApiService.ts             # Simulation health + game mechanics + bleed status + threshold actions
 ├── BotApiService.ts                # Bot player preset CRUD + add/remove bot from epoch
 ├── NotificationPreferencesApiService.ts  # Notification preferences (GET + POST /users/me/notification-preferences)
 └── index.ts                        # Re-exports all service singletons
@@ -745,18 +757,20 @@ Alle Änderungen zeigen eine Live-Preview innerhalb der Shell. Preset-Auswahl f�
 | lore/ | 7 | 1 | SimulationLoreView + lore-content dispatcher + 5 content files (per-simulation) |
 | multiverse/ | 12 | 8 | CartographerMap, MapGraph, MapGraph3D, MapTooltip, MapConnectionPanel, MapBattleFeed, MapLeaderboardPanel, MapMinimap + 4 utilities (map-force, map-data, map-types, map-three-render) |
 | settings/ | 10 | 10 | SettingsView + 9 panels (General, World, AI, Integration, Design, Access, Prompts, Bleed, Notifications) |
-| health/ | 1 | 1 | SimulationHealthView (game metrics dashboard) |
+| health/ | 5 | 5 | SimulationHealthView, AscendancyAura, DesperateActionsPanel, EntropyOverlay, EntropyTimer |
+| bleed/ | 3 | 3 | BleedPalimpsestOverlay, BleedMarginalia, BleedRedaction |
+| map/ | 5 | 5 | CartographersDesk, CartographicMap, MapAnnotationTool, MapLayerToggle, MultiverseConspiracyBoard |
 | epoch/ | 19 | 19 | CommandCenter (orchestrator), OpsBoard, OverviewTab, IntelDossierTab, OperationsTab, AlliancesTab, LobbyActions, CreationWizard, DraftRosterPanel, Leaderboard, BattleLog, MissionCard, DeployOperativeModal, InvitePanel, InviteAcceptView, ChatPanel, PresenceIndicator, ReadyPanel, BotConfigPanel |
 | how-to-play/ | 5 | 1 | HowToPlayView + htp-styles (extracted CSS) + 3 content/type files (htp-types, htp-content-rules, htp-content-matches) |
 | shared/ | 28 | 17 | 17 components + 10 CSS modules + 1 base class |
-| **Gesamt** | **143** | **117** (in components/) | **19 Verzeichnisse** |
+| **Gesamt** | **158** | **131** (in components/) | **22 Verzeichnisse** |
 
 ### Utilities
 
 ```
 frontend/src/utils/
 ├── text.ts                         # getInitials() helper
-├── icons.ts                        # Centralized SVG icons with aria-hidden="true" (includes chevronDown for breadcrumb switcher)
+├── icons.ts                        # Centralized SVG icons with aria-hidden="true" (includes chevronDown, fracture, anchor, scorchedEarth, emergencyDraft, compassRose, stampClassified, magnifyingGlass, pencilAnnotate, layerInfrastructure, layerBleed, layerMilitary, layerHistory, heartline, flatline)
 ├── operative-icons.ts              # Centralized operative-type SVG icons (spy, guardian, saboteur, propagandist, infiltrator, assassin, zone_fortified)
 └── theme-colors.ts                 # Theme color utilities
 ```
@@ -1822,6 +1836,7 @@ Singleton API service for Simulation Forge draft lifecycle, BYOK key management,
 | `generateChunk(id, chunkType)` | POST | `/forge/drafts/{id}/generate/{chunkType}` | Auth (Owner) |
 | `generateTheme(id)` | POST | `/forge/drafts/{id}/generate-theme` | Auth (Owner) |
 | `ignite(id)` | POST | `/forge/drafts/{id}/ignite` | Auth (Owner) |
+| `getForgeProgress(slug)` | GET | `/public/simulations/by-slug/{slug}/forge-progress` | Anon |
 | `getSimulationLore(simId)` | GET | `/simulations/{simId}/lore` | Public |
 | `getWallet()` | GET | `/forge/wallet` | Auth |
 | `updateBYOK(data)` | PUT | `/forge/wallet/keys` | Auth |

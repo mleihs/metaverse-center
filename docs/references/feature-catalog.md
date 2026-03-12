@@ -1,8 +1,8 @@
 ---
 title: "Feature Catalog"
 id: feature-catalog
-version: "2.4"
-date: 2026-03-10
+version: "2.5"
+date: 2026-03-12
 lang: de
 type: reference
 status: active
@@ -183,6 +183,8 @@ Features die innerhalb einer Simulation existieren. Benutzer können beliebig vi
 | S25a | **Cross-Sim Bleed** | ✅ IMPL | `event_echoes`-Tabelle (Migration 026). Probabilistischer Bleed-Threshold basierend auf Connection-Strength. Strength-Decay über Zeit. Vector-Tag-Resonanz. |
 | S25b | **Echo-Transformation-Pipeline** | ✅ IMPL | Approve → AI Generate → Create Target Event. EchoCard + EchoTriggerModal in EventDetailsPanel. Cross-Simulation Writes via Admin-Client. Cascade-Prevention. |
 | S25c | **BleedSettingsPanel** | ✅ IMPL | Konfigurierbare Bleed-Parameter in Settings-UI. Extends BaseSettingsPanel. |
+| S25d | **Bleed Palimpsest Overlay** | ✅ IMPL | Ganzseitige Palimpsest-Überlagerung bei aktiven Bleeds: `BleedPalimpsestOverlay` rendert pro Bleed-Quelle `BleedMarginalia` (Fremd-Theme-gefärbte Marginalia-Einträge mit Zitat-Fragmenten) + `BleedRedaction` (zensierte Textstreifen im redacted-Stil). Aktiviert sich automatisch wenn `bleedStatus.active_bleeds.length > 0`. Foreign-Theme-Integration (Primärfarbe + Heading-Font aus Quell-Simulation). |
+| S25e | **Entropy Text Corruption & Card Distortion** | ✅ IMPL | SimulationShell-Effekte bei `threshold_state === 'critical'`: Text-Scramble ersetzt zufällige Buchstaben mit Glitch-Zeichen (▓░▒█╪╫╬┼╳⌧∅), Karten werden zufällig rotiert (-2.5° bis +2.5°) mit periodischem Shake-Flicker. Deceleration Hero Moment: 3s Ease-out Transition von 1x→3x Animationsgeschwindigkeit via dynamische CSS Custom Properties (`--duration-*`). Shadow-DOM-traversal für Text-Nodes und Card-Elements. |
 
 #### B6. Chat-System
 
@@ -258,6 +260,8 @@ Features die innerhalb einer Simulation existieren. Benutzer können beliebig vi
 | S59 | **Forge Mock-Service** | ✅ IMPL | `FORGE_MOCK_MODE=true`: Deterministisches Mock-System für alle 4 Phasen. Seed-aware via SHA-256. 8 Zonen (mit characteristics), 8 Straßen (mit descriptions), 8 Agenten (2-3 Satz character/background), 9 Gebäude (variierte conditions), 2 Theme-Presets, 5 Lore-Sektionen + DE-Übersetzungen. |
 | S60 | **BYOK (Bring Your Own Key)** | ✅ IMPL | User können eigene OpenRouter/Replicate API-Keys hinterlegen (AES-256 verschlüsselt via `user_wallets`). Forge nutzt User-Keys wenn vorhanden, sonst Platform-Keys. |
 | S61 | **Forge-Frontend** | ✅ IMPL | VelgForgeWizard (Multi-Step), VelgForgeTable (Draft-Management), VelgForgeAstrolabe (Pipeline-Visualisierung), VelgForgeDarkroom (Theme-Tuning), VelgForgeIgnition (Materialisierungs-Bestätigung mit Fehleranzeige + Retry), VelgForgeScanOverlay (Scan-Animation). Retro-Terminal CRT-Ästhetik (bernstein auf schwarz). `ForgeStateManager` mit sessionStorage-Persistenz fuer Draft-ID (ueberlebt Page-Refresh). |
+| S62 | **Forge Ceremony — Card Dealer Spread** | ✅ IMPL | VelgForgeCeremony Post-Ignition-Screen redesigned: Zwei Kartenfächer (Agenten links, Gebäude rechts) mit Bogen-Rotation (3° pro Position, 5px Arc-Dip). `sm`-Kartengröße (120×192) statt `xs`. Dynamische Überlappung berechnet sich aus Viewport-Breite. Hover hebt Karte an und richtet sie gerade aus. Zonen-Badge als vertikaler Divider zwischen den Fächern. Responsive Shard-Name mit `clamp(1.2rem, 4vw, 2.5rem)`. Prominenter Enter-Button mit Breathing-Glow-Animation. Fan-Labels ("6 AGENTS" / "7 BUILDINGS") ersetzen separate Stats-Zeile. Alle Animationen respektieren `prefers-reduced-motion`. |
+| S63 | **Forge Image Progress Polling** | ✅ IMPL | Live-Bildfortschritt während Ceremony: Polling alle 4s via `get_forge_progress` Postgres RPC (Migration 098). Fortschrittsbalken ("3/14 MATERIALIZING..."). Brightness-Flash-Microanimation bei neuen Bildern. Enter-Button gesperrt bis alle Bilder fertig ("MATERIALIZING ASSETS ..." → "ENTER NEW SHARD →"). Auto-Enter 8s nach Abschluss. 5-Minuten Safety-Timeout. Karten-`image-url`-Attribut wird live aktualisiert. |
 
 ---
 
@@ -292,6 +296,11 @@ Features die innerhalb einer Simulation existieren. Benutzer können beliebig vi
 | D6 | **MapMinimap** | ✅ IMPL | 150×100px Viewport-Übersicht unten rechts. |
 | D7 | **MapConnectionPanel** | ✅ IMPL | Connection-Details bei Edge-Klick. MapTooltip für Game-Instance-Tooltips mit Score-Dimensionen-Bars. |
 | D8 | **Auto-Refresh** | ✅ IMPL | 30s automatischer Refresh während aktiver Epochs. `ConnectionService.get_map_data()` angereichert mit active_instance_counts, operative_flow, score_dimensions, sparklines. `_fetch_map_simulations` liest die `map_simulations` Postgres-View (migration 091) — filtert completed/cancelled Game-Instances serverseitig heraus. |
+| D9 | **Cartographer's Desk** | ✅ IMPL | Intelligence Operations Light Table — Bureau of Impossible Geography. Atmosphärische Container-Komponente für die Kartografie-Ansicht: Backlit-Drafting-Table-Ästhetik mit Edge-Glow, taktischer Toolbar, Status-Indikatoren, "BUREAU SURVEY"-Klassifizierungsstempel (rot, `--color-stamp-red`), Kompassrose. Responsive: Toolbar wrap, Compass hidden auf Mobil. |
+| D10 | **Map Layers** | ✅ IMPL | `MapLayerToggle`-Komponente: 4 umschaltbare Layer (Infrastructure, Bleed Activity, Military Operations, Historical Events) mit dedizierten Icons. Aktiver Layer hat bernsteinfarbene Akzente. Keyboard-navigierbar. Layer-Typ steuert Datenvisualisierung auf der CartographicMap. |
+| D11 | **Cartographic Map (SVG)** | ✅ IMPL | `CartographicMap`: Zone-basierte SVG-Karte mit Pan/Zoom (Mausrad + Drag). Zone-Hexagone farbkodiert nach Stabilität (rot < 0.3, gelb < 0.6, grün ≥ 0.6). Zone-Labels, Building-Counts, Security-Badges. Hover-Vergrösserung. Click → `zone-select` CustomEvent. Grid-Layout berechnet aus `Math.ceil(√n)`. |
+| D12 | **Map Annotations** | ✅ IMPL | `MapAnnotationTool`: Toggle-basiertes Annotations-System. Aktiv-State mit bernsteinfarbener Highlight-Taste "Annotate". Integrations-Punkt für zukünftige User-Notizen auf der Karte. |
+| D13 | **Map Overlay Data RPC** | ✅ IMPL | `get_map_overlay_data(uuid[])` Postgres-Funktion (Migration 100): Zone-Topologie, historische Events (Top 20 pro Sim), aktive Bleed-Details in einem einzigen Round-Trip. Ersetzt drei separate Python-Methoden (`_fetch_zone_topology`, `_fetch_historical_events`, `_fetch_active_bleed_details`). |
 
 ---
 
@@ -303,6 +312,11 @@ Features die innerhalb einer Simulation existieren. Benutzer können beliebig vi
 | E2 | **GameMechanicsService** | ✅ IMPL | 4 API-Endpoints für berechnete Attribute. Computed Metrics für AI-Prompt-Integration. |
 | E3 | **Info Bubbles** | ✅ IMPL | `renderInfoBubble(title, text)` Shared-Render-Funktion in allen Edit-Modals + SimulationHealthView Dashboard. |
 | E4 | **Bleed-Pipeline** | ✅ IMPL | Probabilistischer Bleed-Threshold, Strength-Decay, Vector-Tag-Resonanz, Echo-Transformation-Pipeline (approve → AI generate → create target event). |
+| E5 | **Threshold System** | ✅ IMPL | 3 Schwellenwert-Zustände: `normal` (health 0.25–0.85), `critical` (< 0.25), `ascendant` (> 0.85). `get_bleed_status` Postgres RPC (Migration 099): Aggregiert Health, Echoes, Foreign Themes, Lore in einem Round-Trip. Frontend: `SimulationShell` setzt CSS-Klassen (`.shell--critical`, `.shell--ascendant`), überschreibt `--color-surface-raised` via CSS-Tokens. |
+| E6 | **Entropy UI (Critical State)** | ✅ IMPL | 4 Overlay-Komponenten bei `threshold_state === 'critical'`: `EntropyOverlay` (Vignette + roter Pulse + Grain-Noise), `EntropyTimer` (digitale Countdown-Anzeige, Fixed Bottom-Left), `DesperateActionsPanel` (3 Notfall-Aktionen: Scorched Earth, Emergency Draft, Reality Anchor — Fixed Bottom-Center mit expandierbarem Fan-Layout), Text-Corruption + Card-Shake in SimulationShell. `--color-entropy-*` Design-Tokens. 12s Entropy-Drift Filter-Animation (Entsättigung + Sepia + Hue-Shift). |
+| E7 | **Ascendancy UI (Ascendant State)** | ✅ IMPL | `AscendancyAura`: Goldener Glow-Overlay bei `threshold_state === 'ascendant'`. `--color-ascendant-gold` + `--color-ascendant-border` Tokens. `--color-surface-raised-ascendant` für warme Oberflächen. Subtile Radial-Gradient-Aura. |
+| E8 | **Threshold Actions** | ✅ IMPL | 3 Notfall-Aktionen bei kritischem Zustand: `scorched_earth` (Zone zerstören, reduziert Druck), `emergency_draft` (Notfall-Rekrutierung, füllt offene Stellen), `reality_anchor` (Realitätsanker, stabilisiert Bleed-Permeabilität). `ThresholdService` (274 Zeilen). `threshold_actions`-Tabelle (Migration 097). POST `/api/v1/simulations/{id}/threshold-actions/{type}`. Entropy-Countdown: 10 Zyklen minus Aktionen-Count → 0 = Zusammenbruch. |
+| E9 | **Bleed Status RPC** | ✅ IMPL | `get_bleed_status(uuid)` Postgres-Funktion (Migration 099): Ersetzt N+1 Python-Queries (7 Queries pro Quell-Simulation) mit einer einzigen Abfrage. CTEs: `strongest_per_source` (DISTINCT ON), `source_enriched` (Joins: Sim-Name, Theme via `setting_value #>> '{}'`, Lore-Fragment). AppStateManager: `bleedStatus` + `thresholdState` Signals für globalen Zugriff. |
 
 ---
 
@@ -391,8 +405,8 @@ Features die innerhalb einer Simulation existieren. Benutzer können beliebig vi
 | Kennzahl | Wert |
 |----------|------|
 | **Simulationen** | 5 (Velgarien, The Gaslit Reach, Station Null, Speranza, Cité des Dames) |
-| **Datenbanktabellen** | 57 |
-| **SQL-Migrationen** | 93 |
+| **Datenbanktabellen** | 58 |
+| **SQL-Migrationen** | 100 |
 | **RLS-Policies** | 150+ |
 | **Trigger** | 41+ |
 | **Views** | 8 Standard + 6 Materialized |
@@ -400,7 +414,7 @@ Features die innerhalb einer Simulation existieren. Benutzer können beliebig vi
 | **Backend-Tests** | 912 (pytest: unit + integration + security + performance) |
 | **Frontend-Tests** | 453 (vitest: validation + API + theme contrast + SEO) |
 | **E2E-Tests** | 81 (Playwright: 12 Dateien) |
-| **i18n-Strings** | 3160 (EN/DE) |
+| **i18n-Strings** | 3220+ (EN/DE) |
 | **Background-Tasks** | 1 (ResonanceScheduler) |
 | **Storage Buckets** | 4 (agent.portraits, building.images, user.agent.portraits, simulation.assets) |
 | **Theme-Presets** | 6 (dark-brutalist, deep-space-horror, arc-raiders, gaslit-reach, illuminated-literary, custom) |
@@ -466,3 +480,9 @@ Alle 6 Phasen abgeschlossen. 160 Tasks implementiert.
 - I1-I7 (Graduated Event Pressure, Event Lifecycle, Zone Gravity/Vulnerability, Cascade Events, Zone Actions, Event Seismograph)
 - J1-J8 (Substrate Resonances: Detection, Susceptibility, Impact Processing, Operative Integration, Monitor, Admin Panel, Balance Fixes, Auto-Processing Scheduler)
 - K1-K2 (API Key Management, Font Picker)
+
+### Phase 8: Health Threshold, Bleed Overlay & Map Redesign
+- S25d-S25e (Bleed Palimpsest Overlay, Text Corruption)
+- S62-S63 (Forge Ceremony Card Dealer Spread, Image Progress Polling)
+- D9-D13 (Cartographer's Desk, Map Layers, Cartographic Map, Annotations, Map Overlay RPC)
+- E5-E9 (Threshold System, Entropy UI, Ascendancy UI, Threshold Actions, Bleed Status RPC)

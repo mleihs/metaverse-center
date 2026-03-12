@@ -305,6 +305,32 @@ class GameMechanicsService:
         return " ".join(parts) if parts else "The simulation is functional."
 
     @staticmethod
+    async def get_bleed_status(
+        supabase: Client,
+        simulation_id: UUID,
+    ) -> dict:
+        """Return aggregated bleed status for UI overlay rendering.
+
+        Uses the ``get_bleed_status`` Postgres function (migration 099) which
+        combines simulation health, active echoes, foreign themes, and lore
+        in a single round-trip.
+        """
+        response = supabase.rpc(
+            "get_bleed_status",
+            {"p_simulation_id": str(simulation_id)},
+        ).execute()
+        if response.data:
+            return response.data
+        return {
+            "active_bleeds": [],
+            "bleed_permeability": 0.0,
+            "fracture_warning": False,
+            "threshold_state": "normal",
+            "overall_health": 0.5,
+            "entropy_cycles_remaining": None,
+        }
+
+    @staticmethod
     async def refresh_metrics(supabase: Client) -> None:
         """Trigger a full refresh of all game mechanics materialized views.
 

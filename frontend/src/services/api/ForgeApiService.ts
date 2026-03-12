@@ -71,6 +71,19 @@ export interface ForgeDraft {
   updated_at: string;
 }
 
+export interface ForgeProgressEntity {
+  name: string;
+  image_url: string | null;
+}
+
+export interface ForgeProgress {
+  total: number;
+  completed: number;
+  done: boolean;
+  agents: ForgeProgressEntity[];
+  buildings: ForgeProgressEntity[];
+}
+
 export class ForgeApiService extends BaseApiService {
   listDrafts(params?: Record<string, string>): Promise<ApiResponse<PaginatedResponse<ForgeDraft>>> {
     return this.get('/forge/drafts', params);
@@ -104,12 +117,16 @@ export class ForgeApiService extends BaseApiService {
     return this.post(`/forge/drafts/${id}/generate-theme`);
   }
 
-  ignite(id: string): Promise<ApiResponse<{ simulation_id: string; slug: string | null }>> {
+  ignite(id: string): Promise<ApiResponse<{ simulation_id: string; slug: string | null; name?: string; description?: string }>> {
     return this.post(`/forge/drafts/${id}/ignite`);
   }
 
   getSimulationLore(simulationId: string): Promise<ApiResponse<ForgeLoreSection[]>> {
     return this.getPublic(`/simulations/${simulationId}/lore`);
+  }
+
+  getForgeProgress(slug: string): Promise<ApiResponse<ForgeProgress>> {
+    return this.getPublic(`/simulations/by-slug/${slug}/forge-progress`);
   }
 
   getWallet(): Promise<ApiResponse<{ forge_tokens: number; is_architect: boolean }>> {

@@ -13054,6 +13054,199 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 <trans-unit id="sc70ad8207db856a8">
   <source>Coordinates</source>
 <target>Koordinaten</target></trans-unit>
+<trans-unit id="s2c1e467018dead1e">
+  <source>Cross-dimensional reference from </source>
+<target>Interdimensionaler Verweis von </target></trans-unit>
+<trans-unit id="s82ad71ac8aed7da0">
+  <source>THIS SIMULATION</source>
+<target>DIESE SIMULATION</target></trans-unit>
+<trans-unit id="se2bd7085a0b39e62">
+  <source>Classified content, partially revealed through bleed contamination</source>
+<target>Geheime Inhalte, teilweise durch Bleed-Kontamination enthüllt</target></trans-unit>
+<trans-unit id="sc92fb1ef3ff6f5de">
+  <source>Simulation has achieved Ascendant status</source>
+<target>Die Simulation hat den Status Aufstieg erreicht</target></trans-unit>
+<trans-unit id="s4fb0e5beca131050">
+  <source>Ascendant</source>
+<target>Aufstieg</target></trans-unit>
+<trans-unit id="sfd0edd58c9dfdc5c">
+  <source>Scorched Earth</source>
+<target>Verbrannte Erde</target></trans-unit>
+<trans-unit id="s5848c22f2a584ccb">
+  <source>Permanently destroy a building to stabilize zone</source>
+<target>Ein Gebäude dauerhaft zerstören, um die Zone zu stabilisieren</target></trans-unit>
+<trans-unit id="s90a99ec232cfd4a5">
+  <source>Emergency Draft</source>
+<target>Notrekrutierung</target></trans-unit>
+<trans-unit id="s88580189cb05dfc0">
+  <source>Draft emergency personnel from reserves</source>
+<target>Notpersonal aus Reserven einziehen</target></trans-unit>
+<trans-unit id="sa9c11a0dbac7b168">
+  <source>Reality Anchor</source>
+<target>Realitätsanker</target></trans-unit>
+<trans-unit id="s8cf5d0caaff38ab4">
+  <source>Temporary stability boost, all zones, 3 cycles</source>
+<target>Temporärer Stabilitätsschub, alle Zonen, 3 Zyklen</target></trans-unit>
+<trans-unit id="s42949dc4532472f6">
+  <source>Emergency threshold actions</source>
+<target>Notfall-Schwellenwertaktionen</target></trans-unit>
+<trans-unit id="sb3cd54c06ebb298c">
+  <source>Surveying zones...</source>
+<target>Zonen werden vermessen...</target></trans-unit>
+<trans-unit id="s1526529a16aeb348">
+  <source>No zones to chart.</source>
+<target>Keine Zonen zum Kartieren.</target></trans-unit>
+<trans-unit id="sd0c4e164611997ca">
+  <source>Cartographer's Desk</source>
+<target>Kartographen-Pult</target></trans-unit>
+<trans-unit id="s8290689948734139">
+  <source>Annotate</source>
+<target>Annotieren</target></trans-unit>
+<trans-unit id="s5d6ccc4bd21e0ce5">
+  <source>cartographic map of simulation zones</source>
+<target>Kartographische Karte der Simulationszonen</target></trans-unit>
+<trans-unit id="s9ae7e381da4e993d">
+  <source>Simulation zones</source>
+<target>Simulationszonen</target></trans-unit>
+<trans-unit id="sc7b7556c96362b08">
+  <source>stability</source>
+<target>Stabilität</target></trans-unit>
+<trans-unit id="s92b330058be66b91">
+  <source>Note...</source>
+<target>Notiz...</target></trans-unit>
+<trans-unit id="s72e426b3871f100c">
+  <source>Active layer:</source>
+<target>Aktive Ebene:</target></trans-unit>
+<trans-unit id="scd1e71ad1cb95bad">
+  <source>Map layers</source>
+<target>Kartenebenen</target></trans-unit>
+<trans-unit id="s3df26214d8ce2406">
+  <source>No simulation data available.</source>
+<target>Keine Simulationsdaten verfügbar.</target></trans-unit>
+<trans-unit id="sd828ab38c689f5ba">
+  <source>Multiverse Overview</source>
+<target>Multiversum-Übersicht</target></trans-unit>
+<trans-unit id="s3d249bb480032121">
+  <source>List</source>
+<target>Liste</target></trans-unit>
+<trans-unit id="s9241eb356fe8c827">
+  <source>Bureau Survey</source>
+<target>Bureau-Vermessung</target></trans-unit>
+<trans-unit id="sc65ea2cf2f21a13a">
+  <source>Zoom out</source>
+<target>Verkleinern</target></trans-unit>
+<trans-unit id="s236ae937cbcd6a39">
+  <source>Zoom in</source>
+<target>Vergrößern</target></trans-unit>
+<trans-unit id="s06bf38e4a2b4bab1">
+  <source>Reset view</source>
+<target>Ansicht zurücksetzen</target></trans-unit>
+<trans-unit id="s034b3ba029e038f4">
+  <source>avg stability</source>
+<target>Ø Stabilität</target></trans-unit>
+<trans-unit id="s886f003181c384cd">
+  <source>Sign in to execute emergency actions</source>
+<target>Anmelden, um Notfallaktionen auszuführen</target></trans-unit>
+<trans-unit id="s2dac48b3f033dc1c">
+  <source>Action failed</source>
+<target>Aktion fehlgeschlagen</target></trans-unit>
+<trans-unit id="sea2a7645129ac2ef">
+  <source>+0.15 STAB · 1 BLDG</source>
+<target>+0,15 STAB · 1 GEB</target></trans-unit>
+<trans-unit id="sf16d416683d11eed">
+  <source>+1 AGENT · 15 RP</source>
+<target>+1 AGENT · 15 RP</target></trans-unit>
+<trans-unit id="s2ebe62e8a297b924">
+  <source>+0.10 STAB · ALL · 3 CYC</source>
+<target>+0,10 STAB · ALLE · 3 ZYK</target></trans-unit>
+<trans-unit id="s9c03e6f304c73075">
+  <source>LIFE SUPPORT PROTOCOLS</source>
+<target>LEBENSERHALTUNGSPROTOKOLLE</target></trans-unit>
+<trans-unit id="s29e7c3c08c29e79b">
+  <source>ENTROPY COUNTERMEASURES</source>
+<target>ENTROPIE-GEGENMASSNAHMEN</target></trans-unit>
+<trans-unit id="sdbab00821f56d112">
+  <source>ENTROPY</source>
+<target>ENTROPIE</target></trans-unit>
+<trans-unit id="s405a463f037daa06">
+  <source>CYCLES</source>
+<target>ZYKLEN</target></trans-unit>
+<trans-unit id="s801c7b8c54f0f54c">
+  <source>Staff Buildings</source>
+  <target>Gebäude besetzen</target>
+</trans-unit>
+<trans-unit id="s0a16b1dfd3ac6245">
+  <source>Assign agents to understaffed buildings</source>
+  <target>Agenten unterbesetzten Gebäuden zuweisen</target>
+</trans-unit>
+<trans-unit id="sd9b1d1a7260d154e">
+  <source>BLDG</source>
+  <target>GEB</target>
+</trans-unit>
+<trans-unit id="sb105635ff1394314">
+  <source>READY</source>
+  <target>BEREIT</target>
+</trans-unit>
+<trans-unit id="s604aad9be296c5a9">
+  <source>Recruit Agents</source>
+  <target>Agenten rekrutieren</target>
+</trans-unit>
+<trans-unit id="s335f697ad2005c58">
+  <source>Create new agents to fill vacant positions</source>
+  <target>Neue Agenten erstellen, um offene Stellen zu besetzen</target>
+</trans-unit>
+<trans-unit id="s9b70c6e88072d96f">
+  <source>AGENTS</source>
+  <target>AGENTEN</target>
+</trans-unit>
+<trans-unit id="sb2b305d0ac7e7a13">
+  <source>IDLE</source>
+  <target>FREI</target>
+</trans-unit>
+<trans-unit id="scfeaf608e8aa0616">
+  <source>Establish Diplomacy</source>
+  <target>Diplomatie aufbauen</target>
+</trans-unit>
+<trans-unit id="sc9d5d5dae67bfbd2">
+  <source>Open embassies to boost diplomatic reach</source>
+  <target>Botschaften eröffnen, um diplomatische Reichweite zu erhöhen</target>
+</trans-unit>
+<trans-unit id="s452f093dc882f653">
+  <source>EMBASSIES</source>
+  <target>BOTSCHAFTEN</target>
+</trans-unit>
+<trans-unit id="sb0ed8a5ff124f378">
+  <source>REACH</source>
+  <target>REICHWEITE</target>
+</trans-unit>
+<trans-unit id="s19085b96840f3c78">
+  <source>SYSTEM DIAGNOSTICS</source>
+  <target>SYSTEMDIAGNOSE</target>
+</trans-unit>
+<trans-unit id="s81d1e80d27f88c93">
+  <source>RECOVERY PROTOCOLS</source>
+  <target>WIEDERHERSTELLUNGSPROTOKOLLE</target>
+</trans-unit>
+<trans-unit id="s84a0d2cc426151e3">
+  <source>System recovery diagnostics</source>
+  <target>Systemwiederherstellungs-Diagnose</target>
+</trans-unit>
+<trans-unit id="s748158b24709a86f">
+  <source>GO TO TAB</source>
+  <target>ZUM TAB</target>
+</trans-unit>
+<trans-unit id="seaca59908ee0c23c">
+  <source>All Assets Materialized</source>
+  <target>Alle Objekte materialisiert</target>
+</trans-unit>
+<trans-unit id="sd52c28ec5e8a6195">
+  <source>Materializing</source>
+  <target>Materialisierung</target>
+</trans-unit>
+<trans-unit id="s4cc3a5c4ba8ece2e">
+  <source>Materializing Assets</source>
+  <target>Objekte materialisieren</target>
+</trans-unit>
 
 </body>
 </file>

@@ -98,6 +98,11 @@ class ConnectionService:
 
         echo_counts = await cls._fetch_echo_counts(supabase)
 
+        overlay = await cls._fetch_map_overlay_data(supabase, sim_ids)
+        zone_topology = overlay.get("zone_topology", {})
+        historical_events = overlay.get("historical_events", {})
+        active_bleed_details = overlay.get("active_bleed_details", {})
+
         result = {
             "simulations": simulations,
             "connections": connections,
@@ -107,6 +112,9 @@ class ConnectionService:
             "operative_flow": operative_flow,
             "score_dimensions": score_dimensions,
             "sparklines": sparklines,
+            "zone_topology": zone_topology,
+            "historical_events": historical_events,
+            "active_bleed_details": active_bleed_details,
         }
 
         cls._map_data_cache["map_data"] = result
@@ -252,6 +260,28 @@ class ConnectionService:
         except Exception:
             logger.debug("Sparkline data query skipped")
         return sparklines
+
+    @classmethod
+    async def _fetch_map_overlay_data(
+        cls, supabase: Client, sim_ids: set[str]
+    ) -> dict:
+        """Fetch zone topology, historical events, and bleed details in one RPC.
+
+        Uses the ``get_map_overlay_data`` Postgres function (migration 100).
+        """
+        empty = {"zone_topology": {}, "historical_events": {}, "active_bleed_details": {}}
+        if not sim_ids:
+            return empty
+        try:
+            response = supabase.rpc(
+                "get_map_overlay_data",
+                {"p_simulation_ids": list(sim_ids)},
+            ).execute()
+            if response.data:
+                return response.data
+        except Exception:
+            logger.debug("Map overlay data RPC skipped")
+        return empty
 
     @classmethod
     async def create_connection(

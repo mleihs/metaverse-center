@@ -51,6 +51,8 @@
   /* === SURFACE COLORS === */
   --color-surface: #0a0a0a;
   --color-surface-raised: #111111;
+  --color-surface-raised-critical: #0d0808;
+  --color-surface-raised-ascendant: #0d0b08;
   --color-surface-sunken: #060606;
   --color-surface-overlay: #111111;
   --color-surface-header: #0a0a0a;
@@ -76,4 +78,21 @@
   --color-accent-amber-dim: #b45309;
   --color-accent-amber-glow: rgba(245, 158, 11, 0.15);
   --color-accent-green: #4ade80;
+
+  /* === BLEED CONTAMINATION === */
+  --color-bleed-ghost: rgba(229, 229, 229, 0.06);
+  --color-bleed-ghost-intense: rgba(229, 229, 229, 0.12);
+  --color-bleed-marginalia: var(--color-gray-500);
+  --color-ascendant-gold: rgba(245, 158, 11, 0.04);
+  --color-ascendant-border: var(--color-accent-amber);
+
+  /* === ENTROPY (critical threshold) === */
+  --color-entropy-vignette: rgba(0, 0, 0, 0.5);
+  --color-entropy-pulse: rgba(239, 68, 68, 0.03);
+  --color-entropy-timer-bg: rgba(10, 0, 0, 0.9);
+  --color-entropy-timer-border: rgba(239, 68, 68, 0.4);
+  --color-entropy-timer-glow: rgba(239, 68, 68, 0.15);
+  --color-parchment: rgba(245, 230, 204, 0.05);
+  --color-ink-black: rgba(0, 0, 0, 0.85);
+  --color-stamp-red: rgba(220, 38, 38, 0.7);
 }

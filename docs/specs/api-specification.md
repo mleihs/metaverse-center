@@ -1,8 +1,8 @@
 ---
 title: "API Specification"
 id: api-specification
-version: "2.2"
-date: 2026-03-10
+version: "2.3"
+date: 2026-03-12
 lang: de
 type: spec
 status: active
@@ -1657,6 +1657,33 @@ Embassy-Effectiveness fuer alle Embassies dieser Simulation.
 Manuelles Refresh aller Materialized Views. Normalerweise ueber Trigger automatisch — dieser Endpoint erlaubt manuelles Neuberechnen.
 
 **Rolle:** `admin`
+
+### `GET /api/v1/public/simulations/:simId/bleed-status`
+Aggregierter Bleed-Status fuer Palimpsest-Overlay und Schwellenwert-UI. Enthält aktive Bleeds, Threshold-State (normal/critical/ascendant), Fracture-Warning, Entropy-Countdown, Foreign-Theme-Daten und Lore-Fragmente.
+
+**Auth:** Anon (Public)
+
+**Response:** `SuccessResponse[BleedStatusResponse]`
+
+### `POST /api/v1/simulations/:simId/threshold-actions/:actionType`
+Notfall-Aktion bei kritischem Schwellenwert ausfuehren. Drei Typen: `scorched_earth`, `emergency_draft`, `reality_anchor`. Erfordert `overall_health < 0.25`.
+
+**Rolle:** `editor`
+
+**Query-Parameter:**
+| Parameter | Typ | Beschreibung |
+|-----------|-----|-------------|
+| `target_building_id` | UUID? | Zielgebäude (für `scorched_earth`) |
+| `target_zone_id` | UUID? | Zielzone (für `scorched_earth`, `emergency_draft`) |
+
+**Response:** `SuccessResponse`
+
+### `GET /api/v1/public/simulations/by-slug/:slug/forge-progress`
+Leichtgewichtiger Bildgenerierungs-Fortschritt fuer die Forge-Zeremonie. Delegiert an `get_forge_progress(slug)` Postgres-Funktion (Migration 098).
+
+**Auth:** Anon (Public)
+
+**Response:** `SuccessResponse[ForgeProgress]` — `{ total, completed, done, agents: [{name, image_url}], buildings: [{name, image_url}] }`
 
 ---
 

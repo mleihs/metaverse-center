@@ -1,5 +1,6 @@
 import { computed, signal } from '@preact/signals-core';
 import type { User } from '@supabase/supabase-js';
+import type { BleedStatus, ThresholdState } from '../types/health.js';
 import type {
   ForgeAccessStatus,
   Simulation,
@@ -26,6 +27,10 @@ export class AppStateManager {
   // --- Forge Access Requests ---
   readonly forgeRequestStatus = signal<'none' | ForgeAccessStatus>('none');
   readonly pendingForgeRequestCount = signal<number>(0);
+
+  // --- Threshold / Bleed ---
+  readonly thresholdState = signal<ThresholdState>('normal');
+  readonly bleedStatus = signal<BleedStatus | null>(null);
 
   // --- Onboarding ---
   readonly onboardingCompleted = signal<boolean>(true); // default true to avoid flash
@@ -113,6 +118,17 @@ export class AppStateManager {
 
   setSettings(settings: SimulationSetting[]): void {
     this.settings.value = settings;
+  }
+
+  setThresholdState(state: ThresholdState): void {
+    this.thresholdState.value = state;
+  }
+
+  setBleedStatus(status: BleedStatus | null): void {
+    this.bleedStatus.value = status;
+    if (status) {
+      this.thresholdState.value = status.threshold_state;
+    }
   }
 
   /** Get taxonomy values for a specific type. */

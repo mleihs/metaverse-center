@@ -213,6 +213,8 @@ export class VelgForgeIgnition extends LitElement {
   @state() private _hasDraft = false;
   @state() private _isIgniting = false;
   @state() private _materializedSlug: string | null = null;
+  @state() private _materializedName = '';
+  @state() private _materializedDescription = '';
   @state() private _error: string | null = null;
   @state() private _holdProgress = 0;
 
@@ -278,6 +280,8 @@ export class VelgForgeIgnition extends LitElement {
       const result = await forgeStateManager.ignite();
       if (result.slug) {
         this._materializedSlug = result.slug;
+        this._materializedName = result.name ?? '';
+        this._materializedDescription = result.description ?? '';
         VelgToast.success(msg('Shard ignited! Materializing assets...'));
       } else {
         // ignite() returns {} on API failure and sets forgeStateManager.error
@@ -320,9 +324,9 @@ export class VelgForgeIgnition extends LitElement {
       const zones = (draft?.geography as { zones?: unknown[] })?.zones ?? [];
       return html`
         <velg-forge-ceremony
-          .shardName=${draft?.seed_prompt ?? ''}
+          .shardName=${this._materializedName || this._materializedSlug}
           .slug=${this._materializedSlug}
-          .seedPrompt=${draft?.seed_prompt ?? ''}
+          .seedPrompt=${this._materializedDescription || draft?.seed_prompt || ''}
           .anchorTitle=${anchor?.title ?? ''}
           .agents=${draft?.agents ?? []}
           .buildings=${draft?.buildings ?? []}

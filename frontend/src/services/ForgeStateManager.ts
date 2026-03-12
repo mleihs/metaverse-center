@@ -266,7 +266,7 @@ class ForgeStateManager {
     }
   }
 
-  async ignite(): Promise<{ simulationId?: string; slug?: string }> {
+  async ignite(): Promise<{ simulationId?: string; slug?: string; name?: string; description?: string }> {
     const draftId = this.draft.value?.id;
     if (!draftId) return {};
 
@@ -278,6 +278,8 @@ class ForgeStateManager {
         return {
           simulationId: resp.data.simulation_id,
           slug: resp.data.slug ?? resp.data.simulation_id,
+          name: resp.data.name ?? '',
+          description: resp.data.description ?? '',
         };
       }
       this.error.value = resp.error?.message ?? 'Ignition failed';

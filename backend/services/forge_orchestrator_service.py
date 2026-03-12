@@ -176,6 +176,19 @@ class ForgeOrchestratorService:
         return decrypted_or, decrypted_rep
 
     @staticmethod
+    async def get_forge_progress(supabase: Client, slug: str) -> dict | None:
+        """Image-generation progress for the forge ceremony.
+
+        Delegates to ``get_forge_progress(slug)`` Postgres function
+        (migration 098) which counts completed images and returns
+        per-entity image URLs in a single round-trip.
+
+        Returns *None* when the slug does not match a simulation.
+        """
+        resp = supabase.rpc("get_forge_progress", {"p_slug": slug}).execute()
+        return resp.data
+
+    @staticmethod
     async def run_astrolabe_research(
         supabase: Client,
         user_id: UUID,
@@ -350,15 +363,17 @@ class ForgeOrchestratorService:
 
             sim_id = response.data
 
-            # Resolve slug for frontend navigation
+            # Resolve slug + name for frontend navigation and ceremony
             slug_resp = (
                 supabase.table("simulations")
-                .select("slug")
+                .select("slug, name, description")
                 .eq("id", str(sim_id))
                 .single()
                 .execute()
             )
             slug = slug_resp.data["slug"] if slug_resp.data else None
+            sim_name = slug_resp.data.get("name", "") if slug_resp.data else ""
+            sim_description = slug_resp.data.get("description", "") if slug_resp.data else ""
 
             # Fetch draft for theme_config and lore context
             draft_data = await ForgeDraftService.get_draft(supabase, user_id, draft_id)
@@ -381,6 +396,8 @@ class ForgeOrchestratorService:
             return {
                 "simulation_id": sim_id,
                 "slug": slug,
+                "name": sim_name,
+                "description": sim_description,
                 "anchor": anchor,
                 "seed_prompt": seed,
                 "draft_data": draft_data,

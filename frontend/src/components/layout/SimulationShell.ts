@@ -3,10 +3,18 @@ import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
+import { healthApi } from '../../services/api/HealthApiService.js';
 import { simulationsApi } from '../../services/api/SimulationsApiService.js';
 import { themeService } from '../../services/ThemeService.js';
+import type { BleedStatus, ThresholdState } from '../../types/health.js';
 import { icons } from '../../utils/icons.js';
 
+import '../bleed/BleedPalimpsestOverlay.js';
+import '../health/AscendancyAura.js';
+import '../health/DesperateActionsPanel.js';
+import '../health/EntropyOverlay.js';
+import '../health/EntropyTimer.js';
+import '../shared/SvgFilters.js';
 import './SimulationHeader.js';
 import './SimulationNav.js';
 
@@ -32,7 +40,8 @@ function getTabLabel(path: string): string {
 export class VelgSimulationShell extends SignalWatcher(LitElement) {
   static styles = css`
     :host {
-      display: block;
+      display: flex;
+      flex-direction: column;
       min-height: calc(100vh - var(--header-height));
       background-color: var(--color-surface);
       color: var(--color-text-primary);
@@ -46,9 +55,10 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
     }
 
     .shell {
-      display: grid;
-      grid-template-rows: auto auto auto 1fr;
-      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      background-color: var(--color-surface);
     }
 
     /* ── Breadcrumb Bar ── */
@@ -267,10 +277,10 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
     }
 
     .shell__content {
+      flex: 1;
       width: 100%;
       padding: var(--content-padding);
       min-width: 0;
-      overflow: hidden;
       max-width: var(--container-2xl, 1400px);
       margin-inline: auto;
     }
@@ -280,6 +290,63 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
         padding: var(--space-1-5) var(--space-4);
         font-size: 9px;
       }
+    }
+
+    /* ── Threshold State Modifiers ── */
+
+    :host(.shell--critical) .shell {
+      animation: entropy-drift 12s ease-in-out infinite;
+    }
+
+    @keyframes entropy-drift {
+      0%, 100% {
+        filter: saturate(0.3) brightness(0.85) sepia(0.06) hue-rotate(-25deg);
+      }
+      50% {
+        filter: saturate(0.2) brightness(0.75) sepia(0.15) hue-rotate(-35deg);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      :host(.shell--critical) .shell {
+        animation: none;
+        filter: saturate(0.25) brightness(0.8) sepia(0.1) hue-rotate(-30deg);
+      }
+    }
+
+    /* ── Fracture Banner (outside .shell for fixed positioning) ── */
+
+    .fracture-banner {
+      padding: var(--space-1-5, 6px) var(--space-4, 16px);
+      background: rgba(10, 0, 0, 0.95);
+      border-bottom: 1px solid var(--color-accent-amber, #f59e0b);
+      font-family: var(--font-mono, monospace);
+      font-size: var(--text-xs, 12px);
+      letter-spacing: var(--tracking-wider, 0.05em);
+      color: var(--color-accent-amber, #f59e0b);
+      white-space: nowrap;
+      overflow: hidden;
+      pointer-events: auto;
+    }
+
+    .fracture-banner__text {
+      display: inline-block;
+      animation: fracture-banner-scroll 20s linear infinite;
+    }
+
+    @keyframes fracture-banner-scroll {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+    :host(.shell--critical) {
+      --color-surface-raised: var(--color-surface-raised-critical);
+    }
+    :host(.shell--ascendant) {
+      --color-surface-raised: var(--color-surface-raised-ascendant);
+    }
+
+    .shell__overlays {
+      position: relative;
     }
 
     @media (min-width: 2560px) {
@@ -299,21 +366,36 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
 
   @state() private _simSwitcherOpen = false;
   @state() private _dropdownPos = { top: 0, left: 0 };
+  @state() private _bleedStatus: BleedStatus | null = null;
+  @state() private _thresholdState: ThresholdState = 'normal';
   private _focusedIndex = -1;
 
   private _appliedSimulationId = '';
+  private _bleedPollTimer?: ReturnType<typeof setInterval>;
   private _boundCloseDropdown = (e: MouseEvent) => this._onOutsideClick(e);
   private _boundKeyDown = (e: KeyboardEvent) => this._onKeyDown(e);
+
+  /* ── Entropy deceleration ── */
+  private _previousThresholdState: ThresholdState = 'normal';
+  private _hasPlayedDeceleration = false;
+  private _decelerationFrame?: ReturnType<typeof requestAnimationFrame>;
+
+  /* ── Text corruption + card distortion ── */
+  private _scrambleTimer?: ReturnType<typeof setTimeout>;
+  private _cardShakeTimer?: ReturnType<typeof setTimeout>;
 
   async connectedCallback(): Promise<void> {
     super.connectedCallback();
     if (this.simulationId) {
       await this._applyTheme();
+      this._fetchBleedStatus();
+      this._startBleedPolling();
     }
     // Ensure simulations list is populated for the breadcrumb switcher.
     // On direct navigation / page refresh, the dashboard hasn't mounted
-    // yet, so appState.simulations may be empty.
-    if (appState.isAuthenticated.value && appState.simulations.value.length === 0) {
+    // yet, so appState.simulations may be empty. Works for guests too
+    // (simulationsApi.list() uses public endpoint when unauthenticated).
+    if (appState.simulations.value.length === 0) {
       const result = await simulationsApi.list();
       if (result.success && result.data) {
         appState.setSimulations(result.data);
@@ -326,6 +408,12 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
     document.removeEventListener('keydown', this._boundKeyDown);
     themeService.resetTheme(this);
     this._appliedSimulationId = '';
+    this._stopBleedPolling();
+    this._clearEntropyTokens();
+    this._stopScramble();
+    this._clearCardTilts();
+    if (this._decelerationFrame) cancelAnimationFrame(this._decelerationFrame);
+    appState.setBleedStatus(null);
     super.disconnectedCallback();
   }
 
@@ -336,6 +424,8 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
       this.simulationId !== this._appliedSimulationId
     ) {
       await this._applyTheme();
+      this._fetchBleedStatus();
+      this._startBleedPolling();
     }
   }
 
@@ -343,6 +433,291 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
     if (!this.simulationId) return;
     this._appliedSimulationId = this.simulationId;
     await themeService.applySimulationTheme(this.simulationId, this);
+  }
+
+  private async _fetchBleedStatus(): Promise<void> {
+    if (!this.simulationId) return;
+    const result = await healthApi.getBleedStatus(this.simulationId);
+    if (result.success && result.data) {
+      this._bleedStatus = result.data;
+      this._thresholdState = result.data.threshold_state;
+      appState.setBleedStatus(result.data);
+      this._applyThresholdClasses();
+    }
+  }
+
+  private _applyThresholdClasses(): void {
+    const wasCritical = this._previousThresholdState === 'critical';
+    const isCritical = this._thresholdState === 'critical';
+
+    this.classList.toggle('shell--critical', isCritical);
+    this.classList.toggle('shell--ascendant', this._thresholdState === 'ascendant');
+
+    // Entering critical: play deceleration hero moment + start scramble
+    if (isCritical && !wasCritical && !this._hasPlayedDeceleration) {
+      this._playDeceleration();
+      this._startScramble();
+    } else if (isCritical && !this._hasPlayedDeceleration) {
+      // Already critical on load — instant ×3
+      this._applyEntropyTokens(3);
+      this._hasPlayedDeceleration = true;
+      this._startScramble();
+    }
+
+    // Leaving critical: clear entropy tokens + stop scramble
+    if (!isCritical && wasCritical) {
+      this._clearEntropyTokens();
+      this._stopScramble();
+      this._hasPlayedDeceleration = false;
+    }
+
+    this._previousThresholdState = this._thresholdState;
+  }
+
+  /* ── Deceleration sequence ── */
+
+  private _playDeceleration(): void {
+    this._hasPlayedDeceleration = true;
+    const totalSteps = 30;
+    const totalDuration = 3000;
+    const stepMs = totalDuration / totalSteps;
+    let step = 0;
+
+    const tick = () => {
+      step++;
+      // Ease-out: quick start, gradual end
+      const t = step / totalSteps;
+      const eased = 1 - (1 - t) * (1 - t);
+      const multiplier = 1 + eased * 2; // 1→3
+
+      this._applyEntropyTokens(multiplier);
+
+      if (step < totalSteps) {
+        setTimeout(() => {
+          this._decelerationFrame = requestAnimationFrame(tick);
+        }, stepMs);
+      }
+    };
+    this._decelerationFrame = requestAnimationFrame(tick);
+  }
+
+  private _applyEntropyTokens(mult: number): void {
+    // Override core animation duration tokens with entropy multiplier
+    const baseDurations: Record<string, number> = {
+      '--duration-fast': 100,
+      '--duration-normal': 200,
+      '--duration-slow': 300,
+      '--duration-slower': 500,
+      '--duration-entrance': 350,
+      '--duration-stagger': 40,
+      '--duration-cascade': 60,
+    };
+    for (const [token, baseMs] of Object.entries(baseDurations)) {
+      this.style.setProperty(token, `${Math.round(baseMs * mult)}ms`);
+    }
+  }
+
+  private _clearEntropyTokens(): void {
+    const tokens = [
+      '--duration-fast',
+      '--duration-normal',
+      '--duration-slow',
+      '--duration-slower',
+      '--duration-entrance',
+      '--duration-stagger',
+      '--duration-cascade',
+    ];
+    for (const token of tokens) {
+      this.style.removeProperty(token);
+    }
+  }
+
+  /* ── Text corruption (entropy scramble) ── */
+
+  private static _GLITCH_CHARS = '▓░▒█╪╫╬┼╳⌧∅';
+
+  private _startScramble(): void {
+    this._stopScramble();
+    this._scheduleNextScramble();
+    this._scheduleNextCardShake();
+    this._applyCardTilts();
+  }
+
+  private _stopScramble(): void {
+    if (this._scrambleTimer) {
+      clearTimeout(this._scrambleTimer);
+      this._scrambleTimer = undefined;
+    }
+    if (this._cardShakeTimer) {
+      clearTimeout(this._cardShakeTimer);
+      this._cardShakeTimer = undefined;
+    }
+    this._clearCardTilts();
+  }
+
+  private _scheduleNextScramble(): void {
+    this._scrambleTimer = setTimeout(() => {
+      this._scrambleRandomLetter();
+      this._scheduleNextScramble();
+    }, 1500 + Math.random() * 3000);
+  }
+
+  private _scrambleRandomLetter(): void {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const textNodes: Text[] = [];
+    this._collectTextNodes(this, textNodes, 0);
+    if (!textNodes.length) return;
+
+    const targetNode = textNodes[Math.floor(Math.random() * textNodes.length)];
+    const text = targetNode.textContent!;
+
+    // Find non-whitespace character positions
+    const candidates: number[] = [];
+    for (let i = 0; i < text.length; i++) {
+      if (text[i] !== ' ' && text[i] !== '\n' && text[i] !== '\t') {
+        candidates.push(i);
+      }
+    }
+    if (!candidates.length) return;
+
+    const pos = candidates[Math.floor(Math.random() * candidates.length)];
+    const glyphs = VelgSimulationShell._GLITCH_CHARS;
+    const glitch = glyphs[Math.floor(Math.random() * glyphs.length)];
+    const originalFull = text;
+
+    targetNode.textContent = text.slice(0, pos) + glitch + text.slice(pos + 1);
+
+    // Restore after 200-600ms — only if text hasn't been changed by a re-render
+    const expectedCorrupted = text.slice(0, pos) + glitch + text.slice(pos + 1);
+    setTimeout(() => {
+      if (targetNode.textContent === expectedCorrupted) {
+        targetNode.textContent = originalFull;
+      }
+    }, 200 + Math.random() * 400);
+  }
+
+  private _collectTextNodes(root: Node, nodes: Text[], depth: number): void {
+    if (depth > 8 || nodes.length > 80) return;
+
+    if (root instanceof Text) {
+      const text = root.textContent?.trim();
+      if (text && text.length >= 3) {
+        nodes.push(root);
+      }
+      return;
+    }
+
+    // Descend into shadow DOMs
+    if (root instanceof Element && root.shadowRoot) {
+      for (const child of root.shadowRoot.childNodes) {
+        this._collectTextNodes(child, nodes, depth + 1);
+      }
+    }
+
+    for (const child of root.childNodes) {
+      this._collectTextNodes(child, nodes, depth + 1);
+    }
+  }
+
+  /* ── Card distortion (entropy tilt + shake) ── */
+
+  private _findCards(): Element[] {
+    const cards: Element[] = [];
+    const cardTags = new Set(['VELG-GAME-CARD', 'VELG-BUILDING-CARD', 'VELG-AGENT-CARD']);
+
+    const walk = (root: Element, depth: number) => {
+      if (depth > 6 || cards.length > 30) return;
+
+      if (cardTags.has(root.tagName)) {
+        cards.push(root);
+        return; // Don't walk inside cards
+      }
+
+      // Walk shadow DOM children
+      if (root.shadowRoot) {
+        for (const child of root.shadowRoot.querySelectorAll('*')) {
+          if (child instanceof Element) walk(child, depth + 1);
+        }
+      }
+
+      // Walk light DOM children (covers slotted content)
+      for (const child of root.children) {
+        walk(child, depth + 1);
+      }
+    };
+    walk(this, 0);
+    return cards;
+  }
+
+  private _applyCardTilts(): void {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const cards = this._findCards();
+    for (const card of cards) {
+      const el = card as HTMLElement;
+      const tilt = (Math.random() - 0.5) * 5; // -2.5deg to +2.5deg
+      el.style.transition = 'none';
+      el.style.transform = `rotate(${tilt.toFixed(2)}deg)`;
+    }
+  }
+
+  private _clearCardTilts(): void {
+    const cards = this._findCards();
+    for (const card of cards) {
+      const el = card as HTMLElement;
+      el.style.transition = '';
+      el.style.transform = '';
+    }
+  }
+
+  private _scheduleNextCardShake(): void {
+    this._cardShakeTimer = setTimeout(() => {
+      this._shakeRandomCard();
+      this._scheduleNextCardShake();
+    }, 3000 + Math.random() * 5000);
+  }
+
+  private _shakeRandomCard(): void {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const cards = this._findCards();
+    if (!cards.length) return;
+
+    const card = cards[Math.floor(Math.random() * cards.length)] as HTMLElement;
+    const baseTilt = parseFloat(card.style.transform?.match(/rotate\((.+)deg\)/)?.[1] || '0');
+
+    // Brief flicker: opacity dip + micro-shake
+    card.style.transition = 'none';
+    const shake = async () => {
+      const steps = [
+        { r: baseTilt + 3, o: 0.6 },
+        { r: baseTilt - 2, o: 0.8 },
+        { r: baseTilt + 1.5, o: 0.65 },
+        { r: baseTilt - 0.5, o: 0.9 },
+        { r: baseTilt, o: 1 },
+      ];
+      for (const step of steps) {
+        card.style.transform = `rotate(${step.r.toFixed(2)}deg)`;
+        card.style.opacity = String(step.o);
+        await new Promise((r) => setTimeout(r, 60));
+      }
+      // Snap to new tilt — no easing
+      const newTilt = (Math.random() - 0.5) * 5;
+      card.style.transform = `rotate(${newTilt.toFixed(2)}deg)`;
+      card.style.opacity = '1';
+    };
+    shake();
+  }
+
+  private _startBleedPolling(): void {
+    this._stopBleedPolling();
+    this._bleedPollTimer = setInterval(() => this._fetchBleedStatus(), 60_000);
+  }
+
+  private _stopBleedPolling(): void {
+    if (this._bleedPollTimer) {
+      clearInterval(this._bleedPollTimer);
+      this._bleedPollTimer = undefined;
+    }
   }
 
   private _navigate(path: string, e: Event): void {
@@ -525,14 +900,65 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
   }
 
   protected render() {
+    const hasBleeds = this._bleedStatus && this._bleedStatus.active_bleeds.length > 0;
+    const isCritical = this._thresholdState === 'critical';
+    const isAscendant = this._thresholdState === 'ascendant';
+
     return html`
+      <velg-svg-filters></velg-svg-filters>
       <div class="shell">
+        ${this._bleedStatus?.fracture_warning ? this._renderFractureBanner() : nothing}
         <velg-simulation-header .simulationId=${this.simulationId}></velg-simulation-header>
         ${this._renderBreadcrumb()}
         <velg-simulation-nav .simulationId=${this.simulationId}></velg-simulation-nav>
-        <div class="shell__content">
+        <div class="shell__content shell__overlays">
+          ${hasBleeds
+            ? html`<velg-bleed-palimpsest-overlay
+                .bleedStatus=${this._bleedStatus}
+                .simulationId=${this.simulationId}
+              ></velg-bleed-palimpsest-overlay>`
+            : nothing}
+          ${isCritical
+            ? html`<velg-entropy-overlay
+                .active=${true}
+                .healthPercent=${Math.round((this._bleedStatus?.bleed_permeability ?? 0) * 100)}
+                .overallHealth=${this._bleedStatus?.overall_health ?? 0.5}
+              ></velg-entropy-overlay>`
+            : nothing}
+          ${isAscendant
+            ? html`<velg-ascendancy-aura .active=${true}></velg-ascendancy-aura>`
+            : nothing}
           <slot></slot>
         </div>
+      </div>
+      ${isCritical
+        ? html`
+            <velg-entropy-timer
+              .cyclesRemaining=${this._bleedStatus?.entropy_cycles_remaining ?? null}
+            ></velg-entropy-timer>
+            <velg-desperate-actions-panel
+              .simulationId=${this.simulationId}
+            ></velg-desperate-actions-panel>
+          `
+        : nothing}
+    `;
+  }
+
+  private _renderFractureBanner() {
+    const bleeds = this._bleedStatus!.active_bleeds;
+    const source = bleeds[0]?.source_simulation_name ?? '???';
+    const integrity = Math.round((1 - this._bleedStatus!.bleed_permeability) * 100);
+
+    return html`
+      <div class="fracture-banner" role="alert" aria-live="assertive">
+        <span class="fracture-banner__text">
+          BUREAU NOTICE // BLEED THRESHOLD EXCEEDED //
+          ${source} → ${msg('THIS SIMULATION')} //
+          SIGNAL INTEGRITY: ${integrity}% //
+          BUREAU NOTICE // BLEED THRESHOLD EXCEEDED //
+          ${source} → ${msg('THIS SIMULATION')} //
+          SIGNAL INTEGRITY: ${integrity}%
+        </span>
       </div>
     `;
   }

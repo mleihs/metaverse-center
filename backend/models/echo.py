@@ -81,6 +81,29 @@ class ConnectionResponse(BaseModel):
     simulation_b: dict | None = None
 
 
+class ActiveBleedResponse(BaseModel):
+    """Single active bleed source for UI overlay."""
+
+    source_simulation_id: UUID
+    source_simulation_name: str
+    echo_vector: str
+    echo_strength: float
+    affected_zone_ids: list[UUID] = Field(default_factory=list)
+    foreign_theme: dict
+    lore_fragment: str
+
+
+class BleedStatusResponse(BaseModel):
+    """Aggregated bleed status for palimpsest/shattering UI."""
+
+    active_bleeds: list[ActiveBleedResponse]
+    bleed_permeability: float
+    fracture_warning: bool
+    threshold_state: Literal["normal", "critical", "ascendant"]
+    overall_health: float = 0.5
+    entropy_cycles_remaining: int | None = None
+
+
 class MapDataResponse(BaseModel):
     """Aggregated map data for the Cartographer's Map."""
 

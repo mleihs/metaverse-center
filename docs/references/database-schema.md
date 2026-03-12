@@ -71,6 +71,9 @@ Operationen, die mehrere Tabellen atomar modifizieren muessen:
 - **`fn_approve_forge_access()`** — Atomare Genehmigung: Request sperren + Wallet-Tier upgraden + User-Details zurueckgeben
 - **`fn_reject_forge_access()`** — Atomare Ablehnung: Request sperren + Status setzen + User-Details zurueckgeben
 - **`process_cascade_events()`** — Auto-Spawn von Kaskaden-Events bei Zone-Druck-Ueberschreitung, rate-limited pro Zone
+- **`get_forge_progress()`** — Zeremonie-Bildfortschritt: Zählt fertige Bilder + per-Entity Image-URLs (Migration 098)
+- **`get_bleed_status()`** — Aggregierter Bleed-Status: Health, Echoes, Foreign Themes, Lore in einem Round-Trip (Migration 099)
+- **`get_map_overlay_data()`** — Zone-Topologie + historische Events + Bleed-Details fuer Karten-Overlay in einem Call (Migration 100)
 
 ### Entscheidungsmatrix: Wo lebt die Logik?
 
@@ -2025,6 +2028,7 @@ process_cascade_events() kann neue Events spawnen (wenn pressure > threshold)
 | `epoch_alliance_proposals` | Allianz-Beitrittsantraege mit Abstimmungsmechanik (Migration 081) |
 | `epoch_alliance_votes` | Abstimmungen ueber Allianz-Antraege (Migration 081) |
 | `forge_access_requests` | Forge-Zugangsantraege fuer Tier-Upgrades (Observer→Architect/Director) (Migration 093) |
+| `threshold_actions` | Notfall-Aktionen bei kritischem Schwellenwert (scorched_earth, emergency_draft, reality_anchor) (Migration 097) |
 
 ### Typ-Korrekturen
 

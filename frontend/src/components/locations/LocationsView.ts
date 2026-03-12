@@ -12,8 +12,10 @@ import './CityList.js';
 import './ZoneList.js';
 import './StreetList.js';
 import './LocationEditModal.js';
+import '../map/CartographersDesk.js';
 
 type LocationLevel = 'cities' | 'zones' | 'streets';
+type ViewMode = 'list' | 'map';
 
 @localized()
 @customElement('velg-locations-view')
@@ -62,12 +64,49 @@ export class VelgLocationsView extends LitElement {
     /* Crossfade when drilling between city/zone/street levels */
     velg-city-list,
     velg-zone-list,
-    velg-street-list {
+    velg-street-list,
+    velg-cartographers-desk {
       animation: content-fade 250ms var(--ease-out, ease-out) both;
     }
 
     @keyframes content-fade {
       from { opacity: 0; transform: translateY(4px); }
+    }
+
+    /* ── View mode toggle ── */
+
+    .view__mode-toggle {
+      display: flex;
+      gap: 0;
+      border: 1px solid var(--color-border, #333);
+    }
+
+    .view__mode-btn {
+      padding: var(--space-1, 4px) var(--space-3, 12px);
+      background: none;
+      border: none;
+      color: var(--color-text-muted, #888);
+      font-family: var(--font-mono, monospace);
+      font-size: var(--text-xs, 12px);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+
+    .view__mode-btn:first-child {
+      border-right: 1px solid var(--color-border, #333);
+    }
+
+    .view__mode-btn:hover {
+      color: var(--color-text-primary, #e5e5e5);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .view__mode-btn--active {
+      color: var(--color-primary, #f59e0b);
+      background: rgba(245, 158, 11, 0.08);
     }
   `,
   ];
@@ -83,6 +122,7 @@ export class VelgLocationsView extends LitElement {
   @state() private _loading = false;
   @state() private _error: string | null = null;
   @state() private _stabilityMap: Map<string, ZoneStability> = new Map();
+  @state() private _viewMode: ViewMode = 'list';
   @state() private _showEditModal = false;
   @state() private _editType: 'city' | 'zone' | 'street' = 'city';
   @state() private _editItem: City | Zone | CityStreet | null = null;
@@ -239,6 +279,16 @@ export class VelgLocationsView extends LitElement {
     }
   }
 
+  private _handleMapZoneSelect(e: CustomEvent): void {
+    const zone = e.detail;
+    if (zone?.zone_id) {
+      this._selectedZone = { id: zone.zone_id, name: zone.zone_name } as Zone;
+      this._level = 'streets';
+      this._viewMode = 'list';
+      this._loadStreets(zone.zone_id);
+    }
+  }
+
   private _handleRetry(): void {
     if (this._level === 'cities') {
       this._loadCities();
@@ -351,6 +401,23 @@ export class VelgLocationsView extends LitElement {
     `;
   }
 
+  private _renderViewToggle() {
+    return html`
+      <div class="view__mode-toggle">
+        <button
+          class="view__mode-btn ${this._viewMode === 'list' ? 'view__mode-btn--active' : ''}"
+          @click=${() => { this._viewMode = 'list'; }}
+          aria-pressed=${this._viewMode === 'list' ? 'true' : 'false'}
+        >${msg('List')}</button>
+        <button
+          class="view__mode-btn ${this._viewMode === 'map' ? 'view__mode-btn--active' : ''}"
+          @click=${() => { this._viewMode = 'map'; }}
+          aria-pressed=${this._viewMode === 'map' ? 'true' : 'false'}
+        >${msg('Map')}</button>
+      </div>
+    `;
+  }
+
   protected render() {
     const levelLabels: Record<LocationLevel, string> = {
       cities: msg('City'),
@@ -362,19 +429,32 @@ export class VelgLocationsView extends LitElement {
       <div class="view">
         <div class="view__header">
           <h1 class="view__title">${msg('Locations')}</h1>
-          ${
-            this._canEdit
-              ? html`
-                <button class="view__create-btn" @click=${this._handleCreateClick}>
-                  ${msg(str`+ Create ${levelLabels[this._level]}`)}
-                </button>
-              `
-              : nothing
-          }
+          <div style="display: flex; align-items: center; gap: var(--space-3, 12px);">
+            ${this._renderViewToggle()}
+            ${
+              this._canEdit && this._viewMode === 'list'
+                ? html`
+                  <button class="view__create-btn" @click=${this._handleCreateClick}>
+                    ${msg(str`+ Create ${levelLabels[this._level]}`)}
+                  </button>
+                `
+                : nothing
+            }
+          </div>
         </div>
 
-        ${this._renderBreadcrumb()}
-        ${this._renderContent()}
+        ${this._viewMode === 'list'
+          ? html`
+              ${this._renderBreadcrumb()}
+              ${this._renderContent()}
+            `
+          : html`
+              <velg-cartographers-desk
+                .simulationId=${this.simulationId}
+                @zone-select=${this._handleMapZoneSelect}
+              ></velg-cartographers-desk>
+            `
+        }
 
         <velg-location-edit-modal
           .type=${this._editType}

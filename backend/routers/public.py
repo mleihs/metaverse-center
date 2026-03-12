@@ -28,6 +28,7 @@ from backend.services.embassy_service import EmbassyService
 from backend.services.epoch_invitation_service import EpochInvitationService
 from backend.services.epoch_service import EpochService
 from backend.services.event_service import EventService
+from backend.services.forge_orchestrator_service import ForgeOrchestratorService
 from backend.services.resonance_service import ResonanceService
 from backend.services.game_mechanics_service import GameMechanicsService
 from backend.services.location_service import LocationService
@@ -119,6 +120,24 @@ async def get_simulation_by_slug(
     return {"success": True, "data": data[0]}
 
 
+@router.get("/simulations/by-slug/{slug}/forge-progress", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def get_forge_progress(
+    request: Request,
+    slug: str,
+    supabase: Client = Depends(get_anon_supabase),
+) -> dict:
+    """Lightweight image-generation progress for the forge ceremony.
+
+    Delegates to ``get_forge_progress(slug)`` Postgres function via
+    ForgeOrchestratorService (single round-trip, all aggregation in PG).
+    """
+    data = await ForgeOrchestratorService.get_forge_progress(supabase, slug)
+    if data is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Simulation not found.")
+    return {"success": True, "data": data}
+
+
 @router.get("/simulations/{simulation_id}", response_model=SuccessResponse)
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_simulation(
@@ -133,6 +152,25 @@ async def get_simulation(
     data = [sim]
     _enrich_with_counts(supabase, data)
     return {"success": True, "data": data[0]}
+
+
+# ── Bleed Status ────────────────────────────────────────────────────────
+
+
+@router.get("/simulations/{simulation_id}/bleed-status", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def get_bleed_status(
+    request: Request,
+    simulation_id: UUID,
+    supabase: Client = Depends(get_anon_supabase),
+) -> dict:
+    """Get aggregated bleed status for a simulation (public).
+
+    Returns active bleeds, threshold state, and fracture warning for
+    the palimpsest overlay and shattering UI features.
+    """
+    data = await GameMechanicsService.get_bleed_status(supabase, simulation_id)
+    return {"success": True, "data": data}
 
 
 # ── Agents ───────────────────────────────────────────────────────────────

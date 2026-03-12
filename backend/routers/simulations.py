@@ -19,6 +19,7 @@ from backend.models.simulation import (
 from backend.services.audit_service import AuditService
 from backend.services.lore_service import LoreService
 from backend.services.simulation_service import SimulationService
+from backend.services.threshold_service import ThresholdService
 from supabase import Client
 
 router = APIRouter(prefix="/api/v1/simulations", tags=["simulations"])
@@ -132,6 +133,34 @@ async def delete_simulation(
     )
 
     return {"success": True, "data": simulation}
+
+
+# ── Threshold Actions ────────────────────────────────────────────────
+
+
+@router.post("/{simulation_id}/threshold-actions/{action_type}", response_model=SuccessResponse)
+async def execute_threshold_action(
+    simulation_id: UUID,
+    action_type: str,
+    user: CurrentUser = Depends(get_current_user),
+    _role_check: str = Depends(require_role("editor")),
+    admin_supabase: Client = Depends(get_admin_supabase),
+    target_building_id: UUID | None = Query(default=None),
+    target_zone_id: UUID | None = Query(default=None),
+) -> dict:
+    """Execute a threshold action (scorched_earth, emergency_draft, reality_anchor).
+
+    Requires simulation health below 0.25 (critical threshold).
+    """
+    result = await ThresholdService.execute_action(
+        admin_supabase,
+        simulation_id,
+        action_type,
+        user.id,
+        target_building_id=target_building_id,
+        target_zone_id=target_zone_id,
+    )
+    return {"success": True, "data": result}
 
 
 # ── Lore CRUD endpoints ──────────────────────────────────────────────
