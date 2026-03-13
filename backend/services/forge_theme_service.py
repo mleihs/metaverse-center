@@ -13,6 +13,7 @@ from pydantic_ai import Agent
 from backend.models.forge import ForgeThemeOutput
 from backend.config import settings
 from backend.services.ai_utils import get_openrouter_model
+from backend.services.platform_model_config import get_platform_model
 from supabase import Client
 
 logger = logging.getLogger(__name__)
@@ -94,7 +95,7 @@ class ForgeThemeService:
         )
 
         agent = Agent(
-            get_openrouter_model(openrouter_key),
+            get_openrouter_model(openrouter_key, model_id=get_platform_model("forge")),
             system_prompt=THEME_ARCHITECT_PROMPT,
         )
 
@@ -206,7 +207,7 @@ class ForgeThemeService:
                         "card_frame_texture": ["scanlines", "circuits", "filigree"][i],
                     })
             else:
-                model = get_openrouter_model(or_key)
+                model = get_openrouter_model(or_key, model_id=get_platform_model("forge"))
 
                 for i in range(3):
                     variant_prompt = f"""Generate a COMPLETELY DIFFERENT visual theme variant (#{i + 1}/3)

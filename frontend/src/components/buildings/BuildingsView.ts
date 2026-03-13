@@ -1,8 +1,11 @@
 import { localized, msg, str } from '@lit/localize';
+import { effect } from '@preact/signals-core';
+import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { buildingsApi } from '../../services/api/index.js';
+import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import type { Building } from '../../types/index.js';
 import { gridLayoutStyles } from '../shared/grid-layout-styles.js';
 import type { FilterChangeDetail } from '../shared/SharedFilterBar.js';
@@ -21,7 +24,7 @@ import './EmbassyCreateModal.js';
 
 @localized()
 @customElement('velg-buildings-view')
-export class VelgBuildingsView extends LitElement {
+export class VelgBuildingsView extends SignalWatcher(LitElement) {
   static styles = [
     viewHeaderStyles,
     gridLayoutStyles,
@@ -60,11 +63,24 @@ export class VelgBuildingsView extends LitElement {
   @state() private _embassySourceBuilding: Building | null = null;
   @state() private _showEmbassyModal = false;
 
+  private _disposeImageTracking?: () => void;
+
   connectedCallback(): void {
     super.connectedCallback();
     if (this.simulationId) {
       this._loadBuildings();
     }
+    this._disposeImageTracking = effect(() => {
+      const version = forgeStateManager.imageUpdateVersion.value;
+      if (version > 0 && this._buildings.length > 0) {
+        this._loadBuildings();
+      }
+    });
+  }
+
+  disconnectedCallback(): void {
+    this._disposeImageTracking?.();
+    super.disconnectedCallback();
   }
 
   protected willUpdate(changedProperties: Map<PropertyKey, unknown>): void {
@@ -353,6 +369,7 @@ export class VelgBuildingsView extends LitElement {
             <velg-building-card
               style="--i: ${i}"
               .building=${building}
+              ?generating=${forgeStateManager.imageTrackingSlug.value === (appState.currentSimulation.value?.slug ?? '') && !building.image_url}
               @building-click=${this._handleBuildingClick}
               @building-edit=${this._handleBuildingEdit}
               @building-delete=${this._handleBuildingDelete}

@@ -34,9 +34,13 @@ import '../shared/VelgBadge.js';
 import '../shared/VelgSectionHeader.js';
 import '../shared/EntityLightbox.js';
 import '../shared/VelgSidePanel.js';
+import { fetchRawLoreSections, isClassifiedSection, parseAgentIntel } from '../lore/lore-content.js';
+import type { AgentIntelData } from '../lore/lore-content.js';
+import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import './AgentMemorySection.js';
 import './RelationshipCard.js';
 import './RelationshipEditModal.js';
+import './VelgIntelCard.js';
 
 @localized()
 @customElement('velg-agent-details-panel')
@@ -545,6 +549,7 @@ export class VelgAgentDetailsPanel extends LitElement {
   @state() private _aptitudes: AptitudeSet | null = null;
   @state() private _aptitudesLoading = false;
   @state() private _aptitudesSaving = false;
+  @state() private _agentIntel: AgentIntelData | null = null;
 
   private _aptitudeSaveTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -572,6 +577,7 @@ export class VelgAgentDetailsPanel extends LitElement {
         this._loadRelationships();
         this._loadAllAgents();
         this._loadAptitudes();
+        this._loadAgentIntel();
         if (this.agent.is_ambassador) {
           this._loadEmbassy();
         }
@@ -609,6 +615,28 @@ export class VelgAgentDetailsPanel extends LitElement {
       }
     } catch {
       this._relationships = [];
+    }
+  }
+
+  private async _loadAgentIntel(): Promise<void> {
+    this._agentIntel = null;
+    if (!this.agent || !this.simulationId) return;
+
+    // Only load if dossier has been purchased
+    const hasDossier = forgeStateManager.hasCompletedPurchase(this.simulationId, 'classified_dossier');
+    if (!hasDossier) return;
+
+    try {
+      const raw = await fetchRawLoreSections(this.simulationId);
+      if (!raw) return;
+
+      // Find BETA section (agent addenda)
+      const beta = raw.find((s) => isClassifiedSection(s) && s.arcanum === 'BETA');
+      if (!beta) return;
+
+      this._agentIntel = parseAgentIntel(beta.body, this.agent.name);
+    } catch {
+      // Non-critical — intel card simply won't show
     }
   }
 
@@ -1305,6 +1333,15 @@ export class VelgAgentDetailsPanel extends LitElement {
             `
               : nothing
           }
+
+          ${this._agentIntel
+            ? html`
+              <div class="panel__section">
+                <velg-section-header>${msg('Bureau Intelligence')}</velg-section-header>
+                <velg-intel-card .intel=${this._agentIntel}></velg-intel-card>
+              </div>
+            `
+            : nothing}
 
           <div class="panel__section">
             <velg-section-header>${msg('Aptitudes')} ${renderInfoBubble(msg('Drag sliders to set operative strengths. Total budget must equal 36 — raising one type means lowering another. Changes auto-save when the budget balances.'))}</velg-section-header>

@@ -687,6 +687,53 @@ export class VelgGameCard extends LitElement {
     :host([size="lg"]) .card__stamp { font-size: 24px; }
 
     /* ═══════════════════════════════════════════════════
+       GENERATING — shimmer + reveal animations
+       ═══════════════════════════════════════════════════ */
+    .card__art--generating {
+      overflow: hidden;
+    }
+
+    .card__art--generating::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        110deg,
+        transparent 25%,
+        color-mix(in srgb, var(--card-frame-primary) 8%, transparent) 37%,
+        color-mix(in srgb, var(--card-frame-primary) 12%, transparent) 50%,
+        color-mix(in srgb, var(--card-frame-primary) 8%, transparent) 63%,
+        transparent 75%
+      );
+      background-size: 200% 100%;
+      animation: card-shimmer 2s ease-in-out infinite;
+      z-index: 1;
+    }
+
+    @keyframes card-shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .card__art--generating .card__art-placeholder {
+      animation: placeholder-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes placeholder-pulse {
+      0%, 100% { opacity: 0.3; }
+      50%      { opacity: 0.6; }
+    }
+
+    .card__art--revealed img {
+      animation: card-image-reveal 0.6s var(--ease-dramatic, cubic-bezier(0.34, 1.56, 0.64, 1)) forwards;
+    }
+
+    @keyframes card-image-reveal {
+      0%   { opacity: 0; filter: brightness(2.5); transform: scale(1.05); }
+      100% { opacity: 1; filter: brightness(1); transform: scale(1); }
+    }
+
+    /* ═══════════════════════════════════════════════════
        MOBILE — center card in single-column grid cell
        ═══════════════════════════════════════════════════ */
     @media (max-width: 480px) {
@@ -712,6 +759,9 @@ export class VelgGameCard extends LitElement {
         transform: scale(1);
         transition: none;
       }
+      .card__art--generating::before { animation: none; }
+      .card__art--generating .card__art-placeholder { animation: none; opacity: 0.5; }
+      .card__art--revealed img { animation: none; opacity: 1; filter: none; }
     }
   `;
 
@@ -736,14 +786,34 @@ export class VelgGameCard extends LitElement {
   @property({ type: Boolean }) highlighted = false;
   @property({ type: Boolean, attribute: 'show-actions' }) showActions = false;
   @property({ type: Boolean }) editable = false;
+  @property({ type: Boolean }) generating = false;
   @property() description = '';
 
   @state() private _tilting = false;
   @state() private _settling = false;
   @state() private _mx = 0.5;
   @state() private _my = 0.5;
+  @state() private _justRevealed = false;
 
   private _settleTimer = 0;
+  private _revealTimer = 0;
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    window.clearTimeout(this._settleTimer);
+    window.clearTimeout(this._revealTimer);
+  }
+
+  protected willUpdate(changedProperties: Map<PropertyKey, unknown>): void {
+    // Detect image arriving while in generating state → play reveal
+    if (changedProperties.has('imageUrl') && this.imageUrl && this.generating) {
+      this._justRevealed = true;
+      window.clearTimeout(this._revealTimer);
+      this._revealTimer = window.setTimeout(() => {
+        this._justRevealed = false;
+      }, 700);
+    }
+  }
 
   // ── Mouse tracking for 3D tilt ──
 
@@ -852,6 +922,7 @@ export class VelgGameCard extends LitElement {
           tabindex="0"
           .draggable=${this.draggable}
           aria-label=${this.name}
+          aria-busy=${this.generating && !this.imageUrl ? 'true' : 'false'}
           @mousemove=${this._onMouseMove}
           @mouseleave=${this._onMouseLeave}
           @click=${this._onClick}
@@ -868,7 +939,10 @@ export class VelgGameCard extends LitElement {
           ${this._renderGems(best)}
 
           <!-- Artwork -->
-          <div class="card__art">
+          <div class="card__art ${classMap({
+            'card__art--generating': this.generating && !this.imageUrl,
+            'card__art--revealed': this._justRevealed,
+          })}">
             ${
               this.imageUrl
                 ? html`<img src=${this.imageUrl} alt=${this.name} loading="lazy" />`

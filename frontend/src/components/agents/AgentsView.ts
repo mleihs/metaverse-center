@@ -1,4 +1,6 @@
 import { localized, msg, str } from '@lit/localize';
+import { effect } from '@preact/signals-core';
+import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
@@ -25,7 +27,7 @@ import './VelgRecruitmentOffice.js';
 
 @localized()
 @customElement('velg-agents-view')
-export class VelgAgentsView extends LitElement {
+export class VelgAgentsView extends SignalWatcher(LitElement) {
   static styles = [
     viewHeaderStyles,
     gridLayoutStyles,
@@ -162,6 +164,8 @@ export class VelgAgentsView extends LitElement {
   @state() private _showDetails = false;
   @state() private _aptitudeMap: Map<string, AptitudeSet> = new Map();
 
+  private _disposeImageTracking?: () => void;
+
   private get _canEdit(): boolean {
     return appState.canEdit.value;
   }
@@ -197,6 +201,17 @@ export class VelgAgentsView extends LitElement {
     if (this.simulationId) {
       this._loadAgents();
     }
+    this._disposeImageTracking = effect(() => {
+      const version = forgeStateManager.imageUpdateVersion.value;
+      if (version > 0 && this._agents.length > 0) {
+        this._loadAgents();
+      }
+    });
+  }
+
+  disconnectedCallback(): void {
+    this._disposeImageTracking?.();
+    super.disconnectedCallback();
   }
 
   protected willUpdate(changedProperties: Map<PropertyKey, unknown>): void {
@@ -524,6 +539,7 @@ export class VelgAgentsView extends LitElement {
               style="--i: ${i}"
               .agent=${agent}
               .aptitudes=${this._aptitudeMap.get(agent.id) ?? null}
+              ?generating=${forgeStateManager.imageTrackingSlug.value === (appState.currentSimulation.value?.slug ?? '') && !agent.portrait_image_url}
               @agent-click=${this._handleAgentClick}
               @agent-edit=${this._handleAgentEdit}
               @agent-delete=${this._handleAgentDelete}

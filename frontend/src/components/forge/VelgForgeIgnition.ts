@@ -300,6 +300,7 @@ export class VelgForgeIgnition extends LitElement {
 
   private _handleFinish() {
     if (this._materializedSlug) {
+      forgeStateManager.startImageTracking(this._materializedSlug);
       const path = `/simulations/${this._materializedSlug}/lore`;
       window.history.pushState({}, '', path);
       window.dispatchEvent(new PopStateEvent('popstate'));

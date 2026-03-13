@@ -94,15 +94,15 @@ OPERATIVE_TARGET_TYPE: dict[str, str] = {
 
 # Platform defaults -- used when simulation has no model configured
 PLATFORM_DEFAULT_MODELS: dict[str, str] = {
-    "agent_description": "deepseek/deepseek-v3.2",
-    "agent_reactions": "deepseek/deepseek-v3.2",
-    "building_description": "deepseek/deepseek-v3.2",
-    "event_generation": "deepseek/deepseek-v3.2",
-    "chat_response": "deepseek/deepseek-v3.2",
-    "news_transformation": "deepseek/deepseek-v3.2",
-    "social_trends": "deepseek/deepseek-v3.2",
-    "bot_chat": "deepseek/deepseek-v3.2",
-    "default": "deepseek/deepseek-v3.2",
+    "agent_description": "anthropic/claude-sonnet-4-6",
+    "agent_reactions": "anthropic/claude-sonnet-4-6",
+    "building_description": "anthropic/claude-sonnet-4-6",
+    "event_generation": "anthropic/claude-sonnet-4-6",
+    "chat_response": "anthropic/claude-sonnet-4-6",
+    "news_transformation": "anthropic/claude-sonnet-4-6",
+    "social_trends": "anthropic/claude-sonnet-4-6",
+    "bot_chat": "anthropic/claude-sonnet-4-6",
+    "default": "anthropic/claude-sonnet-4-6",
     "fallback": "deepseek/deepseek-r1-0528:free",
 }
 

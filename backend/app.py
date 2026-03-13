@@ -14,6 +14,8 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from backend.config import settings as app_settings
+from backend.dependencies import get_admin_supabase
+from backend.services.platform_model_config import ensure_loaded as ensure_model_config
 from backend.services.resonance_scheduler import ResonanceScheduler
 from backend.services.scanning.scanner_service import ScannerService
 from backend.middleware.logging_context import LoggingContextMiddleware
@@ -66,6 +68,10 @@ from backend.routers import (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Warm the platform model config cache
+    admin_sb = await get_admin_supabase()
+    await ensure_model_config(admin_sb)
+
     resonance_task = await ResonanceScheduler.start()
     scanner_task = await ScannerService.start()
     yield

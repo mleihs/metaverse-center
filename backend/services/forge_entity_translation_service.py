@@ -10,6 +10,7 @@ from pydantic_ai import Agent
 
 from backend.models.forge import ForgeEntityTranslationOutput
 from backend.services.ai_utils import get_openrouter_model
+from backend.services.platform_model_config import get_platform_model
 from supabase import Client
 
 logger = logging.getLogger(__name__)
@@ -101,7 +102,7 @@ class ForgeEntityTranslationService:
         )
 
         agent = Agent(
-            get_openrouter_model(openrouter_key),
+            get_openrouter_model(openrouter_key, model_id=get_platform_model("forge")),
             system_prompt=ENTITY_TRANSLATOR_PROMPT,
         )
 

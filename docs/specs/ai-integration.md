@@ -143,13 +143,14 @@ def build_prompt(template: PromptTemplate, variables: dict, locale: str) -> str:
 ### Pipeline
 
 ```
-1. Portrait/Building-Beschreibung generieren (Text-LLM)
+1. Portrait/Building/Lore-Beschreibung generieren (Text-LLM)
 2. Beschreibung als Prompt an Replicate senden
 3. Negative Prompt aus Settings laden
 4. Bild generieren (Flux Dev, Output-Format: PNG als verlustfreie Quelle)
 5. Bild verarbeiten via image_service.py (AVIF, Qualität 85, Pillow 12.1.1 nativer Support, 1024px max)
 6. In Supabase Storage hochladen
 7. URL in Entity speichern
+8. Lore-Bilder: `simulation_lore.image_generated_at = now()` setzen (via `section_id` Parameter, Migration 107) — ermoeglicht `get_forge_progress()` Lore-Bild-Tracking
 ```
 
 ### Konfigurierbare Parameter

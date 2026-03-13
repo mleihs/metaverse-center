@@ -9,7 +9,7 @@ tags: [index, catalog, documentation]
 
 # Documentation Index
 
-> Auto-generated from frontmatter. 40 documents, 6 categories + 8 ADRs.
+> Auto-generated from frontmatter. 45 documents, 6 categories + 8 ADRs.
 
 ## Specifications (14)
 
@@ -40,16 +40,21 @@ tags: [index, catalog, documentation]
 | [Feature Catalog](references/feature-catalog.md) | 2.4 | 2026-03-10 | de | active |
 | [Frontend Components](references/frontend-components.md) | 2.5 | 2026-03-10 | de | active |
 
-## Guides (7)
+## Guides (12)
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
 | [Deployment Infrastructure](guides/deployment-infrastructure.md) | 1.3 | 2026-03-07 | de | active |
+| [Deployment Procedures](guides/deployment-procedures.md) | — | 2026-03-02 | en | active |
 | [Epoch Gameplay Guide](guides/epoch-gameplay-guide.md) | 1.0 | 2026-03-09 | en | active |
 | [Implementation Plan](guides/implementation-plan.md) | 2.9 | 2026-02-26 | de | active |
+| [Local DB Reset](guides/local-db-reset.md) | — | 2026-02-26 | en | active |
 | [Migration Strategy](guides/migration-strategy.md) | 1.2 | 2026-02-25 | de | active |
 | [Epoch Playtest Methodology](guides/playtest-methodology.md) | 1.0 | — | en | active |
+| [Public Access](guides/public-access.md) | — | 2026-02-25 | en | active |
+| [SEO Implementation](guides/seo-implementation.md) | — | 2026-02-27 | en | active |
 | [Simulation Blueprint](guides/simulation-blueprint.md) | — | — | de | active |
+| [Simulation Creation](guides/simulation-creation.md) | — | 2026-03-02 | en | active |
 | [Testing Strategy](guides/testing-strategy.md) | 2.2 | 2026-03-07 | de | active |
 
 ## Explanations (5)

@@ -14,7 +14,8 @@ from tavily import TavilyClient
 
 from backend.config import settings
 from backend.models.forge import PhilosophicalAnchor
-from backend.services.ai_utils import RESEARCH_MODEL, get_openrouter_model
+from backend.services.ai_utils import get_openrouter_model
+from backend.services.platform_model_config import get_platform_model
 
 logger = logging.getLogger(__name__)
 
@@ -176,7 +177,7 @@ class ResearchService:
 
         # ── Primary: LLM research agent (cheap model) ────────────────
         research_agent = Agent(
-            get_openrouter_model(openrouter_key, model_id=RESEARCH_MODEL),
+            get_openrouter_model(openrouter_key, model_id=get_platform_model("research")),
             system_prompt=(
                 "You are a research librarian specializing in comparative literature, "
                 "philosophy, and architectural history. Your task is to produce a "
@@ -250,7 +251,7 @@ class ResearchService:
         """Generate 3 distinct philosophical angles using Pydantic AI."""
 
         agent = Agent(
-            get_openrouter_model(openrouter_key),
+            get_openrouter_model(openrouter_key, model_id=get_platform_model("forge")),
             output_type=list[PhilosophicalAnchor],
             system_prompt=(
                 "You are a Bureau Scholar from the Bureau of Impossible Geography. "

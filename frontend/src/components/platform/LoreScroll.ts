@@ -857,6 +857,49 @@ export class VelgLoreScroll extends LitElement {
       color: var(--lore-text);
     }
 
+    /* ── Generating shimmer for lore images ── */
+
+    .section__figure--generating {
+      aspect-ratio: 3 / 2;
+      overflow: hidden;
+      max-width: 720px;
+      margin: var(--space-4) 0;
+      border: 1px solid var(--lore-image-border);
+      border-radius: var(--border-radius);
+    }
+
+    .section__image-shimmer {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        110deg,
+        var(--lore-surface, #1a1a1a) 25%,
+        color-mix(in srgb, var(--lore-accent, #f59e0b) 6%, var(--lore-surface, #1a1a1a)) 50%,
+        var(--lore-surface, #1a1a1a) 75%
+      );
+      background-size: 200% 100%;
+      animation: lore-shimmer 2s ease-in-out infinite;
+    }
+
+    @keyframes lore-shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .section__image--reveal {
+      animation: lore-image-reveal 0.8s var(--ease-dramatic, cubic-bezier(0.34, 1.56, 0.64, 1)) forwards;
+    }
+
+    @keyframes lore-image-reveal {
+      from { opacity: 0; filter: brightness(1.8); }
+      to   { opacity: 1; filter: brightness(1); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .section__image-shimmer { animation: none; }
+      .section__image--reveal { animation: none; opacity: 1; filter: none; }
+    }
+
     /* ── Classified Section Styling ── */
 
     .section--classified .section__header {
@@ -1257,6 +1300,12 @@ export class VelgLoreScroll extends LitElement {
   /** IDs of classified sections (rendered with amber border + stamp) */
   @property({ type: Object }) classifiedSectionIds: Set<string> = new Set();
 
+  /** Whether images are currently being generated for this simulation */
+  @property({ type: Boolean }) generating = false;
+
+  /** Image slugs that are still being generated (show shimmer instead of broken img) */
+  @property({ type: Object }) pendingImageSlugs: Set<string> = new Set();
+
   /** Which sections are expanded. Initialized to first 3 sections in willUpdate. */
   @state() private _expanded = new Set<string>();
 
@@ -1265,6 +1314,9 @@ export class VelgLoreScroll extends LitElement {
 
   /** Whether the user has clicked "Descend Deeper" to reveal all sections */
   @state() private _revealedAll = false;
+
+  /** Image slugs already shown (to avoid reveal animation on pre-existing images) */
+  private _seenImageSlugs = new Set<string>();
 
   /** Lightbox state */
   @state() private _lightboxSrc: string | null = null;
@@ -1347,7 +1399,8 @@ export class VelgLoreScroll extends LitElement {
         currentChapter = section.chapter;
         const isExpanded = this._expanded.has(section.id);
         const isClassified = this.classifiedSectionIds.has(section.id);
-        const imageUrl = section.imageSlug ? this._getImageUrl(section.imageSlug) : null;
+        const isPending = this.generating && section.imageSlug && this.pendingImageSlugs.has(section.imageSlug);
+        const imageUrl = section.imageSlug && !isPending ? this._getImageUrl(section.imageSlug) : null;
         const caption = section.imageCaption ?? '';
         const delay = sectionIndex * 0.06;
         sectionIndex++;
@@ -1396,12 +1449,17 @@ export class VelgLoreScroll extends LitElement {
             <div
               class="section__body ${isExpanded ? 'section__body--expanded' : 'section__body--collapsed'}"
             >
-              ${
-                imageUrl
+              ${(() => {
+                // Track seen images to only play reveal on newly arrived ones
+                const isNewReveal = imageUrl && section.imageSlug && this.generating
+                  && !this._seenImageSlugs.has(section.imageSlug);
+                if (imageUrl && section.imageSlug) this._seenImageSlugs.add(section.imageSlug);
+
+                return imageUrl
                   ? html`
                     <figure class="section__figure">
                       <img
-                        class="section__image"
+                        class="section__image ${isNewReveal ? 'section__image--reveal' : ''}"
                         src=${imageUrl}
                         alt=${section.title}
                         loading="lazy"
@@ -1416,8 +1474,12 @@ export class VelgLoreScroll extends LitElement {
                       }
                     </figure>
                   `
-                  : nothing
-              }
+                  : this.generating && section.imageSlug
+                    ? html`<figure class="section__figure section__figure--generating">
+                        <div class="section__image-shimmer"></div>
+                      </figure>`
+                    : nothing;
+              })()}
               <div class="section__text">${section.body}</div>
               ${quote ? this._renderPullQuote(quote, delay + 0.08) : nothing}
             </div>

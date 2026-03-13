@@ -6,6 +6,7 @@ import type {
   ForgeBuildingDraft,
   ForgeDraft,
   ForgeGenerationConfig,
+  ForgeProgress,
   PurchaseReceipt,
   TokenBundle,
   TokenPurchase,
@@ -59,6 +60,17 @@ class ForgeStateManager {
     effective_bypass: false,
     access_policy: 'per_user',
   });
+
+  // --- Threat Level (extracted from dossier ZETA) ---
+  readonly threatLevel = signal<{ level: number; label: string; researchValue: string } | null>(null);
+
+  // --- Image Generation Tracking (post-ceremony) ---
+  /** Slug of the simulation currently having images generated. */
+  readonly imageTrackingSlug = signal<string | null>(null);
+  /** Latest progress snapshot from get_forge_progress. */
+  readonly imageProgress = signal<ForgeProgress | null>(null);
+  /** Counter incremented each time new images are detected (triggers view re-fetches). */
+  readonly imageUpdateVersion = signal(0);
 
   // --- Computed Views ---
   readonly phase = computed(() => this.draft.value?.current_phase ?? 'astrolabe');
@@ -503,6 +515,68 @@ class ForgeStateManager {
     }
   }
 
+  // --- Image Generation Tracking Methods ---
+
+  private _imageTrackingTimer: ReturnType<typeof setInterval> | null = null;
+  private _imageTrackingStopTimer: ReturnType<typeof setTimeout> | null = null;
+  private _imageTrackingStart = 0;
+  private _prevCompleted = -1;
+
+  startImageTracking(slug: string): void {
+    this.stopImageTracking();
+    this.imageTrackingSlug.value = slug;
+    this.imageProgress.value = null;
+    this.imageUpdateVersion.value = 0;
+    this._prevCompleted = -1;
+    this._imageTrackingStart = Date.now();
+
+    const poll = async () => {
+      try {
+        const resp = await forgeApi.getForgeProgress(slug);
+        if (!resp.success || !resp.data) return;
+        this.imageProgress.value = resp.data;
+
+        // Detect new images arriving
+        if (this._prevCompleted >= 0 && resp.data.completed > this._prevCompleted) {
+          this.imageUpdateVersion.value++;
+        }
+        this._prevCompleted = resp.data.completed;
+
+        // Stop when all done
+        if (resp.data.done) {
+          // Final bump so views pick up the last images
+          this.imageUpdateVersion.value++;
+          this._imageTrackingStopTimer = setTimeout(() => this.stopImageTracking(), 2000);
+          return;
+        }
+
+        // Safety timeout: 5 minutes
+        if (Date.now() - this._imageTrackingStart > 5 * 60 * 1000) {
+          this.stopImageTracking();
+        }
+      } catch {
+        // Best-effort polling — ignore transient errors
+      }
+    };
+
+    // Initial poll immediately, then every 5s
+    void poll();
+    this._imageTrackingTimer = setInterval(poll, 5000);
+  }
+
+  stopImageTracking(): void {
+    if (this._imageTrackingStopTimer) {
+      clearTimeout(this._imageTrackingStopTimer);
+      this._imageTrackingStopTimer = null;
+    }
+    if (this._imageTrackingTimer) {
+      clearInterval(this._imageTrackingTimer);
+      this._imageTrackingTimer = null;
+    }
+    this.imageTrackingSlug.value = null;
+    this.imageProgress.value = null;
+  }
+
   reset() {
     if (this._saveTimer) clearTimeout(this._saveTimer);
     this._pendingUpdate = null;
@@ -516,6 +590,7 @@ class ForgeStateManager {
     this.stagedBuildings.value = [];
     this.generationConfig.value = { ...DEFAULT_GENERATION_CONFIG };
     this.featurePurchases.value = new Map();
+    this.stopImageTracking();
   }
 }
 

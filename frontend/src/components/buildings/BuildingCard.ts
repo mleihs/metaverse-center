@@ -19,6 +19,7 @@ export class VelgBuildingCard extends LitElement {
 
   @property({ attribute: false }) building!: Building;
   @property({ type: Boolean }) compromised = false;
+  @property({ type: Boolean }) generating = false;
 
   private _handleClick(): void {
     this.dispatchEvent(
@@ -126,6 +127,7 @@ export class VelgBuildingCard extends LitElement {
         .badges=${this._getBadges()}
         .subtitle=${this._getSubtitle()}
         .capacityBar=${this._getCapacityBar()}
+        ?generating=${this.generating}
         ?show-actions=${appState.canEdit.value}
         @card-click=${this._handleClick}
         @card-edit=${this._handleEdit}

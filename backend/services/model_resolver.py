@@ -9,6 +9,7 @@ from uuid import UUID
 from supabase import Client
 
 from backend.services.constants import PLATFORM_DEFAULT_MODELS
+from backend.services.platform_model_config import get_platform_model
 
 logger = logging.getLogger(__name__)
 
@@ -266,8 +267,8 @@ class ModelResolver:
                 source="simulation.default",
             )
 
-        # 3. Platform default for purpose
-        platform_model = PLATFORM_DEFAULT_MODELS.get(purpose)
+        # 3. Platform default for purpose (admin-configurable via platform_settings)
+        platform_model = get_platform_model(purpose)
         if platform_model:
             return ResolvedModel(
                 model_id=platform_model,
@@ -276,9 +277,9 @@ class ModelResolver:
                 source=f"platform.{purpose}",
             )
 
-        # 4. Platform fallback
+        # 4. Platform fallback (admin-configurable)
         return ResolvedModel(
-            model_id=PLATFORM_DEFAULT_MODELS["fallback"],
+            model_id=get_platform_model("fallback"),
             temperature=0.7,
             max_tokens=1500,
             source="platform.fallback",

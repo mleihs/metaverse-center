@@ -1,7 +1,7 @@
 # metaverse.center
 
 > Multiplayer worldbuilding platform with AI-driven simulations and competitive PvP epochs.
-> 59 database tables, ~64 PostgreSQL functions, ~320 API endpoints, 159 web components.
+> 67 database tables, 75 PostgreSQL functions, ~370 API endpoints, 187 web components.
 > Stack: FastAPI + Lit 3 + Supabase + OpenRouter. Bilingual EN/DE.
 
 ## Specifications
@@ -30,11 +30,16 @@
 
 ## Guides
 - [Deployment Infrastructure](guides/deployment-infrastructure.md)
+- [Deployment Procedures](guides/deployment-procedures.md): Production deploy procedures — Railway, Supabase migration push, image transfer, DB modifications
 - [Epoch Gameplay Guide](guides/epoch-gameplay-guide.md): Player-facing guide — operative types, fog of war, alliances, scoring dimensions, DECLASSIFIED results screen, MVP commendations, academy training mode
 - [Implementation Plan](guides/implementation-plan.md)
+- [Local DB Reset](guides/local-db-reset.md): Safe database reset procedures, storage recovery, image re-generation
 - [Migration Strategy](guides/migration-strategy.md)
 - [Epoch Playtest Methodology](guides/playtest-methodology.md)
+- [Public Access](guides/public-access.md): Public-first API implementation — anon RLS, BaseApiService routing, auth guards
+- [SEO Implementation](guides/seo-implementation.md): SEO/GA4 architecture — 3-layer approach, crawler injection, slug URLs, 5 entity-level approaches evaluated
 - [Simulation Blueprint](guides/simulation-blueprint.md)
+- [Simulation Creation](guides/simulation-creation.md): New simulation setup — UUID scheme, seed/migration strategy, themes, image generation
 - [Testing Strategy](guides/testing-strategy.md)
 
 ## Explanations

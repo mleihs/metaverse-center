@@ -19,6 +19,7 @@ export class VelgAgentCard extends LitElement {
   @property({ type: Object }) agent!: Agent;
   @property({ type: Number }) relationshipCount = 0;
   @property({ type: Object }) aptitudes: AptitudeSet | null = null;
+  @property({ type: Boolean }) generating = false;
 
   private _handleClick(): void {
     this.dispatchEvent(
@@ -118,6 +119,7 @@ export class VelgAgentCard extends LitElement {
         .badges=${this._getBadges()}
         .subtitle=${this._getSubtitle()}
         .connectionCount=${this.relationshipCount}
+        ?generating=${this.generating}
         ?show-actions=${appState.canEdit.value}
         @card-click=${this._handleClick}
         @card-edit=${this._handleEdit}

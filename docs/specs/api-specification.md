@@ -1679,11 +1679,15 @@ Notfall-Aktion bei kritischem Schwellenwert ausfuehren. Drei Typen: `scorched_ea
 **Response:** `SuccessResponse`
 
 ### `GET /api/v1/public/simulations/by-slug/:slug/forge-progress`
-Leichtgewichtiger Bildgenerierungs-Fortschritt fuer die Forge-Zeremonie. Delegiert an `get_forge_progress(slug)` Postgres-Funktion (Migration 098).
+Leichtgewichtiger Bildgenerierungs-Fortschritt fuer die Forge-Zeremonie und Post-Ceremony Image-Tracking. Delegiert an `get_forge_progress(slug)` Postgres-Funktion (Migration 098, erweitert in 107).
 
 **Auth:** Anon (Public)
 
-**Response:** `SuccessResponse[ForgeProgress]` — `{ total, completed, done, agents: [{name, image_url}], buildings: [{name, image_url}] }`
+**Response:** `SuccessResponse[ForgeProgress]` — `{ total, completed, done, banner_url, agents: [{name, image_url}], buildings: [{name, image_url}], lore: [{name, image_url}] }`
+
+- `banner_url`: URL des generierten Banners (null wenn noch nicht fertig)
+- `lore`: Array der Lore-Sektionen mit `image_slug` — `image_url` ist der Slug wenn `image_generated_at IS NOT NULL`, sonst null
+- `total`/`completed`: Zaehlt Banner + Agents + Buildings + Lore-Sektionen mit image_slug
 
 ---
 

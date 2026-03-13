@@ -10,7 +10,7 @@ from backend.config import settings
 
 def get_openrouter_model(
     api_key: str | None = None,
-    model_id: str = "anthropic/claude-3.5-sonnet",
+    model_id: str = "anthropic/claude-sonnet-4-6",
 ) -> OpenAIModel:
     """Return a Pydantic AI model configured for OpenRouter.
 
@@ -19,7 +19,7 @@ def get_openrouter_model(
     api_key:
         Optional user-provided BYOK key. Falls back to the platform key.
     model_id:
-        OpenRouter model identifier. Defaults to Claude 3.5 Sonnet.
+        OpenRouter model identifier. Defaults to Claude Sonnet 4.6.
     """
     provider = OpenAIProvider(
         base_url="https://openrouter.ai/api/v1",
@@ -31,6 +31,6 @@ def get_openrouter_model(
     )
 
 
-# Cheap but effective model for research tasks (~$0.10/M input, $0.40/M output).
-# Research costs ~$0.0005 per call vs ~$0.02 for Claude 3.5 Sonnet.
+# Kept as a constant for backward compatibility — runtime code should use
+# get_platform_model("research") from platform_model_config instead.
 RESEARCH_MODEL = "google/gemini-2.0-flash-001"

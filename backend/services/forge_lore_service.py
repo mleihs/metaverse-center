@@ -13,6 +13,7 @@ from pydantic_ai import Agent
 from backend.models.forge import ForgeLoreOutput, ForgeLoreTranslatedOutput
 from backend.config import settings
 from backend.services.ai_utils import get_openrouter_model
+from backend.services.platform_model_config import get_platform_model
 from supabase import Client
 
 logger = logging.getLogger(__name__)
@@ -192,7 +193,7 @@ class ForgeLoreService:
         )
 
         agent = Agent(
-            get_openrouter_model(openrouter_key),
+            get_openrouter_model(openrouter_key, model_id=get_platform_model("forge")),
             system_prompt=BUREAU_ARCHIVIST_PROMPT,
         )
 
@@ -232,7 +233,7 @@ class ForgeLoreService:
         )
 
         agent = Agent(
-            get_openrouter_model(openrouter_key),
+            get_openrouter_model(openrouter_key, model_id=get_platform_model("forge")),
             system_prompt=LORE_TRANSLATOR_PROMPT,
         )
 
@@ -360,6 +361,21 @@ class ForgeLoreService:
                 for l in existing_lore[:7]
             )
 
+            # Fetch user's other simulations for cross-shard references
+            other_sims_resp = admin_supabase.table("simulations").select(
+                "name, description"
+            ).eq("owner_id", str(user_id)).neq("id", str(simulation_id)).limit(5).execute()
+            other_sims = other_sims_resp.data or []
+            cross_shard_block = ""
+            if other_sims:
+                shard_names = ", ".join(s["name"] for s in other_sims)
+                cross_shard_block = (
+                    f"\n\nADJACENT SHARDS (owned by the same user — reference by name in DELTA's "
+                    f"bleed analysis): {shard_names}\n"
+                    f"Describe how this shard's bleed signature interacts with 1-2 of these "
+                    f"specific adjacent realities. Weave natural cross-references.\n"
+                )
+
             dossier_prompt = f"""You are the Bureau's Senior Classified Analyst producing an expanded intelligence dossier
 for the materialized shard "{sim['name']}".
 
@@ -387,9 +403,17 @@ Required sections (in order):
    Archaeological evidence, temporal anomalies, contested origin myths.
 
 2. ARCANUM "BETA" — Agent Classified Addenda (~2,500 words)
-   Classified supplement for EACH agent. Hidden motivations, surveillance notes,
-   cross-references between agents' secrets. Bureau risk assessments.
-   Reference EVERY agent by name.
+   Classified supplement for EACH agent. Structure each agent's entry EXACTLY as follows:
+
+   === AGENT: [exact agent name] ===
+   RISK ASSESSMENT: [LOW/MODERATE/HIGH/CRITICAL]
+   HIDDEN MOTIVATION: [1-2 sentences]
+   SURVEILLANCE NOTES: [2-3 paragraphs of classified observations]
+   CROSS-REFERENCES: [other agent names this agent connects to]
+   BUREAU ANNOTATION: [1 sentence, dry institutional humor]
+   === END AGENT ===
+
+   Include an entry for EVERY agent. Separate entries with blank lines.
 
 3. ARCANUM "GAMMA" — Geographic Anomalies (~1,500 words)
    Spatial irregularities, impossible geometries, zones that don't obey cartographic law.
@@ -397,7 +421,7 @@ Required sections (in order):
 
 4. ARCANUM "DELTA" — Bleed Signature Analysis (~1,500 words)
    How this shard's reality leaks into adjacent realities. Sensory manifestations,
-   documented incidents, containment protocols. Technical Bureau language.
+   documented incidents, containment protocols. Technical Bureau language.{cross_shard_block}
 
 5. ARCANUM "EPSILON" — Prophetic Fragments (~1,000 words)
    Recovered documents, dreams, inscriptions that seem to predict events.
@@ -431,7 +455,7 @@ REQUIREMENTS:
                     for arcanum in ["ALPHA", "BETA", "GAMMA", "DELTA", "EPSILON", "ZETA"]
                 ]
             else:
-                model = get_openrouter_model(openrouter_key)
+                model = get_openrouter_model(openrouter_key, model_id=get_platform_model("forge"))
                 agent = Agent(model, system_prompt=BUREAU_ARCHIVIST_PROMPT)
                 result = await agent.run(dossier_prompt, output_type=ForgeLoreOutput)
                 sections = [s.model_dump() for s in result.output.sections]

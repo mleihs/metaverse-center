@@ -17,6 +17,7 @@ from backend.services.admin_user_service import AdminUserService
 from backend.services.cache_config import invalidate as invalidate_cache_config
 from backend.services.cleanup_service import CleanupService
 from backend.services.platform_api_keys import invalidate as invalidate_api_key_cache
+from backend.services.platform_model_config import invalidate as invalidate_model_config
 from backend.services.platform_settings_service import PlatformSettingsService
 from backend.services.audit_service import AuditService
 from backend.services.simulation_service import SimulationService
@@ -89,6 +90,10 @@ async def update_setting(
     # Invalidate API key cache when sensitive keys change
     if is_sensitive_key(key):
         invalidate_api_key_cache()
+
+    # Invalidate model config cache when model settings change
+    if key.startswith("model_"):
+        invalidate_model_config()
 
     return {"success": True, "data": data}
 

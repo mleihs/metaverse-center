@@ -569,6 +569,7 @@ frontend/src/services/api/
 ```
 frontend/src/services/
 ├── AppStateManager.ts              # Preact Signals global state
+├── ForgeStateManager.ts            # Forge wizard state + post-ceremony image tracking (Preact Signals)
 ├── NotificationService.ts          # In-app notifications
 ├── ThemeService.ts                 # Per-simulation theming, CSS custom property injection
 ├── theme-presets.ts                # 5 theme presets (brutalist, fantasy, deep-space-horror, arc-raiders, solarpunk)
@@ -601,6 +602,18 @@ frontend/src/services/
 | `epoch:{id}:team:{tid}:chat` | Broadcast | Team-only chat messages |
 
 **Lifecycle:** `joinEpoch(epochId, userId, simulationId, simulationName)` subscribes to all channels. `leaveEpoch(epochId)` unsubscribes and resets signals. `joinTeam(epochId, teamId)` / `leaveTeam()` manage team channel. Focus methods (`setEpochChatFocused`, `setTeamChatFocused`) reset unread counters.
+
+**ForgeStateManager** (`forgeStateManager` singleton) manages Forge wizard state (draft lifecycle, sessionStorage persistence) and post-ceremony image generation tracking. Image tracking signals:
+
+| Signal | Type | Description |
+|--------|------|-------------|
+| `imageTrackingSlug` | `Signal<string \| null>` | Slug of simulation currently having images generated |
+| `imageProgress` | `Signal<ForgeProgress \| null>` | Latest progress snapshot from `get_forge_progress` RPC |
+| `imageUpdateVersion` | `Signal<number>` | Counter incremented each time new images are detected — triggers view re-fetches |
+
+**Image tracking lifecycle:** `startImageTracking(slug)` begins 5s polling via `forgeApi.getForgeProgress(slug)`. On each poll: compares `completed` count — if increased, bumps `imageUpdateVersion` (triggering `effect()` watchers in AgentsView, BuildingsView, SimulationLoreView to re-fetch entities). When `done === true` → final version bump → 2s delay → `stopImageTracking()`. 5-minute safety timeout. Called from `VelgForgeIgnition._handleFinish()` before navigation to the new simulation.
+
+**Consumer pattern:** Views extend `SignalWatcher(LitElement)` to subscribe to signal values in `render()`. Each view creates an `effect()` in `connectedCallback()` watching `imageUpdateVersion` to re-fetch data. The `generating` state is slug-matched (`imageTrackingSlug === currentSlug`) to prevent cross-simulation shimmer. Lore images use `pendingImageSlugs` Set (computed from `imageProgress.lore`) to suppress URL construction for ungenerated images.
 
 ### BaseApiService (erweitert)
 

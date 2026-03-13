@@ -11,6 +11,7 @@ from pydantic_ai import Agent
 from backend.config import settings
 from backend.models.translation import TranslationContext, TranslationResult
 from backend.services.ai_utils import get_openrouter_model
+from backend.services.platform_model_config import get_platform_model
 from supabase import Client
 
 logger = logging.getLogger(__name__)
@@ -149,7 +150,7 @@ class TranslationService:
             context_block=_build_context_block(context),
         )
         agent = Agent(
-            get_openrouter_model(openrouter_key),
+            get_openrouter_model(openrouter_key, model_id=get_platform_model("forge")),
             system_prompt=system,
         )
         result = await agent.run(f"Translate the following text:\n\n{text}", output_type=str)
@@ -178,7 +179,7 @@ class TranslationService:
             prompt_parts.append(f"--- {name} ---\n{value}\n")
 
         agent = Agent(
-            get_openrouter_model(openrouter_key),
+            get_openrouter_model(openrouter_key, model_id=get_platform_model("forge")),
             system_prompt=system,
         )
         result = await agent.run("\n".join(prompt_parts), output_type=TranslationResult)

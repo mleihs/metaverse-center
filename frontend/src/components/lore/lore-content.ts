@@ -27,6 +27,132 @@ export function isClassifiedSection(section: ForgeLoreSection): boolean {
 }
 
 /**
+ * Extract classified sections from raw lore, mapped to display locale.
+ */
+export function getClassifiedSections(raw: ForgeLoreSection[]): LoreSection[] {
+  return mapLoreSectionsForLocale(raw.filter(isClassifiedSection));
+}
+
+/** Parsed intelligence data for a single agent from ARCANUM BETA. */
+export interface AgentIntelData {
+  agentName: string;
+  riskLevel: 'LOW' | 'MODERATE' | 'HIGH' | 'CRITICAL';
+  hiddenMotivation: string;
+  surveillanceNotes: string;
+  crossReferences: string;
+  bureauAnnotation: string;
+}
+
+/**
+ * Parse ARCANUM BETA body text for a specific agent's intelligence entry.
+ * Returns null if the agent's entry is not found.
+ */
+export function parseAgentIntel(betaBody: string, agentName: string): AgentIntelData | null {
+  // Match the block for this specific agent
+  const escaped = agentName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const blockRegex = new RegExp(
+    `=== AGENT:\\s*${escaped}\\s*===([\\s\\S]*?)=== END AGENT ===`,
+    'i',
+  );
+  const match = betaBody.match(blockRegex);
+  if (!match) return null;
+
+  const block = match[1];
+
+  const getField = (label: string): string => {
+    const fieldRegex = new RegExp(`${label}:\\s*(.+?)(?=\\n(?:RISK ASSESSMENT|HIDDEN MOTIVATION|SURVEILLANCE NOTES|CROSS-REFERENCES|BUREAU ANNOTATION|=== END)|$)`, 'is');
+    const m = block.match(fieldRegex);
+    return m ? m[1].trim() : '';
+  };
+
+  const riskRaw = getField('RISK ASSESSMENT').toUpperCase();
+  const validRisks = ['LOW', 'MODERATE', 'HIGH', 'CRITICAL'] as const;
+  const riskLevel = validRisks.find((r) => riskRaw.includes(r)) ?? 'MODERATE';
+
+  return {
+    agentName,
+    riskLevel,
+    hiddenMotivation: getField('HIDDEN MOTIVATION'),
+    surveillanceNotes: getField('SURVEILLANCE NOTES'),
+    crossReferences: getField('CROSS-REFERENCES'),
+    bureauAnnotation: getField('BUREAU ANNOTATION'),
+  };
+}
+
+/**
+ * Parse all agent intel entries from ARCANUM BETA body text.
+ */
+export function parseAllAgentIntel(betaBody: string): AgentIntelData[] {
+  const entries: AgentIntelData[] = [];
+  const blockRegex = /=== AGENT:\s*(.+?)\s*===([\s\S]*?)=== END AGENT ===/gi;
+  let match: RegExpExecArray | null;
+
+  while ((match = blockRegex.exec(betaBody)) !== null) {
+    const name = match[1].trim();
+    const intel = parseAgentIntel(betaBody, name);
+    if (intel) entries.push(intel);
+  }
+  return entries;
+}
+
+/** Threat level data extracted from ARCANUM ZETA. */
+export interface ThreatLevel {
+  level: number;
+  label: string;
+  researchValue: string;
+}
+
+/**
+ * Extract threat level from ARCANUM ZETA body text.
+ * Looks for patterns like "Threat Level: 7" or "THREAT LEVEL 7/10".
+ */
+export function extractThreatLevel(zetaBody: string): ThreatLevel | null {
+  // Try "THREAT LEVEL: X" or "THREAT LEVEL X" or "threat level: X/10"
+  const levelMatch = zetaBody.match(/THREAT\s*LEVEL[:\s]*(\d+)(?:\s*\/\s*10)?/i);
+  if (!levelMatch) return null;
+
+  const level = Math.min(10, Math.max(1, parseInt(levelMatch[1], 10)));
+
+  // Determine label
+  let label: string;
+  if (level <= 3) label = 'LOW';
+  else if (level <= 5) label = 'MODERATE';
+  else if (level <= 7) label = 'HIGH';
+  else label = 'CRITICAL';
+
+  // Try to extract research value
+  const rvMatch = zetaBody.match(/RESEARCH\s*VALUE[:\s]*([A-Z]+)/i);
+  const researchValue = rvMatch ? rvMatch[1].toUpperCase() : 'UNKNOWN';
+
+  return { level, label, researchValue };
+}
+
+/** Prophetic fragment parsed from ARCANUM EPSILON. */
+export interface PropheticFragment {
+  type: 'parchment' | 'typewriter' | 'dream' | 'memo' | 'stone';
+  text: string;
+}
+
+/**
+ * Parse ARCANUM EPSILON body into individual prophetic fragments.
+ * Splits on double newlines and assigns types via content hash.
+ */
+export function parseFragments(epsilonBody: string): PropheticFragment[] {
+  const types: PropheticFragment['type'][] = ['parchment', 'typewriter', 'dream', 'memo', 'stone'];
+  const blocks = epsilonBody.split(/\n{2,}/).filter((b) => b.trim().length > 20);
+
+  return blocks.map((text) => {
+    // Deterministic type based on content hash
+    let hash = 0;
+    for (let j = 0; j < Math.min(text.length, 50); j++) {
+      hash = ((hash << 5) - hash + text.charCodeAt(j)) | 0;
+    }
+    const type = types[Math.abs(hash) % types.length];
+    return { type, text: text.trim() };
+  });
+}
+
+/**
  * Map raw API lore sections to display-ready LoreSection[] using current locale.
  */
 export function mapLoreSectionsForLocale(raw: ForgeLoreSection[]): LoreSection[] {

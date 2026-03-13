@@ -1,5 +1,6 @@
 import { localized, msg } from '@lit/localize';
 import { effect } from '@preact/signals-core';
+import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import type { ForgeLoreSection } from '../../services/api/ForgeApiService.js';
@@ -11,15 +12,18 @@ import { seoService } from '../../services/SeoService.js';
 import { icons } from '../../utils/icons.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { VelgToast } from '../shared/Toast.js';
-import { fetchRawLoreSections, isClassifiedSection, mapLoreSectionsForLocale } from './lore-content.js';
+import { fetchRawLoreSections, getClassifiedSections, isClassifiedSection, mapLoreSectionsForLocale } from './lore-content.js';
 
 import '../platform/LoreScroll.js';
 import './LoreEditor.js';
+import './VelgDossierPreview.js';
 import './VelgDossierRequest.js';
+import './VelgCaseFile.js';
+import './VelgDossierReveal.js';
 
 @localized()
 @customElement('velg-simulation-lore-view')
-export class VelgSimulationLoreView extends LitElement {
+export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
   static styles = css`
     :host {
       display: block;
@@ -90,8 +94,11 @@ export class VelgSimulationLoreView extends LitElement {
   @state() private _rawSections: ForgeLoreSection[] | null = null;
   @state() private _loading = false;
   @state() private _editMode = false;
+  @state() private _showCeremony = false;
+  @state() private _caseFileMode = false;
 
   private _disposeEffect?: () => void;
+  private _disposeImageTracking?: () => void;
   private _fetchedForSimId = '';
 
   connectedCallback(): void {
@@ -104,6 +111,12 @@ export class VelgSimulationLoreView extends LitElement {
         this._loadLore(sim.id);
       }
       this.requestUpdate();
+    });
+    this._disposeImageTracking = effect(() => {
+      const version = forgeStateManager.imageUpdateVersion.value;
+      if (version > 0 && this._rawSections !== null) {
+        this._refreshLore();
+      }
     });
   }
 
@@ -120,6 +133,7 @@ export class VelgSimulationLoreView extends LitElement {
 
   disconnectedCallback(): void {
     this._disposeEffect?.();
+    this._disposeImageTracking?.();
     seoService.removeStructuredData();
     super.disconnectedCallback();
   }
@@ -216,6 +230,18 @@ export class VelgSimulationLoreView extends LitElement {
     }
   }
 
+  private _handleDossierComplete(): void {
+    const sim = appState.currentSimulation.value;
+    if (sim) {
+      this._showCeremony = true;
+    }
+  }
+
+  private async _handleCeremonyComplete(): Promise<void> {
+    this._showCeremony = false;
+    await this._refreshLore();
+  }
+
   private async _refreshLore(): Promise<void> {
     const simId = this._getSimId();
     if (!simId) return;
@@ -266,37 +292,62 @@ export class VelgSimulationLoreView extends LitElement {
 
     const simId = this._getSimId();
     const hasDossier = forgeStateManager.hasCompletedPurchase(simId, 'classified_dossier');
+    const classifiedSections = hasDossier && this._rawSections
+      ? getClassifiedSections(this._rawSections)
+      : [];
 
     return html`
+      ${this._showCeremony
+        ? html`<velg-dossier-reveal
+            .simulationName=${appState.currentSimulation.value?.name ?? ''}
+            @dossier-ceremony-complete=${this._handleCeremonyComplete}
+          ></velg-dossier-reveal>`
+        : nothing}
       <div class="lore-view">
-        ${canEdit ? this._renderToolbar() : nothing}
-        <velg-lore-scroll
-          .sections=${sections!}
-          .basePath=${`${slug}/lore`}
-          .classifiedSectionIds=${classifiedIds}
-          style="
-            --lore-text: var(--color-text-primary);
-            --lore-heading: var(--color-text-primary);
-            --lore-muted: var(--color-text-secondary);
-            --lore-faint: var(--color-text-muted);
-            --lore-accent: var(--color-primary);
-            --lore-accent-strong: var(--color-primary-hover, var(--color-primary));
-            --lore-surface: var(--color-surface-sunken);
-            --lore-surface-hover: var(--color-surface);
-            --lore-divider: var(--color-border-light);
-            --lore-image-border: var(--color-border-light);
-            --lore-btn-border: var(--color-border);
-            --lore-btn-text: var(--color-text-secondary);
-          "
-        ></velg-lore-scroll>
+        ${canEdit ? this._renderToolbar(hasDossier) : nothing}
+
+        ${this._caseFileMode && classifiedSections.length > 0
+          ? html`<velg-case-file
+              .sections=${classifiedSections}
+              .simulationName=${appState.currentSimulation.value?.name ?? ''}
+              .basePath=${slug}
+            ></velg-case-file>`
+          : nothing}
+
+        ${!this._caseFileMode
+          ? html`<velg-lore-scroll
+              .sections=${sections!}
+              .basePath=${`${slug}/lore`}
+              .classifiedSectionIds=${classifiedIds}
+              ?generating=${forgeStateManager.imageTrackingSlug.value === slug}
+              .pendingImageSlugs=${this._computePendingImageSlugs()}
+              style="
+                --lore-text: var(--color-text-primary);
+                --lore-heading: var(--color-text-primary);
+                --lore-muted: var(--color-text-secondary);
+                --lore-faint: var(--color-text-muted);
+                --lore-accent: var(--color-primary);
+                --lore-accent-strong: var(--color-primary-hover, var(--color-primary));
+                --lore-surface: var(--color-surface-sunken);
+                --lore-surface-hover: var(--color-surface);
+                --lore-divider: var(--color-border-light);
+                --lore-image-border: var(--color-border-light);
+                --lore-btn-border: var(--color-border);
+                --lore-btn-text: var(--color-text-secondary);
+              "
+            ></velg-lore-scroll>`
+          : nothing}
 
         ${canEdit && !hasDossier
           ? html`
+            <velg-dossier-preview
+              .simulationId=${simId}
+            ></velg-dossier-preview>
             <velg-dossier-request
               .simulationId=${simId}
               .walletBalance=${forgeStateManager.walletBalance.value}
               .hasBypass=${forgeStateManager.byokStatus.value.effective_bypass}
-              @dossier-complete=${this._refreshLore}
+              @dossier-complete=${this._handleDossierComplete}
             ></velg-dossier-request>
           `
           : nothing}
@@ -304,9 +355,42 @@ export class VelgSimulationLoreView extends LitElement {
     `;
   }
 
-  private _renderToolbar() {
+  private _computePendingImageSlugs(): Set<string> {
+    const progress = forgeStateManager.imageProgress.value;
+    if (!progress?.lore || !this._rawSections) return new Set();
+
+    // Progress lore entries have image_url = image_slug (when done) or null (pending)
+    const doneSlugs = new Set<string>();
+    for (const entry of progress.lore) {
+      if (entry.image_url) doneSlugs.add(entry.image_url);
+    }
+
+    const pending = new Set<string>();
+    for (const s of this._rawSections) {
+      if (s.image_slug && !doneSlugs.has(s.image_slug)) {
+        pending.add(s.image_slug);
+      }
+    }
+    return pending;
+  }
+
+  private _toggleCaseFile(): void {
+    this._caseFileMode = !this._caseFileMode;
+  }
+
+  private _renderToolbar(hasDossier = false) {
     return html`
       <div class="lore-view__toolbar">
+        ${hasDossier
+          ? html`<button
+              class="lore-view__btn ${this._caseFileMode ? 'lore-view__btn--active' : ''}"
+              @click=${this._toggleCaseFile}
+              title=${this._caseFileMode ? msg('View Inline') : msg('View as Case File')}
+            >
+              ${icons.stampClassified(16)}
+              ${this._caseFileMode ? msg('View Inline') : msg('View as Case File')}
+            </button>`
+          : nothing}
         <button
           class="lore-view__btn ${this._editMode ? 'lore-view__btn--active' : ''}"
           @click=${this._toggleEditMode}

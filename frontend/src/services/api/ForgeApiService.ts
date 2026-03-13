@@ -80,8 +80,10 @@ export interface ForgeProgress {
   total: number;
   completed: number;
   done: boolean;
+  banner_url: string | null;
   agents: ForgeProgressEntity[];
   buildings: ForgeProgressEntity[];
+  lore: ForgeProgressEntity[];
 }
 
 export interface TokenBundle {

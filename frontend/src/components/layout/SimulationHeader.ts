@@ -1,10 +1,14 @@
 import { localized, msg } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
+import type { ThreatLevel } from '../lore/lore-content.js';
 import { appState } from '../../services/AppStateManager.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { icons } from '../../utils/icons.js';
+import { fetchRawLoreSections, isClassifiedSection, extractThreatLevel } from '../lore/lore-content.js';
+
+import '../lore/VelgThreatLevel.js';
 
 @localized()
 @customElement('velg-simulation-header')
@@ -159,6 +163,60 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
   @property({ type: String }) simulationId = '';
   @property({ type: Boolean }) introHexagon = false;
 
+  @state() private _threatLevel: ThreatLevel | null = null;
+  private _threatLoadedForSim = '';
+  private _threatLoadedWithPurchases = 0;
+
+  updated(changed: Map<PropertyKey, unknown>): void {
+    if (changed.has('simulationId') && this.simulationId && this.simulationId !== this._threatLoadedForSim) {
+      this._threatLoadedForSim = this.simulationId;
+      this._threatLoadedWithPurchases = 0;
+      void this._loadThreatLevel();
+    }
+  }
+
+  /** Re-check threat level when feature purchases signal changes. */
+  private _checkThreatOnPurchaseChange(): void {
+    const purchaseVersion = forgeStateManager.featurePurchases.value.size;
+    if (purchaseVersion !== this._threatLoadedWithPurchases && this.simulationId) {
+      this._threatLoadedWithPurchases = purchaseVersion;
+      void this._loadThreatLevel();
+    }
+  }
+
+  private async _loadThreatLevel(): Promise<void> {
+    if (!this.simulationId) return;
+
+    const hasDossier = forgeStateManager.hasCompletedPurchase(this.simulationId, 'classified_dossier');
+    if (!hasDossier) {
+      this._threatLevel = null;
+      return;
+    }
+
+    try {
+      const raw = await fetchRawLoreSections(this.simulationId);
+      if (!raw) return;
+
+      const zeta = raw.find((s) => isClassifiedSection(s) && s.arcanum === 'ZETA');
+      if (!zeta) return;
+
+      this._threatLevel = extractThreatLevel(zeta.body);
+      forgeStateManager.threatLevel.value = this._threatLevel;
+    } catch {
+      // Non-critical
+    }
+  }
+
+  private _handleThreatClick(): void {
+    this.dispatchEvent(
+      new CustomEvent('navigate-to-tab', {
+        bubbles: true,
+        composed: true,
+        detail: { tab: 'lore' },
+      }),
+    );
+  }
+
   private _getBadgeClass(status: string): string {
     if (status === 'active') return 'badge--active';
     if (status === 'draft' || status === 'configuring') return 'badge--draft';
@@ -175,6 +233,9 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
     const sim = appState.currentSimulation.value;
     if (!sim) return html``;
 
+    // Reading featurePurchases signal ensures SignalWatcher re-renders on change
+    this._checkThreatOnPurchaseChange();
+
     const canEdit = appState.canEdit.value;
     const hasPulse = canEdit && forgeStateManager.hasAnyUnpurchasedFeature(this.simulationId);
     const btnClass = this.introHexagon
@@ -187,6 +248,12 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
       <div class="header">
         <h2 class="header__name">${sim.name}</h2>
         <span class="header__badge ${this._getBadgeClass(sim.status)}">${sim.status}</span>
+        ${this._threatLevel
+          ? html`<velg-threat-level
+              .threatLevel=${this._threatLevel}
+              @navigate-to-zeta=${this._handleThreatClick}
+            ></velg-threat-level>`
+          : ''}
         ${canEdit ? html`
           <button
             class="header__bureau-btn ${btnClass}"

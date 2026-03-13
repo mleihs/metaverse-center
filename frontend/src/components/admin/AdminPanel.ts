@@ -7,12 +7,13 @@ import './AdminApiKeysTab.js';
 import './AdminUsersTab.js';
 import './AdminCachingTab.js';
 import './AdminCleanupTab.js';
+import './AdminModelsTab.js';
 import './AdminForgeTab.js';
 import './AdminResonancesTab.js';
 import './AdminScannerTab.js';
 import './AdminSimulationsTab.js';
 
-type AdminTab = 'users' | 'simulations' | 'resonances' | 'scanner' | 'forge' | 'apikeys' | 'caching' | 'cleanup';
+type AdminTab = 'users' | 'simulations' | 'resonances' | 'scanner' | 'forge' | 'apikeys' | 'models' | 'caching' | 'cleanup';
 
 @localized()
 @customElement('velg-admin-panel')
@@ -238,6 +239,13 @@ export class VelgAdminPanel extends LitElement {
           @click=${() => this._setTab('apikeys')}
         >${msg('API Keys')}</button>
         <button
+          class="admin-tabs__tab ${this._activeTab === 'models' ? 'admin-tabs__tab--active' : ''}"
+          role="tab"
+          aria-selected=${this._activeTab === 'models'}
+          aria-controls="admin-tabpanel"
+          @click=${() => this._setTab('models')}
+        >${msg('Models')}</button>
+        <button
           class="admin-tabs__tab ${this._activeTab === 'caching' ? 'admin-tabs__tab--active' : ''}"
           role="tab"
           aria-selected=${this._activeTab === 'caching'}
@@ -273,6 +281,8 @@ export class VelgAdminPanel extends LitElement {
         return html`<velg-admin-forge-tab></velg-admin-forge-tab>`;
       case 'apikeys':
         return html`<velg-admin-api-keys-tab></velg-admin-api-keys-tab>`;
+      case 'models':
+        return html`<velg-admin-models-tab></velg-admin-models-tab>`;
       case 'caching':
         return html`<velg-admin-caching-tab></velg-admin-caching-tab>`;
       case 'cleanup':

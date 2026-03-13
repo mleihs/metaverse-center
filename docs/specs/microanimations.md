@@ -114,6 +114,112 @@ Parent views thread the index: `style="--i: ${i}"` on each `<velg-agent-card>`, 
 
 **Files:** `card-styles.ts`, `AgentsView.ts`, `BuildingsView.ts`, `EventsView.ts`
 
+#### T1.1b — Card Shimmer Placeholder + Image Reveal (`VelgGameCard.ts`)
+
+**What:** When a simulation is freshly materialized and images are still being generated in the background, entity cards show a shimmer placeholder in the art area. When images arrive, they flash in with a dramatic brightness reveal.
+
+**How:** `VelgGameCard` has a `generating` Boolean property. When `generating && !imageUrl`:
+
+```css
+.card__art--generating {
+  overflow: hidden;
+  position: relative;
+}
+
+.card__art--generating::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 25%,
+    color-mix(in srgb, var(--card-frame-primary) 8%, transparent) 37%,
+    color-mix(in srgb, var(--card-frame-primary) 12%, transparent) 50%,
+    color-mix(in srgb, var(--card-frame-primary) 8%, transparent) 63%,
+    transparent 75%
+  );
+  background-size: 200% 100%;
+  animation: card-shimmer 2s ease-in-out infinite;
+  z-index: 1;
+}
+
+.card__art--generating .card__art-placeholder {
+  animation: placeholder-pulse 2s ease-in-out infinite;
+}
+
+@keyframes card-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes placeholder-pulse {
+  0%, 100% { opacity: 0.3; }
+  50%      { opacity: 0.6; }
+}
+```
+
+When `imageUrl` arrives while `generating` is true, `willUpdate()` detects the transition and sets `_justRevealed` for 700ms:
+
+```css
+.card__art--revealed img {
+  animation: card-image-reveal 0.6s var(--ease-dramatic) forwards;
+}
+
+@keyframes card-image-reveal {
+  0%   { opacity: 0; filter: brightness(2.5); transform: scale(1.05); }
+  100% { opacity: 1; filter: brightness(1); transform: scale(1); }
+}
+```
+
+**Design decisions:**
+- Shimmer uses `color-mix()` with `--card-frame-primary` (8-12% opacity) so it adapts to per-simulation themes.
+- `card-image-reveal` reuses the brightness flash concept from `VelgForgeCeremony` (S63) but adds a subtle 5% scale punch.
+- `aria-busy="true"` is set on the card host when generating — screen readers announce the loading state.
+- Reduced motion: all three animations are suppressed. Static 0.5 opacity placeholder shown instead.
+
+**Integration:** Parent views (`AgentsView`, `BuildingsView`) pass `?generating=${isGenerating && !entity.image_url}` where `isGenerating` is slug-matched to `forgeStateManager.imageTrackingSlug` to prevent cross-simulation shimmer leak.
+
+**Files:** `VelgGameCard.ts`, `AgentCard.ts`, `BuildingCard.ts`, `AgentsView.ts`, `BuildingsView.ts`
+
+#### T1.1c — Lore Image Shimmer + Reveal (`LoreScroll.ts`)
+
+**What:** During post-ceremony image generation, lore sections with pending images show a shimmer placeholder instead of empty space. Images fade in with a brightness flash when generated.
+
+**How:** `LoreScroll` receives `generating` Boolean and `pendingImageSlugs: Set<string>` properties. The `pendingImageSlugs` pattern solves the problem that `_getImageUrl()` always constructs a storage URL from `imageSlug` regardless of whether the file exists — the Set explicitly marks which slugs are still pending.
+
+```css
+.section__figure--generating {
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+}
+
+.section__image-shimmer {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    110deg,
+    var(--lore-surface, #1a1a1a) 25%,
+    color-mix(in srgb, var(--lore-accent, #f59e0b) 6%, var(--lore-surface, #1a1a1a)) 50%,
+    var(--lore-surface, #1a1a1a) 75%
+  );
+  background-size: 200% 100%;
+  animation: lore-shimmer 2s ease-in-out infinite;
+}
+
+.section__image--reveal {
+  animation: lore-image-reveal 0.8s var(--ease-dramatic) forwards;
+}
+
+@keyframes lore-image-reveal {
+  from { opacity: 0; filter: brightness(1.8); }
+  to   { opacity: 1; filter: brightness(1); }
+}
+```
+
+A `_seenImageSlugs` private Set tracks already-displayed images so reveal animation only plays on newly arrived images, not pre-existing ones.
+
+**Files:** `LoreScroll.ts`, `SimulationLoreView.ts`
+
 #### T1.2 — EventCard (standalone + impact bars)
 
 **What:** EventCard has its own `.card` CSS (doesn't import `cardStyles`), so the same animation is added locally. Additionally, the 10-segment impact bar grows segment by segment.
@@ -465,6 +571,10 @@ The `!important` on `animation-duration` overrides all inline and Shadow DOM ani
 | 23 | `components/social/CampaignDashboard.ts` | `--i` stagger on campaign cards |
 | 24 | `components/locations/LocationsView.ts` | Level transition crossfade |
 | 25 | `tests/theme-service.test.ts` | Updated token count assertion (4 → 7) |
+| 26 | `components/shared/VelgGameCard.ts` | `generating` prop, shimmer placeholder (`card-shimmer`), reveal animation (`card-image-reveal`), `aria-busy` |
+| 27 | `components/agents/AgentCard.ts` | `generating` prop passthrough to VelgGameCard |
+| 28 | `components/buildings/BuildingCard.ts` | `generating` prop passthrough to VelgGameCard |
+| 29 | `components/platform/LoreScroll.ts` | `generating` + `pendingImageSlugs` props, `lore-shimmer` + `lore-image-reveal` animations |
 
 ---
 
@@ -482,7 +592,10 @@ The `!important` on `animation-duration` overrides all inline and Shadow DOM ani
 10. **Social:** Article cards stagger, campaign cards stagger
 11. **Locations:** Level transition crossfades
 12. **Theme scaling:** Switch between themes — `animation_speed` 0.7x (cyberpunk) vs 1.8x (deep-space-horror) affects all entrance durations
-13. **Reduced motion:** Enable `prefers-reduced-motion` in OS — all animations suppressed
+13. **Image shimmer:** Materialize a new shard → entity cards and lore images show shimmer while generating
+14. **Image reveal:** When images arrive → brightness flash (cards) / fade-in (lore)
+15. **No cross-simulation leak:** Visit an old simulation while images generate → no shimmer visible
+16. **Reduced motion:** Enable `prefers-reduced-motion` in OS — all animations suppressed
 14. **Tests:** `npx vitest run` — 365/365 pass
 15. **Lint:** `npx biome check src/` — clean
 16. **Types:** `npx tsc --noEmit` — clean
