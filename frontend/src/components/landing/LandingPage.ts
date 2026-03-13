@@ -16,6 +16,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { seoService } from '../../services/SeoService.js';
+import '../shared/PlatformFooter.js';
 
 interface PlatformStats {
   simulation_count: number;
@@ -420,6 +421,15 @@ export class VelgLandingPage extends LitElement {
       gap: 8px;
       opacity: 0;
       animation: content-fade 400ms var(--ease-dramatic) both 1.2s;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .hero__scroll-hint:focus-visible {
+      outline: 2px solid var(--color-accent-amber);
+      outline-offset: 4px;
     }
 
     .hero__scroll-text {
@@ -1230,6 +1240,7 @@ export class VelgLandingPage extends LitElement {
         ${this._renderHowItWorks()}
         ${this._renderCtaFooter()}
       </main>
+      <velg-platform-footer></velg-platform-footer>
     `;
   }
 
@@ -1290,10 +1301,17 @@ export class VelgLandingPage extends LitElement {
           </div>
         </div>
 
-        <div class="hero__scroll-hint" aria-hidden="true">
+        <button
+          class="hero__scroll-hint"
+          aria-label=${msg('Scroll to features')}
+          @click=${() => {
+            this.renderRoot.querySelector('[data-section="features"]')
+              ?.scrollIntoView({ behavior: 'smooth' });
+          }}
+        >
           <span class="hero__scroll-text">${msg('Scroll')}</span>
           <div class="hero__scroll-line"></div>
-        </div>
+        </button>
       </section>
     `;
   }

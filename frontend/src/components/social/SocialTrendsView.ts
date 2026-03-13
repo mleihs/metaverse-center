@@ -2,9 +2,16 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
-import { eventsApi, resonanceApi, socialTrendsApi } from '../../services/api/index.js';
+import { embassiesApi, eventsApi, healthApi, resonanceApi, socialTrendsApi } from '../../services/api/index.js';
 import { icons } from '../../utils/icons.js';
-import type { SourceCategory } from '../../types/index.js';
+import { getThemeColor } from '../../utils/theme-colors.js';
+import { humanizeEnum } from '../../utils/text.js';
+import type {
+  Embassy,
+  EmbassyEffectiveness,
+  SimulationHealth,
+  SourceCategory,
+} from '../../types/index.js';
 import type { BrowseArticle } from '../../services/api/SocialTrendsApiService.js';
 import { generationProgress } from '../../services/GenerationProgressService.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -592,6 +599,321 @@ export class VelgSocialTrendsView extends LitElement {
       letter-spacing: var(--tracking-brutalist); color: var(--color-text-secondary);
     }
 
+    /* ═══════════════════════════════════════
+       EMBASSY OVERVIEW — Diplomatic Dossier
+       ═══════════════════════════════════════ */
+
+    .embassy-overview {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      padding: var(--space-5) var(--space-6);
+      background: var(--color-surface-sunken);
+      border: var(--border-default);
+      border-top: 3px solid var(--color-secondary, #3b82f6);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .embassy-overview::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(
+        circle at top right,
+        color-mix(in srgb, var(--color-secondary, #3b82f6) 6%, transparent),
+        transparent 70%
+      );
+      pointer-events: none;
+    }
+
+    .embassy-overview__header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .embassy-overview__icon {
+      display: flex;
+      color: var(--color-secondary, #3b82f6);
+      opacity: 0.7;
+    }
+
+    .embassy-overview__title {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-black, 900);
+      font-size: var(--text-sm);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--color-text-primary);
+      margin: 0;
+    }
+
+    .embassy-overview__subtitle {
+      font-family: var(--font-mono, monospace);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-text-muted);
+      margin-left: auto;
+    }
+
+    /* ── Intel summary bar ── */
+
+    .embassy-intel {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-3);
+    }
+
+    .embassy-intel__stat {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      padding: var(--space-3);
+      background: var(--color-surface);
+      border: var(--border-width-thin) solid var(--color-border-light);
+    }
+
+    .embassy-intel__label {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-bold);
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-text-muted);
+    }
+
+    .embassy-intel__value {
+      font-family: var(--font-mono, monospace);
+      font-weight: 700;
+      font-size: var(--text-xl, 20px);
+      color: var(--color-text-primary);
+      line-height: 1;
+    }
+
+    .embassy-intel__value--accent {
+      color: var(--color-secondary, #3b82f6);
+    }
+
+    /* ── Embassy card grid ── */
+
+    .embassy-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--space-4);
+    }
+
+    .embassy-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      padding: var(--space-4);
+      background: var(--color-surface);
+      border: var(--border-width-default) solid var(--color-border);
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .embassy-card:hover {
+      border-color: var(--color-secondary, #3b82f6);
+      box-shadow: 0 0 12px color-mix(in srgb, var(--color-secondary, #3b82f6) 12%, transparent);
+    }
+
+    /* Shimmer border accent */
+    .embassy-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(
+        90deg,
+        var(--embassy-theme-color, var(--color-secondary)),
+        color-mix(in srgb, var(--embassy-theme-color, var(--color-secondary)) 40%, var(--color-primary)),
+        var(--embassy-theme-color, var(--color-secondary))
+      );
+      background-size: 200% 100%;
+      animation: embassy-shimmer 4s linear infinite;
+    }
+
+    @keyframes embassy-shimmer {
+      0% { background-position: 200% center; }
+      100% { background-position: -200% center; }
+    }
+
+    .embassy-card__header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .embassy-card__sim-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      box-shadow: 0 0 6px var(--embassy-theme-color, transparent);
+    }
+
+    .embassy-card__sim-name {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-bold);
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-text-muted);
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .embassy-card__partner {
+      display: flex;
+      gap: var(--space-3);
+      align-items: flex-start;
+    }
+
+    .embassy-card__thumb {
+      width: 48px;
+      height: 48px;
+      object-fit: cover;
+      border: var(--border-width-default) solid var(--color-border);
+      flex-shrink: 0;
+    }
+
+    .embassy-card__info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .embassy-card__building-name {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-bold);
+      font-size: var(--text-sm);
+      color: var(--color-text-primary);
+      margin: 0 0 var(--space-1);
+      transition: color 0.2s;
+    }
+
+    .embassy-card:hover .embassy-card__building-name {
+      color: var(--color-secondary, #3b82f6);
+    }
+
+    .embassy-card__building-type {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      text-transform: capitalize;
+    }
+
+    /* Effectiveness bar */
+    .embassy-card__effectiveness {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .embassy-card__eff-track {
+      flex: 1;
+      height: 6px;
+      background: var(--color-surface-sunken);
+      border: var(--border-width-thin) solid var(--color-border);
+      overflow: hidden;
+    }
+
+    .embassy-card__eff-fill {
+      height: 100%;
+      transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .embassy-card__eff-value {
+      font-family: var(--font-mono, monospace);
+      font-weight: 700;
+      font-size: var(--text-xs);
+      min-width: 36px;
+      text-align: right;
+    }
+
+    .embassy-card__meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      align-items: center;
+    }
+
+    .embassy-card__ambassador {
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+      padding-top: var(--space-2);
+      border-top: 1px solid var(--color-border-light);
+      font-size: var(--text-xs);
+      color: var(--color-text-secondary);
+    }
+
+    .embassy-card__amb-label {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-bold);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-text-muted);
+    }
+
+    /* ── Empty state ── */
+
+    .embassy-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-6) var(--space-4);
+      text-align: center;
+    }
+
+    .embassy-empty__icon {
+      color: var(--color-text-muted);
+      opacity: 0.4;
+    }
+
+    .embassy-empty__text {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-bold);
+      font-size: var(--text-sm);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-text-muted);
+    }
+
+    .embassy-empty__hint {
+      font-family: var(--font-sans);
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      max-width: 320px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 640px) {
+      .embassy-overview {
+        padding: var(--space-4);
+      }
+
+      .embassy-intel {
+        grid-template-columns: 1fr;
+      }
+
+      .embassy-cards {
+        grid-template-columns: 1fr;
+      }
+    }
+
     /* === Mobile: stack selected panel === */
     @media (max-width: 640px) {
       .selected {
@@ -611,6 +933,13 @@ export class VelgSocialTrendsView extends LitElement {
   `;
 
   @property({ type: String }) simulationId = '';
+
+  // Embassy overview state
+  @state() private _embassies: Embassy[] = [];
+  @state() private _embassyEffectiveness: EmbassyEffectiveness[] = [];
+  @state() private _healthSummary: SimulationHealth | null = null;
+  @state() private _embassyLoading = false;
+
   @state() private _articles: BrowseArticle[] = [];
   @state() private _loading = false;
   @state() private _error: string | null = null;
@@ -632,19 +961,40 @@ export class VelgSocialTrendsView extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
-    if (this.simulationId && appState.isAuthenticated.value) {
-      this._loadArticles();
+    if (this.simulationId) {
+      this._loadEmbassyData();
+      if (appState.isAuthenticated.value) {
+        this._loadArticles();
+      }
     }
   }
 
   protected willUpdate(changedProperties: Map<PropertyKey, unknown>): void {
-    if (
-      changedProperties.has('simulationId') &&
-      this.simulationId &&
-      appState.isAuthenticated.value
-    ) {
-      this._loadArticles();
+    if (changedProperties.has('simulationId') && this.simulationId) {
+      this._loadEmbassyData();
+      if (appState.isAuthenticated.value) {
+        this._loadArticles();
+      }
     }
+  }
+
+  private async _loadEmbassyData(): Promise<void> {
+    if (!this.simulationId) return;
+    this._embassyLoading = true;
+
+    const [embassyResult, healthResult] = await Promise.all([
+      embassiesApi.listForSimulation(this.simulationId),
+      healthApi.getDashboard(this.simulationId),
+    ]);
+
+    if (embassyResult.success && embassyResult.data) {
+      this._embassies = embassyResult.data;
+    }
+    if (healthResult.success && healthResult.data) {
+      this._healthSummary = healthResult.data.health;
+      this._embassyEffectiveness = healthResult.data.embassies ?? [];
+    }
+    this._embassyLoading = false;
   }
 
   private async _loadArticles(): Promise<void> {
@@ -972,6 +1322,217 @@ export class VelgSocialTrendsView extends LitElement {
     return raw?.section || raw?.source || '';
   }
 
+  // -- Embassy helpers --
+
+  private _effectivenessColor(label: string): string {
+    switch (label) {
+      case 'optimal': return 'var(--color-success)';
+      case 'operational': return 'var(--color-info, var(--color-secondary))';
+      case 'limited': return 'var(--color-warning, var(--color-accent))';
+      case 'dormant': return 'var(--color-danger)';
+      default: return 'var(--color-text-muted)';
+    }
+  }
+
+  private _getEmbassyPartner(embassy: Embassy): {
+    building: Embassy['building_a'];
+    simulation: Embassy['simulation_a'];
+  } | null {
+    if (embassy.simulation_a_id === this.simulationId) {
+      return { building: embassy.building_b, simulation: embassy.simulation_b };
+    }
+    return { building: embassy.building_a, simulation: embassy.simulation_a };
+  }
+
+  private _getEmbassyEffectiveness(embassyId: string): EmbassyEffectiveness | undefined {
+    return this._embassyEffectiveness.find((e) => e.embassy_id === embassyId);
+  }
+
+  private _getAmbassadorName(embassy: Embassy): string | null {
+    const meta = embassy.embassy_metadata;
+    if (!meta) return null;
+    const key = this.simulationId === embassy.simulation_a_id ? 'ambassador_a' : 'ambassador_b';
+    return meta[key]?.name ?? null;
+  }
+
+  private _handleEmbassyClick(embassy: Embassy): void {
+    const partner = this._getEmbassyPartner(embassy);
+    if (!partner?.simulation || !partner?.building) return;
+    const slug = partner.simulation.slug ?? partner.simulation.id;
+    sessionStorage.setItem('openBuildingId', partner.building.id);
+    window.history.pushState({}, '', `/simulations/${slug}/buildings`);
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  }
+
+  // -- Embassy render --
+
+  private _renderEmbassyOverview() {
+    if (this._embassyLoading) return nothing;
+
+    const health = this._healthSummary;
+    const embassies = this._embassies;
+    const hasEmbassies = embassies.length > 0;
+
+    return html`
+      <div class="embassy-overview">
+        <div class="embassy-overview__header">
+          <span class="embassy-overview__icon">${icons.handshake(18)}</span>
+          <h2 class="embassy-overview__title">${msg('Diplomatic Relations')}</h2>
+          <span class="embassy-overview__subtitle">
+            ${hasEmbassies
+              ? msg(str`${embassies.length} ${embassies.length === 1 ? 'embassy' : 'embassies'} on file`)
+              : msg('No embassies')}
+          </span>
+        </div>
+
+        ${health ? this._renderEmbassyIntel(health) : nothing}
+
+        ${hasEmbassies
+          ? html`<div class="embassy-cards">
+              ${embassies.map((e) => this._renderEmbassyCard(e))}
+            </div>`
+          : this._renderEmbassyEmpty()}
+      </div>
+    `;
+  }
+
+  private _renderEmbassyIntel(health: SimulationHealth) {
+    const avgPct = Math.round(health.avg_embassy_effectiveness * 100);
+    const avgColor = avgPct >= 60
+      ? 'var(--color-success)'
+      : avgPct >= 30
+        ? 'var(--color-warning, var(--color-accent))'
+        : 'var(--color-danger)';
+
+    return html`
+      <div class="embassy-intel">
+        <div class="embassy-intel__stat">
+          <span class="embassy-intel__label">${msg('Active Embassies')}</span>
+          <span class="embassy-intel__value embassy-intel__value--accent">
+            ${health.active_embassy_count}
+          </span>
+        </div>
+        <div class="embassy-intel__stat">
+          <span class="embassy-intel__label">${msg('Avg Effectiveness')}</span>
+          <span class="embassy-intel__value" style="color: ${avgColor}">
+            ${avgPct}%
+          </span>
+        </div>
+        <div class="embassy-intel__stat">
+          <span class="embassy-intel__label">${msg('Diplomatic Reach')}</span>
+          <span class="embassy-intel__value">
+            ${health.diplomatic_reach.toFixed(2)}
+          </span>
+        </div>
+      </div>
+    `;
+  }
+
+  private _renderEmbassyCard(embassy: Embassy) {
+    const partner = this._getEmbassyPartner(embassy);
+    if (!partner?.building || !partner?.simulation) return nothing;
+
+    const eff = this._getEmbassyEffectiveness(embassy.id);
+    const effPct = eff ? Math.round(eff.effectiveness * 100) : 0;
+    const effLabel = eff?.effectiveness_label ?? 'unknown';
+    const effColor = this._effectivenessColor(effLabel);
+    const themeColor = getThemeColor(partner.simulation.theme ?? '');
+    const ambassador = this._getAmbassadorName(embassy);
+
+    const statusVariant = embassy.status === 'active'
+      ? 'success'
+      : embassy.status === 'suspended'
+        ? 'warning'
+        : 'default';
+
+    return html`
+      <div
+        class="embassy-card"
+        style="--embassy-theme-color: ${themeColor}"
+        role="button"
+        tabindex="0"
+        @click=${() => this._handleEmbassyClick(embassy)}
+        @keydown=${(e: KeyboardEvent) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            this._handleEmbassyClick(embassy);
+          }
+        }}
+      >
+        <div class="embassy-card__header">
+          <span
+            class="embassy-card__sim-dot"
+            style="background: ${themeColor}"
+          ></span>
+          <span class="embassy-card__sim-name">${partner.simulation.name}</span>
+          <velg-badge variant=${statusVariant}>${humanizeEnum(embassy.status)}</velg-badge>
+        </div>
+
+        <div class="embassy-card__partner">
+          ${partner.building.image_url
+            ? html`<img
+                class="embassy-card__thumb"
+                src=${partner.building.image_url}
+                alt=${partner.building.name}
+                loading="lazy"
+              />`
+            : nothing}
+          <div class="embassy-card__info">
+            <div class="embassy-card__building-name">${partner.building.name}</div>
+            ${partner.building.building_type
+              ? html`<div class="embassy-card__building-type">${humanizeEnum(partner.building.building_type)}</div>`
+              : nothing}
+          </div>
+        </div>
+
+        ${eff ? html`
+          <div class="embassy-card__effectiveness">
+            <div class="embassy-card__eff-track">
+              <div
+                class="embassy-card__eff-fill"
+                style="width: ${effPct}%; background: ${effColor}"
+              ></div>
+            </div>
+            <span class="embassy-card__eff-value" style="color: ${effColor}">
+              ${effPct}%
+            </span>
+          </div>
+        ` : nothing}
+
+        <div class="embassy-card__meta">
+          ${eff ? html`<velg-badge variant=${
+            effLabel === 'optimal' ? 'success'
+              : effLabel === 'operational' ? 'info'
+                : effLabel === 'limited' ? 'warning'
+                  : 'danger'
+          }>${humanizeEnum(effLabel)}</velg-badge>` : nothing}
+          ${embassy.bleed_vector
+            ? html`<velg-badge variant="info">${humanizeEnum(embassy.bleed_vector)}</velg-badge>`
+            : nothing}
+        </div>
+
+        ${ambassador ? html`
+          <div class="embassy-card__ambassador">
+            <span class="embassy-card__amb-label">${msg('Ambassador')}:</span>
+            ${ambassador}
+          </div>
+        ` : nothing}
+      </div>
+    `;
+  }
+
+  private _renderEmbassyEmpty() {
+    return html`
+      <div class="embassy-empty">
+        <span class="embassy-empty__icon">${icons.handshake(32)}</span>
+        <span class="embassy-empty__text">${msg('No embassies established')}</span>
+        <span class="embassy-empty__hint">
+          ${msg('Visit the Buildings tab to establish embassies with other simulations and boost your diplomatic reach.')}
+        </span>
+      </div>
+    `;
+  }
+
   // -- Render --
 
   private _renderControls() {
@@ -1281,6 +1842,8 @@ export class VelgSocialTrendsView extends LitElement {
 
     return html`
       <div class="trends">
+        ${this._renderEmbassyOverview()}
+
         <div class="trends__header">
           <h1 class="trends__title">${msg('Browse News')}</h1>
           ${appState.isPlatformAdmin.value

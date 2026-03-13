@@ -7732,7 +7732,7 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
 </trans-unit>
 <trans-unit id="s2f59d7a7f1518cfe">
   <source>Remove <x id="0" equiv-text="${bot.name}"/> from deck</source>
-  <target><x id="0" equiv-text="${bot.name}"/> aus dem Deck entfernen</target></trans-unit>
+  <target>Entfernen <x id="0" equiv-text="${bot.name}"/> aus dem Deck entfernen</target></trans-unit>
 <trans-unit id="sd43500c8bc405e08">
   <source>MISSION DISPATCHED</source>
   <target>MISSION ENTSANDT</target>
@@ -7946,7 +7946,7 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
 </trans-unit>
 <trans-unit id="s039b6434e8a75560">
   <source>Delete <x id="0" equiv-text="${epoch.name}"/></source>
-  <target><x id="0" equiv-text="${epoch.name}"/> löschen</target></trans-unit>
+  <target>Löschen <x id="0" equiv-text="${epoch.name}"/> löschen</target></trans-unit>
 <trans-unit id="s4703acf0081a9e92">
   <source>Deploy Guardian / Spy</source>
   <target>Wächter / Spion einsetzen</target>
@@ -9454,7 +9454,7 @@ Das Bureau hat einen Namen für diese Antwort. Der Name ist klassifiziert. Die K
 </trans-unit>
 <trans-unit id="sfcfb31f06be50b07">
   <source>Show <x id="0" equiv-text="${remaining.length}"/> more reactions</source>
-  <target><x id="0" equiv-text="${remaining.length}"/> weitere Reaktionen anzeigen</target></trans-unit>
+  <target>Anzeigen <x id="0" equiv-text="${remaining.length}"/> weitere Reaktionen anzeigen</target></trans-unit>
 <trans-unit id="s7d1bc4880febc8f7">
   <source>impact</source>
 <target>Auswirkung</target></trans-unit>
@@ -9529,7 +9529,7 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 </trans-unit>
 <trans-unit id="s95d0f61607068b70">
   <source>Transforming <x id="0" equiv-text="${this._selectedBatch.length}"/> articles...</source>
-  <target><x id="0" equiv-text="${this._selectedBatch.length}"/> Artikel werden umgewandelt...</target></trans-unit>
+  <target>Transformieren <x id="0" equiv-text="${this._selectedBatch.length}"/> Artikel werden umgewandelt...</target></trans-unit>
 <trans-unit id="s497cb278c4dc1ced">
   <source><x id="0" equiv-text="${successCount}"/> articles transformed</source>
   <target><x id="0" equiv-text="${successCount}"/> Artikel umgewandelt</target></trans-unit>
@@ -9547,7 +9547,7 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 </trans-unit>
 <trans-unit id="sb5e04f0f17068399">
   <source>Creating <x id="0" equiv-text="${successResults.length}"/> events...</source>
-  <target><x id="0" equiv-text="${successResults.length}"/> Ereignisse werden erstellt...</target></trans-unit>
+  <target>Erstellen <x id="0" equiv-text="${successResults.length}"/> Ereignisse werden erstellt...</target></trans-unit>
 <trans-unit id="s96d51078b80ada7d">
   <source><x id="0" equiv-text="${events.length}"/> events created, <x id="1" equiv-text="${reactions_count}"/> reactions generated</source>
   <target><x id="0" equiv-text="${events.length}"/> Ereignisse erstellt, <x id="1" equiv-text="${reactions_count}"/> Reaktionen generiert</target></trans-unit>
@@ -9583,7 +9583,7 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 </trans-unit>
 <trans-unit id="s8672be3d48cb090b">
   <source>Integrate <x id="0" equiv-text="${successCount}"/> Events</source>
-  <target><x id="0" equiv-text="${successCount}"/> Ereignisse integrieren</target></trans-unit>
+  <target>Integrieren <x id="0" equiv-text="${successCount}"/> Ereignisse integrieren</target></trans-unit>
 <trans-unit id="sb4f1dffbb6be6302">
   <source>Clear</source>
   <target>Leeren</target>
@@ -11866,7 +11866,7 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 </trans-unit>
 <trans-unit id="s5fa511bebe4a7390">
   <source>Approve <x id="0" equiv-text="${c.title}"/></source>
-<target><x id="0" equiv-text="${c.title}"/> genehmigen</target></trans-unit>
+<target>Genehmigen <x id="0" equiv-text="${c.title}"/> genehmigen</target></trans-unit>
 <trans-unit id="seed03a4c0428a764">
   <source>Reject <x id="0" equiv-text="${c.title}"/></source>
 <target>Ablehnen<x id="0" equiv-text="${c.title}"/> ablehnen</target>
@@ -12513,10 +12513,6 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
   <source>Shards</source>
   <target>Scherben</target>
 </trans-unit>
-<trans-unit id="s79d594675e391090">
-  <source>members</source>
-  <target>Mitglieder</target>
-</trans-unit>
 <trans-unit id="s2038e03eed1db165">
   <source>DOSSIER // FIELD OPERATIVE</source>
   <target>DOSSIER // FELDOPERATIV</target>
@@ -12524,10 +12520,6 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 <trans-unit id="sccde979903f46472">
   <source>DOSSIER LOADING</source>
   <target>DOSSIER WIRD GELADEN</target>
-</trans-unit>
-<trans-unit id="sb77022c6b47fc864">
-  <source>Agent spotlight coming soon</source>
-  <target>Agenten-Spotlight kommt bald</target>
 </trans-unit>
 <trans-unit id="sc93c99cdd6b2c485">
   <source>Active substrate anomalies</source>
@@ -12880,7 +12872,7 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 <target>ausgewählt</target></trans-unit>
 <trans-unit id="s57a9fe983a719d41">
   <source>Permanently delete <x id="0" equiv-text="${purgeCount} ${meta.label.toLowerCase()}"/>? This cannot be undone.</source>
-<target><x id="0" equiv-text="${purgeCount} ${meta.label.toLowerCase()}"/> endgültig löschen? Dies kann nicht rückgängig gemacht werden.</target></trans-unit>
+<target>Endgültig löschen <x id="0" equiv-text="${purgeCount} ${meta.label.toLowerCase()}"/> endgültig löschen? Dies kann nicht rückgängig gemacht werden.</target></trans-unit>
 <trans-unit id="s6c976fb749d183c5">
   <source>Multiverse observation terminal overlooking interconnected simulation worlds</source>
 <target>Multiversum-Beobachtungsterminal mit Blick auf vernetzte Simulationswelten</target></trans-unit>
@@ -13187,29 +13179,13 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
   <source>READY</source>
   <target>BEREIT</target>
 </trans-unit>
-<trans-unit id="s604aad9be296c5a9">
-  <source>Recruit Agents</source>
-  <target>Agenten rekrutieren</target>
-</trans-unit>
-<trans-unit id="s335f697ad2005c58">
-  <source>Create new agents to fill vacant positions</source>
-  <target>Neue Agenten erstellen, um offene Stellen zu besetzen</target>
-</trans-unit>
 <trans-unit id="s9b70c6e88072d96f">
   <source>AGENTS</source>
   <target>AGENTEN</target>
 </trans-unit>
-<trans-unit id="sb2b305d0ac7e7a13">
-  <source>IDLE</source>
-  <target>FREI</target>
-</trans-unit>
 <trans-unit id="scfeaf608e8aa0616">
   <source>Establish Diplomacy</source>
   <target>Diplomatie aufbauen</target>
-</trans-unit>
-<trans-unit id="sc9d5d5dae67bfbd2">
-  <source>Open embassies to boost diplomatic reach</source>
-  <target>Botschaften eröffnen, um diplomatische Reichweite zu erhöhen</target>
 </trans-unit>
 <trans-unit id="s452f093dc882f653">
   <source>EMBASSIES</source>
@@ -13246,6 +13222,731 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 <trans-unit id="s4cc3a5c4ba8ece2e">
   <source>Materializing Assets</source>
   <target>Objekte materialisieren</target>
+</trans-unit>
+<trans-unit id="s1850e83d7c17c607">
+  <source>Purchase failed</source>
+  <target>Kauf fehlgeschlagen</target>
+</trans-unit>
+<trans-unit id="sdcb27818fed9da90">
+  <source>for</source>
+  <target>für</target>
+</trans-unit>
+<trans-unit id="se68398e3c2c760b2">
+  <source>Token</source>
+  <target>Token</target>
+</trans-unit>
+<trans-unit id="s78fd8c03f8c967f3">
+  <source>Tokens</source>
+  <target>Token</target>
+</trans-unit>
+<trans-unit id="s137fe6ea6d6b0d8e">
+  <source>Purchase History</source>
+  <target>Kaufverlauf</target>
+</trans-unit>
+<trans-unit id="s05918a6d5e6ed114">
+  <source>No purchases yet</source>
+  <target>Noch keine Käufe</target>
+</trans-unit>
+<trans-unit id="sae2d75de42720c34">
+  <source>The Mint</source>
+  <target>Die Münzpresse</target>
+</trans-unit>
+<trans-unit id="s0e93cf9f01b0ef3f">
+  <source>Token bundles</source>
+  <target>Token-Pakete</target>
+</trans-unit>
+<trans-unit id="sb7700696be07efa2">
+  <source>Purchase</source>
+  <target>Kaufen</target>
+</trans-unit>
+<trans-unit id="sf2b34334bbdd8715">
+  <source>Your first shard is free with Architect access</source>
+  <target>Dein erster Splitter ist mit Architekt-Zugang kostenlos</target>
+</trans-unit>
+<trans-unit id="s0db866e18269e1d0">
+  <source>Bundle updated.</source>
+  <target>Bundle aktualisiert.</target>
+</trans-unit>
+<trans-unit id="s5089e9eb358d6b54">
+  <source>Failed to update bundle.</source>
+  <target>Bundle konnte nicht aktualisiert werden.</target>
+</trans-unit>
+<trans-unit id="s3f3fc478d8600acd">
+  <source>Grant Tokens</source>
+  <target>Tokens vergeben</target>
+</trans-unit>
+<trans-unit id="sef16778fe7074a8d">
+  <source>Grant</source>
+  <target>Vergeben</target>
+</trans-unit>
+<trans-unit id="s65f3b1c3dd7f16e4">
+  <source>Grant failed.</source>
+  <target>Vergabe fehlgeschlagen.</target>
+</trans-unit>
+<trans-unit id="sb6468a3137f56552">
+  <source>Token Economy</source>
+  <target>Token-Wirtschaft</target>
+</trans-unit>
+<trans-unit id="sf027603c9a29587f">
+  <source>Aggregated metrics for the forge token economy.</source>
+  <target>Aggregierte Kennzahlen der Schmiede-Token-Wirtschaft.</target>
+</trans-unit>
+<trans-unit id="sb72b8d5b522aecad">
+  <source>Total Revenue</source>
+  <target>Gesamtumsatz</target>
+</trans-unit>
+<trans-unit id="s68f5592e72e0fcc3">
+  <source>purchases</source>
+  <target>Käufe</target>
+</trans-unit>
+<trans-unit id="sf20f5616777da3e8">
+  <source>Tokens Granted</source>
+  <target>Vergebene Tokens</target>
+</trans-unit>
+<trans-unit id="sb13aa2e637b32183">
+  <source>admin grants</source>
+  <target>Admin-Vergaben</target>
+</trans-unit>
+<trans-unit id="s28aca07b698a4849">
+  <source>In Circulation</source>
+  <target>Im Umlauf</target>
+</trans-unit>
+<trans-unit id="scc968a6d14c517ca">
+  <source>active bundles</source>
+  <target>aktive Bundles</target>
+</trans-unit>
+<trans-unit id="sca73b93877f26062">
+  <source>Unique Buyers</source>
+  <target>Einzelne Käufer</target>
+</trans-unit>
+<trans-unit id="s9cdadf80a96a14f4">
+  <source>Bundle Management</source>
+  <target>Bundle-Verwaltung</target>
+</trans-unit>
+<trans-unit id="sb8ec00f596205104">
+  <source>Manage token bundle catalog. Toggle availability or edit pricing.</source>
+  <target>Token-Bundle-Katalog verwalten. Verfügbarkeit umschalten oder Preise bearbeiten.</target>
+</trans-unit>
+<trans-unit id="seed76e8afe9f604a">
+  <source>Price</source>
+  <target>Preis</target>
+</trans-unit>
+<trans-unit id="sb03fe38bb2554090">
+  <source>Savings</source>
+  <target>Ersparnis</target>
+</trans-unit>
+<trans-unit id="s2ba5f4d8f3bd7c57">
+  <source>Order</source>
+  <target>Reihenfolge</target>
+</trans-unit>
+<trans-unit id="sf92cb4194464bd70">
+  <source>Price (cents)</source>
+  <target>Preis (Cent)</target>
+</trans-unit>
+<trans-unit id="s61edfa2ba963ab0f">
+  <source>Savings %</source>
+  <target>Ersparnis %</target>
+</trans-unit>
+<trans-unit id="s050beabafc3fcba9">
+  <source>Manually grant tokens to a user. Creates an auditable ledger entry.</source>
+  <target>Manuell Tokens an einen Benutzer vergeben. Erstellt einen prüfbaren Buchungseintrag.</target>
+</trans-unit>
+<trans-unit id="s392f74e3914541cb">
+  <source>User ID</source>
+  <target>Benutzer-ID</target>
+</trans-unit>
+<trans-unit id="saa29a2ac03cd9d19">
+  <source>Reason</source>
+  <target>Begründung</target>
+</trans-unit>
+<trans-unit id="s0b0748d602401883">
+  <source>Optional reason for audit trail</source>
+  <target>Optionale Begründung für den Prüfpfad</target>
+</trans-unit>
+<trans-unit id="s11acbf92578c9abf">
+  <source>Granting...</source>
+  <target>Wird vergeben...</target>
+</trans-unit>
+<trans-unit id="sb4b373948a149b5f">
+  <source>Purchase Ledger</source>
+  <target>Kaufbuch</target>
+</trans-unit>
+<trans-unit id="s22de19405a71e812">
+  <source>Global purchase transaction log with filter and pagination.</source>
+  <target>Globales Kauftransaktionsprotokoll mit Filter und Seitennavigation.</target>
+</trans-unit>
+<trans-unit id="s37dceeaec59c982b">
+  <source>Mock</source>
+  <target>Mock</target>
+</trans-unit>
+<trans-unit id="sf26afdc350c239c2">
+  <source>Admin Grant</source>
+  <target>Admin-Vergabe</target>
+</trans-unit>
+<trans-unit id="s5892c1ecd4ce939c">
+  <source>Stripe</source>
+  <target>Stripe</target>
+</trans-unit>
+<trans-unit id="s603b2fc7a4ac6922">
+  <source>No purchases found</source>
+  <target>Keine Käufe gefunden</target>
+</trans-unit>
+<trans-unit id="sac8252732f2edb19">
+  <source>Date</source>
+  <target>Datum</target>
+</trans-unit>
+<trans-unit id="sd11fc5474894c6c5">
+  <source>Bundle</source>
+  <target>Bundle</target>
+</trans-unit>
+<trans-unit id="s61f9d8f4ed40ee90">
+  <source>Method</source>
+  <target>Methode</target>
+</trans-unit>
+<trans-unit id="sb8a3d4df7d1c5e6b">
+  <source>Balance</source>
+  <target>Guthaben</target>
+</trans-unit>
+<trans-unit id="s26649097c6745882">
+  <source>admin grant</source>
+  <target>Admin-Vergabe</target>
+</trans-unit>
+<trans-unit id="sc07ab9021d0a85ee">
+  <source>BYOK bypass enabled system-wide.</source>
+  <target>BYOK-Bypass systemweit aktiviert.</target>
+</trans-unit>
+<trans-unit id="s7d9560a285d218dd">
+  <source>BYOK bypass disabled system-wide.</source>
+  <target>BYOK-Bypass systemweit deaktiviert.</target>
+</trans-unit>
+<trans-unit id="s08a54de7ccae8f79">
+  <source>Failed to update BYOK setting.</source>
+  <target>BYOK-Einstellung konnte nicht aktualisiert werden.</target>
+</trans-unit>
+<trans-unit id="sefde83b69a155b22">
+  <source>BYOK Free Access</source>
+  <target>BYOK-Freizugang</target>
+</trans-unit>
+<trans-unit id="sfc52089147b42421">
+  <source>When enabled, users with both BYOK keys bypass token costs entirely.</source>
+  <target>Wenn aktiviert, umgehen Nutzer mit beiden BYOK-Schlüsseln die Token-Kosten vollständig.</target>
+</trans-unit>
+<trans-unit id="s367dc84499a9174a">
+  <source>CLEARANCE: UNLIMITED</source>
+  <target>FREIGABE: UNBESCHRÄNKT</target>
+</trans-unit>
+<trans-unit id="s5239b1e20df6dd49">
+  <source>Your Bureau-issued keys grant unrestricted materialization access.</source>
+  <target>Ihre vom Büro ausgestellten Schlüssel gewähren uneingeschränkten Materialisierungszugang.</target>
+</trans-unit>
+<trans-unit id="s1e95396695587eed">
+  <source>Configure both API keys to enable unlimited access.</source>
+  <target>Konfigurieren Sie beide API-Schlüssel für unbeschränkten Zugang.</target>
+</trans-unit>
+<trans-unit id="s053756e4c9180ff3">
+  <source>BYOK Active — Unlimited Access</source>
+  <target>BYOK aktiv — Unbeschränkter Zugang</target>
+</trans-unit>
+<trans-unit id="s1f6c258160808f59">
+  <source>Using your own API keys — no token cost</source>
+  <target>Eigene API-Schlüssel aktiv — keine Token-Kosten</target>
+</trans-unit>
+<trans-unit id="s8478aa8db0f1310c">
+  <source>Nobody can use BYOK.</source>
+<target>Niemand kann BYOK verwenden.</target></trans-unit>
+<trans-unit id="s993760db6b69e902">
+  <source>All architects can use BYOK.</source>
+<target>Alle Architekten können BYOK verwenden.</target></trans-unit>
+<trans-unit id="s61ffc85654049c9d">
+  <source>BYOK granted per user.</source>
+<target>BYOK wird pro Nutzer gewährt.</target></trans-unit>
+<trans-unit id="s5f6d493aa2083b20">
+  <source>Failed to update access policy.</source>
+<target>Zugriffsrichtlinie konnte nicht aktualisiert werden.</target></trans-unit>
+<trans-unit id="sd9bbbc9ae4c966ce">
+  <source>BYOK Access Policy</source>
+<target>BYOK-Zugriffsrichtlinie</target></trans-unit>
+<trans-unit id="s3ff8a5fcb02cc876">
+  <source>Controls which users can bring their own API keys.</source>
+<target>Bestimmt, welche Nutzer eigene API-Schlüssel verwenden dürfen.</target></trans-unit>
+<trans-unit id="s05a351a51219b0fe">
+  <source>Nobody</source>
+<target>Niemand</target></trans-unit>
+<trans-unit id="s1646666bc3119ef8">
+  <source>Per User (admin grants)</source>
+<target>Pro Nutzer (Admin-Freigabe)</target></trans-unit>
+<trans-unit id="s2d63e3a25b7d81f0">
+  <source>All Architects</source>
+<target>Alle Architekten</target></trans-unit>
+<trans-unit id="sb832bf63a159cdb5">
+  <source>Recruitment authorization failed.</source>
+<target>Rekrutierungsermächtigung fehlgeschlagen.</target></trans-unit>
+<trans-unit id="s72621c1ae7771a59">
+  <source>3 recruits have reported for duty.</source>
+<target>3 Rekruten haben sich zum Dienst gemeldet.</target></trans-unit>
+<trans-unit id="s828942416b0d9ec9">
+  <source>Recruitment failed. Tokens refunded.</source>
+<target>Rekrutierung fehlgeschlagen. Token erstattet.</target></trans-unit>
+<trans-unit id="s1287de1b4891398d">
+  <source>Recruitment timed out. Check back later.</source>
+<target>Rekrutierung Zeitüberschreitung. Versuchen Sie es später erneut.</target></trans-unit>
+<trans-unit id="sd4cc8b69aa06fbcc">
+  <source>Bureau recruitment authorization</source>
+<target>Büro-Rekrutierungsermächtigung</target></trans-unit>
+<trans-unit id="s33f69871259c438c">
+  <source>Bureau Recruitment Authorization</source>
+<target>Büro-Rekrutierungsermächtigung</target></trans-unit>
+<trans-unit id="s0184c1f7096d0069">
+  <source>Authorize the deployment of 3 new agents into this simulation. Optional focus directive and zone assignment available.</source>
+<target>Autorisieren Sie den Einsatz von 3 neuen Agenten in dieser Simulation. Optionale Fokus-Direktive und Zonenauswahl verfügbar.</target></trans-unit>
+<trans-unit id="sb8112779fefa397c">
+  <source>BYOK: NO COST</source>
+<target>BYOK: KEINE KOSTEN</target></trans-unit>
+<trans-unit id="s8ef8c2a88db6069a">
+  <source>AUTHORIZATION COST: 1 FT</source>
+<target>AUTORISIERUNGSKOSTEN: 1 FT</target></trans-unit>
+<trans-unit id="se6ddc51eaf7abb79">
+  <source>Begin recruitment process</source>
+<target>Rekrutierungsprozess starten</target></trans-unit>
+<trans-unit id="sfaf4ca4fa1d1c339">
+  <source>BEGIN RECRUITMENT PROCESS</source>
+<target>REKRUTIERUNGSPROZESS STARTEN</target></trans-unit>
+<trans-unit id="s0cc72f6af26d5c48">
+  <source>Recruitment Directive</source>
+<target>Rekrutierungsdirektive</target></trans-unit>
+<trans-unit id="s29336540e3a3ac0d">
+  <source>Focus directive (optional)</source>
+<target>Fokus-Direktive (optional)</target></trans-unit>
+<trans-unit id="s69a6814bcc44fb3b">
+  <source>Describe the type of agents you want...</source>
+<target>Beschreiben Sie die Art der gewünschten Agenten...</target></trans-unit>
+<trans-unit id="s216d9607080cd8ed">
+  <source>Target zone (optional)</source>
+<target>Zielzone (optional)</target></trans-unit>
+<trans-unit id="sae139b83e8514af5">
+  <source>Any zone</source>
+<target>Beliebige Zone</target></trans-unit>
+<trans-unit id="sd377e78b9a8f7bc9">
+  <source>COST: 1 FT</source>
+<target>KOSTEN: 1 FT</target></trans-unit>
+<trans-unit id="s5b9f294c4f4a21fb">
+  <source>CANCEL</source>
+<target>ABBRECHEN</target></trans-unit>
+<trans-unit id="s996b8c1b096ebf6e">
+  <source>AUTHORIZE RECRUITMENT</source>
+<target>REKRUTIERUNG AUTORISIEREN</target></trans-unit>
+<trans-unit id="s10a536fa578da215">
+  <source>RECRUIT ALPHA</source>
+<target>REKRUT ALPHA</target></trans-unit>
+<trans-unit id="saae8f240b2b055e9">
+  <source>RECRUIT BETA</source>
+<target>REKRUT BETA</target></trans-unit>
+<trans-unit id="s80530a5eb5280418">
+  <source>RECRUIT GAMMA</source>
+<target>REKRUT GAMMA</target></trans-unit>
+<trans-unit id="s7a682a7ee177f81a">
+  <source>PROCESSING RECRUITMENT...</source>
+<target>REKRUTIERUNG WIRD VERARBEITET...</target></trans-unit>
+<trans-unit id="s3f469da86ca74ae7">
+  <source>PROCESSING DOSSIER...</source>
+<target>DOSSIER WIRD VERARBEITET...</target></trans-unit>
+<trans-unit id="s11f3fa6d897d5a24">
+  <source>3 RECRUITS HAVE ARRIVED</source>
+<target>3 REKRUTEN SIND EINGETROFFEN</target></trans-unit>
+<trans-unit id="s66e3775efb382933">
+  <source>Export authorization failed.</source>
+<target>Export-Autorisierung fehlgeschlagen.</target></trans-unit>
+<trans-unit id="s37aa9bf6e9416ef7">
+  <source>Export complete. Download link available.</source>
+<target>Export abgeschlossen. Download-Link verfügbar.</target></trans-unit>
+<trans-unit id="sd9a37e78728beae7">
+  <source>Export failed. Tokens refunded.</source>
+<target>Export fehlgeschlagen. Token erstattet.</target></trans-unit>
+<trans-unit id="se56632a48327b9a0">
+  <source>Public URL copied to clipboard.</source>
+<target>Öffentliche URL in die Zwischenablage kopiert.</target></trans-unit>
+<trans-unit id="s4b576b0aa501b8cc">
+  <source>Chronicle export services</source>
+<target>Chronik-Exportdienste</target></trans-unit>
+<trans-unit id="s60424e62d54ca0ec">
+  <source>Chronicle Printing Press</source>
+<target>Chronik-Druckerei</target></trans-unit>
+<trans-unit id="s22965688c1e8a5e9">
+  <source>Bureau-Authorized Export Services</source>
+<target>Büro-autorisierte Exportdienste</target></trans-unit>
+<trans-unit id="s5f169bb7a90f6202">
+  <source>CODEX PDF</source>
+<target>KODEX-PDF</target></trans-unit>
+<trans-unit id="sd27e732c91bf9cd9">
+  <source>Full simulation codex: agents, buildings, lore, and maps. Bureau-formatted PDF with theme colors.</source>
+<target>Vollständiger Simulationskodex: Agenten, Gebäude, Überlieferungen und Karten. Büro-formatiertes PDF mit Themenfarben.</target></trans-unit>
+<trans-unit id="sa9908d8602ea683c">
+  <source>PRINTING IN PROGRESS...</source>
+<target>DRUCK LÄUFT...</target></trans-unit>
+<trans-unit id="s2e8b1f3683412159">
+  <source>DOWNLOAD</source>
+<target>HERUNTERLADEN</target></trans-unit>
+<trans-unit id="s977089f1467e7326">
+  <source>1 FT</source>
+<target>1 FT</target></trans-unit>
+<trans-unit id="s6c1ce1f24962efb3">
+  <source>HI-RES ARCHIVE</source>
+<target>HOCHAUFLÖSENDES ARCHIV</target></trans-unit>
+<trans-unit id="s029df319645609bb">
+  <source>All images re-generated at 2048px. Packaged as ZIP with organized folders.</source>
+<target>Alle Bilder in 2048px neu generiert. Als ZIP mit organisierten Ordnern verpackt.</target></trans-unit>
+<trans-unit id="s3eb33b3ab959152c">
+  <source>PUBLIC PROSPECTUS</source>
+<target>ÖFFENTLICHER PROSPEKT</target></trans-unit>
+<trans-unit id="sd2b401b3e7c8b220">
+  <source>Shareable URL with Open Graph tags. Preview how your simulation appears on social media.</source>
+<target>Teilbare URL mit Open-Graph-Tags. Vorschau, wie Ihre Simulation in sozialen Medien erscheint.</target></trans-unit>
+<trans-unit id="sbc2595857370e9db">
+  <source>FREE</source>
+<target>KOSTENLOS</target></trans-unit>
+<trans-unit id="sd6cabf908465d7dd">
+  <source>COPY URL AGAIN</source>
+<target>URL ERNEUT KOPIEREN</target></trans-unit>
+<trans-unit id="s3bf2b66d5182dfb2">
+  <source>GENERATE</source>
+<target>GENERIEREN</target></trans-unit>
+<trans-unit id="s9dfe4ea4c72d53f7">
+  <source>Previous Exports</source>
+<target>Frühere Exporte</target></trans-unit>
+<trans-unit id="saff0299a1ec99392">
+  <source>Failed to purchase darkroom pass.</source>
+<target>Dunkelkammer-Pass konnte nicht erworben werden.</target></trans-unit>
+<trans-unit id="s0fefd7ec7d76e1de">
+  <source>Darkroom pass activated.</source>
+<target>Dunkelkammer-Pass aktiviert.</target></trans-unit>
+<trans-unit id="sdf807b658bf58c60">
+  <source>Darkroom pass purchase failed. Tokens refunded.</source>
+<target>Dunkelkammer-Pass-Kauf fehlgeschlagen. Token erstattet.</target></trans-unit>
+<trans-unit id="s91515f9e06cc2a22">
+  <source>Image regenerated.</source>
+<target>Bild neu generiert.</target></trans-unit>
+<trans-unit id="s2a96b3c3e2ce7547">
+  <source>Regeneration failed.</source>
+<target>Regenerierung fehlgeschlagen.</target></trans-unit>
+<trans-unit id="sa815df46d0f359cb">
+  <source>The Darkroom</source>
+<target>Die Dunkelkammer</target></trans-unit>
+<trans-unit id="s1205e813936a6f6b">
+  <source>THE DARKROOM</source>
+<target>DIE DUNKELKAMMER</target></trans-unit>
+<trans-unit id="s024e0902cca4fc43">
+  <source>REGENERATIONS REMAINING:</source>
+<target>VERBLEIBENDE REGENERIERUNGEN:</target></trans-unit>
+<trans-unit id="sec268f517da5e98e">
+  <source>Close darkroom</source>
+<target>Dunkelkammer schließen</target></trans-unit>
+<trans-unit id="s1bc751d19208417b">
+  <source>Theme Laboratory</source>
+<target>Themen-Laboratorium</target></trans-unit>
+<trans-unit id="s60d03ca692ec3439">
+  <source>Image Forge</source>
+<target>Bilderschmiede</target></trans-unit>
+<trans-unit id="sad845f4f61e32fae">
+  <source>Card Frame Atelier</source>
+<target>Kartenrahmen-Atelier</target></trans-unit>
+<trans-unit id="s7cb2676eef318b58">
+  <source>DARKROOM PASS REQUIRED</source>
+<target>DUNKELKAMMER-PASS ERFORDERLICH</target></trans-unit>
+<trans-unit id="s840fa51cc63dcde9">
+  <source>The Darkroom grants access to theme variants, image regeneration (10 uses), and card frame customization for this simulation.</source>
+<target>Die Dunkelkammer gewährt Zugang zu Themenvarianten, Bildregeneration (10 Verwendungen) und Kartenrahmen-Anpassung für diese Simulation.</target></trans-unit>
+<trans-unit id="sf395e37297fa8372">
+  <source>COST: 2 FT</source>
+<target>KOSTEN: 2 FT</target></trans-unit>
+<trans-unit id="s8e980e3f22578bc4">
+  <source>PROCESSING...</source>
+<target>VERARBEITUNG...</target></trans-unit>
+<trans-unit id="s04f01b636ef03f68">
+  <source>ACTIVATE DARKROOM PASS</source>
+<target>DUNKELKAMMER-PASS AKTIVIEREN</target></trans-unit>
+<trans-unit id="see2ee49a8a628f1b">
+  <source>Generate AI theme variants based on your simulation's lore and aesthetic. Apply directly or preview before committing.</source>
+<target>Generieren Sie KI-Themenvarianten basierend auf der Überlieferung und Ästhetik Ihrer Simulation. Direkt anwenden oder Vorschau ansehen.</target></trans-unit>
+<trans-unit id="s15236b74f120a187">
+  <source>Generate Theme Variants</source>
+<target>Themenvarianten generieren</target></trans-unit>
+<trans-unit id="sbd6677501767933c">
+  <source>Theme variant generation initiated.</source>
+<target>Themenvarianten-Generierung gestartet.</target></trans-unit>
+<trans-unit id="s315eae13172669ac">
+  <source>Generate to reveal</source>
+<target>Generieren zum Enthüllen</target></trans-unit>
+<trans-unit id="s9cf77490c849acea">
+  <source>Select an entity to regenerate its portrait. You have</source>
+<target>Wählen Sie eine Entität aus, um ihr Porträt neu zu generieren. Sie haben</target></trans-unit>
+<trans-unit id="sc8cd31870a6e169f">
+  <source>regenerations remaining.</source>
+<target>verbleibende Regenerierungen.</target></trans-unit>
+<trans-unit id="s7f35389c79d84efd">
+  <source>No entity images found for this simulation.</source>
+<target>Keine Entitätsbilder für diese Simulation gefunden.</target></trans-unit>
+<trans-unit id="s84fb3f534483ba99">
+  <source>Close panel</source>
+<target>Panel schließen</target></trans-unit>
+<trans-unit id="s59c6a3d3818fd8dc">
+  <source>Optional: describe what you want different...</source>
+<target>Optional: beschreiben Sie, was Sie anders möchten...</target></trans-unit>
+<trans-unit id="s29a189759a3ab1e3">
+  <source>REMAINING</source>
+<target>VERBLEIBEND</target></trans-unit>
+<trans-unit id="s58ddb825456ec35e">
+  <source>REGENERATING...</source>
+<target>REGENERIERUNG...</target></trans-unit>
+<trans-unit id="se549ef47e0158a6f">
+  <source>REGENERATE</source>
+<target>REGENERIEREN</target></trans-unit>
+<trans-unit id="s997486b3161df7be">
+  <source>Card frame customization coming soon. Texture, nameplate style, corner treatment, and foil effects.</source>
+<target>Kartenrahmen-Anpassung kommt bald. Textur, Namensschildstil, Eckenbehandlung und Folieneffekte.</target></trans-unit>
+<trans-unit id="s66cfe895e6540dbf">
+  <source>API keys saved and encrypted.</source>
+<target>API-Schlüssel gespeichert und verschlüsselt.</target></trans-unit>
+<trans-unit id="sc1041bb0cffa1852">
+  <source>Failed to save keys</source>
+<target>Schlüssel konnten nicht gespeichert werden</target></trans-unit>
+<trans-unit id="s702d83f801592d82">
+  <source>Your API Keys</source>
+<target>Ihre API-Schlüssel</target></trans-unit>
+<trans-unit id="s73d06ea7ecd03b22">
+  <source>Bring your own keys to bypass token costs. Keys are AES-256 encrypted at rest.</source>
+<target>Verwenden Sie eigene Schlüssel, um Token-Kosten zu umgehen. Schlüssel werden mit AES-256 verschlüsselt gespeichert.</target></trans-unit>
+<trans-unit id="s6c435319645ee39d">
+  <source>configured</source>
+<target>konfiguriert</target></trans-unit>
+<trans-unit id="s8f3d223923b156c6">
+  <source>not set</source>
+<target>nicht gesetzt</target></trans-unit>
+<trans-unit id="s86cd16569a652d74">
+  <source>Both keys configured — enter new values to update.</source>
+<target>Beide Schlüssel konfiguriert — neue Werte eingeben zum Aktualisieren.</target></trans-unit>
+<trans-unit id="s73274cae5ef9f359">
+  <source>Set both keys to enable BYOK access.</source>
+<target>Beide Schlüssel setzen, um BYOK-Zugang zu aktivieren.</target></trans-unit>
+<trans-unit id="sae218ac18b87b33f">
+  <source>Authorization failed.</source>
+<target>Autorisierung fehlgeschlagen.</target></trans-unit>
+<trans-unit id="se6090915e30867b1">
+  <source>Classified dossier authorized. Sections now available.</source>
+<target>Verschlusssache autorisiert. Abschnitte jetzt verfügbar.</target></trans-unit>
+<trans-unit id="s0a923a62869e87aa">
+  <source>Dossier generation failed. Tokens refunded.</source>
+<target>Dossier-Generierung fehlgeschlagen. Token erstattet.</target></trans-unit>
+<trans-unit id="s80109750b0cf1786">
+  <source>Dossier generation timed out. Check back later.</source>
+<target>Dossier-Generierung Zeitüberschreitung. Versuchen Sie es später erneut.</target></trans-unit>
+<trans-unit id="s300c90557b4ffe8e">
+  <source>Classified dossier request</source>
+<target>Verschlusssache-Anforderung</target></trans-unit>
+<trans-unit id="s48f18aee338792b6">
+  <source>[CLASSIFIED] BUREAU CLEARANCE LEVEL 4</source>
+<target>[VERSCHLUSSSACHE] BÜRO-FREIGABESTUFE 4</target></trans-unit>
+<trans-unit id="s79109f9e43b91dcc">
+  <source>Request Classified Dossier</source>
+<target>Verschlusssache Anfordern</target></trans-unit>
+<trans-unit id="s159eeb16e4f77621">
+  <source>Six classified sections. 10,000 words of deep lore: pre-arrival history, agent addenda, geographic anomalies, bleed signatures, prophetic fragments, Bureau recommendation.</source>
+<target>Sechs klassifizierte Abschnitte. 10.000 Wörter tiefe Überlieferung: Vor-Ankunft-Geschichte, Agenten-Nachträge, geographische Anomalien, Bleed-Signaturen, prophetische Fragmente, Büro-Empfehlung.</target></trans-unit>
+<trans-unit id="s462f46c057bd5571">
+  <source>AUTHORIZATION COST: 2 FT</source>
+<target>AUTORISIERUNGSKOSTEN: 2 FT</target></trans-unit>
+<trans-unit id="s9fa792c7239c8160">
+  <source>Authorize dossier expansion</source>
+<target>Dossier-Erweiterung autorisieren</target></trans-unit>
+<trans-unit id="s1b68329a788f7960">
+  <source>AUTHORIZE DOSSIER EXPANSION</source>
+<target>DOSSIER-ERWEITERUNG AUTORISIEREN</target></trans-unit>
+<trans-unit id="s6b29a852a1676dbe">
+  <source>PROCESSING CLASSIFIED EXPANSION...</source>
+<target>VERARBEITUNG DER VERSCHLUSSSACHE...</target></trans-unit>
+<trans-unit id="s7aebd8e5842b8396">
+  <source>BUREAU FORM 77-C // CLASSIFIED EXPANSION REQUEST</source>
+<target>BÜRO-FORMULAR 77-C // VERSCHLUSSSACHE-ERWEITERUNGSANTRAG</target></trans-unit>
+<trans-unit id="se56aa2af7113a34f">
+  <source>This will authorize the generation of six classified lore sections for this simulation. The Bureau requires full documentation of pre-arrival history, geographic anomalies, and other sensitive intelligence.</source>
+<target>Dies autorisiert die Generierung von sechs klassifizierten Überlieferungs-Abschnitten für diese Simulation. Das Büro verlangt vollständige Dokumentation der Vor-Ankunft-Geschichte, geographischer Anomalien und anderer sensibler Informationen.</target></trans-unit>
+<trans-unit id="s86ee7ad954b1b919">
+  <source>BYOK ACTIVE — NO TOKEN DEDUCTION</source>
+<target>BYOK AKTIV — KEIN TOKEN-ABZUG</target></trans-unit>
+<trans-unit id="s1f3297624f31e3ea">
+  <source>This action will deduct 2 Forge Tokens from your balance.</source>
+<target>Diese Aktion wird 2 Forge-Token von Ihrem Guthaben abziehen.</target></trans-unit>
+<trans-unit id="s887bddb5363b5490">
+  <source>AUTHORIZE</source>
+<target>AUTORISIEREN</target></trans-unit>
+<trans-unit id="sb939febfbb900180">
+  <source>[CLASSIFIED // CLEARANCE LEVEL 4]</source>
+<target>[VERSCHLUSSSACHE // FREIGABESTUFE 4]</target></trans-unit>
+<trans-unit id="se79f0bd628f3565c">
+  <source>OPEN DARKROOM</source>
+<target>DUNKELKAMMER ÖFFNEN</target></trans-unit>
+<trans-unit id="s32d8fc6a03fbc1f3">
+  <source>CLASSIFIED DOSSIER</source>
+<target>VERSCHLUSSSACHE</target></trans-unit>
+<trans-unit id="sd5522636bb7fc532">
+  <source>[CLASSIFIED] LEVEL 4</source>
+<target>[VERSCHLUSSSACHE] STUFE 4</target></trans-unit>
+<trans-unit id="s6de7284a35afd68d">
+  <source>Deep lore expansion: pre-arrival history, agent addenda, geographic anomalies, bleed signatures, prophetic fragments.</source>
+<target>Tiefe Überlieferungs-Erweiterung: Vor-Ankunft-Geschichte, Agenten-Nachträge, geographische Anomalien, Bleed-Signaturen, prophetische Fragmente.</target></trans-unit>
+<trans-unit id="s797d1e2a06fafaef">
+  <source>RECRUITMENT OFFICE</source>
+<target>REKRUTIERUNGSBÜRO</target></trans-unit>
+<trans-unit id="sb299f0c18b3042fb">
+  <source>FORM 22-B // FIELD DEPLOYMENT</source>
+<target>FORMULAR 22-B // FELDEINSATZ</target></trans-unit>
+<trans-unit id="sd37056a91dc373ad">
+  <source>Custom agent generation: define operative specialization, aptitude profile, and deployment parameters.</source>
+<target>Benutzerdefinierte Agenten-Generierung: Operative Spezialisierung, Eignungsprofil und Einsatzparameter festlegen.</target></trans-unit>
+<trans-unit id="sf2f529f7f5daa523">
+  <source>DARKROOM PASS // D-7</source>
+<target>DUNKELKAMMER-PASS // D-7</target></trans-unit>
+<trans-unit id="s18e449b41685d672">
+  <source>AI theme generation: color palette, typography, and visual identity derived from simulation lore.</source>
+<target>KI-Themengenerierung: Farbpalette, Typografie und visuelle Identität abgeleitet aus der Simulations-Überlieferung.</target></trans-unit>
+<trans-unit id="sa6d7b23ad20f2cf7">
+  <source>PRINTING PRESS</source>
+<target>DRUCKERPRESSE</target></trans-unit>
+<trans-unit id="s9ad52473dbddf9ff">
+  <source>PRINTING PRESS AUTH</source>
+<target>DRUCKERPRESSE-AUTH</target></trans-unit>
+<trans-unit id="sd8989b19f856cfc3">
+  <source>Codex export: compiled simulation chronicle as a formatted, downloadable document.</source>
+<target>Codex-Export: Zusammengestellte Simulationschronik als formatiertes, herunterladbares Dokument.</target></trans-unit>
+<trans-unit id="s8f23a193bb2836e5">
+  <source>Bureau Services Dispatch</source>
+<target>Bürodienste-Depesche</target></trans-unit>
+<trans-unit id="s9d47f4c17e9c33fc">
+  <source>BUREAU OF SIMULATION INTEGRITY</source>
+<target>BÜRO FÜR SIMULATIONSINTEGRITÄT</target></trans-unit>
+<trans-unit id="s0cba90f16f8d6c84">
+  <source>CLASSIFIED DISPATCH</source>
+<target>KLASSIFIZIERTE DEPESCHE</target></trans-unit>
+<trans-unit id="se3de2f198b874702">
+  <source>EYES ONLY // OWNER CLEARANCE</source>
+<target>NUR FÜR IHRE AUGEN // EIGENTÜMER-FREIGABE</target></trans-unit>
+<trans-unit id="sfd20d7bd19552d5d">
+  <source>Simulation Owner</source>
+<target>Simulationseigentümer</target></trans-unit>
+<trans-unit id="seb473be26f7d3aa6">
+  <source>Available Bureau Services</source>
+<target>Verfügbare Bürodienste</target></trans-unit>
+<trans-unit id="sd9ff97da04633341">
+  <source>CLASSIFICATION</source>
+<target>KLASSIFIZIERUNG</target></trans-unit>
+<trans-unit id="s317722add7285ee7">
+  <source>RESTRICTED — OWNER ONLY</source>
+<target>EINGESCHRÄNKT — NUR EIGENTÜMER</target></trans-unit>
+<trans-unit id="s989ba52073a3e518">
+  <source>AVAILABLE</source>
+<target>VERFÜGBAR</target></trans-unit>
+<trans-unit id="h728fbce1691eebfe">
+  <source>COST: <x id="0" equiv-text="${svc.cost}"/> FT</source>
+<target>KOSTEN: <x id="0" equiv-text="${svc.cost}"/> FT</target></trans-unit>
+<trans-unit id="sdf0fed3b3b1d29ba">
+  <source>TOTAL BUDGET</source>
+<target>GESAMTBUDGET</target></trans-unit>
+<trans-unit id="s99d60052d5fdb332">
+  <source>YOUR BALANCE</source>
+<target>IHR GUTHABEN</target></trans-unit>
+<trans-unit id="s9f1dfbc2a0f4f3bf">
+  <source>Access via hexagon icon in simulation header</source>
+<target>Zugang über das Hexagon-Symbol in der Simulationskopfzeile</target></trans-unit>
+<trans-unit id="s27512936133d8da9">
+  <source>DISPATCH ACKNOWLEDGED</source>
+<target>DEPESCHE BESTÄTIGT</target></trans-unit>
+<trans-unit id="s89ec63b95c1b8744">
+  <source>GO TO LORE</source>
+<target>ZUR ÜBERLIEFERUNG</target></trans-unit>
+<trans-unit id="s7bc93876276a1f86">
+  <source>GO TO AGENTS</source>
+<target>ZU DEN AGENTEN</target></trans-unit>
+<trans-unit id="s5c6417be468c263d">
+  <source>GO TO SETTINGS</source>
+<target>ZU DEN EINSTELLUNGEN</target></trans-unit>
+<trans-unit id="s0d442638d9fb6aed">
+  <source>GO TO CHRONICLE</source>
+<target>ZUR CHRONIK</target></trans-unit>
+<trans-unit id="s5b9c7386fe5f72d5">
+  <source>Bureau Services</source>
+<target>Bürodienste</target></trans-unit>
+<trans-unit id="sa972b4e54c959368">
+  <source>Bureau Notice // Classified services available — access via ⬡ in header</source>
+<target>Büromitteilung // Klassifizierte Dienste verfügbar — Zugang über ⬡ im Header</target></trans-unit>
+<trans-unit id="s057bbe6cf5b6cae9">
+  <source>Review Dispatch</source>
+<target>Depesche einsehen</target></trans-unit>
+<trans-unit id="se71811f898df712d">
+  <source>Create Agents</source>
+  <target>Agenten erstellen</target>
+</trans-unit>
+<trans-unit id="se2e973d0f3e85aac">
+  <source>Add new agents and assign them to buildings</source>
+  <target>Neue Agenten erstellen und Gebäuden zuweisen</target>
+</trans-unit>
+<trans-unit id="saf5fbd99bf1bd541">
+  <source>Open building details to establish embassies</source>
+  <target>Gebäudedetails öffnen, um Botschaften zu gründen</target>
+</trans-unit>
+<trans-unit id="s8fd67f9cba6afbce">
+  <source>Diplomatic Relations</source>
+  <target>Diplomatische Beziehungen</target>
+</trans-unit>
+<trans-unit id="sefb6070ce3f06676">
+  <source><x id="0" equiv-text="${embassies.length} ${embassies.length === 1 ? 'embassy' : 'embassies'}"/> on file</source>
+  <target><x id="0" equiv-text="${embassies.length} ${embassies.length === 1 ? 'embassy' : 'embassies'}"/> aktenkundig</target>
+</trans-unit>
+<trans-unit id="s5426eb3d78ea973a">
+  <source>No embassies</source>
+  <target>Keine Botschaften</target>
+</trans-unit>
+<trans-unit id="sc4d31bb59510465c">
+  <source>No embassies established</source>
+  <target>Keine Botschaften gegründet</target>
+</trans-unit>
+<trans-unit id="s625c02e93fb763c7">
+  <source>Visit the Buildings tab to establish embassies with other simulations and boost your diplomatic reach.</source>
+  <target>Besuche den Gebäude-Tab, um Botschaften mit anderen Simulationen zu gründen und deine diplomatische Reichweite zu erhöhen.</target>
+</trans-unit>
+<trans-unit id="s1788a47f4125716c">
+  <source>Write in any language — the AI interprets your concept regardless of language. Focus on atmosphere, themes, and contradictions.</source>
+  <target>Schreibe in jeder Sprache — die KI interpretiert dein Konzept unabhängig von der Sprache. Konzentriere dich auf Atmosphäre, Themen und Widersprüche.</target>
+</trans-unit>
+<trans-unit id="s4cedd7f86263840b">
+  <source>Ein schwimmender Archipel, wo Erinnerungen zu Inseln erstarren — works just as well as English.</source>
+  <target>A floating archipelago where memories solidify into islands — funktioniert genauso gut wie Deutsch.</target>
+</trans-unit>
+<trans-unit id="s1c660db4ec7f8cd9">
+  <source>Any language</source>
+  <target>Beliebige Sprache</target>
+</trans-unit>
+<trans-unit id="sd814eb5b9e0458c8">
+  <source>Scroll to features</source>
+  <target>Zu den Features scrollen</target>
+</trans-unit>
+<trans-unit id="s02815586ca8e2755">
+  <source>Building</source>
+  <target>Gebäude</target>
+</trans-unit>
+<trans-unit id="s8926029c71b0c505">
+  <source>Scanning operative records</source>
+  <target>Operative Akten werden durchsucht</target>
+</trans-unit>
+<trans-unit id="s28a33f1a8d5e304a">
+  <source>Legal</source>
+  <target>Rechtliches</target>
+</trans-unit>
+<trans-unit id="sd11a46c2e7022f58">
+  <source>Impressum</source>
+  <target>Impressum</target>
+</trans-unit>
+<trans-unit id="se78c02e9a98a0f47">
+  <source>Privacy</source>
+  <target>Datenschutz</target>
 </trans-unit>
 
 </body>

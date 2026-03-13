@@ -5,7 +5,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { healthApi } from '../../services/api/HealthApiService.js';
 import { icons } from '../../utils/icons.js';
-import type { ZoneStability } from '../../types/index.js';
+import type { SimulationHealthDashboard, ZoneStability } from '../../types/index.js';
 
 interface PanelAction {
   type: string;
@@ -349,6 +349,33 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
   @property({ type: Array }) zones: ZoneStability[] = [];
 
   @state() private _dismissed = false;
+  @state() private _healthData: SimulationHealthDashboard | null = null;
+
+  private get _dismissKey(): string {
+    return `diagnostics_dismissed_${this.simulationId}`;
+  }
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    if (sessionStorage.getItem(this._dismissKey)) {
+      this._dismissed = true;
+    }
+    if (this.simulationId) {
+      this._loadHealthData();
+    }
+  }
+
+  private async _loadHealthData(): Promise<void> {
+    const result = await healthApi.getDashboard(this.simulationId);
+    if (result.success && result.data) {
+      this._healthData = result.data;
+    }
+  }
+
+  private _dismiss(): void {
+    this._dismissed = true;
+    sessionStorage.setItem(this._dismissKey, '1');
+  }
   @state() private _cooldowns = new Set<string>();
   @state() private _executing = '';
   @state() private _errorMsg = '';
@@ -399,8 +426,12 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
 
   private get _diagnosticActions(): PanelAction[] {
     const sim = appState.currentSimulation.value;
+    const h = this._healthData;
     const agentCount = sim?.agent_count ?? 0;
     const buildingCount = sim?.building_count ?? 0;
+    const readinessPct = h?.health ? Math.round((h.health.avg_readiness ?? 0) * 100) : 0;
+    const embassyCount = h?.health?.active_embassy_count ?? 0;
+    const reach = h?.health?.diplomatic_reach ?? 0;
 
     return [
       {
@@ -410,18 +441,18 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
         color: 'var(--color-info, #3b82f6)',
         accentRgb: '59, 130, 246',
         description: msg('Assign agents to understaffed buildings'),
-        estimate: `${buildingCount} ${msg('BLDG')} · 0% ${msg('READY')}`,
+        estimate: `${buildingCount} ${msg('BLDG')} · ${readinessPct}% ${msg('READY')}`,
         requiresTarget: false,
         navigateTo: 'buildings',
       },
       {
-        type: 'recruit_agents',
-        label: msg('Recruit Agents'),
+        type: 'create_agents',
+        label: msg('Create Agents'),
         icon: icons.emergencyDraft(28),
         color: 'var(--color-success, #22c55e)',
         accentRgb: '34, 197, 94',
-        description: msg('Create new agents to fill vacant positions'),
-        estimate: `${agentCount} ${msg('AGENTS')} · 0 ${msg('IDLE')}`,
+        description: msg('Add new agents and assign them to buildings'),
+        estimate: `${agentCount} ${msg('AGENTS')}`,
         requiresTarget: false,
         navigateTo: 'agents',
       },
@@ -431,10 +462,10 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
         icon: icons.handshake(28),
         color: 'var(--color-epoch-influence, #a78bfa)',
         accentRgb: '167, 139, 250',
-        description: msg('Open embassies to boost diplomatic reach'),
-        estimate: `0 ${msg('EMBASSIES')} · 0.00 ${msg('REACH')}`,
+        description: msg('Open building details to establish embassies'),
+        estimate: `${embassyCount} ${msg('EMBASSIES')} · ${reach.toFixed(2)} ${msg('REACH')}`,
         requiresTarget: false,
-        navigateTo: 'social',
+        navigateTo: 'buildings',
       },
     ];
   }
@@ -457,7 +488,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
           composed: true,
         }),
       );
-      this._dismissed = true;
+      this._dismiss();
     } else {
       // Epoch action → execute threshold API call
       this._executeThresholdAction(action);
@@ -506,9 +537,9 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
     const isEpoch = this._isEpoch;
     const actions = isEpoch ? this._epochActions : this._diagnosticActions;
 
-    // Panel accent: red for epoch war-room, teal for diagnostic
-    const accentColor = isEpoch ? 'var(--color-danger, #ef4444)' : '#2dd4bf';
-    const ecgColor = isEpoch ? '%23ef4444' : '%232dd4bf';
+    // Panel accent: red for epoch war-room, primary for diagnostic
+    const accentColor = isEpoch ? 'var(--color-danger, #ef4444)' : 'var(--color-primary)';
+    const ecgColor = isEpoch ? '%23ef4444' : '%23999999';
 
     const title = isEpoch
       ? html`// ${msg('LIFE SUPPORT PROTOCOLS')} // ${msg('ENTROPY COUNTERMEASURES')} //`
@@ -538,9 +569,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
             </div>
             <button
               class="panel__dismiss"
-              @click=${() => {
-                this._dismissed = true;
-              }}
+              @click=${() => this._dismiss()}
               aria-label=${msg('Dismiss')}
             >
               ${icons.close(14)}

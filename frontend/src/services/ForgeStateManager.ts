@@ -1,9 +1,14 @@
-import { computed, signal } from '@preact/signals-core';
+import { computed, signal, type Signal } from '@preact/signals-core';
 import type {
+  BYOKStatus,
+  FeaturePurchase,
   ForgeAgentDraft,
   ForgeBuildingDraft,
   ForgeDraft,
   ForgeGenerationConfig,
+  PurchaseReceipt,
+  TokenBundle,
+  TokenPurchase,
 } from './api/ForgeApiService.js';
 import { forgeApi } from './api/ForgeApiService.js';
 
@@ -38,12 +43,30 @@ class ForgeStateManager {
   // --- Theme State ---
   readonly isGeneratingTheme = signal(false);
 
+  // --- Wallet / Mint State ---
+  readonly walletBalance = signal<number>(0);
+  readonly walletTier = signal<string>('observer');
+  readonly isLoadingWallet = signal(false);
+  readonly mintOpen = signal(false);
+  readonly bundles = signal<TokenBundle[]>([]);
+  readonly purchaseHistory = signal<TokenPurchase[]>([]);
+  readonly byokStatus = signal<BYOKStatus>({
+    has_openrouter_key: false,
+    has_replicate_key: false,
+    byok_allowed: false,
+    byok_bypass: false,
+    system_bypass_enabled: false,
+    effective_bypass: false,
+    access_policy: 'per_user',
+  });
+
   // --- Computed Views ---
   readonly phase = computed(() => this.draft.value?.current_phase ?? 'astrolabe');
   readonly status = computed(() => this.draft.value?.status ?? 'draft');
   readonly canIgnite = computed(() => {
     const d = this.draft.value;
-    return d && d.current_phase === 'ignition' && d.status === 'draft';
+    if (!d || d.current_phase !== 'ignition' || d.status !== 'draft') return false;
+    return this.walletBalance.value > 0 || this.byokStatus.value.effective_bypass;
   });
 
   // --- Debounce state ---
@@ -292,6 +315,194 @@ class ForgeStateManager {
     }
   }
 
+  // --- Wallet / Mint Actions ---
+
+  async loadWallet(): Promise<void> {
+    this.isLoadingWallet.value = true;
+    try {
+      const resp = await forgeApi.getWallet();
+      if (resp.success && resp.data) {
+        this.walletBalance.value = resp.data.forge_tokens;
+        this.walletTier.value = resp.data.account_tier ?? 'observer';
+        if (resp.data.byok_status) {
+          this.byokStatus.value = resp.data.byok_status;
+        }
+      }
+    } catch {
+      // Best-effort — wallet display is non-critical
+    } finally {
+      this.isLoadingWallet.value = false;
+    }
+  }
+
+  async loadBundles(): Promise<void> {
+    try {
+      const resp = await forgeApi.listBundles();
+      if (resp.success && resp.data) {
+        this.bundles.value = resp.data;
+      }
+    } catch {
+      // Best-effort
+    }
+  }
+
+  async purchaseBundle(slug: string): Promise<PurchaseReceipt | null> {
+    this.isLoadingWallet.value = true;
+    this.error.value = null;
+    try {
+      const resp = await forgeApi.purchaseBundle(slug);
+      if (resp.success && resp.data) {
+        this.walletBalance.value = resp.data.balance_after;
+        return resp.data;
+      }
+      this.error.value = resp.error?.message ?? 'Purchase failed';
+      return null;
+    } catch (err) {
+      this.error.value = err instanceof Error ? err.message : 'Purchase failed';
+      return null;
+    } finally {
+      this.isLoadingWallet.value = false;
+    }
+  }
+
+  async loadPurchaseHistory(): Promise<void> {
+    try {
+      const resp = await forgeApi.getPurchaseHistory();
+      if (resp.success && resp.data) {
+        // PaginatedResponse wraps data in .data
+        const items = Array.isArray(resp.data) ? resp.data : (resp.data as unknown as { data: TokenPurchase[] }).data ?? [];
+        this.purchaseHistory.value = items;
+      }
+    } catch {
+      // Best-effort
+    }
+  }
+
+  // --- Feature Purchases ---
+
+  readonly featurePurchases: Signal<Map<string, FeaturePurchase[]>> = signal(new Map());
+
+  private static readonly FEATURE_TYPES = [
+    'classified_dossier', 'recruitment', 'darkroom_pass', 'chronicle_export',
+  ] as const;
+
+  private static readonly FEATURE_TAB_MAP: Record<string, string> = {
+    classified_dossier: 'lore',
+    recruitment: 'agents',
+    darkroom_pass: 'settings',
+    chronicle_export: 'chronicle',
+  };
+
+  async loadAllFeatureStatuses(simulationId: string): Promise<void> {
+    await Promise.all(
+      ForgeStateManager.FEATURE_TYPES.map(t => this.loadFeaturePurchases(simulationId, t)),
+    );
+  }
+
+  hasAnyUnpurchasedFeature(simulationId: string): boolean {
+    return ForgeStateManager.FEATURE_TYPES.some(
+      t => !this.hasCompletedPurchase(simulationId, t),
+    );
+  }
+
+  getUnpurchasedTabPaths(simulationId: string): Set<string> {
+    const tabs = new Set<string>();
+    for (const ft of ForgeStateManager.FEATURE_TYPES) {
+      if (!this.hasCompletedPurchase(simulationId, ft)) {
+        const tab = ForgeStateManager.FEATURE_TAB_MAP[ft];
+        if (tab) tabs.add(tab);
+      }
+    }
+    return tabs;
+  }
+
+  async loadFeaturePurchases(simulationId: string, featureType: string): Promise<FeaturePurchase[]> {
+    const resp = await forgeApi.listFeaturePurchases(simulationId, featureType);
+    if (resp.success && resp.data) {
+      const map = new Map(this.featurePurchases.value);
+      map.set(`${simulationId}:${featureType}`, resp.data);
+      this.featurePurchases.value = map;
+      return resp.data;
+    }
+    return [];
+  }
+
+  hasCompletedPurchase(simulationId: string, featureType: string): boolean {
+    const key = `${simulationId}:${featureType}`;
+    const purchases = this.featurePurchases.value.get(key);
+    return purchases?.some(p => p.status === 'completed') ?? false;
+  }
+
+  async awaitFeatureCompletion(
+    purchaseId: string,
+    onProgress?: (p: FeaturePurchase) => void,
+  ): Promise<FeaturePurchase | null> {
+    const MAX_POLLS = 90; // 3 minutes at 2s interval
+    for (let i = 0; i < MAX_POLLS; i++) {
+      const purchase = await this.pollFeaturePurchase(purchaseId);
+      if (!purchase) return null;
+      onProgress?.(purchase);
+      if (purchase.status !== 'processing' && purchase.status !== 'pending') {
+        // Update featurePurchases signal so badges react immediately
+        void this.loadFeaturePurchases(purchase.simulation_id, purchase.feature_type);
+        return purchase;
+      }
+      await new Promise(r => setTimeout(r, 2000));
+    }
+    return null;
+  }
+
+  async purchaseFeature(
+    simulationId: string,
+    featureType: 'darkroom_pass' | 'classified_dossier' | 'recruitment' | 'chronicle_export',
+    options?: { focus?: string; zoneId?: string },
+  ): Promise<string | null> {
+    this.error.value = null;
+    try {
+      let resp: { success: boolean; data?: { purchase_id: string }; error?: { message?: string } };
+
+      switch (featureType) {
+        case 'darkroom_pass':
+          resp = await forgeApi.purchaseDarkroom(simulationId);
+          break;
+        case 'classified_dossier':
+          resp = await forgeApi.purchaseDossier(simulationId);
+          break;
+        case 'recruitment':
+          resp = await forgeApi.purchaseRecruitment(
+            simulationId, options?.focus, options?.zoneId,
+          );
+          break;
+        case 'chronicle_export':
+          resp = await forgeApi.purchaseChronicle(simulationId);
+          break;
+      }
+
+      if (resp.success && resp.data?.purchase_id) {
+        // Refresh wallet balance after purchase
+        void this.loadWallet();
+        return resp.data.purchase_id;
+      }
+      this.error.value = resp.error?.message ?? 'Feature purchase failed';
+      return null;
+    } catch (err) {
+      this.error.value = err instanceof Error ? err.message : 'Feature purchase failed';
+      return null;
+    }
+  }
+
+  async pollFeaturePurchase(purchaseId: string): Promise<FeaturePurchase | null> {
+    try {
+      const resp = await forgeApi.getFeaturePurchase(purchaseId);
+      if (resp.success && resp.data) {
+        return resp.data;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
   reset() {
     if (this._saveTimer) clearTimeout(this._saveTimer);
     this._pendingUpdate = null;
@@ -304,6 +515,7 @@ class ForgeStateManager {
     this.stagedAgents.value = [];
     this.stagedBuildings.value = [];
     this.generationConfig.value = { ...DEFAULT_GENERATION_CONFIG };
+    this.featurePurchases.value = new Map();
   }
 }
 

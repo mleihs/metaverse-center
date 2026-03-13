@@ -2,17 +2,22 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
+import { agentsApi } from '../../services/api/AgentsApiService.js';
 import { simulationsApi } from '../../services/api/SimulationsApiService.js';
 import { usersApi } from '../../services/api/UsersApiService.js';
 import { resonanceApi } from '../../services/api/index.js';
 import type {
   ActiveEpochParticipation,
+  Agent,
   DashboardData,
   MembershipInfo,
   Resonance,
   Simulation,
 } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
+import { t } from '../../utils/locale-fields.js';
+import { humanizeEnum, pluralCount, agentAltText } from '../../utils/text.js';
+import { getThemeColor, getThemeVariant } from '../../utils/theme-colors.js';
 
 import { epochsApi } from '../../services/api/EpochsApiService.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -21,7 +26,9 @@ import './SimulationCard.js';
 import '../resonance/ResonanceMonitor.js';
 import '../epoch/AcademyEpochCard.js';
 import '../forge/ClearanceApplicationCard.js';
+import '../shared/VelgBadge.js';
 import '../shared/VelgGameCard.js';
+import '../shared/PlatformFooter.js';
 
 type DashboardState = 'guest' | 'new_member' | 'active_player' | 'power_user';
 
@@ -716,6 +723,13 @@ export class VelgSimulationsDashboard extends LitElement {
       min-height: 200px;
     }
 
+    .featured__header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-bottom: var(--space-2);
+    }
+
     .featured__name {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
@@ -723,6 +737,18 @@ export class VelgSimulationsDashboard extends LitElement {
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-primary);
+      margin: 0;
+    }
+
+    .featured__desc {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: rgba(255, 255, 255, 0.65);
+      line-height: var(--leading-relaxed);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
       margin: 0 0 var(--space-2);
     }
 
@@ -834,6 +860,64 @@ export class VelgSimulationsDashboard extends LitElement {
       letter-spacing: var(--tracking-widest);
       color: var(--color-gray-500);
       margin-bottom: var(--space-3);
+    }
+
+    .agent-spotlight__card {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      padding: var(--space-4);
+      border: 1px solid var(--color-gray-800);
+      background: var(--color-gray-900);
+      cursor: pointer;
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    }
+
+    .agent-spotlight__card:hover {
+      border-color: var(--color-gray-600);
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.06);
+    }
+
+    .agent-spotlight__card:focus-visible {
+      outline: 2px solid var(--color-accent-amber);
+      outline-offset: 2px;
+    }
+
+    .agent-spotlight__portrait {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--color-gray-700);
+      flex-shrink: 0;
+    }
+
+    .agent-spotlight__info {
+      flex: 1;
+      min-width: 0;
+      text-align: left;
+    }
+
+    .agent-spotlight__name {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-black);
+      font-size: var(--text-base);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+      color: var(--color-gray-100);
+      margin: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .agent-spotlight__profession {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-gray-400);
+      margin-top: 2px;
     }
 
     /* ── Resonance Ticker ── */
@@ -1139,6 +1223,24 @@ export class VelgSimulationsDashboard extends LitElement {
       }
     }
 
+    /* ── Layout balance: show shards in left column below 1440, hide center ── */
+    .dashboard__center {
+      display: none;
+    }
+
+    .left-shards {
+      display: block;
+    }
+
+    @media (min-width: 1440px) {
+      .dashboard__center {
+        display: block;
+      }
+      .left-shards {
+        display: none;
+      }
+    }
+
     /* ── Reduced motion ── */
 
     @media (prefers-reduced-motion: reduce) {
@@ -1183,6 +1285,8 @@ export class VelgSimulationsDashboard extends LitElement {
   @state() private _clockText = '';
   @state() private _tickerIndex = 0;
   @state() private _bootSequence = false;
+  @state() private _spotlightAgent: Agent | null = null;
+  @state() private _spotlightSimSlug = '';
 
   private _clockTimer = 0;
   private _tickerTimer = 0;
@@ -1237,6 +1341,9 @@ export class VelgSimulationsDashboard extends LitElement {
       if (!isAuth) {
         this._allSimulations = [...this._simulations].sort(() => Math.random() - 0.5);
       }
+
+      // Load agent spotlight (non-blocking)
+      this._loadSpotlightAgent();
     } finally {
       this._loading = false;
     }
@@ -1291,6 +1398,25 @@ export class VelgSimulationsDashboard extends LitElement {
       }
     } catch {
       // Non-critical — dashboard works without this
+    }
+  }
+
+  private async _loadSpotlightAgent(): Promise<void> {
+    try {
+      const allSims = [...this._simulations, ...this._allSimulations];
+      const simWithAgents = allSims.find((s) => s.agent_count && s.agent_count > 0);
+      if (!simWithAgents) return;
+
+      const res = await agentsApi.listPublic(simWithAgents.id, { limit: '5' });
+      if (!res.success || !res.data) return;
+
+      const agents = (res.data as Agent[]).filter((a) => a.portrait_image_url);
+      if (agents.length === 0) return;
+
+      this._spotlightAgent = agents[Math.floor(Math.random() * agents.length)];
+      this._spotlightSimSlug = simWithAgents.slug;
+    } catch {
+      // Non-critical — placeholder remains
     }
   }
 
@@ -1411,6 +1537,7 @@ export class VelgSimulationsDashboard extends LitElement {
       ${userState === 'new_member' ? this._renderWelcomeStrip() : nothing}
       ${this._renderBody(userState, boot)}
       ${this._renderSubstrateTicker()}
+      <velg-platform-footer></velg-platform-footer>
     `;
   }
 
@@ -1528,13 +1655,14 @@ export class VelgSimulationsDashboard extends LitElement {
         <div class="dashboard__left ${boot ? 'boot-left' : ''}">
           ${!isGuest ? this._renderActiveOps() : nothing}
           ${!isGuest ? this._renderMyWorlds() : nothing}
-          ${isGuest ? this._renderShardSection() : nothing}
+          <div class="left-shards">
+            ${this._renderShardSection()}
+          </div>
         </div>
 
-        <!-- Center Column (visible at 1440p+ via CSS, otherwise left column handles content) -->
+        <!-- Center Column (visible at 1440p+ via CSS) -->
         <div class="dashboard__center ${boot ? 'boot-left' : ''}">
-          ${!isGuest ? this._renderShardSection() : nothing}
-          ${isGuest ? nothing : nothing /* Center only renders content for non-guests */}
+          ${this._renderShardSection()}
         </div>
 
         <!-- Right Column -->
@@ -1640,7 +1768,7 @@ export class VelgSimulationsDashboard extends LitElement {
     return html`
       <div class="my-world-item" @click=${() => this._navigateTo(`/simulations/${m.simulation_slug}/lore`)}>
         <span class="my-world-item__name">${m.simulation_name}</span>
-        <span class="my-world-item__role">${m.member_role}</span>
+        <span class="my-world-item__role">${humanizeEnum(m.member_role)}</span>
       </div>
     `;
   }
@@ -1767,24 +1895,36 @@ export class VelgSimulationsDashboard extends LitElement {
       ? (sim.banner_url.startsWith('http') ? sim.banner_url : `${supabaseUrl}${sim.banner_url}`)
       : null;
 
+    const desc = t(sim, 'description');
+    const themeColor = getThemeColor(sim.theme);
+
     const stats = [
-      sim.agent_count ? `${sim.agent_count} ${msg('agents')}` : null,
-      sim.building_count ? `${sim.building_count} ${msg('buildings')}` : null,
-      sim.member_count ? `${sim.member_count} ${msg('members')}` : null,
+      sim.agent_count ? pluralCount(sim.agent_count, msg('Agent'), msg('Agents')) : null,
+      sim.building_count ? pluralCount(sim.building_count, msg('Building'), msg('Buildings')) : null,
+      sim.event_count ? pluralCount(sim.event_count, msg('Event'), msg('Events')) : null,
     ].filter(Boolean).join(' // ');
 
     return html`
-      <div class="shard-grid__featured" @click=${() => {
-        appState.setCurrentSimulation(sim);
-        this._navigateTo(`/simulations/${sim.slug}/lore`);
-      }}>
+      <div
+        class="shard-grid__featured"
+        role="link"
+        aria-label="${sim.name} — ${desc || sim.theme}"
+        @click=${() => {
+          appState.setCurrentSimulation(sim);
+          this._navigateTo(`/simulations/${sim.slug}/lore`);
+        }}
+      >
         ${bannerUrl
-          ? html`<img class="featured__bg" src=${bannerUrl} alt="" loading="lazy" />`
+          ? html`<img class="featured__bg" src=${bannerUrl} alt="${sim.name} — ${desc || sim.theme}" loading="lazy" />`
           : html`<div class="featured__bg" style="background: linear-gradient(135deg, var(--color-gray-900), var(--color-gray-800));"></div>`
         }
         <div class="featured__gradient"></div>
-        <div class="featured__content">
-          <h3 class="featured__name">${sim.name}</h3>
+        <div class="featured__content" style="border-left: 3px solid ${themeColor}">
+          <div class="featured__header">
+            <h3 class="featured__name">${sim.name}</h3>
+            <velg-badge variant=${getThemeVariant(sim.theme)}>${sim.theme}</velg-badge>
+          </div>
+          ${desc ? html`<p class="featured__desc">${desc}</p>` : nothing}
           ${stats ? html`<span class="featured__stats">${stats}</span>` : nothing}
         </div>
       </div>
@@ -1792,16 +1932,49 @@ export class VelgSimulationsDashboard extends LitElement {
   }
 
   private _renderAgentSpotlight() {
-    // For now, show locked placeholder — agent spotlight requires a dedicated endpoint
+    const agent = this._spotlightAgent;
+
     return html`
       <section class="agent-spotlight">
         <div class="agent-spotlight__label">${msg('DOSSIER // FIELD OPERATIVE')}</div>
-        <div class="agent-spotlight__locked">
-          <div class="agent-spotlight__locked-text">${msg('DOSSIER LOADING')}</div>
-          <div style="color: var(--color-gray-500); font-family: var(--font-mono); font-size: 9px;">
-            ${msg('Agent spotlight coming soon')}
-          </div>
-        </div>
+        ${agent
+          ? html`
+            <div
+              class="agent-spotlight__card"
+              role="link"
+              tabindex="0"
+              aria-label="${agentAltText(agent)}"
+              @click=${() => this._navigateTo(`/simulations/${this._spotlightSimSlug}/agents/${agent.id}`)}
+              @keydown=${(e: KeyboardEvent) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  this._navigateTo(`/simulations/${this._spotlightSimSlug}/agents/${agent.id}`);
+                }
+              }}
+            >
+              <img
+                class="agent-spotlight__portrait"
+                src=${agent.portrait_image_url!}
+                alt=${agentAltText(agent)}
+                loading="lazy"
+              />
+              <div class="agent-spotlight__info">
+                <div class="agent-spotlight__name">${agent.name}</div>
+                ${agent.primary_profession
+                  ? html`<div class="agent-spotlight__profession">${agent.primary_profession}</div>`
+                  : nothing}
+              </div>
+            </div>
+          `
+          : html`
+            <div class="agent-spotlight__locked">
+              <div class="agent-spotlight__locked-text">${msg('DOSSIER LOADING')}</div>
+              <div style="color: var(--color-gray-500); font-family: var(--font-mono); font-size: 9px;">
+                ${msg('Scanning operative records')}
+              </div>
+            </div>
+          `
+        }
       </section>
     `;
   }

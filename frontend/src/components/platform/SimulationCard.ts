@@ -1,9 +1,9 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import type { Simulation, SimulationTheme } from '../../types/index.js';
+import type { Simulation } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
-import { getThemeColor } from '../../utils/theme-colors.js';
+import { getThemeColor, getThemeVariant } from '../../utils/theme-colors.js';
 import '../shared/VelgBadge.js';
 
 @localized()
@@ -221,18 +221,6 @@ export class VelgSimulationCard extends LitElement {
     );
   }
 
-  private _getThemeVariant(theme: SimulationTheme): string {
-    const map: Record<string, string> = {
-      dystopian: 'danger',
-      fantasy: 'warning',
-      utopian: 'success',
-      scifi: 'info',
-      historical: 'default',
-      custom: 'primary',
-    };
-    return map[theme] ?? 'default';
-  }
-
   protected render() {
     const sim = this.simulation;
     if (!sim) return html``;
@@ -257,7 +245,7 @@ export class VelgSimulationCard extends LitElement {
         <div class="shard__content">
           <div class="shard__header">
             <h3 class="shard__name">${sim.name}</h3>
-            <velg-badge variant=${this._getThemeVariant(sim.theme)}>
+            <velg-badge variant=${getThemeVariant(sim.theme)}>
               ${sim.theme}
             </velg-badge>
           </div>

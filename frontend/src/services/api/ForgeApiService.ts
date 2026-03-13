@@ -84,6 +84,67 @@ export interface ForgeProgress {
   buildings: ForgeProgressEntity[];
 }
 
+export interface TokenBundle {
+  id: string;
+  slug: string;
+  display_name: string;
+  tokens: number;
+  price_cents: number;
+  savings_pct: number;
+  sort_order: number;
+}
+
+export interface PurchaseReceipt {
+  purchase_id: string;
+  bundle_slug: string;
+  tokens_granted: number;
+  balance_before: number;
+  balance_after: number;
+  price_cents: number;
+}
+
+export interface TokenPurchase {
+  id: string;
+  bundle_id: string;
+  tokens_granted: number;
+  price_cents: number;
+  payment_method: string;
+  balance_before: number;
+  balance_after: number;
+  created_at: string;
+}
+
+export interface BYOKStatus {
+  has_openrouter_key: boolean;
+  has_replicate_key: boolean;
+  byok_allowed: boolean;
+  byok_bypass: boolean;
+  system_bypass_enabled: boolean;
+  effective_bypass: boolean;
+  access_policy: 'none' | 'all' | 'per_user';
+}
+
+export interface WalletResponse {
+  forge_tokens: number;
+  is_architect: boolean;
+  account_tier: string;
+  byok_status: BYOKStatus;
+}
+
+export interface FeaturePurchase {
+  id: string;
+  user_id: string;
+  simulation_id: string;
+  feature_type: 'darkroom_pass' | 'classified_dossier' | 'recruitment' | 'chronicle_export';
+  token_cost: number;
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'refunded';
+  config: Record<string, unknown>;
+  result: Record<string, unknown>;
+  regen_budget_remaining: number;
+  created_at: string;
+  completed_at: string | null;
+}
+
 export class ForgeApiService extends BaseApiService {
   listDrafts(params?: Record<string, string>): Promise<ApiResponse<PaginatedResponse<ForgeDraft>>> {
     return this.get('/forge/drafts', params);
@@ -129,8 +190,20 @@ export class ForgeApiService extends BaseApiService {
     return this.getPublic(`/simulations/by-slug/${slug}/forge-progress`);
   }
 
-  getWallet(): Promise<ApiResponse<{ forge_tokens: number; is_architect: boolean }>> {
+  getWallet(): Promise<ApiResponse<WalletResponse>> {
     return this.get('/forge/wallet');
+  }
+
+  listBundles(): Promise<ApiResponse<TokenBundle[]>> {
+    return this.get('/forge/bundles');
+  }
+
+  purchaseBundle(slug: string): Promise<ApiResponse<PurchaseReceipt>> {
+    return this.post('/forge/wallet/purchase', { bundle_slug: slug });
+  }
+
+  getPurchaseHistory(limit = 20, offset = 0): Promise<ApiResponse<PaginatedResponse<TokenPurchase>>> {
+    return this.get(`/forge/wallet/history?limit=${limit}&offset=${offset}`);
   }
 
   updateBYOK(data: {
@@ -138,6 +211,50 @@ export class ForgeApiService extends BaseApiService {
     replicate_key?: string;
   }): Promise<ApiResponse<unknown>> {
     return this.put('/forge/wallet/keys', data);
+  }
+
+  // --- Feature Purchases ---
+
+  listFeaturePurchases(
+    simulationId: string, featureType?: string,
+  ): Promise<ApiResponse<FeaturePurchase[]>> {
+    const params = featureType ? `?feature_type=${featureType}` : '';
+    return this.get(`/forge/simulations/${simulationId}/features${params}`);
+  }
+
+  purchaseDarkroom(simulationId: string): Promise<ApiResponse<{ purchase_id: string; regen_budget: number }>> {
+    return this.post(`/forge/simulations/${simulationId}/darkroom`);
+  }
+
+  darkroomRegen(
+    simulationId: string, entityType: string, entityId: string,
+    promptOverride?: string,
+  ): Promise<ApiResponse<{ remaining_regenerations: number; entity_type: string; entity_id: string }>> {
+    return this.post(
+      `/forge/simulations/${simulationId}/darkroom/regenerate/${entityType}/${entityId}`,
+      { prompt_override: promptOverride ?? null },
+    );
+  }
+
+  purchaseDossier(simulationId: string): Promise<ApiResponse<{ purchase_id: string }>> {
+    return this.post(`/forge/simulations/${simulationId}/dossier`);
+  }
+
+  purchaseRecruitment(
+    simulationId: string, focus?: string, zoneId?: string,
+  ): Promise<ApiResponse<{ purchase_id: string }>> {
+    return this.post(`/forge/simulations/${simulationId}/recruit`, {
+      focus: focus ?? null,
+      zone_id: zoneId ?? null,
+    });
+  }
+
+  purchaseChronicle(simulationId: string): Promise<ApiResponse<{ purchase_id: string }>> {
+    return this.post(`/forge/simulations/${simulationId}/chronicle`);
+  }
+
+  getFeaturePurchase(purchaseId: string): Promise<ApiResponse<FeaturePurchase>> {
+    return this.get(`/forge/features/${purchaseId}`);
   }
 
   // --- Access Requests (Clearance) ---

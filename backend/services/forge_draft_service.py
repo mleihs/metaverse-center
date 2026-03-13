@@ -171,15 +171,189 @@ class ForgeDraftService:
 
     @staticmethod
     async def get_wallet(supabase: Client, user_id: UUID) -> dict:
-        """Get the current user's forge wallet."""
+        """Get the current user's forge wallet (includes account_tier and BYOK status)."""
         response = (
             supabase.table("user_wallets")
-            .select("forge_tokens, is_architect")
+            .select(
+                "forge_tokens, is_architect, account_tier, "
+                "encrypted_openrouter_key, encrypted_replicate_key, "
+                "byok_bypass, byok_allowed"
+            )
             .eq("user_id", str(user_id))
             .maybe_single()
             .execute()
         )
-        return response.data or {"forge_tokens": 0, "is_architect": False}
+        wallet = response.data or {
+            "forge_tokens": 0,
+            "is_architect": False,
+            "account_tier": "observer",
+        }
+
+        # Compute BYOK status
+        has_or = wallet.get("encrypted_openrouter_key") is not None
+        has_rep = wallet.get("encrypted_replicate_key") is not None
+        per_user_bypass = wallet.get("byok_bypass", False)
+        per_user_allowed = wallet.get("byok_allowed", False)
+
+        # Check effective bypass via RPC (encapsulates all policy logic)
+        effective_bypass = False
+        try:
+            bypass_resp = supabase.rpc(
+                "fn_user_has_byok_bypass", {"p_user_id": str(user_id)}
+            ).execute()
+            effective_bypass = bool(bypass_resp.data)
+        except Exception:
+            pass
+
+        # Check effective BYOK allowed via RPC
+        byok_allowed = False
+        try:
+            allowed_resp = supabase.rpc(
+                "fn_user_byok_allowed", {"p_user_id": str(user_id)}
+            ).execute()
+            byok_allowed = bool(allowed_resp.data)
+        except Exception:
+            pass
+
+        # Fetch platform settings (bypass enabled + access policy)
+        system_enabled = False
+        access_policy = "per_user"
+        try:
+            admin_client = await get_admin_supabase()
+            settings_resp = (
+                admin_client.table("platform_settings")
+                .select("setting_key, setting_value")
+                .in_("setting_key", ["byok_bypass_enabled", "byok_access_policy"])
+                .execute()
+            )
+            for row in (settings_resp.data or []):
+                if row["setting_key"] == "byok_bypass_enabled":
+                    val = row.get("setting_value")
+                    system_enabled = val is True or val == "true"
+                elif row["setting_key"] == "byok_access_policy":
+                    val = row.get("setting_value")
+                    if isinstance(val, str):
+                        access_policy = val
+        except Exception:
+            pass
+
+        # Strip encrypted key values from response
+        wallet.pop("encrypted_openrouter_key", None)
+        wallet.pop("encrypted_replicate_key", None)
+        wallet.pop("byok_bypass", None)
+        wallet.pop("byok_allowed", None)
+
+        wallet["byok_status"] = {
+            "has_openrouter_key": has_or,
+            "has_replicate_key": has_rep,
+            "byok_allowed": byok_allowed,
+            "byok_bypass": per_user_bypass,
+            "system_bypass_enabled": system_enabled,
+            "effective_bypass": effective_bypass,
+            "access_policy": access_policy,
+        }
+
+        return wallet
+
+    @staticmethod
+    async def list_bundles(supabase: Client) -> list[dict]:
+        """Fetch active token bundles, ordered by sort_order.
+
+        Reads from ``token_bundles`` table (migration 101).
+        """
+        resp = (
+            supabase.table("token_bundles")
+            .select("id, slug, display_name, tokens, price_cents, savings_pct, sort_order")
+            .eq("is_active", True)
+            .order("sort_order")
+            .execute()
+        )
+        return resp.data or []
+
+    @staticmethod
+    async def purchase_tokens(supabase: Client, bundle_slug: str) -> dict:
+        """Execute mock purchase via ``fn_purchase_tokens`` RPC (migration 101)."""
+        resp = supabase.rpc("fn_purchase_tokens", {"p_bundle_slug": bundle_slug}).execute()
+        return resp.data
+
+    @staticmethod
+    async def get_purchase_history(
+        supabase: Client, user_id: UUID, limit: int = 20, offset: int = 0,
+    ) -> tuple[list[dict], int]:
+        """Fetch user's token purchase ledger, most recent first."""
+        resp = (
+            supabase.table("token_purchases")
+            .select("*", count="exact")
+            .eq("user_id", str(user_id))
+            .order("created_at", desc=True)
+            .range(offset, offset + limit - 1)
+            .execute()
+        )
+        return resp.data or [], resp.count or 0
+
+    @staticmethod
+    async def get_token_economy_stats(admin_supabase: Client) -> dict:
+        """Aggregated token economy stats via ``token_economy_stats`` view (migration 102)."""
+        resp = (
+            admin_supabase.table("token_economy_stats")
+            .select("*")
+            .single()
+            .execute()
+        )
+        return resp.data
+
+    @staticmethod
+    async def admin_grant_tokens(
+        admin_supabase: Client, user_id: UUID, tokens: int, reason: str | None,
+    ) -> dict:
+        """Admin token grant via ``fn_admin_grant_tokens`` RPC (migration 102)."""
+        resp = admin_supabase.rpc("fn_admin_grant_tokens", {
+            "p_user_id": str(user_id), "p_tokens": tokens, "p_reason": reason,
+        }).execute()
+        return resp.data
+
+    @staticmethod
+    async def admin_list_purchases(
+        admin_supabase: Client,
+        limit: int = 50,
+        offset: int = 0,
+        payment_method: str | None = None,
+    ) -> tuple[list[dict], int]:
+        """Admin: fetch all purchases with bundle slug join, most recent first."""
+        query = (
+            admin_supabase.table("token_purchases")
+            .select("*, token_bundles(slug)", count="exact")
+            .order("created_at", desc=True)
+            .range(offset, offset + limit - 1)
+        )
+        if payment_method:
+            query = query.eq("payment_method", payment_method)
+        resp = query.execute()
+        return resp.data or [], resp.count or 0
+
+    @staticmethod
+    async def admin_update_bundle(
+        admin_supabase: Client, bundle_id: UUID, updates: dict,
+    ) -> dict:
+        """Admin: update bundle pricing/availability."""
+        resp = (
+            admin_supabase.table("token_bundles")
+            .update(updates)
+            .eq("id", str(bundle_id))
+            .execute()
+        )
+        return resp.data[0] if resp.data else {}
+
+    @staticmethod
+    async def admin_list_all_bundles(admin_supabase: Client) -> list[dict]:
+        """Admin: fetch ALL bundles including inactive. Uses admin client to bypass RLS."""
+        resp = (
+            admin_supabase.table("token_bundles")
+            .select("*")
+            .order("sort_order")
+            .execute()
+        )
+        return resp.data or []
 
     @staticmethod
     async def get_admin_stats(admin_supabase: Client) -> dict:

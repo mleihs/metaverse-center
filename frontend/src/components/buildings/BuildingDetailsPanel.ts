@@ -12,7 +12,7 @@ import type {
 import { icons } from '../../utils/icons.js';
 import { getFullResUrl } from '../../utils/image.js';
 import { t } from '../../utils/locale-fields.js';
-import { buildingAltText } from '../../utils/text.js';
+import { buildingAltText, humanizeEnum } from '../../utils/text.js';
 import '../shared/Lightbox.js';
 import { panelButtonStyles } from '../shared/panel-button-styles.js';
 import { panelCascadeStyles } from '../shared/panel-cascade-styles.js';
@@ -473,7 +473,7 @@ export class VelgBuildingDetailsPanel extends LitElement {
             <span class="panel__detail-value">
               ${r.assigned_agents} / ${r.population_capacity}
               <span class="panel__readiness-label ${this._staffingLabelClass(r.staffing_status)}">
-                ${r.staffing_status}
+                ${humanizeEnum(r.staffing_status)}
               </span>
             </span>
           </div>

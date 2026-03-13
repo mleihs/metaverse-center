@@ -1,9 +1,14 @@
+import { localized, msg } from '@lit/localize';
+import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
+import { forgeStateManager } from '../../services/ForgeStateManager.js';
+import { icons } from '../../utils/icons.js';
 
+@localized()
 @customElement('velg-simulation-header')
-export class VelgSimulationHeader extends LitElement {
+export class VelgSimulationHeader extends SignalWatcher(LitElement) {
   static styles = css`
     :host {
       display: block;
@@ -77,6 +82,64 @@ export class VelgSimulationHeader extends LitElement {
       color: var(--color-text-secondary);
     }
 
+    /* ── Bureau Button ── */
+
+    .header__bureau-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-1);
+      color: var(--color-accent-amber);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      animation: badge-pop 250ms var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) both 300ms;
+    }
+
+    .header__bureau-btn:hover {
+      background: color-mix(in srgb, var(--color-accent-amber) 12%, transparent);
+      transform: scale(1.1);
+    }
+
+    .header__bureau-btn:focus-visible {
+      outline: 2px solid var(--color-accent-amber);
+      outline-offset: 2px;
+    }
+
+    .header__bureau-btn--pulse {
+      animation: badge-pop 250ms var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) both 300ms,
+                 bureau-pulse 2s ease-in-out infinite 550ms;
+    }
+
+    .header__bureau-btn--intro {
+      animation: badge-pop 250ms var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) both 300ms,
+                 bureau-intro 1.8s ease-in-out 600ms,
+                 bureau-pulse 2s ease-in-out infinite 2400ms;
+    }
+
+    @keyframes bureau-pulse {
+      0%, 100% { filter: drop-shadow(0 0 0 transparent); }
+      50% { filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.5)); }
+    }
+
+    @keyframes bureau-intro {
+      0%   { filter: drop-shadow(0 0 0 transparent); transform: scale(1); }
+      20%  { filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.8)); transform: scale(1.3); }
+      40%  { filter: drop-shadow(0 0 3px rgba(245, 158, 11, 0.2)); transform: scale(1); }
+      60%  { filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.6)); transform: scale(1.2); }
+      80%  { filter: drop-shadow(0 0 2px rgba(245, 158, 11, 0.1)); transform: scale(1); }
+      100% { filter: drop-shadow(0 0 0 transparent); transform: scale(1); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .header__bureau-btn,
+      .header__bureau-btn--pulse,
+      .header__bureau-btn--intro {
+        animation: none;
+      }
+    }
+
     @media (max-width: 640px) {
       :host {
         padding: var(--space-3) var(--space-4);
@@ -94,6 +157,7 @@ export class VelgSimulationHeader extends LitElement {
   `;
 
   @property({ type: String }) simulationId = '';
+  @property({ type: Boolean }) introHexagon = false;
 
   private _getBadgeClass(status: string): string {
     if (status === 'active') return 'badge--active';
@@ -101,14 +165,35 @@ export class VelgSimulationHeader extends LitElement {
     return 'badge--archived';
   }
 
+  private _openDispatch(): void {
+    this.dispatchEvent(
+      new CustomEvent('open-bureau-dispatch', { bubbles: true, composed: true }),
+    );
+  }
+
   protected render() {
     const sim = appState.currentSimulation.value;
     if (!sim) return html``;
+
+    const canEdit = appState.canEdit.value;
+    const hasPulse = canEdit && forgeStateManager.hasAnyUnpurchasedFeature(this.simulationId);
+    const btnClass = this.introHexagon
+      ? 'header__bureau-btn--intro'
+      : hasPulse
+        ? 'header__bureau-btn--pulse'
+        : '';
 
     return html`
       <div class="header">
         <h2 class="header__name">${sim.name}</h2>
         <span class="header__badge ${this._getBadgeClass(sim.status)}">${sim.status}</span>
+        ${canEdit ? html`
+          <button
+            class="header__bureau-btn ${btnClass}"
+            @click=${this._openDispatch}
+            aria-label=${msg('Bureau Services')}
+          >${icons.hexagon(14)}</button>
+        ` : ''}
       </div>
     `;
   }

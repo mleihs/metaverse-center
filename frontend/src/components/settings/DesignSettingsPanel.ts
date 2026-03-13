@@ -5,11 +5,13 @@ import { settingsApi } from '../../services/api/index.js';
 import { themeService } from '../../services/ThemeService.js';
 import { PRESET_NAMES, THEME_PRESETS, type ThemePresetName } from '../../services/theme-presets.js';
 import type { SimulationSetting } from '../../types/index.js';
+import { icons } from '../../utils/icons.js';
 import { BaseSettingsPanel } from '../shared/BaseSettingsPanel.js';
 import { VelgToast } from '../shared/Toast.js';
 import '../shared/VelgSectionHeader.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { settingsStyles } from '../shared/settings-styles.js';
+import '../forge/VelgDarkroomStudio.js';
 
 // ---------------------------------------------------------------------------
 // Field definitions — functions so msg() evaluates at render time
@@ -706,6 +708,7 @@ export class VelgDesignSettingsPanel extends BaseSettingsPanel {
   }
 
   @state() private _selectedPreset: ThemePresetName | 'custom' = 'custom';
+  @state() private _darkroomOpen = false;
 
   // ---------------------------------------------------------------------------
   // Data loading (override to also detect preset)
@@ -831,6 +834,22 @@ export class VelgDesignSettingsPanel extends BaseSettingsPanel {
     return html`
       <div class="settings-panel settings-panel--wide">
         ${this._error ? html`<div class="settings-panel__error">${this._error}</div>` : nothing}
+
+        <div style="display: flex; justify-content: flex-end; margin-bottom: var(--space-4);">
+          <button
+            class="settings-btn settings-btn--secondary"
+            style="display: inline-flex; align-items: center; gap: var(--space-1-5);"
+            @click=${() => { this._darkroomOpen = true; }}
+          >
+            ${icons.palette(14)} ${msg('OPEN DARKROOM')}
+          </button>
+        </div>
+
+        <velg-darkroom-studio
+          .simulationId=${this.simulationId}
+          ?open=${this._darkroomOpen}
+          @darkroom-close=${() => { this._darkroomOpen = false; }}
+        ></velg-darkroom-studio>
 
         ${this._renderPresetSelector()}
         ${this._renderColorSection()}

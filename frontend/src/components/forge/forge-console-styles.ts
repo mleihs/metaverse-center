@@ -441,6 +441,50 @@ export const forgeBackButtonStyles = css`
   }
 `;
 
+export const forgeOverlayStyles = css`
+  .forge-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal, 500);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: var(--color-surface, #0a0a0a);
+    overflow-y: auto;
+  }
+
+  .forge-overlay__backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: var(--z-modal, 500);
+  }
+
+  .forge-overlay__close {
+    background: transparent;
+    border: 1px solid var(--color-gray-700, #374151);
+    color: var(--color-gray-400, #9ca3af);
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: var(--text-lg);
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .forge-overlay__close:hover {
+    color: var(--color-gray-100, #f3f4f6);
+    border-color: var(--color-gray-500, #6b7280);
+  }
+
+  .forge-overlay__close:focus-visible {
+    outline: 2px solid var(--color-accent-amber, #f59e0b);
+    outline-offset: 2px;
+  }
+`;
+
 /** All forge console styles combined for convenience. */
 export const forgeConsoleStyles = [
   forgeButtonStyles,

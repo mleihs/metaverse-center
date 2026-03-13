@@ -96,7 +96,7 @@ describe('SeoService', () => {
 
   beforeEach(async () => {
     // Reset DOM between tests
-    document.title = 'metaverse.center — a worldbuilding framework';
+    document.title = 'metaverse.center — Multiplayer Worldbuilding & Strategy Platform';
 
     // Remove any existing meta tags
     for (const el of document.querySelectorAll('meta[name], meta[property], link[rel="canonical"]')) {
@@ -167,7 +167,7 @@ describe('SeoService', () => {
 
   it('setTitle with empty array sets default', () => {
     seoService.setTitle([]);
-    expect(document.title).toBe('metaverse.center — a worldbuilding framework');
+    expect(document.title).toBe('metaverse.center — Multiplayer Worldbuilding & Strategy Platform');
   });
 
   it('setTitle with single part', () => {
@@ -213,9 +213,9 @@ describe('SeoService', () => {
     seoService.setTitle(['Test']);
     seoService.setDescription('Custom');
     seoService.reset();
-    expect(document.title).toBe('metaverse.center — a worldbuilding framework');
+    expect(document.title).toBe('metaverse.center — Multiplayer Worldbuilding & Strategy Platform');
     const desc = document.querySelector<HTMLMetaElement>('meta[name="description"]');
-    expect(desc?.content).toContain('Build and explore simulated worlds');
+    expect(desc?.content).toContain('Build civilizations');
   });
 
   it('creates meta element if not found', () => {

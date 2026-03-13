@@ -18,6 +18,20 @@ export const THEME_COLORS: Record<string, string> = {
   'arc-raiders': '#d97706',
 };
 
+/** Map simulation theme → VelgBadge variant for consistent badge colors. */
+export function getThemeVariant(theme: string): string {
+  const map: Record<string, string> = {
+    dystopian: 'danger',
+    dark: 'danger',
+    fantasy: 'warning',
+    utopian: 'success',
+    scifi: 'info',
+    historical: 'default',
+    custom: 'primary',
+  };
+  return map[theme] ?? 'default';
+}
+
 /** Get theme color with fallback */
 export function getThemeColor(theme: string): string {
   return THEME_COLORS[theme] ?? '#888888';

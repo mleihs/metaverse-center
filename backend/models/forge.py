@@ -8,6 +8,91 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+
+# ── Token Store Models ────────────────────────────────────────────────
+
+
+class TokenBundle(BaseModel):
+    """Token bundle from catalog."""
+    id: UUID
+    slug: str
+    display_name: str
+    tokens: int
+    price_cents: int
+    savings_pct: int
+    sort_order: int
+    is_active: bool = True
+
+
+class PurchaseReceipt(BaseModel):
+    """Receipt returned by fn_purchase_tokens."""
+    purchase_id: UUID
+    bundle_slug: str
+    tokens_granted: int
+    balance_before: int
+    balance_after: int
+    price_cents: int
+
+
+class PurchaseRequest(BaseModel):
+    """Request body for mock purchase."""
+    bundle_slug: str = Field(min_length=1, max_length=50)
+
+
+class TokenPurchaseHistory(BaseModel):
+    """Ledger entry for purchase history."""
+    id: UUID
+    bundle_id: UUID
+    tokens_granted: int
+    price_cents: int
+    payment_method: str
+    balance_before: int
+    balance_after: int
+    created_at: datetime
+
+class AdminTokenGrant(BaseModel):
+    """Admin grant request."""
+    user_id: UUID
+    tokens: int = Field(ge=1, le=1000)
+    reason: str | None = Field(None, max_length=500)
+
+
+class AdminBundleUpdate(BaseModel):
+    """Admin bundle edit request."""
+    display_name: str | None = Field(None, min_length=1, max_length=100)
+    tokens: int | None = Field(None, gt=0)
+    price_cents: int | None = Field(None, ge=0)
+    savings_pct: int | None = Field(None, ge=0, le=100)
+    is_active: bool | None = None
+    sort_order: int | None = Field(None, ge=0)
+
+
+class TokenEconomyStats(BaseModel):
+    """Aggregated token economy metrics from ``token_economy_stats`` view (migration 102)."""
+    total_purchases: int
+    mock_purchases: int
+    admin_grants: int
+    total_revenue_cents: int
+    total_tokens_granted: int
+    tokens_in_circulation: int
+    unique_buyers: int
+    active_bundles: int
+
+
+class AdminPurchaseLedgerEntry(BaseModel):
+    """Purchase ledger entry with bundle slug for admin view."""
+    id: UUID
+    user_id: UUID
+    tokens_granted: int
+    price_cents: int
+    payment_method: str
+    payment_reference: str | None = None
+    balance_before: int
+    balance_after: int
+    created_at: datetime
+    token_bundles: dict | None = None
+
+
 ForgePhase = Literal["astrolabe", "drafting", "darkroom", "ignition", "completed", "failed"]
 ForgeStatus = Literal["draft", "processing", "completed", "failed"]
 
@@ -176,7 +261,7 @@ class ForgeDraftBase(BaseModel):
 
 class ForgeDraftCreate(BaseModel):
     """Schema for creating a new draft."""
-    seed_prompt: str = Field(min_length=3, max_length=500)
+    seed_prompt: str = Field(min_length=3, max_length=1500)
 
 
 class ForgeDraftUpdate(BaseModel):
@@ -223,6 +308,55 @@ class UpdateBYOKRequest(BaseModel):
     """Schema for users to securely update their BYOK keys."""
     openrouter_key: str | None = None
     replicate_key: str | None = None
+
+
+class BYOKStatus(BaseModel):
+    """BYOK bypass status for a user."""
+    has_openrouter_key: bool
+    has_replicate_key: bool
+    byok_allowed: bool  # whether user is permitted to use BYOK at all
+    byok_bypass: bool  # per-user bypass flag
+    system_bypass_enabled: bool
+    effective_bypass: bool
+    access_policy: str = "per_user"  # "none", "all", "per_user"
+
+
+# ── Feature Purchase Models ──────────────────────────────────────────
+
+FeatureType = Literal[
+    "darkroom_pass", "classified_dossier", "recruitment", "chronicle_export"
+]
+FeaturePurchaseStatus = Literal[
+    "pending", "processing", "completed", "failed", "refunded"
+]
+
+
+class FeaturePurchase(BaseModel):
+    """Feature purchase record from database."""
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    user_id: UUID
+    simulation_id: UUID
+    feature_type: FeatureType
+    token_cost: int
+    status: FeaturePurchaseStatus
+    config: dict[str, Any] = Field(default_factory=dict)
+    result: dict[str, Any] = Field(default_factory=dict)
+    regen_budget_remaining: int = 0
+    created_at: datetime
+    completed_at: datetime | None = None
+
+
+class RecruitmentRequest(BaseModel):
+    """Request body for agent recruitment purchase."""
+    focus: str | None = Field(None, max_length=200)
+    zone_id: UUID | None = None
+
+
+class ImageRegenRequest(BaseModel):
+    """Request body for Darkroom image regeneration."""
+    prompt_override: str | None = Field(None, max_length=500)
 
 
 class PhilosophicalAnchor(BaseModel):

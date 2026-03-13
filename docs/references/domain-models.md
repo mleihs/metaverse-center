@@ -1,8 +1,8 @@
 ---
 title: "Domain Models"
 id: domain-models
-version: "3.2"
-date: 2026-03-10
+version: "3.3"
+date: 2026-03-13
 lang: de
 type: reference
 status: active
@@ -1448,5 +1448,70 @@ interface UserWallet {
   account_tier: AccountTier;          // Default 'observer'. Controls Forge access.
   is_architect: boolean;              // Maintained via DB trigger for backward compat.
                                       // TRUE when account_tier IN ('architect', 'director').
+  byok_bypass: boolean;              // Per-user BYOK bypass for token costs.
+  byok_allowed: boolean;             // Per-user BYOK access (when policy is 'per_user').
+}
+```
+
+---
+
+## 25. Forge Token Economy
+
+**Token purchasing, wallet management, and feature purchases.** Mock-monetization layer for the Forge.
+
+```typescript
+interface TokenBundle {
+  id: UUID;
+  slug: string;                       // e.g. 'field-sample', 'architects-reserve'
+  display_name: string;
+  tokens: number;
+  price_cents: number;
+  savings_pct: number;                // 0-100
+  sort_order: number;
+  is_active: boolean;
+}
+
+interface TokenPurchaseHistory {
+  id: UUID;
+  user_id: UUID;
+  bundle_id: UUID;
+  tokens_granted: number;
+  price_cents: number;
+  payment_method: 'mock' | 'stripe' | 'admin_grant' | 'subscription';
+  payment_reference?: string;
+  balance_before: number;
+  balance_after: number;
+  created_at: string;
+}
+
+interface PurchaseReceipt {
+  purchase_id: UUID;
+  bundle_slug: string;
+  tokens_granted: number;
+  balance_before: number;
+  balance_after: number;
+  price_cents: number;
+}
+
+type FeatureType = 'darkroom_pass' | 'classified_dossier' | 'recruitment' | 'chronicle_export';
+type FeatureStatus = 'pending' | 'processing' | 'completed' | 'failed' | 'refunded';
+
+interface FeaturePurchase {
+  id: UUID;
+  user_id: UUID;
+  simulation_id: UUID;
+  feature_type: FeatureType;
+  token_cost: number;                 // 0 for admin/BYOK bypass
+  status: FeatureStatus;
+  config: Record<string, unknown>;
+  result: Record<string, unknown>;
+  regen_budget_remaining: number;     // Darkroom-specific: remaining image regenerations
+  created_at: string;
+  completed_at?: string;
+}
+
+interface UpdateBYOKRequest {
+  openrouter_key?: string;
+  replicate_token?: string;
 }
 ```

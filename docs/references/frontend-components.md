@@ -1,8 +1,8 @@
 ---
 title: "Frontend Components"
 id: frontend-components
-version: "2.6"
-date: 2026-03-12
+version: "2.7"
+date: 2026-03-13
 lang: de
 type: reference
 status: active
@@ -19,7 +19,7 @@ tags: [frontend, components, lit, web-components]
 
 ### Plattform-Level
 
-**143 component files** across 19 subdirectories. **117 @customElement** components. **18 shared components + 10 CSS modules + 1 base class.**
+**144 component files** across 19 subdirectories. **118 @customElement** components. **19 shared components + 10 CSS modules + 1 base class.**
 
 ```
 App (Root)
@@ -31,7 +31,8 @@ App (Root)
 │   ├── SimulationCard (je Simulation)
 │   ├── ClearanceApplicationCard (Forge access CTA, idle/pending/hidden states)
 │   ├── LoreScroll (Akkordeon mit Plattform-Lore, 25 Sections / 6 Chapters / 5 Simulations)
-│   └── CreateSimulationButton
+│   ├── CreateSimulationButton
+│   └── PlatformFooter (legal footer: copyright, Impressum, Privacy links)
 ├── CreateSimulationWizard
 │   ├── Step 1: Basic Info (Name, Theme, Locale)
 │   ├── Step 2: Taxonomies (Import defaults or custom)
@@ -165,11 +166,11 @@ SimulationShell (Layout mit Navigation + Breadcrumb Simulation-Switcher)
 
 ### Shared Components
 
-**18 components + 10 CSS modules + 1 base class** (29 files total)
+**19 components + 10 CSS modules + 1 base class** (30 files total)
 
 ```
 Shared (wiederverwendbar ueber alle Views)
-├── Components (18)
+├── Components (19)
 │   ├── BaseModal                    Focus trap, Escape-to-close, centered dialog
 │   ├── VelgSidePanel                Slide-from-right panel shell, focus trap, role="dialog", aria-modal="true"
 │   ├── SharedFilterBar              Ersetzt 4x duplizierten Filter
@@ -187,7 +188,8 @@ Shared (wiederverwendbar ueber alle Views)
 │   ├── ConfirmDialog                Destructive action confirmation
 │   ├── Toast                        Notification toast with auto-dismiss
 │   ├── Pagination                   Einheitliche Pagination
-│   └── CookieConsent                GDPR banner, accept/decline analytics, privacy policy link
+│   ├── CookieConsent                GDPR banner, accept/decline analytics, privacy policy link
+│   └── VelgPlatformFooter           Legal footer: copyright, Impressum + Privacy links, Bureau tagline. Used on LandingPage + SimulationsDashboard
 ├── CSS Modules (8)
 │   ├── card-styles.ts               .card, .card--embassy (pulsing ring + gradient hover)
 │   ├── form-styles.ts               .form, .form__group, .form__input/.form__textarea/.form__select
@@ -762,17 +764,17 @@ Alle Änderungen zeigen eine Live-Preview innerhalb der Shell. Preset-Auswahl f�
 | map/ | 5 | 5 | CartographersDesk, CartographicMap, MapAnnotationTool, MapLayerToggle, MultiverseConspiracyBoard |
 | epoch/ | 19 | 19 | CommandCenter (orchestrator), OpsBoard, OverviewTab, IntelDossierTab, OperationsTab, AlliancesTab, LobbyActions, CreationWizard, DraftRosterPanel, Leaderboard, BattleLog, MissionCard, DeployOperativeModal, InvitePanel, InviteAcceptView, ChatPanel, PresenceIndicator, ReadyPanel, BotConfigPanel |
 | how-to-play/ | 5 | 1 | HowToPlayView + htp-styles (extracted CSS) + 3 content/type files (htp-types, htp-content-rules, htp-content-matches) |
-| shared/ | 28 | 17 | 17 components + 10 CSS modules + 1 base class |
-| **Gesamt** | **158** | **131** (in components/) | **22 Verzeichnisse** |
+| shared/ | 29 | 18 | 18 components + 10 CSS modules + 1 base class |
+| **Gesamt** | **159** | **132** (in components/) | **22 Verzeichnisse** |
 
 ### Utilities
 
 ```
 frontend/src/utils/
-├── text.ts                         # getInitials() helper
+├── text.ts                         # humanizeEnum(), getInitials(), pluralCount(), agentAltText(), buildingAltText()
 ├── icons.ts                        # Centralized SVG icons with aria-hidden="true" (includes chevronDown, fracture, anchor, scorchedEarth, emergencyDraft, compassRose, stampClassified, magnifyingGlass, pencilAnnotate, layerInfrastructure, layerBleed, layerMilitary, layerHistory, heartline, flatline)
 ├── operative-icons.ts              # Centralized operative-type SVG icons (spy, guardian, saboteur, propagandist, infiltrator, assassin, zone_fortified)
-└── theme-colors.ts                 # Theme color utilities
+└── theme-colors.ts                 # getThemeColor(), getThemeVariant(), getGlowColor(), THEME_COLORS map
 ```
 
 ---

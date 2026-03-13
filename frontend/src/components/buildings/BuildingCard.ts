@@ -4,6 +4,7 @@ import { customElement, property } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import type { Building } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
+import { humanizeEnum } from '../../utils/text.js';
 import type { CapacityBar, CardBadge, CardRarity } from '../shared/VelgGameCard.js';
 import '../shared/VelgGameCard.js';
 
@@ -77,7 +78,7 @@ export class VelgBuildingCard extends LitElement {
     const b = this.building;
     if (!b) return badges;
 
-    if (b.building_type) badges.push({ label: t(b, 'building_type') });
+    if (b.building_type) badges.push({ label: humanizeEnum(t(b, 'building_type')) });
     if (b.building_condition)
       badges.push({ label: t(b, 'building_condition'), variant: this._getConditionVariant() });
     if (b.special_type === 'embassy') badges.push({ label: msg('Embassy'), variant: 'info' });
@@ -106,7 +107,8 @@ export class VelgBuildingCard extends LitElement {
   private _getCapacityBar(): CapacityBar | null {
     const b = this.building;
     if (b?.population_capacity == null) return null;
-    return { current: b.population_capacity, max: 50 };
+    const assigned = b.agents?.length ?? 0;
+    return { current: assigned, max: b.population_capacity };
   }
 
   protected render() {

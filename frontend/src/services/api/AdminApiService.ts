@@ -92,6 +92,69 @@ export class AdminApiService extends BaseApiService {
     });
   }
 
+  // --- Token Economy (Admin) ---
+
+  async getTokenEconomyStats(): Promise<ApiResponse<TokenEconomyStats>> {
+    return this.get('/forge/admin/economy');
+  }
+
+  async listAllBundles(): Promise<ApiResponse<AdminBundleEntry[]>> {
+    return this.get('/forge/admin/bundles');
+  }
+
+  async updateBundle(
+    bundleId: string,
+    data: Partial<AdminBundleEntry>,
+  ): Promise<ApiResponse<unknown>> {
+    return this.put(`/forge/admin/bundles/${bundleId}`, data);
+  }
+
+  async listPurchases(
+    limit = 50,
+    offset = 0,
+    paymentMethod?: string,
+  ): Promise<ApiResponse<AdminPurchaseLedgerEntry[]>> {
+    const params: Record<string, string> = {
+      limit: String(limit),
+      offset: String(offset),
+    };
+    if (paymentMethod) params.payment_method = paymentMethod;
+    return this.get('/forge/admin/purchases', params);
+  }
+
+  async grantTokens(
+    userId: string,
+    tokens: number,
+    reason?: string,
+  ): Promise<ApiResponse<unknown>> {
+    return this.post('/forge/admin/grant', { user_id: userId, tokens, reason });
+  }
+
+  // --- BYOK System Settings ---
+
+  async getBYOKSystemSetting(): Promise<ApiResponse<{
+    byok_bypass_enabled: boolean;
+    byok_access_policy: string;
+  }>> {
+    return this.get('/forge/admin/byok-setting');
+  }
+
+  async updateBYOKSystemSetting(enabled: boolean): Promise<ApiResponse<{ byok_bypass_enabled: boolean }>> {
+    return this.put(`/forge/admin/byok-setting?enabled=${enabled}`, {});
+  }
+
+  async updateBYOKAccessPolicy(policy: 'none' | 'all' | 'per_user'): Promise<ApiResponse<{ byok_access_policy: string }>> {
+    return this.put(`/forge/admin/byok-access-policy?policy=${policy}`, {});
+  }
+
+  async updateUserBYOKBypass(userId: string, enabled: boolean): Promise<ApiResponse<unknown>> {
+    return this.put(`/forge/admin/user-byok-bypass/${userId}?enabled=${enabled}`, {});
+  }
+
+  async updateUserBYOKAllowed(userId: string, enabled: boolean): Promise<ApiResponse<unknown>> {
+    return this.put(`/forge/admin/user-byok-allowed/${userId}?enabled=${enabled}`, {});
+  }
+
   // --- Simulation Management ---
 
   async listSimulations(
@@ -136,6 +199,42 @@ export interface AdminSimulation {
   owner_id: string | null;
   created_at: string;
   deleted_at: string | null;
+}
+
+export interface TokenEconomyStats {
+  total_purchases: number;
+  mock_purchases: number;
+  admin_grants: number;
+  total_revenue_cents: number;
+  total_tokens_granted: number;
+  tokens_in_circulation: number;
+  unique_buyers: number;
+  active_bundles: number;
+}
+
+export interface AdminBundleEntry {
+  id: string;
+  slug: string;
+  display_name: string;
+  tokens: number;
+  price_cents: number;
+  savings_pct: number;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface AdminPurchaseLedgerEntry {
+  id: string;
+  user_id: string;
+  tokens_granted: number;
+  price_cents: number;
+  payment_method: string;
+  payment_reference?: string;
+  balance_before: number;
+  balance_after: number;
+  created_at: string;
+  token_bundles?: { slug: string };
 }
 
 export const adminApi = new AdminApiService();

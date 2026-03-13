@@ -98,6 +98,48 @@ export class VelgForgeAstrolabe extends LitElement {
         opacity: 0.5;
       }
 
+      /* ── Seed Footer (counter + language hint) ── */
+
+      .seed-box__footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: var(--space-2);
+        gap: var(--space-3);
+      }
+
+      .seed-box__lang-hint {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-1);
+        font-family: var(--font-mono, monospace);
+        font-size: 10px;
+        color: var(--color-gray-500, #6b7280);
+        letter-spacing: 0.03em;
+      }
+
+      .seed-box__lang-hint svg {
+        flex-shrink: 0;
+      }
+
+      .seed-counter {
+        font-family: var(--font-mono, monospace);
+        font-size: 11px;
+        letter-spacing: 0.05em;
+        color: var(--color-gray-500, #6b7280);
+        text-align: right;
+        white-space: nowrap;
+        transition: color 0.2s;
+      }
+
+      .seed-counter--warning {
+        color: var(--color-warning, #f59e0b);
+      }
+
+      .seed-counter--danger {
+        color: var(--color-danger, #ef4444);
+      }
+
       /* ── Seed Suggestions ─────────────────── */
 
       .seed-suggestions {
@@ -516,6 +558,8 @@ export class VelgForgeAstrolabe extends LitElement {
     `,
   ];
 
+  private static readonly _SEED_MAX = 1500;
+
   @state() private _seed = '';
   @state() private _selectedIdx: number | null = null;
   @state() private _isGenerating = false;
@@ -649,9 +693,23 @@ export class VelgForgeAstrolabe extends LitElement {
             .value=${this._seed}
             @input=${(e: InputEvent) => (this._seed = (e.target as HTMLTextAreaElement).value)}
             placeholder=${msg('Describe the memory that broke off to form this Shard...')}
+            maxlength=${VelgForgeAstrolabe._SEED_MAX}
             ?disabled=${this._isGenerating}
             aria-label=${msg('Seed prompt')}
           ></textarea>
+
+          <div class="seed-box__footer">
+            <span class="seed-box__lang-hint">
+              ${this._renderInfoBubble(
+                msg('Write in any language — the AI interprets your concept regardless of language. Focus on atmosphere, themes, and contradictions.'),
+                msg('Ein schwimmender Archipel, wo Erinnerungen zu Inseln erstarren — works just as well as English.'),
+              )}
+              <span>${msg('Any language')}</span>
+            </span>
+            <span class="seed-counter ${this._seed.length > VelgForgeAstrolabe._SEED_MAX * 0.9 ? (this._seed.length >= VelgForgeAstrolabe._SEED_MAX ? 'seed-counter--danger' : 'seed-counter--warning') : ''}">
+              ${VelgForgeAstrolabe._SEED_MAX - this._seed.length}
+            </span>
+          </div>
 
           <div class="seed-suggestions">
             ${SEED_SUGGESTIONS.map(

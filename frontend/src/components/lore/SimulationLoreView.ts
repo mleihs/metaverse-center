@@ -6,14 +6,16 @@ import type { ForgeLoreSection } from '../../services/api/ForgeApiService.js';
 import { loreApi } from '../../services/api/LoreApiService.js';
 import type { LoreSectionCreatePayload, LoreSectionUpdatePayload } from '../../services/api/LoreApiService.js';
 import { appState } from '../../services/AppStateManager.js';
+import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { seoService } from '../../services/SeoService.js';
 import { icons } from '../../utils/icons.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { VelgToast } from '../shared/Toast.js';
-import { fetchRawLoreSections, mapLoreSectionsForLocale } from './lore-content.js';
+import { fetchRawLoreSections, isClassifiedSection, mapLoreSectionsForLocale } from './lore-content.js';
 
 import '../platform/LoreScroll.js';
 import './LoreEditor.js';
+import './VelgDossierRequest.js';
 
 @localized()
 @customElement('velg-simulation-lore-view')
@@ -254,12 +256,24 @@ export class VelgSimulationLoreView extends LitElement {
       `;
     }
 
+    // Build classified section IDs set
+    const classifiedIds = new Set<string>();
+    if (this._rawSections) {
+      for (const s of this._rawSections) {
+        if (isClassifiedSection(s)) classifiedIds.add(s.id);
+      }
+    }
+
+    const simId = this._getSimId();
+    const hasDossier = forgeStateManager.hasCompletedPurchase(simId, 'classified_dossier');
+
     return html`
       <div class="lore-view">
         ${canEdit ? this._renderToolbar() : nothing}
         <velg-lore-scroll
           .sections=${sections!}
           .basePath=${`${slug}/lore`}
+          .classifiedSectionIds=${classifiedIds}
           style="
             --lore-text: var(--color-text-primary);
             --lore-heading: var(--color-text-primary);
@@ -275,6 +289,17 @@ export class VelgSimulationLoreView extends LitElement {
             --lore-btn-text: var(--color-text-secondary);
           "
         ></velg-lore-scroll>
+
+        ${canEdit && !hasDossier
+          ? html`
+            <velg-dossier-request
+              .simulationId=${simId}
+              .walletBalance=${forgeStateManager.walletBalance.value}
+              .hasBypass=${forgeStateManager.byokStatus.value.effective_bypass}
+              @dossier-complete=${this._refreshLore}
+            ></velg-dossier-request>
+          `
+          : nothing}
       </div>
     `;
   }

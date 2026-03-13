@@ -1,8 +1,8 @@
 ---
 title: "Feature Catalog"
 id: feature-catalog
-version: "2.5"
-date: 2026-03-12
+version: "2.6"
+date: 2026-03-13
 lang: de
 type: reference
 status: active
@@ -24,7 +24,7 @@ Features die auf Plattform-Ebene existieren, unabhängig von einzelnen Simulatio
 | # | Feature | Status | Beschreibung |
 |---|---------|--------|-------------|
 | P1 | **Simulation erstellen** | ✅ IMPL | Wizard mit Name, Beschreibung, Thema, Slug. CreateSimulationWizard Lit-Komponente. |
-| P2 | **Simulations-Dashboard** | ✅ IMPL | Übersicht aller Simulationen mit Zähler-Badges (Agenten, Gebäude, Events), Bannerbilder, LoreScroll-Akkordeon (25 Sektionen, 6 Kapitel, Spectral-Schrift). Hero-Hintergrund. Dynamisch: zeigt alle vom Benutzer erstellten und beigetretenen Simulationen. |
+| P2 | **Simulations-Dashboard** | ✅ IMPL | Übersicht aller Simulationen mit Zähler-Badges (Agenten, Gebäude, Events), Bannerbilder, LoreScroll-Akkordeon (25 Sektionen, 6 Kapitel, Spectral-Schrift). Hero-Hintergrund. Dynamisch: zeigt alle vom Benutzer erstellten und beigetretenen Simulationen. Featured-Card mit Genre-Badge, Beschreibung, Theme-Akzent-Border, pluralisierten Stats. Agent-Spotlight mit echten API-Daten (Portrait, Name, Beruf). Responsive Layout-Balance (Shards im linken Bereich < 1440px). PlatformFooter (Copyright, Impressum, Privacy). |
 | P3 | **Simulation-Auswahl** | ✅ IMPL | Zwischen Simulationen wechseln. Slug-basierte URLs (`/simulations/speranza/lore`). SimulationShell + SimulationHeader + SimulationNav mit Theme-Wechsel. |
 | P4 | **Benutzer-Registrierung** | ✅ IMPL | Signup mit Email/Passwort via Supabase Auth. RegisterView Komponente. |
 | P5 | **Benutzer-Login** | ✅ IMPL | Signin mit JWT (ES256 Production / HS256 Local). LoginPanel (Slide-from-right via VelgSidePanel). DevAccountSwitcher (5 Accounts, in Production verfügbar). |

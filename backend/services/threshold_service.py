@@ -41,10 +41,31 @@ class ThresholdService:
         supabase: Client,
         simulation_id: UUID,
     ) -> dict:
-        """Verify simulation is in critical threshold state.
+        """Verify simulation is an epoch game instance in critical threshold state.
 
-        Returns the health data if valid, raises 409 if not critical.
+        Returns the health data if valid, raises 409 if not an epoch or not critical.
         """
+        # Check simulation type — threshold actions are epoch-only
+        sim_resp = (
+            supabase.table("simulations")
+            .select("simulation_type, epoch_id")
+            .eq("id", str(simulation_id))
+            .limit(1)
+            .execute()
+        )
+        if not sim_resp.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Simulation not found.",
+            )
+
+        sim = sim_resp.data[0]
+        if sim.get("simulation_type") != "game_instance" or not sim.get("epoch_id"):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Threshold actions are only available during active epochs.",
+            )
+
         health = await GameMechanicsService.get_simulation_health(
             supabase, simulation_id
         )

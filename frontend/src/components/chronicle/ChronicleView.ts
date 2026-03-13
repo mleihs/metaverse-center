@@ -12,6 +12,7 @@ import '../shared/LoadingState.js';
 import '../shared/ErrorState.js';
 import '../shared/EmptyState.js';
 import '../shared/VelgBadge.js';
+import './VelgChronicleExport.js';
 
 @localized()
 @customElement('velg-chronicle-view')
@@ -558,6 +559,10 @@ export class VelgChronicleView extends LitElement {
       <div class="broadsheet">
         ${this._renderMasthead()}
         ${this._canEdit ? this._renderEditorial() : nothing}
+
+        ${this._canEdit
+          ? html`<velg-chronicle-export .simulationId=${this.simulationId}></velg-chronicle-export>`
+          : nothing}
 
         ${this._loading
           ? html`<velg-loading-state message=${msg('Loading chronicles...')}></velg-loading-state>`

@@ -4,6 +4,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { agentsApi } from '../../services/api/index.js';
 import type { Agent, AgentAptitude, AptitudeSet, OperativeType } from '../../types/index.js';
+import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { gridLayoutStyles } from '../shared/grid-layout-styles.js';
 import type { FilterChangeDetail, FilterConfig } from '../shared/SharedFilterBar.js';
@@ -20,6 +21,7 @@ import '../shared/VelgAvatar.js';
 import './AgentCard.js';
 import './AgentEditModal.js';
 import './AgentDetailsPanel.js';
+import './VelgRecruitmentOffice.js';
 
 @localized()
 @customElement('velg-agents-view')
@@ -417,6 +419,10 @@ export class VelgAgentsView extends LitElement {
     }
   }
 
+  private _handleRecruitmentComplete(): void {
+    this._loadAgents();
+  }
+
   private _handleRetry(): void {
     this._loadAgents();
   }
@@ -525,6 +531,17 @@ export class VelgAgentsView extends LitElement {
           `,
         )}
       </div>
+
+      ${this._canEdit
+        ? html`
+          <velg-recruitment-office
+            .simulationId=${this.simulationId}
+            .walletBalance=${forgeStateManager.walletBalance.value}
+            .hasBypass=${forgeStateManager.byokStatus.value.effective_bypass}
+            @recruitment-complete=${this._handleRecruitmentComplete}
+          ></velg-recruitment-office>
+        `
+        : nothing}
     `;
   }
 }

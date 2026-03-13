@@ -28,6 +28,7 @@ from backend.services.embassy_service import EmbassyService
 from backend.services.epoch_invitation_service import EpochInvitationService
 from backend.services.epoch_service import EpochService
 from backend.services.event_service import EventService
+from backend.services.forge_lore_service import ForgeLoreService
 from backend.services.forge_orchestrator_service import ForgeOrchestratorService
 from backend.services.resonance_service import ResonanceService
 from backend.services.game_mechanics_service import GameMechanicsService
@@ -283,14 +284,8 @@ async def list_simulation_lore(
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
     """Get lore sections for a simulation (public)."""
-    resp = (
-        supabase.table("simulation_lore")
-        .select("*")
-        .eq("simulation_id", str(simulation_id))
-        .order("sort_order")
-        .execute()
-    )
-    return {"success": True, "data": resp.data or []}
+    data = await ForgeLoreService.list_for_simulation(supabase, simulation_id)
+    return {"success": True, "data": data}
 
 
 # ── Chronicles ────────────────────────────────────────────────────────────

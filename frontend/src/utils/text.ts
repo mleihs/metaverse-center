@@ -2,6 +2,14 @@
  * Text utilities for display formatting.
  */
 
+/** Convert a snake_case or SCREAMING_SNAKE enum value to Title Case. */
+export function humanizeEnum(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 export function getInitials(name: string): string {
   return name
     .split(/\s+/)
@@ -26,6 +34,11 @@ export function agentAltText(agent: {
 }
 
 /** Build descriptive alt text for a building image from available fields. */
+/** Return singular or plural form based on count. */
+export function pluralCount(count: number, singular: string, plural: string): string {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
 export function buildingAltText(building: {
   name: string;
   building_type?: string;

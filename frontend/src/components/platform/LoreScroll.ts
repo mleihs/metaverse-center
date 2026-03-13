@@ -857,6 +857,59 @@ export class VelgLoreScroll extends LitElement {
       color: var(--lore-text);
     }
 
+    /* ── Classified Section Styling ── */
+
+    .section--classified .section__header {
+      border-left-color: var(--color-accent-amber, #f59e0b);
+      border-left-width: 4px;
+    }
+
+    .section--classified .section__arcanum {
+      color: var(--color-accent-amber, #f59e0b);
+    }
+
+    .section--classified .classified-stamp {
+      display: block;
+      font-family: var(--font-mono, monospace);
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-accent-amber, #f59e0b);
+      padding: var(--space-1) var(--space-2);
+      margin-bottom: var(--space-1);
+      border: 1px solid color-mix(in srgb, var(--color-accent-amber, #f59e0b) 40%, transparent);
+      background: color-mix(in srgb, var(--color-accent-amber, #f59e0b) 5%, transparent);
+      width: fit-content;
+    }
+
+    .classified-stamp {
+      display: none;
+    }
+
+    .section--classified .section__title {
+      font-family: var(--font-mono, monospace);
+    }
+
+    /* Subtle scanline on classified sections */
+    .section--classified .section__body {
+      position: relative;
+    }
+
+    .section--classified .section__body::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(245, 158, 11, 0.02) 3px,
+        rgba(245, 158, 11, 0.02) 6px
+      );
+      pointer-events: none;
+    }
+
     /* ── Pull-Quotes ── */
 
     .pullquote {
@@ -1201,6 +1254,9 @@ export class VelgLoreScroll extends LitElement {
   /** Base path for images in Supabase storage */
   @property({ type: String }) basePath = 'platform/lore';
 
+  /** IDs of classified sections (rendered with amber border + stamp) */
+  @property({ type: Object }) classifiedSectionIds: Set<string> = new Set();
+
   /** Which sections are expanded. Initialized to first 3 sections in willUpdate. */
   @state() private _expanded = new Set<string>();
 
@@ -1290,6 +1346,7 @@ export class VelgLoreScroll extends LitElement {
         const showChapter = section.chapter !== currentChapter;
         currentChapter = section.chapter;
         const isExpanded = this._expanded.has(section.id);
+        const isClassified = this.classifiedSectionIds.has(section.id);
         const imageUrl = section.imageSlug ? this._getImageUrl(section.imageSlug) : null;
         const caption = section.imageCaption ?? '';
         const delay = sectionIndex * 0.06;
@@ -1311,7 +1368,8 @@ export class VelgLoreScroll extends LitElement {
               : nothing
           }
 
-          <div class="section" style="animation-delay: ${delay + 0.05}s">
+          <div class="section ${isClassified ? 'section--classified' : ''}" style="animation-delay: ${delay + 0.05}s">
+            <span class="classified-stamp">${msg('[CLASSIFIED // CLEARANCE LEVEL 4]')}</span>
             <div
               class="section__header ${isExpanded ? 'section__header--expanded' : ''}"
               @click=${() => this._toggleSection(section.id)}

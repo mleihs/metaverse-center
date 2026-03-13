@@ -3,10 +3,13 @@ import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
+import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { localeService } from '../../services/i18n/locale-service.js';
 import type { Simulation } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 
+import '../forge/VelgForgeWalletBadge.js';
+import '../forge/VelgForgeMint.js';
 import './UserMenu.js';
 
 @localized()
@@ -1008,6 +1011,11 @@ l40 16 183 -96 c101 -52 180 -96 176 -96 -4 0 -87 37 -185 81 -160 73 -181 81
         </div>
 
         <div class="header__right">
+          ${appState.canForge.value
+            ? html`<velg-forge-wallet-badge
+                @open-mint=${() => { forgeStateManager.mintOpen.value = true; }}
+              ></velg-forge-wallet-badge>`
+            : nothing}
           ${appState.mockMode.value ? html`<span class="header__mock-badge" title=${msg('Mock Mode')}>MOCK</span>` : nothing}
           ${html`<velg-dev-account-switcher></velg-dev-account-switcher>`}
           <a
@@ -1030,6 +1038,7 @@ l40 16 183 -96 c101 -52 180 -96 176 -96 -4 0 -87 37 -185 81 -160 73 -181 81
       </div>
 
       ${this._renderMenuPanel()}
+      <velg-forge-mint></velg-forge-mint>
     `;
   }
 }

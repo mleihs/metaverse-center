@@ -6,9 +6,12 @@ import logging
 from typing import Any
 from uuid import UUID
 
+import structlog
+
 from pydantic_ai import Agent
 
 from backend.models.forge import ForgeThemeOutput
+from backend.config import settings
 from backend.services.ai_utils import get_openrouter_model
 from supabase import Client
 
@@ -149,3 +152,93 @@ class ForgeThemeService:
         ).execute()
 
         logger.info("Theme settings applied for simulation %s", simulation_id)
+
+    @staticmethod
+    async def generate_variants(
+        admin_supabase: Client,
+        simulation_id: UUID,
+        user_id: UUID,
+        purchase_id: str,
+    ) -> None:
+        """Generate 3 theme variants for an existing simulation (Darkroom feature).
+
+        Stores variants in the feature_purchases result field and marks complete.
+        """
+        structlog.contextvars.bind_contextvars(simulation_id=str(simulation_id))
+        from backend.services.forge_feature_service import ForgeFeatureService
+
+        try:
+            # Fetch simulation data for context
+            sim_resp = admin_supabase.table("simulations").select(
+                "name, description"
+            ).eq("id", str(simulation_id)).single().execute()
+            sim = sim_resp.data
+
+            # Fetch current theme settings
+            settings_resp = admin_supabase.table("simulation_settings").select(
+                "setting_key, setting_value"
+            ).eq("simulation_id", str(simulation_id)).eq("category", "design").execute()
+            current_theme = {
+                s["setting_key"]: s["setting_value"]
+                for s in (settings_resp.data or [])
+            }
+
+            # Get user BYOK key
+            from backend.utils.encryption import decrypt
+            wallet_resp = admin_supabase.table("user_wallets").select(
+                "encrypted_openrouter_key"
+            ).eq("user_id", str(user_id)).maybe_single().execute()
+            or_key = None
+            if wallet_resp.data and wallet_resp.data.get("encrypted_openrouter_key"):
+                or_key = decrypt(wallet_resp.data["encrypted_openrouter_key"])
+
+            variants = []
+            if settings.forge_mock_mode:
+                for i in range(3):
+                    variants.append({
+                        "variant_name": f"Variant {i + 1}",
+                        "color_primary": ["#e74c3c", "#3498db", "#2ecc71"][i],
+                        "color_background": ["#1a0a0a", "#0a0a1a", "#0a1a0a"][i],
+                        "color_surface": ["#1f1111", "#11111f", "#111f11"][i],
+                        "color_text": "#e5e5e5",
+                        "font_heading": ["Playfair Display", "JetBrains Mono", "Crimson Text"][i],
+                        "shadow_style": ["blur", "glow", "offset"][i],
+                        "card_frame_texture": ["scanlines", "circuits", "filigree"][i],
+                    })
+            else:
+                model = get_openrouter_model(or_key)
+
+                for i in range(3):
+                    variant_prompt = f"""Generate a COMPLETELY DIFFERENT visual theme variant (#{i + 1}/3)
+for the world "{sim['name']}": {sim.get('description', '')}
+
+Current theme uses: primary={current_theme.get('color_primary', '?')},
+background={current_theme.get('color_background', '?')},
+font={current_theme.get('font_heading', '?')}
+
+{"Previous variant used: " + variants[-1].get("color_primary", "") if variants else ""}
+
+Create a dramatically different interpretation. Different color palette, different mood,
+different typography. Same world, radically different visual identity."""
+
+                    agent = Agent(model, system_prompt=THEME_ARCHITECT_PROMPT)
+                    result = await agent.run(variant_prompt, output_type=ForgeThemeOutput)
+                    variant_data = result.output.model_dump()
+                    variant_data["variant_name"] = f"Variant {i + 1}"
+                    variants.append(variant_data)
+
+            # Store variants in purchase result and mark completed
+            await ForgeFeatureService.complete_feature(
+                admin_supabase, purchase_id,
+                result={"variants": variants, "current_theme": current_theme},
+            )
+            logger.info(
+                "Darkroom variants generated",
+                extra={"simulation_id": str(simulation_id), "count": len(variants)},
+            )
+
+        except Exception as exc:
+            logger.exception("Darkroom variant generation failed")
+            await ForgeFeatureService.fail_feature(
+                admin_supabase, purchase_id, str(exc),
+            )

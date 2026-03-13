@@ -1,6 +1,12 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import {
+  type AdminBundleEntry,
+  type AdminPurchaseLedgerEntry,
+  type TokenEconomyStats,
+  adminApi,
+} from '../../services/api/AdminApiService.js';
 import { forgeApi } from '../../services/api/index.js';
 import { appState } from '../../services/AppStateManager.js';
 import type { ForgeAccessRequestWithEmail } from '../../types/index.js';
@@ -8,7 +14,8 @@ import { settingsStyles } from '../shared/settings-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 
 /**
- * AdminForgeTab — Global Simulation Forge settings + Clearance Requests.
+ * AdminForgeTab — Global Simulation Forge settings, token economy admin tools,
+ * and Clearance Requests.
  */
 @localized()
 @customElement('velg-admin-forge-tab')
@@ -47,6 +54,12 @@ export class VelgAdminForgeTab extends LitElement {
         font-size: var(--text-xs);
         text-transform: uppercase;
         color: var(--color-text-muted);
+      }
+
+      .stat-card__sub {
+        font-size: var(--text-xs);
+        color: var(--color-text-muted);
+        font-family: var(--font-mono);
       }
 
       .byok-form {
@@ -193,26 +206,261 @@ export class VelgAdminForgeTab extends LitElement {
         padding: var(--space-6) 0;
         letter-spacing: 1px;
       }
+
+      /* ── Bundle Management Table ── */
+
+      .bundle-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: var(--font-mono);
+        font-size: var(--text-sm);
+      }
+
+      .bundle-table th {
+        text-align: left;
+        font-family: var(--font-brutalist);
+        font-size: var(--text-xs);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-wide);
+        color: var(--color-text-muted);
+        padding: var(--space-2) var(--space-3);
+        border-bottom: 2px solid var(--color-border);
+      }
+
+      .bundle-table td {
+        padding: var(--space-2) var(--space-3);
+        border-bottom: 1px solid var(--color-border);
+        color: var(--color-text-primary);
+      }
+
+      .bundle-row--inactive td {
+        opacity: 0.5;
+      }
+
+      .bundle-row--system td {
+        opacity: 0.35;
+      }
+
+      .bundle-edit-form {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: var(--space-2) var(--space-3);
+        align-items: center;
+        padding: var(--space-3);
+        background: var(--color-surface-sunken);
+        border: 1px solid var(--color-border);
+        margin: var(--space-2) 0;
+      }
+
+      .bundle-edit-form__label {
+        font-family: var(--font-brutalist);
+        font-size: var(--text-xs);
+        text-transform: uppercase;
+        color: var(--color-text-muted);
+      }
+
+      .bundle-edit-form__input {
+        padding: var(--space-1) var(--space-2);
+        font-family: var(--font-mono);
+        font-size: var(--text-sm);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        color: var(--color-text-primary);
+        max-width: 200px;
+      }
+
+      .bundle-edit-form__actions {
+        grid-column: 1 / -1;
+        display: flex;
+        gap: var(--space-2);
+        justify-content: flex-end;
+      }
+
+      /* ── Purchase Ledger ── */
+
+      .ledger-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: var(--font-mono);
+        font-size: var(--text-sm);
+      }
+
+      .ledger-table th {
+        text-align: left;
+        font-family: var(--font-brutalist);
+        font-size: var(--text-xs);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-wide);
+        color: var(--color-text-muted);
+        padding: var(--space-2) var(--space-3);
+        border-bottom: 2px solid var(--color-border);
+      }
+
+      .ledger-table td {
+        padding: var(--space-2) var(--space-3);
+        border-bottom: 1px solid var(--color-border);
+        color: var(--color-text-primary);
+      }
+
+      .ledger-filters {
+        display: flex;
+        gap: var(--space-2);
+        margin-bottom: var(--space-4);
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .filter-chip {
+        padding: var(--space-1) var(--space-3);
+        font-family: var(--font-brutalist);
+        font-size: var(--text-xs);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-wide);
+        border: 1px solid var(--color-border);
+        background: transparent;
+        color: var(--color-text-muted);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+      }
+
+      .filter-chip:hover {
+        color: var(--color-text-primary);
+        border-color: var(--color-text-primary);
+      }
+
+      .filter-chip--active {
+        background: var(--color-accent-amber);
+        color: var(--color-gray-950);
+        border-color: var(--color-accent-amber);
+      }
+
+      .ledger-pagination {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: var(--space-4);
+      }
+
+      .ledger-pagination__info {
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        color: var(--color-text-muted);
+      }
+
+      .ledger-pagination__buttons {
+        display: flex;
+        gap: var(--space-2);
+      }
+
+      .ledger-pagination__btn {
+        padding: var(--space-1) var(--space-3);
+        font-family: var(--font-brutalist);
+        font-size: var(--text-xs);
+        text-transform: uppercase;
+        background: var(--color-surface);
+        color: var(--color-text-primary);
+        border: 1px solid var(--color-border);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+      }
+
+      .ledger-pagination__btn:hover:not(:disabled) {
+        border-color: var(--color-accent-amber);
+      }
+
+      .ledger-pagination__btn:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+      }
+
+      /* ── Grant Form ── */
+
+      .grant-form {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: var(--space-3);
+        align-items: center;
+        max-width: 500px;
+      }
+
+      .grant-form__label {
+        font-family: var(--font-brutalist);
+        font-size: var(--text-xs);
+        text-transform: uppercase;
+        color: var(--color-text-muted);
+      }
+
+      .grant-form__input {
+        padding: var(--space-2) var(--space-3);
+        font-family: var(--font-mono);
+        font-size: var(--text-sm);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        color: var(--color-text-primary);
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .grant-form__actions {
+        grid-column: 1 / -1;
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .overflow-x {
+        overflow-x: auto;
+      }
     `,
   ];
 
+  // ── Forge Overview state ──
   @state() private _draftCount = 0;
   @state() private _totalTokens = 0;
   @state() private _totalMaterialized = 0;
 
+  // ── BYOK state ──
   @state() private _openrouterKey = '';
   @state() private _replicateKey = '';
   @state() private _savingBYOK = false;
+  @state() private _byokSystemEnabled = false;
+  @state() private _byokAccessPolicy: 'none' | 'all' | 'per_user' = 'per_user';
 
+  // ── Clearance Requests state ──
   @state() private _pendingRequests: ForgeAccessRequestWithEmail[] = [];
   @state() private _requestNotes: Record<string, string> = {};
   @state() private _reviewingId: string | null = null;
+
+  // ── Token Economy state ──
+  @state() private _economyStats: TokenEconomyStats | null = null;
+  @state() private _bundles: AdminBundleEntry[] = [];
+  @state() private _editingBundleId: string | null = null;
+  @state() private _bundleEditDraft: Partial<AdminBundleEntry> = {};
+
+  // ── Grant state ──
+  @state() private _grantUserId = '';
+  @state() private _grantTokens = 5;
+  @state() private _grantReason = '';
+  @state() private _granting = false;
+
+  // ── Purchase Ledger state ──
+  @state() private _purchases: AdminPurchaseLedgerEntry[] = [];
+  @state() private _purchaseTotal = 0;
+  @state() private _purchaseOffset = 0;
+  @state() private _purchaseFilter: string | null = null;
+
+  private readonly _purchaseLimit = 50;
 
   connectedCallback() {
     super.connectedCallback();
     this._loadStats();
     this._loadPendingRequests();
+    this._loadEconomyStats();
+    this._loadBundles();
+    this._loadPurchases();
+    this._loadBYOKSetting();
   }
+
+  // ── Data Loaders ──
 
   private async _loadStats() {
     try {
@@ -237,6 +485,58 @@ export class VelgAdminForgeTab extends LitElement {
       // Non-critical
     }
   }
+
+  private async _loadEconomyStats() {
+    try {
+      const resp = await adminApi.getTokenEconomyStats();
+      if (resp.success && resp.data) {
+        this._economyStats = resp.data;
+      }
+    } catch {
+      // Non-critical
+    }
+  }
+
+  private async _loadBundles() {
+    try {
+      const resp = await adminApi.listAllBundles();
+      if (resp.success && resp.data) {
+        this._bundles = resp.data;
+      }
+    } catch {
+      // Non-critical
+    }
+  }
+
+  private async _loadPurchases() {
+    try {
+      const resp = await adminApi.listPurchases(
+        this._purchaseLimit,
+        this._purchaseOffset,
+        this._purchaseFilter ?? undefined,
+      );
+      if (resp.success && resp.data) {
+        this._purchases = resp.data;
+        this._purchaseTotal = (resp.meta as { total?: number })?.total ?? resp.data.length;
+      }
+    } catch {
+      // Non-critical
+    }
+  }
+
+  private async _loadBYOKSetting() {
+    try {
+      const resp = await adminApi.getBYOKSystemSetting();
+      if (resp.success && resp.data) {
+        this._byokSystemEnabled = resp.data.byok_bypass_enabled;
+        this._byokAccessPolicy = (resp.data.byok_access_policy as 'none' | 'all' | 'per_user') ?? 'per_user';
+      }
+    } catch {
+      // Non-critical
+    }
+  }
+
+  // ── Actions ──
 
   private async _reviewRequest(id: string, action: 'approve' | 'reject') {
     const { VelgConfirmDialog } = await import('../shared/ConfirmDialog.js');
@@ -273,6 +573,123 @@ export class VelgAdminForgeTab extends LitElement {
     }
   }
 
+  private async _toggleBundleActive(bundle: AdminBundleEntry) {
+    const newActive = !bundle.is_active;
+    // Optimistic update
+    this._bundles = this._bundles.map((b) =>
+      b.id === bundle.id ? { ...b, is_active: newActive } : b,
+    );
+    try {
+      const resp = await adminApi.updateBundle(bundle.id, { is_active: newActive } as Partial<AdminBundleEntry>);
+      if (resp.success) {
+        VelgToast.success(msg('Bundle updated.'));
+        this._loadEconomyStats();
+      } else {
+        // Revert
+        this._bundles = this._bundles.map((b) =>
+          b.id === bundle.id ? { ...b, is_active: !newActive } : b,
+        );
+        VelgToast.error(resp.error?.message ?? msg('Failed to update bundle.'));
+      }
+    } catch {
+      this._bundles = this._bundles.map((b) =>
+        b.id === bundle.id ? { ...b, is_active: !newActive } : b,
+      );
+      VelgToast.error(msg('An unexpected error occurred.'));
+    }
+  }
+
+  private _startEditBundle(bundle: AdminBundleEntry) {
+    this._editingBundleId = bundle.id;
+    this._bundleEditDraft = {
+      display_name: bundle.display_name,
+      tokens: bundle.tokens,
+      price_cents: bundle.price_cents,
+      savings_pct: bundle.savings_pct,
+      sort_order: bundle.sort_order,
+    };
+  }
+
+  private _cancelEditBundle() {
+    this._editingBundleId = null;
+    this._bundleEditDraft = {};
+  }
+
+  private async _saveEditBundle() {
+    if (!this._editingBundleId) return;
+    try {
+      const resp = await adminApi.updateBundle(this._editingBundleId, this._bundleEditDraft as Partial<AdminBundleEntry>);
+      if (resp.success) {
+        VelgToast.success(msg('Bundle updated.'));
+        this._editingBundleId = null;
+        this._bundleEditDraft = {};
+        this._loadBundles();
+        this._loadEconomyStats();
+      } else {
+        VelgToast.error(resp.error?.message ?? msg('Failed to update bundle.'));
+      }
+    } catch {
+      VelgToast.error(msg('An unexpected error occurred.'));
+    }
+  }
+
+  private async _submitGrant() {
+    if (!this._grantUserId.trim() || this._grantTokens < 1) return;
+
+    const { VelgConfirmDialog } = await import('../shared/ConfirmDialog.js');
+    const confirmed = await VelgConfirmDialog.show({
+      title: msg('Grant Tokens'),
+      message: `Grant ${this._grantTokens} tokens to ${this._grantUserId.slice(0, 8)}...?`,
+      confirmLabel: msg('Grant'),
+      variant: 'default',
+    });
+    if (!confirmed) return;
+
+    this._granting = true;
+    try {
+      const resp = await adminApi.grantTokens(
+        this._grantUserId.trim(),
+        this._grantTokens,
+        this._grantReason.trim() || undefined,
+      );
+      if (resp.success) {
+        const data = resp.data as { tokens_granted?: number; balance_after?: number };
+        VelgToast.success(
+          `Granted ${data.tokens_granted ?? this._grantTokens} tokens. New balance: ${data.balance_after ?? '?'}`,
+        );
+        this._grantUserId = '';
+        this._grantTokens = 5;
+        this._grantReason = '';
+        this._loadEconomyStats();
+        this._loadPurchases();
+      } else {
+        VelgToast.error(resp.error?.message ?? msg('Grant failed.'));
+      }
+    } catch {
+      VelgToast.error(msg('An unexpected error occurred.'));
+    } finally {
+      this._granting = false;
+    }
+  }
+
+  private _setLedgerFilter(filter: string | null) {
+    this._purchaseFilter = filter;
+    this._purchaseOffset = 0;
+    this._loadPurchases();
+  }
+
+  private _ledgerPrev() {
+    if (this._purchaseOffset <= 0) return;
+    this._purchaseOffset = Math.max(0, this._purchaseOffset - this._purchaseLimit);
+    this._loadPurchases();
+  }
+
+  private _ledgerNext() {
+    if (this._purchaseOffset + this._purchaseLimit >= this._purchaseTotal) return;
+    this._purchaseOffset += this._purchaseLimit;
+    this._loadPurchases();
+  }
+
   private async _saveBYOK() {
     this._savingBYOK = true;
     try {
@@ -291,6 +708,45 @@ export class VelgAdminForgeTab extends LitElement {
       VelgToast.error(msg('An unexpected error occurred.'));
     } finally {
       this._savingBYOK = false;
+    }
+  }
+
+  private async _toggleBYOKSystem() {
+    const newValue = !this._byokSystemEnabled;
+    try {
+      const resp = await adminApi.updateBYOKSystemSetting(newValue);
+      if (resp.success) {
+        this._byokSystemEnabled = newValue;
+        VelgToast.success(
+          newValue
+            ? msg('BYOK bypass enabled system-wide.')
+            : msg('BYOK bypass disabled system-wide.'),
+        );
+      } else {
+        VelgToast.error(resp.error?.message ?? msg('Failed to update BYOK setting.'));
+      }
+    } catch {
+      VelgToast.error(msg('An unexpected error occurred.'));
+    }
+  }
+
+  private async _changeBYOKAccessPolicy(e: Event) {
+    const policy = (e.target as HTMLSelectElement).value as 'none' | 'all' | 'per_user';
+    try {
+      const resp = await adminApi.updateBYOKAccessPolicy(policy);
+      if (resp.success) {
+        this._byokAccessPolicy = policy;
+        const labels: Record<string, string> = {
+          none: msg('Nobody can use BYOK.'),
+          all: msg('All architects can use BYOK.'),
+          per_user: msg('BYOK granted per user.'),
+        };
+        VelgToast.success(labels[policy]);
+      } else {
+        VelgToast.error(resp.error?.message ?? msg('Failed to update access policy.'));
+      }
+    } catch {
+      VelgToast.error(msg('An unexpected error occurred.'));
     }
   }
 
@@ -317,6 +773,8 @@ export class VelgAdminForgeTab extends LitElement {
     }
   }
 
+  // ── Helpers ──
+
   private _formatDate(isoDate: string): string {
     try {
       return new Date(isoDate).toLocaleString(undefined, {
@@ -328,10 +786,20 @@ export class VelgAdminForgeTab extends LitElement {
     }
   }
 
+  private _formatCents(cents: number): string {
+    return `$${(cents / 100).toFixed(2)}`;
+  }
+
+  // ── Render ──
+
   protected render() {
     return html`
       <div class="forge-admin">
         ${this._renderClearanceRequests()}
+        ${this._renderTokenEconomy()}
+        ${this._renderBundleManagement()}
+        ${this._renderGrantForm()}
+        ${this._renderPurchaseLedger()}
 
         <div class="settings-panel">
           <h3 class="settings-panel__title">${msg('Personal API Keys (BYOK)')}</h3>
@@ -397,6 +865,39 @@ export class VelgAdminForgeTab extends LitElement {
           <div class="settings-group">
             <div class="settings-item">
               <div class="settings-item__info">
+                <div class="settings-item__label">${msg('BYOK Free Access')}</div>
+                <div class="settings-item__description">${msg('When enabled, users with both BYOK keys bypass token costs entirely.')}</div>
+              </div>
+              <label class="settings-toggle" aria-label=${msg('BYOK Free Access')}>
+                <input
+                  class="settings-toggle__input"
+                  type="checkbox"
+                  role="switch"
+                  .checked=${this._byokSystemEnabled}
+                  @change=${this._toggleBYOKSystem}
+                />
+                <span class="settings-toggle__slider"></span>
+              </label>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-item__info">
+                <div class="settings-item__label">${msg('BYOK Access Policy')}</div>
+                <div class="settings-item__description">${msg('Controls which users can bring their own API keys.')}</div>
+              </div>
+              <select
+                class="membership-role-select"
+                .value=${this._byokAccessPolicy}
+                @change=${this._changeBYOKAccessPolicy}
+              >
+                <option value="none">${msg('Nobody')}</option>
+                <option value="per_user">${msg('Per User (admin grants)')}</option>
+                <option value="all">${msg('All Architects')}</option>
+              </select>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-item__info">
                 <div class="settings-item__label">${msg('Default Architect Grant')}</div>
                 <div class="settings-item__description">${msg('Number of forge tokens given to new architects.')}</div>
               </div>
@@ -423,6 +924,350 @@ export class VelgAdminForgeTab extends LitElement {
       </div>
     `;
   }
+
+  // ── Section: Token Economy Dashboard ──
+
+  private _renderTokenEconomy() {
+    const s = this._economyStats;
+    if (!s) return nothing;
+
+    return html`
+      <div class="settings-panel">
+        <h3 class="settings-panel__title">${msg('Token Economy')}</h3>
+        <p class="settings-panel__description">${msg('Aggregated metrics for the forge token economy.')}</p>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card__value">${this._formatCents(Number(s.total_revenue_cents))}</div>
+            <div class="stat-card__label">${msg('Total Revenue')}</div>
+            <div class="stat-card__sub">${s.total_purchases - s.admin_grants} ${msg('purchases')}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__value">${s.total_tokens_granted}</div>
+            <div class="stat-card__label">${msg('Tokens Granted')}</div>
+            <div class="stat-card__sub">${s.admin_grants} ${msg('admin grants')}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__value">${s.tokens_in_circulation}</div>
+            <div class="stat-card__label">${msg('In Circulation')}</div>
+            <div class="stat-card__sub">${s.active_bundles} ${msg('active bundles')}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__value">${s.unique_buyers}</div>
+            <div class="stat-card__label">${msg('Unique Buyers')}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ── Section: Bundle Management ──
+
+  private _renderBundleManagement() {
+    if (!this._bundles.length) return nothing;
+
+    return html`
+      <div class="settings-panel">
+        <h3 class="settings-panel__title">${msg('Bundle Management')}</h3>
+        <p class="settings-panel__description">${msg('Manage token bundle catalog. Toggle availability or edit pricing.')}</p>
+        <div class="overflow-x">
+          <table class="bundle-table">
+            <thead>
+              <tr>
+                <th scope="col">${msg('Slug')}</th>
+                <th scope="col">${msg('Tokens')}</th>
+                <th scope="col">${msg('Price')}</th>
+                <th scope="col">${msg('Savings')}</th>
+                <th scope="col">${msg('Order')}</th>
+                <th scope="col">${msg('Active')}</th>
+                <th scope="col">${msg('Actions')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${this._bundles.map((b) => this._renderBundleRow(b))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  private _renderBundleRow(bundle: AdminBundleEntry) {
+    const isSystem = bundle.slug === 'admin-grant';
+    const rowClass = isSystem
+      ? 'bundle-row--system'
+      : !bundle.is_active
+        ? 'bundle-row--inactive'
+        : '';
+
+    return html`
+      <tr class=${rowClass}>
+        <td>${bundle.slug}</td>
+        <td>${bundle.tokens}</td>
+        <td>${this._formatCents(bundle.price_cents)}</td>
+        <td>${bundle.savings_pct}%</td>
+        <td>${bundle.sort_order}</td>
+        <td>
+          ${isSystem
+            ? html`<span style="color: var(--color-text-muted)">${msg('System')}</span>`
+            : html`
+              <label class="settings-toggle" aria-label=${msg('Active')}>
+                <input
+                  class="settings-toggle__input"
+                  type="checkbox"
+                  role="switch"
+                  .checked=${bundle.is_active}
+                  @change=${() => this._toggleBundleActive(bundle)}
+                />
+                <span class="settings-toggle__slider"></span>
+              </label>
+            `
+          }
+        </td>
+        <td>
+          ${isSystem
+            ? nothing
+            : html`
+              <button
+                class="settings-btn settings-btn--secondary settings-btn--sm"
+                @click=${() => this._startEditBundle(bundle)}
+              >
+                ${msg('Edit')}
+              </button>
+            `
+          }
+        </td>
+      </tr>
+      ${this._editingBundleId === bundle.id ? html`
+        <tr>
+          <td colspan="7">
+            ${this._renderBundleEditForm()}
+          </td>
+        </tr>
+      ` : nothing}
+    `;
+  }
+
+  private _renderBundleEditForm() {
+    const d = this._bundleEditDraft;
+    return html`
+      <div class="bundle-edit-form">
+        <span class="bundle-edit-form__label">${msg('Display Name')}</span>
+        <input
+          class="bundle-edit-form__input"
+          type="text"
+          .value=${d.display_name ?? ''}
+          aria-label=${msg('Display Name')}
+          @input=${(e: Event) => {
+            this._bundleEditDraft = { ...this._bundleEditDraft, display_name: (e.target as HTMLInputElement).value };
+          }}
+        />
+        <span class="bundle-edit-form__label">${msg('Tokens')}</span>
+        <input
+          class="bundle-edit-form__input"
+          type="number"
+          min="1"
+          .value=${String(d.tokens ?? '')}
+          aria-label=${msg('Tokens')}
+          @input=${(e: Event) => {
+            this._bundleEditDraft = { ...this._bundleEditDraft, tokens: Number((e.target as HTMLInputElement).value) };
+          }}
+        />
+        <span class="bundle-edit-form__label">${msg('Price (cents)')}</span>
+        <input
+          class="bundle-edit-form__input"
+          type="number"
+          min="0"
+          .value=${String(d.price_cents ?? '')}
+          aria-label=${msg('Price (cents)')}
+          @input=${(e: Event) => {
+            this._bundleEditDraft = { ...this._bundleEditDraft, price_cents: Number((e.target as HTMLInputElement).value) };
+          }}
+        />
+        <span class="bundle-edit-form__label">${msg('Savings %')}</span>
+        <input
+          class="bundle-edit-form__input"
+          type="number"
+          min="0"
+          max="100"
+          .value=${String(d.savings_pct ?? '')}
+          aria-label=${msg('Savings %')}
+          @input=${(e: Event) => {
+            this._bundleEditDraft = { ...this._bundleEditDraft, savings_pct: Number((e.target as HTMLInputElement).value) };
+          }}
+        />
+        <span class="bundle-edit-form__label">${msg('Sort Order')}</span>
+        <input
+          class="bundle-edit-form__input"
+          type="number"
+          min="0"
+          .value=${String(d.sort_order ?? '')}
+          aria-label=${msg('Sort Order')}
+          @input=${(e: Event) => {
+            this._bundleEditDraft = { ...this._bundleEditDraft, sort_order: Number((e.target as HTMLInputElement).value) };
+          }}
+        />
+        <div class="bundle-edit-form__actions">
+          <button
+            class="settings-btn settings-btn--secondary settings-btn--sm"
+            @click=${this._cancelEditBundle}
+          >
+            ${msg('Cancel')}
+          </button>
+          <button
+            class="settings-btn settings-btn--primary settings-btn--sm"
+            @click=${this._saveEditBundle}
+          >
+            ${msg('Save')}
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  // ── Section: Grant Tokens ──
+
+  private _renderGrantForm() {
+    return html`
+      <div class="settings-panel">
+        <h3 class="settings-panel__title">${msg('Grant Tokens')}</h3>
+        <p class="settings-panel__description">${msg('Manually grant tokens to a user. Creates an auditable ledger entry.')}</p>
+        <div class="grant-form">
+          <span class="grant-form__label">${msg('User ID')}</span>
+          <input
+            class="grant-form__input"
+            type="text"
+            placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+            .value=${this._grantUserId}
+            aria-label=${msg('User ID')}
+            @input=${(e: Event) => (this._grantUserId = (e.target as HTMLInputElement).value)}
+          />
+          <span class="grant-form__label">${msg('Tokens')}</span>
+          <input
+            class="grant-form__input"
+            type="number"
+            min="1"
+            max="1000"
+            .value=${String(this._grantTokens)}
+            aria-label=${msg('Tokens')}
+            @input=${(e: Event) => (this._grantTokens = Number((e.target as HTMLInputElement).value))}
+          />
+          <span class="grant-form__label">${msg('Reason')}</span>
+          <input
+            class="grant-form__input"
+            type="text"
+            placeholder=${msg('Optional reason for audit trail')}
+            .value=${this._grantReason}
+            aria-label=${msg('Reason')}
+            @input=${(e: Event) => (this._grantReason = (e.target as HTMLInputElement).value)}
+          />
+          <div class="grant-form__actions">
+            <button
+              class="btn-approve"
+              ?disabled=${this._granting || !this._grantUserId.trim()}
+              @click=${this._submitGrant}
+            >
+              ${this._granting ? msg('Granting...') : msg('Grant Tokens')}
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ── Section: Purchase Ledger ──
+
+  private _renderPurchaseLedger() {
+    return html`
+      <div class="settings-panel">
+        <h3 class="settings-panel__title">${msg('Purchase Ledger')}</h3>
+        <p class="settings-panel__description">${msg('Global purchase transaction log with filter and pagination.')}</p>
+
+        <div class="ledger-filters">
+          ${this._renderFilterChip(null, msg('All'))}
+          ${this._renderFilterChip('mock', msg('Mock'))}
+          ${this._renderFilterChip('admin_grant', msg('Admin Grant'))}
+          ${this._renderFilterChip('stripe', msg('Stripe'))}
+        </div>
+
+        ${this._purchases.length === 0
+          ? html`<div class="empty-requests">// ${msg('No purchases found')} //</div>`
+          : html`
+            <div class="overflow-x">
+              <table class="ledger-table">
+                <thead>
+                  <tr>
+                    <th scope="col">${msg('Date')}</th>
+                    <th scope="col">${msg('User')}</th>
+                    <th scope="col">${msg('Bundle')}</th>
+                    <th scope="col">${msg('Tokens')}</th>
+                    <th scope="col">${msg('Method')}</th>
+                    <th scope="col">${msg('Balance')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${this._purchases.map((p) => this._renderLedgerRow(p))}
+                </tbody>
+              </table>
+            </div>
+
+            <div class="ledger-pagination">
+              <span class="ledger-pagination__info">
+                ${this._purchaseOffset + 1}&ndash;${Math.min(this._purchaseOffset + this._purchaseLimit, this._purchaseTotal)}
+                / ${this._purchaseTotal}
+              </span>
+              <div class="ledger-pagination__buttons">
+                <button
+                  class="ledger-pagination__btn"
+                  ?disabled=${this._purchaseOffset <= 0}
+                  @click=${this._ledgerPrev}
+                >
+                  &larr; ${msg('Prev')}
+                </button>
+                <button
+                  class="ledger-pagination__btn"
+                  ?disabled=${this._purchaseOffset + this._purchaseLimit >= this._purchaseTotal}
+                  @click=${this._ledgerNext}
+                >
+                  ${msg('Next')} &rarr;
+                </button>
+              </div>
+            </div>
+          `
+        }
+      </div>
+    `;
+  }
+
+  private _renderFilterChip(value: string | null, label: string) {
+    const active = this._purchaseFilter === value;
+    return html`
+      <button
+        class="filter-chip ${active ? 'filter-chip--active' : ''}"
+        aria-pressed=${String(active)}
+        @click=${() => this._setLedgerFilter(value)}
+      >
+        ${label}
+      </button>
+    `;
+  }
+
+  private _renderLedgerRow(p: AdminPurchaseLedgerEntry) {
+    const bundleSlug = p.token_bundles?.slug ?? (p.payment_method === 'admin_grant' ? `(${msg('admin grant')})` : '—');
+    const userId = p.user_id.slice(0, 8) + '...';
+
+    return html`
+      <tr>
+        <td>${this._formatDate(p.created_at)}</td>
+        <td title=${p.user_id}>${userId}</td>
+        <td>${bundleSlug}</td>
+        <td>${p.tokens_granted}</td>
+        <td>${p.payment_method}</td>
+        <td>${p.balance_before} &rarr; ${p.balance_after}</td>
+      </tr>
+    `;
+  }
+
+  // ── Section: Clearance Requests ──
 
   private _renderClearanceRequests() {
     return html`

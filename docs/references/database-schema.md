@@ -1,8 +1,8 @@
 ---
 title: "Database Schema: Neues Multi-Simulations-Schema"
 id: database-schema
-version: "3.5"
-date: 2026-03-10
+version: "3.6"
+date: 2026-03-13
 lang: de
 type: reference
 status: active
@@ -1834,17 +1834,17 @@ CREATE POLICY simulation_assets_insert ON storage.objects FOR INSERT
 
 | Metrik | Wert |
 |--------|------|
-| Tabellen | 55 (inkl. Forge, Chronicle, Agent Memory, Substrate Resonance, Alliance, Forge Access) |
+| Tabellen | 58 (inkl. Forge, Chronicle, Agent Memory, Substrate Resonance, Alliance, Forge Access, Token Economy, Feature Purchases) |
 | Trigger Functions | 20 (set_updated_at, update_conversation_stats, enforce_single_primary_profession, validate_simulation_status_transition, immutable_slug, prevent_last_owner_removal, notify_game_metrics_stale, validate_epoch_status_transition, broadcast_epoch_chat, broadcast_ready_signal, fn_enforce_forge_quota, recompute_reaction_modifier, assign_event_zones, fn_derive_resonance_fields, update_resonance_updated_at, check_resonance_impact_time, compute_effective_magnitude, fn_resolve_alliance_proposal, fn_check_alliance_tension, fn_sync_architect_flag) |
 | Utility Functions | 12 (role_meets_minimum, generate_slug, validate_taxonomy_value, game_weight_fallback, refresh_all_game_metrics, refresh_building_readiness, refresh_embassy_effectiveness, refresh_zone_stability, resolve_template_id, is_platform_admin, get_user_emails_batch, get_bleed_gazette_feed) |
-| Epoch/Forge/Chronicle Functions | 17 (clone_simulations_for_epoch, archive_epoch_instances, delete_epoch_instances, fn_materialize_shard, get_chronicle_source_data, retrieve_agent_memories, get_campaign_analytics, get_cycle_battle_summary, process_cascade_events, fn_get_resonance_susceptibility, fn_get_resonance_event_types, assign_event_zones, fn_expire_alliance_proposals, fn_deduct_alliance_upkeep, fn_compute_alliance_tension, fn_approve_forge_access, fn_reject_forge_access) |
+| Epoch/Forge/Chronicle Functions | 23 (clone_simulations_for_epoch, archive_epoch_instances, delete_epoch_instances, fn_materialize_shard, get_chronicle_source_data, retrieve_agent_memories, get_campaign_analytics, get_cycle_battle_summary, process_cascade_events, fn_get_resonance_susceptibility, fn_get_resonance_event_types, assign_event_zones, fn_expire_alliance_proposals, fn_deduct_alliance_upkeep, fn_compute_alliance_tension, fn_approve_forge_access, fn_reject_forge_access, fn_purchase_tokens, fn_admin_grant_tokens, fn_purchase_feature, fn_refund_feature, fn_darkroom_use_regen, fn_user_byok_allowed) |
 | Admin RPC Functions | 3 (admin_list_users, admin_get_user, admin_delete_user) |
 | RLS Functions | 4 (user_has_simulation_access, user_has_simulation_role, user_simulation_role, role_meets_minimum) |
-| Functions gesamt | ~56 (ohne unaccent-Varianten und interne Helfer) |
+| Functions gesamt | ~62 (ohne unaccent-Varianten und interne Helfer) |
 | Triggers | 56 Eintraege (19 unique Trigger-Functions auf 56 Tabellen/Spalten-Kombinationen) |
-| Regular Views | 9 (4x active_* + simulation_dashboard + conversation_summaries + agent_statistics + campaign_performance + v_pending_forge_requests) |
+| Regular Views | 10 (4x active_* + simulation_dashboard + conversation_summaries + agent_statistics + campaign_performance + v_pending_forge_requests + token_economy_stats) |
 | Materialized Views | 4 (mv_building_readiness + mv_zone_stability + mv_embassy_effectiveness + mv_simulation_health) |
-| RLS-Policies | 238+ (inkl. anon SELECT + Forge + Chronicle + Resonance + Alliance + Forge Access + alle frueheren Policies) |
+| RLS-Policies | 246+ (inkl. anon SELECT + Forge + Chronicle + Resonance + Alliance + Forge Access + Token Economy + Feature Purchases + alle frueheren Policies) |
 | Indexes | ~92 (inkl. partial, GIN, pgvector IVFFlat, unique) |
 | Storage Buckets | 4 |
 | SQL Migrationen | 93 |
@@ -3265,3 +3265,82 @@ CREATE INDEX idx_forge_access_pending
 ### RLS
 
 - **`forge_access_requests`:** User SELECT/INSERT eigene Antraege (`auth.uid() = user_id`). Admin SELECT/UPDATE alle (`is_platform_admin()`).
+
+---
+
+## Forge Token Economy (Migrations 101–104)
+
+Migrations 101–104 fuehren das Token-Wirtschaftssystem ein: Produkt-Katalog (Token-Bundles), Kauf-Ledger, atomare RPC-Funktionen, Admin-Tools (Grants, Statistiken), BYOK-Bypass-System, und Feature-Purchase-Ledger fuer Premium-Features (Darkroom, Dossier, Recruitment, Chronicle Export).
+
+### Neue Tabellen
+
+#### `token_bundles` (Migration 101)
+Token-Produkt-Katalog mit 5 vordefinierten Bundles (Field Sample bis Founder's Vault).
+
+| Spalte | Typ | Beschreibung |
+|--------|-----|-------------|
+| id | uuid PK | |
+| slug | text UNIQUE | Bundle-Bezeichner (z.B. `field-sample`) |
+| display_name | text | Anzeigename |
+| tokens | integer | Anzahl Forge-Tokens |
+| price_cents | integer | Preis in Cents (>= 0, 0 fuer Admin-Grant-Sentinel) |
+| savings_pct | smallint | Ersparnis-Prozentsatz (0–100) |
+| sort_order | smallint | Sortierung |
+| is_active | boolean | Aktiv im Katalog |
+
+#### `token_purchases` (Migration 101)
+Transaktions-Ledger fuer alle Token-Kaeufe (Mock, Stripe, Admin-Grant).
+
+| Spalte | Typ | Beschreibung |
+|--------|-----|-------------|
+| id | uuid PK | |
+| user_id | uuid FK → auth.users | Kaeufer |
+| bundle_id | uuid FK → token_bundles | Gekauftes Bundle |
+| tokens_granted | integer | Gutgeschriebene Tokens |
+| price_cents | integer | Gezahlter Preis |
+| payment_method | text | `mock`, `stripe`, `admin_grant`, `subscription` |
+| payment_reference | text | Referenz (z.B. Admin-Grund) |
+| balance_before | integer | Kontostand vorher |
+| balance_after | integer | Kontostand nachher |
+
+#### `feature_purchases` (Migration 104)
+Generisches Ledger fuer Premium-Feature-Kaeufe mit Token-Abzug.
+
+| Spalte | Typ | Beschreibung |
+|--------|-----|-------------|
+| id | uuid PK | |
+| user_id | uuid FK → auth.users | Kaeufer |
+| simulation_id | uuid FK → simulations | Ziel-Simulation |
+| feature_type | text | `darkroom_pass`, `classified_dossier`, `recruitment`, `chronicle_export` |
+| token_cost | integer | Abgezogene Tokens (0 bei Admin/BYOK-Bypass) |
+| status | text | `pending`, `processing`, `completed`, `failed`, `refunded` |
+| config | jsonb | Feature-spezifische Konfiguration |
+| result | jsonb | Feature-spezifisches Ergebnis |
+| regen_budget_remaining | integer | Verbleibende Regenerations (nur Darkroom) |
+
+### Neue Spalten auf `user_wallets` (Migration 103)
+
+- **`byok_bypass`** — boolean DEFAULT false. Per-User BYOK-Bypass fuer Token-Kosten.
+- **`byok_allowed`** — boolean DEFAULT false. Per-User BYOK-Zugang (wenn Policy `per_user`).
+
+### Neue Functions
+
+| Funktion | Migration | Beschreibung |
+|----------|-----------|-------------|
+| `fn_purchase_tokens(slug)` | 101 | Atomarer Token-Kauf: Bundle validieren, Tokens gutschreiben, Ledger-Eintrag. SECURITY DEFINER. |
+| `fn_admin_grant_tokens(user_id, tokens, reason)` | 102 | Admin-Token-Grant (1–1000): Credits + auditierter Ledger-Eintrag mit `payment_method=admin_grant`. |
+| `fn_user_byok_allowed(user_id)` | 103 | Prueft BYOK-Zugang basierend auf `byok_access_policy` Platform-Setting. |
+| `fn_user_has_byok_bypass(user_id)` | 103 | Prueft ob User BYOK-Bypass hat (erlaubt + beide Keys vorhanden + bypass enabled). |
+| `fn_purchase_feature(user_id, sim_id, type, cost, config)` | 104 | Atomarer Feature-Kauf: Token-Abzug, Purchase-Record, BYOK/Admin-Skip. |
+| `fn_refund_feature(purchase_id)` | 104 | Token-Rueckerstattung bei Fehler (nur Status `processing`/`failed`). |
+| `fn_darkroom_use_regen(purchase_id)` | 104 | Dekrementiert Darkroom-Regenerations-Budget. |
+
+### Neue View
+
+- **`token_economy_stats`** (Migration 102) — Aggregierte Statistiken: total_purchases, mock_purchases, admin_grants, total_revenue_cents, tokens_in_circulation, unique_buyers, active_bundles.
+
+### RLS
+
+- **`token_bundles`:** Jeder liest aktive Bundles (`is_active = true`). Admins verwalten alle (`is_platform_admin()`).
+- **`token_purchases`:** User lesen eigene (`auth.uid() = user_id`). Admins lesen alle.
+- **`feature_purchases`:** User lesen eigene (`auth.uid() = user_id`). Admins verwalten alle.

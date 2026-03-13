@@ -878,7 +878,7 @@ export class VelgGameCard extends LitElement {
 
           <!-- Name plate -->
           <div class="card__nameplate">
-            <h3 class="card__name">${this.name}</h3>
+            <h3 class="card__name" title=${this.name}>${this.name}</h3>
             <div class="card__name-divider"></div>
           </div>
 

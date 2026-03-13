@@ -1,8 +1,8 @@
 ---
 title: "API Specification"
 id: api-specification
-version: "2.3"
-date: 2026-03-12
+version: "2.4"
+date: 2026-03-13
 lang: de
 type: spec
 status: active
@@ -2025,6 +2025,41 @@ Antrag genehmigen oder ablehnen. Ruft SECURITY DEFINER RPC auf, loest bilinguale
 
 ---
 
+## 34. Forge Token Economy
+
+Token-Kaufsystem (Mock-Monetarisierung), Wallet-Verwaltung, BYOK-Schluessel, Feature-Kaeufe (Darkroom, Dossier, Recruitment, Chronicle Export). Admin-Tools fuer Token-Grants und Bundle-Verwaltung.
+
+### Benutzer-Endpoints
+
+| Methode | Pfad | Beschreibung | Auth |
+|---------|------|-------------|------|
+| GET | `/api/v1/forge/token-bundles` | Liste aktiver Token-Bundles (Produkt-Katalog) | Architect+ |
+| GET | `/api/v1/forge/wallet` | Wallet-Info: Balance, BYOK-Keys, Purchase-History | Architect+ |
+| POST | `/api/v1/forge/wallet/purchase` | Mock-Token-Kauf (Bundle-Slug im Body) | Architect+ |
+| GET | `/api/v1/forge/wallet/history` | Token-Kauf-Verlauf (Ledger) | Architect+ |
+| PUT | `/api/v1/forge/wallet/keys` | BYOK-Schluessel aktualisieren (OpenRouter/Replicate) | Architect+ |
+| GET | `/api/v1/forge/feature-purchases` | Feature-Kaeufe fuer Simulation auflisten | Member |
+| POST | `/api/v1/forge/purchase/darkroom-pass` | Darkroom Pass kaufen (2 FT, 10 Regen-Budget) | Editor+ |
+| POST | `/api/v1/forge/purchase/classified-dossier` | Classified Dossier kaufen (2 FT, AI-Lore-Generation) | Editor+ |
+| POST | `/api/v1/forge/purchase/recruitment` | Recruitment Office kaufen (1 FT, 3 neue Agenten) | Editor+ |
+| POST | `/api/v1/forge/purchase/chronicle-export` | Chronicle Export kaufen (1 FT, Codex PDF) | Editor+ |
+| POST | `/api/v1/forge/darkroom/{sim_id}/regenerate` | Bild-Regeneration (Darkroom Budget dekrementieren) | Editor+ |
+| GET | `/api/v1/forge/feature-purchases/{id}` | Einzelnen Feature-Kauf abrufen | Owner |
+
+### Admin-Endpoints
+
+| Methode | Pfad | Beschreibung | Auth |
+|---------|------|-------------|------|
+| GET | `/api/v1/forge/admin/token-bundles` | Alle Bundles (inkl. inaktive) | Platform Admin |
+| PUT | `/api/v1/forge/admin/token-bundles/{id}` | Bundle bearbeiten (Preis, Tokens, Status) | Platform Admin |
+| GET | `/api/v1/forge/admin/purchases` | Alle Token-Kaeufe (globaler Ledger) | Platform Admin |
+| POST | `/api/v1/forge/admin/grant-tokens` | Token-Grant an User (1-1000, mit Grund) | Platform Admin |
+| GET | `/api/v1/forge/admin/byok-system` | BYOK-System-Konfiguration abrufen | Platform Admin |
+| PUT | `/api/v1/forge/admin/byok-system` | BYOK-Policy und Bypass-Settings aendern | Platform Admin |
+| GET | `/api/v1/forge/admin/stats` | Token-Economy-Statistiken (Umsatz, Zirkulation) | Platform Admin |
+
+---
+
 ## Endpoint-Zusammenfassung
 
 | Bereich | Endpoints | Methoden |
@@ -2063,6 +2098,7 @@ Antrag genehmigen oder ablehnen. Ruft SECURITY DEFINER RPC auf, loest bilinguale
 | Zone Actions | 3 | List + Create + Cancel |
 | Resonances | 9 | CRUD + ProcessImpact + Impacts + Status + Restore |
 | Forge Access | 5 | Create + Me + Pending + PendingCount + Review |
+| Forge Token Economy | 19 | Bundles (1) + Wallet (3) + Feature Purchases (6) + Darkroom Regen (1) + Admin Bundles (2) + Admin Purchases (1) + Admin Grant (1) + Admin BYOK (2) + Admin Stats (2) |
 | Admin | 11 | Settings (2) + Users (3) + Memberships (3) + Cleanup (3) |
 | Public | 48 | Anonymer Lesezugriff (alle GET-only) |
-| **Gesamt** | **274** | **36 Router** |
+| **Gesamt** | **293** | **37 Router** |

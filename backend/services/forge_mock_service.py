@@ -495,6 +495,136 @@ def mock_lore_translations(sections: list[dict]) -> list[dict]:
     ]
 
 
+def mock_recruits(
+    sim_name: str = "the simulation",
+    existing_agent_names: list[str] | None = None,
+    focus: str | None = None,
+) -> list[dict]:
+    """Rich mock recruits for FORGE_MOCK_MODE recruitment testing.
+
+    Returns 3 fully-realised agents with arrival narratives and references
+    to existing agent names when provided.  Quality matches ``mock_agents()``.
+    """
+    names = existing_agent_names or []
+    mentions = {
+        0: names[0] if len(names) > 0 else "the resident archivist",
+        1: names[1] if len(names) > 1 else "a local forgewright",
+        2: names[2] if len(names) > 2 else "the chief resonance broker",
+    }
+
+    pool = [
+        {
+            "name": "Isolde Greymantle",
+            "gender": "female",
+            "system": "The Cartographers",
+            "primary_profession": "Threshold Surveyor",
+            "character": (
+                "Watchful, deliberate, and unsettlingly precise. Isolde speaks in "
+                "measurements — distances, angles, the exact number of paces between "
+                "one lamppost and the next. Her colleagues find this endearing for "
+                "approximately forty minutes, after which it becomes unbearable. She "
+                "has a habit of pausing mid-sentence to recalibrate some internal "
+                "compass, her grey eyes unfocusing briefly as though consulting a map "
+                "no one else can see. She wears a heavy coat regardless of weather, "
+                "its pockets bristling with graduated rulers and folded charts. Her "
+                "hands are stained with cartographic ink that she has stopped trying "
+                "to wash off. She considers doubt a professional virtue and certainty "
+                "a form of intellectual laziness. She trusts her instruments more than "
+                "her instincts, which, given what her instincts have led her to in "
+                "the past, is probably wise."
+            ),
+            "background": (
+                f"Arrived at the eastern gate of {sim_name} carrying a surveyor's "
+                "transit and a leather satchel of maps that, upon inspection, turned "
+                "out to chart territories that do not exist on any official record. "
+                "She presented these to the gate clerk with the calm insistence of "
+                "someone who has been right before and was punished for it. Her "
+                "previous posting — a cartographic bureau in a city she refuses to "
+                "name — ended when she discovered that certain districts were being "
+                "systematically removed from census data. She filed a report. The "
+                "report was filed in return, into a locked cabinet. She left shortly "
+                f"after. {mentions[0].title() if not mentions[0][0].isupper() else mentions[0]} was the first person to take her "
+                "maps seriously, or at least to pretend convincingly enough that "
+                "Isolde could not tell the difference. She has been assigned to "
+                "survey the boundary zones, which is either a recognition of her "
+                "talents or a way to keep her out of the central archives."
+            ),
+        },
+        {
+            "name": "Calder Vetch",
+            "gender": "male",
+            "system": "The Foundry",
+            "primary_profession": "Residue Analyst",
+            "character": (
+                "Quiet in the way that large, careful men sometimes are — not shy but "
+                "selective, as though words are a finite resource and he has decided "
+                "to ration them. Calder's hands are enormous, scarred with chemical "
+                "burns arranged in patterns that suggest either extreme carelessness "
+                "or extreme precision. He smells permanently of sulphur and old books. "
+                "His laugh, when it surfaces, is startlingly loud and always surprises "
+                "him as much as anyone else. He keeps a small notebook in which he "
+                "records the colour and consistency of industrial residues with the "
+                "tenderness other men reserve for love poetry. He distrusts theory "
+                "and respects material evidence. He has been known to lick suspicious "
+                "substances to identify them, a practice his superiors have forbidden "
+                "exactly as many times as he has ignored them."
+            ),
+            "background": (
+                f"Calder walked into {sim_name} through the service tunnels beneath "
+                "the freight depot, which is either a sign of resourcefulness or a "
+                "sign that no one told him where the front door was. He carried a "
+                "crate of glass sample jars, each labelled in a shorthand alphabet "
+                "of his own invention. His previous employer — a refinery in the "
+                "industrial hinterlands — collapsed when its primary furnace began "
+                "producing material that no one could identify and everyone was afraid "
+                "to touch. Calder was the only analyst willing to examine it. His "
+                "findings were inconclusive but fascinating, filling three notebooks "
+                f"that he still consults. {mentions[1].title() if not mentions[1][0].isupper() else mentions[1]} recognised his expertise immediately "
+                "and assigned him to the Foundry's output analysis division, where "
+                "his willingness to handle inexplicable substances is considered a "
+                "virtue rather than a liability. He has not yet been told what the "
+                "Foundry actually produces. He suspects no one knows."
+            ),
+        },
+        {
+            "name": "Senna Aldine",
+            "gender": "non-binary",
+            "system": "The Hollows",
+            "primary_profession": "Whisper Auditor",
+            "character": (
+                "Precise, amused, and morally unreadable. Senna has the unsettling "
+                "habit of finishing other people's sentences — not with the wrong "
+                "words, but with the words the speaker was trying to avoid. They "
+                "dress in muted layers that seem to absorb light, making them "
+                "difficult to track in peripheral vision. Their voice is soft and "
+                "carries oddly well in enclosed spaces, a trait they exploit with "
+                "obvious relish. They have a scar across the bridge of their nose "
+                "that they claim was caused by a filing cabinet. The story changes "
+                "each time they tell it. They keep meticulous records of debts, "
+                "favours, and secrets in a cipher that has resisted three separate "
+                "attempts at decryption. They consider transparency overrated and "
+                "trust a negotiable concept."
+            ),
+            "background": (
+                f"No one is entirely certain when Senna arrived in {sim_name}. The "
+                "gate records show no entry; the housing registry shows them as a "
+                "tenant of three months' standing. When asked, they smile and suggest "
+                "that perhaps the records are correct and everyone else's memory is "
+                "wrong. They claim to have served as an auditor in a subterranean "
+                "market two cities east, where the economy ran on whispered confidences "
+                "weighed on brass scales. The market collapsed — not financially but "
+                "literally, into a sinkhole — and Senna emerged from the rubble with "
+                "their ledger intact and their composure undisturbed. "
+                f"{mentions[2].title() if not mentions[2][0].isupper() else mentions[2]} has expressed both admiration and unease at Senna's "
+                "ability to appraise the value of information by ear alone. They have "
+                "been assigned to audit the Hollows' debt networks, a task that "
+                "everyone agrees needs doing and no one else was willing to attempt."
+            ),
+        },
+    ]
+    return pool[:3]
+
+
 def mock_entity_translations(agents: list, buildings: list, zones: list, streets: list, sim_desc: str) -> dict:
     """Return minimal DE translations for all entity types."""
     return {

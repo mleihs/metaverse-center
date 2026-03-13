@@ -6,9 +6,12 @@ import logging
 from typing import Any
 from uuid import UUID
 
+import structlog
+
 from pydantic_ai import Agent
 
 from backend.models.forge import ForgeLoreOutput, ForgeLoreTranslatedOutput
+from backend.config import settings
 from backend.services.ai_utils import get_openrouter_model
 from supabase import Client
 
@@ -240,6 +243,20 @@ class ForgeLoreService:
         return translations
 
     @staticmethod
+    async def list_for_simulation(
+        supabase: Client, simulation_id: UUID,
+    ) -> list[dict[str, Any]]:
+        """List all lore sections for a simulation, ordered by sort_order."""
+        resp = (
+            supabase.table("simulation_lore")
+            .select("*")
+            .eq("simulation_id", str(simulation_id))
+            .order("sort_order")
+            .execute()
+        )
+        return resp.data or []
+
+    @staticmethod
     async def persist_lore(
         supabase: Client,
         simulation_id: UUID,
@@ -279,3 +296,224 @@ class ForgeLoreService:
         )
         supabase.table("simulation_lore").insert(rows).execute()
         logger.debug("Lore persisted", extra={"simulation_id": str(simulation_id)})
+
+    @staticmethod
+    async def generate_dossier(
+        admin_supabase: Client,
+        simulation_id: UUID,
+        user_id: UUID,
+        purchase_id: str,
+        openrouter_key: str | None = None,
+    ) -> None:
+        """Generate a 6-section classified dossier for an existing simulation (background task).
+
+        Sections: ALPHA (pre-arrival), BETA (agent addenda), GAMMA (geographic anomalies),
+        DELTA (bleed signatures), EPSILON (prophetic fragments), ZETA (bureau recommendation).
+        Persists as simulation_lore rows with chapter='CLASSIFIED' and sort_order 100+.
+        """
+        structlog.contextvars.bind_contextvars(simulation_id=str(simulation_id))
+        from backend.services.forge_feature_service import ForgeFeatureService
+
+        try:
+            # 1. Fetch full simulation data
+            sim_resp = admin_supabase.table("simulations").select(
+                "name, description"
+            ).eq("id", str(simulation_id)).single().execute()
+            sim = sim_resp.data
+
+            agents_resp = admin_supabase.table("agents").select(
+                "name, primary_profession, character, background"
+            ).eq("simulation_id", str(simulation_id)).execute()
+            agents = agents_resp.data or []
+
+            buildings_resp = admin_supabase.table("buildings").select(
+                "name, building_type, description"
+            ).eq("simulation_id", str(simulation_id)).execute()
+            buildings = buildings_resp.data or []
+
+            zones_resp = admin_supabase.table("zones").select(
+                "name, zone_type, description"
+            ).eq("simulation_id", str(simulation_id)).execute()
+            zones = zones_resp.data or []
+
+            lore_resp = admin_supabase.table("simulation_lore").select(
+                "title, body, chapter"
+            ).eq("simulation_id", str(simulation_id)).order("sort_order").execute()
+            existing_lore = lore_resp.data or []
+
+            # 2. Build dossier prompt
+            agent_block = "\n".join(
+                f"  - {a['name']} ({a['primary_profession']}): {a.get('character', '')[:150]}... "
+                f"BACKGROUND: {a.get('background', '')[:150]}..."
+                for a in agents[:12]
+            )
+            building_block = "\n".join(
+                f"  - {b['name']} ({b['building_type']}): {b.get('description', '')[:100]}..."
+                for b in buildings[:10]
+            )
+            zone_block = "\n".join(
+                f"  - {z['name']} ({z['zone_type']}): {z.get('description', '')[:80]}"
+                for z in zones
+            )
+            lore_block = "\n".join(
+                f"  [{l['chapter']}] {l['title']}: {l.get('body', '')[:200]}..."
+                for l in existing_lore[:7]
+            )
+
+            dossier_prompt = f"""You are the Bureau's Senior Classified Analyst producing an expanded intelligence dossier
+for the materialized shard "{sim['name']}".
+
+WORLD: {sim['name']}
+DESCRIPTION: {sim.get('description', '')}
+
+EXISTING LORE (for continuity):
+{lore_block}
+
+AGENTS ({len(agents)} registered):
+{agent_block}
+
+BUILDINGS ({len(buildings)} catalogued):
+{building_block}
+
+ZONES ({len(zones)} mapped):
+{zone_block}
+
+Generate a CLASSIFIED DOSSIER with exactly 6 sections. Each section has chapter="CLASSIFIED",
+a unique arcanum, title, optional epigraph (real literary quotes), and body text.
+
+Required sections (in order):
+1. ARCANUM "ALPHA" — Pre-Arrival History (~2,000 words)
+   What existed before the shard materialized. Competing theories from Bureau historians.
+   Archaeological evidence, temporal anomalies, contested origin myths.
+
+2. ARCANUM "BETA" — Agent Classified Addenda (~2,500 words)
+   Classified supplement for EACH agent. Hidden motivations, surveillance notes,
+   cross-references between agents' secrets. Bureau risk assessments.
+   Reference EVERY agent by name.
+
+3. ARCANUM "GAMMA" — Geographic Anomalies (~1,500 words)
+   Spatial irregularities, impossible geometries, zones that don't obey cartographic law.
+   Reference specific zones and buildings by name.
+
+4. ARCANUM "DELTA" — Bleed Signature Analysis (~1,500 words)
+   How this shard's reality leaks into adjacent realities. Sensory manifestations,
+   documented incidents, containment protocols. Technical Bureau language.
+
+5. ARCANUM "EPSILON" — Prophetic Fragments (~1,000 words)
+   Recovered documents, dreams, inscriptions that seem to predict events.
+   Use [CONSUMED], [DEGRADED], [ILLEGIBLE] markers. Unreliable narration.
+
+6. ARCANUM "ZETA" — Bureau Recommendation (~500 words)
+   Official Bureau assessment. Threat level, research value, recommended actions.
+   Institutional language with dry humor.
+
+REQUIREMENTS:
+- Total ~9,000 words across all sections
+- Reference agents, buildings, and zones BY NAME throughout
+- Use document degradation markers: [CONSUMED], [DEGRADED], [ILLEGIBLE], [REDACTED]
+- Epigraphs from real authors (properly attributed)
+- 2-3 sections should include image_slug and image_caption for illustration
+- Maintain continuity with existing lore
+- Classified tone: institutional authority, clinical precision, understated unease
+"""
+
+            if settings.forge_mock_mode:
+                sections = [
+                    {
+                        "chapter": "CLASSIFIED",
+                        "arcanum": arcanum,
+                        "title": f"Classified Section: {arcanum}",
+                        "epigraph": "",
+                        "body": f"[CLASSIFIED] Dossier section {arcanum} for {sim['name']}. [REDACTED]",
+                        "image_slug": None,
+                        "image_caption": None,
+                    }
+                    for arcanum in ["ALPHA", "BETA", "GAMMA", "DELTA", "EPSILON", "ZETA"]
+                ]
+            else:
+                model = get_openrouter_model(openrouter_key)
+                agent = Agent(model, system_prompt=BUREAU_ARCHIVIST_PROMPT)
+                result = await agent.run(dossier_prompt, output_type=ForgeLoreOutput)
+                sections = [s.model_dump() for s in result.output.sections]
+
+            # 3. Translate to German
+            translations = None
+            try:
+                translations = await ForgeLoreService.translate_lore(
+                    sections, openrouter_key,
+                )
+            except Exception:
+                logger.exception("Dossier translation failed")
+
+            # 4. Persist with sort_order 100+ (after standard lore)
+            if sections:
+                rows = []
+                for idx, section in enumerate(sections):
+                    row = {
+                        "simulation_id": str(simulation_id),
+                        "sort_order": 100 + idx,
+                        "chapter": "CLASSIFIED",
+                        "arcanum": section.get("arcanum", f"SEC-{idx}"),
+                        "title": section["title"],
+                        "epigraph": section.get("epigraph", ""),
+                        "body": section["body"],
+                        "image_slug": section.get("image_slug"),
+                        "image_caption": section.get("image_caption"),
+                    }
+                    if translations and idx < len(translations):
+                        tr = translations[idx]
+                        row["title_de"] = tr.get("title")
+                        row["epigraph_de"] = tr.get("epigraph", "")
+                        row["body_de"] = tr.get("body")
+                        row["image_caption_de"] = tr.get("image_caption")
+                    rows.append(row)
+
+                admin_supabase.table("simulation_lore").insert(rows).execute()
+
+            # 5. Generate dossier images
+            try:
+                image_sections = [s for s in sections if s.get("image_slug")]
+                for section in image_sections[:3]:
+                    from backend.services.image_service import ImageService
+
+                    desc = section.get("image_caption", section["title"])
+                    style_resp = admin_supabase.table("simulation_settings").select(
+                        "setting_value"
+                    ).eq("simulation_id", str(simulation_id)).eq(
+                        "setting_key", "image_style_prompt_lore"
+                    ).maybe_single().execute()
+                    style = ""
+                    if style_resp.data:
+                        val = style_resp.data.get("setting_value", "")
+                        style = val.strip('"') if isinstance(val, str) else str(val)
+                    if style:
+                        desc = f"{desc}. Style: {style}"
+
+                    lore_rows = admin_supabase.table("simulation_lore").select(
+                        "id"
+                    ).eq("simulation_id", str(simulation_id)).eq(
+                        "title", section["title"]
+                    ).maybe_single().execute()
+                    if lore_rows.data:
+                        await ImageService.generate_and_upload(
+                            admin_supabase, simulation_id, "lore",
+                            lore_rows.data["id"], desc, "", None,
+                        )
+            except Exception:
+                logger.exception("Dossier image generation failed")
+
+            # 6. Mark purchase completed
+            await ForgeFeatureService.complete_feature(
+                admin_supabase, purchase_id,
+                result={"sections": len(sections)},
+            )
+            logger.info(
+                "Classified dossier completed",
+                extra={"simulation_id": str(simulation_id), "sections": len(sections)},
+            )
+
+        except Exception as exc:
+            logger.exception("Dossier generation failed")
+            await ForgeFeatureService.fail_feature(
+                admin_supabase, purchase_id, str(exc),
+            )

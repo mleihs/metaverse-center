@@ -1,7 +1,9 @@
 import { localized, msg } from '@lit/localize';
+import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
+import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { icons } from '../../utils/icons.js';
 
 interface NavTab {
@@ -28,7 +30,7 @@ function getTabs(): NavTab[] {
 
 @localized()
 @customElement('velg-simulation-nav')
-export class VelgSimulationNav extends LitElement {
+export class VelgSimulationNav extends SignalWatcher(LitElement) {
   static styles = css`
     :host {
       display: block;
@@ -228,6 +230,44 @@ export class VelgSimulationNav extends LitElement {
       }
     }
 
+    /* ── Feature Badge Dots ── */
+
+    .nav__badge {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--color-accent-amber);
+      animation: badge-pulse 2s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    @keyframes badge-pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; box-shadow: 0 0 4px var(--color-accent-amber); }
+    }
+
+    .mobile-menu__badge {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--color-accent-amber);
+      flex-shrink: 0;
+      margin-left: auto;
+      animation: badge-pulse 2s ease-in-out infinite;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .nav__badge,
+      .mobile-menu__badge {
+        animation: none;
+        opacity: 1;
+      }
+    }
+
     /* === Mobile: hamburger menu === */
 
     .mobile-bar {
@@ -335,14 +375,17 @@ export class VelgSimulationNav extends LitElement {
 
   private _boundClickOutside: ((e: MouseEvent) => void) | null = null;
   private _boundKeyDown: ((e: KeyboardEvent) => void) | null = null;
+  private _boundDetectActiveTab: (() => void) | null = null;
 
   connectedCallback(): void {
     super.connectedCallback();
     this._detectActiveTab();
     this._boundClickOutside = this._handleClickOutside.bind(this);
     this._boundKeyDown = this._handleKeyDown.bind(this);
+    this._boundDetectActiveTab = () => this._detectActiveTab();
     document.addEventListener('click', this._boundClickOutside);
     document.addEventListener('keydown', this._boundKeyDown);
+    window.addEventListener('popstate', this._boundDetectActiveTab);
   }
 
   disconnectedCallback(): void {
@@ -352,6 +395,9 @@ export class VelgSimulationNav extends LitElement {
     }
     if (this._boundKeyDown) {
       document.removeEventListener('keydown', this._boundKeyDown);
+    }
+    if (this._boundDetectActiveTab) {
+      window.removeEventListener('popstate', this._boundDetectActiveTab);
     }
   }
 
@@ -415,8 +461,14 @@ export class VelgSimulationNav extends LitElement {
     return appState.currentSimulation.value?.simulation_type === 'game_instance';
   }
 
+  private get _badgedTabs(): Set<string> {
+    if (!appState.canEdit.value || !this.simulationId) return new Set();
+    return forgeStateManager.getUnpurchasedTabPaths(this.simulationId);
+  }
+
   protected render() {
     const tabs = this._visibleTabs;
+    const badged = this._badgedTabs;
 
     return html`
       ${
@@ -437,6 +489,7 @@ export class VelgSimulationNav extends LitElement {
             >
               <span class="nav__icon">${tab.icon()}</span>
               <span class="nav__label">${tab.label}</span>
+              ${badged.has(tab.path) ? html`<span class="nav__badge"></span>` : nothing}
             </a>
           `,
         )}
@@ -464,6 +517,7 @@ export class VelgSimulationNav extends LitElement {
             >
               <span class="mobile-menu__icon">${tab.icon()}</span>
               ${tab.label}
+              ${badged.has(tab.path) ? html`<span class="mobile-menu__badge"></span>` : nothing}
             </a>
           `,
         )}

@@ -3,6 +3,7 @@ import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
+import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { healthApi } from '../../services/api/HealthApiService.js';
 import { simulationsApi } from '../../services/api/SimulationsApiService.js';
 import { themeService } from '../../services/ThemeService.js';
@@ -10,6 +11,8 @@ import type { BleedStatus, ThresholdState } from '../../types/health.js';
 import { icons } from '../../utils/icons.js';
 
 import '../bleed/BleedPalimpsestOverlay.js';
+import '../forge/VelgBureauDispatch.js';
+import '../forge/VelgBureauNotice.js';
 import '../health/AscendancyAura.js';
 import '../health/DesperateActionsPanel.js';
 import '../health/EntropyOverlay.js';
@@ -364,6 +367,8 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
   @property({ type: String }) simulationId = '';
   @property({ type: String }) view = 'lore';
 
+  @state() private _dispatchOpen = false;
+  @state() private _bureauNoticeVisible = false;
   @state() private _simSwitcherOpen = false;
   @state() private _dropdownPos = { top: 0, left: 0 };
   @state() private _bleedStatus: BleedStatus | null = null;
@@ -371,9 +376,15 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
   private _focusedIndex = -1;
 
   private _appliedSimulationId = '';
+  private _bureauNoticeTimer?: ReturnType<typeof setTimeout>;
   private _bleedPollTimer?: ReturnType<typeof setInterval>;
   private _boundCloseDropdown = (e: MouseEvent) => this._onOutsideClick(e);
   private _boundKeyDown = (e: KeyboardEvent) => this._onKeyDown(e);
+
+  private get _isEpoch(): boolean {
+    const sim = appState.currentSimulation.value;
+    return sim?.simulation_type === 'game_instance' && !!sim.epoch_id;
+  }
 
   /* ── Entropy deceleration ── */
   private _previousThresholdState: ThresholdState = 'normal';
@@ -386,10 +397,12 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
 
   async connectedCallback(): Promise<void> {
     super.connectedCallback();
+    this.addEventListener('open-bureau-dispatch', this._handleOpenBureauDispatch);
     if (this.simulationId) {
       await this._applyTheme();
       this._fetchBleedStatus();
       this._startBleedPolling();
+      this._initBureauDispatch();
     }
     // Ensure simulations list is populated for the breadcrumb switcher.
     // On direct navigation / page refresh, the dashboard hasn't mounted
@@ -403,9 +416,67 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
     }
   }
 
+  private _initBureauDispatch(): void {
+    if (!appState.canEdit.value) return;
+    // Load feature statuses for badge dots + dispatch status
+    void forgeStateManager.loadAllFeatureStatuses(this.simulationId);
+    // Show non-blocking notice strip (not modal) on first visit
+    const key = `bureau_dispatch_seen_${this.simulationId}`;
+    if (!localStorage.getItem(key)) {
+      this._bureauNoticeVisible = true;
+      this._bureauNoticeTimer = setTimeout(() => {
+        this._dismissBureauNotice();
+      }, 10_000);
+    }
+  }
+
+  private _dismissBureauNotice(): void {
+    this._bureauNoticeVisible = false;
+    localStorage.setItem(`bureau_dispatch_seen_${this.simulationId}`, '1');
+    if (this._bureauNoticeTimer) {
+      clearTimeout(this._bureauNoticeTimer);
+      this._bureauNoticeTimer = undefined;
+    }
+  }
+
+  private _openDispatchFromNotice(): void {
+    this._dismissBureauNotice();
+    this._dispatchOpen = true;
+  }
+
+  private _handleDispatchClose(): void {
+    this._dispatchOpen = false;
+    const key = `bureau_dispatch_seen_${this.simulationId}`;
+    localStorage.setItem(key, '1');
+  }
+
+  private _handleDispatchNavigate(e: CustomEvent<{ tab: string }>): void {
+    this._dispatchOpen = false;
+    const key = `bureau_dispatch_seen_${this.simulationId}`;
+    localStorage.setItem(key, '1');
+    const slug = appState.currentSimulation.value?.slug ?? this.simulationId;
+    this.dispatchEvent(
+      new CustomEvent('navigate', {
+        detail: `/simulations/${slug}/${e.detail.tab}`,
+        bubbles: true,
+        composed: true,
+      }),
+    );
+    // Sync nav highlight after route change (URL updated synchronously by router)
+    queueMicrotask(() => {
+      (this.shadowRoot?.querySelector('velg-simulation-nav') as any)?._detectActiveTab?.();
+    });
+  }
+
+  private _handleOpenBureauDispatch = (): void => {
+    this._dispatchOpen = true;
+  };
+
   disconnectedCallback(): void {
     document.removeEventListener('click', this._boundCloseDropdown);
     document.removeEventListener('keydown', this._boundKeyDown);
+    this.removeEventListener('open-bureau-dispatch', this._handleOpenBureauDispatch);
+    if (this._bureauNoticeTimer) clearTimeout(this._bureauNoticeTimer);
     themeService.resetTheme(this);
     this._appliedSimulationId = '';
     this._stopBleedPolling();
@@ -908,7 +979,13 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
       <velg-svg-filters></velg-svg-filters>
       <div class="shell">
         ${this._bleedStatus?.fracture_warning ? this._renderFractureBanner() : nothing}
-        <velg-simulation-header .simulationId=${this.simulationId}></velg-simulation-header>
+        <velg-simulation-header .simulationId=${this.simulationId} ?introHexagon=${this._bureauNoticeVisible}></velg-simulation-header>
+        ${this._bureauNoticeVisible ? html`
+          <velg-bureau-notice
+            @notice-dismiss=${this._dismissBureauNotice}
+            @notice-open-dispatch=${this._openDispatchFromNotice}
+          ></velg-bureau-notice>
+        ` : nothing}
         ${this._renderBreadcrumb()}
         <velg-simulation-nav .simulationId=${this.simulationId}></velg-simulation-nav>
         <div class="shell__content shell__overlays">
@@ -933,14 +1010,24 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
       </div>
       ${isCritical
         ? html`
-            <velg-entropy-timer
-              .cyclesRemaining=${this._bleedStatus?.entropy_cycles_remaining ?? null}
-            ></velg-entropy-timer>
+            ${this._isEpoch
+              ? html`<velg-entropy-timer
+                  .cyclesRemaining=${this._bleedStatus?.entropy_cycles_remaining ?? null}
+                ></velg-entropy-timer>`
+              : nothing}
             <velg-desperate-actions-panel
               .simulationId=${this.simulationId}
             ></velg-desperate-actions-panel>
           `
         : nothing}
+      ${appState.canEdit.value ? html`
+        <velg-bureau-dispatch
+          .simulationId=${this.simulationId}
+          ?open=${this._dispatchOpen}
+          @dispatch-close=${this._handleDispatchClose}
+          @dispatch-navigate=${this._handleDispatchNavigate}
+        ></velg-bureau-dispatch>
+      ` : nothing}
     `;
   }
 

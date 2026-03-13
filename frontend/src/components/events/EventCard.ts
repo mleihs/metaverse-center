@@ -355,7 +355,7 @@ export class VelgEventCard extends LitElement {
             role="img"
             aria-label=${msg(str`Status: ${evt.event_status ?? 'active'}`)}
           ></span>
-          <h3 class="card__title">${t(evt, 'title')}</h3>
+          <h3 class="card__title" title=${t(evt, 'title')}>${t(evt, 'title')}</h3>
           ${this._renderImpactBar()}
         </div>
 

@@ -5,6 +5,8 @@ from __future__ import annotations
 import logging
 from uuid import UUID
 
+import structlog
+
 from fastapi import HTTPException, status
 from pydantic_ai import Agent
 
@@ -148,6 +150,27 @@ class ForgeOrchestratorService:
         # Unrecognized RPC error — keep 500 but log for future classification
         logger.warning("Unclassified RPC error: %s", error_message[:200])
         return 500, "Shard materialization failed. Please contact support if the issue persists."
+
+    @staticmethod
+    def _create_image_service(
+        supabase: Client,
+        simulation_id: UUID,
+        sim_data: dict,
+        anchor_data: dict | None = None,
+        replicate_api_key: str | None = None,
+        openrouter_api_key: str | None = None,
+    ) -> ImageService:
+        """Build an ``ImageService`` with world context from the simulation."""
+        world_context = ForgeOrchestratorService._build_world_context(
+            supabase, simulation_id, sim_data, anchor_data,
+        )
+        return ImageService(
+            supabase,
+            simulation_id,
+            replicate_api_key=replicate_api_key,
+            openrouter_api_key=openrouter_api_key,
+            world_context=world_context,
+        )
 
     @staticmethod
     async def _get_user_keys(supabase: Client, user_id: UUID) -> tuple[str | None, str | None]:
@@ -579,12 +602,13 @@ class ForgeOrchestratorService:
         then sequential image generation (banner → portraits → buildings → lore).
         Optimized for 512MB RAM: processes one image at a time.
         """
-        logger.info("Starting background generation", extra={"simulation_id": str(simulation_id)})
+        structlog.contextvars.bind_contextvars(simulation_id=str(simulation_id))
+        logger.info("Starting background generation")
 
         try:
             or_key, rep_key = await ForgeOrchestratorService._get_user_keys(supabase, user_id)
         except Exception:
-            logger.exception("Failed to fetch BYOK keys — using platform keys", extra={"simulation_id": str(simulation_id)})
+            logger.exception("Failed to fetch BYOK keys — using platform keys")
             or_key, rep_key = None, None
 
         # ── Phase A: Lore + translations (must complete before images) ──
@@ -593,7 +617,7 @@ class ForgeOrchestratorService:
         )
 
         # ── Phase B: Image generation ──
-        logger.info("Starting image generation", extra={"simulation_id": str(simulation_id)})
+        logger.info("Starting image generation")
 
         sim_resp = (
             supabase.table("simulations")
@@ -604,16 +628,9 @@ class ForgeOrchestratorService:
         )
         sim_data = sim_resp.data or {}
 
-        world_context = cls._build_world_context(
+        image_service = cls._create_image_service(
             supabase, simulation_id, sim_data, anchor_data,
-        )
-
-        image_service = ImageService(
-            supabase,
-            simulation_id,
-            replicate_api_key=rep_key,
-            openrouter_api_key=or_key,
-            world_context=world_context,
+            replicate_api_key=rep_key, openrouter_api_key=or_key,
         )
 
         try:
@@ -623,7 +640,7 @@ class ForgeOrchestratorService:
                 anchor_data=anchor_data,
             )
         except Exception:
-            logger.exception("Banner generation failed", extra={"simulation_id": str(simulation_id)})
+            logger.exception("Banner generation failed")
 
         # 2. Agent portraits
         agents = (
@@ -699,7 +716,258 @@ class ForgeOrchestratorService:
                     extra={"entity_type": "lore_section", "entity_id": section["id"]},
                 )
 
-        logger.info("Batch generation completed", extra={"simulation_id": str(simulation_id)})
+        logger.info("Batch generation completed")
+
+    @staticmethod
+    async def recruit_agents(
+        admin_supabase: Client,
+        simulation_id: UUID,
+        user_id: UUID,
+        purchase_id: str,
+        focus: str | None = None,
+        zone_id: UUID | None = None,
+        openrouter_key: str | None = None,
+        replicate_key: str | None = None,
+    ) -> None:
+        """Generate 3 new agents for an existing simulation (background task).
+
+        Uses the existing ``generate_blueprint_chunk("agents")`` pattern but
+        with additional context from the live simulation data and a recruitment
+        prompt that requires arrival narratives and relationships.
+        """
+        structlog.contextvars.bind_contextvars(simulation_id=str(simulation_id))
+        from backend.services.forge_feature_service import ForgeFeatureService
+
+        try:
+            # 1. Fetch simulation data
+            sim_resp = admin_supabase.table("simulations").select(
+                "name, description"
+            ).eq("id", str(simulation_id)).single().execute()
+            sim = sim_resp.data
+
+            agents_resp = admin_supabase.table("agents").select(
+                "name, primary_profession, character"
+            ).eq("simulation_id", str(simulation_id)).execute()
+            existing_agents = agents_resp.data or []
+
+            zones_resp = admin_supabase.table("zones").select(
+                "id, name, zone_type, description"
+            ).eq("simulation_id", str(simulation_id)).execute()
+            zones = zones_resp.data or []
+
+            # 2. Build recruitment prompt
+            agent_list = "\n".join(
+                f"  - {a['name']} ({a['primary_profession']}): {a.get('character', '')[:100]}..."
+                for a in existing_agents[:10]
+            )
+            zone_context = "\n".join(
+                f"  - {z['name']} ({z['zone_type']}): {z.get('description', '')[:80]}"
+                for z in zones
+            )
+
+            prompt = f"""You are a Bureau Recruitment Officer processing new arrivals for {sim['name']}.
+
+WORLD DESCRIPTION: {sim.get('description', '')}
+
+EXISTING AGENTS ({len(existing_agents)} total):
+{agent_list}
+
+ZONES:
+{zone_context}
+
+{"RECRUITMENT FOCUS: " + focus if focus else ""}
+{"TARGET ZONE: " + next((z['name'] for z in zones if z['id'] == str(zone_id)), 'any') if zone_id else ""}
+
+Generate exactly 3 new agents. Requirements:
+- Each agent MUST have an ARRIVAL NARRATIVE woven into their background (how/why they arrived)
+- Each agent MUST have 1-2 relationships with EXISTING agents (mention by name)
+- Varied genders, professions, and temperaments
+- Characters that create interesting tensions or complement the existing roster
+- 200-300 words for character, 200-300 words for background
+"""
+
+            if settings.forge_mock_mode:
+                logger.debug("FORGE_MOCK_MODE: using mock recruits")
+                generated = [
+                    ForgeAgentDraft(**r)
+                    for r in mock.mock_recruits(
+                        sim["name"],
+                        [a["name"] for a in existing_agents],
+                        focus,
+                    )
+                ]
+            else:
+                model = get_openrouter_model(openrouter_key)
+                agent = Agent(
+                    model,
+                    system_prompt=WORLD_ARCHITECT_PROMPT,
+                    result_type=list[ForgeAgentDraft],
+                )
+                result = await agent.run(prompt)
+                generated = result.data
+
+            # 3. Insert agents into the simulation
+            for agent_draft in generated:
+                admin_supabase.table("agents").insert({
+                    "simulation_id": str(simulation_id),
+                    "name": agent_draft.name,
+                    "gender": agent_draft.gender,
+                    "system": agent_draft.system,
+                    "primary_profession": agent_draft.primary_profession,
+                    "character": agent_draft.character,
+                    "background": agent_draft.background,
+                }).execute()
+
+            # 4. Generate portraits
+            try:
+                sim_data = {"name": sim["name"], "description": sim.get("description", "")}
+                image_service = ForgeOrchestratorService._create_image_service(
+                    admin_supabase, simulation_id, sim_data,
+                    replicate_api_key=replicate_key, openrouter_api_key=openrouter_key,
+                )
+
+                for agent_draft in generated:
+                    agent_in_db = admin_supabase.table("agents").select(
+                        "id"
+                    ).eq("simulation_id", str(simulation_id)).eq(
+                        "name", agent_draft.name
+                    ).maybe_single().execute()
+
+                    if agent_in_db.data:
+                        await image_service.generate_agent_portrait(
+                            agent_id=agent_in_db.data["id"],
+                            agent_name=agent_draft.name,
+                            agent_data={
+                                "character": agent_draft.character,
+                                "background": agent_draft.background,
+                            },
+                        )
+            except Exception:
+                logger.exception("Portrait generation failed for recruits")
+
+            # 5. Translate
+            try:
+                agent_rows = admin_supabase.table("agents").select(
+                    "id, name, primary_profession, character, background"
+                ).eq("simulation_id", str(simulation_id)).in_(
+                    "name", [a.name for a in generated]
+                ).execute()
+
+                if agent_rows.data:
+                    await ForgeEntityTranslationService.translate_entities(
+                        admin_supabase, simulation_id,
+                        agent_rows.data, [], [], [],
+                        sim.get("description", ""),
+                        openrouter_key,
+                    )
+            except Exception:
+                logger.exception("Translation failed for recruits")
+
+            # 6. Complete feature purchase
+            await ForgeFeatureService.complete_feature(
+                admin_supabase, purchase_id,
+                result={
+                    "agents": [a.name for a in generated],
+                    "count": len(generated),
+                },
+            )
+            logger.info(
+                "Recruitment completed",
+                extra={"agents": len(generated)},
+            )
+
+        except Exception as exc:
+            logger.exception("Recruitment failed")
+            await ForgeFeatureService.fail_feature(
+                admin_supabase, purchase_id, str(exc),
+            )
+
+    @staticmethod
+    async def regenerate_single_image(
+        admin_supabase: Client,
+        simulation_id: UUID,
+        entity_type: str,
+        entity_id: UUID,
+        prompt_override: str | None = None,
+        user_id: UUID | None = None,
+    ) -> None:
+        """Regenerate a single entity image (Darkroom feature)."""
+        structlog.contextvars.bind_contextvars(
+            simulation_id=str(simulation_id),
+            entity_type=entity_type,
+            entity_id=str(entity_id),
+        )
+        try:
+            # Fetch entity data for image description
+            table_map = {"agent": "agents", "building": "buildings", "lore": "simulation_lore"}
+            table = table_map.get(entity_type)
+            if not table:
+                logger.error("Invalid entity_type for regen: %s", entity_type)
+                return
+
+            select = "*, zones(name)" if entity_type == "building" else "*"
+            entity_resp = admin_supabase.table(table).select(select).eq(
+                "id", str(entity_id)
+            ).single().execute()
+            entity = entity_resp.data
+
+            # Fetch simulation data + BYOK keys
+            sim_resp = admin_supabase.table("simulations").select(
+                "name, description, slug"
+            ).eq("id", str(simulation_id)).single().execute()
+            sim_data = sim_resp.data or {}
+
+            or_key = None
+            rep_key = None
+            if user_id:
+                or_key, rep_key = await ForgeOrchestratorService._get_user_keys(
+                    admin_supabase, user_id,
+                )
+
+            image_service = ForgeOrchestratorService._create_image_service(
+                admin_supabase, simulation_id, sim_data,
+                replicate_api_key=rep_key, openrouter_api_key=or_key,
+            )
+
+            if entity_type == "agent":
+                await image_service.generate_agent_portrait(
+                    agent_id=entity_id,
+                    agent_name=entity["name"],
+                    agent_data={
+                        "character": entity.get("character", ""),
+                        "background": entity.get("background", ""),
+                    },
+                    description_override=prompt_override,
+                )
+            elif entity_type == "building":
+                zone_data = entity.get("zones") or {}
+                await image_service.generate_building_image(
+                    building_id=entity_id,
+                    building_name=entity["name"],
+                    building_type=entity.get("building_type", ""),
+                    building_data={
+                        "description": entity.get("description", ""),
+                        "building_condition": entity.get("building_condition", ""),
+                        "building_style": entity.get("style", ""),
+                        "special_type": entity.get("special_type", ""),
+                        "construction_year": entity.get("construction_year", ""),
+                        "population_capacity": entity.get("population_capacity", ""),
+                        "zone_name": zone_data.get("name", ""),
+                    },
+                    description_override=prompt_override,
+                )
+            elif entity_type == "lore":
+                sim_slug = sim_data.get("slug", str(simulation_id))
+                await image_service.generate_lore_image(
+                    section_title=entity.get("title", ""),
+                    section_body=entity.get("body", ""),
+                    image_slug=entity.get("image_slug", str(entity_id)),
+                    sim_slug=sim_slug,
+                )
+
+            logger.info("Darkroom regen completed")
+        except Exception:
+            logger.exception("Darkroom regen failed")
 
     @staticmethod
     def _build_world_context(
