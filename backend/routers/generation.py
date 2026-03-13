@@ -92,6 +92,7 @@ class GenerateLoreImageRequest(BaseModel):
     section_body: str = Field(..., description="Body text of the lore section (truncated for prompt).")
     image_slug: str = Field(..., min_length=1, description="Slug for the output file path.")
     sim_slug: str = Field(..., min_length=1, description="Simulation slug for the storage path.")
+    image_caption: str | None = Field(None, description="Visual scene description for direct use as image prompt.")
 
 
 # --- Helpers ---
@@ -318,6 +319,7 @@ async def generate_lore_image(
             section_body=body.section_body,
             image_slug=body.image_slug,
             sim_slug=body.sim_slug,
+            image_caption=body.image_caption,
         )
         return {"success": True, "data": {"image_url": url}}
     except OpenRouterError as e:

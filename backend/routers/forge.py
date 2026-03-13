@@ -6,6 +6,7 @@ from typing import Literal
 from uuid import UUID
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, status
+from pydantic import BaseModel, Field
 
 from backend.dependencies import (
     get_admin_supabase,
@@ -34,6 +35,7 @@ from backend.models.forge import (
     UpdateBYOKRequest,
 )
 from backend.services.audit_service import AuditService
+from backend.services.dossier_evolution_service import DossierEvolutionService
 from backend.services.codex_export_service import CodexExportService
 from backend.services.forge_draft_service import ForgeDraftService
 from backend.services.forge_feature_service import ForgeFeatureService
@@ -482,6 +484,49 @@ async def purchase_classified_dossier(
 
 
 @router.post(
+    "/simulations/{simulation_id}/dossier/evolve",
+    response_model=SuccessResponse[dict],
+)
+@limiter.limit(RATE_LIMIT_AI_GENERATION)
+async def evolve_dossier_section(
+    request: Request,
+    simulation_id: UUID,
+    background_tasks: BackgroundTasks,
+    arcanum: str = Query(..., description="Section arcanum: BETA, GAMMA, DELTA, or ZETA"),
+    trigger: str = Query(..., description="Evolution trigger: agent_recruited, building_constructed, resonance_event, periodic"),
+    entity_name: str = Query(..., description="Name of new entity/event"),
+    entity_detail: str = Query("", description="Additional context"),
+    user: CurrentUser = Depends(require_architect()),
+    admin_supabase=Depends(get_admin_supabase),
+):
+    """Evolve a classified dossier section with new content."""
+    valid_arcanums = {"BETA", "GAMMA", "DELTA", "ZETA"}
+    if arcanum not in valid_arcanums:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid arcanum. Must be one of: {', '.join(valid_arcanums)}",
+        )
+
+    # Get user's BYOK key if available
+    supabase_user = Depends(get_supabase)
+    or_key = None
+    try:
+        or_key, _ = await _orchestrator_service._get_user_keys(
+            admin_supabase, user.id,
+        )
+    except Exception:
+        pass
+
+    background_tasks.add_task(
+        DossierEvolutionService.evolve_section,
+        admin_supabase, simulation_id, arcanum, trigger,
+        entity_name, entity_detail, or_key,
+    )
+
+    return {"success": True, "data": {"status": "evolving", "arcanum": arcanum}}
+
+
+@router.post(
     "/simulations/{simulation_id}/recruit",
     response_model=SuccessResponse[dict],
 )
@@ -775,29 +820,46 @@ async def update_user_byok_allowed(
     return {"success": True, "data": {"user_id": str(target_user_id), "byok_allowed": enabled}}
 
 
+class RegenerateImagesRequest(BaseModel):
+    """Optional filter for batch image regeneration."""
+
+    entity_types: list[str] | None = Field(
+        None,
+        description="Filter to specific types: 'banner', 'agent', 'building', 'lore'. Omit for all.",
+    )
+
+
 @router.post("/admin/regenerate-images/{simulation_id}", response_model=SuccessResponse[dict])
 @limiter.limit(RATE_LIMIT_AI_GENERATION)
 async def regenerate_images(
     request: Request,
     simulation_id: UUID,
     background_tasks: BackgroundTasks,
+    body: RegenerateImagesRequest | None = None,
     admin: CurrentUser = Depends(require_platform_admin()),
     admin_supabase=Depends(get_admin_supabase),
 ):
-    """Trigger batch image generation for an existing simulation (admin only)."""
+    """Trigger batch image generation for an existing simulation (admin only).
+
+    Optionally filter to specific entity types (e.g. {"entity_types": ["lore"]}).
+    """
     # Verify simulation exists (raises 404 if not found)
     sim = await SimulationService.check_exists(admin_supabase, simulation_id)
+
+    entity_types = set(body.entity_types) if body and body.entity_types else None
 
     background_tasks.add_task(
         _orchestrator_service.run_batch_generation,
         admin_supabase,
         simulation_id,
         admin.id,
+        entity_types=entity_types,
     )
 
+    types_str = ", ".join(sorted(entity_types)) if entity_types else "all"
     await AuditService.safe_log(
         admin_supabase, str(simulation_id), admin.id, "simulation", str(simulation_id),
-        "regenerate_images", {"simulation_name": sim["name"]},
+        "regenerate_images", {"simulation_name": sim["name"], "entity_types": types_str},
     )
 
-    return {"success": True, "data": {"message": f"Image generation started for '{sim['name']}'."}}
+    return {"success": True, "data": {"message": f"Image generation ({types_str}) started for '{sim['name']}'."}}

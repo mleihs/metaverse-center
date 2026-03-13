@@ -21,6 +21,7 @@ from backend.models.forge import (
 )
 from backend.services import forge_mock_service as mock
 from backend.services.ai_utils import get_openrouter_model
+from backend.services.platform_model_config import get_platform_model
 from backend.services.forge_draft_service import ForgeDraftService
 from backend.services.forge_entity_translation_service import ForgeEntityTranslationService
 from backend.services.forge_lore_service import ForgeLoreService
@@ -309,7 +310,7 @@ class ForgeOrchestratorService:
 
         logger.debug("Instantiating dynamic Pydantic AI agent for chunk generation")
         dynamic_agent = Agent(
-            get_openrouter_model(or_key),
+            get_openrouter_model(or_key, model_id=get_platform_model("forge")),
             system_prompt=WORLD_ARCHITECT_PROMPT,
         )
 
@@ -595,12 +596,16 @@ class ForgeOrchestratorService:
         user_id: UUID,
         anchor_data: dict | None = None,
         draft_data: dict | None = None,
+        entity_types: set[str] | None = None,
     ) -> None:
         """Background task: lore generation → image generation.
 
         Runs research + lore + translations first (needed for world_context),
         then sequential image generation (banner → portraits → buildings → lore).
         Optimized for 512MB RAM: processes one image at a time.
+
+        If entity_types is provided, only regenerate those types
+        (e.g. {"lore"}, {"agent", "building"}).
         """
         structlog.contextvars.bind_contextvars(simulation_id=str(simulation_id))
         logger.info("Starting background generation")
@@ -633,88 +638,96 @@ class ForgeOrchestratorService:
             replicate_api_key=rep_key, openrouter_api_key=or_key,
         )
 
-        try:
-            await image_service.generate_banner_image(
-                sim_name=sim_data.get("name", "Unknown"),
-                sim_description=sim_data.get("description", ""),
-                anchor_data=anchor_data,
-            )
-        except Exception:
-            logger.exception("Banner generation failed")
+        _types = entity_types  # None = all types
+
+        if not _types or "banner" in _types:
+            try:
+                await image_service.generate_banner_image(
+                    sim_name=sim_data.get("name", "Unknown"),
+                    sim_description=sim_data.get("description", ""),
+                    anchor_data=anchor_data,
+                )
+            except Exception:
+                logger.exception("Banner generation failed")
 
         # 2. Agent portraits
-        agents = (
-            supabase.table("agents")
-            .select("id, name, character, background")
-            .eq("simulation_id", str(simulation_id))
-            .execute()
-        )
-        for agent in agents.data or []:
-            try:
-                await image_service.generate_agent_portrait(
-                    agent_id=agent["id"],
-                    agent_name=agent["name"],
-                    agent_data={"character": agent["character"], "background": agent["background"]},
-                )
-            except Exception:
-                logger.exception(
-                    "Batch image gen failed for agent",
-                    extra={"entity_type": "agent", "entity_id": agent["id"]},
-                )
+        if not _types or "agent" in _types:
+            agents = (
+                supabase.table("agents")
+                .select("id, name, character, background")
+                .eq("simulation_id", str(simulation_id))
+                .execute()
+            )
+            for agent in agents.data or []:
+                try:
+                    await image_service.generate_agent_portrait(
+                        agent_id=agent["id"],
+                        agent_name=agent["name"],
+                        agent_data={"character": agent["character"], "background": agent["background"]},
+                    )
+                except Exception:
+                    logger.exception(
+                        "Batch image gen failed for agent",
+                        extra={"entity_type": "agent", "entity_id": agent["id"]},
+                    )
 
         # 3. Building images
-        buildings = (
-            supabase.table("buildings")
-            .select("id, name, description, building_type, building_condition, style, special_type, construction_year, population_capacity, zones(name)")
-            .eq("simulation_id", str(simulation_id))
-            .execute()
-        )
-        for building in buildings.data or []:
-            zone_data = building.get("zones") or {}
-            try:
-                await image_service.generate_building_image(
-                    building_id=building["id"],
-                    building_name=building["name"],
-                    building_type=building["building_type"],
-                    building_data={
-                        "description": building.get("description", ""),
-                        "building_condition": building.get("building_condition", ""),
-                        "building_style": building.get("style", ""),
-                        "special_type": building.get("special_type", ""),
-                        "construction_year": building.get("construction_year", ""),
-                        "population_capacity": building.get("population_capacity", ""),
-                        "zone_name": zone_data.get("name", ""),
-                    },
-                )
-            except Exception:
-                logger.exception(
-                    "Batch image gen failed for building",
-                    extra={"entity_type": "building", "entity_id": building["id"]},
-                )
+        if not _types or "building" in _types:
+            buildings = (
+                supabase.table("buildings")
+                .select("id, name, description, building_type, building_condition, style, special_type, construction_year, population_capacity, zones(name)")
+                .eq("simulation_id", str(simulation_id))
+                .execute()
+            )
+            for building in buildings.data or []:
+                zone_data = building.get("zones") or {}
+                try:
+                    await image_service.generate_building_image(
+                        building_id=building["id"],
+                        building_name=building["name"],
+                        building_type=building["building_type"],
+                        building_data={
+                            "description": building.get("description", ""),
+                            "building_condition": building.get("building_condition", ""),
+                            "building_style": building.get("style", ""),
+                            "special_type": building.get("special_type", ""),
+                            "construction_year": building.get("construction_year", ""),
+                            "population_capacity": building.get("population_capacity", ""),
+                            "zone_name": zone_data.get("name", ""),
+                        },
+                    )
+                except Exception:
+                    logger.exception(
+                        "Batch image gen failed for building",
+                        extra={"entity_type": "building", "entity_id": building["id"]},
+                    )
 
         # 4. Lore images (sections with image_slug)
-        sim_slug = sim_data.get("slug", str(simulation_id))
-        lore_sections = (
-            supabase.table("simulation_lore")
-            .select("id, title, body, image_slug")
-            .eq("simulation_id", str(simulation_id))
-            .not_.is_("image_slug", "null")
-            .order("sort_order")
-            .execute()
-        )
-        for section in lore_sections.data or []:
-            try:
-                await image_service.generate_lore_image(
-                    section_title=section["title"],
-                    section_body=section["body"],
-                    image_slug=section["image_slug"],
-                    sim_slug=sim_slug,
-                )
-            except Exception:
-                logger.exception(
-                    "Lore image gen failed",
-                    extra={"entity_type": "lore_section", "entity_id": section["id"]},
-                )
+        if not _types or "lore" in _types:
+            sim_slug = sim_data.get("slug", str(simulation_id))
+            lore_sections = (
+                supabase.table("simulation_lore")
+                .select("id, title, body, image_slug, image_caption")
+                .eq("simulation_id", str(simulation_id))
+                .not_.is_("image_slug", "null")
+                .order("sort_order")
+                .execute()
+            )
+            for section in lore_sections.data or []:
+                try:
+                    await image_service.generate_lore_image(
+                        section_title=section["title"],
+                        section_body=section["body"],
+                        image_slug=section["image_slug"],
+                        sim_slug=sim_slug,
+                        section_id=section["id"],
+                        image_caption=section.get("image_caption"),
+                    )
+                except Exception:
+                    logger.exception(
+                        "Lore image gen failed",
+                        extra={"entity_type": "lore_section", "entity_id": section["id"]},
+                    )
 
         logger.info("Batch generation completed")
 
@@ -797,7 +810,7 @@ Generate exactly 3 new agents. Requirements:
                     )
                 ]
             else:
-                model = get_openrouter_model(openrouter_key)
+                model = get_openrouter_model(openrouter_key, model_id=get_platform_model("forge"))
                 agent = Agent(
                     model,
                     system_prompt=WORLD_ARCHITECT_PROMPT,
@@ -963,6 +976,8 @@ Generate exactly 3 new agents. Requirements:
                     section_body=entity.get("body", ""),
                     image_slug=entity.get("image_slug", str(entity_id)),
                     sim_slug=sim_slug,
+                    section_id=str(entity_id),
+                    image_caption=entity.get("image_caption"),
                 )
 
             logger.info("Darkroom regen completed")

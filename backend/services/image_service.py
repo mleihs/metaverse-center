@@ -308,20 +308,26 @@ class ImageService:
         section_body: str,
         image_slug: str,
         sim_slug: str,
+        section_id: str | None = None,
+        image_caption: str | None = None,
     ) -> str:
         """Generate a 3:2 atmospheric lore image and upload to storage.
 
         Uploads to simulation.assets/{sim_slug}/lore/{image_slug}.avif
         matching the LoreScroll._getImageUrl() path convention.
 
-        Uses GenerationService for LLM-powered description generation
-        (same pipeline as portraits and buildings) so simulation-specific
-        prompt templates can shape the output.
+        When image_caption is provided (written during lore creation as a
+        visual description specifically for image generation), it is used
+        directly as the Replicate prompt — no LLM re-generation needed.
+        Falls back to LLM-powered description from section body otherwise.
         """
-        description = await self._generation.generate_lore_image_description(
-            section_title=section_title,
-            section_body=section_body,
-        )
+        if image_caption:
+            description = image_caption
+        else:
+            description = await self._generation.generate_lore_image_description(
+                section_title=section_title,
+                section_body=section_body,
+            )
 
         style_prompt = await self._model_resolver.resolve_style_prompt("lore")
         if style_prompt:
@@ -346,6 +352,12 @@ class ImageService:
         full_path = path.replace(".avif", ".full.avif")
         await self._upload_to_storage("simulation.assets", full_path, full_avif)
         url = await self._upload_to_storage("simulation.assets", path, thumb_avif)
+
+        # Mark section as image-generated for progress tracking
+        if section_id:
+            self._supabase.table("simulation_lore").update(
+                {"image_generated_at": "now()"},
+            ).eq("id", section_id).execute()
 
         logger.info("Lore image uploaded", extra={"entity_type": "lore", "path": url})
         return url
