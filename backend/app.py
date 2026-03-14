@@ -6,6 +6,7 @@ import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+import sentry_sdk
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
@@ -14,6 +15,17 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from backend.config import settings as app_settings
+
+# --- Sentry (must initialize before app/middleware creation) ---
+if app_settings.sentry_dsn:
+    sentry_sdk.init(
+        dsn=app_settings.sentry_dsn,
+        environment=app_settings.sentry_environment,
+        traces_sample_rate=app_settings.sentry_traces_sample_rate,
+        send_default_pii=False,  # GDPR safe
+        enable_tracing=True,
+    )
+
 from backend.dependencies import get_admin_supabase
 from backend.services.platform_model_config import ensure_loaded as ensure_model_config
 from backend.services.resonance_scheduler import ResonanceScheduler

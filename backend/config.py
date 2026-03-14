@@ -38,6 +38,11 @@ class Settings(BaseSettings):
     platform_admin_emails: str = Field(default="admin@velgarien.dev", alias="PLATFORM_ADMIN_EMAILS")
     indexnow_key: str = ""
 
+    # Sentry
+    sentry_dsn: str = ""
+    sentry_environment: str = "development"
+    sentry_traces_sample_rate: float = 0.1
+
     # Logging
     log_level: str = "INFO"
     log_format: str = "auto"  # "auto" | "json" | "console"

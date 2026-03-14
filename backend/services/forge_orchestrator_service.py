@@ -19,6 +19,7 @@ from backend.models.forge import (
     ForgeGeographyDraft,
     PhilosophicalAnchor,
 )
+import sentry_sdk
 from backend.services import forge_mock_service as mock
 from pydantic_ai.exceptions import ModelHTTPError
 
@@ -909,6 +910,7 @@ Generate exactly 3 new agents. Requirements:
             )
 
         except Exception as exc:
+            sentry_sdk.capture_exception(exc)
             logger.exception("Recruitment failed")
             await ForgeFeatureService.fail_feature(
                 admin_supabase, purchase_id, str(exc),

@@ -6,6 +6,7 @@ import logging
 from typing import Any
 from uuid import UUID
 
+import sentry_sdk
 import structlog
 
 from pydantic_ai import Agent
@@ -549,6 +550,7 @@ REQUIREMENTS:
             )
 
         except Exception as exc:
+            sentry_sdk.capture_exception(exc)
             logger.exception("Dossier generation failed")
             await ForgeFeatureService.fail_feature(
                 admin_supabase, purchase_id, str(exc),

@@ -1,0 +1,11 @@
+{
+  "strict": false,
+  "rules": {
+    "no-unknown-tag-name": "warning",
+    "no-missing-import": "warning",
+    "no-unknown-attribute": "warning",
+    "no-unknown-property": "warning",
+    "no-invalid-boolean-binding": "error",
+    "no-incompatible-type-binding": "warning"
+  }
+}

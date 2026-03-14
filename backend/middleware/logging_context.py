@@ -6,6 +6,7 @@ import logging
 import time
 import uuid
 
+import sentry_sdk
 import structlog
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
@@ -27,6 +28,9 @@ class LoggingContextMiddleware(BaseHTTPMiddleware):
 
         request_id = request.headers.get("x-request-id") or uuid.uuid4().hex
         user_id = self._extract_user_id(request)
+
+        if user_id:
+            sentry_sdk.set_user({"id": user_id})
 
         structlog.contextvars.bind_contextvars(
             request_id=request_id,

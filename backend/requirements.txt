@@ -51,4 +51,5 @@ yarl==1.23.0
 pydantic-ai-slim[openai]==1.66.0
 tavily-python==0.5.0
 deepl==1.21.0
+sentry-sdk[fastapi]==2.29.1
 structlog==25.5.0
