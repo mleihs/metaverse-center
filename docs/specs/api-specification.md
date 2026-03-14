@@ -2047,6 +2047,7 @@ Token-Kaufsystem (Mock-Monetarisierung), Wallet-Verwaltung, BYOK-Schluessel, Fea
 | POST | `/api/v1/forge/purchase/classified-dossier` | Classified Dossier kaufen (2 FT, AI-Lore-Generation) | Editor+ |
 | POST | `/api/v1/forge/purchase/recruitment` | Recruitment Office kaufen (1 FT, 3 neue Agenten) | Editor+ |
 | POST | `/api/v1/forge/purchase/chronicle-export` | Chronicle Export kaufen (1 FT, Codex PDF) | Editor+ |
+| POST | `/api/v1/forge/purchase/chronicle-hires` | Full-Res Archive kaufen (1 FT, ZIP aller Bilder in nativer Aufloesung) | Editor+ |
 | POST | `/api/v1/forge/darkroom/{sim_id}/regenerate` | Bild-Regeneration (Darkroom Budget dekrementieren) | Editor+ |
 | GET | `/api/v1/forge/feature-purchases/{id}` | Einzelnen Feature-Kauf abrufen | Owner |
 
@@ -2102,7 +2103,7 @@ Token-Kaufsystem (Mock-Monetarisierung), Wallet-Verwaltung, BYOK-Schluessel, Fea
 | Zone Actions | 3 | List + Create + Cancel |
 | Resonances | 9 | CRUD + ProcessImpact + Impacts + Status + Restore |
 | Forge Access | 5 | Create + Me + Pending + PendingCount + Review |
-| Forge Token Economy | 19 | Bundles (1) + Wallet (3) + Feature Purchases (6) + Darkroom Regen (1) + Admin Bundles (2) + Admin Purchases (1) + Admin Grant (1) + Admin BYOK (2) + Admin Stats (2) |
+| Forge Token Economy | 20 | Bundles (1) + Wallet (3) + Feature Purchases (7) + Darkroom Regen (1) + Admin Bundles (2) + Admin Purchases (1) + Admin Grant (1) + Admin BYOK (2) + Admin Stats (2) |
 | Admin | 11 | Settings (2) + Users (3) + Memberships (3) + Cleanup (3) |
 | Public | 48 | Anonymer Lesezugriff (alle GET-only) |
-| **Gesamt** | **293** | **37 Router** |
+| **Gesamt** | **294** | **37 Router** |

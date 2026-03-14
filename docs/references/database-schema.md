@@ -3311,7 +3311,7 @@ Generisches Ledger fuer Premium-Feature-Kaeufe mit Token-Abzug.
 | id | uuid PK | |
 | user_id | uuid FK → auth.users | Kaeufer |
 | simulation_id | uuid FK → simulations | Ziel-Simulation |
-| feature_type | text | `darkroom_pass`, `classified_dossier`, `recruitment`, `chronicle_export` |
+| feature_type | text | `darkroom_pass`, `classified_dossier`, `recruitment`, `chronicle_export`. Config: `export_type` differentiates `codex` (PDF) vs `hires` (ZIP) |
 | token_cost | integer | Abgezogene Tokens (0 bei Admin/BYOK-Bypass) |
 | status | text | `pending`, `processing`, `completed`, `failed`, `refunded` |
 | config | jsonb | Feature-spezifische Konfiguration |

@@ -289,6 +289,20 @@ export const localeService = new LocaleService();
 
 ## Ebene 2: Simulations-Inhalte
 
+### Backend Auto-Translation Pipeline
+
+Simulation content is generated in English and automatically translated to German:
+
+| Content Type | Service | Translation Backend | Context |
+|-------------|---------|-------------------|---------|
+| Lore (initial) | `ForgeLoreService.translate_lore()` | PydanticAI (Claude) | Batch, all sections |
+| Dossier (initial) | `ForgeLoreService.translate_lore()` | PydanticAI (Claude) | Batch, 6 classified sections |
+| Dossier evolution | `TranslationService.translate_text()` | DeepL or Claude (configurable) | Per-addendum, with `TranslationContext` |
+| Entity fields | `_run_auto_translate()` | DeepL or Claude (configurable) | Per-entity, background task |
+| Chronicles | `TranslationService.translate_fields()` | DeepL or Claude (configurable) | Per-chronicle, background task |
+
+`TranslationContext` provides simulation name, theme, entity type, and additional notes to improve translation quality. For dossier evolution, this includes the ARCANUM section identifier and trigger type.
+
 ### Simulations-Sprach-Settings
 
 ```sql

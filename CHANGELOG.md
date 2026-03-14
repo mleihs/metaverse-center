@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Substrate Scanner** — news_scan_log + news_scan_candidates tables (migration 084), platform_settings defaults (migration 085), prompt templates for classification + bureau dispatch (migration 086)
 - **Map & RPC Improvements** — `map_simulations` view consolidating 3-query pattern (migration 091), `get_bleed_status()` RPC replacing N+1 queries (migration 099), `get_map_overlay_data()` RPC for zone topology + events + bleed in one round-trip (migration 100), `fn_get_wallet_summary()` composite RPC (migration 108)
 - **Dossier Evolution** — living dossier with `evolved_at` tracking on simulation_lore (migration 106)
+- **Chronicle Full-Res Archive** — `POST /api/v1/forge/simulations/{id}/chronicle/hires` endpoint. `CodexExportService.generate_hires_archive()` downloads all `.full.avif` originals (agents, buildings, lore, banner), packages as organized ZIP (`{sim-name}-fullres/` with subfolders), uploads to Supabase Storage. Frontend `VelgChronicleExport` card renamed from "HI-RES ARCHIVE" to "FULL-RES ARCHIVE" with honest resolution description
+- **Dossier Evolution Auto-Translation** — `DossierEvolutionService.evolve_section()` now translates each Bureau addendum to German via `TranslationService` (DeepL or Claude backend) with full `TranslationContext` (simulation name, theme, arcanum section, trigger type). Falls back to English on failure so `body_de` never falls behind
 - **Lore Image Tracking** — `image_generated_at` on simulation_lore, extended `get_forge_progress()` (migration 107)
 - **Threshold Actions Log** — tracks desperate/ascendant actions when simulation health crosses critical (<0.25) or ascendant (>0.85) thresholds (migration 097)
 - **Forge Access Requests** — `account_tier` on user_wallets + `forge_access_requests` table for Bureau clearance upgrade flow (migration 093)
@@ -28,6 +30,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- **Chronicle export download buttons** — DOWNLOAD buttons in Printing Press rendered with no `@click` handler after purchase. Now extracts `download_url` from completed purchase result, restores state on page reload from history, wires both codex PDF and full-res archive download handlers
+- **CI pipeline** — `sentry-sdk` and `deepl` added to `pyproject.toml` dependencies (were only in `requirements.txt`). Integration tests now check actual Supabase connectivity instead of just env var presence. Fixed stale mocks in echo service and wallet endpoint tests
+- **i18n coverage** — translated all 80 missing German strings in XLIFF (chronicle export, bureau status, dossier preview, command palette, navigation labels). Wrapped export type labels and status strings in `msg()`. Replaced inline styles with CSS classes
 - **CSP policy** — added `fonts.googleapis.com` to style-src, `fonts.gstatic.com` to font-src, `static.cloudflareinsights.com` to script-src (Google Fonts and Cloudflare Insights were blocked)
 - **Forge 422 on landing page** — VelgForgeMint called `/forge/bundles` and `/forge/wallet` without auth guard; added `isAuthenticated` check + lazy-load on mint open
 - **Map dispatch log entity** — raw HTML entity `&#9650;` rendered as text instead of triangle symbol; switched to Unicode escapes
