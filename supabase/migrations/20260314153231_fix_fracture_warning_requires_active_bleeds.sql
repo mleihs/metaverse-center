@@ -1,6 +1,7 @@
--- Aggregated bleed status for UI overlay rendering.
--- Replaces N+1 Python queries in game_mechanics_service.get_bleed_status().
--- Combines: simulation health (threshold), active echoes, foreign themes, lore fragments.
+-- Fix: fracture_warning should only be true when there are ACTIVE incoming bleeds.
+-- Previously it fired on high bleed_permeability alone (a structural metric from
+-- zone stability), causing the "BLEED THRESHOLD EXCEEDED" ticker to show on
+-- simulations that have poor health but no actual cross-sim bleeds.
 
 CREATE OR REPLACE FUNCTION public.get_bleed_status(p_simulation_id uuid)
  RETURNS jsonb
