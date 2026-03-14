@@ -7,6 +7,7 @@
 [![Lit 3.3](https://img.shields.io/badge/Lit-3.3-324FFF?logo=lit&logoColor=white)](https://lit.dev)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.135-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3FCF8E?logo=supabase&logoColor=white)](https://supabase.com)
+[![Sentry](https://img.shields.io/badge/Sentry-Error_Tracking-362D59?logo=sentry&logoColor=white)](https://sentry.io)
 
 > **Live:** [metaverse.center](https://metaverse.center) &mdash; anonymous browsing, no account required
 
@@ -216,33 +217,36 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 ## Architecture
 
 ```
-┌─────────────────────────────┐
-│   Browser (Lit Web Components)  │
-│   Preact Signals state          │
-│   Supabase JS (Auth/Realtime)   │
-└──────────┬────────┬─────────┘
+┌─────────────────────────────────┐
+│   Browser (Lit Web Components)      │
+│   Preact Signals state              │
+│   Supabase JS (Auth/Realtime)       │
+│   GA4 (Consent Mode v2)            │
+│   Sentry (Error Tracking)          │
+└──────────┬────────┬─────────────┘
            │        │
      REST API    Realtime
            │     (WebSocket)
            ▼        │
-┌──────────────┐    │
-│   FastAPI     │    │
-│  ~370 endpoints│    │
-│   41 routers  │    │
-│   PyJWT auth  │    │
-└──────┬───────┘    │
-       │            │
-       ▼            ▼
-┌──────────────────────────┐
-│   Supabase (PostgreSQL)       │
-│   67 tables + pgvector         │
-│   75 functions, 59 triggers    │
-│   246 RLS policies            │
-│   4 materialized views        │
-│   Realtime channels           │
-│   Auth (ES256/HS256)          │
-│   Storage (4 buckets)         │
-└──────────────────────────┘
+┌────────────────┐    │
+│   FastAPI       │    │
+│  ~490 endpoints │    │
+│   42 routers    │    │
+│   PyJWT auth    │    │
+│   Sentry SDK    │    │
+└──────┬─────────┘    │
+       │              │
+       ▼              ▼
+┌──────────────────────────────┐
+│   Supabase (PostgreSQL)          │
+│   67 tables + pgvector            │
+│   75+ functions, 59 triggers      │
+│   246 RLS policies               │
+│   4 materialized views           │
+│   Realtime channels              │
+│   Auth (ES256/HS256)             │
+│   Storage (4 buckets)            │
+└──────────────────────────────┘
 ```
 
 ### Key Patterns
@@ -253,7 +257,9 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 - **Per-Simulation Theming** &mdash; CSS custom properties cascade through shadow DOM. Each simulation gets its own theme preset, all validated against WCAG 2.1 AA contrast ratios.
 - **Structured Logging** &mdash; structlog on top of stdlib logging. JSON output in production, console renderer locally. Request context (user_id, request_id, method, path) injected via middleware. All mutations log with structured `extra={}` fields for observability.
 - **Game Instance Isolation** &mdash; When an epoch starts, participating simulations are atomically cloned into balanced game instances. Templates remain untouched. Clones are archived on completion, deleted on cancellation.
-- **Database-First Logic** &mdash; Business invariants enforced in PostgreSQL via ~65 functions and 25 trigger functions. Complex operations like epoch cloning (~250 lines PL/pgSQL) and forge materialization run as atomic transactions. Derived game metrics computed via 4 materialized views with stale-notification triggers.
+- **Database-First Logic** &mdash; Business invariants enforced in PostgreSQL via 75+ functions and 25 trigger functions. Complex operations like epoch cloning (~250 lines PL/pgSQL) and forge materialization run as atomic transactions. Derived game metrics computed via 4 materialized views with stale-notification triggers.
+- **Admin-Configurable AI** &mdash; LLM model selection (default, fallback, research, forge) configurable at runtime via platform admin panel with environment-specific overrides (dev uses cheap/free models). In-process caching with automatic invalidation on settings change.
+- **Token Economy** &mdash; Atomic SECURITY DEFINER RPCs for token purchases, grants, and feature unlocks. BYOK bypass system with 3 control levels (none/all/per_user) lets power users bring their own API keys.
 
 ---
 
@@ -263,12 +269,13 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 
 | Library | Version | Purpose |
 |:--------|:--------|:--------|
-| FastAPI | 0.135 | Async web framework, auto-generated OpenAPI docs, ~370 endpoints across 41 routers |
+| FastAPI | 0.135 | Async web framework, auto-generated OpenAPI docs, ~490 endpoints across 42 routers |
 | Pydantic v2 | 2.12 | Request/response validation, settings management |
 | structlog | 25.5 | Structured logging (JSON production, console dev) |
 | Supabase Python | 2.25 | PostgreSQL client with RLS enforcement |
 | PyJWT | 2.11 | JWT verification (ES256 production, HS256 local) |
-| Pillow | 12.0 | Image processing, AVIF conversion |
+| Sentry SDK | 2.29 | Error tracking and performance monitoring (FastAPI integration) |
+| Pillow | 12.1 | Image processing, AVIF conversion |
 | Replicate | 1.0 | AI image generation (Flux, Stable Diffusion) |
 | httpx | 0.28 | Async HTTP client for OpenRouter AI calls |
 | slowapi | 0.1 | Tiered rate limiting (30/hr AI, 100/min standard) |
@@ -281,11 +288,12 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 
 | Library | Version | Purpose |
 |:--------|:--------|:--------|
-| Lit | 3.3 | Web Components framework (187 custom elements) |
+| Lit | 3.3 | Web Components framework (186 custom elements) |
 | Preact Signals | 1.8 | Fine-grained reactive state management |
 | Supabase JS | 2.45 | Auth, Storage, Realtime channels |
 | Apache ECharts | 6.0 | Intelligence Report charts (radar, heatmap, bar, line) |
 | 3d-force-graph | 1.79 | Cartographer's Map force-directed visualization |
+| web-vitals | 5.1 | Core Web Vitals reporting (CLS, LCP, INP, TTFB) |
 | Zod | 4.3 | Runtime schema validation |
 | TypeScript | 5.9 | Type safety |
 | Vite | 7.3 | Build tool with HMR |
@@ -295,15 +303,16 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 
 | Component | Technology |
 |:----------|:-----------|
-| Database | PostgreSQL via Supabase (67 tables, 75 functions, 246 RLS policies, pgvector embeddings) |
+| Database | PostgreSQL via Supabase (67 tables, 75+ functions, 246 RLS policies, pgvector embeddings) |
 | Auth | Supabase Auth (JWT with ES256 in production, HS256 locally) |
 | Email | SMTP SSL (bilingual tactical briefing emails, fog-of-war compliant) |
-| AI Text | OpenRouter (admin-configurable model chain) |
+| AI Text | OpenRouter (admin-configurable model chain with env-specific fallbacks) |
 | AI Images | Replicate (Flux, Stable Diffusion) |
 | Hosting | Railway (3-stage Docker build with SEO prerender) + Cloudflare (CDN/DNS) |
-| Analytics | Google Analytics 4 (consent mode v2) |
-| Testing | pytest + pytest-cov + vitest + Playwright |
-| Linting | Ruff (backend) + Biome 2.4 (frontend) |
+| Error Tracking | Sentry (backend + frontend, FastAPI integration) |
+| Analytics | Google Analytics 4 (consent mode v2, 44 custom events, web vitals) |
+| Testing | pytest + pytest-cov + vitest + Playwright 1.58 |
+| Linting | Ruff (backend) + Biome 2.4 (frontend) + lit-analyzer (template checking) |
 
 ---
 
@@ -312,16 +321,17 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 | Metric | Count |
 |:-------|------:|
 | Database tables | 67 |
-| PostgreSQL functions | 75 |
+| PostgreSQL functions | 75+ |
 | Database trigger functions | 23 (59 triggers total) |
 | Views (regular + materialized) | 12 + 4 |
 | RLS policies | 246 |
-| SQL migrations | 115 |
-| API endpoints | ~370 across 41 routers |
-| Web Components | 187 custom elements |
-| Localized UI strings | 3,834 (EN/DE, 0 missing) |
-| Documentation files | 45+ (Divio structure + ADRs) |
-| Flagship simulations | 5 (users can create more) |
+| SQL migrations | 117 |
+| API endpoints | ~490 across 42 routers |
+| Web Components | 186 custom elements |
+| Localized UI strings | 3,837 (EN/DE, 0 missing) |
+| GA4 custom events | 44 (DOM + service-level tracking) |
+| Documentation files | 55 (Divio structure + ADRs) |
+| Flagship simulations | 5 + 1 joke preset (users can create more) |
 | Operative types | 6 |
 | Scoring dimensions | 5 |
 | Bot personalities | 5 archetypes x 3 difficulty levels |
@@ -358,6 +368,14 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 - **Environment sync tooling** &mdash; bidirectional simulation sync between local and production Supabase (`scripts/sync_simulation.py`) with dry-run mode, table group filtering, image storage mirroring
 - **Platform admin panel** &mdash; user/membership management, runtime cache TTL controls, resonance auto-processing scheduler, forge clearance request management with pending badge, LLM model configuration
 - **Bureau auth terminals** &mdash; themed login/register screens with scanlines, corner brackets, amber glow, blinking cursor, styled signup confirmation email
+- **Landing page** &mdash; full-screen immersive intro with hero section, animated feature grid, live platform stats, and call-to-action for unauthenticated visitors
+- **Substrate Scanner** &mdash; automated real-world event detection via 10 source adapters (USGS, NOAA, NASA EONET, GDACS, disease.sh, WHO, Guardian, NewsAPI, GDELT, Hacker News); 4-stage pipeline (fetch &rarr; pre-filter &rarr; classify &rarr; create) with batched LLM classification; admin candidate review queue; auto-creates substrate resonances from real earthquakes, pandemics, and geopolitical events
+- **Forge token economy** &mdash; mock-monetization layer with token bundles, atomic purchase RPC, admin grant tools, economy stats view, BYOK free access system (3 control levels), and feature purchases (Darkroom Pass, Classified Dossier, Recruitment Office, Chronicle Printing Press)
+- **Simulation lore** &mdash; per-simulation narrative sections (~5,000 words each) with AI-generated lore images, living dossier evolution (incremental updates when entities change), and post-ceremony shimmer-to-reveal image tracking
+- **Social media simulation** &mdash; in-world social media feed with AI-generated trends, posts, and news articles; transform/integrate/analyze actions that feed into zone stability and event generation
+- **Threshold actions** &mdash; emergency interventions when simulation health crosses critical (&lt;0.25) or ascendant (&gt;0.85) thresholds: scorched earth, emergency draft, reality anchor
+- **GA4 analytics** &mdash; 44 custom events (entity views, CRUD, chat, social, funnel, landing, web vitals), consent mode v2, GDPR cookie consent banner, user property segmentation, enhanced link attribution
+- **Sentry error tracking** &mdash; backend + frontend integration with FastAPI middleware, request context enrichment
 - **SEO** &mdash; JSON-LD structured data, dynamic sitemap, slug-based URLs, crawler meta injection
 - **Public-first browsing** &mdash; full read access without authentication
 
@@ -403,6 +421,7 @@ python -m ruff check backend/                   # Lint
 npx vitest run
 npx tsc --noEmit                         # Type check (Railway CI fails on errors)
 npx biome check src/                     # Lint
+npx lit-analyzer src/                    # Template type checking
 
 # E2E (requires backend + frontend running)
 npx playwright test
@@ -412,35 +431,35 @@ npx playwright test
 
 ```
 backend/
-  app.py                    # FastAPI entry (41 routers registered)
+  app.py                    # FastAPI entry (42 routers registered)
   logging_config.py         # structlog setup (JSON/console, noisy logger suppression)
   dependencies.py           # JWT auth, Supabase clients, role checking
-  routers/                  # 41 route modules (public, admin, entity, epoch, forge access)
+  routers/                  # 42 route modules (public, admin, entity, epoch, forge, scanner)
   models/                   # Pydantic model files
-  services/                 # Service modules (BaseService CRUD, AI, email, bots, logging)
-  middleware/               # SEO injection, logging context (request_id, user_id)
+  services/                 # Service modules (BaseService CRUD, AI, email, bots, scanning)
+  middleware/               # SEO injection, security headers, logging context
   tests/                    # pytest (unit + integration + performance)
 frontend/
   src/
     app-shell.ts            # Router + auth + simulation context
-    components/             # 187 Lit web components across 16 directories
-    services/               # API services, state, theme, i18n, realtime, SEO
+    components/             # 186 Lit web components across 24 directories
+    services/               # API services, state, theme, i18n, realtime, SEO, analytics
     styles/tokens/          # CSS design tokens (8 files)
     types/                  # TypeScript interfaces + Zod schemas
     locales/                # i18n (XLIFF source + generated output)
 supabase/
-  migrations/               # 115 SQL migration files
-  seed/                     # Seed data (7 active, 11 archived)
-scripts/                    # Image generation, epoch simulation, doc index generation
-docs/                       # 45+ documents (Divio structure)
-  specs/                    # 14 hard contracts ("this is how it works")
+  migrations/               # 117 SQL migration files
+  seed/                     # Seed data (19 files)
+scripts/                    # Image generation, epoch simulation, doc index, env sync
+docs/                       # 55 documents (Divio structure)
+  specs/                    # 15 hard contracts ("this is how it works")
   references/               # 5 canonical data ("look it up here")
-  guides/                   # 12 procedural ("how to do X")
+  guides/                   # 11 procedural ("how to do X")
   explanations/             # 5 understanding ("why it's this way")
-  analysis/                 # 6 epoch balance analysis reports
+  analysis/                 # 7 epoch balance + accessibility analysis reports
   audits/                   # 1 live playthrough audit
   adr/                      # 8 Architecture Decision Records
-  archive/                  # 1 legacy doc
+  archive/                  # 2 legacy docs
   INDEX.md                  # Auto-generated catalog from frontmatter
   llms.txt                  # AI-friendly doc index
 e2e/                        # Playwright E2E tests (13 spec files)
@@ -450,17 +469,18 @@ e2e/                        # Playwright E2E tests (13 spec files)
 
 ## Documentation
 
-The `docs/` directory contains 45+ documents organized in [Divio](https://docs.divio.com/documentation-system/) structure with YAML frontmatter. See [`docs/INDEX.md`](docs/INDEX.md) for the full catalog or [`docs/llms.txt`](docs/llms.txt) for AI-friendly consumption. See [`CHANGELOG.md`](CHANGELOG.md) for recent changes.
+The `docs/` directory contains 55 documents organized in [Divio](https://docs.divio.com/documentation-system/) structure with YAML frontmatter. See [`docs/INDEX.md`](docs/INDEX.md) for the full catalog or [`docs/llms.txt`](docs/llms.txt) for AI-friendly consumption. See [`CHANGELOG.md`](CHANGELOG.md) for recent changes.
 
 | Category | Count | Contents |
 |:---------|------:|:---------|
-| **specs/** | 14 | Platform Architecture, API (~370 endpoints), Auth, AI, Theming, Embassies, Epochs, Game Systems, Substrate Resonances |
-| **references/** | 5 | Database Schema (v3.5, 67 tables), Domain Models, Feature Catalog, Components, Design System |
-| **guides/** | 12 | Deployment (infrastructure + procedures), Testing, Migration, Implementation Plan, Simulation Creation, Simulation Blueprint, Playtest, Epoch Gameplay, SEO, Public Access, Local DB Reset |
+| **specs/** | 15 | Platform Architecture, API (~490 endpoints), Auth, AI, Theming, Embassies, Epochs, Game Systems, Substrate Resonances, Substrate Scanner, Microanimations |
+| **references/** | 5 | Database Schema (v3.6, 67 tables), Domain Models, Feature Catalog, Components, Design System |
+| **guides/** | 11 | Deployment (infrastructure + procedures), Testing, Migration, Simulation Creation, Simulation Blueprint, Playtest, Epoch Gameplay, SEO &amp; GA4, Public Access, Local DB Reset |
 | **explanations/** | 5 | Project Overview, Techstack, Game Design Document, Concept Lore, TCG Card System |
-| **analysis/** | 6 | Epoch balance reports (2P-5P + cross-reference + playthrough verification) |
+| **analysis/** | 7 | Epoch balance reports (2P-5P + cross-reference + playthrough) + accessibility analysis |
 | **audits/** | 1 | Simulation Forge live playthrough audit (UX, content quality, game design) |
 | **adr/** | 8 | Architecture Decision Records (multi-tenancy, settings, taxonomies, templates, cloning, admin, DB logic, resonance caps) |
+| **archive/** | 2 | Legacy documents (old schema, implementation plan) |
 
 ---
 
