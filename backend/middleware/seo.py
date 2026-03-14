@@ -5,6 +5,7 @@ from pathlib import Path
 from cachetools import TTLCache
 
 from backend.config import settings
+from backend.middleware import seo_content
 from backend.services.cache_config import get_ttl
 from supabase import Client, create_client
 
@@ -40,6 +41,9 @@ _index_html_cache: str | None = None
 # TTL cache for simulation metadata lookups (slug/UUID → sim data)
 # TTL is read from platform_settings; cache is rebuilt when admin changes the value.
 _sim_meta_cache: TTLCache = TTLCache(maxsize=64, ttl=get_ttl("cache_seo_metadata_ttl"))
+
+# TTL cache for entity content (per view per simulation)
+_entity_cache: TTLCache = TTLCache(maxsize=128, ttl=get_ttl("cache_seo_metadata_ttl"))
 
 VIEW_LABELS: dict[str, str] = {
     "lore": "Lore",
@@ -172,7 +176,7 @@ async def enrich_html_for_crawler(index_path: Path, url_path: str) -> str | None
     if sim is None:
         try:
             client = _get_anon_client()
-            query = client.table("simulations").select("slug,name,description,banner_url")
+            query = client.table("simulations").select("id,slug,name,description,banner_url")
             if is_uuid:
                 query = query.eq("id", id_or_slug)
             else:
@@ -202,10 +206,15 @@ async def enrich_html_for_crawler(index_path: Path, url_path: str) -> str | None
     # Build breadcrumb JSON-LD for simulation pages
     breadcrumb_json = _build_breadcrumb_json(sim_name, slug, view, view_label)
 
-    return _inject_meta(
+    enriched = _inject_meta(
         _index_html_cache, title=title, description=description, canonical=canonical,
         og_image=banner_url, extra_jsonld=breadcrumb_json,
     )
+
+    # Inject entity content for supported views
+    enriched = _inject_entity_content(enriched, view, sim.get("id", id_or_slug), sim_name, slug)
+
+    return enriched
 
 
 def _build_breadcrumb_json(sim_name: str, slug: str, view: str, view_label: str) -> str:
@@ -230,7 +239,35 @@ def _build_breadcrumb_json(sim_name: str, slug: str, view: str, view_label: str)
             "item": f"https://metaverse.center/simulations/{slug}/{view}",
         })
     breadcrumb = {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": items}
-    return json.dumps(breadcrumb)
+    raw = json.dumps(breadcrumb)
+    # Escape < and > for safe embedding inside HTML <script> tags
+    return raw.replace("<", "\\u003c").replace(">", "\\u003e")
+
+
+def _inject_entity_content(
+    html_str: str, view: str, sim_id: str, sim_name: str, slug: str,
+) -> str:
+    """Inject entity content HTML and JSON-LD into crawler response."""
+    cache_key = f"{slug}:{view}"
+    cached = _entity_cache.get(cache_key)
+    if cached is not None:
+        entity_html, entity_jsonld = cached
+    else:
+        client = _get_anon_client()
+        entity_html, entity_jsonld = seo_content.build_view_content(
+            client, sim_id, sim_name, slug, view,
+        )
+        _entity_cache[cache_key] = (entity_html, entity_jsonld)
+
+    if entity_html:
+        seo_div = f'<div id="seo-content" style="display:none">{entity_html}</div>'
+        html_str = html_str.replace("</body>", f"    {seo_div}\n  </body>")
+
+    if entity_jsonld:
+        jsonld_tag = f'<script type="application/ld+json">{entity_jsonld}</script>'
+        html_str = html_str.replace("</head>", f"    {jsonld_tag}\n  </head>")
+
+    return html_str
 
 
 def _inject_meta(

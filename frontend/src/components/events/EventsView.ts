@@ -2,6 +2,7 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
+import { seoService } from '../../services/SeoService.js';
 import { eventsApi } from '../../services/api/index.js';
 import type { Event as SimEvent } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
@@ -96,6 +97,11 @@ export class VelgEventsView extends LitElement {
     this._loadSeismographEvents();
   }
 
+  disconnectedCallback(): void {
+    seoService.removeStructuredData();
+    super.disconnectedCallback();
+  }
+
   protected willUpdate(changedProperties: Map<PropertyKey, unknown>): void {
     if (changedProperties.has('simulationId') && this.simulationId) {
       this._offset = 0;
@@ -140,6 +146,15 @@ export class VelgEventsView extends LitElement {
       if (response.success && response.data) {
         this._events = Array.isArray(response.data) ? response.data : [];
         this._total = response.meta?.total ?? this._events.length;
+        const sim = appState.currentSimulation.value;
+        if (sim) {
+          seoService.setCollectionPage({
+            name: `${sim.name} — Events`,
+            description: `Recent events in the ${sim.name} simulation.`,
+            url: `https://metaverse.center/simulations/${sim.slug}/events`,
+            numberOfItems: this._total,
+          });
+        }
       } else {
         this._error = response.error?.message ?? msg('Failed to load events');
       }
@@ -269,8 +284,8 @@ export class VelgEventsView extends LitElement {
     ];
 
     return html`
-      <div class="view">
-        <div class="view__header">
+      <section class="view" aria-label=${msg('Events')}>
+        <header class="view__header">
           <h1 class="view__title">${msg('Events')}</h1>
           ${
             this._canEdit
@@ -284,7 +299,7 @@ export class VelgEventsView extends LitElement {
             `
               : nothing
           }
-        </div>
+        </header>
 
         <velg-event-seismograph
           .simulationId=${this.simulationId}
@@ -352,7 +367,7 @@ export class VelgEventsView extends LitElement {
           .offset=${this._offset}
           @page-change=${this._handlePageChange}
         ></velg-pagination>
-      </div>
+      </section>
 
       <velg-event-edit-modal
         .event=${this._editEvent}

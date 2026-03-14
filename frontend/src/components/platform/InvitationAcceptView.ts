@@ -227,6 +227,9 @@ export class VelgInvitationAcceptView extends LitElement {
       const response = await invitationsApi.accept(this.token);
       if (response.success && response.data) {
         VelgToast.success(msg('Invitation accepted successfully.'));
+        document.dispatchEvent(
+          new CustomEvent('invitation-accepted', { bubbles: true }),
+        );
         this.dispatchEvent(
           new CustomEvent('navigate', {
             detail: `/simulations/${response.data.simulation_id}/agents`,

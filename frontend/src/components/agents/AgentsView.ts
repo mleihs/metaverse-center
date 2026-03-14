@@ -7,6 +7,7 @@ import { appState } from '../../services/AppStateManager.js';
 import { agentsApi } from '../../services/api/index.js';
 import type { Agent, AgentAptitude, AptitudeSet, OperativeType } from '../../types/index.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
+import { seoService } from '../../services/SeoService.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { gridLayoutStyles } from '../shared/grid-layout-styles.js';
 import type { FilterChangeDetail, FilterConfig } from '../shared/SharedFilterBar.js';
@@ -211,6 +212,7 @@ export class VelgAgentsView extends SignalWatcher(LitElement) {
 
   disconnectedCallback(): void {
     this._disposeImageTracking?.();
+    seoService.removeStructuredData();
     super.disconnectedCallback();
   }
 
@@ -250,6 +252,15 @@ export class VelgAgentsView extends SignalWatcher(LitElement) {
         this._total = response.meta?.total ?? this._agents.length;
         this._checkDeepLink();
         this._loadAllAptitudes();
+        const sim = appState.currentSimulation.value;
+        if (sim) {
+          seoService.setCollectionPage({
+            name: `${sim.name} — Agents`,
+            description: `All agents in the ${sim.name} simulation.`,
+            url: `https://metaverse.center/simulations/${sim.slug}/agents`,
+            numberOfItems: this._total,
+          });
+        }
       } else {
         this._error = response.error?.message ?? msg('Failed to load agents');
       }
@@ -450,8 +461,8 @@ export class VelgAgentsView extends SignalWatcher(LitElement) {
 
   protected render() {
     return html`
-      <div class="view">
-        <div class="view__header">
+      <section class="view" aria-label=${msg('Agents')}>
+        <header class="view__header">
           <h1 class="view__title">${msg('Agents')}</h1>
           ${
             this._canEdit
@@ -462,7 +473,7 @@ export class VelgAgentsView extends SignalWatcher(LitElement) {
               `
               : nothing
           }
-        </div>
+        </header>
 
         <velg-filter-bar
           .filters=${this._filterConfigs}
@@ -478,7 +489,7 @@ export class VelgAgentsView extends SignalWatcher(LitElement) {
           .offset=${this._offset}
           @page-change=${this._handlePageChange}
         ></velg-pagination>
-      </div>
+      </section>
 
       <velg-agent-edit-modal
         .agent=${this._editAgent}

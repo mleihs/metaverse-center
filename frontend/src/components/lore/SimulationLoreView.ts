@@ -144,13 +144,11 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
     slug: string;
     banner_url?: string;
   }): void {
-    seoService.setStructuredData({
-      '@context': 'https://schema.org',
-      '@type': 'Thing',
+    seoService.setCreativeWork({
       name: sim.name,
       description: sim.description,
       url: `https://metaverse.center/simulations/${sim.slug}/lore`,
-      ...(sim.banner_url ? { image: sim.banner_url } : {}),
+      image: sim.banner_url,
     });
   }
 
@@ -260,16 +258,16 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
 
     if (!sections && !this._editMode) {
       return html`
-        <div class="lore-view">
+        <article class="lore-view">
           ${canEdit ? this._renderToolbar() : nothing}
           <div class="lore-view__empty">${msg('No lore available for this simulation.')}</div>
-        </div>
+        </article>
       `;
     }
 
     if (this._editMode && canEdit) {
       return html`
-        <div class="lore-view">
+        <article class="lore-view">
           ${this._renderToolbar()}
           <velg-lore-editor
             .sections=${this._rawSections ?? []}
@@ -278,7 +276,7 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
             @lore-delete=${this._handleDelete}
             @lore-reorder=${this._handleReorder}
           ></velg-lore-editor>
-        </div>
+        </article>
       `;
     }
 
@@ -303,7 +301,7 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
             @dossier-ceremony-complete=${this._handleCeremonyComplete}
           ></velg-dossier-reveal>`
         : nothing}
-      <div class="lore-view">
+      <article class="lore-view">
         ${canEdit ? this._renderToolbar(hasDossier) : nothing}
 
         ${this._caseFileMode && classifiedSections.length > 0
@@ -351,7 +349,7 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
             ></velg-dossier-request>
           `
           : nothing}
-      </div>
+      </article>
     `;
   }
 

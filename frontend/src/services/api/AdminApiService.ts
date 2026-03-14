@@ -11,6 +11,10 @@ import type {
 import { BaseApiService } from './BaseApiService.js';
 
 export class AdminApiService extends BaseApiService {
+  async getEnvironment(): Promise<ApiResponse<{ environment: string }>> {
+    return this.get('/admin/environment');
+  }
+
   async listSettings(): Promise<ApiResponse<PlatformSetting[]>> {
     return this.get('/admin/settings');
   }

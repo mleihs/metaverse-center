@@ -9,11 +9,11 @@ _GA_DOMAINS = (
 )
 _CSP = "; ".join([
     "default-src 'self'",
-    "script-src 'self' https://*.googletagmanager.com",
+    f"script-src 'self' {_GA_DOMAINS} https://static.cloudflareinsights.com",
     f"connect-src 'self' https://*.supabase.co wss://*.supabase.co {_GA_DOMAINS}",
     f"img-src 'self' https://*.supabase.co {_GA_DOMAINS} data:",
-    "style-src 'self' 'unsafe-inline'",
-    "font-src 'self'",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com",
     "frame-ancestors 'none'",
 ])
 

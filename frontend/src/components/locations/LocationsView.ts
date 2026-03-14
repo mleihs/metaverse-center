@@ -301,7 +301,7 @@ export class VelgLocationsView extends LitElement {
 
   private _renderBreadcrumb() {
     return html`
-      <div class="view__breadcrumb">
+      <nav class="view__breadcrumb" aria-label=${msg('Location breadcrumb')}>
         <span
           class="view__crumb ${this._level === 'cities' ? 'view__crumb--current' : ''}"
           @click=${() => this._navigateTo('cities')}
@@ -331,7 +331,7 @@ export class VelgLocationsView extends LitElement {
             `
             : nothing
         }
-      </div>
+      </nav>
     `;
   }
 
@@ -426,8 +426,8 @@ export class VelgLocationsView extends LitElement {
     };
 
     return html`
-      <div class="view">
-        <div class="view__header">
+      <section class="view" aria-label=${msg('Locations')}>
+        <header class="view__header">
           <h1 class="view__title">${msg('Locations')}</h1>
           <div style="display: flex; align-items: center; gap: var(--space-3, 12px);">
             ${this._renderViewToggle()}
@@ -441,7 +441,7 @@ export class VelgLocationsView extends LitElement {
                 : nothing
             }
           </div>
-        </div>
+        </header>
 
         ${this._viewMode === 'list'
           ? html`
@@ -466,7 +466,7 @@ export class VelgLocationsView extends LitElement {
           @modal-close=${this._handleEditModalClose}
           @location-saved=${this._handleSaveComplete}
         ></velg-location-edit-modal>
-      </div>
+      </section>
     `;
   }
 }

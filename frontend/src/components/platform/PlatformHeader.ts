@@ -866,7 +866,7 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
       <div class="header">
         <div class="header__left">
           <!-- Favicon mark (mobile only) -->
-          <a href="/dashboard" class="header__mark" @click=${this._handleTitleClick}>
+          <a href="/dashboard" class="header__mark" aria-label=${msg('Home')} @click=${this._handleTitleClick}>
             <svg viewBox="0 0 360 360" aria-hidden="true">
               <g transform="translate(0,360) scale(0.1,-0.1)" fill="currentColor" stroke="none">
                 <path d="M1660 3334 c-398 -48 -704 -189 -959 -445 -625 -624 -588 -1633 81

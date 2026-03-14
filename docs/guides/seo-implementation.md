@@ -37,7 +37,7 @@ lang: en
 - `frontend/src/components/platform/PlatformHeader.ts` — span -> a href="/dashboard" (crawlable title)
 - `frontend/src/utils/text.ts` — agentAltText(), buildingAltText() for rich image alt text from DB fields
 - `backend/app.py` — Registered seo.router, crawler-aware serve_spa
-- `backend/middleware/security.py` — CSP header with GA4 domains
+- `backend/middleware/security.py` — CSP header with GA4, Google Fonts, Cloudflare Insights domains
 - `.env`, `.env.example`, `.env.production.example` — VITE_GA4_MEASUREMENT_ID
 - 8 components updated with lightbox alt text (AgentCard, AgentDetailsPanel, BuildingCard, BuildingDetailsPanel, ChatWindow, MessageList, SocialTrendsView, LoreScroll)
 
@@ -49,7 +49,7 @@ lang: en
 4. **Crawler detection**: User-Agent regex against 10 known bots (Googlebot, bingbot, Twitterbot, etc.)
 5. **HTML enrichment**: String replacement on cached index.html (not DOM parsing), with XSS escaping
 6. **GA4**: Consent Mode v2, analytics_storage denied by default, manual page_view on SPA navigation
-7. **CSP**: `'unsafe-inline'` required for style-src (Lit adopted stylesheets + ThemeService)
+7. **CSP**: `'unsafe-inline'` required for style-src (Lit adopted stylesheets + ThemeService). `fonts.googleapis.com` in style-src, `fonts.gstatic.com` in font-src, `static.cloudflareinsights.com` in script-src
 8. **Alt text**: Composed from DB fields used in image generation (character, background, profession for agents; type, zone, description, condition for buildings)
 
 ## Crawlability Limitations

@@ -102,7 +102,10 @@ class TestPreview:
     @pytest.mark.asyncio
     async def test_preview_completed_epochs(self):
         epoch_chain = _make_chain_mock(
-            _mock_table_response(data=[{"id": EPOCH_ID_1}, {"id": EPOCH_ID_2}]),
+            _mock_table_response(data=[
+                {"id": EPOCH_ID_1, "name": "Epoch Alpha", "updated_at": "2026-01-01T00:00:00Z"},
+                {"id": EPOCH_ID_2, "name": "Epoch Beta", "updated_at": "2026-01-02T00:00:00Z"},
+            ]),
         )
         cascade_chain = _make_chain_mock(_mock_table_response(count=5))
         sim_chain = _make_chain_mock(_mock_table_response(count=2))
@@ -152,8 +155,12 @@ class TestPreview:
 
     @pytest.mark.asyncio
     async def test_preview_archived_instances(self):
+        archived_data = [
+            {"id": str(uuid4()), "name": f"Archived {i}", "updated_at": "2026-01-01T00:00:00Z"}
+            for i in range(7)
+        ]
         sb = _make_supabase({
-            "simulations": _make_chain_mock(_mock_table_response(count=7)),
+            "simulations": _make_chain_mock(_mock_table_response(data=archived_data, count=7)),
         })
 
         result = await CleanupService.preview(sb, "archived_instances", 30)
@@ -176,7 +183,7 @@ class TestPreview:
     async def test_preview_stale_lobbies(self):
         sb = MagicMock()
         epoch_chain = _make_chain_mock(
-            _mock_table_response(data=[{"id": EPOCH_ID_1}]),
+            _mock_table_response(data=[{"id": EPOCH_ID_1, "name": "Stale Lobby", "updated_at": "2026-01-01T00:00:00Z"}]),
         )
         cascade_chain = _make_chain_mock(_mock_table_response(count=3))
 
@@ -201,7 +208,7 @@ class TestExecute:
     async def test_execute_completed_epochs_deletes_instances_first(self):
         """Game instance simulations must be deleted before epoch rows."""
         epoch_chain = _make_chain_mock(
-            _mock_table_response(data=[{"id": EPOCH_ID_1}]),
+            _mock_table_response(data=[{"id": EPOCH_ID_1, "name": "Epoch to Delete", "updated_at": "2026-01-01T00:00:00Z"}]),
         )
         cascade_chain = _make_chain_mock(_mock_table_response(count=2))
         sim_chain = MagicMock()
@@ -307,7 +314,7 @@ class TestCleanupServiceLogging:
     async def test_execute_logs_completion(self, caplog):
         """Successful epoch cleanup should log INFO with cleanup_type and deleted_count."""
         epoch_chain = _make_chain_mock(
-            _mock_table_response(data=[{"id": EPOCH_ID_1}]),
+            _mock_table_response(data=[{"id": EPOCH_ID_1, "name": "Epoch for Logging", "updated_at": "2026-01-01T00:00:00Z"}]),
         )
         cascade_chain = _make_chain_mock(_mock_table_response(count=2))
         sim_chain = MagicMock()

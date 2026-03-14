@@ -10,32 +10,74 @@ interface ModelSettingMeta {
   description: string;
 }
 
-const MODEL_KEYS = [
+const PROD_KEYS = [
   'model_default',
   'model_fallback',
   'model_research',
   'model_forge',
 ] as const;
 
-type ModelSettingKey = (typeof MODEL_KEYS)[number];
+const DEV_KEYS = [
+  'model_default_dev',
+  'model_fallback_dev',
+  'model_research_dev',
+  'model_forge_dev',
+] as const;
 
-function getModelMeta(): Record<ModelSettingKey, ModelSettingMeta> {
+const ALL_MODEL_KEYS = [...PROD_KEYS, ...DEV_KEYS] as const;
+type ModelSettingKey = (typeof ALL_MODEL_KEYS)[number];
+
+/** Purpose labels shared between prod and dev columns. */
+function getModelMeta(): Record<string, ModelSettingMeta> {
   return {
     model_default: {
       label: msg('Default Model'),
-      description: msg('Primary text model for simulation generation. Used when no purpose-specific or simulation-level override is set.'),
+      description: msg(
+        'Primary text model for simulation generation. Used when no purpose-specific or simulation-level override is set.',
+      ),
     },
     model_fallback: {
       label: msg('Fallback Model'),
-      description: msg('Last-resort model when the default is unavailable. Choose a cheap or free model to ensure generation never fails.'),
+      description: msg(
+        'Last-resort model when the default is unavailable. Choose a cheap or free model to ensure generation never fails.',
+      ),
     },
     model_research: {
       label: msg('Research Model'),
-      description: msg('Cheaper model for research and analysis tasks (Astrolabe, anchor generation). Trades quality for cost savings.'),
+      description: msg(
+        'Cheaper model for research and analysis tasks (Astrolabe, anchor generation). Trades quality for cost savings.',
+      ),
     },
     model_forge: {
       label: msg('Forge Model'),
-      description: msg('Text model for the Forge pipeline: lore generation, theme design, entity translation, and chunk drafting.'),
+      description: msg(
+        'Text model for the Forge pipeline: lore generation, theme design, entity translation, and chunk drafting.',
+      ),
+    },
+    // Dev keys share the same labels/descriptions — resolved via base key lookup
+    model_default_dev: {
+      label: msg('Default Model'),
+      description: msg(
+        'Primary text model for simulation generation. Used when no purpose-specific or simulation-level override is set.',
+      ),
+    },
+    model_fallback_dev: {
+      label: msg('Fallback Model'),
+      description: msg(
+        'Last-resort model when the default is unavailable. Choose a cheap or free model to ensure generation never fails.',
+      ),
+    },
+    model_research_dev: {
+      label: msg('Research Model'),
+      description: msg(
+        'Cheaper model for research and analysis tasks (Astrolabe, anchor generation). Trades quality for cost savings.',
+      ),
+    },
+    model_forge_dev: {
+      label: msg('Forge Model'),
+      description: msg(
+        'Text model for the Forge pipeline: lore generation, theme design, entity translation, and chunk drafting.',
+      ),
     },
   };
 }
@@ -54,6 +96,10 @@ const DEFAULTS: Record<ModelSettingKey, string> = {
   model_fallback: 'deepseek/deepseek-r1-0528:free',
   model_research: 'google/gemini-2.0-flash-001',
   model_forge: 'anthropic/claude-sonnet-4-6',
+  model_default_dev: 'deepseek/deepseek-r1-0528:free',
+  model_fallback_dev: 'deepseek/deepseek-r1-0528:free',
+  model_research_dev: 'google/gemini-2.0-flash-001',
+  model_forge_dev: 'deepseek/deepseek-r1-0528:free',
 };
 
 @localized()
@@ -66,11 +112,152 @@ export class VelgAdminModelsTab extends LitElement {
       font-family: var(--font-mono, monospace);
     }
 
-    .model-grid {
+    /* --- Animations --- */
+
+    @keyframes panel-enter {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes amber-pulse {
+      0%,
+      100% {
+        opacity: 0.5;
+      }
+      50% {
+        opacity: 1;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .forge-section,
+      .model-card {
+        animation: none !important;
+      }
+    }
+
+    /* --- Bureau Section Wrapper --- */
+
+    .forge-section {
+      position: relative;
+      background: var(--color-surface-sunken);
+      border: 1px solid var(--color-border);
+      padding: var(--space-5) var(--space-5) var(--space-5) var(--space-6);
+      margin-bottom: var(--space-5);
+      animation: panel-enter 0.4s ease both;
+    }
+
+    .forge-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3px;
+      height: 100%;
+      background: linear-gradient(
+        180deg,
+        var(--color-accent-amber) 0%,
+        var(--color-accent-amber-dim, rgba(245, 158, 11, 0.3)) 100%
+      );
+    }
+
+    .forge-section__header {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-3);
+      margin-bottom: var(--space-1);
+    }
+
+    .forge-section__code {
+      font-family: var(--font-mono, 'SF Mono', monospace);
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--color-accent-amber);
+      opacity: 0.7;
+      white-space: nowrap;
+    }
+
+    .forge-section__title {
+      font-family: var(--font-brutalist, 'Courier New', monospace);
+      font-weight: 900;
+      font-size: var(--text-sm);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+      color: var(--color-text-primary);
+      margin: 0;
+    }
+
+    .forge-section__divider {
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        var(--color-accent-amber-dim, rgba(245, 158, 11, 0.2)) 0%,
+        transparent 80%
+      );
+      margin-bottom: var(--space-4);
+    }
+
+    /* --- Two-Column Layout --- */
+
+    .env-columns {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-      gap: var(--space-4);
-      margin-bottom: var(--space-6);
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-5);
+    }
+
+    .env-column__header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-bottom: var(--space-4);
+    }
+
+    .env-column__label {
+      font-family: var(--font-brutalist, 'Courier New', monospace);
+      font-weight: 900;
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--color-text-muted);
+    }
+
+    .env-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      font-family: var(--font-mono, 'SF Mono', monospace);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border-radius: 2px;
+      background: var(--color-accent-amber);
+      color: var(--color-gray-950);
+      animation: amber-pulse 2s ease infinite;
+    }
+
+    .env-badge::before {
+      content: '';
+      display: inline-block;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--color-gray-950);
+    }
+
+    /* --- Model Cards --- */
+
+    .model-cards {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
     }
 
     .model-card {
@@ -80,6 +267,20 @@ export class VelgAdminModelsTab extends LitElement {
       transition:
         border-color 0.2s ease,
         box-shadow 0.2s ease;
+      animation: panel-enter 0.4s ease both;
+    }
+
+    .model-card:nth-child(1) {
+      animation-delay: 0s;
+    }
+    .model-card:nth-child(2) {
+      animation-delay: 0.05s;
+    }
+    .model-card:nth-child(3) {
+      animation-delay: 0.1s;
+    }
+    .model-card:nth-child(4) {
+      animation-delay: 0.15s;
     }
 
     .model-card:hover {
@@ -87,8 +288,8 @@ export class VelgAdminModelsTab extends LitElement {
     }
 
     .model-card--dirty {
-      border-color: var(--color-warning);
-      box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-warning) 50%, transparent);
+      border-color: var(--color-accent-amber);
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-accent-amber) 40%, transparent);
     }
 
     .model-card__label {
@@ -130,7 +331,7 @@ export class VelgAdminModelsTab extends LitElement {
       -webkit-appearance: none;
       -moz-appearance: none;
       appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23f59e0b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 10px center;
       padding-right: var(--space-8);
@@ -138,8 +339,8 @@ export class VelgAdminModelsTab extends LitElement {
 
     .model-card__select:focus {
       outline: none;
-      border-color: var(--color-danger);
-      box-shadow: 0 0 0 1px var(--color-danger);
+      border-color: var(--color-accent-amber);
+      box-shadow: 0 0 0 1px var(--color-accent-amber);
     }
 
     .model-card__select option {
@@ -156,7 +357,9 @@ export class VelgAdminModelsTab extends LitElement {
       border: 1px solid var(--color-border);
       color: var(--color-text-muted);
       cursor: pointer;
-      transition: color 0.2s ease, border-color 0.2s ease;
+      transition:
+        color 0.2s ease,
+        border-color 0.2s ease;
       white-space: nowrap;
     }
 
@@ -166,8 +369,8 @@ export class VelgAdminModelsTab extends LitElement {
     }
 
     .model-card__custom-toggle--active {
-      color: var(--color-danger);
-      border-color: color-mix(in srgb, var(--color-danger) 50%, transparent);
+      color: var(--color-accent-amber);
+      border-color: color-mix(in srgb, var(--color-accent-amber) 50%, transparent);
     }
 
     .model-card__custom-row {
@@ -192,8 +395,8 @@ export class VelgAdminModelsTab extends LitElement {
 
     .model-card__custom-input:focus {
       outline: none;
-      border-color: var(--color-danger);
-      box-shadow: 0 0 0 1px var(--color-danger);
+      border-color: var(--color-accent-amber);
+      box-shadow: 0 0 0 1px var(--color-accent-amber);
     }
 
     .model-card__custom-input::placeholder {
@@ -212,6 +415,7 @@ export class VelgAdminModelsTab extends LitElement {
     .actions {
       display: flex;
       gap: var(--space-3);
+      margin-top: var(--space-5);
     }
 
     .btn {
@@ -244,14 +448,13 @@ export class VelgAdminModelsTab extends LitElement {
     }
 
     .btn--save {
-      background: var(--color-danger);
-      color: var(--color-text-inverse);
-      border: 1px solid var(--color-danger);
+      background: var(--color-accent-amber);
+      color: var(--color-gray-950);
+      border: 1px solid var(--color-accent-amber);
     }
 
     .btn--save:hover:not(:disabled) {
-      background: var(--color-danger-hover);
-      box-shadow: 0 0 12px color-mix(in srgb, var(--color-danger) 30%, transparent);
+      box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent-amber) 30%, transparent);
     }
 
     .btn--reset {
@@ -261,8 +464,8 @@ export class VelgAdminModelsTab extends LitElement {
     }
 
     .btn--reset:hover:not(:disabled) {
-      color: var(--color-danger);
-      border-color: color-mix(in srgb, var(--color-danger) 50%, transparent);
+      color: var(--color-accent-amber);
+      border-color: color-mix(in srgb, var(--color-accent-amber) 50%, transparent);
     }
 
     .loading {
@@ -274,7 +477,7 @@ export class VelgAdminModelsTab extends LitElement {
     }
 
     @media (max-width: 768px) {
-      .model-grid {
+      .env-columns {
         grid-template-columns: 1fr;
       }
     }
@@ -285,37 +488,55 @@ export class VelgAdminModelsTab extends LitElement {
   @state() private _customMode: Set<string> = new Set();
   @state() private _loading = true;
   @state() private _saving = false;
+  @state() private _activeEnvironment = 'development';
 
   async connectedCallback(): Promise<void> {
     super.connectedCallback();
-    await this._loadSettings();
+    await this._loadData();
   }
 
-  private async _loadSettings(): Promise<void> {
+  private async _loadData(): Promise<void> {
     this._loading = true;
-    const result = await adminApi.listSettings();
-    if (result.success && result.data) {
-      const allSettings = result.data as PlatformSetting[];
+    // Fetch settings and environment in parallel
+    const [settingsResult, envResult] = await Promise.all([
+      adminApi.listSettings(),
+      adminApi.getEnvironment(),
+    ]);
+
+    if (settingsResult.success && settingsResult.data) {
+      const allSettings = settingsResult.data as PlatformSetting[];
       this._settings = allSettings.filter((s) =>
-        (MODEL_KEYS as readonly string[]).includes(s.setting_key),
+        (ALL_MODEL_KEYS as readonly string[]).includes(s.setting_key),
       );
       this._editValues = {};
       this._customMode = new Set();
+      // Seed all keys with defaults first, then overlay DB values
+      for (const key of ALL_MODEL_KEYS) {
+        this._editValues[key] = DEFAULTS[key];
+      }
       for (const s of this._settings) {
         const val = String(s.setting_value).replace(/"/g, '');
         this._editValues[s.setting_key] = val;
-        // If current value isn't in the preset list, enable custom mode
         if (!MODEL_OPTIONS.some((o) => o.id === val)) {
           this._customMode.add(s.setting_key);
         }
       }
     }
+
+    if (envResult.success && envResult.data) {
+      this._activeEnvironment = (envResult.data as { environment: string }).environment;
+    }
+
     this._loading = false;
   }
 
   private _isDirty(key: string): boolean {
     const original = this._settings.find((s) => s.setting_key === key);
-    if (!original) return false;
+    if (!original) {
+      // Key not in DB yet — dirty if value differs from hardcoded default
+      const defaultVal = DEFAULTS[key as ModelSettingKey];
+      return defaultVal !== undefined && this._editValues[key] !== defaultVal;
+    }
     const origVal = String(original.setting_value).replace(/"/g, '');
     return this._editValues[key] !== origVal;
   }
@@ -328,7 +549,6 @@ export class VelgAdminModelsTab extends LitElement {
     const next = new Set(this._customMode);
     if (next.has(key)) {
       next.delete(key);
-      // When switching back to preset, reset to the first matching option or default
       const currentVal = this._editValues[key];
       if (!MODEL_OPTIONS.some((o) => o.id === currentVal)) {
         this._editValues = {
@@ -371,17 +591,84 @@ export class VelgAdminModelsTab extends LitElement {
       VelgToast.error(msg(str`${errorCount} settings failed to save.`));
     }
 
-    await this._loadSettings();
+    await this._loadData();
     this._saving = false;
   }
 
   private _resetToDefaults(): void {
     this._editValues = { ...this._editValues };
     this._customMode = new Set();
-    for (const key of MODEL_KEYS) {
+    for (const key of ALL_MODEL_KEYS) {
       this._editValues[key] = DEFAULTS[key];
     }
     this.requestUpdate();
+  }
+
+  private _renderModelCard(key: string) {
+    const meta = getModelMeta();
+    const m = meta[key];
+    if (!m) return nothing;
+    const isDirty = this._isDirty(key);
+    const isCustom = this._customMode.has(key);
+    const currentVal = this._editValues[key] ?? '';
+    const defaultVal = DEFAULTS[key as ModelSettingKey];
+
+    return html`
+      <div class="model-card ${isDirty ? 'model-card--dirty' : ''}">
+        <p class="model-card__label">${m.label}</p>
+        <p class="model-card__description">${m.description}</p>
+        <div class="model-card__select-row">
+          ${isCustom
+            ? nothing
+            : html`
+                <select
+                  class="model-card__select"
+                  .value=${currentVal}
+                  @change=${(e: Event) => {
+                    this._editValues = {
+                      ...this._editValues,
+                      [key]: (e.target as HTMLSelectElement).value,
+                    };
+                  }}
+                >
+                  ${MODEL_OPTIONS.map(
+                    (opt) => html`
+                      <option value=${opt.id} ?selected=${opt.id === currentVal}>
+                        ${opt.label}
+                      </option>
+                    `,
+                  )}
+                </select>
+              `}
+          <button
+            class="model-card__custom-toggle ${isCustom ? 'model-card__custom-toggle--active' : ''}"
+            @click=${() => this._toggleCustom(key)}
+            title=${isCustom ? msg('Use preset') : msg('Custom model ID')}
+          >
+            ${isCustom ? msg('Preset') : msg('Custom')}
+          </button>
+        </div>
+        ${isCustom
+          ? html`
+              <div class="model-card__custom-row">
+                <input
+                  type="text"
+                  class="model-card__custom-input"
+                  placeholder=${msg('e.g. vendor/model-name')}
+                  .value=${currentVal}
+                  @input=${(e: Event) => {
+                    this._editValues = {
+                      ...this._editValues,
+                      [key]: (e.target as HTMLInputElement).value,
+                    };
+                  }}
+                />
+              </div>
+            `
+          : nothing}
+        <p class="model-card__default">${msg(str`Default: ${defaultVal}`)}</p>
+      </div>
+    `;
   }
 
   protected render() {
@@ -389,87 +676,48 @@ export class VelgAdminModelsTab extends LitElement {
       return html`<div class="loading">${msg('Loading model settings...')}</div>`;
     }
 
-    const meta = getModelMeta();
+    const isProd = this._activeEnvironment === 'production';
 
     return html`
-      <div class="model-grid">
-        ${MODEL_KEYS.map((key) => {
-          const setting = this._settings.find((s) => s.setting_key === key);
-          if (!setting) return nothing;
-          const m = meta[key];
-          const isDirty = this._isDirty(key);
-          const isCustom = this._customMode.has(key);
-          const currentVal = this._editValues[key] ?? '';
-          const defaultVal = DEFAULTS[key];
+      <div class="forge-section">
+        <div class="forge-section__header">
+          <span class="forge-section__code">SEC-01</span>
+          <h3 class="forge-section__title">${msg('Model Configuration')}</h3>
+        </div>
+        <div class="forge-section__divider"></div>
 
-          return html`
-            <div class="model-card ${isDirty ? 'model-card--dirty' : ''}">
-              <p class="model-card__label">${m.label}</p>
-              <p class="model-card__description">${m.description}</p>
-              <div class="model-card__select-row">
-                ${isCustom
-                  ? nothing
-                  : html`
-                      <select
-                        class="model-card__select"
-                        .value=${currentVal}
-                        @change=${(e: Event) => {
-                          this._editValues = {
-                            ...this._editValues,
-                            [key]: (e.target as HTMLSelectElement).value,
-                          };
-                        }}
-                      >
-                        ${MODEL_OPTIONS.map(
-                          (opt) => html`
-                            <option value=${opt.id} ?selected=${opt.id === currentVal}>
-                              ${opt.label}
-                            </option>
-                          `,
-                        )}
-                      </select>
-                    `}
-                <button
-                  class="model-card__custom-toggle ${isCustom ? 'model-card__custom-toggle--active' : ''}"
-                  @click=${() => this._toggleCustom(key)}
-                  title=${isCustom ? msg('Use preset') : msg('Custom model ID')}
-                >${isCustom ? msg('Preset') : msg('Custom')}</button>
-              </div>
-              ${isCustom
-                ? html`
-                    <div class="model-card__custom-row">
-                      <input
-                        type="text"
-                        class="model-card__custom-input"
-                        placeholder=${msg('e.g. vendor/model-name')}
-                        .value=${currentVal}
-                        @input=${(e: Event) => {
-                          this._editValues = {
-                            ...this._editValues,
-                            [key]: (e.target as HTMLInputElement).value,
-                          };
-                        }}
-                      />
-                    </div>
-                  `
-                : nothing}
-              <p class="model-card__default">${msg(str`Default: ${defaultVal}`)}</p>
+        <div class="env-columns">
+          <!-- Production Column -->
+          <div class="env-column">
+            <div class="env-column__header">
+              <span class="env-column__label">${msg('Production')}</span>
+              ${isProd ? html`<span class="env-badge">${msg('Active')}</span>` : nothing}
             </div>
-          `;
-        })}
-      </div>
+            <div class="model-cards">${PROD_KEYS.map((k) => this._renderModelCard(k))}</div>
+          </div>
 
-      <div class="actions">
-        <button
-          class="btn btn--save"
-          ?disabled=${!this._hasDirty || this._saving}
-          @click=${this._saveAll}
-        >${this._saving ? msg('Saving...') : msg('Save Changes')}</button>
-        <button
-          class="btn btn--reset"
-          ?disabled=${this._saving}
-          @click=${this._resetToDefaults}
-        >${msg('Reset to Defaults')}</button>
+          <!-- Development Column -->
+          <div class="env-column">
+            <div class="env-column__header">
+              <span class="env-column__label">${msg('Development')}</span>
+              ${!isProd ? html`<span class="env-badge">${msg('Active')}</span>` : nothing}
+            </div>
+            <div class="model-cards">${DEV_KEYS.map((k) => this._renderModelCard(k))}</div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button
+            class="btn btn--save"
+            ?disabled=${!this._hasDirty || this._saving}
+            @click=${this._saveAll}
+          >
+            ${this._saving ? msg('Saving...') : msg('Save Changes')}
+          </button>
+          <button class="btn btn--reset" ?disabled=${this._saving} @click=${this._resetToDefaults}>
+            ${msg('Reset to Defaults')}
+          </button>
+        </div>
       </div>
     `;
   }

@@ -476,7 +476,7 @@ export class VelgBleedGazetteSidebar extends LitElement {
               @click=${() => { this._collapsed = !this._collapsed; }}
               aria-label=${this._collapsed ? msg('Expand dispatch log') : msg('Collapse dispatch log')}
               aria-expanded=${!this._collapsed}
-            >${this._collapsed ? '&#9660;' : '&#9650;'}</button>
+            >${this._collapsed ? '\u25BC' : '\u25B2'}</button>
           </div>
         </div>
         <h2 class="gazette-header__title">${msg('Dispatch Log')}</h2>

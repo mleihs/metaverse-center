@@ -521,6 +521,9 @@ export class VelgEpochInviteAcceptView extends LitElement {
   }
 
   private _handleEnter(): void {
+    document.dispatchEvent(
+      new CustomEvent('epoch-joined', { bubbles: true }),
+    );
     this.dispatchEvent(
       new CustomEvent('navigate', {
         detail: '/epoch',

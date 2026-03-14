@@ -399,6 +399,7 @@ export class VelgApp extends LitElement {
 
   private _handleNavigate = (e: CustomEvent<string>): void => {
     const path = e.detail;
+    seoService.removeServerContent();
     if (path !== window.location.pathname) {
       window.history.pushState({}, '', path);
     }

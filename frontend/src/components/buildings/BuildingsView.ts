@@ -6,6 +6,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { buildingsApi } from '../../services/api/index.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
+import { seoService } from '../../services/SeoService.js';
 import type { Building } from '../../types/index.js';
 import { gridLayoutStyles } from '../shared/grid-layout-styles.js';
 import type { FilterChangeDetail } from '../shared/SharedFilterBar.js';
@@ -80,6 +81,7 @@ export class VelgBuildingsView extends SignalWatcher(LitElement) {
 
   disconnectedCallback(): void {
     this._disposeImageTracking?.();
+    seoService.removeStructuredData();
     super.disconnectedCallback();
   }
 
@@ -146,6 +148,15 @@ export class VelgBuildingsView extends SignalWatcher(LitElement) {
         this._buildings = Array.isArray(response.data) ? response.data : [];
         this._total = response.meta?.total ?? this._buildings.length;
         this._checkDeepLink();
+        const sim = appState.currentSimulation.value;
+        if (sim) {
+          seoService.setCollectionPage({
+            name: `${sim.name} — Buildings`,
+            description: `All buildings in the ${sim.name} simulation.`,
+            url: `https://metaverse.center/simulations/${sim.slug}/buildings`,
+            numberOfItems: this._total,
+          });
+        }
       } else {
         this._error = response.error?.message ?? msg('Failed to load buildings');
       }
@@ -280,8 +291,8 @@ export class VelgBuildingsView extends SignalWatcher(LitElement) {
 
   protected render() {
     return html`
-      <div class="view">
-        <div class="view__header">
+      <section class="view" aria-label=${msg('Buildings')}>
+        <header class="view__header">
           <h1 class="view__title">${msg('Buildings')}</h1>
           ${
             this._canEdit
@@ -292,7 +303,7 @@ export class VelgBuildingsView extends SignalWatcher(LitElement) {
               `
               : nothing
           }
-        </div>
+        </header>
 
         <velg-filter-bar
           .filters=${this._getFilterConfigs()}
@@ -331,7 +342,7 @@ export class VelgBuildingsView extends SignalWatcher(LitElement) {
           @embassy-created=${this._handleEmbassyCreated}
           @modal-close=${this._handleEmbassyModalClose}
         ></velg-embassy-create-modal>
-      </div>
+      </section>
     `;
   }
 

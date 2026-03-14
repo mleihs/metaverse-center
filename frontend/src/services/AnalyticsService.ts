@@ -165,6 +165,16 @@ const EVENT_MAP: EventMapping[] = [
     gaEvent: 'landing_section_view',
     params: (d) => ({ section: _s(d, 'section') }),
   },
+
+  // Funnel events
+  { domEvent: 'onboarding-complete', gaEvent: 'tutorial_complete' },
+  {
+    domEvent: 'simulation-created',
+    gaEvent: 'create_simulation',
+    params: (d) => ({ simulation_name: _s(d, 'name') }),
+  },
+  { domEvent: 'invitation-accepted', gaEvent: 'accept_invitation' },
+  { domEvent: 'epoch-joined', gaEvent: 'join_epoch' },
 ];
 
 class AnalyticsService {
@@ -208,9 +218,17 @@ class AnalyticsService {
     window.gtag('js', new Date());
     window.gtag('config', this._measurementId, {
       send_page_view: false,
+      link_attribution: true,
     });
 
+    this._initWebVitals();
     this._registerEventListeners();
+  }
+
+  /** Set GA4 user properties for audience segmentation. */
+  setUserProperties(props: Record<string, string | number | boolean>): void {
+    if (!this._initialized) return;
+    window.gtag('set', 'user_properties', props);
   }
 
   /** Send a custom GA4 event. */
@@ -258,6 +276,18 @@ class AnalyticsService {
     }
     this._listeners = [];
     this._initialized = false;
+  }
+
+  private _initWebVitals(): void {
+    import('web-vitals').then(({ onCLS, onLCP, onINP, onTTFB }) => {
+      const send = ({ name, value, id }: { name: string; value: number; id: string }) => {
+        this.trackEvent('web_vitals', { metric_name: name, metric_value: value, metric_id: id });
+      };
+      onCLS(send);
+      onLCP(send);
+      onINP(send);
+      onTTFB(send);
+    });
   }
 
   private _registerEventListeners(): void {

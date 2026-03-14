@@ -38,6 +38,9 @@ class Settings(BaseSettings):
     platform_admin_emails: str = Field(default="admin@velgarien.dev", alias="PLATFORM_ADMIN_EMAILS")
     indexnow_key: str = ""
 
+    # Environment — reads RAILWAY_ENVIRONMENT on Railway, defaults to "development" locally
+    environment: str = Field(default="development", alias="RAILWAY_ENVIRONMENT")
+
     # Sentry
     sentry_dsn: str = ""
     sentry_environment: str = "development"

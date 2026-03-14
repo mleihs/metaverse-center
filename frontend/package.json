@@ -26,6 +26,7 @@
     "3d-force-graph": "^1.79.1",
     "echarts": "^6.0.0",
     "lit": "^3.3.2",
+    "web-vitals": "^5.1.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

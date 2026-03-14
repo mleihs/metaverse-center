@@ -1830,9 +1830,9 @@ export class VelgSocialTrendsView extends LitElement {
     if (!appState.isAuthenticated.value) {
       return html`
         <div class="trends">
-          <div class="trends__header">
+          <header class="trends__header">
             <h1 class="trends__title">${msg('Browse News')}</h1>
-          </div>
+          </header>
           <div class="trends__auth-notice">
             <span class="trends__auth-notice-text">${msg('Sign in to browse and transform news articles')}</span>
           </div>
@@ -1844,7 +1844,7 @@ export class VelgSocialTrendsView extends LitElement {
       <div class="trends">
         ${this._renderEmbassyOverview()}
 
-        <div class="trends__header">
+        <header class="trends__header">
           <h1 class="trends__title">${msg('Browse News')}</h1>
           ${appState.isPlatformAdmin.value
             ? html`<button class="btn--resonance" @click=${this._handleCreateResonance}
@@ -1852,7 +1852,7 @@ export class VelgSocialTrendsView extends LitElement {
                 ${icons.substrateTremor(14)} ${msg('Create Resonance')}
               </button>`
             : nothing}
-        </div>
+        </header>
 
         ${this._renderControls()}
         ${this._renderStagingRack()}
@@ -1874,9 +1874,9 @@ export class VelgSocialTrendsView extends LitElement {
         ${
           !this._loading && this._articles.length > 0
             ? html`
-            <div class="articles__grid">
+            <section class="articles__grid" aria-label=${msg('News articles')}>
               ${this._articles.map((a, i) => this._renderArticleCard(a, i))}
-            </div>
+            </section>
           `
             : nothing
         }

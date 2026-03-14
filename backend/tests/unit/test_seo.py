@@ -5,7 +5,13 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from backend.middleware.seo import _escape, _replace_meta, enrich_html_for_crawler, is_crawler
+from backend.middleware.seo import (
+    _escape,
+    _inject_entity_content,
+    _replace_meta,
+    enrich_html_for_crawler,
+    is_crawler,
+)
 
 
 class TestIsCrawler:
@@ -215,3 +221,134 @@ class TestEnrichHtmlForCrawler:
             )
 
         assert result is None
+
+    @pytest.mark.anyio
+    async def test_enriches_with_entity_content(self, tmp_path):
+        """Verify entity content div and JSON-LD are injected for crawler responses."""
+        index = tmp_path / "index.html"
+        index.write_text(
+            '<html><head>'
+            '<title>metaverse.center</title>'
+            '<meta name="description" content="default">'
+            '<meta property="og:title" content="default">'
+            '<meta property="og:description" content="default">'
+            '<meta property="og:url" content="https://metaverse.center/">'
+            '<meta name="twitter:title" content="default">'
+            '<meta name="twitter:description" content="default">'
+            '<link rel="canonical" href="https://metaverse.center/">'
+            '</head><body><velg-app></velg-app></body></html>'
+        )
+
+        sim_response = MagicMock()
+        sim_response.data = [{
+            "id": "10000000-0000-0000-0000-000000000001",
+            "slug": "test-sim",
+            "name": "Test Sim",
+            "description": "A test simulation",
+            "banner_url": "",
+        }]
+
+        with patch("backend.middleware.seo.create_client") as mock_create, \
+             patch("backend.middleware.seo.seo_content.build_view_content") as mock_build:
+            mock_client = MagicMock()
+            mock_create.return_value = mock_client
+            mock_client.table.return_value.select.return_value.eq.return_value.limit.return_value.execute.return_value = (
+                sim_response
+            )
+            mock_build.return_value = (
+                '<article><h3>Ada</h3></article>',
+                '{"@type":"CollectionPage"}',
+            )
+
+            result = await enrich_html_for_crawler(
+                index,
+                "/simulations/10000000-0000-0000-0000-000000000001/agents",
+            )
+
+        assert result is not None
+        assert 'id="seo-content"' in result
+        assert "Ada" in result
+        assert "CollectionPage" in result
+
+    @pytest.mark.anyio
+    async def test_entity_content_view_jsonld_type(self, tmp_path):
+        """Verify JSON-LD @type varies by view."""
+        index = tmp_path / "index.html"
+        index.write_text(
+            '<html><head>'
+            '<title>x</title>'
+            '<meta name="description" content="d">'
+            '<meta property="og:title" content="d">'
+            '<meta property="og:description" content="d">'
+            '<meta property="og:url" content="u">'
+            '<meta name="twitter:title" content="d">'
+            '<meta name="twitter:description" content="d">'
+            '<link rel="canonical" href="u">'
+            '</head><body></body></html>'
+        )
+
+        sim_response = MagicMock()
+        sim_response.data = [{
+            "id": "10000000-0000-0000-0000-000000000001",
+            "slug": "sim",
+            "name": "Sim",
+            "description": "",
+            "banner_url": "",
+        }]
+
+        with patch("backend.middleware.seo.create_client") as mock_create, \
+             patch("backend.middleware.seo.seo_content.build_view_content") as mock_build:
+            mock_client = MagicMock()
+            mock_create.return_value = mock_client
+            mock_client.table.return_value.select.return_value.eq.return_value.limit.return_value.execute.return_value = (
+                sim_response
+            )
+            mock_build.return_value = ("<p>lore</p>", '{"@type":"CreativeWork"}')
+
+            result = await enrich_html_for_crawler(
+                index,
+                "/simulations/10000000-0000-0000-0000-000000000001/lore",
+            )
+
+        assert result is not None
+        assert "CreativeWork" in result
+
+
+class TestInjectEntityContent:
+    @pytest.fixture(autouse=True)
+    def _reset_cache(self):
+        import backend.middleware.seo as seo_module
+        seo_module._entity_cache.clear()
+        seo_module._anon_client = None
+        yield
+        seo_module._entity_cache.clear()
+        seo_module._anon_client = None
+
+    def test_injects_seo_content_div(self):
+        base_html = "<html><head></head><body><app></app></body></html>"
+        with patch("backend.middleware.seo.seo_content.build_view_content") as mock_build, \
+             patch("backend.middleware.seo._get_anon_client"):
+            mock_build.return_value = ("<article>Test</article>", "")
+            result = _inject_entity_content(base_html, "agents", "id", "Sim", "slug")
+
+        assert 'id="seo-content"' in result
+        assert "<article>Test</article>" in result
+
+    def test_injects_jsonld(self):
+        base_html = "<html><head></head><body></body></html>"
+        with patch("backend.middleware.seo.seo_content.build_view_content") as mock_build, \
+             patch("backend.middleware.seo._get_anon_client"):
+            mock_build.return_value = ("", '{"@type":"CollectionPage"}')
+            result = _inject_entity_content(base_html, "agents", "id", "Sim", "slug")
+
+        assert "application/ld+json" in result
+        assert "CollectionPage" in result
+
+    def test_empty_content_unchanged(self):
+        base_html = "<html><head></head><body></body></html>"
+        with patch("backend.middleware.seo.seo_content.build_view_content") as mock_build, \
+             patch("backend.middleware.seo._get_anon_client"):
+            mock_build.return_value = ("", "")
+            result = _inject_entity_content(base_html, "settings", "id", "Sim", "slug")
+
+        assert result == base_html

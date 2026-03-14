@@ -80,6 +80,82 @@ class SeoService {
     document.getElementById('velg-breadcrumbs')?.remove();
   }
 
+  /** Set CollectionPage structured data (agents, buildings, events lists). */
+  setCollectionPage(data: {
+    name: string;
+    description: string;
+    url: string;
+    numberOfItems: number;
+  }): void {
+    this.setStructuredData({
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: data.name,
+      description: data.description,
+      url: data.url,
+      numberOfItems: data.numberOfItems,
+    });
+  }
+
+  /** Set CreativeWork structured data (lore, simulation profiles). */
+  setCreativeWork(data: {
+    name: string;
+    description: string;
+    url: string;
+    image?: string;
+  }): void {
+    this.setStructuredData({
+      '@context': 'https://schema.org',
+      '@type': 'CreativeWork',
+      name: data.name,
+      description: data.description,
+      url: data.url,
+      ...(data.image ? { image: data.image } : {}),
+    });
+  }
+
+  /** Set Article structured data (chronicle editions). */
+  setArticle(data: {
+    headline: string;
+    datePublished?: string;
+    articleBody: string;
+    url: string;
+  }): void {
+    this.setStructuredData({
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: data.headline,
+      articleBody: data.articleBody,
+      url: data.url,
+      ...(data.datePublished ? { datePublished: data.datePublished } : {}),
+    });
+  }
+
+  /** Set HowTo structured data. */
+  setHowTo(data: {
+    name: string;
+    description: string;
+    steps: Array<{ name: string; text: string }>;
+  }): void {
+    this.setStructuredData({
+      '@context': 'https://schema.org',
+      '@type': 'HowTo',
+      name: data.name,
+      description: data.description,
+      step: data.steps.map((s, i) => ({
+        '@type': 'HowToStep',
+        position: i + 1,
+        name: s.name,
+        text: s.text,
+      })),
+    });
+  }
+
+  /** Remove server-injected SEO content div (called on SPA navigation). */
+  removeServerContent(): void {
+    document.getElementById('seo-content')?.remove();
+  }
+
   /** Reset all SEO tags to defaults (for dashboard/homepage). */
   reset(): void {
     document.title = DEFAULT_TITLE;

@@ -2,6 +2,7 @@ import type { AuthError, Session, User } from '@supabase/supabase-js';
 import { analyticsService } from '../AnalyticsService.js';
 import { appState } from '../AppStateManager.js';
 import { forgeApi } from '../api/ForgeApiService.js';
+import { localeService } from '../i18n/locale-service.js';
 import { supabase } from './client.js';
 
 const CLEARANCE_TOAST_KEY = 'velg_clearance_toast_shown';
@@ -107,6 +108,18 @@ export class SupabaseAuthService {
         console.error('Failed to fetch forge wallet:', err);
       }
 
+      // Set GA4 user properties for segmentation
+      const userType = appState.isPlatformAdmin.value
+        ? 'admin'
+        : appState.isArchitect.value
+          ? 'architect'
+          : 'member';
+      analyticsService.setUserProperties({
+        user_type: userType,
+        has_forge_access: appState.canForge.value,
+        locale: localeService.currentLocale,
+      });
+
       // Admin: check pending clearance requests
       if (appState.isPlatformAdmin.value) {
         try {
@@ -126,6 +139,7 @@ export class SupabaseAuthService {
     } else {
       if (this._previouslyAuthenticated) {
         analyticsService.trackEvent('logout');
+        analyticsService.setUserProperties({ user_type: 'visitor' });
       }
       this._previouslyAuthenticated = false;
       appState.setUser(null);

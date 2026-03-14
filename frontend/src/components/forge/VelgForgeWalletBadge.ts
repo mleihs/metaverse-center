@@ -6,6 +6,7 @@ import { localized, msg } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import { appState } from '../../services/AppStateManager.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 
 @localized()
@@ -77,7 +78,9 @@ export class VelgForgeWalletBadge extends SignalWatcher(LitElement) {
 
   connectedCallback(): void {
     super.connectedCallback();
-    void forgeStateManager.loadWallet();
+    if (appState.isAuthenticated.value) {
+      void forgeStateManager.loadWallet();
+    }
   }
 
   protected willUpdate(): void {

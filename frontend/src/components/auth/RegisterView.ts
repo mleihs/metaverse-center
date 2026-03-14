@@ -1,6 +1,7 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import { analyticsService } from '../../services/AnalyticsService.js';
 import { authService } from '../../services/supabase/SupabaseAuthService.js';
 import { icons } from '../../utils/icons.js';
 import {
@@ -158,6 +159,7 @@ export class VelgRegisterView extends LitElement {
       if (error) {
         this._error = error.message;
       } else {
+        analyticsService.trackEvent('sign_up', { method: 'email' });
         this._success = msg(
           'Registration successful. Please check your email to confirm your account.',
         );

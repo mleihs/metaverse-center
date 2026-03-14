@@ -6,6 +6,8 @@ import { localized, msg } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import { analyticsService } from '../../services/AnalyticsService.js';
+import { appState } from '../../services/AppStateManager.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import type { TokenBundle } from '../../services/api/ForgeApiService.js';
 import { forgeApi } from '../../services/api/ForgeApiService.js';
@@ -581,8 +583,10 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
 
   connectedCallback(): void {
     super.connectedCallback();
-    void forgeStateManager.loadBundles();
-    void forgeStateManager.loadWallet();
+    if (appState.isAuthenticated.value) {
+      void forgeStateManager.loadBundles();
+      void forgeStateManager.loadWallet();
+    }
     document.addEventListener('keydown', this._handleEscKey);
   }
 
@@ -590,6 +594,14 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
     document.removeEventListener('keydown', this._handleEscKey);
     if (this._toastTimer) clearTimeout(this._toastTimer);
     super.disconnectedCallback();
+  }
+
+  protected willUpdate(): void {
+    // Lazy-load data when mint opens (handles login after DOM attach)
+    if (forgeStateManager.mintOpen.value && forgeStateManager.bundles.value.length === 0) {
+      void forgeStateManager.loadBundles();
+      void forgeStateManager.loadWallet();
+    }
   }
 
   protected updated(): void {
@@ -630,6 +642,12 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
   }
 
   private _selectBundle(slug: string): void {
+    if (this._selectedSlug !== slug) {
+      const bundle = forgeStateManager.bundles.value.find((b) => b.slug === slug);
+      if (bundle) {
+        analyticsService.trackEvent('view_item', { item_name: bundle.display_name });
+      }
+    }
     this._selectedSlug = this._selectedSlug === slug ? null : slug;
   }
 
@@ -648,6 +666,12 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
     this._isPurchasing = false;
 
     if (receipt) {
+      analyticsService.trackEvent('purchase', {
+        transaction_id: receipt.purchase_id,
+        value: receipt.tokens_granted,
+        currency: 'VLG',
+        items: receipt.bundle_slug,
+      });
       this._showToast(
         `+${receipt.tokens_granted} ${msg('Forge Tokens')}`,
         'success',

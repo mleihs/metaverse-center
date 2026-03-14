@@ -28,6 +28,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- **CSP policy** — added `fonts.googleapis.com` to style-src, `fonts.gstatic.com` to font-src, `static.cloudflareinsights.com` to script-src (Google Fonts and Cloudflare Insights were blocked)
+- **Forge 422 on landing page** — VelgForgeMint called `/forge/bundles` and `/forge/wallet` without auth guard; added `isAuthenticated` check + lazy-load on mint open
+- **Map dispatch log entity** — raw HTML entity `&#9650;` rendered as text instead of triangle symbol; switched to Unicode escapes
+- **Forge anchor card overflow** — "Classified" footer text clipped by card overflow; added `min-height: 0` + `overflow: hidden` on body flex child
+- **Hero preload mismatch** — `dashboard-hero.avif` preload replaced with `landing/hero.avif` (correct LCP target)
 - **Aptitude RLS** — game instance simulations now have same read access as templates for epoch gameplay (migration 088)
 - **Epoch audit** — guardian counting, scoring, game instance UUID fixes (migration 089)
 - **Hard delete FK constraints** — battle_log SET NULL, event_echoes CASCADE to unblock simulation hard-delete (migration 095)

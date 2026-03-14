@@ -21,6 +21,13 @@ const MAX_CUSTOM_CSS_BYTES = 10_240;
 /** ID of the injected <style> element for custom CSS. */
 const CUSTOM_STYLE_ID = 'velg-simulation-custom-css';
 
+/** ID of the injected Google Fonts <link> element. */
+const GOOGLE_FONTS_ID = 'velg-google-fonts';
+
+/** Google Fonts stylesheet URL for simulation heading fonts. */
+const GOOGLE_FONTS_URL =
+  'https://fonts.googleapis.com/css2?family=Barlow:wght@400;800&family=Cormorant+Garamond:wght@400;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Oswald:wght@400;700;900&family=Space+Mono:wght@400;700&family=Spectral:ital,wght@0,400;0,600;0,700;1,400&display=swap';
+
 // ---------------------------------------------------------------------------
 // Token Mapping: setting key → base CSS custom property
 // ---------------------------------------------------------------------------
@@ -164,6 +171,7 @@ class ThemeService {
    * as CSS custom property overrides on the provided host element.
    */
   async applySimulationTheme(simulationId: string, hostElement: HTMLElement): Promise<void> {
+    this.ensureGoogleFonts();
     const response = await settingsApi.getByCategory(simulationId, 'design');
 
     if (!response.success || !response.data) {
@@ -296,6 +304,33 @@ class ThemeService {
     delete hostElement.dataset.simulation;
     this.removeCustomStyleElement();
     this.appliedTokens = [];
+  }
+
+  /**
+   * Lazily inject Google Fonts preconnects and stylesheet into <head>.
+   * Idempotent — skips if the element already exists.
+   */
+  private ensureGoogleFonts(): void {
+    if (document.getElementById(GOOGLE_FONTS_ID)) return;
+
+    // Preconnects
+    const pc1 = document.createElement('link');
+    pc1.rel = 'preconnect';
+    pc1.href = 'https://fonts.googleapis.com';
+    document.head.appendChild(pc1);
+
+    const pc2 = document.createElement('link');
+    pc2.rel = 'preconnect';
+    pc2.href = 'https://fonts.gstatic.com';
+    pc2.crossOrigin = '';
+    document.head.appendChild(pc2);
+
+    // Stylesheet
+    const link = document.createElement('link');
+    link.id = GOOGLE_FONTS_ID;
+    link.rel = 'stylesheet';
+    link.href = GOOGLE_FONTS_URL;
+    document.head.appendChild(link);
   }
 
   // ---------------------------------------------------------------------------

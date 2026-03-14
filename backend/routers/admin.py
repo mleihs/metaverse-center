@@ -9,6 +9,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
 
+from backend.config import settings
 from backend.dependencies import get_admin_supabase, require_platform_admin
 from backend.models.cleanup import CleanupExecuteRequest, CleanupPreviewRequest
 from backend.models.common import CurrentUser, PaginationMeta
@@ -51,6 +52,17 @@ class ChangeMembershipRoleRequest(BaseModel):
 class UpdateUserWalletRequest(BaseModel):
     forge_tokens: int | None = Field(None, ge=0)
     is_architect: bool | None = None
+
+
+# --- Environment ---
+
+
+@router.get("/environment")
+async def get_environment(
+    _user: CurrentUser = Depends(require_platform_admin()),
+) -> dict:
+    """Return the current server environment (production/development)."""
+    return {"success": True, "data": {"environment": settings.environment}}
 
 
 # --- Platform Settings Endpoints ---

@@ -346,6 +346,8 @@ export class VelgForgeAstrolabe extends LitElement {
         flex-direction: column;
         gap: 10px;
         border-top: 1px solid var(--color-gray-800, #1f2937);
+        overflow: hidden;
+        min-height: 0;
       }
 
       .dossier__title {

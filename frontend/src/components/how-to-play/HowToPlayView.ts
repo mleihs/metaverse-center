@@ -120,8 +120,23 @@ export class VelgHowToPlay extends LitElement {
   private _injectFaqSchema() {
     seoService.setStructuredData({
       '@context': 'https://schema.org',
-      '@type': 'FAQPage',
-      mainEntity: [
+      '@graph': [
+        {
+          '@type': 'HowTo',
+          name: 'How to Play metaverse.center',
+          description: 'Step-by-step guide to competitive epoch gameplay — operatives, scoring, alliances, and strategy.',
+          step: [
+            { '@type': 'HowToStep', position: 1, name: 'Create or join a simulation', text: 'Browse the dashboard for active simulations or create your own via the Simulation Forge.' },
+            { '@type': 'HowToStep', position: 2, name: 'Build your world', text: 'Add agents, buildings, events, and lore to populate your simulation.' },
+            { '@type': 'HowToStep', position: 3, name: 'Enter an Epoch', text: 'Join a competitive epoch to deploy operatives and compete against other simulations.' },
+            { '@type': 'HowToStep', position: 4, name: 'Deploy operatives', text: 'Choose from six operative types (Spy, Saboteur, Propagandist, Assassin, Guardian, Infiltrator) to attack or defend.' },
+            { '@type': 'HowToStep', position: 5, name: 'Form alliances', text: 'Team up with other players for diplomatic bonuses, but beware of betrayal.' },
+            { '@type': 'HowToStep', position: 6, name: 'Win the Epoch', text: 'Score across five dimensions — stability, influence, sovereignty, diplomatic, and military — to claim victory.' },
+          ],
+        },
+        {
+          '@type': 'FAQPage',
+          mainEntity: [
         {
           '@type': 'Question',
           name: 'What is an Epoch in metaverse.center?',
@@ -211,6 +226,7 @@ export class VelgHowToPlay extends LitElement {
           },
         },
       ],
+    }],
     });
   }
 

@@ -2,6 +2,9 @@
 
 In-process cache with 5-minute TTL, following the same pattern as
 platform_api_keys.py. Avoids per-request DB queries for model config.
+
+Supports environment-aware resolution: dev keys are preferred when
+``settings.environment != "production"``.
 """
 
 from __future__ import annotations
@@ -22,6 +25,11 @@ HARDCODED_DEFAULTS: dict[str, str] = {
     "model_fallback": "deepseek/deepseek-r1-0528:free",
     "model_research": "google/gemini-2.0-flash-001",
     "model_forge": "anthropic/claude-sonnet-4-6",
+    # Dev defaults — cheap/free models for development
+    "model_default_dev": "deepseek/deepseek-r1-0528:free",
+    "model_fallback_dev": "deepseek/deepseek-r1-0528:free",
+    "model_research_dev": "google/gemini-2.0-flash-001",
+    "model_forge_dev": "deepseek/deepseek-r1-0528:free",
 }
 
 _MODEL_KEYS = tuple(HARDCODED_DEFAULTS.keys())
@@ -61,17 +69,39 @@ def get_platform_model(purpose: str) -> str:
     - "research" → model_research
     - "fallback" → model_fallback
     - anything else → model_default
-    """
-    if purpose == "forge":
-        key = "model_forge"
-    elif purpose == "research":
-        key = "model_research"
-    elif purpose == "fallback":
-        key = "model_fallback"
-    else:
-        key = "model_default"
 
-    return _cache.get(key) or HARDCODED_DEFAULTS[key]
+    In non-production environments, resolves the ``_dev`` variant first,
+    falling back to the production key if the dev key is absent.
+    """
+    from backend.config import settings
+
+    if purpose == "forge":
+        base_key = "model_forge"
+    elif purpose == "research":
+        base_key = "model_research"
+    elif purpose == "fallback":
+        base_key = "model_fallback"
+    else:
+        base_key = "model_default"
+
+    is_prod = settings.environment == "production"
+
+    if not is_prod:
+        dev_key = f"{base_key}_dev"
+        dev_model = _cache.get(dev_key) or HARDCODED_DEFAULTS.get(dev_key)
+        if dev_model:
+            logger.debug(
+                "Resolved model for %s [env=%s]: %s",
+                purpose, settings.environment, dev_model,
+            )
+            return dev_model
+
+    model = _cache.get(base_key) or HARDCODED_DEFAULTS[base_key]
+    logger.debug(
+        "Resolved model for %s [env=%s]: %s",
+        purpose, settings.environment, model,
+    )
+    return model
 
 
 async def ensure_loaded(admin_supabase: Client) -> None:

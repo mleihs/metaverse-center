@@ -3,6 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { chronicleApi } from '../../services/api/index.js';
+import { seoService } from '../../services/SeoService.js';
 import type { Chronicle } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
 import { icons } from '../../utils/icons.js';
@@ -466,6 +467,11 @@ export class VelgChronicleView extends LitElement {
     this._load();
   }
 
+  disconnectedCallback(): void {
+    seoService.removeStructuredData();
+    super.disconnectedCallback();
+  }
+
   protected willUpdate(changed: Map<PropertyKey, unknown>): void {
     if (changed.has('simulationId') && this.simulationId) {
       this._offset = 0;
@@ -492,6 +498,18 @@ export class VelgChronicleView extends LitElement {
       if (resp.success && resp.data) {
         this._chronicles = resp.data;
         this._total = resp.meta?.total ?? resp.data.length;
+        if (resp.data.length > 0) {
+          const featured = resp.data[0];
+          const sim = appState.currentSimulation.value;
+          if (sim) {
+            seoService.setArticle({
+              headline: featured.title ?? sim.name,
+              articleBody: (featured.content ?? '').slice(0, 500),
+              url: `https://metaverse.center/simulations/${sim.slug}/chronicle`,
+              datePublished: featured.published_at ?? undefined,
+            });
+          }
+        }
       } else if (!resp.success) {
         this._error = resp.error?.message ?? msg('Failed to load chronicles.');
       }
@@ -588,14 +606,14 @@ export class VelgChronicleView extends LitElement {
     });
 
     return html`
-      <div class="masthead">
+      <header class="masthead">
         <hr class="masthead__rule--top" />
         <hr class="masthead__rule--thin" />
         <h1 class="masthead__title">${this._publicationName}</h1>
         <div class="masthead__subtitle">${msg('Official Record of Events')}</div>
         <hr class="masthead__rule--bottom" />
         <hr class="masthead__rule--bottom-thick" />
-      </div>
+      </header>
       <div class="dateline">
         <span class="dateline__sim">${simName}</span>
         <span>${today}</span>
@@ -661,7 +679,7 @@ export class VelgChronicleView extends LitElement {
 
   private _renderFrontPage(c: Chronicle) {
     return html`
-      <div class="front-page">
+      <article class="front-page">
         <div class="front-page__vol">
           ${msg('Vol.')} ${c.edition_number} \u2014 ${this._formatDateRange(c.period_start, c.period_end)}
         </div>
@@ -672,22 +690,22 @@ export class VelgChronicleView extends LitElement {
         <hr class="front-page__rule" />
         <div class="article">
           ${this._renderArticle(t(c, 'content'))}
-          <div class="article__footer">
+          <footer class="article__footer">
             ${c.model_used
               ? html`<span>${msg('Model:')} ${c.model_used}</span>`
               : nothing}
             ${c.published_at
               ? html`<span>${new Date(c.published_at).toLocaleDateString()}</span>`
               : nothing}
-          </div>
+          </footer>
         </div>
-      </div>
+      </article>
     `;
   }
 
   private _renderArchive() {
     return html`
-      <div class="archive">
+      <nav class="archive" aria-label=${msg('Previous Editions')}>
         <h3 class="archive__heading">${msg('Previous Editions')}</h3>
         <ul class="archive__list">
           ${this._archiveEditions.map(
@@ -714,7 +732,7 @@ export class VelgChronicleView extends LitElement {
             `,
           )}
         </ul>
-      </div>
+      </nav>
     `;
   }
 }
