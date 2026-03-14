@@ -55,13 +55,15 @@ function findMarkdownFiles(dir, base = dir) {
 }
 
 // Group docs by type
-const TYPE_ORDER = ['spec', 'reference', 'guide', 'explanation', 'analysis'];
+const TYPE_ORDER = ['spec', 'reference', 'guide', 'explanation', 'analysis', 'audit', 'other'];
 const TYPE_LABELS = {
   spec: 'Specifications',
   reference: 'References',
   guide: 'Guides',
   explanation: 'Explanations',
   analysis: 'Analysis',
+  audit: 'Audits',
+  other: 'Other',
 };
 
 function generateIndex(docs) {
@@ -147,7 +149,7 @@ function generateLlmsTxt(docs) {
     '# metaverse.center',
     '',
     '> Multiplayer worldbuilding platform with AI-driven simulations and competitive PvP epochs.',
-    '> 52 database tables, ~48 PostgreSQL functions, 293 API endpoints, 133 web components.',
+    '> 60+ database tables, ~65 PostgreSQL functions, 310+ API endpoints, 150+ web components.',
     '> Stack: FastAPI + Lit 3 + Supabase + OpenRouter. Bilingual EN/DE.',
     '',
   ];
@@ -171,6 +173,8 @@ function generateLlmsTxt(docs) {
     ['guide', 'Guides'],
     ['explanation', 'Explanations'],
     ['analysis', 'Analysis'],
+    ['audit', 'Audits'],
+    ['other', 'Other'],
     ['adr', 'Architecture Decision Records'],
   ];
 

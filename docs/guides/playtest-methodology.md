@@ -2,6 +2,7 @@
 title: "Epoch Playtest Methodology"
 id: playtest-methodology
 version: "1.0"
+date: 2026-03-09
 lang: en
 type: guide
 status: active

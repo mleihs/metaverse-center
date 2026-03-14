@@ -1,5 +1,6 @@
 ---
 title: "Production Deployment Procedures"
+version: "1.0"
 type: guide
 status: active
 lang: en

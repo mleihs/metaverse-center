@@ -1,6 +1,8 @@
 ---
 title: "Epoch Cross-Reference Analysis: Game Balance Report"
 id: epoch-cross-reference
+version: "1.0"
+date: 2026-03-02
 lang: en
 type: analysis
 status: active

@@ -1,6 +1,8 @@
 ---
 title: "The Velgarien Multiverse — Game Design Proposal"
 id: concept-lore
+version: "1.0"
+date: 2026-03-07
 lang: en
 type: explanation
 status: active
@@ -11,7 +13,7 @@ tags: [concept, lore, multiverse, game-design]
 
 ## Context
 
-The Velgarien platform currently runs isolated simulations — each a self-contained world with its own agents, buildings, events, and social dynamics. Two simulations exist: **Velgarien** (brutalist dystopia) and **The Gaslit Reach** (Sunless Sea underground fantasy). The database enforces total isolation between simulations at every layer.
+The Velgarien platform currently runs isolated simulations — each a self-contained world with its own agents, buildings, events, and social dynamics. Five simulations exist: **Velgarien** (brutalist dystopia), **The Gaslit Reach** (Sunless Sea underground fantasy), **Station Null** (orbital station), **Speranza** (Mediterranean colony), and **Spengbab's Grease Pit** (absurdist nightmare). The database enforces total isolation between simulations at every layer.
 
 This document proposes 20 features spanning **meta-lore**, **new simulations**, and **cross-simulation mechanics** that would transform the platform from a collection of isolated sandboxes into a living multiverse where worlds collide, leak into each other, and share consequences.
 

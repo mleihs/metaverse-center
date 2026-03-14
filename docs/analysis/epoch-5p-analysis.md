@@ -1,6 +1,8 @@
 ---
 title: "Epoch 5-Player Simulation: 50-Game Analysis"
 id: epoch-5p-analysis
+version: "1.0"
+date: 2026-02-28
 lang: en
 type: analysis
 status: active

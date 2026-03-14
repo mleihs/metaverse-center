@@ -1,5 +1,6 @@
 ---
 title: "Local DB Reset & Storage Recovery Guide"
+version: "1.0"
 type: guide
 status: active
 lang: en

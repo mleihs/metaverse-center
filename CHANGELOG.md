@@ -8,6 +8,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **Alliance Redesign** — proposal-based joining (unanimous vote), shared intelligence (RLS), upkeep (1 RP/member/cycle), tension system (auto-dissolution at 80). New tables: `epoch_alliance_proposals`, `epoch_alliance_votes`. 5 Postgres functions, 2 triggers, 5 RLS policies. 3 API endpoints. Bot voting strategies per archetype (migration 090)
+- **Forge Token Economy** — admin unlimited forge tokens (migration 098), token store with bundles/purchases/atomic purchase RPC (migration 101), token admin tools with grant RPC + economy stats view (migration 102), BYOK free access system with 3 control levels (migration 103), feature purchase ledger for Darkroom Pass, Classified Dossier, Recruitment Office, Chronicle Printing Press (migration 104)
+- **Platform Model Config** — AI model configuration in platform_settings, admin override via Models tab (migration 105). Development model config with cheap/free models for dev environment (migration 109)
+- **Substrate Scanner** — news_scan_log + news_scan_candidates tables (migration 084), platform_settings defaults (migration 085), prompt templates for classification + bureau dispatch (migration 086)
+- **Map & RPC Improvements** — `map_simulations` view consolidating 3-query pattern (migration 091), `get_bleed_status()` RPC replacing N+1 queries (migration 099), `get_map_overlay_data()` RPC for zone topology + events + bleed in one round-trip (migration 100), `fn_get_wallet_summary()` composite RPC (migration 108)
+- **Dossier Evolution** — living dossier with `evolved_at` tracking on simulation_lore (migration 106)
+- **Lore Image Tracking** — `image_generated_at` on simulation_lore, extended `get_forge_progress()` (migration 107)
+- **Threshold Actions Log** — tracks desperate/ascendant actions when simulation health crosses critical (<0.25) or ascendant (>0.85) thresholds (migration 097)
+- **Forge Access Requests** — `account_tier` on user_wallets + `forge_access_requests` table for Bureau clearance upgrade flow (migration 093)
+- **Event i18n Columns** — German translation columns on events table (migration 081)
+- **Resonance Transformation Templates** — seed EN + DE prompt templates for resonance_transformation (migration 082)
+
+### Changed
+
+- **Admin email** moved from GUC to platform_settings table; `is_platform_admin()` rewired (migration 087)
+- **Spengbab** — lore image settings with cursed aesthetic + Flux Dev model (migration 083), image generation prompt templates (migration 092), slug fix after rename (migration 094)
+- **Admin user listing** — `admin_list_users` RPC granted to anon + authenticated for DevAccountSwitcher (migration 096)
+
+### Fixed
+
+- **Aptitude RLS** — game instance simulations now have same read access as templates for epoch gameplay (migration 088)
+- **Epoch audit** — guardian counting, scoring, game instance UUID fixes (migration 089)
+- **Hard delete FK constraints** — battle_log SET NULL, event_echoes CASCADE to unblock simulation hard-delete (migration 095)
+
+---
+
 - **Graduated Event Pressure** — `POWER(impact_level/10, 1.5)` pressure formula with status multipliers (escalating 1.3x, resolving 0.5x) and emotion-weighted reaction modifiers (migrations 068, 070-071)
 - **Event Lifecycle** — status workflow (active/escalating/resolving/resolved/archived) with event chains (escalation, follow_up, resolution, cascade, resonance) (migration 069)
 - **Zone Gravity Matrix** — event-type to zone-type affinity matrix with auto-assignment trigger `assign_event_zones()` and `_global` flag for crisis events (migration 072)

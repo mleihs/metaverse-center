@@ -1,7 +1,7 @@
 # metaverse.center
 
 > Multiplayer worldbuilding platform with AI-driven simulations and competitive PvP epochs.
-> 67 database tables, 75 PostgreSQL functions, ~370 API endpoints, 187 web components.
+> 60+ database tables, ~65 PostgreSQL functions, 310+ API endpoints, 150+ web components.
 > Stack: FastAPI + Lit 3 + Supabase + OpenRouter. Bilingual EN/DE.
 
 ## Specifications
@@ -17,7 +17,8 @@
 - [Platform Architecture: Multi-Simulations-Plattform](specs/platform-architecture.md)
 - [Relationships, Echoes & Map](specs/relationships-echoes-map.md)
 - [Simulation Settings](specs/simulation-settings.md)
-- [Substrate Resonances](specs/substrate-resonances.md): Platform-level event propagation — 8 archetypes, susceptibility profiles, operative integration, automatic impact processing via background scheduler
+- [Substrate Resonances: Platform-Level Event Propagation](specs/substrate-resonances.md)
+- [Substrate Scanner — Automated Real-World Event Detection](specs/substrate-scanner.md)
 - [Theming System](specs/theming-system.md)
 
 ## References
@@ -29,17 +30,17 @@
 - [Frontend Components](references/frontend-components.md)
 
 ## Guides
+- [Implementation Plan](archive/implementation-plan.md)
 - [Deployment Infrastructure](guides/deployment-infrastructure.md)
-- [Deployment Procedures](guides/deployment-procedures.md): Production deploy procedures — Railway, Supabase migration push, image transfer, DB modifications
-- [Epoch Gameplay Guide](guides/epoch-gameplay-guide.md): Player-facing guide — operative types, fog of war, alliances, scoring dimensions, DECLASSIFIED results screen, MVP commendations, academy training mode
-- [Implementation Plan](guides/implementation-plan.md)
-- [Local DB Reset](guides/local-db-reset.md): Safe database reset procedures, storage recovery, image re-generation
+- [Production Deployment Procedures](guides/deployment-procedures.md)
+- [Epoch Gameplay Guide](guides/epoch-gameplay-guide.md)
+- [Local DB Reset & Storage Recovery Guide](guides/local-db-reset.md)
 - [Migration Strategy](guides/migration-strategy.md)
 - [Epoch Playtest Methodology](guides/playtest-methodology.md)
-- [Public Access](guides/public-access.md): Public-first API implementation — anon RLS, BaseApiService routing, auth guards
-- [SEO Implementation](guides/seo-implementation.md): SEO/GA4 architecture — 3-layer approach, crawler injection, slug URLs, 5 entity-level approaches evaluated
+- [Public-First Architecture — Implementation Reference](guides/public-access.md)
+- [SEO, GA4 & Deep Linking Implementation](guides/seo-implementation.md)
 - [Simulation Blueprint](guides/simulation-blueprint.md)
-- [Simulation Creation](guides/simulation-creation.md): New simulation setup — UUID scheme, seed/migration strategy, themes, image generation
+- [Simulation Creation Guide](guides/simulation-creation.md)
 - [Testing Strategy](guides/testing-strategy.md)
 
 ## Explanations
@@ -50,6 +51,7 @@
 - [Techstack Recommendation](explanations/techstack-recommendation.md)
 
 ## Analysis
+- [Breitentauglichkeit — Analyse & Maßnahmenkatalog](analysis/breitentauglichkeit-analyse.md)
 - [Epoch 2-Player Simulation: 50-Game Analysis](analysis/epoch-2p-analysis.md)
 - [Epoch 3-Player Simulation: 50-Game Analysis](analysis/epoch-3p-analysis.md)
 - [Epoch 4-Player Simulation: 50-Game Analysis](analysis/epoch-4p-analysis.md)
@@ -58,7 +60,7 @@
 - [Epoch Playthrough: Bug Fix Verification](analysis/epoch-playthrough.md)
 
 ## Audits
-- [Simulation Forge — Live Playthrough Audit](audits/forge-playthrough-audit-2026-03-07.md): End-to-end Forge playthrough with UX audit, content quality analysis, admin deletion testing, and 5 architectural fixes
+- [Simulation Forge — Live Playthrough Audit](audits/forge-playthrough-audit-2026-03-07.md)
 
 ## Architecture Decision Records
 - [ADR-001: Simulation als Row-Level Tenant](adr/001-simulation-row-level-tenant.md)
@@ -69,6 +71,3 @@
 - [ADR-006: Platform Admin via SECURITY DEFINER RPC](adr/006-platform-admin-security-definer.md)
 - [ADR-007: Datenbank-Logik in der Datenbank](adr/007-database-logic-in-database.md)
 - [ADR-008: Resonance Function Caps Hardcoded vs. Settings](adr/008-resonance-settings-hardcoded.md)
-
-## Changelog
-- [CHANGELOG.md](../CHANGELOG.md): Keep a Changelog format, covers migrations 068-080

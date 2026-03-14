@@ -1,6 +1,8 @@
 ---
 title: "Simulation Blueprint"
 id: simulation-blueprint
+version: "1.0"
+date: 2026-03-07
 lang: de
 type: guide
 status: active

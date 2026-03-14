@@ -1,5 +1,6 @@
 ---
 title: "SEO, GA4 & Deep Linking Implementation"
+version: "1.1"
 type: guide
 status: active
 lang: en
@@ -310,14 +311,23 @@ Declarative EVENT_MAP in `AnalyticsService.ts` maps DOM CustomEvents to GA4 even
 | Search | `apply_filter` | 1 | EVENT_MAP |
 | Media | `view_lightbox_image` | 1 | EVENT_MAP (Lightbox dispatches `lightbox-open`) |
 | Auth UI | `open_login_panel` | 1 | EVENT_MAP |
+| Landing | `landing_cta_click`, `landing_section_view` | 2 | EVENT_MAP |
+| Funnel | `tutorial_complete`, `create_simulation`, `accept_invitation`, `join_epoch` | 4 | EVENT_MAP |
 | Auth | `login`, `logout` | 2 | SupabaseAuthService |
 | Locale | `change_locale` | 1 | locale-service |
 | AI Generation | `generation_start`, `generation_complete`, `generation_error` | 3 | GenerationProgressService |
 | Consent | `consent_granted`, `consent_revoked` | 2 | AnalyticsService |
+| Web Vitals | `web_vitals` (CLS, LCP, INP, TTFB) | 1 | AnalyticsService (web-vitals lib) |
 
 **Service-level tracking (8 non-DOM events):** Added directly in `SupabaseAuthService._syncAppState()` (login/logout via `_previouslyAuthenticated` flag), `LocaleService.setLocale()`, `GenerationProgressService.withProgress()` (start/complete/error), and `AnalyticsService.grantConsent()`/`revokeConsent()`.
 
 **Lightbox tracking:** `VelgLightbox` dispatches `lightbox-open` CustomEvent in `updated()` when `src` becomes truthy. Tracked from all usage sites (LoreScroll, AgentsView, BuildingsView) with zero consumer changes.
+
+**User properties:** `setUserProperties()` sets GA4 user properties for audience segmentation: `user_type` (admin/member/anon), `has_forge_access` (boolean), `locale` (en/de). Called from `app-shell` after auth state resolves.
+
+**Config notes:**
+- `link_attribution: true` is set in gtag config for enhanced link attribution (tracks which specific link was clicked when multiple links point to the same destination)
+- Scroll tracking, site search, outbound clicks, and file downloads are controlled in GA4 Admin UI → Enhanced Measurement settings, not in gtag config
 
 ## Slug-Based URLs (Added Later)
 

@@ -5,7 +5,7 @@ version: "2.9"
 date: 2026-02-26
 lang: de
 type: guide
-status: active
+status: legacy
 tags: [implementation, tasks, phases, planning]
 ---
 

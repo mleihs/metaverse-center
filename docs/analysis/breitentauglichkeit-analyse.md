@@ -1,3 +1,14 @@
+---
+title: "Breitentauglichkeit — Analyse & Maßnahmenkatalog"
+id: breitentauglichkeit-analyse
+version: "1.0"
+date: 2026-03-08
+lang: de
+type: analysis
+status: active
+tags: [analysis, accessibility, onboarding, growth, strategy]
+---
+
 # Breitentauglichkeit — Analyse & Maßnahmenkatalog
 
 ## Kontext

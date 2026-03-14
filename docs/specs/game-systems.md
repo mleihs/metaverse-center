@@ -1,6 +1,8 @@
 ---
 title: "Game Systems Design"
 id: game-systems
+version: "1.0"
+date: 2026-03-08
 lang: de
 type: spec
 status: active

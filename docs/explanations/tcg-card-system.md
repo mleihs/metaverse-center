@@ -1,6 +1,8 @@
 ---
 title: "TCG Card System — Unified Design Concept"
 id: tcg-card-system
+version: "0.1"
+date: 2026-03-07
 lang: en
 type: explanation
 status: draft

@@ -1,5 +1,6 @@
 ---
 title: "Simulation Creation Guide"
+version: "1.0"
 type: guide
 status: active
 lang: en

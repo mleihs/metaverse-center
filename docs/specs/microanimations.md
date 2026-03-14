@@ -2,6 +2,7 @@
 title: "Microanimations"
 id: microanimations
 version: "1.0"
+date: 2026-03-13
 lang: en
 type: spec
 status: active

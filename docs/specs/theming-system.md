@@ -2,6 +2,7 @@
 title: "Theming System"
 id: theming-system
 version: "1.3"
+date: 2026-03-09
 lang: de
 type: spec
 status: active

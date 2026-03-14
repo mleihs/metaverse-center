@@ -9,74 +9,75 @@ tags: [index, catalog, documentation]
 
 # Documentation Index
 
-> Auto-generated from frontmatter. 45 documents, 6 categories + 8 ADRs.
+> Auto-generated from frontmatter. 46 documents, 6 categories + 8 ADRs.
 
-## Specifications (14)
+## Specifications (15)
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
 | [AI Integration](specs/ai-integration.md) | 2.0 | 2026-03-03 | de | active |
-| [API Specification](specs/api-specification.md) | 2.2 | 2026-03-10 | de | active |
+| [API Specification](specs/api-specification.md) | 2.4 | 2026-03-13 | de | active |
 | [Auth and Security](specs/auth-and-security.md) | 1.5 | 2026-03-01 | de | active |
 | [Embassies & Ambassadors](specs/embassies.md) | 1.1 | 2026-02-27 | de | active |
-| [Epochs & Competitive Layer](specs/epochs-competitive-layer.md) | 2.0 | 2026-03-07 | de | active |
+| [Epochs & Competitive Layer](specs/epochs-competitive-layer.md) | 2.1 | 2026-03-09 | de | active |
 | [External Services](specs/external-services.md) | 1.0 | 2026-02-15 | de | active |
-| [Game Systems Design](specs/game-systems.md) | — | — | de | active |
+| [Game Systems Design](specs/game-systems.md) | 1.0 | 2026-03-08 | de | active |
 | [i18n Architecture](specs/i18n-architecture.md) | 2.0 | 2026-03-03 | de | active |
-| [Microanimations](specs/microanimations.md) | 1.0 | — | en | active |
+| [Microanimations](specs/microanimations.md) | 1.0 | 2026-03-13 | en | active |
 | [Platform Architecture: Multi-Simulations-Plattform](specs/platform-architecture.md) | 2.2 | 2026-03-10 | de | active |
 | [Relationships, Echoes & Map](specs/relationships-echoes-map.md) | 1.1 | 2026-02-26 | de | active |
 | [Simulation Settings](specs/simulation-settings.md) | 1.0 | 2026-02-15 | de | active |
-| [Substrate Resonances](specs/substrate-resonances.md) | 1.2 | 2026-03-08 | en | active |
-| [Theming System](specs/theming-system.md) | 1.3 | — | de | active |
+| [Substrate Resonances: Platform-Level Event Propagation](specs/substrate-resonances.md) | 1.2 | 2026-03-08 | en | active |
+| [Substrate Scanner — Automated Real-World Event Detection](specs/substrate-scanner.md) | 1.0 | 2026-03-08 | en | active |
+| [Theming System](specs/theming-system.md) | 1.3 | 2026-03-09 | de | active |
 
 ## References (5)
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
-| [Database Schema: Neues Multi-Simulations-Schema](references/database-schema.md) | 3.5 | 2026-03-10 | de | active |
+| [Database Schema: Neues Multi-Simulations-Schema](references/database-schema.md) | 3.6 | 2026-03-13 | de | active |
 | [Design System](references/design-system.md) | 1.3 | 2026-03-02 | de | active |
-| [Domain Models](references/domain-models.md) | 3.2 | 2026-03-10 | de | active |
-| [Feature Catalog](references/feature-catalog.md) | 2.4 | 2026-03-10 | de | active |
-| [Frontend Components](references/frontend-components.md) | 2.5 | 2026-03-10 | de | active |
+| [Domain Models](references/domain-models.md) | 3.3 | 2026-03-13 | de | active |
+| [Feature Catalog](references/feature-catalog.md) | 2.6 | 2026-03-13 | de | active |
+| [Frontend Components](references/frontend-components.md) | 2.7 | 2026-03-13 | de | active |
 
-## Guides (12)
+## Guides (11)
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
 | [Deployment Infrastructure](guides/deployment-infrastructure.md) | 1.3 | 2026-03-07 | de | active |
-| [Deployment Procedures](guides/deployment-procedures.md) | — | 2026-03-02 | en | active |
+| [Production Deployment Procedures](guides/deployment-procedures.md) | 1.0 | — | en | active |
 | [Epoch Gameplay Guide](guides/epoch-gameplay-guide.md) | 1.0 | 2026-03-09 | en | active |
-| [Implementation Plan](guides/implementation-plan.md) | 2.9 | 2026-02-26 | de | active |
-| [Local DB Reset](guides/local-db-reset.md) | — | 2026-02-26 | en | active |
+| [Local DB Reset & Storage Recovery Guide](guides/local-db-reset.md) | 1.0 | — | en | active |
 | [Migration Strategy](guides/migration-strategy.md) | 1.2 | 2026-02-25 | de | active |
-| [Epoch Playtest Methodology](guides/playtest-methodology.md) | 1.0 | — | en | active |
-| [Public Access](guides/public-access.md) | — | 2026-02-25 | en | active |
-| [SEO Implementation](guides/seo-implementation.md) | — | 2026-02-27 | en | active |
-| [Simulation Blueprint](guides/simulation-blueprint.md) | — | — | de | active |
-| [Simulation Creation](guides/simulation-creation.md) | — | 2026-03-02 | en | active |
-| [Testing Strategy](guides/testing-strategy.md) | 2.2 | 2026-03-07 | de | active |
+| [Epoch Playtest Methodology](guides/playtest-methodology.md) | 1.0 | 2026-03-09 | en | active |
+| [Public-First Architecture — Implementation Reference](guides/public-access.md) | 1.2 | 2026-03-14 | en | active |
+| [SEO, GA4 & Deep Linking Implementation](guides/seo-implementation.md) | 1.1 | — | en | active |
+| [Simulation Blueprint](guides/simulation-blueprint.md) | 1.0 | 2026-03-07 | de | active |
+| [Simulation Creation Guide](guides/simulation-creation.md) | 1.0 | — | en | active |
+| [Testing Strategy](guides/testing-strategy.md) | 2.3 | 2026-03-09 | de | active |
 
 ## Explanations (5)
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
-| [The Velgarien Multiverse — Game Design Proposal](explanations/concept-lore.md) | — | — | en | active |
+| [The Velgarien Multiverse — Game Design Proposal](explanations/concept-lore.md) | 1.0 | 2026-03-07 | en | active |
 | [Game Design Document](explanations/game-design-document.md) | 1.3 | 2026-03-07 | en | active |
 | [Project Overview: metaverse.center Multi-Simulations-Plattform](explanations/project-overview.md) | 2.0 | 2026-03-03 | de | active |
-| [TCG Card System — Unified Design Concept](explanations/tcg-card-system.md) | — | — | en | draft |
+| [TCG Card System — Unified Design Concept](explanations/tcg-card-system.md) | 0.1 | 2026-03-07 | en | draft |
 | [Techstack Recommendation](explanations/techstack-recommendation.md) | 1.5 | 2026-02-28 | de | active |
 
-## Analysis (6)
+## Analysis (7)
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
-| [Epoch 2-Player Simulation: 50-Game Analysis](analysis/epoch-2p-analysis.md) | — | — | en | active |
-| [Epoch 3-Player Simulation: 50-Game Analysis](analysis/epoch-3p-analysis.md) | — | — | en | active |
-| [Epoch 4-Player Simulation: 50-Game Analysis](analysis/epoch-4p-analysis.md) | — | — | en | active |
-| [Epoch 5-Player Simulation: 50-Game Analysis](analysis/epoch-5p-analysis.md) | — | — | en | active |
-| [Epoch Cross-Reference Analysis: Game Balance Report](analysis/epoch-cross-reference-analysis.md) | — | — | en | active |
-| [Epoch Playthrough: Bug Fix Verification](analysis/epoch-playthrough.md) | — | — | en | active |
+| [Breitentauglichkeit — Analyse & Maßnahmenkatalog](analysis/breitentauglichkeit-analyse.md) | 1.0 | 2026-03-08 | de | active |
+| [Epoch 2-Player Simulation: 50-Game Analysis](analysis/epoch-2p-analysis.md) | 1.0 | 2026-02-28 | en | active |
+| [Epoch 3-Player Simulation: 50-Game Analysis](analysis/epoch-3p-analysis.md) | 1.0 | 2026-02-28 | en | active |
+| [Epoch 4-Player Simulation: 50-Game Analysis](analysis/epoch-4p-analysis.md) | 1.0 | 2026-02-28 | en | active |
+| [Epoch 5-Player Simulation: 50-Game Analysis](analysis/epoch-5p-analysis.md) | 1.0 | 2026-02-28 | en | active |
+| [Epoch Cross-Reference Analysis: Game Balance Report](analysis/epoch-cross-reference-analysis.md) | 1.0 | 2026-03-02 | en | active |
+| [Epoch Playthrough: Bug Fix Verification](analysis/epoch-playthrough.md) | 1.0 | 2026-02-28 | en | active |
 
 ## Audits (1)
 
@@ -97,8 +98,9 @@ tags: [index, catalog, documentation]
 | [ADR-007: Datenbank-Logik in der Datenbank](adr/007-database-logic-in-database.md) | Datenbank-Logik in der Datenbank |
 | [ADR-008: Resonance Function Caps Hardcoded vs. Settings](adr/008-resonance-settings-hardcoded.md) | Resonance Function Caps Hardcoded vs. Settings |
 
-## Archive (1)
+## Archive (2)
 
 | Document | Version | Lang | Status |
 |----------|---------|------|--------|
 | [Database Schema Legacy: Komplettes Alt-Schema](archive/database-schema-legacy.md) | 1.0 | de | legacy |
+| [Implementation Plan](archive/implementation-plan.md) | 2.9 | de | legacy |

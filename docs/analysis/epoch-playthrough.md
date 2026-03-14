@@ -1,6 +1,8 @@
 ---
 title: "Epoch Playthrough: Bug Fix Verification"
 id: epoch-playthrough
+version: "1.0"
+date: 2026-02-28
 lang: en
 type: analysis
 status: active

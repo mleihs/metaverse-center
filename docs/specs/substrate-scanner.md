@@ -1,3 +1,14 @@
+---
+title: "Substrate Scanner — Automated Real-World Event Detection"
+id: substrate-scanner
+version: "1.0"
+date: 2026-03-08
+lang: en
+type: spec
+status: active
+tags: [scanner, resonances, automation, news, adapters]
+---
+
 # Substrate Scanner — Automated Real-World Event Detection
 
 ## Context
