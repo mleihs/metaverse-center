@@ -289,10 +289,12 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
     }
 
     const simId = this._getSimId();
-    const hasDossier = forgeStateManager.hasCompletedPurchase(simId, 'classified_dossier');
-    const classifiedSections = hasDossier && this._rawSections
+    const hasPurchase = forgeStateManager.hasCompletedPurchase(simId, 'classified_dossier');
+    // Show classified sections if they exist in data (public-first) OR purchase confirmed
+    const classifiedSections = this._rawSections
       ? getClassifiedSections(this._rawSections)
       : [];
+    const hasDossier = hasPurchase || classifiedSections.length > 0;
 
     return html`
       ${this._showCeremony
