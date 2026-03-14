@@ -74,7 +74,7 @@ async def list_drafts(
     return {
         "success": True,
         "data": data,
-        "meta": {"count": len(data), "total": total, "limit": limit, "offset": offset},
+        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
     }
 
 
@@ -299,7 +299,7 @@ async def get_purchase_history(
     return {
         "success": True,
         "data": data,
-        "meta": {"count": len(data), "total": total, "limit": limit, "offset": offset},
+        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
     }
 
 
@@ -694,7 +694,7 @@ async def admin_list_purchases(
     return {
         "success": True,
         "data": data,
-        "meta": {"count": len(data), "total": total, "limit": limit, "offset": offset},
+        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
     }
 
 
@@ -721,20 +721,7 @@ async def get_byok_system_setting(
     admin_supabase=Depends(get_admin_supabase),
 ):
     """Get all BYOK-related platform settings (admin only)."""
-    resp = (
-        admin_supabase.table("platform_settings")
-        .select("setting_key, setting_value")
-        .in_("setting_key", ["byok_bypass_enabled", "byok_access_policy"])
-        .execute()
-    )
-    result = {"byok_bypass_enabled": False, "byok_access_policy": "per_user"}
-    for row in (resp.data or []):
-        if row["setting_key"] == "byok_bypass_enabled":
-            val = row.get("setting_value")
-            result["byok_bypass_enabled"] = val is True or val == "true"
-        elif row["setting_key"] == "byok_access_policy":
-            val = row.get("setting_value")
-            result["byok_access_policy"] = val if isinstance(val, str) else "per_user"
+    result = await ForgeDraftService.get_byok_system_settings(admin_supabase)
     return {"success": True, "data": result}
 
 
@@ -745,15 +732,12 @@ async def update_byok_system_setting(
     admin_supabase=Depends(get_admin_supabase),
 ):
     """Toggle system-wide BYOK bypass (admin only)."""
-    admin_supabase.table("platform_settings").update({
-        "setting_value": enabled,
-        "updated_by_id": str(admin.id),
-    }).eq("setting_key", "byok_bypass_enabled").execute()
+    result = await ForgeDraftService.update_byok_bypass_setting(admin_supabase, enabled, admin.id)
     await AuditService.safe_log(
         admin_supabase, None, admin.id, "platform_settings", None,
         "update_byok_bypass", {"enabled": enabled},
     )
-    return {"success": True, "data": {"byok_bypass_enabled": enabled}}
+    return {"success": True, "data": result}
 
 
 @router.put("/admin/byok-access-policy", response_model=SuccessResponse[dict])
@@ -763,15 +747,12 @@ async def update_byok_access_policy(
     admin_supabase=Depends(get_admin_supabase),
 ):
     """Set global BYOK access policy: 'none', 'all', or 'per_user' (admin only)."""
-    admin_supabase.table("platform_settings").update({
-        "setting_value": policy,
-        "updated_by_id": str(admin.id),
-    }).eq("setting_key", "byok_access_policy").execute()
+    result = await ForgeDraftService.update_byok_access_policy(admin_supabase, policy, admin.id)
     await AuditService.safe_log(
         admin_supabase, None, admin.id, "platform_settings", None,
         "update_byok_access_policy", {"policy": policy},
     )
-    return {"success": True, "data": {"byok_access_policy": policy}}
+    return {"success": True, "data": result}
 
 
 @router.put("/admin/user-byok-bypass/{target_user_id}", response_model=SuccessResponse[dict])
@@ -782,19 +763,12 @@ async def update_user_byok_bypass(
     admin_supabase=Depends(get_admin_supabase),
 ):
     """Toggle per-user BYOK bypass (admin only)."""
-    resp = (
-        admin_supabase.table("user_wallets")
-        .update({"byok_bypass": enabled})
-        .eq("user_id", str(target_user_id))
-        .execute()
-    )
-    if not resp.data:
-        raise HTTPException(status_code=404, detail="User wallet not found.")
+    result = await ForgeDraftService.update_user_byok_bypass(admin_supabase, target_user_id, enabled)
     await AuditService.safe_log(
         admin_supabase, None, admin.id, "user_wallets", str(target_user_id),
         "update_byok_bypass", {"enabled": enabled},
     )
-    return {"success": True, "data": {"user_id": str(target_user_id), "byok_bypass": enabled}}
+    return {"success": True, "data": result}
 
 
 @router.put("/admin/user-byok-allowed/{target_user_id}", response_model=SuccessResponse[dict])
@@ -805,19 +779,12 @@ async def update_user_byok_allowed(
     admin_supabase=Depends(get_admin_supabase),
 ):
     """Grant or revoke BYOK access for a specific user (admin only)."""
-    resp = (
-        admin_supabase.table("user_wallets")
-        .update({"byok_allowed": enabled})
-        .eq("user_id", str(target_user_id))
-        .execute()
-    )
-    if not resp.data:
-        raise HTTPException(status_code=404, detail="User wallet not found.")
+    result = await ForgeDraftService.update_user_byok_allowed(admin_supabase, target_user_id, enabled)
     await AuditService.safe_log(
         admin_supabase, None, admin.id, "user_wallets", str(target_user_id),
         "update_byok_allowed", {"enabled": enabled},
     )
-    return {"success": True, "data": {"user_id": str(target_user_id), "byok_allowed": enabled}}
+    return {"success": True, "data": result}
 
 
 class RegenerateImagesRequest(BaseModel):

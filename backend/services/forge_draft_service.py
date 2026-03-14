@@ -171,89 +171,34 @@ class ForgeDraftService:
 
     @staticmethod
     async def get_wallet(supabase: Client, user_id: UUID) -> dict:
-        """Get the current user's forge wallet (includes account_tier and BYOK status)."""
-        response = (
-            supabase.table("user_wallets")
-            .select(
-                "forge_tokens, is_architect, account_tier, "
-                "encrypted_openrouter_key, encrypted_replicate_key, "
-                "byok_bypass, byok_allowed"
-            )
-            .eq("user_id", str(user_id))
-            .maybe_single()
-            .execute()
-        )
-        wallet = response.data or {
+        """Get the current user's forge wallet (includes account_tier and BYOK status).
+
+        Uses a single composite RPC (fn_get_wallet_summary, migration 108)
+        that consolidates the wallet query, BYOK policy checks, and platform
+        settings into one DB round-trip.
+        """
+        _default: dict = {
             "forge_tokens": 0,
             "is_architect": False,
             "account_tier": "observer",
+            "byok_status": {
+                "has_openrouter_key": False,
+                "has_replicate_key": False,
+                "byok_allowed": False,
+                "byok_bypass": False,
+                "system_bypass_enabled": False,
+                "effective_bypass": False,
+                "access_policy": "per_user",
+            },
         }
-
-        # Compute BYOK status
-        has_or = wallet.get("encrypted_openrouter_key") is not None
-        has_rep = wallet.get("encrypted_replicate_key") is not None
-        per_user_bypass = wallet.get("byok_bypass", False)
-        per_user_allowed = wallet.get("byok_allowed", False)
-
-        # Check effective bypass via RPC (encapsulates all policy logic)
-        effective_bypass = False
         try:
-            bypass_resp = supabase.rpc(
-                "fn_user_has_byok_bypass", {"p_user_id": str(user_id)}
+            resp = supabase.rpc(
+                "fn_get_wallet_summary", {"p_user_id": str(user_id)}
             ).execute()
-            effective_bypass = bool(bypass_resp.data)
+            return resp.data or _default
         except Exception:
-            pass
-
-        # Check effective BYOK allowed via RPC
-        byok_allowed = False
-        try:
-            allowed_resp = supabase.rpc(
-                "fn_user_byok_allowed", {"p_user_id": str(user_id)}
-            ).execute()
-            byok_allowed = bool(allowed_resp.data)
-        except Exception:
-            pass
-
-        # Fetch platform settings (bypass enabled + access policy)
-        system_enabled = False
-        access_policy = "per_user"
-        try:
-            admin_client = await get_admin_supabase()
-            settings_resp = (
-                admin_client.table("platform_settings")
-                .select("setting_key, setting_value")
-                .in_("setting_key", ["byok_bypass_enabled", "byok_access_policy"])
-                .execute()
-            )
-            for row in (settings_resp.data or []):
-                if row["setting_key"] == "byok_bypass_enabled":
-                    val = row.get("setting_value")
-                    system_enabled = val is True or val == "true"
-                elif row["setting_key"] == "byok_access_policy":
-                    val = row.get("setting_value")
-                    if isinstance(val, str):
-                        access_policy = val
-        except Exception:
-            pass
-
-        # Strip encrypted key values from response
-        wallet.pop("encrypted_openrouter_key", None)
-        wallet.pop("encrypted_replicate_key", None)
-        wallet.pop("byok_bypass", None)
-        wallet.pop("byok_allowed", None)
-
-        wallet["byok_status"] = {
-            "has_openrouter_key": has_or,
-            "has_replicate_key": has_rep,
-            "byok_allowed": byok_allowed,
-            "byok_bypass": per_user_bypass,
-            "system_bypass_enabled": system_enabled,
-            "effective_bypass": effective_bypass,
-            "access_policy": access_policy,
-        }
-
-        return wallet
+            logger.exception("fn_get_wallet_summary RPC failed")
+            return _default
 
     @staticmethod
     async def list_bundles(supabase: Client) -> list[dict]:
@@ -357,7 +302,11 @@ class ForgeDraftService:
 
     @staticmethod
     async def get_admin_stats(admin_supabase: Client) -> dict:
-        """Get global forge statistics (admin only)."""
+        """Get global forge statistics (admin only).
+
+        Uses ``token_economy_stats`` view for token aggregation (server-side SUM)
+        instead of fetching all wallet rows and summing in Python.
+        """
         drafts_resp = (
             admin_supabase.table("forge_drafts")
             .select("id", count="exact")
@@ -366,12 +315,14 @@ class ForgeDraftService:
         )
         active_drafts = drafts_resp.count or 0
 
-        tokens_resp = (
-            admin_supabase.table("user_wallets")
-            .select("forge_tokens")
+        # Server-side aggregation via the token_economy_stats view (migration 102)
+        economy_resp = (
+            admin_supabase.table("token_economy_stats")
+            .select("tokens_in_circulation")
+            .single()
             .execute()
         )
-        total_tokens = sum(row["forge_tokens"] for row in (tokens_resp.data or []))
+        total_tokens = int(economy_resp.data.get("tokens_in_circulation", 0)) if economy_resp.data else 0
 
         materialized_resp = (
             admin_supabase.table("forge_drafts")
@@ -386,6 +337,85 @@ class ForgeDraftService:
             "total_tokens": total_tokens,
             "total_materialized": total_materialized,
         }
+
+    # ── BYOK Settings (Admin) ────────────────────────────────────────────
+
+    @staticmethod
+    async def get_byok_system_settings(admin_supabase: Client) -> dict:
+        """Get all BYOK-related platform settings (admin only)."""
+        resp = (
+            admin_supabase.table("platform_settings")
+            .select("setting_key, setting_value")
+            .in_("setting_key", ["byok_bypass_enabled", "byok_access_policy"])
+            .execute()
+        )
+        result: dict = {"byok_bypass_enabled": False, "byok_access_policy": "per_user"}
+        for row in (resp.data or []):
+            if row["setting_key"] == "byok_bypass_enabled":
+                val = row.get("setting_value")
+                result["byok_bypass_enabled"] = val is True or val == "true"
+            elif row["setting_key"] == "byok_access_policy":
+                val = row.get("setting_value")
+                result["byok_access_policy"] = val if isinstance(val, str) else "per_user"
+        return result
+
+    @staticmethod
+    async def update_byok_bypass_setting(
+        admin_supabase: Client, enabled: bool, admin_id: UUID,
+    ) -> dict:
+        """Toggle system-wide BYOK bypass (admin only)."""
+        admin_supabase.table("platform_settings").update({
+            "setting_value": enabled,
+            "updated_by_id": str(admin_id),
+        }).eq("setting_key", "byok_bypass_enabled").execute()
+        return {"byok_bypass_enabled": enabled}
+
+    @staticmethod
+    async def update_byok_access_policy(
+        admin_supabase: Client, policy: str, admin_id: UUID,
+    ) -> dict:
+        """Set global BYOK access policy: 'none', 'all', or 'per_user' (admin only)."""
+        admin_supabase.table("platform_settings").update({
+            "setting_value": policy,
+            "updated_by_id": str(admin_id),
+        }).eq("setting_key", "byok_access_policy").execute()
+        return {"byok_access_policy": policy}
+
+    @staticmethod
+    async def update_user_byok_bypass(
+        admin_supabase: Client, target_user_id: UUID, enabled: bool,
+    ) -> dict:
+        """Toggle per-user BYOK bypass (admin only).
+
+        Raises HTTPException 404 if user wallet not found.
+        """
+        resp = (
+            admin_supabase.table("user_wallets")
+            .update({"byok_bypass": enabled})
+            .eq("user_id", str(target_user_id))
+            .execute()
+        )
+        if not resp.data:
+            raise HTTPException(status_code=404, detail="User wallet not found.")
+        return {"user_id": str(target_user_id), "byok_bypass": enabled}
+
+    @staticmethod
+    async def update_user_byok_allowed(
+        admin_supabase: Client, target_user_id: UUID, enabled: bool,
+    ) -> dict:
+        """Grant or revoke BYOK access for a specific user (admin only).
+
+        Raises HTTPException 404 if user wallet not found.
+        """
+        resp = (
+            admin_supabase.table("user_wallets")
+            .update({"byok_allowed": enabled})
+            .eq("user_id", str(target_user_id))
+            .execute()
+        )
+        if not resp.data:
+            raise HTTPException(status_code=404, detail="User wallet not found.")
+        return {"user_id": str(target_user_id), "byok_allowed": enabled}
 
     @staticmethod
     async def purge_stale_drafts(

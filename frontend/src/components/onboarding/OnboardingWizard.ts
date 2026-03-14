@@ -94,8 +94,8 @@ export class VelgOnboardingWizard extends LitElement {
       background: linear-gradient(
         90deg,
         transparent 0%,
-        #f59e0b 20%,
-        #f59e0b 80%,
+        var(--color-accent-amber) 20%,
+        var(--color-accent-amber) 80%,
         transparent 100%
       );
     }
@@ -123,15 +123,15 @@ export class VelgOnboardingWizard extends LitElement {
     .step-dot--active {
       width: 10px;
       height: 10px;
-      background: #f59e0b;
-      border-color: #f59e0b;
-      box-shadow: 0 0 8px rgba(245, 158, 11, 0.3);
+      background: var(--color-accent-amber);
+      border-color: var(--color-accent-amber);
+      box-shadow: 0 0 8px var(--color-accent-amber-glow);
       animation: badge-pop 200ms var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) both;
     }
 
     .step-dot--completed {
-      background: rgba(245, 158, 11, 0.4);
-      border-color: rgba(245, 158, 11, 0.5);
+      background: var(--color-warning-border);
+      border-color: var(--color-warning-border);
     }
 
     .step-connector {
@@ -142,7 +142,7 @@ export class VelgOnboardingWizard extends LitElement {
     }
 
     .step-connector--active {
-      background: rgba(245, 158, 11, 0.4);
+      background: var(--color-warning-border);
     }
 
     @keyframes badge-pop {
@@ -204,7 +204,7 @@ export class VelgOnboardingWizard extends LitElement {
     }
 
     .footer__skip:focus-visible {
-      outline: 1px solid #f59e0b;
+      outline: 1px solid var(--color-accent-amber);
       outline-offset: 2px;
     }
 
@@ -233,12 +233,12 @@ export class VelgOnboardingWizard extends LitElement {
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 2px;
-      color: #0a0a0a;
-      background: #f59e0b;
+      color: var(--color-text-inverse);
+      background: var(--color-accent-amber);
       border: none;
       cursor: pointer;
       transition: background 150ms, transform 150ms, box-shadow 150ms;
-      box-shadow: 3px 3px 0 rgba(245, 158, 11, 0.2);
+      box-shadow: 3px 3px 0 var(--color-accent-amber-glow);
       opacity: 0;
       animation: btn-materialize 400ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) both;
     }
@@ -248,18 +248,18 @@ export class VelgOnboardingWizard extends LitElement {
     .btn-cta--delay-lg  { animation-delay: 800ms; }
 
     .btn-cta:hover {
-      background: #fbbf24;
+      background: var(--color-accent-amber-hover);
       transform: translate(-2px, -2px);
-      box-shadow: 5px 5px 0 rgba(245, 158, 11, 0.25);
+      box-shadow: 5px 5px 0 var(--color-accent-amber-glow);
     }
 
     .btn-cta:active {
       transform: translate(0);
-      box-shadow: 2px 2px 0 rgba(245, 158, 11, 0.15);
+      box-shadow: 2px 2px 0 var(--color-accent-amber-glow);
     }
 
     .btn-cta:focus-visible {
-      outline: 2px solid #f59e0b;
+      outline: 2px solid var(--color-accent-amber);
       outline-offset: 2px;
     }
 
@@ -297,7 +297,7 @@ export class VelgOnboardingWizard extends LitElement {
     }
 
     .btn-secondary:focus-visible {
-      outline: 2px solid #f59e0b;
+      outline: 2px solid var(--color-accent-amber);
       outline-offset: 2px;
     }
 
@@ -319,8 +319,8 @@ export class VelgOnboardingWizard extends LitElement {
       position: absolute;
       inset: -40px;
       background:
-        radial-gradient(ellipse at 30% 40%, rgba(245, 158, 11, 0.06) 0%, transparent 50%),
-        radial-gradient(ellipse at 70% 60%, rgba(245, 158, 11, 0.04) 0%, transparent 50%);
+        radial-gradient(ellipse at 30% 40%, var(--color-ascendant-gold) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 60%, var(--color-ascendant-gold) 0%, transparent 50%);
       animation: welcome-drift 12s ease-in-out infinite alternate;
       pointer-events: none;
     }
@@ -431,14 +431,14 @@ export class VelgOnboardingWizard extends LitElement {
     }
 
     .path-card:focus-visible {
-      outline: 2px solid #f59e0b;
+      outline: 2px solid var(--color-accent-amber);
       outline-offset: -2px;
     }
 
     .path-card[aria-selected="true"] {
-      border-color: #f59e0b;
+      border-color: var(--color-accent-amber);
       transform: scale(1.01);
-      background: rgba(245, 158, 11, 0.04);
+      background: var(--color-ascendant-gold);
     }
 
     .path-card__icon {
@@ -453,8 +453,8 @@ export class VelgOnboardingWizard extends LitElement {
     }
 
     .path-card[aria-selected="true"] .path-card__icon {
-      color: #f59e0b;
-      border-color: rgba(245, 158, 11, 0.3);
+      color: var(--color-accent-amber);
+      border-color: var(--color-warning-border);
     }
 
     .path-card__text {
@@ -565,7 +565,7 @@ export class VelgOnboardingWizard extends LitElement {
       justify-content: center;
       width: 28px;
       height: 28px;
-      color: #f59e0b;
+      color: var(--color-accent-amber);
     }
 
     .tour-card__title {
@@ -641,18 +641,18 @@ export class VelgOnboardingWizard extends LitElement {
     }
 
     .mission-card:focus-visible {
-      outline: 2px solid #f59e0b;
+      outline: 2px solid var(--color-accent-amber);
       outline-offset: -2px;
     }
 
     .mission-card--primary {
-      border-left: 3px solid #f59e0b;
+      border-left: 3px solid var(--color-accent-amber);
     }
 
     .mission-card--primary:hover {
-      border-color: rgba(245, 158, 11, 0.5);
-      border-left-color: #f59e0b;
-      box-shadow: 0 2px 12px rgba(245, 158, 11, 0.08);
+      border-color: var(--color-warning-border);
+      border-left-color: var(--color-accent-amber);
+      box-shadow: 0 2px 12px var(--color-primary-bg);
     }
 
     .mission-card__icon {
@@ -667,8 +667,8 @@ export class VelgOnboardingWizard extends LitElement {
     }
 
     .mission-card--primary .mission-card__icon {
-      color: #f59e0b;
-      border-color: rgba(245, 158, 11, 0.3);
+      color: var(--color-accent-amber);
+      border-color: var(--color-warning-border);
     }
 
     .mission-card__text {

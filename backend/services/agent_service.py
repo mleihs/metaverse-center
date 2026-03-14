@@ -6,6 +6,8 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
+from fastapi import HTTPException, status
+
 from backend.services.base_service import BaseService
 from backend.utils.search import apply_search_filter
 from supabase import Client
@@ -162,11 +164,38 @@ class AgentService(BaseService):
         simulation_id: UUID,
         agent_id: UUID,
     ) -> dict:
-        """Get an agent with professions, reactions, and building relations."""
-        agent = await cls.get(supabase, simulation_id, agent_id)
-        agent["professions"] = await cls.get_professions(supabase, simulation_id, agent_id)
-        agent["reactions"] = await cls.get_reactions(supabase, simulation_id, agent_id)
-        agent["building_relations"] = await cls.get_building_relations(supabase, simulation_id, agent_id)
+        """Get an agent with professions, reactions, and building relations.
+
+        Uses a single Supabase query with foreign-key joins to fetch the agent
+        and all related data in one round-trip, replacing 4 sequential queries.
+        """
+        response = (
+            supabase.table(cls.table_name)
+            .select(
+                "*, "
+                "agent_professions(*), "
+                "event_reactions(*, events(id, title)), "
+                "building_agent_relations(*, buildings(id, name, building_type))"
+            )
+            .eq("simulation_id", str(simulation_id))
+            .eq("id", str(agent_id))
+            .is_("deleted_at", "null")
+            .single()
+            .execute()
+        )
+
+        agent = response.data
+        if not agent:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"agents '{agent_id}' not found in simulation '{simulation_id}'.",
+            )
+
+        # Normalize embedded keys to match the original API contract
+        agent["professions"] = agent.pop("agent_professions", []) or []
+        agent["reactions"] = agent.pop("event_reactions", []) or []
+        agent["building_relations"] = agent.pop("building_agent_relations", []) or []
+
         cls._enrich_ambassador_flag(supabase, simulation_id, [agent])
         return agent
 

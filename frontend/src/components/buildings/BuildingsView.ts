@@ -157,9 +157,9 @@ export class VelgBuildingsView extends SignalWatcher(LitElement) {
   }
 
   private _checkDeepLink(): void {
-    const buildingId = sessionStorage.getItem('openBuildingId');
+    const buildingId = appState.pendingOpenBuildingId.value;
     if (!buildingId) return;
-    sessionStorage.removeItem('openBuildingId');
+    appState.pendingOpenBuildingId.value = null;
 
     const building = this._buildings.find((b) => b.id === buildingId);
     if (building) {

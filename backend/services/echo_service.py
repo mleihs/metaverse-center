@@ -13,7 +13,6 @@ from uuid import UUID
 from fastapi import HTTPException, status
 
 from backend.services.base_service import serialize_for_json
-from backend.services.connection_service import ConnectionService  # noqa: F401 — backwards compat
 from backend.services.game_mechanics_service import GameMechanicsService
 from supabase import Client
 

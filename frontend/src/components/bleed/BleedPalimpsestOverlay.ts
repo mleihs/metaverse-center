@@ -135,7 +135,7 @@ export class BleedPalimpsestOverlay extends LitElement {
   private _renderWatermark() {
     return html`
       <div class="watermark" aria-hidden="true" role="presentation">
-        <img src="/compass-rose.svg" alt="" />
+        <img src="/compass-rose.svg" alt="" aria-hidden="true" role="presentation" />
       </div>
     `;
   }

@@ -167,7 +167,9 @@ class ThemeService {
     const response = await settingsApi.getByCategory(simulationId, 'design');
 
     if (!response.success || !response.data) {
-      console.warn('[ThemeService] Failed to load design settings:', response.error?.message);
+      if (import.meta.env.DEV) {
+        console.warn('[ThemeService] Failed to load design settings:', response.error?.message);
+      }
       return;
     }
 
@@ -356,7 +358,9 @@ class ThemeService {
     if (!css || typeof css !== 'string') return '';
 
     if (new Blob([css]).size > MAX_CUSTOM_CSS_BYTES) {
-      console.warn('[ThemeService] Custom CSS exceeds 10 KB limit — skipping.');
+      if (import.meta.env.DEV) {
+        console.warn('[ThemeService] Custom CSS exceeds 10 KB limit — skipping.');
+      }
       return '';
     }
 

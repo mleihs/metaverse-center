@@ -69,8 +69,3 @@ def get_openrouter_model(
         model_id,
         provider=provider,
     )
-
-
-# Kept as a constant for backward compatibility — runtime code should use
-# get_platform_model("research") from platform_model_config instead.
-RESEARCH_MODEL = "google/gemini-2.0-flash-001"

@@ -239,6 +239,8 @@ export class VelgBureauArchives extends LitElement {
 
     .dossier__evidence img {
       width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
       border: 1px solid var(--color-gray-600);
       transform: rotate(-0.5deg);
       cursor: pointer;
@@ -360,25 +362,6 @@ export class VelgBureauArchives extends LitElement {
       color: rgba(245, 158, 11, 0.4);
     }
 
-    /* ── Lightbox state ── */
-
-    .lightbox-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 1000;
-      background: rgba(0, 0, 0, 0.9);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
-
-    .lightbox-overlay img {
-      max-width: 90vw;
-      max-height: 90vh;
-      object-fit: contain;
-    }
-
     /* ── Responsive ── */
 
     @media (max-width: 640px) {
@@ -439,6 +422,8 @@ export class VelgBureauArchives extends LitElement {
 
   @state() private _activeChapter = '';
   @state() private _lightboxUrl: string | null = null;
+  @state() private _lightboxAlt = '';
+  @state() private _lightboxCaption = '';
 
   private _observer: IntersectionObserver | null = null;
   private _scrollObserver: IntersectionObserver | null = null;
@@ -515,12 +500,16 @@ export class VelgBureauArchives extends LitElement {
     el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  private _openLightbox(url: string): void {
+  private _openLightbox(url: string, alt: string, caption: string): void {
     this._lightboxUrl = url;
+    this._lightboxAlt = alt;
+    this._lightboxCaption = caption;
   }
 
   private _closeLightbox(): void {
     this._lightboxUrl = null;
+    this._lightboxAlt = '';
+    this._lightboxCaption = '';
   }
 
   protected render() {
@@ -581,14 +570,12 @@ export class VelgBureauArchives extends LitElement {
         </span>
       </div>
 
-      ${this._lightboxUrl
-        ? html`
-          <div class="lightbox-overlay" @click=${this._closeLightbox}>
-            <img src=${this._lightboxUrl} alt="" />
-          </div>
-        `
-        : nothing
-      }
+      <velg-lightbox
+        .src=${this._lightboxUrl}
+        .alt=${this._lightboxAlt}
+        .caption=${this._lightboxCaption}
+        @lightbox-close=${this._closeLightbox}
+      ></velg-lightbox>
     `;
   }
 
@@ -638,9 +625,9 @@ export class VelgBureauArchives extends LitElement {
                 src=${imageUrl}
                 alt=${section.imageCaption ?? section.title}
                 loading="lazy"
-                @click=${() => this._openLightbox(imageUrl)}
+                @click=${() => this._openLightbox(imageUrl, section.title, section.imageCaption ?? '')}
                 tabindex="0"
-                @keydown=${(e: KeyboardEvent) => { if (e.key === 'Enter') this._openLightbox(imageUrl); }}
+                @keydown=${(e: KeyboardEvent) => { if (e.key === 'Enter') this._openLightbox(imageUrl, section.title, section.imageCaption ?? ''); }}
               />
               <div class="dossier__evidence-meta">
                 ${msg('ARTIFACT REF')}: #IMG-${section.arcanum}

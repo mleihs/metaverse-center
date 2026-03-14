@@ -54,7 +54,9 @@ class LocaleService {
         await this.setLocale(locale);
       } catch {
         // Fallback to source locale if loading fails
-        console.warn(`Failed to load locale "${locale}", falling back to "${sourceLocale}"`);
+        if (import.meta.env.DEV) {
+          console.warn(`Failed to load locale "${locale}", falling back to "${sourceLocale}"`);
+        }
       }
     }
   }

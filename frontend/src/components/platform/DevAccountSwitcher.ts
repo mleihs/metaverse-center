@@ -619,7 +619,6 @@ export class VelgDevAccountSwitcher extends LitElement {
     });
 
     if (error) {
-      console.error('[DevSwitcher] Sign-in failed:', error.message);
       this._switchError = error.message;
       this.classList.remove('switching');
       setTimeout(() => { this._switchError = ''; }, 4000);

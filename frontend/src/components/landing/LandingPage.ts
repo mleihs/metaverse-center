@@ -15,6 +15,7 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import { simulationsApi } from '../../services/api/SimulationsApiService.js';
 import { seoService } from '../../services/SeoService.js';
 import '../shared/PlatformFooter.js';
 
@@ -1160,10 +1161,9 @@ export class VelgLandingPage extends LitElement {
 
   private async _fetchStats(): Promise<void> {
     try {
-      const res = await fetch('/api/v1/public/platform-stats');
-      if (res.ok) {
-        const json = await res.json();
-        this._stats = json.data;
+      const response = await simulationsApi.getPlatformStats<PlatformStats>();
+      if (response.success && response.data) {
+        this._stats = response.data;
       }
     } catch {
       // Stats are non-critical — show fallback
@@ -1321,7 +1321,7 @@ export class VelgLandingPage extends LitElement {
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReduced) return;
 
-    const hero = this.renderRoot.querySelector('[data-hero="03"]') as HTMLElement | null;
+    const hero = this.renderRoot.querySelector<HTMLElement>('[data-hero="03"]');
     if (!hero) return;
 
     hero.classList.add('in-view');
@@ -1329,10 +1329,10 @@ export class VelgLandingPage extends LitElement {
   }
 
   private _animateSignalDecode(section: HTMLElement): void {
-    const accentEl = section.querySelector('[data-decode-part="accent"]') as HTMLElement | null;
-    const restEl = section.querySelector('[data-decode-part="rest"]') as HTMLElement | null;
-    const progressFill = section.querySelector('.decode-progress__fill') as HTMLElement | null;
-    const progressPct = section.querySelector('.decode-pct') as HTMLElement | null;
+    const accentEl = section.querySelector<HTMLElement>('[data-decode-part="accent"]');
+    const restEl = section.querySelector<HTMLElement>('[data-decode-part="rest"]');
+    const progressFill = section.querySelector<HTMLElement>('.decode-progress__fill');
+    const progressPct = section.querySelector<HTMLElement>('.decode-pct');
 
     if (!accentEl || !restEl) return;
 

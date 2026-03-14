@@ -1359,7 +1359,7 @@ export class VelgSocialTrendsView extends LitElement {
     const partner = this._getEmbassyPartner(embassy);
     if (!partner?.simulation || !partner?.building) return;
     const slug = partner.simulation.slug ?? partner.simulation.id;
-    sessionStorage.setItem('openBuildingId', partner.building.id);
+    appState.pendingOpenBuildingId.value = partner.building.id;
     window.history.pushState({}, '', `/simulations/${slug}/buildings`);
     window.dispatchEvent(new PopStateEvent('popstate'));
   }

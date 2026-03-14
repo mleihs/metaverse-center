@@ -502,7 +502,7 @@ export class VelgEpochChatPanel extends LitElement {
 
     // Focus input after send
     await this.updateComplete;
-    const input = this.shadowRoot?.querySelector('.chat-input') as HTMLInputElement | null;
+    const input = this.shadowRoot?.querySelector<HTMLInputElement>('.chat-input');
     input?.focus();
   }
 

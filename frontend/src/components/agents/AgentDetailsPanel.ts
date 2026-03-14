@@ -753,18 +753,18 @@ export class VelgAgentDetailsPanel extends LitElement {
 
   private _handleNavigateEmbassy(e: CustomEvent): void {
     const { simulationSlug, buildingId } = e.detail;
+    appState.pendingOpenBuildingId.value = buildingId;
     window.history.pushState({}, '', `/simulations/${simulationSlug}/buildings`);
     window.dispatchEvent(new PopStateEvent('popstate'));
-    sessionStorage.setItem('openBuildingId', buildingId);
   }
 
   private _handleNavigateLocalBuilding(buildingId: string): void {
     if (!buildingId) return;
     const sim = appState.currentSimulation.value;
     const slug = sim?.slug ?? sim?.id ?? this.simulationId;
+    appState.pendingOpenBuildingId.value = buildingId;
     window.history.pushState({}, '', `/simulations/${slug}/buildings`);
     window.dispatchEvent(new PopStateEvent('popstate'));
-    sessionStorage.setItem('openBuildingId', buildingId);
   }
 
   private _handleRelationshipClick(e: CustomEvent<{ agentId: string }>): void {

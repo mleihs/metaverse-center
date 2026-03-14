@@ -2292,8 +2292,7 @@ export class VelgEpochCommandCenter extends LitElement {
       }
 
       this._showDraftPanel = true;
-    } catch (err) {
-      console.error('[Draft] Failed to load agents:', err);
+    } catch {
       VelgToast.error(msg('Failed to load agents for draft.'));
     }
   }

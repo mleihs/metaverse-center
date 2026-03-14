@@ -483,7 +483,7 @@ export class VelgCartographerMap extends LitElement {
     this._miniVbh = e.detail.vbh;
     // Directly update minimap DOM properties — avoids triggering Lit re-render
     // of CartographerMap which would cascade into MapGraph and restart animations
-    const minimap = this.renderRoot.querySelector('velg-map-minimap') as VelgMapMinimap | null;
+    const minimap = this.renderRoot.querySelector<VelgMapMinimap>('velg-map-minimap');
     if (minimap) {
       minimap.vbx = this._miniVbx;
       minimap.vby = this._miniVby;

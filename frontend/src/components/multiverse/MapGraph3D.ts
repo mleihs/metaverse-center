@@ -15,7 +15,7 @@
 import { msg } from '@lit/localize';
 import type { ForceGraph3DInstance } from '3d-force-graph';
 import ForceGraph3D from '3d-force-graph';
-import { css, html, LitElement } from 'lit';
+import { css, html, LitElement, render } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { type Group, Vector2 } from 'three';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
@@ -208,7 +208,7 @@ export class VelgMapGraph3D extends LitElement {
   }
 
   protected firstUpdated(): void {
-    this._containerEl = this.renderRoot.querySelector('.graph-container') as HTMLDivElement;
+    this._containerEl = this.renderRoot.querySelector<HTMLDivElement>('.graph-container');
     if (!this._containerEl) return;
 
     this._initGraph();
@@ -465,32 +465,37 @@ export class VelgMapGraph3D extends LitElement {
     tooltip.style.left = `${coords.x + 16}px`;
     tooltip.style.top = `${coords.y - 12}px`;
 
-    // Build tooltip content
-    let content = `<div class="tooltip__name" style="color:${node.color}">${node.name}</div>`;
-    content += `<div class="tooltip__stat">${node.agentCount} Agents / ${node.buildingCount} Buildings / ${node.eventCount} Events</div>`;
+    // Build tooltip content using Lit render() for safe DOM construction
+    const phaseColor =
+      node.simulationType === 'game_instance' && node.epochStatus
+        ? (PHASE_COLORS_3D[node.epochStatus] ?? '#6b7280')
+        : null;
 
-    if (node.simulationType === 'game_instance' && node.epochStatus) {
-      const phaseColor = PHASE_COLORS_3D[node.epochStatus] ?? '#6b7280';
-      content += `<div class="tooltip__phase" style="color:${phaseColor}">${node.epochStatus}</div>`;
-    }
+    const dims = ['stability', 'influence', 'sovereignty', 'diplomatic', 'military'] as const;
 
-    // Score dimension bars for game instances
-    if (node.scoreDimensions) {
-      const dims = ['stability', 'influence', 'sovereignty', 'diplomatic', 'military'] as const;
-      for (const dim of dims) {
-        const value = Math.max(0, Math.min(100, node.scoreDimensions[dim] ?? 0));
-        const color = SCORE_DIMENSION_COLORS[dim] ?? '#888';
-        content += `
-          <div class="tooltip__dim-bar">
-            <span class="tooltip__dim-label">${dim.slice(0, 4)}</span>
-            <div class="tooltip__dim-track">
-              <div class="tooltip__dim-fill" style="width:${value}%;background:${color}"></div>
-            </div>
-          </div>`;
-      }
-    }
-
-    tooltip.innerHTML = content;
+    render(
+      html`
+        <div class="tooltip__name" style="color:${node.color}">${node.name}</div>
+        <div class="tooltip__stat">${node.agentCount} Agents / ${node.buildingCount} Buildings / ${node.eventCount} Events</div>
+        ${phaseColor
+          ? html`<div class="tooltip__phase" style="color:${phaseColor}">${node.epochStatus}</div>`
+          : ''}
+        ${node.scoreDimensions
+          ? dims.map((dim) => {
+              const value = Math.max(0, Math.min(100, node.scoreDimensions![dim] ?? 0));
+              const color = SCORE_DIMENSION_COLORS[dim] ?? '#888';
+              return html`
+                <div class="tooltip__dim-bar">
+                  <span class="tooltip__dim-label">${dim.slice(0, 4)}</span>
+                  <div class="tooltip__dim-track">
+                    <div class="tooltip__dim-fill" style="width:${value}%;background:${color}"></div>
+                  </div>
+                </div>`;
+            })
+          : ''}
+      `,
+      tooltip,
+    );
     tooltip.classList.add('map3d-tooltip--visible');
   }
 

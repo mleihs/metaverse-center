@@ -103,10 +103,16 @@ class ChatAIService:
         }).execute()
 
         # Fire-and-forget: extract memorable observations from this exchange
-        asyncio.create_task(AgentMemoryService.extract_from_chat(
-            self._supabase, self._simulation_id, UUID(agent["id"]),
-            user_message, response_text,
-        ))
+        async def _safe_extract() -> None:
+            try:
+                await AgentMemoryService.extract_from_chat(
+                    self._supabase, self._simulation_id, UUID(agent["id"]),
+                    user_message, response_text,
+                )
+            except Exception:
+                logger.exception("Background memory extraction failed for agent %s", agent["id"])
+
+        asyncio.create_task(_safe_extract())
 
         return response_text
 

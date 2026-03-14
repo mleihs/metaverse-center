@@ -464,7 +464,7 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
     );
     // Sync nav highlight after route change (URL updated synchronously by router)
     queueMicrotask(() => {
-      (this.shadowRoot?.querySelector('velg-simulation-nav') as any)?._detectActiveTab?.();
+      this.shadowRoot?.querySelector<any>('velg-simulation-nav')?._detectActiveTab?.();
     });
   }
 

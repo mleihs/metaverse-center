@@ -175,6 +175,7 @@ async def add_reaction(
             "confidence_score": confidence_score,
         },
     )
+    await AuditService.log_action(supabase, simulation_id, user.id, "event_reactions", reaction["id"], "create")
     return {"success": True, "data": reaction}
 
 
@@ -189,6 +190,7 @@ async def delete_event_reaction(
 ) -> dict:
     """Delete a single reaction from an event."""
     deleted = await _service.delete_reaction(supabase, simulation_id, reaction_id)
+    await AuditService.log_action(supabase, simulation_id, user.id, "event_reactions", reaction_id, "delete")
     return {"success": True, "data": deleted}
 
 

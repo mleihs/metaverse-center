@@ -83,11 +83,6 @@ async def get_platform_stats(
 # ── Simulations ──────────────────────────────────────────────────────────
 
 
-def _enrich_with_counts(supabase: Client, simulations: list[dict]) -> None:
-    """Enrich simulation dicts with counts from the simulation_dashboard view."""
-    SimulationService.enrich_with_counts(supabase, simulations)
-
-
 @router.get("/simulations", response_model=PaginatedResponse)
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_simulations(
@@ -101,7 +96,7 @@ async def list_simulations(
     max_age = get_ttl("cache_http_simulations_max_age")
     http_response.headers["Cache-Control"] = f"public, max-age={max_age}, stale-while-revalidate={max_age * 5}"
     data, total = await SimulationService.list_active_public(supabase, limit=limit, offset=offset)
-    _enrich_with_counts(supabase, data)
+    SimulationService.enrich_with_counts(supabase, data)
     return _paginated(data, total, limit, offset)
 
 
@@ -117,7 +112,7 @@ async def get_simulation_by_slug(
     if not sim:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Simulation not found.")
     data = [sim]
-    _enrich_with_counts(supabase, data)
+    SimulationService.enrich_with_counts(supabase, data)
     return {"success": True, "data": data[0]}
 
 
@@ -151,7 +146,7 @@ async def get_simulation(
     if not sim:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Simulation not found.")
     data = [sim]
-    _enrich_with_counts(supabase, data)
+    SimulationService.enrich_with_counts(supabase, data)
     return {"success": True, "data": data[0]}
 
 

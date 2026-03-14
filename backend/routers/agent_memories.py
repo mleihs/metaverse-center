@@ -1,5 +1,6 @@
 """Agent Memory router — observation, retrieval, reflection endpoints."""
 
+import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Request
@@ -10,6 +11,8 @@ from backend.models.common import PaginatedResponse, PaginationMeta, SuccessResp
 from backend.models.memory import ReflectionRequest
 from backend.services.agent_memory_service import AgentMemoryService
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api/v1/simulations/{simulation_id}/agents/{agent_id}/memories",

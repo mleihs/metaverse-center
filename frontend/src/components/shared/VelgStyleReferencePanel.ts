@@ -100,6 +100,7 @@ export class VelgStyleReferencePanel extends LitElement {
     .ref-row__thumb {
       width: 48px;
       height: 48px;
+      aspect-ratio: 1;
       object-fit: cover;
       border: 1px solid var(--color-gray-700, #374151);
       flex-shrink: 0;
@@ -261,7 +262,7 @@ export class VelgStyleReferencePanel extends LitElement {
 
     return html`
       <div class="ref-row">
-        <img class="ref-row__thumb" src=${ref.reference_image_url} alt="" loading="lazy" />
+        <img class="ref-row__thumb" src=${ref.reference_image_url} alt=${`${ref.entity_type} style reference${ref.entity_name ? ` — ${ref.entity_name}` : ''}`} loading="lazy" />
         <div class="ref-row__info">
           <span class="ref-row__type">
             ${ref.entity_type === 'portrait' ? msg('Portraits') : msg('Buildings')}

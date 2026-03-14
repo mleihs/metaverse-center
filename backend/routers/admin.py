@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 
 from backend.dependencies import get_admin_supabase, require_platform_admin
 from backend.models.cleanup import CleanupExecuteRequest, CleanupPreviewRequest
-from backend.models.common import CurrentUser
+from backend.models.common import CurrentUser, PaginationMeta
 from backend.models.settings import is_sensitive_key
 from backend.services.admin_user_service import AdminUserService
 from backend.services.cache_config import invalidate as invalidate_cache_config
@@ -20,7 +20,9 @@ from backend.services.platform_api_keys import invalidate as invalidate_api_key_
 from backend.services.platform_model_config import invalidate as invalidate_model_config
 from backend.services.platform_settings_service import PlatformSettingsService
 from backend.services.audit_service import AuditService
+from backend.services.connection_service import ConnectionService
 from backend.services.simulation_service import SimulationService
+from backend.middleware.seo import _sim_meta_cache
 from backend.utils.encryption import encrypt as encrypt_value
 from supabase import Client
 
@@ -270,7 +272,11 @@ async def list_simulations(
     data, total = await _sim_service.list_all_simulations(
         admin_supabase, include_deleted=include_deleted, limit=per_page, offset=offset,
     )
-    return {"success": True, "data": data, "meta": {"total": total, "page": page, "per_page": per_page}}
+    return {
+        "success": True,
+        "data": data,
+        "meta": PaginationMeta(count=len(data), total=total, limit=per_page, offset=offset),
+    }
 
 
 @router.get("/simulations/deleted")
@@ -285,7 +291,11 @@ async def list_deleted_simulations(
     data, total = await _sim_service.list_deleted_simulations(
         admin_supabase, limit=per_page, offset=offset,
     )
-    return {"success": True, "data": data, "meta": {"total": total, "page": page, "per_page": per_page}}
+    return {
+        "success": True,
+        "data": data,
+        "meta": PaginationMeta(count=len(data), total=total, limit=per_page, offset=offset),
+    }
 
 
 @router.post("/simulations/{simulation_id}/restore")
@@ -330,8 +340,6 @@ def _invalidate_caches(key: str) -> None:
     invalidate_cache_config()
 
     if key == "cache_map_data_ttl":
-        from backend.services.connection_service import ConnectionService
         ConnectionService._map_data_cache.clear()
     elif key == "cache_seo_metadata_ttl":
-        from backend.middleware.seo import _sim_meta_cache
         _sim_meta_cache.clear()

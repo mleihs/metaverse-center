@@ -261,9 +261,9 @@ export class VelgAgentsView extends SignalWatcher(LitElement) {
   }
 
   private _checkDeepLink(): void {
-    const agentName = sessionStorage.getItem('openAgentName');
+    const agentName = appState.pendingOpenAgentName.value;
     if (!agentName) return;
-    sessionStorage.removeItem('openAgentName');
+    appState.pendingOpenAgentName.value = null;
 
     const agent = this._agents.find((a) => a.name === agentName);
     if (agent) {

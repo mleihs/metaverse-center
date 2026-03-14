@@ -109,7 +109,7 @@ export class VelgDossierReveal extends LitElement {
             this._phase = 'ready';
             // Focus the button after render
             this.updateComplete.then(() => {
-              this._btnRef = this.shadowRoot?.querySelector('.action__btn') as HTMLButtonElement;
+              this._btnRef = this.shadowRoot?.querySelector<HTMLButtonElement>('.action__btn') ?? undefined;
               this._btnRef?.focus();
             });
           }, 600),

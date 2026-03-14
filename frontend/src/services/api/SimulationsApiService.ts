@@ -36,6 +36,10 @@ export class SimulationsApiService extends BaseApiService {
   listPublic(params?: Record<string, string>): Promise<ApiResponse<Simulation[]>> {
     return this.getPublic('/simulations', params);
   }
+
+  getPlatformStats<T = Record<string, number>>(): Promise<ApiResponse<T>> {
+    return this.getPublic<T>('/platform-stats');
+  }
 }
 
 export const simulationsApi = new SimulationsApiService();

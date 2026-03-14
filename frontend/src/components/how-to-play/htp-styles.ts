@@ -186,7 +186,7 @@ export const htpStyles = css`
   .toc__link--active {
     color: var(--color-gray-100);
     border-left-color: var(--color-warning);
-    background: rgba(245 158 11 / 0.05);
+    background: var(--color-ascendant-gold);
   }
 
   /* ═══ MAIN CONTENT ═══════════════════════════════ */
@@ -1563,7 +1563,7 @@ export const htpStyles = css`
     position: relative;
     margin: var(--space-6) 0;
     padding: var(--space-5);
-    background: rgba(15, 23, 42, 0.5);
+    background: color-mix(in srgb, var(--color-gray-900) 50%, transparent);
     border: 1px solid var(--color-gray-800);
     opacity: 0;
     transform: translateY(16px);

@@ -39,6 +39,12 @@ export class AppStateManager {
   readonly loading = signal<boolean>(false);
   readonly mockMode = signal<boolean>(false);
 
+  // --- Navigation deep-link signals ---
+  /** Agent name to auto-open on next AgentsView load, then cleared. */
+  readonly pendingOpenAgentName = signal<string | null>(null);
+  /** Building ID to auto-open on next BuildingsView load, then cleared. */
+  readonly pendingOpenBuildingId = signal<string | null>(null);
+
   // --- Computed ---
   readonly isAuthenticated = computed(() => this.user.value !== null);
 

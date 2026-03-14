@@ -1,5 +1,6 @@
 """Chronicle router — per-simulation AI-generated newspaper."""
 
+import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Request
@@ -10,6 +11,8 @@ from backend.models.chronicle import ChronicleGenerateRequest
 from backend.models.common import PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.services.chronicle_service import ChronicleService
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api/v1/simulations/{simulation_id}/chronicles",

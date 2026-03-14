@@ -343,7 +343,7 @@ export class VelgBuildingDetailsPanel extends LitElement {
     window.history.pushState({}, '', `/simulations/${simulationSlug}/buildings`);
     window.dispatchEvent(new PopStateEvent('popstate'));
     // Store building ID to open after navigation
-    sessionStorage.setItem('openBuildingId', buildingId);
+    appState.pendingOpenBuildingId.value = buildingId;
   }
 
   private _getConditionVariant(condition: string | undefined): string {
@@ -406,7 +406,7 @@ export class VelgBuildingDetailsPanel extends LitElement {
     if (!amb) return;
     const sim = appState.currentSimulation.value;
     const slug = sim?.slug ?? sim?.id ?? this.simulationId;
-    sessionStorage.setItem('openAgentName', amb.name);
+    appState.pendingOpenAgentName.value = amb.name;
     window.history.pushState({}, '', `/simulations/${slug}/agents`);
     window.dispatchEvent(new PopStateEvent('popstate'));
   }

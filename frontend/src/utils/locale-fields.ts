@@ -13,9 +13,9 @@ import { localeService } from '../services/i18n/locale-service.js';
  * Returns the locale-appropriate value for an entity field.
  * Looks up `${field}_de` when locale is not English.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function t(entity: any, field: string): string {
+export function t<T extends object>(entity: T, field: string): string {
   const useDe = localeService.currentLocale !== 'en';
   const deKey = `${field}_de`;
-  return ((useDe && entity[deKey]) || entity[field] || '') as string;
+  const record = entity as Record<string, unknown>;
+  return ((useDe && record[deKey]) || record[field] || '') as string;
 }

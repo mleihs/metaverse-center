@@ -1,5 +1,5 @@
 import { localized, msg, str } from '@lit/localize';
-import { css, html, LitElement, nothing } from 'lit';
+import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { adminApi } from '../../services/api/index.js';
 import type {
@@ -610,7 +610,7 @@ export class VelgAdminCleanupTab extends LitElement {
     }
   }
 
-  private _renderItemList(type: CleanupType, items: CleanupPreviewItem[]): unknown {
+  private _renderItemList(type: CleanupType, items: CleanupPreviewItem[]): TemplateResult | typeof nothing {
     if (!items.length) return nothing;
     const selected = this._selectedIds[type] ?? new Set<string>();
     return html`
@@ -633,7 +633,7 @@ export class VelgAdminCleanupTab extends LitElement {
     `;
   }
 
-  private _renderPreview(type: CleanupType): unknown {
+  private _renderPreview(type: CleanupType): TemplateResult | typeof nothing {
     const preview = this._previews[type];
     if (!preview) return nothing;
 

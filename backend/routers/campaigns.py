@@ -1,5 +1,6 @@
 """Campaign CRUD endpoints with events and metrics."""
 
+import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Body, Depends, Query
@@ -21,6 +22,8 @@ from backend.models.common import (
 from backend.services.audit_service import AuditService
 from backend.services.campaign_service import CampaignService
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api/v1/simulations/{simulation_id}/campaigns",
