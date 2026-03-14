@@ -590,7 +590,7 @@ class ImageService:
         self._supabase.storage.from_(bucket).upload(
             path,
             data,
-            {"content-type": "image/avif"},
+            {"content-type": "image/avif", "upsert": "true"},
         )
 
         result = self._supabase.storage.from_(bucket).get_public_url(path)

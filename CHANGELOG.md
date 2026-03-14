@@ -34,5 +34,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- **Pydantic AI max_tokens exhausting OpenRouter credits** — all 13 `Agent.run()` calls now pass purpose-specific `max_tokens` (1024–16384) instead of the default 65536, preventing 402 errors; centralized token budget table and `ai_error_to_http` helper in `ai_utils.py`
+- **Deprecated Pydantic AI API** — `result_type` → `output_type`, `result.data` → `result.output` in forge orchestrator recruit flow
+- **Storage upload collisions** — added `upsert: true` to image uploads in `ImageService`
 - **fn_target_zone_pressure NULL bug** — returned cap value instead of 0.0 when zone_id not found in mv_zone_stability
 - **active_resonances view** — now excludes archived resonances (`AND status != 'archived'`)

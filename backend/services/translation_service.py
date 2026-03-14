@@ -10,7 +10,7 @@ from pydantic_ai import Agent
 
 from backend.config import settings
 from backend.models.translation import TranslationContext, TranslationResult
-from backend.services.ai_utils import get_openrouter_model
+from backend.services.ai_utils import PYDANTIC_AI_MAX_TOKENS, get_openrouter_model
 from backend.services.platform_model_config import get_platform_model
 from supabase import Client
 
@@ -153,7 +153,11 @@ class TranslationService:
             get_openrouter_model(openrouter_key, model_id=get_platform_model("forge")),
             system_prompt=system,
         )
-        result = await agent.run(f"Translate the following text:\n\n{text}", output_type=str)
+        result = await agent.run(
+            f"Translate the following text:\n\n{text}",
+            output_type=str,
+            model_settings={"max_tokens": PYDANTIC_AI_MAX_TOKENS["translation"]},
+        )
         return result.output
 
     @staticmethod
@@ -182,7 +186,11 @@ class TranslationService:
             get_openrouter_model(openrouter_key, model_id=get_platform_model("forge")),
             system_prompt=system,
         )
-        result = await agent.run("\n".join(prompt_parts), output_type=TranslationResult)
+        result = await agent.run(
+            "\n".join(prompt_parts),
+            output_type=TranslationResult,
+            model_settings={"max_tokens": PYDANTIC_AI_MAX_TOKENS["translation"]},
+        )
         return result.output.translations
 
     # ── DeepL backend ────────────────────────────────────────────────

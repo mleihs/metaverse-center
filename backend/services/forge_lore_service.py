@@ -12,7 +12,7 @@ from pydantic_ai import Agent
 
 from backend.models.forge import ForgeLoreOutput, ForgeLoreTranslatedOutput
 from backend.config import settings
-from backend.services.ai_utils import get_openrouter_model
+from backend.services.ai_utils import PYDANTIC_AI_MAX_TOKENS, get_openrouter_model
 from backend.services.platform_model_config import get_platform_model
 from supabase import Client
 
@@ -197,7 +197,11 @@ class ForgeLoreService:
             system_prompt=BUREAU_ARCHIVIST_PROMPT,
         )
 
-        result = await agent.run(prompt, output_type=ForgeLoreOutput)
+        result = await agent.run(
+            prompt,
+            output_type=ForgeLoreOutput,
+            model_settings={"max_tokens": PYDANTIC_AI_MAX_TOKENS["lore"]},
+        )
         sections = [s.model_dump() for s in result.output.sections]
 
         logger.debug("Lore sections generated", extra={"section_count": len(sections)})
@@ -237,7 +241,11 @@ class ForgeLoreService:
             system_prompt=LORE_TRANSLATOR_PROMPT,
         )
 
-        result = await agent.run(prompt, output_type=ForgeLoreTranslatedOutput)
+        result = await agent.run(
+            prompt,
+            output_type=ForgeLoreTranslatedOutput,
+            model_settings={"max_tokens": PYDANTIC_AI_MAX_TOKENS["lore_translation"]},
+        )
         translations = [t.model_dump() for t in result.output.sections]
 
         logger.debug("Lore sections translated", extra={"section_count": len(translations)})
@@ -457,7 +465,11 @@ REQUIREMENTS:
             else:
                 model = get_openrouter_model(openrouter_key, model_id=get_platform_model("forge"))
                 agent = Agent(model, system_prompt=BUREAU_ARCHIVIST_PROMPT)
-                result = await agent.run(dossier_prompt, output_type=ForgeLoreOutput)
+                result = await agent.run(
+                    dossier_prompt,
+                    output_type=ForgeLoreOutput,
+                    model_settings={"max_tokens": PYDANTIC_AI_MAX_TOKENS["dossier"]},
+                )
                 sections = [s.model_dump() for s in result.output.sections]
 
             # 3. Translate to German

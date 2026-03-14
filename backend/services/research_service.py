@@ -14,7 +14,7 @@ from tavily import TavilyClient
 
 from backend.config import settings
 from backend.models.forge import PhilosophicalAnchor
-from backend.services.ai_utils import get_openrouter_model
+from backend.services.ai_utils import PYDANTIC_AI_MAX_TOKENS, get_openrouter_model
 from backend.services.platform_model_config import get_platform_model
 
 logger = logging.getLogger(__name__)
@@ -215,7 +215,10 @@ class ResearchService:
         )
 
         try:
-            result = await research_agent.run(research_prompt)
+            result = await research_agent.run(
+                research_prompt,
+                model_settings={"max_tokens": PYDANTIC_AI_MAX_TOKENS["research"]},
+            )
             parts.append(f"[LLM RESEARCH]\n{result.output}")
             logger.debug("LLM lore research completed")
         except Exception:
@@ -268,5 +271,8 @@ class ResearchService:
             "Propose 3 distinct philosophical anchors that could define this world."
         )
 
-        result = await agent.run(prompt)
+        result = await agent.run(
+            prompt,
+            model_settings={"max_tokens": PYDANTIC_AI_MAX_TOKENS["anchors"]},
+        )
         return result.output

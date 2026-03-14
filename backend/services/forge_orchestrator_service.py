@@ -20,7 +20,9 @@ from backend.models.forge import (
     PhilosophicalAnchor,
 )
 from backend.services import forge_mock_service as mock
-from backend.services.ai_utils import get_openrouter_model
+from pydantic_ai.exceptions import ModelHTTPError
+
+from backend.services.ai_utils import PYDANTIC_AI_MAX_TOKENS, ai_error_to_http, get_openrouter_model
 from backend.services.platform_model_config import get_platform_model
 from backend.services.forge_draft_service import ForgeDraftService
 from backend.services.forge_entity_translation_service import ForgeEntityTranslationService
@@ -230,13 +232,16 @@ class ForgeOrchestratorService:
         else:
             or_key, _ = await ForgeOrchestratorService._get_user_keys(supabase, user_id)
 
-            # 1. Scrape web context
-            logger.debug("Scraping thematic context for seed: %s", seed[:50])
-            context = await ResearchService.search_thematic_context(seed)
+            try:
+                # 1. Scrape web context
+                logger.debug("Scraping thematic context for seed: %s", seed[:50])
+                context = await ResearchService.search_thematic_context(seed)
 
-            # 2. Generate 3 Philosophical Anchors
-            logger.debug("Generating philosophical anchors...")
-            anchors = await ResearchService.generate_anchors(seed, context, or_key)
+                # 2. Generate 3 Philosophical Anchors
+                logger.debug("Generating philosophical anchors...")
+                anchors = await ResearchService.generate_anchors(seed, context, or_key)
+            except ModelHTTPError as exc:
+                raise ai_error_to_http(exc) from exc
 
         # 3. Update draft
         logger.debug("Updating draft %s with research results", draft_id)
@@ -314,37 +319,48 @@ class ForgeOrchestratorService:
             system_prompt=WORLD_ARCHITECT_PROMPT,
         )
 
-        if chunk_type == "geography":
-            result = await dynamic_agent.run(prompt, output_type=ForgeGeographyDraft)
-            await ForgeDraftService.update_draft(
-                supabase, user_id, draft_id, ForgeDraftUpdate(geography=result.output.model_dump())
-            )
-            return result.output.model_dump()
+        chunk_settings = {"max_tokens": PYDANTIC_AI_MAX_TOKENS["chunk"]}
 
-        elif chunk_type == "agents":
-            result = await dynamic_agent.run(
-                prompt,
-                output_type=list[ForgeAgentDraft],
-            )
-            agents_list = [a.model_dump() for a in result.output]
-            await ForgeDraftService.update_draft(
-                supabase, user_id, draft_id, ForgeDraftUpdate(agents=agents_list)
-            )
-            return {"agents": agents_list}
+        try:
+            if chunk_type == "geography":
+                result = await dynamic_agent.run(
+                    prompt,
+                    output_type=ForgeGeographyDraft,
+                    model_settings=chunk_settings,
+                )
+                await ForgeDraftService.update_draft(
+                    supabase, user_id, draft_id, ForgeDraftUpdate(geography=result.output.model_dump())
+                )
+                return result.output.model_dump()
 
-        elif chunk_type == "buildings":
-            result = await dynamic_agent.run(
-                prompt,
-                output_type=list[ForgeBuildingDraft],
-            )
-            buildings_list = [b.model_dump() for b in result.output]
-            await ForgeDraftService.update_draft(
-                supabase, user_id, draft_id, ForgeDraftUpdate(buildings=buildings_list)
-            )
-            return {"buildings": buildings_list}
+            elif chunk_type == "agents":
+                result = await dynamic_agent.run(
+                    prompt,
+                    output_type=list[ForgeAgentDraft],
+                    model_settings=chunk_settings,
+                )
+                agents_list = [a.model_dump() for a in result.output]
+                await ForgeDraftService.update_draft(
+                    supabase, user_id, draft_id, ForgeDraftUpdate(agents=agents_list)
+                )
+                return {"agents": agents_list}
 
-        else:
-            raise HTTPException(status_code=400, detail=f"Invalid chunk type: {chunk_type}")
+            elif chunk_type == "buildings":
+                result = await dynamic_agent.run(
+                    prompt,
+                    output_type=list[ForgeBuildingDraft],
+                    model_settings=chunk_settings,
+                )
+                buildings_list = [b.model_dump() for b in result.output]
+                await ForgeDraftService.update_draft(
+                    supabase, user_id, draft_id, ForgeDraftUpdate(buildings=buildings_list)
+                )
+                return {"buildings": buildings_list}
+
+            else:
+                raise HTTPException(status_code=400, detail=f"Invalid chunk type: {chunk_type}")
+        except ModelHTTPError as exc:
+            raise ai_error_to_http(exc) from exc
 
     @staticmethod
     async def materialize_shard(
@@ -814,10 +830,13 @@ Generate exactly 3 new agents. Requirements:
                 agent = Agent(
                     model,
                     system_prompt=WORLD_ARCHITECT_PROMPT,
-                    result_type=list[ForgeAgentDraft],
                 )
-                result = await agent.run(prompt)
-                generated = result.data
+                result = await agent.run(
+                    prompt,
+                    output_type=list[ForgeAgentDraft],
+                    model_settings={"max_tokens": PYDANTIC_AI_MAX_TOKENS["chunk"]},
+                )
+                generated = result.output
 
             # 3. Insert agents into the simulation
             for agent_draft in generated:

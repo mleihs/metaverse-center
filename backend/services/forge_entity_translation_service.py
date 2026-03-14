@@ -9,7 +9,7 @@ from uuid import UUID
 from pydantic_ai import Agent
 
 from backend.models.forge import ForgeEntityTranslationOutput
-from backend.services.ai_utils import get_openrouter_model
+from backend.services.ai_utils import PYDANTIC_AI_MAX_TOKENS, get_openrouter_model
 from backend.services.platform_model_config import get_platform_model
 from supabase import Client
 
@@ -106,7 +106,11 @@ class ForgeEntityTranslationService:
             system_prompt=ENTITY_TRANSLATOR_PROMPT,
         )
 
-        result = await agent.run(prompt, output_type=ForgeEntityTranslationOutput)
+        result = await agent.run(
+            prompt,
+            output_type=ForgeEntityTranslationOutput,
+            model_settings={"max_tokens": PYDANTIC_AI_MAX_TOKENS["translation"]},
+        )
         output = result.output
 
         logger.debug(
