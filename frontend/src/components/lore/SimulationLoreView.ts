@@ -19,6 +19,7 @@ import './LoreEditor.js';
 import './VelgDossierPreview.js';
 import './VelgDossierRequest.js';
 import './VelgCaseFile.js';
+import './VelgBureauStatus.js';
 import './VelgDossierReveal.js';
 
 @localized()
@@ -228,6 +229,11 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
     }
   }
 
+  private _handleBureauUpdate(): void {
+    setTimeout(() => void this._refreshLore(), 3000);
+    setTimeout(() => void this._refreshLore(), 15000);
+  }
+
   private _handleDossierComplete(): void {
     const sim = appState.currentSimulation.value;
     if (sim) {
@@ -295,6 +301,13 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
       ? getClassifiedSections(this._rawSections)
       : [];
     const hasDossier = hasPurchase || classifiedSections.length > 0;
+    const dossierPurchase = hasPurchase
+      ? forgeStateManager.featurePurchases.value.get(`${simId}:classified_dossier`)?.find(p => p.status === 'completed')
+      : null;
+    const regenBudget = dossierPurchase?.regen_budget_remaining ?? 3;
+    const rawClassifiedSections = this._rawSections
+      ? this._rawSections.filter(isClassifiedSection)
+      : [];
 
     return html`
       ${this._showCeremony
@@ -350,6 +363,16 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
               @dossier-complete=${this._handleDossierComplete}
             ></velg-dossier-request>
           `
+          : nothing}
+
+        ${canEdit && hasDossier
+          ? html`<velg-bureau-status
+              .simulationId=${simId}
+              .classifiedSections=${rawClassifiedSections}
+              .regenBudgetRemaining=${regenBudget}
+              .hasBypass=${forgeStateManager.byokStatus.value.effective_bypass}
+              @bureau-update-requested=${this._handleBureauUpdate}
+            ></velg-bureau-status>`
           : nothing}
       </article>
     `;

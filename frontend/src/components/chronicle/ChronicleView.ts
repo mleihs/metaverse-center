@@ -7,6 +7,7 @@ import { seoService } from '../../services/SeoService.js';
 import type { Chronicle } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
 import { icons } from '../../utils/icons.js';
+import { localeService } from '../../services/i18n/locale-service.js';
 
 import '../shared/Pagination.js';
 import '../shared/LoadingState.js';
@@ -553,23 +554,31 @@ export class VelgChronicleView extends LitElement {
     this._load();
   }
 
+  private get _dateLocale(): string {
+    return localeService.currentLocale === 'de' ? 'de-DE' : 'en-GB';
+  }
+
   private _formatDateRange(start: string, end: string): string {
     const s = new Date(start);
     const e = new Date(end);
+    const locale = this._dateLocale;
     const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' };
-    return `${s.toLocaleDateString(undefined, opts)} \u2013 ${e.toLocaleDateString(undefined, opts)}`;
+    return `${s.toLocaleDateString(locale, opts)} \u2013 ${e.toLocaleDateString(locale, opts)}`;
   }
 
   private _formatShortDate(start: string, end: string): string {
     const s = new Date(start);
     const e = new Date(end);
+    const locale = this._dateLocale;
     const o: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
-    return `${s.toLocaleDateString(undefined, o)} \u2013 ${e.toLocaleDateString(undefined, o)}`;
+    return `${s.toLocaleDateString(locale, o)} \u2013 ${e.toLocaleDateString(locale, o)}`;
   }
 
   private _renderArticle(content: string) {
-    const paragraphs = content.split(/\n\n+/).filter(Boolean);
-    return paragraphs.map((p) => html`<p>${p}</p>`);
+    // Replace literal \n sequences (backslash + n) with actual newlines
+    const cleaned = content.replace(/\\n/g, '\n');
+    const paragraphs = cleaned.split(/\n\n+/).filter(Boolean);
+    return paragraphs.map((p) => html`<p>${p.trim()}</p>`);
   }
 
   protected render() {
@@ -601,7 +610,7 @@ export class VelgChronicleView extends LitElement {
 
   private _renderMasthead() {
     const simName = appState.currentSimulation.value?.name ?? '';
-    const today = new Date().toLocaleDateString(undefined, {
+    const today = new Date().toLocaleDateString(this._dateLocale, {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
     });
 
@@ -695,7 +704,7 @@ export class VelgChronicleView extends LitElement {
               ? html`<span>${msg('Model:')} ${c.model_used}</span>`
               : nothing}
             ${c.published_at
-              ? html`<span>${new Date(c.published_at).toLocaleDateString()}</span>`
+              ? html`<span>${new Date(c.published_at).toLocaleDateString(this._dateLocale)}</span>`
               : nothing}
           </footer>
         </div>
