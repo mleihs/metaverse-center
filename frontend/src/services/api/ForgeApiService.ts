@@ -47,6 +47,9 @@ export interface ForgeLoreSection {
   epigraph_de?: string | null;
   body_de?: string | null;
   image_caption_de?: string | null;
+  evolution_count?: number | null;
+  evolved_at?: string | null;
+  evolution_log?: Array<{ trigger: string; entity: string; timestamp: string; words_added: number }> | null;
 }
 
 export interface ForgeDraft {
@@ -255,8 +258,30 @@ export class ForgeApiService extends BaseApiService {
     return this.post(`/forge/simulations/${simulationId}/chronicle`);
   }
 
+  purchaseHiresArchive(simulationId: string): Promise<ApiResponse<{ purchase_id: string }>> {
+    return this.post(`/forge/simulations/${simulationId}/chronicle/hires`);
+  }
+
   getFeaturePurchase(purchaseId: string): Promise<ApiResponse<FeaturePurchase>> {
     return this.get(`/forge/features/${purchaseId}`);
+  }
+
+  // --- Dossier Evolution ---
+
+  evolveDossier(
+    simulationId: string,
+    arcanum: string,
+    trigger: string,
+    entityName: string,
+    entityDetail?: string,
+  ): Promise<ApiResponse<{ status: string; arcanum: string }>> {
+    const params = new URLSearchParams({
+      arcanum,
+      trigger,
+      entity_name: entityName,
+    });
+    if (entityDetail) params.set('entity_detail', entityDetail);
+    return this.post(`/forge/simulations/${simulationId}/dossier/evolve?${params.toString()}`);
   }
 
   // --- Access Requests (Clearance) ---

@@ -2,12 +2,17 @@
 
 from __future__ import annotations
 
+import io
 import logging
+import re
+import zipfile
 from datetime import datetime
 from uuid import UUID
 
+import httpx
 import structlog
 
+from backend.config import settings
 from supabase import Client
 
 logger = logging.getLogger(__name__)
@@ -126,6 +131,141 @@ class CodexExportService:
 
         except Exception as exc:
             logger.exception("Chronicle generation failed")
+            await ForgeFeatureService.fail_feature(
+                admin_supabase, purchase_id, str(exc),
+            )
+
+    @staticmethod
+    async def generate_hires_archive(
+        admin_supabase: Client,
+        simulation_id: UUID,
+        user_id: UUID,
+        purchase_id: str,
+    ) -> None:
+        """Package all simulation images at full native resolution into a ZIP.
+
+        Background task. Downloads .full.avif originals (falling back to
+        thumbnail .avif on 404), organises into folders, uploads ZIP to
+        Supabase Storage.
+        """
+        structlog.contextvars.bind_contextvars(simulation_id=str(simulation_id))
+        from backend.services.forge_feature_service import ForgeFeatureService
+
+        try:
+            # 1. Fetch simulation metadata
+            sim_resp = admin_supabase.table("simulations").select(
+                "name, slug, banner_url"
+            ).eq("id", str(simulation_id)).single().execute()
+            sim = sim_resp.data
+            slug = sim.get("slug", str(simulation_id)[:8])
+
+            # 2. Fetch entities
+            agents_resp = admin_supabase.table("agents").select(
+                "name, portrait_image_url"
+            ).eq("simulation_id", str(simulation_id)).order("name").execute()
+            agents = agents_resp.data or []
+
+            buildings_resp = admin_supabase.table("buildings").select(
+                "name, image_url"
+            ).eq("simulation_id", str(simulation_id)).order("name").execute()
+            buildings = buildings_resp.data or []
+
+            lore_resp = admin_supabase.table("simulation_lore").select(
+                "image_slug"
+            ).eq("simulation_id", str(simulation_id)).order("sort_order").execute()
+            lore = [s for s in (lore_resp.data or []) if s.get("image_slug")]
+
+            # 3. Build download manifest: (full_url, fallback_url, zip_path)
+            manifest: list[tuple[str, str | None, str]] = []
+            safe_name = _sanitize_filename(sim["name"])
+
+            # Banner
+            if sim.get("banner_url"):
+                full = sim["banner_url"].replace(".avif", ".full.avif")
+                manifest.append((full, sim["banner_url"], f"{safe_name}-fullres/banner.avif"))
+
+            # Agents
+            seen_agents: dict[str, int] = {}
+            for agent in agents:
+                url = agent.get("portrait_image_url")
+                if not url:
+                    continue
+                fname = _dedup_name(seen_agents, _sanitize_filename(agent["name"]))
+                full = url.replace(".avif", ".full.avif")
+                manifest.append((full, url, f"{safe_name}-fullres/agents/{fname}.avif"))
+
+            # Buildings
+            seen_buildings: dict[str, int] = {}
+            for b in buildings:
+                url = b.get("image_url")
+                if not url:
+                    continue
+                fname = _dedup_name(seen_buildings, _sanitize_filename(b["name"]))
+                full = url.replace(".avif", ".full.avif")
+                manifest.append((full, url, f"{safe_name}-fullres/buildings/{fname}.avif"))
+
+            # Lore
+            base_storage = (
+                f"{settings.supabase_url}/storage/v1/object/public"
+                f"/simulation.assets/{slug}/lore"
+            )
+            for section in lore:
+                img_slug = section["image_slug"]
+                full = f"{base_storage}/{img_slug}.full.avif"
+                thumb = f"{base_storage}/{img_slug}.avif"
+                manifest.append((full, thumb, f"{safe_name}-fullres/lore/{img_slug}.avif"))
+
+            # 4. Download all images and write ZIP
+            buf = io.BytesIO()
+            image_count = 0
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                with zipfile.ZipFile(buf, "w", zipfile.ZIP_STORED) as zf:
+                    for full_url, fallback_url, zip_path in manifest:
+                        data = await _download_with_fallback(client, full_url, fallback_url)
+                        if data:
+                            zf.writestr(zip_path, data)
+                            image_count += 1
+
+            zip_bytes = buf.getvalue()
+
+            # 5. Upload ZIP to Supabase Storage
+            date_str = datetime.utcnow().strftime("%Y%m%d")
+            filename = f"hires-{slug}-{date_str}.zip"
+            storage_path = f"{simulation_id}/exports/{filename}"
+
+            download_url = ""
+            try:
+                admin_supabase.storage.from_("simulation.assets").upload(
+                    storage_path,
+                    zip_bytes,
+                    {"content-type": "application/zip"},
+                )
+                download_url = admin_supabase.storage.from_(
+                    "simulation.assets"
+                ).get_public_url(storage_path)
+            except Exception:
+                logger.exception("Storage upload failed for hires archive")
+
+            # 6. Mark completed
+            await ForgeFeatureService.complete_feature(
+                admin_supabase, purchase_id,
+                result={
+                    "download_url": download_url,
+                    "filename": filename,
+                    "image_count": image_count,
+                },
+            )
+            logger.info(
+                "Hi-res archive generated",
+                extra={
+                    "simulation_id": str(simulation_id),
+                    "filename": filename,
+                    "image_count": image_count,
+                },
+            )
+
+        except Exception as exc:
+            logger.exception("Hi-res archive generation failed")
             await ForgeFeatureService.fail_feature(
                 admin_supabase, purchase_id, str(exc),
             )
@@ -292,3 +432,43 @@ def _nl2p(text: str) -> str:
     return "".join(
         f"<p>{_esc(p.strip())}</p>" for p in paragraphs if p.strip()
     )
+
+
+def _sanitize_filename(name: str) -> str:
+    """Replace non-alphanumeric chars with underscores, collapse runs."""
+    sanitized = re.sub(r"[^\w\-]", "_", name.strip())
+    sanitized = re.sub(r"_+", "_", sanitized).strip("_")
+    return sanitized[:80] or "unnamed"
+
+
+def _dedup_name(seen: dict[str, int], name: str) -> str:
+    """Return unique filename, appending numeric suffix on collision."""
+    if name not in seen:
+        seen[name] = 1
+        return name
+    seen[name] += 1
+    return f"{name}_{seen[name]}"
+
+
+async def _download_with_fallback(
+    client: httpx.AsyncClient,
+    primary_url: str,
+    fallback_url: str | None,
+) -> bytes | None:
+    """Download from primary URL, falling back on 404/error."""
+    try:
+        resp = await client.get(primary_url)
+        if resp.status_code == 200:
+            return resp.content
+    except Exception:
+        logger.debug("Primary download failed: %s", primary_url)
+
+    if fallback_url:
+        try:
+            resp = await client.get(fallback_url)
+            if resp.status_code == 200:
+                return resp.content
+        except Exception:
+            logger.debug("Fallback download failed: %s", fallback_url)
+
+    return None

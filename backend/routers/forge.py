@@ -580,6 +580,7 @@ async def purchase_chronicle_export(
     """Purchase Chronicle: PDF codex export."""
     purchase_id = await ForgeFeatureService.purchase_feature(
         supabase, user.id, simulation_id, "chronicle_export",
+        config={"export_type": "codex"},
     )
     await AuditService.safe_log(
         supabase, str(simulation_id), user.id, "feature_purchase",
@@ -588,6 +589,37 @@ async def purchase_chronicle_export(
 
     background_tasks.add_task(
         CodexExportService.generate_codex_pdf,
+        admin_supabase, simulation_id, user.id, purchase_id,
+    )
+
+    return {"success": True, "data": {"purchase_id": purchase_id}}
+
+
+@router.post(
+    "/simulations/{simulation_id}/chronicle/hires",
+    response_model=SuccessResponse[dict],
+)
+@limiter.limit(RATE_LIMIT_STANDARD)
+async def purchase_hires_archive(
+    request: Request,
+    simulation_id: UUID,
+    background_tasks: BackgroundTasks,
+    user: CurrentUser = Depends(require_architect()),
+    supabase=Depends(get_supabase),
+    admin_supabase=Depends(get_admin_supabase),
+):
+    """Purchase Full-Res Archive: ZIP of all simulation images at native resolution."""
+    purchase_id = await ForgeFeatureService.purchase_feature(
+        supabase, user.id, simulation_id, "chronicle_export",
+        config={"export_type": "hires"},
+    )
+    await AuditService.safe_log(
+        supabase, str(simulation_id), user.id, "feature_purchase",
+        purchase_id, "chronicle_export_hires",
+    )
+
+    background_tasks.add_task(
+        CodexExportService.generate_hires_archive,
         admin_supabase, simulation_id, user.id, purchase_id,
     )
 

@@ -3,7 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import type { FeaturePurchase } from '../../services/api/ForgeApiService.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
-import { humanizeEnum } from '../../utils/text.js';
+import { localeService } from '../../services/i18n/locale-service.js';
 import { VelgToast } from '../shared/Toast.js';
 
 type ExportCardState = 'idle' | 'processing' | 'done';
@@ -298,6 +298,8 @@ export class VelgChronicleExport extends LitElement {
   @state() private _prospectusState: ExportCardState = 'idle';
   @state() private _codexProgress = 0;
   @state() private _hiresProgress = 0;
+  @state() private _codexDownloadUrl: string | null = null;
+  @state() private _hiresDownloadUrl: string | null = null;
   @state() private _history: FeaturePurchase[] = [];
 
   connectedCallback(): void {
@@ -319,6 +321,28 @@ export class VelgChronicleExport extends LitElement {
       this.simulationId,
       'chronicle_export',
     );
+
+    // Restore download state from completed purchases
+    for (const p of this._history) {
+      if (p.status !== 'completed') continue;
+      const downloadUrl = (p.result as { download_url?: string })?.download_url ?? null;
+      const exportType = (p.config as { export_type?: string })?.export_type;
+
+      if (exportType === 'hires') {
+        if (!this._hiresDownloadUrl && downloadUrl) {
+          this._hiresDownloadUrl = downloadUrl;
+          this._hiresState = 'done';
+          this._hiresProgress = 100;
+        }
+      } else {
+        // Legacy purchases without export_type default to codex
+        if (!this._codexDownloadUrl && downloadUrl) {
+          this._codexDownloadUrl = downloadUrl;
+          this._codexState = 'done';
+          this._codexProgress = 100;
+        }
+      }
+    }
   }
 
   private async _purchaseExport(type: 'codex' | 'hires'): Promise<void> {
@@ -328,6 +352,7 @@ export class VelgChronicleExport extends LitElement {
     const purchaseId = await forgeStateManager.purchaseFeature(
       this.simulationId,
       'chronicle_export',
+      { exportType: type },
     );
 
     if (!purchaseId) {
@@ -347,12 +372,15 @@ export class VelgChronicleExport extends LitElement {
     });
 
     if (result?.status === 'completed') {
+      const downloadUrl = (result.result as { download_url?: string })?.download_url ?? null;
       if (type === 'codex') {
         this._codexState = 'done';
         this._codexProgress = 100;
+        this._codexDownloadUrl = downloadUrl;
       } else {
         this._hiresState = 'done';
         this._hiresProgress = 100;
+        this._hiresDownloadUrl = downloadUrl;
       }
       VelgToast.success(msg('Export complete. Download link available.'));
       void this._loadHistory();
@@ -361,6 +389,10 @@ export class VelgChronicleExport extends LitElement {
       else this._hiresState = 'idle';
       VelgToast.error(msg('Export failed. Tokens refunded.'));
     }
+  }
+
+  private _openDownload(url: string | null): void {
+    if (url) window.open(url, '_blank');
   }
 
   private _generateProspectus(): void {
@@ -410,7 +442,9 @@ export class VelgChronicleExport extends LitElement {
           `
           : this._codexState === 'done'
             ? html`
-              <button class="card__btn card__btn--download">${msg('DOWNLOAD')}</button>
+              <button class="card__btn card__btn--download"
+                @click=${() => this._openDownload(this._codexDownloadUrl)}
+              >${msg('DOWNLOAD')}</button>
             `
             : html`
               <p class="card__cost ${this._hasBypass ? 'card__cost--bypass' : ''}">
@@ -433,9 +467,9 @@ export class VelgChronicleExport extends LitElement {
 
     return html`
       <div class="card ${this._hiresState === 'processing' ? 'card--processing' : ''}">
-        <h4 class="card__title">${msg('HI-RES ARCHIVE')}</h4>
+        <h4 class="card__title">${msg('FULL-RES ARCHIVE')}</h4>
         <p class="card__desc">
-          ${msg('All images re-generated at 2048px. Packaged as ZIP with organized folders.')}
+          ${msg('All simulation images at full native resolution. Organized ZIP archive: agents, buildings, lore, and banner.')}
         </p>
 
         ${this._hiresState === 'processing'
@@ -443,11 +477,13 @@ export class VelgChronicleExport extends LitElement {
             <div class="card__progress">
               <div class="card__progress-bar" style="width: ${this._hiresProgress}%"></div>
             </div>
-            <span class="card__status">${msg('PRINTING IN PROGRESS...')} ${this._hiresProgress}%</span>
+            <span class="card__status">${msg('ARCHIVING IN PROGRESS...')} ${this._hiresProgress}%</span>
           `
           : this._hiresState === 'done'
             ? html`
-              <button class="card__btn card__btn--download">${msg('DOWNLOAD')}</button>
+              <button class="card__btn card__btn--download"
+                @click=${() => this._openDownload(this._hiresDownloadUrl)}
+              >${msg('DOWNLOAD')}</button>
             `
             : html`
               <p class="card__cost ${this._hasBypass ? 'card__cost--bypass' : ''}">
@@ -485,18 +521,33 @@ export class VelgChronicleExport extends LitElement {
     `;
   }
 
+  private _getExportTypeLabel(p: FeaturePurchase): string {
+    const exportType = (p.config as { export_type?: string })?.export_type;
+    if (exportType === 'hires') return 'FULL-RES ARCHIVE';
+    return 'CODEX PDF';
+  }
+
   private _renderHistory() {
     return html`
       <div class="history">
         <h4 class="history__heading">${msg('Previous Exports')}</h4>
         <ul class="history__list">
-          ${this._history.map(p => html`
-            <li class="history__item">
-              <span class="history__type">${humanizeEnum(p.feature_type)}</span>
-              <span class="history__date">${new Date(p.created_at).toLocaleDateString()}</span>
-              <span class="history__status history__status--${p.status}">${p.status}</span>
-            </li>
-          `)}
+          ${this._history.map(p => {
+            const downloadUrl = (p.result as { download_url?: string })?.download_url;
+            return html`
+              <li class="history__item">
+                <span class="history__type">${this._getExportTypeLabel(p)}</span>
+                <span class="history__date">${new Date(p.created_at).toLocaleDateString(localeService.currentLocale === 'de' ? 'de-DE' : 'en-GB')}</span>
+                <span class="history__status history__status--${p.status}">${p.status}</span>
+                ${p.status === 'completed' && downloadUrl
+                  ? html`<a class="card__btn card__btn--download"
+                      href=${downloadUrl} target="_blank" rel="noopener"
+                      style="padding: var(--space-1) var(--space-2); font-size: 9px; text-decoration: none;"
+                    >${msg('DOWNLOAD')}</a>`
+                  : nothing}
+              </li>
+            `;
+          })}
         </ul>
       </div>
     `;

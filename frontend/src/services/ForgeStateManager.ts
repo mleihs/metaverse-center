@@ -467,7 +467,7 @@ class ForgeStateManager {
   async purchaseFeature(
     simulationId: string,
     featureType: 'darkroom_pass' | 'classified_dossier' | 'recruitment' | 'chronicle_export',
-    options?: { focus?: string; zoneId?: string },
+    options?: { focus?: string; zoneId?: string; exportType?: 'codex' | 'hires' },
   ): Promise<string | null> {
     this.error.value = null;
     try {
@@ -486,7 +486,11 @@ class ForgeStateManager {
           );
           break;
         case 'chronicle_export':
-          resp = await forgeApi.purchaseChronicle(simulationId);
+          if (options?.exportType === 'hires') {
+            resp = await forgeApi.purchaseHiresArchive(simulationId);
+          } else {
+            resp = await forgeApi.purchaseChronicle(simulationId);
+          }
           break;
       }
 
