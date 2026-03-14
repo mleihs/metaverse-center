@@ -455,11 +455,11 @@ export class VelgDossierRequest extends LitElement {
       <div class="dossier-cta" role="region" aria-label=${msg('Classified dossier request')}>
         <div class="stamp">${msg('[CLASSIFIED] BUREAU CLEARANCE LEVEL 4')}</div>
 
-        <h3 class="cta__title">${msg('Request Classified Dossier')}</h3>
+        <h3 class="cta__title">${msg('Authorize Classified Expansion')}</h3>
         <hr class="cta__rule" />
 
         <p class="cta__desc">
-          ${msg('Six classified sections. 10,000 words of deep lore: pre-arrival history, agent addenda, geographic anomalies, bleed signatures, prophetic fragments, Bureau recommendation.')}
+          ${msg('Unlock the six ARCANUM sections previewed above. The Bureau\'s Senior Classified Analyst will generate ~9,000 words of deep intelligence: the shard\'s hidden pre-arrival history, classified addenda for every agent, annotated geographic anomalies, cross-shard bleed analysis, recovered prophetic fragments, and the Bureau\'s official threat assessment.')}
         </p>
 
         <p class="cta__cost ${this.hasBypass ? 'cta__cost--bypass' : ''}">
@@ -514,7 +514,7 @@ export class VelgDossierRequest extends LitElement {
 
         <div class="confirm__body">
           <p class="confirm__desc">
-            ${msg('This will authorize the generation of six classified lore sections for this simulation. The Bureau requires full documentation of pre-arrival history, geographic anomalies, and other sensitive intelligence.')}
+            ${msg('This will generate the six ARCANUM sections shown in the preview above — ALPHA through ZETA. Each section is AI-generated using the simulation\'s agents, buildings, zones, and existing lore as source material. Generation takes 1-3 minutes. The new sections will appear below the existing lore scroll as CLASSIFIED chapters.')}
           </p>
           <div class="confirm__cost-line">
             ${this.hasBypass

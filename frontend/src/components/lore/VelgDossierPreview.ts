@@ -209,33 +209,33 @@ export class VelgDossierPreview extends LitElement {
     return [
       {
         arcanum: 'ALPHA',
-        label: msg('Pre-Arrival History'),
-        teaser: `"${msg('Before')} ████████, ${msg('the district known as')} ${zone} ${msg('was')} ███████. ${msg('Bureau historians disagree on')} [${msg('REDACTED')}]."`,
+        label: msg('Pre-Arrival History (~2,000 words)'),
+        teaser: `${msg('What existed before this shard materialized? Competing theories from Bureau historians. Archaeological evidence recovered near')} ${zone} ${msg('suggests')} ████████. ${msg('Temporal anomalies, contested origin myths, and the')} [${msg('REDACTED')}] ${msg('incident of')} ████████.`,
       },
       {
         arcanum: 'BETA',
-        label: msg('Agent Classified Addenda'),
-        teaser: `${agent} — ${msg('RISK ASSESSMENT')}: ████████ | ${msg('HIDDEN MOTIVATION')}: [${msg('CLASSIFIED')}] // ${agent2} — [${msg('REDACTED')}]`,
+        label: msg('Agent Classified Addenda (~2,500 words)'),
+        teaser: `${msg('Per-agent intelligence supplement.')} ${agent}: ${msg('RISK ASSESSMENT')} ████████, ${msg('HIDDEN MOTIVATION')}: [${msg('CLASSIFIED')}], ${msg('SURVEILLANCE NOTES')}... // ${agent2}: [${msg('REDACTED')}] // ${msg('Full dossier for every agent. Cross-references mapped.')}`,
       },
       {
         arcanum: 'GAMMA',
-        label: msg('Geographic Anomalies'),
-        teaser: `${msg('Cartographic anomaly detected near')} ${building}. ${msg('Spatial geometry')} ████ ${msg('confirmed')}. ${building2} ███████.`,
+        label: msg('Geographic Anomalies (~1,500 words)'),
+        teaser: `${msg('Cartographic breach detected near')} ${building}. ${msg('Spatial geometry contradicts')} ████ ${msg('Bureau field surveys.')} ${building2} ${msg('exhibits properties consistent with')} ███████. ${msg('Annotated zone analysis for')} ${zone}.`,
       },
       {
         arcanum: 'DELTA',
-        label: msg('Bleed Signature Analysis'),
-        teaser: `${msg('BLEED VECTOR')}: ███████████ | ${msg('CONTAMINATION')}: [${msg('REDACTED')}] | ${msg('CONTAINMENT')}: ████████`,
+        label: msg('Bleed Signature Analysis (~1,500 words)'),
+        teaser: `${msg('Cross-shard contamination vectors. Which adjacent realities bleed into this shard and why.')} ${msg('CONTAINMENT STATUS')}: ████████ | ${msg('DOCUMENTED INCURSIONS')}: [${msg('REDACTED')}]`,
       },
       {
         arcanum: 'EPSILON',
-        label: msg('Prophetic Fragments'),
-        teaser: `${msg('Fragment recovered from')} ████████. ${msg('Text')}: "[${msg('CONSUMED')}]... ${msg('the')} ${building} ${msg('shall')} ████... [${msg('ILLEGIBLE')}]"`,
+        label: msg('Prophetic Fragments (~1,000 words)'),
+        teaser: `${msg('Recovered documents, dream transcriptions, inscriptions.')} "${msg('the')} ${building} ${msg('shall')} ████... [${msg('ILLEGIBLE')}]" — ${msg('Source')}: ████████. ${msg('Reliability')}: [${msg('CONSUMED')}]. ${msg('Unreliable narration with degradation markers.')}`,
       },
       {
         arcanum: 'ZETA',
-        label: msg('Bureau Recommendation'),
-        teaser: `${msg('THREAT LEVEL')}: ████████ | ${msg('RESEARCH VALUE')}: [${msg('CLASSIFIED')}] | ${msg('RECOMMENDED ACTION')}: ████████`,
+        label: msg('Bureau Recommendation (~500 words)'),
+        teaser: `${msg('Official Bureau assessment. Threat designation, research value, recommended actions.')} ${msg('THREAT LEVEL')}: ████████ | [${msg('CLASSIFIED')}] | ${msg('Institutional authority. Dry humor. Final word.')}`,
       },
     ];
   }
