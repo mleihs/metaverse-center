@@ -31,6 +31,7 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
 
       display: block;
       position: relative;
+      z-index: var(--z-header, 200);
       height: var(--header-height);
       background: var(--hdr-bg);
       overflow: visible;

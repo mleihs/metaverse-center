@@ -23,44 +23,176 @@ export class VelgAdminForgeTab extends LitElement {
   static styles = [
     settingsStyles,
     css`
+      /* ── Keyframes ── */
+
+      @keyframes panel-enter {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      @keyframes stat-count {
+        from { opacity: 0; transform: scale(0.8); }
+        to { opacity: 1; transform: scale(1); }
+      }
+
+      @keyframes amber-pulse {
+        0%, 100% { opacity: 0.4; }
+        50% { opacity: 1; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .forge-section, .stat-card, .stat-card__value { animation: none !important; }
+      }
+
+      /* ── Layout ── */
+
       .forge-admin {
         display: flex;
         flex-direction: column;
-        gap: var(--space-8);
+        gap: var(--space-6);
       }
+
+      .forge-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-6);
+      }
+
+      @media (max-width: 900px) {
+        .forge-grid { grid-template-columns: 1fr; }
+      }
+
+      /* ── Section Panel ── */
+
+      .forge-section {
+        position: relative;
+        background: var(--color-surface-sunken);
+        border: 1px solid var(--color-border);
+        padding: var(--space-5) var(--space-5) var(--space-5) var(--space-6);
+        animation: panel-enter 0.4s ease both;
+      }
+
+      .forge-section:nth-child(1) { animation-delay: 0s; }
+      .forge-section:nth-child(2) { animation-delay: 0.05s; }
+      .forge-section:nth-child(3) { animation-delay: 0.1s; }
+      .forge-section:nth-child(4) { animation-delay: 0.15s; }
+      .forge-section:nth-child(5) { animation-delay: 0.2s; }
+      .forge-section:nth-child(6) { animation-delay: 0.25s; }
+      .forge-section:nth-child(7) { animation-delay: 0.3s; }
+      .forge-section:nth-child(8) { animation-delay: 0.35s; }
+
+      /* Amber left accent bar */
+      .forge-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 3px;
+        height: 100%;
+        background: linear-gradient(
+          180deg,
+          var(--color-accent-amber) 0%,
+          var(--color-accent-amber-dim, rgba(245, 158, 11, 0.3)) 100%
+        );
+      }
+
+      /* Section header */
+      .forge-section__header {
+        display: flex;
+        align-items: baseline;
+        gap: var(--space-3);
+        margin-bottom: var(--space-1);
+      }
+
+      .forge-section__code {
+        font-family: var(--font-mono, 'SF Mono', monospace);
+        font-size: 9px;
+        letter-spacing: 2px;
+        color: var(--color-accent-amber);
+        opacity: 0.7;
+        white-space: nowrap;
+      }
+
+      .forge-section__title {
+        font-family: var(--font-brutalist, 'Courier New', monospace);
+        font-weight: 900;
+        font-size: var(--text-sm);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-wide);
+        color: var(--color-text-primary);
+        margin: 0;
+      }
+
+      .forge-section__desc {
+        font-size: var(--text-xs);
+        color: var(--color-text-muted);
+        margin-bottom: var(--space-4);
+        padding-left: 1px;
+      }
+
+      .forge-section__divider {
+        height: 1px;
+        background: linear-gradient(90deg, var(--color-accent-amber-dim, rgba(245, 158, 11, 0.2)) 0%, transparent 80%);
+        margin-bottom: var(--space-4);
+      }
+
+      /* ── Stat Cards ── */
 
       .stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: var(--space-4);
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: var(--space-3);
       }
 
       .stat-card {
-        background: var(--color-surface-sunken);
+        position: relative;
+        background: var(--color-surface);
         border: 1px solid var(--color-border);
-        padding: var(--space-4);
+        padding: var(--space-4) var(--space-4) var(--space-3);
         display: flex;
         flex-direction: column;
         gap: var(--space-1);
+        overflow: hidden;
+        animation: stat-count 0.5s ease both;
+      }
+
+      .stat-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--color-accent-amber);
+        opacity: 0.5;
       }
 
       .stat-card__value {
-        font-family: var(--font-brutalist);
+        font-family: var(--font-brutalist, 'Courier New', monospace);
         font-size: var(--text-2xl);
-        color: var(--color-primary);
+        font-weight: 900;
+        color: var(--color-accent-amber);
+        text-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+        animation: stat-count 0.6s ease both;
+        animation-delay: 0.2s;
       }
 
       .stat-card__label {
-        font-size: var(--text-xs);
+        font-family: var(--font-brutalist, 'Courier New', monospace);
+        font-size: 9px;
         text-transform: uppercase;
+        letter-spacing: 2px;
         color: var(--color-text-muted);
       }
 
       .stat-card__sub {
         font-size: var(--text-xs);
         color: var(--color-text-muted);
-        font-family: var(--font-mono);
+        font-family: var(--font-mono, 'SF Mono', monospace);
+        opacity: 0.7;
       }
+
+      /* ── BYOK Form ── */
 
       .byok-form {
         display: flex;
@@ -69,22 +201,35 @@ export class VelgAdminForgeTab extends LitElement {
       }
 
       .byok-input {
-        max-width: 300px;
-        font-family: var(--font-mono);
+        max-width: 400px;
+        font-family: var(--font-mono, 'SF Mono', monospace);
         font-size: var(--text-sm);
         padding: var(--space-2) var(--space-3);
         background: var(--color-surface);
         border: 1px solid var(--color-border);
         color: var(--color-text-primary);
+        transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+      }
+
+      .byok-input:focus {
+        outline: none;
+        border-color: var(--color-accent-amber);
+        box-shadow: 0 0 0 1px var(--color-accent-amber), 0 0 12px rgba(245, 158, 11, 0.1);
       }
 
       /* ── Clearance Requests ── */
 
       .request-card {
-        background: var(--color-surface-sunken);
+        background: var(--color-surface);
         border: 1px solid var(--color-border);
+        border-left: 3px solid var(--color-warning, #f59e0b);
         padding: var(--space-4);
-        margin-bottom: var(--space-4);
+        margin-bottom: var(--space-3);
+        transition: border-color var(--transition-fast);
+      }
+
+      .request-card:hover {
+        border-left-color: var(--color-accent-amber);
       }
 
       .request-card__header {
@@ -95,25 +240,25 @@ export class VelgAdminForgeTab extends LitElement {
       }
 
       .request-card__email {
-        font-family: var(--font-mono);
+        font-family: var(--font-mono, 'SF Mono', monospace);
         font-size: var(--text-sm);
-        color: var(--color-text-primary);
+        color: var(--color-accent-amber);
         font-weight: 600;
       }
 
       .request-card__date {
-        font-family: var(--font-mono);
+        font-family: var(--font-mono, 'SF Mono', monospace);
         font-size: var(--text-xs);
         color: var(--color-text-muted);
       }
 
       .request-card__message {
-        font-family: var(--font-mono);
+        font-family: var(--font-mono, 'SF Mono', monospace);
         font-size: var(--text-sm);
         color: var(--color-text-secondary);
         font-style: italic;
         padding: var(--space-2) var(--space-3);
-        background: var(--color-surface);
+        background: var(--color-surface-sunken);
         border: 1px dashed var(--color-border);
         margin-bottom: var(--space-3);
         line-height: 1.6;
@@ -122,7 +267,7 @@ export class VelgAdminForgeTab extends LitElement {
       .request-card__notes-input {
         width: 100%;
         box-sizing: border-box;
-        font-family: var(--font-mono);
+        font-family: var(--font-mono, 'SF Mono', monospace);
         font-size: var(--text-sm);
         padding: var(--space-2) var(--space-3);
         background: var(--color-surface);
@@ -131,10 +276,17 @@ export class VelgAdminForgeTab extends LitElement {
         min-height: 60px;
         resize: vertical;
         margin-bottom: var(--space-3);
+        transition: border-color var(--transition-fast);
+      }
+
+      .request-card__notes-input:focus {
+        outline: none;
+        border-color: var(--color-accent-amber);
+        box-shadow: 0 0 0 1px var(--color-accent-amber);
       }
 
       .request-card__notes-label {
-        font-family: var(--font-brutalist);
+        font-family: var(--font-brutalist, 'Courier New', monospace);
         font-size: var(--text-xs);
         text-transform: uppercase;
         letter-spacing: var(--tracking-wide);
@@ -150,8 +302,8 @@ export class VelgAdminForgeTab extends LitElement {
 
       .btn-approve {
         padding: var(--space-2) var(--space-4);
-        font-family: var(--font-brutalist);
-        font-weight: var(--font-black);
+        font-family: var(--font-brutalist, 'Courier New', monospace);
+        font-weight: 900;
         font-size: var(--text-sm);
         text-transform: uppercase;
         letter-spacing: var(--tracking-wide);
@@ -165,6 +317,7 @@ export class VelgAdminForgeTab extends LitElement {
       .btn-approve:hover {
         filter: brightness(1.15);
         transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(74, 222, 128, 0.3);
       }
 
       .btn-approve:disabled {
@@ -175,8 +328,8 @@ export class VelgAdminForgeTab extends LitElement {
 
       .btn-reject {
         padding: var(--space-2) var(--space-4);
-        font-family: var(--font-brutalist);
-        font-weight: var(--font-black);
+        font-family: var(--font-brutalist, 'Courier New', monospace);
+        font-weight: 900;
         font-size: var(--text-sm);
         text-transform: uppercase;
         letter-spacing: var(--tracking-wide);
@@ -190,6 +343,7 @@ export class VelgAdminForgeTab extends LitElement {
       .btn-reject:hover {
         background: var(--color-danger);
         color: var(--color-gray-950);
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
       }
 
       .btn-reject:disabled {
@@ -198,75 +352,113 @@ export class VelgAdminForgeTab extends LitElement {
         pointer-events: none;
       }
 
-      .empty-requests {
-        font-family: var(--font-mono);
+      .empty-state {
+        font-family: var(--font-mono, 'SF Mono', monospace);
         font-size: var(--text-sm);
         color: var(--color-text-muted);
         text-align: center;
-        padding: var(--space-6) 0;
+        padding: var(--space-8) 0;
         letter-spacing: 1px;
+        opacity: 0.6;
       }
 
-      /* ── Bundle Management Table ── */
-
-      .bundle-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-family: var(--font-mono);
-        font-size: var(--text-sm);
-      }
-
-      .bundle-table th {
-        text-align: left;
-        font-family: var(--font-brutalist);
-        font-size: var(--text-xs);
-        text-transform: uppercase;
-        letter-spacing: var(--tracking-wide);
-        color: var(--color-text-muted);
-        padding: var(--space-2) var(--space-3);
-        border-bottom: 2px solid var(--color-border);
-      }
-
-      .bundle-table td {
-        padding: var(--space-2) var(--space-3);
-        border-bottom: 1px solid var(--color-border);
-        color: var(--color-text-primary);
-      }
-
-      .bundle-row--inactive td {
+      .empty-state::before {
+        content: '//';
+        margin-right: 6px;
+        color: var(--color-accent-amber);
         opacity: 0.5;
       }
 
-      .bundle-row--system td {
-        opacity: 0.35;
+      .empty-state::after {
+        content: '//';
+        margin-left: 6px;
+        color: var(--color-accent-amber);
+        opacity: 0.5;
       }
+
+      /* ── Tables (shared) ── */
+
+      .forge-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: var(--font-mono, 'SF Mono', monospace);
+        font-size: var(--text-sm);
+      }
+
+      .forge-table th {
+        text-align: left;
+        font-family: var(--font-brutalist, 'Courier New', monospace);
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--color-accent-amber);
+        padding: var(--space-2) var(--space-3);
+        border-bottom: 2px solid var(--color-accent-amber-dim, rgba(245, 158, 11, 0.3));
+        opacity: 0.8;
+      }
+
+      .forge-table td {
+        padding: var(--space-2-5) var(--space-3);
+        border-bottom: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
+        color: var(--color-text-primary);
+        transition: background var(--transition-fast);
+      }
+
+      .forge-table tbody tr:hover td {
+        background: rgba(245, 158, 11, 0.03);
+      }
+
+      .forge-table tbody tr:nth-child(even) td {
+        background: rgba(255, 255, 255, 0.01);
+      }
+
+      .forge-table tbody tr:nth-child(even):hover td {
+        background: rgba(245, 158, 11, 0.04);
+      }
+
+      .bundle-row--inactive td {
+        opacity: 0.45;
+      }
+
+      .bundle-row--system td {
+        opacity: 0.3;
+      }
+
+      /* ── Bundle Edit Form ── */
 
       .bundle-edit-form {
         display: grid;
         grid-template-columns: auto 1fr;
         gap: var(--space-2) var(--space-3);
         align-items: center;
-        padding: var(--space-3);
-        background: var(--color-surface-sunken);
-        border: 1px solid var(--color-border);
+        padding: var(--space-4);
+        background: var(--color-surface);
+        border: 1px solid var(--color-accent-amber-dim, rgba(245, 158, 11, 0.2));
         margin: var(--space-2) 0;
       }
 
       .bundle-edit-form__label {
-        font-family: var(--font-brutalist);
+        font-family: var(--font-brutalist, 'Courier New', monospace);
         font-size: var(--text-xs);
         text-transform: uppercase;
+        letter-spacing: 1px;
         color: var(--color-text-muted);
       }
 
       .bundle-edit-form__input {
-        padding: var(--space-1) var(--space-2);
-        font-family: var(--font-mono);
+        padding: var(--space-1-5) var(--space-2);
+        font-family: var(--font-mono, 'SF Mono', monospace);
         font-size: var(--text-sm);
-        background: var(--color-surface);
+        background: var(--color-surface-sunken);
         border: 1px solid var(--color-border);
         color: var(--color-text-primary);
         max-width: 200px;
+        transition: border-color var(--transition-fast);
+      }
+
+      .bundle-edit-form__input:focus {
+        outline: none;
+        border-color: var(--color-accent-amber);
       }
 
       .bundle-edit-form__actions {
@@ -274,33 +466,11 @@ export class VelgAdminForgeTab extends LitElement {
         display: flex;
         gap: var(--space-2);
         justify-content: flex-end;
+        padding-top: var(--space-2);
+        border-top: 1px solid var(--color-border);
       }
 
-      /* ── Purchase Ledger ── */
-
-      .ledger-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-family: var(--font-mono);
-        font-size: var(--text-sm);
-      }
-
-      .ledger-table th {
-        text-align: left;
-        font-family: var(--font-brutalist);
-        font-size: var(--text-xs);
-        text-transform: uppercase;
-        letter-spacing: var(--tracking-wide);
-        color: var(--color-text-muted);
-        padding: var(--space-2) var(--space-3);
-        border-bottom: 2px solid var(--color-border);
-      }
-
-      .ledger-table td {
-        padding: var(--space-2) var(--space-3);
-        border-bottom: 1px solid var(--color-border);
-        color: var(--color-text-primary);
-      }
+      /* ── Filter Chips ── */
 
       .ledger-filters {
         display: flex;
@@ -312,7 +482,7 @@ export class VelgAdminForgeTab extends LitElement {
 
       .filter-chip {
         padding: var(--space-1) var(--space-3);
-        font-family: var(--font-brutalist);
+        font-family: var(--font-brutalist, 'Courier New', monospace);
         font-size: var(--text-xs);
         text-transform: uppercase;
         letter-spacing: var(--tracking-wide);
@@ -324,25 +494,31 @@ export class VelgAdminForgeTab extends LitElement {
       }
 
       .filter-chip:hover {
-        color: var(--color-text-primary);
-        border-color: var(--color-text-primary);
+        color: var(--color-accent-amber);
+        border-color: var(--color-accent-amber);
+        background: rgba(245, 158, 11, 0.05);
       }
 
       .filter-chip--active {
         background: var(--color-accent-amber);
         color: var(--color-gray-950);
         border-color: var(--color-accent-amber);
+        box-shadow: 0 0 8px rgba(245, 158, 11, 0.3);
       }
+
+      /* ── Pagination ── */
 
       .ledger-pagination {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-top: var(--space-4);
+        padding-top: var(--space-3);
+        border-top: 1px solid var(--color-border);
       }
 
       .ledger-pagination__info {
-        font-family: var(--font-mono);
+        font-family: var(--font-mono, 'SF Mono', monospace);
         font-size: var(--text-xs);
         color: var(--color-text-muted);
       }
@@ -354,7 +530,7 @@ export class VelgAdminForgeTab extends LitElement {
 
       .ledger-pagination__btn {
         padding: var(--space-1) var(--space-3);
-        font-family: var(--font-brutalist);
+        font-family: var(--font-brutalist, 'Courier New', monospace);
         font-size: var(--text-xs);
         text-transform: uppercase;
         background: var(--color-surface);
@@ -366,10 +542,11 @@ export class VelgAdminForgeTab extends LitElement {
 
       .ledger-pagination__btn:hover:not(:disabled) {
         border-color: var(--color-accent-amber);
+        color: var(--color-accent-amber);
       }
 
       .ledger-pagination__btn:disabled {
-        opacity: 0.35;
+        opacity: 0.25;
         cursor: not-allowed;
       }
 
@@ -384,21 +561,29 @@ export class VelgAdminForgeTab extends LitElement {
       }
 
       .grant-form__label {
-        font-family: var(--font-brutalist);
+        font-family: var(--font-brutalist, 'Courier New', monospace);
         font-size: var(--text-xs);
         text-transform: uppercase;
+        letter-spacing: 1px;
         color: var(--color-text-muted);
       }
 
       .grant-form__input {
         padding: var(--space-2) var(--space-3);
-        font-family: var(--font-mono);
+        font-family: var(--font-mono, 'SF Mono', monospace);
         font-size: var(--text-sm);
         background: var(--color-surface);
         border: 1px solid var(--color-border);
         color: var(--color-text-primary);
         width: 100%;
         box-sizing: border-box;
+        transition: border-color var(--transition-fast);
+      }
+
+      .grant-form__input:focus {
+        outline: none;
+        border-color: var(--color-accent-amber);
+        box-shadow: 0 0 0 1px var(--color-accent-amber);
       }
 
       .grant-form__actions {
@@ -409,6 +594,25 @@ export class VelgAdminForgeTab extends LitElement {
 
       .overflow-x {
         overflow-x: auto;
+      }
+
+      /* ── Clearance count badge ── */
+
+      .request-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 5px;
+        border-radius: 2px;
+        background: var(--color-accent-amber);
+        color: var(--color-gray-950);
+        font-family: var(--font-mono, 'SF Mono', monospace);
+        font-size: 10px;
+        font-weight: 700;
+        margin-left: var(--space-2);
+        animation: amber-pulse 2s ease infinite;
       }
     `,
   ];
@@ -795,55 +999,14 @@ export class VelgAdminForgeTab extends LitElement {
   protected render() {
     return html`
       <div class="forge-admin">
-        ${this._renderClearanceRequests()}
-        ${this._renderTokenEconomy()}
-        ${this._renderBundleManagement()}
-        ${this._renderGrantForm()}
-        ${this._renderPurchaseLedger()}
 
-        <div class="settings-panel">
-          <h3 class="settings-panel__title">${msg('Personal API Keys (BYOK)')}</h3>
-          <p class="settings-panel__description">${msg('Bypass the platform quota by providing your own API keys for the Simulation Forge. These are AES-256 encrypted at rest.')}</p>
-          <div class="byok-form">
-            <div class="settings-item">
-              <div class="settings-item__info">
-                <div class="settings-item__label">${msg('OpenRouter API Key')}</div>
-                <div class="settings-item__description">${msg('Used for the Astrolabe and Drafting Table phases.')}</div>
-              </div>
-              <input
-                type="password"
-                class="form-control byok-input"
-                placeholder="sk-or-v1-..."
-                .value=${this._openrouterKey}
-                @input=${(e: Event) => (this._openrouterKey = (e.target as HTMLInputElement).value)}
-              />
-            </div>
-            <div class="settings-item">
-              <div class="settings-item__info">
-                <div class="settings-item__label">${msg('Replicate API Token')}</div>
-                <div class="settings-item__description">${msg('Used for the Darkroom and final image materialization.')}</div>
-              </div>
-              <input
-                type="password"
-                class="form-control byok-input"
-                placeholder="r8_..."
-                .value=${this._replicateKey}
-                @input=${(e: Event) => (this._replicateKey = (e.target as HTMLInputElement).value)}
-              />
-            </div>
-            <button
-              class="btn-primary"
-              style="align-self: flex-start"
-              ?disabled=${this._savingBYOK}
-              @click=${this._saveBYOK}
-            >
-              ${this._savingBYOK ? msg('Saving...') : msg('Save Keys')}
-            </button>
+        <!-- SEC-01: Forge Overview -->
+        <div class="forge-section">
+          <div class="forge-section__header">
+            <span class="forge-section__code">SEC-01</span>
+            <h3 class="forge-section__title">${msg('Forge Overview')}</h3>
           </div>
-        </div>
-
-        <div class="settings-panel">
-          <h3 class="settings-panel__title">${msg('Forge Overview')}</h3>
+          <div class="forge-section__divider"></div>
           <div class="stats-grid">
             <div class="stat-card">
               <div class="stat-card__value">${this._draftCount}</div>
@@ -851,17 +1014,36 @@ export class VelgAdminForgeTab extends LitElement {
             </div>
             <div class="stat-card">
               <div class="stat-card__value">${this._totalTokens}</div>
-              <div class="stat-card__label">${msg('Total Tokens Circulating')}</div>
+              <div class="stat-card__label">${msg('Tokens Circulating')}</div>
             </div>
             <div class="stat-card">
               <div class="stat-card__value">${this._totalMaterialized}</div>
-              <div class="stat-card__label">${msg('Total Materialized')}</div>
+              <div class="stat-card__label">${msg('Materialized')}</div>
             </div>
           </div>
         </div>
 
-        <div class="settings-panel">
-          <h3 class="settings-panel__title">${msg('Global Economic Controls')}</h3>
+        <!-- SEC-02: Token Economy -->
+        ${this._renderTokenEconomy()}
+
+        <!-- SEC-03: Clearance Requests -->
+        ${this._renderClearanceRequests()}
+
+        <!-- SEC-04 / SEC-05: Bundles + Grant (side by side on wide) -->
+        ${this._renderBundleManagement()}
+
+        <div class="forge-grid">
+          ${this._renderGrantForm()}
+          ${this._renderPurchaseLedger()}
+        </div>
+
+        <!-- SEC-07: Global Controls -->
+        <div class="forge-section">
+          <div class="forge-section__header">
+            <span class="forge-section__code">SEC-07</span>
+            <h3 class="forge-section__title">${msg('Global Economic Controls')}</h3>
+          </div>
+          <div class="forge-section__divider"></div>
           <div class="settings-group">
             <div class="settings-item">
               <div class="settings-item__info">
@@ -914,13 +1096,65 @@ export class VelgAdminForgeTab extends LitElement {
           </div>
         </div>
 
-        <div class="settings-panel">
-          <h3 class="settings-panel__title">${msg('Maintenance')}</h3>
-          <p class="settings-panel__description">${msg('Clean up unused assets and database records.')}</p>
+        <!-- SEC-08: Personal BYOK Keys -->
+        <div class="forge-section">
+          <div class="forge-section__header">
+            <span class="forge-section__code">SEC-08</span>
+            <h3 class="forge-section__title">${msg('Personal API Keys (BYOK)')}</h3>
+          </div>
+          <div class="forge-section__desc">${msg('AES-256 encrypted at rest. Bypass platform quota with your own keys.')}</div>
+          <div class="forge-section__divider"></div>
+          <div class="byok-form">
+            <div class="settings-item">
+              <div class="settings-item__info">
+                <div class="settings-item__label">${msg('OpenRouter API Key')}</div>
+                <div class="settings-item__description">${msg('Used for the Astrolabe and Drafting Table phases.')}</div>
+              </div>
+              <input
+                type="password"
+                class="form-control byok-input"
+                placeholder="sk-or-v1-..."
+                .value=${this._openrouterKey}
+                @input=${(e: Event) => (this._openrouterKey = (e.target as HTMLInputElement).value)}
+              />
+            </div>
+            <div class="settings-item">
+              <div class="settings-item__info">
+                <div class="settings-item__label">${msg('Replicate API Token')}</div>
+                <div class="settings-item__description">${msg('Used for the Darkroom and final image materialization.')}</div>
+              </div>
+              <input
+                type="password"
+                class="form-control byok-input"
+                placeholder="r8_..."
+                .value=${this._replicateKey}
+                @input=${(e: Event) => (this._replicateKey = (e.target as HTMLInputElement).value)}
+              />
+            </div>
+            <button
+              class="btn-primary"
+              style="align-self: flex-start"
+              ?disabled=${this._savingBYOK}
+              @click=${this._saveBYOK}
+            >
+              ${this._savingBYOK ? msg('Saving...') : msg('Save Keys')}
+            </button>
+          </div>
+        </div>
+
+        <!-- SEC-09: Maintenance -->
+        <div class="forge-section">
+          <div class="forge-section__header">
+            <span class="forge-section__code">SEC-09</span>
+            <h3 class="forge-section__title">${msg('Maintenance')}</h3>
+          </div>
+          <div class="forge-section__desc">${msg('Clean up unused assets and database records.')}</div>
+          <div class="forge-section__divider"></div>
           <button class="btn-primary" @click=${this._purgeStaleDrafts}>
             ${msg('Purge Stale Drafts')}
           </button>
         </div>
+
       </div>
     `;
   }
@@ -932,9 +1166,13 @@ export class VelgAdminForgeTab extends LitElement {
     if (!s) return nothing;
 
     return html`
-      <div class="settings-panel">
-        <h3 class="settings-panel__title">${msg('Token Economy')}</h3>
-        <p class="settings-panel__description">${msg('Aggregated metrics for the forge token economy.')}</p>
+      <div class="forge-section">
+        <div class="forge-section__header">
+          <span class="forge-section__code">SEC-02</span>
+          <h3 class="forge-section__title">${msg('Token Economy')}</h3>
+        </div>
+        <div class="forge-section__desc">${msg('Aggregated metrics for the forge token economy.')}</div>
+        <div class="forge-section__divider"></div>
         <div class="stats-grid">
           <div class="stat-card">
             <div class="stat-card__value">${this._formatCents(Number(s.total_revenue_cents))}</div>
@@ -966,11 +1204,15 @@ export class VelgAdminForgeTab extends LitElement {
     if (!this._bundles.length) return nothing;
 
     return html`
-      <div class="settings-panel">
-        <h3 class="settings-panel__title">${msg('Bundle Management')}</h3>
-        <p class="settings-panel__description">${msg('Manage token bundle catalog. Toggle availability or edit pricing.')}</p>
+      <div class="forge-section">
+        <div class="forge-section__header">
+          <span class="forge-section__code">SEC-04</span>
+          <h3 class="forge-section__title">${msg('Bundle Management')}</h3>
+        </div>
+        <div class="forge-section__desc">${msg('Manage token bundle catalog. Toggle availability or edit pricing.')}</div>
+        <div class="forge-section__divider"></div>
         <div class="overflow-x">
-          <table class="bundle-table">
+          <table class="forge-table">
             <thead>
               <tr>
                 <th scope="col">${msg('Slug')}</th>
@@ -1128,9 +1370,13 @@ export class VelgAdminForgeTab extends LitElement {
 
   private _renderGrantForm() {
     return html`
-      <div class="settings-panel">
-        <h3 class="settings-panel__title">${msg('Grant Tokens')}</h3>
-        <p class="settings-panel__description">${msg('Manually grant tokens to a user. Creates an auditable ledger entry.')}</p>
+      <div class="forge-section">
+        <div class="forge-section__header">
+          <span class="forge-section__code">SEC-05</span>
+          <h3 class="forge-section__title">${msg('Grant Tokens')}</h3>
+        </div>
+        <div class="forge-section__desc">${msg('Manually grant tokens to a user. Creates an auditable ledger entry.')}</div>
+        <div class="forge-section__divider"></div>
         <div class="grant-form">
           <span class="grant-form__label">${msg('User ID')}</span>
           <input
@@ -1178,9 +1424,13 @@ export class VelgAdminForgeTab extends LitElement {
 
   private _renderPurchaseLedger() {
     return html`
-      <div class="settings-panel">
-        <h3 class="settings-panel__title">${msg('Purchase Ledger')}</h3>
-        <p class="settings-panel__description">${msg('Global purchase transaction log with filter and pagination.')}</p>
+      <div class="forge-section">
+        <div class="forge-section__header">
+          <span class="forge-section__code">SEC-06</span>
+          <h3 class="forge-section__title">${msg('Purchase Ledger')}</h3>
+        </div>
+        <div class="forge-section__desc">${msg('Global purchase transaction log with filter and pagination.')}</div>
+        <div class="forge-section__divider"></div>
 
         <div class="ledger-filters">
           ${this._renderFilterChip(null, msg('All'))}
@@ -1190,10 +1440,10 @@ export class VelgAdminForgeTab extends LitElement {
         </div>
 
         ${this._purchases.length === 0
-          ? html`<div class="empty-requests">// ${msg('No purchases found')} //</div>`
+          ? html`<div class="empty-state">// ${msg('No purchases found')} //</div>`
           : html`
             <div class="overflow-x">
-              <table class="ledger-table">
+              <table class="forge-table">
                 <thead>
                   <tr>
                     <th scope="col">${msg('Date')}</th>
@@ -1270,13 +1520,21 @@ export class VelgAdminForgeTab extends LitElement {
   // ── Section: Clearance Requests ──
 
   private _renderClearanceRequests() {
+    const count = this._pendingRequests.length;
     return html`
-      <div class="settings-panel">
-        <h3 class="settings-panel__title">${msg('Clearance Requests')}</h3>
-        <p class="settings-panel__description">${msg('Pending clearance upgrade requests from Field Observers.')}</p>
+      <div class="forge-section">
+        <div class="forge-section__header">
+          <span class="forge-section__code">SEC-03</span>
+          <h3 class="forge-section__title">
+            ${msg('Clearance Requests')}
+            ${count > 0 ? html`<span class="request-count">${count}</span>` : nothing}
+          </h3>
+        </div>
+        <div class="forge-section__desc">${msg('Pending clearance upgrade requests from Field Observers.')}</div>
+        <div class="forge-section__divider"></div>
 
         ${this._pendingRequests.length === 0
-          ? html`<div class="empty-requests">// ${msg('No Pending Clearance Requests')} //</div>`
+          ? html`<div class="empty-state">// ${msg('No Pending Clearance Requests')} //</div>`
           : this._pendingRequests.map((req) => this._renderRequestCard(req))
         }
       </div>

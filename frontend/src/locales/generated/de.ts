@@ -579,7 +579,7 @@ Dies sind die bedeutenden Splitter. Sie sind nicht die einzigen Splitter. Der Ka
 's2130cc649867ca4a': `Zyklus-Intervall`,
 's213f63224c213d4a': `Reaktion`,
 's2144a01f20b868a0': `Systemübersicht`,
-'s2146a80a001fb396': `Sie durchstöbern als Gast.`,
+'s2146a80a001fb396': `Du bist als Gast unterwegs.`,
 's2153b6a1d68d08ed': `Spannung`,
 's215e67c292442d29': `Ein interaktiver kräftebasierter Graph, der alle Simulationen und ihre Verbindungen visualisiert. Vorlagenknoten leuchten mit Umgebungsenergie, Spielinstanzen umkreisen während Epochen, und Energieimpulse fließen entlang der Kanten, um Bleeding- und Operativaktivität im Multiversum anzuzeigen.`,
 's2167ba78c14612c3': `Geteilte Aufklärung`,
