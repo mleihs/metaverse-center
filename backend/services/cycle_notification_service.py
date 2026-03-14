@@ -419,8 +419,8 @@ class CycleNotificationService:
                 # Compute upkeep cost
                 member_count = len(ally_names) + 1  # +1 for self
                 alliance_upkeep_cost = member_count
-            except Exception:
-                pass  # Best-effort
+            except Exception:  # noqa: S110 — best-effort alliance data
+                pass
 
         # ── Rank gap (B3) — pass raw data, template handles i18n ──
         rank_gap = None

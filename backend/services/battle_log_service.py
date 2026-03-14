@@ -108,8 +108,8 @@ class BattleLogService:
                     ).maybe_single().execute()
                     if sim_resp.data:
                         metadata["target_sim_name"] = sim_resp.data["name"]
-            except Exception:
-                pass  # Best-effort enrichment
+            except Exception:  # noqa: S110 — best-effort enrichment
+                pass
 
         return await cls.log_event(
             supabase,

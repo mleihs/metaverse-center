@@ -221,11 +221,11 @@ class ThresholdService:
         profession = "laborer"
         system = "civilian"
         if agents:
-            sample = random.choice(agents)
+            sample = random.choice(agents)  # noqa: S311 — game mechanic, not security
             profession = sample.get("primary_profession", "laborer")
             system = sample.get("system", "civilian")
 
-        draft_number = random.randint(1000, 9999)
+        draft_number = random.randint(1000, 9999)  # noqa: S311 — cosmetic display label
         new_agent = {
             "simulation_id": str(simulation_id),
             "name": f"Emergency Draft #{draft_number}",

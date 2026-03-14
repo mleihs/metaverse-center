@@ -324,8 +324,8 @@ async def update_byok(
             )
     except HTTPException:
         raise
-    except Exception:
-        pass  # Fail open — if the check fails, allow the operation
+    except Exception:  # noqa: S110 — fail open if BYOK RPC check fails
+        pass
 
     result = await _draft_service.update_user_keys(
         supabase, user.id, body.openrouter_key, body.replicate_key
@@ -514,7 +514,7 @@ async def evolve_dossier_section(
         or_key, _ = await _orchestrator_service._get_user_keys(
             admin_supabase, user.id,
         )
-    except Exception:
+    except Exception:  # noqa: S110 — optional BYOK key, continue without
         pass
 
     background_tasks.add_task(
