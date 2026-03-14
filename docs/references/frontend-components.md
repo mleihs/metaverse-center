@@ -1,8 +1,8 @@
 ---
 title: "Frontend Components"
 id: frontend-components
-version: "2.7"
-date: 2026-03-13
+version: "2.8"
+date: 2026-03-14
 lang: de
 type: reference
 status: active
@@ -24,9 +24,11 @@ tags: [frontend, components, lit, web-components]
 ```
 App (Root)
 ├── PlatformHeader
-│   ├── DevAccountSwitcher
-│   ├── UserMenu
-│   └── LocaleSelector
+│   ├── HeaderCluster (reusable hover-to-open dropdown: OPS, INTEL, SYS)
+│   ├── SimulationSwitcher (◆ shard picker: My Worlds / Community, theme badges, stats)
+│   ├── CommandPalette (Ctrl+K: fuzzy search, keyboard nav, NAVIGATE/SHARDS/TOOLS)
+│   ├── DevAccountSwitcher (inside SYS cluster panel)
+│   └── UserMenu
 ├── SimulationsDashboard
 │   ├── SimulationCard (je Simulation)
 │   ├── ClearanceApplicationCard (Forge access CTA, idle/pending/hidden states)
@@ -57,7 +59,7 @@ App (Root)
     └── Mobile Card List (≤768px fallback)
 ```
 
-**platform/ directory:** PlatformHeader, UserMenu, DevAccountSwitcher, SimulationsDashboard, LoreScroll, CreateSimulationWizard, UserProfileView, InvitationAcceptView, SimulationCard (9 files)
+**platform/ directory:** PlatformHeader, HeaderCluster, SimulationSwitcher, CommandPalette, UserMenu, DevAccountSwitcher, SimulationsDashboard, LoreScroll, CreateSimulationWizard, UserProfileView, InvitationAcceptView, SimulationCard (12 files)
 
 ### Simulation-Level
 

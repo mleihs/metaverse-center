@@ -387,6 +387,7 @@ export class VelgApp extends LitElement {
     this.addEventListener('navigate', this._handleNavigate as EventListener);
     this.addEventListener('login-panel-open', this._handleLoginPanelOpen as EventListener);
     this.addEventListener('login-panel-close', this._handleLoginPanelClose as EventListener);
+    document.addEventListener('keydown', this._handleGlobalKeydown);
     await this._initAuth();
   }
 
@@ -395,7 +396,17 @@ export class VelgApp extends LitElement {
     this.removeEventListener('navigate', this._handleNavigate as EventListener);
     this.removeEventListener('login-panel-open', this._handleLoginPanelOpen as EventListener);
     this.removeEventListener('login-panel-close', this._handleLoginPanelClose as EventListener);
+    document.removeEventListener('keydown', this._handleGlobalKeydown);
   }
+
+  /** Global Ctrl+K / Cmd+K → open command palette in header. */
+  private _handleGlobalKeydown = (e: KeyboardEvent): void => {
+    if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      const header = this.shadowRoot?.querySelector('velg-platform-header');
+      header?.dispatchEvent(new CustomEvent('open-command-palette'));
+    }
+  };
 
   private _handleNavigate = (e: CustomEvent<string>): void => {
     const path = e.detail;
