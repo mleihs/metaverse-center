@@ -14,7 +14,7 @@ from backend.config import settings
 PYDANTIC_AI_MAX_TOKENS: dict[str, int] = {
     "research": 2048,      # ~3 sections of citations
     "anchors": 2048,       # 3 compact structured objects
-    "chunk": 4096,         # geography/agents/buildings structured output
+    "chunk": 8192,         # geography/agents/buildings structured output
     "lore": 8192,          # 5-7 section lore scroll
     "lore_translation": 8192,  # mirrors lore output
     "dossier": 16384,      # ~9000 words across 6 sections

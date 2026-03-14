@@ -21,7 +21,7 @@ from backend.models.forge import (
 )
 import sentry_sdk
 from backend.services import forge_mock_service as mock
-from pydantic_ai.exceptions import ModelHTTPError
+from pydantic_ai.exceptions import ModelHTTPError, UnexpectedModelBehavior
 
 from backend.services.ai_utils import PYDANTIC_AI_MAX_TOKENS, ai_error_to_http, get_openrouter_model
 from backend.services.platform_model_config import get_platform_model
@@ -318,6 +318,7 @@ class ForgeOrchestratorService:
         dynamic_agent = Agent(
             get_openrouter_model(or_key, model_id=get_platform_model("forge")),
             system_prompt=WORLD_ARCHITECT_PROMPT,
+            retries=3,
         )
 
         chunk_settings = {"max_tokens": PYDANTIC_AI_MAX_TOKENS["chunk"]}
@@ -362,6 +363,16 @@ class ForgeOrchestratorService:
                 raise HTTPException(status_code=400, detail=f"Invalid chunk type: {chunk_type}")
         except ModelHTTPError as exc:
             raise ai_error_to_http(exc) from exc
+        except UnexpectedModelBehavior as exc:
+            logger.error(
+                "LLM output validation failed after retries",
+                extra={"chunk_type": chunk_type, "draft_id": str(draft_id)},
+                exc_info=exc,
+            )
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail="AI model returned invalid output after retries. Please try again.",
+            ) from exc
 
     @staticmethod
     async def materialize_shard(
@@ -831,6 +842,7 @@ Generate exactly 3 new agents. Requirements:
                 agent = Agent(
                     model,
                     system_prompt=WORLD_ARCHITECT_PROMPT,
+                    retries=3,
                 )
                 result = await agent.run(
                     prompt,
