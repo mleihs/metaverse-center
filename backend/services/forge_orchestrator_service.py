@@ -8,7 +8,6 @@ from uuid import UUID
 import structlog
 
 from fastapi import HTTPException, status
-from pydantic_ai import Agent
 
 from backend.config import settings
 from backend.models.forge import (
@@ -23,8 +22,7 @@ import sentry_sdk
 from backend.services import forge_mock_service as mock
 from pydantic_ai.exceptions import ModelHTTPError, UnexpectedModelBehavior
 
-from backend.services.ai_utils import PYDANTIC_AI_MAX_TOKENS, ai_error_to_http, get_openrouter_model
-from backend.services.platform_model_config import get_platform_model
+from backend.services.ai_utils import PYDANTIC_AI_MAX_TOKENS, ai_error_to_http, create_forge_agent
 from backend.services.forge_draft_service import ForgeDraftService
 from backend.services.forge_entity_translation_service import ForgeEntityTranslationService
 from backend.services.forge_lore_service import ForgeLoreService
@@ -315,11 +313,7 @@ class ForgeOrchestratorService:
         prompt = _build_chunk_prompt(chunk_type, anchor, seed, gen_config, geography)
 
         logger.debug("Instantiating dynamic Pydantic AI agent for chunk generation")
-        dynamic_agent = Agent(
-            get_openrouter_model(or_key, model_id=get_platform_model("forge")),
-            system_prompt=WORLD_ARCHITECT_PROMPT,
-            retries=3,
-        )
+        dynamic_agent = create_forge_agent(WORLD_ARCHITECT_PROMPT, api_key=or_key)
 
         chunk_settings = {"max_tokens": PYDANTIC_AI_MAX_TOKENS["chunk"]}
 
@@ -645,12 +639,18 @@ class ForgeOrchestratorService:
             or_key, rep_key = None, None
 
         # ── Phase A: Lore + translations (must complete before images) ──
-        await cls._generate_lore_and_translations(
-            supabase, simulation_id, user_id, or_key, draft_data or {},
-        )
+        # Skip when called for image-only regeneration (no draft_data available).
+        if draft_data:
+            logger.info("Phase A: lore + translations")
+            await cls._generate_lore_and_translations(
+                supabase, simulation_id, user_id, or_key, draft_data,
+            )
+            logger.info("Phase A complete")
+        else:
+            logger.info("Phase A skipped (image-only regeneration)")
 
         # ── Phase B: Image generation ──
-        logger.info("Starting image generation")
+        logger.info("Phase B: image generation")
 
         sim_resp = (
             supabase.table("simulations")
@@ -757,7 +757,7 @@ class ForgeOrchestratorService:
                         extra={"entity_type": "lore_section", "entity_id": section["id"]},
                     )
 
-        logger.info("Batch generation completed")
+        logger.info("Phase B complete — background generation finished")
 
     @staticmethod
     async def recruit_agents(
@@ -838,12 +838,7 @@ Generate exactly 3 new agents. Requirements:
                     )
                 ]
             else:
-                model = get_openrouter_model(openrouter_key, model_id=get_platform_model("forge"))
-                agent = Agent(
-                    model,
-                    system_prompt=WORLD_ARCHITECT_PROMPT,
-                    retries=3,
-                )
+                agent = create_forge_agent(WORLD_ARCHITECT_PROMPT, api_key=openrouter_key)
                 result = await agent.run(
                     prompt,
                     output_type=list[ForgeAgentDraft],

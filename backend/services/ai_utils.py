@@ -2,12 +2,20 @@
 
 from __future__ import annotations
 
+import functools
+import logging
+
+import sentry_sdk
 from fastapi import HTTPException, status
+from pydantic_ai import Agent
 from pydantic_ai.exceptions import ModelHTTPError
 from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.openai import OpenAIProvider
 
 from backend.config import settings
+from backend.services.platform_model_config import get_platform_model
+
+logger = logging.getLogger(__name__)
 
 # ── Centralized max_tokens budgets for all Pydantic AI agent calls ───
 # Prevents the default 65536 from exhausting OpenRouter credits.
@@ -68,4 +76,40 @@ def get_openrouter_model(
     return OpenAIModel(
         model_id,
         provider=provider,
+    )
+
+
+def safe_background(func):
+    """Wrap an async background task with error logging + Sentry capture.
+
+    Starlette's BackgroundTask has zero exception handling — any uncaught
+    error propagates silently. This decorator ensures every background task
+    failure is logged and reported.
+    """
+    @functools.wraps(func)
+    async def wrapper(*args, **kwargs):
+        task_name = func.__qualname__
+        try:
+            await func(*args, **kwargs)
+        except Exception:
+            logger.exception("Background task failed: %s", task_name)
+            sentry_sdk.capture_exception()
+    return wrapper
+
+
+def create_forge_agent(
+    system_prompt: str,
+    api_key: str | None = None,
+    purpose: str = "forge",
+    retries: int = 3,
+) -> Agent:
+    """Create a Pydantic AI Agent configured for OpenRouter with sensible defaults.
+
+    Centralizes the repeated Agent creation pattern across forge services.
+    All agents get retries=3 by default (up from pydantic-ai's default of 1).
+    """
+    return Agent(
+        get_openrouter_model(api_key, model_id=get_platform_model(purpose)),
+        system_prompt=system_prompt,
+        retries=retries,
     )

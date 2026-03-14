@@ -34,6 +34,7 @@ from backend.models.forge import (
     TokenPurchaseHistory,
     UpdateBYOKRequest,
 )
+from backend.services.ai_utils import safe_background
 from backend.services.audit_service import AuditService
 from backend.services.dossier_evolution_service import DossierEvolutionService
 from backend.services.codex_export_service import CodexExportService
@@ -235,7 +236,7 @@ async def ignite_shard(
     # Uses admin client (user JWT may expire during long-running tasks)
     if sim_id:
         background_tasks.add_task(
-            _orchestrator_service.run_batch_generation,
+            safe_background(_orchestrator_service.run_batch_generation),
             admin_supabase,
             sim_id,
             user.id,
@@ -382,7 +383,7 @@ async def purchase_darkroom_pass(
 
     # Generate 3 theme variants in background
     background_tasks.add_task(
-        ForgeThemeService.generate_variants,
+        safe_background(ForgeThemeService.generate_variants),
         admin_supabase, simulation_id, user.id, purchase_id,
     )
 
@@ -435,7 +436,7 @@ async def darkroom_regenerate_image(
 
     # Queue image regeneration in background
     background_tasks.add_task(
-        _orchestrator_service.regenerate_single_image,
+        safe_background(_orchestrator_service.regenerate_single_image),
         admin_supabase, simulation_id, entity_type, entity_id,
         body.prompt_override, user.id,
     )
@@ -476,7 +477,7 @@ async def purchase_classified_dossier(
     or_key, _ = await _orchestrator_service._get_user_keys(supabase, user.id)
 
     background_tasks.add_task(
-        ForgeLoreService.generate_dossier,
+        safe_background(ForgeLoreService.generate_dossier),
         admin_supabase, simulation_id, user.id, purchase_id, or_key,
     )
 
@@ -518,7 +519,7 @@ async def evolve_dossier_section(
         logger.debug("Optional BYOK key retrieval failed, continuing without", exc_info=True)
 
     background_tasks.add_task(
-        DossierEvolutionService.evolve_section,
+        safe_background(DossierEvolutionService.evolve_section),
         admin_supabase, simulation_id, arcanum, trigger,
         entity_name, entity_detail, or_key,
     )
@@ -556,7 +557,7 @@ async def purchase_recruitment(
     or_key, rep_key = await _orchestrator_service._get_user_keys(supabase, user.id)
 
     background_tasks.add_task(
-        _orchestrator_service.recruit_agents,
+        safe_background(_orchestrator_service.recruit_agents),
         admin_supabase, simulation_id, user.id, purchase_id,
         body.focus, body.zone_id, or_key, rep_key,
     )
@@ -588,7 +589,7 @@ async def purchase_chronicle_export(
     )
 
     background_tasks.add_task(
-        CodexExportService.generate_codex_pdf,
+        safe_background(CodexExportService.generate_codex_pdf),
         admin_supabase, simulation_id, user.id, purchase_id,
     )
 
@@ -619,7 +620,7 @@ async def purchase_hires_archive(
     )
 
     background_tasks.add_task(
-        CodexExportService.generate_hires_archive,
+        safe_background(CodexExportService.generate_hires_archive),
         admin_supabase, simulation_id, user.id, purchase_id,
     )
 
@@ -848,7 +849,7 @@ async def regenerate_images(
     entity_types = set(body.entity_types) if body and body.entity_types else None
 
     background_tasks.add_task(
-        _orchestrator_service.run_batch_generation,
+        safe_background(_orchestrator_service.run_batch_generation),
         admin_supabase,
         simulation_id,
         admin.id,

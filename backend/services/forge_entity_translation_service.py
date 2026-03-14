@@ -6,11 +6,8 @@ import logging
 from typing import Any
 from uuid import UUID
 
-from pydantic_ai import Agent
-
 from backend.models.forge import ForgeEntityTranslationOutput
-from backend.services.ai_utils import PYDANTIC_AI_MAX_TOKENS, get_openrouter_model
-from backend.services.platform_model_config import get_platform_model
+from backend.services.ai_utils import PYDANTIC_AI_MAX_TOKENS, create_forge_agent
 from supabase import Client
 
 logger = logging.getLogger(__name__)
@@ -101,10 +98,7 @@ class ForgeEntityTranslationService:
             + "\n".join(sections)
         )
 
-        agent = Agent(
-            get_openrouter_model(openrouter_key, model_id=get_platform_model("forge")),
-            system_prompt=ENTITY_TRANSLATOR_PROMPT,
-        )
+        agent = create_forge_agent(ENTITY_TRANSLATOR_PROMPT, api_key=openrouter_key)
 
         result = await agent.run(
             prompt,

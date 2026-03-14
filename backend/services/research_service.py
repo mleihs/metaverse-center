@@ -9,13 +9,11 @@ import hashlib
 import logging
 
 import anyio
-from pydantic_ai import Agent
 from tavily import TavilyClient
 
 from backend.config import settings
 from backend.models.forge import PhilosophicalAnchor
-from backend.services.ai_utils import PYDANTIC_AI_MAX_TOKENS, get_openrouter_model
-from backend.services.platform_model_config import get_platform_model
+from backend.services.ai_utils import PYDANTIC_AI_MAX_TOKENS, create_forge_agent
 
 logger = logging.getLogger(__name__)
 
@@ -176,8 +174,7 @@ class ResearchService:
             parts.append(f"[PRIOR ASTROLABE RESEARCH]\n{astrolabe_context}")
 
         # ── Primary: LLM research agent (cheap model) ────────────────
-        research_agent = Agent(
-            get_openrouter_model(openrouter_key, model_id=get_platform_model("research")),
+        research_agent = create_forge_agent(
             system_prompt=(
                 "You are a research librarian specializing in comparative literature, "
                 "philosophy, and architectural history. Your task is to produce a "
@@ -201,6 +198,8 @@ class ResearchService:
                 "Be rigorous. Cite real works. Connect each reference to a specific "
                 "worldbuilding application."
             ),
+            api_key=openrouter_key,
+            purpose="research",
         )
 
         research_prompt = (
@@ -253,9 +252,7 @@ class ResearchService:
     ) -> list[PhilosophicalAnchor]:
         """Generate 3 distinct philosophical angles using Pydantic AI."""
 
-        agent = Agent(
-            get_openrouter_model(openrouter_key, model_id=get_platform_model("forge")),
-            output_type=list[PhilosophicalAnchor],
+        agent = create_forge_agent(
             system_prompt=(
                 "You are a Bureau Scholar from the Bureau of Impossible Geography. "
                 "Your task is to analyze research data and propose 3 distinct 'Philosophical Anchors' "
@@ -263,6 +260,7 @@ class ResearchService:
                 "literary, philosophical, or cultural theory. "
                 "Avoid generic tropes; aim for intellectual rigor and surrealist depth."
             ),
+            api_key=openrouter_key,
         )
 
         prompt = (
@@ -273,6 +271,7 @@ class ResearchService:
 
         result = await agent.run(
             prompt,
+            output_type=list[PhilosophicalAnchor],
             model_settings={"max_tokens": PYDANTIC_AI_MAX_TOKENS["anchors"]},
         )
         return result.output

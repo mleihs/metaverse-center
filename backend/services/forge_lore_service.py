@@ -9,12 +9,9 @@ from uuid import UUID
 import sentry_sdk
 import structlog
 
-from pydantic_ai import Agent
-
 from backend.models.forge import ForgeLoreOutput, ForgeLoreTranslatedOutput
 from backend.config import settings
-from backend.services.ai_utils import PYDANTIC_AI_MAX_TOKENS, get_openrouter_model
-from backend.services.platform_model_config import get_platform_model
+from backend.services.ai_utils import PYDANTIC_AI_MAX_TOKENS, create_forge_agent
 from supabase import Client
 
 logger = logging.getLogger(__name__)
@@ -193,10 +190,7 @@ class ForgeLoreService:
             f"Epigraphs should draw from real literary works when possible."
         )
 
-        agent = Agent(
-            get_openrouter_model(openrouter_key, model_id=get_platform_model("forge")),
-            system_prompt=BUREAU_ARCHIVIST_PROMPT,
-        )
+        agent = create_forge_agent(BUREAU_ARCHIVIST_PROMPT, api_key=openrouter_key)
 
         result = await agent.run(
             prompt,
@@ -237,10 +231,7 @@ class ForgeLoreService:
             + "\n".join(section_texts)
         )
 
-        agent = Agent(
-            get_openrouter_model(openrouter_key, model_id=get_platform_model("forge")),
-            system_prompt=LORE_TRANSLATOR_PROMPT,
-        )
+        agent = create_forge_agent(LORE_TRANSLATOR_PROMPT, api_key=openrouter_key)
 
         result = await agent.run(
             prompt,
@@ -464,8 +455,7 @@ REQUIREMENTS:
                     for arcanum in ["ALPHA", "BETA", "GAMMA", "DELTA", "EPSILON", "ZETA"]
                 ]
             else:
-                model = get_openrouter_model(openrouter_key, model_id=get_platform_model("forge"))
-                agent = Agent(model, system_prompt=BUREAU_ARCHIVIST_PROMPT)
+                agent = create_forge_agent(BUREAU_ARCHIVIST_PROMPT, api_key=openrouter_key)
                 result = await agent.run(
                     dossier_prompt,
                     output_type=ForgeLoreOutput,
