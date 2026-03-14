@@ -135,9 +135,10 @@ async def fortify_zone(
     user: CurrentUser = Depends(get_current_user),
     _participant: dict = Depends(require_epoch_participant()),
     supabase: Client = Depends(get_supabase),
+    admin_supabase: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Fortify a zone during foundation phase (costs 2 RP). Must be a participant in the epoch."""
-    result = await OperativeService.fortify_zone(supabase, epoch_id, simulation_id, zone_id)
+    result = await OperativeService.fortify_zone(supabase, epoch_id, simulation_id, zone_id, admin_supabase)
     await AuditService.safe_log(
         supabase, simulation_id, user.id, "zone_fortifications", result.get("id"), "create",
         details={"zone_id": str(zone_id), "epoch_id": str(epoch_id)},

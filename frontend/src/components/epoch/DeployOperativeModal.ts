@@ -1652,12 +1652,15 @@ export class VelgDeployOperativeModal extends LitElement {
 				margin-bottom: 0;
 			}
 
+			/* Shrink cards to xs size on mobile */
 			.hand__card-wrapper velg-game-card {
+				--card-w: 80px;
+				--card-h: 128px;
 				transition: transform 200ms ease;
 			}
 
 			.hand__card-wrapper:hover velg-game-card {
-				transform: translateY(-8px) scale(1.05);
+				transform: translateY(-4px) scale(1.02);
 			}
 
 			.hand__cards:hover .hand__card-wrapper:not(:hover) {

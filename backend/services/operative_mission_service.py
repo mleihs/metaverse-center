@@ -1071,6 +1071,7 @@ class OperativeMissionService:
         epoch_id: UUID,
         simulation_id: UUID,
         zone_id: UUID,
+        admin_supabase: Client | None = None,
     ) -> dict:
         """Fortify a zone during foundation phase (+1 security tier, hidden, 2 RP).
 
@@ -1127,15 +1128,16 @@ class OperativeMissionService:
             foundation_cycles = round(total_cycles * config.get("foundation_pct", 10) / 100)
         expires_at_cycle = foundation_cycles + FORTIFICATION_DURATION_CYCLES
 
-        # Upgrade zone security by 1 tier
+        # Upgrade zone security by 1 tier (admin client — zones RLS requires admin role)
+        db = admin_supabase or supabase
         old_level = zone_resp.data["security_level"]
         new_level = _upgrade_security(old_level)
         if old_level != new_level:
-            supabase.table("zones").update(
+            db.table("zones").update(
                 {"security_level": new_level}
             ).eq("id", str(zone_id)).execute()
 
-        # Insert fortification record
+        # Insert fortification record (admin client — game state mutation)
         fort_data = {
             "epoch_id": str(epoch_id),
             "zone_id": str(zone_id),
@@ -1143,7 +1145,7 @@ class OperativeMissionService:
             "security_bonus": 1,
             "expires_at_cycle": expires_at_cycle,
         }
-        fort_resp = supabase.table("zone_fortifications").insert(fort_data).execute()
+        fort_resp = db.table("zone_fortifications").insert(fort_data).execute()
 
         # Log hidden battle_log event
         cycle = epoch.get("current_cycle", 1)
