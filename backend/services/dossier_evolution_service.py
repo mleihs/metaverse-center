@@ -10,8 +10,10 @@ from uuid import UUID
 
 from pydantic_ai import Agent
 
+from backend.models.translation import TranslationContext
 from backend.services.ai_utils import PYDANTIC_AI_MAX_TOKENS, get_openrouter_model
 from backend.services.platform_model_config import get_platform_model
+from backend.services.translation_service import TranslationService
 from supabase import Client
 
 logger = logging.getLogger(__name__)
@@ -129,15 +131,16 @@ class DossierEvolutionService:
                     })
                     return False
 
-            # 3. Get simulation name
+            # 3. Get simulation name + theme for translation context
             sim_resp = (
                 admin_supabase.table("simulations")
-                .select("name")
+                .select("name, description")
                 .eq("id", str(simulation_id))
                 .single()
                 .execute()
             )
             sim_name = sim_resp.data.get("name", "Unknown")
+            sim_theme = sim_resp.data.get("description", "")
 
             # 4. Generate addendum
             prompt_template = EVOLUTION_PROMPTS.get(arcanum)
@@ -166,6 +169,26 @@ class DossierEvolutionService:
             separator = "\n\n─── BUREAU ADDENDUM ───\n\n"
             updated_body = section["body"] + separator + addendum
 
+            # 5b. Translate addendum and append to body_de
+            updated_body_de = section.get("body_de") or ""
+            try:
+                context = TranslationContext(
+                    simulation_name=sim_name,
+                    simulation_theme=sim_theme,
+                    entity_type="lore",
+                    entity_name=entity_name,
+                    additional_context=f"Classified dossier addendum ({arcanum}), Bureau tone",
+                )
+                addendum_de = await TranslationService.translate_text(
+                    addendum, context=context, openrouter_key=openrouter_key,
+                )
+                separator_de = "\n\n─── BUREAU-NACHTRAG ───\n\n"
+                updated_body_de = updated_body_de + separator_de + addendum_de
+            except Exception:
+                logger.exception("Dossier addendum translation failed, English only")
+                # Fallback: append English so body_de doesn't fall behind
+                updated_body_de = updated_body_de + separator + addendum
+
             now = datetime.now(timezone.utc).isoformat()
             log_entry = {
                 "trigger": trigger,
@@ -190,6 +213,7 @@ class DossierEvolutionService:
             # Update section
             admin_supabase.table("simulation_lore").update({
                 "body": updated_body,
+                "body_de": updated_body_de,
                 "evolved_at": now,
                 "evolution_count": evolution_count + 1,
                 "evolution_log": current_log,
