@@ -490,9 +490,25 @@ export class VelgApp extends LitElement {
       if (appState.isAuthenticated.value) {
         this._fetchOnboardingState();
       }
+      // Load simulations for all users (public-first: guests browse too)
+      this._loadSimulations();
     } finally {
       this._initializing = false;
       this._resolveAuthReady();
+    }
+  }
+
+  /** Load simulations into appState — uses public API so guests can browse. */
+  private async _loadSimulations(): Promise<void> {
+    try {
+      const resp = appState.isAuthenticated.value
+        ? await simulationsApi.list()
+        : await simulationsApi.listPublic();
+      if (resp.success && Array.isArray(resp.data)) {
+        appState.setSimulations(resp.data as Simulation[]);
+      }
+    } catch {
+      // Non-critical — dashboard fetches its own copy
     }
   }
 
