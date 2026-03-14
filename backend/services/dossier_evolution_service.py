@@ -175,9 +175,13 @@ class DossierEvolutionService:
                 context = TranslationContext(
                     simulation_name=sim_name,
                     simulation_theme=sim_theme,
-                    entity_type="lore",
+                    entity_type="classified_dossier",
                     entity_name=entity_name,
-                    additional_context=f"Classified dossier addendum ({arcanum}), Bureau tone",
+                    additional_context=(
+                        f"Bureau classified intelligence addendum for ARCANUM section {arcanum}. "
+                        f"Formal institutional tone, clinical precision. "
+                        f"Triggered by: {trigger}."
+                    ),
                 )
                 addendum_de = await TranslationService.translate_text(
                     addendum, context=context, openrouter_key=openrouter_key,

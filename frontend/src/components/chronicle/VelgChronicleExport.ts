@@ -268,6 +268,24 @@ export class VelgChronicleExport extends LitElement {
       color: var(--color-danger, #ef4444);
     }
 
+    .history__download {
+      padding: var(--space-1) var(--space-2);
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-bold, 700);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      text-decoration: none;
+      color: var(--color-success, #22c55e);
+      border: 1px solid var(--color-success, #22c55e);
+      transition: all 0.2s;
+    }
+
+    .history__download:hover {
+      background: var(--color-success, #22c55e);
+      color: #030712;
+    }
+
     @media (prefers-reduced-motion: reduce) {
       .export-panel,
       .card--processing {
@@ -523,8 +541,17 @@ export class VelgChronicleExport extends LitElement {
 
   private _getExportTypeLabel(p: FeaturePurchase): string {
     const exportType = (p.config as { export_type?: string })?.export_type;
-    if (exportType === 'hires') return 'FULL-RES ARCHIVE';
-    return 'CODEX PDF';
+    if (exportType === 'hires') return msg('FULL-RES ARCHIVE');
+    return msg('CODEX PDF');
+  }
+
+  private _localizeStatus(status: string): string {
+    switch (status) {
+      case 'completed': return msg('completed');
+      case 'processing': return msg('processing');
+      case 'failed': return msg('failed');
+      default: return status;
+    }
   }
 
   private _renderHistory() {
@@ -538,11 +565,10 @@ export class VelgChronicleExport extends LitElement {
               <li class="history__item">
                 <span class="history__type">${this._getExportTypeLabel(p)}</span>
                 <span class="history__date">${new Date(p.created_at).toLocaleDateString(localeService.currentLocale === 'de' ? 'de-DE' : 'en-GB')}</span>
-                <span class="history__status history__status--${p.status}">${p.status}</span>
+                <span class="history__status history__status--${p.status}">${this._localizeStatus(p.status)}</span>
                 ${p.status === 'completed' && downloadUrl
-                  ? html`<a class="card__btn card__btn--download"
+                  ? html`<a class="history__download"
                       href=${downloadUrl} target="_blank" rel="noopener"
-                      style="padding: var(--space-1) var(--space-2); font-size: 9px; text-decoration: none;"
                     >${msg('DOWNLOAD')}</a>`
                   : nothing}
               </li>
