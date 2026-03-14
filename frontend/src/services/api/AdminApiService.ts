@@ -159,6 +159,12 @@ export class AdminApiService extends BaseApiService {
     return this.put(`/forge/admin/user-byok-allowed/${userId}?enabled=${enabled}`, {});
   }
 
+  // --- Impersonation ---
+
+  async impersonateUser(userId: string): Promise<ApiResponse<{ hashed_token: string; email: string }>> {
+    return this.post('/admin/impersonate', { user_id: userId });
+  }
+
   // --- Simulation Management ---
 
   async listSimulations(

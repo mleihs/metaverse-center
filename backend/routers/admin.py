@@ -6,7 +6,7 @@ Uses admin (service_role) Supabase client for cross-table operations.
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from backend.config import settings
@@ -52,6 +52,10 @@ class ChangeMembershipRoleRequest(BaseModel):
 class UpdateUserWalletRequest(BaseModel):
     forge_tokens: int | None = Field(None, ge=0)
     is_architect: bool | None = None
+
+
+class ImpersonateRequest(BaseModel):
+    user_id: UUID
 
 
 # --- Environment ---
@@ -344,6 +348,38 @@ async def admin_delete_simulation(
             admin_supabase, simulation_id, _user.id, "simulations", simulation_id, "delete",
         )
         return {"success": True, "data": data}
+
+
+# --- Impersonation ---
+
+
+@router.post("/impersonate")
+async def impersonate_user(
+    body: ImpersonateRequest,
+    admin_user: CurrentUser = Depends(require_platform_admin()),
+    admin_supabase: Client = Depends(get_admin_supabase),
+) -> dict:
+    """Generate a magic link token to impersonate a user (platform admin only)."""
+    user_response = admin_supabase.auth.admin.get_user_by_id(str(body.user_id))
+    user = user_response.user
+    if not user or not user.email:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    link_response = admin_supabase.auth.admin.generate_link({
+        "type": "magiclink",
+        "email": user.email,
+    })
+    hashed_token = link_response.properties.hashed_token
+
+    await AuditService.safe_log(
+        admin_supabase, None, admin_user.id, "users", body.user_id, "impersonate",
+        details={"target_email": user.email},
+    )
+
+    return {
+        "success": True,
+        "data": {"hashed_token": hashed_token, "email": user.email},
+    }
 
 
 def _invalidate_caches(key: str) -> None:

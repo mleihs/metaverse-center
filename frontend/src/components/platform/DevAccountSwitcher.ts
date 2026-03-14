@@ -10,6 +10,7 @@
 
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, query, state } from 'lit/decorators.js';
+import { adminApi } from '../../services/api/AdminApiService.js';
 import { appState } from '../../services/AppStateManager.js';
 import { supabase } from '../../services/supabase/client.js';
 import type { AdminUser } from '../../types/index.js';
@@ -603,18 +604,36 @@ export class VelgDevAccountSwitcher extends LitElement {
     } else if (e.key === 'Enter' && this._focusIndex >= 0) {
       e.preventDefault();
       const user = items[this._focusIndex];
-      if (user) this._switchTo(user.email);
+      if (user) this._switchTo(user);
     }
   }
 
-  private async _switchTo(email: string) {
-    if (!email || email === this._currentEmail) return;
+  private async _switchTo(user: ResolvedUser) {
+    if (!user.email || user.email === this._currentEmail) return;
 
     this._switchError = '';
     this.classList.add('switching');
 
+    // Try admin impersonation first (works for all users)
+    try {
+      const resp = await adminApi.impersonateUser(user.id);
+      if (resp.success && resp.data) {
+        const { error } = await supabase.auth.verifyOtp({
+          token_hash: resp.data.hashed_token,
+          type: 'magiclink',
+        });
+        if (!error) {
+          window.location.reload();
+          return;
+        }
+      }
+    } catch {
+      // Impersonation unavailable (not admin, network error) — fall through
+    }
+
+    // Fallback: password sign-in (works for seed accounts with dev password)
     const { error } = await supabase.auth.signInWithPassword({
-      email,
+      email: user.email,
       password: DEV_PASSWORD,
     });
 
@@ -730,7 +749,7 @@ export class VelgDevAccountSwitcher extends LitElement {
         class="user ${isCurrent ? 'user--current' : ''} ${isFocused ? 'user--focused' : ''}"
         role="option"
         aria-selected=${isCurrent}
-        @click=${() => this._switchTo(u.email)}
+        @click=${() => this._switchTo(u)}
         @mouseenter=${() => { this._focusIndex = index; }}
       >
         <span class="user__email">${u.email}</span>
