@@ -33,6 +33,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Chronicle export download buttons** — DOWNLOAD buttons in Printing Press rendered with no `@click` handler after purchase. Now extracts `download_url` from completed purchase result, restores state on page reload from history, wires both codex PDF and full-res archive download handlers
 - **CI pipeline** — `sentry-sdk` and `deepl` added to `pyproject.toml` dependencies (were only in `requirements.txt`). Integration tests now check actual Supabase connectivity instead of just env var presence. Fixed stale mocks in echo service and wallet endpoint tests
 - **i18n coverage** — translated all 80 missing German strings in XLIFF (chronicle export, bureau status, dossier preview, command palette, navigation labels). Wrapped export type labels and status strings in `msg()`. Replaced inline styles with CSS classes
+- **Zone fortification RLS** — `fortify_zone` endpoint used user JWT for zone security upgrade and fortification insert, but `zones` RLS requires admin role for UPDATE. Now uses `admin_supabase` for game state mutations, matching the deploy operative pattern
+- **Mobile deployment cards** — agent cards in the War Table hand were 120×192px on mobile with no shrink, making them enormous. Now uses xs size (80×128px) on screens ≤768px
+- **Mobile language switcher** — language toggle and dev account switcher were only in the desktop SYS cluster dropdown, inaccessible from the mobile hamburger menu. Now included in mobile nav
+- **Dev model defaults** — replaced discontinued `deepseek/deepseek-r1-0528:free` with `google/gemini-2.0-flash-001` in hardcoded dev fallbacks
 - **CSP policy** — added `fonts.googleapis.com` to style-src, `fonts.gstatic.com` to font-src, `static.cloudflareinsights.com` to script-src (Google Fonts and Cloudflare Insights were blocked)
 - **Forge 422 on landing page** — VelgForgeMint called `/forge/bundles` and `/forge/wallet` without auth guard; added `isAuthenticated` check + lazy-load on mint open
 - **Map dispatch log entity** — raw HTML entity `&#9650;` rendered as text instead of triangle symbol; switched to Unicode escapes

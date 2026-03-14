@@ -128,7 +128,7 @@ backend/tests/
 │   ├── test_model_resolver_img2img.py  # Bild-Modell-Resolver
 │   └── test_output_repair.py      # JSON-Output-Reparatur
 ├── integration/
-│   ├── conftest.py                # Supabase Test-Client, Fixtures
+│   ├── conftest.py                # requires_supabase marker (connectivity check, auto-skip in CI)
 │   ├── test_routes.py             # Router-Integrationstests
 │   ├── test_public_router.py      # 36 Anonymous-View-Tests
 │   ├── test_rls_policies.py       # RLS Enforcement Tests
