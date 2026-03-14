@@ -614,8 +614,14 @@ class TestConnectionGetMapData:
 
     @pytest.mark.asyncio
     async def test_returns_aggregated_data(self):
-        sim = {"id": str(SIM_A), "name": "Test Sim", "status": "active"}
-        dash = {"simulation_id": str(SIM_A), "agent_count": 5, "building_count": 3, "event_count": 10}
+        sim = {
+            "id": str(SIM_A),
+            "name": "Test Sim",
+            "status": "active",
+            "agent_count": 5,
+            "building_count": 3,
+            "event_count": 10,
+        }
         conn = {
             "id": str(CONN_ID),
             "simulation_a_id": str(SIM_A),
@@ -639,10 +645,8 @@ class TestConnectionGetMapData:
             b.limit.return_value = b
 
             r = MagicMock()
-            if name == "simulations":
+            if name == "map_simulations":
                 r.data = [sim]
-            elif name == "simulation_dashboard":
-                r.data = [dash]
             elif name == "simulation_connections":
                 r.data = [conn]
                 r.count = None
@@ -655,6 +659,13 @@ class TestConnectionGetMapData:
             return b
 
         mock.table.side_effect = make_table
+
+        # Mock the RPC call for get_map_overlay_data
+        rpc_response = MagicMock()
+        rpc_response.data = {"zone_topology": {}, "historical_events": {}, "active_bleed_details": {}}
+        rpc_builder = MagicMock()
+        rpc_builder.execute.return_value = rpc_response
+        mock.rpc.return_value = rpc_builder
 
         with patch("backend.services.embassy_service.EmbassyService.list_all_active", new_callable=AsyncMock, return_value=[]):
             result = await ConnectionService.get_map_data(mock)

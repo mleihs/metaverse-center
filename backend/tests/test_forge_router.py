@@ -83,7 +83,29 @@ class TestCreateDraft:
 
 class TestGetWallet:
     def test_get_wallet(self, client):
-        test_client, _ = client
+        test_client, mock_sb = client
+
+        # get_wallet calls supabase.rpc("fn_get_wallet_summary", ...).execute()
+        # which must return a dict, not a MagicMock
+        rpc_response = MagicMock()
+        rpc_response.data = {
+            "forge_tokens": 0,
+            "is_architect": False,
+            "account_tier": "observer",
+            "byok_status": {
+                "has_openrouter_key": False,
+                "has_replicate_key": False,
+                "byok_allowed": False,
+                "byok_bypass": False,
+                "system_bypass_enabled": False,
+                "effective_bypass": False,
+                "access_policy": "per_user",
+            },
+        }
+        rpc_builder = MagicMock()
+        rpc_builder.execute.return_value = rpc_response
+        mock_sb.rpc.return_value = rpc_builder
+
         resp = test_client.get("/api/v1/forge/wallet")
         assert resp.status_code == 200
 
