@@ -826,6 +826,17 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
             `
           : nothing}
 
+        <button class="header__menu-item"
+          style="--i:${navIdx++}"
+          @click=${this._toggleLocale}
+        >${localeService.currentLocale === 'en'
+            ? msg('Sprache: EN \u2192 DE')
+            : msg('Language: DE \u2192 EN')}</button>
+
+        <div style="padding: 0 var(--space-3); --i:${navIdx++}">
+          <velg-dev-account-switcher></velg-dev-account-switcher>
+        </div>
+
         <a class="header__menu-github"
           href="https://github.com/mleihs/velgarien-rebuild"
           target="_blank"
