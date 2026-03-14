@@ -22,14 +22,14 @@ _CACHE_TTL = 300  # 5 minutes
 
 HARDCODED_DEFAULTS: dict[str, str] = {
     "model_default": "anthropic/claude-sonnet-4-6",
-    "model_fallback": "deepseek/deepseek-r1-0528:free",
+    "model_fallback": "google/gemini-2.0-flash-001",
     "model_research": "google/gemini-2.0-flash-001",
     "model_forge": "anthropic/claude-sonnet-4-6",
     # Dev defaults — cheap/free models for development
-    "model_default_dev": "deepseek/deepseek-r1-0528:free",
-    "model_fallback_dev": "deepseek/deepseek-r1-0528:free",
+    "model_default_dev": "google/gemini-2.0-flash-001",
+    "model_fallback_dev": "google/gemini-2.0-flash-001",
     "model_research_dev": "google/gemini-2.0-flash-001",
-    "model_forge_dev": "deepseek/deepseek-r1-0528:free",
+    "model_forge_dev": "google/gemini-2.0-flash-001",
 }
 
 _MODEL_KEYS = tuple(HARDCODED_DEFAULTS.keys())
