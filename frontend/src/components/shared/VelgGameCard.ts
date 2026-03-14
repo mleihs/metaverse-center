@@ -734,11 +734,19 @@ export class VelgGameCard extends LitElement {
     }
 
     /* ═══════════════════════════════════════════════════
-       MOBILE — center card in single-column grid cell
+       MOBILE — fill single-column grid cell
+       Cards scale from fixed 200px to full-width on small screens.
+       Aspect ratio preserved via --card-h / --card-w calculation.
        ═══════════════════════════════════════════════════ */
     @media (max-width: 480px) {
+      :host {
+        --card-w: 100%;
+        --card-h: auto;
+      }
       .card-perspective {
-        margin: 0 auto;
+        width: 100%;
+        height: auto;
+        aspect-ratio: 200 / 320;
       }
     }
 

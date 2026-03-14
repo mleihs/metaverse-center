@@ -111,6 +111,8 @@ export class VelgSimulationCard extends LitElement {
       display: flex;
       flex-direction: column;
       gap: var(--space-3);
+      overflow: hidden;
+      min-width: 0;
     }
 
     .shard__header {
@@ -118,6 +120,7 @@ export class VelgSimulationCard extends LitElement {
       align-items: center;
       justify-content: space-between;
       gap: var(--space-2);
+      min-width: 0;
     }
 
     .shard__name {
@@ -131,6 +134,7 @@ export class VelgSimulationCard extends LitElement {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      min-width: 0;
     }
 
     velg-badge {
