@@ -12389,10 +12389,6 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
   <source>Head to the dashboard and discover at your own pace.</source>
   <target>Gehen Sie zum Dashboard und entdecken Sie in Ihrem eigenen Tempo.</target>
 </trans-unit>
-<trans-unit id="s666a66398e66846e">
-  <source>Mock Mode</source>
-  <target>Testmodus</target>
-</trans-unit>
 <trans-unit id="s1015e219880ba4ff">
   <source>Academy epoch created. Preparing training simulation.</source>
   <target>Akademie-Epoche erstellt. Trainingssimulation wird vorbereitet.</target>
@@ -13577,12 +13573,6 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 <trans-unit id="s977089f1467e7326">
   <source>1 FT</source>
 <target>1 FT</target></trans-unit>
-<trans-unit id="s6c1ce1f24962efb3">
-  <source>HI-RES ARCHIVE</source>
-<target>HOCHAUFLÖSENDES ARCHIV</target></trans-unit>
-<trans-unit id="s029df319645609bb">
-  <source>All images re-generated at 2048px. Packaged as ZIP with organized folders.</source>
-<target>Alle Bilder in 2048px neu generiert. Als ZIP mit organisierten Ordnern verpackt.</target></trans-unit>
 <trans-unit id="s3eb33b3ab959152c">
   <source>PUBLIC PROSPECTUS</source>
 <target>ÖFFENTLICHER PROSPEKT</target></trans-unit>
@@ -13733,12 +13723,6 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 <trans-unit id="s48f18aee338792b6">
   <source>[CLASSIFIED] BUREAU CLEARANCE LEVEL 4</source>
 <target>[VERSCHLUSSSACHE] BÜRO-FREIGABESTUFE 4</target></trans-unit>
-<trans-unit id="s79109f9e43b91dcc">
-  <source>Request Classified Dossier</source>
-<target>Verschlusssache Anfordern</target></trans-unit>
-<trans-unit id="s159eeb16e4f77621">
-  <source>Six classified sections. 10,000 words of deep lore: pre-arrival history, agent addenda, geographic anomalies, bleed signatures, prophetic fragments, Bureau recommendation.</source>
-<target>Sechs klassifizierte Abschnitte. 10.000 Wörter tiefe Überlieferung: Vor-Ankunft-Geschichte, Agenten-Nachträge, geographische Anomalien, Bleed-Signaturen, prophetische Fragmente, Büro-Empfehlung.</target></trans-unit>
 <trans-unit id="s462f46c057bd5571">
   <source>AUTHORIZATION COST: 2 FT</source>
 <target>AUTORISIERUNGSKOSTEN: 2 FT</target></trans-unit>
@@ -13754,9 +13738,6 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 <trans-unit id="s7aebd8e5842b8396">
   <source>BUREAU FORM 77-C // CLASSIFIED EXPANSION REQUEST</source>
 <target>BÜRO-FORMULAR 77-C // VERSCHLUSSSACHE-ERWEITERUNGSANTRAG</target></trans-unit>
-<trans-unit id="se56aa2af7113a34f">
-  <source>This will authorize the generation of six classified lore sections for this simulation. The Bureau requires full documentation of pre-arrival history, geographic anomalies, and other sensitive intelligence.</source>
-<target>Dies autorisiert die Generierung von sechs klassifizierten Überlieferungs-Abschnitten für diese Simulation. Das Büro verlangt vollständige Dokumentation der Vor-Ankunft-Geschichte, geographischer Anomalien und anderer sensibler Informationen.</target></trans-unit>
 <trans-unit id="s86ee7ad954b1b919">
   <source>BYOK ACTIVE — NO TOKEN DEDUCTION</source>
 <target>BYOK AKTIV — KEIN TOKEN-ABZUG</target></trans-unit>
@@ -14029,57 +14010,9 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 <trans-unit id="s7e171315e566d230">
   <source>UPDATED</source>
 <target>AKTUALISIERT</target></trans-unit>
-<trans-unit id="se1b6ad7e717e2512">
-  <source>Pre-Arrival History</source>
-<target>Vorgeschichte</target></trans-unit>
-<trans-unit id="s1788737137ec6d9e">
-  <source>Before</source>
-<target>Bevor</target></trans-unit>
-<trans-unit id="s3d3ccc70c81c30bf">
-  <source>the district known as</source>
-<target>das Viertel bekannt als</target></trans-unit>
-<trans-unit id="s5eade819487cb532">
-  <source>was</source>
-<target>war</target></trans-unit>
-<trans-unit id="s6b2d272cf0a48cd0">
-  <source>Bureau historians disagree on</source>
-<target>Bureau-Historiker sind sich uneinig über</target></trans-unit>
 <trans-unit id="s9a0d8a8f75d1c0e9">
   <source>REDACTED</source>
 <target>GESCHWÄRZT</target></trans-unit>
-<trans-unit id="s9409a3f8e98982f2">
-  <source>Agent Classified Addenda</source>
-<target>Geheime Agenten-Nachträge</target></trans-unit>
-<trans-unit id="s737734cc1835eebf">
-  <source>Geographic Anomalies</source>
-<target>Geografische Anomalien</target></trans-unit>
-<trans-unit id="s38a992cf98f68965">
-  <source>Cartographic anomaly detected near</source>
-<target>Kartografische Anomalie entdeckt nahe</target></trans-unit>
-<trans-unit id="sd6c8855ca669e1c5">
-  <source>Spatial geometry</source>
-<target>Raumgeometrie</target></trans-unit>
-<trans-unit id="sf48bc60eb5b653ee">
-  <source>confirmed</source>
-<target>bestätigt</target></trans-unit>
-<trans-unit id="sc54cd5f843c4358d">
-  <source>Bleed Signature Analysis</source>
-<target>Bleed-Signaturanalyse</target></trans-unit>
-<trans-unit id="s10b1441c73ffc9de">
-  <source>BLEED VECTOR</source>
-<target>BLEED-VEKTOR</target></trans-unit>
-<trans-unit id="sb154a594372afea5">
-  <source>CONTAMINATION</source>
-<target>KONTAMINATION</target></trans-unit>
-<trans-unit id="s4bfc4aefa65064bf">
-  <source>CONTAINMENT</source>
-<target>EINDÄMMUNG</target></trans-unit>
-<trans-unit id="s71e22c3401cf00e0">
-  <source>Prophetic Fragments</source>
-<target>Prophetische Fragmente</target></trans-unit>
-<trans-unit id="s4624eaf98231fbf4">
-  <source>Fragment recovered from</source>
-<target>Fragment geborgen aus</target></trans-unit>
 <trans-unit id="sc8bc45a6bf90fc7f">
   <source>CONSUMED</source>
 <target>AUFGEZEHRT</target></trans-unit>
@@ -14092,18 +14025,9 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 <trans-unit id="s77076f70301c37c4">
   <source>ILLEGIBLE</source>
 <target>UNLESERLICH</target></trans-unit>
-<trans-unit id="sd57995e5ecc2010e">
-  <source>Bureau Recommendation</source>
-<target>Bureau-Empfehlung</target></trans-unit>
 <trans-unit id="s11eecdb7d76a5803">
   <source>THREAT LEVEL</source>
 <target>BEDROHUNGSSTUFE</target></trans-unit>
-<trans-unit id="s4b24ef8afe487cbd">
-  <source>RESEARCH VALUE</source>
-<target>FORSCHUNGSWERT</target></trans-unit>
-<trans-unit id="s6cf5655b20b709a6">
-  <source>RECOMMENDED ACTION</source>
-<target>EMPFOHLENE MASSNAHME</target></trans-unit>
 <trans-unit id="s860d562fcf6c6ecb">
   <source>Dossier preview — 6 classified sections pending authorization</source>
 <target>Dossier-Vorschau — 6 geheime Abschnitte warten auf Autorisierung</target></trans-unit>
@@ -14193,13 +14117,13 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 <target>BEDROHUNG</target></trans-unit>
 <trans-unit id="s49fde0fb9da24452">
   <source>Tokens Circulating</source>
-</trans-unit>
+<target>Tokens im Umlauf</target></trans-unit>
 <trans-unit id="s7a9261e9976a5462">
   <source>Materialized</source>
-</trans-unit>
+<target>Materialisiert</target></trans-unit>
 <trans-unit id="sb9c754a5df2a1983">
   <source>AES-256 encrypted at rest. Bypass platform quota with your own keys.</source>
-</trans-unit>
+<target>AES-256-verschlüsselt im Ruhezustand. Plattform-Kontingent mit eigenen Schlüsseln umgehen.</target></trans-unit>
 <trans-unit id="s59499b0db5d46564">
   <source>Model Configuration</source>
 <target>Modellkonfiguration</target></trans-unit>
@@ -14209,6 +14133,237 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 <trans-unit id="s35429c9dc2319aea">
   <source>Development</source>
 <target>Entwicklung</target></trans-unit>
+<trans-unit id="s83aaacce14e73081">
+  <source>FULL-RES ARCHIVE</source>
+<target>VOLLAUFLÖSUNGS-ARCHIV</target></trans-unit>
+<trans-unit id="s3568ad62e98cbd68">
+  <source>All simulation images at full native resolution. Organized ZIP archive: agents, buildings, lore, and banner.</source>
+<target>Alle Simulationsbilder in voller nativer Auflösung. Organisiertes ZIP-Archiv: Agenten, Gebäude, Lore und Banner.</target></trans-unit>
+<trans-unit id="s6f9db88691a639c6">
+  <source>ARCHIVING IN PROGRESS...</source>
+<target>ARCHIVIERUNG LÄUFT...</target></trans-unit>
+<trans-unit id="s967b381cb45ab4af">
+  <source>Location breadcrumb</source>
+<target>Standort-Brotkrümel</target></trans-unit>
+<trans-unit id="sf2c21170142b7a6b">
+  <source>Initial assessment</source>
+<target>Erstbewertung</target></trans-unit>
+<trans-unit id="s063eecf7185fa22d">
+  <source>Bureau update requested. The addendum will appear shortly.</source>
+<target>Bureau-Update angefordert. Der Nachtrag erscheint in Kürze.</target></trans-unit>
+<trans-unit id="s964bc80d9a7c48ec">
+  <source>Bureau update request failed.</source>
+<target>Bureau-Update-Anfrage fehlgeschlagen.</target></trans-unit>
+<trans-unit id="sa98ae6d8f7fa30c0">
+  <source>Bureau dossier status</source>
+<target>Bureau-Dossierstatus</target></trans-unit>
+<trans-unit id="s9fd0905b2174b2c5">
+  <source>[DECLASSIFIED] BUREAU CLEARANCE LEVEL 4</source>
+<target>[FREIGEGEBEN] BUREAU-SICHERHEITSSTUFE 4</target></trans-unit>
+<trans-unit id="s7fcb3d69c5d3cdbc">
+  <source>Dossier Status: Active</source>
+<target>Dossierstatus: Aktiv</target></trans-unit>
+<trans-unit id="s68a06c55dd0b0bb9">
+  <source>Last assessment:</source>
+<target>Letzte Bewertung:</target></trans-unit>
+<trans-unit id="s38750a5c4d0e6d66">
+  <source>Bureau addenda:</source>
+<target>Bureau-Nachträge:</target></trans-unit>
+<trans-unit id="s9480f140ae03f124">
+  <source>across</source>
+<target>über</target></trans-unit>
+<trans-unit id="s5770bbe58e94e02d">
+  <source>sections</source>
+<target>Sektionen</target></trans-unit>
+<trans-unit id="sfa302b67aeeb7595">
+  <source>Request Bureau Update</source>
+<target>Bureau-Update anfordern</target></trans-unit>
+<trans-unit id="sd3683ef79a5b6399">
+  <source>Last:</source>
+<target>Zuletzt:</target></trans-unit>
+<trans-unit id="scd3898d3f56df4a9">
+  <source>Awaiting field data</source>
+<target>Warte auf Felddaten</target></trans-unit>
+<trans-unit id="scc01f3f78ad286f8">
+  <source>addenda</source>
+<target>Nachträge</target></trans-unit>
+<trans-unit id="s757a4c2248c0b9da">
+  <source>Entity</source>
+<target>Entität</target></trans-unit>
+<trans-unit id="s8567950346d22c40">
+  <source>Agent name or description</source>
+<target>Agentenname oder -beschreibung</target></trans-unit>
+<trans-unit id="s8c9c924de3cc2876">
+  <source>Budget:</source>
+<target>Budget:</target></trans-unit>
+<trans-unit id="sbee7fb969a068f3d">
+  <source>BYOK — unlimited</source>
+<target>BYOK — unbegrenzt</target></trans-unit>
+<trans-unit id="s7c270776555d5447">
+  <source>remaining (first 3 free)</source>
+<target>verbleibend (erste 3 kostenlos)</target></trans-unit>
+<trans-unit id="s4cd61b617a6e50ec">
+  <source>Requesting...</source>
+<target>Wird angefordert...</target></trans-unit>
+<trans-unit id="s015377462f549b1f">
+  <source>Request Update</source>
+<target>Update anfordern</target></trans-unit>
+<trans-unit id="s9eec5e4d6996de32">
+  <source>Pre-Arrival History (~2,000 words)</source>
+<target>Vorgeschichte (~2.000 Wörter)</target></trans-unit>
+<trans-unit id="s75d6795c299c1161">
+  <source>What existed before this shard materialized? Competing theories from Bureau historians. Archaeological evidence recovered near</source>
+<target>Was existierte, bevor dieser Shard materialisierte? Konkurrierende Theorien von Bureau-Historikern. Geborgene archäologische Beweise deuten auf</target></trans-unit>
+<trans-unit id="sa9bab0cf2f390e62">
+  <source>suggests</source>
+<target>deuten auf</target></trans-unit>
+<trans-unit id="sa42d434a699db39e">
+  <source>Temporal anomalies, contested origin myths, and the</source>
+<target>Temporale Anomalien, umstrittene Ursprungsmythen und der</target></trans-unit>
+<trans-unit id="s7f9938cc03ed9ca8">
+  <source>incident of</source>
+<target>Vorfall von</target></trans-unit>
+<trans-unit id="s420647da47620e73">
+  <source>Agent Classified Addenda (~2,500 words)</source>
+<target>Geheime Agenten-Nachträge (~2.500 Wörter)</target></trans-unit>
+<trans-unit id="s3b7dae19d7f68624">
+  <source>Per-agent intelligence supplement.</source>
+<target>Nachrichtendienstliche Ergänzung pro Agent.</target></trans-unit>
+<trans-unit id="sdf9ba1f73c2a839c">
+  <source>Full dossier for every agent. Cross-references mapped.</source>
+<target>Vollständiges Dossier für jeden Agenten. Querverweise kartiert.</target></trans-unit>
+<trans-unit id="s78fa6de29af1e00f">
+  <source>Geographic Anomalies (~1,500 words)</source>
+<target>Geografische Anomalien (~1.500 Wörter)</target></trans-unit>
+<trans-unit id="s35502dfbe2abc539">
+  <source>Cartographic breach detected near</source>
+<target>Kartografischer Bruch in der Nähe von</target></trans-unit>
+<trans-unit id="s64822333a6f32d63">
+  <source>Spatial geometry contradicts</source>
+<target>Räumliche Geometrie widerspricht</target></trans-unit>
+<trans-unit id="sa64c6148ad272116">
+  <source>Bureau field surveys.</source>
+<target>Bureau-Feldvermessungen.</target></trans-unit>
+<trans-unit id="s7b30d4a2096f1fac">
+  <source>exhibits properties consistent with</source>
+<target>weist Eigenschaften auf, die konsistent sind mit</target></trans-unit>
+<trans-unit id="sfdb1aa0d0965d2dc">
+  <source>Annotated zone analysis for</source>
+<target>Kommentierte Zonenanalyse für</target></trans-unit>
+<trans-unit id="se24dae01cbb16195">
+  <source>Bleed Signature Analysis (~1,500 words)</source>
+<target>Bleed-Signaturanalyse (~1.500 Wörter)</target></trans-unit>
+<trans-unit id="s9ae481b68086c7dc">
+  <source>Cross-shard contamination vectors. Which adjacent realities bleed into this shard and why.</source>
+<target>Cross-Shard-Kontaminationsvektoren. Welche benachbarten Realitäten in diesen Shard bluten und warum.</target></trans-unit>
+<trans-unit id="sd55eac1ba2ce25f7">
+  <source>CONTAINMENT STATUS</source>
+<target>EINDÄMMUNGSSTATUS</target></trans-unit>
+<trans-unit id="sa78fad6ae38b6d28">
+  <source>DOCUMENTED INCURSIONS</source>
+<target>DOKUMENTIERTE EINBRÜCHE</target></trans-unit>
+<trans-unit id="s8b0a85e76e7e90db">
+  <source>Prophetic Fragments (~1,000 words)</source>
+<target>Prophetische Fragmente (~1.000 Wörter)</target></trans-unit>
+<trans-unit id="s9350d4dafb7d3103">
+  <source>Recovered documents, dream transcriptions, inscriptions.</source>
+<target>Geborgene Dokumente, Traumprotokolle, Inschriften.</target></trans-unit>
+<trans-unit id="s17a70f94cd74115b">
+  <source>Reliability</source>
+<target>Zuverlässigkeit</target></trans-unit>
+<trans-unit id="sbd8ba6e005512ce5">
+  <source>Unreliable narration with degradation markers.</source>
+<target>Unzuverlässige Erzählung mit Verfallsmarkern.</target></trans-unit>
+<trans-unit id="s799d5441ac2e5ee1">
+  <source>Bureau Recommendation (~500 words)</source>
+<target>Bureau-Empfehlung (~500 Wörter)</target></trans-unit>
+<trans-unit id="s7818ed1eea70237b">
+  <source>Official Bureau assessment. Threat designation, research value, recommended actions.</source>
+<target>Offizielle Bureau-Bewertung. Bedrohungseinstufung, Forschungswert, empfohlene Maßnahmen.</target></trans-unit>
+<trans-unit id="s85f5007f30c4411d">
+  <source>Institutional authority. Dry humor. Final word.</source>
+<target>Institutionelle Autorität. Trockener Humor. Letztes Wort.</target></trans-unit>
+<trans-unit id="s70a55e76cf29f00e">
+  <source>Authorize Classified Expansion</source>
+<target>Geheime Erweiterung autorisieren</target></trans-unit>
+<trans-unit id="s1dd00c306f89813d">
+  <source>Unlock the six ARCANUM sections previewed above. The Bureau's Senior Classified Analyst will generate ~9,000 words of deep intelligence: the shard's hidden pre-arrival history, classified addenda for every agent, annotated geographic anomalies, cross-shard bleed analysis, recovered prophetic fragments, and the Bureau's official threat assessment.</source>
+<target>Schalte die sechs oben vorgestellten ARCANUM-Sektionen frei. Der leitende geheime Analyst des Bureaus generiert ~9.000 Wörter tiefgehende</target></trans-unit>
+<trans-unit id="se500bb17d22671aa">
+  <source>This will generate the six ARCANUM sections shown in the preview above — ALPHA through ZETA. Each section is AI-generated using the simulation's agents, buildings, zones, and existing lore as source material. Generation takes 1-3 minutes. The new sections will appear below the existing lore scroll as CLASSIFIED chapters.</source>
+<target>Dies generiert die sechs oben vorgestellten ARCANUM-Sektionen — ALPHA bis ZETA. Jede Sektion wird KI-generiert</target></trans-unit>
+<trans-unit id="sf709ded3be2f6501">
+  <source>Toggle Language</source>
+<target>Sprache umschalten</target></trans-unit>
+<trans-unit id="sb7afff3ab2b8ae46">
+  <source>GitHub Repository</source>
+<target>GitHub-Repository</target></trans-unit>
+<trans-unit id="s4b305030ec421c71">
+  <source>Command palette</source>
+<target>Befehlspalette</target></trans-unit>
+<trans-unit id="s9b33eeab1074f164">
+  <source>type to search...</source>
+<target>Suche eingeben...</target></trans-unit>
+<trans-unit id="s991d216e6efc157c">
+  <source>No results</source>
+<target>Keine Ergebnisse</target></trans-unit>
+<trans-unit id="s6485a41aa1424666">
+  <source>navigate</source>
+<target>navigieren</target></trans-unit>
+<trans-unit id="sbd76100bd58c9c0d">
+  <source>select</source>
+<target>auswählen</target></trans-unit>
+<trans-unit id="s9ec2699513c0f9c3">
+  <source>close</source>
+<target>schließen</target></trans-unit>
+<trans-unit id="s3605c59929642487">
+  <source>${this.label} navigation</source>
+<target>${this.label}-Navigation</target></trans-unit>
+<trans-unit id="sc26501e3ade7da3c">
+  <source>Tools</source>
+<target>Werkzeuge</target></trans-unit>
+<trans-unit id="s9e864dd5c110b8f3">
+  <source>Sprache: EN → DE</source>
+<target>Sprache: EN → DE</target></trans-unit>
+<trans-unit id="s7a9bfeca36bfbdb3">
+  <source>Language: DE → EN</source>
+<target>Language: DE → EN</target></trans-unit>
+<trans-unit id="s2270e51a2a6c78dc">
+  <source>Mock Mode Active</source>
+<target>Mock-Modus aktiv</target></trans-unit>
+<trans-unit id="s6abb1cd87fe0114e">
+  <source>Home</source>
+<target>Startseite</target></trans-unit>
+<trans-unit id="s2f9ea819bf21f1bb">
+  <source>OPS</source>
+<target>OPS</target></trans-unit>
+<trans-unit id="sa5b918ea517461b7">
+  <source>INTEL</source>
+<target>INTEL</target></trans-unit>
+<trans-unit id="saaa76b98269405b7">
+  <source>Open command palette</source>
+<target>Befehlspalette öffnen</target></trans-unit>
+<trans-unit id="s272d3f2baec9b775">
+  <source>Command palette (Ctrl+K)</source>
+<target>Befehlspalette (Strg+K)</target></trans-unit>
+<trans-unit id="s981bc419fa7846b6">
+  <source>SYS</source>
+<target>SYS</target></trans-unit>
+<trans-unit id="sbfb90c593d2625c1">
+  <source>Select Shard</source>
+<target>Shard auswählen</target></trans-unit>
+<trans-unit id="s2d222aba03f7d03d">
+  <source>Simulation switcher</source>
+<target>Simulationsumschalter</target></trans-unit>
+<trans-unit id="s9d2af2acb4c70500">
+  <source>Search shards...</source>
+<target>Shards durchsuchen...</target></trans-unit>
+<trans-unit id="s95210477031b8b53">
+  <source>No shards found</source>
+<target>Keine Shards gefunden</target></trans-unit>
+<trans-unit id="sc402e30752117741">
+  <source>News articles</source>
+<target>Nachrichtenartikel</target></trans-unit>
 
 </body>
 </file>
