@@ -560,6 +560,8 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
       .sys-item { transition: none !important; }
     }
 
+    .dev-mobile { display: none; }
+
     /* ── Mobile ── */
 
     @media (max-width: 640px) {
@@ -576,6 +578,7 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
 
       .header__mark { display: flex; }
       .header__menu-btn { display: flex; }
+      .dev-mobile { display: block; }
 
       .header__title { display: none; }
       .header__center { display: none; }
@@ -928,6 +931,8 @@ m-988 -63 c33 -44 61 -87 61 -97 0 -22 62 -135 103 -189 l31 -40 -42 39 c-42
             label=${msg('SYS')}
             .icon=${icons.gear(12)}
           >${this._renderSysPanel()}</velg-header-cluster>
+
+          <div class="dev-mobile"><velg-dev-account-switcher></velg-dev-account-switcher></div>
 
           ${appState.isAuthenticated.value
             ? html`<velg-user-menu></velg-user-menu>`
