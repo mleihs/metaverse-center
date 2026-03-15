@@ -146,6 +146,7 @@ export class SupabaseAuthService {
       appState.setUser(null);
       appState.setAccessToken(null);
       appState.setArchitectStatus(false);
+      appState.setPlatformAdmin(false);
       appState.setForgeRequestStatus('none');
       appState.setPendingForgeRequestCount(0);
       sessionStorage.removeItem(CLEARANCE_TOAST_KEY);

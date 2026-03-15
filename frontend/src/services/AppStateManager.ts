@@ -1,4 +1,4 @@
-import { computed, signal } from '@preact/signals-core';
+import { computed, type ReadonlySignal, signal } from '@preact/signals-core';
 import type { User } from '@supabase/supabase-js';
 import type { BleedStatus, ThresholdState } from '../types/health.js';
 import type {
@@ -62,7 +62,8 @@ export class AppStateManager {
     return role === 'owner' || role === 'admin' || role === 'editor';
   });
 
-  readonly isPlatformAdmin = computed(() => this.user.value?.email === 'matthias@leihs.at');
+  private readonly _isPlatformAdmin = signal<boolean>(false);
+  readonly isPlatformAdmin: ReadonlySignal<boolean> = this._isPlatformAdmin;
 
   readonly canForge = computed(() => this.isArchitect.value || this.isPlatformAdmin.value);
 
@@ -82,6 +83,10 @@ export class AppStateManager {
 
   setArchitectStatus(isArchitect: boolean): void {
     this.isArchitect.value = isArchitect;
+  }
+
+  setPlatformAdmin(value: boolean): void {
+    this._isPlatformAdmin.value = value;
   }
 
   setForgeRequestStatus(status: 'none' | ForgeAccessStatus): void {

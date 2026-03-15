@@ -1,4 +1,4 @@
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { Router } from '@lit-labs/router';
 import type { TemplateResult } from 'lit';
 import { css, html, LitElement, nothing } from 'lit';
@@ -6,6 +6,7 @@ import { customElement, state } from 'lit/decorators.js';
 import { analyticsService } from './services/AnalyticsService.js';
 import { appState } from './services/AppStateManager.js';
 import { epochsApi } from './services/api/EpochsApiService.js';
+import { forgeApi } from './services/api/ForgeApiService.js';
 import { membersApi, settingsApi, simulationsApi, taxonomiesApi } from './services/api/index.js';
 import { usersApi } from './services/api/UsersApiService.js';
 import { localeService } from './services/i18n/locale-service.js';
@@ -486,9 +487,10 @@ export class VelgApp extends LitElement {
         authService.initialize(),
         this._fetchMockMode(),
       ]);
-      // After auth is ready, check onboarding state for authenticated users
+      // After auth is ready, fetch /me (admin status + onboarding) before resolving
+      // _authReady — route guards for /admin and /forge depend on isPlatformAdmin.
       if (appState.isAuthenticated.value) {
-        this._fetchOnboardingState();
+        await this._fetchOnboardingState();
       }
       // Load simulations for all users (public-first: guests browse too)
       this._loadSimulations();
@@ -519,12 +521,45 @@ export class VelgApp extends LitElement {
         const data = resp.data as unknown as Record<string, unknown>;
         const completed = data.onboarding_completed !== false;
         appState.setOnboardingCompleted(completed);
+        appState.setPlatformAdmin(data.is_platform_admin === true);
         if (!completed) {
           this._showOnboarding = true;
+        }
+        // Update GA4 with correct admin status now that /me has resolved
+        const userType = appState.isPlatformAdmin.value
+          ? 'admin'
+          : appState.isArchitect.value
+            ? 'architect'
+            : 'member';
+        analyticsService.setUserProperties({
+          user_type: userType,
+          has_forge_access: appState.canForge.value,
+          locale: localeService.currentLocale,
+        });
+        // Admin: check pending clearance requests
+        if (appState.isPlatformAdmin.value) {
+          this._checkPendingForgeRequests();
         }
       }
     } catch {
       // Non-critical — default to onboarding completed
+    }
+  }
+
+  private async _checkPendingForgeRequests(): Promise<void> {
+    try {
+      const countResp = await forgeApi.getPendingRequestCount();
+      if (countResp.success && typeof countResp.data === 'number') {
+        appState.setPendingForgeRequestCount(countResp.data);
+        const toastKey = 'velg_admin_pending_toast_shown';
+        if (countResp.data > 0 && !sessionStorage.getItem(toastKey)) {
+          const { VelgToast } = await import('./components/shared/Toast.js');
+          VelgToast.info(msg(str`${countResp.data} pending clearance request(s)`));
+          sessionStorage.setItem(toastKey, '1');
+        }
+      }
+    } catch {
+      // Non-critical
     }
   }
 

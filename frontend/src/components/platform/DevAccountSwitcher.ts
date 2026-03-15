@@ -15,12 +15,9 @@ import { appState } from '../../services/AppStateManager.js';
 import { supabase } from '../../services/supabase/client.js';
 import type { AdminUser } from '../../types/index.js';
 
-const DEV_PASSWORD = 'velgarien-dev-2026';
+const DEV_PASSWORD = 'met123';
 const GATE_PASSWORD = 'met123';
 const GATE_STORAGE_KEY = 'dev-switcher-unlocked';
-
-/** Platform admin emails — must match backend config. */
-const ADMIN_EMAILS = new Set(['matthias@leihs.at']);
 
 interface ResolvedUser {
   id: string;
@@ -30,10 +27,10 @@ interface ResolvedUser {
   lastSignIn: string;
 }
 
-function resolveUser(u: AdminUser): ResolvedUser {
+function resolveUser(u: AdminUser, isCurrentUser: boolean): ResolvedUser {
   const meta = u.raw_user_meta_data ?? {};
   const displayName = (meta.display_name as string) || (meta.name as string) || '';
-  const isAdmin = ADMIN_EMAILS.has(u.email);
+  const isAdmin = isCurrentUser && appState.isPlatformAdmin.value;
   const role: ResolvedUser['role'] = isAdmin ? 'admin' : u.is_architect ? 'architect' : 'user';
   const lastSignIn = u.last_sign_in_at
     ? new Date(u.last_sign_in_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
@@ -526,7 +523,8 @@ export class VelgDevAccountSwitcher extends LitElement {
 
       const payload = data as { users: AdminUser[]; total: number } | null;
       const raw = payload?.users ?? [];
-      this._users = raw.map(resolveUser);
+      const currentEmail = this._currentEmail;
+      this._users = raw.map((u) => resolveUser(u, u.email === currentEmail));
       this._userCache = this._users;
     } catch (e) {
       this._fetchError = e instanceof Error ? e.message : 'Network error';

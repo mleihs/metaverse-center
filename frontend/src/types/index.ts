@@ -707,6 +707,7 @@ export interface UserProfile {
   email: string;
   display_name?: string;
   avatar_url?: string;
+  is_platform_admin?: boolean;
   created_at: string;
   updated_at: string;
 }

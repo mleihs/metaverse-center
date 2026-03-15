@@ -27,6 +27,7 @@ class UserWithMemberships(BaseModel):
     memberships: list[MembershipInfo] = []
     onboarding_completed: bool = True
     academy_epochs_played: int = 0
+    is_platform_admin: bool = False
 
 
 class ActiveEpochParticipation(BaseModel):
