@@ -159,7 +159,7 @@
 's08849b780816c366': `Das Bluten — Wo Scherben aufeinandertreffen und die Realität dünn wird`,
 's0887e397b1cac2d6': `Niedrig — verblasst schnell`,
 's08888df1e4e18089': `KI-Gegner mit fünf Persönlichkeitsarchetypen — Wächter, Kriegsherr, Diplomat, Stratege und Chaos — jeweils mit eigenständigem strategischen Verhalten. Bots nutzen dieselben Einsatz- und Bewertungsmechaniken wie menschliche Spieler, konfigurierbar auf drei Schwierigkeitsstufen.`,
-'s088daa83c3de37d6': `LAGEZENTRUM BETRETEN`,
+'s088daa83c3de37d6': `KOMMANDOZENTRALE BETRETEN`,
 's088f4374ae33fa8f': `Operativpfade`,
 's089a87a53b3b77e5': `Thema-Vorlage`,
 's089c5507b545b54d': `als`,
