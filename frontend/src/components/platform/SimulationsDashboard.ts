@@ -865,13 +865,14 @@ export class VelgSimulationsDashboard extends LitElement {
 
     .agent-spotlight__card {
       display: flex;
-      align-items: center;
-      gap: var(--space-4);
-      padding: var(--space-4);
+      flex-direction: column;
+      gap: 0;
+      padding: 0;
       border: 1px solid var(--color-gray-800);
       background: var(--color-gray-900);
       cursor: pointer;
       transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+      overflow: hidden;
     }
 
     .agent-spotlight__card:hover {
@@ -879,9 +880,25 @@ export class VelgSimulationsDashboard extends LitElement {
       box-shadow: 0 0 20px rgba(245, 158, 11, 0.06);
     }
 
+    .agent-spotlight__card:hover .agent-spotlight__cta {
+      color: #f59e0b;
+      letter-spacing: 0.14em;
+    }
+
+    .agent-spotlight__card:hover .agent-spotlight__portrait {
+      border-color: var(--color-gray-500);
+    }
+
     .agent-spotlight__card:focus-visible {
       outline: 2px solid var(--color-accent-amber);
       outline-offset: 2px;
+    }
+
+    .agent-spotlight__header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      padding: var(--space-4);
     }
 
     .agent-spotlight__portrait {
@@ -891,6 +908,7 @@ export class VelgSimulationsDashboard extends LitElement {
       object-fit: cover;
       border: 2px solid var(--color-gray-700);
       flex-shrink: 0;
+      transition: border-color var(--transition-fast);
     }
 
     .agent-spotlight__info {
@@ -919,6 +937,30 @@ export class VelgSimulationsDashboard extends LitElement {
       letter-spacing: 0.08em;
       color: var(--color-gray-400);
       margin-top: 2px;
+    }
+
+    .agent-spotlight__character {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1.5;
+      color: var(--color-gray-500);
+      padding: 0 var(--space-4);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .agent-spotlight__cta {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--color-gray-500);
+      padding: var(--space-3) var(--space-4);
+      border-top: 1px solid var(--color-gray-800);
+      text-align: right;
+      transition: color var(--transition-fast), letter-spacing var(--transition-fast);
     }
 
     /* ── Resonance Ticker ── */
@@ -1405,17 +1447,19 @@ export class VelgSimulationsDashboard extends LitElement {
   private async _loadSpotlightAgent(): Promise<void> {
     try {
       const allSims = [...this._simulations, ...this._allSimulations];
-      const simWithAgents = allSims.find((s) => s.agent_count && s.agent_count > 0);
-      if (!simWithAgents) return;
+      const simsWithAgents = allSims.filter((s) => s.agent_count && s.agent_count > 0);
+      if (simsWithAgents.length === 0) return;
 
-      const res = await agentsApi.listPublic(simWithAgents.id, { limit: '5' });
+      // Pick a random simulation, then a random agent from it
+      const sim = simsWithAgents[Math.floor(Math.random() * simsWithAgents.length)];
+      const res = await agentsApi.listPublic(sim.id, { limit: '10' });
       if (!res.success || !res.data) return;
 
       const agents = (res.data as Agent[]).filter((a) => a.portrait_image_url);
       if (agents.length === 0) return;
 
       this._spotlightAgent = agents[Math.floor(Math.random() * agents.length)];
-      this._spotlightSimSlug = simWithAgents.slug;
+      this._spotlightSimSlug = sim.slug;
     } catch {
       // Non-critical — placeholder remains
     }
@@ -1945,26 +1989,32 @@ export class VelgSimulationsDashboard extends LitElement {
               role="link"
               tabindex="0"
               aria-label="${agentAltText(agent)}"
-              @click=${() => this._navigateTo(`/simulations/${this._spotlightSimSlug}/agents/${agent.id}`)}
+              @click=${() => this._navigateTo(`/simulations/${this._spotlightSimSlug}/agents`)}
               @keydown=${(e: KeyboardEvent) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  this._navigateTo(`/simulations/${this._spotlightSimSlug}/agents/${agent.id}`);
+                  this._navigateTo(`/simulations/${this._spotlightSimSlug}/agents`);
                 }
               }}
             >
-              <img
-                class="agent-spotlight__portrait"
-                src=${agent.portrait_image_url!}
-                alt=${agentAltText(agent)}
-                loading="lazy"
-              />
-              <div class="agent-spotlight__info">
-                <div class="agent-spotlight__name">${agent.name}</div>
-                ${agent.primary_profession
-                  ? html`<div class="agent-spotlight__profession">${agent.primary_profession}</div>`
-                  : nothing}
+              <div class="agent-spotlight__header">
+                <img
+                  class="agent-spotlight__portrait"
+                  src=${agent.portrait_image_url!}
+                  alt=${agentAltText(agent)}
+                  loading="lazy"
+                />
+                <div class="agent-spotlight__info">
+                  <div class="agent-spotlight__name">${agent.name}</div>
+                  ${agent.primary_profession
+                    ? html`<div class="agent-spotlight__profession">${t(agent, 'primary_profession')}</div>`
+                    : nothing}
+                </div>
               </div>
+              ${t(agent, 'character')
+                ? html`<div class="agent-spotlight__character">${t(agent, 'character')}</div>`
+                : nothing}
+              <div class="agent-spotlight__cta">${msg('View Dossier')} &rarr;</div>
             </div>
           `
           : html`
