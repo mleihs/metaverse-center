@@ -8,10 +8,9 @@ import {
   adminApi,
 } from '../../services/api/AdminApiService.js';
 import { forgeApi } from '../../services/api/index.js';
-import { appState } from '../../services/AppStateManager.js';
-import type { ForgeAccessRequestWithEmail } from '../../types/index.js';
 import { settingsStyles } from '../shared/settings-styles.js';
 import { VelgToast } from '../shared/Toast.js';
+import '../forge/ClearanceQueue.js';
 
 /**
  * AdminForgeTab — Global Simulation Forge settings, token economy admin tools,
@@ -215,165 +214,6 @@ export class VelgAdminForgeTab extends LitElement {
         outline: none;
         border-color: var(--color-accent-amber);
         box-shadow: 0 0 0 1px var(--color-accent-amber), 0 0 12px rgba(245, 158, 11, 0.1);
-      }
-
-      /* ── Clearance Requests ── */
-
-      .request-card {
-        background: var(--color-surface);
-        border: 1px solid var(--color-border);
-        border-left: 3px solid var(--color-warning, #f59e0b);
-        padding: var(--space-4);
-        margin-bottom: var(--space-3);
-        transition: border-color var(--transition-fast);
-      }
-
-      .request-card:hover {
-        border-left-color: var(--color-accent-amber);
-      }
-
-      .request-card__header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: var(--space-2);
-      }
-
-      .request-card__email {
-        font-family: var(--font-mono, 'SF Mono', monospace);
-        font-size: var(--text-sm);
-        color: var(--color-accent-amber);
-        font-weight: 600;
-      }
-
-      .request-card__date {
-        font-family: var(--font-mono, 'SF Mono', monospace);
-        font-size: var(--text-xs);
-        color: var(--color-text-muted);
-      }
-
-      .request-card__message {
-        font-family: var(--font-mono, 'SF Mono', monospace);
-        font-size: var(--text-sm);
-        color: var(--color-text-secondary);
-        font-style: italic;
-        padding: var(--space-2) var(--space-3);
-        background: var(--color-surface-sunken);
-        border: 1px dashed var(--color-border);
-        margin-bottom: var(--space-3);
-        line-height: 1.6;
-      }
-
-      .request-card__notes-input {
-        width: 100%;
-        box-sizing: border-box;
-        font-family: var(--font-mono, 'SF Mono', monospace);
-        font-size: var(--text-sm);
-        padding: var(--space-2) var(--space-3);
-        background: var(--color-surface);
-        border: 1px solid var(--color-border);
-        color: var(--color-text-primary);
-        min-height: 60px;
-        resize: vertical;
-        margin-bottom: var(--space-3);
-        transition: border-color var(--transition-fast);
-      }
-
-      .request-card__notes-input:focus {
-        outline: none;
-        border-color: var(--color-accent-amber);
-        box-shadow: 0 0 0 1px var(--color-accent-amber);
-      }
-
-      .request-card__notes-label {
-        font-family: var(--font-brutalist, 'Courier New', monospace);
-        font-size: var(--text-xs);
-        text-transform: uppercase;
-        letter-spacing: var(--tracking-wide);
-        color: var(--color-text-muted);
-        margin-bottom: var(--space-1);
-      }
-
-      .request-card__actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: var(--space-3);
-      }
-
-      .btn-approve {
-        padding: var(--space-2) var(--space-4);
-        font-family: var(--font-brutalist, 'Courier New', monospace);
-        font-weight: 900;
-        font-size: var(--text-sm);
-        text-transform: uppercase;
-        letter-spacing: var(--tracking-wide);
-        background: var(--color-success);
-        color: var(--color-gray-950);
-        border: none;
-        cursor: pointer;
-        transition: all var(--transition-fast);
-      }
-
-      .btn-approve:hover {
-        filter: brightness(1.15);
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(74, 222, 128, 0.3);
-      }
-
-      .btn-approve:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        pointer-events: none;
-      }
-
-      .btn-reject {
-        padding: var(--space-2) var(--space-4);
-        font-family: var(--font-brutalist, 'Courier New', monospace);
-        font-weight: 900;
-        font-size: var(--text-sm);
-        text-transform: uppercase;
-        letter-spacing: var(--tracking-wide);
-        background: transparent;
-        color: var(--color-danger);
-        border: 1px solid var(--color-danger);
-        cursor: pointer;
-        transition: all var(--transition-fast);
-      }
-
-      .btn-reject:hover {
-        background: var(--color-danger);
-        color: var(--color-gray-950);
-        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
-      }
-
-      .btn-reject:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        pointer-events: none;
-      }
-
-      .empty-state {
-        font-family: var(--font-mono, 'SF Mono', monospace);
-        font-size: var(--text-sm);
-        color: var(--color-text-muted);
-        text-align: center;
-        padding: var(--space-8) 0;
-        letter-spacing: 1px;
-        opacity: 0.6;
-      }
-
-      .empty-state::before {
-        content: '//';
-        margin-right: 6px;
-        color: var(--color-accent-amber);
-        opacity: 0.5;
-      }
-
-      .empty-state::after {
-        content: '//';
-        margin-left: 6px;
-        color: var(--color-accent-amber);
-        opacity: 0.5;
       }
 
       /* ── Tables (shared) ── */
@@ -596,23 +436,56 @@ export class VelgAdminForgeTab extends LitElement {
         overflow-x: auto;
       }
 
-      /* ── Clearance count badge ── */
+      /* ── Shared utility styles (used by grant form + purchase ledger) ── */
 
-      .request-count {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 18px;
-        height: 18px;
-        padding: 0 5px;
-        border-radius: 2px;
-        background: var(--color-accent-amber);
+      .btn-approve {
+        padding: var(--space-2) var(--space-4);
+        font-family: var(--font-brutalist, 'Courier New', monospace);
+        font-weight: 900;
+        font-size: var(--text-sm);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-wide);
+        background: var(--color-success);
         color: var(--color-gray-950);
+        border: none;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+      }
+
+      .btn-approve:hover {
+        filter: brightness(1.15);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(74, 222, 128, 0.3);
+      }
+
+      .btn-approve:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+      }
+
+      .empty-state {
         font-family: var(--font-mono, 'SF Mono', monospace);
-        font-size: 10px;
-        font-weight: 700;
-        margin-left: var(--space-2);
-        animation: amber-pulse 2s ease infinite;
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+        text-align: center;
+        padding: var(--space-8) 0;
+        letter-spacing: 1px;
+        opacity: 0.6;
+      }
+
+      .empty-state::before {
+        content: '//';
+        margin-right: 6px;
+        color: var(--color-accent-amber);
+        opacity: 0.5;
+      }
+
+      .empty-state::after {
+        content: '//';
+        margin-left: 6px;
+        color: var(--color-accent-amber);
+        opacity: 0.5;
       }
     `,
   ];
@@ -628,11 +501,6 @@ export class VelgAdminForgeTab extends LitElement {
   @state() private _savingBYOK = false;
   @state() private _byokSystemEnabled = false;
   @state() private _byokAccessPolicy: 'none' | 'all' | 'per_user' = 'per_user';
-
-  // ── Clearance Requests state ──
-  @state() private _pendingRequests: ForgeAccessRequestWithEmail[] = [];
-  @state() private _requestNotes: Record<string, string> = {};
-  @state() private _reviewingId: string | null = null;
 
   // ── Token Economy state ──
   @state() private _economyStats: TokenEconomyStats | null = null;
@@ -657,7 +525,6 @@ export class VelgAdminForgeTab extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     this._loadStats();
-    this._loadPendingRequests();
     this._loadEconomyStats();
     this._loadBundles();
     this._loadPurchases();
@@ -676,17 +543,6 @@ export class VelgAdminForgeTab extends LitElement {
       }
     } catch {
       VelgToast.error(msg('Failed to load forge stats.'));
-    }
-  }
-
-  private async _loadPendingRequests() {
-    try {
-      const resp = await forgeApi.listPendingRequests();
-      if (resp.success && resp.data) {
-        this._pendingRequests = resp.data;
-      }
-    } catch {
-      // Non-critical
     }
   }
 
@@ -741,43 +597,6 @@ export class VelgAdminForgeTab extends LitElement {
   }
 
   // ── Actions ──
-
-  private async _reviewRequest(id: string, action: 'approve' | 'reject') {
-    const { VelgConfirmDialog } = await import('../shared/ConfirmDialog.js');
-    const actionLabel = action === 'approve' ? msg('Approve') : msg('Reject');
-    const confirmed = await VelgConfirmDialog.show({
-      title: `${actionLabel} ${msg('Clearance Request')}`,
-      message: action === 'approve'
-        ? msg('This will grant the user Architect clearance and send a notification email.')
-        : msg('This will deny the clearance request and notify the user.'),
-      confirmLabel: actionLabel,
-      variant: action === 'reject' ? 'danger' : 'default',
-    });
-    if (!confirmed) return;
-
-    this._reviewingId = id;
-    try {
-      const notes = this._requestNotes[id] || undefined;
-      const resp = await forgeApi.reviewRequest(id, action, notes);
-      if (resp.success) {
-        VelgToast.success(
-          action === 'approve'
-            ? msg('Clearance granted successfully.')
-            : msg('Clearance request rejected.'),
-        );
-        this._pendingRequests = this._pendingRequests.filter((r) => r.id !== id);
-        const { [id]: _, ...remainingNotes } = this._requestNotes;
-        this._requestNotes = remainingNotes;
-        appState.setPendingForgeRequestCount(this._pendingRequests.length);
-      } else {
-        VelgToast.error(msg('Review failed.'));
-      }
-    } catch {
-      VelgToast.error(msg('An unexpected error occurred.'));
-    } finally {
-      this._reviewingId = null;
-    }
-  }
 
   private async _toggleBundleActive(bundle: AdminBundleEntry) {
     const newActive = !bundle.is_active;
@@ -1029,7 +848,7 @@ export class VelgAdminForgeTab extends LitElement {
         ${this._renderTokenEconomy()}
 
         <!-- SEC-03: Clearance Requests -->
-        ${this._renderClearanceRequests()}
+        <velg-clearance-queue variant="full"></velg-clearance-queue>
 
         <!-- SEC-04 / SEC-05: Bundles + Grant (side by side on wide) -->
         ${this._renderBundleManagement()}
@@ -1521,78 +1340,6 @@ export class VelgAdminForgeTab extends LitElement {
     `;
   }
 
-  // ── Section: Clearance Requests ──
-
-  private _renderClearanceRequests() {
-    const count = this._pendingRequests.length;
-    return html`
-      <div class="forge-section">
-        <div class="forge-section__header">
-          <span class="forge-section__code">SEC-03</span>
-          <h3 class="forge-section__title">
-            ${msg('Clearance Requests')}
-            ${count > 0 ? html`<span class="request-count">${count}</span>` : nothing}
-          </h3>
-        </div>
-        <div class="forge-section__desc">${msg('Pending clearance upgrade requests from Field Observers.')}</div>
-        <div class="forge-section__divider"></div>
-
-        ${this._pendingRequests.length === 0
-          ? html`<div class="empty-state">// ${msg('No Pending Clearance Requests')} //</div>`
-          : this._pendingRequests.map((req) => this._renderRequestCard(req))
-        }
-      </div>
-    `;
-  }
-
-  private _renderRequestCard(req: ForgeAccessRequestWithEmail) {
-    const isReviewing = this._reviewingId === req.id;
-    return html`
-      <div class="request-card">
-        <div class="request-card__header">
-          <span class="request-card__email">${req.user_email}</span>
-          <span class="request-card__date">${this._formatDate(req.created_at)}</span>
-        </div>
-
-        ${req.message
-          ? html`<div class="request-card__message">&ldquo;${req.message}&rdquo;</div>`
-          : nothing
-        }
-
-        <div class="request-card__notes-label">${msg('Admin notes:')}</div>
-        <textarea
-          class="request-card__notes-input"
-          placeholder=${msg('Optional notes for the user...')}
-          maxlength="500"
-          aria-label=${msg('Admin notes')}
-          .value=${this._requestNotes[req.id] ?? ''}
-          @input=${(e: Event) => {
-            this._requestNotes = {
-              ...this._requestNotes,
-              [req.id]: (e.target as HTMLTextAreaElement).value,
-            };
-          }}
-        ></textarea>
-
-        <div class="request-card__actions">
-          <button
-            class="btn-reject"
-            ?disabled=${isReviewing}
-            @click=${() => this._reviewRequest(req.id, 'reject')}
-          >
-            ${msg('Reject')}
-          </button>
-          <button
-            class="btn-approve"
-            ?disabled=${isReviewing}
-            @click=${() => this._reviewRequest(req.id, 'approve')}
-          >
-            ${isReviewing ? msg('Processing...') : msg('Approve')} &#10003;
-          </button>
-        </div>
-      </div>
-    `;
-  }
 }
 
 declare global {

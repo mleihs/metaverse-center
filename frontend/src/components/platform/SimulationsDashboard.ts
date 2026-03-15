@@ -26,6 +26,7 @@ import './SimulationCard.js';
 import '../resonance/ResonanceMonitor.js';
 import '../epoch/AcademyEpochCard.js';
 import '../forge/ClearanceApplicationCard.js';
+import '../forge/ClearanceQueue.js';
 import '../shared/VelgBadge.js';
 import '../shared/VelgGameCard.js';
 import '../shared/PlatformFooter.js';
@@ -1578,6 +1579,9 @@ export class VelgSimulationsDashboard extends LitElement {
       ${this._renderCommandStrip(userState, boot)}
       ${this._renderTremorBanner()}
       ${userState === 'power_user' ? this._renderAdminBar() : nothing}
+      ${userState === 'power_user' && appState.isPlatformAdmin.value
+        ? html`<velg-clearance-queue variant="compact"></velg-clearance-queue>`
+        : nothing}
       ${userState === 'new_member' ? this._renderWelcomeStrip() : nothing}
       ${this._renderBody(userState, boot)}
       ${this._renderSubstrateTicker()}
