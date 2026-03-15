@@ -1446,12 +1446,11 @@ export class VelgSimulationsDashboard extends LitElement {
 
   private async _loadSpotlightAgent(): Promise<void> {
     try {
-      const allSims = [...this._simulations, ...this._allSimulations];
-      const simsWithAgents = allSims.filter((s) => s.agent_count && s.agent_count > 0);
-      if (simsWithAgents.length === 0) return;
+      // Pick from user's own simulations only
+      const ownedWithAgents = this._simulations.filter((s) => s.agent_count && s.agent_count > 0);
+      if (ownedWithAgents.length === 0) return;
 
-      // Pick a random simulation, then a random agent from it
-      const sim = simsWithAgents[Math.floor(Math.random() * simsWithAgents.length)];
+      const sim = ownedWithAgents[Math.floor(Math.random() * ownedWithAgents.length)];
       const res = await agentsApi.listPublic(sim.id, { limit: '10' });
       if (!res.success || !res.data) return;
 
