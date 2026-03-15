@@ -17,6 +17,7 @@ import {
   forgeSectionStyles,
   forgeStatusStyles,
 } from './forge-console-styles.js';
+import { t } from '../../utils/locale-fields.js';
 import { getBuildingSet, getOperativeSet } from './forge-placeholders.js';
 import { fanRotation, renderInfoBubble } from './forge-utils.js';
 
@@ -1017,7 +1018,7 @@ export class VelgForgeTable extends LitElement {
               (z) => html`
               <div class="geo-card">
                 <div class="geo-card__name">${z.name}</div>
-                <p class="geo-card__desc">${z.description}</p>
+                <p class="geo-card__desc">${t(z, 'description')}</p>
                 ${
                   Array.isArray(z.characteristics) && z.characteristics.length
                     ? html`<div class="geo-card__tags">${z.characteristics.map((c) => html`<span class="geo-tag">${c}</span>`)}</div>`
@@ -1036,7 +1037,7 @@ export class VelgForgeTable extends LitElement {
                 (s) => html`
                 <div class="geo-card">
                   <div class="geo-card__name">${s.name}</div>
-                  <p class="geo-card__desc">${s.description}</p>
+                  <p class="geo-card__desc">${t(s, 'description')}</p>
                   ${
                     Array.isArray(s.characteristics) && s.characteristics.length
                       ? html`<div class="geo-card__tags">${s.characteristics.map((c) => html`<span class="geo-tag">${c}</span>`)}</div>`
@@ -1082,8 +1083,8 @@ export class VelgForgeTable extends LitElement {
                     ? html`
                     <velg-game-card
                       .name=${agent.name}
-                      .subtitle=${agent.primary_profession}
-                      .description=${agent.background ?? ''}
+                      .subtitle=${t(agent, 'primary_profession')}
+                      .description=${t(agent, 'background')}
                       .imageUrl=${this._agentImages[i] ?? ''}
                       .rarity=${'common'}
                       theme="brutalist"
@@ -1122,8 +1123,8 @@ export class VelgForgeTable extends LitElement {
                 >
                   <velg-game-card
                     .name=${a.name}
-                    .subtitle=${a.primary_profession}
-                    .description=${a.background ?? ''}
+                    .subtitle=${t(a, 'primary_profession')}
+                    .description=${t(a, 'background')}
                     .imageUrl=${this._agentImages[i % this._agentImages.length] ?? ''}
                     .rarity=${'common'}
                     theme="brutalist"
@@ -1172,8 +1173,8 @@ export class VelgForgeTable extends LitElement {
                     ? html`
                     <velg-game-card
                       .name=${building.name}
-                      .subtitle=${building.building_type}
-                      .description=${building.description ?? ''}
+                      .subtitle=${t(building, 'building_type')}
+                      .description=${t(building, 'description')}
                       .imageUrl=${this._buildingImages[i] ?? ''}
                       .rarity=${'common'}
                       theme="brutalist"
@@ -1212,8 +1213,8 @@ export class VelgForgeTable extends LitElement {
                 >
                   <velg-game-card
                     .name=${b.name}
-                    .subtitle=${b.building_type}
-                    .description=${b.description ?? ''}
+                    .subtitle=${t(b, 'building_type')}
+                    .description=${t(b, 'description')}
                     .imageUrl=${this._buildingImages[i % this._buildingImages.length] ?? ''}
                     .rarity=${'common'}
                     theme="brutalist"
@@ -1334,7 +1335,7 @@ export class VelgForgeTable extends LitElement {
             <div class="dossier-panel__preview">
               <velg-game-card
                 .name=${entity.name}
-                .subtitle=${isAgent ? (entity as ForgeAgentDraft).primary_profession : (entity as ForgeBuildingDraft).building_type}
+                .subtitle=${isAgent ? t(entity as ForgeAgentDraft, 'primary_profession') : t(entity as ForgeBuildingDraft, 'building_type')}
                 .imageUrl=${isAgent ? (this._agentImages[editing.index] ?? '') : (this._buildingImages[editing.index] ?? '')}
                 .rarity=${'common'}
                 theme="brutalist"

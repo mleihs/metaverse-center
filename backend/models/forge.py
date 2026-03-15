@@ -364,8 +364,10 @@ class PhilosophicalAnchor(BaseModel):
     title: str
     literary_influence: str
     core_question: str
+    core_question_de: str = Field(default="", description="German equivalent of core_question.")
     bleed_signature_suggestion: str
     description: str
+    description_de: str = Field(default="", description="German equivalent of description.")
 
 
 class ForgeAgentDraft(BaseModel):
@@ -374,6 +376,7 @@ class ForgeAgentDraft(BaseModel):
     gender: str
     system: str
     primary_profession: str
+    primary_profession_de: str = Field(default="", description="German equivalent of primary_profession.")
     character: str = Field(
         description=(
             "Personality portrait in 200-300 words. Include temperament, mannerisms, "
@@ -381,18 +384,21 @@ class ForgeAgentDraft(BaseModel):
             "(build, distinguishing feature, typical clothing) to aid later portrait generation."
         ),
     )
+    character_de: str = Field(default="", description="German equivalent of character.")
     background: str = Field(
         description=(
             "Backstory in 200-300 words. Include origin, formative event, current motivation, "
             "and a secret or unresolved tension."
         ),
     )
+    background_de: str = Field(default="", description="German equivalent of background.")
 
 
 class ForgeBuildingDraft(BaseModel):
     """Draft of a building entity."""
     name: str
     building_type: str
+    building_type_de: str = Field(default="", description="German equivalent of building_type.")
     description: str = Field(
         description=(
             "Atmospheric description in 150-250 words. Include architectural style, "
@@ -401,6 +407,7 @@ class ForgeBuildingDraft(BaseModel):
             "These details will feed into image generation."
         ),
     )
+    description_de: str = Field(default="", description="German equivalent of description.")
     building_condition: str = Field(
         default="good",
         description=(
@@ -409,13 +416,16 @@ class ForgeBuildingDraft(BaseModel):
             "A 'ruined' building shows structural damage; 'poor' shows neglect and decay."
         ),
     )
+    building_condition_de: str = Field(default="", description="German equivalent of building_condition.")
 
 
 class ForgeZoneDraft(BaseModel):
     """Draft of a single zone/district."""
     name: str
     zone_type: str = Field(description="Zone classification (e.g. residential, industrial, cultural, commercial, government, military, slum, entertainment).")
+    zone_type_de: str = Field(default="", description="German equivalent of zone_type.")
     description: str = Field(description="1-2 sentence atmospheric description of the zone's character and purpose.")
+    description_de: str = Field(default="", description="German equivalent of description.")
     characteristics: list[str] = Field(description="2-4 evocative tags capturing the zone's essence (e.g. 'perpetual twilight', 'echoing walls', 'overgrown machinery').")
 
 
@@ -424,6 +434,7 @@ class ForgeStreetDraft(BaseModel):
     name: str
     zone_name: str = Field(description="Name of the zone this street belongs to.")
     street_type: str = Field(description="Street classification (e.g. alley, boulevard, lane, avenue, road, street, stairway).")
+    street_type_de: str = Field(default="", description="German equivalent of street_type.")
     description: str = Field(default="", description="Optional 1-sentence atmospheric detail about this street.")
 
 

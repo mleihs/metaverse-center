@@ -12,6 +12,7 @@ import {
   forgeRangeStyles,
   forgeStatusStyles,
 } from './forge-console-styles.js';
+import { t } from '../../utils/locale-fields.js';
 import { renderInfoBubble } from './forge-utils.js';
 
 import '../shared/VelgFontPicker.js';
@@ -675,8 +676,8 @@ export class VelgForgeDarkroom extends LitElement {
             <div class="preview-cards">
               <velg-game-card
                 .name=${firstAgent.name}
-                .subtitle=${firstAgent.primary_profession}
-                .description=${firstAgent.character}
+                .subtitle=${t(firstAgent, 'primary_profession')}
+                .description=${t(firstAgent, 'character')}
                 .rarity=${'rare'}
                 theme="brutalist"
                 size="md"

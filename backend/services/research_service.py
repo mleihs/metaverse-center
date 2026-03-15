@@ -266,7 +266,11 @@ class ResearchService:
         prompt = (
             f"Original Seed: {seed}\n\n"
             f"Research Context: {context}\n\n"
-            "Propose 3 distinct philosophical anchors that could define this world."
+            "Propose 3 distinct philosophical anchors that could define this world.\n\n"
+            "BILINGUAL OUTPUT: For core_question and description, also produce a German "
+            "equivalent in core_question_de and description_de. The German text should "
+            "read as if originally written in German — not a literal translation. "
+            "Keep title and literary_influence in English."
         )
 
         result = await agent.run(

@@ -125,6 +125,16 @@ def _build_chunk_prompt(
             "- Building names should be evocative and world-specific.",
         ]
 
+    # Always generate bilingually — the platform serves EN + DE.
+    lines += [
+        "",
+        "BILINGUAL OUTPUT: For every descriptive text field, also produce a German "
+        "equivalent in the corresponding _de field (e.g. description → description_de, "
+        "character → character_de). The German text should read as if originally written "
+        "in German — not a literal translation. Keep ALL proper nouns (names, places) "
+        "identical across both languages.",
+    ]
+
     return "\n".join(lines)
 
 
@@ -588,25 +598,33 @@ class ForgeOrchestratorService:
         except Exception:
             logger.exception("Lore generation failed", extra={"simulation_id": str(simulation_id)})
 
-        # Translate entity fields
+        # Translate entity fields (skip if bilingual generation already populated _de)
         try:
-            mat_agents = (supabase.table("agents").select("name, character, background, primary_profession").eq("simulation_id", str(simulation_id)).execute()).data or []
-            mat_buildings = (supabase.table("buildings").select("name, description, building_type, building_condition").eq("simulation_id", str(simulation_id)).execute()).data or []
-            mat_zones = (supabase.table("zones").select("name, description, zone_type").eq("simulation_id", str(simulation_id)).execute()).data or []
-            mat_streets = (supabase.table("city_streets").select("name, street_type").eq("simulation_id", str(simulation_id)).execute()).data or []
-            sim_desc = geography.get("description", "") or seed
+            mat_agents = (supabase.table("agents").select("name, character, background, primary_profession, character_de").eq("simulation_id", str(simulation_id)).execute()).data or []
 
-            entity_translations = await ForgeEntityTranslationService.translate_entities(
-                agents=mat_agents,
-                buildings=mat_buildings,
-                zones=mat_zones,
-                streets=mat_streets,
-                simulation_description=sim_desc,
-                openrouter_key=or_key,
-            )
-            await ForgeEntityTranslationService.persist_translations(
-                supabase, simulation_id, entity_translations,
-            )
+            agents_have_de = any(a.get("character_de") for a in mat_agents)
+            if agents_have_de:
+                logger.info(
+                    "Bilingual draft — skipping entity translation",
+                    extra={"simulation_id": str(simulation_id)},
+                )
+            else:
+                mat_buildings = (supabase.table("buildings").select("name, description, building_type, building_condition").eq("simulation_id", str(simulation_id)).execute()).data or []
+                mat_zones = (supabase.table("zones").select("name, description, zone_type").eq("simulation_id", str(simulation_id)).execute()).data or []
+                mat_streets = (supabase.table("city_streets").select("name, street_type").eq("simulation_id", str(simulation_id)).execute()).data or []
+                sim_desc = geography.get("description", "") or seed
+
+                entity_translations = await ForgeEntityTranslationService.translate_entities(
+                    agents=mat_agents,
+                    buildings=mat_buildings,
+                    zones=mat_zones,
+                    streets=mat_streets,
+                    simulation_description=sim_desc,
+                    openrouter_key=or_key,
+                )
+                await ForgeEntityTranslationService.persist_translations(
+                    supabase, simulation_id, entity_translations,
+                )
         except Exception:
             logger.exception("Entity translation failed", extra={"simulation_id": str(simulation_id)})
 

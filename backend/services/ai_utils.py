@@ -21,8 +21,8 @@ logger = logging.getLogger(__name__)
 # Prevents the default 65536 from exhausting OpenRouter credits.
 PYDANTIC_AI_MAX_TOKENS: dict[str, int] = {
     "research": 2048,      # ~3 sections of citations
-    "anchors": 2048,       # 3 compact structured objects
-    "chunk": 8192,         # geography/agents/buildings structured output
+    "anchors": 3072,       # 3 compact structured objects (bilingual EN+DE)
+    "chunk": 12288,        # geography/agents/buildings structured output (bilingual EN+DE)
     "lore": 8192,          # 5-7 section lore scroll
     "lore_translation": 8192,  # mirrors lore output
     "dossier": 16384,      # ~9000 words across 6 sections

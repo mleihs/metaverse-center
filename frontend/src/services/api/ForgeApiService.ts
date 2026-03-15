@@ -5,7 +5,9 @@ export interface PhilosophicalAnchor {
   title: string;
   literary_influence: string;
   core_question: string;
+  core_question_de?: string;
   description: string;
+  description_de?: string;
 }
 
 export interface ForgeAgentDraft {
@@ -13,15 +15,21 @@ export interface ForgeAgentDraft {
   gender: string;
   system: string;
   primary_profession: string;
+  primary_profession_de?: string;
   character: string;
+  character_de?: string;
   background: string;
+  background_de?: string;
 }
 
 export interface ForgeBuildingDraft {
   name: string;
   building_type: string;
+  building_type_de?: string;
   description: string;
+  description_de?: string;
   building_condition: string;
+  building_condition_de?: string;
 }
 
 export interface ForgeGenerationConfig {

@@ -11,6 +11,7 @@ import {
   forgeRangeStyles,
   forgeStatusStyles,
 } from './forge-console-styles.js';
+import { t } from '../../utils/locale-fields.js';
 import { fanRotation, renderInfoBubble } from './forge-utils.js';
 
 import './VelgForgeScanOverlay.js';
@@ -781,7 +782,7 @@ export class VelgForgeAstrolabe extends LitElement {
                   </div>
                   <div class="dossier__body">
                     <h3 class="dossier__title">${opt.title}</h3>
-                    <p class="dossier__question">${opt.core_question}</p>
+                    <p class="dossier__question">${t(opt, 'core_question')}</p>
                     <div class="dossier__source">${opt.literary_influence}</div>
                   </div>
                   <div class="dossier__footer">
@@ -798,8 +799,8 @@ export class VelgForgeAstrolabe extends LitElement {
             this._selectedIdx !== null
               ? html`
             <div class="anchor-detail">
-              <p class="anchor-detail__question">${this._options[this._selectedIdx].core_question}</p>
-              <p class="anchor-detail__description">${this._options[this._selectedIdx].description}</p>
+              <p class="anchor-detail__question">${t(this._options[this._selectedIdx], 'core_question')}</p>
+              <p class="anchor-detail__description">${t(this._options[this._selectedIdx], 'description')}</p>
             </div>
           `
               : nothing

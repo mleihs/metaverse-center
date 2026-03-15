@@ -4,6 +4,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 
 import type { ForgeAgentDraft, ForgeBuildingDraft, ForgeProgress } from '../../services/api/ForgeApiService.js';
 import { forgeApi } from '../../services/api/ForgeApiService.js';
+import { t } from '../../utils/locale-fields.js';
 
 import '../shared/VelgGameCard.js';
 
@@ -969,10 +970,10 @@ export class VelgForgeCeremony extends LitElement {
     }
 
     const agentCards = this.agents.map(a => ({
-      name: a.name, subtitle: a.primary_profession, imageUrl: agentImageMap.get(a.name) ?? '',
+      name: a.name, subtitle: t(a, 'primary_profession'), imageUrl: agentImageMap.get(a.name) ?? '',
     }));
     const buildingCards = this.buildings.map(b => ({
-      name: b.name, subtitle: b.building_type, imageUrl: buildingImageMap.get(b.name) ?? '',
+      name: b.name, subtitle: t(b, 'building_type'), imageUrl: buildingImageMap.get(b.name) ?? '',
     }));
 
     // Max width per fan: half of 95vw minus zone badge + gaps (~70px each side)
