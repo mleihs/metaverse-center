@@ -41,11 +41,11 @@ VALUES (
     '00000000-0000-0000-0000-000000000000',
     'authenticated',
     'authenticated',
-    'admin@velgarien.dev',
-    crypt('velgarien-dev-2026', gen_salt('bf')),
+    'matthias@leihs.at',
+    extensions.crypt('met123', extensions.gen_salt('bf')),
     now(),
     '{"provider":"email","providers":["email"]}',
-    '{"name":"Velgarien Admin"}',
+    '{"name":"Matthias"}',
     now(),
     now(),
     '',
@@ -72,7 +72,7 @@ VALUES (
     '00000000-0000-0000-0000-000000000001',
     jsonb_build_object(
         'sub', '00000000-0000-0000-0000-000000000001',
-        'email', 'admin@velgarien.dev',
+        'email', 'matthias@leihs.at',
         'email_verified', true
     ),
     'email',

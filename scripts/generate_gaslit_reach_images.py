@@ -15,6 +15,7 @@ Usage:
 """
 
 import json
+import os
 import subprocess
 import sys
 import time
@@ -26,8 +27,8 @@ SIM_ID = "20000000-0000-0000-0000-000000000001"
 SUPABASE_URL = "http://127.0.0.1:54321"
 
 # Login credentials (test user from seed 001)
-EMAIL = "admin@velgarien.dev"
-PASSWORD = "velgarien-dev-2026"
+EMAIL = os.environ.get("PLATFORM_ADMIN_EMAIL", "matthias@leihs.at")
+PASSWORD = os.environ.get("PLATFORM_ADMIN_PASSWORD", "met123")
 
 
 def get_jwt_token() -> str:

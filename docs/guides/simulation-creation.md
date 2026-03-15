@@ -187,7 +187,7 @@ python3.13 scripts/generate_station_null_images.py
 
 ### Key Details
 
-- Scripts authenticate via Supabase Auth (test user `admin@velgarien.dev`)
+- Scripts authenticate via Supabase Auth (test user `matthias@leihs.at`)
 - Use `/api/v1/simulations/{sim_id}/generate/image` endpoint
 - Station Null script auto-queries DB for IDs (they change on each fresh start)
 - Older scripts (Velgarien, Capybara) have hardcoded IDs — will break if DB is reset

@@ -11,7 +11,7 @@ from backend.dependencies import get_admin_supabase, get_current_user, get_supab
 from backend.models.common import CurrentUser
 
 MOCK_USER_ID = uuid4()
-MOCK_ADMIN_EMAIL = "admin@velgarien.dev"
+MOCK_ADMIN_EMAIL = "matthias@leihs.at"
 DRAFT_ID = uuid4()
 
 

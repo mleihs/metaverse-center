@@ -5,7 +5,7 @@
 -- competitive layer. Each player is made an owner of their simulation.
 --
 -- Pattern: ensure_dev_user.sql (auth.users + auth.identities + simulation_members)
--- All passwords: velgarien-dev-2026
+-- All passwords: met123
 -- Idempotent via ON CONFLICT DO NOTHING.
 --
 -- Player UUIDs:
@@ -17,7 +17,7 @@
 
 DO $$
 DECLARE
-    v_password TEXT := crypt('velgarien-dev-2026', gen_salt('bf'));
+    v_password TEXT := extensions.crypt('met123', extensions.gen_salt('bf'));
     v_instance UUID := '00000000-0000-0000-0000-000000000000';
     v_p1 UUID := '00000000-0000-0000-0000-000000000002';
     v_p2 UUID := '00000000-0000-0000-0000-000000000003';

@@ -425,7 +425,7 @@ Bot-Entscheidungen werden synchron während `resolve_cycle()` via Admin-Supabase
 ### Zugriffskontrolle
 
 ```
-Platform Admin (Email-Allowlist: admin@velgarien.dev)
+Platform Admin (Email-Allowlist: matthias@leihs.at)
 ├── require_platform_admin() Dependency
 ├── get_admin_supabase() — service_role Client (injected via Depends())
 │
@@ -528,7 +528,7 @@ require_epoch_creator()             # → Depends(), prüft epoch.created_by == 
 # Simulation-Mitglied über Query-Parameter (für plattform-weite Endpoints)
 require_simulation_member("editor") # → Depends(), prüft Rolle via query param
 
-# Platform Admin: Email-Allowlist (admin@velgarien.dev)
+# Platform Admin: Email-Allowlist (matthias@leihs.at)
 require_platform_admin()            # → Depends(), prüft email + get_admin_supabase()
 ```
 

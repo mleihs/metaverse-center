@@ -43,8 +43,8 @@ ALL_SIM_NAMES = {
     "SP": "Speranza",
     "NM": "Nova Meridian",
 }
-ADMIN_EMAIL = "admin@velgarien.dev"
-ADMIN_PASSWORD = "velgarien-dev-2026"
+ADMIN_EMAIL = os.environ.get("PLATFORM_ADMIN_EMAIL", "matthias@leihs.at")
+ADMIN_PASSWORD = os.environ.get("PLATFORM_ADMIN_PASSWORD", "met123")
 
 
 class Player:

@@ -53,7 +53,7 @@ class NOAAAlertAdapter(SourceAdapter):
 
     async def fetch(self, since: datetime | None = None) -> list[ScanResult]:
         headers = {
-            "User-Agent": "(metaverse.center, admin@velgarien.dev)",
+            "User-Agent": "(metaverse.center, matthias@leihs.at)",
             "Accept": "application/geo+json",
         }
         params = {"severity": "Extreme,Severe"}

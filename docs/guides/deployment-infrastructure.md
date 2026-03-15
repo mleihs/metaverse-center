@@ -532,7 +532,7 @@ See `.env.production.example` for the full list including optional AI/external s
 
 Setup steps performed:
 1. Created project on Supabase dashboard
-2. Created auth user `admin@velgarien.dev` (UUID `00000000-0000-0000-0000-000000000001`) via Auth Admin API
+2. Created auth user `matthias@leihs.at` (UUID `00000000-0000-0000-0000-000000000001`) via Auth Admin API
 3. Applied 21 migrations via `supabase db push`
 4. Imported data via temporary migration (then repaired stale migration entry)
 5. Uploaded 60 images to storage buckets (36 platform assets + 13 agent portraits + 11 building images)
@@ -586,7 +586,7 @@ These 15 issues were encountered during production deployments. They are documen
 curl -X POST "https://bffjoupddfjaljqrwqck.supabase.co/auth/v1/admin/users" \
   -H "Authorization: Bearer $SERVICE_ROLE_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"email": "admin@velgarien.dev", "password": "...", "email_confirm": true,
+  -d '{"email": "matthias@leihs.at", "password": "...", "email_confirm": true,
        "id": "00000000-0000-0000-0000-000000000001"}'
 ```
 
@@ -941,7 +941,7 @@ SUPABASE_ACCESS_TOKEN=sbp_... supabase db push
 | Legacy service_role key | JWT (`eyJ...`) | Dashboard → Settings → API | Railway `SUPABASE_SERVICE_ROLE_KEY` env var |
 | JWT secret | string | Dashboard → Settings → API → JWT Settings | Railway `SUPABASE_JWT_SECRET` env var |
 | Railway env vars | varies | Railway Dashboard → metaverse-center → Variables | Backend config |
-| Production user | email/password | `admin@velgarien.dev` | Auth for production API calls |
+| Production user | email/password | `matthias@leihs.at` | Auth for production API calls |
 
 See `.env.production.example` for the full list of required environment variables.
 

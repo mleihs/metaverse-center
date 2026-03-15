@@ -23,8 +23,8 @@ const OUT_DIR = resolve(__dirname, '../docs/screenshots/how-to-play');
 mkdirSync(OUT_DIR, { recursive: true });
 
 const BASE_URL = 'http://localhost:5173';
-const EMAIL = 'admin@velgarien.dev';
-const PASSWORD = 'velgarien-dev-2026';
+const EMAIL = process.env.PLATFORM_ADMIN_EMAIL || 'matthias@leihs.at';
+const PASSWORD = process.env.PLATFORM_ADMIN_PASSWORD || 'met123';
 const SEED_PROMPT = 'A city built on the back of a sleeping leviathan, where the tide reveals memories and the lighthouse keeper trades in forgotten names.';
 
 // AI generation can take 30-90s

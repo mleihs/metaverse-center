@@ -269,7 +269,7 @@ Platform Admin ist **global** (nicht simulation-scoped). Implementiert via Email
 
 ```python
 # backend/dependencies.py
-PLATFORM_ADMIN_EMAILS = {"admin@velgarien.dev"}
+PLATFORM_ADMIN_EMAILS = {"matthias@leihs.at"}
 
 def require_platform_admin():
     async def _check(user = Depends(get_current_user)):

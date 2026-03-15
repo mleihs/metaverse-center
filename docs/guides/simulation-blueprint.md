@@ -270,7 +270,7 @@ Use LEAST/GREATEST to ensure consistent ordering. Include `description` and `lor
 Create `scripts/generate_simname_images.py`. Pattern: follow `generate_cite_des_dames_images.py`.
 
 Key features:
-- Authenticates via Supabase Auth (`admin@velgarien.dev`)
+- Authenticates via Supabase Auth (`matthias@leihs.at`)
 - Queries DB for entity IDs via `docker exec ... psql` with `json_agg()` (handles multi-line text safely)
 - Calls `POST /api/v1/simulations/{sim_id}/generate/image` for each entity
 - Passes `character` + `background` data as `extra` payload for agents

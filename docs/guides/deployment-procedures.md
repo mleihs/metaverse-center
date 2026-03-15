@@ -20,7 +20,7 @@ lang: en
 | Railway env vars | varies | Railway Dashboard → metaverse-center → Variables |
 | Railway API token | UUID | `ff9752d8-3462-4bb7-8516-6199bc6284b6` (Account Settings → Tokens) |
 
-Production user: `admin@velgarien.dev`
+Production user: `matthias@leihs.at`
 Production project ref: `bffjoupddfjaljqrwqck`
 Production URL: `https://bffjoupddfjaljqrwqck.supabase.co`
 App URL: `https://metaverse.center`

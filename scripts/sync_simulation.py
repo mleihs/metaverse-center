@@ -98,7 +98,7 @@ PROD_MANAGEMENT_API = (
     f"https://api.supabase.com/v1/projects/{PROD_PROJECT_REF}/database/query"
 )
 
-PLATFORM_ADMIN_EMAIL = "admin@velgarien.dev"
+PLATFORM_ADMIN_EMAIL = os.environ.get("PLATFORM_ADMIN_EMAIL", "matthias@leihs.at")
 
 STORAGE_BUCKETS = {
     "portraits": "agent.portraits",

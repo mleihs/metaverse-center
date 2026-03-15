@@ -107,7 +107,7 @@ Before starting a playtest:
 - [ ] Supabase running (`supabase status` — check all 10 services are `HEALTHY`)
 - [ ] Screenshot directory exists (`mkdir -p /tmp/epoch-demo`)
 - [ ] Browser launched (`browser_launch` with `channel: "chrome-beta"`)
-- [ ] Logged in as test account (`admin@velgarien.dev` or player account)
+- [ ] Logged in as test account (`matthias@leihs.at` or player account)
 - [ ] Clean epoch state (no stale epochs from previous tests)
 
 ### Epoch Cleanup (if needed)
@@ -382,7 +382,7 @@ For the next development session, fix bugs in this order:
 | Max team size | 2 |
 | Allow betrayal | No |
 | Scoring preset | Balanced (25/20/20/15/20) |
-| Player | The Gaslit Reach (admin@velgarien.dev) |
+| Player | The Gaslit Reach (matthias@leihs.at) |
 | Bot | Cit&eacute; des Dames (Strategist, medium) |
 | Phases played | Foundation (4) + Competition (9) + Reckoning (2) = 15 cycles |
 | Final score | Gaslit Reach 100.0 — Cit&eacute; des Dames 38.4 |

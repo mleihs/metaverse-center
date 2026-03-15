@@ -7,6 +7,7 @@ Buildings: Kanzlerpalast, Kathedrale des Lichts
 Requires: backend running on localhost:8000, valid Replicate API key in .env.
 """
 
+import os
 import time
 
 import requests
@@ -15,8 +16,8 @@ BASE_URL = "http://localhost:8000"
 SIM_ID = "10000000-0000-0000-0000-000000000001"
 SUPABASE_URL = "http://127.0.0.1:54321"
 
-EMAIL = "admin@velgarien.dev"
-PASSWORD = "velgarien-dev-2026"
+EMAIL = os.environ.get("PLATFORM_ADMIN_EMAIL", "matthias@leihs.at")
+PASSWORD = os.environ.get("PLATFORM_ADMIN_PASSWORD", "met123")
 
 ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0"
 SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU"

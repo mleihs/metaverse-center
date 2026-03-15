@@ -44,8 +44,8 @@ PRODUCTION = {
     "anon_key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmZmpvdXBkZGZqYWxqcXJ3cWNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5OTAxNzEsImV4cCI6MjA4NzU2NjE3MX0.fxKLEjPjN-vL3nP9cUSOBvigoSyFr5g_AlWcOQ19Umc",
 }
 
-ADMIN_EMAIL = "admin@velgarien.dev"
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "velgarien-dev-2026")
+ADMIN_EMAIL = os.environ.get("PLATFORM_ADMIN_EMAIL", "matthias@leihs.at")
+ADMIN_PASSWORD = os.environ.get("PLATFORM_ADMIN_PASSWORD", "met123")
 
 
 async def get_auth_token(env: dict) -> str | None:

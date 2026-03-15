@@ -72,7 +72,7 @@ GET https://api.weather.gov/alerts/active
 
 | Field | Source |
 |-------|--------|
-| Auth | Requires `User-Agent` header: `(metaverse.center, admin@velgarien.dev)` |
+| Auth | Requires `User-Agent` header: `(metaverse.center, matthias@leihs.at)` |
 | Rate limits | Generous; rate limit errors clear within 5 seconds |
 | Format | GeoJSON (`application/geo+json`) |
 | Key fields | `properties.event` (e.g., "Tornado Warning"), `properties.severity` (Extreme/Severe/Moderate/Minor), `properties.urgency`, `properties.headline`, `properties.description`, `properties.areaDesc`, `properties.id` |
