@@ -1,4 +1,4 @@
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import {
@@ -766,6 +766,8 @@ export class VelgAdminForgeTab extends LitElement {
             : msg('Clearance request rejected.'),
         );
         this._pendingRequests = this._pendingRequests.filter((r) => r.id !== id);
+        const { [id]: _, ...remainingNotes } = this._requestNotes;
+        this._requestNotes = remainingNotes;
         appState.setPendingForgeRequestCount(this._pendingRequests.length);
       } else {
         VelgToast.error(msg('Review failed.'));
@@ -843,7 +845,7 @@ export class VelgAdminForgeTab extends LitElement {
     const { VelgConfirmDialog } = await import('../shared/ConfirmDialog.js');
     const confirmed = await VelgConfirmDialog.show({
       title: msg('Grant Tokens'),
-      message: `Grant ${this._grantTokens} tokens to ${this._grantUserId.slice(0, 8)}...?`,
+      message: msg(str`Grant ${this._grantTokens} tokens to ${this._grantUserId.slice(0, 8)}...?`),
       confirmLabel: msg('Grant'),
       variant: 'default',
     });
@@ -859,7 +861,7 @@ export class VelgAdminForgeTab extends LitElement {
       if (resp.success) {
         const data = resp.data as { tokens_granted?: number; balance_after?: number };
         VelgToast.success(
-          `Granted ${data.tokens_granted ?? this._grantTokens} tokens. New balance: ${data.balance_after ?? '?'}`,
+          msg(str`Granted ${data.tokens_granted ?? this._grantTokens} tokens. New balance: ${data.balance_after ?? '?'}`),
         );
         this._grantUserId = '';
         this._grantTokens = 5;
@@ -1083,7 +1085,8 @@ export class VelgAdminForgeTab extends LitElement {
                 <div class="settings-item__label">${msg('Default Architect Grant')}</div>
                 <div class="settings-item__description">${msg('Number of forge tokens given to new architects.')}</div>
               </div>
-              <input type="number" class="membership-role-select" style="width: 80px" value="1" />
+              <input type="number" class="membership-role-select" style="width: 80px" value="1"
+                disabled title=${msg('Not yet configurable')} />
             </div>
 
             <div class="settings-item">
@@ -1091,7 +1094,8 @@ export class VelgAdminForgeTab extends LitElement {
                 <div class="settings-item__label">${msg('Darkroom Test Limit')}</div>
                 <div class="settings-item__description">${msg('Max test renders allowed per simulation draft.')}</div>
               </div>
-              <input type="number" class="membership-role-select" style="width: 80px" value="5" />
+              <input type="number" class="membership-role-select" style="width: 80px" value="5"
+                disabled title=${msg('Not yet configurable')} />
             </div>
           </div>
         </div>
@@ -1177,17 +1181,17 @@ export class VelgAdminForgeTab extends LitElement {
           <div class="stat-card">
             <div class="stat-card__value">${this._formatCents(Number(s.total_revenue_cents))}</div>
             <div class="stat-card__label">${msg('Total Revenue')}</div>
-            <div class="stat-card__sub">${s.total_purchases - s.admin_grants} ${msg('purchases')}</div>
+            <div class="stat-card__sub">${msg(str`${s.total_purchases - s.admin_grants} purchases`)}</div>
           </div>
           <div class="stat-card">
             <div class="stat-card__value">${s.total_tokens_granted}</div>
             <div class="stat-card__label">${msg('Tokens Granted')}</div>
-            <div class="stat-card__sub">${s.admin_grants} ${msg('admin grants')}</div>
+            <div class="stat-card__sub">${msg(str`${s.admin_grants} admin grants`)}</div>
           </div>
           <div class="stat-card">
             <div class="stat-card__value">${s.tokens_in_circulation}</div>
             <div class="stat-card__label">${msg('In Circulation')}</div>
-            <div class="stat-card__sub">${s.active_bundles} ${msg('active bundles')}</div>
+            <div class="stat-card__sub">${msg(str`${s.active_bundles} active bundles`)}</div>
           </div>
           <div class="stat-card">
             <div class="stat-card__value">${s.unique_buyers}</div>
@@ -1559,6 +1563,8 @@ export class VelgAdminForgeTab extends LitElement {
         <textarea
           class="request-card__notes-input"
           placeholder=${msg('Optional notes for the user...')}
+          maxlength="500"
+          aria-label=${msg('Admin notes')}
           .value=${this._requestNotes[req.id] ?? ''}
           @input=${(e: Event) => {
             this._requestNotes = {

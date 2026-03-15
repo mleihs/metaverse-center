@@ -13276,25 +13276,13 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
   <source>Total Revenue</source>
   <target>Gesamtumsatz</target>
 </trans-unit>
-<trans-unit id="s68f5592e72e0fcc3">
-  <source>purchases</source>
-  <target>Käufe</target>
-</trans-unit>
 <trans-unit id="sf20f5616777da3e8">
   <source>Tokens Granted</source>
   <target>Vergebene Tokens</target>
 </trans-unit>
-<trans-unit id="sb13aa2e637b32183">
-  <source>admin grants</source>
-  <target>Admin-Vergaben</target>
-</trans-unit>
 <trans-unit id="s28aca07b698a4849">
   <source>In Circulation</source>
   <target>Im Umlauf</target>
-</trans-unit>
-<trans-unit id="scc968a6d14c517ca">
-  <source>active bundles</source>
-  <target>aktive Bundles</target>
 </trans-unit>
 <trans-unit id="sca73b93877f26062">
   <source>Unique Buyers</source>
@@ -14373,6 +14361,59 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 </trans-unit>
 <trans-unit id="sb00f18193b286ec5">
   <source>View Dossier</source>
+  <target>Dossier ansehen</target>
+</trans-unit>
+<trans-unit id="s6525cba659438f97">
+  <source>Failed to load forge stats.</source>
+  <target>Forge-Statistiken konnten nicht geladen werden.</target>
+</trans-unit>
+<trans-unit id="sbf18c74722bb77c7">
+  <source>Failed to load active simulations</source>
+  <target>Aktive Simulationen konnten nicht geladen werden</target>
+</trans-unit>
+<trans-unit id="sba0f8225ea701e66">
+  <source>Failed to load deleted simulations</source>
+  <target>Gelöschte Simulationen konnten nicht geladen werden</target>
+</trans-unit>
+<trans-unit id="s21170b13aa15a3c7">
+  <source>Failed to load users.</source>
+  <target>Benutzer konnten nicht geladen werden.</target>
+</trans-unit>
+<trans-unit id="s09391a34f9177cc3">
+  <source><x id="0" equiv-text="${countResp.data}"/> pending clearance request(s)</source>
+  <target><x id="0" equiv-text="${countResp.data}"/> ausstehende Freigabeanfrage(n)</target>
+</trans-unit>
+<trans-unit id="s2479ba39a44a35e9">
+  <source>Grant <x id="0" equiv-text="${this._grantTokens}"/> tokens to <x id="1" equiv-text="${this._grantUserId.slice(0, 8)}"/>...?</source>
+  <target><x id="0" equiv-text="${this._grantTokens}"/> Token an <x id="1" equiv-text="${this._grantUserId.slice(0, 8)}"/> vergeben...?</target>
+</trans-unit>
+<trans-unit id="s31b53289b705a464">
+  <source>Granted <x id="0" equiv-text="${data.tokens_granted ?? this._grantTokens}"/> tokens. New balance: <x id="1" equiv-text="${data.balance_after ?? '?'}"/></source>
+  <target><x id="0" equiv-text="${data.tokens_granted ?? this._grantTokens}"/> Token vergeben. Neues Guthaben: <x id="1" equiv-text="${data.balance_after ?? '?'}"/></target>
+</trans-unit>
+<trans-unit id="s0fd66458e9857305">
+  <source>Not yet configurable</source>
+  <target>Noch nicht konfigurierbar</target>
+</trans-unit>
+<trans-unit id="s6ece366e70afe055">
+  <source><x id="0" equiv-text="${s.total_purchases - s.admin_grants}"/> purchases</source>
+  <target><x id="0" equiv-text="${s.total_purchases - s.admin_grants}"/> Käufe</target>
+</trans-unit>
+<trans-unit id="s61e28e455335fb05">
+  <source><x id="0" equiv-text="${s.admin_grants}"/> admin grants</source>
+  <target><x id="0" equiv-text="${s.admin_grants}"/> Admin-Vergaben</target>
+</trans-unit>
+<trans-unit id="sf9f73a53f6793fb4">
+  <source><x id="0" equiv-text="${s.active_bundles}"/> active bundles</source>
+  <target><x id="0" equiv-text="${s.active_bundles}"/> aktive Pakete</target>
+</trans-unit>
+<trans-unit id="s54cd8fa45232a1e1">
+  <source>Admin notes</source>
+  <target>Admin-Notizen</target>
+</trans-unit>
+<trans-unit id="s8c35a8053ee30a52">
+  <source>Clearance granted — welcome to the Forge, Architect</source>
+  <target>Freigabe erteilt — willkommen in der Forge, Architekt</target>
 </trans-unit>
 
 </body>

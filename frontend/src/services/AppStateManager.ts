@@ -62,7 +62,7 @@ export class AppStateManager {
     return role === 'owner' || role === 'admin' || role === 'editor';
   });
 
-  readonly isPlatformAdmin = computed(() => this.user.value?.email === 'admin@velgarien.dev');
+  readonly isPlatformAdmin = computed(() => this.user.value?.email === 'matthias@leihs.at');
 
   readonly canForge = computed(() => this.isArchitect.value || this.isPlatformAdmin.value);
 

@@ -16,6 +16,7 @@ from fastapi import HTTPException, status
 from postgrest.exceptions import APIError
 from supabase import Client
 
+from backend.config import settings
 from backend.services.email_service import EmailService
 from backend.services.email_templates import (
     render_clearance_denied,
@@ -29,7 +30,14 @@ logger = logging.getLogger(__name__)
 class ForgeAccessService:
     """Forge access request operations."""
 
-    _ADMIN_EMAIL = "matthias.leihs@gmail.com"
+    @classmethod
+    def _get_admin_emails(cls) -> list[str]:
+        """Platform admin emails from PLATFORM_ADMIN_EMAILS env var."""
+        return [
+            e.strip()
+            for e in settings.platform_admin_emails.split(",")
+            if e.strip()
+        ]
 
     @classmethod
     async def create_request(
@@ -64,6 +72,8 @@ class ForgeAccessService:
                 detail="Failed to create request.",
             )
 
+        logger.info("Forge access request created: %s for user %s", response.data[0].get("id"), user_id)
+
         # Notify admin (best-effort, non-blocking)
         if user_email:
             asyncio.create_task(
@@ -84,12 +94,14 @@ class ForgeAccessService:
                 user_email=user_email,
                 message=message,
             )
-            await EmailService.send(
-                to=cls._ADMIN_EMAIL,
-                subject="BUREAU ALERT // NEW CLEARANCE REQUEST",
-                html_body=html_body,
-            )
-            logger.info("Admin clearance notification sent for %s", user_email)
+            admin_emails = cls._get_admin_emails()
+            for admin_email in admin_emails:
+                await EmailService.send(
+                    to=admin_email,
+                    subject="BUREAU ALERT // NEW CLEARANCE REQUEST",
+                    html_body=html_body,
+                )
+            logger.info("Admin clearance notification sent for %s to %d recipients", user_email, len(admin_emails))
         except Exception:
             logger.exception("Failed to send admin clearance notification")
 
@@ -172,7 +184,11 @@ class ForgeAccessService:
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="Request not found or already reviewed.",
                 ) from e
-            raise
+            logger.exception("Forge access review failed for %s", request_id)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Review failed.",
+            ) from e
 
         result = response.data
         if not result:
@@ -180,6 +196,8 @@ class ForgeAccessService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Review failed.",
             )
+
+        logger.info("Forge access request %s: %s by %s", action, request_id, reviewer_id)
 
         # Send notification email (best-effort, non-blocking)
         asyncio.create_task(

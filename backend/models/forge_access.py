@@ -3,9 +3,13 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field
+
+ForgeTier = Literal["architect", "director"]
+ForgeStatus = Literal["pending", "approved", "rejected"]
 
 
 class ForgeAccessRequestCreate(BaseModel):
@@ -19,8 +23,8 @@ class ForgeAccessRequestResponse(BaseModel):
 
     id: UUID
     user_id: UUID
-    requested_tier: str
-    status: str  # pending | approved | rejected
+    requested_tier: ForgeTier
+    status: ForgeStatus
     message: str | None = None
     admin_notes: str | None = None
     reviewed_by: UUID | None = None
@@ -34,8 +38,8 @@ class ForgeAccessRequestWithEmail(BaseModel):
     id: UUID
     user_id: UUID
     user_email: str
-    requested_tier: str
-    status: str
+    requested_tier: ForgeTier
+    status: ForgeStatus
     message: str | None = None
     admin_notes: str | None = None
     reviewed_by: UUID | None = None

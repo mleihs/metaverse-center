@@ -1,4 +1,5 @@
 import type { AuthError, Session, User } from '@supabase/supabase-js';
+import { msg, str } from '@lit/localize';
 import { analyticsService } from '../AnalyticsService.js';
 import { appState } from '../AppStateManager.js';
 import { forgeApi } from '../api/ForgeApiService.js';
@@ -81,8 +82,8 @@ export class SupabaseAuthService {
               } else {
                 appState.setForgeRequestStatus('none');
               }
-            } catch {
-              // Non-critical
+            } catch (err) {
+              console.error('Failed to check forge status:', err);
             }
           } else {
             // Check if the user was just approved (has an approved request)
@@ -93,13 +94,13 @@ export class SupabaseAuthService {
                   // Show toast only once per session for newly approved architects
                   if (!sessionStorage.getItem(CLEARANCE_TOAST_KEY)) {
                     const { VelgToast } = await import('../../components/shared/Toast.js');
-                    VelgToast.success('Clearance granted \u2014 welcome to the Forge, Architect');
+                    VelgToast.success(msg('Clearance granted \u2014 welcome to the Forge, Architect'));
+                    sessionStorage.setItem(CLEARANCE_TOAST_KEY, '1');
                   }
                 }
-              } catch {
-                // Non-critical
+              } catch (err) {
+                console.error('Failed to check forge status:', err);
               }
-              sessionStorage.setItem(CLEARANCE_TOAST_KEY, '1');
             }
             appState.setForgeRequestStatus('none');
           }
@@ -128,12 +129,12 @@ export class SupabaseAuthService {
             appState.setPendingForgeRequestCount(countResp.data);
             if (countResp.data > 0 && !sessionStorage.getItem(ADMIN_PENDING_TOAST_KEY)) {
               const { VelgToast } = await import('../../components/shared/Toast.js');
-              VelgToast.info(`${countResp.data} pending clearance request(s)`);
+              VelgToast.info(msg(str`${countResp.data} pending clearance request(s)`));
               sessionStorage.setItem(ADMIN_PENDING_TOAST_KEY, '1');
             }
           }
-        } catch {
-          // Non-critical
+        } catch (err) {
+          console.error('Failed to check pending forge requests:', err);
         }
       }
     } else {

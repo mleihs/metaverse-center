@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     resend_api_key: str = ""
 
     # Platform admin
-    platform_admin_emails: str = Field(default="admin@velgarien.dev", alias="PLATFORM_ADMIN_EMAILS")
+    platform_admin_emails: str = Field(default="matthias@leihs.at", alias="PLATFORM_ADMIN_EMAILS")
     indexnow_key: str = ""
 
     # Environment — reads RAILWAY_ENVIRONMENT on Railway, defaults to "development" locally
