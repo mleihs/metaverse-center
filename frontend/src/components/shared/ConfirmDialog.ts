@@ -1,6 +1,6 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 
 import './BaseModal.js';
 
@@ -81,15 +81,6 @@ export class VelgConfirmDialog extends LitElement {
 
   private _resolve: ((value: boolean) => void) | null = null;
 
-  /** Sync external `open` property to internal modal state. */
-  override updated(changed: Map<string, unknown>): void {
-    if (changed.has('open')) {
-      this._open = this.open;
-    }
-  }
-
-  @state() private _open = false;
-
   static async show(options: {
     title?: string;
     message: string;
@@ -111,12 +102,11 @@ export class VelgConfirmDialog extends LitElement {
         resolve(value);
         dialog.remove();
       };
-      dialog._open = true;
+      dialog.open = true;
     });
   }
 
   private _handleConfirm(): void {
-    this._open = false;
     this.open = false;
     if (this._resolve) {
       this._resolve(true);
@@ -125,7 +115,6 @@ export class VelgConfirmDialog extends LitElement {
   }
 
   private _handleCancel(): void {
-    this._open = false;
     this.open = false;
     if (this._resolve) {
       this._resolve(false);
@@ -146,7 +135,7 @@ export class VelgConfirmDialog extends LitElement {
 
     return html`
       <velg-base-modal
-        ?open=${this._open}
+        ?open=${this.open}
         @modal-close=${this._handleModalClose}
       >
         <span slot="header">${this.title}</span>
