@@ -432,7 +432,7 @@ Platform Admin (Email-Allowlist: admin@velgarien.dev)
 ├── Benutzer-Verwaltung
 │   ├── admin_list_users() — SECURITY DEFINER RPC
 │   ├── admin_get_user()  — SECURITY DEFINER RPC
-│   ├── admin_delete_user() — SECURITY DEFINER RPC
+│   ├── admin_delete_user() — SECURITY DEFINER RPC (Migration 113: Ownership-Transfer an Admin, FK-Cleanup)
 │   └── Mitgliedschaft-CRUD via PostgREST
 │
 ├── Cache-TTL-Steuerung

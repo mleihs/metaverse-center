@@ -485,14 +485,18 @@ export class VelgDevAccountSwitcher extends LitElement {
 
   private _boundKeydown = this._handleKeydown.bind(this);
 
+  private _boundUserDeleted = () => { this._userCache = null; };
+
   connectedCallback() {
     super.connectedCallback();
     document.addEventListener('keydown', this._boundKeydown);
+    document.addEventListener('user-deleted', this._boundUserDeleted);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     document.removeEventListener('keydown', this._boundKeydown);
+    document.removeEventListener('user-deleted', this._boundUserDeleted);
   }
 
   // ── Data ──

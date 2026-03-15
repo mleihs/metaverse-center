@@ -1146,7 +1146,7 @@ CREATE OR REPLACE FUNCTION retrieve_agent_memories(
 ) RETURNS TABLE LANGUAGE plpgsql SECURITY DEFINER;
 ```
 
-### Admin-RPC Functions (Migrationen 040/057)
+### Admin-RPC Functions (Migrationen 040/057/113)
 
 ```sql
 -- SECURITY DEFINER: Direkter auth.users-Zugriff (umgeht GoTrue HS256/ES256-Problem)
@@ -1158,7 +1158,10 @@ RETURNS JSONB LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE FUNCTION public.admin_get_user(p_user_id uuid)
 RETURNS JSONB LANGUAGE plpgsql SECURITY DEFINER;
 
-CREATE OR REPLACE FUNCTION public.admin_delete_user(p_user_id uuid)
+-- Migration 113: DROP + CREATE (Return-Type-Wechsel boolean→void).
+-- Transferiert Simulation-Ownership an Platform-Admin, nullifiziert Audit/Referenz-FKs,
+-- loescht user-owned Records, dann DELETE FROM auth.users (CASCADE fuer Rest).
+CREATE FUNCTION public.admin_delete_user(p_user_id uuid)
 RETURNS void LANGUAGE plpgsql SECURITY DEFINER;
 ```
 

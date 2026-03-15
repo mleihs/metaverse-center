@@ -112,12 +112,13 @@ class AdminUserService:
 
     @classmethod
     async def delete_user(cls, admin_supabase: Client, user_id: UUID) -> None:
-        """Delete a user via Postgres ``admin_delete_user`` (migration 040, updated 057). Cascades membership via FK."""
+        """Delete a user via Postgres ``admin_delete_user`` (migration 040, rewritten 113). Transfers simulation ownership to admin, nullifies FKs, cascades rest."""
         try:
             admin_supabase.rpc(
                 "admin_delete_user",
                 {"p_user_id": str(user_id)},
             ).execute()
+            logger.info("User deleted", extra={"user_id": str(user_id)})
         except Exception as e:
             logger.warning("User deletion failed", extra={"user_id": str(user_id)}, exc_info=True)
             raise HTTPException(

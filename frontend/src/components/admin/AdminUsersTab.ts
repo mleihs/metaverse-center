@@ -476,6 +476,7 @@ export class VelgAdminUsersTab extends LitElement {
       VelgToast.success(msg('User deleted.'));
       this._expandedUserId = null;
       this._expandedDetail = null;
+      this.dispatchEvent(new CustomEvent('user-deleted', { bubbles: true, composed: true, detail: { userId } }));
       await this._loadUsers();
     } else {
       VelgToast.error(result.error?.message ?? msg('Failed to delete user.'));
