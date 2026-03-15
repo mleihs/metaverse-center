@@ -355,7 +355,7 @@ Berechnete Metriken aus materialisierten Views werden in AI-Generierungs-Prompts
 
 Alle Mock-Templates werden ebenfalls lokalisiert als Seed-Daten bereitgestellt (DE + EN).
 
-**Forge Mock-Service (`forge_mock_service.py`):** Deterministisches Mock-System für `FORGE_MOCK_MODE=true`. Seed-aware Auswahl via SHA-256 Hash. Alle 4 Forge-Phasen abgedeckt: Research + Anchors (M8), Geography/Agents/Buildings (M9-M10), Theme (2 komplette Presets), Lore (5 Sektionen + DE-Übersetzungen), Entity-Translations.
+**Forge Mock-Service (`forge_mock_service.py`):** Deterministisches Mock-System für `FORGE_MOCK_MODE=true`. Seed-aware Auswahl via SHA-256 Hash. Alle 4 Forge-Phasen abgedeckt: Research + Anchors (M8), Geography/Agents/Buildings (M9-M10), Theme (2 komplette Presets), Lore (5 Sektionen + DE-Übersetzungen), Entity-Translations. Seit Migration 112: Alle Mock-Daten enthalten bilingual `_de`-Felder (z.B. `primary_profession_de`, `description_de`, `core_question_de`).
 
 ---
 

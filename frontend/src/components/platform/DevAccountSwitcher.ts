@@ -460,13 +460,6 @@ export class VelgDevAccountSwitcher extends LitElement {
       white-space: nowrap;
     }
 
-    /* ── Responsive ── */
-
-    @media (max-width: 640px) {
-      :host {
-        display: none;
-      }
-    }
   `;
 
   // ── State ──

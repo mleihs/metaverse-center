@@ -78,6 +78,7 @@ Write operations require:
 - Never run `supabase db reset` without explicit user approval.
 - Never place business logic inside routers.
 - Never change response shape without updating spec.
+- Never add columns to `agents`, `buildings`, `simulations`, or `events` without refreshing the corresponding `active_*` view (`CREATE OR REPLACE VIEW`) in the same migration. PostgreSQL `SELECT *` in views resolves columns at creation time, not query time.
 
 ---
 

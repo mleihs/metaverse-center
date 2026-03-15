@@ -289,16 +289,29 @@ export const localeService = new LocaleService();
 
 ## Ebene 2: Simulations-Inhalte
 
-### Backend Auto-Translation Pipeline
+### Forge: Bilingual Generation (EN+DE in einem LLM-Call)
 
-Simulation content is generated in English and automatically translated to German:
+Seit Migration 112 generiert der Forge alle Entity-Inhalte bilingual in einem einzelnen LLM-Call. Die Pydantic-Output-Modelle enthalten `_de`-Felder (z.B. `character_de`, `description_de`, `core_question_de`), die das LLM im selben Durchgang befuellt. Englisch bleibt die Primaersprache (beste LLM-Qualitaet), Deutsch wird als nativ formuliertes Aequivalent generiert — keine woertliche Uebersetzung.
+
+**Vorteile gegenueber separater Translation:**
+- Spart einen kompletten LLM-Call pro Forge-Erstellung
+- Hoehere DE-Qualitaet (LLM hat vollen Kontext beim Schreiben)
+- Eigennamen bleiben konsistent (`_de`-Prompt: "Keep ALL proper nouns identical")
+
+**Fallback:** Wenn `_de`-Felder leer sind (Legacy-Drafts, LLM-Fehler), greift `ForgeEntityTranslationService` als separater Post-Materialisierungs-Schritt.
+
+**Frontend:** `t()` Utility (`utils/locale-fields.ts`) waehlt locale-aware: `t(agent, 'character')` liefert `character_de` bei DE-Locale, sonst `character`.
+
+### Backend Auto-Translation Pipeline (Fallback + Lore)
+
+Lore und Dossier-Inhalte werden weiterhin separat uebersetzt (post-materialization):
 
 | Content Type | Service | Translation Backend | Context |
 |-------------|---------|-------------------|---------|
 | Lore (initial) | `ForgeLoreService.translate_lore()` | PydanticAI (Claude) | Batch, all sections |
 | Dossier (initial) | `ForgeLoreService.translate_lore()` | PydanticAI (Claude) | Batch, 6 classified sections |
 | Dossier evolution | `TranslationService.translate_text()` | DeepL or Claude (configurable) | Per-addendum, with `TranslationContext` |
-| Entity fields | `_run_auto_translate()` | DeepL or Claude (configurable) | Per-entity, background task |
+| Entity fields (fallback) | `ForgeEntityTranslationService` | PydanticAI (Claude) | Nur wenn bilingual `_de`-Felder leer |
 | Chronicles | `TranslationService.translate_fields()` | DeepL or Claude (configurable) | Per-chronicle, background task |
 
 `TranslationContext` provides simulation name, theme, entity type, and additional notes to improve translation quality. For dossier evolution, this includes the ARCANUM section identifier and trigger type.
