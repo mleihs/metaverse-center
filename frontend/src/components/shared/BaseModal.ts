@@ -34,6 +34,7 @@ export class VelgBaseModal extends LitElement {
       width: 100%;
       max-width: var(--modal-max-width, 560px);
       max-height: 85vh;
+      max-height: 85dvh;
       display: flex;
       flex-direction: column;
       color: var(--color-text-primary);
@@ -117,6 +118,7 @@ export class VelgBaseModal extends LitElement {
         max-width: none;
         margin: var(--space-3);
         max-height: 90vh;
+        max-height: 90dvh;
       }
 
       .modal__header {
@@ -149,11 +151,17 @@ export class VelgBaseModal extends LitElement {
   disconnectedCallback(): void {
     super.disconnectedCallback();
     document.removeEventListener('keydown', this._handleKeyDown);
+    document.body.style.overflow = '';
   }
 
   protected updated(changedProperties: Map<PropertyKey, unknown>): void {
-    if (changedProperties.has('open') && this.open) {
-      this._focusFirstElement();
+    if (changedProperties.has('open')) {
+      if (this.open) {
+        document.body.style.overflow = 'hidden';
+        this._focusFirstElement();
+      } else {
+        document.body.style.overflow = '';
+      }
     }
   }
 

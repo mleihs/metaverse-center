@@ -193,6 +193,7 @@ export class VelgEntityLightbox extends LitElement {
     /* ── Content (right column) ── */
     .lightbox__body {
       overflow-y: auto;
+      overscroll-behavior: contain;
       scrollbar-width: thin;
       scrollbar-color: var(--color-border) transparent;
     }
@@ -264,12 +265,16 @@ export class VelgEntityLightbox extends LitElement {
     @media (max-width: 768px) {
       .lightbox__container {
         width: 100vw;
+        width: 100dvw;
         height: 100vh;
+        height: 100dvh;
         max-width: none;
         max-height: none;
         grid-template-columns: 1fr;
-        grid-template-rows: auto minmax(180px, 35vh) 1fr auto;
+        grid-template-rows: auto minmax(140px, 30vh) 1fr auto;
+        grid-template-rows: auto minmax(140px, 30dvh) 1fr auto;
         border: none;
+        border-radius: 0;
       }
 
       .lightbox__hero {
@@ -278,11 +283,15 @@ export class VelgEntityLightbox extends LitElement {
       }
 
       .lightbox__close {
+        width: 44px;
+        height: 44px;
         min-width: 44px;
         min-height: 44px;
       }
 
       .lightbox__nav-btn {
+        width: 44px;
+        height: 44px;
         min-width: 44px;
         min-height: 44px;
       }
@@ -335,11 +344,17 @@ export class VelgEntityLightbox extends LitElement {
     if (this._boundKeyDown) {
       document.removeEventListener('keydown', this._boundKeyDown);
     }
+    document.body.style.overflow = '';
   }
 
   protected updated(changedProperties: Map<PropertyKey, unknown>): void {
-    if (changedProperties.has('open') && this.open) {
-      focusFirstElement(this.shadowRoot);
+    if (changedProperties.has('open')) {
+      if (this.open) {
+        document.body.style.overflow = 'hidden';
+        focusFirstElement(this.shadowRoot);
+      } else {
+        document.body.style.overflow = '';
+      }
     }
   }
 

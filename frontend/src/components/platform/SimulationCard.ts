@@ -210,6 +210,26 @@ export class VelgSimulationCard extends LitElement {
       pointer-events: none;
       z-index: 2;
     }
+
+    /* ── Mobile ── */
+    @media (max-width: 480px) {
+      .shard {
+        min-height: 200px;
+      }
+
+      .shard__content {
+        padding: var(--space-3) var(--space-4);
+        gap: var(--space-2);
+      }
+
+      .shard__name {
+        font-size: var(--text-md);
+      }
+
+      .shard__enter {
+        display: none;
+      }
+    }
   `;
 
   @property({ type: Object }) simulation!: Simulation;

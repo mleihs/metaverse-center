@@ -152,11 +152,17 @@ export class VelgSidePanel extends LitElement {
     if (this._boundKeyDown) {
       document.removeEventListener('keydown', this._boundKeyDown);
     }
+    document.body.style.overflow = '';
   }
 
   protected updated(changedProperties: Map<PropertyKey, unknown>): void {
-    if (changedProperties.has('open') && this.open) {
-      this._focusFirstElement();
+    if (changedProperties.has('open')) {
+      if (this.open) {
+        document.body.style.overflow = 'hidden';
+        this._focusFirstElement();
+      } else {
+        document.body.style.overflow = '';
+      }
     }
   }
 
