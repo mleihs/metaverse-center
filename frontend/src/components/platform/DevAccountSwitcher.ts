@@ -20,7 +20,7 @@ const GATE_PASSWORD = 'met123';
 const GATE_STORAGE_KEY = 'dev-switcher-unlocked';
 
 /** Platform admin emails — must match backend config. */
-const ADMIN_EMAILS = new Set(['admin@velgarien.dev']);
+const ADMIN_EMAILS = new Set(['matthias@leihs.at']);
 
 interface ResolvedUser {
   id: string;
