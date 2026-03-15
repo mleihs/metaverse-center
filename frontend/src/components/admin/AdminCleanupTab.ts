@@ -475,44 +475,54 @@ export class VelgAdminCleanupTab extends LitElement {
 
   private async _scan(type: CleanupType): Promise<void> {
     this._scanning = type;
-    const result = await adminApi.previewCleanup(type, this._thresholds[type]);
-    if (result.success && result.data) {
-      const preview = result.data as CleanupPreviewResult;
-      this._previews = { ...this._previews, [type]: preview };
-      // Select all items by default
-      if (preview.items?.length) {
-        this._selectedIds = {
-          ...this._selectedIds,
-          [type]: new Set(preview.items.map((it: CleanupPreviewItem) => it.id)),
-        };
+    try {
+      const result = await adminApi.previewCleanup(type, this._thresholds[type]);
+      if (result.success && result.data) {
+        const preview = result.data as CleanupPreviewResult;
+        this._previews = { ...this._previews, [type]: preview };
+        // Select all items by default
+        if (preview.items?.length) {
+          this._selectedIds = {
+            ...this._selectedIds,
+            [type]: new Set(preview.items.map((it: CleanupPreviewItem) => it.id)),
+          };
+        }
+      } else {
+        VelgToast.error(result.error?.message ?? msg('Scan failed.'));
       }
-    } else {
-      VelgToast.error(result.error?.message ?? msg('Scan failed.'));
+    } catch {
+      VelgToast.error(msg('Scan failed.'));
+    } finally {
+      this._scanning = null;
     }
-    this._scanning = null;
   }
 
   private async _executePurge(type: CleanupType): Promise<void> {
     this._confirmPurge = null;
     this._executing = type;
-    const selected = this._selectedIds[type];
-    const epochIds = selected?.size ? [...selected] : undefined;
-    const result = await adminApi.executeCleanup(type, this._thresholds[type], epochIds);
-    if (result.success && result.data) {
-      const count = (result.data as { deleted_count: number }).deleted_count;
-      VelgToast.success(msg(str`Purge complete: ${count} records deleted.`));
-      // Clear preview, selection, and refresh stats
-      const newPreviews = { ...this._previews };
-      delete newPreviews[type];
-      this._previews = newPreviews;
-      const newSelected = { ...this._selectedIds };
-      delete newSelected[type];
-      this._selectedIds = newSelected;
-      await this._loadStats();
-    } else {
-      VelgToast.error(result.error?.message ?? msg('Purge failed.'));
+    try {
+      const selected = this._selectedIds[type];
+      const epochIds = selected?.size ? [...selected] : undefined;
+      const result = await adminApi.executeCleanup(type, this._thresholds[type], epochIds);
+      if (result.success && result.data) {
+        const count = (result.data as { deleted_count: number }).deleted_count;
+        VelgToast.success(msg(str`Purge complete: ${count} records deleted.`));
+        // Clear preview, selection, and refresh stats
+        const newPreviews = { ...this._previews };
+        delete newPreviews[type];
+        this._previews = newPreviews;
+        const newSelected = { ...this._selectedIds };
+        delete newSelected[type];
+        this._selectedIds = newSelected;
+        await this._loadStats();
+      } else {
+        VelgToast.error(result.error?.message ?? msg('Purge failed.'));
+      }
+    } catch {
+      VelgToast.error(msg('Purge failed.'));
+    } finally {
+      this._executing = null;
     }
-    this._executing = null;
   }
 
   private _formatAge(dateStr: string | null): string {
@@ -769,7 +779,7 @@ export class VelgAdminCleanupTab extends LitElement {
           .title=${msg('Confirm Purge')}
           .message=${msg(str`Permanently delete ${purgeCount} ${meta.label.toLowerCase()}? This cannot be undone.`)}
           .confirmLabel=${msg('Execute Purge')}
-          variant="danger"
+          .variant=${'danger'}
           @confirm=${() => this._executePurge(purgeType)}
           @cancel=${() => {
             this._confirmPurge = null;

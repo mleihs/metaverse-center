@@ -38,6 +38,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Mobile language switcher** — language toggle and dev account switcher were only in the desktop SYS cluster dropdown, inaccessible from the mobile hamburger menu. Now included in mobile nav
 - **Dev model defaults** — replaced discontinued `deepseek/deepseek-r1-0528:free` with `google/gemini-2.0-flash-001` in hardcoded dev fallbacks
 - **CSP policy** — added `fonts.googleapis.com` to style-src, `fonts.gstatic.com` to font-src, `static.cloudflareinsights.com` to script-src (Google Fonts and Cloudflare Insights were blocked)
+- **Admin panel hardening** — fixed ConfirmDialog `variant` attribute binding in cleanup tab (danger styling now applies), wrapped async methods in try/catch/finally across 5 admin tabs so loading states always reset and toasts show on API failure
 - **Forge 422 on landing page** — VelgForgeMint called `/forge/bundles` and `/forge/wallet` without auth guard; added `isAuthenticated` check + lazy-load on mint open
 - **Map dispatch log entity** — raw HTML entity `&#9650;` rendered as text instead of triangle symbol; switched to Unicode escapes
 - **Forge anchor card overflow** — "Classified" footer text clipped by card overflow; added `min-height: 0` + `overflow: hidden` on body flex child

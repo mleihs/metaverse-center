@@ -675,7 +675,7 @@ export class VelgAdminForgeTab extends LitElement {
         this._totalMaterialized = resp.data.total_materialized;
       }
     } catch {
-      // Stats are non-critical; silently fail
+      VelgToast.error(msg('Failed to load forge stats.'));
     }
   }
 

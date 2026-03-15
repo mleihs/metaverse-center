@@ -325,9 +325,13 @@ export class VelgAdminSimulationsTab extends LitElement {
 
       if (activeResp.success && activeResp.data) {
         this._simulations = activeResp.data as AdminSimulation[];
+      } else if (!activeResp.success) {
+        this._error = activeResp.error?.message ?? msg('Failed to load active simulations');
       }
       if (deletedResp.success && deletedResp.data) {
         this._deletedSimulations = deletedResp.data as AdminSimulation[];
+      } else if (!deletedResp.success) {
+        this._error = deletedResp.error?.message ?? msg('Failed to load deleted simulations');
       }
     } catch (err) {
       this._error = err instanceof Error ? err.message : msg('Failed to load simulations');

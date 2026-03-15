@@ -392,19 +392,32 @@ export class VelgAdminUsersTab extends LitElement {
   }
 
   private async _loadSimulations(): Promise<void> {
-    const result = await simulationsApi.list();
-    if (result.success && result.data) {
-      this._simulations = result.data as Simulation[];
+    try {
+      const result = await simulationsApi.list();
+      if (result.success && result.data) {
+        this._simulations = result.data as Simulation[];
+      } else {
+        VelgToast.error(result.error?.message ?? msg('Failed to load simulations.'));
+      }
+    } catch {
+      VelgToast.error(msg('Failed to load simulations.'));
     }
   }
 
   private async _loadUsers(): Promise<void> {
     this._loading = true;
-    const result = await adminApi.listUsers(this._page, 50);
-    if (result.success && result.data) {
-      this._users = (result.data as { users: AdminUser[]; total: number }).users;
+    try {
+      const result = await adminApi.listUsers(this._page, 50);
+      if (result.success && result.data) {
+        this._users = (result.data as { users: AdminUser[]; total: number }).users;
+      } else {
+        VelgToast.error(result.error?.message ?? msg('Failed to load users.'));
+      }
+    } catch {
+      VelgToast.error(msg('Failed to load users.'));
+    } finally {
+      this._loading = false;
     }
-    this._loading = false;
   }
 
   private async _toggleExpand(userId: string): Promise<void> {

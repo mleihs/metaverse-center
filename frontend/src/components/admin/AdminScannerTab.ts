@@ -1205,6 +1205,8 @@ export class VelgAdminScannerTab extends LitElement {
       if (resp.success && resp.data) {
         // Sort by magnitude DESC — best candidates first
         this._candidates = resp.data.sort((a, b) => b.magnitude - a.magnitude);
+      } else {
+        VelgToast.error(resp.error?.message ?? msg('Failed to load candidates'));
       }
     } catch {
       VelgToast.error(msg('Failed to load candidates'));
@@ -1219,6 +1221,8 @@ export class VelgAdminScannerTab extends LitElement {
       const resp = await scannerApi.getScanLog({ limit: '100' });
       if (resp.success && resp.data) {
         this._scanLog = resp.data;
+      } else {
+        VelgToast.error(resp.error?.message ?? msg('Failed to load scan log'));
       }
     } catch {
       VelgToast.error(msg('Failed to load scan log'));
