@@ -178,6 +178,7 @@ export class VelgAcademyEpochCard extends LitElement {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      flex-wrap: wrap;
       gap: 12px;
     }
 
