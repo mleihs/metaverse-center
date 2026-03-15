@@ -10,8 +10,14 @@ import '../shared/VelgBadge.js';
 @customElement('velg-simulation-card')
 export class VelgSimulationCard extends LitElement {
   static styles = css`
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
     :host {
       display: block;
+      max-width: 100%;
+      overflow: hidden;
       opacity: 0;
       animation: shard-enter 500ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) forwards;
       animation-delay: calc(var(--i, 0) * 80ms);

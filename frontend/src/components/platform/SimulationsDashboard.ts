@@ -781,6 +781,7 @@ export class VelgSimulationsDashboard extends LitElement {
     @media (max-width: 480px) {
       .shards-grid {
         grid-template-columns: 1fr;
+        overflow: hidden;
       }
     }
 
