@@ -16,6 +16,7 @@ import { forgeApi } from '../../services/api/index.js';
 import { appState } from '../../services/AppStateManager.js';
 import type { ForgeAccessRequestWithEmail } from '../../types/index.js';
 import { VelgToast } from '../shared/Toast.js';
+import '../shared/VelgBadge.js';
 
 @localized()
 @customElement('velg-clearance-queue')
@@ -32,10 +33,6 @@ export class VelgClearanceQueue extends LitElement {
       to { opacity: 1; transform: translateY(0); }
     }
 
-    @keyframes amber-pulse {
-      0%, 100% { opacity: 0.4; }
-      50% { opacity: 1; }
-    }
 
     @keyframes card-exit {
       to { opacity: 0; transform: translateX(-16px) scale(0.97); }
@@ -44,8 +41,7 @@ export class VelgClearanceQueue extends LitElement {
     @media (prefers-reduced-motion: reduce) {
       .forge-section,
       .request-card,
-      .request-count,
-      .queue-strip { animation: none !important; }
+      .clearance-queue { animation: none !important; }
     }
 
     /* ── Full variant: forge-section wrapper ── */
@@ -278,85 +274,38 @@ export class VelgClearanceQueue extends LitElement {
       opacity: 0.5;
     }
 
-    /* ── Request count badge ── */
+    /* ── Compact variant: left-column section ── */
 
-    .request-count {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 18px;
-      height: 18px;
-      padding: 0 5px;
-      border-radius: 2px;
-      background: var(--color-accent-amber);
-      color: var(--color-gray-950);
+    :host([variant="compact"]) .clearance-queue {
+      margin-bottom: var(--space-6);
+    }
+
+    :host([variant="compact"]) .section-header {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin-bottom: var(--space-4);
+    }
+
+    :host([variant="compact"]) .section-header__surtitle {
       font-family: var(--font-mono, 'SF Mono', monospace);
-      font-size: 10px;
-      font-weight: 700;
-      margin-left: var(--space-2);
-      animation: amber-pulse 2s ease infinite;
-    }
-
-    /* ── Compact variant: dashboard strip ── */
-
-    :host([variant="compact"]) .queue-strip {
-      border-top: 2px solid var(--color-accent-amber);
-      padding: var(--space-3) var(--space-4);
-      background: var(--color-surface-sunken);
-      animation: panel-enter 0.3s ease both;
-    }
-
-    :host([variant="compact"]) .queue-strip__header {
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-size: var(--text-xs);
+      font-size: 8px;
       text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      color: var(--color-accent-amber);
-      margin-bottom: var(--space-3);
+      letter-spacing: 0.4em;
+      color: var(--color-gray-400);
+    }
+
+    :host([variant="compact"]) .section-header__title {
+      font-family: var(--font-brutalist, 'Courier New', monospace);
+      font-weight: 900;
+      font-size: var(--text-xl);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-brutalist, 0.08em);
+      color: var(--color-text-primary);
+      margin: 0;
       display: flex;
-      align-items: center;
+      align-items: baseline;
       gap: var(--space-2);
-    }
-
-    :host([variant="compact"]) .queue-strip__cards {
-      display: flex;
-      gap: var(--space-3);
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      -webkit-overflow-scrolling: touch;
-      padding-bottom: var(--space-2);
-    }
-
-    :host([variant="compact"]) .queue-strip__cards::-webkit-scrollbar {
-      height: 4px;
-    }
-
-    :host([variant="compact"]) .queue-strip__cards::-webkit-scrollbar-track {
-      background: var(--color-surface);
-    }
-
-    :host([variant="compact"]) .queue-strip__cards::-webkit-scrollbar-thumb {
-      background: var(--color-accent-amber-dim, rgba(245, 158, 11, 0.3));
-    }
-
-    :host([variant="compact"]) .request-card {
-      min-width: 320px;
-      max-width: 400px;
-      flex-shrink: 0;
-      scroll-snap-align: start;
-      margin-bottom: 0;
-    }
-
-    @media (max-width: 640px) {
-      :host([variant="compact"]) .queue-strip__cards {
-        flex-direction: column;
-        overflow-x: visible;
-      }
-
-      :host([variant="compact"]) .request-card {
-        min-width: unset;
-        max-width: unset;
-      }
     }
   `;
 
@@ -489,7 +438,7 @@ export class VelgClearanceQueue extends LitElement {
           <span class="forge-section__code">SEC-03</span>
           <h3 class="forge-section__title">
             ${msg('Clearance Requests')}
-            ${count > 0 ? html`<span class="request-count">${count}</span>` : nothing}
+            ${count > 0 ? html`<velg-badge variant="warning">${count}</velg-badge>` : nothing}
           </h3>
         </div>
         <div class="forge-section__desc">${msg('Pending clearance upgrade requests from Field Observers.')}</div>
@@ -507,20 +456,21 @@ export class VelgClearanceQueue extends LitElement {
     if (this._requests.length === 0) return nothing;
 
     return html`
-      <div
-        class="queue-strip"
+      <section
+        class="clearance-queue"
         role="region"
         aria-label=${msg('Pending clearance requests')}
         tabindex="-1"
       >
-        <div class="queue-strip__header">
-          <span class="request-count">${this._requests.length}</span>
-          ${msg('Pending Clearance Requests')}
+        <div class="section-header">
+          <span class="section-header__surtitle">${msg('PENDING REVIEW')}</span>
+          <h2 class="section-header__title">
+            ${msg('Clearance Requests')}
+            <velg-badge variant="warning">${this._requests.length}</velg-badge>
+          </h2>
         </div>
-        <div class="queue-strip__cards">
-          ${this._requests.map((req) => this._renderRequestCard(req))}
-        </div>
-      </div>
+        ${this._requests.map((req) => this._renderRequestCard(req))}
+      </section>
     `;
   }
 

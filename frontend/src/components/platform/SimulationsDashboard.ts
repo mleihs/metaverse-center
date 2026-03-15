@@ -1579,9 +1579,6 @@ export class VelgSimulationsDashboard extends LitElement {
       ${this._renderCommandStrip(userState, boot)}
       ${this._renderTremorBanner()}
       ${userState === 'power_user' ? this._renderAdminBar() : nothing}
-      ${userState === 'power_user' && appState.isPlatformAdmin.value
-        ? html`<velg-clearance-queue variant="compact"></velg-clearance-queue>`
-        : nothing}
       ${userState === 'new_member' ? this._renderWelcomeStrip() : nothing}
       ${this._renderBody(userState, boot)}
       ${this._renderSubstrateTicker()}
@@ -1701,6 +1698,9 @@ export class VelgSimulationsDashboard extends LitElement {
       <div class="dashboard__body">
         <!-- Left / Main Column -->
         <div class="dashboard__left ${boot ? 'boot-left' : ''}">
+          ${!isGuest && appState.isPlatformAdmin.value
+            ? html`<velg-clearance-queue variant="compact"></velg-clearance-queue>`
+            : nothing}
           ${!isGuest ? this._renderActiveOps() : nothing}
           ${!isGuest ? this._renderMyWorlds() : nothing}
           <div class="left-shards">
