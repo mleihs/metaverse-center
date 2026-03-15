@@ -298,7 +298,11 @@ Seit Migration 112 generiert der Forge alle Entity-Inhalte bilingual in einem ei
 - Hoehere DE-Qualitaet (LLM hat vollen Kontext beim Schreiben)
 - Eigennamen bleiben konsistent (`_de`-Prompt: "Keep ALL proper nouns identical")
 
-**Fallback:** Wenn `_de`-Felder leer sind (Legacy-Drafts, LLM-Fehler), greift `ForgeEntityTranslationService` als separater Post-Materialisierungs-Schritt.
+**Fallback:** Wenn `_de`-Felder leer sind (Legacy-Drafts, LLM-Fehler), greift `ForgeEntityTranslationService` als separater Post-Materialisierungs-Schritt. Die Entity-Translation wird nur uebersprungen wenn **alle** Agents `character_de` haben (`all()`, nicht `any()`).
+
+**Bilingual-Validierung:** Nach jedem bilingualem LLM-Call prueft `validate_bilingual_output()` (in `forge_orchestrator_service.py`) ob `_de`-Felder befuellt sind. Fehlende Felder werden als Warning geloggt, blockieren aber nicht — die Entity-Translation faengt Luecken auf. Analoges Logging in `research_service.py` (Anchors) und `forge_entity_translation_service.py` (Persist-Phase).
+
+**Lore-Translation-Validierung:** `ForgeLoreService.persist_lore()` warnt wenn die Anzahl der Uebersetzungen nicht mit der Anzahl der Lore-Sections uebereinstimmt (z.B. LLM gibt weniger Uebersetzungen zurueck als Sections existieren).
 
 **Frontend:** `t()` Utility (`utils/locale-fields.ts`) waehlt locale-aware: `t(agent, 'character')` liefert `character_de` bei DE-Locale, sonst `character`.
 
@@ -311,7 +315,7 @@ Lore und Dossier-Inhalte werden weiterhin separat uebersetzt (post-materializati
 | Lore (initial) | `ForgeLoreService.translate_lore()` | PydanticAI (Claude) | Batch, all sections |
 | Dossier (initial) | `ForgeLoreService.translate_lore()` | PydanticAI (Claude) | Batch, 6 classified sections |
 | Dossier evolution | `TranslationService.translate_text()` | DeepL or Claude (configurable) | Per-addendum, with `TranslationContext` |
-| Entity fields (fallback) | `ForgeEntityTranslationService` | PydanticAI (Claude) | Nur wenn bilingual `_de`-Felder leer |
+| Entity fields (fallback) | `ForgeEntityTranslationService` | PydanticAI (Claude) | Nur wenn **alle** bilingual `_de`-Felder leer (pruefen via `all()`) |
 | Chronicles | `TranslationService.translate_fields()` | DeepL or Claude (configurable) | Per-chronicle, background task |
 
 `TranslationContext` provides simulation name, theme, entity type, and additional notes to improve translation quality. For dossier evolution, this includes the ARCANUM section identifier and trigger type.

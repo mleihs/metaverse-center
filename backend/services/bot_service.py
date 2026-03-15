@@ -106,7 +106,7 @@ class BotService:
             admin_supabase.table("game_epochs")
             .select("status")
             .eq("id", epoch_id)
-            .single()
+            .maybe_single()
             .execute()
         )
         epoch_status = epoch_resp.data.get("status", "competition") if epoch_resp.data else "competition"

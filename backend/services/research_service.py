@@ -278,4 +278,14 @@ class ResearchService:
             output_type=list[PhilosophicalAnchor],
             model_settings={"max_tokens": PYDANTIC_AI_MAX_TOKENS["anchors"]},
         )
+        # Validate bilingual output
+        incomplete = 0
+        for anchor in result.output:
+            if not anchor.core_question_de or not anchor.description_de:
+                incomplete += 1
+        if incomplete:
+            logger.warning(
+                "Bilingual gap: %d/%d anchor(s) missing _de fields",
+                incomplete, len(result.output),
+            )
         return result.output

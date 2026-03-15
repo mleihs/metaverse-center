@@ -59,13 +59,22 @@ class SimulationDashboardResponse(BaseModel):
     simulation_id: UUID
     name: str
     slug: str
+    description: str | None = None
+    description_de: str | None = None
     status: str
     theme: str
     content_locale: str
+    additional_locales: list[str] = Field(default_factory=list)
     owner_id: UUID
+    icon_url: str | None = None
+    banner_url: str | None = None
+    simulation_type: str = "template"
+    source_template_id: UUID | None = None
+    epoch_id: UUID | None = None
     member_count: int = 0
     agent_count: int = 0
     building_count: int = 0
     event_count: int = 0
+    archived_at: datetime | None = None
     created_at: datetime
     updated_at: datetime

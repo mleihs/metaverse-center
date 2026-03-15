@@ -600,7 +600,7 @@ class OperativeMissionService:
             supabase.table("game_epochs")
             .select("current_cycle")
             .eq("id", mission["epoch_id"])
-            .single()
+            .maybe_single()
             .execute()
         )
         cycle = epoch_resp.data.get("current_cycle", 1) if epoch_resp.data else 1
@@ -724,7 +724,7 @@ class OperativeMissionService:
                 supabase.table("game_epochs")
                 .select("current_cycle")
                 .eq("id", mission["epoch_id"])
-                .single()
+                .maybe_single()
                 .execute()
             )
             cycle = epoch_resp.data.get("current_cycle", 1) if epoch_resp.data else 1

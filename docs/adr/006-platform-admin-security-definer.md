@@ -28,3 +28,4 @@ Admin-Endpunkte nutzen PostgreSQL SECURITY DEFINER-Funktionen statt GoTrue Admin
 - Direkter `auth.users`-Zugriff mit korrekter Berechtigung.
 - Alle drei Funktionen pruefen `is_platform_admin()` intern.
 - Funktioniert identisch in lokaler und Production-Umgebung.
+- `admin_get_user` fuehrt LEFT JOIN auf `user_wallets` durch (Migration 057) und liefert `forge_tokens` + `is_architect` als flache Felder. Backend konstruiert das Wallet-Objekt aus diesen RPC-Feldern — kein separater PostgREST-Query auf `user_wallets` noetig (vermeidet 500er bei fehlender Wallet-Zeile).

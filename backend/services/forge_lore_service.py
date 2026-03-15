@@ -269,6 +269,15 @@ class ForgeLoreService:
             logger.warning("No lore sections to persist for simulation %s", simulation_id)
             return
 
+        # B3: Warn if translation count doesn't match section count
+        if translations is not None and len(translations) != len(sections):
+            logger.warning(
+                "Lore translation count mismatch: %d translations for %d sections — "
+                "later sections will be persisted without _de fields",
+                len(translations), len(sections),
+                extra={"simulation_id": str(simulation_id)},
+            )
+
         rows = []
         for idx, section in enumerate(sections):
             row = {

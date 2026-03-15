@@ -224,7 +224,7 @@ export class VelgRegisterView extends LitElement {
 
         <div class="briefing">
           <p class="briefing__text">
-            ${msg('Your signal has been detected across the fracture. Five sealed worlds await your observation. Complete this intake form to request Bureau clearance.')}
+            ${msg('Your signal has been detected across the fracture. Multiple sealed worlds await your observation. Complete this intake form to request clearance.')}
           </p>
         </div>
 

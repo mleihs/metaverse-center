@@ -60,7 +60,7 @@ async def main():
 
     # Verify simulation exists
     sim_resp = supabase.table("simulations").select(
-        "id, name, description"
+        "id, name, description, description_de"
     ).eq("id", sim_id).single().execute()
     sim = sim_resp.data
     logger.info("Simulation: %s", sim["name"])
@@ -121,20 +121,29 @@ async def main():
     untranslated_streets = [s for s in streets if not s.get("street_type_de")]
 
     total_untranslated = len(untranslated_agents) + len(untranslated_buildings) + len(untranslated_zones) + len(untranslated_streets)
+    sim_needs_description_de = not sim.get("description_de")
+
     logger.info(
-        "Entities needing translation: %d agents, %d buildings, %d zones, %d streets",
+        "Entities needing translation: %d agents, %d buildings, %d zones, %d streets | description_de missing: %s",
         len(untranslated_agents), len(untranslated_buildings),
         len(untranslated_zones), len(untranslated_streets),
+        sim_needs_description_de,
     )
 
-    if total_untranslated > 0:
+    if total_untranslated > 0 or sim_needs_description_de:
         from backend.services.forge_entity_translation_service import ForgeEntityTranslationService
 
+        # Use all entities for translation if description_de is needed but entities are done
+        translate_agents = untranslated_agents if untranslated_agents else []
+        translate_buildings = untranslated_buildings if untranslated_buildings else []
+        translate_zones = untranslated_zones if untranslated_zones else []
+        translate_streets = untranslated_streets if untranslated_streets else []
+
         entity_translations = await ForgeEntityTranslationService.translate_entities(
-            agents=untranslated_agents,
-            buildings=untranslated_buildings,
-            zones=untranslated_zones,
-            streets=untranslated_streets,
+            agents=translate_agents,
+            buildings=translate_buildings,
+            zones=translate_zones,
+            streets=translate_streets,
             simulation_description=sim.get("description", ""),
             openrouter_key=or_key,
         )
@@ -143,7 +152,6 @@ async def main():
         )
         logger.info("Entity translations persisted")
 
-        # Also translate simulation description
         if entity_translations.simulation.description_de:
             logger.info("Simulation description_de: %s", entity_translations.simulation.description_de[:80])
     else:

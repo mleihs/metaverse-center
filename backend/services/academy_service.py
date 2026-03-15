@@ -80,7 +80,7 @@ class AcademyService:
                     .eq("epoch_type", "academy")
                     .in_("status", ["lobby", "foundation", "competition", "reckoning"])
                     .limit(1)
-                    .single()
+                    .maybe_single()
                     .execute()
                 )
                 if existing.data:

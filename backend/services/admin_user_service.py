@@ -44,7 +44,8 @@ class AdminUserService:
         user_id: UUID,
     ) -> dict:
         """Get a single user with all their simulation memberships."""
-        # Fetch user via Postgres admin_get_user (migration 040, updated 057)
+        # admin_get_user RPC already LEFT JOINs user_wallets (migration 057)
+        # — returns forge_tokens + is_architect as flat fields (null when no wallet)
         user_resp = admin_supabase.rpc(
             "admin_get_user",
             {"p_user_id": str(user_id)},
@@ -65,18 +66,16 @@ class AdminUserService:
             .eq("user_id", str(user_id))
             .execute()
         )
-
         user_data["memberships"] = memberships_resp.data or []
 
-        # Fetch wallet
-        wallet_resp = (
-            admin_supabase.table("user_wallets")
-            .select("*")
-            .eq("user_id", str(user_id))
-            .single()
-            .execute()
+        # Construct nested wallet object from RPC flat fields (frontend expects AdminUserDetail.wallet)
+        ft = user_data.get("forge_tokens")
+        ia = user_data.get("is_architect")
+        user_data["wallet"] = (
+            {"user_id": str(user_id), "forge_tokens": ft or 0, "is_architect": ia or False}
+            if ft is not None or ia is not None
+            else None
         )
-        user_data["wallet"] = wallet_resp.data if wallet_resp.data else None
 
         return user_data
 

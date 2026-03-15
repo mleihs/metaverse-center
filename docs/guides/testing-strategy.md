@@ -1012,6 +1012,9 @@ jobs:
 
 **Logging-Assertions in bestehenden Tests:** `test_email_service.py` (+4 Tests), `test_base_service.py` (+3 Tests), `test_event_service.py` (+1 Test), `test_scoring_service.py` (+2 Tests), `test_epoch_chat_service.py` (+2 Tests), `test_cleanup_service.py` (+2 Tests). Alle verwenden pytest `caplog` Fixture mit `extra={}`-Feld-Verifikation.
 
+| `test_admin_panel_fixes.py` | Admin-Wallet aus RPC-Feldern (4), AcademyService maybe_single (1), BotService Epoch-Fallback (3), OperativeMission Epoch-Cycle-Fallback (4), SimulationDashboardResponse neue Felder (3) | Admin-Panel + PostgREST Fixes (15 Tests) |
+| `test_bilingual_hardening.py` | validate_bilingual_output (6), Translation-Skip-Logik any→all (3), Lore-Persist Mismatch-Warning (3), Entity-Persist DE-Logging (4), translate_simulation description_de (4) | Bilingual-Pipeline Hardening (20 Tests) |
+
 **Shared Fixture:** `make_chain_mock()` in `conftest.py` — wiederverwendbarer Supabase-Query-Chain-Mock. Unterstuetzt `.select()`, `.eq()`, `.in_()`, `.insert()`, `.update()`, `.delete()`, `.maybe_single()`, etc. Eliminiert ~40 Zeilen Copy-Paste pro Test-Datei.
 
 ### Frontend: Spezialisierte Test-Suites

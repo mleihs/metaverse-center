@@ -34,6 +34,25 @@ from supabase import Client
 
 logger = logging.getLogger(__name__)
 
+
+def validate_bilingual_output(
+    entities: list[dict], de_fields: list[str], entity_type: str,
+) -> int:
+    """Log warning for entities with empty _de fields. Returns count of incomplete entities."""
+    incomplete = 0
+    for entity in entities:
+        missing = [f for f in de_fields if not entity.get(f)]
+        if missing:
+            incomplete += 1
+    if incomplete:
+        logger.warning(
+            "Bilingual gap: %d/%d %s(s) missing _de fields",
+            incomplete, len(entities), entity_type,
+            extra={"entity_type": entity_type, "incomplete": incomplete, "total": len(entities)},
+        )
+    return incomplete
+
+
 WORLD_ARCHITECT_PROMPT = (
     "You are a Senior World Architect at the Bureau of Impossible Geography. "
     "Your task is to generate cohesive, high-quality entities for a simulation Shard "
@@ -334,10 +353,16 @@ class ForgeOrchestratorService:
                     output_type=ForgeGeographyDraft,
                     model_settings=chunk_settings,
                 )
-                await ForgeDraftService.update_draft(
-                    supabase, user_id, draft_id, ForgeDraftUpdate(geography=result.output.model_dump())
+                geo_data = result.output.model_dump()
+                validate_bilingual_output(
+                    geo_data.get("zones", []),
+                    ["zone_type_de", "description_de"],
+                    "zone",
                 )
-                return result.output.model_dump()
+                await ForgeDraftService.update_draft(
+                    supabase, user_id, draft_id, ForgeDraftUpdate(geography=geo_data)
+                )
+                return geo_data
 
             elif chunk_type == "agents":
                 result = await dynamic_agent.run(
@@ -346,6 +371,11 @@ class ForgeOrchestratorService:
                     model_settings=chunk_settings,
                 )
                 agents_list = [a.model_dump() for a in result.output]
+                validate_bilingual_output(
+                    agents_list,
+                    ["character_de", "background_de", "primary_profession_de"],
+                    "agent",
+                )
                 await ForgeDraftService.update_draft(
                     supabase, user_id, draft_id, ForgeDraftUpdate(agents=agents_list)
                 )
@@ -358,6 +388,11 @@ class ForgeOrchestratorService:
                     model_settings=chunk_settings,
                 )
                 buildings_list = [b.model_dump() for b in result.output]
+                validate_bilingual_output(
+                    buildings_list,
+                    ["description_de", "building_type_de", "building_condition_de"],
+                    "building",
+                )
                 await ForgeDraftService.update_draft(
                     supabase, user_id, draft_id, ForgeDraftUpdate(buildings=buildings_list)
                 )
@@ -602,7 +637,7 @@ class ForgeOrchestratorService:
         try:
             mat_agents = (supabase.table("agents").select("name, character, background, primary_profession, character_de").eq("simulation_id", str(simulation_id)).execute()).data or []
 
-            agents_have_de = any(a.get("character_de") for a in mat_agents)
+            agents_have_de = all(a.get("character_de") for a in mat_agents)
             if agents_have_de:
                 logger.info(
                     "Bilingual draft — skipping entity translation",

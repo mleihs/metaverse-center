@@ -7711,9 +7711,6 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
 <trans-unit id="sc19e27c5669d6c70">
   <source>Registration Terminal</source>
 <target>Registrierungsterminal</target></trans-unit>
-<trans-unit id="s60d9819f3cfeba49">
-  <source>Your signal has been detected across the fracture. Five sealed worlds await your observation. Complete this intake form to request Bureau clearance.</source>
-<target>Ihr Signal wurde jenseits der Fraktur erfasst. Fünf versiegelte Welten erwarten Ihre Beobachtung. Füllen Sie dieses Aufnahmeformular aus, um eine Büro-Freigabe zu beantragen.</target></trans-unit>
 <trans-unit id="s17d5104749053d10">
   <source>Confirm Access Code</source>
 <target>Zugangscode bestätigen</target></trans-unit>
@@ -12196,7 +12193,7 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 </trans-unit>
 <trans-unit id="sba082a04dd3bb10c">
   <source>The Bureau is accepting new operatives. Your signal has been detected across the fracture. Request clearance to begin.</source>
-  <target>Das Büro nimmt neue Operative auf. Ihr Signal wurde über die Fraktur hinweg erkannt. Beantragen Sie Freigabe, um zu beginnen.</target>
+  <target>Das Büro nimmt neue Agenten auf. Dein Signal wurde jenseits der Fraktur erfasst. Beantrage Zugang, um zu beginnen.</target>
 </trans-unit>
 <trans-unit id="s20fc4a342c233802">
   <source>Create your world — Sign up</source>
@@ -14370,6 +14367,13 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 <trans-unit id="sd7338946b42394f4">
   <source>failed</source>
 <target>Fehlgeschlagen</target></trans-unit>
+<trans-unit id="sd24ccb6133c0bf9d">
+  <source>Your signal has been detected across the fracture. Multiple sealed worlds await your observation. Complete this intake form to request clearance.</source>
+  <target>Dein Signal wurde jenseits der Fraktur erfasst. Verborgene Welten erwarten deine Beobachtung. Fülle dieses Aufnahmeformular aus, um Zugang zu beantragen.</target>
+</trans-unit>
+<trans-unit id="sb00f18193b286ec5">
+  <source>View Dossier</source>
+</trans-unit>
 
 </body>
 </file>
