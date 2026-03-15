@@ -3727,7 +3727,7 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die in Regalen er
 'se63783ea3d6acc68': `Stilreferenz hinzufügen`,
 'se6590729b6ba3ee2': `Vorlagen-Simulationen erscheinen als solide Knoten mit Umgebungsleuchten. Wenn eine Epoche aktiv ist, umkreisen Spielinstanzen ihre Elternvorlage mit gestrichelten rotierenden Rändern und phasenfarbigen Ringen (grün für Foundation, blau für Competition).`,
 'se65cfd7934c7175d': `Agentengedächtnis`,
-'se662b51ee594f3a8': `Multiplayer Worldbuilding &amp; Strategieplattform. Bauen Sie Zivilisationen. Setzen Sie Operative ein. Formen Sie das Multiversum.`,
+'se662b51ee594f3a8': `Multiplayer Worldbuilding & Strategie-Plattform. Erschaffe Zivilisationen. Entsende Agenten. Forme das Multiversum.`,
 'se66bb0aa9e5992d9': `Leitfaden-Umstrukturierung`,
 'se68398e3c2c760b2': `Token`,
 'se691a6c44cb7f5bd': `5 Zonen + 5 Straßen`,

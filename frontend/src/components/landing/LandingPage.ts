@@ -208,7 +208,7 @@ export class VelgLandingPage extends LitElement {
       height: 100%;
       object-fit: cover;
       object-position: center;
-      filter: brightness(0.35) saturate(0.8);
+      filter: brightness(0.45) saturate(0.85);
       animation: hero-bg-drift 30s ease-in-out infinite alternate;
       z-index: 0;
     }
@@ -288,8 +288,8 @@ export class VelgLandingPage extends LitElement {
     }
     .hero__bracket--tl { top: 24px; left: 24px; border-width: 2px 0 0 2px; }
     .hero__bracket--tr { top: 24px; right: 24px; border-width: 2px 2px 0 0; }
-    .hero__bracket--bl { bottom: 24px; left: 24px; border-width: 0 0 2px 2px; }
-    .hero__bracket--br { bottom: 24px; right: 24px; border-width: 0 2px 2px 0; }
+    .hero__bracket--bl { bottom: 12px; left: 24px; border-width: 0 0 2px 2px; }
+    .hero__bracket--br { bottom: 12px; right: 24px; border-width: 0 2px 2px 0; }
 
     /* Corner coordinates */
     .hero__coord {
@@ -303,7 +303,7 @@ export class VelgLandingPage extends LitElement {
     }
     .hero__coord--tl { top: 70px; left: 28px; }
     .hero__coord--tr { top: 70px; right: 28px; text-align: right; }
-    .hero__coord--bl { bottom: 70px; left: 28px; }
+    .hero__coord--bl { bottom: 50px; left: 28px; }
 
     .hero__content {
       position: relative;
@@ -412,14 +412,14 @@ export class VelgLandingPage extends LitElement {
 
     .hero__scroll-hint {
       position: absolute;
-      bottom: 32px;
+      bottom: 80px;
       left: 50%;
       transform: translateX(-50%);
-      z-index: 4;
+      z-index: 6;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
+      gap: 4px;
       opacity: 0;
       animation: content-fade 400ms var(--ease-dramatic) both 1.2s;
       background: none;
@@ -505,7 +505,7 @@ export class VelgLandingPage extends LitElement {
 
     .hero--v03 .decode-progress {
       position: absolute;
-      bottom: 80px;
+      bottom: 40px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 5;
