@@ -77,9 +77,18 @@ export class VelgConfirmDialog extends LitElement {
   @property({ type: String, attribute: 'confirm-label' }) confirmLabel = msg('Confirm');
   @property({ type: String, attribute: 'cancel-label' }) cancelLabel = msg('Cancel');
   @property({ type: String }) variant: 'default' | 'danger' = 'default';
-  @state() private _open = false;
+  @property({ type: Boolean, reflect: true }) open = false;
 
   private _resolve: ((value: boolean) => void) | null = null;
+
+  /** Sync external `open` property to internal modal state. */
+  override updated(changed: Map<string, unknown>): void {
+    if (changed.has('open')) {
+      this._open = this.open;
+    }
+  }
+
+  @state() private _open = false;
 
   static async show(options: {
     title?: string;
@@ -108,16 +117,20 @@ export class VelgConfirmDialog extends LitElement {
 
   private _handleConfirm(): void {
     this._open = false;
+    this.open = false;
     if (this._resolve) {
       this._resolve(true);
     }
+    this.dispatchEvent(new CustomEvent('confirm', { bubbles: true, composed: true }));
   }
 
   private _handleCancel(): void {
     this._open = false;
+    this.open = false;
     if (this._resolve) {
       this._resolve(false);
     }
+    this.dispatchEvent(new CustomEvent('cancel', { bubbles: true, composed: true }));
   }
 
   private _handleModalClose(): void {
@@ -125,8 +138,9 @@ export class VelgConfirmDialog extends LitElement {
   }
 
   protected render() {
+    const effectiveVariant = this.variant === 'danger' ? 'danger' : this.variant;
     const confirmClass =
-      this.variant === 'danger'
+      effectiveVariant === 'danger'
         ? 'confirm__btn confirm__btn--danger'
         : 'confirm__btn confirm__btn--confirm';
 

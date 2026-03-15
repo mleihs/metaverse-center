@@ -548,7 +548,7 @@ export class VelgAdminUsersTab extends LitElement {
             .title=${msg('Delete User')}
             .message=${msg('This will permanently delete this user and all their data. This cannot be undone.')}
             .confirmLabel=${msg('Delete')}
-            .confirmVariant=${'danger'}
+            .variant=${'danger'}
             @confirm=${() => {
               if (this._confirmDeleteUserId) this._deleteUser(this._confirmDeleteUserId);
             }}
