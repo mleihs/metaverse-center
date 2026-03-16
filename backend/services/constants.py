@@ -80,6 +80,40 @@ OPERATIVE_MISSION_CYCLES: dict[str, int] = {
     "infiltrator": 3,
 }
 
+# Security level downgrade map (saboteur effect)
+SECURITY_DOWNGRADE: dict[str, str] = {
+    "fortress": "maximum",
+    "maximum": "high",
+    "high": "guarded",
+    "guarded": "moderate",
+    "moderate": "low",
+    "medium": "low",
+    "low": "contested",
+    "contested": "lawless",
+    "lawless": "lawless",
+}
+
+# Fortification constants
+FORTIFICATION_RP_COST = 2
+FORTIFICATION_DURATION_CYCLES = 5
+
+
+def _downgrade_security(level: str) -> str:
+    """Downgrade a security level by one tier (e.g., high -> guarded)."""
+    return SECURITY_DOWNGRADE.get(level, level)
+
+
+def _upgrade_security(level: str) -> str:
+    """Upgrade a security level by one tier (e.g., moderate -> guarded)."""
+    try:
+        idx = SECURITY_TIER_ORDER.index(level)
+    except ValueError:
+        return level
+    if idx < len(SECURITY_TIER_ORDER) - 1:
+        return SECURITY_TIER_ORDER[idx + 1]
+    return level
+
+
 # Target entity type required per operative
 OPERATIVE_TARGET_TYPE: dict[str, str] = {
     "spy": "none",

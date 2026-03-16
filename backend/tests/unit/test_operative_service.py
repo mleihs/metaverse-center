@@ -10,9 +10,9 @@ from fastapi import HTTPException
 
 from backend.models.epoch import OperativeDeploy
 from backend.services.operative_service import (
-    DEPLOY_CYCLES,
     DETECTION_PENALTY,
     MISSION_SCORE_VALUES,
+    OPERATIVE_DEPLOY_CYCLES,
     OPERATIVE_RP_COSTS,
     SECURITY_LEVEL_MAP,
     OperativeService,
@@ -223,15 +223,15 @@ class TestConstants:
 
     def test_all_operative_types_have_deploy_cycles(self):
         expected_types = {"spy", "saboteur", "propagandist", "assassin", "guardian", "infiltrator"}
-        assert set(DEPLOY_CYCLES.keys()) == expected_types
+        assert set(OPERATIVE_DEPLOY_CYCLES.keys()) == expected_types
 
     def test_spy_and_guardian_deploy_immediately(self):
-        assert DEPLOY_CYCLES["spy"] == 0
-        assert DEPLOY_CYCLES["guardian"] == 0
+        assert OPERATIVE_DEPLOY_CYCLES["spy"] == 0
+        assert OPERATIVE_DEPLOY_CYCLES["guardian"] == 0
 
     def test_assassin_and_infiltrator_take_2_cycles(self):
-        assert DEPLOY_CYCLES["assassin"] == 2
-        assert DEPLOY_CYCLES["infiltrator"] == 2
+        assert OPERATIVE_DEPLOY_CYCLES["assassin"] == 2
+        assert OPERATIVE_DEPLOY_CYCLES["infiltrator"] == 2
 
     def test_guardian_rp_cost_is_4(self):
         assert OPERATIVE_RP_COSTS["guardian"] == 4

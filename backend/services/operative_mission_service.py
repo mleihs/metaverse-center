@@ -11,68 +11,19 @@ from backend.models.epoch import OperativeDeploy
 from backend.services.aptitude_service import AptitudeService
 from backend.services.battle_log_service import BattleLogService
 from backend.services.constants import (
+    FORTIFICATION_DURATION_CYCLES,
+    FORTIFICATION_RP_COST,
+    OPERATIVE_DEPLOY_CYCLES,
+    OPERATIVE_MISSION_CYCLES,
     OPERATIVE_RP_COSTS,
     SECURITY_LEVEL_MAP,
-    SECURITY_TIER_ORDER,
+    _downgrade_security,
+    _upgrade_security,
 )
 from backend.services.epoch_service import EpochService
 from supabase import Client
 
 logger = logging.getLogger(__name__)
-
-# Deploy time in cycles per operative type
-DEPLOY_CYCLES: dict[str, int] = {
-    "spy": 0,
-    "saboteur": 1,
-    "propagandist": 1,
-    "assassin": 2,
-    "guardian": 0,
-    "infiltrator": 2,
-}
-
-# Mission duration in cycles per operative type
-MISSION_DURATION_CYCLES: dict[str, int] = {
-    "spy": 3,
-    "saboteur": 1,
-    "propagandist": 2,
-    "assassin": 1,
-    "guardian": 0,  # permanent while deployed
-    "infiltrator": 3,
-}
-
-# Security level downgrade map (saboteur effect)
-SECURITY_DOWNGRADE: dict[str, str] = {
-    "fortress": "maximum",
-    "maximum": "high",
-    "high": "guarded",
-    "guarded": "moderate",
-    "moderate": "low",
-    "medium": "low",
-    "low": "contested",
-    "contested": "lawless",
-    "lawless": "lawless",
-}
-
-
-def _downgrade_security(level: str) -> str:
-    """Downgrade a security level by one tier (e.g., high -> guarded)."""
-    return SECURITY_DOWNGRADE.get(level, level)
-
-
-# Fortification constants
-FORTIFICATION_RP_COST = 2
-FORTIFICATION_DURATION_CYCLES = 5
-
-
-def _upgrade_security(level: str) -> str:
-    """Upgrade a security level by one tier (e.g., moderate -> guarded)."""
-    try:
-        idx = SECURITY_TIER_ORDER.index(level)
-    except ValueError:
-        return level
-    if idx < len(SECURITY_TIER_ORDER) - 1:
-        return SECURITY_TIER_ORDER[idx + 1]
-    return level
 
 
 class OperativeMissionService:
@@ -217,8 +168,8 @@ class OperativeMissionService:
         # Calculate resolve time
         config = epoch.get("config", {})
         cycle_hours = config.get("cycle_hours", 8)
-        deploy_cycles = DEPLOY_CYCLES.get(body.operative_type, 1)
-        mission_cycles = MISSION_DURATION_CYCLES.get(body.operative_type, 1)
+        deploy_cycles = OPERATIVE_DEPLOY_CYCLES.get(body.operative_type, 1)
+        mission_cycles = OPERATIVE_MISSION_CYCLES.get(body.operative_type, 1)
         total_hours = (deploy_cycles + mission_cycles) * cycle_hours
         resolves_at = datetime.now(UTC) + timedelta(hours=total_hours)
 

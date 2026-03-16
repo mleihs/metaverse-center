@@ -7,10 +7,17 @@ from fastapi import HTTPException, status
 
 from backend.services.constants import (
     DETECTION_PENALTY,
+    FORTIFICATION_DURATION_CYCLES,
+    FORTIFICATION_RP_COST,
     MISSION_SCORE_VALUES,
+    OPERATIVE_DEPLOY_CYCLES,
+    OPERATIVE_MISSION_CYCLES,
     OPERATIVE_RP_COSTS,
+    SECURITY_DOWNGRADE,
     SECURITY_LEVEL_MAP,
     SECURITY_TIER_ORDER,
+    _downgrade_security,
+    _upgrade_security,
 )
 from supabase import Client
 
@@ -20,9 +27,16 @@ logger = logging.getLogger(__name__)
 __all__ = [
     "SECURITY_LEVEL_MAP",
     "SECURITY_TIER_ORDER",
+    "SECURITY_DOWNGRADE",
     "MISSION_SCORE_VALUES",
     "DETECTION_PENALTY",
     "OPERATIVE_RP_COSTS",
+    "OPERATIVE_DEPLOY_CYCLES",
+    "OPERATIVE_MISSION_CYCLES",
+    "FORTIFICATION_RP_COST",
+    "FORTIFICATION_DURATION_CYCLES",
+    "_downgrade_security",
+    "_upgrade_security",
     "OperativeService",
 ]
 
@@ -123,13 +137,3 @@ OperativeService._apply_propagandist_effect = OperativeMissionService._apply_pro
 OperativeService._apply_assassin_effect = OperativeMissionService._apply_assassin_effect  # type: ignore[attr-defined]
 OperativeService._apply_infiltrator_effect = OperativeMissionService._apply_infiltrator_effect  # type: ignore[attr-defined]
 
-# Update __all__ to include re-exported constants
-__all__.extend([
-    "DEPLOY_CYCLES",
-    "MISSION_DURATION_CYCLES",
-    "SECURITY_DOWNGRADE",
-    "FORTIFICATION_RP_COST",
-    "FORTIFICATION_DURATION_CYCLES",
-    "_downgrade_security",
-    "_upgrade_security",
-])
