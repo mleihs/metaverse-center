@@ -575,6 +575,7 @@ export class VelgForgeAstrolabe extends LitElement {
   @state() private _seed = '';
   @state() private _selectedIdx: number | null = null;
   @state() private _isGenerating = false;
+  @state() private _isRecovering = false;
   @state() private _error: string | null = null;
   @state() private _options: PhilosophicalAnchor[] = [];
   @state() private _isDealing = true;
@@ -605,6 +606,9 @@ export class VelgForgeAstrolabe extends LitElement {
             });
           }
         }
+      }),
+      effect(() => {
+        this._isRecovering = forgeStateManager.isRecovering.value;
       }),
       effect(() => {
         const generating = forgeStateManager.isGenerating.value;
@@ -822,6 +826,7 @@ export class VelgForgeAstrolabe extends LitElement {
 
         <velg-forge-scan-overlay
           ?active=${this._isGenerating}
+          ?recovering=${this._isRecovering}
           .phases=${this._scanPhases}
           .lockLabels=${[msg('Anchor 1'), msg('Anchor 2'), msg('Anchor 3')]}
           headerLabel=${msg('Bureau Signal Intelligence')}

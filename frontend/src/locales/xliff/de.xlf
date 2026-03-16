@@ -14574,7 +14574,7 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 </trans-unit>
 <trans-unit id="s50a9ee94b3a26a7f">
   <source>MISSION CLOCK</source>
-  <target>EINSATZUHR</target>
+  <target>SIGNALLAUFZEIT</target>
 </trans-unit>
 <trans-unit id="s0a4dd91525c71bd4">
   <source>RECALIBRATING...</source>
@@ -15211,6 +15211,94 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 <trans-unit id="s10c402d2a5b86235">
   <source>Compiling Structural Manifest</source>
   <target>Strukturmanifest wird kompiliert</target>
+</trans-unit>
+<trans-unit id="se763f0c998a2a787">
+  <source>Critical health effects enabled globally.</source>
+  <target>Kritische Health-Effekte global aktiviert.</target>
+</trans-unit>
+<trans-unit id="s7adb6fc38fd58490">
+  <source>Critical health effects suppressed globally.</source>
+  <target>Kritische Health-Effekte global unterdrückt.</target>
+</trans-unit>
+<trans-unit id="s0c632ce08838d6a8">
+  <source>Failed to update setting.</source>
+  <target>Einstellung konnte nicht aktualisiert werden.</target>
+</trans-unit>
+<trans-unit id="s4df08efe0ecec47c">
+  <source>Effects enabled for simulation.</source>
+  <target>Effekte für Simulation aktiviert.</target>
+</trans-unit>
+<trans-unit id="s2c9421dd35bd9239">
+  <source>Effects suppressed for simulation.</source>
+  <target>Effekte für Simulation unterdrückt.</target>
+</trans-unit>
+<trans-unit id="s991f988682ab496b">
+  <source>Loading health effects data...</source>
+  <target>Lade Health-Effekt-Daten...</target>
+</trans-unit>
+<trans-unit id="s8ab3aecaab21ecd5">
+  <source>Master Switch</source>
+  <target>Master-Schalter</target>
+</trans-unit>
+<trans-unit id="sf2d40e01b0355fcc">
+  <source>Critical Health Effects</source>
+  <target>Kritische Health-Effekte</target>
+</trans-unit>
+<trans-unit id="s395b083e538f2f28">
+  <source>Controls entropy overlay, text corruption, card distortion, deceleration hero moment, entropy timer, and desperate actions panel. When disabled, all critical-state visual effects are suppressed across every simulation.</source>
+  <target>Steuert Entropie-Overlay, Text-Korruption, Karten-Verzerrung, Verlangsamungs-Effekt, Entropie-Timer und Notfall-Aktionspanel. Bei Deaktivierung werden alle kritischen Zustandseffekte in jeder Simulation unterdrückt.</target>
+</trans-unit>
+<trans-unit id="s7d51ea357983f281">
+  <source>Effects Active</source>
+  <target>Effekte aktiv</target>
+</trans-unit>
+<trans-unit id="s4d46f60de0871b59">
+  <source>Effects Suppressed</source>
+  <target>Effekte unterdrückt</target>
+</trans-unit>
+<trans-unit id="sa0b3a50f88603271">
+  <source>Per-Simulation Overrides</source>
+  <target>Pro-Simulation-Überschreibungen</target>
+</trans-unit>
+<trans-unit id="sd4cc44e5b536b06b">
+  <source>Filter simulations...</source>
+  <target>Simulationen filtern...</target>
+</trans-unit>
+<trans-unit id="s90618be69ef89222">
+  <source>No active simulations found.</source>
+  <target>Keine aktiven Simulationen gefunden.</target>
+</trans-unit>
+<trans-unit id="sef787ac38517711c">
+  <source>No simulations match the filter.</source>
+  <target>Keine Simulationen entsprechen dem Filter.</target>
+</trans-unit>
+<trans-unit id="s9ff3121d30f88d52">
+  <source>Normal</source>
+  <target>Normal</target>
+</trans-unit>
+<trans-unit id="sc21557fc020628a7">
+  <source>Globally Disabled</source>
+  <target>Global deaktiviert</target>
+</trans-unit>
+<trans-unit id="s2510c68e639a3fd1">
+  <source>RECOVERING...</source>
+  <target>WIEDERHERSTELLUNG...</target>
+</trans-unit>
+<trans-unit id="s3ae6e5492188918b">
+  <source>Verifying Transmission Integrity...</source>
+  <target>Prüfe Übertragungsintegrität...</target>
+</trans-unit>
+<trans-unit id="s1d853cf7d16c9452">
+  <source>Checking Data Persistence...</source>
+  <target>Verifiziere Datenpersistenz...</target>
+</trans-unit>
+<trans-unit id="sc137454f0cd5489f">
+  <source>Awaiting Server Confirmation...</source>
+  <target>Warte auf Serverbestätigung...</target>
+</trans-unit>
+<trans-unit id="s91a80e651d2dc095">
+  <source>Signal Disrupted</source>
+  <target>Signalstörung</target>
 </trans-unit>
 
 </body>

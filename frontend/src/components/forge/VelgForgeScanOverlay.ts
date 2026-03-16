@@ -251,6 +251,107 @@ export class VelgForgeScanOverlay extends LitElement {
       50% { opacity: 0.3; }
     }
 
+    /* === Recovery mode — amber takeover === */
+
+    :host([recovering]) .scan-overlay {
+      border-color: rgba(245 158 11 / 0.2);
+      transition: border-color 0.6s ease;
+    }
+
+    :host([recovering]) .scan-overlay::before {
+      background: var(--color-warning, #f59e0b);
+      box-shadow:
+        0 0 8px var(--color-warning, #f59e0b),
+        0 0 30px rgba(245 158 11 / 0.3),
+        4px 0 60px rgba(245 158 11 / 0.08);
+      animation: sonar-sweep 4.5s ease-in-out infinite;
+    }
+
+    :host([recovering]) .scan-overlay::after {
+      background:
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 39px,
+          rgba(245 158 11 / 0.04) 39px,
+          rgba(245 158 11 / 0.04) 40px
+        ),
+        repeating-linear-gradient(
+          90deg,
+          transparent,
+          transparent 79px,
+          rgba(245 158 11 / 0.03) 79px,
+          rgba(245 158 11 / 0.03) 80px
+        );
+    }
+
+    :host([recovering]) .scan-status__label {
+      color: rgba(245 158 11 / 0.85);
+      transition: color 0.6s ease;
+    }
+
+    :host([recovering]) .scan-status__phase {
+      color: var(--color-warning, #f59e0b);
+      text-shadow: 0 0 12px rgba(245 158 11 / 0.5);
+      animation: phase-glow-amber 2s ease-in-out infinite;
+    }
+
+    @keyframes phase-glow-amber {
+      0%, 100% { opacity: 1; text-shadow: 0 0 12px rgba(245 158 11 / 0.5); }
+      50% { opacity: 0.85; text-shadow: 0 0 20px rgba(245 158 11 / 0.7); }
+    }
+
+    :host([recovering]) .scan-status__cursor {
+      background: var(--color-warning, #f59e0b);
+    }
+
+    :host([recovering]) .scan-seed-echo {
+      color: rgba(245 158 11 / 0.5);
+      transition: color 0.6s ease;
+    }
+
+    /* Pips: all flash amber in recovery */
+    :host([recovering]) .scan-lock__pip {
+      border-color: rgba(245 158 11 / 0.4);
+      background: var(--color-warning, #f59e0b);
+      box-shadow: 0 0 8px rgba(245 158 11 / 0.5);
+      animation: pip-flash 1.2s ease-in-out infinite;
+    }
+
+    :host([recovering]) .scan-lock__label {
+      color: rgba(245 158 11 / 0.85);
+    }
+
+    @keyframes pip-flash {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+
+    /* Progress bar: locked at 95%, pulsing amber */
+    :host([recovering]) .scan-progress {
+      background: rgba(245 158 11 / 0.12);
+    }
+
+    :host([recovering]) .scan-progress__fill {
+      background: var(--color-warning, #f59e0b);
+      box-shadow: 0 0 6px var(--color-warning, #f59e0b);
+      animation: progress-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes progress-pulse {
+      0%, 100% { box-shadow: 0 0 6px var(--color-warning, #f59e0b); }
+      50% { box-shadow: 0 0 14px var(--color-warning, #f59e0b), 0 0 24px rgba(245 158 11 / 0.3); }
+    }
+
+    :host([recovering]) .scan-timer__elapsed {
+      color: rgba(245 158 11 / 0.7);
+    }
+
+    .scan-timer__recovering {
+      color: rgba(245 158 11 / 0.8);
+      animation: recalibrate-pulse 1.5s infinite;
+    }
+
     @media (prefers-reduced-motion: reduce) {
       .scan-overlay::before {
         animation: none;
@@ -270,10 +371,25 @@ export class VelgForgeScanOverlay extends LitElement {
       .scan-timer__recalibrating {
         animation: none;
       }
+      :host([recovering]) .scan-lock__pip {
+        animation: none;
+        opacity: 1;
+      }
+      :host([recovering]) .scan-progress__fill {
+        animation: none;
+      }
+      :host([recovering]) .scan-status__phase {
+        animation: none;
+        opacity: 1;
+      }
+      .scan-timer__recovering {
+        animation: none;
+      }
     }
   `;
 
   @property({ type: Boolean, reflect: true }) active = false;
+  @property({ type: Boolean, reflect: true }) recovering = false;
   @property({ type: Array }) phases: string[] = [];
   @property({ type: Number }) phaseInterval = 2500;
   @property({ type: Array }) lockLabels: string[] = [];
@@ -341,6 +457,7 @@ export class VelgForgeScanOverlay extends LitElement {
   }
 
   private _progressWidth(): number {
+    if (this.recovering) return 95;
     if (this.phases.length === 0) return 0;
 
     if (this.estimatedDurationMs > 0) {
@@ -375,6 +492,15 @@ export class VelgForgeScanOverlay extends LitElement {
   private _renderTimer() {
     if (this.estimatedDurationMs <= 0) return nothing;
 
+    if (this.recovering) {
+      return html`
+        <div class="scan-timer">
+          <span class="scan-timer__elapsed">${msg('MISSION CLOCK')}: ${this._formatTime(this._elapsedMs)}</span>
+          <span class="scan-timer__recovering">${msg('RECOVERING...')}</span>
+        </div>
+      `;
+    }
+
     const remaining = this.estimatedDurationMs - this._elapsedMs;
     const isPastEstimate = remaining <= 0;
 
@@ -389,25 +515,39 @@ export class VelgForgeScanOverlay extends LitElement {
     `;
   }
 
+  private _recoveryPhases(): string[] {
+    return [
+      msg('Verifying Transmission Integrity...'),
+      msg('Checking Data Persistence...'),
+      msg('Awaiting Server Confirmation...'),
+    ];
+  }
+
   protected render() {
     if (!this.active) return nothing;
 
-    const currentPhase = this.phases[this._scanPhase] ?? msg('Processing...');
+    const recoveryPhases = this._recoveryPhases();
+    const currentPhase = this.recovering
+      ? recoveryPhases[this._scanPhase % recoveryPhases.length]
+      : (this.phases[this._scanPhase] ?? msg('Processing...'));
+    const headerText = this.recovering
+      ? msg('Signal Disrupted')
+      : this.headerLabel;
 
     return html`
-      <div class="scan-overlay" role="status" aria-live="polite" aria-label=${this.headerLabel || msg('Processing')}>
+      <div class="scan-overlay" role="status" aria-live="polite" aria-label=${headerText || msg('Processing')}>
         <div class="scan-overlay__crt"></div>
 
         ${
-          this.echoText
+          this.echoText && !this.recovering
             ? html`<div class="scan-seed-echo" aria-hidden="true">"${this.echoText}"</div>`
             : nothing
         }
 
         <div class="scan-status">
           ${
-            this.headerLabel
-              ? html`<div class="scan-status__label">${this.headerLabel}</div>`
+            headerText
+              ? html`<div class="scan-status__label">${headerText}</div>`
               : nothing
           }
           <div class="scan-status__phase">

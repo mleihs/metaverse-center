@@ -56,6 +56,8 @@ class ForgeStateManager {
   readonly generationStartedAt = signal<number | null>(null);
   /** True if last generation completed via timeout recovery. Reset on next generation. */
   readonly lastGenerationRecovered = signal(false);
+  /** True while actively polling the backend for recovery after a timeout. */
+  readonly isRecovering = signal(false);
 
   // --- Staging State (hand/fan for review before accept) ---
   readonly stagedAgents = signal<ForgeAgentDraft[]>([]);
@@ -244,27 +246,39 @@ class ForgeStateManager {
 
     this.isGenerating.value = true;
     this.error.value = null;
+    this.isRecovering.value = false;
     this.generationStartedAt.value = Date.now();
     this.lastGenerationRecovered.value = false;
     try {
       const resp = await forgeApi.runResearch(draftId);
       if (!resp.success) {
-        this.error.value = resp.error?.message ?? 'Research failed';
+        this.isRecovering.value = true;
         const recovered = await this._tryRecoverResearch(draftId, anchorsBefore);
-        if (recovered) this.lastGenerationRecovered.value = true;
+        this.isRecovering.value = false;
+        if (recovered) {
+          this.lastGenerationRecovered.value = true;
+        } else {
+          this.error.value = resp.error?.message ?? 'Research failed';
+        }
         return;
       }
       await this.loadDraft(draftId);
     } catch (err) {
-      this.error.value = err instanceof Error ? err.message : 'Research failed';
+      this.isRecovering.value = true;
       const recovered = await this._tryRecoverResearch(draftId, anchorsBefore);
-      if (recovered) this.lastGenerationRecovered.value = true;
+      this.isRecovering.value = false;
+      if (recovered) {
+        this.lastGenerationRecovered.value = true;
+      } else {
+        this.error.value = err instanceof Error ? err.message : 'Research failed';
+      }
     } finally {
       const startedAt = this.generationStartedAt.value;
       if (startedAt) {
         this._recordTiming('research', Date.now() - startedAt);
       }
       this.generationStartedAt.value = null;
+      this.isRecovering.value = false;
       this.isGenerating.value = false;
     }
   }
@@ -278,6 +292,7 @@ class ForgeStateManager {
 
     this.isGenerating.value = true;
     this.error.value = null;
+    this.isRecovering.value = false;
     this.generationStartedAt.value = Date.now();
     this.lastGenerationRecovered.value = false;
     try {
@@ -286,20 +301,31 @@ class ForgeStateManager {
         await this.loadDraft(draftId);
         this._syncStagingAfterGeneration(chunkType);
       } else {
-        this.error.value = resp.error?.message ?? 'Generation failed';
+        this.isRecovering.value = true;
         const recovered = await this._tryRecoverChunk(draftId, chunkType, snapshot);
-        if (recovered) this.lastGenerationRecovered.value = true;
+        this.isRecovering.value = false;
+        if (recovered) {
+          this.lastGenerationRecovered.value = true;
+        } else {
+          this.error.value = resp.error?.message ?? 'Generation failed';
+        }
       }
     } catch (err) {
-      this.error.value = err instanceof Error ? err.message : 'Generation failed';
+      this.isRecovering.value = true;
       const recovered = await this._tryRecoverChunk(draftId, chunkType, snapshot);
-      if (recovered) this.lastGenerationRecovered.value = true;
+      this.isRecovering.value = false;
+      if (recovered) {
+        this.lastGenerationRecovered.value = true;
+      } else {
+        this.error.value = err instanceof Error ? err.message : 'Generation failed';
+      }
     } finally {
       const startedAt = this.generationStartedAt.value;
       if (startedAt) {
         this._recordTiming(chunkType, Date.now() - startedAt);
       }
       this.generationStartedAt.value = null;
+      this.isRecovering.value = false;
       this.isGenerating.value = false;
     }
   }
@@ -695,27 +721,38 @@ class ForgeStateManager {
     chunkType: 'geography' | 'agents' | 'buildings',
     snapshot: { agents: number; buildings: number; hasGeography: boolean },
   ): Promise<boolean> {
-    try {
-      await this.loadDraft(draftId);
-    } catch {
-      return false;
+    // Retry up to 4 times with increasing delays (5s, 10s, 15s, 20s).
+    // Railway proxy may kill the connection at ~120s while the backend is still
+    // generating. The backend typically finishes within 30–60s after the timeout,
+    // so retrying gives it time to persist results.
+    const delays = [5_000, 10_000, 15_000, 20_000];
+    for (let attempt = 0; attempt <= delays.length; attempt++) {
+      if (attempt > 0) {
+        await new Promise((r) => setTimeout(r, delays[attempt - 1]));
+      }
+      try {
+        await this.loadDraft(draftId);
+      } catch {
+        continue;
+      }
+      if (!this.draft.value) continue;
+
+      const newAgents = this.draft.value.agents.length;
+      const newBuildings = this.draft.value.buildings.length;
+      const newHasGeo = Object.keys(this.draft.value.geography).length > 0;
+
+      let recovered = false;
+      if (chunkType === 'agents' && newAgents > snapshot.agents) recovered = true;
+      if (chunkType === 'buildings' && newBuildings > snapshot.buildings) recovered = true;
+      if (chunkType === 'geography' && newHasGeo && !snapshot.hasGeography) recovered = true;
+
+      if (recovered) {
+        this.error.value = null;
+        this._syncStagingAfterGeneration(chunkType);
+        return true;
+      }
     }
-    if (!this.draft.value) return false;
-
-    const newAgents = this.draft.value.agents.length;
-    const newBuildings = this.draft.value.buildings.length;
-    const newHasGeo = Object.keys(this.draft.value.geography).length > 0;
-
-    let recovered = false;
-    if (chunkType === 'agents' && newAgents > snapshot.agents) recovered = true;
-    if (chunkType === 'buildings' && newBuildings > snapshot.buildings) recovered = true;
-    if (chunkType === 'geography' && newHasGeo && !snapshot.hasGeography) recovered = true;
-
-    if (recovered) {
-      this.error.value = null;
-      this._syncStagingAfterGeneration(chunkType);
-    }
-    return recovered;
+    return false;
   }
 
   /**
@@ -726,17 +763,23 @@ class ForgeStateManager {
     draftId: string,
     anchorsBefore: number,
   ): Promise<boolean> {
-    try {
-      await this.loadDraft(draftId);
-    } catch {
-      return false;
-    }
-    if (!this.draft.value) return false;
+    const delays = [5_000, 10_000, 15_000, 20_000];
+    for (let attempt = 0; attempt <= delays.length; attempt++) {
+      if (attempt > 0) {
+        await new Promise((r) => setTimeout(r, delays[attempt - 1]));
+      }
+      try {
+        await this.loadDraft(draftId);
+      } catch {
+        continue;
+      }
+      if (!this.draft.value) continue;
 
-    const anchorsAfter = this.draft.value.philosophical_anchor?.options?.length ?? 0;
-    if (anchorsAfter > anchorsBefore) {
-      this.error.value = null;
-      return true;
+      const anchorsAfter = this.draft.value.philosophical_anchor?.options?.length ?? 0;
+      if (anchorsAfter > anchorsBefore) {
+        this.error.value = null;
+        return true;
+      }
     }
     return false;
   }

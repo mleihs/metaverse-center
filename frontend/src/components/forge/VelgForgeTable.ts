@@ -788,6 +788,7 @@ export class VelgForgeTable extends LitElement {
 
   @state() private _draft: ForgeDraft | null = null;
   @state() private _isGenerating = false;
+  @state() private _isRecovering = false;
   @state() private _generatingChunk: 'geography' | 'agents' | 'buildings' | null = null;
   @state() private _error: string | null = null;
   @state() private _editingEntity: { type: 'agent' | 'building'; index: number } | null = null;
@@ -817,6 +818,9 @@ export class VelgForgeTable extends LitElement {
       }),
       effect(() => {
         this._isGenerating = forgeStateManager.isGenerating.value;
+      }),
+      effect(() => {
+        this._isRecovering = forgeStateManager.isRecovering.value;
       }),
       effect(() => {
         this._error = forgeStateManager.error.value;
@@ -1287,6 +1291,7 @@ export class VelgForgeTable extends LitElement {
             ? html`
           <velg-forge-scan-overlay
             active
+            ?recovering=${this._isRecovering}
             .phases=${this._geographyPhases}
             .lockLabels=${[msg('Zones'), msg('Streets'), msg('Grid')]}
             headerLabel=${msg('Dimensional Cartography Division')}
@@ -1383,6 +1388,7 @@ export class VelgForgeTable extends LitElement {
             ? html`
           <velg-forge-scan-overlay
             active
+            ?recovering=${this._isRecovering}
             .phases=${this._agentPhases}
             .lockLabels=${[msg('Psych'), msg('Skills'), msg('Cover')]}
             headerLabel=${msg('Bureau Personnel Division')}
@@ -1478,6 +1484,7 @@ export class VelgForgeTable extends LitElement {
             ? html`
           <velg-forge-scan-overlay
             active
+            ?recovering=${this._isRecovering}
             .phases=${this._buildingPhases}
             .lockLabels=${[msg('Base'), msg('Frame'), msg('Roof')]}
             headerLabel=${msg('Infrastructure Engineering Corps')}
