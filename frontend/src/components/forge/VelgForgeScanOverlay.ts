@@ -5,6 +5,14 @@ import { customElement, property, state } from 'lit/decorators.js';
 /**
  * Shared cinematic scan overlay for Forge generation phases.
  * CRT scanlines, sonar sweep, cycling phase labels, signal lock pips, progress bar.
+ *
+ * When `estimatedDurationMs > 0`, activates time-based mode:
+ * - Phases loop endlessly (modulo) instead of stalling on the last
+ * - Mission clock + ETA countdown displayed
+ * - Asymptotic progress bar that never stalls or hits 100%
+ *
+ * When `estimatedDurationMs` is 0 (default), behaves identically to the
+ * original phase-count-based overlay for backward compatibility.
  */
 @localized()
 @customElement('velg-forge-scan-overlay')
@@ -212,6 +220,37 @@ export class VelgForgeScanOverlay extends LitElement {
       z-index: 2;
     }
 
+    /* Timer row — time-based mode only */
+    .scan-timer {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      font-family: var(--font-mono, monospace);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      position: relative;
+      z-index: 2;
+    }
+
+    .scan-timer__elapsed {
+      color: rgba(74 222 128 / 0.7);
+    }
+
+    .scan-timer__eta {
+      color: rgba(74 222 128 / 0.5);
+    }
+
+    .scan-timer__recalibrating {
+      color: rgba(245 158 11 / 0.7);
+      animation: recalibrate-pulse 1.5s infinite;
+    }
+
+    @keyframes recalibrate-pulse {
+      0%, 100% { opacity: 0.7; }
+      50% { opacity: 0.3; }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       .scan-overlay::before {
         animation: none;
@@ -228,6 +267,9 @@ export class VelgForgeScanOverlay extends LitElement {
         animation: none;
         opacity: 1;
       }
+      .scan-timer__recalibrating {
+        animation: none;
+      }
     }
   `;
 
@@ -237,31 +279,62 @@ export class VelgForgeScanOverlay extends LitElement {
   @property({ type: Array }) lockLabels: string[] = [];
   @property({ type: String }) headerLabel = '';
   @property({ type: String }) echoText = '';
+  /** Estimated duration in ms. Activates time-based mode (looping phases, timer, ETA). */
+  @property({ type: Number }) estimatedDurationMs = 0;
 
   @state() private _scanPhase = 0;
+  @state() private _elapsedMs = 0;
   private _scanTimer = 0;
+  private _tickTimer = 0;
+  private _startTime = 0;
 
   updated(changed: Map<string, unknown>) {
     if (changed.has('active')) {
       if (this.active) {
         this._scanPhase = 0;
+        this._elapsedMs = 0;
+        this._startTime = Date.now();
         this._advanceScanPhase();
+        this._startTickTimer();
       } else {
         window.clearTimeout(this._scanTimer);
+        this._stopTickTimer();
       }
     }
   }
 
   disconnectedCallback() {
     window.clearTimeout(this._scanTimer);
+    this._stopTickTimer();
     super.disconnectedCallback();
+  }
+
+  private _startTickTimer() {
+    this._stopTickTimer();
+    if (this.estimatedDurationMs <= 0) return;
+    this._tickTimer = window.setInterval(() => {
+      this._elapsedMs = Date.now() - this._startTime;
+    }, 1000);
+  }
+
+  private _stopTickTimer() {
+    if (this._tickTimer) {
+      window.clearInterval(this._tickTimer);
+      this._tickTimer = 0;
+    }
   }
 
   private _advanceScanPhase() {
     this._scanTimer = window.setTimeout(() => {
-      if (!this.active) return;
-      if (this._scanPhase < this.phases.length - 1) {
-        this._scanPhase++;
+      if (!this.active || this.phases.length === 0) return;
+      if (this.estimatedDurationMs > 0) {
+        // Time-based mode: loop endlessly
+        this._scanPhase = (this._scanPhase + 1) % this.phases.length;
+      } else {
+        // Legacy mode: stop at last phase
+        if (this._scanPhase < this.phases.length - 1) {
+          this._scanPhase++;
+        }
       }
       this._advanceScanPhase();
     }, this.phaseInterval);
@@ -269,6 +342,20 @@ export class VelgForgeScanOverlay extends LitElement {
 
   private _progressWidth(): number {
     if (this.phases.length === 0) return 0;
+
+    if (this.estimatedDurationMs > 0) {
+      // Asymptotic progress based on elapsed time vs estimate
+      const ratio = this._elapsedMs / this.estimatedDurationMs;
+      if (ratio <= 0.9) {
+        // Linear 0→90% for the first 90% of estimated time
+        return (ratio / 0.9) * 90;
+      }
+      // Beyond 90%: exponential decay approaching 98%
+      const overshoot = ratio - 0.9;
+      return 90 + 8 * (1 - Math.exp(-overshoot * 2));
+    }
+
+    // Legacy: phase-count-based
     return Math.min(95, (this._scanPhase + 1) * (100 / this.phases.length));
   }
 
@@ -276,6 +363,30 @@ export class VelgForgeScanOverlay extends LitElement {
     if (this.phases.length === 0 || this.lockLabels.length === 0) return false;
     const threshold = Math.floor(((index + 1) * this.phases.length) / (this.lockLabels.length + 1));
     return this._scanPhase >= threshold;
+  }
+
+  private _formatTime(ms: number): string {
+    const totalSec = Math.max(0, Math.floor(ms / 1000));
+    const min = Math.floor(totalSec / 60);
+    const sec = totalSec % 60;
+    return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+  }
+
+  private _renderTimer() {
+    if (this.estimatedDurationMs <= 0) return nothing;
+
+    const remaining = this.estimatedDurationMs - this._elapsedMs;
+    const isPastEstimate = remaining <= 0;
+
+    return html`
+      <div class="scan-timer">
+        <span class="scan-timer__elapsed">${msg('MISSION CLOCK')}: ${this._formatTime(this._elapsedMs)}</span>
+        ${isPastEstimate
+          ? html`<span class="scan-timer__recalibrating">${msg('RECALIBRATING...')}</span>`
+          : html`<span class="scan-timer__eta">ETA: ~${this._formatTime(remaining)}</span>`
+        }
+      </div>
+    `;
   }
 
   protected render() {
@@ -324,6 +435,8 @@ export class VelgForgeScanOverlay extends LitElement {
         <div class="scan-progress">
           <div class="scan-progress__fill" style="width: ${this._progressWidth()}%"></div>
         </div>
+
+        ${this._renderTimer()}
       </div>
     `;
   }

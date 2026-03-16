@@ -5,6 +5,7 @@ import { customElement, state } from 'lit/decorators.js';
 import type { PhilosophicalAnchor } from '../../services/api/ForgeApiService.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { t } from '../../utils/locale-fields.js';
+import { VelgToast } from '../shared/Toast.js';
 import {
   forgeButtonStyles,
   forgeFieldStyles,
@@ -631,13 +632,34 @@ export class VelgForgeAstrolabe extends LitElement {
     super.disconnectedCallback();
   }
 
-  private static readonly _SCAN_PHASES = [
-    'Establishing Neural Link',
-    'Parsing Dimensional Frequencies',
-    'Triangulating Shard Coordinates',
-    'Intercepting Philosophical Transmissions',
-    'Crystallizing Anchor Points',
-  ];
+  private get _scanPhases(): string[] {
+    return [
+      msg('Establishing Neural Link'),
+      msg('Parsing Dimensional Frequencies'),
+      msg('Triangulating Shard Coordinates'),
+      msg('Intercepting Philosophical Transmissions'),
+      msg('Scanning Multiversal Wavelengths'),
+      msg('Decrypting Narrative Substrates'),
+      msg('Aligning Cognitive Resonators'),
+      msg('Probing Ontological Boundaries'),
+      msg('Indexing Literary Echoes'),
+      msg('Mapping Conceptual Topography'),
+      msg('Isolating Thematic Harmonics'),
+      msg('Cross-Referencing Archival Fragments'),
+      msg('Amplifying Shard Signal'),
+      msg('Filtering Dimensional Noise'),
+      msg('Resolving Metaphysical Parallax'),
+      msg('Calibrating Anchor Sensitivity'),
+      msg('Sampling Narrative Probability'),
+      msg('Distilling Core Contradictions'),
+      msg('Tracing Philosophical Fault Lines'),
+      msg('Verifying Signal Integrity'),
+      msg('Compressing Dimensional Data'),
+      msg('Synthesizing Anchor Candidates'),
+      msg('Running Coherence Check'),
+      msg('Crystallizing Anchor Points'),
+    ];
+  }
 
   private async _handleResearch() {
     if (!this._seed) return;
@@ -645,6 +667,9 @@ export class VelgForgeAstrolabe extends LitElement {
       await forgeStateManager.createDraft(this._seed);
     }
     await forgeStateManager.startResearch();
+    if (forgeStateManager.lastGenerationRecovered.value) {
+      VelgToast.success(msg('Signal recovered — anchor data retrieved from Bureau archives'));
+    }
   }
 
   private _selectAnchor(idx: number) {
@@ -772,10 +797,11 @@ export class VelgForgeAstrolabe extends LitElement {
 
         <velg-forge-scan-overlay
           ?active=${this._isGenerating}
-          .phases=${VelgForgeAstrolabe._SCAN_PHASES}
+          .phases=${this._scanPhases}
           .lockLabels=${[msg('Anchor 1'), msg('Anchor 2'), msg('Anchor 3')]}
           headerLabel=${msg('Bureau Signal Intelligence')}
           .echoText=${this._seed}
+          .estimatedDurationMs=${forgeStateManager.getEstimatedDuration('research')}
         ></velg-forge-scan-overlay>
 
         ${this._error ? html`<div class="error-banner" role="alert">${this._error}</div>` : nothing}

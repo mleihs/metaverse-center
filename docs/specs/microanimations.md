@@ -1,8 +1,8 @@
 ---
 title: "Microanimations"
 id: microanimations
-version: "1.0"
-date: 2026-03-13
+version: "1.1"
+date: 2026-03-16
 lang: en
 type: spec
 status: active
@@ -516,6 +516,36 @@ velg-city-list, velg-zone-list, velg-street-list {
 Each time the level changes, Lit re-renders the appropriate list component, re-triggering the animation.
 
 **Files:** `LocationsView.ts`
+
+#### T3.5 — Forge Scan Overlay: Lore-Themed Loading UX (`VelgForgeScanOverlay.ts`)
+
+**What:** Generation phases (research, geography, agents, buildings) take 30–200+ seconds. The scan overlay now provides continuous feedback: 24 lore-themed status messages per type loop endlessly, a mission clock ticks elapsed time, an ETA countdown shows remaining estimate, and the progress bar uses an asymptotic curve that never stalls.
+
+**How:** New `estimatedDurationMs` prop activates time-based mode. Three behavioral changes:
+
+1. **Phase looping** — `_advanceScanPhase()` wraps via modulo (`(phase + 1) % phases.length`) instead of stopping at the last phase. 24 messages cycle every 60s at 2.5s intervals.
+
+2. **Mission clock + ETA** — 1-second `setInterval` updates `_elapsedMs`. Timer row renders below progress bar:
+```html
+<span class="scan-timer__elapsed">MISSION CLOCK: 02:34</span>
+<span class="scan-timer__eta">ETA: ~01:26</span>
+<!-- OR when past estimate: -->
+<span class="scan-timer__recalibrating">RECALIBRATING...</span>
+```
+Recalibrating text uses amber color with 1.5s pulse animation.
+
+3. **Asymptotic progress bar** — replaces phase-count-based calculation:
+```
+0–90% of estimate:  linear from 0% → 90% width
+Beyond 90%:         90 + 8 * (1 - e^(-overshoot * 2)) → approaches 98%
+```
+Never hits 100%, never stalls — always visually moving even when generation exceeds estimate.
+
+**Backward compatibility:** When `estimatedDurationMs` is 0 (default), all behavior is identical to the original phase-count-based overlay. Existing callers unaffected.
+
+**Reduced motion:** `recalibrate-pulse` animation disabled. Timer text still displays. All other existing reduced-motion rules (sonar sweep, phase glow, cursor blink) unchanged.
+
+**Files:** `VelgForgeScanOverlay.ts`, `ForgeStateManager.ts` (timing infrastructure), `VelgForgeAstrolabe.ts` (24 research phases), `VelgForgeTable.ts` (24 phases each for geography/agents/buildings)
 
 ---
 

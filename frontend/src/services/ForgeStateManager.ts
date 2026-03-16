@@ -24,6 +24,21 @@ const DEFAULT_GENERATION_CONFIG: ForgeGenerationConfig = {
 };
 
 const DRAFT_STORAGE_KEY = 'forge_draft_id';
+const TIMING_STORAGE_KEY = 'forge_generation_timings';
+const MAX_TIMING_RECORDS = 20;
+const TIMING_AVERAGE_WINDOW = 5;
+const DEFAULT_ESTIMATES: Record<string, number> = {
+  research: 30_000,
+  geography: 120_000,
+  agents: 180_000,
+  buildings: 150_000,
+};
+
+interface TimingRecord {
+  type: string;
+  durationMs: number;
+  timestamp: number;
+}
 
 /**
  * State manager for the Simulation Forge wizard.
@@ -35,6 +50,12 @@ class ForgeStateManager {
   readonly isLoading = signal(false);
   readonly error = signal<string | null>(null);
   readonly isGenerating = signal(false);
+
+  // --- Generation Timing ---
+  /** Timestamp when current generation started. Null when idle. */
+  readonly generationStartedAt = signal<number | null>(null);
+  /** True if last generation completed via timeout recovery. Reset on next generation. */
+  readonly lastGenerationRecovered = signal(false);
 
   // --- Staging State (hand/fan for review before accept) ---
   readonly stagedAgents = signal<ForgeAgentDraft[]>([]);
@@ -216,18 +237,34 @@ class ForgeStateManager {
 
   async startResearch() {
     if (!this.draft.value) return;
+    const draftId = this.draft.value.id;
+
+    // Snapshot anchor count for timeout recovery
+    const anchorsBefore = this.draft.value.philosophical_anchor?.options?.length ?? 0;
+
     this.isGenerating.value = true;
     this.error.value = null;
+    this.generationStartedAt.value = Date.now();
+    this.lastGenerationRecovered.value = false;
     try {
-      const resp = await forgeApi.runResearch(this.draft.value.id);
+      const resp = await forgeApi.runResearch(draftId);
       if (!resp.success) {
         this.error.value = resp.error?.message ?? 'Research failed';
+        const recovered = await this._tryRecoverResearch(draftId, anchorsBefore);
+        if (recovered) this.lastGenerationRecovered.value = true;
         return;
       }
-      await this.loadDraft(this.draft.value.id);
+      await this.loadDraft(draftId);
     } catch (err) {
       this.error.value = err instanceof Error ? err.message : 'Research failed';
+      const recovered = await this._tryRecoverResearch(draftId, anchorsBefore);
+      if (recovered) this.lastGenerationRecovered.value = true;
     } finally {
+      const startedAt = this.generationStartedAt.value;
+      if (startedAt) {
+        this._recordTiming('research', Date.now() - startedAt);
+      }
+      this.generationStartedAt.value = null;
       this.isGenerating.value = false;
     }
   }
@@ -236,24 +273,33 @@ class ForgeStateManager {
     const draftId = this.draft.value?.id;
     if (!draftId) return;
 
+    // Snapshot entity counts before generation for timeout recovery
+    const snapshot = this._snapshotCounts();
+
     this.isGenerating.value = true;
     this.error.value = null;
+    this.generationStartedAt.value = Date.now();
+    this.lastGenerationRecovered.value = false;
     try {
       const resp = await forgeApi.generateChunk(draftId, chunkType);
       if (resp.success) {
         await this.loadDraft(draftId);
-        // Move newly generated entities into staging
-        if (chunkType === 'agents' && this.draft.value) {
-          this.stagedAgents.value = [...this.draft.value.agents];
-        } else if (chunkType === 'buildings' && this.draft.value) {
-          this.stagedBuildings.value = [...this.draft.value.buildings];
-        }
+        this._syncStagingAfterGeneration(chunkType);
       } else {
         this.error.value = resp.error?.message ?? 'Generation failed';
+        const recovered = await this._tryRecoverChunk(draftId, chunkType, snapshot);
+        if (recovered) this.lastGenerationRecovered.value = true;
       }
     } catch (err) {
       this.error.value = err instanceof Error ? err.message : 'Generation failed';
+      const recovered = await this._tryRecoverChunk(draftId, chunkType, snapshot);
+      if (recovered) this.lastGenerationRecovered.value = true;
     } finally {
+      const startedAt = this.generationStartedAt.value;
+      if (startedAt) {
+        this._recordTiming(chunkType, Date.now() - startedAt);
+      }
+      this.generationStartedAt.value = null;
       this.isGenerating.value = false;
     }
   }
@@ -614,6 +660,128 @@ class ForgeStateManager {
     this.imageProgress.value = null;
   }
 
+  // --- Timeout Recovery Helpers ---
+
+  private _snapshotCounts() {
+    const d = this.draft.value;
+    return {
+      agents: d?.agents.length ?? 0,
+      buildings: d?.buildings.length ?? 0,
+      hasGeography: Object.keys(d?.geography ?? {}).length > 0,
+    };
+  }
+
+  /**
+   * Sync newly generated entities into staging for review.
+   * Deduplicates the staging logic between happy path and recovery path.
+   */
+  private _syncStagingAfterGeneration(chunkType: 'geography' | 'agents' | 'buildings'): void {
+    if (!this.draft.value) return;
+    if (chunkType === 'agents') {
+      this.stagedAgents.value = [...this.draft.value.agents];
+    } else if (chunkType === 'buildings') {
+      this.stagedBuildings.value = [...this.draft.value.buildings];
+    }
+  }
+
+  /**
+   * Attempt to recover from a generation timeout/network error.
+   * The backend may have completed and saved data even though the HTTP response
+   * was lost (e.g. Railway proxy timeout). Re-fetches the draft and compares
+   * entity counts against the pre-generation snapshot.
+   */
+  private async _tryRecoverChunk(
+    draftId: string,
+    chunkType: 'geography' | 'agents' | 'buildings',
+    snapshot: { agents: number; buildings: number; hasGeography: boolean },
+  ): Promise<boolean> {
+    try {
+      await this.loadDraft(draftId);
+    } catch {
+      return false;
+    }
+    if (!this.draft.value) return false;
+
+    const newAgents = this.draft.value.agents.length;
+    const newBuildings = this.draft.value.buildings.length;
+    const newHasGeo = Object.keys(this.draft.value.geography).length > 0;
+
+    let recovered = false;
+    if (chunkType === 'agents' && newAgents > snapshot.agents) recovered = true;
+    if (chunkType === 'buildings' && newBuildings > snapshot.buildings) recovered = true;
+    if (chunkType === 'geography' && newHasGeo && !snapshot.hasGeography) recovered = true;
+
+    if (recovered) {
+      this.error.value = null;
+      this._syncStagingAfterGeneration(chunkType);
+    }
+    return recovered;
+  }
+
+  /**
+   * Attempt to recover from a research timeout/network error.
+   * Re-fetches the draft and checks if new anchors appeared.
+   */
+  private async _tryRecoverResearch(
+    draftId: string,
+    anchorsBefore: number,
+  ): Promise<boolean> {
+    try {
+      await this.loadDraft(draftId);
+    } catch {
+      return false;
+    }
+    if (!this.draft.value) return false;
+
+    const anchorsAfter = this.draft.value.philosophical_anchor?.options?.length ?? 0;
+    if (anchorsAfter > anchorsBefore) {
+      this.error.value = null;
+      return true;
+    }
+    return false;
+  }
+
+  // --- Generation Timing Methods ---
+
+  /**
+   * Returns rolling average duration (ms) from localStorage for a generation type.
+   * Falls back to hardcoded defaults when no history exists.
+   */
+  getEstimatedDuration(type: string): number {
+    try {
+      const raw = localStorage.getItem(TIMING_STORAGE_KEY);
+      if (!raw) return DEFAULT_ESTIMATES[type] ?? 60_000;
+      const records: TimingRecord[] = JSON.parse(raw);
+      const matching = records
+        .filter((r) => r.type === type)
+        .slice(-TIMING_AVERAGE_WINDOW);
+      if (matching.length === 0) return DEFAULT_ESTIMATES[type] ?? 60_000;
+      const sum = matching.reduce((acc, r) => acc + r.durationMs, 0);
+      return Math.round(sum / matching.length);
+    } catch {
+      return DEFAULT_ESTIMATES[type] ?? 60_000;
+    }
+  }
+
+  /**
+   * Records a generation timing to localStorage for future ETA estimates.
+   * Caps at MAX_TIMING_RECORDS entries, evicting oldest first.
+   */
+  private _recordTiming(type: string, durationMs: number): void {
+    try {
+      const raw = localStorage.getItem(TIMING_STORAGE_KEY);
+      const records: TimingRecord[] = raw ? JSON.parse(raw) : [];
+      records.push({ type, durationMs, timestamp: Date.now() });
+      // Evict oldest entries beyond cap
+      while (records.length > MAX_TIMING_RECORDS) {
+        records.shift();
+      }
+      localStorage.setItem(TIMING_STORAGE_KEY, JSON.stringify(records));
+    } catch {
+      // Private browsing or quota exceeded — silently ignore
+    }
+  }
+
   reset() {
     if (this._saveTimer) clearTimeout(this._saveTimer);
     this._pendingUpdate = null;
@@ -623,6 +791,8 @@ class ForgeStateManager {
     this.isGenerating.value = false;
     this.isGeneratingTheme.value = false;
     this.isLoading.value = false;
+    this.generationStartedAt.value = null;
+    this.lastGenerationRecovered.value = false;
     this.stagedAgents.value = [];
     this.stagedBuildings.value = [];
     this.generationConfig.value = { ...DEFAULT_GENERATION_CONFIG };

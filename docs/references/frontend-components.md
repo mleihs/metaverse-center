@@ -1,8 +1,8 @@
 ---
 title: "Frontend Components"
 id: frontend-components
-version: "2.8"
-date: 2026-03-14
+version: "2.9"
+date: 2026-03-16
 lang: de
 type: reference
 status: active
@@ -606,7 +606,20 @@ frontend/src/services/
 
 **Lifecycle:** `joinEpoch(epochId, userId, simulationId, simulationName)` subscribes to all channels. `leaveEpoch(epochId)` unsubscribes and resets signals. `joinTeam(epochId, teamId)` / `leaveTeam()` manage team channel. Focus methods (`setEpochChatFocused`, `setTeamChatFocused`) reset unread counters.
 
-**ForgeStateManager** (`forgeStateManager` singleton) manages Forge wizard state (draft lifecycle, sessionStorage persistence) and post-ceremony image generation tracking. Image tracking signals:
+**ForgeStateManager** (`forgeStateManager` singleton) manages Forge wizard state (draft lifecycle, sessionStorage persistence), generation timing/ETA, and post-ceremony image generation tracking.
+
+**Generation timing signals:**
+
+| Signal | Type | Description |
+|--------|------|-------------|
+| `generationStartedAt` | `Signal<number \| null>` | Timestamp when current generation started; null when idle |
+| `lastGenerationRecovered` | `Signal<boolean>` | True if last generation completed via timeout recovery; reset on next generation |
+
+**Timing methods:**
+- `getEstimatedDuration(type)` — rolling average (last 5) from localStorage key `forge_generation_timings`; falls back to hardcoded defaults (research: 30s, geography: 120s, agents: 180s, buildings: 150s). Consumers: `VelgForgeAstrolabe`, `VelgForgeTable` pass result as `estimatedDurationMs` to `VelgForgeScanOverlay`.
+- `_recordTiming(type, durationMs)` — appends to localStorage array after each generation (capped at 20 entries, oldest evicted). Wrapped in try-catch for private browsing.
+
+**Image tracking signals:**
 
 | Signal | Type | Description |
 |--------|------|-------------|

@@ -856,6 +856,93 @@ export class VelgForgeTable extends LitElement {
     });
   }
 
+  private get _geographyPhases(): string[] {
+    return [
+      msg('Surveying Dimensional Topology'),
+      msg('Plotting Zone Boundaries'),
+      msg('Charting Transit Corridors'),
+      msg('Mapping Cartographic Anomalies'),
+      msg('Measuring Spatial Distortions'),
+      msg('Calculating Zone Resonance'),
+      msg('Tracing Ley Line Networks'),
+      msg('Cataloguing Terrain Signatures'),
+      msg('Establishing Grid Reference'),
+      msg('Probing Underground Formations'),
+      msg('Scanning Atmospheric Layers'),
+      msg('Detecting Boundary Phenomena'),
+      msg('Reconciling Overlapping Geometries'),
+      msg('Interpolating Missing Sectors'),
+      msg('Validating Street Connectivity'),
+      msg('Assigning Zone Classifications'),
+      msg('Rendering Elevation Contours'),
+      msg('Simulating Traffic Flow'),
+      msg('Cross-Checking Dimensional Stability'),
+      msg('Encoding Cartographic Metadata'),
+      msg('Verifying Perimeter Integrity'),
+      msg('Finalizing District Boundaries'),
+      msg('Compiling Transit Route Index'),
+      msg('Crystallizing City Grid'),
+    ];
+  }
+
+  private get _agentPhases(): string[] {
+    return [
+      msg('Scanning Personnel Archives'),
+      msg('Profiling Operative Candidates'),
+      msg('Cross-Referencing Dossier Files'),
+      msg('Analyzing Psychological Matrices'),
+      msg('Evaluating Field Competencies'),
+      msg('Assessing Loyalty Trajectories'),
+      msg('Decrypting Background Records'),
+      msg('Generating Cover Identities'),
+      msg('Simulating Social Dynamics'),
+      msg('Mapping Relationship Networks'),
+      msg('Calibrating Personality Vectors'),
+      msg('Stress-Testing Motivational Profiles'),
+      msg('Verifying Operational Security'),
+      msg('Assigning Specialization Codes'),
+      msg('Computing Interpersonal Chemistry'),
+      msg('Projecting Long-Term Allegiance'),
+      msg('Drafting Psychological Briefs'),
+      msg('Encoding Behavioral Signatures'),
+      msg('Cross-Validating Skill Matrices'),
+      msg('Reviewing Counter-Intelligence'),
+      msg('Finalizing Clearance Levels'),
+      msg('Compiling Operative Dossiers'),
+      msg('Running Background Verification'),
+      msg('Assembling Operative Roster'),
+    ];
+  }
+
+  private get _buildingPhases(): string[] {
+    return [
+      msg('Analyzing Structural Foundations'),
+      msg('Drafting Architectural Blueprints'),
+      msg('Calculating Load-Bearing Vectors'),
+      msg('Simulating Infrastructure Networks'),
+      msg('Surveying Construction Materials'),
+      msg('Evaluating Structural Integrity'),
+      msg('Modeling Utility Distribution'),
+      msg('Assessing Defensive Potential'),
+      msg('Computing Spatial Efficiency'),
+      msg('Designing Emergency Protocols'),
+      msg('Integrating Zone Infrastructure'),
+      msg('Calibrating Environmental Systems'),
+      msg('Projecting Maintenance Requirements'),
+      msg('Verifying Building Codes'),
+      msg('Mapping Service Access Points'),
+      msg('Simulating Occupancy Patterns'),
+      msg('Testing Structural Resonance'),
+      msg('Encoding Architectural DNA'),
+      msg('Cross-Referencing Zoning Data'),
+      msg('Rendering Interior Schematics'),
+      msg('Validating Construction Feasibility'),
+      msg('Finalizing Utility Connections'),
+      msg('Compiling Engineering Reports'),
+      msg('Materializing Structural Footprint'),
+    ];
+  }
+
   private async _generateChunk(type: 'agents' | 'buildings' | 'geography') {
     const sectionSel =
       type === 'geography'
@@ -877,7 +964,10 @@ export class VelgForgeTable extends LitElement {
     this._generatingChunk = null;
 
     if (!forgeStateManager.error.value) {
-      VelgToast.success(msg('Blueprint expanded successfully.'));
+      const toastMsg = forgeStateManager.lastGenerationRecovered.value
+        ? msg('Signal recovered — blueprints retrieved from Bureau archives')
+        : msg('Blueprint expanded successfully.');
+      VelgToast.success(toastMsg);
       // Scroll to reveal the generated content
       await this.updateComplete;
       requestAnimationFrame(() => {
@@ -1122,10 +1212,11 @@ export class VelgForgeTable extends LitElement {
             ? html`
           <velg-forge-scan-overlay
             active
-            .phases=${[msg('Surveying Dimensional Topology'), msg('Plotting Zone Boundaries'), msg('Charting Transit Corridors'), msg('Mapping Cartographic Anomalies'), msg('Crystallizing City Grid')]}
+            .phases=${this._geographyPhases}
             .lockLabels=${[msg('Zones'), msg('Streets'), msg('Grid')]}
             headerLabel=${msg('Dimensional Cartography Division')}
             .echoText=${this._draft?.seed_prompt ?? ''}
+            .estimatedDurationMs=${forgeStateManager.getEstimatedDuration('geography')}
           ></velg-forge-scan-overlay>
         `
             : nothing
@@ -1217,9 +1308,10 @@ export class VelgForgeTable extends LitElement {
             ? html`
           <velg-forge-scan-overlay
             active
-            .phases=${[msg('Scanning Personnel Archives'), msg('Profiling Operative Candidates'), msg('Cross-Referencing Dossier Files'), msg('Analyzing Psychological Matrices'), msg('Assembling Operative Roster')]}
+            .phases=${this._agentPhases}
             .lockLabels=${[msg('Psych'), msg('Skills'), msg('Cover')]}
             headerLabel=${msg('Bureau Personnel Division')}
+            .estimatedDurationMs=${forgeStateManager.getEstimatedDuration('agents')}
           ></velg-forge-scan-overlay>
         `
             : nothing
@@ -1311,9 +1403,10 @@ export class VelgForgeTable extends LitElement {
             ? html`
           <velg-forge-scan-overlay
             active
-            .phases=${[msg('Analyzing Structural Foundations'), msg('Drafting Architectural Blueprints'), msg('Calculating Load-Bearing Vectors'), msg('Simulating Infrastructure Networks'), msg('Materializing Structural Footprint')]}
+            .phases=${this._buildingPhases}
             .lockLabels=${[msg('Base'), msg('Frame'), msg('Roof')]}
             headerLabel=${msg('Infrastructure Engineering Corps')}
+            .estimatedDurationMs=${forgeStateManager.getEstimatedDuration('buildings')}
           ></velg-forge-scan-overlay>
         `
             : nothing

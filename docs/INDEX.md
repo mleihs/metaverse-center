@@ -23,7 +23,7 @@ tags: [index, catalog, documentation]
 | [External Services](specs/external-services.md) | 1.0 | 2026-02-15 | de | active |
 | [Game Systems Design](specs/game-systems.md) | 1.0 | 2026-03-08 | de | active |
 | [i18n Architecture](specs/i18n-architecture.md) | 2.0 | 2026-03-03 | de | active |
-| [Microanimations](specs/microanimations.md) | 1.0 | 2026-03-13 | en | active |
+| [Microanimations](specs/microanimations.md) | 1.1 | 2026-03-16 | en | active |
 | [Platform Architecture: Multi-Simulations-Plattform](specs/platform-architecture.md) | 2.2 | 2026-03-10 | de | active |
 | [Relationships, Echoes & Map](specs/relationships-echoes-map.md) | 1.1 | 2026-02-26 | de | active |
 | [Simulation Settings](specs/simulation-settings.md) | 1.0 | 2026-02-15 | de | active |
@@ -38,8 +38,8 @@ tags: [index, catalog, documentation]
 | [Database Schema: Neues Multi-Simulations-Schema](references/database-schema.md) | 3.6 | 2026-03-13 | de | active |
 | [Design System](references/design-system.md) | 1.3 | 2026-03-02 | de | active |
 | [Domain Models](references/domain-models.md) | 3.3 | 2026-03-13 | de | active |
-| [Feature Catalog](references/feature-catalog.md) | 2.6 | 2026-03-13 | de | active |
-| [Frontend Components](references/frontend-components.md) | 2.7 | 2026-03-13 | de | active |
+| [Feature Catalog](references/feature-catalog.md) | 2.7 | 2026-03-16 | de | active |
+| [Frontend Components](references/frontend-components.md) | 2.9 | 2026-03-16 | de | active |
 
 ## Guides (11)
 
