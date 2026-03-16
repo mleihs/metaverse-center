@@ -513,7 +513,7 @@ export class VelgGameCard extends LitElement {
       color: var(--card-text-dim);
       line-height: 1.4;
       display: -webkit-box;
-      -webkit-line-clamp: 2;
+      -webkit-line-clamp: 4;
       -webkit-box-orient: vertical;
       overflow: hidden;
       opacity: 0.8;
@@ -521,7 +521,7 @@ export class VelgGameCard extends LitElement {
 
     :host([size="xs"]) .card__description { display: none; }
     :host([size="sm"]) .card__description { -webkit-line-clamp: 1; font-size: 7px; }
-    :host([size="lg"]) .card__description { -webkit-line-clamp: 3; font-size: 10px; }
+    :host([size="lg"]) .card__description { -webkit-line-clamp: 5; font-size: 10px; }
 
     .card__badges {
       display: flex;

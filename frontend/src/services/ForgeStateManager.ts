@@ -1,4 +1,5 @@
 import { computed, type Signal, signal } from '@preact/signals-core';
+import { appState } from './AppStateManager.js';
 import type {
   BYOKStatus,
   FeaturePurchase,
@@ -78,10 +79,14 @@ class ForgeStateManager {
   // --- Computed Views ---
   readonly phase = computed(() => this.draft.value?.current_phase ?? 'astrolabe');
   readonly status = computed(() => this.draft.value?.status ?? 'draft');
+  /** Platform admins and BYOK bypass users skip all token costs. */
+  readonly hasTokenBypass = computed(
+    () => appState.isPlatformAdmin.value || this.byokStatus.value.effective_bypass,
+  );
   readonly canIgnite = computed(() => {
     const d = this.draft.value;
     if (!d || d.current_phase !== 'ignition' || d.status !== 'draft') return false;
-    return this.walletBalance.value > 0 || this.byokStatus.value.effective_bypass;
+    return this.walletBalance.value > 0 || this.hasTokenBypass.value;
   });
 
   // --- Debounce state ---
@@ -98,7 +103,18 @@ class ForgeStateManager {
     const savedId = sessionStorage.getItem(DRAFT_STORAGE_KEY);
     if (!savedId || this.draft.value) return false;
     await this.loadDraft(savedId);
-    return !!this.draft.value;
+    return this._discardIfCompleted();
+  }
+
+  /** Clears the draft + sessionStorage if the loaded draft is no longer active. */
+  private _discardIfCompleted(): boolean {
+    const d = this.draft.value;
+    if (d && d.status !== 'draft') {
+      this.draft.value = null;
+      sessionStorage.removeItem(DRAFT_STORAGE_KEY);
+      return false;
+    }
+    return !!d;
   }
 
   async loadDraft(id: string) {
@@ -318,6 +334,8 @@ class ForgeStateManager {
     try {
       const resp = await forgeApi.ignite(draftId);
       if (resp.success && resp.data?.simulation_id) {
+        // Draft is now materialized — clear session so the wizard starts fresh next time
+        sessionStorage.removeItem(DRAFT_STORAGE_KEY);
         return {
           simulationId: resp.data.simulation_id,
           slug: resp.data.slug ?? resp.data.simulation_id,

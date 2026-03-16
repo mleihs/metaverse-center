@@ -205,26 +205,68 @@ export class VelgForgeTable extends LitElement {
         margin-bottom: var(--space-8);
       }
 
+      .command-console__advance--bottom {
+        margin-top: var(--space-8);
+      }
+
       .command-console__advance .btn--next {
         min-width: 280px;
         padding: var(--space-3) var(--space-6);
         font-size: var(--text-sm);
         text-align: center;
+        position: relative;
+        overflow: hidden;
       }
 
       .command-console__advance .btn--next:not(:disabled) {
-        animation: advance-reveal 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+        animation: advance-entrance 0.6s cubic-bezier(0.22, 1, 0.36, 1) both,
+                   advance-beacon 2.5s ease-in-out 0.6s infinite;
         border-color: var(--color-success, #22c55e);
         color: var(--color-success, #22c55e);
       }
 
-      .command-console__advance .btn--next:not(:disabled):hover {
-        box-shadow: 0 0 20px rgba(74 222 128 / 0.25);
+      .command-console__advance .btn--next:not(:disabled)::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          90deg,
+          transparent 0%,
+          rgba(74 222 128 / 0.12) 40%,
+          rgba(74 222 128 / 0.2) 50%,
+          rgba(74 222 128 / 0.12) 60%,
+          transparent 100%
+        );
+        transform: translateX(-100%);
+        animation: advance-shimmer 4s ease-in-out 1.2s infinite;
+        pointer-events: none;
       }
 
-      @keyframes advance-reveal {
-        from { opacity: 0; transform: scale(0.95); }
-        to { opacity: 1; transform: scale(1); }
+      .command-console__advance .btn--next:not(:disabled):hover {
+        box-shadow: 0 0 24px rgba(74 222 128 / 0.35), 0 0 6px rgba(74 222 128 / 0.5);
+        transform: translateY(-2px);
+        animation: advance-entrance 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+        transition: box-shadow 0.2s ease, transform 0.2s ease;
+      }
+
+      .command-console__advance .btn--next:not(:disabled):hover::after {
+        animation: advance-shimmer 2.5s ease-in-out infinite;
+      }
+
+      @keyframes advance-entrance {
+        0%   { opacity: 0; transform: translateY(12px) scale(0.96); }
+        70%  { opacity: 1; transform: translateY(-2px) scale(1.01); }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
+      }
+
+      @keyframes advance-beacon {
+        0%, 100% { box-shadow: 0 0 8px rgba(74 222 128 / 0.15), 0 0 2px rgba(74 222 128 / 0.3); }
+        50%      { box-shadow: 0 0 16px rgba(74 222 128 / 0.3), 0 0 4px rgba(74 222 128 / 0.5), 0 0 40px rgba(74 222 128 / 0.08); }
+      }
+
+      @keyframes advance-shimmer {
+        0%, 65% { transform: translateX(-100%); }
+        100%    { transform: translateX(100%); }
       }
 
       .advance-hint {
@@ -279,6 +321,13 @@ export class VelgForgeTable extends LitElement {
           animation: none;
         }
         .command-console__advance .btn--next:not(:disabled) {
+          animation: none;
+          box-shadow: 0 0 8px rgba(74 222 128 / 0.2);
+        }
+        .command-console__advance .btn--next:not(:disabled)::after {
+          display: none;
+        }
+        .command-console__advance .btn--next:not(:disabled):hover {
           animation: none;
         }
         .command-console--entering .command-panel {
@@ -1269,6 +1318,14 @@ export class VelgForgeTable extends LitElement {
         `
             : nothing
         }
+      </div>
+
+      <!-- Bottom advance button (duplicates top) -->
+      <div class="command-console__advance command-console__advance--bottom">
+        <button class="btn btn--next" ?disabled=${!allComplete} @click=${this._handleNext}>
+          ${msg('Calibrate Darkroom')} &rarr;
+        </button>
+        ${!allComplete ? html`<span class="advance-hint">${msg('Complete all three divisions to advance')}</span>` : nothing}
       </div>
 
       ${this._renderDossierPanel()}

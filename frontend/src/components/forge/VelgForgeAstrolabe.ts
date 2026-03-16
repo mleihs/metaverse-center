@@ -16,12 +16,7 @@ import { fanRotation, renderInfoBubble } from './forge-utils.js';
 
 import './VelgForgeScanOverlay.js';
 
-const SEED_SUGGESTIONS = [
-  'A floating archipelago where memories solidify into islands and forgetting causes erosion. Cartographers wage silent wars over which memories are worth preserving.',
-  'A city that only exists during solar eclipses — its inhabitants live compressed lifetimes in minutes of darkness. Between eclipses, they are nothing but equations scratched into observatory walls.',
-  'An underground network of libraries where books rewrite themselves based on who reads them. The librarians have stopped reading entirely, terrified of what the books might become.',
-  'A prison colony on a dying star where inmates mine crystallized light to fuel distant civilizations. The warden believes rehabilitation means learning to love the dark.',
-];
+// Seed suggestions are resolved at render-time via msg() for i18n support.
 
 /**
  * Phase I: The Astrolabe.
@@ -99,6 +94,12 @@ export class VelgForgeAstrolabe extends LitElement {
         opacity: 0.5;
       }
 
+      @media (max-width: 768px) {
+        .seed-box textarea {
+          font-size: 16px;
+        }
+      }
+
       /* ── Seed Footer (counter + language hint) ── */
 
       .seed-box__footer {
@@ -162,6 +163,7 @@ export class VelgForgeAstrolabe extends LitElement {
         transition: all 0.15s;
         text-align: left;
         white-space: normal;
+        min-height: 44px;
       }
 
       .seed-suggestion:hover {
@@ -659,6 +661,23 @@ export class VelgForgeAstrolabe extends LitElement {
     this._seed = text;
   }
 
+  private _getSeedSuggestions(): string[] {
+    return [
+      msg(
+        'A floating archipelago where memories solidify into islands and forgetting causes erosion. Cartographers wage silent wars over which memories are worth preserving.',
+      ),
+      msg(
+        'A city that only exists during solar eclipses — its inhabitants live compressed lifetimes in minutes of darkness. Between eclipses, they are nothing but equations scratched into observatory walls.',
+      ),
+      msg(
+        'An underground network of libraries where books rewrite themselves based on who reads them. The librarians have stopped reading entirely, terrified of what the books might become.',
+      ),
+      msg(
+        'A prison colony on a dying star where inmates mine crystallized light to fuel distant civilizations. The warden believes rehabilitation means learning to love the dark.',
+      ),
+    ];
+  }
+
   private _updateGenConfig(field: string, value: number) {
     forgeStateManager.updateGenerationConfig({ [field]: value });
   }
@@ -719,7 +738,7 @@ export class VelgForgeAstrolabe extends LitElement {
           </div>
 
           <div class="seed-suggestions">
-            ${SEED_SUGGESTIONS.map(
+            ${this._getSeedSuggestions().map(
               (s) => html`
               <button
                 class="seed-suggestion"

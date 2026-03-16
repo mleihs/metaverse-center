@@ -565,7 +565,7 @@ export class VelgAgentsView extends SignalWatcher(LitElement) {
           <velg-recruitment-office
             .simulationId=${this.simulationId}
             .walletBalance=${forgeStateManager.walletBalance.value}
-            .hasBypass=${forgeStateManager.byokStatus.value.effective_bypass}
+            .hasBypass=${forgeStateManager.hasTokenBypass.value}
             @recruitment-complete=${this._handleRecruitmentComplete}
           ></velg-recruitment-office>
         `

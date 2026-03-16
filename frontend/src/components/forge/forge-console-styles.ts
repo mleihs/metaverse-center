@@ -162,6 +162,14 @@ export const forgeFieldStyles = css`
     padding-right: var(--space-8);
     cursor: pointer;
   }
+
+  /* iOS auto-zoom prevention: inputs < 16px trigger viewport zoom */
+  @media (max-width: 768px) {
+    .field__input,
+    .field__textarea {
+      font-size: 16px;
+    }
+  }
 `;
 
 export const forgeRangeStyles = css`

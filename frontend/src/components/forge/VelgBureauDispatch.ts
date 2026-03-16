@@ -91,10 +91,11 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
       inset: 0;
       z-index: 901;
       overflow-y: auto;
+      overscroll-behavior: contain;
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      padding: var(--space-8) var(--space-4);
+      padding: max(var(--space-8), env(safe-area-inset-top)) var(--space-4) max(var(--space-8), env(safe-area-inset-bottom));
     }
 
     .dispatch__doc {
@@ -352,7 +353,7 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
       border: 1px solid color-mix(in srgb, var(--color-accent-amber) 40%, transparent);
       cursor: pointer;
       transition: all 0.2s;
-      min-height: 32px;
+      min-height: 44px;
     }
 
     .service__nav-btn:hover {
@@ -544,7 +545,7 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
     const sim = appState.currentSimulation.value;
     const simName = sim?.name ?? '—';
     const balance = forgeStateManager.walletBalance.value;
-    const bypass = forgeStateManager.byokStatus.value.effective_bypass;
+    const bypass = forgeStateManager.hasTokenBypass.value;
     const totalCost = BUREAU_SERVICES.reduce((sum, s) => sum + s.cost, 0);
     const closing = this._closing;
 

@@ -14301,9 +14301,6 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 <trans-unit id="s9ec2699513c0f9c3">
   <source>close</source>
 <target>schließen</target></trans-unit>
-<trans-unit id="s3605c59929642487">
-  <source>${this.label} navigation</source>
-<target>${this.label}-Navigation</target></trans-unit>
 <trans-unit id="sc26501e3ade7da3c">
   <source>Tools</source>
 <target>Werkzeuge</target></trans-unit>
@@ -14414,6 +14411,60 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 <trans-unit id="s8c35a8053ee30a52">
   <source>Clearance granted — welcome to the Forge, Architect</source>
   <target>Freigabe erteilt — willkommen in der Forge, Architekt</target>
+</trans-unit>
+<trans-unit id="s6d52fcde73fadba7">
+  <source>Clearance granted. <x id="0" equiv-text="${tokens}"/> starter tokens credited.</source>
+  <target>Freigabe erteilt. <x id="0" equiv-text="${tokens}"/> Starter-Tokens gutgeschrieben.</target>
+</trans-unit>
+<trans-unit id="s1b271e78ccadbd88">
+  <source>Pending clearance requests</source>
+  <target>Offene Freigabeanträge</target>
+</trans-unit>
+<trans-unit id="s590b39fee9a98288">
+  <source>PENDING REVIEW</source>
+  <target>PRÜFUNG AUSSTEHEND</target>
+</trans-unit>
+<trans-unit id="sfa973a59b773349d">
+  <source>Reject request from</source>
+  <target>Antrag ablehnen von</target>
+</trans-unit>
+<trans-unit id="s17d200c21bec5fd1">
+  <source>Approve request from</source>
+  <target>Antrag genehmigen von</target>
+</trans-unit>
+<trans-unit id="sac34eff9c3439721">
+  <source>A floating archipelago where memories solidify into islands and forgetting causes erosion. Cartographers wage silent wars over which memories are worth preserving.</source>
+  <target>Ein schwebendes Archipel, in dem Erinnerungen zu Inseln erstarren und Vergessen zur Erosion führt. Kartographen führen stille Kriege darüber, welche Erinnerungen es wert sind, bewahrt zu werden.</target>
+</trans-unit>
+<trans-unit id="s10132eeac19d1e03">
+  <source>A city that only exists during solar eclipses — its inhabitants live compressed lifetimes in minutes of darkness. Between eclipses, they are nothing but equations scratched into observatory walls.</source>
+  <target>Eine Stadt, die nur während Sonnenfinsternissen existiert — ihre Bewohner leben komprimierte Leben in Minuten der Dunkelheit. Zwischen den Finsternissen sind sie nichts als Gleichungen, eingeritzt in die Wände von Observatorien.</target>
+</trans-unit>
+<trans-unit id="s1189cf348ab78dd0">
+  <source>An underground network of libraries where books rewrite themselves based on who reads them. The librarians have stopped reading entirely, terrified of what the books might become.</source>
+  <target>Ein unterirdisches Netzwerk aus Bibliotheken, in denen Bücher sich selbst umschreiben, je nachdem wer sie liest. Die Bibliothekare haben gänzlich aufgehört zu lesen — aus Angst vor dem, was die Bücher werden könnten.</target>
+</trans-unit>
+<trans-unit id="s14f7d3ff53c39cbf">
+  <source>A prison colony on a dying star where inmates mine crystallized light to fuel distant civilizations. The warden believes rehabilitation means learning to love the dark.</source>
+  <target>Eine Strafkolonie auf einem sterbenden Stern, in der Insassen kristallisiertes Licht abbauen, um ferne Zivilisationen zu versorgen. Der Aufseher glaubt, Resozialisierung bedeute, die Dunkelheit lieben zu lernen.</target>
+</trans-unit>
+<trans-unit id="sfe1fb536cab6c0f5">
+  <source><x id="0" equiv-text="${this.label}"/> navigation</source>
+</trans-unit>
+<trans-unit id="sb706428512ac346a">
+  <source>Create your first shard</source>
+</trans-unit>
+<trans-unit id="s4d34d13f31ee3a8d">
+  <source>ARCHITECT CLEARANCE GRANTED</source>
+</trans-unit>
+<trans-unit id="s5153333b116814f0">
+  <source>Fracture Your First Shard</source>
+</trans-unit>
+<trans-unit id="s74b3a0289c5ef2d3">
+  <source>The Forge awaits. Shape a new world from the void.</source>
+</trans-unit>
+<trans-unit id="s652b46bb053a5a24">
+  <source>Clearance granted — welcome to the Forge, Architect! <x id="0" equiv-text="${tokens}"/> tokens await you.</source>
 </trans-unit>
 
 </body>

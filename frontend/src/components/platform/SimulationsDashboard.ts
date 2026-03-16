@@ -1284,6 +1284,116 @@ export class VelgSimulationsDashboard extends LitElement {
       }
     }
 
+    /* ── Forge empty-state CTA ── */
+
+    @keyframes forge-card-enter {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes forge-breathe {
+      0%, 100% {
+        border-color: var(--color-gray-700);
+        box-shadow: 0 0 0 transparent;
+      }
+      50% {
+        border-color: var(--color-accent-amber);
+        box-shadow: 0 0 12px var(--color-accent-amber-glow);
+      }
+    }
+
+    .forge-empty {
+      display: flex;
+      justify-content: center;
+      padding: var(--space-6) 0;
+    }
+
+    .forge-empty__card {
+      all: unset;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-3);
+      width: 100%;
+      max-width: 480px;
+      padding: var(--space-8) var(--space-6);
+      border: 2px dashed var(--color-gray-700);
+      border-radius: var(--radius-lg);
+      background: var(--color-gray-900);
+      cursor: pointer;
+      text-align: center;
+      animation:
+        forge-card-enter 350ms var(--ease-out) both,
+        forge-breathe 3s ease-in-out 0.4s infinite;
+      transition:
+        border-color 200ms var(--ease-out),
+        transform 200ms var(--ease-out),
+        box-shadow 200ms var(--ease-out);
+    }
+
+    .forge-empty__card:hover {
+      border-color: var(--color-accent-amber);
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0 var(--color-accent-amber-glow);
+      animation: forge-card-enter 350ms var(--ease-out) both;
+    }
+
+    .forge-empty__card:active {
+      transform: translate(0);
+      box-shadow: 2px 2px 0 var(--color-accent-amber-glow);
+    }
+
+    .forge-empty__card:focus-visible {
+      outline: 2px solid var(--color-accent-amber);
+      outline-offset: 2px;
+    }
+
+    .forge-empty__icon {
+      color: var(--color-accent-amber);
+    }
+
+    .forge-empty__surtitle {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--color-accent-amber);
+    }
+
+    .forge-empty__title {
+      font-family: var(--font-brutalist);
+      font-size: var(--text-xl);
+      color: var(--color-gray-100);
+    }
+
+    .forge-empty__text {
+      font-size: var(--text-base);
+      color: var(--color-gray-400);
+      max-width: 320px;
+    }
+
+    .forge-empty__action {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      font-family: var(--font-brutalist);
+      font-size: var(--text-sm);
+      color: var(--color-accent-amber);
+      letter-spacing: 0.04em;
+      transition: letter-spacing 200ms var(--ease-out);
+    }
+
+    .forge-empty__card:hover .forge-empty__action {
+      letter-spacing: 0.1em;
+    }
+
     /* ── Reduced motion ── */
 
     @media (prefers-reduced-motion: reduce) {
@@ -1315,6 +1425,11 @@ export class VelgSimulationsDashboard extends LitElement {
 
       .tremor-banner__icon {
         animation: none;
+      }
+
+      .forge-empty__card {
+        animation: none;
+        opacity: 1;
       }
     }
   `;
@@ -1857,6 +1972,9 @@ export class VelgSimulationsDashboard extends LitElement {
 
   private _renderMyShards(sims: Simulation[]) {
     if (sims.length === 0) {
+      if (appState.canForge.value) {
+        return this._renderForgeEmptyState();
+      }
       return html`
         <div class="empty-state">
           <div class="empty-state__title">${msg('No Own Shards Yet')}</div>
@@ -1907,6 +2025,20 @@ export class VelgSimulationsDashboard extends LitElement {
         `
             : nothing
         }
+      </section>
+    `;
+  }
+
+  private _renderForgeEmptyState() {
+    return html`
+      <section class="forge-empty" aria-label="${msg('Create your first shard')}">
+        <button class="forge-empty__card" @click=${this._handleCreateClick}>
+          <div class="forge-empty__icon" aria-hidden="true">${icons.sparkle(28)}</div>
+          <div class="forge-empty__surtitle">${msg('ARCHITECT CLEARANCE GRANTED')}</div>
+          <div class="forge-empty__title">${msg('Fracture Your First Shard')}</div>
+          <div class="forge-empty__text">${msg('The Forge awaits. Shape a new world from the void.')}</div>
+          <div class="forge-empty__action">${msg('Enter the Forge')} ${icons.chevronRight(12)}</div>
+        </button>
       </section>
     `;
   }

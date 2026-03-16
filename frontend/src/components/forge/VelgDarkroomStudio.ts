@@ -49,6 +49,7 @@ export class VelgDarkroomStudio extends LitElement {
       align-items: center;
       justify-content: space-between;
       padding: var(--space-4) var(--space-6);
+      padding-top: max(var(--space-4), env(safe-area-inset-top));
       border-bottom: 2px solid var(--color-accent-amber);
       background: var(--color-surface, #111);
       flex-shrink: 0;
@@ -153,7 +154,9 @@ export class VelgDarkroomStudio extends LitElement {
     .content {
       flex: 1;
       overflow-y: auto;
+      overscroll-behavior: contain;
       padding: var(--space-6);
+      padding-bottom: max(var(--space-6), env(safe-area-inset-bottom));
     }
 
     .content__section {
@@ -309,7 +312,7 @@ export class VelgDarkroomStudio extends LitElement {
       cursor: pointer;
       transition: all 0.2s;
       text-align: center;
-      min-height: 36px;
+      min-height: 44px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -465,8 +468,8 @@ export class VelgDarkroomStudio extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 36px;
-      height: 36px;
+      width: 44px;
+      height: 44px;
       padding: 0;
       background: transparent;
       border: 1px solid var(--color-border);
@@ -484,6 +487,7 @@ export class VelgDarkroomStudio extends LitElement {
     .regen-panel__body {
       flex: 1;
       overflow-y: auto;
+      overscroll-behavior: contain;
       padding: var(--space-4);
       display: flex;
       flex-direction: column;
@@ -514,6 +518,12 @@ export class VelgDarkroomStudio extends LitElement {
       border: 1px solid var(--color-border);
       resize: vertical;
       box-sizing: border-box;
+    }
+
+    @media (max-width: 768px) {
+      .regen-panel__prompt {
+        font-size: 16px;
+      }
     }
 
     .regen-panel__prompt:focus {
@@ -796,7 +806,7 @@ export class VelgDarkroomStudio extends LitElement {
   }
 
   private _renderPurchaseCTA() {
-    const hasBypass = forgeStateManager.byokStatus.value.effective_bypass;
+    const hasBypass = forgeStateManager.hasTokenBypass.value;
     const canAfford = hasBypass || forgeStateManager.walletBalance.value >= 2;
 
     return html`

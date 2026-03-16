@@ -9,7 +9,7 @@
  * Syncs count via `appState.setPendingForgeRequestCount()`.
  */
 
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
@@ -173,6 +173,12 @@ export class VelgClearanceQueue extends LitElement {
       transition: border-color var(--transition-fast);
     }
 
+    @media (max-width: 768px) {
+      .request-card__notes-input {
+        font-size: 16px;
+      }
+    }
+
     .request-card__notes-input:focus {
       outline: none;
       border-color: var(--color-accent-amber);
@@ -208,6 +214,7 @@ export class VelgClearanceQueue extends LitElement {
       border: none;
       cursor: pointer;
       transition: all var(--transition-fast);
+      min-height: 44px;
     }
 
     .btn-approve:hover {
@@ -234,6 +241,7 @@ export class VelgClearanceQueue extends LitElement {
       border: 1px solid var(--color-danger);
       cursor: pointer;
       transition: all var(--transition-fast);
+      min-height: 44px;
     }
 
     .btn-reject:hover {
@@ -307,6 +315,34 @@ export class VelgClearanceQueue extends LitElement {
       align-items: baseline;
       gap: var(--space-2);
     }
+
+    /* ── Mobile ── */
+
+    @media (max-width: 640px) {
+      .forge-section {
+        padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
+      }
+
+      .request-card {
+        padding: var(--space-3);
+      }
+
+      .request-card__header {
+        flex-direction: column;
+        gap: var(--space-1);
+      }
+
+      .request-card__actions {
+        flex-direction: column;
+      }
+
+      .btn-approve,
+      .btn-reject {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+      }
+    }
   `;
 
   @property({ reflect: true }) variant: 'full' | 'compact' = 'full';
@@ -362,7 +398,7 @@ export class VelgClearanceQueue extends LitElement {
           const tokens = (resp.data as Record<string, unknown>)?.tokens_granted;
           VelgToast.success(
             tokens
-              ? msg(`Clearance granted. ${tokens} starter tokens credited.`)
+              ? msg(str`Clearance granted. ${tokens} starter tokens credited.`)
               : msg('Clearance granted successfully.'),
           );
         } else {

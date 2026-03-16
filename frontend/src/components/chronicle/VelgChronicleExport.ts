@@ -326,7 +326,7 @@ export class VelgChronicleExport extends LitElement {
   }
 
   private get _hasBypass(): boolean {
-    return forgeStateManager.byokStatus.value.effective_bypass;
+    return forgeStateManager.hasTokenBypass.value;
   }
 
   private get _balance(): number {

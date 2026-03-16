@@ -56,7 +56,11 @@ export class VelgForgeCeremony extends LitElement {
       justify-content: center;
       overflow: hidden;
       gap: var(--space-3, 0.75rem);
-      padding: 3vh 2vw;
+      padding:
+        max(3vh, env(safe-area-inset-top))
+        max(2vw, env(safe-area-inset-right))
+        max(3vh, env(safe-area-inset-bottom))
+        max(2vw, env(safe-area-inset-left));
     }
 
     /* Vignette for depth */
@@ -296,10 +300,23 @@ export class VelgForgeCeremony extends LitElement {
       animation: particle-rise 3s ease-out infinite;
     }
 
+    /* Extended particles through stages 4-5 at lower opacity, slower pace */
+    .ceremony--stage-4 .ceremony__particle,
+    .ceremony--stage-5 .ceremony__particle {
+      animation: particle-rise-slow 5s ease-out infinite;
+    }
+
     @keyframes particle-rise {
       0%   { transform: translateY(0); opacity: 0; }
       15%  { opacity: 0.8; }
       85%  { opacity: 0.3; }
+      100% { transform: translateY(-100vh); opacity: 0; }
+    }
+
+    @keyframes particle-rise-slow {
+      0%   { transform: translateY(0); opacity: 0; }
+      15%  { opacity: 0.4; }
+      85%  { opacity: 0.15; }
       100% { transform: translateY(-100vh); opacity: 0; }
     }
 
@@ -335,14 +352,14 @@ export class VelgForgeCeremony extends LitElement {
       opacity: 0;
     }
 
+    /* ── Decorated Header ───────────────────────── */
+
     .ceremony__header {
       position: relative;
       z-index: 6;
-      font-family: var(--font-mono, monospace);
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.2em;
-      color: rgba(245 158 11 / 0.7);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3, 0.75rem);
       opacity: 0;
     }
 
@@ -353,9 +370,61 @@ export class VelgForgeCeremony extends LitElement {
       transition: opacity 0.6s ease-out 0.2s;
     }
 
+    .ceremony__header-rule {
+      flex: 0 0 40px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(245 158 11 / 0.5), transparent);
+      position: relative;
+    }
+
+    .ceremony__header-rule::before {
+      content: '\u25C6';
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 6px;
+      color: rgba(245 158 11 / 0.6);
+      line-height: 1;
+    }
+
+    .ceremony__header-rule:first-child::before {
+      right: -2px;
+    }
+
+    .ceremony__header-rule:last-child::before {
+      left: -2px;
+    }
+
+    .ceremony__header-text {
+      font-family: var(--font-mono, monospace);
+      font-size: var(--text-sm, 0.875rem);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: rgba(245 158 11 / 0.85);
+      text-shadow: 0 0 12px rgba(245 158 11 / 0.3);
+      white-space: nowrap;
+    }
+
+    .ceremony--stage-3 .ceremony__header-text,
+    .ceremony--stage-4 .ceremony__header-text,
+    .ceremony--stage-5 .ceremony__header-text {
+      animation: header-tracking-expand 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes header-tracking-expand {
+      from { letter-spacing: 0.05em; }
+      to   { letter-spacing: 0.2em; }
+    }
+
+    /* ── Enhanced Shard Name ─────────────────────── */
+
     .ceremony__name {
       position: relative;
       z-index: 6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2, 0.5rem);
       font-family: var(--font-brutalist, 'Courier New', monospace);
       font-weight: 900;
       font-size: clamp(1.2rem, 4vw, 2.5rem);
@@ -367,9 +436,6 @@ export class VelgForgeCeremony extends LitElement {
       transform: scale(1.5);
       padding: 0 var(--space-6, 1.5rem);
       max-width: 80vw;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
 
     .ceremony--stage-3 .ceremony__name,
@@ -391,6 +457,65 @@ export class VelgForgeCeremony extends LitElement {
     @keyframes name-glow-pulse {
       0%, 100% { opacity: 0.6; transform: scale(1); }
       50%      { opacity: 1; transform: scale(1.05); }
+    }
+
+    .ceremony__name-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      animation: name-text-breathe 3s ease-in-out infinite;
+    }
+
+    @keyframes name-text-breathe {
+      0%, 100% { text-shadow: 0 0 8px rgba(245 158 11 / 0.2), 0 0 20px rgba(245 158 11 / 0.05); }
+      50%      { text-shadow: 0 0 16px rgba(245 158 11 / 0.5), 0 0 40px rgba(245 158 11 / 0.15); }
+    }
+
+    .ceremony__name-ornament {
+      font-size: 0.7em;
+      color: rgba(245 158 11 / 0.6);
+      opacity: 0;
+      flex-shrink: 0;
+    }
+
+    .ceremony--stage-3 .ceremony__name-ornament,
+    .ceremony--stage-4 .ceremony__name-ornament,
+    .ceremony--stage-5 .ceremony__name-ornament {
+      animation: ornament-fade 1s ease-out 0.4s forwards;
+    }
+
+    @keyframes ornament-fade {
+      from { opacity: 0; transform: translateX(var(--ornament-dir, 8px)); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .ceremony__name-ornament:first-of-type {
+      --ornament-dir: -8px;
+    }
+
+    .ceremony__name-ornament:last-of-type {
+      --ornament-dir: 8px;
+    }
+
+    .ceremony__name-underline {
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      height: 1px;
+      width: 0;
+      background: linear-gradient(90deg, transparent, rgba(245 158 11 / 0.6), transparent);
+    }
+
+    .ceremony--stage-3 .ceremony__name-underline,
+    .ceremony--stage-4 .ceremony__name-underline,
+    .ceremony--stage-5 .ceremony__name-underline {
+      animation: underline-draw 0.8s ease-out 0.6s forwards;
+    }
+
+    @keyframes underline-draw {
+      from { width: 0; }
+      to   { width: 80%; }
     }
 
     .ceremony__tagline {
@@ -422,6 +547,7 @@ export class VelgForgeCeremony extends LitElement {
       margin-top: auto;
       margin-bottom: var(--space-4, 1rem);
       opacity: 0;
+      overflow: visible;
     }
 
     .ceremony--stage-4 .ceremony__card-area,
@@ -499,10 +625,45 @@ export class VelgForgeCeremony extends LitElement {
       display: flex;
       align-items: flex-end;
       justify-content: center;
-      padding-bottom: 16px;
+      padding: 0 16px 16px;
+      position: relative;
+    }
+
+    /* Stack wrapper for tiered fans */
+    .ceremony__fan-stack {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Back row: smaller — entities still emerging from the rift */
+    .ceremony__fan-cards--back {
+      transform: scale(0.88);
+      z-index: 0;
+      margin-bottom: -20px;
+    }
+
+    .ceremony__fan-cards--back .ceremony__card {
+      opacity: 0.7;
+      filter: brightness(0.8);
+    }
+
+    .ceremony__fan-cards--front {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Back row cards hover: fully materialize from the rift */
+    .ceremony__fan-cards--back .ceremony__card:hover {
+      opacity: 1 !important;
+      filter: brightness(1) !important;
+      transform: translateY(-12px) rotate(0deg) scale(1.15) !important;
+      z-index: 10;
     }
 
     .ceremony__card {
+      position: relative;
       opacity: 0;
       flex-shrink: 0;
       transition: transform 0.2s ease-out;
@@ -510,28 +671,140 @@ export class VelgForgeCeremony extends LitElement {
     }
 
     .ceremony__card:hover {
+      animation-play-state: paused !important;
       transform: translateY(-12px) rotate(0deg) scale(1.05) !important;
       z-index: 10;
     }
 
-    .ceremony--stage-4 .ceremony__card,
-    .ceremony--stage-5 .ceremony__card {
+    .ceremony--stage-4 .ceremony__card {
       animation: card-deal 0.5s var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) both;
+    }
+
+    /* Card idle breathing in stage 5 */
+    .ceremony--stage-5 .ceremony__card {
+      animation:
+        card-deal 0.5s var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) both,
+        ceremony-card-idle 5s ease-in-out infinite both;
+      animation-delay: var(--card-deal-delay, 0ms), calc(var(--card-deal-delay, 0ms) + 0.6s);
     }
 
     @keyframes card-deal {
       from {
         opacity: 0;
-        transform: translateY(-30px) scale(0.85);
+        transform: translateY(-30px) rotate(var(--card-rot, 0deg)) scale(0.85);
         filter: brightness(2);
       }
       to {
         opacity: 1;
+        transform: translateY(var(--card-dip, 0px)) rotate(var(--card-rot, 0deg));
         filter: brightness(1);
       }
     }
 
-    /* ── Image Materialization Progress ────────── */
+    @keyframes ceremony-card-idle {
+      0%, 100% { transform: translateY(var(--card-dip, 0px)) rotate(var(--card-rot, 0deg)); }
+      50%      { transform: translateY(calc(var(--card-dip, 0px) - 2px)) rotate(var(--card-rot, 0deg)); }
+    }
+
+    /* Amber underglow on cards with images */
+    .ceremony__card--has-image {
+      filter: drop-shadow(0 4px 8px rgba(245 158 11 / 0.15));
+    }
+
+    /* Card image materialisation pop — dimensional breach */
+    .ceremony__card--flash {
+      animation: card-materialize-pop 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
+    }
+
+    .ceremony__card--flash::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border: 2px solid rgba(245 158 11 / 0.8);
+      border-radius: 4px;
+      pointer-events: none;
+      z-index: 10;
+      animation: card-shockwave 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes card-materialize-pop {
+      0% {
+        transform: translateY(var(--card-dip, 0px)) rotate(var(--card-rot, 0deg)) scale(1);
+        filter: brightness(3) saturate(1.5)
+                drop-shadow(0 0 20px rgba(245 158 11 / 0.8));
+      }
+      15% {
+        transform: translateY(calc(var(--card-dip, 0px) - 18px)) rotate(var(--card-rot, 0deg)) scale(1.12);
+        filter: brightness(2.2) saturate(1.3)
+                drop-shadow(0 0 35px rgba(245 158 11 / 0.9))
+                drop-shadow(0 0 60px rgba(251 191 36 / 0.4));
+      }
+      35% {
+        transform: translateY(calc(var(--card-dip, 0px) - 14px)) rotate(var(--card-rot, 0deg)) scale(1.08);
+        filter: brightness(1.6) saturate(1.1)
+                drop-shadow(0 0 25px rgba(245 158 11 / 0.6))
+                drop-shadow(0 0 50px rgba(251 191 36 / 0.2));
+      }
+      55% {
+        transform: translateY(calc(var(--card-dip, 0px) + 3px)) rotate(var(--card-rot, 0deg)) scale(0.98);
+        filter: brightness(1.15)
+                drop-shadow(0 4px 12px rgba(245 158 11 / 0.3));
+      }
+      75% {
+        transform: translateY(calc(var(--card-dip, 0px) - 2px)) rotate(var(--card-rot, 0deg)) scale(1.01);
+        filter: brightness(1.05)
+                drop-shadow(0 4px 10px rgba(245 158 11 / 0.2));
+      }
+      100% {
+        transform: translateY(var(--card-dip, 0px)) rotate(var(--card-rot, 0deg)) scale(1);
+        filter: brightness(1)
+                drop-shadow(0 4px 8px rgba(245 158 11 / 0.15));
+      }
+    }
+
+    @keyframes card-shockwave {
+      0% {
+        inset: -4px;
+        opacity: 0.9;
+        border-color: rgba(251 191 36 / 0.9);
+        box-shadow: inset 0 0 12px rgba(245 158 11 / 0.3);
+      }
+      40% {
+        inset: -20px;
+        opacity: 0.5;
+        border-color: rgba(245 158 11 / 0.5);
+        box-shadow: inset 0 0 8px rgba(245 158 11 / 0.1);
+      }
+      100% {
+        inset: -40px;
+        opacity: 0;
+        border-color: rgba(245 158 11 / 0);
+        box-shadow: none;
+      }
+    }
+
+    /* Ember underglow cascade — per-card rift glow */
+    .ceremony--stage-5 .ceremony__card::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 10%;
+      right: 10%;
+      height: 8px;
+      background: radial-gradient(ellipse at center, rgba(245 158 11 / 0.3) 0%, transparent 70%);
+      border-radius: 50%;
+      opacity: 0;
+      pointer-events: none;
+      animation: ember-cascade 5s ease-in-out infinite;
+      animation-delay: calc(var(--card-deal-delay, 0ms) + 1.2s);
+    }
+
+    @keyframes ember-cascade {
+      0%, 100% { opacity: 0.2; transform: scaleX(0.8); }
+      50%      { opacity: 0.8; transform: scaleX(1.2); }
+    }
+
+    /* ── Redesigned Progress Bar ─────────────────── */
 
     .ceremony__progress {
       position: relative;
@@ -555,21 +828,48 @@ export class VelgForgeCeremony extends LitElement {
       text-transform: uppercase;
       letter-spacing: 0.15em;
       color: rgba(245 158 11 / 0.7);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2, 0.5rem);
+    }
+
+    .ceremony__progress-pct {
+      font-family: var(--font-brutalist, 'Courier New', monospace);
+      font-weight: 900;
+      font-size: var(--text-sm, 0.875rem);
+      color: #f59e0b;
+      min-width: 3ch;
+      text-align: right;
     }
 
     .ceremony__progress-bar {
-      width: 200px;
-      height: 2px;
-      background: rgba(245 158 11 / 0.15);
+      width: min(300px, 60vw);
+      height: 6px;
+      background: rgba(245 158 11 / 0.1);
+      border: 1px solid rgba(245 158 11 / 0.15);
       overflow: hidden;
       position: relative;
     }
 
     .ceremony__progress-fill {
       height: 100%;
-      background: #f59e0b;
+      background: linear-gradient(90deg, #b45309, #f59e0b, #fbbf24);
       box-shadow: 0 0 8px rgba(245 158 11 / 0.6);
       transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+      position: relative;
+    }
+
+    .ceremony__progress-fill::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255 255 255 / 0.4) 50%, transparent 100%);
+      animation: progress-shimmer 2s ease-in-out infinite;
+    }
+
+    @keyframes progress-shimmer {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
     }
 
     .ceremony__progress--done .ceremony__progress-text {
@@ -577,17 +877,112 @@ export class VelgForgeCeremony extends LitElement {
     }
 
     .ceremony__progress--done .ceremony__progress-fill {
-      box-shadow: 0 0 12px rgba(245 158 11 / 0.8);
+      box-shadow: 0 0 16px rgba(245 158 11 / 0.8), 0 0 30px rgba(245 158 11 / 0.3);
+      animation: progress-complete-flash 0.6s ease-out forwards;
     }
 
-    /* Card image materialise effect */
-    .ceremony__card--has-image {
-      animation: card-image-flash 0.6s ease-out forwards !important;
+    .ceremony__progress--done .ceremony__progress-fill::after {
+      animation: none;
+      opacity: 0;
     }
 
-    @keyframes card-image-flash {
-      0%   { filter: brightness(2.5); }
+    @keyframes progress-complete-flash {
+      0%   { filter: brightness(2); }
       100% { filter: brightness(1); }
+    }
+
+    /* ── Background Atmosphere (stages 4-5) ──────── */
+
+    .ceremony__aurora {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 1s ease-out;
+    }
+
+    .ceremony--stage-4 .ceremony__aurora,
+    .ceremony--stage-5 .ceremony__aurora {
+      opacity: 1;
+    }
+
+    .ceremony__aurora::before,
+    .ceremony__aurora::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 40%;
+      animation: aurora-drift 12s ease-in-out infinite alternate;
+    }
+
+    .ceremony__aurora::before {
+      background: radial-gradient(ellipse at 30% 0%, rgba(245 158 11 / 0.06) 0%, transparent 60%);
+    }
+
+    .ceremony__aurora::after {
+      background: radial-gradient(ellipse at 70% 0%, rgba(180 83 9 / 0.05) 0%, transparent 60%);
+      animation-delay: -6s;
+    }
+
+    @keyframes aurora-drift {
+      0%   { transform: translateX(-5%) translateY(0); }
+      100% { transform: translateX(5%) translateY(3%); }
+    }
+
+    .ceremony__grid-pulse {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background:
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 59px,
+          rgba(245 158 11 / 0.02) 59px,
+          rgba(245 158 11 / 0.02) 60px
+        ),
+        repeating-linear-gradient(
+          90deg,
+          transparent,
+          transparent 59px,
+          rgba(245 158 11 / 0.015) 59px,
+          rgba(245 158 11 / 0.015) 60px
+        );
+      opacity: 0;
+    }
+
+    .ceremony--stage-4 .ceremony__grid-pulse,
+    .ceremony--stage-5 .ceremony__grid-pulse {
+      animation: grid-breathe 6s ease-in-out infinite;
+    }
+
+    @keyframes grid-breathe {
+      0%, 100% { opacity: 0.3; }
+      50%      { opacity: 0.8; }
+    }
+
+    /* ── Ready Flash Burst ──────────────────────── */
+
+    .ceremony__ready-burst {
+      position: absolute;
+      inset: 0;
+      background: rgba(245 158 11 / 0);
+      pointer-events: none;
+      z-index: 8;
+    }
+
+    .ceremony__ready-burst--active {
+      animation: ready-burst-flash 1.2s ease-out forwards;
+    }
+
+    @keyframes ready-burst-flash {
+      0%   { background: rgba(245 158 11 / 0); }
+      30%  { background: rgba(245 158 11 / 0.15); }
+      100% { background: rgba(245 158 11 / 0); }
     }
 
     /* ── Stage 5: Arrival ───────────────────────── */
@@ -596,21 +991,23 @@ export class VelgForgeCeremony extends LitElement {
       position: relative;
       z-index: 6;
       opacity: 0;
-      transform: translateY(20px);
+      transform: translateY(12px);
       margin-top: auto;
       margin-bottom: var(--space-4, 1rem);
     }
 
-    .ceremony--stage-5 .ceremony__enter {
-      animation: enter-spring 0.5s var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) forwards;
+    .ceremony__enter--ready {
+      animation: btn-entrance 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
 
-    @keyframes enter-spring {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
+    @keyframes btn-entrance {
+      0%   { opacity: 0; transform: translateY(12px); }
+      70%  { transform: translateY(-3px); }
+      100% { opacity: 1; transform: translateY(0); }
     }
 
     .ceremony__enter-btn {
+      position: relative;
       display: inline-flex;
       align-items: center;
       gap: var(--space-2, 0.5rem);
@@ -625,19 +1022,65 @@ export class VelgForgeCeremony extends LitElement {
       border: 2px solid #f59e0b;
       cursor: pointer;
       transition: all 0.2s ease-out;
-      box-shadow: 0 0 20px rgba(245 158 11 / 0.3), 0 0 60px rgba(245 158 11 / 0.1);
-      animation: btn-breathe 2.5s ease-in-out infinite;
+      overflow: hidden;
     }
 
-    @keyframes btn-breathe {
-      0%, 100% { box-shadow: 0 0 20px rgba(245 158 11 / 0.3), 0 0 60px rgba(245 158 11 / 0.1); }
-      50%      { box-shadow: 0 0 30px rgba(245 158 11 / 0.5), 0 0 80px rgba(245 158 11 / 0.2); }
+    .ceremony__enter--ready .ceremony__enter-btn {
+      animation: btn-beacon 2.5s ease-in-out infinite;
+    }
+
+    @keyframes btn-beacon {
+      0%, 100% {
+        box-shadow:
+          0 0 20px rgba(245 158 11 / 0.3),
+          0 0 60px rgba(245 158 11 / 0.1),
+          0 0 120px rgba(245 158 11 / 0.05);
+      }
+      50% {
+        box-shadow:
+          0 0 30px rgba(245 158 11 / 0.5),
+          0 0 80px rgba(245 158 11 / 0.25),
+          0 0 120px rgba(245 158 11 / 0.1);
+      }
+    }
+
+    /* Surface shimmer */
+    .ceremony__enter--ready .ceremony__enter-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255 255 255 / 0.3) 50%, transparent 100%);
+      animation: btn-shimmer 3s ease-in-out infinite;
+    }
+
+    @keyframes btn-shimmer {
+      0%, 40%  { transform: translateX(-100%); }
+      60%, 100% { transform: translateX(100%); }
+    }
+
+    /* Ring expand */
+    .ceremony__enter--ready .ceremony__enter-btn::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border: 1px solid rgba(245 158 11 / 0.4);
+      pointer-events: none;
+      animation: btn-ring-expand 2.5s ease-out infinite;
+    }
+
+    @keyframes btn-ring-expand {
+      0%   { inset: -4px; opacity: 0.6; }
+      100% { inset: -20px; opacity: 0; }
     }
 
     .ceremony__enter-btn:hover {
       background: #fbbf24;
       border-color: #fbbf24;
-      transform: translateY(-1px);
+      transform: translateY(-2px);
+      box-shadow:
+        0 0 40px rgba(245 158 11 / 0.6),
+        0 0 80px rgba(245 158 11 / 0.3),
+        0 0 120px rgba(245 158 11 / 0.15);
     }
 
     .ceremony__enter-btn:active {
@@ -651,12 +1094,19 @@ export class VelgForgeCeremony extends LitElement {
       box-shadow: none;
       animation: none;
       cursor: default;
+      overflow: visible;
+    }
+
+    .ceremony__enter-btn--waiting::after,
+    .ceremony__enter-btn--waiting::before {
+      display: none;
     }
 
     .ceremony__enter-btn--waiting:hover {
       background: transparent;
       border-color: rgba(245 158 11 / 0.3);
       transform: none;
+      box-shadow: none;
     }
 
     /* ── Reduced Motion ─────────────────────────── */
@@ -676,7 +1126,9 @@ export class VelgForgeCeremony extends LitElement {
         opacity: 0;
       }
       .ceremony--stage-2 .ceremony__particle,
-      .ceremony--stage-3 .ceremony__particle {
+      .ceremony--stage-3 .ceremony__particle,
+      .ceremony--stage-4 .ceremony__particle,
+      .ceremony--stage-5 .ceremony__particle {
         animation: none;
       }
       .ceremony--stage-3 .ceremony__burst {
@@ -686,9 +1138,28 @@ export class VelgForgeCeremony extends LitElement {
         animation: none;
         opacity: 0.6;
       }
+      .ceremony__name-label {
+        animation: none;
+        text-shadow: 0 0 12px rgba(245 158 11 / 0.3);
+      }
+      .ceremony__name-ornament {
+        animation: none !important;
+        opacity: 1;
+        transform: none;
+      }
+      .ceremony__name-underline {
+        animation: none !important;
+        width: 80%;
+      }
       .ceremony__cursor {
         animation: none;
         opacity: 1;
+      }
+      .ceremony--stage-3 .ceremony__header-text,
+      .ceremony--stage-4 .ceremony__header-text,
+      .ceremony--stage-5 .ceremony__header-text {
+        animation: none;
+        letter-spacing: 0.2em;
       }
       .ceremony--stage-4 .ceremony__fan-label,
       .ceremony--stage-5 .ceremony__fan-label {
@@ -710,26 +1181,233 @@ export class VelgForgeCeremony extends LitElement {
       .ceremony__card:hover {
         transition: none;
       }
-      .ceremony__card--has-image {
+      .ceremony__fan-cards--back {
+        transform: scale(0.88);
+      }
+      .ceremony__fan-cards--back .ceremony__card {
+        opacity: 0.7;
+        filter: brightness(0.8);
+      }
+      .ceremony__card--flash {
         animation: none !important;
+      }
+      .ceremony__card--flash::before {
+        display: none;
+      }
+      .ceremony--stage-5 .ceremony__card::after {
+        animation: none;
+        opacity: 0.4;
+      }
+      .ceremony__progress-fill::after {
+        animation: none;
+        display: none;
+      }
+      .ceremony__progress--done .ceremony__progress-fill {
+        animation: none;
       }
       .ceremony--stage-4 .ceremony__progress,
       .ceremony--stage-5 .ceremony__progress {
         opacity: 1;
         transition: none;
       }
+      .ceremony--stage-4 .ceremony__aurora,
+      .ceremony--stage-5 .ceremony__aurora {
+        display: none;
+      }
+      .ceremony__aurora::before,
+      .ceremony__aurora::after {
+        animation: none;
+      }
+      .ceremony--stage-4 .ceremony__grid-pulse,
+      .ceremony--stage-5 .ceremony__grid-pulse {
+        animation: none;
+        display: none;
+      }
+      .ceremony__ready-burst--active {
+        animation: none;
+        display: none;
+      }
+      .ceremony__enter--ready {
+        animation: none;
+        opacity: 1;
+        transform: none;
+      }
+      .ceremony__enter--ready .ceremony__enter-btn {
+        animation: none;
+        box-shadow: 0 0 20px rgba(245 158 11 / 0.3);
+      }
+      .ceremony__enter--ready .ceremony__enter-btn::after,
+      .ceremony__enter--ready .ceremony__enter-btn::before {
+        animation: none;
+        display: none;
+      }
       .ceremony--stage-5 .ceremony__enter {
         animation: none;
         opacity: 1;
         transform: none;
       }
-      .ceremony__enter-btn {
-        animation: none;
-        box-shadow: 0 0 12px rgba(245 158 11 / 0.2);
-      }
       .ceremony__header {
         opacity: 1;
         transition: none;
+      }
+    }
+
+    /* ── Responsive: Tablet ──────────────────────── */
+
+    @media (max-width: 900px) {
+      .ceremony__card-area {
+        gap: var(--space-4, 1rem);
+      }
+      .ceremony__name {
+        font-size: clamp(1rem, 5vw, 2rem);
+      }
+      /* Tablet: toned-down pop — single drop-shadow, smaller shockwave */
+      .ceremony__card--flash {
+        animation-name: card-materialize-pop-mobile;
+      }
+      .ceremony__card--flash::before {
+        animation-name: card-shockwave-mobile;
+      }
+    }
+
+    /* ── Responsive: Phone ───────────────────────── */
+
+    @media (max-width: 480px) {
+      .ceremony__card-area {
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-3, 0.75rem);
+      }
+      .ceremony__zone-badge {
+        flex-direction: row;
+        padding: var(--space-2, 0.5rem) var(--space-4, 1rem);
+      }
+      .ceremony__name {
+        font-size: clamp(1rem, 6vw, 1.5rem);
+      }
+      .ceremony__fan-cards {
+        padding: 0 8px 12px;
+      }
+      .ceremony__fan-cards--back {
+        margin-bottom: -12px;
+      }
+    }
+
+    /* Mobile/tablet materialisation — reduced scale, lift, and GPU load */
+    @keyframes card-materialize-pop-mobile {
+      0% {
+        transform: translateY(var(--card-dip, 0px)) rotate(var(--card-rot, 0deg)) scale(1);
+        filter: brightness(2.5) saturate(1.3)
+                drop-shadow(0 0 14px rgba(245 158 11 / 0.7));
+      }
+      15% {
+        transform: translateY(calc(var(--card-dip, 0px) - 10px)) rotate(var(--card-rot, 0deg)) scale(1.06);
+        filter: brightness(2) saturate(1.2)
+                drop-shadow(0 0 22px rgba(245 158 11 / 0.8));
+      }
+      35% {
+        transform: translateY(calc(var(--card-dip, 0px) - 8px)) rotate(var(--card-rot, 0deg)) scale(1.04);
+        filter: brightness(1.5) saturate(1.1)
+                drop-shadow(0 0 16px rgba(245 158 11 / 0.5));
+      }
+      55% {
+        transform: translateY(calc(var(--card-dip, 0px) + 2px)) rotate(var(--card-rot, 0deg)) scale(0.99);
+        filter: brightness(1.1)
+                drop-shadow(0 4px 10px rgba(245 158 11 / 0.25));
+      }
+      75% {
+        transform: translateY(calc(var(--card-dip, 0px) - 1px)) rotate(var(--card-rot, 0deg)) scale(1.005);
+        filter: brightness(1.03)
+                drop-shadow(0 4px 8px rgba(245 158 11 / 0.18));
+      }
+      100% {
+        transform: translateY(var(--card-dip, 0px)) rotate(var(--card-rot, 0deg)) scale(1);
+        filter: brightness(1)
+                drop-shadow(0 4px 8px rgba(245 158 11 / 0.15));
+      }
+    }
+
+    @keyframes card-shockwave-mobile {
+      0% {
+        inset: -3px;
+        opacity: 0.8;
+        border-color: rgba(251 191 36 / 0.8);
+        box-shadow: none;
+      }
+      40% {
+        inset: -12px;
+        opacity: 0.4;
+        border-color: rgba(245 158 11 / 0.4);
+        box-shadow: none;
+      }
+      100% {
+        inset: -22px;
+        opacity: 0;
+        border-color: rgba(245 158 11 / 0);
+        box-shadow: none;
+      }
+    }
+
+    /* ── Phase 2: Short viewport (iPhone SE 667px) ── */
+
+    @media (max-height: 700px) {
+      .ceremony {
+        overflow-y: auto;
+        justify-content: flex-start;
+      }
+      .ceremony__name {
+        font-size: clamp(0.9rem, 5vw, 1.3rem);
+      }
+      .ceremony__card-area {
+        gap: var(--space-2, 0.5rem);
+      }
+    }
+
+    /* ── Phase 2: Landscape phone ── */
+
+    @media (orientation: landscape) and (max-height: 500px) {
+      .ceremony {
+        overflow-y: auto;
+        justify-content: flex-start;
+        gap: var(--space-1, 0.25rem);
+      }
+      .ceremony__card-area {
+        flex-direction: row;
+      }
+    }
+
+    /* ── Phase 2: GPU performance hints ── */
+
+    .ceremony__particle {
+      will-change: transform, opacity;
+    }
+
+    .ceremony__card {
+      will-change: transform, opacity;
+      contain: layout style;
+    }
+
+    .ceremony__aurora,
+    .ceremony__grid-pulse {
+      contain: strict;
+    }
+
+    .ceremony__progress-fill {
+      will-change: width;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ceremony__particle,
+      .ceremony__card,
+      .ceremony__progress-fill {
+        will-change: auto;
+      }
+      .ceremony__card {
+        contain: none;
+      }
+      .ceremony__aurora,
+      .ceremony__grid-pulse {
+        contain: none;
       }
     }
   `;
@@ -750,6 +1428,7 @@ export class VelgForgeCeremony extends LitElement {
   @state() private _scanPhase = 0;
   @state() private _typedText = '';
   @state() private _progress: ForgeProgress | null = null;
+  @state() private _readyFlash = false;
 
   /** Names that already had images on the previous poll (used to detect new arrivals). */
   private _prevImageSet = new Set<string>();
@@ -761,6 +1440,9 @@ export class VelgForgeCeremony extends LitElement {
   private _typeInterval: ReturnType<typeof setInterval> | null = null;
   private _scanInterval: ReturnType<typeof setInterval> | null = null;
   private _pollInterval: ReturnType<typeof setInterval> | null = null;
+
+  /** Screen Wake Lock — keeps display on during ceremony */
+  private _wakeLock: WakeLockSentinel | null = null;
 
   // ── Phase labels (i18n) ────────────────────────
 
@@ -781,14 +1463,63 @@ export class VelgForgeCeremony extends LitElement {
     return this.seedPrompt || this.anchorTitle || '';
   }
 
+  /** Minimum fraction of card width that must remain visible after overlap. */
+  private static readonly _MIN_VISIBLE = 0.4;
+
+  /**
+   * Per-fan adaptive sizing. Picks card size and single-row vs two-tier
+   * based on viewport width and card count.
+   */
+  private _fanLayout(count: number): {
+    size: 'xs' | 'sm';
+    width: number;
+    rotStep: number;
+    tiered: boolean;
+  } {
+    const vw = window.innerWidth;
+    const mobile = vw <= 480;
+    const tablet = vw <= 900 && vw > 480;
+    // Overhead: zone badge (~52px) + 2 inter-fan gaps (64px) + fan-cards padding (32px each)
+    const maxFan = mobile ? vw * 0.9 : (vw * 0.95 - 180) / 2;
+    const candidates: readonly ('sm' | 'xs')[] =
+      mobile || tablet ? (['xs'] as const) : (['sm', 'xs'] as const);
+
+    for (const candidate of candidates) {
+      const w = candidate === 'sm' ? 120 : 80;
+      const rot = mobile ? 1.5 : tablet ? 2 : candidate === 'sm' ? 3 : 2.5;
+
+      // Try single row: can all cards fit with ≥ MIN_VISIBLE fraction showing?
+      if (count <= 1) {
+        return { size: candidate, width: w, rotStep: rot, tiered: false };
+      }
+      const overlap = Math.max(0, (count * w - maxFan) / (count - 1));
+      if (overlap <= w * (1 - VelgForgeCeremony._MIN_VISIBLE)) {
+        return { size: candidate, width: w, rotStep: rot, tiered: false };
+      }
+
+      // Try two-tier: front row (ceil) + back row (floor)
+      const frontCount = Math.ceil(count / 2);
+      const overlapFront =
+        frontCount > 1 ? Math.max(0, (frontCount * w - maxFan) / (frontCount - 1)) : 0;
+      if (overlapFront <= w * (1 - VelgForgeCeremony._MIN_VISIBLE)) {
+        return { size: candidate, width: w, rotStep: rot, tiered: true };
+      }
+    }
+
+    // Fallback: xs tiered (always works for ≤15 per fan)
+    return { size: 'xs', width: 80, rotStep: mobile ? 1 : 2, tiered: true };
+  }
+
   // ── Lifecycle ──────────────────────────────────
 
   connectedCallback() {
     super.connectedCallback();
     this._startCeremony();
+    document.addEventListener('visibilitychange', this._handleVisibilityChange);
   }
 
   disconnectedCallback() {
+    document.removeEventListener('visibilitychange', this._handleVisibilityChange);
     this._cleanup();
     super.disconnectedCallback();
   }
@@ -796,6 +1527,9 @@ export class VelgForgeCeremony extends LitElement {
   private _startCeremony() {
     // Start polling immediately (background images may already be generating)
     this._startProgressPolling();
+
+    // Prevent screen dimming during ceremony
+    this._requestWakeLock();
 
     // Check reduced motion preference — skip to final state
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -833,19 +1567,11 @@ export class VelgForgeCeremony extends LitElement {
       }, 7000),
     );
 
-    // Stage 5: Arrival (10s–12s)
+    // Stage 5: Arrival (10s+)
     this._timers.push(
       setTimeout(() => {
         this._stage = 5;
       }, 10000),
-    );
-
-    // Auto-enter: only after images are done (checked in _pollProgress).
-    // Safety: auto-enter after 5 minutes regardless to prevent infinite wait.
-    this._timers.push(
-      setTimeout(() => {
-        this._handleEnter();
-      }, 300000),
     );
   }
 
@@ -919,22 +1645,34 @@ export class VelgForgeCeremony extends LitElement {
       // Only set fresh images if there are genuinely new ones (avoid clearing mid-animation)
       if (fresh.size > 0) {
         this._freshImages = fresh;
+
+        // Haptic pulse on card materialisation (Android; iOS silently ignores)
+        if ('vibrate' in navigator) navigator.vibrate(50);
+
+        // On mobile column layout, scroll the fresh card into view —
+        // but only once stage 5 is active (cards visible), so the user
+        // sees the header/name reveal first without being yanked away.
+        if (window.innerWidth <= 480 && this._stage >= 5) {
+          requestAnimationFrame(() => {
+            const el = this.shadowRoot?.querySelector('.ceremony__card--flash');
+            el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          });
+        }
+
         // Clear flash class after animation completes
         setTimeout(() => {
           this._freshImages = new Set();
-        }, 700);
+        }, 1500);
       }
 
       this._progress = progress;
 
-      // Auto-enter 8s after all images are done (if we're past stage 5)
+      // When all images are done and we're past stage 5, stop polling and trigger ready flash
       if (progress.done && this._stage >= 5) {
         this._stopProgressPolling();
-        this._timers.push(
-          setTimeout(() => {
-            this._handleEnter();
-          }, 8000),
-        );
+        this._readyFlash = true;
+        // Victory haptic pattern (Android)
+        if ('vibrate' in navigator) navigator.vibrate([100, 50, 100]);
       }
     } catch {
       // Silently ignore — polling is best-effort
@@ -948,6 +1686,32 @@ export class VelgForgeCeremony extends LitElement {
     }
   }
 
+  // ── Wake Lock ────────────────────────────────
+
+  private async _requestWakeLock(): Promise<void> {
+    try {
+      if ('wakeLock' in navigator) {
+        this._wakeLock = await navigator.wakeLock.request('screen');
+      }
+    } catch {
+      // Wake lock denied or unsupported — non-critical
+    }
+  }
+
+  private async _releaseWakeLock(): Promise<void> {
+    if (this._wakeLock) {
+      await this._wakeLock.release().catch(() => {});
+      this._wakeLock = null;
+    }
+  }
+
+  private _handleVisibilityChange = (): void => {
+    // Re-acquire wake lock when tab becomes visible again (spec auto-releases on blur)
+    if (document.visibilityState === 'visible' && this._stage > 0) {
+      this._requestWakeLock();
+    }
+  };
+
   private _cleanup() {
     for (const t of this._timers) clearTimeout(t);
     this._timers = [];
@@ -957,11 +1721,13 @@ export class VelgForgeCeremony extends LitElement {
       clearInterval(this._typeInterval);
       this._typeInterval = null;
     }
+    this._releaseWakeLock();
   }
 
   // ── Event ──────────────────────────────────────
 
   private _handleEnter() {
+    this._releaseWakeLock();
     this.dispatchEvent(new CustomEvent('ceremony-enter', { bubbles: true, composed: true }));
   }
 
@@ -993,39 +1759,96 @@ export class VelgForgeCeremony extends LitElement {
       imageUrl: buildingImageMap.get(b.name) ?? '',
     }));
 
-    // Max width per fan: half of 95vw minus zone badge + gaps (~70px each side)
-    const maxFanWidth = (window.innerWidth * 0.95 - 100) / 2;
-    const cardWidth = 120; // sm card width
+    const vw = window.innerWidth;
+    const isMobile = vw <= 480;
+    const maxFanWidth = isMobile ? vw * 0.9 : (vw * 0.95 - 180) / 2;
+    const agentLayout = this._fanLayout(agentCards.length);
+    const buildingLayout = this._fanLayout(buildingCards.length);
+
+    const pct =
+      this._progress && this._progress.total > 0
+        ? Math.round((this._progress.completed / this._progress.total) * 100)
+        : 0;
+
+    type CardData = { name: string; subtitle: string; imageUrl: string };
 
     const renderFanCard = (
-      c: { name: string; subtitle: string; imageUrl: string },
+      c: CardData,
       i: number,
       total: number,
       dealOffset: number,
+      layout: { size: 'xs' | 'sm'; width: number; rotStep: number },
+      arcDipMultiplier = 5,
     ) => {
       const center = (total - 1) / 2;
-      const rotDeg = (i - center) * 3;
-      const arcDip = Math.abs(i - center) * 5;
-      // Dynamic overlap: ensure fan fits within maxFanWidth
-      const naturalWidth = total * cardWidth;
+      const rotDeg = (i - center) * layout.rotStep;
+      const arcDip = Math.abs(i - center) * arcDipMultiplier;
+      const naturalWidth = total * layout.width;
       const neededOverlap =
         total > 1 ? Math.max(28, (naturalWidth - maxFanWidth) / (total - 1)) : 0;
       const overlap = i === 0 ? 0 : -neededOverlap;
       const hasImage = !!c.imageUrl;
       const isFresh = this._freshImages.has(c.name);
+      const dealDelay = (dealOffset + i) * 120;
       return html`
         <div
-          class="ceremony__card ${hasImage && isFresh ? 'ceremony__card--has-image' : ''}"
-          style="transform: rotate(${rotDeg}deg) translateY(${arcDip}px); margin-left: ${overlap}px; animation-delay: ${(dealOffset + i) * 120}ms"
+          class="ceremony__card ${hasImage ? 'ceremony__card--has-image' : ''} ${hasImage && isFresh ? 'ceremony__card--flash' : ''}"
+          style="--card-rot: ${rotDeg}deg; --card-dip: ${arcDip}px; --card-deal-delay: ${dealDelay}ms; margin-left: ${overlap}px; animation-delay: ${dealDelay}ms"
         >
           <velg-game-card
             .name=${c.name}
             .subtitle=${c.subtitle}
             .rarity=${'common'}
             theme="brutalist"
-            size="sm"
+            size=${layout.size}
             image-url=${c.imageUrl}
           ></velg-game-card>
+        </div>
+      `;
+    };
+
+    const renderFan = (
+      cards: CardData[],
+      layout: { size: 'xs' | 'sm'; width: number; rotStep: number; tiered: boolean },
+      dealOffset: number,
+      type: 'agents' | 'buildings',
+    ) => {
+      const labelHtml = html`
+        <div class="ceremony__fan-label">
+          <span class="ceremony__stat-number ceremony__stat-number--${type}">${cards.length}</span>
+          ${type === 'agents' ? msg('Agents') : msg('Buildings')}
+        </div>
+      `;
+
+      if (!layout.tiered) {
+        return html`
+          <div class="ceremony__fan">
+            ${labelHtml}
+            <div class="ceremony__fan-cards">
+              ${cards.map((c, i) => renderFanCard(c, i, cards.length, dealOffset, layout))}
+            </div>
+          </div>
+        `;
+      }
+
+      // Tiered: interleave for even name distribution across rows
+      const frontCards: CardData[] = [];
+      const backCards: CardData[] = [];
+      for (let i = 0; i < cards.length; i++) {
+        (i % 2 === 0 ? frontCards : backCards).push(cards[i]);
+      }
+
+      return html`
+        <div class="ceremony__fan">
+          ${labelHtml}
+          <div class="ceremony__fan-stack">
+            <div class="ceremony__fan-cards ceremony__fan-cards--back">
+              ${backCards.map((c, i) => renderFanCard(c, i, backCards.length, dealOffset, layout, 3))}
+            </div>
+            <div class="ceremony__fan-cards ceremony__fan-cards--front">
+              ${frontCards.map((c, i) => renderFanCard(c, i, frontCards.length, dealOffset + backCards.length, layout, 5))}
+            </div>
+          </div>
         </div>
       `;
     };
@@ -1051,6 +1874,15 @@ export class VelgForgeCeremony extends LitElement {
 
         <!-- Sonar sweep -->
         <div class="ceremony__sonar"></div>
+
+        <!-- Aurora corona (stages 4-5) -->
+        <div class="ceremony__aurora"></div>
+
+        <!-- Grid breathing overlay -->
+        <div class="ceremony__grid-pulse"></div>
+
+        <!-- Ready flash burst -->
+        <div class="ceremony__ready-burst ${this._readyFlash ? 'ceremony__ready-burst--active' : ''}"></div>
 
         <!-- Particles -->
         <div class="ceremony__particles">
@@ -1081,11 +1913,20 @@ export class VelgForgeCeremony extends LitElement {
           </div>
         </div>
 
-        <!-- Stage 3+: Header + Shard name -->
-        <div class="ceremony__header">${msg('Materialization Complete')}</div>
+        <!-- Stage 3+: Decorated header -->
+        <div class="ceremony__header">
+          <div class="ceremony__header-rule" aria-hidden="true"></div>
+          <span class="ceremony__header-text">${msg('Materialization Complete')}</span>
+          <div class="ceremony__header-rule" aria-hidden="true"></div>
+        </div>
+
+        <!-- Stage 3+: Enhanced shard name -->
         <div class="ceremony__name">
           <div class="ceremony__name-glow"></div>
-          ${this.shardName}
+          <span class="ceremony__name-ornament" aria-hidden="true">\u27E8</span>
+          <span class="ceremony__name-label">${this.shardName}</span>
+          <span class="ceremony__name-ornament" aria-hidden="true">\u27E9</span>
+          <div class="ceremony__name-underline" aria-hidden="true"></div>
         </div>
 
         <!-- Stage 3+: Tagline typewriter -->
@@ -1097,16 +1938,7 @@ export class VelgForgeCeremony extends LitElement {
 
         <!-- Stage 4+: Card dealer spread -->
         <div class="ceremony__card-area">
-          <!-- Agent fan -->
-          <div class="ceremony__fan">
-            <div class="ceremony__fan-label">
-              <span class="ceremony__stat-number ceremony__stat-number--agents">${agentCards.length}</span>
-              ${msg('Agents')}
-            </div>
-            <div class="ceremony__fan-cards">
-              ${agentCards.map((c, i) => renderFanCard(c, i, agentCards.length, 0))}
-            </div>
-          </div>
+          ${renderFan(agentCards, agentLayout, 0, 'agents')}
 
           <!-- Zone divider -->
           <div class="ceremony__zone-badge">
@@ -1114,16 +1946,7 @@ export class VelgForgeCeremony extends LitElement {
             <span class="ceremony__stat-label">${msg('Zones')}</span>
           </div>
 
-          <!-- Building fan -->
-          <div class="ceremony__fan">
-            <div class="ceremony__fan-label">
-              <span class="ceremony__stat-number ceremony__stat-number--buildings">${buildingCards.length}</span>
-              ${msg('Buildings')}
-            </div>
-            <div class="ceremony__fan-cards">
-              ${buildingCards.map((c, i) => renderFanCard(c, i, buildingCards.length, agentCards.length))}
-            </div>
-          </div>
+          ${renderFan(buildingCards, buildingLayout, agentCards.length, 'buildings')}
         </div>
 
         <!-- Image materialization progress -->
@@ -1137,6 +1960,7 @@ export class VelgForgeCeremony extends LitElement {
                   ? msg('All Assets Materialized')
                   : html`${msg('Materializing')} ${this._progress.completed} / ${this._progress.total}`
               }
+              <span class="ceremony__progress-pct">${pct}%</span>
             </div>
             <div class="ceremony__progress-bar">
               <div
@@ -1150,9 +1974,9 @@ export class VelgForgeCeremony extends LitElement {
         }
 
         <!-- Stage 5: Enter button -->
-        <div class="ceremony__enter">
+        <div class="ceremony__enter ${this._readyFlash ? 'ceremony__enter--ready' : ''}">
           ${
-            this._progress?.done
+            this._readyFlash
               ? html`
               <button class="ceremony__enter-btn" @click=${this._handleEnter}>
                 ${msg('Enter New Shard')} &ensp; &rarr;

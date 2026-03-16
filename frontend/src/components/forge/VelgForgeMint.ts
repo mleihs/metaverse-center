@@ -33,6 +33,8 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
         flex-direction: column;
         background: var(--color-surface, #0a0a0a);
         overflow-y: auto;
+        overscroll-behavior: contain;
+        padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
       }
 
       /* ── Header ───────────────────────────────────────── */
@@ -452,6 +454,12 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
         font-size: var(--text-sm, 14px);
         box-sizing: border-box;
         transition: border-color 0.2s;
+      }
+
+      @media (max-width: 768px) {
+        .mint__key-input {
+          font-size: 16px;
+        }
       }
 
       .mint__key-input::placeholder {
@@ -878,7 +886,8 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
     const byok = forgeStateManager.byokStatus.value;
     const selectedBundle = bundles.find((b) => b.slug === this._selectedSlug);
     const history = forgeStateManager.purchaseHistory.value;
-    const showCallout = balance === 0 && history.length === 0 && !byok.effective_bypass;
+    const showCallout =
+      balance === 0 && history.length === 0 && !forgeStateManager.hasTokenBypass.value;
 
     return html`
       <div

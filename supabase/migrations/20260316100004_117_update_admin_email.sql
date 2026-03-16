@@ -11,6 +11,18 @@ UPDATE public.platform_settings
 SET setting_value = '["matthias@leihs.at"]'
 WHERE setting_key = 'platform_admin_emails';
 
+-- Remove duplicate matthias@leihs.at user if created manually BEFORE renaming
+-- (otherwise the unique constraint on auth.users.email blocks the UPDATE)
+DELETE FROM auth.identities
+WHERE user_id IN (
+    SELECT id FROM auth.users
+    WHERE email = 'matthias@leihs.at'
+      AND id != '00000000-0000-0000-0000-000000000001'
+);
+DELETE FROM auth.users
+WHERE email = 'matthias@leihs.at'
+  AND id != '00000000-0000-0000-0000-000000000001';
+
 -- Update the dev user (UUID 00000000-...-001) to new email + password
 UPDATE auth.users
 SET email = 'matthias@leihs.at',
@@ -27,15 +39,3 @@ SET identity_data = jsonb_build_object(
 )
 WHERE user_id = '00000000-0000-0000-0000-000000000001'
   AND provider = 'email';
-
--- Remove duplicate matthias@leihs.at user if created manually
--- (may have been created earlier with a random UUID)
-DELETE FROM auth.identities
-WHERE user_id IN (
-    SELECT id FROM auth.users
-    WHERE email = 'matthias@leihs.at'
-      AND id != '00000000-0000-0000-0000-000000000001'
-);
-DELETE FROM auth.users
-WHERE email = 'matthias@leihs.at'
-  AND id != '00000000-0000-0000-0000-000000000001';

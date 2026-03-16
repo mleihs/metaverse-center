@@ -378,7 +378,7 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
             <velg-dossier-request
               .simulationId=${simId}
               .walletBalance=${forgeStateManager.walletBalance.value}
-              .hasBypass=${forgeStateManager.byokStatus.value.effective_bypass}
+              .hasBypass=${forgeStateManager.hasTokenBypass.value}
               @dossier-complete=${this._handleDossierComplete}
             ></velg-dossier-request>
           `
@@ -391,7 +391,7 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
               .simulationId=${simId}
               .classifiedSections=${rawClassifiedSections}
               .regenBudgetRemaining=${regenBudget}
-              .hasBypass=${forgeStateManager.byokStatus.value.effective_bypass}
+              .hasBypass=${forgeStateManager.hasTokenBypass.value}
               @bureau-update-requested=${this._handleBureauUpdate}
             ></velg-bureau-status>`
             : nothing
