@@ -102,6 +102,7 @@ class BleedStatusResponse(BaseModel):
     threshold_state: Literal["normal", "critical", "ascendant"]
     overall_health: float = 0.5
     entropy_cycles_remaining: int | None = None
+    effects_suppressed: bool = False
 
 
 class MapDataResponse(BaseModel):

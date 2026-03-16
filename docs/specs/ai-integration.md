@@ -1,8 +1,8 @@
 ---
 title: "AI Integration"
 id: ai-integration
-version: "2.0"
-date: 2026-03-03
+version: "2.1"
+date: 2026-03-16
 lang: de
 type: spec
 status: active
@@ -152,6 +152,16 @@ def build_prompt(template: PromptTemplate, variables: dict, locale: str) -> str:
 7. URL in Entity speichern
 8. Lore-Bilder: `simulation_lore.image_generated_at = now()` setzen (via `section_id` Parameter, Migration 107) — ermoeglicht `get_forge_progress()` Lore-Bild-Tracking
 ```
+
+### Fehlerbehandlung
+
+| Fehlertyp | Klasse | Verhalten |
+|-----------|--------|-----------|
+| Billing/Credit-Fehler (402) | `ReplicateBillingError` | Gesamter Batch-Abbruch — kein Retry sinnvoll. Erkannt via Keywords (`billing`, `payment`, `spending limit`, `402`) in Replicate API-Response. |
+| Modell-Fehler | `ReplicateError` | Einzelbild-Fehler geloggt, Batch faehrt fort mit naechstem Entity. |
+| Sonstige Fehler | `Exception` | Einzelbild-Fehler geloggt, Batch faehrt fort. |
+
+`run_batch_generation` umschliesst alle 4 Bildtypen (Banner → Portraits → Buildings → Lore) mit einem aeusseren `try/except ReplicateBillingError`. Innere Schleifen fangen `ReplicateBillingError` separat und re-raisen — generische `except Exception` Bloecke behandeln nur Nicht-Billing-Fehler.
 
 ### Konfigurierbare Parameter
 

@@ -173,6 +173,19 @@ export class AdminApiService extends BaseApiService {
     return this.post('/admin/impersonate', { user_id: userId });
   }
 
+  // --- Health Effects Control ---
+
+  async getHealthEffects(): Promise<ApiResponse<HealthEffectsData>> {
+    return this.get('/admin/health-effects');
+  }
+
+  async updateSimulationHealthEffects(
+    simulationId: string,
+    enabled: boolean,
+  ): Promise<ApiResponse<{ enabled: boolean }>> {
+    return this.put(`/admin/health-effects/simulations/${simulationId}`, { enabled });
+  }
+
   // --- Simulation Management ---
 
   async listSimulations(
@@ -205,6 +218,20 @@ export class AdminApiService extends BaseApiService {
   async restoreSimulation(simulationId: string): Promise<ApiResponse<unknown>> {
     return this.post(`/admin/simulations/${simulationId}/restore`, {});
   }
+}
+
+export interface HealthEffectsData {
+  global_enabled: boolean;
+  simulations: HealthEffectsSimulation[];
+}
+
+export interface HealthEffectsSimulation {
+  id: string;
+  name: string;
+  slug: string;
+  overall_health: number;
+  threshold_state: 'normal' | 'critical' | 'ascendant';
+  effects_enabled: boolean;
 }
 
 export interface AdminSimulation {

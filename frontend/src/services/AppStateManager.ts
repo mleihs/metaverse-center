@@ -146,7 +146,10 @@ export class AppStateManager {
   setBleedStatus(status: BleedStatus | null): void {
     this.bleedStatus.value = status;
     if (status) {
-      this.thresholdState.value = status.threshold_state;
+      this.thresholdState.value =
+        status.threshold_state === 'critical' && status.effects_suppressed
+          ? 'normal'
+          : status.threshold_state;
     }
   }
 

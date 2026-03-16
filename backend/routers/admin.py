@@ -20,9 +20,11 @@ from backend.services.audit_service import AuditService
 from backend.services.cache_config import invalidate as invalidate_cache_config
 from backend.services.cleanup_service import CleanupService
 from backend.services.connection_service import ConnectionService
+from backend.services.game_mechanics_service import GameMechanicsService
 from backend.services.platform_api_keys import invalidate as invalidate_api_key_cache
 from backend.services.platform_model_config import invalidate as invalidate_model_config
 from backend.services.platform_settings_service import PlatformSettingsService
+from backend.services.settings_service import SettingsService
 from backend.services.simulation_service import SimulationService
 from backend.utils.encryption import encrypt as encrypt_value
 from supabase import Client
@@ -52,6 +54,10 @@ class ChangeMembershipRoleRequest(BaseModel):
 class UpdateUserWalletRequest(BaseModel):
     forge_tokens: int | None = Field(None, ge=0)
     is_architect: bool | None = None
+
+
+class HealthEffectsToggle(BaseModel):
+    enabled: bool
 
 
 class ImpersonateRequest(BaseModel):
@@ -348,6 +354,102 @@ async def admin_delete_simulation(
             admin_supabase, simulation_id, _user.id, "simulations", simulation_id, "delete",
         )
         return {"success": True, "data": data}
+
+
+# --- Health Effects Control ---
+
+
+@router.get("/health-effects")
+async def get_health_effects(
+    _user: CurrentUser = Depends(require_platform_admin()),
+    admin_supabase: Client = Depends(get_admin_supabase),
+) -> dict:
+    """Return global + per-simulation health effects state for admin tab."""
+    # 1. Global setting
+    try:
+        row = await PlatformSettingsService.get(
+            admin_supabase, "critical_health_effects_enabled",
+        )
+        global_enabled = str(row.get("setting_value", "true")).strip('"') != "false"
+    except HTTPException:
+        global_enabled = True
+
+    # 2. All active simulations
+    sims_data, _total = await _sim_service.list_all_simulations(
+        admin_supabase, include_deleted=False, limit=200, offset=0,
+    )
+
+    sim_ids = [str(s["id"]) for s in sims_data]
+
+    # 3. Health data from materialized view (via service)
+    health_rows = await GameMechanicsService.list_simulation_health(admin_supabase)
+    health_map: dict[str, dict] = {h["simulation_id"]: h for h in health_rows}
+
+    # 4. Per-sim health effects settings (via service)
+    effects_rows = await SettingsService.batch_get_by_key(
+        admin_supabase, sim_ids, "game", "critical_health_effects_enabled",
+    )
+    effects_map: dict[str, str] = {}
+    for s in effects_rows:
+        raw = s.get("setting_value", "true")
+        effects_map[s["simulation_id"]] = str(raw).strip('"')
+
+    # 5. Build response
+    simulations = []
+    for sim in sims_data:
+        sid = str(sim["id"])
+        health = health_map.get(sid, {})
+        oh = health.get("overall_health", 0.5)
+        if oh < 0.25:
+            ts = "critical"
+        elif oh > 0.85:
+            ts = "ascendant"
+        else:
+            ts = "normal"
+
+        sim_enabled = effects_map.get(sid, "true") != "false"
+        simulations.append({
+            "id": sid,
+            "name": sim.get("name", ""),
+            "slug": sim.get("slug", ""),
+            "overall_health": round(oh, 4),
+            "threshold_state": ts,
+            "effects_enabled": sim_enabled,
+        })
+
+    return {
+        "success": True,
+        "data": {
+            "global_enabled": global_enabled,
+            "simulations": simulations,
+        },
+    }
+
+
+@router.put("/health-effects/simulations/{simulation_id}")
+async def update_simulation_health_effects(
+    simulation_id: UUID,
+    body: HealthEffectsToggle,
+    user: CurrentUser = Depends(require_platform_admin()),
+    admin_supabase: Client = Depends(get_admin_supabase),
+) -> dict:
+    """Toggle critical health effects for a specific simulation."""
+    await SettingsService.upsert_setting(
+        admin_supabase,
+        simulation_id,
+        user.id,
+        {
+            "category": "game",
+            "setting_key": "critical_health_effects_enabled",
+            "setting_value": str(body.enabled).lower(),
+        },
+    )
+    await AuditService.safe_log(
+        admin_supabase, simulation_id, user.id,
+        "simulation_settings", "critical_health_effects_enabled", "update",
+        details={"enabled": body.enabled},
+    )
+    return {"success": True, "data": {"enabled": body.enabled}}
 
 
 # --- Impersonation ---

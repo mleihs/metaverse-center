@@ -21,4 +21,5 @@ export interface BleedStatus {
   threshold_state: ThresholdState;
   overall_health?: number;
   entropy_cycles_remaining?: number | null;
+  effects_suppressed?: boolean;
 }

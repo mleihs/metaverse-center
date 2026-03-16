@@ -98,6 +98,26 @@ class SettingsService:
         return _mask_if_encrypted(response.data[0])
 
     @staticmethod
+    async def batch_get_by_key(
+        supabase: Client,
+        simulation_ids: list[str],
+        category: str,
+        setting_key: str,
+    ) -> list[dict]:
+        """Fetch a specific setting across multiple simulations."""
+        if not simulation_ids:
+            return []
+        response = (
+            supabase.table("simulation_settings")
+            .select("simulation_id, setting_value")
+            .eq("category", category)
+            .eq("setting_key", setting_key)
+            .in_("simulation_id", simulation_ids)
+            .execute()
+        )
+        return response.data or []
+
+    @staticmethod
     async def delete_setting(
         supabase: Client,
         simulation_id: UUID,

@@ -12,10 +12,12 @@ import './AdminForgeTab.js';
 import './AdminResonancesTab.js';
 import './AdminScannerTab.js';
 import './AdminSimulationsTab.js';
+import './AdminHealthTab.js';
 
 type AdminTab =
   | 'users'
   | 'simulations'
+  | 'health'
   | 'resonances'
   | 'scanner'
   | 'forge'
@@ -218,6 +220,13 @@ export class VelgAdminPanel extends LitElement {
           @click=${() => this._setTab('simulations')}
         >${msg('Simulations')}</button>
         <button
+          class="admin-tabs__tab ${this._activeTab === 'health' ? 'admin-tabs__tab--active' : ''}"
+          role="tab"
+          aria-selected=${this._activeTab === 'health'}
+          aria-controls="admin-tabpanel"
+          @click=${() => this._setTab('health')}
+        >${msg('Health')}</button>
+        <button
           class="admin-tabs__tab ${this._activeTab === 'resonances' ? 'admin-tabs__tab--active' : ''}"
           role="tab"
           aria-selected=${this._activeTab === 'resonances'}
@@ -284,6 +293,8 @@ export class VelgAdminPanel extends LitElement {
         return html`<velg-admin-users-tab></velg-admin-users-tab>`;
       case 'simulations':
         return html`<velg-admin-simulations-tab></velg-admin-simulations-tab>`;
+      case 'health':
+        return html`<velg-admin-health-tab></velg-admin-health-tab>`;
       case 'resonances':
         return html`<velg-admin-resonances-tab></velg-admin-resonances-tab>`;
       case 'scanner':

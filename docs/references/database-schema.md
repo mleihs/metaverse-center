@@ -72,7 +72,7 @@ Operationen, die mehrere Tabellen atomar modifizieren muessen:
 - **`fn_reject_forge_access()`** — Atomare Ablehnung: Request sperren + Status setzen + User-Details zurueckgeben
 - **`process_cascade_events()`** — Auto-Spawn von Kaskaden-Events bei Zone-Druck-Ueberschreitung, rate-limited pro Zone
 - **`get_forge_progress()`** — Zeremonie- und Post-Ceremony-Bildfortschritt: Zählt fertige Bilder (Banner + Agents + Buildings + Lore) + per-Entity Image-URLs. `simulation_lore.image_generated_at` trackt Lore-Bild-Completion. Liefert `banner_url`, `agents`, `buildings`, `lore`-Arrays + `total`/`completed`/`done` (Migration 098, erweitert Migration 107)
-- **`get_bleed_status()`** — Aggregierter Bleed-Status: Health, Echoes, Foreign Themes, Lore in einem Round-Trip (Migration 099)
+- **`get_bleed_status()`** — Aggregierter Bleed-Status: Health, Echoes, Foreign Themes, Lore in einem Round-Trip (Migration 099). SECURITY DEFINER (seit Migration 120) fuer Zugriff auf `platform_settings`. Gibt `effects_suppressed` zurueck (Admin-Toggle fuer kritische Health-Effekte)
 - **`get_map_overlay_data()`** — Zone-Topologie + historische Events + Bleed-Details fuer Karten-Overlay in einem Call (Migration 100)
 
 ### Entscheidungsmatrix: Wo lebt die Logik?

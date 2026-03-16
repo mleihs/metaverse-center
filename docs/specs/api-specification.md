@@ -1659,11 +1659,43 @@ Manuelles Refresh aller Materialized Views. Normalerweise ueber Trigger automati
 **Rolle:** `admin`
 
 ### `GET /api/v1/public/simulations/:simId/bleed-status`
-Aggregierter Bleed-Status fuer Palimpsest-Overlay und Schwellenwert-UI. Enthält aktive Bleeds, Threshold-State (normal/critical/ascendant), Fracture-Warning, Entropy-Countdown, Foreign-Theme-Daten und Lore-Fragmente.
+Aggregierter Bleed-Status fuer Palimpsest-Overlay und Schwellenwert-UI. Enthält aktive Bleeds, Threshold-State (normal/critical/ascendant), Fracture-Warning, Entropy-Countdown, Foreign-Theme-Daten, Lore-Fragmente und `effects_suppressed` (Admin-Toggle fuer kritische Health-Effekte).
 
 **Auth:** Anon (Public)
 
 **Response:** `SuccessResponse[BleedStatusResponse]`
+
+### `GET /api/v1/admin/health-effects`
+Globaler + Per-Simulation Health-Effects-Status fuer Admin-Tab. Liefert globalen Master-Switch-Zustand und Liste aller aktiven Simulationen mit Health-Daten und Toggle-Status.
+
+**Rolle:** `platform_admin`
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "global_enabled": true,
+    "simulations": [
+      {
+        "id": "uuid",
+        "name": "string",
+        "slug": "string",
+        "overall_health": 0.42,
+        "threshold_state": "normal|critical|ascendant",
+        "effects_enabled": true
+      }
+    ]
+  }
+}
+```
+
+### `PUT /api/v1/admin/health-effects/simulations/:simId`
+Kritische Health-Effekte fuer eine einzelne Simulation aktivieren/deaktivieren.
+
+**Rolle:** `platform_admin`
+
+**Body:** `{ "enabled": boolean }`
 
 ### `POST /api/v1/simulations/:simId/threshold-actions/:actionType`
 Notfall-Aktion bei kritischem Schwellenwert ausfuehren. Drei Typen: `scorched_earth`, `emergency_draft`, `reality_anchor`. Erfordert `overall_health < 0.25`.
