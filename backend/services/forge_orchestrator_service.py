@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from uuid import UUID
 
@@ -150,6 +151,93 @@ def _build_chunk_prompt(
         ]
 
     # Always generate bilingually — the platform serves EN + DE.
+    lines += [
+        "",
+        "BILINGUAL OUTPUT: For every descriptive text field, also produce a German "
+        "equivalent in the corresponding _de field (e.g. description → description_de, "
+        "character → character_de). The German text should read as if originally written "
+        "in German — not a literal translation. Keep ALL proper nouns (names, places) "
+        "identical across both languages.",
+    ]
+
+    return "\n".join(lines)
+
+
+def _build_entity_prompt(
+    entity_type: str,
+    anchor: dict,
+    seed: str,
+    entity_index: int,
+    entity_total: int,
+    existing_entities: list[dict],
+    geography: dict | None = None,
+) -> str:
+    """Build a prompt that generates exactly 1 entity, aware of siblings."""
+    lines = [
+        f"Seed Prompt: {seed}",
+        f"Simulation Theme: {anchor.get('title', '')}",
+        f"Core Question: {anchor.get('core_question', '')}",
+        f"Description: {anchor.get('description', '')}",
+    ]
+
+    # Geography context
+    if geography:
+        city = geography.get("city_name", "the city")
+        zone_names = [z.get("name", "") for z in geography.get("zones", [])]
+        lines += ["", f"City: {city}"]
+        if zone_names:
+            lines.append(f"Districts: {', '.join(zone_names)}")
+
+    # Existing siblings — prevent duplication
+    if existing_entities:
+        if entity_type == "agents":
+            lines += [
+                "",
+                "Already recruited operatives (DO NOT duplicate names, professions, or personality archetypes):",
+            ]
+            for e in existing_entities:
+                lines.append(f'- "{e.get("name")}" — {e.get("primary_profession", "?")} ({e.get("gender", "?")})')
+        else:
+            lines += [
+                "",
+                "Already designed structures (DO NOT duplicate names or building types):",
+            ]
+            for e in existing_entities:
+                lines.append(f'- "{e.get("name")}" — {e.get("building_type", "?")}')
+
+    # Entity-type-specific requirements
+    if entity_type == "agents":
+        lines += [
+            "",
+            f"Generate exactly 1 NEW agent distinct from those above. "
+            f"This is operative {entity_index + 1} of {entity_total}.",
+            "",
+            "Requirements:",
+            "- Write 'character' as a vivid personality portrait (200-300 words): temperament, mannerisms, "
+            "contradictions, a memorable quirk, and a brief physical impression (build, distinguishing "
+            "feature, typical clothing). The physical details will feed portrait image generation.",
+            "- Write 'background' as rich backstory (200-300 words): origin, formative event, "
+            "current motivation, and a secret or unresolved tension.",
+            "- Vary gender from already-recruited operatives where possible.",
+            "- The agent should belong to a different faction/system tied to the world's geography.",
+            "- Profession should be unique and thematically resonant — avoid generic titles.",
+        ]
+    else:
+        lines += [
+            "",
+            f"Generate exactly 1 NEW building distinct from those above. "
+            f"This is structure {entity_index + 1} of {entity_total}.",
+            "",
+            "Requirements:",
+            "- Write 'description' as an atmospheric passage (150-250 words): architectural style, "
+            "dominant materials (stone, iron, glass, wood), sensory details (sounds, smells, light), "
+            "and what makes the place remarkable or unsettling. These feed image generation.",
+            "- Vary 'building_condition' from already-designed structures.",
+            "- Building type should differ from existing structures.",
+            "- Building name should be evocative and world-specific.",
+        ]
+
+    # Bilingual block
     lines += [
         "",
         "BILINGUAL OUTPUT: For every descriptive text field, also produce a German "
@@ -449,6 +537,90 @@ class ForgeOrchestratorService:
                 status_code=status.HTTP_502_BAD_GATEWAY,
                 detail="AI model returned invalid output after retries. Please try again.",
             ) from exc
+
+    @staticmethod
+    async def generate_single_entity(
+        supabase: Client,
+        user_id: UUID,
+        draft_id: UUID,
+        entity_type: str,
+        entity_index: int,
+        entity_total: int,
+    ) -> dict:
+        """Generate a single agent or building and append to draft."""
+
+        draft_data = await ForgeDraftService.get_draft(supabase, user_id, draft_id)
+        anchor = draft_data.get("philosophical_anchor", {}).get("selected")
+        if not anchor:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Must select a philosophical anchor first.",
+            )
+        seed = draft_data.get("seed_prompt", "")
+        geography = draft_data.get("geography") or None
+        existing_entities = draft_data.get(entity_type, [])
+
+        if settings.forge_mock_mode:
+            await asyncio.sleep(1.5)
+            if entity_type == "agents":
+                entity = mock.mock_single_agent(seed, entity_index, entity_total)
+            else:
+                entity = mock.mock_single_building(seed, entity_index, entity_total)
+        else:
+            or_key, _ = await ForgeOrchestratorService._get_user_keys(supabase, user_id)
+
+            prompt = _build_entity_prompt(
+                entity_type, anchor, seed, entity_index, entity_total,
+                existing_entities, geography,
+            )
+            dynamic_agent = create_forge_agent(WORLD_ARCHITECT_PROMPT, api_key=or_key)
+            entity_settings = {"max_tokens": PYDANTIC_AI_MAX_TOKENS["entity"]}
+
+            try:
+                if entity_type == "agents":
+                    result = await dynamic_agent.run(
+                        prompt,
+                        output_type=ForgeAgentDraft,
+                        model_settings=entity_settings,
+                    )
+                else:
+                    result = await dynamic_agent.run(
+                        prompt,
+                        output_type=ForgeBuildingDraft,
+                        model_settings=entity_settings,
+                    )
+                entity = result.output.model_dump()
+            except ModelHTTPError as exc:
+                raise ai_error_to_http(exc) from exc
+            except UnexpectedModelBehavior as exc:
+                logger.error(
+                    "LLM entity output validation failed",
+                    extra={"entity_type": entity_type, "draft_id": str(draft_id), "index": entity_index},
+                    exc_info=exc,
+                )
+                raise HTTPException(
+                    status_code=status.HTTP_502_BAD_GATEWAY,
+                    detail="AI model returned invalid output after retries. Please try again.",
+                ) from exc
+
+            # Validate bilingual output
+            de_fields = (
+                ["character_de", "background_de", "primary_profession_de"]
+                if entity_type == "agents"
+                else ["description_de", "building_type_de", "building_condition_de"]
+            )
+            validate_bilingual_output([entity], de_fields, entity_type.rstrip("s"))
+
+        # Duplicate name check
+        existing_names = {e.get("name", "").lower() for e in existing_entities}
+        if entity.get("name", "").lower() in existing_names:
+            entity["name"] = f"{entity['name']} ({entity_index + 1})"
+
+        # Persist to draft
+        await ForgeDraftService.append_entity(
+            supabase, user_id, draft_id, entity_type, entity,
+        )
+        return entity
 
     @staticmethod
     async def materialize_shard(

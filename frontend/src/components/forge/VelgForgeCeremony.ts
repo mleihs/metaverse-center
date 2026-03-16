@@ -530,6 +530,7 @@ export class VelgForgeCeremony extends LitElement {
       text-align: center;
       max-width: 600px;
       padding: 0 var(--space-6, 1.5rem);
+      margin-top: var(--space-4, 1rem);
     }
 
     /* ── Stage 4: Asset Reveal — Card Dealer Spread ── */
@@ -1441,9 +1442,6 @@ export class VelgForgeCeremony extends LitElement {
   private _scanInterval: ReturnType<typeof setInterval> | null = null;
   private _pollInterval: ReturnType<typeof setInterval> | null = null;
 
-  /** Screen Wake Lock — keeps display on during ceremony */
-  private _wakeLock: WakeLockSentinel | null = null;
-
   // ── Phase labels (i18n) ────────────────────────
 
   private get _phaseLabels(): string[] {
@@ -1515,11 +1513,9 @@ export class VelgForgeCeremony extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     this._startCeremony();
-    document.addEventListener('visibilitychange', this._handleVisibilityChange);
   }
 
   disconnectedCallback() {
-    document.removeEventListener('visibilitychange', this._handleVisibilityChange);
     this._cleanup();
     super.disconnectedCallback();
   }
@@ -1527,9 +1523,6 @@ export class VelgForgeCeremony extends LitElement {
   private _startCeremony() {
     // Start polling immediately (background images may already be generating)
     this._startProgressPolling();
-
-    // Prevent screen dimming during ceremony
-    this._requestWakeLock();
 
     // Check reduced motion preference — skip to final state
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -1686,32 +1679,6 @@ export class VelgForgeCeremony extends LitElement {
     }
   }
 
-  // ── Wake Lock ────────────────────────────────
-
-  private async _requestWakeLock(): Promise<void> {
-    try {
-      if ('wakeLock' in navigator) {
-        this._wakeLock = await navigator.wakeLock.request('screen');
-      }
-    } catch {
-      // Wake lock denied or unsupported — non-critical
-    }
-  }
-
-  private async _releaseWakeLock(): Promise<void> {
-    if (this._wakeLock) {
-      await this._wakeLock.release().catch(() => {});
-      this._wakeLock = null;
-    }
-  }
-
-  private _handleVisibilityChange = (): void => {
-    // Re-acquire wake lock when tab becomes visible again (spec auto-releases on blur)
-    if (document.visibilityState === 'visible' && this._stage > 0) {
-      this._requestWakeLock();
-    }
-  };
-
   private _cleanup() {
     for (const t of this._timers) clearTimeout(t);
     this._timers = [];
@@ -1721,13 +1688,11 @@ export class VelgForgeCeremony extends LitElement {
       clearInterval(this._typeInterval);
       this._typeInterval = null;
     }
-    this._releaseWakeLock();
   }
 
   // ── Event ──────────────────────────────────────
 
   private _handleEnter() {
-    this._releaseWakeLock();
     this.dispatchEvent(new CustomEvent('ceremony-enter', { bubbles: true, composed: true }));
   }
 

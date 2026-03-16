@@ -200,6 +200,17 @@ export class ForgeApiService extends BaseApiService {
     return this.post(`/forge/drafts/${id}/generate/${chunkType}`);
   }
 
+  generateEntity(
+    id: string,
+    entityType: 'agents' | 'buildings',
+    entityIndex: number,
+    entityTotal: number,
+  ): Promise<ApiResponse<ForgeAgentDraft | ForgeBuildingDraft>> {
+    return this.post(
+      `/forge/drafts/${id}/generate-entity/${entityType}?entity_index=${entityIndex}&entity_total=${entityTotal}`,
+    );
+  }
+
   generateTheme(id: string): Promise<ApiResponse<Record<string, string>>> {
     return this.post(`/forge/drafts/${id}/generate-theme`);
   }

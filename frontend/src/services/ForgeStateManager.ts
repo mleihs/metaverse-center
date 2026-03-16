@@ -32,7 +32,16 @@ const DEFAULT_ESTIMATES: Record<string, number> = {
   geography: 120_000,
   agents: 180_000,
   buildings: 150_000,
+  agents_entity: 25_000,
+  buildings_entity: 20_000,
 };
+
+interface EntityGenerationProgress {
+  entityType: 'agents' | 'buildings';
+  current: number;
+  total: number;
+  currentEntityStartedAt: number | null;
+}
 
 interface TimingRecord {
   type: string;
@@ -58,6 +67,8 @@ class ForgeStateManager {
   readonly lastGenerationRecovered = signal(false);
   /** True while actively polling the backend for recovery after a timeout. */
   readonly isRecovering = signal(false);
+  /** Per-entity generation progress (null when not in entity loop). */
+  readonly generationProgress = signal<EntityGenerationProgress | null>(null);
 
   // --- Staging State (hand/fan for review before accept) ---
   readonly stagedAgents = signal<ForgeAgentDraft[]>([]);
@@ -287,7 +298,14 @@ class ForgeStateManager {
     const draftId = this.draft.value?.id;
     if (!draftId) return;
 
-    // Snapshot entity counts before generation for timeout recovery
+    if (chunkType === 'geography') {
+      return this._generateGeography(draftId);
+    }
+    return this._generateEntitiesIncremental(draftId, chunkType);
+  }
+
+  /** Batch geography generation (unchanged from original). */
+  private async _generateGeography(draftId: string) {
     const snapshot = this._snapshotCounts();
 
     this.isGenerating.value = true;
@@ -296,13 +314,13 @@ class ForgeStateManager {
     this.generationStartedAt.value = Date.now();
     this.lastGenerationRecovered.value = false;
     try {
-      const resp = await forgeApi.generateChunk(draftId, chunkType);
+      const resp = await forgeApi.generateChunk(draftId, 'geography');
       if (resp.success) {
         await this.loadDraft(draftId);
-        this._syncStagingAfterGeneration(chunkType);
+        this._syncStagingAfterGeneration('geography');
       } else {
         this.isRecovering.value = true;
-        const recovered = await this._tryRecoverChunk(draftId, chunkType, snapshot);
+        const recovered = await this._tryRecoverChunk(draftId, 'geography', snapshot);
         this.isRecovering.value = false;
         if (recovered) {
           this.lastGenerationRecovered.value = true;
@@ -312,7 +330,7 @@ class ForgeStateManager {
       }
     } catch (err) {
       this.isRecovering.value = true;
-      const recovered = await this._tryRecoverChunk(draftId, chunkType, snapshot);
+      const recovered = await this._tryRecoverChunk(draftId, 'geography', snapshot);
       this.isRecovering.value = false;
       if (recovered) {
         this.lastGenerationRecovered.value = true;
@@ -322,9 +340,102 @@ class ForgeStateManager {
     } finally {
       const startedAt = this.generationStartedAt.value;
       if (startedAt) {
-        this._recordTiming(chunkType, Date.now() - startedAt);
+        this._recordTiming('geography', Date.now() - startedAt);
       }
       this.generationStartedAt.value = null;
+      this.isRecovering.value = false;
+      this.isGenerating.value = false;
+    }
+  }
+
+  /** Per-entity incremental generation for agents/buildings. */
+  private async _generateEntitiesIncremental(
+    draftId: string,
+    entityType: 'agents' | 'buildings',
+  ) {
+    const total =
+      entityType === 'agents'
+        ? this.generationConfig.value.agent_count
+        : this.generationConfig.value.building_count;
+
+    // Clear existing entities for re-draft
+    await this._flushUpdate({ [entityType]: [] } as Partial<ForgeDraft>);
+    if (entityType === 'agents') this.stagedAgents.value = [];
+    else this.stagedBuildings.value = [];
+
+    this.isGenerating.value = true;
+    this.error.value = null;
+    this.isRecovering.value = false;
+    this.generationStartedAt.value = Date.now();
+    this.lastGenerationRecovered.value = false;
+    this.generationProgress.value = {
+      entityType,
+      current: 0,
+      total,
+      currentEntityStartedAt: null,
+    };
+
+    let consecutiveFailures = 0;
+    const MAX_RETRIES = 3;
+    const MAX_CONSECUTIVE_FAILURES = 2;
+
+    try {
+      for (let i = 0; i < total; i++) {
+        this.generationProgress.value = {
+          ...this.generationProgress.value!,
+          current: i,
+          currentEntityStartedAt: Date.now(),
+        };
+
+        let success = false;
+        for (let retry = 0; retry < MAX_RETRIES; retry++) {
+          try {
+            const resp = await forgeApi.generateEntity(draftId, entityType, i, total);
+            if (resp.success && resp.data) {
+              if (entityType === 'agents') {
+                this.stagedAgents.value = [
+                  ...this.stagedAgents.value,
+                  resp.data as ForgeAgentDraft,
+                ];
+              } else {
+                this.stagedBuildings.value = [
+                  ...this.stagedBuildings.value,
+                  resp.data as ForgeBuildingDraft,
+                ];
+              }
+              const elapsed =
+                Date.now() - (this.generationProgress.value?.currentEntityStartedAt ?? Date.now());
+              this._recordTiming(`${entityType}_entity`, elapsed);
+              consecutiveFailures = 0;
+              success = true;
+              break;
+            }
+          } catch {
+            // Retry on network/timeout errors
+          }
+          if (retry < MAX_RETRIES - 1) await new Promise((r) => setTimeout(r, 2000));
+        }
+
+        if (!success) {
+          consecutiveFailures++;
+          if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+            this.error.value = `Generation stopped after ${i} of ${total} entities. Re-draft to try again.`;
+            break;
+          }
+        }
+      }
+
+      // Reconcile with server state
+      await this.loadDraft(draftId);
+      this._syncStagingAfterGeneration(entityType);
+    } catch (err) {
+      this.error.value = err instanceof Error ? err.message : 'Generation failed';
+    } finally {
+      if (this.generationStartedAt.value) {
+        this._recordTiming(entityType, Date.now() - this.generationStartedAt.value);
+      }
+      this.generationStartedAt.value = null;
+      this.generationProgress.value = null;
       this.isRecovering.value = false;
       this.isGenerating.value = false;
     }
@@ -836,6 +947,7 @@ class ForgeStateManager {
     this.isLoading.value = false;
     this.generationStartedAt.value = null;
     this.lastGenerationRecovered.value = false;
+    this.generationProgress.value = null;
     this.stagedAgents.value = [];
     this.stagedBuildings.value = [];
     this.generationConfig.value = { ...DEFAULT_GENERATION_CONFIG };

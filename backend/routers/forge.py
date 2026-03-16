@@ -15,7 +15,7 @@ from backend.dependencies import (
     require_architect,
     require_platform_admin,
 )
-from backend.middleware.rate_limit import RATE_LIMIT_AI_GENERATION, RATE_LIMIT_STANDARD, limiter
+from backend.middleware.rate_limit import RATE_LIMIT_AI_ENTITY, RATE_LIMIT_AI_GENERATION, RATE_LIMIT_STANDARD, limiter
 from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.models.forge import (
     AdminBundleUpdate,
@@ -191,6 +191,28 @@ async def generate_chunk(
     await AuditService.safe_log(
         supabase, None, user.id, "forge_draft", str(draft_id), "generate",
         {"chunk_type": chunk_type},
+    )
+    return {"success": True, "data": result}
+
+
+@router.post("/drafts/{draft_id}/generate-entity/{entity_type}", response_model=SuccessResponse[dict])
+@limiter.limit(RATE_LIMIT_AI_ENTITY)
+async def generate_single_entity(
+    request: Request,
+    draft_id: UUID,
+    entity_type: Literal["agents", "buildings"],
+    entity_index: int = Query(..., ge=0, le=11),
+    entity_total: int = Query(..., ge=3, le=12),
+    user: CurrentUser = Depends(require_architect()),
+    supabase=Depends(get_supabase),
+):
+    """Generate a single agent or building entity (per-entity loop)."""
+    result = await _orchestrator_service.generate_single_entity(
+        supabase, user.id, draft_id, entity_type, entity_index, entity_total
+    )
+    await AuditService.safe_log(
+        supabase, None, user.id, "forge_draft", str(draft_id), "generate_entity",
+        {"entity_type": entity_type, "entity_index": entity_index, "entity_total": entity_total},
     )
     return {"success": True, "data": result}
 

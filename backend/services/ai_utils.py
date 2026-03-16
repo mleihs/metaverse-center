@@ -29,6 +29,7 @@ PYDANTIC_AI_MAX_TOKENS: dict[str, int] = {
     "theme": 2048,         # flat structured object ~30 fields
     "translation": 4096,   # entity translation batch
     "dossier_evolution": 1024,  # short 100-250 word addenda
+    "entity": 3072,             # single agent/building (character + background + DE)
 }
 
 

@@ -809,6 +809,18 @@ def mock_buildings(seed: str, count: int = 7) -> list[dict]:
     return _validate_mock_list(pool[:count], ForgeBuildingDraft)
 
 
+def mock_single_agent(seed: str, index: int, count: int = 6) -> dict:
+    """Return a single mock agent at the given index."""
+    all_agents = mock_agents(seed, count)
+    return all_agents[index % len(all_agents)]
+
+
+def mock_single_building(seed: str, index: int, count: int = 7) -> dict:
+    """Return a single mock building at the given index."""
+    all_buildings = mock_buildings(seed, count)
+    return all_buildings[index % len(all_buildings)]
+
+
 # ── Phase 3: Darkroom (theme) ────────────────────────────────────────
 
 

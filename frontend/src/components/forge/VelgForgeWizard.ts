@@ -250,6 +250,9 @@ export class VelgForgeWizard extends LitElement {
   @state() private _hasDraft = false;
   private _disposeEffects: (() => void)[] = [];
 
+  /** Screen Wake Lock — keeps display on during the entire forge session. */
+  private _wakeLock: WakeLockSentinel | null = null;
+
   connectedCallback() {
     super.connectedCallback();
 
@@ -264,13 +267,41 @@ export class VelgForgeWizard extends LitElement {
         this._hasDraft = forgeStateManager.draft.value !== null;
       }),
     );
+
+    this._requestWakeLock();
+    document.addEventListener('visibilitychange', this._handleVisibilityChange);
   }
 
   disconnectedCallback() {
     for (const dispose of this._disposeEffects) dispose();
     this._disposeEffects = [];
+    document.removeEventListener('visibilitychange', this._handleVisibilityChange);
+    this._releaseWakeLock();
     super.disconnectedCallback();
   }
+
+  private async _requestWakeLock(): Promise<void> {
+    try {
+      if ('wakeLock' in navigator) {
+        this._wakeLock = await navigator.wakeLock.request('screen');
+      }
+    } catch {
+      // Wake lock denied or unsupported — non-critical
+    }
+  }
+
+  private async _releaseWakeLock(): Promise<void> {
+    if (this._wakeLock) {
+      await this._wakeLock.release().catch(() => {});
+      this._wakeLock = null;
+    }
+  }
+
+  private _handleVisibilityChange = (): void => {
+    if (document.visibilityState === 'visible') {
+      this._requestWakeLock();
+    }
+  };
 
   private _navigateToPhase(phaseId: 'astrolabe' | 'drafting' | 'darkroom' | 'ignition') {
     forgeStateManager.updateDraft({ current_phase: phaseId });

@@ -114,6 +114,26 @@ class ForgeDraftService:
         return response.data[0]
 
     @staticmethod
+    async def append_entity(
+        supabase: Client,
+        user_id: UUID,
+        draft_id: UUID,
+        entity_type: str,
+        entity: dict,
+    ) -> dict:
+        """Append a single entity to the draft's agent/building array.
+
+        Safe because writes are user-sequential (frontend drives the loop)
+        and RLS-gated by ``user_id``.
+        """
+        draft = await ForgeDraftService.get_draft(supabase, user_id, draft_id)
+        current_list = draft.get(entity_type, [])
+        current_list.append(entity)
+        return await ForgeDraftService.update_draft(
+            supabase, user_id, draft_id, ForgeDraftUpdate(**{entity_type: current_list})
+        )
+
+    @staticmethod
     async def delete_draft(
         supabase: Client,
         user_id: UUID,

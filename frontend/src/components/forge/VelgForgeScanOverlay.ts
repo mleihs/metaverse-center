@@ -352,6 +352,31 @@ export class VelgForgeScanOverlay extends LitElement {
       animation: recalibrate-pulse 1.5s infinite;
     }
 
+    /* Entity counter ("3 / 6") */
+    .scan-entity-counter {
+      position: relative;
+      z-index: 2;
+      font-family: var(--font-mono, monospace);
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--color-success, #22c55e);
+      text-shadow: 0 0 16px rgba(74 222 128 / 0.6), 0 0 40px rgba(74 222 128 / 0.2);
+      letter-spacing: 0.15em;
+    }
+
+    .scan-entity-counter__current {
+      color: var(--color-success, #22c55e);
+    }
+
+    .scan-entity-counter__separator {
+      color: rgba(74 222 128 / 0.4);
+      margin: 0 2px;
+    }
+
+    .scan-entity-counter__total {
+      color: rgba(74 222 128 / 0.5);
+    }
+
     @media (prefers-reduced-motion: reduce) {
       .scan-overlay::before {
         animation: none;
@@ -397,6 +422,10 @@ export class VelgForgeScanOverlay extends LitElement {
   @property({ type: String }) echoText = '';
   /** Estimated duration in ms. Activates time-based mode (looping phases, timer, ETA). */
   @property({ type: Number }) estimatedDurationMs = 0;
+  /** Per-entity progress: current entity index (0-based). -1 = not in entity mode. */
+  @property({ type: Number }) entityCurrent = -1;
+  /** Per-entity progress: total entities to generate. 0 = not in entity mode. */
+  @property({ type: Number }) entityTotal = 0;
 
   @state() private _scanPhase = 0;
   @state() private _elapsedMs = 0;
@@ -416,6 +445,11 @@ export class VelgForgeScanOverlay extends LitElement {
         window.clearTimeout(this._scanTimer);
         this._stopTickTimer();
       }
+    }
+    // Reset per-entity timer when a new entity starts
+    if (changed.has('entityCurrent') && this.entityCurrent >= 0) {
+      this._startTime = Date.now();
+      this._elapsedMs = 0;
     }
   }
 
@@ -460,6 +494,22 @@ export class VelgForgeScanOverlay extends LitElement {
     if (this.recovering) return 95;
     if (this.phases.length === 0) return 0;
 
+    // Entity mode: deterministic base + asymptotic sub-progress within current entity
+    if (this.entityTotal > 0 && this.entityCurrent >= 0) {
+      const basePercent = (this.entityCurrent / this.entityTotal) * 100;
+      // Sub-progress within current entity based on elapsed time vs entity estimate
+      if (this.estimatedDurationMs > 0 && this._elapsedMs > 0) {
+        const entityElapsed = this._elapsedMs;
+        const ratio = entityElapsed / this.estimatedDurationMs;
+        const subPercent = ratio <= 0.9
+          ? (ratio / 0.9) * 0.9
+          : 0.9 + 0.08 * (1 - Math.exp(-(ratio - 0.9) * 2));
+        const entitySlice = 100 / this.entityTotal;
+        return Math.min(98, basePercent + subPercent * entitySlice);
+      }
+      return Math.min(98, basePercent);
+    }
+
     if (this.estimatedDurationMs > 0) {
       // Asymptotic progress based on elapsed time vs estimate
       const ratio = this._elapsedMs / this.estimatedDurationMs;
@@ -478,6 +528,11 @@ export class VelgForgeScanOverlay extends LitElement {
 
   private _isLockActive(index: number): boolean {
     if (this.phases.length === 0 || this.lockLabels.length === 0) return false;
+    // Entity mode: pips fill based on completed entities
+    if (this.entityTotal > 0 && this.entityCurrent >= 0) {
+      const threshold = Math.floor(((index + 1) * this.entityTotal) / (this.lockLabels.length + 1));
+      return this.entityCurrent >= threshold;
+    }
     const threshold = Math.floor(((index + 1) * this.phases.length) / (this.lockLabels.length + 1));
     return this._scanPhase >= threshold;
   }
@@ -490,13 +545,24 @@ export class VelgForgeScanOverlay extends LitElement {
   }
 
   private _renderTimer() {
-    if (this.estimatedDurationMs <= 0) return nothing;
+    if (this.estimatedDurationMs <= 0 && this.entityTotal <= 0) return nothing;
 
     if (this.recovering) {
       return html`
         <div class="scan-timer">
           <span class="scan-timer__elapsed">${msg('MISSION CLOCK')}: ${this._formatTime(this._elapsedMs)}</span>
           <span class="scan-timer__recovering">${msg('RECOVERING...')}</span>
+        </div>
+      `;
+    }
+
+    // Entity mode: ETA based on remaining entities × per-entity estimate
+    if (this.entityTotal > 0 && this.entityCurrent >= 0 && this.estimatedDurationMs > 0) {
+      const remaining = (this.entityTotal - this.entityCurrent) * this.estimatedDurationMs;
+      return html`
+        <div class="scan-timer">
+          <span class="scan-timer__elapsed">${msg('MISSION CLOCK')}: ${this._formatTime(this._elapsedMs)}</span>
+          <span class="scan-timer__eta">ETA: ~${this._formatTime(remaining)}</span>
         </div>
       `;
     }
@@ -541,6 +607,18 @@ export class VelgForgeScanOverlay extends LitElement {
         ${
           this.echoText && !this.recovering
             ? html`<div class="scan-seed-echo" aria-hidden="true">"${this.echoText}"</div>`
+            : nothing
+        }
+
+        ${
+          this.entityTotal > 0 && this.entityCurrent >= 0 && !this.recovering
+            ? html`
+          <div class="scan-entity-counter" aria-label="${this.entityCurrent + 1} of ${this.entityTotal}">
+            <span class="scan-entity-counter__current">${this.entityCurrent + 1}</span>
+            <span class="scan-entity-counter__separator">/</span>
+            <span class="scan-entity-counter__total">${this.entityTotal}</span>
+          </div>
+        `
             : nothing
         }
 

@@ -797,7 +797,13 @@ export class VelgForgeTable extends LitElement {
   @state() private _stagedBuildings: ForgeBuildingDraft[] = [];
   @state() private _slamSlot: number | null = null;
   @state() private _dragOverSlot: number | null = null;
-  @state() private _isDealing = false;
+  @state() private _dealingIndex: number | null = null;
+  @state() private _generationProgress: {
+    entityType: 'agents' | 'buildings';
+    current: number;
+    total: number;
+    currentEntityStartedAt: number | null;
+  } | null = null;
   private _agentImages: string[] = [];
   private _buildingImages: string[] = [];
 
@@ -827,16 +833,26 @@ export class VelgForgeTable extends LitElement {
       }),
       effect(() => {
         const staged = forgeStateManager.stagedAgents.value;
-        if (staged.length > 0 && staged.length !== this._stagedAgents.length) {
-          this._isDealing = true;
+        if (staged.length > 0 && staged.length > this._stagedAgents.length) {
+          this._dealingIndex = staged.length - 1;
           setTimeout(() => {
-            this._isDealing = false;
+            this._dealingIndex = null;
           }, 600);
         }
         this._stagedAgents = staged;
       }),
       effect(() => {
-        this._stagedBuildings = forgeStateManager.stagedBuildings.value;
+        const staged = forgeStateManager.stagedBuildings.value;
+        if (staged.length > 0 && staged.length > this._stagedBuildings.length) {
+          this._dealingIndex = staged.length - 1;
+          setTimeout(() => {
+            this._dealingIndex = null;
+          }, 600);
+        }
+        this._stagedBuildings = staged;
+      }),
+      effect(() => {
+        this._generationProgress = forgeStateManager.generationProgress.value;
       }),
     );
   }
@@ -1356,7 +1372,7 @@ export class VelgForgeTable extends LitElement {
               ${this._stagedAgents.map(
                 (a, i) => html`
                 <div
-                  class="staging-card ${this._isDealing ? 'staging-card--dealing' : ''}"
+                  class="staging-card ${this._dealingIndex === i ? 'staging-card--dealing' : ''}"
                   style="transform: ${this._fanRotation(i, this._stagedAgents.length)}; animation-delay: ${i * 100}ms"
                   draggable="true"
                   @dragstart=${(e: DragEvent) => this._handleDragStart(e, 'agent', i)}
@@ -1392,7 +1408,9 @@ export class VelgForgeTable extends LitElement {
             .phases=${this._agentPhases}
             .lockLabels=${[msg('Psych'), msg('Skills'), msg('Cover')]}
             headerLabel=${msg('Bureau Personnel Division')}
-            .estimatedDurationMs=${forgeStateManager.getEstimatedDuration('agents')}
+            .entityCurrent=${this._generationProgress?.entityType === 'agents' ? this._generationProgress.current : -1}
+            .entityTotal=${this._generationProgress?.entityType === 'agents' ? this._generationProgress.total : 0}
+            .estimatedDurationMs=${this._generationProgress?.entityType === 'agents' ? forgeStateManager.getEstimatedDuration('agents_entity') : forgeStateManager.getEstimatedDuration('agents')}
           ></velg-forge-scan-overlay>
         `
             : nothing
@@ -1488,7 +1506,9 @@ export class VelgForgeTable extends LitElement {
             .phases=${this._buildingPhases}
             .lockLabels=${[msg('Base'), msg('Frame'), msg('Roof')]}
             headerLabel=${msg('Infrastructure Engineering Corps')}
-            .estimatedDurationMs=${forgeStateManager.getEstimatedDuration('buildings')}
+            .entityCurrent=${this._generationProgress?.entityType === 'buildings' ? this._generationProgress.current : -1}
+            .entityTotal=${this._generationProgress?.entityType === 'buildings' ? this._generationProgress.total : 0}
+            .estimatedDurationMs=${this._generationProgress?.entityType === 'buildings' ? forgeStateManager.getEstimatedDuration('buildings_entity') : forgeStateManager.getEstimatedDuration('buildings')}
           ></velg-forge-scan-overlay>
         `
             : nothing
