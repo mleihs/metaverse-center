@@ -161,6 +161,10 @@ def _build_chunk_prompt(
     return "\n".join(lines)
 
 
+class _BillingAbortError(Exception):
+    """Sentinel raised to short-circuit batch image generation on billing errors."""
+
+
 class ForgeOrchestratorService:
     """Orchestrates multi-step simulation generation."""
 
@@ -797,6 +801,32 @@ class ForgeOrchestratorService:
 
         _types = entity_types  # None = all types
 
+        try:
+            await cls._run_image_generation(
+                image_service, supabase, simulation_id, sim_data, anchor_data, _types,
+            )
+        except _BillingAbortError:
+            logger.error(
+                "Replicate billing error — aborting all image generation. "
+                "Check credits at replicate.com/account/billing."
+            )
+            return
+
+        logger.info("Phase B complete — background generation finished")
+
+    @classmethod
+    async def _run_image_generation(
+        cls,
+        image_service: ImageService,
+        supabase: Client,
+        simulation_id: UUID,
+        sim_data: dict,
+        anchor_data: dict | None,
+        _types: set[str] | None,
+    ) -> None:
+        """Execute all image generation steps. Raises _BillingAbort on billing errors."""
+        from backend.services.external.replicate import ReplicateBillingError
+
         if not _types or "banner" in _types:
             try:
                 await image_service.generate_banner_image(
@@ -804,6 +834,8 @@ class ForgeOrchestratorService:
                     sim_description=sim_data.get("description", ""),
                     anchor_data=anchor_data,
                 )
+            except ReplicateBillingError:
+                raise _BillingAbortError from None
             except Exception:
                 logger.exception("Banner generation failed")
 
@@ -822,6 +854,8 @@ class ForgeOrchestratorService:
                         agent_name=agent["name"],
                         agent_data={"character": agent["character"], "background": agent["background"]},
                     )
+                except ReplicateBillingError:
+                    raise _BillingAbortError from None
                 except Exception:
                     logger.exception(
                         "Batch image gen failed for agent",
@@ -857,6 +891,8 @@ class ForgeOrchestratorService:
                             "zone_name": zone_data.get("name", ""),
                         },
                     )
+                except ReplicateBillingError:
+                    raise _BillingAbortError from None
                 except Exception:
                     logger.exception(
                         "Batch image gen failed for building",
@@ -884,13 +920,13 @@ class ForgeOrchestratorService:
                         section_id=section["id"],
                         image_caption=section.get("image_caption"),
                     )
+                except ReplicateBillingError:
+                    raise _BillingAbortError from None
                 except Exception:
                     logger.exception(
                         "Lore image gen failed",
                         extra={"entity_type": "lore_section", "entity_id": section["id"]},
                     )
-
-        logger.info("Phase B complete — background generation finished")
 
     @staticmethod
     async def recruit_agents(

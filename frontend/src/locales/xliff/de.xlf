@@ -14450,21 +14450,767 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 </trans-unit>
 <trans-unit id="sfe1fb536cab6c0f5">
   <source><x id="0" equiv-text="${this.label}"/> navigation</source>
+  <target><x id="0" equiv-text="${this.label}"/> Navigation</target>
 </trans-unit>
 <trans-unit id="sb706428512ac346a">
   <source>Create your first shard</source>
+  <target>Erschaffe deinen ersten Splitter</target>
 </trans-unit>
 <trans-unit id="s4d34d13f31ee3a8d">
   <source>ARCHITECT CLEARANCE GRANTED</source>
+  <target>ARCHITEKTEN-FREIGABE ERTEILT</target>
 </trans-unit>
 <trans-unit id="s5153333b116814f0">
   <source>Fracture Your First Shard</source>
+  <target>Spalte deinen ersten Splitter ab</target>
 </trans-unit>
 <trans-unit id="s74b3a0289c5ef2d3">
   <source>The Forge awaits. Shape a new world from the void.</source>
+  <target>Die Schmiede wartet. Forme eine neue Welt aus der Leere.</target>
 </trans-unit>
 <trans-unit id="s652b46bb053a5a24">
   <source>Clearance granted — welcome to the Forge, Architect! <x id="0" equiv-text="${tokens}"/> tokens await you.</source>
+  <target>Freigabe erteilt — willkommen in der Schmiede, Architekt! <x id="0" equiv-text="${tokens}"/> Token erwarten dich.</target>
+</trans-unit>
+<trans-unit id="sed6b9b3d550ce819">
+  <source>Establishing Neural Link</source>
+  <target>Neuronale Verbindung wird hergestellt</target>
+</trans-unit>
+<trans-unit id="se5af0f16cd69ead0">
+  <source>Parsing Dimensional Frequencies</source>
+  <target>Dimensionale Frequenzen werden analysiert</target>
+</trans-unit>
+<trans-unit id="s119aba7a845c3381">
+  <source>Triangulating Shard Coordinates</source>
+  <target>Splitter-Koordinaten werden trianguliert</target>
+</trans-unit>
+<trans-unit id="s6a19ded3a097b527">
+  <source>Intercepting Philosophical Transmissions</source>
+  <target>Philosophische Übertragungen werden abgefangen</target>
+</trans-unit>
+<trans-unit id="s969a0aa134889f16">
+  <source>Scanning Multiversal Wavelengths</source>
+  <target>Multiversale Wellenlängen werden gescannt</target>
+</trans-unit>
+<trans-unit id="s11eaae01b4231d54">
+  <source>Decrypting Narrative Substrates</source>
+  <target>Narrative Substrate werden entschlüsselt</target>
+</trans-unit>
+<trans-unit id="s20b8f970f3c7b766">
+  <source>Aligning Cognitive Resonators</source>
+  <target>Kognitive Resonatoren werden ausgerichtet</target>
+</trans-unit>
+<trans-unit id="s85312d729a09993d">
+  <source>Probing Ontological Boundaries</source>
+  <target>Ontologische Grenzen werden sondiert</target>
+</trans-unit>
+<trans-unit id="s3550f7796397f658">
+  <source>Indexing Literary Echoes</source>
+  <target>Literarische Echos werden indiziert</target>
+</trans-unit>
+<trans-unit id="s1cd5a49825ce45a4">
+  <source>Mapping Conceptual Topography</source>
+  <target>Konzeptuelle Topographie wird kartiert</target>
+</trans-unit>
+<trans-unit id="s69501b5fa61486b4">
+  <source>Isolating Thematic Harmonics</source>
+  <target>Thematische Harmonien werden isoliert</target>
+</trans-unit>
+<trans-unit id="sbe8efdb64d2011df">
+  <source>Cross-Referencing Archival Fragments</source>
+  <target>Archivfragmente werden abgeglichen</target>
+</trans-unit>
+<trans-unit id="s45eeec2ba734a097">
+  <source>Amplifying Shard Signal</source>
+  <target>Splitter-Signal wird verstärkt</target>
+</trans-unit>
+<trans-unit id="sb65ab83bc74b24f2">
+  <source>Filtering Dimensional Noise</source>
+  <target>Dimensionales Rauschen wird gefiltert</target>
+</trans-unit>
+<trans-unit id="s7bac00a856a2331b">
+  <source>Resolving Metaphysical Parallax</source>
+  <target>Metaphysische Parallaxe wird aufgelöst</target>
+</trans-unit>
+<trans-unit id="s58068e5052592ed9">
+  <source>Calibrating Anchor Sensitivity</source>
+  <target>Anker-Empfindlichkeit wird kalibriert</target>
+</trans-unit>
+<trans-unit id="s4c4d728a3bc11e21">
+  <source>Sampling Narrative Probability</source>
+  <target>Narrative Wahrscheinlichkeit wird abgetastet</target>
+</trans-unit>
+<trans-unit id="s07f59f10061ed29b">
+  <source>Distilling Core Contradictions</source>
+  <target>Kernwidersprüche werden destilliert</target>
+</trans-unit>
+<trans-unit id="s5d0e35b668c5387f">
+  <source>Tracing Philosophical Fault Lines</source>
+  <target>Philosophische Bruchlinien werden verfolgt</target>
+</trans-unit>
+<trans-unit id="s80529b4cc18046a7">
+  <source>Verifying Signal Integrity</source>
+  <target>Signalintegrität wird verifiziert</target>
+</trans-unit>
+<trans-unit id="s7618c720cac85066">
+  <source>Compressing Dimensional Data</source>
+  <target>Dimensionale Daten werden komprimiert</target>
+</trans-unit>
+<trans-unit id="s66bf26de8deef1e7">
+  <source>Synthesizing Anchor Candidates</source>
+  <target>Anker-Kandidaten werden synthetisiert</target>
+</trans-unit>
+<trans-unit id="s87a2bcec7772955e">
+  <source>Running Coherence Check</source>
+  <target>Kohärenzprüfung wird durchgeführt</target>
+</trans-unit>
+<trans-unit id="sb3b022f5506dd3c8">
+  <source>Crystallizing Anchor Points</source>
+  <target>Ankerpunkte werden kristallisiert</target>
+</trans-unit>
+<trans-unit id="s5af14320b52bc4e8">
+  <source>Signal recovered — anchor data retrieved from Bureau archives</source>
+  <target>Signal wiederhergestellt — Ankerdaten aus dem Büro-Archiv abgerufen</target>
+</trans-unit>
+<trans-unit id="s50a9ee94b3a26a7f">
+  <source>MISSION CLOCK</source>
+  <target>EINSATZUHR</target>
+</trans-unit>
+<trans-unit id="s0a4dd91525c71bd4">
+  <source>RECALIBRATING...</source>
+  <target>REKALIBRIERUNG...</target>
+</trans-unit>
+<trans-unit id="s0328d572e21feccc">
+  <source>Measuring Spatial Distortions</source>
+  <target>Räumliche Verzerrungen werden gemessen</target>
+</trans-unit>
+<trans-unit id="sf82e4c5d5114916e">
+  <source>Calculating Zone Resonance</source>
+  <target>Zonenresonanz wird berechnet</target>
+</trans-unit>
+<trans-unit id="sa8c62020350199e6">
+  <source>Tracing Ley Line Networks</source>
+  <target>Ley-Linien-Netzwerke werden verfolgt</target>
+</trans-unit>
+<trans-unit id="sc29262a0d0e14cc7">
+  <source>Cataloguing Terrain Signatures</source>
+  <target>Geländesignaturen werden katalogisiert</target>
+</trans-unit>
+<trans-unit id="s1689d0f121525e91">
+  <source>Establishing Grid Reference</source>
+  <target>Gitterreferenz wird etabliert</target>
+</trans-unit>
+<trans-unit id="s2f4afc32a0ed8099">
+  <source>Probing Underground Formations</source>
+  <target>Unterirdische Formationen werden sondiert</target>
+</trans-unit>
+<trans-unit id="s93c3d596a3b9e3fb">
+  <source>Scanning Atmospheric Layers</source>
+  <target>Atmosphärische Schichten werden gescannt</target>
+</trans-unit>
+<trans-unit id="s4285f0b97c4b6f8f">
+  <source>Detecting Boundary Phenomena</source>
+  <target>Grenzphänomene werden detektiert</target>
+</trans-unit>
+<trans-unit id="sa91b64e1627d3595">
+  <source>Reconciling Overlapping Geometries</source>
+  <target>Überlappende Geometrien werden abgeglichen</target>
+</trans-unit>
+<trans-unit id="s9bab163c70474de8">
+  <source>Interpolating Missing Sectors</source>
+  <target>Fehlende Sektoren werden interpoliert</target>
+</trans-unit>
+<trans-unit id="s2af13fd76f2f30ee">
+  <source>Validating Street Connectivity</source>
+  <target>Straßenvernetzung wird validiert</target>
+</trans-unit>
+<trans-unit id="s9819fcbda80d787b">
+  <source>Assigning Zone Classifications</source>
+  <target>Zonenklassifikationen werden zugewiesen</target>
+</trans-unit>
+<trans-unit id="s2f455e9445c70cdf">
+  <source>Rendering Elevation Contours</source>
+  <target>Höhenlinien werden gerendert</target>
+</trans-unit>
+<trans-unit id="sa3ad1d997483946f">
+  <source>Simulating Traffic Flow</source>
+  <target>Verkehrsfluss wird simuliert</target>
+</trans-unit>
+<trans-unit id="sb0547a4bcd4331c0">
+  <source>Cross-Checking Dimensional Stability</source>
+  <target>Dimensionale Stabilität wird gegengeprüft</target>
+</trans-unit>
+<trans-unit id="s97d249db94664fbe">
+  <source>Encoding Cartographic Metadata</source>
+  <target>Kartographische Metadaten werden kodiert</target>
+</trans-unit>
+<trans-unit id="s3d7b383c0391ce2c">
+  <source>Verifying Perimeter Integrity</source>
+  <target>Perimeterintegrität wird verifiziert</target>
+</trans-unit>
+<trans-unit id="s81ce02bc7072b1b8">
+  <source>Finalizing District Boundaries</source>
+  <target>Bezirksgrenzen werden finalisiert</target>
+</trans-unit>
+<trans-unit id="sa09038046321fc9b">
+  <source>Compiling Transit Route Index</source>
+  <target>Transitrouten-Index wird kompiliert</target>
+</trans-unit>
+<trans-unit id="s740a9d9a4eb9d2da">
+  <source>Evaluating Field Competencies</source>
+  <target>Feldkompetenzen werden evaluiert</target>
+</trans-unit>
+<trans-unit id="s52dfd8edffbf36b8">
+  <source>Assessing Loyalty Trajectories</source>
+  <target>Loyalitätsverläufe werden bewertet</target>
+</trans-unit>
+<trans-unit id="sa820128e2fa19750">
+  <source>Decrypting Background Records</source>
+  <target>Hintergrundakten werden entschlüsselt</target>
+</trans-unit>
+<trans-unit id="s920fa14fa96bfaec">
+  <source>Generating Cover Identities</source>
+  <target>Tarnidentitäten werden generiert</target>
+</trans-unit>
+<trans-unit id="s8c88f00570c99c9b">
+  <source>Simulating Social Dynamics</source>
+  <target>Soziale Dynamiken werden simuliert</target>
+</trans-unit>
+<trans-unit id="sf33aee47d6de266c">
+  <source>Mapping Relationship Networks</source>
+  <target>Beziehungsnetzwerke werden kartiert</target>
+</trans-unit>
+<trans-unit id="s95a670c8caa59ca9">
+  <source>Calibrating Personality Vectors</source>
+  <target>Persönlichkeitsvektoren werden kalibriert</target>
+</trans-unit>
+<trans-unit id="sc623796b0ee2e415">
+  <source>Stress-Testing Motivational Profiles</source>
+  <target>Motivationsprofile werden belastungsgetestet</target>
+</trans-unit>
+<trans-unit id="s8aa7d823f37c1736">
+  <source>Verifying Operational Security</source>
+  <target>Operationelle Sicherheit wird verifiziert</target>
+</trans-unit>
+<trans-unit id="s324e5329ef1dc23f">
+  <source>Assigning Specialization Codes</source>
+  <target>Spezialisierungscodes werden zugewiesen</target>
+</trans-unit>
+<trans-unit id="sdfcffe4e66c0824d">
+  <source>Computing Interpersonal Chemistry</source>
+  <target>Zwischenmenschliche Chemie wird berechnet</target>
+</trans-unit>
+<trans-unit id="s1e4952b1a9a571e6">
+  <source>Projecting Long-Term Allegiance</source>
+  <target>Langfristige Loyalität wird projiziert</target>
+</trans-unit>
+<trans-unit id="sf27a9b4a3ceec850">
+  <source>Drafting Psychological Briefs</source>
+  <target>Psychologische Kurzberichte werden erstellt</target>
+</trans-unit>
+<trans-unit id="s9e31924d64955baa">
+  <source>Encoding Behavioral Signatures</source>
+  <target>Verhaltenssignaturen werden kodiert</target>
+</trans-unit>
+<trans-unit id="s898c45dc922b8742">
+  <source>Cross-Validating Skill Matrices</source>
+  <target>Fähigkeitsmatrizen werden kreuzvalidiert</target>
+</trans-unit>
+<trans-unit id="saf76630b7a7183f1">
+  <source>Reviewing Counter-Intelligence</source>
+  <target>Spionageabwehr wird überprüft</target>
+</trans-unit>
+<trans-unit id="sd74dd03316aa9021">
+  <source>Finalizing Clearance Levels</source>
+  <target>Freigabestufen werden finalisiert</target>
+</trans-unit>
+<trans-unit id="s617d64751a5fbb76">
+  <source>Compiling Operative Dossiers</source>
+  <target>Operativ-Dossiers werden kompiliert</target>
+</trans-unit>
+<trans-unit id="sb5eeb2629c7bc99b">
+  <source>Running Background Verification</source>
+  <target>Hintergrundüberprüfung wird durchgeführt</target>
+</trans-unit>
+<trans-unit id="sf6dd8c041ce68120">
+  <source>Surveying Construction Materials</source>
+  <target>Baumaterialien werden vermessen</target>
+</trans-unit>
+<trans-unit id="s02be3989173f02db">
+  <source>Evaluating Structural Integrity</source>
+  <target>Strukturelle Integrität wird evaluiert</target>
+</trans-unit>
+<trans-unit id="s61734c62719b4d48">
+  <source>Modeling Utility Distribution</source>
+  <target>Versorgungsverteilung wird modelliert</target>
+</trans-unit>
+<trans-unit id="sc7ecd44a1d1ce98e">
+  <source>Assessing Defensive Potential</source>
+  <target>Verteidigungspotenzial wird bewertet</target>
+</trans-unit>
+<trans-unit id="se7b1cc4d5ebfdac6">
+  <source>Computing Spatial Efficiency</source>
+  <target>Raumeffizienz wird berechnet</target>
+</trans-unit>
+<trans-unit id="sc7cf434d6a5d3df1">
+  <source>Designing Emergency Protocols</source>
+  <target>Notfallprotokolle werden entworfen</target>
+</trans-unit>
+<trans-unit id="s882a38f6f9e6b182">
+  <source>Integrating Zone Infrastructure</source>
+  <target>Zoneninfrastruktur wird integriert</target>
+</trans-unit>
+<trans-unit id="s14e9805d2f124b17">
+  <source>Calibrating Environmental Systems</source>
+  <target>Umweltsysteme werden kalibriert</target>
+</trans-unit>
+<trans-unit id="s8450860a5c034caf">
+  <source>Projecting Maintenance Requirements</source>
+  <target>Wartungsanforderungen werden projiziert</target>
+</trans-unit>
+<trans-unit id="sbbf00340b46af7b6">
+  <source>Verifying Building Codes</source>
+  <target>Bauvorschriften werden verifiziert</target>
+</trans-unit>
+<trans-unit id="s97f37943da38dd3f">
+  <source>Mapping Service Access Points</source>
+  <target>Service-Zugangspunkte werden kartiert</target>
+</trans-unit>
+<trans-unit id="s4a544453cad8afec">
+  <source>Simulating Occupancy Patterns</source>
+  <target>Belegungsmuster werden simuliert</target>
+</trans-unit>
+<trans-unit id="s0102af64f72dfb6e">
+  <source>Testing Structural Resonance</source>
+  <target>Strukturelle Resonanz wird getestet</target>
+</trans-unit>
+<trans-unit id="se62f31f26fae7980">
+  <source>Encoding Architectural DNA</source>
+  <target>Architektonische DNA wird kodiert</target>
+</trans-unit>
+<trans-unit id="s4adb60d35cdd056b">
+  <source>Cross-Referencing Zoning Data</source>
+  <target>Bebauungsdaten werden abgeglichen</target>
+</trans-unit>
+<trans-unit id="s35498e9752289891">
+  <source>Rendering Interior Schematics</source>
+  <target>Innenraumschemata werden gerendert</target>
+</trans-unit>
+<trans-unit id="s2edaecccd291e490">
+  <source>Validating Construction Feasibility</source>
+  <target>Baumachbarkeit wird validiert</target>
+</trans-unit>
+<trans-unit id="s056998b99e229d81">
+  <source>Finalizing Utility Connections</source>
+  <target>Versorgungsanschlüsse werden finalisiert</target>
+</trans-unit>
+<trans-unit id="se0be4b004617fe0d">
+  <source>Compiling Engineering Reports</source>
+  <target>Ingenieurberichte werden kompiliert</target>
+</trans-unit>
+<trans-unit id="s7fc692b05c5e063d">
+  <source>Signal recovered — blueprints retrieved from Bureau archives</source>
+  <target>Signal wiederhergestellt — Blaupausen aus dem Büro-Archiv abgerufen</target>
+</trans-unit>
+<trans-unit id="s0f213648324d8b9a">
+  <source>Deconstructing Paradox Layers</source>
+  <target>Paradoxie-Schichten werden dekonstruiert</target>
+</trans-unit>
+<trans-unit id="s3d95e3a7df4ab351">
+  <source>Measuring Existential Drift</source>
+  <target>Existenzielle Drift wird gemessen</target>
+</trans-unit>
+<trans-unit id="sc2fa63807965ad17">
+  <source>Harvesting Semantic Residue</source>
+  <target>Semantische Rückstände werden geerntet</target>
+</trans-unit>
+<trans-unit id="sc9ed8d8f7a6e7411">
+  <source>Correlating Mythopoetic Signatures</source>
+  <target>Mythopoetische Signaturen werden korreliert</target>
+</trans-unit>
+<trans-unit id="sc4e7d8eefd26dd5a">
+  <source>Stabilizing Narrative Waveform</source>
+  <target>Narrative Wellenform wird stabilisiert</target>
+</trans-unit>
+<trans-unit id="s458a3ce52a225704">
+  <source>Extracting Thematic DNA</source>
+  <target>Thematische DNA wird extrahiert</target>
+</trans-unit>
+<trans-unit id="s6122734376d8253d">
+  <source>Reconstructing Causal Threads</source>
+  <target>Kausale Fäden werden rekonstruiert</target>
+</trans-unit>
+<trans-unit id="s446e94da0f8ad21c">
+  <source>Evaluating Philosophical Density</source>
+  <target>Philosophische Dichte wird evaluiert</target>
+</trans-unit>
+<trans-unit id="s9b830ecbc815328d">
+  <source>Binding Conceptual Fragments</source>
+  <target>Konzeptuelle Fragmente werden gebunden</target>
+</trans-unit>
+<trans-unit id="s0d65680b2eff866f">
+  <source>Projecting Anchor Resonance</source>
+  <target>Anker-Resonanz wird projiziert</target>
+</trans-unit>
+<trans-unit id="s942057897827ebea">
+  <source>Sealing Dimensional Breach</source>
+  <target>Dimensionsbruch wird versiegelt</target>
+</trans-unit>
+<trans-unit id="s06867d95cb25a50d">
+  <source>Committing Shard Topology</source>
+  <target>Splitter-Topologie wird festgeschrieben</target>
+</trans-unit>
+<trans-unit id="sd749c06650915f8b">
+  <source>Unraveling Recursive Metaphors</source>
+  <target>Rekursive Metaphern werden entschlüsselt</target>
+</trans-unit>
+<trans-unit id="sd23f23fa895d8986">
+  <source>Quantifying Symbolic Weight</source>
+  <target>Symbolisches Gewicht wird quantifiziert</target>
+</trans-unit>
+<trans-unit id="sd2085283070c1f7e">
+  <source>Scanning Subconscious Archetypes</source>
+  <target>Unterbewusste Archetypen werden gescannt</target>
+</trans-unit>
+<trans-unit id="sa3a222888eb543f2">
+  <source>Weaving Narrative Scaffolding</source>
+  <target>Narratives Gerüst wird gewoben</target>
+</trans-unit>
+<trans-unit id="s12325a8ac86accf9">
+  <source>Detecting Orphaned Plot Threads</source>
+  <target>Verwaiste Handlungsstränge werden erkannt</target>
+</trans-unit>
+<trans-unit id="s1fb34d22929e4aff">
+  <source>Calibrating Irony Detectors</source>
+  <target>Ironie-Detektoren werden kalibriert</target>
+</trans-unit>
+<trans-unit id="se83f188637e79fd1">
+  <source>Mapping Allegory Networks</source>
+  <target>Allegorie-Netzwerke werden kartiert</target>
+</trans-unit>
+<trans-unit id="s983db2911d392de4">
+  <source>Compiling Philosophical Index</source>
+  <target>Philosophischer Index wird kompiliert</target>
+</trans-unit>
+<trans-unit id="s0dcd0532a664441b">
+  <source>Stress-Testing Worldview Coherence</source>
+  <target>Weltbild-Kohärenz wird belastungsgetestet</target>
+</trans-unit>
+<trans-unit id="sdc90950e79db1232">
+  <source>Encoding Mythic Resonance</source>
+  <target>Mythische Resonanz wird kodiert</target>
+</trans-unit>
+<trans-unit id="sbd18997abb1a360a">
+  <source>Fusing Thematic Polarities</source>
+  <target>Thematische Polaritäten werden fusioniert</target>
+</trans-unit>
+<trans-unit id="s07b3c57ae6c2b776">
+  <source>Validating Existential Parameters</source>
+  <target>Existenzielle Parameter werden validiert</target>
+</trans-unit>
+<trans-unit id="sffcc81dd3f954a5e">
+  <source>Sealing Cognitive Lattice</source>
+  <target>Kognitives Gitter wird versiegelt</target>
+</trans-unit>
+<trans-unit id="s2cf77897bc113ba0">
+  <source>Sampling Gravitational Gradients</source>
+  <target>Gravitationsgradienten werden abgetastet</target>
+</trans-unit>
+<trans-unit id="sb5a8c6e4d9807723">
+  <source>Triangulating Subterranean Voids</source>
+  <target>Unterirdische Hohlräume werden trianguliert</target>
+</trans-unit>
+<trans-unit id="sc1b8a679bd3de4ed">
+  <source>Modeling Tidal Resonance Patterns</source>
+  <target>Gezeitenresonanzmuster werden modelliert</target>
+</trans-unit>
+<trans-unit id="sf5249878155c3a61">
+  <source>Scanning for Rift Anomalies</source>
+  <target>Rissanomalien werden gescannt</target>
+</trans-unit>
+<trans-unit id="s68323d8661e73a2f">
+  <source>Classifying Microclimate Zones</source>
+  <target>Mikroklimazonen werden klassifiziert</target>
+</trans-unit>
+<trans-unit id="s58a0a9e71a7a36a3">
+  <source>Projecting Urban Expansion Vectors</source>
+  <target>Urbane Expansionsvektoren werden projiziert</target>
+</trans-unit>
+<trans-unit id="sd8f41aa7659cd1c3">
+  <source>Tracing Aquifer Networks</source>
+  <target>Grundwasserleiter-Netzwerke werden verfolgt</target>
+</trans-unit>
+<trans-unit id="sfe30bb12e5271a83">
+  <source>Correlating Seismic Activity</source>
+  <target>Seismische Aktivität wird korreliert</target>
+</trans-unit>
+<trans-unit id="sd8e3bb532b1eed7b">
+  <source>Indexing Flora Distribution</source>
+  <target>Floraverteilung wird indiziert</target>
+</trans-unit>
+<trans-unit id="s2fd35a0c2bcb0d29">
+  <source>Calibrating Horizon Parallax</source>
+  <target>Horizontparallaxe wird kalibriert</target>
+</trans-unit>
+<trans-unit id="s2c424193c008538a">
+  <source>Sealing Cartographic Gaps</source>
+  <target>Kartographische Lücken werden versiegelt</target>
+</trans-unit>
+<trans-unit id="s9eae8a978cdd08df">
+  <source>Committing Grid Coordinates</source>
+  <target>Gitterkoordinaten werden festgeschrieben</target>
+</trans-unit>
+<trans-unit id="s64d50c5aeab60445">
+  <source>Measuring Shadow Azimuths</source>
+  <target>Schattenazimute werden gemessen</target>
+</trans-unit>
+<trans-unit id="sa123a87aae2b6d81">
+  <source>Indexing Acoustic Topology</source>
+  <target>Akustische Topologie wird indiziert</target>
+</trans-unit>
+<trans-unit id="s8ed9f9b3b903a6c5">
+  <source>Modeling Wind Corridor Drift</source>
+  <target>Windkorridor-Drift wird modelliert</target>
+</trans-unit>
+<trans-unit id="s1a772abf021c52ed">
+  <source>Detecting Phantom Intersections</source>
+  <target>Phantomkreuzungen werden detektiert</target>
+</trans-unit>
+<trans-unit id="s7d246faf7fdad206">
+  <source>Calibrating Compass Deviation</source>
+  <target>Kompassabweichung wird kalibriert</target>
+</trans-unit>
+<trans-unit id="s6fdb693fc99f2bf3">
+  <source>Surveying Liminal Thresholds</source>
+  <target>Liminale Schwellen werden vermessen</target>
+</trans-unit>
+<trans-unit id="s2ab68dbd49e48c6d">
+  <source>Projecting Population Density</source>
+  <target>Bevölkerungsdichte wird projiziert</target>
+</trans-unit>
+<trans-unit id="se44c1fcc130111ce">
+  <source>Tracing Watershed Boundaries</source>
+  <target>Wasserscheidengrenzen werden verfolgt</target>
+</trans-unit>
+<trans-unit id="sa8e4bccd44fe44ec">
+  <source>Classifying Geological Strata</source>
+  <target>Geologische Schichten werden klassifiziert</target>
+</trans-unit>
+<trans-unit id="scd7ecc64ddd38616">
+  <source>Encoding Navigational Beacons</source>
+  <target>Navigationsfeuer werden kodiert</target>
+</trans-unit>
+<trans-unit id="se33dc6e778cb3577">
+  <source>Resolving Boundary Disputes</source>
+  <target>Grenzstreitigkeiten werden aufgelöst</target>
+</trans-unit>
+<trans-unit id="s8ec932735be99b9a">
+  <source>Validating Topographic Fidelity</source>
+  <target>Topographische Treue wird validiert</target>
+</trans-unit>
+<trans-unit id="sfc7ddf1195836108">
+  <source>Compressing Spatial Telemetry</source>
+  <target>Räumliche Telemetrie wird komprimiert</target>
+</trans-unit>
+<trans-unit id="sbad0f2a347eb0ab6">
+  <source>Extracting Trauma Indicators</source>
+  <target>Trauma-Indikatoren werden extrahiert</target>
+</trans-unit>
+<trans-unit id="s705911a4022e7d39">
+  <source>Modeling Decision Heuristics</source>
+  <target>Entscheidungsheuristiken werden modelliert</target>
+</trans-unit>
+<trans-unit id="sbe4aa9344c6a927c">
+  <source>Tracing Ideological Lineage</source>
+  <target>Ideologische Herkunft wird verfolgt</target>
+</trans-unit>
+<trans-unit id="s63e9e72b7f5f93bf">
+  <source>Evaluating Deception Resistance</source>
+  <target>Täuschungsresistenz wird evaluiert</target>
+</trans-unit>
+<trans-unit id="s4a5f58dd6847d556">
+  <source>Projecting Conflict Behavior</source>
+  <target>Konfliktverhalten wird projiziert</target>
+</trans-unit>
+<trans-unit id="s65df646eaf226662">
+  <source>Synthesizing Persona Composites</source>
+  <target>Persona-Komposite werden synthetisiert</target>
+</trans-unit>
+<trans-unit id="s4a768dfb0366a35f">
+  <source>Correlating Voice Pattern Data</source>
+  <target>Stimmuster-Daten werden korreliert</target>
+</trans-unit>
+<trans-unit id="s809539d1a83d79f9">
+  <source>Scoring Adaptability Quotient</source>
+  <target>Anpassungsfähigkeitsquotient wird bewertet</target>
+</trans-unit>
+<trans-unit id="s4a8e6337d1f2ec05">
+  <source>Indexing Known Affiliations</source>
+  <target>Bekannte Zugehörigkeiten werden indiziert</target>
+</trans-unit>
+<trans-unit id="se68262254d2fcc6c">
+  <source>Simulating Interrogation Scenarios</source>
+  <target>Verhörszenarien werden simuliert</target>
+</trans-unit>
+<trans-unit id="s036cdc89a515d702">
+  <source>Sealing Personnel Dossiers</source>
+  <target>Personaldossiers werden versiegelt</target>
+</trans-unit>
+<trans-unit id="sa3fabe637c6c8790">
+  <source>Committing Roster Manifest</source>
+  <target>Kadermanifest wird festgeschrieben</target>
+</trans-unit>
+<trans-unit id="s38291f0cead57939">
+  <source>Profiling Sleep Cycle Anomalies</source>
+  <target>Schlafzyklus-Anomalien werden profiliert</target>
+</trans-unit>
+<trans-unit id="sa6fe8a588434b960">
+  <source>Mapping Subconscious Triggers</source>
+  <target>Unterbewusste Auslöser werden kartiert</target>
+</trans-unit>
+<trans-unit id="se09760426e2036d1">
+  <source>Evaluating Moral Flexibility</source>
+  <target>Moralische Flexibilität wird evaluiert</target>
+</trans-unit>
+<trans-unit id="s4ad1433dcc699032">
+  <source>Correlating Field Incident Reports</source>
+  <target>Feldvorfallberichte werden korreliert</target>
+</trans-unit>
+<trans-unit id="s7918d50908d0af7c">
+  <source>Simulating Loyalty Under Duress</source>
+  <target>Loyalität unter Zwang wird simuliert</target>
+</trans-unit>
+<trans-unit id="s553bb00d057c9b8d">
+  <source>Projecting Career Trajectory</source>
+  <target>Karriereverlauf wird projiziert</target>
+</trans-unit>
+<trans-unit id="sc6612d5a240b889c">
+  <source>Tracing Handler Lineage</source>
+  <target>Führungsoffizier-Herkunft wird verfolgt</target>
+</trans-unit>
+<trans-unit id="s8255cee2ef1a7bc3">
+  <source>Indexing Linguistic Competencies</source>
+  <target>Sprachkompetenzen werden indiziert</target>
+</trans-unit>
+<trans-unit id="s37b8ef81fa26f80c">
+  <source>Measuring Stress Tolerance Ceiling</source>
+  <target>Stresstoleranzgrenze wird gemessen</target>
+</trans-unit>
+<trans-unit id="s87e752dd20288c16">
+  <source>Encoding Biometric Baselines</source>
+  <target>Biometrische Basiswerte werden kodiert</target>
+</trans-unit>
+<trans-unit id="sb792ee908ec9635c">
+  <source>Scanning for Double Agents</source>
+  <target>Doppelagenten werden gescannt</target>
+</trans-unit>
+<trans-unit id="s8b61b151c693522d">
+  <source>Validating Cover Story Integrity</source>
+  <target>Legende wird auf Integrität geprüft</target>
+</trans-unit>
+<trans-unit id="sfb4a7fb04a7f53f6">
+  <source>Compiling Final Assessments</source>
+  <target>Abschlussbewertungen werden kompiliert</target>
+</trans-unit>
+<trans-unit id="s1b91612e0724460b">
+  <source>Modeling Acoustic Propagation</source>
+  <target>Akustische Ausbreitung wird modelliert</target>
+</trans-unit>
+<trans-unit id="sabd1717ebf31db55">
+  <source>Tracing Ventilation Pathways</source>
+  <target>Belüftungswege werden verfolgt</target>
+</trans-unit>
+<trans-unit id="s5803ea1473ffb6db">
+  <source>Projecting Thermal Envelope</source>
+  <target>Thermische Hülle wird projiziert</target>
+</trans-unit>
+<trans-unit id="s0349afdeaf2510d0">
+  <source>Classifying Hazard Zones</source>
+  <target>Gefahrenzonen werden klassifiziert</target>
+</trans-unit>
+<trans-unit id="sc796a90876d668af">
+  <source>Simulating Evacuation Routes</source>
+  <target>Evakuierungsrouten werden simuliert</target>
+</trans-unit>
+<trans-unit id="sc422138567d4b023">
+  <source>Evaluating Fortification Rating</source>
+  <target>Befestigungsgrad wird evaluiert</target>
+</trans-unit>
+<trans-unit id="se1fcc60efa9e401b">
+  <source>Mapping Substructure Conduits</source>
+  <target>Unterstruktur-Leitungen werden kartiert</target>
+</trans-unit>
+<trans-unit id="s7e684362ebd4b856">
+  <source>Indexing Material Stress Limits</source>
+  <target>Material-Belastungsgrenzen werden indiziert</target>
+</trans-unit>
+<trans-unit id="s091dd6d6b5697679">
+  <source>Scanning for Structural Fatigue</source>
+  <target>Strukturelle Ermüdung wird gescannt</target>
+</trans-unit>
+<trans-unit id="se12cc02b76a136ad">
+  <source>Correlating Foundation Drift</source>
+  <target>Fundamentverschiebung wird korreliert</target>
+</trans-unit>
+<trans-unit id="s13ab59e4a27bd636">
+  <source>Sealing Blueprint Archives</source>
+  <target>Blaupausen-Archive werden versiegelt</target>
+</trans-unit>
+<trans-unit id="s4a41fa7c91791d0e">
+  <source>Committing Construction Orders</source>
+  <target>Bauaufträge werden festgeschrieben</target>
+</trans-unit>
+<trans-unit id="s6f2902cf180a32ee">
+  <source>Analyzing Load Distribution Curves</source>
+  <target>Lastverteilungskurven werden analysiert</target>
+</trans-unit>
+<trans-unit id="s17528c9b0ad80da2">
+  <source>Modeling Seismic Dampening</source>
+  <target>Seismische Dämpfung wird modelliert</target>
+</trans-unit>
+<trans-unit id="s5490e0130da5faa3">
+  <source>Tracing Electrical Grid Layout</source>
+  <target>Stromnetzlayout wird verfolgt</target>
+</trans-unit>
+<trans-unit id="s4af7afa27d2a6fec">
+  <source>Projecting Facade Weathering</source>
+  <target>Fassadenverwitterung wird projiziert</target>
+</trans-unit>
+<trans-unit id="s0c090f6ec7f257fb">
+  <source>Classifying Structural Redundancy</source>
+  <target>Strukturelle Redundanz wird klassifiziert</target>
+</trans-unit>
+<trans-unit id="s05c327d8978707d8">
+  <source>Evaluating Blast Resistance</source>
+  <target>Explosionswiderstand wird evaluiert</target>
+</trans-unit>
+<trans-unit id="se4e1e7909059ee8f">
+  <source>Mapping Emergency Egress Routes</source>
+  <target>Notausgangswege werden kartiert</target>
+</trans-unit>
+<trans-unit id="scf4a368792e97f0d">
+  <source>Indexing Material Provenance</source>
+  <target>Materialherkunft wird indiziert</target>
+</trans-unit>
+<trans-unit id="sc22df9ff776035fe">
+  <source>Simulating Long-Term Settlement</source>
+  <target>Langfristige Setzung wird simuliert</target>
+</trans-unit>
+<trans-unit id="s02eeb5868a8b3b1d">
+  <source>Encoding Maintenance Schedules</source>
+  <target>Wartungspläne werden kodiert</target>
+</trans-unit>
+<trans-unit id="s67ba5efdb938d7af">
+  <source>Calibrating HVAC Flow Dynamics</source>
+  <target>HLK-Strömungsdynamik wird kalibriert</target>
+</trans-unit>
+<trans-unit id="s8e2abf09fc9acf05">
+  <source>Validating Fire Compartmentation</source>
+  <target>Brandabschottung wird validiert</target>
+</trans-unit>
+<trans-unit id="s10c402d2a5b86235">
+  <source>Compiling Structural Manifest</source>
+  <target>Strukturmanifest wird kompiliert</target>
 </trans-unit>
 
 </body>

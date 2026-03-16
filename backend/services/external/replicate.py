@@ -16,6 +16,14 @@ class ReplicateError(Exception):
     """Base error for Replicate API issues."""
 
 
+class ReplicateBillingError(ReplicateError):
+    """Raised when Replicate rejects a request due to billing/credit issues.
+
+    Callers should abort the entire batch — retrying individual images
+    will fail with the same error.
+    """
+
+
 class ReplicateService:
     """Async client for Replicate image generation using the official SDK.
 
@@ -75,4 +83,9 @@ class ReplicateService:
         except replicate.exceptions.ModelError as e:
             raise ReplicateError(f"Model error: {e}") from e
         except replicate.exceptions.ReplicateError as e:
+            err_str = str(e).lower()
+            if any(kw in err_str for kw in ("billing", "payment", "spending limit", "out of credit", "402")):
+                raise ReplicateBillingError(
+                    f"Replicate billing error — check credits at replicate.com/account/billing: {e}"
+                ) from e
             raise ReplicateError(f"Replicate API error: {e}") from e
