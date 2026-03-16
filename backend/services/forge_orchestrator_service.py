@@ -36,15 +36,21 @@ logger = logging.getLogger(__name__)
 def validate_bilingual_output(
     entities: list[dict], de_fields: list[str], entity_type: str,
 ) -> int:
-    """Log warning for entities with empty _de fields. Returns count of incomplete entities."""
+    """Patch empty _de fields with EN fallback. Returns count of patched entities."""
     incomplete = 0
     for entity in entities:
-        missing = [f for f in de_fields if not entity.get(f)]
-        if missing:
+        patched = False
+        for de_field in de_fields:
+            if not entity.get(de_field):
+                # Derive EN field name: "description_de" → "description"
+                en_field = de_field.removesuffix("_de")
+                entity[de_field] = entity.get(en_field, "")
+                patched = True
+        if patched:
             incomplete += 1
     if incomplete:
         logger.warning(
-            "Bilingual gap: %d/%d %s(s) missing _de fields",
+            "Bilingual gap: %d/%d %s(s) missing _de fields — patched with EN fallback",
             incomplete, len(entities), entity_type,
             extra={"entity_type": entity_type, "incomplete": incomplete, "total": len(entities)},
         )
@@ -373,6 +379,11 @@ class ForgeOrchestratorService:
                     geo_data.get("zones", []),
                     ["zone_type_de", "description_de"],
                     "zone",
+                )
+                validate_bilingual_output(
+                    geo_data.get("streets", []),
+                    ["street_type_de"],
+                    "street",
                 )
                 await ForgeDraftService.update_draft(
                     supabase, user_id, draft_id, ForgeDraftUpdate(geography=geo_data)

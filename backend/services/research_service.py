@@ -278,19 +278,27 @@ class ResearchService:
             output_type=list[PhilosophicalAnchor],
             model_settings={"max_tokens": PYDANTIC_AI_MAX_TOKENS["anchors"]},
         )
-        # Validate bilingual output
+        # Patch empty _de fields with EN fallback so downstream never sees blanks
         incomplete = 0
         for anchor in result.output:
-            if (
-                not anchor.title_de
-                or not anchor.literary_influence_de
-                or not anchor.core_question_de
-                or not anchor.description_de
-            ):
+            patched = False
+            if not anchor.title_de:
+                anchor.title_de = anchor.title
+                patched = True
+            if not anchor.literary_influence_de:
+                anchor.literary_influence_de = anchor.literary_influence
+                patched = True
+            if not anchor.core_question_de:
+                anchor.core_question_de = anchor.core_question
+                patched = True
+            if not anchor.description_de:
+                anchor.description_de = anchor.description
+                patched = True
+            if patched:
                 incomplete += 1
         if incomplete:
             logger.warning(
-                "Bilingual gap: %d/%d anchor(s) missing _de fields",
+                "Bilingual gap: %d/%d anchor(s) missing _de fields — patched with EN fallback",
                 incomplete, len(result.output),
             )
         return result.output

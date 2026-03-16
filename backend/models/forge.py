@@ -362,23 +362,23 @@ class PhilosophicalAnchor(BaseModel):
     """A proposed thematic anchor for a simulation."""
     title: str
     title_de: str = Field(
-        min_length=1,
+        default="",
         description="German equivalent of title, written as if originally German.",
     )
     literary_influence: str
     literary_influence_de: str = Field(
-        min_length=1,
+        default="",
         description="German equivalent of literary_influence — use published German title if it exists.",
     )
     core_question: str
     core_question_de: str = Field(
-        min_length=1,
+        default="",
         description="German equivalent of core_question.",
     )
     bleed_signature_suggestion: str
     description: str
     description_de: str = Field(
-        min_length=1,
+        default="",
         description="German equivalent of description.",
     )
 
@@ -390,7 +390,7 @@ class ForgeAgentDraft(BaseModel):
     system: str
     primary_profession: str
     primary_profession_de: str = Field(
-        min_length=1,
+        default="",
         description="German equivalent of primary_profession.",
     )
     character: str = Field(
@@ -401,7 +401,7 @@ class ForgeAgentDraft(BaseModel):
         ),
     )
     character_de: str = Field(
-        min_length=1,
+        default="",
         description="German equivalent of character.",
     )
     background: str = Field(
@@ -411,7 +411,7 @@ class ForgeAgentDraft(BaseModel):
         ),
     )
     background_de: str = Field(
-        min_length=1,
+        default="",
         description="German equivalent of background.",
     )
 
@@ -421,7 +421,7 @@ class ForgeBuildingDraft(BaseModel):
     name: str
     building_type: str
     building_type_de: str = Field(
-        min_length=1,
+        default="",
         description="German equivalent of building_type.",
     )
     description: str = Field(
@@ -433,7 +433,7 @@ class ForgeBuildingDraft(BaseModel):
         ),
     )
     description_de: str = Field(
-        min_length=1,
+        default="",
         description="German equivalent of description.",
     )
     building_condition: str = Field(
@@ -445,7 +445,7 @@ class ForgeBuildingDraft(BaseModel):
         ),
     )
     building_condition_de: str = Field(
-        min_length=1,
+        default="",
         description="German equivalent of building_condition.",
     )
 
@@ -458,12 +458,12 @@ class ForgeZoneDraft(BaseModel):
         " cultural, commercial, government, military, slum, entertainment).",
     )
     zone_type_de: str = Field(
-        min_length=1,
+        default="",
         description="German equivalent of zone_type.",
     )
     description: str = Field(description="1-2 sentence atmospheric description of the zone's character and purpose.")
     description_de: str = Field(
-        min_length=1,
+        default="",
         description="German equivalent of description.",
     )
     characteristics: list[str] = Field(
@@ -481,7 +481,7 @@ class ForgeStreetDraft(BaseModel):
         " (e.g. alley, boulevard, lane, avenue, road, street, stairway).",
     )
     street_type_de: str = Field(
-        min_length=1,
+        default="",
         description="German equivalent of street_type.",
     )
     description: str = Field(default="", description="Optional 1-sentence atmospheric detail about this street.")
