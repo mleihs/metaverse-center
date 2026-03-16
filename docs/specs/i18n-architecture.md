@@ -300,7 +300,7 @@ Seit Migration 112 generiert der Forge alle Entity-Inhalte bilingual in einem ei
 
 **Fallback:** Wenn `_de`-Felder leer sind (Legacy-Drafts, LLM-Fehler), greift `ForgeEntityTranslationService` als separater Post-Materialisierungs-Schritt. Die Entity-Translation wird nur uebersprungen wenn **alle** Agents `character_de` haben (`all()`, nicht `any()`).
 
-**Bilingual-Validierung:** Nach jedem bilingualem LLM-Call prueft `validate_bilingual_output()` (in `forge_orchestrator_service.py`) ob `_de`-Felder befuellt sind. Fehlende Felder werden als Warning geloggt, blockieren aber nicht — die Entity-Translation faengt Luecken auf. Analoges Logging in `research_service.py` (Anchors) und `forge_entity_translation_service.py` (Persist-Phase).
+**Bilingual-Validierung:** Nach jedem bilingualem LLM-Call prueft `validate_bilingual_output()` (in `ai_utils.py`, shared Utility) ob `_de`-Felder befuellt sind. Funktioniert mit dicts und Pydantic BaseModel Instanzen. Fehlende Felder werden mit EN-Fallback gepatcht und als Warning geloggt, blockieren aber nicht — die Entity-Translation faengt Luecken auf. Aufgerufen in `forge_orchestrator_service.py` (Chunks), `research_service.py` (Anchors) und `forge_entity_translation_service.py` (Persist-Phase).
 
 **Lore-Translation-Validierung:** `ForgeLoreService.persist_lore()` warnt wenn die Anzahl der Uebersetzungen nicht mit der Anzahl der Lore-Sections uebereinstimmt (z.B. LLM gibt weniger Uebersetzungen zurueck als Sections existieren).
 

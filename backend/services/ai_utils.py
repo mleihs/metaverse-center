@@ -160,6 +160,38 @@ def safe_background(func):
     return wrapper
 
 
+def validate_bilingual_output(
+    entities: list, de_fields: list[str], entity_type: str,
+) -> int:
+    """Patch empty _de fields with EN fallback. Returns count of patched entities.
+
+    Works with both dicts and Pydantic BaseModel instances.
+    """
+    incomplete = 0
+    for entity in entities:
+        patched = False
+        is_dict = isinstance(entity, dict)
+        for de_field in de_fields:
+            en_field = de_field.removesuffix("_de")
+            current = entity.get(de_field) if is_dict else getattr(entity, de_field, None)
+            if not current:
+                value = entity.get(en_field, "") if is_dict else getattr(entity, en_field, "")
+                if is_dict:
+                    entity[de_field] = value
+                else:
+                    setattr(entity, de_field, value)
+                patched = True
+        if patched:
+            incomplete += 1
+    if incomplete:
+        logger.warning(
+            "Bilingual gap: %d/%d %s(s) missing _de fields — patched with EN fallback",
+            incomplete, len(entities), entity_type,
+            extra={"entity_type": entity_type, "incomplete": incomplete, "total": len(entities)},
+        )
+    return incomplete
+
+
 def create_forge_agent(
     system_prompt: str,
     api_key: str | None = None,

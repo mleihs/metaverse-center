@@ -87,6 +87,7 @@ export interface ForgeDraft {
   agents: ForgeAgentDraft[];
   buildings: ForgeBuildingDraft[];
   ai_settings: Record<string, unknown>;
+  research_context: { raw_data?: string; source?: 'tavily' | 'emulator' };
   generation_config: ForgeGenerationConfig;
   theme_config: Record<string, string>;
   status: 'draft' | 'processing' | 'completed' | 'failed';

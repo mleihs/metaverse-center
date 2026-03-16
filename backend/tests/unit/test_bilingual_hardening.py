@@ -21,9 +21,9 @@ from backend.models.forge import (
     ForgeStreetTranslation,
     ForgeZoneTranslation,
 )
+from backend.services.ai_utils import validate_bilingual_output
 from backend.services.forge_entity_translation_service import ForgeEntityTranslationService
 from backend.services.forge_lore_service import ForgeLoreService
-from backend.services.forge_orchestrator_service import validate_bilingual_output
 from backend.tests.conftest import make_chain_mock
 
 # ── B1: validate_bilingual_output ──────────────────────────────────────

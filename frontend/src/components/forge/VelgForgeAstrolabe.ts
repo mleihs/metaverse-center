@@ -11,6 +11,7 @@ import {
   forgeFieldStyles,
   forgeInfoBubbleStyles,
   forgeRangeStyles,
+  forgeResearchHintStyles,
   forgeStatusStyles,
 } from './forge-console-styles.js';
 import { fanRotation, renderInfoBubble } from './forge-utils.js';
@@ -32,6 +33,7 @@ export class VelgForgeAstrolabe extends LitElement {
     forgeRangeStyles,
     forgeStatusStyles,
     forgeInfoBubbleStyles,
+    forgeResearchHintStyles,
     css`
       :host {
         display: block;
@@ -742,6 +744,10 @@ export class VelgForgeAstrolabe extends LitElement {
     forgeStateManager.updateGenerationConfig({ [field]: value });
   }
 
+  private get _researchSource(): 'tavily' | 'emulator' | null {
+    return forgeStateManager.draft.value?.research_context?.source ?? null;
+  }
+
   private _handleNext() {
     if (this._selectedIdx !== null) {
       forgeStateManager.updateDraft({ current_phase: 'drafting' });
@@ -879,6 +885,16 @@ export class VelgForgeAstrolabe extends LitElement {
             `,
             )}
           </div>
+
+          ${this._researchSource
+            ? html`
+              <div class="research-source-hint ${this._researchSource === 'tavily' ? 'research-source-hint--tavily' : ''}">
+                <span class="research-source-hint__dot"></span>
+                ${this._researchSource === 'tavily'
+                  ? msg('Research grounded in web sources + AI analysis')
+                  : msg('Research based on AI analysis (web search unavailable)')}
+              </div>`
+            : nothing}
 
           ${
             this._selectedIdx !== null

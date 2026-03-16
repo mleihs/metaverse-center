@@ -295,6 +295,38 @@ export const forgeRangeStyles = css`
   }
 `;
 
+export const forgeResearchHintStyles = css`
+  .research-source-hint {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-family: var(--font-mono, monospace);
+    font-size: 10px;
+    letter-spacing: 0.03em;
+    color: var(--color-gray-500, #6b7280);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-gray-800, #1f2937);
+    background: var(--color-gray-950, #030712);
+  }
+
+  .research-source-hint--tavily {
+    border-color: rgba(74 222 128 / 0.15);
+    color: var(--color-gray-400, #9ca3af);
+  }
+
+  .research-source-hint__dot {
+    width: 6px;
+    height: 6px;
+    flex-shrink: 0;
+    background: var(--color-gray-600, #4b5563);
+  }
+
+  .research-source-hint--tavily .research-source-hint__dot {
+    background: var(--color-success, #22c55e);
+    box-shadow: 0 0 4px rgba(74 222 128 / 0.4);
+  }
+`;
+
 export const forgeStatusStyles = css`
   .error-banner {
     background: rgba(239 68 68 / 0.1);
