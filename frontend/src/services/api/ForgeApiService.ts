@@ -8,9 +8,12 @@ import { BaseApiService } from './BaseApiService.js';
 
 export interface PhilosophicalAnchor {
   title: string;
+  title_de?: string;
   literary_influence: string;
+  literary_influence_de?: string;
   core_question: string;
   core_question_de?: string;
+  bleed_signature_suggestion?: string;
   description: string;
   description_de?: string;
 }

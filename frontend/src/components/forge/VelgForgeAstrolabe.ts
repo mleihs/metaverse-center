@@ -207,6 +207,12 @@ export class VelgForgeAstrolabe extends LitElement {
       .anchor-fan__card--dimmed {
         opacity: 0.55;
         filter: grayscale(0.4) brightness(0.7);
+        transition: opacity 0.3s, filter 0.3s, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      .anchor-fan__card--dimmed:hover {
+        opacity: 1;
+        filter: none;
       }
 
       /* ── Dossier Card ─────────────────────── */
@@ -804,9 +810,9 @@ export class VelgForgeAstrolabe extends LitElement {
                     <div class="dossier__sigil-shape"></div>
                   </div>
                   <div class="dossier__body">
-                    <h3 class="dossier__title">${opt.title}</h3>
+                    <h3 class="dossier__title">${t(opt, 'title')}</h3>
                     <p class="dossier__question">${t(opt, 'core_question')}</p>
-                    <div class="dossier__source">${opt.literary_influence}</div>
+                    <div class="dossier__source">${t(opt, 'literary_influence')}</div>
                   </div>
                   <div class="dossier__footer">
                     <span class="dossier__index">${String(i + 1).padStart(2, '0')}</span>

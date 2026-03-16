@@ -361,7 +361,9 @@ class ImageRegenRequest(BaseModel):
 class PhilosophicalAnchor(BaseModel):
     """A proposed thematic anchor for a simulation."""
     title: str
+    title_de: str = Field(default="", description="German equivalent of title.")
     literary_influence: str
+    literary_influence_de: str = Field(default="", description="German equivalent of literary_influence.")
     core_question: str
     core_question_de: str = Field(default="", description="German equivalent of core_question.")
     bleed_signature_suggestion: str

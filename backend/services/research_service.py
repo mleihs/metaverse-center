@@ -267,10 +267,10 @@ class ResearchService:
             f"Original Seed: {seed}\n\n"
             f"Research Context: {context}\n\n"
             "Propose 3 distinct philosophical anchors that could define this world.\n\n"
-            "BILINGUAL OUTPUT: For core_question and description, also produce a German "
-            "equivalent in core_question_de and description_de. The German text should "
-            "read as if originally written in German — not a literal translation. "
-            "Keep title and literary_influence in English."
+            "BILINGUAL OUTPUT: For every text field, also produce a German equivalent "
+            "in the corresponding _de field (title_de, literary_influence_de, "
+            "core_question_de, description_de). The German text should read as if "
+            "originally written in German — not a literal translation."
         )
 
         result = await agent.run(
@@ -281,7 +281,12 @@ class ResearchService:
         # Validate bilingual output
         incomplete = 0
         for anchor in result.output:
-            if not anchor.core_question_de or not anchor.description_de:
+            if (
+                not anchor.title_de
+                or not anchor.literary_influence_de
+                or not anchor.core_question_de
+                or not anchor.description_de
+            ):
                 incomplete += 1
         if incomplete:
             logger.warning(

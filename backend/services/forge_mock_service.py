@@ -36,7 +36,9 @@ def mock_anchors(seed: str) -> list[dict]:
     variants = [
         {
             "title": "The Cartography of Absence",
+            "title_de": "Die Kartographie der Abwesenheit",
             "literary_influence": "Italo Calvino, Invisible Cities",
+            "literary_influence_de": "Italo Calvino, Die unsichtbaren St\u00e4dte",
             "core_question": "Can a place exist if no one remembers it?",
             "core_question_de": "Kann ein Ort existieren, wenn sich niemand an ihn erinnert?",
             "bleed_signature_suggestion": "Fading ink on wet parchment",
@@ -53,7 +55,9 @@ def mock_anchors(seed: str) -> list[dict]:
         },
         {
             "title": "The Parliament of Echoes",
+            "title_de": "Das Parlament der Echos",
             "literary_influence": "Ursula K. Le Guin, The Dispossessed",
+            "literary_influence_de": "Ursula K. Le Guin, Die Enteigneten",
             "core_question": "What happens when every voice is heard simultaneously?",
             "core_question_de": "Was geschieht, wenn jede Stimme gleichzeitig geh\u00f6rt wird?",
             "bleed_signature_suggestion": "Overlapping radio frequencies",
@@ -71,7 +75,9 @@ def mock_anchors(seed: str) -> list[dict]:
         },
         {
             "title": "The Metabolic City",
-            "literary_influence": "China Miéville, Perdido Street Station",
+            "title_de": "Die Metabolische Stadt",
+            "literary_influence": "China Mi\u00e9ville, Perdido Street Station",
+            "literary_influence_de": "China Mi\u00e9ville, Die Falte",
             "core_question": "What does a city eat, and what does it excrete?",
             "core_question_de": "Was isst eine Stadt, und was scheidet sie aus?",
             "bleed_signature_suggestion": "Rust blooming on living metal",
