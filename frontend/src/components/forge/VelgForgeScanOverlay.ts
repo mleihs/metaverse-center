@@ -362,6 +362,18 @@ export class VelgForgeScanOverlay extends LitElement {
       color: var(--color-success, #22c55e);
       text-shadow: 0 0 16px rgba(74 222 128 / 0.6), 0 0 40px rgba(74 222 128 / 0.2);
       letter-spacing: 0.15em;
+      animation: entity-counter-breathe 2.5s ease-in-out infinite;
+    }
+
+    @keyframes entity-counter-breathe {
+      0%, 100% {
+        text-shadow: 0 0 16px rgba(74 222 128 / 0.6), 0 0 40px rgba(74 222 128 / 0.2);
+        transform: scale(1);
+      }
+      50% {
+        text-shadow: 0 0 24px rgba(74 222 128 / 0.8), 0 0 60px rgba(74 222 128 / 0.35);
+        transform: scale(1.03);
+      }
     }
 
     .scan-entity-counter__current {
@@ -375,6 +387,44 @@ export class VelgForgeScanOverlay extends LitElement {
 
     .scan-entity-counter__total {
       color: rgba(74 222 128 / 0.5);
+    }
+
+    /* ── Mobile: full-viewport takeover during entity generation ── */
+
+    @media (max-width: 767px) {
+      :host([active][entity-mode]) {
+        position: fixed !important;
+        inset: 0 !important;
+        z-index: 9999 !important;
+        animation: none !important;
+      }
+
+      :host([active][entity-mode]) .scan-overlay {
+        min-height: 100vh;
+        min-height: 100dvh;
+        padding: var(--space-6) var(--space-4);
+        border: none;
+      }
+
+      :host([active][entity-mode]) .scan-entity-counter {
+        font-size: clamp(48px, 15vw, 72px);
+        margin: var(--space-4) 0;
+      }
+
+      :host([active][entity-mode]) .scan-status__phase {
+        font-size: var(--text-sm, 0.875rem);
+        max-width: 85vw;
+        line-height: 1.4;
+      }
+
+      :host([active][entity-mode]) .scan-progress {
+        width: 70vw;
+        height: 3px;
+      }
+
+      :host([active][entity-mode]) .scan-seed-echo {
+        display: none;
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -408,6 +458,9 @@ export class VelgForgeScanOverlay extends LitElement {
         opacity: 1;
       }
       .scan-timer__recovering {
+        animation: none;
+      }
+      .scan-entity-counter {
         animation: none;
       }
     }
@@ -450,6 +503,11 @@ export class VelgForgeScanOverlay extends LitElement {
     if (changed.has('entityCurrent') && this.entityCurrent >= 0) {
       this._startTime = Date.now();
       this._elapsedMs = 0;
+    }
+    // Reflect entity-mode attribute for mobile CSS takeover
+    if (changed.has('entityTotal') || changed.has('entityCurrent')) {
+      const isEntityMode = this.entityTotal > 0 && this.entityCurrent >= 0;
+      this.toggleAttribute('entity-mode', isEntityMode);
     }
   }
 
