@@ -1,8 +1,8 @@
 ---
 title: "API Specification"
 id: api-specification
-version: "2.4"
-date: 2026-03-13
+version: "2.5"
+date: 2026-03-16
 lang: de
 type: spec
 status: active
@@ -1666,7 +1666,7 @@ Aggregierter Bleed-Status fuer Palimpsest-Overlay und Schwellenwert-UI. Enthält
 **Response:** `SuccessResponse[BleedStatusResponse]`
 
 ### `GET /api/v1/admin/health-effects`
-Globaler + Per-Simulation Health-Effects-Status fuer Admin-Tab. Liefert globalen Master-Switch-Zustand und Liste aller aktiven Simulationen mit Health-Daten und Toggle-Status.
+Globaler + Per-Simulation Health-Effects-Status fuer Admin-Tab. Liefert globalen Master-Switch-Zustand und Liste aller aktiven Simulationen mit Health-Daten und Toggle-Status. Neu geforgte Simulationen starten mit `effects_enabled: false` (Migration 121 setzt Default in `fn_materialize_shard`).
 
 **Rolle:** `platform_admin`
 
@@ -2094,6 +2094,8 @@ Token-Kaufsystem (Mock-Monetarisierung), Wallet-Verwaltung, BYOK-Schluessel, Fea
 | GET | `/api/v1/forge/admin/byok-system` | BYOK-System-Konfiguration abrufen | Platform Admin |
 | PUT | `/api/v1/forge/admin/byok-system` | BYOK-Policy und Bypass-Settings aendern | Platform Admin |
 | GET | `/api/v1/forge/admin/stats` | Token-Economy-Statistiken (Umsatz, Zirkulation) | Platform Admin |
+| POST | `/api/v1/forge/admin/regenerate-images/{simulation_id}` | Batch-Bildgenerierung fuer bestehende Simulation triggern (optional Entity-Type-Filter) | Platform Admin |
+| POST | `/api/v1/forge/admin/retrigger-batch/{simulation_id}` | Vollstaendige Batch-Regenerierung (Lore + Translations + Bilder) fuer bestehende Simulation. Rekonstruiert `draft_data` aus materialisierten Tabellen. Body: `{ include_lore: bool, entity_types: string[] \| null }` | Platform Admin |
 
 ---
 

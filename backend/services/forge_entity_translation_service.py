@@ -7,7 +7,7 @@ from typing import Any
 from uuid import UUID
 
 from backend.models.forge import ForgeEntityTranslationOutput
-from backend.services.ai_utils import PYDANTIC_AI_MAX_TOKENS, create_forge_agent
+from backend.services.ai_utils import create_forge_agent, run_ai
 from supabase import Client
 
 logger = logging.getLogger(__name__)
@@ -100,11 +100,7 @@ class ForgeEntityTranslationService:
 
         agent = create_forge_agent(ENTITY_TRANSLATOR_PROMPT, api_key=openrouter_key)
 
-        result = await agent.run(
-            prompt,
-            output_type=ForgeEntityTranslationOutput,
-            model_settings={"max_tokens": PYDANTIC_AI_MAX_TOKENS["translation"]},
-        )
+        result = await run_ai(agent, prompt, "translation", output_type=ForgeEntityTranslationOutput)
         output = result.output
 
         logger.debug(

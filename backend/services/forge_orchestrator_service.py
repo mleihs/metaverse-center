@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from uuid import UUID
 
 import sentry_sdk
@@ -21,7 +22,7 @@ from backend.models.forge import (
     PhilosophicalAnchor,
 )
 from backend.services import forge_mock_service as mock
-from backend.services.ai_utils import PYDANTIC_AI_MAX_TOKENS, ai_error_to_http, create_forge_agent
+from backend.services.ai_utils import ai_error_to_http, create_forge_agent, run_ai
 from backend.services.external.replicate import ReplicateBillingError
 from backend.services.forge_draft_service import ForgeDraftService
 from backend.services.forge_entity_translation_service import ForgeEntityTranslationService
@@ -449,15 +450,9 @@ class ForgeOrchestratorService:
         logger.debug("Instantiating dynamic Pydantic AI agent for chunk generation")
         dynamic_agent = create_forge_agent(WORLD_ARCHITECT_PROMPT, api_key=or_key)
 
-        chunk_settings = {"max_tokens": PYDANTIC_AI_MAX_TOKENS["chunk"]}
-
         try:
             if chunk_type == "geography":
-                result = await dynamic_agent.run(
-                    prompt,
-                    output_type=ForgeGeographyDraft,
-                    model_settings=chunk_settings,
-                )
+                result = await run_ai(dynamic_agent, prompt, "chunk", output_type=ForgeGeographyDraft)
                 geo_data = result.output.model_dump()
                 if not geo_data.get("zones"):
                     raise HTTPException(
@@ -480,11 +475,7 @@ class ForgeOrchestratorService:
                 return geo_data
 
             elif chunk_type == "agents":
-                result = await dynamic_agent.run(
-                    prompt,
-                    output_type=list[ForgeAgentDraft],
-                    model_settings=chunk_settings,
-                )
+                result = await run_ai(dynamic_agent, prompt, "chunk", output_type=list[ForgeAgentDraft])
                 agents_list = [a.model_dump() for a in result.output]
                 if not agents_list:
                     raise HTTPException(
@@ -502,11 +493,7 @@ class ForgeOrchestratorService:
                 return {"agents": agents_list}
 
             elif chunk_type == "buildings":
-                result = await dynamic_agent.run(
-                    prompt,
-                    output_type=list[ForgeBuildingDraft],
-                    model_settings=chunk_settings,
-                )
+                result = await run_ai(dynamic_agent, prompt, "chunk", output_type=list[ForgeBuildingDraft])
                 buildings_list = [b.model_dump() for b in result.output]
                 if not buildings_list:
                     raise HTTPException(
@@ -574,21 +561,12 @@ class ForgeOrchestratorService:
                 existing_entities, geography,
             )
             dynamic_agent = create_forge_agent(WORLD_ARCHITECT_PROMPT, api_key=or_key)
-            entity_settings = {"max_tokens": PYDANTIC_AI_MAX_TOKENS["entity"]}
 
             try:
                 if entity_type == "agents":
-                    result = await dynamic_agent.run(
-                        prompt,
-                        output_type=ForgeAgentDraft,
-                        model_settings=entity_settings,
-                    )
+                    result = await run_ai(dynamic_agent, prompt, "entity", output_type=ForgeAgentDraft)
                 else:
-                    result = await dynamic_agent.run(
-                        prompt,
-                        output_type=ForgeBuildingDraft,
-                        model_settings=entity_settings,
-                    )
+                    result = await run_ai(dynamic_agent, prompt, "entity", output_type=ForgeBuildingDraft)
                 entity = result.output.model_dump()
             except ModelHTTPError as exc:
                 raise ai_error_to_http(exc) from exc
@@ -825,6 +803,7 @@ class ForgeOrchestratorService:
 
         research_context = astrolabe_ctx
         if gen_config.deep_research:
+            logger.info("Step: deep research")
             try:
                 research_context = await ResearchService.research_for_lore(
                     seed=seed,
@@ -838,6 +817,7 @@ class ForgeOrchestratorService:
                     extra={"simulation_id": str(simulation_id)},
                 )
 
+        logger.info("Step: lore generation")
         try:
             lore_sections = await ForgeLoreService.generate_lore(
                 seed=seed,
@@ -848,6 +828,7 @@ class ForgeOrchestratorService:
                 openrouter_key=or_key,
                 research_context=research_context,
             )
+            logger.info("Step: lore translation")
             translations = None
             try:
                 translations = await ForgeLoreService.translate_lore(
@@ -863,6 +844,7 @@ class ForgeOrchestratorService:
             logger.exception("Lore generation failed", extra={"simulation_id": str(simulation_id)})
 
         # Translate entity fields (skip if bilingual generation already populated _de)
+        logger.info("Step: entity translation")
         try:
             mat_agents = (
                 supabase.table("agents")
@@ -931,8 +913,12 @@ class ForgeOrchestratorService:
         If entity_types is provided, only regenerate those types
         (e.g. {"lore"}, {"agent", "building"}).
         """
-        structlog.contextvars.bind_contextvars(simulation_id=str(simulation_id))
-        logger.info("Starting background generation")
+        batch_id = f"batch-{simulation_id!s:.8}"
+        structlog.contextvars.bind_contextvars(
+            simulation_id=str(simulation_id), batch_id=batch_id,
+        )
+        logger.info("Batch generation starting", extra={"batch_id": batch_id})
+        t_batch = time.monotonic()
 
         try:
             or_key, rep_key = await ForgeOrchestratorService._get_user_keys(supabase, user_id)
@@ -942,17 +928,21 @@ class ForgeOrchestratorService:
 
         # ── Phase A: Lore + translations (must complete before images) ──
         # Skip when called for image-only regeneration (no draft_data available).
+        phase_a_s = 0.0
         if draft_data:
             logger.info("Phase A: lore + translations")
+            t_a = time.monotonic()
             await cls._generate_lore_and_translations(
                 supabase, simulation_id, user_id, or_key, draft_data,
             )
-            logger.info("Phase A complete")
+            phase_a_s = time.monotonic() - t_a
+            logger.info("Phase A complete", extra={"elapsed_s": round(phase_a_s, 1)})
         else:
             logger.info("Phase A skipped (image-only regeneration)")
 
         # ── Phase B: Image generation ──
         logger.info("Phase B: image generation")
+        t_b = time.monotonic()
 
         sim_resp = (
             supabase.table("simulations")
@@ -969,18 +959,49 @@ class ForgeOrchestratorService:
         )
 
         _types = entity_types  # None = all types
+        images_succeeded = 0
+        images_failed = 0
+        img_counter = 0
+
+        # Count total images for progress tracking
+        img_total_parts: list[int] = []
+        if not _types or "banner" in _types:
+            img_total_parts.append(1)
+        if not _types or "agent" in _types:
+            agent_count_resp = supabase.table("agents").select("id", count="exact").eq(
+                "simulation_id", str(simulation_id),
+            ).execute()
+            img_total_parts.append(agent_count_resp.count or 0)
+        if not _types or "building" in _types:
+            bldg_count_resp = supabase.table("buildings").select("id", count="exact").eq(
+                "simulation_id", str(simulation_id),
+            ).execute()
+            img_total_parts.append(bldg_count_resp.count or 0)
+        if not _types or "lore" in _types:
+            lore_count_resp = supabase.table("simulation_lore").select("id", count="exact").eq(
+                "simulation_id", str(simulation_id),
+            ).not_.is_("image_slug", "null").execute()
+            img_total_parts.append(lore_count_resp.count or 0)
+        img_total = sum(img_total_parts)
 
         try:
             if not _types or "banner" in _types:
+                img_counter += 1
+                logger.info(
+                    "Generating image",
+                    extra={"entity_type": "banner", "progress": f"{img_counter}/{img_total}"},
+                )
                 try:
                     await image_service.generate_banner_image(
                         sim_name=sim_data.get("name", "Unknown"),
                         sim_description=sim_data.get("description", ""),
                         anchor_data=anchor_data,
                     )
+                    images_succeeded += 1
                 except ReplicateBillingError:
                     raise
                 except Exception:
+                    images_failed += 1
                     logger.exception("Banner generation failed")
 
             # 2. Agent portraits
@@ -991,19 +1012,29 @@ class ForgeOrchestratorService:
                     .eq("simulation_id", str(simulation_id))
                     .execute()
                 )
-                for agent in agents.data or []:
+                for agent_row in agents.data or []:
+                    img_counter += 1
+                    logger.info(
+                        "Generating image",
+                        extra={
+                            "entity_type": "agent", "progress": f"{img_counter}/{img_total}",
+                            "name": agent_row["name"],
+                        },
+                    )
                     try:
                         await image_service.generate_agent_portrait(
-                            agent_id=agent["id"],
-                            agent_name=agent["name"],
-                            agent_data={"character": agent["character"], "background": agent["background"]},
+                            agent_id=agent_row["id"],
+                            agent_name=agent_row["name"],
+                            agent_data={"character": agent_row["character"], "background": agent_row["background"]},
                         )
+                        images_succeeded += 1
                     except ReplicateBillingError:
                         raise
                     except Exception:
+                        images_failed += 1
                         logger.exception(
                             "Batch image gen failed for agent",
-                            extra={"entity_type": "agent", "entity_id": agent["id"]},
+                            extra={"entity_type": "agent", "entity_id": agent_row["id"]},
                         )
 
             # 3. Building images
@@ -1019,6 +1050,14 @@ class ForgeOrchestratorService:
                     .execute()
                 )
                 for building in buildings.data or []:
+                    img_counter += 1
+                    logger.info(
+                        "Generating image",
+                        extra={
+                            "entity_type": "building", "progress": f"{img_counter}/{img_total}",
+                            "name": building["name"],
+                        },
+                    )
                     zone_data = building.get("zones") or {}
                     try:
                         await image_service.generate_building_image(
@@ -1035,9 +1074,11 @@ class ForgeOrchestratorService:
                                 "zone_name": zone_data.get("name", ""),
                             },
                         )
+                        images_succeeded += 1
                     except ReplicateBillingError:
                         raise
                     except Exception:
+                        images_failed += 1
                         logger.exception(
                             "Batch image gen failed for building",
                             extra={"entity_type": "building", "entity_id": building["id"]},
@@ -1055,6 +1096,14 @@ class ForgeOrchestratorService:
                     .execute()
                 )
                 for section in lore_sections.data or []:
+                    img_counter += 1
+                    logger.info(
+                        "Generating image",
+                        extra={
+                            "entity_type": "lore", "progress": f"{img_counter}/{img_total}",
+                            "name": section["title"],
+                        },
+                    )
                     try:
                         await image_service.generate_lore_image(
                             section_title=section["title"],
@@ -1064,9 +1113,11 @@ class ForgeOrchestratorService:
                             section_id=section["id"],
                             image_caption=section.get("image_caption"),
                         )
+                        images_succeeded += 1
                     except ReplicateBillingError:
                         raise
                     except Exception:
+                        images_failed += 1
                         logger.exception(
                             "Lore image gen failed",
                             extra={"entity_type": "lore_section", "entity_id": section["id"]},
@@ -1077,7 +1128,19 @@ class ForgeOrchestratorService:
                 "Replicate billing error — aborting all image generation. "
                 "Check credits at replicate.com/account/billing."
             )
-            return
+
+        phase_b_s = time.monotonic() - t_b
+        total_elapsed_s = time.monotonic() - t_batch
+        logger.info(
+            "Batch generation DONE",
+            extra={
+                "total_elapsed_s": round(total_elapsed_s, 1),
+                "phase_a_s": round(phase_a_s, 1),
+                "phase_b_s": round(phase_b_s, 1),
+                "images_succeeded": images_succeeded,
+                "images_failed": images_failed,
+            },
+        )
 
     @staticmethod
     async def recruit_agents(
@@ -1159,11 +1222,7 @@ Generate exactly 3 new agents. Requirements:
                 ]
             else:
                 agent = create_forge_agent(WORLD_ARCHITECT_PROMPT, api_key=openrouter_key)
-                result = await agent.run(
-                    prompt,
-                    output_type=list[ForgeAgentDraft],
-                    model_settings={"max_tokens": PYDANTIC_AI_MAX_TOKENS["chunk"]},
-                )
+                result = await run_ai(agent, prompt, "chunk", output_type=list[ForgeAgentDraft])
                 generated = result.output
 
             # 3. Insert agents into the simulation
@@ -1331,6 +1390,71 @@ Generate exactly 3 new agents. Requirements:
             logger.info("Darkroom regen completed")
         except Exception:
             logger.exception("Darkroom regen failed")
+
+    @staticmethod
+    def reconstruct_draft_data(
+        supabase: Client,
+        simulation_id: UUID,
+    ) -> dict:
+        """Reconstruct the draft_data dict from materialized tables.
+
+        Used by the admin retrigger endpoint to re-run lore + translations
+        for a simulation that has already been materialized.
+        """
+        sim_resp = supabase.table("simulations").select(
+            "name, description"
+        ).eq("id", str(simulation_id)).single().execute()
+        sim = sim_resp.data
+
+        agents_resp = supabase.table("agents").select(
+            "name, gender, system, primary_profession, character, background"
+        ).eq("simulation_id", str(simulation_id)).execute()
+
+        buildings_resp = supabase.table("buildings").select(
+            "name, building_type, building_condition, description, style"
+        ).eq("simulation_id", str(simulation_id)).execute()
+
+        zones_resp = supabase.table("zones").select(
+            "name, zone_type, description"
+        ).eq("simulation_id", str(simulation_id)).execute()
+
+        streets_resp = supabase.table("city_streets").select(
+            "name, street_type"
+        ).eq("simulation_id", str(simulation_id)).execute()
+
+        # Reconstruct geography block
+        geography = {
+            "city_name": sim.get("name", "Unknown"),
+            "description": sim.get("description", ""),
+            "zones": zones_resp.data or [],
+            "streets": streets_resp.data or [],
+        }
+
+        # Try to fetch the original anchor from simulation_settings
+        anchor_resp = supabase.table("simulation_settings").select(
+            "setting_value"
+        ).eq("simulation_id", str(simulation_id)).eq(
+            "setting_key", "philosophical_anchor"
+        ).maybe_single().execute()
+
+        anchor = {}
+        if anchor_resp.data:
+            import json
+            try:
+                anchor = json.loads(anchor_resp.data["setting_value"]) if isinstance(
+                    anchor_resp.data["setting_value"], str,
+                ) else anchor_resp.data["setting_value"]
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+        return {
+            "seed_prompt": sim.get("description", ""),
+            "philosophical_anchor": {"selected": anchor},
+            "geography": geography,
+            "agents": agents_resp.data or [],
+            "buildings": buildings_resp.data or [],
+            "generation_config": {"deep_research": True},
+        }
 
     @staticmethod
     def _build_world_context(

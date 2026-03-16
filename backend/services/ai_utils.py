@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import functools
 import logging
+import time
+from typing import Any
 
 import sentry_sdk
 from fastapi import HTTPException, status
@@ -30,6 +32,24 @@ PYDANTIC_AI_MAX_TOKENS: dict[str, int] = {
     "translation": 4096,   # entity translation batch
     "dossier_evolution": 1024,  # short 100-250 word addenda
     "entity": 3072,             # single agent/building (character + background + DE)
+}
+
+# ── Centralized timeout budgets (seconds) ────────────────────────────
+# pydantic-ai passes model_settings["timeout"] to the OpenAI SDK's
+# create() call, which sets it as an httpx timeout.  When it fires,
+# openai.APITimeoutError is raised → caught by existing except blocks.
+# Values are 2-3x expected duration to avoid false timeouts.
+PYDANTIC_AI_TIMEOUTS: dict[str, int] = {
+    "research": 90,
+    "anchors": 120,
+    "chunk": 180,
+    "lore": 180,
+    "lore_translation": 180,
+    "dossier": 300,
+    "theme": 90,
+    "translation": 120,
+    "dossier_evolution": 60,
+    "entity": 120,
 }
 
 
@@ -80,6 +100,43 @@ def get_openrouter_model(
     )
 
 
+async def run_ai(
+    agent: Agent,
+    prompt: str,
+    purpose: str,
+    *,
+    output_type: type | None = None,
+    model_settings: dict[str, Any] | None = None,
+) -> Any:
+    """Central wrapper for every agent.run() call.
+
+    Injects timeout + max_tokens from centralized configs, logs before/after
+    every call with purpose and elapsed time.  On failure, logs with
+    exc_info and re-raises so existing error-handling continues to work.
+    """
+    ms = dict(model_settings) if model_settings else {}
+    ms.setdefault("timeout", PYDANTIC_AI_TIMEOUTS.get(purpose))
+    ms.setdefault("max_tokens", PYDANTIC_AI_MAX_TOKENS.get(purpose))
+
+    timeout_s = ms.get("timeout")
+    max_tokens = ms.get("max_tokens")
+
+    logger.info("AI call started", extra={"purpose": purpose, "timeout_s": timeout_s, "max_tokens": max_tokens})
+    t0 = time.monotonic()
+    try:
+        kwargs: dict[str, Any] = {"model_settings": ms}
+        if output_type is not None:
+            kwargs["output_type"] = output_type
+        result = await agent.run(prompt, **kwargs)
+        elapsed = time.monotonic() - t0
+        logger.info("AI call completed", extra={"purpose": purpose, "elapsed_s": round(elapsed, 1)})
+        return result
+    except Exception:
+        elapsed = time.monotonic() - t0
+        logger.error("AI call failed", extra={"purpose": purpose, "elapsed_s": round(elapsed, 1)}, exc_info=True)
+        raise
+
+
 def safe_background(func):
     """Wrap an async background task with error logging + Sentry capture.
 
@@ -90,10 +147,15 @@ def safe_background(func):
     @functools.wraps(func)
     async def wrapper(*args, **kwargs):
         task_name = func.__qualname__
+        logger.info("Background task started: %s", task_name)
+        t0 = time.monotonic()
         try:
             await func(*args, **kwargs)
+            elapsed = time.monotonic() - t0
+            logger.info("Background task completed: %s (%.1fs)", task_name, elapsed)
         except Exception:
-            logger.exception("Background task failed: %s", task_name)
+            elapsed = time.monotonic() - t0
+            logger.exception("Background task FAILED: %s (after %.1fs)", task_name, elapsed)
             sentry_sdk.capture_exception()
     return wrapper
 

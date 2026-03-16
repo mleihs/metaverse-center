@@ -12,7 +12,7 @@ from pydantic_ai import Agent
 
 from backend.config import settings
 from backend.models.forge import ForgeThemeOutput
-from backend.services.ai_utils import PYDANTIC_AI_MAX_TOKENS, get_openrouter_model
+from backend.services.ai_utils import get_openrouter_model, run_ai
 from backend.services.platform_model_config import get_platform_model
 from supabase import Client
 
@@ -99,11 +99,7 @@ class ForgeThemeService:
             system_prompt=THEME_ARCHITECT_PROMPT,
         )
 
-        result = await agent.run(
-            prompt,
-            output_type=ForgeThemeOutput,
-            model_settings={"max_tokens": PYDANTIC_AI_MAX_TOKENS["theme"]},
-        )
+        result = await run_ai(agent, prompt, "theme", output_type=ForgeThemeOutput)
         theme_data = result.output.model_dump()
 
         logger.info("Theme generated: primary=%s, shadow=%s, texture=%s",
@@ -227,11 +223,7 @@ Create a dramatically different interpretation. Different color palette, differe
 different typography. Same world, radically different visual identity."""
 
                     agent = Agent(model, system_prompt=THEME_ARCHITECT_PROMPT)
-                    result = await agent.run(
-                        variant_prompt,
-                        output_type=ForgeThemeOutput,
-                        model_settings={"max_tokens": PYDANTIC_AI_MAX_TOKENS["theme"]},
-                    )
+                    result = await run_ai(agent, variant_prompt, "theme", output_type=ForgeThemeOutput)
                     variant_data = result.output.model_dump()
                     variant_data["variant_name"] = f"Variant {i + 1}"
                     variants.append(variant_data)

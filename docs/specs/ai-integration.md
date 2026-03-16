@@ -1,7 +1,7 @@
 ---
 title: "AI Integration"
 id: ai-integration
-version: "2.1"
+version: "2.2"
 date: 2026-03-16
 lang: de
 type: spec
@@ -162,6 +162,40 @@ def build_prompt(template: PromptTemplate, variables: dict, locale: str) -> str:
 | Sonstige Fehler | `Exception` | Einzelbild-Fehler geloggt, Batch faehrt fort. |
 
 `run_batch_generation` umschliesst alle 4 Bildtypen (Banner → Portraits → Buildings → Lore) mit einem aeusseren `try/except ReplicateBillingError`. Innere Schleifen fangen `ReplicateBillingError` separat und re-raisen — generische `except Exception` Bloecke behandeln nur Nicht-Billing-Fehler.
+
+### LLM Timeout Protection (`run_ai()`)
+
+Zentraler Wrapper fuer alle `agent.run()`-Aufrufe in `ai_utils.py`. Verhindert unendliches Haengen bei OpenRouter-Ausfaellen.
+
+**Mechanismus:** `run_ai()` injiziert `timeout` und `max_tokens` via `setdefault` in `model_settings`. pydantic-ai reicht `model_settings["timeout"]` an das OpenAI SDK weiter, das es als httpx-Timeout setzt. Bei Timeout wird `openai.APITimeoutError` geworfen → von bestehenden `except Exception`-Bloecken gefangen → Prozess faehrt fort.
+
+**Centralized Timeouts (`PYDANTIC_AI_TIMEOUTS`):**
+
+| Purpose | Timeout (s) | Max Tokens | Beschreibung |
+|---------|-------------|------------|-------------|
+| `research` | 90 | 2048 | Themen-Recherche (cheap model) |
+| `anchors` | 120 | 3072 | 3 Philosophical Anchors (bilingual) |
+| `chunk` | 180 | 12288 | Geography/Agents/Buildings |
+| `lore` | 180 | 8192 | Lore Scroll (5-7 Sektionen) |
+| `lore_translation` | 180 | 8192 | Lore DE-Uebersetzung |
+| `dossier` | 300 | 16384 | Classified Dossier (~9000 Woerter) |
+| `theme` | 90 | 2048 | Visual Theme (~30 Felder) |
+| `translation` | 120 | 4096 | Entity-Uebersetzungs-Batch |
+| `dossier_evolution` | 60 | 1024 | Dossier-Addendum (100-250 Woerter) |
+| `entity` | 120 | 3072 | Einzel-Agent/Building |
+
+**Observability:** Jeder `run_ai()`-Aufruf loggt:
+- Start: `AI call started` mit `purpose`, `timeout_s`, `max_tokens`
+- Erfolg: `AI call completed` mit `purpose`, `elapsed_s`
+- Fehler: `AI call failed` mit `purpose`, `elapsed_s`, `exc_info=True`
+
+**Batch Observability (`run_batch_generation`):**
+- `batch_id`-Korrelation via structlog contextvars
+- Phase A/B-Timing mit `elapsed_s`
+- Pro-Bild Fortschritts-Logs: `Generating image {entity_type} {n}/{total}`
+- Zusammenfassungs-Log: `Batch generation DONE` mit `total_elapsed_s`, `phase_a_s`, `phase_b_s`, `images_succeeded`, `images_failed`
+
+**`safe_background()` Enhancement:** Loggt Start, Completion (mit Dauer), und Failure (mit Dauer + Sentry) fuer alle Background-Tasks.
 
 ### Konfigurierbare Parameter
 

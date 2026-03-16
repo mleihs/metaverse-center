@@ -381,7 +381,17 @@ Berechnete Tokens (`shadow_style` → 7 Shadow-Variablen, `animation_speed` → 
 
 ---
 
-## 6. Access Settings
+## 6. Game Settings
+
+Per-Simulation-Gameplay-Einstellungen. Werden in `simulation_settings` mit Kategorie `game` gespeichert.
+
+| Setting Key | Default | Beschreibung |
+|------------|---------|-------------|
+| `critical_health_effects_enabled` | `false` (Forge-Default via Migration 121) | Kritische Health-Effekte (Entropy Overlay, Text Corruption, Card Distortion etc.) aktiviert. `get_bleed_status()` RPC liest diesen Wert — bei `false` wird `effects_suppressed: true` zurückgegeben. Admin kann per Simulation umschalten. Ohne Per-Simulation-Eintrag greift der globale `platform_settings`-Default (`true` = aktiviert). |
+
+---
+
+## 7. Access Settings
 
 | Setting Key | Default | Beschreibung |
 |------------|---------|-------------|

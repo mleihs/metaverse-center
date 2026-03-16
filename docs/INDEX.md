@@ -15,8 +15,8 @@ tags: [index, catalog, documentation]
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
-| [AI Integration](specs/ai-integration.md) | 2.1 | 2026-03-16 | de | active |
-| [API Specification](specs/api-specification.md) | 2.4 | 2026-03-13 | de | active |
+| [AI Integration](specs/ai-integration.md) | 2.2 | 2026-03-16 | de | active |
+| [API Specification](specs/api-specification.md) | 2.5 | 2026-03-16 | de | active |
 | [Auth and Security](specs/auth-and-security.md) | 1.5 | 2026-03-01 | de | active |
 | [Embassies & Ambassadors](specs/embassies.md) | 1.1 | 2026-02-27 | de | active |
 | [Epochs & Competitive Layer](specs/epochs-competitive-layer.md) | 2.1 | 2026-03-09 | de | active |
@@ -38,7 +38,7 @@ tags: [index, catalog, documentation]
 | [Database Schema: Neues Multi-Simulations-Schema](references/database-schema.md) | 3.6 | 2026-03-13 | de | active |
 | [Design System](references/design-system.md) | 1.3 | 2026-03-02 | de | active |
 | [Domain Models](references/domain-models.md) | 3.3 | 2026-03-13 | de | active |
-| [Feature Catalog](references/feature-catalog.md) | 2.8 | 2026-03-16 | de | active |
+| [Feature Catalog](references/feature-catalog.md) | 2.9 | 2026-03-16 | de | active |
 | [Frontend Components](references/frontend-components.md) | 2.9 | 2026-03-16 | de | active |
 
 ## Guides (11)

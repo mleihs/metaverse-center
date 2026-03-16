@@ -67,7 +67,7 @@ Abgeleitete Metriken werden einmal berechnet und bei Quelldaten-Aenderung invali
 Operationen, die mehrere Tabellen atomar modifizieren muessen:
 
 - **`clone_simulations_for_epoch()`** (~250 Zeilen) — Klont Template-Simulationen inkl. Settings, Taxonomien, Stadt, Zonen, Strassen, Agenten, Gebaeude + normalisiert Werte fuer PvP-Balance
-- **`fn_materialize_shard()`** — Konvertiert Forge-Entwurf in Live-Simulation (Simulation + Settings + Taxonomien + Stadt + Zonen + Strassen + Agenten + Gebaeude atomar). Seit Migration 112: Bilingual — inseriert `_de`-Spalten (z.B. `character_de`, `description_de`) aus dem Draft-JSONB
+- **`fn_materialize_shard()`** — Konvertiert Forge-Entwurf in Live-Simulation (Simulation + Settings + Taxonomien + Stadt + Zonen + Strassen + Agenten + Gebaeude atomar). Seit Migration 112: Bilingual — inseriert `_de`-Spalten (z.B. `character_de`, `description_de`) aus dem Draft-JSONB. Seit Migration 121: Setzt `critical_health_effects_enabled = false` (Kategorie `game`) — neue Simulationen starten ohne kritische Health-Effekte
 - **`fn_approve_forge_access()`** — Atomare Genehmigung: Request sperren + Wallet-Tier upgraden + User-Details zurueckgeben
 - **`fn_reject_forge_access()`** — Atomare Ablehnung: Request sperren + Status setzen + User-Details zurueckgeben
 - **`process_cascade_events()`** — Auto-Spawn von Kaskaden-Events bei Zone-Druck-Ueberschreitung, rate-limited pro Zone

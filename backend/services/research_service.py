@@ -13,7 +13,7 @@ from tavily import TavilyClient
 
 from backend.config import settings
 from backend.models.forge import PhilosophicalAnchor
-from backend.services.ai_utils import PYDANTIC_AI_MAX_TOKENS, create_forge_agent
+from backend.services.ai_utils import create_forge_agent, run_ai
 
 logger = logging.getLogger(__name__)
 
@@ -214,10 +214,7 @@ class ResearchService:
         )
 
         try:
-            result = await research_agent.run(
-                research_prompt,
-                model_settings={"max_tokens": PYDANTIC_AI_MAX_TOKENS["research"]},
-            )
+            result = await run_ai(research_agent, research_prompt, "research")
             parts.append(f"[LLM RESEARCH]\n{result.output}")
             logger.debug("LLM lore research completed")
         except Exception:
@@ -273,11 +270,7 @@ class ResearchService:
             "originally written in German — not a literal translation."
         )
 
-        result = await agent.run(
-            prompt,
-            output_type=list[PhilosophicalAnchor],
-            model_settings={"max_tokens": PYDANTIC_AI_MAX_TOKENS["anchors"]},
-        )
+        result = await run_ai(agent, prompt, "anchors", output_type=list[PhilosophicalAnchor])
         # Patch empty _de fields with EN fallback so downstream never sees blanks
         incomplete = 0
         for anchor in result.output:

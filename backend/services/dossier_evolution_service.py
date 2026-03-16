@@ -10,7 +10,7 @@ from uuid import UUID
 from pydantic_ai import Agent
 
 from backend.models.translation import TranslationContext
-from backend.services.ai_utils import PYDANTIC_AI_MAX_TOKENS, get_openrouter_model
+from backend.services.ai_utils import get_openrouter_model, run_ai
 from backend.services.platform_model_config import get_platform_model
 from backend.services.translation_service import TranslationService
 from supabase import Client
@@ -158,10 +158,7 @@ class DossierEvolutionService:
                 model_id=get_platform_model("forge"),
             )
             agent = Agent(model, system_prompt="You are the Bureau's Senior Classified Analyst.")
-            result = await agent.run(
-                prompt,
-                model_settings={"max_tokens": PYDANTIC_AI_MAX_TOKENS["dossier_evolution"]},
-            )
+            result = await run_ai(agent, prompt, "dossier_evolution")
             addendum = result.output if isinstance(result.output, str) else str(result.output)
 
             # 5. Append to existing body

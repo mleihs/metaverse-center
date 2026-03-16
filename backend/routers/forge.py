@@ -889,3 +889,64 @@ async def regenerate_images(
     )
 
     return {"success": True, "data": {"message": f"Image generation ({types_str}) started for '{sim['name']}'."}}
+
+
+class RetriggerBatchRequest(BaseModel):
+    """Request body for admin batch retrigger."""
+
+    include_lore: bool = Field(
+        True, description="If true, re-run lore + translations before images.",
+    )
+    entity_types: list[str] | None = Field(
+        None,
+        description="Filter image types: 'banner', 'agent', 'building', 'lore'. Omit for all.",
+    )
+
+
+@router.post("/admin/retrigger-batch/{simulation_id}", response_model=SuccessResponse[dict])
+@limiter.limit(RATE_LIMIT_AI_GENERATION)
+async def retrigger_batch(
+    request: Request,
+    simulation_id: UUID,
+    background_tasks: BackgroundTasks,
+    body: RetriggerBatchRequest | None = None,
+    admin: CurrentUser = Depends(require_platform_admin()),
+    admin_supabase=Depends(get_admin_supabase),
+):
+    """Re-run batch generation (lore + images) for an existing simulation (admin only).
+
+    Unlike regenerate-images, this can also re-run the full Phase A
+    (research → lore → translations) by reconstructing draft_data from
+    the materialized tables.
+    """
+    sim = await SimulationService.check_exists(admin_supabase, simulation_id)
+    include_lore = body.include_lore if body else True
+    entity_types = set(body.entity_types) if body and body.entity_types else None
+
+    draft_data = None
+    if include_lore:
+        draft_data = ForgeOrchestratorService.reconstruct_draft_data(
+            admin_supabase, simulation_id,
+        )
+        # Delete existing lore to avoid duplicates on re-generation
+        admin_supabase.table("simulation_lore").delete().eq(
+            "simulation_id", str(simulation_id),
+        ).execute()
+
+    background_tasks.add_task(
+        safe_background(_orchestrator_service.run_batch_generation),
+        admin_supabase,
+        simulation_id,
+        admin.id,
+        draft_data=draft_data,
+        entity_types=entity_types,
+    )
+
+    mode = "lore + images" if include_lore else "images only"
+    types_str = ", ".join(sorted(entity_types)) if entity_types else "all"
+    await AuditService.safe_log(
+        admin_supabase, str(simulation_id), admin.id, "simulation", str(simulation_id),
+        "retrigger_batch", {"simulation_name": sim["name"], "mode": mode, "entity_types": types_str},
+    )
+
+    return {"success": True, "data": {"message": f"Batch retrigger ({mode}, {types_str}) started for '{sim['name']}'."}}
