@@ -382,19 +382,16 @@ export class VelgSimulationSwitcher extends SignalWatcher(LitElement) {
     return appState.simulations.value;
   }
 
-  private get _userId(): string | undefined {
-    return appState.user.value?.id;
-  }
-
   private get _myWorlds(): Simulation[] {
-    const uid = this._userId;
-    if (!uid) return [];
-    return this._filteredSims.filter((s) => s.owner_id === uid);
+    const memberIds = appState.memberSimulationIds.value;
+    if (memberIds.size === 0) return [];
+    return this._filteredSims.filter((s) => memberIds.has(s.id));
   }
 
   private get _communityWorlds(): Simulation[] {
-    const uid = this._userId;
-    return this._filteredSims.filter((s) => s.owner_id !== uid);
+    const memberIds = appState.memberSimulationIds.value;
+    if (memberIds.size === 0) return this._filteredSims;
+    return this._filteredSims.filter((s) => !memberIds.has(s.id));
   }
 
   private get _filteredSims(): Simulation[] {
@@ -556,7 +553,7 @@ export class VelgSimulationSwitcher extends SignalWatcher(LitElement) {
                   }
 
                   ${
-                    this._userId && this._myWorlds.length > 0
+                    this._myWorlds.length > 0
                       ? html`
                         <div class="section-label">${msg('My Worlds')}</div>
                         ${this._myWorlds.map((s) => this._renderSimCard(s))}

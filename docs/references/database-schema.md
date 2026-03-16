@@ -1111,7 +1111,11 @@ RETURNS TRIGGER LANGUAGE plpgsql;
 ```sql
 -- Atomare Genehmigung: Sperrt Request (FOR UPDATE), setzt status='approved',
 -- Upsert user_wallets mit neuem account_tier (Trigger synct is_architect),
--- Gibt {request_id, user_id, user_email, email_locale, requested_tier, status} zurueck.
+-- Grantet 3 Starter-Tokens (Lock Wallet, Credit forge_tokens, Ledger-Eintrag
+-- via admin-grant Bundle mit payment_reference='clearance_welcome').
+-- Gibt {request_id, user_id, user_email, email_locale, requested_tier, status,
+--       tokens_granted, balance_after} zurueck.
+-- Migration 118 erweitert mit Starter-Token-Grant.
 CREATE OR REPLACE FUNCTION public.fn_approve_forge_access(
     p_request_id uuid, p_admin_notes text DEFAULT NULL, p_reviewer_id uuid DEFAULT NULL
 ) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER;
@@ -3266,7 +3270,7 @@ CREATE INDEX idx_forge_access_pending
 
 | Funktion | Parameter | Returns | Beschreibung |
 |----------|-----------|---------|-------------|
-| `fn_approve_forge_access()` | `(p_request_id uuid, p_admin_notes text, p_reviewer_id uuid)` | jsonb | Atomare Genehmigung: Sperrt Request, setzt `status='approved'`, Upsert `user_wallets.account_tier`, gibt `{request_id, user_id, user_email, email_locale, requested_tier, status}` zurueck. SECURITY DEFINER. |
+| `fn_approve_forge_access()` | `(p_request_id uuid, p_admin_notes text, p_reviewer_id uuid)` | jsonb | Atomare Genehmigung: Sperrt Request, setzt `status='approved'`, Upsert `user_wallets.account_tier`,Grantet 3 Starter-Tokens (atomisch: Lock Wallet, Credit, Ledger-Eintrag mit `payment_method='admin_grant'`, `payment_reference='clearance_welcome'`), gibt `{request_id, user_id, user_email, email_locale, requested_tier, status, tokens_granted, balance_after}` zurueck. SECURITY DEFINER. Migration 118 erweitert. |
 | `fn_reject_forge_access()` | `(p_request_id uuid, p_admin_notes text, p_reviewer_id uuid)` | jsonb | Ablehnung: Sperrt Request, setzt `status='rejected'`, gibt User-Details zurueck. SECURITY DEFINER. |
 | `fn_sync_architect_flag()` | trigger | trigger | Setzt `NEW.is_architect := (NEW.account_tier != 'observer')`. BEFORE INSERT/UPDATE Trigger auf `user_wallets`. |
 
@@ -3287,7 +3291,7 @@ Migrations 101–104 fuehren das Token-Wirtschaftssystem ein: Produkt-Katalog (T
 ### Neue Tabellen
 
 #### `token_bundles` (Migration 101)
-Token-Produkt-Katalog mit 5 vordefinierten Bundles (Field Sample bis Founder's Vault).
+Token-Produkt-Katalog mit 5 vordefinierten Bundles (Field Sample bis Founder's Vault) + 1 Hidden Sentinel (`admin-grant`, `is_active=false`, Migration 102) fuer Admin-Grants und Clearance-Starter-Tokens.
 
 | Spalte | Typ | Beschreibung |
 |--------|-----|-------------|

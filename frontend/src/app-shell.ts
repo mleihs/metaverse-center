@@ -521,14 +521,31 @@ export class VelgApp extends LitElement {
     }
   }
 
-  /** Load simulations into appState — uses public API so guests can browse. */
+  /** Load simulations into appState — merges member + public for auth users. */
   private async _loadSimulations(): Promise<void> {
     try {
-      const resp = appState.isAuthenticated.value
-        ? await simulationsApi.list()
-        : await simulationsApi.listPublic();
-      if (resp.success && Array.isArray(resp.data)) {
-        appState.setSimulations(resp.data as Simulation[]);
+      if (appState.isAuthenticated.value) {
+        const [memberResp, publicResp] = await Promise.all([
+          simulationsApi.list(),
+          simulationsApi.listPublic(),
+        ]);
+        const memberSims =
+          memberResp.success && Array.isArray(memberResp.data)
+            ? (memberResp.data as Simulation[])
+            : [];
+        const publicSims =
+          publicResp.success && Array.isArray(publicResp.data)
+            ? (publicResp.data as Simulation[])
+            : [];
+        const memberIds = new Set(memberSims.map((s) => s.id));
+        appState.setMemberSimulationIds(memberIds);
+        const community = publicSims.filter((s) => !memberIds.has(s.id));
+        appState.setSimulations([...memberSims, ...community]);
+      } else {
+        const resp = await simulationsApi.listPublic();
+        if (resp.success && Array.isArray(resp.data)) {
+          appState.setSimulations(resp.data as Simulation[]);
+        }
       }
     } catch {
       // Non-critical — dashboard fetches its own copy

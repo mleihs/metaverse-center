@@ -1411,6 +1411,11 @@ export class VelgSimulationsDashboard extends LitElement {
       if (response.success) {
         // Shuffle so community shards appear in random order each page load
         this._allSimulations = items.sort(() => Math.random() - 0.5);
+        // Sync merged sims to appState so the switcher stays in sync
+        const memberIds = appState.memberSimulationIds.value;
+        const community = items.filter((s) => !memberIds.has(s.id));
+        const memberSims = appState.simulations.value.filter((s) => memberIds.has(s.id));
+        appState.setSimulations([...memberSims, ...community]);
       }
     } catch {
       // Non-critical — community shards just won't show

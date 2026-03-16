@@ -25,7 +25,7 @@ tags: [frontend, components, lit, web-components]
 App (Root)
 ├── PlatformHeader
 │   ├── HeaderCluster (reusable hover-to-open dropdown: OPS, INTEL, SYS)
-│   ├── SimulationSwitcher (◆ shard picker: My Worlds / Community, theme badges, stats)
+│   ├── SimulationSwitcher (◆ shard picker: My Worlds / Community via memberSimulationIds, theme badges, stats)
 │   ├── CommandPalette (Ctrl+K: fuzzy search, keyboard nav, NAVIGATE/SHARDS/TOOLS)
 │   ├── DevAccountSwitcher (inside SYS cluster panel)
 │   └── UserMenu
@@ -374,6 +374,7 @@ class AppStateManager {
   currentUser = signal<User | null>(null);
   userLocale = signal<string>('en');
   simulations = signal<Simulation[]>([]);
+  memberSimulationIds = signal<Set<string>>(new Set()); // IDs of sims user is a member of
 
   // Aktive Simulation
   currentSimulation = signal<Simulation | null>(null);

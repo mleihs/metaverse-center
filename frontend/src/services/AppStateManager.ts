@@ -17,6 +17,7 @@ export class AppStateManager {
   // --- Simulations ---
   readonly currentSimulation = signal<Simulation | null>(null);
   readonly simulations = signal<Simulation[]>([]);
+  readonly memberSimulationIds = signal<Set<string>>(new Set());
   readonly isArchitect = signal<boolean>(false);
 
   // --- Simulation context ---
@@ -112,6 +113,10 @@ export class AppStateManager {
 
   setSimulations(simulations: Simulation[]): void {
     this.simulations.value = simulations;
+  }
+
+  setMemberSimulationIds(ids: Set<string>): void {
+    this.memberSimulationIds.value = ids;
   }
 
   setCurrentRole(role: SimulationRole | null): void {
