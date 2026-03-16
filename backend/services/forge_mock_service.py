@@ -3,6 +3,10 @@
 When FORGE_MOCK_MODE=true, all AI calls (OpenRouter, Tavily, Replicate) are
 replaced by these instant, credit-free fixtures. Data is seed-aware for
 reproducibility.
+
+Every mock function that returns structured entity data validates its output
+through the corresponding Pydantic model before returning. This guarantees
+mock data cannot drift out of sync with model constraints.
 """
 
 from __future__ import annotations
@@ -10,7 +14,18 @@ from __future__ import annotations
 import hashlib
 import logging
 
+from pydantic import BaseModel
+
 logger = logging.getLogger(__name__)
+
+
+def _validate_mock_list(items: list[dict], model_cls: type[BaseModel]) -> list[dict]:
+    """Validate each dict through *model_cls* and return model_dump() output.
+
+    Raises ``ValidationError`` immediately if any item violates the schema,
+    making mock-data / model-constraint drift impossible to miss.
+    """
+    return [model_cls(**item).model_dump() for item in items]
 
 
 def _seed_int(seed: str) -> int:
@@ -95,8 +110,11 @@ def mock_anchors(seed: str) -> list[dict]:
         },
     ]
     # Rotate based on seed for variety
+    from backend.models.forge import PhilosophicalAnchor
+
     offset = h % 3
-    return variants[offset:] + variants[:offset]
+    rotated = variants[offset:] + variants[:offset]
+    return _validate_mock_list(rotated, PhilosophicalAnchor)
 
 
 # ── Phase 2: Drafting (geography, agents, buildings) ─────────────────
@@ -341,12 +359,15 @@ def mock_geography(seed: str, zone_count: int = 5, street_count: int = 5) -> dic
         s["zone_name"] = zones[i % len(zones)]["name"]
         streets.append(s)
 
-    return {
+    from backend.models.forge import ForgeGeographyDraft
+
+    geo = {
         "city_name": city,
         "description": f"The city of {city} exists at the intersection of memory and bureaucracy.",
         "zones": zones,
         "streets": streets,
     }
+    return ForgeGeographyDraft(**geo).model_dump()
 
 
 def mock_agents(seed: str, count: int = 6) -> list[dict]:
@@ -616,7 +637,9 @@ def mock_agents(seed: str, count: int = 6) -> list[dict]:
             ),
         },
     ]
-    return pool[:count]
+    from backend.models.forge import ForgeAgentDraft
+
+    return _validate_mock_list(pool[:count], ForgeAgentDraft)
 
 
 def mock_buildings(seed: str, count: int = 7) -> list[dict]:
@@ -781,7 +804,9 @@ def mock_buildings(seed: str, count: int = 7) -> list[dict]:
             "building_condition_de": "gut",
         },
     ]
-    return pool[:count]
+    from backend.models.forge import ForgeBuildingDraft
+
+    return _validate_mock_list(pool[:count], ForgeBuildingDraft)
 
 
 # ── Phase 3: Darkroom (theme) ────────────────────────────────────────
@@ -1121,6 +1146,7 @@ def mock_recruits(
             "gender": "female",
             "system": "The Cartographers",
             "primary_profession": "Threshold Surveyor",
+            "primary_profession_de": "Schwellenvermesserin",
             "character": (
                 "Watchful, deliberate, and unsettlingly precise. Isolde speaks in "
                 "measurements — distances, angles, the exact number of paces between "
@@ -1135,6 +1161,17 @@ def mock_recruits(
                 "a form of intellectual laziness. She trusts her instruments more than "
                 "her instincts, which, given what her instincts have led her to in "
                 "the past, is probably wise."
+            ),
+            "character_de": (
+                "Wachsam, bedächtig und beunruhigend präzise. Isolde spricht in "
+                "Maßeinheiten — Entfernungen, Winkel, die exakte Anzahl von Schritten "
+                "zwischen einem Laternenpfahl und dem nächsten. Ihre Kollegen finden "
+                "das etwa vierzig Minuten lang charmant, danach wird es unerträglich. "
+                "Sie hat die Angewohnheit, mitten im Satz innezuhalten, um einen "
+                "inneren Kompass neu zu kalibrieren, wobei ihre grauen Augen kurz "
+                "den Fokus verlieren, als konsultiere sie eine Karte, die niemand "
+                "sonst sehen kann. Sie trägt ungeachtet des Wetters einen schweren "
+                "Mantel, dessen Taschen vor Maßstäben und gefalteten Karten strotzen."
             ),
             "background": (
                 f"Arrived at the eastern gate of {sim_name} carrying a surveyor's "
@@ -1154,12 +1191,25 @@ def mock_recruits(
                 "survey the boundary zones, which is either a recognition of her "
                 "talents or a way to keep her out of the central archives."
             ),
+            "background_de": (
+                f"Kam am Osttor von {sim_name} an, mit einem Vermessungsgerät und "
+                "einer Ledertasche voller Karten, die bei näherer Betrachtung Gebiete "
+                "verzeichneten, die in keinem offiziellen Register existieren. Sie "
+                "legte diese dem Torschreiber mit der ruhigen Bestimmtheit vor, die "
+                "jemand ausstrahlt, der schon einmal Recht hatte und dafür bestraft "
+                "wurde. Ihre vorherige Stelle — ein kartographisches Büro in einer "
+                "Stadt, deren Namen sie sich weigert zu nennen — endete, als sie "
+                "entdeckte, dass bestimmte Bezirke systematisch aus den Zensusdaten "
+                "entfernt wurden. Sie reichte einen Bericht ein. Der Bericht wurde "
+                "seinerseits eingereicht, in einen verschlossenen Schrank."
+            ),
         },
         {
             "name": "Calder Vetch",
             "gender": "male",
             "system": "The Foundry",
             "primary_profession": "Residue Analyst",
+            "primary_profession_de": "Rückstandsanalytiker",
             "character": (
                 "Quiet in the way that large, careful men sometimes are — not shy but "
                 "selective, as though words are a finite resource and he has decided "
@@ -1173,6 +1223,16 @@ def mock_recruits(
                 "and respects material evidence. He has been known to lick suspicious "
                 "substances to identify them, a practice his superiors have forbidden "
                 "exactly as many times as he has ignored them."
+            ),
+            "character_de": (
+                "Still auf die Art, die großen, bedächtigen Männern eigen ist — nicht "
+                "schüchtern, sondern selektiv, als wären Worte eine endliche Ressource, "
+                "die er zu rationieren beschlossen hat. Calders Hände sind riesig, "
+                "vernarbt von Verätzungen in Mustern, die entweder auf extreme "
+                "Nachlässigkeit oder extreme Präzision schließen lassen. Er riecht "
+                "permanent nach Schwefel und alten Büchern. Sein Lachen, wenn es "
+                "auftaucht, ist erschreckend laut und überrascht ihn stets ebenso "
+                "wie alle anderen."
             ),
             "background": (
                 f"Calder walked into {sim_name} through the service tunnels beneath "
@@ -1192,12 +1252,23 @@ def mock_recruits(
                 "virtue rather than a liability. He has not yet been told what the "
                 "Foundry actually produces. He suspects no one knows."
             ),
+            "background_de": (
+                f"Calder betrat {sim_name} durch die Versorgungstunnel unter dem "
+                "Frachtdepot, was entweder ein Zeichen von Einfallsreichtum ist oder "
+                "ein Zeichen dafür, dass ihm niemand gesagt hat, wo die Vordertür "
+                "ist. Er trug eine Kiste mit Glasproben, jede beschriftet in einem "
+                "Kurzschrift-Alphabet seiner eigenen Erfindung. Sein vorheriger "
+                "Arbeitgeber — eine Raffinerie im industriellen Hinterland — brach "
+                "zusammen, als sein Hauptofen begann, Material zu produzieren, das "
+                "niemand identifizieren konnte und das anzufassen sich alle fürchteten."
+            ),
         },
         {
             "name": "Senna Aldine",
             "gender": "non-binary",
             "system": "The Hollows",
             "primary_profession": "Whisper Auditor",
+            "primary_profession_de": "Flüsterprüfer\u00b7in",
             "character": (
                 "Precise, amused, and morally unreadable. Senna has the unsettling "
                 "habit of finishing other people's sentences — not with the wrong "
@@ -1211,6 +1282,16 @@ def mock_recruits(
                 "favours, and secrets in a cipher that has resisted three separate "
                 "attempts at decryption. They consider transparency overrated and "
                 "trust a negotiable concept."
+            ),
+            "character_de": (
+                "Präzise, amüsiert und moralisch unlesbar. Senna hat die "
+                "beunruhigende Angewohnheit, die Sätze anderer zu beenden — nicht "
+                "mit den falschen Worten, sondern mit jenen, die der Sprecher zu "
+                "vermeiden versuchte. Sie kleiden sich in gedämpfte Schichten, die "
+                "Licht zu absorbieren scheinen, was sie im peripheren Blickfeld "
+                "schwer verfolgbar macht. Ihre Stimme ist leise und trägt seltsam "
+                "gut in geschlossenen Räumen, eine Eigenschaft, die sie mit "
+                "offensichtlichem Vergnügen ausnutzen."
             ),
             "background": (
                 f"No one is entirely certain when Senna arrived in {sim_name}. The "
@@ -1229,9 +1310,21 @@ def mock_recruits(
                 "been assigned to audit the Hollows' debt networks, a task that "
                 "everyone agrees needs doing and no one else was willing to attempt."
             ),
+            "background_de": (
+                f"Niemand ist sich ganz sicher, wann Senna in {sim_name} angekommen "
+                "ist. Die Torprotokolle zeigen keinen Eintritt; das Wohnungsregister "
+                "führt sie als Mieter\u00b7in seit drei Monaten. Auf Nachfrage lächeln "
+                "sie und schlagen vor, dass vielleicht die Akten korrekt sind und "
+                "die Erinnerung aller anderen falsch. Sie behaupten, als Prüfer\u00b7in "
+                "in einem unterirdischen Markt zwei Städte östlich gedient zu haben, "
+                "wo die Wirtschaft auf geflüsterten Vertraulichkeiten lief, gewogen "
+                "auf Messingwaagen."
+            ),
         },
     ]
-    return pool[:3]
+    from backend.models.forge import ForgeAgentDraft
+
+    return _validate_mock_list(pool[:3], ForgeAgentDraft)
 
 
 def mock_entity_translations(agents: list, buildings: list, zones: list, streets: list, sim_desc: str) -> dict:
