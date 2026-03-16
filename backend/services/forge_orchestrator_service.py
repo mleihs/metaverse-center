@@ -364,6 +364,11 @@ class ForgeOrchestratorService:
                     model_settings=chunk_settings,
                 )
                 geo_data = result.output.model_dump()
+                if not geo_data.get("zones"):
+                    raise HTTPException(
+                        status_code=status.HTTP_502_BAD_GATEWAY,
+                        detail="AI model returned no zones. Please try again.",
+                    )
                 validate_bilingual_output(
                     geo_data.get("zones", []),
                     ["zone_type_de", "description_de"],
@@ -381,6 +386,11 @@ class ForgeOrchestratorService:
                     model_settings=chunk_settings,
                 )
                 agents_list = [a.model_dump() for a in result.output]
+                if not agents_list:
+                    raise HTTPException(
+                        status_code=status.HTTP_502_BAD_GATEWAY,
+                        detail="AI model returned no agents. Please try again.",
+                    )
                 validate_bilingual_output(
                     agents_list,
                     ["character_de", "background_de", "primary_profession_de"],
@@ -398,6 +408,11 @@ class ForgeOrchestratorService:
                     model_settings=chunk_settings,
                 )
                 buildings_list = [b.model_dump() for b in result.output]
+                if not buildings_list:
+                    raise HTTPException(
+                        status_code=status.HTTP_502_BAD_GATEWAY,
+                        detail="AI model returned no buildings. Please try again.",
+                    )
                 validate_bilingual_output(
                     buildings_list,
                     ["description_de", "building_type_de", "building_condition_de"],

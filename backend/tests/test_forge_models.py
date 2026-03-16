@@ -89,16 +89,34 @@ class TestPhilosophicalAnchor:
     def test_valid(self):
         anchor = PhilosophicalAnchor(
             title="The Weight of Clocks",
+            title_de="Das Gewicht der Uhren",
             literary_influence="Borges",
+            literary_influence_de="Borges",
             core_question="What happens when time commodifies itself?",
+            core_question_de="Was passiert, wenn Zeit sich selbst vermarktet?",
             bleed_signature_suggestion="temporal_entropy",
             description="A world where time is currency.",
+            description_de="Eine Welt, in der Zeit Währung ist.",
         )
         assert anchor.title == "The Weight of Clocks"
 
     def test_missing_field_raises(self):
         with pytest.raises(ValidationError):
             PhilosophicalAnchor(title="Missing fields")
+
+    def test_empty_de_field_raises(self):
+        with pytest.raises(ValidationError):
+            PhilosophicalAnchor(
+                title="Test",
+                title_de="",
+                literary_influence="Borges",
+                literary_influence_de="Borges",
+                core_question="Q?",
+                core_question_de="F?",
+                bleed_signature_suggestion="sig",
+                description="Desc.",
+                description_de="Beschr.",
+            )
 
 
 class TestForgeAgentDraft:
@@ -108,10 +126,38 @@ class TestForgeAgentDraft:
             gender="male",
             system="central",
             primary_profession="clockmaker",
+            primary_profession_de="Uhrmacher",
             character="Meticulous and paranoid.",
+            character_de="Akribisch und paranoid.",
             background="Former bureau agent.",
+            background_de="Ehemaliger Büroagent.",
         )
         assert agent.name == "Enzo"
+
+    def test_missing_de_field_raises(self):
+        with pytest.raises(ValidationError):
+            ForgeAgentDraft(
+                name="Enzo",
+                gender="male",
+                system="central",
+                primary_profession="clockmaker",
+                character="Meticulous.",
+                background="Former agent.",
+            )
+
+    def test_empty_de_field_raises(self):
+        with pytest.raises(ValidationError):
+            ForgeAgentDraft(
+                name="Enzo",
+                gender="male",
+                system="central",
+                primary_profession="clockmaker",
+                primary_profession_de="",
+                character="Meticulous.",
+                character_de="Akribisch.",
+                background="Former agent.",
+                background_de="Ehemaliger Agent.",
+            )
 
 
 class TestForgeBuildingDraft:
@@ -119,17 +165,40 @@ class TestForgeBuildingDraft:
         building = ForgeBuildingDraft(
             name="The Watchmaker's Loft",
             building_type="workshop",
+            building_type_de="Werkstatt",
             description="Gears everywhere.",
+            description_de="Überall Zahnräder.",
+            building_condition_de="gut",
         )
         assert building.building_condition == "good"
+
+    def test_missing_de_field_raises(self):
+        with pytest.raises(ValidationError):
+            ForgeBuildingDraft(
+                name="Loft",
+                building_type="workshop",
+                description="Gears.",
+            )
 
 
 class TestForgeGeographyDraft:
     def test_valid(self):
         geo = ForgeGeographyDraft(
             city_name="Chronopolis",
-            zones=[{"name": "District 1", "zone_type": "commercial", "description": "Trade hub", "characteristics": ["bustling", "neon-lit"]}],
-            streets=[{"name": "Main St", "zone_name": "District 1", "street_type": "main"}],
+            zones=[{
+                "name": "District 1",
+                "zone_type": "commercial",
+                "zone_type_de": "Gewerbe",
+                "description": "Trade hub",
+                "description_de": "Handelszentrum",
+                "characteristics": ["bustling", "neon-lit"],
+            }],
+            streets=[{
+                "name": "Main St",
+                "zone_name": "District 1",
+                "street_type": "main",
+                "street_type_de": "Hauptstraße",
+            }],
         )
         assert geo.city_name == "Chronopolis"
         assert len(geo.zones) == 1
