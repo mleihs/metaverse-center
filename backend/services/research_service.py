@@ -1,6 +1,8 @@
 """Research service for the Simulation Forge (The Astrolabe).
 
 Uses Pydantic AI for structured extraction from thematic context.
+Tavily web searches are delegated to TavilySearchService for async,
+timeout-protected, axis-targeted research grounding.
 """
 
 from __future__ import annotations
@@ -8,17 +10,20 @@ from __future__ import annotations
 import hashlib
 import logging
 
-import anyio
-from tavily import TavilyClient
+import sentry_sdk
 
-from backend.config import settings
 from backend.models.forge import PhilosophicalAnchor
-from backend.services.ai_utils import create_forge_agent, run_ai
+from backend.services.ai_utils import create_forge_agent, run_ai, validate_bilingual_output
+from backend.services.external.tavily_search import (
+    ARCHITECTURE_DOMAINS,
+    ENCYCLOPEDIC_DOMAINS,
+    LITERARY_DOMAINS,
+    PHILOSOPHY_DOMAINS,
+    TavilySearchRequest,
+    TavilySearchService,
+)
 
 logger = logging.getLogger(__name__)
-
-# Initialize Tavily only if key exists
-tavily = TavilyClient(api_key=settings.tavily_api_key) if settings.tavily_api_key else None
 
 # ── Local Tavily Emulator ───────────────────────────────────────────
 # Deterministically generates rich, seed-aware research context so the
@@ -94,9 +99,11 @@ _THEMATIC_LENSES = [
 ]
 
 
-def _emulate_tavily(seed: str) -> str:
-    """Generate deterministic, seed-aware research context without Tavily."""
-    # Use seed hash to select 2-3 thematic lenses deterministically
+def _emulate_tavily_phase1(seed: str) -> str:
+    """Generate deterministic, axis-structured research context without Tavily.
+
+    Matches the dual-axis format produced by live Tavily Phase 1 searches.
+    """
     digest = int(hashlib.sha256(seed.encode()).hexdigest(), 16)
     n_lenses = len(_THEMATIC_LENSES)
     indices = [
@@ -104,7 +111,6 @@ def _emulate_tavily(seed: str) -> str:
         (digest // n_lenses) % n_lenses,
         (digest // (n_lenses * n_lenses)) % n_lenses,
     ]
-    # Deduplicate while preserving order
     seen: set[int] = set()
     unique: list[int] = []
     for i in indices:
@@ -113,9 +119,18 @@ def _emulate_tavily(seed: str) -> str:
             unique.append(i)
 
     parts = [f"Research seed: '{seed}'.\n"]
-    for idx in unique:
+
+    # Conceptual overview (first lens)
+    lens0 = _THEMATIC_LENSES[unique[0]]
+    parts.append(f"[CONCEPTUAL OVERVIEW]\n{lens0['context']}\n")
+
+    # Intellectual traditions (remaining lenses)
+    traditions = []
+    for idx in unique[1:]:
         lens = _THEMATIC_LENSES[idx]
-        parts.append(f"[{lens['theme'].upper()}]\n{lens['context']}\n")
+        traditions.append(f"{lens['theme']}: {lens['context']}")
+    if traditions:
+        parts.append("[INTELLECTUAL TRADITIONS]\n" + "\n".join(traditions) + "\n")
 
     parts.append(
         f"Cross-reference: the seed concept '{seed}' resonates most strongly with "
@@ -125,25 +140,115 @@ def _emulate_tavily(seed: str) -> str:
     return "\n".join(parts)
 
 
+def _emulate_tavily_phase4(seed: str, anchor: dict) -> str:
+    """Generate deterministic, tri-axis research context for Phase 4 emulation.
+
+    Matches the axis-labeled format produced by live Tavily Phase 4 searches.
+    """
+    digest = int(hashlib.sha256(seed.encode()).hexdigest(), 16)
+    n_lenses = len(_THEMATIC_LENSES)
+
+    # Pick 3 different lenses for the 3 axes
+    idx_lit = digest % n_lenses
+    idx_phil = (digest // n_lenses) % n_lenses
+    idx_arch = (digest // (n_lenses * n_lenses)) % n_lenses
+
+    title = anchor.get("title", seed)
+    literary = anchor.get("literary_influence", "")
+    core_q = anchor.get("core_question", "")
+
+    parts: list[str] = []
+
+    lens_lit = _THEMATIC_LENSES[idx_lit]
+    parts.append(
+        f"[WEB: LITERARY AXIS]\n"
+        f"Literary context for '{literary or title}': {lens_lit['context']}"
+    )
+
+    lens_phil = _THEMATIC_LENSES[idx_phil]
+    parts.append(
+        f"[WEB: PHILOSOPHICAL AXIS]\n"
+        f"Philosophical context for '{core_q or title}': {lens_phil['context']}"
+    )
+
+    lens_arch = _THEMATIC_LENSES[idx_arch]
+    parts.append(
+        f"[WEB: ARCHITECTURAL AXIS]\n"
+        f"Architectural context for '{title}': {lens_arch['context']}"
+    )
+
+    return "\n\n".join(parts)
+
+
 class ResearchService:
     """Service for autonomous thematic research."""
 
     @classmethod
     async def search_thematic_context(cls, seed: str) -> str:
-        """Perform deep web research using Tavily (or local emulator if key missing)."""
-        if not tavily:
-            logger.info("TAVILY_API_KEY missing. Using local research emulator.")
-            return _emulate_tavily(seed)
+        """Phase 1: Dual-axis web research using Tavily (or emulator fallback).
 
-        try:
-            def _search():
-                return tavily.search(query=seed, search_depth="advanced", include_answer=True)
+        Runs 2 parallel searches:
+        - Conceptual: raw seed → encyclopedic domains → deep context
+        - Intellectual: English-glossed seed → broader philosophy/literature sources
+        """
+        if not TavilySearchService.is_available():
+            logger.warning(
+                "Tavily unavailable — using deterministic emulator",
+                extra={"seed_preview": seed[:60], "source": "emulator"},
+            )
+            return _emulate_tavily_phase1(seed)
 
-            result = await anyio.to_thread.run_sync(_search)
-            return result.get("answer") or str((result.get("results") or [])[:3])
-        except Exception:
-            logger.exception("Tavily search failed")
-            return f"Search failed for '{seed}'. Fallback to base seed concepts."
+        # Build English gloss for non-English seeds: strip to key nouns + context suffix
+        english_gloss = f"{seed} philosophical literary context"
+
+        requests = [
+            TavilySearchRequest(
+                axis="CONCEPTUAL OVERVIEW",
+                query=seed,
+                search_depth="advanced",
+                max_results=5,
+                include_domains=ENCYCLOPEDIC_DOMAINS,
+            ),
+            TavilySearchRequest(
+                axis="INTELLECTUAL TRADITIONS",
+                query=english_gloss,
+                search_depth="basic",
+                max_results=3,
+            ),
+        ]
+
+        results = await TavilySearchService.parallel_search(
+            requests, timeout_s=10.0
+        )
+
+        if not results:
+            logger.warning(
+                "All Tavily Phase 1 searches failed — falling back to emulator",
+                extra={"seed_preview": seed[:60]},
+            )
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("forge_phase", "astrolabe_research")
+                scope.set_context("forge", {"seed_preview": seed[:60]})
+                sentry_sdk.capture_message(
+                    "Tavily fully unavailable in Phase 1 — emulator fallback",
+                    level="warning",
+                )
+            return _emulate_tavily_phase1(seed)
+
+        context = TavilySearchService.format_results(results)
+        if not context:
+            context = f"Web search returned no usable results for '{seed}'."
+
+        logger.info(
+            "Phase 1 research completed",
+            extra={
+                "seed_preview": seed[:60],
+                "source": "tavily",
+                "axes_completed": len(results),
+                "result_length": len(context),
+            },
+        )
+        return context
 
     @classmethod
     async def research_for_lore(
@@ -153,14 +258,13 @@ class ResearchService:
         astrolabe_context: str = "",
         openrouter_key: str | None = None,
     ) -> str:
-        """Run deep LLM-based research to produce concept-lore-quality context.
+        """Phase 4: Deep LLM research + tri-axis Tavily augmentation.
 
-        Uses a dedicated research agent to identify specific literary works,
-        philosophical frameworks, and architectural vocabularies relevant to
-        the world being created. Optionally augments with Tavily web search
-        if a key is configured.
+        Uses a dedicated research agent for literary genealogy, philosophical
+        framework, and architectural vocabulary. Augments with 3 axis-specific
+        Tavily searches that feed each axis independently.
 
-        Returns a synthesized research brief that feeds the BUREAU_ARCHIVIST_PROMPT.
+        Returns a synthesized research brief for the BUREAU_ARCHIVIST_PROMPT.
         """
         title = anchor.get("title", "")
         core_question = anchor.get("core_question", "")
@@ -216,30 +320,84 @@ class ResearchService:
         try:
             result = await run_ai(research_agent, research_prompt, "research")
             parts.append(f"[LLM RESEARCH]\n{result.output}")
-            logger.debug("LLM lore research completed")
         except Exception:
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("forge_phase", "lore_research")
+                scope.set_context("forge", {"seed": seed[:80], "anchor_title": title[:60]})
+                sentry_sdk.capture_exception()
             logger.exception("LLM lore research failed")
 
-        # ── Optional: Tavily web search augmentation ────────────────
-        if tavily:
-            query = (
-                f"{literary_influence} {core_question} {seed}"
+        # ── Tri-axis Tavily web search augmentation ───────────────────
+        if TavilySearchService.is_available():
+            lit_query = (
+                f"{literary_influence} literary analysis narrative technique"
                 if literary_influence
-                else f"{title} {core_question} literature philosophy"
+                else f"{seed} literature narrative technique"
             )
-            try:
-                def _search(q=query):
-                    return tavily.search(
-                        query=q, search_depth="advanced", include_answer=True,
-                    )
+            phil_query = (
+                f"{core_question} philosophy epistemology"
+                if core_question
+                else f"{seed} philosophy epistemology"
+            )
+            arch_query = (
+                f"{description} architecture movement materials visual"
+                if description
+                else f"{title} architecture visual vocabulary"
+            )
 
-                result = await anyio.to_thread.run_sync(_search)
-                answer = result.get("answer", "")
-                if answer:
-                    parts.append(f"[WEB SEARCH AUGMENTATION]\n{answer}")
-                    logger.debug("Tavily augmentation completed")
-            except Exception:
-                logger.exception("Tavily augmentation failed — continuing without")
+            requests = [
+                TavilySearchRequest(
+                    axis="WEB: LITERARY AXIS",
+                    query=lit_query,
+                    search_depth="advanced",
+                    max_results=5,
+                    include_domains=LITERARY_DOMAINS,
+                ),
+                TavilySearchRequest(
+                    axis="WEB: PHILOSOPHICAL AXIS",
+                    query=phil_query,
+                    search_depth="advanced",
+                    max_results=5,
+                    include_domains=PHILOSOPHY_DOMAINS,
+                ),
+                TavilySearchRequest(
+                    axis="WEB: ARCHITECTURAL AXIS",
+                    query=arch_query,
+                    search_depth="basic",
+                    max_results=4,
+                    include_domains=ARCHITECTURE_DOMAINS,
+                ),
+            ]
+
+            results = await TavilySearchService.parallel_search(
+                requests, timeout_s=20.0, max_retries=1
+            )
+
+            if results:
+                augmentation = TavilySearchService.format_results(results)
+                if augmentation:
+                    parts.append(augmentation)
+                    logger.info(
+                        "Phase 4 tri-axis augmentation completed",
+                        extra={
+                            "axes_completed": len(results),
+                            "total_length": len(augmentation),
+                        },
+                    )
+            else:
+                logger.warning("All Phase 4 Tavily searches failed — continuing with LLM research only")
+                with sentry_sdk.push_scope() as scope:
+                    scope.set_tag("forge_phase", "lore_research_augmentation")
+                    scope.set_context("forge", {"seed": seed[:80], "anchor_title": title[:60]})
+                    sentry_sdk.capture_message(
+                        "Tavily fully unavailable in Phase 4 — LLM research only",
+                        level="warning",
+                    )
+        else:
+            # Emulated augmentation for local development
+            emulated = _emulate_tavily_phase4(seed, anchor)
+            parts.append(emulated)
+            logger.info("Phase 4 Tavily augmentation emulated (no API key)")
 
         return "\n\n".join(parts)
 
@@ -272,26 +430,10 @@ class ResearchService:
 
         result = await run_ai(agent, prompt, "anchors", output_type=list[PhilosophicalAnchor])
         # Patch empty _de fields with EN fallback so downstream never sees blanks
-        incomplete = 0
-        for anchor in result.output:
-            patched = False
-            if not anchor.title_de:
-                anchor.title_de = anchor.title
-                patched = True
-            if not anchor.literary_influence_de:
-                anchor.literary_influence_de = anchor.literary_influence
-                patched = True
-            if not anchor.core_question_de:
-                anchor.core_question_de = anchor.core_question
-                patched = True
-            if not anchor.description_de:
-                anchor.description_de = anchor.description
-                patched = True
-            if patched:
-                incomplete += 1
-        if incomplete:
-            logger.warning(
-                "Bilingual gap: %d/%d anchor(s) missing _de fields — patched with EN fallback",
-                incomplete, len(result.output),
-            )
+        anchor_de_fields = ["title_de", "literary_influence_de", "core_question_de", "description_de"]
+        incomplete = validate_bilingual_output(result.output, anchor_de_fields, "anchor")
+        logger.info(
+            "Anchors generated",
+            extra={"count": len(result.output), "bilingual_complete": incomplete == 0},
+        )
         return result.output

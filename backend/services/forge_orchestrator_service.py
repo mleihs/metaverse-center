@@ -22,7 +22,7 @@ from backend.models.forge import (
     PhilosophicalAnchor,
 )
 from backend.services import forge_mock_service as mock
-from backend.services.ai_utils import ai_error_to_http, create_forge_agent, run_ai
+from backend.services.ai_utils import ai_error_to_http, create_forge_agent, run_ai, validate_bilingual_output
 from backend.services.external.replicate import ReplicateBillingError
 from backend.services.forge_draft_service import ForgeDraftService
 from backend.services.forge_entity_translation_service import ForgeEntityTranslationService
@@ -34,30 +34,6 @@ from backend.utils.encryption import decrypt
 from supabase import Client
 
 logger = logging.getLogger(__name__)
-
-
-def validate_bilingual_output(
-    entities: list[dict], de_fields: list[str], entity_type: str,
-) -> int:
-    """Patch empty _de fields with EN fallback. Returns count of patched entities."""
-    incomplete = 0
-    for entity in entities:
-        patched = False
-        for de_field in de_fields:
-            if not entity.get(de_field):
-                # Derive EN field name: "description_de" → "description"
-                en_field = de_field.removesuffix("_de")
-                entity[de_field] = entity.get(en_field, "")
-                patched = True
-        if patched:
-            incomplete += 1
-    if incomplete:
-        logger.warning(
-            "Bilingual gap: %d/%d %s(s) missing _de fields — patched with EN fallback",
-            incomplete, len(entities), entity_type,
-            extra={"entity_type": entity_type, "incomplete": incomplete, "total": len(entities)},
-        )
-    return incomplete
 
 
 WORLD_ARCHITECT_PROMPT = (
@@ -377,14 +353,18 @@ class ForgeOrchestratorService:
             except ModelHTTPError as exc:
                 raise ai_error_to_http(exc) from exc
 
-        # 3. Update draft
-        logger.debug("Updating draft %s with research results", draft_id)
+        # 3. Update draft — track research source for frontend transparency
+        research_source = "tavily" if settings.tavily_api_key else "emulator"
+        logger.info(
+            "Astrolabe research completed",
+            extra={"draft_id": str(draft_id), "research_source": research_source, "anchor_count": len(anchors)},
+        )
         await ForgeDraftService.update_draft(
             supabase,
             user_id,
             draft_id,
             ForgeDraftUpdate(
-                research_context={"raw_data": context},
+                research_context={"raw_data": context, "source": research_source},
                 philosophical_anchor={"options": [a.model_dump() for a in anchors]},
                 status="draft",
             ),
@@ -515,6 +495,10 @@ class ForgeOrchestratorService:
         except ModelHTTPError as exc:
             raise ai_error_to_http(exc) from exc
         except UnexpectedModelBehavior as exc:
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("forge_phase", "blueprint_chunk")
+                scope.set_context("forge", {"chunk_type": chunk_type, "draft_id": str(draft_id)})
+                sentry_sdk.capture_exception(exc)
             logger.error(
                 "LLM output validation failed after retries",
                 extra={"chunk_type": chunk_type, "draft_id": str(draft_id)},
@@ -571,6 +555,14 @@ class ForgeOrchestratorService:
             except ModelHTTPError as exc:
                 raise ai_error_to_http(exc) from exc
             except UnexpectedModelBehavior as exc:
+                with sentry_sdk.push_scope() as scope:
+                    scope.set_tag("forge_phase", "entity_generation")
+                    scope.set_context("forge", {
+                        "entity_type": entity_type,
+                        "draft_id": str(draft_id),
+                        "entity_index": entity_index,
+                    })
+                    sentry_sdk.capture_exception(exc)
                 logger.error(
                     "LLM entity output validation failed",
                     extra={"entity_type": entity_type, "draft_id": str(draft_id), "index": entity_index},
@@ -665,6 +657,10 @@ class ForgeOrchestratorService:
                 try:
                     await ForgeThemeService.apply_theme_settings(write_client, sim_id, theme_config)
                 except Exception:
+                    with sentry_sdk.push_scope() as scope:
+                        scope.set_tag("forge_phase", "materialize")
+                        scope.set_context("forge", {"simulation_id": str(sim_id)})
+                        sentry_sdk.capture_exception()
                     logger.exception("Theme application failed", extra={"simulation_id": str(sim_id)})
 
             # Pass draft_data through for background lore generation
@@ -683,6 +679,10 @@ class ForgeOrchestratorService:
         except HTTPException:
             raise
         except Exception as e:
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("forge_phase", "materialize")
+                scope.set_context("forge", {"draft_id": str(draft_id)})
+                sentry_sdk.capture_exception(e)
             logger.exception("Shard materialization failed", extra={"draft_id": str(draft_id)})
             await ForgeDraftService.update_draft(
                 supabase, user_id, draft_id,
@@ -713,12 +713,28 @@ class ForgeOrchestratorService:
             geography = draft_data.get("geography", {})
             or_key, _ = await ForgeOrchestratorService._get_user_keys(supabase, user_id)
 
-            theme_data = await ForgeThemeService.generate_theme(
-                seed=seed,
-                anchor=anchor,
-                geography=geography,
-                openrouter_key=or_key,
-            )
+            try:
+                theme_data = await ForgeThemeService.generate_theme(
+                    seed=seed,
+                    anchor=anchor,
+                    geography=geography,
+                    openrouter_key=or_key,
+                )
+            except ModelHTTPError as exc:
+                raise ai_error_to_http(exc) from exc
+            except Exception as exc:
+                with sentry_sdk.push_scope() as scope:
+                    scope.set_tag("forge_phase", "theme_generation")
+                    scope.set_context("forge", {"draft_id": str(draft_id)})
+                    sentry_sdk.capture_exception(exc)
+                logger.exception(
+                    "Theme generation failed",
+                    extra={"draft_id": str(draft_id)},
+                )
+                raise HTTPException(
+                    status_code=status.HTTP_502_BAD_GATEWAY,
+                    detail="Theme generation failed. Please try again.",
+                ) from exc
 
         # Store in draft
         await ForgeDraftService.update_draft(
@@ -802,6 +818,10 @@ class ForgeOrchestratorService:
         gen_config = ForgeGenerationConfig(**raw_config)
 
         research_context = astrolabe_ctx
+        logger.info(
+            "Generation config",
+            extra={"deep_research": gen_config.deep_research, "simulation_id": str(simulation_id)},
+        )
         if gen_config.deep_research:
             logger.info("Step: deep research")
             try:
@@ -812,6 +832,10 @@ class ForgeOrchestratorService:
                     openrouter_key=or_key,
                 )
             except Exception:
+                with sentry_sdk.push_scope() as scope:
+                    scope.set_tag("forge_phase", "deep_research")
+                    scope.set_context("forge", {"simulation_id": str(simulation_id), "seed": seed[:80]})
+                    sentry_sdk.capture_exception()
                 logger.exception(
                     "Deep research failed — using Astrolabe context only",
                     extra={"simulation_id": str(simulation_id)},
@@ -835,12 +859,20 @@ class ForgeOrchestratorService:
                     lore_sections, openrouter_key=or_key,
                 )
             except Exception:
+                with sentry_sdk.push_scope() as scope:
+                    scope.set_tag("forge_phase", "lore_translation")
+                    scope.set_context("forge", {"simulation_id": str(simulation_id)})
+                    sentry_sdk.capture_exception()
                 logger.exception("Lore translation failed", extra={"simulation_id": str(simulation_id)})
 
             await ForgeLoreService.persist_lore(
                 supabase, simulation_id, lore_sections, translations,
             )
         except Exception:
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("forge_phase", "lore_generation")
+                scope.set_context("forge", {"simulation_id": str(simulation_id), "seed": seed[:80]})
+                sentry_sdk.capture_exception()
             logger.exception("Lore generation failed", extra={"simulation_id": str(simulation_id)})
 
         # Translate entity fields (skip if bilingual generation already populated _de)
@@ -892,6 +924,10 @@ class ForgeOrchestratorService:
                     supabase, simulation_id, entity_translations,
                 )
         except Exception:
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("forge_phase", "entity_translation")
+                scope.set_context("forge", {"simulation_id": str(simulation_id)})
+                sentry_sdk.capture_exception()
             logger.exception("Entity translation failed", extra={"simulation_id": str(simulation_id)})
 
     @classmethod
@@ -1262,6 +1298,10 @@ Generate exactly 3 new agents. Requirements:
                             },
                         )
             except Exception:
+                with sentry_sdk.push_scope() as scope:
+                    scope.set_tag("forge_phase", "recruit_portraits")
+                    scope.set_context("forge", {"simulation_id": str(simulation_id), "agent_count": len(generated)})
+                    sentry_sdk.capture_exception()
                 logger.exception("Portrait generation failed for recruits")
 
             # 5. Translate
@@ -1280,6 +1320,10 @@ Generate exactly 3 new agents. Requirements:
                         openrouter_key,
                     )
             except Exception:
+                with sentry_sdk.push_scope() as scope:
+                    scope.set_tag("forge_phase", "recruit_translation")
+                    scope.set_context("forge", {"simulation_id": str(simulation_id), "agent_count": len(generated)})
+                    sentry_sdk.capture_exception()
                 logger.exception("Translation failed for recruits")
 
             # 6. Complete feature purchase
@@ -1296,7 +1340,10 @@ Generate exactly 3 new agents. Requirements:
             )
 
         except Exception as exc:
-            sentry_sdk.capture_exception(exc)
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("forge_phase", "recruitment")
+                scope.set_context("forge", {"simulation_id": str(simulation_id), "purchase_id": purchase_id})
+                sentry_sdk.capture_exception(exc)
             logger.exception("Recruitment failed")
             await ForgeFeatureService.fail_feature(
                 admin_supabase, purchase_id, str(exc),
@@ -1389,6 +1436,14 @@ Generate exactly 3 new agents. Requirements:
 
             logger.info("Darkroom regen completed")
         except Exception:
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("forge_phase", "darkroom_regen")
+                scope.set_context("forge", {
+                    "simulation_id": str(simulation_id),
+                    "entity_type": entity_type,
+                    "entity_id": str(entity_id),
+                })
+                sentry_sdk.capture_exception()
             logger.exception("Darkroom regen failed")
 
     @staticmethod

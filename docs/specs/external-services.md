@@ -1,12 +1,12 @@
 ---
 title: "External Services"
 id: external-services
-version: "1.0"
-date: 2026-02-15
+version: "1.1"
+date: 2026-03-16
 lang: de
 type: spec
 status: active
-tags: [external, apis, facebook, guardian, newsapi]
+tags: [external, apis, facebook, guardian, newsapi, tavily]
 ---
 
 # 11 - External Services: Pro Simulation konfigurierbar
@@ -315,7 +315,93 @@ async def get_facebook_posts(
 
 ---
 
-## 6. Platform API Key Management
+## 6. Tavily Web Search (`TavilySearchService`)
+
+### Architektur
+
+Dedizierter async Wrapper fuer die Tavily Search API. Folgt dem `external/replicate.py`-Pattern: lazy init, async-native, timeout-protected, structured logging.
+
+**Datei:** `backend/services/external/tavily_search.py`
+
+```
+TavilySearchService (class-level, no instance needed)
+    │
+    ├── is_available()     → bool (checks settings.tavily_api_key)
+    ├── search()           → TavilySearchResult | None
+    ├── parallel_search()  → list[TavilySearchResult]  (asyncio.gather)
+    ├── format_result()    → str (single axis)
+    └── format_results()   → str (multi-axis, labeled sections)
+```
+
+### Lazy Initialization
+
+`AsyncTavilyClient` wird beim ersten `search()`-Aufruf erstellt, nicht bei Import. Behebt den Production-Bug bei dem `TavilyClient` bei Import-Time `None` blieb wenn der Key erst nach Import gesetzt wurde (hot reload, late env).
+
+### Timeout + Retry
+
+| Parameter | Phase 1 (Astrolabe) | Phase 4 (Ignition) |
+|-----------|--------------------|--------------------|
+| `timeout_s` | 10s | 20s |
+| `max_retries` | 0 | 1 (2s backoff) |
+
+Jeder `search()`-Aufruf ist mit `asyncio.timeout()` geschuetzt. Bei Timeout oder API-Fehler: `None` zurueck (graceful degradation). `parallel_search()` nutzt `asyncio.gather(return_exceptions=True)` — partielle Ergebnisse bei partiellem Fehlschlag.
+
+### Domain Targeting
+
+Gezielte `include_domains` pro Research-Achse statt generischer Suche:
+
+| Achse | Domains | Zweck |
+|-------|---------|-------|
+| `ENCYCLOPEDIC` | en.wikipedia.org, plato.stanford.edu, britannica.com | Phase 1: Konzeptuelle Uebersicht |
+| `LITERARY` | en.wikipedia.org, britannica.com, theparisreview.org | Phase 4: Literarische Genealogie |
+| `PHILOSOPHY` | plato.stanford.edu, iep.utm.edu, en.wikipedia.org | Phase 4: Philosophisches Framework |
+| `ARCHITECTURE` | archdaily.com, en.wikipedia.org | Phase 4: Architektonisches Vokabular |
+
+### Research Pipeline
+
+**Phase 1 (Astrolabe) — `search_thematic_context()`:**
+2 parallele Suchen:
+
+| Suche | Query | Tiefe | Domains | Max Results |
+|-------|-------|-------|---------|-------------|
+| Conceptual | `{seed}` | advanced | ENCYCLOPEDIC | 5 |
+| Intellectual | `{seed} philosophical literary context` | basic | (keine) | 3 |
+
+Ergebnis-Format: `[CONCEPTUAL OVERVIEW]` + `[INTELLECTUAL TRADITIONS]`
+
+**Phase 4 (Ignition) — `research_for_lore()` Augmentation:**
+3 achsenspezifische parallele Suchen:
+
+| Suche | Query-Quelle | Tiefe | Domains | Max Results |
+|-------|-------------|-------|---------|-------------|
+| Literary | `{anchor.literary_influence} literary analysis narrative technique` | advanced | LITERARY | 5 |
+| Philosophical | `{anchor.core_question} philosophy epistemology` | advanced | PHILOSOPHY | 5 |
+| Architectural | `{anchor.description} architecture movement materials visual` | basic | ARCHITECTURE | 4 |
+
+Ergebnis-Format: `[WEB: LITERARY AXIS]` + `[WEB: PHILOSOPHICAL AXIS]` + `[WEB: ARCHITECTURAL AXIS]`
+
+### Emulator (kein API-Key)
+
+Deterministischer Fallback fuer lokale Entwicklung. 6 thematische Linsen (entropy, memory, surveillance, liminality, posthuman, temporal economics). Seed-Hash-basierte Auswahl.
+
+- `_emulate_tavily_phase1()`: Dual-axis Format (CONCEPTUAL OVERVIEW + INTELLECTUAL TRADITIONS)
+- `_emulate_tavily_phase4()`: Tri-axis Format (WEB: LITERARY/PHILOSOPHICAL/ARCHITECTURAL AXIS)
+
+### Kosten
+
+| Phase | Vorher | Nachher | Delta |
+|-------|--------|---------|-------|
+| Phase 1 | 1 advanced | 1 advanced + 1 basic | +1 basic |
+| Phase 4 | 1 advanced | 2 advanced + 1 basic | +1 adv + 1 basic |
+| **Total pro Forge** | **2 advanced** | **3 advanced + 2 basic** | ~$0.01-0.02 extra |
+
+### Sentry Coverage
+
+Alle Tavily-Fehlschlaege werden ueber `sentry_sdk.capture_message()` mit `push_scope()` gemeldet (Tag: `forge_phase`, Context: `seed_preview`/`simulation_id`). Einzelne Tavily-Fehler (Timeouts, 429) sind nur Warnings — diese sind transient und werden per Retry behandelt. Nur vollstaendiger Fehlschlag (alle Achsen gescheitert → Emulator-Fallback) triggert Sentry.
+
+---
+
+## 7. Platform API Key Management
 
 Platform-level API keys provide defaults for all simulations. Individual simulations can override these via BYOK (Bring Your Own Key) in their settings.
 

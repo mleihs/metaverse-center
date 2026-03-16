@@ -1,7 +1,7 @@
 ---
 title: "AI Integration"
 id: ai-integration
-version: "2.2"
+version: "2.3"
 date: 2026-03-16
 lang: de
 type: spec
@@ -335,6 +335,26 @@ Chunked world generation using **Pydantic AI** `output_type` with `Field(descrip
 **Downstream Impact:** Rich Phase II text feeds Phase IV image generation:
 - `agent.character` + `agent.background` → `portrait_description` DB template → Replicate
 - `building.description` + `building_condition` → `building_image_description` DB template → Replicate
+
+### Forge Research Pipeline (`ResearchService`)
+
+Zweistufige Web-Recherche die den BUREAU_ARCHIVIST_PROMPT mit drei Achsen realer Gruendung versorgt: literarische Genealogie, philosophisches Framework, architektonisches Vokabular.
+
+**Phase 1 (Astrolabe) — `search_thematic_context()`:**
+Dual-Achsen-Parallelsuche ueber `TavilySearchService`:
+1. **Conceptual Overview**: Seed → encyclopedic domains (Wikipedia, Stanford Encyclopedia, Britannica) → advanced depth, 5 results
+2. **Intellectual Traditions**: English-glossed seed + "philosophical literary context" → broad search → basic depth, 3 results
+
+Fallback: Deterministischer Emulator mit 6 thematischen Linsen (Entropy, Memory, Surveillance, Liminality, Posthuman, Temporal Economics).
+
+**Phase 4 (Ignition) — `research_for_lore()`:**
+Zwei parallele Schritte:
+1. **LLM Research Agent** (cheap model): Generiert Forschungsbrief mit drei Sektionen (LITERARY GENEALOGY, PHILOSOPHICAL FRAMEWORK, ARCHITECTURAL VOCABULARY)
+2. **Tri-Achsen Tavily-Augmentation**: 3 parallele Suchen mit achsenspezifischen Queries und Domain-Targeting (Literary → theparisreview.org; Philosophy → plato.stanford.edu; Architecture → archdaily.com). 20s Timeout, 1 Retry.
+
+Graceful Degradation: Partielle Ergebnisse bei partiellem Fehlschlag. Emulator-Fallback fuer lokale Entwicklung.
+
+**Sentry Scope Context:** Alle Forge-Exception-Handler nutzen `sentry_sdk.push_scope()` mit `forge_phase` Tag und `forge` Context (simulation_id, draft_id, seed, entity_type etc.). Ermoeglicht Sentry-seitige Filterung nach Phase.
 
 ### Game-Mechanik-Integration in AI-Prompts
 
