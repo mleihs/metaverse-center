@@ -21,6 +21,7 @@ from backend.models.forge import (
 )
 from backend.services import forge_mock_service as mock
 from backend.services.ai_utils import PYDANTIC_AI_MAX_TOKENS, ai_error_to_http, create_forge_agent
+from backend.services.external.replicate import ReplicateBillingError
 from backend.services.forge_draft_service import ForgeDraftService
 from backend.services.forge_entity_translation_service import ForgeEntityTranslationService
 from backend.services.forge_lore_service import ForgeLoreService
@@ -159,10 +160,6 @@ def _build_chunk_prompt(
     ]
 
     return "\n".join(lines)
-
-
-class _BillingAbortError(Exception):
-    """Sentinel raised to short-circuit batch image generation on billing errors."""
 
 
 class ForgeOrchestratorService:
@@ -802,131 +799,113 @@ class ForgeOrchestratorService:
         _types = entity_types  # None = all types
 
         try:
-            await cls._run_image_generation(
-                image_service, supabase, simulation_id, sim_data, anchor_data, _types,
-            )
-        except _BillingAbortError:
+            if not _types or "banner" in _types:
+                try:
+                    await image_service.generate_banner_image(
+                        sim_name=sim_data.get("name", "Unknown"),
+                        sim_description=sim_data.get("description", ""),
+                        anchor_data=anchor_data,
+                    )
+                except ReplicateBillingError:
+                    raise
+                except Exception:
+                    logger.exception("Banner generation failed")
+
+            # 2. Agent portraits
+            if not _types or "agent" in _types:
+                agents = (
+                    supabase.table("agents")
+                    .select("id, name, character, background")
+                    .eq("simulation_id", str(simulation_id))
+                    .execute()
+                )
+                for agent in agents.data or []:
+                    try:
+                        await image_service.generate_agent_portrait(
+                            agent_id=agent["id"],
+                            agent_name=agent["name"],
+                            agent_data={"character": agent["character"], "background": agent["background"]},
+                        )
+                    except ReplicateBillingError:
+                        raise
+                    except Exception:
+                        logger.exception(
+                            "Batch image gen failed for agent",
+                            extra={"entity_type": "agent", "entity_id": agent["id"]},
+                        )
+
+            # 3. Building images
+            if not _types or "building" in _types:
+                buildings = (
+                    supabase.table("buildings")
+                    .select(
+                        "id, name, description, building_type, building_condition,"
+                        " style, special_type, construction_year,"
+                        " population_capacity, zones(name)"
+                    )
+                    .eq("simulation_id", str(simulation_id))
+                    .execute()
+                )
+                for building in buildings.data or []:
+                    zone_data = building.get("zones") or {}
+                    try:
+                        await image_service.generate_building_image(
+                            building_id=building["id"],
+                            building_name=building["name"],
+                            building_type=building["building_type"],
+                            building_data={
+                                "description": building.get("description", ""),
+                                "building_condition": building.get("building_condition", ""),
+                                "building_style": building.get("style", ""),
+                                "special_type": building.get("special_type", ""),
+                                "construction_year": building.get("construction_year", ""),
+                                "population_capacity": building.get("population_capacity", ""),
+                                "zone_name": zone_data.get("name", ""),
+                            },
+                        )
+                    except ReplicateBillingError:
+                        raise
+                    except Exception:
+                        logger.exception(
+                            "Batch image gen failed for building",
+                            extra={"entity_type": "building", "entity_id": building["id"]},
+                        )
+
+            # 4. Lore images (sections with image_slug)
+            if not _types or "lore" in _types:
+                sim_slug = sim_data.get("slug", str(simulation_id))
+                lore_sections = (
+                    supabase.table("simulation_lore")
+                    .select("id, title, body, image_slug, image_caption")
+                    .eq("simulation_id", str(simulation_id))
+                    .not_.is_("image_slug", "null")
+                    .order("sort_order")
+                    .execute()
+                )
+                for section in lore_sections.data or []:
+                    try:
+                        await image_service.generate_lore_image(
+                            section_title=section["title"],
+                            section_body=section["body"],
+                            image_slug=section["image_slug"],
+                            sim_slug=sim_slug,
+                            section_id=section["id"],
+                            image_caption=section.get("image_caption"),
+                        )
+                    except ReplicateBillingError:
+                        raise
+                    except Exception:
+                        logger.exception(
+                            "Lore image gen failed",
+                            extra={"entity_type": "lore_section", "entity_id": section["id"]},
+                        )
+
+        except ReplicateBillingError:
             logger.error(
                 "Replicate billing error — aborting all image generation. "
                 "Check credits at replicate.com/account/billing."
             )
             return
-
-        logger.info("Phase B complete — background generation finished")
-
-    @classmethod
-    async def _run_image_generation(
-        cls,
-        image_service: ImageService,
-        supabase: Client,
-        simulation_id: UUID,
-        sim_data: dict,
-        anchor_data: dict | None,
-        _types: set[str] | None,
-    ) -> None:
-        """Execute all image generation steps. Raises _BillingAbort on billing errors."""
-        from backend.services.external.replicate import ReplicateBillingError
-
-        if not _types or "banner" in _types:
-            try:
-                await image_service.generate_banner_image(
-                    sim_name=sim_data.get("name", "Unknown"),
-                    sim_description=sim_data.get("description", ""),
-                    anchor_data=anchor_data,
-                )
-            except ReplicateBillingError:
-                raise _BillingAbortError from None
-            except Exception:
-                logger.exception("Banner generation failed")
-
-        # 2. Agent portraits
-        if not _types or "agent" in _types:
-            agents = (
-                supabase.table("agents")
-                .select("id, name, character, background")
-                .eq("simulation_id", str(simulation_id))
-                .execute()
-            )
-            for agent in agents.data or []:
-                try:
-                    await image_service.generate_agent_portrait(
-                        agent_id=agent["id"],
-                        agent_name=agent["name"],
-                        agent_data={"character": agent["character"], "background": agent["background"]},
-                    )
-                except ReplicateBillingError:
-                    raise _BillingAbortError from None
-                except Exception:
-                    logger.exception(
-                        "Batch image gen failed for agent",
-                        extra={"entity_type": "agent", "entity_id": agent["id"]},
-                    )
-
-        # 3. Building images
-        if not _types or "building" in _types:
-            buildings = (
-                supabase.table("buildings")
-                .select(
-                    "id, name, description, building_type, building_condition,"
-                    " style, special_type, construction_year,"
-                    " population_capacity, zones(name)"
-                )
-                .eq("simulation_id", str(simulation_id))
-                .execute()
-            )
-            for building in buildings.data or []:
-                zone_data = building.get("zones") or {}
-                try:
-                    await image_service.generate_building_image(
-                        building_id=building["id"],
-                        building_name=building["name"],
-                        building_type=building["building_type"],
-                        building_data={
-                            "description": building.get("description", ""),
-                            "building_condition": building.get("building_condition", ""),
-                            "building_style": building.get("style", ""),
-                            "special_type": building.get("special_type", ""),
-                            "construction_year": building.get("construction_year", ""),
-                            "population_capacity": building.get("population_capacity", ""),
-                            "zone_name": zone_data.get("name", ""),
-                        },
-                    )
-                except ReplicateBillingError:
-                    raise _BillingAbortError from None
-                except Exception:
-                    logger.exception(
-                        "Batch image gen failed for building",
-                        extra={"entity_type": "building", "entity_id": building["id"]},
-                    )
-
-        # 4. Lore images (sections with image_slug)
-        if not _types or "lore" in _types:
-            sim_slug = sim_data.get("slug", str(simulation_id))
-            lore_sections = (
-                supabase.table("simulation_lore")
-                .select("id, title, body, image_slug, image_caption")
-                .eq("simulation_id", str(simulation_id))
-                .not_.is_("image_slug", "null")
-                .order("sort_order")
-                .execute()
-            )
-            for section in lore_sections.data or []:
-                try:
-                    await image_service.generate_lore_image(
-                        section_title=section["title"],
-                        section_body=section["body"],
-                        image_slug=section["image_slug"],
-                        sim_slug=sim_slug,
-                        section_id=section["id"],
-                        image_caption=section.get("image_caption"),
-                    )
-                except ReplicateBillingError:
-                    raise _BillingAbortError from None
-                except Exception:
-                    logger.exception(
-                        "Lore image gen failed",
-                        extra={"entity_type": "lore_section", "entity_id": section["id"]},
-                    )
 
     @staticmethod
     async def recruit_agents(
