@@ -381,7 +381,7 @@ export class VelgDossierRequest extends LitElement {
       this.simulationId,
       'classified_dossier',
     );
-    const completed = purchases.some(p => p.status === 'completed');
+    const completed = purchases.some((p) => p.status === 'completed');
     this._state = completed ? 'completed' : 'idle';
   }
 
@@ -420,9 +420,7 @@ export class VelgDossierRequest extends LitElement {
       this._slotsCompleted = 6;
       VelgToast.success(msg('Classified dossier authorized. Sections now available.'));
       this._state = 'completed';
-      this.dispatchEvent(
-        new CustomEvent('dossier-complete', { bubbles: true, composed: true }),
-      );
+      this.dispatchEvent(new CustomEvent('dossier-complete', { bubbles: true, composed: true }));
     } else if (result?.status === 'failed' || result?.status === 'refunded') {
       VelgToast.error(msg('Dossier generation failed. Tokens refunded.'));
       this._state = 'idle';
@@ -459,13 +457,11 @@ export class VelgDossierRequest extends LitElement {
         <hr class="cta__rule" />
 
         <p class="cta__desc">
-          ${msg('Unlock the six ARCANUM sections previewed above. The Bureau\'s Senior Classified Analyst will generate ~9,000 words of deep intelligence: the shard\'s hidden pre-arrival history, classified addenda for every agent, annotated geographic anomalies, cross-shard bleed analysis, recovered prophetic fragments, and the Bureau\'s official threat assessment.')}
+          ${msg("Unlock the six ARCANUM sections previewed above. The Bureau's Senior Classified Analyst will generate ~9,000 words of deep intelligence: the shard's hidden pre-arrival history, classified addenda for every agent, annotated geographic anomalies, cross-shard bleed analysis, recovered prophetic fragments, and the Bureau's official threat assessment.")}
         </p>
 
         <p class="cta__cost ${this.hasBypass ? 'cta__cost--bypass' : ''}">
-          ${this.hasBypass
-            ? msg('BYOK: NO COST')
-            : msg('AUTHORIZATION COST: 2 FT')}
+          ${this.hasBypass ? msg('BYOK: NO COST') : msg('AUTHORIZATION COST: 2 FT')}
         </p>
 
         <button
@@ -514,12 +510,14 @@ export class VelgDossierRequest extends LitElement {
 
         <div class="confirm__body">
           <p class="confirm__desc">
-            ${msg('This will generate the six ARCANUM sections shown in the preview above — ALPHA through ZETA. Each section is AI-generated using the simulation\'s agents, buildings, zones, and existing lore as source material. Generation takes 1-3 minutes. The new sections will appear below the existing lore scroll as CLASSIFIED chapters.')}
+            ${msg("This will generate the six ARCANUM sections shown in the preview above — ALPHA through ZETA. Each section is AI-generated using the simulation's agents, buildings, zones, and existing lore as source material. Generation takes 1-3 minutes. The new sections will appear below the existing lore scroll as CLASSIFIED chapters.")}
           </p>
           <div class="confirm__cost-line">
-            ${this.hasBypass
-              ? msg('BYOK ACTIVE — NO TOKEN DEDUCTION')
-              : msg('This action will deduct 2 Forge Tokens from your balance.')}
+            ${
+              this.hasBypass
+                ? msg('BYOK ACTIVE — NO TOKEN DEDUCTION')
+                : msg('This action will deduct 2 Forge Tokens from your balance.')
+            }
           </div>
         </div>
 

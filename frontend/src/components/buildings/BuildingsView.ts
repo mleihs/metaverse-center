@@ -1,6 +1,6 @@
 import { localized, msg, str } from '@lit/localize';
-import { effect } from '@preact/signals-core';
 import { SignalWatcher } from '@lit-labs/preact-signals';
+import { effect } from '@preact/signals-core';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';

@@ -406,12 +406,16 @@ export class VelgLocationsView extends LitElement {
       <div class="view__mode-toggle">
         <button
           class="view__mode-btn ${this._viewMode === 'list' ? 'view__mode-btn--active' : ''}"
-          @click=${() => { this._viewMode = 'list'; }}
+          @click=${() => {
+            this._viewMode = 'list';
+          }}
           aria-pressed=${this._viewMode === 'list' ? 'true' : 'false'}
         >${msg('List')}</button>
         <button
           class="view__mode-btn ${this._viewMode === 'map' ? 'view__mode-btn--active' : ''}"
-          @click=${() => { this._viewMode = 'map'; }}
+          @click=${() => {
+            this._viewMode = 'map';
+          }}
           aria-pressed=${this._viewMode === 'map' ? 'true' : 'false'}
         >${msg('Map')}</button>
       </div>
@@ -443,12 +447,13 @@ export class VelgLocationsView extends LitElement {
           </div>
         </header>
 
-        ${this._viewMode === 'list'
-          ? html`
+        ${
+          this._viewMode === 'list'
+            ? html`
               ${this._renderBreadcrumb()}
               ${this._renderContent()}
             `
-          : html`
+            : html`
               <velg-cartographers-desk
                 .simulationId=${this.simulationId}
                 @zone-select=${this._handleMapZoneSelect}

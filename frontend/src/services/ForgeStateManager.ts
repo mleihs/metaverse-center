@@ -1,4 +1,4 @@
-import { computed, signal, type Signal } from '@preact/signals-core';
+import { computed, type Signal, signal } from '@preact/signals-core';
 import type {
   BYOKStatus,
   FeaturePurchase,
@@ -10,6 +10,7 @@ import type {
   PurchaseReceipt,
   TokenBundle,
   TokenPurchase,
+  WalletResponse,
 } from './api/ForgeApiService.js';
 import { forgeApi } from './api/ForgeApiService.js';
 
@@ -62,7 +63,9 @@ class ForgeStateManager {
   });
 
   // --- Threat Level (extracted from dossier ZETA) ---
-  readonly threatLevel = signal<{ level: number; label: string; researchValue: string } | null>(null);
+  readonly threatLevel = signal<{ level: number; label: string; researchValue: string } | null>(
+    null,
+  );
 
   // --- Image Generation Tracking (post-ceremony) ---
   /** Slug of the simulation currently having images generated. */
@@ -301,7 +304,12 @@ class ForgeStateManager {
     }
   }
 
-  async ignite(): Promise<{ simulationId?: string; slug?: string; name?: string; description?: string }> {
+  async ignite(): Promise<{
+    simulationId?: string;
+    slug?: string;
+    name?: string;
+    description?: string;
+  }> {
     const draftId = this.draft.value?.id;
     if (!draftId) return {};
 
@@ -329,7 +337,7 @@ class ForgeStateManager {
 
   // --- Wallet / Mint Actions ---
 
-  async loadWallet(): Promise<void> {
+  async loadWallet(): Promise<WalletResponse | null> {
     this.isLoadingWallet.value = true;
     try {
       const resp = await forgeApi.getWallet();
@@ -339,9 +347,12 @@ class ForgeStateManager {
         if (resp.data.byok_status) {
           this.byokStatus.value = resp.data.byok_status;
         }
+        return resp.data;
       }
+      return null;
     } catch {
       // Best-effort — wallet display is non-critical
+      return null;
     } finally {
       this.isLoadingWallet.value = false;
     }
@@ -382,7 +393,9 @@ class ForgeStateManager {
       const resp = await forgeApi.getPurchaseHistory();
       if (resp.success && resp.data) {
         // PaginatedResponse wraps data in .data
-        const items = Array.isArray(resp.data) ? resp.data : (resp.data as unknown as { data: TokenPurchase[] }).data ?? [];
+        const items = Array.isArray(resp.data)
+          ? resp.data
+          : ((resp.data as unknown as { data: TokenPurchase[] }).data ?? []);
         this.purchaseHistory.value = items;
       }
     } catch {
@@ -395,7 +408,10 @@ class ForgeStateManager {
   readonly featurePurchases: Signal<Map<string, FeaturePurchase[]>> = signal(new Map());
 
   private static readonly FEATURE_TYPES = [
-    'classified_dossier', 'recruitment', 'darkroom_pass', 'chronicle_export',
+    'classified_dossier',
+    'recruitment',
+    'darkroom_pass',
+    'chronicle_export',
   ] as const;
 
   private static readonly FEATURE_TAB_MAP: Record<string, string> = {
@@ -407,14 +423,12 @@ class ForgeStateManager {
 
   async loadAllFeatureStatuses(simulationId: string): Promise<void> {
     await Promise.all(
-      ForgeStateManager.FEATURE_TYPES.map(t => this.loadFeaturePurchases(simulationId, t)),
+      ForgeStateManager.FEATURE_TYPES.map((t) => this.loadFeaturePurchases(simulationId, t)),
     );
   }
 
   hasAnyUnpurchasedFeature(simulationId: string): boolean {
-    return ForgeStateManager.FEATURE_TYPES.some(
-      t => !this.hasCompletedPurchase(simulationId, t),
-    );
+    return ForgeStateManager.FEATURE_TYPES.some((t) => !this.hasCompletedPurchase(simulationId, t));
   }
 
   getUnpurchasedTabPaths(simulationId: string): Set<string> {
@@ -428,7 +442,10 @@ class ForgeStateManager {
     return tabs;
   }
 
-  async loadFeaturePurchases(simulationId: string, featureType: string): Promise<FeaturePurchase[]> {
+  async loadFeaturePurchases(
+    simulationId: string,
+    featureType: string,
+  ): Promise<FeaturePurchase[]> {
     const resp = await forgeApi.listFeaturePurchases(simulationId, featureType);
     if (resp.success && resp.data) {
       const map = new Map(this.featurePurchases.value);
@@ -442,7 +459,7 @@ class ForgeStateManager {
   hasCompletedPurchase(simulationId: string, featureType: string): boolean {
     const key = `${simulationId}:${featureType}`;
     const purchases = this.featurePurchases.value.get(key);
-    return purchases?.some(p => p.status === 'completed') ?? false;
+    return purchases?.some((p) => p.status === 'completed') ?? false;
   }
 
   async awaitFeatureCompletion(
@@ -459,7 +476,7 @@ class ForgeStateManager {
         void this.loadFeaturePurchases(purchase.simulation_id, purchase.feature_type);
         return purchase;
       }
-      await new Promise(r => setTimeout(r, 2000));
+      await new Promise((r) => setTimeout(r, 2000));
     }
     return null;
   }
@@ -481,9 +498,7 @@ class ForgeStateManager {
           resp = await forgeApi.purchaseDossier(simulationId);
           break;
         case 'recruitment':
-          resp = await forgeApi.purchaseRecruitment(
-            simulationId, options?.focus, options?.zoneId,
-          );
+          resp = await forgeApi.purchaseRecruitment(simulationId, options?.focus, options?.zoneId);
           break;
         case 'chronicle_export':
           if (options?.exportType === 'hires') {

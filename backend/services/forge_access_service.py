@@ -14,7 +14,6 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 from postgrest.exceptions import APIError
-from supabase import Client
 
 from backend.config import settings
 from backend.services.email_service import EmailService
@@ -23,6 +22,7 @@ from backend.services.email_templates import (
     render_clearance_granted,
     render_clearance_request_admin_notification,
 )
+from supabase import Client
 
 logger = logging.getLogger(__name__)
 
@@ -33,11 +33,7 @@ class ForgeAccessService:
     @classmethod
     def _get_admin_emails(cls) -> list[str]:
         """Platform admin emails from PLATFORM_ADMIN_EMAILS env var."""
-        return [
-            e.strip()
-            for e in settings.platform_admin_emails.split(",")
-            if e.strip()
-        ]
+        return [e.strip() for e in settings.platform_admin_emails.split(",") if e.strip()]
 
     @classmethod
     async def create_request(
@@ -54,11 +50,7 @@ class ForgeAccessService:
             "message": message,
         }
         try:
-            response = (
-                supabase.table("forge_access_requests")
-                .insert(insert_data)
-                .execute()
-            )
+            response = supabase.table("forge_access_requests").insert(insert_data).execute()
         except APIError as e:
             if "idx_forge_access_one_pending" in str(e) or "duplicate" in str(e).lower():
                 raise HTTPException(
@@ -76,9 +68,7 @@ class ForgeAccessService:
 
         # Notify admin (best-effort, non-blocking)
         if user_email:
-            asyncio.create_task(
-                cls._send_admin_notification(user_email, message)
-            )
+            asyncio.create_task(cls._send_admin_notification(user_email, message))
 
         return response.data[0]
 
@@ -128,11 +118,7 @@ class ForgeAccessService:
         admin_supabase: Client,
     ) -> list[dict]:
         """List pending requests with user emails (admin, via view)."""
-        response = (
-            admin_supabase.table("v_pending_forge_requests")
-            .select("*")
-            .execute()
-        )
+        response = admin_supabase.table("v_pending_forge_requests").select("*").execute()
         return response.data or []
 
     @classmethod
@@ -142,10 +128,7 @@ class ForgeAccessService:
     ) -> int:
         """Count pending requests (admin)."""
         response = (
-            admin_supabase.table("forge_access_requests")
-            .select("id", count="exact")
-            .eq("status", "pending")
-            .execute()
+            admin_supabase.table("forge_access_requests").select("id", count="exact").eq("status", "pending").execute()
         )
         return response.count or 0
 
@@ -164,10 +147,7 @@ class ForgeAccessService:
         or status update (reject) and returns user email + locale for
         notification.
         """
-        rpc_name = (
-            "fn_approve_forge_access" if action == "approve"
-            else "fn_reject_forge_access"
-        )
+        rpc_name = "fn_approve_forge_access" if action == "approve" else "fn_reject_forge_access"
         try:
             response = admin_supabase.rpc(
                 rpc_name,
@@ -200,9 +180,7 @@ class ForgeAccessService:
         logger.info("Forge access request %s: %s by %s", action, request_id, reviewer_id)
 
         # Send notification email (best-effort, non-blocking)
-        asyncio.create_task(
-            cls._send_review_email(result, action, admin_notes)
-        )
+        asyncio.create_task(cls._send_review_email(result, action, admin_notes))
 
         return result
 
@@ -228,10 +206,12 @@ class ForgeAccessService:
                 subject_en = "CLASSIFIED // CLEARANCE GRANTED"
                 subject_de = "GEHEIM // FREIGABE ERTEILT"
                 subject = subject_de if email_locale == "de" else subject_en
+                tokens_granted = result.get("tokens_granted")
                 html_body = render_clearance_granted(
                     email_locale=email_locale,
                     forge_url=forge_url,
                     admin_notes=admin_notes,
+                    starter_tokens=tokens_granted,
                 )
             else:
                 subject_en = "CLASSIFIED // CLEARANCE REVIEW"

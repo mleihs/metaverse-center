@@ -33,7 +33,10 @@ import type {
   Zone,
 } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
-import { OPERATIVE_COLORS as OP_COLORS, OPERATIVE_RP_COSTS } from '../../utils/operative-constants.js';
+import {
+  OPERATIVE_COLORS as OP_COLORS,
+  OPERATIVE_RP_COSTS,
+} from '../../utils/operative-constants.js';
 import { focusFirstElement, trapFocus } from '../shared/focus-trap.js';
 import '../shared/VelgGameCard.js';
 import './MissionCard.js';
@@ -2011,8 +2014,15 @@ export class VelgDeployOperativeModal extends LitElement {
       const zone = this._targetZones.find((z) => z.id === this._selectedZoneId);
       if (zone) {
         const SECURITY_MAP: Record<string, number> = {
-          fortress: 10.0, maximum: 10.0, high: 8.5, guarded: 7.0,
-          moderate: 5.5, medium: 5.5, low: 4.0, contested: 3.0, lawless: 2.0,
+          fortress: 10.0,
+          maximum: 10.0,
+          high: 8.5,
+          guarded: 7.0,
+          moderate: 5.5,
+          medium: 5.5,
+          low: 4.0,
+          contested: 3.0,
+          lawless: 2.0,
         };
         zonePenalty = (SECURITY_MAP[zone.security_level] ?? 5.5) * 0.05;
       }
@@ -2021,9 +2031,7 @@ export class VelgDeployOperativeModal extends LitElement {
     if (this._selectedEmbassyId) {
       const emb = this._getSelectedEmbassy?.();
       const embAny = emb as unknown as { effectiveness?: number } | undefined;
-      embBonus = embAny?.effectiveness != null
-        ? embAny.effectiveness * 0.15
-        : 0.15;
+      embBonus = embAny?.effectiveness != null ? embAny.effectiveness * 0.15 : 0.15;
     }
 
     // Guardian + resonance modifiers intentionally hidden (fog of war)
@@ -2274,15 +2282,14 @@ export class VelgDeployOperativeModal extends LitElement {
       if (resp.success) {
         const m = resp.data as OperativeMission;
         const agentName = m.agents?.name ?? msg('Operative');
-        const targetName = (m as OperativeMission & { target_sim?: { name: string } }).target_sim?.name;
-        const zoneName = (m as OperativeMission & { target_zone?: { name: string } }).target_zone?.name;
-        const prob = m.success_probability != null
-          ? ` — ${Math.round(m.success_probability * 100)}%` : '';
-        const target = zoneName && targetName
-          ? `${zoneName}, ${targetName}` : targetName ?? '';
-        VelgToast.success(
-          msg(str`DISPATCH CONFIRMED: ${agentName} → ${target}${prob}`),
-        );
+        const targetName = (m as OperativeMission & { target_sim?: { name: string } }).target_sim
+          ?.name;
+        const zoneName = (m as OperativeMission & { target_zone?: { name: string } }).target_zone
+          ?.name;
+        const prob =
+          m.success_probability != null ? ` — ${Math.round(m.success_probability * 100)}%` : '';
+        const target = zoneName && targetName ? `${zoneName}, ${targetName}` : (targetName ?? '');
+        VelgToast.success(msg(str`DISPATCH CONFIRMED: ${agentName} → ${target}${prob}`));
         this.dispatchEvent(
           new CustomEvent('operative-deployed', {
             detail: resp.data,
@@ -2353,16 +2360,15 @@ export class VelgDeployOperativeModal extends LitElement {
   // ── Header ──────────────────────────────────────────
 
   private _renderHeader() {
-    const needsEmbassy = this._selectedType
-      && !['guardian'].includes(this._selectedType)
-      && !this._selectedEmbassyId;
+    const needsEmbassy =
+      this._selectedType && !['guardian'].includes(this._selectedType) && !this._selectedEmbassyId;
     const stepLabel =
       this._step === 'asset'
         ? msg('Select an agent from your roster')
         : this._step === 'mission'
-          ? (needsEmbassy && this._selectedType
+          ? needsEmbassy && this._selectedType
             ? msg('Select embassy route')
-            : msg('Choose a mission type'))
+            : msg('Choose a mission type')
           : msg('Select a target');
 
     return html`
@@ -2573,14 +2579,19 @@ export class VelgDeployOperativeModal extends LitElement {
 
 				${this._error ? html`<div class="error">${this._error}</div>` : nothing}
 
-				${this._step === 'asset' ? html`
+				${
+          this._step === 'asset'
+            ? html`
 					<div class="agent-detail-slot">
-						${this._hoveredAgentId
-              ? this._renderAgentDetail()
-              : html`<div class="agent-detail-slot__hint">${msg('Hover over an agent to compare aptitudes')}</div>`
+						${
+              this._hoveredAgentId
+                ? this._renderAgentDetail()
+                : html`<div class="agent-detail-slot__hint">${msg('Hover over an agent to compare aptitudes')}</div>`
             }
 					</div>
-				` : nothing}
+				`
+            : nothing
+        }
 				${this._step === 'asset' ? this._renderHand() : nothing}
 				${this._step === 'mission' ? this._renderMissionSelection() : nothing}
 				${this._step === 'target' && !this._needsNoTarget() && !this._isEmbassyTarget() ? this._renderTargetSelection() : nothing}
@@ -2814,10 +2825,18 @@ export class VelgDeployOperativeModal extends LitElement {
 								draggable=${isDeployed ? 'false' : 'true'}
 								@dragstart=${(e: DragEvent) => this._onAgentDragStart(e, agent.id)}
 								@click=${() => this._selectAgent(agent.id)}
-								@mouseenter=${() => { if (!isDeployed) this._hoveredAgentId = agent.id; }}
-								@mouseleave=${() => { if (this._hoveredAgentId === agent.id) this._hoveredAgentId = ''; }}
-								@focus=${() => { if (!isDeployed) this._hoveredAgentId = agent.id; }}
-								@blur=${() => { if (this._hoveredAgentId === agent.id) this._hoveredAgentId = ''; }}
+								@mouseenter=${() => {
+                  if (!isDeployed) this._hoveredAgentId = agent.id;
+                }}
+								@mouseleave=${() => {
+                  if (this._hoveredAgentId === agent.id) this._hoveredAgentId = '';
+                }}
+								@focus=${() => {
+                  if (!isDeployed) this._hoveredAgentId = agent.id;
+                }}
+								@blur=${() => {
+                  if (this._hoveredAgentId === agent.id) this._hoveredAgentId = '';
+                }}
 								role="button"
 								tabindex=${isDeployed ? -1 : 0}
 								aria-label=${agent.name}
@@ -2859,12 +2878,9 @@ export class VelgDeployOperativeModal extends LitElement {
     if (!apt) return nothing;
 
     const selectedType = this._selectedType || null;
-    const fit =
-      selectedType
-        ? this._getFitLevel(apt[selectedType as OperativeType])
-        : null;
+    const fit = selectedType ? this._getFitLevel(apt[selectedType as OperativeType]) : null;
     const accentColor = selectedType
-      ? OP_COLORS[selectedType as OperativeType] ?? 'var(--color-epoch-accent)'
+      ? (OP_COLORS[selectedType as OperativeType] ?? 'var(--color-epoch-accent)')
       : 'var(--color-epoch-accent)';
 
     return html`
@@ -2889,11 +2905,12 @@ export class VelgDeployOperativeModal extends LitElement {
 						.highlight=${selectedType as OperativeType | null}
 					></velg-aptitude-bars>
 				</div>
-				${fit
-          ? html`<span class="agent-detail__fit agent-detail__fit--${fit.css}">
+				${
+          fit
+            ? html`<span class="agent-detail__fit agent-detail__fit--${fit.css}">
 						${msg('Fit')}: ${fit.label}
 					</span>`
-          : nothing
+            : nothing
         }
 			</div>
 		`;

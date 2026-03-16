@@ -209,7 +209,10 @@ class EventService(BaseService):
         """Get all chain links for an event (as parent or child)."""
         response = (
             supabase.table("event_chains")
-            .select("*, parent:events!parent_event_id(id, title, event_status), child:events!child_event_id(id, title, event_status)")
+            .select(
+                "*, parent:events!parent_event_id(id, title, event_status),"
+                " child:events!child_event_id(id, title, event_status)"
+            )
             .eq("simulation_id", str(simulation_id))
             .or_(f"parent_event_id.eq.{event_id},child_event_id.eq.{event_id}")
             .order("created_at", desc=True)

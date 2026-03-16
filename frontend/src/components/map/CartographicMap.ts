@@ -1,5 +1,5 @@
 import { localized, msg } from '@lit/localize';
-import { css, html, LitElement, svg, nothing } from 'lit';
+import { css, html, LitElement, nothing, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import type { MapLayer } from './MapLayerToggle.js';
 
@@ -395,7 +395,7 @@ export class CartographicMap extends LitElement {
     // Scatter building symbols
     const buildingCount = Math.min(zone.building_count, 14);
     const buildings: BuildingMarker[] = [];
-    const rngB = this._mulberry32(this._hash(zone.zone_id + 'bld'));
+    const rngB = this._mulberry32(this._hash(`${zone.zone_id}bld`));
     const innerR = baseR * 0.55;
 
     for (let b = 0; b < buildingCount; b++) {
@@ -448,7 +448,7 @@ export class CartographicMap extends LitElement {
       d += ` C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
     }
 
-    return d + ' Z';
+    return `${d} Z`;
   }
 
   /* ── Stability color system ─────────────── */
@@ -495,7 +495,14 @@ export class CartographicMap extends LitElement {
 
   /* ── Adjacency routes ───────────────────── */
 
-  private _computeRoutes(): { x1: number; y1: number; x2: number; y2: number; mx: number; my: number }[] {
+  private _computeRoutes(): {
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+    mx: number;
+    my: number;
+  }[] {
     if (this._generated.length < 2) return [];
 
     const routes: { x1: number; y1: number; x2: number; y2: number; mx: number; my: number }[] = [];
@@ -526,7 +533,14 @@ export class CartographicMap extends LitElement {
         connected.add(key);
         const mx = (gz.zone.x + nearest.zone.x) / 2;
         const my = (gz.zone.y + nearest.zone.y) / 2 + 15;
-        routes.push({ x1: gz.zone.x, y1: gz.zone.y, x2: nearest.zone.x, y2: nearest.zone.y, mx, my });
+        routes.push({
+          x1: gz.zone.x,
+          y1: gz.zone.y,
+          x2: nearest.zone.x,
+          y2: nearest.zone.y,
+          mx,
+          my,
+        });
       }
     }
 
@@ -749,9 +763,11 @@ export class CartographicMap extends LitElement {
         />
 
         <!-- Instability shimmer -->
-        ${unstable
-          ? svg`<path class="zone-unstable" d=${path} fill="rgba(239, 68, 68, 0.08)" />`
-          : nothing}
+        ${
+          unstable
+            ? svg`<path class="zone-unstable" d=${path} fill="rgba(239, 68, 68, 0.08)" />`
+            : nothing
+        }
 
         <!-- Border glow (subtle) -->
         <path

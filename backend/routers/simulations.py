@@ -2,7 +2,13 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 
-from backend.dependencies import get_admin_supabase, get_current_user, get_supabase, require_owner_or_platform_admin, require_role
+from backend.dependencies import (
+    get_admin_supabase,
+    get_current_user,
+    get_supabase,
+    require_owner_or_platform_admin,
+    require_role,
+)
 from backend.models.common import (
     CurrentUser,
     PaginatedResponse,

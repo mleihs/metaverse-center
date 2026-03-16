@@ -318,8 +318,9 @@ export class VelgEpochOperationsTab extends LitElement {
   }
 
   private _renderMission(m: OperativeMission) {
-    const canRecall = ['deploying', 'active'].includes(m.status)
-      && !['completed', 'cancelled'].includes(this.epochStatus);
+    const canRecall =
+      ['deploying', 'active'].includes(m.status) &&
+      !['completed', 'cancelled'].includes(this.epochStatus);
     const isDefensive = m.operative_type === 'guardian';
     const isCompleted = ['success', 'failed', 'detected', 'captured'].includes(m.status);
     const narrative = (m as OperativeMission & { mission_result?: { narrative?: string } })

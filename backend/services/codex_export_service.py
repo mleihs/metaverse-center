@@ -6,7 +6,7 @@ import io
 import logging
 import re
 import zipfile
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import UUID
 
 import httpx
@@ -82,8 +82,8 @@ class CodexExportService:
             content_type = "application/pdf"
             ext = "pdf"
             try:
-                from weasyprint import HTML as WeasyHTML
-                pdf_bytes = WeasyHTML(string=html_content).write_pdf()
+                from weasyprint import HTML as WEASY_HTML
+                pdf_bytes = WEASY_HTML(string=html_content).write_pdf()
             except ImportError:
                 logger.warning(
                     "WeasyPrint not available, generating HTML codex instead"
@@ -94,7 +94,7 @@ class CodexExportService:
 
             # 4. Upload to Supabase Storage
             slug = sim.get("slug", str(simulation_id)[:8])
-            date_str = datetime.utcnow().strftime("%Y%m%d")
+            date_str = datetime.now(UTC).strftime("%Y%m%d")
             filename = f"codex-{slug}-{date_str}.{ext}"
 
             download_url = ""
@@ -229,7 +229,7 @@ class CodexExportService:
             zip_bytes = buf.getvalue()
 
             # 5. Upload ZIP to Supabase Storage
-            date_str = datetime.utcnow().strftime("%Y%m%d")
+            date_str = datetime.now(UTC).strftime("%Y%m%d")
             filename = f"hires-{slug}-{date_str}.zip"
             storage_path = f"{simulation_id}/exports/{filename}"
 
@@ -337,7 +337,7 @@ class CodexExportService:
                 <p>{_esc(b.get('description', ''))}</p>
             </div>"""
 
-        now_str = datetime.utcnow().strftime("%Y-%m-%d")
+        now_str = datetime.now(UTC).strftime("%Y-%m-%d")
 
         return f"""<!DOCTYPE html>
 <html lang="en">

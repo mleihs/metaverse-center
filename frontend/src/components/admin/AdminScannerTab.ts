@@ -1,7 +1,7 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-
+import { scannerApi } from '../../services/api/index.js';
 import type {
   AdapterInfo,
   ScanCandidate,
@@ -10,7 +10,6 @@ import type {
   ScannerDashboard,
   ScannerMetrics,
 } from '../../services/api/ScannerApiService.js';
-import { scannerApi } from '../../services/api/index.js';
 import { icons } from '../../utils/icons.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -1238,7 +1237,9 @@ export class VelgAdminScannerTab extends LitElement {
       if (resp.success && resp.data) {
         const m = resp.data as ScanCycleMetrics;
         VelgToast.success(
-          msg(str`Scan complete: ${m.total_fetched} fetched, ${m.total_new} new, ${m.resonances_created + m.candidates_staged} staged`),
+          msg(
+            str`Scan complete: ${m.total_fetched} fetched, ${m.total_new} new, ${m.resonances_created + m.candidates_staged} staged`,
+          ),
         );
         await this._loadDashboard();
       } else {
@@ -1398,14 +1399,16 @@ export class VelgAdminScannerTab extends LitElement {
           ${icons.radar(14)}
           ${this._scanning ? msg('Scanning...') : msg('Trigger Scan')}
         </button>
-        ${metrics.last_scan
-          ? html`<span class="scan-info">${msg('Last scan:')} ${this._relativeTime(metrics.last_scan)}</span>`
-          : html`<span class="scan-info">${msg('No scans yet')}</span>`}
+        ${
+          metrics.last_scan
+            ? html`<span class="scan-info">${msg('Last scan:')} ${this._relativeTime(metrics.last_scan)}</span>`
+            : html`<span class="scan-info">${msg('No scans yet')}</span>`
+        }
       </div>
 
       <div class="section-label">${msg('Sensor Network')}</div>
       <div class="sensor-grid">
-        ${adapters.map(a => this._renderAdapterCard(a))}
+        ${adapters.map((a) => this._renderAdapterCard(a))}
       </div>
     `;
   }
@@ -1444,15 +1447,17 @@ export class VelgAdminScannerTab extends LitElement {
         </div>
         <div class="adapter-card__categories">
           ${adapter.categories.map(
-            c => html`<span class="category-badge">${c.replace('_', ' ')}</span>`,
+            (c) => html`<span class="category-badge">${c.replace('_', ' ')}</span>`,
           )}
         </div>
         <span class="adapter-card__type ${adapter.is_structured ? 'adapter-card__type--structured' : 'adapter-card__type--llm'}">
           ${adapter.is_structured ? msg('Structured') : msg('LLM Required')}
         </span>
-        ${!adapter.available && adapter.requires_api_key
-          ? html`<span class="adapter-card__type" style="color: var(--color-danger)">${msg('No API Key')}</span>`
-          : nothing}
+        ${
+          !adapter.available && adapter.requires_api_key
+            ? html`<span class="adapter-card__type" style="color: var(--color-danger)">${msg('No API Key')}</span>`
+            : nothing
+        }
         <span class="adapter-card__interval">${this._formatInterval(adapter.default_interval)}</span>
       </div>
     `;
@@ -1462,46 +1467,52 @@ export class VelgAdminScannerTab extends LitElement {
 
   private _getRecommendedThreshold(): number {
     // Top 20% of candidates by magnitude, minimum 0.40
-    const pending = this._candidates.filter(c => c.status === 'pending');
-    if (pending.length === 0) return 0.60;
+    const pending = this._candidates.filter((c) => c.status === 'pending');
+    if (pending.length === 0) return 0.6;
     const sorted = [...pending].sort((a, b) => b.magnitude - a.magnitude);
     const top20idx = Math.max(0, Math.ceil(sorted.length * 0.2) - 1);
-    return Math.max(0.40, sorted[top20idx]?.magnitude ?? 0.60);
+    return Math.max(0.4, sorted[top20idx]?.magnitude ?? 0.6);
   }
 
   private _renderCandidates() {
     const filters: CandidateFilter[] = ['all', 'pending', 'approved', 'rejected'];
     const threshold = this._getRecommendedThreshold();
-    const recommendedCount = this._candidates.filter(c => c.status === 'pending' && c.magnitude >= threshold).length;
+    const recommendedCount = this._candidates.filter(
+      (c) => c.status === 'pending' && c.magnitude >= threshold,
+    ).length;
 
     return html`
       <div class="filter-row">
         ${filters.map(
-          f => html`
+          (f) => html`
             <button
               class="filter-btn ${this._candidateFilter === f ? 'filter-btn--active' : ''}"
               @click=${() => this._setCandidateFilter(f)}
             >${f === 'all' ? msg('All') : f === 'pending' ? msg('Pending') : f === 'approved' ? msg('Approved') : msg('Rejected')}</button>
           `,
         )}
-        ${recommendedCount > 0
-          ? html`<span class="recommended-summary">${msg(str`◆ ${recommendedCount} recommended`)}</span>`
-          : nothing}
+        ${
+          recommendedCount > 0
+            ? html`<span class="recommended-summary">${msg(str`◆ ${recommendedCount} recommended`)}</span>`
+            : nothing
+        }
       </div>
 
-      ${this._loading
-        ? html`<div class="loading-state">${msg('Scanning records...')}</div>`
-        : this._candidates.length === 0
-          ? html`<div class="empty-state">${msg('No candidates found.')}</div>`
-          : html`
+      ${
+        this._loading
+          ? html`<div class="loading-state">${msg('Scanning records...')}</div>`
+          : this._candidates.length === 0
+            ? html`<div class="empty-state">${msg('No candidates found.')}</div>`
+            : html`
               <div class="candidate-grid">
-                ${this._candidates.map(c => this._renderCandidate(c, threshold))}
+                ${this._candidates.map((c) => this._renderCandidate(c, threshold))}
               </div>
-            `}
+            `
+      }
     `;
   }
 
-  private _renderCandidate(c: ScanCandidate, threshold = 0.60) {
+  private _renderCandidate(c: ScanCandidate, threshold = 0.6) {
     const isExpanded = this._expandedId === c.id;
     const isRecommended = c.status === 'pending' && c.magnitude >= threshold;
     const magTier = c.magnitude >= 0.7 ? 'high' : c.magnitude >= 0.4 ? 'mid' : 'low';
@@ -1524,18 +1535,23 @@ export class VelgAdminScannerTab extends LitElement {
 
         <div class="card-body">
           <div class="candidate__title">${c.title}</div>
-          ${c.classification_reason
-            ? html`<div class="candidate__reason">${c.classification_reason}</div>`
-            : nothing}
-          ${c.bureau_dispatch && !isExpanded
-            ? html`<div class="card-dispatch-preview">${c.bureau_dispatch}</div>`
-            : nothing}
+          ${
+            c.classification_reason
+              ? html`<div class="candidate__reason">${c.classification_reason}</div>`
+              : nothing
+          }
+          ${
+            c.bureau_dispatch && !isExpanded
+              ? html`<div class="card-dispatch-preview">${c.bureau_dispatch}</div>`
+              : nothing
+          }
         </div>
 
         <div class="card-footer">
           <span class="card-footer__source">${c.source_adapter} · ${this._relativeTime(c.created_at)}</span>
-          ${c.status === 'pending'
-            ? html`
+          ${
+            c.status === 'pending'
+              ? html`
                 <button
                   class="action-btn action-btn--approve"
                   ?disabled=${this._actionInProgress === c.id}
@@ -1549,7 +1565,8 @@ export class VelgAdminScannerTab extends LitElement {
                   aria-label=${msg(str`Reject ${c.title}`)}
                 >${msg('Reject')}</button>
               `
-            : nothing}
+              : nothing
+          }
           <button class="action-btn" @click=${() => this._toggleExpand(c.id)}>
             ${isExpanded ? msg('Hide') : msg('Detail')}
           </button>
@@ -1563,26 +1580,32 @@ export class VelgAdminScannerTab extends LitElement {
   private _renderCandidateDetail(c: ScanCandidate) {
     return html`
       <div class="candidate-detail">
-        ${c.article_url
-          ? html`
+        ${
+          c.article_url
+            ? html`
               <div class="detail-label">${msg('Source')}</div>
               <a class="source-link" href=${c.article_url} target="_blank" rel="noopener">${c.article_url}</a>
             `
-          : nothing}
+            : nothing
+        }
 
-        ${c.bureau_dispatch
-          ? html`
+        ${
+          c.bureau_dispatch
+            ? html`
               <div class="detail-label">${msg('Bureau Dispatch')}</div>
               <div class="candidate__dispatch-preview">${c.bureau_dispatch}</div>
             `
-          : nothing}
+            : nothing
+        }
 
-        ${c.article_raw_data
-          ? html`
+        ${
+          c.article_raw_data
+            ? html`
               <div class="detail-label">${msg('Raw Data')}</div>
               <pre class="raw-data">${JSON.stringify(c.article_raw_data, null, 2)}</pre>
             `
-          : nothing}
+            : nothing
+        }
       </div>
     `;
   }
@@ -1626,7 +1649,7 @@ export class VelgAdminScannerTab extends LitElement {
         </thead>
         <tbody>
           ${this._scanLog.map(
-            entry => html`
+            (entry) => html`
               <tr>
                 <td><span class="${entry.classified ? 'log-classified' : 'log-unclassified'}">${entry.source_name}</span></td>
                 <td class="log-table__title">${entry.title}</td>

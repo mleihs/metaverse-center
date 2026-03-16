@@ -3,6 +3,7 @@ import { effect } from '@preact/signals-core';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
+import { t } from '../../utils/locale-fields.js';
 import { VelgToast } from '../shared/Toast.js';
 import {
   forgeBackButtonStyles,
@@ -12,7 +13,6 @@ import {
   forgeRangeStyles,
   forgeStatusStyles,
 } from './forge-console-styles.js';
-import { t } from '../../utils/locale-fields.js';
 import { renderInfoBubble } from './forge-utils.js';
 
 import '../shared/VelgFontPicker.js';
@@ -485,20 +485,34 @@ export class VelgForgeDarkroom extends LitElement {
     shadow_style: { offset: '__|', blur: '...', glow: '(*)', none: '---' },
     hover_effect: { translate: '↑↑', scale: '<+>', glow: '(*)' },
     card_frame_texture: {
-      none: '---', filigree: '~*~', circuits: '[#]',
-      scanlines: '|||', rivets: 'o·o', illumination: '❋',
+      none: '---',
+      filigree: '~*~',
+      circuits: '[#]',
+      scanlines: '|||',
+      rivets: 'o·o',
+      illumination: '❋',
     },
     card_frame_nameplate: {
-      terminal: '>_', banner: '═/═', readout: '[=]',
-      plate: '|=|', cartouche: '(~)',
+      terminal: '>_',
+      banner: '═/═',
+      readout: '[=]',
+      plate: '|=|',
+      cartouche: '(~)',
     },
     card_frame_corners: {
-      none: '···', tentacles: '~.~', brackets: '[.]',
-      crosshairs: '+.+', bolts: 'o.o', floral: '✿',
+      none: '···',
+      tentacles: '~.~',
+      brackets: '[.]',
+      crosshairs: '+.+',
+      bolts: 'o.o',
+      floral: '✿',
     },
     card_frame_foil: {
-      holographic: '◇', aquatic: '≈', phosphor: '✦',
-      patina: '··', gilded: '✧',
+      holographic: '◇',
+      aquatic: '≈',
+      phosphor: '✦',
+      patina: '··',
+      gilded: '✧',
     },
   };
 
@@ -609,7 +623,9 @@ export class VelgForgeDarkroom extends LitElement {
               <label class="range-field__label">
                 ${msg('Border Radius')}
                 ${this._renderInfoBubble(
-                  msg('Corner rounding on cards, buttons, and panels. 0 for sharp brutalist edges.'),
+                  msg(
+                    'Corner rounding on cards, buttons, and panels. 0 for sharp brutalist edges.',
+                  ),
                   msg('0px for military precision. 8px for softer, modern feel.'),
                 )}
               </label>
@@ -742,8 +758,12 @@ export class VelgForgeDarkroom extends LitElement {
             <label class="field__label">
               ${msg('Image Style Prompts')}
               ${this._renderInfoBubble(
-                msg('Text prompts that guide AI image generation for each category. More specific prompts produce more consistent results.'),
-                msg("Try 'oil painting, dramatic chiaroscuro, renaissance' for a classical aesthetic."),
+                msg(
+                  'Text prompts that guide AI image generation for each category. More specific prompts produce more consistent results.',
+                ),
+                msg(
+                  "Try 'oil painting, dramatic chiaroscuro, renaissance' for a classical aesthetic.",
+                ),
               )}
             </label>
 
@@ -800,8 +820,12 @@ export class VelgForgeDarkroom extends LitElement {
             <label class="field__label">
               ${msg('Reference Images (optional)')}
               ${this._renderInfoBubble(
-                msg('Upload a reference image to guide the AI art style via img2img. The generated images will visually resemble the reference.'),
-                msg('Upload a painting or photo — portraits and buildings will inherit its visual style.'),
+                msg(
+                  'Upload a reference image to guide the AI art style via img2img. The generated images will visually resemble the reference.',
+                ),
+                msg(
+                  'Upload a painting or photo — portraits and buildings will inherit its visual style.',
+                ),
               )}
             </label>
             <div class="color-grid">

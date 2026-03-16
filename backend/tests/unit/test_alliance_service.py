@@ -9,7 +9,6 @@ import pytest
 from fastapi import HTTPException
 
 from backend.services.alliance_service import AllianceService
-from backend.tests.conftest import make_chain_mock
 
 # ── Helpers ────────────────────────────────────────────────────
 
@@ -850,7 +849,6 @@ class TestClearDissolvedTeamIds:
         ])
         update_chain = _make_chain(execute_data=[])
 
-        call_count = {"n": 0}
 
         def table_router(name):
             if name == "epoch_teams":

@@ -2,7 +2,11 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
-import type { ForgeAgentDraft, ForgeBuildingDraft, ForgeProgress } from '../../services/api/ForgeApiService.js';
+import type {
+  ForgeAgentDraft,
+  ForgeBuildingDraft,
+  ForgeProgress,
+} from '../../services/api/ForgeApiService.js';
 import { forgeApi } from '../../services/api/ForgeApiService.js';
 import { t } from '../../utils/locale-fields.js';
 
@@ -770,12 +774,7 @@ export class VelgForgeCeremony extends LitElement {
   }
 
   private get _lockLabels(): string[] {
-    return [
-      msg('Anchor'),
-      msg('Threads'),
-      msg('Geometry'),
-      msg('Coordinates'),
-    ];
+    return [msg('Anchor'), msg('Threads'), msg('Geometry'), msg('Coordinates')];
   }
 
   private get _tagline(): string {
@@ -810,34 +809,44 @@ export class VelgForgeCeremony extends LitElement {
     this._stage = 1;
 
     // Stage 2: Dimensional Scan (2s–5s)
-    this._timers.push(setTimeout(() => {
-      this._stage = 2;
-      this._startScanCycle();
-    }, 2000));
+    this._timers.push(
+      setTimeout(() => {
+        this._stage = 2;
+        this._startScanCycle();
+      }, 2000),
+    );
 
     // Stage 3: Materialization Burst (5s–7s)
-    this._timers.push(setTimeout(() => {
-      this._stage = 3;
-      this._stopScanCycle();
-      this._scanPhase = 3; // all pips locked
-      this._startTypewriter();
-    }, 5000));
+    this._timers.push(
+      setTimeout(() => {
+        this._stage = 3;
+        this._stopScanCycle();
+        this._scanPhase = 3; // all pips locked
+        this._startTypewriter();
+      }, 5000),
+    );
 
     // Stage 4: Asset Reveal (7s–10s)
-    this._timers.push(setTimeout(() => {
-      this._stage = 4;
-    }, 7000));
+    this._timers.push(
+      setTimeout(() => {
+        this._stage = 4;
+      }, 7000),
+    );
 
     // Stage 5: Arrival (10s–12s)
-    this._timers.push(setTimeout(() => {
-      this._stage = 5;
-    }, 10000));
+    this._timers.push(
+      setTimeout(() => {
+        this._stage = 5;
+      }, 10000),
+    );
 
     // Auto-enter: only after images are done (checked in _pollProgress).
     // Safety: auto-enter after 5 minutes regardless to prevent infinite wait.
-    this._timers.push(setTimeout(() => {
-      this._handleEnter();
-    }, 300000));
+    this._timers.push(
+      setTimeout(() => {
+        this._handleEnter();
+      }, 300000),
+    );
   }
 
   private _startScanCycle() {
@@ -911,7 +920,9 @@ export class VelgForgeCeremony extends LitElement {
       if (fresh.size > 0) {
         this._freshImages = fresh;
         // Clear flash class after animation completes
-        setTimeout(() => { this._freshImages = new Set(); }, 700);
+        setTimeout(() => {
+          this._freshImages = new Set();
+        }, 700);
       }
 
       this._progress = progress;
@@ -919,9 +930,11 @@ export class VelgForgeCeremony extends LitElement {
       // Auto-enter 8s after all images are done (if we're past stage 5)
       if (progress.done && this._stage >= 5) {
         this._stopProgressPolling();
-        this._timers.push(setTimeout(() => {
-          this._handleEnter();
-        }, 8000));
+        this._timers.push(
+          setTimeout(() => {
+            this._handleEnter();
+          }, 8000),
+        );
       }
     } catch {
       // Silently ignore — polling is best-effort
@@ -969,24 +982,34 @@ export class VelgForgeCeremony extends LitElement {
       }
     }
 
-    const agentCards = this.agents.map(a => ({
-      name: a.name, subtitle: t(a, 'primary_profession'), imageUrl: agentImageMap.get(a.name) ?? '',
+    const agentCards = this.agents.map((a) => ({
+      name: a.name,
+      subtitle: t(a, 'primary_profession'),
+      imageUrl: agentImageMap.get(a.name) ?? '',
     }));
-    const buildingCards = this.buildings.map(b => ({
-      name: b.name, subtitle: t(b, 'building_type'), imageUrl: buildingImageMap.get(b.name) ?? '',
+    const buildingCards = this.buildings.map((b) => ({
+      name: b.name,
+      subtitle: t(b, 'building_type'),
+      imageUrl: buildingImageMap.get(b.name) ?? '',
     }));
 
     // Max width per fan: half of 95vw minus zone badge + gaps (~70px each side)
     const maxFanWidth = (window.innerWidth * 0.95 - 100) / 2;
     const cardWidth = 120; // sm card width
 
-    const renderFanCard = (c: { name: string; subtitle: string; imageUrl: string }, i: number, total: number, dealOffset: number) => {
+    const renderFanCard = (
+      c: { name: string; subtitle: string; imageUrl: string },
+      i: number,
+      total: number,
+      dealOffset: number,
+    ) => {
       const center = (total - 1) / 2;
       const rotDeg = (i - center) * 3;
       const arcDip = Math.abs(i - center) * 5;
       // Dynamic overlap: ensure fan fits within maxFanWidth
       const naturalWidth = total * cardWidth;
-      const neededOverlap = total > 1 ? Math.max(28, (naturalWidth - maxFanWidth) / (total - 1)) : 0;
+      const neededOverlap =
+        total > 1 ? Math.max(28, (naturalWidth - maxFanWidth) / (total - 1)) : 0;
       const overlap = i === 0 ? 0 : -neededOverlap;
       const hasImage = !!c.imageUrl;
       const isFresh = this._freshImages.has(c.name);
@@ -1032,7 +1055,7 @@ export class VelgForgeCeremony extends LitElement {
         <!-- Particles -->
         <div class="ceremony__particles">
           ${[0, 1, 2, 3, 4, 5, 6, 7].map(
-            i => html`
+            (i) => html`
             <div
               class="ceremony__particle"
               style="left: ${12 + i * 11}%; animation-delay: ${i * 0.35}s; width: ${3 + (i % 3)}px; height: ${3 + (i % 3)}px;"
@@ -1066,9 +1089,11 @@ export class VelgForgeCeremony extends LitElement {
         </div>
 
         <!-- Stage 3+: Tagline typewriter -->
-        ${this._tagline
-          ? html`<div class="ceremony__tagline">${this._typedText}<span class="ceremony__cursor"></span></div>`
-          : nothing}
+        ${
+          this._tagline
+            ? html`<div class="ceremony__tagline">${this._typedText}<span class="ceremony__cursor"></span></div>`
+            : nothing
+        }
 
         <!-- Stage 4+: Card dealer spread -->
         <div class="ceremony__card-area">
@@ -1102,12 +1127,16 @@ export class VelgForgeCeremony extends LitElement {
         </div>
 
         <!-- Image materialization progress -->
-        ${this._progress ? html`
+        ${
+          this._progress
+            ? html`
           <div class="ceremony__progress ${this._progress.done ? 'ceremony__progress--done' : ''}">
             <div class="ceremony__progress-text">
-              ${this._progress.done
-                ? msg('All Assets Materialized')
-                : html`${msg('Materializing')} ${this._progress.completed} / ${this._progress.total}`}
+              ${
+                this._progress.done
+                  ? msg('All Assets Materialized')
+                  : html`${msg('Materializing')} ${this._progress.completed} / ${this._progress.total}`
+              }
             </div>
             <div class="ceremony__progress-bar">
               <div
@@ -1116,21 +1145,25 @@ export class VelgForgeCeremony extends LitElement {
               ></div>
             </div>
           </div>
-        ` : nothing}
+        `
+            : nothing
+        }
 
         <!-- Stage 5: Enter button -->
         <div class="ceremony__enter">
-          ${this._progress?.done
-            ? html`
+          ${
+            this._progress?.done
+              ? html`
               <button class="ceremony__enter-btn" @click=${this._handleEnter}>
                 ${msg('Enter New Shard')} &ensp; &rarr;
               </button>
             `
-            : html`
+              : html`
               <button class="ceremony__enter-btn ceremony__enter-btn--waiting" disabled>
                 ${msg('Materializing Assets')} &ensp; &hellip;
               </button>
-            `}
+            `
+          }
         </div>
       </div>
     `;

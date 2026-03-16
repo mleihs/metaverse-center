@@ -2,11 +2,15 @@ import { localized, msg } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import type { ThreatLevel } from '../lore/lore-content.js';
 import { appState } from '../../services/AppStateManager.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { icons } from '../../utils/icons.js';
-import { fetchRawLoreSections, isClassifiedSection, extractThreatLevel } from '../lore/lore-content.js';
+import type { ThreatLevel } from '../lore/lore-content.js';
+import {
+  extractThreatLevel,
+  fetchRawLoreSections,
+  isClassifiedSection,
+} from '../lore/lore-content.js';
 
 import '../lore/VelgThreatLevel.js';
 
@@ -168,7 +172,11 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
   private _threatLoadedWithPurchases = 0;
 
   updated(changed: Map<PropertyKey, unknown>): void {
-    if (changed.has('simulationId') && this.simulationId && this.simulationId !== this._threatLoadedForSim) {
+    if (
+      changed.has('simulationId') &&
+      this.simulationId &&
+      this.simulationId !== this._threatLoadedForSim
+    ) {
       this._threatLoadedForSim = this.simulationId;
       this._threatLoadedWithPurchases = 0;
       void this._loadThreatLevel();
@@ -187,7 +195,10 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
   private async _loadThreatLevel(): Promise<void> {
     if (!this.simulationId) return;
 
-    const hasDossier = forgeStateManager.hasCompletedPurchase(this.simulationId, 'classified_dossier');
+    const hasDossier = forgeStateManager.hasCompletedPurchase(
+      this.simulationId,
+      'classified_dossier',
+    );
     if (!hasDossier) {
       this._threatLevel = null;
       return;
@@ -224,9 +235,7 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
   }
 
   private _openDispatch(): void {
-    this.dispatchEvent(
-      new CustomEvent('open-bureau-dispatch', { bubbles: true, composed: true }),
-    );
+    this.dispatchEvent(new CustomEvent('open-bureau-dispatch', { bubbles: true, composed: true }));
   }
 
   protected render() {
@@ -248,19 +257,25 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
       <div class="header">
         <h2 class="header__name">${sim.name}</h2>
         <span class="header__badge ${this._getBadgeClass(sim.status)}">${sim.status}</span>
-        ${this._threatLevel
-          ? html`<velg-threat-level
+        ${
+          this._threatLevel
+            ? html`<velg-threat-level
               .threatLevel=${this._threatLevel}
               @navigate-to-zeta=${this._handleThreatClick}
             ></velg-threat-level>`
-          : ''}
-        ${canEdit ? html`
+            : ''
+        }
+        ${
+          canEdit
+            ? html`
           <button
             class="header__bureau-btn ${btnClass}"
             @click=${this._openDispatch}
             aria-label=${msg('Bureau Services')}
           >${icons.hexagon(14)}</button>
-        ` : ''}
+        `
+            : ''
+        }
       </div>
     `;
   }

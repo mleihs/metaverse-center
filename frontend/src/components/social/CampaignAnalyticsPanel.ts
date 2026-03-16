@@ -334,7 +334,7 @@ export class VelgCampaignAnalyticsPanel extends LitElement {
 
     const tick = (now: number) => {
       const t = Math.min((now - start) / duration, 1);
-      const ease = 1 - Math.pow(1 - t, 3); // easeOutCubic
+      const ease = 1 - (1 - t) ** 3; // easeOutCubic
       this._animatedValues = {
         events: Math.round(targets.events * ease),
         echoes: Math.round(targets.echoes * ease),
@@ -424,7 +424,7 @@ export class VelgCampaignAnalyticsPanel extends LitElement {
     for (const point of timeline) {
       const name = point.name;
       if (!groups.has(name)) groups.set(name, []);
-      groups.get(name)!.push({ value: point.value, at: point.at });
+      groups.get(name)?.push({ value: point.value, at: point.at });
     }
 
     // Find global min/max for Y scaling

@@ -455,7 +455,6 @@ export class VelgForgeIgnition extends LitElement {
       </div>
     `;
   }
-
 }
 
 declare global {

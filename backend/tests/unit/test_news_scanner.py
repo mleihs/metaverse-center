@@ -13,7 +13,6 @@ import pytest
 
 from backend.services.scanning.base_adapter import ScanResult
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -167,7 +166,7 @@ class TestTitleSimilarity:
         assert "devastating" in keywords
 
     def test_threshold_boundary(self):
-        from backend.services.scanning.deduplicator import _SIMILARITY_THRESHOLD, _title_similarity
+        from backend.services.scanning.deduplicator import _title_similarity
 
         # Same core keywords, different phrasing
         sim = _title_similarity(

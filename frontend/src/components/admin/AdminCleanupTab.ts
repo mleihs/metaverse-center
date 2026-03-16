@@ -610,17 +610,16 @@ export class VelgAdminCleanupTab extends LitElement {
   private async _refreshPreview(type: CleanupType): Promise<void> {
     const selected = this._selectedIds[type];
     if (!selected?.size) return;
-    const result = await adminApi.previewCleanup(
-      type,
-      this._thresholds[type],
-      [...selected],
-    );
+    const result = await adminApi.previewCleanup(type, this._thresholds[type], [...selected]);
     if (result.success && result.data) {
       this._previews = { ...this._previews, [type]: result.data as CleanupPreviewResult };
     }
   }
 
-  private _renderItemList(type: CleanupType, items: CleanupPreviewItem[]): TemplateResult | typeof nothing {
+  private _renderItemList(
+    type: CleanupType,
+    items: CleanupPreviewItem[],
+  ): TemplateResult | typeof nothing {
     if (!items.length) return nothing;
     const selected = this._selectedIds[type] ?? new Set<string>();
     return html`

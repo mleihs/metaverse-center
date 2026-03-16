@@ -2,10 +2,9 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-
-import type { Resonance, ResonanceImpact } from '../../types/index.js';
-import { resonanceApi } from '../../services/api/index.js';
 import { appState } from '../../services/AppStateManager.js';
+import { resonanceApi } from '../../services/api/index.js';
+import type { Resonance, ResonanceImpact } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import { panelButtonStyles } from '../shared/panel-button-styles.js';
 import { panelCascadeStyles } from '../shared/panel-cascade-styles.js';
@@ -807,7 +806,8 @@ export class VelgResonanceDetailsPanel extends LitElement {
   // ── Render ──
 
   private _renderMedia() {
-    const r = this.resonance!;
+    const r = this.resonance;
+    if (!r) return nothing;
     const magPct = Math.round(r.magnitude * 100);
     const isUrgent =
       r.status === 'detected' &&
@@ -850,8 +850,9 @@ export class VelgResonanceDetailsPanel extends LitElement {
           </div>
 
           <!-- Countdown -->
-          ${this._countdown
-            ? html`<span
+          ${
+            this._countdown
+              ? html`<span
                 class=${classMap({
                   dossier__countdown: true,
                   urgent: isUrgent,
@@ -859,25 +860,29 @@ export class VelgResonanceDetailsPanel extends LitElement {
                 aria-label=${msg('Time until impact')}
                 >${this._countdown}</span
               >`
-            : r.status === 'impacting'
-              ? html`<span class="dossier__countdown urgent"
+              : r.status === 'impacting'
+                ? html`<span class="dossier__countdown urgent"
                   >${msg('IMPACTING')}</span
                 >`
-              : nothing}
+                : nothing
+          }
 
           <!-- Source category -->
-          ${r.source_category
-            ? html`<span class="dossier__source"
+          ${
+            r.source_category
+              ? html`<span class="dossier__source"
                 >${r.source_category.replace(/_/g, ' ')}</span
               >`
-            : nothing}
+              : nothing
+          }
         </div>
       </div>
     `;
   }
 
   private _renderContent() {
-    const r = this.resonance!;
+    const r = this.resonance;
+    if (!r) return nothing;
 
     return html`
       <div slot="content">
@@ -885,15 +890,15 @@ export class VelgResonanceDetailsPanel extends LitElement {
           <!-- Classification -->
           <div class="panel__section">
             <velg-section-header
-              >${ARCHETYPE_LABELS[r.resonance_signature] ??
-              r.archetype}</velg-section-header
+              >${ARCHETYPE_LABELS[r.resonance_signature] ?? r.archetype}</velg-section-header
             >
             <p class="panel__description">${r.title}</p>
           </div>
 
           <!-- Description -->
-          ${r.description
-            ? html`
+          ${
+            r.description
+              ? html`
                 <div class="panel__section">
                   <velg-section-header
                     >${msg('Description')}</velg-section-header
@@ -901,11 +906,13 @@ export class VelgResonanceDetailsPanel extends LitElement {
                   <p class="panel__description">${r.description}</p>
                 </div>
               `
-            : nothing}
+              : nothing
+          }
 
           <!-- Bureau Dispatch -->
-          ${r.bureau_dispatch
-            ? html`
+          ${
+            r.bureau_dispatch
+              ? html`
                 <div class="panel__section">
                   <velg-section-header
                     >${msg('Bureau Dispatch')}</velg-section-header
@@ -913,11 +920,13 @@ export class VelgResonanceDetailsPanel extends LitElement {
                   <p class="panel__dispatch">${r.bureau_dispatch}</p>
                 </div>
               `
-            : nothing}
+              : nothing
+          }
 
           <!-- Affected Event Types -->
-          ${r.affected_event_types?.length
-            ? html`
+          ${
+            r.affected_event_types?.length
+              ? html`
                 <div class="panel__section">
                   <velg-section-header
                     >${msg('Affected Event Types')}</velg-section-header
@@ -932,7 +941,8 @@ export class VelgResonanceDetailsPanel extends LitElement {
                   </div>
                 </div>
               `
-            : nothing}
+              : nothing
+          }
 
           <!-- Affected Shards (impact table) -->
           <div class="panel__section">
@@ -962,8 +972,9 @@ export class VelgResonanceDetailsPanel extends LitElement {
                   >${this._formatTimestamp(r.impacts_at)}</span
                 >
               </div>
-              ${r.subsides_at
-                ? html`
+              ${
+                r.subsides_at
+                  ? html`
                     <div class="timeline-entry">
                       <span class="timeline-entry__label"
                         >${msg('Subsides at')}</span
@@ -973,7 +984,8 @@ export class VelgResonanceDetailsPanel extends LitElement {
                       >
                     </div>
                   `
-                : nothing}
+                  : nothing
+              }
             </div>
           </div>
         </div>
@@ -1064,15 +1076,17 @@ export class VelgResonanceDetailsPanel extends LitElement {
     if (!this._isPlatformAdmin) return nothing;
 
     return html`
-      ${this.resonance?.status === 'detected'
-        ? html`<button
+      ${
+        this.resonance?.status === 'detected'
+          ? html`<button
             slot="footer"
             class="panel__btn panel__btn--generate"
             @click=${this._handleProcess}
           >
             ${msg('Process')}
           </button>`
-        : nothing}
+          : nothing
+      }
       <button
         slot="footer"
         class="panel__btn panel__btn--edit"

@@ -477,9 +477,14 @@ export class VelgSimulationSwitcher extends SignalWatcher(LitElement) {
   private _renderSimCard(sim: Simulation) {
     const isActive = this._currentSim?.id === sim.id;
     const themeColor = THEME_COLORS[sim.theme] ?? '#888';
-    const statusClass = sim.status === 'active' ? '--active'
-      : sim.status === 'draft' || sim.status === 'configuring' ? '--draft'
-      : sim.status === 'paused' ? '--paused' : '';
+    const statusClass =
+      sim.status === 'active'
+        ? '--active'
+        : sim.status === 'draft' || sim.status === 'configuring'
+          ? '--draft'
+          : sim.status === 'paused'
+            ? '--paused'
+            : '';
     const agents = sim.agent_count ?? 0;
     const buildings = sim.building_count ?? 0;
 
@@ -525,13 +530,15 @@ export class VelgSimulationSwitcher extends SignalWatcher(LitElement) {
           <span class="trigger__chevron">${icons.chevronDown(10)}</span>
         </button>
 
-        ${this._open
-          ? html`
+        ${
+          this._open
+            ? html`
               <div class="backdrop" @click=${this._close}></div>
               <div class="panel-anchor">
                 <div class="panel" role="listbox" aria-label=${msg('Simulations')}>
-                  ${showSearch
-                    ? html`
+                  ${
+                    showSearch
+                      ? html`
                         <div class="search">
                           <span class="search__icon">${icons.magnifyingGlass(12)}</span>
                           <input
@@ -545,39 +552,49 @@ export class VelgSimulationSwitcher extends SignalWatcher(LitElement) {
                           />
                         </div>
                       `
-                    : nothing}
+                      : nothing
+                  }
 
-                  ${this._userId && this._myWorlds.length > 0
-                    ? html`
+                  ${
+                    this._userId && this._myWorlds.length > 0
+                      ? html`
                         <div class="section-label">${msg('My Worlds')}</div>
                         ${this._myWorlds.map((s) => this._renderSimCard(s))}
                       `
-                    : nothing}
+                      : nothing
+                  }
 
-                  ${this._communityWorlds.length > 0
-                    ? html`
+                  ${
+                    this._communityWorlds.length > 0
+                      ? html`
                         ${this._myWorlds.length > 0 ? html`<div class="divider"></div>` : nothing}
                         <div class="section-label">${msg('Community Shards')}</div>
                         ${this._communityWorlds.map((s) => this._renderSimCard(s))}
                       `
-                    : nothing}
+                      : nothing
+                  }
 
-                  ${this._filteredSims.length === 0
-                    ? html`<div class="empty">${msg('No shards found')}</div>`
-                    : nothing}
+                  ${
+                    this._filteredSims.length === 0
+                      ? html`<div class="empty">${msg('No shards found')}</div>`
+                      : nothing
+                  }
 
-                  ${appState.isAuthenticated.value
-                    ? html`
+                  ${
+                    appState.isAuthenticated.value
+                      ? html`
                         <div class="divider"></div>
                         <button class="cta" @click=${this._onNewShard}>
                           + ${msg('Fracture a New Shard')}
                         </button>
                       `
-                    : nothing}
+                      : nothing
+                  }
                 </div>
               </div>
             `
-          : nothing}
+            : nothing
+        }
       </div>
     `;
   }

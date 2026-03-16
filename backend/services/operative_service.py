@@ -105,14 +105,7 @@ class OperativeService:
 # which eventually imports OperativeService via cycle_resolution_service).
 
 from backend.services.operative_mission_service import (  # noqa: E402
-    DEPLOY_CYCLES,
-    FORTIFICATION_DURATION_CYCLES,
-    FORTIFICATION_RP_COST,
-    MISSION_DURATION_CYCLES,
-    SECURITY_DOWNGRADE,
     OperativeMissionService,
-    _downgrade_security,
-    _upgrade_security,
 )
 
 # Mission execution operations

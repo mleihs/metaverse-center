@@ -3,8 +3,6 @@
 import json
 from unittest.mock import MagicMock
 
-import pytest
-
 from backend.middleware.seo_content import (
     _esc,
     _safe_jsonld,

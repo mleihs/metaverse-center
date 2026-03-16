@@ -487,9 +487,7 @@ export class VelgBureauStatus extends LitElement {
   @state() private _submitting = false;
 
   private _getSectionForArcanum(arcanum: string): ForgeLoreSection | undefined {
-    return this.classifiedSections.find(
-      (s) => s.arcanum === arcanum && s.chapter === 'CLASSIFIED',
-    );
+    return this.classifiedSections.find((s) => s.arcanum === arcanum && s.chapter === 'CLASSIFIED');
   }
 
   private _getTotalAddenda(): number {
@@ -631,9 +629,10 @@ export class VelgBureauStatus extends LitElement {
     const count = section?.evolution_count ?? 0;
     const hasEvolved = count > 0;
 
-    const lastLog = hasEvolved && section?.evolution_log?.length
-      ? section.evolution_log[section.evolution_log.length - 1]
-      : null;
+    const lastLog =
+      hasEvolved && section?.evolution_log?.length
+        ? section.evolution_log[section.evolution_log.length - 1]
+        : null;
 
     let detail: string;
     if (lastLog) {
@@ -657,10 +656,7 @@ export class VelgBureauStatus extends LitElement {
     `;
   }
 
-  private _renderForm(
-    triggers: Array<{ value: string; label: string }>,
-    canSubmit: boolean,
-  ) {
+  private _renderForm(triggers: Array<{ value: string; label: string }>, canSubmit: boolean) {
     return html`
       <div class="evo-form" id="bureau-evo-form" aria-live="polite">
         <div class="evo-form__row">
@@ -685,9 +681,7 @@ export class VelgBureauStatus extends LitElement {
             .value=${this._selectedTrigger}
             @change=${this._onTriggerChange}
           >
-            ${triggers.map(
-              (t) => html`<option value=${t.value}>${t.label}</option>`,
-            )}
+            ${triggers.map((t) => html`<option value=${t.value}>${t.label}</option>`)}
           </select>
         </div>
 
@@ -706,9 +700,11 @@ export class VelgBureauStatus extends LitElement {
         <div class="evo-form__budget">
           ${msg('Budget:')}
           <span class="evo-form__budget-value ${this.hasBypass ? 'evo-form__budget-value--bypass' : ''}">
-            ${this.hasBypass
-              ? msg('BYOK — unlimited')
-              : html`${this.regenBudgetRemaining} ${msg('remaining (first 3 free)')}`}
+            ${
+              this.hasBypass
+                ? msg('BYOK — unlimited')
+                : html`${this.regenBudgetRemaining} ${msg('remaining (first 3 free)')}`
+            }
           </span>
         </div>
 

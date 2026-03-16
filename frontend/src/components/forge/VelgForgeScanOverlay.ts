@@ -274,9 +274,7 @@ export class VelgForgeScanOverlay extends LitElement {
 
   private _isLockActive(index: number): boolean {
     if (this.phases.length === 0 || this.lockLabels.length === 0) return false;
-    const threshold = Math.floor(
-      ((index + 1) * this.phases.length) / (this.lockLabels.length + 1),
-    );
+    const threshold = Math.floor(((index + 1) * this.phases.length) / (this.lockLabels.length + 1));
     return this._scanPhase >= threshold;
   }
 
@@ -289,21 +287,26 @@ export class VelgForgeScanOverlay extends LitElement {
       <div class="scan-overlay" role="status" aria-live="polite" aria-label=${this.headerLabel || msg('Processing')}>
         <div class="scan-overlay__crt"></div>
 
-        ${this.echoText
-          ? html`<div class="scan-seed-echo" aria-hidden="true">"${this.echoText}"</div>`
-          : nothing}
+        ${
+          this.echoText
+            ? html`<div class="scan-seed-echo" aria-hidden="true">"${this.echoText}"</div>`
+            : nothing
+        }
 
         <div class="scan-status">
-          ${this.headerLabel
-            ? html`<div class="scan-status__label">${this.headerLabel}</div>`
-            : nothing}
+          ${
+            this.headerLabel
+              ? html`<div class="scan-status__label">${this.headerLabel}</div>`
+              : nothing
+          }
           <div class="scan-status__phase">
             ${currentPhase}<span class="scan-status__cursor"></span>
           </div>
         </div>
 
-        ${this.lockLabels.length > 0
-          ? html`
+        ${
+          this.lockLabels.length > 0
+            ? html`
           <div class="scan-locks">
             ${this.lockLabels.map(
               (label, i) => html`
@@ -315,7 +318,8 @@ export class VelgForgeScanOverlay extends LitElement {
             )}
           </div>
         `
-          : nothing}
+            : nothing
+        }
 
         <div class="scan-progress">
           <div class="scan-progress__fill" style="width: ${this._progressWidth()}%"></div>

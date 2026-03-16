@@ -832,8 +832,9 @@ export class VelgEpochOverviewTab extends LitElement {
   }
 
   private _renderMission(m: OperativeMission) {
-    const canRecall = ['deploying', 'active'].includes(m.status)
-      && !['completed', 'cancelled'].includes(this.epoch?.status ?? '');
+    const canRecall =
+      ['deploying', 'active'].includes(m.status) &&
+      !['completed', 'cancelled'].includes(this.epoch?.status ?? '');
     return html`
       <div class="mission">
         <div class="mission__icon">${getOperativeIcon(m.operative_type)}</div>
@@ -844,15 +845,19 @@ export class VelgEpochOverviewTab extends LitElement {
             ${m.target_sim?.name ? html` &rarr; ${m.target_sim.name}` : nothing}
           </div>
           <div class="mission__detail">
-            ${m.operative_type === 'guardian'
-              ? html`${msg('Permanent')} &middot; ${m.cost_rp} RP`
-              : html`
-                ${m.success_probability != null
-                  ? html`${Math.round(m.success_probability * 100)}% ${msg('success')}`
-                  : nothing}
+            ${
+              m.operative_type === 'guardian'
+                ? html`${msg('Permanent')} &middot; ${m.cost_rp} RP`
+                : html`
+                ${
+                  m.success_probability != null
+                    ? html`${Math.round(m.success_probability * 100)}% ${msg('success')}`
+                    : nothing
+                }
                 ${m.cost_rp ? html` &middot; ${m.cost_rp} RP` : nothing}
                 ${this._getRemainingCycles(m)}
-              `}
+              `
+            }
           </div>
         </div>
         ${

@@ -3,11 +3,11 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { chronicleApi } from '../../services/api/index.js';
+import { localeService } from '../../services/i18n/locale-service.js';
 import { seoService } from '../../services/SeoService.js';
 import type { Chronicle } from '../../types/index.js';
-import { t } from '../../utils/locale-fields.js';
 import { icons } from '../../utils/icons.js';
-import { localeService } from '../../services/i18n/locale-service.js';
+import { t } from '../../utils/locale-fields.js';
 
 import '../shared/Pagination.js';
 import '../shared/LoadingState.js';
@@ -587,17 +587,21 @@ export class VelgChronicleView extends LitElement {
         ${this._renderMasthead()}
         ${this._canEdit ? this._renderEditorial() : nothing}
 
-        ${this._canEdit
-          ? html`<velg-chronicle-export .simulationId=${this.simulationId}></velg-chronicle-export>`
-          : nothing}
+        ${
+          this._canEdit
+            ? html`<velg-chronicle-export .simulationId=${this.simulationId}></velg-chronicle-export>`
+            : nothing
+        }
 
-        ${this._loading
-          ? html`<velg-loading-state message=${msg('Loading chronicles...')}></velg-loading-state>`
-          : this._error
-            ? html`<velg-error-state message=${this._error} show-retry @retry=${this._load}></velg-error-state>`
-            : this._chronicles.length === 0
-              ? html`<velg-empty-state message=${msg('No chronicle editions yet.')}></velg-empty-state>`
-              : this._renderBroadsheet()}
+        ${
+          this._loading
+            ? html`<velg-loading-state message=${msg('Loading chronicles...')}></velg-loading-state>`
+            : this._error
+              ? html`<velg-error-state message=${this._error} show-retry @retry=${this._load}></velg-error-state>`
+              : this._chronicles.length === 0
+                ? html`<velg-empty-state message=${msg('No chronicle editions yet.')}></velg-empty-state>`
+                : this._renderBroadsheet()
+        }
       </div>
     `;
   }
@@ -611,7 +615,10 @@ export class VelgChronicleView extends LitElement {
   private _renderMasthead() {
     const simName = appState.currentSimulation.value?.name ?? '';
     const today = new Date().toLocaleDateString(this._dateLocale, {
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
     });
 
     return html`
@@ -639,7 +646,9 @@ export class VelgChronicleView extends LitElement {
             class="editorial__input"
             type="date"
             .value=${this._periodStart}
-            @change=${(e: Event) => { this._periodStart = (e.target as HTMLInputElement).value; }}
+            @change=${(e: Event) => {
+              this._periodStart = (e.target as HTMLInputElement).value;
+            }}
           />
         </div>
         <div class="editorial__field">
@@ -648,7 +657,9 @@ export class VelgChronicleView extends LitElement {
             class="editorial__input"
             type="date"
             .value=${this._periodEnd}
-            @change=${(e: Event) => { this._periodEnd = (e.target as HTMLInputElement).value; }}
+            @change=${(e: Event) => {
+              this._periodEnd = (e.target as HTMLInputElement).value;
+            }}
           />
         </div>
         <button
@@ -670,12 +681,14 @@ export class VelgChronicleView extends LitElement {
     return html`
       ${this._renderFrontPage(featured)}
 
-      ${this._archiveEditions.length > 0
-        ? html`
+      ${
+        this._archiveEditions.length > 0
+          ? html`
           <div class="ornament" aria-hidden="true">\u2736 \u2736 \u2736</div>
           ${this._renderArchive()}
         `
-        : nothing}
+          : nothing
+      }
 
       <velg-pagination
         .total=${this._total}
@@ -693,19 +706,17 @@ export class VelgChronicleView extends LitElement {
           ${msg('Vol.')} ${c.edition_number} \u2014 ${this._formatDateRange(c.period_start, c.period_end)}
         </div>
         <h2 class="front-page__headline">${t(c, 'title')}</h2>
-        ${c.headline
-          ? html`<div class="front-page__subhead">${t(c, 'headline')}</div>`
-          : nothing}
+        ${c.headline ? html`<div class="front-page__subhead">${t(c, 'headline')}</div>` : nothing}
         <hr class="front-page__rule" />
         <div class="article">
           ${this._renderArticle(t(c, 'content'))}
           <footer class="article__footer">
-            ${c.model_used
-              ? html`<span>${msg('Model:')} ${c.model_used}</span>`
-              : nothing}
-            ${c.published_at
-              ? html`<span>${new Date(c.published_at).toLocaleDateString(this._dateLocale)}</span>`
-              : nothing}
+            ${c.model_used ? html`<span>${msg('Model:')} ${c.model_used}</span>` : nothing}
+            ${
+              c.published_at
+                ? html`<span>${new Date(c.published_at).toLocaleDateString(this._dateLocale)}</span>`
+                : nothing
+            }
           </footer>
         </div>
       </article>

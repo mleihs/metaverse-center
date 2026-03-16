@@ -616,8 +616,14 @@ export class VelgDarkroomStudio extends LitElement {
   @state() private _regenerating = false;
 
   // Image forge state
-  @state() private _entities: Array<{ id: string; name: string; type: string; imageUrl: string }> = [];
-  @state() private _selectedEntity: { id: string; name: string; type: string; imageUrl: string } | null = null;
+  @state() private _entities: Array<{ id: string; name: string; type: string; imageUrl: string }> =
+    [];
+  @state() private _selectedEntity: {
+    id: string;
+    name: string;
+    type: string;
+    imageUrl: string;
+  } | null = null;
   @state() private _promptOverride = '';
 
   connectedCallback(): void {
@@ -650,7 +656,7 @@ export class VelgDarkroomStudio extends LitElement {
       this.simulationId,
       'darkroom_pass',
     );
-    const activePurchase = purchases.find(p => p.status === 'completed');
+    const activePurchase = purchases.find((p) => p.status === 'completed');
     if (activePurchase) {
       this._hasPass = true;
       this._regenBudget = activePurchase.regen_budget_remaining;
@@ -660,17 +666,12 @@ export class VelgDarkroomStudio extends LitElement {
   }
 
   private _close(): void {
-    this.dispatchEvent(
-      new CustomEvent('darkroom-close', { bubbles: true, composed: true }),
-    );
+    this.dispatchEvent(new CustomEvent('darkroom-close', { bubbles: true, composed: true }));
   }
 
   private async _purchasePass(): Promise<void> {
     this._purchasing = true;
-    const purchaseId = await forgeStateManager.purchaseFeature(
-      this.simulationId,
-      'darkroom_pass',
-    );
+    const purchaseId = await forgeStateManager.purchaseFeature(this.simulationId, 'darkroom_pass');
 
     if (!purchaseId) {
       VelgToast.error(forgeStateManager.error.value ?? msg('Failed to purchase darkroom pass.'));
@@ -707,7 +708,7 @@ export class VelgDarkroomStudio extends LitElement {
         // Force image refresh by appending cache buster
         this._selectedEntity = {
           ...this._selectedEntity,
-          imageUrl: this._selectedEntity.imageUrl.split('?')[0] + `?t=${Date.now()}`,
+          imageUrl: `${this._selectedEntity.imageUrl.split('?')[0]}?t=${Date.now()}`,
         };
       } else {
         VelgToast.error(msg('Regeneration failed.'));
@@ -734,9 +735,11 @@ export class VelgDarkroomStudio extends LitElement {
         <div class="header">
           <div class="header__left">
             <h2 class="header__title">${msg('THE DARKROOM')}</h2>
-            ${this._hasPass
-              ? html`<span class="header__budget">${msg('REGENERATIONS REMAINING:')} ${this._regenBudget}/10</span>`
-              : nothing}
+            ${
+              this._hasPass
+                ? html`<span class="header__budget">${msg('REGENERATIONS REMAINING:')} ${this._regenBudget}/10</span>`
+                : nothing
+            }
           </div>
           <button
             class="header__close"
@@ -748,9 +751,7 @@ export class VelgDarkroomStudio extends LitElement {
         ${this._hasPass ? this._renderTabs() : nothing}
 
         <div class="content">
-          ${this._hasPass
-            ? this._renderActiveTab()
-            : this._renderPurchaseCTA()}
+          ${this._hasPass ? this._renderActiveTab() : this._renderPurchaseCTA()}
         </div>
 
         ${this._selectedEntity ? this._renderRegenPanel() : nothing}
@@ -767,7 +768,8 @@ export class VelgDarkroomStudio extends LitElement {
 
     return html`
       <nav class="tabs" role="tablist">
-        ${tabs.map(t => html`
+        ${tabs.map(
+          (t) => html`
           <button
             class="tab ${this._activeTab === t.key ? 'tab--active' : ''}"
             role="tab"
@@ -776,7 +778,8 @@ export class VelgDarkroomStudio extends LitElement {
           >
             ${t.label}
           </button>
-        `)}
+        `,
+        )}
       </nav>
     `;
   }
@@ -821,7 +824,7 @@ export class VelgDarkroomStudio extends LitElement {
       <div class="content__section theme-lab">
         <h3 class="theme-lab__heading">${msg('Theme Laboratory')}</h3>
         <p style="font-size: var(--text-sm); color: var(--color-text-secondary); margin: 0;">
-          ${msg('Generate AI theme variants based on your simulation\'s lore and aesthetic. Apply directly or preview before committing.')}
+          ${msg("Generate AI theme variants based on your simulation's lore and aesthetic. Apply directly or preview before committing.")}
         </p>
         <button
           class="generate-btn"
@@ -880,13 +883,18 @@ export class VelgDarkroomStudio extends LitElement {
         <p style="font-size: var(--text-sm); color: var(--color-text-secondary); margin: 0;">
           ${msg('Select an entity to regenerate its portrait. You have')} ${this._regenBudget} ${msg('regenerations remaining.')}
         </p>
-        ${this._entities.length > 0
-          ? html`
+        ${
+          this._entities.length > 0
+            ? html`
             <div class="image-forge__grid">
-              ${this._entities.map(e => html`
+              ${this._entities.map(
+                (e) => html`
                 <div
                   class="entity-thumb"
-                  @click=${() => { this._selectedEntity = e; this._promptOverride = ''; }}
+                  @click=${() => {
+                    this._selectedEntity = e;
+                    this._promptOverride = '';
+                  }}
                   role="button"
                   tabindex="0"
                   aria-label=${e.name}
@@ -901,14 +909,16 @@ export class VelgDarkroomStudio extends LitElement {
                   <img class="entity-thumb__img" src=${e.imageUrl} alt=${e.name} loading="lazy" />
                   <span class="entity-thumb__name">${e.name}</span>
                 </div>
-              `)}
+              `,
+              )}
             </div>
           `
-          : html`
+            : html`
             <p style="font-size: var(--text-sm); color: var(--color-text-muted);">
               ${msg('No entity images found for this simulation.')}
             </p>
-          `}
+          `
+        }
       </div>
     `;
   }
@@ -922,7 +932,9 @@ export class VelgDarkroomStudio extends LitElement {
           <h4 class="regen-panel__title">${this._selectedEntity.name}</h4>
           <button
             class="regen-panel__close"
-            @click=${() => { this._selectedEntity = null; }}
+            @click=${() => {
+              this._selectedEntity = null;
+            }}
             aria-label=${msg('Close panel')}
           >X</button>
         </div>
@@ -936,7 +948,9 @@ export class VelgDarkroomStudio extends LitElement {
             class="regen-panel__prompt"
             placeholder=${msg('Optional: describe what you want different...')}
             .value=${this._promptOverride}
-            @input=${(e: Event) => { this._promptOverride = (e.target as HTMLTextAreaElement).value; }}
+            @input=${(e: Event) => {
+              this._promptOverride = (e.target as HTMLTextAreaElement).value;
+            }}
           ></textarea>
           <span class="regen-panel__budget">${this._regenBudget}/10 ${msg('REMAINING')}</span>
           <button

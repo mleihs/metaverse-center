@@ -98,8 +98,13 @@ def render_epoch_invitation(
             blocks.append(_language_divider())
         blocks.append(
             _render_invitation_block(
-                safe_name, safe_lore, invite_url, lang,
-                is_primary=(i == 0), accent=accent, cycle_hours=cycle_hours,
+                safe_name,
+                safe_lore,
+                invite_url,
+                lang,
+                is_primary=(i == 0),
+                accent=accent,
+                cycle_hours=cycle_hours,
             )
         )
         blocks.append(_cta_button(invite_url, _nt("inv_cta", lang), accent=accent))
@@ -132,7 +137,7 @@ def _render_invitation_block(
           <tr>
             <td style="padding:24px 32px;border-bottom:2px solid {_BORDER};">
               <p style="margin:0;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
-                {_nt('inv_header', lang)}
+                {_nt("inv_header", lang)}
               </p>
             </td>
           </tr>"""
@@ -141,7 +146,7 @@ def _render_invitation_block(
           <tr>
             <td style="padding:24px 32px 8px;">
               <p style="margin:0;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
-                {_nt('inv_header', lang)}
+                {_nt("inv_header", lang)}
               </p>
             </td>
           </tr>"""
@@ -149,12 +154,12 @@ def _render_invitation_block(
     # Introduction paragraphs
     intro = f"""\
           <tr>
-            <td style="padding:{'24px' if is_primary else '8px'} 32px 16px;">
+            <td style="padding:{"24px" if is_primary else "8px"} 32px 16px;">
               <p style="margin:0 0 12px;font-size:14px;line-height:1.7;color:{_TEXT};">
-                {_nt('inv_intro_1', lang)}
+                {_nt("inv_intro_1", lang)}
               </p>
               <p style="margin:0;font-size:14px;line-height:1.7;color:{_TEXT};">
-                {_nt('inv_intro_2', lang)}
+                {_nt("inv_intro_2", lang)}
               </p>
             </td>
           </tr>"""
@@ -164,7 +169,7 @@ def _render_invitation_block(
           <tr>
             <td style="padding:8px 32px 4px;">
               <p style="margin:0 0 2px;font-size:10px;letter-spacing:3px;color:{_TEXT_DIM};text-transform:uppercase;">
-                {_nt('inv_operation', lang)}
+                {_nt("inv_operation", lang)}
               </p>
               <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
                 {epoch_name}
@@ -195,7 +200,7 @@ def _render_invitation_block(
           <tr>
             <td style="padding:0 32px 16px;">
               <p style="margin:0;font-size:12px;color:{_TEXT_DIM};font-style:italic;padding:0 4px;">
-                {_nt('inv_intel_see_above', lang)}
+                {_nt("inv_intel_see_above", lang)}
               </p>
             </td>
           </tr>"""
@@ -265,12 +270,7 @@ def _resolve_langs(email_locale: str | None) -> list[str]:
 
 def _esc(text: str) -> str:
     """Escape HTML special characters."""
-    return (
-        text.replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-        .replace('"', "&quot;")
-    )
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
 
 
 # ── Shared building blocks ──────────────────────────────────────────────
@@ -410,7 +410,7 @@ def _footer_row(email_locale: str | None = None) -> str:
                 {manage_link}
               </p>
               <p style="margin:0;font-size:10px;letter-spacing:2px;color:{_TEXT_DARK};text-transform:uppercase;">
-                {_nt('footer_origin', footer_lang)}
+                {_nt("footer_origin", footer_lang)}
               </p>
             </td>
           </tr>"""
@@ -565,7 +565,7 @@ _NOTIF_STRINGS: dict[str, dict[str, str]] = {
     },
     "alliance_dissolved": {
         "en": "Alliance '{name}' has collapsed under internal tensions!",
-        "de": "Allianz \u201E{name}\u201C ist unter internen Spannungen zerbrochen!",
+        "de": "Allianz \u201e{name}\u201c ist unter internen Spannungen zerbrochen!",
     },
     "alliance_dissolved_hint": {
         "en": "All former members are now operating independently. Overlapping operations caused irreconcilable friction.",
@@ -847,6 +847,10 @@ _NOTIF_STRINGS: dict[str, dict[str, str]] = {
         "en": "REVIEWER NOTES",
         "de": "ANMERKUNGEN DES PRÜFERS",
     },
+    "clearance_tokens_granted": {
+        "en": "{count} Forge Tokens credited to your account",
+        "de": "{count} Schmiede-Token deinem Konto gutgeschrieben",
+    },
     "clearance_tier_label": {
         "en": "CLEARANCE LEVEL",
         "de": "FREIGABESTUFE",
@@ -999,20 +1003,20 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
             <td style="padding:0 32px 16px;">
               <div style="border:1px dashed {_BORDER};padding:16px 20px;background-color:{_SURFACE};">
                 <p style="margin:0 0 4px;font-size:10px;letter-spacing:3px;color:{_TEXT_DIM};text-transform:uppercase;">
-                  {_nt('your_standing', lang)}
+                  {_nt("your_standing", lang)}
                 </p>
                 <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin-top:8px;">
                   <tr>
-                    <td style="font-size:12px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:4px 0;">{_nt('rank', lang)}</td>
+                    <td style="font-size:12px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:4px 0;">{_nt("rank", lang)}</td>
                     <td style="font-size:14px;color:{_TEXT};text-align:right;padding:4px 0;">{rank_str} {rank_delta}</td>
                   </tr>
                   <tr>
-                    <td style="font-size:12px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:4px 0;">{_nt('composite', lang)}</td>
-                    <td style="font-size:14px;color:{accent};font-weight:bold;text-align:right;padding:4px 0;">{data['composite']:.1f} {_delta_arrow(data['composite_delta'])}</td>
+                    <td style="font-size:12px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:4px 0;">{_nt("composite", lang)}</td>
+                    <td style="font-size:14px;color:{accent};font-weight:bold;text-align:right;padding:4px 0;">{data["composite"]:.1f} {_delta_arrow(data["composite_delta"])}</td>
                   </tr>
                   <tr>
-                    <td style="font-size:12px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:4px 0;">{_nt('rp_reserve', lang)}</td>
-                    <td style="font-size:14px;color:{_TEXT};text-align:right;padding:4px 0;">{data['rp_balance']} / {data['rp_cap']}</td>
+                    <td style="font-size:12px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:4px 0;">{_nt("rp_reserve", lang)}</td>
+                    <td style="font-size:14px;color:{_TEXT};text-align:right;padding:4px 0;">{data["rp_balance"]} / {data["rp_cap"]}</td>
                   </tr>
 {rank_gap_html}
                 </table>
@@ -1036,12 +1040,12 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
                   <tr>
                     <td style="font-size:11px;color:{_TEXT_DIM};letter-spacing:1px;text-transform:uppercase;padding:5px 0;white-space:nowrap;width:100px;">{label}</td>
                     <td style="padding:5px 8px;">{bar}</td>
-                    <td style="font-size:12px;color:{_TEXT};text-align:right;padding:5px 0;white-space:nowrap;width:50px;">{d['value']:.1f}</td>
-                    <td style="font-size:11px;text-align:right;padding:5px 0;white-space:nowrap;width:60px;">{_delta_arrow(d['delta'])}</td>
+                    <td style="font-size:12px;color:{_TEXT};text-align:right;padding:5px 0;white-space:nowrap;width:50px;">{d["value"]:.1f}</td>
+                    <td style="font-size:11px;text-align:right;padding:5px 0;white-space:nowrap;width:60px;">{_delta_arrow(d["delta"])}</td>
                   </tr>"""
 
     dims_html = f"""\
-{_section_header(_nt('dimension_analysis', lang))}
+{_section_header(_nt("dimension_analysis", lang))}
           <tr>
             <td style="padding:0 32px 16px;">
               <div style="border:1px dashed {_BORDER};padding:12px 16px;background-color:{_SURFACE};">
@@ -1060,7 +1064,9 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
             target = _esc(m.get("target_name", "?"))
             status = m.get("status", "active")
             status_icon = _OP_STATUS_LABELS.get(status, {}).get(lang, "?")
-            status_color = _GREEN if status == "success" else (_RED if status in ("detected", "captured", "failed") else _TEXT_DIM)
+            status_color = (
+                _GREEN if status == "success" else (_RED if status in ("detected", "captured", "failed") else _TEXT_DIM)
+            )
 
             mission_rows += f"""\
                   <tr>
@@ -1070,22 +1076,22 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
                   </tr>"""
 
         ops_html = f"""\
-{_section_header(_nt('operative_status', lang))}
+{_section_header(_nt("operative_status", lang))}
           <tr>
             <td style="padding:0 32px 16px;">
               <div style="border:1px dashed {_BORDER};padding:12px 16px;background-color:{_SURFACE};">
                 <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
                   <tr>
-                    <td style="font-size:9px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:0 8px 6px 0;border-bottom:1px solid {_BORDER_SUBTLE};">{_nt('mission_type_header', lang)}</td>
-                    <td style="font-size:9px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:0 0 6px;border-bottom:1px solid {_BORDER_SUBTLE};">{_nt('mission_target', lang)}</td>
-                    <td style="font-size:9px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:0 0 6px 8px;text-align:right;border-bottom:1px solid {_BORDER_SUBTLE};">{_nt('mission_outcome', lang)}</td>
+                    <td style="font-size:9px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:0 8px 6px 0;border-bottom:1px solid {_BORDER_SUBTLE};">{_nt("mission_type_header", lang)}</td>
+                    <td style="font-size:9px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:0 0 6px;border-bottom:1px solid {_BORDER_SUBTLE};">{_nt("mission_target", lang)}</td>
+                    <td style="font-size:9px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:0 0 6px 8px;text-align:right;border-bottom:1px solid {_BORDER_SUBTLE};">{_nt("mission_outcome", lang)}</td>
                   </tr>
 {mission_rows}
                 </table>
                 <p style="margin:8px 0 0;font-size:12px;color:{_TEXT_DIM};line-height:1.6;">
-                  {_nt('guardians', lang)}: <strong style="color:{_TEXT};">{data['guardians']}</strong>
+                  {_nt("guardians", lang)}: <strong style="color:{_TEXT};">{data["guardians"]}</strong>
                   &nbsp;&middot;&nbsp;
-                  {_nt('counter_intel', lang)}: <strong style="color:{_TEXT};">{data['counter_intel']}</strong>
+                  {_nt("counter_intel", lang)}: <strong style="color:{_TEXT};">{data["counter_intel"]}</strong>
                 </p>
               </div>
             </td>
@@ -1093,20 +1099,20 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
     else:
         # Fallback: aggregate view (backward compat)
         ops_html = f"""\
-{_section_header(_nt('operative_status', lang))}
+{_section_header(_nt("operative_status", lang))}
           <tr>
             <td style="padding:0 32px 16px;">
               <div style="border:1px dashed {_BORDER};padding:12px 16px;background-color:{_SURFACE};">
                 <p style="margin:0;font-size:13px;color:{_TEXT};line-height:1.8;">
-                  {_nt('active', lang)}: <strong style="color:{accent};">{data['active_ops']}</strong>
+                  {_nt("active", lang)}: <strong style="color:{accent};">{data["active_ops"]}</strong>
                   &nbsp;&middot;&nbsp;
-                  {_nt('resolved', lang)}: <strong>{data['resolved_ops']}</strong>
-                  ({data['success_ops']}&#10003; {data['detected_ops']}&#10007;)
+                  {_nt("resolved", lang)}: <strong>{data["resolved_ops"]}</strong>
+                  ({data["success_ops"]}&#10003; {data["detected_ops"]}&#10007;)
                 </p>
                 <p style="margin:4px 0 0;font-size:13px;color:{_TEXT};line-height:1.8;">
-                  {_nt('guardians', lang)}: <strong>{data['guardians']}</strong>
+                  {_nt("guardians", lang)}: <strong>{data["guardians"]}</strong>
                   &nbsp;&middot;&nbsp;
-                  {_nt('counter_intel', lang)}: <strong>{data['counter_intel']}</strong>
+                  {_nt("counter_intel", lang)}: <strong>{data["counter_intel"]}</strong>
                 </p>
               </div>
             </td>
@@ -1124,17 +1130,17 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
             status_label = _nt(status_key, lang) if status_key in _NOTIF_STRINGS else raw_status.upper()
             threat_items += f"""\
                 <p style="margin:0 0 6px;font-size:13px;color:{_RED};line-height:1.6;">
-                  &#9888; {op_type} {_nt('threat_from', lang)} {source} &mdash; {status_label}
+                  &#9888; {op_type} {_nt("threat_from", lang)} {source} &mdash; {status_label}
                 </p>"""
         threat_html = f"{_section_header(_nt('threat_assessment', lang))}\n{_dashed_box(threat_items)}"
     elif data.get("has_threat_data"):
         # Only show "no threats" if we actually queried for threats
         threat_html = f"""\
-{_section_header(_nt('threat_assessment', lang))}
+{_section_header(_nt("threat_assessment", lang))}
           <tr>
             <td style="padding:0 32px 16px;">
               <p style="margin:0;font-size:12px;color:{_TEXT_DIM};font-style:italic;padding:0 4px;">
-                {_nt('no_threats', lang)}
+                {_nt("no_threats", lang)}
               </p>
             </td>
           </tr>"""
@@ -1160,18 +1166,18 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
                 breakdown = ", ".join(parts)
                 intel_items += f"""\
                 <p style="margin:0 0 6px;font-size:13px;color:{_TEXT};line-height:1.6;">
-                  &#9656; {_nt('intel_zone_analysis', lang, target=target_name, breakdown=breakdown)}
+                  &#9656; {_nt("intel_zone_analysis", lang, target=target_name, breakdown=breakdown)}
                 </p>"""
             if guardian_ct is not None and target_name:
                 intel_items += f"""\
                 <p style="margin:0 0 6px;font-size:13px;color:{_TEXT};line-height:1.6;">
-                  &#9656; {_nt('intel_guardian_count', lang, target=target_name, count=str(guardian_ct))}
+                  &#9656; {_nt("intel_guardian_count", lang, target=target_name, count=str(guardian_ct))}
                 </p>"""
             # Fallback: raw narrative if no structured metadata
             if not zone_sec and guardian_ct is None:
                 intel_items += f"""\
                 <p style="margin:0 0 6px;font-size:13px;color:{_TEXT};line-height:1.6;">
-                  &#9656; {_esc(si.get('narrative', ''))}
+                  &#9656; {_esc(si.get("narrative", ""))}
                 </p>"""
         intel_html = f"{_section_header(_nt('spy_intel', lang))}\n{_dashed_box(intel_items)}"
 
@@ -1179,7 +1185,11 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
     alliance_name = data.get("alliance_name")
     if alliance_name:
         ally_names = ", ".join(_esc(n) for n in data.get("ally_names", []))
-        bonus_tag = f' <span style="color:{_GREEN};font-size:10px;">&#9679; {_nt("alliance_bonus", lang)}</span>' if data.get("alliance_bonus_active") else ""
+        bonus_tag = (
+            f' <span style="color:{_GREEN};font-size:10px;">&#9679; {_nt("alliance_bonus", lang)}</span>'
+            if data.get("alliance_bonus_active")
+            else ""
+        )
 
         # Alliance enrichment: proposals, tension, upkeep
         alliance_details = ""
@@ -1189,22 +1199,24 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
 
         detail_parts = []
         if pp_count > 0:
-            detail_parts.append(f'<span style="color:{_AMBER};">&#9888; {_nt("pending_proposals_label", lang, n=pp_count)}</span>')
+            detail_parts.append(
+                f'<span style="color:{_AMBER};">&#9888; {_nt("pending_proposals_label", lang, n=pp_count)}</span>'
+            )
         if tension > 0:
             tension_color = _GREEN if tension < 30 else (_AMBER if tension < 60 else _RED)
             detail_parts.append(f'<span style="color:{tension_color};">{_nt("team_tension", lang, t=tension)}</span>')
         if upkeep > 0:
-            detail_parts.append(f'{_nt("alliance_upkeep_label", lang, cost=upkeep)}')
+            detail_parts.append(f"{_nt('alliance_upkeep_label', lang, cost=upkeep)}")
 
         if detail_parts:
-            alliance_details = '<br>'.join(detail_parts)
+            alliance_details = "<br>".join(detail_parts)
             alliance_details = f"""
                 <p style="margin:8px 0 0;font-size:11px;color:{_TEXT_DIM};line-height:1.8;">
                   {alliance_details}
                 </p>"""
 
         alliance_html = f"""\
-{_section_header(_nt('alliance_status', lang))}
+{_section_header(_nt("alliance_status", lang))}
           <tr>
             <td style="padding:0 32px 16px;">
               <div style="border:1px dashed {_BORDER};padding:12px 16px;background-color:{_SURFACE};">
@@ -1221,26 +1233,26 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
         dissolved_name = data.get("dissolved_alliance_name")
         if dissolved_name:
             alliance_html = f"""\
-{_section_header(_nt('alliance_status', lang))}
+{_section_header(_nt("alliance_status", lang))}
           <tr>
             <td style="padding:0 32px 16px;">
               <div style="border:1px dashed {_RED};padding:12px 16px;background-color:rgba(239,68,68,0.06);">
                 <p style="margin:0;font-size:13px;color:{_RED};font-weight:bold;line-height:1.6;">
-                  &#9888; {_nt('alliance_dissolved', lang, name=_esc(dissolved_name))}
+                  &#9888; {_nt("alliance_dissolved", lang, name=_esc(dissolved_name))}
                 </p>
                 <p style="margin:4px 0 0;font-size:11px;color:{_TEXT_DIM};line-height:1.6;">
-                  {_nt('alliance_dissolved_hint', lang)}
+                  {_nt("alliance_dissolved_hint", lang)}
                 </p>
               </div>
             </td>
           </tr>"""
         else:
             alliance_html = f"""\
-{_section_header(_nt('alliance_status', lang))}
+{_section_header(_nt("alliance_status", lang))}
           <tr>
             <td style="padding:0 32px 16px;">
               <p style="margin:0;font-size:12px;color:{_TEXT_DIM};font-style:italic;padding:0 4px;">
-                {_nt('no_alliance', lang)}
+                {_nt("no_alliance", lang)}
               </p>
             </td>
           </tr>"""
@@ -1254,12 +1266,12 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
         if next_missions:
             preview_items += f"""\
                 <p style="margin:0 0 4px;font-size:13px;color:{_TEXT};line-height:1.6;">
-                  {_nt('pending_missions', lang)}: <strong style="color:{accent};">{next_missions}</strong>
+                  {_nt("pending_missions", lang)}: <strong style="color:{accent};">{next_missions}</strong>
                 </p>"""
         if rp_projection:
             preview_items += f"""\
                 <p style="margin:0;font-size:13px;color:{_TEXT};line-height:1.6;">
-                  {_nt('rp_projection', lang)}: <strong>{rp_projection}</strong>
+                  {_nt("rp_projection", lang)}: <strong>{rp_projection}</strong>
                 </p>"""
         next_cycle_html = f"{_section_header(_nt('next_cycle', lang))}\n{_dashed_box(preview_items)}"
 
@@ -1270,7 +1282,7 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
         for ev in events[:5]:
             event_items += f"""\
                 <p style="margin:0 0 6px;font-size:13px;color:{_TEXT};line-height:1.6;">
-                  &#9656; {_esc(ev['narrative'])}
+                  &#9656; {_esc(ev["narrative"])}
                 </p>"""
         events_html += _dashed_box(event_items)
     else:
@@ -1278,7 +1290,7 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
           <tr>
             <td style="padding:0 32px 16px;">
               <p style="margin:0;font-size:12px;color:{_TEXT_DIM};font-style:italic;padding:0 4px;">
-                {_nt('no_intercepts', lang)}
+                {_nt("no_intercepts", lang)}
               </p>
             </td>
           </tr>"""
@@ -1345,7 +1357,7 @@ def render_cycle_briefing(data: dict, *, email_locale: str | None = None) -> str
                 {epoch_name}
               </{heading_tag}>
               <p style="margin:0;font-size:12px;color:{_TEXT_DIM};letter-spacing:2px;">
-                {_nt('cycle_resolved', lang, n=cycle_number)} &middot; {_nt('phase_label', lang)}: {status_display}
+                {_nt("cycle_resolved", lang, n=cycle_number)} &middot; {_nt("phase_label", lang)}: {status_display}
               </p>
             </td>
           </tr>"""
@@ -1361,7 +1373,7 @@ def render_cycle_briefing(data: dict, *, email_locale: str | None = None) -> str
                 {epoch_name}
               </{heading_tag}>
               <p style="margin:0;font-size:12px;color:{_TEXT_DIM};letter-spacing:2px;">
-                {_nt('cycle_resolved', lang, n=cycle_number)} &middot; {_nt('phase_label', lang)}: {status_display}
+                {_nt("cycle_resolved", lang, n=cycle_number)} &middot; {_nt("phase_label", lang)}: {status_display}
               </p>
             </td>
           </tr>"""
@@ -1390,6 +1402,7 @@ def _render_phase_block(
     standing_data: dict | None = None,
 ) -> str:
     """Render a single language block for the phase change email."""
+
     def _phase_label(phase: str) -> str:
         key = f"phase_{phase}"
         if key in _NOTIF_STRINGS:
@@ -1415,7 +1428,7 @@ def _render_phase_block(
         composite = standing_data.get("composite", 0)
         standing_html = f"""\
                   <tr>
-                    <td style="font-size:12px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:4px 0;">{_nt('your_standing', lang)}</td>
+                    <td style="font-size:12px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:4px 0;">{_nt("your_standing", lang)}</td>
                     <td style="font-size:14px;color:{accent};font-weight:bold;text-align:right;padding:4px 0;">#{rank} / {total} &middot; {composite:.1f}</td>
                   </tr>"""
 
@@ -1425,11 +1438,11 @@ def _render_phase_block(
               <div style="border:1px dashed {_BORDER};padding:16px 20px;background-color:{_SURFACE};">
                 <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
                   <tr>
-                    <td style="font-size:12px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:4px 0;">{_nt('phase_transition', lang)}</td>
+                    <td style="font-size:12px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:4px 0;">{_nt("phase_transition", lang)}</td>
                     <td style="font-size:14px;color:{accent};font-weight:bold;text-align:right;padding:4px 0;">{old_name} &#10132; {new_name}</td>
                   </tr>
                   <tr>
-                    <td style="font-size:12px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:4px 0;">{_nt('cycles_elapsed', lang)}</td>
+                    <td style="font-size:12px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:4px 0;">{_nt("cycles_elapsed", lang)}</td>
                     <td style="font-size:14px;color:{_TEXT};text-align:right;padding:4px 0;">{cycle_count}</td>
                   </tr>
 {standing_html}
@@ -1437,7 +1450,7 @@ def _render_phase_block(
               </div>
             </td>
           </tr>
-{_section_header(_nt('what_changes', lang))}
+{_section_header(_nt("what_changes", lang))}
           <tr>
             <td style="padding:0 32px 16px;">
               <div style="border:1px dashed {_BORDER};padding:12px 16px;background-color:{_SURFACE};">
@@ -1488,7 +1501,7 @@ def render_phase_change(
           <tr>
             <td style="padding:24px 32px;border-bottom:2px solid {_BORDER};">
               <p style="margin:0;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
-                {_nt('phase_change_header', lang)}
+                {_nt("phase_change_header", lang)}
               </p>
             </td>
           </tr>
@@ -1505,7 +1518,7 @@ def render_phase_change(
           <tr>
             <td style="padding:24px 32px 16px;">
               <p style="margin:0 0 4px;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
-                {_nt('phase_change_header', lang)}
+                {_nt("phase_change_header", lang)}
               </p>
               <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
                 {safe_name}
@@ -1514,10 +1527,17 @@ def render_phase_change(
           </tr>"""
 
         blocks.append(header)
-        blocks.append(_render_phase_block(
-            safe_name, old_phase, new_phase, cycle_count, lang,
-            accent=accent, standing_data=standing_data,
-        ))
+        blocks.append(
+            _render_phase_block(
+                safe_name,
+                old_phase,
+                new_phase,
+                cycle_count,
+                lang,
+                accent=accent,
+                standing_data=standing_data,
+            )
+        )
         blocks.append(_cta_button(cta_url, _nt("cta", lang), accent=accent))
 
     blocks.append(_footer_row(email_locale))
@@ -1549,13 +1569,13 @@ def _render_completed_block(
             <td style="padding:0 32px 16px;">
               <div style="border:2px solid {accent};padding:16px 20px;background-color:{_SURFACE};text-align:center;">
                 <p style="margin:0 0 4px;font-size:10px;letter-spacing:3px;color:{_TEXT_DIM};text-transform:uppercase;">
-                  {_nt('winner', lang)}
+                  {_nt("winner", lang)}
                 </p>
                 <p style="margin:0;font-size:20px;font-weight:900;color:{accent};letter-spacing:2px;">
                   &#128081; {winner_name}
                 </p>
                 <p style="margin:4px 0 0;font-size:14px;color:{_TEXT};">
-                  {_nt('composite', lang)}: {winner['composite']:.1f}
+                  {_nt("composite", lang)}: {winner["composite"]:.1f}
                 </p>
               </div>
             </td>
@@ -1571,20 +1591,20 @@ def _render_completed_block(
 
         lb_rows += f"""\
                   <tr style="background-color:{row_bg};">
-                    <td style="font-size:13px;color:{_TEXT_DIM};padding:6px 4px;text-align:center;border-bottom:1px solid {_BORDER_SUBTLE};">#{entry['rank']}</td>
-                    <td style="font-size:13px;color:{name_color};padding:6px 4px;border-bottom:1px solid {_BORDER_SUBTLE};font-weight:{'bold' if is_player else 'normal'};">{sim_name}</td>
-                    <td style="font-size:13px;color:{accent};padding:6px 4px;text-align:right;border-bottom:1px solid {_BORDER_SUBTLE};font-weight:bold;">{entry['composite']:.1f}</td>
+                    <td style="font-size:13px;color:{_TEXT_DIM};padding:6px 4px;text-align:center;border-bottom:1px solid {_BORDER_SUBTLE};">#{entry["rank"]}</td>
+                    <td style="font-size:13px;color:{name_color};padding:6px 4px;border-bottom:1px solid {_BORDER_SUBTLE};font-weight:{"bold" if is_player else "normal"};">{sim_name}</td>
+                    <td style="font-size:13px;color:{accent};padding:6px 4px;text-align:right;border-bottom:1px solid {_BORDER_SUBTLE};font-weight:bold;">{entry["composite"]:.1f}</td>
                   </tr>"""
 
     leaderboard_html = f"""\
-{_section_header(_nt('final_standings', lang))}
+{_section_header(_nt("final_standings", lang))}
           <tr>
             <td style="padding:0 32px 16px;">
               <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color:{_SURFACE};border:1px dashed {_BORDER};">
                 <tr>
                   <td style="font-size:10px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:8px 4px;text-align:center;border-bottom:1px solid {_BORDER};">#</td>
-                  <td style="font-size:10px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:8px 4px;border-bottom:1px solid {_BORDER};">{_nt('leaderboard_sim', lang)}</td>
-                  <td style="font-size:10px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:8px 4px;text-align:right;border-bottom:1px solid {_BORDER};">{_nt('composite', lang)}</td>
+                  <td style="font-size:10px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:8px 4px;border-bottom:1px solid {_BORDER};">{_nt("leaderboard_sim", lang)}</td>
+                  <td style="font-size:10px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:8px 4px;text-align:right;border-bottom:1px solid {_BORDER};">{_nt("composite", lang)}</td>
                 </tr>
 {lb_rows}
               </table>
@@ -1599,14 +1619,14 @@ def _render_completed_block(
     player_result_html = ""
     if player_entry:
         player_result_html = f"""\
-{_section_header(_nt('your_result', lang))}
+{_section_header(_nt("your_result", lang))}
           <tr>
             <td style="padding:0 32px 16px;">
               <div style="border:1px dashed {_BORDER};padding:12px 16px;background-color:{_SURFACE};">
                 <p style="margin:0;font-size:14px;color:{_TEXT};line-height:1.8;">
-                  {_nt('rank', lang)}: <strong style="color:{accent};">#{player_entry['rank']}</strong> / {len(leaderboard)}
+                  {_nt("rank", lang)}: <strong style="color:{accent};">#{player_entry["rank"]}</strong> / {len(leaderboard)}
                   &nbsp;&middot;&nbsp;
-                  {_nt('composite', lang)}: <strong style="color:{accent};">{player_entry['composite']:.1f}</strong>
+                  {_nt("composite", lang)}: <strong style="color:{accent};">{player_entry["composite"]:.1f}</strong>
                 </p>
               </div>
             </td>
@@ -1629,14 +1649,14 @@ def _render_completed_block(
         type_breakdown = " &middot; ".join(type_parts) if type_parts else "\u2014"
 
         campaign_html = f"""\
-{_section_header(_nt('campaign_stats', lang))}
+{_section_header(_nt("campaign_stats", lang))}
           <tr>
             <td style="padding:0 32px 16px;">
               <div style="border:1px dashed {_BORDER};padding:12px 16px;background-color:{_SURFACE};">
                 <p style="margin:0 0 4px;font-size:13px;color:{_TEXT};line-height:1.6;">
-                  {_nt('ops_deployed', lang)}: <strong style="color:{accent};">{total_ops}</strong>
+                  {_nt("ops_deployed", lang)}: <strong style="color:{accent};">{total_ops}</strong>
                   &nbsp;&middot;&nbsp;
-                  {_nt('success_rate', lang)}: <strong>{success_rate:.0f}%</strong>
+                  {_nt("success_rate", lang)}: <strong>{success_rate:.0f}%</strong>
                 </p>
                 <p style="margin:0;font-size:12px;color:{_TEXT_DIM};line-height:1.6;">
                   {type_breakdown}
@@ -1667,7 +1687,7 @@ def _render_completed_block(
                     score_key = f"{dim_key}_score" if f"{dim_key}_score" in (player_entry or {}) else dim_key
                     player_val = player_entry.get(score_key, player_entry.get(dim_key, 0))
                     if player_val:
-                        player_pos = f' | {_nt("you_label", lang)}: {float(player_val):.1f}'
+                        player_pos = f" | {_nt('you_label', lang)}: {float(player_val):.1f}"
                 highlight = f"color:{accent};" if is_player else ""
                 title_items += f"""\
                 <p style="margin:0 0 4px;font-size:13px;color:{_TEXT};line-height:1.6;">
@@ -1677,7 +1697,7 @@ def _render_completed_block(
     titles_html = ""
     if title_items:
         titles_html = f"""\
-{_section_header(_nt('dimension_titles', lang))}
+{_section_header(_nt("dimension_titles", lang))}
           <tr>
             <td style="padding:0 32px 16px;">
               <div style="border:1px dashed {_BORDER};padding:12px 16px;background-color:{_SURFACE};">
@@ -1691,7 +1711,7 @@ def _render_completed_block(
           <tr>
             <td style="padding:8px 32px 16px;">
               <p style="margin:0;font-size:12px;color:{_TEXT_DIM};letter-spacing:1px;">
-                {_nt('total_cycles', lang)}: <strong style="color:{_TEXT};">{cycle_count}</strong>
+                {_nt("total_cycles", lang)}: <strong style="color:{_TEXT};">{cycle_count}</strong>
               </p>
             </td>
           </tr>"""
@@ -1737,7 +1757,7 @@ def render_epoch_completed(
           <tr>
             <td style="padding:24px 32px;border-bottom:2px solid {accent};">
               <p style="margin:0;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
-                {_nt('epoch_complete_header', lang)}
+                {_nt("epoch_complete_header", lang)}
               </p>
             </td>
           </tr>
@@ -1754,7 +1774,7 @@ def render_epoch_completed(
           <tr>
             <td style="padding:24px 32px 16px;">
               <p style="margin:0 0 4px;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
-                {_nt('epoch_complete_header', lang)}
+                {_nt("epoch_complete_header", lang)}
               </p>
               <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
                 {safe_name}
@@ -1763,10 +1783,17 @@ def render_epoch_completed(
           </tr>"""
 
         blocks.append(header)
-        blocks.append(_render_completed_block(
-            safe_name, leaderboard, player_simulation_id, cycle_count, lang,
-            accent=accent, campaign_stats=campaign_stats,
-        ))
+        blocks.append(
+            _render_completed_block(
+                safe_name,
+                leaderboard,
+                player_simulation_id,
+                cycle_count,
+                lang,
+                accent=accent,
+                campaign_stats=campaign_stats,
+            )
+        )
         blocks.append(_cta_button(cta_url, _nt("cta", lang), accent=accent))
 
     blocks.append(_footer_row(email_locale))
@@ -1784,16 +1811,16 @@ def _render_clearance_block(
     approved: bool,
     admin_notes: str | None = None,
     accent: str = _AMBER,
+    starter_tokens: int | None = None,
 ) -> str:
     """Render a single language block for the clearance email."""
-    header_key = "clearance_granted_header" if approved else "clearance_denied_header"
     intro_key = "clearance_granted_intro" if approved else "clearance_denied_intro"
 
     header = f"""\
           <tr>
             <td style="padding:20px 32px 8px;">
               <p style="margin:0;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
-                // {_nt('clearance_tier_label', lang)} //
+                // {_nt("clearance_tier_label", lang)} //
               </p>
             </td>
           </tr>"""
@@ -1827,7 +1854,7 @@ def _render_clearance_block(
     notes_html = ""
     if admin_notes:
         notes_html = f"""\
-{_section_header(_nt('clearance_admin_notes', lang))}
+{_section_header(_nt("clearance_admin_notes", lang))}
           <tr>
             <td style="padding:0 32px 16px;">
               <div style="border:1px dashed {_BORDER};padding:12px 16px;background-color:{_SURFACE};">
@@ -1838,7 +1865,22 @@ def _render_clearance_block(
             </td>
           </tr>"""
 
-    return f"{header}\n{tier_html}\n{intro}\n{notes_html}"
+    # Starter tokens info (if any)
+    tokens_html = ""
+    if starter_tokens and starter_tokens > 0:
+        tokens_text = _nt("clearance_tokens_granted", lang).format(count=starter_tokens)
+        tokens_html = f"""\
+          <tr>
+            <td style="padding:0 32px 16px;">
+              <div style="border:1px solid {accent};padding:12px 20px;background-color:{_SURFACE};text-align:center;">
+                <p style="margin:0;font-size:13px;color:{accent};letter-spacing:1px;font-weight:700;font-family:{_MONO};">
+                  &#9670; {_esc(tokens_text)}
+                </p>
+              </div>
+            </td>
+          </tr>"""
+
+    return f"{header}\n{tier_html}\n{tokens_html}\n{intro}\n{notes_html}"
 
 
 def render_clearance_granted(
@@ -1846,6 +1888,7 @@ def render_clearance_granted(
     email_locale: str | None = None,
     forge_url: str,
     admin_notes: str | None = None,
+    starter_tokens: int | None = None,
 ) -> str:
     """Render the clearance granted email (bilingual or single-language)."""
     langs = _resolve_langs(email_locale)
@@ -1869,7 +1912,7 @@ def render_clearance_granted(
           <tr>
             <td style="padding:24px 32px 8px;">
               <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
-                {_nt('clearance_granted_header', lang)}
+                {_nt("clearance_granted_header", lang)}
               </{heading_tag}>
             </td>
           </tr>"""
@@ -1879,13 +1922,17 @@ def render_clearance_granted(
           <tr>
             <td style="padding:24px 32px 8px;">
               <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
-                {_nt('clearance_granted_header', lang)}
+                {_nt("clearance_granted_header", lang)}
               </{heading_tag}>
             </td>
           </tr>"""
 
         blocks.append(top)
-        blocks.append(_render_clearance_block(lang, approved=True, admin_notes=admin_notes, accent=accent))
+        blocks.append(
+            _render_clearance_block(
+                lang, approved=True, admin_notes=admin_notes, accent=accent, starter_tokens=starter_tokens
+            )
+        )
         blocks.append(_cta_button(forge_url, _nt("clearance_granted_cta", lang), accent=accent))
 
     blocks.append(_footer_row(email_locale))
@@ -1920,7 +1967,7 @@ def render_clearance_denied(
           <tr>
             <td style="padding:24px 32px 8px;">
               <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{_TEXT};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
-                {_nt('clearance_denied_header', lang)}
+                {_nt("clearance_denied_header", lang)}
               </{heading_tag}>
             </td>
           </tr>"""
@@ -1930,7 +1977,7 @@ def render_clearance_denied(
           <tr>
             <td style="padding:24px 32px 8px;">
               <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{_TEXT};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
-                {_nt('clearance_denied_header', lang)}
+                {_nt("clearance_denied_header", lang)}
               </{heading_tag}>
             </td>
           </tr>"""

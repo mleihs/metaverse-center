@@ -180,12 +180,11 @@ class CycleResolutionService:
         # Late imports to avoid circular dependency:
         # These services import EpochService (directly or transitively)
         # which imports this module.
+        from backend.services.alliance_service import AllianceService
         from backend.services.bot_service import BotService
         from backend.services.cycle_notification_service import CycleNotificationService
         from backend.services.operative_service import OperativeService
         from backend.services.scoring_service import ScoringService
-
-        from backend.services.alliance_service import AllianceService
 
         data = await cls.resolve_cycle(supabase, epoch_id, admin_supabase=admin_supabase)
         config = data.get("config", {})
@@ -197,7 +196,10 @@ class CycleResolutionService:
         try:
             upkeep_teams = await AllianceService.deduct_upkeep(db, epoch_id, cycle_number)
             if upkeep_teams:
-                logger.info("Alliance upkeep step complete", extra={"epoch_id": str(epoch_id), "teams": len(upkeep_teams)})
+                logger.info(
+                    "Alliance upkeep step complete",
+                    extra={"epoch_id": str(epoch_id), "teams": len(upkeep_teams)},
+                )
         except Exception:
             logger.warning("Alliance upkeep deduction failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
 

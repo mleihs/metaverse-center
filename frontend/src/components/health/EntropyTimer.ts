@@ -113,7 +113,11 @@ export class EntropyTimer extends LitElement {
   private _prevCycles: number | null = null;
 
   protected willUpdate(changed: Map<PropertyKey, unknown>): void {
-    if (changed.has('cyclesRemaining') && this._prevCycles !== null && this.cyclesRemaining !== this._prevCycles) {
+    if (
+      changed.has('cyclesRemaining') &&
+      this._prevCycles !== null &&
+      this.cyclesRemaining !== this._prevCycles
+    ) {
       this._flashing = true;
       setTimeout(() => {
         this._flashing = false;

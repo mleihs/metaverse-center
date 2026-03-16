@@ -388,15 +388,18 @@ export class VelgEpochBattleLog extends LitElement {
   private _renderIntelData(metadata: Record<string, unknown> | undefined) {
     if (!metadata) return nothing;
     const zones = metadata.zone_security as string[] | undefined;
-    const zoneDetails = metadata.zone_details as Array<{ name: string; security_level: string }> | undefined;
+    const zoneDetails = metadata.zone_details as
+      | Array<{ name: string; security_level: string }>
+      | undefined;
     const guardians = metadata.guardian_count as number | undefined;
     const fortifications = metadata.fortifications as
       | Array<{ zone_name: string; security_bonus: number; expires_at_cycle: number }>
       | undefined;
-    if (!zones && !zoneDetails && guardians === undefined && !fortifications?.length) return nothing;
+    if (!zones && !zoneDetails && guardians === undefined && !fortifications?.length)
+      return nothing;
     const zoneDisplay = zoneDetails
       ? zoneDetails.map((z) => `${z.name}: ${z.security_level}`).join(', ')
-      : zones?.join(', ') ?? '';
+      : (zones?.join(', ') ?? '');
     return html`
       <div class="entry__intel">
         ${guardians !== undefined ? html`${msg('Guardians detected')}: ${guardians}` : nothing}
@@ -466,8 +469,12 @@ export class VelgEpochBattleLog extends LitElement {
           <span class="entry__narrative">${(() => {
             const meta = entry.metadata as Record<string, unknown> | undefined;
             const botPersonality = this._getBotPersonality(entry.source_simulation_id);
-            const isOwnAction = this.mySimulationId && entry.source_simulation_id === this.mySimulationId;
-            const isIncomingThreat = this.mySimulationId && entry.target_simulation_id === this.mySimulationId && !isOwnAction;
+            const isOwnAction =
+              this.mySimulationId && entry.source_simulation_id === this.mySimulationId;
+            const isIncomingThreat =
+              this.mySimulationId &&
+              entry.target_simulation_id === this.mySimulationId &&
+              !isOwnAction;
 
             // Context-aware narrative (fog of war)
             let narrative = entry.narrative;
@@ -477,7 +484,7 @@ export class VelgEpochBattleLog extends LitElement {
               const zoneName = meta.target_zone_name as string | undefined;
               const simName = meta.target_sim_name as string | undefined;
               if (agentName) {
-                const target = zoneName && simName ? `${zoneName}, ${simName}` : simName ?? '';
+                const target = zoneName && simName ? `${zoneName}, ${simName}` : (simName ?? '');
                 narrative = `${agentName} deployed${target ? ` → ${target}` : ''}`;
               }
             } else if (isIncomingThreat && meta) {

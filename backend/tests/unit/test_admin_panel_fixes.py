@@ -7,7 +7,7 @@ A4: OperativeMissionService epoch cycle fetch uses maybe_single (2 locations)
 A5: SimulationDashboardResponse includes all dashboard view fields
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import MagicMock
 from uuid import UUID, uuid4
 
@@ -17,7 +17,6 @@ from fastapi import HTTPException
 from backend.models.simulation import SimulationDashboardResponse
 from backend.services.admin_user_service import AdminUserService
 from backend.tests.conftest import make_chain_mock
-
 
 MOCK_USER_ID = UUID("22222222-2222-2222-2222-222222222222")
 
@@ -132,6 +131,7 @@ class TestAcademyMaybeSingle:
     def test_maybe_single_in_source(self):
         """Verify the source code uses maybe_single (static analysis)."""
         import inspect
+
         from backend.services.academy_service import AcademyService
 
         source = inspect.getsource(AcademyService.create_academy_epoch)
@@ -152,6 +152,7 @@ class TestBotServiceEpochFallback:
     def test_maybe_single_in_bot_execute_source(self):
         """Verify bot service uses maybe_single for epoch status lookup."""
         import inspect
+
         from backend.services.bot_service import BotService
 
         source = inspect.getsource(BotService._execute_single_bot)
@@ -183,15 +184,16 @@ class TestOperativeEpochCycleFallback:
     def test_maybe_single_in_source(self):
         """Verify both epoch lookups use maybe_single."""
         import inspect
+
         from backend.services.operative_mission_service import OperativeMissionService
 
         # Check _log_betrayal_if_same_team and resolve_mission
         source = inspect.getsource(OperativeMissionService)
         # Count maybe_single occurrences related to game_epochs
         lines = source.split("\n")
-        epoch_maybe_single = [
-            l.strip() for l in lines
-            if "maybe_single" in l and "game_epochs" not in l
+        [
+            line.strip() for line in lines
+            if "maybe_single" in line and "game_epochs" not in line
         ]
         # At minimum, 2 epoch fetches should use maybe_single
         maybe_single_count = source.count("maybe_single")
@@ -223,7 +225,7 @@ class TestSimulationDashboardResponseFields:
 
     def test_new_fields_with_defaults(self):
         """New optional fields should default correctly."""
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         resp = SimulationDashboardResponse(
             simulation_id=uuid4(),
             name="Test Sim",
@@ -248,7 +250,7 @@ class TestSimulationDashboardResponseFields:
 
     def test_new_fields_populated(self):
         """All new fields can be set explicitly."""
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         uid = uuid4()
         resp = SimulationDashboardResponse(
             simulation_id=uuid4(),
@@ -284,7 +286,7 @@ class TestSimulationDashboardResponseFields:
 
     def test_backwards_compatible_with_old_data(self):
         """Data without new fields still parses (dashboard view migration rollout)."""
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         # Simulate old-format dict (pre-A5) — only original fields
         data = {
             "simulation_id": str(uuid4()),

@@ -4,8 +4,8 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { agentMemoryApi } from '../../services/api/index.js';
 import type { AgentMemory } from '../../types/index.js';
-import { t } from '../../utils/locale-fields.js';
 import { icons } from '../../utils/icons.js';
+import { t } from '../../utils/locale-fields.js';
 
 import '../shared/VelgBadge.js';
 import '../shared/LoadingState.js';
@@ -289,7 +289,11 @@ export class VelgAgentMemorySection extends LitElement {
   }
 
   protected willUpdate(changed: Map<PropertyKey, unknown>): void {
-    if ((changed.has('simulationId') || changed.has('agentId')) && this.simulationId && this.agentId) {
+    if (
+      (changed.has('simulationId') || changed.has('agentId')) &&
+      this.simulationId &&
+      this.agentId
+    ) {
       this._load();
     }
   }
@@ -354,12 +358,7 @@ export class VelgAgentMemorySection extends LitElement {
     `;
   }
 
-  private _renderGroup(
-    label: string,
-    entries: AgentMemory[],
-    open: boolean,
-    toggleFn: () => void,
-  ) {
+  private _renderGroup(label: string, entries: AgentMemory[], open: boolean, toggleFn: () => void) {
     if (entries.length === 0) return nothing;
     return html`
       <div class="mem-group">
@@ -374,13 +373,15 @@ export class VelgAgentMemorySection extends LitElement {
           <span class="mem-group__label">${label}</span>
           <span class="mem-group__count">${entries.length}</span>
         </button>
-        ${open
-          ? html`
+        ${
+          open
+            ? html`
             <div class="timeline">
               ${entries.map((m, i) => this._renderEntry(m, i))}
             </div>
           `
-          : nothing}
+            : nothing
+        }
       </div>
     `;
   }
@@ -395,22 +396,17 @@ export class VelgAgentMemorySection extends LitElement {
     }
 
     return html`
-      ${this._renderGroup(
-        msg('Reflections'),
-        this._reflections,
-        this._refOpen,
-        () => { this._refOpen = !this._refOpen; },
-      )}
+      ${this._renderGroup(msg('Reflections'), this._reflections, this._refOpen, () => {
+        this._refOpen = !this._refOpen;
+      })}
 
-      ${this._renderGroup(
-        msg('Observations'),
-        this._observations,
-        this._obsOpen,
-        () => { this._obsOpen = !this._obsOpen; },
-      )}
+      ${this._renderGroup(msg('Observations'), this._observations, this._obsOpen, () => {
+        this._obsOpen = !this._obsOpen;
+      })}
 
-      ${appState.canEdit.value
-        ? html`
+      ${
+        appState.canEdit.value
+          ? html`
           <button
             class="reflect-btn"
             ?disabled=${this._reflecting}
@@ -420,17 +416,20 @@ export class VelgAgentMemorySection extends LitElement {
             ${this._reflecting ? msg('Reflecting...') : msg('Trigger Reflection')}
           </button>
         `
-        : nothing}
+          : nothing
+      }
 
-      ${this._total > this._memories.length
-        ? html`
+      ${
+        this._total > this._memories.length
+          ? html`
           <div class="load-more">
             <button class="load-more__btn" @click=${this._loadMore}>
               ${msg('Load more')}
             </button>
           </div>
         `
-        : nothing}
+          : nothing
+      }
     `;
   }
 }

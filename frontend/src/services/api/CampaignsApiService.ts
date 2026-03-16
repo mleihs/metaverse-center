@@ -1,4 +1,10 @@
-import type { ApiResponse, Campaign, CampaignAnalytics, CampaignEvent, CampaignMetric } from '../../types/index.js';
+import type {
+  ApiResponse,
+  Campaign,
+  CampaignAnalytics,
+  CampaignEvent,
+  CampaignMetric,
+} from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
 
 export class CampaignsApiService extends BaseApiService {

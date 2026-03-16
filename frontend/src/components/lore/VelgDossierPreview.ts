@@ -276,9 +276,8 @@ export class VelgDossierPreview extends LitElement {
     const parts: Array<ReturnType<typeof html>> = [];
     const regex = /(\[(?:REDACTED|CLASSIFIED|CONSUMED|ILLEGIBLE)\])|(████+|███████+)/g;
     let last = 0;
-    let match: RegExpExecArray | null;
 
-    while ((match = regex.exec(teaser)) !== null) {
+    for (const match of teaser.matchAll(regex)) {
       if (match.index > last) {
         parts.push(html`${teaser.slice(last, match.index)}`);
       }

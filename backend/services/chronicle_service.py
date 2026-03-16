@@ -130,7 +130,8 @@ class ChronicleService:
 
         # Parse JSON response
         parsed = GenerationService._parse_json_content(result.get("content", ""))
-        title = parsed.get("title", f"Chronicle Edition #{next_edition}") if parsed else f"Chronicle Edition #{next_edition}"
+        default_title = f"Chronicle Edition #{next_edition}"
+        title = parsed.get("title", default_title) if parsed else default_title
         headline = parsed.get("headline") if parsed else None
         content = parsed.get("content", result.get("content", "")) if parsed else result.get("content", "")
 

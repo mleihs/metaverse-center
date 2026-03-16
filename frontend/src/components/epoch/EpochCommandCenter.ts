@@ -58,7 +58,15 @@ import './DraftRosterPanel.js';
 import './WarRoomPanel.js';
 import './EpochResultsView.js';
 
-type TabId = 'overview' | 'leaderboard' | 'operations' | 'battle-log' | 'war-room' | 'alliances' | 'chat' | 'results';
+type TabId =
+  | 'overview'
+  | 'leaderboard'
+  | 'operations'
+  | 'battle-log'
+  | 'war-room'
+  | 'alliances'
+  | 'chat'
+  | 'results';
 
 @localized()
 @customElement('velg-epoch-command-center')
@@ -1621,7 +1629,10 @@ export class VelgEpochCommandCenter extends LitElement {
     if (this._myParticipant?.simulation_id) {
       battleLogParams.simulation_id = this._myParticipant.simulation_id;
     }
-    const battleLog = await epochsApi.getBattleLog(epochId, Object.keys(battleLogParams).length ? battleLogParams : undefined);
+    const battleLog = await epochsApi.getBattleLog(
+      epochId,
+      Object.keys(battleLogParams).length ? battleLogParams : undefined,
+    );
     if (battleLog.success && battleLog.data) {
       this._battleLog = battleLog.data;
     }
@@ -2633,11 +2644,8 @@ export class VelgEpochCommandCenter extends LitElement {
     );
     this._actionLoading = false;
     if (result.success) {
-      const teamName =
-        this._teams.find((t) => t.id === this._myParticipant?.team_id)?.name ?? '';
-      VelgToast.success(
-        msg(str`Alliance invitation sent to ${simulationName} for "${teamName}".`),
-      );
+      const teamName = this._teams.find((t) => t.id === this._myParticipant?.team_id)?.name ?? '';
+      VelgToast.success(msg(str`Alliance invitation sent to ${simulationName} for "${teamName}".`));
       await this._loadEpochDetails(this._epoch.id);
     } else {
       VelgToast.error(result.error?.message ?? msg('Failed to send invitation.'));

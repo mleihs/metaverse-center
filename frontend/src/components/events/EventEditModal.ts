@@ -3,7 +3,7 @@ import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { eventsApi } from '../../services/api/index.js';
-import type { Event as SimEvent, EventStatus } from '../../types/index.js';
+import type { EventStatus, Event as SimEvent } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import '../shared/BaseModal.js';
 import { formStyles } from '../shared/form-styles.js';
@@ -408,7 +408,9 @@ export class VelgEventEditModal extends LitElement {
             </div>
           </div>
 
-          ${this._isEdit ? html`
+          ${
+            this._isEdit
+              ? html`
           <div class="form__group">
             <label class="form__label">
               ${msg('Event Status')}
@@ -428,7 +430,9 @@ export class VelgEventEditModal extends LitElement {
               <option value="archived">${msg('Archived')}</option>
             </select>
           </div>
-          ` : null}
+          `
+              : null
+          }
 
           <div class="form__group">
             <label class="form__label">

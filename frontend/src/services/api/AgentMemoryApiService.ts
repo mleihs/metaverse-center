@@ -11,10 +11,7 @@ export class AgentMemoryApiService extends BaseApiService {
     if (params?.memory_type) p.memory_type = params.memory_type;
     if (params?.limit != null) p.limit = String(params.limit);
     if (params?.offset != null) p.offset = String(params.offset);
-    return this.getSimulationData(
-      `/simulations/${simulationId}/agents/${agentId}/memories`,
-      p,
-    );
+    return this.getSimulationData(`/simulations/${simulationId}/agents/${agentId}/memories`, p);
   }
 
   reflect(
@@ -22,10 +19,7 @@ export class AgentMemoryApiService extends BaseApiService {
     agentId: string,
     data?: { locale?: string },
   ): Promise<ApiResponse<AgentMemory[]>> {
-    return this.post(
-      `/simulations/${simulationId}/agents/${agentId}/memories/reflect`,
-      data,
-    );
+    return this.post(`/simulations/${simulationId}/agents/${agentId}/memories/reflect`, data);
   }
 }
 

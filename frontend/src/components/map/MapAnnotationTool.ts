@@ -121,16 +121,14 @@ export class MapAnnotationTool extends LitElement {
 
   private _handleInput(id: string, e: InputEvent) {
     const text = (e.target as HTMLInputElement).value;
-    this._annotations = this._annotations.map(a =>
-      a.id === id ? { ...a, text } : a,
-    );
+    this._annotations = this._annotations.map((a) => (a.id === id ? { ...a, text } : a));
   }
 
   private _finishEditing(id: string) {
-    const annotation = this._annotations.find(a => a.id === id);
+    const annotation = this._annotations.find((a) => a.id === id);
     if (annotation && !annotation.text.trim()) {
       // Remove empty annotations
-      this._annotations = this._annotations.filter(a => a.id !== id);
+      this._annotations = this._annotations.filter((a) => a.id !== id);
     }
     this._editingId = null;
     this._saveAnnotations();
@@ -140,7 +138,7 @@ export class MapAnnotationTool extends LitElement {
     if (e.key === 'Enter') {
       this._finishEditing(id);
     } else if (e.key === 'Escape') {
-      this._annotations = this._annotations.filter(a => a.id !== id);
+      this._annotations = this._annotations.filter((a) => a.id !== id);
       this._editingId = null;
       this._saveAnnotations();
     }
@@ -148,14 +146,14 @@ export class MapAnnotationTool extends LitElement {
 
   private _handleContextMenu(id: string, e: MouseEvent) {
     e.preventDefault();
-    this._annotations = this._annotations.filter(a => a.id !== id);
+    this._annotations = this._annotations.filter((a) => a.id !== id);
     this._saveAnnotations();
   }
 
   protected render() {
     return html`
       <div @click=${this._handleClick}>
-        ${this._annotations.map(a => this._renderAnnotation(a))}
+        ${this._annotations.map((a) => this._renderAnnotation(a))}
       </div>
     `;
   }
@@ -169,8 +167,9 @@ export class MapAnnotationTool extends LitElement {
         style="left: ${annotation.x}px; top: ${annotation.y}px; transform: rotate(${annotation.rotation}deg)"
         @contextmenu=${(e: MouseEvent) => this._handleContextMenu(annotation.id, e)}
       >
-        ${isEditing
-          ? html`
+        ${
+          isEditing
+            ? html`
               <input
                 class="annotation__input"
                 type="text"
@@ -182,7 +181,8 @@ export class MapAnnotationTool extends LitElement {
                 autofocus
               />
             `
-          : annotation.text || nothing}
+            : annotation.text || nothing
+        }
       </div>
     `;
   }

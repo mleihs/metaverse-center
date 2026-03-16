@@ -590,7 +590,7 @@ export class VelgWarRoomPanel extends LitElement {
     const start = performance.now();
     const tick = (now: number) => {
       const t = Math.min((now - start) / dur, 1);
-      const e = 1 - Math.pow(1 - t, 3);
+      const e = 1 - (1 - t) ** 3;
       this._animatedStats = {
         deployed: Math.round(targets.deployed * e),
         successes: Math.round(targets.successes * e),
@@ -638,9 +638,11 @@ export class VelgWarRoomPanel extends LitElement {
         <div class="wr-header__left">
           <span class="wr-header__icon">${icons.crossedSwords(22)}</span>
           <h2 class="wr-header__title">${msg('War Room')}</h2>
-          ${this.status
-            ? html`<span class="phase-badge" style="color: ${phaseColor}">${this.status}</span>`
-            : nothing}
+          ${
+            this.status
+              ? html`<span class="phase-badge" style="color: ${phaseColor}">${this.status}</span>`
+              : nothing
+          }
         </div>
         <div class="cycle-nav">
           <button
@@ -693,9 +695,11 @@ export class VelgWarRoomPanel extends LitElement {
             <h3 class="sitrep__title">${msg('Situation Report')}</h3>
           </div>
           <div class="sitrep__actions">
-            ${this._sitrep?.model_used
-              ? html`<span class="sitrep__model">${this._sitrep.model_used}</span>`
-              : nothing}
+            ${
+              this._sitrep?.model_used
+                ? html`<span class="sitrep__model">${this._sitrep.model_used}</span>`
+                : nothing
+            }
             <button
               class="sitrep__btn"
               @click=${this._loadSitrep}
@@ -705,11 +709,13 @@ export class VelgWarRoomPanel extends LitElement {
           </div>
         </div>
         <div class="sitrep__body">
-          ${this._sitrepLoading
-            ? html`<span class="sitrep__generating"><span class="pulse-dot"></span> ${msg('Generating...')}</span>`
-            : this._sitrepRevealed
-              ? this._sitrepRevealed
-              : html`<span style="color: var(--color-gray-600)">${msg('Click Generate SITREP to request an intelligence briefing for this cycle.')}</span>`}
+          ${
+            this._sitrepLoading
+              ? html`<span class="sitrep__generating"><span class="pulse-dot"></span> ${msg('Generating...')}</span>`
+              : this._sitrepRevealed
+                ? this._sitrepRevealed
+                : html`<span style="color: var(--color-gray-600)">${msg('Click Generate SITREP to request an intelligence briefing for this cycle.')}</span>`
+          }
         </div>
       </div>
     `;
@@ -730,7 +736,7 @@ export class VelgWarRoomPanel extends LitElement {
     for (const e of this._entries) {
       const c = e.cycle_number;
       if (!byCycle.has(c)) byCycle.set(c, []);
-      byCycle.get(c)!.push(e);
+      byCycle.get(c)?.push(e);
     }
     const sortedCycles = [...byCycle.keys()].sort((a, b) => b - a);
 
@@ -741,7 +747,7 @@ export class VelgWarRoomPanel extends LitElement {
         <h3 class="battle-log__title">${msg('Battle Log')}</h3>
         <div class="battle-log__list" role="log" aria-label=${msg('Battle events')}>
           ${sortedCycles.map((cycle) => {
-            const entries = byCycle.get(cycle)!;
+            const entries = byCycle.get(cycle) ?? [];
             return html`
               <div class="bl-cycle-divider">${msg('Cycle')} ${cycle}</div>
               ${entries.map((entry) => {
@@ -749,7 +755,8 @@ export class VelgWarRoomPanel extends LitElement {
                 const classified = this._isClassified(entry);
                 const isPhase = entry.event_type === 'phase_change';
                 const isBetrayal = entry.event_type === 'betrayal';
-                const isAlliedIntel = !!(entry.metadata as Record<string, unknown> | undefined)?.allied_intel;
+                const isAlliedIntel = !!(entry.metadata as Record<string, unknown> | undefined)
+                  ?.allied_intel;
                 const delay = entryIdx * 50;
                 entryIdx++;
                 return html`

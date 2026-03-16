@@ -6,7 +6,6 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-
 ZONE_ACTION_TYPES = ("fortify", "quarantine", "deploy_resources")
 
 ZoneActionType = Literal["fortify", "quarantine", "deploy_resources"]

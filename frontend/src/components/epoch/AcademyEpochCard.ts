@@ -284,9 +284,7 @@ export class VelgAcademyEpochCard extends LitElement {
   @property({ type: Boolean }) hasActiveEpoch = false;
 
   private _handleStart(): void {
-    this.dispatchEvent(
-      new CustomEvent('start-academy', { bubbles: true, composed: true }),
-    );
+    this.dispatchEvent(new CustomEvent('start-academy', { bubbles: true, composed: true }));
   }
 
   protected render() {
@@ -302,17 +300,24 @@ export class VelgAcademyEpochCard extends LitElement {
         <div class="header">
           <span class="header__classification">${msg('Academy // Training Protocol')}</span>
           <div class="header__divider"></div>
-          ${this.academyEpochsPlayed > 0
-            ? html`<span class="header__status">${this.academyEpochsPlayed} ${msg('completed')}</span>`
-            : html`<span class="header__status">${msg('Uninitialized')}</span>`
+          ${
+            this.academyEpochsPlayed > 0
+              ? html`<span class="header__status">${this.academyEpochsPlayed} ${msg('completed')}</span>`
+              : html`<span class="header__status">${msg('Uninitialized')}</span>`
           }
         </div>
 
         <!-- Description -->
         <p class="desc">
-          ${this.academyEpochsPlayed === 0
-            ? msg('Initialize your first training simulation. Solo training vs 3 AI opponents — learn operative deployment, score mechanics, and alliance tactics.')
-            : msg('Continue your training regimen. Solo training vs 3 AI opponents — refine your operative strategy and score optimization.')}
+          ${
+            this.academyEpochsPlayed === 0
+              ? msg(
+                  'Initialize your first training simulation. Solo training vs 3 AI opponents — learn operative deployment, score mechanics, and alliance tactics.',
+                )
+              : msg(
+                  'Continue your training regimen. Solo training vs 3 AI opponents — refine your operative strategy and score optimization.',
+                )
+          }
         </p>
 
         <!-- Bot Roster -->

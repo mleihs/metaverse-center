@@ -157,16 +157,12 @@ export class VelgBureauNotice extends LitElement {
   private _dismiss(): void {
     this.classList.add('dismissing');
     setTimeout(() => {
-      this.dispatchEvent(
-        new CustomEvent('notice-dismiss', { bubbles: true, composed: true }),
-      );
+      this.dispatchEvent(new CustomEvent('notice-dismiss', { bubbles: true, composed: true }));
     }, 250);
   }
 
   private _openDispatch(): void {
-    this.dispatchEvent(
-      new CustomEvent('notice-open-dispatch', { bubbles: true, composed: true }),
-    );
+    this.dispatchEvent(new CustomEvent('notice-open-dispatch', { bubbles: true, composed: true }));
   }
 
   protected render() {

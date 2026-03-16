@@ -27,9 +27,6 @@ if app_settings.sentry_dsn:
     )
 
 from backend.dependencies import get_admin_supabase
-from backend.services.platform_model_config import ensure_loaded as ensure_model_config
-from backend.services.resonance_scheduler import ResonanceScheduler
-from backend.services.scanning.scanner_service import ScannerService
 from backend.middleware.logging_context import LoggingContextMiddleware
 from backend.middleware.rate_limit import limiter
 from backend.middleware.security import SecurityHeadersMiddleware
@@ -60,6 +57,7 @@ from backend.routers import (
     invitations,
     locations,
     members,
+    news_scanner,
     operatives,
     prompt_templates,
     public,
@@ -74,9 +72,12 @@ from backend.routers import (
     style_references,
     taxonomies,
     users,
-    news_scanner,
     zone_actions,
 )
+from backend.services.platform_model_config import ensure_loaded as ensure_model_config
+from backend.services.resonance_scheduler import ResonanceScheduler
+from backend.services.scanning.scanner_service import ScannerService
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

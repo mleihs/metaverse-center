@@ -7,13 +7,13 @@ from datetime import UTC, datetime
 from uuid import UUID
 
 from fastapi import HTTPException, status
-from supabase import Client
 
 from backend.models.resonance import ARCHETYPE_DESCRIPTIONS
 from backend.services.base_service import BaseService, serialize_for_json
 from backend.services.event_service import EventService
 from backend.services.external_service_resolver import ExternalServiceResolver
 from backend.services.generation_service import GenerationService
+from supabase import Client
 
 logger = logging.getLogger(__name__)
 

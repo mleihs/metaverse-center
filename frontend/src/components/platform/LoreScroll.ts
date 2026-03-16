@@ -90,7 +90,9 @@ Axiom 4: The Cartographers exist outside the axioms. This is not a privilege. Th
         'The Fracture was not an explosion. It was a thought becoming too large for a single mind.',
       ),
       imageSlug: 'the-fracture',
-      imageCaption: msg('The Fracture — Reality shattering into incompatible worlds, each a complete answer to a question that could not be asked in one voice'),
+      imageCaption: msg(
+        'The Fracture — Reality shattering into incompatible worlds, each a complete answer to a question that could not be asked in one voice',
+      ),
       body: msg(`The Gaslit Reach's account is the most poetic. In the Annals of the Deep, Commodore Harrowgate describes it thus: "Imagine you are swimming in a sea that is also a mirror. The mirror cracks. You continue swimming. But now the water on one side tastes of salt and the water on the other tastes of copper, and you realise that you have always been swimming in two seas, and they have only just now stopped pretending to be one."
 
 Velgarien's official account is characteristically blunt. Bureau 9 maintains that the Fracture was a "controlled decoupling performed by the State for the safety of the citizenry." The circular logic is considered a feature, not a bug.
@@ -104,7 +106,9 @@ This is why the Shards cannot be simply reassembled. You cannot pour the wine ba
       chapter: msg('The Fracture'),
       arcanum: 'IV',
       title: msg('The Known Shards'),
-      epigraph: msg('Each Shard is an answer to a question the universe could not ask in one voice. The Bureau has never claimed the list is complete.'),
+      epigraph: msg(
+        'Each Shard is an answer to a question the universe could not ask in one voice. The Bureau has never claimed the list is complete.',
+      ),
       body: msg(`The Bureau has classified several major Shards — worlds that survived the Fracture intact, that developed their own internal logic, that grew rather than collapsed. The catalog is not exhaustive. It cannot be. The Fracture is not a historical event with a fixed number of consequences. It is an ongoing ontological condition. New Shards continue to crystallize at the edges of mapped reality, wherever a question arises that no existing world can answer.
 
 What follows are the first Shards the Bureau mapped — the major, stable realities around which the Cartographic discipline was built:
@@ -1399,8 +1403,10 @@ export class VelgLoreScroll extends LitElement {
         currentChapter = section.chapter;
         const isExpanded = this._expanded.has(section.id);
         const isClassified = this.classifiedSectionIds.has(section.id);
-        const isPending = this.generating && section.imageSlug && this.pendingImageSlugs.has(section.imageSlug);
-        const imageUrl = section.imageSlug && !isPending ? this._getImageUrl(section.imageSlug) : null;
+        const isPending =
+          this.generating && section.imageSlug && this.pendingImageSlugs.has(section.imageSlug);
+        const imageUrl =
+          section.imageSlug && !isPending ? this._getImageUrl(section.imageSlug) : null;
         const caption = section.imageCaption ?? '';
         const delay = sectionIndex * 0.06;
         sectionIndex++;
@@ -1451,8 +1457,11 @@ export class VelgLoreScroll extends LitElement {
             >
               ${(() => {
                 // Track seen images to only play reveal on newly arrived ones
-                const isNewReveal = imageUrl && section.imageSlug && this.generating
-                  && !this._seenImageSlugs.has(section.imageSlug);
+                const isNewReveal =
+                  imageUrl &&
+                  section.imageSlug &&
+                  this.generating &&
+                  !this._seenImageSlugs.has(section.imageSlug);
                 if (imageUrl && section.imageSlug) this._seenImageSlugs.add(section.imageSlug);
 
                 return imageUrl

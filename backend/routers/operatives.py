@@ -16,13 +16,6 @@ from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta
 from backend.models.epoch import MissionResponse, OperativeDeploy
 from backend.services.audit_service import AuditService
 from backend.services.battle_log_service import BattleLogService
-from backend.services.constants import (
-    OPERATIVE_DEPLOY_CYCLES,
-    OPERATIVE_MISSION_CYCLES,
-    OPERATIVE_RP_COSTS,
-    OPERATIVE_TARGET_TYPE,
-    OPERATIVE_TYPE_COLORS,
-)
 from backend.services.epoch_service import EpochService
 from backend.services.operative_service import OperativeService
 from supabase import Client

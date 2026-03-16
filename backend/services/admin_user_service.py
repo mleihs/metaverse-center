@@ -112,7 +112,10 @@ class AdminUserService:
 
     @classmethod
     async def delete_user(cls, admin_supabase: Client, user_id: UUID) -> None:
-        """Delete a user via Postgres ``admin_delete_user`` (migration 040, rewritten 113). Transfers simulation ownership to admin, nullifies FKs, cascades rest."""
+        """Delete a user via Postgres ``admin_delete_user`` (migration 040, rewritten 113).
+
+        Transfers simulation ownership to admin, nullifies FKs, cascades rest.
+        """
         try:
             admin_supabase.rpc(
                 "admin_delete_user",

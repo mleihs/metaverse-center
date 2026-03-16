@@ -10,8 +10,8 @@
 
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, query, state } from 'lit/decorators.js';
-import { adminApi } from '../../services/api/AdminApiService.js';
 import { appState } from '../../services/AppStateManager.js';
+import { adminApi } from '../../services/api/AdminApiService.js';
 import { supabase } from '../../services/supabase/client.js';
 import type { AdminUser } from '../../types/index.js';
 
@@ -482,7 +482,9 @@ export class VelgDevAccountSwitcher extends LitElement {
 
   private _boundKeydown = this._handleKeydown.bind(this);
 
-  private _boundUserDeleted = () => { this._userCache = null; };
+  private _boundUserDeleted = () => {
+    this._userCache = null;
+  };
 
   connectedCallback() {
     super.connectedCallback();
@@ -635,7 +637,9 @@ export class VelgDevAccountSwitcher extends LitElement {
     if (error) {
       this._switchError = error.message;
       this.classList.remove('switching');
-      setTimeout(() => { this._switchError = ''; }, 4000);
+      setTimeout(() => {
+        this._switchError = '';
+      }, 4000);
       return;
     }
 
@@ -687,7 +691,9 @@ export class VelgDevAccountSwitcher extends LitElement {
         title="Dev Account Switcher"
       >DEV</span>
 
-      ${this._open ? html`
+      ${
+        this._open
+          ? html`
         <div class="backdrop" @click=${this._close}></div>
         <div class="panel" @keydown=${this._handleListKeydown}>
           <div class="panel__header">
@@ -716,23 +722,31 @@ export class VelgDevAccountSwitcher extends LitElement {
 
           ${this._loading ? html`<div class="loading">Loading</div>` : nothing}
 
-          ${!this._loading && this._fetchError
-            ? html`<div class="error-msg">${this._fetchError}</div>`
-            : nothing}
+          ${
+            !this._loading && this._fetchError
+              ? html`<div class="error-msg">${this._fetchError}</div>`
+              : nothing
+          }
 
-          ${!this._loading && !this._fetchError ? html`
+          ${
+            !this._loading && !this._fetchError
+              ? html`
             <div class="list" role="listbox">
-              ${this._filtered.length === 0
-                ? html`<div class="empty">No matches</div>`
-                : this._filtered.map((u, i) => this._renderUser(u, i))}
+              ${
+                this._filtered.length === 0
+                  ? html`<div class="empty">No matches</div>`
+                  : this._filtered.map((u, i) => this._renderUser(u, i))
+              }
             </div>
-          ` : nothing}
+          `
+              : nothing
+          }
 
-          ${this._switchError
-            ? html`<div class="error-msg">${this._switchError}</div>`
-            : nothing}
+          ${this._switchError ? html`<div class="error-msg">${this._switchError}</div>` : nothing}
         </div>
-      ` : nothing}
+      `
+          : nothing
+      }
     `;
   }
 
@@ -745,7 +759,9 @@ export class VelgDevAccountSwitcher extends LitElement {
         role="option"
         aria-selected=${isCurrent}
         @click=${() => this._switchTo(u)}
-        @mouseenter=${() => { this._focusIndex = index; }}
+        @mouseenter=${() => {
+          this._focusIndex = index;
+        }}
       >
         <span class="user__email">${u.email}</span>
         <div class="user__meta">
@@ -759,8 +775,13 @@ export class VelgDevAccountSwitcher extends LitElement {
   private _renderGate() {
     return html`
       <span class="tag" @click=${this._openGate}>DEV</span>
-      ${this._gateOpen ? html`
-        <div class="gate-backdrop" @click=${() => { this._gateOpen = false; this._gateError = ''; }}></div>
+      ${
+        this._gateOpen
+          ? html`
+        <div class="gate-backdrop" @click=${() => {
+          this._gateOpen = false;
+          this._gateError = '';
+        }}></div>
         <div class="gate">
           <input
             class="gate__input ${this._gateError ? 'gate__input--error' : ''}"
@@ -771,7 +792,9 @@ export class VelgDevAccountSwitcher extends LitElement {
           <button class="gate__btn" @click=${this._handleGateSubmit}>OK</button>
           ${this._gateError ? html`<span class="gate__error">${this._gateError}</span>` : nothing}
         </div>
-      ` : nothing}
+      `
+          : nothing
+      }
     `;
   }
 }

@@ -13,7 +13,16 @@ import './AdminResonancesTab.js';
 import './AdminScannerTab.js';
 import './AdminSimulationsTab.js';
 
-type AdminTab = 'users' | 'simulations' | 'resonances' | 'scanner' | 'forge' | 'apikeys' | 'models' | 'caching' | 'cleanup';
+type AdminTab =
+  | 'users'
+  | 'simulations'
+  | 'resonances'
+  | 'scanner'
+  | 'forge'
+  | 'apikeys'
+  | 'models'
+  | 'caching'
+  | 'cleanup';
 
 @localized()
 @customElement('velg-admin-panel')
@@ -228,9 +237,11 @@ export class VelgAdminPanel extends LitElement {
           aria-selected=${this._activeTab === 'forge'}
           aria-controls="admin-tabpanel"
           @click=${() => this._setTab('forge')}
-        >${msg('Forge')}${appState.pendingForgeRequestCount.value > 0
-          ? html`<span class="admin-tabs__badge">${appState.pendingForgeRequestCount.value}</span>`
-          : ''}</button>
+        >${msg('Forge')}${
+          appState.pendingForgeRequestCount.value > 0
+            ? html`<span class="admin-tabs__badge">${appState.pendingForgeRequestCount.value}</span>`
+            : ''
+        }</button>
         <button
           class="admin-tabs__tab ${this._activeTab === 'apikeys' ? 'admin-tabs__tab--active' : ''}"
           role="tab"

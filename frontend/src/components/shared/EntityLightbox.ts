@@ -472,11 +472,13 @@ export class VelgEntityLightbox extends LitElement {
           <!-- Header -->
           <div class="lightbox__header">
             <h2 class="lightbox__title">${this.panelTitle}</h2>
-            ${showNav
-              ? html`<span class="lightbox__counter" aria-live="polite">
+            ${
+              showNav
+                ? html`<span class="lightbox__counter" aria-live="polite">
                   ${this.currentIndex + 1} / ${this.totalEntities}
                 </span>`
-              : nothing}
+                : nothing
+            }
             <button
               class="lightbox__close"
               @click=${this._emitClose}
@@ -502,8 +504,9 @@ export class VelgEntityLightbox extends LitElement {
           <!-- Footer -->
           <div class="lightbox__footer">
             <div class="lightbox__nav" role="group" aria-label=${msg('Entity navigation')}>
-              ${showNav
-                ? html`
+              ${
+                showNav
+                  ? html`
                     <button
                       class="lightbox__nav-btn"
                       ?disabled=${!hasPrev}
@@ -521,7 +524,8 @@ export class VelgEntityLightbox extends LitElement {
                       <svg viewBox="0 0 16 16"><path d="M5.7 2.3a1 1 0 0 1 1.5 0l4.5 5a1 1 0 0 1 0 1.4l-4.5 5a1 1 0 1 1-1.5-1.4L9.6 8 5.7 3.7a1 1 0 0 1 0-1.4z"/></svg>
                     </button>
                   `
-                : nothing}
+                  : nothing
+              }
             </div>
             <div class="lightbox__footer-actions">
               <slot name="footer"></slot>

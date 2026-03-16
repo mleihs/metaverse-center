@@ -839,7 +839,9 @@ export class VelgDesignSettingsPanel extends BaseSettingsPanel {
           <button
             class="settings-btn settings-btn--secondary"
             style="display: inline-flex; align-items: center; gap: var(--space-1-5);"
-            @click=${() => { this._darkroomOpen = true; }}
+            @click=${() => {
+              this._darkroomOpen = true;
+            }}
           >
             ${icons.palette(14)} ${msg('OPEN DARKROOM')}
           </button>
@@ -848,7 +850,9 @@ export class VelgDesignSettingsPanel extends BaseSettingsPanel {
         <velg-darkroom-studio
           .simulationId=${this.simulationId}
           ?open=${this._darkroomOpen}
-          @darkroom-close=${() => { this._darkroomOpen = false; }}
+          @darkroom-close=${() => {
+            this._darkroomOpen = false;
+          }}
         ></velg-darkroom-studio>
 
         ${this._renderPresetSelector()}

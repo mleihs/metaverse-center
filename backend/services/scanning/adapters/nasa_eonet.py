@@ -100,7 +100,10 @@ class NASAEONETAdapter(SourceAdapter):
                 },
                 source_category=source_category,
                 magnitude=round(game_magnitude, 2),
-                classification_reason=f"EONET category: {categories[0].get('id', 'unknown') if categories else 'unknown'}",
+                classification_reason=(
+                    f"EONET category:"
+                    f" {categories[0].get('id', 'unknown') if categories else 'unknown'}"
+                ),
                 is_structured=True,
             ))
 

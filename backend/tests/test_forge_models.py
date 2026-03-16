@@ -1,6 +1,6 @@
 """Tests for Simulation Forge Pydantic models."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
@@ -55,7 +55,7 @@ class TestForgeDraftUpdate:
 
 class TestForgeDraft:
     def test_from_dict(self):
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         uid = uuid4()
         draft = ForgeDraft(
             id=uid,
@@ -79,7 +79,7 @@ class TestUserWallet:
         assert UserWallet.model_config["from_attributes"] is True
 
     def test_defaults(self):
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         w = UserWallet(user_id=uuid4(), forge_tokens=3, is_architect=True, created_at=now, updated_at=now)
         assert w.encrypted_openrouter_key is None
         assert w.encrypted_replicate_key is None

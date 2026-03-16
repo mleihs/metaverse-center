@@ -110,7 +110,9 @@ export class VelgApp extends LitElement {
           const ok = await this._guardGuest();
           if (ok) {
             seoService.setTitle(['Sign In']);
-            seoService.setDescription('Sign in to metaverse.center — access your operative terminal and explore simulated worlds.');
+            seoService.setDescription(
+              'Sign in to metaverse.center — access your operative terminal and explore simulated worlds.',
+            );
             seoService.setCanonical('/login');
             analyticsService.trackPageView('/login', document.title);
           }
@@ -124,7 +126,9 @@ export class VelgApp extends LitElement {
           const ok = await this._guardGuest();
           if (ok) {
             seoService.setTitle(['Register']);
-            seoService.setDescription('Create your operative account on metaverse.center — join the Bureau of Multiverse Observation.');
+            seoService.setDescription(
+              'Create your operative account on metaverse.center — join the Bureau of Multiverse Observation.',
+            );
             seoService.setCanonical('/register');
             analyticsService.trackPageView('/register', document.title);
           }
@@ -137,7 +141,9 @@ export class VelgApp extends LitElement {
         enter: async () => {
           await this._authReady;
           seoService.setTitle(['Operative Terminal']);
-          seoService.setDescription('Your operative command center — monitor active epochs, browse simulation worlds, and track substrate anomalies.');
+          seoService.setDescription(
+            'Your operative command center — monitor active epochs, browse simulation worlds, and track substrate anomalies.',
+          );
           seoService.setCanonical('/dashboard');
           analyticsService.trackPageView('/dashboard', document.title);
           return true;
@@ -149,7 +155,9 @@ export class VelgApp extends LitElement {
         enter: async () => {
           await this._authReady;
           seoService.setTitle(['Multiverse Map']);
-          seoService.setDescription('Explore the multiverse map — view active simulations, connections, and live battle statistics.');
+          seoService.setDescription(
+            'Explore the multiverse map — view active simulations, connections, and live battle statistics.',
+          );
           seoService.setCanonical('/multiverse');
           analyticsService.trackPageView('/multiverse', document.title);
           return true;
@@ -172,7 +180,9 @@ export class VelgApp extends LitElement {
         enter: async () => {
           await this._authReady;
           seoService.setTitle(['Epoch Summons']);
-          seoService.setDescription('Accept an epoch invitation — join competitive PvP operations and deploy your simulation.');
+          seoService.setDescription(
+            'Accept an epoch invitation — join competitive PvP operations and deploy your simulation.',
+          );
           seoService.setCanonical('/epoch/join');
           analyticsService.trackPageView('/epoch/join', document.title);
           return true;
@@ -189,7 +199,9 @@ export class VelgApp extends LitElement {
             return false;
           }
           seoService.setTitle(['The Simulation Forge']);
-          seoService.setDescription('Create new simulations with the Simulation Forge — design worlds, set parameters, and launch your game.');
+          seoService.setDescription(
+            'Create new simulations with the Simulation Forge — design worlds, set parameters, and launch your game.',
+          );
           seoService.setCanonical('/forge');
           analyticsService.trackPageView('/forge', document.title);
           return true;
@@ -212,7 +224,9 @@ export class VelgApp extends LitElement {
         enter: async () => {
           await this._authReady;
           seoService.setTitle(['Bureau Archives']);
-          seoService.setDescription('Declassified archives of the Bureau of Impossible Geography — the complete mythology of the Fracture, the Bleed, and the Convergence.');
+          seoService.setDescription(
+            'Declassified archives of the Bureau of Impossible Geography — the complete mythology of the Fracture, the Bleed, and the Convergence.',
+          );
           seoService.setCanonical('/archives');
           analyticsService.trackPageView('/archives', document.title);
           return true;
@@ -225,7 +239,9 @@ export class VelgApp extends LitElement {
         enter: async () => {
           await this._authReady;
           seoService.setTitle(['Invitation']);
-          seoService.setDescription('Accept your invitation to join a simulation on metaverse.center.');
+          seoService.setDescription(
+            'Accept your invitation to join a simulation on metaverse.center.',
+          );
           seoService.setCanonical('/invitations');
           analyticsService.trackPageView('/invitations', document.title);
           return true;
@@ -238,7 +254,9 @@ export class VelgApp extends LitElement {
           const ok = await this._guardAuth();
           if (ok) {
             seoService.setTitle(['Profile']);
-            seoService.setDescription('Manage your operative profile, wallet, preferences, and account settings.');
+            seoService.setDescription(
+              'Manage your operative profile, wallet, preferences, and account settings.',
+            );
             seoService.setCanonical('/profile');
             analyticsService.trackPageView('/profile', document.title);
           }
@@ -252,7 +270,9 @@ export class VelgApp extends LitElement {
           const ok = await this._guardAuth();
           if (ok) {
             seoService.setTitle(['New Simulation']);
-            seoService.setDescription('Create a new simulation — build your world and launch it to the metaverse.');
+            seoService.setDescription(
+              'Create a new simulation — build your world and launch it to the metaverse.',
+            );
             seoService.setCanonical('/new-simulation');
             analyticsService.trackPageView('/new-simulation', document.title);
           }
@@ -270,7 +290,9 @@ export class VelgApp extends LitElement {
             return false;
           }
           seoService.setTitle(['Admin']);
-          seoService.setDescription('Platform administration — manage users, simulations, settings, and system health.');
+          seoService.setDescription(
+            'Platform administration — manage users, simulations, settings, and system health.',
+          );
           seoService.setCanonical('/admin');
           analyticsService.trackPageView('/admin', document.title);
           return true;
@@ -351,7 +373,9 @@ export class VelgApp extends LitElement {
             return false;
           }
           seoService.setTitle(['Multiplayer Worldbuilding & Strategy Platform']);
-          seoService.setDescription('Build civilizations, deploy operatives, shape the metaverse. A multiplayer worldbuilding and strategy platform.');
+          seoService.setDescription(
+            'Build civilizations, deploy operatives, shape the metaverse. A multiplayer worldbuilding and strategy platform.',
+          );
           seoService.setCanonical('/');
           analyticsService.trackPageView('/', document.title);
           return true;
@@ -483,10 +507,7 @@ export class VelgApp extends LitElement {
 
   private async _initAuth(): Promise<void> {
     try {
-      await Promise.all([
-        authService.initialize(),
-        this._fetchMockMode(),
-      ]);
+      await Promise.all([authService.initialize(), this._fetchMockMode()]);
       // After auth is ready, fetch /me (admin status + onboarding) before resolving
       // _authReady — route guards for /admin and /forge depend on isPlatformAdmin.
       if (appState.isAuthenticated.value) {
@@ -678,7 +699,10 @@ export class VelgApp extends LitElement {
     if (simName) {
       breadcrumbs.push({ name: simName, url: `https://metaverse.center/simulations/${slug}/lore` });
     }
-    breadcrumbs.push({ name: viewLabel, url: `https://metaverse.center/simulations/${slug}/${view}` });
+    breadcrumbs.push({
+      name: viewLabel,
+      url: `https://metaverse.center/simulations/${slug}/${view}`,
+    });
     seoService.setBreadcrumbs(breadcrumbs);
     analyticsService.trackPageView(`/simulations/${slug}/${view}`, document.title);
 
@@ -753,7 +777,9 @@ export class VelgApp extends LitElement {
         ${this._router.outlet()}
       </main>
       ${this._showLoginPanel ? html`<velg-login-panel></velg-login-panel>` : nothing}
-      ${this._showOnboarding ? html`
+      ${
+        this._showOnboarding
+          ? html`
         <velg-onboarding-wizard
           .open=${true}
           @onboarding-complete=${this._handleOnboardingComplete}
@@ -761,7 +787,9 @@ export class VelgApp extends LitElement {
           @onboarding-create-simulation=${this._handleOnboardingCreateSim}
           @onboarding-browse=${this._handleOnboardingBrowse}
         ></velg-onboarding-wizard>
-      ` : nothing}
+      `
+          : nothing
+      }
       <velg-cookie-consent></velg-cookie-consent>
     `;
   }
@@ -772,12 +800,15 @@ export class VelgApp extends LitElement {
 
   private _handleOnboardingAcademy(): void {
     this._showOnboarding = false;
-    epochsApi.createQuickAcademy().then((resp) => {
-      if (resp.success && resp.data) {
-        window.history.pushState({}, '', `/epochs/${resp.data.id}`);
-        window.dispatchEvent(new PopStateEvent('popstate'));
-      }
-    }).catch(() => {});
+    epochsApi
+      .createQuickAcademy()
+      .then((resp) => {
+        if (resp.success && resp.data) {
+          window.history.pushState({}, '', `/epochs/${resp.data.id}`);
+          window.dispatchEvent(new PopStateEvent('popstate'));
+        }
+      })
+      .catch(() => {});
   }
 
   private _handleOnboardingCreateSim(): void {

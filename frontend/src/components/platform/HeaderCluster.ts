@@ -7,10 +7,10 @@
  * @slot - Panel content (links, widgets, etc.)
  * @fires navigate - Bubbles route change requests from child links
  */
-import { msg } from '@lit/localize';
+import { msg, str } from '@lit/localize';
+import type { TemplateResult } from 'lit';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import type { TemplateResult } from 'lit';
 import { icons } from '../../utils/icons.js';
 
 @customElement('velg-header-cluster')
@@ -305,20 +305,22 @@ export class VelgHeaderCluster extends LitElement {
           <span class="trigger__chevron">${icons.chevronDown(10)}</span>
         </button>
 
-        ${this._open
-          ? html`
+        ${
+          this._open
+            ? html`
               <div class="backdrop" @click=${this._onBackdropClick}></div>
               <nav
                 class="panel-wrapper"
                 role="navigation"
-                aria-label=${msg('${this.label} navigation')}
+                aria-label=${msg(str`${this.label} navigation`)}
               >
                 <div class="panel">
                   <slot></slot>
                 </div>
               </nav>
             `
-          : nothing}
+            : nothing
+        }
       </div>
     `;
   }

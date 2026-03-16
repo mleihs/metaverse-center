@@ -165,10 +165,9 @@ export class EpochsApiService extends BaseApiService {
     simulationId: string,
     targetSimulationId: string,
   ): Promise<ApiResponse<AllianceProposal>> {
-    return this.post(
-      `/epochs/${epochId}/teams/${teamId}/invite?simulation_id=${simulationId}`,
-      { target_simulation_id: targetSimulationId },
-    );
+    return this.post(`/epochs/${epochId}/teams/${teamId}/invite?simulation_id=${simulationId}`, {
+      target_simulation_id: targetSimulationId,
+    });
   }
 
   voteOnProposal(

@@ -16,9 +16,9 @@ import logging
 from uuid import UUID
 
 from backend.models.epoch import OperativeDeploy
+from backend.services.alliance_service import AllianceService
 from backend.services.bot_chat_service import BotChatService
 from backend.services.bot_game_state import BotGameState
-from backend.services.alliance_service import AllianceService
 from backend.services.bot_personality import create_personality
 from backend.services.epoch_service import EpochService
 from backend.services.operative_service import OperativeService

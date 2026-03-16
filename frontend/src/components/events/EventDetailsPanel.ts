@@ -1,11 +1,20 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
-import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { customElement, property, state } from 'lit/decorators.js';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { appState } from '../../services/AppStateManager.js';
 import { connectionsApi, echoesApi, eventsApi, simulationsApi } from '../../services/api/index.js';
 import { generationProgress } from '../../services/GenerationProgressService.js';
-import type { EventChain, EventEcho, EventReaction, EventStatus, EventZoneLink, Event as SimEvent, Simulation, SimulationConnection } from '../../types/index.js';
+import type {
+  EventChain,
+  EventEcho,
+  EventReaction,
+  EventStatus,
+  EventZoneLink,
+  Event as SimEvent,
+  Simulation,
+  SimulationConnection,
+} from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import { t } from '../../utils/locale-fields.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
@@ -725,22 +734,33 @@ export class VelgEventDetailsPanel extends LitElement {
 
   private _getStatusBadgeVariant(status: EventStatus): string {
     switch (status) {
-      case 'active': return 'success';
-      case 'escalating': return 'danger';
-      case 'resolving': return 'info';
-      case 'resolved': return 'default';
-      case 'archived': return 'default';
-      default: return 'default';
+      case 'active':
+        return 'success';
+      case 'escalating':
+        return 'danger';
+      case 'resolving':
+        return 'info';
+      case 'resolved':
+        return 'default';
+      case 'archived':
+        return 'default';
+      default:
+        return 'default';
     }
   }
 
   private _getChainTypeBadgeVariant(chainType: string): string {
     switch (chainType) {
-      case 'escalation': return 'danger';
-      case 'follow_up': return 'info';
-      case 'resolution': return 'success';
-      case 'cascade': return 'danger';
-      default: return 'default';
+      case 'escalation':
+        return 'danger';
+      case 'follow_up':
+        return 'info';
+      case 'resolution':
+        return 'success';
+      case 'cascade':
+        return 'danger';
+      default:
+        return 'default';
     }
   }
 
@@ -765,17 +785,20 @@ export class VelgEventDetailsPanel extends LitElement {
     return html`
       <div class="panel__section">
         <velg-section-header>${msg('Zone Impact')}</velg-section-header>
-        ${this.event?.data_source === 'cascade'
-          ? html`<div class="panel__cascade-badge">${icons.bolt()} ${msg('Cascade Event')}</div>`
-          : nothing
+        ${
+          this.event?.data_source === 'cascade'
+            ? html`<div class="panel__cascade-badge">${icons.bolt()} ${msg('Cascade Event')}</div>`
+            : nothing
         }
         <div class="panel__zone-links">
-          ${this._zoneLinks.map((link) => html`
+          ${this._zoneLinks.map(
+            (link) => html`
             <div class="panel__zone-link">
               <span class="panel__zone-link-name">${link.zone_name ?? msg('Unknown Zone')}</span>
-              ${link.zone_type
-                ? html`<span class="panel__zone-link-type">${link.zone_type}</span>`
-                : nothing
+              ${
+                link.zone_type
+                  ? html`<span class="panel__zone-link-type">${link.zone_type}</span>`
+                  : nothing
               }
               <div class="panel__zone-link-weight"
                 title=${msg(str`Affinity: ${Math.round(link.affinity_weight * 100)}%`)}
@@ -785,7 +808,8 @@ export class VelgEventDetailsPanel extends LitElement {
               </div>
               <span class="panel__zone-link-source">${link.link_source}</span>
             </div>
-          `)}
+          `,
+          )}
         </div>
       </div>
     `;
@@ -832,10 +856,7 @@ export class VelgEventDetailsPanel extends LitElement {
 
   /** Convert basic markdown (headings, bold, italic, paragraphs) to HTML. */
   private _renderMarkdown(text: string) {
-    const escaped = text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
+    const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const converted = escaped
       .replace(/^### (.+)$/gm, '<h4>$1</h4>')
       .replace(/^## (.+)$/gm, '<h3>$1</h3>')
@@ -998,10 +1019,12 @@ export class VelgEventDetailsPanel extends LitElement {
           <velg-badge variant=${this._getStatusBadgeVariant(status)}>${status}</velg-badge>
         </div>
 
-        ${this._chains.length > 0 ? html`
+        ${
+          this._chains.length > 0
+            ? html`
           <div class="panel__chains" style="margin-top: var(--space-3);">
             ${this._chains.map((chain) => {
-              const isParent = chain.parent_event_id === this.event!.id;
+              const isParent = chain.parent_event_id === this.event?.id;
               const linked = isParent ? chain.child : chain.parent;
               const linkedTitle = linked?.title ?? msg('Unknown event');
               const direction = isParent ? '\u2192' : '\u2190';
@@ -1015,7 +1038,9 @@ export class VelgEventDetailsPanel extends LitElement {
               `;
             })}
           </div>
-        ` : null}
+        `
+            : null
+        }
       </div>
     `;
   }
@@ -1044,15 +1069,24 @@ export class VelgEventDetailsPanel extends LitElement {
 
   private _getEmotionColor(emotion: string): string {
     switch (emotion) {
-      case 'fear': return 'fear';
-      case 'anger': return 'anger';
-      case 'panic': return 'panic';
-      case 'despair': return 'despair';
-      case 'defiance': return 'defiance';
-      case 'hope': return 'hope';
-      case 'resolve': return 'resolve';
-      case 'indifference': return 'indifference';
-      default: return 'unknown';
+      case 'fear':
+        return 'fear';
+      case 'anger':
+        return 'anger';
+      case 'panic':
+        return 'panic';
+      case 'despair':
+        return 'despair';
+      case 'defiance':
+        return 'defiance';
+      case 'hope':
+        return 'hope';
+      case 'resolve':
+        return 'resolve';
+      case 'indifference':
+        return 'indifference';
+      default:
+        return 'unknown';
     }
   }
 
@@ -1083,11 +1117,15 @@ export class VelgEventDetailsPanel extends LitElement {
     });
 
     return html`
-      ${dominant ? html`
+      ${
+        dominant
+          ? html`
         <div class="chorus__dominant" aria-live="polite">
           ${msg('Dominant sentiment')}: <span class="chorus__dominant-value">${dominant.toUpperCase()}</span>
         </div>
-      ` : null}
+      `
+          : null
+      }
 
       <div class="chorus__bar" role="img" aria-label=${msg(str`Sentiment distribution across ${total} reactions`)}>
         ${sorted.map(([emotion, reactions]) => {
@@ -1100,13 +1138,23 @@ export class VelgEventDetailsPanel extends LitElement {
               style="width: ${pct}%"
               aria-label=${msg(str`${reactions.length} agents: ${emotion}`)}
               tabindex="0"
-              @mouseenter=${() => { this._hoveredEmotion = emotion; }}
-              @mouseleave=${() => { this._hoveredEmotion = null; }}
-              @focus=${() => { this._hoveredEmotion = emotion; }}
-              @blur=${() => { this._hoveredEmotion = null; }}
+              @mouseenter=${() => {
+                this._hoveredEmotion = emotion;
+              }}
+              @mouseleave=${() => {
+                this._hoveredEmotion = null;
+              }}
+              @focus=${() => {
+                this._hoveredEmotion = emotion;
+              }}
+              @blur=${() => {
+                this._hoveredEmotion = null;
+              }}
             >
               ${pct >= 15 ? reactions.length : ''}
-              ${this._hoveredEmotion === emotion ? html`
+              ${
+                this._hoveredEmotion === emotion
+                  ? html`
                 <div class="chorus__tooltip">
                   ${reactions.slice(0, 5).map((r) => {
                     const name = r.agents?.name ?? r.agent_name;
@@ -1123,11 +1171,17 @@ export class VelgEventDetailsPanel extends LitElement {
                       </div>
                     `;
                   })}
-                  ${reactions.length > 5 ? html`
+                  ${
+                    reactions.length > 5
+                      ? html`
                     <div class="chorus__tooltip-preview" style="padding-top: var(--space-1);">+${reactions.length - 5} ${msg('more')}</div>
-                  ` : null}
+                  `
+                      : null
+                  }
                 </div>
-              ` : null}
+              `
+                  : null
+              }
             </button>
           `;
         })}
@@ -1179,13 +1233,17 @@ export class VelgEventDetailsPanel extends LitElement {
                 ></velg-avatar>
                 <span class="chorus__reaction-agent">${agentName}</span>
                 ${reaction.emotion ? html`<velg-badge variant=${this._getEmotionBadgeVariant(reaction.emotion)}>${reaction.emotion}</velg-badge>` : nothing}
-                ${appState.canEdit.value ? html`
+                ${
+                  appState.canEdit.value
+                    ? html`
                   <button
                     class="chorus__reaction-delete"
                     title=${msg('Delete reaction')}
                     @click=${() => this._handleDeleteReaction(reaction)}
                   >${icons.trash(14)}</button>
-                ` : nothing}
+                `
+                    : nothing
+                }
               </div>
               <div class="chorus__reaction-text">${reaction.reaction_text}</div>
             </div>
@@ -1193,18 +1251,26 @@ export class VelgEventDetailsPanel extends LitElement {
         })}
       </div>
 
-      ${remaining.length > 0 ? html`
+      ${
+        remaining.length > 0
+          ? html`
         <button
           class="chorus__show-all"
-          @click=${() => { this._showAllReactions = !this._showAllReactions; }}
+          @click=${() => {
+            this._showAllReactions = !this._showAllReactions;
+          }}
           aria-expanded=${this._showAllReactions}
         >
-          ${this._showAllReactions
-            ? msg('Hide remaining')
-            : msg(str`Show ${remaining.length} more reactions`)}
+          ${
+            this._showAllReactions
+              ? msg('Hide remaining')
+              : msg(str`Show ${remaining.length} more reactions`)
+          }
         </button>
 
-        ${this._showAllReactions ? html`
+        ${
+          this._showAllReactions
+            ? html`
           <div class="chorus__remaining">
             ${remaining.map((reaction) => {
               const agentName = reaction.agents?.name ?? reaction.agent_name;
@@ -1224,36 +1290,59 @@ export class VelgEventDetailsPanel extends LitElement {
                     <span class="chorus__remaining-agent">${agentName}</span>
                     ${reaction.emotion ? html`<velg-badge variant=${this._getEmotionBadgeVariant(reaction.emotion)}>${reaction.emotion}</velg-badge>` : nothing}
                     <span class="chorus__remaining-preview">${reaction.reaction_text.slice(0, 50)}...</span>
-                    ${appState.canEdit.value ? html`
+                    ${
+                      appState.canEdit.value
+                        ? html`
                       <button
                         class="chorus__reaction-delete"
                         title=${msg('Delete reaction')}
-                        @click=${(e: MouseEvent) => { e.stopPropagation(); this._handleDeleteReaction(reaction); }}
+                        @click=${(e: MouseEvent) => {
+                          e.stopPropagation();
+                          this._handleDeleteReaction(reaction);
+                        }}
                       >${icons.trash(14)}</button>
-                    ` : nothing}
+                    `
+                        : nothing
+                    }
                   </div>
-                  ${isOpen ? html`
+                  ${
+                    isOpen
+                      ? html`
                     <div class="chorus__remaining-body">
                       <div class="chorus__remaining-body-text">${reaction.reaction_text}</div>
                     </div>
-                  ` : nothing}
+                  `
+                      : nothing
+                  }
                 </div>
               `;
             })}
           </div>
-        ` : nothing}
-      ` : null}
+        `
+            : nothing
+        }
+      `
+          : null
+      }
     `;
   }
 
   private _getEmotionBadgeVariant(emotion: string): string {
     const e = emotion.trim().toLowerCase();
     switch (e) {
-      case 'fear': return 'warning';
-      case 'anger': case 'panic': case 'despair': return 'danger';
-      case 'hope': case 'resolve': return 'success';
-      case 'defiance': return 'primary';
-      default: return 'default';
+      case 'fear':
+        return 'warning';
+      case 'anger':
+      case 'panic':
+      case 'despair':
+        return 'danger';
+      case 'hope':
+      case 'resolve':
+        return 'success';
+      case 'defiance':
+        return 'primary';
+      default:
+        return 'default';
     }
   }
 

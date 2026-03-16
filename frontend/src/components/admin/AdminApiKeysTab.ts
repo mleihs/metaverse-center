@@ -27,22 +27,30 @@ function getApiKeyMeta(): Record<ApiKeySettingKey, ApiKeyMeta> {
   return {
     openrouter_api_key: {
       label: msg('OpenRouter API Key'),
-      description: msg('Platform default for AI text generation. Simulations can override with their own key.'),
+      description: msg(
+        'Platform default for AI text generation. Simulations can override with their own key.',
+      ),
       category: 'ai',
     },
     replicate_api_key: {
       label: msg('Replicate API Key'),
-      description: msg('Platform default for AI image generation. Simulations can override with their own key.'),
+      description: msg(
+        'Platform default for AI image generation. Simulations can override with their own key.',
+      ),
       category: 'ai',
     },
     guardian_api_key: {
       label: msg('Guardian API Key'),
-      description: msg('Platform default for The Guardian news integration. Required for social trend fetching from Guardian.'),
+      description: msg(
+        'Platform default for The Guardian news integration. Required for social trend fetching from Guardian.',
+      ),
       category: 'news',
     },
     newsapi_api_key: {
       label: msg('NewsAPI Key'),
-      description: msg('Platform default for NewsAPI news integration. Required for social trend fetching from NewsAPI.'),
+      description: msg(
+        'Platform default for NewsAPI news integration. Required for social trend fetching from NewsAPI.',
+      ),
       category: 'news',
     },
     tavily_api_key: {
@@ -438,24 +446,28 @@ export class VelgAdminApiKeysTab extends LitElement {
           >${visible ? icons.eyeOff(14) : icons.eye(14)}</button>
         </div>
         <div class="key-card__actions">
-          ${dirty
-            ? html`
+          ${
+            dirty
+              ? html`
                 <button
                   class="btn btn--save"
                   ?disabled=${saving}
                   @click=${() => this._saveKey(key)}
                 >${saving ? msg('Saving...') : msg('Save')}</button>
               `
-            : nothing}
-          ${configured
-            ? html`
+              : nothing
+          }
+          ${
+            configured
+              ? html`
                 <button
                   class="btn btn--clear"
                   ?disabled=${saving}
                   @click=${() => this._clearKey(key)}
                 >${msg('Clear')}</button>
               `
-            : nothing}
+              : nothing
+          }
         </div>
       </div>
     `;

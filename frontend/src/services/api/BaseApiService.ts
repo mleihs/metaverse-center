@@ -168,10 +168,7 @@ export class BaseApiService {
    * POST with multipart/form-data body.
    * Does NOT set Content-Type header — browser auto-sets boundary.
    */
-  protected async postFormData<T>(
-    path: string,
-    formData: FormData,
-  ): Promise<ApiResponse<T>> {
+  protected async postFormData<T>(path: string, formData: FormData): Promise<ApiResponse<T>> {
     try {
       const url = this.buildUrl(path);
       const headers: Record<string, string> = {};

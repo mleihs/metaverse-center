@@ -432,7 +432,7 @@ export class VelgEventSeismograph extends LitElement {
       for (const evt of sorted) {
         const t = new Date(evt.occurred_at).getTime();
         if (t > windowStart && t <= sampleTime) {
-          pressure += Math.pow((evt.impact_level ?? 1) / 10.0, 1.5);
+          pressure += ((evt.impact_level ?? 1) / 10.0) ** 1.5;
         }
       }
 
@@ -468,14 +468,22 @@ export class VelgEventSeismograph extends LitElement {
       const isResonance = evt.data_source === 'resonance';
       const isEscalating = evt.event_status === 'escalating';
 
-      const spikeClass = isEscalating ? 'seismo__spike--escalating' : isResonance ? 'seismo__spike--resonance' : '';
+      const spikeClass = isEscalating
+        ? 'seismo__spike--escalating'
+        : isResonance
+          ? 'seismo__spike--resonance'
+          : '';
       const spikeColor = isCascade
         ? 'var(--color-epoch-influence, var(--color-warning))'
         : isResonance
           ? 'var(--color-danger)'
           : color;
       const dashArray = isBleed ? '4,3' : isCascade ? '6,4' : '';
-      const sourceLabel = isCascade ? ` [${msg('Cascade')}]` : isResonance ? ` [${msg('Resonance')}]` : '';
+      const sourceLabel = isCascade
+        ? ` [${msg('Cascade')}]`
+        : isResonance
+          ? ` [${msg('Resonance')}]`
+          : '';
 
       return svg`
         <g
@@ -484,13 +492,17 @@ export class VelgEventSeismograph extends LitElement {
           role="img"
           aria-label=${`${t(evt, 'title')}: ${msg('impact')} ${impact}, ${evt.event_type ?? ''}${sourceLabel}`}
         >
-          ${isResonance ? svg`
+          ${
+            isResonance
+              ? svg`
             <circle cx=${x} cy=${y} r="8" fill="none"
               stroke="var(--color-danger)" stroke-width="1" opacity="0.3">
               <animate attributeName="r" from="4" to="12" dur="2s" repeatCount="indefinite" />
               <animate attributeName="opacity" from="0.4" to="0" dur="2s" repeatCount="indefinite" />
             </circle>
-          ` : nothing}
+          `
+              : nothing
+          }
           <line
             x1=${x} y1=${AXIS_Y}
             x2=${x} y2=${y}
@@ -498,14 +510,17 @@ export class VelgEventSeismograph extends LitElement {
             stroke-width=${isResonance ? '3' : isCascade ? '2' : '3'}
             ${dashArray ? svg`stroke-dasharray=${dashArray}` : nothing}
           />
-          ${isResonance ? svg`
+          ${
+            isResonance
+              ? svg`
             <polygon
               points="${x - 4},${y + 4} ${x},${y - 2} ${x + 4},${y + 4}"
               fill=${spikeColor}
               stroke=${spikeColor}
               stroke-width="1"
             />
-          ` : svg`
+          `
+              : svg`
             <circle
               cx=${x} cy=${y}
               r=${isCascade ? '4' : '3'}
@@ -513,7 +528,8 @@ export class VelgEventSeismograph extends LitElement {
               stroke=${spikeColor}
               stroke-width=${isCascade ? '2' : '1.5'}
             />
-          `}
+          `
+          }
           <title>${t(evt, 'title')} — ${msg('impact')} ${impact}${sourceLabel}</title>
         </g>
       `;
@@ -575,7 +591,9 @@ export class VelgEventSeismograph extends LitElement {
           @mousedown=${this._handleMouseDown}
           @mousemove=${this._handleMouseMove}
           @mouseup=${this._handleMouseUp}
-          @mouseleave=${() => { if (this._brushing) this._handleMouseUp(); }}
+          @mouseleave=${() => {
+            if (this._brushing) this._handleMouseUp();
+          }}
           @dblclick=${this._handleDblClick}
         >
           <desc>${msg(str`Timeline visualization showing ${totalVisible} events. Highest impact level: ${highest}.`)}</desc>

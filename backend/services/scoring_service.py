@@ -630,7 +630,7 @@ class ScoringService:
         if not standings:
             return awards
 
-        stats_by_sim: dict[str, dict] = {
+        {
             s["simulation_id"]: s for s in participant_stats
         }
 

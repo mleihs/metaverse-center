@@ -2,7 +2,10 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import type { ForgeLoreSection } from '../../services/api/ForgeApiService.js';
-import type { LoreSectionCreatePayload, LoreSectionUpdatePayload } from '../../services/api/LoreApiService.js';
+import type {
+  LoreSectionCreatePayload,
+  LoreSectionUpdatePayload,
+} from '../../services/api/LoreApiService.js';
 import { icons } from '../../utils/icons.js';
 
 interface EditingState {
@@ -334,7 +337,8 @@ export class VelgLoreEditor extends LitElement {
 
   private _submitEdit(): void {
     if (!this._editing) return;
-    const { sectionId, chapter, arcanum, title, epigraph, body, image_slug, image_caption } = this._editing;
+    const { sectionId, chapter, arcanum, title, epigraph, body, image_slug, image_caption } =
+      this._editing;
 
     if (sectionId) {
       const data: LoreSectionUpdatePayload = {
@@ -346,7 +350,13 @@ export class VelgLoreEditor extends LitElement {
         image_slug: image_slug || null,
         image_caption: image_caption || null,
       };
-      this.dispatchEvent(new CustomEvent('lore-save', { detail: { sectionId, data }, bubbles: true, composed: true }));
+      this.dispatchEvent(
+        new CustomEvent('lore-save', {
+          detail: { sectionId, data },
+          bubbles: true,
+          composed: true,
+        }),
+      );
     } else {
       const data: LoreSectionCreatePayload = {
         chapter,
@@ -357,18 +367,28 @@ export class VelgLoreEditor extends LitElement {
         image_slug: image_slug || null,
         image_caption: image_caption || null,
       };
-      this.dispatchEvent(new CustomEvent('lore-create', { detail: { data }, bubbles: true, composed: true }));
+      this.dispatchEvent(
+        new CustomEvent('lore-create', { detail: { data }, bubbles: true, composed: true }),
+      );
     }
 
     this._editing = null;
   }
 
   private _dispatchDelete(sectionId: string): void {
-    this.dispatchEvent(new CustomEvent('lore-delete', { detail: { sectionId }, bubbles: true, composed: true }));
+    this.dispatchEvent(
+      new CustomEvent('lore-delete', { detail: { sectionId }, bubbles: true, composed: true }),
+    );
   }
 
   private _dispatchReorder(sectionId: string, direction: -1 | 1): void {
-    this.dispatchEvent(new CustomEvent('lore-reorder', { detail: { sectionId, direction }, bubbles: true, composed: true }));
+    this.dispatchEvent(
+      new CustomEvent('lore-reorder', {
+        detail: { sectionId, direction },
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   protected render() {
@@ -379,14 +399,16 @@ export class VelgLoreEditor extends LitElement {
             ? this._renderEditForm()
             : this._renderSectionCard(section, idx),
         )}
-        ${this._editing?.sectionId === null
-          ? this._renderEditForm()
-          : html`
+        ${
+          this._editing?.sectionId === null
+            ? this._renderEditForm()
+            : html`
               <button class="add-section" @click=${this._startCreate}>
                 <svg viewBox="0 0 16 16"><path d="M8 2a1 1 0 0 1 1 1v4h4a1 1 0 1 1 0 2H9v4a1 1 0 1 1-2 0V9H3a1 1 0 0 1 0-2h4V3a1 1 0 0 1 1-1z"/></svg>
                 ${msg('Add Section')}
               </button>
-            `}
+            `
+        }
       </div>
     `;
   }

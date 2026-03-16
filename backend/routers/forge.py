@@ -36,8 +36,8 @@ from backend.models.forge import (
 )
 from backend.services.ai_utils import safe_background
 from backend.services.audit_service import AuditService
-from backend.services.dossier_evolution_service import DossierEvolutionService
 from backend.services.codex_export_service import CodexExportService
+from backend.services.dossier_evolution_service import DossierEvolutionService
 from backend.services.forge_draft_service import ForgeDraftService
 from backend.services.forge_feature_service import ForgeFeatureService
 from backend.services.forge_lore_service import ForgeLoreService
@@ -494,7 +494,11 @@ async def evolve_dossier_section(
     simulation_id: UUID,
     background_tasks: BackgroundTasks,
     arcanum: str = Query(..., description="Section arcanum: BETA, GAMMA, DELTA, or ZETA"),
-    trigger: str = Query(..., description="Evolution trigger: agent_recruited, building_constructed, resonance_event, periodic"),
+    trigger: str = Query(
+        ...,
+        description="Evolution trigger: agent_recruited,"
+        " building_constructed, resonance_event, periodic",
+    ),
     entity_name: str = Query(..., description="Name of new entity/event"),
     entity_detail: str = Query("", description="Additional context"),
     user: CurrentUser = Depends(require_architect()),
@@ -509,7 +513,7 @@ async def evolve_dossier_section(
         )
 
     # Get user's BYOK key if available
-    supabase_user = Depends(get_supabase)
+    Depends(get_supabase)
     or_key = None
     try:
         or_key, _ = await _orchestrator_service._get_user_keys(

@@ -67,8 +67,11 @@ export class AppStateManager {
 
   readonly canForge = computed(() => this.isArchitect.value || this.isPlatformAdmin.value);
 
-  readonly canRequestForgeAccess = computed(() =>
-    this.isAuthenticated.value && !this.canForge.value && this.forgeRequestStatus.value === 'none'
+  readonly canRequestForgeAccess = computed(
+    () =>
+      this.isAuthenticated.value &&
+      !this.canForge.value &&
+      this.forgeRequestStatus.value === 'none',
   );
 
   // --- Setters ---

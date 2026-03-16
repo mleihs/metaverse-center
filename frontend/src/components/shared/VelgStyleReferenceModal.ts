@@ -1,14 +1,13 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { styleReferenceApi } from '../../services/api/index.js';
-import { agentsApi, buildingsApi } from '../../services/api/index.js';
-import { VelgToast } from './Toast.js';
+import { agentsApi, buildingsApi, styleReferenceApi } from '../../services/api/index.js';
 import {
   forgeButtonStyles,
   forgeFieldStyles,
   forgeRangeStyles,
 } from '../forge/forge-console-styles.js';
+import { VelgToast } from './Toast.js';
 
 import './BaseModal.js';
 import './VelgStyleReferenceUpload.js';
@@ -235,8 +234,8 @@ export class VelgStyleReferenceModal extends LitElement {
   }
 
   protected render() {
-    const canSave = (this._pendingFile || this._pendingUrl) &&
-      (this._scope === 'global' || this._entityId);
+    const canSave =
+      (this._pendingFile || this._pendingUrl) && (this._scope === 'global' || this._entityId);
 
     return html`
       <velg-base-modal .open=${this.open} @modal-close=${this._close}>
@@ -249,11 +248,15 @@ export class VelgStyleReferenceModal extends LitElement {
             <div class="chips">
               <button
                 class="chip ${this._entityType === 'portrait' ? 'chip--active' : ''}"
-                @click=${() => { this._entityType = 'portrait'; }}
+                @click=${() => {
+                  this._entityType = 'portrait';
+                }}
               >${msg('Portraits')}</button>
               <button
                 class="chip ${this._entityType === 'building' ? 'chip--active' : ''}"
-                @click=${() => { this._entityType = 'building'; }}
+                @click=${() => {
+                  this._entityType = 'building';
+                }}
               >${msg('Buildings')}</button>
             </div>
           </div>
@@ -264,26 +267,31 @@ export class VelgStyleReferenceModal extends LitElement {
             <div class="chips">
               <button
                 class="chip ${this._scope === 'global' ? 'chip--active' : ''}"
-                @click=${() => { this._scope = 'global'; }}
+                @click=${() => {
+                  this._scope = 'global';
+                }}
               >${msg('Global')}</button>
               <button
                 class="chip ${this._scope === 'entity' ? 'chip--active' : ''}"
-                @click=${() => { this._scope = 'entity'; }}
+                @click=${() => {
+                  this._scope = 'entity';
+                }}
               >${msg('Specific Entity')}</button>
             </div>
-            ${this._scope === 'entity'
-              ? html`
+            ${
+              this._scope === 'entity'
+                ? html`
                 <div class="entity-select">
                   <select
                     class="field__input"
                     .value=${this._entityId}
                     ?disabled=${this._loadingEntities}
-                    @change=${(e: Event) => { this._entityId = (e.target as HTMLSelectElement).value; }}
+                    @change=${(e: Event) => {
+                      this._entityId = (e.target as HTMLSelectElement).value;
+                    }}
                   >
                     <option value="">
-                      ${this._loadingEntities
-                        ? msg('Loading...')
-                        : msg('Select entity...')}
+                      ${this._loadingEntities ? msg('Loading...') : msg('Select entity...')}
                     </option>
                     ${this._entities.map(
                       (ent) => html`<option value=${ent.id}>${ent.name}</option>`,
@@ -291,7 +299,8 @@ export class VelgStyleReferenceModal extends LitElement {
                   </select>
                 </div>
               `
-              : nothing}
+                : nothing
+            }
           </div>
 
           <!-- Upload -->

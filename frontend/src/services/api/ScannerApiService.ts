@@ -91,7 +91,10 @@ export class ScannerApiService extends BaseApiService {
   }
 
   async triggerScan(adapterNames?: string[]): Promise<ApiResponse<ScanCycleMetrics>> {
-    return this.post('/admin/news-scanner/trigger-scan', adapterNames ? { adapter_names: adapterNames } : {});
+    return this.post(
+      '/admin/news-scanner/trigger-scan',
+      adapterNames ? { adapter_names: adapterNames } : {},
+    );
   }
 
   async listCandidates(params?: Record<string, string>): Promise<ApiResponse<ScanCandidate[]>> {
@@ -108,7 +111,12 @@ export class ScannerApiService extends BaseApiService {
 
   async updateCandidate(
     id: string,
-    data: { title?: string; magnitude?: number; source_category?: string; bureau_dispatch?: string },
+    data: {
+      title?: string;
+      magnitude?: number;
+      source_category?: string;
+      bureau_dispatch?: string;
+    },
   ): Promise<ApiResponse<ScanCandidate>> {
     return this.patch(`/admin/news-scanner/candidates/${id}`, data);
   }

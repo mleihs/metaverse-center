@@ -126,12 +126,19 @@ _PLATFORM_META: dict[str, dict[str, str]] = {
     },
     "/epoch": {
         "title": "Epoch Command Center | metaverse.center",
-        "description": "Join competitive PvP epochs — deploy operatives, form alliances, and compete for multiverse dominance.",
+        "description": (
+            "Join competitive PvP epochs — deploy operatives,"
+            " form alliances, and compete for multiverse dominance."
+        ),
         "canonical": "https://metaverse.center/epoch",
     },
     "/archives": {
         "title": "Bureau Archives | metaverse.center",
-        "description": "Declassified archives of the Bureau of Impossible Geography — the complete mythology of the Fracture, the Bleed, and the Convergence.",
+        "description": (
+            "Declassified archives of the Bureau of Impossible Geography"
+            " — the complete mythology of the Fracture, the Bleed,"
+            " and the Convergence."
+        ),
         "canonical": "https://metaverse.center/archives",
     },
 }

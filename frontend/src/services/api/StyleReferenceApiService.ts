@@ -37,10 +37,7 @@ export class StyleReferenceApiService extends BaseApiService {
   }
 
   /** List all configured references for an entity type. */
-  async list(
-    simulationId: string,
-    entityType: string,
-  ): Promise<ApiResponse<StyleReferenceInfo[]>> {
+  async list(simulationId: string, entityType: string): Promise<ApiResponse<StyleReferenceInfo[]>> {
     return this.get<StyleReferenceInfo[]>(
       `/simulations/${simulationId}/style-references/${entityType}`,
     );

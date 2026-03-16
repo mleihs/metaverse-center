@@ -165,7 +165,7 @@ export class MultiverseConspiracyBoard extends LitElement {
   private _buildBoard(): void {
     if (!this.mapData) return;
 
-    const sims = this.mapData.simulations.filter(s => s.simulation_type !== 'archived');
+    const sims = this.mapData.simulations.filter((s) => s.simulation_type !== 'archived');
     const cols = Math.ceil(Math.sqrt(sims.length));
 
     this._nodes = sims.map((sim, i) => ({
@@ -178,17 +178,21 @@ export class MultiverseConspiracyBoard extends LitElement {
       y: 80 + Math.floor(i / cols) * 180 + (Math.random() * 20 - 10),
     }));
 
-    this._strings = (this.mapData.connections ?? []).map(conn => ({
+    this._strings = (this.mapData.connections ?? []).map((conn) => ({
       sourceId: conn.simulation_a_id,
       targetId: conn.simulation_b_id,
-      color: conn.connection_type === 'hostile' ? '#ef4444' :
-             conn.connection_type === 'allied' ? '#f59e0b' : '#e5e5e5',
+      color:
+        conn.connection_type === 'hostile'
+          ? '#ef4444'
+          : conn.connection_type === 'allied'
+            ? '#f59e0b'
+            : '#e5e5e5',
       type: conn.connection_type,
     }));
   }
 
   private _getNodePos(id: string): { x: number; y: number } | null {
-    const node = this._nodes.find(n => n.id === id);
+    const node = this._nodes.find((n) => n.id === id);
     return node ? { x: node.x + 70, y: node.y + 50 } : null;
   }
 
@@ -212,11 +216,11 @@ export class MultiverseConspiracyBoard extends LitElement {
 
       <!-- String connections (SVG layer) -->
       <svg class="board-svg" aria-hidden="true">
-        ${this._strings.map(s => this._renderString(s))}
+        ${this._strings.map((s) => this._renderString(s))}
       </svg>
 
       <!-- Polaroid nodes -->
-      ${this._nodes.map(node => this._renderPolaroid(node))}
+      ${this._nodes.map((node) => this._renderPolaroid(node))}
     `;
   }
 

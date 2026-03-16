@@ -484,8 +484,12 @@ export function getChangelog(): ChangelogEntry[] {
       date: '2026-03-08',
       title: msg('Complete Guide & Auto-Processing'),
       highlights: [
-        msg('Guide restructured: World \u2192 Competitive \u2192 Advanced \u2192 Reference progression'),
-        msg('9 new guide sections: Intro, Lore, Events, Agent Chat, Social Trends, Map, Health, Bots, COMMS'),
+        msg(
+          'Guide restructured: World \u2192 Competitive \u2192 Advanced \u2192 Reference progression',
+        ),
+        msg(
+          '9 new guide sections: Intro, Lore, Events, Agent Chat, Social Trends, Map, Health, Bots, COMMS',
+        ),
         msg('Automatic resonance impact processing when impacts_at timestamp arrives'),
       ],
       details: [
@@ -503,21 +507,31 @@ export function getChangelog(): ChangelogEntry[] {
         {
           category: msg('New Sections'),
           changes: [
-            msg('Events & Reactions: event creation, AI generation, agent reactions, mechanical impact'),
-            msg('The Multiverse Map: interactive force-directed graph, game instance visualization, battle feed'),
+            msg(
+              'Events & Reactions: event creation, AI generation, agent reactions, mechanical impact',
+            ),
+            msg(
+              'The Multiverse Map: interactive force-directed graph, game instance visualization, battle feed',
+            ),
             msg('Bot Players: 5 personality archetypes, difficulty levels, dual-mode chat'),
             msg('Agent Chat: memory-augmented AI conversations, semantic retrieval'),
             msg('Simulation Lore: per-simulation worldbuilding narrative, Forge-generated content'),
-            msg('Simulation Health: building readiness, zone stability, embassy effectiveness dashboard'),
+            msg(
+              'Simulation Health: building readiness, zone stability, embassy effectiveness dashboard',
+            ),
             msg('Social Trends & Campaigns: real-world news integration pipeline'),
-            msg('COMMS & Notifications: epoch chat, presence, ready signals, tactical email briefings'),
+            msg(
+              'COMMS & Notifications: epoch chat, presence, ready signals, tactical email briefings',
+            ),
           ],
         },
         {
           category: msg('Resonance Auto-Processing'),
           changes: [
             msg('Background scheduler auto-processes resonances when impacts_at timestamp arrives'),
-            msg('Configurable via platform_settings: resonance_auto_process_enabled, resonance_auto_process_interval_seconds'),
+            msg(
+              'Configurable via platform_settings: resonance_auto_process_enabled, resonance_auto_process_interval_seconds',
+            ),
             msg('Uses service_role admin client (system actor pattern)'),
           ],
         },
@@ -529,7 +543,9 @@ export function getChangelog(): ChangelogEntry[] {
       title: msg('The Chronicle & Agent Memory'),
       highlights: [
         msg('The Chronicle: AI-generated per-simulation broadsheet newspaper'),
-        msg('Agent Memory: Stanford Generative Agents-style observe → store → retrieve → reflect loop'),
+        msg(
+          'Agent Memory: Stanford Generative Agents-style observe → store → retrieve → reflect loop',
+        ),
         msg('pgvector semantic embeddings for memory retrieval (1536-dim)'),
         msg('Memories automatically injected into agent chat context'),
       ],
@@ -537,9 +553,15 @@ export function getChangelog(): ChangelogEntry[] {
         {
           category: msg('The Chronicle'),
           changes: [
-            msg('AI-generated newspaper editions synthesizing events, echoes, battle log, and agent reactions'),
-            msg('Broadsheet front-page layout with CSS multi-column text, drop cap, and ornamental rules'),
-            msg('Theme-responsive masthead: "The {SimName} Chronicle" with simulation\u2019s primary color'),
+            msg(
+              'AI-generated newspaper editions synthesizing events, echoes, battle log, and agent reactions',
+            ),
+            msg(
+              'Broadsheet front-page layout with CSS multi-column text, drop cap, and ornamental rules',
+            ),
+            msg(
+              'Theme-responsive masthead: "The {SimName} Chronicle" with simulation\u2019s primary color',
+            ),
             msg('Edition archive index with leader-dot navigation'),
             msg('Public read access, editor+ role required to generate editions'),
             msg('Auto-translation to German via existing translation pipeline'),
@@ -549,10 +571,18 @@ export function getChangelog(): ChangelogEntry[] {
           category: msg('Agent Memory & Reflection'),
           changes: [
             msg('Observations extracted from chat exchanges via AI (fire-and-forget)'),
-            msg('pgvector embeddings (text-embedding-3-small, 1536 dimensions) for semantic retrieval'),
-            msg('Stanford retrieval formula: 0.4 \u00D7 cosine_similarity + 0.4 \u00D7 importance/10 + 0.2 \u00D7 recency_decay'),
-            msg('Reflection: synthesize higher-level insights from recent observations (editor+ trigger)'),
-            msg('Memory timeline UI: observations (monospace/factual) vs reflections (italic/elevated)'),
+            msg(
+              'pgvector embeddings (text-embedding-3-small, 1536 dimensions) for semantic retrieval',
+            ),
+            msg(
+              'Stanford retrieval formula: 0.4 \u00D7 cosine_similarity + 0.4 \u00D7 importance/10 + 0.2 \u00D7 recency_decay',
+            ),
+            msg(
+              'Reflection: synthesize higher-level insights from recent observations (editor+ trigger)',
+            ),
+            msg(
+              'Memory timeline UI: observations (monospace/factual) vs reflections (italic/elevated)',
+            ),
             msg('Importance pips (1\u201310 scale) for visual memory weight'),
             msg('Memories formatted and injected into agent system prompts during chat'),
           ],

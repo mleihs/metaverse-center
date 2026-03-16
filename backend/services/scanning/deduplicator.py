@@ -6,9 +6,8 @@ import logging
 import re
 from datetime import UTC, datetime, timedelta
 
-from supabase import Client
-
 from backend.services.scanning.base_adapter import ScanResult
+from supabase import Client
 
 logger = logging.getLogger(__name__)
 

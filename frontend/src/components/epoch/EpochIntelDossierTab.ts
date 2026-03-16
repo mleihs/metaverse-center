@@ -570,23 +570,24 @@ export class VelgEpochIntelDossierTab extends LitElement {
               <div class="intel-row">
                 <span class="intel-row__label">${msg('Zone Security')}</span>
                 <span class="intel-row__value">
-                  ${dossier.zoneDetails.length > 0
-                    ? dossier.zoneDetails.map(
-                        (z) => html`
+                  ${
+                    dossier.zoneDetails.length > 0
+                      ? dossier.zoneDetails.map(
+                          (z) => html`
                           <span
                             class="zone-badge"
                             style="color: ${SECURITY_COLORS[z.security_level] ?? 'var(--color-gray-300)'}; border-color: ${SECURITY_COLORS[z.security_level] ?? 'var(--color-gray-500)'}"
                           >${z.name}: ${z.security_level}</span>
                         `,
-                      )
-                    : dossier.zoneSecurityLevels.map(
-                        (level) => html`
+                        )
+                      : dossier.zoneSecurityLevels.map(
+                          (level) => html`
                           <span
                             class="zone-badge"
                             style="color: ${SECURITY_COLORS[level] ?? 'var(--color-gray-300)'}; border-color: ${SECURITY_COLORS[level] ?? 'var(--color-gray-500)'}"
                           >${level}</span>
                         `,
-                      )
+                        )
                   }
                 </span>
               </div>

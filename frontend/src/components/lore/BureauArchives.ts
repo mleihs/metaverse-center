@@ -463,7 +463,9 @@ export class VelgBureauArchives extends LitElement {
     );
 
     const chapterHeadings = this.shadowRoot?.querySelectorAll('.chapter-divider');
-    chapterHeadings?.forEach((el) => this._observer?.observe(el));
+    chapterHeadings?.forEach((el) => {
+      this._observer?.observe(el);
+    });
 
     // Scroll-in animations for dossiers and transmissions
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -485,7 +487,9 @@ export class VelgBureauArchives extends LitElement {
       );
 
       const animatedElements = this.shadowRoot?.querySelectorAll('.dossier, .transmission');
-      animatedElements?.forEach((el) => this._scrollObserver?.observe(el));
+      animatedElements?.forEach((el) => {
+        this._scrollObserver?.observe(el);
+      });
     }
   }
 
@@ -540,7 +544,8 @@ export class VelgBureauArchives extends LitElement {
       ${this._renderChapterNav(chapters)}
 
       <div class="archives__content">
-        ${chapters.map((ch, ci) => html`
+        ${chapters.map(
+          (ch, ci) => html`
           <h2
             class="chapter-divider"
             id="chapter-${ci}"
@@ -550,11 +555,15 @@ export class VelgBureauArchives extends LitElement {
             <span class="chapter-divider__count">${ch.sections.length} ${msg('files')}</span>
           </h2>
 
-          ${ch.sections.map((section) => html`
+          ${ch.sections.map((section) => {
+            const quote = quoteMap.get(section.id);
+            return html`
             ${this._renderDossier(section, dateStr)}
-            ${quoteMap.has(section.id) ? this._renderTransmission(quoteMap.get(section.id)!) : nothing}
-          `)}
-        `)}
+            ${quote ? this._renderTransmission(quote) : nothing}
+          `;
+          })}
+        `,
+        )}
       </div>
 
       <div
@@ -594,7 +603,8 @@ export class VelgBureauArchives extends LitElement {
   private _renderChapterNav(chapters: { name: string; sections: LoreSection[] }[]) {
     return html`
       <nav class="chapter-nav" role="navigation" aria-label="${msg('Chapter navigation')}">
-        ${chapters.map((ch) => html`
+        ${chapters.map(
+          (ch) => html`
           <button
             class="chapter-nav__item ${this._activeChapter === ch.name ? 'chapter-nav__item--active' : ''}"
             @click=${() => this._scrollToChapter(ch.name)}
@@ -602,7 +612,8 @@ export class VelgBureauArchives extends LitElement {
           >
             ${ch.name}
           </button>
-        `)}
+        `,
+        )}
       </nav>
     `;
   }
@@ -618,8 +629,9 @@ export class VelgBureauArchives extends LitElement {
         <p class="dossier__epigraph">${section.epigraph}</p>
         <div class="dossier__body">${section.body}</div>
 
-        ${imageUrl
-          ? html`
+        ${
+          imageUrl
+            ? html`
             <div class="dossier__evidence">
               <img
                 src=${imageUrl}
@@ -627,7 +639,10 @@ export class VelgBureauArchives extends LitElement {
                 loading="lazy"
                 @click=${() => this._openLightbox(imageUrl, section.title, section.imageCaption ?? '')}
                 tabindex="0"
-                @keydown=${(e: KeyboardEvent) => { if (e.key === 'Enter') this._openLightbox(imageUrl, section.title, section.imageCaption ?? ''); }}
+                @keydown=${(e: KeyboardEvent) => {
+                  if (e.key === 'Enter')
+                    this._openLightbox(imageUrl, section.title, section.imageCaption ?? '');
+                }}
               />
               <div class="dossier__evidence-meta">
                 ${msg('ARTIFACT REF')}: #IMG-${section.arcanum}
@@ -635,7 +650,7 @@ export class VelgBureauArchives extends LitElement {
               </div>
             </div>
           `
-          : nothing
+            : nothing
         }
 
         <div class="dossier__footer">
@@ -655,14 +670,16 @@ export class VelgBureauArchives extends LitElement {
 
     return html`
       <div class="transmission transmission--${quote.variant}">
-        ${labelMap[quote.variant]
-          ? html`<div class="transmission__label">${labelMap[quote.variant]}</div>`
-          : nothing
+        ${
+          labelMap[quote.variant]
+            ? html`<div class="transmission__label">${labelMap[quote.variant]}</div>`
+            : nothing
         }
         <div class="transmission__text">${quote.text}</div>
-        ${quote.attribution
-          ? html`<div class="transmission__attribution">${quote.attribution}</div>`
-          : nothing
+        ${
+          quote.attribution
+            ? html`<div class="transmission__attribution">${quote.attribution}</div>`
+            : nothing
         }
       </div>
     `;

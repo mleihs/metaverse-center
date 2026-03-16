@@ -6,7 +6,6 @@ All endpoints require platform admin. Uses admin (service_role) client.
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Request
-from supabase import Client
 
 from backend.dependencies import get_admin_supabase, require_platform_admin
 from backend.middleware.rate_limit import RATE_LIMIT_EXTERNAL_API, RATE_LIMIT_STANDARD, limiter
@@ -18,6 +17,7 @@ from backend.models.news_scanner import (
 )
 from backend.services.audit_service import AuditService
 from backend.services.scanning.scanner_service import ScannerService
+from supabase import Client
 
 router = APIRouter(
     prefix="/api/v1/admin/news-scanner",

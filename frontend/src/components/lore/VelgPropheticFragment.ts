@@ -44,9 +44,8 @@ export class VelgPropheticFragment extends LitElement {
     const parts: Array<ReturnType<typeof html> | string> = [];
     const regex = /\[(CONSUMED|DEGRADED|ILLEGIBLE|REDACTED)\]/gi;
     let last = 0;
-    let match: RegExpExecArray | null;
 
-    while ((match = regex.exec(text)) !== null) {
+    for (const match of text.matchAll(regex)) {
       if (match.index > last) {
         parts.push(text.slice(last, match.index));
       }

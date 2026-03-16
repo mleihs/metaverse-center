@@ -200,7 +200,14 @@ export class VelgIntelCard extends LitElement {
   protected render() {
     if (!this.intel) return nothing;
 
-    const { agentName, riskLevel, hiddenMotivation, surveillanceNotes, crossReferences, bureauAnnotation } = this.intel;
+    const {
+      agentName,
+      riskLevel,
+      hiddenMotivation,
+      surveillanceNotes,
+      crossReferences,
+      bureauAnnotation,
+    } = this.intel;
     const riskClass = riskLevel.toLowerCase();
 
     return html`
@@ -218,33 +225,41 @@ export class VelgIntelCard extends LitElement {
           ${msg('RISK ASSESSMENT')}: ${riskLevel}
         </div>
 
-        ${hiddenMotivation
-          ? html`<div class="intel__section">
+        ${
+          hiddenMotivation
+            ? html`<div class="intel__section">
               <div class="intel__field-label">${msg('HIDDEN MOTIVATION')}</div>
               <div class="intel__field-value">${hiddenMotivation}</div>
             </div>`
-          : nothing}
+            : nothing
+        }
 
-        ${surveillanceNotes
-          ? html`<div class="intel__section">
+        ${
+          surveillanceNotes
+            ? html`<div class="intel__section">
               <div class="intel__field-label">${msg('SURVEILLANCE NOTES')}</div>
               <div class="intel__field-value">${surveillanceNotes}</div>
             </div>`
-          : nothing}
+            : nothing
+        }
 
-        ${crossReferences
-          ? html`<div class="intel__section">
+        ${
+          crossReferences
+            ? html`<div class="intel__section">
               <div class="intel__field-label">${msg('CROSS-REFERENCES')}</div>
               <div class="intel__field-value">${crossReferences}</div>
             </div>`
-          : nothing}
+            : nothing
+        }
 
-        ${bureauAnnotation
-          ? html`<div class="intel__annotation">
+        ${
+          bureauAnnotation
+            ? html`<div class="intel__annotation">
               <span class="intel__field-label">${msg('BUREAU ANNOTATION')}</span>
               ${bureauAnnotation}
             </div>`
-          : nothing}
+            : nothing
+        }
       </div>
     `;
   }

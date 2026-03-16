@@ -77,7 +77,7 @@ class DiseaseSHAdapter(SourceAdapter):
                 },
                 source_category="pandemic",
                 magnitude=magnitude,
-                classification_reason=f">10% daily case increase globally",
+                classification_reason=">10% daily case increase globally",
                 is_structured=True,
             ))
 

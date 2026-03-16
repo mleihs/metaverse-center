@@ -1,4 +1,9 @@
-import type { ApiResponse, ForgeAccessRequest, ForgeAccessRequestWithEmail, PaginatedResponse } from '../../types/index.js';
+import type {
+  ApiResponse,
+  ForgeAccessRequest,
+  ForgeAccessRequestWithEmail,
+  PaginatedResponse,
+} from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
 
 export interface PhilosophicalAnchor {
@@ -57,7 +62,12 @@ export interface ForgeLoreSection {
   image_caption_de?: string | null;
   evolution_count?: number | null;
   evolved_at?: string | null;
-  evolution_log?: Array<{ trigger: string; entity: string; timestamp: string; words_added: number }> | null;
+  evolution_log?: Array<{
+    trigger: string;
+    entity: string;
+    timestamp: string;
+    words_added: number;
+  }> | null;
 }
 
 export interface ForgeDraft {
@@ -191,7 +201,11 @@ export class ForgeApiService extends BaseApiService {
     return this.post(`/forge/drafts/${id}/generate-theme`);
   }
 
-  ignite(id: string): Promise<ApiResponse<{ simulation_id: string; slug: string | null; name?: string; description?: string }>> {
+  ignite(
+    id: string,
+  ): Promise<
+    ApiResponse<{ simulation_id: string; slug: string | null; name?: string; description?: string }>
+  > {
     return this.post(`/forge/drafts/${id}/ignite`);
   }
 
@@ -215,7 +229,10 @@ export class ForgeApiService extends BaseApiService {
     return this.post('/forge/wallet/purchase', { bundle_slug: slug });
   }
 
-  getPurchaseHistory(limit = 20, offset = 0): Promise<ApiResponse<PaginatedResponse<TokenPurchase>>> {
+  getPurchaseHistory(
+    limit = 20,
+    offset = 0,
+  ): Promise<ApiResponse<PaginatedResponse<TokenPurchase>>> {
     return this.get(`/forge/wallet/history?limit=${limit}&offset=${offset}`);
   }
 
@@ -229,20 +246,27 @@ export class ForgeApiService extends BaseApiService {
   // --- Feature Purchases ---
 
   listFeaturePurchases(
-    simulationId: string, featureType?: string,
+    simulationId: string,
+    featureType?: string,
   ): Promise<ApiResponse<FeaturePurchase[]>> {
     const params = featureType ? `?feature_type=${featureType}` : '';
     return this.get(`/forge/simulations/${simulationId}/features${params}`);
   }
 
-  purchaseDarkroom(simulationId: string): Promise<ApiResponse<{ purchase_id: string; regen_budget: number }>> {
+  purchaseDarkroom(
+    simulationId: string,
+  ): Promise<ApiResponse<{ purchase_id: string; regen_budget: number }>> {
     return this.post(`/forge/simulations/${simulationId}/darkroom`);
   }
 
   darkroomRegen(
-    simulationId: string, entityType: string, entityId: string,
+    simulationId: string,
+    entityType: string,
+    entityId: string,
     promptOverride?: string,
-  ): Promise<ApiResponse<{ remaining_regenerations: number; entity_type: string; entity_id: string }>> {
+  ): Promise<
+    ApiResponse<{ remaining_regenerations: number; entity_type: string; entity_id: string }>
+  > {
     return this.post(
       `/forge/simulations/${simulationId}/darkroom/regenerate/${entityType}/${entityId}`,
       { prompt_override: promptOverride ?? null },
@@ -254,7 +278,9 @@ export class ForgeApiService extends BaseApiService {
   }
 
   purchaseRecruitment(
-    simulationId: string, focus?: string, zoneId?: string,
+    simulationId: string,
+    focus?: string,
+    zoneId?: string,
   ): Promise<ApiResponse<{ purchase_id: string }>> {
     return this.post(`/forge/simulations/${simulationId}/recruit`, {
       focus: focus ?? null,
@@ -310,7 +336,11 @@ export class ForgeApiService extends BaseApiService {
     return this.get('/forge/access-requests/pending/count');
   }
 
-  reviewRequest(id: string, action: 'approve' | 'reject', adminNotes?: string): Promise<ApiResponse<unknown>> {
+  reviewRequest(
+    id: string,
+    action: 'approve' | 'reject',
+    adminNotes?: string,
+  ): Promise<ApiResponse<unknown>> {
     return this.post(`/forge/access-requests/${id}/review`, {
       action,
       admin_notes: adminNotes ?? null,

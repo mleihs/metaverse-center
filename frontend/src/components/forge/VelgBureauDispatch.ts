@@ -12,7 +12,10 @@ const BUREAU_SERVICES = [
     cost: 2,
     label: () => msg('CLASSIFIED DOSSIER'),
     formId: () => msg('[CLASSIFIED] LEVEL 4'),
-    desc: () => msg('Deep lore expansion: pre-arrival history, agent addenda, geographic anomalies, bleed signatures, prophetic fragments.'),
+    desc: () =>
+      msg(
+        'Deep lore expansion: pre-arrival history, agent addenda, geographic anomalies, bleed signatures, prophetic fragments.',
+      ),
   },
   {
     key: 'recruitment' as const,
@@ -20,7 +23,10 @@ const BUREAU_SERVICES = [
     cost: 1,
     label: () => msg('RECRUITMENT OFFICE'),
     formId: () => msg('FORM 22-B // FIELD DEPLOYMENT'),
-    desc: () => msg('Custom agent generation: define operative specialization, aptitude profile, and deployment parameters.'),
+    desc: () =>
+      msg(
+        'Custom agent generation: define operative specialization, aptitude profile, and deployment parameters.',
+      ),
   },
   {
     key: 'darkroom_pass' as const,
@@ -28,7 +34,10 @@ const BUREAU_SERVICES = [
     cost: 2,
     label: () => msg('THE DARKROOM'),
     formId: () => msg('DARKROOM PASS // D-7'),
-    desc: () => msg('AI theme generation: color palette, typography, and visual identity derived from simulation lore.'),
+    desc: () =>
+      msg(
+        'AI theme generation: color palette, typography, and visual identity derived from simulation lore.',
+      ),
   },
   {
     key: 'chronicle_export' as const,
@@ -36,7 +45,8 @@ const BUREAU_SERVICES = [
     cost: 1,
     label: () => msg('PRINTING PRESS'),
     formId: () => msg('PRINTING PRESS AUTH'),
-    desc: () => msg('Codex export: compiled simulation chronicle as a formatted, downloadable document.'),
+    desc: () =>
+      msg('Codex export: compiled simulation chronicle as a formatted, downloadable document.'),
   },
 ] as const;
 
@@ -502,9 +512,7 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
     this.requestUpdate();
     setTimeout(() => {
       this._closing = false;
-      this.dispatchEvent(
-        new CustomEvent('dispatch-close', { bubbles: true, composed: true }),
-      );
+      this.dispatchEvent(new CustomEvent('dispatch-close', { bubbles: true, composed: true }));
     }, 300);
   }
 
@@ -589,9 +597,7 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
                     <p class="service__desc">${svc.desc()}</p>
                     <div class="service__footer">
                       <span class="service__cost ${bypass ? 'service__cost--bypass' : ''}">
-                        ${bypass
-                          ? msg('BYOK: NO COST')
-                          : msg(html`COST: ${svc.cost} FT`)}
+                        ${bypass ? msg('BYOK: NO COST') : msg(html`COST: ${svc.cost} FT`)}
                       </span>
                       <button
                         class="service__nav-btn"

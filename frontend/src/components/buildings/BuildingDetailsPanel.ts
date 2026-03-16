@@ -692,15 +692,16 @@ export class VelgBuildingDetailsPanel extends LitElement {
     const title = this.building?.name ?? msg('Building Details');
     const content = this._renderSlottedContent();
 
-    const wrapper = this.container === 'lightbox'
-      ? html`
+    const wrapper =
+      this.container === 'lightbox'
+        ? html`
         <velg-entity-lightbox
           .open=${this.open}
           .panelTitle=${title}
           .totalEntities=${this.totalEntities}
           .currentIndex=${this.currentIndex}
         >${content}</velg-entity-lightbox>`
-      : html`
+        : html`
         <velg-side-panel
           .open=${this.open}
           .panelTitle=${title}

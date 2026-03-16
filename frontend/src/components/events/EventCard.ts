@@ -2,7 +2,7 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
-import type { Event as SimEvent, EventStatus } from '../../types/index.js';
+import type { EventStatus, Event as SimEvent } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import { t } from '../../utils/locale-fields.js';
 import '../shared/VelgBadge.js';
@@ -267,12 +267,18 @@ export class VelgEventCard extends LitElement {
 
   private _getStatusBadgeVariant(status: EventStatus): string {
     switch (status) {
-      case 'active': return 'success';
-      case 'escalating': return 'danger';
-      case 'resolving': return 'info';
-      case 'resolved': return 'default';
-      case 'archived': return 'default';
-      default: return 'default';
+      case 'active':
+        return 'success';
+      case 'escalating':
+        return 'danger';
+      case 'resolving':
+        return 'info';
+      case 'resolved':
+        return 'default';
+      case 'archived':
+        return 'default';
+      default:
+        return 'default';
     }
   }
 

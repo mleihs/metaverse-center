@@ -5,7 +5,6 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-
 EVENT_STATUSES = ("active", "escalating", "resolving", "resolved", "archived")
 CHAIN_TYPES = ("escalation", "follow_up", "resolution", "cascade", "resonance")
 

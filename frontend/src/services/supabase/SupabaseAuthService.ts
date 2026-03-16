@@ -1,8 +1,9 @@
-import type { AuthError, Session, User } from '@supabase/supabase-js';
 import { msg, str } from '@lit/localize';
+import type { AuthError, RealtimeChannel, Session, User } from '@supabase/supabase-js';
 import { analyticsService } from '../AnalyticsService.js';
 import { appState } from '../AppStateManager.js';
 import { forgeApi } from '../api/ForgeApiService.js';
+import { forgeStateManager } from '../ForgeStateManager.js';
 import { localeService } from '../i18n/locale-service.js';
 import { supabase } from './client.js';
 
@@ -50,11 +51,74 @@ export class SupabaseAuthService {
   }
 
   private _subscription: { unsubscribe: () => void } | null = null;
+  private _clearanceChannel: RealtimeChannel | null = null;
 
   dispose(): void {
     this._subscription?.unsubscribe();
     this._subscription = null;
+    this._unsubscribeClearance();
     this._initialized = false;
+  }
+
+  private _unsubscribeClearance(): void {
+    if (this._clearanceChannel) {
+      supabase.removeChannel(this._clearanceChannel);
+      this._clearanceChannel = null;
+    }
+  }
+
+  /**
+   * Subscribe to realtime updates on the user's clearance request.
+   * Auto-unsubscribes once the request is resolved (approved/rejected).
+   */
+  private _subscribeClearanceStatus(userId: string): void {
+    // Don't double-subscribe
+    if (this._clearanceChannel) return;
+
+    this._clearanceChannel = supabase
+      .channel(`clearance:${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'forge_access_requests',
+          filter: `user_id=eq.${userId}`,
+        },
+        async (payload) => {
+          const newStatus = (payload.new as { status?: string }).status;
+
+          if (newStatus === 'approved') {
+            // Re-fetch wallet to get updated architect status + token balance
+            const wallet = await forgeStateManager.loadWallet();
+            appState.setArchitectStatus(true);
+            appState.setForgeRequestStatus('none');
+
+            // Show welcome toast with token count
+            const tokens = wallet?.forge_tokens ?? 0;
+            const { VelgToast } = await import('../../components/shared/Toast.js');
+            VelgToast.success(
+              tokens > 0
+                ? msg(
+                    str`Clearance granted — welcome to the Forge, Architect! ${tokens} tokens await you.`,
+                  )
+                : msg('Clearance granted — welcome to the Forge, Architect'),
+            );
+            sessionStorage.setItem(CLEARANCE_TOAST_KEY, '1');
+
+            this._unsubscribeClearance();
+          } else if (newStatus === 'rejected') {
+            appState.setForgeRequestStatus('rejected');
+            this._unsubscribeClearance();
+          }
+        },
+      )
+      .subscribe((status, err) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.error('Clearance realtime subscription failed:', status, err);
+          this._unsubscribeClearance();
+        }
+      });
   }
 
   private async _syncAppState(session: Session | null): Promise<void> {
@@ -79,6 +143,10 @@ export class SupabaseAuthService {
               const reqResp = await forgeApi.getMyAccessRequest();
               if (reqResp.success && reqResp.data) {
                 appState.setForgeRequestStatus(reqResp.data.status);
+                // Subscribe to realtime updates while request is pending
+                if (reqResp.data.status === 'pending' && session.user?.id) {
+                  this._subscribeClearanceStatus(session.user.id);
+                }
               } else {
                 appState.setForgeRequestStatus('none');
               }
@@ -87,14 +155,19 @@ export class SupabaseAuthService {
             }
           } else {
             // Check if the user was just approved (has an approved request)
-            if (appState.forgeRequestStatus.value === 'pending' || !sessionStorage.getItem(CLEARANCE_TOAST_KEY)) {
+            if (
+              appState.forgeRequestStatus.value === 'pending' ||
+              !sessionStorage.getItem(CLEARANCE_TOAST_KEY)
+            ) {
               try {
                 const reqResp = await forgeApi.getMyAccessRequest();
                 if (reqResp.success && reqResp.data?.status === 'approved') {
                   // Show toast only once per session for newly approved architects
                   if (!sessionStorage.getItem(CLEARANCE_TOAST_KEY)) {
                     const { VelgToast } = await import('../../components/shared/Toast.js');
-                    VelgToast.success(msg('Clearance granted \u2014 welcome to the Forge, Architect'));
+                    VelgToast.success(
+                      msg('Clearance granted \u2014 welcome to the Forge, Architect'),
+                    );
                     sessionStorage.setItem(CLEARANCE_TOAST_KEY, '1');
                   }
                 }
@@ -143,6 +216,7 @@ export class SupabaseAuthService {
         analyticsService.setUserProperties({ user_type: 'visitor' });
       }
       this._previouslyAuthenticated = false;
+      this._unsubscribeClearance();
       appState.setUser(null);
       appState.setAccessToken(null);
       appState.setArchitectStatus(false);

@@ -11,10 +11,9 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
+from backend.dependencies import get_admin_supabase
 from backend.services.resonance_service import ResonanceService
 from supabase import Client
-
-from backend.dependencies import get_admin_supabase
 
 logger = logging.getLogger(__name__)
 

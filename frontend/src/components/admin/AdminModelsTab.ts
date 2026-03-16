@@ -10,12 +10,7 @@ interface ModelSettingMeta {
   description: string;
 }
 
-const PROD_KEYS = [
-  'model_default',
-  'model_fallback',
-  'model_research',
-  'model_forge',
-] as const;
+const PROD_KEYS = ['model_default', 'model_fallback', 'model_research', 'model_forge'] as const;
 
 const DEV_KEYS = [
   'model_default_dev',
@@ -618,9 +613,10 @@ export class VelgAdminModelsTab extends LitElement {
         <p class="model-card__label">${m.label}</p>
         <p class="model-card__description">${m.description}</p>
         <div class="model-card__select-row">
-          ${isCustom
-            ? nothing
-            : html`
+          ${
+            isCustom
+              ? nothing
+              : html`
                 <select
                   class="model-card__select"
                   .value=${currentVal}
@@ -639,7 +635,8 @@ export class VelgAdminModelsTab extends LitElement {
                     `,
                   )}
                 </select>
-              `}
+              `
+          }
           <button
             class="model-card__custom-toggle ${isCustom ? 'model-card__custom-toggle--active' : ''}"
             @click=${() => this._toggleCustom(key)}
@@ -648,8 +645,9 @@ export class VelgAdminModelsTab extends LitElement {
             ${isCustom ? msg('Preset') : msg('Custom')}
           </button>
         </div>
-        ${isCustom
-          ? html`
+        ${
+          isCustom
+            ? html`
               <div class="model-card__custom-row">
                 <input
                   type="text"
@@ -665,7 +663,8 @@ export class VelgAdminModelsTab extends LitElement {
                 />
               </div>
             `
-          : nothing}
+            : nothing
+        }
         <p class="model-card__default">${msg(str`Default: ${defaultVal}`)}</p>
       </div>
     `;

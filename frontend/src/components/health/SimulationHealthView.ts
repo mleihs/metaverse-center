@@ -875,20 +875,26 @@ export class VelgSimulationHealthView extends LitElement {
 
     return html`
       <div class="zone-item__overlays">
-        ${hasFortification && !z.is_quarantined
-          ? html`<span class="zone-item__overlay-badge zone-item__overlay-badge--fortified"
+        ${
+          hasFortification && !z.is_quarantined
+            ? html`<span class="zone-item__overlay-badge zone-item__overlay-badge--fortified"
               >${icons.fortify(10)} ${msg('Fortified')}</span>`
-          : nothing}
-        ${z.is_quarantined
-          ? html`<span class="zone-item__overlay-badge zone-item__overlay-badge--quarantine"
+            : nothing
+        }
+        ${
+          z.is_quarantined
+            ? html`<span class="zone-item__overlay-badge zone-item__overlay-badge--quarantine"
               aria-label=${msg('Zone quarantined')}
               >${msg('Quarantined')}</span>`
-          : nothing}
-        ${hasCascadeRisk
-          ? html`<span class="zone-item__overlay-badge zone-item__overlay-badge--cascade"
+            : nothing
+        }
+        ${
+          hasCascadeRisk
+            ? html`<span class="zone-item__overlay-badge zone-item__overlay-badge--cascade"
               aria-label=${msg('Cascade risk: zone pressure exceeds threshold')}
               ><span class="zone-item__cascade-dot"></span> ${msg('Cascade Risk')}</span>`
-          : nothing}
+            : nothing
+        }
       </div>
     `;
   }
@@ -915,7 +921,13 @@ export class VelgSimulationHealthView extends LitElement {
 
     if (!canEdit) return nothing;
 
-    const actions: { type: ZoneActionType; name: string; desc: string; effect: string; icon: typeof icons.fortify }[] = [
+    const actions: {
+      type: ZoneActionType;
+      name: string;
+      desc: string;
+      effect: string;
+      icon: typeof icons.fortify;
+    }[] = [
       {
         type: 'fortify',
         name: msg('Fortify'),
@@ -1004,8 +1016,9 @@ export class VelgSimulationHealthView extends LitElement {
                         </span>
                         <span class="zone-item__label">${z.stability_label}</span>
                         ${this._renderZoneOverlays(z)}
-                        ${canEdit
-                          ? html`
+                        ${
+                          canEdit
+                            ? html`
                             <button
                               class="zone-item__shield-btn ${hasActiveAction ? (isQuarantined ? 'zone-item__shield-btn--quarantined' : 'zone-item__shield-btn--active') : ''}"
                               aria-label=${msg(str`Fortify zone: ${z.zone_name}`)}
@@ -1015,13 +1028,16 @@ export class VelgSimulationHealthView extends LitElement {
                               ${icons.fortify(14)}
                             </button>
                           `
-                          : nothing}
+                            : nothing
+                        }
                       </div>
-                      ${z.total_pressure > 0
-                        ? html`<div class="zone-item__pressure-text">
+                      ${
+                        z.total_pressure > 0
+                          ? html`<div class="zone-item__pressure-text">
                             ${msg(str`Pressure: ${Math.round(z.event_pressure * 100)}% targeted + ${Math.round(z.ambient_pressure * 100)}% ambient${z.fortification_reduction > 0 ? ` - ${Math.round(z.fortification_reduction * 100)}% fortification` : ''}`)}
                           </div>`
-                        : nothing}
+                          : nothing
+                      }
                       ${this._renderActionSelector(z)}
                     </div>
                   `;

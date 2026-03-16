@@ -737,9 +737,7 @@ export class VelgOnboardingWizard extends LitElement {
     appState.setOnboardingCompleted(true);
     usersApi.completeOnboarding().catch(() => {});
 
-    this.dispatchEvent(
-      new CustomEvent('onboarding-complete', { bubbles: true, composed: true }),
-    );
+    this.dispatchEvent(new CustomEvent('onboarding-complete', { bubbles: true, composed: true }));
 
     if (action === 'academy') {
       this.dispatchEvent(
@@ -756,9 +754,7 @@ export class VelgOnboardingWizard extends LitElement {
         new CustomEvent('onboarding-create-simulation', { bubbles: true, composed: true }),
       );
     } else if (path === 'browse') {
-      this.dispatchEvent(
-        new CustomEvent('onboarding-browse', { bubbles: true, composed: true }),
-      );
+      this.dispatchEvent(new CustomEvent('onboarding-browse', { bubbles: true, composed: true }));
     }
 
     // Auto-advance after brief delay
@@ -768,9 +764,7 @@ export class VelgOnboardingWizard extends LitElement {
   private async _skipAll(): Promise<void> {
     appState.setOnboardingCompleted(true);
     usersApi.completeOnboarding().catch(() => {});
-    this.dispatchEvent(
-      new CustomEvent('onboarding-complete', { bubbles: true, composed: true }),
-    );
+    this.dispatchEvent(new CustomEvent('onboarding-complete', { bubbles: true, composed: true }));
   }
 
   // ── Render ──
@@ -797,31 +791,43 @@ export class VelgOnboardingWizard extends LitElement {
           </div>
 
           <div class="footer">
-            ${this._step > 0 ? html`
+            ${
+              this._step > 0
+                ? html`
               <button
                 class="footer__skip"
                 @click=${this._goBackward}
                 aria-label=${msg('Go back')}
               >${msg('Back')}</button>
-            ` : html`
+            `
+                : html`
               <button
                 class="footer__skip"
                 @click=${this._skipAll}
                 aria-label=${msg('Skip onboarding')}
               >${msg('Skip all')}</button>
-            `}
+            `
+            }
 
-            ${this._step === 0 ? html`
+            ${
+              this._step === 0
+                ? html`
               <button class="btn-cta btn-cta--delay-lg" @click=${this._goForward}>
                 ${msg("Let's Begin")}
               </button>
-            ` : nothing}
+            `
+                : nothing
+            }
 
-            ${this._step === 2 ? html`
+            ${
+              this._step === 2
+                ? html`
               <button class="btn-cta btn-cta--delay-sm" @click=${this._goForward}>
                 ${msg('Got It')}
               </button>
-            ` : nothing}
+            `
+                : nothing
+            }
           </div>
         </div>
       </div>
@@ -835,16 +841,20 @@ export class VelgOnboardingWizard extends LitElement {
         aria-valuenow=${this._step + 1} aria-valuemin=${1} aria-valuemax=${4}
         aria-label=${msg('Onboarding progress')}
       >
-        ${steps.map((s, i) => html`
-          ${i > 0 ? html`
+        ${steps.map(
+          (s, i) => html`
+          ${
+            i > 0
+              ? html`
             <div class="step-connector ${s <= this._step ? 'step-connector--active' : ''}"></div>
-          ` : nothing}
+          `
+              : nothing
+          }
           <div class="step-dot ${
-            s === this._step ? 'step-dot--active'
-            : s < this._step ? 'step-dot--completed'
-            : ''
+            s === this._step ? 'step-dot--active' : s < this._step ? 'step-dot--completed' : ''
           }"></div>
-        `)}
+        `,
+        )}
       </div>
     `;
   }
@@ -892,7 +902,8 @@ export class VelgOnboardingWizard extends LitElement {
         <p class="worlds__subtext">${msg('Every agent needs a home base. How would you like to start?')}</p>
 
         <div class="path-cards" role="radiogroup" aria-label=${msg('Choose your path')}>
-          ${paths.map((p, i) => html`
+          ${paths.map(
+            (p, i) => html`
             <div
               class="path-card"
               style="--i: ${i}"
@@ -901,7 +912,12 @@ export class VelgOnboardingWizard extends LitElement {
               aria-selected=${this._selectedPath === p.id ? 'true' : 'false'}
               aria-label=${p.title}
               @click=${() => this._handlePathSelect(p.id)}
-              @keydown=${(e: KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this._handlePathSelect(p.id); } }}
+              @keydown=${(e: KeyboardEvent) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  this._handlePathSelect(p.id);
+                }
+              }}
             >
               <div class="path-card__icon" aria-hidden="true">${p.icon}</div>
               <div class="path-card__text">
@@ -910,7 +926,8 @@ export class VelgOnboardingWizard extends LitElement {
               </div>
               <div class="path-card__arrow" aria-hidden="true">${icons.chevronRight(12)}</div>
             </div>
-          `)}
+          `,
+          )}
         </div>
       </div>
     `;
@@ -951,13 +968,15 @@ export class VelgOnboardingWizard extends LitElement {
         <p class="tour__subtext">${msg('Five core systems power the multiverse.')}</p>
 
         <div class="tour-carousel" role="list" aria-label=${msg('Feature overview')}>
-          ${topics.map((t, i) => html`
+          ${topics.map(
+            (t, i) => html`
             <div class="tour-card" style="--i: ${i}" role="listitem">
               <div class="tour-card__icon" aria-hidden="true">${t.icon}</div>
               <div class="tour-card__title">${t.title}</div>
               <div class="tour-card__desc">${t.desc}</div>
             </div>
-          `)}
+          `,
+          )}
         </div>
       </div>
     `;
@@ -978,7 +997,12 @@ export class VelgOnboardingWizard extends LitElement {
             tabindex="0"
             aria-label=${msg('Start Academy Epoch')}
             @click=${() => this._complete('academy')}
-            @keydown=${(e: KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this._complete('academy'); } }}
+            @keydown=${(e: KeyboardEvent) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this._complete('academy');
+              }
+            }}
           >
             <div class="mission-card__icon" aria-hidden="true">${icons.crossedSwords(20)}</div>
             <div class="mission-card__text">
@@ -994,7 +1018,12 @@ export class VelgOnboardingWizard extends LitElement {
             tabindex="0"
             aria-label=${msg('Explore on my own')}
             @click=${() => this._complete('explore')}
-            @keydown=${(e: KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this._complete('explore'); } }}
+            @keydown=${(e: KeyboardEvent) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this._complete('explore');
+              }
+            }}
           >
             <div class="mission-card__icon" aria-hidden="true">${icons.book(20)}</div>
             <div class="mission-card__text">

@@ -2,10 +2,9 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-
-import type { Resonance, ResonanceImpact } from '../../types/index.js';
-import { resonanceApi } from '../../services/api/index.js';
 import { appState } from '../../services/AppStateManager.js';
+import { resonanceApi } from '../../services/api/index.js';
+import type { Resonance, ResonanceImpact } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 
 /** Human-readable archetype labels. */
@@ -888,11 +887,16 @@ export class ResonanceCard extends LitElement {
 
   private _statusLabel(status: string): string {
     switch (status) {
-      case 'detected': return msg('Detected');
-      case 'impacting': return msg('Impacting');
-      case 'subsiding': return msg('Subsiding');
-      case 'archived': return msg('Archived');
-      default: return status;
+      case 'detected':
+        return msg('Detected');
+      case 'impacting':
+        return msg('Impacting');
+      case 'subsiding':
+        return msg('Subsiding');
+      case 'archived':
+        return msg('Archived');
+      default:
+        return status;
     }
   }
 
@@ -902,7 +906,9 @@ export class ResonanceCard extends LitElement {
     const r = this.resonance;
     const statusClass = `status-${r.status}`;
     const magPct = Math.round(r.magnitude * 100);
-    const isUrgent = r.status === 'detected' && this._countdown !== '' &&
+    const isUrgent =
+      r.status === 'detected' &&
+      this._countdown !== '' &&
       new Date(r.impacts_at).getTime() - Date.now() < 3_600_000;
 
     return html`
@@ -912,7 +918,12 @@ export class ResonanceCard extends LitElement {
         role="article"
         aria-label=${`${r.archetype ?? 'Resonance'}: ${r.title ?? 'Unknown'}`}
         @click=${this._handleClick}
-        @keydown=${(e: KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this._handleClick(); } }}
+        @keydown=${(e: KeyboardEvent) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            this._handleClick();
+          }
+        }}
       >
         <!-- Header -->
         <div class="header">
@@ -933,13 +944,15 @@ export class ResonanceCard extends LitElement {
             <span class="status-dot"></span>
             ${this._statusLabel(r.status)}
           </span>
-          ${this._countdown
-            ? html`<span class=${classMap({ countdown: true, urgent: isUrgent })}
+          ${
+            this._countdown
+              ? html`<span class=${classMap({ countdown: true, urgent: isUrgent })}
                 aria-label=${msg('Time until impact')}
               >${this._countdown}</span>`
-            : r.status === 'impacting'
-              ? html`<span class="countdown urgent">${msg('IMPACTING')}</span>`
-              : nothing}
+              : r.status === 'impacting'
+                ? html`<span class="countdown urgent">${msg('IMPACTING')}</span>`
+                : nothing
+          }
         </div>
 
         <!-- Magnitude -->
@@ -956,17 +969,20 @@ export class ResonanceCard extends LitElement {
         </div>
 
         <!-- Event Type Chips -->
-        ${r.affected_event_types?.length
-          ? html`<div class="chips" aria-label=${msg('Affected event types')}>
+        ${
+          r.affected_event_types?.length
+            ? html`<div class="chips" aria-label=${msg('Affected event types')}>
               ${r.affected_event_types.map(
                 (t) => html`<span class="chip">${t.replace(/_/g, ' ')}</span>`,
               )}
             </div>`
-          : nothing}
+            : nothing
+        }
 
         <!-- Bureau Dispatch -->
-        ${r.bureau_dispatch
-          ? html`<div class="dispatch">
+        ${
+          r.bureau_dispatch
+            ? html`<div class="dispatch">
               <button class="dispatch-toggle"
                 @click=${this._toggleDispatch}
                 aria-expanded=${this._dispatchExpanded}
@@ -977,17 +993,21 @@ export class ResonanceCard extends LitElement {
               </button>
               <div id="dispatch-content"
                 class=${classMap({ 'dispatch-content': true, expanded: this._dispatchExpanded })}>
-                <div class="dispatch-text">${this._dispatchExpanded
-                  ? r.bureau_dispatch
-                  : r.bureau_dispatch.slice(0, 120) + '...'}</div>
+                <div class="dispatch-text">${
+                  this._dispatchExpanded
+                    ? r.bureau_dispatch
+                    : `${r.bureau_dispatch.slice(0, 120)}...`
+                }</div>
               </div>
             </div>`
-          : nothing}
+            : nothing
+        }
 
         <!-- Footer -->
         <div class="footer">
-          ${this.impactCount > 0
-            ? html`<button class="impact-toggle"
+          ${
+            this.impactCount > 0
+              ? html`<button class="impact-toggle"
                 @click=${this._toggleImpacts}
                 aria-expanded=${this._impactsExpanded}
                 aria-controls="impact-panel">
@@ -996,17 +1016,20 @@ export class ResonanceCard extends LitElement {
                 ${icons.substrateTremor(12)}
                 <strong>${this.impactCount}</strong> ${msg('impacts')}
               </button>`
-            : html`<span class="impact-toggle">
+              : html`<span class="impact-toggle">
                 ${icons.substrateTremor(12)}
                 <strong>0</strong> ${msg('impacts')}
-              </span>`}
-          ${this.showProcessButton && r.status === 'detected'
-            ? html`<button class="process-btn"
+              </span>`
+          }
+          ${
+            this.showProcessButton && r.status === 'detected'
+              ? html`<button class="process-btn"
                 @click=${this._handleProcess}
                 aria-label=${msg('Process impact across simulations')}>
                 ${msg('Process')}
               </button>`
-            : nothing}
+              : nothing
+          }
         </div>
 
         <!-- Impact Panel -->
@@ -1057,7 +1080,9 @@ export class ResonanceCard extends LitElement {
               tabindex="0"
               aria-label="${impact._simName} — ${msg('magnitude')} ${impact.effective_magnitude.toFixed(2)}"
               @click=${(e: Event) => this._navigateToSim(e, impact._simSlug)}
-              @keydown=${(e: KeyboardEvent) => { if (e.key === 'Enter') this._navigateToSim(e, impact._simSlug); }}>
+              @keydown=${(e: KeyboardEvent) => {
+                if (e.key === 'Enter') this._navigateToSim(e, impact._simSlug);
+              }}>
               <span class="impact-row__status impact-row__status--${impact.status}"></span>
               <span class="impact-row__name">${impact._simName}</span>
               <span class="impact-row__mag">

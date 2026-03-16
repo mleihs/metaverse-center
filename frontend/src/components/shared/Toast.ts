@@ -336,10 +336,14 @@ export class VelgToast extends LitElement {
 
   private _classLabel(type: ToastType): string {
     switch (type) {
-      case 'success': return msg('SIGNAL CONFIRMED');
-      case 'error': return msg('BREACH DETECTED');
-      case 'warning': return msg('ADVISORY');
-      case 'info': return msg('DISPATCH');
+      case 'success':
+        return msg('SIGNAL CONFIRMED');
+      case 'error':
+        return msg('BREACH DETECTED');
+      case 'warning':
+        return msg('ADVISORY');
+      case 'info':
+        return msg('DISPATCH');
     }
   }
 

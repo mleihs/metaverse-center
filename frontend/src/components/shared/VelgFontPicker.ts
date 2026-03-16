@@ -221,9 +221,7 @@ export class VelgFontPicker extends LitElement {
 
   private get _isCustom(): boolean {
     if (!this.value) return false;
-    return !CURATED_FONTS.some(
-      (f) => f.family.toLowerCase() === this.value.toLowerCase(),
-    );
+    return !CURATED_FONTS.some((f) => f.family.toLowerCase() === this.value.toLowerCase());
   }
 
   private get _filtered(): FontEntry[] {
@@ -309,7 +307,9 @@ export class VelgFontPicker extends LitElement {
   protected render() {
     const displayName =
       CURATED_FONTS.find((f) => f.family.toLowerCase() === (this.value || '').toLowerCase())
-        ?.name || this.value || '—';
+        ?.name ||
+      this.value ||
+      '—';
     const filtered = this._filtered;
 
     return html`
@@ -328,8 +328,9 @@ export class VelgFontPicker extends LitElement {
         <span class="picker__chevron">▼</span>
       </button>
 
-      ${this._open
-        ? html`
+      ${
+        this._open
+          ? html`
             <div class="picker__backdrop" @click=${this._close}></div>
             <div class="picker__dropdown" @keydown=${this._onKeydown}>
               <input
@@ -361,10 +362,12 @@ export class VelgFontPicker extends LitElement {
               </ul>
             </div>
           `
-        : nothing}
+          : nothing
+      }
 
-      ${this._isCustom
-        ? html`
+      ${
+        this._isCustom
+          ? html`
             <input
               class="picker__custom"
               type="text"
@@ -373,7 +376,8 @@ export class VelgFontPicker extends LitElement {
               placeholder=${msg('Custom font family')}
             />
           `
-        : nothing}
+          : nothing
+      }
 
       <div class="picker__specimen">
         <p class="picker__specimen-heading" style="font-family: ${this.value || 'inherit'}">

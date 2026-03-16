@@ -136,18 +136,24 @@ export class AdminApiService extends BaseApiService {
 
   // --- BYOK System Settings ---
 
-  async getBYOKSystemSetting(): Promise<ApiResponse<{
-    byok_bypass_enabled: boolean;
-    byok_access_policy: string;
-  }>> {
+  async getBYOKSystemSetting(): Promise<
+    ApiResponse<{
+      byok_bypass_enabled: boolean;
+      byok_access_policy: string;
+    }>
+  > {
     return this.get('/forge/admin/byok-setting');
   }
 
-  async updateBYOKSystemSetting(enabled: boolean): Promise<ApiResponse<{ byok_bypass_enabled: boolean }>> {
+  async updateBYOKSystemSetting(
+    enabled: boolean,
+  ): Promise<ApiResponse<{ byok_bypass_enabled: boolean }>> {
     return this.put(`/forge/admin/byok-setting?enabled=${enabled}`, {});
   }
 
-  async updateBYOKAccessPolicy(policy: 'none' | 'all' | 'per_user'): Promise<ApiResponse<{ byok_access_policy: string }>> {
+  async updateBYOKAccessPolicy(
+    policy: 'none' | 'all' | 'per_user',
+  ): Promise<ApiResponse<{ byok_access_policy: string }>> {
     return this.put(`/forge/admin/byok-access-policy?policy=${policy}`, {});
   }
 
@@ -161,7 +167,9 @@ export class AdminApiService extends BaseApiService {
 
   // --- Impersonation ---
 
-  async impersonateUser(userId: string): Promise<ApiResponse<{ hashed_token: string; email: string }>> {
+  async impersonateUser(
+    userId: string,
+  ): Promise<ApiResponse<{ hashed_token: string; email: string }>> {
     return this.post('/admin/impersonate', { user_id: userId });
   }
 

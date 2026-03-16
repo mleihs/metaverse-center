@@ -16,7 +16,9 @@ import './EpochPresenceIndicator.js';
 @localized()
 @customElement('velg-epoch-alliances-tab')
 export class VelgEpochAlliancesTab extends LitElement {
-  static styles = [infoBubbleStyles, css`
+  static styles = [
+    infoBubbleStyles,
+    css`
     :host {
       display: block;
     }
@@ -529,7 +531,8 @@ export class VelgEpochAlliancesTab extends LitElement {
         opacity: 1;
       }
     }
-  `];
+  `,
+  ];
 
   @property({ type: Object }) epoch: Epoch | null = null;
   @property({ type: Object }) myParticipant: EpochParticipant | null = null;
@@ -551,8 +554,7 @@ export class VelgEpochAlliancesTab extends LitElement {
     const isAligned = !!this.myParticipant?.team_id;
     const activeTeams = this.teams.filter((t) => !t.dissolved_at);
     const isCompetitionPlus =
-      this.epoch &&
-      ['competition', 'reckoning'].includes(this.epoch.status);
+      this.epoch && ['competition', 'reckoning'].includes(this.epoch.status);
 
     return html`
       <div class="overview">
@@ -561,10 +563,12 @@ export class VelgEpochAlliancesTab extends LitElement {
             <h3 class="panel__title">${msg('Active Alliances')}</h3>
           </div>
           <div class="panel__body">
-            ${canCreateTeam
-              ? html`
-              ${this._creatingTeam
+            ${
+              canCreateTeam
                 ? html`
+              ${
+                this._creatingTeam
+                  ? html`
                   <div class="alliance-actions">
                     <div class="team-form">
                       <input
@@ -595,7 +599,7 @@ export class VelgEpochAlliancesTab extends LitElement {
                     </div>
                   </div>
                 `
-                : html`
+                  : html`
                   <div class="alliance-cta">
                     <button class="lobby-btn lobby-btn--join" @click=${() => {
                       this._creatingTeam = true;
@@ -607,11 +611,12 @@ export class VelgEpochAlliancesTab extends LitElement {
                 `
               }
             `
-              : nothing
+                : nothing
             }
-            ${activeTeams.length > 0
-              ? activeTeams.map((t) => this._renderAllianceCard(t, isAligned, isCompetitionPlus))
-              : html`<p class="empty-hint">${msg('No alliances formed yet. Create one to share intelligence with allies and gain diplomatic bonuses — but watch the upkeep cost.')}</p>`
+            ${
+              activeTeams.length > 0
+                ? activeTeams.map((t) => this._renderAllianceCard(t, isAligned, isCompetitionPlus))
+                : html`<p class="empty-hint">${msg('No alliances formed yet. Create one to share intelligence with allies and gain diplomatic bonuses — but watch the upkeep cost.')}</p>`
             }
           </div>
         </div>
@@ -636,10 +641,7 @@ export class VelgEpochAlliancesTab extends LitElement {
       !isAligned &&
       this.epoch &&
       ['lobby', 'foundation'].includes(this.epoch.status);
-    const canRequestJoin =
-      this.myParticipant &&
-      !isAligned &&
-      isCompetitionPlus;
+    const canRequestJoin = this.myParticipant && !isAligned && isCompetitionPlus;
     const isMember = this.myParticipant?.team_id === t.id;
     const tension = t.tension ?? 0;
     const teamProposals = this.proposals.filter(
@@ -674,8 +676,9 @@ export class VelgEpochAlliancesTab extends LitElement {
         )}
 
         <!-- Tension meter -->
-        ${isMember || tension > 0
-          ? html`
+        ${
+          isMember || tension > 0
+            ? html`
             <div class="tension-meter"
               role="meter"
               aria-label=${msg('Alliance tension')}
@@ -688,25 +691,31 @@ export class VelgEpochAlliancesTab extends LitElement {
             <span class="tension-meter__label">
               ${msg('Tension')}: ${tension}/100
               ${renderInfoBubble(msg('Tension increases when allies attack the same target (+10). Decays naturally each cycle (-5). Alliance dissolves at 80.'))}
-              ${tension >= 60
-                ? html` — <strong class="tension-meter__critical">${msg('Critical!')}</strong>`
-                : tension >= 30
-                  ? html` — <span class="tension-meter__elevated">${msg('Elevated')}</span>`
-                  : nothing}
+              ${
+                tension >= 60
+                  ? html` — <strong class="tension-meter__critical">${msg('Critical!')}</strong>`
+                  : tension >= 30
+                    ? html` — <span class="tension-meter__elevated">${msg('Elevated')}</span>`
+                    : nothing
+              }
             </span>
           `
-          : nothing}
+            : nothing
+        }
 
         <!-- Pending proposals for this team -->
-        ${isMember && teamProposals.length > 0
-          ? teamProposals.map((p) => this._renderProposalCard(p, memberCount))
-          : isMember
-            ? html`<p class="proposal-card__hint" style="margin-top: var(--space-2)">${msg('No pending proposals. Unaligned players can request to join your alliance.')}</p>`
-            : nothing}
+        ${
+          isMember && teamProposals.length > 0
+            ? teamProposals.map((p) => this._renderProposalCard(p, memberCount))
+            : isMember
+              ? html`<p class="proposal-card__hint" style="margin-top: var(--space-2)">${msg('No pending proposals. Unaligned players can request to join your alliance.')}</p>`
+              : nothing
+        }
 
         <!-- Own pending proposal (for proposer view) -->
-        ${!isMember && myOwnProposal
-          ? html`
+        ${
+          !isMember && myOwnProposal
+            ? html`
             <div class="proposal-card proposal-card--own">
               <span class="proposal-card__status">
                 ${msg('Your request is pending')} — ${(myOwnProposal.votes ?? []).filter((v) => v.vote === 'accept').length}/${memberCount} ${msg('approved')}
@@ -716,14 +725,16 @@ export class VelgEpochAlliancesTab extends LitElement {
               </span>
             </div>
           `
-          : nothing}
+            : nothing
+        }
 
         <!-- Recently resolved proposal (for proposer feedback) -->
         ${this._renderResolvedProposalFeedback(t.id, memberCount)}
 
         <div class="alliance__actions">
-          ${canJoinInstant
-            ? html`
+          ${
+            canJoinInstant
+              ? html`
               <button
                 class="alliance-btn alliance-btn--join"
                 ?disabled=${this.actionLoading}
@@ -731,9 +742,11 @@ export class VelgEpochAlliancesTab extends LitElement {
                 @click=${() => this._onJoinTeam(t.id)}
               >${msg('Join')}</button>
             `
-            : nothing}
-          ${canRequestJoin && !myOwnProposal
-            ? html`
+              : nothing
+          }
+          ${
+            canRequestJoin && !myOwnProposal
+              ? html`
               <button
                 class="alliance-btn alliance-btn--join"
                 ?disabled=${this.actionLoading}
@@ -741,16 +754,19 @@ export class VelgEpochAlliancesTab extends LitElement {
                 @click=${() => this._onRequestJoin(t.id)}
               >${msg('Request to Join')}</button>
             `
-            : nothing}
-          ${isMember
-            ? html`
+              : nothing
+          }
+          ${
+            isMember
+              ? html`
               <button
                 class="alliance-btn alliance-btn--leave"
                 ?disabled=${this.actionLoading}
                 @click=${this._onLeaveTeam}
               >${msg('Leave')}</button>
             `
-            : nothing}
+              : nothing
+          }
         </div>
       </div>
     `;
@@ -767,7 +783,8 @@ export class VelgEpochAlliancesTab extends LitElement {
     );
     if (!resolved) return nothing;
 
-    const statusClass = resolved.status === 'rejected' ? 'proposal-card--rejected' : 'proposal-card--expired';
+    const statusClass =
+      resolved.status === 'rejected' ? 'proposal-card--rejected' : 'proposal-card--expired';
     const statusMsg =
       resolved.status === 'rejected'
         ? msg('Your request was rejected.')
@@ -798,9 +815,11 @@ export class VelgEpochAlliancesTab extends LitElement {
             ${renderInfoBubble(msg('All current members must vote Accept for the proposal to pass. A single Reject immediately declines.'))}
           </span>
           <span class="proposal-card__expiry">
-            ${expiresInCycles === 1
-              ? msg(str`Expires in ${expiresInCycles} cycle`)
-              : msg(str`Expires in ${expiresInCycles} cycles`)}
+            ${
+              expiresInCycles === 1
+                ? msg(str`Expires in ${expiresInCycles} cycle`)
+                : msg(str`Expires in ${expiresInCycles} cycles`)
+            }
           </span>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:var(--space-1)">
@@ -808,8 +827,9 @@ export class VelgEpochAlliancesTab extends LitElement {
             aria-label=${msg(str`${acceptCount} of ${memberCount} votes cast`)}>
             ${acceptCount}/${memberCount} ${msg('votes')}
           </span>
-          ${!alreadyVoted
-            ? html`
+          ${
+            !alreadyVoted
+              ? html`
               <div class="proposal-card__actions">
                 <button class="vote-btn vote-btn--accept"
                   aria-label=${msg(str`Accept alliance proposal from ${proposerName}`)}
@@ -825,7 +845,8 @@ export class VelgEpochAlliancesTab extends LitElement {
                 </button>
               </div>
             `
-            : html`<span class="proposal-card__hint">${msg('Vote cast')}</span>`}
+              : html`<span class="proposal-card__hint">${msg('Vote cast')}</span>`
+          }
         </div>
       </div>
     `;
@@ -848,23 +869,36 @@ export class VelgEpochAlliancesTab extends LitElement {
       <div class="alliance__member">
         <velg-epoch-presence .simulationId=${p.simulation_id}></velg-epoch-presence>
         ${simName}
-        ${p.team_id
-          ? nothing
-          : html` <span class="participant__unaligned">(${msg('unaligned')})</span>
-            ${pendingProposal && pendingTeamName
-              ? html`<span class="proposal-card__hint" style="margin-left:var(--space-1)">${msg(str`→ ${pendingTeamName}`)}</span>`
-              : nothing}
-            ${isAligned && p.simulation_id !== this.myParticipant?.simulation_id && this.epoch && ['lobby', 'foundation', 'competition'].includes(this.epoch.status) && !this._isMyTeamFull()
-              ? html`<button
+        ${
+          p.team_id
+            ? nothing
+            : html` <span class="participant__unaligned">(${msg('unaligned')})</span>
+            ${
+              pendingProposal && pendingTeamName
+                ? html`<span class="proposal-card__hint" style="margin-left:var(--space-1)">${msg(str`→ ${pendingTeamName}`)}</span>`
+                : nothing
+            }
+            ${
+              isAligned &&
+              p.simulation_id !== this.myParticipant?.simulation_id &&
+              this.epoch &&
+              ['lobby', 'foundation', 'competition'].includes(this.epoch.status) &&
+              !this._isMyTeamFull()
+                ? html`<button
                   class="alliance-btn alliance-btn--invite"
                   ?disabled=${this.actionLoading}
                   @click=${() => this._onInvitePlayer(p)}
                 >${msg('Invite')}</button>`
-              : nothing
+                : nothing
             }
-            ${!isAligned && !pendingProposal && isCompetitionPlus && p.simulation_id !== this.myParticipant?.simulation_id
-              ? nothing
-              : nothing}`
+            ${
+              !isAligned &&
+              !pendingProposal &&
+              isCompetitionPlus &&
+              p.simulation_id !== this.myParticipant?.simulation_id
+                ? nothing
+                : nothing
+            }`
         }
       </div>
     `;

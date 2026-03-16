@@ -11,8 +11,6 @@ import logging
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
-from supabase import Client
-
 from backend.config import settings
 from backend.dependencies import get_admin_supabase
 from backend.models.resonance import ARCHETYPE_DESCRIPTIONS, CATEGORY_ARCHETYPE_MAP
@@ -21,6 +19,7 @@ from backend.services.external.openrouter import OpenRouterService
 from backend.services.scanning import classifier, deduplicator, pre_filter
 from backend.services.scanning.base_adapter import ScanResult
 from backend.services.scanning.registry import get_adapter, get_adapter_names
+from supabase import Client
 
 logger = logging.getLogger(__name__)
 

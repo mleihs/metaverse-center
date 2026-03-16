@@ -425,7 +425,9 @@ export class VelgStyleReferenceUpload extends LitElement {
 
   private _flash(state: 'success' | 'error') {
     this._flashState = state;
-    setTimeout(() => { this._flashState = ''; }, 400);
+    setTimeout(() => {
+      this._flashState = '';
+    }, 400);
   }
 
   protected render() {
@@ -437,8 +439,9 @@ export class VelgStyleReferenceUpload extends LitElement {
 
     return html`
       ${hasPreview ? this._renderPreview() : this._renderDropZone()}
-      ${!hasPreview
-        ? html`
+      ${
+        !hasPreview
+          ? html`
           <div class="url-row">
             <input
               class="url-row__input"
@@ -446,7 +449,9 @@ export class VelgStyleReferenceUpload extends LitElement {
               .value=${this._urlInput}
               placeholder=${msg('or paste image URL')}
               ?disabled=${this.disabled}
-              @input=${(e: Event) => { this._urlInput = (e.target as HTMLInputElement).value; }}
+              @input=${(e: Event) => {
+                this._urlInput = (e.target as HTMLInputElement).value;
+              }}
               @keydown=${this._handleUrlKeydown}
             />
             <button
@@ -456,7 +461,8 @@ export class VelgStyleReferenceUpload extends LitElement {
             >${msg('Fetch')}</button>
           </div>
         `
-        : nothing}
+          : nothing
+      }
       ${this.aspectHint ? html`<div class="aspect-hint">${this.aspectHint}</div>` : nothing}
       ${this._error ? html`<div class="error-msg">${this._error}</div>` : nothing}
       <input

@@ -1,18 +1,26 @@
 import { localized, msg } from '@lit/localize';
-import { effect } from '@preact/signals-core';
 import { SignalWatcher } from '@lit-labs/preact-signals';
+import { effect } from '@preact/signals-core';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import type { ForgeLoreSection } from '../../services/api/ForgeApiService.js';
-import { loreApi } from '../../services/api/LoreApiService.js';
-import type { LoreSectionCreatePayload, LoreSectionUpdatePayload } from '../../services/api/LoreApiService.js';
 import { appState } from '../../services/AppStateManager.js';
+import type { ForgeLoreSection } from '../../services/api/ForgeApiService.js';
+import type {
+  LoreSectionCreatePayload,
+  LoreSectionUpdatePayload,
+} from '../../services/api/LoreApiService.js';
+import { loreApi } from '../../services/api/LoreApiService.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { seoService } from '../../services/SeoService.js';
 import { icons } from '../../utils/icons.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { VelgToast } from '../shared/Toast.js';
-import { fetchRawLoreSections, getClassifiedSections, isClassifiedSection, mapLoreSectionsForLocale } from './lore-content.js';
+import {
+  fetchRawLoreSections,
+  getClassifiedSections,
+  isClassifiedSection,
+  mapLoreSectionsForLocale,
+} from './lore-content.js';
 
 import '../platform/LoreScroll.js';
 import './LoreEditor.js';
@@ -165,7 +173,9 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
     this._editMode = !this._editMode;
   }
 
-  private async _handleSave(e: CustomEvent<{ sectionId: string; data: LoreSectionUpdatePayload }>): Promise<void> {
+  private async _handleSave(
+    e: CustomEvent<{ sectionId: string; data: LoreSectionUpdatePayload }>,
+  ): Promise<void> {
     const { sectionId, data } = e.detail;
     const simId = this._getSimId();
     const resp = await loreApi.updateSection(simId, sectionId, data);
@@ -208,7 +218,9 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
     }
   }
 
-  private async _handleReorder(e: CustomEvent<{ sectionId: string; direction: -1 | 1 }>): Promise<void> {
+  private async _handleReorder(
+    e: CustomEvent<{ sectionId: string; direction: -1 | 1 }>,
+  ): Promise<void> {
     const { sectionId, direction } = e.detail;
     if (!this._rawSections) return;
 
@@ -297,12 +309,12 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
     const simId = this._getSimId();
     const hasPurchase = forgeStateManager.hasCompletedPurchase(simId, 'classified_dossier');
     // Show classified sections if they exist in data (public-first) OR purchase confirmed
-    const classifiedSections = this._rawSections
-      ? getClassifiedSections(this._rawSections)
-      : [];
+    const classifiedSections = this._rawSections ? getClassifiedSections(this._rawSections) : [];
     const hasDossier = hasPurchase || classifiedSections.length > 0;
     const dossierPurchase = hasPurchase
-      ? forgeStateManager.featurePurchases.value.get(`${simId}:classified_dossier`)?.find(p => p.status === 'completed')
+      ? forgeStateManager.featurePurchases.value
+          .get(`${simId}:classified_dossier`)
+          ?.find((p) => p.status === 'completed')
       : null;
     const regenBudget = dossierPurchase?.regen_budget_remaining ?? 3;
     const rawClassifiedSections = this._rawSections
@@ -310,26 +322,31 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
       : [];
 
     return html`
-      ${this._showCeremony
-        ? html`<velg-dossier-reveal
+      ${
+        this._showCeremony
+          ? html`<velg-dossier-reveal
             .simulationName=${appState.currentSimulation.value?.name ?? ''}
             @dossier-ceremony-complete=${this._handleCeremonyComplete}
           ></velg-dossier-reveal>`
-        : nothing}
+          : nothing
+      }
       <article class="lore-view">
         ${canEdit ? this._renderToolbar(hasDossier) : nothing}
 
-        ${this._caseFileMode && classifiedSections.length > 0
-          ? html`<velg-case-file
+        ${
+          this._caseFileMode && classifiedSections.length > 0
+            ? html`<velg-case-file
               .sections=${classifiedSections}
               .simulationName=${appState.currentSimulation.value?.name ?? ''}
               .basePath=${slug}
             ></velg-case-file>`
-          : nothing}
+            : nothing
+        }
 
-        ${!this._caseFileMode
-          ? html`<velg-lore-scroll
-              .sections=${sections!}
+        ${
+          !this._caseFileMode
+            ? html`<velg-lore-scroll
+              .sections=${sections ?? []}
               .basePath=${`${slug}/lore`}
               .classifiedSectionIds=${classifiedIds}
               ?generating=${forgeStateManager.imageTrackingSlug.value === slug}
@@ -349,10 +366,12 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
                 --lore-btn-text: var(--color-text-secondary);
               "
             ></velg-lore-scroll>`
-          : nothing}
+            : nothing
+        }
 
-        ${canEdit && !hasDossier
-          ? html`
+        ${
+          canEdit && !hasDossier
+            ? html`
             <velg-dossier-preview
               .simulationId=${simId}
             ></velg-dossier-preview>
@@ -363,17 +382,20 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
               @dossier-complete=${this._handleDossierComplete}
             ></velg-dossier-request>
           `
-          : nothing}
+            : nothing
+        }
 
-        ${canEdit && hasDossier
-          ? html`<velg-bureau-status
+        ${
+          canEdit && hasDossier
+            ? html`<velg-bureau-status
               .simulationId=${simId}
               .classifiedSections=${rawClassifiedSections}
               .regenBudgetRemaining=${regenBudget}
               .hasBypass=${forgeStateManager.byokStatus.value.effective_bypass}
               @bureau-update-requested=${this._handleBureauUpdate}
             ></velg-bureau-status>`
-          : nothing}
+            : nothing
+        }
       </article>
     `;
   }
@@ -404,8 +426,9 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
   private _renderToolbar(hasDossier = false) {
     return html`
       <div class="lore-view__toolbar">
-        ${hasDossier
-          ? html`<button
+        ${
+          hasDossier
+            ? html`<button
               class="lore-view__btn ${this._caseFileMode ? 'lore-view__btn--active' : ''}"
               @click=${this._toggleCaseFile}
               title=${this._caseFileMode ? msg('View Inline') : msg('View as Case File')}
@@ -413,7 +436,8 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
               ${icons.stampClassified(16)}
               ${this._caseFileMode ? msg('View Inline') : msg('View as Case File')}
             </button>`
-          : nothing}
+            : nothing
+        }
         <button
           class="lore-view__btn ${this._editMode ? 'lore-view__btn--active' : ''}"
           @click=${this._toggleEditMode}

@@ -418,12 +418,15 @@ export class VelgRecruitmentOffice extends LitElement {
       return;
     }
 
-    const result = await forgeStateManager.awaitFeatureCompletion(purchaseId, (p: FeaturePurchase) => {
-      if (p.status === 'processing') {
-        const elapsed = Date.now() - new Date(p.created_at).getTime();
-        this._cardsCompleted = Math.min(2, Math.floor(elapsed / 10000));
-      }
-    });
+    const result = await forgeStateManager.awaitFeatureCompletion(
+      purchaseId,
+      (p: FeaturePurchase) => {
+        if (p.status === 'processing') {
+          const elapsed = Date.now() - new Date(p.created_at).getTime();
+          this._cardsCompleted = Math.min(2, Math.floor(elapsed / 10000));
+        }
+      },
+    );
 
     if (result?.status === 'completed') {
       this._cardsCompleted = 3;
@@ -501,26 +504,32 @@ export class VelgRecruitmentOffice extends LitElement {
             maxlength="200"
             placeholder=${msg('Describe the type of agents you want...')}
             .value=${this._focus}
-            @input=${(e: Event) => { this._focus = (e.target as HTMLTextAreaElement).value; }}
+            @input=${(e: Event) => {
+              this._focus = (e.target as HTMLTextAreaElement).value;
+            }}
           ></textarea>
           <span class="config__charcount">${this._focus.length}/200</span>
         </div>
 
-        ${this.zones.length > 0
-          ? html`
+        ${
+          this.zones.length > 0
+            ? html`
             <div class="config__field">
               <label class="config__label">${msg('Target zone (optional)')}</label>
               <select
                 class="config__select"
                 .value=${this._zoneId}
-                @change=${(e: Event) => { this._zoneId = (e.target as HTMLSelectElement).value; }}
+                @change=${(e: Event) => {
+                  this._zoneId = (e.target as HTMLSelectElement).value;
+                }}
               >
                 <option value="">${msg('Any zone')}</option>
-                ${this.zones.map(z => html`<option value=${z.id}>${z.name}</option>`)}
+                ${this.zones.map((z) => html`<option value=${z.id}>${z.name}</option>`)}
               </select>
             </div>
           `
-          : nothing}
+            : nothing
+        }
 
         <p class="config__cost ${this.hasBypass ? 'config__cost--bypass' : ''}">
           ${this.hasBypass ? msg('BYOK: NO COST') : msg('COST: 1 FT')}
@@ -556,15 +565,17 @@ export class VelgRecruitmentOffice extends LitElement {
                 class="recruit-card ${done ? 'recruit-card--done' : 'recruit-card--pending'}"
                 style="animation-delay: ${done ? i * 200 : i * 300}ms"
               >
-                ${done
-                  ? html`
+                ${
+                  done
+                    ? html`
                     <span class="recruit-card__name">${label}</span>
                     <span class="recruit-card__status">${msg('DEPLOYED')}</span>
                   `
-                  : html`
+                    : html`
                     <div class="recruit-card__scan"></div>
                     <span class="recruit-card__label">${msg('PROCESSING DOSSIER...')}</span>
-                  `}
+                  `
+                }
               </div>
             `;
           })}

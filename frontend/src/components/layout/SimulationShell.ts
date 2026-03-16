@@ -3,9 +3,9 @@ import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
-import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { healthApi } from '../../services/api/HealthApiService.js';
 import { simulationsApi } from '../../services/api/SimulationsApiService.js';
+import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { themeService } from '../../services/ThemeService.js';
 import type { BleedStatus, ThresholdState } from '../../types/health.js';
 import { icons } from '../../utils/icons.js';
@@ -464,7 +464,9 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
     );
     // Sync nav highlight after route change (URL updated synchronously by router)
     queueMicrotask(() => {
-      this.shadowRoot?.querySelector<any>('velg-simulation-nav')?._detectActiveTab?.();
+      this.shadowRoot
+        ?.querySelector<HTMLElement & { _detectActiveTab?: () => void }>('velg-simulation-nav')
+        ?._detectActiveTab?.();
     });
   }
 
@@ -627,10 +629,13 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
   }
 
   private _scheduleNextScramble(): void {
-    this._scrambleTimer = setTimeout(() => {
-      this._scrambleRandomLetter();
-      this._scheduleNextScramble();
-    }, 1500 + Math.random() * 3000);
+    this._scrambleTimer = setTimeout(
+      () => {
+        this._scrambleRandomLetter();
+        this._scheduleNextScramble();
+      },
+      1500 + Math.random() * 3000,
+    );
   }
 
   private _scrambleRandomLetter(): void {
@@ -641,7 +646,7 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
     if (!textNodes.length) return;
 
     const targetNode = textNodes[Math.floor(Math.random() * textNodes.length)];
-    const text = targetNode.textContent!;
+    const text = targetNode.textContent ?? '';
 
     // Find non-whitespace character positions
     const candidates: number[] = [];
@@ -661,11 +666,14 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
 
     // Restore after 200-600ms — only if text hasn't been changed by a re-render
     const expectedCorrupted = text.slice(0, pos) + glitch + text.slice(pos + 1);
-    setTimeout(() => {
-      if (targetNode.textContent === expectedCorrupted) {
-        targetNode.textContent = originalFull;
-      }
-    }, 200 + Math.random() * 400);
+    setTimeout(
+      () => {
+        if (targetNode.textContent === expectedCorrupted) {
+          targetNode.textContent = originalFull;
+        }
+      },
+      200 + Math.random() * 400,
+    );
   }
 
   private _collectTextNodes(root: Node, nodes: Text[], depth: number): void {
@@ -742,10 +750,13 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
   }
 
   private _scheduleNextCardShake(): void {
-    this._cardShakeTimer = setTimeout(() => {
-      this._shakeRandomCard();
-      this._scheduleNextCardShake();
-    }, 3000 + Math.random() * 5000);
+    this._cardShakeTimer = setTimeout(
+      () => {
+        this._shakeRandomCard();
+        this._scheduleNextCardShake();
+      },
+      3000 + Math.random() * 5000,
+    );
   }
 
   private _shakeRandomCard(): void {
@@ -918,8 +929,9 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
           ${simName}
           ${icons.chevronDown(10)}
         </button>
-        ${this._simSwitcherOpen
-          ? html`
+        ${
+          this._simSwitcherOpen
+            ? html`
               <div
                 class="breadcrumb__dropdown"
                 role="listbox"
@@ -941,7 +953,8 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
                 )}
               </div>
             `
-          : nothing}
+            : nothing
+        }
       </div>
     `;
   }
@@ -959,12 +972,14 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
           @click=${(e: Event) => this._navigate('/dashboard', e)}
         >${msg('Dashboard')}</button>
         ${sep}
-        ${simName
-          ? html`
+        ${
+          simName
+            ? html`
               ${this._renderSimSwitcher(simName)}
               ${sep}
             `
-          : ''}
+            : ''
+        }
         <span class="breadcrumb__current">${viewLabel}</span>
       </nav>
     `;
@@ -980,61 +995,79 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
       <div class="shell">
         ${this._bleedStatus?.fracture_warning ? this._renderFractureBanner() : nothing}
         <velg-simulation-header .simulationId=${this.simulationId} ?introHexagon=${this._bureauNoticeVisible}></velg-simulation-header>
-        ${this._bureauNoticeVisible ? html`
+        ${
+          this._bureauNoticeVisible
+            ? html`
           <velg-bureau-notice
             @notice-dismiss=${this._dismissBureauNotice}
             @notice-open-dispatch=${this._openDispatchFromNotice}
           ></velg-bureau-notice>
-        ` : nothing}
+        `
+            : nothing
+        }
         ${this._renderBreadcrumb()}
         <velg-simulation-nav .simulationId=${this.simulationId}></velg-simulation-nav>
         <div class="shell__content shell__overlays">
-          ${hasBleeds
-            ? html`<velg-bleed-palimpsest-overlay
+          ${
+            hasBleeds
+              ? html`<velg-bleed-palimpsest-overlay
                 .bleedStatus=${this._bleedStatus}
                 .simulationId=${this.simulationId}
               ></velg-bleed-palimpsest-overlay>`
-            : nothing}
-          ${isCritical
-            ? html`<velg-entropy-overlay
+              : nothing
+          }
+          ${
+            isCritical
+              ? html`<velg-entropy-overlay
                 .active=${true}
                 .healthPercent=${Math.round((this._bleedStatus?.bleed_permeability ?? 0) * 100)}
                 .overallHealth=${this._bleedStatus?.overall_health ?? 0.5}
               ></velg-entropy-overlay>`
-            : nothing}
-          ${isAscendant
-            ? html`<velg-ascendancy-aura .active=${true}></velg-ascendancy-aura>`
-            : nothing}
+              : nothing
+          }
+          ${
+            isAscendant
+              ? html`<velg-ascendancy-aura .active=${true}></velg-ascendancy-aura>`
+              : nothing
+          }
           <slot></slot>
         </div>
       </div>
-      ${isCritical
-        ? html`
-            ${this._isEpoch
-              ? html`<velg-entropy-timer
+      ${
+        isCritical
+          ? html`
+            ${
+              this._isEpoch
+                ? html`<velg-entropy-timer
                   .cyclesRemaining=${this._bleedStatus?.entropy_cycles_remaining ?? null}
                 ></velg-entropy-timer>`
-              : nothing}
+                : nothing
+            }
             <velg-desperate-actions-panel
               .simulationId=${this.simulationId}
             ></velg-desperate-actions-panel>
           `
-        : nothing}
-      ${appState.canEdit.value ? html`
+          : nothing
+      }
+      ${
+        appState.canEdit.value
+          ? html`
         <velg-bureau-dispatch
           .simulationId=${this.simulationId}
           ?open=${this._dispatchOpen}
           @dispatch-close=${this._handleDispatchClose}
           @dispatch-navigate=${this._handleDispatchNavigate}
         ></velg-bureau-dispatch>
-      ` : nothing}
+      `
+          : nothing
+      }
     `;
   }
 
   private _renderFractureBanner() {
-    const bleeds = this._bleedStatus!.active_bleeds;
+    const bleeds = this._bleedStatus?.active_bleeds ?? [];
     const source = bleeds[0]?.source_simulation_name ?? '???';
-    const integrity = Math.round((1 - this._bleedStatus!.bleed_permeability) * 100);
+    const integrity = Math.round((1 - (this._bleedStatus?.bleed_permeability ?? 0)) * 100);
 
     return html`
       <div class="fracture-banner" role="alert" aria-live="assertive">

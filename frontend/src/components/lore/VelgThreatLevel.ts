@@ -104,9 +104,7 @@ export class VelgThreatLevel extends LitElement {
   @property({ type: Object }) threatLevel: ThreatLevel | null = null;
 
   private _handleClick(): void {
-    this.dispatchEvent(
-      new CustomEvent('navigate-to-zeta', { bubbles: true, composed: true }),
-    );
+    this.dispatchEvent(new CustomEvent('navigate-to-zeta', { bubbles: true, composed: true }));
   }
 
   protected render() {

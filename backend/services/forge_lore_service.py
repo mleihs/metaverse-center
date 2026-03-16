@@ -9,8 +9,8 @@ from uuid import UUID
 import sentry_sdk
 import structlog
 
-from backend.models.forge import ForgeLoreOutput, ForgeLoreTranslatedOutput
 from backend.config import settings
+from backend.models.forge import ForgeLoreOutput, ForgeLoreTranslatedOutput
 from backend.services.ai_utils import PYDANTIC_AI_MAX_TOKENS, create_forge_agent
 from supabase import Client
 
@@ -366,8 +366,8 @@ class ForgeLoreService:
                 for z in zones
             )
             lore_block = "\n".join(
-                f"  [{l['chapter']}] {l['title']}: {l.get('body', '')[:200]}..."
-                for l in existing_lore[:7]
+                f"  [{entry['chapter']}] {entry['title']}: {entry.get('body', '')[:200]}..."
+                for entry in existing_lore[:7]
             )
 
             # Fetch user's other simulations for cross-shard references
@@ -385,7 +385,8 @@ class ForgeLoreService:
                     f"specific adjacent realities. Weave natural cross-references.\n"
                 )
 
-            dossier_prompt = f"""You are the Bureau's Senior Classified Analyst producing an expanded intelligence dossier
+            dossier_prompt = f"""You are the Bureau's Senior Classified Analyst \
+producing an expanded intelligence dossier
 for the materialized shard "{sim['name']}".
 
 WORLD: {sim['name']}

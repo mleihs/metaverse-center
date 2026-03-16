@@ -52,7 +52,10 @@ async def upload_reference(
             if content_type not in ALLOWED_CONTENT_TYPES:
                 raise HTTPException(
                     status_code=400,
-                    detail=f"Unsupported file type: {content_type}. Allowed: {', '.join(sorted(ALLOWED_CONTENT_TYPES))}",
+                    detail=(
+                        f"Unsupported file type: {content_type}."
+                        f" Allowed: {', '.join(sorted(ALLOWED_CONTENT_TYPES))}"
+                    ),
                 )
             image_data = await file.read()
             if len(image_data) > MAX_FILE_SIZE:

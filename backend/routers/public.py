@@ -12,28 +12,17 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response,
 from backend.dependencies import get_anon_supabase
 from backend.middleware.rate_limit import RATE_LIMIT_STANDARD, limiter
 from backend.models.common import PaginatedResponse, PaginationMeta, SuccessResponse
-from backend.services.agent_service import AgentService
-from backend.services.bleed_gazette_service import BleedGazetteService
 from backend.services.agent_memory_service import AgentMemoryService
-from backend.services.chat_service import ChatService
-from backend.services.chronicle_service import ChronicleService
+from backend.services.agent_service import AgentService
 from backend.services.aptitude_service import AptitudeService
 from backend.services.battle_log_service import BattleLogService
+from backend.services.bleed_gazette_service import BleedGazetteService
 from backend.services.building_service import BuildingService
 from backend.services.cache_config import get_ttl
 from backend.services.campaign_service import CampaignService
+from backend.services.chat_service import ChatService
+from backend.services.chronicle_service import ChronicleService
 from backend.services.connection_service import ConnectionService
-from backend.services.echo_service import EchoService
-from backend.services.embassy_service import EmbassyService
-from backend.services.epoch_invitation_service import EpochInvitationService
-from backend.services.epoch_service import EpochService
-from backend.services.event_service import EventService
-from backend.services.forge_lore_service import ForgeLoreService
-from backend.services.forge_orchestrator_service import ForgeOrchestratorService
-from backend.services.resonance_service import ResonanceService
-from backend.services.game_mechanics_service import GameMechanicsService
-from backend.services.location_service import LocationService
-from backend.services.relationship_service import RelationshipService
 from backend.services.constants import (
     OPERATIVE_DEPLOY_CYCLES,
     OPERATIVE_MISSION_CYCLES,
@@ -41,6 +30,17 @@ from backend.services.constants import (
     OPERATIVE_TARGET_TYPE,
     OPERATIVE_TYPE_COLORS,
 )
+from backend.services.echo_service import EchoService
+from backend.services.embassy_service import EmbassyService
+from backend.services.epoch_invitation_service import EpochInvitationService
+from backend.services.epoch_service import EpochService
+from backend.services.event_service import EventService
+from backend.services.forge_lore_service import ForgeLoreService
+from backend.services.forge_orchestrator_service import ForgeOrchestratorService
+from backend.services.game_mechanics_service import GameMechanicsService
+from backend.services.location_service import LocationService
+from backend.services.relationship_service import RelationshipService
+from backend.services.resonance_service import ResonanceService
 from backend.services.scoring_service import ScoringService
 from backend.services.settings_service import SettingsService
 from backend.services.simulation_service import SimulationService

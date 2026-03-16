@@ -18,6 +18,7 @@ import { seoService } from '../../services/SeoService.js';
 import '../shared/EchartsChart.js';
 import '../shared/Lightbox.js';
 import { getDemoSteps } from './htp-content-demo.js';
+import type { ForgeStep } from './htp-content-features.js';
 import {
   getAgentChatGuideSteps,
   getAgentMemoryGuideSteps,
@@ -33,7 +34,6 @@ import {
   getSocialTrendsGuideSteps,
   getZoneDynamicsGuideSteps,
 } from './htp-content-features.js';
-import type { ForgeStep } from './htp-content-features.js';
 import { getMatches } from './htp-content-matches.js';
 import {
   getBalanceInsights,
@@ -124,109 +124,141 @@ export class VelgHowToPlay extends LitElement {
         {
           '@type': 'HowTo',
           name: 'How to Play metaverse.center',
-          description: 'Step-by-step guide to competitive epoch gameplay — operatives, scoring, alliances, and strategy.',
+          description:
+            'Step-by-step guide to competitive epoch gameplay — operatives, scoring, alliances, and strategy.',
           step: [
-            { '@type': 'HowToStep', position: 1, name: 'Create or join a simulation', text: 'Browse the dashboard for active simulations or create your own via the Simulation Forge.' },
-            { '@type': 'HowToStep', position: 2, name: 'Build your world', text: 'Add agents, buildings, events, and lore to populate your simulation.' },
-            { '@type': 'HowToStep', position: 3, name: 'Enter an Epoch', text: 'Join a competitive epoch to deploy operatives and compete against other simulations.' },
-            { '@type': 'HowToStep', position: 4, name: 'Deploy operatives', text: 'Choose from six operative types (Spy, Saboteur, Propagandist, Assassin, Guardian, Infiltrator) to attack or defend.' },
-            { '@type': 'HowToStep', position: 5, name: 'Form alliances', text: 'Team up with other players for diplomatic bonuses, but beware of betrayal.' },
-            { '@type': 'HowToStep', position: 6, name: 'Win the Epoch', text: 'Score across five dimensions — stability, influence, sovereignty, diplomatic, and military — to claim victory.' },
+            {
+              '@type': 'HowToStep',
+              position: 1,
+              name: 'Create or join a simulation',
+              text: 'Browse the dashboard for active simulations or create your own via the Simulation Forge.',
+            },
+            {
+              '@type': 'HowToStep',
+              position: 2,
+              name: 'Build your world',
+              text: 'Add agents, buildings, events, and lore to populate your simulation.',
+            },
+            {
+              '@type': 'HowToStep',
+              position: 3,
+              name: 'Enter an Epoch',
+              text: 'Join a competitive epoch to deploy operatives and compete against other simulations.',
+            },
+            {
+              '@type': 'HowToStep',
+              position: 4,
+              name: 'Deploy operatives',
+              text: 'Choose from six operative types (Spy, Saboteur, Propagandist, Assassin, Guardian, Infiltrator) to attack or defend.',
+            },
+            {
+              '@type': 'HowToStep',
+              position: 5,
+              name: 'Form alliances',
+              text: 'Team up with other players for diplomatic bonuses, but beware of betrayal.',
+            },
+            {
+              '@type': 'HowToStep',
+              position: 6,
+              name: 'Win the Epoch',
+              text: 'Score across five dimensions — stability, influence, sovereignty, diplomatic, and military — to claim victory.',
+            },
           ],
         },
         {
           '@type': 'FAQPage',
           mainEntity: [
-        {
-          '@type': 'Question',
-          name: 'What is an Epoch in metaverse.center?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'An Epoch is a competitive PvP match where simulation owners deploy operatives, form alliances, and compete across five scoring dimensions: stability, influence, sovereignty, diplomatic, and military.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'How does scoring work in Epochs?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Scores are computed each cycle across five dimensions derived from your simulation health, zone stability, building readiness, embassy effectiveness, and military operations. The composite score determines your final ranking.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'What are operatives and how do I deploy them?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Operatives are agents you deploy against rival simulations. There are six types: Spy (intelligence), Saboteur (building damage), Propagandist (event creation), Assassin (ambassador blocking), Guardian (defense), and Infiltrator (embassy weakening). Each costs Resource Points (RP) to deploy.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'Can I form alliances with other players?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Yes. Teams can be formed during an Epoch for shared diplomatic bonuses. However, betrayal is possible — attacking an ally dissolves the alliance and may incur score penalties if detected.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'What is the Bleed mechanic?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Bleed is the cross-simulation echo system. High-impact events can "bleed" through connections to other simulations, creating transformed echoes. Embassies and connection strength amplify bleed probability.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'How are game instances created for Epochs?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'When an Epoch starts, each participating template simulation is cloned into a balanced game instance with normalized agent counts, building conditions, and security levels. Templates remain untouched.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'What changed in the latest balance update?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Version 2.1 adds real game state effects to all 6 operative types: spies reveal target intel (zone security + guardian count), saboteurs downgrade zone security tiers, and guardians were rebalanced from -10%/guardian (cap 25%) to -8%/guardian (cap 20%). Scoring dimensions were activated: stability reacts to sabotage and assassination, influence rewards propaganda and espionage more, and diplomatic bonuses from alliances increased to +15%.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'How are game instances balanced for fair competition?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Game instances are normalized when an epoch starts: agents capped at 6, buildings at 8, all conditions set to good, capacities to 30, qualifications to 5, and zone security distributed as 1x high, 2x medium, 1x low. Embassies are auto-generated between all participants. This ensures every simulation starts on equal footing.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'What is the Multiverse Map?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'The Multiverse Map is an interactive force-directed graph that visualizes all simulations and their connections. During epochs, game instances orbit their template nodes with phase-colored rings. Click nodes for leaderboard data, edges for connection details, and use the battle feed ticker for real-time event updates.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'How do bot players work?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Bot players are AI opponents with five personality archetypes (Sentinel, Warlord, Diplomat, Strategist, Chaos) and three difficulty levels. They use the same deployment mechanics as humans, auto-draft based on personality, and can chat in template or LLM mode.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'Can I chat with agents in my simulation?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Yes. Agent Chat lets you have AI-generated conversations with any agent. Responses are shaped by the agent\u2019s personality, profession, and accumulated memories. The system retrieves relevant memories via semantic similarity, so agents reference past events and conversations.',
-          },
+            {
+              '@type': 'Question',
+              name: 'What is an Epoch in metaverse.center?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'An Epoch is a competitive PvP match where simulation owners deploy operatives, form alliances, and compete across five scoring dimensions: stability, influence, sovereignty, diplomatic, and military.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: 'How does scoring work in Epochs?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Scores are computed each cycle across five dimensions derived from your simulation health, zone stability, building readiness, embassy effectiveness, and military operations. The composite score determines your final ranking.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: 'What are operatives and how do I deploy them?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Operatives are agents you deploy against rival simulations. There are six types: Spy (intelligence), Saboteur (building damage), Propagandist (event creation), Assassin (ambassador blocking), Guardian (defense), and Infiltrator (embassy weakening). Each costs Resource Points (RP) to deploy.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: 'Can I form alliances with other players?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Yes. Teams can be formed during an Epoch for shared diplomatic bonuses. However, betrayal is possible — attacking an ally dissolves the alliance and may incur score penalties if detected.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: 'What is the Bleed mechanic?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Bleed is the cross-simulation echo system. High-impact events can "bleed" through connections to other simulations, creating transformed echoes. Embassies and connection strength amplify bleed probability.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: 'How are game instances created for Epochs?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'When an Epoch starts, each participating template simulation is cloned into a balanced game instance with normalized agent counts, building conditions, and security levels. Templates remain untouched.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: 'What changed in the latest balance update?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Version 2.1 adds real game state effects to all 6 operative types: spies reveal target intel (zone security + guardian count), saboteurs downgrade zone security tiers, and guardians were rebalanced from -10%/guardian (cap 25%) to -8%/guardian (cap 20%). Scoring dimensions were activated: stability reacts to sabotage and assassination, influence rewards propaganda and espionage more, and diplomatic bonuses from alliances increased to +15%.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: 'How are game instances balanced for fair competition?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Game instances are normalized when an epoch starts: agents capped at 6, buildings at 8, all conditions set to good, capacities to 30, qualifications to 5, and zone security distributed as 1x high, 2x medium, 1x low. Embassies are auto-generated between all participants. This ensures every simulation starts on equal footing.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: 'What is the Multiverse Map?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'The Multiverse Map is an interactive force-directed graph that visualizes all simulations and their connections. During epochs, game instances orbit their template nodes with phase-colored rings. Click nodes for leaderboard data, edges for connection details, and use the battle feed ticker for real-time event updates.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: 'How do bot players work?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Bot players are AI opponents with five personality archetypes (Sentinel, Warlord, Diplomat, Strategist, Chaos) and three difficulty levels. They use the same deployment mechanics as humans, auto-draft based on personality, and can chat in template or LLM mode.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: 'Can I chat with agents in my simulation?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Yes. Agent Chat lets you have AI-generated conversations with any agent. Responses are shaped by the agent\u2019s personality, profession, and accumulated memories. The system retrieves relevant memories via semantic similarity, so agents reference past events and conversations.',
+              },
+            },
+          ],
         },
       ],
-    }],
     });
   }
 

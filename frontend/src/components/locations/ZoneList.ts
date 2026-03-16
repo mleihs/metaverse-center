@@ -251,30 +251,34 @@ export class VelgZoneList extends LitElement {
 
     return html`
       <div class="item__overlays">
-        ${hasFortification && !isQuarantined
-          ? html`<span class="item__overlay-badge item__overlay-badge--fortified"
+        ${
+          hasFortification && !isQuarantined
+            ? html`<span class="item__overlay-badge item__overlay-badge--fortified"
               aria-label=${msg('Zone fortified')}
             >${msg('Fortified')}</span>`
-          : nothing
+            : nothing
         }
-        ${isQuarantined
-          ? html`<span class="item__overlay-badge item__overlay-badge--quarantine"
+        ${
+          isQuarantined
+            ? html`<span class="item__overlay-badge item__overlay-badge--quarantine"
               aria-label=${msg('Zone quarantined')}
             >${msg('Quarantined')}</span>`
-          : nothing
+            : nothing
         }
-        ${hasCascadeRisk
-          ? html`<span class="item__overlay-badge item__overlay-badge--cascade-risk"
+        ${
+          hasCascadeRisk
+            ? html`<span class="item__overlay-badge item__overlay-badge--cascade-risk"
               aria-label=${msg('Cascade risk: zone pressure exceeds threshold')}
             ><span class="item__cascade-dot"></span> ${msg('Cascade Risk')}</span>`
-          : nothing
+            : nothing
         }
       </div>
-      ${stability.total_pressure > 0
-        ? html`<div class="item__pressure-text">
+      ${
+        stability.total_pressure > 0
+          ? html`<div class="item__pressure-text">
             ${msg(str`Pressure: ${Math.round(stability.event_pressure * 100)}% targeted + ${Math.round(stability.ambient_pressure * 100)}% ambient${stability.fortification_reduction > 0 ? ` - ${Math.round(stability.fortification_reduction * 100)}% fortification` : ''}`)}
           </div>`
-        : nothing
+          : nothing
       }
     `;
   }
@@ -282,11 +286,10 @@ export class VelgZoneList extends LitElement {
   protected render() {
     return html`
       <div class="list">
-        ${this.zones.map(
-          (zone) => {
-            const stability = this.stabilityMap.get(zone.id);
-            const isQuarantined = stability?.is_quarantined ?? false;
-            return html`
+        ${this.zones.map((zone) => {
+          const stability = this.stabilityMap.get(zone.id);
+          const isQuarantined = stability?.is_quarantined ?? false;
+          return html`
             <div class="item ${isQuarantined ? 'item--quarantined' : ''}" role="button" tabindex="0" @click=${() => this._handleSelect(zone)} @keydown=${(
               e: KeyboardEvent,
             ) => {
@@ -324,8 +327,7 @@ export class VelgZoneList extends LitElement {
               ${this._renderOverlays(zone.id)}
             </div>
           `;
-          },
-        )}
+        })}
       </div>
     `;
   }

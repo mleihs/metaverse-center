@@ -8,9 +8,9 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { analyticsService } from '../../services/AnalyticsService.js';
 import { appState } from '../../services/AppStateManager.js';
-import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import type { TokenBundle } from '../../services/api/ForgeApiService.js';
 import { forgeApi } from '../../services/api/ForgeApiService.js';
+import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { forgeButtonStyles } from './forge-console-styles.js';
 
 @localized()
@@ -672,24 +672,20 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
         currency: 'VLG',
         items: receipt.bundle_slug,
       });
-      this._showToast(
-        `+${receipt.tokens_granted} ${msg('Forge Tokens')}`,
-        'success',
-      );
+      this._showToast(`+${receipt.tokens_granted} ${msg('Forge Tokens')}`, 'success');
       this._selectedSlug = null;
       void forgeStateManager.loadPurchaseHistory();
     } else {
-      this._showToast(
-        forgeStateManager.error.value ?? msg('Purchase failed'),
-        'error',
-      );
+      this._showToast(forgeStateManager.error.value ?? msg('Purchase failed'), 'error');
     }
   }
 
   private _showToast(message: string, type: 'success' | 'error'): void {
     if (this._toastTimer) clearTimeout(this._toastTimer);
     this._toast = { message, type };
-    this._toastTimer = setTimeout(() => { this._toast = null; }, 3000);
+    this._toastTimer = setTimeout(() => {
+      this._toast = null;
+    }, 3000);
   }
 
   private _toggleHistory(): void {
@@ -758,9 +754,11 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
         <span class="bundle__token-label">${bundle.tokens === 1 ? msg('Token') : msg('Tokens')}</span>
         <span class="bundle__name">${bundle.display_name}</span>
         <span class="bundle__price">${this._formatPrice(bundle.price_cents)}</span>
-        ${bundle.savings_pct > 0
-          ? html`<span class="bundle__savings">${msg('Save')} ${bundle.savings_pct}%</span>`
-          : nothing}
+        ${
+          bundle.savings_pct > 0
+            ? html`<span class="bundle__savings">${msg('Save')} ${bundle.savings_pct}%</span>`
+            : nothing
+        }
       </div>
     `;
   }
@@ -779,11 +777,13 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
           ${msg('Purchase History')}
         </button>
 
-        ${this._historyOpen
-          ? html`
-            ${history.length === 0
-              ? html`<p class="mint__history-empty">${msg('No purchases yet')}</p>`
-              : html`
+        ${
+          this._historyOpen
+            ? html`
+            ${
+              history.length === 0
+                ? html`<p class="mint__history-empty">${msg('No purchases yet')}</p>`
+                : html`
                 <ul class="mint__history-list">
                   ${history.map(
                     (p) => html`
@@ -795,9 +795,11 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
                     `,
                   )}
                 </ul>
-              `}
+              `
+            }
           `
-          : nothing}
+            : nothing
+        }
       </div>
     `;
   }
@@ -816,7 +818,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
           <label class="mint__key-label">
             OpenRouter
             <span class="mint__key-status ${byok.has_openrouter_key ? 'mint__key-status--set' : 'mint__key-status--unset'}">
-              ${byok.has_openrouter_key ? '\u2713 ' + msg('configured') : '\u2717 ' + msg('not set')}
+              ${byok.has_openrouter_key ? `\u2713 ${msg('configured')}` : `\u2717 ${msg('not set')}`}
             </span>
           </label>
           <input
@@ -824,7 +826,9 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
             class="mint__key-input"
             placeholder="sk-or-v1-..."
             .value=${this._orKey}
-            @input=${(e: InputEvent) => { this._orKey = (e.target as HTMLInputElement).value; }}
+            @input=${(e: InputEvent) => {
+              this._orKey = (e.target as HTMLInputElement).value;
+            }}
           />
         </div>
 
@@ -832,7 +836,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
           <label class="mint__key-label">
             Replicate
             <span class="mint__key-status ${byok.has_replicate_key ? 'mint__key-status--set' : 'mint__key-status--unset'}">
-              ${byok.has_replicate_key ? '\u2713 ' + msg('configured') : '\u2717 ' + msg('not set')}
+              ${byok.has_replicate_key ? `\u2713 ${msg('configured')}` : `\u2717 ${msg('not set')}`}
             </span>
           </label>
           <input
@@ -840,7 +844,9 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
             class="mint__key-input"
             placeholder="r8_..."
             .value=${this._repKey}
-            @input=${(e: InputEvent) => { this._repKey = (e.target as HTMLInputElement).value; }}
+            @input=${(e: InputEvent) => {
+              this._repKey = (e.target as HTMLInputElement).value;
+            }}
           />
         </div>
 
@@ -853,9 +859,11 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
             ${this._isSavingKeys ? msg('Saving...') : msg('Save Keys')}
           </button>
           <span class="mint__keys-hint">
-            ${byok.has_openrouter_key && byok.has_replicate_key
-              ? msg('Both keys configured — enter new values to update.')
-              : msg('Set both keys to enable BYOK access.')}
+            ${
+              byok.has_openrouter_key && byok.has_replicate_key
+                ? msg('Both keys configured — enter new values to update.')
+                : msg('Set both keys to enable BYOK access.')
+            }
           </span>
         </div>
       </div>
@@ -883,9 +891,10 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
         <div class="mint__header">
           <h2 class="mint__title" id="mint-title">${msg('The Mint')}</h2>
           <div class="mint__balance">
-            ${byok.effective_bypass
-              ? html`<span>&#x1F511; BYOK</span>`
-              : html`
+            ${
+              byok.effective_bypass
+                ? html`<span>&#x1F511; BYOK</span>`
+                : html`
                   <span class="mint__balance-icon" aria-hidden="true">&#x2B23;</span>
                   <span role="status" aria-live="polite">${balance}</span>
                 `
@@ -899,8 +908,9 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
         </div>
 
         <div class="mint__body">
-          ${byok.effective_bypass
-            ? html`
+          ${
+            byok.effective_bypass
+              ? html`
               <div class="mint__byok-banner">
                 <div class="mint__byok-title">${msg('CLEARANCE: UNLIMITED')}</div>
                 <div class="mint__byok-subtitle">${msg('Your Bureau-issued keys grant unrestricted materialization access.')}</div>
@@ -914,15 +924,16 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
                 </div>
               </div>
             `
-            : html`
+              : html`
               <div class="mint__grid" role="radiogroup" aria-label=${msg('Token bundles')}>
                 ${bundles.map((b) => this._renderBundle(b))}
               </div>
             `
           }
 
-          ${!byok.effective_bypass && (byok.has_openrouter_key || byok.has_replicate_key)
-            ? html`
+          ${
+            !byok.effective_bypass && (byok.has_openrouter_key || byok.has_replicate_key)
+              ? html`
               <div class="mint__callout" style="margin-bottom: var(--space-4, 16px)">
                 ${msg('Configure both API keys to enable unlimited access.')}
                 <div class="mint__byok-keys" style="margin-top: var(--space-2, 8px)">
@@ -935,11 +946,12 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
                 </div>
               </div>
             `
-            : nothing
+              : nothing
           }
 
-          ${selectedBundle
-            ? html`
+          ${
+            selectedBundle
+              ? html`
               <div class="mint__purchase">
                 <p class="mint__purchase-info">
                   ${msg('Add')} ${selectedBundle.tokens} ${msg('Forge Tokens')} ${msg('for')} ${this._formatPrice(selectedBundle.price_cents)}
@@ -954,24 +966,29 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
                 </button>
               </div>
             `
-            : nothing}
+              : nothing
+          }
 
-          ${showCallout
-            ? html`<p class="mint__callout">${msg('Your first shard is free with Architect access')}</p>`
-            : nothing}
+          ${
+            showCallout
+              ? html`<p class="mint__callout">${msg('Your first shard is free with Architect access')}</p>`
+              : nothing
+          }
 
           ${byok.byok_allowed ? this._renderKeyManagement() : nothing}
 
           ${this._renderHistory()}
         </div>
 
-        ${this._toast
-          ? html`
+        ${
+          this._toast
+            ? html`
             <div class="mint__toast mint__toast--${this._toast.type}" role="alert">
               ${this._toast.message}
             </div>
           `
-          : nothing}
+            : nothing
+        }
       </div>
     `;
   }

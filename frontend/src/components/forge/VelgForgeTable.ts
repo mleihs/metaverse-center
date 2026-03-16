@@ -8,6 +8,7 @@ import type {
   ForgeDraft,
 } from '../../services/api/ForgeApiService.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
+import { t } from '../../utils/locale-fields.js';
 import { VelgToast } from '../shared/Toast.js';
 import {
   forgeBackButtonStyles,
@@ -17,7 +18,6 @@ import {
   forgeSectionStyles,
   forgeStatusStyles,
 } from './forge-console-styles.js';
-import { t } from '../../utils/locale-fields.js';
 import { getBuildingSet, getOperativeSet } from './forge-placeholders.js';
 import { fanRotation, renderInfoBubble } from './forge-utils.js';
 
@@ -763,7 +763,7 @@ export class VelgForgeTable extends LitElement {
           const seed = draft.seed_prompt ?? draft.id;
           const cfg = forgeStateManager.generationConfig.value;
           this._agentImages = getOperativeSet(cfg.agent_count, seed);
-          this._buildingImages = getBuildingSet(cfg.building_count, seed + '_bld');
+          this._buildingImages = getBuildingSet(cfg.building_count, `${seed}_bld`);
         }
       }),
       effect(() => {
@@ -939,7 +939,7 @@ export class VelgForgeTable extends LitElement {
     const buildings = this._draft.buildings;
     const genConfig = forgeStateManager.generationConfig.value;
 
-    const hasGeo = !!(geo?.zones?.length);
+    const hasGeo = !!geo?.zones?.length;
     const hasAgents = agents.length > 0;
     const hasBuildings = buildings.length > 0;
     const allComplete = hasGeo && hasAgents && hasBuildings;
@@ -956,12 +956,18 @@ export class VelgForgeTable extends LitElement {
       <div class="command-console">
         ${this._renderCommandPanel({
           division: msg('Cartographic Division'),
-          description: msg('Survey dimensional topology and chart transit corridors from your seed vision.'),
+          description: msg(
+            'Survey dimensional topology and chart transit corridors from your seed vision.',
+          ),
           actionLabel: msg('Initiate Survey'),
           regenLabel: msg('Re-scan'),
           stampLabel: msg('Surveyed'),
-          infoText: msg('Surveys dimensional topology and charts transit corridors based on your seed vision.'),
-          infoExample: msg('Generates 5 zones and 5 streets with unique names and characteristics.'),
+          infoText: msg(
+            'Surveys dimensional topology and charts transit corridors based on your seed vision.',
+          ),
+          infoExample: msg(
+            'Generates 5 zones and 5 streets with unique names and characteristics.',
+          ),
           isComplete: hasGeo,
           isActive: this._generatingChunk === 'geography',
           isGenerating: this._isGenerating,
@@ -969,11 +975,15 @@ export class VelgForgeTable extends LitElement {
         })}
         ${this._renderCommandPanel({
           division: msg('Personnel Bureau'),
-          description: msg('Recruit operative candidates — AI-generated characters with names, professions, and backstories.'),
+          description: msg(
+            'Recruit operative candidates — AI-generated characters with names, professions, and backstories.',
+          ),
           actionLabel: msg('Begin Recruitment'),
           regenLabel: msg('Re-draft'),
           stampLabel: msg('Recruited'),
-          infoText: msg('Recruits operative candidates — AI-generated characters with names, professions, and backstories.'),
+          infoText: msg(
+            'Recruits operative candidates — AI-generated characters with names, professions, and backstories.',
+          ),
           infoExample: msg('Drafts 6 agents that appear in your staging hand for review.'),
           isComplete: hasAgents,
           isActive: this._generatingChunk === 'agents',
@@ -982,11 +992,11 @@ export class VelgForgeTable extends LitElement {
         })}
         ${this._renderCommandPanel({
           division: msg('Infrastructure Corps'),
-          description: msg('Engineer structural blueprints for the simulation\'s key locations.'),
+          description: msg("Engineer structural blueprints for the simulation's key locations."),
           actionLabel: msg('Draft Blueprints'),
           regenLabel: msg('Re-draft'),
           stampLabel: msg('Blueprinted'),
-          infoText: msg('Engineers structural blueprints for the simulation\'s key locations.'),
+          infoText: msg("Engineers structural blueprints for the simulation's key locations."),
           infoExample: msg('Creates 7 buildings with types, descriptions, and zone assignments.'),
           isComplete: hasBuildings,
           isActive: this._generatingChunk === 'buildings',
@@ -1011,8 +1021,9 @@ export class VelgForgeTable extends LitElement {
           </span>
         </h2>
 
-        ${geo?.zones?.length
-          ? html`
+        ${
+          geo?.zones?.length
+            ? html`
           <div class="geo-grid section-reveal">
             ${geo.zones.map(
               (z) => html`
@@ -1029,8 +1040,9 @@ export class VelgForgeTable extends LitElement {
             )}
           </div>
 
-          ${geo.streets?.length
-            ? html`
+          ${
+            geo.streets?.length
+              ? html`
             <h2 class="section-title">${msg('Transit Arteries')}</h2>
             <div class="geo-grid section-reveal">
               ${geo.streets.map(
@@ -1047,12 +1059,18 @@ export class VelgForgeTable extends LitElement {
               `,
               )}
             </div>
-          ` : nothing}
-        ` : html`
+          `
+              : nothing
+          }
+        `
+            : html`
           <div class="section-empty">${msg('Awaiting cartographic survey...')}</div>
-        `}
+        `
+        }
 
-        ${this._generatingChunk === 'geography' ? html`
+        ${
+          this._generatingChunk === 'geography'
+            ? html`
           <velg-forge-scan-overlay
             active
             .phases=${[msg('Surveying Dimensional Topology'), msg('Plotting Zone Boundaries'), msg('Charting Transit Corridors'), msg('Mapping Cartographic Anomalies'), msg('Crystallizing City Grid')]}
@@ -1060,7 +1078,9 @@ export class VelgForgeTable extends LitElement {
             headerLabel=${msg('Dimensional Cartography Division')}
             .echoText=${this._draft?.seed_prompt ?? ''}
           ></velg-forge-scan-overlay>
-        ` : nothing}
+        `
+            : nothing
+        }
       </div>
 
       <!-- Operative Roster -->
@@ -1143,14 +1163,18 @@ export class VelgForgeTable extends LitElement {
             : nothing
         }
 
-        ${this._generatingChunk === 'agents' ? html`
+        ${
+          this._generatingChunk === 'agents'
+            ? html`
           <velg-forge-scan-overlay
             active
             .phases=${[msg('Scanning Personnel Archives'), msg('Profiling Operative Candidates'), msg('Cross-Referencing Dossier Files'), msg('Analyzing Psychological Matrices'), msg('Assembling Operative Roster')]}
             .lockLabels=${[msg('Psych'), msg('Skills'), msg('Cover')]}
             headerLabel=${msg('Bureau Personnel Division')}
           ></velg-forge-scan-overlay>
-        ` : nothing}
+        `
+            : nothing
+        }
       </div>
 
       <!-- Architectural Footprint -->
@@ -1233,14 +1257,18 @@ export class VelgForgeTable extends LitElement {
             : nothing
         }
 
-        ${this._generatingChunk === 'buildings' ? html`
+        ${
+          this._generatingChunk === 'buildings'
+            ? html`
           <velg-forge-scan-overlay
             active
             .phases=${[msg('Analyzing Structural Foundations'), msg('Drafting Architectural Blueprints'), msg('Calculating Load-Bearing Vectors'), msg('Simulating Infrastructure Networks'), msg('Materializing Structural Footprint')]}
             .lockLabels=${[msg('Base'), msg('Frame'), msg('Roof')]}
             headerLabel=${msg('Infrastructure Engineering Corps')}
           ></velg-forge-scan-overlay>
-        ` : nothing}
+        `
+            : nothing
+        }
       </div>
 
       ${this._renderDossierPanel()}
@@ -1307,9 +1335,11 @@ export class VelgForgeTable extends LitElement {
         >
           ${buttonLabel}
         </button>
-        ${opts.isComplete && !opts.isActive
-          ? html`<div class="command-panel__stamp">\u2713 ${opts.stampLabel}</div>`
-          : nothing}
+        ${
+          opts.isComplete && !opts.isActive
+            ? html`<div class="command-panel__stamp">\u2713 ${opts.stampLabel}</div>`
+            : nothing
+        }
       </div>
     `;
   }
@@ -1318,11 +1348,7 @@ export class VelgForgeTable extends LitElement {
     const entity = this._getEditingEntity();
     const editing = this._editingEntity;
     const isAgent = editing?.type === 'agent';
-    const panelTitle = entity
-      ? isAgent
-        ? msg('Agent Dossier')
-        : msg('Building Dossier')
-      : '';
+    const panelTitle = entity ? (isAgent ? msg('Agent Dossier') : msg('Building Dossier')) : '';
 
     return html`
       <velg-side-panel
@@ -1330,7 +1356,9 @@ export class VelgForgeTable extends LitElement {
         .panelTitle=${panelTitle}
         @panel-close=${() => (this._editingEntity = null)}
       >
-        ${entity && editing ? html`
+        ${
+          entity && editing
+            ? html`
           <div slot="content" class="dossier-panel">
             <div class="dossier-panel__preview">
               <velg-game-card
@@ -1357,12 +1385,13 @@ export class VelgForgeTable extends LitElement {
             <textarea
               class="field__textarea"
               .value=${isAgent ? (entity as ForgeAgentDraft).character : (entity as ForgeBuildingDraft).description}
-              @input=${(e: Event) => this._updateEntity(
-                editing.type,
-                editing.index,
-                isAgent ? 'character' : 'description',
-                (e.target as HTMLTextAreaElement).value,
-              )}
+              @input=${(e: Event) =>
+                this._updateEntity(
+                  editing.type,
+                  editing.index,
+                  isAgent ? 'character' : 'description',
+                  (e.target as HTMLTextAreaElement).value,
+                )}
             ></textarea>
 
             <span class="dossier-panel__section-label">${msg('AI Mutation')}</span>
@@ -1378,7 +1407,9 @@ export class VelgForgeTable extends LitElement {
               ${msg('Mutate Entity')}
             </button>
           </div>
-        ` : nothing}
+        `
+            : nothing
+        }
       </velg-side-panel>
     `;
   }

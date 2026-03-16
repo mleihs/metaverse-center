@@ -286,26 +286,50 @@ export class VelgCommandPalette extends SignalWatcher(LitElement) {
       { id: 'map', label: msg('Map'), category: 'navigate', hint: 'G M', path: '/multiverse' },
       { id: 'epoch', label: msg('Epoch'), category: 'navigate', hint: 'G E', path: '/epoch' },
       { id: 'guide', label: msg('Guide'), category: 'navigate', hint: 'G G', path: '/how-to-play' },
-      { id: 'archives', label: msg('Archives'), category: 'navigate', hint: 'G A', path: '/archives' },
-      { id: 'dashboard', label: msg('Dashboard'), category: 'navigate', hint: 'G D', path: '/dashboard' },
       {
-        id: 'forge', label: msg('Forge'), category: 'navigate', hint: 'G F', path: '/forge',
+        id: 'archives',
+        label: msg('Archives'),
+        category: 'navigate',
+        hint: 'G A',
+        path: '/archives',
+      },
+      {
+        id: 'dashboard',
+        label: msg('Dashboard'),
+        category: 'navigate',
+        hint: 'G D',
+        path: '/dashboard',
+      },
+      {
+        id: 'forge',
+        label: msg('Forge'),
+        category: 'navigate',
+        hint: 'G F',
+        path: '/forge',
         hidden: !appState.canForge.value,
       },
       {
-        id: 'admin', label: msg('Admin'), category: 'navigate', hint: 'G X', path: '/admin',
+        id: 'admin',
+        label: msg('Admin'),
+        category: 'navigate',
+        hint: 'G X',
+        path: '/admin',
         hidden: !appState.isPlatformAdmin.value,
       },
       ...this._simItems,
       {
-        id: 'locale', label: msg('Toggle Language'), category: 'tools',
+        id: 'locale',
+        label: msg('Toggle Language'),
+        category: 'tools',
         action: () => {
           const next = localeService.currentLocale === 'en' ? 'de' : 'en';
           localeService.setLocale(next);
         },
       },
       {
-        id: 'github', label: msg('GitHub Repository'), category: 'tools',
+        id: 'github',
+        label: msg('GitHub Repository'),
+        category: 'tools',
         action: () => window.open('https://github.com/mleihs/velgarien-rebuild', '_blank'),
       },
     ];
@@ -335,12 +359,10 @@ export class VelgCommandPalette extends SignalWatcher(LitElement) {
 
   private get _groupedItems(): Array<{ category: string; items: PaletteItem[] }> {
     const filtered = this._filteredItems;
-    return CATEGORY_ORDER
-      .map((cat) => ({
-        category: cat,
-        items: filtered.filter((i) => i.category === cat),
-      }))
-      .filter((g) => g.items.length > 0);
+    return CATEGORY_ORDER.map((cat) => ({
+      category: cat,
+      items: filtered.filter((i) => i.category === cat),
+    })).filter((g) => g.items.length > 0);
   }
 
   private get _flatItems(): PaletteItem[] {
@@ -397,9 +419,7 @@ export class VelgCommandPalette extends SignalWatcher(LitElement) {
   }
 
   private _requestClose(): void {
-    this.dispatchEvent(
-      new CustomEvent('command-palette-close', { bubbles: true, composed: true }),
-    );
+    this.dispatchEvent(new CustomEvent('command-palette-close', { bubbles: true, composed: true }));
   }
 
   // ── Render ──
@@ -434,18 +454,19 @@ export class VelgCommandPalette extends SignalWatcher(LitElement) {
               role="combobox"
               aria-expanded="true"
               aria-controls="palette-results"
-              aria-activedescendant=${flat[this._focusIndex]
-                ? `palette-item-${flat[this._focusIndex].id}`
-                : ''}
+              aria-activedescendant=${
+                flat[this._focusIndex] ? `palette-item-${flat[this._focusIndex].id}` : ''
+              }
             />
             <span class="search__shortcut">ESC</span>
           </div>
 
           <div class="results" id="palette-results" role="listbox">
-            ${groups.length === 0
-              ? html`<div class="empty">${msg('No results')}</div>`
-              : groups.map(
-                  (group) => html`
+            ${
+              groups.length === 0
+                ? html`<div class="empty">${msg('No results')}</div>`
+                : groups.map(
+                    (group) => html`
                     <div class="category-label">${CATEGORY_LABELS[group.category] ?? group.category}</div>
                     ${group.items.map((item) => {
                       const idx = globalIdx++;
@@ -458,7 +479,9 @@ export class VelgCommandPalette extends SignalWatcher(LitElement) {
                           role="option"
                           aria-selected=${focused}
                           @click=${() => this._selectItem(item)}
-                          @mouseenter=${() => { this._focusIndex = idx; }}
+                          @mouseenter=${() => {
+                            this._focusIndex = idx;
+                          }}
                         >
                           <span class="item__label">${item.label}</span>
                           ${item.hint ? html`<span class="item__hint">${item.hint}</span>` : nothing}
@@ -466,7 +489,8 @@ export class VelgCommandPalette extends SignalWatcher(LitElement) {
                       `;
                     })}
                   `,
-                )}
+                  )
+            }
           </div>
 
           <div class="footer">

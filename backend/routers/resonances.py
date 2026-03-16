@@ -7,7 +7,7 @@ All authenticated users can read them.
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query
 
 from backend.dependencies import (
     CurrentUser,
@@ -23,7 +23,6 @@ from backend.models.resonance import (
     ResonanceResponse,
     ResonanceUpdate,
 )
-from backend.services.audit_service import AuditService
 from backend.services.resonance_service import ResonanceService
 from supabase import Client
 

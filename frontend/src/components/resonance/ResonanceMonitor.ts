@@ -2,11 +2,10 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-
-import type { Resonance, ResonanceSignature } from '../../types/index.js';
-import { resonanceApi } from '../../services/api/index.js';
-import { icons } from '../../utils/icons.js';
 import { appState } from '../../services/AppStateManager.js';
+import { resonanceApi } from '../../services/api/index.js';
+import type { Resonance, ResonanceSignature } from '../../types/index.js';
+import { icons } from '../../utils/icons.js';
 import './ResonanceCard.js';
 import './ResonanceDetailsPanel.js';
 
@@ -482,13 +481,15 @@ export class ResonanceMonitor extends LitElement {
 
         <!-- Content -->
         <div class="timeline">
-          ${this._loading
-            ? this._renderLoading()
-            : this._error
-              ? this._renderError()
-              : this._filteredResonances.length === 0
-                ? this._renderEmpty()
-                : this._renderCards()}
+          ${
+            this._loading
+              ? this._renderLoading()
+              : this._error
+                ? this._renderError()
+                : this._filteredResonances.length === 0
+                  ? this._renderEmpty()
+                  : this._renderCards()
+          }
         </div>
       </div>
 
@@ -496,9 +497,11 @@ export class ResonanceMonitor extends LitElement {
         .resonance=${this._selectedResonance}
         ?open=${this._showDetails}
         .totalEntities=${this._filteredResonances.length}
-        .currentIndex=${this._selectedResonance
-          ? this._filteredResonances.findIndex((r) => r.id === this._selectedResonance!.id)
-          : 0}
+        .currentIndex=${
+          this._selectedResonance
+            ? this._filteredResonances.findIndex((r) => r.id === this._selectedResonance?.id)
+            : 0
+        }
         @panel-close=${this._handleDetailsPanelClose}
         @lightbox-prev=${this._handleLightboxPrev}
         @lightbox-next=${this._handleLightboxNext}
@@ -563,7 +566,10 @@ export class ResonanceMonitor extends LitElement {
     return html`
       <div class="error-state">
         <p class="error-text">${this._error}</p>
-        <button class="retry-btn" @click=${() => { this._loading = true; this._loadData(); }}>
+        <button class="retry-btn" @click=${() => {
+          this._loading = true;
+          this._loadData();
+        }}>
           ${msg('Retry')}
         </button>
       </div>

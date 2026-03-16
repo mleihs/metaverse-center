@@ -7,7 +7,9 @@ import type { LoreSection } from '../platform/LoreScroll.js';
  * Fetch raw lore sections from the API (all language fields).
  * Falls back to null if the API call fails or returns empty.
  */
-export async function fetchRawLoreSections(simulationId: string): Promise<ForgeLoreSection[] | null> {
+export async function fetchRawLoreSections(
+  simulationId: string,
+): Promise<ForgeLoreSection[] | null> {
   try {
     const resp = await forgeApi.getSimulationLore(simulationId);
     if (!resp.success || !resp.data || !Array.isArray(resp.data) || resp.data.length === 0) {
@@ -60,7 +62,10 @@ export function parseAgentIntel(betaBody: string, agentName: string): AgentIntel
   const block = match[1];
 
   const getField = (label: string): string => {
-    const fieldRegex = new RegExp(`${label}:\\s*(.+?)(?=\\n(?:RISK ASSESSMENT|HIDDEN MOTIVATION|SURVEILLANCE NOTES|CROSS-REFERENCES|BUREAU ANNOTATION|=== END)|$)`, 'is');
+    const fieldRegex = new RegExp(
+      `${label}:\\s*(.+?)(?=\\n(?:RISK ASSESSMENT|HIDDEN MOTIVATION|SURVEILLANCE NOTES|CROSS-REFERENCES|BUREAU ANNOTATION|=== END)|$)`,
+      'is',
+    );
     const m = block.match(fieldRegex);
     return m ? m[1].trim() : '';
   };
@@ -85,9 +90,7 @@ export function parseAgentIntel(betaBody: string, agentName: string): AgentIntel
 export function parseAllAgentIntel(betaBody: string): AgentIntelData[] {
   const entries: AgentIntelData[] = [];
   const blockRegex = /=== AGENT:\s*(.+?)\s*===([\s\S]*?)=== END AGENT ===/gi;
-  let match: RegExpExecArray | null;
-
-  while ((match = blockRegex.exec(betaBody)) !== null) {
+  for (const match of betaBody.matchAll(blockRegex)) {
     const name = match[1].trim();
     const intel = parseAgentIntel(betaBody, name);
     if (intel) entries.push(intel);

@@ -1,9 +1,4 @@
-import type {
-  ApiResponse,
-  Resonance,
-  ResonanceImpact,
-  SourceCategory,
-} from '../../types/index.js';
+import type { ApiResponse, Resonance, ResonanceImpact, SourceCategory } from '../../types/index.js';
 import { appState } from '../AppStateManager.js';
 import { BaseApiService } from './BaseApiService.js';
 
@@ -46,10 +41,7 @@ export class ResonanceApiService extends BaseApiService {
   /**
    * Update an existing resonance (platform admin only).
    */
-  update(
-    resonanceId: string,
-    data: Partial<Resonance>,
-  ): Promise<ApiResponse<Resonance>> {
+  update(resonanceId: string, data: Partial<Resonance>): Promise<ApiResponse<Resonance>> {
     return this.put(`/resonances/${resonanceId}`, data);
   }
 
@@ -80,10 +72,7 @@ export class ResonanceApiService extends BaseApiService {
   /**
    * Update resonance status (platform admin only).
    */
-  updateStatus(
-    resonanceId: string,
-    newStatus: string,
-  ): Promise<ApiResponse<Resonance>> {
+  updateStatus(resonanceId: string, newStatus: string): Promise<ApiResponse<Resonance>> {
     return this.put(`/resonances/${resonanceId}/status?new_status=${newStatus}`, {});
   }
 

@@ -369,7 +369,9 @@ export class VelgForgeAccessModal extends LitElement {
             maxlength="500"
             placeholder=${msg('Tell us why you want to create worlds...')}
             .value=${this._message}
-            @input=${(e: Event) => { this._message = (e.target as HTMLTextAreaElement).value; }}
+            @input=${(e: Event) => {
+              this._message = (e.target as HTMLTextAreaElement).value;
+            }}
           ></textarea>
           <div class="char-count ${this._message.length > 0 ? 'char-count--active' : ''}">${this._message.length}/500</div>
         </div>

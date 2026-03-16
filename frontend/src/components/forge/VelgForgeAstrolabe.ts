@@ -4,6 +4,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import type { PhilosophicalAnchor } from '../../services/api/ForgeApiService.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
+import { t } from '../../utils/locale-fields.js';
 import {
   forgeButtonStyles,
   forgeFieldStyles,
@@ -11,7 +12,6 @@ import {
   forgeRangeStyles,
   forgeStatusStyles,
 } from './forge-console-styles.js';
-import { t } from '../../utils/locale-fields.js';
 import { fanRotation, renderInfoBubble } from './forge-utils.js';
 
 import './VelgForgeScanOverlay.js';
@@ -704,8 +704,12 @@ export class VelgForgeAstrolabe extends LitElement {
           <div class="seed-box__footer">
             <span class="seed-box__lang-hint">
               ${this._renderInfoBubble(
-                msg('Write in any language — the AI interprets your concept regardless of language. Focus on atmosphere, themes, and contradictions.'),
-                msg('Ein schwimmender Archipel, wo Erinnerungen zu Inseln erstarren — works just as well as English.'),
+                msg(
+                  'Write in any language — the AI interprets your concept regardless of language. Focus on atmosphere, themes, and contradictions.',
+                ),
+                msg(
+                  'Ein schwimmender Archipel, wo Erinnerungen zu Inseln erstarren — works just as well as English.',
+                ),
               )}
               <span>${msg('Any language')}</span>
             </span>

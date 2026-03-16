@@ -18,10 +18,10 @@ import { epochsApi } from '../../services/api/EpochsApiService.js';
 import type { EpochScoreWeights } from '../../types/index.js';
 import '../shared/BaseModal.js';
 import { computePhaseCycles, DEFAULT_RECKONING_CYCLES } from '../../utils/epoch.js';
+import { icons } from '../../utils/icons.js';
 import { formStyles } from '../shared/form-styles.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
-import { icons } from '../../utils/icons.js';
 
 type FormatPresetId = 'blitz' | 'sprint' | 'standard' | 'marathon' | 'custom';
 
@@ -1186,9 +1186,11 @@ export class VelgEpochCreationWizard extends LitElement {
                   ${p.icon ? html`<span class="format-card__icon">${p.icon}</span>` : nothing}
                   <span class="format-card__label">${p.label}</span>
                 </div>
-                ${p.duration_days != null
-                  ? html`<span class="format-card__stats">${p.duration_days}d · ${p.cycle_hours}h</span>`
-                  : nothing}
+                ${
+                  p.duration_days != null
+                    ? html`<span class="format-card__stats">${p.duration_days}d · ${p.cycle_hours}h</span>`
+                    : nothing
+                }
                 <span class="format-card__desc">${p.description}</span>
               </button>
             `,

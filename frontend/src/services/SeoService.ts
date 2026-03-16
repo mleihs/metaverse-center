@@ -98,12 +98,7 @@ class SeoService {
   }
 
   /** Set CreativeWork structured data (lore, simulation profiles). */
-  setCreativeWork(data: {
-    name: string;
-    description: string;
-    url: string;
-    image?: string;
-  }): void {
+  setCreativeWork(data: { name: string; description: string; url: string; image?: string }): void {
     this.setStructuredData({
       '@context': 'https://schema.org',
       '@type': 'CreativeWork',

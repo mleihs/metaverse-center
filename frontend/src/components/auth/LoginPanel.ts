@@ -2,13 +2,13 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { authService } from '../../services/supabase/SupabaseAuthService.js';
+import { icons } from '../../utils/icons.js';
 import {
   terminalAnimations,
   terminalFormStyles,
   terminalOAuthStyles,
   terminalTokens,
 } from '../shared/terminal-theme-styles.js';
-import { icons } from '../../utils/icons.js';
 
 import '../shared/VelgSidePanel.js';
 

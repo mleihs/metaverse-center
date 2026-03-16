@@ -59,9 +59,7 @@ export class VelgCaseFile extends LitElement {
     this._entityMap = map;
 
     // Build regex from names, sorted longest-first to avoid partial matches
-    const names = [...map.keys()]
-      .filter((n) => n.length > 2)
-      .sort((a, b) => b.length - a.length);
+    const names = [...map.keys()].filter((n) => n.length > 2).sort((a, b) => b.length - a.length);
 
     if (names.length > 0) {
       const escaped = names.map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
@@ -161,12 +159,16 @@ export class VelgCaseFile extends LitElement {
     return html`
       <div class="panel__arcanum-label">${msg('ARCANUM')} ${section.arcanum}</div>
       <h4 class="panel__title">${section.title}</h4>
-      ${section.epigraph
-        ? html`<blockquote class="panel__epigraph">${section.epigraph}</blockquote>`
-        : nothing}
-      ${isEpsilon
-        ? this._renderFragments(section.body)
-        : html`<div class="panel__body">${this._renderBodyWithTags(section.body)}</div>`}
+      ${
+        section.epigraph
+          ? html`<blockquote class="panel__epigraph">${section.epigraph}</blockquote>`
+          : nothing
+      }
+      ${
+        isEpsilon
+          ? this._renderFragments(section.body)
+          : html`<div class="panel__body">${this._renderBodyWithTags(section.body)}</div>`
+      }
     `;
   }
 
@@ -187,9 +189,7 @@ export class VelgCaseFile extends LitElement {
 
     // Split body into paragraphs, then tag entities within each
     const paragraphs = body.split(/\n\n+/);
-    return paragraphs.map(
-      (para) => html`<p>${this._tagEntitiesInText(para)}</p>`,
-    );
+    return paragraphs.map((para) => html`<p>${this._tagEntitiesInText(para)}</p>`);
   }
 
   private _tagEntitiesInText(text: string): Array<ReturnType<typeof html> | string> {
@@ -198,9 +198,8 @@ export class VelgCaseFile extends LitElement {
     const parts: Array<ReturnType<typeof html> | string> = [];
     const regex = new RegExp(this._entityRegex.source, 'g');
     let last = 0;
-    let match: RegExpExecArray | null;
 
-    while ((match = regex.exec(text)) !== null) {
+    for (const match of text.matchAll(regex)) {
       if (match.index > last) {
         parts.push(text.slice(last, match.index));
       }

@@ -2,18 +2,24 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
-import { embassiesApi, eventsApi, healthApi, resonanceApi, socialTrendsApi } from '../../services/api/index.js';
-import { icons } from '../../utils/icons.js';
-import { getThemeColor } from '../../utils/theme-colors.js';
-import { humanizeEnum } from '../../utils/text.js';
+import {
+  embassiesApi,
+  eventsApi,
+  healthApi,
+  resonanceApi,
+  socialTrendsApi,
+} from '../../services/api/index.js';
+import type { BrowseArticle } from '../../services/api/SocialTrendsApiService.js';
+import { generationProgress } from '../../services/GenerationProgressService.js';
 import type {
   Embassy,
   EmbassyEffectiveness,
   SimulationHealth,
   SourceCategory,
 } from '../../types/index.js';
-import type { BrowseArticle } from '../../services/api/SocialTrendsApiService.js';
-import { generationProgress } from '../../services/GenerationProgressService.js';
+import { icons } from '../../utils/icons.js';
+import { humanizeEnum } from '../../utils/text.js';
+import { getThemeColor } from '../../utils/theme-colors.js';
 import { VelgToast } from '../shared/Toast.js';
 
 import '../shared/VelgBadge.js';
@@ -1034,8 +1040,8 @@ export class VelgSocialTrendsView extends LitElement {
     try {
       const response = await eventsApi.list(this.simulationId, { limit: '100', offset: '0' });
       if (response.success && response.data && Array.isArray(response.data)) {
-        this._existingEventTitles = response.data.map(
-          (e: { title: string }) => e.title.toLowerCase(),
+        this._existingEventTitles = response.data.map((e: { title: string }) =>
+          e.title.toLowerCase(),
         );
       }
     } catch {
@@ -1126,33 +1132,33 @@ export class VelgSocialTrendsView extends LitElement {
           ],
         },
         async (progress) => {
-        progress.setStep('prepare', msg('Preparing batch...'));
-        await new Promise((r) => setTimeout(r, 300));
+          progress.setStep('prepare', msg('Preparing batch...'));
+          await new Promise((r) => setTimeout(r, 300));
 
-        progress.setStep(
-          'transform',
-          msg(str`Transforming ${this._selectedBatch.length} articles...`),
-          msg('This may take a moment'),
-        );
+          progress.setStep(
+            'transform',
+            msg(str`Transforming ${this._selectedBatch.length} articles...`),
+            msg('This may take a moment'),
+          );
 
-        const response = await socialTrendsApi.batchTransform(this.simulationId, {
-          articles: this._selectedBatch.map((a) => ({
-            article_name: a.name,
-            article_platform: a.platform,
-            article_url: a.url,
-            article_raw_data: a.raw_data,
-          })),
-        });
+          const response = await socialTrendsApi.batchTransform(this.simulationId, {
+            articles: this._selectedBatch.map((a) => ({
+              article_name: a.name,
+              article_platform: a.platform,
+              article_url: a.url,
+              article_raw_data: a.raw_data,
+            })),
+          });
 
-        if (response.success && response.data) {
-          this._batchResults = response.data;
-          const successCount = response.data.filter((r) => r.transformation).length;
-          progress.complete(msg(str`${successCount} articles transformed`));
-        } else {
-          const errMsg = response.error?.message || msg('Batch transformation failed');
-          progress.setError(errMsg);
-        }
-      },
+          if (response.success && response.data) {
+            this._batchResults = response.data;
+            const successCount = response.data.filter((r) => r.transformation).length;
+            progress.complete(msg(str`${successCount} articles transformed`));
+          } else {
+            const errMsg = response.error?.message || msg('Batch transformation failed');
+            progress.setError(errMsg);
+          }
+        },
       );
     } catch {
       // Error shown by GenerationProgressService
@@ -1179,47 +1185,51 @@ export class VelgSocialTrendsView extends LitElement {
           ],
         },
         async (progress) => {
-        progress.setStep('integrate', msg(str`Creating ${successResults.length} events...`));
+          progress.setStep('integrate', msg(str`Creating ${successResults.length} events...`));
 
-        const items = successResults.map((r) => ({
-          title: r.transformation!.title || r.article_name,
-          description: r.transformation!.description || r.transformation!.narrative || r.transformation!.content || '',
-          event_type: r.transformation!.event_type || 'news',
-          impact_level: r.transformation!.impact_level || 5,
-          tags: [r.article_platform],
-          source_article: {
-            name: r.article_name,
-            platform: r.article_platform,
-            url: r.article_url,
-            raw_data: r.article_raw_data,
-          },
-        }));
+          const items = successResults.map((r) => ({
+            title: r.transformation?.title || r.article_name,
+            description:
+              r.transformation?.description ||
+              r.transformation?.narrative ||
+              r.transformation?.content ||
+              '',
+            event_type: r.transformation?.event_type || 'news',
+            impact_level: r.transformation?.impact_level || 5,
+            tags: [r.article_platform],
+            source_article: {
+              name: r.article_name,
+              platform: r.article_platform,
+              url: r.article_url,
+              raw_data: r.article_raw_data,
+            },
+          }));
 
-        const response = await socialTrendsApi.batchIntegrate(this.simulationId, {
-          items,
-          generate_reactions_for_top: true,
-          max_reaction_agents: 20,
-        });
+          const response = await socialTrendsApi.batchIntegrate(this.simulationId, {
+            items,
+            generate_reactions_for_top: true,
+            max_reaction_agents: 20,
+          });
 
-        if (response.success && response.data) {
-          const { events, errors, reactions_count } = response.data;
-          if (reactions_count > 0) {
-            VelgToast.success(
-              msg(str`${events.length} events created, ${reactions_count} reactions generated`),
-            );
+          if (response.success && response.data) {
+            const { events, errors, reactions_count } = response.data;
+            if (reactions_count > 0) {
+              VelgToast.success(
+                msg(str`${events.length} events created, ${reactions_count} reactions generated`),
+              );
+            } else {
+              VelgToast.success(msg(str`${events.length} events created`));
+            }
+            if (errors.length > 0) {
+              VelgToast.error(msg(str`${errors.length} items failed`));
+            }
+            this._selectedBatch = [];
+            this._batchResults = null;
+            progress.complete(msg(str`${events.length} events created`));
           } else {
-            VelgToast.success(msg(str`${events.length} events created`));
+            progress.setError(response.error?.message || msg('Batch integration failed'));
           }
-          if (errors.length > 0) {
-            VelgToast.error(msg(str`${errors.length} items failed`));
-          }
-          this._selectedBatch = [];
-          this._batchResults = null;
-          progress.complete(msg(str`${events.length} events created`));
-        } else {
-          progress.setError(response.error?.message || msg('Batch integration failed'));
-        }
-      },
+        },
       );
     } catch {
       // Error shown by GenerationProgressService
@@ -1326,11 +1336,16 @@ export class VelgSocialTrendsView extends LitElement {
 
   private _effectivenessColor(label: string): string {
     switch (label) {
-      case 'optimal': return 'var(--color-success)';
-      case 'operational': return 'var(--color-info, var(--color-secondary))';
-      case 'limited': return 'var(--color-warning, var(--color-accent))';
-      case 'dormant': return 'var(--color-danger)';
-      default: return 'var(--color-text-muted)';
+      case 'optimal':
+        return 'var(--color-success)';
+      case 'operational':
+        return 'var(--color-info, var(--color-secondary))';
+      case 'limited':
+        return 'var(--color-warning, var(--color-accent))';
+      case 'dormant':
+        return 'var(--color-danger)';
+      default:
+        return 'var(--color-text-muted)';
     }
   }
 
@@ -1379,30 +1394,37 @@ export class VelgSocialTrendsView extends LitElement {
           <span class="embassy-overview__icon">${icons.handshake(18)}</span>
           <h2 class="embassy-overview__title">${msg('Diplomatic Relations')}</h2>
           <span class="embassy-overview__subtitle">
-            ${hasEmbassies
-              ? msg(str`${embassies.length} ${embassies.length === 1 ? 'embassy' : 'embassies'} on file`)
-              : msg('No embassies')}
+            ${
+              hasEmbassies
+                ? msg(
+                    str`${embassies.length} ${embassies.length === 1 ? 'embassy' : 'embassies'} on file`,
+                  )
+                : msg('No embassies')
+            }
           </span>
         </div>
 
         ${health ? this._renderEmbassyIntel(health) : nothing}
 
-        ${hasEmbassies
-          ? html`<div class="embassy-cards">
+        ${
+          hasEmbassies
+            ? html`<div class="embassy-cards">
               ${embassies.map((e) => this._renderEmbassyCard(e))}
             </div>`
-          : this._renderEmbassyEmpty()}
+            : this._renderEmbassyEmpty()
+        }
       </div>
     `;
   }
 
   private _renderEmbassyIntel(health: SimulationHealth) {
     const avgPct = Math.round(health.avg_embassy_effectiveness * 100);
-    const avgColor = avgPct >= 60
-      ? 'var(--color-success)'
-      : avgPct >= 30
-        ? 'var(--color-warning, var(--color-accent))'
-        : 'var(--color-danger)';
+    const avgColor =
+      avgPct >= 60
+        ? 'var(--color-success)'
+        : avgPct >= 30
+          ? 'var(--color-warning, var(--color-accent))'
+          : 'var(--color-danger)';
 
     return html`
       <div class="embassy-intel">
@@ -1439,11 +1461,12 @@ export class VelgSocialTrendsView extends LitElement {
     const themeColor = getThemeColor(partner.simulation.theme ?? '');
     const ambassador = this._getAmbassadorName(embassy);
 
-    const statusVariant = embassy.status === 'active'
-      ? 'success'
-      : embassy.status === 'suspended'
-        ? 'warning'
-        : 'default';
+    const statusVariant =
+      embassy.status === 'active'
+        ? 'success'
+        : embassy.status === 'suspended'
+          ? 'warning'
+          : 'default';
 
     return html`
       <div
@@ -1469,23 +1492,29 @@ export class VelgSocialTrendsView extends LitElement {
         </div>
 
         <div class="embassy-card__partner">
-          ${partner.building.image_url
-            ? html`<img
+          ${
+            partner.building.image_url
+              ? html`<img
                 class="embassy-card__thumb"
                 src=${partner.building.image_url}
                 alt=${partner.building.name}
                 loading="lazy"
               />`
-            : nothing}
+              : nothing
+          }
           <div class="embassy-card__info">
             <div class="embassy-card__building-name">${partner.building.name}</div>
-            ${partner.building.building_type
-              ? html`<div class="embassy-card__building-type">${humanizeEnum(partner.building.building_type)}</div>`
-              : nothing}
+            ${
+              partner.building.building_type
+                ? html`<div class="embassy-card__building-type">${humanizeEnum(partner.building.building_type)}</div>`
+                : nothing
+            }
           </div>
         </div>
 
-        ${eff ? html`
+        ${
+          eff
+            ? html`
           <div class="embassy-card__effectiveness">
             <div class="embassy-card__eff-track">
               <div
@@ -1497,26 +1526,41 @@ export class VelgSocialTrendsView extends LitElement {
               ${effPct}%
             </span>
           </div>
-        ` : nothing}
+        `
+            : nothing
+        }
 
         <div class="embassy-card__meta">
-          ${eff ? html`<velg-badge variant=${
-            effLabel === 'optimal' ? 'success'
-              : effLabel === 'operational' ? 'info'
-                : effLabel === 'limited' ? 'warning'
-                  : 'danger'
-          }>${humanizeEnum(effLabel)}</velg-badge>` : nothing}
-          ${embassy.bleed_vector
-            ? html`<velg-badge variant="info">${humanizeEnum(embassy.bleed_vector)}</velg-badge>`
-            : nothing}
+          ${
+            eff
+              ? html`<velg-badge variant=${
+                  effLabel === 'optimal'
+                    ? 'success'
+                    : effLabel === 'operational'
+                      ? 'info'
+                      : effLabel === 'limited'
+                        ? 'warning'
+                        : 'danger'
+                }>${humanizeEnum(effLabel)}</velg-badge>`
+              : nothing
+          }
+          ${
+            embassy.bleed_vector
+              ? html`<velg-badge variant="info">${humanizeEnum(embassy.bleed_vector)}</velg-badge>`
+              : nothing
+          }
         </div>
 
-        ${ambassador ? html`
+        ${
+          ambassador
+            ? html`
           <div class="embassy-card__ambassador">
             <span class="embassy-card__amb-label">${msg('Ambassador')}:</span>
             ${ambassador}
           </div>
-        ` : nothing}
+        `
+            : nothing
+        }
       </div>
     `;
   }
@@ -1846,12 +1890,14 @@ export class VelgSocialTrendsView extends LitElement {
 
         <header class="trends__header">
           <h1 class="trends__title">${msg('Browse News')}</h1>
-          ${appState.isPlatformAdmin.value
-            ? html`<button class="btn--resonance" @click=${this._handleCreateResonance}
+          ${
+            appState.isPlatformAdmin.value
+              ? html`<button class="btn--resonance" @click=${this._handleCreateResonance}
                 title=${msg('Create substrate resonance from selected article')}>
                 ${icons.substrateTremor(14)} ${msg('Create Resonance')}
               </button>`
-            : nothing}
+              : nothing
+          }
         </header>
 
         ${this._renderControls()}

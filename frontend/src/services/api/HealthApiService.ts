@@ -1,3 +1,4 @@
+import type { BleedStatus } from '../../types/health.js';
 import type {
   ApiResponse,
   BuildingReadiness,
@@ -6,7 +7,6 @@ import type {
   SimulationHealthDashboard,
   ZoneStability,
 } from '../../types/index.js';
-import type { BleedStatus } from '../../types/health.js';
 import { BaseApiService } from './BaseApiService.js';
 
 export class HealthApiService extends BaseApiService {
@@ -46,7 +46,7 @@ export class HealthApiService extends BaseApiService {
     actionType: string,
     params?: Record<string, string>,
   ): Promise<ApiResponse<Record<string, unknown>>> {
-    const query = params ? '?' + new URLSearchParams(params).toString() : '';
+    const query = params ? `?${new URLSearchParams(params).toString()}` : '';
     return this.post(`/simulations/${simulationId}/threshold-actions/${actionType}${query}`);
   }
 

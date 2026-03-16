@@ -236,7 +236,7 @@ class TranslationService:
             target_lang=_deepl_target(target_lang),
             context=deepl_context,
         )
-        return {name: r.text for name, r in zip(names, results)}
+        return {name: r.text for name, r in zip(names, results, strict=False)}
 
 
 def _deepl_target(lang: str) -> str:

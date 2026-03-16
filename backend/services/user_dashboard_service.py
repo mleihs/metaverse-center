@@ -5,9 +5,8 @@ from __future__ import annotations
 import logging
 from uuid import UUID
 
-from supabase import Client
-
 from backend.models.user import ActiveEpochParticipation, DashboardData, MembershipInfo
+from supabase import Client
 
 logger = logging.getLogger(__name__)
 

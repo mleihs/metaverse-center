@@ -380,14 +380,17 @@ export class VelgChronicleExport extends LitElement {
       return;
     }
 
-    const result = await forgeStateManager.awaitFeatureCompletion(purchaseId, (p: FeaturePurchase) => {
-      if (p.status === 'processing') {
-        const elapsed = Date.now() - new Date(p.created_at).getTime();
-        const progress = Math.min(95, Math.floor(elapsed / 600));
-        if (type === 'codex') this._codexProgress = progress;
-        else this._hiresProgress = progress;
-      }
-    });
+    const result = await forgeStateManager.awaitFeatureCompletion(
+      purchaseId,
+      (p: FeaturePurchase) => {
+        if (p.status === 'processing') {
+          const elapsed = Date.now() - new Date(p.created_at).getTime();
+          const progress = Math.min(95, Math.floor(elapsed / 600));
+          if (type === 'codex') this._codexProgress = progress;
+          else this._hiresProgress = progress;
+        }
+      },
+    );
 
     if (result?.status === 'completed') {
       const downloadUrl = (result.result as { download_url?: string })?.download_url ?? null;
@@ -451,20 +454,21 @@ export class VelgChronicleExport extends LitElement {
           ${msg('Full simulation codex: agents, buildings, lore, and maps. Bureau-formatted PDF with theme colors.')}
         </p>
 
-        ${this._codexState === 'processing'
-          ? html`
+        ${
+          this._codexState === 'processing'
+            ? html`
             <div class="card__progress">
               <div class="card__progress-bar" style="width: ${this._codexProgress}%"></div>
             </div>
             <span class="card__status">${msg('PRINTING IN PROGRESS...')} ${this._codexProgress}%</span>
           `
-          : this._codexState === 'done'
-            ? html`
+            : this._codexState === 'done'
+              ? html`
               <button class="card__btn card__btn--download"
                 @click=${() => this._openDownload(this._codexDownloadUrl)}
               >${msg('DOWNLOAD')}</button>
             `
-            : html`
+              : html`
               <p class="card__cost ${this._hasBypass ? 'card__cost--bypass' : ''}">
                 ${this._hasBypass ? msg('BYOK: NO COST') : msg('1 FT')}
               </p>
@@ -475,7 +479,8 @@ export class VelgChronicleExport extends LitElement {
               >
                 ${msg('AUTHORIZE')}
               </button>
-            `}
+            `
+        }
       </div>
     `;
   }
@@ -490,20 +495,21 @@ export class VelgChronicleExport extends LitElement {
           ${msg('All simulation images at full native resolution. Organized ZIP archive: agents, buildings, lore, and banner.')}
         </p>
 
-        ${this._hiresState === 'processing'
-          ? html`
+        ${
+          this._hiresState === 'processing'
+            ? html`
             <div class="card__progress">
               <div class="card__progress-bar" style="width: ${this._hiresProgress}%"></div>
             </div>
             <span class="card__status">${msg('ARCHIVING IN PROGRESS...')} ${this._hiresProgress}%</span>
           `
-          : this._hiresState === 'done'
-            ? html`
+            : this._hiresState === 'done'
+              ? html`
               <button class="card__btn card__btn--download"
                 @click=${() => this._openDownload(this._hiresDownloadUrl)}
               >${msg('DOWNLOAD')}</button>
             `
-            : html`
+              : html`
               <p class="card__cost ${this._hasBypass ? 'card__cost--bypass' : ''}">
                 ${this._hasBypass ? msg('BYOK: NO COST') : msg('1 FT')}
               </p>
@@ -514,7 +520,8 @@ export class VelgChronicleExport extends LitElement {
               >
                 ${msg('AUTHORIZE')}
               </button>
-            `}
+            `
+        }
       </div>
     `;
   }
@@ -528,13 +535,15 @@ export class VelgChronicleExport extends LitElement {
         </p>
         <p class="card__cost card__cost--free">${msg('FREE')}</p>
 
-        ${this._prospectusState === 'done'
-          ? html`<button class="card__btn card__btn--download" @click=${this._generateProspectus}>
+        ${
+          this._prospectusState === 'done'
+            ? html`<button class="card__btn card__btn--download" @click=${this._generateProspectus}>
               ${msg('COPY URL AGAIN')}
             </button>`
-          : html`<button class="card__btn card__btn--free" @click=${this._generateProspectus}>
+            : html`<button class="card__btn card__btn--free" @click=${this._generateProspectus}>
               ${msg('GENERATE')}
-            </button>`}
+            </button>`
+        }
       </div>
     `;
   }
@@ -547,10 +556,14 @@ export class VelgChronicleExport extends LitElement {
 
   private _localizeStatus(status: string): string {
     switch (status) {
-      case 'completed': return msg('completed');
-      case 'processing': return msg('processing');
-      case 'failed': return msg('failed');
-      default: return status;
+      case 'completed':
+        return msg('completed');
+      case 'processing':
+        return msg('processing');
+      case 'failed':
+        return msg('failed');
+      default:
+        return status;
     }
   }
 
@@ -559,18 +572,20 @@ export class VelgChronicleExport extends LitElement {
       <div class="history">
         <h4 class="history__heading">${msg('Previous Exports')}</h4>
         <ul class="history__list">
-          ${this._history.map(p => {
+          ${this._history.map((p) => {
             const downloadUrl = (p.result as { download_url?: string })?.download_url;
             return html`
               <li class="history__item">
                 <span class="history__type">${this._getExportTypeLabel(p)}</span>
                 <span class="history__date">${new Date(p.created_at).toLocaleDateString(localeService.currentLocale === 'de' ? 'de-DE' : 'en-GB')}</span>
                 <span class="history__status history__status--${p.status}">${this._localizeStatus(p.status)}</span>
-                ${p.status === 'completed' && downloadUrl
-                  ? html`<a class="history__download"
+                ${
+                  p.status === 'completed' && downloadUrl
+                    ? html`<a class="history__download"
                       href=${downloadUrl} target="_blank" rel="noopener"
                     >${msg('DOWNLOAD')}</a>`
-                  : nothing}
+                    : nothing
+                }
               </li>
             `;
           })}

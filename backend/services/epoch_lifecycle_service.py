@@ -21,7 +21,10 @@ class EpochLifecycleService:
     """Epoch lifecycle transitions: start, advance, cancel, delete."""
 
     @classmethod
-    async def start_epoch(cls, supabase: Client, epoch_id: UUID, user_id: UUID, admin_supabase: Client | None = None) -> dict:
+    async def start_epoch(
+        cls, supabase: Client, epoch_id: UUID, user_id: UUID,
+        admin_supabase: Client | None = None,
+    ) -> dict:
         """Transition epoch from lobby -> foundation.
 
         This triggers the game instance cloning process:

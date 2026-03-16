@@ -4,8 +4,8 @@ import { customElement, state } from 'lit/decorators.js';
 import {
   type AdminBundleEntry,
   type AdminPurchaseLedgerEntry,
-  type TokenEconomyStats,
   adminApi,
+  type TokenEconomyStats,
 } from '../../services/api/AdminApiService.js';
 import { forgeApi } from '../../services/api/index.js';
 import { settingsStyles } from '../shared/settings-styles.js';
@@ -589,7 +589,8 @@ export class VelgAdminForgeTab extends LitElement {
       const resp = await adminApi.getBYOKSystemSetting();
       if (resp.success && resp.data) {
         this._byokSystemEnabled = resp.data.byok_bypass_enabled;
-        this._byokAccessPolicy = (resp.data.byok_access_policy as 'none' | 'all' | 'per_user') ?? 'per_user';
+        this._byokAccessPolicy =
+          (resp.data.byok_access_policy as 'none' | 'all' | 'per_user') ?? 'per_user';
       }
     } catch {
       // Non-critical
@@ -605,7 +606,9 @@ export class VelgAdminForgeTab extends LitElement {
       b.id === bundle.id ? { ...b, is_active: newActive } : b,
     );
     try {
-      const resp = await adminApi.updateBundle(bundle.id, { is_active: newActive } as Partial<AdminBundleEntry>);
+      const resp = await adminApi.updateBundle(bundle.id, {
+        is_active: newActive,
+      } as Partial<AdminBundleEntry>);
       if (resp.success) {
         VelgToast.success(msg('Bundle updated.'));
         this._loadEconomyStats();
@@ -643,7 +646,10 @@ export class VelgAdminForgeTab extends LitElement {
   private async _saveEditBundle() {
     if (!this._editingBundleId) return;
     try {
-      const resp = await adminApi.updateBundle(this._editingBundleId, this._bundleEditDraft as Partial<AdminBundleEntry>);
+      const resp = await adminApi.updateBundle(
+        this._editingBundleId,
+        this._bundleEditDraft as Partial<AdminBundleEntry>,
+      );
       if (resp.success) {
         VelgToast.success(msg('Bundle updated.'));
         this._editingBundleId = null;
@@ -680,7 +686,9 @@ export class VelgAdminForgeTab extends LitElement {
       if (resp.success) {
         const data = resp.data as { tokens_granted?: number; balance_after?: number };
         VelgToast.success(
-          msg(str`Granted ${data.tokens_granted ?? this._grantTokens} tokens. New balance: ${data.balance_after ?? '?'}`),
+          msg(
+            str`Granted ${data.tokens_granted ?? this._grantTokens} tokens. New balance: ${data.balance_after ?? '?'}`,
+          ),
         );
         this._grantUserId = '';
         this._grantTokens = 5;
@@ -803,8 +811,11 @@ export class VelgAdminForgeTab extends LitElement {
   private _formatDate(isoDate: string): string {
     try {
       return new Date(isoDate).toLocaleString(undefined, {
-        year: 'numeric', month: 'short', day: 'numeric',
-        hour: '2-digit', minute: '2-digit',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
       });
     } catch {
       return isoDate;
@@ -1072,9 +1083,10 @@ export class VelgAdminForgeTab extends LitElement {
         <td>${bundle.savings_pct}%</td>
         <td>${bundle.sort_order}</td>
         <td>
-          ${isSystem
-            ? html`<span style="color: var(--color-text-muted)">${msg('System')}</span>`
-            : html`
+          ${
+            isSystem
+              ? html`<span style="color: var(--color-text-muted)">${msg('System')}</span>`
+              : html`
               <label class="settings-toggle" aria-label=${msg('Active')}>
                 <input
                   class="settings-toggle__input"
@@ -1089,9 +1101,10 @@ export class VelgAdminForgeTab extends LitElement {
           }
         </td>
         <td>
-          ${isSystem
-            ? nothing
-            : html`
+          ${
+            isSystem
+              ? nothing
+              : html`
               <button
                 class="settings-btn settings-btn--secondary settings-btn--sm"
                 @click=${() => this._startEditBundle(bundle)}
@@ -1102,13 +1115,17 @@ export class VelgAdminForgeTab extends LitElement {
           }
         </td>
       </tr>
-      ${this._editingBundleId === bundle.id ? html`
+      ${
+        this._editingBundleId === bundle.id
+          ? html`
         <tr>
           <td colspan="7">
             ${this._renderBundleEditForm()}
           </td>
         </tr>
-      ` : nothing}
+      `
+          : nothing
+      }
     `;
   }
 
@@ -1123,7 +1140,10 @@ export class VelgAdminForgeTab extends LitElement {
           .value=${d.display_name ?? ''}
           aria-label=${msg('Display Name')}
           @input=${(e: Event) => {
-            this._bundleEditDraft = { ...this._bundleEditDraft, display_name: (e.target as HTMLInputElement).value };
+            this._bundleEditDraft = {
+              ...this._bundleEditDraft,
+              display_name: (e.target as HTMLInputElement).value,
+            };
           }}
         />
         <span class="bundle-edit-form__label">${msg('Tokens')}</span>
@@ -1134,7 +1154,10 @@ export class VelgAdminForgeTab extends LitElement {
           .value=${String(d.tokens ?? '')}
           aria-label=${msg('Tokens')}
           @input=${(e: Event) => {
-            this._bundleEditDraft = { ...this._bundleEditDraft, tokens: Number((e.target as HTMLInputElement).value) };
+            this._bundleEditDraft = {
+              ...this._bundleEditDraft,
+              tokens: Number((e.target as HTMLInputElement).value),
+            };
           }}
         />
         <span class="bundle-edit-form__label">${msg('Price (cents)')}</span>
@@ -1145,7 +1168,10 @@ export class VelgAdminForgeTab extends LitElement {
           .value=${String(d.price_cents ?? '')}
           aria-label=${msg('Price (cents)')}
           @input=${(e: Event) => {
-            this._bundleEditDraft = { ...this._bundleEditDraft, price_cents: Number((e.target as HTMLInputElement).value) };
+            this._bundleEditDraft = {
+              ...this._bundleEditDraft,
+              price_cents: Number((e.target as HTMLInputElement).value),
+            };
           }}
         />
         <span class="bundle-edit-form__label">${msg('Savings %')}</span>
@@ -1157,7 +1183,10 @@ export class VelgAdminForgeTab extends LitElement {
           .value=${String(d.savings_pct ?? '')}
           aria-label=${msg('Savings %')}
           @input=${(e: Event) => {
-            this._bundleEditDraft = { ...this._bundleEditDraft, savings_pct: Number((e.target as HTMLInputElement).value) };
+            this._bundleEditDraft = {
+              ...this._bundleEditDraft,
+              savings_pct: Number((e.target as HTMLInputElement).value),
+            };
           }}
         />
         <span class="bundle-edit-form__label">${msg('Sort Order')}</span>
@@ -1168,7 +1197,10 @@ export class VelgAdminForgeTab extends LitElement {
           .value=${String(d.sort_order ?? '')}
           aria-label=${msg('Sort Order')}
           @input=${(e: Event) => {
-            this._bundleEditDraft = { ...this._bundleEditDraft, sort_order: Number((e.target as HTMLInputElement).value) };
+            this._bundleEditDraft = {
+              ...this._bundleEditDraft,
+              sort_order: Number((e.target as HTMLInputElement).value),
+            };
           }}
         />
         <div class="bundle-edit-form__actions">
@@ -1262,9 +1294,10 @@ export class VelgAdminForgeTab extends LitElement {
           ${this._renderFilterChip('stripe', msg('Stripe'))}
         </div>
 
-        ${this._purchases.length === 0
-          ? html`<div class="empty-state">// ${msg('No purchases found')} //</div>`
-          : html`
+        ${
+          this._purchases.length === 0
+            ? html`<div class="empty-state">// ${msg('No purchases found')} //</div>`
+            : html`
             <div class="overflow-x">
               <table class="forge-table">
                 <thead>
@@ -1325,8 +1358,10 @@ export class VelgAdminForgeTab extends LitElement {
   }
 
   private _renderLedgerRow(p: AdminPurchaseLedgerEntry) {
-    const bundleSlug = p.token_bundles?.slug ?? (p.payment_method === 'admin_grant' ? `(${msg('admin grant')})` : '—');
-    const userId = p.user_id.slice(0, 8) + '...';
+    const bundleSlug =
+      p.token_bundles?.slug ??
+      (p.payment_method === 'admin_grant' ? `(${msg('admin grant')})` : '—');
+    const userId = `${p.user_id.slice(0, 8)}...`;
 
     return html`
       <tr>
@@ -1339,7 +1374,6 @@ export class VelgAdminForgeTab extends LitElement {
       </tr>
     `;
   }
-
 }
 
 declare global {

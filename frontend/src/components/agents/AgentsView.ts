@@ -1,13 +1,13 @@
 import { localized, msg, str } from '@lit/localize';
-import { effect } from '@preact/signals-core';
 import { SignalWatcher } from '@lit-labs/preact-signals';
+import { effect } from '@preact/signals-core';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { agentsApi } from '../../services/api/index.js';
-import type { Agent, AgentAptitude, AptitudeSet, OperativeType } from '../../types/index.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { seoService } from '../../services/SeoService.js';
+import type { Agent, AgentAptitude, AptitudeSet, OperativeType } from '../../types/index.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { gridLayoutStyles } from '../shared/grid-layout-styles.js';
 import type { FilterChangeDetail, FilterConfig } from '../shared/SharedFilterBar.js';
@@ -559,8 +559,9 @@ export class VelgAgentsView extends SignalWatcher(LitElement) {
         )}
       </div>
 
-      ${this._canEdit
-        ? html`
+      ${
+        this._canEdit
+          ? html`
           <velg-recruitment-office
             .simulationId=${this.simulationId}
             .walletBalance=${forgeStateManager.walletBalance.value}
@@ -568,7 +569,8 @@ export class VelgAgentsView extends SignalWatcher(LitElement) {
             @recruitment-complete=${this._handleRecruitmentComplete}
           ></velg-recruitment-office>
         `
-        : nothing}
+          : nothing
+      }
     `;
   }
 }

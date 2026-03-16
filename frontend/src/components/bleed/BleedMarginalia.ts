@@ -68,7 +68,7 @@ export class BleedMarginalia extends LitElement {
     super.connectedCallback();
     // Deterministic-seeming random rotation from bleed source ID
     const hash = this.bleed?.source_simulation_id
-      ? this.bleed.source_simulation_id.charCodeAt(0) % 7 - 3
+      ? (this.bleed.source_simulation_id.charCodeAt(0) % 7) - 3
       : 0;
     this._rotation = hash;
   }

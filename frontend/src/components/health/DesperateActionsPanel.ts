@@ -4,8 +4,8 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { healthApi } from '../../services/api/HealthApiService.js';
-import { icons } from '../../utils/icons.js';
 import type { SimulationHealthDashboard, ZoneStability } from '../../types/index.js';
+import { icons } from '../../utils/icons.js';
 
 interface PanelAction {
   type: string;
@@ -509,7 +509,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
     if (action.requiresTarget && this.zones.length > 0) {
       const worstZone = this.zones[0];
       if (worstZone?.zone_id) {
-        params['target_zone_id'] = worstZone.zone_id;
+        params.target_zone_id = worstZone.zone_id;
       }
     }
 
@@ -578,9 +578,11 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
           <div class="actions">
             ${actions.map((action) => this._renderAction(action))}
           </div>
-          ${this._errorMsg
-            ? html`<div class="panel__error" role="alert">${this._errorMsg}</div>`
-            : nothing}
+          ${
+            this._errorMsg
+              ? html`<div class="panel__error" role="alert">${this._errorMsg}</div>`
+              : nothing
+          }
         </div>
       </div>
     `;
@@ -603,9 +605,11 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
         </div>
         <span class="action__desc">${action.description}</span>
         <span class="action__estimate">${action.estimate}</span>
-        ${action.navigateTo
-          ? html`<span class="action__nav-hint">${msg('GO TO TAB')} →</span>`
-          : nothing}
+        ${
+          action.navigateTo
+            ? html`<span class="action__nav-hint">${msg('GO TO TAB')} →</span>`
+            : nothing
+        }
       </button>
     `;
   }

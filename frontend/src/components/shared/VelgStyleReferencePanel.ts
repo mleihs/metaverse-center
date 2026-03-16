@@ -1,9 +1,9 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { styleReferenceApi } from '../../services/api/index.js';
 import type { StyleReferenceInfo } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
-import { styleReferenceApi } from '../../services/api/index.js';
 import { VelgToast } from './Toast.js';
 
 import './VelgStyleReferenceModal.js';
@@ -258,7 +258,7 @@ export class VelgStyleReferencePanel extends LitElement {
 
   private _renderRefRow(ref: StyleReferenceInfo) {
     const scopeLabel =
-      ref.scope === 'global' ? msg('Global') : ref.entity_name ?? ref.entity_id ?? '';
+      ref.scope === 'global' ? msg('Global') : (ref.entity_name ?? ref.entity_id ?? '');
 
     return html`
       <div class="ref-row">
@@ -289,43 +289,53 @@ export class VelgStyleReferencePanel extends LitElement {
     return html`
       <div class="panel__header">
         <span class="panel__title">${msg('Style References')}</span>
-        <button class="panel__add-btn" @click=${() => { this._showModal = true; }}>
+        <button class="panel__add-btn" @click=${() => {
+          this._showModal = true;
+        }}>
           + ${msg('Add Reference')}
         </button>
       </div>
 
-      ${this._loading
-        ? html`<div class="empty"><span class="empty__text">${msg('Loading...')}</span></div>`
-        : !hasRefs
-          ? html`<div class="empty"><span class="empty__text">${msg('No style references configured')}</span></div>`
-          : html`
-            ${this._portraitRefs.length > 0
-              ? html`
+      ${
+        this._loading
+          ? html`<div class="empty"><span class="empty__text">${msg('Loading...')}</span></div>`
+          : !hasRefs
+            ? html`<div class="empty"><span class="empty__text">${msg('No style references configured')}</span></div>`
+            : html`
+            ${
+              this._portraitRefs.length > 0
+                ? html`
                 <div class="section">
                   <div class="section__label">${msg('Portraits')}</div>
                   ${this._portraitRefs.map((r) => this._renderRefRow(r))}
                 </div>
               `
-              : nothing}
-            ${this._buildingRefs.length > 0
-              ? html`
+                : nothing
+            }
+            ${
+              this._buildingRefs.length > 0
+                ? html`
                 <div class="section">
                   <div class="section__label">${msg('Buildings')}</div>
                   ${this._buildingRefs.map((r) => this._renderRefRow(r))}
                 </div>
               `
-              : nothing}
-          `}
+                : nothing
+            }
+          `
+      }
 
-      ${this._showModal
-        ? html`
+      ${
+        this._showModal
+          ? html`
           <velg-style-reference-modal
             .simulationId=${this.simulationId}
             .open=${true}
             @modal-close=${this._handleModalClose}
           ></velg-style-reference-modal>
         `
-        : nothing}
+          : nothing
+      }
     `;
   }
 }

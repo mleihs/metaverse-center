@@ -1,9 +1,8 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-
-import type { Resonance, ResonanceImpact } from '../../types/index.js';
 import { resonanceApi } from '../../services/api/ResonanceApiService.js';
+import type { Resonance, ResonanceImpact } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -673,15 +672,11 @@ export class VelgAdminResonancesTab extends LitElement {
   // ── Computed Filters ──────────────────────────────────
 
   private get _activeResonances(): Resonance[] {
-    return this._resonances.filter(
-      (r) => !r.deleted_at && r.status !== 'archived',
-    );
+    return this._resonances.filter((r) => !r.deleted_at && r.status !== 'archived');
   }
 
   private get _archivedResonances(): Resonance[] {
-    return this._resonances.filter(
-      (r) => !r.deleted_at && r.status === 'archived',
-    );
+    return this._resonances.filter((r) => !r.deleted_at && r.status === 'archived');
   }
 
   private get _deletedResonances(): Resonance[] {
@@ -743,7 +738,9 @@ export class VelgAdminResonancesTab extends LitElement {
   private async _handleProcessImpact(res: Resonance): Promise<void> {
     const confirmed = await VelgConfirmDialog.show({
       title: msg('Process Impact'),
-      message: msg(str`Process resonance "${res.title}" across all active simulations? This will spawn events.`),
+      message: msg(
+        str`Process resonance "${res.title}" across all active simulations? This will spawn events.`,
+      ),
       confirmLabel: msg('Process'),
     });
     if (!confirmed) return;
@@ -824,12 +821,9 @@ export class VelgAdminResonancesTab extends LitElement {
   private async _handleFormSave(e: CustomEvent): Promise<void> {
     const detail = e.detail as { data: Record<string, unknown>; resonanceId?: string };
     try {
-      let resp;
-      if (detail.resonanceId) {
-        resp = await resonanceApi.update(detail.resonanceId, detail.data);
-      } else {
-        resp = await resonanceApi.create(detail.data as never);
-      }
+      const resp = detail.resonanceId
+        ? await resonanceApi.update(detail.resonanceId, detail.data)
+        : await resonanceApi.create(detail.data as never);
       if (resp.success) {
         VelgToast.success(
           detail.resonanceId ? msg('Resonance updated.') : msg('Resonance created.'),
@@ -938,26 +932,36 @@ export class VelgAdminResonancesTab extends LitElement {
           type="text"
           placeholder=${msg('Search resonances...')}
           .value=${this._search}
-          @input=${(e: Event) => { this._search = (e.target as HTMLInputElement).value; }}
+          @input=${(e: Event) => {
+            this._search = (e.target as HTMLInputElement).value;
+          }}
         />
 
-        ${this._view === 'active' ? html`
+        ${
+          this._view === 'active'
+            ? html`
           <div class="filter-chips">
             ${(['all', 'detected', 'impacting', 'subsiding'] as StatusFilter[]).map(
               (s) => html`
                 <button
                   class="filter-chip ${this._statusFilter === s ? 'filter-chip--active' : ''}"
-                  @click=${() => { this._statusFilter = s; }}
+                  @click=${() => {
+                    this._statusFilter = s;
+                  }}
                 >${s === 'all' ? msg('All') : s}</button>
               `,
             )}
           </div>
-        ` : nothing}
+        `
+            : nothing
+        }
 
         <select
           class="sig-select"
           .value=${this._signatureFilter}
-          @change=${(e: Event) => { this._signatureFilter = (e.target as HTMLSelectElement).value; }}
+          @change=${(e: Event) => {
+            this._signatureFilter = (e.target as HTMLSelectElement).value;
+          }}
         >
           <option value="">${msg('All signatures')}</option>
           ${Object.entries(SIGNATURE_LABELS).map(
@@ -970,17 +974,23 @@ export class VelgAdminResonancesTab extends LitElement {
         </span>
       </div>
 
-      ${this._loading
-        ? html`<div class="loading-state">${msg('Scanning substrate...')}</div>`
-        : this._renderList()}
+      ${
+        this._loading
+          ? html`<div class="loading-state">${msg('Scanning substrate...')}</div>`
+          : this._renderList()
+      }
 
-      ${this._showFormModal ? html`
+      ${
+        this._showFormModal
+          ? html`
         <velg-admin-resonance-form-modal
           .resonance=${this._editTarget}
           @resonance-save=${this._handleFormSave}
           @modal-close=${this._handleFormClose}
         ></velg-admin-resonance-form-modal>
-      ` : nothing}
+      `
+          : nothing
+      }
     `;
   }
 
@@ -1031,13 +1041,17 @@ export class VelgAdminResonancesTab extends LitElement {
         <span class="badge badge--${r.status}">${r.status}</span>
 
         <div class="res-meta">
-          ${r.status === 'detected' || r.status === 'impacting' ? html`
+          ${
+            r.status === 'detected' || r.status === 'impacting'
+              ? html`
             <div class="res-meta__countdown ${this._isPast(r.impacts_at) ? 'res-meta__countdown--past' : ''}">
               ${this._isPast(r.impacts_at) ? msg('overdue') : this._countdown(r.impacts_at)}
             </div>
-          ` : html`
+          `
+              : html`
             <div>${this._formatDate(r.updated_at)}</div>
-          `}
+          `
+          }
         </div>
 
         <div class="res-actions">
@@ -1054,22 +1068,30 @@ export class VelgAdminResonancesTab extends LitElement {
     const disabled = this._actionInProgress === r.id;
 
     return html`
-      ${nextStatus ? html`
+      ${
+        nextStatus
+          ? html`
         <button
           class="action-btn action-btn--transition"
           ?disabled=${disabled}
           @click=${() => this._handleTransition(r)}
           title=${msg(str`Transition to ${nextStatus}`)}
         >${nextStatus === 'impacting' ? msg('Impact') : nextStatus === 'subsiding' ? msg('Subside') : msg('Archive')}</button>
-      ` : nothing}
+      `
+          : nothing
+      }
 
-      ${r.status === 'detected' || r.status === 'impacting' ? html`
+      ${
+        r.status === 'detected' || r.status === 'impacting'
+          ? html`
         <button
           class="action-btn action-btn--process"
           ?disabled=${disabled}
           @click=${() => this._handleProcessImpact(r)}
         >${msg('Process')}</button>
-      ` : nothing}
+      `
+          : nothing
+      }
 
       <button
         class="action-btn"
@@ -1108,18 +1130,22 @@ export class VelgAdminResonancesTab extends LitElement {
     return html`
       <div class="impact-panel">
         <div class="impact-panel__header">${msg('Impact Records')}</div>
-        ${!impacts
-          ? html`<div class="impact-empty">${msg('Loading...')}</div>`
-          : impacts.length === 0
-            ? html`<div class="impact-empty">${msg('No impacts recorded yet.')}</div>`
-            : impacts.map((imp) => html`
+        ${
+          !impacts
+            ? html`<div class="impact-empty">${msg('Loading...')}</div>`
+            : impacts.length === 0
+              ? html`<div class="impact-empty">${msg('No impacts recorded yet.')}</div>`
+              : impacts.map(
+                  (imp) => html`
                 <div class="impact-row">
-                  <span class="impact-sim">${imp.simulation_name ?? imp.simulation_id.substring(0, 8) + '...'}</span>
+                  <span class="impact-sim">${imp.simulation_name ?? `${imp.simulation_id.substring(0, 8)}...`}</span>
                   <span class="impact-mag">${imp.effective_magnitude.toFixed(2)}</span>
                   <span class="badge badge--${imp.status}">${imp.status}</span>
                   <span class="impact-events">${imp.spawned_event_ids?.length ?? 0} ${msg('events')}</span>
                 </div>
-              `)}
+              `,
+                )
+        }
       </div>
     `;
   }

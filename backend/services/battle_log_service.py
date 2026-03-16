@@ -166,7 +166,11 @@ class BattleLogService:
             metadata={
                 "operative_type": mission["operative_type"],
                 "outcome": outcome,
-                "agent_name": mission.get("agents", {}).get("name") if isinstance(mission.get("agents"), dict) else None,
+                "agent_name": (
+                    mission.get("agents", {}).get("name")
+                    if isinstance(mission.get("agents"), dict)
+                    else None
+                ),
             },
         )
 

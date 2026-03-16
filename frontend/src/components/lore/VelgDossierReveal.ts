@@ -109,7 +109,8 @@ export class VelgDossierReveal extends LitElement {
             this._phase = 'ready';
             // Focus the button after render
             this.updateComplete.then(() => {
-              this._btnRef = this.shadowRoot?.querySelector<HTMLButtonElement>('.action__btn') ?? undefined;
+              this._btnRef =
+                this.shadowRoot?.querySelector<HTMLButtonElement>('.action__btn') ?? undefined;
               this._btnRef?.focus();
             });
           }, 600),
@@ -144,9 +145,9 @@ export class VelgDossierReveal extends LitElement {
         <div class="reveal__content">
           ${this._renderStamp()}
           ${this._phase !== 'stamp' ? this._renderTypewriter() : nothing}
-          ${this._phase === 'sections' || this._phase === 'ready'
-            ? this._renderSections()
-            : nothing}
+          ${
+            this._phase === 'sections' || this._phase === 'ready' ? this._renderSections() : nothing
+          }
           ${this._phase === 'ready' ? this._renderAction() : nothing}
         </div>
         <div class="stamp__flash"></div>
@@ -171,9 +172,11 @@ export class VelgDossierReveal extends LitElement {
     return html`
       <div class="typewriter" aria-live="assertive">
         <span class="typewriter__text">${this._typewriterText}</span>
-        ${this._phase === 'typewriter'
-          ? html`<span class="typewriter__cursor" aria-hidden="true"></span>`
-          : nothing}
+        ${
+          this._phase === 'typewriter'
+            ? html`<span class="typewriter__cursor" aria-hidden="true"></span>`
+            : nothing
+        }
       </div>
     `;
   }
@@ -191,12 +194,14 @@ export class VelgDossierReveal extends LitElement {
               style="animation-delay: ${i * 400}ms"
             >
               <span class="section-slot__label">${labelFn()}</span>
-              ${revealed
-                ? html`<span
+              ${
+                revealed
+                  ? html`<span
                     class="section-slot__stamp"
                     style="animation-delay: ${i * 400 + 200}ms"
                   >${msg('DECLASSIFIED')}</span>`
-                : nothing}
+                  : nothing
+              }
             </div>
           `;
         })}

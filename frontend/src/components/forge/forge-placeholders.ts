@@ -119,9 +119,9 @@ const BROW_R_KF: string[] = [
 /** Per-person-type eye geometry */
 const EYE_L_CX = [88, 86, 90, 91, 88, 85, 91, 86, 89, 87, 90, 89];
 const EYE_R_CX = [112, 114, 110, 109, 112, 115, 109, 114, 111, 113, 110, 111];
-const EYE_CY   = [115, 118, 112, 120, 112, 118, 110, 112, 113, 117, 117, 114];
-const EYE_RX   = [5, 4, 5.5, 4, 5, 3.5, 5.5, 5, 5, 4.5, 4, 4.5];
-const EYE_RY   = [2.5, 1.8, 2, 3, 2, 1.5, 2.5, 2, 2.2, 2.5, 1.8, 2];
+const EYE_CY = [115, 118, 112, 120, 112, 118, 110, 112, 113, 117, 117, 114];
+const EYE_RX = [5, 4, 5.5, 4, 5, 3.5, 5.5, 5, 5, 4.5, 4, 4.5];
+const EYE_RY = [2.5, 1.8, 2, 3, 2, 1.5, 2.5, 2, 2.2, 2.5, 1.8, 2];
 
 /** Per-person-type nose position */
 const NOSE_Y1 = [118, 122, 116, 124, 116, 122, 114, 116, 117, 120, 120, 118];
@@ -155,17 +155,17 @@ interface OperativeVariant {
 
 const OP_VARIANTS: OperativeVariant[] = [
   { pattern: 'scanlines', accent: '#22c55e', label: 'CLASSIFIED', code: 'SPECTER-7A' },
-  { pattern: 'grid',      accent: '#4ade80', label: 'RESTRICTED', code: 'IRON-12' },
-  { pattern: 'dots',      accent: '#14b8a6', label: 'CLASSIFIED', code: 'WRAITH-3X' },
-  { pattern: 'diagonal',  accent: '#22c55e', label: 'TOP SECRET', code: 'SHADOW-09' },
+  { pattern: 'grid', accent: '#4ade80', label: 'RESTRICTED', code: 'IRON-12' },
+  { pattern: 'dots', accent: '#14b8a6', label: 'CLASSIFIED', code: 'WRAITH-3X' },
+  { pattern: 'diagonal', accent: '#22c55e', label: 'TOP SECRET', code: 'SHADOW-09' },
   { pattern: 'scanlines', accent: '#2dd4bf', label: 'RESTRICTED', code: 'VIPER-4K' },
-  { pattern: 'grid',      accent: '#10b981', label: 'CLASSIFIED', code: 'CIPHER-21' },
-  { pattern: 'dots',      accent: '#34d399', label: 'TOP SECRET', code: 'ORACLE-6F' },
-  { pattern: 'diagonal',  accent: '#4ade80', label: 'RESTRICTED', code: 'FLUX-7Z' },
+  { pattern: 'grid', accent: '#10b981', label: 'CLASSIFIED', code: 'CIPHER-21' },
+  { pattern: 'dots', accent: '#34d399', label: 'TOP SECRET', code: 'ORACLE-6F' },
+  { pattern: 'diagonal', accent: '#4ade80', label: 'RESTRICTED', code: 'FLUX-7Z' },
   { pattern: 'scanlines', accent: '#10b981', label: 'TOP SECRET', code: 'PHANTOM-5A' },
-  { pattern: 'grid',      accent: '#2dd4bf', label: 'CLASSIFIED', code: 'NOMAD-8R' },
-  { pattern: 'dots',      accent: '#22c55e', label: 'RESTRICTED', code: 'DAGGER-11' },
-  { pattern: 'diagonal',  accent: '#14b8a6', label: 'TOP SECRET', code: 'AEGIS-2K' },
+  { pattern: 'grid', accent: '#2dd4bf', label: 'CLASSIFIED', code: 'NOMAD-8R' },
+  { pattern: 'dots', accent: '#22c55e', label: 'RESTRICTED', code: 'DAGGER-11' },
+  { pattern: 'diagonal', accent: '#14b8a6', label: 'TOP SECRET', code: 'AEGIS-2K' },
 ];
 
 // ── SVG helpers ──────────────────────────────────────────────────────
@@ -219,7 +219,9 @@ function vals<T>(arr: T[], offset: number): string {
 
 /** SMIL keySplines for n values */
 function sp(n: number): string {
-  return Array(n - 1).fill('0.4 0 0.6 1').join(';');
+  return Array(n - 1)
+    .fill('0.4 0 0.6 1')
+    .join(';');
 }
 
 // ── Animated operative builder ───────────────────────────────────────
@@ -345,20 +347,38 @@ interface BuildingVariant {
 }
 
 const BLD_VARIANTS: BuildingVariant[] = [
-  { buildingIdx: 0,  pattern: 'grid',      accent: '#22c55e', label: 'SECTOR A-7',  code: 'TOWER-01' },
-  { buildingIdx: 1,  pattern: 'scanlines', accent: '#14b8a6', label: 'INDUSTRIAL',  code: 'PLANT-3K' },
-  { buildingIdx: 2,  pattern: 'dots',      accent: '#4ade80', label: 'CLASSIFIED',   code: 'DOME-09' },
-  { buildingIdx: 3,  pattern: 'diagonal',  accent: '#10b981', label: 'RESTRICTED',   code: 'APEX-12' },
-  { buildingIdx: 4,  pattern: 'scanlines', accent: '#2dd4bf', label: 'DEPOT',        code: 'BAY-4F' },
-  { buildingIdx: 5,  pattern: 'grid',      accent: '#22c55e', label: 'SECTOR C-2',  code: 'SPIRE-07' },
-  { buildingIdx: 6,  pattern: 'dots',      accent: '#34d399', label: 'FORTIFIED',    code: 'BASTION-5' },
-  { buildingIdx: 7,  pattern: 'diagonal',  accent: '#14b8a6', label: 'COMMS ARRAY', code: 'RELAY-8X' },
-  { buildingIdx: 8,  pattern: 'scanlines', accent: '#4ade80', label: 'SECTOR D-1',  code: 'LENS-02' },
-  { buildingIdx: 9,  pattern: 'grid',      accent: '#10b981', label: 'COMMERCIAL',   code: 'MONOLITH-6' },
-  { buildingIdx: 10, pattern: 'dots',      accent: '#22c55e', label: 'SECTOR B-9',  code: 'BLOCK-11' },
-  { buildingIdx: 11, pattern: 'diagonal',  accent: '#2dd4bf', label: 'INDUSTRIAL',  code: 'FORGE-3A' },
-  { buildingIdx: 12, pattern: 'scanlines', accent: '#34d399', label: 'TRANSIT',      code: 'SPAN-14' },
-  { buildingIdx: 13, pattern: 'grid',      accent: '#14b8a6', label: 'FORTIFIED',    code: 'KEEP-7R' },
+  { buildingIdx: 0, pattern: 'grid', accent: '#22c55e', label: 'SECTOR A-7', code: 'TOWER-01' },
+  {
+    buildingIdx: 1,
+    pattern: 'scanlines',
+    accent: '#14b8a6',
+    label: 'INDUSTRIAL',
+    code: 'PLANT-3K',
+  },
+  { buildingIdx: 2, pattern: 'dots', accent: '#4ade80', label: 'CLASSIFIED', code: 'DOME-09' },
+  { buildingIdx: 3, pattern: 'diagonal', accent: '#10b981', label: 'RESTRICTED', code: 'APEX-12' },
+  { buildingIdx: 4, pattern: 'scanlines', accent: '#2dd4bf', label: 'DEPOT', code: 'BAY-4F' },
+  { buildingIdx: 5, pattern: 'grid', accent: '#22c55e', label: 'SECTOR C-2', code: 'SPIRE-07' },
+  { buildingIdx: 6, pattern: 'dots', accent: '#34d399', label: 'FORTIFIED', code: 'BASTION-5' },
+  {
+    buildingIdx: 7,
+    pattern: 'diagonal',
+    accent: '#14b8a6',
+    label: 'COMMS ARRAY',
+    code: 'RELAY-8X',
+  },
+  { buildingIdx: 8, pattern: 'scanlines', accent: '#4ade80', label: 'SECTOR D-1', code: 'LENS-02' },
+  { buildingIdx: 9, pattern: 'grid', accent: '#10b981', label: 'COMMERCIAL', code: 'MONOLITH-6' },
+  { buildingIdx: 10, pattern: 'dots', accent: '#22c55e', label: 'SECTOR B-9', code: 'BLOCK-11' },
+  {
+    buildingIdx: 11,
+    pattern: 'diagonal',
+    accent: '#2dd4bf',
+    label: 'INDUSTRIAL',
+    code: 'FORGE-3A',
+  },
+  { buildingIdx: 12, pattern: 'scanlines', accent: '#34d399', label: 'TRANSIT', code: 'SPAN-14' },
+  { buildingIdx: 13, pattern: 'grid', accent: '#14b8a6', label: 'FORTIFIED', code: 'KEEP-7R' },
 ];
 
 function buildBuildingSvg(v: BuildingVariant): string {

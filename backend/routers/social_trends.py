@@ -526,7 +526,7 @@ async def batch_integrate_articles(
     # Sort by impact_level descending so highest-impact is first (for reaction generation)
     sorted_items = sorted(body.items, key=lambda x: x.impact_level, reverse=True)
 
-    for idx, item in enumerate(sorted_items):
+    for _idx, item in enumerate(sorted_items):
         tags = [*item.tags, "imported", "news", "batch"]
         event_data = serialize_for_json({
             "title": item.title,

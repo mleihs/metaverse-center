@@ -1,6 +1,6 @@
 import type { ApiResponse } from '../../types/index.js';
-import type { ForgeLoreSection } from './ForgeApiService.js';
 import { BaseApiService } from './BaseApiService.js';
+import type { ForgeLoreSection } from './ForgeApiService.js';
 
 export interface LoreSectionCreatePayload {
   chapter: string;
@@ -30,10 +30,7 @@ export class LoreApiService extends BaseApiService {
     return this.patch(`/simulations/${simulationId}/lore/${sectionId}`, data);
   }
 
-  deleteSection(
-    simulationId: string,
-    sectionId: string,
-  ): Promise<ApiResponse<ForgeLoreSection>> {
+  deleteSection(simulationId: string, sectionId: string): Promise<ApiResponse<ForgeLoreSection>> {
     return this.delete(`/simulations/${simulationId}/lore/${sectionId}`);
   }
 

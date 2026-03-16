@@ -277,7 +277,11 @@ export class VelgForgeWizard extends LitElement {
   }
 
   private _renderPhaseBar() {
-    const steps: { id: 'astrolabe' | 'drafting' | 'darkroom' | 'ignition'; label: string; ignition: boolean }[] = [
+    const steps: {
+      id: 'astrolabe' | 'drafting' | 'darkroom' | 'ignition';
+      label: string;
+      ignition: boolean;
+    }[] = [
       { id: 'astrolabe', label: msg('I. The Astrolabe'), ignition: false },
       { id: 'drafting', label: msg('II. The Table'), ignition: false },
       { id: 'darkroom', label: msg('III. The Darkroom'), ignition: false },
@@ -288,26 +292,33 @@ export class VelgForgeWizard extends LitElement {
 
     return html`
       <div class="phases" role="list" aria-label=${msg('Forge Phases')}>
-        ${steps.map(
-          (s, i) => {
-            const isDone = i < currentIdx;
-            const isActive = this._phase === s.id;
-            return html`
+        ${steps.map((s, i) => {
+          const isDone = i < currentIdx;
+          const isActive = this._phase === s.id;
+          return html`
             <div
               role="listitem"
               class="phase ${isDone ? 'phase--done phase--clickable' : ''} ${isActive ? 'phase--active' : ''} ${s.ignition ? 'phase--ignition' : ''}"
               ${isActive ? html`aria-current="step"` : nothing}
               @click=${isDone ? () => this._navigateToPhase(s.id) : nothing}
-              @keydown=${isDone ? (e: KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this._navigateToPhase(s.id); } } : nothing}
+              @keydown=${
+                isDone
+                  ? (e: KeyboardEvent) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        this._navigateToPhase(s.id);
+                      }
+                    }
+                  : nothing
+              }
               tabindex=${isDone ? '0' : '-1'}
               ${isDone ? html`role="button"` : nothing}
-              ${isDone ? html`aria-label=${msg('Return to') + ' ' + s.label}` : nothing}
+              ${isDone ? html`aria-label=${`${msg('Return to')} ${s.label}`}` : nothing}
             >
               ${isDone ? html`<span aria-hidden="true">&#10003; </span>` : nothing}${s.label}
             </div>
           `;
-          },
-        )}
+        })}
       </div>
     `;
   }

@@ -87,15 +87,15 @@ export class VelgForgeWalletBadge extends SignalWatcher(LitElement) {
     const current = forgeStateManager.walletBalance.value;
     if (this._prevBalance >= 0 && current !== this._prevBalance) {
       this._animating = true;
-      setTimeout(() => { this._animating = false; }, 500);
+      setTimeout(() => {
+        this._animating = false;
+      }, 500);
     }
     this._prevBalance = current;
   }
 
   private _handleClick(): void {
-    this.dispatchEvent(
-      new CustomEvent('open-mint', { bubbles: true, composed: true }),
-    );
+    this.dispatchEvent(new CustomEvent('open-mint', { bubbles: true, composed: true }));
   }
 
   private _handleKeyDown(e: KeyboardEvent): void {
@@ -110,7 +110,7 @@ export class VelgForgeWalletBadge extends SignalWatcher(LitElement) {
     const bypass = forgeStateManager.byokStatus.value.effective_bypass;
     const label = bypass
       ? msg('BYOK Active — Unlimited Access')
-      : msg('Forge Tokens') + `: ${balance}`;
+      : `${msg('Forge Tokens')}: ${balance}`;
 
     return html`
       <div
@@ -123,12 +123,13 @@ export class VelgForgeWalletBadge extends SignalWatcher(LitElement) {
         @click=${this._handleClick}
         @keydown=${this._handleKeyDown}
       >
-        ${bypass
-          ? html`
+        ${
+          bypass
+            ? html`
               <span class="wallet-badge__icon" aria-hidden="true">&#x1F511;</span>
               <span class="wallet-badge__count">BYOK</span>
             `
-          : html`
+            : html`
               <span class="wallet-badge__icon" aria-hidden="true">&#x2B23;</span>
               <span class="wallet-badge__count">${balance}</span>
             `

@@ -1198,10 +1198,13 @@ export class VelgLandingPage extends LitElement {
   }
 
   private _trackCta(location: string): void {
-    this.dispatchEvent(new CustomEvent('landing-cta-click', {
-      bubbles: true, composed: true,
-      detail: { location },
-    }));
+    this.dispatchEvent(
+      new CustomEvent('landing-cta-click', {
+        bubbles: true,
+        composed: true,
+        detail: { location },
+      }),
+    );
   }
 
   private _setupSectionTracking(): void {
@@ -1211,10 +1214,13 @@ export class VelgLandingPage extends LitElement {
           if (entry.isIntersecting) {
             const section = (entry.target as HTMLElement).dataset.section;
             if (section) {
-              this.dispatchEvent(new CustomEvent('landing-section-view', {
-                bubbles: true, composed: true,
-                detail: { section },
-              }));
+              this.dispatchEvent(
+                new CustomEvent('landing-section-view', {
+                  bubbles: true,
+                  composed: true,
+                  detail: { section },
+                }),
+              );
             }
             sectionObserver.unobserve(entry.target);
           }
@@ -1245,8 +1251,10 @@ export class VelgLandingPage extends LitElement {
   }
 
   private _renderHero() {
-    const waveformBars = Array.from({ length: 24 }, (_, i) =>
-      html`<div class="waveform__bar" style="animation-delay: ${i * 0.06}s; height: ${4 + Math.random() * 12}px"></div>`,
+    const waveformBars = Array.from(
+      { length: 24 },
+      (_, i) =>
+        html`<div class="waveform__bar" style="animation-delay: ${i * 0.06}s; height: ${4 + Math.random() * 12}px"></div>`,
     );
 
     return html`
@@ -1282,7 +1290,11 @@ export class VelgLandingPage extends LitElement {
             <a
               class="hero__cta"
               href="/register"
-              @click=${(e: Event) => { e.preventDefault(); this._trackCta('hero'); this._navigate('/register'); }}
+              @click=${(e: Event) => {
+                e.preventDefault();
+                this._trackCta('hero');
+                this._navigate('/register');
+              }}
               aria-label=${msg('Enter the Metaverse — Create your account')}
             >
               ${msg('Enter the Metaverse')}
@@ -1305,7 +1317,8 @@ export class VelgLandingPage extends LitElement {
           class="hero__scroll-hint"
           aria-label=${msg('Scroll to features')}
           @click=${() => {
-            this.renderRoot.querySelector('[data-section="features"]')
+            this.renderRoot
+              .querySelector('[data-section="features"]')
               ?.scrollIntoView({ behavior: 'smooth' });
           }}
         >
@@ -1354,17 +1367,19 @@ export class VelgLandingPage extends LitElement {
 
       let accentText = '';
       for (let j = 0; j < targetAccent.length; j++) {
-        accentText += j < accentRevealed
-          ? targetAccent[j]
-          : scrambleChars[Math.floor(Math.random() * scrambleChars.length)];
+        accentText +=
+          j < accentRevealed
+            ? targetAccent[j]
+            : scrambleChars[Math.floor(Math.random() * scrambleChars.length)];
       }
       accentEl.textContent = accentText;
 
       let restText = '';
       for (let j = 0; j < targetRest.length; j++) {
-        restText += j < restRevealed
-          ? targetRest[j]
-          : scrambleChars[Math.floor(Math.random() * scrambleChars.length)];
+        restText +=
+          j < restRevealed
+            ? targetRest[j]
+            : scrambleChars[Math.floor(Math.random() * scrambleChars.length)];
       }
       restEl.textContent = restText;
 
@@ -1559,7 +1574,11 @@ export class VelgLandingPage extends LitElement {
             <a
               class="cta-frame__btn"
               href="/register"
-              @click=${(e: Event) => { e.preventDefault(); this._trackCta('footer'); this._navigate('/register'); }}
+              @click=${(e: Event) => {
+                e.preventDefault();
+                this._trackCta('footer');
+                this._navigate('/register');
+              }}
               aria-label=${msg('Create your world — Sign up')}
             >
               ${msg('Create Your World')}

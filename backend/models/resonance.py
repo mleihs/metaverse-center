@@ -5,7 +5,6 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-
 # ── Constants ────────────────────────────────────────────────────────────────
 
 RESONANCE_STATUSES = ("detected", "impacting", "subsiding", "archived")

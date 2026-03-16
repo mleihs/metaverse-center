@@ -449,7 +449,8 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
 
     const simId = this.simulationId ?? appState.simulationId.value ?? '';
     const avg = Math.round(this._avgStability * 100);
-    const stabColor = avg < 40 ? 'var(--color-danger)' : avg < 60 ? 'var(--color-warning)' : 'var(--color-success)';
+    const stabColor =
+      avg < 40 ? 'var(--color-danger)' : avg < 60 ? 'var(--color-warning)' : 'var(--color-success)';
 
     return html`
       <div class="desk">

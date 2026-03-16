@@ -34,9 +34,13 @@ import '../shared/VelgBadge.js';
 import '../shared/VelgSectionHeader.js';
 import '../shared/EntityLightbox.js';
 import '../shared/VelgSidePanel.js';
-import { fetchRawLoreSections, isClassifiedSection, parseAgentIntel } from '../lore/lore-content.js';
-import type { AgentIntelData } from '../lore/lore-content.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
+import type { AgentIntelData } from '../lore/lore-content.js';
+import {
+  fetchRawLoreSections,
+  isClassifiedSection,
+  parseAgentIntel,
+} from '../lore/lore-content.js';
 import './AgentMemorySection.js';
 import './RelationshipCard.js';
 import './RelationshipEditModal.js';
@@ -623,7 +627,10 @@ export class VelgAgentDetailsPanel extends LitElement {
     if (!this.agent || !this.simulationId) return;
 
     // Only load if dossier has been purchased
-    const hasDossier = forgeStateManager.hasCompletedPurchase(this.simulationId, 'classified_dossier');
+    const hasDossier = forgeStateManager.hasCompletedPurchase(
+      this.simulationId,
+      'classified_dossier',
+    );
     if (!hasDossier) return;
 
     try {
@@ -1334,14 +1341,16 @@ export class VelgAgentDetailsPanel extends LitElement {
               : nothing
           }
 
-          ${this._agentIntel
-            ? html`
+          ${
+            this._agentIntel
+              ? html`
               <div class="panel__section">
                 <velg-section-header>${msg('Bureau Intelligence')}</velg-section-header>
                 <velg-intel-card .intel=${this._agentIntel}></velg-intel-card>
               </div>
             `
-            : nothing}
+              : nothing
+          }
 
           <div class="panel__section">
             <velg-section-header>${msg('Aptitudes')} ${renderInfoBubble(msg('Drag sliders to set operative strengths. Total budget must equal 36 — raising one type means lowering another. Changes auto-save when the budget balances.'))}</velg-section-header>
@@ -1399,15 +1408,16 @@ export class VelgAgentDetailsPanel extends LitElement {
     const title = this.agent?.name ?? msg('Agent Details');
     const content = this._renderSlottedContent();
 
-    const wrapper = this.container === 'lightbox'
-      ? html`
+    const wrapper =
+      this.container === 'lightbox'
+        ? html`
         <velg-entity-lightbox
           .open=${this.open}
           .panelTitle=${title}
           .totalEntities=${this.totalEntities}
           .currentIndex=${this.currentIndex}
         >${content}</velg-entity-lightbox>`
-      : html`
+        : html`
         <velg-side-panel
           .open=${this.open}
           .panelTitle=${title}

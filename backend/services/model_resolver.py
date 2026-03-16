@@ -6,10 +6,9 @@ import logging
 from dataclasses import dataclass
 from uuid import UUID
 
-from supabase import Client
-
 from backend.services.constants import PLATFORM_DEFAULT_MODELS
 from backend.services.platform_model_config import get_platform_model
+from supabase import Client
 
 logger = logging.getLogger(__name__)
 

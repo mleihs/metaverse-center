@@ -5,9 +5,10 @@ from __future__ import annotations
 import logging
 from uuid import UUID
 
+import sentry_sdk
 import structlog
-
 from fastapi import HTTPException, status
+from pydantic_ai.exceptions import ModelHTTPError, UnexpectedModelBehavior
 
 from backend.config import settings
 from backend.models.forge import (
@@ -18,10 +19,7 @@ from backend.models.forge import (
     ForgeGeographyDraft,
     PhilosophicalAnchor,
 )
-import sentry_sdk
 from backend.services import forge_mock_service as mock
-from pydantic_ai.exceptions import ModelHTTPError, UnexpectedModelBehavior
-
 from backend.services.ai_utils import PYDANTIC_AI_MAX_TOKENS, ai_error_to_http, create_forge_agent
 from backend.services.forge_draft_service import ForgeDraftService
 from backend.services.forge_entity_translation_service import ForgeEntityTranslationService
@@ -102,7 +100,7 @@ def _build_chunk_prompt(
             city = geography.get("city_name", "the city")
             zone_names = [z.get("name", "") for z in geography.get("zones", [])]
             lines += [
-                f"",
+                "",
                 f"City: {city}",
                 f"Districts: {', '.join(zone_names)}" if zone_names else "",
             ]
@@ -128,7 +126,7 @@ def _build_chunk_prompt(
             city = geography.get("city_name", "the city")
             zone_names = [z.get("name", "") for z in geography.get("zones", [])]
             lines += [
-                f"",
+                "",
                 f"City: {city}",
                 f"Districts: {', '.join(zone_names)}" if zone_names else "",
             ]
@@ -166,9 +164,21 @@ class ForgeOrchestratorService:
         ("insufficient tokens", 402, "Insufficient Forge Tokens. Acquire more before igniting."),
         ("already processed", 409, "This draft has already been materialized."),
         ("in progress", 409, "Materialization is already in progress."),
-        ("missing a selected philosophical anchor", 400, "Draft is missing a philosophical anchor. Return to the Astrolabe."),
-        ("missing geography", 400, "Draft is missing geography data. Return to the Drafting Table."),
-        ("must contain at least one agent", 400, "Draft must contain at least one agent. Return to the Drafting Table."),
+        (
+            "missing a selected philosophical anchor",
+            400,
+            "Draft is missing a philosophical anchor. Return to the Astrolabe.",
+        ),
+        (
+            "missing geography",
+            400,
+            "Draft is missing geography data. Return to the Drafting Table.",
+        ),
+        (
+            "must contain at least one agent",
+            400,
+            "Draft must contain at least one agent. Return to the Drafting Table.",
+        ),
     ]
 
     @staticmethod
@@ -572,10 +582,30 @@ class ForgeOrchestratorService:
                 logger.exception("Mock lore persist failed", extra={"simulation_id": str(simulation_id)})
 
             try:
-                mat_agents = (supabase.table("agents").select("name, character, background, primary_profession").eq("simulation_id", str(simulation_id)).execute()).data or []
-                mat_buildings = (supabase.table("buildings").select("name, description, building_type, building_condition").eq("simulation_id", str(simulation_id)).execute()).data or []
-                mat_zones = (supabase.table("zones").select("name, description, zone_type").eq("simulation_id", str(simulation_id)).execute()).data or []
-                mat_streets = (supabase.table("city_streets").select("name, street_type").eq("simulation_id", str(simulation_id)).execute()).data or []
+                mat_agents = (
+                    supabase.table("agents")
+                    .select("name, character, background, primary_profession")
+                    .eq("simulation_id", str(simulation_id))
+                    .execute()
+                ).data or []
+                mat_buildings = (
+                    supabase.table("buildings")
+                    .select("name, description, building_type, building_condition")
+                    .eq("simulation_id", str(simulation_id))
+                    .execute()
+                ).data or []
+                mat_zones = (
+                    supabase.table("zones")
+                    .select("name, description, zone_type")
+                    .eq("simulation_id", str(simulation_id))
+                    .execute()
+                ).data or []
+                mat_streets = (
+                    supabase.table("city_streets")
+                    .select("name, street_type")
+                    .eq("simulation_id", str(simulation_id))
+                    .execute()
+                ).data or []
                 sim_desc = geography.get("description", "") or seed
                 mock_trans = mock.mock_entity_translations(mat_agents, mat_buildings, mat_zones, mat_streets, sim_desc)
                 await ForgeEntityTranslationService.persist_translations(supabase, simulation_id, mock_trans)
@@ -635,7 +665,12 @@ class ForgeOrchestratorService:
 
         # Translate entity fields (skip if bilingual generation already populated _de)
         try:
-            mat_agents = (supabase.table("agents").select("name, character, background, primary_profession, character_de").eq("simulation_id", str(simulation_id)).execute()).data or []
+            mat_agents = (
+                supabase.table("agents")
+                .select("name, character, background, primary_profession, character_de")
+                .eq("simulation_id", str(simulation_id))
+                .execute()
+            ).data or []
 
             agents_have_de = all(a.get("character_de") for a in mat_agents)
             if agents_have_de:
@@ -644,9 +679,24 @@ class ForgeOrchestratorService:
                     extra={"simulation_id": str(simulation_id)},
                 )
             else:
-                mat_buildings = (supabase.table("buildings").select("name, description, building_type, building_condition").eq("simulation_id", str(simulation_id)).execute()).data or []
-                mat_zones = (supabase.table("zones").select("name, description, zone_type").eq("simulation_id", str(simulation_id)).execute()).data or []
-                mat_streets = (supabase.table("city_streets").select("name, street_type").eq("simulation_id", str(simulation_id)).execute()).data or []
+                mat_buildings = (
+                    supabase.table("buildings")
+                    .select("name, description, building_type, building_condition")
+                    .eq("simulation_id", str(simulation_id))
+                    .execute()
+                ).data or []
+                mat_zones = (
+                    supabase.table("zones")
+                    .select("name, description, zone_type")
+                    .eq("simulation_id", str(simulation_id))
+                    .execute()
+                ).data or []
+                mat_streets = (
+                    supabase.table("city_streets")
+                    .select("name, street_type")
+                    .eq("simulation_id", str(simulation_id))
+                    .execute()
+                ).data or []
                 sim_desc = geography.get("description", "") or seed
 
                 entity_translations = await ForgeEntityTranslationService.translate_entities(
@@ -756,7 +806,11 @@ class ForgeOrchestratorService:
         if not _types or "building" in _types:
             buildings = (
                 supabase.table("buildings")
-                .select("id, name, description, building_type, building_condition, style, special_type, construction_year, population_capacity, zones(name)")
+                .select(
+                    "id, name, description, building_type, building_condition,"
+                    " style, special_type, construction_year,"
+                    " population_capacity, zones(name)"
+                )
                 .eq("simulation_id", str(simulation_id))
                 .execute()
             )

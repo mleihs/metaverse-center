@@ -81,18 +81,27 @@ export class VelgCampaignDashboard extends LitElement {
         ${this._error ? html`<velg-error-state message=${this._error} @retry=${this._loadCampaigns}></velg-error-state>` : ''}
         ${!this._loading && !this._error && this._campaigns.length === 0 ? html`<velg-empty-state message=${msg('No campaigns yet')}></velg-empty-state>` : ''}
 
-        ${this._selectedCampaignId
-          ? html`
-            <button @click=${() => { this._selectedCampaignId = null; }} style="background:none;border:none;color:var(--color-primary);cursor:pointer;font-size:var(--text-sm);padding:0;">&larr; ${msg('Back to campaigns')}</button>
+        ${
+          this._selectedCampaignId
+            ? html`
+            <button @click=${() => {
+              this._selectedCampaignId = null;
+            }} style="background:none;border:none;color:var(--color-primary);cursor:pointer;font-size:var(--text-sm);padding:0;">&larr; ${msg('Back to campaigns')}</button>
             <velg-campaign-analytics-panel .simulationId=${this.simulationId} .campaignId=${this._selectedCampaignId}></velg-campaign-analytics-panel>
           `
-          : ''}
+            : ''
+        }
 
         ${
           !this._loading && !this._selectedCampaignId && this._campaigns.length > 0
             ? html`
           <div class="entity-grid">
-            ${this._campaigns.map((c, i) => html`<velg-campaign-card style="--i: ${i}" .campaign=${c} .simulationId=${this.simulationId} @click=${() => { this._selectedCampaignId = c.id; }}></velg-campaign-card>`)}
+            ${this._campaigns.map(
+              (c, i) =>
+                html`<velg-campaign-card style="--i: ${i}" .campaign=${c} .simulationId=${this.simulationId} @click=${() => {
+                  this._selectedCampaignId = c.id;
+                }}></velg-campaign-card>`,
+            )}
           </div>
           <velg-pagination .currentPage=${this._page} .totalItems=${this._total} .pageSize=${this._pageSize} @page-change=${this._handlePageChange}></velg-pagination>
         `

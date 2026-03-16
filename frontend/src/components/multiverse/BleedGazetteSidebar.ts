@@ -398,18 +398,24 @@ export class VelgBleedGazetteSidebar extends LitElement {
       >
         <div class="dispatch__route">
           <span class="dispatch__icon" aria-hidden="true">${icons.antenna(14)}</span>
-          ${entry.source_simulation
-            ? html`<span class="dispatch__sim-name">${entry.source_simulation.name}</span>`
-            : nothing}
+          ${
+            entry.source_simulation
+              ? html`<span class="dispatch__sim-name">${entry.source_simulation.name}</span>`
+              : nothing
+          }
           <span class="dispatch__arrow" aria-hidden="true">&#10142;</span>
-          ${entry.target_simulation
-            ? html`<span class="dispatch__sim-name">${entry.target_simulation.name}</span>`
-            : nothing}
+          ${
+            entry.target_simulation
+              ? html`<span class="dispatch__sim-name">${entry.target_simulation.name}</span>`
+              : nothing
+          }
         </div>
         <div class="dispatch__route">
-          ${entry.echo_vector
-            ? html`<span class="dispatch__vector-tag" style="color: ${vecColor}">${entry.echo_vector}</span>`
-            : nothing}
+          ${
+            entry.echo_vector
+              ? html`<span class="dispatch__vector-tag" style="color: ${vecColor}">${entry.echo_vector}</span>`
+              : nothing
+          }
           ${this._strengthDots(entry.strength)}
         </div>
         <div class="dispatch__narrative">${entry.narrative}</div>
@@ -473,7 +479,9 @@ export class VelgBleedGazetteSidebar extends LitElement {
             <span class="pulse-indicator" aria-hidden="true"></span>
             <button
               class="collapse-btn"
-              @click=${() => { this._collapsed = !this._collapsed; }}
+              @click=${() => {
+                this._collapsed = !this._collapsed;
+              }}
               aria-label=${this._collapsed ? msg('Expand dispatch log') : msg('Collapse dispatch log')}
               aria-expanded=${!this._collapsed}
             >${this._collapsed ? '\u25BC' : '\u25B2'}</button>
@@ -483,15 +491,19 @@ export class VelgBleedGazetteSidebar extends LitElement {
         <div class="gazette-header__rule" aria-hidden="true"></div>
       </div>
 
-      ${this._loading
-        ? html`<velg-loading-state message=${msg('Receiving dispatches...')}></velg-loading-state>`
-        : html`
+      ${
+        this._loading
+          ? html`<velg-loading-state message=${msg('Receiving dispatches...')}></velg-loading-state>`
+          : html`
           <div class="dispatches ${this._collapsed ? 'dispatches--collapsed' : ''}">
-            ${this._entries.length === 0
-              ? html`<div class="empty">${msg('No dispatches on file')}</div>`
-              : this._entries.map((e, i) => this._renderEntry(e, i))}
+            ${
+              this._entries.length === 0
+                ? html`<div class="empty">${msg('No dispatches on file')}</div>`
+                : this._entries.map((e, i) => this._renderEntry(e, i))
+            }
           </div>
-        `}
+        `
+      }
     `;
   }
 }

@@ -102,28 +102,231 @@ def mock_geography(seed: str, zone_count: int = 5, street_count: int = 5) -> dic
     city = city_names[h % len(city_names)]
 
     zone_pool = [
-        {"name": "The Inkwell", "zone_type": "cultural", "zone_type_de": "kulturell", "description": "Where stories are distilled into liquid form and sold by the dram.", "description_de": "Hier werden Geschichten zu fl\u00fcssiger Form destilliert und schluckweise verkauft.", "characteristics": ["liquid narratives", "alchemical fumes", "ink-stained cobblestones"]},
-        {"name": "Thornwalk", "zone_type": "residential", "zone_type_de": "Wohngebiet", "description": "A labyrinth of terraced houses growing thorned hedges as load-bearing walls.", "description_de": "Ein Labyrinth aus Reihenh\u00e4usern, deren tragende W\u00e4nde aus Dornenhecken bestehen.", "characteristics": ["living architecture", "rustling walls", "pollen haze"]},
-        {"name": "The Furnace Quarter", "zone_type": "industrial", "zone_type_de": "Industriegebiet", "description": "Perpetual smoke. The factories here produce things no one ordered.", "description_de": "Ewiger Rauch. Die Fabriken hier produzieren Dinge, die niemand bestellt hat.", "characteristics": ["perpetual smoke", "unexplained output", "molten glow"]},
-        {"name": "Echoplex", "zone_type": "entertainment", "zone_type_de": "Unterhaltung", "description": "An amphitheatre district where yesterday's conversations replay at dusk.", "description_de": "Ein Amphitheaterviertel, in dem die Gespr\u00e4che von gestern bei D\u00e4mmerung wiederhallen.", "characteristics": ["temporal echoes", "acoustic anomalies", "twilight performances"]},
-        {"name": "The Stillwater", "zone_type": "government", "zone_type_de": "Regierungsviertel", "description": "Administrative buildings arranged around a canal that flows in no direction.", "description_de": "Verwaltungsgeb\u00e4ude, angeordnet um einen Kanal, der in keine Richtung flie\u00dft.", "characteristics": ["bureaucratic calm", "directionless canal", "paper rustling"]},
-        {"name": "Ashgrove", "zone_type": "military", "zone_type_de": "Milit\u00e4rgebiet", "description": "A fortified garden where trees grow ammunition instead of fruit.", "description_de": "Ein befestigter Garten, in dem B\u00e4ume Munition statt Fr\u00fcchte tragen.", "characteristics": ["militant horticulture", "brass-leaf canopy", "cordite perfume"]},
-        {"name": "The Hollows", "zone_type": "slum", "zone_type_de": "Elendsviertel", "description": "Underground caverns repurposed as housing. The rent is paid in secrets.", "description_de": "Unterirdische H\u00f6hlen, umfunktioniert zu Wohnraum. Die Miete wird in Geheimnissen bezahlt.", "characteristics": ["subterranean", "whisper economy", "bioluminescent moss"]},
-        {"name": "Mirrorside", "zone_type": "commercial", "zone_type_de": "Gewerbegebiet", "description": "Every shopfront reflects a slightly different version of the customer.", "description_de": "Jede Schaufensterfront spiegelt eine leicht ver\u00e4nderte Version des Kunden wider.", "characteristics": ["distorted reflections", "identity commerce", "silver-glass facades"]},
+        {
+            "name": "The Inkwell",
+            "zone_type": "cultural",
+            "zone_type_de": "kulturell",
+            "description": (
+                "Where stories are distilled into liquid form"
+                " and sold by the dram."
+            ),
+            "description_de": (
+                "Hier werden Geschichten zu flüssiger Form"
+                " destilliert und schluckweise verkauft."
+            ),
+            "characteristics": [
+                "liquid narratives",
+                "alchemical fumes",
+                "ink-stained cobblestones",
+            ],
+        },
+        {
+            "name": "Thornwalk",
+            "zone_type": "residential",
+            "zone_type_de": "Wohngebiet",
+            "description": (
+                "A labyrinth of terraced houses growing thorned"
+                " hedges as load-bearing walls."
+            ),
+            "description_de": (
+                "Ein Labyrinth aus Reihenhäusern, deren tragende"
+                " Wände aus Dornenhecken bestehen."
+            ),
+            "characteristics": [
+                "living architecture",
+                "rustling walls",
+                "pollen haze",
+            ],
+        },
+        {
+            "name": "The Furnace Quarter",
+            "zone_type": "industrial",
+            "zone_type_de": "Industriegebiet",
+            "description": (
+                "Perpetual smoke. The factories here produce"
+                " things no one ordered."
+            ),
+            "description_de": (
+                "Ewiger Rauch. Die Fabriken hier produzieren"
+                " Dinge, die niemand bestellt hat."
+            ),
+            "characteristics": [
+                "perpetual smoke",
+                "unexplained output",
+                "molten glow",
+            ],
+        },
+        {
+            "name": "Echoplex",
+            "zone_type": "entertainment",
+            "zone_type_de": "Unterhaltung",
+            "description": (
+                "An amphitheatre district where yesterday's"
+                " conversations replay at dusk."
+            ),
+            "description_de": (
+                "Ein Amphitheaterviertel, in dem die Gespräche"
+                " von gestern bei Dämmerung wiederhallen."
+            ),
+            "characteristics": [
+                "temporal echoes",
+                "acoustic anomalies",
+                "twilight performances",
+            ],
+        },
+        {
+            "name": "The Stillwater",
+            "zone_type": "government",
+            "zone_type_de": "Regierungsviertel",
+            "description": (
+                "Administrative buildings arranged around a"
+                " canal that flows in no direction."
+            ),
+            "description_de": (
+                "Verwaltungsgebäude, angeordnet um einen Kanal,"
+                " der in keine Richtung fließt."
+            ),
+            "characteristics": [
+                "bureaucratic calm",
+                "directionless canal",
+                "paper rustling",
+            ],
+        },
+        {
+            "name": "Ashgrove",
+            "zone_type": "military",
+            "zone_type_de": "Militärgebiet",
+            "description": (
+                "A fortified garden where trees grow ammunition"
+                " instead of fruit."
+            ),
+            "description_de": (
+                "Ein befestigter Garten, in dem Bäume Munition"
+                " statt Früchte tragen."
+            ),
+            "characteristics": [
+                "militant horticulture",
+                "brass-leaf canopy",
+                "cordite perfume",
+            ],
+        },
+        {
+            "name": "The Hollows",
+            "zone_type": "slum",
+            "zone_type_de": "Elendsviertel",
+            "description": (
+                "Underground caverns repurposed as housing."
+                " The rent is paid in secrets."
+            ),
+            "description_de": (
+                "Unterirdische Höhlen, umfunktioniert zu"
+                " Wohnraum. Die Miete wird in Geheimnissen"
+                " bezahlt."
+            ),
+            "characteristics": [
+                "subterranean",
+                "whisper economy",
+                "bioluminescent moss",
+            ],
+        },
+        {
+            "name": "Mirrorside",
+            "zone_type": "commercial",
+            "zone_type_de": "Gewerbegebiet",
+            "description": (
+                "Every shopfront reflects a slightly different"
+                " version of the customer."
+            ),
+            "description_de": (
+                "Jede Schaufensterfront spiegelt eine leicht"
+                " veränderte Version des Kunden wider."
+            ),
+            "characteristics": [
+                "distorted reflections",
+                "identity commerce",
+                "silver-glass facades",
+            ],
+        },
     ]
     street_pool = [
-        {"name": "Threadneedle Passage", "street_type": "alley", "street_type_de": "Gasse", "description": "A narrow gap between buildings where seamstresses once threaded needles by moonlight."},
-        {"name": "Rue du Souvenir", "street_type": "boulevard", "street_type_de": "Boulevard", "description": "Lined with trees that shed memories instead of leaves each autumn."},
-        {"name": "Forgetting Lane", "street_type": "lane", "street_type_de": "Weg", "description": "Visitors report mild amnesia upon reaching the far end."},
-        {"name": "The Long Exhale", "street_type": "avenue", "street_type_de": "Allee", "description": "A gently sloping avenue where the wind always sighs downhill."},
-        {"name": "Clinker Row", "street_type": "road", "street_type_de": "Stra\u00dfe", "description": "Paved with fused furnace slag that still radiates warmth underfoot."},
-        {"name": "Drift Street", "street_type": "street", "street_type_de": "Stra\u00dfe", "description": "Its position shifts by a few meters each decade, confounding cartographers."},
-        {"name": "Parliament Way", "street_type": "avenue", "street_type_de": "Allee", "description": "The widest avenue in the city, designed so that shouted debates carry from end to end."},
-        {"name": "The Spiral Descent", "street_type": "stairway", "street_type_de": "Treppe", "description": "A corkscrew stairway carved into bedrock, connecting the surface to the Hollows."},
+        {
+            "name": "Threadneedle Passage",
+            "street_type": "alley",
+            "street_type_de": "Gasse",
+            "description": (
+                "A narrow gap between buildings where"
+                " seamstresses once threaded needles"
+                " by moonlight."
+            ),
+        },
+        {
+            "name": "Rue du Souvenir",
+            "street_type": "boulevard",
+            "street_type_de": "Boulevard",
+            "description": (
+                "Lined with trees that shed memories"
+                " instead of leaves each autumn."
+            ),
+        },
+        {
+            "name": "Forgetting Lane",
+            "street_type": "lane",
+            "street_type_de": "Weg",
+            "description": (
+                "Visitors report mild amnesia upon"
+                " reaching the far end."
+            ),
+        },
+        {
+            "name": "The Long Exhale",
+            "street_type": "avenue",
+            "street_type_de": "Allee",
+            "description": (
+                "A gently sloping avenue where the"
+                " wind always sighs downhill."
+            ),
+        },
+        {
+            "name": "Clinker Row",
+            "street_type": "road",
+            "street_type_de": "Straße",
+            "description": (
+                "Paved with fused furnace slag that"
+                " still radiates warmth underfoot."
+            ),
+        },
+        {
+            "name": "Drift Street",
+            "street_type": "street",
+            "street_type_de": "Straße",
+            "description": (
+                "Its position shifts by a few meters"
+                " each decade, confounding cartographers."
+            ),
+        },
+        {
+            "name": "Parliament Way",
+            "street_type": "avenue",
+            "street_type_de": "Allee",
+            "description": (
+                "The widest avenue in the city, designed"
+                " so that shouted debates carry from"
+                " end to end."
+            ),
+        },
+        {
+            "name": "The Spiral Descent",
+            "street_type": "stairway",
+            "street_type_de": "Treppe",
+            "description": (
+                "A corkscrew stairway carved into bedrock,"
+                " connecting the surface to the Hollows."
+            ),
+        },
     ]
 
     zones = zone_pool[:zone_count]
-    for i, z in enumerate(zones):
+    for z in zones:
         z["zone_type"] = z.get("zone_type", "mixed")
 
     streets = []
@@ -148,10 +351,34 @@ def mock_agents(seed: str, count: int = 6) -> list[dict]:
             "system": "The Cartographers",
             "primary_profession": "Archivist",
             "primary_profession_de": "Archivarin",
-            "character": "Meticulous, sardonic, and quietly furious. Vesper catalogues what others forget, which means she remembers everything — a condition she considers a disability.",
-            "character_de": "Akribisch, sarkastisch und leise w\u00fctend. Vesper katalogisiert, was andere vergessen, was bedeutet, dass sie sich an alles erinnert \u2014 ein Zustand, den sie als Behinderung betrachtet.",
-            "background": "Former census-taker who discovered that three districts had been removed from official records. Her investigation cost her a promotion and a husband. She considers this a fair trade.",
-            "background_de": "Ehemalige Volksz\u00e4hlerin, die entdeckte, dass drei Bezirke aus den offiziellen Akten entfernt worden waren. Ihre Ermittlungen kosteten sie eine Bef\u00f6rderung und einen Ehemann. Sie h\u00e4lt das f\u00fcr einen fairen Tausch.",
+            "character": (
+                "Meticulous, sardonic, and quietly furious."
+                " Vesper catalogues what others forget, which"
+                " means she remembers everything \u2014 a condition"
+                " she considers a disability."
+            ),
+            "character_de": (
+                "Akribisch, sarkastisch und leise w\u00fctend."
+                " Vesper katalogisiert, was andere vergessen,"
+                " was bedeutet, dass sie sich an alles"
+                " erinnert \u2014 ein Zustand, den sie als"
+                " Behinderung betrachtet."
+            ),
+            "background": (
+                "Former census-taker who discovered that three"
+                " districts had been removed from official"
+                " records. Her investigation cost her a"
+                " promotion and a husband. She considers"
+                " this a fair trade."
+            ),
+            "background_de": (
+                "Ehemalige Volksz\u00e4hlerin, die entdeckte, dass"
+                " drei Bezirke aus den offiziellen Akten"
+                " entfernt worden waren. Ihre Ermittlungen"
+                " kosteten sie eine Bef\u00f6rderung und einen"
+                " Ehemann. Sie h\u00e4lt das f\u00fcr einen fairen"
+                " Tausch."
+            ),
         },
         {
             "name": "Harlan Moss",
@@ -159,10 +386,31 @@ def mock_agents(seed: str, count: int = 6) -> list[dict]:
             "system": "The Foundry",
             "primary_profession": "Forgewright",
             "primary_profession_de": "Schmiedemeister",
-            "character": "Laconic and burn-scarred. Speaks mostly to metal. Believes that everything worth saying has already been hammered into shape by someone with better tools.",
-            "character_de": "Wortkarg und brandvernarbt. Spricht haupts\u00e4chlich mit Metall. Glaubt, dass alles Sagenswerte bereits von jemandem mit besserem Werkzeug in Form gehämmert wurde.",
-            "background": "Third-generation furnace operator who discovered that the factory's output is consumed by something beneath the building. He feeds it anyway. What else would he do?",
-            "background_de": "Hochofenbediener in dritter Generation, der entdeckte, dass die Produktion der Fabrik von etwas unter dem Geb\u00e4ude verschlungen wird. Er f\u00fcttert es trotzdem. Was sollte er auch sonst tun?",
+            "character": (
+                "Laconic and burn-scarred. Speaks mostly to"
+                " metal. Believes that everything worth saying"
+                " has already been hammered into shape by"
+                " someone with better tools."
+            ),
+            "character_de": (
+                "Wortkarg und brandvernarbt. Spricht"
+                " haupts\u00e4chlich mit Metall. Glaubt, dass alles"
+                " Sagenswerte bereits von jemandem mit"
+                " besserem Werkzeug in Form geh\u00e4mmert wurde."
+            ),
+            "background": (
+                "Third-generation furnace operator who"
+                " discovered that the factory's output is"
+                " consumed by something beneath the building."
+                " He feeds it anyway. What else would he do?"
+            ),
+            "background_de": (
+                "Hochofenbediener in dritter Generation, der"
+                " entdeckte, dass die Produktion der Fabrik"
+                " von etwas unter dem Geb\u00e4ude verschlungen"
+                " wird. Er f\u00fcttert es trotzdem. Was sollte er"
+                " auch sonst tun?"
+            ),
         },
         {
             "name": "Sable Drest",
@@ -170,10 +418,32 @@ def mock_agents(seed: str, count: int = 6) -> list[dict]:
             "system": "The Echoplex",
             "primary_profession": "Resonance Broker",
             "primary_profession_de": "Resonanzmakler",
-            "character": "Silver-tongued and ethically flexible. Sable trades in echoes — recorded conversations, ambient emotions, the acoustic fingerprints of rooms where important things happened.",
-            "character_de": "Redegewandt und ethisch flexibel. Sable handelt mit Echos \u2014 aufgezeichneten Gespr\u00e4chen, Umgebungsemotionen, den akustischen Fingerabdr\u00fccken von R\u00e4umen, in denen Wichtiges geschah.",
-            "background": "Grew up in the Hollows, where sound carries strangely. Learned early that a whisper in the right corridor is worth more than a shout in the square.",
-            "background_de": "Aufgewachsen in den Hollows, wo Schall sich seltsam fortpflanzt. Lernte fr\u00fch, dass ein Fl\u00fcstern im richtigen Korridor mehr wert ist als ein Schrei auf dem Platz.",
+            "character": (
+                "Silver-tongued and ethically flexible."
+                " Sable trades in echoes \u2014 recorded"
+                " conversations, ambient emotions, the"
+                " acoustic fingerprints of rooms where"
+                " important things happened."
+            ),
+            "character_de": (
+                "Redegewandt und ethisch flexibel. Sable"
+                " handelt mit Echos \u2014 aufgezeichneten"
+                " Gespr\u00e4chen, Umgebungsemotionen, den"
+                " akustischen Fingerabdr\u00fccken von R\u00e4umen,"
+                " in denen Wichtiges geschah."
+            ),
+            "background": (
+                "Grew up in the Hollows, where sound carries"
+                " strangely. Learned early that a whisper in"
+                " the right corridor is worth more than a"
+                " shout in the square."
+            ),
+            "background_de": (
+                "Aufgewachsen in den Hollows, wo Schall sich"
+                " seltsam fortpflanzt. Lernte fr\u00fch, dass ein"
+                " Fl\u00fcstern im richtigen Korridor mehr wert"
+                " ist als ein Schrei auf dem Platz."
+            ),
         },
         {
             "name": "Orin Keelhaul",
@@ -181,10 +451,33 @@ def mock_agents(seed: str, count: int = 6) -> list[dict]:
             "system": "The Stillwater",
             "primary_profession": "Tide Clerk",
             "primary_profession_de": "Gezeitenschreiber",
-            "character": "Pedantic, anxious, secretly romantic. Orin measures the canal's non-directional flow with instruments of his own devising. His reports are beautiful and incomprehensible.",
-            "character_de": "Pedantisch, \u00e4ngstlich, insgeheim romantisch. Orin misst den richtungslosen Fluss des Kanals mit selbst erfundenen Instrumenten. Seine Berichte sind sch\u00f6n und unverst\u00e4ndlich.",
-            "background": "Applied to the Bureau of Hydrology seven times before being accepted. His thesis — 'On the Emotional Viscosity of Municipal Water' — remains the department's most borrowed text.",
-            "background_de": "Bewarb sich sieben Mal beim B\u00fcro f\u00fcr Hydrologie, bevor er angenommen wurde. Seine Abhandlung \u2014 \u201e\u00dcber die emotionale Viskosit\u00e4t st\u00e4dtischen Wassers\u201c \u2014 bleibt der meistentliehene Text der Abteilung.",
+            "character": (
+                "Pedantic, anxious, secretly romantic. Orin"
+                " measures the canal's non-directional flow"
+                " with instruments of his own devising. His"
+                " reports are beautiful and incomprehensible."
+            ),
+            "character_de": (
+                "Pedantisch, \u00e4ngstlich, insgeheim romantisch."
+                " Orin misst den richtungslosen Fluss des"
+                " Kanals mit selbst erfundenen Instrumenten."
+                " Seine Berichte sind sch\u00f6n und"
+                " unverst\u00e4ndlich."
+            ),
+            "background": (
+                "Applied to the Bureau of Hydrology seven"
+                " times before being accepted. His thesis"
+                " \u2014 'On the Emotional Viscosity of Municipal"
+                " Water' \u2014 remains the department's most"
+                " borrowed text."
+            ),
+            "background_de": (
+                "Bewarb sich sieben Mal beim B\u00fcro f\u00fcr"
+                " Hydrologie, bevor er angenommen wurde."
+                " Seine Abhandlung \u2014 \u201e\u00dcber die emotionale"
+                " Viskosit\u00e4t st\u00e4dtischen Wassers\u201c \u2014 bleibt"
+                " der meistentliehene Text der Abteilung."
+            ),
         },
         {
             "name": "Elara Vex",
@@ -192,10 +485,33 @@ def mock_agents(seed: str, count: int = 6) -> list[dict]:
             "system": "The Inkwell",
             "primary_profession": "Story Distiller",
             "primary_profession_de": "Geschichtendestillateurin",
-            "character": "Warm, pragmatic, and slightly dangerous. Elara converts narratives into consumable liquid form. She insists the process is purely chemical. Her customers report hallucinations anyway.",
-            "character_de": "Warmherzig, pragmatisch und leicht gef\u00e4hrlich. Elara wandelt Erz\u00e4hlungen in trinkbare Fl\u00fcssigkeit um. Sie besteht darauf, der Vorgang sei rein chemisch. Ihre Kunden berichten trotzdem von Halluzinationen.",
-            "background": "Trained as a chemist, retrained as a bartender, finally found her calling at the intersection. Her shop, 'The Final Draft', is both a pun and a threat.",
-            "background_de": "Ausgebildete Chemikerin, umgeschult zur Barkeeperin, fand schlie\u00dflich ihre Berufung an der Schnittstelle. Ihr Laden, \u201eThe Final Draft\u201c, ist Wortspiel und Drohung zugleich.",
+            "character": (
+                "Warm, pragmatic, and slightly dangerous."
+                " Elara converts narratives into consumable"
+                " liquid form. She insists the process is"
+                " purely chemical. Her customers report"
+                " hallucinations anyway."
+            ),
+            "character_de": (
+                "Warmherzig, pragmatisch und leicht"
+                " gef\u00e4hrlich. Elara wandelt Erz\u00e4hlungen in"
+                " trinkbare Fl\u00fcssigkeit um. Sie besteht"
+                " darauf, der Vorgang sei rein chemisch."
+                " Ihre Kunden berichten trotzdem von"
+                " Halluzinationen."
+            ),
+            "background": (
+                "Trained as a chemist, retrained as a"
+                " bartender, finally found her calling at"
+                " the intersection. Her shop, 'The Final"
+                " Draft', is both a pun and a threat."
+            ),
+            "background_de": (
+                "Ausgebildete Chemikerin, umgeschult zur"
+                " Barkeeperin, fand schlie\u00dflich ihre Berufung"
+                " an der Schnittstelle. Ihr Laden, \u201eThe Final"
+                " Draft\u201c, ist Wortspiel und Drohung zugleich."
+            ),
         },
         {
             "name": "Wick Solander",
@@ -203,10 +519,32 @@ def mock_agents(seed: str, count: int = 6) -> list[dict]:
             "system": "Ashgrove",
             "primary_profession": "Orchardist-Militant",
             "primary_profession_de": "Obstbauer-Soldat",
-            "character": "Gentle with plants, lethal with everything else. Wick tends the ammunition trees with the reverence of a monk and the precision of an engineer.",
-            "character_de": "Sanft zu Pflanzen, t\u00f6dlich f\u00fcr alles andere. Wick pflegt die Munitionsb\u00e4ume mit der Ehrfurcht eines M\u00f6nchs und der Pr\u00e4zision eines Ingenieurs.",
-            "background": "Deserted from the city guard after being ordered to prune the ancient oak in Ashgrove. The oak, he insists, spoke to him. The court-martial transcript is classified.",
-            "background_de": "Desertierte von der Stadtwache, nachdem ihm befohlen wurde, die uralte Eiche in Ashgrove zu beschneiden. Die Eiche, behauptet er, habe zu ihm gesprochen. Das Kriegsgerichtsprotokoll ist geheim.",
+            "character": (
+                "Gentle with plants, lethal with everything"
+                " else. Wick tends the ammunition trees with"
+                " the reverence of a monk and the precision"
+                " of an engineer."
+            ),
+            "character_de": (
+                "Sanft zu Pflanzen, t\u00f6dlich f\u00fcr alles andere."
+                " Wick pflegt die Munitionsb\u00e4ume mit der"
+                " Ehrfurcht eines M\u00f6nchs und der Pr\u00e4zision"
+                " eines Ingenieurs."
+            ),
+            "background": (
+                "Deserted from the city guard after being"
+                " ordered to prune the ancient oak in"
+                " Ashgrove. The oak, he insists, spoke to"
+                " him. The court-martial transcript is"
+                " classified."
+            ),
+            "background_de": (
+                "Desertierte von der Stadtwache, nachdem ihm"
+                " befohlen wurde, die uralte Eiche in"
+                " Ashgrove zu beschneiden. Die Eiche,"
+                " behauptet er, habe zu ihm gesprochen. Das"
+                " Kriegsgerichtsprotokoll ist geheim."
+            ),
         },
         {
             "name": "Quill Fenwick",
@@ -214,10 +552,29 @@ def mock_agents(seed: str, count: int = 6) -> list[dict]:
             "system": "The Hollows",
             "primary_profession": "Debt Cartographer",
             "primary_profession_de": "Schuldenkartograph",
-            "character": "Cheerful, relentless, and morally ambiguous. Maps the intricate web of secrets-as-currency that sustains the underground economy.",
-            "character_de": "Fr\u00f6hlich, unerbittlich und moralisch zweideutig. Kartiert das verschlungene Netz der Geheimnisse-als-W\u00e4hrung, das die Untergrundwirtschaft am Leben h\u00e4lt.",
-            "background": "Born on the surface, moved underground voluntarily. Claims to prefer 'honest darkness to dishonest light.' Has never been seen paying for anything.",
-            "background_de": "An der Oberfl\u00e4che geboren, freiwillig in den Untergrund gezogen. Behauptet, \u201eehrliche Dunkelheit unehrlichem Licht\u201c vorzuziehen. Wurde nie beim Bezahlen gesehen.",
+            "character": (
+                "Cheerful, relentless, and morally ambiguous."
+                " Maps the intricate web of secrets-as-currency"
+                " that sustains the underground economy."
+            ),
+            "character_de": (
+                "Fr\u00f6hlich, unerbittlich und moralisch"
+                " zweideutig. Kartiert das verschlungene Netz"
+                " der Geheimnisse-als-W\u00e4hrung, das die"
+                " Untergrundwirtschaft am Leben h\u00e4lt."
+            ),
+            "background": (
+                "Born on the surface, moved underground"
+                " voluntarily. Claims to prefer 'honest"
+                " darkness to dishonest light.' Has never"
+                " been seen paying for anything."
+            ),
+            "background_de": (
+                "An der Oberfl\u00e4che geboren, freiwillig in den"
+                " Untergrund gezogen. Behauptet, \u201eehrliche"
+                " Dunkelheit unehrlichem Licht\u201c vorzuziehen."
+                " Wurde nie beim Bezahlen gesehen."
+            ),
         },
         {
             "name": "Maren Ash",
@@ -225,10 +582,32 @@ def mock_agents(seed: str, count: int = 6) -> list[dict]:
             "system": "Mirrorside",
             "primary_profession": "Reflection Inspector",
             "primary_profession_de": "Spiegelungsinspektorin",
-            "character": "Calm, observant, and deeply unsettling. Maren ensures that shopfront reflections maintain their mandated deviation from reality — no more, no less.",
-            "character_de": "Ruhig, aufmerksam und zutiefst beunruhigend. Maren stellt sicher, dass Schaufensterreflexionen ihre vorgeschriebene Abweichung von der Realit\u00e4t einhalten \u2014 nicht mehr und nicht weniger.",
-            "background": "Discovered her aptitude during a childhood incident involving a funhouse mirror. What she saw made her cry. What she did about it made the papers.",
-            "background_de": "Entdeckte ihre Begabung bei einem Kindheitserlebnis mit einem Zerrspiegel. Was sie sah, brachte sie zum Weinen. Was sie dagegen tat, schaffte es in die Zeitung.",
+            "character": (
+                "Calm, observant, and deeply unsettling."
+                " Maren ensures that shopfront reflections"
+                " maintain their mandated deviation from"
+                " reality \u2014 no more, no less."
+            ),
+            "character_de": (
+                "Ruhig, aufmerksam und zutiefst beunruhigend."
+                " Maren stellt sicher, dass"
+                " Schaufensterreflexionen ihre vorgeschriebene"
+                " Abweichung von der Realit\u00e4t einhalten \u2014"
+                " nicht mehr und nicht weniger."
+            ),
+            "background": (
+                "Discovered her aptitude during a childhood"
+                " incident involving a funhouse mirror. What"
+                " she saw made her cry. What she did about"
+                " it made the papers."
+            ),
+            "background_de": (
+                "Entdeckte ihre Begabung bei einem"
+                " Kindheitserlebnis mit einem Zerrspiegel."
+                " Was sie sah, brachte sie zum Weinen. Was"
+                " sie dagegen tat, schaffte es in die"
+                " Zeitung."
+            ),
         },
     ]
     return pool[:count]
@@ -236,15 +615,165 @@ def mock_agents(seed: str, count: int = 6) -> list[dict]:
 
 def mock_buildings(seed: str, count: int = 7) -> list[dict]:
     pool = [
-        {"name": "The Final Draft", "building_type": "tavern", "building_type_de": "Taverne", "description": "A narrative distillery where stories are served in liquid form. The house special causes vivid memories of events that never happened.", "description_de": "Eine Erz\u00e4hldestillerie, in der Geschichten in fl\u00fcssiger Form serviert werden. Die Hausspezialit\u00e4t verursacht lebhafte Erinnerungen an Ereignisse, die nie stattfanden.", "building_condition": "good", "building_condition_de": "gut"},
-        {"name": "The Resonance Vault", "building_type": "archive", "building_type_de": "Archiv", "description": "A soundproofed library that stores not books but acoustic recordings. Visitors wear tuning forks instead of library cards.", "description_de": "Eine schallisolierte Bibliothek, die keine B\u00fccher, sondern akustische Aufnahmen aufbewahrt. Besucher tragen Stimmgabeln statt Bibliotheksausweisen.", "building_condition": "good", "building_condition_de": "gut"},
-        {"name": "Furnace Seven", "building_type": "factory", "building_type_de": "Fabrik", "description": "The oldest continuously operating furnace in the city. What it produces has never been identified. The output is consumed by something in the sub-basement.", "description_de": "Der \u00e4lteste durchgehend betriebene Hochofen der Stadt. Was er produziert, wurde nie identifiziert. Die Erzeugnisse werden von etwas im Untergeschoss verschlungen.", "building_condition": "fair", "building_condition_de": "m\u00e4\u00dfig"},
-        {"name": "The Absent Embassy", "building_type": "government", "building_type_de": "Regierungsgeb\u00e4ude", "description": "Embassy of a nation that no longer exists. Staff continue to process visas. The visas are accepted everywhere.", "description_de": "Botschaft einer Nation, die nicht mehr existiert. Das Personal bearbeitet weiterhin Visa. Die Visa werden \u00fcberall akzeptiert.", "building_condition": "good", "building_condition_de": "gut"},
-        {"name": "Thorn Manor", "building_type": "residence", "building_type_de": "Wohnhaus", "description": "A townhouse in Thornwalk where the load-bearing hedges have developed opinions about the residents.", "description_de": "Ein Stadthaus in Thornwalk, dessen tragende Hecken Meinungen \u00fcber die Bewohner entwickelt haben.", "building_condition": "fair", "building_condition_de": "m\u00e4\u00dfig"},
-        {"name": "The Plumb House", "building_type": "observatory", "building_type_de": "Observatorium", "description": "Municipal hydrological station where the canal's non-directional flow is measured with increasingly desperate instruments.", "description_de": "St\u00e4dtische Hydrologiestation, in der der richtungslose Fluss des Kanals mit zunehmend verzweifelten Instrumenten gemessen wird.", "building_condition": "poor", "building_condition_de": "schlecht"},
-        {"name": "Cartographer's Rest", "building_type": "inn", "building_type_de": "Gasthof", "description": "An inn that occupies a different location each morning. Regulars navigate by the smell of breakfast.", "description_de": "Ein Gasthof, der jeden Morgen einen anderen Standort einnimmt. Stammg\u00e4ste orientieren sich am Fr\u00fchst\u00fccksduft.", "building_condition": "good", "building_condition_de": "gut"},
-        {"name": "The Hollow Market", "building_type": "market", "building_type_de": "Markt", "description": "An underground bazaar where prices are quoted in secrets of equivalent weight.", "description_de": "Ein unterirdischer Basar, auf dem Preise in Geheimnissen gleichen Gewichts angegeben werden.", "building_condition": "fair", "building_condition_de": "m\u00e4\u00dfig"},
-        {"name": "The Silent Theatre", "building_type": "entertainment", "building_type_de": "Unterhaltung", "description": "A performance venue where shows are experienced through vibration alone. The audience is always blindfolded.", "description_de": "Eine Auff\u00fchrungsst\u00e4tte, in der Vorstellungen ausschlie\u00dflich durch Vibration erlebt werden. Das Publikum tr\u00e4gt stets Augenbinden.", "building_condition": "good", "building_condition_de": "gut"},
+        {
+            "name": "The Final Draft",
+            "building_type": "tavern",
+            "building_type_de": "Taverne",
+            "description": (
+                "A narrative distillery where stories are"
+                " served in liquid form. The house special"
+                " causes vivid memories of events that"
+                " never happened."
+            ),
+            "description_de": (
+                "Eine Erz\u00e4hldestillerie, in der Geschichten"
+                " in fl\u00fcssiger Form serviert werden. Die"
+                " Hausspezialit\u00e4t verursacht lebhafte"
+                " Erinnerungen an Ereignisse, die nie"
+                " stattfanden."
+            ),
+            "building_condition": "good",
+            "building_condition_de": "gut",
+        },
+        {
+            "name": "The Resonance Vault",
+            "building_type": "archive",
+            "building_type_de": "Archiv",
+            "description": (
+                "A soundproofed library that stores not books"
+                " but acoustic recordings. Visitors wear"
+                " tuning forks instead of library cards."
+            ),
+            "description_de": (
+                "Eine schallisolierte Bibliothek, die keine"
+                " B\u00fccher, sondern akustische Aufnahmen"
+                " aufbewahrt. Besucher tragen Stimmgabeln"
+                " statt Bibliotheksausweisen."
+            ),
+            "building_condition": "good",
+            "building_condition_de": "gut",
+        },
+        {
+            "name": "Furnace Seven",
+            "building_type": "factory",
+            "building_type_de": "Fabrik",
+            "description": (
+                "The oldest continuously operating furnace"
+                " in the city. What it produces has never"
+                " been identified. The output is consumed"
+                " by something in the sub-basement."
+            ),
+            "description_de": (
+                "Der \u00e4lteste durchgehend betriebene Hochofen"
+                " der Stadt. Was er produziert, wurde nie"
+                " identifiziert. Die Erzeugnisse werden von"
+                " etwas im Untergeschoss verschlungen."
+            ),
+            "building_condition": "fair",
+            "building_condition_de": "m\u00e4\u00dfig",
+        },
+        {
+            "name": "The Absent Embassy",
+            "building_type": "government",
+            "building_type_de": "Regierungsgeb\u00e4ude",
+            "description": (
+                "Embassy of a nation that no longer exists."
+                " Staff continue to process visas. The visas"
+                " are accepted everywhere."
+            ),
+            "description_de": (
+                "Botschaft einer Nation, die nicht mehr"
+                " existiert. Das Personal bearbeitet weiterhin"
+                " Visa. Die Visa werden \u00fcberall akzeptiert."
+            ),
+            "building_condition": "good",
+            "building_condition_de": "gut",
+        },
+        {
+            "name": "Thorn Manor",
+            "building_type": "residence",
+            "building_type_de": "Wohnhaus",
+            "description": (
+                "A townhouse in Thornwalk where the"
+                " load-bearing hedges have developed"
+                " opinions about the residents."
+            ),
+            "description_de": (
+                "Ein Stadthaus in Thornwalk, dessen tragende"
+                " Hecken Meinungen \u00fcber die Bewohner"
+                " entwickelt haben."
+            ),
+            "building_condition": "fair",
+            "building_condition_de": "m\u00e4\u00dfig",
+        },
+        {
+            "name": "The Plumb House",
+            "building_type": "observatory",
+            "building_type_de": "Observatorium",
+            "description": (
+                "Municipal hydrological station where the"
+                " canal's non-directional flow is measured"
+                " with increasingly desperate instruments."
+            ),
+            "description_de": (
+                "St\u00e4dtische Hydrologiestation, in der der"
+                " richtungslose Fluss des Kanals mit zunehmend"
+                " verzweifelten Instrumenten gemessen wird."
+            ),
+            "building_condition": "poor",
+            "building_condition_de": "schlecht",
+        },
+        {
+            "name": "Cartographer's Rest",
+            "building_type": "inn",
+            "building_type_de": "Gasthof",
+            "description": (
+                "An inn that occupies a different location"
+                " each morning. Regulars navigate by the"
+                " smell of breakfast."
+            ),
+            "description_de": (
+                "Ein Gasthof, der jeden Morgen einen anderen"
+                " Standort einnimmt. Stammg\u00e4ste orientieren"
+                " sich am Fr\u00fchst\u00fccksduft."
+            ),
+            "building_condition": "good",
+            "building_condition_de": "gut",
+        },
+        {
+            "name": "The Hollow Market",
+            "building_type": "market",
+            "building_type_de": "Markt",
+            "description": (
+                "An underground bazaar where prices are"
+                " quoted in secrets of equivalent weight."
+            ),
+            "description_de": (
+                "Ein unterirdischer Basar, auf dem Preise in"
+                " Geheimnissen gleichen Gewichts angegeben"
+                " werden."
+            ),
+            "building_condition": "fair",
+            "building_condition_de": "m\u00e4\u00dfig",
+        },
+        {
+            "name": "The Silent Theatre",
+            "building_type": "entertainment",
+            "building_type_de": "Unterhaltung",
+            "description": (
+                "A performance venue where shows are"
+                " experienced through vibration alone."
+                " The audience is always blindfolded."
+            ),
+            "description_de": (
+                "Eine Auff\u00fchrungsst\u00e4tte, in der Vorstellungen"
+                " ausschlie\u00dflich durch Vibration erlebt"
+                " werden. Das Publikum tr\u00e4gt stets"
+                " Augenbinden."
+            ),
+            "building_condition": "good",
+            "building_condition_de": "gut",
+        },
     ]
     return pool[:count]
 
@@ -297,10 +826,22 @@ def mock_theme(seed: str) -> dict:
             "card_frame_nameplate": "cartouche",
             "card_frame_corners": "floral",
             "card_frame_foil": "patina",
-            "image_style_prompt_portrait": "daguerreotype portrait, formal studio lighting, sepia warmth, antiquarian grain",
-            "image_style_prompt_building": "architectural photography, overcast, desaturated amber tones, mist",
-            "image_style_prompt_banner": "romantic landscape painting, oil on canvas, atmospheric perspective, golden light",
-            "image_style_prompt_lore": "etching illustration, cross-hatched, parchment texture, archival quality",
+            "image_style_prompt_portrait": (
+                "daguerreotype portrait, formal studio"
+                " lighting, sepia warmth, antiquarian grain"
+            ),
+            "image_style_prompt_building": (
+                "architectural photography, overcast,"
+                " desaturated amber tones, mist"
+            ),
+            "image_style_prompt_banner": (
+                "romantic landscape painting, oil on canvas,"
+                " atmospheric perspective, golden light"
+            ),
+            "image_style_prompt_lore": (
+                "etching illustration, cross-hatched,"
+                " parchment texture, archival quality"
+            ),
         },
         {
             "color_primary": "#00d4aa",
@@ -344,10 +885,22 @@ def mock_theme(seed: str) -> dict:
             "card_frame_nameplate": "terminal",
             "card_frame_corners": "crosshairs",
             "card_frame_foil": "phosphor",
-            "image_style_prompt_portrait": "cyberpunk neon portrait, holographic overlay, chromatic aberration, moody lighting",
-            "image_style_prompt_building": "brutalist architecture, neon signage, rain-slicked concrete, night photography",
-            "image_style_prompt_banner": "aerial drone photo, neon city grid, fog layer, cinematic color grade",
-            "image_style_prompt_lore": "concept art, moody environmental, desaturated cyan palette, digital painting",
+            "image_style_prompt_portrait": (
+                "cyberpunk neon portrait, holographic overlay,"
+                " chromatic aberration, moody lighting"
+            ),
+            "image_style_prompt_building": (
+                "brutalist architecture, neon signage,"
+                " rain-slicked concrete, night photography"
+            ),
+            "image_style_prompt_banner": (
+                "aerial drone photo, neon city grid,"
+                " fog layer, cinematic color grade"
+            ),
+            "image_style_prompt_lore": (
+                "concept art, moody environmental,"
+                " desaturated cyan palette, digital painting"
+            ),
         },
     ]
     return themes[h % len(themes)]
@@ -587,7 +1140,9 @@ def mock_recruits(
                 "name — ended when she discovered that certain districts were being "
                 "systematically removed from census data. She filed a report. The "
                 "report was filed in return, into a locked cabinet. She left shortly "
-                f"after. {mentions[0].title() if not mentions[0][0].isupper() else mentions[0]} was the first person to take her "
+                "after. "
+                f"{mentions[0].title() if not mentions[0][0].isupper() else mentions[0]}"
+                " was the first person to take her "
                 "maps seriously, or at least to pretend convincingly enough that "
                 "Isolde could not tell the difference. She has been assigned to "
                 "survey the boundary zones, which is either a recognition of her "
@@ -623,7 +1178,9 @@ def mock_recruits(
                 "producing material that no one could identify and everyone was afraid "
                 "to touch. Calder was the only analyst willing to examine it. His "
                 "findings were inconclusive but fascinating, filling three notebooks "
-                f"that he still consults. {mentions[1].title() if not mentions[1][0].isupper() else mentions[1]} recognised his expertise immediately "
+                "that he still consults. "
+                f"{mentions[1].title() if not mentions[1][0].isupper() else mentions[1]}"
+                " recognised his expertise immediately "
                 "and assigned him to the Foundry's output analysis division, where "
                 "his willingness to handle inexplicable substances is considered a "
                 "virtue rather than a liability. He has not yet been told what the "
@@ -659,7 +1216,9 @@ def mock_recruits(
                 "weighed on brass scales. The market collapsed — not financially but "
                 "literally, into a sinkhole — and Senna emerged from the rubble with "
                 "their ledger intact and their composure undisturbed. "
-                f"{mentions[2].title() if not mentions[2][0].isupper() else mentions[2]} has expressed both admiration and unease at Senna's "
+                f"{mentions[2].title() if not mentions[2][0].isupper() else mentions[2]}"
+                " has expressed both admiration and unease"
+                " at Senna's "
                 "ability to appraise the value of information by ear alone. They have "
                 "been assigned to audit the Hollows' debt networks, a task that "
                 "everyone agrees needs doing and no one else was willing to attempt."

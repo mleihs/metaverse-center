@@ -4,8 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import datetime, timezone
-from typing import Any
+from datetime import UTC, datetime
 from uuid import UUID
 
 from pydantic_ai import Agent
@@ -193,7 +192,7 @@ class DossierEvolutionService:
                 # Fallback: append English so body_de doesn't fall behind
                 updated_body_de = updated_body_de + separator + addendum
 
-            now = datetime.now(timezone.utc).isoformat()
+            now = datetime.now(UTC).isoformat()
             log_entry = {
                 "trigger": trigger,
                 "entity": entity_name,

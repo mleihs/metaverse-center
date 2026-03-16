@@ -108,10 +108,8 @@ export class BleedPalimpsestOverlay extends LitElement {
   }
 
   private _renderGhostText() {
-    const bleeds = this.bleedStatus!.active_bleeds;
-    const fragments = bleeds
-      .filter(b => b.lore_fragment)
-      .slice(0, 3);
+    const bleeds = this.bleedStatus?.active_bleeds ?? [];
+    const fragments = bleeds.filter((b) => b.lore_fragment).slice(0, 3);
 
     if (fragments.length === 0) return nothing;
 
@@ -139,7 +137,6 @@ export class BleedPalimpsestOverlay extends LitElement {
       </div>
     `;
   }
-
 }
 
 declare global {

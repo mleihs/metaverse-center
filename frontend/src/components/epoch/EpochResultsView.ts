@@ -793,12 +793,16 @@ export class VelgEpochResultsView extends LitElement {
               <span class="podium__rank">${entry.rank}</span>
               <span class="podium__name">${entry.simulation_name}</span>
               <span class="podium__score">${entry.composite.toFixed(1)}</span>
-              ${this._getDimensionTitle(entry)
-                ? html`<span class="podium__title">"${this._getDimensionTitle(entry)}"</span>`
-                : nothing}
-              ${entry.team_name
-                ? html`<span class="podium__team">${entry.team_name}</span>`
-                : nothing}
+              ${
+                this._getDimensionTitle(entry)
+                  ? html`<span class="podium__title">"${this._getDimensionTitle(entry)}"</span>`
+                  : nothing
+              }
+              ${
+                entry.team_name
+                  ? html`<span class="podium__team">${entry.team_name}</span>`
+                  : nothing
+              }
             </div>
           `,
         )}
@@ -867,7 +871,7 @@ export class VelgEpochResultsView extends LitElement {
                 <span class="mvp-card__title">${award.title}</span>
                 <span class="mvp-card__sim">${award.simulation_name}</span>
                 <span class="mvp-card__desc">${award.description}</span>
-                <span class="mvp-card__value">${typeof award.value === 'number' ? award.value.toFixed?.(1) ?? award.value : award.value}</span>
+                <span class="mvp-card__value">${typeof award.value === 'number' ? (award.value.toFixed?.(1) ?? award.value) : award.value}</span>
               </div>
             `,
           )}
@@ -891,17 +895,13 @@ export class VelgEpochResultsView extends LitElement {
           ${msg('DIMENSION ANALYSIS')}
         </h3>
         <div class="dimension-grid">
-          ${dims.map(
-            (dim, di) => {
-              const max = Math.max(
-                ...this._standings.map((s) => (s[dim.key] as number) ?? 0),
-                1,
-              );
-              const winner = this._standings.reduce((a, b) =>
-                ((a[dim.key] as number) ?? 0) > ((b[dim.key] as number) ?? 0) ? a : b,
-              );
+          ${dims.map((dim, di) => {
+            const max = Math.max(...this._standings.map((s) => (s[dim.key] as number) ?? 0), 1);
+            const winner = this._standings.reduce((a, b) =>
+              ((a[dim.key] as number) ?? 0) > ((b[dim.key] as number) ?? 0) ? a : b,
+            );
 
-              return html`
+            return html`
                 <div class="dim-card dim-card--${dim.key}" style="animation-delay: ${5.2 + di * 0.15}s">
                   <div class="dim-card__label">${dim.label}</div>
                   <div class="dim-card__winner">${winner.simulation_name}</div>
@@ -919,8 +919,7 @@ export class VelgEpochResultsView extends LitElement {
                   )}
                 </div>
               `;
-            },
-          )}
+          })}
         </div>
       </div>
     `;
@@ -958,9 +957,11 @@ export class VelgEpochResultsView extends LitElement {
                   <td>
                     <div>
                       <span class="standings-name">${s.simulation_name}</span>
-                      ${this._getDimensionTitle(s)
-                        ? html`<br><span class="standings-title">"${this._getDimensionTitle(s)}"</span>`
-                        : nothing}
+                      ${
+                        this._getDimensionTitle(s)
+                          ? html`<br><span class="standings-title">"${this._getDimensionTitle(s)}"</span>`
+                          : nothing
+                      }
                     </div>
                   </td>
                   <td class="standings-composite">${s.composite.toFixed(1)}</td>

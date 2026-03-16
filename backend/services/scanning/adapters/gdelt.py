@@ -22,9 +22,18 @@ GDELT_CATEGORY_QUERIES = {
     "pandemic": 'pandemic OR epidemic OR outbreak OR "public health emergency"',
     "natural_disaster": 'earthquake OR tsunami OR hurricane OR "volcanic eruption" OR flood',
     "political_upheaval": 'revolution OR coup OR "mass protest" OR "regime change" OR uprising',
-    "tech_breakthrough": '"artificial intelligence" OR "quantum computing" OR "space launch" OR "scientific breakthrough"',
-    "cultural_shift": '"social movement" OR "civil rights" OR "cultural revolution" OR "generational change"',
-    "environmental_disaster": '"oil spill" OR deforestation OR "extinction event" OR "climate tipping point" OR "pollution crisis"',
+    "tech_breakthrough": (
+        '"artificial intelligence" OR "quantum computing"'
+        ' OR "space launch" OR "scientific breakthrough"'
+    ),
+    "cultural_shift": (
+        '"social movement" OR "civil rights"'
+        ' OR "cultural revolution" OR "generational change"'
+    ),
+    "environmental_disaster": (
+        '"oil spill" OR deforestation OR "extinction event"'
+        ' OR "climate tipping point" OR "pollution crisis"'
+    ),
 }
 
 

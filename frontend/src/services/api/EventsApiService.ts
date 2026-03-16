@@ -1,4 +1,11 @@
-import type { ApiResponse, Event, EventChain, EventReaction, EventStatus, EventZoneLink } from '../../types/index.js';
+import type {
+  ApiResponse,
+  Event,
+  EventChain,
+  EventReaction,
+  EventStatus,
+  EventZoneLink,
+} from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
 
 export class EventsApiService extends BaseApiService {
@@ -58,10 +65,9 @@ export class EventsApiService extends BaseApiService {
     eventId: string,
     eventStatus: EventStatus,
   ): Promise<ApiResponse<Event>> {
-    return this.put(
-      `/simulations/${simulationId}/events/${eventId}/status`,
-      { event_status: eventStatus },
-    );
+    return this.put(`/simulations/${simulationId}/events/${eventId}/status`, {
+      event_status: eventStatus,
+    });
   }
 
   getChains(simulationId: string, eventId: string): Promise<ApiResponse<EventChain[]>> {
@@ -76,11 +82,7 @@ export class EventsApiService extends BaseApiService {
     return this.post(`/simulations/${simulationId}/events/${eventId}/chains`, data);
   }
 
-  deleteChain(
-    simulationId: string,
-    eventId: string,
-    chainId: string,
-  ): Promise<ApiResponse<void>> {
+  deleteChain(simulationId: string, eventId: string, chainId: string): Promise<ApiResponse<void>> {
     return this.delete(`/simulations/${simulationId}/events/${eventId}/chains/${chainId}`);
   }
 

@@ -706,30 +706,38 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
   private _renderIntelPanel() {
     const path = this._path;
     return html`
-      ${appState.canForge.value
-        ? html`<a href="/forge" class="cluster-link ${path === '/forge' ? 'cluster-link--active' : ''}"
+      ${
+        appState.canForge.value
+          ? html`<a href="/forge" class="cluster-link ${path === '/forge' ? 'cluster-link--active' : ''}"
             @click=${(e: Event) => this._navigate('/forge', e)}>${msg('Forge')}</a>`
-        : nothing}
-      ${appState.isPlatformAdmin.value
-        ? html`<a href="/admin" class="cluster-link cluster-link--admin ${path === '/admin' ? 'cluster-link--active' : ''}"
+          : nothing
+      }
+      ${
+        appState.isPlatformAdmin.value
+          ? html`<a href="/admin" class="cluster-link cluster-link--admin ${path === '/admin' ? 'cluster-link--active' : ''}"
             @click=${(e: Event) => this._navigate('/admin', e)}>${msg('Admin')}</a>`
-        : nothing}
+          : nothing
+      }
     `;
   }
 
   private _renderSysPanel() {
     return html`
-      ${appState.canForge.value
-        ? html`
+      ${
+        appState.canForge.value
+          ? html`
             <div class="sys-label">${msg('Forge')}</div>
             <div style="padding: 0 12px 8px;">
               <velg-forge-wallet-badge
-                @open-mint=${() => { forgeStateManager.mintOpen.value = true; }}
+                @open-mint=${() => {
+                  forgeStateManager.mintOpen.value = true;
+                }}
               ></velg-forge-wallet-badge>
             </div>
             <div class="cluster-divider"></div>
           `
-        : nothing}
+          : nothing
+      }
 
       <div class="sys-label">${msg('Tools')}</div>
       <a class="sys-item"
@@ -740,9 +748,11 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
 
       <button class="sys-item" @click=${this._toggleLocale}>
         ${icons.compassRose(14)}
-        ${localeService.currentLocale === 'en'
-          ? msg('Sprache: EN \u2192 DE')
-          : msg('Language: DE \u2192 EN')}
+        ${
+          localeService.currentLocale === 'en'
+            ? msg('Sprache: EN \u2192 DE')
+            : msg('Language: DE \u2192 EN')
+        }
       </button>
 
       <div class="cluster-divider"></div>
@@ -752,11 +762,13 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
         <velg-dev-account-switcher></velg-dev-account-switcher>
       </div>
 
-      ${appState.mockMode.value
-        ? html`<div style="padding: 2px 12px 8px;">
+      ${
+        appState.mockMode.value
+          ? html`<div style="padding: 2px 12px 8px;">
             <span class="sys-badge sys-badge--mock">${msg('Mock Mode Active')}</span>
           </div>`
-        : nothing}
+          : nothing
+      }
     `;
   }
 
@@ -795,24 +807,29 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
           style="--i:${navIdx++}"
           @click=${(e: Event) => this._navigate('/archives', e)}>${msg('Archives')}</a>
 
-        ${appState.canForge.value
-          ? html`<a href="/forge"
+        ${
+          appState.canForge.value
+            ? html`<a href="/forge"
               class="header__menu-item ${path === '/forge' ? 'header__menu-item--active' : ''}"
               style="--i:${navIdx++}"
               @click=${(e: Event) => this._navigate('/forge', e)}>${msg('Forge')}</a>`
-          : nothing}
+            : nothing
+        }
 
-        ${isAdmin
-          ? html`<a href="/admin"
+        ${
+          isAdmin
+            ? html`<a href="/admin"
               class="header__menu-item header__menu-item--admin ${path === '/admin' ? 'header__menu-item--active' : ''}"
               style="--i:${navIdx++}"
               @click=${(e: Event) => this._navigate('/admin', e)}>${msg('Admin')}</a>`
-          : nothing}
+            : nothing
+        }
 
         <div class="header__menu-divider"></div>
 
-        ${this._simulations.length > 0
-          ? html`
+        ${
+          this._simulations.length > 0
+            ? html`
               <div class="header__menu-sim" style="--i:${navIdx++}">
                 <span class="sim-selector__label">${msg('Simulation:')}</span>
                 <select class="sim-selector__select" @change=${this._handleSimulationChange}>
@@ -827,14 +844,17 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
                 </select>
               </div>
             `
-          : nothing}
+            : nothing
+        }
 
         <button class="header__menu-item"
           style="--i:${navIdx++}"
           @click=${this._toggleLocale}
-        >${localeService.currentLocale === 'en'
+        >${
+          localeService.currentLocale === 'en'
             ? msg('Sprache: EN \u2192 DE')
-            : msg('Language: DE \u2192 EN')}</button>
+            : msg('Language: DE \u2192 EN')
+        }</button>
 
         <div style="padding: 0 var(--space-3); --i:${navIdx++}">
           <velg-dev-account-switcher></velg-dev-account-switcher>
@@ -900,15 +920,17 @@ m-988 -63 c33 -44 61 -87 61 -97 0 -22 62 -135 103 -189 l31 -40 -42 39 c-42
             ?active=${this._opsActive}
           >${this._renderOpsPanel()}</velg-header-cluster>
 
-          ${this._showIntel
-            ? html`
+          ${
+            this._showIntel
+              ? html`
                 <velg-header-cluster
                   label=${msg('INTEL')}
                   variant=${appState.isPlatformAdmin.value ? 'danger' : 'default'}
                   ?active=${this._intelActive}
                 >${this._renderIntelPanel()}</velg-header-cluster>
               `
-            : nothing}
+              : nothing
+          }
         </div>
 
         <!-- Center: sim switcher -->
@@ -920,7 +942,9 @@ m-988 -63 c33 -44 61 -87 61 -97 0 -22 62 -135 103 -189 l31 -40 -42 39 c-42
         <div class="header__right">
           <button
             class="cmd-k-btn"
-            @click=${() => { this._paletteOpen = true; }}
+            @click=${() => {
+              this._paletteOpen = true;
+            }}
             aria-label=${msg('Open command palette')}
             title=${msg('Command palette (Ctrl+K)')}
           >
@@ -934,9 +958,11 @@ m-988 -63 c33 -44 61 -87 61 -97 0 -22 62 -135 103 -189 l31 -40 -42 39 c-42
 
           <div class="dev-mobile"><velg-dev-account-switcher></velg-dev-account-switcher></div>
 
-          ${appState.isAuthenticated.value
-            ? html`<velg-user-menu></velg-user-menu>`
-            : html`<button class="btn-sign-in" @click=${this._handleSignInClick}>${msg('Sign In')}</button>`}
+          ${
+            appState.isAuthenticated.value
+              ? html`<velg-user-menu></velg-user-menu>`
+              : html`<button class="btn-sign-in" @click=${this._handleSignInClick}>${msg('Sign In')}</button>`
+          }
         </div>
       </header>
 
@@ -944,7 +970,9 @@ m-988 -63 c33 -44 61 -87 61 -97 0 -22 62 -135 103 -189 l31 -40 -42 39 c-42
 
       <velg-command-palette
         .open=${this._paletteOpen}
-        @command-palette-close=${() => { this._paletteOpen = false; }}
+        @command-palette-close=${() => {
+          this._paletteOpen = false;
+        }}
       ></velg-command-palette>
 
       <velg-forge-mint></velg-forge-mint>

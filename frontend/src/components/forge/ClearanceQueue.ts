@@ -12,8 +12,8 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { forgeApi } from '../../services/api/index.js';
 import { appState } from '../../services/AppStateManager.js';
+import { forgeApi } from '../../services/api/index.js';
 import type { ForgeAccessRequestWithEmail } from '../../types/index.js';
 import { VelgToast } from '../shared/Toast.js';
 import '../shared/VelgBadge.js';
@@ -344,9 +344,10 @@ export class VelgClearanceQueue extends LitElement {
     const actionLabel = action === 'approve' ? msg('Approve') : msg('Reject');
     const confirmed = await VelgConfirmDialog.show({
       title: `${actionLabel} ${msg('Clearance Request')}`,
-      message: action === 'approve'
-        ? msg('This will grant the user Architect clearance and send a notification email.')
-        : msg('This will deny the clearance request and notify the user.'),
+      message:
+        action === 'approve'
+          ? msg('This will grant the user Architect clearance and send a notification email.')
+          : msg('This will deny the clearance request and notify the user.'),
       confirmLabel: actionLabel,
       variant: action === 'reject' ? 'danger' : 'default',
     });
@@ -357,14 +358,21 @@ export class VelgClearanceQueue extends LitElement {
       const notes = this._requestNotes[id] || undefined;
       const resp = await forgeApi.reviewRequest(id, action, notes);
       if (resp.success) {
-        VelgToast.success(
-          action === 'approve'
-            ? msg('Clearance granted successfully.')
-            : msg('Clearance request rejected.'),
-        );
+        if (action === 'approve') {
+          const tokens = (resp.data as Record<string, unknown>)?.tokens_granted;
+          VelgToast.success(
+            tokens
+              ? msg(`Clearance granted. ${tokens} starter tokens credited.`)
+              : msg('Clearance granted successfully.'),
+          );
+        } else {
+          VelgToast.success(msg('Clearance request rejected.'));
+        }
 
         // Animate card out, then remove
-        const card = this.shadowRoot?.querySelector(`[data-request-id="${id}"]`) as HTMLElement | null;
+        const card = this.shadowRoot?.querySelector(
+          `[data-request-id="${id}"]`,
+        ) as HTMLElement | null;
         if (card) {
           card.classList.add('exiting');
           card.addEventListener('animationend', () => this._removeAndFocus(id), { once: true });
@@ -407,8 +415,11 @@ export class VelgClearanceQueue extends LitElement {
   private _formatDate(isoDate: string): string {
     try {
       return new Date(isoDate).toLocaleString(undefined, {
-        year: 'numeric', month: 'short', day: 'numeric',
-        hour: '2-digit', minute: '2-digit',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
       });
     } catch {
       return isoDate;
@@ -420,9 +431,7 @@ export class VelgClearanceQueue extends LitElement {
   protected render() {
     if (this._loading && this._requests.length === 0) return nothing;
 
-    return this.variant === 'compact'
-      ? this._renderCompact()
-      : this._renderFull();
+    return this.variant === 'compact' ? this._renderCompact() : this._renderFull();
   }
 
   private _renderFull() {
@@ -444,9 +453,10 @@ export class VelgClearanceQueue extends LitElement {
         <div class="forge-section__desc">${msg('Pending clearance upgrade requests from Field Observers.')}</div>
         <div class="forge-section__divider"></div>
 
-        ${count === 0
-          ? html`<div class="empty-state">${msg('No Pending Clearance Requests')}</div>`
-          : this._requests.map((req) => this._renderRequestCard(req))
+        ${
+          count === 0
+            ? html`<div class="empty-state">${msg('No Pending Clearance Requests')}</div>`
+            : this._requests.map((req) => this._renderRequestCard(req))
         }
       </div>
     `;
@@ -488,9 +498,10 @@ export class VelgClearanceQueue extends LitElement {
           <span class="request-card__date">${this._formatDate(req.created_at)}</span>
         </div>
 
-        ${req.message
-          ? html`<div class="request-card__message">&ldquo;${req.message}&rdquo;</div>`
-          : nothing
+        ${
+          req.message
+            ? html`<div class="request-card__message">&ldquo;${req.message}&rdquo;</div>`
+            : nothing
         }
 
         <div class="request-card__notes-label">${msg('Admin notes:')}</div>

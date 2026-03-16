@@ -3,9 +3,10 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { agentsApi } from '../../services/api/AgentsApiService.js';
+import { epochsApi } from '../../services/api/EpochsApiService.js';
+import { resonanceApi } from '../../services/api/index.js';
 import { simulationsApi } from '../../services/api/SimulationsApiService.js';
 import { usersApi } from '../../services/api/UsersApiService.js';
-import { resonanceApi } from '../../services/api/index.js';
 import type {
   ActiveEpochParticipation,
   Agent,
@@ -16,10 +17,8 @@ import type {
 } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import { t } from '../../utils/locale-fields.js';
-import { humanizeEnum, pluralCount, agentAltText } from '../../utils/text.js';
+import { agentAltText, humanizeEnum, pluralCount } from '../../utils/text.js';
 import { getThemeColor, getThemeVariant } from '../../utils/theme-colors.js';
-
-import { epochsApi } from '../../services/api/EpochsApiService.js';
 import { VelgToast } from '../shared/Toast.js';
 import { getPlatformPullQuotes, type PullQuote } from './LoreScroll.js';
 import './SimulationCard.js';
@@ -1369,10 +1368,7 @@ export class VelgSimulationsDashboard extends LitElement {
 
     try {
       const isAuth = appState.isAuthenticated.value;
-      const promises: Promise<void>[] = [
-        this._loadSimulations(),
-        this._loadActiveResonances(),
-      ];
+      const promises: Promise<void>[] = [this._loadSimulations(), this._loadActiveResonances()];
 
       if (isAuth) {
         promises.push(this._loadDashboard());
@@ -1491,8 +1487,9 @@ export class VelgSimulationsDashboard extends LitElement {
 
   private async _handleStartAcademy(): Promise<void> {
     // If there's already an active academy epoch, navigate to it instead
-    const activeAcademy = this._dashboardData?.active_epoch_participations
-      ?.find(ep => ep.epoch_type === 'academy');
+    const activeAcademy = this._dashboardData?.active_epoch_participations?.find(
+      (ep) => ep.epoch_type === 'academy',
+    );
     if (activeAcademy) {
       window.history.pushState({}, '', `/epochs/${activeAcademy.epoch_id}`);
       window.dispatchEvent(new PopStateEvent('popstate'));
@@ -1547,9 +1544,11 @@ export class VelgSimulationsDashboard extends LitElement {
         : msg('multiple tremors entering decay phase — substrate settling');
     }
     if (maxMag >= 8) return msg('severe substrate distortion — local geometry unreliable');
-    if (impacting >= 3) return msg('concurrent substrate fractures — recommend caution in affected zones');
+    if (impacting >= 3)
+      return msg('concurrent substrate fractures — recommend caution in affected zones');
     if (impacting >= 2) return msg('overlapping tremor signatures — interference patterns forming');
-    if (impacting === 1) return msg('active substrate displacement — affected zones may behave unpredictably');
+    if (impacting === 1)
+      return msg('active substrate displacement — affected zones may behave unpredictably');
     if (count >= 3) return msg('multiple signatures detected — the substrate is restless');
     return msg('substrate anomaly detected — origin unclear');
   }
@@ -1615,9 +1614,10 @@ export class VelgSimulationsDashboard extends LitElement {
       <div class="command-strip ${boot ? 'boot-command-strip' : ''}" aria-label="${msg('Operative status bar')}">
         <span class="command-strip__bracket-tr"></span>
         <div class="command-strip__left">
-          ${isGuest
-            ? html`// ${msg('OBSERVATION MODE')} // ${msg('CLEARANCE: RESTRICTED')}`
-            : html`
+          ${
+            isGuest
+              ? html`// ${msg('OBSERVATION MODE')} // ${msg('CLEARANCE: RESTRICTED')}`
+              : html`
               // ${msg('OPERATIVE TERMINAL')} // ${appState.user.value?.email ?? ''}
               <span class="command-strip__stats">
                 <span class="command-strip__sep">|</span>
@@ -1640,9 +1640,10 @@ export class VelgSimulationsDashboard extends LitElement {
           }
         </div>
         <div class="command-strip__right">
-          ${isGuest
-            ? html`<button class="command-strip__cta" @click=${() => this._navigateTo('/register')}>${msg('SIGN UP')}</button>`
-            : this._clockText
+          ${
+            isGuest
+              ? html`<button class="command-strip__cta" @click=${() => this._navigateTo('/register')}>${msg('SIGN UP')}</button>`
+              : this._clockText
           }
         </div>
       </div>
@@ -1663,12 +1664,20 @@ export class VelgSimulationsDashboard extends LitElement {
   private _renderAdminBar() {
     return html`
       <div class="admin-bar">
-        ${appState.isPlatformAdmin.value ? html`
+        ${
+          appState.isPlatformAdmin.value
+            ? html`
           <button class="admin-bar__btn" @click=${() => this._navigateTo('/admin')}>${msg('Admin Panel')}</button>
-        ` : nothing}
-        ${appState.canForge.value ? html`
+        `
+            : nothing
+        }
+        ${
+          appState.canForge.value
+            ? html`
           <button class="admin-bar__btn" @click=${() => this._navigateTo('/forge')}>${msg('Forge')}</button>
-        ` : nothing}
+        `
+            : nothing
+        }
         <button class="admin-bar__btn" @click=${() => this._navigateTo('/epoch')}>${msg('Create Epoch')}</button>
       </div>
     `;
@@ -1680,9 +1689,10 @@ export class VelgSimulationsDashboard extends LitElement {
         <button class="welcome-strip__btn welcome-strip__btn--primary" @click=${this._handleStartAcademy}>
           ${this._hasActiveAcademy() ? msg('Resume Academy') : msg('Start Training')}
         </button>
-        ${appState.canForge.value
-          ? html`<button class="welcome-strip__btn" @click=${this._handleCreateClick}>${msg('Create World')}</button>`
-          : nothing
+        ${
+          appState.canForge.value
+            ? html`<button class="welcome-strip__btn" @click=${this._handleCreateClick}>${msg('Create World')}</button>`
+            : nothing
         }
         <button class="welcome-strip__btn" @click=${() => window.scrollTo({ top: 400, behavior: 'smooth' })}>
           ${msg('Browse Shards')}
@@ -1698,9 +1708,11 @@ export class VelgSimulationsDashboard extends LitElement {
       <div class="dashboard__body">
         <!-- Left / Main Column -->
         <div class="dashboard__left ${boot ? 'boot-left' : ''}">
-          ${!isGuest && appState.isPlatformAdmin.value
-            ? html`<velg-clearance-queue variant="compact"></velg-clearance-queue>`
-            : nothing}
+          ${
+            !isGuest && appState.isPlatformAdmin.value
+              ? html`<velg-clearance-queue variant="compact"></velg-clearance-queue>`
+              : nothing
+          }
           ${!isGuest ? this._renderActiveOps() : nothing}
           ${!isGuest ? this._renderMyWorlds() : nothing}
           <div class="left-shards">
@@ -1718,9 +1730,11 @@ export class VelgSimulationsDashboard extends LitElement {
           ${!isGuest ? this._renderAgentSpotlight() : nothing}
           ${this._renderResonanceTicker()}
           ${this._renderAcademyCta(userState)}
-          ${!isGuest && this._simulations.length > 0
-            ? html`<velg-clearance-card style="--i: 3"></velg-clearance-card>`
-            : nothing}
+          ${
+            !isGuest && this._simulations.length > 0
+              ? html`<velg-clearance-card style="--i: 3"></velg-clearance-card>`
+              : nothing
+          }
         </div>
       </div>
     `;
@@ -1738,17 +1752,19 @@ export class VelgSimulationsDashboard extends LitElement {
           <span class="section-header__surtitle">${msg('ACTIVE OPERATIONS')}</span>
           <h2 class="section-header__title">${msg('Your Epochs')}</h2>
         </div>
-        ${shown.length > 0
-          ? html`
+        ${
+          shown.length > 0
+            ? html`
             <div class="active-ops__cards--hscroll">
               ${shown.map((ep, i) => this._renderDossierCard(ep, i))}
             </div>
-            ${remaining > 0
-              ? html`<button class="ops-more" @click=${() => this._navigateTo('/epoch')}>+${remaining} ${msg('more')}</button>`
-              : nothing
+            ${
+              remaining > 0
+                ? html`<button class="ops-more" @click=${() => this._navigateTo('/epoch')}>+${remaining} ${msg('more')}</button>`
+                : nothing
             }
           `
-          : html`<div class="ops-empty">${msg('NO ACTIVE DEPLOYMENT')}</div>`
+            : html`<div class="ops-empty">${msg('NO ACTIVE DEPLOYMENT')}</div>`
         }
       </section>
     `;
@@ -1756,7 +1772,8 @@ export class VelgSimulationsDashboard extends LitElement {
 
   private _renderDossierCard(ep: ActiveEpochParticipation, index: number) {
     const totalSegs = Math.min(ep.total_cycles, 20);
-    const filledSegs = totalSegs > 0 ? Math.round((ep.current_cycle / ep.total_cycles) * totalSegs) : 0;
+    const filledSegs =
+      totalSegs > 0 ? Math.round((ep.current_cycle / ep.total_cycles) * totalSegs) : 0;
 
     return html`
       <div
@@ -1860,13 +1877,16 @@ export class VelgSimulationsDashboard extends LitElement {
             </h2>
           </div>
           <div class="shards-header__spacer"></div>
-          ${appState.canForge.value
-            ? html`<button class="btn-fracture" @click=${this._handleCreateClick}>${msg('Fracture a New Shard')}</button>`
-            : nothing
+          ${
+            appState.canForge.value
+              ? html`<button class="btn-fracture" @click=${this._handleCreateClick}>${msg('Fracture a New Shard')}</button>`
+              : nothing
           }
         </div>
         ${this._renderFeaturedShard(featured)}
-        ${rest.length > 0 ? html`
+        ${
+          rest.length > 0
+            ? html`
           <div class="shards-grid" role="list">
             ${rest.map(
               (sim, i) => html`
@@ -1879,7 +1899,9 @@ export class VelgSimulationsDashboard extends LitElement {
               `,
             )}
           </div>
-        ` : nothing}
+        `
+            : nothing
+        }
       </section>
     `;
   }
@@ -1913,13 +1935,19 @@ export class VelgSimulationsDashboard extends LitElement {
           </div>
           <div class="shards-header__spacer"></div>
         </div>
-        ${isAuth ? html`
+        ${
+          isAuth
+            ? html`
           <div class="community-shards__note">
             ${msg('Shards created and managed by other observers. Browse freely.')}
           </div>
-        ` : nothing}
+        `
+            : nothing
+        }
         ${this._renderFeaturedShard(featured)}
-        ${rest.length > 0 ? html`
+        ${
+          rest.length > 0
+            ? html`
           <div class="shards-grid" role="list">
             ${rest.map(
               (sim, i) => html`
@@ -1932,7 +1960,9 @@ export class VelgSimulationsDashboard extends LitElement {
               `,
             )}
           </div>
-        ` : nothing}
+        `
+            : nothing
+        }
       </section>
     `;
   }
@@ -1940,7 +1970,9 @@ export class VelgSimulationsDashboard extends LitElement {
   private _renderFeaturedShard(sim: Simulation) {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const bannerUrl = sim.banner_url
-      ? (sim.banner_url.startsWith('http') ? sim.banner_url : `${supabaseUrl}${sim.banner_url}`)
+      ? sim.banner_url.startsWith('http')
+        ? sim.banner_url
+        : `${supabaseUrl}${sim.banner_url}`
       : null;
 
     const desc = t(sim, 'description');
@@ -1948,9 +1980,13 @@ export class VelgSimulationsDashboard extends LitElement {
 
     const stats = [
       sim.agent_count ? pluralCount(sim.agent_count, msg('Agent'), msg('Agents')) : null,
-      sim.building_count ? pluralCount(sim.building_count, msg('Building'), msg('Buildings')) : null,
+      sim.building_count
+        ? pluralCount(sim.building_count, msg('Building'), msg('Buildings'))
+        : null,
       sim.event_count ? pluralCount(sim.event_count, msg('Event'), msg('Events')) : null,
-    ].filter(Boolean).join(' // ');
+    ]
+      .filter(Boolean)
+      .join(' // ');
 
     return html`
       <div
@@ -1962,9 +1998,10 @@ export class VelgSimulationsDashboard extends LitElement {
           this._navigateTo(`/simulations/${sim.slug}/lore`);
         }}
       >
-        ${bannerUrl
-          ? html`<img class="featured__bg" src=${bannerUrl} alt="${sim.name} — ${desc || sim.theme}" loading="lazy" />`
-          : html`<div class="featured__bg" style="background: linear-gradient(135deg, var(--color-gray-900), var(--color-gray-800));"></div>`
+        ${
+          bannerUrl
+            ? html`<img class="featured__bg" src=${bannerUrl} alt="${sim.name} — ${desc || sim.theme}" loading="lazy" />`
+            : html`<div class="featured__bg" style="background: linear-gradient(135deg, var(--color-gray-900), var(--color-gray-800));"></div>`
         }
         <div class="featured__gradient"></div>
         <div class="featured__content" style="border-left: 3px solid ${themeColor}">
@@ -1985,8 +2022,9 @@ export class VelgSimulationsDashboard extends LitElement {
     return html`
       <section class="agent-spotlight">
         <div class="agent-spotlight__label">${msg('DOSSIER // FIELD OPERATIVE')}</div>
-        ${agent
-          ? html`
+        ${
+          agent
+            ? html`
             <div
               class="agent-spotlight__card"
               role="link"
@@ -2003,24 +2041,28 @@ export class VelgSimulationsDashboard extends LitElement {
               <div class="agent-spotlight__header">
                 <img
                   class="agent-spotlight__portrait"
-                  src=${agent.portrait_image_url!}
+                  src=${agent.portrait_image_url ?? ''}
                   alt=${agentAltText(agent)}
                   loading="lazy"
                 />
                 <div class="agent-spotlight__info">
                   <div class="agent-spotlight__name">${agent.name}</div>
-                  ${agent.primary_profession
-                    ? html`<div class="agent-spotlight__profession">${t(agent, 'primary_profession')}</div>`
-                    : nothing}
+                  ${
+                    agent.primary_profession
+                      ? html`<div class="agent-spotlight__profession">${t(agent, 'primary_profession')}</div>`
+                      : nothing
+                  }
                 </div>
               </div>
-              ${t(agent, 'character')
-                ? html`<div class="agent-spotlight__character">${t(agent, 'character')}</div>`
-                : nothing}
+              ${
+                t(agent, 'character')
+                  ? html`<div class="agent-spotlight__character">${t(agent, 'character')}</div>`
+                  : nothing
+              }
               <div class="agent-spotlight__cta">${msg('View Dossier')} &rarr;</div>
             </div>
           `
-          : html`
+            : html`
             <div class="agent-spotlight__locked">
               <div class="agent-spotlight__locked-text">${msg('DOSSIER LOADING')}</div>
               <div style="color: var(--color-gray-500); font-family: var(--font-mono); font-size: 9px;">
@@ -2042,8 +2084,10 @@ export class VelgSimulationsDashboard extends LitElement {
           <span class="section-header__surtitle">${msg('SUBSTRATE MONITOR')}</span>
           <h2 class="section-header__title">${msg('Resonance')}</h2>
         </div>
-        ${resonances.length > 0
-          ? resonances.map((r) => html`
+        ${
+          resonances.length > 0
+            ? resonances.map(
+                (r) => html`
             <div class="resonance-item" @click=${() => this._navigateTo('/dashboard')}>
               <span class="resonance-item__pip resonance-item__pip--${r.status}"></span>
               <span class="resonance-item__name">${r.title}</span>
@@ -2055,16 +2099,18 @@ export class VelgSimulationsDashboard extends LitElement {
               </div>
               <span class="resonance-item__time">${this._getRelativeTime(r.detected_at)}</span>
             </div>
-          `)
-          : html`<div class="resonance-nominal">${msg('SUBSTRATE: NOMINAL')}</div>`
+          `,
+              )
+            : html`<div class="resonance-nominal">${msg('SUBSTRATE: NOMINAL')}</div>`
         }
       </section>
     `;
   }
 
   private _hasActiveAcademy(): boolean {
-    return !!this._dashboardData?.active_epoch_participations
-      ?.some(ep => ep.epoch_type === 'academy');
+    return !!this._dashboardData?.active_epoch_participations?.some(
+      (ep) => ep.epoch_type === 'academy',
+    );
   }
 
   private _renderAcademyCta(userState: DashboardState) {

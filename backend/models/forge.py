@@ -8,7 +8,6 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
-
 # ── Token Store Models ────────────────────────────────────────────────
 
 
@@ -422,18 +421,27 @@ class ForgeBuildingDraft(BaseModel):
 class ForgeZoneDraft(BaseModel):
     """Draft of a single zone/district."""
     name: str
-    zone_type: str = Field(description="Zone classification (e.g. residential, industrial, cultural, commercial, government, military, slum, entertainment).")
+    zone_type: str = Field(
+        description="Zone classification (e.g. residential, industrial,"
+        " cultural, commercial, government, military, slum, entertainment).",
+    )
     zone_type_de: str = Field(default="", description="German equivalent of zone_type.")
     description: str = Field(description="1-2 sentence atmospheric description of the zone's character and purpose.")
     description_de: str = Field(default="", description="German equivalent of description.")
-    characteristics: list[str] = Field(description="2-4 evocative tags capturing the zone's essence (e.g. 'perpetual twilight', 'echoing walls', 'overgrown machinery').")
+    characteristics: list[str] = Field(
+        description="2-4 evocative tags capturing the zone's essence"
+        " (e.g. 'perpetual twilight', 'echoing walls', 'overgrown machinery').",
+    )
 
 
 class ForgeStreetDraft(BaseModel):
     """Draft of a single named street."""
     name: str
     zone_name: str = Field(description="Name of the zone this street belongs to.")
-    street_type: str = Field(description="Street classification (e.g. alley, boulevard, lane, avenue, road, street, stairway).")
+    street_type: str = Field(
+        description="Street classification"
+        " (e.g. alley, boulevard, lane, avenue, road, street, stairway).",
+    )
     street_type_de: str = Field(default="", description="German equivalent of street_type.")
     description: str = Field(default="", description="Optional 1-sentence atmospheric detail about this street.")
 

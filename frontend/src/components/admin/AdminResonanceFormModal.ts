@@ -18,15 +18,50 @@ const SOURCE_CATEGORIES: { value: SourceCategory; label: string }[] = [
   { value: 'environmental_disaster', label: 'Environmental Disaster' },
 ];
 
-const CATEGORY_DERIVATION: Record<string, { signatureKey: string; signatureLabel: string; archetype: string }> = {
-  economic_crisis: { signatureKey: 'economic_tremor', signatureLabel: 'Economic Tremor', archetype: 'The Tower' },
-  military_conflict: { signatureKey: 'conflict_wave', signatureLabel: 'Conflict Wave', archetype: 'The Shadow' },
-  pandemic: { signatureKey: 'biological_tide', signatureLabel: 'Biological Tide', archetype: 'The Devouring Mother' },
-  natural_disaster: { signatureKey: 'elemental_surge', signatureLabel: 'Elemental Surge', archetype: 'The Deluge' },
-  political_upheaval: { signatureKey: 'authority_fracture', signatureLabel: 'Authority Fracture', archetype: 'The Overthrow' },
-  tech_breakthrough: { signatureKey: 'innovation_spark', signatureLabel: 'Innovation Spark', archetype: 'The Prometheus' },
-  cultural_shift: { signatureKey: 'consciousness_drift', signatureLabel: 'Consciousness Drift', archetype: 'The Awakening' },
-  environmental_disaster: { signatureKey: 'decay_bloom', signatureLabel: 'Decay Bloom', archetype: 'The Entropy' },
+const CATEGORY_DERIVATION: Record<
+  string,
+  { signatureKey: string; signatureLabel: string; archetype: string }
+> = {
+  economic_crisis: {
+    signatureKey: 'economic_tremor',
+    signatureLabel: 'Economic Tremor',
+    archetype: 'The Tower',
+  },
+  military_conflict: {
+    signatureKey: 'conflict_wave',
+    signatureLabel: 'Conflict Wave',
+    archetype: 'The Shadow',
+  },
+  pandemic: {
+    signatureKey: 'biological_tide',
+    signatureLabel: 'Biological Tide',
+    archetype: 'The Devouring Mother',
+  },
+  natural_disaster: {
+    signatureKey: 'elemental_surge',
+    signatureLabel: 'Elemental Surge',
+    archetype: 'The Deluge',
+  },
+  political_upheaval: {
+    signatureKey: 'authority_fracture',
+    signatureLabel: 'Authority Fracture',
+    archetype: 'The Overthrow',
+  },
+  tech_breakthrough: {
+    signatureKey: 'innovation_spark',
+    signatureLabel: 'Innovation Spark',
+    archetype: 'The Prometheus',
+  },
+  cultural_shift: {
+    signatureKey: 'consciousness_drift',
+    signatureLabel: 'Consciousness Drift',
+    archetype: 'The Awakening',
+  },
+  environmental_disaster: {
+    signatureKey: 'decay_bloom',
+    signatureLabel: 'Decay Bloom',
+    archetype: 'The Entropy',
+  },
 };
 
 @localized()
@@ -262,7 +297,11 @@ export class VelgAdminResonanceFormModal extends LitElement {
     return !!this.resonance;
   }
 
-  private get _derivation(): { signatureKey: string; signatureLabel: string; archetype: string } | null {
+  private get _derivation(): {
+    signatureKey: string;
+    signatureLabel: string;
+    archetype: string;
+  } | null {
     if (!this._category) return null;
     return CATEGORY_DERIVATION[this._category] ?? null;
   }
@@ -307,9 +346,7 @@ export class VelgAdminResonanceFormModal extends LitElement {
   }
 
   private _handleClose(): void {
-    this.dispatchEvent(
-      new CustomEvent('modal-close', { bubbles: true, composed: true }),
-    );
+    this.dispatchEvent(new CustomEvent('modal-close', { bubbles: true, composed: true }));
   }
 
   protected render() {
@@ -323,22 +360,27 @@ export class VelgAdminResonanceFormModal extends LitElement {
         </span>
 
         <div class="form">
-          ${this._isEdit ? nothing : html`
+          ${
+            this._isEdit
+              ? nothing
+              : html`
             <div class="field">
               <label class="field__label">${msg('Source Category')}</label>
               <select
                 class="field__select"
                 .value=${this._category}
-                @change=${(e: Event) => { this._category = (e.target as HTMLSelectElement).value as SourceCategory; }}
+                @change=${(e: Event) => {
+                  this._category = (e.target as HTMLSelectElement).value as SourceCategory;
+                }}
               >
                 <option value="" disabled>${msg('Select category...')}</option>
-                ${SOURCE_CATEGORIES.map(
-                  (c) => html`<option value=${c.value}>${c.label}</option>`,
-                )}
+                ${SOURCE_CATEGORIES.map((c) => html`<option value=${c.value}>${c.label}</option>`)}
               </select>
             </div>
 
-            ${this._derivation ? html`
+            ${
+              this._derivation
+                ? html`
               <div class="derivation">
                 <div class="derivation__icon">
                   ${icons.resonanceArchetype(this._derivation.signatureKey, 20)}
@@ -348,8 +390,11 @@ export class VelgAdminResonanceFormModal extends LitElement {
                   — ${this._derivation.archetype}
                 </div>
               </div>
-            ` : nothing}
-          `}
+            `
+                : nothing
+            }
+          `
+          }
 
           <div class="field">
             <label class="field__label">${msg('Title')}</label>
@@ -357,7 +402,9 @@ export class VelgAdminResonanceFormModal extends LitElement {
               class="field__input"
               type="text"
               .value=${this._title}
-              @input=${(e: Event) => { this._title = (e.target as HTMLInputElement).value; }}
+              @input=${(e: Event) => {
+                this._title = (e.target as HTMLInputElement).value;
+              }}
               placeholder=${msg('Resonance title...')}
             />
           </div>
@@ -367,7 +414,9 @@ export class VelgAdminResonanceFormModal extends LitElement {
             <textarea
               class="field__textarea"
               .value=${this._description}
-              @input=${(e: Event) => { this._description = (e.target as HTMLTextAreaElement).value; }}
+              @input=${(e: Event) => {
+                this._description = (e.target as HTMLTextAreaElement).value;
+              }}
               placeholder=${msg('What happened in the real world...')}
             ></textarea>
           </div>
@@ -377,7 +426,9 @@ export class VelgAdminResonanceFormModal extends LitElement {
             <textarea
               class="field__textarea field__textarea--mono"
               .value=${this._bureauDispatch}
-              @input=${(e: Event) => { this._bureauDispatch = (e.target as HTMLTextAreaElement).value; }}
+              @input=${(e: Event) => {
+                this._bureauDispatch = (e.target as HTMLTextAreaElement).value;
+              }}
               placeholder=${msg('In-world narrative for the Bureau of Resonance...')}
             ></textarea>
           </div>
@@ -392,7 +443,9 @@ export class VelgAdminResonanceFormModal extends LitElement {
                 max="1.0"
                 step="0.05"
                 .value=${String(this._magnitude)}
-                @input=${(e: Event) => { this._magnitude = parseFloat((e.target as HTMLInputElement).value); }}
+                @input=${(e: Event) => {
+                  this._magnitude = parseFloat((e.target as HTMLInputElement).value);
+                }}
               />
               <span class="magnitude-value magnitude-value--${this._magClass}">
                 ${this._magnitude.toFixed(2)}
@@ -406,7 +459,9 @@ export class VelgAdminResonanceFormModal extends LitElement {
               class="field__input"
               type="datetime-local"
               .value=${this._impactsAt}
-              @input=${(e: Event) => { this._impactsAt = (e.target as HTMLInputElement).value; }}
+              @input=${(e: Event) => {
+                this._impactsAt = (e.target as HTMLInputElement).value;
+              }}
             />
           </div>
         </div>

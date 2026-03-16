@@ -8,6 +8,7 @@ import re
 from uuid import UUID
 
 from backend.config import settings
+from backend.services.constants import PLATFORM_DEFAULT_MODELS
 from backend.services.embassy_prompts import (
     VECTOR_PERSON_EFFECTS,
     VECTOR_VISUAL_LANGUAGE,
@@ -17,7 +18,6 @@ from backend.services.external.openrouter import (
     OpenRouterService,
     RateLimitError,
 )
-from backend.services.constants import PLATFORM_DEFAULT_MODELS
 from backend.services.external.output_repair import repair_json_output
 from backend.services.model_resolver import ModelResolver, ResolvedModel
 from backend.services.prompt_service import LOCALE_NAMES, PromptResolver
@@ -742,11 +742,14 @@ class GenerationService:
         # Excluded from mock mode:
         # - agent/building: image pipeline (description → Replicate) needs real text
         # - news_transformation: resonance events need structured JSON for proper creation
-        _MOCK_EXCLUDED_PURPOSES = {"agent_description", "building_description", "news_transformation"}
-        if settings.forge_mock_mode and model_purpose not in _MOCK_EXCLUDED_PURPOSES:
+        mock_excluded_purposes = {"agent_description", "building_description", "news_transformation"}
+        if settings.forge_mock_mode and model_purpose not in mock_excluded_purposes:
             logger.info("MOCK_MODE: returning template %s content", template_type)
             return {
-                "content": f"[MOCK {template_type}] Generated content for {variables.get('simulation_name', 'simulation')}.",
+                "content": (
+                    f"[MOCK {template_type}] Generated content for"
+                    f" {variables.get('simulation_name', 'simulation')}."
+                ),
                 "model_used": "mock",
                 "template_source": "mock",
                 "locale": locale,

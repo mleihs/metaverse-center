@@ -12,7 +12,6 @@ from backend.services.platform_model_config import (
 )
 from backend.tests.conftest import make_chain_mock
 
-
 # ── Fixtures ────────────────────────────────────────────────────────────
 
 

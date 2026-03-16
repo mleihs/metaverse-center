@@ -477,22 +477,26 @@ export class VelgMapGraph3D extends LitElement {
       html`
         <div class="tooltip__name" style="color:${node.color}">${node.name}</div>
         <div class="tooltip__stat">${node.agentCount} Agents / ${node.buildingCount} Buildings / ${node.eventCount} Events</div>
-        ${phaseColor
-          ? html`<div class="tooltip__phase" style="color:${phaseColor}">${node.epochStatus}</div>`
-          : ''}
-        ${node.scoreDimensions
-          ? dims.map((dim) => {
-              const value = Math.max(0, Math.min(100, node.scoreDimensions![dim] ?? 0));
-              const color = SCORE_DIMENSION_COLORS[dim] ?? '#888';
-              return html`
+        ${
+          phaseColor
+            ? html`<div class="tooltip__phase" style="color:${phaseColor}">${node.epochStatus}</div>`
+            : ''
+        }
+        ${
+          node.scoreDimensions
+            ? dims.map((dim) => {
+                const value = Math.max(0, Math.min(100, node.scoreDimensions?.[dim] ?? 0));
+                const color = SCORE_DIMENSION_COLORS[dim] ?? '#888';
+                return html`
                 <div class="tooltip__dim-bar">
                   <span class="tooltip__dim-label">${dim.slice(0, 4)}</span>
                   <div class="tooltip__dim-track">
                     <div class="tooltip__dim-fill" style="width:${value}%;background:${color}"></div>
                   </div>
                 </div>`;
-            })
-          : ''}
+              })
+            : ''
+        }
       `,
       tooltip,
     );
