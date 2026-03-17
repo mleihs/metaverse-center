@@ -156,10 +156,19 @@ class BaseService:
         )
 
         if not response.data:
-            logger.error("Entity creation failed", extra={"table": cls.table_name, "simulation_id": str(simulation_id)})
+            # Empty response with no exception = RLS policy rejected the insert
+            # (PostgreSQL RETURNING * returns 0 rows when WITH CHECK fails)
+            logger.warning(
+                "Entity creation rejected by RLS",
+                extra={
+                    "table": cls.table_name,
+                    "simulation_id": str(simulation_id),
+                    "user_id": str(user_id),
+                },
+            )
             raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to create {cls.table_name} record.",
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Not authorized to create {cls.table_name} in this simulation.",
             )
 
         return response.data[0]

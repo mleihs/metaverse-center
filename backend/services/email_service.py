@@ -34,7 +34,7 @@ class EmailService:
         msg.attach(MIMEText(html_body, "html", "utf-8"))
 
         try:
-            with smtplib.SMTP_SSL(settings.smtp_host, settings.smtp_port, timeout=15) as server:
+            with smtplib.SMTP_SSL(settings.smtp_host, settings.smtp_port, timeout=30) as server:
                 server.login(settings.smtp_user, settings.smtp_password)
                 server.sendmail(settings.smtp_from, [to], msg.as_string())
             logger.info("Email sent", extra={"recipient": to, "subject_preview": subject[:60]})

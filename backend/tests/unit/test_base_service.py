@@ -129,14 +129,14 @@ class TestBaseServiceCreate:
         assert insert_data["simulation_id"] == str(sim_id)
 
     async def test_raises_on_empty_response(self):
-        """Should raise HTTPException 500 when Supabase returns no data."""
+        """Empty insert response (RLS rejection) should raise 403."""
         mock_sb = _mock_supabase(return_data=None)
 
         with pytest.raises(HTTPException) as exc_info:
             await _ServiceWithCreatedBy.create(
                 mock_sb, uuid4(), uuid4(), {"name": "Fail"},
             )
-        assert exc_info.value.status_code == 500
+        assert exc_info.value.status_code == 403
 
 
 class TestActualServiceFlags:
@@ -161,18 +161,18 @@ class TestActualServiceFlags:
 class TestBaseServiceLogging:
     """Verify logging output for BaseService CRUD operations."""
 
-    async def test_create_failure_logs_error(self, caplog):
-        """Empty response on create → ERROR with table and simulation_id."""
+    async def test_create_rls_rejection_logs_warning(self, caplog):
+        """Empty insert response (RLS rejection) → WARNING with table and simulation_id."""
         mock_sb = _mock_supabase(return_data=None)
         sim_id = uuid4()
 
-        with caplog.at_level(logging.ERROR, logger="backend.services.base_service"):
+        with caplog.at_level(logging.WARNING, logger="backend.services.base_service"):
             with pytest.raises(HTTPException):
                 await _ServiceWithCreatedBy.create(mock_sb, sim_id, uuid4(), {"name": "Fail"})
 
-        error_records = [r for r in caplog.records if r.levelno == logging.ERROR]
-        assert len(error_records) >= 1
-        record = error_records[0]
+        warning_records = [r for r in caplog.records if r.levelno == logging.WARNING]
+        assert len(warning_records) >= 1
+        record = warning_records[0]
         assert record.table == "agents"
         assert record.simulation_id == str(sim_id)
 

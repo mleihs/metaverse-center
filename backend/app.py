@@ -17,7 +17,9 @@ from slowapi.errors import RateLimitExceeded
 from backend.config import settings as app_settings
 
 # --- Sentry (must initialize before app/middleware creation) ---
-if app_settings.sentry_dsn:
+# Only send errors to Sentry in deployed environments (production/staging).
+# Local development and test runs should not pollute the error tracker.
+if app_settings.sentry_dsn and app_settings.environment not in ("development", "test"):
     sentry_sdk.init(
         dsn=app_settings.sentry_dsn,
         environment=app_settings.sentry_environment,
@@ -124,12 +126,27 @@ app.add_middleware(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# --- Global Exception Handler ---
+# --- Global Exception Handlers ---
 logger = logging.getLogger(__name__)
+
+# Database connectivity errors are infrastructure failures, not application bugs.
+# Return 503 so clients/load balancers can retry instead of logging a false 500.
+_CONNECTIVITY_ERRORS = frozenset({"ConnectError", "ConnectTimeout", "PoolTimeout"})
 
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    if type(exc).__name__ in _CONNECTIVITY_ERRORS:
+        logger.warning("Database unavailable: %s", type(exc).__name__)
+        return JSONResponse(
+            status_code=503,
+            content={
+                "success": False,
+                "code": "SERVICE_UNAVAILABLE",
+                "message": "Database temporarily unavailable. Please retry shortly.",
+            },
+            headers={"Retry-After": "5"},
+        )
     logger.exception("Unhandled exception")
     return JSONResponse(
         status_code=500,

@@ -47,8 +47,13 @@ class ResonanceScheduler:
             except asyncio.CancelledError:
                 logger.info("Resonance scheduler shutting down")
                 raise
-            except Exception:
-                logger.exception("Resonance scheduler loop error")
+            except Exception as exc:
+                # Transient connectivity errors are expected during DB restarts
+                # — log at warning level to avoid Sentry noise.
+                if type(exc).__name__ in ("ConnectError", "ConnectTimeout"):
+                    logger.warning("Resonance scheduler: database unavailable, retrying in %ds", interval)
+                else:
+                    logger.exception("Resonance scheduler loop error")
             await asyncio.sleep(interval)
 
     @classmethod

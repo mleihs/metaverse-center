@@ -476,7 +476,11 @@ class ScoringService:
 
         resp = (
             supabase.table("epoch_scores")
-            .select("*, simulations(name, slug)")
+            .select(
+                "id, epoch_id, simulation_id, cycle_number,"
+                " stability_score, influence_score, sovereignty_score,"
+                " diplomatic_score, military_score, composite_score"
+            )
             .eq("epoch_id", str(epoch_id))
             .eq("cycle_number", cycle_number)
             .order("composite_score", desc=True)
@@ -486,6 +490,17 @@ class ScoringService:
         scores = resp.data or []
         if not scores:
             return []
+
+        # Batch-fetch simulation names (separate query avoids PostgREST
+        # join coercion failures when FK cardinality is ambiguous)
+        score_sim_ids = [s["simulation_id"] for s in scores]
+        sims_resp = (
+            supabase.table("simulations")
+            .select("id, name, slug")
+            .in_("id", score_sim_ids)
+            .execute()
+        )
+        sim_map: dict[str, dict] = {s["id"]: s for s in sims_resp.data or []}
 
         # Batch-fetch all participant team assignments + betrayal data for this epoch
         participants_resp = (
@@ -515,8 +530,8 @@ class ScoringService:
 
         entries = []
         for rank, score in enumerate(scores, start=1):
-            sim = score.get("simulations") or {}
             sim_id = score["simulation_id"]
+            sim = sim_map.get(sim_id, {})
             ac = ally_counts.get(sim_id, 0)
             entries.append({
                 "rank": rank,
