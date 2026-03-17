@@ -205,34 +205,65 @@ class ForgeLoreService:
     ) -> list[dict[str, Any]]:
         """Translate lore sections from English to German via AI.
 
+        Translates one section at a time for reliability — each call is
+        small enough to avoid output truncation and Pydantic validation
+        failures.  Individual failures are logged and skipped so partial
+        translations still get persisted.
+
         Returns a list of dicts with title_de, epigraph_de, body_de, image_caption_de.
         """
-        logger.debug("Translating lore sections", extra={"section_count": len(sections)})
+        logger.info("Translating lore sections", extra={"section_count": len(sections)})
+        translations: list[dict[str, Any]] = []
+        agent = create_forge_agent(LORE_TRANSLATOR_PROMPT, api_key=openrouter_key)
 
-        # Build translation prompt with all sections
-        section_texts = []
         for i, s in enumerate(sections):
-            block = f"--- SECTION {i + 1} ---\n"
-            block += f"Title: {s['title']}\n"
+            block = f"Title: {s['title']}\n"
             if s.get("epigraph"):
                 block += f"Epigraph: {s['epigraph']}\n"
             block += f"Body:\n{s['body']}\n"
             if s.get("image_caption"):
                 block += f"Image Caption: {s['image_caption']}\n"
-            section_texts.append(block)
 
-        prompt = (
-            f"Translate these {len(sections)} lore sections to German. "
-            f"Return exactly {len(sections)} translated sections in the same order.\n\n"
-            + "\n".join(section_texts)
+            prompt = (
+                "Translate this lore section to German. "
+                "Return exactly 1 translated section.\n\n" + block
+            )
+
+            try:
+                result = await run_ai(
+                    agent, prompt, "lore_translation",
+                    output_type=ForgeLoreTranslatedOutput,
+                )
+                translated = result.output.sections[0].model_dump()
+                translations.append(translated)
+                logger.info(
+                    "Lore section translated",
+                    extra={
+                        "section": f"{i + 1}/{len(sections)}",
+                        "entity_name": s["title"],
+                    },
+                )
+            except Exception:
+                logger.exception(
+                    "Lore section translation failed — skipping",
+                    extra={
+                        "section": f"{i + 1}/{len(sections)}",
+                        "entity_name": s["title"],
+                    },
+                )
+                # Append empty translation so indices stay aligned
+                translations.append({
+                    "title": s["title"],
+                    "epigraph": s.get("epigraph", ""),
+                    "body": "",
+                    "image_caption": s.get("image_caption"),
+                })
+
+        succeeded = sum(1 for t in translations if t.get("body"))
+        logger.info(
+            "Lore translation complete",
+            extra={"succeeded": succeeded, "total": len(sections)},
         )
-
-        agent = create_forge_agent(LORE_TRANSLATOR_PROMPT, api_key=openrouter_key)
-
-        result = await run_ai(agent, prompt, "lore_translation", output_type=ForgeLoreTranslatedOutput)
-        translations = [t.model_dump() for t in result.output.sections]
-
-        logger.debug("Lore sections translated", extra={"section_count": len(translations)})
         return translations
 
     @staticmethod

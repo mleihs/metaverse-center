@@ -330,17 +330,17 @@ class ResearchService:
         # ── Tri-axis Tavily web search augmentation ───────────────────
         if TavilySearchService.is_available():
             lit_query = (
-                f"{literary_influence} literary analysis narrative technique"
+                f"{literary_influence[:300]} literary analysis narrative technique"
                 if literary_influence
-                else f"{seed} literature narrative technique"
+                else f"{seed[:200]} literature narrative technique"
             )
             phil_query = (
-                f"{core_question} philosophy epistemology"
+                f"{core_question[:300]} philosophy epistemology"
                 if core_question
-                else f"{seed} philosophy epistemology"
+                else f"{seed[:200]} philosophy epistemology"
             )
             arch_query = (
-                f"{description} architecture movement materials visual"
+                f"{description[:300]} architecture movement materials visual"
                 if description
                 else f"{title} architecture visual vocabulary"
             )
