@@ -279,6 +279,9 @@ class LeaderboardEntry(BaseModel):
     diplomatic: float
     military: float
     composite: float
+    ally_count: int = 0
+    ally_bonus_pct: float = 0.0
+    betrayal_penalty: float = 0.0
 
 
 # ── Battle Log ───────────────────────────────────────────────────

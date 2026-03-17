@@ -12,24 +12,9 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import type { BattleLogEntry, Epoch, EpochParticipant } from '../../types/index.js';
+import type { Epoch, EpochParticipant, IntelDossier } from '../../types/index.js';
+import { epochsApi } from '../../services/api/EpochsApiService.js';
 import { icons } from '../../utils/icons.js';
-
-/** Aggregated intel for one opponent. */
-interface OpponentDossier {
-  simulationId: string;
-  simulationName: string;
-  zoneSecurityLevels: string[];
-  zoneDetails: Array<{ name: string; security_level: string }>;
-  guardianCount: number;
-  fortifications: Array<{
-    zone_name: string;
-    security_bonus: number;
-    expires_at_cycle: number;
-  }>;
-  lastIntelCycle: number;
-  reportCount: number;
-}
 
 const SECURITY_COLORS: Record<string, string> = {
   fortress: 'var(--color-danger)',
@@ -43,7 +28,6 @@ const SECURITY_COLORS: Record<string, string> = {
   lawless: 'var(--color-success)',
 };
 
-const STALENESS_THRESHOLD = 5;
 
 @localized()
 @customElement('velg-epoch-intel-dossier-tab')
@@ -436,61 +420,41 @@ export class VelgEpochIntelDossierTab extends LitElement {
 
   @property({ type: Object }) epoch: Epoch | null = null;
   @property({ type: Object }) myParticipant: EpochParticipant | null = null;
-  @property({ type: Array }) battleLog: BattleLogEntry[] = [];
   @property({ type: Array }) participants: EpochParticipant[] = [];
   @property({ type: Boolean, reflect: true }) compact = false;
   @state() private _expanded = true;
+  @state() private _dossiers: IntelDossier[] = [];
+  @state() private _loading = false;
+  private _loadedKey = '';
 
-  private _buildDossiers(): OpponentDossier[] {
-    const mySimId = this.myParticipant?.simulation_id;
-    if (!mySimId) return [];
-
-    // Filter intel_report entries from our spies
-    const intelReports = this.battleLog.filter(
-      (e) => e.event_type === 'intel_report' && e.source_simulation_id === mySimId,
-    );
-
-    // Group by target, use latest report per target
-    const byTarget = new Map<string, BattleLogEntry[]>();
-    for (const report of intelReports) {
-      const target = report.target_simulation_id;
-      if (!target) continue;
-      const existing = byTarget.get(target) ?? [];
-      existing.push(report);
-      byTarget.set(target, existing);
+  override willUpdate(changed: Map<string, unknown>) {
+    super.willUpdate(changed);
+    const key = `${this.epoch?.id}|${this.myParticipant?.simulation_id}`;
+    if (key !== this._loadedKey && this.epoch?.id && this.myParticipant?.simulation_id) {
+      this._loadedKey = key;
+      this._loadDossiers();
     }
+  }
 
-    const dossiers: OpponentDossier[] = [];
-    for (const [targetSimId, reports] of byTarget) {
-      // Sort by cycle descending — latest first
-      reports.sort((a, b) => b.cycle_number - a.cycle_number);
-      const latest = reports[0];
-      const meta = latest.metadata as Record<string, unknown>;
-
-      // Resolve simulation name
-      const participant = this.participants.find((p) => p.simulation_id === targetSimId);
-      const simName =
-        (participant?.simulations as { name: string } | undefined)?.name ?? targetSimId.slice(0, 8);
-
-      dossiers.push({
-        simulationId: targetSimId,
-        simulationName: simName,
-        zoneSecurityLevels: (meta.zone_security as string[]) ?? [],
-        zoneDetails: (meta.zone_details as Array<{ name: string; security_level: string }>) ?? [],
-        guardianCount: (meta.guardian_count as number) ?? 0,
-        fortifications: (meta.fortifications as OpponentDossier['fortifications']) ?? [],
-        lastIntelCycle: latest.cycle_number,
-        reportCount: reports.length,
-      });
+  private async _loadDossiers() {
+    if (!this.epoch?.id || !this.myParticipant?.simulation_id) return;
+    this._loading = true;
+    try {
+      const resp = await epochsApi.getIntelDossiers(
+        this.epoch.id,
+        this.myParticipant.simulation_id,
+      );
+      this._dossiers = resp.data ?? [];
+    } catch {
+      this._dossiers = [];
+    } finally {
+      this._loading = false;
     }
-
-    // Sort: most recently gathered first
-    dossiers.sort((a, b) => b.lastIntelCycle - a.lastIntelCycle);
-    return dossiers;
   }
 
   protected render() {
-    const dossiers = this._buildDossiers();
+    if (this._loading) return nothing;
+    const dossiers = this._dossiers;
 
     if (this.compact) {
       return html`
@@ -522,7 +486,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
     return this._renderContent(dossiers);
   }
 
-  private _renderContent(dossiers: OpponentDossier[]) {
+  private _renderContent(dossiers: IntelDossier[]) {
     if (dossiers.length === 0) {
       return html`
         <div class="empty" role="status">
@@ -542,22 +506,20 @@ export class VelgEpochIntelDossierTab extends LitElement {
     `;
   }
 
-  private _renderCard(dossier: OpponentDossier, index: number) {
-    const currentCycle = this.epoch?.current_cycle ?? 1;
-    const cyclesAgo = currentCycle - dossier.lastIntelCycle;
-    const isStale = cyclesAgo > STALENESS_THRESHOLD;
+  private _renderCard(dossier: IntelDossier, index: number) {
+    const isStale = dossier.is_stale;
 
     return html`
       <article
         class="card ${isStale ? 'card--stale' : ''}"
         role="listitem"
         style="animation-delay: ${index * 80}ms"
-        aria-label="${dossier.simulationName}"
+        aria-label="${dossier.simulation_name}"
       >
         <div class="card__header">
-          <h4 class="card__name">${dossier.simulationName}</h4>
+          <h4 class="card__name">${dossier.simulation_name}</h4>
           <span class="card__cycle">
-            ${msg('Last intel')}: ${msg(str`Cycle ${dossier.lastIntelCycle}`)}
+            ${msg('Last intel')}: ${msg(str`Cycle ${dossier.last_intel_cycle}`)}
             ${isStale ? html`<span class="card__stale-tag">${msg('Intel may be outdated')}</span>` : nothing}
           </span>
         </div>
@@ -565,14 +527,14 @@ export class VelgEpochIntelDossierTab extends LitElement {
         <div class="card__body">
           <!-- Zone Security -->
           ${
-            dossier.zoneDetails.length > 0 || dossier.zoneSecurityLevels.length > 0
+            dossier.zone_details.length > 0 || dossier.zone_security_levels.length > 0
               ? html`
               <div class="intel-row">
                 <span class="intel-row__label">${msg('Zone Security')}</span>
                 <span class="intel-row__value">
                   ${
-                    dossier.zoneDetails.length > 0
-                      ? dossier.zoneDetails.map(
+                    dossier.zone_details.length > 0
+                      ? dossier.zone_details.map(
                           (z) => html`
                           <span
                             class="zone-badge"
@@ -580,7 +542,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
                           >${z.name}: ${z.security_level}</span>
                         `,
                         )
-                      : dossier.zoneSecurityLevels.map(
+                      : dossier.zone_security_levels.map(
                           (level) => html`
                           <span
                             class="zone-badge"
@@ -600,7 +562,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
             <span class="intel-row__label">${msg('Guardians detected')}</span>
             <span class="guardian-count">
               <span class="guardian-count__icon" aria-hidden="true">${icons.operativeGuardian(14)}</span>
-              ${dossier.guardianCount}
+              ${dossier.guardian_count}
             </span>
           </div>
 
@@ -627,7 +589,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
 
         <div class="card__footer">
           <span class="card__reports">
-            ${msg('Snapshot')} &middot; ${dossier.reportCount} ${dossier.reportCount === 1 ? msg('report') : msg('reports')}
+            ${msg('Snapshot')} &middot; ${dossier.report_count} ${dossier.report_count === 1 ? msg('report') : msg('reports')}
           </span>
         </div>
       </article>

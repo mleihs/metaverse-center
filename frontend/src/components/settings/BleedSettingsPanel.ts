@@ -68,6 +68,20 @@ export class VelgBleedSettingsPanel extends BaseSettingsPanel {
         min-width: 32px;
         text-align: right;
       }
+
+      @media (max-width: 640px) {
+        :host {
+          padding: var(--space-3);
+        }
+
+        .bleed-toggle-row {
+          min-height: 44px;
+        }
+
+        .bleed-range__input {
+          min-height: 44px;
+        }
+      }
     `,
   ];
 

@@ -169,6 +169,30 @@ export class VelgEventPicker extends LitElement {
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-muted);
     }
+
+    @media (max-width: 640px) {
+      .picker__search {
+        font-size: var(--text-base);
+        padding: var(--space-3);
+      }
+
+      .picker__list {
+        max-height: 50vh;
+      }
+
+      .picker__item {
+        padding: var(--space-3);
+        min-height: 44px;
+      }
+
+      .picker__item-title {
+        font-size: var(--text-base);
+      }
+
+      .picker__item-meta {
+        gap: var(--space-1);
+      }
+    }
   `;
 
   @property({ type: String }) simulationId = '';

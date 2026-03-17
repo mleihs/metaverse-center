@@ -54,7 +54,10 @@ class ResonanceService(BaseService):
         query = query.range(offset, offset + limit - 1)
         response = query.execute()
         total = response.count if response.count is not None else len(response.data or [])
-        return response.data or [], total
+        results = response.data or []
+        for r in results:
+            r["magnitude_class"] = cls._classify_magnitude(float(r.get("magnitude") or 0))
+        return results, total
 
     @classmethod
     async def get(
@@ -75,7 +78,9 @@ class ResonanceService(BaseService):
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Resonance not found.",
             )
-        return response.data[0]
+        result = response.data[0]
+        result["magnitude_class"] = cls._classify_magnitude(float(result.get("magnitude") or 0))
+        return result
 
     @classmethod
     async def create(
@@ -164,24 +169,37 @@ class ResonanceService(BaseService):
 
     # ── Impact Processing ────────────────────────────────────────────────
 
+    @staticmethod
+    def _classify_magnitude(magnitude: float) -> str:
+        """Classify magnitude into low/medium/high."""
+        if magnitude <= 0.4:
+            return "low"
+        if magnitude <= 0.7:
+            return "medium"
+        return "high"
+
     @classmethod
     async def list_impacts(
         cls,
         supabase: Client,
         resonance_id: UUID,
     ) -> list[dict]:
-        """List all impacts for a resonance, including simulation names."""
+        """List all impacts for a resonance, including simulation names/slugs."""
         response = (
             supabase.table("resonance_impacts")
-            .select("*, simulations(name)")
+            .select("*, simulations(name, slug)")
             .eq("resonance_id", str(resonance_id))
             .order("created_at", desc=True)
             .execute()
         )
-        # Flatten simulation name into each impact record
+        # Flatten simulation name/slug into each impact record
         for impact in response.data or []:
             sim = impact.pop("simulations", None)
             impact["simulation_name"] = sim["name"] if sim else None
+            impact["simulation_slug"] = sim.get("slug") if sim else None
+            impact["magnitude_class"] = cls._classify_magnitude(
+                float(impact.get("effective_magnitude") or impact.get("magnitude") or 0)
+            )
         return response.data or []
 
     @classmethod

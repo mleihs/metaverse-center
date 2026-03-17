@@ -61,6 +61,21 @@ async def get_score_history(
     return {"success": True, "data": data}
 
 
+# ── Intel Dossiers ─────────────────────────────────────
+
+
+@router.get("/intel-dossiers", response_model=SuccessResponse)
+async def get_intel_dossiers(
+    epoch_id: UUID,
+    simulation_id: UUID = Query(..., description="Requesting simulation's ID"),
+    user: CurrentUser = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase),
+) -> dict:
+    """Get pre-aggregated intel dossiers for a simulation's spy reports."""
+    data = await ScoringService.get_intel_dossiers(supabase, epoch_id, simulation_id)
+    return {"success": True, "data": data}
+
+
 # ── Compute (Admin) ────────────────────────────────────
 
 

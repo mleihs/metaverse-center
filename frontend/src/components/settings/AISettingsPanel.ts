@@ -114,6 +114,21 @@ export class VelgAISettingsPanel extends BaseSettingsPanel {
         font-size: var(--text-xs);
         line-height: 1.5;
       }
+
+      @media (max-width: 640px) {
+        :host {
+          padding: var(--space-3);
+        }
+
+        .settings-form-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .settings-form__select,
+        .settings-form__input {
+          width: 100%;
+        }
+      }
     `,
   ];
 

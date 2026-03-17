@@ -171,6 +171,19 @@ export const terminalFormStyles = css`
     text-transform: uppercase;
     letter-spacing: 1px;
   }
+
+  @media (max-width: 640px) {
+    .form-input {
+      font-size: var(--text-base, 1rem);
+      padding: 12px 14px;
+      min-height: 44px;
+    }
+
+    .btn-submit {
+      min-height: 44px;
+      padding: 14px 20px;
+    }
+  }
 `;
 
 /* ── OAuth section: divider, provider buttons ── */
@@ -265,6 +278,17 @@ export const terminalOAuthStyles = css`
 
   @media (prefers-reduced-motion: reduce) {
     .oauth-divider__line, .oauth-btn { animation: none !important; opacity: 1; transform: none; }
+  }
+
+  @media (max-width: 640px) {
+    .oauth-section {
+      padding: 0 20px 20px;
+    }
+
+    .oauth-btn {
+      min-height: 44px;
+      padding: 12px 20px;
+    }
   }
 `;
 

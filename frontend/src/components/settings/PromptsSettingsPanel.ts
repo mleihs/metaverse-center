@@ -186,6 +186,54 @@ export class VelgPromptsSettingsPanel extends LitElement {
     .footer__btn:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
     .footer__btn--cancel { background: var(--color-surface-raised); color: var(--color-text-primary); }
     .footer__btn--save { background: var(--color-primary); color: var(--color-text-inverse); }
+
+    @media (max-width: 640px) {
+      :host {
+        padding: var(--space-3);
+      }
+
+      .panel__header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-2);
+      }
+
+      .panel__btn {
+        min-height: 44px;
+        justify-content: center;
+      }
+
+      .template {
+        grid-template-columns: 1fr;
+        gap: var(--space-2);
+      }
+
+      .template__meta {
+        flex-wrap: wrap;
+      }
+
+      .form__row {
+        grid-template-columns: 1fr;
+      }
+
+      .form__row--3 {
+        grid-template-columns: 1fr;
+      }
+
+      .footer {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .footer__btn {
+        min-height: 44px;
+      }
+
+      .template__action-btn {
+        min-height: 44px;
+        min-width: 44px;
+      }
+    }
   `;
 
   @property({ type: String }) simulationId = '';

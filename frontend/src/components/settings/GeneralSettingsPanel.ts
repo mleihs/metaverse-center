@@ -68,6 +68,26 @@ export class VelgGeneralSettingsPanel extends LitElement {
         align-items: center;
         gap: var(--space-3);
       }
+
+      @media (max-width: 640px) {
+        :host {
+          padding: var(--space-3);
+        }
+
+        .danger-zone {
+          margin-top: var(--space-4);
+          padding-top: var(--space-4);
+        }
+
+        .danger-zone__actions {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .danger-zone__actions button {
+          min-height: 44px;
+        }
+      }
     `,
   ];
 

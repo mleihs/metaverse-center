@@ -1,7 +1,7 @@
 ---
 title: "Frontend Components"
 id: frontend-components
-version: "3.0"
+version: "3.1"
 date: 2026-03-17
 lang: de
 type: reference
@@ -19,7 +19,7 @@ tags: [frontend, components, lit, web-components]
 
 ### Plattform-Level
 
-**144 component files** across 19 subdirectories. **118 @customElement** components. **19 shared components + 10 CSS modules + 1 base class.**
+**147 component files** across 19 subdirectories. **121 @customElement** components. **22 shared components + 10 CSS modules + 1 base class.**
 
 ```
 App (Root)
@@ -154,7 +154,7 @@ SimulationShell (Layout mit Navigation + Breadcrumb Simulation-Switcher)
 │   ├── EpochPresenceIndicator (online user dot per simulation_id)
 │   ├── EpochReadyPanel (cycle ready toggle with live broadcast)
 │   └── BotConfigPanel (VelgSidePanel slide-out: bot preset CRUD + personality cards)
-└── SettingsView
+└── SettingsView (verwendet VelgTabs fuer Tab-Navigation)
     ├── GeneralSettingsPanel
     ├── WorldSettingsPanel (Taxonomien)
     ├── AISettingsPanel (extends BaseSettingsPanel)
@@ -168,13 +168,16 @@ SimulationShell (Layout mit Navigation + Breadcrumb Simulation-Switcher)
 
 ### Shared Components
 
-**19 components + 10 CSS modules + 1 base class** (30 files total)
+**22 components + 10 CSS modules + 1 base class** (33 files total)
 
 ```
 Shared (wiederverwendbar ueber alle Views)
-├── Components (19)
+├── Components (22)
 │   ├── BaseModal                    Focus trap, Escape-to-close, centered dialog
 │   ├── VelgSidePanel                Slide-from-right panel shell, focus trap, role="dialog", aria-modal="true"
+│   ├── VelgTabs                     Shared tab bar: keyboard nav (Arrow/Home/End), role="tablist", aria-selected, roving tabindex. Ersetzt SettingsView-eigene Tab-Implementierung
+│   ├── VelgDetailPanel              Loading/Error/Content states, slot-basiert (header, body, footer)
+│   ├── VelgSkeleton                 Shimmer loading placeholder, Varianten: text/card/avatar/table-row, prefers-reduced-motion
 │   ├── SharedFilterBar              Ersetzt 4x duplizierten Filter
 │   ├── VelgBadge                    6 color variants (default, primary, info, warning, danger, success)
 │   ├── VelgAvatar                   Portrait + initials fallback, 3 sizes (sm/md/lg), optional alt override
@@ -212,6 +215,10 @@ Das Shared CSS Modul `cardStyles` enthaelt neben den Standard-Card-Styles (`hove
 - **Hover:** Gradient-Border (padding-box/border-box Trick) + Gradient-Fill-Overlay (`::after` Pseudo-Element) + Lift + Glow.
 - Verwendet per-Simulation Theme-Farben fuer einzigartige visuelle Identitaet je Welt.
 - Angewandt in: `VelgAgentCard` (`agent.is_ambassador`), `VelgBuildingCard` (`building.special_type === 'embassy'`).
+
+### Mobile Responsive (Audit Phase 2)
+
+`@media (max-width: 640px)` in 19 Dateien ergaenzt: 9 Settings-Panels, settings-styles.ts, 6 Chat-Komponenten, terminal-theme-styles.ts, 2 Auth-Komponenten. EpochLeaderboard: Table→Card Layout bei 768px. Alle Touch-Targets auf 44px Minimum, Single-Column Layouts, Full-Width Inputs.
 
 ---
 
@@ -793,8 +800,8 @@ Alle Änderungen zeigen eine Live-Preview innerhalb der Shell. Preset-Auswahl f�
 | map/ | 5 | 5 | CartographersDesk, CartographicMap, MapAnnotationTool, MapLayerToggle, MultiverseConspiracyBoard |
 | epoch/ | 19 | 19 | CommandCenter (orchestrator), OpsBoard, OverviewTab, IntelDossierTab, OperationsTab, AlliancesTab, LobbyActions, CreationWizard, DraftRosterPanel, Leaderboard, BattleLog, MissionCard, DeployOperativeModal, InvitePanel, InviteAcceptView, ChatPanel, PresenceIndicator, ReadyPanel, BotConfigPanel |
 | how-to-play/ | 5 | 1 | HowToPlayView + htp-styles (extracted CSS) + 3 content/type files (htp-types, htp-content-rules, htp-content-matches) |
-| shared/ | 29 | 18 | 18 components + 10 CSS modules + 1 base class |
-| **Gesamt** | **159** | **132** (in components/) | **22 Verzeichnisse** |
+| shared/ | 32 | 21 | 21 components + 10 CSS modules + 1 base class |
+| **Gesamt** | **162** | **135** (in components/) | **22 Verzeichnisse** |
 
 ### Utilities
 
@@ -1463,7 +1470,7 @@ Full-screen overlay for the epoch agent draft. Players select which agents from 
 
 ### EpochIntelDossierTab (`velg-epoch-intel-dossier-tab`)
 
-Per-opponent intelligence dashboard assembled from spy battle log data. Shows what the player has learned about each rival through successful spy missions.
+Per-opponent intelligence dashboard. Bezieht Daten ueber den dedizierten API-Endpoint `GET /api/v1/epochs/{epoch_id}/scores/intel-dossiers` (vorab-aggregiert, mit `is_stale` Flag) statt client-seitiger Berechnung aus Battle-Log-Rohdaten.
 
 **Tag:** `<velg-epoch-intel-dossier-tab>`
 
@@ -1473,11 +1480,10 @@ Per-opponent intelligence dashboard assembled from spy battle log data. Shows wh
 | `epoch` | `Epoch` | Current epoch object |
 | `participants` | `EpochParticipant[]` | All epoch participants |
 | `myParticipant` | `EpochParticipant` | Player's own participant record |
-| `battleLog` | `BattleLogEntry[]` | Epoch battle log entries |
 
 **Layout:**
-- Grid of per-opponent intel cards. Each card shows: simulation name/avatar, zone security badges (low/medium/high counts), guardian deployment count, fortification indicators (revealed by spy intel), staleness indicator (how many cycles since last intel).
-- Cards are only populated when the player has spy intel reports (`event_type = 'intel_report'`) for that opponent in the battle log metadata.
+- Grid of per-opponent intel cards. Each card shows: simulation name/avatar, zone security badges (low/medium/high counts), guardian deployment count, fortification indicators (revealed by spy intel), staleness indicator (`is_stale` Flag vom API).
+- Cards are only populated when the player has spy intel reports for that opponent.
 - Empty state when no intel has been gathered.
 
 **Accessibility:** `<article>` semantic elements, `role`/`aria` attributes, WCAG AA contrast (no container opacity — explicit dimmed colors instead), `prefers-reduced-motion`.

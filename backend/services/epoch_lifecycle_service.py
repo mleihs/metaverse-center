@@ -72,29 +72,18 @@ class EpochLifecycleService:
                     "Epoch creator must join with a simulation before starting.",
                 )
 
-        # Auto-complete drafts for participants who haven't drafted
+        # Auto-complete drafts for participants who haven't drafted.
+        # Uses fn_auto_draft_participants RPC (migration 128) — single SQL call
+        # replaces N per-participant queries.
         # Use admin client to bypass RLS — creator may not be a member of
         # all participating simulations (e.g. bot-assigned sims).
         admin = admin_supabase or supabase
         config = {**DEFAULT_CONFIG, **epoch.get("config", {})}
         max_agents = config.get("max_agents_per_player", 6)
-        for p in participants:
-            if not p.get("drafted_agent_ids"):
-                agent_resp = (
-                    admin.table("agents")
-                    .select("id")
-                    .eq("simulation_id", str(p["simulation_id"]))
-                    .is_("deleted_at", "null")
-                    .order("created_at")
-                    .limit(max_agents)
-                    .execute()
-                )
-                auto_ids = [a["id"] for a in (agent_resp.data or [])]
-                if auto_ids:
-                    admin.table("epoch_participants").update({
-                        "drafted_agent_ids": auto_ids,
-                        "draft_completed_at": datetime.now(UTC).isoformat(),
-                    }).eq("id", str(p["id"])).execute()
+        admin.rpc("fn_auto_draft_participants", {
+            "p_epoch_id": str(epoch_id),
+            "p_max_agents": max_agents,
+        }).execute()
 
         # Clone simulations into game instances (atomic batch operation)
         epoch_number = await GameInstanceService.get_epoch_number(supabase)

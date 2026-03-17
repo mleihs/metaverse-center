@@ -129,6 +129,23 @@ export class VelgMessageInput extends LitElement {
     .input-area__counter--limit {
       color: var(--color-text-danger);
     }
+
+    @media (max-width: 640px) {
+      .input-area {
+        padding: var(--space-3);
+      }
+
+      .input-area__textarea {
+        min-height: 44px;
+        font-size: var(--text-base);
+        padding: var(--space-2-5) var(--space-3);
+      }
+
+      .input-area__send {
+        min-width: 44px;
+        height: 44px;
+      }
+    }
   `;
 
   @property({ type: Boolean }) disabled = false;

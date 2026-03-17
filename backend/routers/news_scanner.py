@@ -99,10 +99,15 @@ async def list_candidates(
         admin_supabase, status=status, category=category, source=source,
         limit=limit, offset=offset,
     )
+    # Compute recommended magnitude threshold (top 20%, minimum 0.4)
+    recommended_threshold = ScannerService.compute_recommended_threshold(data)
     return {
         "success": True,
         "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
+        "meta": {
+            **PaginationMeta(count=len(data), total=total, limit=limit, offset=offset).model_dump(),
+            "recommended_threshold": recommended_threshold,
+        },
     }
 
 

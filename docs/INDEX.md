@@ -16,10 +16,10 @@ tags: [index, catalog, documentation]
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
 | [AI Integration](specs/ai-integration.md) | 2.2 | 2026-03-16 | de | active |
-| [API Specification](specs/api-specification.md) | 2.6 | 2026-03-17 | de | active |
+| [API Specification](specs/api-specification.md) | 2.7 | 2026-03-17 | de | active |
 | [Auth and Security](specs/auth-and-security.md) | 1.6 | 2026-03-17 | de | active |
 | [Embassies & Ambassadors](specs/embassies.md) | 1.1 | 2026-02-27 | de | active |
-| [Epochs & Competitive Layer](specs/epochs-competitive-layer.md) | 2.1 | 2026-03-09 | de | active |
+| [Epochs & Competitive Layer](specs/epochs-competitive-layer.md) | 2.2 | 2026-03-17 | de | active |
 | [External Services](specs/external-services.md) | 1.0 | 2026-02-15 | de | active |
 | [Game Systems Design](specs/game-systems.md) | 1.0 | 2026-03-08 | de | active |
 | [i18n Architecture](specs/i18n-architecture.md) | 2.0 | 2026-03-03 | de | active |
@@ -27,19 +27,19 @@ tags: [index, catalog, documentation]
 | [Platform Architecture: Multi-Simulations-Plattform](specs/platform-architecture.md) | 2.2 | 2026-03-10 | de | active |
 | [Relationships, Echoes & Map](specs/relationships-echoes-map.md) | 1.1 | 2026-02-26 | de | active |
 | [Simulation Settings](specs/simulation-settings.md) | 1.0 | 2026-02-15 | de | active |
-| [Substrate Resonances: Platform-Level Event Propagation](specs/substrate-resonances.md) | 1.2 | 2026-03-08 | en | active |
-| [Substrate Scanner — Automated Real-World Event Detection](specs/substrate-scanner.md) | 1.0 | 2026-03-08 | en | active |
+| [Substrate Resonances: Platform-Level Event Propagation](specs/substrate-resonances.md) | 1.3 | 2026-03-17 | en | active |
+| [Substrate Scanner — Automated Real-World Event Detection](specs/substrate-scanner.md) | 1.1 | 2026-03-17 | en | active |
 | [Theming System](specs/theming-system.md) | 1.3 | 2026-03-09 | de | active |
 
 ## References (5)
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
-| [Database Schema: Neues Multi-Simulations-Schema](references/database-schema.md) | 3.7 | 2026-03-17 | de | active |
-| [Design System](references/design-system.md) | 1.3 | 2026-03-02 | de | active |
+| [Database Schema: Neues Multi-Simulations-Schema](references/database-schema.md) | 3.8 | 2026-03-17 | de | active |
+| [Design System](references/design-system.md) | 1.4 | 2026-03-17 | de | active |
 | [Domain Models](references/domain-models.md) | 3.3 | 2026-03-13 | de | active |
 | [Feature Catalog](references/feature-catalog.md) | 3.0 | 2026-03-17 | de | active |
-| [Frontend Components](references/frontend-components.md) | 3.0 | 2026-03-17 | de | active |
+| [Frontend Components](references/frontend-components.md) | 3.1 | 2026-03-17 | de | active |
 
 ## Guides (11)
 

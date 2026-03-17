@@ -169,6 +169,34 @@ export class VelgConversationList extends LitElement {
       color: var(--color-text-muted);
       text-align: center;
     }
+
+    @media (max-width: 640px) {
+      .conversation {
+        padding: var(--space-3);
+      }
+
+      .conversation__agent-name {
+        font-size: var(--text-base);
+      }
+
+      .conversation__preview {
+        font-size: var(--text-sm);
+      }
+
+      .conversation__badge {
+        min-width: 24px;
+        height: 24px;
+      }
+
+      .conversation__actions {
+        display: flex;
+      }
+
+      .conversation__action-btn {
+        min-height: 44px;
+        padding: var(--space-2) var(--space-3);
+      }
+    }
   `;
 
   @property({ type: Array }) conversations: ChatConversation[] = [];

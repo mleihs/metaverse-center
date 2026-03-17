@@ -323,14 +323,93 @@ export class VelgEpochLeaderboard extends LitElement {
     }
 
     @media (max-width: 768px) {
-      .dim-cell,
-      .table th.bar-col {
+      .table-wrapper {
+        overflow-x: visible;
+      }
+
+      thead {
         display: none;
       }
 
-      .table-wrapper {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
+      .table {
+        display: block;
+      }
+
+      tbody {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+      }
+
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-3);
+        border: var(--border-width-thin, 1px) solid var(--color-border-subtle, rgba(255,255,255,0.06));
+        border-bottom: var(--border-width-thin, 1px) solid var(--color-border-subtle, rgba(255,255,255,0.06));
+        border-radius: var(--radius-sm, 4px);
+        background: var(--color-surface-raised, rgba(255,255,255,0.03));
+        transform: none;
+      }
+
+      .row:hover {
+        transform: none;
+      }
+
+      .row--self {
+        border-left: 3px solid var(--color-epoch-accent, #f59e0b);
+      }
+
+      .row td {
+        display: block;
+        padding: 0;
+        border: none;
+      }
+
+      /* Rank — prominent leading number */
+      .row td:first-child {
+        display: flex;
+        align-items: center;
+        min-width: 32px;
+      }
+
+      .row td:first-child .rank {
+        font-size: var(--text-xl);
+        width: auto;
+      }
+
+      /* Simulation name — takes remaining first-line space */
+      .row td:nth-child(2) {
+        flex: 1;
+        min-width: 0;
+      }
+
+      /* Composite score — right-aligned on first line */
+      .row td:nth-child(3) {
+        display: flex;
+        align-items: center;
+      }
+
+      .row td:nth-child(3) .composite {
+        font-size: var(--text-lg);
+      }
+
+      /* Dimension bar cells — flow into a compact horizontal row */
+      .dim-cell {
+        display: block;
+        width: calc(20% - var(--space-1, 4px));
+        flex: 1 1 0%;
+        min-width: 0;
+      }
+
+      .dim-bar {
+        height: 4px;
+      }
+
+      .dim-label {
+        font-size: 8px;
       }
     }
   `;
@@ -535,7 +614,7 @@ export class VelgEpochLeaderboard extends LitElement {
     const rankClass = entry.rank <= 3 ? `rank--${entry.rank}` : '';
 
     const hasBetrayal = (entry.betrayal_penalty ?? 0) > 0;
-    const allyCount = this._getAllyCount(entry);
+    const allyCount = entry.ally_count ?? 0;
     const botPart = this._getBotParticipant(entry);
     const botPlayer = botPart?.bot_players;
     const personality = botPlayer?.personality ?? '';
@@ -584,13 +663,6 @@ export class VelgEpochLeaderboard extends LitElement {
         </div>
       </td>
     `;
-  }
-
-  private _getAllyCount(entry: LeaderboardEntry): number {
-    if (!entry.team_name) return 0;
-    return this.entries.filter(
-      (e) => e.team_name === entry.team_name && e.simulation_id !== entry.simulation_id,
-    ).length;
   }
 
   private _getMaxDimensionValue(): number {

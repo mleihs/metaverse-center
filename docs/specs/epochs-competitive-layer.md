@@ -1,8 +1,8 @@
 ---
 title: "Epochs & Competitive Layer"
 id: epochs-competitive-layer
-version: "2.1"
-date: 2026-03-09
+version: "2.2"
+date: 2026-03-17
 lang: de
 type: spec
 status: active
@@ -292,7 +292,13 @@ This gives an 18 percentage-point swing range between the weakest and strongest 
 
 **Composite score** = weighted sum of normalized dimensions. Each dimension is rescaled 0–100 relative to the highest scorer in that dimension. Configurable weights via Epoch Creation Wizard presets: Balanced / Builder / Warmonger / Diplomat.
 
+**Postgres Push-Down (Migration 127):** Die gesamte Scoring-Berechnung wurde in `fn_compute_cycle_scores(p_epoch_id, p_cycle_number, p_score_weights)` verlagert — ein einziger SECURITY DEFINER SQL-Call mit CTE-Kette (zone_stab → propaganda → missions → echoes → embassies → teams → guardians → raw_scores → normalization → composite). Ersetzt 12 per-Simulation Python-Queries.
+
 **Team scoring** = sum of member scores + 5% alliance bonus per active member.
+
+**Leaderboard Enrichment:** LeaderboardEntry enthaelt zusaetzlich `ally_count` (Anzahl aktiver Alliierter), `ally_bonus_pct` (Allianz-Bonus in %), `betrayal_penalty` (aktive Verrats-Strafe auf Diplomatic Score).
+
+**Intel Dossier Endpoint:** `GET /api/v1/epochs/{epoch_id}/scores/intel-dossiers?simulation_id={sim_id}` — vorab-aggregierte Intel Dossiers mit `is_stale` Flag (true wenn letzter Intel aelter als 2 Zyklen). Ersetzt client-seitige Berechnung aus Battle-Log-Rohdaten.
 
 ### Alliances & Betrayal
 
@@ -1335,6 +1341,7 @@ Includes a dismiss button to cancel the selection.
 
 ## Changelog
 
+**Change v2.2:** Audit Phase 2 — Scoring via `fn_compute_cycle_scores()` RPC (Migration 127, ersetzt 12 Python-Queries), `fn_auto_draft_participants()` RPC (Migration 128, ersetzt N per-Participant Loop). LeaderboardEntry erweitert: `ally_count`, `ally_bonus_pct`, `betrayal_penalty`. Neuer Endpoint: `GET /epochs/{epoch_id}/scores/intel-dossiers` (vorab-aggregierte Intel Dossiers mit `is_stale` Flag). Results-Summary N+1 Fix (Batch-Queries statt per-Participant Loops).
 **Change v2.1:** Alliance Redesign — Proposal-basiertes Beitreten (einstimmige Abstimmung), Shared Intelligence (RLS), Upkeep (1 RP/Mitglied/Zyklus), Tension (Auto-Auflösung bei 80). Neue Tabellen: `epoch_alliance_proposals`, `epoch_alliance_votes`. Neue Spalte: `epoch_teams.tension`. 5 Postgres-Funktionen, 2 Trigger, 5 RLS-Policies. 3 neue API-Endpunkte. 6 neue `battle_log`-Event-Typen. Bot-Abstimmungsstrategien pro Persönlichkeitsarchetyp.
 **Change v1.9:** Foundation Phase Redesign ("Nebelkrieg") + Open Epoch Participation — Migration 048: `zone_fortifications` table, Foundation phase now allows spies + guardians (was guardian-only), spy intel includes fortifications metadata, bot personalities with per-archetype fortification strategies, `/operatives/fortify-zone` endpoint, `zone_fortified` battle log event type. Migration 049: `user_id` column on `epoch_participants`, any authenticated user can join any template simulation (no membership required), `require_epoch_participant()` dependency replaces `require_simulation_member("editor")` on competitive endpoints, RLS rewritten to direct `user_id` checks, `user_has_simulation_access()` extended for epoch participants, DELETE policy added for `epoch_participants`. Frontend: EpochIntelDossierTab (new), MissionCard (new), operative-icons.ts (new), EpochOverviewTab fortify zone section, EpochLobbyActions sim picker with faction cards, `_myParticipant` matching via `user_id`.
 **Change v1.8:** Email Notification i18n & Template Enhancement — Full German translation coverage across all 4 email templates. 85+ bilingual string keys in `_NOTIF_STRINGS` dict (was ~40). Cycle briefing enriched: threat assessment (localized status ERKANNT/GEFASST), spy intel from structured metadata (zone security NIEDRIG/MITTEL/HOCH + Wächtereinsatz), per-mission log with translated headers (TYP/ZIEL/ERGEBNIS), phase name translation (WETTBEWERB/GRUNDSTEINLEGUNG/ABRECHNUNG), alliance status, rank gap, next cycle preview. Phase change: localized subject prefixes (DRINGEND // LETZTE PHASE, GEHEIM // OPERATIONEN BEGINNEN). Epoch completed: localized leaderboard columns, dimension title race "Du:" label. Invitation: DE block shows "Siehe Geheimdienstbericht oben" instead of duplicating English AI lore. All templates: footer ÜBERTRAGUNGSURSPRUNG localized. Contrast fix: `_TEXT_DIM` #666→#888, `_TEXT_DARK` #444→#666 (WCAG AA compliant). Per-simulation accent colors + narrative voice headers. SMTP delivery (replaced Resend API). Epoch start notification (G1: lobby→foundation fires phase change email). `cycle_notification_service.py` enriched: spy intel includes structured `metadata` + resolved `target_name`.

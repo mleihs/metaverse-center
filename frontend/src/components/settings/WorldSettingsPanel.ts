@@ -265,6 +265,46 @@ export class VelgWorldSettingsPanel extends LitElement {
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
     }
+
+    @media (max-width: 640px) {
+      :host {
+        padding: var(--space-3);
+      }
+
+      .panel__controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .form__select {
+        min-width: 0;
+        width: 100%;
+      }
+
+      .add-form__row {
+        flex-direction: column;
+      }
+
+      .add-form__group--narrow {
+        flex: 1;
+      }
+
+      .table__th,
+      .table__td {
+        padding: var(--space-2);
+        font-size: var(--text-xs);
+      }
+
+      .btn,
+      .toggle-btn {
+        min-height: 44px;
+        min-width: 44px;
+      }
+
+      .form__input {
+        width: 100%;
+      }
+    }
   `;
 
   @property({ type: String }) simulationId = '';

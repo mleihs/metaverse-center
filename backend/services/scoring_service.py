@@ -25,7 +25,12 @@ class ScoringService:
         epoch_id: UUID,
         cycle_number: int,
     ) -> list[dict]:
-        """Compute and store scores for all participants in the current cycle."""
+        """Compute and store scores for all participants in the current cycle.
+
+        Uses ``fn_compute_cycle_scores`` RPC (migration 127) which pushes all
+        12 per-simulation queries into a single SQL call with CTEs for raw
+        scoring, normalization, and weighted composite computation.
+        """
         logger.info("Computing cycle scores", extra={"epoch_id": str(epoch_id), "cycle_number": cycle_number})
         # Refresh materialized views (migration 031) so freshly cloned game instances have data
         try:
@@ -34,41 +39,28 @@ class ScoringService:
             logger.warning("Failed to refresh materialized views before scoring")
 
         epoch = await EpochService.get(supabase, epoch_id)
-        participants = await EpochService.list_participants(supabase, epoch_id)
+        config = {**DEFAULT_CONFIG, **epoch.get("config", {})}
+        weights = config.get("score_weights", {})
+        score_weights = {
+            "stability": weights.get("stability", 25),
+            "influence": weights.get("influence", 20),
+            "sovereignty": weights.get("sovereignty", 20),
+            "diplomatic": weights.get("diplomatic", 15),
+            "military": weights.get("military", 20),
+        }
 
-        scores = []
-        for p in participants:
-            sim_id = p["simulation_id"]
-            raw = await cls._compute_raw_scores(supabase, epoch_id, sim_id, epoch)
+        resp = supabase.rpc("fn_compute_cycle_scores", {
+            "p_epoch_id": str(epoch_id),
+            "p_cycle_number": cycle_number,
+            "p_score_weights": score_weights,
+        }).execute()
 
-            score_data = {
-                "epoch_id": str(epoch_id),
-                "simulation_id": sim_id,
-                "cycle_number": cycle_number,
-                "stability_score": raw["stability"],
-                "influence_score": raw["influence"],
-                "sovereignty_score": raw["sovereignty"],
-                "diplomatic_score": raw["diplomatic"],
-                "military_score": raw["military"],
-                "composite_score": 0,  # computed after normalization
-            }
-
-            resp = (
-                supabase.table("epoch_scores")
-                .upsert(score_data, on_conflict="epoch_id,simulation_id,cycle_number")
-                .execute()
+        scores = resp.data or []
+        if not scores:
+            logger.warning(
+                "Scoring RPC returned no data",
+                extra={"epoch_id": str(epoch_id), "cycle_number": cycle_number},
             )
-            if resp.data:
-                scores.append(resp.data[0])
-            else:
-                logger.warning(
-                    "Score upsert returned no data",
-                    extra={"simulation_id": sim_id, "epoch_id": str(epoch_id), "cycle_number": cycle_number},
-                )
-
-        # Normalize and compute composites
-        if scores:
-            scores = await cls._normalize_and_composite(supabase, epoch_id, cycle_number, epoch)
 
         return scores
 
@@ -495,36 +487,115 @@ class ScoringService:
         if not scores:
             return []
 
-        # Batch-fetch all participant team assignments for this epoch
+        # Batch-fetch all participant team assignments + betrayal data for this epoch
         participants_resp = (
             supabase.table("epoch_participants")
-            .select("simulation_id, team_id, epoch_teams(name)")
+            .select("simulation_id, team_id, betrayal_penalty, epoch_teams(name)")
             .eq("epoch_id", str(epoch_id))
             .execute()
         )
         team_by_sim: dict[str, str | None] = {}
+        betrayal_by_sim: dict[str, float] = {}
+        team_id_by_sim: dict[str, str | None] = {}
         for p in participants_resp.data or []:
             team = p.get("epoch_teams")
-            team_by_sim[p["simulation_id"]] = team.get("name") if team else None
+            sim_id = p["simulation_id"]
+            team_by_sim[sim_id] = team.get("name") if team else None
+            team_id_by_sim[sim_id] = p.get("team_id")
+            betrayal_by_sim[sim_id] = float(p.get("betrayal_penalty") or 0)
+
+        # Compute ally counts per team
+        ally_counts: dict[str, int] = {}
+        for sim_id, tid in team_id_by_sim.items():
+            if tid:
+                count = sum(1 for s, t in team_id_by_sim.items() if t == tid and s != sim_id)
+                ally_counts[sim_id] = count
+            else:
+                ally_counts[sim_id] = 0
 
         entries = []
         for rank, score in enumerate(scores, start=1):
             sim = score.get("simulations") or {}
+            sim_id = score["simulation_id"]
+            ac = ally_counts.get(sim_id, 0)
             entries.append({
                 "rank": rank,
-                "simulation_id": score["simulation_id"],
+                "simulation_id": sim_id,
                 "simulation_name": sim.get("name", "Unknown"),
                 "simulation_slug": sim.get("slug"),
-                "team_name": team_by_sim.get(score["simulation_id"]),
+                "team_name": team_by_sim.get(sim_id),
                 "stability": float(score["stability_score"]),
                 "influence": float(score["influence_score"]),
                 "sovereignty": float(score["sovereignty_score"]),
                 "diplomatic": float(score["diplomatic_score"]),
                 "military": float(score["military_score"]),
                 "composite": float(score["composite_score"]),
+                "ally_count": ac,
+                "ally_bonus_pct": round(ac * 15, 1),
+                "betrayal_penalty": betrayal_by_sim.get(sim_id, 0.0),
             })
 
         return entries
+
+    @classmethod
+    async def get_intel_dossiers(
+        cls,
+        supabase: Client,
+        epoch_id: UUID,
+        simulation_id: UUID,
+    ) -> list[dict]:
+        """Get pre-aggregated intel dossiers for a simulation's spy reports.
+
+        Groups intel_report battle_log entries by target_simulation_id,
+        uses the latest report per target, and computes a staleness flag.
+        """
+        staleness_threshold = 5
+
+        epoch = await EpochService.get(supabase, epoch_id)
+        current_cycle = epoch.get("current_cycle", 1)
+
+        # Fetch intel reports from this simulation
+        intel_resp = (
+            supabase.table("battle_log")
+            .select("*, simulations:target_simulation_id(name, slug)")
+            .eq("epoch_id", str(epoch_id))
+            .eq("source_simulation_id", str(simulation_id))
+            .eq("event_type", "intel_report")
+            .order("cycle_number", desc=True)
+            .execute()
+        )
+        reports = intel_resp.data or []
+
+        # Group by target, use latest report per target
+        by_target: dict[str, list[dict]] = {}
+        for r in reports:
+            target = r.get("target_simulation_id")
+            if target:
+                by_target.setdefault(target, []).append(r)
+
+        dossiers = []
+        for target_sim_id, target_reports in by_target.items():
+            latest = target_reports[0]  # already sorted desc
+            meta = latest.get("metadata") or {}
+            sim_info = latest.get("simulations") or {}
+
+            last_intel_cycle = latest.get("cycle_number", 0)
+            dossiers.append({
+                "simulation_id": target_sim_id,
+                "simulation_name": sim_info.get("name", target_sim_id[:8]),
+                "simulation_slug": sim_info.get("slug"),
+                "zone_security_levels": meta.get("zone_security", []),
+                "zone_details": meta.get("zone_details", []),
+                "guardian_count": meta.get("guardian_count", 0),
+                "fortifications": meta.get("fortifications", []),
+                "last_intel_cycle": last_intel_cycle,
+                "report_count": len(target_reports),
+                "is_stale": (current_cycle - last_intel_cycle) > staleness_threshold,
+            })
+
+        # Sort by most recently gathered first
+        dossiers.sort(key=lambda d: d["last_intel_cycle"], reverse=True)
+        return dossiers
 
     @classmethod
     async def get_score_history(
@@ -565,30 +636,37 @@ class ScoringService:
 
         standings = await cls.get_final_standings(supabase, epoch_id)
 
-        # Per-participant operation statistics
+        # Per-participant operation statistics — batch query (no N+1)
         participants = await EpochService.list_participants(supabase, epoch_id)
+        sim_ids = [p["simulation_id"] for p in participants]
+
+        # Single batch query for all mission stats
+        all_missions_resp = (
+            supabase.table("operative_missions")
+            .select("source_simulation_id, operative_type, status")
+            .eq("epoch_id", str(epoch_id))
+            .in_("source_simulation_id", sim_ids)
+            .execute()
+        )
+        # Group by source_simulation_id in Python
+        missions_by_sim: dict[str, list[dict]] = {sid: [] for sid in sim_ids}
+        for m in all_missions_resp.data or []:
+            sid = m["source_simulation_id"]
+            if sid in missions_by_sim:
+                missions_by_sim[sid].append(m)
+
         participant_stats = []
-        for p in participants:
-            sim_id = p["simulation_id"]
-            missions_resp = (
-                supabase.table("operative_missions")
-                .select("operative_type, status")
-                .eq("epoch_id", str(epoch_id))
-                .eq("source_simulation_id", sim_id)
-                .execute()
-            )
-            missions = missions_resp.data or []
+        for sid in sim_ids:
+            missions = missions_by_sim.get(sid, [])
             total_ops = len(missions)
             successes = sum(1 for m in missions if m["status"] == "success")
             failures = sum(1 for m in missions if m["status"] in ("failed", "detected", "captured"))
             detections = sum(1 for m in missions if m["status"] in ("detected", "captured"))
+            captured = sum(1 for m in missions if m["status"] == "captured")
             success_rate = round(successes / total_ops, 2) if total_ops > 0 else 0.0
 
-            # Agents lost (captured status)
-            captured = sum(1 for m in missions if m["status"] == "captured")
-
             participant_stats.append({
-                "simulation_id": sim_id,
+                "simulation_id": sid,
                 "total_operations": total_ops,
                 "successes": successes,
                 "failures": failures,
@@ -600,11 +678,20 @@ class ScoringService:
         # MVP Awards
         mvp_awards = cls._compute_mvp_awards(standings, participant_stats)
 
-        # Score history for all participants
-        score_history = {}
-        for p in participants:
-            history = await cls.get_score_history(supabase, epoch_id, UUID(p["simulation_id"]))
-            score_history[p["simulation_id"]] = history
+        # Score history — batch query for all participants (no N+1)
+        all_scores_resp = (
+            supabase.table("epoch_scores")
+            .select("*")
+            .eq("epoch_id", str(epoch_id))
+            .in_("simulation_id", sim_ids)
+            .order("cycle_number")
+            .execute()
+        )
+        score_history: dict[str, list[dict]] = {sid: [] for sid in sim_ids}
+        for s in all_scores_resp.data or []:
+            sid = s["simulation_id"]
+            if sid in score_history:
+                score_history[sid].append(s)
 
         return {
             "epoch": {

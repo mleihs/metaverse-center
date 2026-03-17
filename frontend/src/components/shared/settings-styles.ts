@@ -306,4 +306,45 @@ export const settingsStyles = css`
     color: var(--color-text-muted);
     font-family: var(--font-sans);
   }
+
+  /* --- Mobile Responsive --- */
+
+  @media (max-width: 640px) {
+    .settings-panel {
+      padding: var(--space-3);
+      gap: var(--space-3);
+    }
+
+    .settings-form-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .settings-section__subtitle {
+      font-size: var(--text-sm);
+    }
+
+    .settings-form__label {
+      font-size: var(--text-xs);
+    }
+
+    .settings-form__input,
+    .settings-form__textarea,
+    .settings-form__select {
+      font-size: var(--text-sm);
+    }
+
+    .settings-panel__footer {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .settings-btn {
+      min-height: 44px;
+      min-width: 44px;
+    }
+
+    .settings-toggle {
+      min-height: 44px;
+    }
+  }
 `;

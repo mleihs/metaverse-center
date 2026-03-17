@@ -215,6 +215,40 @@ export class VelgAgentSelector extends LitElement {
       opacity: 0.5;
       cursor: not-allowed;
     }
+
+    @media (max-width: 640px) {
+      .selector__search {
+        font-size: var(--text-base);
+        padding: var(--space-3);
+      }
+
+      .selector__list {
+        max-height: 50vh;
+      }
+
+      .selector__item {
+        padding: var(--space-3);
+        min-height: 44px;
+      }
+
+      .selector__name {
+        font-size: var(--text-base);
+      }
+
+      .selector__confirm {
+        min-height: 44px;
+        font-size: var(--text-base);
+      }
+
+      .selector__chip {
+        padding: var(--space-1-5) var(--space-2-5);
+      }
+
+      .selector__chip-remove {
+        width: 20px;
+        height: 20px;
+      }
+    }
   `;
 
   @property({ type: String }) simulationId = '';

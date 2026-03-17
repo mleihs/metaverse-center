@@ -1,8 +1,8 @@
 ---
 title: "Substrate Scanner — Automated Real-World Event Detection"
 id: substrate-scanner
-version: "1.0"
-date: 2026-03-08
+version: "1.1"
+date: 2026-03-17
 lang: en
 type: spec
 status: active
@@ -923,7 +923,7 @@ All under `/api/v1/admin/news-scanner`, platform admin only.
 | GET | `/adapters` | List all registered adapters with status, config, last fetch |
 | PATCH | `/adapters/{name}` | Enable/disable an adapter |
 | POST | `/trigger-scan` | Manually trigger one scan cycle (optional: `adapter_names` filter) |
-| GET | `/candidates` | List candidates (filter: status, category, source; paginated) |
+| GET | `/candidates` | List candidates (filter: status, category, source; paginated). Response meta enthaelt `recommended_threshold` (berechneter Schwellwert basierend auf aktueller Kandidaten-Verteilung) |
 | POST | `/candidates/{id}/approve` | Approve → create resonance + mark `created` |
 | POST | `/candidates/{id}/reject` | Reject candidate |
 | PATCH | `/candidates/{id}` | Edit magnitude/title before approving |

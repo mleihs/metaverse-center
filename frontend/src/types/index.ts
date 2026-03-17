@@ -1240,12 +1240,31 @@ export interface LeaderboardEntry {
   diplomatic: number;
   military: number;
   composite: number;
-  betrayal_penalty?: number;
+  ally_count: number;
+  ally_bonus_pct: number;
+  betrayal_penalty: number;
   stability_title?: string;
   influence_title?: string;
   sovereignty_title?: string;
   diplomatic_title?: string;
   military_title?: string;
+}
+
+export interface IntelDossier {
+  simulation_id: UUID;
+  simulation_name: string;
+  simulation_slug?: string;
+  zone_security_levels: string[];
+  zone_details: Array<{ name: string; security_level: string }>;
+  guardian_count: number;
+  fortifications: Array<{
+    zone_name: string;
+    security_bonus: number;
+    expires_at_cycle: number;
+  }>;
+  last_intel_cycle: number;
+  report_count: number;
+  is_stale: boolean;
 }
 
 export interface ParticipantStats {
@@ -1534,6 +1553,7 @@ export interface Resonance {
   created_at: string;
   updated_at: string;
   deleted_at?: string;
+  magnitude_class?: string;
 }
 
 export interface ResonanceImpact {
@@ -1541,6 +1561,8 @@ export interface ResonanceImpact {
   resonance_id: UUID;
   simulation_id: UUID;
   simulation_name?: string;
+  simulation_slug?: string;
+  magnitude_class?: string;
   susceptibility: number;
   effective_magnitude: number;
   status: ResonanceImpactStatus;

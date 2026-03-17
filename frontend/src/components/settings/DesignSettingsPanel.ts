@@ -696,6 +696,54 @@ export class VelgDesignSettingsPanel extends BaseSettingsPanel {
       box-sizing: border-box;
     }
 
+    @media (max-width: 640px) {
+      :host {
+        padding: var(--space-3);
+      }
+
+      .color-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: var(--space-3);
+      }
+
+      .font-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .character-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .preset-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .preset-bar__select {
+        min-width: 0;
+        width: 100%;
+      }
+
+      .preset-bar__btn {
+        min-height: 44px;
+        justify-content: center;
+      }
+
+      .form__input,
+      .form__select,
+      .form__textarea {
+        width: 100%;
+      }
+
+      .preview__input {
+        width: 100%;
+      }
+
+      .preview__btn-row {
+        flex-direction: column;
+      }
+    }
+
   `,
   ];
 

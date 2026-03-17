@@ -718,16 +718,12 @@ export class VelgResonanceDetailsPanel extends LitElement {
     try {
       const res = await resonanceApi.listImpacts(this.resonance.id);
       if (res.success && res.data) {
-        const sims = appState.simulations.value;
         this._impacts = res.data
-          .map((impact) => {
-            const sim = sims.find((s) => s.id === impact.simulation_id);
-            return {
-              ...impact,
-              _simName: sim?.name ?? impact.simulation_id.slice(0, 8),
-              _simSlug: sim?.slug ?? '',
-            };
-          })
+          .map((impact) => ({
+            ...impact,
+            _simName: impact.simulation_name ?? impact.simulation_id.slice(0, 8),
+            _simSlug: impact.simulation_slug ?? '',
+          }))
           .sort((a, b) => b.effective_magnitude - a.effective_magnitude);
       }
     } catch {
@@ -738,6 +734,9 @@ export class VelgResonanceDetailsPanel extends LitElement {
   }
 
   private _getMagnitudeClass(mag?: number): string {
+    if (this.resonance?.magnitude_class && mag === undefined) {
+      return this.resonance.magnitude_class;
+    }
     const m = mag ?? this.resonance?.magnitude ?? 0;
     if (m <= 0.4) return 'low';
     if (m <= 0.7) return 'medium';

@@ -121,6 +121,30 @@ export class VelgIntegrationSettingsPanel extends BaseSettingsPanel {
         justify-content: space-between;
         gap: var(--space-3);
       }
+
+      @media (max-width: 640px) {
+        :host {
+          padding: var(--space-3);
+        }
+
+        .int-section {
+          padding: var(--space-3);
+        }
+
+        .int-section__header {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .settings-form__input {
+          width: 100%;
+        }
+
+        .settings-btn {
+          min-height: 44px;
+          width: 100%;
+        }
+      }
     `,
   ];
 

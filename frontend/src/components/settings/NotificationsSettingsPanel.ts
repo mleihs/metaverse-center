@@ -67,6 +67,27 @@ export class VelgNotificationsSettingsPanel extends LitElement {
         gap: var(--space-3);
         padding-top: var(--space-3);
       }
+
+      @media (max-width: 640px) {
+        :host {
+          padding: var(--space-3);
+        }
+
+        .notif-toggle-row {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: var(--space-2);
+        }
+
+        .notif-locale-row {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .settings-toggle {
+          min-height: 44px;
+        }
+      }
     `,
   ];
 

@@ -1,8 +1,8 @@
 ---
 title: "Substrate Resonances: Platform-Level Event Propagation"
 id: substrate-resonances
-version: "1.2"
-date: 2026-03-08
+version: "1.3"
+date: 2026-03-17
 lang: en
 type: spec
 status: active
@@ -295,6 +295,9 @@ When `resonance_bot_awareness_enabled` is true, bot personalities factor active 
 | `updated_at` | timestamptz | NO | `now()` |
 | `deleted_at` | timestamptz | YES | |
 
+**Computed field (API-Level):**
+- `magnitude_class`: Abgeleitet aus `magnitude` — `low` (<=0.4), `medium` (<=0.7), `high` (>0.7). Nicht in der Datenbank gespeichert, vom Backend in der Response berechnet.
+
 **CHECK constraints:**
 - `source_category IN ('economic_crisis', 'military_conflict', 'pandemic', 'natural_disaster', 'political_upheaval', 'tech_breakthrough', 'cultural_shift', 'environmental_disaster')`
 - `resonance_signature IN ('economic_tremor', 'conflict_wave', 'biological_tide', 'elemental_surge', 'authority_fracture', 'innovation_spark', 'consciousness_drift', 'decay_bloom')`
@@ -327,6 +330,9 @@ When `resonance_bot_awareness_enabled` is true, bot personalities factor active 
 | `created_at` | timestamptz | NO | `now()` |
 
 **UNIQUE:** `(resonance_id, simulation_id)` — one impact per simulation per resonance
+
+**Computed field (API-Level):**
+- `simulation_slug`: Via JOIN auf `simulations.slug` aufgelöst. Ermöglicht Frontend-seitige URL-Konstruktion ohne zusätzlichen Lookup.
 
 **Triggers:**
 - `trg_compute_effective_magnitude` (BEFORE INSERT): `effective_magnitude = MIN(resonance.magnitude * susceptibility, 1.00)`

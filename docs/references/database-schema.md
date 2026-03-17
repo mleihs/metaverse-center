@@ -1,7 +1,7 @@
 ---
 title: "Database Schema: Neues Multi-Simulations-Schema"
 id: database-schema
-version: "3.7"
+version: "3.8"
 date: 2026-03-17
 lang: de
 type: reference
@@ -1171,6 +1171,24 @@ CREATE OR REPLACE FUNCTION public.fn_batch_grant_rp(
 ) RETURNS integer LANGUAGE sql SECURITY DEFINER;
 ```
 
+### Scoring & Draft RPC Functions (Migrationen 127/128)
+
+```sql
+-- Komplette Cycle-Scoring-Berechnung in einem SQL-Call.
+-- CTE-Kette: zone_stab, propaganda, inbound_missions, outbound_missions,
+-- echo_strength, embassy_data, team_data, guardian_counts → raw_scores → maxes → normalized → composited.
+-- Ersetzt 12 per-Simulation Python-Queries.
+CREATE OR REPLACE FUNCTION public.fn_compute_cycle_scores(
+    p_epoch_id uuid, p_cycle_number integer, p_score_weights jsonb
+) RETURNS void LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Auto-Draft: Selektiert die besten Agenten pro Teilnehmer basierend auf Aptitude-Summen.
+-- Ersetzt N per-Participant Python-Loop durch ein einziges UPDATE ... FROM.
+CREATE OR REPLACE FUNCTION public.fn_auto_draft_participants(
+    p_epoch_id uuid, p_max_agents integer
+) RETURNS integer LANGUAGE plpgsql SECURITY DEFINER;
+```
+
 ### Admin-RPC Functions (Migrationen 040/057/113)
 
 ```sql
@@ -1874,17 +1892,17 @@ CREATE POLICY simulation_assets_insert ON storage.objects FOR INSERT
 | Tabellen | 58 (inkl. Forge, Chronicle, Agent Memory, Substrate Resonance, Alliance, Forge Access, Token Economy, Feature Purchases) |
 | Trigger Functions | 20 (set_updated_at, update_conversation_stats, enforce_single_primary_profession, validate_simulation_status_transition, immutable_slug, prevent_last_owner_removal, notify_game_metrics_stale, validate_epoch_status_transition, broadcast_epoch_chat, broadcast_ready_signal, fn_enforce_forge_quota, recompute_reaction_modifier, assign_event_zones, fn_derive_resonance_fields, update_resonance_updated_at, check_resonance_impact_time, compute_effective_magnitude, fn_resolve_alliance_proposal, fn_check_alliance_tension, fn_sync_architect_flag) |
 | Utility Functions | 12 (role_meets_minimum, generate_slug, validate_taxonomy_value, game_weight_fallback, refresh_all_game_metrics, refresh_building_readiness, refresh_embassy_effectiveness, refresh_zone_stability, resolve_template_id, is_platform_admin, get_user_emails_batch, get_bleed_gazette_feed) |
-| Epoch/Forge/Chronicle Functions | 25 (clone_simulations_for_epoch, archive_epoch_instances, delete_epoch_instances, fn_materialize_shard, get_chronicle_source_data, retrieve_agent_memories, get_campaign_analytics, get_cycle_battle_summary, process_cascade_events, fn_get_resonance_susceptibility, fn_get_resonance_event_types, assign_event_zones, fn_expire_alliance_proposals, fn_deduct_alliance_upkeep, fn_compute_alliance_tension, fn_approve_forge_access, fn_reject_forge_access, fn_purchase_tokens, fn_admin_grant_tokens, fn_purchase_feature, fn_refund_feature, fn_darkroom_use_regen, fn_user_byok_allowed, fn_update_user_byok_keys, fn_batch_grant_rp) |
+| Epoch/Forge/Chronicle Functions | 27 (clone_simulations_for_epoch, archive_epoch_instances, delete_epoch_instances, fn_materialize_shard, get_chronicle_source_data, retrieve_agent_memories, get_campaign_analytics, get_cycle_battle_summary, process_cascade_events, fn_get_resonance_susceptibility, fn_get_resonance_event_types, assign_event_zones, fn_expire_alliance_proposals, fn_deduct_alliance_upkeep, fn_compute_alliance_tension, fn_approve_forge_access, fn_reject_forge_access, fn_purchase_tokens, fn_admin_grant_tokens, fn_purchase_feature, fn_refund_feature, fn_darkroom_use_regen, fn_user_byok_allowed, fn_update_user_byok_keys, fn_batch_grant_rp, fn_compute_cycle_scores, fn_auto_draft_participants) |
 | Admin RPC Functions | 3 (admin_list_users, admin_get_user, admin_delete_user) |
 | RLS Functions | 4 (user_has_simulation_access, user_has_simulation_role, user_simulation_role, role_meets_minimum) |
-| Functions gesamt | ~64 (ohne unaccent-Varianten und interne Helfer) |
+| Functions gesamt | ~66 (ohne unaccent-Varianten und interne Helfer) |
 | Triggers | 56 Eintraege (19 unique Trigger-Functions auf 56 Tabellen/Spalten-Kombinationen) |
 | Regular Views | 10 (4x active_* + simulation_dashboard + conversation_summaries + agent_statistics + campaign_performance + v_pending_forge_requests + token_economy_stats) |
 | Materialized Views | 4 (mv_building_readiness + mv_zone_stability + mv_embassy_effectiveness + mv_simulation_health) |
 | RLS-Policies | 246+ (inkl. anon SELECT + Forge + Chronicle + Resonance + Alliance + Forge Access + Token Economy + Feature Purchases + alle frueheren Policies) |
 | Indexes | ~92 (inkl. partial, GIN, pgvector IVFFlat, unique) |
 | Storage Buckets | 4 |
-| SQL Migrationen | 98 |
+| SQL Migrationen | 100 |
 
 ---
 
@@ -3418,3 +3436,23 @@ Zuvor waren Domains in `tavily_search.py` hartcodiert. AdminResearchTab-Komponen
 ### Migration 126: Batch RP Grant RPC
 
 `fn_batch_grant_rp(p_epoch_id, p_amount, p_rp_cap)` — Single `UPDATE ... SET current_rp = LEAST(current_rp + amount, cap)` fuer alle Epoch-Teilnehmer. Ersetzt Python-seitige Gruppierung + mehrere UPDATE-Queries.
+
+### Migration 127: Cycle Scoring RPC (Audit Phase 2 — Postgres Push-Down)
+
+`fn_compute_cycle_scores(p_epoch_id, p_cycle_number, p_score_weights)` — SECURITY DEFINER. Ersetzt 12 per-Simulation Python-Queries durch einen einzigen SQL-Call. Verwendet CTEs fuer zone_stab, propaganda, inbound_missions, outbound_missions, echo_strength, embassy_data, team_data, guardian_counts → raw_scores → maxes → normalized → composited. Ergebnis: UPSERT in `cycle_scores`.
+
+```sql
+CREATE OR REPLACE FUNCTION public.fn_compute_cycle_scores(
+    p_epoch_id uuid, p_cycle_number integer, p_score_weights jsonb
+) RETURNS void LANGUAGE plpgsql SECURITY DEFINER;
+```
+
+### Migration 128: Auto-Draft Participants RPC (Audit Phase 2 — Postgres Push-Down)
+
+`fn_auto_draft_participants(p_epoch_id, p_max_agents)` — SECURITY DEFINER. Ersetzt N per-Participant Python-Loop durch ein einziges `UPDATE ... FROM` Statement. Selektiert die besten Agenten pro Teilnehmer basierend auf Aptitude-Summen.
+
+```sql
+CREATE OR REPLACE FUNCTION public.fn_auto_draft_participants(
+    p_epoch_id uuid, p_max_agents integer
+) RETURNS integer LANGUAGE plpgsql SECURITY DEFINER;
+```

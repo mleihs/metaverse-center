@@ -1,7 +1,7 @@
 ---
 title: "API Specification"
 id: api-specification
-version: "2.6"
+version: "2.7"
 date: 2026-03-17
 lang: de
 type: spec
@@ -1447,11 +1447,51 @@ Punkte-Verlauf einer Simulation ueber alle Zyklen einer Epoche.
 **Auth:** Authentifizierter Benutzer
 
 ### `POST /api/v1/epochs/:epochId/scores/compute`
-Punkte fuer aktuellen oder angegebenen Zyklus berechnen und speichern. Nur Epoch-Creator.
+Punkte fuer aktuellen oder angegebenen Zyklus berechnen und speichern. Nur Epoch-Creator. Intern via `fn_compute_cycle_scores()` RPC (Migration 127) — Single SQL Call statt 12 Python-Queries pro Simulation.
 
 **Query:** `?cycle=3` (optional)
 
 **Auth:** Epoch-Creator
+
+### `GET /api/v1/epochs/:epochId/scores/intel-dossiers`
+Vorab-aggregierte Intel Dossiers fuer alle Gegner einer Simulation. Ersetzt client-seitige Berechnung aus Battle-Log-Daten.
+
+**Query:** `?simulation_id={simId}` (required)
+
+**Auth:** Authentifizierter Benutzer (Epoch-Teilnehmer)
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "target_simulation_id": "uuid",
+      "target_simulation_name": "Velgarien",
+      "zone_security_summary": { "low": 2, "medium": 1, "high": 0 },
+      "guardian_count": 3,
+      "fortification_count": 1,
+      "last_intel_cycle": 4,
+      "is_stale": false
+    }
+  ]
+}
+```
+
+**Felder:**
+| Feld | Typ | Beschreibung |
+|------|-----|-------------|
+| `is_stale` | boolean | `true` wenn letzter Intel aelter als 2 Zyklen |
+
+### LeaderboardEntry — Erweiterte Felder
+
+Die Leaderboard-Response enthaelt zusaetzlich:
+
+| Feld | Typ | Beschreibung |
+|------|-----|-------------|
+| `ally_count` | int | Anzahl aktiver Alliierter |
+| `ally_bonus_pct` | float | Allianz-Bonus in Prozent (z.B. 15.0) |
+| `betrayal_penalty` | float | Aktive Verrats-Strafe auf Diplomatic Score (z.B. -25.0) |
 
 ---
 
@@ -1928,10 +1968,12 @@ Resonanzen auflisten (paginiert, filterbar).
 
 **Auth:** Authentifizierter Benutzer
 
+**Hinweis:** ResonanceResponse enthaelt `magnitude_class` (computed): `low` (magnitude <= 0.4), `medium` (magnitude <= 0.7), `high` (magnitude > 0.7).
+
 ### `GET /api/v1/resonances/:resonanceId`
 Einzelne Resonanz abrufen.
 
-**Response:** `SuccessResponse[ResonanceResponse]`
+**Response:** `SuccessResponse[ResonanceResponse]` — inkl. `magnitude_class`
 
 **Auth:** Authentifizierter Benutzer
 
@@ -1981,7 +2023,7 @@ Impact-Verarbeitung ueber Simulationen triggern. Erzeugt 2-3 Events pro Simulati
 ### `GET /api/v1/resonances/:resonanceId/impacts`
 Impact-Records fuer eine Resonanz auflisten.
 
-**Response:** `SuccessResponse[list[ResonanceImpactResponse]]`
+**Response:** `SuccessResponse[list[ResonanceImpactResponse]]` — enthaelt `simulation_slug` pro Impact fuer URL-Konstruktion
 
 ### `PUT /api/v1/resonances/:resonanceId/status`
 Resonanz-Status aktualisieren.

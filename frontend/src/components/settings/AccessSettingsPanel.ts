@@ -361,6 +361,63 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
       .invitations__status--accepted {
         color: var(--color-success);
       }
+
+      @media (max-width: 640px) {
+        :host {
+          padding: var(--space-3);
+        }
+
+        .radio-group {
+          flex-direction: column;
+          gap: var(--space-2);
+        }
+
+        .radio__input {
+          min-height: 44px;
+          min-width: 44px;
+        }
+
+        .members__row {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: var(--space-2);
+          padding: var(--space-3);
+        }
+
+        .members__role-select {
+          width: 100%;
+          min-height: 44px;
+        }
+
+        .members__remove-btn {
+          min-height: 44px;
+          width: 100%;
+          justify-content: center;
+        }
+
+        .invite-form__row {
+          flex-direction: column;
+        }
+
+        .invite-form__input,
+        .invite-form__select {
+          width: 100%;
+          min-height: 44px;
+          box-sizing: border-box;
+        }
+
+        .invitations__row {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: var(--space-1);
+          padding: var(--space-3);
+        }
+
+        .settings-form__input,
+        .settings-form__select {
+          max-width: 100% !important;
+        }
+      }
     `,
   ];
 

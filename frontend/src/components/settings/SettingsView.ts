@@ -3,7 +3,9 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import type { SettingCategory } from '../../types/index.js';
+import type { TabDef } from '../shared/VelgTabs.js';
 
+import '../shared/VelgTabs.js';
 import './GeneralSettingsPanel.js';
 import './WorldSettingsPanel.js';
 import './BleedSettingsPanel.js';
@@ -14,13 +16,11 @@ import './AccessSettingsPanel.js';
 import './PromptsSettingsPanel.js';
 import './NotificationsSettingsPanel.js';
 
-interface TabDef {
-  key: SettingCategory;
-  label: string;
+interface SettingsTabDef extends TabDef {
   ownerOnly?: boolean;
 }
 
-function getTabs(): TabDef[] {
+function getTabs(): SettingsTabDef[] {
   return [
     { key: 'general', label: msg('General') },
     { key: 'world', label: msg('World') },
@@ -61,62 +61,6 @@ export class VelgSettingsView extends LitElement {
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
       margin: 0;
-    }
-
-    .settings__tabs {
-      display: flex;
-      gap: 0;
-      border-bottom: var(--border-default);
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-
-    .settings__tabs::-webkit-scrollbar {
-      display: none;
-    }
-
-    .settings__tab {
-      display: inline-flex;
-      align-items: center;
-      padding: var(--space-2-5) var(--space-4);
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-sm);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
-      background: transparent;
-      color: var(--color-text-secondary);
-      border: none;
-      border-bottom: 3px solid transparent;
-      cursor: pointer;
-      transition: all var(--transition-fast);
-      white-space: nowrap;
-      opacity: 0;
-      animation: tab-enter 250ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) forwards;
-    }
-
-    .settings__tab:nth-child(1) { animation-delay: 0ms; }
-    .settings__tab:nth-child(2) { animation-delay: 40ms; }
-    .settings__tab:nth-child(3) { animation-delay: 80ms; }
-    .settings__tab:nth-child(4) { animation-delay: 120ms; }
-    .settings__tab:nth-child(5) { animation-delay: 160ms; }
-    .settings__tab:nth-child(6) { animation-delay: 200ms; }
-    .settings__tab:nth-child(7) { animation-delay: 240ms; }
-    .settings__tab:nth-child(8) { animation-delay: 280ms; }
-
-    @keyframes tab-enter {
-      from { opacity: 0; transform: translateY(-6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .settings__tab:hover {
-      color: var(--color-text-primary);
-      background: var(--color-surface-raised);
-    }
-
-    .settings__tab--active {
-      color: var(--color-text-primary);
-      border-bottom-color: var(--color-primary);
     }
 
     .settings__content {
@@ -171,20 +115,6 @@ export class VelgSettingsView extends LitElement {
       color: var(--color-surface);
     }
 
-    /* === Mobile: shrink tabs to fit === */
-
-    @media (max-width: 640px) {
-      .settings__tabs {
-        gap: 0;
-        padding: 0 var(--space-2);
-      }
-
-      .settings__tab {
-        padding: var(--space-2) var(--space-2-5);
-        font-size: 0.56rem;
-        letter-spacing: 0;
-      }
-    }
   `;
 
   @property({ type: String }) simulationId = '';
@@ -195,10 +125,14 @@ export class VelgSettingsView extends LitElement {
 
   private get _visibleTabs(): TabDef[] {
     const isOwner = appState.isOwner.value;
-    return getTabs().filter((tab) => !tab.ownerOnly || isOwner);
+    return getTabs().map((tab) => ({
+      ...tab,
+      hidden: tab.ownerOnly && !isOwner,
+    }));
   }
 
-  private _handleTabClick(tab: SettingCategory): void {
+  private _handleTabChange(e: CustomEvent<{ key: string }>): void {
+    const tab = e.detail.key as SettingCategory;
     if (tab === this._activeTab) return;
 
     if (this._hasUnsavedChanges) {
@@ -337,21 +271,11 @@ export class VelgSettingsView extends LitElement {
             : nothing
         }
 
-        <nav class="settings__tabs" role="tablist">
-          ${this._visibleTabs.map(
-            (tab) => html`
-              <button
-                role="tab"
-                aria-selected=${this._activeTab === tab.key}
-                aria-controls="settings-tabpanel"
-                class="settings__tab ${this._activeTab === tab.key ? 'settings__tab--active' : ''}"
-                @click=${() => this._handleTabClick(tab.key)}
-              >
-                ${tab.label}
-              </button>
-            `,
-          )}
-        </nav>
+        <velg-tabs
+          .tabs=${this._visibleTabs}
+          .active=${this._activeTab}
+          @tab-change=${this._handleTabChange}
+        ></velg-tabs>
 
         <div class="settings__content" id="settings-tabpanel" role="tabpanel">
           ${this._renderPanel()}

@@ -955,19 +955,20 @@ class TestScoringServiceLogging:
         assert record.cycle_number == 3
 
     @pytest.mark.asyncio
-    async def test_empty_upsert_logs_warning(self, caplog):
-        """Score upsert returning no data should log WARNING with simulation_id."""
+    async def test_empty_rpc_logs_warning(self, caplog):
+        """Scoring RPC returning no data should log WARNING."""
         sb = MagicMock()
 
-        rpc_chain = MagicMock()
-        rpc_chain.execute.return_value = MagicMock()
-        sb.rpc.return_value = rpc_chain
+        # RPC chain: refresh_all_game_metrics succeeds, scoring RPC returns empty
+        def rpc_side_effect(name, *args, **kwargs):
+            chain = MagicMock()
+            if name == "fn_compute_cycle_scores":
+                chain.execute.return_value = MagicMock(data=[])
+            else:
+                chain.execute.return_value = MagicMock()
+            return chain
 
-        # Upsert chain that returns no data
-        upsert_chain = _make_chain()
-        upsert_chain.execute.return_value = MagicMock(data=[])
-
-        sb.table.side_effect = lambda name: upsert_chain
+        sb.rpc.side_effect = rpc_side_effect
 
         with (
             patch(
@@ -975,20 +976,10 @@ class TestScoringServiceLogging:
                 new_callable=AsyncMock,
                 return_value={"id": str(EPOCH_ID), "status": "competition", "config": {}},
             ),
-            patch(
-                "backend.services.scoring_service.EpochService.list_participants",
-                new_callable=AsyncMock,
-                return_value=[{"simulation_id": SIM_ID_A}],
-            ),
-            patch.object(
-                ScoringService, "_compute_raw_scores",
-                new_callable=AsyncMock,
-                return_value={"stability": 50, "influence": 10, "sovereignty": 80, "diplomatic": 5, "military": 3},
-            ),
             caplog.at_level(logging.WARNING, logger="backend.services.scoring_service"),
         ):
-            await ScoringService.compute_cycle_scores(sb, EPOCH_ID, 1)
+            result = await ScoringService.compute_cycle_scores(sb, EPOCH_ID, 1)
 
-        warning_records = [r for r in caplog.records if r.levelno == logging.WARNING and "upsert" in r.message.lower()]
+        assert result == []
+        warning_records = [r for r in caplog.records if r.levelno == logging.WARNING and "rpc" in r.message.lower()]
         assert len(warning_records) >= 1
-        assert warning_records[0].simulation_id == SIM_ID_A

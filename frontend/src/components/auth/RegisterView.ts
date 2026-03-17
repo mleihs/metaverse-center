@@ -127,6 +127,32 @@ export class VelgRegisterView extends LitElement {
         outline: 2px solid var(--amber);
         outline-offset: 2px;
       }
+
+      @media (max-width: 640px) {
+        :host {
+          padding: var(--space-3);
+        }
+
+        .header {
+          padding: 16px 20px;
+        }
+
+        .header__title {
+          font-size: var(--text-lg, 1.25rem);
+        }
+
+        .briefing {
+          padding: 16px 20px;
+        }
+
+        .body {
+          padding: 20px;
+        }
+
+        .footer {
+          padding: 14px 20px;
+        }
+      }
     `,
   ];
 

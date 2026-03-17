@@ -67,15 +67,25 @@ class ConnectionService:
 
         simulations = await cls._fetch_map_simulations(supabase)
 
-        all_connections = await cls.list_all(supabase, active_only=True)
-
-        # Filter connections: remove orphans (pointing to archived/deleted sims).
         sim_ids = {s["id"] for s in simulations}
         instance_ids = {s["id"] for s in simulations if s.get("simulation_type") == "game_instance"}
-        connections = [
-            c for c in all_connections
-            if c["simulation_a_id"] in sim_ids and c["simulation_b_id"] in sim_ids
-        ]
+        template_ids = [s["id"] for s in simulations if s.get("simulation_type") in (None, "template")]
+
+        # Connections: filter by sim_ids in SQL (no orphan fetch)
+        sim_id_list = list(sim_ids)
+        conn_resp = (
+            supabase.table(cls.table_name)
+            .select(
+                "*, simulation_a:simulations!simulation_a_id(id, name, slug, theme, banner_url, description),"
+                " simulation_b:simulations!simulation_b_id(id, name, slug, theme, banner_url, description)"
+            )
+            .eq("is_active", True)
+            .in_("simulation_a_id", sim_id_list)
+            .in_("simulation_b_id", sim_id_list)
+            .order("created_at", desc=False)
+            .execute()
+        )
+        connections = conn_resp.data or []
 
         all_embassies = await EmbassyService.list_all_active(supabase)
         # Filter embassies: only show template-template embassy edges on the map.
@@ -90,10 +100,9 @@ class ConnectionService:
         active_instance_counts = cls._compute_active_instance_counts(simulations)
         operative_flow = await cls._fetch_operative_flow(supabase)
 
-        instance_ids = [s["id"] for s in simulations if s.get("simulation_type") == "game_instance"]
-        score_dimensions = await cls._fetch_score_dimensions(supabase, instance_ids)
+        instance_id_list = list(instance_ids)
+        score_dimensions = await cls._fetch_score_dimensions(supabase, instance_id_list)
 
-        template_ids = [s["id"] for s in simulations if s.get("simulation_type") in (None, "template")]
         sparklines = await cls._fetch_sparklines(supabase, template_ids)
 
         echo_counts = await cls._fetch_echo_counts(supabase)

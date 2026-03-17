@@ -1,8 +1,8 @@
 ---
 title: "Design System"
 id: design-system
-version: "1.3"
-date: 2026-03-02
+version: "1.4"
+date: 2026-03-17
 lang: de
 type: reference
 status: active
@@ -1092,6 +1092,19 @@ hostElement.style.setProperty('--font-brutalist', "'Arial Narrow', sans-serif");
   }
 }
 ```
+
+### Mobile Responsive (Audit Phase 2)
+
+Systematische Mobile-Optimierung ueber 19 Dateien mit zwei Breakpoints:
+
+| Breakpoint | Verwendung |
+|------------|-----------|
+| `max-width: 640px` | Settings-Panels (9), settings-styles.ts, Chat-Komponenten (6), terminal-theme-styles.ts, Auth-Komponenten (2). Single-Column Layouts, Full-Width Inputs |
+| `max-width: 768px` | EpochLeaderboard: Table→Card Layout Umbruch |
+
+**Touch Targets:** Alle interaktiven Elemente auf mindestens 44px Mindestgroesse (WCAG 2.5.5 Level AAA).
+
+**Shared Components:** `<velg-tabs>` (Tab-Bar mit Keyboard-Navigation: Arrow/Home/End, role="tablist", aria-selected, Roving Tabindex), `<velg-skeleton>` (Shimmer Loading Placeholder, Varianten: text/card/avatar/table-row, respektiert `prefers-reduced-motion`).
 
 ---
 

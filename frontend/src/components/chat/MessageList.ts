@@ -223,6 +223,35 @@ export class VelgMessageList extends LitElement {
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-muted);
     }
+
+    @media (max-width: 640px) {
+      .messages {
+        padding: var(--space-3);
+      }
+
+      .message-row {
+        max-width: 90%;
+      }
+
+      .message__bubble {
+        padding: var(--space-2-5) var(--space-3);
+        font-size: var(--text-base);
+      }
+
+      .message__avatar {
+        width: 28px;
+        height: 28px;
+      }
+
+      .message__avatar-spacer {
+        width: 28px;
+      }
+
+      .empty {
+        min-height: 120px;
+        padding: var(--space-4);
+      }
+    }
   `;
 
   @property({ type: Array }) messages: ChatMessage[] = [];

@@ -14,6 +14,7 @@ import type {
   EpochParticipant,
   EpochScore,
   EpochTeam,
+  IntelDossier,
   LeaderboardEntry,
   OperativeMission,
   ResultsSummary,
@@ -269,6 +270,10 @@ export class EpochsApiService extends BaseApiService {
 
   getResultsSummary(epochId: string): Promise<ApiResponse<ResultsSummary>> {
     return this.get(`/epochs/${epochId}/results-summary`);
+  }
+
+  getIntelDossiers(epochId: string, simulationId: string): Promise<ApiResponse<IntelDossier[]>> {
+    return this.get(`/epochs/${epochId}/scores/intel-dossiers?simulation_id=${simulationId}`);
   }
 
   // ── War Room ──────────────────────────────────────

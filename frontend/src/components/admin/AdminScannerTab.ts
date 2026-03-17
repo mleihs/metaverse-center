@@ -1170,6 +1170,7 @@ export class VelgAdminScannerTab extends LitElement {
   @state() private _scanning = false;
   @state() private _actionInProgress: string | null = null;
   @state() private _expandedId: string | null = null;
+  @state() private _recommendedThreshold = 0.6;
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -1204,6 +1205,11 @@ export class VelgAdminScannerTab extends LitElement {
       if (resp.success && resp.data) {
         // Sort by magnitude DESC — best candidates first
         this._candidates = resp.data.sort((a, b) => b.magnitude - a.magnitude);
+        // Use API-provided threshold (top-20% of pending, min 0.4)
+        const meta = (resp as unknown as { meta?: { recommended_threshold?: number } }).meta;
+        if (meta?.recommended_threshold !== undefined) {
+          this._recommendedThreshold = meta.recommended_threshold;
+        }
       } else {
         VelgToast.error(resp.error?.message ?? msg('Failed to load candidates'));
       }
@@ -1465,18 +1471,9 @@ export class VelgAdminScannerTab extends LitElement {
 
   // ── Candidates ───────────────────────────────────────────
 
-  private _getRecommendedThreshold(): number {
-    // Top 20% of candidates by magnitude, minimum 0.40
-    const pending = this._candidates.filter((c) => c.status === 'pending');
-    if (pending.length === 0) return 0.6;
-    const sorted = [...pending].sort((a, b) => b.magnitude - a.magnitude);
-    const top20idx = Math.max(0, Math.ceil(sorted.length * 0.2) - 1);
-    return Math.max(0.4, sorted[top20idx]?.magnitude ?? 0.6);
-  }
-
   private _renderCandidates() {
     const filters: CandidateFilter[] = ['all', 'pending', 'approved', 'rejected'];
-    const threshold = this._getRecommendedThreshold();
+    const threshold = this._recommendedThreshold;
     const recommendedCount = this._candidates.filter(
       (c) => c.status === 'pending' && c.magnitude >= threshold,
     ).length;

@@ -421,6 +421,23 @@ class ScannerService:
 
         return {"name": name, "enabled": enabled}
 
+    @staticmethod
+    def compute_recommended_threshold(candidates: list[dict]) -> float:
+        """Compute recommended magnitude threshold from candidate list.
+
+        Returns the magnitude at the top-20% boundary of pending candidates,
+        with a minimum of 0.4 and a default of 0.6 when no candidates exist.
+        """
+        pending = [c for c in candidates if c.get("status") == "pending"]
+        if not pending:
+            return 0.6
+        magnitudes = sorted(
+            (float(c.get("magnitude") or 0) for c in pending),
+            reverse=True,
+        )
+        top_20_idx = max(0, int(len(magnitudes) * 0.2) - 1)
+        return max(0.4, round(magnitudes[top_20_idx], 2))
+
     @classmethod
     async def list_candidates(
         cls,

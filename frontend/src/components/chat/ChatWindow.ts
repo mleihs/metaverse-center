@@ -309,6 +309,52 @@ export class VelgChatWindow extends LitElement {
         transform: scale(1);
       }
     }
+
+    @media (max-width: 640px) {
+      .window__header-main {
+        padding: var(--space-2) var(--space-3);
+      }
+
+      .window__agent-name {
+        font-size: var(--text-sm);
+      }
+
+      .window__events-bar {
+        padding: var(--space-2) var(--space-3);
+      }
+
+      .event-card {
+        min-width: 140px;
+        max-width: 200px;
+        padding: var(--space-1-5) var(--space-2);
+      }
+
+      .window__empty {
+        padding: var(--space-4);
+        gap: var(--space-3);
+      }
+
+      .window__empty-title {
+        font-size: var(--text-base);
+      }
+
+      .window__empty-text {
+        font-size: var(--text-sm);
+      }
+
+      .window__sending-indicator {
+        padding: var(--space-2) var(--space-3);
+      }
+
+      .window__typing-indicator {
+        padding: var(--space-2) var(--space-3);
+      }
+
+      .header__portrait-overflow {
+        width: 28px;
+        height: 28px;
+      }
+    }
   `;
 
   @property({ type: Object }) conversation: ChatConversation | null = null;
