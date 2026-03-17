@@ -513,8 +513,8 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
     const result = await healthApi.getBleedStatus(this.simulationId);
     if (result.success && result.data) {
       this._bleedStatus = result.data;
-      this._thresholdState = result.data.threshold_state;
       appState.setBleedStatus(result.data);
+      this._thresholdState = appState.thresholdState.value;
       this._applyThresholdClasses();
     }
   }

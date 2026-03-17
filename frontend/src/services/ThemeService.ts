@@ -21,12 +21,20 @@ const MAX_CUSTOM_CSS_BYTES = 10_240;
 /** ID of the injected <style> element for custom CSS. */
 const CUSTOM_STYLE_ID = 'velg-simulation-custom-css';
 
-/** ID of the injected Google Fonts <link> element. */
-const GOOGLE_FONTS_ID = 'velg-google-fonts';
+/** Prefix for dynamically injected Google Fonts <link> elements. */
+const GOOGLE_FONTS_PREFIX = 'velg-gf-';
 
-/** Google Fonts stylesheet URL for simulation heading fonts. */
-const GOOGLE_FONTS_URL =
-  'https://fonts.googleapis.com/css2?family=Barlow:wght@400;800&family=Cormorant+Garamond:wght@400;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Oswald:wght@400;700;900&family=Space+Mono:wght@400;700&family=Spectral:ital,wght@0,400;0,600;0,700;1,400&display=swap';
+/** System fonts that should never be loaded from Google Fonts. */
+const SYSTEM_FONTS = new Set([
+  'system-ui', '-apple-system', 'segoe ui', 'arial', 'arial narrow',
+  'helvetica', 'helvetica neue', 'georgia', 'times new roman',
+  'courier new', 'comic sans ms', 'inter', 'inherit', 'sans-serif',
+  'serif', 'monospace', 'cursive', 'fantasy',
+]);
+
+/** Track which Google Fonts have been loaded to avoid duplicate requests. */
+const loadedFonts = new Set<string>();
+let preconnectInjected = false;
 
 // ---------------------------------------------------------------------------
 // Token Mapping: setting key → base CSS custom property
@@ -171,7 +179,6 @@ class ThemeService {
    * as CSS custom property overrides on the provided host element.
    */
   async applySimulationTheme(simulationId: string, hostElement: HTMLElement): Promise<void> {
-    this.ensureGoogleFonts();
     const response = await settingsApi.getByCategory(simulationId, 'design');
 
     if (!response.success || !response.data) {
@@ -296,6 +303,13 @@ class ThemeService {
     }
 
     this.appliedTokens = tokensApplied;
+
+    // 6. Dynamically load any Google Fonts referenced by the config
+    const fontKeys = ['font_heading', 'font_body', 'font_mono'] as const;
+    for (const key of fontKeys) {
+      const family = config[key];
+      if (family) loadGoogleFont(family);
+    }
   }
 
   /** Remove all theme overrides from the host element and clean up. */
@@ -306,32 +320,7 @@ class ThemeService {
     this.appliedTokens = [];
   }
 
-  /**
-   * Lazily inject Google Fonts preconnects and stylesheet into <head>.
-   * Idempotent — skips if the element already exists.
-   */
-  private ensureGoogleFonts(): void {
-    if (document.getElementById(GOOGLE_FONTS_ID)) return;
-
-    // Preconnects
-    const pc1 = document.createElement('link');
-    pc1.rel = 'preconnect';
-    pc1.href = 'https://fonts.googleapis.com';
-    document.head.appendChild(pc1);
-
-    const pc2 = document.createElement('link');
-    pc2.rel = 'preconnect';
-    pc2.href = 'https://fonts.gstatic.com';
-    pc2.crossOrigin = '';
-    document.head.appendChild(pc2);
-
-    // Stylesheet
-    const link = document.createElement('link');
-    link.id = GOOGLE_FONTS_ID;
-    link.rel = 'stylesheet';
-    link.href = GOOGLE_FONTS_URL;
-    document.head.appendChild(link);
-  }
+  // ensureGoogleFonts removed — fonts are now loaded on demand via loadGoogleFont()
 
   // ---------------------------------------------------------------------------
   // Private helpers
@@ -413,3 +402,60 @@ class ThemeService {
 export const themeService = new ThemeService();
 export { computeShadows, computeAnimationDurations, THEME_TOKEN_MAP };
 export type { ShadowStyle };
+
+// ---------------------------------------------------------------------------
+// Dynamic Google Font loader — used by ThemeService and VelgFontPicker
+// ---------------------------------------------------------------------------
+
+/**
+ * Ensure preconnect hints for Google Fonts are in <head>.
+ * Called once on first font load request.
+ */
+function ensurePreconnect(): void {
+  if (preconnectInjected) return;
+  preconnectInjected = true;
+
+  const pc1 = document.createElement('link');
+  pc1.rel = 'preconnect';
+  pc1.href = 'https://fonts.googleapis.com';
+  document.head.appendChild(pc1);
+
+  const pc2 = document.createElement('link');
+  pc2.rel = 'preconnect';
+  pc2.href = 'https://fonts.gstatic.com';
+  pc2.crossOrigin = '';
+  document.head.appendChild(pc2);
+}
+
+/**
+ * Extract the primary font family name from a CSS font-family value.
+ * E.g. "'Playfair Display', serif" → "Playfair Display"
+ */
+function extractPrimaryFamily(cssValue: string): string {
+  const first = cssValue.split(',')[0].trim();
+  return first.replace(/^['"]|['"]$/g, '');
+}
+
+/**
+ * Dynamically load a Google Font by family name.
+ * Idempotent — skips system fonts and already-loaded families.
+ * Loads weights 400, 700, 900 with swap display for all fonts.
+ */
+export function loadGoogleFont(cssFamily: string): void {
+  const family = extractPrimaryFamily(cssFamily);
+  const key = family.toLowerCase();
+
+  if (!family || SYSTEM_FONTS.has(key) || loadedFonts.has(key)) return;
+  loadedFonts.add(key);
+
+  ensurePreconnect();
+
+  const encoded = family.replace(/\s+/g, '+');
+  const url = `https://fonts.googleapis.com/css2?family=${encoded}:ital,wght@0,400;0,700;0,900;1,400&display=swap`;
+
+  const link = document.createElement('link');
+  link.id = `${GOOGLE_FONTS_PREFIX}${key.replace(/\s+/g, '-')}`;
+  link.rel = 'stylesheet';
+  link.href = url;
+  document.head.appendChild(link);
+}

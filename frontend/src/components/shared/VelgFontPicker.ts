@@ -1,27 +1,116 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { loadGoogleFont } from '../../services/ThemeService.js';
 
 interface FontEntry {
   name: string;
   family: string;
+  category: 'serif' | 'sans-serif' | 'display' | 'monospace' | 'handwriting';
 }
 
-const CURATED_FONTS: FontEntry[] = [
-  { name: 'Oswald', family: 'Oswald' },
-  { name: 'Barlow', family: 'Barlow' },
-  { name: 'Cormorant Garamond', family: 'Cormorant Garamond' },
-  { name: 'Libre Baskerville', family: 'Libre Baskerville' },
-  { name: 'Space Mono', family: 'Space Mono' },
-  { name: 'Spectral', family: 'Spectral' },
-  { name: 'system-ui', family: 'system-ui' },
-  { name: 'Inter', family: 'Inter' },
-  { name: 'Segoe UI', family: 'Segoe UI' },
-  { name: 'Georgia', family: 'Georgia' },
-  { name: 'Courier New', family: 'Courier New' },
-  { name: 'Arial Narrow', family: 'Arial Narrow' },
-  { name: 'Comic Sans MS', family: 'Comic Sans MS' },
+/**
+ * Curated catalog of ~80 popular Google Fonts, organized by category.
+ * The AI theme generator can pick ANY Google Font — this list is for
+ * convenient browsing. Users can also type any font name manually.
+ */
+const GOOGLE_FONTS: FontEntry[] = [
+  // ── Sans-Serif ──
+  { name: 'Barlow', family: 'Barlow', category: 'sans-serif' },
+  { name: 'Barlow Condensed', family: 'Barlow Condensed', category: 'sans-serif' },
+  { name: 'DM Sans', family: 'DM Sans', category: 'sans-serif' },
+  { name: 'Exo 2', family: 'Exo 2', category: 'sans-serif' },
+  { name: 'Figtree', family: 'Figtree', category: 'sans-serif' },
+  { name: 'IBM Plex Sans', family: 'IBM Plex Sans', category: 'sans-serif' },
+  { name: 'Inter', family: 'Inter', category: 'sans-serif' },
+  { name: 'Jost', family: 'Jost', category: 'sans-serif' },
+  { name: 'Karla', family: 'Karla', category: 'sans-serif' },
+  { name: 'Lato', family: 'Lato', category: 'sans-serif' },
+  { name: 'Manrope', family: 'Manrope', category: 'sans-serif' },
+  { name: 'Montserrat', family: 'Montserrat', category: 'sans-serif' },
+  { name: 'Mulish', family: 'Mulish', category: 'sans-serif' },
+  { name: 'Nunito', family: 'Nunito', category: 'sans-serif' },
+  { name: 'Open Sans', family: 'Open Sans', category: 'sans-serif' },
+  { name: 'Outfit', family: 'Outfit', category: 'sans-serif' },
+  { name: 'Poppins', family: 'Poppins', category: 'sans-serif' },
+  { name: 'Public Sans', family: 'Public Sans', category: 'sans-serif' },
+  { name: 'Quicksand', family: 'Quicksand', category: 'sans-serif' },
+  { name: 'Rajdhani', family: 'Rajdhani', category: 'sans-serif' },
+  { name: 'Raleway', family: 'Raleway', category: 'sans-serif' },
+  { name: 'Rubik', family: 'Rubik', category: 'sans-serif' },
+  { name: 'Source Sans 3', family: 'Source Sans 3', category: 'sans-serif' },
+  { name: 'Space Grotesk', family: 'Space Grotesk', category: 'sans-serif' },
+  { name: 'Work Sans', family: 'Work Sans', category: 'sans-serif' },
+
+  // ── Serif ──
+  { name: 'Bitter', family: 'Bitter', category: 'serif' },
+  { name: 'Cormorant Garamond', family: 'Cormorant Garamond', category: 'serif' },
+  { name: 'Crimson Text', family: 'Crimson Text', category: 'serif' },
+  { name: 'DM Serif Display', family: 'DM Serif Display', category: 'serif' },
+  { name: 'EB Garamond', family: 'EB Garamond', category: 'serif' },
+  { name: 'Fraunces', family: 'Fraunces', category: 'serif' },
+  { name: 'IBM Plex Serif', family: 'IBM Plex Serif', category: 'serif' },
+  { name: 'Josefin Slab', family: 'Josefin Slab', category: 'serif' },
+  { name: 'Libre Baskerville', family: 'Libre Baskerville', category: 'serif' },
+  { name: 'Lora', family: 'Lora', category: 'serif' },
+  { name: 'Merriweather', family: 'Merriweather', category: 'serif' },
+  { name: 'Noto Serif', family: 'Noto Serif', category: 'serif' },
+  { name: 'Old Standard TT', family: 'Old Standard TT', category: 'serif' },
+  { name: 'Playfair Display', family: 'Playfair Display', category: 'serif' },
+  { name: 'Rowan', family: 'Rowan', category: 'serif' },
+  { name: 'Source Serif 4', family: 'Source Serif 4', category: 'serif' },
+  { name: 'Spectral', family: 'Spectral', category: 'serif' },
+  { name: 'Vollkorn', family: 'Vollkorn', category: 'serif' },
+
+  // ── Display ──
+  { name: 'Abril Fatface', family: 'Abril Fatface', category: 'display' },
+  { name: 'Bebas Neue', family: 'Bebas Neue', category: 'display' },
+  { name: 'Big Shoulders Display', family: 'Big Shoulders Display', category: 'display' },
+  { name: 'Bungee', family: 'Bungee', category: 'display' },
+  { name: 'Cardo', family: 'Cardo', category: 'display' },
+  { name: 'Cinzel', family: 'Cinzel', category: 'display' },
+  { name: 'Climate Crisis', family: 'Climate Crisis', category: 'display' },
+  { name: 'Concert One', family: 'Concert One', category: 'display' },
+  { name: 'Josefin Sans', family: 'Josefin Sans', category: 'display' },
+  { name: 'Lexend', family: 'Lexend', category: 'display' },
+  { name: 'Libre Franklin', family: 'Libre Franklin', category: 'display' },
+  { name: 'Orbitron', family: 'Orbitron', category: 'display' },
+  { name: 'Oswald', family: 'Oswald', category: 'display' },
+  { name: 'Permanent Marker', family: 'Permanent Marker', category: 'display' },
+  { name: 'Righteous', family: 'Righteous', category: 'display' },
+  { name: 'Russo One', family: 'Russo One', category: 'display' },
+  { name: 'Saira', family: 'Saira', category: 'display' },
+  { name: 'Signika', family: 'Signika', category: 'display' },
+  { name: 'Syne', family: 'Syne', category: 'display' },
+  { name: 'Unbounded', family: 'Unbounded', category: 'display' },
+
+  // ── Monospace ──
+  { name: 'Fira Code', family: 'Fira Code', category: 'monospace' },
+  { name: 'IBM Plex Mono', family: 'IBM Plex Mono', category: 'monospace' },
+  { name: 'Inconsolata', family: 'Inconsolata', category: 'monospace' },
+  { name: 'JetBrains Mono', family: 'JetBrains Mono', category: 'monospace' },
+  { name: 'Source Code Pro', family: 'Source Code Pro', category: 'monospace' },
+  { name: 'Space Mono', family: 'Space Mono', category: 'monospace' },
+
+  // ── Handwriting ──
+  { name: 'Caveat', family: 'Caveat', category: 'handwriting' },
+  { name: 'Dancing Script', family: 'Dancing Script', category: 'handwriting' },
+  { name: 'Kalam', family: 'Kalam', category: 'handwriting' },
+  { name: 'Patrick Hand', family: 'Patrick Hand', category: 'handwriting' },
+
+  // ── System Fonts ──
+  { name: 'system-ui', family: 'system-ui', category: 'sans-serif' },
+  { name: 'Georgia', family: 'Georgia', category: 'serif' },
+  { name: 'Courier New', family: 'Courier New', category: 'monospace' },
 ];
+
+const CATEGORY_LABELS: Record<string, string> = {
+  'sans-serif': 'SANS-SERIF',
+  serif: 'SERIF',
+  display: 'DISPLAY',
+  monospace: 'MONOSPACE',
+  handwriting: 'HANDWRITING',
+};
 
 @localized()
 @customElement('velg-font-picker')
@@ -42,7 +131,7 @@ export class VelgFontPicker extends LitElement {
       margin-bottom: var(--space-1);
     }
 
-    /* ── Trigger Button ────────────────── */
+    /* -- Trigger Button -- */
 
     .picker__trigger {
       display: flex;
@@ -87,7 +176,7 @@ export class VelgFontPicker extends LitElement {
       transform: rotate(180deg);
     }
 
-    /* ── Backdrop ──────────────────────── */
+    /* -- Backdrop -- */
 
     .picker__backdrop {
       position: fixed;
@@ -95,7 +184,7 @@ export class VelgFontPicker extends LitElement {
       z-index: 99;
     }
 
-    /* ── Dropdown Panel ────────────────── */
+    /* -- Dropdown Panel -- */
 
     .picker__dropdown {
       position: absolute;
@@ -106,7 +195,7 @@ export class VelgFontPicker extends LitElement {
       background: var(--color-gray-950, #030712);
       border: 1px solid var(--color-gray-700, #374151);
       margin-top: 2px;
-      max-height: 280px;
+      max-height: 380px;
       display: flex;
       flex-direction: column;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
@@ -137,11 +226,27 @@ export class VelgFontPicker extends LitElement {
       list-style: none;
     }
 
+    .picker__category {
+      font-family: var(--font-mono, monospace);
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--color-gray-500, #6b7280);
+      padding: var(--space-2) var(--space-3) var(--space-1);
+      border-top: 1px solid var(--color-gray-800, #1f2937);
+      user-select: none;
+    }
+
+    .picker__category:first-child {
+      border-top: none;
+    }
+
     .picker__option {
       display: flex;
       flex-direction: column;
       gap: 2px;
-      padding: var(--space-2) var(--space-3);
+      padding: var(--space-1-5) var(--space-3);
       cursor: pointer;
       border-left: 3px solid transparent;
       transition: background 0.1s, border-color 0.1s;
@@ -170,26 +275,65 @@ export class VelgFontPicker extends LitElement {
       color: var(--color-gray-100, #f3f4f6);
     }
 
-    /* ── Custom Input Fallback ─────────── */
+    /* -- Custom Google Font Input -- */
+
+    .picker__custom-section {
+      border-top: 1px solid var(--color-gray-700, #374151);
+      padding: var(--space-2) var(--space-3);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+
+    .picker__custom-label {
+      font-family: var(--font-mono, monospace);
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--color-gray-500, #6b7280);
+    }
+
+    .picker__custom-row {
+      display: flex;
+      gap: var(--space-2);
+    }
 
     .picker__custom {
-      width: 100%;
-      background: var(--color-gray-950, #030712);
+      flex: 1;
+      background: var(--color-gray-900, #111827);
       border: 1px solid var(--color-gray-700, #374151);
       color: var(--color-gray-100, #f3f4f6);
-      padding: var(--space-2) var(--space-3);
+      padding: var(--space-1-5) var(--space-2);
       font-family: var(--font-mono, monospace);
       font-size: 12px;
       box-sizing: border-box;
-      margin-top: var(--space-1);
+      outline: none;
     }
 
     .picker__custom:focus {
-      outline: 2px solid var(--color-success, #22c55e);
-      outline-offset: 1px;
+      border-color: var(--color-success, #22c55e);
     }
 
-    /* ── Specimen Preview ──────────────── */
+    .picker__custom-btn {
+      background: var(--color-gray-800, #1f2937);
+      border: 1px solid var(--color-gray-600, #4b5563);
+      color: var(--color-gray-200, #e5e7eb);
+      font-family: var(--font-mono, monospace);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: var(--space-1-5) var(--space-3);
+      cursor: pointer;
+      transition: background 0.1s;
+      white-space: nowrap;
+    }
+
+    .picker__custom-btn:hover {
+      background: var(--color-gray-700, #374151);
+    }
+
+    /* -- Specimen Preview -- */
 
     .picker__specimen {
       margin-top: var(--space-3);
@@ -218,22 +362,53 @@ export class VelgFontPicker extends LitElement {
   @state() private _open = false;
   @state() private _search = '';
   @state() private _focusedIndex = -1;
+  @state() private _customInput = '';
 
-  private get _isCustom(): boolean {
-    if (!this.value) return false;
-    return !CURATED_FONTS.some((f) => f.family.toLowerCase() === this.value.toLowerCase());
+  private get _filtered(): { category: string; fonts: FontEntry[] }[] {
+    const q = this._search.toLowerCase();
+    const matching = q
+      ? GOOGLE_FONTS.filter(
+          (f) =>
+            f.name.toLowerCase().includes(q) ||
+            f.category.includes(q),
+        )
+      : GOOGLE_FONTS;
+
+    // Group by category
+    const groups = new Map<string, FontEntry[]>();
+    for (const font of matching) {
+      const list = groups.get(font.category) ?? [];
+      list.push(font);
+      groups.set(font.category, list);
+    }
+
+    return Array.from(groups.entries()).map(([category, fonts]) => ({
+      category,
+      fonts,
+    }));
   }
 
-  private get _filtered(): FontEntry[] {
-    if (!this._search) return CURATED_FONTS;
-    const q = this._search.toLowerCase();
-    return CURATED_FONTS.filter((f) => f.name.toLowerCase().includes(q));
+  private get _flatFiltered(): FontEntry[] {
+    return this._filtered.flatMap((g) => g.fonts);
+  }
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    // Load the currently selected font for specimen preview
+    if (this.value) loadGoogleFont(this.value);
+  }
+
+  updated(changed: Map<string, unknown>): void {
+    if (changed.has('value') && this.value) {
+      loadGoogleFont(this.value);
+    }
   }
 
   private _toggle() {
     this._open = !this._open;
     this._search = '';
     this._focusedIndex = -1;
+    this._customInput = '';
     if (this._open) {
       this.setAttribute('open', '');
       requestAnimationFrame(() => {
@@ -252,10 +427,25 @@ export class VelgFontPicker extends LitElement {
   }
 
   private _select(font: FontEntry) {
+    loadGoogleFont(font.family);
     this._close();
     this.dispatchEvent(
       new CustomEvent('font-change', {
         detail: { value: font.family },
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
+
+  private _selectCustom() {
+    const val = this._customInput.trim();
+    if (!val) return;
+    loadGoogleFont(val);
+    this._close();
+    this.dispatchEvent(
+      new CustomEvent('font-change', {
+        detail: { value: val },
         bubbles: true,
         composed: true,
       }),
@@ -268,11 +458,11 @@ export class VelgFontPicker extends LitElement {
   }
 
   private _onKeydown(e: KeyboardEvent) {
-    const filtered = this._filtered;
+    const flat = this._flatFiltered;
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        this._focusedIndex = Math.min(this._focusedIndex + 1, filtered.length - 1);
+        this._focusedIndex = Math.min(this._focusedIndex + 1, flat.length - 1);
         break;
       case 'ArrowUp':
         e.preventDefault();
@@ -280,8 +470,8 @@ export class VelgFontPicker extends LitElement {
         break;
       case 'Enter':
         e.preventDefault();
-        if (this._focusedIndex >= 0 && this._focusedIndex < filtered.length) {
-          this._select(filtered[this._focusedIndex]);
+        if (this._focusedIndex >= 0 && this._focusedIndex < flat.length) {
+          this._select(flat[this._focusedIndex]);
         }
         break;
       case 'Escape':
@@ -291,26 +481,18 @@ export class VelgFontPicker extends LitElement {
     }
   }
 
-  private _onCustomChange(e: Event) {
-    const val = (e.target as HTMLInputElement).value.trim();
-    if (val) {
-      this.dispatchEvent(
-        new CustomEvent('font-change', {
-          detail: { value: val },
-          bubbles: true,
-          composed: true,
-        }),
-      );
-    }
+  private _onOptionMouseEnter(font: FontEntry) {
+    loadGoogleFont(font.family);
   }
 
   protected render() {
     const displayName =
-      CURATED_FONTS.find((f) => f.family.toLowerCase() === (this.value || '').toLowerCase())
+      GOOGLE_FONTS.find((f) => f.family.toLowerCase() === (this.value || '').toLowerCase())
         ?.name ||
       this.value ||
-      '—';
-    const filtered = this._filtered;
+      '\u2014';
+    const groups = this._filtered;
+    const flat = this._flatFiltered;
 
     return html`
       ${this.label ? html`<span class="picker__label">${this.label}</span>` : nothing}
@@ -322,10 +504,10 @@ export class VelgFontPicker extends LitElement {
         aria-haspopup="listbox"
         @click=${this._toggle}
       >
-        <span class="picker__trigger-name" style="font-family: ${this.value || 'inherit'}"
+        <span class="picker__trigger-name" style="font-family: '${this.value || 'inherit'}', sans-serif"
           >${displayName}</span
         >
-        <span class="picker__chevron">▼</span>
+        <span class="picker__chevron">\u25BC</span>
       </button>
 
       ${
@@ -341,50 +523,59 @@ export class VelgFontPicker extends LitElement {
                 @input=${this._onSearchInput}
               />
               <ul class="picker__list" role="listbox">
-                ${filtered.map(
-                  (font, i) => html`
-                    <li
-                      class="picker__option ${this.value?.toLowerCase() === font.family.toLowerCase() ? 'picker__option--selected' : ''} ${i === this._focusedIndex ? 'picker__option--focused' : ''}"
-                      role="option"
-                      aria-selected=${this.value?.toLowerCase() === font.family.toLowerCase()}
-                      id="font-opt-${i}"
-                      @click=${() => this._select(font)}
-                    >
-                      <span class="picker__option-label">${font.name}</span>
-                      <span
-                        class="picker__option-specimen"
-                        style="font-family: '${font.family}', sans-serif"
-                        >${font.name}</span
-                      >
-                    </li>
+                ${groups.map(
+                  (group) => html`
+                    <li class="picker__category">${CATEGORY_LABELS[group.category] ?? group.category}</li>
+                    ${group.fonts.map((font) => {
+                      const globalIdx = flat.indexOf(font);
+                      return html`
+                        <li
+                          class="picker__option ${this.value?.toLowerCase() === font.family.toLowerCase() ? 'picker__option--selected' : ''} ${globalIdx === this._focusedIndex ? 'picker__option--focused' : ''}"
+                          role="option"
+                          aria-selected=${this.value?.toLowerCase() === font.family.toLowerCase()}
+                          @click=${() => this._select(font)}
+                          @mouseenter=${() => this._onOptionMouseEnter(font)}
+                        >
+                          <span class="picker__option-label">${font.name}</span>
+                          <span
+                            class="picker__option-specimen"
+                            style="font-family: '${font.family}', sans-serif"
+                            >${font.name}</span
+                          >
+                        </li>
+                      `;
+                    })}
                   `,
                 )}
               </ul>
+              <div class="picker__custom-section">
+                <span class="picker__custom-label">${msg('Any Google Font')}</span>
+                <div class="picker__custom-row">
+                  <input
+                    class="picker__custom"
+                    type="text"
+                    .value=${this._customInput}
+                    @input=${(e: Event) => { this._customInput = (e.target as HTMLInputElement).value; }}
+                    @keydown=${(e: KeyboardEvent) => { if (e.key === 'Enter') { e.preventDefault(); this._selectCustom(); } }}
+                    placeholder=${msg('e.g. Playfair Display')}
+                  />
+                  <button
+                    class="picker__custom-btn"
+                    @click=${this._selectCustom}
+                  >${msg('Load')}</button>
+                </div>
+              </div>
             </div>
           `
           : nothing
       }
 
-      ${
-        this._isCustom
-          ? html`
-            <input
-              class="picker__custom"
-              type="text"
-              .value=${this.value}
-              @change=${this._onCustomChange}
-              placeholder=${msg('Custom font family')}
-            />
-          `
-          : nothing
-      }
-
       <div class="picker__specimen">
-        <p class="picker__specimen-heading" style="font-family: ${this.value || 'inherit'}">
+        <p class="picker__specimen-heading" style="font-family: '${this.value || 'inherit'}', sans-serif">
           The quick brown fox jumps over the lazy dog
         </p>
-        <p class="picker__specimen-body" style="font-family: ${this.value || 'inherit'}">
-          ABCDEFGHIJKLM — abcdefghijklm — 0123456789
+        <p class="picker__specimen-body" style="font-family: '${this.value || 'inherit'}', sans-serif">
+          ABCDEFGHIJKLM \u2014 abcdefghijklm \u2014 0123456789
         </p>
       </div>
     `;
