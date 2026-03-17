@@ -398,8 +398,11 @@ export class VelgForgeDarkroom extends LitElement {
     const result = await forgeStateManager.generateTheme();
     if (result) {
       this._themeConfig = result;
-      // Theme now available in draft signal
       VelgToast.success(msg('Visual identity generated.'));
+    } else {
+      VelgToast.error(
+        forgeStateManager.error.value ?? msg('Theme generation failed. Try again.'),
+      );
     }
   }
 
