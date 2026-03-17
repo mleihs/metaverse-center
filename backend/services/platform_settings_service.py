@@ -96,21 +96,25 @@ class PlatformSettingsService:
         value: str | int | float,
         user_id: UUID,
     ) -> dict:
-        """Update a platform setting value."""
+        """Update or create a platform setting value."""
+        now = datetime.now(UTC).isoformat()
         response = (
             admin_supabase.table(cls.table_name)
-            .update({
-                "setting_value": str(value),
-                "updated_by_id": str(user_id),
-                "updated_at": datetime.now(UTC).isoformat(),
-            })
-            .eq("setting_key", key)
+            .upsert(
+                {
+                    "setting_key": key,
+                    "setting_value": str(value),
+                    "updated_by_id": str(user_id),
+                    "updated_at": now,
+                },
+                on_conflict="setting_key",
+            )
             .execute()
         )
         if not response.data:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Platform setting '{key}' not found.",
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to save platform setting '{key}'.",
             )
         return response.data[0]
 

@@ -313,16 +313,22 @@ export class VelgAdminApiKeysTab extends LitElement {
   private async _loadSettings(): Promise<void> {
     this._loading = true;
     const result = await adminApi.listSettings();
+    const existingByKey = new Map<string, PlatformSetting>();
     if (result.success && result.data) {
-      const allSettings = result.data as PlatformSetting[];
-      this._settings = allSettings.filter((s) =>
-        (API_KEY_SETTINGS as readonly string[]).includes(s.setting_key),
-      );
-      this._editValues = {};
-      for (const s of this._settings) {
-        // Don't populate edit values with masked values — start empty
-        this._editValues[s.setting_key] = '';
+      for (const s of result.data as PlatformSetting[]) {
+        if ((API_KEY_SETTINGS as readonly string[]).includes(s.setting_key)) {
+          existingByKey.set(s.setting_key, s);
+        }
       }
+    }
+    // Build entries for ALL defined keys, even if not yet in the database
+    this._settings = API_KEY_SETTINGS.map((key) => {
+      const existing = existingByKey.get(key);
+      return existing ?? ({ setting_key: key, setting_value: '' } as PlatformSetting);
+    });
+    this._editValues = {};
+    for (const s of this._settings) {
+      this._editValues[s.setting_key] = '';
     }
     this._loading = false;
   }
