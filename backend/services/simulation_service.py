@@ -393,10 +393,10 @@ class SimulationService:
         cls,
         supabase: Client,
     ) -> list[dict]:
-        """List slugs and updated_at for all active simulations (sitemap)."""
+        """List slugs, IDs, and updated_at for all active simulations (sitemap)."""
         response = (
             supabase.table("simulations")
-            .select("slug, updated_at")
+            .select("id, slug, updated_at")
             .eq("status", "active")
             .execute()
         )

@@ -77,19 +77,71 @@ async def sitemap_xml(supabase: Client = Depends(get_anon_supabase)) -> Response
     # Chronicle Feed (cross-simulation AI newspaper)
     _add_url(urlset, "https://metaverse.center/chronicles", now, "0.7", "daily")
 
-    # Per-simulation views
+    # Per-simulation views + individual entities
     for sim in simulations:
+        slug = sim["slug"]
+        sim_id = sim.get("id", "")
         sim_updated = sim.get("updated_at", now)
         if isinstance(sim_updated, str) and "T" in sim_updated:
             sim_updated = sim_updated[:10]
+
         for view in SIMULATION_VIEWS:
             _add_url(
                 urlset,
-                f"https://metaverse.center/simulations/{sim['slug']}/{view}",
+                f"https://metaverse.center/simulations/{slug}/{view}",
                 sim_updated,
                 "0.7",
                 "weekly",
             )
+
+        # Individual agents (cool content — AI characters with personalities)
+        if sim_id:
+            try:
+                agents = (
+                    supabase.table("agents")
+                    .select("id, name, updated_at")
+                    .eq("simulation_id", sim_id)
+                    .is_("deleted_at", "null")
+                    .limit(50)
+                    .execute()
+                ).data or []
+                for agent in agents:
+                    agent_updated = agent.get("updated_at", sim_updated)
+                    if isinstance(agent_updated, str) and "T" in agent_updated:
+                        agent_updated = agent_updated[:10]
+                    _add_url(
+                        urlset,
+                        f"https://metaverse.center/simulations/{slug}/agents/{agent['id']}",
+                        agent_updated,
+                        "0.6",
+                        "weekly",
+                    )
+            except Exception:
+                logger.warning("Failed to fetch agents for sitemap: %s", slug)
+
+            # Individual buildings (world infrastructure)
+            try:
+                buildings = (
+                    supabase.table("buildings")
+                    .select("id, name, updated_at")
+                    .eq("simulation_id", sim_id)
+                    .is_("deleted_at", "null")
+                    .limit(50)
+                    .execute()
+                ).data or []
+                for bldg in buildings:
+                    bldg_updated = bldg.get("updated_at", sim_updated)
+                    if isinstance(bldg_updated, str) and "T" in bldg_updated:
+                        bldg_updated = bldg_updated[:10]
+                    _add_url(
+                        urlset,
+                        f"https://metaverse.center/simulations/{slug}/buildings/{bldg['id']}",
+                        bldg_updated,
+                        "0.6",
+                        "weekly",
+                    )
+            except Exception:
+                logger.warning("Failed to fetch buildings for sitemap: %s", slug)
 
     xml_bytes = tostring(urlset, encoding="unicode", xml_declaration=False)
     xml_content = '<?xml version="1.0" encoding="UTF-8"?>\n' + xml_bytes

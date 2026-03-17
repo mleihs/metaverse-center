@@ -296,6 +296,24 @@ def _build_social_content(sim_name: str) -> str:
     return f"<h1>{_esc_content(sim_name)} — Social</h1>\n<p>Social interactions and trends in {_esc_content(sim_name)}.</p>"
 
 
+def _build_trends_content(sim_name: str) -> str:
+    """Build minimal HTML for social trends view."""
+    return (
+        f"<h1>{_esc_content(sim_name)} — Social Trends</h1>\n"
+        f"<p>Real-world news transformed into simulation events in"
+        f" {_esc_content(sim_name)}. AI-driven narrative integration.</p>"
+    )
+
+
+def _build_health_content(sim_name: str) -> str:
+    """Build minimal HTML for simulation health view."""
+    return (
+        f"<h1>{_esc_content(sim_name)} — Simulation Health</h1>\n"
+        f"<p>Building Readiness, Zone Stability, Embassy Effectiveness,"
+        f" and overall health metrics for {_esc_content(sim_name)}.</p>"
+    )
+
+
 def _build_chat_content(sim_name: str) -> str:
     """Build minimal HTML for chat view."""
     return f"<h1>{_esc_content(sim_name)} — Chat</h1>\n<p>Community chat for {_esc_content(sim_name)}.</p>"
@@ -340,6 +358,8 @@ def main() -> None:
         "events": lambda sim: _build_events_content(sim["name"]),
         "social": lambda sim: _build_social_content(sim["name"]),
         "chat": lambda sim: _build_chat_content(sim["name"]),
+        "trends": lambda sim: _build_trends_content(sim["name"]),
+        "health": lambda sim: _build_health_content(sim["name"]),
     }
 
     for sim in sims:

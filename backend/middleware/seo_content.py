@@ -48,6 +48,8 @@ def build_view_content(
         "chronicle": _build_chronicle,
         "locations": _build_locations,
         "events": _build_events,
+        "trends": _build_trends,
+        "health": _build_health,
     }
 
     builder = builders.get(view)
@@ -93,11 +95,28 @@ def _build_agents(
 
     jsonld = _safe_jsonld({
         "@context": "https://schema.org",
-        "@type": "CollectionPage",
+        "@type": "ItemList",
         "name": f"{sim_name} — Agents",
         "url": f"{BASE_URL}/simulations/{slug}/agents",
         "numberOfItems": len(agents),
-        "description": f"All agents in the {sim_name} simulation.",
+        "description": (
+            f"AI characters in the {sim_name} simulation"
+            f" — each with unique personalities, professions, and memories."
+        ),
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": i + 1,
+                "item": {
+                    "@type": "Person",
+                    "name": a.get("name", ""),
+                    "jobTitle": a.get("primary_profession", ""),
+                    "description": _truncate(a.get("character") or "", 300),
+                    "url": f"{BASE_URL}/simulations/{slug}/agents",
+                },
+            }
+            for i, a in enumerate(agents[:20])
+        ],
     })
 
     return entity_html, jsonld
@@ -131,11 +150,25 @@ def _build_buildings(
 
     jsonld = _safe_jsonld({
         "@context": "https://schema.org",
-        "@type": "CollectionPage",
+        "@type": "ItemList",
         "name": f"{sim_name} — Buildings",
         "url": f"{BASE_URL}/simulations/{slug}/buildings",
         "numberOfItems": len(buildings),
-        "description": f"All buildings in the {sim_name} simulation.",
+        "description": f"Architecture and infrastructure in the {sim_name} simulation.",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": i + 1,
+                "item": {
+                    "@type": "Place",
+                    "name": b.get("name", ""),
+                    "additionalType": b.get("building_type", ""),
+                    "description": _truncate(b.get("description") or "", 300),
+                    "url": f"{BASE_URL}/simulations/{slug}/buildings",
+                },
+            }
+            for i, b in enumerate(buildings[:20])
+        ],
     })
 
     return entity_html, jsonld
@@ -298,6 +331,51 @@ def _build_events(
         "url": f"{BASE_URL}/simulations/{slug}/events",
         "numberOfItems": len(events),
         "description": f"Recent events in the {sim_name} simulation.",
+    })
+
+    return entity_html, jsonld
+
+
+def _build_trends(
+    client: Client, sim_id: str, sim_name: str, slug: str,
+) -> tuple[str, str]:
+    entity_html = (
+        f"<h2>{_esc(sim_name)} — Social Trends</h2>\n"
+        f"<p>Real-world news transformed into simulation events."
+        f" AI-driven narrative integration for {_esc(sim_name)}.</p>"
+    )
+
+    jsonld = _safe_jsonld({
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": f"{sim_name} — Social Trends",
+        "url": f"{BASE_URL}/simulations/{slug}/trends",
+        "description": (
+            f"Real-world news transformed into simulation events in {sim_name}."
+        ),
+    })
+
+    return entity_html, jsonld
+
+
+def _build_health(
+    client: Client, sim_id: str, sim_name: str, slug: str,
+) -> tuple[str, str]:
+    entity_html = (
+        f"<h2>{_esc(sim_name)} — Simulation Health</h2>\n"
+        f"<p>Building Readiness, Zone Stability, Embassy Effectiveness,"
+        f" and overall health metrics for {_esc(sim_name)}.</p>"
+    )
+
+    jsonld = _safe_jsonld({
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": f"{sim_name} — Simulation Health",
+        "url": f"{BASE_URL}/simulations/{slug}/health",
+        "description": (
+            f"Game metrics dashboard for {sim_name}:"
+            f" building readiness, zone stability, embassy effectiveness."
+        ),
     })
 
     return entity_html, jsonld
