@@ -50,6 +50,7 @@ scripts/__pycache__/
 # E2E artifacts
 e2e/playwright-report/
 e2e/test-results/
+frontend/test-results/
 
 # Claude
 .claude/settings.local.json

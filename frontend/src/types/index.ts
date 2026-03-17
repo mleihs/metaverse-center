@@ -26,7 +26,8 @@ export type SettingCategory =
   | 'design'
   | 'access'
   | 'prompts'
-  | 'notifications';
+  | 'notifications'
+  | 'anchor';
 
 export type TaxonomyType =
   | 'gender'

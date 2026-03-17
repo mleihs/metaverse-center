@@ -37,6 +37,10 @@ export class SimulationsApiService extends BaseApiService {
     return this.getPublic('/simulations', params);
   }
 
+  getAnchor(simulationId: string): Promise<ApiResponse<Record<string, string>>> {
+    return this.getPublic(`/simulations/${simulationId}/anchor`);
+  }
+
   getPlatformStats<T = Record<string, number>>(): Promise<ApiResponse<T>> {
     return this.getPublic<T>('/platform-stats');
   }
