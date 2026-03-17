@@ -75,6 +75,7 @@ from backend.routers import (
     zone_actions,
 )
 from backend.services.platform_model_config import ensure_loaded as ensure_model_config
+from backend.services.platform_research_domains import ensure_loaded as ensure_research_domains
 from backend.services.resonance_scheduler import ResonanceScheduler
 from backend.services.scanning.scanner_service import ScannerService
 
@@ -84,6 +85,7 @@ async def lifespan(app: FastAPI):
     # Warm the platform model config cache
     admin_sb = await get_admin_supabase()
     await ensure_model_config(admin_sb)
+    await ensure_research_domains(admin_sb)
 
     resonance_task = await ResonanceScheduler.start()
     scanner_task = await ScannerService.start()

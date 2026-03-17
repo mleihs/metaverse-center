@@ -385,13 +385,21 @@ class PhilosophicalAnchor(BaseModel):
 
 class ForgeAgentDraft(BaseModel):
     """Draft of an agent entity."""
-    name: str
-    gender: str
-    system: str
-    primary_profession: str
+    name: str = Field(max_length=100)
+    gender: str = Field(max_length=30)
+    system: str = Field(
+        description=(
+            "Short faction or organization name (1-5 words). "
+            "Must be a concise identifier like 'Gildenrat' or 'Kanalgrund Widerstand', "
+            "NOT a full description or sentence."
+        ),
+        max_length=80,
+    )
+    primary_profession: str = Field(max_length=100)
     primary_profession_de: str = Field(
         default="",
         description="German equivalent of primary_profession.",
+        max_length=100,
     )
     character: str = Field(
         description=(
@@ -418,11 +426,12 @@ class ForgeAgentDraft(BaseModel):
 
 class ForgeBuildingDraft(BaseModel):
     """Draft of a building entity."""
-    name: str
-    building_type: str
+    name: str = Field(max_length=100)
+    building_type: str = Field(max_length=100)
     building_type_de: str = Field(
         default="",
         description="German equivalent of building_type.",
+        max_length=100,
     )
     description: str = Field(
         description=(

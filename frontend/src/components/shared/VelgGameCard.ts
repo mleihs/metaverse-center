@@ -538,6 +538,10 @@ export class VelgGameCard extends LitElement {
       border: 1px solid var(--card-border-color);
       color: var(--card-text-dim);
       line-height: 1.3;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     :host([size="xs"]) .card__badges { display: none; }

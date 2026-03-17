@@ -13,6 +13,7 @@ import './AdminResonancesTab.js';
 import './AdminScannerTab.js';
 import './AdminSimulationsTab.js';
 import './AdminHealthTab.js';
+import './AdminResearchTab.js';
 
 type AdminTab =
   | 'users'
@@ -23,6 +24,7 @@ type AdminTab =
   | 'forge'
   | 'apikeys'
   | 'models'
+  | 'research'
   | 'caching'
   | 'cleanup';
 
@@ -266,6 +268,13 @@ export class VelgAdminPanel extends LitElement {
           @click=${() => this._setTab('models')}
         >${msg('Models')}</button>
         <button
+          class="admin-tabs__tab ${this._activeTab === 'research' ? 'admin-tabs__tab--active' : ''}"
+          role="tab"
+          aria-selected=${this._activeTab === 'research'}
+          aria-controls="admin-tabpanel"
+          @click=${() => this._setTab('research')}
+        >${msg('Research')}</button>
+        <button
           class="admin-tabs__tab ${this._activeTab === 'caching' ? 'admin-tabs__tab--active' : ''}"
           role="tab"
           aria-selected=${this._activeTab === 'caching'}
@@ -305,6 +314,8 @@ export class VelgAdminPanel extends LitElement {
         return html`<velg-admin-api-keys-tab></velg-admin-api-keys-tab>`;
       case 'models':
         return html`<velg-admin-models-tab></velg-admin-models-tab>`;
+      case 'research':
+        return html`<velg-admin-research-tab></velg-admin-research-tab>`;
       case 'caching':
         return html`<velg-admin-caching-tab></velg-admin-caching-tab>`;
       case 'cleanup':

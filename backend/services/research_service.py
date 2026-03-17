@@ -15,13 +15,10 @@ import sentry_sdk
 from backend.models.forge import PhilosophicalAnchor
 from backend.services.ai_utils import create_forge_agent, run_ai, validate_bilingual_output
 from backend.services.external.tavily_search import (
-    ARCHITECTURE_DOMAINS,
-    ENCYCLOPEDIC_DOMAINS,
-    LITERARY_DOMAINS,
-    PHILOSOPHY_DOMAINS,
     TavilySearchRequest,
     TavilySearchService,
 )
+from backend.services.platform_research_domains import get_research_domains
 
 logger = logging.getLogger(__name__)
 
@@ -207,7 +204,7 @@ class ResearchService:
                 query=seed,
                 search_depth="advanced",
                 max_results=5,
-                include_domains=ENCYCLOPEDIC_DOMAINS,
+                include_domains=get_research_domains("encyclopedic"),
             ),
             TavilySearchRequest(
                 axis="INTELLECTUAL TRADITIONS",
@@ -339,11 +336,9 @@ class ResearchService:
                 if core_question
                 else f"{seed[:200]} philosophy epistemology"
             )
-            arch_query = (
-                f"{description[:300]} architecture movement materials visual"
-                if description
-                else f"{title} architecture visual vocabulary"
-            )
+            # Build focused architecture query from title + literary influence, not raw description
+            arch_seed = f"{title} {literary_influence}".strip()[:200] if literary_influence else title
+            arch_query = f"{arch_seed} architecture movement materials visual style"
 
             requests = [
                 TavilySearchRequest(
@@ -351,21 +346,21 @@ class ResearchService:
                     query=lit_query,
                     search_depth="advanced",
                     max_results=5,
-                    include_domains=LITERARY_DOMAINS,
+                    include_domains=get_research_domains("literary"),
                 ),
                 TavilySearchRequest(
                     axis="WEB: PHILOSOPHICAL AXIS",
                     query=phil_query,
                     search_depth="advanced",
                     max_results=5,
-                    include_domains=PHILOSOPHY_DOMAINS,
+                    include_domains=get_research_domains("philosophy"),
                 ),
                 TavilySearchRequest(
                     axis="WEB: ARCHITECTURAL AXIS",
                     query=arch_query,
-                    search_depth="basic",
+                    search_depth="advanced",
                     max_results=4,
-                    include_domains=ARCHITECTURE_DOMAINS,
+                    include_domains=get_research_domains("architecture"),
                 ),
             ]
 

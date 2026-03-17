@@ -1,0 +1,729 @@
+import { localized, msg, str } from '@lit/localize';
+import { css, html, LitElement, nothing } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
+import { adminApi } from '../../services/api/index.js';
+import type { PlatformSetting } from '../../types/index.js';
+import { icons } from '../../utils/icons.js';
+import { VelgToast } from '../shared/Toast.js';
+
+interface DomainAxisMeta {
+  label: string;
+  description: string;
+}
+
+const DOMAIN_KEYS = [
+  'research_domains_encyclopedic',
+  'research_domains_literary',
+  'research_domains_philosophy',
+  'research_domains_architecture',
+] as const;
+
+type DomainSettingKey = (typeof DOMAIN_KEYS)[number];
+
+function getAxisMeta(): Record<DomainSettingKey, DomainAxisMeta> {
+  return {
+    research_domains_encyclopedic: {
+      label: msg('Encyclopedic Domains'),
+      description: msg(
+        'General knowledge sources for conceptual overview research in Phase 1 (Astrolabe).',
+      ),
+    },
+    research_domains_literary: {
+      label: msg('Literary Domains'),
+      description: msg(
+        'Literary analysis and narrative technique sources for the literary axis of lore research.',
+      ),
+    },
+    research_domains_philosophy: {
+      label: msg('Philosophy Domains'),
+      description: msg(
+        'Philosophical and epistemological sources for the philosophical framework axis.',
+      ),
+    },
+    research_domains_architecture: {
+      label: msg('Architecture Domains'),
+      description: msg(
+        'Architectural movements, materials, and visual vocabulary sources for the visual axis.',
+      ),
+    },
+  };
+}
+
+const DEFAULTS: Record<DomainSettingKey, string[]> = {
+  research_domains_encyclopedic: ['en.wikipedia.org', 'plato.stanford.edu', 'britannica.com'],
+  research_domains_literary: ['en.wikipedia.org', 'britannica.com', 'theparisreview.org'],
+  research_domains_philosophy: ['plato.stanford.edu', 'iep.utm.edu', 'en.wikipedia.org'],
+  research_domains_architecture: ['en.wikipedia.org', 'dezeen.com', 'designboom.com'],
+};
+
+@localized()
+@customElement('velg-admin-research-tab')
+export class VelgAdminResearchTab extends LitElement {
+  static styles = css`
+    :host {
+      display: block;
+      color: var(--color-text-primary);
+      font-family: var(--font-mono, monospace);
+    }
+
+    /* --- Animations --- */
+
+    @keyframes panel-enter {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .forge-section,
+      .domain-card {
+        animation: none !important;
+      }
+    }
+
+    /* --- Bureau Section Wrapper --- */
+
+    .forge-section {
+      position: relative;
+      background: var(--color-surface-sunken);
+      border: 1px solid var(--color-border);
+      padding: var(--space-5) var(--space-5) var(--space-5) var(--space-6);
+      margin-bottom: var(--space-5);
+      animation: panel-enter 0.4s ease both;
+    }
+
+    .forge-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3px;
+      height: 100%;
+      background: linear-gradient(
+        180deg,
+        var(--color-accent-amber) 0%,
+        var(--color-accent-amber-dim, rgba(245, 158, 11, 0.3)) 100%
+      );
+    }
+
+    .forge-section__header {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-3);
+      margin-bottom: var(--space-1);
+    }
+
+    .forge-section__code {
+      font-family: var(--font-mono, 'SF Mono', monospace);
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--color-accent-amber);
+      opacity: 0.7;
+      white-space: nowrap;
+    }
+
+    .forge-section__title {
+      font-family: var(--font-brutalist, 'Courier New', monospace);
+      font-weight: 900;
+      font-size: var(--text-sm);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+      color: var(--color-text-primary);
+      margin: 0;
+    }
+
+    .forge-section__divider {
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        var(--color-accent-amber-dim, rgba(245, 158, 11, 0.2)) 0%,
+        transparent 80%
+      );
+      margin-bottom: var(--space-4);
+    }
+
+    /* --- Domain Grid --- */
+
+    .domain-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: var(--space-4);
+    }
+
+    .domain-card {
+      padding: var(--space-4);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+      animation: panel-enter 0.4s ease both;
+    }
+
+    .domain-card:nth-child(1) { animation-delay: 0s; }
+    .domain-card:nth-child(2) { animation-delay: 0.05s; }
+    .domain-card:nth-child(3) { animation-delay: 0.1s; }
+    .domain-card:nth-child(4) { animation-delay: 0.15s; }
+
+    .domain-card:hover {
+      border-color: var(--color-text-muted);
+    }
+
+    .domain-card--dirty {
+      border-color: var(--color-accent-amber);
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-accent-amber) 40%, transparent);
+    }
+
+    /* --- Card Header --- */
+
+    .domain-card__header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-3);
+    }
+
+    .domain-card__label {
+      font-family: var(--font-brutalist);
+      font-size: var(--text-sm);
+      font-weight: var(--font-bold);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+      color: var(--color-text-primary);
+      margin: 0;
+    }
+
+    /* --- Info Bubble --- */
+
+    .info-trigger {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1px solid var(--color-border);
+      background: none;
+      color: var(--color-text-muted);
+      font-family: var(--font-mono, monospace);
+      font-size: 10px;
+      font-weight: 700;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0;
+      transition:
+        color 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .info-trigger:hover,
+    .info-trigger:focus-visible {
+      color: var(--color-accent-amber);
+      border-color: var(--color-accent-amber);
+      background: color-mix(in srgb, var(--color-accent-amber) 10%, transparent);
+      outline: none;
+    }
+
+    .info-bubble {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: max-content;
+      max-width: 260px;
+      padding: var(--space-2) var(--space-3);
+      background: var(--color-gray-950, #0a0a0a);
+      color: var(--color-text-secondary);
+      border: 1px solid var(--color-border);
+      font-family: var(--font-mono, monospace);
+      font-size: var(--text-xs);
+      line-height: 1.5;
+      z-index: 10;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+
+    .info-bubble::before {
+      content: '';
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-bottom-color: var(--color-border);
+    }
+
+    .info-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 4px solid transparent;
+      border-bottom-color: var(--color-gray-950, #0a0a0a);
+    }
+
+    .info-trigger:hover .info-bubble,
+    .info-trigger:focus-visible .info-bubble,
+    .info-bubble--visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* --- Domain Chips --- */
+
+    .domain-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-1-5);
+      margin-bottom: var(--space-3);
+      min-height: 28px;
+    }
+
+    .domain-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      padding: var(--space-0-5) var(--space-1) var(--space-0-5) var(--space-2);
+      background: var(--color-background);
+      border: 1px solid var(--color-border);
+      font-family: var(--font-mono, monospace);
+      font-size: var(--text-xs);
+      color: var(--color-text-secondary);
+      transition:
+        border-color 0.15s ease,
+        background 0.15s ease;
+    }
+
+    .domain-chip:hover {
+      border-color: var(--color-text-muted);
+    }
+
+    .domain-chip__remove {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      padding: 0;
+      background: none;
+      border: none;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      transition: color 0.15s ease;
+      flex-shrink: 0;
+    }
+
+    .domain-chip__remove:hover {
+      color: var(--color-danger);
+    }
+
+    .domain-chip__remove:focus-visible {
+      outline: 1px solid var(--color-danger);
+      outline-offset: -1px;
+    }
+
+    .domain-chips--empty {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      padding: var(--space-1) 0;
+      font-style: italic;
+    }
+
+    /* --- Add Row --- */
+
+    .domain-card__add-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .domain-card__input {
+      flex: 1;
+      min-width: 0;
+      padding: var(--space-2) var(--space-3);
+      font-family: var(--font-mono, monospace);
+      font-size: var(--text-sm);
+      background: var(--color-background);
+      color: var(--color-text-primary);
+      border: 1px solid var(--color-border);
+      border-radius: 0;
+      transition: border-color 0.2s ease;
+    }
+
+    .domain-card__input:focus {
+      outline: none;
+      border-color: var(--color-accent-amber);
+      box-shadow: 0 0 0 1px var(--color-accent-amber);
+    }
+
+    .domain-card__input::placeholder {
+      color: var(--color-text-muted);
+      opacity: 0.6;
+    }
+
+    .domain-card__add-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-2);
+      background: none;
+      border: 1px solid var(--color-border);
+      color: var(--color-text-muted);
+      cursor: pointer;
+      transition:
+        color 0.2s ease,
+        border-color 0.2s ease;
+    }
+
+    .domain-card__add-btn:hover {
+      color: var(--color-accent-amber);
+      border-color: var(--color-accent-amber);
+    }
+
+    .domain-card__add-btn:focus-visible {
+      outline: none;
+      color: var(--color-accent-amber);
+      border-color: var(--color-accent-amber);
+      box-shadow: 0 0 0 1px var(--color-accent-amber);
+    }
+
+    /* --- Actions --- */
+
+    .actions {
+      display: flex;
+      gap: var(--space-3);
+      margin-top: var(--space-5);
+    }
+
+    .btn {
+      font-family: var(--font-brutalist);
+      font-size: var(--text-sm);
+      font-weight: var(--font-bold);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+      padding: var(--space-2) var(--space-5);
+      cursor: pointer;
+      transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.15s ease,
+        box-shadow 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn--save {
+      background: var(--color-accent-amber);
+      color: var(--color-gray-950);
+      border: 1px solid var(--color-accent-amber);
+    }
+
+    .btn--save:hover:not(:disabled) {
+      box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent-amber) 30%, transparent);
+    }
+
+    .btn--reset {
+      background: transparent;
+      color: var(--color-text-secondary);
+      border: 1px solid var(--color-border);
+    }
+
+    .btn--reset:hover:not(:disabled) {
+      color: var(--color-accent-amber);
+      border-color: color-mix(in srgb, var(--color-accent-amber) 50%, transparent);
+    }
+
+    .loading {
+      text-align: center;
+      padding: var(--space-8);
+      color: var(--color-text-muted);
+      font-family: var(--font-brutalist);
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 768px) {
+      .domain-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  `;
+
+  @state() private _loading = true;
+  @state() private _saving = false;
+  @state() private _domains: Record<string, string[]> = {};
+  @state() private _originalDomains: Record<string, string[]> = {};
+  @state() private _newDomainInputs: Record<string, string> = {};
+
+  async connectedCallback(): Promise<void> {
+    super.connectedCallback();
+    await this._loadSettings();
+  }
+
+  private async _loadSettings(): Promise<void> {
+    this._loading = true;
+    const result = await adminApi.listSettings();
+    if (result.success && result.data) {
+      const allSettings = result.data as PlatformSetting[];
+      const domains: Record<string, string[]> = {};
+
+      // Seed with defaults
+      for (const key of DOMAIN_KEYS) {
+        domains[key] = [...DEFAULTS[key]];
+      }
+
+      // Overlay DB values
+      for (const s of allSettings) {
+        if (!(DOMAIN_KEYS as readonly string[]).includes(s.setting_key)) continue;
+        const raw = s.setting_value;
+        try {
+          const cleaned = typeof raw === 'string' ? raw.replace(/^"|"$/g, '') : raw;
+          const parsed = typeof cleaned === 'string' ? JSON.parse(cleaned) : cleaned;
+          if (Array.isArray(parsed)) {
+            domains[s.setting_key] = parsed;
+          }
+        } catch {
+          // Keep default on parse failure
+        }
+      }
+
+      this._domains = domains;
+      this._originalDomains = JSON.parse(JSON.stringify(domains));
+      this._newDomainInputs = {};
+      for (const key of DOMAIN_KEYS) {
+        this._newDomainInputs[key] = '';
+      }
+    }
+    this._loading = false;
+  }
+
+  private _isDirty(key: string): boolean {
+    const current = this._domains[key];
+    const original = this._originalDomains[key];
+    if (!current || !original) return false;
+    if (current.length !== original.length) return true;
+    return current.some((d, i) => d !== original[i]);
+  }
+
+  private get _hasDirty(): boolean {
+    return DOMAIN_KEYS.some((key) => this._isDirty(key));
+  }
+
+  private _addDomain(key: string): void {
+    const value = (this._newDomainInputs[key] ?? '').trim().toLowerCase();
+    if (!value) return;
+    // Strip protocol if pasted
+    const domain = value.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+    if (!domain) return;
+
+    const current = this._domains[key] ?? [];
+    if (current.includes(domain)) {
+      VelgToast.error(msg('Domain already exists.'));
+      return;
+    }
+
+    this._domains = {
+      ...this._domains,
+      [key]: [...current, domain],
+    };
+    this._newDomainInputs = {
+      ...this._newDomainInputs,
+      [key]: '',
+    };
+
+    // Return focus to input
+    this.updateComplete.then(() => {
+      const input = this.shadowRoot?.querySelector<HTMLInputElement>(
+        `input[data-key="${key}"]`,
+      );
+      input?.focus();
+    });
+  }
+
+  private _removeDomain(key: string, index: number): void {
+    const current = this._domains[key] ?? [];
+    this._domains = {
+      ...this._domains,
+      [key]: current.filter((_, i) => i !== index),
+    };
+
+    // Return focus to input
+    this.updateComplete.then(() => {
+      const input = this.shadowRoot?.querySelector<HTMLInputElement>(
+        `input[data-key="${key}"]`,
+      );
+      input?.focus();
+    });
+  }
+
+  private async _saveAll(): Promise<void> {
+    this._saving = true;
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const key of DOMAIN_KEYS) {
+      if (!this._isDirty(key)) continue;
+      const domains = this._domains[key];
+      const result = await adminApi.updateSetting(key, JSON.stringify(domains));
+      if (result.success) {
+        successCount++;
+      } else {
+        errorCount++;
+        VelgToast.error(result.error?.message ?? msg('Save failed.'));
+      }
+    }
+
+    if (successCount > 0) {
+      VelgToast.success(msg(str`${successCount} domain settings saved.`));
+    }
+    if (errorCount > 0) {
+      VelgToast.error(msg(str`${errorCount} settings failed to save.`));
+    }
+
+    await this._loadSettings();
+    this._saving = false;
+  }
+
+  private _resetToDefaults(): void {
+    const domains: Record<string, string[]> = {};
+    for (const key of DOMAIN_KEYS) {
+      domains[key] = [...DEFAULTS[key]];
+    }
+    this._domains = domains;
+    this.requestUpdate();
+  }
+
+  private _renderDomainCard(key: DomainSettingKey) {
+    const meta = getAxisMeta();
+    const m = meta[key];
+    if (!m) return nothing;
+
+    const isDirty = this._isDirty(key);
+    const domains = this._domains[key] ?? [];
+    const inputValue = this._newDomainInputs[key] ?? '';
+    const tooltipId = `tooltip-${key}`;
+
+    return html`
+      <div class="domain-card ${isDirty ? 'domain-card--dirty' : ''}">
+        <div class="domain-card__header">
+          <p class="domain-card__label">${m.label}</p>
+          <button
+            class="info-trigger"
+            aria-describedby=${tooltipId}
+            @click=${(e: Event) => e.preventDefault()}
+          >
+            i
+            <span class="info-bubble" id=${tooltipId} role="tooltip">${m.description}</span>
+          </button>
+        </div>
+
+        ${domains.length > 0
+          ? html`
+              <div class="domain-chips" role="list">
+                ${domains.map(
+                  (domain, i) => html`
+                    <span class="domain-chip" role="listitem">
+                      ${domain}
+                      <button
+                        class="domain-chip__remove"
+                        aria-label=${msg(str`Remove ${domain}`)}
+                        @click=${() => this._removeDomain(key, i)}
+                      >${icons.close(10)}</button>
+                    </span>
+                  `,
+                )}
+              </div>
+            `
+          : html`<div class="domain-chips--empty">${msg('No domains configured')}</div>`}
+
+        <div class="domain-card__add-row">
+          <input
+            type="text"
+            class="domain-card__input"
+            data-key=${key}
+            placeholder=${msg('Add domain...')}
+            aria-label=${msg(str`Add domain to ${m.label}`)}
+            .value=${inputValue}
+            @input=${(e: Event) => {
+              this._newDomainInputs = {
+                ...this._newDomainInputs,
+                [key]: (e.target as HTMLInputElement).value,
+              };
+            }}
+            @keydown=${(e: KeyboardEvent) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                this._addDomain(key);
+              }
+            }}
+          />
+          <button
+            class="domain-card__add-btn"
+            title=${msg('Add Domain')}
+            @click=${() => this._addDomain(key)}
+          >${icons.plus(12)}</button>
+        </div>
+      </div>
+    `;
+  }
+
+  protected render() {
+    if (this._loading) {
+      return html`<div class="loading">${msg('Loading research domains...')}</div>`;
+    }
+
+    return html`
+      <div class="forge-section">
+        <div class="forge-section__header">
+          <span class="forge-section__code">SEC-02</span>
+          <h3 class="forge-section__title">${msg('Research Domains')}</h3>
+        </div>
+        <div class="forge-section__divider"></div>
+
+        <div class="domain-grid">
+          ${DOMAIN_KEYS.map((key) => this._renderDomainCard(key))}
+        </div>
+
+        <div class="actions">
+          <button
+            class="btn btn--save"
+            ?disabled=${!this._hasDirty || this._saving}
+            @click=${this._saveAll}
+          >
+            ${this._saving ? msg('Saving...') : msg('Save Changes')}
+          </button>
+          <button class="btn btn--reset" ?disabled=${this._saving} @click=${this._resetToDefaults}>
+            ${msg('Reset to Defaults')}
+          </button>
+        </div>
+      </div>
+    `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'velg-admin-research-tab': VelgAdminResearchTab;
+  }
+}

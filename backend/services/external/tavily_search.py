@@ -39,8 +39,9 @@ PHILOSOPHY_DOMAINS: list[str] = [
     "en.wikipedia.org",
 ]
 ARCHITECTURE_DOMAINS: list[str] = [
-    "archdaily.com",
     "en.wikipedia.org",
+    "dezeen.com",
+    "designboom.com",
 ]
 
 
