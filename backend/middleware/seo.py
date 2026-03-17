@@ -141,6 +141,32 @@ _PLATFORM_META: dict[str, dict[str, str]] = {
         ),
         "canonical": "https://metaverse.center/archives",
     },
+    "/worlds": {
+        "title": "Explore Living Worlds | metaverse.center",
+        "description": (
+            "Browse player-created civilizations — each with AI-powered characters,"
+            " evolving cities, and stories that write themselves."
+            " Every world started as a single sentence."
+        ),
+        "canonical": "https://metaverse.center/worlds",
+        "og_image": (
+            "https://bffjoupddfjaljqrwqck.supabase.co/storage/v1"
+            "/object/public/simulation.assets/platform/og-image.jpg"
+        ),
+    },
+    "/chronicles": {
+        "title": "The Chronicle Feed | metaverse.center",
+        "description": (
+            "Every world writes its own newspaper."
+            " Read AI-generated broadsheets from active simulations"
+            " — fiction tied to real gameplay events."
+        ),
+        "canonical": "https://metaverse.center/chronicles",
+        "og_image": (
+            "https://bffjoupddfjaljqrwqck.supabase.co/storage/v1"
+            "/object/public/simulation.assets/platform/og-image.jpg"
+        ),
+    },
 }
 
 

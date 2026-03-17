@@ -13,6 +13,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { simulationsApi } from '../../services/api/SimulationsApiService.js';
+import { seoService } from '../../services/SeoService.js';
 import { appState } from '../../services/AppStateManager.js';
 import { getThemeColor } from '../../utils/theme-colors.js';
 import type { Simulation } from '../../types/index.js';
@@ -469,6 +470,7 @@ export class VelgWorldsGallery extends LitElement {
   disconnectedCallback(): void {
     super.disconnectedCallback();
     this._observer?.disconnect();
+    seoService.removeStructuredData();
   }
 
   private async _fetchSimulations(): Promise<void> {
@@ -480,6 +482,7 @@ export class VelgWorldsGallery extends LitElement {
     if (resp.success && Array.isArray(resp.data)) {
       this._simulations = resp.data as Simulation[];
       this._total = resp.meta?.total ?? resp.data.length;
+      this._injectStructuredData();
     }
     this._loading = false;
   }
@@ -496,6 +499,31 @@ export class VelgWorldsGallery extends LitElement {
         (s.description ?? '').toLowerCase().includes(this._search) ||
         (s.theme ?? '').toLowerCase().includes(this._search),
     );
+  }
+
+  private _injectStructuredData(): void {
+    if (this._simulations.length === 0) return;
+    seoService.setStructuredData({
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: 'Explore Living Worlds',
+      description:
+        'Browse player-created civilizations — each with AI-powered characters, evolving cities, and stories that write themselves.',
+      url: 'https://metaverse.center/worlds',
+      numberOfItems: this._total,
+      mainEntity: {
+        '@type': 'ItemList',
+        numberOfItems: this._simulations.length,
+        itemListElement: this._simulations.map((sim, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: sim.name,
+          description: sim.description ?? '',
+          url: `https://metaverse.center/simulations/${sim.slug || sim.id}/lore`,
+          ...(sim.banner_url ? { image: sim.banner_url } : {}),
+        })),
+      },
+    });
   }
 
   private _navigate(path: string): void {

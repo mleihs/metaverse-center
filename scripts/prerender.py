@@ -31,6 +31,8 @@ VIEW_LABELS: dict[str, str] = {
     "chat": "Chat",
     "social": "Social",
     "locations": "Locations",
+    "trends": "Social Trends",
+    "health": "Simulation Health",
 }
 
 # Platform routes with static content (no DB query)
@@ -83,6 +85,33 @@ PLATFORM_PAGES: dict[str, dict[str, str]] = {
             "<h1>Epochs</h1>"
             "<p>Competitive cross-simulation battles — form alliances, "
             "deploy operatives, and claim victory.</p>"
+        ),
+    },
+    "worlds": {
+        "title": "Explore Living Worlds | metaverse.center",
+        "description": (
+            "Browse player-created civilizations — each with AI-powered"
+            " characters, evolving cities, and stories that write themselves."
+        ),
+        "canonical": f"{BASE_URL}/worlds",
+        "content": (
+            "<h1>Explore Living Worlds</h1>"
+            "<p>Browse player-created civilizations — each with AI-powered characters, "
+            "evolving cities, and stories that write themselves. Every world started as "
+            "a single sentence.</p>"
+        ),
+    },
+    "chronicles": {
+        "title": "The Chronicle Feed | metaverse.center",
+        "description": (
+            "Every world writes its own newspaper. Read AI-generated broadsheets"
+            " from active simulations — fiction tied to real gameplay events."
+        ),
+        "canonical": f"{BASE_URL}/chronicles",
+        "content": (
+            "<h1>The Chronicle Feed</h1>"
+            "<p>Every world writes its own newspaper. Read AI-generated broadsheets "
+            "from active simulations — fiction tied to real gameplay events.</p>"
         ),
     },
 }

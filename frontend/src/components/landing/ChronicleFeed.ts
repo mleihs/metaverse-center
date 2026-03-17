@@ -13,6 +13,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { chronicleApi } from '../../services/api/ChronicleApiService.js';
+import { seoService } from '../../services/SeoService.js';
 import { appState } from '../../services/AppStateManager.js';
 import { getThemeColor } from '../../utils/theme-colors.js';
 import type { Chronicle } from '../../types/index.js';
@@ -452,6 +453,7 @@ export class VelgChronicleFeed extends LitElement {
   disconnectedCallback(): void {
     super.disconnectedCallback();
     this._observer?.disconnect();
+    seoService.removeStructuredData();
   }
 
   private async _fetchChronicles(): Promise<void> {
@@ -463,8 +465,36 @@ export class VelgChronicleFeed extends LitElement {
     if (resp.success && Array.isArray(resp.data)) {
       this._chronicles = resp.data as FeedChronicle[];
       this._total = resp.meta?.total ?? resp.data.length;
+      this._injectStructuredData();
     }
     this._loading = false;
+  }
+
+  private _injectStructuredData(): void {
+    if (this._chronicles.length === 0) return;
+    seoService.setStructuredData({
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: 'The Chronicle Feed',
+      description:
+        'Every world writes its own newspaper. Read AI-generated broadsheets from active simulations.',
+      url: 'https://metaverse.center/chronicles',
+      numberOfItems: this._total,
+      mainEntity: {
+        '@type': 'ItemList',
+        numberOfItems: this._chronicles.length,
+        itemListElement: this._chronicles.map((c, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          item: {
+            '@type': 'Article',
+            headline: c.title ?? `Edition #${c.edition_number}`,
+            datePublished: c.created_at,
+            ...(c.simulation ? { author: { '@type': 'Organization', name: c.simulation.name } } : {}),
+          },
+        })),
+      },
+    });
   }
 
   private _navigate(path: string): void {

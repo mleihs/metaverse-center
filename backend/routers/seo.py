@@ -21,6 +21,8 @@ Allow: /multiverse
 Allow: /how-to-play
 Allow: /epoch
 Allow: /archives
+Allow: /worlds
+Allow: /chronicles
 Allow: /simulations/
 Disallow: /login
 Disallow: /register
@@ -34,7 +36,7 @@ Disallow: /api/
 Sitemap: https://metaverse.center/sitemap.xml
 """
 
-SIMULATION_VIEWS = ["lore", "agents", "buildings", "events", "locations", "social", "chat"]
+SIMULATION_VIEWS = ["lore", "agents", "buildings", "events", "locations", "social", "chat", "trends", "health"]
 
 
 @router.get("/robots.txt", response_class=PlainTextResponse)
@@ -68,6 +70,12 @@ async def sitemap_xml(supabase: Client = Depends(get_anon_supabase)) -> Response
 
     # Bureau Archives
     _add_url(urlset, "https://metaverse.center/archives", now, "0.5", "monthly")
+
+    # Worlds Gallery (public simulation browser)
+    _add_url(urlset, "https://metaverse.center/worlds", now, "0.8", "daily")
+
+    # Chronicle Feed (cross-simulation AI newspaper)
+    _add_url(urlset, "https://metaverse.center/chronicles", now, "0.7", "daily")
 
     # Per-simulation views
     for sim in simulations:
