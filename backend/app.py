@@ -56,6 +56,7 @@ from backend.routers import (
     game_mechanics,
     generation,
     health,
+    heartbeat,
     invitations,
     locations,
     members,
@@ -76,6 +77,7 @@ from backend.routers import (
     users,
     zone_actions,
 )
+from backend.services.heartbeat_service import HeartbeatService
 from backend.services.platform_model_config import ensure_loaded as ensure_model_config
 from backend.services.platform_research_domains import ensure_loaded as ensure_research_domains
 from backend.services.resonance_scheduler import ResonanceScheduler
@@ -91,7 +93,9 @@ async def lifespan(app: FastAPI):
 
     resonance_task = await ResonanceScheduler.start()
     scanner_task = await ScannerService.start()
+    heartbeat_task = await HeartbeatService.start()
     yield
+    heartbeat_task.cancel()
     scanner_task.cancel()
     resonance_task.cancel()
 
@@ -194,6 +198,7 @@ app.include_router(epoch_invitations.router)
 app.include_router(operatives.router)
 app.include_router(scores.router)
 app.include_router(zone_actions.router)
+app.include_router(heartbeat.router)
 app.include_router(resonances.router)
 app.include_router(news_scanner.router)
 app.include_router(style_references.router)

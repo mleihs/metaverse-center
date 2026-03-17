@@ -17,7 +17,10 @@ import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { simulationsApi } from '../../services/api/SimulationsApiService.js';
 import { seoService } from '../../services/SeoService.js';
+import { getThemeColor } from '../../utils/theme-colors.js';
+import type { Simulation } from '../../types/index.js';
 import '../shared/PlatformFooter.js';
+import './LandingAgentShowcase.js';
 
 interface PlatformStats {
   simulation_count: number;
@@ -408,6 +411,24 @@ export class VelgLandingPage extends LitElement {
 
     .hero__cta:hover .hero__cta-arrow {
       transform: translateX(4px);
+    }
+
+    .hero__cta--secondary {
+      background: transparent;
+      color: var(--color-text-primary);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      margin-left: 16px;
+    }
+
+    .hero__cta--secondary:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--color-text-primary);
+      border-color: rgba(255, 255, 255, 0.4);
+      box-shadow: none;
+    }
+
+    .hero__cta--secondary::after {
+      display: none;
     }
 
     .hero__scroll-hint {
@@ -1009,12 +1030,259 @@ export class VelgLandingPage extends LitElement {
       transform: translateY(0);
     }
 
+    .cta-frame__btn--secondary {
+      background: transparent;
+      color: var(--color-accent-amber);
+      border: 1px solid var(--color-accent-amber);
+    }
+
+    .cta-frame__btn--secondary:hover {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--color-accent-amber);
+    }
+
+    .cta-frame__actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
     .cta-frame__ref {
       margin-top: 24px;
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 9px;
       color: var(--color-text-muted);
       letter-spacing: 1px;
+    }
+
+    /* ═══════════════════════════════════════════
+       WORLDS PREVIEW — Surveillance Monitor Array
+       ═══════════════════════════════════════════ */
+
+    .worlds-preview {
+      padding: var(--space-12, 48px) 0;
+    }
+
+    .worlds-preview__grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 3px;
+    }
+
+    .monitor-card {
+      display: block;
+      background: #0d0d0d;
+      text-decoration: none;
+      color: inherit;
+      overflow: hidden;
+      position: relative;
+      transition: transform 300ms var(--ease-dramatic);
+    }
+
+    .monitor-card:hover {
+      transform: translateY(-2px);
+      z-index: 1;
+    }
+
+    .monitor-card__strip {
+      height: 3px;
+      background: var(--theme-accent, #888);
+    }
+
+    .monitor-card__feed {
+      position: relative;
+      height: 140px;
+      overflow: hidden;
+      background: #080808;
+    }
+
+    .monitor-card__img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.6;
+      transition: opacity 400ms, filter 400ms;
+      filter: saturate(0.7);
+    }
+
+    .monitor-card:hover .monitor-card__img {
+      opacity: 0.85;
+      filter: saturate(1);
+    }
+
+    .monitor-card__overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, #0d0d0d 0%, transparent 50%);
+    }
+
+    .monitor-card__scanline {
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        transparent 0px, transparent 2px,
+        rgba(0, 0, 0, 0.15) 2px, rgba(0, 0, 0, 0.15) 4px
+      );
+      pointer-events: none;
+    }
+
+    .monitor-card__scanline::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.04);
+      animation: monitor-scan 4s linear infinite;
+    }
+
+    .monitor-card:hover .monitor-card__scanline::after {
+      animation-play-state: paused;
+    }
+
+    @keyframes monitor-scan {
+      from { top: -2px; }
+      to   { top: 100%; }
+    }
+
+    .monitor-card__rec {
+      position: absolute;
+      top: 8px;
+      left: 10px;
+      font-family: var(--font-mono, 'SF Mono', monospace);
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #ef4444;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .monitor-card__rec::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #ef4444;
+      animation: rec-blink 1.5s ease-in-out infinite;
+    }
+
+    @keyframes rec-blink {
+      0%, 100% { opacity: 1; }
+      50%      { opacity: 0.2; }
+    }
+
+    .monitor-card__coord {
+      position: absolute;
+      bottom: 8px;
+      right: 10px;
+      font-family: var(--font-mono, 'SF Mono', monospace);
+      font-size: 8px;
+      letter-spacing: 1px;
+      color: rgba(255, 255, 255, 0.25);
+    }
+
+    .monitor-card__body {
+      padding: 14px 16px 16px;
+    }
+
+    .monitor-card__name {
+      font-family: var(--font-brutalist, 'Courier New', monospace);
+      font-weight: 900;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--color-text-primary);
+      margin: 0 0 6px;
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .monitor-card__desc {
+      font-family: var(--font-mono, 'SF Mono', monospace);
+      font-size: 11px;
+      color: var(--color-text-muted, #666);
+      margin: 0 0 10px;
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .monitor-card__stats {
+      display: flex;
+      gap: 12px;
+      font-family: var(--font-mono, 'SF Mono', monospace);
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--color-text-muted, #555);
+    }
+
+    /* Explore-all card: static/noise effect */
+    .monitor-card--explore .monitor-card__static {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .monitor-card__noise {
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          0deg,
+          transparent, transparent 1px,
+          rgba(255, 255, 255, 0.015) 1px, rgba(255, 255, 255, 0.015) 2px
+        );
+      opacity: 0.6;
+      transition: opacity 400ms;
+    }
+
+    .monitor-card--explore:hover .monitor-card__noise {
+      opacity: 0.2;
+    }
+
+    .monitor-card__static-text {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+
+    .monitor-card__static-count {
+      display: block;
+      font-family: var(--font-brutalist, 'Courier New', monospace);
+      font-weight: 900;
+      font-size: 28px;
+      color: var(--color-accent-amber);
+      line-height: 1;
+    }
+
+    .monitor-card__static-label {
+      font-family: var(--font-mono, 'SF Mono', monospace);
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--color-text-muted, #666);
+    }
+
+    .monitor-card__cta-arrow {
+      font-size: 18px;
+      color: var(--color-accent-amber);
+      transition: transform 200ms;
+    }
+
+    .monitor-card--explore:hover .monitor-card__cta-arrow {
+      transform: translateX(6px);
+    }
+
+    .monitor-card--explore .monitor-card__name {
+      color: var(--color-accent-amber);
     }
 
     /* ═══════════════════════════════════════════
@@ -1025,6 +1293,17 @@ export class VelgLandingPage extends LitElement {
       .hero__bracket,
       .hero__coord {
         display: none;
+      }
+
+      .hero__cta-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .hero__cta--secondary {
+        margin-left: 0;
       }
 
       .feature-card {
@@ -1038,6 +1317,25 @@ export class VelgLandingPage extends LitElement {
       .cta-frame {
         padding: 32px 24px;
       }
+
+      .cta-frame__actions {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .worlds-preview__grid {
+        grid-template-columns: 1fr;
+      }
+
+      .monitor-card__feed {
+        height: 120px;
+      }
+    }
+
+    @media (min-width: 641px) and (max-width: 1023px) {
+      .worlds-preview__grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
     }
 
     /* ── Widescreen (1440px+) ── */
@@ -1049,6 +1347,10 @@ export class VelgLandingPage extends LitElement {
         max-width: 1400px;
         margin-inline: auto;
         padding-inline: var(--space-8, 32px);
+      }
+
+      .worlds-preview__grid {
+        grid-template-columns: repeat(6, 1fr);
       }
 
       .hero__title {
@@ -1096,14 +1398,20 @@ export class VelgLandingPage extends LitElement {
       .cta-footer {
         max-width: 1800px;
       }
+
+      .worlds-preview__grid {
+        grid-template-columns: repeat(8, 1fr);
+      }
     }
   `;
 
   @state() private _stats: PlatformStats | null = null;
+  @state() private _worlds: Simulation[] = [];
 
   async connectedCallback(): Promise<void> {
     super.connectedCallback();
     this._fetchStats();
+    this._fetchWorlds();
     this._injectStructuredData();
   }
 
@@ -1159,6 +1467,11 @@ export class VelgLandingPage extends LitElement {
     this._setupSignalDecodeHero();
   }
 
+  protected updated(): void {
+    // Re-observe any new scroll-reveal elements added after async data loads
+    this._observeNewScrollRevealElements();
+  }
+
   private async _fetchStats(): Promise<void> {
     try {
       const response = await simulationsApi.getPlatformStats<PlatformStats>();
@@ -1170,8 +1483,23 @@ export class VelgLandingPage extends LitElement {
     }
   }
 
+  private async _fetchWorlds(): Promise<void> {
+    try {
+      const w = window.innerWidth;
+      const worldLimit = w >= 2560 ? 7 : w >= 1440 ? 5 : 3;
+      const resp = await simulationsApi.listPublic({ limit: String(worldLimit), offset: '0' });
+      if (resp.success && Array.isArray(resp.data)) {
+        this._worlds = resp.data as Simulation[];
+      }
+    } catch {
+      // Non-critical
+    }
+  }
+
+  private _scrollObserver?: IntersectionObserver;
+
   private _setupScrollAnimations(): void {
-    const observer = new IntersectionObserver(
+    this._scrollObserver = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
@@ -1182,9 +1510,14 @@ export class VelgLandingPage extends LitElement {
       { threshold: 0.15 },
     );
 
-    const elements = this.renderRoot.querySelectorAll('.scroll-reveal');
+    this._observeNewScrollRevealElements();
+  }
+
+  private _observeNewScrollRevealElements(): void {
+    if (!this._scrollObserver) return;
+    const elements = this.renderRoot.querySelectorAll('.scroll-reveal:not(.in-view)');
     for (const el of elements) {
-      observer.observe(el);
+      this._scrollObserver.observe(el);
     }
   }
 
@@ -1242,6 +1575,8 @@ export class VelgLandingPage extends LitElement {
       <main id="main-content">
         ${this._renderHero()}
         ${this._renderFeatures()}
+        ${this._worlds.length > 0 ? this._renderWorldsPreview() : ''}
+        <velg-landing-agent-showcase></velg-landing-agent-showcase>
         ${this._renderLiveData()}
         ${this._renderHowItWorks()}
         ${this._renderCtaFooter()}
@@ -1284,7 +1619,7 @@ export class VelgLandingPage extends LitElement {
           </h1>
           <div class="waveform" aria-hidden="true">${waveformBars}</div>
           <p class="hero__subtitle">
-            ${msg('Multiplayer Worldbuilding & Strategy Platform. Build civilizations. Deploy operatives. Shape the metaverse.')}
+            ${msg('Create AI-powered civilizations with characters who remember, cities that evolve, and stories that write themselves.')}
           </p>
           <div class="hero__cta-area">
             <a
@@ -1295,10 +1630,22 @@ export class VelgLandingPage extends LitElement {
                 this._trackCta('hero');
                 this._navigate('/register');
               }}
-              aria-label=${msg('Enter the Metaverse — Create your account')}
+              aria-label=${msg('Build Your World — Create your account')}
             >
-              ${msg('Enter the Metaverse')}
+              ${msg('Build Your World')}
               <span class="hero__cta-arrow" aria-hidden="true">\u2192</span>
+            </a>
+            <a
+              class="hero__cta hero__cta--secondary"
+              href="/worlds"
+              @click=${(e: Event) => {
+                e.preventDefault();
+                this._trackCta('hero-explore');
+                this._navigate('/worlds');
+              }}
+              aria-label=${msg('Explore Worlds — Browse player-created civilizations')}
+            >
+              ${msg('Explore Worlds')}
             </a>
           </div>
         </div>
@@ -1416,7 +1763,7 @@ export class VelgLandingPage extends LitElement {
               <div class="feature-card__body">
                 <h2 class="feature-card__title">${msg('Worldbuilding')}</h2>
                 <p class="feature-card__desc">
-                  ${msg('Create living worlds with AI-powered agents, sprawling cities, and evolving lore. Every simulation is a sovereign civilization with its own history.')}
+                  ${msg('Describe a world in one sentence. The Forge builds it — geography, citizens, architecture, 5,000 words of lore. In four minutes, you have a living civilization with characters who form opinions, hold grudges, and write their own newspapers.')}
                 </p>
                 <div class="feature-card__ref">TIER-1 // ACTIVE</div>
               </div>
@@ -1438,7 +1785,7 @@ export class VelgLandingPage extends LitElement {
               <div class="feature-card__body">
                 <h2 class="feature-card__title">${msg('Competition')}</h2>
                 <p class="feature-card__desc">
-                  ${msg('Join Epochs: strategic seasons where civilizations clash. Deploy spies, form alliances, betray rivals. Every decision reshapes the balance of power.')}
+                  ${msg('Enter competitive seasons where civilizations clash. Deploy spies behind enemy lines, forge alliances with rival worldbuilders, betray them at the perfect moment. Real-time strategy with AI agents as your pawns.')}
                 </p>
                 <div class="feature-card__ref">TIER-2 // ACTIVE</div>
               </div>
@@ -1460,11 +1807,90 @@ export class VelgLandingPage extends LitElement {
               <div class="feature-card__body">
                 <h2 class="feature-card__title">${msg('The Substrate')}</h2>
                 <p class="feature-card__desc">
-                  ${msg('Real-world events ripple through the multiverse as Resonances. Earthquakes, elections, discoveries — the boundary between worlds is thinner than you think.')}
+                  ${msg('Real-world events ripple through every simulation as Resonances. An earthquake in Tokyo becomes a tremor in your fantasy kingdom. Events in one world bleed into others. The boundary between realities is thinner than you think.')}
                 </p>
                 <div class="feature-card__ref">TIER-3 // ACTIVE</div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  private _renderWorldsPreview() {
+    return html`
+      <section class="worlds-preview landing-section" data-section="worlds-preview" aria-label=${msg('Active Worlds')}>
+        <div class="landing-inner">
+          <div class="section-label">${msg('Active Feeds')}</div>
+
+          <div class="worlds-preview__grid">
+            ${this._worlds.map(
+              (sim, i) => html`
+                <a
+                  class="monitor-card scroll-reveal"
+                  style="--i: ${i}; --theme-accent: ${getThemeColor(sim.theme ?? 'custom')}"
+                  href="/simulations/${sim.slug || sim.id}/lore"
+                  @click=${(e: Event) => {
+                    e.preventDefault();
+                    this._trackCta('worlds-preview');
+                    this._navigate(`/simulations/${sim.slug || sim.id}/lore`);
+                  }}
+                >
+                  <div class="monitor-card__strip"></div>
+                  <div class="monitor-card__feed">
+                    ${sim.banner_url
+                      ? html`<img
+                          class="monitor-card__img"
+                          src=${sim.banner_url}
+                          alt=${sim.name}
+                          loading="lazy"
+                          decoding="async"
+                        />`
+                      : ''}
+                    <div class="monitor-card__overlay"></div>
+                    <div class="monitor-card__scanline"></div>
+                    <span class="monitor-card__rec" aria-hidden="true">REC</span>
+                    <span class="monitor-card__coord" aria-hidden="true">
+                      FEED-${String(i + 1).padStart(2, '0')} // ${(sim.theme ?? 'custom').toUpperCase()}
+                    </span>
+                  </div>
+                  <div class="monitor-card__body">
+                    <h3 class="monitor-card__name">${sim.name}</h3>
+                    <p class="monitor-card__desc">${sim.description ?? ''}</p>
+                    <div class="monitor-card__stats">
+                      <span>${sim.agent_count ?? 0} ${msg('agents')}</span>
+                      <span>${sim.building_count ?? 0} ${msg('buildings')}</span>
+                    </div>
+                  </div>
+                </a>
+              `,
+            )}
+
+            <a
+              class="monitor-card monitor-card--explore scroll-reveal"
+              style="--i: ${this._worlds.length}"
+              href="/worlds"
+              @click=${(e: Event) => {
+                e.preventDefault();
+                this._trackCta('worlds-preview-explore');
+                this._navigate('/worlds');
+              }}
+            >
+              <div class="monitor-card__strip" style="background: var(--color-accent-amber)"></div>
+              <div class="monitor-card__feed monitor-card__static">
+                <div class="monitor-card__noise"></div>
+                <div class="monitor-card__static-text">
+                  <span class="monitor-card__static-count">${this._stats?.simulation_count ?? '...'}</span>
+                  <span class="monitor-card__static-label">${msg('worlds online')}</span>
+                </div>
+              </div>
+              <div class="monitor-card__body">
+                <h3 class="monitor-card__name">${msg('Explore All Worlds')}</h3>
+                <p class="monitor-card__desc">${msg('Browse every civilization in the multiverse.')}</p>
+                <div class="monitor-card__cta-arrow">\u2192</div>
+              </div>
+            </a>
           </div>
         </div>
       </section>
@@ -1525,7 +1951,7 @@ export class VelgLandingPage extends LitElement {
               <div class="step__badge">01</div>
               <h3 class="step__title">${msg('Create Your World')}</h3>
               <p class="step__desc">
-                ${msg('Build a simulation with agents, buildings, and lore. Your world evolves through AI-driven conversations and events.')}
+                ${msg('Type a premise. The Forge generates a complete civilization — dozens of characters with personalities, cities with architecture, and thousands of words of original lore. Four minutes.')}
               </p>
             </div>
 
@@ -1537,7 +1963,7 @@ export class VelgLandingPage extends LitElement {
               <div class="step__badge">02</div>
               <h3 class="step__title">${msg('Join an Epoch')}</h3>
               <p class="step__desc">
-                ${msg('Enter competitive seasons. Draft agents, deploy operatives, forge alliances — or betray them.')}
+                ${msg('Pit your civilization against others in timed competitive seasons. Deploy operatives, sabotage rivals, protect your agents. Strategy meets emergent AI storytelling.')}
               </p>
             </div>
 
@@ -1549,7 +1975,7 @@ export class VelgLandingPage extends LitElement {
               <div class="step__badge">03</div>
               <h3 class="step__title">${msg('Shape the Metaverse')}</h3>
               <p class="step__desc">
-                ${msg('Your actions ripple across worlds. Build embassies, establish connections, and leave your mark on the substrate.')}
+                ${msg('Your actions ripple across every connected world. Build embassies, trigger cross-simulation events, and watch as the stories of separate civilizations entangle.')}
               </p>
             </div>
           </div>
@@ -1565,24 +1991,38 @@ export class VelgLandingPage extends LitElement {
           <div class="cta-frame">
             <div class="cta-frame__corners"></div>
 
-            <p class="cta-frame__classification">${msg('Clearance Required')}</p>
-            <h2 class="cta-frame__heading">${msg('Ready to Observe?')}</h2>
+            <p class="cta-frame__classification">${msg('Transmission Open')}</p>
+            <h2 class="cta-frame__heading">${msg('Every World Writes Its Own History')}</h2>
             <p class="cta-frame__text">
-              ${msg('The Bureau is accepting new operatives. Your signal has been detected across the fracture. Request clearance to begin.')}
+              ${msg('Explore worlds built by others — read their stories, meet their characters, follow the intrigue. Or build your own. Describe a world in one sentence. The Forge does the rest.')}
             </p>
 
-            <a
-              class="cta-frame__btn"
-              href="/register"
-              @click=${(e: Event) => {
-                e.preventDefault();
-                this._trackCta('footer');
-                this._navigate('/register');
-              }}
-              aria-label=${msg('Create your world — Sign up')}
-            >
-              ${msg('Create Your World')}
-            </a>
+            <div class="cta-frame__actions">
+              <a
+                class="cta-frame__btn"
+                href="/register"
+                @click=${(e: Event) => {
+                  e.preventDefault();
+                  this._trackCta('footer-create');
+                  this._navigate('/register');
+                }}
+                aria-label=${msg('Create your world — Sign up')}
+              >
+                ${msg('Create Your World')}
+              </a>
+              <a
+                class="cta-frame__btn cta-frame__btn--secondary"
+                href="/worlds"
+                @click=${(e: Event) => {
+                  e.preventDefault();
+                  this._trackCta('footer-explore');
+                  this._navigate('/worlds');
+                }}
+                aria-label=${msg('Explore existing worlds')}
+              >
+                ${msg('Explore Worlds')}
+              </a>
+            </div>
 
             <p class="cta-frame__ref">REF: BMO-${new Date().getFullYear()}-INTAKE</p>
           </div>

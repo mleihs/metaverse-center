@@ -305,6 +305,22 @@ async def list_simulation_lore(
 # ── Chronicles ────────────────────────────────────────────────────────────
 
 
+@router.get("/chronicles", response_model=PaginatedResponse)
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def list_chronicles_global(
+    request: Request,
+    http_response: Response,
+    supabase: Client = Depends(get_anon_supabase),
+    limit: int = Query(default=20, ge=1, le=50),
+    offset: int = Query(default=0, ge=0),
+) -> dict:
+    """Recent chronicles across all active simulations (public feed)."""
+    max_age = get_ttl("cache_http_battle_feed_max_age")
+    http_response.headers["Cache-Control"] = f"public, max-age={max_age}, stale-while-revalidate={max_age * 3}"
+    data, total = await ChronicleService.list_all_recent(supabase, limit=limit, offset=offset)
+    return _paginated(data, total, limit, offset)
+
+
 @router.get("/simulations/{simulation_id}/chronicles", response_model=PaginatedResponse)
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_chronicles_public(

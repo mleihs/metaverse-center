@@ -41,9 +41,12 @@ import './components/how-to-play/HowToPlayView.js';
 import './components/admin/AdminPanel.js';
 import './components/forge/VelgForgeWizard.js';
 import './components/chronicle/ChronicleView.js';
+import './components/heartbeat/SimulationPulse.js';
 import './components/shared/CookieConsent.js';
 import './components/shared/GuestBanner.js';
 import './components/landing/LandingPage.js';
+import './components/landing/WorldsGallery.js';
+import './components/landing/ChronicleFeed.js';
 import './components/onboarding/OnboardingWizard.js';
 import './components/lore/BureauArchives.js';
 
@@ -315,6 +318,11 @@ export class VelgApp extends LitElement {
         enter: async ({ id }) => this._enterSimulationRoute(id),
       },
       {
+        path: '/simulations/:id/pulse',
+        render: ({ id }) => this._renderSimulationView(id ?? '', 'pulse'),
+        enter: async ({ id }) => this._enterSimulationRoute(id),
+      },
+      {
         path: '/simulations/:id/agents',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'agents'),
         enter: async ({ id }) => this._enterSimulationRoute(id),
@@ -364,6 +372,34 @@ export class VelgApp extends LitElement {
         },
       },
       {
+        path: '/worlds',
+        render: () => html`<velg-worlds-gallery></velg-worlds-gallery>`,
+        enter: async () => {
+          await this._authReady;
+          seoService.setTitle(['Explore Living Worlds']);
+          seoService.setDescription(
+            'Browse player-created civilizations — each with AI-powered characters, evolving cities, and stories that write themselves.',
+          );
+          seoService.setCanonical('/worlds');
+          analyticsService.trackPageView('/worlds', document.title);
+          return true;
+        },
+      },
+      {
+        path: '/chronicles',
+        render: () => html`<velg-chronicle-feed></velg-chronicle-feed>`,
+        enter: async () => {
+          await this._authReady;
+          seoService.setTitle(['The Chronicle Feed']);
+          seoService.setDescription(
+            'Every world writes its own newspaper. Read AI-generated broadsheets from active simulations — fiction tied to real gameplay events.',
+          );
+          seoService.setCanonical('/chronicles');
+          analyticsService.trackPageView('/chronicles', document.title);
+          return true;
+        },
+      },
+      {
         path: '/',
         render: () => html`<velg-landing-page></velg-landing-page>`,
         enter: async () => {
@@ -372,9 +408,9 @@ export class VelgApp extends LitElement {
             this._router.goto('/dashboard');
             return false;
           }
-          seoService.setTitle(['Multiplayer Worldbuilding & Strategy Platform']);
+          seoService.setTitle(['Build a World. Watch It Live.']);
           seoService.setDescription(
-            'Build civilizations, deploy operatives, shape the metaverse. A multiplayer worldbuilding and strategy platform.',
+            'Create AI-powered civilizations with characters who remember, cities that evolve, and stories that write themselves. Build your own world or explore others.',
           );
           seoService.setCanonical('/');
           analyticsService.trackPageView('/', document.title);
@@ -739,6 +775,9 @@ export class VelgApp extends LitElement {
         break;
       case 'health':
         content = html`<velg-simulation-health-view .simulationId=${resolvedId}></velg-simulation-health-view>`;
+        break;
+      case 'pulse':
+        content = html`<velg-simulation-pulse .simulationId=${resolvedId}></velg-simulation-pulse>`;
         break;
       case 'agents':
         content = html`<velg-agents-view .simulationId=${resolvedId}></velg-agents-view>`;

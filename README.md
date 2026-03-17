@@ -21,6 +21,10 @@ A **cross-simulation diplomacy layer** connects worlds through embassies, ambass
 
 Every number tells a story. Every story changes a number. Agent aptitudes shape operative success probabilities. Zone stability degrades under sabotage. Embassy effectiveness drops when infiltrators compromise diplomatic channels. The game balance is calibrated through deterministic simulation of hundreds of epoch matches, with statistical analysis driving each tuning pass.
 
+A **simulation heartbeat system** drives narrative arcs forward through configurable tick cycles, with philosophical anchors, attunement tuning, and automated bureau responses keeping each world's story coherent as it evolves.
+
+The **landing page** doubles as a showcase &mdash; real AI characters from live simulations are displayed as "Intercepted Dossiers" with holographic foil effects, rarity badges, and TCG-style cards. The world *is* the ad: visitors see actual game content before they sign up. The page is viewport-responsive, scaling from 6 agents on mobile to 12 at 4K, with more worlds filling wider screens.
+
 The entire platform is bilingual (English/German), fully themed per-simulation with WCAG 2.1 AA contrast validation, and browsable without authentication via a public-first architecture.
 
 ---
@@ -230,8 +234,8 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
            ▼        │
 ┌────────────────┐    │
 │   FastAPI       │    │
-│  ~490 endpoints │    │
-│   42 routers    │    │
+│  ~500 endpoints │    │
+│   43 routers    │    │
 │   PyJWT auth    │    │
 │   Sentry SDK    │    │
 └──────┬─────────┘    │
@@ -239,7 +243,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
        ▼              ▼
 ┌──────────────────────────────┐
 │   Supabase (PostgreSQL)          │
-│   67 tables + pgvector            │
+│   70 tables + pgvector            │
 │   75+ functions, 59 triggers      │
 │   246 RLS policies               │
 │   4 materialized views           │
@@ -303,7 +307,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 
 | Component | Technology |
 |:----------|:-----------|
-| Database | PostgreSQL via Supabase (67 tables, 75+ functions, 246 RLS policies, pgvector embeddings) |
+| Database | PostgreSQL via Supabase (70 tables, 75+ functions, 246 RLS policies, pgvector embeddings) |
 | Auth | Supabase Auth (JWT with ES256 in production, HS256 locally) |
 | Email | SMTP SSL (bilingual tactical briefing emails, fog-of-war compliant) |
 | AI Text | OpenRouter (admin-configurable model chain with env-specific fallbacks) |
@@ -474,7 +478,7 @@ The `docs/` directory contains 55 documents organized in [Divio](https://docs.di
 | Category | Count | Contents |
 |:---------|------:|:---------|
 | **specs/** | 15 | Platform Architecture, API (~490 endpoints), Auth, AI, Theming, Embassies, Epochs, Game Systems, Substrate Resonances, Substrate Scanner, Microanimations |
-| **references/** | 5 | Database Schema (v3.6, 67 tables), Domain Models, Feature Catalog, Components, Design System |
+| **references/** | 5 | Database Schema (v3.6, 70 tables), Domain Models, Feature Catalog, Components, Design System |
 | **guides/** | 11 | Deployment (infrastructure + procedures), Testing, Migration, Simulation Creation, Simulation Blueprint, Playtest, Epoch Gameplay, SEO &amp; GA4, Public Access, Local DB Reset |
 | **explanations/** | 5 | Project Overview, Techstack, Game Design Document, Concept Lore, TCG Card System |
 | **analysis/** | 7 | Epoch balance reports (2P-5P + cross-reference + playthrough) + accessibility analysis |

@@ -88,6 +88,13 @@ class BotGameState:
     resonance_aligned_types: list[str] = field(default_factory=list)
     resonance_opposed_types: list[str] = field(default_factory=list)
 
+    # Heartbeat awareness
+    active_narrative_arcs: list[dict] = field(default_factory=list)
+    active_convergences: list[dict] = field(default_factory=list)
+    own_scar_tissue: float = 0.0
+    pending_bureau_responses: int = 0
+    own_attunements: list[dict] = field(default_factory=list)
+
     # Alliance awareness
     pending_proposals: list[dict] = field(default_factory=list)
     own_team_tension: int = 0
@@ -361,6 +368,53 @@ class BotGameState:
         except Exception:
             logger.debug("Active resonances load failed", exc_info=True)
 
+        # ── Heartbeat awareness ──
+        try:
+            arcs_resp = (
+                supabase.table("narrative_arcs")
+                .select("id, arc_type, primary_signature, status, pressure")
+                .eq("simulation_id", sim_id)
+                .in_("status", ["building", "active", "climax"])
+                .execute()
+            )
+            self.active_narrative_arcs = arcs_resp.data or []
+            self.active_convergences = [
+                a for a in self.active_narrative_arcs if a.get("arc_type") == "convergence"
+            ]
+
+            # Scar tissue
+            scar_resp = (
+                supabase.table("narrative_arcs")
+                .select("scar_tissue_deposited")
+                .eq("simulation_id", sim_id)
+                .gt("scar_tissue_deposited", 0)
+                .execute()
+            )
+            self.own_scar_tissue = sum(
+                float(a.get("scar_tissue_deposited", 0)) for a in (scar_resp.data or [])
+            )
+
+            # Pending bureau responses
+            pending_resp = (
+                supabase.table("bureau_responses")
+                .select("id", count="exact")
+                .eq("simulation_id", sim_id)
+                .eq("status", "pending")
+                .execute()
+            )
+            self.pending_bureau_responses = pending_resp.count or 0
+
+            # Own attunements
+            att_resp = (
+                supabase.table("substrate_attunements")
+                .select("resonance_signature, depth")
+                .eq("simulation_id", sim_id)
+                .execute()
+            )
+            self.own_attunements = att_resp.data or []
+        except Exception:
+            logger.debug("Heartbeat state load failed (tables may not exist yet)")
+
     # ── Query helpers for personality logic ──────────────────
 
     def get_available_agents(self) -> list[dict]:
@@ -501,3 +555,30 @@ class BotGameState:
             if op_type in candidates:
                 return op_type
         return None
+
+    # ── Heartbeat-aware helpers ──────────────────────────────
+
+    def has_active_arcs(self) -> bool:
+        """True if any narrative arcs are building/active/climax."""
+        return len(self.active_narrative_arcs) > 0
+
+    def has_convergence(self) -> bool:
+        """True if a convergence is active (affects operative modifiers)."""
+        return len(self.active_convergences) > 0
+
+    def is_scarred(self) -> bool:
+        """True if accumulated scar tissue exceeds 0.1."""
+        return self.own_scar_tissue > 0.1
+
+    def get_arc_pressure(self) -> float:
+        """Get the highest arc pressure in own simulation."""
+        if not self.active_narrative_arcs:
+            return 0.0
+        return max(float(a.get("pressure", 0)) for a in self.active_narrative_arcs)
+
+    def get_dominant_arc_signature(self) -> str | None:
+        """Get the primary signature of the highest-pressure arc."""
+        if not self.active_narrative_arcs:
+            return None
+        best = max(self.active_narrative_arcs, key=lambda a: float(a.get("pressure", 0)))
+        return best.get("primary_signature")

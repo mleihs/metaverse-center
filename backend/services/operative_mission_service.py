@@ -358,6 +358,47 @@ class OperativeMissionService:
                 admin, str(source_simulation_id)
             )
 
+        # ── Heartbeat integration: convergence operative modifiers ──
+        convergence_mod = 0.0
+        try:
+            if body.target_simulation_id:
+                convergences = (
+                    admin.table("narrative_arcs")
+                    .select("id, primary_archetype, secondary_archetype")
+                    .eq("simulation_id", str(body.target_simulation_id))
+                    .eq("arc_type", "convergence")
+                    .in_("status", ["active", "climax"])
+                    .execute()
+                ).data or []
+
+                if convergences:
+                    # Load convergence pairs config
+                    pairs_row = (
+                        admin.table("platform_settings")
+                        .select("setting_value")
+                        .eq("setting_key", "heartbeat_convergence_pairs")
+                        .limit(1)
+                        .execute()
+                    ).data
+                    if pairs_row:
+                        import json
+                        pairs = pairs_row[0]["setting_value"]
+                        if isinstance(pairs, str):
+                            pairs = json.loads(pairs)
+
+                        for conv in convergences:
+                            a = conv.get("primary_archetype", "")
+                            b = conv.get("secondary_archetype", "")
+                            pair_key = f"{a}+{b}"
+                            pair_data = pairs.get(pair_key) or pairs.get(f"{b}+{a}")
+                            if pair_data:
+                                effects = pair_data.get("effects", {})
+                                op_type = body.operative_type
+                                if op_type in effects:
+                                    convergence_mod += float(effects[op_type])
+        except Exception:
+            logger.debug("Convergence modifiers unavailable (tables may not exist yet)")
+
         probability = (
             base
             + aptitude * 0.03
@@ -367,6 +408,7 @@ class OperativeMissionService:
             + resonance_pressure
             + resonance_operative_mod
             + attacker_pressure_penalty
+            + convergence_mod
         )
 
         return max(0.05, min(0.95, probability))

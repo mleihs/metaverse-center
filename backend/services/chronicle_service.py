@@ -164,6 +164,43 @@ class ChronicleService:
         return saved
 
     @classmethod
+    async def list_all_recent(
+        cls,
+        supabase: Client,
+        limit: int = 20,
+        offset: int = 0,
+    ) -> tuple[list, int]:
+        """List recent chronicles across ALL active simulations, with simulation metadata.
+
+        Returns chronicles joined with simulation name/slug/theme for the public
+        chronicle feed page. Only includes chronicles from active template simulations.
+        """
+        response = (
+            supabase.table("simulation_chronicles")
+            .select(
+                "id, simulation_id, epoch_id, edition_number, period_start, period_end, "
+                "title, headline, content, title_de, headline_de, content_de, "
+                "model_used, published_at, created_at, updated_at, "
+                "simulations!inner(id, name, slug, theme, banner_url)",
+                count="exact",
+            )
+            .eq("simulations.status", "active")
+            .is_("simulations.deleted_at", "null")
+            .eq("simulations.simulation_type", "template")
+            .order("created_at", desc=True)
+            .range(offset, offset + limit - 1)
+            .execute()
+        )
+        data = response.data or []
+        # Flatten simulation join into a nested dict for cleaner API response
+        for row in data:
+            sim = row.pop("simulations", None)
+            if sim:
+                row["simulation"] = sim
+        total = response.count if response.count is not None else len(data)
+        return data, total
+
+    @classmethod
     async def list(
         cls,
         supabase: Client,

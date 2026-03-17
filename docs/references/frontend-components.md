@@ -1,7 +1,7 @@
 ---
 title: "Frontend Components"
 id: frontend-components
-version: "3.1"
+version: "3.2"
 date: 2026-03-17
 lang: de
 type: reference
@@ -19,7 +19,7 @@ tags: [frontend, components, lit, web-components]
 
 ### Plattform-Level
 
-**147 component files** across 19 subdirectories. **121 @customElement** components. **22 shared components + 10 CSS modules + 1 base class.**
+**155 component files** across 21 subdirectories. **129 @customElement** components. **22 shared components + 10 CSS modules + 1 base class.**
 
 ```
 App (Root)
@@ -45,6 +45,27 @@ App (Root)
 │   ├── LoginView
 │   ├── LoginPanel (Slide-from-Right)
 │   └── RegisterView
+├── LandingPage (/ unauthenticated)
+│   ├── Hero (signal decode animation, CTA)
+│   ├── Features (3-column capability showcase with Supabase Storage images)
+│   ├── WorldsPreview (monitor-card grid, responsive: 3→5→7 worlds at default/1440p/4K)
+│   ├── LandingAgentShowcase ("Intercepted Dossiers" — real AI agents as marketing)
+│   │   ├── VelgAgentCard (reused, with rarity/badges/aptitude pips)
+│   │   ├── Decode animation (scramble→resolve section label, IntersectionObserver)
+│   │   ├── Typewriter tagline ("These are real AI characters...")
+│   │   ├── Scanner beam (CSS ambient sweep, 8s cycle)
+│   │   ├── Responsive grid: 3 cols (default) → 4 cols (1440p) → 6 cols (4K)
+│   │   ├── Data: 6→8→12 agents, scored by portrait/ambassador/character, 1-per-sim diversity
+│   │   └── SEO: ItemList JSON-LD structured data
+│   ├── LiveData (platform stats counters)
+│   ├── HowItWorks (3-step process flow)
+│   └── CtaFooter (terminal-framed conversion CTA)
+├── WorldsGallery (/worlds)
+│   ├── Search + Pagination
+│   └── World cards with theme-color portal bleed
+├── ChronicleFeed (/chronicles)
+│   ├── Cross-simulation chronicle aggregation
+│   └── Pagination + search
 └── CartographerMap (/multiverse)
     ├── MapGraph (2D SVG force-directed graph, default)
     │   ├── MapNode (circle + banner + label)
@@ -123,6 +144,10 @@ SimulationShell (Layout mit Navigation + Breadcrumb Simulation-Switcher)
 │   └── LocationEditModal (extends BaseModal)
 ├── SimulationLoreView
 │   └── Lore Content (4 per-simulation content files)
+├── SimulationPulse (Heartbeat visualization — ambient simulation heartbeat indicator in SimulationNav)
+├── AnchorDashboard (Philosophical Anchor overview — narrative arc status, attunement metrics)
+├── AttunementSettings (Heartbeat tuning controls — tick rate, narrative sensitivity, bureau response thresholds)
+├── BureauResponsePanel (Bureau automated response review — pending/approved/rejected bureau reactions)
 ├── SimulationHealthView (Game Metrics Dashboard)
 │   ├── AscendancyAura (golden glow overlay for ascendant threshold)
 │   ├── DesperateActionsPanel (3 emergency actions fan: scorched_earth, emergency_draft, reality_anchor)
@@ -481,7 +506,9 @@ export class AppShell extends LitElement {
 ### Route-Definitionen
 
 ```
-/                                    → Redirect zu /simulations
+/                                    → LandingPage (unauthenticated) or Redirect zu /simulations (authenticated)
+/worlds                              → WorldsGallery (public simulation browser)
+/chronicles                          → ChronicleFeed (public chronicle editions)
 /multiverse                         → CartographerMap
 /simulations                        → SimulationsDashboard
 /simulations/new                    → CreateSimulationWizard

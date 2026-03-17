@@ -112,6 +112,45 @@ class ConnectionService:
         historical_events = overlay.get("historical_events", {})
         active_bleed_details = overlay.get("active_bleed_details", {})
 
+        # ── Heartbeat integration: anchor lines + scar tissue ──
+        anchors: list[dict] = []
+        heartbeat_status: dict[str, dict] = {}
+        try:
+            anchor_resp = (
+                supabase.table("collaborative_anchors")
+                .select("id, name, resonance_signature, anchor_simulation_ids, strength, status")
+                .in_("status", ["forming", "active", "reinforcing"])
+                .execute()
+            )
+            anchors = anchor_resp.data or []
+
+            # Per-simulation heartbeat summary for map overlay
+            hb_resp = (
+                supabase.table("simulations")
+                .select("id, last_heartbeat_tick, next_heartbeat_at")
+                .in_("id", sim_id_list)
+                .execute()
+            )
+            for sim in (hb_resp.data or []):
+                sid = sim["id"]
+                # Get active arc count + total scar tissue
+                arc_data = (
+                    supabase.table("narrative_arcs")
+                    .select("id, scar_tissue_deposited")
+                    .eq("simulation_id", sid)
+                    .in_("status", ["building", "active", "climax"])
+                    .execute()
+                ).data or []
+                scar = sum(float(a.get("scar_tissue_deposited", 0)) for a in arc_data)
+                heartbeat_status[sid] = {
+                    "last_tick": sim.get("last_heartbeat_tick", 0),
+                    "next_heartbeat_at": sim.get("next_heartbeat_at"),
+                    "active_arcs": len(arc_data),
+                    "scar_tissue": round(scar, 4),
+                }
+        except Exception:
+            logger.debug("Heartbeat map data unavailable (tables may not exist yet)")
+
         result = {
             "simulations": simulations,
             "connections": connections,
@@ -124,6 +163,8 @@ class ConnectionService:
             "zone_topology": zone_topology,
             "historical_events": historical_events,
             "active_bleed_details": active_bleed_details,
+            "anchors": anchors,
+            "heartbeat_status": heartbeat_status,
         }
 
         cls._map_data_cache["map_data"] = result

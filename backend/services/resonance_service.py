@@ -346,6 +346,34 @@ class ResonanceService(BaseService):
         impact = impact_resp.data[0]
         effective_mag = float(impact["effective_magnitude"])
 
+        # ── Heartbeat integration: attunement & anchor modifiers ──
+        try:
+            from backend.services.anchor_service import AnchorService
+            from backend.services.attunement_service import AttunementService
+
+            # Attunement susceptibility reduction
+            attunements = await AttunementService.list_attunements(supabase, UUID(sim_id))
+            for att in attunements:
+                if att.get("resonance_signature") == signature:
+                    depth = float(att.get("depth", 0))
+                    reduction = depth * 0.3
+                    effective_mag = round(max(0, effective_mag - reduction), 4)
+                    logger.debug(
+                        "Attunement reduced magnitude by %.4f for sim %s (depth %.2f)",
+                        reduction, sim_id, depth,
+                    )
+
+            # Anchor protection reduction
+            protection = await AnchorService.get_protection_factor(supabase, UUID(sim_id))
+            if protection > 0:
+                effective_mag = round(effective_mag * (1.0 - protection), 4)
+                logger.debug(
+                    "Anchor protection reduced magnitude by %.2f%% for sim %s",
+                    protection * 100, sim_id,
+                )
+        except Exception:
+            logger.debug("Heartbeat modifiers unavailable (tables may not exist yet)")
+
         # Skip low-impact simulations
         if effective_mag < 0.05:
             await cls._update_impact_status(supabase, impact["id"], "skipped")

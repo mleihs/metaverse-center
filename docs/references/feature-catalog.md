@@ -1,7 +1,7 @@
 ---
 title: "Feature Catalog"
 id: feature-catalog
-version: "3.0"
+version: "3.1"
 date: 2026-03-17
 lang: de
 type: reference
@@ -117,6 +117,24 @@ Features die auf Plattform-Ebene existieren, unabhängig von einzelnen Simulatio
 | # | Feature | Status | Beschreibung |
 |---|---------|--------|-------------|
 | P20 | **Interaktive Analyse-Charts** | ✅ IMPL | Apache ECharts 6.0 Integration. `EchartsChart` Lit-Wrapper mit `tactical` Dark-Theme. 4 Charts: Radar (Simulations-Profile), Heatmap (Head-to-Head 2P-Duelle), Grouped Bar mit Wilson 95% CI-Whiskers (Strategie-Tiers), Multi-Line (Win-Rate nach Spieleranzahl). IntersectionObserver Scroll-Reveal mit "CLASSIFIED" / "INTEL GRADE" Eck-Bracket-Dekorativen Headers. 200-Game Epoch-Simulations-Datenbasis. |
+
+#### A12. Landing Page & Public Showcase
+
+| # | Feature | Status | Beschreibung |
+|---|---------|--------|-------------|
+| P21 | **Landing Page** | ✅ IMPL | Full-screen immersive introduction. Military surveillance terminal aesthetic. 7 sections: Hero (signal decode animation), Features (3-column with Supabase Storage images), Worlds Preview (monitor-card grid), Agent Showcase, Live Telemetry (animated counters), How It Works (3-step flow), CTA Footer (terminal frame). Responsive: content scales with viewport — more worlds (3→5→7) and agents (6→8→12) at wider screens (1440p/4K). `prefers-reduced-motion` respected throughout. |
+| P21a | **Agent Showcase** | ✅ IMPL | "Intercepted Dossiers" — real AI agents as marketing content. Reuses `VelgAgentCard` with auto rarity computation (ambassador → legendary, AI → rare). Data: fetches up to 8 simulations, scores agents by portrait (+3) / ambassador (+2) / character (+1), selects 1 per sim for diversity. Animations: scramble→decode section label, staggered spring card entrance, origin label slide-in, typewriter tagline, ambient scanner beam. Responsive grid: 3 cols (default) → 4 cols (1440px+) → 6 cols (2560px+). SEO: ItemList JSON-LD structured data. WCAG AA: `role="list"`, `aria-label`, `:focus-visible`, reduced motion. |
+| P21b | **Worlds Gallery** | ✅ IMPL | `/worlds` — public simulation browser. Portal bleed effect on hover (theme-color glow). Search + pagination. Scroll reveal with staggered entrance. CTA for unauthenticated users. |
+| P21c | **Chronicle Feed** | ✅ IMPL | `/chronicles` — cross-simulation public chronicle aggregation. Theme-colored source indicators. Pagination + search. |
+| P21d | **Image Recovery** | ✅ IMPL | `scripts/recover_landing_images.py` — copies landing page images (hero, 3 feature images) from production Supabase to local Docker volume. Reuses `download_file`/`upload_file` from `sync_simulation.py`. |
+
+#### A13. Heartbeat System (Simulation Pulse)
+
+| # | Feature | Status | Beschreibung |
+|---|---------|--------|-------------|
+| P22 | **Heartbeat Core** | ✅ IMPL | Simulation tick system with configurable pulse rates. `heartbeat_ticks` table (Migration 129). 5 backend services: `HeartbeatService` (tick orchestration), `AnchorService` (philosophical anchor tracking), `AttunementService` (narrative sensitivity tuning), `BureauResponseService` (automated bureau reactions), `NarrativeArcService` (story arc progression). Public + authenticated API endpoints. |
+| P22a | **Heartbeat Cascade** | ✅ IMPL | Cascade seed data for heartbeat tuning presets (Migration 130). Configurable tick rates and narrative thresholds per simulation. |
+| P22b | **Heartbeat Tuning** | ✅ IMPL | Admin-configurable heartbeat settings (Migration 131). `AdminHeartbeatTab` in Admin Panel. Frontend: `SimulationPulse` (ambient heartbeat indicator in SimulationNav), `AnchorDashboard`, `AttunementSettings`, `BureauResponsePanel`. `HeartbeatApiService` for frontend integration. |
 
 ---
 

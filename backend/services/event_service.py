@@ -381,6 +381,41 @@ class EventService(BaseService):
         """
         await GameMechanicsService.refresh_metrics(supabase)
 
+        # ── Heartbeat integration: attach new events to matching arcs ──
+        try:
+            arcs = (
+                supabase.table("narrative_arcs")
+                .select("id, primary_signature, source_event_ids")
+                .eq("simulation_id", str(simulation_id))
+                .in_("status", ["building", "active", "climax"])
+                .execute()
+            ).data or []
+            if arcs:
+                # Get recently created events (last 60s) with resonance tags
+                from datetime import UTC, datetime, timedelta
+                cutoff = (datetime.now(UTC) - timedelta(seconds=60)).isoformat()
+                recent = (
+                    supabase.table("events")
+                    .select("id, tags")
+                    .eq("simulation_id", str(simulation_id))
+                    .is_("deleted_at", "null")
+                    .gte("created_at", cutoff)
+                    .execute()
+                ).data or []
+                for event in recent:
+                    tags = event.get("tags") or []
+                    for arc in arcs:
+                        sig = arc.get("primary_signature", "")
+                        if sig in tags:
+                            existing_ids = arc.get("source_event_ids") or []
+                            if event["id"] not in existing_ids:
+                                existing_ids.append(event["id"])
+                                supabase.table("narrative_arcs").update({
+                                    "source_event_ids": existing_ids,
+                                }).eq("id", arc["id"]).execute()
+        except Exception:
+            logger.debug("Heartbeat arc attachment unavailable")
+
         result = supabase.rpc(
             "process_cascade_events",
             {"p_simulation_id": str(simulation_id)},

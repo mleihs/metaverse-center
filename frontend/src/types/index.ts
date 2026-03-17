@@ -27,7 +27,8 @@ export type SettingCategory =
   | 'access'
   | 'prompts'
   | 'notifications'
-  | 'anchor';
+  | 'anchor'
+  | 'heartbeat';
 
 export type TaxonomyType =
   | 'gender'
@@ -103,6 +104,9 @@ export interface Simulation {
   updated_at: string;
   archived_at?: string;
   deleted_at?: string;
+  last_heartbeat_tick?: number;
+  last_heartbeat_at?: string;
+  next_heartbeat_at?: string;
   agent_count?: number;
   building_count?: number;
   event_count?: number;
@@ -1569,4 +1573,196 @@ export interface ResonanceImpact {
   spawned_event_ids: UUID[];
   narrative_context?: string;
   created_at: string;
+}
+
+// --- Simulation Heartbeat ---
+
+export type HeartbeatStatus = 'processing' | 'completed' | 'failed' | 'skipped';
+
+export type HeartbeatEntryType =
+  | 'zone_shift'
+  | 'event_aging'
+  | 'event_escalation'
+  | 'event_resolution'
+  | 'scar_tissue'
+  | 'resonance_pressure'
+  | 'cascade_spawn'
+  | 'bureau_response'
+  | 'attunement_deepen'
+  | 'anchor_strengthen'
+  | 'convergence'
+  | 'positive_event'
+  | 'narrative_arc'
+  | 'system_note';
+
+export type HeartbeatSeverity = 'info' | 'warning' | 'critical' | 'positive';
+
+export interface HeartbeatTick {
+  id: UUID;
+  simulation_id: UUID;
+  tick_number: number;
+  status: HeartbeatStatus;
+  summary: Record<string, unknown>;
+  dispatch_en?: string;
+  dispatch_de?: string;
+  events_aged: number;
+  events_escalated: number;
+  events_resolved: number;
+  zone_actions_expired: number;
+  scar_tissue_delta: number;
+  resonance_pressure_delta: number;
+  bureau_responses_resolved: number;
+  cascade_events_spawned: number;
+  convergence_detected: boolean;
+  created_at: string;
+}
+
+export interface HeartbeatEntry {
+  id: UUID;
+  heartbeat_id: UUID;
+  simulation_id: UUID;
+  tick_number: number;
+  entry_type: HeartbeatEntryType;
+  narrative_en: string;
+  narrative_de?: string;
+  metadata: Record<string, unknown>;
+  severity: HeartbeatSeverity;
+  created_at: string;
+}
+
+export interface HeartbeatOverview {
+  simulation_id: UUID;
+  last_tick: number;
+  last_heartbeat_at?: string;
+  next_heartbeat_at?: string;
+  active_arcs: number;
+  pending_responses: number;
+  active_attunements: number;
+  active_anchors: number;
+}
+
+// --- Narrative Arcs ---
+
+export type ArcType = 'escalation' | 'cascade' | 'convergence' | 'resolution';
+export type ArcStatus = 'building' | 'active' | 'climax' | 'resolving' | 'resolved' | 'dormant';
+
+export interface NarrativeArc {
+  id: UUID;
+  simulation_id: UUID;
+  arc_type: ArcType;
+  primary_signature: string;
+  secondary_signature?: string;
+  primary_archetype?: string;
+  secondary_archetype?: string;
+  status: ArcStatus;
+  pressure: number;
+  peak_pressure: number;
+  started_at_tick: number;
+  last_active_tick: number;
+  ticks_active: number;
+  ticks_dormant: number;
+  source_event_ids: UUID[];
+  spawned_event_ids: UUID[];
+  scar_tissue_deposited: number;
+  created_at: string;
+  updated_at: string;
+}
+
+// --- Bureau Responses ---
+
+export type BureauResponseType = 'contain' | 'remediate' | 'adapt';
+export type BureauResponseStatus = 'pending' | 'resolving' | 'resolved' | 'expired' | 'failed';
+
+export interface BureauResponse {
+  id: UUID;
+  simulation_id: UUID;
+  event_id: UUID;
+  response_type: BureauResponseType;
+  assigned_agent_ids: UUID[];
+  agent_count: number;
+  status: BureauResponseStatus;
+  submitted_before_tick: number;
+  resolved_at_tick?: number;
+  effectiveness: number;
+  pressure_reduction: number;
+  staffing_penalty_active: boolean;
+  created_by_id?: UUID;
+  created_at: string;
+  updated_at: string;
+}
+
+// --- Substrate Attunements ---
+
+export interface SubstrateAttunement {
+  id: UUID;
+  simulation_id: UUID;
+  resonance_signature: ResonanceSignature;
+  depth: number;
+  ticks_exposed: number;
+  positive_threshold: number;
+  positive_event_generated: boolean;
+  switching_cooldown_ticks: number;
+  created_by_id?: UUID;
+  created_at: string;
+  updated_at: string;
+}
+
+// --- Collaborative Anchors ---
+
+export type AnchorStatus = 'forming' | 'active' | 'reinforcing' | 'dissolved';
+
+export interface CollaborativeAnchor {
+  id: UUID;
+  name: string;
+  resonance_id?: UUID;
+  resonance_signature: string;
+  anchor_simulation_ids: UUID[];
+  strength: number;
+  status: AnchorStatus;
+  formed_at_tick: number;
+  ticks_active: number;
+  created_by_simulation_id?: UUID;
+  created_by_user_id?: UUID;
+  created_at: string;
+  updated_at: string;
+}
+
+// --- Cascade Rules ---
+
+export interface CascadeRule {
+  id: UUID;
+  source_signature: string;
+  target_signature: string;
+  pressure_threshold: number;
+  transfer_rate: number;
+  narrative_en: string;
+  narrative_de?: string;
+  cooldown_hours: number;
+  depth_cap: number;
+  is_active: boolean;
+  last_triggered_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// --- Heartbeat Admin Dashboard ---
+
+export interface HeartbeatSimulationStatus {
+  simulation_id: UUID;
+  simulation_name: string;
+  slug: string;
+  last_tick: number;
+  last_heartbeat_at?: string;
+  next_heartbeat_at?: string;
+  status: string;
+  active_arcs: number;
+  scar_tissue_level: number;
+  pending_responses: number;
+}
+
+export interface HeartbeatDashboard {
+  global_enabled: boolean;
+  interval_seconds: number;
+  active_systems: string[];
+  simulations: HeartbeatSimulationStatus[];
 }

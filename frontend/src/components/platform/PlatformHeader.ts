@@ -807,6 +807,16 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
           style="--i:${navIdx++}"
           @click=${(e: Event) => this._navigate('/archives', e)}>${msg('Archives')}</a>
 
+        <a href="/worlds"
+          class="header__menu-item ${path === '/worlds' ? 'header__menu-item--active' : ''}"
+          style="--i:${navIdx++}"
+          @click=${(e: Event) => this._navigate('/worlds', e)}>${msg('Worlds')}</a>
+
+        <a href="/chronicles"
+          class="header__menu-item ${path === '/chronicles' ? 'header__menu-item--active' : ''}"
+          style="--i:${navIdx++}"
+          @click=${(e: Event) => this._navigate('/chronicles', e)}>${msg('Chronicles')}</a>
+
         ${
           appState.canForge.value
             ? html`<a href="/forge"
