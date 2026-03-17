@@ -66,6 +66,128 @@ def build_view_content(
         return "", ""
 
 
+def build_entity_detail_content(
+    client: Client, sim_id: str, sim_name: str, slug: str,
+    view: str, entity_id: str,
+) -> tuple[str, str]:
+    """Build HTML and JSON-LD for an individual entity detail page.
+
+    Returns (entity_html, jsonld_script_content).
+    """
+    detail_builders: dict[str, callable] = {
+        "agents": _build_agent_detail,
+        "buildings": _build_building_detail,
+    }
+
+    builder = detail_builders.get(view)
+    if not builder:
+        return "", ""
+
+    try:
+        return builder(client, sim_id, sim_name, slug, entity_id)
+    except Exception:
+        logger.warning(
+            "Failed to build entity detail for %s/%s/%s",
+            slug, view, entity_id, exc_info=True,
+        )
+        return "", ""
+
+
+def _build_agent_detail(
+    client: Client, sim_id: str, sim_name: str, slug: str,
+    entity_id: str,
+) -> tuple[str, str]:
+    """Build Person schema for an individual agent."""
+    response = (
+        client.table("agents")
+        .select("name,character,primary_profession,portrait_image_url,gender")
+        .eq("id", entity_id)
+        .eq("simulation_id", sim_id)
+        .is_("deleted_at", "null")
+        .limit(1)
+        .execute()
+    )
+    agents = response.data or []
+    if not agents:
+        return "", ""
+
+    a = agents[0]
+    name = a.get("name", "")
+    profession = a.get("primary_profession", "")
+    character = a.get("character", "")
+    portrait = a.get("portrait_image_url", "")
+    gender = a.get("gender", "")
+
+    entity_html = (
+        f"<h2>{_esc(name)}</h2>\n"
+        f"<p class=\"role\">{_esc(profession)}"
+        f"{f' · {_esc(gender)}' if gender else ''}</p>\n"
+        f"<p>{_esc(_truncate(character, 500))}</p>\n"
+        f"<p>From the simulation <em>{_esc(sim_name)}</em>.</p>"
+    )
+
+    person: dict = {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": name,
+        "description": _truncate(character, 300),
+        "url": f"{BASE_URL}/simulations/{slug}/agents/{entity_id}",
+    }
+    if profession:
+        person["jobTitle"] = profession
+    if portrait:
+        person["image"] = portrait
+    if gender:
+        person["gender"] = gender
+
+    return entity_html, _safe_jsonld(person)
+
+
+def _build_building_detail(
+    client: Client, sim_id: str, sim_name: str, slug: str,
+    entity_id: str,
+) -> tuple[str, str]:
+    """Build Place schema for an individual building."""
+    response = (
+        client.table("buildings")
+        .select("name,description,building_type,image_url")
+        .eq("id", entity_id)
+        .eq("simulation_id", sim_id)
+        .is_("deleted_at", "null")
+        .limit(1)
+        .execute()
+    )
+    buildings = response.data or []
+    if not buildings:
+        return "", ""
+
+    b = buildings[0]
+    name = b.get("name", "")
+    desc = b.get("description", "")
+    btype = b.get("building_type", "")
+    image = b.get("image_url", "")
+
+    entity_html = (
+        f"<h2>{_esc(name)}</h2>\n"
+        f"<p class=\"type\">{_esc(btype)}</p>\n"
+        f"<p>{_esc(_truncate(desc, 500))}</p>\n"
+        f"<p>Located in <em>{_esc(sim_name)}</em>.</p>"
+    )
+
+    place: dict = {
+        "@context": "https://schema.org",
+        "@type": "Place",
+        "name": name,
+        "description": _truncate(desc, 300),
+        "additionalType": btype,
+        "url": f"{BASE_URL}/simulations/{slug}/buildings/{entity_id}",
+    }
+    if image:
+        place["image"] = image
+
+    return entity_html, _safe_jsonld(place)
+
+
 def _build_agents(
     client: Client, sim_id: str, sim_name: str, slug: str,
 ) -> tuple[str, str]:
@@ -177,21 +299,44 @@ def _build_buildings(
 def _build_lore(
     client: Client, sim_id: str, sim_name: str, slug: str,
 ) -> tuple[str, str]:
-    response = (
+    sim_resp = (
         client.table("simulations")
         .select("description,banner_url")
         .eq("id", sim_id)
         .limit(1)
         .execute()
     )
-    sim = (response.data or [{}])[0]
+    sim = (sim_resp.data or [{}])[0]
     desc = sim.get("description") or ""
     banner = sim.get("banner_url") or ""
 
-    entity_html = (
-        f"<h2>{_esc(sim_name)} — Lore</h2>\n"
-        f"<p>{_esc(desc)}</p>"
+    # Fetch actual lore chapters for rich content
+    lore_resp = (
+        client.table("simulation_lore")
+        .select("chapter,title,body")
+        .eq("simulation_id", sim_id)
+        .order("sort_order")
+        .limit(12)
+        .execute()
     )
+    chapters = lore_resp.data or []
+
+    parts = [
+        f"<h2>{_esc(sim_name)} — Lore</h2>",
+        f"<p>{_esc(desc)}</p>",
+    ]
+    for ch in chapters:
+        chapter_name = _esc(ch.get("chapter", ""))
+        title = _esc(ch.get("title", ""))
+        body = ch.get("body") or ""
+        # First 300 chars of body as preview
+        preview = _esc(_truncate(body, 300))
+        parts.append(
+            f'<article><h3>{chapter_name}: {title}</h3>'
+            f'<p>{preview}</p></article>'
+        )
+
+    entity_html = "\n".join(parts)
 
     data: dict = {
         "@context": "https://schema.org",
@@ -199,9 +344,19 @@ def _build_lore(
         "name": sim_name,
         "description": desc,
         "url": f"{BASE_URL}/simulations/{slug}/lore",
+        "genre": "Interactive Fiction",
     }
     if banner:
         data["image"] = banner
+    if chapters:
+        data["hasPart"] = [
+            {
+                "@type": "Chapter",
+                "name": f"{ch.get('chapter', '')}: {ch.get('title', '')}",
+                "position": i + 1,
+            }
+            for i, ch in enumerate(chapters)
+        ]
     jsonld = _safe_jsonld(data)
 
     return entity_html, jsonld

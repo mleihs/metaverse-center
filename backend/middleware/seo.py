@@ -30,10 +30,10 @@ _CRAWLER_RE = re.compile(
     re.IGNORECASE,
 )
 
-# Regex to extract simulation ID (UUID) and view from URL path
-_SIM_UUID_RE = re.compile(r"^/simulations/([a-f0-9-]{36})/(\w+)$")
-# Regex to extract simulation slug and view from URL path
-_SIM_SLUG_RE = re.compile(r"^/simulations/([a-z0-9][a-z0-9-]*)/(\w+)$")
+# Regex to extract simulation ID (UUID), view, and optional entity ID from URL path
+_SIM_UUID_RE = re.compile(r"^/simulations/([a-f0-9-]{36})/(\w+)(?:/([a-f0-9-]{36}))?$")
+# Regex to extract simulation slug, view, and optional entity ID from URL path
+_SIM_SLUG_RE = re.compile(r"^/simulations/([a-z0-9][a-z0-9-]*)/(\w+)(?:/([a-f0-9-]{36}))?$")
 
 # Cache the raw index.html contents (read once per process)
 _index_html_cache: str | None = None
@@ -191,8 +191,10 @@ async def enrich_html_for_crawler(index_path: Path, url_path: str) -> str | None
     if not uuid_match and not slug_match:
         return None
 
-    id_or_slug = (uuid_match or slug_match).group(1)  # type: ignore[union-attr]
-    view = (uuid_match or slug_match).group(2)  # type: ignore[union-attr]
+    match = uuid_match or slug_match
+    id_or_slug = match.group(1)  # type: ignore[union-attr]
+    view = match.group(2)  # type: ignore[union-attr]
+    entity_id = match.group(3) if match.lastindex and match.lastindex >= 3 else None  # type: ignore[union-attr]
     view_label = VIEW_LABELS.get(view, view.capitalize())
     is_uuid = uuid_match is not None
 
@@ -237,10 +239,15 @@ async def enrich_html_for_crawler(index_path: Path, url_path: str) -> str | None
     if sim_desc:
         description = sim_desc
     elif sim_name:
-        description = f"Explore {sim_name}{f', a {theme}' if theme else ''} simulation world on metaverse.center."
+        description = (
+            f"Explore {sim_name}{f', a {theme}' if theme else ''}"
+            f" simulation world on metaverse.center."
+        )
     else:
         description = "Build and explore simulated worlds on metaverse.center."
     canonical = f"https://metaverse.center/simulations/{slug}/{view}"
+    if entity_id:
+        canonical = f"{canonical}/{entity_id}"
 
     # Build breadcrumb JSON-LD for simulation pages
     breadcrumb_json = _build_breadcrumb_json(sim_name, slug, view, view_label)
@@ -250,8 +257,11 @@ async def enrich_html_for_crawler(index_path: Path, url_path: str) -> str | None
         og_image=banner_url, extra_jsonld=breadcrumb_json,
     )
 
-    # Inject entity content for supported views
-    enriched = _inject_entity_content(enriched, view, sim.get("id", id_or_slug), sim_name, slug)
+    # Inject entity content for supported views (and entity detail pages)
+    enriched = _inject_entity_content(
+        enriched, view, sim.get("id", id_or_slug), sim_name, slug,
+        entity_id=entity_id,
+    )
 
     return enriched
 
@@ -285,17 +295,23 @@ def _build_breadcrumb_json(sim_name: str, slug: str, view: str, view_label: str)
 
 def _inject_entity_content(
     html_str: str, view: str, sim_id: str, sim_name: str, slug: str,
+    entity_id: str | None = None,
 ) -> str:
     """Inject entity content HTML and JSON-LD into crawler response."""
-    cache_key = f"{slug}:{view}"
+    cache_key = f"{slug}:{view}:{entity_id}" if entity_id else f"{slug}:{view}"
     cached = _entity_cache.get(cache_key)
     if cached is not None:
         entity_html, entity_jsonld = cached
     else:
         client = _get_anon_client()
-        entity_html, entity_jsonld = seo_content.build_view_content(
-            client, sim_id, sim_name, slug, view,
-        )
+        if entity_id:
+            entity_html, entity_jsonld = seo_content.build_entity_detail_content(
+                client, sim_id, sim_name, slug, view, entity_id,
+            )
+        else:
+            entity_html, entity_jsonld = seo_content.build_view_content(
+                client, sim_id, sim_name, slug, view,
+            )
         _entity_cache[cache_key] = (entity_html, entity_jsonld)
 
     if entity_html:
