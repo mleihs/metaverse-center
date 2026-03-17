@@ -328,6 +328,7 @@ export class VelgHowToPlay extends LitElement {
           ${this._renderSocialTrendsGuide()}
           ${this._renderMultiverseMapGuide()}
           ${this._renderSimulationHealthGuide()}
+          ${this._renderSimulationPulseGuide()}
           <!-- Competitive Play -->
           ${this._renderEpochs()}
           ${this._renderGettingStarted()}
@@ -339,6 +340,8 @@ export class VelgHowToPlay extends LitElement {
           ${this._renderAlliances()}
           ${this._renderBotPlayersGuide()}
           ${this._renderEpochCommsGuide()}
+          ${this._renderAcademyModeGuide()}
+          ${this._renderResultsScreenGuide()}
           <!-- Advanced Mechanics -->
           ${this._renderBleed()}
           ${this._renderResonanceGuide()}
@@ -1976,7 +1979,7 @@ export class VelgHowToPlay extends LitElement {
       <section class="section" id="multiverse-map">
         ${this._renderSectionHeader('07', msg('The Multiverse Map'))}
         <p class="section__text">
-          ${msg('An interactive force-directed graph that visualizes all simulations and their connections. Template nodes glow with ambient energy, game instances orbit during epochs, and energy pulses flow along edges to show bleed and operative activity across the multiverse.')}
+          ${msg('An interactive force-directed graph that visualizes all simulations and their connections. Template nodes glow with ambient energy, game instances orbit during epochs, and energy pulses flow along edges to show bleed and operative activity across the multiverse. Available in two rendering modes: 2D SVG (default, with pan/zoom and search) and 3D WebGL (via Three.js, lazy-loaded) with full orbital camera controls, depth-of-field, and volumetric edge rendering.')}
         </p>
         <div class="demo-steps">
           ${steps.map((step, i) => this._renderDemoStep(step, i))}
@@ -2083,6 +2086,130 @@ export class VelgHowToPlay extends LitElement {
         <div class="demo-steps">
           ${steps.map((step, i) => this._renderDemoStep(step, i))}
         </div>
+      </section>
+    `;
+  }
+
+  /* ── Section 27: Simulation Pulse (Heartbeat) ───── */
+
+  private _renderSimulationPulseGuide() {
+    return html`
+      <section class="section" id="simulation-pulse">
+        ${this._renderSectionHeader('09', msg('Simulation Pulse'))}
+        <p class="section__text">
+          ${msg('Every simulation has a heartbeat \u2014 a configurable tick cycle that drives narrative arcs forward. The pulse system orchestrates five interconnected subsystems: philosophical anchors, attunement sensitivity, bureau responses, narrative arc progression, and the ambient pulse indicator visible in navigation.')}
+        </p>
+
+        <div class="callout callout--info">
+          <div class="callout__label">${msg('Philosophical Anchors')}</div>
+          <div class="callout__text">
+            ${msg('Each simulation is grounded by a philosophical anchor \u2014 a thematic compass generated during the Forge that guides narrative coherence. The anchor influences how events are interpreted, how agents react to crises, and which story arcs gain momentum. Think of it as the world\u2019s moral gravity.')}
+          </div>
+        </div>
+
+        <div class="callout callout--tip">
+          <div class="callout__label">${msg('Attunement Tuning')}</div>
+          <div class="callout__text">
+            ${msg('Fine-tune your simulation\u2019s narrative sensitivity through the Attunement Settings. Higher sensitivity means the world reacts more dramatically to events \u2014 useful for volatile dystopias. Lower sensitivity creates a steadier, more predictable world suited to methodical worldbuilding.')}
+          </div>
+        </div>
+
+        <div class="callout callout--info">
+          <div class="callout__label">${msg('Bureau Responses')}</div>
+          <div class="callout__text">
+            ${msg('The Bureau of Impossible Geography monitors simulation events and generates automated responses when certain thresholds are crossed. These responses add emergent narrative beats \u2014 investigations launched, containment protocols enacted, diplomatic interventions triggered \u2014 all driven by the world\u2019s current state.')}
+          </div>
+        </div>
+
+        <div class="callout callout--info">
+          <div class="callout__label">${msg('Narrative Arcs')}</div>
+          <div class="callout__text">
+            ${msg('The pulse system tracks narrative arcs as they develop through event sequences. An arc might begin as a territorial dispute, escalate into a full border crisis, and resolve through diplomatic intervention or collapse. Each tick evaluates arc progression, checking for escalation triggers, resolution conditions, and inter-arc interference.')}
+          </div>
+        </div>
+
+        <p class="section__text">
+          ${msg('The ambient pulse indicator in the simulation navigation bar shows the heartbeat state at a glance. A steady pulse means the world is ticking normally; irregular rhythms indicate narrative turbulence or approaching arc climaxes.')}
+        </p>
+      </section>
+    `;
+  }
+
+  /* ── Section 28: Academy Mode ───────────────────── */
+
+  private _renderAcademyModeGuide() {
+    return html`
+      <section class="section" id="academy-mode">
+        ${this._renderSectionHeader('19', msg('Academy Mode'))}
+        <p class="section__text">
+          ${msg('Solo training against 2\u20134 AI bot opponents in a sprint format. Academy epochs use a compressed timeline (3-day duration, 4-hour cycles) so you can experience a full competitive season in a single afternoon.')}
+        </p>
+
+        <div class="callout callout--tip">
+          <div class="callout__label">${msg('One-Click Creation')}</div>
+          <div class="callout__text">
+            ${msg('Launch an Academy session from your Dashboard with a single click. The system auto-joins your simulation, adds bots with rotated personalities (each session gets a different mix of Sentinel, Warlord, Diplomat, Strategist, and Chaos archetypes), and starts the match immediately. No waiting for other players.')}
+          </div>
+        </div>
+
+        <div class="callout callout--info">
+          <div class="callout__label">${msg('What You\u2019ll Learn')}</div>
+          <div class="callout__text">
+            ${msg('Academy mode uses the same mechanics as full competitive epochs \u2014 the same operative types, scoring dimensions, alliance systems, and fog of war. Use it to experiment with strategies, test agent draft compositions, practice resource management, and learn how different bot personalities respond to pressure. One active academy epoch is allowed per player.')}
+          </div>
+        </div>
+
+        <div class="callout callout--warn">
+          <div class="callout__label">${msg('Sprint Format')}</div>
+          <div class="callout__text">
+            ${msg('Academy epochs are intentionally compressed. Cycles resolve every 4 hours instead of the standard 24 hours in competitive play. This means the pace is relentless \u2014 you\u2019ll need to make quick decisions. It\u2019s the difference between chess with a clock and correspondence chess.')}
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  /* ── Section 29: Results & Commendations ────────── */
+
+  private _renderResultsScreenGuide() {
+    return html`
+      <section class="section" id="results-screen">
+        ${this._renderSectionHeader('20', msg('Results & Commendations'))}
+        <p class="section__text">
+          ${msg('When an epoch completes, the fog of war lifts. The DECLASSIFIED results screen reveals the full picture of the campaign \u2014 every operation, every betrayal, every alliance that held or shattered. This is the moment where the narrative becomes history.')}
+        </p>
+
+        <div class="callout callout--info">
+          <div class="callout__label">${msg('Top-3 Podium')}</div>
+          <div class="callout__text">
+            ${msg('Gold, silver, and bronze placements with animated score count-ups and dimension titles. Each winner\u2019s strongest scoring dimension is highlighted \u2014 "Master of Influence" or "Sovereign Defender" \u2014 giving flavor to the final standings.')}
+          </div>
+        </div>
+
+        <div class="callout callout--info">
+          <div class="callout__label">${msg('Personal Operations Report')}</div>
+          <div class="callout__text">
+            ${msg('Your complete campaign statistics: total operations deployed, successes, detections by enemy counter-intelligence, and overall success rate. Animated stat bars show how your performance compared to the field average. This is where you see whether your spy network was brilliant or compromised.')}
+          </div>
+        </div>
+
+        <div class="callout callout--tip">
+          <div class="callout__label">${msg('MVP Commendations')}</div>
+          <div class="callout__text">
+            ${msg('Five commendation titles awarded to standout performers: Master Spy (highest military impact), Iron Guardian (strongest sovereignty defense), The Diplomat (highest diplomatic score), Most Lethal (best operative success rate), and Cultural Domination (greatest influence spread). Multiple awards can go to the same player \u2014 domination is rewarded.')}
+          </div>
+        </div>
+
+        <div class="callout callout--info">
+          <div class="callout__label">${msg('Five-Dimension Comparison')}</div>
+          <div class="callout__text">
+            ${msg('Animated breakdown bars for all five scoring dimensions \u2014 Stability, Influence, Sovereignty, Diplomacy, and Military \u2014 with per-participant breakdowns. See exactly where each player dominated and where they were vulnerable. Your own row is highlighted in amber.')}
+          </div>
+        </div>
+
+        <p class="section__text">
+          ${msg('All results animations respect prefers-reduced-motion. The full data is also available via the API for programmatic analysis.')}
+        </p>
       </section>
     `;
   }

@@ -32,6 +32,7 @@ export function getTocSections(): TocSection[] {
     { id: 'social-trends', label: msg('Social Trends & Campaigns') },
     { id: 'multiverse-map', label: msg('The Multiverse Map') },
     { id: 'simulation-health', label: msg('Simulation Health') },
+    { id: 'simulation-pulse', label: msg('Simulation Pulse') },
     // ── Competitive Play ──
     { id: 'epochs', label: msg('What is an Epoch?') },
     { id: 'getting-started', label: msg('Getting Started') },
@@ -43,6 +44,8 @@ export function getTocSections(): TocSection[] {
     { id: 'alliances', label: msg('Alliances & Diplomacy') },
     { id: 'bot-players', label: msg('Bot Players') },
     { id: 'epoch-comms', label: msg('COMMS & Notifications') },
+    { id: 'academy-mode', label: msg('Academy Mode') },
+    { id: 'results-screen', label: msg('Results & Commendations') },
     // ── Advanced Mechanics ──
     { id: 'bleed', label: msg('Bleed & Echoes') },
     { id: 'resonance-guide', label: msg('Substrate Resonances') },
