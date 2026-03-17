@@ -11,11 +11,14 @@ Views: ``mv_simulation_health``, ``mv_building_readiness``, ``mv_zone_stability`
 
 from __future__ import annotations
 
+import logging
 from uuid import UUID
 
 from fastapi import HTTPException, status
 
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 
 class GameMechanicsService:

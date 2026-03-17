@@ -1,5 +1,6 @@
 """Style reference image endpoints for img2img art direction."""
 
+import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
@@ -14,6 +15,8 @@ from backend.services.style_reference_service import (
     StyleReferenceService,
 )
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api/v1/simulations/{simulation_id}/style-references",

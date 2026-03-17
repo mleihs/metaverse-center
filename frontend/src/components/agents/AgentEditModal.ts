@@ -486,7 +486,7 @@ export class VelgAgentEditModal extends LitElement {
                     ? html`<img
                         class="portrait-section__preview"
                         src=${this._formData.portrait_image_url}
-                        alt=${this._formData.name}
+                        alt=${`Portrait preview for ${this._formData.name || 'agent'}`}
                       />`
                     : html`<div class="portrait-section__placeholder">
                         ${this._formData.name ? this._formData.name.substring(0, 2).toUpperCase() : '??'}

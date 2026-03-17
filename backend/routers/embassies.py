@@ -1,5 +1,6 @@
 """Embassy endpoints — cross-simulation building links."""
 
+import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -19,6 +20,8 @@ from backend.models.embassy import (
 from backend.services.audit_service import AuditService
 from backend.services.embassy_service import EmbassyService
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api/v1/simulations/{simulation_id}",

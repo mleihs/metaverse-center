@@ -348,7 +348,11 @@ async def update_byok(
     except HTTPException:
         raise
     except Exception:
-        logger.debug("BYOK allowance check failed, failing open", exc_info=True)
+        logger.exception("BYOK allowance check failed — denying access")
+        raise HTTPException(
+            status_code=500,
+            detail="Unable to verify BYOK access. Please try again later.",
+        )
 
     result = await _draft_service.update_user_keys(
         supabase, user.id, body.openrouter_key, body.replicate_key

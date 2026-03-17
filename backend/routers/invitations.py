@@ -1,5 +1,6 @@
 """Simulation invitation endpoints."""
 
+import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -14,6 +15,8 @@ from backend.models.invitation import (
 from backend.models.member import MemberResponse
 from backend.services.invitation_service import InvitationService
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["invitations"])
 

@@ -2,6 +2,7 @@ import { msg, str } from '@lit/localize';
 import type { AuthError, RealtimeChannel, Session, User } from '@supabase/supabase-js';
 import { analyticsService } from '../AnalyticsService.js';
 import { appState } from '../AppStateManager.js';
+import { captureError } from '../SentryService.js';
 import { forgeApi } from '../api/ForgeApiService.js';
 import { forgeStateManager } from '../ForgeStateManager.js';
 import { localeService } from '../i18n/locale-service.js';
@@ -115,7 +116,7 @@ export class SupabaseAuthService {
       )
       .subscribe((status, err) => {
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          console.error('Clearance realtime subscription failed:', status, err);
+          captureError(err ?? status, { source: 'clearance_realtime' });
           this._unsubscribeClearance();
         }
       });
@@ -151,7 +152,7 @@ export class SupabaseAuthService {
                 appState.setForgeRequestStatus('none');
               }
             } catch (err) {
-              console.error('Failed to check forge status:', err);
+              captureError(err, { source: 'forge_status_check' });
             }
           } else {
             // Check if the user was just approved (has an approved request)
@@ -172,14 +173,14 @@ export class SupabaseAuthService {
                   }
                 }
               } catch (err) {
-                console.error('Failed to check forge status:', err);
+                captureError(err, { source: 'forge_status_check' });
               }
             }
             appState.setForgeRequestStatus('none');
           }
         }
       } catch (err) {
-        console.error('Failed to fetch forge wallet:', err);
+        captureError(err, { source: 'forge_wallet_fetch' });
       }
 
       // Set GA4 user properties for segmentation
@@ -207,7 +208,7 @@ export class SupabaseAuthService {
             }
           }
         } catch (err) {
-          console.error('Failed to check pending forge requests:', err);
+          captureError(err, { source: 'pending_forge_requests' });
         }
       }
     } else {

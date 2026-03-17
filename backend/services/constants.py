@@ -5,6 +5,10 @@ They are re-exported from those modules for backwards compatibility, but new cod
 should import from here to avoid circular dependency chains.
 """
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 # ── Operative constants (from operative_service.py) ──────────────────────
 
 # Security level -> numeric value for success probability

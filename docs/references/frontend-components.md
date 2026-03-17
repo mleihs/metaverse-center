@@ -1,8 +1,8 @@
 ---
 title: "Frontend Components"
 id: frontend-components
-version: "2.9"
-date: 2026-03-16
+version: "3.0"
+date: 2026-03-17
 lang: de
 type: reference
 status: active
@@ -1697,6 +1697,32 @@ Global Simulation Forge settings panel with BYOK key management, forge statistic
    - Pending count badge (propagated to AdminPanel tab via `appState.setPendingForgeRequestCount()`)
 
 **API:** `forgeApi.getAdminStats()`, `forgeApi.listPendingRequests()`, `forgeApi.reviewRequest(id, action, adminNotes)`, `forgeApi.updateBYOK()`
+
+### AdminResearchTab (`velg-admin-research-tab`)
+
+Platform-level Tavily research domain configuration panel. Allows admin to configure domain lists for each research axis used in the Forge pipeline (Astrolabe + Lore Research phases).
+
+**Tag:** `<velg-admin-research-tab>`
+
+**Managed Domain Axes:**
+
+| Setting Key | Label | Forge Phase |
+|-------------|-------|-------------|
+| `research_domains_encyclopedic` | Encyclopedic Domains | Astrolabe (Phase 1) |
+| `research_domains_literary` | Literary Domains | Lore Research (literary axis) |
+| `research_domains_philosophy` | Philosophy Domains | Lore Research (philosophical axis) |
+| `research_domains_architecture` | Architecture Domains | Lore Research (architectural axis) |
+
+**Features:**
+- Loads domain lists from `platform_settings` via `adminApi.getPlatformSettings()`
+- Per-axis editable comma-separated domain list inputs
+- Dirty-state tracking with save/reset per axis
+- Descriptive labels explaining each axis's role in the Forge pipeline
+- Uses `DOMAIN_KEYS` constant for type-safe setting key references
+
+**Data Source:** `platform_settings` table (Migration 124 seeds default values)
+
+**API:** `adminApi.getPlatformSettings()`, `adminApi.updatePlatformSetting(key, value)`
 
 ---
 

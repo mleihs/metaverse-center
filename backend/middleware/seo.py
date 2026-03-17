@@ -207,7 +207,13 @@ async def enrich_html_for_crawler(index_path: Path, url_path: str) -> str | None
     banner_url = sim.get("banner_url", "")
 
     title = f"{view_label} — {sim_name} | metaverse.center" if sim_name else f"{view_label} | metaverse.center"
-    description = sim_desc or "Build and explore simulated worlds on metaverse.center."
+    theme = sim.get("theme", "")
+    if sim_desc:
+        description = sim_desc
+    elif sim_name:
+        description = f"Explore {sim_name}{f', a {theme}' if theme else ''} simulation world on metaverse.center."
+    else:
+        description = "Build and explore simulated worlds on metaverse.center."
     canonical = f"https://metaverse.center/simulations/{slug}/{view}"
 
     # Build breadcrumb JSON-LD for simulation pages

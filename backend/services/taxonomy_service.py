@@ -1,11 +1,14 @@
 """Service layer for taxonomy operations."""
 
+import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
 from fastapi import HTTPException, status
 
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 
 class TaxonomyService:

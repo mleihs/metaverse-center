@@ -13,6 +13,7 @@ export default defineConfig({
           'signals': ['@preact/signals-core', '@lit-labs/preact-signals'],
           'router': ['@lit-labs/router'],
           'supabase': ['@supabase/supabase-js'],
+          'sentry': ['@sentry/browser'],
         },
       },
     },

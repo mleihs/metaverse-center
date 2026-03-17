@@ -3,6 +3,7 @@
 All endpoints require platform admin. Uses admin (service_role) client.
 """
 
+import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Request
@@ -18,6 +19,8 @@ from backend.models.news_scanner import (
 from backend.services.audit_service import AuditService
 from backend.services.scanning.scanner_service import ScannerService
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api/v1/admin/news-scanner",

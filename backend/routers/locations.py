@@ -1,5 +1,6 @@
 """Location endpoints: cities, zones, and streets."""
 
+import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -25,6 +26,8 @@ from backend.models.location import (
 from backend.services.audit_service import AuditService
 from backend.services.location_service import LocationService
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api/v1/simulations/{simulation_id}/locations",

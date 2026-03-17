@@ -1,3 +1,4 @@
+import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -27,6 +28,8 @@ from backend.services.lore_service import LoreService
 from backend.services.simulation_service import SimulationService
 from backend.services.threshold_service import ThresholdService
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/simulations", tags=["simulations"])
 

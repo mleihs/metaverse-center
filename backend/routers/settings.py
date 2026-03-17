@@ -1,5 +1,6 @@
 """Simulation settings endpoints with encryption support."""
 
+import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -10,6 +11,8 @@ from backend.models.settings import SettingCreate, SettingResponse, SettingUpdat
 from backend.services.audit_service import AuditService
 from backend.services.settings_service import SettingsService
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api/v1/simulations/{simulation_id}/settings",

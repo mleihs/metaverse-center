@@ -1,5 +1,6 @@
 """Simulation member management endpoints."""
 
+import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -10,6 +11,8 @@ from backend.models.member import MemberCreate, MemberResponse, MemberUpdate
 from backend.services.audit_service import AuditService
 from backend.services.member_service import LastOwnerError, MemberService
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api/v1/simulations/{simulation_id}/members",

@@ -1,8 +1,8 @@
 ---
 title: "Database Schema: Neues Multi-Simulations-Schema"
 id: database-schema
-version: "3.6"
-date: 2026-03-13
+version: "3.7"
+date: 2026-03-17
 lang: de
 type: reference
 status: active
@@ -67,11 +67,11 @@ Abgeleitete Metriken werden einmal berechnet und bei Quelldaten-Aenderung invali
 Operationen, die mehrere Tabellen atomar modifizieren muessen:
 
 - **`clone_simulations_for_epoch()`** (~250 Zeilen) — Klont Template-Simulationen inkl. Settings, Taxonomien, Stadt, Zonen, Strassen, Agenten, Gebaeude + normalisiert Werte fuer PvP-Balance
-- **`fn_materialize_shard()`** — Konvertiert Forge-Entwurf in Live-Simulation (Simulation + Settings + Taxonomien + Stadt + Zonen + Strassen + Agenten + Gebaeude atomar). Seit Migration 112: Bilingual — inseriert `_de`-Spalten (z.B. `character_de`, `description_de`) aus dem Draft-JSONB. Seit Migration 121: Setzt `critical_health_effects_enabled = false` (Kategorie `game`) — neue Simulationen starten ohne kritische Health-Effekte
+- **`fn_materialize_shard()`** — Konvertiert Forge-Entwurf in Live-Simulation (Simulation + Settings + Taxonomien + Stadt + Zonen + Strassen + Agenten + Gebaeude atomar). Seit Migration 112: Bilingual — inseriert `_de`-Spalten (z.B. `character_de`, `description_de`) aus dem Draft-JSONB. Seit Migration 121: Setzt `critical_health_effects_enabled = false` (Kategorie `game`) — neue Simulationen starten ohne kritische Health-Effekte. Seit Migration 122: Persistiert philosophische Anchor-Felder (title, core_question, literary_influence, description, bleed_signature_suggestion, seed_prompt + alle `_de`-Varianten) zu `simulation_settings` mit `category='anchor'`
 - **`fn_approve_forge_access()`** — Atomare Genehmigung: Request sperren + Wallet-Tier upgraden + User-Details zurueckgeben
 - **`fn_reject_forge_access()`** — Atomare Ablehnung: Request sperren + Status setzen + User-Details zurueckgeben
 - **`process_cascade_events()`** — Auto-Spawn von Kaskaden-Events bei Zone-Druck-Ueberschreitung, rate-limited pro Zone
-- **`get_forge_progress()`** — Zeremonie- und Post-Ceremony-Bildfortschritt: Zählt fertige Bilder (Banner + Agents + Buildings + Lore) + per-Entity Image-URLs. `simulation_lore.image_generated_at` trackt Lore-Bild-Completion. Liefert `banner_url`, `agents`, `buildings`, `lore`-Arrays + `total`/`completed`/`done` (Migration 098, erweitert Migration 107)
+- **`get_forge_progress()`** — Zeremonie- und Post-Ceremony-Bildfortschritt: Zählt fertige Bilder (Banner + Agents + Buildings + Lore) + per-Entity Image-URLs. `simulation_lore.image_generated_at` trackt Lore-Bild-Completion. Liefert `banner_url`, `agents`, `buildings`, `lore`-Arrays + `total`/`completed`/`done` + `lore_progress` (Migration 098, erweitert Migration 107, erweitert Migration 123)
 - **`get_bleed_status()`** — Aggregierter Bleed-Status: Health, Echoes, Foreign Themes, Lore in einem Round-Trip (Migration 099). SECURITY DEFINER (seit Migration 120) fuer Zugriff auf `platform_settings`. Gibt `effects_suppressed` zurueck (Admin-Toggle fuer kritische Health-Effekte)
 - **`get_map_overlay_data()`** — Zone-Topologie + historische Events + Bleed-Details fuer Karten-Overlay in einem Call (Migration 100)
 
@@ -112,7 +112,8 @@ CREATE TABLE public.simulations (
     created_at timestamptz DEFAULT now() NOT NULL,
     updated_at timestamptz DEFAULT now() NOT NULL,
     archived_at timestamptz,
-    deleted_at timestamptz
+    deleted_at timestamptz,
+    lore_progress jsonb DEFAULT NULL                    -- Forge lore generation progress (Migration 123)
 );
 
 CREATE INDEX idx_simulations_owner ON simulations(owner_id);
@@ -1092,12 +1093,15 @@ CREATE OR REPLACE FUNCTION fn_compute_alliance_tension(
 ) RETURNS void LANGUAGE plpgsql SECURITY DEFINER;
 ```
 
-### Forge-Materialisierung (Migrationen 055/056/058)
+### Forge-Materialisierung (Migrationen 055/056/058/122)
 
 ```sql
 -- Konvertiert Forge-Entwurf in Live-Simulation. Atomar erstellt:
 -- simulation + simulation_settings + simulation_taxonomies + city + zones + streets + agents + buildings
 -- Setzt Forge-Guthaben (user_wallets) ein. Gibt neue simulation_id zurueck.
+-- Migration 122: Persistiert philosophical anchor fields (title, core_question,
+-- literary_influence, description, bleed_signature_suggestion, seed_prompt + _de Varianten)
+-- zu simulation_settings mit category='anchor'. Anon RLS auf 'anchor' erweitert.
 CREATE OR REPLACE FUNCTION public.fn_materialize_shard(p_draft_id uuid)
 RETURNS UUID LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -1148,6 +1152,23 @@ CREATE OR REPLACE FUNCTION get_chronicle_source_data(
 CREATE OR REPLACE FUNCTION retrieve_agent_memories(
     p_agent_id UUID, p_query_embedding vector(1536), p_limit INTEGER DEFAULT 10
 ) RETURNS TABLE LANGUAGE plpgsql SECURITY DEFINER;
+```
+
+### Security & Wallet RPC Functions (Migrationen 125/126)
+
+```sql
+-- SECURITY DEFINER: Aktualisiert verschluesselte BYOK-Keys fuer den aufrufenden User.
+-- Ersetzt service_role-Bypass (user_wallets RLS erlaubt nur SELECT fuer Owner).
+-- Validiert auth.uid() = p_user_id.
+CREATE OR REPLACE FUNCTION public.fn_update_user_byok_keys(
+    p_user_id uuid, p_encrypted_openrouter_key text DEFAULT NULL, p_encrypted_replicate_key text DEFAULT NULL
+) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Single UPDATE fuer RP-Grants an alle Epoch-Teilnehmer.
+-- Verwendet LEAST() fuer Cap-Enforcement statt Python-seitiger Gruppierung.
+CREATE OR REPLACE FUNCTION public.fn_batch_grant_rp(
+    p_epoch_id uuid, p_amount integer, p_rp_cap integer
+) RETURNS integer LANGUAGE sql SECURITY DEFINER;
 ```
 
 ### Admin-RPC Functions (Migrationen 040/057/113)
@@ -1853,17 +1874,17 @@ CREATE POLICY simulation_assets_insert ON storage.objects FOR INSERT
 | Tabellen | 58 (inkl. Forge, Chronicle, Agent Memory, Substrate Resonance, Alliance, Forge Access, Token Economy, Feature Purchases) |
 | Trigger Functions | 20 (set_updated_at, update_conversation_stats, enforce_single_primary_profession, validate_simulation_status_transition, immutable_slug, prevent_last_owner_removal, notify_game_metrics_stale, validate_epoch_status_transition, broadcast_epoch_chat, broadcast_ready_signal, fn_enforce_forge_quota, recompute_reaction_modifier, assign_event_zones, fn_derive_resonance_fields, update_resonance_updated_at, check_resonance_impact_time, compute_effective_magnitude, fn_resolve_alliance_proposal, fn_check_alliance_tension, fn_sync_architect_flag) |
 | Utility Functions | 12 (role_meets_minimum, generate_slug, validate_taxonomy_value, game_weight_fallback, refresh_all_game_metrics, refresh_building_readiness, refresh_embassy_effectiveness, refresh_zone_stability, resolve_template_id, is_platform_admin, get_user_emails_batch, get_bleed_gazette_feed) |
-| Epoch/Forge/Chronicle Functions | 23 (clone_simulations_for_epoch, archive_epoch_instances, delete_epoch_instances, fn_materialize_shard, get_chronicle_source_data, retrieve_agent_memories, get_campaign_analytics, get_cycle_battle_summary, process_cascade_events, fn_get_resonance_susceptibility, fn_get_resonance_event_types, assign_event_zones, fn_expire_alliance_proposals, fn_deduct_alliance_upkeep, fn_compute_alliance_tension, fn_approve_forge_access, fn_reject_forge_access, fn_purchase_tokens, fn_admin_grant_tokens, fn_purchase_feature, fn_refund_feature, fn_darkroom_use_regen, fn_user_byok_allowed) |
+| Epoch/Forge/Chronicle Functions | 25 (clone_simulations_for_epoch, archive_epoch_instances, delete_epoch_instances, fn_materialize_shard, get_chronicle_source_data, retrieve_agent_memories, get_campaign_analytics, get_cycle_battle_summary, process_cascade_events, fn_get_resonance_susceptibility, fn_get_resonance_event_types, assign_event_zones, fn_expire_alliance_proposals, fn_deduct_alliance_upkeep, fn_compute_alliance_tension, fn_approve_forge_access, fn_reject_forge_access, fn_purchase_tokens, fn_admin_grant_tokens, fn_purchase_feature, fn_refund_feature, fn_darkroom_use_regen, fn_user_byok_allowed, fn_update_user_byok_keys, fn_batch_grant_rp) |
 | Admin RPC Functions | 3 (admin_list_users, admin_get_user, admin_delete_user) |
 | RLS Functions | 4 (user_has_simulation_access, user_has_simulation_role, user_simulation_role, role_meets_minimum) |
-| Functions gesamt | ~62 (ohne unaccent-Varianten und interne Helfer) |
+| Functions gesamt | ~64 (ohne unaccent-Varianten und interne Helfer) |
 | Triggers | 56 Eintraege (19 unique Trigger-Functions auf 56 Tabellen/Spalten-Kombinationen) |
 | Regular Views | 10 (4x active_* + simulation_dashboard + conversation_summaries + agent_statistics + campaign_performance + v_pending_forge_requests + token_economy_stats) |
 | Materialized Views | 4 (mv_building_readiness + mv_zone_stability + mv_embassy_effectiveness + mv_simulation_health) |
 | RLS-Policies | 246+ (inkl. anon SELECT + Forge + Chronicle + Resonance + Alliance + Forge Access + Token Economy + Feature Purchases + alle frueheren Policies) |
 | Indexes | ~92 (inkl. partial, GIN, pgvector IVFFlat, unique) |
 | Storage Buckets | 4 |
-| SQL Migrationen | 93 |
+| SQL Migrationen | 98 |
 
 ---
 
@@ -1904,6 +1925,8 @@ CREATE POLICY simulation_assets_insert ON storage.objects FOR INSERT
 | Resonance susceptibility | **Function** | Reads for AI decisions | -- |
 | Zone gravity | **Trigger** (auto-assign) | -- | Zone-Map |
 | Admin user mgmt | **SECURITY DEFINER RPCs** | Calls RPCs | Admin Panel |
+| BYOK key updates | **SECURITY DEFINER RPC** | Calls RPC | Wallet UI |
+| RP batch grants | **SECURITY DEFINER RPC** | Calls RPC | -- |
 | Realtime broadcast | **SECURITY DEFINER Triggers** | -- | **Supabase Realtime** |
 
 ### Trigger-Datenfluesse
@@ -3360,3 +3383,38 @@ Generisches Ledger fuer Premium-Feature-Kaeufe mit Token-Abzug.
 - **`token_bundles`:** Jeder liest aktive Bundles (`is_active = true`). Admins verwalten alle (`is_platform_admin()`).
 - **`token_purchases`:** User lesen eigene (`auth.uid() = user_id`). Admins lesen alle.
 - **`feature_purchases`:** User lesen eigene (`auth.uid() = user_id`). Admins verwalten alle.
+
+---
+
+## Forge & Security Improvements (Migrations 122–126)
+
+### Migration 122: Anchor Settings Persistence
+
+`fn_materialize_shard()` erweitert: Philosophische Anchor-Felder (title, title_de, core_question, core_question_de, literary_influence, literary_influence_de, description, description_de, bleed_signature_suggestion, seed_prompt) werden atomar in `simulation_settings` mit `category='anchor'` persistiert. Zuvor gingen diese Daten nach Draft-Loeschung verloren. Anon-RLS-Policy auf `simulation_settings` um `category='anchor'` erweitert (Public-Endpoint-Zugriff).
+
+### Migration 123: Lore Generation Progress
+
+- **Neue Spalte `simulations.lore_progress`** — `jsonb DEFAULT NULL`. Trackt per-section Lore-Generierungsfortschritt waehrend der Forge-Zeremonie (phase, section_index, sections_total, current_section).
+- **`active_simulations` View refreshed** — `CREATE OR REPLACE VIEW` nach Spalten-Hinzufuegung (PostgreSQL `SELECT *` in Views resolved Spalten bei Erstellung).
+- **`get_forge_progress()` erweitert** — Liefert `lore_progress` im Response-JSONB. Frontend zeigt per-section Status waehrend der Zeremonie an.
+
+### Migration 124: Research Domain Settings
+
+4 neue `platform_settings`-Eintraege fuer konfigurierbare Tavily-Recherche-Domains:
+
+| Setting Key | Default-Domains | Forge-Phase |
+|-------------|----------------|-------------|
+| `research_domains_encyclopedic` | wikipedia, Stanford Encyclopedia, Britannica | Astrolabe (Phase 1) |
+| `research_domains_literary` | wikipedia, Britannica, Paris Review | Lore Research (literary axis) |
+| `research_domains_philosophy` | Stanford Encyclopedia, IEP, wikipedia | Lore Research (philosophical axis) |
+| `research_domains_architecture` | wikipedia, Dezeen, Designboom | Lore Research (architectural axis) |
+
+Zuvor waren Domains in `tavily_search.py` hartcodiert. AdminResearchTab-Komponente ermoeglicht Runtime-Konfiguration.
+
+### Migration 125: BYOK Key Update RPC
+
+`fn_update_user_byok_keys(p_user_id, p_encrypted_openrouter_key, p_encrypted_replicate_key)` — SECURITY DEFINER. Ersetzt service_role-Bypass fuer verschluesselte BYOK-Key-Updates. Validiert `auth.uid() = p_user_id`. Nur `authenticated` darf ausfuehren.
+
+### Migration 126: Batch RP Grant RPC
+
+`fn_batch_grant_rp(p_epoch_id, p_amount, p_rp_cap)` — Single `UPDATE ... SET current_rp = LEAST(current_rp + amount, cap)` fuer alle Epoch-Teilnehmer. Ersetzt Python-seitige Gruppierung + mehrere UPDATE-Queries.

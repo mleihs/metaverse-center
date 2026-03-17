@@ -1,5 +1,6 @@
 """Agent CRUD endpoints."""
 
+import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, Query
@@ -18,6 +19,8 @@ from backend.services.event_service import EventService
 from backend.services.simulation_service import SimulationService
 from backend.services.translation_service import null_de_fields_for_update, schedule_auto_translation
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api/v1/simulations/{simulation_id}/agents",

@@ -1,8 +1,11 @@
+import logging
 from datetime import UTC, datetime
 
 from fastapi import APIRouter
 
 from backend.config import settings
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1", tags=["health"])
 

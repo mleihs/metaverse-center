@@ -7,7 +7,6 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 
-from backend.dependencies import get_admin_supabase
 from backend.models.forge import ForgeDraftCreate, ForgeDraftUpdate
 from backend.utils.encryption import encrypt
 from supabase import Client
@@ -163,29 +162,31 @@ class ForgeDraftService:
     ) -> dict:
         """Update a user's BYOK encrypted keys.
 
-        Uses admin client because ``user_wallets`` RLS only allows SELECT for
-        the owning user — UPDATE requires service_role.
+        Uses ``fn_update_user_byok_keys`` RPC (migration 125) which runs as
+        SECURITY DEFINER, validating ownership inside the function.  This
+        avoids the previous service_role bypass.
         """
-        update_data = {}
-        if openrouter_key is not None:
-            update_data["encrypted_openrouter_key"] = encrypt(openrouter_key) if openrouter_key else None
-        if replicate_key is not None:
-            update_data["encrypted_replicate_key"] = encrypt(replicate_key) if replicate_key else None
+        params: dict[str, str | None] = {"p_user_id": str(user_id)}
+        has_update = False
 
-        if not update_data:
+        if openrouter_key is not None:
+            params["p_encrypted_openrouter_key"] = encrypt(openrouter_key) if openrouter_key else None
+            has_update = True
+        if replicate_key is not None:
+            params["p_encrypted_replicate_key"] = encrypt(replicate_key) if replicate_key else None
+            has_update = True
+
+        if not has_update:
             return {"message": "No keys updated."}
 
-        admin_client = await get_admin_supabase()
+        resp = supabase.rpc("fn_update_user_byok_keys", params).execute()
+        result = resp.data or {}
 
-        response = (
-            admin_client.table("user_wallets")
-            .update(update_data)
-            .eq("user_id", str(user_id))
-            .execute()
-        )
-
-        if not response.data:
-            raise HTTPException(status_code=404, detail="User wallet not found. Must be an architect first.")
+        if not result.get("success"):
+            raise HTTPException(
+                status_code=404,
+                detail=result.get("error", "User wallet not found. Must be an architect first."),
+            )
 
         return {"message": "Keys updated successfully."}
 
@@ -218,7 +219,10 @@ class ForgeDraftService:
             return resp.data or _default
         except Exception:
             logger.exception("fn_get_wallet_summary RPC failed")
-            return _default
+            raise HTTPException(
+                status_code=503,
+                detail="Unable to retrieve wallet data. Please try again later.",
+            )
 
     @staticmethod
     async def list_bundles(supabase: Client) -> list[dict]:

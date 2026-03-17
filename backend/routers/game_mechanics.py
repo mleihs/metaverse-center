@@ -4,6 +4,7 @@ Reads from materialized views via GameMechanicsService.
 All endpoints are read-only (GET) except the admin-only refresh trigger.
 """
 
+import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -19,6 +20,8 @@ from backend.models.game_mechanics import (
 )
 from backend.services.game_mechanics_service import GameMechanicsService
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api/v1/simulations/{simulation_id}",

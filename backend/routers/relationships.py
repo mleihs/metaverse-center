@@ -1,5 +1,6 @@
 """Agent relationship CRUD endpoints."""
 
+import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -14,6 +15,8 @@ from backend.models.relationship import (
 from backend.services.audit_service import AuditService
 from backend.services.relationship_service import RelationshipService
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api/v1/simulations/{simulation_id}",

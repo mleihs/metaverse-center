@@ -1603,7 +1603,7 @@ export class VelgHowToPlay extends LitElement {
           <span class="intel-chart__title">${title}</span>
           <span class="intel-chart__grade">${grade}</span>
         </div>
-        <velg-echarts-chart .option=${option} height=${height}></velg-echarts-chart>
+        <velg-echarts-chart .option=${option} height=${height} aria-label=${title}></velg-echarts-chart>
       </div>
     `;
   }

@@ -9,7 +9,10 @@ Per-simulation accent colors thread through all templates via accent_color param
 
 from __future__ import annotations
 
+import logging
 from collections import Counter
+
+logger = logging.getLogger(__name__)
 
 # ── Per-simulation accent colors ──────────────────────────────────────────
 

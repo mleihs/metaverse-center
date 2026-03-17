@@ -64,6 +64,7 @@ export class EchartsChart extends LitElement {
 
   @property({ type: Object }) option: EChartsOption = {};
   @property({ type: String }) height = '300px';
+  @property({ type: String, attribute: 'aria-label' }) ariaLabel = 'Chart';
 
   @query('.chart-container') private _container!: HTMLDivElement;
   private _chart: echarts.ECharts | null = null;
@@ -104,6 +105,6 @@ export class EchartsChart extends LitElement {
   }
 
   override render() {
-    return html`<div class="chart-container" style="--chart-height: ${this.height}"></div>`;
+    return html`<div class="chart-container" role="img" aria-label=${this.ariaLabel} style="--chart-height: ${this.height}"></div>`;
   }
 }

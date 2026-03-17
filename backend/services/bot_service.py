@@ -15,6 +15,8 @@ from __future__ import annotations
 import logging
 from uuid import UUID
 
+import sentry_sdk
+
 from backend.models.epoch import OperativeDeploy
 from backend.services.alliance_service import AllianceService
 from backend.services.bot_chat_service import BotChatService
@@ -67,6 +69,7 @@ class BotService:
                     "Bot execution failed",
                     extra={"participant_id": bot_p["id"], "epoch_id": epoch_id},
                 )
+                sentry_sdk.capture_exception()
                 results.append({
                     "participant_id": bot_p["id"],
                     "success": False,

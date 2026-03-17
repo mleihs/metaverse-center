@@ -1,10 +1,13 @@
 """Bot player preset CRUD service."""
 
+import logging
 from uuid import UUID
 
 from fastapi import HTTPException, status
 
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 
 class BotPlayerService:

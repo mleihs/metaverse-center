@@ -1,5 +1,6 @@
 """Taxonomy CRUD endpoints."""
 
+import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -10,6 +11,8 @@ from backend.models.taxonomy import TaxonomyCreate, TaxonomyResponse, TaxonomyUp
 from backend.services.audit_service import AuditService
 from backend.services.taxonomy_service import TaxonomyService
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api/v1/simulations/{simulation_id}/taxonomies",

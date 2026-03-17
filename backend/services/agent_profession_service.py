@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
@@ -9,6 +10,8 @@ from fastapi import HTTPException, status
 
 from backend.services.base_service import BaseService
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 
 class AgentProfessionService(BaseService):

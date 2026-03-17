@@ -5,6 +5,7 @@ Only platform admins can create/process/update resonances.
 All authenticated users can read them.
 """
 
+import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -25,6 +26,8 @@ from backend.models.resonance import (
 )
 from backend.services.resonance_service import ResonanceService
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api/v1/resonances",

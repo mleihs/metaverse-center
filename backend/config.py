@@ -43,8 +43,11 @@ class Settings(BaseSettings):
 
     # Sentry
     sentry_dsn: str = ""
-    sentry_environment: str = "development"
     sentry_traces_sample_rate: float = 0.1
+
+    @property
+    def sentry_environment(self) -> str:
+        return self.environment
 
     # Logging
     log_level: str = "INFO"

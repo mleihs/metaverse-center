@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends
 
 from backend.dependencies import PLATFORM_ADMIN_EMAILS, get_admin_supabase, get_current_user, get_supabase
@@ -8,6 +10,8 @@ from backend.services.member_service import MemberService
 from backend.services.user_dashboard_service import UserDashboardService
 from backend.services.user_profile_service import UserProfileService
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/users", tags=["users"])
 

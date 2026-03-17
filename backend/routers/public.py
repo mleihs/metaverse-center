@@ -5,6 +5,7 @@ Only GET endpoints for active simulation data.
 Delegates to existing service layer where possible (keeps query logic in sync).
 """
 
+import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
@@ -48,6 +49,8 @@ from backend.services.social_media_service import SocialMediaService
 from backend.services.social_trends_service import SocialTrendsService
 from backend.services.taxonomy_service import TaxonomyService
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/public", tags=["Public"])
 
@@ -265,6 +268,22 @@ async def get_event(
 ) -> dict:
     """Get a single event (public)."""
     data = await EventService.get(supabase, simulation_id, event_id)
+    return {"success": True, "data": data}
+
+
+# ── Anchor ────────────────────────────────────────────────────────────────
+
+
+@router.get("/simulations/{simulation_id}/anchor", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def get_anchor(
+    request: Request,
+    simulation_id: UUID,
+    supabase: Client = Depends(get_anon_supabase),
+) -> dict:
+    """Get philosophical anchor data (public)."""
+    rows = await SettingsService.list_settings(supabase, simulation_id, category="anchor")
+    data = {row["setting_key"]: row["setting_value"] for row in rows}
     return {"success": True, "data": data}
 
 

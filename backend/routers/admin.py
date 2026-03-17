@@ -4,13 +4,15 @@ All endpoints require platform admin (email allowlist).
 Uses admin (service_role) Supabase client for cross-table operations.
 """
 
+import logging
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, Field
 
 from backend.config import settings
 from backend.dependencies import get_admin_supabase, require_platform_admin
+from backend.middleware.rate_limit import RATE_LIMIT_ADMIN_MUTATION, limiter
 from backend.middleware.seo import _sim_meta_cache
 from backend.models.cleanup import CleanupExecuteRequest, CleanupPreviewRequest
 from backend.models.common import CurrentUser, PaginationMeta
@@ -23,11 +25,14 @@ from backend.services.connection_service import ConnectionService
 from backend.services.game_mechanics_service import GameMechanicsService
 from backend.services.platform_api_keys import invalidate as invalidate_api_key_cache
 from backend.services.platform_model_config import invalidate as invalidate_model_config
+from backend.services.platform_research_domains import invalidate as invalidate_research_domains
 from backend.services.platform_settings_service import PlatformSettingsService
 from backend.services.settings_service import SettingsService
 from backend.services.simulation_service import SimulationService
 from backend.utils.encryption import encrypt as encrypt_value
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api/v1/admin",
@@ -119,6 +124,10 @@ async def update_setting(
     if key.startswith("model_"):
         invalidate_model_config()
 
+    # Invalidate research domain cache when domain settings change
+    if key.startswith("research_domains_"):
+        invalidate_research_domains()
+
     return {"success": True, "data": data}
 
 
@@ -149,7 +158,9 @@ async def get_user(
 
 
 @router.delete("/users/{user_id}")
+@limiter.limit(RATE_LIMIT_ADMIN_MUTATION)
 async def delete_user(
+    request: Request,
     user_id: UUID,
     _user: CurrentUser = Depends(require_platform_admin()),
     admin_supabase: Client = Depends(get_admin_supabase),
@@ -215,7 +226,9 @@ async def remove_membership(
 
 
 @router.put("/users/{user_id}/wallet")
+@limiter.limit(RATE_LIMIT_ADMIN_MUTATION)
 async def update_user_wallet(
+    request: Request,
     user_id: UUID,
     body: UpdateUserWalletRequest,
     _user: CurrentUser = Depends(require_platform_admin()),
@@ -456,7 +469,9 @@ async def update_simulation_health_effects(
 
 
 @router.post("/impersonate")
+@limiter.limit(RATE_LIMIT_ADMIN_MUTATION)
 async def impersonate_user(
+    request: Request,
     body: ImpersonateRequest,
     admin_user: CurrentUser = Depends(require_platform_admin()),
     admin_supabase: Client = Depends(get_admin_supabase),

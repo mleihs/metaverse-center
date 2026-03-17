@@ -7,10 +7,13 @@ StreetService.
 
 from __future__ import annotations
 
+import logging
 from uuid import UUID
 
 from backend.services.base_service import BaseService
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 # Placeholder user_id — location tables have no created_by_id column, so
 # BaseService.create() never writes this value (supports_created_by = False).

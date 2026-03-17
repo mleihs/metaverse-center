@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import logging
 from uuid import UUID
 
 from fastapi import HTTPException, status
 
 from backend.models.aptitude import OPERATIVE_TYPES, AptitudeSet
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 
 class AptitudeService:

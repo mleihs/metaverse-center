@@ -1,5 +1,6 @@
 """Simulation connection endpoints (platform-level, not simulation-scoped)."""
 
+import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -10,6 +11,8 @@ from backend.models.echo import ConnectionCreate, ConnectionResponse, Connection
 from backend.services.audit_service import AuditService
 from backend.services.connection_service import ConnectionService
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api/v1/connections",

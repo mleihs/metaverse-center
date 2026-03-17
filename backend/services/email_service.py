@@ -7,6 +7,8 @@ Falls back gracefully if SMTP config is missing (logs warning, returns False).
 import asyncio
 import logging
 import smtplib
+
+import sentry_sdk
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -39,9 +41,11 @@ class EmailService:
             return True
         except smtplib.SMTPException:
             logger.exception("SMTP error sending email", extra={"recipient": to})
+            sentry_sdk.capture_exception()
             return False
         except (TimeoutError, OSError):
             logger.exception("Email connection error", extra={"recipient": to})
+            sentry_sdk.capture_exception()
             return False
 
     @classmethod

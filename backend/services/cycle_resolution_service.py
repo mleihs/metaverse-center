@@ -2,7 +2,9 @@
 
 import logging
 from collections import defaultdict
-from datetime import UTC, datetime, timedelta
+
+import sentry_sdk
+from datetime import datetime, timedelta
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -34,31 +36,13 @@ class CycleResolutionService:
     ) -> None:
         """Grant RP to all participants in an epoch, respecting the cap.
 
-        Uses a single batch query via RPC to avoid N+1 SELECT+UPDATE loops.
-        Falls back to per-participant updates if the batch approach isn't available.
+        Uses ``fn_batch_grant_rp`` RPC (migration 126) — a single UPDATE
+        with LEAST() for cap enforcement.
         """
-        now = datetime.now(UTC).isoformat()
-        # Fetch all participants with current RP in a single query
-        resp = (
-            supabase.table("epoch_participants")
-            .select("id, current_rp")
-            .eq("epoch_id", str(epoch_id))
-            .execute()
-        )
-        participants = resp.data or []
-
-        # Build batch updates — group by target RP to minimize queries
-        rp_groups: dict[int, list[str]] = {}
-        for p in participants:
-            current = p.get("current_rp", 0)
-            new_rp = min(current + amount, rp_cap)
-            rp_groups.setdefault(new_rp, []).append(p["id"])
-
-        for new_rp, ids in rp_groups.items():
-            supabase.table("epoch_participants").update({
-                "current_rp": new_rp,
-                "last_rp_grant_at": now,
-            }).in_("id", ids).execute()
+        supabase.rpc(
+            "fn_batch_grant_rp",
+            {"p_epoch_id": str(epoch_id), "p_amount": amount, "p_rp_cap": rp_cap},
+        ).execute()
 
     @classmethod
     async def spend_rp(
@@ -202,6 +186,7 @@ class CycleResolutionService:
                 )
         except Exception:
             logger.warning("Alliance upkeep deduction failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
+            sentry_sdk.capture_exception()
 
         # Expire stale alliance proposals
         try:
@@ -210,6 +195,7 @@ class CycleResolutionService:
                 logger.info("Alliance proposals expired", extra={"epoch_id": str(epoch_id), "count": expired})
         except Exception:
             logger.warning("Alliance proposal expiry failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
+            sentry_sdk.capture_exception()
 
         # Resolve missions that have passed their resolves_at time
         # (after timer advancement in resolve_cycle, before bots act)
@@ -225,6 +211,7 @@ class CycleResolutionService:
                     logger.debug("Battle log write failed for mission result", exc_info=True)
         except Exception:
             logger.warning("Mission resolution failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
+            sentry_sdk.capture_exception()
 
         # Expire zone fortifications that have passed their expiry cycle
         try:
@@ -260,6 +247,7 @@ class CycleResolutionService:
                 db.table("zone_fortifications").delete().eq("id", fort["id"]).execute()
         except Exception:
             logger.warning("Fortification expiry failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
+            sentry_sdk.capture_exception()
 
         # Execute bot decisions (after RP grant + mission resolution, before next cycle)
         try:
@@ -272,6 +260,7 @@ class CycleResolutionService:
             )
         except Exception:
             logger.warning("Bot cycle execution failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
+            sentry_sdk.capture_exception()
 
         # Compute scores after missions resolve (best-effort)
         try:
@@ -280,6 +269,7 @@ class CycleResolutionService:
             logger.warning(
                 "Scoring failed", extra={"epoch_id": str(epoch_id), "cycle_number": cycle_number}, exc_info=True
             )
+            sentry_sdk.capture_exception()
 
         # Compute alliance tension (after missions — counts same-target attacks)
         try:
@@ -292,6 +282,7 @@ class CycleResolutionService:
                 })
         except Exception:
             logger.warning("Alliance tension computation failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
+            sentry_sdk.capture_exception()
 
         # Send cycle notification emails (best-effort, non-blocking)
         try:
@@ -302,12 +293,14 @@ class CycleResolutionService:
             )
         except Exception:
             logger.warning("Cycle notification failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
+            sentry_sdk.capture_exception()
 
         # Clear team_ids for dissolved alliances (AFTER notifications have read them)
         try:
             await AllianceService.clear_dissolved_team_ids(db, epoch_id)
         except Exception:
             logger.warning("Dissolved team cleanup failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
+            sentry_sdk.capture_exception()
 
         return data
 
@@ -453,5 +446,6 @@ class CycleResolutionService:
                         )
                 except Exception:
                     logger.warning("Auto-phase notification failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
+                    sentry_sdk.capture_exception()
 
         return resp.data[0]

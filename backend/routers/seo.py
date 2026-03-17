@@ -1,3 +1,4 @@
+import logging
 from datetime import UTC, datetime
 from xml.etree.ElementTree import Element, SubElement, tostring
 
@@ -8,6 +9,8 @@ from backend.config import settings
 from backend.dependencies import get_anon_supabase
 from backend.services.simulation_service import SimulationService
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["seo"])
 

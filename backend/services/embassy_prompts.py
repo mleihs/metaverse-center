@@ -9,6 +9,10 @@ template-driven generation.
 
 from __future__ import annotations
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 # ---------------------------------------------------------------------------
 # 1. CONTAMINATION_VOCABULARY
 # ---------------------------------------------------------------------------

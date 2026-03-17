@@ -1,8 +1,8 @@
 ---
 title: "API Specification"
 id: api-specification
-version: "2.5"
-date: 2026-03-16
+version: "2.6"
+date: 2026-03-17
 lang: de
 type: spec
 status: active
@@ -1791,7 +1791,7 @@ Bot aus Epoche entfernen.
 
 ---
 
-## 30. Public Endpoints — Gesamt (48 Endpoints)
+## 30. Public Endpoints — Gesamt (49 Endpoints)
 
 Alle oeffentlichen Endpoints (ohne Authentifizierung, Rate-Limit: 100/min) unter `/api/v1/public/`.
 
@@ -1817,6 +1817,7 @@ Alle oeffentlichen Endpoints (ohne Authentifizierung, Rate-Limit: 100/min) unter
 | 16 | GET | `/simulations/:simId/chat/conversations/:convId/messages` | Nachrichten |
 | 17 | GET | `/simulations/:simId/taxonomies` | Taxonomien |
 | 18 | GET | `/simulations/:simId/settings` | Settings (nur `design`-Kategorie) |
+| 18a | GET | `/simulations/:simId/anchor` | Philosophical anchor data (category='anchor' Settings) |
 | 19 | GET | `/simulations/:simId/social-trends` | Social Trends |
 | 20 | GET | `/simulations/:simId/social-media` | Social Media Posts |
 | 21 | GET | `/simulations/:simId/campaigns` | Kampagnen |
@@ -2139,5 +2140,5 @@ Token-Kaufsystem (Mock-Monetarisierung), Wallet-Verwaltung, BYOK-Schluessel, Fea
 | Forge Access | 5 | Create + Me + Pending + PendingCount + Review |
 | Forge Token Economy | 20 | Bundles (1) + Wallet (3) + Feature Purchases (7) + Darkroom Regen (1) + Admin Bundles (2) + Admin Purchases (1) + Admin Grant (1) + Admin BYOK (2) + Admin Stats (2) |
 | Admin | 11 | Settings (2) + Users (3) + Memberships (3) + Cleanup (3) |
-| Public | 48 | Anonymer Lesezugriff (alle GET-only) |
-| **Gesamt** | **294** | **37 Router** |
+| Public | 49 | Anonymer Lesezugriff (alle GET-only) |
+| **Gesamt** | **295** | **37 Router** |

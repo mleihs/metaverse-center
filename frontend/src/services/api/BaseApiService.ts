@@ -1,5 +1,6 @@
 import type { ApiResponse } from '../../types/index.js';
 import { appState } from '../AppStateManager.js';
+import { captureError } from '../SentryService.js';
 import { supabase } from '../supabase/client.js';
 
 export class BaseApiService {
@@ -99,6 +100,7 @@ export class BaseApiService {
       const response = await fetch(url, options);
       return this.handleResponse<T>(response);
     } catch (err) {
+      captureError(err, { source: 'BaseApiService.request', method, path });
       const message = err instanceof Error ? err.message : 'An unknown error occurred';
       return {
         success: false,
@@ -142,6 +144,7 @@ export class BaseApiService {
       });
       return this.handleResponse<T>(response, false);
     } catch (err) {
+      captureError(err, { source: 'BaseApiService.getPublic', path });
       const message = err instanceof Error ? err.message : 'An unknown error occurred';
       return { success: false, error: { code: 'NETWORK_ERROR', message } };
     }
@@ -183,6 +186,7 @@ export class BaseApiService {
       });
       return this.handleResponse<T>(response);
     } catch (err) {
+      captureError(err, { source: 'BaseApiService.postFormData', path });
       const message = err instanceof Error ? err.message : 'An unknown error occurred';
       return {
         success: false,

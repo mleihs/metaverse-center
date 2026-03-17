@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -9,6 +10,8 @@ from fastapi import HTTPException, status
 from backend.services.base_service import BaseService
 from backend.utils.search import apply_search_filter
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 
 class BuildingService(BaseService):

@@ -1,5 +1,6 @@
 """Agent profession CRUD endpoints."""
 
+import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -14,6 +15,8 @@ from backend.models.common import CurrentUser, SuccessResponse
 from backend.services.agent_profession_service import AgentProfessionService
 from backend.services.audit_service import AuditService
 from supabase import Client
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api/v1/simulations/{simulation_id}/agents/{agent_id}/professions",

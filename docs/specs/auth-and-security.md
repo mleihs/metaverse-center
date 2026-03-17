@@ -1,8 +1,8 @@
 ---
 title: "Auth and Security"
 id: auth-and-security
-version: "1.5"
-date: 2026-03-01
+version: "1.6"
+date: 2026-03-17
 lang: de
 type: spec
 status: active
@@ -607,8 +607,21 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 | AI-Generierung | 30 Requests | 1 Stunde |
 | Standard-API | 100 Requests | 1 Minute |
 | Health Checks | Kein Limit | - |
+| Admin Mutations (delete_user, update_wallet, impersonate) | Individuell rate-limited | Per Endpoint |
 
 (Auth-Rate-Limiting wird von Supabase Auth direkt gehandhabt.)
+
+### BYOK Hardening (v1.6)
+
+- **BYOK-Key-Updates via SECURITY DEFINER RPC:** `fn_update_user_byok_keys()` (Migration 125) ersetzt den bisherigen `service_role`-Bypass fuer `user_wallets`-Updates. Validiert `auth.uid() = p_user_id` — kein fremder Wallet-Zugriff moeglich.
+- **BYOK Access Check Hard-Fail:** `fn_user_byok_allowed()` gibt bei Fehler jetzt einen harten Fehler zurueck (zuvor: fail-open, d.h. bei Datenbankfehler wurde BYOK-Zugang erlaubt).
+- **Wallet RPC Failure → 503:** Wenn die Wallet-RPC fehlschlaegt, wird HTTP 503 zurueckgegeben (zuvor: Default-Wallet mit 0 Tokens, was den Fehler verschleierte).
+
+### Error Observability: Sentry Integration (v1.6)
+
+- **Frontend:** `@sentry/browser` Integration in `main.ts`. `SentryService` initialisiert Sentry mit DSN, Environment, Release-Tag. `BaseApiService` faengt API-Fehler und leitet sie an Sentry weiter.
+- **Backend:** `sentry_sdk.capture_exception()` in kritischen Service-Pfaden: `cycle_resolution`, `email_service`, `bot_decision_service`, `ForgeOrchestratorService` (13 Capture-Points), `ResearchService` (3 Capture-Points). Sentry Scope Context mit Tags (`forge_phase`, `service`) und Context-Daten (simulation_id, draft_id, epoch_id).
+- **42 Loggers:** Alle Routers und Services verwenden modul-spezifische `logging.getLogger(__name__)`-Instanzen fuer strukturiertes Logging.
 
 ### Input-Validierung
 

@@ -27,9 +27,7 @@
     <meta name="twitter:description" content="Build civilizations, deploy operatives, shape the metaverse. A multiplayer worldbuilding and strategy platform with AI-powered agents, competitive epochs, and real-world resonances." />
     <meta name="twitter:image" content="https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/og-image.jpg" />
 
-    <!-- hreflang (client-side locale, not path-based) -->
-    <link rel="alternate" hreflang="en" href="https://metaverse.center/" />
-    <link rel="alternate" hreflang="de" href="https://metaverse.center/" />
+    <!-- hreflang — locale is client-side, so only x-default is meaningful -->
     <link rel="alternate" hreflang="x-default" href="https://metaverse.center/" />
 
     <!-- JSON-LD Structured Data -->
@@ -67,6 +65,24 @@
             "https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/landing/feature-competition.avif",
             "https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/landing/feature-substrate.avif"
           ],
+          "author": { "@id": "https://metaverse.center/#organization" },
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          }
+        },
+        {
+          "@type": "VideoGame",
+          "@id": "https://metaverse.center/#game",
+          "name": "metaverse.center",
+          "url": "https://metaverse.center/",
+          "description": "A multiplayer worldbuilding and strategy platform where players build civilizations, deploy operatives, and compete in strategic epochs.",
+          "genre": ["Strategy", "Simulation", "Multiplayer"],
+          "playMode": ["MultiPlayer", "CoOperative"],
+          "numberOfPlayers": { "@type": "QuantitativeValue", "minValue": 2, "maxValue": 32 },
+          "gamePlatform": "Web browser",
+          "inLanguage": ["en", "de"],
           "author": { "@id": "https://metaverse.center/#organization" },
           "offers": {
             "@type": "Offer",

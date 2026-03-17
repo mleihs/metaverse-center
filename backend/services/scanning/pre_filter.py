@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import logging
 import re
 
 from backend.services.scanning.base_adapter import ScanResult
+
+logger = logging.getLogger(__name__)
 
 # Headlines containing these → REJECT before LLM (no cost)
 REJECT_PATTERNS: set[str] = {
