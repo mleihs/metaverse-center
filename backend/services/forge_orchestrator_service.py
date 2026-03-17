@@ -40,8 +40,40 @@ WORLD_ARCHITECT_PROMPT = (
     "You are a Senior World Architect at the Bureau of Impossible Geography. "
     "Your task is to generate cohesive, high-quality entities for a simulation Shard "
     "based on its Philosophical Anchor and Seed. "
-    "Maintain tonal consistency and literary depth. No generic fantasy/sci-fi."
+    "Maintain tonal consistency and literary depth. No generic fantasy/sci-fi. "
+    "Field-length discipline: 'name', 'system', 'primary_profession', 'gender', and 'building_type' "
+    "are SHORT identifiers (1-5 words each). Only 'character', 'background', and 'description' are "
+    "long-form prose."
 )
+
+_SHORT_FIELD_LIMITS: dict[str, int] = {
+    "system": 80,
+    "name": 100,
+    "gender": 30,
+    "primary_profession": 100,
+    "primary_profession_de": 100,
+    "building_type": 100,
+    "building_type_de": 100,
+}
+
+
+def _sanitize_short_fields(entity: dict, entity_type: str) -> None:
+    """Truncate fields that should be short identifiers."""
+    for field_name, limit in _SHORT_FIELD_LIMITS.items():
+        value = entity.get(field_name, "")
+        if len(value) > limit:
+            truncated = value[:limit].rsplit(" ", 1)[0]
+            logger.warning(
+                "Truncated overlong field",
+                extra={
+                    "field": field_name,
+                    "original_len": len(value),
+                    "truncated_to": len(truncated),
+                    "entity_type": entity_type,
+                    "entity_name": entity.get("name", "?"),
+                },
+            )
+            entity[field_name] = truncated
 
 
 def _build_chunk_prompt(
@@ -196,7 +228,9 @@ def _build_entity_prompt(
             "- Write 'background' as rich backstory (200-300 words): origin, formative event, "
             "current motivation, and a secret or unresolved tension.",
             "- Vary gender from already-recruited operatives where possible.",
-            "- The agent should belong to a different faction/system tied to the world's geography.",
+            "- 'system' is the agent's faction or organization — a SHORT name (1-5 words, max 80 chars). "
+            "Examples: 'Gildenrat', 'Kanalgrund Widerstand', 'Observatorium'. "
+            "Do NOT put descriptions, parenthetical explanations, or full sentences in this field.",
             "- Profession should be unique and thematically resonant — avoid generic titles.",
         ]
     else:
@@ -581,6 +615,9 @@ class ForgeOrchestratorService:
             )
             validate_bilingual_output([entity], de_fields, entity_type.rstrip("s"))
 
+            # Truncate any overlong short fields
+            _sanitize_short_fields(entity, entity_type)
+
         # Duplicate name check
         existing_names = {e.get("name", "").lower() for e in existing_entities}
         if entity.get("name", "").lower() in existing_names:
@@ -744,6 +781,17 @@ class ForgeOrchestratorService:
 
         return theme_data
 
+    @staticmethod
+    def _update_lore_progress(
+        supabase: Client,
+        simulation_id: UUID,
+        progress: dict | None,
+    ) -> None:
+        """Write lore-generation progress to simulations.lore_progress."""
+        supabase.table("simulations").update(
+            {"lore_progress": progress},
+        ).eq("id", str(simulation_id)).execute()
+
     @classmethod
     async def _generate_lore_and_translations(
         cls,
@@ -824,6 +872,7 @@ class ForgeOrchestratorService:
         )
         if gen_config.deep_research:
             logger.info("Step: deep research")
+            cls._update_lore_progress(supabase, simulation_id, {"phase": "research"})
             try:
                 research_context = await ResearchService.research_for_lore(
                     seed=seed,
@@ -842,6 +891,7 @@ class ForgeOrchestratorService:
                 )
 
         logger.info("Step: lore generation")
+        cls._update_lore_progress(supabase, simulation_id, {"phase": "generating"})
         try:
             lore_sections = await ForgeLoreService.generate_lore(
                 seed=seed,
@@ -853,10 +903,23 @@ class ForgeOrchestratorService:
                 research_context=research_context,
             )
             logger.info("Step: lore translation")
+            section_count = len(lore_sections)
+
+            def on_section_start(index: int, title: str) -> None:
+                cls._update_lore_progress(supabase, simulation_id, {
+                    "phase": "translating",
+                    "current": index,
+                    "total": section_count,
+                    "section_title": title,
+                })
+
+            cls._update_lore_progress(supabase, simulation_id, {
+                "phase": "translating", "current": 0, "total": section_count, "section_title": "",
+            })
             translations = None
             try:
                 translations = await ForgeLoreService.translate_lore(
-                    lore_sections, openrouter_key=or_key,
+                    lore_sections, openrouter_key=or_key, on_section_start=on_section_start,
                 )
             except Exception:
                 with sentry_sdk.push_scope() as scope:
@@ -877,6 +940,7 @@ class ForgeOrchestratorService:
 
         # Translate entity fields (skip if bilingual generation already populated _de)
         logger.info("Step: entity translation")
+        cls._update_lore_progress(supabase, simulation_id, {"phase": "entities"})
         try:
             mat_agents = (
                 supabase.table("agents")
@@ -929,6 +993,9 @@ class ForgeOrchestratorService:
                 scope.set_context("forge", {"simulation_id": str(simulation_id)})
                 sentry_sdk.capture_exception()
             logger.exception("Entity translation failed", extra={"simulation_id": str(simulation_id)})
+
+        # Signal transition to image generation phase
+        cls._update_lore_progress(supabase, simulation_id, {"phase": "images"})
 
     @classmethod
     async def run_batch_generation(
@@ -1191,6 +1258,9 @@ class ForgeOrchestratorService:
                     f" ({images_succeeded} succeeded)",
                     level="error" if images_succeeded == 0 else "warning",
                 )
+
+        # Clear lore progress — ceremony no longer needs it
+        cls._update_lore_progress(supabase, simulation_id, None)
 
         logger.info(
             "Batch generation DONE",

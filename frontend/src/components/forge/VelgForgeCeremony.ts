@@ -6,6 +6,7 @@ import type {
   ForgeAgentDraft,
   ForgeBuildingDraft,
   ForgeProgress,
+  LorePhaseProgress,
 } from '../../services/api/ForgeApiService.js';
 import { forgeApi } from '../../services/api/ForgeApiService.js';
 import { t } from '../../utils/locale-fields.js';
@@ -803,6 +804,91 @@ export class VelgForgeCeremony extends LitElement {
     @keyframes ember-cascade {
       0%, 100% { opacity: 0.2; transform: scaleX(0.8); }
       50%      { opacity: 0.8; transform: scaleX(1.2); }
+    }
+
+    /* ── Lore Phase Readout ──────────────────────── */
+
+    .ceremony__lore-phase {
+      position: relative;
+      z-index: 6;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-1, 0.25rem);
+      opacity: 0;
+      transition: opacity 0.4s ease-out;
+    }
+
+    .ceremony--stage-4 .ceremony__lore-phase,
+    .ceremony--stage-5 .ceremony__lore-phase {
+      opacity: 1;
+    }
+
+    .ceremony__lore-phase--hidden {
+      opacity: 0 !important;
+      pointer-events: none;
+    }
+
+    .ceremony__lore-label {
+      font-family: var(--font-mono, monospace);
+      font-size: var(--text-xs, 0.75rem);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #f59e0b;
+      text-shadow: 0 0 8px rgba(245 158 11 / 0.4);
+      text-align: center;
+    }
+
+    .ceremony__lore-title {
+      font-family: var(--font-mono, monospace);
+      font-size: var(--text-xs, 0.75rem);
+      font-style: italic;
+      color: rgba(245 158 11 / 0.7);
+      text-align: center;
+      max-width: 300px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .ceremony__lore-dots {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin-top: 2px;
+    }
+
+    .ceremony__lore-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      border: 1px solid rgba(245 158 11 / 0.4);
+      background: transparent;
+      transition: background 0.3s ease-out, border-color 0.3s ease-out, box-shadow 0.3s ease-out;
+    }
+
+    .ceremony__lore-dot--done {
+      background: #f59e0b;
+      border-color: #f59e0b;
+    }
+
+    .ceremony__lore-dot--active {
+      background: rgba(245 158 11 / 0.5);
+      border-color: #f59e0b;
+      box-shadow: 0 0 6px rgba(245 158 11 / 0.6);
+      animation: lore-dot-pulse 1.2s ease-in-out infinite;
+    }
+
+    @keyframes lore-dot-pulse {
+      0%, 100% { box-shadow: 0 0 4px rgba(245 158 11 / 0.3); opacity: 0.6; }
+      50%      { box-shadow: 0 0 10px rgba(245 158 11 / 0.8); opacity: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ceremony__lore-dot--active {
+        animation: none;
+        opacity: 1;
+      }
     }
 
     /* ── Redesigned Progress Bar ─────────────────── */
@@ -1690,6 +1776,23 @@ export class VelgForgeCeremony extends LitElement {
     }
   }
 
+  // ── Lore phase helpers ───────────────────────────
+
+  private _lorePhaseLabel(lp: LorePhaseProgress): string {
+    switch (lp.phase) {
+      case 'research':
+        return msg('Deep Research in Progress...');
+      case 'generating':
+        return msg('Inscribing the Lore Scroll...');
+      case 'translating':
+        return `${msg('Translating Section')} ${lp.current ?? 0}/${lp.total ?? 0}`;
+      case 'entities':
+        return msg('Translating Entities...');
+      default:
+        return '';
+    }
+  }
+
   // ── Event ──────────────────────────────────────
 
   private _handleEnter() {
@@ -1913,6 +2016,43 @@ export class VelgForgeCeremony extends LitElement {
 
           ${renderFan(buildingCards, buildingLayout, agentCards.length, 'buildings')}
         </div>
+
+        <!-- Lore generation phase readout -->
+        ${
+          this._progress?.lore_progress && this._progress.lore_progress.phase !== 'images'
+            ? html`
+          <div
+            class="ceremony__lore-phase"
+            role="status"
+            aria-live="polite"
+            aria-label=${this._lorePhaseLabel(this._progress.lore_progress)}
+          >
+            <span class="ceremony__lore-label">
+              ${this._lorePhaseLabel(this._progress.lore_progress)}
+            </span>
+            ${
+              this._progress.lore_progress.phase === 'translating' && this._progress.lore_progress.section_title
+                ? html`<span class="ceremony__lore-title">${this._progress.lore_progress.section_title}</span>`
+                : nothing
+            }
+            ${
+              this._progress.lore_progress.phase === 'translating' && (this._progress.lore_progress.total ?? 0) > 0
+                ? html`
+              <div class="ceremony__lore-dots" aria-hidden="true">
+                ${Array.from({ length: this._progress.lore_progress.total! }, (_, i) => {
+                  const current = this._progress!.lore_progress!.current ?? 0;
+                  const isDone = i + 1 < current;
+                  const isActive = i + 1 === current;
+                  return html`<div class="ceremony__lore-dot ${isDone ? 'ceremony__lore-dot--done' : ''} ${isActive ? 'ceremony__lore-dot--active' : ''}"></div>`;
+                })}
+              </div>
+            `
+                : nothing
+            }
+          </div>
+        `
+            : nothing
+        }
 
         <!-- Image materialization progress -->
         ${

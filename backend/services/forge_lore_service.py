@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from typing import Any
 from uuid import UUID
 
@@ -202,6 +203,7 @@ class ForgeLoreService:
     async def translate_lore(
         sections: list[dict[str, Any]],
         openrouter_key: str | None = None,
+        on_section_start: Callable[[int, str], None] | None = None,
     ) -> list[dict[str, Any]]:
         """Translate lore sections from English to German via AI.
 
@@ -210,6 +212,11 @@ class ForgeLoreService:
         failures.  Individual failures are logged and skipped so partial
         translations still get persisted.
 
+        Args:
+            on_section_start: Optional callback fired before each section
+                translation with ``(1-based index, title)``.  Used by the
+                orchestrator to push progress to the DB.
+
         Returns a list of dicts with title_de, epigraph_de, body_de, image_caption_de.
         """
         logger.info("Translating lore sections", extra={"section_count": len(sections)})
@@ -217,6 +224,8 @@ class ForgeLoreService:
         agent = create_forge_agent(LORE_TRANSLATOR_PROMPT, api_key=openrouter_key)
 
         for i, s in enumerate(sections):
+            if on_section_start is not None:
+                on_section_start(i + 1, s["title"])
             block = f"Title: {s['title']}\n"
             if s.get("epigraph"):
                 block += f"Epigraph: {s['epigraph']}\n"

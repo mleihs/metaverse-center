@@ -101,6 +101,13 @@ export interface ForgeProgressEntity {
   image_url: string | null;
 }
 
+export interface LorePhaseProgress {
+  phase: 'research' | 'generating' | 'translating' | 'entities' | 'images';
+  current?: number;
+  total?: number;
+  section_title?: string;
+}
+
 export interface ForgeProgress {
   total: number;
   completed: number;
@@ -109,6 +116,7 @@ export interface ForgeProgress {
   agents: ForgeProgressEntity[];
   buildings: ForgeProgressEntity[];
   lore: ForgeProgressEntity[];
+  lore_progress: LorePhaseProgress | null;
 }
 
 export interface TokenBundle {
