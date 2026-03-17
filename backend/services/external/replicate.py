@@ -33,9 +33,13 @@ class ReplicateService:
     """
 
     def __init__(self, api_key: str | None = None):
-        self._client = replicate.Client(
-            api_token=api_key or settings.replicate_api_token,
-        )
+        token = api_key or settings.replicate_api_token
+        if not token:
+            raise ReplicateError(
+                "No Replicate API token configured. "
+                "Set REPLICATE_API_TOKEN env var or provide a BYOK key via Forge Wallet."
+            )
+        self._client = replicate.Client(api_token=token)
 
     async def generate_image(
         self,

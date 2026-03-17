@@ -1054,7 +1054,7 @@ class ForgeOrchestratorService:
                         "Generating image",
                         extra={
                             "entity_type": "agent", "progress": f"{img_counter}/{img_total}",
-                            "name": agent_row["name"],
+                            "entity_name": agent_row["name"],
                         },
                     )
                     try:
@@ -1091,7 +1091,7 @@ class ForgeOrchestratorService:
                         "Generating image",
                         extra={
                             "entity_type": "building", "progress": f"{img_counter}/{img_total}",
-                            "name": building["name"],
+                            "entity_name": building["name"],
                         },
                     )
                     zone_data = building.get("zones") or {}
@@ -1137,7 +1137,7 @@ class ForgeOrchestratorService:
                         "Generating image",
                         extra={
                             "entity_type": "lore", "progress": f"{img_counter}/{img_total}",
-                            "name": section["title"],
+                            "entity_name": section["title"],
                         },
                     )
                     try:
@@ -1164,9 +1164,34 @@ class ForgeOrchestratorService:
                 "Replicate billing error — aborting all image generation. "
                 "Check credits at replicate.com/account/billing."
             )
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("forge_phase", "batch_images")
+                scope.set_context("forge", {
+                    "simulation_id": str(simulation_id),
+                    "images_succeeded": images_succeeded,
+                    "images_failed": images_failed,
+                })
+                sentry_sdk.capture_exception()
 
         phase_b_s = time.monotonic() - t_b
         total_elapsed_s = time.monotonic() - t_batch
+
+        # Report image failures to Sentry so we know immediately
+        if images_failed > 0:
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("forge_phase", "batch_images")
+                scope.set_context("forge", {
+                    "simulation_id": str(simulation_id),
+                    "images_succeeded": images_succeeded,
+                    "images_failed": images_failed,
+                    "img_total": img_total,
+                })
+                sentry_sdk.capture_message(
+                    f"Batch image gen: {images_failed}/{img_total} failed"
+                    f" ({images_succeeded} succeeded)",
+                    level="error" if images_succeeded == 0 else "warning",
+                )
+
         logger.info(
             "Batch generation DONE",
             extra={
