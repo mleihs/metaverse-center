@@ -1338,19 +1338,75 @@ export class VelgLandingPage extends LitElement {
       }
     }
 
-    /* ── Widescreen (1440px+) ── */
-    @media (min-width: 1440px) {
+    /* ── Standard Desktop / 1080p (1280px–1599px) ── */
+    @media (min-width: 1280px) and (max-width: 1599px) {
+      .landing-inner {
+        max-width: 1200px;
+      }
+
+      .worlds-preview__grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 4px;
+      }
+
+      .monitor-card__feed {
+        height: 160px;
+      }
+
+      .monitor-card__desc {
+        -webkit-line-clamp: 3;
+      }
+
+      .feature-card__body {
+        padding: 28px 32px 32px;
+      }
+
+      .feature-card__desc {
+        font-size: 12.5px;
+        line-height: 1.75;
+      }
+
+      .stat-cell {
+        padding: 48px 36px;
+      }
+
+      .features {
+        padding: 100px 0 80px;
+      }
+
+      .cta-frame {
+        max-width: 720px;
+        padding: 56px 48px;
+      }
+    }
+
+    /* ── Widescreen (1600px+) ── */
+    @media (min-width: 1600px) {
       .features,
       .live-data,
       .how-it-works,
       .cta-footer {
-        max-width: 1400px;
+        max-width: 1500px;
         margin-inline: auto;
         padding-inline: var(--space-8, 32px);
       }
 
+      .worlds-preview .landing-inner {
+        max-width: 1500px;
+      }
+
       .worlds-preview__grid {
-        grid-template-columns: repeat(6, 1fr);
+        grid-template-columns: repeat(5, 1fr);
+        gap: 4px;
+      }
+
+      .monitor-card__feed {
+        height: 160px;
+      }
+
+      .monitor-card__desc {
+        -webkit-line-clamp: 3;
+        font-size: 11.5px;
       }
 
       .hero__title {
@@ -1372,6 +1428,7 @@ export class VelgLandingPage extends LitElement {
 
       .feature-card__desc {
         font-size: 13px;
+        line-height: 1.8;
       }
 
       .stat-cell {
@@ -1399,8 +1456,12 @@ export class VelgLandingPage extends LitElement {
         max-width: 1800px;
       }
 
+      .worlds-preview .landing-inner {
+        max-width: 1800px;
+      }
+
       .worlds-preview__grid {
-        grid-template-columns: repeat(8, 1fr);
+        grid-template-columns: repeat(6, 1fr);
       }
     }
   `;

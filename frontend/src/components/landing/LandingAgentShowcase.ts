@@ -310,9 +310,9 @@ export class VelgLandingAgentShowcase extends LitElement {
       width: 100%;
     }
 
-    /* ── Widescreen (1440px+): 4 columns ─────── */
+    /* ── Standard Desktop / 1080p (1280px+): 4 columns ─── */
 
-    @media (min-width: 1440px) {
+    @media (min-width: 1280px) {
       .showcase__inner {
         max-width: 1400px;
       }
@@ -320,6 +320,18 @@ export class VelgLandingAgentShowcase extends LitElement {
       .showcase__grid {
         grid-template-columns: repeat(4, 1fr);
         max-width: 1200px;
+      }
+    }
+
+    /* ── Widescreen (1600px+) ─────── */
+
+    @media (min-width: 1600px) {
+      .showcase__inner {
+        max-width: 1500px;
+      }
+
+      .showcase__grid {
+        max-width: 1400px;
       }
     }
 

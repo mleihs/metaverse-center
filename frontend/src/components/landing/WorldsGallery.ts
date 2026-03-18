@@ -437,10 +437,17 @@ export class VelgWorldsGallery extends LitElement {
       }
     }
 
-    @media (min-width: 1440px) {
+    @media (min-width: 1280px) {
       .gallery-grid {
         max-width: 1400px;
         grid-template-columns: repeat(3, 1fr);
+        gap: 4px;
+      }
+    }
+
+    @media (min-width: 1600px) {
+      .gallery-grid {
+        max-width: 1500px;
       }
     }
   `;
