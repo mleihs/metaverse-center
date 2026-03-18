@@ -7,10 +7,10 @@ Falls back gracefully if SMTP config is missing (logs warning, returns False).
 import asyncio
 import logging
 import smtplib
-
-import sentry_sdk
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+
+import sentry_sdk
 
 from backend.config import settings
 

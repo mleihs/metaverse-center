@@ -352,7 +352,7 @@ async def update_byok(
         raise HTTPException(
             status_code=500,
             detail="Unable to verify BYOK access. Please try again later.",
-        )
+        ) from None
 
     result = await _draft_service.update_user_keys(
         supabase, user.id, body.openrouter_key, body.replicate_key

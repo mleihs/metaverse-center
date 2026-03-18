@@ -2,11 +2,10 @@
 
 import logging
 from collections import defaultdict
-
-import sentry_sdk
 from datetime import datetime, timedelta
 from uuid import UUID
 
+import sentry_sdk
 from fastapi import HTTPException, status
 
 from backend.models.epoch import EpochConfig

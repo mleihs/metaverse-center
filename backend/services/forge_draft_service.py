@@ -222,7 +222,7 @@ class ForgeDraftService:
             raise HTTPException(
                 status_code=503,
                 detail="Unable to retrieve wallet data. Please try again later.",
-            )
+            ) from None
 
     @staticmethod
     async def list_bundles(supabase: Client) -> list[dict]:
