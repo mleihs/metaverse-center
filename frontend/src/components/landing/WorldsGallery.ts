@@ -9,7 +9,7 @@
  * Auth: None required (public page)
  */
 
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { simulationsApi } from '../../services/api/SimulationsApiService.js';
@@ -594,7 +594,7 @@ export class VelgWorldsGallery extends LitElement {
           aria-label=${msg('Search worlds')}
         />
         <span class="results-count">
-          ${this._loading ? msg('Loading...') : msg(`${this._filtered.length} worlds`)}
+          ${this._loading ? msg('Loading...') : msg(str`${this._filtered.length} worlds`)}
         </span>
       </div>
 

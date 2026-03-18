@@ -19,11 +19,13 @@ import type { ShadowStyle } from '../src/services/ThemeService.js';
 // ---------------------------------------------------------------------------
 
 describe('THEME_TOKEN_MAP', () => {
-  it('maps all 21 color keys to --color-* CSS variables', () => {
+  it('maps all 15 direct color keys to --color-* CSS variables', () => {
+    // Only direct 1:1 mappings live in THEME_TOKEN_MAP.
+    // Auto-derived keys (color_primary_hover, color_primary_active,
+    // color_primary_bg, color_info_bg, color_danger_bg, color_success_bg,
+    // color_warning_bg) are computed via color-mix() in applyConfig().
     const colorKeys = [
       'color_primary',
-      'color_primary_hover',
-      'color_primary_active',
       'color_secondary',
       'color_accent',
       'color_background',
@@ -37,6 +39,18 @@ describe('THEME_TOKEN_MAP', () => {
       'color_border_light',
       'color_danger',
       'color_success',
+    ];
+
+    for (const key of colorKeys) {
+      expect(THEME_TOKEN_MAP[key]).toBeDefined();
+      expect(THEME_TOKEN_MAP[key]).toMatch(/^--color-/);
+    }
+  });
+
+  it('does NOT contain auto-derived color keys', () => {
+    const derivedKeys = [
+      'color_primary_hover',
+      'color_primary_active',
       'color_primary_bg',
       'color_info_bg',
       'color_danger_bg',
@@ -44,9 +58,8 @@ describe('THEME_TOKEN_MAP', () => {
       'color_warning_bg',
     ];
 
-    for (const key of colorKeys) {
-      expect(THEME_TOKEN_MAP[key]).toBeDefined();
-      expect(THEME_TOKEN_MAP[key]).toMatch(/^--color-/);
+    for (const key of derivedKeys) {
+      expect(THEME_TOKEN_MAP[key]).toBeUndefined();
     }
   });
 

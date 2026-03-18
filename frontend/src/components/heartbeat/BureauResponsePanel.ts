@@ -16,21 +16,21 @@ import { icons } from '../../utils/icons.js';
 import { renderInfoBubble, infoBubbleStyles } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 
-const RESPONSE_DESCRIPTIONS: Record<BureauResponseType, { label: string; desc: string; cost: string }> = {
+const RESPONSE_DESCRIPTIONS: Record<BureauResponseType, { label: () => string; desc: () => string; cost: () => string }> = {
   contain: {
-    label: 'Contain',
-    desc: 'Dispatch containment team to stabilize the situation.',
-    cost: '1 agent, 1 tick',
+    label: () => msg('Contain'),
+    desc: () => msg('Dispatch containment team to stabilize the situation.'),
+    cost: () => msg('1 agent, 1 tick'),
   },
   remediate: {
-    label: 'Remediate',
-    desc: 'Full remediation protocol — higher effectiveness, can resolve event.',
-    cost: '2-3 agents, 2 ticks',
+    label: () => msg('Remediate'),
+    desc: () => msg('Full remediation protocol — higher effectiveness, can resolve event.'),
+    cost: () => msg('2-3 agents, 2 ticks'),
   },
   adapt: {
-    label: 'Adapt',
-    desc: 'Learn from crisis to reduce scar tissue. Requires 5+ reactions.',
-    cost: 'No agents, 1 tick',
+    label: () => msg('Adapt'),
+    desc: () => msg('Learn from crisis to reduce scar tissue. Requires 5+ reactions.'),
+    cost: () => msg('No agents, 1 tick'),
   },
 };
 
@@ -925,9 +925,9 @@ export class VelgBureauResponsePanel extends LitElement {
             >
               <span class="type-card__icon">${typeIcons[type]}</span>
               <div class="type-card__content">
-                <div class="type-card__label">${msg(info.label)}</div>
-                <div class="type-card__desc">${msg(info.desc)}</div>
-                <div class="type-card__cost">${msg(info.cost)}</div>
+                <div class="type-card__label">${info.label()}</div>
+                <div class="type-card__desc">${info.desc()}</div>
+                <div class="type-card__cost">${info.cost()}</div>
               </div>
               <span class="type-card__stamp" aria-hidden="true">${msg('Approved')}</span>
             </button>

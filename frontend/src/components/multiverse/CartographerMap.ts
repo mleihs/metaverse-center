@@ -284,6 +284,10 @@ export class VelgCartographerMap extends LitElement {
       clearInterval(this._pollTimer);
       this._pollTimer = null;
     }
+    if (this._searchDebounce) {
+      clearTimeout(this._searchDebounce);
+      this._searchDebounce = null;
+    }
   }
 
   private async _loadData(): Promise<void> {

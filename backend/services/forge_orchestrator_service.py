@@ -30,6 +30,7 @@ from backend.services.forge_lore_service import ForgeLoreService
 from backend.services.forge_theme_service import ForgeThemeService
 from backend.services.image_service import ImageService
 from backend.services.research_service import ResearchService
+from backend.services.seo_service import notify_search_engines
 from backend.utils.encryption import decrypt
 from supabase import Client
 
@@ -699,6 +700,10 @@ class ForgeOrchestratorService:
                         scope.set_context("forge", {"simulation_id": str(sim_id)})
                         sentry_sdk.capture_exception()
                     logger.exception("Theme application failed", extra={"simulation_id": str(sim_id)})
+
+            # Notify search engines (fire-and-forget, best-effort)
+            if slug:
+                asyncio.create_task(notify_search_engines(slug))
 
             # Pass draft_data through for background lore generation
             anchor = draft_data.get("philosophical_anchor", {}).get("selected", {})
