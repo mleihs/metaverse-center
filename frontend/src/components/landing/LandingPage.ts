@@ -1338,14 +1338,18 @@ export class VelgLandingPage extends LitElement {
       }
     }
 
-    /* ── Standard Desktop / 1080p (1280px–1599px) ── */
+    /* ── Standard Desktop / 1080p laptops (1280px–1599px) ── */
     @media (min-width: 1280px) and (max-width: 1599px) {
       .landing-inner {
-        max-width: 1200px;
+        max-width: 1400px;
+      }
+
+      .worlds-preview .landing-inner {
+        max-width: 1400px;
       }
 
       .worlds-preview__grid {
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(5, 1fr);
         gap: 4px;
       }
 
@@ -1380,23 +1384,27 @@ export class VelgLandingPage extends LitElement {
       }
     }
 
-    /* ── Widescreen (1600px+) ── */
+    /* ── Widescreen / 1440p (1600px+) ── */
     @media (min-width: 1600px) {
+      .landing-inner {
+        max-width: 1700px;
+      }
+
       .features,
       .live-data,
       .how-it-works,
       .cta-footer {
-        max-width: 1500px;
+        max-width: 1700px;
         margin-inline: auto;
         padding-inline: var(--space-8, 32px);
       }
 
       .worlds-preview .landing-inner {
-        max-width: 1500px;
+        max-width: 1700px;
       }
 
       .worlds-preview__grid {
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(6, 1fr);
         gap: 4px;
       }
 
@@ -1441,7 +1449,7 @@ export class VelgLandingPage extends LitElement {
       }
     }
 
-    /* ── Ultrawide (2560px+) ── */
+    /* ── Ultrawide / 4K (2560px+) ── */
     @media (min-width: 2560px) {
       :host {
         background:
@@ -1453,15 +1461,31 @@ export class VelgLandingPage extends LitElement {
       .live-data,
       .how-it-works,
       .cta-footer {
-        max-width: 1800px;
+        max-width: 2200px;
       }
 
       .worlds-preview .landing-inner {
-        max-width: 1800px;
+        max-width: 2200px;
       }
 
       .worlds-preview__grid {
-        grid-template-columns: repeat(6, 1fr);
+        grid-template-columns: repeat(8, 1fr);
+      }
+
+      .monitor-card__feed {
+        height: 180px;
+      }
+
+      .monitor-card__body {
+        padding: 16px 20px 20px;
+      }
+
+      .feature-card__body {
+        padding: 36px 40px 40px;
+      }
+
+      .feature-card__desc {
+        font-size: 14px;
       }
     }
   `;
@@ -1566,7 +1590,7 @@ export class VelgLandingPage extends LitElement {
   private async _fetchWorlds(): Promise<void> {
     try {
       const w = window.innerWidth;
-      const worldLimit = w >= 2560 ? 7 : w >= 1440 ? 5 : 3;
+      const worldLimit = w >= 2560 ? 7 : w >= 1600 ? 5 : w >= 1280 ? 4 : 3;
       const resp = await simulationsApi.listPublic({ limit: String(worldLimit), offset: '0' });
       if (resp.success && Array.isArray(resp.data)) {
         this._worlds = resp.data as Simulation[];

@@ -450,6 +450,13 @@ export class VelgWorldsGallery extends LitElement {
         max-width: 1500px;
       }
     }
+
+    @media (min-width: 2560px) {
+      .gallery-grid {
+        max-width: 2200px;
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
   `;
 
   @state() private _simulations: Simulation[] = [];

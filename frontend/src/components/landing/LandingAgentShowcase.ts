@@ -323,7 +323,7 @@ export class VelgLandingAgentShowcase extends LitElement {
       }
     }
 
-    /* ── Widescreen (1600px+) ─────── */
+    /* ── Widescreen / 1440p (1600px+) ─────── */
 
     @media (min-width: 1600px) {
       .showcase__inner {
@@ -335,16 +335,16 @@ export class VelgLandingAgentShowcase extends LitElement {
       }
     }
 
-    /* ── Ultrawide (2560px+): 6 columns ──────── */
+    /* ── Ultrawide / 4K (2560px+) ──────── */
 
     @media (min-width: 2560px) {
       .showcase__inner {
-        max-width: 1800px;
+        max-width: 2200px;
       }
 
       .showcase__grid {
         grid-template-columns: repeat(6, 1fr);
-        max-width: 1800px;
+        max-width: 2200px;
       }
     }
 
