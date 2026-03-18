@@ -21,7 +21,7 @@ A **cross-simulation diplomacy layer** connects worlds through embassies, ambass
 
 Every number tells a story. Every story changes a number. Agent aptitudes shape operative success probabilities. Zone stability degrades under sabotage. Embassy effectiveness drops when infiltrators compromise diplomatic channels. The game balance is calibrated through deterministic simulation of hundreds of epoch matches, with statistical analysis driving each tuning pass.
 
-A **simulation heartbeat system** drives narrative arcs forward through configurable tick cycles, with philosophical anchors, attunement tuning, and automated bureau responses keeping each world's story coherent as it evolves.
+A **simulation heartbeat system** drives narrative arcs forward through configurable tick cycles, with philosophical anchors, attunement tuning, and automated bureau responses keeping each world's story coherent as it evolves. A **Daily Substrate Dispatch** &mdash; styled as a classified Bureau intelligence briefing &mdash; greets players on first visit each day with a 24-hour summary: health status, critical/positive event counts, active narrative arcs with pressure bars, and quick navigation to the Pulse chronicle.
 
 The **landing page** doubles as a showcase &mdash; real AI characters from live simulations are displayed as "Intercepted Dossiers" with holographic foil effects, rarity badges, and TCG-style cards. The world *is* the ad: visitors see actual game content before they sign up. The page is viewport-responsive, scaling from 6 agents on mobile to 12 at 4K, with more worlds filling wider screens.
 

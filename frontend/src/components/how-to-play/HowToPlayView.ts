@@ -32,6 +32,7 @@ import {
   getSimulationHealthGuideSteps,
   getSimulationLoreGuideSteps,
   getSocialTrendsGuideSteps,
+  getSubstratePulseGuideSteps,
   getZoneDynamicsGuideSteps,
 } from './htp-content-features.js';
 import { getMatches } from './htp-content-matches.js';
@@ -2131,6 +2132,17 @@ export class VelgHowToPlay extends LitElement {
         <p class="section__text">
           ${msg('The ambient pulse indicator in the simulation navigation bar shows the heartbeat state at a glance. A steady pulse means the world is ticking normally; irregular rhythms indicate narrative turbulence or approaching arc climaxes.')}
         </p>
+
+        <div class="callout callout--tip">
+          <div class="callout__label">${msg('Daily Substrate Dispatch')}</div>
+          <div class="callout__text">
+            ${msg('On your first visit to a simulation each day, a classified intelligence briefing appears \u2014 the Daily Substrate Dispatch. It summarizes the last 24 hours: overall health status with a color-coded bar, counts of critical and positive events, total pulse entries, and active narrative arcs with pressure indicators. Acknowledge the briefing or click "View Chronicle" to jump to the Pulse tab. The dispatch only appears when new activity has occurred.')}
+          </div>
+        </div>
+
+        <div class="demo-steps">
+          ${getSubstratePulseGuideSteps().map((step, i) => this._renderDemoStep(step, i))}
+        </div>
       </section>
     `;
   }

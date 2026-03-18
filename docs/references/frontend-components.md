@@ -144,6 +144,7 @@ SimulationShell (Layout mit Navigation + Breadcrumb Simulation-Switcher)
 │   └── LocationEditModal (extends BaseModal)
 ├── SimulationLoreView
 │   └── Lore Content (4 per-simulation content files)
+├── DailyBriefingModal (Daily Substrate Dispatch — once-per-day 24h summary modal: health hero bar, stat grid, arc pressure bars, auto-dismiss 30s, forced dark tokens)
 ├── SimulationPulse (Heartbeat visualization — ambient simulation heartbeat indicator in SimulationNav)
 ├── AnchorDashboard (Philosophical Anchor overview — narrative arc status, attunement metrics)
 ├── AttunementSettings (Heartbeat tuning controls — tick rate, narrative sensitivity, bureau response thresholds)

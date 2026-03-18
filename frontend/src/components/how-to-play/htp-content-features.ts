@@ -156,6 +156,53 @@ export function getForgeGuideSteps(): ForgeStep[] {
   ];
 }
 
+/* ── Substrate Pulse & Daily Briefing ─────────────── */
+
+export function getSubstratePulseGuideSteps(): DemoStep[] {
+  return [
+    {
+      phase: 'competition',
+      title: msg('What is the Substrate Pulse?'),
+      narration: msg(
+        'The Substrate Pulse is the heartbeat of every simulation. Every 4 hours, the system ticks \u2014 updating zone stability, progressing narrative arcs, triggering bureau responses, and recording entries in the pulse chronicle. The Pulse tab shows this activity as a battle-log-style ticker, grouped by tick number, with color-coded severity and type indicators.',
+      ),
+      readout: [
+        { label: msg('Tick interval'), value: msg('4 hours (configurable)') },
+        { label: msg('Entry types'), value: msg('Zone, events, arcs, bureau, resonance') },
+        { label: msg('Access'), value: msg('Simulation \u2192 Pulse tab') },
+      ],
+    },
+    {
+      phase: 'competition',
+      title: msg('The Daily Substrate Dispatch'),
+      narration: msg(
+        'When you visit a simulation for the first time each day, a classified intelligence briefing appears \u2014 the Daily Substrate Dispatch. Styled as a Bureau report handed to an operative, it summarizes the last 24 hours: overall health status with a color-coded bar, counts of critical and positive events, total pulse entries, and active narrative arcs with pressure indicators.',
+      ),
+      detail: msg(
+        'The dispatch auto-dismisses after 30 seconds (pause by hovering) or can be acknowledged immediately. Click "View Chronicle" to jump straight to the Pulse tab. The briefing only appears when there are new entries to report \u2014 if nothing happened in 24 hours, no briefing is shown.',
+      ),
+      readout: [
+        { label: msg('Frequency'), value: msg('Once per day per simulation') },
+        { label: msg('Health'), value: msg('Bar + tier badge') },
+        { label: msg('Activity'), value: msg('Critical / positive / total / arcs') },
+        { label: msg('Actions'), value: msg('Acknowledge or View Chronicle') },
+      ],
+    },
+    {
+      phase: 'competition',
+      title: msg('Narrative Arcs'),
+      narration: msg(
+        'Narrative arcs are emergent storylines that the heartbeat system detects and tracks. An arc might be an escalating economic crisis, a cascade of diplomatic failures, or a wave of military conflict. Each arc has a type, a primary signature, a status (building/active/climax), and a pressure value. High-pressure arcs drive more dramatic pulse entries and can trigger cascade events.',
+      ),
+      readout: [
+        { label: msg('Statuses'), value: msg('Building \u2192 Active \u2192 Climax') },
+        { label: msg('Pressure'), value: msg('0.0\u20131.0 (bar indicator)') },
+        { label: msg('Effect'), value: msg('Drives pulse entries + cascades') },
+      ],
+    },
+  ];
+}
+
 /* ── The Chronicle ────────────────────────────────── */
 
 export function getChronicleGuideSteps(): DemoStep[] {

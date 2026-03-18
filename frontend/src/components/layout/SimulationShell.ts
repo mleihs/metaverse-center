@@ -4,6 +4,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { healthApi } from '../../services/api/HealthApiService.js';
+import { heartbeatApi } from '../../services/api/HeartbeatApiService.js';
 import { simulationsApi } from '../../services/api/SimulationsApiService.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { themeService } from '../../services/ThemeService.js';
@@ -13,6 +14,7 @@ import { icons } from '../../utils/icons.js';
 import '../bleed/BleedPalimpsestOverlay.js';
 import '../forge/VelgBureauDispatch.js';
 import '../forge/VelgBureauNotice.js';
+import '../heartbeat/DailyBriefingModal.js';
 import '../health/AscendancyAura.js';
 import '../health/DesperateActionsPanel.js';
 import '../health/EntropyOverlay.js';
@@ -373,6 +375,7 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
   @state() private _dropdownPos = { top: 0, left: 0 };
   @state() private _bleedStatus: BleedStatus | null = null;
   @state() private _thresholdState: ThresholdState = 'normal';
+  @state() private _briefingData: Record<string, unknown> | null = null;
   private _focusedIndex = -1;
 
   private _appliedSimulationId = '';
@@ -403,6 +406,7 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
       this._fetchBleedStatus();
       this._startBleedPolling();
       this._initBureauDispatch();
+      this._fetchDailyBriefing();
     }
     // Ensure simulations list is populated for the breadcrumb switcher.
     // On direct navigation / page refresh, the dashboard hasn't mounted
@@ -414,6 +418,25 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
         appState.setSimulations(result.data);
       }
     }
+  }
+
+  private async _fetchDailyBriefing(): Promise<void> {
+    if (!this.simulationId) return;
+    const today = new Date().toISOString().split('T')[0];
+    const key = `briefing_${this.simulationId}_${today}`;
+    if (localStorage.getItem(key)) return;
+
+    const result = await heartbeatApi.getDailyBriefing(this.simulationId);
+    if (result.success && result.data) {
+      const data = result.data as Record<string, unknown>;
+      if ((data.entries_24h as number) > 0) {
+        this._briefingData = data;
+      }
+    }
+  }
+
+  private _handleBriefingDismissed(): void {
+    this._briefingData = null;
   }
 
   private _initBureauDispatch(): void {
@@ -1047,6 +1070,18 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
               .simulationId=${this.simulationId}
             ></velg-desperate-actions-panel>
           `
+          : nothing
+      }
+      ${
+        this._briefingData
+          ? html`
+        <velg-daily-briefing
+          .simulationId=${this.simulationId}
+          .simulationSlug=${appState.currentSimulation.value?.slug ?? this.simulationId}
+          .briefingData=${this._briefingData}
+          @briefing-dismissed=${this._handleBriefingDismissed}
+        ></velg-daily-briefing>
+      `
           : nothing
       }
       ${
