@@ -117,8 +117,12 @@ class ForgeAccessService:
         cls,
         admin_supabase: Client,
     ) -> list[dict]:
-        """List pending requests with user emails (admin, via view)."""
-        response = admin_supabase.table("v_pending_forge_requests").select("*").execute()
+        """List pending requests with user emails (admin).
+
+        Uses ``fn_list_pending_forge_requests`` SECURITY DEFINER RPC
+        (migration 134) — service_role only, no PostgREST exposure.
+        """
+        response = admin_supabase.rpc("fn_list_pending_forge_requests").execute()
         return response.data or []
 
     @classmethod
