@@ -349,16 +349,16 @@ COMMENT ON FUNCTION public.fn_instagram_analytics IS 'Aggregate Instagram perfor
 -- SEED: Platform settings for Instagram
 -- ============================================================================
 
-INSERT INTO public.platform_settings (setting_key, setting_value, category, description)
+INSERT INTO public.platform_settings (setting_key, setting_value, description)
 VALUES
-    ('instagram_enabled', 'false', 'integration', 'Master switch for Instagram publishing pipeline'),
-    ('instagram_posting_enabled', 'false', 'integration', 'Enable actual posting to Instagram (vs dry-run)'),
-    ('instagram_ig_user_id', '', 'integration', 'Instagram Business Account ID from Graph API'),
-    ('instagram_access_token', '', 'integration', 'Encrypted perpetual page access token for Instagram'),
-    ('instagram_posts_per_day', '3', 'integration', 'Maximum feed posts per day'),
-    ('instagram_posting_hours', '[9, 13, 18]', 'integration', 'UTC hours when posts are scheduled'),
-    ('instagram_approval_required', 'true', 'integration', 'Require admin approval before posting'),
-    ('instagram_caption_model', '', 'integration', 'Override model for caption generation (empty = default)'),
-    ('instagram_scheduler_interval_seconds', '300', 'integration', 'Scheduler check interval in seconds'),
-    ('instagram_content_mix', '{"agent": 3, "building": 2, "chronicle": 2}', 'integration', 'Weighted content type distribution')
+    ('instagram_enabled', '"false"', 'Master switch for Instagram publishing pipeline'),
+    ('instagram_posting_enabled', '"false"', 'Enable actual posting to Instagram (vs dry-run)'),
+    ('instagram_ig_user_id', '""', 'Instagram Business Account ID from Graph API'),
+    ('instagram_access_token', '""', 'Encrypted perpetual page access token for Instagram'),
+    ('instagram_posts_per_day', '3', 'Maximum feed posts per day'),
+    ('instagram_posting_hours', '[9, 13, 18]', 'UTC hours when posts are scheduled'),
+    ('instagram_approval_required', '"true"', 'Require admin approval before posting'),
+    ('instagram_caption_model', '""', 'Override model for caption generation (empty = default)'),
+    ('instagram_scheduler_interval_seconds', '300', 'Scheduler check interval in seconds'),
+    ('instagram_content_mix', '{"agent": 3, "building": 2, "chronicle": 2}', 'Weighted content type distribution')
 ON CONFLICT (setting_key) DO NOTHING;
