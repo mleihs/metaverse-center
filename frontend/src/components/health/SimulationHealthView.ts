@@ -63,6 +63,17 @@ export class VelgSimulationHealthView extends LitElement {
         display: block;
       }
 
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
+      }
+
       /* ── Overall health hero ── */
 
       .health-hero {
@@ -256,7 +267,7 @@ export class VelgSimulationHealthView extends LitElement {
       .zone-item__label {
         font-family: var(--font-sans);
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-secondary);
         min-width: 70px;
         text-align: right;
       }
@@ -290,7 +301,7 @@ export class VelgSimulationHealthView extends LitElement {
         padding: 0;
         background: transparent;
         border: var(--border-width-thin) solid var(--color-border);
-        color: var(--color-text-muted);
+        color: var(--color-text-secondary);
         cursor: pointer;
         flex-shrink: 0;
         transition: all var(--transition-fast);
@@ -380,7 +391,7 @@ export class VelgSimulationHealthView extends LitElement {
       .zone-item__pressure-text {
         font-family: var(--font-brutalist);
         font-size: 10px;
-        color: var(--color-text-muted);
+        color: var(--color-text-secondary);
         padding-left: calc(140px + var(--space-3));
         margin-top: var(--space-0-5);
       }
@@ -391,6 +402,9 @@ export class VelgSimulationHealthView extends LitElement {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: var(--space-2);
+        border: none;
+        padding: 0;
+        margin: 0;
         padding: var(--space-3) 0 var(--space-1);
         padding-left: calc(140px + var(--space-3));
       }
@@ -404,6 +418,19 @@ export class VelgSimulationHealthView extends LitElement {
         border: var(--border-width-thin) solid var(--color-border);
         cursor: pointer;
         transition: all var(--transition-fast);
+        font: inherit;
+        color: inherit;
+        text-align: left;
+      }
+
+      .zone-action-card:focus-visible {
+        outline: 2px solid var(--color-primary);
+        outline-offset: 2px;
+      }
+
+      .zone-action-card:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
       }
 
       .zone-action-card:hover {
@@ -438,7 +465,7 @@ export class VelgSimulationHealthView extends LitElement {
       .zone-action-card__desc {
         font-family: var(--font-sans);
         font-size: 10px;
-        color: var(--color-text-muted);
+        color: var(--color-text-secondary);
         line-height: 1.3;
       }
 
@@ -511,7 +538,7 @@ export class VelgSimulationHealthView extends LitElement {
       .building-item__type {
         font-family: var(--font-sans);
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-secondary);
         min-width: 80px;
       }
 
@@ -593,7 +620,7 @@ export class VelgSimulationHealthView extends LitElement {
       .embassy-item__vector {
         font-family: var(--font-sans);
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-secondary);
         text-transform: uppercase;
         letter-spacing: var(--tracking-wide);
       }
@@ -657,7 +684,7 @@ export class VelgSimulationHealthView extends LitElement {
       .event-item__meta {
         font-family: var(--font-sans);
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-secondary);
         margin-top: 2px;
       }
 
@@ -666,7 +693,7 @@ export class VelgSimulationHealthView extends LitElement {
       .panel__empty {
         font-family: var(--font-sans);
         font-size: var(--text-sm);
-        color: var(--color-text-muted);
+        color: var(--color-text-secondary);
         text-align: center;
         padding: var(--space-4);
       }
@@ -790,7 +817,14 @@ export class VelgSimulationHealthView extends LitElement {
 
     return html`
       <div class="health-hero">
-        <div class="health-hero__meter">
+        <div
+          class="health-hero__meter"
+          role="meter"
+          aria-valuenow=${pct}
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-label=${msg(str`Overall health: ${pct} percent`)}
+        >
           <svg viewBox="0 0 100 100" aria-hidden="true">
             <circle class="health-hero__meter-bg" cx="50" cy="50" r="40" />
             <circle
@@ -801,7 +835,7 @@ export class VelgSimulationHealthView extends LitElement {
               stroke-dashoffset=${dashoffset}
             />
           </svg>
-          <span class="health-hero__meter-text" style="color: ${color}">${pct}</span>
+          <span class="health-hero__meter-text" style="color: ${color}" aria-hidden="true">${pct}</span>
         </div>
         <div class="health-hero__info">
           <h2 class="health-hero__title">${h.simulation_name}</h2>
@@ -952,21 +986,15 @@ export class VelgSimulationHealthView extends LitElement {
     ];
 
     return html`
-      <div class="zone-action-selector" role="radiogroup" aria-label=${msg('Zone actions')}>
+      <fieldset class="zone-action-selector" role="radiogroup" aria-label=${msg('Zone actions')}>
+        <legend class="sr-only">${msg('Choose zone action')}</legend>
         ${actions.map(
           (a) => html`
-            <div
+            <button
+              type="button"
               class="zone-action-card ${this._actionLoading ? 'zone-action-card--loading' : ''}"
-              role="radio"
-              tabindex="0"
-              aria-checked="false"
+              ?disabled=${this._actionLoading}
               @click=${() => this._handleZoneAction(z.zone_id, a.type)}
-              @keydown=${(e: KeyboardEvent) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  this._handleZoneAction(z.zone_id, a.type);
-                }
-              }}
             >
               <div class="zone-action-card__header">
                 <span class="zone-action-card__icon">${a.icon(12)}</span>
@@ -974,10 +1002,10 @@ export class VelgSimulationHealthView extends LitElement {
               </div>
               <span class="zone-action-card__desc">${a.desc}</span>
               <span class="zone-action-card__effect">${a.effect}</span>
-            </div>
+            </button>
           `,
         )}
-      </div>
+      </fieldset>
     `;
   }
 
@@ -1011,7 +1039,11 @@ export class VelgSimulationHealthView extends LitElement {
                             style="width: ${Math.round(z.stability * 100)}%; background: ${healthColor(z.stability_label)}"
                           ></div>
                         </div>
-                        <span class="zone-item__value" style="color: ${healthColor(z.stability_label)}">
+                        <span
+                          class="zone-item__value"
+                          style="color: ${healthColor(z.stability_label)}"
+                          aria-label=${msg(str`Zone stability: ${(z.stability * 100).toFixed(0)} percent`)}
+                        >
                           ${(z.stability * 100).toFixed(0)}%
                         </span>
                         <span class="zone-item__label">${z.stability_label}</span>
@@ -1062,7 +1094,7 @@ export class VelgSimulationHealthView extends LitElement {
         <div class="diplo-stats" style="margin-bottom: var(--space-4)">
           <div class="diplo-stat">
             <span class="diplo-stat__label">${msg('Avg Readiness')}</span>
-            <span class="diplo-stat__value">${(health.avg_readiness * 100).toFixed(0)}%</span>
+            <span class="diplo-stat__value" aria-label=${msg(str`Average readiness: ${(health.avg_readiness * 100).toFixed(0)} percent`)}>${(health.avg_readiness * 100).toFixed(0)}%</span>
           </div>
           <div class="diplo-stat">
             <span class="diplo-stat__label">${msg('Critical')}</span>
@@ -1093,6 +1125,7 @@ export class VelgSimulationHealthView extends LitElement {
                       <span
                         class="building-item__staffing"
                         style="color: ${staffingColor(b.staffing_status)}"
+                        aria-label=${msg(str`Staffing ratio: ${Math.round(b.staffing_ratio * 100)} percent`)}
                       >
                         ${Math.round(b.staffing_ratio * 100)}%
                       </span>
@@ -1119,6 +1152,7 @@ export class VelgSimulationHealthView extends LitElement {
                       <span
                         class="building-item__staffing"
                         style="color: ${staffingColor(b.staffing_status)}"
+                        aria-label=${msg(str`Staffing ratio: ${Math.round(b.staffing_ratio * 100)} percent`)}
                       >
                         ${Math.round(b.staffing_ratio * 100)}%
                       </span>
@@ -1151,7 +1185,7 @@ export class VelgSimulationHealthView extends LitElement {
           </div>
           <div class="diplo-stat">
             <span class="diplo-stat__label">${msg('Avg Effectiveness')}</span>
-            <span class="diplo-stat__value">
+            <span class="diplo-stat__value" aria-label=${msg(str`Average effectiveness: ${(health.avg_embassy_effectiveness * 100).toFixed(0)} percent`)}>
               ${(health.avg_embassy_effectiveness * 100).toFixed(0)}%
             </span>
           </div>
@@ -1169,7 +1203,7 @@ export class VelgSimulationHealthView extends LitElement {
                         ${e.bleed_vector ?? msg('general')}
                       </span>
                       <span class="embassy-item__vector">${e.effectiveness_label}</span>
-                      <span class="embassy-item__score" style="color: ${color}">
+                      <span class="embassy-item__score" style="color: ${color}" aria-label=${msg(str`Embassy effectiveness: ${(e.effectiveness * 100).toFixed(0)} percent`)}>
                         ${(e.effectiveness * 100).toFixed(0)}%
                       </span>
                     </div>
@@ -1193,7 +1227,7 @@ export class VelgSimulationHealthView extends LitElement {
         <div class="bleed-stats">
           <div class="diplo-stat">
             <span class="diplo-stat__label">${msg('Permeability')}</span>
-            <span class="diplo-stat__value">${(health.bleed_permeability * 100).toFixed(0)}%</span>
+            <span class="diplo-stat__value" aria-label=${msg(str`Permeability: ${(health.bleed_permeability * 100).toFixed(0)} percent`)}>${(health.bleed_permeability * 100).toFixed(0)}%</span>
           </div>
           <div class="diplo-stat">
             <span class="diplo-stat__label">${msg('Outbound Echoes')}</span>
@@ -1205,7 +1239,7 @@ export class VelgSimulationHealthView extends LitElement {
           </div>
           <div class="diplo-stat">
             <span class="diplo-stat__label">${msg('Avg Outbound Strength')}</span>
-            <span class="diplo-stat__value">
+            <span class="diplo-stat__value" aria-label=${msg(str`Average outbound strength: ${(health.avg_outbound_strength * 100).toFixed(0)} percent`)}>
               ${(health.avg_outbound_strength * 100).toFixed(0)}%
             </span>
           </div>

@@ -6,6 +6,7 @@ import { appState } from '../../services/AppStateManager.js';
 import { healthApi } from '../../services/api/HealthApiService.js';
 import type { SimulationHealthDashboard, ZoneStability } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
+import { trapFocus, focusFirstElement } from '../shared/focus-trap.js';
 
 interface PanelAction {
   type: string;
@@ -363,6 +364,30 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
     if (this.simulationId) {
       this._loadHealthData();
     }
+    this._handleKeydown = this._handleKeydown.bind(this);
+    this.addEventListener('keydown', this._handleKeydown);
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.removeEventListener('keydown', this._handleKeydown);
+  }
+
+  protected updated(changed: Map<string, unknown>): void {
+    // Focus first element when panel becomes visible
+    if (changed.has('_dismissed') && !this._dismissed) {
+      focusFirstElement(this.shadowRoot);
+    }
+  }
+
+  private _handleKeydown(e: KeyboardEvent): void {
+    if (e.key === 'Escape') {
+      this._dismiss();
+      return;
+    }
+    // Trap focus inside the panel
+    const container = this.shadowRoot?.querySelector('.panel__inner');
+    trapFocus(e, container, this);
   }
 
   private async _loadHealthData(): Promise<void> {
@@ -596,7 +621,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
       <button
         class="action ${onCooldown ? 'action--cooldown' : ''}"
         style="--action-color: ${action.color}"
-        aria-disabled=${executing ? 'true' : 'false'}
+        ?disabled=${executing || onCooldown}
         @click=${() => this._handleAction(action)}
       >
         <div class="action__header">

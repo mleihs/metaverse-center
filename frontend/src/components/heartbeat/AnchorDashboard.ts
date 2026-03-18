@@ -6,36 +6,21 @@
  * indicators, radio-comm button styling, and status-driven glow effects.
  */
 
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import { heartbeatApi } from '../../services/api/HeartbeatApiService.js';
 import type { CollaborativeAnchor } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
-
-/* ── SVG helper for circular arcs ────────────────────────────────── */
-
-function describeArc(
-  cx: number,
-  cy: number,
-  r: number,
-  startAngle: number,
-  endAngle: number,
-): string {
-  const rad = (deg: number) => ((deg - 90) * Math.PI) / 180;
-  const x1 = cx + r * Math.cos(rad(startAngle));
-  const y1 = cy + r * Math.sin(rad(startAngle));
-  const x2 = cx + r * Math.cos(rad(endAngle));
-  const y2 = cy + r * Math.sin(rad(endAngle));
-  const large = endAngle - startAngle > 180 ? 1 : 0;
-  return `M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`;
-}
+import { describeArc } from '../../utils/svg.js';
+import { renderInfoBubble, infoBubbleStyles } from '../shared/info-bubble-styles.js';
+import { VelgToast } from '../shared/Toast.js';
 
 @localized()
 @customElement('velg-anchor-dashboard')
 export class VelgAnchorDashboard extends LitElement {
-  static styles = css`
+  static styles = [infoBubbleStyles, css`
     /* ── Host ──────────────────────────────────────────────── */
 
     :host {
@@ -88,7 +73,7 @@ export class VelgAnchorDashboard extends LitElement {
     @keyframes status-pulse {
       0%,
       100% {
-        opacity: 0.7;
+        opacity: 0.85;
       }
       50% {
         opacity: 1;
@@ -210,7 +195,7 @@ export class VelgAnchorDashboard extends LitElement {
     .empty__text {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-secondary);
       text-align: center;
       text-transform: uppercase;
       letter-spacing: 0.08em;
@@ -222,7 +207,7 @@ export class VelgAnchorDashboard extends LitElement {
     .loading {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-secondary);
       text-align: center;
       padding: var(--space-4);
     }
@@ -332,7 +317,7 @@ export class VelgAnchorDashboard extends LitElement {
 
     .anchor-card--dissolved {
       border-color: var(--color-gray-600, #666);
-      opacity: 0.7;
+      opacity: 0.85;
     }
 
     /* ── Card top row ──────────────────────────────────────── */
@@ -384,7 +369,7 @@ export class VelgAnchorDashboard extends LitElement {
     }
 
     .status-badge--dissolved {
-      color: var(--color-text-muted);
+      color: var(--color-text-secondary);
       border-color: var(--color-gray-600, #666);
     }
 
@@ -470,7 +455,7 @@ export class VelgAnchorDashboard extends LitElement {
     .radar-contacts__label {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      fill: var(--color-text-muted);
+      fill: var(--color-text-secondary);
       text-anchor: middle;
     }
 
@@ -501,7 +486,7 @@ export class VelgAnchorDashboard extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-secondary);
       letter-spacing: 0.04em;
     }
 
@@ -514,7 +499,7 @@ export class VelgAnchorDashboard extends LitElement {
       align-items: center;
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-secondary);
     }
 
     .meta-row__item {
@@ -574,7 +559,7 @@ export class VelgAnchorDashboard extends LitElement {
       border-color: var(--color-danger);
       background: rgba(var(--color-danger-rgb, 239 68 68) / 0.08);
     }
-  `;
+  `];
 
   @property({ type: String }) simulationId = '';
   @state() private _anchors: CollaborativeAnchor[] = [];
@@ -601,12 +586,22 @@ export class VelgAnchorDashboard extends LitElement {
   }
 
   private async _joinAnchor(anchorId: string): Promise<void> {
-    await heartbeatApi.joinAnchor(anchorId, this.simulationId);
+    const res = await heartbeatApi.joinAnchor(anchorId, this.simulationId);
+    if (res.success) {
+      VelgToast.success(msg('Joined anchor. Protection strengthens each tick.'));
+    } else {
+      VelgToast.error(res.error?.message ?? msg('Failed to join anchor.'));
+    }
     await this._load();
   }
 
   private async _leaveAnchor(anchorId: string): Promise<void> {
-    await heartbeatApi.leaveAnchor(anchorId, this.simulationId);
+    const res = await heartbeatApi.leaveAnchor(anchorId, this.simulationId);
+    if (res.success) {
+      VelgToast.info(msg('Left anchor.'));
+    } else {
+      VelgToast.error(res.error?.message ?? msg('Failed to leave anchor.'));
+    }
     await this._load();
   }
 
@@ -616,7 +611,10 @@ export class VelgAnchorDashboard extends LitElement {
     return html`
       <div class="header">
         <span class="header__icon-sway">${icons.anchor(16)}</span>
-        <h3 class="header__title">${msg('Collaborative Anchors')}</h3>
+        <h3 class="header__title">
+          ${msg('Collaborative Anchors')}
+          ${renderInfoBubble(msg('Anchors pool stability across embassy-connected simulations. Strength grows each tick. Higher strength + more participants = greater protection from resonance impacts.'))}
+        </h3>
       </div>
 
       ${this._loading
@@ -688,18 +686,18 @@ export class VelgAnchorDashboard extends LitElement {
         <div class="gauge-row">
           ${this._renderStrengthGauge(strengthPct)}
           ${this._renderRadarContacts(participantCount)}
-          <div class="protection-badge">
+          <div class="protection-badge" aria-label=${msg(str`Protection: ${protectionPct} percent`)}>
             <span class="protection-badge__icon" aria-hidden="true">
               ${icons.operativeGuardian(16)}
             </span>
-            <span class="protection-badge__value">${protectionPct}%</span>
-            <span class="protection-badge__suffix">${msg('Protection')}</span>
+            <span class="protection-badge__value" aria-hidden="true">${protectionPct}%</span>
+            <span class="protection-badge__suffix" aria-hidden="true">${msg('Protection')}</span>
           </div>
         </div>
 
         <!-- Meta row -->
         <div class="meta-row">
-          <span class="meta-row__item">
+          <span class="meta-row__item" aria-label=${msg(str`Strength: ${strengthPct} percent`)}>
             ${msg('Strength')}: ${strengthPct}%
           </span>
           <span class="meta-row__item">

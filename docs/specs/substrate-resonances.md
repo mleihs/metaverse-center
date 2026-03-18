@@ -534,3 +534,35 @@ The scheduler uses `get_admin_supabase()` (service_role client) — the same pat
 | 078 | Gameplay functions: `fn_resonance_operative_modifier()`, `fn_target_zone_pressure()` |
 | 079 | Seed gameplay settings: operative pressure/modifier caps, bot awareness |
 | 080 | Balance fixes: NULL bug fix, reduced caps (0.06→0.04), infiltrator oppositions, subsiding decay, `fn_attacker_pressure_penalty()`, `active_resonances` view fix |
+| 132 | Heartbeat balance: health baseline floor (0.10), scar susceptibility multiplier, passive attunement growth, adapt scar reduction, 8 new configurable settings, `climax_start_tick` column, composite indexes, `mv_simulation_health` rebuilt with configurable floor |
+| 133 | Batch RPCs: `fn_age_events_batch`, `fn_compute_event_pressure_batch`, `fn_deepen_attunements_batch`, `fn_strengthen_anchors_batch`, `fn_drift_scar_tissue_batch`. All SECURITY DEFINER + SET search_path, restricted to service_role |
+
+---
+
+## Heartbeat Balance Changes (v1.4)
+
+### Bug Fixes
+- **Bureau double-multiply**: `pressure_reduction` was `effectiveness × multiplier` (multiplier already in effectiveness). Fixed: `pressure_reduction = effectiveness`.
+- **Adapt response inert**: Adapt bypassed all pressure/status changes. Fixed: reduces scar tissue on parent narrative arc by configurable `bureau_adapt_scar_reduction` (default 20%).
+- **Anchor amplification**: Growth was `growth_per_sim × participant_count` per tick. Fixed: flat `growth_per_sim` per tick; participants only affect protection factor.
+- **Fresh sim critical**: Health formula gave 0% for missing diplomacy (20% weight). Fixed: configurable `health_baseline_floor` (default 0.10) added to MV formula.
+- **Climax ticks**: Used absolute tick count instead of relative. Fixed: `climax_start_tick` column tracks when arc entered climax.
+
+### Balance Changes (all admin-configurable via platform_settings)
+- Scar tissue amplifies resonance pressure via `scar_susceptibility_multiplier` (default 0.50)
+- Attunement grows passively during peace via `attunement_passive_growth_rate` (default 0.01)
+- Default tick interval reduced from 8h to 4h for better engagement
+- Scar tissue growth rate externalized from hardcoded 0.05
+
+### World Evolution
+- **Event → agent memories**: Reactions auto-create memories via `AgentMemoryService.record_observation(source_type="event_reaction")`
+- **Building condition degradation**: Crisis/sabotage events degrade building condition in affected zones
+- **Convergence → lore**: Convergence moments auto-generate new `simulation_lore` sections
+- **Arc scars → zone descriptions**: Resolved high-pressure arcs append scar descriptions to affected zones
+
+### Architecture
+- `PlatformConfigService` replaces duplicated config loading (single source of truth)
+- `make_heartbeat_entry()` shared builder used by all 5 heartbeat services
+- Dashboard queries moved from router to `HeartbeatService.get_admin_dashboard()`
+- 5 Postgres batch RPCs replace O(N) individual UPDATE loops
+- All module-level imports (zero late imports)

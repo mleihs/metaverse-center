@@ -7,13 +7,15 @@
  * Max 2 selectable with classified-style slot badge.
  */
 
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import { heartbeatApi } from '../../services/api/HeartbeatApiService.js';
 import type { ResonanceSignature, SubstrateAttunement } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
+import { renderInfoBubble, infoBubbleStyles } from '../shared/info-bubble-styles.js';
+import { VelgToast } from '../shared/Toast.js';
 
 /* ── Wave frequency offsets per signature (in deg) for unique patterns ── */
 const WAVE_PHASES: Record<ResonanceSignature, number> = {
@@ -43,7 +45,7 @@ const VU_SEGMENTS = 10;
 @localized()
 @customElement('velg-attunement-settings')
 export class VelgAttunementSettings extends LitElement {
-  static styles = css`
+  static styles = [infoBubbleStyles, css`
     /* ═══════════════════════════════════════════════════════
        SUBSTRATE FREQUENCY TUNER
        ═══════════════════════════════════════════════════════ */
@@ -370,7 +372,7 @@ export class VelgAttunementSettings extends LitElement {
       justify-content: space-between;
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-secondary);
       margin-top: var(--space-1, 4px);
     }
 
@@ -489,7 +491,7 @@ export class VelgAttunementSettings extends LitElement {
         transition: none;
       }
     }
-  `;
+  `];
 
   @property({ type: String }) simulationId = '';
   @state() private _attunements: SubstrateAttunement[] = [];
@@ -523,16 +525,27 @@ export class VelgAttunementSettings extends LitElement {
 
     if (existing) {
       const res = await heartbeatApi.removeAttunement(this.simulationId, sig);
-      if (!res.success) this._error = res.error?.message ?? msg('Failed to remove attunement.');
+      if (res.success) {
+        VelgToast.info(msg('Attunement removed.'));
+      } else {
+        this._error = res.error?.message ?? msg('Failed to remove attunement.');
+        VelgToast.error(this._error);
+      }
     } else {
       if (this._attunements.length >= 2) {
         this._error = msg('Maximum 2 attunements. Remove one first.');
+        VelgToast.warning(this._error);
         this._loading = false;
         this._tuningKey = '';
         return;
       }
       const res = await heartbeatApi.setAttunement(this.simulationId, { resonance_signature: sig });
-      if (!res.success) this._error = res.error?.message ?? msg('Failed to set attunement.');
+      if (res.success) {
+        VelgToast.success(msg('Attunement activated. Depth will grow each tick.'));
+      } else {
+        this._error = res.error?.message ?? msg('Failed to set attunement.');
+        VelgToast.error(this._error);
+      }
     }
 
     // Track which sigs were already harmonized before reload
@@ -585,7 +598,10 @@ export class VelgAttunementSettings extends LitElement {
     return html`
       <div class="header">
         <div class="header__left">
-          <h3 class="header__title">${msg('Substrate Harmonics')}</h3>
+          <h3 class="header__title">
+            ${msg('Substrate Harmonics')}
+            ${renderInfoBubble(msg('Attune to up to 2 resonance signatures. Depth grows passively and faster when matching events are active. At threshold, positive events may spawn. Choose signatures that match your simulation\'s threats.'))}
+          </h3>
           <div class="header__ekg">
             <svg viewBox="0 0 300 12" preserveAspectRatio="none">
               <polyline
@@ -694,7 +710,14 @@ export class VelgAttunementSettings extends LitElement {
         <!-- VU meter depth bar (only when attuned) -->
         ${isAttuned
           ? html`
-              <div class="vu-meter" aria-label=${msg('Attunement depth')}>
+              <div
+                class="vu-meter"
+                role="meter"
+                aria-valuenow=${Math.round(depth * 100)}
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-label=${msg(str`Attunement depth: ${(depth * 100).toFixed(0)} percent of ${Math.round(threshold * 100)} percent threshold`)}
+              >
                 ${Array.from({ length: VU_SEGMENTS }, (_, i) => {
                   const isLit = i < litCount;
                   const isHot = isLit && i >= VU_SEGMENTS * 0.8;
@@ -707,7 +730,7 @@ export class VelgAttunementSettings extends LitElement {
                 </div>
               </div>
               <div class="depth-info">
-                <span>${msg('Depth')}: ${(depth * 100).toFixed(0)}%</span>
+                <span aria-label=${msg(str`Depth: ${(depth * 100).toFixed(0)} percent`)}>${msg('Depth')}: ${(depth * 100).toFixed(0)}%</span>
                 <span>${att!.ticks_exposed} ${msg('ticks')}</span>
               </div>
             `

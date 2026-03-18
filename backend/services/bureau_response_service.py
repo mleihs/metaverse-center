@@ -8,10 +8,11 @@ from __future__ import annotations
 
 import logging
 from datetime import UTC, datetime
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from fastapi import HTTPException, status
 
+from backend.services.heartbeat_entry_builder import make_heartbeat_entry
 from supabase import Client
 
 logger = logging.getLogger(__name__)
@@ -191,6 +192,11 @@ class BureauResponseService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Pending bureau response not found.",
             )
+        logger.info(
+            "Bureau response cancelled: %s (sim %s)",
+            response_id, sim_id,
+            extra={"simulation_id": str(sim_id), "response_id": str(response_id)},
+        )
         return response.data[0]
 
     @classmethod
@@ -261,16 +267,11 @@ class BureauResponseService:
                 qualification_match = min(1.0, agent_count / max(1, impact_level / 3))
                 effectiveness = round(qualification_match * multiplier, 4)
 
-            # Compute pressure reduction
-            pressure_reduction = round(effectiveness * multiplier, 4)
+            # Pressure reduction equals effectiveness (no double-multiply)
+            pressure_reduction = effectiveness
 
-            # Apply pressure reduction to event
-            if resp_type != "adapt":
-                current_pressure = (
-                    float(event_data.get("heartbeat_pressure", 0))
-                    if "heartbeat_pressure" in event_data
-                    else 0
-                )
+            # Apply pressure reduction to event (contain + remediate)
+            if resp_type in ("contain", "remediate"):
                 # Read event's current pressure
                 ev = (
                     admin.table("events")
@@ -292,6 +293,12 @@ class BureauResponseService:
 
                     admin.table("events").update(update_data).eq("id", resp["event_id"]).execute()
 
+            elif resp_type == "adapt":
+                # Adapt reduces scar tissue on the parent narrative arc
+                pressure_reduction = cls._apply_adapt_scar_reduction(
+                    admin, sim_id, resp["event_id"], config,
+                )
+
             # Update response record
             admin.table("bureau_responses").update({
                 "status": "resolved",
@@ -304,27 +311,23 @@ class BureauResponseService:
 
             resolved_count += 1
 
-            entries.append({
-                "id": str(uuid4()),
-                "heartbeat_id": str(heartbeat_id),
-                "simulation_id": str(sim_id),
-                "tick_number": tick_number,
-                "entry_type": "bureau_response",
-                "narrative_en": (
+            entries.append(make_heartbeat_entry(
+                heartbeat_id, sim_id, tick_number, "bureau_response",
+                (
                     f"Bureau Response resolved: {resp_type.title()} of '{event_title}' "
                     f"effectiveness {effectiveness:.2f}. Pressure reduced by {pressure_reduction:.2f}."
                 ),
-                "narrative_de": (
+                (
                     f"Buero-Reaktion aufgeloest: {resp_type.title()} von '{event_title}' "
                     f"Effektivitaet {effectiveness:.2f}. Druck reduziert um {pressure_reduction:.2f}."
                 ),
-                "metadata": {
+                severity="positive" if effectiveness > 0.5 else "info",
+                metadata={
                     "response_id": resp_id, "response_type": resp_type,
                     "event_id": resp["event_id"], "effectiveness": effectiveness,
                     "pressure_reduction": pressure_reduction,
                 },
-                "severity": "positive" if effectiveness > 0.5 else "info",
-            })
+            ))
 
             logger.info(
                 "Bureau response resolved: %s for event %s (effectiveness %.2f)",
@@ -337,3 +340,47 @@ class BureauResponseService:
             )
 
         return resolved_count, entries
+
+    # ── Adapt Scar Reduction ─────────────────────────────────────
+
+    @classmethod
+    def _apply_adapt_scar_reduction(
+        cls, admin: Client, sim_id: UUID,
+        event_id: str, config: dict | None,
+    ) -> float:
+        """Reduce scar tissue on the narrative arc containing this event.
+
+        Returns the amount of scar tissue reduced (for pressure_reduction tracking).
+        """
+        adapt_scar_reduction = float(
+            (config or {}).get("bureau_adapt_scar_reduction", 0.20),
+        )
+        arcs = (
+            admin.table("narrative_arcs")
+            .select("id, scar_tissue_deposited, source_event_ids")
+            .eq("simulation_id", str(sim_id))
+            .in_("status", ["active", "climax", "resolving"])
+            .execute()
+        ).data or []
+
+        for arc in arcs:
+            source_ids = arc.get("source_event_ids") or []
+            if event_id in source_ids:
+                current_scar = float(arc.get("scar_tissue_deposited", 0))
+                new_scar = round(max(0, current_scar * (1 - adapt_scar_reduction)), 4)
+                admin.table("narrative_arcs").update({
+                    "scar_tissue_deposited": new_scar,
+                }).eq("id", arc["id"]).execute()
+                reduction = round(current_scar - new_scar, 4)
+                logger.info(
+                    "Adapt response reduced scar tissue on arc %s: %.4f -> %.4f",
+                    arc["id"], current_scar, new_scar,
+                    extra={
+                        "simulation_id": str(sim_id),
+                        "arc_id": arc["id"],
+                        "scar_reduction": reduction,
+                    },
+                )
+                return reduction
+
+        return 0.0

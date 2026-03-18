@@ -13,6 +13,8 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { heartbeatApi } from '../../services/api/HeartbeatApiService.js';
 import type { Agent, BureauResponse, BureauResponseType } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
+import { renderInfoBubble, infoBubbleStyles } from '../shared/info-bubble-styles.js';
+import { VelgToast } from '../shared/Toast.js';
 
 const RESPONSE_DESCRIPTIONS: Record<BureauResponseType, { label: string; desc: string; cost: string }> = {
   contain: {
@@ -35,7 +37,7 @@ const RESPONSE_DESCRIPTIONS: Record<BureauResponseType, { label: string; desc: s
 @localized()
 @customElement('velg-bureau-response-panel')
 export class VelgBureauResponsePanel extends LitElement {
-  static styles = css`
+  static styles = [infoBubbleStyles, css`
     /* ═══════════════════════════════════════
        KEYFRAMES
        ═══════════════════════════════════════ */
@@ -210,7 +212,7 @@ export class VelgBureauResponsePanel extends LitElement {
       font-weight: 700;
       letter-spacing: 0.2em;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-secondary);
       border: 1px solid color-mix(in srgb, var(--color-warning) 30%, transparent);
       padding: 2px var(--space-2);
     }
@@ -317,7 +319,7 @@ export class VelgBureauResponsePanel extends LitElement {
     .type-card__cost {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-secondary);
       margin-top: var(--space-1);
       letter-spacing: 0.04em;
     }
@@ -325,7 +327,7 @@ export class VelgBureauResponsePanel extends LitElement {
     .type-card__icon {
       flex-shrink: 0;
       margin-top: 2px;
-      opacity: 0.7;
+      opacity: 0.85;
     }
 
     .type-card--contain .type-card__icon { color: var(--color-warning); }
@@ -383,7 +385,7 @@ export class VelgBureauResponsePanel extends LitElement {
       font-weight: 700;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-secondary);
       margin-bottom: var(--space-2);
     }
 
@@ -423,7 +425,7 @@ export class VelgBureauResponsePanel extends LitElement {
 
     .dossier-card__portrait-placeholder {
       color: var(--color-text-muted);
-      opacity: 0.5;
+      opacity: 0.6;
     }
 
     .dossier-card__name {
@@ -440,7 +442,7 @@ export class VelgBureauResponsePanel extends LitElement {
     .dossier-card__role {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      color: var(--color-text-muted);
+      color: var(--color-text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
@@ -511,7 +513,7 @@ export class VelgBureauResponsePanel extends LitElement {
       font-weight: 600;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-secondary);
       background: transparent;
       border: 1px solid var(--color-border);
       padding: var(--space-2) var(--space-4);
@@ -564,7 +566,7 @@ export class VelgBureauResponsePanel extends LitElement {
     .pending-dispatch__detail {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-secondary);
     }
 
     /* ═══════════════════════════════════════
@@ -594,7 +596,7 @@ export class VelgBureauResponsePanel extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.15em;
-      color: var(--color-text-muted);
+      color: var(--color-text-secondary);
     }
 
     .history-entry {
@@ -655,8 +657,8 @@ export class VelgBureauResponsePanel extends LitElement {
     }
 
     .history-entry__status--expired {
-      color: var(--color-text-muted);
-      border-color: color-mix(in srgb, var(--color-text-muted) 40%, transparent);
+      color: var(--color-text-secondary);
+      border-color: color-mix(in srgb, var(--color-text-secondary) 40%, transparent);
     }
 
     .history-entry__status--resolving {
@@ -671,7 +673,7 @@ export class VelgBureauResponsePanel extends LitElement {
     }
 
     .history-entry__agents {
-      color: var(--color-text-muted);
+      color: var(--color-text-secondary);
     }
 
     .history-entry__eff {
@@ -791,7 +793,7 @@ export class VelgBureauResponsePanel extends LitElement {
         max-width: 80px;
       }
     }
-  `;
+  `];
 
   @property({ type: String }) simulationId = '';
   @property({ type: String }) eventId = '';
@@ -849,9 +851,11 @@ export class VelgBureauResponsePanel extends LitElement {
 
     if (res.success) {
       await this._loadResponses();
+      VelgToast.success(msg('Bureau response deployed. Will resolve at next tick.'));
       this._selectedType = null;
     } else {
       this._error = res.error?.message ?? msg('Failed to create response.');
+      VelgToast.error(this._error);
     }
     this._loading = false;
   }
@@ -869,7 +873,10 @@ export class VelgBureauResponsePanel extends LitElement {
 
         <div class="panel__header">
           <span class="panel__icon">${icons.stampClassified(16)}</span>
-          <h3 class="panel__title">${msg('Bureau Field Response')}</h3>
+          <h3 class="panel__title">
+            ${msg('Bureau Field Response')}
+            ${renderInfoBubble(msg('Assign agents to contain, remediate, or adapt to active events. Responses resolve at the next heartbeat tick. Contain reduces pressure, remediate can resolve events, adapt reduces accumulated scar tissue.'))}
+          </h3>
           <span class="panel__classification">${msg('Classified')}</span>
         </div>
 

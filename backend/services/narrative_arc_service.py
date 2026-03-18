@@ -5,10 +5,13 @@ Called from HeartbeatService Phase 4. Pure DB computations, no AI.
 
 from __future__ import annotations
 
+import json
 import logging
 from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
+from backend.models.resonance import RESONANCE_SIGNATURES
+from backend.services.heartbeat_entry_builder import make_heartbeat_entry
 from supabase import Client
 
 logger = logging.getLogger(__name__)
@@ -80,7 +83,6 @@ class NarrativeArcService:
             return entries
 
         # Group by resonance signature tag
-        from backend.models.resonance import RESONANCE_SIGNATURES
         sig_events: dict[str, list[dict]] = {}
         for event in events:
             tags = event.get("tags") or []
@@ -128,7 +130,7 @@ class NarrativeArcService:
                 "source_event_ids": event_ids,
             }).execute()
 
-            entries.append(_make_entry(
+            entries.append(make_heartbeat_entry(
                 heartbeat_id, sim_id, tick_number, "narrative_arc",
                 f"NARRATIVE ARC DETECTED: {len(sig_event_list)} '{signature}' events "
                 f"converging — escalation pattern building (pressure {initial_pressure:.2f}).",
@@ -266,7 +268,7 @@ class NarrativeArcService:
                 narrative_en = rule.get("narrative_en", f"{source_sig} cascading into {target_sig}")
                 narrative_de = rule.get("narrative_de", f"{source_sig} kaskadiert in {target_sig}")
 
-                entries.append(_make_entry(
+                entries.append(make_heartbeat_entry(
                     heartbeat_id, sim_id, tick_number, "cascade_spawn",
                     f"NARRATIVE ARC: {narrative_en} (cascade pressure {child_pressure:.2f})",
                     f"NARRATIVER BOGEN: {narrative_de} (Kaskadendruck {child_pressure:.2f})",
@@ -309,7 +311,6 @@ class NarrativeArcService:
             ).data
             if not pairs_row:
                 return entries, detected
-            import json
             pairs = pairs_row[0]["setting_value"]
             if isinstance(pairs, str):
                 pairs = json.loads(pairs)
@@ -384,7 +385,7 @@ class NarrativeArcService:
                 effects = pair_data.get("effects", {})
                 effects_desc = ", ".join(f"{k}: {v:+.2f}" for k, v in effects.items())
 
-                entries.append(_make_entry(
+                entries.append(make_heartbeat_entry(
                     heartbeat_id, sim_id, tick_number, "convergence",
                     f"CONVERGENCE DETECTED: The {arch_a} + The {arch_b} = '{conv_name}'. {effects_desc}.",
                     f"KONVERGENZ ERKANNT: Der {arch_a} + Der {arch_b} = '{conv_name}'. {effects_desc}.",
@@ -402,7 +403,57 @@ class NarrativeArcService:
                     extra={"simulation_id": str(sim_id), "convergence_id": str(conv_id)},
                 )
 
+                # Generate new lore section from convergence (world evolution)
+                cls._create_convergence_lore(
+                    admin, sim_id, arch_a, arch_b, conv_name, effects_desc,
+                )
+
         return entries, detected
+
+    @classmethod
+    def _create_convergence_lore(
+        cls, admin: Client, sim_id: UUID,
+        arch_a: str, arch_b: str, conv_name: str, effects_desc: str,
+    ) -> None:
+        """Create a new lore section when a convergence is detected."""
+        try:
+            # Find next sort_order
+            existing = (
+                admin.table("simulation_lore")
+                .select("sort_order")
+                .eq("simulation_id", str(sim_id))
+                .order("sort_order", desc=True)
+                .limit(1)
+                .execute()
+            ).data
+            next_order = (existing[0]["sort_order"] + 1) if existing else 0
+
+            admin.table("simulation_lore").insert({
+                "simulation_id": str(sim_id),
+                "sort_order": next_order,
+                "chapter": "Echoes of Convergence",
+                "arcanum": f"The {conv_name}",
+                "title": conv_name,
+                "epigraph": f"When The {arch_a} met The {arch_b}, the substrate trembled.",
+                "body": (
+                    f"The convergence of The {arch_a} and The {arch_b} reshaped the fabric "
+                    f"of this simulation. Known as '{conv_name}', this moment marked a turning "
+                    f"point in the world's history. {effects_desc}"
+                ),
+            }).execute()
+
+            logger.info(
+                "Convergence lore created: '%s' (order %d)",
+                conv_name, next_order,
+                extra={"simulation_id": str(sim_id), "convergence_name": conv_name},
+            )
+        except Exception:
+            logger.warning(
+                "Failed to create convergence lore for '%s'",
+                conv_name,
+                extra={"simulation_id": str(sim_id)},
+                exc_info=True,
+            )
 
     # ── Arc Advancement ─────────────────────────────────────────
 
@@ -439,7 +490,7 @@ class NarrativeArcService:
                 # Building → active after 2 ticks
                 if ticks_active >= 2:
                     update_data["status"] = "active"
-                    entries.append(_make_entry(
+                    entries.append(make_heartbeat_entry(
                         heartbeat_id, sim_id, tick_number, "narrative_arc",
                         f"Narrative arc '{arc.get('primary_signature', 'unknown')}' "
                         f"({arc_type}) became ACTIVE.",
@@ -472,7 +523,8 @@ class NarrativeArcService:
                 # Check for climax
                 if pressure > 0.8:
                     update_data["status"] = "climax"
-                    entries.append(_make_entry(
+                    update_data["climax_start_tick"] = tick_number
+                    entries.append(make_heartbeat_entry(
                         heartbeat_id, sim_id, tick_number, "narrative_arc",
                         f"Narrative arc '{arc.get('primary_signature', 'unknown')}' "
                         f"({arc_type}) reached CLIMAX (pressure {pressure:.2f}).",
@@ -487,7 +539,9 @@ class NarrativeArcService:
 
             elif arc_status == "climax":
                 # Climax → resolving after 2 ticks at climax
-                climax_ticks = ticks_active - (arc.get("started_at_tick", 0) or 0)
+                # Use climax_start_tick if tracked, otherwise estimate from peak_pressure timing
+                climax_start = arc.get("climax_start_tick") or arc.get("last_active_tick", tick_number)
+                climax_ticks = tick_number - climax_start
                 if climax_ticks >= 2:
                     update_data["status"] = "resolving"
                     update_data["pressure"] = round(pressure * 0.8, 4)
@@ -498,12 +552,13 @@ class NarrativeArcService:
                 update_data["pressure"] = new_pressure
                 if new_pressure < 0.1:
                     update_data["status"] = "resolved"
-                    entries.append(_make_entry(
+                    sig = arc.get("primary_signature", "unknown")
+                    entries.append(make_heartbeat_entry(
                         heartbeat_id, sim_id, tick_number, "narrative_arc",
-                        f"Narrative arc '{arc.get('primary_signature', 'unknown')}' "
-                        f"({arc_type}) RESOLVED. Peak pressure was {peak:.2f}.",
-                        f"Narrativer Bogen '{arc.get('primary_signature', 'unknown')}' "
-                        f"({arc_type}) AUFGELOEST. Spitzendruck war {peak:.2f}.",
+                        f"Narrative arc '{sig}' ({arc_type}) RESOLVED. "
+                        f"Peak pressure was {peak:.2f}.",
+                        f"Narrativer Bogen '{sig}' ({arc_type}) AUFGELOEST. "
+                        f"Spitzendruck war {peak:.2f}.",
                         severity="positive",
                         metadata={
                             "arc_id": arc_id, "arc_type": arc_type,
@@ -511,9 +566,76 @@ class NarrativeArcService:
                         },
                     ))
 
+                    # Scar zones if peak pressure was significant
+                    if peak > 0.5:
+                        cls._scar_affected_zones(
+                            admin, sim_id, arc, arc_type, sig,
+                        )
+
             admin.table("narrative_arcs").update(update_data).eq("id", arc_id).execute()
 
         return entries
+
+    # ── Zone Scarring ──────────────────────────────────────────
+
+    @classmethod
+    def _scar_affected_zones(
+        cls, admin: Client, sim_id: UUID,
+        arc: dict, arc_type: str, signature: str,
+    ) -> None:
+        """Append scar description to zones affected by a resolved high-pressure arc."""
+        try:
+            source_event_ids = arc.get("source_event_ids") or []
+            if not source_event_ids:
+                return
+
+            # Find zones linked to the arc's source events
+            zone_links = (
+                admin.table("event_zone_links")
+                .select("zone_id")
+                .in_("event_id", source_event_ids)
+                .execute()
+            ).data or []
+
+            seen_zones: set[str] = set()
+            scar_suffix = f" The district still bears marks of the {arc_type} of {signature}."
+
+            for link in zone_links:
+                zone_id = link["zone_id"]
+                if zone_id in seen_zones:
+                    continue
+                seen_zones.add(zone_id)
+
+                zone = (
+                    admin.table("zones")
+                    .select("id, description")
+                    .eq("id", zone_id)
+                    .limit(1)
+                    .execute()
+                ).data
+                if zone:
+                    current_desc = zone[0].get("description") or ""
+                    if scar_suffix not in current_desc:
+                        admin.table("zones").update({
+                            "description": current_desc + scar_suffix,
+                        }).eq("id", zone_id).execute()
+
+            if seen_zones:
+                logger.info(
+                    "Scarred %d zone(s) from resolved %s/%s arc",
+                    len(seen_zones), arc_type, signature,
+                    extra={
+                        "simulation_id": str(sim_id),
+                        "arc_id": arc.get("id"),
+                        "zones_scarred": len(seen_zones),
+                    },
+                )
+        except Exception:
+            logger.warning(
+                "Failed to scar zones for arc %s", arc.get("id"),
+                extra={"simulation_id": str(sim_id)},
+                exc_info=True,
+            )
 
     # ── Query Methods (for API) ─────────────────────────────────
 
@@ -550,20 +672,3 @@ class NarrativeArcService:
         return response.data[0] if response.data else None
 
 
-def _make_entry(
-    heartbeat_id: UUID, sim_id: UUID, tick_number: int,
-    entry_type: str, narrative_en: str, narrative_de: str,
-    severity: str = "info", metadata: dict | None = None,
-) -> dict:
-    """Build a heartbeat_entries row dict."""
-    return {
-        "id": str(uuid4()),
-        "heartbeat_id": str(heartbeat_id),
-        "simulation_id": str(sim_id),
-        "tick_number": tick_number,
-        "entry_type": entry_type,
-        "narrative_en": narrative_en,
-        "narrative_de": narrative_de,
-        "metadata": metadata or {},
-        "severity": severity,
-    }

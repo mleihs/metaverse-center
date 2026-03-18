@@ -24,6 +24,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { heartbeatApi } from '../../services/api/HeartbeatApiService.js';
 import type { HeartbeatEntry, HeartbeatEntryType, HeartbeatOverview } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
+import { renderInfoBubble, infoBubbleStyles } from '../shared/info-bubble-styles.js';
 
 type FilterKey = 'all' | 'zone' | 'events' | 'resonance' | 'bureau' | 'diplomatic' | 'arcs';
 
@@ -40,7 +41,7 @@ const FILTER_TYPES: Record<FilterKey, HeartbeatEntryType[] | null> = {
 @localized()
 @customElement('velg-simulation-pulse')
 export class VelgSimulationPulse extends SignalWatcher(LitElement) {
-  static styles = css`
+  static styles = [infoBubbleStyles, css`
     /* ═══════════════════════════════════════
        SUBSTRATE MONITORING STATION
        Classified Medical Monitoring Aesthetic
@@ -538,13 +539,13 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-gray-400);
+      color: var(--color-gray-300);
     }
 
     .entry__meta {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-gray-400);
+      color: var(--color-gray-300);
       white-space: nowrap;
       align-self: start;
       padding-top: 2px;
@@ -735,7 +736,7 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
     }
 
     @keyframes loading-pulse {
-      0%, 100% { opacity: 0.5; }
+      0%, 100% { opacity: 0.7; }
       50% { opacity: 1; }
     }
 
@@ -796,7 +797,7 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
         animation: none !important;
       }
     }
-  `;
+  `];
 
   @property({ type: String }) simulationId = '';
   @state() private _entries: HeartbeatEntry[] = [];
@@ -961,7 +962,10 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
           role="status"
           aria-label=${msg('Heartbeat status') + ': ' + statusClass}
         ></span>
-        <h2 class="pulse-header__title">${msg('Substrate Pulse')}</h2>
+        <h2 class="pulse-header__title">
+          ${msg('Substrate Pulse')}
+          ${renderInfoBubble(msg('The Substrate Pulse monitors all heartbeat activity. Every tick, the simulation processes events, narrative arcs, and zone dynamics. Filter by category to focus on specific systems.'))}
+        </h2>
         ${o ? html`
           <span class="pulse-header__tick" aria-label=${msg('Current tick')}>
             ${msg('Tick')} #${o.last_tick}

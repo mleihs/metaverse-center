@@ -2,6 +2,28 @@
  * Text utilities for display formatting.
  */
 
+// ── Number Formatting ────────────────────────────────────────────
+
+/** Format a 0–1 value as a percentage string (e.g. 0.483 → "48%"). */
+export function formatPercent(value: number, decimals = 0): string {
+  return `${(value * 100).toFixed(decimals)}%`;
+}
+
+/** Format a signed delta (e.g. +0.05 → "+5%", -0.12 → "−12%"). */
+export function formatDelta(value: number, decimals = 0): string {
+  const sign = value >= 0 ? '+' : '−';
+  return `${sign}${Math.abs(value * 100).toFixed(decimals)}%`;
+}
+
+/** Format tick count as human-readable duration (e.g. 3 ticks × 8h = "1d"). */
+export function formatTickDuration(ticks: number, hoursPerTick = 8): string {
+  const totalHours = ticks * hoursPerTick;
+  if (totalHours < 24) return `${totalHours}h`;
+  const days = Math.floor(totalHours / 24);
+  const hours = totalHours % 24;
+  return hours > 0 ? `${days}d ${hours}h` : `${days}d`;
+}
+
 /** Convert a snake_case or SCREAMING_SNAKE enum value to Title Case. */
 export function humanizeEnum(value: string): string {
   return value

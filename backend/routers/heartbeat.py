@@ -417,87 +417,8 @@ async def get_heartbeat_dashboard(
     admin_supabase: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Admin heartbeat dashboard — all simulation statuses + global config."""
-    # Load global config
-    enabled, interval = await HeartbeatService._load_config(admin_supabase)
-
-    # Load active systems
-    systems_row = (
-        admin_supabase.table("platform_settings")
-        .select("setting_value")
-        .eq("setting_key", "heartbeat_systems")
-        .limit(1)
-        .execute()
-    ).data
-    import json
-    active_systems = []
-    if systems_row:
-        val = systems_row[0]["setting_value"]
-        active_systems = json.loads(val) if isinstance(val, str) else val
-
-    # Get all active simulations with heartbeat state
-    sims = (
-        admin_supabase.table("simulations")
-        .select("id, name, slug, last_heartbeat_tick, last_heartbeat_at, next_heartbeat_at, status")
-        .eq("status", "active")
-        .eq("simulation_type", "template")
-        .is_("deleted_at", "null")
-        .order("name")
-        .execute()
-    ).data or []
-
-    # Get arc counts and scar tissue per simulation
-    sim_data = []
-    for sim in sims:
-        sid = sim["id"]
-
-        arcs = (
-            admin_supabase.table("narrative_arcs")
-            .select("id", count="exact")
-            .eq("simulation_id", sid)
-            .in_("status", ["building", "active", "climax"])
-            .execute()
-        )
-
-        pending = (
-            admin_supabase.table("bureau_responses")
-            .select("id", count="exact")
-            .eq("simulation_id", sid)
-            .eq("status", "pending")
-            .execute()
-        )
-
-        # Scar tissue from arcs
-        scar_arcs = (
-            admin_supabase.table("narrative_arcs")
-            .select("scar_tissue_deposited")
-            .eq("simulation_id", sid)
-            .gt("scar_tissue_deposited", 0)
-            .execute()
-        ).data or []
-        total_scar = sum(float(a.get("scar_tissue_deposited", 0)) for a in scar_arcs)
-
-        sim_data.append({
-            "simulation_id": sid,
-            "simulation_name": sim.get("name", ""),
-            "slug": sim.get("slug", ""),
-            "last_tick": sim.get("last_heartbeat_tick", 0),
-            "last_heartbeat_at": sim.get("last_heartbeat_at"),
-            "next_heartbeat_at": sim.get("next_heartbeat_at"),
-            "status": "active",
-            "active_arcs": arcs.count or 0,
-            "scar_tissue_level": round(total_scar, 4),
-            "pending_responses": pending.count or 0,
-        })
-
-    return {
-        "success": True,
-        "data": {
-            "global_enabled": enabled,
-            "interval_seconds": interval,
-            "active_systems": active_systems,
-            "simulations": sim_data,
-        },
-    }
+    data = await HeartbeatService.get_admin_dashboard(admin_supabase)
+    return {"success": True, "data": data}
 
 
 @router.get("/api/v1/admin/heartbeat/cascade-rules")

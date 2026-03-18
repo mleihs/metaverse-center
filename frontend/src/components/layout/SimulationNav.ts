@@ -262,6 +262,20 @@ export class VelgSimulationNav extends SignalWatcher(LitElement) {
     }
 
     @media (prefers-reduced-motion: reduce) {
+      .nav__tab {
+        animation: none;
+        opacity: 1;
+        transform: none;
+      }
+
+      .nav__tab::before {
+        animation: none;
+      }
+
+      .nav__tab--active .nav__icon {
+        animation: none;
+      }
+
       .nav__badge,
       .mobile-menu__badge {
         animation: none;
@@ -463,8 +477,36 @@ export class VelgSimulationNav extends SignalWatcher(LitElement) {
   }
 
   private get _badgedTabs(): Set<string> {
-    if (!appState.canEdit.value || !this.simulationId) return new Set();
-    return forgeStateManager.getUnpurchasedTabPaths(this.simulationId);
+    const badged = new Set<string>();
+
+    // Forge feature badges (existing)
+    if (appState.canEdit.value && this.simulationId) {
+      for (const path of forgeStateManager.getUnpurchasedTabPaths(this.simulationId)) {
+        badged.add(path);
+      }
+    }
+
+    // Heartbeat activity badges — show on pulse/events/health if new ticks since last visit
+    if (this.simulationId) {
+      const sim = appState.currentSimulation.value;
+      const lastHeartbeat = sim?.last_heartbeat_at;
+      if (lastHeartbeat) {
+        const heartbeatTabs = ['pulse', 'events', 'health'];
+        for (const tab of heartbeatTabs) {
+          if (tab === this._activeTab) {
+            // Currently viewing — mark as visited
+            localStorage.setItem(`nav_visited_${this.simulationId}_${tab}`, lastHeartbeat);
+          } else {
+            const lastVisited = localStorage.getItem(`nav_visited_${this.simulationId}_${tab}`);
+            if (!lastVisited || lastVisited < lastHeartbeat) {
+              badged.add(tab);
+            }
+          }
+        }
+      }
+    }
+
+    return badged;
   }
 
   protected render() {
@@ -490,7 +532,7 @@ export class VelgSimulationNav extends SignalWatcher(LitElement) {
             >
               <span class="nav__icon">${tab.icon()}</span>
               <span class="nav__label">${tab.label}</span>
-              ${badged.has(tab.path) ? html`<span class="nav__badge"></span>` : nothing}
+              ${badged.has(tab.path) ? html`<span class="nav__badge" aria-label=${msg('New activity')}></span>` : nothing}
             </a>
           `,
         )}

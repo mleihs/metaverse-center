@@ -6,13 +6,16 @@ Attunement deepens each tick, eventually producing positive events.
 
 from __future__ import annotations
 
+import json
 import logging
 import random
-from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from fastapi import HTTPException, status
 
+from backend.models.resonance import RESONANCE_SIGNATURES
+from backend.services.heartbeat_entry_builder import make_heartbeat_entry
+from backend.services.platform_config_service import PlatformConfigService
 from supabase import Client
 
 logger = logging.getLogger(__name__)
@@ -69,30 +72,19 @@ class AttunementService:
         signature: str, user_id: UUID,
     ) -> dict:
         """Set a resonance signature attunement (max 2 per sim)."""
-        from backend.models.resonance import RESONANCE_SIGNATURES
         if signature not in RESONANCE_SIGNATURES:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Invalid resonance signature '{signature}'.",
             )
 
-        # Load max attunements from config
-        max_attunements = _DEFAULT_MAX_ATTUNEMENTS
-        cooldown_ticks = _DEFAULT_SWITCHING_COOLDOWN_TICKS
-        try:
-            cfg_rows = (
-                supabase.table("platform_settings")
-                .select("setting_key, setting_value")
-                .in_("setting_key", ["heartbeat_max_attunements", "heartbeat_switching_cooldown_ticks"])
-                .execute()
-            ).data or []
-            for r in cfg_rows:
-                if r["setting_key"] == "heartbeat_max_attunements":
-                    max_attunements = int(r["setting_value"])
-                elif r["setting_key"] == "heartbeat_switching_cooldown_ticks":
-                    cooldown_ticks = int(r["setting_value"])
-        except Exception:
-            logger.debug("Attunement config load failed, using defaults")
+        # Load max attunements from config via PlatformConfigService
+        att_config = PlatformConfigService.get_multiple(supabase, {
+            "max_attunements": _DEFAULT_MAX_ATTUNEMENTS,
+            "switching_cooldown_ticks": _DEFAULT_SWITCHING_COOLDOWN_TICKS,
+        }, prefix="heartbeat_")
+        max_attunements = att_config["max_attunements"]
+        cooldown_ticks = att_config["switching_cooldown_ticks"]
 
         # Check current attunement count
         existing = (
@@ -187,92 +179,62 @@ class AttunementService:
         tick_number: int, heartbeat_id: UUID,
         config: dict,
     ) -> list[dict]:
-        """Deepen attunements each tick. Called from HeartbeatService Phase 6."""
+        """Deepen attunements each tick via batch RPC. Called from HeartbeatService Phase 6."""
         entries: list[dict] = []
         growth_rate = config.get("attunement_growth_rate", 0.05)
+        passive_rate = config.get("attunement_passive_growth_rate", 0.01)
 
-        attunements = (
-            admin.table("substrate_attunements")
-            .select("*")
-            .eq("simulation_id", str(sim_id))
-            .execute()
-        ).data or []
+        # Single RPC call handles cooldown, event checks, and depth updates
+        result = admin.rpc("fn_deepen_attunements_batch", {
+            "p_sim_id": str(sim_id),
+            "p_growth_rate": growth_rate,
+            "p_passive_rate": passive_rate,
+        }).execute()
 
-        if not attunements:
+        changes = result.data or []
+        if isinstance(changes, str):
+            changes = json.loads(changes)
+
+        if not changes:
             return entries
 
-        for att in attunements:
-            att_id = att["id"]
-            signature = att["resonance_signature"]
-            depth = float(att.get("depth", 0))
-            ticks_exposed = (att.get("ticks_exposed") or 0)
-            threshold = float(att.get("positive_threshold", 0.5))
-            cooldown = att.get("switching_cooldown_ticks") or 0
+        for change in changes:
+            signature = change["signature"]
+            old_depth = float(change["old_depth"])
+            new_depth = float(change["new_depth"])
+            threshold = float(change["threshold"])
+            just_harmonized = change.get("just_harmonized", False)
+            harmonized = change.get("harmonized", False)
 
-            # Reduce switching cooldown
-            if cooldown > 0:
-                admin.table("substrate_attunements").update({
-                    "switching_cooldown_ticks": cooldown - 1,
-                }).eq("id", att_id).execute()
-
-            # Check if signature has active events (must be exposed to grow)
-            active_events = (
-                admin.table("events")
-                .select("id")
-                .eq("simulation_id", str(sim_id))
-                .is_("deleted_at", "null")
-                .in_("event_status", ["active", "escalating"])
-                .contains("tags", [signature])
-                .limit(1)
-                .execute()
-            ).data
-
-            if not active_events:
-                continue
-
-            # Deepen
-            new_depth = round(min(1.0, depth + growth_rate), 4)
-            new_ticks = ticks_exposed + 1
-
-            update_data: dict = {
-                "depth": new_depth,
-                "ticks_exposed": new_ticks,
-                "updated_at": datetime.now(UTC).isoformat(),
-            }
-
-            entries.append({
-                "id": str(uuid4()),
-                "heartbeat_id": str(heartbeat_id),
-                "simulation_id": str(sim_id),
-                "tick_number": tick_number,
-                "entry_type": "attunement_deepen",
-                "narrative_en": (
+            entries.append(make_heartbeat_entry(
+                heartbeat_id, sim_id, tick_number, "attunement_deepen",
+                (
                     f"'{signature}' attunement deepened "
-                    f"({depth:.2f} -> {new_depth:.2f}). "
+                    f"({old_depth:.2f} -> {new_depth:.2f}). "
                     + (
                         "HARMONIZED — positive events possible!"
-                        if new_depth >= threshold > depth
+                        if just_harmonized
                         else f"Threshold at {threshold:.2f}."
                     )
                 ),
-                "narrative_de": (
+                (
                     f"'{signature}' Abstimmung vertieft "
-                    f"({depth:.2f} -> {new_depth:.2f}). "
+                    f"({old_depth:.2f} -> {new_depth:.2f}). "
                     + (
                         "HARMONISIERT — positive Ereignisse moeglich!"
-                        if new_depth >= threshold > depth
+                        if just_harmonized
                         else f"Schwelle bei {threshold:.2f}."
                     )
                 ),
-                "metadata": {
-                    "signature": signature, "old_depth": depth, "new_depth": new_depth,
-                    "threshold": threshold, "harmonized": new_depth >= threshold,
+                severity="positive" if just_harmonized else "info",
+                metadata={
+                    "signature": signature, "old_depth": old_depth, "new_depth": new_depth,
+                    "threshold": threshold, "harmonized": harmonized,
                 },
-                "severity": "positive" if new_depth >= threshold > depth else "info",
-            })
+            ))
 
-            # Check for positive event generation
-            if new_depth >= threshold:
+            # Check for positive event generation (requires randomness — stays in Python)
+            if harmonized:
                 pos_prob = config.get("positive_event_probability", _DEFAULT_POSITIVE_EVENT_PROBABILITY)
                 if random.random() < pos_prob:  # noqa: S311 — game mechanic, not crypto
                     pos_entry = await cls._spawn_positive_event(
@@ -280,9 +242,6 @@ class AttunementService:
                     )
                     if pos_entry:
                         entries.append(pos_entry)
-                        update_data["positive_event_generated"] = True
-
-            admin.table("substrate_attunements").update(update_data).eq("id", att_id).execute()
 
         return entries
 
@@ -336,21 +295,13 @@ class AttunementService:
             extra={"simulation_id": str(sim_id), "event_id": str(event_id)},
         )
 
-        return {
-            "id": str(uuid4()),
-            "heartbeat_id": str(heartbeat_id),
-            "simulation_id": str(sim_id),
-            "tick_number": tick_number,
-            "entry_type": "positive_event",
-            "narrative_en": (
-                f"ATTUNEMENT HARVEST: '{title}' spawned from {signature} harmony."
-            ),
-            "narrative_de": (
-                f"ABSTIMMUNGSERNTE: '{title}' aus {signature}-Harmonie entstanden."
-            ),
-            "metadata": {
+        return make_heartbeat_entry(
+            heartbeat_id, sim_id, tick_number, "positive_event",
+            f"ATTUNEMENT HARVEST: '{title}' spawned from {signature} harmony.",
+            f"ABSTIMMUNGSERNTE: '{title}' aus {signature}-Harmonie entstanden.",
+            severity="positive",
+            metadata={
                 "event_id": str(event_id), "signature": signature,
                 "title": title,
             },
-            "severity": "positive",
-        }
+        )

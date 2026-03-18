@@ -6,12 +6,14 @@ resonance impact for all participants.
 
 from __future__ import annotations
 
+import json
 import logging
 from datetime import UTC, datetime
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from fastapi import HTTPException, status
 
+from backend.services.heartbeat_entry_builder import make_heartbeat_entry
 from supabase import Client
 
 logger = logging.getLogger(__name__)
@@ -234,76 +236,49 @@ class AnchorService:
         tick_number: int, heartbeat_id: UUID,
         config: dict,
     ) -> list[dict]:
-        """Strengthen anchors this simulation participates in. Phase 7."""
+        """Strengthen anchors this simulation participates in via batch RPC. Phase 7."""
         entries: list[dict] = []
-        growth_per_sim = config.get("anchor_growth_per_sim", 0.03)
 
-        # Get active anchors this simulation participates in
-        anchors = (
-            admin.table("collaborative_anchors")
-            .select("*")
-            .in_("status", ["forming", "active", "reinforcing"])
-            .contains("anchor_simulation_ids", [str(sim_id)])
-            .execute()
-        ).data or []
+        # Single RPC call handles all anchor updates
+        result = admin.rpc("fn_strengthen_anchors_batch", {
+            "p_sim_id": str(sim_id),
+            "p_growth_per_sim": config.get("anchor_growth_per_sim", 0.03),
+            "p_protection_cap": config.get("anchor_protection_cap", 0.70),
+        }).execute()
 
-        if not anchors:
-            return entries
+        changes = result.data or []
+        if isinstance(changes, str):
+            changes = json.loads(changes)
 
-        for anchor in anchors:
-            anchor_id = anchor["id"]
-            participants = anchor.get("anchor_simulation_ids") or []
-            participant_count = len(participants)
-            strength = float(anchor.get("strength", 0))
-            ticks_active = (anchor.get("ticks_active") or 0) + 1
+        for change in changes:
+            anchor_id = change["anchor_id"]
+            anchor_name = change["anchor_name"]
+            old_strength = float(change["old_strength"])
+            new_strength = float(change["new_strength"])
+            protection = float(change["protection"])
+            participant_count = int(change["participant_count"])
 
-            # Grow strength
-            growth = round(growth_per_sim * participant_count, 4)
-            new_strength = round(min(1.0, strength + growth), 4)
-
-            # Status transitions
-            new_status = anchor["status"]
-            if new_status == "forming" and ticks_active >= 2:
-                new_status = "active"
-            elif new_status == "active" and new_strength > 0.5:
-                new_status = "reinforcing"
-
-            admin.table("collaborative_anchors").update({
-                "strength": new_strength,
-                "ticks_active": ticks_active,
-                "status": new_status,
-                "updated_at": datetime.now(UTC).isoformat(),
-            }).eq("id", anchor_id).execute()
-
-            # Compute protection factor
-            cap = config.get("anchor_protection_cap", 0.70)
-            protection = round(min(cap, new_strength * (participant_count / 5)), 4)
-
-            entries.append({
-                "id": str(uuid4()),
-                "heartbeat_id": str(heartbeat_id),
-                "simulation_id": str(sim_id),
-                "tick_number": tick_number,
-                "entry_type": "anchor_strengthen",
-                "narrative_en": (
-                    f"Anchor '{anchor['name']}' strengthened "
-                    f"({strength:.2f} -> {new_strength:.2f}). "
+            entries.append(make_heartbeat_entry(
+                heartbeat_id, sim_id, tick_number, "anchor_strengthen",
+                (
+                    f"Anchor '{anchor_name}' strengthened "
+                    f"({old_strength:.2f} -> {new_strength:.2f}). "
                     f"{participant_count} shard(s) participating. "
                     f"Protection factor: {protection:.2f}."
                 ),
-                "narrative_de": (
-                    f"Anker '{anchor['name']}' verstaerkt "
-                    f"({strength:.2f} -> {new_strength:.2f}). "
+                (
+                    f"Anker '{anchor_name}' verstaerkt "
+                    f"({old_strength:.2f} -> {new_strength:.2f}). "
                     f"{participant_count} Scherbe(n) beteiligt. "
                     f"Schutzfaktor: {protection:.2f}."
                 ),
-                "metadata": {
-                    "anchor_id": anchor_id, "old_strength": strength,
+                severity="positive" if new_strength > old_strength else "info",
+                metadata={
+                    "anchor_id": anchor_id, "old_strength": old_strength,
                     "new_strength": new_strength, "protection": protection,
                     "participant_count": participant_count,
                 },
-                "severity": "positive" if new_strength > strength else "info",
-            })
+            ))
 
         return entries
 

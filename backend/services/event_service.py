@@ -3,15 +3,17 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 from fastapi import HTTPException, status
 
+from backend.services.agent_memory_service import AgentMemoryService
 from backend.services.agent_service import AgentService
 from backend.services.base_service import BaseService
 from backend.services.constants import EVENT_STATUSES
 from backend.services.game_mechanics_service import GameMechanicsService
+from backend.services.platform_config_service import PlatformConfigService
 from backend.utils.search import apply_search_filter
 from supabase import Client
 
@@ -344,7 +346,55 @@ class EventService(BaseService):
         # NOTE: reaction_modifier is computed automatically by the
         # recompute_reaction_modifier() Postgres trigger on event_reactions.
 
+        # Create agent memories from reactions so agents remember crises
+        if reactions:
+            await cls._create_memories_from_reactions(
+                supabase, simulation_id, event, reactions,
+            )
+
         return reactions
+
+    @classmethod
+    async def _create_memories_from_reactions(
+        cls,
+        supabase: Client,
+        simulation_id: UUID,
+        event: dict,
+        reactions: list[dict],
+    ) -> None:
+        """Wire event reactions → agent memories.
+
+        Each reacting agent gets a memory of the event, so they can
+        reference it in future conversations.
+        """
+        event_title = event.get("title", "Unknown event")
+        impact_level = int(event.get("impact_level", 5))
+
+        for reaction in reactions:
+            agent_id = reaction.get("agent_id")
+            reaction_text = reaction.get("reaction_text", "")
+            if not agent_id or not reaction_text:
+                continue
+
+            try:
+                content = (
+                    f"During the event '{event_title}', I reacted: {reaction_text[:200]}"
+                )
+                await AgentMemoryService.record_observation(
+                    supabase,
+                    agent_id=UUID(agent_id),
+                    simulation_id=simulation_id,
+                    content=content,
+                    importance=min(10, impact_level),
+                    source_type="event_reaction",
+                    source_id=UUID(reaction["id"]),
+                )
+            except Exception:
+                logger.debug(
+                    "Failed to create event memory for agent %s",
+                    agent_id,
+                    exc_info=True,
+                )
 
     @classmethod
     async def get_zone_links(
@@ -392,7 +442,6 @@ class EventService(BaseService):
             ).data or []
             if arcs:
                 # Get recently created events (last 60s) with resonance tags
-                from datetime import UTC, datetime, timedelta
                 cutoff = (datetime.now(UTC) - timedelta(seconds=60)).isoformat()
                 recent = (
                     supabase.table("events")
@@ -415,6 +464,58 @@ class EventService(BaseService):
                                 }).eq("id", arc["id"]).execute()
         except Exception:
             logger.debug("Heartbeat arc attachment unavailable")
+
+        # ── Building condition degradation from crisis/sabotage events ──
+        try:
+            cutoff_crisis = (datetime.now(UTC) - timedelta(seconds=60)).isoformat()
+            crisis_events = (
+                supabase.table("events")
+                .select("id, tags")
+                .eq("simulation_id", str(simulation_id))
+                .is_("deleted_at", "null")
+                .gte("created_at", cutoff_crisis)
+                .overlaps("tags", ["sabotage", "crisis"])
+                .execute()
+            ).data or []
+            if crisis_events:
+                degradation = PlatformConfigService.get(
+                    supabase, "heartbeat_building_crisis_degradation", 0.10,
+                )
+                for ev in crisis_events:
+                    zone_links = (
+                        supabase.table("event_zone_links")
+                        .select("zone_id")
+                        .eq("event_id", ev["id"])
+                        .execute()
+                    ).data or []
+                    zone_ids = [zl["zone_id"] for zl in zone_links]
+                    if zone_ids:
+                        buildings = (
+                            supabase.table("buildings")
+                            .select("id, building_condition")
+                            .eq("simulation_id", str(simulation_id))
+                            .in_("zone_id", zone_ids)
+                            .is_("deleted_at", "null")
+                            .execute()
+                        ).data or []
+                        for bldg in buildings:
+                            old_cond = float(bldg.get("building_condition") or 1.0)
+                            new_cond = round(max(0.0, old_cond - degradation), 4)
+                            if new_cond < old_cond:
+                                supabase.table("buildings").update({
+                                    "building_condition": new_cond,
+                                }).eq("id", bldg["id"]).execute()
+                        logger.info(
+                            "Crisis event degraded %d building(s) by %.2f",
+                            len(buildings), degradation,
+                            extra={
+                                "simulation_id": str(simulation_id),
+                                "event_id": ev["id"],
+                                "buildings_affected": len(buildings),
+                            },
+                        )
+        except Exception:
+            logger.debug("Building crisis degradation unavailable", exc_info=True)
 
         result = supabase.rpc(
             "process_cascade_events",
