@@ -696,7 +696,7 @@ export class VelgWorldsGallery extends LitElement {
         ? html`
             <div class="gallery-cta">
               <p class="gallery-cta__text">
-                ${msg('Every world here was built in four minutes. Create yours.')}
+                ${msg('Every world here was forged from a single idea. Create yours.')}
               </p>
               <a
                 class="gallery-cta__btn"
