@@ -48,7 +48,7 @@ export const infoBubbleStyles = css`
     background: var(--color-text-primary);
     color: var(--color-surface);
     padding: var(--space-2) var(--space-3);
-    font-family: var(--font-sans);
+    font-family: var(--font-body);
     font-size: var(--text-xs);
     font-weight: 400;
     text-transform: none;

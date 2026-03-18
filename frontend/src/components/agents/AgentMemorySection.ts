@@ -123,7 +123,7 @@ export class VelgAgentMemorySection extends LitElement {
     }
 
     .mem--reflection .mem__content {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-style: italic;
       font-size: var(--text-sm);
       line-height: 1.6;

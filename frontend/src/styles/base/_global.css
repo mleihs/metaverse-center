@@ -1,7 +1,7 @@
 /* === Global Styles === */
 
 body {
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
   font-size: var(--text-base);
   font-weight: var(--font-normal);
   color: var(--color-text-primary);

@@ -66,7 +66,7 @@ export class VelgGameCard extends LitElement {
       --card-border-color: var(--color-border);
       --card-radius: var(--border-radius, 0px);
       --card-font-heading: var(--font-brutalist, 'Oswald', sans-serif);
-      --card-font-body: var(--font-sans, system-ui, sans-serif);
+      --card-font-body: var(--font-body, system-ui, sans-serif);
       --card-font-mono: var(--font-mono, monospace);
     }
 

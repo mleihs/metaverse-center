@@ -204,7 +204,7 @@ export class VelgBureauArchives extends LitElement {
     }
 
     .dossier__title {
-      font-family: var(--font-bureau);
+      font-family: var(--font-prose);
       font-size: var(--text-2xl);
       font-weight: var(--font-bold);
       color: var(--color-text-primary);
@@ -213,7 +213,7 @@ export class VelgBureauArchives extends LitElement {
     }
 
     .dossier__epigraph {
-      font-family: var(--font-bureau);
+      font-family: var(--font-prose);
       font-style: italic;
       font-size: var(--text-sm);
       color: var(--color-text-muted);
@@ -223,7 +223,7 @@ export class VelgBureauArchives extends LitElement {
     }
 
     .dossier__body {
-      font-family: var(--font-bureau);
+      font-family: var(--font-prose);
       font-size: var(--text-base);
       line-height: var(--leading-relaxed);
       color: var(--color-text-tertiary);
@@ -321,7 +321,7 @@ export class VelgBureauArchives extends LitElement {
     }
 
     .transmission__text {
-      font-family: var(--font-bureau);
+      font-family: var(--font-prose);
       font-size: var(--text-lg);
       font-style: italic;
       color: var(--color-text-tertiary);

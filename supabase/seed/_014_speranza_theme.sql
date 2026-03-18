@@ -47,7 +47,7 @@ VALUES
 
   -- Typography
   (sim_id, 'design', 'font_heading',          '"''Barlow'', ''Arial Narrow'', sans-serif"', usr_id),
-  (sim_id, 'design', 'font_body',             '"system-ui, -apple-system, sans-serif"', usr_id),
+  (sim_id, 'design', 'font_body',             '"''Source Sans 3'', system-ui, sans-serif"', usr_id),
   (sim_id, 'design', 'font_mono',             '"SF Mono, Monaco, Inconsolata, ''Roboto Mono'', monospace"', usr_id),
   (sim_id, 'design', 'heading_weight',        '"800"', usr_id),
   (sim_id, 'design', 'heading_transform',     '"uppercase"', usr_id),
@@ -65,7 +65,10 @@ VALUES
 
   -- Animation
   (sim_id, 'design', 'animation_speed',       '"0.9"', usr_id),
-  (sim_id, 'design', 'animation_easing',      '"ease-out"', usr_id)
+  (sim_id, 'design', 'animation_easing',      '"ease-out"', usr_id),
+
+  -- Theme preset (for ThemeService base resolution)
+  (sim_id, 'design', 'theme_preset',          '"arc-raiders"', usr_id)
 
 ON CONFLICT (simulation_id, category, setting_key) DO UPDATE SET
   setting_value = EXCLUDED.setting_value,

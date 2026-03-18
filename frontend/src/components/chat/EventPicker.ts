@@ -18,7 +18,7 @@ export class VelgEventPicker extends LitElement {
     .picker__search {
       width: 100%;
       padding: var(--space-2-5) var(--space-3);
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-sm);
       color: var(--color-text-primary);
       background: var(--color-surface-sunken);
@@ -146,7 +146,7 @@ export class VelgEventPicker extends LitElement {
     }
 
     .picker__item-desc {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-xs);
       color: var(--color-text-secondary);
       line-height: var(--leading-snug);

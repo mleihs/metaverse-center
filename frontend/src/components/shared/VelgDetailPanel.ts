@@ -86,7 +86,7 @@ export class VelgDetailPanel extends LitElement {
     }
 
     .error__message {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-sm);
       color: var(--color-text-secondary);
       margin: 0;

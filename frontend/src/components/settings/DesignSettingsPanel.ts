@@ -378,7 +378,7 @@ export class VelgDesignSettingsPanel extends BaseSettingsPanel {
     }
 
     .preset-bar__select {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-sm);
       padding: var(--space-2) var(--space-3);
       border: var(--border-medium);
@@ -518,7 +518,7 @@ export class VelgDesignSettingsPanel extends BaseSettingsPanel {
 
     .form__input,
     .form__select {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-sm);
       padding: var(--space-2) var(--space-3);
       border: var(--border-medium);
@@ -564,7 +564,7 @@ export class VelgDesignSettingsPanel extends BaseSettingsPanel {
     .form__hint {
       font-size: var(--text-xs);
       color: var(--color-text-muted);
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
     }
 
     /* --- Range input --- */

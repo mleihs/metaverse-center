@@ -39,7 +39,7 @@ export const formStyles = css`
   .form__input,
   .form__textarea,
   .form__select {
-    font-family: var(--font-sans);
+    font-family: var(--font-body);
     font-size: var(--text-base);
     padding: var(--space-2-5) var(--space-3);
     border: var(--border-medium);

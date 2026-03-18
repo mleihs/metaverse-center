@@ -157,7 +157,7 @@ export const caseFileStyles = css`
   }
 
   .panel__body {
-    font-family: var(--font-sans);
+    font-family: var(--font-body);
     font-size: var(--text-sm);
     line-height: 1.8;
     color: var(--color-text-secondary);

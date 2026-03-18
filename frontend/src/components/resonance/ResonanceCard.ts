@@ -147,7 +147,7 @@ export class ResonanceCard extends LitElement {
     }
 
     .archetype-label {
-      font-family: var(--font-bureau);
+      font-family: var(--font-prose);
       font-size: var(--text-xs);
       font-weight: var(--font-medium);
       color: var(--color-text-secondary);
@@ -346,7 +346,7 @@ export class ResonanceCard extends LitElement {
       border: none;
       padding: 0;
       cursor: pointer;
-      font-family: var(--font-bureau);
+      font-family: var(--font-prose);
       font-size: var(--text-xs);
       font-style: italic;
       color: var(--color-text-muted);
@@ -384,7 +384,7 @@ export class ResonanceCard extends LitElement {
     }
 
     .dispatch-text {
-      font-family: var(--font-bureau);
+      font-family: var(--font-prose);
       font-size: var(--text-xs);
       line-height: var(--leading-relaxed);
       color: var(--color-text-secondary);
@@ -695,7 +695,7 @@ export class ResonanceCard extends LitElement {
 
     .impact-empty {
       padding: var(--space-3) 0;
-      font-family: var(--font-bureau);
+      font-family: var(--font-prose);
       font-size: var(--text-xs);
       font-style: italic;
       color: var(--color-text-muted);

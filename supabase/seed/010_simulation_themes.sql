@@ -49,7 +49,7 @@ VALUES
 
   -- Typography
   (sim_id, 'design', 'font_heading',          '"''Cormorant Garamond'', Georgia, serif"', usr_id),
-  (sim_id, 'design', 'font_body',             '"''Segoe UI'', Roboto, sans-serif"', usr_id),
+  (sim_id, 'design', 'font_body',             '"''Lora'', Georgia, serif"', usr_id),
   (sim_id, 'design', 'heading_weight',        '"700"', usr_id),
   (sim_id, 'design', 'heading_transform',     '"none"', usr_id),
   (sim_id, 'design', 'heading_tracking',      '"0.05em"', usr_id),
@@ -66,7 +66,10 @@ VALUES
 
   -- Animation
   (sim_id, 'design', 'animation_speed',       '"1.5"', usr_id),
-  (sim_id, 'design', 'animation_easing',      '"ease-in-out"', usr_id)
+  (sim_id, 'design', 'animation_easing',      '"ease-in-out"', usr_id),
+
+  -- Theme preset (for ThemeService base resolution)
+  (sim_id, 'design', 'theme_preset',          '"sunless-sea"', usr_id)
 
 ON CONFLICT (simulation_id, category, setting_key) DO UPDATE SET
   setting_value = EXCLUDED.setting_value,

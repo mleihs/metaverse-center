@@ -20,6 +20,20 @@ def _slugify(name: str) -> str:
     return slug.strip("-")[:100]
 
 
+_THEME_TO_PRESET: dict[str, str] = {
+    "dystopian": "cyberpunk",
+    "utopian": "illuminated-literary",
+    "fantasy": "sunless-sea",
+    "scifi": "cyberpunk",
+    "historical": "nordic-noir",
+}
+
+
+def _get_preset_for_theme(theme: str) -> str:
+    """Map a simulation theme to the recommended design preset name."""
+    return _THEME_TO_PRESET.get(theme, "brutalist")
+
+
 class SimulationService:
     """Service layer for simulation CRUD operations."""
 
@@ -141,6 +155,18 @@ class SimulationService:
             "user_id": str(user_id),
             "member_role": "owner",
         }).execute()
+
+        # Seed theme_preset design setting so ThemeService resolves the
+        # correct base preset instead of always falling back to brutalist.
+        preset = _get_preset_for_theme(data.theme)
+        if preset != "brutalist":
+            supabase.table("simulation_settings").upsert({
+                "simulation_id": simulation["id"],
+                "category": "design",
+                "setting_key": "theme_preset",
+                "setting_value": f'"{preset}"',
+                "updated_by_id": str(user_id),
+            }).execute()
 
         return simulation
 

@@ -205,7 +205,7 @@ export class VelgOnboardingBrief extends LitElement {
       margin-top: var(--space-3);
       padding-top: var(--space-3);
       border-top: 1px dashed color-mix(in srgb, var(--color-border) 60%, transparent);
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-sm);
       line-height: 1.7;
       color: var(--color-text-secondary);

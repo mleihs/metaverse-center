@@ -167,7 +167,7 @@ export class CartographicMap extends LitElement {
     /* ── Zone labels ─────────────────────────── */
 
     .zone-name {
-      font-family: var(--font-bureau, 'Spectral', serif);
+      font-family: var(--font-prose, 'Spectral', serif);
       font-style: italic;
       fill: var(--color-text-primary);
       opacity: 0;

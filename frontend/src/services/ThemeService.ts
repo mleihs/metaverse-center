@@ -14,6 +14,7 @@
 
 import { settingsApi } from './api/index.js';
 import { THEME_PRESETS } from './theme-presets.js';
+import type { ThemePresetName } from './theme-presets.js';
 
 /** Maximum allowed size for custom CSS (bytes). */
 const MAX_CUSTOM_CSS_BYTES = 10_240;
@@ -28,7 +29,7 @@ const GOOGLE_FONTS_PREFIX = 'velg-gf-';
 const SYSTEM_FONTS = new Set([
   'system-ui', '-apple-system', 'segoe ui', 'arial', 'arial narrow',
   'helvetica', 'helvetica neue', 'georgia', 'times new roman',
-  'courier new', 'comic sans ms', 'inter', 'inherit', 'sans-serif',
+  'courier new', 'comic sans ms', 'inherit', 'sans-serif',
   'serif', 'monospace', 'cursive', 'fantasy',
 ]);
 
@@ -65,7 +66,7 @@ const THEME_TOKEN_MAP: Record<string, string> = {
 
   // Typography
   font_heading: '--font-brutalist',
-  font_body: '--font-sans',
+  font_body: '--font-body',
   font_mono: '--font-mono',
   heading_weight: '--heading-weight',
   heading_transform: '--heading-transform',
@@ -186,6 +187,7 @@ class ThemeService {
     // Build a flat config from settings
     const config: Record<string, string> = {};
     let customCss = '';
+    let presetName: ThemePresetName = 'brutalist';
 
     for (const setting of settings) {
       const { setting_key, setting_value } = setting;
@@ -193,16 +195,23 @@ class ThemeService {
         customCss = String(setting_value ?? '');
         continue;
       }
-      if (setting_key === 'logo_url') continue;
+      if (setting_key === 'logo_url' || setting_key === 'theme_preset') {
+        // theme_preset is metadata — resolve it as the base preset below
+        if (setting_key === 'theme_preset') {
+          const raw = String(setting_value ?? '').replace(/^"|"$/g, '');
+          if (raw in THEME_PRESETS) presetName = raw as ThemePresetName;
+        }
+        continue;
+      }
       if (setting_value != null && String(setting_value).trim() !== '') {
         config[setting_key] = String(setting_value);
       }
     }
 
-    // Merge brutalist defaults with saved settings (saved settings win).
-    // This ensures simulations always get a complete light base even with
+    // Merge base preset defaults with saved settings (saved settings win).
+    // This ensures simulations always get a complete base even with
     // partial settings, preventing dark platform tokens from bleeding through.
-    const mergedConfig = { ...THEME_PRESETS.brutalist, ...config };
+    const mergedConfig = { ...THEME_PRESETS[presetName], ...config };
 
     this.applyConfig(mergedConfig, hostElement);
 
@@ -352,9 +361,17 @@ class ThemeService {
       tokensApplied.push(token);
     }
 
+    // 9. Override --font-prose so literary text (LoreScroll, BureauArchives,
+    //    Resonance) inherits the simulation's body font inside the shell.
+    //    Outside the shell, --font-prose falls back to var(--font-bureau) = Spectral.
+    if (config.font_body) {
+      hostElement.style.setProperty('--font-prose', config.font_body);
+      tokensApplied.push('--font-prose');
+    }
+
     this.appliedTokens = tokensApplied;
 
-    // 9. Dynamically load any Google Fonts referenced by the config
+    // 10. Dynamically load any Google Fonts referenced by the config
     const fontKeys = ['font_heading', 'font_body', 'font_mono'] as const;
     for (const key of fontKeys) {
       const family = config[key];
@@ -478,23 +495,19 @@ function ensurePreconnect(): void {
 }
 
 /**
- * Extract the primary font family name from a CSS font-family value.
- * E.g. "'Playfair Display', serif" → "Playfair Display"
+ * Extract all font family names from a CSS font-family value.
+ * E.g. "'Playfair Display', Georgia, serif" → ["Playfair Display", "Georgia", "serif"]
  */
-function extractPrimaryFamily(cssValue: string): string {
-  const first = cssValue.split(',')[0].trim();
-  return first.replace(/^['"]|['"]$/g, '');
+function extractAllFamilies(cssValue: string): string[] {
+  return cssValue.split(',').map((f) => f.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean);
 }
 
 /**
- * Dynamically load a Google Font by family name.
+ * Dynamically load a single Google Font family.
  * Idempotent — skips system fonts and already-loaded families.
- * Loads weights 400, 700, 900 with swap display for all fonts.
  */
-export function loadGoogleFont(cssFamily: string): void {
-  const family = extractPrimaryFamily(cssFamily);
+function loadSingleGoogleFont(family: string): void {
   const key = family.toLowerCase();
-
   if (!family || SYSTEM_FONTS.has(key) || loadedFonts.has(key)) return;
   loadedFonts.add(key);
 
@@ -508,4 +521,14 @@ export function loadGoogleFont(cssFamily: string): void {
   link.rel = 'stylesheet';
   link.href = url;
   document.head.appendChild(link);
+}
+
+/**
+ * Dynamically load all non-system Google Fonts in a CSS font-family stack.
+ * E.g. "'Lora', Georgia, serif" loads Lora, skips Georgia and serif.
+ */
+export function loadGoogleFont(cssFamily: string): void {
+  for (const family of extractAllFamilies(cssFamily)) {
+    loadSingleGoogleFont(family);
+  }
 }

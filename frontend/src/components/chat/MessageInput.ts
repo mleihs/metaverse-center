@@ -33,7 +33,7 @@ export class VelgMessageInput extends LitElement {
       min-height: 40px;
       max-height: 120px;
       padding: var(--space-2-5) var(--space-3);
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-sm);
       line-height: var(--leading-normal);
       color: var(--color-text-primary);

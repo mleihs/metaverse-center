@@ -71,7 +71,7 @@ export class VelgChronicleView extends LitElement {
     }
 
     .masthead__subtitle {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: 0.35em;
@@ -218,7 +218,7 @@ export class VelgChronicleView extends LitElement {
     }
 
     .front-page__subhead {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-base);
       font-style: italic;
       line-height: 1.5;
@@ -239,7 +239,7 @@ export class VelgChronicleView extends LitElement {
       column-count: 2;
       column-gap: var(--space-6);
       column-rule: var(--chron-rule-thin) solid var(--color-border-light);
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-sm);
       line-height: 1.8;
       color: var(--color-text-primary);

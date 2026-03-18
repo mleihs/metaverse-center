@@ -157,7 +157,7 @@ export class VelgSimulationHealthView extends LitElement {
       }
 
       .health-hero__stat {
-        font-family: var(--font-sans);
+        font-family: var(--font-body);
         font-size: var(--text-sm);
         color: var(--color-text-secondary);
       }
@@ -234,7 +234,7 @@ export class VelgSimulationHealthView extends LitElement {
       }
 
       .zone-item__name {
-        font-family: var(--font-sans);
+        font-family: var(--font-body);
         font-size: var(--text-sm);
         font-weight: var(--font-semibold);
         min-width: 140px;
@@ -268,7 +268,7 @@ export class VelgSimulationHealthView extends LitElement {
       }
 
       .zone-item__label {
-        font-family: var(--font-sans);
+        font-family: var(--font-body);
         font-size: var(--text-xs);
         color: var(--color-text-secondary);
         min-width: 70px;
@@ -466,7 +466,7 @@ export class VelgSimulationHealthView extends LitElement {
       }
 
       .zone-action-card__desc {
-        font-family: var(--font-sans);
+        font-family: var(--font-body);
         font-size: 10px;
         color: var(--color-text-secondary);
         line-height: 1.3;
@@ -529,7 +529,7 @@ export class VelgSimulationHealthView extends LitElement {
       }
 
       .building-item__name {
-        font-family: var(--font-sans);
+        font-family: var(--font-body);
         font-size: var(--text-sm);
         flex: 1;
         min-width: 0;
@@ -539,7 +539,7 @@ export class VelgSimulationHealthView extends LitElement {
       }
 
       .building-item__type {
-        font-family: var(--font-sans);
+        font-family: var(--font-body);
         font-size: var(--text-xs);
         color: var(--color-text-secondary);
         min-width: 80px;
@@ -582,7 +582,7 @@ export class VelgSimulationHealthView extends LitElement {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        font-family: var(--font-sans);
+        font-family: var(--font-body);
         font-size: var(--text-sm);
       }
 
@@ -616,12 +616,12 @@ export class VelgSimulationHealthView extends LitElement {
 
       .embassy-item__sims {
         flex: 1;
-        font-family: var(--font-sans);
+        font-family: var(--font-body);
         font-size: var(--text-sm);
       }
 
       .embassy-item__vector {
-        font-family: var(--font-sans);
+        font-family: var(--font-body);
         font-size: var(--text-xs);
         color: var(--color-text-secondary);
         text-transform: uppercase;
@@ -679,13 +679,13 @@ export class VelgSimulationHealthView extends LitElement {
       }
 
       .event-item__title {
-        font-family: var(--font-sans);
+        font-family: var(--font-body);
         font-size: var(--text-sm);
         font-weight: var(--font-semibold);
       }
 
       .event-item__meta {
-        font-family: var(--font-sans);
+        font-family: var(--font-body);
         font-size: var(--text-xs);
         color: var(--color-text-secondary);
         margin-top: 2px;
@@ -722,7 +722,7 @@ export class VelgSimulationHealthView extends LitElement {
       }
 
       .hb-meter__label {
-        font-family: var(--font-sans);
+        font-family: var(--font-body);
         font-size: var(--text-xs);
         text-transform: capitalize;
         color: var(--color-text-secondary);
@@ -777,7 +777,7 @@ export class VelgSimulationHealthView extends LitElement {
       /* ── Empty state ── */
 
       .panel__empty {
-        font-family: var(--font-sans);
+        font-family: var(--font-body);
         font-size: var(--text-sm);
         color: var(--color-text-secondary);
         text-align: center;

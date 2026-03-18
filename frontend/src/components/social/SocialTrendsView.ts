@@ -100,7 +100,7 @@ export class VelgSocialTrendsView extends LitElement {
 
     .controls__input,
     .controls__select {
-      font-family: var(--font-sans); font-size: var(--text-sm);
+      font-family: var(--font-body); font-size: var(--text-sm);
       padding: var(--space-1-5) var(--space-2-5);
       border: var(--border-medium); background: var(--color-surface);
       color: var(--color-text-primary);
@@ -899,7 +899,7 @@ export class VelgSocialTrendsView extends LitElement {
     }
 
     .embassy-empty__hint {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-xs);
       color: var(--color-text-muted);
       max-width: 320px;

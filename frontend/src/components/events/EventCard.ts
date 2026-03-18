@@ -173,7 +173,7 @@ export class VelgEventCard extends LitElement {
       display: inline-flex;
       align-items: center;
       padding: var(--space-0-5) var(--space-1-5);
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: 10px;
       font-weight: var(--font-bold);
       text-transform: uppercase;

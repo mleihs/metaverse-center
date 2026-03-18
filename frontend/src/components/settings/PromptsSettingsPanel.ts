@@ -146,7 +146,7 @@ export class VelgPromptsSettingsPanel extends LitElement {
     .form__input,
     .form__select,
     .form__textarea {
-      font-family: var(--font-sans); font-size: var(--text-base);
+      font-family: var(--font-body); font-size: var(--text-base);
       padding: var(--space-2) var(--space-3); border: var(--border-medium);
       background: var(--color-surface); color: var(--color-text-primary);
       transition: border-color var(--transition-fast), box-shadow var(--transition-fast);

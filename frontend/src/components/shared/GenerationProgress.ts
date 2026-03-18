@@ -166,7 +166,7 @@ export class VelgGenerationProgress extends LitElement {
     }
 
     .progress-text__sub {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-xs);
       color: var(--color-text-muted);
       margin-top: var(--space-1);

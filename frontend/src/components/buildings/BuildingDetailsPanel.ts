@@ -79,7 +79,7 @@ export class VelgBuildingDetailsPanel extends LitElement {
     }
 
     .panel__description {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-base);
       line-height: var(--leading-relaxed);
       color: var(--color-text-primary);
@@ -108,7 +108,7 @@ export class VelgBuildingDetailsPanel extends LitElement {
     }
 
     .panel__detail-value {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-sm);
       color: var(--color-text-primary);
     }
@@ -129,7 +129,7 @@ export class VelgBuildingDetailsPanel extends LitElement {
     }
 
     .panel__agent-name {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-sm);
       font-weight: var(--font-semibold);
       color: var(--color-text-primary);
@@ -145,7 +145,7 @@ export class VelgBuildingDetailsPanel extends LitElement {
     }
 
     .panel__no-agents {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-sm);
       color: var(--color-text-muted);
       font-style: italic;

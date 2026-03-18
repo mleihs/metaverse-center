@@ -56,7 +56,7 @@ describe('THEME_TOKEN_MAP', () => {
 
   it('maps all 7 typography keys to correct CSS variables', () => {
     expect(THEME_TOKEN_MAP.font_heading).toBe('--font-brutalist');
-    expect(THEME_TOKEN_MAP.font_body).toBe('--font-sans');
+    expect(THEME_TOKEN_MAP.font_body).toBe('--font-body');
     expect(THEME_TOKEN_MAP.font_mono).toBe('--font-mono');
     expect(THEME_TOKEN_MAP.heading_weight).toBe('--heading-weight');
     expect(THEME_TOKEN_MAP.heading_transform).toBe('--heading-transform');

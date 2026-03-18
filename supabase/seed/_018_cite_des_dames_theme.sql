@@ -48,7 +48,7 @@ VALUES
 
   -- Typography
   (sim_id, 'design', 'font_heading',          '"''Libre Baskerville'', Baskerville, Georgia, serif"', usr_id),
-  (sim_id, 'design', 'font_body',             '"system-ui, -apple-system, sans-serif"', usr_id),
+  (sim_id, 'design', 'font_body',             '"''Cormorant'', Georgia, serif"', usr_id),
   (sim_id, 'design', 'font_mono',             '"SF Mono, Monaco, Inconsolata, ''Roboto Mono'', monospace"', usr_id),
   (sim_id, 'design', 'heading_weight',        '"700"', usr_id),
   (sim_id, 'design', 'heading_transform',     '"none"', usr_id),
@@ -66,7 +66,10 @@ VALUES
 
   -- Animation
   (sim_id, 'design', 'animation_speed',       '"1.1"', usr_id),
-  (sim_id, 'design', 'animation_easing',      '"ease-in-out"', usr_id)
+  (sim_id, 'design', 'animation_easing',      '"ease-in-out"', usr_id),
+
+  -- Theme preset (for ThemeService base resolution)
+  (sim_id, 'design', 'theme_preset',          '"illuminated-literary"', usr_id)
 
 ON CONFLICT (simulation_id, category, setting_key) DO UPDATE SET
   setting_value = EXCLUDED.setting_value,

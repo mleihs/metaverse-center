@@ -25,7 +25,7 @@ export class BleedMarginalia extends LitElement {
     .marginalia {
       position: absolute;
       top: 0;
-      font-family: var(--font-bureau, 'Spectral', serif);
+      font-family: var(--font-prose, 'Spectral', serif);
       font-style: italic;
       font-size: 11px;
       line-height: 1.4;

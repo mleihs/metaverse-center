@@ -66,7 +66,7 @@ export class VelgWorldSettingsPanel extends LitElement {
     }
 
     .form__select {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-base);
       padding: var(--space-2) var(--space-3);
       border: var(--border-medium);
@@ -109,7 +109,7 @@ export class VelgWorldSettingsPanel extends LitElement {
     }
 
     .table__td {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-sm);
       padding: var(--space-2-5) var(--space-3);
       border-bottom: var(--border-width-thin) solid var(--color-border-light);
@@ -229,7 +229,7 @@ export class VelgWorldSettingsPanel extends LitElement {
     }
 
     .form__input {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-sm);
       padding: var(--space-2) var(--space-3);
       border: var(--border-medium);

@@ -38,7 +38,7 @@ export class MapAnnotationTool extends LitElement {
 
     .annotation {
       position: absolute;
-      font-family: var(--font-bureau, 'Spectral', serif);
+      font-family: var(--font-prose, 'Spectral', serif);
       font-style: italic;
       font-size: 12px;
       color: var(--color-text-secondary);
@@ -57,7 +57,7 @@ export class MapAnnotationTool extends LitElement {
       background: var(--color-surface-sunken);
       border: 1px solid var(--color-border);
       color: var(--color-text-primary);
-      font-family: var(--font-bureau, 'Spectral', serif);
+      font-family: var(--font-prose, 'Spectral', serif);
       font-style: italic;
       font-size: 12px;
       padding: 2px 4px;

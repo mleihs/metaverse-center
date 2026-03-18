@@ -114,7 +114,7 @@ export class VelgDossierRequest extends LitElement {
     }
 
     .cta__desc {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-sm);
       line-height: 1.7;
       color: var(--color-text-secondary);
@@ -252,7 +252,7 @@ export class VelgDossierRequest extends LitElement {
     }
 
     .confirm__desc {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-sm);
       line-height: 1.7;
       color: var(--color-text-secondary);

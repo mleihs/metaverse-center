@@ -237,7 +237,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
     }
 
     .action__desc {
-      font-family: var(--font-sans, sans-serif);
+      font-family: var(--font-body, sans-serif);
       font-size: var(--text-xs, 12px);
       color: var(--color-text-secondary);
       line-height: 1.5;

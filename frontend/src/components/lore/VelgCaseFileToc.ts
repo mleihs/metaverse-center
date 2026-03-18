@@ -84,7 +84,7 @@ export class VelgCaseFileToc extends LitElement {
     }
 
     .toc__title {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: 11px;
       color: var(--color-text-muted);
       line-height: 1.3;

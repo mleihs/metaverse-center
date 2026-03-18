@@ -215,7 +215,7 @@ export class ResonanceMonitor extends LitElement {
     }
 
     .empty-text {
-      font-family: var(--font-bureau);
+      font-family: var(--font-prose);
       font-size: var(--text-base);
       font-style: italic;
       color: var(--color-text-muted);

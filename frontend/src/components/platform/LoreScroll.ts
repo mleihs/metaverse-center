@@ -776,7 +776,7 @@ export class VelgLoreScroll extends LitElement {
     }
 
     .section__epigraph {
-      font-family: var(--font-bureau);
+      font-family: var(--font-prose);
       font-size: var(--text-sm);
       font-style: italic;
       color: var(--lore-muted);
@@ -813,7 +813,7 @@ export class VelgLoreScroll extends LitElement {
     }
 
     .section__text {
-      font-family: var(--font-bureau);
+      font-family: var(--font-prose);
       font-size: var(--text-sm);
       line-height: var(--leading-relaxed);
       color: var(--lore-text);
@@ -1002,7 +1002,7 @@ export class VelgLoreScroll extends LitElement {
 
     .pullquote--cosmic blockquote {
       position: relative;
-      font-family: var(--font-bureau);
+      font-family: var(--font-prose);
       font-size: clamp(1.5rem, 3vw, 2rem);
       font-style: italic;
       line-height: 1.5;
@@ -1100,7 +1100,7 @@ export class VelgLoreScroll extends LitElement {
       position: absolute;
       top: var(--space-3);
       left: var(--space-3);
-      font-family: var(--font-bureau);
+      font-family: var(--font-prose);
       font-size: 3rem;
       line-height: 1;
       color: var(--lore-accent);
@@ -1108,7 +1108,7 @@ export class VelgLoreScroll extends LitElement {
     }
 
     .pullquote--character blockquote {
-      font-family: var(--font-bureau);
+      font-family: var(--font-prose);
       font-size: var(--text-xl);
       font-style: italic;
       line-height: 1.6;

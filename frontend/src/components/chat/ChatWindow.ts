@@ -231,7 +231,7 @@ export class VelgChatWindow extends LitElement {
     }
 
     .window__empty-text {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-sm);
       color: var(--color-text-muted);
       max-width: 360px;

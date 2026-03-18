@@ -78,7 +78,7 @@ export const propheticFragmentStyles = css`
 
   /* ── Bureau Memo ── */
   .fragment--memo {
-    font-family: var(--font-sans);
+    font-family: var(--font-body);
     font-size: var(--text-sm);
     color: var(--color-text-secondary);
     background: var(--color-surface-sunken);

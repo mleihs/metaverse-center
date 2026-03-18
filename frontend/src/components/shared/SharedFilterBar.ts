@@ -45,7 +45,7 @@ export class VelgFilterBar extends LitElement {
     .filter-bar__search {
       flex: 1;
       min-width: clamp(120px, 100%, 400px);
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-base);
       padding: var(--space-2) var(--space-3);
       border: var(--border-medium);

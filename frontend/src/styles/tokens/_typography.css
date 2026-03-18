@@ -41,6 +41,10 @@
   --tracking-widest: 0.1em;
   --tracking-brutalist: 1px;
 
+  /* === SEMANTIC TOKENS (analogous to --heading-font for headings) === */
+  --font-body: var(--font-sans);    /* UI text — themed per simulation */
+  --font-prose: var(--font-bureau); /* Literary prose — themed per simulation, Spectral on platform */
+
   /* === HEADING TOKENS === */
   --heading-font: var(--font-brutalist);
   --heading-weight: var(--font-black);

@@ -59,7 +59,7 @@ export const settingsStyles = css`
   .settings-form__hint {
     font-size: var(--text-xs);
     color: var(--color-text-muted);
-    font-family: var(--font-sans);
+    font-family: var(--font-body);
     text-transform: none;
     letter-spacing: normal;
   }
@@ -67,7 +67,7 @@ export const settingsStyles = css`
   .settings-form__input,
   .settings-form__textarea,
   .settings-form__select {
-    font-family: var(--font-sans);
+    font-family: var(--font-body);
     font-size: var(--text-base);
     padding: var(--space-2-5) var(--space-3);
     border: var(--border-medium);
@@ -156,7 +156,7 @@ export const settingsStyles = css`
   }
 
   .settings-section__help {
-    font-family: var(--font-sans);
+    font-family: var(--font-body);
     font-size: var(--text-xs);
     color: var(--color-text-muted);
     margin: 0;
@@ -304,7 +304,7 @@ export const settingsStyles = css`
   .settings-sensitive-hint {
     font-size: var(--text-xs);
     color: var(--color-text-muted);
-    font-family: var(--font-sans);
+    font-family: var(--font-body);
   }
 
   /* --- Mobile Responsive --- */

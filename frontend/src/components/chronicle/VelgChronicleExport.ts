@@ -52,7 +52,7 @@ export class VelgChronicleExport extends LitElement {
     }
 
     .export__subtitle {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: 0.3em;
@@ -103,7 +103,7 @@ export class VelgChronicleExport extends LitElement {
     }
 
     .card__desc {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-xs);
       line-height: 1.6;
       color: var(--color-text-secondary);

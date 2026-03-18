@@ -93,7 +93,7 @@ export class VelgConversationList extends LitElement {
     }
 
     .conversation__preview {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-xs);
       color: var(--color-text-secondary);
       line-height: var(--leading-snug);

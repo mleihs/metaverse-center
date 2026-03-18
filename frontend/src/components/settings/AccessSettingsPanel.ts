@@ -159,7 +159,7 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
 
       .members__name {
         flex: 1;
-        font-family: var(--font-sans);
+        font-family: var(--font-body);
         font-size: var(--text-sm);
         color: var(--color-text-primary);
         min-width: 0;
@@ -194,7 +194,7 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
       }
 
       .members__role-select {
-        font-family: var(--font-sans);
+        font-family: var(--font-body);
         font-size: var(--text-sm);
         padding: var(--space-1) var(--space-2);
         border: var(--border-default);
@@ -250,7 +250,7 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
 
       .invite-form__input {
         flex: 1;
-        font-family: var(--font-sans);
+        font-family: var(--font-body);
         font-size: var(--text-sm);
         padding: var(--space-2) var(--space-3);
         border: var(--border-default);
@@ -265,7 +265,7 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
       }
 
       .invite-form__select {
-        font-family: var(--font-sans);
+        font-family: var(--font-body);
         font-size: var(--text-sm);
         padding: var(--space-2) var(--space-3);
         border: var(--border-default);
@@ -337,7 +337,7 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
 
       .invitations__email {
         flex: 1;
-        font-family: var(--font-sans);
+        font-family: var(--font-body);
         color: var(--color-text-primary);
         min-width: 0;
         overflow: hidden;

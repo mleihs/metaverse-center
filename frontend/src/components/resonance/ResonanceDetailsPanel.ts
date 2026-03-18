@@ -275,7 +275,7 @@ export class VelgResonanceDetailsPanel extends LitElement {
       }
 
       .panel__description {
-        font-family: var(--font-sans);
+        font-family: var(--font-body);
         font-size: var(--text-base);
         line-height: var(--leading-relaxed);
         color: var(--color-text-primary);
@@ -283,7 +283,7 @@ export class VelgResonanceDetailsPanel extends LitElement {
       }
 
       .panel__dispatch {
-        font-family: var(--font-bureau);
+        font-family: var(--font-prose);
         font-size: var(--text-sm);
         line-height: var(--leading-relaxed);
         color: var(--color-text-secondary);
@@ -533,7 +533,7 @@ export class VelgResonanceDetailsPanel extends LitElement {
 
       .impact-empty {
         padding: var(--space-4) 0;
-        font-family: var(--font-bureau);
+        font-family: var(--font-prose);
         font-size: var(--text-sm);
         font-style: italic;
         color: var(--color-text-muted);

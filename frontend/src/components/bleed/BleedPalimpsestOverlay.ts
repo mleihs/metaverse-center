@@ -37,7 +37,7 @@ export class BleedPalimpsestOverlay extends LitElement {
 
     .ghost-text__fragment {
       position: absolute;
-      font-family: var(--font-bureau, 'Spectral', serif);
+      font-family: var(--font-prose, 'Spectral', serif);
       font-style: italic;
       font-size: 14px;
       line-height: 1.6;

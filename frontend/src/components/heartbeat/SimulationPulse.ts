@@ -434,7 +434,7 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
       margin-bottom: var(--space-2);
       border-left: 2px solid var(--color-border);
       background: color-mix(in srgb, var(--color-surface-sunken) 40%, transparent);
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-xs);
       color: var(--color-text-secondary);
     }

@@ -313,7 +313,7 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
     }
 
     .service__desc {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-xs);
       line-height: 1.6;
       color: var(--color-text-muted);

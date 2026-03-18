@@ -89,7 +89,7 @@ export class VelgRelationshipEditModal extends LitElement {
     }
 
     .form__checkbox-label {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-base);
       color: var(--color-text-primary);
       cursor: pointer;

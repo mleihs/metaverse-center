@@ -344,7 +344,7 @@ export class VelgOnboardingWizard extends LitElement {
 
     .welcome__title {
       position: relative;
-      font-family: var(--font-bureau, 'Courier New', monospace);
+      font-family: var(--font-prose);
       font-weight: 900;
       font-size: 28px;
       letter-spacing: 1px;
@@ -390,7 +390,7 @@ export class VelgOnboardingWizard extends LitElement {
     }
 
     .worlds__heading {
-      font-family: var(--font-bureau, 'Courier New', monospace);
+      font-family: var(--font-prose);
       font-weight: 900;
       font-size: 16px;
       letter-spacing: 1px;
@@ -499,7 +499,7 @@ export class VelgOnboardingWizard extends LitElement {
     }
 
     .tour__heading {
-      font-family: var(--font-bureau, 'Courier New', monospace);
+      font-family: var(--font-prose);
       font-weight: 900;
       font-size: 16px;
       letter-spacing: 1px;
@@ -595,7 +595,7 @@ export class VelgOnboardingWizard extends LitElement {
     }
 
     .mission__heading {
-      font-family: var(--font-bureau, 'Courier New', monospace);
+      font-family: var(--font-prose);
       font-weight: 900;
       font-size: 16px;
       letter-spacing: 1px;

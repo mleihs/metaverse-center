@@ -131,7 +131,7 @@ export class VelgTransformationModal extends LitElement {
     }
 
     .clipping__headline {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-weight: var(--font-black);
       font-size: var(--text-xl);
       line-height: 1.2;
@@ -145,7 +145,7 @@ export class VelgTransformationModal extends LitElement {
     }
 
     .clipping__body {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-sm);
       line-height: 1.65;
       color: var(--color-text-secondary);
@@ -159,7 +159,7 @@ export class VelgTransformationModal extends LitElement {
       margin-top: var(--space-2);
       padding-top: var(--space-2);
       border-top: 1px solid color-mix(in srgb, var(--color-border) 40%, transparent);
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-xs);
       color: var(--color-text-muted);
       font-style: italic;
@@ -369,7 +369,7 @@ export class VelgTransformationModal extends LitElement {
     .crucible__form-input,
     .crucible__form-select,
     .crucible__form-textarea {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-base);
       padding: var(--space-2) var(--space-3);
       border: var(--border-medium);

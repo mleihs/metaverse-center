@@ -191,6 +191,10 @@ Simulation-Views uberschreiben die Tokens via ThemeService auf dem `<velg-simula
   --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
 
+  /* === SEMANTIC TOKENS (analogous to --heading-font) === */
+  --font-body: var(--font-sans);    /* UI text — overridden per-simulation by ThemeService */
+  --font-prose: var(--font-bureau); /* Literary prose — overridden per-simulation, Spectral on platform */
+
   /* === FONT SIZES (Modular Scale: 1.25 ratio) === */
   --text-xs: 0.64rem;    /* 10.24px */
   --text-sm: 0.8rem;     /* 12.8px */

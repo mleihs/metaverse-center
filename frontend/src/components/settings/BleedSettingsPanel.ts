@@ -43,7 +43,7 @@ export class VelgBleedSettingsPanel extends BaseSettingsPanel {
         padding: var(--space-3);
         background: var(--color-surface-sunken);
         border: var(--border-default);
-        font-family: var(--font-sans);
+        font-family: var(--font-body);
         font-size: var(--text-sm);
         color: var(--color-text-muted);
         line-height: 1.5;

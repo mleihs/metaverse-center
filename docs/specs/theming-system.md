@@ -78,7 +78,8 @@ Simulation views (inside shell)      →  Overridden tokens on shell host
 | Setting Key | Overrides Base Token | Purpose |
 |---|---|---|
 | `font_heading` | `--font-brutalist` | Heading font stack |
-| `font_body` | `--font-sans` | Body text font stack |
+| `font_body` | `--font-body` | Body text font stack (semantic, resolves to `--font-sans` by default) |
+| `font_body` | `--font-prose` | Literary prose font (semantic, resolves to `--font-bureau` / Spectral by default) |
 | `font_mono` | `--font-mono` | Code/data font stack |
 | `heading_weight` | `--heading-weight` | Heading font weight (400-900) |
 | `heading_transform` | `--heading-transform` | uppercase / capitalize / none |
@@ -246,4 +247,14 @@ The 8 token files in `frontend/src/styles/tokens/` define the base design system
 - Only simulations with explicit design settings get themed
 - The base token files remain the single source of truth for the default aesthetic
 
-**Theme-aware platform components:** `LoreScroll` `.section__title` uses `var(--font-brutalist)` with fallback tokens (`--heading-weight`, `--heading-transform`, `--heading-tracking`) so section titles inherit the simulation's custom heading font when rendered inside a themed shell. Narrative text (`.section__epigraph`, `.section__text`, pullquotes) stays on `var(--font-bureau)` as body/prose.
+**Theme-aware platform components:** `LoreScroll` `.section__title` uses `var(--font-brutalist)` with fallback tokens (`--heading-weight`, `--heading-transform`, `--heading-tracking`) so section titles inherit the simulation's custom heading font when rendered inside a themed shell. Narrative text (`.section__epigraph`, `.section__text`, pullquotes) uses `var(--font-prose)` — which resolves to the simulation's body font inside a themed shell, and to Spectral (`--font-bureau`) on platform pages.
+
+**Font token architecture:**
+```
+Primitive         Semantic          Usage
+--font-brutalist → --heading-font → heading elements
+--font-sans      → --font-body   → UI text (cards, panels, chat, forms)
+--font-bureau    → --font-prose  → literary prose (lore, resonance, archives)
+--font-mono      → (direct)      → code/data display
+```
+Inside the simulation shell, ThemeService overrides `--font-body` and `--font-prose` to the simulation's body font. Outside the shell, they resolve to their `:root` defaults (`--font-sans` and `--font-bureau` respectively). `--font-bureau` itself is never overridden — it always means Spectral.

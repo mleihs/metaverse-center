@@ -1041,7 +1041,7 @@ export class VelgEpochCommandCenter extends LitElement {
     .team-form__input {
       flex: 1;
       padding: var(--space-1-5) var(--space-2);
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-sm);
       border: 1px solid var(--color-border);
       background: var(--color-surface);

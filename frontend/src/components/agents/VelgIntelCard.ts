@@ -165,7 +165,7 @@ export class VelgIntelCard extends LitElement {
     }
 
     .intel__field-value {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-sm);
       line-height: 1.7;
       color: var(--color-text-secondary);

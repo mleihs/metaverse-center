@@ -180,7 +180,7 @@ export class VelgMessageList extends LitElement {
 
     .message__bubble {
       padding: var(--space-3) var(--space-4);
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-sm);
       line-height: var(--leading-normal);
       word-break: break-word;

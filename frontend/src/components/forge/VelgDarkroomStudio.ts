@@ -187,7 +187,7 @@ export class VelgDarkroomStudio extends LitElement {
     }
 
     .purchase-cta__desc {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-sm);
       line-height: 1.7;
       color: var(--color-text-secondary);
@@ -511,7 +511,7 @@ export class VelgDarkroomStudio extends LitElement {
       width: 100%;
       min-height: 80px;
       padding: var(--space-2);
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-sm);
       background: var(--color-surface-sunken);
       color: var(--color-text-primary);
@@ -575,7 +575,7 @@ export class VelgDarkroomStudio extends LitElement {
     }
 
     .atelier__text {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-sm);
       color: var(--color-text-muted);
       text-align: center;

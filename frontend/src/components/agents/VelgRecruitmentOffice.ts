@@ -50,7 +50,7 @@ export class VelgRecruitmentOffice extends LitElement {
     }
 
     .recruit__desc {
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-sm);
       line-height: 1.7;
       color: var(--color-text-secondary);
@@ -160,7 +160,7 @@ export class VelgRecruitmentOffice extends LitElement {
       width: 100%;
       min-height: 60px;
       padding: var(--space-2);
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-sm);
       background: var(--color-surface);
       color: var(--color-text-primary);
@@ -177,7 +177,7 @@ export class VelgRecruitmentOffice extends LitElement {
 
     .config__select {
       padding: var(--space-2);
-      font-family: var(--font-sans);
+      font-family: var(--font-body);
       font-size: var(--text-sm);
       background: var(--color-surface);
       color: var(--color-text-primary);
