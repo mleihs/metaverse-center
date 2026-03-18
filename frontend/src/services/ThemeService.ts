@@ -363,8 +363,9 @@ class ThemeService {
 
     // 9. Override --font-prose so literary text (LoreScroll, BureauArchives,
     //    Resonance) inherits the simulation's body font inside the shell.
-    //    Outside the shell, --font-prose falls back to var(--font-bureau) = Spectral.
-    if (config.font_body) {
+    //    Skip if the body font is the default system stack — let --font-prose
+    //    inherit from :root (Spectral) so prose stays readable in serif.
+    if (config.font_body && !config.font_body.startsWith('system-ui')) {
       hostElement.style.setProperty('--font-prose', config.font_body);
       tokensApplied.push('--font-prose');
     }
