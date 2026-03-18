@@ -78,10 +78,14 @@ CREATE INDEX idx_ig_posts_published ON public.instagram_posts(published_at DESC)
     WHERE status = 'published';
 CREATE INDEX idx_ig_posts_source ON public.instagram_posts(content_source_type, content_source_id);
 
+-- Helper: extract UTC date from timestamptz (IMMUTABLE for index use)
+CREATE OR REPLACE FUNCTION public.utc_date(ts timestamptz)
+RETURNS date LANGUAGE sql IMMUTABLE PARALLEL SAFE
+AS $$ SELECT CAST(ts AT TIME ZONE 'UTC' AS date) $$;
+
 -- Dedup constraint: same entity can't be posted twice on the same day
--- Cast to date via timezone-pinned expression (IMMUTABLE requirement for index)
 CREATE UNIQUE INDEX idx_ig_posts_dedup
-    ON public.instagram_posts (content_source_type, content_source_id, (COALESCE(scheduled_at, created_at) AT TIME ZONE 'UTC')::date)
+    ON public.instagram_posts (content_source_type, content_source_id, utc_date(COALESCE(scheduled_at, created_at)))
     WHERE status NOT IN ('rejected', 'failed');
 
 -- ============================================================================
