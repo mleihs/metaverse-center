@@ -172,7 +172,7 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
 
     .breadcrumb__dropdown {
       position: fixed;
-      z-index: 50;
+      z-index: var(--z-raised);
       min-width: 220px;
       max-width: 340px;
       max-height: 300px;
@@ -324,11 +324,11 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
     .fracture-banner {
       padding: var(--space-1-5, 6px) var(--space-4, 16px);
       background: rgba(10, 0, 0, 0.95);
-      border-bottom: 1px solid var(--color-accent-amber, #f59e0b);
+      border-bottom: 1px solid var(--color-accent-amber);
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs, 12px);
       letter-spacing: var(--tracking-wider, 0.05em);
-      color: var(--color-accent-amber, #f59e0b);
+      color: var(--color-accent-amber);
       white-space: nowrap;
       overflow: hidden;
       pointer-events: auto;

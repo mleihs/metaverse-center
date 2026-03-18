@@ -44,9 +44,9 @@ export class VelgAcademyEpochCard extends LitElement {
 
     .card {
       position: relative;
-      background: var(--color-gray-900, #111);
-      border: 1px solid var(--color-gray-700, #333);
-      border-left: 3px solid #f59e0b;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-left: 3px solid var(--color-primary);
       padding: 24px;
       overflow: hidden;
     }
@@ -81,19 +81,19 @@ export class VelgAcademyEpochCard extends LitElement {
       font-weight: 700;
       letter-spacing: 2px;
       text-transform: uppercase;
-      color: #f59e0b;
+      color: var(--color-primary);
     }
 
     .header__divider {
       flex: 1;
       height: 1px;
-      background: linear-gradient(90deg, var(--color-gray-700, #333) 0%, transparent 100%);
+      background: linear-gradient(90deg, var(--color-border) 0%, transparent 100%);
     }
 
     .header__status {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 10px;
-      color: var(--color-gray-400, #9ca3af);
+      color: var(--color-text-muted);
       letter-spacing: 1px;
     }
 
@@ -103,7 +103,7 @@ export class VelgAcademyEpochCard extends LitElement {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 12px;
       line-height: 1.6;
-      color: var(--color-gray-400, #9ca3af);
+      color: var(--color-text-muted);
       margin-bottom: 20px;
     }
 
@@ -115,8 +115,8 @@ export class VelgAcademyEpochCard extends LitElement {
       gap: 12px;
       margin-bottom: 20px;
       padding: 12px;
-      background: var(--color-gray-950, #0a0a0a);
-      border: 1px solid var(--color-gray-800, #1f1f1f);
+      background: var(--color-surface-sunken);
+      border: 1px solid var(--color-border-light);
     }
 
     .roster__label {
@@ -125,7 +125,7 @@ export class VelgAcademyEpochCard extends LitElement {
       font-weight: 700;
       letter-spacing: 2px;
       text-transform: uppercase;
-      color: var(--color-gray-600, #555);
+      color: var(--color-border);
       writing-mode: vertical-lr;
       text-orientation: mixed;
       transform: rotate(180deg);
@@ -153,15 +153,15 @@ export class VelgAcademyEpochCard extends LitElement {
       justify-content: center;
       width: 36px;
       height: 36px;
-      border: 1px solid var(--color-gray-700, #333);
-      background: var(--color-gray-900, #111);
-      color: var(--color-gray-400, #9ca3af);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      color: var(--color-icon);
       transition: color 200ms, border-color 200ms;
     }
 
     .roster__bot:hover .roster__bot-icon {
-      color: #f59e0b;
-      border-color: rgba(245, 158, 11, 0.3);
+      color: var(--color-primary);
+      border-color: var(--color-warning-border);
     }
 
     .roster__bot-name {
@@ -169,7 +169,7 @@ export class VelgAcademyEpochCard extends LitElement {
       font-size: 8px;
       letter-spacing: 1px;
       text-transform: uppercase;
-      color: var(--color-gray-600, #555);
+      color: var(--color-border);
     }
 
     /* ── Footer ── */
@@ -196,7 +196,7 @@ export class VelgAcademyEpochCard extends LitElement {
       font-size: 10px;
       letter-spacing: 1px;
       text-transform: uppercase;
-      color: var(--color-gray-400, #9ca3af);
+      color: var(--color-text-muted);
     }
 
     .difficulty__pips {
@@ -207,13 +207,13 @@ export class VelgAcademyEpochCard extends LitElement {
     .difficulty__pip {
       width: 6px;
       height: 6px;
-      border: 1px solid var(--color-gray-600, #555);
+      border: 1px solid var(--color-border);
       transition: background 200ms;
     }
 
     .difficulty__pip--active {
-      background: #f59e0b;
-      border-color: #f59e0b;
+      background: var(--color-primary);
+      border-color: var(--color-primary);
     }
 
     .format-tag {
@@ -222,8 +222,8 @@ export class VelgAcademyEpochCard extends LitElement {
       letter-spacing: 1px;
       text-transform: uppercase;
       padding: 2px 8px;
-      border: 1px solid var(--color-gray-700, #333);
-      color: var(--color-gray-400, #9ca3af);
+      border: 1px solid var(--color-border);
+      color: var(--color-text-muted);
     }
 
     /* ── CTA Button ── */
@@ -238,30 +238,30 @@ export class VelgAcademyEpochCard extends LitElement {
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 2px;
-      color: #0a0a0a;
-      background: #f59e0b;
+      color: var(--color-surface-sunken);
+      background: var(--color-primary);
       border: none;
       cursor: pointer;
       transition: background 150ms, transform 150ms, box-shadow 150ms;
-      box-shadow: 3px 3px 0 rgba(245, 158, 11, 0.2);
+      box-shadow: 3px 3px 0 var(--color-warning-glow);
       opacity: 0;
       animation: btn-materialize 400ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) both;
       animation-delay: 500ms;
     }
 
     .btn-train:hover {
-      background: #fbbf24;
+      background: var(--color-primary-hover);
       transform: translate(-2px, -2px);
-      box-shadow: 5px 5px 0 rgba(245, 158, 11, 0.25);
+      box-shadow: 5px 5px 0 var(--color-warning-glow);
     }
 
     .btn-train:active {
       transform: translate(0);
-      box-shadow: 2px 2px 0 rgba(245, 158, 11, 0.15);
+      box-shadow: 2px 2px 0 var(--color-warning-glow);
     }
 
     .btn-train:focus-visible {
-      outline: 2px solid #f59e0b;
+      outline: 2px solid var(--color-primary);
       outline-offset: 2px;
     }
 

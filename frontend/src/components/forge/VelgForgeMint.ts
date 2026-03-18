@@ -31,7 +31,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
         z-index: var(--z-modal, 500);
         display: flex;
         flex-direction: column;
-        background: var(--color-surface, #0a0a0a);
+        background: var(--color-surface);
         overflow-y: auto;
         overscroll-behavior: contain;
         padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
@@ -44,7 +44,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
         align-items: center;
         justify-content: space-between;
         padding: var(--space-6, 24px) var(--space-8, 32px);
-        border-bottom: 2px solid var(--color-mint-brass, #b8860b);
+        border-bottom: 2px solid var(--color-mint-brass);
       }
 
       .mint__title {
@@ -53,7 +53,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
         font-size: var(--text-2xl, 24px);
         text-transform: uppercase;
         letter-spacing: 0.2em;
-        color: var(--color-accent-amber, #f59e0b);
+        color: var(--color-accent-amber);
         margin: 0;
       }
 
@@ -64,7 +64,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
         font-family: var(--font-brutalist, system-ui);
         font-weight: 900;
         font-size: var(--text-lg, 18px);
-        color: var(--color-accent-amber, #f59e0b);
+        color: var(--color-accent-amber);
       }
 
       .mint__balance-icon {
@@ -73,8 +73,8 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
 
       .mint__close {
         background: transparent;
-        border: 1px solid var(--color-gray-700, #374151);
-        color: var(--color-gray-400, #9ca3af);
+        border: 1px solid var(--color-border);
+        color: var(--color-icon);
         width: 44px;
         height: 44px;
         display: flex;
@@ -86,12 +86,12 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
       }
 
       .mint__close:hover {
-        color: var(--color-gray-100, #f3f4f6);
-        border-color: var(--color-gray-500, #6b7280);
+        color: var(--color-text-primary);
+        border-color: var(--color-text-muted);
       }
 
       .mint__close:focus-visible {
-        outline: 2px solid var(--color-accent-amber, #f59e0b);
+        outline: 2px solid var(--color-accent-amber);
         outline-offset: 2px;
       }
 
@@ -143,8 +143,8 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
         flex-direction: column;
         align-items: center;
         padding: var(--space-6, 24px) var(--space-4, 16px);
-        border: 2px solid var(--color-mint-brass, #b8860b);
-        background: var(--color-surface-raised, #111111);
+        border: 2px solid var(--color-mint-brass);
+        background: var(--color-surface-raised);
         cursor: pointer;
         transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
         min-height: 200px;
@@ -152,17 +152,17 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
 
       .bundle:hover {
         transform: translateY(-4px);
-        border-color: var(--color-accent-amber, #f59e0b);
+        border-color: var(--color-accent-amber);
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
       }
 
       .bundle:focus-visible {
-        outline: 2px solid var(--color-accent-amber, #f59e0b);
+        outline: 2px solid var(--color-accent-amber);
         outline-offset: 2px;
       }
 
       .bundle--selected {
-        border-color: var(--color-accent-amber, #f59e0b);
+        border-color: var(--color-accent-amber);
         box-shadow: 0 0 20px rgba(245, 158, 11, 0.2), inset 0 0 20px rgba(245, 158, 11, 0.05);
       }
 
@@ -170,7 +170,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
         font-family: var(--font-brutalist, system-ui);
         font-weight: 900;
         font-size: 48px;
-        color: var(--color-accent-amber, #f59e0b);
+        color: var(--color-accent-amber);
         line-height: 1;
         margin-bottom: var(--space-2, 8px);
       }
@@ -180,7 +180,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
         font-size: var(--text-xs, 12px);
         text-transform: uppercase;
         letter-spacing: 0.15em;
-        color: var(--color-text-muted, #888888);
+        color: var(--color-text-muted);
         margin-bottom: var(--space-4, 16px);
       }
 
@@ -189,7 +189,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
         font-size: var(--text-sm, 14px);
         text-transform: uppercase;
         letter-spacing: 0.15em;
-        color: var(--color-text-primary, #e5e5e5);
+        color: var(--color-text-primary);
         margin-bottom: var(--space-3, 12px);
         text-align: center;
       }
@@ -198,16 +198,16 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
         font-family: var(--font-brutalist, system-ui);
         font-weight: 900;
         font-size: var(--text-xl, 20px);
-        color: var(--color-accent-amber, #f59e0b);
+        color: var(--color-accent-amber);
         margin-bottom: var(--space-2, 8px);
       }
 
       .bundle__savings {
         display: inline-block;
         padding: var(--space-0-5, 2px) var(--space-2, 8px);
-        background: rgba(34, 197, 94, 0.15);
-        border: 1px solid rgba(34, 197, 94, 0.3);
-        color: var(--color-success, #22c55e);
+        background: var(--color-success-glow);
+        border: 1px solid color-mix(in srgb, var(--color-success) 30%, transparent);
+        color: var(--color-success);
         font-family: var(--font-mono, monospace);
         font-size: var(--text-xs, 12px);
         font-weight: 700;
@@ -229,14 +229,14 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
       .mint__purchase-info {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-sm, 14px);
-        color: var(--color-text-secondary, #a0a0a0);
+        color: var(--color-text-secondary);
         text-align: center;
       }
 
       .btn--purchase {
-        background: var(--color-accent-amber, #f59e0b);
-        border-color: var(--color-accent-amber, #f59e0b);
-        color: #0a0a0a;
+        background: var(--color-accent-amber);
+        border-color: var(--color-accent-amber);
+        color: var(--color-surface-sunken);
         font-weight: 900;
         letter-spacing: 0.15em;
         padding: var(--space-3, 12px) var(--space-8, 32px);
@@ -246,7 +246,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
       }
 
       .btn--purchase:hover:not(:disabled) {
-        background: var(--color-accent-amber-hover, #fbbf24);
+        background: var(--color-accent-amber-hover);
         box-shadow: 0 0 16px rgba(245, 158, 11, 0.3);
         transform: translateY(-1px);
       }
@@ -257,7 +257,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
       }
 
       .btn--purchase:focus-visible {
-        outline: 2px solid var(--color-accent-amber, #f59e0b);
+        outline: 2px solid var(--color-accent-amber);
         outline-offset: 2px;
       }
 
@@ -265,7 +265,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
 
       .mint__history {
         width: 100%;
-        border-top: 1px solid var(--color-gray-800, #1f2937);
+        border-top: 1px solid var(--color-border-light);
         padding-top: var(--space-6, 24px);
       }
 
@@ -275,7 +275,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
         gap: var(--space-2, 8px);
         background: none;
         border: none;
-        color: var(--color-text-secondary, #a0a0a0);
+        color: var(--color-text-secondary);
         font-family: var(--font-mono, monospace);
         font-size: var(--text-sm, 14px);
         text-transform: uppercase;
@@ -287,11 +287,11 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
       }
 
       .mint__history-toggle:hover {
-        color: var(--color-text-primary, #e5e5e5);
+        color: var(--color-text-primary);
       }
 
       .mint__history-toggle:focus-visible {
-        outline: 2px solid var(--color-accent-amber, #f59e0b);
+        outline: 2px solid var(--color-accent-amber);
         outline-offset: 2px;
       }
 
@@ -314,29 +314,29 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
         justify-content: space-between;
         align-items: center;
         padding: var(--space-3, 12px) var(--space-4, 16px);
-        border-bottom: 1px solid var(--color-gray-900, #111827);
+        border-bottom: 1px solid var(--color-surface);
         font-family: var(--font-mono, monospace);
         font-size: var(--text-sm, 14px);
       }
 
       .mint__history-tokens {
-        color: var(--color-accent-amber, #f59e0b);
+        color: var(--color-accent-amber);
         font-weight: 700;
       }
 
       .mint__history-price {
-        color: var(--color-text-muted, #888888);
+        color: var(--color-text-muted);
       }
 
       .mint__history-date {
-        color: var(--color-text-muted, #888888);
+        color: var(--color-text-muted);
         font-size: var(--text-xs, 12px);
       }
 
       .mint__history-empty {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-sm, 14px);
-        color: var(--color-text-muted, #888888);
+        color: var(--color-text-muted);
         padding: var(--space-4, 16px);
         text-align: center;
       }
@@ -346,7 +346,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
       .mint__byok-banner {
         width: 100%;
         padding: var(--space-6, 24px);
-        border: 2px solid var(--color-accent-amber, #f59e0b);
+        border: 2px solid var(--color-accent-amber);
         background: rgba(245, 158, 11, 0.06);
         text-align: center;
         margin-bottom: var(--space-8, 32px);
@@ -358,14 +358,14 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
         font-size: var(--text-lg, 18px);
         text-transform: uppercase;
         letter-spacing: 0.15em;
-        color: var(--color-accent-amber, #f59e0b);
+        color: var(--color-accent-amber);
         margin-bottom: var(--space-2, 8px);
       }
 
       .mint__byok-subtitle {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-sm, 14px);
-        color: var(--color-text-secondary, #a0a0a0);
+        color: var(--color-text-secondary);
       }
 
       .mint__byok-keys {
@@ -384,19 +384,19 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
       }
 
       .mint__byok-key--active {
-        color: var(--color-success, #22c55e);
+        color: var(--color-success);
       }
 
       .mint__byok-key--missing {
-        color: var(--color-text-muted, #888888);
+        color: var(--color-text-muted);
       }
 
       /* ── BYOK Key Management ─────────────────────────── */
 
       .mint__keys-section {
         width: 100%;
-        border: 1px solid var(--color-gray-800, #1f2937);
-        background: var(--color-surface-raised, #111111);
+        border: 1px solid var(--color-border-light);
+        background: var(--color-surface-raised);
         padding: var(--space-6, 24px);
         margin-bottom: var(--space-6, 24px);
       }
@@ -407,14 +407,14 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
         font-size: var(--text-base, 16px);
         text-transform: uppercase;
         letter-spacing: 0.1em;
-        color: var(--color-text-primary, #e5e5e5);
+        color: var(--color-text-primary);
         margin: 0 0 var(--space-1, 4px);
       }
 
       .mint__keys-desc {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-xs, 12px);
-        color: var(--color-text-muted, #888888);
+        color: var(--color-text-muted);
         margin: 0 0 var(--space-4, 16px);
       }
 
@@ -428,7 +428,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
         gap: var(--space-2, 8px);
         font-family: var(--font-mono, monospace);
         font-size: var(--text-sm, 14px);
-        color: var(--color-text-secondary, #a0a0a0);
+        color: var(--color-text-secondary);
         margin-bottom: var(--space-1-5, 6px);
       }
 
@@ -437,19 +437,19 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
       }
 
       .mint__key-status--set {
-        color: var(--color-success, #22c55e);
+        color: var(--color-success);
       }
 
       .mint__key-status--unset {
-        color: var(--color-text-muted, #888888);
+        color: var(--color-text-muted);
       }
 
       .mint__key-input {
         width: 100%;
         padding: var(--space-2-5, 10px) var(--space-3, 12px);
-        background: var(--color-surface, #0a0a0a);
-        border: 1px solid var(--color-gray-700, #374151);
-        color: var(--color-text-primary, #e5e5e5);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        color: var(--color-text-primary);
         font-family: var(--font-mono, monospace);
         font-size: var(--text-sm, 14px);
         box-sizing: border-box;
@@ -463,12 +463,12 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
       }
 
       .mint__key-input::placeholder {
-        color: var(--color-text-muted, #888888);
+        color: var(--color-text-muted);
       }
 
       .mint__key-input:focus {
         outline: none;
-        border-color: var(--color-accent-amber, #f59e0b);
+        border-color: var(--color-accent-amber);
       }
 
       .mint__keys-actions {
@@ -479,8 +479,8 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
 
       .btn--save-keys {
         background: transparent;
-        border: 1px solid var(--color-accent-amber, #f59e0b);
-        color: var(--color-accent-amber, #f59e0b);
+        border: 1px solid var(--color-accent-amber);
+        color: var(--color-accent-amber);
         font-family: var(--font-brutalist, system-ui);
         font-weight: 900;
         font-size: var(--text-sm, 14px);
@@ -493,8 +493,8 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
       }
 
       .btn--save-keys:hover:not(:disabled) {
-        background: var(--color-accent-amber, #f59e0b);
-        color: #0a0a0a;
+        background: var(--color-accent-amber);
+        color: var(--color-surface-sunken);
       }
 
       .btn--save-keys:disabled {
@@ -503,14 +503,14 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
       }
 
       .btn--save-keys:focus-visible {
-        outline: 2px solid var(--color-accent-amber, #f59e0b);
+        outline: 2px solid var(--color-accent-amber);
         outline-offset: 2px;
       }
 
       .mint__keys-hint {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-xs, 12px);
-        color: var(--color-text-muted, #888888);
+        color: var(--color-text-muted);
       }
 
       /* ── First-shard callout ──────────────────────────── */
@@ -518,9 +518,9 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
       .mint__callout {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-sm, 14px);
-        color: var(--color-text-muted, #888888);
+        color: var(--color-text-muted);
         text-align: center;
-        border: 1px dashed var(--color-mint-brass, #b8860b);
+        border: 1px dashed var(--color-mint-brass);
         padding: var(--space-4, 16px) var(--space-6, 24px);
         margin-top: var(--space-4, 16px);
       }
@@ -541,15 +541,15 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
       }
 
       .mint__toast--success {
-        background: rgba(34, 197, 94, 0.15);
-        border: 1px solid var(--color-success, #22c55e);
-        color: var(--color-success, #22c55e);
+        background: var(--color-success-glow);
+        border: 1px solid var(--color-success);
+        color: var(--color-success);
       }
 
       .mint__toast--error {
-        background: rgba(239, 68, 68, 0.15);
-        border: 1px solid var(--color-danger, #ef4444);
-        color: var(--color-danger, #ef4444);
+        background: var(--color-danger-glow);
+        border: 1px solid var(--color-danger);
+        color: var(--color-danger);
       }
 
       @keyframes toast-enter {

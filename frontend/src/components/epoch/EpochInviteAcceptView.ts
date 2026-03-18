@@ -25,13 +25,13 @@ export class VelgEpochInviteAcceptView extends LitElement {
       --amber: var(--color-warning);
       --amber-light: var(--color-warning-border);
       --amber-glow: color-mix(in srgb, var(--color-warning) 15%, transparent);
-      --hud-bg: var(--color-gray-950);
-      --hud-surface: var(--color-gray-900);
-      --hud-border: var(--color-gray-800);
-      --hud-border-dim: var(--color-gray-700);
-      --hud-text: var(--color-gray-200);
-      --hud-text-dim: var(--color-gray-400);
-      --hud-text-muted: var(--color-gray-400);
+      --hud-bg: var(--color-surface-sunken);
+      --hud-surface: var(--color-surface);
+      --hud-border: var(--color-border-light);
+      --hud-border-dim: var(--color-border);
+      --hud-text: var(--color-text-secondary);
+      --hud-text-dim: var(--color-text-muted);
+      --hud-text-muted: var(--color-text-muted);
       display: block;
       min-height: 100vh;
       background: var(--hud-bg);
@@ -132,7 +132,7 @@ export class VelgEpochInviteAcceptView extends LitElement {
     .intel__dossier {
       border: 1px dashed var(--hud-border-dim);
       padding: 20px 24px;
-      background: var(--color-gray-950);
+      background: var(--color-surface-sunken);
       animation: slide-up 0.5s ease-out 0.35s both;
     }
 

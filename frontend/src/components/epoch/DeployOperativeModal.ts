@@ -121,7 +121,7 @@ export class VelgDeployOperativeModal extends LitElement {
 			position: fixed;
 			inset: 0;
 			z-index: var(--z-top, 9000);
-			background: var(--color-gray-950, #0a0a0f);
+			background: var(--color-surface-sunken);
 			display: flex;
 			flex-direction: column;
 			opacity: 0;
@@ -152,8 +152,8 @@ export class VelgDeployOperativeModal extends LitElement {
 			align-items: center;
 			justify-content: space-between;
 			padding: var(--space-3) var(--space-5);
-			border-bottom: 2px solid var(--color-gray-800);
-			background: var(--color-gray-900);
+			border-bottom: 2px solid var(--color-border);
+			background: var(--color-surface);
 			flex-shrink: 0;
 			z-index: 2;
 		}
@@ -170,7 +170,7 @@ export class VelgDeployOperativeModal extends LitElement {
 			font-size: var(--text-lg);
 			text-transform: uppercase;
 			letter-spacing: var(--tracking-wide);
-			color: var(--color-gray-100);
+			color: var(--color-text-primary);
 		}
 
 		.header__subtitle {
@@ -178,7 +178,7 @@ export class VelgDeployOperativeModal extends LitElement {
 			font-size: 10px;
 			text-transform: uppercase;
 			letter-spacing: 0.08em;
-			color: var(--color-gray-500);
+			color: var(--color-text-muted);
 		}
 
 		.header__rp {
@@ -186,12 +186,12 @@ export class VelgDeployOperativeModal extends LitElement {
 			align-items: center;
 			gap: var(--space-1);
 			padding: var(--space-1) var(--space-3);
-			border: 1px solid rgba(245 158 11 / 0.4);
-			background: rgba(245 158 11 / 0.08);
+			border: 1px solid var(--color-primary-border);
+			background: var(--color-primary-bg);
 			font-family: var(--font-brutalist);
 			font-weight: 900;
 			font-size: var(--text-sm);
-			color: var(--color-epoch-accent, #f59e0b);
+			color: var(--color-epoch-accent);
 		}
 
 		.header__close {
@@ -201,17 +201,17 @@ export class VelgDeployOperativeModal extends LitElement {
 			width: 36px;
 			height: 36px;
 			padding: 0;
-			border: 1px solid var(--color-gray-700);
+			border: 1px solid var(--color-border);
 			background: transparent;
-			color: var(--color-gray-400);
+			color: var(--color-text-muted);
 			cursor: pointer;
 			transition: all 150ms ease;
 		}
 
 		.header__close:hover {
-			border-color: var(--color-gray-400);
-			color: var(--color-gray-100);
-			background: var(--color-gray-800);
+			border-color: var(--color-text-muted);
+			color: var(--color-text-primary);
+			background: var(--color-surface-raised);
 		}
 
 		/* ══════════════════════════════════════════════════
@@ -255,8 +255,8 @@ export class VelgDeployOperativeModal extends LitElement {
 			/* Recessed bay surface */
 			background:
 				linear-gradient(180deg, rgba(0 0 0 / 0.4) 0%, rgba(0 0 0 / 0.15) 50%, rgba(0 0 0 / 0.35) 100%),
-				var(--color-gray-950, #030712);
-			border: 1px solid var(--color-gray-800, #1f2937);
+				var(--color-surface-sunken);
+			border: 1px solid var(--color-border);
 			box-shadow:
 				inset 0 2px 8px rgba(0 0 0 / 0.6),
 				inset 0 0 1px rgba(255 255 255 / 0.03),
@@ -276,23 +276,23 @@ export class VelgDeployOperativeModal extends LitElement {
 
 		.zone::before {
 			background:
-				linear-gradient(to right, var(--zone-bracket, var(--color-gray-600, #4b5563)) 0%, transparent 100%) no-repeat 0 0 / 18px 1px,
-				linear-gradient(to bottom, var(--zone-bracket, var(--color-gray-600, #4b5563)) 0%, transparent 100%) no-repeat 0 0 / 1px 18px,
-				linear-gradient(to left, var(--zone-bracket, var(--color-gray-600, #4b5563)) 0%, transparent 100%) no-repeat 100% 100% / 18px 1px,
-				linear-gradient(to top, var(--zone-bracket, var(--color-gray-600, #4b5563)) 0%, transparent 100%) no-repeat 100% 100% / 1px 18px;
+				linear-gradient(to right, var(--zone-bracket, var(--color-border)) 0%, transparent 100%) no-repeat 0 0 / 18px 1px,
+				linear-gradient(to bottom, var(--zone-bracket, var(--color-border)) 0%, transparent 100%) no-repeat 0 0 / 1px 18px,
+				linear-gradient(to left, var(--zone-bracket, var(--color-border)) 0%, transparent 100%) no-repeat 100% 100% / 18px 1px,
+				linear-gradient(to top, var(--zone-bracket, var(--color-border)) 0%, transparent 100%) no-repeat 100% 100% / 1px 18px;
 		}
 
 		.zone::after {
 			background:
-				linear-gradient(to left, var(--zone-bracket, var(--color-gray-600, #4b5563)) 0%, transparent 100%) no-repeat 100% 0 / 18px 1px,
-				linear-gradient(to bottom, var(--zone-bracket, var(--color-gray-600, #4b5563)) 0%, transparent 100%) no-repeat 100% 0 / 1px 18px,
-				linear-gradient(to right, var(--zone-bracket, var(--color-gray-600, #4b5563)) 0%, transparent 100%) no-repeat 0 100% / 18px 1px,
-				linear-gradient(to top, var(--zone-bracket, var(--color-gray-600, #4b5563)) 0%, transparent 100%) no-repeat 0 100% / 1px 18px;
+				linear-gradient(to left, var(--zone-bracket, var(--color-border)) 0%, transparent 100%) no-repeat 100% 0 / 18px 1px,
+				linear-gradient(to bottom, var(--zone-bracket, var(--color-border)) 0%, transparent 100%) no-repeat 100% 0 / 1px 18px,
+				linear-gradient(to right, var(--zone-bracket, var(--color-border)) 0%, transparent 100%) no-repeat 0 100% / 18px 1px,
+				linear-gradient(to top, var(--zone-bracket, var(--color-border)) 0%, transparent 100%) no-repeat 0 100% / 1px 18px;
 		}
 
 		/* Empty: awaiting card */
 		.zone--empty {
-			--zone-bracket: color-mix(in srgb, var(--color-epoch-accent, #f59e0b) 40%, var(--color-gray-600));
+			--zone-bracket: color-mix(in srgb, var(--color-epoch-accent) 40%, var(--color-border));
 			animation: slot-breathe 2.5s ease-in-out infinite alternate;
 		}
 
@@ -311,7 +311,7 @@ export class VelgDeployOperativeModal extends LitElement {
 			z-index: 15;
 			transform: scale(1.2) translateY(-12px) !important;
 			filter:
-				drop-shadow(0 0 16px rgba(245 158 11 / 0.3))
+				drop-shadow(0 0 16px var(--color-primary-border))
 				drop-shadow(0 20px 40px rgba(0 0 0 / 0.7));
 		}
 
@@ -322,37 +322,37 @@ export class VelgDeployOperativeModal extends LitElement {
 
 		/* Locked: powered-down bay */
 		.zone--locked {
-			border-color: var(--color-gray-900, #111827);
+			border-color: var(--color-surface);
 			background:
 				repeating-linear-gradient(-45deg, transparent, transparent 4px, rgba(255 255 255 / 0.008) 4px, rgba(255 255 255 / 0.008) 5px),
 				linear-gradient(180deg, rgba(0 0 0 / 0.5), rgba(0 0 0 / 0.3)),
-				var(--color-gray-950, #030712);
+				var(--color-surface-sunken);
 			box-shadow: inset 0 2px 12px rgba(0 0 0 / 0.7);
 			animation: none;
 		}
 
 		.zone--locked::before,
 		.zone--locked::after {
-			--zone-bracket: var(--color-gray-800, #1f2937);
+			--zone-bracket: var(--color-border);
 			opacity: 0.4;
 		}
 
 		.zone--locked .zone__label {
-			color: var(--color-gray-700, #374151);
+			color: var(--color-surface-raised);
 		}
 
 		/* Active-target: pulsing amber energy */
 		.zone--active-target {
-			--zone-bracket: var(--color-epoch-accent, #f59e0b);
-			border-color: var(--color-epoch-accent, #f59e0b);
+			--zone-bracket: var(--color-epoch-accent);
+			border-color: var(--color-epoch-accent);
 			border-style: solid;
 			animation: zone-pulse 1.5s ease-in-out infinite;
 		}
 
 		.zone--dragover {
-			border-color: var(--color-epoch-accent, #f59e0b);
+			border-color: var(--color-epoch-accent);
 			border-style: solid;
-			box-shadow: 0 0 16px rgba(245 158 11 / 0.2), inset 0 0 12px rgba(245 158 11 / 0.06);
+			box-shadow: 0 0 16px color-mix(in srgb, var(--color-primary) 20%, transparent), inset 0 0 12px color-mix(in srgb, var(--color-primary) 6%, transparent);
 			transform: scale(1.03);
 			transition: all 150ms ease;
 		}
@@ -370,14 +370,14 @@ export class VelgDeployOperativeModal extends LitElement {
 			width: 10px;
 			height: 10px;
 			border-radius: 50%;
-			border: 1.5px solid var(--color-gray-600);
+			border: 1.5px solid var(--color-border);
 			background: transparent;
 			transition: all 200ms ease;
 		}
 
 		.counter-pip--filled {
-			border-color: var(--color-epoch-accent, #f59e0b);
-			background: var(--color-epoch-accent, #f59e0b);
+			border-color: var(--color-epoch-accent);
+			background: var(--color-epoch-accent);
 			animation: pip-flip 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
 		}
 
@@ -389,18 +389,18 @@ export class VelgDeployOperativeModal extends LitElement {
 
 		@keyframes slot-breathe {
 			from {
-				border-color: var(--color-gray-800, #1f2937);
+				border-color: var(--color-border);
 				box-shadow:
 					inset 0 2px 8px rgba(0 0 0 / 0.6),
 					inset 0 0 1px rgba(255 255 255 / 0.03),
 					0 1px 0 rgba(255 255 255 / 0.02);
 			}
 			to {
-				border-color: color-mix(in srgb, var(--color-epoch-accent, #f59e0b) 25%, var(--color-gray-700));
+				border-color: color-mix(in srgb, var(--color-epoch-accent) 25%, var(--color-surface-raised));
 				box-shadow:
 					inset 0 2px 8px rgba(0 0 0 / 0.6),
-					inset 0 0 12px rgba(245 158 11 / 0.04),
-					0 0 8px rgba(245 158 11 / 0.06),
+					inset 0 0 12px color-mix(in srgb, var(--color-primary) 4%, transparent),
+					0 0 8px color-mix(in srgb, var(--color-primary) 6%, transparent),
 					0 1px 0 rgba(255 255 255 / 0.02);
 			}
 		}
@@ -416,14 +416,14 @@ export class VelgDeployOperativeModal extends LitElement {
 			0%, 100% {
 				box-shadow:
 					inset 0 2px 8px rgba(0 0 0 / 0.6),
-					inset 0 0 20px rgba(245 158 11 / 0.06),
-					0 0 0 0 rgba(245 158 11 / 0.3);
+					inset 0 0 20px color-mix(in srgb, var(--color-primary) 6%, transparent),
+					0 0 0 0 var(--color-primary-border);
 			}
 			50% {
 				box-shadow:
 					inset 0 2px 8px rgba(0 0 0 / 0.6),
-					inset 0 0 30px rgba(245 158 11 / 0.1),
-					0 0 24px 4px rgba(245 158 11 / 0.12);
+					inset 0 0 30px color-mix(in srgb, var(--color-primary) 10%, transparent),
+					0 0 24px 4px color-mix(in srgb, var(--color-primary) 12%, transparent);
 			}
 		}
 
@@ -434,7 +434,7 @@ export class VelgDeployOperativeModal extends LitElement {
 			font-size: 10px;
 			text-transform: uppercase;
 			letter-spacing: 0.2em;
-			color: var(--color-gray-500, #6b7280);
+			color: var(--color-text-muted);
 			margin-bottom: var(--space-1);
 			text-shadow: 0 1px 2px rgba(0 0 0 / 0.5);
 		}
@@ -442,7 +442,7 @@ export class VelgDeployOperativeModal extends LitElement {
 		.zone__hint {
 			font-family: var(--font-mono, monospace);
 			font-size: 9px;
-			color: var(--color-gray-600, #4b5563);
+			color: var(--color-icon);
 			text-align: center;
 			padding: 0 var(--space-2);
 			opacity: 0.7;
@@ -491,7 +491,7 @@ export class VelgDeployOperativeModal extends LitElement {
 
 		.zone--empty .zone__silhouette {
 			opacity: 0.08;
-			color: var(--color-epoch-accent, #f59e0b);
+			color: var(--color-epoch-accent);
 		}
 
 		.zone--locked .zone__silhouette {
@@ -508,10 +508,10 @@ export class VelgDeployOperativeModal extends LitElement {
 			align-items: center;
 			justify-content: center;
 			padding: 0;
-			border: 1px solid var(--color-gray-600);
+			border: 1px solid var(--color-border);
 			border-radius: 50%;
-			background: var(--color-gray-900);
-			color: var(--color-gray-400);
+			background: var(--color-surface);
+			color: var(--color-text-muted);
 			cursor: pointer;
 			opacity: 0;
 			transition: all 150ms ease;
@@ -525,14 +525,14 @@ export class VelgDeployOperativeModal extends LitElement {
 		.zone__remove:hover {
 			border-color: var(--color-danger);
 			color: var(--color-danger);
-			background: var(--color-gray-800);
+			background: var(--color-surface-raised);
 		}
 
 		/* Shockwave ring */
 		.slam-ring {
 			position: absolute;
 			inset: 0;
-			border: 2px solid var(--slam-ring-color, var(--color-epoch-accent, #f59e0b));
+			border: 2px solid var(--slam-ring-color, var(--color-epoch-accent));
 			border-radius: 8px;
 			pointer-events: none;
 			opacity: 0;
@@ -563,18 +563,18 @@ export class VelgDeployOperativeModal extends LitElement {
 		}
 
 		.zone__fit--good { color: var(--color-success); border-color: var(--color-success); }
-		.zone__fit--fair { color: var(--color-epoch-accent, #f59e0b); border-color: var(--color-epoch-accent, #f59e0b); }
+		.zone__fit--fair { color: var(--color-epoch-accent); border-color: var(--color-epoch-accent); }
 		.zone__fit--poor { color: var(--color-danger); border-color: var(--color-danger); }
 
 		/* ── Arrow connectors ── */
 		.arrow {
 			flex-shrink: 0;
-			color: var(--color-gray-700);
+			color: var(--color-surface-raised);
 			transition: color 300ms;
 		}
 
 		.arrow--active {
-			color: var(--color-epoch-accent, #f59e0b);
+			color: var(--color-epoch-accent);
 		}
 
 		/* ══════════════════════════════════════════════════
@@ -594,7 +594,7 @@ export class VelgDeployOperativeModal extends LitElement {
 		.wire-bar__line {
 			flex: 1;
 			height: 2px;
-			background: var(--color-gray-800);
+			background: var(--color-surface-raised);
 			position: relative;
 			overflow: hidden;
 		}
@@ -603,7 +603,7 @@ export class VelgDeployOperativeModal extends LitElement {
 			content: '';
 			position: absolute;
 			inset: 0;
-			background: var(--color-epoch-accent, #f59e0b);
+			background: var(--color-epoch-accent);
 			transform: scaleX(0);
 			transform-origin: left;
 			animation: wire-draw 600ms ease-out forwards;
@@ -620,12 +620,12 @@ export class VelgDeployOperativeModal extends LitElement {
 			font-size: 10px;
 			text-transform: uppercase;
 			letter-spacing: 0.15em;
-			color: var(--color-gray-600);
+			color: var(--color-icon);
 			white-space: nowrap;
 		}
 
 		.wire-bar__status--ready {
-			color: var(--color-epoch-accent, #f59e0b);
+			color: var(--color-epoch-accent);
 			overflow: hidden;
 			animation: typewriter 800ms steps(16) forwards;
 		}
@@ -675,7 +675,7 @@ export class VelgDeployOperativeModal extends LitElement {
 			/* !important beats animation: forwards fill */
 			transform: translateY(-16px) scale(1.35) !important;
 			filter:
-				drop-shadow(0 0 18px rgba(245 158 11 / 0.35))
+				drop-shadow(0 0 18px color-mix(in srgb, var(--color-primary) 35%, transparent))
 				drop-shadow(0 16px 36px rgba(0 0 0 / 0.7));
 		}
 
@@ -701,21 +701,21 @@ export class VelgDeployOperativeModal extends LitElement {
 		   ══════════════════════════════════════════════════ */
 
 		/* -- Security-level accent color -- */
-		.target-card--high   { --zone-accent: #ef4444; }
-		.target-card--medium { --zone-accent: #f59e0b; }
-		.target-card--low    { --zone-accent: #22c55e; }
+		.target-card--high   { --zone-accent: var(--color-danger); }
+		.target-card--medium { --zone-accent: var(--color-primary); }
+		.target-card--low    { --zone-accent: var(--color-success); }
 
 		.target-card {
-			--_accent: var(--zone-accent, var(--color-gray-600));
+			--_accent: var(--zone-accent, var(--color-border));
 			position: relative;
 			flex-shrink: 0;
 			width: 168px;
 			height: 120px;
-			border: 1px solid var(--color-gray-700);
+			border: 1px solid var(--color-border);
 			border-radius: 6px;
 			background:
 				linear-gradient(175deg, rgba(255 255 255 / 0.02) 0%, transparent 40%),
-				linear-gradient(180deg, var(--color-gray-900) 0%, var(--color-gray-950, #030712) 100%);
+				linear-gradient(180deg, var(--color-surface) 0%, var(--color-surface-sunken) 100%);
 			cursor: pointer;
 			overflow: hidden;
 			transition:
@@ -762,17 +762,17 @@ export class VelgDeployOperativeModal extends LitElement {
 			transition: opacity 200ms ease;
 			background:
 				/* TL */
-				linear-gradient(to right, var(--color-gray-600) 0%, transparent 100%) no-repeat 0 0 / 14px 1px,
-				linear-gradient(to bottom, var(--color-gray-600) 0%, transparent 100%) no-repeat 0 0 / 1px 14px,
+				linear-gradient(to right, var(--color-border) 0%, transparent 100%) no-repeat 0 0 / 14px 1px,
+				linear-gradient(to bottom, var(--color-border) 0%, transparent 100%) no-repeat 0 0 / 1px 14px,
 				/* TR */
-				linear-gradient(to left, var(--color-gray-600) 0%, transparent 100%) no-repeat 100% 0 / 14px 1px,
-				linear-gradient(to bottom, var(--color-gray-600) 0%, transparent 100%) no-repeat 100% 0 / 1px 14px,
+				linear-gradient(to left, var(--color-border) 0%, transparent 100%) no-repeat 100% 0 / 14px 1px,
+				linear-gradient(to bottom, var(--color-border) 0%, transparent 100%) no-repeat 100% 0 / 1px 14px,
 				/* BL */
-				linear-gradient(to right, var(--color-gray-600) 0%, transparent 100%) no-repeat 0 100% / 14px 1px,
-				linear-gradient(to top, var(--color-gray-600) 0%, transparent 100%) no-repeat 0 100% / 1px 14px,
+				linear-gradient(to right, var(--color-border) 0%, transparent 100%) no-repeat 0 100% / 14px 1px,
+				linear-gradient(to top, var(--color-border) 0%, transparent 100%) no-repeat 0 100% / 1px 14px,
 				/* BR */
-				linear-gradient(to left, var(--color-gray-600) 0%, transparent 100%) no-repeat 100% 100% / 14px 1px,
-				linear-gradient(to top, var(--color-gray-600) 0%, transparent 100%) no-repeat 100% 100% / 1px 14px;
+				linear-gradient(to left, var(--color-border) 0%, transparent 100%) no-repeat 100% 100% / 14px 1px,
+				linear-gradient(to top, var(--color-border) 0%, transparent 100%) no-repeat 100% 100% / 1px 14px;
 		}
 
 		/* Card body — content area */
@@ -794,7 +794,7 @@ export class VelgDeployOperativeModal extends LitElement {
 			font-size: 11px;
 			text-transform: uppercase;
 			letter-spacing: 0.12em;
-			color: var(--color-gray-200);
+			color: var(--color-text-secondary);
 			line-height: 1.3;
 			text-align: center;
 			text-shadow: 0 1px 3px rgba(0 0 0 / 0.6);
@@ -816,7 +816,7 @@ export class VelgDeployOperativeModal extends LitElement {
 
 		/* ─── Hover: lift + glow + scale ─── */
 		.target-card:hover {
-			border-color: color-mix(in srgb, var(--_accent) 50%, var(--color-gray-600));
+			border-color: color-mix(in srgb, var(--_accent) 50%, var(--color-border));
 			transform: translateY(-10px) scale(1.08);
 			box-shadow:
 				inset 0 1px 0 rgba(255 255 255 / 0.06),
@@ -844,28 +844,28 @@ export class VelgDeployOperativeModal extends LitElement {
 		}
 
 		.target-card:hover .target-card__name {
-			color: var(--color-gray-50);
+			color: var(--color-text-primary);
 		}
 
 		/* ─── Selected: amber border + inner glow ─── */
 		.target-card--selected {
-			border-color: var(--color-epoch-accent, #f59e0b);
+			border-color: var(--color-epoch-accent);
 			background:
-				linear-gradient(175deg, rgba(245 158 11 / 0.06) 0%, transparent 40%),
-				linear-gradient(180deg, var(--color-gray-900) 0%, var(--color-gray-950, #030712) 100%);
+				linear-gradient(175deg, color-mix(in srgb, var(--color-primary) 6%, transparent) 0%, transparent 40%),
+				linear-gradient(180deg, var(--color-surface) 0%, var(--color-surface-sunken) 100%);
 			box-shadow:
-				inset 0 0 24px rgba(245 158 11 / 0.08),
+				inset 0 0 24px var(--color-primary-bg),
 				inset 0 1px 0 rgba(255 255 255 / 0.04),
-				0 0 12px rgba(245 158 11 / 0.15),
-				0 0 0 1px rgba(245 158 11 / 0.2);
+				0 0 12px var(--color-primary-glow),
+				0 0 0 1px color-mix(in srgb, var(--color-primary) 20%, transparent);
 		}
 
 		.target-card--selected::before {
 			background: linear-gradient(
 				90deg,
 				transparent 0%,
-				var(--color-epoch-accent, #f59e0b) 10%,
-				var(--color-epoch-accent, #f59e0b) 90%,
+				var(--color-epoch-accent) 10%,
+				var(--color-epoch-accent) 90%,
 				transparent 100%
 			);
 			opacity: 1;
@@ -874,18 +874,18 @@ export class VelgDeployOperativeModal extends LitElement {
 
 		.target-card--selected::after {
 			background:
-				linear-gradient(to right, var(--color-epoch-accent, #f59e0b) 0%, transparent 100%) no-repeat 0 0 / 16px 1px,
-				linear-gradient(to bottom, var(--color-epoch-accent, #f59e0b) 0%, transparent 100%) no-repeat 0 0 / 1px 16px,
-				linear-gradient(to left, var(--color-epoch-accent, #f59e0b) 0%, transparent 100%) no-repeat 100% 0 / 16px 1px,
-				linear-gradient(to bottom, var(--color-epoch-accent, #f59e0b) 0%, transparent 100%) no-repeat 100% 0 / 1px 16px,
-				linear-gradient(to right, var(--color-epoch-accent, #f59e0b) 0%, transparent 100%) no-repeat 0 100% / 16px 1px,
-				linear-gradient(to top, var(--color-epoch-accent, #f59e0b) 0%, transparent 100%) no-repeat 0 100% / 1px 16px,
-				linear-gradient(to left, var(--color-epoch-accent, #f59e0b) 0%, transparent 100%) no-repeat 100% 100% / 16px 1px,
-				linear-gradient(to top, var(--color-epoch-accent, #f59e0b) 0%, transparent 100%) no-repeat 100% 100% / 1px 16px;
+				linear-gradient(to right, var(--color-epoch-accent) 0%, transparent 100%) no-repeat 0 0 / 16px 1px,
+				linear-gradient(to bottom, var(--color-epoch-accent) 0%, transparent 100%) no-repeat 0 0 / 1px 16px,
+				linear-gradient(to left, var(--color-epoch-accent) 0%, transparent 100%) no-repeat 100% 0 / 16px 1px,
+				linear-gradient(to bottom, var(--color-epoch-accent) 0%, transparent 100%) no-repeat 100% 0 / 1px 16px,
+				linear-gradient(to right, var(--color-epoch-accent) 0%, transparent 100%) no-repeat 0 100% / 16px 1px,
+				linear-gradient(to top, var(--color-epoch-accent) 0%, transparent 100%) no-repeat 0 100% / 1px 16px,
+				linear-gradient(to left, var(--color-epoch-accent) 0%, transparent 100%) no-repeat 100% 100% / 16px 1px,
+				linear-gradient(to top, var(--color-epoch-accent) 0%, transparent 100%) no-repeat 100% 100% / 1px 16px;
 		}
 
 		.target-card--selected .target-card__name {
-			color: var(--color-epoch-accent, #f59e0b);
+			color: var(--color-epoch-accent);
 		}
 
 		/* ══════════════════════════════════════════════════
@@ -907,11 +907,11 @@ export class VelgDeployOperativeModal extends LitElement {
 			gap: var(--space-3);
 			padding: var(--space-2) var(--space-3);
 			margin-bottom: var(--space-3);
-			border: 1px solid rgba(245 158 11 / 0.2);
-			border-left: 3px solid var(--color-epoch-accent, #f59e0b);
+			border: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
+			border-left: 3px solid var(--color-epoch-accent);
 			background:
-				linear-gradient(90deg, rgba(245 158 11 / 0.06) 0%, transparent 60%),
-				var(--color-gray-900);
+				linear-gradient(90deg, color-mix(in srgb, var(--color-primary) 6%, transparent) 0%, transparent 60%),
+				var(--color-surface);
 			position: relative;
 			overflow: hidden;
 		}
@@ -927,9 +927,9 @@ export class VelgDeployOperativeModal extends LitElement {
 			background: linear-gradient(
 				90deg,
 				transparent 0%,
-				rgba(245 158 11 / 0.04) 40%,
-				rgba(245 158 11 / 0.08) 50%,
-				rgba(245 158 11 / 0.04) 60%,
+				color-mix(in srgb, var(--color-primary) 4%, transparent) 40%,
+				var(--color-primary-bg) 50%,
+				color-mix(in srgb, var(--color-primary) 4%, transparent) 60%,
 				transparent 100%
 			);
 			animation: header-scan 4s ease-in-out infinite;
@@ -946,10 +946,10 @@ export class VelgDeployOperativeModal extends LitElement {
 			font-size: 8px;
 			text-transform: uppercase;
 			letter-spacing: 0.15em;
-			color: var(--color-epoch-accent, #f59e0b);
+			color: var(--color-epoch-accent);
 			padding: 2px 8px;
-			border: 1px solid rgba(245 158 11 / 0.3);
-			background: rgba(245 158 11 / 0.08);
+			border: 1px solid var(--color-primary-border);
+			background: var(--color-primary-bg);
 			white-space: nowrap;
 			flex-shrink: 0;
 		}
@@ -960,7 +960,7 @@ export class VelgDeployOperativeModal extends LitElement {
 			font-size: 13px;
 			text-transform: uppercase;
 			letter-spacing: 0.15em;
-			color: var(--color-gray-100);
+			color: var(--color-text-primary);
 		}
 
 		/* ─── Zone columns grid ─── */
@@ -985,9 +985,9 @@ export class VelgDeployOperativeModal extends LitElement {
 			align-items: center;
 			justify-content: space-between;
 			padding: var(--space-1) var(--space-2);
-			border-top: 2px solid var(--zone-accent, var(--color-gray-600));
+			border-top: 2px solid var(--zone-accent, var(--color-border));
 			background:
-				linear-gradient(180deg, color-mix(in srgb, var(--zone-accent, var(--color-gray-600)) 6%, transparent) 0%, transparent 100%);
+				linear-gradient(180deg, color-mix(in srgb, var(--zone-accent, var(--color-border)) 6%, transparent) 0%, transparent 100%);
 		}
 
 		.target-zone-col__header-name {
@@ -996,7 +996,7 @@ export class VelgDeployOperativeModal extends LitElement {
 			font-size: 10px;
 			text-transform: uppercase;
 			letter-spacing: 0.1em;
-			color: var(--color-gray-300);
+			color: var(--color-text-tertiary);
 		}
 
 		.target-zone-col__header-sec {
@@ -1004,7 +1004,7 @@ export class VelgDeployOperativeModal extends LitElement {
 			font-size: 8px;
 			text-transform: uppercase;
 			letter-spacing: 0.08em;
-			color: var(--zone-accent, var(--color-gray-500));
+			color: var(--zone-accent, var(--color-text-muted));
 		}
 
 		/* Buildings sub-list within zone column */
@@ -1013,7 +1013,7 @@ export class VelgDeployOperativeModal extends LitElement {
 			flex-direction: column;
 			gap: var(--space-2);
 			padding-left: var(--space-2);
-			border-left: 1px solid var(--color-gray-800);
+			border-left: 1px solid var(--color-border);
 		}
 
 		/* Target card adjustments within zone columns — fill column width */
@@ -1039,8 +1039,8 @@ export class VelgDeployOperativeModal extends LitElement {
 			align-items: center;
 			gap: var(--space-3);
 			padding: var(--space-2) var(--space-3);
-			border: 1px solid var(--color-gray-800);
-			background: var(--color-gray-900);
+			border: 1px solid var(--color-border);
+			background: var(--color-surface);
 			margin-bottom: var(--space-3);
 			width: 100%;
 			max-width: 600px;
@@ -1051,7 +1051,7 @@ export class VelgDeployOperativeModal extends LitElement {
 			font-size: 9px;
 			text-transform: uppercase;
 			letter-spacing: 0.08em;
-			color: var(--color-gray-500);
+			color: var(--color-text-muted);
 			white-space: nowrap;
 		}
 
@@ -1060,15 +1060,15 @@ export class VelgDeployOperativeModal extends LitElement {
 			font-family: var(--font-mono, monospace);
 			font-size: var(--text-xs);
 			padding: var(--space-1) var(--space-2);
-			border: 1px solid var(--color-gray-700);
-			background: var(--color-gray-950);
-			color: var(--color-gray-100);
+			border: 1px solid var(--color-border);
+			background: var(--color-surface-sunken);
+			color: var(--color-text-primary);
 			cursor: pointer;
 		}
 
 		.embassy-bar__select:focus {
 			outline: none;
-			border-color: var(--color-epoch-accent, #f59e0b);
+			border-color: var(--color-epoch-accent);
 		}
 
 		/* ══════════════════════════════════════════════════
@@ -1079,8 +1079,8 @@ export class VelgDeployOperativeModal extends LitElement {
 			align-items: center;
 			gap: var(--space-4);
 			padding: var(--space-3);
-			border: 1px solid var(--color-gray-800);
-			background: var(--color-gray-900);
+			border: 1px solid var(--color-border);
+			background: var(--color-surface);
 			margin-top: var(--space-2);
 			max-width: 400px;
 		}
@@ -1100,7 +1100,7 @@ export class VelgDeployOperativeModal extends LitElement {
 
 		.targeting__ring-bg {
 			fill: none;
-			stroke: var(--color-gray-800);
+			stroke: var(--color-border);
 			stroke-width: 5;
 		}
 
@@ -1123,7 +1123,7 @@ export class VelgDeployOperativeModal extends LitElement {
 		}
 
 		.targeting__pct--green { color: var(--color-success); }
-		.targeting__pct--amber { color: var(--color-epoch-accent, #f59e0b); }
+		.targeting__pct--amber { color: var(--color-epoch-accent); }
 		.targeting__pct--red { color: var(--color-danger); }
 
 		.targeting__details {
@@ -1138,7 +1138,7 @@ export class VelgDeployOperativeModal extends LitElement {
 			justify-content: space-between;
 			font-family: var(--font-mono, monospace);
 			font-size: 10px;
-			color: var(--color-gray-400);
+			color: var(--color-text-muted);
 		}
 
 		.targeting__val--pos { color: var(--color-success); font-weight: 700; }
@@ -1167,7 +1167,7 @@ export class VelgDeployOperativeModal extends LitElement {
 			font-size: 9px;
 			text-transform: uppercase;
 			letter-spacing: 0.1em;
-			color: var(--color-gray-600);
+			color: var(--color-icon);
 		}
 
 		.hand__cards {
@@ -1213,8 +1213,8 @@ export class VelgDeployOperativeModal extends LitElement {
 			transform: translateY(-30px) rotateZ(0deg) scale(1.4);
 			transition-delay: 0ms;
 			filter:
-				drop-shadow(0 0 16px rgba(245 158 11 / 0.35))
-				drop-shadow(0 0 36px rgba(245 158 11 / 0.15))
+				drop-shadow(0 0 16px color-mix(in srgb, var(--color-primary) 35%, transparent))
+				drop-shadow(0 0 36px var(--color-primary-glow))
 				drop-shadow(0 20px 40px rgba(0 0 0 / 0.7));
 		}
 
@@ -1290,7 +1290,7 @@ export class VelgDeployOperativeModal extends LitElement {
 			max-width: 520px;
 			min-height: 42px;
 			flex-shrink: 0;
-			z-index: 25;
+			z-index: var(--z-raised);
 			position: relative;
 			margin-bottom: var(--space-2);
 		}
@@ -1304,8 +1304,8 @@ export class VelgDeployOperativeModal extends LitElement {
 			font-size: 10px;
 			text-transform: uppercase;
 			letter-spacing: 0.08em;
-			color: var(--color-gray-600);
-			border: 1px dashed var(--color-gray-800);
+			color: var(--color-icon);
+			border: 1px dashed var(--color-border);
 		}
 
 		.agent-detail {
@@ -1315,9 +1315,9 @@ export class VelgDeployOperativeModal extends LitElement {
 			padding: var(--space-2) var(--space-4);
 			background:
 				linear-gradient(90deg, rgba(255 255 255 / 0.02) 0%, transparent 60%),
-				var(--color-gray-900, #0f172a);
-			border: 1px solid var(--color-gray-800, #1f2937);
-			border-left: 3px solid var(--agent-accent, var(--color-epoch-accent, #f59e0b));
+				var(--color-surface);
+			border: 1px solid var(--color-border);
+			border-left: 3px solid var(--agent-accent, var(--color-epoch-accent));
 			animation: detail-fade-in 200ms ease both;
 		}
 
@@ -1339,7 +1339,7 @@ export class VelgDeployOperativeModal extends LitElement {
 			font-size: 11px;
 			text-transform: uppercase;
 			letter-spacing: 0.08em;
-			color: var(--color-gray-100);
+			color: var(--color-text-primary);
 			white-space: nowrap;
 		}
 
@@ -1361,19 +1361,19 @@ export class VelgDeployOperativeModal extends LitElement {
 		}
 
 		.agent-detail__fit--good {
-			color: var(--color-success, #10b981);
+			color: var(--color-success);
 			border-color: color-mix(in srgb, var(--color-success) 40%, transparent);
 			background: color-mix(in srgb, var(--color-success) 8%, transparent);
 		}
 
 		.agent-detail__fit--fair {
-			color: var(--color-warning, #f59e0b);
+			color: var(--color-warning);
 			border-color: color-mix(in srgb, var(--color-warning) 40%, transparent);
 			background: color-mix(in srgb, var(--color-warning) 8%, transparent);
 		}
 
 		.agent-detail__fit--poor {
-			color: var(--color-danger, #ef4444);
+			color: var(--color-danger, var(--color-danger));
 			border-color: color-mix(in srgb, var(--color-danger) 40%, transparent);
 			background: color-mix(in srgb, var(--color-danger) 8%, transparent);
 		}
@@ -1409,8 +1409,8 @@ export class VelgDeployOperativeModal extends LitElement {
 			justify-content: space-between;
 			gap: var(--space-3);
 			padding: var(--space-3) var(--space-5);
-			border-top: 2px solid var(--color-gray-800);
-			background: var(--color-gray-900);
+			border-top: 2px solid var(--color-border);
+			background: var(--color-surface);
 			flex-shrink: 0;
 			z-index: 2;
 		}
@@ -1436,27 +1436,27 @@ export class VelgDeployOperativeModal extends LitElement {
 		}
 
 		.footer__btn--cancel {
-			color: var(--color-gray-400);
-			border-color: var(--color-gray-700);
+			color: var(--color-text-muted);
+			border-color: var(--color-border);
 			background: transparent;
 		}
 
 		.footer__btn--cancel:hover:not(:disabled) {
-			border-color: var(--color-gray-400);
-			background: var(--color-gray-800);
+			border-color: var(--color-text-muted);
+			background: var(--color-surface-raised);
 		}
 
 		.footer__btn--deploy {
-			color: var(--color-gray-950);
-			border-color: var(--color-epoch-accent, #f59e0b);
-			background: var(--color-epoch-accent, #f59e0b);
+			color: var(--color-text-inverse);
+			border-color: var(--color-epoch-accent);
+			background: var(--color-epoch-accent);
 			position: relative;
 			overflow: hidden;
 		}
 
 		.footer__btn--deploy:hover:not(:disabled) {
-			box-shadow: 0 0 20px rgba(245 158 11 / 0.4),
-				0 0 40px rgba(245 158 11 / 0.15);
+			box-shadow: 0 0 20px color-mix(in srgb, var(--color-primary) 40%, transparent),
+				0 0 40px var(--color-primary-glow);
 			transform: translateY(-1px);
 		}
 
@@ -1486,8 +1486,8 @@ export class VelgDeployOperativeModal extends LitElement {
 		}
 
 		@keyframes deploy-pulse {
-			0%, 100% { box-shadow: 0 0 0 0 rgba(245 158 11 / 0.4); }
-			50% { box-shadow: 0 0 20px 4px rgba(245 158 11 / 0.3); }
+			0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 40%, transparent); }
+			50% { box-shadow: 0 0 20px 4px var(--color-primary-border); }
 		}
 
 		/* ══════════════════════════════════════════════════
@@ -1524,8 +1524,8 @@ export class VelgDeployOperativeModal extends LitElement {
 			font-size: var(--text-xs);
 			color: var(--color-danger);
 			padding: var(--space-2) var(--space-3);
-			border: 1px solid rgba(239 68 68 / 0.3);
-			background: rgba(239 68 68 / 0.05);
+			border: 1px solid var(--color-danger-border);
+			background: var(--color-danger-bg);
 			text-align: center;
 			max-width: 600px;
 			z-index: 2;
@@ -1568,10 +1568,10 @@ export class VelgDeployOperativeModal extends LitElement {
 		.flash {
 			position: fixed;
 			inset: 0;
-			background: white;
+			background: var(--color-surface-inverse);
 			opacity: 0;
 			pointer-events: none;
-			z-index: 100;
+			z-index: var(--z-sticky);
 		}
 
 		.flash--active {
@@ -1594,13 +1594,13 @@ export class VelgDeployOperativeModal extends LitElement {
 			font-size: clamp(24px, 4vw, 40px);
 			text-transform: uppercase;
 			letter-spacing: 0.15em;
-			color: var(--color-epoch-accent, #f59e0b);
-			border: 4px solid var(--color-epoch-accent, #f59e0b);
+			color: var(--color-epoch-accent);
+			border: 4px solid var(--color-epoch-accent);
 			padding: var(--space-2) var(--space-5);
 			white-space: nowrap;
 			opacity: 0;
 			pointer-events: none;
-			z-index: 200;
+			z-index: var(--z-header);
 		}
 
 		.dispatch-stamp--active {
@@ -1643,7 +1643,7 @@ export class VelgDeployOperativeModal extends LitElement {
 				overflow-x: auto;
 				padding-bottom: var(--space-2);
 				scrollbar-width: thin;
-				scrollbar-color: var(--color-gray-700) transparent;
+				scrollbar-color: var(--color-border) transparent;
 			}
 
 			.hand__card-wrapper {
@@ -2100,7 +2100,7 @@ export class VelgDeployOperativeModal extends LitElement {
     const info = getOperativeTypes().find((t) => t.type === type);
     if (!info || info.cost > this.currentRp) return;
     this._selectedType = type;
-    this._triggerSlam('mission', OP_COLORS[type] ?? '#f59e0b');
+    this._triggerSlam('mission', OP_COLORS[type] ?? 'var(--color-primary)');
 
     if (this._needsNoEmbassy()) {
       this._step = 'target';
@@ -2110,7 +2110,7 @@ export class VelgDeployOperativeModal extends LitElement {
     } else if (this._isEmbassyTarget() && this._selectedEmbassyId) {
       // Infiltrator: embassy IS the target, auto-fill and slam
       this._step = 'target';
-      this._triggerSlam('target', OP_COLORS[type] ?? '#a78bfa');
+      this._triggerSlam('target', OP_COLORS[type] ?? '#a78bfa'); // lint-color-ok
     } else if (this._selectedEmbassyId) {
       this._step = 'target';
       const targetSimId = this._getTargetSimulationId();
@@ -2131,7 +2131,7 @@ export class VelgDeployOperativeModal extends LitElement {
       this._step = 'target';
       if (this._isEmbassyTarget() || this._needsNoTarget()) {
         // Infiltrator: embassy IS the target. Spy: no entity target needed.
-        this._triggerSlam('target', OP_COLORS[this._selectedType] ?? '#a78bfa');
+        this._triggerSlam('target', OP_COLORS[this._selectedType] ?? '#a78bfa'); // lint-color-ok
       } else {
         const targetSimId = this._getTargetSimulationId();
         if (targetSimId) this._loadTargetData(targetSimId);
@@ -2510,8 +2510,8 @@ export class VelgDeployOperativeModal extends LitElement {
               (this._needsNoEmbassy() || this._selectedEmbassyId)
               ? html`
 								<div style="text-align:center;padding:var(--space-2)">
-									<div style="margin-bottom:var(--space-2);color:var(--color-gray-300)">${this._isGuardian() ? icons.operativeGuardian(32) : icons.operativeSpy(32)}</div>
-									<div style="font-family:var(--font-brutalist);font-weight:900;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-gray-300)">
+									<div style="margin-bottom:var(--space-2);color:var(--color-text-tertiary)">${this._isGuardian() ? icons.operativeGuardian(32) : icons.operativeSpy(32)}</div>
+									<div style="font-family:var(--font-brutalist);font-weight:900;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-text-tertiary)">
 										${this._isGuardian() ? msg('Your simulation') : msg('ALL SECTORS')}
 									</div>
 								</div>
@@ -2519,11 +2519,11 @@ export class VelgDeployOperativeModal extends LitElement {
               : this._isEmbassyTarget() && this._selectedEmbassyId
                 ? html`
 									<div style="text-align:center;padding:var(--space-2)">
-										<div style="margin-bottom:var(--space-2);color:var(--color-gray-300)">${icons.operativeInfiltrator(32)}</div>
-										<div style="font-family:var(--font-brutalist);font-weight:900;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--color-gray-100);margin-bottom:4px">
+										<div style="margin-bottom:var(--space-2);color:var(--color-text-tertiary)">${icons.operativeInfiltrator(32)}</div>
+										<div style="font-family:var(--font-brutalist);font-weight:900;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--color-text-primary);margin-bottom:4px">
 											${targetName}
 										</div>
-										<div style="font-family:var(--font-mono,monospace);font-size:9px;color:var(--color-gray-500);text-transform:uppercase">
+										<div style="font-family:var(--font-mono,monospace);font-size:9px;color:var(--color-text-muted);text-transform:uppercase">
 											${targetSimName}
 										</div>
 									</div>
@@ -2531,10 +2531,10 @@ export class VelgDeployOperativeModal extends LitElement {
                 : targetName
                   ? html`
 									<div style="text-align:center;padding:var(--space-2)">
-										<div style="font-family:var(--font-brutalist);font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--color-gray-100);margin-bottom:4px">
+										<div style="font-family:var(--font-brutalist);font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--color-text-primary);margin-bottom:4px">
 											${targetName}
 										</div>
-										<div style="font-family:var(--font-mono,monospace);font-size:9px;color:var(--color-gray-500);text-transform:uppercase">
+										<div style="font-family:var(--font-mono,monospace);font-size:9px;color:var(--color-text-muted);text-transform:uppercase">
 											${targetSimName}
 										</div>
 									</div>
@@ -2617,7 +2617,7 @@ export class VelgDeployOperativeModal extends LitElement {
       'zone--dragover': this._dragOverZone === zone && !filled,
     });
 
-    const slamRingColor = this._slamColor || 'var(--color-epoch-accent, #f59e0b)';
+    const slamRingColor = this._slamColor || 'var(--color-epoch-accent)';
 
     return html`
 			<div
@@ -2692,7 +2692,7 @@ export class VelgDeployOperativeModal extends LitElement {
 				${
           showPct
             ? html`
-					<span class="wire-bar__pct" style="color:${successPct >= 70 ? 'var(--color-success)' : successPct >= 40 ? 'var(--color-epoch-accent,#f59e0b)' : 'var(--color-danger)'}">
+					<span class="wire-bar__pct" style="color:${successPct >= 70 ? 'var(--color-success)' : successPct >= 40 ? 'var(--color-epoch-accent)' : 'var(--color-danger)'}">
 						${successPct}%
 					</span>
 				`
@@ -2739,7 +2739,7 @@ export class VelgDeployOperativeModal extends LitElement {
       successPct >= 70
         ? 'var(--color-success)'
         : successPct >= 40
-          ? 'var(--color-epoch-accent, #f59e0b)'
+          ? 'var(--color-epoch-accent)'
           : 'var(--color-danger)';
     const pctClass =
       successPct >= 70
@@ -2980,7 +2980,7 @@ export class VelgDeployOperativeModal extends LitElement {
 				${missionInfo.needsTarget === 'agent' ? this._renderAgentTargets() : nothing}
 				${
           missionInfo.needsTarget === 'embassy'
-            ? html`<div class="guardian-note" style="color:var(--color-epoch-accent,#f59e0b);border-color:rgba(245 158 11/0.3);background:rgba(245 158 11/0.05)">
+            ? html`<div class="guardian-note" style="color:var(--color-epoch-accent, var(--color-primary));border-color:color-mix(in srgb, var(--color-primary) 30%, transparent);background:color-mix(in srgb, var(--color-primary) 5%, transparent)">
 						${msg('Select embassy route first')}
 					</div>`
             : nothing
@@ -2999,9 +2999,9 @@ export class VelgDeployOperativeModal extends LitElement {
 
   private _getSecurityVar(level?: string): string {
     const l = (level ?? '').toLowerCase();
-    if (l === 'high') return '#ef4444';
-    if (l === 'low') return '#22c55e';
-    return '#f59e0b';
+    if (l === 'high') return 'var(--color-danger)';
+    if (l === 'low') return 'var(--color-success)';
+    return 'var(--color-primary)';
   }
 
   private _renderZoneTargets(missionInfo: OperativeTypeInfo) {

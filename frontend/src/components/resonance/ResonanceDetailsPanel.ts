@@ -208,13 +208,13 @@ export class VelgResonanceDetailsPanel extends LitElement {
       }
 
       .dossier__mag-fill.low {
-        background: linear-gradient(90deg, #06b6d4, #22d3ee);
+        background: linear-gradient(90deg, var(--color-info), var(--color-info));
       }
       .dossier__mag-fill.medium {
-        background: linear-gradient(90deg, #f59e0b, #fbbf24);
+        background: linear-gradient(90deg, var(--color-primary), var(--color-primary-hover));
       }
       .dossier__mag-fill.high {
-        background: linear-gradient(90deg, #ef4444, #f87171);
+        background: linear-gradient(90deg, var(--color-danger), var(--color-danger));
       }
 
       .dossier__mag-fill::after {
@@ -396,7 +396,7 @@ export class VelgResonanceDetailsPanel extends LitElement {
       }
 
       .impact-row__dot--completed {
-        background: var(--color-success, #22c55e);
+        background: var(--color-success);
       }
 
       .impact-row__dot--pending,
@@ -453,13 +453,13 @@ export class VelgResonanceDetailsPanel extends LitElement {
       }
 
       .impact-row__mag-fill.low {
-        background: #06b6d4;
+        background: var(--color-info);
       }
       .impact-row__mag-fill.medium {
-        background: #f59e0b;
+        background: var(--color-primary);
       }
       .impact-row__mag-fill.high {
-        background: #ef4444;
+        background: var(--color-danger);
       }
 
       .impact-row__mag-val {

@@ -72,14 +72,14 @@ export class VelgEpochLobbyActions extends LitElement {
     }
 
     .lobby-btn--start {
-      color: var(--color-gray-950);
-      border-color: var(--color-gray-100);
-      background: var(--color-gray-100);
+      color: var(--color-text-inverse);
+      border-color: var(--color-text-primary);
+      background: var(--color-text-primary);
     }
 
     .lobby-btn--start:hover:not(:disabled) {
       transform: translate(-2px, -2px);
-      box-shadow: 4px 4px 0 var(--color-gray-600);
+      box-shadow: 4px 4px 0 var(--color-border);
     }
 
     .lobby-btn--start:active:not(:disabled) {
@@ -120,14 +120,14 @@ export class VelgEpochLobbyActions extends LitElement {
     }
 
     .lobby-btn--draft {
-      color: var(--color-epoch-accent, #f59e0b);
-      border-color: var(--color-epoch-accent, #f59e0b);
+      color: var(--color-epoch-accent);
+      border-color: var(--color-epoch-accent);
       background: transparent;
     }
 
     .lobby-btn--draft:hover:not(:disabled) {
-      background: color-mix(in srgb, var(--color-epoch-accent, #f59e0b) 15%, transparent);
-      box-shadow: 0 0 10px color-mix(in srgb, var(--color-epoch-accent, #f59e0b) 20%, transparent);
+      background: color-mix(in srgb, var(--color-epoch-accent) 15%, transparent);
+      box-shadow: 0 0 10px color-mix(in srgb, var(--color-epoch-accent) 20%, transparent);
     }
 
     .draft-status {
@@ -144,8 +144,8 @@ export class VelgEpochLobbyActions extends LitElement {
     }
 
     .draft-status--pending {
-      border-color: var(--color-gray-600);
-      color: var(--color-gray-400);
+      border-color: var(--color-border);
+      color: var(--color-text-muted);
     }
 
     /* ── Simulation Picker ─────────────────── */
@@ -163,12 +163,12 @@ export class VelgEpochLobbyActions extends LitElement {
       font-size: 9px;
       letter-spacing: 2px;
       text-transform: uppercase;
-      color: var(--color-gray-500);
+      color: var(--color-text-muted);
       margin-bottom: var(--space-1);
     }
 
-    .sim-picker__label::before { content: '[ '; color: var(--color-gray-600); }
-    .sim-picker__label::after { content: ' ]'; color: var(--color-gray-600); }
+    .sim-picker__label::before { content: '[ '; color: var(--color-icon); }
+    .sim-picker__label::after { content: ' ]'; color: var(--color-icon); }
 
     /* Individual faction card */
     .faction-card {
@@ -182,8 +182,8 @@ export class VelgEpochLobbyActions extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      border: 2px solid var(--color-gray-600);
-      color: var(--color-gray-300);
+      border: 2px solid var(--color-border);
+      color: var(--color-text-tertiary);
       background: transparent;
       cursor: pointer;
       overflow: hidden;
@@ -312,7 +312,7 @@ export class VelgEpochLobbyActions extends LitElement {
       font-size: var(--text-sm);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-gray-100);
+      color: var(--color-text-primary);
     }
 
     .deployed__dismiss {
@@ -322,9 +322,9 @@ export class VelgEpochLobbyActions extends LitElement {
       width: 28px;
       height: 28px;
       margin-left: var(--space-3);
-      border: 2px solid var(--color-gray-600);
-      background: color-mix(in srgb, var(--color-gray-800) 60%, transparent);
-      color: var(--color-gray-300);
+      border: 2px solid var(--color-border);
+      background: color-mix(in srgb, var(--color-border) 60%, transparent);
+      color: var(--color-text-tertiary);
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: 14px;
@@ -381,19 +381,19 @@ export class VelgEpochLobbyActions extends LitElement {
       font-size: 10px;
       letter-spacing: 3px;
       text-transform: uppercase;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       margin: 0;
     }
 
     .roster__title::before {
       content: '┌─ ';
-      color: var(--color-epoch-accent, #f59e0b);
+      color: var(--color-epoch-accent);
       opacity: 0.5;
     }
 
     .roster__title::after {
       content: ' ─┐';
-      color: var(--color-epoch-accent, #f59e0b);
+      color: var(--color-epoch-accent);
       opacity: 0.5;
     }
 
@@ -402,13 +402,13 @@ export class VelgEpochLobbyActions extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
       letter-spacing: 1px;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       padding: 2px 8px;
-      border: 1px solid var(--color-gray-800);
+      border: 1px solid var(--color-border);
     }
 
     .roster__count-num {
-      color: var(--color-epoch-accent, #f59e0b);
+      color: var(--color-epoch-accent);
     }
 
     .roster__grid {
@@ -431,8 +431,8 @@ export class VelgEpochLobbyActions extends LitElement {
       align-items: center;
       gap: var(--space-2);
       padding: var(--space-2) var(--space-3);
-      background: var(--color-gray-900);
-      border: 1px solid var(--color-gray-800);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
       border-left: 3px solid var(--slot-accent, var(--color-success));
       opacity: 0;
       animation: slot-enter 300ms ease forwards;
@@ -441,7 +441,7 @@ export class VelgEpochLobbyActions extends LitElement {
     }
 
     .slot:hover {
-      background: color-mix(in srgb, var(--slot-accent, var(--color-success)) 5%, var(--color-gray-900));
+      background: color-mix(in srgb, var(--slot-accent, var(--color-success)) 5%, var(--color-surface));
     }
 
     @keyframes slot-enter {
@@ -477,7 +477,7 @@ export class VelgEpochLobbyActions extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      color: var(--color-gray-100);
+      color: var(--color-text-primary);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -507,15 +507,15 @@ export class VelgEpochLobbyActions extends LitElement {
     }
 
     .slot__status--pending {
-      color: var(--color-gray-400);
-      border-color: var(--color-gray-600);
+      color: var(--color-text-muted);
+      border-color: var(--color-border);
     }
 
     /* ── Vacant slot ── */
 
     .slot--vacant {
-      border: 1px dashed var(--color-gray-600);
-      border-left: 3px dashed var(--color-gray-600);
+      border: 1px dashed var(--color-border);
+      border-left: 3px dashed var(--color-border);
       background: transparent;
       opacity: 0;
       animation: slot-enter 300ms ease forwards;
@@ -523,38 +523,38 @@ export class VelgEpochLobbyActions extends LitElement {
     }
 
     .slot--vacant .slot__icon {
-      color: var(--color-gray-400);
-      border: 1px dashed var(--color-gray-500);
+      color: var(--color-text-muted);
+      border: 1px dashed var(--color-text-muted);
       background: transparent;
       animation: vacant-pulse 3s ease-in-out infinite;
     }
 
     @keyframes vacant-pulse {
       0%, 100% {
-        border-color: var(--color-gray-500);
-        color: var(--color-gray-400);
+        border-color: var(--color-text-muted);
+        color: var(--color-text-muted);
       }
       50% {
-        border-color: color-mix(in srgb, var(--color-epoch-accent, #f59e0b) 50%, transparent);
-        color: color-mix(in srgb, var(--color-epoch-accent, #f59e0b) 40%, transparent);
+        border-color: color-mix(in srgb, var(--color-epoch-accent) 50%, transparent);
+        color: color-mix(in srgb, var(--color-epoch-accent) 40%, transparent);
       }
     }
 
     .slot--vacant .slot__name {
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       font-size: 10px;
       letter-spacing: 2px;
     }
 
     .slot--vacant .slot__tag {
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     /* ── Admin Controls ────────────────────── */
 
     .admin-panel {
       margin-top: var(--space-3);
-      border: 1px solid var(--color-gray-800);
+      border: 1px solid var(--color-border);
       overflow: hidden;
     }
 
@@ -570,14 +570,14 @@ export class VelgEpochLobbyActions extends LitElement {
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
       color: var(--color-warning);
-      background: var(--color-gray-900);
+      background: var(--color-surface);
       border: none;
       cursor: pointer;
       transition: background var(--transition-normal);
     }
 
     .admin-toggle:hover {
-      background: var(--color-gray-800);
+      background: var(--color-surface-raised);
     }
 
     .admin-toggle__chevron {
@@ -594,8 +594,8 @@ export class VelgEpochLobbyActions extends LitElement {
       gap: var(--space-2);
       flex-wrap: wrap;
       padding: var(--space-3);
-      border-top: 1px solid var(--color-gray-800);
-      background: var(--color-gray-950);
+      border-top: 1px solid var(--color-border);
+      background: var(--color-surface-sunken);
     }
 
     .admin-btn {
@@ -657,7 +657,7 @@ export class VelgEpochLobbyActions extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 1.5px;
-      color: var(--color-epoch-accent, #f59e0b);
+      color: var(--color-epoch-accent);
     }
 
     /* ── Reduced motion ── */

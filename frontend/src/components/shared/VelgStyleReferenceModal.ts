@@ -55,7 +55,7 @@ export class VelgStyleReferenceModal extends LitElement {
         font-size: 11px;
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        color: var(--color-gray-400, #9ca3af);
+        color: var(--color-icon);
       }
 
       /* ── Chip Row ──────────────────────────────── */
@@ -70,9 +70,9 @@ export class VelgStyleReferenceModal extends LitElement {
         align-items: center;
         gap: var(--space-1);
         padding: var(--space-1) var(--space-3);
-        background: var(--color-gray-950, #030712);
-        border: 1px solid var(--color-gray-700, #374151);
-        color: var(--color-gray-300, #d1d5db);
+        background: var(--color-surface-sunken);
+        border: 1px solid var(--color-border);
+        color: var(--color-text-tertiary);
         font-family: var(--font-mono, monospace);
         font-size: 11px;
         cursor: pointer;
@@ -82,13 +82,13 @@ export class VelgStyleReferenceModal extends LitElement {
       }
 
       .chip:hover {
-        background: var(--color-gray-800, #1f2937);
+        background: var(--color-surface-raised);
       }
 
       .chip--active {
-        border-color: var(--color-success, #22c55e);
-        color: var(--color-success, #22c55e);
-        box-shadow: 0 0 6px rgba(34 197 94 / 0.15);
+        border-color: var(--color-success);
+        color: var(--color-success);
+        box-shadow: 0 0 6px var(--color-success-glow);
       }
 
       /* ── Entity Select ─────────────────────────── */
@@ -103,8 +103,8 @@ export class VelgStyleReferenceModal extends LitElement {
         height: 4px;
         background: linear-gradient(
           90deg,
-          var(--color-gray-700, #374151),
-          var(--color-success, #22c55e)
+          var(--color-border),
+          var(--color-success)
         );
         margin-top: var(--space-1);
         opacity: 0.6;
@@ -113,7 +113,7 @@ export class VelgStyleReferenceModal extends LitElement {
       .strength-hint {
         font-family: var(--font-mono, monospace);
         font-size: 10px;
-        color: var(--color-gray-500, #6b7280);
+        color: var(--color-text-muted);
         margin-top: var(--space-1);
       }
 

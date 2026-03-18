@@ -55,7 +55,7 @@ export class VelgChronicleFeed extends LitElement {
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(ellipse at 50% 0%, rgba(245, 158, 11, 0.04) 0%, transparent 60%);
+        radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-primary) 4%, transparent) 0%, transparent 60%);
       pointer-events: none;
     }
 
@@ -65,7 +65,7 @@ export class VelgChronicleFeed extends LitElement {
       font-size: 10px;
       letter-spacing: 5px;
       text-transform: uppercase;
-      color: var(--color-accent-amber, #f59e0b);
+      color: var(--color-accent-amber);
       margin: 0 0 var(--space-4, 16px);
     }
 
@@ -93,8 +93,8 @@ export class VelgChronicleFeed extends LitElement {
     /* ── Ticker ─────────────────────────────── */
 
     .wire-ticker {
-      border-top: 1px solid var(--color-border, #333);
-      border-bottom: 1px solid var(--color-border, #333);
+      border-top: 1px solid var(--color-border);
+      border-bottom: 1px solid var(--color-border);
       padding: 10px 0;
       overflow: hidden;
       position: relative;
@@ -112,7 +112,7 @@ export class VelgChronicleFeed extends LitElement {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 11px;
       letter-spacing: 1px;
-      color: var(--color-text-muted, #666);
+      color: var(--color-text-muted);
       white-space: nowrap;
       flex-shrink: 0;
     }
@@ -152,7 +152,7 @@ export class VelgChronicleFeed extends LitElement {
     .dispatch {
       position: relative;
       padding: var(--space-6, 24px) 0 var(--space-8, 32px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      border-bottom: 1px solid var(--color-separator);
     }
 
     .dispatch:last-child {
@@ -198,13 +198,13 @@ export class VelgChronicleFeed extends LitElement {
     }
 
     .dispatch__source-link:hover {
-      color: var(--color-accent-amber, #f59e0b);
+      color: var(--color-accent-amber);
     }
 
     .dispatch__meta {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 10px;
-      color: var(--color-text-muted, #666);
+      color: var(--color-text-muted);
       letter-spacing: 1px;
     }
 
@@ -212,7 +212,7 @@ export class VelgChronicleFeed extends LitElement {
     .dispatch__masthead {
       font-family: var(--font-bureau, 'Spectral', Georgia, serif);
       font-size: 13px;
-      color: var(--color-text-muted, #666);
+      color: var(--color-text-muted);
       font-style: italic;
       margin-bottom: var(--space-2, 8px);
     }
@@ -255,7 +255,7 @@ export class VelgChronicleFeed extends LitElement {
     }
 
     .dispatch__read-more:hover {
-      color: var(--color-accent-amber, #f59e0b);
+      color: var(--color-accent-amber);
     }
 
     .dispatch__read-more-arrow {
@@ -273,7 +273,7 @@ export class VelgChronicleFeed extends LitElement {
       font-size: 9px;
       letter-spacing: 2px;
       text-transform: uppercase;
-      color: rgba(34, 197, 94, 0.4);
+      color: var(--color-success-glow);
       margin-top: var(--space-3, 12px);
     }
 
@@ -355,14 +355,14 @@ export class VelgChronicleFeed extends LitElement {
       text-transform: uppercase;
       color: var(--color-text-secondary);
       background: transparent;
-      border: 1px solid var(--color-border, #333);
+      border: 1px solid var(--color-border);
       cursor: pointer;
       transition: all 200ms;
     }
 
     .feed-pagination__btn:hover:not(:disabled) {
-      border-color: var(--color-accent-amber, #f59e0b);
-      color: var(--color-accent-amber, #f59e0b);
+      border-color: var(--color-accent-amber);
+      color: var(--color-accent-amber);
     }
 
     .feed-pagination__btn:disabled {
@@ -377,7 +377,7 @@ export class VelgChronicleFeed extends LitElement {
       margin: 0 auto var(--space-12, 48px);
       padding: var(--space-6, 24px);
       text-align: center;
-      border: 1px dashed rgba(245, 158, 11, 0.2);
+      border: 1px dashed var(--color-primary-glow);
     }
 
     .feed-cta__text {
@@ -399,7 +399,7 @@ export class VelgChronicleFeed extends LitElement {
       text-transform: uppercase;
       letter-spacing: 3px;
       color: var(--color-surface);
-      background: var(--color-accent-amber, #f59e0b);
+      background: var(--color-accent-amber);
       border: none;
       cursor: pointer;
       text-decoration: none;
@@ -408,7 +408,7 @@ export class VelgChronicleFeed extends LitElement {
 
     .feed-cta__btn:hover {
       transform: translateY(-1px);
-      box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+      box-shadow: 0 0 20px var(--color-primary-glow);
     }
 
     /* ── Responsive ─────────────────────────── */
@@ -577,7 +577,7 @@ export class VelgChronicleFeed extends LitElement {
 
     const tickerItems = [...items, ...items].map((c) => {
       const sim = (c as FeedChronicle).simulation;
-      const color = sim ? getThemeColor(sim.theme) : '#888';
+      const color = sim ? getThemeColor(sim.theme) : 'var(--color-text-muted)';
       const headline = c.headline || c.title;
       return html`
         <span class="wire-ticker__item">
@@ -596,7 +596,7 @@ export class VelgChronicleFeed extends LitElement {
 
   private _renderDispatch(chronicle: FeedChronicle, index: number) {
     const sim = chronicle.simulation;
-    const themeColor = sim ? getThemeColor(sim.theme) : '#888';
+    const themeColor = sim ? getThemeColor(sim.theme) : 'var(--color-text-muted)';
     const simSlug = sim?.slug ?? '';
     const simName = sim?.name ?? msg('Unknown World');
     const readMoreHref = sim

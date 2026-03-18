@@ -78,14 +78,14 @@ export class VelgLocationsView extends LitElement {
     .view__mode-toggle {
       display: flex;
       gap: 0;
-      border: 1px solid var(--color-border, #333);
+      border: 1px solid var(--color-border);
     }
 
     .view__mode-btn {
       padding: var(--space-1, 4px) var(--space-3, 12px);
       background: none;
       border: none;
-      color: var(--color-text-muted, #888);
+      color: var(--color-text-muted);
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs, 12px);
       font-weight: 600;
@@ -96,16 +96,16 @@ export class VelgLocationsView extends LitElement {
     }
 
     .view__mode-btn:first-child {
-      border-right: 1px solid var(--color-border, #333);
+      border-right: 1px solid var(--color-border);
     }
 
     .view__mode-btn:hover {
-      color: var(--color-text-primary, #e5e5e5);
+      color: var(--color-text-primary);
       background: rgba(255, 255, 255, 0.03);
     }
 
     .view__mode-btn--active {
-      color: var(--color-primary, #f59e0b);
+      color: var(--color-primary);
       background: rgba(245, 158, 11, 0.08);
     }
   `,

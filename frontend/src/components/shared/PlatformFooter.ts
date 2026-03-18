@@ -11,7 +11,7 @@ export class VelgPlatformFooter extends LitElement {
     }
 
     footer {
-      border-top: 1px solid var(--color-gray-800);
+      border-top: 1px solid var(--color-border-light);
       padding: var(--space-6) var(--space-4);
       text-align: center;
     }
@@ -33,7 +33,7 @@ export class VelgPlatformFooter extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-widest);
-      color: var(--color-gray-500);
+      color: var(--color-text-muted);
       flex-wrap: wrap;
     }
 
@@ -43,13 +43,13 @@ export class VelgPlatformFooter extends LitElement {
     }
 
     a {
-      color: var(--color-gray-500);
+      color: var(--color-text-muted);
       text-decoration: none;
       transition: color var(--transition-fast);
     }
 
     a:hover {
-      color: var(--color-gray-300);
+      color: var(--color-text-tertiary);
     }
 
     a:focus-visible {
@@ -62,7 +62,7 @@ export class VelgPlatformFooter extends LitElement {
       font-size: 8px;
       text-transform: uppercase;
       letter-spacing: 0.4em;
-      color: var(--color-gray-600);
+      color: var(--color-text-muted);
       margin-top: var(--space-3);
     }
   `;

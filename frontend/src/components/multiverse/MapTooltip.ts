@@ -54,8 +54,8 @@ export class VelgMapTooltip extends LitElement {
 
     .tooltip__badge {
       display: inline-block;
-      background: #ef4444;
-      color: #fff;
+      background: var(--color-danger);
+      color: var(--color-text-inverse);
       font-size: 10px;
       font-weight: 700;
       padding: 1px 6px;
@@ -79,7 +79,7 @@ export class VelgMapTooltip extends LitElement {
 
     .tooltip__score-bar {
       height: 6px;
-      background: var(--color-surface-sunken, #111);
+      background: var(--color-surface-sunken);
       align-self: center;
     }
 

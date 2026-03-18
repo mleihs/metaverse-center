@@ -21,8 +21,8 @@ export class VelgBureauArchives extends LitElement {
   static styles = css`
     :host {
       display: block;
-      background: var(--color-gray-950);
-      color: #fff;
+      background: var(--color-surface-sunken);
+      color: var(--color-text-primary);
       min-height: calc(100vh - var(--header-height));
     }
 
@@ -30,8 +30,8 @@ export class VelgBureauArchives extends LitElement {
 
     .archives__header {
       height: 60px;
-      background: var(--color-gray-900);
-      border-bottom: 2px solid var(--color-gray-700);
+      background: var(--color-surface);
+      border-bottom: 2px solid var(--color-border);
       display: flex;
       align-items: center;
       padding: 0 var(--space-6);
@@ -39,31 +39,31 @@ export class VelgBureauArchives extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-widest);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       gap: var(--space-4);
       overflow: hidden;
     }
 
     .archives__header-title {
       font-weight: var(--font-bold);
-      color: var(--color-gray-300);
+      color: var(--color-text-tertiary);
       white-space: nowrap;
     }
 
     .archives__header-classification {
-      color: #f59e0b;
+      color: var(--color-primary);
       font-weight: var(--font-bold);
-      border: 1px solid rgba(245, 158, 11, 0.3);
+      border: 1px solid var(--color-warning-glow);
       padding: 2px 8px;
       flex-shrink: 0;
     }
 
     .archives__header-sep {
-      color: var(--color-gray-600);
+      color: var(--color-border);
     }
 
     .archives__header-count {
-      color: var(--color-gray-500);
+      color: var(--color-text-muted);
     }
 
     @media (max-width: 640px) {
@@ -84,7 +84,7 @@ export class VelgBureauArchives extends LitElement {
       z-index: 10;
       background: rgba(10, 10, 14, 0.95);
       backdrop-filter: blur(8px);
-      border-bottom: 1px solid var(--color-gray-800);
+      border-bottom: 1px solid var(--color-border-light);
       padding: var(--space-3) var(--space-6);
       display: flex;
       gap: var(--space-4);
@@ -101,7 +101,7 @@ export class VelgBureauArchives extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       cursor: pointer;
       white-space: nowrap;
       padding: var(--space-1) var(--space-3);
@@ -112,12 +112,12 @@ export class VelgBureauArchives extends LitElement {
 
     .chapter-nav__item--active,
     .chapter-nav__item:hover {
-      color: #f59e0b;
-      border-color: rgba(245, 158, 11, 0.3);
+      color: var(--color-primary);
+      border-color: var(--color-warning-glow);
     }
 
     .chapter-nav__item:focus-visible {
-      outline: 2px solid #f59e0b;
+      outline: 2px solid var(--color-primary);
       outline-offset: 2px;
     }
 
@@ -135,7 +135,7 @@ export class VelgBureauArchives extends LitElement {
       max-width: 800px;
       margin: var(--space-12) auto var(--space-8);
       padding: var(--space-6) 0;
-      border-top: 2px solid var(--color-gray-700);
+      border-top: 2px solid var(--color-border);
       display: flex;
       align-items: baseline;
       gap: var(--space-4);
@@ -151,13 +151,13 @@ export class VelgBureauArchives extends LitElement {
       font-weight: var(--font-black);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: #fff;
+      color: var(--color-text-primary);
     }
 
     .chapter-divider__count {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-gray-500);
+      color: var(--color-text-muted);
     }
 
     /* ── Dossier Card ── */
@@ -165,8 +165,8 @@ export class VelgBureauArchives extends LitElement {
     .dossier {
       max-width: 800px;
       margin: var(--space-8) auto;
-      background: var(--color-gray-900);
-      border: 1px solid var(--color-gray-700);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
       padding: var(--space-8);
       position: relative;
       opacity: 0;
@@ -186,7 +186,7 @@ export class VelgBureauArchives extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 64px;
       font-weight: var(--font-black);
-      color: rgba(255, 255, 255, 0.04);
+      color: color-mix(in srgb, var(--color-text-primary) 4%, transparent);
       line-height: 1;
       user-select: none;
     }
@@ -197,8 +197,8 @@ export class VelgBureauArchives extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-widest);
-      color: #f59e0b;
-      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: var(--color-primary);
+      border: 1px solid var(--color-warning-glow);
       padding: 1px 6px;
       transform: rotate(-2deg);
     }
@@ -207,7 +207,7 @@ export class VelgBureauArchives extends LitElement {
       font-family: var(--font-bureau);
       font-size: var(--text-2xl);
       font-weight: var(--font-bold);
-      color: #fff;
+      color: var(--color-text-primary);
       margin: var(--space-4) 0 var(--space-3);
       letter-spacing: 1px;
     }
@@ -216,8 +216,8 @@ export class VelgBureauArchives extends LitElement {
       font-family: var(--font-bureau);
       font-style: italic;
       font-size: var(--text-sm);
-      color: var(--color-gray-400);
-      border-left: 2px solid rgba(245, 158, 11, 0.3);
+      color: var(--color-text-muted);
+      border-left: 2px solid var(--color-warning-glow);
       padding-left: var(--space-4);
       margin: 0 0 var(--space-6);
     }
@@ -226,7 +226,7 @@ export class VelgBureauArchives extends LitElement {
       font-family: var(--font-bureau);
       font-size: var(--text-base);
       line-height: var(--leading-relaxed);
-      color: var(--color-gray-300);
+      color: var(--color-text-tertiary);
       max-width: 72ch;
       white-space: pre-line;
     }
@@ -241,7 +241,7 @@ export class VelgBureauArchives extends LitElement {
       width: 100%;
       aspect-ratio: 16 / 9;
       object-fit: cover;
-      border: 1px solid var(--color-gray-600);
+      border: 1px solid var(--color-border);
       transform: rotate(-0.5deg);
       cursor: pointer;
     }
@@ -254,7 +254,7 @@ export class VelgBureauArchives extends LitElement {
       font-family: var(--font-mono);
       font-size: 9px;
       text-transform: uppercase;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       margin-top: var(--space-2);
       letter-spacing: var(--tracking-wider);
     }
@@ -262,12 +262,12 @@ export class VelgBureauArchives extends LitElement {
     .dossier__footer {
       margin-top: var(--space-6);
       padding-top: var(--space-3);
-      border-top: 1px solid var(--color-gray-800);
+      border-top: 1px solid var(--color-border-light);
       font-family: var(--font-mono);
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-wider);
-      color: var(--color-gray-500);
+      color: var(--color-text-muted);
       display: flex;
       justify-content: space-between;
     }
@@ -278,8 +278,8 @@ export class VelgBureauArchives extends LitElement {
       max-width: 800px;
       margin: var(--space-10) auto;
       padding: var(--space-6);
-      border-left: 3px solid rgba(245, 158, 11, 0.4);
-      background: rgba(245, 158, 11, 0.02);
+      border-left: 3px solid var(--color-warning-glow);
+      background: color-mix(in srgb, var(--color-primary) 2%, transparent);
       opacity: 0;
       transform: scale(0.98);
       transition: opacity 0.5s ease, transform 0.5s ease;
@@ -301,14 +301,14 @@ export class VelgBureauArchives extends LitElement {
       content: '';
       position: absolute;
       inset: 0;
-      background: radial-gradient(ellipse at center, rgba(245, 158, 11, 0.04) 0%, transparent 70%);
+      background: radial-gradient(ellipse at center, color-mix(in srgb, var(--color-primary) 4%, transparent) 0%, transparent 70%);
       pointer-events: none;
     }
 
     .transmission--character {
       text-align: right;
       border-left: none;
-      border-right: 3px solid rgba(245, 158, 11, 0.3);
+      border-right: 3px solid var(--color-warning-glow);
     }
 
     .transmission__label {
@@ -316,7 +316,7 @@ export class VelgBureauArchives extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-widest);
-      color: rgba(245, 158, 11, 0.75);
+      color: var(--color-primary);
       margin-bottom: var(--space-3);
     }
 
@@ -324,7 +324,7 @@ export class VelgBureauArchives extends LitElement {
       font-family: var(--font-bureau);
       font-size: var(--text-lg);
       font-style: italic;
-      color: var(--color-gray-300);
+      color: var(--color-text-tertiary);
       line-height: var(--leading-relaxed);
     }
 
@@ -333,7 +333,7 @@ export class VelgBureauArchives extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-wider);
-      color: var(--color-gray-500);
+      color: var(--color-text-muted);
       margin-top: var(--space-3);
     }
 
@@ -342,7 +342,7 @@ export class VelgBureauArchives extends LitElement {
     .substrate-ticker {
       height: 28px;
       background: rgba(0, 0, 0, 0.6);
-      border-top: 1px solid var(--color-gray-800);
+      border-top: 1px solid var(--color-border-light);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -353,13 +353,13 @@ export class VelgBureauArchives extends LitElement {
     .substrate-ticker__text {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: rgba(255, 255, 255, 0.25);
+      color: color-mix(in srgb, var(--color-text-primary) 25%, transparent);
       letter-spacing: var(--tracking-wider);
       text-transform: uppercase;
     }
 
     .substrate-ticker:hover .substrate-ticker__text {
-      color: rgba(245, 158, 11, 0.4);
+      color: var(--color-warning-glow);
     }
 
     /* ── Responsive ── */

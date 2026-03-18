@@ -435,7 +435,7 @@ export class VelgDarkroomStudio extends LitElement {
       width: min(400px, 90vw);
       background: var(--color-surface, #111);
       border-left: 2px solid var(--color-accent-amber);
-      z-index: 600;
+      z-index: var(--z-popover);
       display: flex;
       flex-direction: column;
       animation: panel-slide 300ms ease-out;

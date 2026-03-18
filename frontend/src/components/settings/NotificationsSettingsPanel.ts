@@ -32,7 +32,7 @@ export class VelgNotificationsSettingsPanel extends LitElement {
         justify-content: space-between;
         gap: var(--space-4);
         padding: var(--space-3) 0;
-        border-bottom: 1px solid var(--color-border, #333);
+        border-bottom: 1px solid var(--color-border);
       }
 
       .notif-toggle-row:last-of-type {

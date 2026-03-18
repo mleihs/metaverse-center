@@ -37,7 +37,7 @@ export class VelgSimulationCard extends LitElement {
     .shard {
       position: relative;
       min-height: 280px;
-      border: 2px solid var(--color-gray-700);
+      border: 2px solid var(--color-surface-raised);
       box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.4);
       border-radius: var(--border-radius);
       overflow: hidden;
@@ -53,7 +53,7 @@ export class VelgSimulationCard extends LitElement {
     .shard:hover {
       transform: translate(-2px, -2px);
       box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.5);
-      border-color: var(--color-gray-500);
+      border-color: var(--color-text-muted);
     }
 
     .shard:hover .shard__bleed {
@@ -82,7 +82,7 @@ export class VelgSimulationCard extends LitElement {
     .shard__placeholder {
       position: absolute;
       inset: 0;
-      background: var(--color-gray-900);
+      background: var(--color-surface);
     }
 
     .shard__placeholder::after {
@@ -94,8 +94,8 @@ export class VelgSimulationCard extends LitElement {
         45deg,
         transparent,
         transparent 20px,
-        var(--shard-color, #888) 20px,
-        var(--shard-color, #888) 21px
+        var(--shard-color, var(--color-text-muted)) 20px,
+        var(--shard-color, var(--color-text-muted)) 21px
       );
     }
 
@@ -135,7 +135,7 @@ export class VelgSimulationCard extends LitElement {
       font-size: var(--text-lg);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: #fff;
+      color: var(--color-text-primary);
       margin: 0;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -149,7 +149,7 @@ export class VelgSimulationCard extends LitElement {
 
     .shard__description {
       font-size: var(--text-sm);
-      color: rgba(255, 255, 255, 0.7);
+      color: color-mix(in srgb, var(--color-text-primary) 70%, transparent);
       line-height: var(--leading-relaxed);
       display: -webkit-box;
       -webkit-line-clamp: 2;
@@ -162,7 +162,7 @@ export class VelgSimulationCard extends LitElement {
       display: flex;
       gap: var(--space-4);
       padding-top: var(--space-2);
-      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      border-top: 1px solid color-mix(in srgb, var(--color-text-primary) 15%, transparent);
     }
 
     .shard__stat {
@@ -175,14 +175,14 @@ export class VelgSimulationCard extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-md);
-      color: #fff;
+      color: var(--color-text-primary);
     }
 
     .shard__stat-label {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: rgba(255, 255, 255, 0.5);
+      color: color-mix(in srgb, var(--color-text-primary) 50%, transparent);
     }
 
     .shard__enter {
@@ -191,7 +191,7 @@ export class VelgSimulationCard extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wider);
-      color: var(--shard-color, rgba(255, 255, 255, 0.6));
+      color: var(--shard-color, color-mix(in srgb, var(--color-text-primary) 60%, transparent));
       align-self: flex-end;
       opacity: 0;
       transform: translateY(4px);
@@ -206,11 +206,11 @@ export class VelgSimulationCard extends LitElement {
     .shard__bleed {
       position: absolute;
       inset: 0;
-      border: 2px solid var(--shard-color, #888);
+      border: 2px solid var(--shard-color, var(--color-text-muted));
       border-radius: var(--border-radius);
       box-shadow:
-        inset 0 0 20px var(--shard-color-alpha, rgba(136, 136, 136, 0.2)),
-        0 0 15px var(--shard-color-alpha, rgba(136, 136, 136, 0.15));
+        inset 0 0 20px var(--shard-color-alpha, color-mix(in srgb, var(--color-text-muted) 20%, transparent)),
+        0 0 15px var(--shard-color-alpha, color-mix(in srgb, var(--color-text-muted) 15%, transparent));
       opacity: 0;
       transition: opacity var(--transition-normal);
       pointer-events: none;

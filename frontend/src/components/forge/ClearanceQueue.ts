@@ -112,7 +112,7 @@ export class VelgClearanceQueue extends LitElement {
     .request-card {
       background: var(--color-surface);
       border: 1px solid var(--color-border);
-      border-left: 3px solid var(--color-warning, #f59e0b);
+      border-left: 3px solid var(--color-warning);
       padding: var(--space-4);
       margin-bottom: var(--space-3);
       transition: border-color var(--transition-fast);
@@ -210,7 +210,7 @@ export class VelgClearanceQueue extends LitElement {
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
       background: var(--color-success);
-      color: var(--color-gray-950);
+      color: var(--color-surface-sunken);
       border: none;
       cursor: pointer;
       transition: all var(--transition-fast);
@@ -220,7 +220,7 @@ export class VelgClearanceQueue extends LitElement {
     .btn-approve:hover {
       filter: brightness(1.15);
       transform: translateY(-1px);
-      box-shadow: 0 2px 8px rgba(74, 222, 128, 0.3);
+      box-shadow: 0 2px 8px color-mix(in srgb, var(--color-success) 30%, transparent);
     }
 
     .btn-approve:disabled {
@@ -246,8 +246,8 @@ export class VelgClearanceQueue extends LitElement {
 
     .btn-reject:hover {
       background: var(--color-danger);
-      color: var(--color-gray-950);
-      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+      color: var(--color-surface-sunken);
+      box-shadow: 0 2px 8px var(--color-danger-border);
     }
 
     .btn-reject:disabled {
@@ -300,7 +300,7 @@ export class VelgClearanceQueue extends LitElement {
       font-size: 8px;
       text-transform: uppercase;
       letter-spacing: 0.4em;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     :host([variant="compact"]) .section-header__title {

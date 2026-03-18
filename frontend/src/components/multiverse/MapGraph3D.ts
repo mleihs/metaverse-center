@@ -87,9 +87,9 @@ export class VelgMapGraph3D extends LitElement {
 		}
 
 		.map3d-btn {
-			background: var(--color-surface-raised, #161616);
-			border: 1px solid var(--color-border, #2a2a2a);
-			color: var(--color-text-primary, #f0f0f0);
+			background: var(--color-surface-raised);
+			border: 1px solid var(--color-border);
+			color: var(--color-text-primary);
 			font-family: var(--font-brutalist, monospace);
 			font-size: 10px;
 			font-weight: 700;
@@ -100,13 +100,13 @@ export class VelgMapGraph3D extends LitElement {
 		}
 
 		.map3d-btn:hover {
-			background: var(--color-surface-hover, #1f1f1f);
+			background: var(--color-surface-hover);
 		}
 
 		.map3d-btn--active {
-			background: var(--color-surface-hover, #1f1f1f);
-			border-color: var(--color-text-secondary, #aaa);
-			color: #ffffff;
+			background: var(--color-surface-hover);
+			border-color: var(--color-text-secondary);
+			color: var(--color-text-primary);
 		}
 
 		/* ── Tooltip ── */
@@ -120,7 +120,7 @@ export class VelgMapGraph3D extends LitElement {
 			padding: 10px 14px;
 			font-family: var(--font-mono, monospace);
 			font-size: 11px;
-			color: var(--color-text-primary, #f0f0f0);
+			color: var(--color-text-primary);
 			max-width: 240px;
 			backdrop-filter: blur(6px);
 		}
@@ -138,7 +138,7 @@ export class VelgMapGraph3D extends LitElement {
 		}
 
 		.tooltip__stat {
-			color: var(--color-text-muted, #777);
+			color: var(--color-text-muted);
 			font-size: 10px;
 			margin: 2px 0;
 		}
@@ -163,7 +163,7 @@ export class VelgMapGraph3D extends LitElement {
 			width: 56px;
 			text-transform: uppercase;
 			letter-spacing: 0.05em;
-			color: var(--color-text-muted, #777);
+			color: var(--color-text-muted);
 		}
 
 		.tooltip__dim-track {
@@ -468,7 +468,7 @@ export class VelgMapGraph3D extends LitElement {
     // Build tooltip content using Lit render() for safe DOM construction
     const phaseColor =
       node.simulationType === 'game_instance' && node.epochStatus
-        ? (PHASE_COLORS_3D[node.epochStatus] ?? '#6b7280')
+        ? (PHASE_COLORS_3D[node.epochStatus] ?? 'var(--color-text-muted)')
         : null;
 
     const dims = ['stability', 'influence', 'sovereignty', 'diplomatic', 'military'] as const;
@@ -486,7 +486,7 @@ export class VelgMapGraph3D extends LitElement {
           node.scoreDimensions
             ? dims.map((dim) => {
                 const value = Math.max(0, Math.min(100, node.scoreDimensions?.[dim] ?? 0));
-                const color = SCORE_DIMENSION_COLORS[dim] ?? '#888';
+                const color = SCORE_DIMENSION_COLORS[dim] ?? 'var(--color-text-muted)';
                 return html`
                 <div class="tooltip__dim-bar">
                   <span class="tooltip__dim-label">${dim.slice(0, 4)}</span>

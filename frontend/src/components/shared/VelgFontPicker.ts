@@ -126,7 +126,7 @@ export class VelgFontPicker extends LitElement {
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: var(--color-gray-300, #d1d5db);
+      color: var(--color-text-tertiary);
       display: block;
       margin-bottom: var(--space-1);
     }
@@ -138,9 +138,9 @@ export class VelgFontPicker extends LitElement {
       align-items: center;
       justify-content: space-between;
       width: 100%;
-      background: var(--color-gray-950, #030712);
-      border: 1px solid var(--color-gray-700, #374151);
-      color: var(--color-gray-100, #f3f4f6);
+      background: var(--color-surface-sunken);
+      border: 1px solid var(--color-border);
+      color: var(--color-text-primary);
       padding: var(--space-2) var(--space-3);
       cursor: pointer;
       transition: border-color 0.15s;
@@ -148,11 +148,11 @@ export class VelgFontPicker extends LitElement {
     }
 
     .picker__trigger:hover {
-      border-color: var(--color-gray-500, #6b7280);
+      border-color: var(--color-text-muted);
     }
 
     .picker__trigger:focus-visible {
-      outline: 2px solid var(--color-success, #22c55e);
+      outline: 2px solid var(--color-success);
       outline-offset: 1px;
     }
 
@@ -166,7 +166,7 @@ export class VelgFontPicker extends LitElement {
     .picker__chevron {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-gray-400, #9ca3af);
+      color: var(--color-icon);
       margin-left: var(--space-2);
       transition: transform 0.15s;
       flex-shrink: 0;
@@ -181,7 +181,7 @@ export class VelgFontPicker extends LitElement {
     .picker__backdrop {
       position: fixed;
       inset: 0;
-      z-index: 99;
+      z-index: var(--z-sticky);
     }
 
     /* -- Dropdown Panel -- */
@@ -191,9 +191,9 @@ export class VelgFontPicker extends LitElement {
       top: 100%;
       left: 0;
       right: 0;
-      z-index: 100;
-      background: var(--color-gray-950, #030712);
-      border: 1px solid var(--color-gray-700, #374151);
+      z-index: var(--z-sticky);
+      background: var(--color-surface-sunken);
+      border: 1px solid var(--color-border);
       margin-top: 2px;
       max-height: 380px;
       display: flex;
@@ -203,10 +203,10 @@ export class VelgFontPicker extends LitElement {
 
     .picker__search {
       width: 100%;
-      background: var(--color-gray-900, #111827);
+      background: var(--color-surface);
       border: none;
-      border-bottom: 1px solid var(--color-gray-700, #374151);
-      color: var(--color-gray-100, #f3f4f6);
+      border-bottom: 1px solid var(--color-border);
+      color: var(--color-text-primary);
       padding: var(--space-2) var(--space-3);
       font-family: var(--font-mono, monospace);
       font-size: 12px;
@@ -215,7 +215,7 @@ export class VelgFontPicker extends LitElement {
     }
 
     .picker__search::placeholder {
-      color: var(--color-gray-500, #6b7280);
+      color: var(--color-text-muted);
     }
 
     .picker__list {
@@ -232,9 +232,9 @@ export class VelgFontPicker extends LitElement {
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-gray-500, #6b7280);
+      color: var(--color-text-muted);
       padding: var(--space-2) var(--space-3) var(--space-1);
-      border-top: 1px solid var(--color-gray-800, #1f2937);
+      border-top: 1px solid var(--color-border-light);
       user-select: none;
     }
 
@@ -254,12 +254,12 @@ export class VelgFontPicker extends LitElement {
 
     .picker__option:hover,
     .picker__option--focused {
-      background: var(--color-gray-800, #1f2937);
+      background: var(--color-surface-raised);
     }
 
     .picker__option--selected {
-      border-left-color: var(--color-success, #22c55e);
-      background: rgba(34, 197, 94, 0.08);
+      border-left-color: var(--color-success);
+      background: var(--color-success-glow);
     }
 
     .picker__option-label {
@@ -267,18 +267,18 @@ export class VelgFontPicker extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      color: var(--color-gray-400, #9ca3af);
+      color: var(--color-icon);
     }
 
     .picker__option-specimen {
       font-size: var(--text-sm, 14px);
-      color: var(--color-gray-100, #f3f4f6);
+      color: var(--color-text-primary);
     }
 
     /* -- Custom Google Font Input -- */
 
     .picker__custom-section {
-      border-top: 1px solid var(--color-gray-700, #374151);
+      border-top: 1px solid var(--color-border);
       padding: var(--space-2) var(--space-3);
       display: flex;
       flex-direction: column;
@@ -291,7 +291,7 @@ export class VelgFontPicker extends LitElement {
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-gray-500, #6b7280);
+      color: var(--color-text-muted);
     }
 
     .picker__custom-row {
@@ -301,9 +301,9 @@ export class VelgFontPicker extends LitElement {
 
     .picker__custom {
       flex: 1;
-      background: var(--color-gray-900, #111827);
-      border: 1px solid var(--color-gray-700, #374151);
-      color: var(--color-gray-100, #f3f4f6);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      color: var(--color-text-primary);
       padding: var(--space-1-5) var(--space-2);
       font-family: var(--font-mono, monospace);
       font-size: 12px;
@@ -312,13 +312,13 @@ export class VelgFontPicker extends LitElement {
     }
 
     .picker__custom:focus {
-      border-color: var(--color-success, #22c55e);
+      border-color: var(--color-success);
     }
 
     .picker__custom-btn {
-      background: var(--color-gray-800, #1f2937);
-      border: 1px solid var(--color-gray-600, #4b5563);
-      color: var(--color-gray-200, #e5e7eb);
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      color: var(--color-text-secondary);
       font-family: var(--font-mono, monospace);
       font-size: 10px;
       text-transform: uppercase;
@@ -330,7 +330,7 @@ export class VelgFontPicker extends LitElement {
     }
 
     .picker__custom-btn:hover {
-      background: var(--color-gray-700, #374151);
+      background: var(--color-border);
     }
 
     /* -- Specimen Preview -- */
@@ -338,20 +338,20 @@ export class VelgFontPicker extends LitElement {
     .picker__specimen {
       margin-top: var(--space-3);
       padding: var(--space-3);
-      background: var(--color-gray-900, #111827);
-      border: 1px solid var(--color-gray-800, #1f2937);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-light);
     }
 
     .picker__specimen-heading {
       font-size: var(--text-lg, 18px);
       font-weight: 700;
-      color: var(--color-gray-100, #f3f4f6);
+      color: var(--color-text-primary);
       margin: 0 0 var(--space-1);
     }
 
     .picker__specimen-body {
       font-size: var(--text-sm, 14px);
-      color: var(--color-gray-300, #d1d5db);
+      color: var(--color-text-tertiary);
       margin: 0;
     }
   `;

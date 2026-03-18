@@ -47,7 +47,7 @@ export class VelgDraftRosterPanel extends LitElement {
       position: fixed;
       inset: 0;
       z-index: var(--z-top, 9000);
-      background: var(--color-gray-950, #0a0a0f);
+      background: var(--color-surface-sunken);
       display: flex;
       flex-direction: column;
       opacity: 0;
@@ -78,8 +78,8 @@ export class VelgDraftRosterPanel extends LitElement {
       align-items: center;
       justify-content: space-between;
       padding: var(--space-3) var(--space-5);
-      border-bottom: 2px solid var(--color-gray-800);
-      background: var(--color-gray-900);
+      border-bottom: 2px solid var(--color-border);
+      background: var(--color-surface);
       flex-shrink: 0;
       z-index: 2;
     }
@@ -90,7 +90,7 @@ export class VelgDraftRosterPanel extends LitElement {
       font-size: var(--text-lg);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-gray-100);
+      color: var(--color-text-primary);
     }
 
     .header__close {
@@ -100,17 +100,17 @@ export class VelgDraftRosterPanel extends LitElement {
       width: 36px;
       height: 36px;
       padding: 0;
-      border: 1px solid var(--color-gray-700);
+      border: 1px solid var(--color-border);
       background: transparent;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       cursor: pointer;
       transition: all var(--transition-fast);
     }
 
     .header__close:hover {
-      border-color: var(--color-gray-400);
-      color: var(--color-gray-100);
-      background: var(--color-gray-800);
+      border-color: var(--color-text-muted);
+      color: var(--color-text-primary);
+      background: var(--color-surface-raised);
     }
 
     /* ══════════════════════════════════════════════════
@@ -138,7 +138,7 @@ export class VelgDraftRosterPanel extends LitElement {
       position: relative;
       width: 120px;
       height: 168px;
-      border: 2px dashed var(--color-gray-700);
+      border: 2px dashed var(--color-border);
       border-radius: 8px;
       display: flex;
       align-items: center;
@@ -152,8 +152,8 @@ export class VelgDraftRosterPanel extends LitElement {
     }
 
     @keyframes slot-breathe {
-      from { border-color: var(--color-gray-700); }
-      to { border-color: color-mix(in srgb, var(--color-epoch-accent, #f59e0b) 30%, var(--color-gray-700)); }
+      from { border-color: var(--color-border); }
+      to { border-color: color-mix(in srgb, var(--color-epoch-accent) 30%, var(--color-surface-raised)); }
     }
 
     .slot__label {
@@ -161,15 +161,15 @@ export class VelgDraftRosterPanel extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-gray-700);
+      color: var(--color-surface-raised);
       user-select: none;
     }
 
     /* Drag-over state */
     .slot--dragover {
       border-style: solid;
-      border-color: var(--color-epoch-accent, #f59e0b);
-      background: color-mix(in srgb, var(--color-epoch-accent, #f59e0b) 6%, var(--color-gray-900));
+      border-color: var(--color-epoch-accent);
+      background: color-mix(in srgb, var(--color-epoch-accent) 6%, var(--color-surface));
       box-shadow: 0 0 20px rgba(245,158,11,0.15);
       transform: scale(1.03);
     }
@@ -197,10 +197,10 @@ export class VelgDraftRosterPanel extends LitElement {
       align-items: center;
       justify-content: center;
       padding: 0;
-      border: 1px solid var(--color-gray-600);
+      border: 1px solid var(--color-border);
       border-radius: 50%;
-      background: var(--color-gray-900);
-      color: var(--color-gray-400);
+      background: var(--color-surface);
+      color: var(--color-text-muted);
       cursor: pointer;
       opacity: 0;
       transition: all 150ms ease;
@@ -214,14 +214,14 @@ export class VelgDraftRosterPanel extends LitElement {
     .slot__remove:hover {
       border-color: var(--color-danger);
       color: var(--color-danger);
-      background: var(--color-gray-800);
+      background: var(--color-surface-raised);
     }
 
     /* ── Shockwave particles on slam ── */
     .slam-ring {
       position: absolute;
       inset: 0;
-      border: 2px solid var(--color-epoch-accent, #f59e0b);
+      border: 2px solid var(--color-epoch-accent);
       border-radius: 8px;
       pointer-events: none;
       opacity: 0;
@@ -246,8 +246,8 @@ export class VelgDraftRosterPanel extends LitElement {
        TEAM PROFILE — aggregate stats
        ══════════════════════════════════════════════════ */
     .team-profile {
-      background: var(--color-gray-900);
-      border: 1px solid var(--color-gray-800);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
       padding: var(--space-3) var(--space-4);
       margin-top: auto;
       opacity: 0;
@@ -277,7 +277,7 @@ export class VelgDraftRosterPanel extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--card-text-dim, var(--color-gray-400));
+      color: var(--card-text-dim, var(--color-text-muted));
       width: 24px;
       flex-shrink: 0;
     }
@@ -285,7 +285,7 @@ export class VelgDraftRosterPanel extends LitElement {
     .team-bar__track {
       flex: 1;
       height: 6px;
-      background: var(--color-gray-800);
+      background: var(--color-surface-raised);
       border-radius: 3px;
       overflow: hidden;
     }
@@ -299,7 +299,7 @@ export class VelgDraftRosterPanel extends LitElement {
     .team-bar__value {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      color: var(--color-gray-300);
+      color: var(--color-text-tertiary);
       width: 20px;
       text-align: right;
     }
@@ -309,7 +309,7 @@ export class VelgDraftRosterPanel extends LitElement {
       gap: var(--space-4);
       margin-top: var(--space-2);
       padding-top: var(--space-2);
-      border-top: 1px solid var(--color-gray-800);
+      border-top: 1px solid var(--color-border);
     }
 
     .meta-stat {
@@ -323,7 +323,7 @@ export class VelgDraftRosterPanel extends LitElement {
       font-size: 8px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-gray-500);
+      color: var(--color-text-muted);
     }
 
     .meta-stat__value {
@@ -335,7 +335,7 @@ export class VelgDraftRosterPanel extends LitElement {
 
     .meta-stat__value--strong { color: var(--color-success); }
     .meta-stat__value--weak { color: var(--color-danger); }
-    .meta-stat__value--neutral { color: var(--color-gray-300); }
+    .meta-stat__value--neutral { color: var(--color-text-tertiary); }
 
     /* ══════════════════════════════════════════════════
        DIVIDER — between field and hand
@@ -346,9 +346,9 @@ export class VelgDraftRosterPanel extends LitElement {
       justify-content: center;
       gap: var(--space-3);
       padding: var(--space-2) var(--space-5);
-      background: var(--color-gray-900);
-      border-top: 2px solid var(--color-gray-800);
-      border-bottom: 1px solid var(--color-gray-800);
+      background: var(--color-surface);
+      border-top: 2px solid var(--color-border);
+      border-bottom: 1px solid var(--color-border);
       flex-shrink: 0;
       z-index: 2;
     }
@@ -362,14 +362,14 @@ export class VelgDraftRosterPanel extends LitElement {
     .counter-pip {
       width: 16px;
       height: 22px;
-      border: 1px solid var(--color-gray-700);
+      border: 1px solid var(--color-border);
       border-radius: 2px;
       transition: all 300ms var(--ease-spring);
     }
 
     .counter-pip--filled {
-      background: var(--color-epoch-accent, #f59e0b);
-      border-color: var(--color-epoch-accent, #f59e0b);
+      background: var(--color-epoch-accent);
+      border-color: var(--color-epoch-accent);
       box-shadow: 0 0 6px rgba(245,158,11,0.3);
       animation: pip-flip 300ms var(--ease-spring);
     }
@@ -385,7 +385,7 @@ export class VelgDraftRosterPanel extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     .counter-text--ready {
@@ -494,8 +494,8 @@ export class VelgDraftRosterPanel extends LitElement {
       justify-content: flex-end;
       gap: var(--space-3);
       padding: var(--space-3) var(--space-5);
-      border-top: 2px solid var(--color-gray-800);
-      background: var(--color-gray-900);
+      border-top: 2px solid var(--color-border);
+      background: var(--color-surface);
       flex-shrink: 0;
       z-index: 2;
     }
@@ -521,26 +521,26 @@ export class VelgDraftRosterPanel extends LitElement {
     }
 
     .footer__btn--cancel {
-      color: var(--color-gray-400);
-      border-color: var(--color-gray-700);
+      color: var(--color-text-muted);
+      border-color: var(--color-border);
       background: transparent;
     }
 
     .footer__btn--cancel:hover:not(:disabled) {
-      border-color: var(--color-gray-400);
-      background: var(--color-gray-800);
+      border-color: var(--color-text-muted);
+      background: var(--color-surface-raised);
     }
 
     .footer__btn--lock {
-      color: var(--color-gray-950);
-      border-color: var(--color-epoch-accent, #f59e0b);
-      background: var(--color-epoch-accent, #f59e0b);
+      color: var(--color-text-inverse);
+      border-color: var(--color-epoch-accent);
+      background: var(--color-epoch-accent);
     }
 
     .footer__btn--lock:hover:not(:disabled) {
       transform: translate(-2px, -2px);
-      box-shadow: 4px 4px 0 var(--color-gray-700),
-        0 0 20px color-mix(in srgb, var(--color-epoch-accent, #f59e0b) 30%, transparent);
+      box-shadow: 4px 4px 0 var(--color-surface-raised),
+        0 0 20px color-mix(in srgb, var(--color-epoch-accent) 30%, transparent);
     }
 
     .footer__btn--lock:active:not(:disabled) {
@@ -563,7 +563,7 @@ export class VelgDraftRosterPanel extends LitElement {
         overflow-x: auto;
         padding-bottom: var(--space-2);
         scrollbar-width: thin;
-        scrollbar-color: var(--color-gray-700) transparent;
+        scrollbar-color: var(--color-border) transparent;
       }
 
       .hand__card-wrapper {

@@ -259,7 +259,7 @@ export class VelgEventDetailsPanel extends LitElement {
     .chorus__segment--anger { background: var(--color-danger); }
     .chorus__segment--panic { background: var(--color-danger); }
     .chorus__segment--despair { background: var(--color-danger); opacity: 0.7; }
-    .chorus__segment--defiance { background: var(--color-epoch-influence, #a78bfa); }
+    .chorus__segment--defiance { background: var(--color-epoch-influence); }
     .chorus__segment--hope { background: var(--color-success); }
     .chorus__segment--resolve { background: var(--color-success); opacity: 0.7; }
     .chorus__segment--indifference { background: var(--color-text-muted); }

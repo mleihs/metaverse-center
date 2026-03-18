@@ -17,8 +17,8 @@ export class VelgCookieConsent extends LitElement {
       left: 0;
       right: 0;
       z-index: var(--z-overlay);
-      background: var(--color-gray-900);
-      border-top: 2px solid var(--color-gray-700);
+      background: var(--color-surface);
+      border-top: 2px solid var(--color-border);
       padding: var(--space-4) var(--space-6);
       display: flex;
       align-items: center;
@@ -30,7 +30,7 @@ export class VelgCookieConsent extends LitElement {
     .banner__text {
       font-family: var(--font-sans);
       font-size: var(--text-sm);
-      color: rgba(255, 255, 255, 0.8);
+      color: var(--color-text-secondary);
     }
 
     .banner__actions {
@@ -64,22 +64,22 @@ export class VelgCookieConsent extends LitElement {
 
     .btn--decline {
       background: transparent;
-      color: rgba(255, 255, 255, 0.6);
+      color: var(--color-text-muted);
     }
 
     .btn--decline:hover {
-      color: #fff;
+      color: var(--color-text-primary);
     }
 
     .banner__link {
-      color: rgba(255, 255, 255, 0.6);
+      color: var(--color-text-muted);
       text-decoration: underline;
       font-size: var(--text-xs);
       transition: color var(--transition-fast);
     }
 
     .banner__link:hover {
-      color: #fff;
+      color: var(--color-text-primary);
     }
   `;
 

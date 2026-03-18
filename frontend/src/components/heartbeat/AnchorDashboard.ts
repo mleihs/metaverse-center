@@ -83,12 +83,12 @@ export class VelgAnchorDashboard extends LitElement {
     @keyframes reinforcing-glow {
       0%,
       100% {
-        box-shadow: 0 0 6px rgba(var(--color-info-rgb, 56 189 248) / 0.25),
-          inset 0 0 4px rgba(var(--color-info-rgb, 56 189 248) / 0.06);
+        box-shadow: 0 0 6px color-mix(in srgb, var(--color-info) 25%, transparent),
+          inset 0 0 4px color-mix(in srgb, var(--color-info) 6%, transparent);
       }
       50% {
-        box-shadow: 0 0 14px rgba(var(--color-info-rgb, 56 189 248) / 0.45),
-          inset 0 0 8px rgba(var(--color-info-rgb, 56 189 248) / 0.12);
+        box-shadow: 0 0 14px color-mix(in srgb, var(--color-info) 45%, transparent),
+          inset 0 0 8px color-mix(in srgb, var(--color-info) 12%, transparent);
       }
     }
 
@@ -244,13 +244,13 @@ export class VelgAnchorDashboard extends LitElement {
       background: radial-gradient(
         circle,
         transparent 30%,
-        rgba(var(--color-info-rgb, 56 189 248) / 0.02) 32%,
+        color-mix(in srgb, var(--color-info) 2%, transparent) 32%,
         transparent 34%,
         transparent 48%,
-        rgba(var(--color-info-rgb, 56 189 248) / 0.015) 50%,
+        color-mix(in srgb, var(--color-info) 1.5%, transparent) 50%,
         transparent 52%,
         transparent 66%,
-        rgba(var(--color-info-rgb, 56 189 248) / 0.01) 68%,
+        color-mix(in srgb, var(--color-info) 1%, transparent) 68%,
         transparent 70%
       );
       pointer-events: none;
@@ -273,7 +273,7 @@ export class VelgAnchorDashboard extends LitElement {
       border-radius: 50%;
       background: radial-gradient(
         circle,
-        rgba(var(--color-info-rgb, 56 189 248) / 0.12),
+        color-mix(in srgb, var(--color-info) 12%, transparent),
         transparent 70%
       );
       animation: ping-ripple 0.8s ease-out forwards;
@@ -306,8 +306,8 @@ export class VelgAnchorDashboard extends LitElement {
 
     .anchor-card--active {
       border-color: var(--color-success);
-      box-shadow: 0 0 8px rgba(var(--color-success-rgb, 16 185 129) / 0.2),
-        inset 0 0 4px rgba(var(--color-success-rgb, 16 185 129) / 0.04);
+      box-shadow: 0 0 8px color-mix(in srgb, var(--color-success) 20%, transparent),
+        inset 0 0 4px color-mix(in srgb, var(--color-success) 4%, transparent);
     }
 
     .anchor-card--reinforcing {
@@ -316,7 +316,7 @@ export class VelgAnchorDashboard extends LitElement {
     }
 
     .anchor-card--dissolved {
-      border-color: var(--color-gray-600, #666);
+      border-color: var(--color-border);
       opacity: 0.85;
     }
 
@@ -353,24 +353,24 @@ export class VelgAnchorDashboard extends LitElement {
 
     .status-badge--forming {
       color: var(--color-warning);
-      border-color: rgba(245 158 11 / 0.4);
+      border-color: color-mix(in srgb, var(--color-warning) 40%, transparent);
       animation: status-pulse 1.5s ease-in-out infinite;
     }
 
     .status-badge--active {
       color: var(--color-success);
-      border-color: rgba(16 185 129 / 0.4);
+      border-color: color-mix(in srgb, var(--color-success) 40%, transparent);
     }
 
     .status-badge--reinforcing {
       color: var(--color-info);
-      border-color: rgba(56 189 248 / 0.4);
-      text-shadow: 0 0 4px rgba(56 189 248 / 0.5);
+      border-color: color-mix(in srgb, var(--color-info) 40%, transparent);
+      text-shadow: 0 0 4px color-mix(in srgb, var(--color-info) 50%, transparent);
     }
 
     .status-badge--dissolved {
       color: var(--color-text-secondary);
-      border-color: var(--color-gray-600, #666);
+      border-color: var(--color-border);
     }
 
     /* ── Resonance signature row ───────────────────────────── */
@@ -409,7 +409,7 @@ export class VelgAnchorDashboard extends LitElement {
 
     .strength-gauge__bg {
       fill: none;
-      stroke: var(--color-gray-800);
+      stroke: var(--color-surface);
       stroke-width: 4;
     }
 
@@ -444,7 +444,7 @@ export class VelgAnchorDashboard extends LitElement {
 
     .radar-contacts__ring {
       fill: none;
-      stroke: var(--color-gray-700);
+      stroke: var(--color-border);
       stroke-width: 1;
     }
 
@@ -466,8 +466,8 @@ export class VelgAnchorDashboard extends LitElement {
       align-items: center;
       gap: var(--space-1);
       padding: var(--space-1) var(--space-2);
-      background: rgba(var(--color-success-rgb, 16 185 129) / 0.08);
-      border: 1px solid rgba(var(--color-success-rgb, 16 185 129) / 0.2);
+      background: color-mix(in srgb, var(--color-success) 8%, transparent);
+      border: 1px solid color-mix(in srgb, var(--color-success) 20%, transparent);
     }
 
     .protection-badge__icon {
@@ -526,27 +526,27 @@ export class VelgAnchorDashboard extends LitElement {
       min-height: 44px;
       min-width: 44px;
       border-radius: 6px;
-      background: var(--color-gray-800);
-      border: 2px solid var(--color-gray-600, #666);
+      background: var(--color-surface);
+      border: 2px solid var(--color-border);
       color: var(--color-text-secondary);
       cursor: pointer;
       position: relative;
       transition: all var(--transition-fast);
       /* "Press" depth */
-      box-shadow: 0 3px 0 var(--color-gray-900, #111),
-        inset 0 1px 0 rgba(255 255 255 / 0.04);
+      box-shadow: 0 3px 0 var(--color-surface-sunken),
+        inset 0 1px 0 color-mix(in srgb, var(--color-text-primary) 4%, transparent);
     }
 
     .radio-btn:hover {
       color: var(--color-info);
       border-color: var(--color-info);
-      background: rgba(var(--color-info-rgb, 56 189 248) / 0.08);
+      background: color-mix(in srgb, var(--color-info) 8%, transparent);
     }
 
     .radio-btn:active {
       transform: translateY(2px);
-      box-shadow: 0 1px 0 var(--color-gray-900, #111),
-        inset 0 1px 0 rgba(255 255 255 / 0.04);
+      box-shadow: 0 1px 0 var(--color-surface-sunken),
+        inset 0 1px 0 color-mix(in srgb, var(--color-text-primary) 4%, transparent);
     }
 
     .radio-btn:focus-visible {
@@ -557,7 +557,7 @@ export class VelgAnchorDashboard extends LitElement {
     .radio-btn--danger:hover {
       color: var(--color-danger);
       border-color: var(--color-danger);
-      background: rgba(var(--color-danger-rgb, 239 68 68) / 0.08);
+      background: color-mix(in srgb, var(--color-danger) 8%, transparent);
     }
   `];
 

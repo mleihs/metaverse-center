@@ -19,13 +19,13 @@ const INSTANCE_RADIUS = 36;
 const LABEL_OFFSET = NODE_RADIUS + 18;
 const INSTANCE_LABEL_OFFSET = INSTANCE_RADIUS + 14;
 
-/** Epoch phase → glow color for game instance nodes */
+/** Epoch phase → glow color for game instance nodes (semantic tokens for SVG inline styles) */
 const PHASE_COLORS: Record<string, string> = {
-  lobby: '#6b7280', // gray — waiting
-  foundation: '#3b82f6', // blue — deploying guardians
-  competition: '#ef4444', // red — active combat
-  reckoning: '#f59e0b', // amber — final push
-  completed: '#22c55e', // green — fading out
+  lobby: 'var(--color-text-muted)', // gray — waiting
+  foundation: 'var(--color-info)', // blue — deploying guardians
+  competition: 'var(--color-danger)', // red — active combat
+  reckoning: 'var(--color-primary)', // amber — final push
+  completed: 'var(--color-success)', // green — fading out
 };
 
 @localized()
@@ -65,7 +65,7 @@ export class VelgMapGraph extends LitElement {
 
     /* Starfield */
     .star {
-      fill: #ffffff;
+      fill: var(--color-text-primary);
     }
 
     .star--twinkle {
@@ -79,7 +79,7 @@ export class VelgMapGraph extends LitElement {
 
     /* Energy pulses on edges */
     .energy-pulse {
-      fill: var(--pulse-color, #fff);
+      fill: var(--pulse-color, var(--color-text-primary));
       opacity: 0.9;
     }
 
@@ -118,7 +118,7 @@ export class VelgMapGraph extends LitElement {
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      fill: var(--color-text-primary, #f0f0f0);
+      fill: var(--color-text-primary);
       text-anchor: middle;
       pointer-events: none;
     }
@@ -126,7 +126,7 @@ export class VelgMapGraph extends LitElement {
     .node-stat {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      fill: var(--color-text-muted, #777);
+      fill: var(--color-text-muted);
       text-anchor: middle;
       pointer-events: none;
     }
@@ -215,7 +215,7 @@ export class VelgMapGraph extends LitElement {
       font-size: 12px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      fill: var(--color-text-primary, #f0f0f0);
+      fill: var(--color-text-primary);
       text-anchor: middle;
       pointer-events: none;
     }
@@ -243,9 +243,9 @@ export class VelgMapGraph extends LitElement {
       position: absolute;
       top: var(--space-3, 12px);
       right: var(--space-3, 12px);
-      background: var(--color-surface-raised, #161616);
-      border: 1px solid var(--color-border, #2a2a2a);
-      color: var(--color-text-primary, #f0f0f0);
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      color: var(--color-text-primary);
       font-family: var(--font-brutalist, monospace);
       font-size: 10px;
       font-weight: 700;
@@ -261,7 +261,7 @@ export class VelgMapGraph extends LitElement {
     }
 
     .reset-zoom:hover {
-      background: var(--color-surface-hover, #1f1f1f);
+      background: var(--color-surface-hover);
     }
 
     /* A1: Active epoch count badge */
@@ -269,7 +269,7 @@ export class VelgMapGraph extends LitElement {
       font-family: var(--font-brutalist, monospace);
       font-weight: 900;
       font-size: 9px;
-      fill: #ffffff;
+      fill: var(--color-text-inverse);
       text-anchor: middle;
       dominant-baseline: central;
       pointer-events: none;
@@ -1001,7 +1001,7 @@ export class VelgMapGraph extends LitElement {
               />
             `
             : svg`
-              <circle r="${NODE_RADIUS - 3}" fill="var(--color-surface, #0a0a0a)" />
+              <circle r="${NODE_RADIUS - 3}" fill="var(--color-surface)" />
             `
         }
 
@@ -1020,7 +1020,7 @@ export class VelgMapGraph extends LitElement {
         ${
           node.activeInstanceCount && node.activeInstanceCount > 0
             ? svg`
-            <circle cx="${NODE_RADIUS - 8}" cy="${-NODE_RADIUS + 8}" r="10" fill="#ef4444" />
+            <circle cx="${NODE_RADIUS - 8}" cy="${-NODE_RADIUS + 8}" r="10" fill="var(--color-danger)" />
             <text class="instance-count-badge" x="${NODE_RADIUS - 8}" y="${-NODE_RADIUS + 8}">
               ${node.activeInstanceCount}
             </text>
@@ -1072,7 +1072,7 @@ export class VelgMapGraph extends LitElement {
               />
             `
             : svg`
-              <circle r="${r - 2}" fill="var(--color-surface, #0a0a0a)" />
+              <circle r="${r - 2}" fill="var(--color-surface)" />
             `
         }
 
@@ -1119,7 +1119,7 @@ export class VelgMapGraph extends LitElement {
           const startAngle = i * (arcAngle + gapAngle) - 90; // start from top
           const value = Math.max(0, Math.min(100, scores[dim] ?? 0));
           const valueAngle = (value / 100) * arcAngle;
-          const color = SCORE_DIMENSION_COLORS[dim] ?? '#888';
+          const color = SCORE_DIMENSION_COLORS[dim] ?? 'var(--color-text-muted)';
 
           return svg`
             <!-- Background arc -->
@@ -1216,7 +1216,7 @@ export class VelgMapGraph extends LitElement {
 
     return svg`
       ${edge.operativeTypes.map((opType, i) => {
-        const color = OPERATIVE_COLORS[opType] ?? '#888';
+        const color = OPERATIVE_COLORS[opType] ?? 'var(--color-text-muted)';
         const duration = 4 + i * 1.5; // stagger
         return svg`
           <circle class="operative-trail" r="2.5" fill="${color}">

@@ -48,8 +48,6 @@ let preconnectInjected = false;
 const THEME_TOKEN_MAP: Record<string, string> = {
   // Colors
   color_primary: '--color-primary',
-  color_primary_hover: '--color-primary-hover',
-  color_primary_active: '--color-primary-active',
   color_secondary: '--color-info',
   color_accent: '--color-warning',
   color_background: '--color-surface',
@@ -63,11 +61,6 @@ const THEME_TOKEN_MAP: Record<string, string> = {
   color_border_light: '--color-border-light',
   color_danger: '--color-danger',
   color_success: '--color-success',
-  color_primary_bg: '--color-primary-bg',
-  color_info_bg: '--color-info-bg',
-  color_danger_bg: '--color-danger-bg',
-  color_success_bg: '--color-success-bg',
-  color_warning_bg: '--color-warning-bg',
   text_inverse: '--color-text-inverse',
 
   // Typography
@@ -302,9 +295,66 @@ class ThemeService {
       tokensApplied.push('--border-medium');
     }
 
+    // 6. Auto-derive status color variants on the shell element.
+    //    color-mix() expressions resolve using the shell's overridden base values.
+    const STATUS_COLORS = ['primary', 'danger', 'success', 'warning', 'info'] as const;
+    for (const status of STATUS_COLORS) {
+      const pairs: [string, string][] = [
+        [`--color-${status}-glow`, `color-mix(in srgb, var(--color-${status}) 15%, transparent)`],
+        [`--color-${status}-border`, `color-mix(in srgb, var(--color-${status}) 30%, transparent)`],
+        [
+          `--color-${status}-bg`,
+          `color-mix(in srgb, var(--color-${status}) 8%, var(--color-surface))`,
+        ],
+        [
+          `--color-${status}-hover`,
+          `color-mix(in srgb, var(--color-${status}) 80%, var(--color-text-primary))`,
+        ],
+      ];
+      for (const [token, value] of pairs) {
+        hostElement.style.setProperty(token, value);
+        tokensApplied.push(token);
+      }
+    }
+    // primary-active
+    hostElement.style.setProperty(
+      '--color-primary-active',
+      'color-mix(in srgb, var(--color-primary) 70%, var(--color-text-primary))',
+    );
+    tokensApplied.push('--color-primary-active');
+
+    // 7. Auto-derive new granularity tokens
+    const granularityPairs: [string, string][] = [
+      [
+        '--color-text-tertiary',
+        'color-mix(in srgb, var(--color-text-secondary) 60%, var(--color-text-muted))',
+      ],
+      ['--color-icon', 'var(--color-text-muted)'],
+      ['--color-separator', 'color-mix(in srgb, var(--color-border) 50%, transparent)'],
+    ];
+    for (const [token, value] of granularityPairs) {
+      hostElement.style.setProperty(token, value);
+      tokensApplied.push(token);
+    }
+
+    // 8. Auto-derive focus rings so they adapt to themed status colors
+    const ringPairs: [string, string][] = [
+      ['--ring-danger', '0 0 0 3px color-mix(in srgb, var(--color-danger) 40%, transparent)'],
+      ['--ring-success', '0 0 0 3px color-mix(in srgb, var(--color-success) 40%, transparent)'],
+      ['--ring-warning', '0 0 0 3px color-mix(in srgb, var(--color-warning) 40%, transparent)'],
+      [
+        '--ring-focus',
+        '0 0 0 3px color-mix(in srgb, var(--color-border-focus) 40%, transparent)',
+      ],
+    ];
+    for (const [token, value] of ringPairs) {
+      hostElement.style.setProperty(token, value);
+      tokensApplied.push(token);
+    }
+
     this.appliedTokens = tokensApplied;
 
-    // 6. Dynamically load any Google Fonts referenced by the config
+    // 9. Dynamically load any Google Fonts referenced by the config
     const fontKeys = ['font_heading', 'font_body', 'font_mono'] as const;
     for (const key of fontKeys) {
       const family = config[key];

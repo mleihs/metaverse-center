@@ -36,7 +36,7 @@ export class VelgMapLeaderboardPanel extends LitElement {
       font-size: var(--text-lg, 18px);
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--color-text-primary, #f0f0f0);
+      color: var(--color-text-primary);
       margin: 0 0 var(--space-4, 16px);
     }
 
@@ -45,8 +45,8 @@ export class VelgMapLeaderboardPanel extends LitElement {
       flex-direction: column;
       gap: var(--space-2, 8px);
       padding: var(--space-3, 12px);
-      border: 1px solid var(--color-border, #2a2a2a);
-      background: var(--color-surface-raised, #161616);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface-raised);
       margin-bottom: var(--space-3, 12px);
     }
 
@@ -60,14 +60,14 @@ export class VelgMapLeaderboardPanel extends LitElement {
       font-family: var(--font-brutalist, monospace);
       font-weight: 900;
       font-size: var(--text-xl, 20px);
-      color: var(--color-text-muted, #777);
+      color: var(--color-text-muted);
       min-width: 28px;
       text-align: center;
     }
 
-    .entry__rank--1 { color: #f59e0b; }
-    .entry__rank--2 { color: #94a3b8; }
-    .entry__rank--3 { color: #b45309; }
+    .entry__rank--1 { color: var(--color-primary); }
+    .entry__rank--2 { color: #94a3b8; } /* lint-color-ok */
+    .entry__rank--3 { color: #b45309; } /* lint-color-ok */
 
     .entry__name {
       font-family: var(--font-brutalist, monospace);
@@ -75,7 +75,7 @@ export class VelgMapLeaderboardPanel extends LitElement {
       font-size: var(--text-sm, 14px);
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: var(--color-text-primary, #f0f0f0);
+      color: var(--color-text-primary);
       flex: 1;
     }
 
@@ -83,7 +83,7 @@ export class VelgMapLeaderboardPanel extends LitElement {
       font-family: var(--font-mono, monospace);
       font-weight: 700;
       font-size: var(--text-sm, 14px);
-      color: var(--color-text-secondary, #aaa);
+      color: var(--color-text-secondary);
     }
 
     .entry__bars {
@@ -96,7 +96,7 @@ export class VelgMapLeaderboardPanel extends LitElement {
     .bar-label {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      color: var(--color-text-muted, #777);
+      color: var(--color-text-muted);
       text-transform: uppercase;
       letter-spacing: 0.06em;
     }
@@ -114,14 +114,14 @@ export class VelgMapLeaderboardPanel extends LitElement {
     .bar-value {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      color: var(--color-text-secondary, #aaa);
+      color: var(--color-text-secondary);
       text-align: right;
     }
 
     .empty {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm, 14px);
-      color: var(--color-text-muted, #777);
+      color: var(--color-text-muted);
       text-align: center;
       padding: var(--space-8, 32px) 0;
     }

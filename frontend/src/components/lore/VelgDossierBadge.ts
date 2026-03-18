@@ -23,16 +23,16 @@ export class VelgDossierBadge extends LitElement {
       font-weight: 700;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: var(--color-success, #22c55e);
-      border: 1px solid color-mix(in srgb, var(--color-success, #22c55e) 40%, transparent);
-      background: color-mix(in srgb, var(--color-success, #22c55e) 8%, transparent);
+      color: var(--color-success);
+      border: 1px solid color-mix(in srgb, var(--color-success) 40%, transparent);
+      background: color-mix(in srgb, var(--color-success) 8%, transparent);
     }
 
     .badge__dot {
       width: 4px;
       height: 4px;
       border-radius: 50%;
-      background: var(--color-success, #22c55e);
+      background: var(--color-success);
     }
   `;
 

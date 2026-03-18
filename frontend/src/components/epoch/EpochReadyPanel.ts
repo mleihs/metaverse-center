@@ -25,12 +25,12 @@ export class VelgEpochReadyPanel extends LitElement {
       --amber: var(--color-warning);
       --amber-dim: var(--color-warning-hover);
       --amber-glow: color-mix(in srgb, var(--color-warning) 15%, transparent);
-      --panel-bg: var(--color-gray-950);
-      --surface: var(--color-gray-900);
-      --border-dim: var(--color-gray-700);
-      --text-bright: var(--color-gray-100);
-      --text-mid: var(--color-gray-300);
-      --text-dim: var(--color-gray-500);
+      --panel-bg: var(--color-surface-sunken);
+      --surface: var(--color-surface);
+      --border-dim: var(--color-border);
+      --text-bright: var(--color-text-primary);
+      --text-mid: var(--color-text-tertiary);
+      --text-dim: var(--color-text-muted);
       display: block;
       font-family: var(--font-brutalist, 'Courier New', monospace);
     }

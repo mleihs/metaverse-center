@@ -105,7 +105,7 @@ export class VelgSimulationHealthView extends LitElement {
 
       .health-hero__meter-bg {
         fill: none;
-        stroke: var(--color-border, #333);
+        stroke: var(--color-border);
         stroke-width: 8;
       }
 
@@ -246,8 +246,8 @@ export class VelgSimulationHealthView extends LitElement {
       .zone-item__bar {
         flex: 1;
         height: 18px;
-        background: var(--color-background);
-        border: 1px solid var(--color-border, #333);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
         position: relative;
         overflow: hidden;
       }
@@ -417,7 +417,7 @@ export class VelgSimulationHealthView extends LitElement {
         flex-direction: column;
         gap: var(--space-1);
         padding: var(--space-2) var(--space-3);
-        background: var(--color-surface-sunken, var(--color-background));
+        background: var(--color-surface-sunken, var(--color-surface));
         border: var(--border-width-thin) solid var(--color-border);
         cursor: pointer;
         transition: all var(--transition-fast);
@@ -438,7 +438,7 @@ export class VelgSimulationHealthView extends LitElement {
 
       .zone-action-card:hover {
         border-color: var(--color-primary);
-        background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface-sunken, var(--color-background)));
+        background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface-sunken, var(--color-surface)));
       }
 
       .zone-action-card--loading {
@@ -521,7 +521,7 @@ export class VelgSimulationHealthView extends LitElement {
         align-items: center;
         gap: var(--space-3);
         padding: var(--space-2) 0;
-        border-bottom: 1px solid color-mix(in srgb, var(--color-border, #333) 40%, transparent);
+        border-bottom: 1px solid color-mix(in srgb, var(--color-border) 40%, transparent);
       }
 
       .building-item:last-child {
@@ -600,7 +600,7 @@ export class VelgSimulationHealthView extends LitElement {
         align-items: center;
         gap: var(--space-3);
         padding: var(--space-2) 0;
-        border-bottom: 1px solid color-mix(in srgb, var(--color-border, #333) 40%, transparent);
+        border-bottom: 1px solid color-mix(in srgb, var(--color-border) 40%, transparent);
       }
 
       .embassy-item:last-child {
@@ -657,7 +657,7 @@ export class VelgSimulationHealthView extends LitElement {
         align-items: flex-start;
         gap: var(--space-3);
         padding: var(--space-2) 0;
-        border-bottom: 1px solid color-mix(in srgb, var(--color-border, #333) 40%, transparent);
+        border-bottom: 1px solid color-mix(in srgb, var(--color-border) 40%, transparent);
       }
 
       .event-item:last-child {
@@ -733,7 +733,7 @@ export class VelgSimulationHealthView extends LitElement {
 
       .hb-meter__bar {
         height: 6px;
-        background: var(--color-surface-sunken, #111);
+        background: var(--color-surface-sunken);
         border: 1px solid var(--color-border);
         position: relative;
         overflow: hidden;
@@ -798,7 +798,7 @@ export class VelgSimulationHealthView extends LitElement {
         letter-spacing: var(--tracking-wide);
         background: transparent;
         color: var(--color-text-secondary);
-        border: 1px solid var(--color-border, #333);
+        border: 1px solid var(--color-border);
         cursor: pointer;
         transition: all var(--transition-fast);
       }

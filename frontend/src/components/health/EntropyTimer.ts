@@ -20,7 +20,7 @@ export class EntropyTimer extends LitElement {
       position: fixed;
       top: calc(var(--header-height, 56px) + var(--space-3, 12px));
       right: var(--space-4, 16px);
-      z-index: 30;
+      z-index: var(--z-raised);
       display: flex;
       align-items: center;
       gap: var(--space-2, 8px);
@@ -32,7 +32,7 @@ export class EntropyTimer extends LitElement {
       font-size: 12px;
       font-weight: 700;
       letter-spacing: 0.06em;
-      color: var(--color-danger, #ef4444);
+      color: var(--color-danger);
       animation: timer-enter 0.5s var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) both;
     }
 
@@ -56,7 +56,7 @@ export class EntropyTimer extends LitElement {
     }
 
     .timer__digits {
-      text-shadow: 0 0 4px var(--color-danger, #ef4444);
+      text-shadow: 0 0 4px var(--color-danger);
       animation: digit-pulse 6s ease-in-out infinite;
       min-width: 1.6em;
       text-align: center;

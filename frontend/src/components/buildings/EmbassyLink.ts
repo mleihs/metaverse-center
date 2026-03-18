@@ -38,7 +38,7 @@ export class VelgEmbassyLink extends LitElement {
           var(--color-primary)
         )
         border-box;
-      mask:
+      mask: /* lint-color-ok: #fff used as mask fill, not a design color */
         linear-gradient(#fff 0 0) padding-box,
         linear-gradient(#fff 0 0);
       mask-composite: exclude;

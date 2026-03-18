@@ -50,7 +50,7 @@ export class VelgForgeCeremony extends LitElement {
           rgba(245 158 11 / 0.015) 59px,
           rgba(245 158 11 / 0.015) 60px
         ),
-        #000;
+        var(--color-surface-sunken);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -79,7 +79,7 @@ export class VelgForgeCeremony extends LitElement {
     .ceremony__flash {
       position: absolute;
       inset: 0;
-      background: #fff;
+      background: var(--color-text-primary);
       opacity: 0;
       pointer-events: none;
       z-index: 10;
@@ -103,7 +103,7 @@ export class VelgForgeCeremony extends LitElement {
       width: 0;
       height: 100%;
       transform: translateX(-50%);
-      background: #f59e0b;
+      background: var(--color-accent-amber);
       box-shadow:
         0 0 12px rgba(245 158 11 / 0.6),
         0 0 40px rgba(245 158 11 / 0.3);
@@ -187,7 +187,7 @@ export class VelgForgeCeremony extends LitElement {
     .ceremony__phase-text {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-lg, 1.125rem);
-      color: #f59e0b;
+      color: var(--color-accent-amber);
       text-transform: uppercase;
       letter-spacing: 0.08em;
       text-shadow: 0 0 12px rgba(245 158 11 / 0.5);
@@ -199,7 +199,7 @@ export class VelgForgeCeremony extends LitElement {
       display: inline-block;
       width: 2px;
       height: 1.1em;
-      background: #f59e0b;
+      background: var(--color-accent-amber);
       margin-left: 4px;
       vertical-align: text-bottom;
       animation: cursor-blink 0.8s steps(1) infinite;
@@ -232,8 +232,8 @@ export class VelgForgeCeremony extends LitElement {
     }
 
     .ceremony__pip--active {
-      background: #f59e0b;
-      border-color: #f59e0b;
+      background: var(--color-accent-amber);
+      border-color: var(--color-accent-amber);
       box-shadow: 0 0 8px rgba(245 158 11 / 0.6);
     }
 
@@ -258,9 +258,9 @@ export class VelgForgeCeremony extends LitElement {
       left: 0;
       width: 2px;
       height: 100%;
-      background: #f59e0b;
+      background: var(--color-accent-amber);
       box-shadow:
-        0 0 8px #f59e0b,
+        0 0 8px var(--color-accent-amber),
         0 0 30px rgba(245 158 11 / 0.3);
       z-index: 1;
       opacity: 0;
@@ -290,7 +290,7 @@ export class VelgForgeCeremony extends LitElement {
       bottom: -10px;
       width: 4px;
       height: 4px;
-      background: #f59e0b;
+      background: var(--color-accent-amber);
       border-radius: 50%;
       opacity: 0;
       filter: blur(1px);
@@ -431,7 +431,7 @@ export class VelgForgeCeremony extends LitElement {
       font-size: clamp(1.2rem, 4vw, 2.5rem);
       text-transform: uppercase;
       letter-spacing: 0.12em;
-      color: #fff;
+      color: var(--color-text-primary);
       text-align: center;
       opacity: 0;
       transform: scale(1.5);
@@ -570,7 +570,7 @@ export class VelgForgeCeremony extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.15em;
-      color: var(--color-gray-400, #9ca3af);
+      color: var(--color-text-muted);
       opacity: 0;
       transform: translateY(12px);
     }
@@ -594,16 +594,16 @@ export class VelgForgeCeremony extends LitElement {
       font-size: var(--text-2xl, 1.5rem);
     }
 
-    .ceremony__stat-number--agents   { color: var(--color-success, #22c55e); }
-    .ceremony__stat-number--buildings { color: #f59e0b; }
-    .ceremony__stat-number--zones    { color: var(--color-info, #3b82f6); }
+    .ceremony__stat-number--agents   { color: var(--color-success); }
+    .ceremony__stat-number--buildings { color: var(--color-accent-amber); }
+    .ceremony__stat-number--zones    { color: var(--color-info); }
 
     .ceremony__stat-label {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-gray-400, #9ca3af);
+      color: var(--color-text-muted);
     }
 
     /* Zone divider badge */
@@ -834,7 +834,7 @@ export class VelgForgeCeremony extends LitElement {
       font-size: var(--text-xs, 0.75rem);
       text-transform: uppercase;
       letter-spacing: 0.12em;
-      color: #f59e0b;
+      color: var(--color-accent-amber);
       text-shadow: 0 0 8px rgba(245 158 11 / 0.4);
       text-align: center;
     }
@@ -868,13 +868,13 @@ export class VelgForgeCeremony extends LitElement {
     }
 
     .ceremony__lore-dot--done {
-      background: #f59e0b;
-      border-color: #f59e0b;
+      background: var(--color-accent-amber);
+      border-color: var(--color-accent-amber);
     }
 
     .ceremony__lore-dot--active {
       background: rgba(245 158 11 / 0.5);
-      border-color: #f59e0b;
+      border-color: var(--color-accent-amber);
       box-shadow: 0 0 6px rgba(245 158 11 / 0.6);
       animation: lore-dot-pulse 1.2s ease-in-out infinite;
     }
@@ -924,7 +924,7 @@ export class VelgForgeCeremony extends LitElement {
       font-family: var(--font-brutalist, 'Courier New', monospace);
       font-weight: 900;
       font-size: var(--text-sm, 0.875rem);
-      color: #f59e0b;
+      color: var(--color-accent-amber);
       min-width: 3ch;
       text-align: right;
     }
@@ -940,7 +940,7 @@ export class VelgForgeCeremony extends LitElement {
 
     .ceremony__progress-fill {
       height: 100%;
-      background: linear-gradient(90deg, #b45309, #f59e0b, #fbbf24);
+      background: linear-gradient(90deg, var(--color-accent-amber-dim), var(--color-accent-amber), var(--color-accent-amber-hover));
       box-shadow: 0 0 8px rgba(245 158 11 / 0.6);
       transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
       position: relative;
@@ -1104,9 +1104,9 @@ export class VelgForgeCeremony extends LitElement {
       font-size: var(--text-lg, 1.125rem);
       text-transform: uppercase;
       letter-spacing: 0.15em;
-      color: #000;
-      background: #f59e0b;
-      border: 2px solid #f59e0b;
+      color: var(--color-surface-sunken);
+      background: var(--color-accent-amber);
+      border: 2px solid var(--color-accent-amber);
       cursor: pointer;
       transition: all 0.2s ease-out;
       overflow: hidden;
@@ -1161,8 +1161,8 @@ export class VelgForgeCeremony extends LitElement {
     }
 
     .ceremony__enter-btn:hover {
-      background: #fbbf24;
-      border-color: #fbbf24;
+      background: var(--color-accent-amber-hover);
+      border-color: var(--color-accent-amber-hover);
       transform: translateY(-2px);
       box-shadow:
         0 0 40px rgba(245 158 11 / 0.6),

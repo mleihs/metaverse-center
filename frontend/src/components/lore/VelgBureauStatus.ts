@@ -168,7 +168,7 @@ export class VelgBureauStatus extends LitElement {
     }
 
     .bureau__meta-value--active {
-      color: var(--color-success, #22c55e);
+      color: var(--color-success);
     }
 
     /* ── Arcanum Slots ── */
@@ -211,7 +211,7 @@ export class VelgBureauStatus extends LitElement {
     }
 
     .arcanum-slot__indicator--evolved {
-      background: var(--color-success, #22c55e);
+      background: var(--color-success);
     }
 
     .arcanum-slot__body {
@@ -375,7 +375,7 @@ export class VelgBureauStatus extends LitElement {
     }
 
     .evo-form__budget-value--bypass {
-      color: var(--color-success, #22c55e);
+      color: var(--color-success);
     }
 
     .evo-form__submit {
@@ -389,7 +389,7 @@ export class VelgBureauStatus extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: #030712;
+      color: var(--color-text-inverse);
       background: var(--color-accent-amber);
       border: 1px solid var(--color-accent-amber);
       cursor: pointer;

@@ -23,8 +23,8 @@ export class VelgForgeWizard extends LitElement {
       :host {
         display: block;
         min-height: 100vh;
-        background: var(--color-gray-950, #030712);
-        color: var(--color-gray-100, #f3f4f6);
+        background: var(--color-surface-sunken);
+        color: var(--color-text-primary);
         position: relative;
         overflow: hidden;
       }
@@ -42,7 +42,7 @@ export class VelgForgeWizard extends LitElement {
           rgba(255 255 255 / 0.012) 4px
         );
         pointer-events: none;
-        z-index: 1000;
+        z-index: var(--z-top);
       }
 
       @media (prefers-reduced-motion: reduce) {
@@ -64,8 +64,8 @@ export class VelgForgeWizard extends LitElement {
         position: relative;
         padding: var(--space-8) var(--space-6);
         margin-bottom: var(--space-8);
-        border-bottom: 2px solid var(--color-gray-700, #374151);
-        background: var(--color-gray-900, #111827);
+        border-bottom: 2px solid var(--color-border);
+        background: var(--color-surface);
         overflow: hidden;
       }
 
@@ -90,8 +90,8 @@ export class VelgForgeWizard extends LitElement {
         font-size: 10px;
         text-transform: uppercase;
         letter-spacing: 0.15em;
-        color: var(--color-danger, #ef4444);
-        border: 1px solid var(--color-danger, #ef4444);
+        color: var(--color-danger);
+        border: 1px solid var(--color-danger);
         margin-bottom: var(--space-4);
         position: relative;
       }
@@ -102,7 +102,7 @@ export class VelgForgeWizard extends LitElement {
         font-size: var(--text-3xl, 1.875rem);
         text-transform: uppercase;
         letter-spacing: var(--tracking-brutalist, 0.08em);
-        color: var(--color-gray-100, #f3f4f6);
+        color: var(--color-text-primary);
         margin: 0 0 var(--space-2);
         position: relative;
       }
@@ -110,7 +110,7 @@ export class VelgForgeWizard extends LitElement {
       .forge-hero__subtitle {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-sm);
-        color: var(--color-gray-400, #9ca3af);
+        color: var(--color-text-muted);
         margin: 0;
         position: relative;
       }
@@ -123,11 +123,11 @@ export class VelgForgeWizard extends LitElement {
         font-size: 10px;
         text-transform: uppercase;
         letter-spacing: 0.1em;
-        color: var(--color-gray-400, #9ca3af);
+        color: var(--color-text-muted);
       }
 
       .forge-hero__save-status--saving {
-        color: var(--color-success, #22c55e);
+        color: var(--color-success);
         animation: blink 1s step-end infinite;
       }
 
@@ -141,7 +141,7 @@ export class VelgForgeWizard extends LitElement {
         display: flex;
         gap: 0;
         margin-bottom: var(--space-10);
-        border: 1px solid var(--color-gray-700, #374151);
+        border: 1px solid var(--color-border);
         overflow: hidden;
       }
 
@@ -153,9 +153,9 @@ export class VelgForgeWizard extends LitElement {
         text-transform: uppercase;
         letter-spacing: 0.1em;
         text-align: center;
-        color: var(--color-gray-400, #9ca3af);
-        background: var(--color-gray-900, #111827);
-        border-right: 1px solid var(--color-gray-700, #374151);
+        color: var(--color-text-muted);
+        background: var(--color-surface);
+        border-right: 1px solid var(--color-border);
         position: relative;
         transition: all 0.3s ease;
         overflow: hidden;
@@ -166,15 +166,15 @@ export class VelgForgeWizard extends LitElement {
       }
 
       .phase--active {
-        color: var(--color-gray-950, #030712);
-        background: var(--color-success, #22c55e);
+        color: var(--color-surface-sunken);
+        background: var(--color-success);
         font-weight: 700;
       }
 
       /* Phase IV (Ignition) uses danger red instead of green */
       .phase--active.phase--ignition {
-        background: var(--color-danger, #ef4444);
-        color: white;
+        background: var(--color-danger);
+        color: var(--color-text-inverse);
       }
 
       .phase--active::after {
@@ -197,7 +197,7 @@ export class VelgForgeWizard extends LitElement {
       }
 
       .phase--done {
-        color: var(--color-success, #22c55e);
+        color: var(--color-success);
         background: rgba(74 222 128 / 0.1);
       }
 

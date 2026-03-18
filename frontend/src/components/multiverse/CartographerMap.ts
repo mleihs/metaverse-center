@@ -30,7 +30,7 @@ export class VelgCartographerMap extends LitElement {
       width: 100%;
       min-height: 100vh;
 
-      /* Dark theme overrides — map is always dark regardless of platform theme */
+      /* Dark theme overrides — map is always dark regardless of platform theme */ // lint-color-ok
       --color-surface: #0a0a0a;
       --color-surface-raised: #161616;
       --color-surface-header: #0d0d0d;
@@ -42,8 +42,6 @@ export class VelgCartographerMap extends LitElement {
       --color-text-inverse: #000000;
       --color-border: #2a2a2a;
       --color-border-light: #333333;
-      --color-text: #f0f0f0;
-      --color-background: #0a0a0a;
 
       background: var(--color-surface);
       color: var(--color-text-primary);
@@ -98,9 +96,9 @@ export class VelgCartographerMap extends LitElement {
     }
 
     .map__search {
-      background: var(--color-surface-sunken, #050505);
-      border: 1px solid var(--color-border, #2a2a2a);
-      color: var(--color-text-primary, #f0f0f0);
+      background: var(--color-surface-sunken);
+      border: 1px solid var(--color-border);
+      color: var(--color-text-primary);
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm, 14px);
       padding: var(--space-2, 8px) var(--space-3, 12px);
@@ -109,11 +107,11 @@ export class VelgCartographerMap extends LitElement {
     }
 
     .map__search::placeholder {
-      color: var(--color-text-muted, #777);
+      color: var(--color-text-muted);
     }
 
     .map__search:focus {
-      border-color: var(--color-text-secondary, #aaa);
+      border-color: var(--color-text-secondary);
     }
 
     .map__graph {
@@ -166,7 +164,7 @@ export class VelgCartographerMap extends LitElement {
 
     .mobile-card__stats {
       font-size: var(--text-xs, 12px);
-      color: var(--color-text-muted, #888);
+      color: var(--color-text-muted);
       margin-top: var(--space-1, 4px);
     }
 
@@ -174,7 +172,7 @@ export class VelgCartographerMap extends LitElement {
       display: flex;
       justify-content: center;
       padding: var(--space-1, 4px) 0;
-      color: var(--color-text-muted, #888);
+      color: var(--color-text-muted);
       font-size: var(--text-xs, 12px);
     }
 
@@ -187,15 +185,15 @@ export class VelgCartographerMap extends LitElement {
 
     .view-toggle {
       display: flex;
-      border: 1px solid var(--color-border, #2a2a2a);
-      background: var(--color-surface-sunken, #050505);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface-sunken);
       overflow: hidden;
     }
 
     .view-toggle__btn {
       background: none;
       border: none;
-      color: var(--color-text-muted, #777);
+      color: var(--color-text-muted);
       font-family: var(--font-brutalist, monospace);
       font-size: 10px;
       font-weight: 700;
@@ -204,7 +202,7 @@ export class VelgCartographerMap extends LitElement {
       padding: 6px 12px;
       cursor: pointer;
       transition: background 0.15s ease, color 0.15s ease;
-      border-right: 1px solid var(--color-border, #2a2a2a);
+      border-right: 1px solid var(--color-border);
     }
 
     .view-toggle__btn:last-child {
@@ -212,13 +210,13 @@ export class VelgCartographerMap extends LitElement {
     }
 
     .view-toggle__btn:hover {
-      color: var(--color-text-secondary, #aaa);
-      background: var(--color-surface-hover, #1f1f1f);
+      color: var(--color-text-secondary);
+      background: var(--color-surface-hover);
     }
 
     .view-toggle__btn--active {
-      color: var(--color-text-primary, #f0f0f0);
-      background: var(--color-surface-raised, #161616);
+      color: var(--color-text-primary);
+      background: var(--color-surface-raised);
     }
 
     @media (max-width: 768px) {

@@ -39,7 +39,7 @@ export class VelgEpochBattleLog extends LitElement {
       grid-template-columns: 32px 1fr auto;
       gap: var(--space-3);
       padding: var(--space-3) var(--space-2);
-      border-bottom: 1px solid var(--color-gray-850, var(--color-gray-800));
+      border-bottom: 1px solid var(--color-border-light);
       opacity: 0;
       transform: translateY(6px);
       animation: entry-slide 0.35s ease-out forwards;
@@ -81,7 +81,7 @@ export class VelgEpochBattleLog extends LitElement {
 
     .entry--operative_deployed::before      { background: var(--color-warning); }
     .entry--mission_success::before         { background: var(--color-success); }
-    .entry--mission_failed::before          { background: var(--color-gray-600); }
+    .entry--mission_failed::before          { background: var(--color-icon); }
     .entry--detected::before                { background: var(--color-danger); }
     .entry--sabotage::before                { background: var(--color-warning); }
     .entry--propaganda::before              { background: var(--color-epoch-influence); }
@@ -89,17 +89,17 @@ export class VelgEpochBattleLog extends LitElement {
     .entry--agent_wounded::before           { background: var(--color-danger); }
     .entry--alliance_formed::before         { background: var(--color-info); }
     .entry--betrayal::before                { background: var(--color-danger-hover); width: 4px; opacity: 1; }
-    .entry--betrayal .entry__narrative       { font-weight: var(--font-bold); color: var(--color-gray-100); }
+    .entry--betrayal .entry__narrative       { font-weight: var(--font-bold); color: var(--color-text-primary); }
     .entry--betrayal .entry__type            { color: var(--color-danger); }
     .entry--phase_change::before            { background: var(--color-warning); }
     .entry--counter_intel::before           { background: var(--color-info); }
     .entry--intel_report::before            { background: var(--color-info); }
-    .entry--alliance_proposal::before        { background: var(--color-epoch-accent, #f59e0b); }
+    .entry--alliance_proposal::before        { background: var(--color-epoch-accent, var(--color-primary)); }
     .entry--alliance_proposal_accepted::before { background: var(--color-success); }
     .entry--alliance_proposal_rejected::before { background: var(--color-danger); }
     .entry--alliance_tension_increase::before { background: var(--color-warning); }
     .entry--alliance_dissolved_tension::before { background: var(--color-danger); width: 4px; opacity: 1; }
-    .entry--alliance_upkeep::before          { background: var(--color-gray-500); }
+    .entry--alliance_upkeep::before          { background: var(--color-text-muted); }
 
     .allied-intel-badge {
       display: inline-block;
@@ -120,10 +120,10 @@ export class VelgEpochBattleLog extends LitElement {
     .entry__intel-fort {
       margin-top: 4px;
       padding: 6px 8px;
-      background: rgba(245, 158, 11, 0.10);
+      background: color-mix(in srgb, var(--color-warning) 10%, transparent);
       border-left: 2px solid var(--color-warning);
       font-size: 0.75rem;
-      color: var(--color-gray-200);
+      color: var(--color-text-secondary);
       font-family: var(--font-mono);
       display: flex;
       flex-direction: column;
@@ -142,10 +142,10 @@ export class VelgEpochBattleLog extends LitElement {
     .entry--intel_report .entry__intel {
       margin-top: 4px;
       padding: 6px 8px;
-      background: rgba(56, 189, 248, 0.10);
+      background: color-mix(in srgb, var(--color-info) 10%, transparent);
       border-left: 2px solid var(--color-info);
       font-size: 0.75rem;
-      color: var(--color-gray-200);
+      color: var(--color-text-secondary);
       font-family: var(--font-mono);
     }
 
@@ -157,9 +157,9 @@ export class VelgEpochBattleLog extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--color-gray-300);
-      border: 1px solid var(--color-gray-700);
-      background: var(--color-gray-800);
+      color: var(--color-text-tertiary);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface-raised);
       flex-shrink: 0;
       transition: transform var(--transition-fast);
     }
@@ -180,7 +180,7 @@ export class VelgEpochBattleLog extends LitElement {
     .entry__narrative {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-      color: var(--color-gray-200);
+      color: var(--color-text-secondary);
       line-height: 1.5;
     }
 
@@ -190,7 +190,7 @@ export class VelgEpochBattleLog extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     /* ── Cycle tag ────────────────────────── */
@@ -198,7 +198,7 @@ export class VelgEpochBattleLog extends LitElement {
     .entry__cycle {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       white-space: nowrap;
       align-self: start;
       padding-top: 2px;
@@ -258,7 +258,7 @@ export class VelgEpochBattleLog extends LitElement {
     .phase-divider__subtitle {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: var(--color-gray-300);
+      color: var(--color-text-tertiary);
       letter-spacing: 0.05em;
     }
 
@@ -268,9 +268,9 @@ export class VelgEpochBattleLog extends LitElement {
       100% { opacity: 1; transform: scaleX(1); }
     }
 
-    .phase-divider--foundation { --_phase-color: var(--color-success); --_phase-glow: rgba(74, 222, 128, 0.12); }
-    .phase-divider--competition { --_phase-color: var(--color-warning); --_phase-glow: rgba(245, 158, 11, 0.12); }
-    .phase-divider--reckoning { --_phase-color: var(--color-danger); --_phase-glow: rgba(239, 68, 68, 0.12); }
+    .phase-divider--foundation { --_phase-color: var(--color-success); --_phase-glow: color-mix(in srgb, var(--color-success) 12%, transparent); }
+    .phase-divider--competition { --_phase-color: var(--color-warning); --_phase-glow: color-mix(in srgb, var(--color-warning) 12%, transparent); }
+    .phase-divider--reckoning { --_phase-color: var(--color-danger); --_phase-glow: color-mix(in srgb, var(--color-danger) 12%, transparent); }
 
     @media (prefers-reduced-motion: reduce) {
       .phase-divider {
@@ -283,7 +283,7 @@ export class VelgEpochBattleLog extends LitElement {
     .empty {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       text-align: center;
       padding: var(--space-4);
     }
@@ -293,7 +293,7 @@ export class VelgEpochBattleLog extends LitElement {
     .entry__target {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       margin-left: 4px;
     }
 

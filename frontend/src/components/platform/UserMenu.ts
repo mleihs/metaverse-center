@@ -23,8 +23,8 @@ export class VelgUserMenu extends LitElement {
       font-size: var(--text-sm);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      border: 1px solid #333;
-      color: #ccc;
+      border: 1px solid var(--color-border);
+      color: var(--color-text-tertiary);
       background: transparent;
       cursor: pointer;
       transition: background var(--transition-fast),
@@ -32,8 +32,8 @@ export class VelgUserMenu extends LitElement {
     }
 
     .user-btn:hover {
-      background: rgba(245, 158, 11, 0.08);
-      border-color: rgba(245, 158, 11, 0.3);
+      background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+      border-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
     }
 
     .dropdown {
@@ -41,8 +41,8 @@ export class VelgUserMenu extends LitElement {
       top: calc(100% + var(--space-1));
       right: 0;
       min-width: 180px;
-      background: var(--color-gray-900, #111827);
-      border: 1px solid var(--color-gray-700, #374151);
+      background: var(--color-surface);
+      border: 1px solid var(--color-surface-raised);
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.8);
       z-index: var(--z-dropdown, 300);
       display: none;
@@ -61,19 +61,19 @@ export class VelgUserMenu extends LitElement {
       text-align: left;
       background: transparent;
       border: none;
-      color: #ccc;
+      color: var(--color-text-tertiary);
       cursor: pointer;
       transition: background var(--transition-fast),
                   color var(--transition-fast);
     }
 
     .dropdown__item:hover {
-      background: rgba(245, 158, 11, 0.08);
-      color: #f59e0b;
+      background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+      color: var(--color-primary);
     }
 
     .dropdown__divider {
-      border-top: 1px solid #222;
+      border-top: 1px solid var(--color-separator);
       margin: var(--space-1) 0;
     }
   `;

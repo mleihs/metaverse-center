@@ -92,6 +92,17 @@ Write operations require:
 - Use design tokens — never hardcode colors or spacing.
 - All icons must come from `utils/icons.ts`.
 
+### Color Tokens (MANDATORY)
+
+Never use raw `#hex` or `rgba()` in component CSS. All colors must reference:
+- Tier 1 semantic tokens: `var(--color-text-primary)`, `var(--color-surface)`, etc.
+- Tier 2 auto-derived tokens: `var(--color-danger-glow)`, `var(--color-success-bg)`, etc.
+- Tier 3 component-local `--_*` variables (defined in `:host` only, using `color-mix()` from Tier 1/2)
+
+Exceptions: `EchartsChart.ts`, `forge-placeholders.ts`, `DailyBriefingModal.ts`, `VelgDarkroomStudio.ts` (documented in `docs/guides/design-tokens.md`).
+
+Run `frontend/scripts/lint-color-tokens.sh` to verify. CI will reject violations.
+
 ---
 
 ## i18n (MANDATORY)

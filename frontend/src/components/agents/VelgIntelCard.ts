@@ -32,8 +32,8 @@ export class VelgIntelCard extends LitElement {
         0deg,
         transparent,
         transparent 2px,
-        rgba(245, 158, 11, 0.015) 2px,
-        rgba(245, 158, 11, 0.015) 4px
+        color-mix(in srgb, var(--color-primary) 1.5%, transparent) 2px,
+        color-mix(in srgb, var(--color-primary) 1.5%, transparent) 4px
       );
       pointer-events: none;
     }
@@ -108,36 +108,36 @@ export class VelgIntelCard extends LitElement {
     }
 
     .intel__risk--low {
-      color: var(--color-success, #22c55e);
-      border-color: color-mix(in srgb, var(--color-success, #22c55e) 40%, transparent);
+      color: var(--color-success);
+      border-color: color-mix(in srgb, var(--color-success) 40%, transparent);
     }
-    .intel__risk--low .risk-dot { background: var(--color-success, #22c55e); }
+    .intel__risk--low .risk-dot { background: var(--color-success); }
 
     .intel__risk--moderate {
-      color: var(--color-warning, #eab308);
-      border-color: color-mix(in srgb, var(--color-warning, #eab308) 40%, transparent);
+      color: var(--color-warning);
+      border-color: color-mix(in srgb, var(--color-warning) 40%, transparent);
     }
-    .intel__risk--moderate .risk-dot { background: var(--color-warning, #eab308); }
+    .intel__risk--moderate .risk-dot { background: var(--color-warning); }
 
     .intel__risk--high {
-      color: var(--color-danger, #ef4444);
-      border-color: color-mix(in srgb, var(--color-danger, #ef4444) 40%, transparent);
+      color: var(--color-danger);
+      border-color: color-mix(in srgb, var(--color-danger) 40%, transparent);
     }
-    .intel__risk--high .risk-dot { background: var(--color-danger, #ef4444); }
+    .intel__risk--high .risk-dot { background: var(--color-danger); }
 
     .intel__risk--critical {
-      color: var(--color-danger, #ef4444);
-      border-color: var(--color-danger, #ef4444);
+      color: var(--color-danger);
+      border-color: var(--color-danger);
       animation: risk-glow 1.5s ease-in-out infinite;
     }
     .intel__risk--critical .risk-dot {
-      background: var(--color-danger, #ef4444);
+      background: var(--color-danger);
       animation: risk-pulse 1s ease-in-out infinite;
     }
 
     @keyframes risk-glow {
       0%, 100% { box-shadow: none; }
-      50% { box-shadow: 0 0 8px rgba(239, 68, 68, 0.3); }
+      50% { box-shadow: 0 0 8px var(--color-danger-border); }
     }
 
     @keyframes risk-pulse {

@@ -39,6 +39,14 @@ export class VelgLandingAgentShowcase extends LitElement {
       display: block;
       position: relative;
       overflow: hidden;
+
+      /* Component-local amber tints for gradient stops */
+      --_primary-1: color-mix(in srgb, var(--color-primary) 1%, transparent);
+      --_primary-2: color-mix(in srgb, var(--color-primary) 2.5%, transparent);
+      --_primary-3: color-mix(in srgb, var(--color-primary) 3.5%, transparent);
+      --_primary-10: color-mix(in srgb, var(--color-primary) 10%, transparent);
+      --_primary-22: color-mix(in srgb, var(--color-primary) 22%, transparent);
+      --_primary-25: color-mix(in srgb, var(--color-primary) 25%, transparent);
     }
 
     /* ── Section: cosmic void + nebula tints ──── */
@@ -49,8 +57,8 @@ export class VelgLandingAgentShowcase extends LitElement {
       background:
         radial-gradient(ellipse at 15% 50%, rgba(139, 92, 246, 0.04) 0%, transparent 50%),
         radial-gradient(ellipse at 85% 30%, rgba(6, 182, 212, 0.035) 0%, transparent 45%),
-        radial-gradient(ellipse at 50% 90%, rgba(245, 158, 11, 0.025) 0%, transparent 40%),
-        radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.01) 0%, transparent 30%),
+        radial-gradient(ellipse at 50% 90%, var(--_primary-2) 0%, transparent 40%),
+        radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-surface-inverse) 1%, transparent) 0%, transparent 30%),
         var(--color-surface);
     }
 
@@ -66,9 +74,9 @@ export class VelgLandingAgentShowcase extends LitElement {
       background: linear-gradient(
         90deg,
         transparent 0%,
-        rgba(245, 158, 11, 0.01) 20%,
-        rgba(245, 158, 11, 0.035) 50%,
-        rgba(245, 158, 11, 0.01) 80%,
+        var(--_primary-1) 20%,
+        var(--_primary-3) 50%,
+        var(--_primary-1) 80%,
         transparent 100%
       );
       animation: scanner-sweep 8s ease-in-out infinite;
@@ -98,9 +106,9 @@ export class VelgLandingAgentShowcase extends LitElement {
       background: linear-gradient(
         90deg,
         transparent 0%,
-        rgba(245, 158, 11, 0.1) 20%,
-        rgba(245, 158, 11, 0.22) 50%,
-        rgba(245, 158, 11, 0.1) 80%,
+        var(--_primary-10) 20%,
+        var(--_primary-22) 50%,
+        var(--_primary-10) 80%,
         transparent 100%
       );
       max-width: 500px;
@@ -120,16 +128,16 @@ export class VelgLandingAgentShowcase extends LitElement {
       font-size: 10px;
       letter-spacing: 5px;
       text-transform: uppercase;
-      color: var(--color-accent-amber, #f59e0b);
+      color: var(--color-accent-amber);
       margin: 0 0 var(--space-4, 16px);
       min-height: 1.4em;
-      text-shadow: 0 0 30px rgba(245, 158, 11, 0.25);
+      text-shadow: 0 0 30px var(--_primary-25);
     }
 
     .showcase__subtitle {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: clamp(0.75rem, 1.2vw, 0.875rem);
-      color: var(--color-text-muted, #666);
+      color: var(--color-text-muted);
       letter-spacing: 0.5px;
       margin: 0;
       line-height: 1.6;
@@ -165,7 +173,7 @@ export class VelgLandingAgentShowcase extends LitElement {
     }
 
     .showcase__card:focus-within {
-      outline: 2px solid var(--color-accent-amber, #f59e0b);
+      outline: 2px solid var(--color-accent-amber);
       outline-offset: 8px;
       border-radius: 4px;
     }
@@ -205,7 +213,7 @@ export class VelgLandingAgentShowcase extends LitElement {
       font-size: 10px;
       letter-spacing: 1px;
       text-transform: uppercase;
-      color: var(--color-text-muted, #666);
+      color: var(--color-text-muted);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -236,7 +244,7 @@ export class VelgLandingAgentShowcase extends LitElement {
       display: inline-block;
       width: 2px;
       height: 1.15em;
-      background: var(--color-accent-amber, #f59e0b);
+      background: var(--color-accent-amber);
       margin-left: 2px;
       vertical-align: text-bottom;
       animation: cursor-blink 800ms step-end infinite;
@@ -262,7 +270,7 @@ export class VelgLandingAgentShowcase extends LitElement {
       font-size: 11px;
       letter-spacing: 3px;
       text-transform: uppercase;
-      color: var(--color-accent-amber, #f59e0b);
+      color: var(--color-accent-amber);
       text-decoration: none;
       cursor: pointer;
       transition: color 200ms;
@@ -273,7 +281,7 @@ export class VelgLandingAgentShowcase extends LitElement {
     }
 
     .showcase__cta:focus-visible {
-      outline: 2px solid var(--color-accent-amber, #f59e0b);
+      outline: 2px solid var(--color-accent-amber);
       outline-offset: 4px;
     }
 
@@ -294,7 +302,7 @@ export class VelgLandingAgentShowcase extends LitElement {
       left: 0;
       width: 0;
       height: 1px;
-      background: var(--color-accent-amber, #f59e0b);
+      background: var(--color-accent-amber);
       transition: width 300ms cubic-bezier(0.22, 1, 0.36, 1);
     }
 

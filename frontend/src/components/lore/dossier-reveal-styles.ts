@@ -37,8 +37,8 @@ export const dossierRevealStyles = css`
       0deg,
       transparent,
       transparent 2px,
-      rgba(245, 158, 11, 0.015) 2px,
-      rgba(245, 158, 11, 0.015) 4px
+      color-mix(in srgb, var(--color-primary) 1.5%, transparent) 2px,
+      color-mix(in srgb, var(--color-primary) 1.5%, transparent) 4px
     );
     pointer-events: none;
     animation: scanline-drift 30s linear infinite;
@@ -87,7 +87,7 @@ export const dossierRevealStyles = css`
   .stamp__flash {
     position: fixed;
     inset: 0;
-    background: white;
+    background: var(--color-surface-inverse);
     opacity: 0;
     pointer-events: none;
     animation: stamp-flash 150ms ease-out forwards;
@@ -208,7 +208,7 @@ export const dossierRevealStyles = css`
     font-size: 9px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--color-danger, #ef4444);
+    color: var(--color-danger);
     transform: rotate(-3deg);
     opacity: 0;
     animation: declassify-stamp 300ms ease-out forwards;
@@ -243,7 +243,7 @@ export const dossierRevealStyles = css`
     font-size: var(--text-sm);
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    color: #030712;
+    color: var(--color-text-inverse);
     background: var(--color-accent-amber);
     border: 2px solid var(--color-accent-amber);
     cursor: pointer;
@@ -253,12 +253,12 @@ export const dossierRevealStyles = css`
   }
 
   @keyframes btn-glow {
-    0%, 100% { box-shadow: 0 0 8px rgba(245, 158, 11, 0.3); }
-    50% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.5); }
+    0%, 100% { box-shadow: 0 0 8px var(--color-primary-border); }
+    50% { box-shadow: 0 0 20px color-mix(in srgb, var(--color-primary) 50%, transparent); }
   }
 
   .action__btn:hover {
-    box-shadow: 0 0 24px rgba(245, 158, 11, 0.6);
+    box-shadow: 0 0 24px color-mix(in srgb, var(--color-primary) 60%, transparent);
     transform: translateY(-1px);
   }
 
@@ -318,7 +318,7 @@ export const dossierRevealStyles = css`
 
     .action__btn {
       animation: none;
-      box-shadow: 0 0 8px rgba(245, 158, 11, 0.3);
+      box-shadow: 0 0 8px var(--color-primary-border);
     }
 
     .reveal__backdrop::after {

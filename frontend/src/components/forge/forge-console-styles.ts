@@ -23,32 +23,32 @@ export const forgeButtonStyles = css`
   }
 
   .btn--next {
-    background: var(--color-gray-800, #1f2937);
-    border-color: var(--color-gray-600, #4b5563);
-    color: var(--color-gray-100, #f3f4f6);
+    background: var(--color-surface);
+    border-color: var(--color-border);
+    color: var(--color-text-primary);
   }
 
   .btn--next:hover:not(:disabled) {
-    background: var(--color-gray-700, #374151);
+    background: var(--color-surface-raised);
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(0 0 0 / 0.3);
   }
 
   .btn--ghost {
     background: transparent;
-    border-color: var(--color-gray-700, #374151);
-    color: var(--color-gray-400, #9ca3af);
+    border-color: var(--color-border);
+    color: var(--color-text-muted);
   }
 
   .btn--ghost:hover {
-    border-color: var(--color-gray-500, #6b7280);
-    color: var(--color-gray-200, #e5e7eb);
+    border-color: var(--color-icon);
+    color: var(--color-text-secondary);
   }
 
   .btn--launch {
-    background: var(--color-success, #22c55e);
-    border-color: var(--color-success, #22c55e);
-    color: var(--color-gray-950, #030712);
+    background: var(--color-success);
+    border-color: var(--color-success);
+    color: var(--color-surface-sunken);
     font-weight: 900;
     letter-spacing: 0.15em;
     width: 100%;
@@ -73,9 +73,9 @@ export const forgeButtonStyles = css`
   }
 
   .btn--danger {
-    background: var(--color-danger, #ef4444);
-    border-color: var(--color-danger, #ef4444);
-    color: white;
+    background: var(--color-danger);
+    border-color: var(--color-danger);
+    color: var(--color-text-inverse);
     font-weight: 900;
     letter-spacing: 0.15em;
     position: relative;
@@ -83,7 +83,7 @@ export const forgeButtonStyles = css`
   }
 
   .btn--danger:hover:not(:disabled) {
-    box-shadow: 0 0 20px rgba(239 68 68 / 0.5);
+    box-shadow: 0 0 20px color-mix(in srgb, var(--color-danger) 50%, transparent);
     transform: translateY(-2px);
   }
 
@@ -115,15 +115,15 @@ export const forgeFieldStyles = css`
     font-size: var(--text-xs);
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: var(--color-gray-400, #9ca3af);
+    color: var(--color-text-muted);
   }
 
   .field__input,
   .field__textarea {
     width: 100%;
-    background: var(--color-gray-950, #030712);
-    color: var(--color-gray-100, #f3f4f6);
-    border: 1px solid var(--color-gray-700, #374151);
+    background: var(--color-surface-sunken);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
     padding: var(--space-3);
     font-family: var(--font-mono, monospace);
     font-size: var(--text-sm);
@@ -138,15 +138,15 @@ export const forgeFieldStyles = css`
 
   .field__input:focus,
   .field__textarea:focus {
-    outline: 2px solid var(--color-success, #22c55e);
+    outline: 2px solid var(--color-success);
     outline-offset: 1px;
-    border-color: var(--color-success, #22c55e);
+    border-color: var(--color-success);
     box-shadow: 0 0 0 1px rgba(74 222 128 / 0.3);
   }
 
   .field__input::placeholder,
   .field__textarea::placeholder {
-    color: var(--color-gray-500, #6b7280);
+    color: var(--color-text-muted);
   }
 
   .field__input:disabled,
@@ -190,7 +190,7 @@ export const forgeRangeStyles = css`
     font-size: var(--text-xs);
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: var(--color-gray-400, #9ca3af);
+    color: var(--color-text-muted);
     display: flex;
     align-items: center;
     gap: var(--space-2);
@@ -200,7 +200,7 @@ export const forgeRangeStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-black, 900);
     font-size: var(--text-base);
-    color: var(--color-success, #22c55e);
+    color: var(--color-success);
     min-width: 40px;
     text-align: right;
   }
@@ -210,8 +210,8 @@ export const forgeRangeStyles = css`
     appearance: none;
     width: 100%;
     height: 6px;
-    background: var(--color-gray-800, #1f2937);
-    border: 1px solid var(--color-gray-700, #374151);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
     cursor: pointer;
   }
 
@@ -220,8 +220,8 @@ export const forgeRangeStyles = css`
     appearance: none;
     width: 14px;
     height: 14px;
-    background: var(--color-success, #22c55e);
-    border: 2px solid var(--color-gray-950, #030712);
+    background: var(--color-success);
+    border: 2px solid var(--color-surface-sunken);
     cursor: pointer;
     transition: transform 0.15s;
   }
@@ -233,8 +233,8 @@ export const forgeRangeStyles = css`
   .range-field input[type='range']::-moz-range-thumb {
     width: 14px;
     height: 14px;
-    background: var(--color-success, #22c55e);
-    border: 2px solid var(--color-gray-950, #030712);
+    background: var(--color-success);
+    border: 2px solid var(--color-surface-sunken);
     border-radius: 0;
     cursor: pointer;
   }
@@ -247,7 +247,7 @@ export const forgeRangeStyles = css`
     gap: var(--space-2);
     margin-top: var(--space-3);
     padding-top: var(--space-3);
-    border-top: 1px solid var(--color-gray-800, #1f2937);
+    border-top: 1px solid var(--color-border-light);
     cursor: pointer;
   }
 
@@ -256,7 +256,7 @@ export const forgeRangeStyles = css`
     appearance: none;
     width: 16px;
     height: 16px;
-    border: 2px solid var(--color-gray-600, #4b5563);
+    border: 2px solid var(--color-border);
     background: transparent;
     cursor: pointer;
     flex-shrink: 0;
@@ -264,8 +264,8 @@ export const forgeRangeStyles = css`
   }
 
   .toggle-field input[type='checkbox']:checked {
-    border-color: var(--color-success, #22c55e);
-    background: var(--color-success, #22c55e);
+    border-color: var(--color-success);
+    background: var(--color-success);
   }
 
   .toggle-field input[type='checkbox']:checked::after {
@@ -274,7 +274,7 @@ export const forgeRangeStyles = css`
     top: -2px;
     left: 1px;
     font-size: 12px;
-    color: var(--color-gray-950, #030712);
+    color: var(--color-surface-sunken);
     font-weight: 900;
   }
 
@@ -283,14 +283,14 @@ export const forgeRangeStyles = css`
     font-size: var(--text-xs);
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: var(--color-gray-300, #d1d5db);
+    color: var(--color-text-tertiary);
   }
 
   .toggle-field__hint {
     width: 100%;
     font-family: var(--font-mono, monospace);
     font-size: var(--text-xs);
-    color: var(--color-gray-500, #6b7280);
+    color: var(--color-text-muted);
     line-height: 1.4;
   }
 `;
@@ -303,43 +303,43 @@ export const forgeResearchHintStyles = css`
     font-family: var(--font-mono, monospace);
     font-size: 10px;
     letter-spacing: 0.03em;
-    color: var(--color-gray-500, #6b7280);
+    color: var(--color-text-muted);
     padding: var(--space-2) var(--space-3);
-    border: 1px solid var(--color-gray-800, #1f2937);
-    background: var(--color-gray-950, #030712);
+    border: 1px solid var(--color-border-light);
+    background: var(--color-surface-sunken);
   }
 
   .research-source-hint--tavily {
-    border-color: rgba(74 222 128 / 0.15);
-    color: var(--color-gray-400, #9ca3af);
+    border-color: var(--color-success-glow);
+    color: var(--color-icon);
   }
 
   .research-source-hint__dot {
     width: 6px;
     height: 6px;
     flex-shrink: 0;
-    background: var(--color-gray-600, #4b5563);
+    background: var(--color-border);
   }
 
   .research-source-hint--tavily .research-source-hint__dot {
-    background: var(--color-success, #22c55e);
+    background: var(--color-success);
     box-shadow: 0 0 4px rgba(74 222 128 / 0.4);
   }
 `;
 
 export const forgeStatusStyles = css`
   .error-banner {
-    background: rgba(239 68 68 / 0.1);
-    border: 1px solid var(--color-danger, #ef4444);
+    background: var(--color-danger-glow);
+    border: 1px solid var(--color-danger);
     padding: var(--space-3) var(--space-4);
     font-family: var(--font-mono, monospace);
     font-size: var(--text-sm);
-    color: var(--color-danger, #ef4444);
+    color: var(--color-danger);
   }
 
   .generating-indicator {
     font-family: var(--font-mono, monospace);
-    color: var(--color-success, #22c55e);
+    color: var(--color-success);
     font-size: var(--text-sm);
     display: inline-flex;
     align-items: center;
@@ -352,7 +352,7 @@ export const forgeStatusStyles = css`
     display: inline-block;
     width: 100%;
     height: 2px;
-    background: var(--color-success, #22c55e);
+    background: var(--color-success);
     animation: scan-sweep 1.5s ease-in-out infinite;
     position: absolute;
     left: 0;
@@ -376,7 +376,7 @@ export const forgeSectionStyles = css`
     text-transform: uppercase;
     letter-spacing: var(--tracking-widest);
     margin: var(--space-12) 0 var(--space-6);
-    color: var(--color-gray-200, #e5e7eb);
+    color: var(--color-text-secondary);
     display: flex;
     align-items: center;
     gap: var(--space-4);
@@ -386,7 +386,7 @@ export const forgeSectionStyles = css`
     content: '';
     flex: 1;
     height: 1px;
-    background: var(--color-gray-700, #374151);
+    background: var(--color-border);
   }
 `;
 
@@ -406,8 +406,8 @@ export const forgeInfoBubbleStyles = css`
     font-family: var(--font-mono, monospace);
     font-size: 10px;
     font-weight: 700;
-    color: var(--color-gray-400, #9ca3af);
-    border: 1px solid var(--color-gray-500, #6b7280);
+    color: var(--color-icon);
+    border: 1px solid var(--color-icon);
     background: transparent;
     cursor: help;
     transition: all 0.15s;
@@ -417,8 +417,8 @@ export const forgeInfoBubbleStyles = css`
 
   .info-bubble__trigger:hover,
   .info-bubble__trigger:focus {
-    color: var(--color-success, #22c55e);
-    border-color: var(--color-success, #22c55e);
+    color: var(--color-success);
+    border-color: var(--color-success);
   }
 
   .info-bubble__panel {
@@ -428,10 +428,10 @@ export const forgeInfoBubbleStyles = css`
     left: 50%;
     transform: translateX(-50%);
     width: 280px;
-    background: var(--color-gray-900, #111827);
-    border: 1px solid var(--color-gray-600, #4b5563);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
     padding: var(--space-3);
-    z-index: 100;
+    z-index: var(--z-sticky);
     box-shadow: 0 4px 16px rgba(0 0 0 / 0.5);
   }
 
@@ -444,7 +444,7 @@ export const forgeInfoBubbleStyles = css`
   .info-bubble__text {
     font-family: var(--font-mono, monospace);
     font-size: 11px;
-    color: var(--color-gray-300, #d1d5db);
+    color: var(--color-text-tertiary);
     line-height: 1.5;
     margin: 0 0 var(--space-2);
   }
@@ -452,19 +452,19 @@ export const forgeInfoBubbleStyles = css`
   .info-bubble__example {
     font-family: var(--font-mono, monospace);
     font-size: 11px;
-    color: var(--color-gray-400, #9ca3af);
+    color: var(--color-icon);
     font-style: italic;
     margin: 0;
     padding-top: var(--space-1);
-    border-top: 1px solid var(--color-gray-700, #374151);
+    border-top: 1px solid var(--color-border);
   }
 `;
 
 export const forgeBackButtonStyles = css`
   .btn--back {
     background: transparent;
-    border: 1px solid var(--color-gray-700, #374151);
-    color: var(--color-gray-400, #9ca3af);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-muted);
     padding: var(--space-2) var(--space-4);
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold, 700);
@@ -476,8 +476,8 @@ export const forgeBackButtonStyles = css`
   }
 
   .btn--back:hover {
-    border-color: var(--color-gray-500, #6b7280);
-    color: var(--color-gray-200, #e5e7eb);
+    border-color: var(--color-icon);
+    color: var(--color-text-secondary);
   }
 `;
 
@@ -489,7 +489,7 @@ export const forgeOverlayStyles = css`
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: var(--color-surface, #0a0a0a);
+    background: var(--color-surface);
     overflow-y: auto;
   }
 
@@ -502,8 +502,8 @@ export const forgeOverlayStyles = css`
 
   .forge-overlay__close {
     background: transparent;
-    border: 1px solid var(--color-gray-700, #374151);
-    color: var(--color-gray-400, #9ca3af);
+    border: 1px solid var(--color-border);
+    color: var(--color-icon);
     width: 44px;
     height: 44px;
     display: flex;
@@ -515,12 +515,12 @@ export const forgeOverlayStyles = css`
   }
 
   .forge-overlay__close:hover {
-    color: var(--color-gray-100, #f3f4f6);
-    border-color: var(--color-gray-500, #6b7280);
+    color: var(--color-text-primary);
+    border-color: var(--color-icon);
   }
 
   .forge-overlay__close:focus-visible {
-    outline: 2px solid var(--color-accent-amber, #f59e0b);
+    outline: 2px solid var(--color-accent-amber);
     outline-offset: 2px;
   }
 `;

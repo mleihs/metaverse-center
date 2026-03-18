@@ -65,7 +65,7 @@ export function getPhases(): { name: string; color: string; description: string 
   return [
     {
       name: msg('Lobby'),
-      color: 'var(--color-gray-500)',
+      color: 'var(--color-text-muted)',
       description: msg(
         'Simulations join, players draft their agent roster, and teams form. No operations allowed.',
       ),
@@ -89,7 +89,7 @@ export function getPhases(): { name: string; color: string; description: string 
     },
     {
       name: msg('Completed'),
-      color: 'var(--color-gray-600)',
+      color: 'var(--color-text-muted)',
       description: msg('Titles awarded. Final standings published.'),
     },
   ];
@@ -436,7 +436,7 @@ export function getBleedVectors(): BleedVector[] {
     },
     {
       name: msg('Architecture'),
-      color: 'var(--color-gray-400)',
+      color: 'var(--color-text-muted)',
       tags: ['architecture', 'building', 'construction', 'structure', 'ruin'],
       description: msg('Structural influence. Buildings cast shadows into neighboring realities.'),
     },
@@ -472,7 +472,7 @@ export function getBleedThresholdRules(): { label: string; value: string }[] {
 
 export function getEchoLifecycle(): { name: string; color: string }[] {
   return [
-    { name: msg('Pending'), color: 'var(--color-gray-500)' },
+    { name: msg('Pending'), color: 'var(--color-text-muted)' },
     { name: msg('Generating'), color: 'var(--color-info)' },
     { name: msg('Completed'), color: 'var(--color-success)' },
     { name: msg('Rejected'), color: 'var(--color-warning)' },
@@ -877,7 +877,7 @@ export function getStrategyTiers(): StrategyTier[] {
     },
     {
       tier: 'C',
-      tierColor: 'var(--color-gray-500)',
+      tierColor: 'var(--color-text-muted)',
       strategies: [
         {
           name: msg('Balanced'),

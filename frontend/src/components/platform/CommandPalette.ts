@@ -78,12 +78,12 @@ export class VelgCommandPalette extends SignalWatcher(LitElement) {
       max-height: min(480px, calc(100vh - 200px));
       display: flex;
       flex-direction: column;
-      background: #0d0d0d;
-      border: 1px solid #2a2a2a;
-      border-top: 2px solid #f59e0b;
+      background: var(--color-surface-sunken);
+      border: 1px solid var(--color-border);
+      border-top: 2px solid var(--color-primary);
       box-shadow:
         0 24px 80px rgba(0, 0, 0, 0.8),
-        0 0 1px rgba(245, 158, 11, 0.3);
+        0 0 1px color-mix(in srgb, var(--color-primary) 30%, transparent);
       animation: panel-in 250ms cubic-bezier(0.23, 1, 0.32, 1) both;
     }
 
@@ -94,7 +94,7 @@ export class VelgCommandPalette extends SignalWatcher(LitElement) {
       position: absolute;
       width: 14px;
       height: 14px;
-      border-color: #f59e0b;
+      border-color: var(--color-primary);
       border-style: solid;
       pointer-events: none;
       opacity: 0.35;
@@ -119,14 +119,14 @@ export class VelgCommandPalette extends SignalWatcher(LitElement) {
       display: flex;
       align-items: center;
       padding: var(--space-3, 12px) var(--space-4, 16px);
-      border-bottom: 1px solid #222;
+      border-bottom: 1px solid var(--color-separator);
       gap: var(--space-2, 8px);
     }
 
     .search__prompt {
       font-family: var(--font-mono, monospace);
       font-size: 14px;
-      color: #f59e0b;
+      color: var(--color-primary);
       flex-shrink: 0;
       user-select: none;
     }
@@ -135,21 +135,21 @@ export class VelgCommandPalette extends SignalWatcher(LitElement) {
       flex: 1;
       font-family: var(--font-mono, monospace);
       font-size: 14px;
-      color: #e5e5e5;
+      color: var(--color-text-secondary);
       background: transparent;
       border: none;
       outline: none;
-      caret-color: #f59e0b;
+      caret-color: var(--color-primary);
     }
 
     .search__input::placeholder {
-      color: #444;
+      color: var(--color-text-muted);
     }
 
     .search__shortcut {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: #444;
+      color: var(--color-text-muted);
       flex-shrink: 0;
     }
 
@@ -161,12 +161,12 @@ export class VelgCommandPalette extends SignalWatcher(LitElement) {
       padding: var(--space-2, 8px) 0;
 
       scrollbar-width: thin;
-      scrollbar-color: #333 transparent;
+      scrollbar-color: var(--color-border) transparent;
     }
 
     .results::-webkit-scrollbar { width: 4px; }
     .results::-webkit-scrollbar-track { background: transparent; }
-    .results::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+    .results::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 2px; }
 
     .category-label {
       font-family: var(--font-mono, monospace);
@@ -174,7 +174,7 @@ export class VelgCommandPalette extends SignalWatcher(LitElement) {
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.15em;
-      color: #555;
+      color: var(--color-text-muted);
       padding: var(--space-2, 8px) var(--space-4, 16px) var(--space-1, 4px);
     }
 
@@ -192,30 +192,30 @@ export class VelgCommandPalette extends SignalWatcher(LitElement) {
 
     .item:hover,
     .item--focused {
-      background: rgba(245, 158, 11, 0.08);
+      background: color-mix(in srgb, var(--color-primary) 8%, transparent);
     }
 
     .item--focused {
-      box-shadow: inset 2px 0 0 #f59e0b;
+      box-shadow: inset 2px 0 0 var(--color-primary);
     }
 
     .item__label {
       font-family: var(--font-sans);
       font-size: var(--text-sm, 14px);
-      color: #ccc;
+      color: var(--color-text-tertiary);
     }
 
     .item--focused .item__label {
-      color: #f59e0b;
+      color: var(--color-primary);
     }
 
     .item__hint {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: #444;
+      color: var(--color-text-muted);
       padding: 1px 6px;
-      border: 1px solid #2a2a2a;
-      background: #111;
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
       letter-spacing: 0.05em;
       flex-shrink: 0;
     }
@@ -228,7 +228,7 @@ export class VelgCommandPalette extends SignalWatcher(LitElement) {
     .empty {
       font-family: var(--font-mono, monospace);
       font-size: 12px;
-      color: #444;
+      color: var(--color-text-muted);
       text-align: center;
       padding: var(--space-6, 24px) var(--space-4, 16px);
     }
@@ -240,16 +240,16 @@ export class VelgCommandPalette extends SignalWatcher(LitElement) {
       align-items: center;
       gap: var(--space-4, 16px);
       padding: var(--space-2, 8px) var(--space-4, 16px);
-      border-top: 1px solid #222;
+      border-top: 1px solid var(--color-separator);
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: #444;
+      color: var(--color-text-muted);
     }
 
     .footer kbd {
       padding: 1px 4px;
-      border: 1px solid #333;
-      background: #111;
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
       border-radius: 2px;
       font-family: inherit;
       font-size: inherit;

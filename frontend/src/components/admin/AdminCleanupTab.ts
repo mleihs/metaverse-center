@@ -246,7 +246,7 @@ export class VelgAdminCleanupTab extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
       text-align: right;
-      background: var(--color-background);
+      background: var(--color-surface);
       color: var(--color-text-primary);
       border: 1px solid var(--color-border);
       border-radius: 0;
@@ -326,7 +326,7 @@ export class VelgAdminCleanupTab extends LitElement {
     /* ── Preview readout ─────────────────────────── */
 
     .preview {
-      background: var(--color-background);
+      background: var(--color-surface);
       border: 1px solid var(--color-border);
       padding: var(--space-3);
       margin-bottom: var(--space-3);

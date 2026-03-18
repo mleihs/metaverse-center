@@ -21,8 +21,8 @@ export class VelgCampaignAnalyticsPanel extends LitElement {
   static styles = css`
     :host {
       display: block;
-      background: var(--color-gray-950);
-      color: var(--color-gray-100);
+      background: var(--color-surface-sunken);
+      color: var(--color-text-primary);
       padding: var(--space-5);
     }
 
@@ -39,7 +39,7 @@ export class VelgCampaignAnalyticsPanel extends LitElement {
       align-items: center;
       gap: var(--space-3);
       padding-bottom: var(--space-4);
-      border-bottom: 2px solid var(--color-gray-800);
+      border-bottom: 2px solid var(--color-border-light);
     }
 
     .analytics__header-icon {
@@ -65,8 +65,8 @@ export class VelgCampaignAnalyticsPanel extends LitElement {
     }
 
     .metric-card {
-      background: var(--color-gray-900);
-      border: 1px solid var(--color-gray-800);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-light);
       border-radius: var(--radius-md, 6px);
       padding: var(--space-4) var(--space-5);
       display: flex;
@@ -109,7 +109,7 @@ export class VelgCampaignAnalyticsPanel extends LitElement {
 
     .metric-card__label {
       font-size: var(--text-sm);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
@@ -139,7 +139,7 @@ export class VelgCampaignAnalyticsPanel extends LitElement {
       font-size: var(--text-sm);
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       margin: 0;
     }
 
@@ -159,7 +159,7 @@ export class VelgCampaignAnalyticsPanel extends LitElement {
 
     .bar-row__label {
       font-size: var(--text-sm);
-      color: var(--color-gray-300);
+      color: var(--color-text-tertiary);
       text-transform: capitalize;
       white-space: nowrap;
       overflow: hidden;
@@ -168,7 +168,7 @@ export class VelgCampaignAnalyticsPanel extends LitElement {
 
     .bar-row__track {
       height: 8px;
-      background: var(--color-gray-800);
+      background: var(--color-border-light);
       border-radius: 4px;
       overflow: hidden;
     }
@@ -181,7 +181,7 @@ export class VelgCampaignAnalyticsPanel extends LitElement {
 
     .bar-row__count {
       font-size: var(--text-sm);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       text-align: right;
       font-variant-numeric: tabular-nums;
     }
@@ -200,13 +200,13 @@ export class VelgCampaignAnalyticsPanel extends LitElement {
       font-size: var(--text-sm);
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       margin: 0;
     }
 
     .timeline__chart {
-      background: var(--color-gray-900);
-      border: 1px solid var(--color-gray-800);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-light);
       border-radius: var(--radius-md, 6px);
       padding: var(--space-3);
     }
@@ -218,7 +218,7 @@ export class VelgCampaignAnalyticsPanel extends LitElement {
     }
 
     .timeline__empty {
-      color: var(--color-gray-500);
+      color: var(--color-text-muted);
       font-size: var(--text-sm);
       text-align: center;
       padding: var(--space-4);
@@ -236,7 +236,7 @@ export class VelgCampaignAnalyticsPanel extends LitElement {
       align-items: center;
       gap: var(--space-1);
       font-size: var(--text-xs);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     .legend-swatch {
@@ -248,7 +248,7 @@ export class VelgCampaignAnalyticsPanel extends LitElement {
     /* ── Empty ─────────────────────────── */
 
     .empty-section {
-      color: var(--color-gray-500);
+      color: var(--color-text-muted);
       font-size: var(--text-sm);
       text-align: center;
       padding: var(--space-4);

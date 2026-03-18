@@ -95,7 +95,7 @@ export class ResonanceMonitor extends LitElement {
       gap: var(--space-2);
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     .count-number {

@@ -364,7 +364,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
       padding: var(--space-1-5) var(--space-2);
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-      background: var(--color-background);
+      background: var(--color-surface);
       color: var(--color-text-primary);
       border: 1px solid var(--color-border);
       border-radius: 0;
@@ -498,9 +498,9 @@ export class VelgAdminHeartbeatTab extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
       color: var(--color-text-muted);
-      background: var(--color-gray-800);
+      background: var(--color-border-light);
       padding: 1px 6px;
-      border: 1px solid var(--color-gray-700);
+      border: 1px solid var(--color-border);
     }
 
     .sim-card__stats {
@@ -604,7 +604,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
       padding: var(--space-2) var(--space-3);
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-      background: var(--color-background);
+      background: var(--color-surface);
       color: var(--color-text-primary);
       border: 1px solid var(--color-border);
       border-radius: 0;
@@ -740,7 +740,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
     }
 
     .status-dot--idle {
-      background: var(--color-gray-500);
+      background: var(--color-text-muted);
     }
 
     /* ── Dirty indicator ─────────────────── */

@@ -19,7 +19,7 @@ export const propheticFragmentStyles = css`
     font-family: Georgia, 'Times New Roman', serif;
     font-style: italic;
     font-size: var(--text-sm);
-    color: #3d2b1f;
+    color: var(--color-text-inverse);
     background: linear-gradient(135deg, rgba(245, 230, 204, 0.9), rgba(235, 215, 185, 0.85));
     border: none;
     clip-path: polygon(

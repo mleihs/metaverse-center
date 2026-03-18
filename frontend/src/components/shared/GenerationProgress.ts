@@ -40,7 +40,7 @@ export class VelgGenerationProgress extends LitElement {
       width: 90%;
       max-width: 480px;
       background: var(--color-surface-raised);
-      border: var(--border-width-heavy) solid var(--color-gray-1000);
+      border: var(--border-width-heavy) solid var(--color-primary);
       box-shadow: var(--shadow-xl);
       padding: var(--space-8) var(--space-6);
       display: flex;
@@ -71,7 +71,7 @@ export class VelgGenerationProgress extends LitElement {
       width: 80px;
       height: 80px;
       border: 6px solid var(--color-border-light);
-      border-top-color: var(--color-gray-1000);
+      border-top-color: var(--color-primary);
       border-radius: var(--border-radius-full);
       animation: spin 1s linear infinite;
     }
@@ -107,7 +107,7 @@ export class VelgGenerationProgress extends LitElement {
     .spinner__icon svg {
       width: 28px;
       height: 28px;
-      stroke: var(--color-gray-1000);
+      stroke: var(--color-primary);
       stroke-width: 2.5;
       fill: none;
     }
@@ -221,7 +221,7 @@ export class VelgGenerationProgress extends LitElement {
     .step--active .step__dot {
       width: 12px;
       height: 12px;
-      background: var(--color-gray-1000);
+      background: var(--color-primary);
       animation: pulse 1.5s infinite;
     }
 
@@ -262,7 +262,7 @@ export class VelgGenerationProgress extends LitElement {
 
     .progress-bar__fill {
       height: 100%;
-      background: var(--color-gray-1000);
+      background: var(--color-primary);
       transition: width 0.5s var(--ease-out);
     }
 

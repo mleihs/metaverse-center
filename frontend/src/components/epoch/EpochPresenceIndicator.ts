@@ -36,7 +36,7 @@ export class VelgEpochPresenceIndicator extends LitElement {
     }
 
     .dot--offline {
-      background: var(--color-gray-600);
+      background: var(--color-icon);
       box-shadow: none;
     }
 

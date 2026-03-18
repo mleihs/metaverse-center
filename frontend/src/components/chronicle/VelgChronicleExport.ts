@@ -89,7 +89,7 @@ export class VelgChronicleExport extends LitElement {
 
     @keyframes card-pulse {
       0%, 100% { box-shadow: none; }
-      50% { box-shadow: 0 0 8px rgba(245, 158, 11, 0.2); }
+      50% { box-shadow: 0 0 8px var(--color-warning-glow); }
     }
 
     .card__title {
@@ -120,11 +120,11 @@ export class VelgChronicleExport extends LitElement {
     }
 
     .card__cost--free {
-      color: var(--color-success, #22c55e);
+      color: var(--color-success);
     }
 
     .card__cost--bypass {
-      color: var(--color-success, #22c55e);
+      color: var(--color-success);
     }
 
     .card__btn {
@@ -141,13 +141,13 @@ export class VelgChronicleExport extends LitElement {
     }
 
     .card__btn--authorize {
-      color: #030712;
+      color: var(--color-surface-sunken);
       background: var(--color-accent-amber);
       border: 1px solid var(--color-accent-amber);
     }
 
     .card__btn--authorize:hover:not(:disabled) {
-      box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+      box-shadow: 0 0 10px var(--color-warning-glow);
     }
 
     .card__btn--free {
@@ -162,14 +162,14 @@ export class VelgChronicleExport extends LitElement {
     }
 
     .card__btn--download {
-      color: var(--color-success, #22c55e);
+      color: var(--color-success);
       background: transparent;
-      border: 1px solid var(--color-success, #22c55e);
+      border: 1px solid var(--color-success);
     }
 
     .card__btn--download:hover {
-      background: var(--color-success, #22c55e);
-      color: #030712;
+      background: var(--color-success);
+      color: var(--color-surface-sunken);
     }
 
     .card__btn:disabled {
@@ -257,7 +257,7 @@ export class VelgChronicleExport extends LitElement {
     }
 
     .history__status--completed {
-      color: var(--color-success, #22c55e);
+      color: var(--color-success);
     }
 
     .history__status--processing {
@@ -265,7 +265,7 @@ export class VelgChronicleExport extends LitElement {
     }
 
     .history__status--failed {
-      color: var(--color-danger, #ef4444);
+      color: var(--color-danger);
     }
 
     .history__download {
@@ -276,14 +276,14 @@ export class VelgChronicleExport extends LitElement {
       text-transform: uppercase;
       letter-spacing: 0.08em;
       text-decoration: none;
-      color: var(--color-success, #22c55e);
-      border: 1px solid var(--color-success, #22c55e);
+      color: var(--color-success);
+      border: 1px solid var(--color-success);
       transition: all 0.2s;
     }
 
     .history__download:hover {
-      background: var(--color-success, #22c55e);
-      color: #030712;
+      background: var(--color-success);
+      color: var(--color-surface-sunken);
     }
 
     @media (prefers-reduced-motion: reduce) {

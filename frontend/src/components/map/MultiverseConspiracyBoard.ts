@@ -46,7 +46,7 @@ export class MultiverseConspiracyBoard extends LitElement {
           rgba(139, 90, 43, 0.02) 2px,
           rgba(139, 90, 43, 0.02) 4px
         ),
-        var(--color-surface, #0a0a0a);
+        var(--color-surface);
       overflow: hidden;
     }
 
@@ -73,14 +73,14 @@ export class MultiverseConspiracyBoard extends LitElement {
 
     /* Pushpin at connection midpoints */
     .pushpin {
-      fill: var(--color-text-muted, #888);
+      fill: var(--color-text-muted);
     }
 
     /* Polaroid photo cards */
     .polaroid {
       position: absolute;
       width: 140px;
-      background: #1a1a1a;
+      background: var(--color-surface-raised);
       padding: 6px;
       box-shadow: 2px 3px 12px rgba(0, 0, 0, 0.5);
       cursor: pointer;
@@ -98,7 +98,7 @@ export class MultiverseConspiracyBoard extends LitElement {
       height: 90px;
       background-size: cover;
       background-position: center;
-      background-color: var(--node-color, #333);
+      background-color: var(--node-color, var(--color-border));
     }
 
     .polaroid__label {
@@ -107,7 +107,7 @@ export class MultiverseConspiracyBoard extends LitElement {
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: var(--color-text-secondary, #a0a0a0);
+      color: var(--color-text-secondary);
       padding: 4px 0 2px;
       text-align: center;
       overflow: hidden;
@@ -125,7 +125,7 @@ export class MultiverseConspiracyBoard extends LitElement {
       width: 12px;
       height: 12px;
       border-radius: 50%;
-      background: #666;
+      background: var(--color-text-muted);
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
     }
 
@@ -138,7 +138,7 @@ export class MultiverseConspiracyBoard extends LitElement {
       font-size: var(--text-xl, 20px);
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--color-text-primary, #e5e5e5);
+      color: var(--color-text-primary);
     }
 
     @media (max-width: 768px) {
@@ -183,10 +183,10 @@ export class MultiverseConspiracyBoard extends LitElement {
       targetId: conn.simulation_b_id,
       color:
         conn.connection_type === 'hostile'
-          ? '#ef4444'
+          ? 'var(--color-danger)'
           : conn.connection_type === 'allied'
-            ? '#f59e0b'
-            : '#e5e5e5',
+            ? 'var(--color-primary)'
+            : 'var(--color-text-primary)',
       type: conn.connection_type,
     }));
   }

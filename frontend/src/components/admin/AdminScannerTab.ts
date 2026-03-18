@@ -1026,7 +1026,7 @@ export class VelgAdminScannerTab extends LitElement {
       border-bottom: 2px solid var(--color-border);
       position: sticky;
       top: 0;
-      background: var(--color-background, var(--color-surface));
+      background: var(--color-surface);
       z-index: 1;
     }
 

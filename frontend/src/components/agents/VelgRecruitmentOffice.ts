@@ -68,7 +68,7 @@ export class VelgRecruitmentOffice extends LitElement {
     }
 
     .recruit__cost--bypass {
-      color: var(--color-success, #22c55e);
+      color: var(--color-success);
     }
 
     .recruit__btn {
@@ -81,7 +81,7 @@ export class VelgRecruitmentOffice extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: #030712;
+      color: var(--color-surface-sunken);
       background: var(--color-accent-amber);
       border: 1px solid var(--color-accent-amber);
       cursor: pointer;
@@ -90,7 +90,7 @@ export class VelgRecruitmentOffice extends LitElement {
     }
 
     .recruit__btn:hover:not(:disabled) {
-      box-shadow: 0 0 16px rgba(245, 158, 11, 0.4);
+      box-shadow: 0 0 16px var(--color-warning-glow);
       transform: translateY(-1px);
     }
 
@@ -172,7 +172,7 @@ export class VelgRecruitmentOffice extends LitElement {
     .config__textarea:focus {
       outline: none;
       border-color: var(--color-accent-amber);
-      box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.3);
+      box-shadow: 0 0 0 1px var(--color-warning-glow);
     }
 
     .config__select {
@@ -198,7 +198,7 @@ export class VelgRecruitmentOffice extends LitElement {
     }
 
     .config__cost--bypass {
-      color: var(--color-success, #22c55e);
+      color: var(--color-success);
     }
 
     .config__actions {
@@ -314,7 +314,7 @@ export class VelgRecruitmentOffice extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-success, #22c55e);
+      color: var(--color-success);
     }
 
     /* ── Completion Banner ── */
@@ -322,8 +322,8 @@ export class VelgRecruitmentOffice extends LitElement {
     .completion {
       margin-top: var(--space-5);
       padding: var(--space-4) var(--space-6);
-      border: 1px solid var(--color-success, #22c55e);
-      background: color-mix(in srgb, var(--color-success, #22c55e) 5%, var(--color-surface-sunken));
+      border: 1px solid var(--color-success);
+      background: color-mix(in srgb, var(--color-success) 5%, var(--color-surface-sunken));
       animation: recruit-enter 400ms ease-out forwards;
       opacity: 0;
     }
@@ -334,7 +334,7 @@ export class VelgRecruitmentOffice extends LitElement {
       font-size: var(--text-sm);
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-success, #22c55e);
+      color: var(--color-success);
       margin: 0;
     }
 

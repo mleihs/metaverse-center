@@ -44,7 +44,7 @@ export class VelgWorldsGallery extends LitElement {
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(ellipse at 50% 0%, rgba(245, 158, 11, 0.04) 0%, transparent 60%);
+        radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-primary) 4%, transparent) 0%, transparent 60%);
       pointer-events: none;
     }
 
@@ -54,7 +54,7 @@ export class VelgWorldsGallery extends LitElement {
       font-size: 10px;
       letter-spacing: 5px;
       text-transform: uppercase;
-      color: var(--color-accent-amber, #f59e0b);
+      color: var(--color-accent-amber);
       margin: 0 0 var(--space-4, 16px);
     }
 
@@ -98,19 +98,19 @@ export class VelgWorldsGallery extends LitElement {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 13px;
       color: var(--color-text-primary);
-      background: var(--color-surface-raised, #111);
-      border: 1px solid var(--color-border, #333);
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
       letter-spacing: 0.5px;
       transition: border-color 200ms;
     }
 
     .search-input::placeholder {
-      color: var(--color-text-muted, #666);
+      color: var(--color-text-muted);
     }
 
     .search-input:focus {
       outline: none;
-      border-color: var(--color-accent-amber, #f59e0b);
+      border-color: var(--color-accent-amber);
     }
 
     .results-count {
@@ -136,7 +136,7 @@ export class VelgWorldsGallery extends LitElement {
 
     .world-card {
       position: relative;
-      background: #0d0d0d;
+      background: var(--color-surface-sunken);
       overflow: hidden;
       cursor: pointer;
       text-decoration: none;
@@ -176,7 +176,7 @@ export class VelgWorldsGallery extends LitElement {
       position: relative;
       height: 160px;
       overflow: hidden;
-      background: #0a0a0a;
+      background: var(--color-surface-sunken);
     }
 
     .world-card__banner-img {
@@ -195,7 +195,7 @@ export class VelgWorldsGallery extends LitElement {
     .world-card__banner-overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(to top, #0d0d0d 0%, transparent 60%);
+      background: linear-gradient(to top, var(--color-surface-sunken) 0%, transparent 60%);
     }
 
     .world-card__theme-tag {
@@ -221,7 +221,7 @@ export class VelgWorldsGallery extends LitElement {
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: #22c55e;
+      background: var(--color-success);
       z-index: 2;
     }
 
@@ -230,7 +230,7 @@ export class VelgWorldsGallery extends LitElement {
       position: absolute;
       inset: -3px;
       border-radius: 50%;
-      border: 1px solid rgba(34, 197, 94, 0.4);
+      border: 1px solid var(--color-success-glow);
       animation: signal-ping 2s ease-out infinite;
     }
 
@@ -272,7 +272,7 @@ export class VelgWorldsGallery extends LitElement {
       display: flex;
       gap: 16px;
       padding-top: 12px;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      border-top: 1px solid var(--color-separator);
     }
 
     .world-card__stat {
@@ -280,7 +280,7 @@ export class VelgWorldsGallery extends LitElement {
       font-size: 10px;
       letter-spacing: 1px;
       text-transform: uppercase;
-      color: var(--color-text-muted, #666);
+      color: var(--color-text-muted);
     }
 
     .world-card__stat-value {
@@ -368,14 +368,14 @@ export class VelgWorldsGallery extends LitElement {
       text-transform: uppercase;
       color: var(--color-text-secondary);
       background: transparent;
-      border: 1px solid var(--color-border, #333);
+      border: 1px solid var(--color-border);
       cursor: pointer;
       transition: all 200ms;
     }
 
     .gallery-pagination__btn:hover:not(:disabled) {
-      border-color: var(--color-accent-amber, #f59e0b);
-      color: var(--color-accent-amber, #f59e0b);
+      border-color: var(--color-accent-amber);
+      color: var(--color-accent-amber);
     }
 
     .gallery-pagination__btn:disabled {
@@ -390,7 +390,7 @@ export class VelgWorldsGallery extends LitElement {
       margin: 0 auto var(--space-12, 48px);
       padding: var(--space-8, 32px);
       text-align: center;
-      border: 1px dashed rgba(245, 158, 11, 0.2);
+      border: 1px dashed var(--color-primary-glow);
       position: relative;
     }
 
@@ -413,7 +413,7 @@ export class VelgWorldsGallery extends LitElement {
       text-transform: uppercase;
       letter-spacing: 3px;
       color: var(--color-surface);
-      background: var(--color-accent-amber, #f59e0b);
+      background: var(--color-accent-amber);
       border: none;
       cursor: pointer;
       text-decoration: none;
@@ -422,7 +422,7 @@ export class VelgWorldsGallery extends LitElement {
 
     .gallery-cta__btn:hover {
       transform: translateY(-1px);
-      box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+      box-shadow: 0 0 20px var(--color-primary-glow);
     }
 
     /* ── Responsive ─────────────────────────── */

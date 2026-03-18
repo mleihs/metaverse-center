@@ -56,7 +56,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
       left: 0;
       right: 0;
       z-index: 20;
-      background: var(--color-surface, #0a0a0a);
+      background: var(--color-surface);
       transform: translateY(100%);
       animation: panel-enter 500ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) forwards;
     }
@@ -75,7 +75,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
       left: 0;
       right: 0;
       height: 2px;
-      background: var(--panel-accent, var(--color-danger, #ef4444));
+      background: var(--panel-accent, var(--color-danger));
       opacity: 0.6;
     }
 
@@ -128,8 +128,8 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: var(--panel-accent, var(--color-danger, #ef4444));
-      box-shadow: 0 0 6px var(--panel-accent, var(--color-danger, #ef4444));
+      background: var(--panel-accent, var(--color-danger));
+      box-shadow: 0 0 6px var(--panel-accent, var(--color-danger));
       animation: lamp-pulse 3s ease-in-out infinite;
     }
 
@@ -137,11 +137,11 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
       0%,
       100% {
         opacity: 1;
-        box-shadow: 0 0 6px var(--panel-accent, var(--color-danger, #ef4444));
+        box-shadow: 0 0 6px var(--panel-accent, var(--color-danger));
       }
       50% {
         opacity: 0.3;
-        box-shadow: 0 0 2px var(--panel-accent, var(--color-danger, #ef4444));
+        box-shadow: 0 0 2px var(--panel-accent, var(--color-danger));
       }
     }
 
@@ -151,7 +151,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
       font-weight: 900;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--panel-accent, var(--color-danger, #ef4444));
+      color: var(--panel-accent, var(--color-danger));
     }
 
     .panel__dismiss {
@@ -161,15 +161,15 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
       width: 28px;
       height: 28px;
       background: none;
-      border: 1px solid color-mix(in srgb, var(--color-text-muted, #888) 30%, transparent);
-      color: var(--color-text-muted, #888);
+      border: 1px solid color-mix(in srgb, var(--color-text-muted) 30%, transparent);
+      color: var(--color-text-muted);
       cursor: pointer;
       transition: all 0.15s ease;
     }
 
     .panel__dismiss:hover {
-      color: var(--color-text-primary, #e5e5e5);
-      border-color: var(--color-text-primary, #e5e5e5);
+      color: var(--color-text-primary);
+      border-color: var(--color-text-primary);
       background: rgba(255, 255, 255, 0.04);
     }
 
@@ -187,9 +187,9 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
       flex-direction: column;
       gap: var(--space-2, 8px);
       padding: var(--space-3, 12px) var(--space-4, 16px);
-      background: var(--color-surface-raised, #111);
-      border: 1px solid color-mix(in srgb, var(--color-border, #333) 60%, transparent);
-      border-left: 3px solid color-mix(in srgb, var(--action-color) 70%, var(--color-text-muted, #888));
+      background: var(--color-surface-raised);
+      border: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+      border-left: 3px solid color-mix(in srgb, var(--action-color) 70%, var(--color-text-muted));
       border-radius: 4px;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -198,9 +198,9 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
 
     .action:hover,
     .action:focus-visible {
-      border-color: color-mix(in srgb, var(--action-color) 70%, var(--color-text-muted, #888));
+      border-color: color-mix(in srgb, var(--action-color) 70%, var(--color-text-muted));
       border-left-color: var(--action-color);
-      background: color-mix(in srgb, var(--action-color) 4%, var(--color-surface-raised, #111));
+      background: color-mix(in srgb, var(--action-color) 4%, var(--color-surface-raised));
       box-shadow: 0 0 12px color-mix(in srgb, var(--action-color) 8%, transparent);
     }
 
@@ -223,7 +223,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
 
     .action__icon {
       display: flex;
-      color: color-mix(in srgb, var(--action-color) 70%, var(--color-text-muted, #888));
+      color: color-mix(in srgb, var(--action-color) 70%, var(--color-text-muted));
       filter: drop-shadow(0 0 3px color-mix(in srgb, var(--action-color) 15%, transparent));
     }
 
@@ -233,13 +233,13 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
       font-weight: 900;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      color: var(--color-text-primary, #e5e5e5);
+      color: var(--color-text-primary);
     }
 
     .action__desc {
       font-family: var(--font-sans, sans-serif);
       font-size: var(--text-xs, 12px);
-      color: var(--color-text-secondary, #a0a0a0);
+      color: var(--color-text-secondary);
       line-height: 1.5;
     }
 
@@ -247,18 +247,18 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
       font-weight: 700;
-      color: color-mix(in srgb, var(--action-color) 60%, var(--color-text-muted, #888));
+      color: color-mix(in srgb, var(--action-color) 60%, var(--color-text-muted));
       letter-spacing: 0.04em;
       text-transform: uppercase;
       padding-top: var(--space-1, 4px);
-      border-top: 1px solid color-mix(in srgb, var(--color-border, #333) 40%, transparent);
+      border-top: 1px solid color-mix(in srgb, var(--color-border) 40%, transparent);
     }
 
     /* Navigate hint for diagnostic actions */
     .action__nav-hint {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      color: var(--color-text-muted, #888);
+      color: var(--color-text-muted);
       letter-spacing: 0.06em;
       text-transform: uppercase;
       opacity: 0;
@@ -293,7 +293,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
     .panel__error {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs, 12px);
-      color: var(--color-danger, #ef4444);
+      color: var(--color-danger);
       text-align: center;
       padding: var(--space-2, 8px) 0 0;
       animation: error-flash 0.3s ease;
@@ -418,7 +418,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
         type: 'scorched_earth',
         label: msg('Scorched Earth'),
         icon: icons.scorchedEarth(28),
-        color: 'var(--color-danger, #ef4444)',
+        color: 'var(--color-danger)',
         accentRgb: '239, 68, 68',
         description: msg('Permanently destroy a building to stabilize zone'),
         estimate: msg('+0.15 STAB · 1 BLDG'),
@@ -428,7 +428,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
         type: 'emergency_draft',
         label: msg('Emergency Draft'),
         icon: icons.emergencyDraft(28),
-        color: 'var(--color-warning, #f59e0b)',
+        color: 'var(--color-warning)',
         accentRgb: '245, 158, 11',
         description: msg('Draft emergency personnel from reserves'),
         estimate: msg('+1 AGENT · 15 RP'),
@@ -438,7 +438,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
         type: 'reality_anchor',
         label: msg('Reality Anchor'),
         icon: icons.anchor(28),
-        color: 'var(--color-info, #3b82f6)',
+        color: 'var(--color-info)',
         accentRgb: '59, 130, 246',
         description: msg('Temporary stability boost, all zones, 3 cycles'),
         estimate: msg('+0.10 STAB · ALL · 3 CYC'),
@@ -463,7 +463,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
         type: 'staff_buildings',
         label: msg('Staff Buildings'),
         icon: icons.building(28),
-        color: 'var(--color-info, #3b82f6)',
+        color: 'var(--color-info)',
         accentRgb: '59, 130, 246',
         description: msg('Assign agents to understaffed buildings'),
         estimate: `${buildingCount} ${msg('BLDG')} · ${readinessPct}% ${msg('READY')}`,
@@ -474,7 +474,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
         type: 'create_agents',
         label: msg('Create Agents'),
         icon: icons.emergencyDraft(28),
-        color: 'var(--color-success, #22c55e)',
+        color: 'var(--color-success)',
         accentRgb: '34, 197, 94',
         description: msg('Add new agents and assign them to buildings'),
         estimate: `${agentCount} ${msg('AGENTS')}`,
@@ -485,7 +485,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
         type: 'establish_diplomacy',
         label: msg('Establish Diplomacy'),
         icon: icons.handshake(28),
-        color: 'var(--color-epoch-influence, #a78bfa)',
+        color: 'var(--color-epoch-influence)',
         accentRgb: '167, 139, 250',
         description: msg('Open building details to establish embassies'),
         estimate: `${embassyCount} ${msg('EMBASSIES')} · ${reach.toFixed(2)} ${msg('REACH')}`,
@@ -563,7 +563,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
     const actions = isEpoch ? this._epochActions : this._diagnosticActions;
 
     // Panel accent: red for epoch war-room, primary for diagnostic
-    const accentColor = isEpoch ? 'var(--color-danger, #ef4444)' : 'var(--color-primary)';
+    const accentColor = isEpoch ? 'var(--color-danger)' : 'var(--color-primary)';
     const ecgColor = isEpoch ? '%23ef4444' : '%23999999';
 
     const title = isEpoch

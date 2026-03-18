@@ -1203,7 +1203,7 @@ export class VelgHowToPlay extends LitElement {
         <tr>
           <td>${cycle.cycle}</td>
           <td><span class="cycle-phase cycle-phase--${cycle.phase}">${cycle.phase}</span></td>
-          <td colspan="4" style="color: var(--color-gray-500); font-style: italic;">
+          <td colspan="4" style="color: var(--color-text-muted); font-style: italic;">
             ${
               cycle.scoreSnapshot
                 ? html`${msg('Final scores')}: ${Object.entries(cycle.scoreSnapshot)

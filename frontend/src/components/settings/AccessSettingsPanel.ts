@@ -42,12 +42,12 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
         align-items: center;
         gap: var(--space-2);
         padding: var(--space-3);
-        background: var(--color-info-bg, rgba(59, 130, 246, 0.1));
-        border: var(--border-width-default) solid var(--color-info, #3b82f6);
+        background: var(--color-info-bg);
+        border: var(--border-width-default) solid var(--color-info);
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: var(--text-sm);
-        color: var(--color-info, #3b82f6);
+        color: var(--color-info);
         text-transform: uppercase;
         letter-spacing: var(--tracking-wide);
       }
@@ -188,9 +188,9 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
       }
 
       .members__role-badge--admin {
-        background: var(--color-info-bg, rgba(59, 130, 246, 0.1));
-        border-color: var(--color-info, #3b82f6);
-        color: var(--color-info, #3b82f6);
+        background: var(--color-info-bg);
+        border-color: var(--color-info);
+        color: var(--color-info);
       }
 
       .members__role-select {

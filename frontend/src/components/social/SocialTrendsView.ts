@@ -616,7 +616,7 @@ export class VelgSocialTrendsView extends LitElement {
       padding: var(--space-5) var(--space-6);
       background: var(--color-surface-sunken);
       border: var(--border-default);
-      border-top: 3px solid var(--color-secondary, #3b82f6);
+      border-top: 3px solid var(--color-secondary);
       position: relative;
       overflow: hidden;
     }
@@ -630,7 +630,7 @@ export class VelgSocialTrendsView extends LitElement {
       height: 200px;
       background: radial-gradient(
         circle at top right,
-        color-mix(in srgb, var(--color-secondary, #3b82f6) 6%, transparent),
+        color-mix(in srgb, var(--color-secondary) 6%, transparent),
         transparent 70%
       );
       pointer-events: none;
@@ -644,7 +644,7 @@ export class VelgSocialTrendsView extends LitElement {
 
     .embassy-overview__icon {
       display: flex;
-      color: var(--color-secondary, #3b82f6);
+      color: var(--color-secondary);
       opacity: 0.7;
     }
 
@@ -702,7 +702,7 @@ export class VelgSocialTrendsView extends LitElement {
     }
 
     .embassy-intel__value--accent {
-      color: var(--color-secondary, #3b82f6);
+      color: var(--color-secondary);
     }
 
     /* ── Embassy card grid ── */
@@ -727,8 +727,8 @@ export class VelgSocialTrendsView extends LitElement {
     }
 
     .embassy-card:hover {
-      border-color: var(--color-secondary, #3b82f6);
-      box-shadow: 0 0 12px color-mix(in srgb, var(--color-secondary, #3b82f6) 12%, transparent);
+      border-color: var(--color-secondary);
+      box-shadow: 0 0 12px color-mix(in srgb, var(--color-secondary) 12%, transparent);
     }
 
     /* Shimmer border accent */
@@ -811,7 +811,7 @@ export class VelgSocialTrendsView extends LitElement {
     }
 
     .embassy-card:hover .embassy-card__building-name {
-      color: var(--color-secondary, #3b82f6);
+      color: var(--color-secondary);
     }
 
     .embassy-card__building-type {

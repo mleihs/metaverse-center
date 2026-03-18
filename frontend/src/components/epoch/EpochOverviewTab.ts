@@ -46,8 +46,8 @@ export class VelgEpochOverviewTab extends LitElement {
     }
 
     .panel {
-      border: 1px solid var(--color-gray-800);
-      background: var(--color-gray-900);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
       opacity: 0;
       animation: panel-enter 0.4s ease-out forwards;
     }
@@ -73,7 +73,7 @@ export class VelgEpochOverviewTab extends LitElement {
       justify-content: space-between;
       align-items: center;
       padding: var(--space-3) var(--space-4);
-      border-bottom: 1px solid var(--color-gray-800);
+      border-bottom: 1px solid var(--color-border);
     }
 
     .panel__title {
@@ -82,7 +82,7 @@ export class VelgEpochOverviewTab extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-gray-300);
+      color: var(--color-text-tertiary);
       margin: 0;
     }
 
@@ -109,12 +109,12 @@ export class VelgEpochOverviewTab extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-gray-200);
+      color: var(--color-text-secondary);
       background:
         linear-gradient(90deg, rgba(255 255 255 / 0.02) 0%, transparent 60%),
-        var(--color-gray-800);
-      border: 1px solid var(--color-gray-700);
-      border-left: 3px solid var(--_accent, var(--color-gray-600));
+        var(--color-border);
+      border: 1px solid var(--color-border);
+      border-left: 3px solid var(--_accent, var(--color-border));
       cursor: pointer;
       transition:
         transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1),
@@ -150,7 +150,7 @@ export class VelgEpochOverviewTab extends LitElement {
 
     .action-btn:hover {
       transform: translateY(-2px);
-      border-color: color-mix(in srgb, var(--_accent) 50%, var(--color-gray-600));
+      border-color: color-mix(in srgb, var(--_accent) 50%, var(--color-border));
       border-left-color: var(--_accent);
       box-shadow:
         0 4px 12px rgba(0 0 0 / 0.3),
@@ -158,13 +158,13 @@ export class VelgEpochOverviewTab extends LitElement {
         inset 0 1px 0 rgba(255 255 255 / 0.04);
       background:
         linear-gradient(90deg, color-mix(in srgb, var(--_accent) 6%, transparent) 0%, transparent 50%),
-        var(--color-gray-800);
+        var(--color-border);
     }
 
     .action-btn:active {
       transform: translateY(0);
       box-shadow: none;
-      background: var(--color-gray-700);
+      background: var(--color-surface-raised);
       transition-duration: 50ms;
     }
 
@@ -173,16 +173,16 @@ export class VelgEpochOverviewTab extends LitElement {
       outline-offset: 2px;
     }
 
-    .action-btn--deploy  { --_accent: var(--color-epoch-accent, #f59e0b); }
-    .action-btn--sweep   { --_accent: var(--color-info, #38bdf8); }
-    .action-btn--fortify { --_accent: var(--color-warning, #f59e0b); }
+    .action-btn--deploy  { --_accent: var(--color-epoch-accent); }
+    .action-btn--sweep   { --_accent: var(--color-info); }
+    .action-btn--fortify { --_accent: var(--color-warning); }
 
     .action-btn:disabled {
       opacity: 0.5;
-      color: var(--color-gray-500);
+      color: var(--color-text-muted);
       cursor: not-allowed;
       pointer-events: none;
-      border-left-color: var(--color-gray-700);
+      border-left-color: var(--color-surface-raised);
     }
 
     .action-btn__icon {
@@ -192,14 +192,14 @@ export class VelgEpochOverviewTab extends LitElement {
       width: 28px;
       height: 28px;
       color: var(--_accent);
-      border: 1px solid color-mix(in srgb, var(--_accent) 25%, var(--color-gray-700));
-      background: color-mix(in srgb, var(--_accent) 6%, var(--color-gray-900));
+      border: 1px solid color-mix(in srgb, var(--_accent) 25%, var(--color-surface-raised));
+      background: color-mix(in srgb, var(--_accent) 6%, var(--color-surface));
       flex-shrink: 0;
       transition: border-color 150ms ease, box-shadow 200ms ease;
     }
 
     .action-btn:hover .action-btn__icon {
-      border-color: color-mix(in srgb, var(--_accent) 50%, var(--color-gray-600));
+      border-color: color-mix(in srgb, var(--_accent) 50%, var(--color-border));
       box-shadow: 0 0 8px color-mix(in srgb, var(--_accent) 20%, transparent);
     }
 
@@ -219,7 +219,7 @@ export class VelgEpochOverviewTab extends LitElement {
       letter-spacing: 0.06em;
       color: var(--color-success);
       padding: 2px 8px;
-      border: 1px solid color-mix(in srgb, var(--color-success) 30%, var(--color-gray-700));
+      border: 1px solid color-mix(in srgb, var(--color-success) 30%, var(--color-surface-raised));
       background: color-mix(in srgb, var(--color-success) 5%, transparent);
       white-space: nowrap;
       flex-shrink: 0;
@@ -238,7 +238,7 @@ export class VelgEpochOverviewTab extends LitElement {
       align-items: center;
       gap: var(--space-3);
       padding: var(--space-2) 0;
-      border-bottom: 1px solid var(--color-gray-850, var(--color-gray-800));
+      border-bottom: 1px solid var(--color-border);
       transition: all var(--transition-normal);
     }
 
@@ -249,7 +249,7 @@ export class VelgEpochOverviewTab extends LitElement {
 
     .mission:hover .mission__icon {
       transform: scale(1.1) rotate(-3deg);
-      border-color: var(--color-gray-500);
+      border-color: var(--color-text-muted);
     }
 
     .mission:last-child {
@@ -262,9 +262,9 @@ export class VelgEpochOverviewTab extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--color-gray-300);
-      border: 1px solid var(--color-gray-700);
-      background: var(--color-gray-800);
+      color: var(--color-text-tertiary);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface-raised);
       flex-shrink: 0;
       transition: all var(--transition-normal);
     }
@@ -285,7 +285,7 @@ export class VelgEpochOverviewTab extends LitElement {
     .mission__detail {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     .mission__status {
@@ -311,8 +311,8 @@ export class VelgEpochOverviewTab extends LitElement {
     }
 
     .mission__status--failed {
-      border-color: var(--color-gray-500);
-      color: var(--color-gray-400);
+      border-color: var(--color-text-muted);
+      color: var(--color-text-muted);
     }
 
     .mission__status--detected {
@@ -384,7 +384,7 @@ export class VelgEpochOverviewTab extends LitElement {
 
     .fortify-zone-btn__security {
       font-size: 10px;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       text-transform: uppercase;
     }
 
@@ -407,7 +407,7 @@ export class VelgEpochOverviewTab extends LitElement {
 
     .fort-manifest {
       margin-top: var(--space-3);
-      border-top: 1px solid var(--color-gray-800);
+      border-top: 1px solid var(--color-border);
       padding-top: var(--space-3);
     }
 
@@ -456,7 +456,7 @@ export class VelgEpochOverviewTab extends LitElement {
     .fort-manifest__count {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     .fort-entry {
@@ -488,7 +488,7 @@ export class VelgEpochOverviewTab extends LitElement {
     }
 
     .fort-entry--expired {
-      border-left-color: var(--color-gray-700);
+      border-left-color: var(--color-surface-raised);
       background: transparent;
       animation: none;
     }
@@ -504,7 +504,7 @@ export class VelgEpochOverviewTab extends LitElement {
     }
 
     .fort-entry--expired .fort-entry__status {
-      background: var(--color-gray-500);
+      background: var(--color-text-muted);
       box-shadow: none;
       animation: none;
     }
@@ -528,13 +528,13 @@ export class VelgEpochOverviewTab extends LitElement {
     }
 
     .fort-entry--expired .fort-entry__zone {
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     .fort-entry__level {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       text-transform: uppercase;
       flex-shrink: 0;
     }
@@ -542,7 +542,7 @@ export class VelgEpochOverviewTab extends LitElement {
     .fort-entry__expiry {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       flex-shrink: 0;
       white-space: nowrap;
     }
@@ -564,8 +564,8 @@ export class VelgEpochOverviewTab extends LitElement {
     }
 
     .fort-entry__tag--expired {
-      color: var(--color-gray-400);
-      border-color: var(--color-gray-600);
+      color: var(--color-text-muted);
+      border-color: var(--color-border);
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -596,7 +596,7 @@ export class VelgEpochOverviewTab extends LitElement {
     .empty-hint {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       text-align: center;
       padding: var(--space-4);
     }

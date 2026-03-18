@@ -62,9 +62,9 @@ export class VelgForgeTable extends LitElement {
       }
 
       .command-panel {
-        background: var(--color-gray-850, #182030);
-        border: 1px solid var(--color-gray-600, #4b5563);
-        border-left: 3px solid var(--color-gray-500, #6b7280);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-left: 3px solid var(--color-text-muted);
         padding: var(--space-5) var(--space-4);
         display: flex;
         flex-direction: column;
@@ -75,14 +75,14 @@ export class VelgForgeTable extends LitElement {
       }
 
       .command-panel:hover {
-        border-color: var(--color-gray-500, #6b7280);
-        border-left-color: var(--color-gray-400, #9ca3af);
-        background: var(--color-gray-800, #1f2937);
+        border-color: var(--color-text-muted);
+        border-left-color: var(--color-icon);
+        background: var(--color-surface);
       }
 
       /* Active (generating) state */
       .command-panel--active {
-        border-left-color: var(--color-success, #22c55e);
+        border-left-color: var(--color-success);
         animation: panel-pulse 1.5s ease-in-out infinite;
       }
 
@@ -93,8 +93,8 @@ export class VelgForgeTable extends LitElement {
         left: 0;
         width: 2px;
         height: 100%;
-        background: var(--color-success, #22c55e);
-        box-shadow: 0 0 8px var(--color-success, #22c55e), 4px 0 30px rgba(74 222 128 / 0.15);
+        background: var(--color-success);
+        box-shadow: 0 0 8px var(--color-success), 4px 0 30px rgba(74 222 128 / 0.15);
         animation: sonar-sweep 3s ease-in-out infinite;
       }
 
@@ -104,13 +104,13 @@ export class VelgForgeTable extends LitElement {
       }
 
       @keyframes panel-pulse {
-        0%, 100% { border-left-color: var(--color-success, #22c55e); }
+        0%, 100% { border-left-color: var(--color-success); }
         50% { border-left-color: rgba(74 222 128 / 0.4); }
       }
 
       /* Complete state */
       .command-panel--complete {
-        border-left-color: var(--color-success, #22c55e);
+        border-left-color: var(--color-success);
         background: rgba(74 222 128 / 0.07);
       }
 
@@ -125,21 +125,21 @@ export class VelgForgeTable extends LitElement {
         font-size: 10px;
         text-transform: uppercase;
         letter-spacing: 0.12em;
-        color: var(--color-gray-300, #d1d5db);
+        color: var(--color-text-tertiary);
       }
 
       .command-panel--active .command-panel__division {
-        color: var(--color-success, #22c55e);
+        color: var(--color-success);
       }
 
       .command-panel--complete .command-panel__division {
-        color: var(--color-success, #22c55e);
+        color: var(--color-success);
       }
 
       .command-panel__desc {
         font-family: var(--font-mono, monospace);
         font-size: 11px;
-        color: var(--color-gray-300, #d1d5db);
+        color: var(--color-text-tertiary);
         line-height: 1.5;
         margin: 0;
         flex: 1;
@@ -153,17 +153,17 @@ export class VelgForgeTable extends LitElement {
         font-size: var(--text-xs);
         text-transform: uppercase;
         letter-spacing: var(--tracking-wide, 0.05em);
-        color: var(--color-gray-100, #f3f4f6);
-        background: var(--color-gray-800, #1f2937);
-        border: 1px solid var(--color-gray-600, #4b5563);
+        color: var(--color-text-primary);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
         cursor: pointer;
         transition: all 0.2s;
       }
 
       .command-panel__action:hover:not(:disabled) {
-        background: var(--color-gray-700, #374151);
+        background: var(--color-border);
         box-shadow: 0 0 12px rgba(74 222 128 / 0.15);
-        border-color: var(--color-success, #22c55e);
+        border-color: var(--color-success);
       }
 
       .command-panel__action:disabled {
@@ -172,8 +172,8 @@ export class VelgForgeTable extends LitElement {
       }
 
       .command-panel--complete .command-panel__action {
-        border-color: var(--color-gray-600, #4b5563);
-        color: var(--color-gray-300, #d1d5db);
+        border-color: var(--color-border);
+        color: var(--color-text-tertiary);
       }
 
       .command-panel__stamp {
@@ -182,7 +182,7 @@ export class VelgForgeTable extends LitElement {
         font-size: var(--text-sm);
         text-transform: uppercase;
         letter-spacing: 0.15em;
-        color: var(--color-success, #22c55e);
+        color: var(--color-success);
         text-align: center;
         padding-top: var(--space-2);
         animation: stamp-slam 0.4s cubic-bezier(0.22, 1, 0.36, 1);
@@ -221,8 +221,8 @@ export class VelgForgeTable extends LitElement {
       .command-console__advance .btn--next:not(:disabled) {
         animation: advance-entrance 0.6s cubic-bezier(0.22, 1, 0.36, 1) both,
                    advance-beacon 2.5s ease-in-out 0.6s infinite;
-        border-color: var(--color-success, #22c55e);
-        color: var(--color-success, #22c55e);
+        border-color: var(--color-success);
+        color: var(--color-success);
       }
 
       .command-console__advance .btn--next:not(:disabled)::after {
@@ -272,7 +272,7 @@ export class VelgForgeTable extends LitElement {
       .advance-hint {
         font-family: var(--font-mono, monospace);
         font-size: 11px;
-        color: var(--color-gray-400, #9ca3af);
+        color: var(--color-icon);
         text-transform: uppercase;
         letter-spacing: 0.06em;
       }
@@ -293,19 +293,19 @@ export class VelgForgeTable extends LitElement {
 
       @keyframes panel-beckon {
         0% {
-          border-left-color: var(--color-gray-500, #6b7280);
+          border-left-color: var(--color-text-muted);
           box-shadow: none;
         }
         25% {
-          border-left-color: var(--color-success, #22c55e);
+          border-left-color: var(--color-success);
           box-shadow: inset 0 0 30px rgba(74 222 128 / 0.06), 0 0 16px rgba(74 222 128 / 0.12);
         }
         65% {
-          border-left-color: var(--color-success, #22c55e);
+          border-left-color: var(--color-success);
           box-shadow: inset 0 0 30px rgba(74 222 128 / 0.06), 0 0 16px rgba(74 222 128 / 0.12);
         }
         100% {
-          border-left-color: var(--color-gray-500, #6b7280);
+          border-left-color: var(--color-text-muted);
           box-shadow: none;
         }
       }
@@ -367,12 +367,12 @@ export class VelgForgeTable extends LitElement {
       .section-empty {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-sm);
-        color: var(--color-gray-500, #6b7280);
+        color: var(--color-text-muted);
         text-transform: uppercase;
         letter-spacing: 0.08em;
         padding: var(--space-8) var(--space-4);
         text-align: center;
-        border: 1px dashed var(--color-gray-700, #374151);
+        border: 1px dashed var(--color-border);
       }
 
       .section-reveal {
@@ -408,7 +408,7 @@ export class VelgForgeTable extends LitElement {
         gap: var(--space-4);
         min-height: auto;
         /* Override source tokens so VelgGameCard :host picks up dark forge theme */
-        --color-primary: #22c55e;
+        --color-primary: #22c55e; // lint-color-ok
         --color-secondary: #14b8a6;
         --color-border: #556270;
         --color-surface-sunken: #1e293b;
@@ -419,7 +419,7 @@ export class VelgForgeTable extends LitElement {
 
       .deploy-slot {
         aspect-ratio: 5 / 8;
-        border: 2px dashed var(--color-gray-700, #374151);
+        border: 2px dashed var(--color-border);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -433,7 +433,7 @@ export class VelgForgeTable extends LitElement {
       }
 
       .deploy-slot--drag-over {
-        border-color: var(--color-success, #22c55e);
+        border-color: var(--color-success);
         background: rgba(74 222 128 / 0.05);
         box-shadow: 0 0 12px rgba(74 222 128 / 0.2);
         transform: scale(1.02);
@@ -442,7 +442,7 @@ export class VelgForgeTable extends LitElement {
       .deploy-slot__placeholder {
         font-family: var(--font-mono, monospace);
         font-size: 11px;
-        color: var(--color-gray-300, #d1d5db);
+        color: var(--color-text-tertiary);
         text-transform: uppercase;
         letter-spacing: 0.1em;
       }
@@ -464,7 +464,7 @@ export class VelgForgeTable extends LitElement {
         content: '';
         position: absolute;
         inset: -8px;
-        border: 2px solid var(--color-success, #22c55e);
+        border: 2px solid var(--color-success);
         opacity: 0;
         animation: shockwave 0.6s cubic-bezier(0, 0, 0.2, 1);
       }
@@ -492,20 +492,20 @@ export class VelgForgeTable extends LitElement {
         gap: var(--space-3);
         padding: var(--space-4) 0;
         margin: var(--space-4) 0;
-        border-top: 1px dashed var(--color-gray-700, #374151);
-        border-bottom: 1px dashed var(--color-gray-700, #374151);
+        border-top: 1px dashed var(--color-border);
+        border-bottom: 1px dashed var(--color-border);
       }
 
       .counter-pips__pip {
         width: 12px;
         height: 19px;
-        border: 1px solid var(--color-gray-600, #4b5563);
+        border: 1px solid var(--color-border);
         transition: all 0.3s;
       }
 
       .counter-pips__pip--filled {
-        background: var(--color-success, #22c55e);
-        border-color: var(--color-success, #22c55e);
+        background: var(--color-success);
+        border-color: var(--color-success);
         animation: pip-flip 0.3s cubic-bezier(0.22, 1, 0.36, 1);
       }
 
@@ -523,7 +523,7 @@ export class VelgForgeTable extends LitElement {
       .counter-pips__label {
         font-family: var(--font-mono, monospace);
         font-size: 11px;
-        color: var(--color-gray-400, #9ca3af);
+        color: var(--color-icon);
         text-transform: uppercase;
         letter-spacing: 0.08em;
         margin-left: var(--space-2);
@@ -534,10 +534,10 @@ export class VelgForgeTable extends LitElement {
       .staging-section {
         margin-top: var(--space-8);
         padding: var(--space-6);
-        border: 1px dashed var(--color-success, #22c55e);
+        border: 1px dashed var(--color-success);
         background: rgba(74 222 128 / 0.03);
         /* Override source tokens for dark forge theme */
-        --color-primary: #22c55e;
+        --color-primary: #22c55e; // lint-color-ok
         --color-secondary: #14b8a6;
         --color-border: #556270;
         --color-surface-sunken: #1e293b;
@@ -551,13 +551,13 @@ export class VelgForgeTable extends LitElement {
         font-size: var(--text-xs);
         text-transform: uppercase;
         letter-spacing: 0.1em;
-        color: var(--color-gray-300, #d1d5db);
+        color: var(--color-text-tertiary);
         margin-bottom: var(--space-4);
       }
 
       .staging-hint {
         font-weight: 400;
-        color: var(--color-gray-400, #9ca3af);
+        color: var(--color-icon);
       }
 
       .staging-hand {
@@ -637,22 +637,22 @@ export class VelgForgeTable extends LitElement {
         align-items: center;
         justify-content: center;
         font-size: 12px;
-        background: var(--color-gray-800, #1f2937);
-        border: 1px solid var(--color-gray-600, #4b5563);
-        color: var(--color-gray-300, #d1d5db);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        color: var(--color-text-tertiary);
         cursor: pointer;
         transition: all 0.15s;
         padding: 0;
       }
 
       .staging-action:hover {
-        border-color: var(--color-success, #22c55e);
-        color: var(--color-success, #22c55e);
+        border-color: var(--color-success);
+        color: var(--color-success);
       }
 
       .staging-action--reject:hover {
-        border-color: var(--color-danger, #ef4444);
-        color: var(--color-danger, #ef4444);
+        border-color: var(--color-danger);
+        color: var(--color-danger);
       }
 
       /* ── Geography Section ─────────────────── */
@@ -666,12 +666,12 @@ export class VelgForgeTable extends LitElement {
       .geo-header__city {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-sm);
-        color: var(--color-success, #22c55e);
+        color: var(--color-success);
       }
 
       .geo-card {
-        background: var(--color-gray-850, #182030);
-        border: 1px solid var(--color-gray-600, #4b5563);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
         padding: var(--space-4);
         display: flex;
         flex-direction: column;
@@ -704,13 +704,13 @@ export class VelgForgeTable extends LitElement {
         font-weight: var(--font-bold, 700);
         text-transform: uppercase;
         letter-spacing: var(--tracking-wide, 0.05em);
-        color: var(--color-gray-100, #f3f4f6);
+        color: var(--color-text-primary);
         font-size: var(--text-sm);
       }
 
       .geo-card__desc {
         font-size: var(--text-sm);
-        color: var(--color-gray-300, #d1d5db);
+        color: var(--color-text-tertiary);
         line-height: 1.5;
         margin: 0;
       }
@@ -726,9 +726,9 @@ export class VelgForgeTable extends LitElement {
         font-family: var(--font-mono, monospace);
         font-size: 10px;
         padding: 2px var(--space-2);
-        background: var(--color-gray-800, #1f2937);
-        border: 1px solid var(--color-gray-700, #374151);
-        color: var(--color-gray-300, #d1d5db);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        color: var(--color-text-tertiary);
       }
 
       /* ── Side Panel (Dossier) ─────────────── */
@@ -739,7 +739,7 @@ export class VelgForgeTable extends LitElement {
         gap: var(--space-4);
         padding: var(--space-6);
         /* Override source tokens for dark forge theme */
-        --color-primary: #22c55e;
+        --color-primary: #22c55e; // lint-color-ok
         --color-secondary: #14b8a6;
         --color-border: #556270;
         --color-surface-sunken: #1e293b;
@@ -752,7 +752,7 @@ export class VelgForgeTable extends LitElement {
         display: flex;
         justify-content: center;
         padding-bottom: var(--space-4);
-        border-bottom: 1px solid var(--color-gray-700, #374151);
+        border-bottom: 1px solid var(--color-border);
       }
 
       .dossier-panel__section-label {
@@ -760,7 +760,7 @@ export class VelgForgeTable extends LitElement {
         font-size: 10px;
         text-transform: uppercase;
         letter-spacing: 0.1em;
-        color: var(--color-success, #22c55e);
+        color: var(--color-success);
         margin-top: var(--space-2);
       }
 

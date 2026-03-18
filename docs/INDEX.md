@@ -41,10 +41,11 @@ tags: [index, catalog, documentation]
 | [Feature Catalog](references/feature-catalog.md) | 3.0 | 2026-03-17 | de | active |
 | [Frontend Components](references/frontend-components.md) | 3.1 | 2026-03-17 | de | active |
 
-## Guides (11)
+## Guides (12)
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
+| [Design Tokens — Three-Tier Color Architecture](guides/design-tokens.md) | 1.0 | 2026-03-18 | en | active |
 | [Deployment Infrastructure](guides/deployment-infrastructure.md) | 1.3 | 2026-03-07 | de | active |
 | [Production Deployment Procedures](guides/deployment-procedures.md) | 1.0 | — | en | active |
 | [Epoch Gameplay Guide](guides/epoch-gameplay-guide.md) | 1.0 | 2026-03-09 | en | active |

@@ -41,8 +41,8 @@ export class VelgEpochAlliancesTab extends LitElement {
     }
 
     .panel {
-      border: 1px solid var(--color-gray-800);
-      background: var(--color-gray-900);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
       opacity: 0;
       animation: panel-enter 0.4s ease-out forwards;
     }
@@ -66,7 +66,7 @@ export class VelgEpochAlliancesTab extends LitElement {
       justify-content: space-between;
       align-items: center;
       padding: var(--space-3) var(--space-4);
-      border-bottom: 1px solid var(--color-gray-800);
+      border-bottom: 1px solid var(--color-border);
     }
 
     .panel__title {
@@ -75,7 +75,7 @@ export class VelgEpochAlliancesTab extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-gray-300);
+      color: var(--color-text-tertiary);
       margin: 0;
     }
 
@@ -87,7 +87,7 @@ export class VelgEpochAlliancesTab extends LitElement {
 
     .alliance {
       padding: var(--space-3);
-      border: 1px solid var(--color-gray-700);
+      border: 1px solid var(--color-border);
       margin-bottom: var(--space-3);
       transition: all var(--transition-normal);
       position: relative;
@@ -106,7 +106,7 @@ export class VelgEpochAlliancesTab extends LitElement {
     }
 
     .alliance:hover {
-      border-color: var(--color-gray-500);
+      border-color: var(--color-text-muted);
       transform: translateX(2px);
     }
 
@@ -132,14 +132,14 @@ export class VelgEpochAlliancesTab extends LitElement {
     .alliance__upkeep {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       margin-top: 2px;
     }
 
     .alliance__member {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       padding: 2px 0;
     }
 
@@ -154,7 +154,7 @@ export class VelgEpochAlliancesTab extends LitElement {
     .tension-meter {
       position: relative;
       height: 6px;
-      background: var(--color-gray-800);
+      background: var(--color-surface-raised);
       border-radius: 3px;
       overflow: hidden;
       margin: var(--space-2) 0 var(--space-1);
@@ -169,7 +169,7 @@ export class VelgEpochAlliancesTab extends LitElement {
     .tension-meter__label {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       margin-top: 2px;
       display: flex;
       align-items: center;
@@ -194,8 +194,8 @@ export class VelgEpochAlliancesTab extends LitElement {
     /* ── Proposal Card ────────────────────────── */
 
     .proposal-card {
-      border: 1px dashed var(--color-epoch-accent, #f59e0b);
-      background: rgba(245 158 11 / 0.04);
+      border: 1px dashed var(--color-epoch-accent);
+      background: color-mix(in srgb, var(--color-primary) 4%, transparent);
       padding: var(--space-3);
       margin-top: var(--space-2);
       position: relative;
@@ -212,13 +212,13 @@ export class VelgEpochAlliancesTab extends LitElement {
       to {
         opacity: 1;
         transform: translateY(0);
-        border-color: var(--color-epoch-accent, #f59e0b);
+        border-color: var(--color-epoch-accent);
       }
     }
 
     @keyframes proposal-pulse {
-      from { border-color: var(--color-epoch-accent, #f59e0b); }
-      to { border-color: rgba(245 158 11 / 0.35); }
+      from { border-color: var(--color-epoch-accent); }
+      to { border-color: color-mix(in srgb, var(--color-primary) 35%, transparent); }
     }
 
     .proposal-card--accepted {
@@ -229,11 +229,11 @@ export class VelgEpochAlliancesTab extends LitElement {
 
     @keyframes proposal-accepted {
       from {
-        background: rgba(74 222 128 / 0.15);
+        background: var(--color-success-glow);
         transform: scale(1.02);
       }
       to {
-        background: rgba(74 222 128 / 0.04);
+        background: var(--color-success-bg);
         transform: scale(1);
       }
     }
@@ -246,7 +246,7 @@ export class VelgEpochAlliancesTab extends LitElement {
     }
 
     .proposal-card--expired {
-      border-color: var(--color-gray-500);
+      border-color: var(--color-text-muted);
       border-style: dotted;
       opacity: 0.5;
       animation: none;
@@ -269,14 +269,14 @@ export class VelgEpochAlliancesTab extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-wider);
-      color: var(--color-epoch-accent, #f59e0b);
+      color: var(--color-epoch-accent);
       margin-bottom: var(--space-1);
     }
 
     .proposal-card__name {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-      color: var(--color-gray-200);
+      color: var(--color-text-secondary);
     }
 
     .proposal-card__info {
@@ -289,25 +289,25 @@ export class VelgEpochAlliancesTab extends LitElement {
     .proposal-card__hint {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     .proposal-card__expiry {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     .proposal-card__tally {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: var(--color-gray-300);
+      color: var(--color-text-tertiary);
     }
 
     .proposal-card__status {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: var(--color-gray-300);
+      color: var(--color-text-tertiary);
     }
 
     .proposal-card__actions {
@@ -388,7 +388,7 @@ export class VelgEpochAlliancesTab extends LitElement {
     }
 
     .alliance-btn--join:hover {
-      background: rgba(74 222 128 / 0.15);
+      background: var(--color-success-glow);
     }
 
     .alliance-btn--leave {
@@ -398,7 +398,7 @@ export class VelgEpochAlliancesTab extends LitElement {
     }
 
     .alliance-btn--leave:hover {
-      background: rgba(239 68 68 / 0.15);
+      background: var(--color-danger-glow);
     }
 
     .alliance-btn--invite {
@@ -408,7 +408,7 @@ export class VelgEpochAlliancesTab extends LitElement {
     }
 
     .alliance-btn--invite:hover {
-      background: rgba(56 189 248 / 0.15);
+      background: var(--color-info-glow);
     }
 
     /* ── Alliance Actions ──────────────────── */
@@ -428,9 +428,9 @@ export class VelgEpochAlliancesTab extends LitElement {
       padding: var(--space-1-5) var(--space-2);
       font-family: var(--font-sans);
       font-size: var(--text-sm);
-      border: 1px solid var(--color-gray-700);
-      background: var(--color-gray-900);
-      color: var(--color-gray-200);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      color: var(--color-text-secondary);
     }
 
     .team-form__input:focus {
@@ -439,7 +439,7 @@ export class VelgEpochAlliancesTab extends LitElement {
     }
 
     .team-form__input::placeholder {
-      color: var(--color-gray-500);
+      color: var(--color-text-muted);
     }
 
     /* ── Lobby button (for Create Alliance) ── */
@@ -472,7 +472,7 @@ export class VelgEpochAlliancesTab extends LitElement {
 
     .lobby-btn--join:hover:not(:disabled) {
       background: var(--color-success);
-      color: var(--color-gray-950);
+      color: var(--color-text-inverse);
     }
 
     /* ── Prominent CTA for unaligned ──────── */
@@ -483,7 +483,7 @@ export class VelgEpochAlliancesTab extends LitElement {
       align-items: center;
       gap: var(--space-3);
       padding: var(--space-5) var(--space-4);
-      border: 2px dashed var(--color-gray-700);
+      border: 2px dashed var(--color-border);
       margin-bottom: var(--space-4);
       text-align: center;
       transition: border-color var(--transition-normal);
@@ -496,7 +496,7 @@ export class VelgEpochAlliancesTab extends LitElement {
     .alliance-cta__hint {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       max-width: 380px;
       line-height: 1.5;
     }
@@ -506,7 +506,7 @@ export class VelgEpochAlliancesTab extends LitElement {
     .participant__unaligned {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     /* ── Empty ───────────────────────────────── */
@@ -514,7 +514,7 @@ export class VelgEpochAlliancesTab extends LitElement {
     .empty-hint {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       text-align: center;
       padding: var(--space-4);
     }

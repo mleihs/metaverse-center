@@ -234,7 +234,7 @@ export class VelgAdminModelsTab extends LitElement {
       text-transform: uppercase;
       border-radius: 2px;
       background: var(--color-accent-amber);
-      color: var(--color-gray-950);
+      color: var(--color-surface-sunken);
       animation: amber-pulse 2s ease infinite;
     }
 
@@ -244,7 +244,7 @@ export class VelgAdminModelsTab extends LitElement {
       width: 5px;
       height: 5px;
       border-radius: 50%;
-      background: var(--color-gray-950);
+      background: var(--color-surface-sunken);
     }
 
     /* --- Model Cards --- */
@@ -317,7 +317,7 @@ export class VelgAdminModelsTab extends LitElement {
       padding: var(--space-2) var(--space-3);
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-      background: var(--color-background);
+      background: var(--color-surface);
       color: var(--color-text-primary);
       border: 1px solid var(--color-border);
       border-radius: 0;
@@ -339,7 +339,7 @@ export class VelgAdminModelsTab extends LitElement {
     }
 
     .model-card__select option {
-      background: var(--color-background);
+      background: var(--color-surface);
       color: var(--color-text-primary);
     }
 
@@ -381,7 +381,7 @@ export class VelgAdminModelsTab extends LitElement {
       padding: var(--space-2) var(--space-3);
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-      background: var(--color-background);
+      background: var(--color-surface);
       color: var(--color-text-primary);
       border: 1px solid var(--color-border);
       border-radius: 0;
@@ -444,7 +444,7 @@ export class VelgAdminModelsTab extends LitElement {
 
     .btn--save {
       background: var(--color-accent-amber);
-      color: var(--color-gray-950);
+      color: var(--color-surface-sunken);
       border: 1px solid var(--color-accent-amber);
     }
 

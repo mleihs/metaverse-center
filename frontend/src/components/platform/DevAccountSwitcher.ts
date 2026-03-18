@@ -63,8 +63,8 @@ export class VelgDevAccountSwitcher extends LitElement {
       text-transform: uppercase;
       letter-spacing: 0.12em;
       padding: 3px 7px;
-      color: #0a0a0a;
-      background: #f59e0b;
+      color: var(--color-surface);
+      background: var(--color-primary);
       line-height: 1;
       cursor: pointer;
       user-select: none;
@@ -73,7 +73,7 @@ export class VelgDevAccountSwitcher extends LitElement {
     }
 
     .tag:hover {
-      background: #fbbf24;
+      background: var(--color-primary-hover);
       transform: translateY(-1px);
     }
 
@@ -82,7 +82,7 @@ export class VelgDevAccountSwitcher extends LitElement {
     }
 
     .tag--open {
-      background: #fbbf24;
+      background: var(--color-primary-hover);
     }
 
     .tag--open::after {
@@ -92,7 +92,7 @@ export class VelgDevAccountSwitcher extends LitElement {
       left: 50%;
       transform: translateX(-50%);
       border: 4px solid transparent;
-      border-top-color: #fbbf24;
+      border-top-color: var(--color-primary-hover);
     }
 
     /* ── Backdrop ── */
@@ -113,12 +113,12 @@ export class VelgDevAccountSwitcher extends LitElement {
       max-height: 440px;
       z-index: var(--z-modal, 200);
 
-      background: #0c0c0c;
-      border: 1px solid #2a2a2a;
-      border-top: 2px solid #f59e0b;
+      background: var(--color-surface-sunken);
+      border: 1px solid var(--color-border);
+      border-top: 2px solid var(--color-primary);
       box-shadow:
         0 12px 40px rgba(0, 0, 0, 0.7),
-        0 0 1px rgba(245, 158, 11, 0.3),
+        0 0 1px color-mix(in srgb, var(--color-primary) 30%, transparent),
         inset 0 1px 0 rgba(255, 255, 255, 0.03);
 
       display: flex;
@@ -162,13 +162,13 @@ export class VelgDevAccountSwitcher extends LitElement {
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.15em;
-      color: #666;
+      color: var(--color-text-muted);
     }
 
     .panel__count {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      color: #555;
+      color: var(--color-text-muted);
       letter-spacing: 0.05em;
     }
 
@@ -184,21 +184,21 @@ export class VelgDevAccountSwitcher extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: 12px;
       letter-spacing: 0.02em;
-      color: #ccc;
-      background: #111;
-      border: 1px solid #2a2a2a;
+      color: var(--color-text-tertiary);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
       outline: none;
       transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
     .search__input::placeholder {
-      color: #444;
+      color: var(--color-text-muted);
       font-style: italic;
     }
 
     .search__input:focus {
-      border-color: rgba(245, 158, 11, 0.5);
-      box-shadow: 0 0 8px rgba(245, 158, 11, 0.1);
+      border-color: color-mix(in srgb, var(--color-primary) 50%, transparent);
+      box-shadow: 0 0 8px color-mix(in srgb, var(--color-primary) 10%, transparent);
     }
 
     .search__icon {
@@ -208,7 +208,7 @@ export class VelgDevAccountSwitcher extends LitElement {
       transform: translateY(-50%);
       width: 12px;
       height: 12px;
-      color: #444;
+      color: var(--color-text-muted);
       pointer-events: none;
     }
 
@@ -216,7 +216,7 @@ export class VelgDevAccountSwitcher extends LitElement {
 
     .divider {
       height: 1px;
-      background: linear-gradient(90deg, transparent, #2a2a2a 20%, #2a2a2a 80%, transparent);
+      background: linear-gradient(90deg, transparent, var(--color-border) 20%, var(--color-border) 80%, transparent);
       margin: 8px 0 0;
       flex-shrink: 0;
     }
@@ -229,7 +229,7 @@ export class VelgDevAccountSwitcher extends LitElement {
       padding: 4px 0;
 
       scrollbar-width: thin;
-      scrollbar-color: #333 transparent;
+      scrollbar-color: var(--color-border) transparent;
     }
 
     .list::-webkit-scrollbar {
@@ -239,7 +239,7 @@ export class VelgDevAccountSwitcher extends LitElement {
       background: transparent;
     }
     .list::-webkit-scrollbar-thumb {
-      background: #333;
+      background: var(--color-border);
       border-radius: 2px;
     }
 
@@ -256,18 +256,18 @@ export class VelgDevAccountSwitcher extends LitElement {
     }
 
     .user:hover {
-      background: rgba(245, 158, 11, 0.06);
-      border-left-color: rgba(245, 158, 11, 0.3);
+      background: color-mix(in srgb, var(--color-primary) 6%, transparent);
+      border-left-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
     }
 
     .user--focused {
-      background: rgba(245, 158, 11, 0.1);
-      border-left-color: #f59e0b;
+      background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+      border-left-color: var(--color-primary);
     }
 
     .user--current {
-      background: rgba(245, 158, 11, 0.04);
-      border-left-color: rgba(245, 158, 11, 0.15);
+      background: color-mix(in srgb, var(--color-primary) 4%, transparent);
+      border-left-color: color-mix(in srgb, var(--color-primary) 15%, transparent);
     }
 
     .user--current::after {
@@ -275,14 +275,14 @@ export class VelgDevAccountSwitcher extends LitElement {
       grid-row: 1 / -1;
       grid-column: 2;
       font-size: 6px;
-      color: #f59e0b;
+      color: var(--color-primary);
       align-self: center;
     }
 
     .user__email {
       font-family: var(--font-mono, monospace);
       font-size: 11px;
-      color: #bbb;
+      color: var(--color-text-tertiary);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -292,7 +292,7 @@ export class VelgDevAccountSwitcher extends LitElement {
 
     .user:hover .user__email,
     .user--focused .user__email {
-      color: #e5e5e5;
+      color: var(--color-text-secondary);
     }
 
     .user__meta {
@@ -305,7 +305,7 @@ export class VelgDevAccountSwitcher extends LitElement {
     .user__name {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      color: #555;
+      color: var(--color-text-muted);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -323,21 +323,21 @@ export class VelgDevAccountSwitcher extends LitElement {
     }
 
     .user__role--admin {
-      color: #f59e0b;
-      background: rgba(245, 158, 11, 0.12);
-      border: 1px solid rgba(245, 158, 11, 0.25);
+      color: var(--color-primary);
+      background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+      border: 1px solid color-mix(in srgb, var(--color-primary) 25%, transparent);
     }
 
     .user__role--architect {
-      color: #34d399;
-      background: rgba(52, 211, 153, 0.1);
-      border: 1px solid rgba(52, 211, 153, 0.2);
+      color: var(--color-success);
+      background: color-mix(in srgb, var(--color-success) 10%, transparent);
+      border: 1px solid color-mix(in srgb, var(--color-success) 20%, transparent);
     }
 
     .user__role--user {
-      color: #666;
+      color: var(--color-text-muted);
       background: rgba(255, 255, 255, 0.03);
-      border: 1px solid #2a2a2a;
+      border: 1px solid var(--color-border);
     }
 
     /* ── States ── */
@@ -349,7 +349,7 @@ export class VelgDevAccountSwitcher extends LitElement {
       padding: 24px 12px;
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: #555;
+      color: var(--color-text-muted);
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
@@ -360,8 +360,8 @@ export class VelgDevAccountSwitcher extends LitElement {
       width: 10px;
       height: 10px;
       margin-left: 8px;
-      border: 1px solid #333;
-      border-top-color: #f59e0b;
+      border: 1px solid var(--color-border);
+      border-top-color: var(--color-primary);
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
     }
@@ -374,9 +374,9 @@ export class VelgDevAccountSwitcher extends LitElement {
       padding: 8px 12px;
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      color: #ef4444;
-      background: rgba(239, 68, 68, 0.06);
-      border-top: 1px solid rgba(239, 68, 68, 0.15);
+      color: var(--color-danger);
+      background: color-mix(in srgb, var(--color-danger) 6%, transparent);
+      border-top: 1px solid var(--color-danger-glow);
     }
 
     :host(.switching) .panel {
@@ -397,9 +397,9 @@ export class VelgDevAccountSwitcher extends LitElement {
       top: calc(100% + 6px);
       right: 0;
       z-index: var(--z-modal, 200);
-      background: #0c0c0c;
-      border: 1px solid #2a2a2a;
-      border-top: 2px solid #f59e0b;
+      background: var(--color-surface-sunken);
+      border: 1px solid var(--color-border);
+      border-top: 2px solid var(--color-primary);
       padding: 10px;
       display: flex;
       gap: 6px;
@@ -414,19 +414,19 @@ export class VelgDevAccountSwitcher extends LitElement {
       font-size: 12px;
       padding: 4px 8px;
       width: 90px;
-      border: 1px solid #2a2a2a;
-      background: #111;
-      color: #ccc;
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      color: var(--color-text-tertiary);
       outline: none;
       transition: border-color 0.2s ease;
     }
 
     .gate__input:focus {
-      border-color: rgba(245, 158, 11, 0.5);
+      border-color: color-mix(in srgb, var(--color-primary) 50%, transparent);
     }
 
     .gate__input--error {
-      border-color: #ef4444;
+      border-color: var(--color-danger);
     }
 
     .gate__btn {
@@ -435,15 +435,15 @@ export class VelgDevAccountSwitcher extends LitElement {
       text-transform: uppercase;
       letter-spacing: 0.08em;
       padding: 4px 10px;
-      border: 1px solid #f59e0b;
+      border: 1px solid var(--color-primary);
       background: transparent;
-      color: #f59e0b;
+      color: var(--color-primary);
       cursor: pointer;
       transition: background 0.15s ease;
     }
 
     .gate__btn:hover {
-      background: rgba(245, 158, 11, 0.12);
+      background: color-mix(in srgb, var(--color-primary) 12%, transparent);
     }
 
     .gate__error {
@@ -453,7 +453,7 @@ export class VelgDevAccountSwitcher extends LitElement {
       margin-top: 4px;
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      color: #ef4444;
+      color: var(--color-danger);
       white-space: nowrap;
     }
 

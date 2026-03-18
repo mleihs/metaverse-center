@@ -11,23 +11,23 @@ import { customElement, state } from 'lit/decorators.js';
 import { connectionsApi } from '../../services/api/index.js';
 import type { BattleLogEntry } from '../../types/index.js';
 
-/** Battle log event type → dot color */
+/** Battle log event type → dot color (semantic tokens for inline style binding) */
 const EVENT_TYPE_COLORS: Record<string, string> = {
-  mission_success: '#22c55e',
-  mission_failed: '#ef4444',
-  detected: '#f59e0b',
-  captured: '#f59e0b',
-  sabotage: '#ef4444',
-  propaganda: '#a78bfa',
-  assassination: '#dc2626',
-  infiltration: '#06b6d4',
-  alliance_formed: '#3b82f6',
-  alliance_dissolved: '#f97316',
-  betrayal: '#dc2626',
-  phase_change: '#6b7280',
-  epoch_start: '#22c55e',
-  epoch_end: '#6b7280',
-  rp_allocated: '#6b7280',
+  mission_success: 'var(--color-success)',
+  mission_failed: 'var(--color-danger)',
+  detected: 'var(--color-primary)',
+  captured: 'var(--color-primary)',
+  sabotage: 'var(--color-danger)',
+  propaganda: '#a78bfa', // lint-color-ok
+  assassination: 'var(--color-danger)',
+  infiltration: 'var(--color-info)',
+  alliance_formed: 'var(--color-info)',
+  alliance_dissolved: '#f97316', // lint-color-ok
+  betrayal: 'var(--color-danger)',
+  phase_change: 'var(--color-text-muted)',
+  epoch_start: 'var(--color-success)',
+  epoch_end: 'var(--color-text-muted)',
+  rp_allocated: 'var(--color-text-muted)',
 };
 
 @localized()
@@ -62,7 +62,7 @@ export class VelgMapBattleFeed extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: 0.12em;
-      color: #ef4444;
+      color: var(--color-danger);
       flex-shrink: 0;
       display: flex;
       align-items: center;
@@ -73,7 +73,7 @@ export class VelgMapBattleFeed extends LitElement {
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background: #ef4444;
+      background: var(--color-danger);
       animation: feed-dot-pulse 1.5s ease-in-out infinite;
     }
 
@@ -105,7 +105,7 @@ export class VelgMapBattleFeed extends LitElement {
       gap: 6px;
       font-family: var(--font-mono, monospace);
       font-size: 11px;
-      color: var(--color-text-secondary, #aaa);
+      color: var(--color-text-secondary);
     }
 
     .feed__type-dot {
@@ -118,7 +118,7 @@ export class VelgMapBattleFeed extends LitElement {
     .feed__empty {
       font-family: var(--font-mono, monospace);
       font-size: 11px;
-      color: var(--color-text-muted, #666);
+      color: var(--color-text-muted);
     }
 
     @media (max-width: 768px) {
@@ -181,7 +181,7 @@ export class VelgMapBattleFeed extends LitElement {
   }
 
   private _renderItem(entry: BattleLogEntry) {
-    const color = EVENT_TYPE_COLORS[entry.event_type] ?? '#6b7280';
+    const color = EVENT_TYPE_COLORS[entry.event_type] ?? 'var(--color-text-muted)';
     return html`
       <span class="feed__item">
         <span class="feed__type-dot" style="background: ${color}"></span>

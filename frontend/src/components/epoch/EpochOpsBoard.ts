@@ -42,15 +42,15 @@ export class VelgEpochOpsBoard extends LitElement {
           0deg,
           transparent,
           transparent 39px,
-          color-mix(in srgb, var(--color-border, var(--color-gray-700)) 6%, transparent) 39px,
-          color-mix(in srgb, var(--color-border, var(--color-gray-700)) 6%, transparent) 40px
+          color-mix(in srgb, var(--color-border, var(--color-surface-raised)) 6%, transparent) 39px,
+          color-mix(in srgb, var(--color-border, var(--color-surface-raised)) 6%, transparent) 40px
         ),
         repeating-linear-gradient(
           90deg,
           transparent,
           transparent 39px,
-          color-mix(in srgb, var(--color-border, var(--color-gray-700)) 6%, transparent) 39px,
-          color-mix(in srgb, var(--color-border, var(--color-gray-700)) 6%, transparent) 40px
+          color-mix(in srgb, var(--color-border, var(--color-surface-raised)) 6%, transparent) 39px,
+          color-mix(in srgb, var(--color-border, var(--color-surface-raised)) 6%, transparent) 40px
         );
     }
 
@@ -123,7 +123,7 @@ export class VelgEpochOpsBoard extends LitElement {
       align-items: flex-end;
       margin-bottom: var(--space-5);
       padding: var(--space-4) var(--space-5) var(--space-3);
-      border-bottom: 2px solid var(--color-gray-800);
+      border-bottom: 2px solid var(--color-border);
       position: relative;
       animation: lobby-fade 0.6s ease-out;
       overflow: hidden;
@@ -162,8 +162,8 @@ export class VelgEpochOpsBoard extends LitElement {
       left: 6px;
       width: 14px;
       height: 14px;
-      border-left: 2px solid var(--color-gray-600);
-      border-top: 2px solid var(--color-gray-600);
+      border-left: 2px solid var(--color-border);
+      border-top: 2px solid var(--color-border);
       pointer-events: none;
     }
 
@@ -173,8 +173,8 @@ export class VelgEpochOpsBoard extends LitElement {
       right: 6px;
       width: 14px;
       height: 14px;
-      border-right: 2px solid var(--color-gray-600);
-      border-bottom: 2px solid var(--color-gray-600);
+      border-right: 2px solid var(--color-border);
+      border-bottom: 2px solid var(--color-border);
       pointer-events: none;
     }
 
@@ -191,7 +191,7 @@ export class VelgEpochOpsBoard extends LitElement {
       font-size: 8px;
       text-transform: uppercase;
       letter-spacing: 0.4em;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     .ops-board__title {
@@ -216,10 +216,10 @@ export class VelgEpochOpsBoard extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       margin-bottom: var(--space-5);
       padding: var(--space-2) 0;
-      border-bottom: 1px solid var(--color-gray-800);
+      border-bottom: 1px solid var(--color-border);
       animation: lobby-fade 0.6s ease-out 0.1s both;
     }
 
@@ -230,12 +230,12 @@ export class VelgEpochOpsBoard extends LitElement {
     }
 
     .ops-board__readout-value {
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       font-weight: 600;
     }
 
     .ops-board__readout-sep {
-      color: var(--color-gray-700);
+      color: var(--color-surface-raised);
       font-size: 6px;
     }
 
@@ -249,9 +249,9 @@ export class VelgEpochOpsBoard extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-gray-950);
-      background: var(--color-gray-100);
-      border: 2px solid var(--color-gray-100);
+      color: var(--color-surface-sunken);
+      background: var(--color-text-primary);
+      border: 2px solid var(--color-text-primary);
       cursor: pointer;
       transition: all 0.2s;
       position: relative;
@@ -260,7 +260,7 @@ export class VelgEpochOpsBoard extends LitElement {
 
     .ops-board__create-btn:hover {
       transform: translate(-2px, -2px);
-      box-shadow: 4px 4px 0 var(--color-gray-700);
+      box-shadow: 4px 4px 0 var(--color-surface-raised);
     }
 
     .ops-board__create-btn:active {
@@ -285,13 +285,13 @@ export class VelgEpochOpsBoard extends LitElement {
     /* ── Dossier Card ─────────────────────── */
 
     .dossier-card {
-      --dossier-color: var(--color-gray-600);
+      --dossier-color: var(--color-icon);
       --accent-bar-width: 3px;
       position: relative;
       display: flex;
       flex-direction: column;
-      background: var(--color-gray-900);
-      border: 1px solid var(--color-gray-800);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
       cursor: pointer;
       transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
       overflow: hidden;
@@ -346,14 +346,14 @@ export class VelgEpochOpsBoard extends LitElement {
 
     /* LOBBY — desaturated, subtle, waiting */
     .dossier-card--lobby {
-      --dossier-color: var(--color-gray-500);
+      --dossier-color: var(--color-text-muted);
       --accent-bar-width: 2px;
       opacity: 0;
       animation: dossier-enter 0.4s ease-out forwards;
     }
 
     .dossier-card--lobby .dossier-card__name {
-      color: var(--color-gray-300);
+      color: var(--color-text-tertiary);
     }
 
     /* FOUNDATION — building phase, moderate presence */
@@ -381,7 +381,7 @@ export class VelgEpochOpsBoard extends LitElement {
     .dossier-card--reckoning {
       --dossier-color: var(--color-danger);
       --accent-bar-width: 5px;
-      border-color: color-mix(in srgb, var(--color-danger) 25%, var(--color-gray-800));
+      border-color: color-mix(in srgb, var(--color-danger) 25%, var(--color-border));
       box-shadow: 0 0 16px color-mix(in srgb, var(--color-danger) 10%, transparent);
       animation: dossier-enter 0.4s ease-out forwards, dossier-pulse-intense 3s ease-in-out 0.5s infinite;
     }
@@ -395,18 +395,18 @@ export class VelgEpochOpsBoard extends LitElement {
 
     /* COMPLETED — faded, archival */
     .dossier-card--completed {
-      --dossier-color: var(--color-gray-600);
+      --dossier-color: var(--color-icon);
       --accent-bar-width: 2px;
       opacity: 0;
       animation: dossier-enter 0.4s ease-out forwards;
     }
 
     .dossier-card--completed .dossier-card__name {
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     .dossier-card--completed .dossier-stat__value {
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     /* Phase pulse animations — increasing intensity */
@@ -423,11 +423,11 @@ export class VelgEpochOpsBoard extends LitElement {
     @keyframes dossier-pulse-intense {
       0%, 100% {
         box-shadow: 0 0 16px color-mix(in srgb, var(--dossier-color) 10%, transparent);
-        border-color: color-mix(in srgb, var(--color-danger) 25%, var(--color-gray-800));
+        border-color: color-mix(in srgb, var(--color-danger) 25%, var(--color-border));
       }
       50% {
         box-shadow: 0 0 30px color-mix(in srgb, var(--dossier-color) 25%, transparent);
-        border-color: color-mix(in srgb, var(--color-danger) 45%, var(--color-gray-800));
+        border-color: color-mix(in srgb, var(--color-danger) 45%, var(--color-border));
       }
     }
 
@@ -447,7 +447,7 @@ export class VelgEpochOpsBoard extends LitElement {
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
       line-height: 1.1;
-      color: var(--color-gray-100);
+      color: var(--color-text-primary);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -502,9 +502,9 @@ export class VelgEpochOpsBoard extends LitElement {
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 1.5px;
-      color: var(--color-epoch-accent, #f59e0b);
-      border: 1px solid color-mix(in srgb, var(--color-epoch-accent, #f59e0b) 50%, transparent);
-      background: color-mix(in srgb, var(--color-epoch-accent, #f59e0b) 8%, transparent);
+      color: var(--color-epoch-accent);
+      border: 1px solid color-mix(in srgb, var(--color-epoch-accent) 50%, transparent);
+      background: color-mix(in srgb, var(--color-epoch-accent) 8%, transparent);
       flex-shrink: 0;
     }
 
@@ -526,7 +526,7 @@ export class VelgEpochOpsBoard extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-base);
-      color: var(--color-gray-200);
+      color: var(--color-text-secondary);
       line-height: 1;
     }
 
@@ -535,7 +535,7 @@ export class VelgEpochOpsBoard extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     /* ── Segmented progress bar ──────────── */
@@ -559,7 +559,7 @@ export class VelgEpochOpsBoard extends LitElement {
 
     .dossier-progress__seg {
       flex: 1;
-      background: var(--color-gray-800);
+      background: var(--color-surface-raised);
       position: relative;
       overflow: hidden;
       transition: background 0.3s;
@@ -571,19 +571,19 @@ export class VelgEpochOpsBoard extends LitElement {
 
     /* Current cycle segment: pulsing fill */
     .dossier-progress__seg--current {
-      background: color-mix(in srgb, var(--dossier-color) 40%, var(--color-gray-800));
+      background: color-mix(in srgb, var(--dossier-color) 40%, var(--color-border));
       animation: seg-pulse 2s ease-in-out infinite;
     }
 
     @keyframes seg-pulse {
-      0%, 100% { background: color-mix(in srgb, var(--dossier-color) 30%, var(--color-gray-800)); }
-      50% { background: color-mix(in srgb, var(--dossier-color) 60%, var(--color-gray-800)); }
+      0%, 100% { background: color-mix(in srgb, var(--dossier-color) 30%, var(--color-border)); }
+      50% { background: color-mix(in srgb, var(--dossier-color) 60%, var(--color-border)); }
     }
 
     .dossier-progress__text {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       flex-shrink: 0;
       min-width: 24px;
       text-align: right;
@@ -594,7 +594,7 @@ export class VelgEpochOpsBoard extends LitElement {
     .dossier-card__footer {
       margin-top: auto;
       padding: var(--space-2) var(--space-4) var(--space-3) calc(var(--space-4) + var(--accent-bar-width));
-      border-top: 1px solid var(--color-gray-800);
+      border-top: 1px solid var(--color-border);
       display: flex;
       align-items: center;
       gap: var(--space-2);
@@ -617,7 +617,7 @@ export class VelgEpochOpsBoard extends LitElement {
 
     .dossier-join-btn:hover {
       background: var(--color-success);
-      color: var(--color-gray-950);
+      color: var(--color-surface-sunken);
     }
 
     .dossier-join-btn:disabled {
@@ -634,7 +634,7 @@ export class VelgEpochOpsBoard extends LitElement {
       padding: 0;
       background: transparent;
       border: 1px solid transparent;
-      color: var(--color-gray-500);
+      color: var(--color-text-muted);
       cursor: pointer;
       transition: all 0.15s;
       flex-shrink: 0;
@@ -651,20 +651,20 @@ export class VelgEpochOpsBoard extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       margin-left: auto;
       transition: color 0.2s;
     }
 
     .dossier-card:hover .dossier-card__view-hint {
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     /* ── Create New card ──────────────────── */
 
     .dossier-card--create {
       border-style: dashed;
-      border-color: var(--color-gray-700);
+      border-color: var(--color-border);
       background: transparent;
       display: flex;
       align-items: center;
@@ -678,7 +678,7 @@ export class VelgEpochOpsBoard extends LitElement {
     }
 
     .dossier-card--create:hover {
-      border-color: var(--color-gray-400);
+      border-color: var(--color-text-muted);
       background: rgba(255 255 255 / 0.02);
       transform: none;
       box-shadow: none;
@@ -695,13 +695,13 @@ export class VelgEpochOpsBoard extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-3xl);
-      color: var(--color-gray-500);
+      color: var(--color-text-muted);
       line-height: 1;
       transition: color 0.2s, transform 0.2s;
     }
 
     .dossier-card--create:hover .dossier-create__plus {
-      color: var(--color-gray-300);
+      color: var(--color-text-tertiary);
       transform: scale(1.1);
     }
 
@@ -710,12 +710,12 @@ export class VelgEpochOpsBoard extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       transition: color 0.2s;
     }
 
     .dossier-card--create:hover .dossier-create__label {
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     /* ── Atmospheric empty state ─────────── */
@@ -727,7 +727,7 @@ export class VelgEpochOpsBoard extends LitElement {
       align-items: center;
       justify-content: center;
       padding: var(--space-10) var(--space-6);
-      border: 1px dashed var(--color-gray-700);
+      border: 1px dashed var(--color-border);
       overflow: hidden;
       min-height: 240px;
     }
@@ -742,7 +742,7 @@ export class VelgEpochOpsBoard extends LitElement {
       height: 180px;
       transform: translate(-50%, -50%);
       border-radius: 50%;
-      border: 1px solid color-mix(in srgb, var(--color-gray-600) 15%, transparent);
+      border: 1px solid color-mix(in srgb, var(--color-border) 15%, transparent);
       background: conic-gradient(
         from 0deg,
         transparent 0deg,
@@ -767,13 +767,13 @@ export class VelgEpochOpsBoard extends LitElement {
         radial-gradient(
           circle,
           transparent 29%,
-          color-mix(in srgb, var(--color-gray-600) 8%, transparent) 30%,
+          color-mix(in srgb, var(--color-border) 8%, transparent) 30%,
           transparent 31%,
           transparent 59%,
-          color-mix(in srgb, var(--color-gray-600) 8%, transparent) 60%,
+          color-mix(in srgb, var(--color-border) 8%, transparent) 60%,
           transparent 61%,
           transparent 89%,
-          color-mix(in srgb, var(--color-gray-600) 8%, transparent) 90%,
+          color-mix(in srgb, var(--color-border) 8%, transparent) 90%,
           transparent 91%
         );
       pointer-events: none;
@@ -784,7 +784,7 @@ export class VelgEpochOpsBoard extends LitElement {
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.35em;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       position: relative;
       z-index: 1;
       animation: empty-pulse 3s ease-in-out infinite;
@@ -798,7 +798,7 @@ export class VelgEpochOpsBoard extends LitElement {
     .ops-board__empty-sub {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       margin-top: var(--space-2);
       position: relative;
       z-index: 1;
@@ -809,10 +809,10 @@ export class VelgEpochOpsBoard extends LitElement {
     .ops-board__no-auth {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       text-align: center;
       padding: var(--space-8);
-      border: 1px dashed var(--color-gray-800);
+      border: 1px dashed var(--color-border);
     }
 
     /* ── Past epochs section in ops board ── */
@@ -822,10 +822,10 @@ export class VelgEpochOpsBoard extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       margin: var(--space-8) 0 var(--space-3);
       padding-bottom: var(--space-2);
-      border-bottom: 1px solid var(--color-gray-800);
+      border-bottom: 1px solid var(--color-border);
     }
 
     /* ── COMMS Toggle ─────────────────────── */
@@ -840,9 +840,9 @@ export class VelgEpochOpsBoard extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.12em;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       background: transparent;
-      border: 1px solid var(--color-gray-700);
+      border: 1px solid var(--color-border);
       cursor: pointer;
       transition: all 0.25s;
       position: relative;
@@ -865,8 +865,8 @@ export class VelgEpochOpsBoard extends LitElement {
     }
 
     .comms-toggle:hover {
-      border-color: var(--color-gray-500);
-      color: var(--color-gray-300);
+      border-color: var(--color-text-muted);
+      color: var(--color-text-tertiary);
     }
 
     .comms-toggle--active {
@@ -902,7 +902,7 @@ export class VelgEpochOpsBoard extends LitElement {
       padding: 0 3px;
       border-radius: 7px;
       background: var(--color-warning);
-      color: var(--color-gray-950);
+      color: var(--color-surface-sunken);
       font-size: 8px;
       font-weight: 900;
       letter-spacing: 0;
@@ -926,8 +926,8 @@ export class VelgEpochOpsBoard extends LitElement {
       height: calc(100vh - var(--header-height, 56px) - var(--space-8));
       display: flex;
       flex-direction: column;
-      border: 1px solid var(--color-gray-800);
-      background: var(--color-gray-950);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface-sunken);
       overflow: hidden;
       animation: comms-open 0.35s ease-out;
       z-index: 2;
@@ -967,7 +967,7 @@ export class VelgEpochOpsBoard extends LitElement {
       align-items: center;
       gap: var(--space-2);
       padding: var(--space-2-5) var(--space-3);
-      border-bottom: 1px solid var(--color-gray-800);
+      border-bottom: 1px solid var(--color-border);
       background: color-mix(in srgb, var(--color-warning) 3%, transparent);
       flex-shrink: 0;
     }
@@ -1018,7 +1018,7 @@ export class VelgEpochOpsBoard extends LitElement {
       justify-content: center;
       background: none;
       border: 1px solid transparent;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       cursor: pointer;
       font-size: 10px;
       transition: all 0.2s;
@@ -1026,8 +1026,8 @@ export class VelgEpochOpsBoard extends LitElement {
     }
 
     .comms-sidebar__close:hover {
-      color: var(--color-gray-300);
-      border-color: var(--color-gray-700);
+      color: var(--color-text-tertiary);
+      border-color: var(--color-border);
     }
 
     .comms-sidebar__body {
@@ -1065,13 +1065,13 @@ export class VelgEpochOpsBoard extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     .comms-empty__desc {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       line-height: 1.5;
     }
 
@@ -1113,7 +1113,7 @@ export class VelgEpochOpsBoard extends LitElement {
 
       .dossier-progress__seg--current {
         animation: none;
-        background: color-mix(in srgb, var(--dossier-color) 50%, var(--color-gray-800));
+        background: color-mix(in srgb, var(--dossier-color) 50%, var(--color-border));
       }
 
       .ops-board__empty::before {

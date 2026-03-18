@@ -594,7 +594,7 @@ export class VelgLoreScroll extends LitElement {
 
       /* Lore color tokens — defaults match dashboard (white-on-dark) */
       --lore-text: rgba(255, 255, 255, 0.75);
-      --lore-heading: #fff;
+      --lore-heading: var(--color-text-primary);
       --lore-muted: rgba(255, 255, 255, 0.6);
       --lore-faint: rgba(255, 255, 255, 0.45);
       --lore-accent: rgba(255, 200, 100, 0.7);
@@ -907,12 +907,12 @@ export class VelgLoreScroll extends LitElement {
     /* ── Classified Section Styling ── */
 
     .section--classified .section__header {
-      border-left-color: var(--color-accent-amber, #f59e0b);
+      border-left-color: var(--color-accent-amber);
       border-left-width: 4px;
     }
 
     .section--classified .section__arcanum {
-      color: var(--color-accent-amber, #f59e0b);
+      color: var(--color-accent-amber);
     }
 
     .section--classified .classified-stamp {
@@ -922,11 +922,11 @@ export class VelgLoreScroll extends LitElement {
       font-weight: 900;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: var(--color-accent-amber, #f59e0b);
+      color: var(--color-accent-amber);
       padding: var(--space-1) var(--space-2);
       margin-bottom: var(--space-1);
-      border: 1px solid color-mix(in srgb, var(--color-accent-amber, #f59e0b) 40%, transparent);
-      background: color-mix(in srgb, var(--color-accent-amber, #f59e0b) 5%, transparent);
+      border: 1px solid color-mix(in srgb, var(--color-accent-amber) 40%, transparent);
+      background: color-mix(in srgb, var(--color-accent-amber) 5%, transparent);
       width: fit-content;
     }
 

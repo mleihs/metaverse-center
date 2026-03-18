@@ -43,8 +43,8 @@ export class VelgForgeIgnition extends LitElement {
       /* ── Summary Review ────────────────────── */
 
       .summary {
-        background: var(--color-gray-900, #111827);
-        border: 1px solid var(--color-gray-700, #374151);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
         padding: var(--space-6);
       }
 
@@ -53,10 +53,10 @@ export class VelgForgeIgnition extends LitElement {
         font-size: var(--text-xs);
         text-transform: uppercase;
         letter-spacing: 0.1em;
-        color: var(--color-gray-400, #9ca3af);
+        color: var(--color-text-muted);
         margin: 0 0 var(--space-4);
         padding-bottom: var(--space-3);
-        border-bottom: 1px solid var(--color-gray-700, #374151);
+        border-bottom: 1px solid var(--color-border);
       }
 
       .summary__rows {
@@ -77,13 +77,13 @@ export class VelgForgeIgnition extends LitElement {
         font-size: var(--text-xs);
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        color: var(--color-gray-300, #d1d5db);
+        color: var(--color-text-tertiary);
       }
 
       .summary__value {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-sm);
-        color: var(--color-gray-100, #f3f4f6);
+        color: var(--color-text-primary);
         text-align: right;
         max-width: 60%;
         overflow: hidden;
@@ -94,25 +94,25 @@ export class VelgForgeIgnition extends LitElement {
       /* ── Generation Cost Preview ────────── */
 
       .cost-preview {
-        background: rgba(59 130 246 / 0.05);
-        border: 1px solid var(--color-gray-700, #374151);
+        background: color-mix(in srgb, var(--color-info) 5%, transparent);
+        border: 1px solid var(--color-border);
         padding: var(--space-4);
         font-family: var(--font-mono, monospace);
         font-size: var(--text-sm);
-        color: var(--color-gray-300, #d1d5db);
+        color: var(--color-text-tertiary);
         line-height: 1.6;
       }
 
       .cost-preview__highlight {
-        color: var(--color-gray-200, #e5e7eb);
+        color: var(--color-text-secondary);
         font-weight: 700;
       }
 
       /* ── Danger Zone ────────────────────── */
 
       .danger-zone {
-        background: var(--color-gray-900, #111827);
-        border: 2px solid var(--color-danger, #ef4444);
+        background: var(--color-surface);
+        border: 2px solid var(--color-danger);
         padding: var(--space-8);
         text-align: center;
         position: relative;
@@ -120,14 +120,14 @@ export class VelgForgeIgnition extends LitElement {
       }
 
       @keyframes danger-pulse {
-        0%, 100% { box-shadow: 0 0 0px rgba(239 68 68 / 0); }
-        50% { box-shadow: 0 0 20px rgba(239 68 68 / 0.3); }
+        0%, 100% { box-shadow: none; }
+        50% { box-shadow: 0 0 20px var(--color-danger-border); }
       }
 
       @media (prefers-reduced-motion: reduce) {
         .danger-zone {
           animation: none;
-          box-shadow: 0 0 10px rgba(239 68 68 / 0.2);
+          box-shadow: 0 0 10px var(--color-danger-glow);
         }
       }
 
@@ -137,14 +137,14 @@ export class VelgForgeIgnition extends LitElement {
         font-size: var(--text-xl);
         text-transform: uppercase;
         letter-spacing: var(--tracking-wide, 0.05em);
-        color: #f87171;
+        color: var(--color-danger);
         margin: 0 0 var(--space-4);
       }
 
       .danger-zone__text {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-sm);
-        color: var(--color-gray-300, #d1d5db);
+        color: var(--color-text-tertiary);
         line-height: 1.6;
         margin: 0 0 var(--space-8);
       }
@@ -162,9 +162,9 @@ export class VelgForgeIgnition extends LitElement {
         font-size: var(--text-xl);
         text-transform: uppercase;
         letter-spacing: 0.15em;
-        color: white;
+        color: var(--color-text-inverse);
         cursor: pointer;
-        border: 2px solid var(--color-danger, #ef4444);
+        border: 2px solid var(--color-danger);
         position: relative;
         overflow: hidden;
         background: transparent;
@@ -175,7 +175,7 @@ export class VelgForgeIgnition extends LitElement {
       .btn-hold__fill {
         position: absolute;
         inset: 0;
-        background: var(--color-danger, #ef4444);
+        background: var(--color-danger);
         transform-origin: left;
         transform: scaleX(0);
         transition: transform 0.05s linear;
@@ -195,8 +195,8 @@ export class VelgForgeIgnition extends LitElement {
       /* ── Error Box ───────────────────────── */
 
       .error-box {
-        background: var(--color-gray-900, #111827);
-        border: 1px solid var(--color-danger, #ef4444);
+        background: var(--color-surface);
+        border: 1px solid var(--color-danger);
         padding: var(--space-6);
         text-align: center;
       }
@@ -204,7 +204,7 @@ export class VelgForgeIgnition extends LitElement {
       .error-box__message {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-sm);
-        color: var(--color-danger, #ef4444);
+        color: var(--color-danger);
         margin: 0 0 var(--space-4);
       }
     `,

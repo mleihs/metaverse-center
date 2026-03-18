@@ -24,8 +24,8 @@ export class VelgStyleReferenceUpload extends LitElement {
     .tray {
       position: relative;
       min-height: 120px;
-      background: var(--color-gray-950, #030712);
-      border: 1px dashed var(--color-gray-600, #4b5563);
+      background: var(--color-surface-sunken);
+      border: 1px dashed var(--color-border);
       box-shadow: inset 0 2px 8px rgba(0 0 0 / 0.4);
       display: flex;
       flex-direction: column;
@@ -38,14 +38,14 @@ export class VelgStyleReferenceUpload extends LitElement {
     }
 
     .tray:hover {
-      border-color: var(--color-gray-500, #6b7280);
+      border-color: var(--color-text-muted);
     }
 
     .tray--dragover {
-      border-color: var(--color-success, #22c55e);
+      border-color: var(--color-success);
       box-shadow:
         inset 0 2px 8px rgba(0 0 0 / 0.4),
-        0 0 12px rgba(34 197 94 / 0.15);
+        0 0 12px var(--color-success-glow);
     }
 
     /* Scanline overlay on dragover */
@@ -74,35 +74,35 @@ export class VelgStyleReferenceUpload extends LitElement {
     }
 
     .tray--error {
-      border-color: var(--color-danger, #ef4444);
+      border-color: var(--color-danger);
       animation: error-flash 0.3s ease;
     }
 
     @keyframes error-flash {
-      0%, 100% { border-color: var(--color-danger, #ef4444); }
-      50% { border-color: rgba(239 68 68 / 0.4); }
+      0%, 100% { border-color: var(--color-danger); }
+      50% { border-color: var(--color-danger-border); }
     }
 
     .tray--success {
-      border-color: var(--color-success, #22c55e);
+      border-color: var(--color-success);
       animation: success-flash 0.4s ease;
     }
 
     @keyframes success-flash {
-      0% { border-color: var(--color-success, #22c55e); box-shadow: 0 0 0 rgba(34 197 94 / 0); }
-      50% { box-shadow: 0 0 16px rgba(34 197 94 / 0.3); }
-      100% { border-color: var(--color-gray-600, #4b5563); box-shadow: 0 0 0 rgba(34 197 94 / 0); }
+      0% { border-color: var(--color-success); box-shadow: 0 0 0 transparent; }
+      50% { box-shadow: 0 0 16px var(--color-success-glow); }
+      100% { border-color: var(--color-border); box-shadow: 0 0 0 transparent; }
     }
 
     /* ── Empty State ──────────────────────────── */
 
     .tray__icon {
-      color: var(--color-gray-500, #6b7280);
+      color: var(--color-icon);
       transition: color 0.2s;
     }
 
     .tray--dragover .tray__icon {
-      color: var(--color-success, #22c55e);
+      color: var(--color-success);
     }
 
     .tray__label {
@@ -110,14 +110,14 @@ export class VelgStyleReferenceUpload extends LitElement {
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: var(--color-gray-400, #9ca3af);
+      color: var(--color-icon);
       text-align: center;
     }
 
     .tray__hint {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-gray-500, #6b7280);
+      color: var(--color-text-muted);
     }
 
     .tray__input {
@@ -141,7 +141,7 @@ export class VelgStyleReferenceUpload extends LitElement {
       max-height: 200px;
       object-fit: cover;
       display: block;
-      border: 1px solid var(--color-gray-700, #374151);
+      border: 1px solid var(--color-border);
       transition: transform 0.2s;
     }
 
@@ -172,31 +172,31 @@ export class VelgStyleReferenceUpload extends LitElement {
       justify-content: center;
       width: 36px;
       height: 36px;
-      background: var(--color-gray-800, #1f2937);
-      border: 1px solid var(--color-gray-600, #4b5563);
-      color: var(--color-gray-200, #e5e7eb);
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      color: var(--color-text-secondary);
       cursor: pointer;
       transition: all 0.15s;
       padding: 0;
     }
 
     .preview__action:hover {
-      background: var(--color-gray-700, #374151);
-      border-color: var(--color-gray-400, #9ca3af);
+      background: var(--color-border);
+      border-color: var(--color-icon);
       transform: scale(1.1);
     }
 
     .preview__action--delete:hover {
-      border-color: var(--color-danger, #ef4444);
-      color: var(--color-danger, #ef4444);
+      border-color: var(--color-danger);
+      color: var(--color-danger);
     }
 
     /* ── Loading Shimmer ─────────────────────── */
 
     .shimmer {
       min-height: 120px;
-      background: var(--color-gray-950, #030712);
-      border: 1px solid var(--color-gray-700, #374151);
+      background: var(--color-surface-sunken);
+      border: 1px solid var(--color-border);
       position: relative;
       overflow: hidden;
     }
@@ -233,9 +233,9 @@ export class VelgStyleReferenceUpload extends LitElement {
 
     .url-row__input {
       flex: 1;
-      background: var(--color-gray-950, #030712);
-      color: var(--color-gray-100, #f3f4f6);
-      border: 1px solid var(--color-gray-700, #374151);
+      background: var(--color-surface-sunken);
+      color: var(--color-text-primary);
+      border: 1px solid var(--color-border);
       padding: var(--space-1) var(--space-2);
       font-family: var(--font-mono, monospace);
       font-size: 11px;
@@ -245,18 +245,18 @@ export class VelgStyleReferenceUpload extends LitElement {
 
     .url-row__input:focus {
       outline: none;
-      border-color: var(--color-success, #22c55e);
+      border-color: var(--color-success);
     }
 
     .url-row__input::placeholder {
-      color: var(--color-gray-500, #6b7280);
+      color: var(--color-text-muted);
     }
 
     .url-row__btn {
       padding: var(--space-1) var(--space-2);
-      background: var(--color-gray-800, #1f2937);
-      border: 1px solid var(--color-gray-600, #4b5563);
-      color: var(--color-gray-300, #d1d5db);
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      color: var(--color-text-tertiary);
       font-family: var(--font-mono, monospace);
       font-size: 11px;
       text-transform: uppercase;
@@ -266,8 +266,8 @@ export class VelgStyleReferenceUpload extends LitElement {
     }
 
     .url-row__btn:hover {
-      background: var(--color-gray-700, #374151);
-      border-color: var(--color-gray-500, #6b7280);
+      background: var(--color-border);
+      border-color: var(--color-text-muted);
     }
 
     .url-row__btn:disabled {
@@ -280,7 +280,7 @@ export class VelgStyleReferenceUpload extends LitElement {
     .error-msg {
       font-family: var(--font-mono, monospace);
       font-size: 11px;
-      color: var(--color-danger, #ef4444);
+      color: var(--color-danger);
       margin-top: var(--space-1);
     }
 
@@ -289,7 +289,7 @@ export class VelgStyleReferenceUpload extends LitElement {
     .aspect-hint {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-gray-500, #6b7280);
+      color: var(--color-text-muted);
       text-align: center;
       margin-top: var(--space-1);
     }

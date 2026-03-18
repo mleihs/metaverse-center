@@ -132,7 +132,7 @@ export class VelgDossierRequest extends LitElement {
     }
 
     .cta__cost--bypass {
-      color: var(--color-success, #22c55e);
+      color: var(--color-success);
     }
 
     .cta__btn {
@@ -145,7 +145,7 @@ export class VelgDossierRequest extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: #030712;
+      color: var(--color-text-inverse);
       background: var(--color-accent-amber);
       border: 1px solid var(--color-accent-amber);
       cursor: pointer;
@@ -223,7 +223,7 @@ export class VelgDossierRequest extends LitElement {
     }
 
     .slot__indicator--done {
-      background: var(--color-success, #22c55e);
+      background: var(--color-success);
     }
 
     @keyframes indicator-pulse {
@@ -300,7 +300,7 @@ export class VelgDossierRequest extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: #030712;
+      color: var(--color-text-inverse);
       background: var(--color-accent-amber);
       border: 1px solid var(--color-accent-amber);
       cursor: pointer;

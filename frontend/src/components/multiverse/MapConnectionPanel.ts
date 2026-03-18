@@ -30,11 +30,11 @@ export class VelgMapConnectionPanel extends LitElement {
       font-size: var(--text-base, 16px);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist, 0.08em);
-      color: var(--color-text, #fff);
+      color: var(--color-text);
     }
 
     .panel__arrow {
-      color: var(--color-text-muted, #888);
+      color: var(--color-text-muted);
       font-size: var(--text-lg, 18px);
     }
 
@@ -49,11 +49,11 @@ export class VelgMapConnectionPanel extends LitElement {
       font-weight: var(--font-bold, 700);
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: var(--color-text-muted, #888);
+      color: var(--color-text-muted);
     }
 
     .panel__value {
-      color: var(--color-text, #fff);
+      color: var(--color-text);
       font-size: var(--text-sm, 14px);
       line-height: 1.5;
     }
@@ -73,26 +73,26 @@ export class VelgMapConnectionPanel extends LitElement {
     .panel__strength-bar {
       flex: 1;
       height: 6px;
-      background: var(--color-border-light, #333);
+      background: var(--color-border-light);
       position: relative;
     }
 
     .panel__strength-fill {
       height: 100%;
-      background: var(--color-primary, #ef4444);
+      background: var(--color-primary);
       transition: width 0.3s ease;
     }
 
     .panel__strength-label {
       font-size: var(--text-sm, 14px);
       font-weight: var(--font-bold, 700);
-      color: var(--color-text, #fff);
+      color: var(--color-text);
       min-width: 36px;
       text-align: right;
     }
 
     .panel__description {
-      color: var(--color-text-secondary, #aaa);
+      color: var(--color-text-secondary);
       font-size: var(--text-sm, 14px);
       line-height: 1.6;
       font-style: italic;

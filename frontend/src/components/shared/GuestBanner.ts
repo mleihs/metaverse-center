@@ -19,7 +19,7 @@ export class VelgGuestBanner extends LitElement {
       display: block;
       position: sticky;
       top: 0;
-      z-index: 50;
+      z-index: var(--z-raised);
       animation: banner-enter 400ms cubic-bezier(0.22, 1, 0.36, 1) both;
     }
 
@@ -38,8 +38,8 @@ export class VelgGuestBanner extends LitElement {
     }
 
     @keyframes cta-glow {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.15); }
-      50%      { box-shadow: 0 0 12px 2px rgba(245, 158, 11, 0.2); }
+      0%, 100% { box-shadow: 0 0 0 0 var(--color-warning-glow); }
+      50%      { box-shadow: 0 0 12px 2px var(--color-warning-glow); }
     }
 
     .banner {
@@ -49,8 +49,8 @@ export class VelgGuestBanner extends LitElement {
       gap: 12px;
       height: 44px;
       padding: 0 16px;
-      background: #111;
-      border-bottom: 1px solid #222;
+      background: var(--color-surface);
+      border-bottom: 1px solid var(--color-border-light);
       position: relative;
       overflow: hidden;
     }
@@ -66,9 +66,9 @@ export class VelgGuestBanner extends LitElement {
       background: linear-gradient(
         90deg,
         transparent 0%,
-        rgba(245, 158, 11, 0.4) 30%,
-        rgba(245, 158, 11, 0.6) 50%,
-        rgba(245, 158, 11, 0.4) 70%,
+        color-mix(in srgb, var(--color-primary) 40%, transparent) 30%,
+        color-mix(in srgb, var(--color-primary) 60%, transparent) 50%,
+        color-mix(in srgb, var(--color-primary) 40%, transparent) 70%,
         transparent 100%
       );
     }
@@ -77,14 +77,14 @@ export class VelgGuestBanner extends LitElement {
       flex-shrink: 0;
       width: 6px;
       height: 6px;
-      background: #f59e0b;
+      background: var(--color-primary);
       clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
     }
 
     .banner__text {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 11px;
-      color: #888;
+      color: var(--color-text-muted);
       letter-spacing: 0.5px;
       white-space: nowrap;
       overflow: hidden;
@@ -100,8 +100,8 @@ export class VelgGuestBanner extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 2px;
-      color: #0a0a0a;
-      background: #f59e0b;
+      color: var(--color-text-inverse);
+      background: var(--color-primary);
       border: none;
       cursor: pointer;
       transition: background 150ms, transform 150ms;
@@ -110,7 +110,7 @@ export class VelgGuestBanner extends LitElement {
     }
 
     .banner__cta:hover {
-      background: #fbbf24;
+      background: var(--color-primary-hover);
       transform: translateY(-1px);
     }
 
@@ -127,19 +127,19 @@ export class VelgGuestBanner extends LitElement {
       height: 28px;
       background: none;
       border: 1px solid transparent;
-      color: #9ca3af;
+      color: var(--color-icon);
       cursor: pointer;
       padding: 0;
       transition: color 150ms, border-color 150ms;
     }
 
     .banner__dismiss:hover {
-      color: #999;
-      border-color: #333;
+      color: var(--color-text-muted);
+      border-color: var(--color-border);
     }
 
     .banner__dismiss:focus-visible {
-      outline: 2px solid #f59e0b;
+      outline: 2px solid var(--color-primary);
       outline-offset: -2px;
     }
 

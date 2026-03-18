@@ -21,12 +21,12 @@ const LAST_TAB_PREFIX = 'velg-sim-tab-';
 
 /** Theme → display color mapping for badges. */
 const THEME_COLORS: Record<string, string> = {
-  dystopian: '#ef4444',
-  utopian: '#34d399',
-  fantasy: '#a78bfa',
-  scifi: '#38bdf8',
-  historical: '#fbbf24',
-  custom: '#f59e0b',
+  dystopian: 'var(--color-danger)',
+  utopian: 'var(--color-success)',
+  fantasy: '#a78bfa', // lint-color-ok
+  scifi: '#38bdf8', // lint-color-ok
+  historical: 'var(--color-primary-hover)',
+  custom: 'var(--color-primary)',
 };
 
 function getLastTab(simId: string): string {
@@ -65,9 +65,9 @@ export class VelgSimulationSwitcher extends SignalWatcher(LitElement) {
       font-size: var(--text-sm, 14px);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist, 0.08em);
-      color: #f59e0b;
-      background: rgba(245, 158, 11, 0.04);
-      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: var(--color-primary);
+      background: color-mix(in srgb, var(--color-primary) 4%, transparent);
+      border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
       cursor: pointer;
       white-space: nowrap;
       max-width: 260px;
@@ -79,9 +79,9 @@ export class VelgSimulationSwitcher extends SignalWatcher(LitElement) {
 
     .trigger:hover,
     .trigger[aria-expanded='true'] {
-      background: rgba(245, 158, 11, 0.08);
-      border-color: #f59e0b;
-      box-shadow: 0 0 12px rgba(245, 158, 11, 0.15);
+      background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+      border-color: var(--color-primary);
+      box-shadow: 0 0 12px var(--color-primary-glow);
     }
 
     .trigger__diamond {
@@ -128,22 +128,22 @@ export class VelgSimulationSwitcher extends SignalWatcher(LitElement) {
       width: 380px;
       max-height: 480px;
       overflow-y: auto;
-      background: #0d0d0d;
-      border: 1px solid #2a2a2a;
-      border-top: 2px solid #f59e0b;
+      background: var(--color-surface-sunken);
+      border: 1px solid var(--color-border);
+      border-top: 2px solid var(--color-primary);
       box-shadow:
         0 12px 40px rgba(0, 0, 0, 0.7),
-        0 0 1px rgba(245, 158, 11, 0.3);
+        0 0 1px color-mix(in srgb, var(--color-primary) 30%, transparent);
       padding: var(--space-3, 12px);
       animation: panel-enter 200ms cubic-bezier(0.23, 1, 0.32, 1) both;
 
       scrollbar-width: thin;
-      scrollbar-color: #333 transparent;
+      scrollbar-color: var(--color-border) transparent;
     }
 
     .panel::-webkit-scrollbar { width: 4px; }
     .panel::-webkit-scrollbar-track { background: transparent; }
-    .panel::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+    .panel::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 2px; }
 
     /* Corner brackets */
     .panel::before,
@@ -152,7 +152,7 @@ export class VelgSimulationSwitcher extends SignalWatcher(LitElement) {
       position: absolute;
       width: 12px;
       height: 12px;
-      border-color: #f59e0b;
+      border-color: var(--color-primary);
       border-style: solid;
       pointer-events: none;
       opacity: 0.4;
@@ -185,18 +185,18 @@ export class VelgSimulationSwitcher extends SignalWatcher(LitElement) {
       padding: 6px 10px 6px 28px;
       font-family: var(--font-mono, monospace);
       font-size: 12px;
-      color: #ccc;
-      background: #111;
-      border: 1px solid #2a2a2a;
+      color: var(--color-text-tertiary);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
       outline: none;
       transition: border-color 200ms, box-shadow 200ms;
     }
 
-    .search__input::placeholder { color: #444; }
+    .search__input::placeholder { color: var(--color-text-muted); }
 
     .search__input:focus {
-      border-color: rgba(245, 158, 11, 0.5);
-      box-shadow: 0 0 8px rgba(245, 158, 11, 0.1);
+      border-color: color-mix(in srgb, var(--color-primary) 50%, transparent);
+      box-shadow: 0 0 8px color-mix(in srgb, var(--color-primary) 10%, transparent);
     }
 
     .search__icon {
@@ -204,7 +204,7 @@ export class VelgSimulationSwitcher extends SignalWatcher(LitElement) {
       left: 8px;
       top: 50%;
       transform: translateY(-50%);
-      color: #444;
+      color: var(--color-text-muted);
       pointer-events: none;
       display: flex;
     }
@@ -217,13 +217,13 @@ export class VelgSimulationSwitcher extends SignalWatcher(LitElement) {
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.15em;
-      color: #555;
+      color: var(--color-text-muted);
       margin: var(--space-2, 8px) 0 var(--space-1, 4px);
     }
 
     .divider {
       height: 1px;
-      background: linear-gradient(90deg, transparent, #2a2a2a 20%, #2a2a2a 80%, transparent);
+      background: linear-gradient(90deg, transparent, var(--color-border) 20%, var(--color-border) 80%, transparent);
       margin: var(--space-2, 8px) 0;
     }
 
@@ -243,20 +243,20 @@ export class VelgSimulationSwitcher extends SignalWatcher(LitElement) {
     }
 
     .sim-card:hover {
-      background: rgba(245, 158, 11, 0.06);
-      border-left-color: rgba(245, 158, 11, 0.3);
+      background: color-mix(in srgb, var(--color-primary) 6%, transparent);
+      border-left-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
     }
 
     .sim-card--active {
-      background: rgba(245, 158, 11, 0.04);
-      border-left-color: #f59e0b;
+      background: color-mix(in srgb, var(--color-primary) 4%, transparent);
+      border-left-color: var(--color-primary);
     }
 
     .sim-card__name {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold, 700);
       font-size: var(--text-sm, 14px);
-      color: #ccc;
+      color: var(--color-text-tertiary);
       text-transform: uppercase;
       letter-spacing: 0.04em;
       overflow: hidden;
@@ -265,7 +265,7 @@ export class VelgSimulationSwitcher extends SignalWatcher(LitElement) {
     }
 
     .sim-card--active .sim-card__name {
-      color: #f59e0b;
+      color: var(--color-primary);
     }
 
     .sim-card__meta {
@@ -292,24 +292,24 @@ export class VelgSimulationSwitcher extends SignalWatcher(LitElement) {
       gap: 4px;
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      color: #555;
+      color: var(--color-text-muted);
     }
 
     .sim-card__status-dot {
       width: 5px;
       height: 5px;
       border-radius: 50%;
-      background: #555;
+      background: var(--color-text-muted);
     }
 
-    .sim-card__status-dot--active { background: #34d399; }
-    .sim-card__status-dot--draft { background: #fbbf24; }
-    .sim-card__status-dot--paused { background: #ef4444; }
+    .sim-card__status-dot--active { background: var(--color-success); }
+    .sim-card__status-dot--draft { background: var(--color-primary-hover); }
+    .sim-card__status-dot--paused { background: var(--color-danger); }
 
     .sim-card__stats {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: #555;
+      color: var(--color-text-muted);
       white-space: nowrap;
       grid-row: 1 / -1;
       grid-column: 2;
@@ -330,8 +330,8 @@ export class VelgSimulationSwitcher extends SignalWatcher(LitElement) {
       font-size: var(--text-xs, 12px);
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: #f59e0b;
-      border: 1px dashed rgba(245, 158, 11, 0.3);
+      color: var(--color-primary);
+      border: 1px dashed color-mix(in srgb, var(--color-primary) 30%, transparent);
       background: transparent;
       cursor: pointer;
       width: 100%;
@@ -341,14 +341,14 @@ export class VelgSimulationSwitcher extends SignalWatcher(LitElement) {
     }
 
     .cta:hover {
-      background: rgba(245, 158, 11, 0.06);
-      border-color: #f59e0b;
+      background: color-mix(in srgb, var(--color-primary) 6%, transparent);
+      border-color: var(--color-primary);
     }
 
     .empty {
       font-family: var(--font-mono, monospace);
       font-size: 11px;
-      color: #555;
+      color: var(--color-text-muted);
       text-align: center;
       padding: var(--space-4, 16px);
     }
@@ -473,7 +473,7 @@ export class VelgSimulationSwitcher extends SignalWatcher(LitElement) {
 
   private _renderSimCard(sim: Simulation) {
     const isActive = this._currentSim?.id === sim.id;
-    const themeColor = THEME_COLORS[sim.theme] ?? '#888';
+    const themeColor = THEME_COLORS[sim.theme] ?? 'var(--color-text-muted)';
     const statusClass =
       sim.status === 'active'
         ? '--active'

@@ -240,7 +240,7 @@ export class VelgAdminResearchTab extends LitElement {
       width: max-content;
       max-width: 260px;
       padding: var(--space-2) var(--space-3);
-      background: var(--color-gray-950, #0a0a0a);
+      background: var(--color-surface-sunken);
       color: var(--color-text-secondary);
       border: 1px solid var(--color-border);
       font-family: var(--font-mono, monospace);
@@ -269,7 +269,7 @@ export class VelgAdminResearchTab extends LitElement {
       left: 50%;
       transform: translateX(-50%);
       border: 4px solid transparent;
-      border-bottom-color: var(--color-gray-950, #0a0a0a);
+      border-bottom-color: var(--color-surface-sunken);
     }
 
     .info-trigger:hover .info-bubble,
@@ -294,7 +294,7 @@ export class VelgAdminResearchTab extends LitElement {
       align-items: center;
       gap: var(--space-1);
       padding: var(--space-0-5) var(--space-1) var(--space-0-5) var(--space-2);
-      background: var(--color-background);
+      background: var(--color-surface);
       border: 1px solid var(--color-border);
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
@@ -353,7 +353,7 @@ export class VelgAdminResearchTab extends LitElement {
       padding: var(--space-2) var(--space-3);
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-      background: var(--color-background);
+      background: var(--color-surface);
       color: var(--color-text-primary);
       border: 1px solid var(--color-border);
       border-radius: 0;
@@ -436,7 +436,7 @@ export class VelgAdminResearchTab extends LitElement {
 
     .btn--save {
       background: var(--color-accent-amber);
-      color: var(--color-gray-950);
+      color: var(--color-surface-sunken);
       border: 1px solid var(--color-accent-amber);
     }
 

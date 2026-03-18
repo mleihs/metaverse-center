@@ -29,7 +29,7 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
       position: relative;
       width: 100%;
       min-height: 500px;
-      color: var(--color-text-primary, #e5e5e5);
+      color: var(--color-text-primary);
     }
 
     *,
@@ -45,8 +45,8 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
       flex-direction: column;
       height: calc(100vh - var(--header-height, 56px) - 140px);
       min-height: 500px;
-      background: var(--color-surface, #0a0a0a);
-      border: 1px solid var(--color-border, #333);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
       overflow: hidden;
     }
 
@@ -57,9 +57,11 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
       inset: 0;
       pointer-events: none;
       z-index: 2;
+      --_glow-subtle: color-mix(in srgb, var(--color-primary) 1.5%, transparent);
+      --_glow-edge: color-mix(in srgb, var(--color-primary) 8%, transparent);
       box-shadow:
-        inset 0 0 60px rgba(245, 158, 11, 0.015),
-        inset 0 1px 0 rgba(245, 158, 11, 0.08);
+        inset 0 0 60px var(--_glow-subtle),
+        inset 0 1px 0 var(--_glow-edge);
     }
 
     /* ── Toolbar ─────────────────────────────── */
@@ -69,8 +71,8 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
       align-items: center;
       justify-content: space-between;
       padding: var(--space-2, 8px) var(--space-4, 16px);
-      background: var(--color-surface-raised, #111);
-      border-bottom: 1px solid var(--color-border, #333);
+      background: var(--color-surface-raised);
+      border-bottom: 1px solid var(--color-border);
       z-index: 3;
     }
 
@@ -111,8 +113,8 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
       gap: var(--space-1, 4px);
       padding: var(--space-1, 4px) var(--space-2, 8px);
       background: none;
-      border: 1px solid var(--color-border, #333);
-      color: var(--color-text-muted, #888);
+      border: 1px solid var(--color-border);
+      color: var(--color-text-muted);
       font-family: var(--font-mono, monospace);
       font-size: 10px;
       text-transform: uppercase;
@@ -122,15 +124,15 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
     }
 
     .desk__tool-btn:hover {
-      color: var(--color-text-primary, #e5e5e5);
-      border-color: var(--color-text-muted, #888);
+      color: var(--color-text-primary);
+      border-color: var(--color-text-muted);
       background: rgba(255, 255, 255, 0.03);
     }
 
     .desk__tool-btn--active {
-      color: var(--color-primary, #f59e0b);
-      border-color: var(--color-primary, #f59e0b);
-      background: rgba(245, 158, 11, 0.06);
+      color: var(--color-primary);
+      border-color: var(--color-primary);
+      background: color-mix(in srgb, var(--color-primary) 6%, transparent);
     }
 
     .desk__zoom-group {
@@ -146,8 +148,8 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
       width: 24px;
       height: 24px;
       background: none;
-      border: 1px solid var(--color-border, #333);
-      color: var(--color-text-muted, #888);
+      border: 1px solid var(--color-border);
+      color: var(--color-text-muted);
       font-family: var(--font-mono, monospace);
       font-size: 12px;
       font-weight: 700;
@@ -156,14 +158,14 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
     }
 
     .desk__zoom-btn:hover {
-      color: var(--color-text-primary, #e5e5e5);
-      border-color: var(--color-text-muted, #888);
+      color: var(--color-text-primary);
+      border-color: var(--color-text-muted);
     }
 
     .desk__zoom-label {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      color: var(--color-text-muted, #888);
+      color: var(--color-text-muted);
       min-width: 32px;
       text-align: center;
     }
@@ -194,7 +196,7 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
       bottom: var(--space-4, 16px);
       right: var(--space-4, 16px);
       opacity: 0.08;
-      color: var(--color-text-muted, #888);
+      color: var(--color-text-muted);
       pointer-events: none;
       z-index: 1;
       transition: opacity 0.3s ease;
@@ -212,7 +214,7 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
       right: var(--space-3, 12px);
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      color: var(--color-text-muted, #888);
+      color: var(--color-text-muted);
       opacity: 0.5;
       z-index: 1;
       pointer-events: none;
@@ -227,9 +229,9 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
       padding: var(--space-1, 4px) var(--space-4, 16px);
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      color: var(--color-text-muted, #888);
-      background: var(--color-surface-raised, #111);
-      border-top: 1px solid var(--color-border, #333);
+      color: var(--color-text-muted);
+      background: var(--color-surface-raised);
+      border-top: 1px solid var(--color-border);
       z-index: 3;
     }
 
@@ -260,7 +262,7 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
     .desk__scale-line {
       width: 50px;
       height: 1px;
-      background: var(--color-text-muted, #888);
+      background: var(--color-text-muted);
       position: relative;
     }
 
@@ -271,7 +273,7 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
       top: -2px;
       width: 1px;
       height: 5px;
-      background: var(--color-text-muted, #888);
+      background: var(--color-text-muted);
     }
 
     .desk__scale-line::before {
@@ -297,7 +299,7 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
       height: 100%;
       min-height: 300px;
       gap: var(--space-3, 12px);
-      color: var(--color-text-muted, #888);
+      color: var(--color-text-muted);
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm, 14px);
     }
@@ -515,7 +517,7 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
         <div class="desk__footer">
           <div class="desk__status">
             <span class="desk__stat">
-              <span class="desk__stat-dot" style="background: var(--color-text-muted, #888)"></span>
+              <span class="desk__stat-dot" style="background: var(--color-text-muted)"></span>
               ${this._zones.length} ${msg('zones')}
             </span>
             <span class="desk__stat">

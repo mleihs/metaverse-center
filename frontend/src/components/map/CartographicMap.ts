@@ -169,7 +169,7 @@ export class CartographicMap extends LitElement {
     .zone-name {
       font-family: var(--font-bureau, 'Spectral', serif);
       font-style: italic;
-      fill: var(--color-text-primary, #e5e5e5);
+      fill: var(--color-text-primary);
       opacity: 0;
       animation: label-float 0.5s ease forwards;
       pointer-events: none;
@@ -178,7 +178,7 @@ export class CartographicMap extends LitElement {
     .zone-stat {
       font-family: var(--font-mono, monospace);
       font-size: 7px;
-      fill: var(--color-text-muted, #888);
+      fill: var(--color-text-muted);
       opacity: 0;
       animation: label-float 0.5s ease forwards;
       pointer-events: none;
@@ -198,7 +198,7 @@ export class CartographicMap extends LitElement {
     /* ── Grid overlay ────────────────────────── */
 
     .grid-line {
-      stroke: var(--color-text-muted, #888);
+      stroke: var(--color-text-muted);
       stroke-width: 0.3;
       opacity: 0.06;
     }
@@ -206,7 +206,7 @@ export class CartographicMap extends LitElement {
     .grid-label {
       font-family: var(--font-mono, monospace);
       font-size: 6px;
-      fill: var(--color-text-muted, #888);
+      fill: var(--color-text-muted);
       opacity: 0.12;
     }
 
@@ -214,7 +214,7 @@ export class CartographicMap extends LitElement {
 
     .route-line {
       fill: none;
-      stroke: var(--color-border, #333);
+      stroke: var(--color-border);
       stroke-width: 0.6;
       stroke-dasharray: 3 6;
       opacity: 0.25;
@@ -279,7 +279,7 @@ export class CartographicMap extends LitElement {
     /* ── Military hatch ──────────────────────── */
 
     .security-hatch {
-      stroke: var(--color-text-muted, #888);
+      stroke: var(--color-text-muted);
       stroke-width: 0.3;
       opacity: 0.15;
       pointer-events: none;
@@ -617,7 +617,7 @@ export class CartographicMap extends LitElement {
 
         <!-- Background -->
         <rect x="-2000" y="-2000" width="4000" height="4000"
-          fill="var(--color-surface, #0a0a0a)" />
+          fill="var(--color-surface)" />
 
         <!-- Coordinate grid -->
         ${this._renderGrid()}
@@ -674,7 +674,7 @@ export class CartographicMap extends LitElement {
       </filter>
 
       <!-- Terrain patterns -->
-      <pattern id="terrain-crosshatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <pattern id="terrain-crosshatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"> <!-- lint-color-ok -->
         <line x1="0" y1="3" x2="6" y2="3" stroke="#e5e5e5" stroke-width="0.2" opacity="0.07" />
       </pattern>
       <pattern id="terrain-crosshatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
@@ -801,7 +801,7 @@ export class CartographicMap extends LitElement {
             return svg`
               <rect class="building-marker" x=${b.x - b.size / 2} y=${b.y - h / 2}
                 width=${b.size} height=${h}
-                fill="var(--color-text-muted, #888)" style=${style} />
+                fill="var(--color-text-muted)" style=${style} />
             `;
           }
           if (b.shape === 'tri') {
@@ -809,12 +809,12 @@ export class CartographicMap extends LitElement {
             const pts = `${b.x},${b.y - s} ${b.x - s * 0.8},${b.y + s * 0.5} ${b.x + s * 0.8},${b.y + s * 0.5}`;
             return svg`
               <polygon class="building-marker" points=${pts}
-                fill="var(--color-text-muted, #888)" style=${style} />
+                fill="var(--color-text-muted)" style=${style} />
             `;
           }
           return svg`
             <circle class="building-marker" cx=${b.x} cy=${b.y} r=${b.size * 0.6}
-              fill="none" stroke="var(--color-text-muted, #888)" stroke-width="0.5" style=${style} />
+              fill="none" stroke="var(--color-text-muted)" stroke-width="0.5" style=${style} />
           `;
         })}
       </g>

@@ -25,21 +25,21 @@ export class VelgEpochInvitePanel extends LitElement {
       --amber: var(--color-warning);
       --amber-dim: var(--color-warning-hover);
       --amber-glow: color-mix(in srgb, var(--color-warning) 20%, transparent);
-      --panel-bg: var(--color-gray-950);
-      --surface: var(--color-gray-900);
-      --border-dim: var(--color-gray-700);
-      --text-bright: var(--color-gray-100);
-      --text-mid: var(--color-gray-300);
-      --text-dim: var(--color-gray-400);
+      --panel-bg: var(--color-surface-sunken);
+      --surface: var(--color-surface);
+      --border-dim: var(--color-border);
+      --text-bright: var(--color-text-primary);
+      --text-mid: var(--color-text-tertiary);
+      --text-dim: var(--color-text-muted);
     }
 
     /* Override VelgSidePanel theme tokens — force dark HUD aesthetic */
     velg-side-panel {
-      --color-surface-raised: var(--color-gray-950);
-      --color-surface-header: var(--color-gray-900);
-      --color-text-primary: var(--color-gray-100);
-      --border-default: 1px solid var(--color-gray-700);
-      --border-medium: 1px solid var(--color-gray-700);
+      --color-surface-raised: var(--color-surface-sunken);
+      --color-surface-header: var(--color-surface);
+      --color-text-primary: var(--color-text-primary);
+      --border-default: 1px solid var(--color-border);
+      --border-medium: 1px solid var(--color-border);
     }
 
     .panel-body {

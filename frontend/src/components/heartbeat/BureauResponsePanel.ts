@@ -474,7 +474,7 @@ export class VelgBureauResponsePanel extends LitElement {
       padding: var(--space-3) var(--space-6);
       background: var(--color-warning);
       border: 2px solid var(--color-warning);
-      color: var(--color-surface-sunken, #0a0a0f);
+      color: var(--color-surface-sunken);
       cursor: pointer;
       transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);

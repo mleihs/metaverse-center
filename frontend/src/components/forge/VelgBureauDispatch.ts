@@ -63,7 +63,7 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
     .dispatch-backdrop {
       position: fixed;
       inset: 0;
-      z-index: 900;
+      z-index: var(--z-top);
       background: rgba(0, 0, 0, 0.85);
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
@@ -89,7 +89,7 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
     .dispatch {
       position: fixed;
       inset: 0;
-      z-index: 901;
+      z-index: calc(var(--z-top) + 1);
       overflow-y: auto;
       overscroll-behavior: contain;
       display: flex;
@@ -102,7 +102,7 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
       position: relative;
       width: 100%;
       max-width: 680px;
-      background: var(--color-surface-sunken, #060606);
+      background: var(--color-surface-sunken);
       border: 2px solid var(--color-accent-amber);
       outline: 1px solid color-mix(in srgb, var(--color-accent-amber) 30%, transparent);
       outline-offset: 4px;
@@ -248,7 +248,7 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
       position: relative;
       padding: var(--space-4);
       border: 1px solid var(--color-border);
-      background: var(--color-surface, #0a0a0a);
+      background: var(--color-surface);
       opacity: 0;
       transform: translateX(-12px);
       animation: service-enter 400ms ease-out forwards;
@@ -269,8 +269,8 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
       font-weight: 900;
       letter-spacing: 0.15em;
       text-transform: uppercase;
-      color: var(--color-accent-amber-dim, #b45309);
-      border: 1px solid var(--color-accent-amber-dim, #b45309);
+      color: var(--color-accent-amber-dim);
+      border: 1px solid var(--color-accent-amber-dim);
       margin-bottom: var(--space-2);
     }
 
@@ -308,8 +308,8 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
     }
 
     .service__status--completed {
-      color: var(--color-success, #22c55e);
-      border: 1px solid color-mix(in srgb, var(--color-success, #22c55e) 50%, transparent);
+      color: var(--color-success);
+      border: 1px solid color-mix(in srgb, var(--color-success) 50%, transparent);
     }
 
     .service__desc {
@@ -335,7 +335,7 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
     }
 
     .service__cost--bypass {
-      color: var(--color-success, #22c55e);
+      color: var(--color-success);
     }
 
     .service__nav-btn {
@@ -414,7 +414,7 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: #030712;
+      color: var(--color-surface-sunken);
       background: var(--color-accent-amber);
       border: 1px solid var(--color-accent-amber);
       cursor: pointer;

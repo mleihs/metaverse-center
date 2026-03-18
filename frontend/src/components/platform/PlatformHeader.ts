@@ -38,17 +38,17 @@ const INTEL_PATHS = ['/forge', '/admin'];
 export class VelgPlatformHeader extends SignalWatcher(LitElement) {
   static styles = css`
     :host {
-      --hdr-bg: #0a0a0a;
-      --hdr-surface: #111;
-      --hdr-border: #333;
-      --hdr-text: #ccc;
-      --hdr-text-dim: #888;
-      --hdr-text-muted: #555;
-      --hdr-amber: #f59e0b;
-      --hdr-amber-dim: #b45309;
-      --hdr-amber-glow: rgba(245, 158, 11, 0.15);
-      --hdr-amber-ghost: rgba(245, 158, 11, 0.06);
-      --hdr-danger: #ef4444;
+      --hdr-bg: var(--color-surface-sunken);
+      --hdr-surface: var(--color-surface);
+      --hdr-border: var(--color-border);
+      --hdr-text: var(--color-text-tertiary);
+      --hdr-text-dim: var(--color-text-secondary);
+      --hdr-text-muted: var(--color-text-muted);
+      --hdr-amber: var(--color-primary);
+      --hdr-amber-dim: color-mix(in srgb, var(--color-primary) 70%, black);
+      --hdr-amber-glow: var(--color-primary-glow);
+      --hdr-amber-ghost: color-mix(in srgb, var(--color-primary) 6%, transparent);
+      --hdr-danger: var(--color-danger);
 
       display: block;
       position: relative;
@@ -65,8 +65,8 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
       inset: 0;
       background: repeating-linear-gradient(
         0deg,
-        rgba(245, 158, 11, 0.008) 0px,
-        rgba(245, 158, 11, 0.008) 3px,
+        color-mix(in srgb, var(--color-primary) 0.8%, transparent) 0px,
+        color-mix(in srgb, var(--color-primary) 0.8%, transparent) 3px,
         transparent 3px,
         transparent 6px
       );
@@ -185,7 +185,7 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
 
     .header__menu-btn:hover {
       color: var(--hdr-amber);
-      border-color: rgba(245, 158, 11, 0.3);
+      border-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
     }
 
     /* ── Cmd+K trigger button ── */
@@ -265,7 +265,7 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
 
     .cluster-link--active::before {
       background: var(--hdr-amber);
-      box-shadow: 0 0 6px var(--hdr-amber), 0 0 12px rgba(245, 158, 11, 0.4);
+      box-shadow: 0 0 6px var(--hdr-amber), 0 0 12px color-mix(in srgb, var(--color-primary) 40%, transparent);
     }
 
     .cluster-link--admin {
@@ -279,12 +279,12 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
 
     .cluster-link--admin:hover {
       color: var(--hdr-danger);
-      background: rgba(239, 68, 68, 0.06);
+      background: color-mix(in srgb, var(--color-danger) 6%, transparent);
     }
 
     .cluster-divider {
       height: 1px;
-      background: #222;
+      background: var(--color-separator);
       margin: var(--space-1) 0;
     }
 
@@ -331,14 +331,14 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
 
     .sys-badge--mock {
       color: var(--hdr-amber);
-      background: rgba(245, 158, 11, 0.1);
-      border: 1px solid rgba(245, 158, 11, 0.3);
+      background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+      border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
     }
 
     .sys-badge--dev {
       color: var(--hdr-amber);
-      background: rgba(245, 158, 11, 0.1);
-      border: 1px solid rgba(245, 158, 11, 0.3);
+      background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+      border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
     }
 
     /* ── Sign-in button ── */
@@ -359,7 +359,7 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
     }
 
     .btn-sign-in:hover {
-      background: #fbbf24;
+      background: var(--color-primary-hover);
       box-shadow: 0 0 16px var(--hdr-amber-glow);
     }
 
@@ -386,7 +386,7 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
       top: 100%;
       left: 0;
       right: 0;
-      background: #0d0d0d;
+      background: var(--color-surface-sunken);
       border-bottom: 2px solid var(--hdr-amber);
       z-index: calc(var(--z-dropdown) + 1);
       padding: var(--space-4) var(--space-4) var(--space-5);
@@ -422,7 +422,7 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
       color: var(--hdr-amber);
       padding: 0 var(--space-2) var(--space-3);
       margin-bottom: var(--space-2);
-      border-bottom: 1px dashed rgba(245, 158, 11, 0.2);
+      border-bottom: 1px dashed color-mix(in srgb, var(--color-primary) 20%, transparent);
     }
 
     .header__menu-item {
@@ -473,7 +473,7 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
 
     .header__menu-item--admin { color: var(--hdr-danger); }
     .header__menu-item--admin::before { background: var(--hdr-danger); box-shadow: 0 0 4px var(--hdr-danger); }
-    .header__menu-item--admin:hover { color: var(--hdr-danger); border-color: var(--hdr-danger); background: rgba(239, 68, 68, 0.08); }
+    .header__menu-item--admin:hover { color: var(--hdr-danger); border-color: var(--hdr-danger); background: color-mix(in srgb, var(--color-danger) 8%, transparent); }
 
     .header__menu-item--active { background: var(--hdr-amber); color: var(--hdr-bg); border-color: var(--hdr-amber); }
     .header__menu-item--active::before { background: var(--hdr-bg); box-shadow: none; }
@@ -485,7 +485,7 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
 
     .header__menu-divider {
       height: 1px;
-      background: #222;
+      background: var(--color-separator);
       margin: var(--space-2) 0 var(--space-3);
     }
 
@@ -538,7 +538,7 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
 
     @keyframes beacon-pulse {
       0%, 100% { opacity: 1; box-shadow: 0 0 4px var(--hdr-amber); }
-      50% { opacity: 0.4; box-shadow: 0 0 8px var(--hdr-amber), 0 0 16px rgba(245, 158, 11, 0.4); }
+      50% { opacity: 0.4; box-shadow: 0 0 8px var(--hdr-amber), 0 0 16px color-mix(in srgb, var(--color-primary) 40%, transparent); }
     }
 
     @keyframes header-border-flow {

@@ -99,7 +99,7 @@ export class VelgAptitudeBars extends LitElement {
       font-size: var(--apt-font-size);
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: var(--color-text-muted, #64748b);
+      color: var(--color-text-muted);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -113,8 +113,8 @@ export class VelgAptitudeBars extends LitElement {
     .track {
       flex: 1;
       height: var(--apt-bar-height);
-      background: var(--color-surface, #1e293b);
-      border: 1px solid var(--color-border, #334155);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
       position: relative;
       overflow: hidden;
     }
@@ -142,7 +142,7 @@ export class VelgAptitudeBars extends LitElement {
       text-align: right;
       font-size: var(--apt-font-size);
       font-weight: 700;
-      color: var(--color-text, #e2e8f0);
+      color: var(--color-text-primary);
       flex-shrink: 0;
     }
 
@@ -151,18 +151,18 @@ export class VelgAptitudeBars extends LitElement {
       display: flex;
       justify-content: flex-end;
       font-size: var(--apt-font-size);
-      color: var(--color-text-muted, #64748b);
+      color: var(--color-text-muted);
       margin-top: 4px;
       padding-top: 4px;
-      border-top: 1px solid var(--color-border, #334155);
+      border-top: 1px solid var(--color-border);
     }
 
     .budget.over {
-      color: var(--color-danger, #ef4444);
+      color: var(--color-danger);
     }
 
     .budget.exact {
-      color: var(--color-success, #10b981);
+      color: var(--color-success);
     }
 
     /* Slider (editable mode) */
@@ -184,8 +184,8 @@ export class VelgAptitudeBars extends LitElement {
 
     input[type='range']::-webkit-slider-runnable-track {
       height: var(--apt-bar-height);
-      background: var(--color-surface, #1e293b);
-      border: 1px solid var(--color-border, #334155);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
     }
 
     input[type='range']::-webkit-slider-thumb {
@@ -194,23 +194,23 @@ export class VelgAptitudeBars extends LitElement {
       width: 12px;
       height: calc(var(--apt-bar-height) + 4px);
       margin-top: -3px;
-      background: var(--slider-color, var(--color-text-muted, #94a3b8));
-      border: 1px solid var(--slider-color, var(--color-text-muted, #94a3b8));
+      background: var(--slider-color, var(--color-text-muted));
+      border: 1px solid var(--slider-color, var(--color-text-muted));
       cursor: grab;
       box-shadow: 0 0 6px color-mix(in srgb, var(--slider-color, transparent) 40%, transparent);
     }
 
     input[type='range']::-moz-range-track {
       height: var(--apt-bar-height);
-      background: var(--color-surface, #1e293b);
-      border: 1px solid var(--color-border, #334155);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
     }
 
     input[type='range']::-moz-range-thumb {
       width: 10px;
       height: var(--apt-bar-height);
-      background: var(--slider-color, var(--color-text-muted, #94a3b8));
-      border: 1px solid var(--slider-color, var(--color-text-muted, #94a3b8));
+      background: var(--slider-color, var(--color-text-muted));
+      border: 1px solid var(--slider-color, var(--color-text-muted));
       border-radius: 0;
       cursor: grab;
     }

@@ -44,8 +44,8 @@ export class VelgSimulationNav extends SignalWatcher(LitElement) {
       align-items: center;
       gap: var(--space-1);
       padding: var(--space-1) var(--space-6);
-      background: var(--color-epoch-influence, #a78bfa);
-      color: #fff;
+      background: var(--color-epoch-influence);
+      color: var(--color-text-primary);
       font-size: var(--font-size-xs);
       font-weight: 700;
       text-transform: uppercase;

@@ -57,13 +57,13 @@ export class VelgGameCard extends LitElement {
       --card-w: 200px;
       --card-h: 320px;
       /* Theme-inherited card tokens (defaults for non-themed contexts) */
-      --card-frame-primary: var(--color-primary, #ff6b2b);
-      --card-frame-secondary: var(--color-secondary, #3b82f6);
-      --card-bg: var(--color-surface, #1a1a1a);
-      --card-bg-deep: var(--color-surface-sunken, #0f0f0f);
-      --card-text: var(--color-text-primary, #e5e5e5);
-      --card-text-dim: var(--color-text-secondary, #a3a3a3);
-      --card-border-color: var(--color-border, #333);
+      --card-frame-primary: var(--color-primary);
+      --card-frame-secondary: var(--color-secondary);
+      --card-bg: var(--color-surface);
+      --card-bg-deep: var(--color-surface-sunken);
+      --card-text: var(--color-text-primary);
+      --card-text-dim: var(--color-text-secondary);
+      --card-border-color: var(--color-border);
       --card-radius: var(--border-radius, 0px);
       --card-font-heading: var(--font-brutalist, 'Oswald', sans-serif);
       --card-font-body: var(--font-sans, system-ui, sans-serif);
@@ -642,7 +642,7 @@ export class VelgGameCard extends LitElement {
     }
 
     .card__action-btn--danger:hover {
-      background: var(--color-danger, #dc2626);
+      background: var(--color-danger);
     }
 
     /* Touch devices: always show action buttons (no hover) */
@@ -680,7 +680,7 @@ export class VelgGameCard extends LitElement {
       font-size: 18px;
       text-transform: uppercase;
       letter-spacing: 0.15em;
-      color: var(--color-epoch-accent, #f59e0b);
+      color: var(--color-epoch-accent);
       opacity: 0.6;
       z-index: 10;
       pointer-events: none;
@@ -1032,7 +1032,7 @@ export class VelgGameCard extends LitElement {
 
   private _renderConditionDots() {
     const dots = this.conditionDots ?? 0;
-    const colors = ['#16a34a', '#d97706', '#dc2626']; // good=green, fair=amber, poor=red
+    const colors = ['var(--color-success)', 'var(--color-warning)', 'var(--color-danger)']; // good=green, fair=amber, poor=red
     const dotColor = dots >= 3 ? colors[0] : dots >= 2 ? colors[1] : colors[2];
 
     return html`

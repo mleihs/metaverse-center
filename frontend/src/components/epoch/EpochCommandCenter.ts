@@ -75,15 +75,15 @@ export class VelgEpochCommandCenter extends LitElement {
     :host {
       display: block;
       min-height: calc(100vh - var(--header-height, 56px));
-      background: var(--color-gray-950);
-      color: var(--color-gray-100);
+      background: var(--color-surface-sunken);
+      color: var(--color-text-primary);
     }
 
     /* ── Status Banner ────────────────────────── */
 
     .banner {
       position: relative;
-      border-bottom: 3px solid var(--color-gray-800);
+      border-bottom: 3px solid var(--color-border);
     }
 
     .banner__bg {
@@ -124,7 +124,7 @@ export class VelgEpochCommandCenter extends LitElement {
     .banner__sub {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       margin: var(--space-1) 0 0;
     }
 
@@ -140,8 +140,8 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .banner__phase--lobby {
-      border-color: var(--color-gray-500);
-      color: var(--color-gray-300);
+      border-color: var(--color-text-muted);
+      color: var(--color-text-tertiary);
     }
     .banner__phase--foundation {
       border-color: var(--color-success);
@@ -160,12 +160,12 @@ export class VelgEpochCommandCenter extends LitElement {
       animation: pulse-glow 2s ease-in-out infinite;
     }
     .banner__phase--completed {
-      border-color: var(--color-gray-600);
-      color: var(--color-gray-400);
+      border-color: var(--color-border);
+      color: var(--color-text-muted);
     }
     .banner__phase--cancelled {
-      border-color: var(--color-gray-700);
-      color: var(--color-gray-400);
+      border-color: var(--color-border);
+      color: var(--color-text-muted);
       text-decoration: line-through;
     }
 
@@ -213,7 +213,7 @@ export class VelgEpochCommandCenter extends LitElement {
       justify-content: center;
       font-size: 7px;
       font-weight: 900;
-      color: var(--color-gray-950);
+      color: var(--color-text-inverse);
     }
 
     .stepper__dot--active {
@@ -223,7 +223,7 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .stepper__dot--upcoming {
-      border-color: var(--color-gray-600);
+      border-color: var(--color-border);
       background: transparent;
     }
 
@@ -249,7 +249,7 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .stepper__label--upcoming {
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     /* ── Progress connector (replaces flat line) ── */
@@ -259,7 +259,7 @@ export class VelgEpochCommandCenter extends LitElement {
       height: 2px;
       margin: 0 var(--space-1-5);
       flex-shrink: 0;
-      background: var(--color-gray-800);
+      background: var(--color-surface-raised);
       overflow: hidden;
     }
 
@@ -276,7 +276,7 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .stepper__track-fill--upcoming {
-      background: var(--color-gray-700);
+      background: var(--color-surface-raised);
       transform: scaleX(0);
     }
 
@@ -300,13 +300,13 @@ export class VelgEpochCommandCenter extends LitElement {
 
     .stepper__intel-box {
       position: relative;
-      background: var(--color-gray-900);
-      border: 1px solid var(--color-gray-700);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
       padding: 5px 8px;
       white-space: nowrap;
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-gray-300);
+      color: var(--color-text-tertiary);
       letter-spacing: 0.03em;
       box-shadow: 0 4px 12px rgba(0 0 0 / 0.5);
     }
@@ -320,13 +320,13 @@ export class VelgEpochCommandCenter extends LitElement {
       transform: translateX(-50%) rotate(45deg);
       width: 7px;
       height: 7px;
-      background: var(--color-gray-900);
-      border-top: 1px solid var(--color-gray-700);
-      border-left: 1px solid var(--color-gray-700);
+      background: var(--color-surface);
+      border-top: 1px solid var(--color-border);
+      border-left: 1px solid var(--color-border);
     }
 
     .stepper__intel-val {
-      color: var(--stepper-color, var(--color-gray-100));
+      color: var(--stepper-color, var(--color-text-primary));
       font-weight: 700;
     }
 
@@ -340,18 +340,18 @@ export class VelgEpochCommandCenter extends LitElement {
       width: 10px;
       height: 10px;
       border-radius: 50%;
-      border: 2px solid var(--color-gray-600);
+      border: 2px solid var(--color-border);
       flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--color-gray-600);
+      color: var(--color-icon);
     }
 
     .stepper__dot--trophy-active {
       border-color: var(--color-warning);
       background: var(--color-warning);
-      color: var(--color-gray-950);
+      color: var(--color-text-inverse);
       animation: trophy-glow 2.5s ease-in-out infinite;
     }
 
@@ -388,7 +388,7 @@ export class VelgEpochCommandCenter extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     .winner-banner__name {
@@ -401,7 +401,7 @@ export class VelgEpochCommandCenter extends LitElement {
     .winner-banner__score {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: var(--color-gray-300);
+      color: var(--color-text-tertiary);
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -474,7 +474,7 @@ export class VelgEpochCommandCenter extends LitElement {
     .stat__label {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
     }
@@ -490,8 +490,8 @@ export class VelgEpochCommandCenter extends LitElement {
     .rp-meter__bar {
       width: 120px;
       height: 8px;
-      background: var(--color-gray-800);
-      border: 1px solid var(--color-gray-700);
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
       position: relative;
     }
 
@@ -518,7 +518,7 @@ export class VelgEpochCommandCenter extends LitElement {
       padding: 0 var(--space-6);
       display: flex;
       gap: 0;
-      border-bottom: 1px solid var(--color-gray-800);
+      border-bottom: 1px solid var(--color-border);
       overflow-x: auto;
       scrollbar-width: none;
     }
@@ -534,7 +534,7 @@ export class VelgEpochCommandCenter extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       background: none;
       border: none;
       border-bottom: 2px solid transparent;
@@ -543,12 +543,12 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .tab:hover {
-      color: var(--color-gray-200);
+      color: var(--color-text-secondary);
     }
 
     .tab--active {
-      color: var(--color-gray-100);
-      border-bottom-color: var(--color-gray-100);
+      color: var(--color-text-primary);
+      border-bottom-color: var(--color-text-primary);
       animation: tab-underline 0.3s ease-out;
       transform-origin: left;
     }
@@ -563,7 +563,7 @@ export class VelgEpochCommandCenter extends LitElement {
       margin-left: var(--space-1, 4px);
       border-radius: 8px;
       background: var(--color-warning);
-      color: var(--color-gray-950);
+      color: var(--color-text-inverse);
       font-size: 9px;
       font-weight: 900;
       letter-spacing: 0;
@@ -592,8 +592,8 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .panel {
-      border: 1px solid var(--color-gray-800);
-      background: var(--color-gray-900);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
     }
 
     .panel__header {
@@ -601,7 +601,7 @@ export class VelgEpochCommandCenter extends LitElement {
       justify-content: space-between;
       align-items: center;
       padding: var(--space-3) var(--space-4);
-      border-bottom: 1px solid var(--color-gray-800);
+      border-bottom: 1px solid var(--color-border);
     }
 
     .panel__title {
@@ -610,7 +610,7 @@ export class VelgEpochCommandCenter extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-gray-300);
+      color: var(--color-text-tertiary);
       margin: 0;
     }
 
@@ -629,7 +629,7 @@ export class VelgEpochCommandCenter extends LitElement {
       align-items: center;
       gap: var(--space-3);
       padding: var(--space-2) 0;
-      border-bottom: 1px solid var(--color-gray-850, var(--color-gray-800));
+      border-bottom: 1px solid var(--color-border);
       transition: all var(--transition-normal);
     }
 
@@ -640,7 +640,7 @@ export class VelgEpochCommandCenter extends LitElement {
 
     .mission:hover .mission__icon {
       transform: scale(1.1) rotate(-3deg);
-      border-color: var(--color-gray-500);
+      border-color: var(--color-text-muted);
     }
 
     .mission:last-child {
@@ -654,8 +654,8 @@ export class VelgEpochCommandCenter extends LitElement {
       align-items: center;
       justify-content: center;
       font-size: var(--text-base);
-      border: 1px solid var(--color-gray-700);
-      background: var(--color-gray-800);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface-raised);
       flex-shrink: 0;
       transition: all var(--transition-normal);
     }
@@ -676,7 +676,7 @@ export class VelgEpochCommandCenter extends LitElement {
     .mission__detail {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     .mission__status {
@@ -702,8 +702,8 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .mission__status--failed {
-      border-color: var(--color-gray-500);
-      color: var(--color-gray-400);
+      border-color: var(--color-text-muted);
+      color: var(--color-text-muted);
     }
 
     .mission__status--detected {
@@ -729,17 +729,17 @@ export class VelgEpochCommandCenter extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-gray-200);
-      background: var(--color-gray-800);
-      border: 1px solid var(--color-gray-700);
+      color: var(--color-text-secondary);
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
       cursor: pointer;
       transition: all var(--transition-normal);
     }
 
     .action-btn:hover {
-      background: var(--color-gray-700);
+      background: var(--color-surface-raised);
       transform: translate(-1px, -1px);
-      box-shadow: 2px 2px 0 var(--color-gray-900);
+      box-shadow: 2px 2px 0 var(--color-surface);
     }
 
     .action-btn__cost {
@@ -759,14 +759,14 @@ export class VelgEpochCommandCenter extends LitElement {
     .no-auth__text {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     /* ── Alliance Card ────────────────────────── */
 
     .alliance {
       padding: var(--space-3);
-      border: 1px solid var(--color-gray-700);
+      border: 1px solid var(--color-border);
       margin-bottom: var(--space-2);
     }
 
@@ -782,7 +782,7 @@ export class VelgEpochCommandCenter extends LitElement {
     .alliance__member {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       padding: 2px 0;
     }
 
@@ -791,7 +791,7 @@ export class VelgEpochCommandCenter extends LitElement {
     .empty-hint {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       text-align: center;
       padding: var(--space-4);
     }
@@ -813,7 +813,7 @@ export class VelgEpochCommandCenter extends LitElement {
     .action-btn:active {
       transform: translate(0, 0);
       box-shadow: none;
-      background: var(--color-gray-600);
+      background: var(--color-surface-raised);
     }
 
     .banner__phase {
@@ -857,7 +857,7 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .alliance:hover {
-      border-color: var(--color-gray-500);
+      border-color: var(--color-text-muted);
       transform: translateX(2px);
     }
 
@@ -898,29 +898,29 @@ export class VelgEpochCommandCenter extends LitElement {
 
     .lobby-btn--join:hover:not(:disabled) {
       background: var(--color-success);
-      color: var(--color-gray-950);
+      color: var(--color-text-inverse);
     }
 
     .lobby-btn--leave {
-      color: var(--color-gray-400);
-      border-color: var(--color-gray-600);
+      color: var(--color-text-muted);
+      border-color: var(--color-border);
       background: transparent;
     }
 
     .lobby-btn--leave:hover:not(:disabled) {
-      border-color: var(--color-gray-400);
-      background: var(--color-gray-800);
+      border-color: var(--color-text-muted);
+      background: var(--color-surface-raised);
     }
 
     .lobby-btn--start {
-      color: var(--color-gray-950);
-      border-color: var(--color-gray-100);
-      background: var(--color-gray-100);
+      color: var(--color-text-inverse);
+      border-color: var(--color-text-primary);
+      background: var(--color-text-primary);
     }
 
     .lobby-btn--start:hover:not(:disabled) {
       transform: translate(-2px, -2px);
-      box-shadow: 4px 4px 0 var(--color-gray-600);
+      box-shadow: 4px 4px 0 var(--color-border);
     }
 
     .lobby-btn--start:active:not(:disabled) {
@@ -932,7 +932,7 @@ export class VelgEpochCommandCenter extends LitElement {
 
     .admin-panel {
       margin-top: var(--space-3);
-      border: 1px solid var(--color-gray-800);
+      border: 1px solid var(--color-border);
       overflow: hidden;
     }
 
@@ -948,14 +948,14 @@ export class VelgEpochCommandCenter extends LitElement {
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
       color: var(--color-warning);
-      background: var(--color-gray-900);
+      background: var(--color-surface);
       border: none;
       cursor: pointer;
       transition: background var(--transition-normal);
     }
 
     .admin-toggle:hover {
-      background: var(--color-gray-800);
+      background: var(--color-surface-raised);
     }
 
     .admin-toggle__chevron {
@@ -972,8 +972,8 @@ export class VelgEpochCommandCenter extends LitElement {
       gap: var(--space-2);
       flex-wrap: wrap;
       padding: var(--space-3);
-      border-top: 1px solid var(--color-gray-800);
-      background: var(--color-gray-950);
+      border-top: 1px solid var(--color-border);
+      background: var(--color-surface-sunken);
     }
 
     .admin-btn {
@@ -1003,7 +1003,7 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .admin-btn--advance:hover:not(:disabled) {
-      background: rgba(74 222 128 / 0.15);
+      background: var(--color-success-glow);
     }
 
     .admin-btn--resolve {
@@ -1023,7 +1023,7 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .admin-btn--cancel:hover:not(:disabled) {
-      background: rgba(239 68 68 / 0.15);
+      background: var(--color-danger-glow);
     }
 
     /* ── Alliance Actions ──────────────────── */
@@ -1043,9 +1043,9 @@ export class VelgEpochCommandCenter extends LitElement {
       padding: var(--space-1-5) var(--space-2);
       font-family: var(--font-sans);
       font-size: var(--text-sm);
-      border: 1px solid var(--color-gray-700);
-      background: var(--color-gray-900);
-      color: var(--color-gray-200);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      color: var(--color-text-secondary);
     }
 
     .team-form__input:focus {
@@ -1054,7 +1054,7 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .team-form__input::placeholder {
-      color: var(--color-gray-500);
+      color: var(--color-text-muted);
     }
 
     .alliance__actions {
@@ -1079,7 +1079,7 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .alliance-btn--join:hover {
-      background: rgba(74 222 128 / 0.15);
+      background: var(--color-success-glow);
     }
 
     .alliance-btn--leave {
@@ -1089,7 +1089,7 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .alliance-btn--leave:hover {
-      background: rgba(239 68 68 / 0.15);
+      background: var(--color-danger-glow);
     }
 
     /* ── Back to Ops Board button ─────────── */
@@ -1102,7 +1102,7 @@ export class VelgEpochCommandCenter extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       background: none;
       border: none;
       cursor: pointer;
@@ -1112,7 +1112,7 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .banner__back:hover {
-      color: var(--color-gray-200);
+      color: var(--color-text-secondary);
       transform: translateX(-3px);
     }
 
@@ -1153,7 +1153,7 @@ export class VelgEpochCommandCenter extends LitElement {
       :host {
         background:
           radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.4) 100%),
-          var(--color-gray-950);
+          var(--color-surface-sunken);
       }
       .content {
         max-width: var(--container-max, 1600px);
@@ -1238,7 +1238,7 @@ export class VelgEpochCommandCenter extends LitElement {
       font-weight: 900;
       letter-spacing: 6px;
       text-transform: uppercase;
-      color: var(--color-gray-100);
+      color: var(--color-text-primary);
       text-shadow: 0 0 40px rgba(245 158 11 / 0.4), 0 0 80px rgba(245 158 11 / 0.15);
       opacity: 0;
       animation: overlay-zoom-in 0.5s 0.15s var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) forwards;
@@ -1338,7 +1338,7 @@ export class VelgEpochCommandCenter extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--color-gray-300);
+      color: var(--color-text-tertiary);
     }
 
     .phase-overlay--foundation { --_phase-color: var(--color-success); }

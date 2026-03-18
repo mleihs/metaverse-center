@@ -214,8 +214,8 @@ export const caseFileStyles = css`
   }
 
   .evidence-tag--agent {
-    color: var(--color-info, #3b82f6);
-    border-color: var(--color-info, #3b82f6);
+    color: var(--color-info);
+    border-color: var(--color-info);
   }
 
   .evidence-tag--building {
@@ -224,8 +224,8 @@ export const caseFileStyles = css`
   }
 
   .evidence-tag--zone {
-    color: var(--color-success, #22c55e);
-    border-color: var(--color-success, #22c55e);
+    color: var(--color-success);
+    border-color: var(--color-success);
   }
 
   /* ── Updated Badge ── */
@@ -239,9 +239,9 @@ export const caseFileStyles = css`
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--color-success, #22c55e);
-    border: 1px solid color-mix(in srgb, var(--color-success, #22c55e) 40%, transparent);
-    background: color-mix(in srgb, var(--color-success, #22c55e) 8%, transparent);
+    color: var(--color-success);
+    border: 1px solid color-mix(in srgb, var(--color-success) 40%, transparent);
+    background: color-mix(in srgb, var(--color-success) 8%, transparent);
     vertical-align: middle;
     margin-left: var(--space-1);
   }

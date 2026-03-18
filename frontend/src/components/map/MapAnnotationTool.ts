@@ -41,7 +41,7 @@ export class MapAnnotationTool extends LitElement {
       font-family: var(--font-bureau, 'Spectral', serif);
       font-style: italic;
       font-size: 12px;
-      color: var(--color-text-secondary, #a0a0a0);
+      color: var(--color-text-secondary);
       padding: var(--space-1, 4px);
       pointer-events: auto;
       cursor: default;
@@ -50,13 +50,13 @@ export class MapAnnotationTool extends LitElement {
     }
 
     .annotation:hover {
-      color: var(--color-text-primary, #e5e5e5);
+      color: var(--color-text-primary);
     }
 
     .annotation__input {
-      background: var(--color-surface-sunken, #060606);
-      border: 1px solid var(--color-border, #333);
-      color: var(--color-text-primary, #e5e5e5);
+      background: var(--color-surface-sunken);
+      border: 1px solid var(--color-border);
+      color: var(--color-text-primary);
       font-family: var(--font-bureau, 'Spectral', serif);
       font-style: italic;
       font-size: 12px;
@@ -66,7 +66,7 @@ export class MapAnnotationTool extends LitElement {
     }
 
     .annotation__input:focus {
-      border-color: var(--color-primary, #f59e0b);
+      border-color: var(--color-primary);
     }
   `;
 

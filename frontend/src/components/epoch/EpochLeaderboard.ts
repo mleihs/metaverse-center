@@ -46,10 +46,10 @@ export class VelgEpochLeaderboard extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       text-align: left;
       padding: var(--space-2) var(--space-2);
-      border-bottom: 2px solid var(--color-gray-800);
+      border-bottom: 2px solid var(--color-border-light);
       cursor: pointer;
       user-select: none;
       transition: color var(--transition-fast);
@@ -57,11 +57,11 @@ export class VelgEpochLeaderboard extends LitElement {
     }
 
     .table th:hover {
-      color: var(--color-gray-300);
+      color: var(--color-text-tertiary);
     }
 
     .table th--sorted {
-      color: var(--color-gray-100);
+      color: var(--color-text-primary);
     }
 
     .table th.rank-col {
@@ -81,7 +81,7 @@ export class VelgEpochLeaderboard extends LitElement {
     /* ── Rows ─────────────────────────────── */
 
     .row {
-      border-bottom: 1px solid var(--color-gray-850, var(--color-gray-800));
+      border-bottom: 1px solid var(--color-border-light);
       transition: all var(--transition-normal);
       opacity: 0;
       transform: translateX(-8px);
@@ -95,7 +95,7 @@ export class VelgEpochLeaderboard extends LitElement {
 
     .row--self {
       background: rgba(245 158 11 / 0.06);
-      border-left: 3px solid var(--color-epoch-accent, #f59e0b);
+      border-left: 3px solid var(--color-epoch-accent);
     }
 
     .row--self:hover {
@@ -109,8 +109,8 @@ export class VelgEpochLeaderboard extends LitElement {
       font-size: 8px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--color-epoch-accent, #f59e0b);
-      border: 1px solid var(--color-epoch-accent, #f59e0b);
+      color: var(--color-epoch-accent);
+      border: 1px solid var(--color-epoch-accent);
       padding: 0 4px;
       margin-left: 4px;
       vertical-align: middle;
@@ -139,7 +139,7 @@ export class VelgEpochLeaderboard extends LitElement {
     }
 
     .rank--1 { color: var(--color-warning); }
-    .rank--2 { color: var(--color-gray-400); }
+    .rank--2 { color: var(--color-text-muted); }
     .rank--3 { color: var(--color-warning-hover); }
 
     /* ── Simulation Info ──────────────────── */
@@ -156,13 +156,13 @@ export class VelgEpochLeaderboard extends LitElement {
       font-size: var(--text-sm);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-gray-100);
+      color: var(--color-text-primary);
     }
 
     .sim__team {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     .sim__title {
@@ -242,7 +242,7 @@ export class VelgEpochLeaderboard extends LitElement {
       font-weight: var(--font-black);
       font-size: var(--text-lg);
       text-align: right;
-      color: var(--color-gray-100);
+      color: var(--color-text-primary);
       min-width: 50px;
     }
 
@@ -255,7 +255,7 @@ export class VelgEpochLeaderboard extends LitElement {
     .dim-bar {
       position: relative;
       height: 6px;
-      background: var(--color-gray-800);
+      background: var(--color-surface-raised);
       overflow: hidden;
     }
 
@@ -280,7 +280,7 @@ export class VelgEpochLeaderboard extends LitElement {
     .dim-label {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       margin-top: 2px;
       display: flex;
       justify-content: space-between;
@@ -359,7 +359,7 @@ export class VelgEpochLeaderboard extends LitElement {
       }
 
       .row--self {
-        border-left: 3px solid var(--color-epoch-accent, #f59e0b);
+        border-left: 3px solid var(--color-epoch-accent);
       }
 
       .row td {
@@ -493,7 +493,7 @@ export class VelgEpochLeaderboard extends LitElement {
       return html`<p style="
         font-family: var(--font-mono, monospace);
         font-size: var(--text-sm);
-        color: var(--color-gray-400);
+        color: var(--color-text-muted);
         text-align: center;
         padding: var(--space-4);
       ">${msg('No scores recorded yet.')}</p>`;

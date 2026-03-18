@@ -48,8 +48,8 @@ export class VelgForgeAstrolabe extends LitElement {
       /* ── Seed Box ────────────────────────── */
 
       .seed-box {
-        background: var(--color-gray-900, #111827);
-        border: 1px solid var(--color-gray-700, #374151);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
         padding: var(--space-6);
       }
 
@@ -65,15 +65,15 @@ export class VelgForgeAstrolabe extends LitElement {
         font-size: var(--text-xs);
         text-transform: uppercase;
         letter-spacing: 0.1em;
-        color: var(--color-success, #22c55e);
+        color: var(--color-success);
       }
 
       .seed-box textarea {
         width: 100%;
         min-height: 120px;
-        background: var(--color-gray-950, #030712);
-        color: var(--color-gray-100, #f3f4f6);
-        border: 1px solid var(--color-gray-700, #374151);
+        background: var(--color-surface-sunken);
+        color: var(--color-text-primary);
+        border: 1px solid var(--color-border);
         padding: var(--space-3);
         font-family: var(--font-mono, monospace);
         font-size: var(--text-sm);
@@ -83,14 +83,14 @@ export class VelgForgeAstrolabe extends LitElement {
       }
 
       .seed-box textarea:focus {
-        outline: 2px solid var(--color-success, #22c55e);
+        outline: 2px solid var(--color-success);
         outline-offset: 1px;
-        border-color: var(--color-success, #22c55e);
+        border-color: var(--color-success);
         box-shadow: 0 0 0 1px rgba(74 222 128 / 0.3);
       }
 
       .seed-box textarea::placeholder {
-        color: var(--color-gray-500, #6b7280);
+        color: var(--color-text-muted);
       }
 
       .seed-box textarea:disabled {
@@ -119,7 +119,7 @@ export class VelgForgeAstrolabe extends LitElement {
         gap: var(--space-1);
         font-family: var(--font-mono, monospace);
         font-size: 10px;
-        color: var(--color-gray-500, #6b7280);
+        color: var(--color-text-muted);
         letter-spacing: 0.03em;
       }
 
@@ -131,18 +131,18 @@ export class VelgForgeAstrolabe extends LitElement {
         font-family: var(--font-mono, monospace);
         font-size: 11px;
         letter-spacing: 0.05em;
-        color: var(--color-gray-500, #6b7280);
+        color: var(--color-text-muted);
         text-align: right;
         white-space: nowrap;
         transition: color 0.2s;
       }
 
       .seed-counter--warning {
-        color: var(--color-warning, #f59e0b);
+        color: var(--color-warning);
       }
 
       .seed-counter--danger {
-        color: var(--color-danger, #ef4444);
+        color: var(--color-danger);
       }
 
       /* ── Seed Suggestions ─────────────────── */
@@ -159,9 +159,9 @@ export class VelgForgeAstrolabe extends LitElement {
         font-family: var(--font-mono, monospace);
         font-size: 11px;
         line-height: 1.5;
-        color: var(--color-gray-400, #9ca3af);
-        background: var(--color-gray-900, #111827);
-        border: 1px solid var(--color-gray-700, #374151);
+        color: var(--color-icon);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
         cursor: pointer;
         transition: all 0.15s;
         text-align: left;
@@ -170,8 +170,8 @@ export class VelgForgeAstrolabe extends LitElement {
       }
 
       .seed-suggestion:hover {
-        border-color: var(--color-success, #22c55e);
-        color: var(--color-success, #22c55e);
+        border-color: var(--color-success);
+        color: var(--color-success);
       }
 
       /* ── Anchor Fan ─────────────────────── */
@@ -223,8 +223,8 @@ export class VelgForgeAstrolabe extends LitElement {
       .dossier {
         width: 240px;
         min-height: 370px;
-        background: var(--color-gray-950, #030712);
-        border: 1px solid var(--color-gray-600, #4b5563);
+        background: var(--color-surface-sunken);
+        border: 1px solid var(--color-border);
         display: flex;
         flex-direction: column;
         position: relative;
@@ -237,7 +237,7 @@ export class VelgForgeAstrolabe extends LitElement {
 
       .anchor-fan__card:hover .dossier,
       .anchor-fan__card--selected .dossier {
-        border-color: var(--color-success, #22c55e);
+        border-color: var(--color-success);
         box-shadow:
           0 8px 40px rgba(0 0 0 / 0.7),
           0 0 20px rgba(74 222 128 / 0.12),
@@ -251,7 +251,7 @@ export class VelgForgeAstrolabe extends LitElement {
         position: absolute;
         width: 16px;
         height: 16px;
-        border-color: var(--color-gray-500, #6b7280);
+        border-color: var(--color-text-muted);
         border-style: solid;
         transition: border-color 0.3s;
         z-index: 2;
@@ -273,14 +273,14 @@ export class VelgForgeAstrolabe extends LitElement {
       .anchor-fan__card:hover .dossier::after,
       .anchor-fan__card--selected .dossier::before,
       .anchor-fan__card--selected .dossier::after {
-        border-color: var(--color-success, #22c55e);
+        border-color: var(--color-success);
       }
 
       /* Classification header strip */
       .dossier__classification {
         padding: 6px 12px;
         background: rgba(74 222 128 / 0.08);
-        border-bottom: 1px solid var(--color-gray-700, #374151);
+        border-bottom: 1px solid var(--color-border);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -291,13 +291,13 @@ export class VelgForgeAstrolabe extends LitElement {
         font-size: 9px;
         text-transform: uppercase;
         letter-spacing: 0.2em;
-        color: var(--color-success, #22c55e);
+        color: var(--color-success);
       }
 
       .dossier__class-id {
         font-family: var(--font-mono, monospace);
         font-size: 9px;
-        color: var(--color-gray-400, #9ca3af);
+        color: var(--color-icon);
       }
 
       /* Geometric sigil / visual anchor */
@@ -357,7 +357,7 @@ export class VelgForgeAstrolabe extends LitElement {
         display: flex;
         flex-direction: column;
         gap: 10px;
-        border-top: 1px solid var(--color-gray-800, #1f2937);
+        border-top: 1px solid var(--color-border-light);
         overflow: hidden;
         min-height: 0;
       }
@@ -369,7 +369,7 @@ export class VelgForgeAstrolabe extends LitElement {
         text-transform: uppercase;
         letter-spacing: 0.04em;
         line-height: 1.3;
-        color: var(--color-gray-100, #f3f4f6);
+        color: var(--color-text-primary);
         margin: 0;
         /* Allow wrapping — never truncate */
         white-space: normal;
@@ -381,16 +381,16 @@ export class VelgForgeAstrolabe extends LitElement {
         font-family: var(--font-mono, monospace);
         font-size: 10px;
         line-height: 1.5;
-        color: var(--color-gray-400, #9ca3af);
+        color: var(--color-icon);
         padding-top: 8px;
-        border-top: 1px solid var(--color-gray-800, #1f2937);
+        border-top: 1px solid var(--color-border-light);
         white-space: normal;
         word-break: break-word;
       }
 
       .dossier__source::before {
         content: 'SRC: ';
-        color: var(--color-gray-400, #9ca3af);
+        color: var(--color-icon);
       }
 
       /* Core question — prophetic text */
@@ -399,7 +399,7 @@ export class VelgForgeAstrolabe extends LitElement {
         font-size: 11px;
         font-style: italic;
         line-height: 1.5;
-        color: var(--color-success, #22c55e);
+        color: var(--color-success);
         white-space: normal;
         margin: 0;
         opacity: 0.85;
@@ -412,7 +412,7 @@ export class VelgForgeAstrolabe extends LitElement {
       /* Footer with dossier number */
       .dossier__footer {
         padding: 6px 12px;
-        border-top: 1px solid var(--color-gray-800, #1f2937);
+        border-top: 1px solid var(--color-border-light);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -422,12 +422,12 @@ export class VelgForgeAstrolabe extends LitElement {
         font-family: var(--font-mono, monospace);
         font-size: 20px;
         font-weight: 900;
-        color: var(--color-gray-700, #374151);
+        color: var(--color-border);
         line-height: 1;
       }
 
       .anchor-fan__card--selected .dossier__index {
-        color: var(--color-success, #22c55e);
+        color: var(--color-success);
       }
 
       .dossier__status {
@@ -435,11 +435,11 @@ export class VelgForgeAstrolabe extends LitElement {
         font-size: 10px;
         text-transform: uppercase;
         letter-spacing: 0.15em;
-        color: var(--color-gray-400, #9ca3af);
+        color: var(--color-icon);
       }
 
       .anchor-fan__card--selected .dossier__status {
-        color: var(--color-success, #22c55e);
+        color: var(--color-success);
       }
 
       /* Deal animation */
@@ -473,8 +473,8 @@ export class VelgForgeAstrolabe extends LitElement {
       /* ── Anchor Detail (below fan) ──────── */
 
       .anchor-detail {
-        background: var(--color-gray-900, #111827);
-        border: 1px solid var(--color-success, #22c55e);
+        background: var(--color-surface);
+        border: 1px solid var(--color-success);
         padding: var(--space-6);
         box-shadow: 0 0 20px rgba(74 222 128 / 0.1);
       }
@@ -482,13 +482,13 @@ export class VelgForgeAstrolabe extends LitElement {
       .anchor-detail__question {
         font-weight: var(--font-bold, 700);
         font-size: var(--text-base);
-        color: var(--color-gray-100, #f3f4f6);
+        color: var(--color-text-primary);
         margin: 0 0 var(--space-3);
       }
 
       .anchor-detail__description {
         font-size: var(--text-sm);
-        color: var(--color-gray-400, #9ca3af);
+        color: var(--color-icon);
         line-height: 1.6;
         margin: 0;
       }
@@ -496,8 +496,8 @@ export class VelgForgeAstrolabe extends LitElement {
       /* ── Forge Parameters Panel ─────────── */
 
       .forge-params {
-        background: var(--color-gray-900, #111827);
-        border: 1px solid var(--color-gray-700, #374151);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
         padding: var(--space-6);
         display: flex;
         flex-direction: column;
@@ -509,10 +509,10 @@ export class VelgForgeAstrolabe extends LitElement {
         font-size: var(--text-xs);
         text-transform: uppercase;
         letter-spacing: 0.1em;
-        color: var(--color-gray-400, #9ca3af);
+        color: var(--color-icon);
         margin: 0;
         padding-bottom: var(--space-3);
-        border-bottom: 1px solid var(--color-gray-700, #374151);
+        border-bottom: 1px solid var(--color-border);
       }
 
       /* ── Footer ──────────────────────────── */
@@ -524,14 +524,14 @@ export class VelgForgeAstrolabe extends LitElement {
       }
 
       .btn--advance {
-        background: var(--color-gray-800, #1f2937);
-        border-color: var(--color-gray-600, #4b5563);
-        color: var(--color-gray-100, #f3f4f6);
+        background: var(--color-border-light);
+        border-color: var(--color-border);
+        color: var(--color-text-primary);
         padding: var(--space-2-5, 10px) var(--space-6);
       }
 
       .btn--advance:hover:not(:disabled) {
-        background: var(--color-gray-700, #374151);
+        background: var(--color-border);
         transform: translateY(-1px);
         box-shadow: 0 2px 8px rgba(0 0 0 / 0.3);
       }

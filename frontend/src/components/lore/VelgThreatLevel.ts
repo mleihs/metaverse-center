@@ -52,33 +52,33 @@ export class VelgThreatLevel extends LitElement {
 
     /* Level colors */
     .threat--low {
-      color: var(--color-success, #22c55e);
-      border-color: color-mix(in srgb, var(--color-success, #22c55e) 40%, transparent);
+      color: var(--color-success);
+      border-color: color-mix(in srgb, var(--color-success) 40%, transparent);
     }
-    .threat--low .threat__dot { background: var(--color-success, #22c55e); }
+    .threat--low .threat__dot { background: var(--color-success); }
 
     .threat--moderate {
-      color: var(--color-warning, #eab308);
-      border-color: color-mix(in srgb, var(--color-warning, #eab308) 40%, transparent);
+      color: var(--color-warning);
+      border-color: color-mix(in srgb, var(--color-warning) 40%, transparent);
     }
-    .threat--moderate .threat__dot { background: var(--color-warning, #eab308); }
+    .threat--moderate .threat__dot { background: var(--color-warning); }
 
     .threat--high {
-      color: var(--color-danger, #ef4444);
-      border-color: color-mix(in srgb, var(--color-danger, #ef4444) 40%, transparent);
+      color: var(--color-danger);
+      border-color: color-mix(in srgb, var(--color-danger) 40%, transparent);
     }
     .threat--high .threat__dot {
-      background: var(--color-danger, #ef4444);
+      background: var(--color-danger);
       animation: threat-pulse 2s ease-in-out infinite;
     }
 
     .threat--critical {
-      color: var(--color-danger, #ef4444);
-      border-color: var(--color-danger, #ef4444);
+      color: var(--color-danger);
+      border-color: var(--color-danger);
       animation: threat-glow 1.5s ease-in-out infinite;
     }
     .threat--critical .threat__dot {
-      background: var(--color-danger, #ef4444);
+      background: var(--color-danger);
       animation: threat-pulse 0.8s ease-in-out infinite;
     }
 
@@ -89,7 +89,7 @@ export class VelgThreatLevel extends LitElement {
 
     @keyframes threat-glow {
       0%, 100% { box-shadow: none; }
-      50% { box-shadow: 0 0 6px rgba(239, 68, 68, 0.3); }
+      50% { box-shadow: 0 0 6px var(--color-danger-border); }
     }
 
     @media (prefers-reduced-motion: reduce) {

@@ -31,7 +31,7 @@ export class VelgOnboardingWizard extends LitElement {
       display: block;
       position: fixed;
       inset: 0;
-      z-index: 100;
+      z-index: var(--z-sticky);
       animation: overlay-enter 300ms ease both;
     }
 
@@ -71,8 +71,8 @@ export class VelgOnboardingWizard extends LitElement {
     .wizard {
       width: 100%;
       max-width: 640px;
-      background: var(--color-gray-950, #0a0a0a);
-      border: 1px solid var(--color-gray-700, #333);
+      background: var(--color-surface-sunken);
+      border: 1px solid var(--color-border);
       position: relative;
       overflow: hidden;
       animation: wizard-scale-enter 350ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) both 100ms;
@@ -114,8 +114,8 @@ export class VelgOnboardingWizard extends LitElement {
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: var(--color-gray-700, #333);
-      border: 1px solid var(--color-gray-600, #555);
+      background: var(--color-border);
+      border: 1px solid var(--color-border);
       transition: all 200ms var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
       flex-shrink: 0;
     }
@@ -137,7 +137,7 @@ export class VelgOnboardingWizard extends LitElement {
     .step-connector {
       width: 32px;
       height: 1px;
-      background: var(--color-gray-700, #333);
+      background: var(--color-border);
       transition: background 200ms;
     }
 
@@ -192,7 +192,7 @@ export class VelgOnboardingWizard extends LitElement {
       border: none;
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 11px;
-      color: var(--color-gray-600, #9ca3af);
+      color: var(--color-text-muted);
       cursor: pointer;
       padding: 4px 8px;
       letter-spacing: 0.5px;
@@ -200,7 +200,7 @@ export class VelgOnboardingWizard extends LitElement {
     }
 
     .footer__skip:hover {
-      color: var(--color-gray-400, #9ca3af);
+      color: var(--color-text-muted);
     }
 
     .footer__skip:focus-visible {
@@ -279,16 +279,16 @@ export class VelgOnboardingWizard extends LitElement {
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 2px;
-      color: var(--color-gray-200, #e5e5e5);
+      color: var(--color-text-secondary);
       background: transparent;
-      border: 1px solid var(--color-gray-600, #555);
+      border: 1px solid var(--color-border);
       cursor: pointer;
       transition: border-color 150ms, color 150ms, transform 150ms;
     }
 
     .btn-secondary:hover {
-      border-color: var(--color-gray-400, #9ca3af);
-      color: #fff;
+      border-color: var(--color-text-muted);
+      color: var(--color-text-primary);
       transform: translateY(-1px);
     }
 
@@ -336,7 +336,7 @@ export class VelgOnboardingWizard extends LitElement {
       font-size: 9px;
       letter-spacing: 3px;
       text-transform: uppercase;
-      color: var(--color-gray-600, #9ca3af);
+      color: var(--color-text-muted);
       margin-bottom: 24px;
       opacity: 0;
       animation: card-enter 400ms var(--ease-dramatic) both 200ms;
@@ -348,7 +348,7 @@ export class VelgOnboardingWizard extends LitElement {
       font-weight: 900;
       font-size: 28px;
       letter-spacing: 1px;
-      color: #fff;
+      color: var(--color-text-primary);
       margin: 0 0 20px;
       animation: hero-title-enter 600ms var(--ease-dramatic) both 300ms;
     }
@@ -372,7 +372,7 @@ export class VelgOnboardingWizard extends LitElement {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 12px;
       line-height: 1.6;
-      color: var(--color-gray-400, #9ca3af);
+      color: var(--color-text-muted);
       opacity: 0;
       animation: card-enter 350ms var(--ease-dramatic) both;
     }
@@ -395,14 +395,14 @@ export class VelgOnboardingWizard extends LitElement {
       font-size: 16px;
       letter-spacing: 1px;
       text-transform: uppercase;
-      color: #fff;
+      color: var(--color-text-primary);
       margin: 0 0 6px;
     }
 
     .worlds__subtext {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 11px;
-      color: var(--color-gray-400, #9ca3af);
+      color: var(--color-text-muted);
       margin: 0 0 24px;
     }
 
@@ -417,8 +417,8 @@ export class VelgOnboardingWizard extends LitElement {
       align-items: center;
       gap: 14px;
       padding: 14px 16px;
-      background: var(--color-gray-900, #111);
-      border: 1px solid var(--color-gray-700, #333);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
       cursor: pointer;
       transition: border-color 200ms, transform 200ms var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
       opacity: 0;
@@ -427,7 +427,7 @@ export class VelgOnboardingWizard extends LitElement {
     }
 
     .path-card:hover {
-      border-color: var(--color-gray-600, #555);
+      border-color: var(--color-border);
     }
 
     .path-card:focus-visible {
@@ -448,8 +448,8 @@ export class VelgOnboardingWizard extends LitElement {
       justify-content: center;
       width: 36px;
       height: 36px;
-      border: 1px solid var(--color-gray-700, #333);
-      color: var(--color-gray-400, #9ca3af);
+      border: 1px solid var(--color-border);
+      color: var(--color-text-muted);
     }
 
     .path-card[aria-selected="true"] .path-card__icon {
@@ -468,25 +468,25 @@ export class VelgOnboardingWizard extends LitElement {
       font-size: 12px;
       text-transform: uppercase;
       letter-spacing: 1px;
-      color: var(--color-gray-200, #e5e5e5);
+      color: var(--color-text-secondary);
       margin: 0 0 2px;
     }
 
     .path-card__desc {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 10px;
-      color: var(--color-gray-600, #9ca3af);
+      color: var(--color-text-muted);
     }
 
     .path-card__arrow {
       flex-shrink: 0;
-      color: var(--color-gray-700, #333);
+      color: var(--color-border);
       transition: color 200ms, transform 200ms;
     }
 
     .path-card:hover .path-card__arrow,
     .path-card[aria-selected="true"] .path-card__arrow {
-      color: var(--color-gray-400, #9ca3af);
+      color: var(--color-text-muted);
       transform: translateX(2px);
     }
 
@@ -504,14 +504,14 @@ export class VelgOnboardingWizard extends LitElement {
       font-size: 16px;
       letter-spacing: 1px;
       text-transform: uppercase;
-      color: #fff;
+      color: var(--color-text-primary);
       margin: 0 0 6px;
     }
 
     .tour__subtext {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 11px;
-      color: var(--color-gray-400, #9ca3af);
+      color: var(--color-text-muted);
       margin: 0 0 20px;
     }
 
@@ -533,19 +533,19 @@ export class VelgOnboardingWizard extends LitElement {
     }
 
     .tour-carousel::-webkit-scrollbar-track {
-      background: var(--color-gray-800, #1f1f1f);
+      background: var(--color-border-light);
     }
 
     .tour-carousel::-webkit-scrollbar-thumb {
-      background: var(--color-gray-600, #555);
+      background: var(--color-border);
     }
 
     .tour-card {
       flex: 0 0 160px;
       scroll-snap-align: start;
       padding: 16px 14px;
-      background: var(--color-gray-900, #111);
-      border: 1px solid var(--color-gray-700, #333);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
       display: flex;
       flex-direction: column;
       gap: 8px;
@@ -556,7 +556,7 @@ export class VelgOnboardingWizard extends LitElement {
     }
 
     .tour-card:hover {
-      border-color: var(--color-gray-600, #555);
+      border-color: var(--color-border);
     }
 
     .tour-card__icon {
@@ -574,14 +574,14 @@ export class VelgOnboardingWizard extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 1px;
-      color: var(--color-gray-200, #e5e5e5);
+      color: var(--color-text-secondary);
     }
 
     .tour-card__desc {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 10px;
       line-height: 1.5;
-      color: var(--color-gray-600, #9ca3af);
+      color: var(--color-text-muted);
     }
 
     /* ══════════════════════════════════════════
@@ -600,14 +600,14 @@ export class VelgOnboardingWizard extends LitElement {
       font-size: 16px;
       letter-spacing: 1px;
       text-transform: uppercase;
-      color: #fff;
+      color: var(--color-text-primary);
       margin: 0 0 6px;
     }
 
     .mission__subtext {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 11px;
-      color: var(--color-gray-400, #9ca3af);
+      color: var(--color-text-muted);
       margin: 0 0 24px;
       line-height: 1.6;
     }
@@ -624,8 +624,8 @@ export class VelgOnboardingWizard extends LitElement {
       align-items: center;
       gap: 16px;
       padding: 18px 16px;
-      background: var(--color-gray-900, #111);
-      border: 1px solid var(--color-gray-700, #333);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
       cursor: pointer;
       transition: border-color 200ms, transform 200ms, box-shadow 200ms;
       opacity: 0;
@@ -636,7 +636,7 @@ export class VelgOnboardingWizard extends LitElement {
     .mission-card:last-child  { animation-delay: 320ms; }
 
     .mission-card:hover {
-      border-color: var(--color-gray-600, #555);
+      border-color: var(--color-border);
       transform: translateY(-1px);
     }
 
@@ -662,8 +662,8 @@ export class VelgOnboardingWizard extends LitElement {
       justify-content: center;
       width: 40px;
       height: 40px;
-      border: 1px solid var(--color-gray-700, #333);
-      color: var(--color-gray-400, #9ca3af);
+      border: 1px solid var(--color-border);
+      color: var(--color-text-muted);
     }
 
     .mission-card--primary .mission-card__icon {
@@ -681,7 +681,7 @@ export class VelgOnboardingWizard extends LitElement {
       font-size: 13px;
       text-transform: uppercase;
       letter-spacing: 1px;
-      color: var(--color-gray-200, #e5e5e5);
+      color: var(--color-text-secondary);
       margin: 0 0 4px;
     }
 
@@ -689,17 +689,17 @@ export class VelgOnboardingWizard extends LitElement {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 10px;
       line-height: 1.5;
-      color: var(--color-gray-600, #9ca3af);
+      color: var(--color-text-muted);
     }
 
     .mission-card__arrow {
       flex-shrink: 0;
-      color: var(--color-gray-700, #333);
+      color: var(--color-border);
       transition: color 200ms, transform 200ms;
     }
 
     .mission-card:hover .mission-card__arrow {
-      color: var(--color-gray-400, #9ca3af);
+      color: var(--color-text-muted);
       transform: translateX(2px);
     }
 

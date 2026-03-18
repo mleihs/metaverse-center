@@ -95,9 +95,9 @@ function getPersonalityDescriptions(): Record<BotPersonality, string> {
 }
 
 const DIFFICULTY_META: Record<BotDifficulty, { label: string; color: string }> = {
-  easy: { label: 'LOW', color: '#4ade80' },
-  medium: { label: 'MED', color: '#fbbf24' },
-  hard: { label: 'HGH', color: '#ef4444' },
+  easy: { label: 'LOW', color: 'var(--color-success)' },
+  medium: { label: 'MED', color: 'var(--color-primary-hover)' },
+  hard: { label: 'HGH', color: 'var(--color-danger)' },
 };
 
 const BAR_LABELS = ['OFF', 'DEF', 'DIP', 'INT', 'RNG'];
@@ -139,22 +139,22 @@ function renderRadar(stats: [number, number, number, number, number], color: str
 export class VelgBotConfigPanel extends LitElement {
   static styles = css`
     :host {
-      --panel-bg: var(--color-gray-950);
-      --surface: var(--color-gray-900);
-      --surface-raised: var(--color-gray-800);
-      --border-dim: var(--color-gray-700);
-      --text-bright: var(--color-gray-100);
-      --text-mid: var(--color-gray-300);
-      --text-dim: var(--color-gray-400);
-      --accent: #38bdf8;
+      --panel-bg: var(--color-surface-sunken);
+      --surface: var(--color-surface);
+      --surface-raised: var(--color-surface-raised);
+      --border-dim: var(--color-border);
+      --text-bright: var(--color-text-primary);
+      --text-mid: var(--color-text-tertiary);
+      --text-dim: var(--color-text-muted);
+      --accent: var(--color-info);
     }
 
     velg-side-panel {
-      --color-surface-raised: var(--color-gray-950);
-      --color-surface-header: var(--color-gray-900);
-      --color-text-primary: var(--color-gray-100);
-      --border-default: 1px solid var(--color-gray-700);
-      --border-medium: 1px solid var(--color-gray-700);
+      --color-surface-raised: var(--color-surface-sunken);
+      --color-surface-header: var(--color-surface);
+      --color-text-primary: var(--color-text-primary);
+      --border-default: 1px solid var(--color-border);
+      --border-medium: 1px solid var(--color-border);
     }
 
     .panel-body {
@@ -617,12 +617,12 @@ export class VelgBotConfigPanel extends LitElement {
     }
 
     .action-btn--deploy {
-      background: #4ade80;
+      background: var(--color-success);
       color: var(--panel-bg);
     }
 
     .action-btn--deploy:hover:not(:disabled) {
-      box-shadow: 0 0 16px rgba(74, 222, 128, 0.3);
+      box-shadow: 0 0 16px var(--color-success-border);
       transform: translateY(-1px);
     }
 
@@ -634,7 +634,7 @@ export class VelgBotConfigPanel extends LitElement {
     }
 
     .action-btn--success {
-      background: #4ade80 !important;
+      background: var(--color-success) !important;
       animation: deploy-flash 600ms ease;
     }
 
@@ -644,7 +644,7 @@ export class VelgBotConfigPanel extends LitElement {
         box-shadow: none;
       }
       50% {
-        box-shadow: 0 0 24px rgba(74, 222, 128, 0.5);
+        box-shadow: 0 0 24px var(--color-success-border);
       }
     }
 

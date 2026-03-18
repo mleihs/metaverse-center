@@ -31,8 +31,8 @@ export class VelgEvidenceTag extends LitElement {
     }
 
     .tag--agent {
-      color: var(--color-info, #3b82f6);
-      border-color: var(--color-info, #3b82f6);
+      color: var(--color-info);
+      border-color: var(--color-info);
     }
 
     .tag--building {
@@ -41,8 +41,8 @@ export class VelgEvidenceTag extends LitElement {
     }
 
     .tag--zone {
-      color: var(--color-success, #22c55e);
-      border-color: var(--color-success, #22c55e);
+      color: var(--color-success);
+      border-color: var(--color-success);
     }
 
     .tag:focus-visible {

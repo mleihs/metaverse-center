@@ -43,8 +43,8 @@ export class VelgToast extends LitElement {
       align-items: stretch;
       min-width: 320px;
       max-width: 480px;
-      background: #0a0a0a;
-      border: 1px solid #2a2a2a;
+      background: var(--color-surface-sunken);
+      border: 1px solid var(--color-border);
       pointer-events: auto;
       animation: dispatch-in 400ms var(--ease-out) forwards;
       overflow: hidden;
@@ -56,7 +56,7 @@ export class VelgToast extends LitElement {
       position: absolute;
       width: 10px;
       height: 10px;
-      border-color: #3a3a3a;
+      border-color: var(--color-border);
       border-style: solid;
       pointer-events: none;
       z-index: 2;
@@ -149,7 +149,7 @@ export class VelgToast extends LitElement {
     .dispatch__timestamp {
       font-family: var(--font-brutalist);
       font-size: 9px;
-      color: #555;
+      color: var(--color-text-muted);
       letter-spacing: 0.08em;
       flex-shrink: 0;
     }
@@ -159,7 +159,7 @@ export class VelgToast extends LitElement {
     .dispatch__message {
       font-family: var(--font-sans);
       font-size: 13px;
-      color: #c8c8c8;
+      color: var(--color-text-secondary);
       line-height: 1.45;
       word-break: break-word;
     }
@@ -178,15 +178,15 @@ export class VelgToast extends LitElement {
       padding: 0;
       background: transparent;
       border: 1px solid transparent;
-      color: #555;
+      color: var(--color-text-muted);
       cursor: pointer;
       z-index: 3;
       transition: color 150ms, border-color 150ms;
     }
 
     .dispatch__close:hover {
-      color: #aaa;
-      border-color: #333;
+      color: var(--color-text-tertiary);
+      border-color: var(--color-border);
     }
 
     .dispatch__close:focus-visible {

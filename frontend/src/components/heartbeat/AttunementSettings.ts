@@ -115,15 +115,15 @@ export class VelgAttunementSettings extends LitElement {
     }
 
     .slot-badge--available {
-      color: var(--color-success, #22c55e);
-      border-color: color-mix(in srgb, var(--color-success, #22c55e) 40%, transparent);
-      background: color-mix(in srgb, var(--color-success, #22c55e) 8%, transparent);
+      color: var(--color-success);
+      border-color: color-mix(in srgb, var(--color-success) 40%, transparent);
+      background: color-mix(in srgb, var(--color-success) 8%, transparent);
     }
 
     .slot-badge--full {
-      color: var(--color-warning, #f59e0b);
-      border-color: color-mix(in srgb, var(--color-warning, #f59e0b) 40%, transparent);
-      background: color-mix(in srgb, var(--color-warning, #f59e0b) 8%, transparent);
+      color: var(--color-warning);
+      border-color: color-mix(in srgb, var(--color-warning) 40%, transparent);
+      background: color-mix(in srgb, var(--color-warning) 8%, transparent);
     }
 
     /* ── Grid ────────────────────────────────────────────── */
@@ -172,22 +172,22 @@ export class VelgAttunementSettings extends LitElement {
     /* ── Attuned (active) ────────────────────────────────── */
 
     .channel--attuned {
-      border-color: var(--color-gold, #eab308);
-      background: color-mix(in srgb, var(--color-gold, #eab308) 5%, var(--color-surface-raised));
+      border-color: var(--color-warning);
+      background: color-mix(in srgb, var(--color-warning) 5%, var(--color-surface-raised));
     }
 
     .channel--attuned:hover {
-      border-color: var(--color-gold, #eab308);
-      background: color-mix(in srgb, var(--color-gold, #eab308) 10%, var(--color-surface-raised));
+      border-color: var(--color-warning);
+      background: color-mix(in srgb, var(--color-warning) 10%, var(--color-surface-raised));
     }
 
     /* ── Harmonized ──────────────────────────────────────── */
 
     .channel--harmonized {
-      border-color: var(--color-gold, #eab308);
+      border-color: var(--color-warning);
       box-shadow:
-        0 0 12px color-mix(in srgb, var(--color-gold, #eab308) 30%, transparent),
-        inset 0 0 20px color-mix(in srgb, var(--color-gold, #eab308) 6%, transparent);
+        0 0 12px color-mix(in srgb, var(--color-warning) 30%, transparent),
+        inset 0 0 20px color-mix(in srgb, var(--color-warning) 6%, transparent);
     }
 
     /* ── Locked (slots full) ─────────────────────────────── */
@@ -250,9 +250,9 @@ export class VelgAttunementSettings extends LitElement {
     }
 
     .channel--attuned .wave-path {
-      stroke: var(--color-gold, #eab308);
+      stroke: var(--color-warning);
       opacity: 0.8;
-      filter: drop-shadow(0 0 3px color-mix(in srgb, var(--color-gold, #eab308) 60%, transparent));
+      filter: drop-shadow(0 0 3px color-mix(in srgb, var(--color-warning) 60%, transparent));
     }
 
     .channel--attuned .wave-svg {
@@ -261,7 +261,7 @@ export class VelgAttunementSettings extends LitElement {
 
     .channel--harmonized .wave-path {
       opacity: 1;
-      filter: drop-shadow(0 0 6px color-mix(in srgb, var(--color-gold, #eab308) 80%, transparent));
+      filter: drop-shadow(0 0 6px color-mix(in srgb, var(--color-warning) 80%, transparent));
     }
 
     @keyframes wave-flow {
@@ -286,7 +286,7 @@ export class VelgAttunementSettings extends LitElement {
     }
 
     .channel--attuned .channel__icon {
-      color: var(--color-gold, #eab308);
+      color: var(--color-warning);
     }
 
     .channel__name {
@@ -303,11 +303,11 @@ export class VelgAttunementSettings extends LitElement {
     .channel__cooldown {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-warning, #f59e0b);
+      color: var(--color-warning);
       flex-shrink: 0;
       padding: 1px 6px;
-      border: 1px solid color-mix(in srgb, var(--color-warning, #f59e0b) 30%, transparent);
-      background: color-mix(in srgb, var(--color-warning, #f59e0b) 6%, transparent);
+      border: 1px solid color-mix(in srgb, var(--color-warning) 30%, transparent);
+      background: color-mix(in srgb, var(--color-warning) 6%, transparent);
     }
 
     /* ── VU Meter (segmented depth bar) ──────────────────── */
@@ -319,26 +319,26 @@ export class VelgAttunementSettings extends LitElement {
       height: 14px;
       margin-top: var(--space-2, 8px);
       padding: 2px;
-      background: var(--color-gray-900, #111);
-      border: 1px solid var(--color-gray-700, #333);
+      background: var(--color-surface-sunken);
+      border: 1px solid var(--color-border);
     }
 
     .vu-segment {
       flex: 1;
-      background: var(--color-gray-800, #1a1a1a);
+      background: var(--color-surface);
       transition: background 0.15s ease;
       min-width: 0;
     }
 
     .vu-segment--lit {
-      background: var(--color-gold, #eab308);
-      box-shadow: 0 0 4px color-mix(in srgb, var(--color-gold, #eab308) 40%, transparent);
+      background: var(--color-warning);
+      box-shadow: 0 0 4px color-mix(in srgb, var(--color-warning) 40%, transparent);
     }
 
     /* Hot segments (last 20%) glow more intensely */
     .vu-segment--hot {
-      background: var(--color-warning, #f59e0b);
-      box-shadow: 0 0 6px color-mix(in srgb, var(--color-warning, #f59e0b) 60%, transparent);
+      background: var(--color-warning);
+      box-shadow: 0 0 6px color-mix(in srgb, var(--color-warning) 60%, transparent);
     }
 
     /* Threshold marker */
@@ -347,7 +347,7 @@ export class VelgAttunementSettings extends LitElement {
       top: -2px;
       bottom: -2px;
       width: 2px;
-      background: var(--color-danger, #ef4444);
+      background: var(--color-danger);
       z-index: 1;
     }
 
@@ -361,7 +361,7 @@ export class VelgAttunementSettings extends LitElement {
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--color-danger, #ef4444);
+      color: var(--color-danger);
       white-space: nowrap;
     }
 
@@ -388,9 +388,9 @@ export class VelgAttunementSettings extends LitElement {
       text-transform: uppercase;
       letter-spacing: 0.12em;
       padding: 2px 8px;
-      color: var(--color-gold, #eab308);
-      border: 1px solid color-mix(in srgb, var(--color-gold, #eab308) 40%, transparent);
-      background: color-mix(in srgb, var(--color-gold, #eab308) 10%, transparent);
+      color: var(--color-warning);
+      border: 1px solid color-mix(in srgb, var(--color-warning) 40%, transparent);
+      background: color-mix(in srgb, var(--color-warning) 10%, transparent);
       z-index: 3;
     }
 
@@ -444,7 +444,7 @@ export class VelgAttunementSettings extends LitElement {
     }
 
     .starburst__ray {
-      fill: var(--color-gold, #eab308);
+      fill: var(--color-warning);
       opacity: 0.5;
     }
 
@@ -471,7 +471,7 @@ export class VelgAttunementSettings extends LitElement {
     .error-msg {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs, 12px);
-      color: var(--color-danger, #ef4444);
+      color: var(--color-danger);
       margin-top: var(--space-3, 12px);
     }
 

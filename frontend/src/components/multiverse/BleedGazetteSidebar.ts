@@ -6,7 +6,7 @@ import type { GazetteEntry } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import '../shared/LoadingState.js';
 
-const VECTOR_COLORS: Record<string, string> = {
+const VECTOR_COLORS: Record<string, string> = { // lint-color-ok
   commerce: '#d4a843',
   language: '#5bbcd6',
   memory: '#a78bfa',
@@ -25,11 +25,11 @@ export class VelgBleedGazetteSidebar extends LitElement {
       width: 320px;
       max-height: 100%;
       overflow-y: auto;
-      background: var(--color-gray-950);
-      color: var(--color-gray-200);
+      background: var(--color-surface-sunken);
+      color: var(--color-text-secondary);
       scrollbar-width: thin;
-      scrollbar-color: var(--color-gray-800) transparent;
-      border-left: 1px solid var(--color-gray-800);
+      scrollbar-color: var(--color-border-light) transparent;
+      border-left: 1px solid var(--color-border-light);
     }
 
     /* ── Header ────────────────────────── */
@@ -38,8 +38,8 @@ export class VelgBleedGazetteSidebar extends LitElement {
       position: sticky;
       top: 0;
       z-index: 3;
-      background: var(--color-gray-950);
-      border-bottom: 1px solid var(--color-gray-800);
+      background: var(--color-surface-sunken);
+      border-bottom: 1px solid var(--color-border-light);
       padding: var(--space-4);
       display: flex;
       flex-direction: column;
@@ -57,7 +57,7 @@ export class VelgBleedGazetteSidebar extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: 0.18em;
-      color: var(--color-gray-500);
+      color: var(--color-text-muted);
       margin: 0;
     }
 
@@ -82,8 +82,8 @@ export class VelgBleedGazetteSidebar extends LitElement {
 
     .collapse-btn {
       background: none;
-      border: 1px solid var(--color-gray-700);
-      color: var(--color-gray-400);
+      border: 1px solid var(--color-border);
+      color: var(--color-icon);
       width: 22px;
       height: 22px;
       display: flex;
@@ -95,7 +95,7 @@ export class VelgBleedGazetteSidebar extends LitElement {
       transition: color 0.15s;
     }
 
-    .collapse-btn:hover { color: var(--color-gray-200); }
+    .collapse-btn:hover { color: var(--color-text-secondary); }
     .collapse-btn:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 1px; }
 
     .gazette-header__title {
@@ -104,14 +104,14 @@ export class VelgBleedGazetteSidebar extends LitElement {
       font-size: var(--text-base);
       text-transform: uppercase;
       letter-spacing: 0.12em;
-      color: var(--color-gray-200);
+      color: var(--color-text-secondary);
       margin: 0;
     }
 
     .gazette-header__rule {
       width: 40px;
       height: 1px;
-      background: var(--color-gray-700);
+      background: var(--color-border);
       margin-top: var(--space-1);
     }
 
@@ -131,9 +131,9 @@ export class VelgBleedGazetteSidebar extends LitElement {
     /* ── Dispatch Card (base) ──────────── */
 
     .dispatch {
-      background: var(--color-gray-900);
+      background: var(--color-surface);
       background-image: linear-gradient(135deg, rgba(255, 248, 230, 0.02), transparent);
-      border: 1px solid var(--color-gray-800);
+      border: 1px solid var(--color-border-light);
       padding: var(--space-3);
       display: flex;
       flex-direction: column;
@@ -149,7 +149,7 @@ export class VelgBleedGazetteSidebar extends LitElement {
       left: 0;
       width: 3px;
       height: 100%;
-      background: var(--dispatch-accent, var(--color-gray-700));
+      background: var(--dispatch-accent, var(--color-border));
     }
 
     /* ── Echo Completed ────────────────── */
@@ -168,7 +168,7 @@ export class VelgBleedGazetteSidebar extends LitElement {
       align-items: center;
       gap: var(--space-2);
       font-size: var(--text-xs);
-      color: var(--color-gray-300);
+      color: var(--color-text-tertiary);
     }
 
     .dispatch__sim-name {
@@ -182,7 +182,7 @@ export class VelgBleedGazetteSidebar extends LitElement {
     }
 
     .dispatch__arrow {
-      color: var(--color-gray-600);
+      color: var(--color-separator);
       font-size: 10px;
       flex-shrink: 0;
     }
@@ -208,12 +208,12 @@ export class VelgBleedGazetteSidebar extends LitElement {
       width: 5px;
       height: 5px;
       border-radius: 50%;
-      border: 1px solid var(--color-gray-600);
+      border: 1px solid var(--color-separator);
     }
 
     .strength-dot--filled {
-      background: var(--dispatch-accent, var(--color-gray-400));
-      border-color: var(--dispatch-accent, var(--color-gray-400));
+      background: var(--dispatch-accent, var(--color-icon));
+      border-color: var(--dispatch-accent, var(--color-icon));
     }
 
     /* ── Embassy Change ────────────────── */
@@ -226,12 +226,12 @@ export class VelgBleedGazetteSidebar extends LitElement {
       width: 44px;
       height: 44px;
       border-radius: 50%;
-      border: 2px solid var(--color-gray-600);
+      border: 2px solid var(--color-separator);
       display: flex;
       align-items: center;
       justify-content: center;
       margin: 0 auto;
-      color: var(--color-gray-500);
+      color: var(--color-text-muted);
     }
 
     .dispatch__seal-text {
@@ -239,14 +239,14 @@ export class VelgBleedGazetteSidebar extends LitElement {
       font-size: 7px;
       text-transform: uppercase;
       letter-spacing: 0.14em;
-      color: var(--color-gray-500);
+      color: var(--color-text-muted);
       margin-top: var(--space-1);
     }
 
     .dispatch__embassy-names {
       font-family: Georgia, 'Times New Roman', serif;
       font-size: var(--text-xs);
-      color: var(--color-gray-300);
+      color: var(--color-text-tertiary);
     }
 
     /* ── Phase Change ──────────────────── */
@@ -262,7 +262,7 @@ export class VelgBleedGazetteSidebar extends LitElement {
     }
 
     @keyframes phasePulse {
-      0%, 100% { border-color: var(--color-gray-800); }
+      0%, 100% { border-color: var(--color-border-light); }
       50% { border-color: var(--color-warning); }
     }
 
@@ -275,7 +275,7 @@ export class VelgBleedGazetteSidebar extends LitElement {
     .dispatch__phase-rule {
       flex: 1;
       height: 1px;
-      background: var(--color-gray-700);
+      background: var(--color-border);
     }
 
     .dispatch__phase-label {
@@ -294,19 +294,19 @@ export class VelgBleedGazetteSidebar extends LitElement {
       font-family: 'Courier New', Courier, monospace;
       font-size: 11px;
       line-height: 1.6;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     .dispatch__filed {
       font-size: 9px;
-      color: var(--color-gray-600);
+      color: var(--color-separator);
       text-transform: uppercase;
       letter-spacing: 0.08em;
       font-variant-numeric: tabular-nums;
     }
 
     .dispatch__icon {
-      color: var(--dispatch-accent, var(--color-gray-500));
+      color: var(--dispatch-accent, var(--color-text-muted));
       opacity: 0.6;
     }
 
@@ -315,7 +315,7 @@ export class VelgBleedGazetteSidebar extends LitElement {
     .empty {
       text-align: center;
       padding: var(--space-6);
-      color: var(--color-gray-600);
+      color: var(--color-separator);
       font-family: Georgia, 'Times New Roman', serif;
       font-size: var(--text-sm);
       font-style: italic;
@@ -390,7 +390,7 @@ export class VelgBleedGazetteSidebar extends LitElement {
   }
 
   private _renderEcho(entry: GazetteEntry, idx: number) {
-    const vecColor = VECTOR_COLORS[entry.echo_vector || ''] || 'var(--color-gray-500)';
+    const vecColor = VECTOR_COLORS[entry.echo_vector || ''] || 'var(--color-text-muted)';
     return html`
       <div
         class="dispatch dispatch--echo"

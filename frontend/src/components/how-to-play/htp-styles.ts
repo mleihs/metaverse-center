@@ -13,8 +13,8 @@ export const htpStyles = css`
   :host {
     display: block;
     min-height: 100vh;
-    background: var(--color-gray-950);
-    color: var(--color-gray-200);
+    background: var(--color-surface-sunken);
+    color: var(--color-text-secondary);
     font-family: var(--font-mono, monospace);
     font-size: var(--text-sm);
     line-height: var(--leading-normal);
@@ -30,7 +30,7 @@ export const htpStyles = css`
 
   .hero {
     position: relative;
-    border-bottom: 3px solid var(--color-gray-800);
+    border-bottom: 3px solid var(--color-border-light);
     overflow: hidden;
   }
 
@@ -76,7 +76,7 @@ export const htpStyles = css`
     font-size: clamp(2rem, 6vw, var(--text-4xl));
     text-transform: uppercase;
     letter-spacing: 0.15em;
-    color: var(--color-gray-0);
+    color: var(--color-text-primary);
     margin: 0 0 var(--space-3);
     opacity: 0;
     animation: fade-down 0.6s var(--ease-dramatic) 0.25s forwards;
@@ -85,7 +85,7 @@ export const htpStyles = css`
   .hero__sub {
     font-family: var(--font-mono, monospace);
     font-size: var(--text-base);
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     letter-spacing: var(--tracking-wider);
     text-transform: uppercase;
     margin: 0;
@@ -96,7 +96,7 @@ export const htpStyles = css`
   .hero__line {
     width: 80px;
     height: 2px;
-    background: var(--color-gray-700);
+    background: var(--color-border);
     margin: var(--space-6) auto 0;
     opacity: 0;
     animation: scale-x 0.6s var(--ease-dramatic) 0.55s forwards;
@@ -133,10 +133,10 @@ export const htpStyles = css`
     top: 0;
     height: 100vh;
     padding: var(--space-8) var(--space-4) var(--space-8) var(--space-6);
-    border-right: 1px solid var(--color-gray-800);
+    border-right: 1px solid var(--color-border-light);
     overflow-y: auto;
     scrollbar-width: thin;
-    scrollbar-color: var(--color-gray-700) transparent;
+    scrollbar-color: var(--color-border) transparent;
   }
 
   .toc__label {
@@ -145,7 +145,7 @@ export const htpStyles = css`
     font-size: 9px;
     text-transform: uppercase;
     letter-spacing: var(--tracking-widest);
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     margin: 0 0 var(--space-4);
   }
 
@@ -163,7 +163,7 @@ export const htpStyles = css`
     padding: var(--space-1-5) var(--space-2);
     font-family: var(--font-mono, monospace);
     font-size: 11px;
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     text-decoration: none;
     border-left: 2px solid transparent;
     cursor: pointer;
@@ -174,8 +174,8 @@ export const htpStyles = css`
   }
 
   .toc__link:hover {
-    color: var(--color-gray-300);
-    border-left-color: var(--color-gray-600);
+    color: var(--color-text-tertiary);
+    border-left-color: var(--color-border);
   }
 
   .toc__link:focus-visible {
@@ -184,7 +184,7 @@ export const htpStyles = css`
   }
 
   .toc__link--active {
-    color: var(--color-gray-100);
+    color: var(--color-text-primary);
     border-left-color: var(--color-warning);
     background: var(--color-ascendant-gold);
   }
@@ -214,14 +214,14 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-black);
     font-size: 11px;
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     flex-shrink: 0;
   }
 
   .section__rule {
     flex: 1;
     height: 1px;
-    background: var(--color-gray-800);
+    background: var(--color-border-light);
   }
 
   .section__title {
@@ -230,12 +230,12 @@ export const htpStyles = css`
     font-size: var(--text-xl);
     text-transform: uppercase;
     letter-spacing: var(--tracking-brutalist);
-    color: var(--color-gray-0);
+    color: var(--color-text-primary);
     margin: 0 0 var(--space-4);
   }
 
   .section__text {
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     line-height: var(--leading-relaxed);
     max-width: 65ch;
   }
@@ -270,7 +270,7 @@ export const htpStyles = css`
   .phase__track {
     flex: 1;
     height: 2px;
-    background: var(--color-gray-700);
+    background: var(--color-border);
   }
 
   .phase__track--hidden {
@@ -299,7 +299,7 @@ export const htpStyles = css`
 
   .phase__desc {
     font-size: 10px;
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     text-align: center;
     margin-top: var(--space-1);
     padding: 0 var(--space-1);
@@ -312,8 +312,8 @@ export const htpStyles = css`
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1px;
-    background: var(--color-gray-800);
-    border: 1px solid var(--color-gray-800);
+    background: var(--color-border-light);
+    border: 1px solid var(--color-border-light);
     margin: var(--space-4) 0;
     max-width: 500px;
   }
@@ -322,11 +322,11 @@ export const htpStyles = css`
     display: flex;
     justify-content: space-between;
     padding: var(--space-2) var(--space-3);
-    background: var(--color-gray-900);
+    background: var(--color-surface);
   }
 
   .readout__label {
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     font-size: 11px;
   }
 
@@ -346,8 +346,8 @@ export const htpStyles = css`
   }
 
   .op-card {
-    background: var(--color-gray-900);
-    border: 1px solid var(--color-gray-800);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-light);
     border-left: 4px solid;
     padding: var(--space-4);
     display: flex;
@@ -376,7 +376,7 @@ export const htpStyles = css`
     font-size: var(--text-md);
     text-transform: uppercase;
     letter-spacing: var(--tracking-brutalist);
-    color: var(--color-gray-0);
+    color: var(--color-text-primary);
   }
 
   .op-card__cost {
@@ -388,7 +388,7 @@ export const htpStyles = css`
 
   .op-card__cost-label {
     font-size: var(--text-xs);
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     text-transform: uppercase;
     margin-left: 2px;
   }
@@ -406,29 +406,29 @@ export const htpStyles = css`
 
   .op-card__stat-label {
     font-size: 9px;
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
   }
 
   .op-card__stat-value {
     font-weight: var(--font-bold);
-    color: var(--color-gray-300);
+    color: var(--color-text-tertiary);
     font-size: var(--text-sm);
   }
 
   .op-card__desc {
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     font-size: 11px;
     line-height: 1.5;
   }
 
   .op-card__effect {
     font-size: 11px;
-    color: var(--color-gray-300);
+    color: var(--color-text-tertiary);
     padding: var(--space-2);
     background: rgba(255 255 255 / 0.03);
-    border-left: 2px solid var(--color-gray-600);
+    border-left: 2px solid var(--color-border);
   }
 
   /* ═══ TACTICS CARDS ═════════════════════════════ */
@@ -441,8 +441,8 @@ export const htpStyles = css`
   }
 
   .tactic-card {
-    background: var(--color-gray-900);
-    border: 1px solid var(--color-gray-800);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-light);
     border-left: 4px solid;
     padding: var(--space-4);
     display: flex;
@@ -457,7 +457,7 @@ export const htpStyles = css`
   .tactic-card--timing   { border-left-color: var(--color-warning); }
   .tactic-card--economy  { border-left-color: var(--color-info); }
   .tactic-card--counter  { border-left-color: var(--color-danger); }
-  .tactic-card--preset   { border-left-color: var(--color-gray-500); }
+  .tactic-card--preset   { border-left-color: var(--color-text-muted); }
 
   .tactic-card__header {
     display: flex;
@@ -472,7 +472,7 @@ export const htpStyles = css`
     font-size: var(--text-sm);
     text-transform: uppercase;
     letter-spacing: var(--tracking-brutalist);
-    color: var(--color-gray-0);
+    color: var(--color-text-primary);
   }
 
   .tactic-card__badge {
@@ -489,10 +489,10 @@ export const htpStyles = css`
   .tactic-card__badge--timing   { color: var(--color-warning); border: 1px solid var(--color-warning); }
   .tactic-card__badge--economy  { color: var(--color-info); border: 1px solid var(--color-info); }
   .tactic-card__badge--counter  { color: var(--color-danger); border: 1px solid var(--color-danger); }
-  .tactic-card__badge--preset   { color: var(--color-gray-400); border: 1px solid var(--color-gray-400); }
+  .tactic-card__badge--preset   { color: var(--color-text-muted); border: 1px solid var(--color-text-muted); }
 
   .tactic-card__desc {
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     font-size: 11px;
     line-height: 1.6;
   }
@@ -524,7 +524,7 @@ export const htpStyles = css`
 
   .dim-row__bar {
     height: 8px;
-    background: var(--color-gray-800);
+    background: var(--color-border-light);
     position: relative;
     overflow: hidden;
   }
@@ -539,7 +539,7 @@ export const htpStyles = css`
 
   .dim-row__value {
     font-size: 10px;
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     text-align: right;
   }
 
@@ -556,10 +556,10 @@ export const htpStyles = css`
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     text-align: center;
     padding: var(--space-2);
-    border-bottom: 2px solid var(--color-gray-800);
+    border-bottom: 2px solid var(--color-border-light);
   }
 
   .presets-table th:first-child {
@@ -570,22 +570,22 @@ export const htpStyles = css`
     font-size: 11px;
     text-align: center;
     padding: var(--space-2);
-    border-bottom: 1px solid var(--color-gray-850, var(--color-gray-800));
-    color: var(--color-gray-300);
+    border-bottom: 1px solid var(--color-border-light);
+    color: var(--color-text-tertiary);
   }
 
   .presets-table td:first-child {
     text-align: left;
     font-weight: var(--font-bold);
-    color: var(--color-gray-100);
+    color: var(--color-text-primary);
   }
 
   .formula {
     font-family: var(--font-mono, monospace);
     font-size: var(--text-sm);
     color: var(--color-info);
-    background: var(--color-gray-900);
-    border: 1px solid var(--color-gray-800);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-light);
     padding: var(--space-3) var(--space-4);
     margin: var(--space-4) 0;
     overflow-x: auto;
@@ -621,7 +621,7 @@ export const htpStyles = css`
   .callout--info   .callout__label { color: var(--color-info); }
 
   .callout__text {
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     font-size: 12px;
     line-height: 1.6;
   }
@@ -629,8 +629,8 @@ export const htpStyles = css`
   /* ═══ MATCH CARDS ════════════════════════════════ */
 
   .match {
-    background: var(--color-gray-900);
-    border: 1px solid var(--color-gray-800);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-light);
     margin-bottom: var(--space-6);
   }
 
@@ -640,7 +640,7 @@ export const htpStyles = css`
     justify-content: space-between;
     gap: var(--space-4);
     padding: var(--space-4) var(--space-5);
-    border-bottom: 1px solid var(--color-gray-800);
+    border-bottom: 1px solid var(--color-border-light);
     cursor: pointer;
     transition: background var(--transition-fast);
   }
@@ -666,13 +666,13 @@ export const htpStyles = css`
     font-size: var(--text-md);
     text-transform: uppercase;
     letter-spacing: var(--tracking-brutalist);
-    color: var(--color-gray-0);
+    color: var(--color-text-primary);
     margin: 0;
   }
 
   .match__subtitle {
     font-size: 10px;
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
   }
@@ -685,14 +685,14 @@ export const htpStyles = css`
 
   .match__meta-tag {
     font-size: 10px;
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     padding: var(--space-0-5) var(--space-2);
-    border: 1px solid var(--color-gray-700);
+    border: 1px solid var(--color-border);
   }
 
   .match__toggle {
     font-size: var(--text-sm);
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     transition: transform var(--transition-fast);
   }
 
@@ -708,7 +708,7 @@ export const htpStyles = css`
   }
 
   .match__desc {
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     font-size: 12px;
     line-height: 1.6;
   }
@@ -726,8 +726,8 @@ export const htpStyles = css`
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
     padding: var(--space-0-5) var(--space-2);
-    border: 1px solid var(--color-gray-600);
-    color: var(--color-gray-300);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-tertiary);
   }
 
   /* ── Cycle Table ─────────── */
@@ -738,7 +738,7 @@ export const htpStyles = css`
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     margin-bottom: var(--space-2);
   }
 
@@ -759,17 +759,17 @@ export const htpStyles = css`
     font-size: 9px;
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     text-align: left;
     padding: var(--space-1-5) var(--space-2);
-    border-bottom: 2px solid var(--color-gray-800);
+    border-bottom: 2px solid var(--color-border-light);
   }
 
   .cycles-table td {
     font-size: 11px;
     padding: var(--space-1-5) var(--space-2);
-    border-bottom: 1px solid var(--color-gray-850, var(--color-gray-800));
-    color: var(--color-gray-300);
+    border-bottom: 1px solid var(--color-border-light);
+    color: var(--color-text-tertiary);
     vertical-align: top;
   }
 
@@ -791,11 +791,11 @@ export const htpStyles = css`
 
   .outcome--success  { color: var(--color-success); }
   .outcome--detected { color: var(--color-danger); }
-  .outcome--failed   { color: var(--color-gray-400); }
+  .outcome--failed   { color: var(--color-text-muted); }
 
   .cycle-note {
     font-size: 10px;
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     font-style: italic;
   }
 
@@ -807,7 +807,7 @@ export const htpStyles = css`
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     margin-bottom: var(--space-2);
   }
 
@@ -822,10 +822,10 @@ export const htpStyles = css`
     font-size: 9px;
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     text-align: center;
     padding: var(--space-1-5) var(--space-2);
-    border-bottom: 2px solid var(--color-gray-800);
+    border-bottom: 2px solid var(--color-border-light);
   }
 
   .standings-table th:first-child,
@@ -835,8 +835,8 @@ export const htpStyles = css`
     font-size: 11px;
     text-align: center;
     padding: var(--space-1-5) var(--space-2);
-    border-bottom: 1px solid var(--color-gray-850, var(--color-gray-800));
-    color: var(--color-gray-300);
+    border-bottom: 1px solid var(--color-border-light);
+    color: var(--color-text-tertiary);
   }
 
   .standings-table td:first-child,
@@ -847,7 +847,7 @@ export const htpStyles = css`
   }
 
   .standings-rank--1 { color: var(--color-warning); }
-  .standings-rank--2 { color: var(--color-gray-400); }
+  .standings-rank--2 { color: var(--color-text-muted); }
   .standings-rank--3 { color: var(--color-warning-hover); }
 
   .standings-title {
@@ -858,7 +858,7 @@ export const htpStyles = css`
 
   .standings-composite {
     font-weight: var(--font-black);
-    color: var(--color-gray-100);
+    color: var(--color-text-primary);
   }
 
   /* ── Key Moments ─────────── */
@@ -869,7 +869,7 @@ export const htpStyles = css`
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     margin-bottom: var(--space-2);
   }
 
@@ -886,7 +886,7 @@ export const htpStyles = css`
     padding-left: var(--space-4);
     position: relative;
     font-size: 12px;
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     line-height: 1.5;
   }
 
@@ -907,8 +907,8 @@ export const htpStyles = css`
   }
 
   .vector-card {
-    background: var(--color-gray-900);
-    border: 1px solid var(--color-gray-800);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-light);
     border-left: 4px solid;
     padding: var(--space-4);
     display: flex;
@@ -925,11 +925,11 @@ export const htpStyles = css`
     font-size: var(--text-sm);
     text-transform: uppercase;
     letter-spacing: var(--tracking-brutalist);
-    color: var(--color-gray-0);
+    color: var(--color-text-primary);
   }
 
   .vector-card__desc {
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     font-size: 11px;
     line-height: 1.5;
   }
@@ -944,15 +944,15 @@ export const htpStyles = css`
     font-family: var(--font-mono, monospace);
     font-size: 9px;
     padding: 1px 5px;
-    border: 1px solid var(--color-gray-700);
-    color: var(--color-gray-400);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-muted);
   }
 
   /* ═══ DIMENSION FORMULAS ═════════════════════════ */
 
   .dim-block {
-    background: var(--color-gray-900);
-    border: 1px solid var(--color-gray-800);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-light);
     border-left: 4px solid;
     padding: var(--space-4);
     margin-bottom: var(--space-3);
@@ -971,7 +971,7 @@ export const htpStyles = css`
     font-size: var(--text-sm);
     text-transform: uppercase;
     letter-spacing: var(--tracking-brutalist);
-    color: var(--color-gray-0);
+    color: var(--color-text-primary);
   }
 
   .dim-title {
@@ -990,7 +990,7 @@ export const htpStyles = css`
   }
 
   .dim-block__explanation {
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     font-size: 11px;
     line-height: 1.5;
   }
@@ -1027,7 +1027,7 @@ export const htpStyles = css`
   }
 
   .lifecycle__arrow {
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     font-size: 10px;
     margin: 0 var(--space-2);
   }
@@ -1044,14 +1044,14 @@ export const htpStyles = css`
     font-size: var(--text-md);
     text-transform: uppercase;
     letter-spacing: var(--tracking-brutalist);
-    color: var(--color-gray-200);
+    color: var(--color-text-secondary);
     margin: 0 0 var(--space-2);
     padding-bottom: var(--space-2);
-    border-bottom: 1px solid var(--color-gray-800);
+    border-bottom: 1px solid var(--color-border-light);
   }
 
   .analytics-sub__desc {
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     font-size: 11px;
     line-height: 1.5;
     margin-bottom: var(--space-4);
@@ -1084,7 +1084,7 @@ export const htpStyles = css`
 
   .elo-row__track {
     height: 12px;
-    background: var(--color-gray-800);
+    background: var(--color-border-light);
     position: relative;
     overflow: hidden;
   }
@@ -1112,7 +1112,7 @@ export const htpStyles = css`
     font-family: var(--font-mono, monospace);
     font-weight: var(--font-bold);
     font-size: var(--text-sm);
-    color: var(--color-gray-100);
+    color: var(--color-text-primary);
     text-align: right;
   }
 
@@ -1135,8 +1135,8 @@ export const htpStyles = css`
   }
 
   .profile-card {
-    background: var(--color-gray-900);
-    border: 1px solid var(--color-gray-800);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-light);
     border-top: 3px solid;
     opacity: 0;
     animation: card-in var(--duration-entrance, 350ms) var(--ease-dramatic) forwards;
@@ -1148,7 +1148,7 @@ export const htpStyles = css`
     align-items: center;
     gap: var(--space-3);
     padding: var(--space-3) var(--space-4);
-    border-bottom: 1px solid var(--color-gray-850, var(--color-gray-800));
+    border-bottom: 1px solid var(--color-border-light);
   }
 
   .profile-card__tag {
@@ -1168,7 +1168,7 @@ export const htpStyles = css`
     font-size: var(--text-sm);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
-    color: var(--color-gray-0);
+    color: var(--color-text-primary);
     flex: 1;
   }
 
@@ -1176,7 +1176,7 @@ export const htpStyles = css`
     font-family: var(--font-mono, monospace);
     font-weight: var(--font-bold);
     font-size: var(--text-sm);
-    color: var(--color-gray-300);
+    color: var(--color-text-tertiary);
   }
 
   .profile-card__body {
@@ -1198,7 +1198,7 @@ export const htpStyles = css`
 
   .profile-card__rate-label {
     font-size: 9px;
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
     display: block;
@@ -1209,11 +1209,11 @@ export const htpStyles = css`
     font-family: var(--font-mono, monospace);
     font-weight: var(--font-bold);
     font-size: var(--text-sm);
-    color: var(--color-gray-200);
+    color: var(--color-text-secondary);
   }
 
   .profile-card__rate-value--na {
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     font-size: 10px;
   }
 
@@ -1225,7 +1225,7 @@ export const htpStyles = css`
   }
 
   .profile-card__ci-label {
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
     font-family: var(--font-brutalist);
@@ -1238,7 +1238,7 @@ export const htpStyles = css`
   .profile-card__ci-track {
     flex: 1;
     height: 6px;
-    background: var(--color-gray-800);
+    background: var(--color-border-light);
     position: relative;
   }
 
@@ -1251,7 +1251,7 @@ export const htpStyles = css`
 
   .profile-card__ci-range {
     font-family: var(--font-mono, monospace);
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     flex-shrink: 0;
   }
 
@@ -1270,7 +1270,7 @@ export const htpStyles = css`
   }
 
   .profile-card__text-value {
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
   }
 
   /* ═══ ANALYTICS: STRATEGY TIERS ═════════════════ */
@@ -1306,8 +1306,8 @@ export const htpStyles = css`
   }
 
   .strat-entry {
-    background: var(--color-gray-900);
-    border: 1px solid var(--color-gray-800);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-light);
     padding: var(--space-2) var(--space-3);
   }
 
@@ -1325,7 +1325,7 @@ export const htpStyles = css`
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
-    color: var(--color-gray-100);
+    color: var(--color-text-primary);
   }
 
   .strat-entry__meta {
@@ -1333,13 +1333,13 @@ export const htpStyles = css`
     gap: var(--space-2);
     font-family: var(--font-mono, monospace);
     font-size: 10px;
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     flex-shrink: 0;
   }
 
   .strat-entry__bar {
     height: 6px;
-    background: var(--color-gray-800);
+    background: var(--color-border-light);
     position: relative;
     margin-bottom: var(--space-1);
   }
@@ -1354,7 +1354,7 @@ export const htpStyles = css`
 
   .strat-entry__desc {
     font-size: 10px;
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     line-height: 1.4;
   }
 
@@ -1384,7 +1384,7 @@ export const htpStyles = css`
 
   .impact-row__track {
     height: 10px;
-    background: var(--color-gray-800);
+    background: var(--color-border-light);
     position: relative;
     overflow: hidden;
   }
@@ -1401,7 +1401,7 @@ export const htpStyles = css`
   .impact-row__std {
     font-family: var(--font-mono, monospace);
     font-size: 10px;
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     text-align: right;
   }
 
@@ -1426,8 +1426,8 @@ export const htpStyles = css`
   }
 
   .verdict-card {
-    background: var(--color-gray-900);
-    border: 1px solid var(--color-gray-800);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-light);
     padding: var(--space-4);
     display: flex;
     flex-direction: column;
@@ -1443,20 +1443,20 @@ export const htpStyles = css`
     font-size: 9px;
     text-transform: uppercase;
     letter-spacing: var(--tracking-widest);
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
   }
 
   .verdict-card__value {
     font-family: var(--font-mono, monospace);
     font-weight: var(--font-black);
     font-size: var(--text-2xl);
-    color: var(--color-gray-0);
+    color: var(--color-text-primary);
     line-height: 1;
   }
 
   .verdict-card__desc {
     font-size: 11px;
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     line-height: 1.5;
   }
 
@@ -1473,8 +1473,8 @@ export const htpStyles = css`
       z-index: var(--z-raised);
       height: auto;
       border-right: none;
-      border-bottom: 1px solid var(--color-gray-800);
-      background: var(--color-gray-950);
+      border-bottom: 1px solid var(--color-border-light);
+      background: var(--color-surface-sunken);
       padding: var(--space-2) var(--space-4);
       overflow-x: auto;
       overflow-y: hidden;
@@ -1563,8 +1563,8 @@ export const htpStyles = css`
     position: relative;
     margin: var(--space-6) 0;
     padding: var(--space-5);
-    background: color-mix(in srgb, var(--color-gray-900) 50%, transparent);
-    border: 1px solid var(--color-gray-800);
+    background: color-mix(in srgb, var(--color-surface) 50%, transparent);
+    border: 1px solid var(--color-border-light);
     opacity: 0;
     transform: translateY(16px);
     transition: opacity 0.7s var(--ease-dramatic), transform 0.7s var(--ease-dramatic);
@@ -1589,14 +1589,14 @@ export const htpStyles = css`
   .intel-chart::before {
     top: -1px;
     left: -1px;
-    border-top: 2px solid var(--color-gray-500);
-    border-left: 2px solid var(--color-gray-500);
+    border-top: 2px solid var(--color-text-muted);
+    border-left: 2px solid var(--color-text-muted);
   }
   .intel-chart::after {
     bottom: -1px;
     right: -1px;
-    border-bottom: 2px solid var(--color-gray-500);
-    border-right: 2px solid var(--color-gray-500);
+    border-bottom: 2px solid var(--color-text-muted);
+    border-right: 2px solid var(--color-text-muted);
   }
 
   /* Scan-line overlay */
@@ -1620,7 +1620,7 @@ export const htpStyles = css`
     gap: var(--space-3);
     margin-bottom: var(--space-4);
     padding-bottom: var(--space-2);
-    border-bottom: 1px dashed var(--color-gray-700);
+    border-bottom: 1px dashed var(--color-border);
     position: relative;
     z-index: 2;
   }
@@ -1644,14 +1644,14 @@ export const htpStyles = css`
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
-    color: var(--color-gray-300);
+    color: var(--color-text-tertiary);
     flex: 1;
   }
 
   .intel-chart__grade {
     font-family: var(--font-mono, monospace);
     font-size: 9px;
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     letter-spacing: var(--tracking-wide);
     flex-shrink: 0;
   }
@@ -1726,7 +1726,7 @@ export const htpStyles = css`
     left: var(--space-2);
     right: var(--space-2);
     height: 2px;
-    background: var(--color-gray-700);
+    background: var(--color-border);
     transform: translateY(-50%);
     z-index: 0;
   }
@@ -1744,24 +1744,24 @@ export const htpStyles = css`
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    border: 2px solid var(--color-gray-600);
-    background: var(--color-gray-900);
+    border: 2px solid var(--color-border);
+    background: var(--color-surface);
     transition: border-color 0.3s, box-shadow 0.3s;
   }
 
-  .demo-timeline__node--lobby .demo-timeline__pip       { border-color: var(--color-gray-500); }
+  .demo-timeline__node--lobby .demo-timeline__pip       { border-color: var(--color-text-muted); }
   .demo-timeline__node--draft .demo-timeline__pip        { border-color: var(--color-warning); }
   .demo-timeline__node--foundation .demo-timeline__pip   { border-color: var(--color-success); }
   .demo-timeline__node--competition .demo-timeline__pip  { border-color: var(--color-warning); }
   .demo-timeline__node--reckoning .demo-timeline__pip    { border-color: var(--color-danger); }
-  .demo-timeline__node--completed .demo-timeline__pip    { border-color: var(--color-gray-400); }
+  .demo-timeline__node--completed .demo-timeline__pip    { border-color: var(--color-text-muted); }
 
   .demo-timeline__label {
     font-family: var(--font-brutalist);
     font-size: var(--text-xs);
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     white-space: nowrap;
   }
 
@@ -1776,7 +1776,7 @@ export const htpStyles = css`
     grid-template-columns: 80px 1fr;
     gap: var(--space-4);
     padding: var(--space-5) var(--space-4);
-    border-left: 2px solid var(--color-gray-800);
+    border-left: 2px solid var(--color-border-light);
     position: relative;
     opacity: 0;
     transform: translateY(12px);
@@ -1791,7 +1791,7 @@ export const htpStyles = css`
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: var(--color-gray-600);
+    background: var(--color-border);
   }
 
   .demo-step:hover {
@@ -1810,7 +1810,7 @@ export const htpStyles = css`
     font-family: var(--font-mono);
     font-size: var(--text-lg);
     font-weight: var(--font-bold);
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     line-height: 1;
   }
 
@@ -1826,12 +1826,12 @@ export const htpStyles = css`
     white-space: nowrap;
   }
 
-  .demo-step__phase--lobby       { color: var(--color-gray-400); border-color: var(--color-gray-600); }
+  .demo-step__phase--lobby       { color: var(--color-text-muted); border-color: var(--color-border); }
   .demo-step__phase--draft        { color: var(--color-warning); border-color: var(--color-warning); }
   .demo-step__phase--foundation   { color: var(--color-success); border-color: var(--color-success); }
   .demo-step__phase--competition  { color: var(--color-warning); border-color: var(--color-warning); }
   .demo-step__phase--reckoning    { color: var(--color-danger); border-color: var(--color-danger); }
-  .demo-step__phase--completed    { color: var(--color-gray-300); border-color: var(--color-gray-500); }
+  .demo-step__phase--completed    { color: var(--color-text-tertiary); border-color: var(--color-text-muted); }
 
   .demo-step__body {
     min-width: 0;
@@ -1843,31 +1843,31 @@ export const htpStyles = css`
     font-size: var(--text-base);
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--color-gray-0);
+    color: var(--color-text-primary);
     margin: 0 0 var(--space-2);
   }
 
   .demo-step__narration {
-    color: var(--color-gray-300);
+    color: var(--color-text-tertiary);
     line-height: var(--leading-relaxed);
     margin: 0 0 var(--space-2);
   }
 
   .demo-step__detail {
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
     font-size: var(--text-xs);
     line-height: var(--leading-relaxed);
     margin: 0 0 var(--space-3);
     padding-left: var(--space-3);
-    border-left: 2px solid var(--color-gray-700);
+    border-left: 2px solid var(--color-border);
   }
 
   .demo-readout {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 1px;
-    background: var(--color-gray-800);
-    border: 1px solid var(--color-gray-800);
+    background: var(--color-border-light);
+    border: 1px solid var(--color-border-light);
     border-radius: var(--radius-sm);
     overflow: hidden;
     margin-bottom: var(--space-2);
@@ -1878,7 +1878,7 @@ export const htpStyles = css`
     flex-direction: column;
     gap: 2px;
     padding: var(--space-2) var(--space-3);
-    background: var(--color-gray-900);
+    background: var(--color-surface);
   }
 
   .demo-readout__label {
@@ -1886,13 +1886,13 @@ export const htpStyles = css`
     font-size: 9px;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: var(--color-gray-400);
+    color: var(--color-text-muted);
   }
 
   .demo-readout__value {
     font-family: var(--font-mono);
     font-size: var(--text-sm);
-    color: var(--color-gray-100);
+    color: var(--color-text-primary);
   }
 
   /* ── Demo evidence thumbnails ────────────────────── */
@@ -1902,8 +1902,8 @@ export const htpStyles = css`
     width: 140px;
     margin: 0 0 var(--space-3) var(--space-4);
     padding: 6px;
-    background: var(--color-gray-850, #1a1a1a);
-    border: 1px solid var(--color-gray-700);
+    background: var(--color-border-light);
+    border: 1px solid var(--color-border);
     box-shadow:
       0 2px 8px rgba(0 0 0 / 0.4),
       inset 0 0 0 1px rgba(255 255 255 / 0.03);
@@ -1987,7 +1987,7 @@ export const htpStyles = css`
     font-weight: var(--font-bold);
     text-transform: uppercase;
     letter-spacing: 0.2em;
-    color: var(--color-gray-0);
+    color: var(--color-text-primary);
     background: rgba(0 0 0 / 0.55);
     opacity: 0;
     transition: opacity 0.25s;

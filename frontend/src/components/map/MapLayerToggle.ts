@@ -35,8 +35,8 @@ export class MapLayerToggle extends LitElement {
     .toggle {
       display: flex;
       gap: 0;
-      background: var(--color-surface-sunken, #060606);
-      border-top: 1px solid var(--color-border, #333);
+      background: var(--color-surface-sunken);
+      border-top: 1px solid var(--color-border);
     }
 
     .toggle__tab {
@@ -48,8 +48,8 @@ export class MapLayerToggle extends LitElement {
       padding: var(--space-2, 8px) var(--space-3, 12px);
       background: none;
       border: none;
-      border-right: 1px solid color-mix(in srgb, var(--color-border, #333) 50%, transparent);
-      color: var(--color-text-muted, #888);
+      border-right: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
+      color: var(--color-text-muted);
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs, 12px);
       font-weight: 600;
@@ -78,7 +78,7 @@ export class MapLayerToggle extends LitElement {
     }
 
     .toggle__tab:hover {
-      color: var(--color-text-secondary, #a0a0a0);
+      color: var(--color-text-secondary);
       background: rgba(255, 255, 255, 0.015);
     }
 
@@ -121,7 +121,7 @@ export class MapLayerToggle extends LitElement {
     }
 
     .toggle__tab[aria-selected='true'] .toggle__roundel svg {
-      color: var(--color-surface, #0a0a0a);
+      color: var(--color-surface);
     }
 
     .toggle__label {
@@ -161,25 +161,25 @@ export class MapLayerToggle extends LitElement {
         id: 'infrastructure',
         label: msg('Infrastructure'),
         icon: icons.layerInfrastructure(11),
-        color: '#e5e5e5',
+        color: 'var(--color-text-primary)',
       },
       {
         id: 'bleed',
         label: msg('Bleed'),
         icon: icons.layerBleed(11),
-        color: '#a78bfa',
+        color: '#a78bfa', // lint-color-ok
       },
       {
         id: 'military',
         label: msg('Military'),
         icon: icons.layerMilitary(11),
-        color: '#ef4444',
+        color: 'var(--color-danger)',
       },
       {
         id: 'historical',
         label: msg('Historical'),
         icon: icons.layerHistory(11),
-        color: '#d4a574',
+        color: '#d4a574', // lint-color-ok
       },
     ];
   }

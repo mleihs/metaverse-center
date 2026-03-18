@@ -29,7 +29,7 @@ export class BleedMarginalia extends LitElement {
       font-style: italic;
       font-size: 11px;
       line-height: 1.4;
-      color: var(--color-bleed-marginalia, var(--color-gray-500, #6b7280));
+      color: var(--color-bleed-marginalia, var(--color-text-muted));
       opacity: 0.5;
       max-width: 180px;
       transition: opacity 0.3s ease, transform 0.3s ease;

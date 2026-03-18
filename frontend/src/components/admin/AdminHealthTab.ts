@@ -251,7 +251,7 @@ export class VelgAdminHealthTab extends LitElement {
       padding: var(--space-2) var(--space-3);
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-      background: var(--color-background);
+      background: var(--color-surface);
       color: var(--color-text-primary);
       border: 1px solid var(--color-border);
       border-radius: 0;
@@ -299,7 +299,7 @@ export class VelgAdminHealthTab extends LitElement {
     }
 
     .sim-card--ascendant {
-      border-left: 3px solid var(--color-accent-gold, #d4a017);
+      border-left: 3px solid var(--color-accent-gold);
     }
 
     .sim-card__header {
@@ -362,7 +362,7 @@ export class VelgAdminHealthTab extends LitElement {
     }
 
     .health-bar__value--ascendant {
-      color: var(--color-success, #22c55e);
+      color: var(--color-success);
     }
 
     .health-bar__track {
@@ -386,7 +386,7 @@ export class VelgAdminHealthTab extends LitElement {
     }
 
     .health-bar__fill--ascendant {
-      background: var(--color-success, #22c55e);
+      background: var(--color-success);
     }
 
     /* --- Badges --- */
@@ -423,9 +423,9 @@ export class VelgAdminHealthTab extends LitElement {
     }
 
     .badge--ascendant {
-      color: var(--color-accent-gold, #d4a017);
-      background: color-mix(in srgb, var(--color-accent-gold, #d4a017) 10%, transparent);
-      border: 1px solid color-mix(in srgb, var(--color-accent-gold, #d4a017) 25%, transparent);
+      color: var(--color-accent-gold);
+      background: color-mix(in srgb, var(--color-accent-gold) 10%, transparent);
+      border: 1px solid color-mix(in srgb, var(--color-accent-gold) 25%, transparent);
     }
 
     .sim-card__toggle-area {

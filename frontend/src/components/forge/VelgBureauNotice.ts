@@ -45,8 +45,8 @@ export class VelgBureauNotice extends LitElement {
       gap: 12px;
       height: 44px;
       padding: 0 16px;
-      background: #111;
-      border-bottom: 1px solid #222;
+      background: var(--color-surface-sunken);
+      border-bottom: 1px solid var(--color-border);
       position: relative;
       overflow: hidden;
     }
@@ -72,14 +72,14 @@ export class VelgBureauNotice extends LitElement {
       flex-shrink: 0;
       width: 6px;
       height: 6px;
-      background: #f59e0b;
+      background: var(--color-accent-amber);
       clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
     }
 
     .notice__text {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 11px;
-      color: #888;
+      color: var(--color-text-muted);
       letter-spacing: 0.5px;
       white-space: nowrap;
       overflow: hidden;
@@ -95,8 +95,8 @@ export class VelgBureauNotice extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 2px;
-      color: #0a0a0a;
-      background: #f59e0b;
+      color: var(--color-surface-sunken);
+      background: var(--color-accent-amber);
       border: none;
       cursor: pointer;
       transition: background 150ms, transform 150ms;
@@ -104,7 +104,7 @@ export class VelgBureauNotice extends LitElement {
     }
 
     .notice__cta:hover {
-      background: #fbbf24;
+      background: var(--color-accent-amber-hover);
       transform: translateY(-1px);
     }
 
@@ -121,19 +121,19 @@ export class VelgBureauNotice extends LitElement {
       height: 28px;
       background: none;
       border: 1px solid transparent;
-      color: #9ca3af;
+      color: var(--color-icon);
       cursor: pointer;
       padding: 0;
       transition: color 150ms, border-color 150ms;
     }
 
     .notice__dismiss:hover {
-      color: #999;
-      border-color: #333;
+      color: var(--color-text-muted);
+      border-color: var(--color-border);
     }
 
     .notice__dismiss:focus-visible {
-      outline: 2px solid #f59e0b;
+      outline: 2px solid var(--color-accent-amber);
       outline-offset: -2px;
     }
 

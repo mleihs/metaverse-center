@@ -13,7 +13,7 @@ const EVENT_COLORS: Record<string, string> = {
   detected: 'var(--color-danger)',
   captured: 'var(--color-danger)',
   sabotage: 'var(--color-warning)',
-  propaganda: 'var(--epoch-influence, #a78bfa)',
+  propaganda: 'var(--color-epoch-influence)',
   assassination: 'var(--color-danger)',
   infiltration: 'var(--color-info)',
   alliance_formed: 'var(--color-info)',
@@ -23,23 +23,23 @@ const EVENT_COLORS: Record<string, string> = {
   counter_intel: 'var(--color-info)',
   building_damaged: 'var(--color-danger)',
   agent_wounded: 'var(--color-danger)',
-  rp_allocated: 'var(--color-gray-500)',
+  rp_allocated: 'var(--color-text-muted)',
   zone_fortified: 'var(--color-warning)',
-  alliance_proposal: 'var(--color-epoch-accent, #f59e0b)',
+  alliance_proposal: 'var(--color-epoch-accent)',
   alliance_proposal_accepted: 'var(--color-success)',
   alliance_proposal_rejected: 'var(--color-danger)',
   alliance_tension_increase: 'var(--color-warning)',
   alliance_dissolved_tension: 'var(--color-danger)',
-  alliance_upkeep: 'var(--color-gray-500)',
+  alliance_upkeep: 'var(--color-text-muted)',
 };
 
 const PHASE_COLORS: Record<string, string> = {
   foundation: 'var(--color-success)',
   competition: 'var(--color-warning)',
   reckoning: 'var(--color-danger)',
-  completed: 'var(--color-gray-400)',
+  completed: 'var(--color-text-muted)',
   lobby: 'var(--color-info)',
-  cancelled: 'var(--color-gray-600)',
+  cancelled: 'var(--color-icon)',
 };
 
 @localized()
@@ -48,8 +48,8 @@ export class VelgWarRoomPanel extends LitElement {
   static styles = css`
     :host {
       display: block;
-      background: var(--color-gray-950);
-      color: var(--color-gray-100);
+      background: var(--color-surface-sunken);
+      color: var(--color-text-primary);
       position: relative;
     }
 
@@ -84,7 +84,7 @@ export class VelgWarRoomPanel extends LitElement {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 2px solid var(--color-gray-800);
+      border-bottom: 2px solid var(--color-border);
       padding-bottom: var(--space-4);
     }
 
@@ -126,9 +126,9 @@ export class VelgWarRoomPanel extends LitElement {
     }
 
     .cycle-nav__btn {
-      background: var(--color-gray-800);
-      border: 1px solid var(--color-gray-700);
-      color: var(--color-gray-300);
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      color: var(--color-text-tertiary);
       width: 28px;
       height: 28px;
       display: flex;
@@ -141,8 +141,8 @@ export class VelgWarRoomPanel extends LitElement {
     }
 
     .cycle-nav__btn:hover:not(:disabled) {
-      background: var(--color-gray-700);
-      color: var(--color-gray-100);
+      background: var(--color-surface-raised);
+      color: var(--color-text-primary);
     }
 
     .cycle-nav__btn:disabled {
@@ -158,7 +158,7 @@ export class VelgWarRoomPanel extends LitElement {
     .cycle-nav__label {
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       min-width: 70px;
       text-align: center;
       text-transform: uppercase;
@@ -174,9 +174,9 @@ export class VelgWarRoomPanel extends LitElement {
     }
 
     .stat-box {
-      background: var(--color-gray-900);
-      border: 1px solid var(--color-gray-800);
-      border-top: 2px solid var(--stat-color, var(--color-gray-600));
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-top: 2px solid var(--stat-color, var(--color-border));
       padding: var(--space-3) var(--space-4);
       display: flex;
       flex-direction: column;
@@ -200,7 +200,7 @@ export class VelgWarRoomPanel extends LitElement {
 
     .stat-box__label {
       font-size: var(--text-xs);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       text-transform: uppercase;
       letter-spacing: 0.06em;
     }
@@ -213,8 +213,8 @@ export class VelgWarRoomPanel extends LitElement {
     /* ── SITREP Section ────────────────── */
 
     .sitrep {
-      background: var(--color-gray-900);
-      border: 1px solid var(--color-gray-800);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
       padding: 0;
       overflow: hidden;
     }
@@ -224,7 +224,7 @@ export class VelgWarRoomPanel extends LitElement {
       align-items: center;
       justify-content: space-between;
       padding: var(--space-3) var(--space-4);
-      border-bottom: 1px solid var(--color-gray-800);
+      border-bottom: 1px solid var(--color-border);
       background: rgba(255, 255, 255, 0.02);
     }
 
@@ -252,7 +252,7 @@ export class VelgWarRoomPanel extends LitElement {
       font-size: var(--text-sm);
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--color-gray-300);
+      color: var(--color-text-tertiary);
       margin: 0;
     }
 
@@ -264,16 +264,16 @@ export class VelgWarRoomPanel extends LitElement {
 
     .sitrep__model {
       font-size: 10px;
-      color: var(--color-gray-500);
-      background: var(--color-gray-800);
+      color: var(--color-text-muted);
+      background: var(--color-surface-raised);
       padding: 1px 5px;
       border-radius: 2px;
     }
 
     .sitrep__btn {
-      background: var(--color-gray-800);
-      border: 1px solid var(--color-gray-700);
-      color: var(--color-gray-300);
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      color: var(--color-text-tertiary);
       font-size: var(--text-xs);
       padding: 3px 10px;
       cursor: pointer;
@@ -284,7 +284,7 @@ export class VelgWarRoomPanel extends LitElement {
     }
 
     .sitrep__btn:hover {
-      background: var(--color-gray-700);
+      background: var(--color-surface-raised);
     }
 
     .sitrep__btn:focus-visible {
@@ -297,7 +297,7 @@ export class VelgWarRoomPanel extends LitElement {
       font-family: 'Courier New', Courier, monospace;
       font-size: var(--text-sm);
       line-height: 1.7;
-      color: var(--color-gray-300);
+      color: var(--color-text-tertiary);
       white-space: pre-wrap;
       min-height: 80px;
     }
@@ -306,7 +306,7 @@ export class VelgWarRoomPanel extends LitElement {
       display: flex;
       align-items: center;
       gap: var(--space-2);
-      color: var(--color-gray-500);
+      color: var(--color-text-muted);
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
       text-transform: uppercase;
@@ -340,7 +340,7 @@ export class VelgWarRoomPanel extends LitElement {
       font-size: var(--text-sm);
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       margin: 0;
       padding-bottom: var(--space-2);
     }
@@ -352,15 +352,15 @@ export class VelgWarRoomPanel extends LitElement {
       flex-direction: column;
       gap: 2px;
       scrollbar-width: thin;
-      scrollbar-color: var(--color-gray-700) transparent;
+      scrollbar-color: var(--color-border) transparent;
     }
 
     .bl-entry {
       display: flex;
       gap: var(--space-3);
       padding: var(--space-2) var(--space-3);
-      background: var(--color-gray-900);
-      border-left: 3px solid var(--entry-color, var(--color-gray-600));
+      background: var(--color-surface);
+      border-left: 3px solid var(--entry-color, var(--color-border));
       animation: entrySlide 0.3s ease-out both;
       position: relative;
     }
@@ -412,7 +412,7 @@ export class VelgWarRoomPanel extends LitElement {
 
     .bl-entry__time {
       font-size: 10px;
-      color: var(--color-gray-600);
+      color: var(--color-icon);
       white-space: nowrap;
       min-width: 50px;
       padding-top: 2px;
@@ -426,7 +426,7 @@ export class VelgWarRoomPanel extends LitElement {
 
     .bl-entry__type {
       font-size: 10px;
-      color: var(--entry-color, var(--color-gray-500));
+      color: var(--entry-color, var(--color-text-muted));
       text-transform: uppercase;
       letter-spacing: 0.06em;
       margin-bottom: 2px;
@@ -434,7 +434,7 @@ export class VelgWarRoomPanel extends LitElement {
 
     .bl-entry__narrative {
       font-size: var(--text-sm);
-      color: var(--color-gray-300);
+      color: var(--color-text-tertiary);
       line-height: 1.4;
     }
 
@@ -443,9 +443,9 @@ export class VelgWarRoomPanel extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-gray-500);
+      color: var(--color-text-muted);
       padding: var(--space-2) 0;
-      border-bottom: 1px dashed var(--color-gray-800);
+      border-bottom: 1px dashed var(--color-border);
       margin-top: var(--space-2);
     }
 
@@ -455,7 +455,7 @@ export class VelgWarRoomPanel extends LitElement {
     }
 
     .empty-state {
-      color: var(--color-gray-500);
+      color: var(--color-text-muted);
       font-size: var(--text-sm);
       text-align: center;
       padding: var(--space-6);
@@ -632,7 +632,7 @@ export class VelgWarRoomPanel extends LitElement {
   }
 
   private _renderHeader() {
-    const phaseColor = PHASE_COLORS[this.status] || 'var(--color-gray-500)';
+    const phaseColor = PHASE_COLORS[this.status] || 'var(--color-text-muted)';
     return html`
       <div class="wr-header">
         <div class="wr-header__left">
@@ -714,7 +714,7 @@ export class VelgWarRoomPanel extends LitElement {
               ? html`<span class="sitrep__generating"><span class="pulse-dot"></span> ${msg('Generating...')}</span>`
               : this._sitrepRevealed
                 ? this._sitrepRevealed
-                : html`<span style="color: var(--color-gray-600)">${msg('Click Generate SITREP to request an intelligence briefing for this cycle.')}</span>`
+                : html`<span style="color: var(--color-text-muted)">${msg('Click Generate SITREP to request an intelligence briefing for this cycle.')}</span>`
           }
         </div>
       </div>
@@ -751,7 +751,7 @@ export class VelgWarRoomPanel extends LitElement {
             return html`
               <div class="bl-cycle-divider">${msg('Cycle')} ${cycle}</div>
               ${entries.map((entry) => {
-                const color = EVENT_COLORS[entry.event_type] || 'var(--color-gray-600)';
+                const color = EVENT_COLORS[entry.event_type] || 'var(--color-border)';
                 const classified = this._isClassified(entry);
                 const isPhase = entry.event_type === 'phase_change';
                 const isBetrayal = entry.event_type === 'betrayal';

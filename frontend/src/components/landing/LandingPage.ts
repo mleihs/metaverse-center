@@ -36,9 +36,9 @@ export class VelgLandingPage extends LitElement {
 
     :host {
       /* Landing-page-only tokens (no platform equivalent) */
-      --green-dim: rgba(74, 222, 128, 0.15);
-      --surface-card: #0d0d0d;
-      --border-dim: #1a1a1a;
+      --green-dim: var(--color-success-glow);
+      --surface-card: var(--color-surface-sunken);
+      --border-dim: var(--color-border-light);
       --ease-dramatic: cubic-bezier(0.22, 1, 0.36, 1);
       --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
@@ -56,7 +56,7 @@ export class VelgLandingPage extends LitElement {
       position: absolute;
       top: -100%;
       left: 16px;
-      z-index: 100;
+      z-index: var(--z-sticky);
       padding: 8px 16px;
       background: var(--color-accent-amber);
       color: var(--color-surface);
@@ -136,7 +136,7 @@ export class VelgLandingPage extends LitElement {
 
     @keyframes stat-glow {
       0%, 100% { text-shadow: 0 0 8px var(--green-dim); }
-      50%      { text-shadow: 0 0 20px var(--green-dim), 0 0 40px rgba(74, 222, 128, 0.08); }
+      50%      { text-shadow: 0 0 20px var(--green-dim), 0 0 40px color-mix(in srgb, var(--color-success) 8%, transparent); }
     }
 
     @keyframes signal-ping {
@@ -226,8 +226,8 @@ export class VelgLandingPage extends LitElement {
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(ellipse 600px 400px at 25% 35%, rgba(245, 158, 11, 0.08) 0%, transparent 70%),
-        radial-gradient(ellipse 500px 500px at 75% 65%, rgba(74, 222, 128, 0.05) 0%, transparent 70%);
+        radial-gradient(ellipse 600px 400px at 25% 35%, color-mix(in srgb, var(--color-primary) 8%, transparent) 0%, transparent 70%),
+        radial-gradient(ellipse 500px 500px at 75% 65%, color-mix(in srgb, var(--color-success) 5%, transparent) 0%, transparent 70%);
       pointer-events: none;
       z-index: 1;
     }
@@ -241,8 +241,8 @@ export class VelgLandingPage extends LitElement {
         0deg,
         transparent,
         transparent 3px,
-        rgba(245, 158, 11, 0.008) 3px,
-        rgba(245, 158, 11, 0.008) 6px
+        color-mix(in srgb, var(--color-primary) 1%, transparent) 3px,
+        color-mix(in srgb, var(--color-primary) 1%, transparent) 6px
       );
       z-index: 1;
     }
@@ -257,9 +257,9 @@ export class VelgLandingPage extends LitElement {
       background: linear-gradient(
         180deg,
         transparent 0%,
-        rgba(245, 158, 11, 0.03) 40%,
-        rgba(245, 158, 11, 0.06) 50%,
-        rgba(245, 158, 11, 0.03) 60%,
+        color-mix(in srgb, var(--color-primary) 3%, transparent) 40%,
+        color-mix(in srgb, var(--color-primary) 6%, transparent) 50%,
+        color-mix(in srgb, var(--color-primary) 3%, transparent) 60%,
         transparent 100%
       );
       animation: scanline-scroll 8s linear infinite;
@@ -272,8 +272,8 @@ export class VelgLandingPage extends LitElement {
       position: absolute;
       inset: 0;
       background-image:
-        linear-gradient(rgba(245, 158, 11, 0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(245, 158, 11, 0.025) 1px, transparent 1px);
+        linear-gradient(color-mix(in srgb, var(--color-primary) 3%, transparent) 1px, transparent 1px),
+        linear-gradient(90deg, color-mix(in srgb, var(--color-primary) 3%, transparent) 1px, transparent 1px);
       background-size: 60px 60px;
       animation: grid-pulse 6s ease-in-out infinite;
       pointer-events: none;
@@ -382,7 +382,7 @@ export class VelgLandingPage extends LitElement {
 
     .hero__cta:hover {
       background: var(--color-accent-amber-hover);
-      box-shadow: 0 0 30px var(--color-accent-amber-glow), 0 0 60px rgba(245, 158, 11, 0.08);
+      box-shadow: 0 0 30px var(--color-accent-amber-glow), 0 0 60px color-mix(in srgb, var(--color-primary) 8%, transparent);
       transform: translateY(-2px);
     }
 
@@ -546,7 +546,7 @@ export class VelgLandingPage extends LitElement {
 
     .hero--v03 .decode-progress__bar {
       height: 2px;
-      background: rgba(245, 158, 11, 0.15);
+      background: var(--color-primary-glow);
       position: relative;
       overflow: hidden;
     }
@@ -691,7 +691,7 @@ export class VelgLandingPage extends LitElement {
       color: var(--color-accent-amber);
       background: rgba(10, 10, 10, 0.7);
       padding: 3px 8px;
-      border: 1px solid rgba(245, 158, 11, 0.2);
+      border: 1px solid var(--color-primary-glow);
     }
 
     /* Text section */
@@ -1037,7 +1037,7 @@ export class VelgLandingPage extends LitElement {
     }
 
     .cta-frame__btn--secondary:hover {
-      background: rgba(245, 158, 11, 0.1);
+      background: color-mix(in srgb, var(--color-primary) 10%, transparent);
       color: var(--color-accent-amber);
     }
 
@@ -1072,7 +1072,7 @@ export class VelgLandingPage extends LitElement {
 
     .monitor-card {
       display: block;
-      background: #0d0d0d;
+      background: var(--color-surface-sunken);
       text-decoration: none;
       color: inherit;
       overflow: hidden;
@@ -1094,7 +1094,7 @@ export class VelgLandingPage extends LitElement {
       position: relative;
       height: 140px;
       overflow: hidden;
-      background: #080808;
+      background: var(--color-surface-sunken);
     }
 
     .monitor-card__img {
@@ -1114,7 +1114,7 @@ export class VelgLandingPage extends LitElement {
     .monitor-card__overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(to top, #0d0d0d 0%, transparent 50%);
+      background: linear-gradient(to top, var(--color-surface-sunken) 0%, transparent 50%);
     }
 
     .monitor-card__scanline {
@@ -1153,7 +1153,7 @@ export class VelgLandingPage extends LitElement {
       font-size: 8px;
       font-weight: 700;
       letter-spacing: 2px;
-      color: #ef4444;
+      color: var(--color-danger);
       display: flex;
       align-items: center;
       gap: 4px;
@@ -1164,7 +1164,7 @@ export class VelgLandingPage extends LitElement {
       width: 5px;
       height: 5px;
       border-radius: 50%;
-      background: #ef4444;
+      background: var(--color-danger);
       animation: rec-blink 1.5s ease-in-out infinite;
     }
 
@@ -1204,7 +1204,7 @@ export class VelgLandingPage extends LitElement {
     .monitor-card__desc {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 11px;
-      color: var(--color-text-muted, #666);
+      color: var(--color-text-muted);
       margin: 0 0 10px;
       line-height: 1.5;
       display: -webkit-box;
@@ -1220,7 +1220,7 @@ export class VelgLandingPage extends LitElement {
       font-size: 9px;
       letter-spacing: 1px;
       text-transform: uppercase;
-      color: var(--color-text-muted, #555);
+      color: var(--color-text-muted);
     }
 
     /* Explore-all card: static/noise effect */
@@ -1268,7 +1268,7 @@ export class VelgLandingPage extends LitElement {
       font-size: 9px;
       letter-spacing: 2px;
       text-transform: uppercase;
-      color: var(--color-text-muted, #666);
+      color: var(--color-text-muted);
     }
 
     .monitor-card__cta-arrow {

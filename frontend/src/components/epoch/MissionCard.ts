@@ -21,7 +21,7 @@ export class VelgMissionCard extends LitElement {
   static styles = css`
 		:host {
 			display: block;
-			--mc-color: var(--mission-card-color, #64748b);
+			--mc-color: var(--mission-card-color, var(--color-text-muted));
 		}
 
 		.card {
@@ -30,7 +30,7 @@ export class VelgMissionCard extends LitElement {
 			height: 192px;
 			border: 2px solid var(--mc-color);
 			border-radius: 6px;
-			background: var(--color-gray-950, #0a0a0f);
+			background: var(--color-surface-sunken);
 			overflow: hidden;
 			cursor: pointer;
 			transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
@@ -45,7 +45,7 @@ export class VelgMissionCard extends LitElement {
 		}
 
 		.card--selected {
-			border-color: var(--color-epoch-accent, #f59e0b);
+			border-color: var(--color-epoch-accent);
 			box-shadow: 0 0 20px rgba(245 158 11 / 0.3),
 				inset 0 0 20px rgba(245 158 11 / 0.06);
 		}
@@ -68,7 +68,7 @@ export class VelgMissionCard extends LitElement {
 			font-family: var(--font-brutalist, 'Oswald', sans-serif);
 			font-weight: 900;
 			font-size: 11px;
-			color: var(--color-gray-950, #0a0a0f);
+			color: var(--color-surface-sunken);
 			z-index: 2;
 			transform: rotate(45deg);
 		}
@@ -80,13 +80,13 @@ export class VelgMissionCard extends LitElement {
 
 		.gem--cost {
 			left: 8px;
-			background: var(--color-epoch-accent, #f59e0b);
+			background: var(--color-epoch-accent);
 		}
 
 		.gem--icon {
 			right: 8px;
 			background: var(--mc-color);
-			color: var(--color-gray-950, #0a0a0f);
+			color: var(--color-surface-sunken);
 		}
 
 		/* ── Gradient fill (type color) ── */
@@ -144,7 +144,7 @@ export class VelgMissionCard extends LitElement {
 			font-size: 11px;
 			text-transform: uppercase;
 			letter-spacing: 0.1em;
-			color: var(--color-gray-100, #f5f5f5);
+			color: var(--color-text-primary);
 			line-height: 1;
 		}
 
@@ -158,7 +158,7 @@ export class VelgMissionCard extends LitElement {
 			font-family: var(--font-mono, monospace);
 			font-size: 8px;
 			line-height: 1.3;
-			color: var(--color-gray-400, #999);
+			color: var(--color-text-muted);
 			max-height: 44px;
 			overflow: hidden;
 			display: -webkit-box;
@@ -172,7 +172,7 @@ export class VelgMissionCard extends LitElement {
 			gap: 2px;
 			margin-top: 2px;
 			font-size: 7px;
-			color: var(--color-gray-500, #777);
+			color: var(--color-text-muted);
 			text-transform: uppercase;
 			letter-spacing: 0.05em;
 		}
@@ -188,8 +188,8 @@ export class VelgMissionCard extends LitElement {
 			font-size: 10px;
 			text-transform: uppercase;
 			letter-spacing: 0.12em;
-			color: var(--color-danger, #ef4444);
-			border: 2px solid var(--color-danger, #ef4444);
+			color: var(--color-danger);
+			border: 2px solid var(--color-danger);
 			padding: 2px 8px;
 			opacity: 0.8;
 			white-space: nowrap;
@@ -248,7 +248,7 @@ export class VelgMissionCard extends LitElement {
   @property({ type: Boolean }) interactive = true;
 
   protected render() {
-    const color = OP_COLORS[this.operativeType] ?? '#64748b';
+    const color = OP_COLORS[this.operativeType] ?? 'var(--color-text-muted)';
 
     const classes = classMap({
       card: true,

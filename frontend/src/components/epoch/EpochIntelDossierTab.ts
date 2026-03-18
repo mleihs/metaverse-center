@@ -21,8 +21,8 @@ const SECURITY_COLORS: Record<string, string> = {
   maximum: 'var(--color-danger)',
   high: 'var(--color-warning)',
   guarded: 'var(--color-warning)',
-  moderate: 'var(--color-gray-300)',
-  medium: 'var(--color-gray-300)',
+  moderate: 'var(--color-text-tertiary)',
+  medium: 'var(--color-text-tertiary)',
   low: 'var(--color-success)',
   contested: 'var(--color-success)',
   lawless: 'var(--color-success)',
@@ -55,8 +55,8 @@ export class VelgEpochIntelDossierTab extends LitElement {
 
     .card {
       position: relative;
-      border: 1px solid var(--color-gray-800);
-      background: var(--color-gray-900);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
       opacity: 0;
       animation: card-reveal 0.45s ease-out forwards;
       overflow: hidden;
@@ -98,21 +98,21 @@ export class VelgEpochIntelDossierTab extends LitElement {
 
     /* Stale card — explicit dimmed colors instead of opacity (WCAG AA) */
     .card--stale {
-      border-color: var(--color-gray-850, var(--color-gray-800));
+      border-color: var(--color-border);
     }
 
     .card--stale .card__name {
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     .card--stale .intel-row__value,
     .card--stale .guardian-count {
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     .card--stale .fort-row {
-      color: var(--color-gray-400);
-      border-left-color: var(--color-gray-600);
+      color: var(--color-text-muted);
+      border-left-color: var(--color-icon);
       background: rgba(148 163 184 / 0.04);
     }
 
@@ -141,7 +141,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
       justify-content: space-between;
       align-items: center;
       padding: var(--space-3) var(--space-4);
-      border-bottom: 1px solid var(--color-gray-800);
+      border-bottom: 1px solid var(--color-border);
       background: rgba(56 189 248 / 0.03);
     }
 
@@ -151,14 +151,14 @@ export class VelgEpochIntelDossierTab extends LitElement {
       font-size: var(--text-sm);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-gray-100);
+      color: var(--color-text-primary);
       margin: 0;
     }
 
     .card__cycle {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       white-space: nowrap;
     }
 
@@ -198,7 +198,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       min-width: 80px;
       flex-shrink: 0;
     }
@@ -206,7 +206,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
     .intel-row__value {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: var(--color-gray-200);
+      color: var(--color-text-secondary);
       display: flex;
       flex-wrap: wrap;
       gap: 4px;
@@ -233,7 +233,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
       gap: 4px;
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: var(--color-gray-200);
+      color: var(--color-text-secondary);
     }
 
     .guardian-count__icon {
@@ -247,7 +247,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
       align-items: center;
       gap: var(--space-2);
       padding: 3px 8px;
-      background: rgba(245 158 11 / 0.06);
+      background: color-mix(in srgb, var(--color-primary) 6%, transparent);
       border-left: 2px solid var(--color-warning);
       font-family: var(--font-mono, monospace);
       font-size: 11px;
@@ -259,7 +259,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
     }
 
     .fort-row__expiry {
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       font-size: 10px;
     }
 
@@ -270,14 +270,14 @@ export class VelgEpochIntelDossierTab extends LitElement {
       justify-content: space-between;
       align-items: center;
       padding: var(--space-2) var(--space-4);
-      border-top: 1px solid var(--color-gray-800);
+      border-top: 1px solid var(--color-border);
       background: rgba(56 189 248 / 0.02);
     }
 
     .card__reports {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     /* ── Empty State ─────────────────────────── */
@@ -292,7 +292,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
     }
 
     .empty__icon {
-      color: var(--color-gray-600);
+      color: var(--color-icon);
       opacity: 0;
       animation: empty-icon-enter 0.6s ease-out 0.2s forwards;
     }
@@ -314,14 +314,14 @@ export class VelgEpochIntelDossierTab extends LitElement {
       font-size: var(--text-sm);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       margin: 0;
     }
 
     .empty__hint {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       max-width: 340px;
       line-height: 1.6;
     }
@@ -362,7 +362,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-gray-300);
+      color: var(--color-text-tertiary);
       flex: 1;
     }
 
@@ -371,7 +371,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
       font-size: 10px;
       color: var(--color-info);
       padding: 1px 6px;
-      border: 1px solid color-mix(in srgb, var(--color-info) 30%, var(--color-gray-700));
+      border: 1px solid color-mix(in srgb, var(--color-info) 30%, var(--color-surface-raised));
     }
 
     :host([compact]) .dossier-grid {
@@ -380,7 +380,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
     }
 
     :host([compact]) .card {
-      border: 1px solid var(--color-gray-850, var(--color-gray-800));
+      border: 1px solid var(--color-border);
     }
 
     :host([compact]) .empty {
@@ -538,7 +538,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
                           (z) => html`
                           <span
                             class="zone-badge"
-                            style="color: ${SECURITY_COLORS[z.security_level] ?? 'var(--color-gray-300)'}; border-color: ${SECURITY_COLORS[z.security_level] ?? 'var(--color-gray-500)'}"
+                            style="color: ${SECURITY_COLORS[z.security_level] ?? 'var(--color-text-tertiary)'}; border-color: ${SECURITY_COLORS[z.security_level] ?? 'var(--color-text-muted)'}"
                           >${z.name}: ${z.security_level}</span>
                         `,
                         )
@@ -546,7 +546,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
                           (level) => html`
                           <span
                             class="zone-badge"
-                            style="color: ${SECURITY_COLORS[level] ?? 'var(--color-gray-300)'}; border-color: ${SECURITY_COLORS[level] ?? 'var(--color-gray-500)'}"
+                            style="color: ${SECURITY_COLORS[level] ?? 'var(--color-text-tertiary)'}; border-color: ${SECURITY_COLORS[level] ?? 'var(--color-text-muted)'}"
                           >${level}</span>
                         `,
                         )

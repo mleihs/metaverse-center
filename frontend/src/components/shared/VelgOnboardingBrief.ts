@@ -43,7 +43,7 @@ export class VelgOnboardingBrief extends LitElement {
       border: 1px solid var(--color-border);
       padding: var(--space-5) var(--space-5) var(--space-4);
       margin-bottom: var(--space-5);
-      background: var(--color-surface-sunken, #080808);
+      background: var(--color-surface-sunken);
       overflow: hidden;
       animation: dossier-materialize 0.6s var(--ease-out, ease-out) forwards;
     }

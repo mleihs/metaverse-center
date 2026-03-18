@@ -53,12 +53,16 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
       --_phosphor: var(--color-success);
       --_phosphor-dim: color-mix(in srgb, var(--color-success) 40%, transparent);
       --_phosphor-glow: color-mix(in srgb, var(--color-success) 12%, transparent);
-      --_surface-dark: var(--color-surface, #0a0a0a);
+      --_surface-dark: var(--color-surface);
       --_danger-glow: color-mix(in srgb, var(--color-danger) 15%, transparent);
-      --_emerald: #10b981;
-      --_emerald-glow: rgba(16 185 129 / 0.12);
-      --_cascade-magenta: #d946ef;
-      --_cascade-glow: rgba(217 70 239 / 0.15);
+      --_emerald: var(--color-success);
+      --_emerald-glow: color-mix(in srgb, var(--color-success) 12%, transparent);
+      --_scar: color-mix(in srgb, var(--color-danger) 55%, var(--color-info));
+      --_scar-glow: color-mix(in srgb, var(--_scar) 20%, transparent);
+      --_cascade: var(--color-primary);
+      --_cascade-magenta: #d946ef; /* lint-color-ok */
+      --_cascade-glow: color-mix(in srgb, var(--_cascade-magenta) 15%, transparent);
+      --_positive-text: color-mix(in srgb, var(--color-success) 65%, var(--color-text-primary));
     }
 
     /* ══════════════════════════════════════════
@@ -91,15 +95,15 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
           0deg,
           transparent,
           transparent 2px,
-          rgba(255 255 255 / 0.018) 2px,
-          rgba(255 255 255 / 0.018) 4px
+          color-mix(in srgb, var(--color-text-primary) 1.8%, transparent) 2px,
+          color-mix(in srgb, var(--color-text-primary) 1.8%, transparent) 4px
         ),
         repeating-linear-gradient(
           0deg,
           transparent,
           transparent 6px,
-          rgba(74 222 128 / 0.008) 6px,
-          rgba(74 222 128 / 0.008) 8px
+          color-mix(in srgb, var(--_phosphor) 0.8%, transparent) 6px,
+          color-mix(in srgb, var(--_phosphor) 0.8%, transparent) 8px
         );
       pointer-events: none;
       z-index: 0;
@@ -162,8 +166,8 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
       margin: 0;
       color: var(--color-text-primary);
       text-shadow:
-        0 0 30px rgba(74 222 128 / 0.12),
-        0 0 60px rgba(74 222 128 / 0.04);
+        0 0 30px color-mix(in srgb, var(--_phosphor) 12%, transparent),
+        0 0 60px color-mix(in srgb, var(--_phosphor) 4%, transparent);
     }
 
     .pulse-header__tick {
@@ -265,7 +269,7 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
     .filter-chip:hover {
       color: var(--color-text-primary);
       border-color: var(--color-text-secondary);
-      background: rgba(255 255 255 / 0.03);
+      background: color-mix(in srgb, var(--color-text-primary) 3%, transparent);
     }
 
     .filter-chip:focus-visible {
@@ -399,7 +403,7 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
       text-transform: uppercase;
       letter-spacing: 0.14em;
       color: var(--_phosphor);
-      text-shadow: 0 0 20px rgba(74 222 128 / 0.18);
+      text-shadow: 0 0 20px color-mix(in srgb, var(--_phosphor) 18%, transparent);
     }
 
     .tick-header__line {
@@ -495,7 +499,7 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
       transition: opacity var(--transition-normal);
     }
 
-    .entry:hover { background: rgba(255 255 255 / 0.02); }
+    .entry:hover { background: color-mix(in srgb, var(--color-text-primary) 2%, transparent); }
     .entry:hover::before { opacity: 1; }
     .entry:last-child { border-bottom: none; }
 
@@ -506,16 +510,16 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
     /* ── Type accent colors ──────────────── */
 
     .entry--zone_shift::before           { background: var(--color-warning); }
-    .entry--event_aging::before          { background: var(--color-gray-500); }
+    .entry--event_aging::before          { background: var(--color-text-muted); }
     .entry--event_escalation::before     { background: var(--color-danger); }
     .entry--event_resolution::before     { background: var(--_emerald); }
-    .entry--scar_tissue::before          { background: #a855f7; }
-    .entry--resonance_pressure::before   { background: #22d3ee; }
+    .entry--scar_tissue::before          { background: var(--_scar); }
+    .entry--resonance_pressure::before   { background: var(--color-info); }
     .entry--bureau_response::before      { background: var(--color-text-primary); }
-    .entry--attunement_deepen::before    { background: #eab308; }
+    .entry--attunement_deepen::before    { background: var(--color-warning); }
     .entry--anchor_strengthen::before    { background: var(--color-info); }
     .entry--narrative_arc::before        { background: var(--color-warning); }
-    .entry--system_note::before          { background: var(--color-gray-600); }
+    .entry--system_note::before          { background: var(--color-border); }
 
     /* Cascade/convergence/positive — always visible left bar */
     .entry--cascade_spawn::before        { background: var(--color-danger); width: 4px; opacity: 1; }
@@ -530,9 +534,9 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--color-gray-300);
-      border: 1px solid var(--color-gray-700);
-      background: var(--color-gray-800);
+      color: var(--color-icon);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
       flex-shrink: 0;
       transition: transform var(--transition-fast), box-shadow var(--transition-fast);
     }
@@ -545,13 +549,13 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
     .entry--zone_shift:hover .entry__icon           { box-shadow: 0 0 10px color-mix(in srgb, var(--color-warning) 25%, transparent); }
     .entry--event_escalation:hover .entry__icon      { box-shadow: 0 0 10px var(--_danger-glow); }
     .entry--event_resolution:hover .entry__icon      { box-shadow: 0 0 10px var(--_emerald-glow); }
-    .entry--scar_tissue:hover .entry__icon           { box-shadow: 0 0 10px rgba(168 85 247 / 0.2); }
-    .entry--resonance_pressure:hover .entry__icon    { box-shadow: 0 0 10px rgba(34 211 238 / 0.2); }
+    .entry--scar_tissue:hover .entry__icon           { box-shadow: 0 0 10px var(--_scar-glow); }
+    .entry--resonance_pressure:hover .entry__icon    { box-shadow: 0 0 10px color-mix(in srgb, var(--color-info) 20%, transparent); }
     .entry--cascade_spawn:hover .entry__icon         { box-shadow: 0 0 12px var(--_danger-glow); }
     .entry--convergence:hover .entry__icon           { box-shadow: 0 0 12px var(--_cascade-glow); }
     .entry--positive_event:hover .entry__icon        { box-shadow: 0 0 10px var(--_emerald-glow); }
-    .entry--bureau_response:hover .entry__icon       { box-shadow: 0 0 10px rgba(255 255 255 / 0.1); }
-    .entry--attunement_deepen:hover .entry__icon     { box-shadow: 0 0 10px rgba(234 179 8 / 0.2); }
+    .entry--bureau_response:hover .entry__icon       { box-shadow: 0 0 10px color-mix(in srgb, var(--color-text-primary) 10%, transparent); }
+    .entry--attunement_deepen:hover .entry__icon     { box-shadow: 0 0 10px color-mix(in srgb, var(--color-warning) 20%, transparent); }
     .entry--anchor_strengthen:hover .entry__icon     { box-shadow: 0 0 10px color-mix(in srgb, var(--color-info) 25%, transparent); }
     .entry--narrative_arc:hover .entry__icon          { box-shadow: 0 0 10px color-mix(in srgb, var(--color-warning) 25%, transparent); }
 
@@ -567,7 +571,7 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
     .entry__narrative {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-      color: var(--color-gray-200);
+      color: var(--color-text-secondary);
       line-height: 1.5;
     }
 
@@ -577,13 +581,13 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-gray-300);
+      color: var(--color-text-tertiary);
     }
 
     .entry__meta {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-gray-300);
+      color: var(--color-text-tertiary);
       white-space: nowrap;
       align-self: start;
       padding-top: 2px;
@@ -595,7 +599,7 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
 
     /* CRITICAL: red border glow + pulsing background */
     .entry--severity-critical {
-      background: rgba(239 68 68 / 0.05);
+      background: color-mix(in srgb, var(--color-danger) 5%, transparent);
       border-left: 3px solid var(--color-danger);
       box-shadow: inset 4px 0 12px -4px var(--_danger-glow);
       animation: entry-slide 0.25s ease-out forwards, critical-pulse 2.5s ease-in-out infinite;
@@ -603,10 +607,10 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
     .entry--severity-critical::before { opacity: 1 !important; }
     .entry--severity-critical .entry__narrative {
       font-weight: var(--font-bold);
-      color: var(--color-gray-100);
+      color: var(--color-text-primary);
     }
     .entry--severity-critical .entry__icon {
-      border-color: color-mix(in srgb, var(--color-danger) 40%, var(--color-gray-700));
+      border-color: color-mix(in srgb, var(--color-danger) 40%, var(--color-border));
       box-shadow: 0 0 8px var(--_danger-glow);
     }
 
@@ -615,34 +619,34 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
       50% {
         box-shadow:
           inset 4px 0 20px -4px color-mix(in srgb, var(--color-danger) 25%, transparent),
-          inset 0 0 30px -15px rgba(239 68 68 / 0.08);
+          inset 0 0 30px -15px color-mix(in srgb, var(--color-danger) 8%, transparent);
       }
     }
 
     /* POSITIVE: emerald shimmer */
     .entry--severity-positive {
-      background: rgba(16 185 129 / 0.04);
+      background: color-mix(in srgb, var(--_emerald) 4%, transparent);
       border-left: 2px solid var(--_emerald);
       box-shadow: inset 3px 0 10px -4px var(--_emerald-glow);
       animation: entry-slide 0.25s ease-out forwards, emerald-shimmer 4s ease-in-out infinite;
     }
     .entry--severity-positive .entry__narrative {
-      color: #a7f3d0;
+      color: var(--_positive-text);
     }
     .entry--severity-positive .entry__icon {
-      border-color: color-mix(in srgb, var(--_emerald) 30%, var(--color-gray-700));
+      border-color: color-mix(in srgb, var(--_emerald) 30%, var(--color-border));
     }
 
     @keyframes emerald-shimmer {
       0%, 100% {
-        background: rgba(16 185 129 / 0.04);
+        background: color-mix(in srgb, var(--color-success) 4%, transparent);
         box-shadow: inset 3px 0 10px -4px var(--_emerald-glow);
       }
       50% {
-        background: rgba(16 185 129 / 0.07);
+        background: color-mix(in srgb, var(--color-success) 7%, transparent);
         box-shadow:
-          inset 3px 0 16px -4px rgba(16 185 129 / 0.2),
-          inset 0 0 20px -10px rgba(16 185 129 / 0.06);
+          inset 3px 0 16px -4px color-mix(in srgb, var(--color-success) 20%, transparent),
+          inset 0 0 20px -10px color-mix(in srgb, var(--color-success) 6%, transparent);
       }
     }
 
@@ -650,68 +654,68 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
     .entry--cascade_spawn {
       background: linear-gradient(
         135deg,
-        rgba(239 68 68 / 0.06) 0%,
-        rgba(245 158 11 / 0.04) 50%,
-        rgba(239 68 68 / 0.03) 100%
+        color-mix(in srgb, var(--color-danger) 6%, transparent) 0%,
+        color-mix(in srgb, var(--color-warning) 4%, transparent) 50%,
+        color-mix(in srgb, var(--color-danger) 3%, transparent) 100%
       );
       border-left: 4px solid var(--color-danger);
       box-shadow:
         inset 6px 0 20px -6px var(--_danger-glow),
-        0 0 1px rgba(239 68 68 / 0.3);
+        0 0 1px color-mix(in srgb, var(--color-danger) 30%, transparent);
       animation: entry-slide 0.25s ease-out forwards, cascade-drama 3s ease-in-out infinite;
     }
     .entry--cascade_spawn .entry__narrative {
       font-weight: var(--font-bold);
-      color: var(--color-gray-100);
+      color: var(--color-text-primary);
     }
     .entry--cascade_spawn .entry__icon {
-      border-color: color-mix(in srgb, var(--color-danger) 50%, var(--color-gray-700));
+      border-color: color-mix(in srgb, var(--color-danger) 50%, var(--color-border));
       box-shadow: 0 0 10px var(--_danger-glow);
     }
 
     @keyframes cascade-drama {
       0%, 100% {
-        box-shadow: inset 6px 0 20px -6px var(--_danger-glow), 0 0 1px rgba(239 68 68 / 0.3);
+        box-shadow: inset 6px 0 20px -6px var(--_danger-glow), 0 0 1px color-mix(in srgb, var(--color-danger) 30%, transparent);
       }
       50% {
         box-shadow:
           inset 6px 0 30px -6px color-mix(in srgb, var(--color-danger) 30%, transparent),
-          0 0 2px rgba(239 68 68 / 0.4),
-          inset 0 0 40px -20px rgba(239 68 68 / 0.08);
+          0 0 2px color-mix(in srgb, var(--color-danger) 40%, transparent),
+          inset 0 0 40px -20px color-mix(in srgb, var(--color-danger) 8%, transparent);
       }
     }
 
     .entry--convergence {
       background: linear-gradient(
         135deg,
-        rgba(217 70 239 / 0.06) 0%,
-        rgba(139 92 246 / 0.04) 50%,
-        rgba(217 70 239 / 0.03) 100%
+        color-mix(in srgb, var(--_cascade-magenta) 6%, transparent) 0%,
+        color-mix(in srgb, var(--_cascade-magenta) 4%, transparent) 50%,
+        color-mix(in srgb, var(--_cascade-magenta) 3%, transparent) 100%
       );
       border-left: 4px solid var(--_cascade-magenta);
       box-shadow:
         inset 6px 0 20px -6px var(--_cascade-glow),
-        0 0 1px rgba(217 70 239 / 0.3);
+        0 0 1px color-mix(in srgb, var(--_cascade-magenta) 30%, transparent);
       animation: entry-slide 0.25s ease-out forwards, convergence-drama 3.5s ease-in-out infinite;
     }
     .entry--convergence .entry__narrative {
       font-weight: var(--font-bold);
-      color: var(--color-gray-100);
+      color: var(--color-text-primary);
     }
     .entry--convergence .entry__icon {
-      border-color: color-mix(in srgb, var(--_cascade-magenta) 40%, var(--color-gray-700));
+      border-color: color-mix(in srgb, var(--_cascade-magenta) 40%, var(--color-border));
       box-shadow: 0 0 10px var(--_cascade-glow);
     }
 
     @keyframes convergence-drama {
       0%, 100% {
-        box-shadow: inset 6px 0 20px -6px var(--_cascade-glow), 0 0 1px rgba(217 70 239 / 0.3);
+        box-shadow: inset 6px 0 20px -6px var(--_cascade-glow), 0 0 1px color-mix(in srgb, var(--_cascade-magenta) 30%, transparent);
       }
       50% {
         box-shadow:
-          inset 6px 0 30px -6px rgba(217 70 239 / 0.25),
-          0 0 2px rgba(217 70 239 / 0.4),
-          inset 0 0 40px -20px rgba(217 70 239 / 0.08);
+          inset 6px 0 30px -6px color-mix(in srgb, var(--_cascade-magenta) 25%, transparent),
+          0 0 2px color-mix(in srgb, var(--_cascade-magenta) 40%, transparent),
+          inset 0 0 40px -20px color-mix(in srgb, var(--_cascade-magenta) 8%, transparent);
       }
     }
 
@@ -735,26 +739,26 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
 
     .severity-badge--critical {
       color: var(--color-danger);
-      border-color: rgba(239 68 68 / 0.5);
-      background: rgba(239 68 68 / 0.1);
-      box-shadow: 0 0 8px rgba(239 68 68 / 0.15);
-      text-shadow: 0 0 6px rgba(239 68 68 / 0.3);
+      border-color: color-mix(in srgb, var(--color-danger) 50%, transparent);
+      background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+      box-shadow: 0 0 8px color-mix(in srgb, var(--color-danger) 15%, transparent);
+      text-shadow: 0 0 6px color-mix(in srgb, var(--color-danger) 30%, transparent);
     }
 
     .severity-badge--warning {
       color: var(--color-warning);
-      border-color: rgba(245 158 11 / 0.5);
-      background: rgba(245 158 11 / 0.1);
-      box-shadow: 0 0 8px rgba(245 158 11 / 0.12);
-      text-shadow: 0 0 6px rgba(245 158 11 / 0.25);
+      border-color: color-mix(in srgb, var(--color-warning) 50%, transparent);
+      background: color-mix(in srgb, var(--color-warning) 10%, transparent);
+      box-shadow: 0 0 8px color-mix(in srgb, var(--color-warning) 12%, transparent);
+      text-shadow: 0 0 6px color-mix(in srgb, var(--color-warning) 25%, transparent);
     }
 
     .severity-badge--positive {
       color: var(--_emerald);
-      border-color: rgba(16 185 129 / 0.5);
-      background: rgba(16 185 129 / 0.1);
+      border-color: color-mix(in srgb, var(--color-success) 50%, transparent);
+      background: color-mix(in srgb, var(--color-success) 10%, transparent);
       box-shadow: 0 0 8px var(--_emerald-glow);
-      text-shadow: 0 0 6px rgba(16 185 129 / 0.3);
+      text-shadow: 0 0 6px color-mix(in srgb, var(--color-success) 30%, transparent);
     }
 
     /* ══════════════════════════════════════════

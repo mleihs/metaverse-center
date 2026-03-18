@@ -37,7 +37,7 @@ export class VelgAdminPanel extends LitElement {
     :host {
       display: block;
       min-height: calc(100vh - 56px);
-      background: var(--color-background);
+      background: var(--color-surface);
       color: var(--color-text-primary);
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
@@ -154,7 +154,7 @@ export class VelgAdminPanel extends LitElement {
       font-size: 10px;
       font-weight: var(--font-black);
       background: var(--color-warning);
-      color: var(--color-gray-950);
+      color: var(--color-surface-sunken);
       border-radius: 9px;
     }
 

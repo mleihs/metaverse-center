@@ -37,7 +37,7 @@ export class VelgStyleReferencePanel extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-success, #22c55e);
+      color: var(--color-success);
       margin: 0;
     }
 
@@ -47,8 +47,8 @@ export class VelgStyleReferencePanel extends LitElement {
       gap: var(--space-1);
       padding: var(--space-1) var(--space-2);
       background: transparent;
-      border: 1px solid var(--color-gray-700, #374151);
-      color: var(--color-success, #22c55e);
+      border: 1px solid var(--color-border);
+      color: var(--color-success);
       font-family: var(--font-mono, monospace);
       font-size: 11px;
       text-transform: uppercase;
@@ -57,8 +57,8 @@ export class VelgStyleReferencePanel extends LitElement {
     }
 
     .panel__add-btn:hover {
-      background: var(--color-gray-800, #1f2937);
-      border-color: var(--color-success, #22c55e);
+      background: var(--color-surface-raised);
+      border-color: var(--color-success);
     }
 
     /* ── Section Divider ─────────────────────── */
@@ -72,9 +72,9 @@ export class VelgStyleReferencePanel extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-gray-500, #6b7280);
+      color: var(--color-text-muted);
       padding-bottom: var(--space-2);
-      border-bottom: 1px solid var(--color-gray-800, #1f2937);
+      border-bottom: 1px solid var(--color-border-light);
       margin-bottom: var(--space-2);
     }
 
@@ -85,7 +85,7 @@ export class VelgStyleReferencePanel extends LitElement {
       align-items: center;
       gap: var(--space-3);
       padding: var(--space-2) 0;
-      border-bottom: 1px solid var(--color-gray-800, #1f2937);
+      border-bottom: 1px solid var(--color-border-light);
       transition: background 0.15s;
     }
 
@@ -102,7 +102,7 @@ export class VelgStyleReferencePanel extends LitElement {
       height: 48px;
       aspect-ratio: 1;
       object-fit: cover;
-      border: 1px solid var(--color-gray-700, #374151);
+      border: 1px solid var(--color-border);
       flex-shrink: 0;
     }
 
@@ -117,7 +117,7 @@ export class VelgStyleReferencePanel extends LitElement {
     .ref-row__type {
       font-family: var(--font-mono, monospace);
       font-size: 11px;
-      color: var(--color-gray-200, #e5e7eb);
+      color: var(--color-text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
@@ -128,13 +128,13 @@ export class VelgStyleReferencePanel extends LitElement {
     }
 
     .ref-row__scope--global {
-      color: var(--color-success, #22c55e);
+      color: var(--color-success);
       text-transform: uppercase;
       letter-spacing: 0.08em;
     }
 
     .ref-row__scope--entity {
-      color: var(--color-gray-400, #9ca3af);
+      color: var(--color-icon);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -145,8 +145,8 @@ export class VelgStyleReferencePanel extends LitElement {
     .strength-bar {
       width: 60px;
       height: 4px;
-      background: var(--color-gray-800, #1f2937);
-      border: 1px solid var(--color-gray-700, #374151);
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
       flex-shrink: 0;
       position: relative;
     }
@@ -156,7 +156,7 @@ export class VelgStyleReferencePanel extends LitElement {
       top: 0;
       left: 0;
       height: 100%;
-      background: var(--color-success, #22c55e);
+      background: var(--color-success);
       transition: width 0.2s;
     }
 
@@ -170,7 +170,7 @@ export class VelgStyleReferencePanel extends LitElement {
       height: 28px;
       background: transparent;
       border: 1px solid transparent;
-      color: var(--color-gray-500, #6b7280);
+      color: var(--color-text-muted);
       cursor: pointer;
       padding: 0;
       flex-shrink: 0;
@@ -183,8 +183,8 @@ export class VelgStyleReferencePanel extends LitElement {
     }
 
     .ref-row__delete:hover {
-      border-color: var(--color-danger, #ef4444);
-      color: var(--color-danger, #ef4444);
+      border-color: var(--color-danger);
+      color: var(--color-danger);
     }
 
     /* ── Empty State ─────────────────────────── */
@@ -192,14 +192,14 @@ export class VelgStyleReferencePanel extends LitElement {
     .empty {
       padding: var(--space-6);
       text-align: center;
-      border: 1px dashed var(--color-gray-700, #374151);
-      background: var(--color-gray-950, #030712);
+      border: 1px dashed var(--color-border);
+      background: var(--color-surface-sunken);
     }
 
     .empty__text {
       font-family: var(--font-mono, monospace);
       font-size: 11px;
-      color: var(--color-gray-500, #6b7280);
+      color: var(--color-text-muted);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }

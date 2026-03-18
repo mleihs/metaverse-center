@@ -55,7 +55,7 @@ export class VelgSimulationsDashboard extends LitElement {
       justify-content: space-between;
       padding: 0 var(--space-4);
       background: rgba(0, 0, 0, 0.6);
-      border-bottom: 1px solid var(--color-gray-800);
+      border-bottom: 1px solid var(--color-border-light);
       position: relative;
       overflow: hidden;
     }
@@ -83,8 +83,8 @@ export class VelgSimulationsDashboard extends LitElement {
       left: 4px;
       width: 10px;
       height: 10px;
-      border-left: 2px solid var(--color-gray-600);
-      border-top: 2px solid var(--color-gray-600);
+      border-left: 2px solid var(--color-border);
+      border-top: 2px solid var(--color-border);
       pointer-events: none;
     }
 
@@ -94,8 +94,8 @@ export class VelgSimulationsDashboard extends LitElement {
       right: 4px;
       width: 10px;
       height: 10px;
-      border-right: 2px solid var(--color-gray-600);
-      border-top: 2px solid var(--color-gray-600);
+      border-right: 2px solid var(--color-border);
+      border-top: 2px solid var(--color-border);
       pointer-events: none;
     }
 
@@ -107,7 +107,7 @@ export class VelgSimulationsDashboard extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-widest);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       position: relative;
       z-index: 1;
     }
@@ -125,12 +125,12 @@ export class VelgSimulationsDashboard extends LitElement {
     }
 
     .command-strip__stat-value {
-      color: var(--color-gray-300);
+      color: var(--color-text-tertiary);
       font-weight: 600;
     }
 
     .command-strip__sep {
-      color: var(--color-gray-700);
+      color: var(--color-border);
       font-size: 6px;
     }
 
@@ -139,7 +139,7 @@ export class VelgSimulationsDashboard extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-widest);
-      color: var(--color-gray-500);
+      color: var(--color-text-muted);
       position: relative;
       z-index: 1;
     }
@@ -152,7 +152,7 @@ export class VelgSimulationsDashboard extends LitElement {
       text-transform: uppercase;
       letter-spacing: var(--tracking-widest);
       background: var(--color-accent-amber);
-      color: var(--color-gray-950);
+      color: var(--color-surface-sunken);
       border: none;
       cursor: pointer;
       transition: background var(--transition-fast);
@@ -169,11 +169,11 @@ export class VelgSimulationsDashboard extends LitElement {
       align-items: center;
       gap: var(--space-3);
       padding: var(--space-3) var(--space-4);
-      background: rgba(239, 68, 68, 0.08);
-      border-bottom: 2px solid rgba(239, 68, 68, 0.3);
+      background: var(--color-danger-glow);
+      border-bottom: 2px solid var(--color-danger-border);
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
-      color: rgba(239, 68, 68, 0.9);
+      color: var(--color-danger);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wider);
       animation: banner-pulse 3s ease-in-out infinite;
@@ -190,8 +190,8 @@ export class VelgSimulationsDashboard extends LitElement {
     }
 
     @keyframes banner-pulse {
-      0%, 100% { background: rgba(239, 68, 68, 0.08); }
-      50% { background: rgba(239, 68, 68, 0.04); }
+      0%, 100% { background: var(--color-danger-glow); }
+      50% { background: color-mix(in srgb, var(--color-danger) 4%, transparent); }
     }
 
     @keyframes tremor-shake {
@@ -207,8 +207,8 @@ export class VelgSimulationsDashboard extends LitElement {
       align-items: center;
       gap: var(--space-3);
       padding: var(--space-2) var(--space-4);
-      background: rgba(245, 158, 11, 0.04);
-      border-bottom: 1px solid rgba(245, 158, 11, 0.15);
+      background: color-mix(in srgb, var(--color-primary) 4%, transparent);
+      border-bottom: 1px solid var(--color-primary-glow);
     }
 
     .admin-bar__btn {
@@ -220,14 +220,14 @@ export class VelgSimulationsDashboard extends LitElement {
       letter-spacing: var(--tracking-wider);
       background: transparent;
       color: var(--color-accent-amber);
-      border: 1px solid rgba(245, 158, 11, 0.3);
+      border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
       cursor: pointer;
       transition: all var(--transition-fast);
     }
 
     .admin-bar__btn:hover {
-      background: rgba(245, 158, 11, 0.1);
-      border-color: rgba(245, 158, 11, 0.5);
+      background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+      border-color: color-mix(in srgb, var(--color-primary) 50%, transparent);
     }
 
     /* ── Welcome Actions Strip (new_member) ── */
@@ -237,8 +237,8 @@ export class VelgSimulationsDashboard extends LitElement {
       align-items: center;
       gap: var(--space-4);
       padding: var(--space-4) var(--space-6);
-      background: rgba(245, 158, 11, 0.03);
-      border-bottom: 1px solid var(--color-gray-800);
+      background: color-mix(in srgb, var(--color-primary) 3%, transparent);
+      border-bottom: 1px solid var(--color-border-light);
       flex-wrap: wrap;
     }
 
@@ -252,9 +252,9 @@ export class VelgSimulationsDashboard extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      border: 2px solid var(--color-gray-600);
+      border: 2px solid var(--color-border);
       background: transparent;
-      color: var(--color-gray-200);
+      color: var(--color-text-secondary);
       cursor: pointer;
       transition: all var(--transition-fast);
     }
@@ -263,7 +263,7 @@ export class VelgSimulationsDashboard extends LitElement {
       border-color: var(--color-accent-amber);
       color: var(--color-accent-amber);
       transform: translate(-2px, -2px);
-      box-shadow: 4px 4px 0 rgba(245, 158, 11, 0.15);
+      box-shadow: 4px 4px 0 var(--color-primary-glow);
     }
 
     .welcome-strip__btn--primary {
@@ -275,10 +275,10 @@ export class VelgSimulationsDashboard extends LitElement {
 
     @keyframes training-pulse {
       0%, 100% {
-        box-shadow: 4px 4px 0 rgba(245, 158, 11, 0.15), 0 0 0 0 rgba(245, 158, 11, 0.3);
+        box-shadow: 4px 4px 0 var(--color-primary-glow), 0 0 0 0 color-mix(in srgb, var(--color-primary) 30%, transparent);
       }
       50% {
-        box-shadow: 4px 4px 0 rgba(245, 158, 11, 0.15), 0 0 20px 4px rgba(245, 158, 11, 0.15);
+        box-shadow: 4px 4px 0 var(--color-primary-glow), 0 0 20px 4px var(--color-primary-glow);
       }
     }
 
@@ -303,11 +303,11 @@ export class VelgSimulationsDashboard extends LitElement {
       /* Tactical grid background */
       background:
         repeating-linear-gradient(0deg, transparent, transparent 39px,
-          color-mix(in srgb, var(--color-gray-700) 4%, transparent) 39px,
-          color-mix(in srgb, var(--color-gray-700) 4%, transparent) 40px),
+          color-mix(in srgb, var(--color-border) 4%, transparent) 39px,
+          color-mix(in srgb, var(--color-border) 4%, transparent) 40px),
         repeating-linear-gradient(90deg, transparent, transparent 39px,
-          color-mix(in srgb, var(--color-gray-700) 4%, transparent) 39px,
-          color-mix(in srgb, var(--color-gray-700) 4%, transparent) 40px);
+          color-mix(in srgb, var(--color-border) 4%, transparent) 39px,
+          color-mix(in srgb, var(--color-border) 4%, transparent) 40px);
     }
 
     @media (min-width: 1024px) {
@@ -326,11 +326,11 @@ export class VelgSimulationsDashboard extends LitElement {
       .dashboard__body {
         background:
           repeating-linear-gradient(0deg, transparent, transparent 59px,
-            color-mix(in srgb, var(--color-gray-700) 3%, transparent) 59px,
-            color-mix(in srgb, var(--color-gray-700) 3%, transparent) 60px),
+            color-mix(in srgb, var(--color-border) 3%, transparent) 59px,
+            color-mix(in srgb, var(--color-border) 3%, transparent) 60px),
           repeating-linear-gradient(90deg, transparent, transparent 59px,
-            color-mix(in srgb, var(--color-gray-700) 3%, transparent) 59px,
-            color-mix(in srgb, var(--color-gray-700) 3%, transparent) 60px);
+            color-mix(in srgb, var(--color-border) 3%, transparent) 59px,
+            color-mix(in srgb, var(--color-border) 3%, transparent) 60px);
       }
     }
 
@@ -338,7 +338,7 @@ export class VelgSimulationsDashboard extends LitElement {
       :host {
         background:
           radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.4) 100%),
-          var(--color-gray-950);
+          var(--color-surface-sunken);
       }
       .dashboard__body {
         max-width: 2000px;
@@ -364,14 +364,14 @@ export class VelgSimulationsDashboard extends LitElement {
 
     @media (min-width: 1024px) {
       .dashboard__right {
-        border-left: 1px solid var(--color-gray-800);
-        background: var(--color-gray-900);
+        border-left: 1px solid var(--color-border-light);
+        background: var(--color-surface);
       }
     }
 
     @media (min-width: 1440px) {
       .dashboard__left {
-        border-right: 1px solid var(--color-gray-800);
+        border-right: 1px solid var(--color-border-light);
       }
 
       .dashboard__center {
@@ -393,7 +393,7 @@ export class VelgSimulationsDashboard extends LitElement {
       font-size: 8px;
       text-transform: uppercase;
       letter-spacing: 0.4em;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     .section-header__title {
@@ -412,7 +412,7 @@ export class VelgSimulationsDashboard extends LitElement {
     .section-header__count {
       font-family: var(--font-mono);
       font-size: var(--text-sm);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       font-weight: normal;
       letter-spacing: normal;
       text-transform: none;
@@ -425,12 +425,12 @@ export class VelgSimulationsDashboard extends LitElement {
     }
 
     .dossier-card {
-      --dossier-color: var(--color-gray-600);
+      --dossier-color: var(--color-border);
       position: relative;
       display: flex;
       flex-direction: column;
-      background: var(--color-gray-900);
-      border: 1px solid var(--color-gray-800);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-light);
       cursor: pointer;
       transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
       overflow: hidden;
@@ -462,7 +462,7 @@ export class VelgSimulationsDashboard extends LitElement {
       box-shadow: 0 0 10px var(--dossier-color);
     }
 
-    .dossier-card--lobby { --dossier-color: var(--color-gray-500); }
+    .dossier-card--lobby { --dossier-color: var(--color-text-muted); }
     .dossier-card--foundation { --dossier-color: var(--color-success); }
     .dossier-card--competition { --dossier-color: var(--color-warning); }
     .dossier-card--reckoning { --dossier-color: var(--color-danger); }
@@ -481,7 +481,7 @@ export class VelgSimulationsDashboard extends LitElement {
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
       line-height: 1.1;
-      color: var(--color-gray-100);
+      color: var(--color-text-primary);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -535,7 +535,7 @@ export class VelgSimulationsDashboard extends LitElement {
     .dossier-card__sim-name {
       font-family: var(--font-mono);
       font-size: 9px;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
@@ -545,7 +545,7 @@ export class VelgSimulationsDashboard extends LitElement {
       gap: var(--space-4);
       font-family: var(--font-mono);
       font-size: 9px;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
     }
 
     .dossier-card__stat-label {
@@ -553,7 +553,7 @@ export class VelgSimulationsDashboard extends LitElement {
     }
 
     .dossier-card__stat-value {
-      color: var(--color-gray-300);
+      color: var(--color-text-tertiary);
       font-weight: 600;
     }
 
@@ -566,7 +566,7 @@ export class VelgSimulationsDashboard extends LitElement {
 
     .dossier-progress__seg {
       flex: 1;
-      background: var(--color-gray-800);
+      background: var(--color-border-light);
       transition: background 0.2s;
     }
 
@@ -612,8 +612,8 @@ export class VelgSimulationsDashboard extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wider);
-      color: var(--color-gray-500);
-      border: 1px dashed var(--color-gray-800);
+      color: var(--color-text-muted);
+      border: 1px dashed var(--color-border-light);
     }
 
     .ops-more {
@@ -622,7 +622,7 @@ export class VelgSimulationsDashboard extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       margin-top: var(--space-2);
       cursor: pointer;
       background: none;
@@ -645,16 +645,16 @@ export class VelgSimulationsDashboard extends LitElement {
       align-items: center;
       gap: var(--space-3);
       padding: var(--space-2) var(--space-3);
-      border: 1px solid var(--color-gray-800);
-      background: var(--color-gray-900);
+      border: 1px solid var(--color-border-light);
+      background: var(--color-surface);
       cursor: pointer;
       transition: border-color var(--transition-fast), background var(--transition-fast);
       margin-bottom: var(--space-2);
     }
 
     .my-world-item:hover {
-      border-color: var(--color-gray-600);
-      background: var(--color-gray-800);
+      border-color: var(--color-border);
+      background: var(--color-border-light);
     }
 
     .my-world-item__name {
@@ -663,7 +663,7 @@ export class VelgSimulationsDashboard extends LitElement {
       font-size: var(--text-sm);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-gray-200);
+      color: var(--color-text-secondary);
       flex: 1;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -675,9 +675,9 @@ export class VelgSimulationsDashboard extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       padding: 1px 6px;
-      border: 1px solid var(--color-gray-700);
+      border: 1px solid var(--color-surface-raised);
     }
 
     /* ── Shard Grid ── */
@@ -687,7 +687,7 @@ export class VelgSimulationsDashboard extends LitElement {
       min-height: 200px;
       position: relative;
       overflow: hidden;
-      border: 1px solid var(--color-gray-700);
+      border: 1px solid var(--color-surface-raised);
       cursor: pointer;
       transition: transform var(--transition-fast), box-shadow var(--transition-fast);
       margin-bottom: var(--space-4);
@@ -695,7 +695,7 @@ export class VelgSimulationsDashboard extends LitElement {
 
     .shard-grid__featured:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 32px rgba(0 0 0 / 0.5);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
     }
 
     .featured__bg {
@@ -743,7 +743,7 @@ export class VelgSimulationsDashboard extends LitElement {
     .featured__desc {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: rgba(255, 255, 255, 0.65);
+      color: color-mix(in srgb, var(--color-text-primary) 65%, transparent);
       line-height: var(--leading-relaxed);
       display: -webkit-box;
       -webkit-line-clamp: 2;
@@ -755,7 +755,7 @@ export class VelgSimulationsDashboard extends LitElement {
     .featured__stats {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wider);
     }
@@ -805,10 +805,10 @@ export class VelgSimulationsDashboard extends LitElement {
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
       background: var(--color-surface-inverse);
-      color: var(--color-gray-900);
+      color: var(--color-surface);
       border: 2px solid var(--color-surface-inverse);
       border-radius: var(--border-radius);
-      box-shadow: 4px 4px 0 rgba(255, 255, 255, 0.2);
+      box-shadow: 4px 4px 0 color-mix(in srgb, var(--color-text-primary) 20%, transparent);
       cursor: pointer;
       transition: all var(--transition-fast);
       flex-shrink: 0;
@@ -816,12 +816,12 @@ export class VelgSimulationsDashboard extends LitElement {
 
     .btn-fracture:hover {
       transform: translate(-2px, -2px);
-      box-shadow: 6px 6px 0 rgba(255, 255, 255, 0.25);
+      box-shadow: 6px 6px 0 color-mix(in srgb, var(--color-text-primary) 25%, transparent);
     }
 
     .btn-fracture:active {
       transform: translate(0);
-      box-shadow: 2px 2px 0 rgba(255, 255, 255, 0.15);
+      box-shadow: 2px 2px 0 color-mix(in srgb, var(--color-text-primary) 15%, transparent);
     }
 
     /* ── Agent Spotlight ── */
@@ -836,7 +836,7 @@ export class VelgSimulationsDashboard extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-widest);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       margin-bottom: var(--space-3);
     }
 
@@ -844,14 +844,14 @@ export class VelgSimulationsDashboard extends LitElement {
       font-family: var(--font-bureau);
       font-style: italic;
       font-size: var(--text-sm);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       margin-top: var(--space-3);
     }
 
     .agent-spotlight__locked {
       padding: var(--space-8) var(--space-4);
       text-align: center;
-      border: 1px dashed var(--color-gray-700);
+      border: 1px dashed var(--color-surface-raised);
     }
 
     .agent-spotlight__locked-text {
@@ -859,7 +859,7 @@ export class VelgSimulationsDashboard extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-widest);
-      color: var(--color-gray-500);
+      color: var(--color-text-muted);
       margin-bottom: var(--space-3);
     }
 
@@ -868,25 +868,25 @@ export class VelgSimulationsDashboard extends LitElement {
       flex-direction: column;
       gap: 0;
       padding: 0;
-      border: 1px solid var(--color-gray-800);
-      background: var(--color-gray-900);
+      border: 1px solid var(--color-border-light);
+      background: var(--color-surface);
       cursor: pointer;
       transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
       overflow: hidden;
     }
 
     .agent-spotlight__card:hover {
-      border-color: var(--color-gray-600);
-      box-shadow: 0 0 20px rgba(245, 158, 11, 0.06);
+      border-color: var(--color-border);
+      box-shadow: 0 0 20px color-mix(in srgb, var(--color-primary) 6%, transparent);
     }
 
     .agent-spotlight__card:hover .agent-spotlight__cta {
-      color: #f59e0b;
+      color: var(--color-primary);
       letter-spacing: 0.14em;
     }
 
     .agent-spotlight__card:hover .agent-spotlight__portrait {
-      border-color: var(--color-gray-500);
+      border-color: var(--color-text-muted);
     }
 
     .agent-spotlight__card:focus-visible {
@@ -906,7 +906,7 @@ export class VelgSimulationsDashboard extends LitElement {
       height: 56px;
       border-radius: 50%;
       object-fit: cover;
-      border: 2px solid var(--color-gray-700);
+      border: 2px solid var(--color-surface-raised);
       flex-shrink: 0;
       transition: border-color var(--transition-fast);
     }
@@ -923,7 +923,7 @@ export class VelgSimulationsDashboard extends LitElement {
       font-size: var(--text-base);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-gray-100);
+      color: var(--color-text-primary);
       margin: 0;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -935,7 +935,7 @@ export class VelgSimulationsDashboard extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       margin-top: 2px;
     }
 
@@ -943,7 +943,7 @@ export class VelgSimulationsDashboard extends LitElement {
       font-family: var(--font-mono);
       font-size: 11px;
       line-height: 1.5;
-      color: var(--color-gray-500);
+      color: var(--color-text-muted);
       padding: 0 var(--space-4);
       display: -webkit-box;
       -webkit-line-clamp: 2;
@@ -956,9 +956,9 @@ export class VelgSimulationsDashboard extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-gray-500);
+      color: var(--color-text-muted);
       padding: var(--space-3) var(--space-4);
-      border-top: 1px solid var(--color-gray-800);
+      border-top: 1px solid var(--color-border-light);
       text-align: right;
       transition: color var(--transition-fast), letter-spacing var(--transition-fast);
     }
@@ -974,7 +974,7 @@ export class VelgSimulationsDashboard extends LitElement {
       align-items: center;
       gap: var(--space-3);
       padding: var(--space-2) 0;
-      border-bottom: 1px solid var(--color-gray-800);
+      border-bottom: 1px solid var(--color-border-light);
       cursor: pointer;
       transition: border-width var(--transition-fast);
     }
@@ -992,13 +992,13 @@ export class VelgSimulationsDashboard extends LitElement {
 
     .resonance-item__pip--detected { background: var(--color-accent-amber); }
     .resonance-item__pip--impacting { background: var(--color-danger); }
-    .resonance-item__pip--subsiding { background: var(--color-gray-500); }
+    .resonance-item__pip--subsiding { background: var(--color-text-muted); }
 
     .resonance-item__name {
       flex: 1;
       font-family: var(--font-bureau);
       font-size: var(--text-sm);
-      color: var(--color-gray-300);
+      color: var(--color-text-tertiary);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -1007,7 +1007,7 @@ export class VelgSimulationsDashboard extends LitElement {
     .resonance-item__bar {
       width: 60px;
       height: 4px;
-      background: var(--color-gray-800);
+      background: var(--color-border-light);
       overflow: hidden;
       flex-shrink: 0;
     }
@@ -1019,12 +1019,12 @@ export class VelgSimulationsDashboard extends LitElement {
 
     .resonance-item__bar-fill--detected { background: var(--color-accent-amber); }
     .resonance-item__bar-fill--impacting { background: var(--color-danger); }
-    .resonance-item__bar-fill--subsiding { background: var(--color-gray-500); }
+    .resonance-item__bar-fill--subsiding { background: var(--color-text-muted); }
 
     .resonance-item__time {
       font-family: var(--font-mono);
       font-size: 9px;
-      color: var(--color-gray-500);
+      color: var(--color-text-muted);
       flex-shrink: 0;
     }
 
@@ -1035,7 +1035,7 @@ export class VelgSimulationsDashboard extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wider);
-      color: var(--color-gray-500);
+      color: var(--color-text-muted);
       animation: nominal-breathe 4s ease-in-out infinite;
     }
 
@@ -1055,7 +1055,7 @@ export class VelgSimulationsDashboard extends LitElement {
     .substrate-ticker {
       height: 28px;
       background: rgba(0, 0, 0, 0.6);
-      border-top: 1px solid var(--color-gray-800);
+      border-top: 1px solid var(--color-border-light);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1066,7 +1066,7 @@ export class VelgSimulationsDashboard extends LitElement {
     .substrate-ticker__text {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: rgba(255, 255, 255, 0.25);
+      color: color-mix(in srgb, var(--color-text-primary) 25%, transparent);
       letter-spacing: var(--tracking-wider);
       text-transform: uppercase;
       white-space: nowrap;
@@ -1074,7 +1074,7 @@ export class VelgSimulationsDashboard extends LitElement {
     }
 
     .substrate-ticker:hover .substrate-ticker__text {
-      color: rgba(245, 158, 11, 0.4);
+      color: color-mix(in srgb, var(--color-primary) 40%, transparent);
       text-decoration: underline;
       text-underline-offset: 2px;
     }
@@ -1087,8 +1087,8 @@ export class VelgSimulationsDashboard extends LitElement {
 
     .skeleton-strip {
       height: 44px;
-      background: var(--color-gray-900);
-      border-bottom: 1px solid var(--color-gray-800);
+      background: var(--color-surface);
+      border-bottom: 1px solid var(--color-border-light);
       display: flex;
       align-items: center;
       padding: 0 var(--space-4);
@@ -1098,7 +1098,7 @@ export class VelgSimulationsDashboard extends LitElement {
       display: inline-block;
       width: 8px;
       height: 14px;
-      background: var(--color-gray-600);
+      background: var(--color-border);
       animation: cursor-blink 1s step-end infinite;
     }
 
@@ -1114,7 +1114,7 @@ export class VelgSimulationsDashboard extends LitElement {
     }
 
     .skeleton-rect {
-      background: linear-gradient(90deg, var(--color-gray-900), var(--color-gray-800), var(--color-gray-900));
+      background: linear-gradient(90deg, var(--color-surface), var(--color-border-light), var(--color-surface));
       background-size: 200% 100%;
       animation: shimmer 1.5s ease-in-out infinite;
       border-radius: 2px;
@@ -1165,7 +1165,7 @@ export class VelgSimulationsDashboard extends LitElement {
 
     .empty-state__text {
       font-size: var(--text-base);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       max-width: 480px;
     }
 
@@ -1177,10 +1177,10 @@ export class VelgSimulationsDashboard extends LitElement {
       margin-bottom: var(--space-4);
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       letter-spacing: var(--tracking-wide);
       text-transform: uppercase;
-      border-left: 2px solid var(--color-gray-600);
+      border-left: 2px solid var(--color-border);
     }
 
     /* ── Boot Sequence ── */
@@ -1299,7 +1299,7 @@ export class VelgSimulationsDashboard extends LitElement {
 
     @keyframes forge-breathe {
       0%, 100% {
-        border-color: var(--color-gray-700);
+        border-color: var(--color-surface-raised);
         box-shadow: 0 0 0 transparent;
       }
       50% {
@@ -1324,9 +1324,9 @@ export class VelgSimulationsDashboard extends LitElement {
       width: 100%;
       max-width: 480px;
       padding: var(--space-8) var(--space-6);
-      border: 2px dashed var(--color-gray-700);
+      border: 2px dashed var(--color-surface-raised);
       border-radius: var(--radius-lg);
-      background: var(--color-gray-900);
+      background: var(--color-surface);
       cursor: pointer;
       text-align: center;
       animation:
@@ -1370,12 +1370,12 @@ export class VelgSimulationsDashboard extends LitElement {
     .forge-empty__title {
       font-family: var(--font-brutalist);
       font-size: var(--text-xl);
-      color: var(--color-gray-100);
+      color: var(--color-text-primary);
     }
 
     .forge-empty__text {
       font-size: var(--text-base);
-      color: var(--color-gray-400);
+      color: var(--color-text-muted);
       max-width: 320px;
     }
 
@@ -2138,7 +2138,7 @@ export class VelgSimulationsDashboard extends LitElement {
         ${
           bannerUrl
             ? html`<img class="featured__bg" src=${bannerUrl} alt="${sim.name} — ${desc || sim.theme}" loading="lazy" />`
-            : html`<div class="featured__bg" style="background: linear-gradient(135deg, var(--color-gray-900), var(--color-gray-800));"></div>`
+            : html`<div class="featured__bg" style="background: linear-gradient(135deg, var(--color-surface), var(--color-border-light));"></div>`
         }
         <div class="featured__gradient"></div>
         <div class="featured__content" style="border-left: 3px solid ${themeColor}">
@@ -2202,7 +2202,7 @@ export class VelgSimulationsDashboard extends LitElement {
             : html`
             <div class="agent-spotlight__locked">
               <div class="agent-spotlight__locked-text">${msg('DOSSIER LOADING')}</div>
-              <div style="color: var(--color-gray-500); font-family: var(--font-mono); font-size: 9px;">
+              <div style="color: var(--color-text-muted); font-family: var(--font-mono); font-size: 9px;">
                 ${msg('Scanning operative records')}
               </div>
             </div>

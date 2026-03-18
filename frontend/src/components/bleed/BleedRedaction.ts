@@ -28,7 +28,7 @@ export class BleedRedaction extends LitElement {
 
     .redaction__text {
       display: inline;
-      color: var(--color-text-primary, #e5e5e5);
+      color: var(--color-text-primary);
     }
 
     .redaction__cover {

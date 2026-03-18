@@ -58,9 +58,9 @@ export class VelgForgeDarkroom extends LitElement {
         font-size: var(--text-xs);
         text-transform: uppercase;
         letter-spacing: 0.1em;
-        color: var(--color-gray-400, #9ca3af);
+        color: var(--color-icon);
         padding-bottom: var(--space-3);
-        border-bottom: 1px solid var(--color-gray-700, #374151);
+        border-bottom: 1px solid var(--color-border);
         margin-bottom: var(--space-4);
         grid-column: 1 / -1;
       }
@@ -71,8 +71,8 @@ export class VelgForgeDarkroom extends LitElement {
         display: flex;
         flex-direction: column;
         gap: var(--space-5);
-        background: var(--color-gray-900, #111827);
-        border: 1px solid var(--color-gray-700, #374151);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
         padding: var(--space-6);
       }
 
@@ -81,7 +81,7 @@ export class VelgForgeDarkroom extends LitElement {
         font-size: var(--text-xs);
         text-transform: uppercase;
         letter-spacing: 0.1em;
-        color: var(--color-success, #22c55e);
+        color: var(--color-success);
         margin: 0;
       }
 
@@ -107,14 +107,14 @@ export class VelgForgeDarkroom extends LitElement {
         gap: var(--space-1);
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        color: var(--color-gray-300, #d1d5db);
+        color: var(--color-text-tertiary);
       }
 
       .color-field__hint {
         font-size: 9px;
         text-transform: none;
         letter-spacing: normal;
-        color: var(--color-gray-500, #6b7280);
+        color: var(--color-text-muted);
       }
 
       .color-field__row {
@@ -126,7 +126,7 @@ export class VelgForgeDarkroom extends LitElement {
       .color-field input[type='color'] {
         width: 40px;
         height: 40px;
-        border: 1px solid var(--color-gray-600, #4b5563);
+        border: 1px solid var(--color-border);
         background: transparent;
         cursor: pointer;
         padding: 0;
@@ -135,20 +135,20 @@ export class VelgForgeDarkroom extends LitElement {
 
       .color-field input[type='color']:hover {
         transform: scale(1.15);
-        border-color: var(--color-gray-400, #9ca3af);
-        box-shadow: 0 0 8px rgba(255, 255, 255, 0.1);
+        border-color: var(--color-icon);
+        box-shadow: 0 0 8px color-mix(in srgb, var(--color-text-primary) 10%, transparent);
       }
 
       .color-field input[type='color']:focus {
-        outline: 2px solid var(--color-success, #22c55e);
+        outline: 2px solid var(--color-success);
         outline-offset: 1px;
       }
 
       .color-field input[type='text'] {
         flex: 1;
-        background: var(--color-gray-950, #030712);
-        color: var(--color-gray-100, #f3f4f6);
-        border: 1px solid var(--color-gray-700, #374151);
+        background: var(--color-surface-sunken);
+        color: var(--color-text-primary);
+        border: 1px solid var(--color-border);
         padding: var(--space-1) var(--space-2);
         font-family: var(--font-mono, monospace);
         font-size: 11px;
@@ -168,7 +168,7 @@ export class VelgForgeDarkroom extends LitElement {
         font-size: 11px;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        color: var(--color-gray-300, #d1d5db);
+        color: var(--color-text-tertiary);
       }
 
       .chip-group__row {
@@ -183,9 +183,9 @@ export class VelgForgeDarkroom extends LitElement {
         gap: var(--space-1);
         min-width: 44px;
         padding: var(--space-1) var(--space-2);
-        background: var(--color-gray-950, #030712);
-        border: 1px solid var(--color-gray-700, #374151);
-        color: var(--color-gray-300, #d1d5db);
+        background: var(--color-surface-sunken);
+        border: 1px solid var(--color-border);
+        color: var(--color-text-tertiary);
         font-family: var(--font-mono, monospace);
         font-size: 11px;
         cursor: pointer;
@@ -195,13 +195,13 @@ export class VelgForgeDarkroom extends LitElement {
       }
 
       .chip:hover {
-        background: var(--color-gray-800, #1f2937);
+        background: var(--color-border-light);
       }
 
       .chip[aria-pressed='true'] {
-        border-color: var(--color-success, #22c55e);
-        color: var(--color-success, #22c55e);
-        box-shadow: 0 0 6px rgba(34, 197, 94, 0.2);
+        border-color: var(--color-success);
+        color: var(--color-success);
+        box-shadow: 0 0 6px var(--color-success-glow);
       }
 
       .chip__glyph {
@@ -225,8 +225,8 @@ export class VelgForgeDarkroom extends LitElement {
       /* ── Preview Pane ────────────────────── */
 
       .preview-pane {
-        background: var(--color-gray-900, #111827);
-        border: 1px solid var(--color-gray-700, #374151);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
         display: flex;
         flex-direction: column;
         gap: var(--space-6);
@@ -239,7 +239,7 @@ export class VelgForgeDarkroom extends LitElement {
         font-size: 11px;
         text-transform: uppercase;
         letter-spacing: 0.1em;
-        color: var(--color-gray-400, #9ca3af);
+        color: var(--color-icon);
       }
 
       /* Live preview swatches */
@@ -252,7 +252,7 @@ export class VelgForgeDarkroom extends LitElement {
       .preview-swatch {
         width: 40px;
         height: 40px;
-        border: 1px solid var(--color-gray-600, #4b5563);
+        border: 1px solid var(--color-border);
         position: relative;
       }
 
@@ -263,7 +263,7 @@ export class VelgForgeDarkroom extends LitElement {
         transform: translateX(-50%);
         font-family: var(--font-mono, monospace);
         font-size: 10px;
-        color: var(--color-gray-400, #9ca3af);
+        color: var(--color-icon);
         white-space: nowrap;
       }
 
@@ -300,8 +300,8 @@ export class VelgForgeDarkroom extends LitElement {
 
       .image-settings {
         grid-column: 1 / -1;
-        background: var(--color-gray-900, #111827);
-        border: 1px solid var(--color-gray-700, #374151);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
         padding: var(--space-6);
         display: flex;
         flex-direction: column;
@@ -311,12 +311,12 @@ export class VelgForgeDarkroom extends LitElement {
       .formula-readout {
         font-family: var(--font-mono, monospace);
         font-size: 11px;
-        color: var(--color-gray-300, #d1d5db);
+        color: var(--color-text-tertiary);
         letter-spacing: 0.08em;
         text-transform: uppercase;
         padding: var(--space-2) var(--space-3);
-        background: var(--color-gray-950, #030712);
-        border: 1px solid var(--color-gray-800, #1f2937);
+        background: var(--color-surface-sunken);
+        border: 1px solid var(--color-border-light);
         text-align: center;
       }
 
@@ -325,7 +325,7 @@ export class VelgForgeDarkroom extends LitElement {
       .darkroom__footer {
         grid-column: 1 / -1;
         padding-top: var(--space-6);
-        border-top: 1px solid var(--color-gray-700, #374151);
+        border-top: 1px solid var(--color-border);
       }
     `,
   ];
@@ -470,7 +470,7 @@ export class VelgForgeDarkroom extends LitElement {
   }
 
   private _renderColorField(key: string, label: string, hint?: string) {
-    const value = this._themeConfig[key] || '#000000';
+    const value = this._themeConfig[key] || '#000000'; // lint-color-ok
     return html`
       <div class="color-field">
         <span class="color-field__label">${label}${hint ? html` <span class="color-field__hint">${hint}</span>` : nothing}</span>
@@ -665,7 +665,7 @@ export class VelgForgeDarkroom extends LitElement {
               'color_accent',
               'color_background',
               'color_surface',
-            ].map(
+            ].map( // lint-color-ok
               (key) => html`
               <div class="preview-swatch" style="background:${tc[key] || '#333'}">
                 <span class="preview-swatch__label">${key.replace('color_', '')}</span>
@@ -676,16 +676,16 @@ export class VelgForgeDarkroom extends LitElement {
 
           <div class="preview-heading" style="
             font-family: ${tc.font_heading || 'var(--font-brutalist)'};
-            color: ${tc.color_text || '#f3f4f6'};
+            color: ${tc.color_text || '#f3f4f6'}; /* lint-color-ok */
             font-weight: ${tc.heading_weight || '700'};
             text-transform: ${tc.heading_transform || 'uppercase'};
             letter-spacing: ${tc.heading_tracking || '0.08em'};
           ">${msg('Sample Heading')}</div>
 
           <div class="preview-button" style="
-            background: ${tc.color_primary || '#22c55e'};
-            color: ${tc.text_inverse || '#ffffff'};
-            border: ${tc.border_width || '2px'} solid ${tc.color_primary || '#22c55e'};
+            background: ${tc.color_primary || '#22c55e'}; /* lint-color-ok */
+            color: ${tc.text_inverse || '#ffffff'}; /* lint-color-ok */
+            border: ${tc.border_width || '2px'} solid ${tc.color_primary || '#22c55e'}; /* lint-color-ok */
             border-radius: ${tc.border_radius || '0'};
           ">${msg('Sample Button')}</div>
 

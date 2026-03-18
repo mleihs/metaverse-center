@@ -99,7 +99,7 @@ export const terminalFormStyles = css`
   }
 
   .form-input::placeholder {
-    color: #9ca3af;
+    color: var(--color-text-muted);
   }
 
   /* ── CTA Button ── */
@@ -124,7 +124,7 @@ export const terminalFormStyles = css`
   }
 
   .btn-submit:hover {
-    background: #fbbf24;
+    background: var(--color-primary-hover);
     box-shadow: 0 0 20px var(--amber-glow);
   }
 
@@ -147,10 +147,10 @@ export const terminalFormStyles = css`
   .msg--error {
     padding: 12px 14px;
     margin-bottom: 20px;
-    background: rgba(239, 68, 68, 0.08);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    border-left: 3px solid #ef4444;
-    color: #fca5a5;
+    background: color-mix(in srgb, var(--color-danger) 8%, transparent);
+    border: 1px solid var(--color-danger-border);
+    border-left: 3px solid var(--color-danger);
+    color: color-mix(in srgb, var(--color-danger) 65%, white);
     font-family: var(--font-brutalist, 'Courier New', monospace);
     font-weight: 700;
     font-size: 11px;
@@ -161,10 +161,10 @@ export const terminalFormStyles = css`
   .msg--success {
     padding: 12px 14px;
     margin-bottom: 20px;
-    background: rgba(34, 197, 94, 0.08);
-    border: 1px solid rgba(34, 197, 94, 0.3);
-    border-left: 3px solid #22c55e;
-    color: #86efac;
+    background: color-mix(in srgb, var(--color-success) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-success) 30%, transparent);
+    border-left: 3px solid var(--color-success);
+    color: color-mix(in srgb, var(--color-success) 55%, white);
     font-family: var(--font-brutalist, 'Courier New', monospace);
     font-weight: 700;
     font-size: 11px;
@@ -250,7 +250,7 @@ export const terminalOAuthStyles = css`
   }
 
   .oauth-btn--google:hover {
-    border-color: #4285f4;
+    border-color: #4285f4; /* lint-color-ok */
     box-shadow: 0 0 20px rgba(66, 133, 244, 0.25);
   }
 
@@ -261,7 +261,7 @@ export const terminalOAuthStyles = css`
   }
 
   .oauth-btn--discord:hover {
-    border-color: #5865f2;
+    border-color: #5865f2; /* lint-color-ok */
     box-shadow: 0 0 20px rgba(88, 101, 242, 0.25);
   }
 

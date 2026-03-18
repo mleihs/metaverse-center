@@ -341,7 +341,7 @@ export class VelgAdminForgeTab extends LitElement {
 
       .filter-chip--active {
         background: var(--color-accent-amber);
-        color: var(--color-gray-950);
+        color: var(--color-surface-sunken);
         border-color: var(--color-accent-amber);
         box-shadow: 0 0 8px rgba(245, 158, 11, 0.3);
       }
@@ -446,7 +446,7 @@ export class VelgAdminForgeTab extends LitElement {
         text-transform: uppercase;
         letter-spacing: var(--tracking-wide);
         background: var(--color-success);
-        color: var(--color-gray-950);
+        color: var(--color-surface-sunken);
         border: none;
         cursor: pointer;
         transition: all var(--transition-fast);
