@@ -35,6 +35,16 @@ class NewsConfig:
 
 
 @dataclass
+class InstagramConfig:
+    """Instagram Graph API configuration (platform-level)."""
+
+    access_token: str
+    ig_user_id: str
+    api_version: str = "v22.0"
+    posting_enabled: bool = False
+
+
+@dataclass
 class AIProviderConfig:
     """AI provider API key configuration."""
 

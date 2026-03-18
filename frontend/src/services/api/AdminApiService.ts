@@ -186,6 +186,64 @@ export class AdminApiService extends BaseApiService {
     return this.put(`/admin/health-effects/simulations/${simulationId}`, { enabled });
   }
 
+  // --- Instagram Pipeline ---
+
+  async listInstagramQueue(
+    params?: Record<string, string>,
+  ): Promise<ApiResponse<InstagramQueueItem[]>> {
+    return this.get('/admin/instagram/queue', params);
+  }
+
+  async getInstagramPost(postId: string): Promise<ApiResponse<InstagramQueueItem>> {
+    return this.get(`/admin/instagram/queue/${postId}`);
+  }
+
+  async generateInstagramContent(body: {
+    content_types?: string[];
+    simulation_id?: string;
+    count?: number;
+  }): Promise<ApiResponse<InstagramQueueItem[]>> {
+    return this.post('/admin/instagram/generate', body);
+  }
+
+  async listInstagramCandidates(
+    params?: Record<string, string>,
+  ): Promise<ApiResponse<unknown[]>> {
+    return this.get('/admin/instagram/candidates', params);
+  }
+
+  async createInstagramPost(body: Record<string, unknown>): Promise<ApiResponse<InstagramQueueItem>> {
+    return this.post('/admin/instagram/queue', body);
+  }
+
+  async approveInstagramPost(
+    postId: string,
+    body?: { scheduled_at?: string },
+  ): Promise<ApiResponse<InstagramQueueItem>> {
+    return this.post(`/admin/instagram/queue/${postId}/approve`, body ?? {});
+  }
+
+  async rejectInstagramPost(
+    postId: string,
+    reason: string,
+  ): Promise<ApiResponse<InstagramQueueItem>> {
+    return this.post(`/admin/instagram/queue/${postId}/reject`, { reason });
+  }
+
+  async forcePublishInstagramPost(postId: string): Promise<ApiResponse<InstagramQueueItem>> {
+    return this.post(`/admin/instagram/queue/${postId}/publish`, {});
+  }
+
+  async getInstagramAnalytics(
+    days = 30,
+  ): Promise<ApiResponse<InstagramAnalytics>> {
+    return this.get('/admin/instagram/analytics', { days: String(days) });
+  }
+
+  async getInstagramRateLimit(): Promise<ApiResponse<InstagramRateLimit>> {
+    return this.get('/admin/instagram/rate-limit');
+  }
+
   // --- Simulation Management ---
 
   async listSimulations(
@@ -280,6 +338,63 @@ export interface AdminPurchaseLedgerEntry {
   balance_after: number;
   created_at: string;
   token_bundles?: { slug: string };
+}
+
+export interface InstagramQueueItem {
+  id: string;
+  simulation_id: string | null;
+  content_source_type: string;
+  content_source_id: string | null;
+  caption: string;
+  hashtags: string[];
+  alt_text: string | null;
+  image_urls: string[];
+  media_type: string;
+  status: string;
+  scheduled_at: string | null;
+  published_at: string | null;
+  failure_reason: string | null;
+  retry_count: number;
+  ig_permalink: string | null;
+  likes_count: number;
+  comments_count: number;
+  reach: number;
+  saves: number;
+  shares: number;
+  engagement_rate: number;
+  metrics_updated_at: string | null;
+  unlock_code: string | null;
+  ai_disclosure_included: boolean;
+  ai_model_used: string | null;
+  created_at: string;
+  updated_at: string;
+  created_by_id: string | null;
+  simulation_name: string | null;
+  simulation_slug: string | null;
+  simulation_theme: string | null;
+}
+
+export interface InstagramAnalytics {
+  period_days: number;
+  total_posts: number;
+  total_drafts: number;
+  total_scheduled: number;
+  total_failed: number;
+  avg_engagement_rate: number | null;
+  total_reach: number | null;
+  total_likes: number | null;
+  total_saves: number | null;
+  total_shares: number | null;
+  total_comments: number | null;
+  top_content_type: string | null;
+  engagement_by_simulation: { simulation_name: string; post_count: number; avg_engagement_rate: number }[];
+  engagement_by_type: { content_type: string; post_count: number; avg_engagement_rate: number }[];
+}
+
+export interface InstagramRateLimit {
+  quota_usage: number;
+  quota_total: number;
+  remaining: number;
 }
 
 export const adminApi = new AdminApiService();

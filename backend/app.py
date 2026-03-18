@@ -57,6 +57,7 @@ from backend.routers import (
     generation,
     health,
     heartbeat,
+    instagram,
     invitations,
     locations,
     members,
@@ -78,6 +79,7 @@ from backend.routers import (
     zone_actions,
 )
 from backend.services.heartbeat_service import HeartbeatService
+from backend.services.instagram_scheduler import InstagramScheduler
 from backend.services.platform_model_config import ensure_loaded as ensure_model_config
 from backend.services.platform_research_domains import ensure_loaded as ensure_research_domains
 from backend.services.resonance_scheduler import ResonanceScheduler
@@ -94,7 +96,9 @@ async def lifespan(app: FastAPI):
     resonance_task = await ResonanceScheduler.start()
     scanner_task = await ScannerService.start()
     heartbeat_task = await HeartbeatService.start()
+    instagram_task = await InstagramScheduler.start()
     yield
+    instagram_task.cancel()
     heartbeat_task.cancel()
     scanner_task.cancel()
     resonance_task.cancel()
@@ -202,6 +206,7 @@ app.include_router(heartbeat.router)
 app.include_router(resonances.router)
 app.include_router(news_scanner.router)
 app.include_router(style_references.router)
+app.include_router(instagram.router)
 app.include_router(public.router)
 app.include_router(seo.router)
 
