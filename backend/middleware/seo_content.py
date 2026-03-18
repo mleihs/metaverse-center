@@ -193,7 +193,7 @@ def _build_agents(
 ) -> tuple[str, str]:
     response = (
         client.table("agents")
-        .select("name,character,primary_profession")
+        .select("id,name,character,primary_profession,portrait_image_url")
         .eq("simulation_id", sim_id)
         .is_("deleted_at", "null")
         .limit(50)
@@ -234,7 +234,8 @@ def _build_agents(
                     "name": a.get("name", ""),
                     "jobTitle": a.get("primary_profession", ""),
                     "description": _truncate(a.get("character") or "", 300),
-                    "url": f"{BASE_URL}/simulations/{slug}/agents",
+                    "url": f"{BASE_URL}/simulations/{slug}/agents/{a.get('id', '')}",
+                    **({"image": a["portrait_image_url"]} if a.get("portrait_image_url") else {}),
                 },
             }
             for i, a in enumerate(agents[:20])
@@ -249,7 +250,7 @@ def _build_buildings(
 ) -> tuple[str, str]:
     response = (
         client.table("buildings")
-        .select("name,description,building_type")
+        .select("id,name,description,building_type,image_url")
         .eq("simulation_id", sim_id)
         .is_("deleted_at", "null")
         .limit(50)
@@ -286,7 +287,8 @@ def _build_buildings(
                     "name": b.get("name", ""),
                     "additionalType": b.get("building_type", ""),
                     "description": _truncate(b.get("description") or "", 300),
-                    "url": f"{BASE_URL}/simulations/{slug}/buildings",
+                    "url": f"{BASE_URL}/simulations/{slug}/buildings/{b.get('id', '')}",
+                    **({"image": b["image_url"]} if b.get("image_url") else {}),
                 },
             }
             for i, b in enumerate(buildings[:20])
@@ -398,6 +400,12 @@ def _build_chronicle(
         "headline": latest.get("title") or sim_name,
         "url": f"{BASE_URL}/simulations/{slug}/chronicle",
         "articleBody": _truncate(content, 500),
+        "author": {"@type": "Organization", "name": sim_name},
+        "publisher": {
+            "@type": "Organization",
+            "name": "metaverse.center",
+            "url": BASE_URL,
+        },
     }
     if latest.get("published_at"):
         data["datePublished"] = latest["published_at"]
