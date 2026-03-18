@@ -48,7 +48,7 @@ REVOKE ALL ON FUNCTION public.fn_list_pending_forge_requests() FROM authenticate
 GRANT EXECUTE ON FUNCTION public.fn_list_pending_forge_requests() TO service_role;
 
 -- ============================================================
--- 2. Drop unused legacy materialized views
+-- 2. Drop unused legacy views
 -- ============================================================
-DROP MATERIALIZED VIEW IF EXISTS public.agent_statistics;
-DROP MATERIALIZED VIEW IF EXISTS public.campaign_performance;
+DROP VIEW IF EXISTS public.agent_statistics;
+DROP VIEW IF EXISTS public.campaign_performance;
