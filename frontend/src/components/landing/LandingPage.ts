@@ -1867,7 +1867,7 @@ export class VelgLandingPage extends LitElement {
               <div class="feature-card__body">
                 <h2 class="feature-card__title">${msg('Worldbuilding')}</h2>
                 <p class="feature-card__desc">
-                  ${msg('Describe a world in one sentence. The Forge builds it — geography, citizens, architecture, 5,000 words of lore. In four minutes, you have a living civilization with characters who form opinions, hold grudges, and write their own newspapers.')}
+                  ${msg('Describe a world in one sentence. The Forge builds it — geography, citizens, architecture, thousands of words of lore. Within minutes, you have a living civilization with characters who form opinions, hold grudges, and write their own newspapers.')}
                 </p>
                 <div class="feature-card__ref">TIER-1 // ACTIVE</div>
               </div>
@@ -2055,7 +2055,7 @@ export class VelgLandingPage extends LitElement {
               <div class="step__badge">01</div>
               <h3 class="step__title">${msg('Create Your World')}</h3>
               <p class="step__desc">
-                ${msg('Type a premise. The Forge generates a complete civilization — dozens of characters with personalities, cities with architecture, and thousands of words of original lore. Four minutes.')}
+                ${msg('Type a premise. The Forge generates a complete civilization — dozens of characters with personalities, cities with architecture, and thousands of words of original lore. Minutes, not months.')}
               </p>
             </div>
 
