@@ -12,8 +12,10 @@ import type {
   ZoneActionType,
   ZoneStability,
 } from '../../types/index.js';
+import { heartbeatApi } from '../../services/api/HeartbeatApiService.js';
 import { icons } from '../../utils/icons.js';
 import { viewHeaderStyles } from '../shared/view-header-styles.js';
+import { renderInfoBubble, infoBubbleStyles } from '../shared/info-bubble-styles.js';
 
 import '../shared/LoadingState.js';
 import '../shared/ErrorState.js';
@@ -58,6 +60,7 @@ function staffingColor(status: string): string {
 export class VelgSimulationHealthView extends LitElement {
   static styles = [
     viewHeaderStyles,
+    infoBubbleStyles,
     css`
       :host {
         display: block;
@@ -688,6 +691,89 @@ export class VelgSimulationHealthView extends LitElement {
         margin-top: 2px;
       }
 
+      /* ── Heartbeat Systems ── */
+
+      .hb-subsection {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+        margin-bottom: var(--space-4);
+      }
+
+      .hb-subsection:last-child {
+        margin-bottom: 0;
+      }
+
+      .hb-subsection__label {
+        font-family: var(--font-brutalist);
+        font-size: 9px;
+        font-weight: var(--font-black);
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        color: var(--color-text-muted);
+        margin-bottom: var(--space-1);
+      }
+
+      .hb-meter {
+        display: grid;
+        grid-template-columns: 110px 1fr 40px;
+        align-items: center;
+        gap: var(--space-2);
+      }
+
+      .hb-meter__label {
+        font-family: var(--font-sans);
+        font-size: var(--text-xs);
+        text-transform: capitalize;
+        color: var(--color-text-secondary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .hb-meter__bar {
+        height: 6px;
+        background: var(--color-surface-sunken, #111);
+        border: 1px solid var(--color-border);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hb-meter__fill {
+        height: 100%;
+        background: var(--color-primary);
+        transition: width 0.6s ease;
+      }
+
+      .hb-meter__fill--harmonized {
+        background: var(--color-success);
+      }
+
+      .hb-meter__fill--anchor {
+        background: var(--color-info);
+      }
+
+      .hb-meter__threshold {
+        position: absolute;
+        top: -2px;
+        bottom: -2px;
+        width: 2px;
+        background: var(--color-warning);
+        z-index: 1;
+      }
+
+      .hb-meter__value {
+        font-family: var(--font-brutalist);
+        font-weight: var(--font-bold);
+        font-size: var(--text-xs);
+        text-align: right;
+        color: var(--color-text-secondary);
+      }
+
+      .hb-meter__value--harmonized {
+        color: var(--color-success);
+      }
+
       /* ── Empty state ── */
 
       .panel__empty {
@@ -731,6 +817,8 @@ export class VelgSimulationHealthView extends LitElement {
   @state() private _refreshing = false;
   @state() private _selectedZoneForAction: string | null = null;
   @state() private _actionLoading = false;
+  @state() private _attunements: Array<{ resonance_signature: string; depth: number; positive_threshold: number }> = [];
+  @state() private _anchors: Array<{ name: string; strength: number; status: string; anchor_simulation_ids: string[] }> = [];
 
   async connectedCallback(): Promise<void> {
     super.connectedCallback();
@@ -741,11 +829,21 @@ export class VelgSimulationHealthView extends LitElement {
     this._loading = true;
     this._error = null;
     try {
-      const result = await healthApi.getDashboard(this.simulationId);
-      if (result.success && result.data) {
-        this._dashboard = result.data;
+      const [healthResult, attResult, anchorResult] = await Promise.all([
+        healthApi.getDashboard(this.simulationId),
+        heartbeatApi.listAttunements(this.simulationId).catch(() => ({ success: false, data: null })),
+        heartbeatApi.listAnchors({ simulation_id: this.simulationId }).catch(() => ({ success: false, data: null })),
+      ]);
+      if (healthResult.success && healthResult.data) {
+        this._dashboard = healthResult.data;
       } else {
-        this._error = result.error?.message ?? msg('Failed to load health data.');
+        this._error = healthResult.error?.message ?? msg('Failed to load health data.');
+      }
+      if (attResult.success && attResult.data) {
+        this._attunements = attResult.data as typeof this._attunements;
+      }
+      if (anchorResult.success && anchorResult.data) {
+        this._anchors = anchorResult.data as typeof this._anchors;
       }
     } catch (err) {
       this._error = err instanceof Error ? err.message : msg('An unexpected error occurred.');
@@ -803,6 +901,7 @@ export class VelgSimulationHealthView extends LitElement {
           ${this._renderStaffingPanel(health, buildings)}
           ${this._renderDiplomacyPanel(health, embassies)}
           ${this._renderBleedPanel(health)}
+          ${this._renderHeartbeatSystemsPanel()}
           ${this._renderEventsPanel(recent_high_impact_events)}
         </div>
       </div>
@@ -1213,6 +1312,61 @@ export class VelgSimulationHealthView extends LitElement {
             `
             : nothing
         }
+      </div>
+    `;
+  }
+
+  private _renderHeartbeatSystemsPanel() {
+    if (this._attunements.length === 0 && this._anchors.length === 0) return nothing;
+
+    return html`
+      <div class="panel">
+        <div class="panel__header">
+          <span class="panel__icon">${icons.radar(16)}</span>
+          <h3 class="panel__title">
+            ${msg('Heartbeat Systems')}
+            ${renderInfoBubble(msg('Attunements deepen each tick, eventually spawning positive events. Anchors pool stability across embassy-connected simulations.'))}
+          </h3>
+        </div>
+
+        ${this._attunements.length > 0 ? html`
+          <div class="hb-subsection">
+            <span class="hb-subsection__label">${msg('Attunements')}</span>
+            ${this._attunements.map((att) => {
+              const pct = Math.round(att.depth * 100);
+              const thresh = Math.round(att.positive_threshold * 100);
+              const harmonized = att.depth >= att.positive_threshold;
+              return html`
+                <div class="hb-meter" aria-label=${msg(str`${att.resonance_signature}: ${pct}% depth`)}>
+                  <span class="hb-meter__label">${att.resonance_signature.replace(/_/g, ' ')}</span>
+                  <div class="hb-meter__bar">
+                    <div class="hb-meter__fill ${harmonized ? 'hb-meter__fill--harmonized' : ''}" style="width: ${pct}%"></div>
+                    <div class="hb-meter__threshold" style="left: ${thresh}%"></div>
+                  </div>
+                  <span class="hb-meter__value ${harmonized ? 'hb-meter__value--harmonized' : ''}">${pct}%</span>
+                </div>
+              `;
+            })}
+          </div>
+        ` : nothing}
+
+        ${this._anchors.length > 0 ? html`
+          <div class="hb-subsection">
+            <span class="hb-subsection__label">${msg('Anchors')}</span>
+            ${this._anchors.map((anchor) => {
+              const pct = Math.round(anchor.strength * 100);
+              return html`
+                <div class="hb-meter" aria-label=${msg(str`${anchor.name}: ${pct}% strength`)}>
+                  <span class="hb-meter__label">${anchor.name}</span>
+                  <div class="hb-meter__bar">
+                    <div class="hb-meter__fill hb-meter__fill--anchor" style="width: ${pct}%"></div>
+                  </div>
+                  <span class="hb-meter__value">${pct}%</span>
+                </div>
+              `;
+            })}
+          </div>
+        ` : nothing}
       </div>
     `;
   }

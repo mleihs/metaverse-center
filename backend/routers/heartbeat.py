@@ -112,6 +112,17 @@ async def get_heartbeat_overview(
     }
 
 
+@router.get("/api/v1/simulations/{simulation_id}/heartbeat/briefing")
+async def get_daily_briefing(
+    simulation_id: UUID,
+    user: CurrentUser = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase),
+) -> dict:
+    """Daily briefing summary — health delta, event counts, active arcs."""
+    data = await HeartbeatService.get_daily_briefing(supabase, simulation_id)
+    return {"success": True, "data": data}
+
+
 @router.get("/api/v1/simulations/{simulation_id}/heartbeat/entries")
 async def list_heartbeat_entries(
     simulation_id: UUID,

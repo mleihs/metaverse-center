@@ -419,6 +419,44 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
       color: var(--color-text-muted);
     }
 
+    /* ── Tick Summary ── */
+
+    .tick-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-4);
+      margin-bottom: var(--space-2);
+      border-left: 2px solid var(--color-border);
+      background: color-mix(in srgb, var(--color-surface-sunken) 40%, transparent);
+      font-family: var(--font-sans);
+      font-size: var(--text-xs);
+      color: var(--color-text-secondary);
+    }
+
+    .tick-summary--critical {
+      border-left-color: var(--color-danger);
+    }
+
+    .tick-summary--positive {
+      border-left-color: var(--color-success);
+    }
+
+    .tick-summary__text {
+      flex: 1;
+    }
+
+    .tick-summary__alert {
+      font-family: var(--font-brutalist);
+      font-size: 9px;
+      font-weight: var(--font-black);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--color-danger);
+      flex-shrink: 0;
+    }
+
     .tick-header__chevron {
       color: var(--_phosphor-dim);
       transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -913,23 +951,23 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
   }
 
   private _getTypeLabel(type: HeartbeatEntryType): string {
-    const labels: Record<HeartbeatEntryType, string> = {
-      zone_shift: 'Zone Shift',
-      event_aging: 'Event Aging',
-      event_escalation: 'Escalation',
-      event_resolution: 'Resolution',
-      scar_tissue: 'Scar Tissue',
-      resonance_pressure: 'Resonance',
-      cascade_spawn: 'Cascade',
-      bureau_response: 'Bureau',
-      attunement_deepen: 'Attunement',
-      anchor_strengthen: 'Anchor',
-      convergence: 'Convergence',
-      positive_event: 'Harvest',
-      narrative_arc: 'Arc',
-      system_note: 'System',
-    };
-    return labels[type] ?? type;
+    switch (type) {
+      case 'zone_shift': return msg('Zone Shift');
+      case 'event_aging': return msg('Event Aging');
+      case 'event_escalation': return msg('Escalation');
+      case 'event_resolution': return msg('Resolution');
+      case 'scar_tissue': return msg('Scar Tissue');
+      case 'resonance_pressure': return msg('Resonance');
+      case 'cascade_spawn': return msg('Cascade');
+      case 'bureau_response': return msg('Bureau');
+      case 'attunement_deepen': return msg('Attunement');
+      case 'anchor_strengthen': return msg('Anchor');
+      case 'convergence': return msg('Convergence');
+      case 'positive_event': return msg('Harvest');
+      case 'narrative_arc': return msg('Arc');
+      case 'system_note': return msg('System');
+      default: return type;
+    }
   }
 
   private _formatRelativeTime(dateStr: string): string {
@@ -1045,7 +1083,8 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
                 <span class="tick-header__count">${entries.length} ${entries.length === 1 ? msg('entry') : msg('entries')}</span>
               </button>
               ${collapsed ? nothing : html`
-                <div id="tick-${tickNum}" role="group" aria-label=${`Tick ${tickNum} entries`}>
+                <div id="tick-${tickNum}" role="group" aria-label=${msg('Tick entries')}>
+                  ${this._renderTickSummary(entries)}
                   ${entries.map((entry) => {
                     const idx = entryIndex++;
                     return this._renderEntry(entry, idx);
@@ -1064,6 +1103,63 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
         </div>
       ` : nothing}
     `;
+  }
+
+  private _renderTickSummary(entries: HeartbeatEntry[]) {
+    if (entries.length < 2) return nothing;
+
+    const counts: Record<string, number> = {};
+    let criticalCount = 0;
+    let positiveCount = 0;
+
+    for (const e of entries) {
+      const cat = this._getSummaryCategory(e.entry_type);
+      counts[cat] = (counts[cat] ?? 0) + 1;
+      if (e.severity === 'critical') criticalCount++;
+      if (e.severity === 'positive') positiveCount++;
+    }
+
+    const parts: string[] = [];
+    if (counts['events']) parts.push(`${counts['events']} ${counts['events'] === 1 ? msg('event update') : msg('event updates')}`);
+    if (counts['arcs']) parts.push(`${counts['arcs']} ${counts['arcs'] === 1 ? msg('arc shift') : msg('arc shifts')}`);
+    if (counts['bureau']) parts.push(`${counts['bureau']} ${counts['bureau'] === 1 ? msg('bureau action') : msg('bureau actions')}`);
+    if (counts['diplomatic']) parts.push(`${counts['diplomatic']} ${counts['diplomatic'] === 1 ? msg('diplomatic signal') : msg('diplomatic signals')}`);
+    if (counts['zone']) parts.push(`${counts['zone']} ${counts['zone'] === 1 ? msg('zone change') : msg('zone changes')}`);
+    if (counts['system']) parts.push(`${counts['system']} ${counts['system'] === 1 ? msg('system note') : msg('system notes')}`);
+
+    const severityClass = criticalCount > 0 ? 'tick-summary--critical' : positiveCount > 0 ? 'tick-summary--positive' : '';
+
+    return html`
+      <div class="tick-summary ${severityClass}">
+        <span class="tick-summary__text">${parts.join(' · ')}</span>
+        ${criticalCount > 0 ? html`<span class="tick-summary__alert">${criticalCount} ${msg('critical')}</span>` : nothing}
+      </div>
+    `;
+  }
+
+  private _getSummaryCategory(type: HeartbeatEntryType): string {
+    switch (type) {
+      case 'event_aging':
+      case 'event_escalation':
+      case 'event_resolution':
+      case 'resonance_pressure':
+      case 'scar_tissue':
+        return 'events';
+      case 'narrative_arc':
+      case 'cascade_spawn':
+      case 'convergence':
+        return 'arcs';
+      case 'bureau_response':
+      case 'attunement_deepen':
+      case 'positive_event':
+        return 'bureau';
+      case 'anchor_strengthen':
+        return 'diplomatic';
+      case 'zone_shift':
+        return 'zone';
+      default:
+        return 'system';
+    }
   }
 
   private _renderEntry(entry: HeartbeatEntry, index: number) {

@@ -724,6 +724,65 @@ class HeartbeatService:
             "simulations": sim_data,
         }
 
+    # ── Daily Briefing ────────────────────────────────────────
+
+    @classmethod
+    async def get_daily_briefing(cls, supabase: Client, sim_id: UUID) -> dict:
+        """Build a daily briefing summary for a simulation.
+
+        Returns health delta, recent event counts, active arcs, and
+        notable entries since the last briefing.
+        """
+        # Get current health
+        health = (
+            supabase.table("mv_simulation_health")
+            .select("overall_health, health_label, avg_zone_stability, avg_readiness")
+            .eq("simulation_id", str(sim_id))
+            .limit(1)
+            .execute()
+        ).data
+        health_data = health[0] if health else {}
+
+        # Get last 24h of heartbeat entries (summary counts)
+        last_day = (datetime.now(UTC) - timedelta(hours=24)).isoformat()
+        entries = (
+            supabase.table("heartbeat_entries")
+            .select("entry_type, severity")
+            .eq("simulation_id", str(sim_id))
+            .gte("created_at", last_day)
+            .execute()
+        ).data or []
+
+        type_counts: dict[str, int] = {}
+        critical_count = 0
+        positive_count = 0
+        for e in entries:
+            t = e.get("entry_type", "unknown")
+            type_counts[t] = type_counts.get(t, 0) + 1
+            if e.get("severity") == "critical":
+                critical_count += 1
+            elif e.get("severity") == "positive":
+                positive_count += 1
+
+        # Active arcs
+        arcs = (
+            supabase.table("narrative_arcs")
+            .select("arc_type, primary_signature, status, pressure", count="exact")
+            .eq("simulation_id", str(sim_id))
+            .in_("status", ["building", "active", "climax"])
+            .execute()
+        )
+
+        return {
+            "health": health_data,
+            "entries_24h": len(entries),
+            "entry_type_counts": type_counts,
+            "critical_events": critical_count,
+            "positive_events": positive_count,
+            "active_arcs": arcs.count or 0,
+            "arc_details": arcs.data or [],
+        }
+
     # ── Force Tick (Admin) ──────────────────────────────────────
 
     @classmethod

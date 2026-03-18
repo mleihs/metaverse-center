@@ -19,6 +19,10 @@ export class HeartbeatApiService extends BaseApiService {
     return this.getSimulationData(`/simulations/${simulationId}/heartbeat`);
   }
 
+  getDailyBriefing(simulationId: string): Promise<ApiResponse<Record<string, unknown>>> {
+    return this.getSimulationData(`/simulations/${simulationId}/heartbeat/briefing`);
+  }
+
   listEntries(
     simulationId: string,
     params?: Record<string, string>,
