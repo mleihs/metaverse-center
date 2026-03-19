@@ -39,6 +39,7 @@ from backend.routers import (
     agent_professions,
     agents,
     aptitudes,
+    bluesky,
     bot_players,
     buildings,
     campaigns,
@@ -79,6 +80,7 @@ from backend.routers import (
     users,
     zone_actions,
 )
+from backend.services.bluesky_scheduler import BlueskyScheduler
 from backend.services.heartbeat_service import HeartbeatService
 from backend.services.instagram_scheduler import InstagramScheduler
 from backend.services.platform_model_config import ensure_loaded as ensure_model_config
@@ -98,7 +100,9 @@ async def lifespan(app: FastAPI):
     scanner_task = await ScannerService.start()
     heartbeat_task = await HeartbeatService.start()
     instagram_task = await InstagramScheduler.start()
+    bluesky_task = await BlueskyScheduler.start()
     yield
+    bluesky_task.cancel()
     instagram_task.cancel()
     heartbeat_task.cancel()
     scanner_task.cancel()
@@ -208,6 +212,7 @@ app.include_router(resonances.router)
 app.include_router(news_scanner.router)
 app.include_router(style_references.router)
 app.include_router(instagram.router)
+app.include_router(bluesky.router)
 app.include_router(cipher.public_router)
 app.include_router(cipher.admin_router)
 app.include_router(public.router)

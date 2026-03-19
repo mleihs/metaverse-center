@@ -782,6 +782,10 @@ export class VelgAdminInstagramTab extends LitElement {
       background: color-mix(in srgb, var(--color-danger) 12%, transparent);
       color: var(--color-danger);
     }
+    .badge--muted {
+      background: color-mix(in srgb, var(--color-text-muted) 12%, transparent);
+      color: var(--color-text-muted);
+    }
 
     /* ══════════════════════════════════════════════════════
        CONFIGURATION PANEL — Pipeline settings
@@ -1898,6 +1902,11 @@ export class VelgAdminInstagramTab extends LitElement {
               : nothing
             }
             <span class="badge badge--${badgeColor}">${post.status}</span>
+            ${post.bsky_status ? html`
+              <span class="badge badge--${post.bsky_status === 'published' ? 'success' : post.bsky_status === 'failed' ? 'danger' : post.bsky_status === 'skipped' ? 'muted' : 'info'}" title=${msg('Bluesky')}>
+                ${icons.antenna(10)} ${post.bsky_status}
+              </span>
+            ` : nothing}
             <span class="dispatch__timestamp">
               ${post.status === 'published'
                 ? this._formatDate(post.published_at)

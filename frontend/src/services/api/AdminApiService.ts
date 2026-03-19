@@ -259,6 +259,44 @@ export class AdminApiService extends BaseApiService {
     return this.get('/admin/instagram/settings');
   }
 
+  // --- Bluesky Pipeline ---
+
+  async listBlueskyQueue(
+    params?: Record<string, string>,
+  ): Promise<ApiResponse<BlueskyQueueItem[]>> {
+    return this.get('/admin/bluesky/queue', params);
+  }
+
+  async getBlueskyPost(postId: string): Promise<ApiResponse<BlueskyQueueItem>> {
+    return this.get(`/admin/bluesky/queue/${postId}`);
+  }
+
+  async skipBlueskyPost(postId: string): Promise<ApiResponse<BlueskyQueueItem>> {
+    return this.post(`/admin/bluesky/queue/${postId}/skip`, {});
+  }
+
+  async unskipBlueskyPost(postId: string): Promise<ApiResponse<BlueskyQueueItem>> {
+    return this.post(`/admin/bluesky/queue/${postId}/unskip`, {});
+  }
+
+  async forcePublishBlueskyPost(postId: string): Promise<ApiResponse<BlueskyQueueItem>> {
+    return this.post(`/admin/bluesky/queue/${postId}/publish`, {});
+  }
+
+  async getBlueskyAnalytics(
+    days = 30,
+  ): Promise<ApiResponse<BlueskyAnalytics>> {
+    return this.get('/admin/bluesky/analytics', { days: String(days) });
+  }
+
+  async getBlueskySettings(): Promise<ApiResponse<BlueskyPipelineSettings>> {
+    return this.get('/admin/bluesky/settings');
+  }
+
+  async getBlueskyStatus(): Promise<ApiResponse<BlueskyConnectionStatus>> {
+    return this.get('/admin/bluesky/status');
+  }
+
   // --- Simulation Management ---
 
   async listSimulations(
@@ -387,6 +425,7 @@ export interface InstagramQueueItem {
   simulation_name: string | null;
   simulation_slug: string | null;
   simulation_theme: string | null;
+  bsky_status: string | null;
 }
 
 export interface InstagramAnalytics {
@@ -436,5 +475,59 @@ export interface InstagramSettingEntry {
 }
 
 export type InstagramPipelineSettings = Record<string, InstagramSettingEntry>;
+
+export interface BlueskyQueueItem {
+  id: string;
+  instagram_post_id: string | null;
+  simulation_id: string | null;
+  content_source_type: string;
+  content_source_id: string | null;
+  caption: string;
+  facets: Record<string, unknown>[] | null;
+  alt_text: string | null;
+  image_urls: string[];
+  status: string;
+  scheduled_at: string | null;
+  published_at: string | null;
+  failure_reason: string | null;
+  retry_count: number;
+  bsky_uri: string | null;
+  bsky_cid: string | null;
+  likes_count: number;
+  reposts_count: number;
+  replies_count: number;
+  quotes_count: number;
+  metrics_updated_at: string | null;
+  unlock_code: string | null;
+  created_at: string;
+  updated_at: string;
+  simulation_name: string | null;
+  simulation_slug: string | null;
+  simulation_theme: string | null;
+  instagram_permalink: string | null;
+  instagram_status: string | null;
+}
+
+export interface BlueskyAnalytics {
+  period_days: number;
+  total_posts: number;
+  total_pending: number;
+  total_failed: number;
+  total_skipped: number;
+  avg_likes: number | null;
+  total_reposts: number | null;
+  total_replies: number | null;
+  total_quotes: number | null;
+  engagement_by_type: { content_type: string; post_count: number; avg_likes: number }[];
+}
+
+export interface BlueskyConnectionStatus {
+  configured: boolean;
+  authenticated: boolean;
+  handle: string | null;
+  pds_url: string;
+}
+
+export type BlueskyPipelineSettings = Record<string, InstagramSettingEntry>;
 
 export const adminApi = new AdminApiService();

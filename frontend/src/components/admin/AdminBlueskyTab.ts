@@ -1,0 +1,1038 @@
+import { localized, msg, str } from '@lit/localize';
+import { css, html, LitElement, nothing } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
+import {
+  adminApi,
+  type BlueskyAnalytics,
+  type BlueskyConnectionStatus,
+  type BlueskyQueueItem,
+} from '../../services/api/AdminApiService.js';
+import { icons } from '../../utils/icons.js';
+import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
+import { VelgToast } from '../shared/Toast.js';
+
+import '../shared/ConfirmDialog.js';
+
+type PanelTab = 'operations' | 'intelligence';
+type StatusFilter = 'all' | 'pending' | 'publishing' | 'published' | 'failed' | 'skipped';
+
+const STATUS_COLORS: Record<string, string> = {
+  pending: 'info',
+  publishing: 'warning',
+  published: 'success',
+  failed: 'danger',
+  skipped: 'muted',
+};
+
+@localized()
+@customElement('velg-admin-bluesky-tab')
+export class VelgAdminBlueskyTab extends LitElement {
+  static styles = css`
+    :host {
+      display: block;
+      color: var(--color-text-primary);
+      font-family: var(--font-mono, monospace);
+      font-size: var(--text-sm);
+    }
+
+    /* ── SCIF Header ────────────────────────────────── */
+
+    .scif-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      margin-bottom: var(--space-4);
+      padding-bottom: var(--space-4);
+      border-bottom: 1px solid var(--color-border);
+      position: relative;
+    }
+
+    .scif-header::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      width: 120px;
+      height: 1px;
+      background: var(--color-primary);
+    }
+
+    .scif-header__title {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-black);
+      font-size: var(--text-lg);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin: 0;
+    }
+
+    .scif-header__subtitle {
+      color: var(--color-text-muted);
+      font-size: var(--text-xs);
+    }
+
+    /* ── Connection Status ──────────────────────────── */
+
+    .connection-card {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      padding: var(--space-4);
+      margin-bottom: var(--space-5);
+      border: 1px solid var(--color-border);
+      border-radius: 4px;
+      background: color-mix(in srgb, var(--color-surface) 60%, transparent);
+    }
+
+    .connection-card__indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .connection-card__indicator--ok {
+      background: var(--color-success);
+      box-shadow: 0 0 6px var(--color-success);
+    }
+
+    .connection-card__indicator--error {
+      background: var(--color-danger);
+      box-shadow: 0 0 6px var(--color-danger);
+    }
+
+    .connection-card__indicator--unconfigured {
+      background: var(--color-text-muted);
+    }
+
+    .connection-card__info {
+      flex: 1;
+    }
+
+    .connection-card__handle {
+      font-weight: var(--font-bold);
+      color: var(--color-text-primary);
+    }
+
+    .connection-card__pds {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
+
+    .connection-card__status {
+      font-size: var(--text-xs);
+      font-weight: var(--font-bold);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .connection-card__status--ok { color: var(--color-success); }
+    .connection-card__status--error { color: var(--color-danger); }
+    .connection-card__status--unconfigured { color: var(--color-text-muted); }
+
+    .btn-test {
+      font-family: var(--font-brutalist);
+      font-size: var(--text-xs);
+      font-weight: var(--font-bold);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: var(--space-1-5) var(--space-3);
+      border: 1px solid var(--color-border);
+      border-radius: 3px;
+      background: none;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-test:hover:not(:disabled) {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+    }
+
+    .btn-test:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* ── Tab Bar ─────────────────────────────────────── */
+
+    .tab-bar {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--color-border);
+      margin-bottom: var(--space-5);
+    }
+
+    .tab {
+      display: flex;
+      align-items: center;
+      gap: var(--space-1-5);
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-bold);
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: var(--space-2) var(--space-4);
+      background: none;
+      border: none;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      position: relative;
+      transition: color 0.15s ease;
+    }
+
+    .tab:hover { color: var(--color-text-primary); }
+
+    .tab--active {
+      color: var(--color-primary);
+    }
+
+    .tab--active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--color-primary);
+    }
+
+    .tab__badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 16px;
+      height: 16px;
+      padding: 0 3px;
+      font-size: 9px;
+      font-weight: var(--font-black);
+      background: var(--color-warning);
+      color: var(--color-surface-sunken);
+      border-radius: 8px;
+    }
+
+    /* ── Status Filter ──────────────────────────────── */
+
+    .status-bar {
+      display: flex;
+      gap: var(--space-1);
+      align-items: center;
+      margin-bottom: var(--space-4);
+      flex-wrap: wrap;
+    }
+
+    .status-tab {
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      padding: var(--space-1) var(--space-2);
+      border: 1px solid var(--color-border);
+      border-radius: 3px;
+      background: none;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .status-tab:hover { border-color: var(--color-text-secondary); color: var(--color-text-primary); }
+
+    .status-tab--active {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+      background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+    }
+
+    .status-tab__count {
+      font-weight: var(--font-bold);
+      opacity: 0.7;
+    }
+
+    .queue-total {
+      margin-left: auto;
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
+
+    /* ── Dispatch Cards ─────────────────────────────── */
+
+    .dispatch-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .dispatch {
+      display: flex;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      border: 1px solid var(--color-border);
+      border-radius: 4px;
+      transition: border-color 0.15s ease;
+    }
+
+    .dispatch:hover {
+      border-color: var(--color-text-muted);
+    }
+
+    .dispatch--published { border-left: 3px solid var(--color-success); }
+    .dispatch--failed { border-left: 3px solid var(--color-danger); }
+    .dispatch--skipped { border-left: 3px solid var(--color-text-muted); }
+    .dispatch--pending { border-left: 3px solid var(--color-info); }
+    .dispatch--publishing { border-left: 3px solid var(--color-warning); }
+
+    .dispatch__thumb {
+      width: 56px;
+      height: 56px;
+      flex-shrink: 0;
+      border-radius: 3px;
+      overflow: hidden;
+      border: 1px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
+
+    .dispatch__thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .dispatch__body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .dispatch__header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-1);
+      flex-wrap: wrap;
+    }
+
+    .dispatch__type-tag {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-bold);
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-text-secondary);
+    }
+
+    .dispatch__shard {
+      font-size: var(--text-xs);
+      color: var(--color-primary);
+      opacity: 0.7;
+    }
+
+    .dispatch__timestamp {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      margin-left: auto;
+    }
+
+    .dispatch__caption {
+      font-size: var(--text-xs);
+      color: var(--color-text-secondary);
+      line-height: 1.5;
+      max-height: 3em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .dispatch__metrics {
+      display: flex;
+      gap: var(--space-3);
+      margin-top: var(--space-1);
+      font-size: var(--text-xs);
+    }
+
+    .metric {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      color: var(--color-text-muted);
+    }
+
+    .metric--accent { color: var(--color-primary); }
+
+    .dispatch__failure {
+      font-size: var(--text-xs);
+      color: var(--color-danger);
+      margin-top: var(--space-1);
+    }
+
+    .dispatch__ig-link {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      margin-top: var(--space-1);
+    }
+
+    .dispatch__ig-link a {
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .dispatch__ig-link a:hover {
+      text-decoration: underline;
+    }
+
+    .dispatch__actions {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      flex-shrink: 0;
+    }
+
+    /* ── Badges ──────────────────────────────────────── */
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: var(--font-bold);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 1px 6px;
+      border-radius: 3px;
+    }
+
+    .badge--info {
+      background: var(--color-info-bg);
+      color: var(--color-info);
+    }
+    .badge--success {
+      background: var(--color-success-bg);
+      color: var(--color-success);
+    }
+    .badge--warning {
+      background: color-mix(in srgb, var(--color-warning) 12%, transparent);
+      color: var(--color-warning);
+    }
+    .badge--danger {
+      background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+      color: var(--color-danger);
+    }
+    .badge--muted {
+      background: color-mix(in srgb, var(--color-text-muted) 12%, transparent);
+      color: var(--color-text-muted);
+    }
+
+    /* ── Action Buttons ──────────────────────────────── */
+
+    .act {
+      font-family: var(--font-brutalist);
+      font-size: var(--text-xs);
+      font-weight: var(--font-bold);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: var(--space-1) var(--space-2);
+      border: 1px solid var(--color-border);
+      border-radius: 3px;
+      background: none;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .act:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .act--skip {
+      color: var(--color-text-muted);
+    }
+    .act--skip:hover:not(:disabled) {
+      border-color: var(--color-text-muted);
+      background: color-mix(in srgb, var(--color-text-muted) 8%, transparent);
+    }
+
+    .act--unskip {
+      color: var(--color-info);
+    }
+    .act--unskip:hover:not(:disabled) {
+      border-color: var(--color-info);
+      background: color-mix(in srgb, var(--color-info) 8%, transparent);
+    }
+
+    .act--publish {
+      color: var(--color-success);
+    }
+    .act--publish:hover:not(:disabled) {
+      border-color: var(--color-success);
+      background: color-mix(in srgb, var(--color-success) 8%, transparent);
+    }
+
+    .act--link {
+      color: var(--color-primary);
+    }
+    .act--link:hover {
+      border-color: var(--color-primary);
+      background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+    }
+
+    /* ── Intelligence Cards ──────────────────────────── */
+
+    .intel-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: var(--space-3);
+      margin-bottom: var(--space-5);
+    }
+
+    .intel-card {
+      padding: var(--space-3);
+      border: 1px solid var(--color-border);
+      border-radius: 4px;
+    }
+
+    .intel-card__label {
+      font-family: var(--font-brutalist);
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-text-muted);
+      margin-bottom: var(--space-1);
+    }
+
+    .intel-card__value {
+      font-size: var(--text-xl);
+      font-weight: var(--font-black);
+      color: var(--color-text-primary);
+    }
+
+    .intel-card__value--accent { color: var(--color-primary); }
+
+    /* ── States ──────────────────────────────────────── */
+
+    .loading-state, .empty-state {
+      padding: var(--space-8);
+      text-align: center;
+      color: var(--color-text-muted);
+    }
+
+    .error-state {
+      padding: var(--space-4);
+      border: 1px solid var(--color-danger);
+      border-radius: 4px;
+      color: var(--color-danger);
+      margin-bottom: var(--space-4);
+    }
+
+    @media (max-width: 768px) {
+      .dispatch {
+        flex-direction: column;
+      }
+      .dispatch__thumb {
+        width: 100%;
+        height: 120px;
+      }
+      .dispatch__actions {
+        flex-direction: row;
+      }
+      .intel-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  `;
+
+  // ── State ────────────────────────────────────────────
+
+  @state() private _activeTab: PanelTab = 'operations';
+  @state() private _queue: BlueskyQueueItem[] = [];
+  @state() private _analytics: BlueskyAnalytics | null = null;
+  @state() private _connectionStatus: BlueskyConnectionStatus | null = null;
+  @state() private _statusFilter: StatusFilter = 'all';
+  @state() private _loading = true;
+  @state() private _testingConnection = false;
+  @state() private _error: string | null = null;
+  @state() private _actionInProgress: string | null = null;
+
+  // ── Lifecycle ────────────────────────────────────────
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    void this._loadAll();
+  }
+
+  // ── Data Loading ─────────────────────────────────────
+
+  private async _loadAll(): Promise<void> {
+    this._loading = true;
+    this._error = null;
+
+    try {
+      const [queueResp, analyticsResp, statusResp] = await Promise.all([
+        adminApi.listBlueskyQueue({ limit: '100' }),
+        adminApi.getBlueskyAnalytics(30),
+        adminApi.getBlueskyStatus(),
+      ]);
+
+      if (queueResp.success && queueResp.data) {
+        this._queue = queueResp.data;
+      }
+      if (analyticsResp.success && analyticsResp.data) {
+        this._analytics = analyticsResp.data;
+      }
+      if (statusResp.success && statusResp.data) {
+        this._connectionStatus = statusResp.data;
+      }
+    } catch (err) {
+      this._error = err instanceof Error ? err.message : msg('Failed to load Bluesky data');
+    } finally {
+      this._loading = false;
+    }
+  }
+
+  // ── Computed ─────────────────────────────────────────
+
+  private get _filteredQueue(): BlueskyQueueItem[] {
+    if (this._statusFilter === 'all') return this._queue;
+    return this._queue.filter((p) => p.status === this._statusFilter);
+  }
+
+  private get _actionableCount(): number {
+    return this._queue.filter((p) => p.status === 'pending' || p.status === 'failed').length;
+  }
+
+  private _statusCount(status: string): number {
+    return this._queue.filter((p) => p.status === status).length;
+  }
+
+  // ── Actions ──────────────────────────────────────────
+
+  private async _handleSkip(post: BlueskyQueueItem): Promise<void> {
+    this._actionInProgress = post.id;
+    try {
+      const resp = await adminApi.skipBlueskyPost(post.id);
+      if (resp.success) {
+        VelgToast.success(msg('Post skipped.'));
+        await this._loadAll();
+      } else {
+        VelgToast.error(resp.error?.message ?? msg('Skip failed'));
+      }
+    } catch {
+      VelgToast.error(msg('An error occurred'));
+    } finally {
+      this._actionInProgress = null;
+    }
+  }
+
+  private async _handleUnskip(post: BlueskyQueueItem): Promise<void> {
+    this._actionInProgress = post.id;
+    try {
+      const resp = await adminApi.unskipBlueskyPost(post.id);
+      if (resp.success) {
+        VelgToast.success(msg('Post re-enabled.'));
+        await this._loadAll();
+      } else {
+        VelgToast.error(resp.error?.message ?? msg('Unskip failed'));
+      }
+    } catch {
+      VelgToast.error(msg('An error occurred'));
+    } finally {
+      this._actionInProgress = null;
+    }
+  }
+
+  private async _handleForcePublish(post: BlueskyQueueItem): Promise<void> {
+    const confirmed = await VelgConfirmDialog.show({
+      title: msg('Force Publish to Bluesky'),
+      message: msg(str`Publish this ${post.content_source_type} post to Bluesky immediately?`),
+      confirmLabel: msg('Publish Now'),
+    });
+    if (!confirmed) return;
+
+    this._actionInProgress = post.id;
+    try {
+      const resp = await adminApi.forcePublishBlueskyPost(post.id);
+      if (resp.success) {
+        VelgToast.success(msg('Post published to Bluesky.'));
+        await this._loadAll();
+      } else {
+        VelgToast.error(resp.error?.message ?? msg('Publishing failed'));
+      }
+    } catch {
+      VelgToast.error(msg('An error occurred'));
+    } finally {
+      this._actionInProgress = null;
+    }
+  }
+
+  private async _handleTestConnection(): Promise<void> {
+    this._testingConnection = true;
+    try {
+      const resp = await adminApi.getBlueskyStatus();
+      if (resp.success && resp.data) {
+        this._connectionStatus = resp.data;
+        if (resp.data.authenticated) {
+          VelgToast.success(msg('Bluesky connection verified.'));
+        } else if (resp.data.configured) {
+          VelgToast.error(msg('Authentication failed — check app password.'));
+        } else {
+          VelgToast.error(msg('Bluesky credentials not configured.'));
+        }
+      }
+    } catch {
+      VelgToast.error(msg('Connection test failed'));
+    } finally {
+      this._testingConnection = false;
+    }
+  }
+
+  // ── Formatting ───────────────────────────────────────
+
+  private _formatDate(iso: string | null): string {
+    if (!iso) return '—';
+    try {
+      const d = new Date(iso);
+      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    } catch {
+      return iso;
+    }
+  }
+
+  private _formatNumber(n: number): string {
+    if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
+    return String(n);
+  }
+
+  // ── Render ───────────────────────────────────────────
+
+  protected render() {
+    return html`
+      <div class="scif-header">
+        <div>
+          <h2 class="scif-header__title">${msg('Bluesky Relay')}</h2>
+          <span class="scif-header__subtitle">${msg('Cross-channel dispatch — AT Protocol')}</span>
+        </div>
+      </div>
+
+      ${this._renderConnectionStatus()}
+
+      ${this._error ? html`<div class="error-state">${this._error}</div>` : nothing}
+
+      ${this._renderTabBar()}
+
+      ${this._activeTab === 'operations' ? this._renderOperations() : nothing}
+      ${this._activeTab === 'intelligence' ? this._renderIntelligence() : nothing}
+    `;
+  }
+
+  // ── Connection Status Card ───────────────────────────
+
+  private _renderConnectionStatus() {
+    const cs = this._connectionStatus;
+    const indicatorClass = cs?.authenticated
+      ? 'connection-card__indicator--ok'
+      : cs?.configured
+        ? 'connection-card__indicator--error'
+        : 'connection-card__indicator--unconfigured';
+
+    const statusLabel = cs?.authenticated
+      ? msg('Authenticated')
+      : cs?.configured
+        ? msg('Auth Failed')
+        : msg('Not Configured');
+
+    const statusClass = cs?.authenticated
+      ? 'connection-card__status--ok'
+      : cs?.configured
+        ? 'connection-card__status--error'
+        : 'connection-card__status--unconfigured';
+
+    return html`
+      <div class="connection-card">
+        <div class="connection-card__indicator ${indicatorClass}"></div>
+        <div class="connection-card__info">
+          <div class="connection-card__handle">
+            ${cs?.handle ? `@${cs.handle}` : msg('No handle configured')}
+          </div>
+          <div class="connection-card__pds">${cs?.pds_url ?? 'https://bsky.social'}</div>
+        </div>
+        <span class="connection-card__status ${statusClass}">${statusLabel}</span>
+        <button
+          class="btn-test"
+          ?disabled=${this._testingConnection}
+          @click=${this._handleTestConnection}
+        >
+          ${this._testingConnection ? msg('Testing...') : msg('Test')}
+        </button>
+      </div>
+    `;
+  }
+
+  // ── Tab Bar ──────────────────────────────────────────
+
+  private _renderTabBar() {
+    const tabs: { key: PanelTab; label: string; icon: ReturnType<typeof icons.antenna>; badge?: unknown }[] = [
+      {
+        key: 'operations',
+        label: msg('Operations'),
+        icon: icons.antenna(13),
+        badge: this._actionableCount > 0
+          ? html`<span class="tab__badge">${this._actionableCount}</span>`
+          : nothing,
+      },
+      {
+        key: 'intelligence',
+        label: msg('Intelligence'),
+        icon: icons.radar(13),
+      },
+    ];
+
+    return html`
+      <div class="tab-bar">
+        ${tabs.map((t) => html`
+          <button
+            class="tab ${this._activeTab === t.key ? 'tab--active' : ''}"
+            @click=${() => { this._activeTab = t.key; }}
+          >
+            ${t.icon}
+            ${t.label}
+            ${t.badge ?? nothing}
+          </button>
+        `)}
+      </div>
+    `;
+  }
+
+  // ── Operations ───────────────────────────────────────
+
+  private _renderOperations() {
+    return html`
+      <div>
+        ${this._renderStatusBar()}
+        ${this._loading
+          ? html`<div class="loading-state">${msg('Scanning Bluesky relay channels...')}</div>`
+          : this._renderDispatchList()
+        }
+      </div>
+    `;
+  }
+
+  private _renderStatusBar() {
+    const tabs: { key: StatusFilter; label: string }[] = [
+      { key: 'all', label: msg('All') },
+      { key: 'pending', label: msg('Pending') },
+      { key: 'published', label: msg('Published') },
+      { key: 'failed', label: msg('Failed') },
+      { key: 'skipped', label: msg('Skipped') },
+    ];
+
+    return html`
+      <div class="status-bar">
+        ${tabs.map((t) => html`
+          <button
+            class="status-tab ${this._statusFilter === t.key ? 'status-tab--active' : ''}"
+            @click=${() => { this._statusFilter = t.key; }}
+          >
+            ${t.label}
+            <span class="status-tab__count">
+              ${t.key === 'all' ? this._queue.length : this._statusCount(t.key)}
+            </span>
+          </button>
+        `)}
+        <span class="queue-total">
+          ${msg(str`${this._filteredQueue.length} dispatches`)}
+        </span>
+      </div>
+    `;
+  }
+
+  private _renderDispatchList() {
+    const posts = this._filteredQueue;
+    if (posts.length === 0) {
+      return html`
+        <div class="empty-state">
+          ${msg('No Bluesky dispatches found. Approve Instagram posts to trigger cross-posting.')}
+        </div>
+      `;
+    }
+
+    return html`
+      <div class="dispatch-list">
+        ${posts.map((p) => this._renderDispatch(p))}
+      </div>
+    `;
+  }
+
+  private _renderDispatch(post: BlueskyQueueItem) {
+    const badgeColor = STATUS_COLORS[post.status] ?? 'info';
+    const disabled = this._actionInProgress === post.id;
+    const hasImage = post.image_urls.length > 0;
+
+    return html`
+      <div class="dispatch dispatch--${post.status}">
+        <div class="dispatch__thumb">
+          ${hasImage
+            ? html`<img src="${post.image_urls[0]}" alt="${post.alt_text ?? ''}" loading="lazy" />`
+            : msg('N/A')
+          }
+        </div>
+
+        <div class="dispatch__body">
+          <div class="dispatch__header">
+            <span class="dispatch__type-tag">${post.content_source_type}</span>
+            ${post.simulation_name
+              ? html`<span class="dispatch__shard">${post.simulation_name}</span>`
+              : nothing
+            }
+            <span class="badge badge--${badgeColor}">${post.status}</span>
+            <span class="dispatch__timestamp">
+              ${post.status === 'published'
+                ? this._formatDate(post.published_at)
+                : post.status === 'pending'
+                  ? this._formatDate(post.scheduled_at)
+                  : this._formatDate(post.created_at)
+              }
+            </span>
+          </div>
+
+          <div class="dispatch__caption">${post.caption}</div>
+
+          ${post.status === 'published' ? html`
+            <div class="dispatch__metrics">
+              <span class="metric">${icons.sparkle(12)} ${this._formatNumber(post.likes_count)}</span>
+              <span class="metric">${icons.messageCircle(12)} ${this._formatNumber(post.replies_count)}</span>
+              <span class="metric metric--accent">${this._formatNumber(post.reposts_count)} ${msg('reposts')}</span>
+              <span class="metric">${this._formatNumber(post.quotes_count)} ${msg('quotes')}</span>
+            </div>
+          ` : nothing}
+
+          ${post.failure_reason ? html`
+            <div class="dispatch__failure">${post.failure_reason}</div>
+          ` : nothing}
+
+          ${post.instagram_permalink ? html`
+            <div class="dispatch__ig-link">
+              ${icons.instagram(12)}
+              <a href="${post.instagram_permalink}" target="_blank" rel="noopener">${msg('View on Instagram')}</a>
+              ${post.instagram_status ? html` <span class="badge badge--${STATUS_COLORS[post.instagram_status] ?? 'info'}">${post.instagram_status}</span>` : nothing}
+            </div>
+          ` : nothing}
+        </div>
+
+        <div class="dispatch__actions">
+          ${post.status === 'pending' ? html`
+            <button class="act act--publish" ?disabled=${disabled} @click=${() => this._handleForcePublish(post)}>
+              ${msg('Publish')}
+            </button>
+            <button class="act act--skip" ?disabled=${disabled} @click=${() => this._handleSkip(post)}>
+              ${msg('Skip')}
+            </button>
+          ` : nothing}
+
+          ${post.status === 'failed' ? html`
+            <button class="act act--publish" ?disabled=${disabled} @click=${() => this._handleForcePublish(post)}>
+              ${msg('Retry')}
+            </button>
+            <button class="act act--skip" ?disabled=${disabled} @click=${() => this._handleSkip(post)}>
+              ${msg('Skip')}
+            </button>
+          ` : nothing}
+
+          ${post.status === 'skipped' ? html`
+            <button class="act act--unskip" ?disabled=${disabled} @click=${() => this._handleUnskip(post)}>
+              ${msg('Re-enable')}
+            </button>
+          ` : nothing}
+
+          ${post.status === 'published' && post.bsky_uri ? html`
+            <a class="act act--link"
+               href="https://bsky.app/profile/${this._connectionStatus?.handle ?? ''}/post/${post.bsky_uri.split('/').pop()}"
+               target="_blank" rel="noopener">
+              ${msg('View')}
+            </a>
+          ` : nothing}
+        </div>
+      </div>
+    `;
+  }
+
+  // ── Intelligence ─────────────────────────────────────
+
+  private _renderIntelligence() {
+    if (this._loading) {
+      return html`<div class="loading-state">${msg('Loading intelligence...')}</div>`;
+    }
+
+    const a = this._analytics;
+    if (!a) {
+      return html`<div class="empty-state">${msg('No analytics data available.')}</div>`;
+    }
+
+    return html`
+      <div class="intel-grid">
+        <div class="intel-card">
+          <div class="intel-card__label">${msg('Published')}</div>
+          <div class="intel-card__value">${a.total_posts}</div>
+        </div>
+        <div class="intel-card">
+          <div class="intel-card__label">${msg('Pending')}</div>
+          <div class="intel-card__value">${a.total_pending}</div>
+        </div>
+        <div class="intel-card">
+          <div class="intel-card__label">${msg('Failed')}</div>
+          <div class="intel-card__value">${a.total_failed}</div>
+        </div>
+        <div class="intel-card">
+          <div class="intel-card__label">${msg('Skipped')}</div>
+          <div class="intel-card__value">${a.total_skipped}</div>
+        </div>
+        <div class="intel-card">
+          <div class="intel-card__label">${msg('Avg Likes')}</div>
+          <div class="intel-card__value intel-card__value--accent">${a.avg_likes ?? '—'}</div>
+        </div>
+        <div class="intel-card">
+          <div class="intel-card__label">${msg('Total Reposts')}</div>
+          <div class="intel-card__value">${a.total_reposts ?? 0}</div>
+        </div>
+        <div class="intel-card">
+          <div class="intel-card__label">${msg('Total Replies')}</div>
+          <div class="intel-card__value">${a.total_replies ?? 0}</div>
+        </div>
+        <div class="intel-card">
+          <div class="intel-card__label">${msg('Total Quotes')}</div>
+          <div class="intel-card__value">${a.total_quotes ?? 0}</div>
+        </div>
+      </div>
+
+      ${a.engagement_by_type.length > 0 ? html`
+        <h3 style="font-family: var(--font-brutalist); text-transform: uppercase; letter-spacing: 0.06em; font-size: var(--text-sm); margin-bottom: var(--space-3);">
+          ${msg('By Content Type')}
+        </h3>
+        <div class="intel-grid">
+          ${a.engagement_by_type.map((e) => html`
+            <div class="intel-card">
+              <div class="intel-card__label">${e.content_type}</div>
+              <div class="intel-card__value">${e.post_count} ${msg('posts')}</div>
+              <div style="font-size: var(--text-xs); color: var(--color-text-muted); margin-top: var(--space-1);">
+                ${msg(str`avg ${e.avg_likes} likes`)}
+              </div>
+            </div>
+          `)}
+        </div>
+      ` : nothing}
+    `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'velg-admin-bluesky-tab': VelgAdminBlueskyTab;
+  }
+}

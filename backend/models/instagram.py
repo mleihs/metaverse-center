@@ -79,6 +79,7 @@ class InstagramQueueItem(BaseModel):
     simulation_name: str | None = None
     simulation_slug: str | None = None
     simulation_theme: str | None = None
+    bsky_status: str | None = None
 
 
 class InstagramAnalytics(BaseModel):
