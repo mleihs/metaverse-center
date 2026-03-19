@@ -51,7 +51,7 @@ class InstagramService:
     def __init__(self, access_token: str, ig_user_id: str, api_version: str = "v22.0"):
         self.access_token = access_token
         self.ig_user_id = ig_user_id
-        self.base_url = f"https://graph.facebook.com/{api_version}"
+        self.base_url = f"https://graph.instagram.com/{api_version}"
 
     # ── Container Creation ──────────────────────────────────────────────
 
