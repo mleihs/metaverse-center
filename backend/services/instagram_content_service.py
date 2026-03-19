@@ -32,11 +32,14 @@ _AI_DISCLOSURE_FOOTER = "\n\n—\nAI-generated content from metaverse.center"
 _BRAND_TAGS = ["#BureauOfImpossibleGeography", "#SubstrateDispatch"]
 _DISCOVERY_TAGS = ["#worldbuilding", "#AIart", "#speculativefiction"]
 
-# Content type weights (overridable via platform_settings.instagram_content_mix)
+# Content type weights (overridable via platform_settings.instagram_content_mix).
+# Weights are proportional: agent=3, building=2 means ~60% agents, ~40% buildings.
+# Set a weight to 0 to disable that content type entirely.
 DEFAULT_CONTENT_MIX: dict[str, int] = {
     "agent": 3,
     "building": 2,
     "chronicle": 2,
+    "lore": 1,
 }
 
 # Caption templates (hardcoded fallbacks — prompt_templates DB entries take priority)
@@ -134,6 +137,13 @@ class InstagramContentService:
         simulation_name = candidate.get("simulation_name", "Unknown Shard")
         simulation_slug = candidate.get("simulation_slug", "")
         image_url = candidate.get("image_url") or candidate.get("portrait_image_url")
+        # Lore entries store image_slug, not full URL — resolve it
+        if not image_url and content_type == "lore" and candidate.get("image_slug"):
+            from backend.config import settings
+            image_url = (
+                f"{settings.supabase_url}/storage/v1/object/public/"
+                f"simulation.assets/{simulation_slug}/{candidate['image_slug']}.avif"
+            )
 
         # 1. Next dispatch number
         dispatch_number = await cls._get_next_dispatch_number(admin_supabase)
@@ -271,8 +281,8 @@ class InstagramContentService:
                 if c.get("simulation_id") == str(simulation_id)
             ]
 
-        # Weight by content mix
-        mix = DEFAULT_CONTENT_MIX
+        # Load configurable content mix from platform_settings
+        mix = dict(DEFAULT_CONTENT_MIX)
         try:
             mix_resp = (
                 admin_supabase.table("platform_settings")
@@ -286,14 +296,13 @@ class InstagramContentService:
         except Exception:
             logger.debug("Failed to load instagram_content_mix, using defaults")
 
-        # Sort candidates by type weight (descending)
-        candidates.sort(
-            key=lambda c: mix.get(c.get("content_type", ""), 0),
-            reverse=True,
-        )
+        # Distribute count across types proportionally to weights.
+        # Example: mix={"agent":3,"building":2,"chronicle":2}, count=5
+        #   → agent=2, building=1, chronicle=1, remaining=1 → agent=3
+        selected = cls._select_weighted(candidates, mix, count)
 
         results = []
-        for candidate in candidates[:count]:
+        for candidate in selected:
             try:
                 post = await cls.generate_post_from_candidate(
                     admin_supabase, candidate, user_id=user_id,
@@ -306,6 +315,88 @@ class InstagramContentService:
                 )
 
         return results
+
+    @staticmethod
+    def _select_weighted(
+        candidates: list[dict],
+        mix: dict[str, int],
+        count: int,
+    ) -> list[dict]:
+        """Select candidates proportionally to content mix weights.
+
+        Given mix={"agent": 3, "building": 2, "chronicle": 2, "lore": 1}
+        and count=8, allocates: agent=3, building=2, chronicle=2, lore=1.
+        Remaining slots (if any) go round-robin to types with available candidates.
+        Diversifies across simulations within each type via round-robin.
+        """
+        import random
+
+        # Group candidates by type
+        by_type: dict[str, list[dict]] = {}
+        for c in candidates:
+            ct = c.get("content_type", "")
+            by_type.setdefault(ct, []).append(c)
+
+        # Shuffle within each type for variety across simulations
+        for items in by_type.values():
+            random.shuffle(items)
+
+        # Diversify: within each type, round-robin across simulations
+        for ct in by_type:
+            items = by_type[ct]
+            sim_buckets: dict[str, list[dict]] = {}
+            for c in items:
+                sid = c.get("simulation_id", "")
+                sim_buckets.setdefault(sid, []).append(c)
+            # Interleave from different simulations
+            interleaved: list[dict] = []
+            bucket_iters = [iter(v) for v in sim_buckets.values()]
+            random.shuffle(bucket_iters)
+            while bucket_iters:
+                next_round = []
+                for it in bucket_iters:
+                    val = next(it, None)
+                    if val is not None:
+                        interleaved.append(val)
+                        next_round.append(it)
+                bucket_iters = next_round
+            by_type[ct] = interleaved
+
+        # Calculate proportional slots per type
+        total_weight = sum(mix.get(ct, 0) for ct in mix if mix.get(ct, 0) > 0)
+        if total_weight == 0:
+            return candidates[:count]
+
+        slots: dict[str, int] = {}
+        allocated = 0
+        for ct, weight in sorted(mix.items(), key=lambda x: -x[1]):
+            if weight <= 0:
+                continue
+            n = max(1, round(count * weight / total_weight))
+            n = min(n, count - allocated, len(by_type.get(ct, [])))
+            slots[ct] = n
+            allocated += n
+
+        # Fill remaining slots round-robin from types with leftover candidates
+        remaining = count - allocated
+        if remaining > 0:
+            for ct in sorted(mix.keys(), key=lambda x: -mix.get(x, 0)):
+                available = len(by_type.get(ct, [])) - slots.get(ct, 0)
+                if available > 0:
+                    take = min(remaining, available)
+                    slots[ct] = slots.get(ct, 0) + take
+                    remaining -= take
+                if remaining <= 0:
+                    break
+
+        # Pick candidates
+        selected: list[dict] = []
+        for ct, n in slots.items():
+            selected.extend(by_type.get(ct, [])[:n])
+
+        # Shuffle final selection so types are interleaved in the batch
+        random.shuffle(selected)
+        return selected
 
     # ── Queue Management ────────────────────────────────────────────────
 
@@ -582,6 +673,17 @@ class InstagramContentService:
                 parts.append(f"Content excerpt: {candidate['content'][:400]}")
             return "\n".join(parts)
 
+        if content_type == "lore":
+            parts = [
+                f"Title: {candidate.get('name', 'Unknown')}",
+                f"Chapter: {candidate.get('chapter', '')}",
+            ]
+            if candidate.get("epigraph"):
+                parts.append(f"Epigraph: {candidate['epigraph'][:200]}")
+            if candidate.get("body"):
+                parts.append(f"Content: {candidate['body'][:400]}")
+            return "\n".join(parts)
+
         return json.dumps(candidate, default=str)[:500]
 
     @classmethod
@@ -618,6 +720,18 @@ class InstagramContentService:
                 f"{content[:500] if content else 'Full dispatch available at metaverse.center.'}"
             )
 
+        if content_type == "lore":
+            title = candidate.get("name", "Unknown Archive")
+            chapter = candidate.get("chapter", "")
+            epigraph = candidate.get("epigraph", "")
+            body = candidate.get("body", "")
+            return (
+                f"DECLASSIFIED ARCHIVE: {title}\n"
+                f"Section: {chapter}\n\n"
+                f"{epigraph[:200] + chr(10) + chr(10) if epigraph else ''}"
+                f"{body[:400] if body else 'Full archive available at metaverse.center.'}"
+            )
+
         return "The Bureau has detected activity requiring documentation."
 
     @classmethod
@@ -640,6 +754,10 @@ class InstagramContentService:
             tags.append("#AIart")
         elif content_type == "chronicle":
             tags.append("#speculativefiction")
+        elif content_type == "lore":
+            tags.append("#lore")
+        elif content_type == "building":
+            tags.append("#AIarchitecture")
 
         return tags[:5]
 
@@ -655,6 +773,8 @@ class InstagramContentService:
             return f"AI-generated image of {name}, a fictional structure"[:100]
         if content_type == "chronicle":
             return f"Bureau dispatch document: {name}"[:100]
+        if content_type == "lore":
+            return f"Declassified Bureau archive: {name}"[:100]
 
         return f"Bureau of Impossible Geography dispatch about {name}"[:100]
 
