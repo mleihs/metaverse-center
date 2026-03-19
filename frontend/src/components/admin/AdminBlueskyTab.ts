@@ -10,6 +10,7 @@ import {
 } from '../../services/api/AdminApiService.js';
 import { icons } from '../../utils/icons.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
+import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 
 import '../shared/ConfirmDialog.js';
@@ -28,7 +29,7 @@ const STATUS_COLORS: Record<string, string> = {
 @localized()
 @customElement('velg-admin-bluesky-tab')
 export class VelgAdminBlueskyTab extends LitElement {
-  static styles = css`
+  static styles = [infoBubbleStyles, css`
     :host {
       display: block;
       color: var(--color-text-primary);
@@ -675,7 +676,7 @@ export class VelgAdminBlueskyTab extends LitElement {
         grid-template-columns: repeat(2, 1fr);
       }
     }
-  `;
+  `];
 
   // ── State ────────────────────────────────────────────
 
@@ -1170,7 +1171,7 @@ export class VelgAdminBlueskyTab extends LitElement {
 
           <div class="config-row">
             <div class="config-row__label">
-              <div class="config-row__name">${msg('Handle')}</div>
+              <div class="config-row__name">${msg('Handle')} ${renderInfoBubble(msg('Your Bluesky handle (e.g. bureau.bsky.social). This is the account that will publish Bureau dispatches. Create a dedicated account for the pipeline — do not use a personal account.'))}</div>
               <div class="config-row__desc">${msg('Bluesky account handle (e.g. bureau.bsky.social)')}</div>
             </div>
             <div class="config-input-group">
@@ -1191,7 +1192,7 @@ export class VelgAdminBlueskyTab extends LitElement {
 
           <div class="config-row">
             <div class="config-row__label">
-              <div class="config-row__name">${msg('App Password')}</div>
+              <div class="config-row__name">${msg('App Password')} ${renderInfoBubble(msg('App-specific password from bsky.app/settings/app-passwords. NOT your main account password. App passwords can be revoked individually without affecting your account. Stored encrypted at rest.'))}</div>
               <div class="config-row__desc">${msg('Generate at bsky.app/settings/app-passwords')}</div>
             </div>
             <div class="config-input-group">
@@ -1212,7 +1213,7 @@ export class VelgAdminBlueskyTab extends LitElement {
 
           <div class="config-row">
             <div class="config-row__label">
-              <div class="config-row__name">${msg('PDS URL')}</div>
+              <div class="config-row__name">${msg('PDS URL')} ${renderInfoBubble(msg('AT Protocol Personal Data Server. Use https://bsky.social for the main Bluesky network. Only change this if you run a self-hosted PDS or use a different AT Protocol provider.'))}</div>
               <div class="config-row__desc">${msg('Personal Data Server (default: bsky.social)')}</div>
             </div>
             <div class="config-input-group">
@@ -1245,7 +1246,7 @@ export class VelgAdminBlueskyTab extends LitElement {
 
           <div class="config-row">
             <div class="config-row__label">
-              <div class="config-row__name">${msg('Bluesky Enabled')}</div>
+              <div class="config-row__name">${msg('Bluesky Enabled')} ${renderInfoBubble(msg('Master switch for the entire Bluesky pipeline. When off, no posts are created or published — even if Auto Cross-Post is on. Turn this on after configuring Handle + App Password above.'))}</div>
               <div class="config-row__desc">${msg('Master switch for the Bluesky pipeline')}</div>
             </div>
             <button
@@ -1257,7 +1258,7 @@ export class VelgAdminBlueskyTab extends LitElement {
 
           <div class="config-row">
             <div class="config-row__label">
-              <div class="config-row__name">${msg('Posting Enabled')}</div>
+              <div class="config-row__name">${msg('Posting Enabled')} ${renderInfoBubble(msg('When Off, the pipeline creates draft posts but does not actually publish them to Bluesky (dry-run mode). Use this to verify post quality before going live. When On, scheduled posts are published automatically.'))}</div>
               <div class="config-row__desc">${msg('Actually publish to Bluesky (vs dry-run mode)')}</div>
             </div>
             <button
@@ -1269,7 +1270,7 @@ export class VelgAdminBlueskyTab extends LitElement {
 
           <div class="config-row">
             <div class="config-row__label">
-              <div class="config-row__name">${msg('Auto Cross-Post')}</div>
+              <div class="config-row__name">${msg('Auto Cross-Post')} ${renderInfoBubble(msg('When enabled, every Instagram post that gets published automatically creates a corresponding Bluesky post. The caption is reformatted for Bluesky (300 char limit with facets/links). Images are re-uploaded to Bluesky\'s blob store.'))}</div>
               <div class="config-row__desc">${msg('Automatically create Bluesky posts from Instagram')}</div>
             </div>
             <button
