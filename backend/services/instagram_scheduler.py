@@ -19,6 +19,8 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
+import httpx
+
 from backend.dependencies import get_admin_supabase
 from backend.services.external.instagram import (
     InstagramAPIError,
@@ -43,6 +45,8 @@ class InstagramScheduler:
     """Periodic background task that publishes scheduled Instagram posts."""
 
     _task: asyncio.Task | None = None
+    _last_token_refresh: datetime | None = None
+    _TOKEN_REFRESH_INTERVAL_DAYS = 50  # Refresh every 50 days (tokens last 60)
 
     @classmethod
     async def start(cls) -> asyncio.Task:
@@ -62,6 +66,7 @@ class InstagramScheduler:
                 interval = config["interval"]
 
                 if config["enabled"]:
+                    await cls._maybe_refresh_token(admin, config)
                     await cls._process_due_posts(admin, config)
                     await cls._collect_pending_metrics(admin, config)
             except asyncio.CancelledError:
@@ -291,6 +296,65 @@ class InstagramScheduler:
             media_id,
             extra={"post_id": post_id, "media_id": media_id, "permalink": permalink},
         )
+
+    @classmethod
+    async def _maybe_refresh_token(cls, admin: Client, config: dict) -> None:
+        """Refresh the Instagram access token if it's older than 50 days.
+
+        Instagram Business Login tokens last 60 days. We refresh at 50 days
+        to avoid expiration. The refresh endpoint returns a new 60-day token.
+        """
+        now = datetime.now(UTC)
+
+        # Only check once per scheduler cycle (avoid hammering the API)
+        if cls._last_token_refresh and (now - cls._last_token_refresh).days < 1:
+            return
+
+        access_token = config.get("access_token", "")
+        if not access_token:
+            return
+
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                resp = await client.get(
+                    "https://graph.instagram.com/refresh_access_token",
+                    params={
+                        "grant_type": "ig_refresh_token",
+                        "access_token": access_token,
+                    },
+                )
+                data = resp.json()
+
+            if "access_token" in data:
+                new_token = data["access_token"]
+                expires_in = data.get("expires_in", 0)
+
+                # Only update if we got a genuinely new token
+                if new_token != access_token:
+                    from backend.utils.encryption import encrypt
+                    encrypted = encrypt(new_token)
+                    admin.table("platform_settings").update(
+                        {"setting_value": encrypted},
+                    ).eq("setting_key", "instagram_access_token").execute()
+
+                    logger.info(
+                        "Instagram token refreshed, expires in %d days",
+                        expires_in // 86400,
+                    )
+
+                cls._last_token_refresh = now
+            elif "error" in data:
+                error_msg = data["error"].get("message", "Unknown")
+                # Don't log as error if token is too new (<24h)
+                if data["error"].get("code") == 190:
+                    logger.debug("Token refresh skipped (too new): %s", error_msg)
+                else:
+                    logger.warning("Token refresh failed: %s", error_msg)
+                cls._last_token_refresh = now  # Don't retry immediately
+
+        except Exception:
+            logger.warning("Token refresh request failed", exc_info=True)
+            cls._last_token_refresh = now
 
     @classmethod
     async def _collect_pending_metrics(cls, admin: Client, config: dict) -> None:
