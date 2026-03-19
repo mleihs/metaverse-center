@@ -16,7 +16,8 @@ export type ThemePresetName =
   | 'deep-space-horror'
   | 'arc-raiders'
   | 'illuminated-literary'
-  | 'deep-fried-horror';
+  | 'deep-fried-horror'
+  | 'vbdos';
 
 export const THEME_PRESETS: Record<ThemePresetName, Record<string, string>> = {
   brutalist: {
@@ -351,11 +352,49 @@ export const THEME_PRESETS: Record<ThemePresetName, Record<string, string>> = {
     card_frame_corners: 'none',
     card_frame_foil: 'holographic',
   },
+
+  vbdos: {
+    color_primary: '#00AAAA',
+    color_secondary: '#55FF55',
+    color_accent: '#FFFF55',
+    color_background: '#08081a',
+    color_surface: '#0c0c2c',
+    color_surface_sunken: '#060614',
+    color_surface_header: '#0a0a24',
+    color_text: '#AAAAAA',
+    color_text_secondary: '#5588AA',
+    color_text_muted: '#557799',
+    color_border: '#00AAAA',
+    color_border_light: '#1a1a3a',
+    color_danger: '#FF5555',
+    color_success: '#55FF55',
+    font_heading: "'VT323', 'Share Tech Mono', 'Courier New', monospace",
+    font_body: "'IBM Plex Mono', 'Courier New', monospace",
+    font_mono: "'IBM Plex Mono', 'Courier New', monospace",
+    heading_weight: '700',
+    heading_transform: 'uppercase',
+    heading_tracking: '0.15em',
+    font_base_size: '15px',
+    border_radius: '0',
+    border_width: '2px',
+    border_width_default: '1px',
+    shadow_style: 'offset',
+    shadow_color: '#000000',
+    hover_effect: 'translate',
+    animation_speed: '0.5',
+    animation_easing: 'steps(3, end)',
+    text_inverse: '#000000',
+    card_frame_texture: 'scanlines',
+    card_frame_nameplate: 'terminal',
+    card_frame_corners: 'brackets',
+    card_frame_foil: 'phosphor',
+  },
 };
 
 /** Maps SimulationTheme types to suggested preset names. */
 export function getPresetForTheme(theme: SimulationTheme, slug?: string): ThemePresetName {
   if (slug === 'spengbabs-grease-pit') return 'deep-fried-horror';
+  if (slug === 'conventional-memory') return 'vbdos';
 
   switch (theme) {
     case 'dystopian':
@@ -384,4 +423,5 @@ export const PRESET_NAMES: ThemePresetName[] = [
   'arc-raiders',
   'illuminated-literary',
   'deep-fried-horror',
+  'vbdos',
 ];

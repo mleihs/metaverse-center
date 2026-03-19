@@ -352,6 +352,7 @@ function getPresetLabels(): Record<ThemePresetName, string> {
     'arc-raiders': msg('Arc Raiders'),
     'illuminated-literary': msg('Illuminated Literary'),
     'deep-fried-horror': msg('Deep-Fried Horror'),
+    vbdos: msg('VBDOS'),
   };
 }
 

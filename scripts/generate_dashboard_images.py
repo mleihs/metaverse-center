@@ -63,6 +63,7 @@ GASLIT_REACH_SIM_ID = "20000000-0000-0000-0000-000000000001"
 STATION_NULL_SIM_ID = "30000000-0000-0000-0000-000000000001"
 SPERANZA_SIM_ID = "40000000-0000-0000-0000-000000000001"
 CITE_DES_DAMES_SIM_ID = "50000000-0000-0000-0000-000000000001"
+CONVENTIONAL_MEMORY_SIM_ID = "60000000-0000-0000-0000-000000000001"
 
 BUCKET = "simulation.assets"
 FLUX_MODEL = "black-forest-labs/flux-dev"
@@ -160,6 +161,22 @@ IMAGES = [
             "women in historical dress from different eras visible on the walls, "
             "painterly literary aesthetic, wide establishing shot, "
             "jewel-tone richness, vellum texture"
+        ),
+        "width": 1024,
+        "height": 683,
+    },
+    {
+        "name": "Conventional Memory Banner",
+        "storage_path": f"{CONVENTIONAL_MEMORY_SIM_ID}/banner.avif",
+        "simulation_id": CONVENTIONAL_MEMORY_SIM_ID,
+        "prompt": (
+            "Close-up photograph of a vintage beige IBM PC XT computer on a cluttered "
+            "1990s office desk, CRT monitor displaying blue DOS screen with white text "
+            "and box-drawing characters, green phosphor glow, mechanical keyboard, "
+            "stacked floppy disks, coiled cables, warm tungsten desk lamp lighting, "
+            "tech nostalgia, photorealistic, slightly yellowed plastic, visible CRT "
+            "scanlines, the screen shows a VBDOS program with cyan and yellow text "
+            "on blue background, wide panoramic composition"
         ),
         "width": 1024,
         "height": 683,

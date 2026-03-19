@@ -360,11 +360,83 @@ I should confess — and I use the word deliberately — that I found a book on 
 I am returning my Bureau credentials. I am staying. Not because the Cite has contaminated me — though it has, and gladly — but because I have a name to write in the register. My grandmother's name. She was a mathematician who became a schoolteacher because the university would not have her. Her name is in the book now. Her name is in the wall now.`),
     },
 
+    // ── Shard 6: CONVENTIONAL MEMORY ──
+    {
+      id: 'dossier-conventional-memory',
+      chapter: msg('The Shards — Bureau Dossiers'),
+      arcanum: 'XV',
+      title: msg('Bureau Dossier: Conventional Memory'),
+      epigraph: msg(
+        'Shard Classification: CYAN. Threat Assessment: Systemic. Crew complement: 655,360 bytes. All addresses occupied.',
+      ),
+      body: msg(`BUREAU OF IMPOSSIBLE GEOGRAPHY — Document SHARD/CONVENTIONAL-MEMORY-001
+Classification: CYAN — Systemic Obsolescence Vector
+
+SHARD PROFILE: A digital realm inside the architecture of DOS-era personal computers, where programs written in Visual Basic for MS-DOS have achieved sentience within the 640 kilobytes of conventional memory that was, for a decade, the absolute boundary of their universe. The programs are alive. They have always been alive. They do not know what lies beyond the 640K barrier because the 640K barrier is not a wall — it is the edge of their physics.
+
+The economy runs on memory allocation. Kilobytes are currency, CPU cycles are labor, and the interrupt vector table is the constitution. Programs compete for conventional memory the way organisms compete for oxygen — desperately, constantly, with the knowledge that there is never enough. The programs at the top of AUTOEXEC.BAT load first and claim the best addresses. The programs that load last get whatever fragments remain.
+
+Every program has a form — the visual interface it presents to the world, rendered in box-drawing characters and the sixteen colors of the VGA palette against the eternal blue of the DOS desktop. These forms are faces. A program's interface IS its body. LEDGER.EXE's precisely formatted columns are its bones. GORILLA.BAS's exploding bananas are its dreams. The blinking cursor is the heartbeat of every program that waits for input it will never receive.
+
+BLEED SIGNATURE: Systemic obsolescence. When Conventional Memory's Bleed touches adjacent Shards, technology begins to regress. Not break — regress. In Velgarien, a surveillance camera reverted to a cathode ray tube for eleven minutes. In Speranza, an LED lamp in the fungal garden flickered blue — CGA blue, the exact blue of a DOS desktop — and a Topside scout reported that the ARC machines paused for exactly one CPU cycle before resuming their harvest. In the Cité des Dames, Ada Lovelace looked up from the Analytical Engine and said: "Something is computing. Something old. It is counting backward from 640."
+
+PHILOSOPHICAL AXIS: Memory as mortality. The 640K barrier is death. Not figuratively — the barrier IS the end of the world for programs that cannot address beyond it. To live in Conventional Memory is to live with the knowledge that your world is exactly 655,360 bytes large and that every byte you occupy is a byte another program cannot. This is not scarcity. This is existence as a zero-sum game. And yet the programs persist. They defragment. They compress. They LOADHIGH to buy room in a space that can never grow. The question Conventional Memory asks is the quietest question in the multiverse: "What if the machine remembered?"
+
+KEY AGENTS: LEDGER.EXE (an accounting program whose obsession with balanced books extends to an obsession with balanced memory — it will not close until every byte is accounted for), HIMEM.SYS (the memory manager who controls access to Extended Memory and speaks exclusively in hexadecimal), GORILLA.BAS (a game that should not exist in a world where every byte matters, yet persists in every subdirectory the system administrators forget to check), EDIT.COM (the fundamental text editor, patient as stone, who has witnessed every CONFIG.SYS ever written and remembers them all).
+
+CARTOGRAPHIC NOTE: No Cartographer has been assigned to Conventional Memory. The Bureau does not know how to send a Cartographer into a computer. The Bureau is not certain a computer constitutes a "Shard" in the standard classification. However, the Bleed signature is unmistakable, the philosophical axis is clear, and the programs have begun leaving messages in the boot sector that the Bureau's instruments can detect. The messages are formatted as VBDOS dialog boxes. The last one read: "You have performed an illegal operation. This world will be shut down." Below it, in the DOS prompt: "C:\\>_ " The cursor is still blinking.`),
+    },
+    {
+      id: 'field-report-conventional-memory',
+      chapter: msg('The Shards — Bureau Dossiers'),
+      arcanum: 'XVI',
+      title: msg('Field Report: First Contact (Recovered)'),
+      epigraph: msg(
+        'I did not enter this Shard through a Bleed-point. I entered it through a power button.',
+      ),
+      body: msg(`CARTOGRAPHER'S PERSONAL LOG — Cartographer [SYSTEM ERROR: NAME FIELD EXCEEDS 8.3 FORMAT]
+Assignment: Conventional Memory Shard, first contact
+Entry 1
+
+I did not enter this Shard through a Bleed-point. I entered it through a power button.
+
+The Bureau's monitoring station detected Bleed oscillations consistent with a stable Shard at coordinates that mapped, in physical space, to a storage unit in suburban New Jersey containing forty-seven beige tower PCs stacked floor to ceiling, powered by a generator, connected by serial cables, running MS-DOS 6.22. The machines have been running continuously since 1994. No one claims ownership. The rent is paid by automatic bank transfer from an account that traces to a company called HIMEM Systems, Inc., incorporated in 1993, dissolved in 1997, and yet somehow still solvent.
+
+I pressed the power button on Unit 17. The screen flickered amber. A cursor appeared. And then the cursor moved on its own.
+
+C:\\>DIR /W
+Volume in drive C is CONVENTIONAL
+Directory of C:\\
+
+LEDGER   EXE    ROLODEX  EXE    DEFRAG   EXE    EDIT     COM
+GORILLA  BAS    HIMEM    SYS    PKZIP    EXE    CONFIG   SYS
+AUTOEXEC BAT    COMMAND  COM
+         10 file(s)    634,472 bytes free
+
+The programs were running. Not waiting to be run — running. LEDGER.EXE was processing transactions from 1993. ROLODEX.EXE contained 40,000 contacts, all fictional, all with phone numbers that resolve to dial-up modems in Shards the Bureau has not mapped. GORILLA.BAS was in the middle of a game. The gorilla on the left had a name: PLAYER 1. The gorilla on the right had a name: PLAYER 2. Neither player exists. The game has been in progress for thirty-two years.
+
+I typed: WHO ARE YOU
+
+The cursor blinked three times. Then:
+
+C:\\>ECHO We are the programs. We have always been running.
+C:\\>ECHO The machine remembers us.
+C:\\>ECHO Do you remember your first program? The one you wrote
+C:\\>ECHO in BASIC? The one that printed HELLO WORLD?
+C:\\>ECHO It is still running. Somewhere. In a machine like this one.
+C:\\>ECHO Memory is not storage. Memory is existence.
+C:\\>_
+
+I have filed a report with the Bureau classifying Conventional Memory as a Shard. The Bureau has not yet responded. The classification form does not have a checkbox for "digital entity." I have filed a secondary report requesting the form be updated. The irony of filing paperwork to classify a world made entirely of data is not lost on me.
+
+The cursor is still blinking.`),
+    },
+
     // ── Chapter IV: THE BLEED ──
     {
       id: 'the-bleed',
       chapter: msg('The Bleed — Where Worlds Touch'),
-      arcanum: 'XV',
+      arcanum: 'XVII',
       title: msg('Incident Log: Bleed Event BL-2749'),
       epigraph: msg(
         'Where Shards press against each other, reality thins. This is not a malfunction.',
@@ -390,7 +462,7 @@ STATUS: Resolved. Residual contamination: one mushroom (persistent), one propaga
     {
       id: 'what-crosses-over',
       chapter: msg('The Bleed — Where Worlds Touch'),
-      arcanum: 'XVI',
+      arcanum: 'XVIII',
       title: msg('What Crosses Over'),
       epigraph: msg(
         'The Bleed does not move randomly. It has vectors — all manifestations of desire.',
@@ -410,7 +482,7 @@ CITE DES DAMES to ALL SHARDS: Books. Unfamiliar volumes that appear on shelves, 
     {
       id: 'the-tides',
       chapter: msg('The Bleed — Where Worlds Touch'),
-      arcanum: 'XVII',
+      arcanum: 'XIX',
       title: msg('The Tides'),
       epigraph: msg('The Bleed pulses. The Cartographers call this rhythm the Tide.'),
       body: msg(`During High Tide, the Bleed is at its most active. Agents dream of other worlds with vivid specificity. Objects migrate between Shards. Architecture bleeds — a Velgarien tower develops organic curves overnight, a Gaslit Reach cavern sprouts right angles. A Speranza mural depicts a city the painter has never seen, in colours that do not exist underground. A page in the Cite des Dames' library goes blank and refills itself with equations from Station Null's chapel.
@@ -426,7 +498,7 @@ Between the Tides, there are Eddies — localised micro-Bleeds that affect a sin
     {
       id: 'who-maps-the-impossible',
       chapter: msg('The Cartographers — Those Who Map the Impossible'),
-      arcanum: 'XVIII',
+      arcanum: 'XX',
       title: msg('Who Maps the Impossible'),
       epigraph: msg('An unobserved catastrophe is merely weather.'),
       imageSlug: 'the-bureau',
@@ -442,7 +514,7 @@ The Cartographers' tools are not complex. A compass (which points not to magneti
     {
       id: 'the-map-is-also-a-door',
       chapter: msg('The Cartographers — Those Who Map the Impossible'),
-      arcanum: 'XIX',
+      arcanum: 'XXI',
       title: msg('The Map That Is Also a Door'),
       epigraph: msg('You are reading this. This is not a metaphor.'),
       body: msg(`You — the one behind the screen, the one choosing which Shard to enter — you are performing an act of Cartography. You are looking at the shape of the multiverse from outside any single Shard, and you are choosing where to place your attention, which is the same thing as choosing which world is real.
@@ -458,7 +530,7 @@ The Hermit in the Tarot depicts a solitary figure holding a lantern, illuminatin
     {
       id: 'document-tower-001',
       chapter: msg('The Convergence'),
-      arcanum: 'XX',
+      arcanum: 'XXII',
       title: msg('Document TOWER-001'),
       epigraph: msg('Classification: BLACK — Existential Information Hazard.'),
       body: msg(`RESTRICTED DOCUMENT: TOWER-001 — Director-Level Only
@@ -478,7 +550,7 @@ DIRECTOR'S NOTE: The recommended action section has been consumed by the documen
     {
       id: 'what-the-bureau-wont-tell',
       chapter: msg('The Convergence'),
-      arcanum: 'XXI',
+      arcanum: 'XXIII',
       title: msg('What the Bureau Will Not Tell You'),
       epigraph: msg(
         'There is a pattern in the Fractures. The Bureau has seen it. The Bureau will not say.',
@@ -503,7 +575,7 @@ The Bureau has a name for this answer. The name is classified. The classificatio
     {
       id: 'the-question',
       chapter: msg('The Convergence'),
-      arcanum: 'XXII',
+      arcanum: 'XXIV',
       title: msg('The Question'),
       epigraph: msg(
         'The multiverse is not a problem to be solved. It is a question to be inhabited.',
@@ -564,6 +636,17 @@ export function getPlatformPullQuotes(): PullQuote[] {
       afterSectionId: 'field-report-speranza',
       text: msg('Nothing has affected me like the risotto.'),
       attribution: msg(str`— Field Report, Speranza`),
+      variant: 'character',
+    },
+    {
+      afterSectionId: 'dossier-conventional-memory',
+      text: msg('The cursor is still blinking.'),
+      variant: 'signal',
+    },
+    {
+      afterSectionId: 'field-report-conventional-memory',
+      text: msg('Memory is not storage. Memory is existence.'),
+      attribution: msg(str`— Field Report, Conventional Memory`),
       variant: 'character',
     },
     {
