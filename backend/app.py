@@ -44,6 +44,7 @@ from backend.routers import (
     campaigns,
     chat,
     chronicles,
+    cipher,
     connections,
     echoes,
     embassies,
@@ -207,6 +208,8 @@ app.include_router(resonances.router)
 app.include_router(news_scanner.router)
 app.include_router(style_references.router)
 app.include_router(instagram.router)
+app.include_router(cipher.public_router)
+app.include_router(cipher.admin_router)
 app.include_router(public.router)
 app.include_router(seo.router)
 

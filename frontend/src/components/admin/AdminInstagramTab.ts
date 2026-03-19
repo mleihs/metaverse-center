@@ -3,6 +3,8 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import {
   adminApi,
+  type CipherRedemptionRecord,
+  type CipherStats,
   type InstagramAnalytics,
   type InstagramQueueItem,
   type InstagramRateLimit,
@@ -914,6 +916,36 @@ export class VelgAdminInstagramTab extends LitElement {
     }
 
     /* ══════════════════════════════════════════════════════
+       CIPHER TABLE
+       ══════════════════════════════════════════════════════ */
+
+    .cipher-table__header,
+    .cipher-table__row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      font-size: var(--text-xs);
+    }
+
+    .cipher-table__header {
+      font-weight: var(--font-bold);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+      color: var(--color-text-muted);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .cipher-table__row {
+      border-bottom: 1px solid var(--color-border-light);
+      color: var(--color-text-secondary);
+    }
+
+    .cipher-table__row:last-child {
+      border-bottom: none;
+    }
+
+    /* ══════════════════════════════════════════════════════
        RESPONSIVE
        ══════════════════════════════════════════════════════ */
 
@@ -966,6 +998,7 @@ export class VelgAdminInstagramTab extends LitElement {
   @state() private _actionInProgress: string | null = null;
   @state() private _rejectTarget: InstagramQueueItem | null = null;
   @state() private _rejectReason = '';
+  @state() private _cipherStats: CipherStats | null = null;
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -979,10 +1012,11 @@ export class VelgAdminInstagramTab extends LitElement {
     this._error = null;
 
     try {
-      const [queueResp, analyticsResp, rateLimitResp] = await Promise.all([
+      const [queueResp, analyticsResp, rateLimitResp, cipherResp] = await Promise.all([
         adminApi.listInstagramQueue({ limit: '100' }),
         adminApi.getInstagramAnalytics(30),
         adminApi.getInstagramRateLimit(),
+        adminApi.getInstagramCipherStats(),
       ]);
 
       if (queueResp.success && queueResp.data) {
@@ -993,6 +1027,9 @@ export class VelgAdminInstagramTab extends LitElement {
       }
       if (rateLimitResp.success && rateLimitResp.data) {
         this._rateLimit = rateLimitResp.data;
+      }
+      if (cipherResp.success && cipherResp.data) {
+        this._cipherStats = cipherResp.data;
       }
     } catch (err) {
       this._error = err instanceof Error ? err.message : msg('Failed to load Instagram data');
@@ -1154,6 +1191,8 @@ export class VelgAdminInstagramTab extends LitElement {
           : this._renderDispatchList()
         }
       </div>
+
+      ${this._renderCipherSection()}
 
       ${this._rejectTarget ? this._renderRejectModal() : nothing}
     `;
@@ -1409,6 +1448,83 @@ export class VelgAdminInstagramTab extends LitElement {
             </a>
           ` : nothing}
         </div>
+      </div>
+    `;
+  }
+
+  private _renderCipherSection() {
+    const cs = this._cipherStats;
+    if (!cs) return nothing;
+
+    return html`
+      <div class="queue-section" style="margin-top: var(--space-8);">
+        <div class="queue-header">
+          <div class="queue-header__marker"></div>
+          <div class="queue-header__title">${msg('Cipher Operations')}</div>
+        </div>
+
+        <div class="intel-grid" style="margin-top: var(--space-4);">
+          <div class="intel-card">
+            <div class="intel-card__corner intel-card__corner--tl"></div>
+            <div class="intel-card__corner intel-card__corner--br"></div>
+            <div class="intel-card__icon">${icons.key(14)}</div>
+            <div class="intel-card__label">${msg('Total Redemptions')}</div>
+            <div class="intel-card__value">${cs.total_redemptions}</div>
+            <div class="intel-card__sub">${msg('all time')}</div>
+          </div>
+
+          <div class="intel-card">
+            <div class="intel-card__corner intel-card__corner--tl"></div>
+            <div class="intel-card__corner intel-card__corner--br"></div>
+            <div class="intel-card__icon">${icons.users(14)}</div>
+            <div class="intel-card__label">${msg('Unique Operatives')}</div>
+            <div class="intel-card__value">${cs.unique_users}</div>
+            <div class="intel-card__sub">${msg('authenticated users')}</div>
+          </div>
+
+          <div class="intel-card">
+            <div class="intel-card__corner intel-card__corner--tl"></div>
+            <div class="intel-card__corner intel-card__corner--br"></div>
+            <div class="intel-card__icon">${icons.target(14)}</div>
+            <div class="intel-card__label">${msg('Success Rate')}</div>
+            <div class="intel-card__value">
+              ${(cs.success_rate * 100).toFixed(1)}<span class="intel-card__value--unit">%</span>
+            </div>
+            <div class="intel-card__sub">
+              ${msg(str`${cs.total_attempts} total attempts`)}
+            </div>
+          </div>
+        </div>
+
+        ${cs.recent_redemptions.length > 0
+          ? html`
+            <div class="cipher-table" style="margin-top: var(--space-4);">
+              <div class="cipher-table__header">
+                <span>${msg('Redeemed')}</span>
+                <span>${msg('Reward')}</span>
+                <span>${msg('User')}</span>
+              </div>
+              ${cs.recent_redemptions.slice(0, 10).map(
+                (r: CipherRedemptionRecord) => html`
+                  <div class="cipher-table__row">
+                    <span>${this._formatDate(r.redeemed_at)}</span>
+                    <span class="dispatch__type-tag">${r.reward_type}</span>
+                    <span style="color: var(--color-text-muted)">
+                      ${r.user_id ? r.user_id.slice(0, 8) + '…' : msg('Anonymous')}
+                    </span>
+                  </div>
+                `,
+              )}
+            </div>
+          `
+          : html`
+            <div class="empty-state" style="margin-top: var(--space-4);">
+              ${msg('No cipher redemptions yet.')}
+              <div class="empty-state__hint">
+                ${msg('Ciphers are generated automatically when enabled in platform settings.')}
+              </div>
+            </div>
+          `}
       </div>
     `;
   }

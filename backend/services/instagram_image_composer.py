@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING
 from uuid import uuid4
 
 import httpx
+import sentry_sdk
 
 from supabase import Client
 
@@ -37,6 +38,26 @@ BUREAU_HEADER_HEIGHT = 80
 BUREAU_FOOTER_HEIGHT = 40
 BUREAU_WATERMARK_TEXT = "BUREAU OF IMPOSSIBLE GEOGRAPHY — [REDACTED]"
 CLASSIFICATION_LEVELS = ("PUBLIC", "AMBER", "RESTRICTED")
+
+
+def _load_monospace_font(size: int):
+    """Load a monospace font with cross-platform fallback.
+
+    Tries common Linux paths first (deployment target), then macOS,
+    then falls back to Pillow's built-in default font.
+    """
+    from PIL import ImageFont
+
+    for path in (
+        "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",      # Debian/Ubuntu
+        "/usr/share/fonts/dejavu-sans-mono-fonts/DejaVuSansMono.ttf",  # Fedora/RHEL
+        "/System/Library/Fonts/Menlo.ttc",                            # macOS
+    ):
+        try:
+            return ImageFont.truetype(path, size)
+        except OSError:
+            continue
+    return ImageFont.load_default()
 
 
 class InstagramImageComposer:
@@ -63,6 +84,11 @@ class InstagramImageComposer:
         - Bureau watermark
         - JPEG conversion at 1080×1350
         """
+        logger.info("Composing agent dossier image", extra={
+            "source_url": portrait_url,
+            "simulation_name": simulation_name,
+            "stage": "agent_dossier",
+        })
         raw_bytes = await self._download_image(portrait_url)
         return self._compose_with_overlay(
             raw_bytes,
@@ -84,6 +110,11 @@ class InstagramImageComposer:
         classification: str = "PUBLIC",
     ) -> bytes:
         """Compose a building surveillance image for Instagram."""
+        logger.info("Composing building surveillance image", extra={
+            "source_url": image_url,
+            "simulation_name": simulation_name,
+            "stage": "building_surveillance",
+        })
         raw_bytes = await self._download_image(image_url)
         return self._compose_with_overlay(
             raw_bytes,
@@ -108,6 +139,12 @@ class InstagramImageComposer:
 
         If no source image, generates a solid background with Bureau styling.
         """
+        logger.info("Composing bureau dispatch image", extra={
+            "source_url": source_image_url,
+            "simulation_name": simulation_name,
+            "dispatch_number": dispatch_number,
+            "stage": "bureau_dispatch",
+        })
         if source_image_url:
             raw_bytes = await self._download_image(source_image_url)
         else:
@@ -135,7 +172,13 @@ class InstagramImageComposer:
             jpeg_bytes,
             {"content-type": "image/jpeg", "upsert": "true"},
         )
-        return self._supabase.storage.from_("simulation.assets").get_public_url(filename)
+        url = self._supabase.storage.from_("simulation.assets").get_public_url(filename)
+        logger.info("Uploaded composed image to staging", extra={
+            "simulation_id": simulation_id,
+            "output_size": len(jpeg_bytes),
+            "stage": "upload",
+        })
+        return url
 
     # ── Internal Compositing ────────────────────────────────────────────
 
@@ -150,100 +193,116 @@ class InstagramImageComposer:
     ) -> bytes:
         """Apply Bureau overlay to an image and convert to Instagram JPEG."""
         try:
-            from PIL import Image, ImageDraw, ImageFont
+            from PIL import Image, ImageDraw
         except ImportError:
             logger.warning("Pillow not installed — returning raw JPEG conversion")
             return self._convert_to_jpeg(image_bytes)
 
-        img = Image.open(io.BytesIO(image_bytes))
-
-        # Convert to RGB if necessary
-        if img.mode not in ("RGB",):
-            img = img.convert("RGB")
-
-        # Resize to Instagram portrait (1080×1350) maintaining aspect ratio
-        img = self._resize_for_instagram(img)
-
-        draw = ImageDraw.Draw(img)
-        width, height = img.size
-
-        # Parse colors
-        primary_rgb = self._hex_to_rgb(color_primary)
-        bg_rgb = self._hex_to_rgb(color_background)
-
-        # Classification header bar
-        header_y = 0
-        draw.rectangle(
-            [(0, header_y), (width, header_y + BUREAU_HEADER_HEIGHT)],
-            fill=(*bg_rgb, 220),
-        )
-
-        # Load font (fallback to default if unavailable)
         try:
-            font_title = ImageFont.truetype("/System/Library/Fonts/Menlo.ttc", 18)
-            font_subtitle = ImageFont.truetype("/System/Library/Fonts/Menlo.ttc", 14)
-            font_watermark = ImageFont.truetype("/System/Library/Fonts/Menlo.ttc", 10)
-        except OSError:
-            font_title = ImageFont.load_default()
-            font_subtitle = font_title
-            font_watermark = font_title
+            img = Image.open(io.BytesIO(image_bytes))
 
-        # Classification stamp
-        classification_text = f"CLASSIFICATION: {classification}"
-        draw.text(
-            (20, header_y + 10),
-            classification_text,
-            fill=primary_rgb,
-            font=font_title,
-        )
+            # Convert to RGB if necessary
+            if img.mode not in ("RGB",):
+                img = img.convert("RGB")
 
-        # Title
-        draw.text(
-            (20, header_y + 35),
-            title[:60],
-            fill=(255, 255, 255),
-            font=font_title,
-        )
+            # Resize to Instagram portrait (1080×1350) maintaining aspect ratio
+            img = self._resize_for_instagram(img)
 
-        # Subtitle
-        draw.text(
-            (20, header_y + 58),
-            subtitle[:80],
-            fill=(*primary_rgb,),
-            font=font_subtitle,
-        )
+            draw = ImageDraw.Draw(img)
+            width, height = img.size
 
-        # Border (simulation primary color)
-        border_width = 3
-        draw.rectangle(
-            [(0, 0), (width - 1, height - 1)],
-            outline=primary_rgb,
-            width=border_width,
-        )
+            # Parse colors
+            primary_rgb = self._hex_to_rgb(color_primary)
+            bg_rgb = self._hex_to_rgb(color_background)
 
-        # Bureau watermark footer
-        footer_y = height - BUREAU_FOOTER_HEIGHT
-        draw.rectangle(
-            [(0, footer_y), (width, height)],
-            fill=(*bg_rgb, 200),
-        )
-        draw.text(
-            (20, footer_y + 12),
-            BUREAU_WATERMARK_TEXT,
-            fill=(120, 120, 120),
-            font=font_watermark,
-        )
+            # Classification header bar
+            header_y = 0
+            draw.rectangle(
+                [(0, header_y), (width, header_y + BUREAU_HEADER_HEIGHT)],
+                fill=(*bg_rgb, 220),
+            )
 
-        # AI disclosure (right-aligned in footer)
-        disclosure = "AI-generated content"
-        draw.text(
-            (width - 200, footer_y + 12),
-            disclosure,
-            fill=(100, 100, 100),
-            font=font_watermark,
-        )
+            # Load fonts (cross-platform)
+            font_title = _load_monospace_font(18)
+            font_subtitle = _load_monospace_font(14)
+            font_watermark = _load_monospace_font(10)
 
-        return self._image_to_jpeg(img)
+            # Classification stamp
+            classification_text = f"CLASSIFICATION: {classification}"
+            draw.text(
+                (20, header_y + 10),
+                classification_text,
+                fill=primary_rgb,
+                font=font_title,
+            )
+
+            # Title
+            draw.text(
+                (20, header_y + 35),
+                title[:60],
+                fill=(255, 255, 255),
+                font=font_title,
+            )
+
+            # Subtitle
+            draw.text(
+                (20, header_y + 58),
+                subtitle[:80],
+                fill=(*primary_rgb,),
+                font=font_subtitle,
+            )
+
+            # Border (simulation primary color)
+            border_width = 3
+            draw.rectangle(
+                [(0, 0), (width - 1, height - 1)],
+                outline=primary_rgb,
+                width=border_width,
+            )
+
+            # Bureau watermark footer
+            footer_y = height - BUREAU_FOOTER_HEIGHT
+            draw.rectangle(
+                [(0, footer_y), (width, height)],
+                fill=(*bg_rgb, 200),
+            )
+            draw.text(
+                (20, footer_y + 12),
+                BUREAU_WATERMARK_TEXT,
+                fill=(120, 120, 120),
+                font=font_watermark,
+            )
+
+            # AI disclosure (right-aligned in footer)
+            disclosure = "AI-generated content"
+            draw.text(
+                (width - 200, footer_y + 12),
+                disclosure,
+                fill=(100, 100, 100),
+                font=font_watermark,
+            )
+
+            result = self._image_to_jpeg(img)
+            logger.debug("Image composition complete", extra={
+                "output_size": len(result),
+                "output_dimensions": f"{width}x{height}",
+                "stage": "compose_complete",
+            })
+            return result
+
+        except Exception as exc:
+            logger.exception("Image composition failed", extra={
+                "stage": "compose_overlay",
+                "title": title[:60],
+            })
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("instagram_phase", "image_composition")
+                scope.set_context("instagram", {
+                    "title": title[:60],
+                    "classification": classification,
+                })
+                sentry_sdk.capture_exception(exc)
+            raise
 
     def _resize_for_instagram(self, img: PILImage) -> PILImage:
         """Resize image to fit Instagram 4:5 portrait format (1080×1350).
@@ -337,7 +396,18 @@ class InstagramImageComposer:
     @staticmethod
     async def _download_image(url: str) -> bytes:
         """Download an image from a URL."""
-        async with httpx.AsyncClient(timeout=30) as client:
-            resp = await client.get(url)
-            resp.raise_for_status()
-            return resp.content
+        try:
+            async with httpx.AsyncClient(timeout=30) as client:
+                resp = await client.get(url)
+                resp.raise_for_status()
+                return resp.content
+        except Exception as exc:
+            logger.error("Image download failed", extra={
+                "source_url": url,
+                "stage": "download",
+            })
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("instagram_phase", "image_download")
+                scope.set_context("instagram", {"source_url": url})
+                sentry_sdk.capture_exception(exc)
+            raise

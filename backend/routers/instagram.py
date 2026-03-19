@@ -18,6 +18,7 @@ Endpoints:
 import logging
 from uuid import UUID
 
+import sentry_sdk
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
 from backend.dependencies import get_admin_supabase, require_platform_admin
@@ -99,6 +100,12 @@ async def generate_content(
     generates Bureau-voice captions, composes themed images, and
     creates draft records ready for admin approval.
     """
+    logger.info("Instagram admin action", extra={
+        "action": "generate",
+        "user_id": str(user.id),
+        "count": body.count,
+        "content_types": body.content_types,
+    })
     posts = await InstagramContentService.generate_batch(
         admin_supabase,
         content_types=body.content_types,
@@ -138,6 +145,11 @@ async def create_post(
     admin_supabase: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Manually create an Instagram post draft."""
+    logger.info("Instagram admin action", extra={
+        "action": "create_post",
+        "user_id": str(user.id),
+        "content_source_type": body.content_source_type,
+    })
     record = {
         "simulation_id": str(body.simulation_id),
         "content_source_type": body.content_source_type,
@@ -172,10 +184,15 @@ async def approve_post(
     request: Request,
     post_id: UUID,
     body: ApprovePostRequest | None = None,
-    _user: CurrentUser = Depends(require_platform_admin()),
+    user: CurrentUser = Depends(require_platform_admin()),
     admin_supabase: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Approve a draft post for scheduling."""
+    logger.info("Instagram admin action", extra={
+        "action": "approve",
+        "post_id": str(post_id),
+        "user_id": str(user.id),
+    })
     scheduled_at = body.scheduled_at if body else None
     post = await InstagramContentService.approve_post(
         admin_supabase, post_id, scheduled_at=scheduled_at,
@@ -189,10 +206,16 @@ async def reject_post(
     request: Request,
     post_id: UUID,
     body: RejectPostRequest,
-    _user: CurrentUser = Depends(require_platform_admin()),
+    user: CurrentUser = Depends(require_platform_admin()),
     admin_supabase: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Reject a draft post with reason."""
+    logger.info("Instagram admin action", extra={
+        "action": "reject",
+        "post_id": str(post_id),
+        "user_id": str(user.id),
+        "reason": body.reason[:100],
+    })
     post = await InstagramContentService.reject_post(
         admin_supabase, post_id, reason=body.reason,
     )
@@ -207,10 +230,16 @@ async def reject_post(
 async def force_publish(
     request: Request,
     post_id: UUID,
-    _user: CurrentUser = Depends(require_platform_admin()),
+    user: CurrentUser = Depends(require_platform_admin()),
     admin_supabase: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Force-publish a post immediately (bypasses scheduler)."""
+    logger.info("Instagram admin action", extra={
+        "action": "force_publish",
+        "post_id": str(post_id),
+        "user_id": str(user.id),
+    })
+
     post = await InstagramContentService.get_post(admin_supabase, post_id)
 
     if post["status"] not in ("draft", "scheduled"):
@@ -219,8 +248,8 @@ async def force_publish(
             detail=f"Cannot publish post with status '{post['status']}'.",
         )
 
-    # Load credentials
-    config = await _load_instagram_credentials(admin_supabase)
+    # Load credentials via shared utility
+    config = await InstagramContentService.load_instagram_credentials(admin_supabase)
     if not config["access_token"] or not config["ig_user_id"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -232,7 +261,29 @@ async def force_publish(
         ig_user_id=config["ig_user_id"],
     )
 
-    await InstagramScheduler._publish_single_post(admin_supabase, ig, post)
+    try:
+        await InstagramScheduler._publish_single_post(admin_supabase, ig, post)
+    except Exception as exc:
+        logger.exception("Force-publish failed", extra={
+            "post_id": str(post_id),
+            "user_id": str(user.id),
+        })
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("instagram_phase", "force_publish")
+            scope.set_context("instagram", {
+                "post_id": str(post_id),
+                "user_id": str(user.id),
+            })
+            sentry_sdk.capture_exception(exc)
+        # Reset status if it was changed to "publishing"
+        admin_supabase.table("instagram_posts").update({
+            "status": "scheduled",
+            "failure_reason": f"Force-publish failed: {str(exc)[:300]}",
+        }).eq("id", str(post_id)).execute()
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Force-publish failed: {str(exc)[:200]}",
+        ) from exc
 
     # Return updated post
     updated = await InstagramContentService.get_post(admin_supabase, post_id)
@@ -262,7 +313,7 @@ async def get_rate_limit(
     admin_supabase: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Check current Instagram API rate limit usage."""
-    config = await _load_instagram_credentials(admin_supabase)
+    config = await InstagramContentService.load_instagram_credentials(admin_supabase)
     if not config["access_token"] or not config["ig_user_id"]:
         return {
             "success": True,
@@ -275,33 +326,3 @@ async def get_rate_limit(
     )
     rate_data = await ig.check_rate_limit()
     return {"success": True, "data": rate_data}
-
-
-# ── Helpers ─────────────────────────────────────────────────────────────
-
-
-async def _load_instagram_credentials(admin_supabase: Client) -> dict[str, str]:
-    """Load Instagram API credentials from platform_settings."""
-    rows = (
-        admin_supabase.table("platform_settings")
-        .select("setting_key, setting_value")
-        .in_("setting_key", ["instagram_access_token", "instagram_ig_user_id"])
-        .execute()
-    ).data or []
-
-    result: dict[str, str] = {"access_token": "", "ig_user_id": ""}
-    for row in rows:
-        if row["setting_key"] == "instagram_ig_user_id":
-            result["ig_user_id"] = row["setting_value"] or ""
-        elif row["setting_key"] == "instagram_access_token":
-            raw = row["setting_value"] or ""
-            if raw.startswith("gAAAAA"):
-                try:
-                    from backend.utils.encryption import decrypt
-                    result["access_token"] = decrypt(raw)
-                except (ValueError, Exception):
-                    logger.warning("Failed to decrypt Instagram access token")
-            else:
-                result["access_token"] = raw
-
-    return result

@@ -2,6 +2,7 @@ export { AdminApiService, adminApi } from './AdminApiService.js';
 export { AgentMemoryApiService, agentMemoryApi } from './AgentMemoryApiService.js';
 export { AgentsApiService, agentsApi } from './AgentsApiService.js';
 export { BaseApiService } from './BaseApiService.js';
+export { BureauApiService, bureauApi } from './BureauApiService.js';
 export { BuildingsApiService, buildingsApi } from './BuildingsApiService.js';
 export { CampaignsApiService, campaignsApi } from './CampaignsApiService.js';
 export { ChatApiService, chatApi } from './ChatApiService.js';

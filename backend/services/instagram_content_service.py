@@ -16,6 +16,7 @@ import re
 from datetime import UTC, datetime
 from uuid import UUID
 
+import sentry_sdk
 from fastapi import HTTPException, status
 
 from backend.config import settings
@@ -109,6 +110,7 @@ class InstagramContentService:
             "Selected %d Instagram candidates across types %s",
             len(candidates),
             types,
+            extra={"candidate_count": len(candidates), "content_types": types},
         )
         return candidates
 
@@ -223,13 +225,59 @@ class InstagramContentService:
                 "Caption blocked by moderation: %s (reason: %s)",
                 candidate.get("name", "?"),
                 moderation["reason"],
+                extra={
+                    "content_type": content_type,
+                    "candidate_id": entity_id,
+                    "simulation_id": simulation_id,
+                    "moderation_reason": moderation["reason"],
+                },
             )
             return {"id": None, "status": "rejected", "failure_reason": moderation["reason"]}
 
-        # 7. Build content snapshot (frozen entity data)
+        # 7. Cipher ARG integration — generate unlock code if enabled
+        unlock_code = None
+        try:
+            cipher_resp = (
+                admin_supabase.table("platform_settings")
+                .select("setting_key, setting_value")
+                .in_("setting_key", [
+                    "instagram_cipher_enabled",
+                    "instagram_cipher_difficulty",
+                    "instagram_cipher_hint_format",
+                ])
+                .execute()
+            )
+            cipher_settings: dict[str, str] = {}
+            for row in cipher_resp.data or []:
+                cipher_settings[row["setting_key"]] = row["setting_value"]
+
+            raw_enabled = str(cipher_settings.get("instagram_cipher_enabled", "false")).lower()
+            cipher_enabled = raw_enabled not in ("false", "0", "no", "")
+            if cipher_enabled and simulation_id:
+                from backend.services.cipher_service import CipherService
+                cipher_difficulty = cipher_settings.get("instagram_cipher_difficulty", "medium")
+                cipher_hint_format = cipher_settings.get("instagram_cipher_hint_format", "footer")
+
+                unlock_code = await CipherService.generate_code(
+                    admin_supabase,
+                    difficulty=cipher_difficulty,
+                    simulation_id=UUID(simulation_id),
+                )
+                caption = CipherService.embed_cipher_hint(
+                    caption, unlock_code, cipher_difficulty, cipher_hint_format,
+                )
+                logger.info("Cipher code generated for draft", extra={
+                    "unlock_code_prefix": unlock_code[:8] if unlock_code else "",
+                    "difficulty": cipher_difficulty,
+                    "simulation_id": simulation_id,
+                })
+        except Exception:
+            logger.warning("Cipher generation failed, proceeding without cipher", exc_info=True)
+
+        # 8. Build content snapshot (frozen entity data)
         snapshot = cls._build_snapshot(candidate)
 
-        # 8. Insert draft
+        # 9. Insert draft
         record = {
             "simulation_id": simulation_id,
             "content_source_type": content_type,
@@ -241,6 +289,7 @@ class InstagramContentService:
             "image_urls": image_urls,
             "media_type": "IMAGE",
             "status": "draft",
+            "unlock_code": unlock_code,
             "ai_disclosure_included": True,
             "created_by_id": str(user_id) if user_id else None,
         }
@@ -258,9 +307,12 @@ class InstagramContentService:
             content_type,
             simulation_name,
             extra={
+                "post_id": saved.get("id"),
                 "content_type": content_type,
-                "entity_id": entity_id,
-                "simulation": simulation_name,
+                "candidate_id": entity_id,
+                "simulation_id": simulation_id,
+                "simulation_name": simulation_name,
+                "dispatch_number": dispatch_number,
             },
         )
         return saved
@@ -318,11 +370,24 @@ class InstagramContentService:
                     admin_supabase, candidate, user_id=user_id,
                 )
                 results.append(post)
-            except Exception:
+            except Exception as exc:
                 logger.exception(
                     "Failed to generate post for candidate %s",
                     candidate.get("id"),
+                    extra={
+                        "candidate_id": candidate.get("id"),
+                        "content_type": candidate.get("content_type"),
+                        "simulation_id": candidate.get("simulation_id"),
+                    },
                 )
+                with sentry_sdk.push_scope() as scope:
+                    scope.set_tag("instagram_phase", "content_generation")
+                    scope.set_context("instagram", {
+                        "candidate_id": str(candidate.get("id")),
+                        "content_type": candidate.get("content_type"),
+                        "simulation_id": str(candidate.get("simulation_id")),
+                    })
+                    sentry_sdk.capture_exception(exc)
 
         return results
 
@@ -620,12 +685,24 @@ class InstagramContentService:
                     if len(caption) > 2200:
                         caption = caption[:2190] + "…"
                     return caption
-            except Exception:
+            except Exception as exc:
                 logger.warning(
                     "AI caption generation failed for %s, using template",
                     content_type,
                     exc_info=True,
+                    extra={
+                        "content_type": content_type,
+                        "simulation_id": str(simulation_id),
+                        "dispatch_number": dispatch_number,
+                    },
                 )
+                with sentry_sdk.push_scope() as scope:
+                    scope.set_tag("instagram_phase", "caption_generation")
+                    scope.set_context("instagram", {
+                        "content_type": content_type,
+                        "simulation_id": str(simulation_id),
+                    })
+                    sentry_sdk.capture_exception(exc)
 
         # Template fallback
         template = CAPTION_TEMPLATES.get(content_type, CAPTION_TEMPLATES["agent"])
@@ -871,6 +948,37 @@ class InstagramContentService:
             return {"blocked": True, "reason": f"Too many emojis ({emoji_count}) — not Bureau voice"}
 
         return {"blocked": False, "reason": ""}
+
+    @classmethod
+    async def load_instagram_credentials(cls, admin_supabase: Client) -> dict[str, str]:
+        """Load Instagram API credentials from platform_settings.
+
+        Shared utility used by both the router and scheduler to avoid
+        duplicating credential loading + decryption logic.
+        """
+        rows = (
+            admin_supabase.table("platform_settings")
+            .select("setting_key, setting_value")
+            .in_("setting_key", ["instagram_access_token", "instagram_ig_user_id"])
+            .execute()
+        ).data or []
+
+        result: dict[str, str] = {"access_token": "", "ig_user_id": ""}
+        for row in rows:
+            if row["setting_key"] == "instagram_ig_user_id":
+                result["ig_user_id"] = row["setting_value"] or ""
+            elif row["setting_key"] == "instagram_access_token":
+                raw = row["setting_value"] or ""
+                if raw.startswith("gAAAAA"):
+                    try:
+                        from backend.utils.encryption import decrypt
+                        result["access_token"] = decrypt(raw)
+                    except (ValueError, Exception):
+                        logger.warning("Failed to decrypt Instagram access token")
+                else:
+                    result["access_token"] = raw
+
+        return result
 
     @classmethod
     def _build_snapshot(cls, candidate: dict) -> dict:

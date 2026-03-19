@@ -49,6 +49,7 @@ import './components/landing/WorldsGallery.js';
 import './components/landing/ChronicleFeed.js';
 import './components/onboarding/OnboardingWizard.js';
 import './components/lore/BureauArchives.js';
+import './components/bureau/BureauDispatchView.js';
 import './components/content/ContentPageView.js';
 
 @localized()
@@ -233,6 +234,20 @@ export class VelgApp extends LitElement {
           );
           seoService.setCanonical('/archives');
           analyticsService.trackPageView('/archives', document.title);
+          return true;
+        },
+      },
+      {
+        path: '/bureau/dispatch',
+        render: () => html`<velg-bureau-dispatch-terminal></velg-bureau-dispatch-terminal>`,
+        enter: async () => {
+          await this._authReady;
+          seoService.setTitle(['Bureau Dispatch Terminal']);
+          seoService.setDescription(
+            'Decode classified Bureau transmissions. Enter your cipher code to unlock declassified dispatches.',
+          );
+          seoService.setCanonical('/bureau/dispatch');
+          analyticsService.trackPageView('/bureau/dispatch', document.title);
           return true;
         },
       },

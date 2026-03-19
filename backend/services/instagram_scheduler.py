@@ -20,6 +20,8 @@ from datetime import UTC, datetime
 from uuid import UUID
 
 import httpx
+import sentry_sdk
+import structlog
 
 from backend.dependencies import get_admin_supabase
 from backend.services.external.instagram import (
@@ -47,6 +49,7 @@ class InstagramScheduler:
     _task: asyncio.Task | None = None
     _last_token_refresh: datetime | None = None
     _TOKEN_REFRESH_INTERVAL_DAYS = 50  # Refresh every 50 days (tokens last 60)
+    _iteration_count: int = 0
 
     @classmethod
     async def start(cls) -> asyncio.Task:
@@ -60,7 +63,12 @@ class InstagramScheduler:
         """Infinite loop: sleep → check for due posts → publish."""
         while True:
             interval = _DEFAULT_CHECK_INTERVAL
+            cls._iteration_count += 1
             try:
+                structlog.contextvars.bind_contextvars(
+                    scheduler="instagram",
+                    iteration=cls._iteration_count,
+                )
                 admin = await get_admin_supabase()
                 config = await cls._load_config(admin)
                 interval = config["interval"]
@@ -72,11 +80,21 @@ class InstagramScheduler:
             except asyncio.CancelledError:
                 logger.info("Instagram scheduler shutting down")
                 raise
+            except (httpx.ConnectError, httpx.ConnectTimeout):
+                logger.warning("Instagram scheduler: database unavailable, retrying", extra={
+                    "iteration": cls._iteration_count,
+                    "retry_in_s": interval,
+                })
             except Exception as exc:
-                if type(exc).__name__ in ("ConnectError", "ConnectTimeout"):
-                    logger.warning("Instagram scheduler: database unavailable, retrying in %ds", interval)
-                else:
-                    logger.exception("Instagram scheduler loop error")
+                logger.exception("Instagram scheduler loop error", extra={
+                    "iteration": cls._iteration_count,
+                })
+                with sentry_sdk.push_scope() as scope:
+                    scope.set_tag("instagram_phase", "scheduler_loop")
+                    scope.set_context("instagram", {
+                        "iteration": cls._iteration_count,
+                    })
+                    sentry_sdk.capture_exception(exc)
             await asyncio.sleep(interval)
 
     @classmethod
@@ -127,7 +145,10 @@ class InstagramScheduler:
                     from backend.utils.encryption import decrypt
                     config["access_token"] = decrypt(raw_token)
                 except (ValueError, Exception):
-                    logger.warning("Failed to decrypt Instagram access token")
+                    logger.warning("Failed to decrypt Instagram access token", extra={
+                        "iteration": cls._iteration_count,
+                        "token_status": "decrypt_failed",
+                    })
                     config["access_token"] = ""
             else:
                 config["access_token"] = raw_token
@@ -151,7 +172,9 @@ class InstagramScheduler:
                 pass
 
         except Exception:
-            logger.warning("Failed to load Instagram scheduler config, using defaults")
+            logger.warning("Failed to load Instagram scheduler config, using defaults", extra={
+                "iteration": cls._iteration_count,
+            })
 
         return config
 
@@ -173,14 +196,24 @@ class InstagramScheduler:
         if not due:
             return
 
-        logger.info("Found %d due Instagram post(s) to publish", len(due))
+        logger.info("Found due Instagram posts to publish", extra={
+            "post_count": len(due),
+            "iteration": cls._iteration_count,
+            "config_enabled": config["posting_enabled"],
+        })
 
         if not config["posting_enabled"]:
-            logger.info("Posting disabled (dry-run mode) — skipping publish for %d post(s)", len(due))
+            logger.info("Posting disabled (dry-run mode) — skipping publish", extra={
+                "post_count": len(due),
+                "iteration": cls._iteration_count,
+            })
             return
 
         if not config["access_token"] or not config["ig_user_id"]:
-            logger.warning("Instagram credentials not configured — cannot publish")
+            logger.warning("Instagram credentials not configured — cannot publish", extra={
+                "iteration": cls._iteration_count,
+                "token_status": "missing",
+            })
             return
 
         ig = InstagramService(
@@ -192,40 +225,90 @@ class InstagramScheduler:
             post_id = UUID(post["id"])
             try:
                 await cls._publish_single_post(admin, ig, post)
-            except InstagramTokenExpiredError:
-                logger.error("Instagram access token expired — disabling scheduler")
+            except InstagramTokenExpiredError as exc:
+                logger.error("Instagram access token expired — disabling scheduler", extra={
+                    "post_id": str(post_id),
+                    "iteration": cls._iteration_count,
+                    "token_status": "expired",
+                })
+                with sentry_sdk.push_scope() as scope:
+                    scope.set_tag("instagram_phase", "token_expired")
+                    scope.set_context("instagram", {
+                        "post_id": str(post_id),
+                        "iteration": cls._iteration_count,
+                    })
+                    sentry_sdk.capture_exception(exc)
                 admin.table("platform_settings").update(
                     {"setting_value": "false"},
                 ).eq("setting_key", "instagram_posting_enabled").execute()
                 return
             except InstagramRateLimitError:
-                logger.warning("Instagram rate limit reached — stopping publish cycle")
+                logger.warning("Instagram rate limit reached — stopping publish cycle", extra={
+                    "post_id": str(post_id),
+                    "iteration": cls._iteration_count,
+                })
                 return
-            except InstagramContainerError:
+            except InstagramContainerError as exc:
                 retry_count = post.get("retry_count", 0)
                 if retry_count < _MAX_RETRIES:
                     admin.table("instagram_posts").update({
+                        "status": "scheduled",
                         "retry_count": retry_count + 1,
                     }).eq("id", str(post_id)).execute()
-                    logger.warning("Container error for post %s (retry %d/%d)", post_id, retry_count + 1, _MAX_RETRIES)
+                    logger.warning("Container error for post, resetting to scheduled", extra={
+                        "post_id": str(post_id),
+                        "retry_count": retry_count + 1,
+                        "max_retries": _MAX_RETRIES,
+                        "iteration": cls._iteration_count,
+                    })
                 else:
                     admin.table("instagram_posts").update({
                         "status": "failed",
                         "failure_reason": "Container processing failed after max retries",
                     }).eq("id", str(post_id)).execute()
-                    logger.error("Post %s failed after %d retries", post_id, _MAX_RETRIES)
+                    logger.error("Post failed after max retries", extra={
+                        "post_id": str(post_id),
+                        "retry_count": _MAX_RETRIES,
+                        "iteration": cls._iteration_count,
+                    })
+                    with sentry_sdk.push_scope() as scope:
+                        scope.set_tag("instagram_phase", "container_retries_exhausted")
+                        scope.set_context("instagram", {
+                            "post_id": str(post_id),
+                            "retry_count": _MAX_RETRIES,
+                        })
+                        sentry_sdk.capture_exception(exc)
             except InstagramAPIError as exc:
                 admin.table("instagram_posts").update({
                     "status": "failed",
                     "failure_reason": str(exc)[:500],
                 }).eq("id", str(post_id)).execute()
-                logger.exception("Instagram API error for post %s", post_id)
-            except Exception:
+                logger.exception("Instagram API error for post", extra={
+                    "post_id": str(post_id),
+                    "iteration": cls._iteration_count,
+                })
+                with sentry_sdk.push_scope() as scope:
+                    scope.set_tag("instagram_phase", "publish")
+                    scope.set_context("instagram", {
+                        "post_id": str(post_id),
+                        "error": str(exc)[:500],
+                    })
+                    sentry_sdk.capture_exception(exc)
+            except Exception as exc:
                 admin.table("instagram_posts").update({
                     "status": "failed",
                     "failure_reason": "Unexpected error during publishing",
                 }).eq("id", str(post_id)).execute()
-                logger.exception("Unexpected error publishing post %s", post_id)
+                logger.exception("Unexpected error publishing post", extra={
+                    "post_id": str(post_id),
+                    "iteration": cls._iteration_count,
+                })
+                with sentry_sdk.push_scope() as scope:
+                    scope.set_tag("instagram_phase", "publish_unexpected")
+                    scope.set_context("instagram", {
+                        "post_id": str(post_id),
+                    })
+                    sentry_sdk.capture_exception(exc)
 
     @classmethod
     async def _publish_single_post(
@@ -285,7 +368,10 @@ class InstagramScheduler:
             try:
                 permalink = await ig.get_media_permalink(media_id)
             except Exception:
-                logger.warning("Failed to fetch permalink for media %s", media_id)
+                logger.warning("Failed to fetch permalink for media", extra={
+                    "post_id": post_id,
+                    "media_id": media_id,
+                })
 
         # Update post as published
         admin.table("instagram_posts").update({
@@ -295,12 +381,13 @@ class InstagramScheduler:
             "ig_permalink": permalink,
         }).eq("id", post_id).execute()
 
-        logger.info(
-            "Published Instagram post %s → media %s",
-            post_id,
-            media_id,
-            extra={"post_id": post_id, "media_id": media_id, "permalink": permalink},
-        )
+        logger.info("Published Instagram post", extra={
+            "post_id": post_id,
+            "media_id": media_id,
+            "media_type": media_type,
+            "permalink": permalink,
+            "iteration": cls._iteration_count,
+        })
 
     @classmethod
     async def _maybe_refresh_token(cls, admin: Client, config: dict) -> None:
@@ -342,23 +429,41 @@ class InstagramScheduler:
                         {"setting_value": encrypted},
                     ).eq("setting_key", "instagram_access_token").execute()
 
-                    logger.info(
-                        "Instagram token refreshed, expires in %d days",
-                        expires_in // 86400,
-                    )
+                    logger.info("Instagram token refreshed", extra={
+                        "expires_in_days": expires_in // 86400,
+                        "iteration": cls._iteration_count,
+                        "token_status": "refreshed",
+                    })
 
                 cls._last_token_refresh = now
             elif "error" in data:
                 error_msg = data["error"].get("message", "Unknown")
                 # Don't log as error if token is too new (<24h)
                 if data["error"].get("code") == 190:
-                    logger.debug("Token refresh skipped (too new): %s", error_msg)
+                    logger.debug("Token refresh skipped (too new)", extra={
+                        "error_message": error_msg,
+                        "iteration": cls._iteration_count,
+                        "token_status": "too_new",
+                    })
                 else:
-                    logger.warning("Token refresh failed: %s", error_msg)
+                    logger.warning("Token refresh failed", extra={
+                        "error_message": error_msg,
+                        "iteration": cls._iteration_count,
+                        "token_status": "refresh_failed",
+                    })
                 cls._last_token_refresh = now  # Don't retry immediately
 
-        except Exception:
-            logger.warning("Token refresh request failed", exc_info=True)
+        except Exception as exc:
+            logger.warning("Token refresh request failed", extra={
+                "iteration": cls._iteration_count,
+                "token_status": "request_failed",
+            })
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("instagram_phase", "token_refresh")
+                scope.set_context("instagram", {
+                    "iteration": cls._iteration_count,
+                })
+                sentry_sdk.capture_exception(exc)
             cls._last_token_refresh = now
 
     @classmethod
@@ -410,18 +515,17 @@ class InstagramScheduler:
                 await InstagramContentService.update_engagement_metrics(
                     admin, UUID(post["id"]), metrics,
                 )
-                logger.debug(
-                    "Collected metrics for post %s: reach=%s, saves=%s",
-                    post["id"],
-                    metrics.get("reach", 0),
-                    metrics.get("saved", 0),
-                )
+                logger.debug("Collected metrics for post", extra={
+                    "post_id": post["id"],
+                    "reach": metrics.get("reach", 0),
+                    "saves": metrics.get("saved", 0),
+                    "iteration": cls._iteration_count,
+                })
             except Exception:
-                logger.warning(
-                    "Failed to collect metrics for post %s",
-                    post["id"],
-                    exc_info=True,
-                )
+                logger.warning("Failed to collect metrics for post", extra={
+                    "post_id": post["id"],
+                    "iteration": cls._iteration_count,
+                })
 
 
 def _parse_bool(value: str) -> bool:

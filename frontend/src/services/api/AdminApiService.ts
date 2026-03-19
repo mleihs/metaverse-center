@@ -244,6 +244,17 @@ export class AdminApiService extends BaseApiService {
     return this.get('/admin/instagram/rate-limit');
   }
 
+  async getInstagramCipherStats(): Promise<ApiResponse<CipherStats>> {
+    return this.get('/admin/instagram/ciphers');
+  }
+
+  async setInstagramCipher(
+    postId: string,
+    body: { unlock_code: string; difficulty: string },
+  ): Promise<ApiResponse<{ post_id: string; unlock_code: string; difficulty: string }>> {
+    return this.post(`/admin/instagram/${postId}/cipher`, body);
+  }
+
   // --- Simulation Management ---
 
   async listSimulations(
@@ -395,6 +406,24 @@ export interface InstagramRateLimit {
   quota_usage: number;
   quota_total: number;
   remaining: number;
+}
+
+export interface CipherStats {
+  total_redemptions: number;
+  unique_users: number;
+  total_attempts: number;
+  success_rate: number;
+  recent_redemptions: CipherRedemptionRecord[];
+}
+
+export interface CipherRedemptionRecord {
+  id: string;
+  instagram_post_id: string;
+  user_id: string | null;
+  redeemed_at: string;
+  ip_hash: string | null;
+  reward_type: string;
+  reward_data: Record<string, unknown>;
 }
 
 export const adminApi = new AdminApiService();
