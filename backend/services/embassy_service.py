@@ -174,6 +174,17 @@ class EmbassyService:
 
         embassy = response.data[0]
 
+        logger.info(
+            "Embassy created",
+            extra={
+                "embassy_id": embassy["id"],
+                "simulation_a_id": str(data["simulation_a_id"]),
+                "simulation_b_id": str(data["simulation_b_id"]),
+                "building_a_id": bid_a,
+                "building_b_id": bid_b,
+            },
+        )
+
         # Update special_attributes on both buildings
         await cls._update_building_special_attrs(admin_supabase, embassy)
 
@@ -212,6 +223,11 @@ class EmbassyService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Embassy '{embassy_id}' not found.",
             )
+
+        logger.info(
+            "Embassy updated",
+            extra={"embassy_id": str(embassy_id), "fields": list(data.keys())},
+        )
         return response.data[0]
 
     @classmethod
@@ -239,6 +255,15 @@ class EmbassyService:
             )
 
         result = await cls.update_embassy(admin_supabase, embassy_id, {"status": new_status})
+
+        logger.info(
+            "Embassy status transitioned",
+            extra={
+                "embassy_id": str(embassy_id),
+                "from_status": current,
+                "to_status": new_status,
+            },
+        )
 
         # If dissolving, clear special_attributes on buildings
         if new_status == "dissolved":

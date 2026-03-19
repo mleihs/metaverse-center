@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from typing import Any
 
 import httpx
@@ -84,6 +85,13 @@ class OpenRouterService:
         }
         last_error: Exception | None = None
 
+        purpose = messages[0].get("content", "")[:60] if messages else ""
+        logger.info(
+            "OpenRouter request",
+            extra={"model": model, "purpose": purpose, "max_tokens": max_tokens},
+        )
+        t0 = time.monotonic()
+
         for attempt in range(MAX_RETRIES + 1):
             try:
                 async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS) as client:
@@ -94,11 +102,19 @@ class OpenRouterService:
                     )
 
                 if response.status_code == 429:
+                    logger.error(
+                        "OpenRouter rate limited",
+                        extra={"model": model, "status": 429},
+                    )
                     raise RateLimitError(
                         f"Rate limited by OpenRouter (model: {model})"
                     )
 
                 if response.status_code == 503:
+                    logger.error(
+                        "OpenRouter model unavailable",
+                        extra={"model": model, "status": 503},
+                    )
                     raise ModelUnavailableError(
                         f"Model '{model}' is currently unavailable"
                     )
@@ -117,11 +133,20 @@ class OpenRouterService:
                             f"API error {response.status_code}: {error_body[:200]}"
                         )
                         continue
+                    logger.error(
+                        "OpenRouter request failed",
+                        extra={"model": model, "status": response.status_code, "error": error_body[:200]},
+                    )
                     raise OpenRouterError(
                         f"API error {response.status_code}: {error_body[:200]}"
                     )
 
                 data = response.json()
+                duration_ms = int((time.monotonic() - t0) * 1000)
+                logger.info(
+                    "OpenRouter response",
+                    extra={"model": model, "status": 200, "duration_ms": duration_ms},
+                )
                 return _extract_content(data)
 
             except (httpx.TimeoutException, httpx.ConnectError) as e:
@@ -134,6 +159,10 @@ class OpenRouterService:
                     )
                     last_error = e
                     continue
+                logger.error(
+                    "OpenRouter connection failed",
+                    extra={"model": model, "error": str(e), "attempts": MAX_RETRIES + 1},
+                )
                 raise OpenRouterError(f"Connection failed after {MAX_RETRIES + 1} attempts") from e
 
         raise OpenRouterError("All retry attempts exhausted") from last_error

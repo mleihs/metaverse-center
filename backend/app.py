@@ -155,8 +155,10 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
             status_code=503,
             content={
                 "success": False,
-                "code": "SERVICE_UNAVAILABLE",
-                "message": "Database temporarily unavailable. Please retry shortly.",
+                "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Database temporarily unavailable. Please retry shortly.",
+                },
             },
             headers={"Retry-After": "5"},
         )
@@ -165,8 +167,10 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
         status_code=500,
         content={
             "success": False,
-            "code": "INTERNAL_ERROR",
-            "message": "An internal server error occurred.",
+            "error": {
+                "code": "INTERNAL_ERROR",
+                "message": "An internal server error occurred.",
+            },
         },
     )
 

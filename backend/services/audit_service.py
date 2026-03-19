@@ -27,7 +27,7 @@ class AuditService:
                 supabase, simulation_id, user_id, entity_type, entity_id, action, details,
             )
         except Exception:
-            logger.debug("Audit log skipped (RLS): %s %s %s", entity_type, action, entity_id)
+            logger.warning("Audit log skipped (RLS): %s %s %s", entity_type, action, entity_id)
 
     @staticmethod
     async def log_action(

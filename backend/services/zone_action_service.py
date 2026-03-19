@@ -119,6 +119,16 @@ class ZoneActionService:
                 detail="Failed to create zone action.",
             )
 
+        logger.info(
+            "Zone action created",
+            extra={
+                "simulation_id": str(simulation_id),
+                "zone_id": str(zone_id),
+                "action_type": action_type,
+                "user_id": str(user_id),
+            },
+        )
+
         await GameMechanicsService.refresh_metrics(supabase)
         return response.data[0]
 
@@ -145,6 +155,15 @@ class ZoneActionService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Zone action not found or already cancelled.",
             )
+
+        logger.info(
+            "Zone action cancelled",
+            extra={
+                "simulation_id": str(simulation_id),
+                "zone_id": str(zone_id),
+                "action_id": str(action_id),
+            },
+        )
 
         await GameMechanicsService.refresh_metrics(supabase)
         return response.data[0]

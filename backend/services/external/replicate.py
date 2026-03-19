@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from typing import Any
 
 import replicate
@@ -65,8 +66,12 @@ class ReplicateService:
         Raises:
             ReplicateError: On API errors, model errors, or timeout.
         """
+        t0 = time.monotonic()
         try:
-            logger.info("Replicate generation: model=%s, prompt=%s...", model, prompt[:80])
+            logger.info(
+                "Replicate request",
+                extra={"model": model, "prompt": prompt[:80], "prompt_key": prompt_key},
+            )
 
             output = await self._client.async_run(
                 model,
@@ -81,15 +86,33 @@ class ReplicateService:
             else:
                 image_bytes = await output.aread()
 
-            logger.info("Replicate generation complete: %d bytes", len(image_bytes))
+            duration_ms = int((time.monotonic() - t0) * 1000)
+            logger.info(
+                "Replicate response",
+                extra={"model": model, "bytes": len(image_bytes), "duration_ms": duration_ms},
+            )
             return image_bytes
 
         except replicate.exceptions.ModelError as e:
+            duration_ms = int((time.monotonic() - t0) * 1000)
+            logger.error(
+                "Replicate model error",
+                extra={"model": model, "error": str(e), "duration_ms": duration_ms},
+            )
             raise ReplicateError(f"Model error: {e}") from e
         except replicate.exceptions.ReplicateError as e:
+            duration_ms = int((time.monotonic() - t0) * 1000)
             err_str = str(e).lower()
             if any(kw in err_str for kw in ("billing", "payment", "spending limit", "out of credit", "402")):
+                logger.error(
+                    "Replicate billing error",
+                    extra={"model": model, "error": str(e), "duration_ms": duration_ms},
+                )
                 raise ReplicateBillingError(
                     f"Replicate billing error — check credits at replicate.com/account/billing: {e}"
                 ) from e
+            logger.error(
+                "Replicate API error",
+                extra={"model": model, "error": str(e), "duration_ms": duration_ms},
+            )
             raise ReplicateError(f"Replicate API error: {e}") from e

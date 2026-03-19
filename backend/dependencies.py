@@ -228,7 +228,16 @@ def require_epoch_creator():
 
 
 def require_platform_admin():
-    """Dependency that checks the user is a platform admin (by email allowlist)."""
+    """Dependency that checks the user is a platform admin (by email allowlist).
+
+    # TODO: SECURITY — email-based admin checks are fragile.
+    # The JWT `email` claim comes from the auth provider and could be spoofed
+    # if the provider is misconfigured or if email verification is disabled.
+    # Migrate to a `platform_admins` table with user ID lookup:
+    #   1. Create `platform_admins` table with `user_id UUID PRIMARY KEY`.
+    #   2. Replace email check with a DB lookup by `user.id`.
+    #   3. Remove `PLATFORM_ADMIN_EMAILS` config entirely.
+    """
 
     async def _check_admin(
         user: CurrentUser = Depends(get_current_user),
