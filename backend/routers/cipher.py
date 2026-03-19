@@ -43,7 +43,7 @@ async def redeem_cipher(
     request: Request,
     body: CipherRedeemRequest,
     admin_supabase: Client = Depends(get_admin_supabase),
-) -> dict:
+) -> CipherRedemptionResponse:
     """Redeem a cipher code from an Instagram dispatch.
 
     No authentication required, but authenticated users get

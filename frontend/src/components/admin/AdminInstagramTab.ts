@@ -916,8 +916,16 @@ export class VelgAdminInstagramTab extends LitElement {
     }
 
     /* ══════════════════════════════════════════════════════
-       CIPHER TABLE
+       CIPHER OPERATIONS
        ══════════════════════════════════════════════════════ */
+
+    .cipher-section {
+      margin-top: var(--space-8);
+    }
+
+    .cipher-section__grid {
+      margin-top: var(--space-4);
+    }
 
     .cipher-table__header,
     .cipher-table__row {
@@ -1457,13 +1465,13 @@ export class VelgAdminInstagramTab extends LitElement {
     if (!cs) return nothing;
 
     return html`
-      <div class="queue-section" style="margin-top: var(--space-8);">
+      <div class="queue-section cipher-section">
         <div class="queue-header">
           <div class="queue-header__marker"></div>
           <div class="queue-header__title">${msg('Cipher Operations')}</div>
         </div>
 
-        <div class="intel-grid" style="margin-top: var(--space-4);">
+        <div class="intel-grid cipher-section__grid">
           <div class="intel-card">
             <div class="intel-card__corner intel-card__corner--tl"></div>
             <div class="intel-card__corner intel-card__corner--br"></div>
@@ -1498,7 +1506,7 @@ export class VelgAdminInstagramTab extends LitElement {
 
         ${cs.recent_redemptions.length > 0
           ? html`
-            <div class="cipher-table" style="margin-top: var(--space-4);">
+            <div class="cipher-table" >
               <div class="cipher-table__header">
                 <span>${msg('Redeemed')}</span>
                 <span>${msg('Reward')}</span>
@@ -1518,7 +1526,7 @@ export class VelgAdminInstagramTab extends LitElement {
             </div>
           `
           : html`
-            <div class="empty-state" style="margin-top: var(--space-4);">
+            <div class="empty-state" >
               ${msg('No cipher redemptions yet.')}
               <div class="empty-state__hint">
                 ${msg('Ciphers are generated automatically when enabled in platform settings.')}

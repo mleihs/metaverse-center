@@ -50,7 +50,9 @@ CREATE POLICY "service_role_all" ON public.cipher_redemptions
 CREATE POLICY "service_role_all" ON public.cipher_attempts
     FOR ALL TO service_role USING (true) WITH CHECK (true);
 
--- Authenticated users can read their own redemptions
+-- Authenticated users can read their own redemptions.
+-- No INSERT/UPDATE/DELETE policies for authenticated users — all mutations
+-- go through fn_redeem_cipher_code() RPC which runs as SECURITY DEFINER.
 CREATE POLICY "users_read_own_redemptions" ON public.cipher_redemptions
     FOR SELECT TO authenticated
     USING (user_id = auth.uid());
