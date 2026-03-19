@@ -5,6 +5,7 @@ import {
   adminApi,
   type BlueskyAnalytics,
   type BlueskyConnectionStatus,
+  type BlueskyPipelineSettings,
   type BlueskyQueueItem,
 } from '../../services/api/AdminApiService.js';
 import { icons } from '../../utils/icons.js';
@@ -13,7 +14,7 @@ import { VelgToast } from '../shared/Toast.js';
 
 import '../shared/ConfirmDialog.js';
 
-type PanelTab = 'operations' | 'intelligence';
+type PanelTab = 'operations' | 'configure' | 'intelligence';
 type StatusFilter = 'all' | 'pending' | 'publishing' | 'published' | 'failed' | 'skipped';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -532,6 +533,133 @@ export class VelgAdminBlueskyTab extends LitElement {
       margin-bottom: var(--space-4);
     }
 
+    /* ── Configuration Panel ──────────────────────────── */
+
+    .config-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: var(--space-4);
+    }
+
+    .config-card {
+      border: 1px solid var(--color-border);
+      border-radius: 4px;
+      padding: var(--space-4);
+      position: relative;
+    }
+
+    .config-card__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-3);
+      padding-bottom: var(--space-2);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .config-card__title {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-bold);
+      font-size: var(--text-sm);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .config-card__status {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      font-weight: var(--font-bold);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .config-card__status--active { color: var(--color-success); }
+    .config-card__status--inactive { color: var(--color-text-muted); }
+
+    .config-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+      padding: var(--space-2) 0;
+    }
+
+    .config-row + .config-row {
+      border-top: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
+    }
+
+    .config-row__label {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .config-row__name {
+      font-weight: var(--font-bold);
+      font-size: var(--text-sm);
+      color: var(--color-text-primary);
+    }
+
+    .config-row__desc {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      margin-top: 2px;
+    }
+
+    .config-input {
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+      padding: var(--space-1-5) var(--space-2);
+      border: 1px solid var(--color-border);
+      border-radius: 3px;
+      background: var(--color-surface-sunken);
+      color: var(--color-text-primary);
+      width: 220px;
+      transition: border-color 0.15s ease;
+    }
+
+    .config-input:focus {
+      outline: none;
+      border-color: var(--color-primary);
+    }
+
+    .config-input--password {
+      letter-spacing: 0.15em;
+    }
+
+    .config-save-btn {
+      font-family: var(--font-brutalist);
+      font-size: var(--text-xs);
+      font-weight: var(--font-bold);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: var(--space-1) var(--space-2);
+      border: 1px solid var(--color-primary);
+      border-radius: 3px;
+      background: none;
+      color: var(--color-primary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      margin-left: var(--space-2);
+      white-space: nowrap;
+    }
+
+    .config-save-btn:hover:not(:disabled) {
+      background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+    }
+
+    .config-save-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .config-input-group {
+      display: flex;
+      align-items: center;
+    }
+
     @media (max-width: 768px) {
       .dispatch {
         flex-direction: column;
@@ -560,6 +688,11 @@ export class VelgAdminBlueskyTab extends LitElement {
   @state() private _testingConnection = false;
   @state() private _error: string | null = null;
   @state() private _actionInProgress: string | null = null;
+  @state() private _settings: BlueskyPipelineSettings | null = null;
+  @state() private _savingKey: string | null = null;
+  @state() private _handleDraft = '';
+  @state() private _passwordDraft = '';
+  @state() private _pdsDraft = '';
 
   // ── Lifecycle ────────────────────────────────────────
 
@@ -575,10 +708,11 @@ export class VelgAdminBlueskyTab extends LitElement {
     this._error = null;
 
     try {
-      const [queueResp, analyticsResp, statusResp] = await Promise.all([
+      const [queueResp, analyticsResp, statusResp, settingsResp] = await Promise.all([
         adminApi.listBlueskyQueue({ limit: '100' }),
         adminApi.getBlueskyAnalytics(30),
         adminApi.getBlueskyStatus(),
+        adminApi.getBlueskySettings(),
       ]);
 
       if (queueResp.success && queueResp.data) {
@@ -589,6 +723,12 @@ export class VelgAdminBlueskyTab extends LitElement {
       }
       if (statusResp.success && statusResp.data) {
         this._connectionStatus = statusResp.data;
+      }
+      if (settingsResp.success && settingsResp.data) {
+        this._settings = settingsResp.data;
+        this._handleDraft = this._settingValue('bluesky_handle');
+        this._passwordDraft = '';
+        this._pdsDraft = this._settingValue('bluesky_pds_url');
       }
     } catch (err) {
       this._error = err instanceof Error ? err.message : msg('Failed to load Bluesky data');
@@ -693,6 +833,45 @@ export class VelgAdminBlueskyTab extends LitElement {
     }
   }
 
+  // ── Settings Helpers ─────────────────────────────────
+
+  private _settingValue(key: string): string {
+    const entry = this._settings?.[key];
+    if (!entry) return '';
+    return String(entry.value ?? '').replace(/^"|"$/g, '');
+  }
+
+  private _settingBool(key: string): boolean {
+    const raw = this._settingValue(key);
+    return raw === 'true';
+  }
+
+  private async _saveSetting(key: string, value: string): Promise<void> {
+    this._savingKey = key;
+    try {
+      const resp = await adminApi.updateSetting(key, value);
+      if (resp.success) {
+        VelgToast.success(msg(str`Setting updated: ${key.replace('bluesky_', '')}`));
+        // Refresh settings
+        const settingsResp = await adminApi.getBlueskySettings();
+        if (settingsResp.success && settingsResp.data) {
+          this._settings = settingsResp.data;
+        }
+      } else {
+        VelgToast.error(resp.error?.message ?? msg('Failed to save setting'));
+      }
+    } catch {
+      VelgToast.error(msg('Failed to save setting'));
+    } finally {
+      this._savingKey = null;
+    }
+  }
+
+  private async _toggleSetting(key: string): Promise<void> {
+    const newVal = !this._settingBool(key);
+    await this._saveSetting(key, newVal ? 'true' : 'false');
+  }
+
   // ── Formatting ───────────────────────────────────────
 
   private _formatDate(iso: string | null): string {
@@ -728,6 +907,7 @@ export class VelgAdminBlueskyTab extends LitElement {
       ${this._renderTabBar()}
 
       ${this._activeTab === 'operations' ? this._renderOperations() : nothing}
+      ${this._activeTab === 'configure' ? this._renderConfigureTab() : nothing}
       ${this._activeTab === 'intelligence' ? this._renderIntelligence() : nothing}
     `;
   }
@@ -786,6 +966,11 @@ export class VelgAdminBlueskyTab extends LitElement {
         badge: this._actionableCount > 0
           ? html`<span class="tab__badge">${this._actionableCount}</span>`
           : nothing,
+      },
+      {
+        key: 'configure',
+        label: msg('Configure'),
+        icon: icons.gear(13),
       },
       {
         key: 'intelligence',
@@ -958,6 +1143,141 @@ export class VelgAdminBlueskyTab extends LitElement {
               ${msg('View')}
             </a>
           ` : nothing}
+        </div>
+      </div>
+    `;
+  }
+
+  // ── Configure ───────────────────────────────────────
+
+  private _renderConfigureTab() {
+    const enabled = this._settingBool('bluesky_enabled');
+    const postingEnabled = this._settingBool('bluesky_posting_enabled');
+    const autoCrosspost = this._settingBool('bluesky_auto_crosspost');
+
+    return html`
+      <div class="config-grid">
+        <!-- Credentials Card -->
+        <div class="config-card">
+          <div class="config-card__header">
+            <div class="config-card__title">
+              ${icons.antenna(14)} ${msg('Credentials')}
+            </div>
+            <span class="config-card__status ${this._connectionStatus?.authenticated ? 'config-card__status--active' : 'config-card__status--inactive'}">
+              ${this._connectionStatus?.authenticated ? msg('Connected') : msg('Disconnected')}
+            </span>
+          </div>
+
+          <div class="config-row">
+            <div class="config-row__label">
+              <div class="config-row__name">${msg('Handle')}</div>
+              <div class="config-row__desc">${msg('Bluesky account handle (e.g. bureau.bsky.social)')}</div>
+            </div>
+            <div class="config-input-group">
+              <input
+                class="config-input"
+                type="text"
+                .value=${this._handleDraft}
+                placeholder="handle.bsky.social"
+                @input=${(e: InputEvent) => { this._handleDraft = (e.target as HTMLInputElement).value; }}
+              />
+              <button
+                class="config-save-btn"
+                ?disabled=${this._savingKey === 'bluesky_handle'}
+                @click=${() => void this._saveSetting('bluesky_handle', this._handleDraft)}
+              >${this._savingKey === 'bluesky_handle' ? msg('Saving...') : msg('Save')}</button>
+            </div>
+          </div>
+
+          <div class="config-row">
+            <div class="config-row__label">
+              <div class="config-row__name">${msg('App Password')}</div>
+              <div class="config-row__desc">${msg('Generate at bsky.app/settings/app-passwords')}</div>
+            </div>
+            <div class="config-input-group">
+              <input
+                class="config-input config-input--password"
+                type="password"
+                .value=${this._passwordDraft}
+                placeholder=${msg('Enter app password')}
+                @input=${(e: InputEvent) => { this._passwordDraft = (e.target as HTMLInputElement).value; }}
+              />
+              <button
+                class="config-save-btn"
+                ?disabled=${this._savingKey === 'bluesky_app_password' || !this._passwordDraft}
+                @click=${() => void this._saveSetting('bluesky_app_password', this._passwordDraft)}
+              >${this._savingKey === 'bluesky_app_password' ? msg('Saving...') : msg('Save')}</button>
+            </div>
+          </div>
+
+          <div class="config-row">
+            <div class="config-row__label">
+              <div class="config-row__name">${msg('PDS URL')}</div>
+              <div class="config-row__desc">${msg('Personal Data Server (default: bsky.social)')}</div>
+            </div>
+            <div class="config-input-group">
+              <input
+                class="config-input"
+                type="text"
+                .value=${this._pdsDraft}
+                placeholder="https://bsky.social"
+                @input=${(e: InputEvent) => { this._pdsDraft = (e.target as HTMLInputElement).value; }}
+              />
+              <button
+                class="config-save-btn"
+                ?disabled=${this._savingKey === 'bluesky_pds_url'}
+                @click=${() => void this._saveSetting('bluesky_pds_url', this._pdsDraft)}
+              >${this._savingKey === 'bluesky_pds_url' ? msg('Saving...') : msg('Save')}</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pipeline Card -->
+        <div class="config-card">
+          <div class="config-card__header">
+            <div class="config-card__title">
+              ${icons.gear(14)} ${msg('Pipeline')}
+            </div>
+            <span class="config-card__status ${enabled ? 'config-card__status--active' : 'config-card__status--inactive'}">
+              ${enabled ? msg('Active') : msg('Inactive')}
+            </span>
+          </div>
+
+          <div class="config-row">
+            <div class="config-row__label">
+              <div class="config-row__name">${msg('Bluesky Enabled')}</div>
+              <div class="config-row__desc">${msg('Master switch for the Bluesky pipeline')}</div>
+            </div>
+            <button
+              class="act ${enabled ? 'act--publish' : 'act--skip'}"
+              ?disabled=${this._savingKey === 'bluesky_enabled'}
+              @click=${() => void this._toggleSetting('bluesky_enabled')}
+            >${enabled ? msg('On') : msg('Off')}</button>
+          </div>
+
+          <div class="config-row">
+            <div class="config-row__label">
+              <div class="config-row__name">${msg('Posting Enabled')}</div>
+              <div class="config-row__desc">${msg('Actually publish to Bluesky (vs dry-run mode)')}</div>
+            </div>
+            <button
+              class="act ${postingEnabled ? 'act--publish' : 'act--skip'}"
+              ?disabled=${this._savingKey === 'bluesky_posting_enabled'}
+              @click=${() => void this._toggleSetting('bluesky_posting_enabled')}
+            >${postingEnabled ? msg('On') : msg('Off')}</button>
+          </div>
+
+          <div class="config-row">
+            <div class="config-row__label">
+              <div class="config-row__name">${msg('Auto Cross-Post')}</div>
+              <div class="config-row__desc">${msg('Automatically create Bluesky posts from Instagram')}</div>
+            </div>
+            <button
+              class="act ${autoCrosspost ? 'act--publish' : 'act--skip'}"
+              ?disabled=${this._savingKey === 'bluesky_auto_crosspost'}
+              @click=${() => void this._toggleSetting('bluesky_auto_crosspost')}
+            >${autoCrosspost ? msg('On') : msg('Off')}</button>
+          </div>
         </div>
       </div>
     `;

@@ -14,8 +14,7 @@ import './AdminScannerTab.js';
 import './AdminSimulationsTab.js';
 import './AdminHeartbeatTab.js';
 import './AdminHealthTab.js';
-import './AdminInstagramTab.js';
-import './AdminBlueskyTab.js';
+import './AdminSocialTab.js';
 import './AdminResearchTab.js';
 
 type AdminTab =
@@ -29,8 +28,7 @@ type AdminTab =
   | 'apikeys'
   | 'models'
   | 'research'
-  | 'instagram'
-  | 'bluesky'
+  | 'social'
   | 'caching'
   | 'cleanup';
 
@@ -288,19 +286,12 @@ export class VelgAdminPanel extends LitElement {
           @click=${() => this._setTab('research')}
         >${msg('Research')}</button>
         <button
-          class="admin-tabs__tab ${this._activeTab === 'instagram' ? 'admin-tabs__tab--active' : ''}"
+          class="admin-tabs__tab ${this._activeTab === 'social' ? 'admin-tabs__tab--active' : ''}"
           role="tab"
-          aria-selected=${this._activeTab === 'instagram'}
+          aria-selected=${this._activeTab === 'social'}
           aria-controls="admin-tabpanel"
-          @click=${() => this._setTab('instagram')}
-        >${msg('Instagram')}</button>
-        <button
-          class="admin-tabs__tab ${this._activeTab === 'bluesky' ? 'admin-tabs__tab--active' : ''}"
-          role="tab"
-          aria-selected=${this._activeTab === 'bluesky'}
-          aria-controls="admin-tabpanel"
-          @click=${() => this._setTab('bluesky')}
-        >${msg('Bluesky')}</button>
+          @click=${() => this._setTab('social')}
+        >${msg('Social')}</button>
         <button
           class="admin-tabs__tab ${this._activeTab === 'caching' ? 'admin-tabs__tab--active' : ''}"
           role="tab"
@@ -345,10 +336,8 @@ export class VelgAdminPanel extends LitElement {
         return html`<velg-admin-models-tab></velg-admin-models-tab>`;
       case 'research':
         return html`<velg-admin-research-tab></velg-admin-research-tab>`;
-      case 'instagram':
-        return html`<velg-admin-instagram-tab></velg-admin-instagram-tab>`;
-      case 'bluesky':
-        return html`<velg-admin-bluesky-tab></velg-admin-bluesky-tab>`;
+      case 'social':
+        return html`<velg-admin-social-tab></velg-admin-social-tab>`;
       case 'caching':
         return html`<velg-admin-caching-tab></velg-admin-caching-tab>`;
       case 'cleanup':
