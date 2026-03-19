@@ -24,6 +24,20 @@ const registry: Record<string, ContentGetter> = {
     return m.getStrategyGamePage();
   },
 
+  /* ── Legal pages ────────────────────────────────── */
+  privacy: async () => {
+    const m = await import('./pages/privacy.js');
+    return m.getPrivacyPage();
+  },
+  terms: async () => {
+    const m = await import('./pages/terms.js');
+    return m.getTermsPage();
+  },
+  'data-deletion': async () => {
+    const m = await import('./pages/data-deletion.js');
+    return m.getDataDeletionPage();
+  },
+
   /* ── Perspective articles ──────────────────────── */
   'perspectives/what-is-the-metaverse': async () => {
     const m = await import('./perspectives/what-is-the-metaverse.js');

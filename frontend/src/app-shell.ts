@@ -419,6 +419,31 @@ export class VelgApp extends LitElement {
           return true;
         },
       },
+      // --- Legal pages ---
+      {
+        path: '/privacy',
+        render: () => html`<velg-content-page .slug=${'privacy'}></velg-content-page>`,
+        enter: async () => {
+          await this._authReady;
+          return true;
+        },
+      },
+      {
+        path: '/terms',
+        render: () => html`<velg-content-page .slug=${'terms'}></velg-content-page>`,
+        enter: async () => {
+          await this._authReady;
+          return true;
+        },
+      },
+      {
+        path: '/data-deletion',
+        render: () => html`<velg-content-page .slug=${'data-deletion'}></velg-content-page>`,
+        enter: async () => {
+          await this._authReady;
+          return true;
+        },
+      },
       // --- Content pages (landing + perspectives) ---
       {
         path: '/worldbuilding',
