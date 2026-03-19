@@ -120,6 +120,18 @@ export class VelgAgentsView extends SignalWatcher(LitElement) {
       width: 100%;
     }
 
+    .lineup__role {
+      font-size: 8px;
+      color: var(--color-text-muted);
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+      opacity: 0.8;
+    }
+
+
     @media (max-width: 480px) {
       .lineup__card {
         min-width: 80px;
@@ -312,7 +324,9 @@ export class VelgAgentsView extends SignalWatcher(LitElement) {
   }
 
   private _renderLineup() {
-    if (this._agents.length === 0 || this._aptitudeMap.size === 0) return nothing;
+    if (this._agents.length === 0) return nothing;
+
+    const hasAptitudes = this._aptitudeMap.size > 0;
 
     return html`
       <div class="lineup">
@@ -321,8 +335,7 @@ export class VelgAgentsView extends SignalWatcher(LitElement) {
         </div>
         <div class="lineup__scroll">
           ${this._agents.map((agent, i) => {
-            const aptitudes = this._aptitudeMap.get(agent.id);
-            if (!aptitudes) return nothing;
+            const aptitudes = hasAptitudes ? this._aptitudeMap.get(agent.id) : null;
 
             return html`
               <div
@@ -339,12 +352,16 @@ export class VelgAgentsView extends SignalWatcher(LitElement) {
                   size="sm"
                 ></velg-avatar>
                 <span class="lineup__name">${agent.name}</span>
-                <div class="lineup__bars">
-                  <velg-aptitude-bars
-                    .aptitudes=${aptitudes}
-                    size="sm"
-                  ></velg-aptitude-bars>
-                </div>
+                ${aptitudes ? html`
+                  <div class="lineup__bars">
+                    <velg-aptitude-bars
+                      .aptitudes=${aptitudes}
+                      size="sm"
+                    ></velg-aptitude-bars>
+                  </div>
+                ` : agent.primary_profession ? html`
+                  <span class="lineup__role">${agent.primary_profession}</span>
+                ` : nothing}
               </div>
             `;
           })}
