@@ -31,7 +31,7 @@ class CipherRedemptionResponse(BaseModel):
 
     success: bool
     error_code: str | None = None
-    message: str | None = None
+    user_message: str | None = None
     redemption_id: UUID | None = None
     reward_type: str | None = None
     reward_data: dict | None = None

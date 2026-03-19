@@ -130,7 +130,7 @@ BEGIN
         RETURN jsonb_build_object(
             'success', false,
             'error_code',   'rate_limited',
-            'message', 'Too many attempts. Try again later.',
+            'user_message', 'Too many attempts. Try again later.',
             'retry_after_seconds', 3600
         );
     END IF;
@@ -151,7 +151,7 @@ BEGIN
         RETURN jsonb_build_object(
             'success',            false,
             'error_code',              'invalid_code',
-            'message',            'Invalid cipher code.',
+            'user_message',            'Invalid cipher code.',
             'attempts_remaining', greatest(v_max_attempts - v_rate_count - 1, 0)
         );
     END IF;
@@ -174,7 +174,7 @@ BEGIN
         RETURN jsonb_build_object(
             'success', false,
             'error_code',   'already_redeemed',
-            'message', 'You have already redeemed this cipher.'
+            'user_message', 'You have already redeemed this cipher.'
         );
     END IF;
 

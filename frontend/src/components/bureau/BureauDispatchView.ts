@@ -92,7 +92,7 @@ export class VelgBureauDispatch extends LitElement {
     }
 
     this._state = 'error';
-    this._errorMessage = result?.message ?? msg('Invalid cipher code.');
+    this._errorMessage = result?.user_message ?? msg('Invalid cipher code.');
     this._attemptsRemaining = result?.attempts_remaining ?? null;
   }
 
