@@ -161,7 +161,7 @@ class InstagramScheduler:
         now = datetime.now(UTC).isoformat()
         response = (
             admin.table("instagram_posts")
-            .select("id, caption, image_urls, media_type, alt_text, ig_container_id, retry_count")
+            .select("id, caption, hashtags, image_urls, media_type, alt_text, ig_container_id, retry_count")
             .eq("status", "scheduled")
             .lte("scheduled_at", now)
             .order("scheduled_at")
@@ -240,6 +240,11 @@ class InstagramScheduler:
         image_urls = post.get("image_urls", [])
         caption = post.get("caption", "")
         alt_text = post.get("alt_text")
+
+        # Append hashtags to caption (Instagram has no separate hashtag field)
+        hashtags = post.get("hashtags") or []
+        if hashtags:
+            caption = caption.rstrip() + "\n\n" + " ".join(hashtags)
 
         # Mark as publishing
         admin.table("instagram_posts").update(
