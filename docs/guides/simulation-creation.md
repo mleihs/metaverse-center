@@ -21,10 +21,10 @@ Each simulation uses a deterministic UUID pattern for easy identification:
 | Zones | `a000000X-0000-0000-0000-000000000001` | `a0000008-` through `a000000b-` |
 | User (test) | `00000000-0000-0000-0000-000000000001` | Always same |
 
-- Velgarien = sim 1 (`10000000-...`), Capybara = sim 2 (`20000000-...`), Station Null = sim 3 (`30000000-...`), Speranza = sim 4 (`40000000-...`), Cit&eacute; des Dames = sim 5 (`50000000-...`)
-- City IDs: `c0000002-` (Velgarien), `c0000003-` (Capybara), `c0000004-` (Station Null), `c0000005-` (Speranza), `c0000006-` (Cit&eacute; des Dames)
-- Zone IDs: sequential from `a0000001-` (Velgarien zones 1-3), `a0000004-` (Capybara zones 4-7), `a0000008-` (Station Null zones 8-b), `a000000c-` (Speranza zones c-f), `a0000010-` (Cit&eacute; des Dames zones 10-13)
-- Next simulation would use: sim `60000000-...`, city `c0000007-...`, zones `a0000014-` onwards
+- Velgarien = sim 1 (`10000000-...`), Capybara = sim 2 (`20000000-...`), Station Null = sim 3 (`30000000-...`), Speranza = sim 4 (`40000000-...`), Cit&eacute; des Dames = sim 5 (`50000000-...`), Spengbab = sim 6 (`60000000-...`), Conventional Memory = sim 7 (`70000000-...`)
+- City IDs: `c0000002-` (Velgarien), `c0000003-` (Capybara), `c0000004-` (Station Null), `c0000005-` (Speranza), `c0000006-` (Cit&eacute; des Dames), `c0000007-` (Spengbab), `c0000008-` (Conventional Memory)
+- Zone IDs: sequential from `a0000001-` (Velgarien zones 1-3), `a0000004-` (Capybara zones 4-7), `a0000008-` (Station Null zones 8-b), `a000000c-` (Speranza zones c-f), `a0000010-` (Cit&eacute; des Dames zones 10-13), `a0000014-` (Spengbab zones 14-17), `a0000018-` (Conventional Memory zones 18-1b)
+- Next simulation would use: sim `80000000-...`, city `c0000009-...`, zones `a000001c-` onwards
 
 ## Seed vs Migration Strategy
 
@@ -273,3 +273,8 @@ Agent and building slugs are **auto-generated** from their `name` via a `BEFORE 
 - **Generation script must pass character/background** — psql pipe-delimited output breaks on multi-line text. Use `json_agg()` wrapper for safe parsing. Always pass `character` + `background` as `extra` to the generate endpoint.
 - **Flux Dev ignores negative prompts** — never use "not anime", "not cartoon" etc. Only positive descriptors work. Use film references + texture requirements instead.
 - **"concept art" triggers anime in Flux** — this phrase pushes Flux toward clean digital illustration. Use "cinematic film still" + director references instead.
+- **`theme_preset` setting is REQUIRED** — Without a `theme_preset` row in `simulation_settings` (category='design'), the ThemeService defaults to `'brutalist'` and the simulation's theme won't apply. Always include: `INSERT INTO simulation_settings (simulation_id, category, setting_key, setting_value) VALUES (sim_id, 'design', 'theme_preset', '"preset_name"')`.
+- **REST API double-encodes JSONB values** — When inserting design tokens via the PostgREST REST API, do NOT `json.dumps()` the value before putting it in the payload. Use `{"setting_value": "#AA00AA"}` not `{"setting_value": "\"#AA00AA\""}`. Double-encoding causes CSS values to include literal quotes, breaking the theme.
+- **Simulation lore is in `simulation_lore` table** — NOT in `LoreScroll.ts` (that's platform-wide lore). Each simulation has its own lore sections stored in the database, managed via the `/api/v1/simulations/{id}/lore` API. The lore page shows "No lore available" until rows are inserted into this table.
+- **Check UUID availability before assigning** — UUID patterns like `60000000-...` may already be taken by other simulations (e.g., Spengbab). Always query production first: `curl "$PROD_URL/rest/v1/simulations?select=id,name,slug" -H "Authorization: Bearer $KEY" -H "apikey: $KEY"`.
+- **Image generation script needs correct SIM_ID** — If the simulation UUID changes (e.g., from 60000000 to 70000000), update the generation script's `SIM_ID` constant before running. The script queries agents/buildings by simulation_id and will generate images for the wrong simulation otherwise.
