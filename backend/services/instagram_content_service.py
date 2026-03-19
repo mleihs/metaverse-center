@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from datetime import UTC, datetime
 from uuid import UUID
 
@@ -625,9 +626,11 @@ class InstagramContentService:
         tags = [_BRAND_TAGS[0]]  # #BureauOfImpossibleGeography
 
         if simulation_slug:
+            # Strip epoch suffix (e.g., "station-null-e7" → "station-null")
+            clean_slug = re.sub(r"-e\d+$", "", simulation_slug)
             # Convert slug to hashtag (e.g., "station-null" → "#StationNull")
             slug_tag = "#" + "".join(
-                word.capitalize() for word in simulation_slug.split("-")
+                word.capitalize() for word in clean_slug.split("-")
             )
             tags.append(slug_tag)
 
