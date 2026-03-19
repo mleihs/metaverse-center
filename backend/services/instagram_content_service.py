@@ -1152,9 +1152,9 @@ class InstagramContentService:
         result: dict[str, str] = {"access_token": "", "ig_user_id": ""}
         for row in rows:
             if row["setting_key"] == "instagram_ig_user_id":
-                result["ig_user_id"] = row["setting_value"] or ""
+                result["ig_user_id"] = str(row["setting_value"] or "")
             elif row["setting_key"] == "instagram_access_token":
-                raw = row["setting_value"] or ""
+                raw = str(row["setting_value"] or "")
                 if raw.startswith("gAAAAA"):
                     try:
                         from backend.utils.encryption import decrypt
@@ -1164,6 +1164,15 @@ class InstagramContentService:
                 else:
                     result["access_token"] = raw
 
+        logger.info("Instagram credentials loaded", extra={
+            "token_prefix": result["access_token"][:12] + "…" if result["access_token"] else "EMPTY",
+            "token_len": len(result["access_token"]),
+            "ig_user_id": result["ig_user_id"],
+            "was_encrypted": any(
+                str(r["setting_value"] or "").startswith("gAAAAA")
+                for r in rows if r["setting_key"] == "instagram_access_token"
+            ),
+        })
         return result
 
     @classmethod
