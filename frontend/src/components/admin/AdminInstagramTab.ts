@@ -154,9 +154,38 @@ export class VelgAdminInstagramTab extends LitElement {
     }
 
     .btn-generate:disabled {
-      opacity: 0.4;
       cursor: not-allowed;
       pointer-events: none;
+    }
+
+    .btn-generate--generating {
+      animation: generate-pulse 1.5s ease-in-out infinite;
+    }
+
+    .btn-generate--generating::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        color-mix(in srgb, var(--color-primary) 15%, transparent),
+        transparent
+      );
+      animation: generate-sweep 1.8s ease-in-out infinite;
+    }
+
+    @keyframes generate-pulse {
+      0%, 100% { opacity: 0.7; }
+      50% { opacity: 1; }
+    }
+
+    @keyframes generate-sweep {
+      0% { left: -100%; }
+      100% { left: 100%; }
     }
 
     /* ══════════════════════════════════════════════════════
@@ -1144,12 +1173,12 @@ export class VelgAdminInstagramTab extends LitElement {
         </div>
         <div class="scif-header__actions">
           <button
-            class="btn-generate"
+            class="btn-generate ${this._generating ? 'btn-generate--generating' : ''}"
             ?disabled=${this._generating}
             @click=${this._handleGenerate}
           >
             ${icons.plus(12)}
-            ${this._generating ? msg('Generating...') : msg('Generate Dispatches')}
+            ${this._generating ? msg('Scanning Bureau dispatch channels...') : msg('Generate Dispatches')}
           </button>
         </div>
       </div>
