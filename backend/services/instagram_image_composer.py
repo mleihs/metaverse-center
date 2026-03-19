@@ -75,6 +75,7 @@ class InstagramImageComposer:
         color_primary: str = "#e2e8f0",
         color_background: str = "#0f172a",
         classification: str = "PUBLIC",
+        cipher_hint: str | None = None,
     ) -> bytes:
         """Compose an agent dossier image for Instagram.
 
@@ -82,6 +83,7 @@ class InstagramImageComposer:
         - Classification header bar
         - Simulation-colored border
         - Bureau watermark
+        - Optional steganographic cipher hint (rotated marginal text)
         - JPEG conversion at 1080×1350
         """
         logger.info("Composing agent dossier image", extra={
@@ -97,6 +99,7 @@ class InstagramImageComposer:
             color_primary=color_primary,
             color_background=color_background,
             classification=classification,
+            cipher_hint=cipher_hint,
         )
 
     async def compose_building_surveillance(
@@ -108,6 +111,7 @@ class InstagramImageComposer:
         color_primary: str = "#e2e8f0",
         color_background: str = "#0f172a",
         classification: str = "PUBLIC",
+        cipher_hint: str | None = None,
     ) -> bytes:
         """Compose a building surveillance image for Instagram."""
         logger.info("Composing building surveillance image", extra={
@@ -123,6 +127,7 @@ class InstagramImageComposer:
             color_primary=color_primary,
             color_background=color_background,
             classification=classification,
+            cipher_hint=cipher_hint,
         )
 
     async def compose_bureau_dispatch(
@@ -134,6 +139,7 @@ class InstagramImageComposer:
         color_primary: str = "#e2e8f0",
         color_background: str = "#0f172a",
         classification: str = "AMBER",
+        cipher_hint: str | None = None,
     ) -> bytes:
         """Compose a Bureau dispatch image.
 
@@ -157,6 +163,7 @@ class InstagramImageComposer:
             color_primary=color_primary,
             color_background=color_background,
             classification=classification,
+            cipher_hint=cipher_hint,
         )
 
     async def upload_to_staging(
@@ -190,8 +197,13 @@ class InstagramImageComposer:
         color_primary: str,
         color_background: str,
         classification: str,
+        cipher_hint: str | None = None,
     ) -> bytes:
-        """Apply Bureau overlay to an image and convert to Instagram JPEG."""
+        """Apply Bureau overlay to an image and convert to Instagram JPEG.
+
+        If cipher_hint is provided, renders it as low-opacity rotated text
+        along the right margin (steganographic "marginal notation" aesthetic).
+        """
         try:
             from PIL import Image, ImageDraw
         except ImportError:
@@ -282,10 +294,31 @@ class InstagramImageComposer:
                 font=font_watermark,
             )
 
+            # Steganographic cipher hint — rotated 90° marginal notation
+            if cipher_hint:
+                try:
+                    self._render_cipher_margin(
+                        img, cipher_hint, primary_rgb, width, height,
+                    )
+                except Exception as cipher_exc:
+                    # Non-fatal — post continues without visual cipher
+                    logger.warning(
+                        "Steganographic cipher rendering failed",
+                        exc_info=True,
+                        extra={
+                            "cipher_length": len(cipher_hint),
+                            "stage": "cipher_margin_render",
+                        },
+                    )
+                    with sentry_sdk.push_scope() as scope:
+                        scope.set_tag("instagram_phase", "cipher_rendering")
+                        sentry_sdk.capture_exception(cipher_exc)
+
             result = self._image_to_jpeg(img)
             logger.debug("Image composition complete", extra={
                 "output_size": len(result),
                 "output_dimensions": f"{width}x{height}",
+                "has_cipher_hint": cipher_hint is not None,
                 "stage": "compose_complete",
             })
             return result
@@ -303,6 +336,50 @@ class InstagramImageComposer:
                 })
                 sentry_sdk.capture_exception(exc)
             raise
+
+    def _render_cipher_margin(
+        self,
+        img: PILImage,
+        cipher_hint: str,
+        primary_rgb: tuple[int, int, int],
+        width: int,
+        height: int,
+    ) -> None:
+        """Render cipher hint as rotated marginal notation along the right edge.
+
+        Aesthetic: classified document with marginal annotations — rotated 90°,
+        ~15% opacity, monospace font between header and footer bars.
+        """
+        from PIL import Image, ImageDraw
+
+        font_cipher = _load_monospace_font(11)
+
+        # Render text onto a temporary RGBA image for rotation
+        # Available vertical space: between header bottom and footer top
+        margin_height = height - BUREAU_HEADER_HEIGHT - BUREAU_FOOTER_HEIGHT - 8
+        # Create a tall-enough canvas for the text (will be rotated)
+        temp = Image.new("RGBA", (margin_height, 24), (0, 0, 0, 0))
+        temp_draw = ImageDraw.Draw(temp)
+
+        # ~15% opacity (alpha ≈ 38/255)
+        cipher_color = (*primary_rgb, 38)
+        temp_draw.text((4, 2), cipher_hint, fill=cipher_color, font=font_cipher)
+
+        # Rotate 90° counter-clockwise (text reads bottom-to-top)
+        rotated = temp.rotate(90, expand=True)
+
+        # Paste along right edge, vertically between header and footer
+        paste_x = width - 28
+        paste_y = BUREAU_HEADER_HEIGHT + 4
+        img.paste(rotated, (paste_x, paste_y), rotated)
+
+        logger.debug("Rendered steganographic cipher margin", extra={
+            "cipher_length": len(cipher_hint),
+            "position": f"({paste_x}, {paste_y})",
+            "opacity": "15%",
+            "font_size": 11,
+            "stage": "cipher_margin_render",
+        })
 
     def _resize_for_instagram(self, img: PILImage) -> PILImage:
         """Resize image to fit Instagram 4:5 portrait format (1080×1350).

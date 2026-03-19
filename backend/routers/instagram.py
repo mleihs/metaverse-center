@@ -15,6 +15,7 @@ Endpoints:
   GET  /candidates     — Preview available content candidates
 """
 
+import json
 import logging
 from uuid import UUID
 
@@ -305,6 +306,52 @@ async def get_analytics(
 
 
 # ── Rate Limit ──────────────────────────────────────────────────────────
+
+
+# ── Pipeline Settings ──────────────────────────────────────────────────
+
+# Instagram pipeline setting keys — grouped for the admin configuration panel.
+_INSTAGRAM_SETTINGS_KEYS = [
+    "instagram_cipher_enabled",
+    "instagram_cipher_difficulty",
+    "instagram_cipher_hint_format",
+    "instagram_content_mix",
+    "instagram_auto_schedule",
+    "instagram_schedule_interval_hours",
+    "instagram_blocklist",
+    "instagram_trending_tags",
+]
+
+
+@router.get("/settings", response_model=SuccessResponse[dict])
+async def get_instagram_settings(
+    _user: CurrentUser = Depends(require_platform_admin()),
+    admin_supabase: Client = Depends(get_admin_supabase),
+) -> dict:
+    """Get all Instagram pipeline configuration settings as a flat dict."""
+    resp = (
+        admin_supabase.table("platform_settings")
+        .select("setting_key, setting_value, description")
+        .in_("setting_key", _INSTAGRAM_SETTINGS_KEYS)
+        .execute()
+    )
+    settings_map = {}
+    for row in resp.data or []:
+        # setting_value is jsonb — serialize to string for frontend consumption
+        raw = row["setting_value"]
+        if isinstance(raw, dict | list):
+            value = json.dumps(raw)
+        elif isinstance(raw, bool):
+            value = "true" if raw else "false"
+        elif raw is not None:
+            value = str(raw)
+        else:
+            value = ""
+        settings_map[row["setting_key"]] = {
+            "value": value,
+            "description": row.get("description", ""),
+        }
+    return {"success": True, "data": settings_map}
 
 
 @router.get("/rate-limit", response_model=SuccessResponse[InstagramRateLimit])

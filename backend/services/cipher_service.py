@@ -27,15 +27,19 @@ class CipherService:
         admin: Client,
         difficulty: str,
         simulation_id: UUID,
+        entity_id: UUID | str | None = None,
     ) -> str:
         """Generate a deterministic Bureau-themed cipher code.
 
         Calls Postgres RPC fn_generate_cipher_code for deterministic,
-        reproducible code generation from simulation context.
+        reproducible code generation from simulation + entity context.
+
+        The entity_id ensures each post from the same simulation gets a
+        unique code. Falls back to 'platform' for platform-level posts.
 
         Returns the unlock_code (what the user must type to redeem).
         """
-        seed = f"{simulation_id}:{difficulty}"
+        seed = f"{simulation_id}:{difficulty}:{entity_id or 'platform'}"
         response = admin.rpc(
             "fn_generate_cipher_code",
             {"p_difficulty": difficulty, "p_seed": seed},
@@ -44,6 +48,7 @@ class CipherService:
         code = response.data if isinstance(response.data, str) else str(response.data)
         logger.info("Generated cipher code", extra={
             "simulation_id": str(simulation_id),
+            "entity_id": str(entity_id) if entity_id else None,
             "difficulty": difficulty,
             "code_prefix": code[:8] if code else "",
         })
@@ -137,6 +142,56 @@ class CipherService:
             "success_rate": success_rate,
             "recent_redemptions": recent_resp.data or [],
         }
+
+    @classmethod
+    def prepare_cipher_for_post(
+        cls,
+        caption: str,
+        unlock_code: str,
+        difficulty: str,
+        hint_format: str = "footer",
+    ) -> dict[str, str | None]:
+        """Prepare cipher output for a post based on hint_format setting.
+
+        Returns:
+            {"caption": str, "image_cipher": str | None}
+            - For steganographic: caption gets notice text, image_cipher
+              gets encoded hint for visual rendering
+            - For footer/caption: delegates to embed_cipher_hint,
+              image_cipher is None
+        """
+        if hint_format == "steganographic":
+            encoded_hint = cls.encode_hint(unlock_code, difficulty)
+            # Caption gets a notice instead of the actual cipher
+            notice = (
+                "\n\n—\nVISUAL CIPHER EMBEDDED — "
+                "Decode at metaverse.center/bureau/dispatch"
+            )
+            disclosure = "\n\n—\nAI-generated content from metaverse.center"
+            if disclosure in caption:
+                result_caption = caption.replace(disclosure, notice + disclosure)
+            else:
+                result_caption = caption + notice
+
+            logger.info("Prepared steganographic cipher", extra={
+                "hint_format": hint_format,
+                "difficulty": difficulty,
+                "has_image_cipher": True,
+                "hint_length": len(encoded_hint),
+            })
+            return {"caption": result_caption, "image_cipher": encoded_hint}
+
+        # footer / caption — embed in caption text, no image cipher
+        result_caption = cls.embed_cipher_hint(
+            caption, unlock_code, difficulty, hint_format,
+        )
+        logger.info("Prepared caption cipher", extra={
+            "hint_format": hint_format,
+            "difficulty": difficulty,
+            "has_image_cipher": False,
+            "hint_length": len(result_caption) - len(caption),
+        })
+        return {"caption": result_caption, "image_cipher": None}
 
     @classmethod
     def encode_hint(cls, unlock_code: str, difficulty: str) -> str:

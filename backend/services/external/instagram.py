@@ -462,10 +462,18 @@ class InstagramService:
         subcode = error.get("error_subcode")
         message = error.get("message", resp.text[:300])
 
-        # Token expired
+        # Token expired (code 190) — most common cause of publish failures.
+        # Subcodes: 463=expired, 460=password changed, 467=invalid.
         if code == 190:
+            subcode_hint = {
+                463: "token has expired (60-day lifetime exceeded)",
+                460: "password was changed — token invalidated",
+                467: "token is invalid or was revoked",
+            }.get(subcode, "unknown cause")
             raise InstagramTokenExpiredError(
-                f"Access token expired: {message}", code=code, subcode=subcode,
+                f"Access token expired ({subcode_hint}): {message}",
+                code=code,
+                subcode=subcode,
             )
 
         # Rate limited

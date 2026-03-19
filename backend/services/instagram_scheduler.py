@@ -226,20 +226,36 @@ class InstagramScheduler:
             try:
                 await cls._publish_single_post(admin, ig, post)
             except InstagramTokenExpiredError as exc:
-                logger.error("Instagram access token expired — disabling scheduler", extra={
-                    "post_id": str(post_id),
-                    "iteration": cls._iteration_count,
-                    "token_status": "expired",
-                })
-                with sentry_sdk.push_scope() as scope:
-                    scope.set_tag("instagram_phase", "token_expired")
-                    scope.set_context("instagram", {
+                token_prefix = config["access_token"][:12] + "…" if config["access_token"] else "EMPTY"
+                last_refresh = cls._last_token_refresh.isoformat() if cls._last_token_refresh else "never"
+                logger.error(
+                    "Instagram access token expired — disabling posting. "
+                    "Generate a new token at Meta Developer Dashboard and save it "
+                    "via Admin Panel → Instagram → Configuration.",
+                    extra={
                         "post_id": str(post_id),
                         "iteration": cls._iteration_count,
+                        "token_status": "expired",
+                        "token_prefix": token_prefix,
+                        "last_token_refresh": last_refresh,
+                        "meta_error": str(exc)[:200],
+                        "action_required": "Replace token in platform_settings.instagram_access_token",
+                    },
+                )
+                with sentry_sdk.push_scope() as scope:
+                    scope.set_tag("instagram_phase", "token_expired")
+                    scope.set_tag("action_required", "replace_token")
+                    scope.set_context("instagram_token", {
+                        "post_id": str(post_id),
+                        "iteration": cls._iteration_count,
+                        "token_prefix": token_prefix,
+                        "last_refresh": last_refresh,
+                        "meta_error": str(exc)[:300],
                     })
                     sentry_sdk.capture_exception(exc)
+                # Disable posting (not the whole pipeline — drafts can still be generated)
                 admin.table("platform_settings").update(
-                    {"setting_value": "false"},
+                    {"setting_value": json.dumps(False)},
                 ).eq("setting_key", "instagram_posting_enabled").execute()
                 return
             except InstagramRateLimitError:
@@ -429,8 +445,10 @@ class InstagramScheduler:
                         {"setting_value": encrypted},
                     ).eq("setting_key", "instagram_access_token").execute()
 
-                    logger.info("Instagram token refreshed", extra={
+                    logger.info("Instagram token refreshed and saved", extra={
                         "expires_in_days": expires_in // 86400,
+                        "old_token_prefix": access_token[:12] + "…",
+                        "new_token_prefix": new_token[:12] + "…",
                         "iteration": cls._iteration_count,
                         "token_status": "refreshed",
                     })

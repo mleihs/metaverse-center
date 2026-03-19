@@ -255,6 +255,10 @@ export class AdminApiService extends BaseApiService {
     return this.post(`/admin/instagram/${postId}/cipher`, body);
   }
 
+  async getInstagramSettings(): Promise<ApiResponse<InstagramPipelineSettings>> {
+    return this.get('/admin/instagram/settings');
+  }
+
   // --- Simulation Management ---
 
   async listSimulations(
@@ -425,5 +429,12 @@ export interface CipherRedemptionRecord {
   reward_type: string;
   reward_data: Record<string, unknown>;
 }
+
+export interface InstagramSettingEntry {
+  value: string;
+  description: string;
+}
+
+export type InstagramPipelineSettings = Record<string, InstagramSettingEntry>;
 
 export const adminApi = new AdminApiService();

@@ -20,6 +20,7 @@ import sentry_sdk
 from fastapi import HTTPException, status
 
 from backend.config import settings
+from backend.services.cipher_service import CipherService
 from backend.services.generation_service import GenerationService
 from backend.services.instagram_image_composer import InstagramImageComposer
 from supabase import Client
@@ -29,9 +30,43 @@ logger = logging.getLogger(__name__)
 # Bureau dispatch counter — persisted via MAX(dispatch_number) pattern
 _AI_DISCLOSURE_FOOTER = "\n\n—\nAI-generated content from metaverse.center"
 
-# Hashtag presets
+# Hashtag presets — rotated per post for reach diversity.
+# Instagram 2026: 3-5 tags max, 80% niche + 20% broad, varied per post.
+# Algorithm uses hashtags for categorization, not reach — relevance > volume.
 _BRAND_TAGS = ["#BureauOfImpossibleGeography", "#SubstrateDispatch"]
-_DISCOVERY_TAGS = ["#worldbuilding", "#AIart", "#speculativefiction"]
+
+# Broad reach pool (10K-500K posts range — medium competition sweet spot).
+# Rotated per post via entity name hash to avoid identical tag sets.
+_BROAD_POOL = [
+    "#worldbuilding", "#AIart", "#speculativefiction", "#scifi",
+    "#digitalart", "#conceptart", "#storytelling", "#alternatehistory",
+    "#creativewriting", "#indiedev", "#fantasyworldbuilding", "#scifiart",
+]
+
+# Niche engagement pools — high relevance, per content type.
+# These attract genuinely interested followers (better engagement rate).
+_NICHE_POOLS: dict[str, list[str]] = {
+    "agent": [
+        "#characterdesign", "#OC", "#AIcharacter", "#characterart",
+        "#AIportrait", "#RPG", "#dndcharacter", "#fictionalcharacter",
+        "#portraitart", "#ttrpgcommunity",
+    ],
+    "building": [
+        "#AIarchitecture", "#fantasyarchitecture", "#environmentdesign",
+        "#scifibuilding", "#conceptarchitecture", "#urbanfantasy",
+        "#proceduralgeneration", "#virtualworld",
+    ],
+    "chronicle": [
+        "#microfiction", "#flashfiction", "#lorebuilding",
+        "#narrativedesign", "#ttrpg", "#emergentnarrative",
+        "#fictionwriting", "#worldlore",
+    ],
+    "lore": [
+        "#lore", "#deepdive", "#secrethistory", "#fictionallore",
+        "#narrativedesign", "#ttrpg", "#archivesfiction",
+        "#classifieddocument",
+    ],
+}
 
 # Content type weights (overridable via platform_settings.instagram_content_mix).
 # Weights are proportional: agent=3, building=2 means ~60% agents, ~40% buildings.
@@ -74,6 +109,16 @@ CAPTION_TEMPLATES = {
         "ADDENDUM: Filing Clerk's Note — "
         "This chronicle was intercepted during routine substrate monitoring. "
         "Read the full dispatch at metaverse.center."
+    ),
+    "lore": (
+        "BUREAU OF IMPOSSIBLE GEOGRAPHY\n"
+        "DISPATCH [{dispatch_number:04d}] | {date}\n"
+        "CLASSIFICATION: RESTRICTED\n"
+        "RE: {simulation_name} — Declassified Archive\n\n"
+        "{body}\n\n"
+        "ADDENDUM: Filing Clerk's Note — "
+        "This archive was unsealed following review by the Bureau's "
+        "Substrate Cartography Division. Handle with care."
     ),
 }
 
@@ -158,67 +203,34 @@ class InstagramContentService:
             simulation_id=UUID(simulation_id) if simulation_id else None,
         )
 
-        # 3. Build hashtags
-        hashtags = cls._build_hashtags(simulation_slug, content_type)
+        # 3. Build hashtags (with trending tags from platform_settings)
+        trending_tags: list[str] = []
+        try:
+            trend_resp = (
+                admin_supabase.table("platform_settings")
+                .select("setting_value")
+                .eq("setting_key", "instagram_trending_tags")
+                .limit(1)
+                .execute()
+            )
+            if trend_resp.data:
+                raw = trend_resp.data[0]["setting_value"]
+                parsed = json.loads(raw) if isinstance(raw, str) else raw
+                if isinstance(parsed, list):
+                    trending_tags = [t for t in parsed if isinstance(t, str)]
+        except Exception:
+            logger.debug("Failed to load instagram_trending_tags")
+
+        hashtags = cls._build_hashtags(
+            simulation_slug, content_type,
+            entity_name=candidate.get("name", ""),
+            trending_tags=trending_tags,
+        )
 
         # 4. Generate alt text
         alt_text = cls._generate_alt_text(candidate)
 
-        # 5. Compose image
-        image_urls = []
-        if image_url:
-            composer = InstagramImageComposer(admin_supabase)
-            sim_colors = await cls._get_simulation_colors(admin_supabase, simulation_id)
-
-            if content_type == "agent":
-                jpeg_bytes = await composer.compose_agent_dossier(
-                    portrait_url=image_url,
-                    agent_name=candidate.get("name", "Unknown"),
-                    simulation_name=simulation_name,
-                    color_primary=sim_colors.get("color_primary", "#e2e8f0"),
-                    color_background=sim_colors.get("color_background", "#0f172a"),
-                )
-            elif content_type == "building":
-                jpeg_bytes = await composer.compose_building_surveillance(
-                    image_url=image_url,
-                    building_name=candidate.get("name", "Unknown"),
-                    simulation_name=simulation_name,
-                    color_primary=sim_colors.get("color_primary", "#e2e8f0"),
-                    color_background=sim_colors.get("color_background", "#0f172a"),
-                )
-            else:
-                jpeg_bytes = await composer.compose_bureau_dispatch(
-                    source_image_url=image_url,
-                    dispatch_number=dispatch_number,
-                    simulation_name=simulation_name,
-                    color_primary=sim_colors.get("color_primary", "#e2e8f0"),
-                    color_background=sim_colors.get("color_background", "#0f172a"),
-                )
-
-            staging_url = await composer.upload_to_staging(
-                jpeg_bytes,
-                simulation_id=simulation_id or "platform",
-            )
-            image_urls.append(staging_url)
-        else:
-            # Text-only dispatches (chronicles) — generate background
-            composer = InstagramImageComposer(admin_supabase)
-            sim_colors = await cls._get_simulation_colors(admin_supabase, simulation_id)
-            jpeg_bytes = await composer.compose_bureau_dispatch(
-                source_image_url=None,
-                dispatch_number=dispatch_number,
-                simulation_name=simulation_name,
-                color_primary=sim_colors.get("color_primary", "#e2e8f0"),
-                color_background=sim_colors.get("color_background", "#0f172a"),
-                classification="AMBER",
-            )
-            staging_url = await composer.upload_to_staging(
-                jpeg_bytes,
-                simulation_id=simulation_id or "platform",
-            )
-            image_urls.append(staging_url)
-
-        # 6. Content moderation check
+        # 5. Content moderation check (before cipher/image — fail fast)
         moderation = await cls._moderate_caption(admin_supabase, caption)
         if moderation["blocked"]:
             logger.warning(
@@ -234,8 +246,11 @@ class InstagramContentService:
             )
             return {"id": None, "status": "rejected", "failure_reason": moderation["reason"]}
 
-        # 7. Cipher ARG integration — generate unlock code if enabled
+        # 6. Cipher ARG integration — generate unlock code if enabled
+        #    Must run before image composition so steganographic hints
+        #    can be rendered into the composed image.
         unlock_code = None
+        image_cipher_hint = None
         try:
             cipher_resp = (
                 admin_supabase.table("platform_settings")
@@ -254,7 +269,6 @@ class InstagramContentService:
             raw_enabled = str(cipher_settings.get("instagram_cipher_enabled", "false")).lower()
             cipher_enabled = raw_enabled not in ("false", "0", "no", "")
             if cipher_enabled and simulation_id:
-                from backend.services.cipher_service import CipherService
                 cipher_difficulty = cipher_settings.get("instagram_cipher_difficulty", "medium")
                 cipher_hint_format = cipher_settings.get("instagram_cipher_hint_format", "footer")
 
@@ -262,17 +276,80 @@ class InstagramContentService:
                     admin_supabase,
                     difficulty=cipher_difficulty,
                     simulation_id=UUID(simulation_id),
+                    entity_id=entity_id,
                 )
-                caption = CipherService.embed_cipher_hint(
+                cipher_result = CipherService.prepare_cipher_for_post(
                     caption, unlock_code, cipher_difficulty, cipher_hint_format,
                 )
+                caption = cipher_result["caption"]
+                image_cipher_hint = cipher_result["image_cipher"]
                 logger.info("Cipher code generated for draft", extra={
                     "unlock_code_prefix": unlock_code[:8] if unlock_code else "",
                     "difficulty": cipher_difficulty,
+                    "hint_format": cipher_hint_format,
+                    "has_image_cipher": image_cipher_hint is not None,
                     "simulation_id": simulation_id,
                 })
         except Exception:
             logger.warning("Cipher generation failed, proceeding without cipher", exc_info=True)
+
+        # 7. Compose image (after cipher so steganographic hint is available)
+        image_urls = []
+        if image_url:
+            composer = InstagramImageComposer(admin_supabase)
+            sim_colors = await cls._get_simulation_colors(admin_supabase, simulation_id)
+
+            if content_type == "agent":
+                jpeg_bytes = await composer.compose_agent_dossier(
+                    portrait_url=image_url,
+                    agent_name=candidate.get("name", "Unknown"),
+                    simulation_name=simulation_name,
+                    color_primary=sim_colors.get("color_primary", "#e2e8f0"),
+                    color_background=sim_colors.get("color_background", "#0f172a"),
+                    cipher_hint=image_cipher_hint,
+                )
+            elif content_type == "building":
+                jpeg_bytes = await composer.compose_building_surveillance(
+                    image_url=image_url,
+                    building_name=candidate.get("name", "Unknown"),
+                    simulation_name=simulation_name,
+                    color_primary=sim_colors.get("color_primary", "#e2e8f0"),
+                    color_background=sim_colors.get("color_background", "#0f172a"),
+                    cipher_hint=image_cipher_hint,
+                )
+            else:
+                jpeg_bytes = await composer.compose_bureau_dispatch(
+                    source_image_url=image_url,
+                    dispatch_number=dispatch_number,
+                    simulation_name=simulation_name,
+                    color_primary=sim_colors.get("color_primary", "#e2e8f0"),
+                    color_background=sim_colors.get("color_background", "#0f172a"),
+                    cipher_hint=image_cipher_hint,
+                )
+
+            staging_url = await composer.upload_to_staging(
+                jpeg_bytes,
+                simulation_id=simulation_id or "platform",
+            )
+            image_urls.append(staging_url)
+        else:
+            # Text-only dispatches (chronicles) — generate background
+            composer = InstagramImageComposer(admin_supabase)
+            sim_colors = await cls._get_simulation_colors(admin_supabase, simulation_id)
+            jpeg_bytes = await composer.compose_bureau_dispatch(
+                source_image_url=None,
+                dispatch_number=dispatch_number,
+                simulation_name=simulation_name,
+                color_primary=sim_colors.get("color_primary", "#e2e8f0"),
+                color_background=sim_colors.get("color_background", "#0f172a"),
+                classification="AMBER",
+                cipher_hint=image_cipher_hint,
+            )
+            staging_url = await composer.upload_to_staging(
+                jpeg_bytes,
+                simulation_id=simulation_id or "platform",
+            )
+            image_urls.append(staging_url)
 
         # 8. Build content snapshot (frozen entity data)
         snapshot = cls._build_snapshot(candidate)
@@ -617,11 +694,20 @@ class InstagramContentService:
         days: int = 30,
     ) -> dict:
         """Get aggregated Instagram analytics via Postgres RPC."""
-        response = admin_supabase.rpc(
-            "fn_instagram_analytics",
-            {"p_days": days},
-        ).execute()
-        return response.data if response.data else {}
+        try:
+            response = admin_supabase.rpc(
+                "fn_instagram_analytics",
+                {"p_days": days},
+            ).execute()
+            return response.data if response.data else {}
+        except Exception as exc:
+            logger.warning(
+                "Instagram analytics RPC failed — returning empty stats",
+                exc_info=True,
+                extra={"days": days},
+            )
+            sentry_sdk.capture_exception(exc)
+            return {"period_days": days, "total_posts": 0, "total_drafts": 0}
 
     # ── Internal Helpers ────────────────────────────────────────────────
 
@@ -822,29 +908,69 @@ class InstagramContentService:
         return "The Bureau has detected activity requiring documentation."
 
     @classmethod
-    def _build_hashtags(cls, simulation_slug: str, content_type: str) -> list[str]:
-        """Build 3-5 hashtags for a post."""
-        tags = [_BRAND_TAGS[0]]  # #BureauOfImpossibleGeography
+    def _build_hashtags(
+        cls,
+        simulation_slug: str,
+        content_type: str,
+        entity_name: str = "",
+        trending_tags: list[str] | None = None,
+    ) -> list[str]:
+        """Build 5 varied hashtags optimized for Instagram 2026 reach.
 
+        Formula: 1 brand + 1 simulation + 1 broad + 1 niche + 1 trending/niche.
+        Uses entity_name as rotation seed so each post in a batch gets
+        different discovery tags (Instagram penalizes identical tag sets).
+
+        Instagram 2026 best practice: 3-5 highly relevant tags in caption,
+        80% niche + 20% broad, no repeated sets across posts.
+        """
+        import hashlib
+
+        # Deterministic rotation seed from entity name
+        seed = int(hashlib.md5(entity_name.encode(), usedforsecurity=False).hexdigest()[:8], 16)  # noqa: S324
+
+        tags: list[str] = []
+
+        # 1. Brand tag (alternates between two)
+        tags.append(_BRAND_TAGS[seed % len(_BRAND_TAGS)])
+
+        # 2. Simulation tag
         if simulation_slug:
-            # Strip epoch suffix (e.g., "station-null-e7" → "station-null")
             clean_slug = re.sub(r"-e\d+$", "", simulation_slug)
-            # Convert slug to hashtag (e.g., "station-null" → "#StationNull")
             slug_tag = "#" + "".join(
                 word.capitalize() for word in clean_slug.split("-")
             )
             tags.append(slug_tag)
 
-        # 1-2 discovery tags
-        tags.append(_DISCOVERY_TAGS[0])  # #worldbuilding
-        if content_type == "agent":
-            tags.append("#AIart")
-        elif content_type == "chronicle":
-            tags.append("#speculativefiction")
-        elif content_type == "lore":
-            tags.append("#lore")
-        elif content_type == "building":
-            tags.append("#AIarchitecture")
+        # 3. Broad reach tag (rotated from pool)
+        broad_idx = seed % len(_BROAD_POOL)
+        broad_pick = _BROAD_POOL[broad_idx]
+        if broad_pick in tags:
+            broad_pick = _BROAD_POOL[(broad_idx + 1) % len(_BROAD_POOL)]
+        tags.append(broad_pick)
+
+        # 4. Niche tag (rotated from content-type pool)
+        niche_pool = _NICHE_POOLS.get(content_type, _NICHE_POOLS["agent"])
+        niche_idx = (seed >> 4) % len(niche_pool)
+        niche_pick = niche_pool[niche_idx]
+        if niche_pick not in tags:
+            tags.append(niche_pick)
+
+        # 5. Trending tag (if available) or second niche tag
+        if trending_tags and len(tags) < 5:
+            trend_idx = seed % len(trending_tags)
+            trend_pick = trending_tags[trend_idx]
+            if trend_pick not in tags:
+                tags.append(trend_pick)
+
+        # Fill remaining slots from niche pool if needed
+        if len(tags) < 5:
+            for i in range(1, len(niche_pool)):
+                pick = niche_pool[(niche_idx + i) % len(niche_pool)]
+                if pick not in tags:
+                    tags.append(pick)
+                if len(tags) >= 5:
+                    break
 
         return tags[:5]
 

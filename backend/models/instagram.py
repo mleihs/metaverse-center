@@ -117,7 +117,7 @@ class CreateInstagramPostRequest(BaseModel):
     simulation_id: UUID
     content_source_type: str = Field(
         ...,
-        pattern=r"^(agent|building|chronicle|battle_report|heartbeat|resonance)$",
+        pattern=r"^(agent|building|chronicle|lore|battle_report|heartbeat|resonance)$",
     )
     content_source_id: UUID | None = None
     caption: str = Field(..., max_length=2200)
@@ -148,7 +148,7 @@ class GenerateContentRequest(BaseModel):
     """Request to auto-generate Instagram content from platform data."""
 
     content_types: list[str] = Field(
-        default=["agent", "building", "chronicle"],
+        default=["agent", "building", "chronicle", "lore"],
     )
     simulation_id: UUID | None = None
     count: int = Field(default=1, ge=1, le=10)
