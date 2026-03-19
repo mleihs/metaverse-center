@@ -155,6 +155,131 @@ class ForgeThemeService:
         logger.info("Theme settings applied for simulation %s", simulation_id)
 
     @staticmethod
+    async def refine_style_prompts(
+        supabase: Client,
+        simulation_id: UUID,
+        openrouter_key: str | None = None,
+    ) -> None:
+        """Refine image style prompts using the simulation's lore as context.
+
+        Called after lore generation (Phase A) and before image generation
+        (Phase B). Reads the current style prompts and lore, then asks the
+        AI to produce more distinctive, world-specific style prompts that
+        capture the simulation's unique atmosphere.
+        """
+        # Load simulation + lore context
+        sim_resp = (
+            supabase.table("simulations")
+            .select("name, description")
+            .eq("id", str(simulation_id))
+            .single()
+            .execute()
+        )
+        sim = sim_resp.data or {}
+
+        lore_resp = (
+            supabase.table("simulation_lore")
+            .select("title, chapter, epigraph, body")
+            .eq("simulation_id", str(simulation_id))
+            .order("sort_order")
+            .limit(5)
+            .execute()
+        )
+        lore_sections = lore_resp.data or []
+        if not lore_sections:
+            logger.debug("No lore found for style refinement, skipping")
+            return
+
+        # Load current style prompts
+        style_resp = (
+            supabase.table("simulation_settings")
+            .select("setting_key, setting_value")
+            .eq("simulation_id", str(simulation_id))
+            .eq("category", "ai")
+            .execute()
+        )
+        current_styles = {r["setting_key"]: r["setting_value"] for r in style_resp.data or []}
+        if not current_styles.get("image_style_prompt_portrait"):
+            return
+
+        # Build lore digest for context
+        lore_digest = "\n".join(
+            f"- {s['title']}: {(s.get('epigraph') or '')[:100]} "
+            f"{(s.get('body') or '')[:200]}"
+            for s in lore_sections
+        )
+
+        prompt = (
+            f"You are refining image style prompts for the world \"{sim.get('name', '?')}\".\n\n"
+            f"WORLD DESCRIPTION: {sim.get('description', '')}\n\n"
+            f"LORE EXCERPTS (these define the world's unique atmosphere):\n{lore_digest}\n\n"
+            f"CURRENT STYLE PROMPTS (too generic — need to be more distinctive):\n"
+            f"- Portrait: {current_styles.get('image_style_prompt_portrait', '')}\n"
+            f"- Building: {current_styles.get('image_style_prompt_building', '')}\n"
+            f"- Lore: {current_styles.get('image_style_prompt_lore', '')}\n\n"
+            f"TASK: Rewrite these 3 style prompts to be MUCH more distinctive and specific "
+            f"to this world's unique identity. The prompts are appended to AI image generation "
+            f"requests (Replicate Flux). They should:\n"
+            f"- Evoke a specific visual medium or technique (NOT generic photography)\n"
+            f"- Reference unique elements from the lore (materials, lighting, textures)\n"
+            f"- Create a visual language that could ONLY belong to this world\n"
+            f"- Be technically precise (describe lens, lighting, medium, color grading)\n\n"
+            f"Respond with ONLY the three prompts, one per line, in this format:\n"
+            f"PORTRAIT: [prompt]\n"
+            f"BUILDING: [prompt]\n"
+            f"LORE: [prompt]"
+        )
+
+        try:
+            model = get_openrouter_model(openrouter_key, model_id=get_platform_model("forge"))
+            agent = Agent(model, system_prompt="You are a visual style director. Be specific, bold, distinctive.")
+            result = await run_ai(agent, prompt, "style_refine")
+
+            # Parse response
+            text = result.output if isinstance(result.output, str) else str(result.output)
+            updates: dict[str, str] = {}
+            for line in text.strip().split("\n"):
+                line = line.strip()
+                if line.upper().startswith("PORTRAIT:"):
+                    updates["image_style_prompt_portrait"] = line.split(":", 1)[1].strip().strip('"')
+                elif line.upper().startswith("BUILDING:"):
+                    updates["image_style_prompt_building"] = line.split(":", 1)[1].strip().strip('"')
+                elif line.upper().startswith("LORE:"):
+                    updates["image_style_prompt_lore"] = line.split(":", 1)[1].strip().strip('"')
+
+            if not updates:
+                logger.warning("Style refinement produced no parseable output")
+                return
+
+            # Update settings
+            rows = [
+                {
+                    "simulation_id": str(simulation_id),
+                    "setting_key": key,
+                    "setting_value": value,
+                    "category": "ai",
+                }
+                for key, value in updates.items()
+                if value and len(value) > 20  # Reject too-short prompts
+            ]
+            if rows:
+                supabase.table("simulation_settings").upsert(
+                    rows,
+                    on_conflict="simulation_id,category,setting_key",
+                ).execute()
+                logger.info(
+                    "Style prompts refined using lore context",
+                    extra={
+                        "simulation_id": str(simulation_id),
+                        "updated_keys": list(updates.keys()),
+                    },
+                )
+
+        except Exception as exc:
+            logger.warning("Style prompt refinement AI call failed", exc_info=True)
+            sentry_sdk.capture_exception(exc)
+
+    @staticmethod
     async def generate_variants(
         admin_supabase: Client,
         simulation_id: UUID,

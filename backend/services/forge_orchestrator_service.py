@@ -1048,6 +1048,18 @@ class ForgeOrchestratorService:
         else:
             logger.info("Phase A skipped (image-only regeneration)")
 
+        # ── Phase A.5: Refine image style prompts using lore context ──
+        if draft_data:
+            try:
+                await ForgeThemeService.refine_style_prompts(
+                    supabase, simulation_id, or_key,
+                )
+            except Exception:
+                logger.warning(
+                    "Style prompt refinement failed — using original prompts",
+                    exc_info=True,
+                )
+
         # ── Phase B: Image generation ──
         logger.info("Phase B: image generation")
         t_b = time.monotonic()
