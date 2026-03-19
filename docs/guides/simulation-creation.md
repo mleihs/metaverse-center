@@ -245,6 +245,10 @@ The script uploads to `simulation.assets/{sim_id}/banner.webp` and updates `bann
 - In system prompts, enforce TEXTURE requirements (pores, grime, sweat, weathering)
 - Test generation script passes entity data (character, background) to API — check for "Missing variable" warnings in backend logs
 
+## Forge Lore Refinement (Phases A.5/A.6)
+
+After a simulation is materialized, Phase A.5 (style prompt refinement) analyzes its lore content to generate distinctive `image_style_prompt_portrait` and `image_style_prompt_building` values grounded in the world's aesthetic DNA. Phase A.6 (prompt template generation) then produces simulation-specific `portrait_description` and `building_image_description` prompt templates that reference lore landmarks, factions, and atmosphere — replacing generic templates with world-aware ones.
+
 ## Entity Slugs (Migration 137)
 
 Agent and building slugs are **auto-generated** from their `name` via a `BEFORE INSERT` SQL trigger. No manual slug specification needed in seed files or migrations.

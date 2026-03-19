@@ -13,6 +13,18 @@
 
 ---
 
+### Social Media Pipeline
+
+A **Bureau of Impossible Geography Instagram pipeline** generates themed posts from simulation content — agent dossiers, building surveillance reports, chronicle dispatches, and declassified lore archives. Each post is composed as a 1080×1350 JPEG with Bureau header/footer overlays, simulation-colored borders, and optional steganographic cipher hints embedded as low-opacity marginal text.
+
+An **ARG cipher system** generates unique unlock codes per post. Followers decode hints from Instagram captions (or hidden in images) and redeem codes at `/bureau/dispatch` for rewards. Difficulty levels (easy/medium/hard) and hint formats (footer/caption/steganographic) are configurable from the admin panel.
+
+**Bluesky cross-posting** via the AT Protocol automatically mirrors Instagram content to Bluesky with reformatted captions and re-uploaded images.
+
+A **Forge lore refinement pipeline** (Phases A.5/A.6) ensures every simulation gets distinctive image style prompts and world-specific prompt templates generated from its lore content — no more generic AI aesthetics.
+
+---
+
 ## What Is This?
 
 metaverse.center is a multiplayer worldbuilding platform where users create and manage literary simulations &mdash; each a distinct fictional world with its own agents, buildings, locations, events, and political dynamics. The platform ships with five richly detailed flagship worlds, but any user can forge new simulations with custom lore, themes, and entity hierarchies. Players shape their worlds through AI-assisted content generation and compete in **Epochs**: structured PvP campaigns where operatives are deployed, alliances form and fracture, and scoring spans five strategic dimensions.

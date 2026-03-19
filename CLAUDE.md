@@ -25,6 +25,14 @@
 - AI: OpenRouter
 - Email: SMTP SSL
 
+### Social Media Pipeline
+
+- Instagram: admin generates drafts, approves, publishes via Graph API
+- Bluesky: AT Protocol cross-posting from Instagram (reformatted captions, re-uploaded images)
+- Cipher ARG: unique codes per post, steganographic hints, `/bureau/dispatch` redemption
+- Hashtag strategy: 5 tags max, varied per post, trending tag slot
+- Forge Phases A.5/A.6: lore-informed style prompts and prompt templates per simulation
+
 ---
 
 ## Hybrid Supabase Pattern (CRITICAL)
