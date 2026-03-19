@@ -99,6 +99,7 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
   `;
 
   @property({ type: String }) simulationId = '';
+  @property({ type: String }) entitySlug = '';
 
   @state() private _rawSections: ForgeLoreSection[] | null = null;
   @state() private _loading = false;
@@ -135,9 +136,24 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
     this._loading = true;
     try {
       this._rawSections = await fetchRawLoreSections(simId);
+      if (this.entitySlug && this._rawSections) {
+        this._scrollToSection(this.entitySlug);
+      }
     } finally {
       this._loading = false;
     }
+  }
+
+  private _scrollToSection(slug: string): void {
+    if (!this._rawSections) return;
+    const section = this._rawSections.find((s) => s.slug === slug);
+    if (!section) return;
+    // Scroll to section after render
+    requestAnimationFrame(() => {
+      const el = this.shadowRoot?.querySelector(`[data-lore-slug="${slug}"]`)
+        ?? this.shadowRoot?.querySelector(`[data-section-index="${this._rawSections!.indexOf(section)}"]`);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   }
 
   disconnectedCallback(): void {

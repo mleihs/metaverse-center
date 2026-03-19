@@ -79,6 +79,7 @@ def build_entity_detail_content(
     detail_builders: dict[str, callable] = {
         "agents": _build_agent_detail,
         "buildings": _build_building_detail,
+        "lore": _build_lore_detail,
     }
 
     builder = detail_builders.get(view)
@@ -194,6 +195,59 @@ def _build_building_detail(
         place["image"] = image
 
     return entity_html, _safe_jsonld(place)
+
+
+def _build_lore_detail(
+    client: Client, sim_id: str, sim_name: str, slug: str,
+    entity_id: str,
+) -> tuple[str, str]:
+    """Build Article schema for an individual lore section."""
+    query = (
+        client.table("simulation_lore")
+        .select("title,slug,chapter,arcanum,body,epigraph,image_slug,image_caption,created_at")
+        .eq("simulation_id", sim_id)
+    )
+    if _UUID_RE.match(entity_id):
+        query = query.eq("id", entity_id)
+    else:
+        query = query.eq("slug", entity_id)
+
+    sections = (query.limit(1).execute()).data or []
+    if not sections:
+        return "", ""
+
+    s = sections[0]
+    title = s.get("title", "")
+    entity_slug = s.get("slug", entity_id)
+    chapter = s.get("chapter", "")
+    body = s.get("body", "")
+    epigraph = s.get("epigraph", "")
+
+    parts = [f"<h2>{_esc(chapter)}: {_esc(title)}</h2>"]
+    if epigraph:
+        parts.append(f"<blockquote>{_esc(epigraph)}</blockquote>")
+    parts.append(f"<p>{_esc(_truncate(body, 1000))}</p>")
+    parts.append(f"<p>From the lore of <em>{_esc(sim_name)}</em>.</p>")
+    entity_html = "\n".join(parts)
+
+    article: dict = {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": f"{chapter}: {title}",
+        "description": _truncate(body, 300),
+        "url": f"{BASE_URL}/simulations/{slug}/lore/{entity_slug}",
+        "author": {"@type": "Organization", "name": sim_name},
+        "publisher": {
+            "@type": "Organization",
+            "name": "metaverse.center",
+            "url": BASE_URL,
+        },
+        "genre": "Interactive Fiction",
+    }
+    if s.get("created_at"):
+        article["datePublished"] = s["created_at"]
+
+    return entity_html, _safe_jsonld(article)
 
 
 def _build_agents(
@@ -323,7 +377,7 @@ def _build_lore(
     # Fetch actual lore chapters for rich content
     lore_resp = (
         client.table("simulation_lore")
-        .select("chapter,title,body")
+        .select("chapter,title,slug,body")
         .eq("simulation_id", sim_id)
         .order("sort_order")
         .limit(12)

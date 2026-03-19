@@ -94,6 +94,33 @@ async def sitemap_xml(supabase: Client = Depends(get_anon_supabase)) -> Response
                 "weekly",
             )
 
+        # Individual lore chapters (long-form narrative content)
+        if sim_id:
+            try:
+                lore_sections = (
+                    supabase.table("simulation_lore")
+                    .select("slug, updated_at")
+                    .eq("simulation_id", sim_id)
+                    .order("sort_order")
+                    .limit(20)
+                    .execute()
+                ).data or []
+                for section in lore_sections:
+                    section_updated = section.get("updated_at", sim_updated)
+                    if isinstance(section_updated, str) and "T" in section_updated:
+                        section_updated = section_updated[:10]
+                    section_slug = section.get("slug", "")
+                    if section_slug:
+                        _add_url(
+                            urlset,
+                            f"https://metaverse.center/simulations/{slug}/lore/{section_slug}",
+                            section_updated,
+                            "0.7",
+                            "monthly",
+                        )
+            except Exception:
+                logger.warning("Failed to fetch lore for sitemap: %s", slug)
+
         # Individual agents (cool content — AI characters with personalities)
         if sim_id:
             try:

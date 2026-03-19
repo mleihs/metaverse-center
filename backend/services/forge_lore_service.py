@@ -290,6 +290,21 @@ class ForgeLoreService:
         return resp.data or []
 
     @staticmethod
+    async def get_by_slug(
+        supabase: Client, simulation_id: UUID, slug: str,
+    ) -> dict[str, Any] | None:
+        """Get a single lore section by simulation-scoped slug."""
+        resp = (
+            supabase.table("simulation_lore")
+            .select("*")
+            .eq("simulation_id", str(simulation_id))
+            .eq("slug", slug)
+            .limit(1)
+            .execute()
+        )
+        return resp.data[0] if resp.data else None
+
+    @staticmethod
     async def persist_lore(
         supabase: Client,
         simulation_id: UUID,

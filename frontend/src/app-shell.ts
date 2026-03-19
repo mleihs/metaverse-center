@@ -303,6 +303,12 @@ export class VelgApp extends LitElement {
       },
       // --- Simulation-scoped routes (public read, auth for mutations) ---
       {
+        path: '/simulations/:id/lore/:entitySlug',
+        render: ({ id, entitySlug }) =>
+          this._renderSimulationView(id ?? '', 'lore', entitySlug),
+        enter: async ({ id }) => this._enterSimulationRoute(id),
+      },
+      {
         path: '/simulations/:id/lore',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'lore'),
         enter: async ({ id }) => this._enterSimulationRoute(id),
@@ -784,7 +790,7 @@ export class VelgApp extends LitElement {
     let content: TemplateResult;
     switch (view) {
       case 'lore':
-        content = html`<velg-simulation-lore-view .simulationId=${resolvedId}></velg-simulation-lore-view>`;
+        content = html`<velg-simulation-lore-view .simulationId=${resolvedId} .entitySlug=${entitySlug ?? ''}></velg-simulation-lore-view>`;
         break;
       case 'chronicle':
         content = html`<velg-chronicle-view .simulationId=${resolvedId}></velg-chronicle-view>`;

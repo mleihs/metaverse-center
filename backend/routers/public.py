@@ -316,6 +316,21 @@ async def get_anchor(
 # ── Lore ──────────────────────────────────────────────────────────────────
 
 
+@router.get("/simulations/{simulation_id}/lore/by-slug/{slug}", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def get_lore_by_slug(
+    request: Request,
+    simulation_id: UUID,
+    slug: str,
+    supabase: Client = Depends(get_anon_supabase),
+) -> dict:
+    """Get a single lore section by slug (public)."""
+    data = await ForgeLoreService.get_by_slug(supabase, simulation_id, slug)
+    if not data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lore section not found.")
+    return {"success": True, "data": data}
+
+
 @router.get("/simulations/{simulation_id}/lore", response_model=SuccessResponse)
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_simulation_lore(

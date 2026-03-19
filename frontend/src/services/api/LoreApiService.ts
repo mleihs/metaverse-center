@@ -15,6 +15,10 @@ export interface LoreSectionCreatePayload {
 export type LoreSectionUpdatePayload = Partial<LoreSectionCreatePayload>;
 
 export class LoreApiService extends BaseApiService {
+  getBySlug(simulationId: string, slug: string): Promise<ApiResponse<ForgeLoreSection>> {
+    return this.getPublic(`/simulations/${simulationId}/lore/by-slug/${slug}`);
+  }
+
   createSection(
     simulationId: string,
     data: LoreSectionCreatePayload,

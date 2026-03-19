@@ -51,6 +51,7 @@ export interface ForgeGenerationConfig {
 export interface ForgeLoreSection {
   id: string;
   simulation_id: string;
+  slug: string;
   sort_order: number;
   chapter: string;
   arcanum: string;
