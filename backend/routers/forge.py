@@ -337,10 +337,8 @@ async def update_byok(
     """Update personal API keys (BYOK) for the Simulation Forge."""
     # Check if user is allowed to use BYOK
     try:
-        allowed_resp = supabase.rpc(
-            "fn_user_byok_allowed", {"p_user_id": str(user.id)}
-        ).execute()
-        if not allowed_resp.data:
+        allowed = await ForgeDraftService.check_byok_allowed(supabase, user.id)
+        if not allowed:
             raise HTTPException(
                 status_code=403,
                 detail="BYOK access not granted. Contact your platform administrator.",
@@ -933,9 +931,9 @@ async def retrigger_batch(
             admin_supabase, simulation_id,
         )
         # Delete existing lore to avoid duplicates on re-generation
-        admin_supabase.table("simulation_lore").delete().eq(
-            "simulation_id", str(simulation_id),
-        ).execute()
+        ForgeOrchestratorService.delete_simulation_lore(
+            admin_supabase, simulation_id,
+        )
 
     background_tasks.add_task(
         safe_background(_orchestrator_service.run_batch_generation),

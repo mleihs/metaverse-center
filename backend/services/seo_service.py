@@ -1,10 +1,11 @@
-"""SEO notification service — IndexNow pings for search engine discovery."""
+"""SEO service — sitemap entity queries + IndexNow pings."""
 
 import logging
 
 import httpx
 
 from backend.config import settings
+from supabase import Client
 
 logger = logging.getLogger(__name__)
 
@@ -12,6 +13,49 @@ SITE_HOST = "metaverse.center"
 SITE_URL = f"https://{SITE_HOST}"
 
 SIMULATION_VIEWS = ["lore", "agents", "buildings", "events", "locations", "social", "chat", "trends", "health"]
+
+
+class SeoService:
+    """Database queries for sitemap entity discovery."""
+
+    @classmethod
+    def get_lore_sections(cls, supabase: Client, simulation_id: str) -> list[dict]:
+        """Fetch lore section slugs and timestamps for a simulation's sitemap entries."""
+        resp = (
+            supabase.table("simulation_lore")
+            .select("slug, updated_at")
+            .eq("simulation_id", simulation_id)
+            .order("sort_order")
+            .limit(20)
+            .execute()
+        )
+        return resp.data or []
+
+    @classmethod
+    def get_agents_for_sitemap(cls, supabase: Client, simulation_id: str) -> list[dict]:
+        """Fetch agent slugs and timestamps for a simulation's sitemap entries."""
+        resp = (
+            supabase.table("agents")
+            .select("id, slug, name, updated_at")
+            .eq("simulation_id", simulation_id)
+            .is_("deleted_at", "null")
+            .limit(50)
+            .execute()
+        )
+        return resp.data or []
+
+    @classmethod
+    def get_buildings_for_sitemap(cls, supabase: Client, simulation_id: str) -> list[dict]:
+        """Fetch building slugs and timestamps for a simulation's sitemap entries."""
+        resp = (
+            supabase.table("buildings")
+            .select("id, slug, name, updated_at")
+            .eq("simulation_id", simulation_id)
+            .is_("deleted_at", "null")
+            .limit(50)
+            .execute()
+        )
+        return resp.data or []
 
 
 async def notify_search_engines(slug: str) -> None:

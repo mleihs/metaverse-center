@@ -7,6 +7,7 @@ from fastapi.responses import PlainTextResponse
 
 from backend.config import settings
 from backend.dependencies import get_anon_supabase
+from backend.services.seo_service import SeoService
 from backend.services.simulation_service import SimulationService
 from supabase import Client
 
@@ -113,14 +114,7 @@ async def sitemap_xml(supabase: Client = Depends(get_anon_supabase)) -> Response
         # Individual lore chapters (long-form narrative content)
         if sim_id:
             try:
-                lore_sections = (
-                    supabase.table("simulation_lore")
-                    .select("slug, updated_at")
-                    .eq("simulation_id", sim_id)
-                    .order("sort_order")
-                    .limit(20)
-                    .execute()
-                ).data or []
+                lore_sections = SeoService.get_lore_sections(supabase, sim_id)
                 for section in lore_sections:
                     section_updated = section.get("updated_at", sim_updated)
                     if isinstance(section_updated, str) and "T" in section_updated:
@@ -140,14 +134,7 @@ async def sitemap_xml(supabase: Client = Depends(get_anon_supabase)) -> Response
         # Individual agents (cool content — AI characters with personalities)
         if sim_id:
             try:
-                agents = (
-                    supabase.table("agents")
-                    .select("id, slug, name, updated_at")
-                    .eq("simulation_id", sim_id)
-                    .is_("deleted_at", "null")
-                    .limit(50)
-                    .execute()
-                ).data or []
+                agents = SeoService.get_agents_for_sitemap(supabase, sim_id)
                 for agent in agents:
                     agent_updated = agent.get("updated_at", sim_updated)
                     if isinstance(agent_updated, str) and "T" in agent_updated:
@@ -165,14 +152,7 @@ async def sitemap_xml(supabase: Client = Depends(get_anon_supabase)) -> Response
 
             # Individual buildings (world infrastructure)
             try:
-                buildings = (
-                    supabase.table("buildings")
-                    .select("id, slug, name, updated_at")
-                    .eq("simulation_id", sim_id)
-                    .is_("deleted_at", "null")
-                    .limit(50)
-                    .execute()
-                ).data or []
+                buildings = SeoService.get_buildings_for_sitemap(supabase, sim_id)
                 for bldg in buildings:
                     bldg_updated = bldg.get("updated_at", sim_updated)
                     if isinstance(bldg_updated, str) and "T" in bldg_updated:

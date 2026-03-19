@@ -128,23 +128,17 @@ async def set_cipher_for_post(
     })
 
     # Verify post exists
-    post_resp = (
-        admin_supabase.table("instagram_posts")
-        .select("id, status")
-        .eq("id", str(post_id))
-        .limit(1)
-        .execute()
-    )
-    if not post_resp.data:
+    post = await CipherService.get_instagram_post(admin_supabase, post_id)
+    if not post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Instagram post not found.",
         )
 
     # Update unlock code
-    admin_supabase.table("instagram_posts").update({
-        "unlock_code": body.unlock_code.upper(),
-    }).eq("id", str(post_id)).execute()
+    await CipherService.update_post_unlock_code(
+        admin_supabase, post_id, body.unlock_code.upper(),
+    )
 
     return {
         "success": True,

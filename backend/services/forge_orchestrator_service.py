@@ -1636,6 +1636,16 @@ Generate exactly 3 new agents. Requirements:
         }
 
     @staticmethod
+    def delete_simulation_lore(supabase: Client, simulation_id: UUID) -> None:
+        """Delete all lore entries for a simulation.
+
+        Used before re-generating lore to avoid duplicates.
+        """
+        supabase.table("simulation_lore").delete().eq(
+            "simulation_id", str(simulation_id),
+        ).execute()
+
+    @staticmethod
     def _build_world_context(
         supabase: Client,
         simulation_id: UUID,

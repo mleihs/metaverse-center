@@ -154,6 +154,20 @@ class ForgeDraftService:
         return response.data[0]
 
     @staticmethod
+    async def check_byok_allowed(supabase: Client, user_id: UUID) -> bool:
+        """Check whether a user is allowed to use BYOK keys.
+
+        Calls the fn_user_byok_allowed RPC which evaluates per-user and
+        system-wide BYOK access policies.
+
+        Returns True if allowed, False otherwise.
+        """
+        resp = supabase.rpc(
+            "fn_user_byok_allowed", {"p_user_id": str(user_id)}
+        ).execute()
+        return bool(resp.data)
+
+    @staticmethod
     async def update_user_keys(
         supabase: Client,
         user_id: UUID,

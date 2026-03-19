@@ -643,6 +643,112 @@ class HeartbeatService:
 
         return scar_delta, entries
 
+    # ── Router-Facing Queries ─────────────────────────────────
+
+    @classmethod
+    async def get_heartbeat_overview(cls, supabase: Client, simulation_id: UUID) -> dict:
+        """Get latest heartbeat tick + summary counts for a simulation."""
+        sim = (
+            supabase.table("simulations")
+            .select("last_heartbeat_tick, last_heartbeat_at, next_heartbeat_at")
+            .eq("id", str(simulation_id))
+            .limit(1)
+            .execute()
+        ).data
+        if not sim:
+            return {"last_tick": 0}
+
+        sim = sim[0]
+        last_tick = sim.get("last_heartbeat_tick", 0)
+
+        # Count active arcs
+        arcs = (
+            supabase.table("narrative_arcs")
+            .select("id", count="exact")
+            .eq("simulation_id", str(simulation_id))
+            .in_("status", ["building", "active", "climax"])
+            .execute()
+        )
+
+        # Count pending bureau responses
+        pending = (
+            supabase.table("bureau_responses")
+            .select("id", count="exact")
+            .eq("simulation_id", str(simulation_id))
+            .eq("status", "pending")
+            .execute()
+        )
+
+        # Count active attunements
+        attunements = (
+            supabase.table("substrate_attunements")
+            .select("id", count="exact")
+            .eq("simulation_id", str(simulation_id))
+            .execute()
+        )
+
+        # Count active anchors
+        anchors = (
+            supabase.table("collaborative_anchors")
+            .select("id", count="exact")
+            .in_("status", ["forming", "active", "reinforcing"])
+            .contains("anchor_simulation_ids", [str(simulation_id)])
+            .execute()
+        )
+
+        return {
+            "simulation_id": str(simulation_id),
+            "last_tick": last_tick,
+            "last_heartbeat_at": sim.get("last_heartbeat_at"),
+            "next_heartbeat_at": sim.get("next_heartbeat_at"),
+            "active_arcs": arcs.count or 0,
+            "pending_responses": pending.count or 0,
+            "active_attunements": attunements.count or 0,
+            "active_anchors": anchors.count or 0,
+        }
+
+    @classmethod
+    async def list_heartbeat_entries(
+        cls,
+        supabase: Client,
+        simulation_id: UUID,
+        *,
+        entry_type: str | None = None,
+        tick_number: int | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> tuple[list[dict], int]:
+        """Paginated chronicle feed (heartbeat entries).
+
+        Returns (data, total) tuple.
+        """
+        query = (
+            supabase.table("heartbeat_entries")
+            .select("*", count="exact")
+            .eq("simulation_id", str(simulation_id))
+            .order("tick_number", desc=True)
+            .order("created_at", desc=True)
+            .range(offset, offset + limit - 1)
+        )
+        if entry_type:
+            query = query.eq("entry_type", entry_type)
+        if tick_number is not None:
+            query = query.eq("tick_number", tick_number)
+
+        response = query.execute()
+        return response.data or [], response.count or 0
+
+    @classmethod
+    async def list_cascade_rules(cls, admin: Client) -> list[dict]:
+        """List all cascade rules from the resonance_cascade_rules table."""
+        response = (
+            admin.table("resonance_cascade_rules")
+            .select("*")
+            .order("source_signature")
+            .execute()
+        )
+        return response.data or []
+
     # ── Admin Dashboard ────────────────────────────────────────
 
     @classmethod

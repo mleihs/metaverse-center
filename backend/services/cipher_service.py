@@ -144,6 +144,34 @@ class CipherService:
         }
 
     @classmethod
+    async def get_instagram_post(
+        cls,
+        supabase: Client,
+        post_id: UUID,
+    ) -> dict | None:
+        """Fetch an Instagram post by ID. Returns None if not found."""
+        resp = (
+            supabase.table("instagram_posts")
+            .select("id, status")
+            .eq("id", str(post_id))
+            .limit(1)
+            .execute()
+        )
+        return resp.data[0] if resp.data else None
+
+    @classmethod
+    async def update_post_unlock_code(
+        cls,
+        supabase: Client,
+        post_id: UUID,
+        unlock_code: str,
+    ) -> None:
+        """Update the unlock_code on an Instagram post."""
+        supabase.table("instagram_posts").update({
+            "unlock_code": unlock_code,
+        }).eq("id", str(post_id)).execute()
+
+    @classmethod
     def prepare_cipher_for_post(
         cls,
         caption: str,
