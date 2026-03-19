@@ -741,6 +741,11 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
 
       <div class="sys-label">${msg('Tools')}</div>
       <a class="sys-item"
+        href="https://www.instagram.com/bureau.of.impossible.geography/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >${icons.instagram(14)} ${msg('Instagram')}</a>
+      <a class="sys-item"
         href="https://github.com/mleihs/velgarien-rebuild"
         target="_blank"
         rel="noopener noreferrer"
@@ -871,11 +876,17 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
         </div>
 
         <a class="header__menu-github"
-          href="https://github.com/mleihs/velgarien-rebuild"
+          href="https://www.instagram.com/bureau.of.impossible.geography/"
           target="_blank"
           rel="noopener noreferrer"
           style="--i:${navIdx}"
-        >${icons.github(18)} ${msg('View source on GitHub')}</a>
+        >${icons.instagram(18)} ${msg('Instagram')}</a>
+        <a class="header__menu-github"
+          href="https://github.com/mleihs/velgarien-rebuild"
+          target="_blank"
+          rel="noopener noreferrer"
+          style="--i:${navIdx + 1}"
+        >${icons.github(18)} ${msg('GitHub Repository')}</a>
       </nav>
     `;
   }

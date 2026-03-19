@@ -216,10 +216,20 @@ class InstagramContentService:
             )
             image_urls.append(staging_url)
 
-        # 6. Build content snapshot (frozen entity data)
+        # 6. Content moderation check
+        moderation = await cls._moderate_caption(admin_supabase, caption)
+        if moderation["blocked"]:
+            logger.warning(
+                "Caption blocked by moderation: %s (reason: %s)",
+                candidate.get("name", "?"),
+                moderation["reason"],
+            )
+            return {"id": None, "status": "rejected", "failure_reason": moderation["reason"]}
+
+        # 7. Build content snapshot (frozen entity data)
         snapshot = cls._build_snapshot(candidate)
 
-        # 7. Insert draft
+        # 8. Insert draft
         record = {
             "simulation_id": simulation_id,
             "content_source_type": content_type,
@@ -808,6 +818,59 @@ class InstagramContentService:
                 colors["color_background"] = row["setting_value"]
 
         return colors
+
+    # Default blocklist — catches obvious issues. Overridable via platform_settings.
+    _DEFAULT_BLOCKLIST = [
+        "kill yourself", "suicide", "self-harm", "racial slur", "n-word",
+        "child abuse", "sexual content", "porn", "nude", "naked",
+        "terrorist", "bomb threat", "school shooting",
+    ]
+
+    @classmethod
+    async def _moderate_caption(
+        cls,
+        admin_supabase: Client,
+        caption: str,
+    ) -> dict[str, bool | str]:
+        """Check caption against keyword blocklist and basic safety rules.
+
+        Returns: {"blocked": bool, "reason": str}
+        """
+        caption_lower = caption.lower()
+
+        # Load configurable blocklist from platform_settings
+        blocklist = list(cls._DEFAULT_BLOCKLIST)
+        try:
+            resp = (
+                admin_supabase.table("platform_settings")
+                .select("setting_value")
+                .eq("setting_key", "instagram_blocklist")
+                .limit(1)
+                .execute()
+            )
+            if resp.data and resp.data[0]["setting_value"]:
+                custom = json.loads(resp.data[0]["setting_value"])
+                if isinstance(custom, list):
+                    blocklist.extend(custom)
+        except Exception:
+            logger.debug("Failed to load instagram_blocklist, using defaults")
+
+        # Check blocklist
+        for term in blocklist:
+            if term.lower() in caption_lower:
+                return {"blocked": True, "reason": f"Blocked term: '{term}'"}
+
+        # Basic length check — Instagram captions max 2200 chars
+        if len(caption) > 2200:
+            return {"blocked": False, "reason": ""}
+
+        # Check for excessive emoji (Bureau voice should have none)
+        import unicodedata
+        emoji_count = sum(1 for ch in caption if unicodedata.category(ch).startswith("So"))
+        if emoji_count > 3:
+            return {"blocked": True, "reason": f"Too many emojis ({emoji_count}) — not Bureau voice"}
+
+        return {"blocked": False, "reason": ""}
 
     @classmethod
     def _build_snapshot(cls, candidate: dict) -> dict:

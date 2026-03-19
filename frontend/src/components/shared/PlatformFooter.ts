@@ -112,6 +112,10 @@ export class VelgPlatformFooter extends LitElement {
             <a href="/privacy">${msg('Privacy')}</a>
             <span aria-hidden="true">\u00B7</span>
             <a href="/terms">${msg('Terms')}</a>
+            <span aria-hidden="true">\u00B7</span>
+            <a href="https://www.instagram.com/bureau.of.impossible.geography/" target="_blank" rel="noopener noreferrer">${msg('Instagram')}</a>
+            <span aria-hidden="true">\u00B7</span>
+            <a href="https://github.com/mleihs/velgarien-rebuild" target="_blank" rel="noopener noreferrer">${msg('GitHub')}</a>
           </nav>
         </div>
         <div class="footer__bureau">${msg('Bureau of Multiverse Observation')}</div>
