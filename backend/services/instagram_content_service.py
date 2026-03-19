@@ -15,6 +15,8 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
+from fastapi import HTTPException, status
+
 from backend.config import settings
 from backend.services.generation_service import GenerationService
 from backend.services.instagram_image_composer import InstagramImageComposer
@@ -348,7 +350,7 @@ class InstagramContentService:
             .execute()
         )
         if not resp.data:
-            from fastapi import HTTPException, status
+
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Post not found or not in draft status.",
@@ -375,7 +377,7 @@ class InstagramContentService:
             .execute()
         )
         if not resp.data:
-            from fastapi import HTTPException, status
+
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Post not found or already published.",
@@ -397,7 +399,7 @@ class InstagramContentService:
             .execute()
         )
         if not resp.data:
-            from fastapi import HTTPException, status
+
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Instagram post not found.",
@@ -562,7 +564,7 @@ class InstagramContentService:
             parts = [
                 f"Name: {candidate.get('name', 'Unknown')}",
                 f"Type: {candidate.get('building_type', '')}",
-                f"Condition: {candidate.get('condition', '')}",
+                f"Condition: {candidate.get('building_condition', '')}",
             ]
             if candidate.get("description"):
                 parts.append(f"Description: {candidate['description'][:300]}")
@@ -599,7 +601,7 @@ class InstagramContentService:
         if content_type == "building":
             name = candidate.get("name", "Unknown Structure")
             btype = candidate.get("building_type", "")
-            condition = candidate.get("condition", "operational")
+            condition = candidate.get("building_condition", "operational")
             desc = candidate.get("description", "")
             return (
                 f"Shard surveillance report for {name} ({btype}). "

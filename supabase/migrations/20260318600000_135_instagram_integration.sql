@@ -213,7 +213,7 @@ BEGIN
                 b.name,
                 b.building_type,
                 b.description,
-                b.condition,
+                b.building_condition,
                 b.image_url,
                 b.simulation_id,
                 s.name AS simulation_name,

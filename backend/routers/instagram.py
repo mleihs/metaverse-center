@@ -35,6 +35,7 @@ from backend.models.instagram import (
 )
 from backend.services.external.instagram import InstagramService
 from backend.services.instagram_content_service import InstagramContentService
+from backend.services.instagram_scheduler import InstagramScheduler
 from supabase import Client
 
 logger = logging.getLogger(__name__)
@@ -231,8 +232,6 @@ async def force_publish(
         ig_user_id=config["ig_user_id"],
     )
 
-    # Import scheduler to reuse publish logic
-    from backend.services.instagram_scheduler import InstagramScheduler
     await InstagramScheduler._publish_single_post(admin_supabase, ig, post)
 
     # Return updated post

@@ -244,6 +244,9 @@ class InstagramScheduler:
         # Check for crash recovery — resume if container already created
         container_id = post.get("ig_container_id")
 
+        if not image_urls:
+            raise InstagramContainerError(f"Post {post['id']} has no image URLs")
+
         if media_type == "CAROUSEL" and len(image_urls) > 1:
             result = await ig.publish_carousel(
                 image_urls=image_urls,
