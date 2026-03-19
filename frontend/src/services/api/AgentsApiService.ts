@@ -40,6 +40,10 @@ export class AgentsApiService extends BaseApiService {
     return this.delete(`/simulations/${simulationId}/agents/${agentId}/reactions/${reactionId}`);
   }
 
+  getBySlug(simulationId: string, slug: string): Promise<ApiResponse<Agent>> {
+    return this.getPublic(`/simulations/${simulationId}/agents/by-slug/${slug}`);
+  }
+
   listPublic(simulationId: string, params?: Record<string, string>): Promise<ApiResponse<Agent[]>> {
     return this.getPublic(`/simulations/${simulationId}/agents`, params);
   }

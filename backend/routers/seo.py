@@ -99,7 +99,7 @@ async def sitemap_xml(supabase: Client = Depends(get_anon_supabase)) -> Response
             try:
                 agents = (
                     supabase.table("agents")
-                    .select("id, name, updated_at")
+                    .select("id, slug, name, updated_at")
                     .eq("simulation_id", sim_id)
                     .is_("deleted_at", "null")
                     .limit(50)
@@ -109,9 +109,10 @@ async def sitemap_xml(supabase: Client = Depends(get_anon_supabase)) -> Response
                     agent_updated = agent.get("updated_at", sim_updated)
                     if isinstance(agent_updated, str) and "T" in agent_updated:
                         agent_updated = agent_updated[:10]
+                    agent_slug = agent.get("slug") or agent["id"]
                     _add_url(
                         urlset,
-                        f"https://metaverse.center/simulations/{slug}/agents/{agent['id']}",
+                        f"https://metaverse.center/simulations/{slug}/agents/{agent_slug}",
                         agent_updated,
                         "0.6",
                         "weekly",
@@ -123,7 +124,7 @@ async def sitemap_xml(supabase: Client = Depends(get_anon_supabase)) -> Response
             try:
                 buildings = (
                     supabase.table("buildings")
-                    .select("id, name, updated_at")
+                    .select("id, slug, name, updated_at")
                     .eq("simulation_id", sim_id)
                     .is_("deleted_at", "null")
                     .limit(50)
@@ -133,9 +134,10 @@ async def sitemap_xml(supabase: Client = Depends(get_anon_supabase)) -> Response
                     bldg_updated = bldg.get("updated_at", sim_updated)
                     if isinstance(bldg_updated, str) and "T" in bldg_updated:
                         bldg_updated = bldg_updated[:10]
+                    bldg_slug = bldg.get("slug") or bldg["id"]
                     _add_url(
                         urlset,
-                        f"https://metaverse.center/simulations/{slug}/buildings/{bldg['id']}",
+                        f"https://metaverse.center/simulations/{slug}/buildings/{bldg_slug}",
                         bldg_updated,
                         "0.6",
                         "weekly",

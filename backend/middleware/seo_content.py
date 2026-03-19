@@ -8,12 +8,14 @@ Used by the SEO middleware to inject content into crawler responses.
 import html
 import json
 import logging
+import re
 
 from supabase import Client
 
 logger = logging.getLogger(__name__)
 
 BASE_URL = "https://metaverse.center"
+_UUID_RE = re.compile(r"^[a-f0-9-]{36}$")
 
 
 def _esc(text: str | None) -> str:
@@ -98,21 +100,24 @@ def _build_agent_detail(
     entity_id: str,
 ) -> tuple[str, str]:
     """Build Person schema for an individual agent."""
-    response = (
+    query = (
         client.table("agents")
-        .select("name,character,primary_profession,portrait_image_url,gender")
-        .eq("id", entity_id)
+        .select("name,slug,character,primary_profession,portrait_image_url,gender")
         .eq("simulation_id", sim_id)
         .is_("deleted_at", "null")
-        .limit(1)
-        .execute()
     )
-    agents = response.data or []
+    if _UUID_RE.match(entity_id):
+        query = query.eq("id", entity_id)
+    else:
+        query = query.eq("slug", entity_id)
+
+    agents = (query.limit(1).execute()).data or []
     if not agents:
         return "", ""
 
     a = agents[0]
     name = a.get("name", "")
+    entity_slug = a.get("slug", entity_id)
     profession = a.get("primary_profession", "")
     character = a.get("character", "")
     portrait = a.get("portrait_image_url", "")
@@ -131,7 +136,7 @@ def _build_agent_detail(
         "@type": "Person",
         "name": name,
         "description": _truncate(character, 300),
-        "url": f"{BASE_URL}/simulations/{slug}/agents/{entity_id}",
+        "url": f"{BASE_URL}/simulations/{slug}/agents/{entity_slug}",
     }
     if profession:
         person["jobTitle"] = profession
@@ -148,21 +153,24 @@ def _build_building_detail(
     entity_id: str,
 ) -> tuple[str, str]:
     """Build Place schema for an individual building."""
-    response = (
+    query = (
         client.table("buildings")
-        .select("name,description,building_type,image_url")
-        .eq("id", entity_id)
+        .select("name,slug,description,building_type,image_url")
         .eq("simulation_id", sim_id)
         .is_("deleted_at", "null")
-        .limit(1)
-        .execute()
     )
-    buildings = response.data or []
+    if _UUID_RE.match(entity_id):
+        query = query.eq("id", entity_id)
+    else:
+        query = query.eq("slug", entity_id)
+
+    buildings = (query.limit(1).execute()).data or []
     if not buildings:
         return "", ""
 
     b = buildings[0]
     name = b.get("name", "")
+    entity_slug = b.get("slug", entity_id)
     desc = b.get("description", "")
     btype = b.get("building_type", "")
     image = b.get("image_url", "")
@@ -180,7 +188,7 @@ def _build_building_detail(
         "name": name,
         "description": _truncate(desc, 300),
         "additionalType": btype,
-        "url": f"{BASE_URL}/simulations/{slug}/buildings/{entity_id}",
+        "url": f"{BASE_URL}/simulations/{slug}/buildings/{entity_slug}",
     }
     if image:
         place["image"] = image
@@ -193,7 +201,7 @@ def _build_agents(
 ) -> tuple[str, str]:
     response = (
         client.table("agents")
-        .select("id,name,character,primary_profession,portrait_image_url")
+        .select("id,slug,name,character,primary_profession,portrait_image_url")
         .eq("simulation_id", sim_id)
         .is_("deleted_at", "null")
         .limit(50)
@@ -234,7 +242,7 @@ def _build_agents(
                     "name": a.get("name", ""),
                     "jobTitle": a.get("primary_profession", ""),
                     "description": _truncate(a.get("character") or "", 300),
-                    "url": f"{BASE_URL}/simulations/{slug}/agents/{a.get('id', '')}",
+                    "url": f"{BASE_URL}/simulations/{slug}/agents/{a.get('slug', a.get('id', ''))}",
                     **({"image": a["portrait_image_url"]} if a.get("portrait_image_url") else {}),
                 },
             }
@@ -250,7 +258,7 @@ def _build_buildings(
 ) -> tuple[str, str]:
     response = (
         client.table("buildings")
-        .select("id,name,description,building_type,image_url")
+        .select("id,slug,name,description,building_type,image_url")
         .eq("simulation_id", sim_id)
         .is_("deleted_at", "null")
         .limit(50)
@@ -287,7 +295,7 @@ def _build_buildings(
                     "name": b.get("name", ""),
                     "additionalType": b.get("building_type", ""),
                     "description": _truncate(b.get("description") or "", 300),
-                    "url": f"{BASE_URL}/simulations/{slug}/buildings/{b.get('id', '')}",
+                    "url": f"{BASE_URL}/simulations/{slug}/buildings/{b.get('slug', b.get('id', ''))}",
                     **({"image": b["image_url"]} if b.get("image_url") else {}),
                 },
             }

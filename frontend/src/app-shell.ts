@@ -322,6 +322,19 @@ export class VelgApp extends LitElement {
         render: ({ id }) => this._renderSimulationView(id ?? '', 'pulse'),
         enter: async ({ id }) => this._enterSimulationRoute(id),
       },
+      // Entity slug routes BEFORE list routes (first-match routing)
+      {
+        path: '/simulations/:id/agents/:entitySlug',
+        render: ({ id, entitySlug }) =>
+          this._renderSimulationView(id ?? '', 'agents', entitySlug),
+        enter: async ({ id }) => this._enterSimulationRoute(id),
+      },
+      {
+        path: '/simulations/:id/buildings/:entitySlug',
+        render: ({ id, entitySlug }) =>
+          this._renderSimulationView(id ?? '', 'buildings', entitySlug),
+        enter: async ({ id }) => this._enterSimulationRoute(id),
+      },
       {
         path: '/simulations/:id/agents',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'agents'),
@@ -722,7 +735,7 @@ export class VelgApp extends LitElement {
     }
   }
 
-  private _renderSimulationView(idOrSlug: string, view: string) {
+  private _renderSimulationView(idOrSlug: string, view: string, entitySlug?: string) {
     // Slug resolution already completed in enter() callback.
     // Fire context loading (taxonomies, role, settings) as background task.
     // No requestUpdate() needed — child components read signals directly.
@@ -736,8 +749,11 @@ export class VelgApp extends LitElement {
     const simName = sim?.name ?? '';
     const slug = sim?.slug ?? idOrSlug;
     const viewLabel = view.charAt(0).toUpperCase() + view.slice(1);
+    const canonicalPath = entitySlug
+      ? `/simulations/${slug}/${view}/${entitySlug}`
+      : `/simulations/${slug}/${view}`;
     seoService.setTitle(simName ? [viewLabel, simName] : [viewLabel]);
-    seoService.setCanonical(`/simulations/${slug}/${view}`);
+    seoService.setCanonical(canonicalPath);
     if (sim?.description) {
       seoService.setDescription(sim.description);
     }
@@ -757,7 +773,7 @@ export class VelgApp extends LitElement {
       url: `https://metaverse.center/simulations/${slug}/${view}`,
     });
     seoService.setBreadcrumbs(breadcrumbs);
-    analyticsService.trackPageView(`/simulations/${slug}/${view}`, document.title);
+    analyticsService.trackPageView(canonicalPath, document.title);
 
     // Safety fallback: if slug resolution somehow failed, show bare loading spinner
     // (without SimulationShell, to prevent ThemeService 422s on non-UUID)
@@ -780,10 +796,10 @@ export class VelgApp extends LitElement {
         content = html`<velg-simulation-pulse .simulationId=${resolvedId}></velg-simulation-pulse>`;
         break;
       case 'agents':
-        content = html`<velg-agents-view .simulationId=${resolvedId}></velg-agents-view>`;
+        content = html`<velg-agents-view .simulationId=${resolvedId} .entitySlug=${entitySlug ?? ''}></velg-agents-view>`;
         break;
       case 'buildings':
-        content = html`<velg-buildings-view .simulationId=${resolvedId}></velg-buildings-view>`;
+        content = html`<velg-buildings-view .simulationId=${resolvedId} .entitySlug=${entitySlug ?? ''}></velg-buildings-view>`;
         break;
       case 'events':
         content = html`<velg-events-view .simulationId=${resolvedId}></velg-events-view>`;

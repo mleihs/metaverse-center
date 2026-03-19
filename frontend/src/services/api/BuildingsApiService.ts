@@ -81,6 +81,10 @@ export class BuildingsApiService extends BaseApiService {
     );
   }
 
+  getBySlug(simulationId: string, slug: string): Promise<ApiResponse<Building>> {
+    return this.getPublic(`/simulations/${simulationId}/buildings/by-slug/${slug}`);
+  }
+
   listPublic(
     simulationId: string,
     params?: Record<string, string>,

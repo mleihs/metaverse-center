@@ -2,7 +2,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
-import type { Building } from '../../types/index.js';
+import type { Building, Simulation } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
 import { humanizeEnum } from '../../utils/text.js';
 import type { CapacityBar, CardBadge, CardRarity } from '../shared/VelgGameCard.js';
@@ -14,6 +14,15 @@ export class VelgBuildingCard extends LitElement {
   static styles = css`
     :host {
       display: block;
+      position: relative;
+    }
+
+    .seo-link {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
     }
   `;
 
@@ -112,11 +121,20 @@ export class VelgBuildingCard extends LitElement {
     return { current: assigned, max: b.population_capacity };
   }
 
+  private _getEntityUrl(): string {
+    const sim = appState.currentSimulation.value as Simulation | null;
+    if (!sim?.slug || !this.building?.slug) return '';
+    return `/simulations/${sim.slug}/buildings/${this.building.slug}`;
+  }
+
   protected render() {
     const b = this.building;
     if (!b) return nothing;
 
+    const entityUrl = this._getEntityUrl();
+
     return html`
+      ${entityUrl ? html`<a class="seo-link" href=${entityUrl}>${b.name}</a>` : ''}
       <velg-game-card
         type="building"
         .name=${b.name}

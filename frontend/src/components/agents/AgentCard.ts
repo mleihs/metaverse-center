@@ -2,7 +2,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
-import type { Agent, AptitudeSet } from '../../types/index.js';
+import type { Agent, AptitudeSet, Simulation } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
 import type { CardBadge, CardRarity } from '../shared/VelgGameCard.js';
 import '../shared/VelgGameCard.js';
@@ -13,6 +13,15 @@ export class VelgAgentCard extends LitElement {
   static styles = css`
     :host {
       display: block;
+      position: relative;
+    }
+
+    .seo-link {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
     }
   `;
 
@@ -101,13 +110,21 @@ export class VelgAgentCard extends LitElement {
     return parts.join(' \u00b7 ');
   }
 
+  private _getEntityUrl(): string {
+    const sim = appState.currentSimulation.value as Simulation | null;
+    if (!sim?.slug || !this.agent?.slug) return '';
+    return `/simulations/${sim.slug}/agents/${this.agent.slug}`;
+  }
+
   protected render() {
     const agent = this.agent;
     if (!agent) return html``;
 
     const best = this._getBestAptitude();
+    const entityUrl = this._getEntityUrl();
 
     return html`
+      ${entityUrl ? html`<a class="seo-link" href=${entityUrl}>${agent.name}</a>` : ''}
       <velg-game-card
         type="agent"
         .name=${agent.name}

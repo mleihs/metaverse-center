@@ -192,6 +192,19 @@ async def list_agents(
     return _paginated(data, total, limit, offset)
 
 
+@router.get("/simulations/{simulation_id}/agents/by-slug/{slug}", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def get_agent_by_slug(
+    request: Request,
+    simulation_id: UUID,
+    slug: str,
+    supabase: Client = Depends(get_anon_supabase),
+) -> dict:
+    """Get a single agent by slug (public)."""
+    data = await AgentService.get_by_slug(supabase, simulation_id, slug)
+    return {"success": True, "data": data}
+
+
 @router.get("/simulations/{simulation_id}/agents/{agent_id}", response_model=SuccessResponse)
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_agent(
@@ -223,6 +236,19 @@ async def list_buildings(
         supabase, simulation_id, search=search, limit=limit, offset=offset,
     )
     return _paginated(data, total, limit, offset)
+
+
+@router.get("/simulations/{simulation_id}/buildings/by-slug/{slug}", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def get_building_by_slug(
+    request: Request,
+    simulation_id: UUID,
+    slug: str,
+    supabase: Client = Depends(get_anon_supabase),
+) -> dict:
+    """Get a single building by slug (public)."""
+    data = await BuildingService.get_by_slug(supabase, simulation_id, slug)
+    return {"success": True, "data": data}
 
 
 @router.get("/simulations/{simulation_id}/buildings/{building_id}", response_model=SuccessResponse)

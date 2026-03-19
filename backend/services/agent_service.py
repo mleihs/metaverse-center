@@ -158,6 +158,32 @@ class AgentService(BaseService):
         return response.data or []
 
     @classmethod
+    async def get_by_slug(
+        cls,
+        supabase: Client,
+        simulation_id: UUID,
+        slug: str,
+    ) -> dict:
+        """Get an agent by simulation-scoped slug."""
+        response = (
+            supabase.table(cls._read_table())
+            .select("*")
+            .eq("simulation_id", str(simulation_id))
+            .eq("slug", slug)
+            .is_("deleted_at", "null")
+            .limit(1)
+            .execute()
+        )
+        if not response.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Agent with slug '{slug}' not found in simulation '{simulation_id}'.",
+            )
+        agent = response.data[0]
+        cls._enrich_ambassador_flag(supabase, simulation_id, [agent])
+        return agent
+
+    @classmethod
     async def get_with_details(
         cls,
         supabase: Client,

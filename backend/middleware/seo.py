@@ -32,9 +32,8 @@ _CRAWLER_RE = re.compile(
 
 # Regex to extract simulation ID (UUID), view, and optional entity ID from URL path
 _SIM_UUID_RE = re.compile(r"^/simulations/([a-f0-9-]{36})/(\w+)(?:/([a-f0-9-]{36}))?$")
-# Regex to extract simulation slug, view, and optional entity ID from URL path
-_SIM_SLUG_RE = re.compile(r"^/simulations/([a-z0-9][a-z0-9-]*)/(\w+)(?:/([a-f0-9-]{36}))?$")
-
+# Regex to extract simulation slug, view, and optional entity slug/UUID from URL path
+_SIM_SLUG_RE = re.compile(r"^/simulations/([a-z0-9][a-z0-9-]*)/(\w+)(?:/([a-z0-9][a-z0-9-]*))?$")
 # Cache the raw index.html contents (read once per process)
 _index_html_cache: str | None = None
 
@@ -62,7 +61,7 @@ def is_crawler(user_agent: str) -> bool:
 
 
 def get_crawler_redirect(url_path: str) -> str | None:
-    """If a crawler hits a UUID-based simulation URL, return the slug-based redirect URL.
+    """If a crawler hits a UUID-based simulation/entity URL, return the slug-based redirect URL.
 
     Returns the 301 redirect target, or None if no redirect is needed.
     """
@@ -72,6 +71,7 @@ def get_crawler_redirect(url_path: str) -> str | None:
 
     simulation_id = match.group(1)
     view = match.group(2)
+    entity_id = match.group(3) if match.lastindex and match.lastindex >= 3 else None
 
     try:
         client = _get_anon_client()
@@ -82,9 +82,28 @@ def get_crawler_redirect(url_path: str) -> str | None:
             .limit(1)
             .execute()
         )
-        if response.data and response.data[0].get("slug"):
-            slug = response.data[0]["slug"]
-            return f"/simulations/{slug}/{view}"
+        if not response.data or not response.data[0].get("slug"):
+            return None
+
+        sim_slug = response.data[0]["slug"]
+        redirect_url = f"/simulations/{sim_slug}/{view}"
+
+        # If there's an entity UUID, resolve it to an entity slug
+        if entity_id and view in ("agents", "buildings"):
+            entity_resp = (
+                client.table(view)
+                .select("slug")
+                .eq("id", entity_id)
+                .eq("simulation_id", simulation_id)
+                .limit(1)
+                .execute()
+            )
+            if entity_resp.data and entity_resp.data[0].get("slug"):
+                redirect_url = f"{redirect_url}/{entity_resp.data[0]['slug']}"
+            else:
+                redirect_url = f"{redirect_url}/{entity_id}"
+
+        return redirect_url
     except Exception:
         logger.warning(
             "Failed to resolve slug for crawler redirect",
@@ -194,7 +213,7 @@ async def enrich_html_for_crawler(index_path: Path, url_path: str) -> str | None
     match = uuid_match or slug_match
     id_or_slug = match.group(1)  # type: ignore[union-attr]
     view = match.group(2)  # type: ignore[union-attr]
-    entity_id = match.group(3) if match.lastindex and match.lastindex >= 3 else None  # type: ignore[union-attr]
+    entity_id_or_slug = match.group(3) if match.lastindex and match.lastindex >= 3 else None  # type: ignore[union-attr]
     view_label = VIEW_LABELS.get(view, view.capitalize())
     is_uuid = uuid_match is not None
 
@@ -246,8 +265,8 @@ async def enrich_html_for_crawler(index_path: Path, url_path: str) -> str | None
     else:
         description = "Build and explore simulated worlds on metaverse.center."
     canonical = f"https://metaverse.center/simulations/{slug}/{view}"
-    if entity_id:
-        canonical = f"{canonical}/{entity_id}"
+    if entity_id_or_slug:
+        canonical = f"{canonical}/{entity_id_or_slug}"
 
     # Build breadcrumb JSON-LD for simulation pages
     breadcrumb_json = _build_breadcrumb_json(sim_name, slug, view, view_label)
@@ -260,7 +279,7 @@ async def enrich_html_for_crawler(index_path: Path, url_path: str) -> str | None
     # Inject entity content for supported views (and entity detail pages)
     enriched = _inject_entity_content(
         enriched, view, sim.get("id", id_or_slug), sim_name, slug,
-        entity_id=entity_id,
+        entity_id=entity_id_or_slug,
     )
 
     return enriched

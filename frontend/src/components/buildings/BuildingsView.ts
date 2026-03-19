@@ -48,6 +48,7 @@ export class VelgBuildingsView extends SignalWatcher(LitElement) {
   ];
 
   @property({ type: String }) simulationId = '';
+  @property({ type: String }) entitySlug = '';
 
   @state() private _buildings: Building[] = [];
   @state() private _total = 0;
@@ -167,7 +168,28 @@ export class VelgBuildingsView extends SignalWatcher(LitElement) {
     }
   }
 
-  private _checkDeepLink(): void {
+  private async _checkDeepLink(): Promise<void> {
+    // Slug-based deep link from URL route (primary)
+    if (this.entitySlug) {
+      const building = this._buildings.find((b) => b.slug === this.entitySlug);
+      if (building) {
+        this._selectedBuilding = building;
+        this._showDetails = true;
+        return;
+      }
+      // Building not in current page — fetch by slug from API
+      try {
+        const resp = await buildingsApi.getBySlug(this.simulationId, this.entitySlug);
+        if (resp.success && resp.data) {
+          this._selectedBuilding = resp.data as Building;
+          this._showDetails = true;
+          return;
+        }
+      } catch {
+        // Fall through
+      }
+    }
+    // Legacy ID-based deep link (backward compat)
     const buildingId = appState.pendingOpenBuildingId.value;
     if (!buildingId) return;
     appState.pendingOpenBuildingId.value = null;
@@ -195,6 +217,25 @@ export class VelgBuildingsView extends SignalWatcher(LitElement) {
   private _handleBuildingClick(e: CustomEvent<Building>): void {
     this._selectedBuilding = e.detail;
     this._showDetails = true;
+    this._pushEntityUrl(e.detail);
+  }
+
+  private _pushEntityUrl(building: Building): void {
+    const sim = appState.currentSimulation.value;
+    if (!sim?.slug || !building.slug) return;
+    const entityPath = `/simulations/${sim.slug}/buildings/${building.slug}`;
+    if (window.location.pathname !== entityPath) {
+      window.history.pushState({}, '', entityPath);
+    }
+  }
+
+  private _pushListUrl(): void {
+    const sim = appState.currentSimulation.value;
+    if (!sim?.slug) return;
+    const listPath = `/simulations/${sim.slug}/buildings`;
+    if (window.location.pathname !== listPath) {
+      window.history.pushState({}, '', listPath);
+    }
   }
 
   private _handleBuildingEdit(e: CustomEvent<Building>): void {
@@ -252,12 +293,14 @@ export class VelgBuildingsView extends SignalWatcher(LitElement) {
   private _handleDetailsClose(): void {
     this._showDetails = false;
     this._selectedBuilding = null;
+    this._pushListUrl();
   }
 
   private _handleLightboxPrev(): void {
     const idx = this._selectedBuilding ? this._buildings.indexOf(this._selectedBuilding) : -1;
     if (idx > 0) {
       this._selectedBuilding = this._buildings[idx - 1];
+      this._pushEntityUrl(this._selectedBuilding);
     }
   }
 
@@ -265,6 +308,7 @@ export class VelgBuildingsView extends SignalWatcher(LitElement) {
     const idx = this._selectedBuilding ? this._buildings.indexOf(this._selectedBuilding) : -1;
     if (idx >= 0 && idx < this._buildings.length - 1) {
       this._selectedBuilding = this._buildings[idx + 1];
+      this._pushEntityUrl(this._selectedBuilding);
     }
   }
 

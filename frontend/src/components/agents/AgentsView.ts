@@ -162,6 +162,7 @@ export class VelgAgentsView extends SignalWatcher(LitElement) {
   ];
 
   @property({ type: String }) simulationId = '';
+  @property({ type: String }) entitySlug = '';
 
   @state() private _agents: Agent[] = [];
   @state() private _total = 0;
@@ -283,7 +284,28 @@ export class VelgAgentsView extends SignalWatcher(LitElement) {
     }
   }
 
-  private _checkDeepLink(): void {
+  private async _checkDeepLink(): Promise<void> {
+    // Slug-based deep link from URL route (primary)
+    if (this.entitySlug) {
+      const agent = this._agents.find((a) => a.slug === this.entitySlug);
+      if (agent) {
+        this._selectedAgent = agent;
+        this._showDetails = true;
+        return;
+      }
+      // Agent not in current page — fetch by slug from API
+      try {
+        const resp = await agentsApi.getBySlug(this.simulationId, this.entitySlug);
+        if (resp.success && resp.data) {
+          this._selectedAgent = resp.data as Agent;
+          this._showDetails = true;
+          return;
+        }
+      } catch {
+        // Fall through
+      }
+    }
+    // Legacy name-based deep link (backward compat)
     const agentName = appState.pendingOpenAgentName.value;
     if (!agentName) return;
     appState.pendingOpenAgentName.value = null;
@@ -386,6 +408,25 @@ export class VelgAgentsView extends SignalWatcher(LitElement) {
   private _handleAgentClick(e: CustomEvent<Agent>): void {
     this._selectedAgent = e.detail;
     this._showDetails = true;
+    this._pushEntityUrl(e.detail);
+  }
+
+  private _pushEntityUrl(agent: Agent): void {
+    const sim = appState.currentSimulation.value;
+    if (!sim?.slug || !agent.slug) return;
+    const entityPath = `/simulations/${sim.slug}/agents/${agent.slug}`;
+    if (window.location.pathname !== entityPath) {
+      window.history.pushState({}, '', entityPath);
+    }
+  }
+
+  private _pushListUrl(): void {
+    const sim = appState.currentSimulation.value;
+    if (!sim?.slug) return;
+    const listPath = `/simulations/${sim.slug}/agents`;
+    if (window.location.pathname !== listPath) {
+      window.history.pushState({}, '', listPath);
+    }
   }
 
   private _handleAgentEdit(e: CustomEvent<Agent>): void {
@@ -446,12 +487,14 @@ export class VelgAgentsView extends SignalWatcher(LitElement) {
   private _handleDetailsPanelClose(): void {
     this._showDetails = false;
     this._selectedAgent = null;
+    this._pushListUrl();
   }
 
   private _handleLightboxPrev(): void {
     const idx = this._selectedAgent ? this._agents.indexOf(this._selectedAgent) : -1;
     if (idx > 0) {
       this._selectedAgent = this._agents[idx - 1];
+      this._pushEntityUrl(this._selectedAgent);
     }
   }
 
@@ -459,6 +502,7 @@ export class VelgAgentsView extends SignalWatcher(LitElement) {
     const idx = this._selectedAgent ? this._agents.indexOf(this._selectedAgent) : -1;
     if (idx >= 0 && idx < this._agents.length - 1) {
       this._selectedAgent = this._agents[idx + 1];
+      this._pushEntityUrl(this._selectedAgent);
     }
   }
 

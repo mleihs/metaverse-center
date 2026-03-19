@@ -63,6 +63,30 @@ class BuildingService(BaseService):
         return response.data or [], total
 
     @classmethod
+    async def get_by_slug(
+        cls,
+        supabase: Client,
+        simulation_id: UUID,
+        slug: str,
+    ) -> dict:
+        """Get a building by simulation-scoped slug."""
+        response = (
+            supabase.table(cls._read_table())
+            .select("*")
+            .eq("simulation_id", str(simulation_id))
+            .eq("slug", slug)
+            .is_("deleted_at", "null")
+            .limit(1)
+            .execute()
+        )
+        if not response.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Building with slug '{slug}' not found in simulation '{simulation_id}'.",
+            )
+        return response.data[0]
+
+    @classmethod
     async def get_agents(
         cls,
         supabase: Client,

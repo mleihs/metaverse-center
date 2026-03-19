@@ -155,6 +155,7 @@ export interface SimulationTaxonomy {
 export interface Agent {
   id: UUID;
   simulation_id: UUID;
+  slug: string;
   name: string;
   system?: string;
   character?: string;
@@ -218,6 +219,7 @@ export interface GeoLocation {
 export interface Building {
   id: UUID;
   simulation_id: UUID;
+  slug: string;
   name: string;
   building_type: string;
   building_type_de?: string;

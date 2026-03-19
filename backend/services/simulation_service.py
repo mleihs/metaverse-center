@@ -1,23 +1,14 @@
 import logging
-import re
 from datetime import UTC, datetime
 from uuid import UUID
 
 from fastapi import HTTPException, status
 
 from backend.models.simulation import SimulationCreate, SimulationUpdate
+from backend.utils.slug import slugify
 from supabase import Client
 
 logger = logging.getLogger(__name__)
-
-
-def _slugify(name: str) -> str:
-    """Generate a URL-safe slug from a simulation name."""
-    slug = name.lower().strip()
-    slug = re.sub(r"[^a-z0-9\s-]", "", slug)
-    slug = re.sub(r"[\s_]+", "-", slug)
-    slug = re.sub(r"-+", "-", slug)
-    return slug.strip("-")[:100]
 
 
 _THEME_TO_PRESET: dict[str, str] = {
@@ -103,7 +94,7 @@ class SimulationService:
         data: SimulationCreate,
     ) -> dict:
         """Create a new simulation and add the creator as owner member."""
-        slug = data.slug if data.slug else _slugify(data.name)
+        slug = data.slug if data.slug else slugify(data.name)
 
         # Check slug uniqueness
         existing = (
