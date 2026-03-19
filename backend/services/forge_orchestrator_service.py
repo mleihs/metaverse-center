@@ -1060,6 +1060,18 @@ class ForgeOrchestratorService:
                     exc_info=True,
                 )
 
+        # ── Phase A.6: Generate world-specific prompt templates ──
+        if draft_data:
+            try:
+                await ForgeThemeService.generate_simulation_templates(
+                    supabase, simulation_id, or_key,
+                )
+            except Exception:
+                logger.warning(
+                    "Prompt template generation failed — using platform defaults",
+                    exc_info=True,
+                )
+
         # ── Phase B: Image generation ──
         logger.info("Phase B: image generation")
         t_b = time.monotonic()

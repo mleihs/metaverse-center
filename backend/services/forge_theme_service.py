@@ -280,6 +280,201 @@ class ForgeThemeService:
             sentry_sdk.capture_exception(exc)
 
     @staticmethod
+    async def generate_simulation_templates(
+        supabase: Client,
+        simulation_id: UUID,
+        openrouter_key: str | None = None,
+    ) -> None:
+        """Generate world-specific prompt templates using lore context.
+
+        Creates simulation-scoped prompt_templates rows for portrait_description,
+        building_image_description, chronicle_generation, and chat_system_prompt.
+        These override the generic platform defaults with world-specific voice,
+        visual language, and narrative conventions drawn from the simulation's lore.
+        """
+        import json as _json
+
+        # Load simulation + lore context
+        sim_resp = (
+            supabase.table("simulations")
+            .select("name, description")
+            .eq("id", str(simulation_id))
+            .single()
+            .execute()
+        )
+        sim = sim_resp.data or {}
+        sim_name = sim.get("name", "Unknown")
+
+        lore_resp = (
+            supabase.table("simulation_lore")
+            .select("title, chapter, epigraph, body")
+            .eq("simulation_id", str(simulation_id))
+            .order("sort_order")
+            .limit(5)
+            .execute()
+        )
+        lore_sections = lore_resp.data or []
+        if not lore_sections:
+            logger.debug("No lore for template generation, skipping")
+            return
+
+        # Load current style prompts for visual consistency
+        style_resp = (
+            supabase.table("simulation_settings")
+            .select("setting_key, setting_value")
+            .eq("simulation_id", str(simulation_id))
+            .eq("category", "ai")
+            .execute()
+        )
+        styles = {r["setting_key"]: r["setting_value"] for r in style_resp.data or []}
+
+        lore_digest = "\n".join(
+            f"- {s['title']}: {(s.get('epigraph') or '')[:80]} "
+            f"{(s.get('body') or '')[:150]}"
+            for s in lore_sections
+        )
+
+        prompt = (
+            f'You are creating world-specific AI prompt templates for "{sim_name}".\n\n'
+            f"WORLD: {sim.get('description', '')}\n\n"
+            f"LORE EXCERPTS:\n{lore_digest}\n\n"
+            f"VISUAL STYLE: {styles.get('image_style_prompt_portrait', 'not set')}\n\n"
+            f"Generate 4 prompt templates that capture this world's UNIQUE voice, "
+            f"visual language, and narrative conventions. Each template must be deeply "
+            f"specific to this world — referencing its materials, aesthetics, social "
+            f"structures, and atmospheric qualities from the lore.\n\n"
+            f"Return valid JSON with exactly these 4 keys:\n"
+            f'{{\n'
+            f'  "portrait_description": {{\n'
+            f'    "system_prompt": "You are a [world-specific] portrait specialist...",\n'
+            f'    "prompt_content": "Describe a portrait of {{agent_name}}..."\n'
+            f'  }},\n'
+            f'  "building_image_description": {{\n'
+            f'    "system_prompt": "You are a [world-specific] architectural photographer...",\n'
+            f'    "prompt_content": "Describe an image of {{building_name}}..."\n'
+            f'  }},\n'
+            f'  "chronicle_generation": {{\n'
+            f'    "system_prompt": "You are the editor of {sim_name}\'s chronicle...",\n'
+            f'    "prompt_content": "Write edition #{{edition_number}}..."\n'
+            f'  }},\n'
+            f'  "chat_system_prompt": {{\n'
+            f'    "system_prompt": "You roleplay characters from {sim_name}...",\n'
+            f'    "prompt_content": "You are {{agent_name}}..."\n'
+            f'  }}\n'
+            f'}}\n\n'
+            f"RULES:\n"
+            f"- system_prompt: Sets the AI's persona (2-4 sentences, world-specific)\n"
+            f"- prompt_content: The user-facing template with {{variable}} placeholders\n"
+            f"- portrait_description MUST reference the visual style above\n"
+            f"- chronicle MUST capture the world's media/propaganda voice from lore\n"
+            f"- chat MUST establish how characters from this world speak and think\n"
+            f"- Be BOLD and SPECIFIC — generic templates are useless\n"
+            f"- Use template variables: {{agent_name}}, {{agent_character}}, "
+            f"{{agent_background}}, {{building_name}}, {{building_type}}, "
+            f"{{building_condition}}, {{building_description}}, {{zone_name}}, "
+            f"{{simulation_name}}, {{edition_number}}, {{period_start}}, {{period_end}}, "
+            f"{{event_summary}}, {{echo_summary}}, {{battle_summary}}, {{reaction_summary}}"
+        )
+
+        try:
+            model = get_openrouter_model(openrouter_key, model_id=get_platform_model("forge"))
+            agent = Agent(
+                model,
+                system_prompt=(
+                    "You are a worldbuilding narrative architect. Generate prompt templates "
+                    "as valid JSON. Each template must be deeply specific to the world's "
+                    "identity — never generic. Return ONLY the JSON object, no markdown."
+                ),
+            )
+            result = await run_ai(agent, prompt, "templates")
+            text = result.output if isinstance(result.output, str) else str(result.output)
+
+            # Strip markdown code fences if present
+            text = text.strip()
+            if text.startswith("```"):
+                text = text.split("\n", 1)[1] if "\n" in text else text[3:]
+            if text.endswith("```"):
+                text = text[:-3]
+            text = text.strip()
+
+            templates = _json.loads(text)
+            if not isinstance(templates, dict):
+                logger.warning("Template generation returned non-dict")
+                return
+
+            # Template type → column mappings
+            template_meta = {
+                "portrait_description": {
+                    "prompt_category": "image",
+                    "template_name": f"{sim_name} Portrait Description",
+                    "temperature": 0.8,
+                    "max_tokens": 300,
+                },
+                "building_image_description": {
+                    "prompt_category": "image",
+                    "template_name": f"{sim_name} Building Image Description",
+                    "temperature": 0.8,
+                    "max_tokens": 300,
+                },
+                "chronicle_generation": {
+                    "prompt_category": "generation",
+                    "template_name": f"{sim_name} Chronicle",
+                    "temperature": 0.9,
+                    "max_tokens": 2000,
+                },
+                "chat_system_prompt": {
+                    "prompt_category": "chat",
+                    "template_name": f"{sim_name} Chat System Prompt",
+                    "temperature": 0.85,
+                    "max_tokens": 500,
+                },
+            }
+
+            rows = []
+            for ttype, tdata in templates.items():
+                if ttype not in template_meta:
+                    continue
+                if not isinstance(tdata, dict):
+                    continue
+                meta = template_meta[ttype]
+                rows.append({
+                    "simulation_id": str(simulation_id),
+                    "template_type": ttype,
+                    "prompt_category": meta["prompt_category"],
+                    "locale": "en",
+                    "template_name": meta["template_name"],
+                    "prompt_content": tdata.get("prompt_content", ""),
+                    "system_prompt": tdata.get("system_prompt", ""),
+                    "variables": _json.dumps([]),
+                    "temperature": meta["temperature"],
+                    "max_tokens": meta["max_tokens"],
+                    "is_system_default": False,
+                })
+
+            if rows:
+                # Delete existing templates for this simulation first
+                # (partial unique index doesn't support standard upsert)
+                for r in rows:
+                    supabase.table("prompt_templates").delete().eq(
+                        "simulation_id", str(simulation_id),
+                    ).eq("template_type", r["template_type"]).eq(
+                        "locale", "en",
+                    ).execute()
+                supabase.table("prompt_templates").insert(rows).execute()
+                logger.info(
+                    "Generated %d world-specific prompt templates",
+                    len(rows),
+                    extra={
+                        "simulation_id": str(simulation_id),
+                        "template_types": [r["template_type"] for r in rows],
+                    },
+                )
+
+        except Exception as exc:
+            logger.warning("Prompt template generation failed", exc_info=True)
+            sentry_sdk.capture_exception(exc)
+
+    @staticmethod
     async def generate_variants(
         admin_supabase: Client,
         simulation_id: UUID,
