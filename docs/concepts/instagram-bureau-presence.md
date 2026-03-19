@@ -1,7 +1,7 @@
 # Bureau Instagram Presence — Feature Design Document
 
-> Version: 1.1 — 2026-03-18
-> Status: **Phase 1 Implemented** / Phases 2-5 Planned
+> Version: 1.2 — 2026-03-19
+> Status: **Phase 1 LIVE** — First post published / Phases 2-5 Planned
 
 ---
 
@@ -27,12 +27,43 @@
 | **Admin Panel Tab** | `AdminInstagramTab.ts` | DONE — SCIF-styled operations control panel with intel cards, dispatch queue, status filters, approve/reject/publish actions, quota gauge, reject modal |
 | **Admin Panel Registration** | `AdminPanel.ts` | DONE — Instagram tab added to type union, tab bar, and switch |
 
+### Phase 1 Additions (2026-03-19) — COMPLETE
+
+| Component | Status |
+|-----------|--------|
+| **Meta Developer App** | DONE — App "metverse.center-IG" (ID: `1980078392546426`), Instagram Business Login, App Mode: Live |
+| **Instagram Account** | DONE — `@bureau.of.impossible.geography`, Business account, linked to FB Page |
+| **Credentials in DB** | DONE — `instagram_access_token` (encrypted), `instagram_ig_user_id` in `platform_settings` |
+| **Token Refresh** | DONE — Automatic `ig_refresh_token` in scheduler loop (every 50 days, tokens last 60) |
+| **Bureau Prompt Templates** | DONE — `instagram_agent_caption`, `instagram_building_caption`, `instagram_chronicle_caption` in `prompt_templates` |
+| **Epoch Instance Filter** | DONE — RPC filters `s.source_template_id IS NULL AND s.epoch_id IS NULL` (only template sims) |
+| **Hashtag Fix** | DONE — Epoch suffix stripped from slugs, hashtags appended to caption on publish |
+| **Generate Button UX** | DONE — Animated pulse/sweep during generation, "Scanning Bureau dispatch channels..." text |
+| **Legal Pages** | DONE — `/privacy`, `/terms`, `/data-deletion` (required by Meta API + GDPR) |
+| **First Post Published** | DONE — https://www.instagram.com/p/DWEINw0EaB3/ (2026-03-19) |
+
+### Bug Fixes Applied (2026-03-19)
+
+| Bug | Fix |
+|-----|-----|
+| `b.condition` column reference | Changed to `b.building_condition` in RPC + Python |
+| `image_urls[0]` without bounds check | Added empty-list guard |
+| Late-binding imports | Moved to module level (fastapi, InstagramScheduler) |
+| Hashtags not in caption | Scheduler now appends hashtags array to caption text |
+| `SETTINGS_ENCRYPTION_KEY` missing on Railway | Set via `railway variables` |
+
+### Token Lifecycle (Resolved)
+
+Dashboard-generated tokens (IGAA prefix) are **already long-lived (60 days)** — the `ig_exchange_token` endpoint rejects them with error 452 because it only accepts short-lived tokens. This is expected behavior, not a bug.
+
+- **Refresh:** `GET https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token={TOKEN}`
+- **Schedule:** Scheduler checks daily, refreshes when token is >24h old (returns new 60-day token)
+- **If token expires:** Must re-generate from Meta Developer Dashboard manually
+
 ### What's NOT Yet Implemented (Future Phases)
 
 | Item | Phase | Notes |
 |------|-------|-------|
-| Meta Developer App setup | Phase 1 (manual) | One-time manual step: create FB Page, IG Business Account, register Meta app, App Review |
-| Prompt templates in DB | Phase 2 | `instagram_agent_caption`, `instagram_building_caption`, etc. — currently uses hardcoded fallback templates |
 | Content moderation pipeline | Phase 2 | Keyword blocklist, LLM safety check — currently relies on admin approval |
 | Cipher system | Phase 3 | `unlock_code` column exists but cipher generation/unlock page not built |
 | Bleed contamination visuals | Phase 3 | Per-archetype visual effects on images during active resonances |
@@ -42,6 +73,7 @@
 | Instagram Polls → Game State | Phase 4 | Story polls mapped to Bureau Response system |
 | IPTC/C2PA metadata embedding | Phase 1 (deferred) | EU AI Act compliance metadata in JPEG — need `python-iptcinfo3` or `c2pa-python` |
 | Bilingual carousel slides | Phase 2 | EN slide 1 + DE final slide for key posts |
+| Content seeding sprint | Phase 2 | Generate events/chronicles across sims to fill pipeline |
 
 ---
 
@@ -304,9 +336,9 @@ Engagement metrics collected at +1h, +6h, +24h, +48h
 
 ## Next Steps (Priority Order)
 
-1. **Meta Developer App setup** — manual: create FB Page + IG Business Account, register Meta app
-2. **Content seeding sprint** — generate events/chronicles across simulations to populate the content pipeline
-3. **Prompt templates** — add `instagram_agent_caption`, `instagram_building_caption`, `instagram_chronicle_caption` to `prompt_templates` table for AI-quality Bureau voice
+1. ~~Meta Developer App setup~~ **DONE (2026-03-19)**
+2. ~~Prompt templates~~ **DONE (2026-03-19)** — Bureau-voice templates in `prompt_templates`
+3. **Content seeding sprint** — generate events/chronicles across simulations to populate the content pipeline with more diverse candidates (currently mostly agents from Time Bank of Momo)
 4. **Content moderation** — keyword blocklist + LLM safety scoring before posts reach `scheduled`
-5. **IPTC metadata** — embed AI disclosure in JPEG metadata for EU AI Act compliance
+5. **IPTC metadata** — embed AI disclosure in JPEG metadata for EU AI Act compliance (deadline: August 2, 2026)
 6. **Phase 3: ARG layer** — cipher service, unlock page, bleed visual effects
