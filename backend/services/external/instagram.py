@@ -356,6 +356,14 @@ class InstagramService:
             }
         return {"quota_usage": 0, "quota_total": 100, "remaining": 100}
 
+    async def validate_credentials(self) -> bool:
+        """Test if the access token is valid by querying the rate limit endpoint."""
+        try:
+            await self.check_rate_limit()
+            return True
+        except Exception:
+            return False
+
     # ── Token Exchange ──────────────────────────────────────────────────
 
     @staticmethod

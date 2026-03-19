@@ -6,6 +6,7 @@ import {
   type CipherRedemptionRecord,
   type CipherStats,
   type InstagramAnalytics,
+  type InstagramConnectionStatus,
   type InstagramPipelineSettings,
   type InstagramQueueItem,
   type InstagramRateLimit,
@@ -71,6 +72,88 @@ export class VelgAdminInstagramTab extends LitElement {
       color: var(--color-text-primary);
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
+    }
+
+    /* ── Connection Status Card ──────────────────────────── */
+
+    .connection-card {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      padding: var(--space-4);
+      margin-bottom: var(--space-5);
+      border: 1px solid var(--color-border);
+      border-radius: 4px;
+      background: color-mix(in srgb, var(--color-surface) 60%, transparent);
+    }
+
+    .connection-card__indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .connection-card__indicator--ok {
+      background: var(--color-success);
+      box-shadow: 0 0 6px var(--color-success);
+    }
+
+    .connection-card__indicator--error {
+      background: var(--color-danger);
+      box-shadow: 0 0 6px var(--color-danger);
+    }
+
+    .connection-card__indicator--unconfigured {
+      background: var(--color-text-muted);
+    }
+
+    .connection-card__info { flex: 1; }
+
+    .connection-card__handle {
+      font-weight: var(--font-bold);
+      color: var(--color-text-primary);
+    }
+
+    .connection-card__detail {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
+
+    .connection-card__status {
+      font-size: var(--text-xs);
+      font-weight: var(--font-bold);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .connection-card__status--ok { color: var(--color-success); }
+    .connection-card__status--error { color: var(--color-danger); }
+    .connection-card__status--unconfigured { color: var(--color-text-muted); }
+
+    .btn-test {
+      font-family: var(--font-brutalist);
+      font-size: var(--text-xs);
+      font-weight: var(--font-bold);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: var(--space-1-5) var(--space-3);
+      border: 1px solid var(--color-border);
+      border-radius: 3px;
+      background: none;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-test:hover:not(:disabled) {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+    }
+
+    .btn-test:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
 
     /* ══════════════════════════════════════════════════════
@@ -1422,6 +1505,8 @@ export class VelgAdminInstagramTab extends LitElement {
   @state() private _savingKey: string | null = null;
   @state() private _blocklistDraft = '';
   @state() private _trendingDraft = '';
+  @state() private _connectionStatus: InstagramConnectionStatus | null = null;
+  @state() private _testingConnection = false;
 
   // ══════════════════════════════════════════════════════
   // LIFECYCLE
@@ -1441,13 +1526,14 @@ export class VelgAdminInstagramTab extends LitElement {
     this._error = null;
 
     try {
-      const [queueResp, analyticsResp, rateLimitResp, cipherResp, settingsResp] =
+      const [queueResp, analyticsResp, rateLimitResp, cipherResp, settingsResp, statusResp] =
         await Promise.all([
           adminApi.listInstagramQueue({ limit: '100' }),
           adminApi.getInstagramAnalytics(30),
           adminApi.getInstagramRateLimit(),
           adminApi.getInstagramCipherStats(),
           adminApi.getInstagramSettings(),
+          adminApi.getInstagramStatus(),
         ]);
 
       if (queueResp.success && queueResp.data) {
@@ -1464,6 +1550,9 @@ export class VelgAdminInstagramTab extends LitElement {
       }
       if (settingsResp.success && settingsResp.data) {
         this._parseSettings(settingsResp.data);
+      }
+      if (statusResp.success && statusResp.data) {
+        this._connectionStatus = statusResp.data;
       }
     } catch (err) {
       this._error = err instanceof Error ? err.message : msg('Failed to load Instagram data');
@@ -1588,6 +1677,31 @@ export class VelgAdminInstagramTab extends LitElement {
       .filter(Boolean);
     this._config = { ...this._config, trending_tags: tags };
     void this._saveSetting('instagram_trending_tags', JSON.stringify(tags));
+  }
+
+  // ══════════════════════════════════════════════════════
+  // CONNECTION TEST
+  // ══════════════════════════════════════════════════════
+
+  private async _handleTestConnection(): Promise<void> {
+    this._testingConnection = true;
+    try {
+      const resp = await adminApi.getInstagramStatus();
+      if (resp.success && resp.data) {
+        this._connectionStatus = resp.data;
+        if (resp.data.authenticated) {
+          VelgToast.success(msg('Instagram connection verified.'));
+        } else if (resp.data.configured) {
+          VelgToast.error(msg('Authentication failed — check access token.'));
+        } else {
+          VelgToast.error(msg('Instagram credentials not configured.'));
+        }
+      }
+    } catch {
+      VelgToast.error(msg('Connection test failed'));
+    } finally {
+      this._testingConnection = false;
+    }
   }
 
   // ══════════════════════════════════════════════════════
@@ -1733,6 +1847,7 @@ export class VelgAdminInstagramTab extends LitElement {
       ` : nothing}
 
       ${this._renderHeader()}
+      ${this._renderConnectionStatus()}
       ${this._renderTabBar()}
 
       ${this._activeTab === 'operations' ? this._renderOperationsTab() : nothing}
@@ -1765,6 +1880,47 @@ export class VelgAdminInstagramTab extends LitElement {
             ${this._generating ? msg('Scanning Bureau dispatch channels...') : msg('Generate Dispatches')}
           </button>
         </div>
+      </div>
+    `;
+  }
+
+  private _renderConnectionStatus() {
+    const cs = this._connectionStatus;
+    const indicatorClass = cs?.authenticated
+      ? 'connection-card__indicator--ok'
+      : cs?.configured
+        ? 'connection-card__indicator--error'
+        : 'connection-card__indicator--unconfigured';
+
+    const statusLabel = cs?.authenticated
+      ? msg('Authenticated')
+      : cs?.configured
+        ? msg('Auth Failed')
+        : msg('Not Configured');
+
+    const statusClass = cs?.authenticated
+      ? 'connection-card__status--ok'
+      : cs?.configured
+        ? 'connection-card__status--error'
+        : 'connection-card__status--unconfigured';
+
+    return html`
+      <div class="connection-card">
+        <div class="connection-card__indicator ${indicatorClass}"></div>
+        <div class="connection-card__info">
+          <div class="connection-card__handle">
+            ${cs?.ig_user_id ? `IG User: ${cs.ig_user_id}` : msg('No credentials configured')}
+          </div>
+          <div class="connection-card__detail">${msg('Meta Graph API')}</div>
+        </div>
+        <span class="connection-card__status ${statusClass}">${statusLabel}</span>
+        <button
+          class="btn-test"
+          ?disabled=${this._testingConnection}
+          @click=${this._handleTestConnection}
+        >
+          ${this._testingConnection ? msg('Testing...') : msg('Test')}
+        </button>
       </div>
     `;
   }

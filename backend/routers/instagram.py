@@ -361,3 +361,40 @@ async def get_rate_limit(
     )
     rate_data = await ig.check_rate_limit()
     return {"success": True, "data": rate_data}
+
+
+# ── Connection Status ──────────────────────────────────────────────────
+
+
+@router.get("/status", response_model=SuccessResponse[dict])
+async def get_connection_status(
+    _user: CurrentUser = Depends(require_platform_admin()),
+    admin_supabase: Client = Depends(get_admin_supabase),
+) -> dict:
+    """Validate Instagram credentials and return connection status."""
+    config = await InstagramContentService.load_instagram_credentials(admin_supabase)
+
+    if not config["access_token"] or not config["ig_user_id"]:
+        return {
+            "success": True,
+            "data": {
+                "configured": False,
+                "authenticated": False,
+                "ig_user_id": None,
+            },
+        }
+
+    ig = InstagramService(
+        access_token=config["access_token"],
+        ig_user_id=config["ig_user_id"],
+    )
+    authenticated = await ig.validate_credentials()
+
+    return {
+        "success": True,
+        "data": {
+            "configured": True,
+            "authenticated": authenticated,
+            "ig_user_id": config["ig_user_id"],
+        },
+    }

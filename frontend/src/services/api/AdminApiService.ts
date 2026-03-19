@@ -259,6 +259,10 @@ export class AdminApiService extends BaseApiService {
     return this.get('/admin/instagram/settings');
   }
 
+  async getInstagramStatus(): Promise<ApiResponse<InstagramConnectionStatus>> {
+    return this.get('/admin/instagram/status');
+  }
+
   // --- Bluesky Pipeline ---
 
   async listBlueskyQueue(
@@ -475,6 +479,12 @@ export interface InstagramSettingEntry {
 }
 
 export type InstagramPipelineSettings = Record<string, InstagramSettingEntry>;
+
+export interface InstagramConnectionStatus {
+  configured: boolean;
+  authenticated: boolean;
+  ig_user_id: string | null;
+}
 
 export interface BlueskyQueueItem {
   id: string;
