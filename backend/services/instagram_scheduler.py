@@ -327,6 +327,13 @@ class InstagramScheduler:
                     sentry_sdk.capture_exception(exc)
 
     @classmethod
+    async def publish_post(
+        cls, admin: Client, ig: InstagramService, post: dict,
+    ) -> None:
+        """Public interface for force-publishing a single post."""
+        await cls._publish_single_post(admin, ig, post)
+
+    @classmethod
     async def _publish_single_post(
         cls,
         admin: Client,

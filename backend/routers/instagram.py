@@ -15,7 +15,6 @@ Endpoints:
   GET  /candidates     — Preview available content candidates
 """
 
-import json
 import logging
 from uuid import UUID
 
@@ -35,6 +34,7 @@ from backend.models.instagram import (
     InstagramRateLimit,
     RejectPostRequest,
 )
+from backend.services.audit_service import AuditService
 from backend.services.external.instagram import InstagramService
 from backend.services.instagram_content_service import InstagramContentService
 from backend.services.instagram_scheduler import InstagramScheduler
@@ -46,6 +46,23 @@ router = APIRouter(
     prefix="/api/v1/admin/instagram",
     tags=["Instagram"],
 )
+
+
+# ── Helpers ────────────────────────────────────────────────────────────
+
+
+async def _get_instagram_service(admin_supabase: Client) -> InstagramService:
+    """Load Instagram credentials and return a configured service client."""
+    config = await InstagramContentService.load_instagram_credentials(admin_supabase)
+    if not config["access_token"] or not config["ig_user_id"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Instagram credentials not configured.",
+        )
+    return InstagramService(
+        access_token=config["access_token"],
+        ig_user_id=config["ig_user_id"],
+    )
 
 
 # ── Queue Management ────────────────────────────────────────────────────
@@ -114,6 +131,11 @@ async def generate_content(
         simulation_id=body.simulation_id,
         user_id=user.id,
     )
+    await AuditService.safe_log(
+        admin_supabase, None, user.id,
+        "instagram_posts", None, "generate",
+        {"count": body.count, "content_types": body.content_types, "generated": len(posts)},
+    )
     return {"success": True, "data": posts}
 
 
@@ -151,7 +173,7 @@ async def create_post(
         "user_id": str(user.id),
         "content_source_type": body.content_source_type,
     })
-    record = {
+    data = {
         "simulation_id": str(body.simulation_id),
         "content_source_type": body.content_source_type,
         "content_source_id": str(body.content_source_id) if body.content_source_id else None,
@@ -161,19 +183,16 @@ async def create_post(
         "alt_text": body.alt_text,
         "image_urls": body.image_urls,
         "media_type": body.media_type,
-        "status": "draft",
         "scheduled_at": body.scheduled_at.isoformat() if body.scheduled_at else None,
         "unlock_code": body.unlock_code,
-        "ai_disclosure_included": True,
-        "created_by_id": str(user.id),
     }
-    resp = admin_supabase.table("instagram_posts").insert(record).execute()
-    if not resp.data:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to create Instagram post.",
-        )
-    return {"success": True, "data": resp.data[0]}
+    post = await InstagramContentService.create_post(admin_supabase, data, str(user.id))
+    await AuditService.safe_log(
+        admin_supabase, None, user.id,
+        "instagram_posts", post.get("id"), "create",
+        {"content_source_type": body.content_source_type},
+    )
+    return {"success": True, "data": post}
 
 
 # ── Approval & Rejection ───────────────────────────────────────────────
@@ -198,6 +217,11 @@ async def approve_post(
     post = await InstagramContentService.approve_post(
         admin_supabase, post_id, scheduled_at=scheduled_at,
     )
+    await AuditService.safe_log(
+        admin_supabase, None, user.id,
+        "instagram_posts", post_id, "update",
+        {"action": "approve"},
+    )
     return {"success": True, "data": post}
 
 
@@ -219,6 +243,11 @@ async def reject_post(
     })
     post = await InstagramContentService.reject_post(
         admin_supabase, post_id, reason=body.reason,
+    )
+    await AuditService.safe_log(
+        admin_supabase, None, user.id,
+        "instagram_posts", post_id, "update",
+        {"action": "reject", "reason": body.reason[:200]},
     )
     return {"success": True, "data": post}
 
@@ -249,21 +278,10 @@ async def force_publish(
             detail=f"Cannot publish post with status '{post['status']}'.",
         )
 
-    # Load credentials via shared utility
-    config = await InstagramContentService.load_instagram_credentials(admin_supabase)
-    if not config["access_token"] or not config["ig_user_id"]:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Instagram credentials not configured.",
-        )
-
-    ig = InstagramService(
-        access_token=config["access_token"],
-        ig_user_id=config["ig_user_id"],
-    )
+    ig = await _get_instagram_service(admin_supabase)
 
     try:
-        await InstagramScheduler._publish_single_post(admin_supabase, ig, post)
+        await InstagramScheduler.publish_post(admin_supabase, ig, post)
     except Exception as exc:
         logger.exception("Force-publish failed", extra={
             "post_id": str(post_id),
@@ -276,17 +294,20 @@ async def force_publish(
                 "user_id": str(user.id),
             })
             sentry_sdk.capture_exception(exc)
-        # Reset status if it was changed to "publishing"
-        admin_supabase.table("instagram_posts").update({
-            "status": "scheduled",
-            "failure_reason": f"Force-publish failed: {str(exc)[:300]}",
-        }).eq("id", str(post_id)).execute()
+        await InstagramContentService.reset_post_status(
+            admin_supabase, str(post_id), f"Force-publish failed: {str(exc)[:300]}",
+        )
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=f"Force-publish failed: {str(exc)[:200]}",
         ) from exc
 
-    # Return updated post
+    await AuditService.safe_log(
+        admin_supabase, None, user.id,
+        "instagram_posts", post_id, "update",
+        {"action": "force_publish"},
+    )
+
     updated = await InstagramContentService.get_post(admin_supabase, post_id)
     return {"success": True, "data": updated}
 
@@ -305,22 +326,7 @@ async def get_analytics(
     return {"success": True, "data": analytics}
 
 
-# ── Rate Limit ──────────────────────────────────────────────────────────
-
-
 # ── Pipeline Settings ──────────────────────────────────────────────────
-
-# Instagram pipeline setting keys — grouped for the admin configuration panel.
-_INSTAGRAM_SETTINGS_KEYS = [
-    "instagram_cipher_enabled",
-    "instagram_cipher_difficulty",
-    "instagram_cipher_hint_format",
-    "instagram_content_mix",
-    "instagram_auto_schedule",
-    "instagram_schedule_interval_hours",
-    "instagram_blocklist",
-    "instagram_trending_tags",
-]
 
 
 @router.get("/settings", response_model=SuccessResponse[dict])
@@ -329,29 +335,11 @@ async def get_instagram_settings(
     admin_supabase: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Get all Instagram pipeline configuration settings as a flat dict."""
-    resp = (
-        admin_supabase.table("platform_settings")
-        .select("setting_key, setting_value, description")
-        .in_("setting_key", _INSTAGRAM_SETTINGS_KEYS)
-        .execute()
-    )
-    settings_map = {}
-    for row in resp.data or []:
-        # setting_value is jsonb — serialize to string for frontend consumption
-        raw = row["setting_value"]
-        if isinstance(raw, dict | list):
-            value = json.dumps(raw)
-        elif isinstance(raw, bool):
-            value = "true" if raw else "false"
-        elif raw is not None:
-            value = str(raw)
-        else:
-            value = ""
-        settings_map[row["setting_key"]] = {
-            "value": value,
-            "description": row.get("description", ""),
-        }
+    settings_map = await InstagramContentService.get_pipeline_settings(admin_supabase)
     return {"success": True, "data": settings_map}
+
+
+# ── Rate Limit ──────────────────────────────────────────────────────────
 
 
 @router.get("/rate-limit", response_model=SuccessResponse[InstagramRateLimit])

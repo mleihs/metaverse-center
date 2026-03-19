@@ -126,6 +126,66 @@ CAPTION_TEMPLATES = {
 class InstagramContentService:
     """Selects, composes, and stages content for the Instagram pipeline."""
 
+    # Instagram pipeline setting keys — used by admin configuration panel.
+    PIPELINE_SETTINGS_KEYS = [
+        "instagram_cipher_enabled",
+        "instagram_cipher_difficulty",
+        "instagram_cipher_hint_format",
+        "instagram_content_mix",
+        "instagram_auto_schedule",
+        "instagram_schedule_interval_hours",
+        "instagram_blocklist",
+        "instagram_trending_tags",
+    ]
+
+    @classmethod
+    async def create_post(cls, admin_supabase: Client, data: dict, user_id: str) -> dict:
+        """Create a manual Instagram post draft."""
+        record = {**data, "status": "draft", "ai_disclosure_included": True, "created_by_id": user_id}
+        resp = admin_supabase.table("instagram_posts").insert(record).execute()
+        if not resp.data:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to create Instagram post.",
+            )
+        return resp.data[0]
+
+    @classmethod
+    async def reset_post_status(
+        cls, admin_supabase: Client, post_id: str, failure_reason: str,
+    ) -> None:
+        """Reset a post back to scheduled status after a publish failure."""
+        admin_supabase.table("instagram_posts").update({
+            "status": "scheduled",
+            "failure_reason": failure_reason[:500],
+        }).eq("id", post_id).execute()
+
+    @classmethod
+    async def get_pipeline_settings(cls, admin_supabase: Client) -> dict:
+        """Get all Instagram pipeline configuration settings as a flat dict."""
+        resp = (
+            admin_supabase.table("platform_settings")
+            .select("setting_key, setting_value, description")
+            .in_("setting_key", cls.PIPELINE_SETTINGS_KEYS)
+            .execute()
+        )
+        settings_map = {}
+        for row in resp.data or []:
+            raw = row["setting_value"]
+            if isinstance(raw, dict | list):
+                value = json.dumps(raw)
+            elif isinstance(raw, bool):
+                value = "true" if raw else "false"
+            elif raw is not None:
+                value = str(raw)
+            else:
+                value = ""
+            settings_map[row["setting_key"]] = {
+                "value": value,
+                "description": row.get("description", ""),
+            }
+        return settings_map
+
     @classmethod
     async def select_candidates(
         cls,
