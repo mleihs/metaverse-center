@@ -23,6 +23,10 @@ Allow: /epoch
 Allow: /archives
 Allow: /worlds
 Allow: /chronicles
+Allow: /worldbuilding
+Allow: /ai-characters
+Allow: /strategy-game
+Allow: /perspectives/
 Allow: /simulations/
 Disallow: /login
 Disallow: /register
@@ -76,6 +80,18 @@ async def sitemap_xml(supabase: Client = Depends(get_anon_supabase)) -> Response
 
     # Chronicle Feed (cross-simulation AI newspaper)
     _add_url(urlset, "https://metaverse.center/chronicles", now, "0.7", "daily")
+
+    # Content pages — landing pages (high priority, topical authority)
+    _add_url(urlset, "https://metaverse.center/worldbuilding", now, "0.9", "monthly")
+    _add_url(urlset, "https://metaverse.center/ai-characters", now, "0.9", "monthly")
+    _add_url(urlset, "https://metaverse.center/strategy-game", now, "0.9", "monthly")
+
+    # Content pages — perspective articles
+    _add_url(urlset, "https://metaverse.center/perspectives/what-is-the-metaverse", now, "0.8", "monthly")
+    _add_url(urlset, "https://metaverse.center/perspectives/ai-powered-worldbuilding", now, "0.8", "monthly")
+    _add_url(urlset, "https://metaverse.center/perspectives/digital-sovereignty", now, "0.8", "monthly")
+    _add_url(urlset, "https://metaverse.center/perspectives/virtual-civilizations", now, "0.8", "monthly")
+    _add_url(urlset, "https://metaverse.center/perspectives/competitive-strategy", now, "0.8", "monthly")
 
     # Per-simulation views + individual entities
     for sim in simulations:

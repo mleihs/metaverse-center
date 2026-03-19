@@ -57,6 +57,23 @@ export class VelgPlatformFooter extends LitElement {
       outline-offset: 2px;
     }
 
+    .footer__links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: var(--space-2) var(--space-3);
+      margin-bottom: var(--space-4);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-widest);
+    }
+
+    .footer__links-label {
+      color: var(--color-accent-amber);
+      font-weight: var(--font-bold);
+    }
+
     .footer__bureau {
       font-family: var(--font-mono);
       font-size: 8px;
@@ -71,6 +88,24 @@ export class VelgPlatformFooter extends LitElement {
     return html`
       <footer role="contentinfo">
         <hr class="footer__rule" />
+        <nav class="footer__links" aria-label=${msg('Discover')}>
+          <span class="footer__links-label">${msg('Discover')}</span>
+          <a href="/worldbuilding">${msg('Worldbuilding')}</a>
+          <span aria-hidden="true">\u00B7</span>
+          <a href="/ai-characters">${msg('AI Characters')}</a>
+          <span aria-hidden="true">\u00B7</span>
+          <a href="/strategy-game">${msg('Strategy Game')}</a>
+          <span aria-hidden="true">\u00B7</span>
+          <a href="/perspectives/what-is-the-metaverse">${msg('What Is the Metaverse?')}</a>
+          <span aria-hidden="true">\u00B7</span>
+          <a href="/perspectives/ai-powered-worldbuilding">${msg('AI Worldbuilding')}</a>
+          <span aria-hidden="true">\u00B7</span>
+          <a href="/perspectives/digital-sovereignty">${msg('Digital Sovereignty')}</a>
+          <span aria-hidden="true">\u00B7</span>
+          <a href="/perspectives/virtual-civilizations">${msg('Virtual Civilizations')}</a>
+          <span aria-hidden="true">\u00B7</span>
+          <a href="/perspectives/competitive-strategy">${msg('Competitive Strategy')}</a>
+        </nav>
         <div class="footer__row">
           <span>\u00A9 ${new Date().getFullYear()} metaverse.center</span>
           <nav aria-label=${msg('Legal')}>

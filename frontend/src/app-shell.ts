@@ -49,6 +49,7 @@ import './components/landing/WorldsGallery.js';
 import './components/landing/ChronicleFeed.js';
 import './components/onboarding/OnboardingWizard.js';
 import './components/lore/BureauArchives.js';
+import './components/content/ContentPageView.js';
 
 @localized()
 @customElement('velg-app')
@@ -415,6 +416,44 @@ export class VelgApp extends LitElement {
           );
           seoService.setCanonical('/chronicles');
           analyticsService.trackPageView('/chronicles', document.title);
+          return true;
+        },
+      },
+      // --- Content pages (landing + perspectives) ---
+      {
+        path: '/worldbuilding',
+        render: () => html`<velg-content-page .slug=${'worldbuilding'}></velg-content-page>`,
+        enter: async () => {
+          await this._authReady;
+          analyticsService.trackPageView('/worldbuilding', document.title);
+          return true;
+        },
+      },
+      {
+        path: '/ai-characters',
+        render: () => html`<velg-content-page .slug=${'ai-characters'}></velg-content-page>`,
+        enter: async () => {
+          await this._authReady;
+          analyticsService.trackPageView('/ai-characters', document.title);
+          return true;
+        },
+      },
+      {
+        path: '/strategy-game',
+        render: () => html`<velg-content-page .slug=${'strategy-game'}></velg-content-page>`,
+        enter: async () => {
+          await this._authReady;
+          analyticsService.trackPageView('/strategy-game', document.title);
+          return true;
+        },
+      },
+      {
+        path: '/perspectives/:slug',
+        render: ({ slug }) =>
+          html`<velg-content-page .slug=${`perspectives/${slug}`}></velg-content-page>`,
+        enter: async () => {
+          await this._authReady;
+          analyticsService.trackPageView(window.location.pathname, document.title);
           return true;
         },
       },

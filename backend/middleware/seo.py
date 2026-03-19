@@ -186,6 +186,76 @@ _PLATFORM_META: dict[str, dict[str, str]] = {
             "/object/public/simulation.assets/platform/og-image.jpg"
         ),
     },
+    # --- Content pages: landing pages ---
+    "/worldbuilding": {
+        "title": "AI Worldbuilding Platform — Create Living Worlds | metaverse.center",
+        "description": (
+            "Build AI-powered worlds with characters who remember, cities that evolve,"
+            " and stories that write themselves. From Tolkien's subcreation to procedural"
+            " generation — worldbuilding reimagined."
+        ),
+        "canonical": "https://metaverse.center/worldbuilding",
+    },
+    "/ai-characters": {
+        "title": "AI Characters with Memory & Personality | metaverse.center",
+        "description": (
+            "Create AI characters that remember conversations, form opinions, and evolve"
+            " over time. Generative agents with persistent memory, personality models,"
+            " and emergent social behavior."
+        ),
+        "canonical": "https://metaverse.center/ai-characters",
+    },
+    "/strategy-game": {
+        "title": "Multiplayer Strategy Game — Competitive Epochs | metaverse.center",
+        "description": (
+            "Deploy operatives, form alliances, and compete across five scoring dimensions"
+            " in time-limited PvP epochs. A strategy game where your world is your weapon."
+        ),
+        "canonical": "https://metaverse.center/strategy-game",
+    },
+    # --- Content pages: perspective articles ---
+    "/perspectives/what-is-the-metaverse": {
+        "title": "What Is the Metaverse? Beyond Corporate Hype | metaverse.center",
+        "description": (
+            "From Stephenson's Snow Crash to Baudrillard's simulacra — a literary and"
+            " philosophical exploration of what the metaverse actually means, beyond"
+            " corporate buzzwords and failed VR demos."
+        ),
+        "canonical": "https://metaverse.center/perspectives/what-is-the-metaverse",
+    },
+    "/perspectives/ai-powered-worldbuilding": {
+        "title": "AI-Powered Worldbuilding: From Cellular Automata to Living Narratives | metaverse.center",
+        "description": (
+            "How emergence, autopoiesis, and generative AI converge to create worlds"
+            " that write their own stories. Conway's Game of Life meets narrative intelligence."
+        ),
+        "canonical": "https://metaverse.center/perspectives/ai-powered-worldbuilding",
+    },
+    "/perspectives/digital-sovereignty": {
+        "title": "Digital Sovereignty: Who Governs Virtual Worlds? | metaverse.center",
+        "description": (
+            "Lessig's 'Code is Law,' Foucault's governmentality, and the EU Digital"
+            " Markets Act — exploring self-determination in digital spaces and why"
+            " platform governance matters."
+        ),
+        "canonical": "https://metaverse.center/perspectives/digital-sovereignty",
+    },
+    "/perspectives/virtual-civilizations": {
+        "title": "Virtual Civilizations: Architecture, Decay, and Renewal | metaverse.center",
+        "description": (
+            "From Spengler's cyclical history to Metabolist architecture — how virtual"
+            " civilizations mirror, challenge, and transcend physical urban development."
+        ),
+        "canonical": "https://metaverse.center/perspectives/virtual-civilizations",
+    },
+    "/perspectives/competitive-strategy": {
+        "title": "Competitive Strategy in Virtual Worlds: From Sun Tzu to EVE Online | metaverse.center",
+        "description": (
+            "Game theory, asymmetric warfare, and emergent player strategy — how"
+            " competitive virtual worlds create strategic depth that rivals real geopolitics."
+        ),
+        "canonical": "https://metaverse.center/perspectives/competitive-strategy",
+    },
 }
 
 
