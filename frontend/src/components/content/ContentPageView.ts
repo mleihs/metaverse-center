@@ -206,23 +206,11 @@ export class VelgContentPage extends LitElement {
 
   protected render() {
     if (this._loading) {
-      return html`
-        <div style="display:flex;align-items:center;justify-content:center;min-height:50vh;">
-          <span style="font-family:var(--font-brutalist);font-weight:var(--font-bold);font-size:var(--text-lg);text-transform:uppercase;letter-spacing:var(--tracking-brutalist);color:var(--color-text-secondary);">
-            ${msg('Loading...')}
-          </span>
-        </div>
-      `;
+      return html`<div class="status"><span class="status__text">${msg('Loading...')}</span></div>`;
     }
 
     if (!this._data) {
-      return html`
-        <div style="display:flex;align-items:center;justify-content:center;min-height:50vh;">
-          <span style="font-family:var(--font-brutalist);font-weight:var(--font-bold);font-size:var(--text-lg);text-transform:uppercase;letter-spacing:var(--tracking-brutalist);color:var(--color-text-secondary);">
-            ${msg('Page not found.')}
-          </span>
-        </div>
-      `;
+      return html`<div class="status"><span class="status__text">${msg('Page not found.')}</span></div>`;
     }
 
     const d = this._data;

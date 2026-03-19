@@ -28,6 +28,24 @@ export const contentStyles = css`
     box-sizing: border-box;
   }
 
+  /* ═══ STATUS STATES ══════════════════════════════ */
+
+  .status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50vh;
+  }
+
+  .status__text {
+    font-family: var(--font-brutalist);
+    font-weight: var(--font-bold);
+    font-size: var(--text-lg);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-brutalist);
+    color: var(--color-text-secondary);
+  }
+
   /* ═══ SKIP LINK ═════════════════════════════════ */
 
   .skip-link {
