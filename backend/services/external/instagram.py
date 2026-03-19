@@ -462,9 +462,38 @@ class InstagramService:
         subcode = error.get("error_subcode")
         message = error.get("message", resp.text[:300])
 
-        # Token expired (code 190) — most common cause of publish failures.
+        # Log EVERY error response with full context for debugging
+        logger.error("Instagram Graph API error", extra={
+            "http_status": resp.status_code,
+            "error_code": code,
+            "error_subcode": subcode,
+            "error_message": message[:300],
+            "error_type": error.get("type", ""),
+            "fbtrace_id": error.get("fbtrace_id", ""),
+            "request_url": str(resp.request.url)[:100] if resp.request else "",
+            "request_method": str(resp.request.method) if resp.request else "",
+            "response_body": resp.text[:500],
+        })
+
+        # Token expired (code 190) — ALSO triggers on IP blocks.
         # Subcodes: 463=expired, 460=password changed, 467=invalid.
+        # "Cannot parse access token" with no subcode = likely IP block,
+        # NOT an actual token issue. Distinguish for operator clarity.
         if code == 190:
+            is_ip_block = (
+                subcode is None
+                and "Cannot parse" in message
+            )
+            if is_ip_block:
+                raise InstagramTokenExpiredError(
+                    f"Instagram IP block suspected — 'Cannot parse access token' with no "
+                    f"subcode usually means Meta is blocking this server's IP after "
+                    f"repeated failed attempts. The token itself may be valid. "
+                    f"Wait 1-24h or publish from a different IP. "
+                    f"fbtrace_id={error.get('fbtrace_id', '?')}",
+                    code=code,
+                    subcode=subcode,
+                )
             subcode_hint = {
                 463: "token has expired (60-day lifetime exceeded)",
                 460: "password was changed — token invalidated",
