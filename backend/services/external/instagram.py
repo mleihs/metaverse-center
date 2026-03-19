@@ -437,8 +437,36 @@ class InstagramService:
             return resp.json()
 
     @staticmethod
+    @staticmethod
+    def _extract_rate_limit_info(resp: httpx.Response) -> dict[str, str]:
+        """Extract Meta rate limit and debug headers from response."""
+        headers_of_interest = [
+            "x-business-use-case-usage",
+            "x-app-usage",
+            "x-ad-account-usage",
+            "x-fb-trace-id",
+            "x-fb-rev",
+            "x-fb-debug",
+            "retry-after",
+            "www-authenticate",
+        ]
+        return {
+            h: resp.headers.get(h, "")
+            for h in headers_of_interest
+            if resp.headers.get(h)
+        }
+
+    @staticmethod
     def _check_response(resp: httpx.Response) -> None:
         """Check Graph API response for errors and raise typed exceptions."""
+        # Log rate-limit headers on ALL responses (success + error)
+        rate_info = InstagramService._extract_rate_limit_info(resp)
+        if rate_info:
+            logger.debug("Instagram API rate info", extra={
+                "http_status": resp.status_code,
+                "meta_headers": rate_info,
+            })
+
         if resp.status_code == 200:
             return
 
@@ -462,16 +490,22 @@ class InstagramService:
         subcode = error.get("error_subcode")
         message = error.get("message", resp.text[:300])
 
-        # Log EVERY error response with full context for debugging
+        # Log EVERY error response with full context for debugging.
+        # Includes Meta rate-limit headers, fbtrace_id, and full response.
+        rate_info = InstagramService._extract_rate_limit_info(resp)
         logger.error("Instagram Graph API error", extra={
             "http_status": resp.status_code,
             "error_code": code,
             "error_subcode": subcode,
-            "error_message": message[:300],
             "error_type": error.get("type", ""),
+            "error_message": message[:300],
             "fbtrace_id": error.get("fbtrace_id", ""),
-            "request_url": str(resp.request.url)[:100] if resp.request else "",
+            "is_transient": error.get("is_transient", False),
+            "error_user_title": error.get("error_user_title", ""),
+            "error_user_msg": error.get("error_user_msg", "")[:200],
+            "request_url": str(resp.request.url).split("?")[0] if resp.request else "",
             "request_method": str(resp.request.method) if resp.request else "",
+            "meta_rate_limit_headers": rate_info,
             "response_body": resp.text[:500],
         })
 
