@@ -23,7 +23,7 @@ import time
 import requests
 
 BASE_URL = "http://localhost:8000"
-SIM_ID = "60000000-0000-0000-0000-000000000001"
+SIM_ID = "70000000-0000-0000-0000-000000000001"
 SUPABASE_URL = "http://127.0.0.1:54321"
 
 # Login credentials (test user from seed 001)

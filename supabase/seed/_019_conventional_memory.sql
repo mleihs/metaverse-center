@@ -21,13 +21,13 @@ BEGIN;
 
 DO $$
 DECLARE
-    sim_id  uuid := '60000000-0000-0000-0000-000000000001';
+    sim_id  uuid := '70000000-0000-0000-0000-000000000001';
     usr_id  uuid := '00000000-0000-0000-0000-000000000001';
-    city_id uuid := 'c0000007-0000-4000-a000-000000000001';
-    zone_conventional uuid := 'a0000014-0000-0000-0000-000000000001';
-    zone_upper        uuid := 'a0000015-0000-0000-0000-000000000001';
-    zone_extended     uuid := 'a0000016-0000-0000-0000-000000000001';
-    zone_bios         uuid := 'a0000017-0000-0000-0000-000000000001';
+    city_id uuid := 'c0000008-0000-4000-a000-000000000001';
+    zone_conventional uuid := 'a0000018-0000-0000-0000-000000000001';
+    zone_upper        uuid := 'a0000019-0000-0000-0000-000000000001';
+    zone_extended     uuid := 'a000001a-0000-0000-0000-000000000001';
+    zone_bios         uuid := 'a000001b-0000-0000-0000-000000000001';
 BEGIN
 
 -- ============================================================================
@@ -424,22 +424,22 @@ COMMIT;
 -- =============================================================================
 -- Verification
 -- =============================================================================
-SELECT 'simulation' as entity, count(*) as count FROM simulations WHERE id = '60000000-0000-0000-0000-000000000001'
+SELECT 'simulation' as entity, count(*) as count FROM simulations WHERE id = '70000000-0000-0000-0000-000000000001'
 UNION ALL
-SELECT 'members', count(*) FROM simulation_members WHERE simulation_id = '60000000-0000-0000-0000-000000000001'
+SELECT 'members', count(*) FROM simulation_members WHERE simulation_id = '70000000-0000-0000-0000-000000000001'
 UNION ALL
-SELECT 'taxonomies', count(*) FROM simulation_taxonomies WHERE simulation_id = '60000000-0000-0000-0000-000000000001'
+SELECT 'taxonomies', count(*) FROM simulation_taxonomies WHERE simulation_id = '70000000-0000-0000-0000-000000000001'
 UNION ALL
-SELECT 'agents', count(*) FROM agents WHERE simulation_id = '60000000-0000-0000-0000-000000000001'
+SELECT 'agents', count(*) FROM agents WHERE simulation_id = '70000000-0000-0000-0000-000000000001'
 UNION ALL
-SELECT 'buildings', count(*) FROM buildings WHERE simulation_id = '60000000-0000-0000-0000-000000000001'
+SELECT 'buildings', count(*) FROM buildings WHERE simulation_id = '70000000-0000-0000-0000-000000000001'
 UNION ALL
-SELECT 'cities', count(*) FROM cities WHERE simulation_id = '60000000-0000-0000-0000-000000000001'
+SELECT 'cities', count(*) FROM cities WHERE simulation_id = '70000000-0000-0000-0000-000000000001'
 UNION ALL
-SELECT 'zones', count(*) FROM zones WHERE simulation_id = '60000000-0000-0000-0000-000000000001'
+SELECT 'zones', count(*) FROM zones WHERE simulation_id = '70000000-0000-0000-0000-000000000001'
 UNION ALL
-SELECT 'streets', count(*) FROM city_streets WHERE simulation_id = '60000000-0000-0000-0000-000000000001'
+SELECT 'streets', count(*) FROM city_streets WHERE simulation_id = '70000000-0000-0000-0000-000000000001'
 UNION ALL
-SELECT 'settings', count(*) FROM simulation_settings WHERE simulation_id = '60000000-0000-0000-0000-000000000001'
+SELECT 'settings', count(*) FROM simulation_settings WHERE simulation_id = '70000000-0000-0000-0000-000000000001'
 UNION ALL
-SELECT 'templates', count(*) FROM prompt_templates WHERE simulation_id = '60000000-0000-0000-0000-000000000001';
+SELECT 'templates', count(*) FROM prompt_templates WHERE simulation_id = '70000000-0000-0000-0000-000000000001';
