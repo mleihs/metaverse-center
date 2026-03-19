@@ -1,7 +1,7 @@
 # Bureau Instagram Presence — Feature Design Document
 
-> Version: 1.2 — 2026-03-19
-> Status: **Phase 1 LIVE** — First post published / Phases 2-5 Planned
+> Version: 1.3 — 2026-03-19
+> Status: **Phase 1+2 LIVE** — Hardened pipeline + Cipher ARG system / Phases 3-5 Planned
 
 ---
 
@@ -60,20 +60,51 @@ Dashboard-generated tokens (IGAA prefix) are **already long-lived (60 days)** �
 - **Schedule:** Scheduler checks daily, refreshes when token is >24h old (returns new 60-day token)
 - **If token expires:** Must re-generate from Meta Developer Dashboard manually
 
+### Phase 2: Hardening + Content Moderation — COMPLETE (2026-03-19)
+
+| Component | Status |
+|-----------|--------|
+| **Structured Logging** | DONE — All 5 Instagram files enriched with `extra={}` context fields (ig_user_id, container_id, media_type, elapsed_ms, post_id, simulation_id, etc.) |
+| **Sentry Integration** | DONE — 17 `sentry_sdk.capture_exception` calls across all files (was 0). Covers: API failures, container timeouts, content generation, caption generation, image composition, token expiry, force-publish, scheduler loop errors |
+| **Retry Logic Fix** | DONE — Container errors now reset status from `publishing` to `scheduled` (was stuck in `publishing`) |
+| **ConnectError Fix** | DONE — Catches `httpx.ConnectError, httpx.ConnectTimeout` explicitly instead of fragile `type(exc).__name__` string comparison |
+| **Font Path Fix** | DONE — Cross-platform `_load_monospace_font()` with Linux/macOS/Pillow fallback chain (was hardcoded macOS path) |
+| **Force-Publish Error Handling** | DONE — Wrapped in try/except with Sentry capture + status cleanup (was raw 500) |
+| **Credential Deduplication** | DONE — Shared `InstagramContentService.load_instagram_credentials()` replaces duplicate in router |
+| **Audit Trail** | DONE — All admin actions (approve, reject, force_publish, generate, create_post) logged with user_id + post_id |
+| **Scheduler Context** | DONE — `structlog.contextvars.bind_contextvars(scheduler="instagram", iteration=N)` on each loop |
+| **Content Moderation** | DONE — Keyword blocklist + emoji count check (configurable via `instagram_blocklist` platform setting) |
+
+### Phase 2: Cipher ARG System — COMPLETE (2026-03-19)
+
+| Component | File | Status |
+|-----------|------|--------|
+| **Database** | `migrations/139_cipher_system.sql` | DONE — `cipher_redemptions` table, `cipher_attempts` rate-limit table, RLS, partial unique index for anon users |
+| **Postgres RPCs** | migration 139 | DONE — `fn_generate_cipher_code(difficulty, seed)` deterministic code gen, `fn_redeem_cipher_code(code, user_id, ip_hash)` atomic validation with rate limiting |
+| **Platform Settings** | migration 139 seed | DONE — 5 cipher config keys (enabled, difficulty, hint_format, reward_type, max_attempts_per_hour) |
+| **Cipher Service** | `services/cipher_service.py` | DONE — Code generation via RPC, Caesar/Base64 hint encoding (easy/medium/hard), hint embedding in captions, IP hashing, redemption stats |
+| **Cipher Router** | `routers/cipher.py` | DONE — Public `POST /api/v1/public/bureau/dispatch` (no auth required, optional auth enhances reward), Admin GET ciphers + POST set cipher per post |
+| **Cipher Models** | `models/cipher.py` | DONE — `CipherRedeemRequest`, `CipherRedemptionResponse`, `CipherSetRequest`, `CipherStatsResponse` |
+| **Content Integration** | `instagram_content_service.py` | DONE — Auto-generates cipher code when `instagram_cipher_enabled=true`, embeds hint in caption |
+| **Bureau Dispatch Page** | `components/bureau/BureauDispatchView.ts` | DONE — Cold War terminal unlock page at `/bureau/dispatch` with CRT scanlines, amber monospace, 5 states (idle/decoding/success/error/rate-limited), dramatic reveal animation, full a11y (skip link, aria-live, role=alert, prefers-reduced-motion) |
+| **Bureau API Service** | `services/api/BureauApiService.ts` | DONE — Singleton for cipher redemption |
+| **Admin Panel Extension** | `AdminInstagramTab.ts` | DONE — Cipher Operations section with stats cards (total redemptions, unique users, success rate) + recent redemptions table |
+| **Route Registration** | `app-shell.ts` | DONE — `/bureau/dispatch` route with SEO (noindex) |
+| **App Registration** | `app.py` | DONE — `cipher.public_router` + `cipher.admin_router` |
+
 ### What's NOT Yet Implemented (Future Phases)
 
 | Item | Phase | Notes |
 |------|-------|-------|
-| Content moderation pipeline | Phase 2 | Keyword blocklist, LLM safety check — currently relies on admin approval |
-| Cipher system | Phase 3 | `unlock_code` column exists but cipher generation/unlock page not built |
 | Bleed contamination visuals | Phase 3 | Per-archetype visual effects on images during active resonances |
 | Resonance → Story pipeline | Phase 3 | Auto-post Stories when resonances are detected |
 | Deep link share cards | Phase 4 | "Share to Instagram" button on agent/building/chronicle pages |
 | Comment import loop | Phase 4 | Fetch IG comments → `social_media_comments` → sentiment analysis |
 | Instagram Polls → Game State | Phase 4 | Story polls mapped to Bureau Response system |
 | IPTC/C2PA metadata embedding | Phase 1 (deferred) | EU AI Act compliance metadata in JPEG — need `python-iptcinfo3` or `c2pa-python` |
-| Bilingual carousel slides | Phase 2 | EN slide 1 + DE final slide for key posts |
-| Content seeding sprint | Phase 2 | Generate events/chronicles across sims to fill pipeline |
+| Bilingual carousel slides | Phase 3 | EN slide 1 + DE final slide for key posts |
+| Content seeding sprint | Ongoing | Generate events/chronicles across sims to fill pipeline |
+| Steganographic cipher hints | Phase 3 | Embed cipher in image (currently caption-only) |
 
 ---
 
@@ -158,11 +189,14 @@ The central creative conceit: Instagram is another dimension the Bureau monitors
 
 When platform bleed events occur, the Instagram account exhibits "contamination symptoms" per archetype. Requires extending `InstagramImageComposer` with per-archetype visual effects.
 
-### Cipher System: Instagram → Platform
+### Cipher System: Instagram → Platform — IMPLEMENTED
 
-Database support exists (`instagram_posts.unlock_code` column). Implementation needed:
-- `instagram_cipher_service.py` — cipher generation (base64, substitution, multi-step)
-- `BureauDispatchUnlock.ts` — frontend unlock page at `/bureau/dispatch`
+Full ARG cipher pipeline is live:
+- `cipher_service.py` — cipher generation via Postgres RPC, Caesar/Base64 hint encoding (3 difficulty levels), caption embedding
+- `routers/cipher.py` — Public redemption endpoint + admin management
+- `BureauDispatchView.ts` — Cold War terminal unlock page at `/bureau/dispatch`
+- `cipher_redemptions` + `cipher_attempts` tables with atomic rate limiting in Postgres RPC
+- Platform settings: `instagram_cipher_enabled`, `instagram_cipher_difficulty`, `instagram_cipher_hint_format`, `instagram_cipher_reward_type`, `instagram_cipher_max_attempts_per_hour`
 
 ### Resonance → Instagram Story Pipeline
 
@@ -253,7 +287,13 @@ Not recommended for initial launch.
 | `backend/services/instagram_image_composer.py` | AVIF→JPEG conversion, Bureau overlay compositing, Supabase staging upload |
 | `backend/routers/instagram.py` | 10 admin API endpoints under `/api/v1/admin/instagram/` |
 | `backend/models/instagram.py` | Pydantic request/response models |
-| `frontend/src/components/admin/AdminInstagramTab.ts` | SCIF-styled admin operations panel |
+| `backend/services/cipher_service.py` | Cipher code generation, hint encoding (Caesar/Base64), redemption orchestration |
+| `backend/routers/cipher.py` | Public cipher redemption + admin cipher management endpoints |
+| `backend/models/cipher.py` | Pydantic request/response models for cipher system |
+| `supabase/migrations/139_cipher_system.sql` | `cipher_redemptions`, `cipher_attempts` tables, `fn_generate_cipher_code`, `fn_redeem_cipher_code` RPCs |
+| `frontend/src/components/bureau/BureauDispatchView.ts` | Cold War terminal unlock page at `/bureau/dispatch` |
+| `frontend/src/services/api/BureauApiService.ts` | API singleton for cipher redemption |
+| `frontend/src/components/admin/AdminInstagramTab.ts` | SCIF-styled admin operations panel + Cipher Operations section |
 | `frontend/src/services/api/AdminApiService.ts` | TypeScript API methods + interfaces (added to existing file) |
 
 ### Database (Migration 135)
@@ -278,6 +318,11 @@ Not recommended for initial launch.
 | `instagram_caption_model` | `''` | Override model for captions |
 | `instagram_scheduler_interval_seconds` | `300` | Check interval |
 | `instagram_content_mix` | `{"agent": 3, "building": 2, "chronicle": 2}` | Weighted distribution |
+| `instagram_cipher_enabled` | `false` | Master switch for cipher ARG system |
+| `instagram_cipher_difficulty` | `medium` | Cipher difficulty: easy, medium, hard |
+| `instagram_cipher_hint_format` | `footer` | Hint format: footer, steganographic, caption |
+| `instagram_cipher_reward_type` | `lore_fragment` | Default reward type |
+| `instagram_cipher_max_attempts_per_hour` | `10` | Rate limit per IP |
 
 ### Content Pipeline Flow (Implemented)
 
@@ -337,8 +382,11 @@ Engagement metrics collected at +1h, +6h, +24h, +48h
 ## Next Steps (Priority Order)
 
 1. ~~Meta Developer App setup~~ **DONE (2026-03-19)**
-2. ~~Prompt templates~~ **DONE (2026-03-19)** — Bureau-voice templates in `prompt_templates`
-3. **Content seeding sprint** — generate events/chronicles across simulations to populate the content pipeline with more diverse candidates (currently mostly agents from Time Bank of Momo)
-4. **Content moderation** — keyword blocklist + LLM safety scoring before posts reach `scheduled`
-5. **IPTC metadata** — embed AI disclosure in JPEG metadata for EU AI Act compliance (deadline: August 2, 2026)
-6. **Phase 3: ARG layer** — cipher service, unlock page, bleed visual effects
+2. ~~Prompt templates~~ **DONE (2026-03-19)**
+3. ~~Hardening + Sentry~~ **DONE (2026-03-19)** — 17 Sentry captures, structured logging, bug fixes
+4. ~~Cipher ARG system~~ **DONE (2026-03-19)** — Full pipeline: generation → hint embedding → unlock page → redemption
+5. **Content seeding sprint** — generate events/chronicles across simulations to populate the content pipeline
+6. **Enable cipher on first post** — set `instagram_cipher_enabled=true`, generate a draft with cipher, publish to test full flow
+7. **IPTC metadata** — embed AI disclosure in JPEG metadata for EU AI Act compliance (deadline: August 2, 2026)
+8. **Phase 3: Bleed visuals** — per-archetype visual effects on images during active resonances
+9. **Phase 3: Resonance → Story** — auto-post Stories when resonances are detected
