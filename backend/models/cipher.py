@@ -30,7 +30,7 @@ class CipherRedemptionResponse(BaseModel):
     """Result of a cipher redemption attempt."""
 
     success: bool
-    error: str | None = None
+    error_code: str | None = None
     message: str | None = None
     redemption_id: UUID | None = None
     reward_type: str | None = None

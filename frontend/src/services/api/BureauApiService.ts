@@ -2,7 +2,7 @@ import { BaseApiService } from './BaseApiService.js';
 
 export interface CipherRedemptionResult {
   success: boolean;
-  error?: string;
+  error_code?: string;
   message?: string;
   redemption_id?: string;
   reward_type?: string;

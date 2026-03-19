@@ -79,13 +79,13 @@ export class VelgBureauDispatch extends LitElement {
     }
 
     // Handle specific cipher errors
-    if (result?.error === 'rate_limited') {
+    if (result?.error_code === 'rate_limited') {
       this._state = 'rate_limited';
       this._startCountdown(result.retry_after_seconds ?? 3600);
       return;
     }
 
-    if (result?.error === 'already_redeemed') {
+    if (result?.error_code === 'already_redeemed') {
       this._state = 'error';
       this._errorMessage = msg('Cipher already redeemed from this terminal.');
       return;

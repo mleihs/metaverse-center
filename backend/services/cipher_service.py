@@ -74,7 +74,7 @@ class CipherService:
             result = response.data if isinstance(response.data, dict) else {}
             logger.info("Cipher redemption attempt", extra={
                 "success": result.get("success", False),
-                "error": result.get("error"),
+                "error_code": result.get("error_code"),
                 "user_id": str(user_id) if user_id else "anonymous",
             })
             return result

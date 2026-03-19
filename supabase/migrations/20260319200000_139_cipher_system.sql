@@ -129,7 +129,7 @@ BEGIN
 
         RETURN jsonb_build_object(
             'success', false,
-            'error',   'rate_limited',
+            'error_code',   'rate_limited',
             'message', 'Too many attempts. Try again later.',
             'retry_after_seconds', 3600
         );
@@ -150,7 +150,7 @@ BEGIN
 
         RETURN jsonb_build_object(
             'success',            false,
-            'error',              'invalid_code',
+            'error_code',              'invalid_code',
             'message',            'Invalid cipher code.',
             'attempts_remaining', greatest(v_max_attempts - v_rate_count - 1, 0)
         );
@@ -173,7 +173,7 @@ BEGIN
     IF v_existing_id IS NOT NULL THEN
         RETURN jsonb_build_object(
             'success', false,
-            'error',   'already_redeemed',
+            'error_code',   'already_redeemed',
             'message', 'You have already redeemed this cipher.'
         );
     END IF;
