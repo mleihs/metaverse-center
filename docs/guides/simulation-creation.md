@@ -245,6 +245,16 @@ The script uploads to `simulation.assets/{sim_id}/banner.webp` and updates `bann
 - In system prompts, enforce TEXTURE requirements (pores, grime, sweat, weathering)
 - Test generation script passes entity data (character, background) to API — check for "Missing variable" warnings in backend logs
 
+## Entity Slugs (Migration 137)
+
+Agent and building slugs are **auto-generated** from their `name` via a `BEFORE INSERT` SQL trigger. No manual slug specification needed in seed files or migrations.
+
+- Slugs follow the pattern `^[a-z0-9-]+$` (lowercase, hyphens, max 80 chars)
+- Collision handling appends `-2`, `-3` etc. within the same simulation
+- Slugs are **immutable** after creation (URL stability for SEO)
+- Used in SEO-friendly URLs: `/simulations/{sim-slug}/agents/{agent-slug}`
+- Example: agent "Chaplain Isadora Mora" gets slug `chaplain-isadora-mora`
+
 ## Common Pitfalls
 
 - **NEVER hardcode agent/building UUIDs in migrations** — agents and buildings get auto-generated UUIDs (`gen_random_uuid()`), which differ between local and production. Use name-based `JOIN` subqueries instead (see `deployment-procedures.md` for pattern). Simulation, city, and zone UUIDs use deterministic patterns and ARE safe to hardcode.

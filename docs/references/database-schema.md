@@ -223,6 +223,7 @@ CREATE INDEX idx_invitations_simulation ON simulation_invitations(simulation_id)
 CREATE TABLE public.agents (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     simulation_id uuid NOT NULL REFERENCES simulations(id) ON DELETE CASCADE,
+    slug text NOT NULL,                               -- Auto-generated from name (Migration 137)
     name text NOT NULL CHECK (length(name) > 0 AND length(name) <= 255),
     system text,                                      -- Referenz auf taxonomy: type='system'
     character text,                                   -- Renamed: charakter -> character
@@ -252,12 +253,15 @@ CREATE INDEX idx_agents_profession ON agents(simulation_id, primary_profession);
 CREATE INDEX idx_agents_created_by ON agents(created_by_id);
 CREATE INDEX idx_agents_active ON agents(simulation_id) WHERE deleted_at IS NULL;
 CREATE INDEX idx_agents_search ON agents USING GIN(search_vector);
+CREATE INDEX idx_agents_sim_slug ON agents(simulation_id, slug);
+-- UNIQUE(simulation_id, slug) constraint enforced separately
 ```
 
 **Renames:**
 - `created_by_user` -> `created_by_id` (FK-Suffix-Konvention)
 
 **Neu:**
+- `slug` — auto-generated from name via `BEFORE INSERT` trigger `trg_agents_auto_slug` (Migration 137). Collision handling appends `-2`, `-3` etc. Immutable via `trg_agents_slug_immutable`. `UNIQUE(simulation_id, slug)`.
 - `search_vector` generated column + GIN index
 - `idx_agents_active` partial index for soft-delete
 - Length CHECK on `name`
@@ -289,6 +293,7 @@ CREATE INDEX idx_agent_prof_simulation ON agent_professions(simulation_id);
 CREATE TABLE public.buildings (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     simulation_id uuid NOT NULL REFERENCES simulations(id) ON DELETE CASCADE,
+    slug text NOT NULL,                               -- Auto-generated from name (Migration 137)
     name text NOT NULL CHECK (length(name) > 0 AND length(name) <= 255),
     building_type text NOT NULL,                      -- Referenz auf taxonomy: type='building_type'
     description text,
@@ -323,6 +328,8 @@ CREATE INDEX idx_buildings_zone ON buildings(zone_id);
 CREATE INDEX idx_buildings_type ON buildings(simulation_id, building_type);
 CREATE INDEX idx_buildings_active ON buildings(simulation_id) WHERE deleted_at IS NULL;
 CREATE INDEX idx_buildings_search ON buildings USING GIN(search_vector);
+CREATE INDEX idx_buildings_sim_slug ON buildings(simulation_id, slug);
+-- UNIQUE(simulation_id, slug) constraint enforced separately
 ```
 
 **Renames:**
@@ -331,6 +338,7 @@ CREATE INDEX idx_buildings_search ON buildings USING GIN(search_vector);
 
 **Neu:**
 - `search_vector` generated column + GIN index
+- `slug` — auto-generated from name via `BEFORE INSERT` trigger `trg_buildings_auto_slug` (Migration 137). Same collision handling as agents. Immutable via `trg_buildings_slug_immutable`. `UNIQUE(simulation_id, slug)`.
 - `idx_buildings_active` partial index for soft-delete
 - Length CHECK on `name`
 

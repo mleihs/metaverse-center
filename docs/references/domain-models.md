@@ -134,6 +134,7 @@ interface SimulationTaxonomy {
 interface Agent {
   id: UUID;
   simulation_id: UUID;
+  slug: string;                     // Auto-generated from name, UNIQUE per simulation (Migration 137)
   name: string;                     // CHECK length 1-255
   system?: string;                  // Referenz auf Taxonomy 'system'
   character?: string;               // Charakter-Beschreibung
@@ -226,6 +227,7 @@ type AptitudeSet = Record<OperativeType, number>;
 interface Building {
   id: UUID;
   simulation_id: UUID;
+  slug: string;                     // Auto-generated from name, UNIQUE per simulation (Migration 137)
   name: string;                     // CHECK length 1-255
   building_type: string;            // RENAMED: type -> building_type (SQL reserved word)
   description?: string;

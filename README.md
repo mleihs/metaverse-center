@@ -380,7 +380,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 - **Threshold actions** &mdash; emergency interventions when simulation health crosses critical (&lt;0.25) or ascendant (&gt;0.85) thresholds: scorched earth, emergency draft, reality anchor
 - **GA4 analytics** &mdash; 44 custom events (entity views, CRUD, chat, social, funnel, landing, web vitals), consent mode v2, GDPR cookie consent banner, user property segmentation, enhanced link attribution
 - **Sentry error tracking** &mdash; backend + frontend integration with FastAPI middleware, request context enrichment
-- **SEO** &mdash; JSON-LD structured data, dynamic sitemap, slug-based URLs, crawler meta injection
+- **SEO** &mdash; Entity-level slug URLs (`/simulations/velgarien/agents/elena-voss`), JSON-LD structured data (Person/Place/BreadcrumbList), dynamic sitemap with 1500+ entity URLs, server-side crawler enrichment, 301 UUID-to-slug redirects, crawlable card links
 - **Public-first browsing** &mdash; full read access without authentication
 
 ---

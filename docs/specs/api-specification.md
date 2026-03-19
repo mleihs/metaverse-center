@@ -1009,6 +1009,16 @@ Verbindung loeschen. Verwendet `admin_supabase`.
 
 Detail-Dokumentation fuer ausgewaehlte Public-Endpoints. Vollstaendige Liste aller 46 Public-Endpoints: siehe Abschnitt 29.
 
+### `GET /api/v1/public/simulations/:simId/agents/by-slug/:slug`
+Einzelnen Agenten per Slug abrufen (oeffentlich). Migration 137.
+
+**Response:** `SuccessResponse[Agent]`
+
+### `GET /api/v1/public/simulations/:simId/buildings/by-slug/:slug`
+Einzelnes Gebaeude per Slug abrufen (oeffentlich). Migration 137.
+
+**Response:** `SuccessResponse[Building]`
+
 ### `GET /api/v1/public/simulations/:simId/agents/:agentId/relationships`
 Beziehungen eines Agenten (oeffentlich).
 
