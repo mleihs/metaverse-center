@@ -74,6 +74,7 @@ from backend.routers import (
     settings,
     simulations,
     social_media,
+    social_stories,
     social_trends,
     style_references,
     taxonomies,
@@ -217,6 +218,7 @@ app.include_router(news_scanner.router)
 app.include_router(style_references.router)
 app.include_router(instagram.router)
 app.include_router(bluesky.router)
+app.include_router(social_stories.router)
 app.include_router(cipher.public_router)
 app.include_router(cipher.admin_router)
 app.include_router(public.router)

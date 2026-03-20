@@ -301,6 +301,38 @@ export class AdminApiService extends BaseApiService {
     return this.get('/admin/bluesky/status');
   }
 
+  // --- Social Stories (Resonance → Instagram Story Pipeline) ---
+
+  async listSocialStories(
+    params?: Record<string, string>,
+  ): Promise<ApiResponse<SocialStoryItem[]>> {
+    return this.get('/admin/instagram/stories', params);
+  }
+
+  async getSocialStorySequence(resonanceId: string): Promise<ApiResponse<SocialStorySequence>> {
+    return this.get(`/admin/instagram/stories/sequence/${resonanceId}`);
+  }
+
+  async skipSocialStory(storyId: string): Promise<ApiResponse<SocialStoryItem>> {
+    return this.post(`/admin/instagram/stories/${storyId}/skip`, {});
+  }
+
+  async unskipSocialStory(storyId: string): Promise<ApiResponse<SocialStoryItem>> {
+    return this.post(`/admin/instagram/stories/${storyId}/unskip`, {});
+  }
+
+  async forceComposeSocialStory(storyId: string): Promise<ApiResponse<SocialStoryItem>> {
+    return this.post(`/admin/instagram/stories/${storyId}/compose`, {});
+  }
+
+  async forcePublishSocialStory(storyId: string): Promise<ApiResponse<SocialStoryItem>> {
+    return this.post(`/admin/instagram/stories/${storyId}/publish`, {});
+  }
+
+  async getSocialStorySettings(): Promise<ApiResponse<Record<string, string>>> {
+    return this.get('/admin/instagram/stories/settings');
+  }
+
   // --- Simulation Management ---
 
   async listSimulations(
@@ -539,5 +571,38 @@ export interface BlueskyConnectionStatus {
 }
 
 export type BlueskyPipelineSettings = Record<string, InstagramSettingEntry>;
+
+export interface SocialStoryItem {
+  id: string;
+  resonance_id: string | null;
+  simulation_id: string | null;
+  story_type: string;
+  sequence_index: number;
+  image_url: string | null;
+  caption: string | null;
+  narrative_closing: string | null;
+  ig_story_id: string | null;
+  ig_posted_at: string | null;
+  status: string;
+  scheduled_at: string;
+  published_at: string | null;
+  failure_reason: string | null;
+  retry_count: number;
+  archetype: string | null;
+  magnitude: number | null;
+  effective_magnitude: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SocialStorySequence {
+  resonance_id: string;
+  archetype: string;
+  magnitude: number;
+  stories: SocialStoryItem[];
+  total_stories: number;
+  published_count: number;
+  status_summary: string;
+}
 
 export const adminApi = new AdminApiService();

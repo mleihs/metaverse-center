@@ -32,6 +32,7 @@ from backend.services.external.instagram import (
     InstagramTokenExpiredError,
 )
 from backend.services.instagram_content_service import InstagramContentService
+from backend.services.social_story_service import SocialStoryService
 from supabase import Client
 
 logger = logging.getLogger(__name__)
@@ -76,6 +77,8 @@ class InstagramScheduler:
                 if config["enabled"]:
                     await cls._maybe_refresh_token(admin, config)
                     await cls._process_due_posts(admin, config)
+                    await cls._compose_pending_stories(admin)
+                    await cls._process_due_stories(admin, config)
                     await cls._collect_pending_metrics(admin, config)
             except asyncio.CancelledError:
                 logger.info("Instagram scheduler shutting down")
@@ -411,6 +414,165 @@ class InstagramScheduler:
             "permalink": permalink,
             "iteration": cls._iteration_count,
         })
+
+    @classmethod
+    async def _compose_pending_stories(cls, admin: Client) -> None:
+        """Compose images for stories in 'pending' status with scheduled_at in the future.
+
+        Composes images ahead of time so they're ready when the scheduled_at arrives.
+        Only composes stories that don't yet have an image_url.
+        """
+        response = (
+            admin.table("social_stories")
+            .select("id")
+            .eq("status", "pending")
+            .is_("image_url", "null")
+            .order("scheduled_at")
+            .limit(3)  # Compose max 3 per cycle to avoid blocking
+            .execute()
+        )
+        pending = response.data or []
+        if not pending:
+            return
+
+        for story in pending:
+            story_id = UUID(story["id"])
+            try:
+                url = await SocialStoryService.compose_story_image(admin, story_id)
+                if url:
+                    logger.debug("Composed story image ahead of schedule", extra={
+                        "story_id": str(story_id),
+                        "iteration": cls._iteration_count,
+                    })
+            except Exception:
+                logger.warning("Failed to compose story image", extra={
+                    "story_id": str(story_id),
+                    "iteration": cls._iteration_count,
+                })
+
+    @classmethod
+    async def _process_due_stories(cls, admin: Client, config: dict) -> None:
+        """Find and publish stories with status='ready' and scheduled_at <= now().
+
+        Uses the same Instagram Graph API story container flow as feed posts.
+        """
+        now = datetime.now(UTC).isoformat()
+        response = (
+            admin.table("social_stories")
+            .select("id, image_url, caption, retry_count")
+            .eq("status", "ready")
+            .lte("scheduled_at", now)
+            .not_.is_("image_url", "null")
+            .order("scheduled_at")
+            .limit(5)
+            .execute()
+        )
+
+        due = response.data or []
+        if not due:
+            return
+
+        logger.info("Found due Instagram stories to publish", extra={
+            "story_count": len(due),
+            "iteration": cls._iteration_count,
+            "config_enabled": config["posting_enabled"],
+        })
+
+        if not config["posting_enabled"]:
+            logger.info("Posting disabled (dry-run) — skipping story publish", extra={
+                "story_count": len(due),
+                "iteration": cls._iteration_count,
+            })
+            return
+
+        if not config["access_token"] or not config["ig_user_id"]:
+            logger.warning("Instagram credentials not configured — cannot publish stories", extra={
+                "iteration": cls._iteration_count,
+            })
+            return
+
+        ig = InstagramService(
+            access_token=config["access_token"],
+            ig_user_id=config["ig_user_id"],
+        )
+
+        for story in due:
+            story_id = story["id"]
+            image_url = story["image_url"]
+            try:
+                # Mark as publishing
+                admin.table("social_stories").update(
+                    {"status": "publishing"},
+                ).eq("id", story_id).execute()
+
+                # Publish via Stories API
+                result = await ig.publish_story(image_url)
+                media_id = result.get("id", "")
+
+                # Update as published
+                admin.table("social_stories").update({
+                    "status": "published",
+                    "published_at": datetime.now(UTC).isoformat(),
+                    "ig_story_id": media_id,
+                    "ig_posted_at": datetime.now(UTC).isoformat(),
+                }).eq("id", story_id).execute()
+
+                logger.info("Published Instagram story", extra={
+                    "story_id": story_id,
+                    "media_id": media_id,
+                    "iteration": cls._iteration_count,
+                })
+
+            except InstagramTokenExpiredError:
+                logger.error("Token expired during story publish — stopping", extra={
+                    "story_id": story_id,
+                    "iteration": cls._iteration_count,
+                })
+                return
+            except InstagramRateLimitError:
+                logger.warning("Rate limit hit during story publish — stopping", extra={
+                    "story_id": story_id,
+                    "iteration": cls._iteration_count,
+                })
+                return
+            except (InstagramContainerError, InstagramAPIError) as exc:
+                retry_count = story.get("retry_count", 0)
+                if retry_count < _MAX_RETRIES:
+                    admin.table("social_stories").update({
+                        "status": "ready",
+                        "retry_count": retry_count + 1,
+                    }).eq("id", story_id).execute()
+                    logger.warning("Story publish failed — will retry", extra={
+                        "story_id": story_id,
+                        "retry_count": retry_count + 1,
+                        "iteration": cls._iteration_count,
+                    })
+                else:
+                    admin.table("social_stories").update({
+                        "status": "failed",
+                        "failure_reason": str(exc)[:500],
+                    }).eq("id", story_id).execute()
+                    logger.error("Story failed after max retries", extra={
+                        "story_id": story_id,
+                        "iteration": cls._iteration_count,
+                    })
+                    with sentry_sdk.push_scope() as scope:
+                        scope.set_tag("instagram_phase", "story_publish")
+                        scope.set_context("story", {"story_id": story_id})
+                        sentry_sdk.capture_exception(exc)
+            except Exception as exc:
+                admin.table("social_stories").update({
+                    "status": "failed",
+                    "failure_reason": "Unexpected error during story publishing",
+                }).eq("id", story_id).execute()
+                logger.exception("Unexpected error publishing story", extra={
+                    "story_id": story_id,
+                    "iteration": cls._iteration_count,
+                })
+                with sentry_sdk.push_scope() as scope:
+                    scope.set_tag("instagram_phase", "story_publish_unexpected")
+                    scope.set_context("story", {"story_id": story_id})
+                    sentry_sdk.capture_exception(exc)
 
     @classmethod
     async def _maybe_refresh_token(cls, admin: Client, config: dict) -> None:

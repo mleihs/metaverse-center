@@ -10,6 +10,7 @@ import {
   type InstagramPipelineSettings,
   type InstagramQueueItem,
   type InstagramRateLimit,
+  type SocialStoryItem,
 } from '../../services/api/AdminApiService.js';
 import { icons } from '../../utils/icons.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
@@ -36,6 +37,37 @@ const CONTENT_TYPE_ICONS: Record<string, string> = {
   chronicle: 'newspaper',
   lore: 'book',
 };
+
+const STORY_STATUS_COLORS: Record<string, string> = {
+  pending: 'info',
+  composing: 'warning',
+  ready: 'warning',
+  publishing: 'warning',
+  published: 'success',
+  failed: 'danger',
+  skipped: 'muted',
+};
+
+const ARCHETYPE_HEX: Record<string, string> = {
+  'The Tower': '#FF3333',
+  'The Shadow': '#7744AA',
+  'The Devouring Mother': '#33AA66',
+  'The Deluge': '#2266CC',
+  'The Overthrow': '#FF8800',
+  'The Prometheus': '#FFCC00',
+  'The Awakening': '#CC88FF',
+  'The Entropy': '#666666',
+};
+
+const STORY_TYPE_LABELS: Record<string, string> = {
+  detection: 'DETECT',
+  classification: 'CLASSIFY',
+  impact: 'IMPACT',
+  advisory: 'ADVISORY',
+  subsiding: 'SUBSIDE',
+};
+
+type StoryStatusFilter = 'all' | 'pending' | 'ready' | 'published' | 'failed' | 'skipped';
 
 const DIFFICULTY_OPTIONS = ['easy', 'medium', 'hard'] as const;
 const HINT_FORMAT_OPTIONS = ['footer', 'caption', 'steganographic'] as const;
@@ -871,6 +903,255 @@ export class VelgAdminInstagramTab extends LitElement {
     }
 
     /* ══════════════════════════════════════════════════════
+       STORIES SECTION — Resonance broadcast log
+       ══════════════════════════════════════════════════════ */
+
+    .stories-section {
+      margin-bottom: var(--space-6);
+    }
+
+    .stories-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-bottom: var(--space-4);
+    }
+
+    .stories-header__marker {
+      width: 3px;
+      height: 16px;
+      background: var(--color-warning);
+    }
+
+    .stories-header__title {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-black);
+      font-size: var(--text-sm);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--color-text-primary);
+    }
+
+    .stories-header__count {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      margin-left: auto;
+    }
+
+    .story-filter-bar {
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+      margin-bottom: var(--space-4);
+      padding-bottom: var(--space-3);
+      border-bottom: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
+      flex-wrap: wrap;
+    }
+
+    .seq-accordion {
+      margin-bottom: var(--space-3);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .seq-accordion::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        color-mix(in srgb, var(--color-text-primary) 1%, transparent) 3px,
+        color-mix(in srgb, var(--color-text-primary) 1%, transparent) 4px
+      );
+      pointer-events: none;
+    }
+
+    .seq-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      cursor: pointer;
+      transition: background 0.15s ease;
+      position: relative;
+      z-index: 1;
+      border-left: 4px solid var(--_seq-accent, var(--color-border));
+    }
+
+    .seq-header:hover {
+      background: color-mix(in srgb, var(--_seq-accent, var(--color-primary)) 5%, transparent);
+    }
+
+    .seq-header__chevron {
+      color: var(--color-text-muted);
+      transition: transform 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .seq-header__chevron--open {
+      transform: rotate(90deg);
+    }
+
+    .seq-header__archetype {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-black);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--_seq-accent, var(--color-primary));
+    }
+
+    .seq-header__mag {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
+
+    .seq-mag-bar {
+      width: 60px;
+      height: 6px;
+      background: var(--color-border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .seq-mag-bar__fill {
+      height: 100%;
+      background: var(--_seq-accent, var(--color-primary));
+      transition: width 0.4s ease;
+    }
+
+    .seq-header__summary {
+      margin-left: auto;
+      font-family: var(--font-brutalist);
+      font-size: 9px;
+      font-weight: var(--font-bold);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-text-muted);
+    }
+
+    .seq-body {
+      padding: 0 var(--space-4) var(--space-3);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      position: relative;
+      z-index: 1;
+      border-left: 4px solid color-mix(in srgb, var(--_seq-accent, var(--color-border)) 30%, transparent);
+    }
+
+    .story-card {
+      display: flex;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-3);
+      border: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+      background: color-mix(in srgb, var(--color-bg) 40%, transparent);
+      transition: border-color 0.15s ease;
+    }
+
+    .story-card:hover {
+      border-color: var(--color-border);
+    }
+
+    .story-card__thumb {
+      width: 40px;
+      height: 72px;
+      flex-shrink: 0;
+      overflow: hidden;
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+    }
+
+    .story-card__thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .story-card__thumb--empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 7px;
+      color: var(--color-text-muted);
+    }
+
+    .story-card__body {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .story-card__header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .story-card__type {
+      font-family: var(--font-brutalist);
+      font-size: 8px;
+      font-weight: var(--font-bold);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 1px var(--space-1-5);
+      background: color-mix(in srgb, var(--_seq-accent, var(--color-primary)) 15%, transparent);
+      color: var(--_seq-accent, var(--color-primary));
+    }
+
+    .story-card__seq {
+      font-family: var(--font-mono);
+      font-size: 8px;
+      color: var(--color-text-muted);
+    }
+
+    .story-card__time {
+      font-size: 9px;
+      color: var(--color-text-muted);
+      margin-left: auto;
+    }
+
+    .story-card__caption {
+      font-size: 10px;
+      color: var(--color-text-secondary);
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+    }
+
+    .story-card__failure {
+      font-size: 9px;
+      color: var(--color-danger);
+    }
+
+    .story-card__actions {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      align-self: center;
+      flex-shrink: 0;
+    }
+
+    .story-empty {
+      padding: var(--space-6) var(--space-4);
+      text-align: center;
+      color: var(--color-text-muted);
+      font-size: var(--text-sm);
+    }
+
+    /* ══════════════════════════════════════════════════════
        CONFIGURATION PANEL — Pipeline settings
        ══════════════════════════════════════════════════════ */
 
@@ -1507,6 +1788,10 @@ export class VelgAdminInstagramTab extends LitElement {
   @state() private _trendingDraft = '';
   @state() private _connectionStatus: InstagramConnectionStatus | null = null;
   @state() private _testingConnection = false;
+  @state() private _stories: SocialStoryItem[] = [];
+  @state() private _storyFilter: StoryStatusFilter = 'all';
+  @state() private _expandedSequences: Set<string> = new Set();
+  @state() private _storyActionInProgress: string | null = null;
 
   // ══════════════════════════════════════════════════════
   // LIFECYCLE
@@ -1526,7 +1811,7 @@ export class VelgAdminInstagramTab extends LitElement {
     this._error = null;
 
     try {
-      const [queueResp, analyticsResp, rateLimitResp, cipherResp, settingsResp, statusResp] =
+      const [queueResp, analyticsResp, rateLimitResp, cipherResp, settingsResp, statusResp, storiesResp] =
         await Promise.all([
           adminApi.listInstagramQueue({ limit: '100' }),
           adminApi.getInstagramAnalytics(30),
@@ -1534,6 +1819,7 @@ export class VelgAdminInstagramTab extends LitElement {
           adminApi.getInstagramCipherStats(),
           adminApi.getInstagramSettings(),
           adminApi.getInstagramStatus(),
+          adminApi.listSocialStories({ limit: '50' }),
         ]);
 
       if (queueResp.success && queueResp.data) {
@@ -1553,6 +1839,9 @@ export class VelgAdminInstagramTab extends LitElement {
       }
       if (statusResp.success && statusResp.data) {
         this._connectionStatus = statusResp.data;
+      }
+      if (storiesResp.success && storiesResp.data) {
+        this._stories = storiesResp.data;
       }
     } catch (err) {
       this._error = err instanceof Error ? err.message : msg('Failed to load Instagram data');
@@ -1978,6 +2267,7 @@ export class VelgAdminInstagramTab extends LitElement {
           : this._renderDispatchList()
         }
       </div>
+      ${this._renderStoriesSection()}
     `;
   }
 
@@ -2126,6 +2416,230 @@ export class VelgAdminInstagramTab extends LitElement {
         </div>
       </div>
     `;
+  }
+
+  // ── Stories Section ────────────────────────────────────
+
+  private get _filteredStories(): SocialStoryItem[] {
+    if (this._storyFilter === 'all') return this._stories;
+    return this._stories.filter((s) => s.status === this._storyFilter);
+  }
+
+  /** Group stories by resonance_id into sequences. */
+  private get _storySequences(): { resonanceId: string; archetype: string; magnitude: number; stories: SocialStoryItem[] }[] {
+    const map = new Map<string, SocialStoryItem[]>();
+    for (const s of this._filteredStories) {
+      const key = s.resonance_id ?? 'unknown';
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(s);
+    }
+    return Array.from(map.entries()).map(([resonanceId, stories]) => {
+      stories.sort((a, b) => a.sequence_index - b.sequence_index);
+      return {
+        resonanceId,
+        archetype: stories[0]?.archetype ?? '',
+        magnitude: stories[0]?.magnitude ?? 0,
+        stories,
+      };
+    });
+  }
+
+  private _storyStatusCount(status: string): number {
+    return this._stories.filter((s) => s.status === status).length;
+  }
+
+  private _toggleSequence(resonanceId: string): void {
+    const next = new Set(this._expandedSequences);
+    if (next.has(resonanceId)) {
+      next.delete(resonanceId);
+    } else {
+      next.add(resonanceId);
+    }
+    this._expandedSequences = next;
+  }
+
+  private _renderStoriesSection() {
+    if (this._stories.length === 0) return nothing;
+
+    return html`
+      <div class="stories-section">
+        <div class="stories-header">
+          <div class="stories-header__marker"></div>
+          <div class="stories-header__title">${msg('Resonance Broadcast Log')}</div>
+          <span class="stories-header__count">${this._stories.length} ${msg('stories')}</span>
+        </div>
+        ${this._renderStoryFilterBar()}
+        ${this._storySequences.length === 0
+          ? html`<div class="story-empty">${msg('No stories match this filter.')}</div>`
+          : this._storySequences.map((seq) => this._renderSequenceAccordion(seq))
+        }
+      </div>
+    `;
+  }
+
+  private _renderStoryFilterBar() {
+    const filters: { key: StoryStatusFilter; label: string }[] = [
+      { key: 'all', label: 'All' },
+      { key: 'pending', label: 'Pending' },
+      { key: 'ready', label: 'Ready' },
+      { key: 'published', label: 'Published' },
+      { key: 'failed', label: 'Failed' },
+      { key: 'skipped', label: 'Skipped' },
+    ];
+
+    return html`
+      <div class="story-filter-bar">
+        ${filters.map((f) => html`
+          <button
+            class="status-tab ${this._storyFilter === f.key ? 'status-tab--active' : ''}"
+            @click=${() => { this._storyFilter = f.key; }}
+          >
+            ${f.label}
+            <span class="status-tab__count">${f.key === 'all' ? this._stories.length : this._storyStatusCount(f.key)}</span>
+          </button>
+        `)}
+      </div>
+    `;
+  }
+
+  private _renderSequenceAccordion(seq: { resonanceId: string; archetype: string; magnitude: number; stories: SocialStoryItem[] }) {
+    const isOpen = this._expandedSequences.has(seq.resonanceId);
+    const accentHex = ARCHETYPE_HEX[seq.archetype] ?? 'var(--color-primary)';
+    const published = seq.stories.filter((s) => s.status === 'published').length;
+    const total = seq.stories.length;
+
+    return html`
+      <div class="seq-accordion" style="--_seq-accent: ${accentHex}">
+        <div
+          class="seq-header"
+          @click=${() => this._toggleSequence(seq.resonanceId)}
+          role="button"
+          tabindex="0"
+          aria-expanded=${isOpen}
+        >
+          <span class="seq-header__chevron ${isOpen ? 'seq-header__chevron--open' : ''}">
+            ${icons.chevronRight(14)}
+          </span>
+          <span class="seq-header__archetype">${seq.archetype || msg('Unknown')}</span>
+          <span class="seq-header__mag">
+            <span class="seq-mag-bar">
+              <span class="seq-mag-bar__fill" style="width: ${Math.min(seq.magnitude * 100, 100)}%"></span>
+            </span>
+            ${seq.magnitude.toFixed(2)}
+          </span>
+          <span class="seq-header__summary">${published}/${total} ${msg('published')}</span>
+        </div>
+        ${isOpen ? html`
+          <div class="seq-body">
+            ${seq.stories.map((s) => this._renderStoryCard(s))}
+          </div>
+        ` : nothing}
+      </div>
+    `;
+  }
+
+  private _renderStoryCard(story: SocialStoryItem) {
+    const badgeColor = STORY_STATUS_COLORS[story.status] ?? 'info';
+    const typeLabel = STORY_TYPE_LABELS[story.story_type] ?? story.story_type.toUpperCase();
+    const hasImage = !!story.image_url;
+    const disabled = this._storyActionInProgress === story.id;
+
+    return html`
+      <div class="story-card">
+        <div class="story-card__thumb ${!hasImage ? 'story-card__thumb--empty' : ''}">
+          ${hasImage
+            ? html`<img src="${story.image_url}" alt="${story.caption ?? ''}" loading="lazy" />`
+            : html`<span>9:16</span>`
+          }
+        </div>
+        <div class="story-card__body">
+          <div class="story-card__header">
+            <span class="story-card__type">${typeLabel}</span>
+            <span class="story-card__seq">#${story.sequence_index}</span>
+            <span class="badge badge--${badgeColor}">${story.status}</span>
+            <span class="story-card__time">${this._formatDate(story.scheduled_at)}</span>
+          </div>
+          <div class="story-card__caption">${story.caption ?? ''}</div>
+          ${story.failure_reason ? html`
+            <div class="story-card__failure">${story.failure_reason}</div>
+          ` : nothing}
+        </div>
+        <div class="story-card__actions">
+          ${story.status === 'pending' || story.status === 'ready' ? html`
+            <button class="act act--reject" ?disabled=${disabled} @click=${() => this._handleSkipStory(story)}>
+              ${msg('Skip')}
+            </button>
+          ` : nothing}
+          ${story.status === 'skipped' ? html`
+            <button class="act" ?disabled=${disabled} @click=${() => this._handleUnskipStory(story)}>
+              ${msg('Unskip')}
+            </button>
+          ` : nothing}
+          ${story.status === 'pending' ? html`
+            <button class="act" ?disabled=${disabled} @click=${() => this._handleComposeStory(story)}>
+              ${msg('Compose')}
+            </button>
+          ` : nothing}
+          ${story.status === 'pending' || story.status === 'ready' ? html`
+            <button class="act act--publish" ?disabled=${disabled} @click=${() => this._handlePublishStory(story)}>
+              ${msg('Publish')}
+            </button>
+          ` : nothing}
+        </div>
+      </div>
+    `;
+  }
+
+  private async _handleSkipStory(story: SocialStoryItem): Promise<void> {
+    this._storyActionInProgress = story.id;
+    try {
+      await adminApi.skipSocialStory(story.id);
+      VelgToast.success(msg('Story skipped'));
+      await this._loadAll();
+    } catch {
+      VelgToast.error(msg('Failed to skip story'));
+    } finally {
+      this._storyActionInProgress = null;
+    }
+  }
+
+  private async _handleUnskipStory(story: SocialStoryItem): Promise<void> {
+    this._storyActionInProgress = story.id;
+    try {
+      await adminApi.unskipSocialStory(story.id);
+      VelgToast.success(msg('Story restored'));
+      await this._loadAll();
+    } catch {
+      VelgToast.error(msg('Failed to unskip story'));
+    } finally {
+      this._storyActionInProgress = null;
+    }
+  }
+
+  private async _handleComposeStory(story: SocialStoryItem): Promise<void> {
+    this._storyActionInProgress = story.id;
+    try {
+      await adminApi.forceComposeSocialStory(story.id);
+      VelgToast.success(msg('Story image composed'));
+      await this._loadAll();
+    } catch {
+      VelgToast.error(msg('Failed to compose story'));
+    } finally {
+      this._storyActionInProgress = null;
+    }
+  }
+
+  private async _handlePublishStory(story: SocialStoryItem): Promise<void> {
+    this._storyActionInProgress = story.id;
+    try {
+      await adminApi.forcePublishSocialStory(story.id);
+      VelgToast.success(msg('Story published'));
+      await this._loadAll();
+    } catch {
+      VelgToast.error(msg('Failed to publish story'));
+    } finally {
+      this._storyActionInProgress = null;
+    }
   }
 
   // ── Configure Tab ──────────────────────────────────────

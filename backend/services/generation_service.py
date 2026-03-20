@@ -640,6 +640,41 @@ class GenerationService:
             "description": raw_content,
         }
 
+    # --- Story closing lines ---
+
+    async def generate_story_closing_line(
+        self,
+        archetype_name: str,
+        archetype_description: str,
+        simulation_name: str,
+        simulation_description: str,
+    ) -> str | None:
+        """Generate a one-sentence poetic closing line for a resonance impact Story.
+
+        Returns a single sentence (max ~15 words) or None on failure.
+        Uses template_type ``story_closing_line`` (migration 143).
+        """
+        try:
+            result = await self._generate(
+                template_type="story_closing_line",
+                model_purpose="event_generation",
+                variables={
+                    "archetype_name": archetype_name,
+                    "archetype_description": archetype_description,
+                    "simulation_name": simulation_name,
+                    "simulation_description": simulation_description or "",
+                },
+                locale="en",
+            )
+            line = result.get("content", "").strip().strip('"').strip()
+            # Enforce brevity — take first sentence if AI returns more
+            if ". " in line:
+                line = line.split(". ")[0] + "."
+            return line[:120] if line else None
+        except Exception:
+            logger.warning("Story closing line generation failed", exc_info=True)
+            return None
+
     # --- JSON parsing ---
 
     async def _parse_or_repair_json(

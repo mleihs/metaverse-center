@@ -6,7 +6,8 @@ Converts platform images (AVIF) to Instagram-ready JPEG with themed overlays:
 - Bureau watermark (partially redacted seal text)
 - AI disclosure metadata
 
-Target format: JPEG, 1080×1350 (4:5 portrait), quality 90, max 8MB.
+Feed target: JPEG, 1080×1350 (4:5 portrait), quality 90, max 8MB.
+Story target: JPEG, 1080×1920 (9:16 vertical), quality 90, max 8MB.
 """
 
 from __future__ import annotations
@@ -29,6 +30,7 @@ logger = logging.getLogger(__name__)
 # Instagram image specs
 IG_WIDTH = 1080
 IG_HEIGHT_PORTRAIT = 1350  # 4:5 ratio — highest engagement
+IG_HEIGHT_STORY = 1920     # 9:16 ratio — Stories
 IG_HEIGHT_SQUARE = 1080    # 1:1 fallback
 IG_JPEG_QUALITY = 90
 IG_MAX_BYTES = 8 * 1024 * 1024  # 8MB
@@ -38,6 +40,12 @@ BUREAU_HEADER_HEIGHT = 80
 BUREAU_FOOTER_HEIGHT = 40
 BUREAU_WATERMARK_TEXT = "BUREAU OF IMPOSSIBLE GEOGRAPHY — [REDACTED]"
 CLASSIFICATION_LEVELS = ("PUBLIC", "AMBER", "RESTRICTED")
+
+# Story template layout constants
+STORY_HEADER_Y = 280       # Main content starts well below top (safe area)
+STORY_FOOTER_Y = 1720      # Footer above bottom safe area
+STORY_LINE_HEIGHT = 36     # Line spacing for body text
+STORY_SCANLINE_ALPHA = 18  # Scan line overlay opacity (~7%)
 
 
 def _load_monospace_font(size: int):
@@ -186,6 +194,347 @@ class InstagramImageComposer:
             "stage": "upload",
         })
         return url
+
+    # ── Story Templates (1080×1920 vertical) ────────────────────────────
+
+    def compose_story_detection(
+        self,
+        *,
+        archetype: str,
+        signature: str,
+        magnitude: float,
+        accent_hex: str,
+    ) -> bytes:
+        """Story 1: SUBSTRATE ANOMALY DETECTED — military alert style.
+
+        Full-bleed dark background with archetype color accent, scan lines,
+        magnitude bar, and urgent classification text.
+        """
+        from PIL import Image, ImageDraw
+
+        accent = self._hex_to_rgb(accent_hex)
+        bg = (10, 12, 18)
+        img = Image.new("RGB", (IG_WIDTH, IG_HEIGHT_STORY), bg)
+        draw = ImageDraw.Draw(img)
+
+        font_lg = _load_monospace_font(32)
+        font_md = _load_monospace_font(22)
+        font_sm = _load_monospace_font(16)
+
+        self._draw_scan_lines(draw, IG_WIDTH, IG_HEIGHT_STORY, accent)
+
+        # Top accent bar
+        draw.rectangle([(0, 0), (IG_WIDTH, 6)], fill=accent)
+
+        y = STORY_HEADER_Y
+        draw.text((60, y), "SUBSTRATE ANOMALY DETECTED", fill=accent, font=font_lg)
+        y += 50
+        # Separator
+        draw.text((60, y), "\u2501" * 28, fill=(*accent, 180), font=font_sm)
+        y += 40
+
+        draw.text((60, y), f"Signature: [{signature.upper().replace('_', ' ')}]", fill=(200, 200, 200), font=font_md)
+        y += 44
+        draw.text((60, y), f"Archetype: {archetype.upper()}", fill=(255, 255, 255), font=font_md)
+        y += 60
+
+        # Magnitude bar
+        draw.text((60, y), "Magnitude:", fill=(160, 160, 160), font=font_sm)
+        y += 28
+        bar_x, bar_w, bar_h = 60, 600, 30
+        draw.rectangle([(bar_x, y), (bar_x + bar_w, y + bar_h)], outline=(80, 80, 80), width=1)
+        fill_w = int(bar_w * min(magnitude, 1.0))
+        if fill_w > 0:
+            draw.rectangle([(bar_x, y), (bar_x + fill_w, y + bar_h)], fill=accent)
+        mag_text = f" {magnitude:.2f}"
+        draw.text((bar_x + bar_w + 16, y + 2), mag_text, fill=(255, 255, 255), font=font_md)
+        y += 80
+
+        draw.text((60, y), "All operatives report to stations.", fill=(160, 160, 160), font=font_sm)
+
+        # Bottom accent bar
+        draw.rectangle([(0, IG_HEIGHT_STORY - 6), (IG_WIDTH, IG_HEIGHT_STORY)], fill=accent)
+
+        # Bureau footer
+        self._draw_story_footer(draw, accent)
+
+        return self._image_to_jpeg(img)
+
+    def compose_story_classification(
+        self,
+        *,
+        archetype: str,
+        source_category: str,
+        affected_shard_count: int,
+        highest_susceptibility_sim: str,
+        highest_susceptibility_val: float,
+        bureau_dispatch: str | None,
+        accent_hex: str,
+    ) -> bytes:
+        """Story 2: BUREAU CLASSIFICATION — bureaucratic clinical document."""
+        from PIL import Image, ImageDraw
+
+        accent = self._hex_to_rgb(accent_hex)
+        bg = (10, 12, 18)
+        img = Image.new("RGB", (IG_WIDTH, IG_HEIGHT_STORY), bg)
+        draw = ImageDraw.Draw(img)
+
+        font_lg = _load_monospace_font(28)
+        font_md = _load_monospace_font(20)
+        font_sm = _load_monospace_font(16)
+        font_body = _load_monospace_font(14)
+
+        self._draw_scan_lines(draw, IG_WIDTH, IG_HEIGHT_STORY, accent)
+
+        # Bureau seal stamp (faded)
+        draw.text((60, 180), "BUREAU OF IMPOSSIBLE GEOGRAPHY", fill=(*accent, 60), font=font_sm)
+
+        y = STORY_HEADER_Y
+        draw.text((60, y), "BUREAU CLASSIFICATION", fill=accent, font=font_lg)
+        y += 44
+        draw.text((60, y), "\u2501" * 28, fill=(*accent, 180), font=font_sm)
+        y += 44
+
+        category_display = source_category.upper().replace("_", " ")
+        draw.text((60, y), f"Source Category: [{category_display}]", fill=(200, 200, 200), font=font_md)
+        y += 40
+        draw.text((60, y), f"Affected Shards: [{affected_shard_count}]", fill=(200, 200, 200), font=font_md)
+        y += 40
+        susc_text = f"Highest Susceptibility: {highest_susceptibility_sim} ({highest_susceptibility_val:.1f}\u00d7)"
+        draw.text((60, y), susc_text[:60], fill=(255, 255, 255), font=font_md)
+        y += 60
+
+        # Bureau dispatch text (if available)
+        if bureau_dispatch:
+            lines = bureau_dispatch[:400].split("\n")[:8]
+            for line in lines:
+                draw.text((60, y), line[:65], fill=(140, 140, 140), font=font_body)
+                y += 24
+
+        y += 40
+        draw.text((60, y), "The Substrate trembles. Reality bleeds.", fill=accent, font=font_sm)
+
+        draw.rectangle([(0, 0), (IG_WIDTH, 4)], fill=accent)
+        draw.rectangle([(0, IG_HEIGHT_STORY - 4), (IG_WIDTH, IG_HEIGHT_STORY)], fill=accent)
+        self._draw_story_footer(draw, accent)
+
+        return self._image_to_jpeg(img)
+
+    def compose_story_impact(
+        self,
+        *,
+        simulation_name: str,
+        effective_magnitude: float,
+        events_spawned: list[str],
+        narrative_closing: str | None,
+        accent_hex: str,
+        sim_color_hex: str | None = None,
+    ) -> bytes:
+        """Story 3+: SHARD IMPACT REPORT — per-simulation, poetic."""
+        from PIL import Image, ImageDraw
+
+        accent = self._hex_to_rgb(accent_hex)
+        sim_color = self._hex_to_rgb(sim_color_hex) if sim_color_hex else accent
+        bg = (10, 12, 18)
+        img = Image.new("RGB", (IG_WIDTH, IG_HEIGHT_STORY), bg)
+        draw = ImageDraw.Draw(img)
+
+        font_lg = _load_monospace_font(28)
+        font_md = _load_monospace_font(20)
+        font_sm = _load_monospace_font(16)
+        font_event = _load_monospace_font(15)
+
+        self._draw_scan_lines(draw, IG_WIDTH, IG_HEIGHT_STORY, sim_color)
+
+        # Simulation color accent bar
+        draw.rectangle([(0, 0), (IG_WIDTH, 8)], fill=sim_color)
+
+        y = STORY_HEADER_Y
+        draw.text((60, y), f"SHARD IMPACT: [{simulation_name.upper()[:30]}]", fill=sim_color, font=font_lg)
+        y += 44
+        draw.text((60, y), "\u2501" * 28, fill=(*sim_color, 180), font=font_sm)
+        y += 44
+
+        # Magnitude bar
+        draw.text((60, y), "Effective Magnitude:", fill=(160, 160, 160), font=font_sm)
+        y += 28
+        bar_x, bar_w, bar_h = 60, 500, 26
+        draw.rectangle([(bar_x, y), (bar_x + bar_w, y + bar_h)], outline=(80, 80, 80), width=1)
+        fill_w = int(bar_w * min(effective_magnitude, 1.0))
+        if fill_w > 0:
+            draw.rectangle([(bar_x, y), (bar_x + fill_w, y + bar_h)], fill=sim_color)
+        draw.text((bar_x + bar_w + 16, y), f"{effective_magnitude:.2f}", fill=(255, 255, 255), font=font_md)
+        y += 50
+
+        draw.text((60, y), f"Events Spawned: {len(events_spawned)}", fill=(200, 200, 200), font=font_md)
+        y += 20
+
+        impact_lvl = min(10, max(1, round(effective_magnitude * 10)))
+        draw.text((60, y + 24), f"Impact Level: {impact_lvl}/10", fill=(200, 200, 200), font=font_md)
+        y += 70
+
+        # Event titles
+        for title in events_spawned[:5]:
+            draw.text((80, y), f"\u25b8 {title[:55]}", fill=(220, 220, 220), font=font_event)
+            y += 30
+
+        # Poetic closing line
+        if narrative_closing:
+            y = max(y + 60, 1200)
+            # Wrap if too long
+            closing = narrative_closing[:120]
+            draw.text((60, y), closing, fill=(*sim_color, 200), font=font_sm)
+
+        draw.rectangle([(0, IG_HEIGHT_STORY - 8), (IG_WIDTH, IG_HEIGHT_STORY)], fill=sim_color)
+        self._draw_story_footer(draw, sim_color)
+
+        return self._image_to_jpeg(img)
+
+    def compose_story_advisory(
+        self,
+        *,
+        archetype: str,
+        aligned_types: list[str],
+        opposed_types: list[str],
+        zone_name: str | None,
+        accent_hex: str,
+    ) -> bytes:
+        """Story 4: OPERATIVE ADVISORY — tactical briefing, active epochs only."""
+        from PIL import Image, ImageDraw
+
+        accent = self._hex_to_rgb(accent_hex)
+        bg = (10, 12, 18)
+        img = Image.new("RGB", (IG_WIDTH, IG_HEIGHT_STORY), bg)
+        draw = ImageDraw.Draw(img)
+
+        font_lg = _load_monospace_font(28)
+        font_md = _load_monospace_font(20)
+        font_sm = _load_monospace_font(16)
+
+        self._draw_scan_lines(draw, IG_WIDTH, IG_HEIGHT_STORY, accent)
+
+        draw.rectangle([(0, 0), (IG_WIDTH, 6)], fill=accent)
+
+        y = STORY_HEADER_Y
+        draw.text((60, y), "OPERATIVE ADVISORY", fill=accent, font=font_lg)
+        y += 44
+        draw.text((60, y), "\u2501" * 28, fill=(*accent, 180), font=font_sm)
+        y += 50
+
+        draw.text((60, y), f"Active Resonance: [{archetype.upper()}]", fill=(255, 255, 255), font=font_md)
+        y += 60
+
+        if aligned_types:
+            aligned_str = ", ".join(aligned_types)
+            draw.text((60, y), f"ALIGNED: {aligned_str} (+3%)", fill=(100, 220, 100), font=font_md)
+            y += 40
+        if opposed_types:
+            opposed_str = ", ".join(opposed_types)
+            draw.text((60, y), f"OPPOSED: {opposed_str} (-2%)", fill=(220, 100, 100), font=font_md)
+            y += 40
+
+        y += 40
+        if zone_name:
+            draw.text((60, y), f"Zone pressure elevated in {zone_name}.", fill=(200, 200, 200), font=font_sm)
+            y += 30
+        draw.text((60, y), "Defenders gain tactical advantage.", fill=(200, 200, 200), font=font_sm)
+        y += 50
+        draw.text((60, y), "Deploy accordingly.", fill=accent, font=font_md)
+
+        draw.rectangle([(0, IG_HEIGHT_STORY - 6), (IG_WIDTH, IG_HEIGHT_STORY)], fill=accent)
+        self._draw_story_footer(draw, accent)
+
+        return self._image_to_jpeg(img)
+
+    def compose_story_subsiding(
+        self,
+        *,
+        archetype: str,
+        events_spawned_total: int,
+        shards_affected: int,
+        accent_hex: str,
+    ) -> bytes:
+        """Story 5: SUBSTRATE STABILIZING — elegiac resolution."""
+        from PIL import Image, ImageDraw
+
+        accent = self._hex_to_rgb(accent_hex)
+        bg = (10, 12, 18)
+        img = Image.new("RGB", (IG_WIDTH, IG_HEIGHT_STORY), bg)
+        draw = ImageDraw.Draw(img)
+
+        font_lg = _load_monospace_font(28)
+        font_md = _load_monospace_font(20)
+        font_sm = _load_monospace_font(16)
+
+        # Lighter scan lines — calming
+        self._draw_scan_lines(draw, IG_WIDTH, IG_HEIGHT_STORY, accent, alpha=10)
+
+        draw.rectangle([(0, 0), (IG_WIDTH, 4)], fill=(*accent, 120))
+
+        y = STORY_HEADER_Y + 60
+        draw.text((60, y), "SUBSTRATE STABILIZING", fill=accent, font=font_lg)
+        y += 44
+        draw.text((60, y), "\u2501" * 28, fill=(*accent, 120), font=font_sm)
+        y += 60
+
+        draw.text((60, y), f"[{archetype.upper()}] resonance subsiding.", fill=(200, 200, 200), font=font_md)
+        y += 40
+        draw.text((60, y), "Residual effects at 50% magnitude.", fill=(160, 160, 160), font=font_sm)
+        y += 60
+
+        draw.text(
+            (60, y),
+            f"{events_spawned_total} events spawned across {shards_affected} shards.",
+            fill=(200, 200, 200),
+            font=font_md,
+        )
+        y += 100
+
+        draw.text((60, y), "The trembling fades.", fill=accent, font=font_md)
+        y += 36
+        draw.text((60, y), "The scars remain.", fill=(*accent, 160), font=font_md)
+
+        draw.rectangle([(0, IG_HEIGHT_STORY - 4), (IG_WIDTH, IG_HEIGHT_STORY)], fill=(*accent, 120))
+        self._draw_story_footer(draw, accent)
+
+        return self._image_to_jpeg(img)
+
+    # ── Story Helpers ─────────────────────────────────────────────────────
+
+    @staticmethod
+    def _draw_scan_lines(
+        draw,
+        width: int,
+        height: int,
+        accent: tuple[int, int, int],
+        *,
+        spacing: int = 4,
+        alpha: int = STORY_SCANLINE_ALPHA,
+    ) -> None:
+        """Draw subtle horizontal scan lines across the image."""
+        color = (*accent, alpha)
+        for y in range(0, height, spacing):
+            draw.line([(0, y), (width, y)], fill=color, width=1)
+
+    @staticmethod
+    def _draw_story_footer(
+        draw,
+        accent: tuple[int, int, int],
+    ) -> None:
+        """Draw Bureau watermark footer for Stories."""
+        font_wm = _load_monospace_font(10)
+        draw.text(
+            (60, STORY_FOOTER_Y),
+            BUREAU_WATERMARK_TEXT,
+            fill=(80, 80, 80),
+            font=font_wm,
+        )
+        draw.text(
+            (60, STORY_FOOTER_Y + 18),
+            "AI-generated content",
+            fill=(60, 60, 60),
+            font=font_wm,
+        )
 
     # ── Internal Compositing ────────────────────────────────────────────
 

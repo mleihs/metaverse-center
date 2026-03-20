@@ -13,6 +13,7 @@ from backend.services.base_service import BaseService, serialize_for_json
 from backend.services.event_service import EventService
 from backend.services.external_service_resolver import ExternalServiceResolver
 from backend.services.generation_service import GenerationService
+from backend.services.social_story_service import SocialStoryService
 from supabase import Client
 
 logger = logging.getLogger(__name__)
@@ -135,8 +136,25 @@ class ResonanceService(BaseService):
         resonance_id: UUID,
         new_status: str,
     ) -> dict:
-        """Transition resonance status."""
-        return await cls.update(supabase, resonance_id, {"status": new_status})
+        """Transition resonance status.
+
+        When transitioning to 'subsiding', creates the final resolution Story.
+        """
+        result = await cls.update(supabase, resonance_id, {"status": new_status})
+
+        # Hook: create subsiding story when resonance starts resolving
+        if new_status == "subsiding":
+            try:
+                from backend.dependencies import get_admin_supabase
+                admin_sb = await get_admin_supabase()
+                await SocialStoryService.create_subsiding_story(admin_sb, resonance_id)
+            except Exception:
+                logger.warning(
+                    "Subsiding story creation failed (non-fatal)",
+                    exc_info=True,
+                )
+
+        return result
 
     @classmethod
     async def soft_delete(
@@ -291,6 +309,26 @@ class ResonanceService(BaseService):
                         impacts.append(resp.data[0])
                 except Exception:
                     logger.exception("Failed to record failure for simulation %s", sim_id)
+
+        # ── Generate Instagram Stories for this resonance ──
+        # Stories use service_role (admin) client because social_stories RLS
+        # restricts writes to platform admins; the scheduler also needs access.
+        try:
+            from backend.dependencies import get_admin_supabase
+            admin_sb = await get_admin_supabase()
+            stories = await SocialStoryService.create_resonance_stories(
+                admin_sb, resonance_id, impacts,
+            )
+            if stories:
+                logger.info(
+                    "Created %d resonance stories for %s",
+                    len(stories), resonance_id,
+                )
+        except Exception:
+            logger.warning(
+                "Resonance story creation failed (non-fatal)",
+                exc_info=True,
+            )
 
         return impacts
 
