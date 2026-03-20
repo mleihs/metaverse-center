@@ -21,9 +21,29 @@ from supabase import Client
 
 logger = logging.getLogger(__name__)
 
-# Bluesky post limit is 300 graphemes; leave room for link
-_GRAPHEME_LIMIT = 280
-_LINK_SUFFIX_BUDGET = 40  # "metaverse.center/dispatch/0042" ≈ 35 chars
+# Bluesky post limit is 300 graphemes; leave room for hashtags
+_GRAPHEME_LIMIT = 260  # Leave ~40 chars for 2-3 hashtags
+_HASHTAG_BUDGET = 3  # Max hashtags to append
+
+# Brand/simulation-specific tags — zero search volume, skip for Bluesky
+_SKIP_TAG_PATTERNS = {
+    "bureauofimpossiblegeography", "substratedispatch",
+    # Simulation slugs become CamelCase tags — detect by checking if
+    # the lowered tag matches no known community hashtag
+}
+
+# Community tags worth keeping on Bluesky (high discoverability)
+_BLUESKY_WORTHY_TAGS = {
+    "#worldbuilding", "#aiart", "#speculativefiction", "#scifi",
+    "#digitalart", "#conceptart", "#storytelling", "#alternatehistory",
+    "#creativewriting", "#fantasyworldbuilding", "#scifiart", "#ttrpg",
+    "#fantasy", "#characterdesign", "#oc", "#aicharacter", "#characterart",
+    "#aiportrait", "#rpg", "#fictionalcharacter", "#portraitart",
+    "#ttrpgcommunity", "#aiarchitecture", "#fantasyarchitecture",
+    "#environmentdesign", "#urbanfantasy", "#proceduralgeneration",
+    "#microfiction", "#flashfiction", "#lorebuilding", "#narrativedesign",
+    "#emergentnarrative", "#indiedev",
+}
 
 
 class BlueskyContentService:
@@ -72,9 +92,13 @@ class BlueskyContentService:
         bp = bp_resp.data[0]
         ig_data = bp.get("instagram_posts") or {}
         full_caption = ig_data.get("caption", bp.get("caption", ""))
+        ig_hashtags = ig_data.get("hashtags") or []
 
         # Adapt caption
         adapted = cls._adapt_caption(full_caption, bp.get("simulation_id"))
+
+        # Append discoverable hashtags (filtered from IG tags)
+        adapted = cls._append_bluesky_hashtags(adapted, ig_hashtags)
 
         # Build facets
         facets = BlueskyService.build_facets(adapted)
@@ -130,6 +154,45 @@ class BlueskyContentService:
 
         # Truncate to grapheme limit
         text = cls.truncate_to_graphemes(text, _GRAPHEME_LIMIT)
+        return text
+
+    @classmethod
+    def _append_bluesky_hashtags(cls, text: str, ig_hashtags: list[str]) -> str:
+        """Append 2-3 discoverable hashtags from the Instagram post's tag list.
+
+        Filters out brand/simulation-specific tags (zero search volume) and
+        keeps only community tags that drive Bluesky discoverability.
+        """
+        if not ig_hashtags:
+            return text
+
+        worthy = []
+        for tag in ig_hashtags:
+            lower = tag.lstrip("#").lower()
+            # Skip known brand/simulation patterns
+            if lower in _SKIP_TAG_PATTERNS:
+                continue
+            # Keep only tags in the community-worthy set
+            if f"#{lower}" in _BLUESKY_WORTHY_TAGS:
+                worthy.append(tag)
+
+        if not worthy:
+            return text
+
+        # Take up to _HASHTAG_BUDGET tags
+        selected = worthy[:_HASHTAG_BUDGET]
+        suffix = "\n\n" + " ".join(selected)
+
+        # Only append if we have room (stay under 300 graphemes total)
+        if len(text) + len(suffix) <= 300:
+            return text + suffix
+
+        # If tight on space, try with fewer tags
+        for count in range(len(selected) - 1, 0, -1):
+            suffix = "\n\n" + " ".join(selected[:count])
+            if len(text) + len(suffix) <= 300:
+                return text + suffix
+
         return text
 
     @classmethod

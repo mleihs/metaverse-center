@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import json
 import logging
-import re
 from datetime import UTC, datetime
 from uuid import UUID
 
@@ -31,16 +30,17 @@ logger = logging.getLogger(__name__)
 _AI_DISCLOSURE_FOOTER = "\n\n—\nAI-generated content from metaverse.center"
 
 # Hashtag presets — rotated per post for reach diversity.
-# Instagram 2026: 3-5 tags max, 80% niche + 20% broad, varied per post.
-# Algorithm uses hashtags for categorization, not reach — relevance > volume.
-_BRAND_TAGS = ["#BureauOfImpossibleGeography", "#SubstrateDispatch"]
+# Instagram 2026: 4-5 tags max, all generic/discoverable. No brand or
+# simulation-specific tags (zero search volume, hurt discoverability).
+# Formula: 2 broad + 2 niche + 1 trending/extra niche.
 
-# Broad reach pool (10K-500K posts range — medium competition sweet spot).
+# Broad reach pool (high search volume, relevant communities).
 # Rotated per post via entity name hash to avoid identical tag sets.
 _BROAD_POOL = [
     "#worldbuilding", "#AIart", "#speculativefiction", "#scifi",
     "#digitalart", "#conceptart", "#storytelling", "#alternatehistory",
     "#creativewriting", "#indiedev", "#fantasyworldbuilding", "#scifiart",
+    "#ttrpg", "#fantasy",
 ]
 
 # Niche engagement pools — high relevance, per content type.
@@ -975,14 +975,14 @@ class InstagramContentService:
         entity_name: str = "",
         trending_tags: list[str] | None = None,
     ) -> list[str]:
-        """Build 5 varied hashtags optimized for Instagram 2026 reach.
+        """Build 4-5 varied hashtags optimized for Instagram 2026 reach.
 
-        Formula: 1 brand + 1 simulation + 1 broad + 1 niche + 1 trending/niche.
+        Formula: 2 broad + 2 niche + 1 trending (no brand/simulation tags).
         Uses entity_name as rotation seed so each post in a batch gets
         different discovery tags (Instagram penalizes identical tag sets).
 
         Instagram 2026 best practice: 3-5 highly relevant tags in caption,
-        80% niche + 20% broad, no repeated sets across posts.
+        all generic/discoverable — no brand or simulation-specific tags.
         """
         import hashlib
 
@@ -991,32 +991,22 @@ class InstagramContentService:
 
         tags: list[str] = []
 
-        # 1. Brand tag (alternates between two)
-        tags.append(_BRAND_TAGS[seed % len(_BRAND_TAGS)])
-
-        # 2. Simulation tag
-        if simulation_slug:
-            clean_slug = re.sub(r"-e\d+$", "", simulation_slug)
-            slug_tag = "#" + "".join(
-                word.capitalize() for word in clean_slug.split("-")
-            )
-            tags.append(slug_tag)
-
-        # 3. Broad reach tag (rotated from pool)
+        # 1-2. Two broad reach tags (rotated from pool)
         broad_idx = seed % len(_BROAD_POOL)
-        broad_pick = _BROAD_POOL[broad_idx]
-        if broad_pick in tags:
-            broad_pick = _BROAD_POOL[(broad_idx + 1) % len(_BROAD_POOL)]
-        tags.append(broad_pick)
+        for offset in range(2):
+            pick = _BROAD_POOL[(broad_idx + offset) % len(_BROAD_POOL)]
+            if pick not in tags:
+                tags.append(pick)
 
-        # 4. Niche tag (rotated from content-type pool)
+        # 3-4. Two niche tags (rotated from content-type pool)
         niche_pool = _NICHE_POOLS.get(content_type, _NICHE_POOLS["agent"])
         niche_idx = (seed >> 4) % len(niche_pool)
-        niche_pick = niche_pool[niche_idx]
-        if niche_pick not in tags:
-            tags.append(niche_pick)
+        for offset in range(2):
+            pick = niche_pool[(niche_idx + offset) % len(niche_pool)]
+            if pick not in tags:
+                tags.append(pick)
 
-        # 5. Trending tag (if available) or second niche tag
+        # 5. Trending tag (if available) or third niche tag
         if trending_tags and len(tags) < 5:
             trend_idx = seed % len(trending_tags)
             trend_pick = trending_tags[trend_idx]
@@ -1025,7 +1015,7 @@ class InstagramContentService:
 
         # Fill remaining slots from niche pool if needed
         if len(tags) < 5:
-            for i in range(1, len(niche_pool)):
+            for i in range(2, len(niche_pool)):
                 pick = niche_pool[(niche_idx + i) % len(niche_pool)]
                 if pick not in tags:
                     tags.append(pick)
