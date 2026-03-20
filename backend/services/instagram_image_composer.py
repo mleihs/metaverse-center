@@ -295,6 +295,39 @@ class InstagramImageComposer:
         return Image.fromarray(arr.astype(np.uint8), img.mode)
 
     @staticmethod
+    def _add_bokeh_dots(
+        img: PILImage,
+        color: tuple[int, int, int],
+        count: int = 12,
+        min_radius: int = 20,
+        max_radius: int = 80,
+        alpha_range: tuple[int, int] = (8, 25),
+        seed: int = 42,
+    ) -> None:
+        """Add subtle semi-transparent bokeh dots for atmospheric depth."""
+        import random
+
+        from PIL import Image, ImageDraw, ImageFilter
+
+        rng = random.Random(seed)  # noqa: S311 — decorative bokeh, not cryptographic
+        w, h = img.size
+        layer = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(layer)
+
+        for _ in range(count):
+            x = rng.randint(-max_radius, w + max_radius)
+            y = rng.randint(-max_radius, h + max_radius)
+            r = rng.randint(min_radius, max_radius)
+            a = rng.randint(alpha_range[0], alpha_range[1])
+            draw.ellipse(
+                (x - r, y - r, x + r, y + r),
+                fill=(*color, a),
+            )
+
+        layer = layer.filter(ImageFilter.GaussianBlur(radius=30))
+        img.alpha_composite(layer)
+
+    @staticmethod
     def _text_with_glow(
         img: PILImage,
         position: tuple[int, int],
@@ -330,8 +363,11 @@ class InstagramImageComposer:
         glow = glow.filter(ImageFilter.GaussianBlur(radius=glow_radius))
         img.alpha_composite(glow, (layer_x, layer_y))
 
-        # Crisp text on top
-        ImageDraw.Draw(img).text(position, text, fill=fill, font=font)
+        # Crisp text on top with dark stroke for readability
+        ImageDraw.Draw(img).text(
+            position, text, fill=fill, font=font,
+            stroke_width=2, stroke_fill=(0, 0, 0, 180),
+        )
 
     @staticmethod
     def _draw_scan_lines_rgba(
@@ -620,6 +656,9 @@ class InstagramImageComposer:
         # Film grain
         img = self._add_noise_grain(img, sigma=20, opacity=0.10)
 
+        # Subtle bokeh for atmospheric depth
+        self._add_bokeh_dots(img, accent, count=15, seed=hash(archetype) & 0xFFFF)
+
         # Heavy scan lines (C5: +50% alpha)
         self._draw_scan_lines_rgba(img, accent, alpha=33)
 
@@ -675,11 +714,13 @@ class InstagramImageComposer:
         draw.text(
             (60, y), f"Signature: [{sig_display}]",
             fill=(200, 200, 200, 255), font=font_md,
+            stroke_width=1, stroke_fill=(0, 0, 0, 120),
         )
         y += 72  # A: grid-aligned (3*24)
         draw.text(
             (60, y), f"Archetype: {archetype.upper()}",
             fill=(255, 255, 255, 255), font=font_md,
+            stroke_width=1, stroke_fill=(0, 0, 0, 120),
         )
         y += 60
 
@@ -827,15 +868,20 @@ class InstagramImageComposer:
         draw.text(
             (60, y), f"Source Category: [{category_display}]",
             fill=(200, 200, 200, 255), font=font_md,
+            stroke_width=1, stroke_fill=(0, 0, 0, 100),
         )
         y += 72  # A: grid-aligned (3*24)
         draw.text(
             (60, y), f"Affected Shards: [{affected_shard_count}]",
             fill=(200, 200, 200, 255), font=font_md,
+            stroke_width=1, stroke_fill=(0, 0, 0, 100),
         )
         y += 72  # A: grid-aligned (3*24)
         susc_text = f"Peak Susceptibility: {highest_susceptibility_sim}"
-        draw.text((60, y), susc_text[:55], fill=(255, 255, 255, 255), font=font_md)
+        draw.text(
+            (60, y), susc_text[:55], fill=(255, 255, 255, 255), font=font_md,
+            stroke_width=1, stroke_fill=(0, 0, 0, 100),
+        )
         y += 48  # A: grid-aligned (2*24)
         draw.text(
             (72, y), f"({highest_susceptibility_val:.1f}\u00d7 baseline)",
@@ -990,6 +1036,7 @@ class InstagramImageComposer:
         draw.text(
             (bar_x + bar_w + 16, y - 6), mag_text,
             fill=(255, 255, 255, 255), font=font_mag,
+            stroke_width=1, stroke_fill=(0, 0, 0, 120),
         )
         y += 48  # A: grid-aligned (2*24)
 
@@ -999,6 +1046,7 @@ class InstagramImageComposer:
             (60, y),
             f"Events: {len(events_spawned)}  \u2502  Impact: {impact_lvl}/10",
             fill=(180, 180, 180, 255), font=font_sm,
+            stroke_width=1, stroke_fill=(0, 0, 0, 120),
         )
         y += 48  # A: grid-aligned (2*24)
 
@@ -1031,6 +1079,7 @@ class InstagramImageComposer:
                 draw.text(
                     (px + total_size // 2 - name_w // 2, portrait_y + total_size + 8),
                     p_name[:14], fill=(180, 180, 180, 200), font=name_font,
+                    stroke_width=1, stroke_fill=(0, 0, 0, 120),
                 )
 
             y = portrait_y + total_size + 48  # A: grid-aligned (2*24)
@@ -1181,6 +1230,7 @@ class InstagramImageComposer:
         draw.text(
             (60, y), f"Active Resonance: [{archetype.upper()}]",
             fill=(255, 255, 255, 255), font=font_md,
+            stroke_width=1, stroke_fill=(0, 0, 0, 100),
         )
         y += 144  # A: grid-aligned (6*24)
 
@@ -1218,6 +1268,7 @@ class InstagramImageComposer:
                 draw.text(
                     (col_left_x + 56, col_y + 4), op_type,
                     fill=(220, 220, 220, 255), font=font_md,
+                    stroke_width=1, stroke_fill=(0, 0, 0, 100),
                 )
                 col_y += 96
 
@@ -1241,6 +1292,7 @@ class InstagramImageComposer:
                 draw.text(
                     (col_right_x + 56, col_y + 4), op_type,
                     fill=(220, 220, 220, 255), font=font_md,
+                    stroke_width=1, stroke_fill=(0, 0, 0, 100),
                 )
                 col_y += 96
 
@@ -1316,6 +1368,12 @@ class InstagramImageComposer:
         # Extremely subtle grain
         img = self._add_noise_grain(img, sigma=10, opacity=0.03)
 
+        # Subtle bokeh for atmospheric depth
+        self._add_bokeh_dots(
+            img, accent, count=10, alpha_range=(5, 15),
+            seed=hash(archetype) & 0xFFFF,
+        )
+
         draw = ImageDraw.Draw(img)
 
         # Title backdrop panel (B: panel margin x=48)
@@ -1344,6 +1402,7 @@ class InstagramImageComposer:
         draw.text(
             (60, y), f"[{archetype.upper()}] resonance subsiding.",
             fill=(180, 180, 180, 255), font=font_md,
+            stroke_width=1, stroke_fill=(0, 0, 0, 100),
         )
         y += 72  # A: grid-aligned (3*24)
         draw.text(
