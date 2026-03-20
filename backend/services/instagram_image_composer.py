@@ -794,8 +794,8 @@ class InstagramImageComposer:
         # Title backdrop panel (B: panel margin x=48)
         title_panel_y = 240
         draw.rounded_rectangle(
-            [(48, title_panel_y), (w - 48, title_panel_y + 140)],
-            radius=16, fill=(0, 0, 0, 100),
+            [(48, title_panel_y), (w - 48, title_panel_y + 76)],
+            radius=12, fill=(0, 0, 0, 100),
         )
 
         # Title with glow (C1: accent color title)
@@ -960,8 +960,8 @@ class InstagramImageComposer:
         # Title backdrop panel (B: panel margin x=48)
         title_panel_y = 240
         draw.rounded_rectangle(
-            [(48, title_panel_y), (w - 48, title_panel_y + 140)],
-            radius=16, fill=(0, 0, 0, 100),
+            [(48, title_panel_y), (w - 48, title_panel_y + 76)],
+            radius=12, fill=(0, 0, 0, 100),
         )
 
         # Simulation name with glow (C1 exception: uses sim_color, already correct)
@@ -1160,8 +1160,8 @@ class InstagramImageComposer:
         # Title backdrop panel (B: panel margin x=48)
         title_panel_y = 240
         draw.rounded_rectangle(
-            [(48, title_panel_y), (w - 48, title_panel_y + 140)],
-            radius=16, fill=(0, 0, 0, 100),
+            [(48, title_panel_y), (w - 48, title_panel_y + 76)],
+            radius=12, fill=(0, 0, 0, 100),
         )
 
         # Title with glow (C1: accent color title)
@@ -1321,8 +1321,8 @@ class InstagramImageComposer:
         # Title backdrop panel (B: panel margin x=48)
         title_panel_y = 240
         draw.rounded_rectangle(
-            [(48, title_panel_y), (w - 48, title_panel_y + 140)],
-            radius=16, fill=(0, 0, 0, 100),
+            [(48, title_panel_y), (w - 48, title_panel_y + 76)],
+            radius=12, fill=(0, 0, 0, 100),
         )
 
         # Title with faint glow (C1: accent color title)
