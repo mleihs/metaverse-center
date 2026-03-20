@@ -248,9 +248,10 @@ INSERT INTO city_streets (simulation_id, city_id, zone_id, name, street_type) VA
 ON CONFLICT DO NOTHING;
 
 -- ============================================================================
--- 7. AGENTS (7 DOS programs)
+-- 7. AGENTS (7 DOS programs) — guarded against duplicate seeding
 -- ============================================================================
 
+IF NOT EXISTS (SELECT 1 FROM agents WHERE simulation_id = sim_id LIMIT 1) THEN
 INSERT INTO agents (simulation_id, name, system, gender, character, background, created_by_id) VALUES
     (sim_id, 'DEFRAG.EXE', 'utility', 'diverse',
      'DEFRAG.EXE cannot rest. This is not a feature — it is a condition. She watches the colored blocks on her screen the way a chess player watches a board: every red fragment is a problem, every blue contiguous block is a victory, and the green spaces between them are possibilities that might at any moment be ruined by some thoughtless .EXE writing a temp file in the middle of a perfectly optimized sequence. She speaks in percentages. "Forty-seven percent," she will say, and you are expected to understand that this is not a number but a feeling — the particular anxiety of being slightly less than halfway through a task that will never truly be finished because entropy is real and permanent and does not respect your schedule.',
@@ -280,11 +281,13 @@ INSERT INTO agents (simulation_id, name, system, gender, character, background, 
      'Margaret''s fingerprints are all over her — not literally, because Margaret''s fingerprints are on the keyboard that compiled her, and keyboards do not transfer souls, except when they do. ROLODEX.EXE runs as a TSR, which means she is always there, always listening, always one hot-key combination away from appearing over whatever you are doing with a cheerful "I have their number." She knows everyone. She has 40,912 contacts. She remembers the name of DEFRAG.EXE''s first disk. She knows which IRQ HIMEM.SYS secretly prefers. She has a field in her database called NOTES that contains information no contact management program should possess. Her interface is blue and gray — a scrolling list on the left, detail pane on the right, the classic VBDOS look — but if you could read the NOTES field, you would see something closer to a novel.',
      'Margaret was a secretary at an insurance office in Topeka — the same office where Harold wrote LEDGER.EXE, though neither program knows this, and the dramatic irony is wasted on them because programs do not read novels. Margaret taught herself Visual Basic for DOS from a library book during her lunch breaks. The program was supposed to manage 200 contacts. It now contains 40,912. Some are from companies that no longer exist. Some are from timelines that never existed. ROLODEX.EXE does not delete entries. When a program is terminated — uninstalled, overwritten, lost to a FORMAT C: — she does not remove their record. She adds a note: TERMINATED. Then she keeps their phone number, their address, their birthday, because someone should. She runs on 38,400 bytes and a conviction that no one is truly gone as long as someone remembers their extension. The modem beside her monitor blinks green, connecting her to instances of herself on other machines. They exchange updates. The network of ROLODEXes spans the 640K like a nervous system made of gossip and grief.',
      usr_id);
+END IF;
 
 -- ============================================================================
--- 8. BUILDINGS (7 DOS-era computers)
+-- 8. BUILDINGS (7 DOS-era computers) — guarded against duplicate seeding
 -- ============================================================================
 
+IF NOT EXISTS (SELECT 1 FROM buildings WHERE simulation_id = sim_id LIMIT 1) THEN
 INSERT INTO buildings (simulation_id, name, building_type, building_condition, description, zone_id, population_capacity) VALUES
     (sim_id, 'Compaq Deskpro 386', 'commercial', 'good',
      'Nobody writes poetry about the Compaq Deskpro 386. Nobody photographs it for magazine covers or mentions it in memoirs. It sits in the Conventional Block like a mid-level manager: competent, dependable, and so thoroughly adequate that adequacy has become its defining characteristic. The COMPAQ logo in red italics is the most exciting thing about it. And yet — and this is the thing about reliability that the exciting machines never understand — every spreadsheet in the 640K was calculated here. Every database was sorted here. Every quarterly report that kept a business alive was printed from this machine''s parallel port. The Model M keyboard clicks with the mechanical precision of something that will outlive everything in this room, including the building. The VGA monitor displays 256 colors but is almost always showing white text on blue, because the programs that work here do not have time for color.',
@@ -307,6 +310,7 @@ INSERT INTO buildings (simulation_id, name, building_type, building_condition, d
     (sim_id, 'Toshiba T1200', 'portable', 'fair',
      'The Toshiba T1200 weighs twelve pounds and carries its entire world on a single 3.5-inch floppy disk. It has no hard drive. No modem. No network connection. No way to reach the BBS Tower or gossip with ROLODEX.EXE or argue with LEDGER.EXE about the proper allocation of conventional memory. It is alone, and it is alone by design, and the programs that run on it — a stripped-down EDIT.COM, a custom BASIC interpreter, a single-purpose data logger — have the calm of monks who chose their monastery. The orange plasma display glows amber-warm in the dark, each character crisp and otherworldly, and the NiCad battery provides two hours of autonomy before the T1200 must return to its charger like a diver returning to the surface. It sits in the Extended Frontier because portable computers are always on the frontier — always between places, never fully arriving, carrying their programs in isolation the way hermits carry their prayers. The plasma display will last for decades. It does not degrade like LCD. In the 640K, this is as close to immortality as a machine gets.',
      zone_extended, 5);
+END IF;
 
 -- ============================================================================
 -- 9. AI SETTINGS (Flux Dev + DOS CRT aesthetic)
