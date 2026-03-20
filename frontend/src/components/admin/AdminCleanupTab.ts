@@ -76,12 +76,12 @@ function getCleanupMeta(): Record<CleanupType, CleanupMeta> {
 
 function getCleanupTip(): Record<CleanupType, string> {
   return {
-    completed_epochs: msg('Irreversible. Deletes match data, scores, chat messages, bot decisions, and cloned game instances. Keep for at least 30 days for post-mortem analysis.'),
-    cancelled_epochs: msg('Safe to purge. Cancelled matches have no meaningful data. Orphan game instances may consume storage.'),
-    stale_lobbies: msg('Very safe. Lobbies that never started contain only participant signups. No game data exists.'),
-    archived_instances: msg('Frozen simulation snapshots from completed epochs. Safe to remove after balance analysis is complete.'),
-    audit_log: msg('CRUD audit trail. Useful for debugging recent issues. Recommended: keep 90 days minimum for incident investigation.'),
-    bot_decision_log: msg('AI decision records per tick cycle. Grows fast during playtesting. Safe to purge after bot tuning is complete.'),
+    completed_epochs: msg('IRREVERSIBLE. Permanently deletes all data for finished epoch matches: final scores, player rankings, chat history, bot decision logs, and cloned game instances. This data cannot be recovered. Keep for at least 30 days after epoch end for post-mortem analysis and balance tuning. Only purge once you are certain no further analysis is needed.'),
+    cancelled_epochs: msg('Safe to purge. Cancelled matches were aborted before completion and contain no meaningful gameplay data. However, orphan game instances from cancelled matches may still consume Supabase storage. Purging reclaims storage and removes clutter from the epoch history view.'),
+    stale_lobbies: msg('Very safe to purge. Lobbies that never transitioned to an active match contain only participant signup records and lobby configuration. No game data, no scores, no chat messages exist. These accumulate over time when players create lobbies but never start the game.'),
+    archived_instances: msg('Frozen simulation state snapshots created when an epoch completes. These preserve the exact simulation state at epoch end for balance analysis. Safe to remove once you have extracted any needed metrics or screenshots. Archived instances do not affect active simulations or ongoing gameplay.'),
+    audit_log: msg('Chronological CRUD audit trail recording every mutation (create, update, delete) across all platform entities. Essential for debugging recent issues, investigating user reports, and compliance. Recommended retention: 90 days minimum. Older entries are rarely needed but provide long-term forensics capability. Grows ~1-5 MB/month depending on activity.'),
+    bot_decision_log: msg('Detailed AI decision records generated every heartbeat tick cycle. Logs which actions each bot agent considered, evaluated, and chose. Grows very fast during active playtesting (10-100 MB/day with many simulations). Safe to purge after bot behavior tuning is complete. Keep recent entries (7-14 days) during active development for debugging bot logic.'),
   };
 }
 
@@ -637,7 +637,7 @@ export class VelgAdminCleanupTab extends LitElement {
             <input
               type="checkbox"
               class="item-row__check"
-              aria-label=${msg(`Select ${item.name}`)}
+              aria-label=${msg(str`Select ${item.name}`)}
               .checked=${selected.has(item.id)}
               @change=${() => this._toggleItem(type, item.id)}
             />
@@ -716,7 +716,7 @@ export class VelgAdminCleanupTab extends LitElement {
                   class="controls-row__input"
                   min="0"
                   max="3650"
-                  aria-label=${msg(`Minimum age in days for ${m.label}`)}
+                  aria-label=${msg(str`Minimum age in days for ${m.label}`)}
                   aria-describedby=${`tip-cleanup-${type}`}
                   .value=${String(this._thresholds[type])}
                   @input=${(e: Event) => {
@@ -739,7 +739,7 @@ export class VelgAdminCleanupTab extends LitElement {
                 <button
                   class="btn btn--scan"
                   ?disabled=${isScanning || isExecuting}
-                  aria-label=${msg(`Scan for ${m.label}`)}
+                  aria-label=${msg(str`Scan for ${m.label}`)}
                   @click=${() => this._scan(type)}
                 >${isScanning ? msg('Scanning...') : msg('Scan')}</button>
               </div>
@@ -752,7 +752,7 @@ export class VelgAdminCleanupTab extends LitElement {
                 <button
                   class="btn btn--purge"
                   ?disabled=${isExecuting}
-                  aria-label=${msg(`Execute purge for ${m.label}`)}
+                  aria-label=${msg(str`Execute purge for ${m.label}`)}
                   @click=${() => {
                     this._confirmPurge = type;
                   }}

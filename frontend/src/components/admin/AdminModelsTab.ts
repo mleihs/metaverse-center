@@ -96,16 +96,16 @@ const MODEL_OPTIONS = [
 function getModelTip(key: string): string {
   const tips: Record<string, string> = {
     model_default: msg(
-      'Highest quality, highest cost. Used for narrative generation, dialogue, and event descriptions.',
+      'Primary model for all high-stakes generation: narrative events, agent dialogue, chronicle entries, and simulation descriptions. This model runs for every user-facing text output. Higher quality models produce richer, more coherent storytelling but cost more per request. Recommended: Claude Sonnet 4.6 or GPT-4o for the best quality-to-cost ratio.',
     ),
     model_fallback: msg(
-      'Activates automatically when the default model errors or times out. Choose a reliable free-tier model.',
+      'Activated automatically when the default model returns an error, times out, or hits rate limits. Should be a reliable, always-available model. Free-tier models (e.g. Llama 3.1, Gemma) work well here since fallback quality matters less than availability. The system retries once with the fallback before reporting failure.',
     ),
     model_research: msg(
-      'Lower cost model for bulk research operations. Runs during Astrolabe and anchor generation – high volume, lower stakes.',
+      'Used for high-volume, lower-stakes bulk operations: Astrolabe research queries, anchor point generation, trend analysis, and background enrichment tasks. Runs 10-50x more requests than the default model. Choose a cost-effective model since individual output quality is less critical. Haiku or Gemini Flash are good choices.',
     ),
     model_forge: msg(
-      'Powers the creative pipeline: lore, themes, entity translation. Quality directly affects Forge output.',
+      'Dedicated model for the Forge creative pipeline: lore generation, theme composition, entity translation, simulation seed content, and world-building prompts. Quality directly impacts Forge output richness. Architect users see this model\'s output during simulation creation. Recommended: a top-tier model (Opus, GPT-4o) for the best creative results.',
     ),
   };
   // Dev keys share the same tips as their prod counterparts

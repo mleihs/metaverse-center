@@ -16,6 +16,16 @@ import { icons } from '../../utils/icons.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
+import {
+  adminActionStyles,
+  adminBadgeStyles,
+  adminConnectionCardStyles,
+  adminDispatchStyles,
+  adminMetricCardStyles,
+  adminStatusFilterStyles,
+  adminTabNavStyles,
+  adminToggleSCIFStyles,
+} from './admin-shared-styles.js';
 
 import '../shared/ConfirmDialog.js';
 
@@ -98,94 +108,22 @@ const DEFAULT_CONFIG: PipelineConfig = {
 @localized()
 @customElement('velg-admin-instagram-tab')
 export class VelgAdminInstagramTab extends LitElement {
-  static styles = [infoBubbleStyles, css`
+  static styles = [
+    infoBubbleStyles,
+    adminConnectionCardStyles,
+    adminTabNavStyles,
+    adminStatusFilterStyles,
+    adminDispatchStyles,
+    adminBadgeStyles,
+    adminActionStyles,
+    adminMetricCardStyles,
+    adminToggleSCIFStyles,
+    css`
     :host {
       display: block;
       color: var(--color-text-primary);
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-    }
-
-    /* ── Connection Status Card ──────────────────────────── */
-
-    .connection-card {
-      display: flex;
-      align-items: center;
-      gap: var(--space-4);
-      padding: var(--space-4);
-      margin-bottom: var(--space-5);
-      border: 1px solid var(--color-border);
-      border-radius: 4px;
-      background: color-mix(in srgb, var(--color-surface) 60%, transparent);
-    }
-
-    .connection-card__indicator {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    .connection-card__indicator--ok {
-      background: var(--color-success);
-      box-shadow: 0 0 6px var(--color-success);
-    }
-
-    .connection-card__indicator--error {
-      background: var(--color-danger);
-      box-shadow: 0 0 6px var(--color-danger);
-    }
-
-    .connection-card__indicator--unconfigured {
-      background: var(--color-text-muted);
-    }
-
-    .connection-card__info { flex: 1; }
-
-    .connection-card__handle {
-      font-weight: var(--font-bold);
-      color: var(--color-text-primary);
-    }
-
-    .connection-card__detail {
-      font-size: var(--text-xs);
-      color: var(--color-text-muted);
-    }
-
-    .connection-card__status {
-      font-size: var(--text-xs);
-      font-weight: var(--font-bold);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .connection-card__status--ok { color: var(--color-success); }
-    .connection-card__status--error { color: var(--color-danger); }
-    .connection-card__status--unconfigured { color: var(--color-text-muted); }
-
-    .btn-test {
-      font-family: var(--font-brutalist);
-      font-size: var(--text-xs);
-      font-weight: var(--font-bold);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      padding: var(--space-1-5) var(--space-3);
-      border: 1px solid var(--color-border);
-      border-radius: 3px;
-      background: none;
-      color: var(--color-text-secondary);
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-
-    .btn-test:hover:not(:disabled) {
-      border-color: var(--color-primary);
-      color: var(--color-primary);
-    }
-
-    .btn-test:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
     }
 
     /* ══════════════════════════════════════════════════════
@@ -346,14 +284,10 @@ export class VelgAdminInstagramTab extends LitElement {
     }
 
     /* ══════════════════════════════════════════════════════
-       TAB NAVIGATION — Classification-level selector
+       TAB NAVIGATION — Instagram-specific overrides
        ══════════════════════════════════════════════════════ */
 
     .tab-bar {
-      display: flex;
-      gap: 0;
-      margin-bottom: var(--space-5);
-      border-bottom: 1px solid var(--color-border);
       position: relative;
     }
 
@@ -370,87 +304,15 @@ export class VelgAdminInstagramTab extends LitElement {
       color: var(--color-text-muted);
     }
 
-    .tab {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-2);
-      padding: var(--space-3) var(--space-4);
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--color-text-muted);
-      border: none;
-      border-bottom: 2px solid transparent;
-      background: none;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      position: relative;
-    }
-
-    .tab svg {
-      color: var(--color-text-muted);
-      transition: color 0.2s ease;
-    }
-
-    .tab:hover {
-      color: var(--color-text-secondary);
-      background: color-mix(in srgb, var(--color-primary) 3%, transparent);
-    }
-
-    .tab:hover svg {
-      color: var(--color-text-secondary);
-    }
-
-    .tab--active {
-      color: var(--color-primary);
-      border-bottom-color: var(--color-primary);
-    }
-
-    .tab--active svg {
-      color: var(--color-primary);
-    }
-
-    .tab__badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 16px;
-      height: 16px;
-      padding: 0 var(--space-1);
-      font-size: 8px;
-      font-family: var(--font-mono);
-      font-weight: var(--font-bold);
-      background: color-mix(in srgb, var(--color-primary) 15%, transparent);
-      color: var(--color-primary);
-      border-radius: 2px;
-    }
-
-    .tab__badge--active {
-      background: var(--color-success-bg);
-      color: var(--color-success);
-      font-size: 7px;
-      letter-spacing: 0.05em;
-    }
-
     /* ══════════════════════════════════════════════════════
-       INTEL READOUT — Analytics dashboard cards
+       INTEL READOUT — Instagram-specific overrides
        ══════════════════════════════════════════════════════ */
 
     .intel-grid {
-      display: grid;
       grid-template-columns: repeat(6, 1fr);
-      gap: var(--space-3);
-      margin-bottom: var(--space-6);
     }
 
     .intel-card {
-      position: relative;
-      padding: var(--space-3) var(--space-4);
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      overflow: hidden;
       animation: intel-slide-up 0.4s ease both;
     }
 
@@ -472,15 +334,6 @@ export class VelgAdminInstagramTab extends LitElement {
       }
     }
 
-    .intel-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-    }
-
     .intel-card::after {
       content: '';
       position: absolute;
@@ -494,18 +347,6 @@ export class VelgAdminInstagramTab extends LitElement {
       );
       pointer-events: none;
     }
-
-    .intel-card__corner {
-      position: absolute;
-      width: 6px;
-      height: 6px;
-      border-style: solid;
-      opacity: 0.25;
-      z-index: 1;
-    }
-
-    .intel-card__corner--tl { top: 3px; left: 3px; border-width: 1px 0 0 1px; }
-    .intel-card__corner--br { bottom: 3px; right: 3px; border-width: 0 1px 1px 0; }
 
     .intel-card--dispatches::before { background: var(--color-info); }
     .intel-card--dispatches .intel-card__corner { border-color: var(--color-info); }
@@ -524,43 +365,6 @@ export class VelgAdminInstagramTab extends LitElement {
 
     .intel-card--quota::before { background: var(--color-danger); }
     .intel-card--quota .intel-card__corner { border-color: var(--color-danger); }
-
-    .intel-card__icon {
-      display: flex;
-      align-items: center;
-      margin-bottom: var(--space-1);
-      color: var(--color-text-muted);
-    }
-
-    .intel-card__label {
-      font-family: var(--font-brutalist);
-      font-size: 8px;
-      font-weight: var(--font-bold);
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--color-text-muted);
-      margin-bottom: 2px;
-    }
-
-    .intel-card__value {
-      font-family: var(--font-brutalist);
-      font-size: var(--text-xl);
-      font-weight: var(--font-black);
-      color: var(--color-text-primary);
-      line-height: 1;
-    }
-
-    .intel-card__value--unit {
-      font-size: 11px;
-      font-weight: var(--font-bold);
-      color: var(--color-text-muted);
-    }
-
-    .intel-card__sub {
-      font-size: 9px;
-      color: var(--color-text-muted);
-      margin-top: 2px;
-    }
 
     /* Quota gauge */
     .quota-gauge {
@@ -622,284 +426,15 @@ export class VelgAdminInstagramTab extends LitElement {
       color: var(--color-text-primary);
     }
 
-    /* Status filter bar */
+    /* Instagram-specific: status bar has bottom border */
     .status-bar {
-      display: flex;
-      align-items: center;
-      gap: var(--space-1);
-      margin-bottom: var(--space-4);
       padding-bottom: var(--space-3);
       border-bottom: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
-      flex-wrap: wrap;
     }
 
-    .status-tab {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-1);
-      padding: var(--space-1) var(--space-3);
-      font-family: var(--font-brutalist);
-      font-size: 9px;
-      font-weight: var(--font-bold);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--color-text-muted);
-      background: none;
-      border: 1px solid transparent;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-
-    .status-tab:hover {
-      color: var(--color-text-secondary);
-      background: color-mix(in srgb, var(--color-primary) 5%, transparent);
-    }
-
-    .status-tab--active {
-      color: var(--color-primary);
-      border-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
-      background: color-mix(in srgb, var(--color-primary) 8%, transparent);
-    }
-
-    .status-tab__count {
-      font-family: var(--font-mono);
-      font-size: 8px;
-      opacity: 0.6;
-    }
-
-    .queue-total {
-      margin-left: auto;
-      font-size: 9px;
-      color: var(--color-text-muted);
-    }
-
-    /* Dispatch list + items */
-    .dispatch-list {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-2);
-    }
-
+    /* Instagram-specific: dispatch card has background */
     .dispatch {
-      display: flex;
-      gap: var(--space-3);
-      padding: var(--space-3);
       background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-left: 3px solid var(--color-border);
-      transition: border-color 0.2s ease;
-    }
-
-    .dispatch--draft { border-left-color: var(--color-info); }
-    .dispatch--scheduled { border-left-color: var(--color-warning); }
-    .dispatch--publishing { border-left-color: var(--color-warning); }
-    .dispatch--published { border-left-color: var(--color-success); }
-    .dispatch--failed { border-left-color: var(--color-danger); }
-    .dispatch--rejected { border-left-color: var(--color-danger); }
-
-    .dispatch__thumb {
-      width: 64px;
-      height: 80px;
-      flex-shrink: 0;
-      overflow: hidden;
-      background: var(--color-bg);
-      border: 1px solid var(--color-border);
-    }
-
-    .dispatch__thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .dispatch__thumb--empty {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 9px;
-      color: var(--color-text-muted);
-    }
-
-    .dispatch__body {
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-1);
-    }
-
-    .dispatch__header {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-      flex-wrap: wrap;
-    }
-
-    .dispatch__type-tag {
-      font-family: var(--font-brutalist);
-      font-size: 8px;
-      font-weight: var(--font-bold);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      padding: 1px var(--space-2);
-      background: color-mix(in srgb, var(--color-primary) 12%, transparent);
-      color: var(--color-primary);
-    }
-
-    .dispatch__shard {
-      font-size: 9px;
-      color: var(--color-text-muted);
-      font-style: italic;
-    }
-
-    .dispatch__timestamp {
-      font-size: 9px;
-      color: var(--color-text-muted);
-      margin-left: auto;
-    }
-
-    .dispatch__caption {
-      font-size: 11px;
-      line-height: 1.5;
-      color: var(--color-text-secondary);
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 3;
-      overflow: hidden;
-    }
-
-    .dispatch__tags {
-      display: flex;
-      gap: var(--space-1);
-      flex-wrap: wrap;
-    }
-
-    .dispatch__tag {
-      font-size: 9px;
-      color: var(--color-text-muted);
-    }
-
-    .dispatch__metrics {
-      display: flex;
-      gap: var(--space-3);
-      align-items: center;
-      margin-top: var(--space-1);
-    }
-
-    .metric {
-      display: flex;
-      align-items: center;
-      gap: 3px;
-      font-size: 10px;
-      color: var(--color-text-muted);
-    }
-
-    .metric--accent {
-      color: var(--color-primary);
-    }
-
-    .dispatch__failure {
-      font-size: 10px;
-      color: var(--color-danger);
-      margin-top: var(--space-1);
-    }
-
-    .dispatch__actions {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-1);
-      align-self: center;
-      flex-shrink: 0;
-    }
-
-    /* Action buttons */
-    .act {
-      padding: var(--space-1) var(--space-3);
-      font-family: var(--font-brutalist);
-      font-size: 9px;
-      font-weight: var(--font-bold);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      border: 1px solid var(--color-border);
-      background: var(--color-surface);
-      color: var(--color-text-secondary);
-      cursor: pointer;
-      transition: all 0.15s ease;
-      text-decoration: none;
-      text-align: center;
-    }
-
-    .act:hover { border-color: var(--color-text-muted); }
-    .act:disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
-
-    .act--approve {
-      border-color: color-mix(in srgb, var(--color-success) 40%, transparent);
-      color: var(--color-success);
-    }
-    .act--approve:hover {
-      background: var(--color-success-bg);
-      border-color: var(--color-success);
-    }
-
-    .act--reject {
-      border-color: color-mix(in srgb, var(--color-danger) 40%, transparent);
-      color: var(--color-danger);
-    }
-    .act--reject:hover {
-      background: color-mix(in srgb, var(--color-danger) 10%, var(--color-surface));
-      border-color: var(--color-danger);
-    }
-
-    .act--publish {
-      border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
-      color: var(--color-primary);
-    }
-    .act--publish:hover {
-      background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
-      border-color: var(--color-primary);
-    }
-
-    .act--link {
-      color: var(--color-text-muted);
-    }
-    .act--link:hover {
-      color: var(--color-primary);
-      border-color: var(--color-primary);
-    }
-
-    /* ══════════════════════════════════════════════════════
-       BADGE — Status indicator
-       ══════════════════════════════════════════════════════ */
-
-    .badge {
-      display: inline-block;
-      padding: 1px var(--space-2);
-      font-family: var(--font-brutalist);
-      font-size: 8px;
-      font-weight: var(--font-bold);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
-    .badge--info {
-      background: var(--color-info-bg);
-      color: var(--color-info);
-    }
-    .badge--success {
-      background: var(--color-success-bg);
-      color: var(--color-success);
-    }
-    .badge--warning {
-      background: var(--color-warning-bg);
-      color: var(--color-warning);
-    }
-    .badge--danger {
-      background: color-mix(in srgb, var(--color-danger) 12%, transparent);
-      color: var(--color-danger);
-    }
-    .badge--muted {
-      background: color-mix(in srgb, var(--color-text-muted) 12%, transparent);
-      color: var(--color-text-muted);
     }
 
     /* ══════════════════════════════════════════════════════
@@ -1283,65 +818,6 @@ export class VelgAdminInstagramTab extends LitElement {
       font-size: 9px;
       color: var(--color-text-muted);
       max-width: 280px;
-    }
-
-    /* ══════════════════════════════════════════════════════
-       TOGGLE SWITCH — Circuit breaker aesthetic
-       ══════════════════════════════════════════════════════ */
-
-    .toggle {
-      position: relative;
-      width: 44px;
-      height: 22px;
-      flex-shrink: 0;
-      cursor: pointer;
-      z-index: 1;
-    }
-
-    .toggle input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-      position: absolute;
-    }
-
-    .toggle__track {
-      position: absolute;
-      inset: 0;
-      background: color-mix(in srgb, var(--color-text-muted) 15%, var(--color-surface));
-      border: 1px solid var(--color-border);
-      transition: all 0.25s ease;
-    }
-
-    .toggle__track::after {
-      content: '';
-      position: absolute;
-      top: 2px;
-      left: 2px;
-      width: 16px;
-      height: 16px;
-      background: var(--color-text-muted);
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .toggle input:checked + .toggle__track {
-      background: color-mix(in srgb, var(--color-primary) 20%, var(--color-surface));
-      border-color: var(--color-primary);
-    }
-
-    .toggle input:checked + .toggle__track::after {
-      left: 24px;
-      background: var(--color-primary);
-      box-shadow: 0 0 8px color-mix(in srgb, var(--color-primary) 40%, transparent);
-    }
-
-    .toggle:hover .toggle__track {
-      border-color: var(--color-text-muted);
-    }
-
-    .toggle input:disabled + .toggle__track {
-      opacity: 0.4;
-      cursor: not-allowed;
     }
 
     /* ══════════════════════════════════════════════════════
@@ -2282,12 +1758,12 @@ export class VelgAdminInstagramTab extends LitElement {
 
   private _renderStatusBar() {
     const tabs: { key: StatusFilter; label: string }[] = [
-      { key: 'all', label: 'All' },
-      { key: 'draft', label: 'Draft' },
-      { key: 'scheduled', label: 'Scheduled' },
-      { key: 'published', label: 'Published' },
-      { key: 'failed', label: 'Failed' },
-      { key: 'rejected', label: 'Rejected' },
+      { key: 'all', label: msg('All') },
+      { key: 'draft', label: msg('Draft') },
+      { key: 'scheduled', label: msg('Scheduled') },
+      { key: 'published', label: msg('Published') },
+      { key: 'failed', label: msg('Failed') },
+      { key: 'rejected', label: msg('Rejected') },
     ];
 
     return html`
@@ -2479,12 +1955,12 @@ export class VelgAdminInstagramTab extends LitElement {
 
   private _renderStoryFilterBar() {
     const filters: { key: StoryStatusFilter; label: string }[] = [
-      { key: 'all', label: 'All' },
-      { key: 'pending', label: 'Pending' },
-      { key: 'ready', label: 'Ready' },
-      { key: 'published', label: 'Published' },
-      { key: 'failed', label: 'Failed' },
-      { key: 'skipped', label: 'Skipped' },
+      { key: 'all', label: msg('All') },
+      { key: 'pending', label: msg('Pending') },
+      { key: 'ready', label: msg('Ready') },
+      { key: 'published', label: msg('Published') },
+      { key: 'failed', label: msg('Failed') },
+      { key: 'skipped', label: msg('Skipped') },
     ];
 
     return html`
@@ -2847,6 +2323,7 @@ export class VelgAdminInstagramTab extends LitElement {
     return html`
       <label class="toggle">
         <input
+          class="toggle__input"
           type="checkbox"
           .checked=${checked}
           ?disabled=${this._savingKey === key}

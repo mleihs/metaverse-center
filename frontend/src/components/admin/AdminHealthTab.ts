@@ -336,7 +336,7 @@ export class VelgAdminHealthTab extends LitElement {
           <div class="global-card__info">
             <p class="global-card__label">
               ${msg('Critical Health Effects')}
-              ${renderInfoBubble(msg('Controls entropy overlay, text corruption, card distortion, deceleration hero moment, entropy timer, and desperate actions panel across all simulations.'), 'tip-health-global')}
+              ${renderInfoBubble(msg('Master switch for all critical-state visual effects across every simulation. When active, simulations below the escalation threshold display: entropy overlay (screen distortion), text corruption (glitched characters), card distortion (warped UI cards), deceleration hero moment (dramatic slow-motion reveal), entropy countdown timer, and the desperate actions panel (last-resort player options). Disable during maintenance or if visual effects cause accessibility issues.'), 'tip-health-global')}
             </p>
             <p class="global-card__description">
               ${msg('Controls entropy overlay, text corruption, card distortion, deceleration hero moment, entropy timer, and desperate actions panel. When disabled, all critical-state visual effects are suppressed across every simulation.')}
@@ -366,7 +366,7 @@ export class VelgAdminHealthTab extends LitElement {
         <div class="section-header__marker"></div>
         <h2 class="section-header__title">
           ${msg('Per-Simulation Overrides')}
-          ${renderInfoBubble(msg('Enable or disable health effects per simulation. Only applies when the master switch is active.'), 'tip-health-overrides')}
+          ${renderInfoBubble(msg('Per-simulation granular control over critical health effects. Each simulation can independently opt in or out of entropy visuals. Only applies when the master switch above is active. Use this to disable effects for simulations in early development, testing, or those with a calm narrative tone that should not display crisis visuals even at low health.'), 'tip-health-overrides')}
         </h2>
       </div>
 

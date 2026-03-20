@@ -81,22 +81,22 @@ type ConfigKey = (typeof CONFIG_KEYS)[number];
 /** Tooltip text for each heartbeat config key (i18n-wrapped). */
 function getConfigTooltip(key: string): string {
   const tooltips: Record<string, string> = {
-    heartbeat_enabled: msg('Master switch for the heartbeat tick engine. When disabled, no simulations receive periodic ticks.'),
-    heartbeat_interval_seconds: msg('Seconds between heartbeat ticks. Lower values increase server load but make simulations feel more responsive.'),
-    heartbeat_scar_decay_rate: msg('Rate at which scar tissue decays per tick. Higher values mean faster healing after critical events.'),
-    heartbeat_attunement_growth_rate: msg('Rate at which attunement grows per tick when conditions are met. Controls how quickly agents align with their environment.'),
-    heartbeat_anchor_growth_per_sim: msg('Anchor points gained per simulation per tick cycle. Anchors stabilize simulation health.'),
-    heartbeat_escalation_threshold: msg('Health threshold below which escalation mechanics activate. Lower values delay escalation longer.'),
-    heartbeat_cascade_pressure_trigger: msg('Pressure level that triggers cross-simulation cascade effects. Higher values make cascades harder to trigger.'),
-    heartbeat_bureau_contain_multiplier: msg('Multiplier for Bureau containment response strength. Higher values make containment more effective.'),
-    heartbeat_bureau_remediate_multiplier: msg('Multiplier for Bureau remediation response strength. Controls healing speed during active incidents.'),
-    heartbeat_bureau_adapt_multiplier: msg('Multiplier for Bureau adaptation response. Higher values accelerate post-crisis normalization.'),
-    heartbeat_bureau_max_agents: msg('Maximum Bureau agents that can be active simultaneously across all simulations.'),
-    heartbeat_positive_event_probability: msg('Probability of positive attunement events per tick. Range 0-1. Higher values create more hopeful moments.'),
-    heartbeat_max_attunements: msg('Maximum number of concurrent attunement bonds per simulation.'),
-    heartbeat_switching_cooldown_ticks: msg('Tick cooldown before an agent can switch attunement targets. Prevents rapid oscillation.'),
-    heartbeat_anchor_protection_cap: msg('Maximum anchor protection percentage. Caps how much anchors can shield a simulation from damage.'),
-    heartbeat_event_aging_rules: msg('JSON rules governing how events age and decay over time. Advanced – edit with caution.'),
+    heartbeat_enabled: msg('Master switch for the entire heartbeat tick engine. When disabled, no simulations receive periodic ticks, meaning all autonomous simulation mechanics stop: health decay, scar healing, attunement growth, Bureau responses, and event aging. Turn off during maintenance or to freeze all simulations.'),
+    heartbeat_interval_seconds: msg('Seconds between heartbeat ticks across all active simulations. Lower values (10-30s) make simulations feel alive and responsive but increase server CPU and DB load proportionally. Higher values (60-120s) reduce load but make gameplay feel sluggish. Default 30s is a good balance for up to 20 active simulations.'),
+    heartbeat_scar_decay_rate: msg('How fast scar tissue heals per tick (0.0-1.0). Scars are accumulated damage from critical events like entropy spikes or cascade failures. At 0.05, a fully scarred simulation takes ~20 ticks to heal. Higher values (0.1+) mean rapid recovery, lower values (0.01) create long-lasting consequences from crises.'),
+    heartbeat_attunement_growth_rate: msg('Rate at which agent attunement bonds strengthen per tick when proximity and alignment conditions are met (0.0-1.0). Controls how quickly operatives align with their simulation environment. Higher values create fast, volatile bonds. Lower values produce slow, stable relationships. Affects the pace of emergent narrative.'),
+    heartbeat_anchor_growth_per_sim: msg('Anchor stability points gained per simulation per tick cycle. Anchors act as structural stabilizers that resist health decay and dampen cascade pressure. More anchors = more resilient simulations. Set higher (2-5) for casual play, lower (0.5-1) for challenging, high-stakes scenarios.'),
+    heartbeat_escalation_threshold: msg('Health percentage (0-100) below which escalation mechanics activate. When a simulation drops below this threshold, desperate actions unlock, entropy effects intensify, and Bureau containment can trigger. Lower values (20-30) delay escalation, creating a larger safe zone. Higher values (50-60) make simulations more volatile and dramatic.'),
+    heartbeat_cascade_pressure_trigger: msg('Cumulative pressure value (0.0-1.0) that triggers cross-simulation cascade effects. When one simulation accumulates enough negative pressure, it can cascade into neighboring simulations. Higher values (0.7+) make cascades rare but dramatic. Lower values (0.3-0.5) create frequent interconnected chaos across simulations.'),
+    heartbeat_bureau_contain_multiplier: msg('Strength multiplier (0.0-5.0) for Bureau containment response when a simulation enters critical state. Containment slows health decay and dampens negative events. At 1.0 (default), containment provides moderate protection. At 2.0+, the Bureau can nearly halt a crisis. At 0.5, containment is weak and simulations spiral faster.'),
+    heartbeat_bureau_remediate_multiplier: msg('Strength multiplier (0.0-5.0) for Bureau remediation response during active incidents. Remediation actively heals simulation health and repairs damage. Higher values accelerate recovery during crises. At 1.0 (default), healing is gradual. At 3.0+, even severe damage recovers within a few ticks.'),
+    heartbeat_bureau_adapt_multiplier: msg('Strength multiplier (0.0-5.0) for Bureau adaptation response after crises resolve. Adaptation normalizes simulation parameters and reduces lingering scar tissue. Higher values speed up post-crisis normalization. At 1.0 (default), recovery takes several tick cycles. At 0 the Bureau does not adapt at all.'),
+    heartbeat_bureau_max_agents: msg('Maximum number of Bureau agents (automated system responders) that can be deployed simultaneously across all active simulations. Bureau agents consume server resources per tick. Limit this to prevent overload with many simulations. Recommended: 3-5 for small deployments, 10-15 for production with many active simulations.'),
+    heartbeat_positive_event_probability: msg('Probability (0.0-1.0) that a positive attunement event spawns per tick per simulation. Positive events create moments of hope, bonding, or discovery that counterbalance entropy. At 0.1, roughly 1 in 10 ticks produces a positive moment. At 0.3+, simulations feel optimistic. At 0.01, positivity is rare and precious.'),
+    heartbeat_max_attunements: msg('Maximum number of concurrent attunement bonds allowed per simulation. Attunements are resonance connections between agents and their environment. More bonds create richer narrative but increase tick processing time. Recommended: 5-10 for typical simulations, up to 20 for large simulations with many agents.'),
+    heartbeat_switching_cooldown_ticks: msg('Number of ticks an agent must wait before switching attunement targets. Prevents rapid oscillation where agents flip between targets every tick, which creates incoherent narrative. At 3-5 ticks, bonds feel meaningful. At 1, agents can switch freely. At 10+, bonds are very sticky and hard to break.'),
+    heartbeat_anchor_protection_cap: msg('Maximum protection percentage (0-100) that anchor points can provide against health decay. Caps how much structural stability can shield a simulation from damage. At 80 (default), even fully anchored simulations take 20% damage. At 100, a fully anchored simulation is invulnerable. At 50, anchors provide only moderate protection.'),
+    heartbeat_event_aging_rules: msg('JSON configuration defining how simulation events age and decay over time. Controls event visibility duration, severity decay curves, and cleanup thresholds. Advanced setting: incorrect values can cause events to disappear too quickly or accumulate indefinitely. Edit with caution and test in a dev simulation first.'),
   };
   return tooltips[key] ?? '';
 }
@@ -927,7 +927,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
                 ${renderInfoBubble(getConfigTooltip('heartbeat_enabled'), 'tip-heartbeat_enabled')}
               </p>
               <p class="global-card__description">
-                ${msg('Controls the heartbeat tick engine across all simulations. When disabled, no automatic ticks will fire, narrative arcs will not age, and scar tissue will not decay.')}
+                ${msg('The heartbeat is the autonomous pulse that drives every simulation forward. Each tick evaluates agent attunement bonds, decays accumulated scar tissue, grows anchor stability points, and ages active events according to their decay curves. Bureau containment, remediation, and adaptation responses are triggered automatically when simulation health drops below critical thresholds. When the heartbeat is disabled, all of this stops: simulations freeze in their current state, no new attunement events fire, scar tissue persists indefinitely, and Bureau agents stand down. Disable during maintenance windows or when you need to inspect simulation state without it changing under observation.')}
               </p>
               <div
                 class="global-card__status ${enabled ? 'global-card__status--active' : 'global-card__status--disabled'}"

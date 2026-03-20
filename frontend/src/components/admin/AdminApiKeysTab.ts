@@ -84,12 +84,12 @@ function getCategoryLabel(category: string): string {
 /** Operational tips for each API key (shown as info bubbles). */
 function getApiKeyTip(): Record<string, string> {
   return {
-    openrouter_api_key: msg('Fallback chain: simulation BYOK key → platform key → free tier. Generation fails if no key is available.'),
-    replicate_api_key: msg('Used for Forge image generation (SDXL/Flux). Without this key, image generation is disabled platform-wide.'),
-    guardian_api_key: msg('Free tier: 12 requests/s, 500/day. Used during social trend aggregation. Not needed if Guardian source is disabled.'),
-    newsapi_api_key: msg('Free tier: 100 requests/day. Used during social trend aggregation alongside Guardian.'),
-    tavily_api_key: msg('Powers web search in the Forge research pipeline (Astrolabe Phase 1). Without it, research falls back to domain-only mode.'),
-    deepl_api_key: msg('Free tier: 500,000 chars/month. Used for translating generated content. Falls back to no translation if missing.'),
+    openrouter_api_key: msg('Primary AI provider for all text generation. Fallback chain: simulation BYOK key (if configured per simulation) → platform key → free tier models. If no key is available at any level, all AI generation (events, dialogue, captions, lore) fails. Supports 200+ models from Anthropic, OpenAI, Google, Meta, and others.'),
+    replicate_api_key: msg('Powers Forge image generation via SDXL and Flux models. Without this key, image generation is completely disabled platform-wide: no simulation artwork, no Instagram post images, no Forge visual output. Billing is per-image (typically $0.01-0.05 per generation depending on model and resolution).'),
+    guardian_api_key: msg('The Guardian Open Platform API key for real-world news scanning. Free tier allows 12 requests/second and 500/day. Used by the News Scanner during social trend aggregation to find real-world events that could seed substrate resonances. Not needed if the Guardian source adapter is disabled in Scanner settings.'),
+    newsapi_api_key: msg('NewsAPI.org key for supplementary news scanning alongside The Guardian. Free tier allows 100 requests/day (resets at midnight UTC). Covers 80,000+ sources globally. Used during social trend aggregation to broaden the scanner coverage beyond Guardian. Both sources can run independently.'),
+    tavily_api_key: msg('AI-native search engine powering web research in the Forge pipeline (Astrolabe Phase 1). Tavily returns structured, LLM-optimized results. Without this key, the research pipeline falls back to domain-only mode, significantly reducing the depth and variety of generated lore. Free tier: 1,000 searches/month.'),
+    deepl_api_key: msg('DeepL translation API for localizing AI-generated content into German. Free tier: 500,000 characters/month. Used to translate event descriptions, agent dialogue, and lore text. If missing, generated content remains English-only. Note: DeepL struggles with game-specific terminology; a manual review pass is recommended for critical content.'),
   };
 }
 

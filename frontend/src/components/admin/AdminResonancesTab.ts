@@ -5,6 +5,7 @@ import { resonanceApi } from '../../services/api/ResonanceApiService.js';
 import type { Resonance, ResonanceImpact } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
+import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 
 import '../shared/ConfirmDialog.js';
@@ -33,7 +34,7 @@ const STATUS_TRANSITIONS: Record<string, string> = {
 @localized()
 @customElement('velg-admin-resonances-tab')
 export class VelgAdminResonancesTab extends LitElement {
-  static styles = css`
+  static styles = [infoBubbleStyles, css`
     :host {
       display: block;
       color: var(--color-text-primary);
@@ -603,7 +604,7 @@ export class VelgAdminResonancesTab extends LitElement {
         flex-wrap: wrap;
       }
     }
-  `;
+  `];
 
   @state() private _view: ResView = 'active';
   @state() private _statusFilter: StatusFilter = 'all';
@@ -896,6 +897,7 @@ export class VelgAdminResonancesTab extends LitElement {
         <div class="header__title">
           ${icons.substrateTremor(18)}
           ${msg('Substrate Resonances')}
+          ${renderInfoBubble(msg('Substrate resonances are cross-simulation disturbances triggered by real-world events or manual creation. Each resonance follows a lifecycle: Detected (identified, not yet active) → Impacting (actively affecting simulations, spawning events) → Subsiding (fading, reduced effect) → Archived. Magnitude (0.0-1.0) determines the severity of impact across all affected simulations.'), 'tip-resonances-overview')}
         </div>
         <button class="header__create-btn" @click=${this._handleCreate}>
           + ${msg('Create Resonance')}
@@ -936,6 +938,7 @@ export class VelgAdminResonancesTab extends LitElement {
             this._search = (e.target as HTMLInputElement).value;
           }}
         />
+        ${renderInfoBubble(msg('Filter by resonance title, description, or signature type. The search matches across all visible fields. Combine with status chips and signature dropdown for precise filtering.'), 'tip-resonance-search')}
 
         ${
           this._view === 'active'

@@ -12,6 +12,15 @@ import { icons } from '../../utils/icons.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
+import {
+  adminActionStyles,
+  adminBadgeStyles,
+  adminConnectionCardStyles,
+  adminDispatchStyles,
+  adminMetricCardStyles,
+  adminStatusFilterStyles,
+  adminTabNavStyles,
+} from './admin-shared-styles.js';
 
 import '../shared/ConfirmDialog.js';
 
@@ -29,7 +38,16 @@ const STATUS_COLORS: Record<string, string> = {
 @localized()
 @customElement('velg-admin-bluesky-tab')
 export class VelgAdminBlueskyTab extends LitElement {
-  static styles = [infoBubbleStyles, css`
+  static styles = [
+    infoBubbleStyles,
+    adminConnectionCardStyles,
+    adminTabNavStyles,
+    adminStatusFilterStyles,
+    adminDispatchStyles,
+    adminBadgeStyles,
+    adminActionStyles,
+    adminMetricCardStyles,
+    css`
     :host {
       display: block;
       color: var(--color-text-primary);
@@ -74,303 +92,7 @@ export class VelgAdminBlueskyTab extends LitElement {
       font-size: var(--text-xs);
     }
 
-    /* ── Connection Status ──────────────────────────── */
-
-    .connection-card {
-      display: flex;
-      align-items: center;
-      gap: var(--space-4);
-      padding: var(--space-4);
-      margin-bottom: var(--space-5);
-      border: 1px solid var(--color-border);
-      border-radius: 4px;
-      background: color-mix(in srgb, var(--color-surface) 60%, transparent);
-    }
-
-    .connection-card__indicator {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    .connection-card__indicator--ok {
-      background: var(--color-success);
-      box-shadow: 0 0 6px var(--color-success);
-    }
-
-    .connection-card__indicator--error {
-      background: var(--color-danger);
-      box-shadow: 0 0 6px var(--color-danger);
-    }
-
-    .connection-card__indicator--unconfigured {
-      background: var(--color-text-muted);
-    }
-
-    .connection-card__info {
-      flex: 1;
-    }
-
-    .connection-card__handle {
-      font-weight: var(--font-bold);
-      color: var(--color-text-primary);
-    }
-
-    .connection-card__pds {
-      font-size: var(--text-xs);
-      color: var(--color-text-muted);
-    }
-
-    .connection-card__status {
-      font-size: var(--text-xs);
-      font-weight: var(--font-bold);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .connection-card__status--ok { color: var(--color-success); }
-    .connection-card__status--error { color: var(--color-danger); }
-    .connection-card__status--unconfigured { color: var(--color-text-muted); }
-
-    .btn-test {
-      font-family: var(--font-brutalist);
-      font-size: var(--text-xs);
-      font-weight: var(--font-bold);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      padding: var(--space-1-5) var(--space-3);
-      border: 1px solid var(--color-border);
-      border-radius: 3px;
-      background: none;
-      color: var(--color-text-secondary);
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-
-    .btn-test:hover:not(:disabled) {
-      border-color: var(--color-primary);
-      color: var(--color-primary);
-    }
-
-    .btn-test:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    /* ── Tab Bar ─────────────────────────────────────── */
-
-    .tab-bar {
-      display: flex;
-      gap: 0;
-      border-bottom: 1px solid var(--color-border);
-      margin-bottom: var(--space-5);
-    }
-
-    .tab {
-      display: flex;
-      align-items: center;
-      gap: var(--space-1-5);
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: var(--text-xs);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      padding: var(--space-2) var(--space-4);
-      background: none;
-      border: none;
-      color: var(--color-text-muted);
-      cursor: pointer;
-      position: relative;
-      transition: color 0.15s ease;
-    }
-
-    .tab:hover { color: var(--color-text-primary); }
-
-    .tab--active {
-      color: var(--color-primary);
-    }
-
-    .tab--active::after {
-      content: '';
-      position: absolute;
-      bottom: -1px;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: var(--color-primary);
-    }
-
-    .tab__badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 16px;
-      height: 16px;
-      padding: 0 3px;
-      font-size: 9px;
-      font-weight: var(--font-black);
-      background: var(--color-warning);
-      color: var(--color-surface-sunken);
-      border-radius: 8px;
-    }
-
-    /* ── Status Filter ──────────────────────────────── */
-
-    .status-bar {
-      display: flex;
-      gap: var(--space-1);
-      align-items: center;
-      margin-bottom: var(--space-4);
-      flex-wrap: wrap;
-    }
-
-    .status-tab {
-      display: flex;
-      align-items: center;
-      gap: var(--space-1);
-      font-family: var(--font-mono);
-      font-size: var(--text-xs);
-      padding: var(--space-1) var(--space-2);
-      border: 1px solid var(--color-border);
-      border-radius: 3px;
-      background: none;
-      color: var(--color-text-muted);
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-
-    .status-tab:hover { border-color: var(--color-text-secondary); color: var(--color-text-primary); }
-
-    .status-tab--active {
-      border-color: var(--color-primary);
-      color: var(--color-primary);
-      background: color-mix(in srgb, var(--color-primary) 8%, transparent);
-    }
-
-    .status-tab__count {
-      font-weight: var(--font-bold);
-      opacity: 0.7;
-    }
-
-    .queue-total {
-      margin-left: auto;
-      font-size: var(--text-xs);
-      color: var(--color-text-muted);
-    }
-
-    /* ── Dispatch Cards ─────────────────────────────── */
-
-    .dispatch-list {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-2);
-    }
-
-    .dispatch {
-      display: flex;
-      gap: var(--space-3);
-      padding: var(--space-3);
-      border: 1px solid var(--color-border);
-      border-radius: 4px;
-      transition: border-color 0.15s ease;
-    }
-
-    .dispatch:hover {
-      border-color: var(--color-text-muted);
-    }
-
-    .dispatch--published { border-left: 3px solid var(--color-success); }
-    .dispatch--failed { border-left: 3px solid var(--color-danger); }
-    .dispatch--skipped { border-left: 3px solid var(--color-text-muted); }
-    .dispatch--pending { border-left: 3px solid var(--color-info); }
-    .dispatch--publishing { border-left: 3px solid var(--color-warning); }
-
-    .dispatch__thumb {
-      width: 56px;
-      height: 56px;
-      flex-shrink: 0;
-      border-radius: 3px;
-      overflow: hidden;
-      border: 1px solid var(--color-border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: var(--text-xs);
-      color: var(--color-text-muted);
-    }
-
-    .dispatch__thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .dispatch__body {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .dispatch__header {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-      margin-bottom: var(--space-1);
-      flex-wrap: wrap;
-    }
-
-    .dispatch__type-tag {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: var(--text-xs);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--color-text-secondary);
-    }
-
-    .dispatch__shard {
-      font-size: var(--text-xs);
-      color: var(--color-primary);
-      opacity: 0.7;
-    }
-
-    .dispatch__timestamp {
-      font-size: var(--text-xs);
-      color: var(--color-text-muted);
-      margin-left: auto;
-    }
-
-    .dispatch__caption {
-      font-size: var(--text-xs);
-      color: var(--color-text-secondary);
-      line-height: 1.5;
-      max-height: 3em;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .dispatch__metrics {
-      display: flex;
-      gap: var(--space-3);
-      margin-top: var(--space-1);
-      font-size: var(--text-xs);
-    }
-
-    .metric {
-      display: flex;
-      align-items: center;
-      gap: 3px;
-      color: var(--color-text-muted);
-    }
-
-    .metric--accent { color: var(--color-primary); }
-
-    .dispatch__failure {
-      font-size: var(--text-xs);
-      color: var(--color-danger);
-      margin-top: var(--space-1);
-    }
+    /* ── Bluesky-specific: IG link in dispatch cards ── */
 
     .dispatch__ig-link {
       font-size: var(--text-xs);
@@ -386,137 +108,6 @@ export class VelgAdminBlueskyTab extends LitElement {
     .dispatch__ig-link a:hover {
       text-decoration: underline;
     }
-
-    .dispatch__actions {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-1);
-      flex-shrink: 0;
-    }
-
-    /* ── Badges ──────────────────────────────────────── */
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      font-family: var(--font-mono);
-      font-size: 10px;
-      font-weight: var(--font-bold);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      padding: 1px 6px;
-      border-radius: 3px;
-    }
-
-    .badge--info {
-      background: var(--color-info-bg);
-      color: var(--color-info);
-    }
-    .badge--success {
-      background: var(--color-success-bg);
-      color: var(--color-success);
-    }
-    .badge--warning {
-      background: color-mix(in srgb, var(--color-warning) 12%, transparent);
-      color: var(--color-warning);
-    }
-    .badge--danger {
-      background: color-mix(in srgb, var(--color-danger) 12%, transparent);
-      color: var(--color-danger);
-    }
-    .badge--muted {
-      background: color-mix(in srgb, var(--color-text-muted) 12%, transparent);
-      color: var(--color-text-muted);
-    }
-
-    /* ── Action Buttons ──────────────────────────────── */
-
-    .act {
-      font-family: var(--font-brutalist);
-      font-size: var(--text-xs);
-      font-weight: var(--font-bold);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      padding: var(--space-1) var(--space-2);
-      border: 1px solid var(--color-border);
-      border-radius: 3px;
-      background: none;
-      cursor: pointer;
-      text-align: center;
-      text-decoration: none;
-      transition: all 0.15s ease;
-      white-space: nowrap;
-    }
-
-    .act:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-
-    .act--skip {
-      color: var(--color-text-muted);
-    }
-    .act--skip:hover:not(:disabled) {
-      border-color: var(--color-text-muted);
-      background: color-mix(in srgb, var(--color-text-muted) 8%, transparent);
-    }
-
-    .act--unskip {
-      color: var(--color-info);
-    }
-    .act--unskip:hover:not(:disabled) {
-      border-color: var(--color-info);
-      background: color-mix(in srgb, var(--color-info) 8%, transparent);
-    }
-
-    .act--publish {
-      color: var(--color-success);
-    }
-    .act--publish:hover:not(:disabled) {
-      border-color: var(--color-success);
-      background: color-mix(in srgb, var(--color-success) 8%, transparent);
-    }
-
-    .act--link {
-      color: var(--color-primary);
-    }
-    .act--link:hover {
-      border-color: var(--color-primary);
-      background: color-mix(in srgb, var(--color-primary) 8%, transparent);
-    }
-
-    /* ── Intelligence Cards ──────────────────────────── */
-
-    .intel-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: var(--space-3);
-      margin-bottom: var(--space-5);
-    }
-
-    .intel-card {
-      padding: var(--space-3);
-      border: 1px solid var(--color-border);
-      border-radius: 4px;
-    }
-
-    .intel-card__label {
-      font-family: var(--font-brutalist);
-      font-size: var(--text-xs);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--color-text-muted);
-      margin-bottom: var(--space-1);
-    }
-
-    .intel-card__value {
-      font-size: var(--text-xl);
-      font-weight: var(--font-black);
-      color: var(--color-text-primary);
-    }
-
-    .intel-card__value--accent { color: var(--color-primary); }
 
     /* ── States ──────────────────────────────────────── */
 
@@ -660,6 +251,10 @@ export class VelgAdminBlueskyTab extends LitElement {
       display: flex;
       align-items: center;
     }
+
+    /* ── Bluesky intel value accent ── */
+
+    .intel-card__value--accent { color: var(--color-primary); }
 
     @media (max-width: 768px) {
       .dispatch {

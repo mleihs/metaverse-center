@@ -851,7 +851,7 @@ class InstagramImageComposer:
         if bureau_dispatch:
             bar_x = 56
             bar_top = y
-            font_body = _load_monospace_font(26)
+            font_body = _load_monospace_font(28)
             lines = bureau_dispatch[:500].split("\n")[:10]
             for line in lines:
                 wrapped = self._wrap_text(line, font_body, w - 160)
@@ -881,7 +881,7 @@ class InstagramImageComposer:
         self._text_with_glow(
             img, (60, closing_y),
             "The Substrate trembles. Reality bleeds.",
-            _load_monospace_font(32), (*accent, 220), (*accent, 60), glow_radius=6,
+            _load_monospace_font(36), (*accent, 220), (*accent, 60), glow_radius=6,
         )
 
         # Accent bars — width 10, double-line effect
@@ -953,7 +953,7 @@ class InstagramImageComposer:
         # ── Top Zone: Simulation Name + Magnitude ─────────────────────
         draw = ImageDraw.Draw(img)
         font_title = _load_bold_font(48)
-        font_md = _load_monospace_font(36)
+        font_mag = _load_monospace_font(40)
         font_sm = _load_monospace_font(28)
         font_event = _load_monospace_font(26)
 
@@ -989,7 +989,7 @@ class InstagramImageComposer:
         mag_text = f"{effective_magnitude:.2f}"
         draw.text(
             (bar_x + bar_w + 16, y - 6), mag_text,
-            fill=(255, 255, 255, 255), font=font_md,
+            fill=(255, 255, 255, 255), font=font_mag,
         )
         y += 48  # A: grid-aligned (2*24)
 
@@ -1005,7 +1005,7 @@ class InstagramImageComposer:
         # ── Portrait Strip ────────────────────────────────────────────
         portrait_images: list[tuple[PILImage, str]] = []
         if portraits:
-            portrait_size = 200
+            portrait_size = 220
             for p_data in portraits[:4]:
                 circle = self._crop_to_circle(
                     p_data["image_bytes"], portrait_size, sim_color, border_width=5,
@@ -1015,7 +1015,7 @@ class InstagramImageComposer:
 
         if portrait_images:
             total_size = portrait_images[0][0].width
-            gap = 40
+            gap = 28
             strip_w = len(portrait_images) * total_size + (len(portrait_images) - 1) * gap
             start_x = (w - strip_w) // 2
             portrait_y = y + 24  # A: grid-aligned (1*24)
@@ -1024,7 +1024,7 @@ class InstagramImageComposer:
                 px = start_x + i * (total_size + gap)
                 img.alpha_composite(p_img, (px, portrait_y))
                 # Agent name below portrait
-                name_font = _load_monospace_font(22)
+                name_font = _load_monospace_font(24)
                 draw = ImageDraw.Draw(img)
                 name_bbox = draw.textbbox((0, 0), p_name[:14], font=name_font)
                 name_w = name_bbox[2] - name_bbox[0]
@@ -1052,13 +1052,13 @@ class InstagramImageComposer:
 
         # ── Reaction Quotes ───────────────────────────────────────────
         if reactions:
-            font_quote = _load_italic_font(28)
-            font_attrib = _load_monospace_font(22)
+            font_quote = _load_italic_font(32)
+            font_attrib = _load_monospace_font(26)
 
             for rxn in reactions[:3]:
                 quote_text = rxn["text"][:150]
                 wrapped = self._wrap_text(quote_text, font_quote, w - 160)
-                card_h = len(wrapped) * 38 + 56
+                card_h = len(wrapped) * 42 + 64
                 card_y = y
 
                 # Semi-transparent dark card background with accent border
@@ -1077,7 +1077,7 @@ class InstagramImageComposer:
                         (72, text_y), wline,
                         fill=(220, 220, 220, 240), font=font_quote,
                     )
-                    text_y += 38
+                    text_y += 42
 
                 # Attribution
                 emotion_tag = f" [{rxn.get('emotion', '')}]" if rxn.get("emotion") else ""
@@ -1097,14 +1097,14 @@ class InstagramImageComposer:
         if narrative_closing:
             closing_y = max(y + 96, 1200)  # A: grid-aligned (4*24)
             closing_y = min(closing_y, STORY_CLOSING_MAX_Y)
-            font_closing = _load_italic_font(38)  # C6: larger font
+            font_closing = _load_italic_font(42)  # C6: larger font
             wrapped = self._wrap_text(narrative_closing[:160], font_closing, w - 140)
             draw = ImageDraw.Draw(img)
             for i, cline in enumerate(wrapped[:3]):
                 cbbox = draw.textbbox((0, 0), cline, font=font_closing)
                 ctw = cbbox[2] - cbbox[0]
                 self._text_with_glow(
-                    img, (w // 2 - ctw // 2, closing_y + i * 48), cline,
+                    img, (w // 2 - ctw // 2, closing_y + i * 52), cline,
                     font_closing, (*sim_color, 230), (*sim_color, 60), glow_radius=10,
                 )
 
@@ -1353,8 +1353,8 @@ class InstagramImageComposer:
         y += 192  # A: grid-aligned (8*24)
 
         # Large stat numbers (centered, dramatic) (C7: accent color stats)
-        font_stat = _load_bold_font(96)
-        font_label = _load_monospace_font(24)
+        font_stat = _load_bold_font(108)
+        font_label = _load_monospace_font(28)
 
         # Stats content panel (B: panel centered)
         stats_panel_y = y - 24  # A: grid-aligned

@@ -529,3 +529,611 @@ export const adminConfigGridStyles = css`
     }
   }
 `;
+
+/* ─── SCIF Toggle (square / brutalist variant) ───────────────────── */
+
+export const adminToggleSCIFStyles = css`
+  .toggle {
+    position: relative;
+    width: 44px;
+    height: 22px;
+    flex-shrink: 0;
+    cursor: pointer;
+    z-index: 1;
+  }
+
+  .toggle__input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+  }
+
+  .toggle__track {
+    position: absolute;
+    inset: 0;
+    background: color-mix(in srgb, var(--color-text-muted) 15%, var(--color-surface));
+    border: 1px solid var(--color-border);
+    transition: all 0.25s ease;
+  }
+
+  .toggle__track::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    background: var(--color-text-muted);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .toggle__input:checked + .toggle__track {
+    background: color-mix(in srgb, var(--color-primary) 20%, var(--color-surface));
+    border-color: var(--color-primary);
+  }
+
+  .toggle__input:checked + .toggle__track::after {
+    left: 24px;
+    background: var(--color-primary);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--color-primary) 40%, transparent);
+  }
+
+  .toggle:hover .toggle__track {
+    border-color: var(--color-text-muted);
+  }
+
+  .toggle__input:disabled + .toggle__track {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .toggle__input:focus-visible + .toggle__track {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+`;
+
+/* ─── Badges (status indicators) ─────────────────────────────────── */
+
+export const adminBadgeStyles = css`
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: var(--font-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 1px 6px;
+  }
+
+  .badge--info {
+    background: var(--color-info-bg);
+    color: var(--color-info);
+  }
+  .badge--success {
+    background: var(--color-success-bg);
+    color: var(--color-success);
+  }
+  .badge--warning {
+    background: color-mix(in srgb, var(--color-warning) 12%, transparent);
+    color: var(--color-warning);
+  }
+  .badge--danger {
+    background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+    color: var(--color-danger);
+  }
+  .badge--muted {
+    background: color-mix(in srgb, var(--color-text-muted) 12%, transparent);
+    color: var(--color-text-muted);
+  }
+`;
+
+/* ─── Action Buttons (.act) ──────────────────────────────────────── */
+
+export const adminActionStyles = css`
+  .act {
+    font-family: var(--font-brutalist);
+    font-size: var(--text-xs);
+    font-weight: var(--font-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: var(--space-1) var(--space-2);
+    border: 1px solid var(--color-border);
+    background: none;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+
+  .act:hover:not(:disabled) {
+    border-color: var(--color-text-muted);
+  }
+
+  .act:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  .act--approve {
+    color: var(--color-success);
+    border-color: color-mix(in srgb, var(--color-success) 40%, transparent);
+  }
+  .act--approve:hover:not(:disabled) {
+    background: var(--color-success-bg);
+    border-color: var(--color-success);
+  }
+
+  .act--reject {
+    color: var(--color-danger);
+    border-color: color-mix(in srgb, var(--color-danger) 40%, transparent);
+  }
+  .act--reject:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-danger) 10%, var(--color-surface));
+    border-color: var(--color-danger);
+  }
+
+  .act--publish {
+    color: var(--color-success);
+  }
+  .act--publish:hover:not(:disabled) {
+    border-color: var(--color-success);
+    background: color-mix(in srgb, var(--color-success) 8%, transparent);
+  }
+
+  .act--skip {
+    color: var(--color-text-muted);
+  }
+  .act--skip:hover:not(:disabled) {
+    border-color: var(--color-text-muted);
+    background: color-mix(in srgb, var(--color-text-muted) 8%, transparent);
+  }
+
+  .act--unskip {
+    color: var(--color-info);
+  }
+  .act--unskip:hover:not(:disabled) {
+    border-color: var(--color-info);
+    background: color-mix(in srgb, var(--color-info) 8%, transparent);
+  }
+
+  .act--link {
+    color: var(--color-primary);
+  }
+  .act--link:hover:not(:disabled) {
+    border-color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+  }
+`;
+
+/* ─── Tab Navigation ─────────────────────────────────────────────── */
+
+export const adminTabNavStyles = css`
+  .tab-bar {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: var(--space-5);
+  }
+
+  .tab {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1-5);
+    font-family: var(--font-brutalist);
+    font-weight: var(--font-bold);
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: var(--space-2) var(--space-4);
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    position: relative;
+    transition: color 0.15s ease;
+  }
+
+  .tab:hover { color: var(--color-text-primary); }
+
+  .tab--active {
+    color: var(--color-primary);
+  }
+
+  .tab--active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--color-primary);
+  }
+
+  .tab svg {
+    color: inherit;
+  }
+
+  .tab__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 3px;
+    font-size: 9px;
+    font-weight: var(--font-black);
+    background: var(--color-warning);
+    color: var(--color-surface-sunken);
+    border-radius: 8px;
+  }
+
+  .tab__badge--active {
+    background: var(--color-success-bg);
+    color: var(--color-success);
+    font-size: 7px;
+    letter-spacing: 0.05em;
+  }
+`;
+
+/* ─── Status Filter Bar ──────────────────────────────────────────── */
+
+export const adminStatusFilterStyles = css`
+  .status-bar {
+    display: flex;
+    gap: var(--space-1);
+    align-items: center;
+    margin-bottom: var(--space-4);
+    flex-wrap: wrap;
+  }
+
+  .status-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-family: var(--font-brutalist);
+    font-size: 9px;
+    font-weight: var(--font-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: var(--space-1) var(--space-3);
+    border: 1px solid transparent;
+    background: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .status-tab:hover {
+    color: var(--color-text-secondary);
+    background: color-mix(in srgb, var(--color-primary) 5%, transparent);
+  }
+
+  .status-tab--active {
+    color: var(--color-primary);
+    border-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
+    background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+  }
+
+  .status-tab__count {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    opacity: 0.6;
+  }
+
+  .queue-total {
+    margin-left: auto;
+    font-size: 9px;
+    color: var(--color-text-muted);
+  }
+`;
+
+/* ─── Connection Status Card ─────────────────────────────────────── */
+
+export const adminConnectionCardStyles = css`
+  .connection-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    margin-bottom: var(--space-5);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--color-surface) 60%, transparent);
+  }
+
+  .connection-card__indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .connection-card__indicator--ok {
+    background: var(--color-success);
+    box-shadow: 0 0 6px var(--color-success);
+  }
+
+  .connection-card__indicator--error {
+    background: var(--color-danger);
+    box-shadow: 0 0 6px var(--color-danger);
+  }
+
+  .connection-card__indicator--unconfigured {
+    background: var(--color-text-muted);
+  }
+
+  .connection-card__info { flex: 1; }
+
+  .connection-card__handle {
+    font-weight: var(--font-bold);
+    color: var(--color-text-primary);
+  }
+
+  .connection-card__detail,
+  .connection-card__pds {
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+
+  .connection-card__status {
+    font-size: var(--text-xs);
+    font-weight: var(--font-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .connection-card__status--ok { color: var(--color-success); }
+  .connection-card__status--error { color: var(--color-danger); }
+  .connection-card__status--unconfigured { color: var(--color-text-muted); }
+
+  .btn-test {
+    font-family: var(--font-brutalist);
+    font-size: var(--text-xs);
+    font-weight: var(--font-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: var(--space-1-5) var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: 3px;
+    background: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .btn-test:hover:not(:disabled) {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+
+  .btn-test:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+/* ─── Dispatch Queue Cards ───────────────────────────────────────── */
+
+export const adminDispatchStyles = css`
+  .dispatch-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .dispatch {
+    display: flex;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-left: 3px solid var(--color-border);
+    transition: border-color 0.2s ease;
+  }
+
+  .dispatch--draft { border-left-color: var(--color-info); }
+  .dispatch--scheduled { border-left-color: var(--color-warning); }
+  .dispatch--publishing { border-left-color: var(--color-warning); }
+  .dispatch--published { border-left-color: var(--color-success); }
+  .dispatch--failed { border-left-color: var(--color-danger); }
+  .dispatch--rejected { border-left-color: var(--color-danger); }
+  .dispatch--pending { border-left-color: var(--color-info); }
+  .dispatch--skipped { border-left-color: var(--color-text-muted); }
+
+  .dispatch__thumb {
+    width: 64px;
+    height: 80px;
+    flex-shrink: 0;
+    overflow: hidden;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+  }
+
+  .dispatch__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .dispatch__thumb--empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    color: var(--color-text-muted);
+  }
+
+  .dispatch__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .dispatch__header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+  }
+
+  .dispatch__type-tag {
+    font-family: var(--font-brutalist);
+    font-size: 8px;
+    font-weight: var(--font-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 1px var(--space-2);
+    background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+    color: var(--color-primary);
+  }
+
+  .dispatch__shard {
+    font-size: 9px;
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  .dispatch__timestamp {
+    font-size: 9px;
+    color: var(--color-text-muted);
+    margin-left: auto;
+  }
+
+  .dispatch__caption {
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--color-text-secondary);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+  }
+
+  .dispatch__tags {
+    display: flex;
+    gap: var(--space-1);
+    flex-wrap: wrap;
+  }
+
+  .dispatch__tag {
+    font-size: 9px;
+    color: var(--color-text-muted);
+  }
+
+  .dispatch__metrics {
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+    margin-top: var(--space-1);
+  }
+
+  .metric {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    color: var(--color-text-muted);
+  }
+
+  .metric--accent {
+    color: var(--color-primary);
+  }
+
+  .dispatch__failure {
+    font-size: 10px;
+    color: var(--color-danger);
+    margin-top: var(--space-1);
+  }
+
+  .dispatch__actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    align-self: center;
+    flex-shrink: 0;
+  }
+`;
+
+/* ─── Intel / Metric Card Grid ───────────────────────────────────── */
+
+export const adminMetricCardStyles = css`
+  .intel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: var(--space-3);
+    margin-bottom: var(--space-6);
+  }
+
+  .intel-card {
+    position: relative;
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+  }
+
+  .intel-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+  }
+
+  .intel-card__corner {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-style: solid;
+    opacity: 0.25;
+    z-index: 1;
+  }
+
+  .intel-card__corner--tl { top: 3px; left: 3px; border-width: 1px 0 0 1px; }
+  .intel-card__corner--br { bottom: 3px; right: 3px; border-width: 0 1px 1px 0; }
+
+  .intel-card__icon {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--space-1);
+    color: var(--color-text-muted);
+  }
+
+  .intel-card__label {
+    font-family: var(--font-brutalist);
+    font-size: 8px;
+    font-weight: var(--font-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-text-muted);
+    margin-bottom: 2px;
+  }
+
+  .intel-card__value {
+    font-family: var(--font-brutalist);
+    font-size: var(--text-xl);
+    font-weight: var(--font-black);
+    color: var(--color-text-primary);
+    line-height: 1;
+  }
+
+  .intel-card__value--unit {
+    font-size: 11px;
+    font-weight: var(--font-bold);
+    color: var(--color-text-muted);
+  }
+
+  .intel-card__sub {
+    font-size: 9px;
+    color: var(--color-text-muted);
+    margin-top: 2px;
+  }
+`;
