@@ -24,7 +24,7 @@ Instagram overlays its UI on the bottom ~250px. Content ending at Y=1200 is inte
 
 - **Base unit**: 24px. All vertical spacings are multiples of 24.
 - **Title Y**: 252 across ALL templates (consistent tap-through experience)
-- **Title panel Y**: 240, height 140px (2-line Detection) or 76px (single-line others)
+- **Title panel Y**: 240, height 160px (2-line Detection/Impact) or 96px (single-line others)
 - **Left margins**: panels x=48, text x=60, indented x=72
 - **Accent bars**: 10px primary + 2px secondary at alpha 80 (top and bottom)
 
@@ -32,21 +32,25 @@ Instagram overlays its UI on the bottom ~250px. Content ending at Y=1200 is inte
 
 | Element | Size | Font | Notes |
 |---------|------|------|-------|
-| Title (Detection 2-line) | 52px | bold | Accent color, glow + stroke |
-| Title (single-line) | 52px | bold | Accent color, glow + stroke |
-| Title (Impact sim name) | 48px | bold | Sim color, glow + stroke |
-| Body/info text | 36px | regular | With stroke on important elements |
-| Small labels | 28px | regular | Status text, event counts |
-| Dispatch/body text | 28px | regular | Classification dispatch |
-| Agent names | 24px | regular | Under portraits, with stroke |
-| Reaction quotes | 32px | italic | Inside dark cards |
-| Reaction attribution | 26px | regular | Accent color |
-| Closing lines | 42px | italic | Centered, glow + stroke |
-| Stat numbers | 108px | bold | Accent color, glow |
-| Stat labels | 28px | regular | Centered under numbers |
-| Classification badge | 24px | regular | In rounded rect badge |
-| Footer watermark | 18px | regular | Gray, bottom of canvas |
-| Magnitude value | 80px | bold | Centered in gauge |
+| Title (Detection 2-line) | 60px | bold | Accent color, glow + stroke |
+| Title (single-line) | 60px | bold | Accent color, glow + stroke |
+| Title (Impact sim name) | 56px | bold | Sim color, glow + stroke, 2-line |
+| Body/info text | 48px | regular | With stroke on important elements |
+| Small labels | 36px | regular | Status text, event counts |
+| Dispatch/body text | 36px | regular | Classification dispatch |
+| Agent names | 30px | regular | Under portraits, with stroke |
+| Reaction quotes | 52px | italic | 1 prominent quote in dark card |
+| Reaction attribution | 36px | regular | Accent color |
+| Closing lines | 52px | italic | Centered, glow + stroke |
+| Stat numbers | 140px | bold | Accent color, glow |
+| Stat labels | 36px | regular | Centered under numbers |
+| Classification badge | 28px | regular | In rounded rect badge |
+| Footer watermark | 20px | regular | Gray, bottom of canvas |
+| Magnitude value | 96px | bold | Centered in gauge |
+| Directive text | 44px | italic | Below gauge |
+| Threat assessment | 32px | regular | Accent color, centered |
+| CTA text | 56px | bold | Glow effect |
+| Effectiveness labels | 32px | regular | Column sub-labels |
 
 ## Pillow Techniques Used
 

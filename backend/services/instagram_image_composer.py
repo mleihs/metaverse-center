@@ -609,7 +609,7 @@ class InstagramImageComposer:
         accent: tuple[int, int, int],
     ) -> None:
         """Draw Bureau watermark footer for Stories."""
-        font_wm = _load_monospace_font(18)
+        font_wm = _load_monospace_font(20)
         draw.text(
             (60, STORY_FOOTER_Y),
             BUREAU_WATERMARK_TEXT,
@@ -665,7 +665,7 @@ class InstagramImageComposer:
         draw = ImageDraw.Draw(img)
 
         # Classification badge — rounded rectangle with text inside
-        font_stamp = _load_monospace_font(24)
+        font_stamp = _load_monospace_font(28)
         badge_text = "CLASSIFICATION: AMBER"
         badge_bbox = draw.textbbox((0, 0), badge_text, font=font_stamp)
         badge_tw = badge_bbox[2] - badge_bbox[0]
@@ -684,23 +684,23 @@ class InstagramImageComposer:
         # Title backdrop panel (tight around text, close to badge)
         title_panel_y = 240
         draw.rounded_rectangle(
-            [(48, title_panel_y), (w - 48, title_panel_y + 140)],
+            [(48, title_panel_y), (w - 48, title_panel_y + 160)],
             radius=12, fill=(0, 0, 0, 100),
         )
 
         # Title with glow — large and dramatic (C1: accent color title)
-        font_title = _load_bold_font(52)
+        font_title = _load_bold_font(60)
         y = 252
         self._text_with_glow(
             img, (60, y), "SUBSTRATE ANOMALY",
             font_title, (*accent, 255), (*accent, 100), glow_radius=14,
         )
-        y += 56
+        y += 64
         self._text_with_glow(
             img, (60, y), "DETECTED",
             font_title, (*accent, 255), (*accent, 100), glow_radius=14,
         )
-        y += 96  # A: grid-aligned (4*24)
+        y += 72  # Tighter post-title gap
 
         # Accent divider line (double-line effect)
         draw = ImageDraw.Draw(img)
@@ -709,37 +709,37 @@ class InstagramImageComposer:
         y += 48  # A: grid-aligned (2*24)
 
         # Signature + archetype info
-        font_md = _load_monospace_font(36)
-        sig_display = signature.upper().replace("_", " ")
+        font_md = _load_monospace_font(48)
+        sig_display = signature.upper().replace("_", " ")[:25]
         draw.text(
             (60, y), f"Signature: [{sig_display}]",
             fill=(200, 200, 200, 255), font=font_md,
             stroke_width=1, stroke_fill=(0, 0, 0, 120),
         )
-        y += 72  # A: grid-aligned (3*24)
+        y += 60
         draw.text(
             (60, y), f"Archetype: {archetype.upper()}",
             fill=(255, 255, 255, 255), font=font_md,
             stroke_width=1, stroke_fill=(0, 0, 0, 120),
         )
-        y += 60
+        y += 56
 
         # Archetype description (italic, accent-tinted) (C2: alpha 180)
         desc = ARCHETYPE_DESCRIPTIONS.get(archetype, "")
         if desc:
-            font_desc = _load_italic_font(28)
+            font_desc = _load_italic_font(36)
             desc_lines = self._wrap_text(desc, font_desc, w - 140)
             for dline in desc_lines[:3]:
                 draw.text((60, y), dline, fill=(*accent, 220), font=font_desc)
-                y += 38
-        y += 72  # A: grid-aligned (3*24) — more breathing room before gauge
+                y += 46
+        y += 48  # Tighter before gauge
 
         # Accent divider before gauge
         draw.line([(60, y), (w - 60, y)], fill=(*accent, 80), width=1)
-        y += 72  # A: grid-aligned (3*24)
+        y += 48
 
-        # Gauge — pushed to vertical center of canvas
-        gauge_cy = max(y + 200, 1000)  # Center gauge around Y=1000
+        # Gauge — centered in visible zone (Y=160-1200)
+        gauge_cy = max(y + 160, 940)
         draw.ellipse(
             [(w // 2 - 180, gauge_cy - 180), (w // 2 + 180, gauge_cy + 180)],
             fill=(0, 0, 0, 80),
@@ -749,7 +749,7 @@ class InstagramImageComposer:
         self._draw_magnitude_arc(draw, w // 2, gauge_cy, 160, 22, magnitude, accent)
 
         # Magnitude value in gauge center (account for font ascent/descent offset)
-        font_mag = _load_bold_font(88)
+        font_mag = _load_bold_font(96)
         mag_text = f"{magnitude:.2f}"
         bbox = draw.textbbox((0, 0), mag_text, font=font_mag)
         cx = w // 2 - (bbox[0] + bbox[2]) // 2
@@ -761,7 +761,7 @@ class InstagramImageComposer:
 
         # "MAGNITUDE" label below gauge
         draw = ImageDraw.Draw(img)
-        font_label = _load_monospace_font(24)
+        font_label = _load_monospace_font(28)
         mag_label = "MAGNITUDE"
         lbbox = draw.textbbox((0, 0), mag_label, font=font_label)
         lw = lbbox[2] - lbbox[0]
@@ -770,20 +770,20 @@ class InstagramImageComposer:
             fill=(120, 120, 120, 255), font=font_label,
         )
 
-        # Directive — lower third
-        font_directive = _load_italic_font(32)
+        # Directive — below gauge
+        font_directive = _load_italic_font(44)
         directive = "All operatives report to stations."
         dbbox = draw.textbbox((0, 0), directive, font=font_directive)
         dw = dbbox[2] - dbbox[0]
-        directive_y = gauge_cy + 336  # A: grid-aligned (14*24) below gauge center
+        directive_y = gauge_cy + 264  # Below gauge, tighter
         self._text_with_glow(
             img, (w // 2 - dw // 2, directive_y), directive,
             font_directive, (*accent, 200), (*accent, 60), glow_radius=6,
         )
 
         # Threat assessment label — additional bottom-third content
-        threat_y = directive_y + 120  # A: grid-aligned (5*24) below directive
-        font_threat = _load_monospace_font(22)
+        threat_y = directive_y + 96
+        font_threat = _load_monospace_font(32)
         level = "CATASTROPHIC" if magnitude >= 0.8 else "ELEVATED" if magnitude >= 0.5 else "MODERATE"
         threat_text = f"THREAT ASSESSMENT: {level}"
         tbbox = draw.textbbox((0, 0), threat_text, font=font_threat)
@@ -842,7 +842,7 @@ class InstagramImageComposer:
 
         # Faded Bureau seal watermark (centered, very transparent)
         draw = ImageDraw.Draw(img)
-        seal_font = _load_bold_font(24)
+        seal_font = _load_bold_font(28)
         seal_text = "BUREAU OF IMPOSSIBLE GEOGRAPHY"
         seal_bbox = draw.textbbox((0, 0), seal_text, font=seal_font)
         seal_w = seal_bbox[2] - seal_bbox[0]
@@ -861,75 +861,81 @@ class InstagramImageComposer:
         # Title backdrop panel (B: panel margin x=48)
         title_panel_y = 240
         draw.rounded_rectangle(
-            [(48, title_panel_y), (w - 48, title_panel_y + 76)],
+            [(48, title_panel_y), (w - 48, title_panel_y + 96)],
             radius=12, fill=(0, 0, 0, 100),
         )
 
         # Title with glow (C1: accent color title)
-        font_title = _load_bold_font(52)
+        font_title = _load_bold_font(60)
         y = 252
         self._text_with_glow(
             img, (60, y), "BUREAU CLASSIFICATION",
             font_title, (*accent, 255), (*accent, 80), glow_radius=8,
         )
-        y += 96  # A: grid-aligned (4*24)
+        y += 84  # Tighter post-title
 
         draw = ImageDraw.Draw(img)
-        font_sm = _load_monospace_font(28)
+        font_sm = _load_monospace_font(36)
         draw.line([(60, y), (w - 60, y)], fill=(*accent, 140), width=2)
         draw.line([(60, y + 4), (w - 60, y + 4)], fill=(*accent, 40), width=1)
         y += 48  # A: grid-aligned (2*24)
 
         # Classification fields content panel (B: panel margin x=48)
         fields_panel_y = y - 16
-        fields_panel_h = 320
+        fields_panel_h = 380
         draw.rounded_rectangle(
             [(48, fields_panel_y), (w - 48, fields_panel_y + fields_panel_h)],
             radius=12, fill=(0, 0, 0, 40),
         )
 
-        # Classification fields (A: 96px between fields for more breathing room)
-        font_md = _load_monospace_font(36)
+        # Classification fields — bigger fonts, tighter spacing
+        font_md = _load_monospace_font(48)
         category_display = source_category.upper().replace("_", " ")
         draw.text(
             (60, y), f"Source Category: [{category_display}]",
             fill=(200, 200, 200, 255), font=font_md,
             stroke_width=1, stroke_fill=(0, 0, 0, 100),
         )
-        y += 96  # A: grid-aligned (4*24)
+        y += 72
         draw.text(
             (60, y), f"Affected Shards: [{affected_shard_count}]",
             fill=(200, 200, 200, 255), font=font_md,
             stroke_width=1, stroke_fill=(0, 0, 0, 100),
         )
-        y += 96  # A: grid-aligned (4*24)
-        susc_text = f"Peak Susceptibility: {highest_susceptibility_sim}"
+        y += 72
         draw.text(
-            (60, y), susc_text[:55], fill=(255, 255, 255, 255), font=font_md,
+            (60, y), "Peak Susceptibility:",
+            fill=(255, 255, 255, 255), font=font_md,
             stroke_width=1, stroke_fill=(0, 0, 0, 100),
         )
-        y += 48  # A: grid-aligned (2*24)
+        y += 60
+        draw.text(
+            (72, y), f"{highest_susceptibility_sim[:28]}",
+            fill=(*accent, 240), font=font_md,
+            stroke_width=1, stroke_fill=(0, 0, 0, 100),
+        )
+        y += 48
         draw.text(
             (72, y), f"({highest_susceptibility_val:.1f}\u00d7 baseline)",
             fill=(*accent, 200), font=font_sm,
         )
-        y += 120  # A: grid-aligned (5*24)
+        y += 96
 
         # Accent divider between fields and dispatch
         draw.line([(60, y), (w - 60, y)], fill=(*accent, 80), width=1)
-        y += 72  # A: grid-aligned (3*24)
+        y += 48
 
         # Bureau dispatch text with left accent bar (wider bar + caps)
         if bureau_dispatch:
             bar_x = 56
             bar_top = y
-            font_body = _load_monospace_font(28)
+            font_body = _load_monospace_font(36)
             lines = bureau_dispatch[:500].split("\n")[:10]
             for line in lines:
                 wrapped = self._wrap_text(line, font_body, w - 160)
                 for wline in wrapped:
                     draw.text((72, y), wline, fill=(150, 150, 150, 255), font=font_body)
-                    y += 48  # A: grid-aligned (2*24)
+                    y += 56
             bar_bottom = y
             # Wider accent bar (6px) with horizontal caps
             draw.rectangle(
@@ -946,25 +952,32 @@ class InstagramImageComposer:
                 [(bar_x, bar_bottom + 4), (bar_x + 20, bar_bottom + 4)],
                 fill=(*accent, 140), width=2,
             )
-            y += 96  # A: grid-aligned (4*24)
+            y += 72
 
         # Accent divider before closing
         draw.line([(200, y), (w - 200, y)], fill=(*accent, 50), width=1)
-        y += 96  # A: grid-aligned (4*24)
+        y += 72
 
-        # Closing line — pushed to lower third
-        closing_y = max(y, 1350)
-        closing_y = min(closing_y, STORY_CLOSING_MAX_Y)
-        self._text_with_glow(
-            img, (60, closing_y),
-            "The Substrate trembles. Reality bleeds.",
-            _load_monospace_font(36), (*accent, 220), (*accent, 60), glow_radius=6,
+        # Closing line — in extended visible zone (Y=1100-1300)
+        closing_y = max(y, 1100)
+        closing_y = min(closing_y, 1300)
+        font_closing = _load_italic_font(44)
+        closing_lines = self._wrap_text(
+            "The Substrate trembles. Reality bleeds.", font_closing, w - 140,
         )
+        draw = ImageDraw.Draw(img)
+        for ci, cline in enumerate(closing_lines[:2]):
+            cbbox = draw.textbbox((0, 0), cline, font=font_closing)
+            ctw = cbbox[2] - cbbox[0]
+            self._text_with_glow(
+                img, (w // 2 - ctw // 2, closing_y + ci * 64), cline,
+                font_closing, (*accent, 220), (*accent, 60), glow_radius=8,
+            )
 
         # Filing reference — additional bottom content
-        filing_y = closing_y + 120  # A: grid-aligned (5*24)
+        filing_y = closing_y + len(closing_lines) * 64 + 24
         if filing_y < STORY_FOOTER_Y - 80:
-            font_filing = _load_monospace_font(20)
+            font_filing = _load_monospace_font(28)
             draw = ImageDraw.Draw(img)
             draw.text(
                 (60, filing_y), f"FILING: R-{archetype.upper().replace('THE ', '')}-CLASS",
@@ -1043,30 +1056,44 @@ class InstagramImageComposer:
 
         # ── Top Zone: Simulation Name + Magnitude ─────────────────────
         draw = ImageDraw.Draw(img)
-        font_title = _load_bold_font(48)
-        font_mag = _load_monospace_font(40)
-        font_sm = _load_monospace_font(28)
-        font_event = _load_monospace_font(26)
+        font_title = _load_bold_font(60)
+        font_mag = _load_monospace_font(48)
+        font_sm = _load_monospace_font(36)
+        font_event = _load_monospace_font(36)
 
-        # Title backdrop panel (B: panel margin x=48)
+        # Title backdrop panel — title + magnitude + bar in one block
         title_panel_y = 240
         draw.rounded_rectangle(
-            [(48, title_panel_y), (w - 48, title_panel_y + 76)],
+            [(48, title_panel_y), (w - 48, title_panel_y + 210)],
             radius=12, fill=(0, 0, 0, 100),
         )
 
-        # Simulation name with glow (C1 exception: uses sim_color, already correct)
-        y = 252
-        sim_display = f"SHARD IMPACT: [{simulation_name.upper()[:30]}]"
+        # "SHARD IMPACT:" top line
+        y = 256
         self._text_with_glow(
-            img, (60, y), sim_display,
+            img, (60, y), "SHARD IMPACT:",
             font_title, (*sim_color, 255), (*sim_color, 80), glow_radius=10,
         )
-        y += 72  # A: grid-aligned (3*24)
+        y += 64
 
-        # Thin magnitude bar
+        # Sim name left-aligned, magnitude right-aligned on same row
+        self._text_with_glow(
+            img, (60, y), f"[{simulation_name.upper()[:24]}]",
+            font_title, (*sim_color, 255), (*sim_color, 80), glow_radius=10,
+        )
         draw = ImageDraw.Draw(img)
-        bar_x, bar_w, bar_h = 60, 780, 14
+        mag_text = f"{effective_magnitude:.2f}"
+        mag_bbox = draw.textbbox((0, 0), mag_text, font=font_mag)
+        mag_tw = mag_bbox[2] - mag_bbox[0]
+        self._text_with_glow(
+            img, (w - 60 - mag_tw, y + 4), mag_text,
+            font_mag, (255, 255, 255, 255), (*sim_color, 80), glow_radius=8,
+        )
+        y += 84  # Breathing room before bar
+
+        # Full-width magnitude bar as panel footer
+        draw = ImageDraw.Draw(img)
+        bar_x, bar_w, bar_h = 60, w - 120, 12
         draw.rounded_rectangle(
             [(bar_x, y), (bar_x + bar_w, y + bar_h)],
             radius=4, fill=(40, 40, 40, 180),
@@ -1077,13 +1104,8 @@ class InstagramImageComposer:
                 [(bar_x, y), (bar_x + fill_w, y + bar_h)],
                 radius=4, fill=(*sim_color, 255),
             )
-        mag_text = f"{effective_magnitude:.2f}"
-        draw.text(
-            (bar_x + bar_w + 16, y - 6), mag_text,
-            fill=(255, 255, 255, 255), font=font_mag,
-            stroke_width=1, stroke_fill=(0, 0, 0, 120),
-        )
-        y += 48  # A: grid-aligned (2*24)
+        # Jump below panel bottom + breathing room
+        y = title_panel_y + 210 + 24
 
         # Event count + impact level
         impact_lvl = min(10, max(1, round(effective_magnitude * 10)))
@@ -1093,7 +1115,7 @@ class InstagramImageComposer:
             fill=(180, 180, 180, 255), font=font_sm,
             stroke_width=1, stroke_fill=(0, 0, 0, 120),
         )
-        y += 48  # A: grid-aligned (2*24)
+        y += 24  # Symmetric spacing below events line
 
         # ── Portrait Strip ────────────────────────────────────────────
         portrait_images: list[tuple[PILImage, str]] = []
@@ -1117,7 +1139,7 @@ class InstagramImageComposer:
                 px = start_x + i * (total_size + gap)
                 img.alpha_composite(p_img, (px, portrait_y))
                 # Agent name below portrait
-                name_font = _load_monospace_font(24)
+                name_font = _load_monospace_font(30)
                 draw = ImageDraw.Draw(img)
                 name_bbox = draw.textbbox((0, 0), p_name[:14], font=name_font)
                 name_w = name_bbox[2] - name_bbox[0]
@@ -1133,10 +1155,10 @@ class InstagramImageComposer:
             y += 24  # A: grid-aligned (1*24)
             for title in events_spawned[:5]:
                 draw.text(
-                    (72, y), f"\u25b8 {title[:55]}",
+                    (72, y), f"\u25b8 {title[:45]}",
                     fill=(220, 220, 220, 255), font=font_event,
                 )
-                y += 40
+                y += 48
             y += 24  # A: grid-aligned (1*24)
 
         # Section divider after portrait strip / event list
@@ -1144,15 +1166,15 @@ class InstagramImageComposer:
         draw.line([(60, y), (w - 60, y)], fill=(*sim_color, 80), width=1)
         y += 48  # A: grid-aligned (2*24)
 
-        # ── Reaction Quotes ───────────────────────────────────────────
+        # ── Reaction Quote (1 prominent quote, subordinate to closing) ─
         if reactions:
-            font_quote = _load_italic_font(32)
-            font_attrib = _load_monospace_font(26)
+            font_quote = _load_italic_font(44)
+            font_attrib = _load_monospace_font(36)
 
-            for rxn in reactions[:3]:
-                quote_text = rxn["text"][:150]
+            for rxn in reactions[:1]:
+                quote_text = rxn["text"][:100]
                 wrapped = self._wrap_text(quote_text, font_quote, w - 160)
-                card_h = len(wrapped) * 42 + 64
+                card_h = len(wrapped) * 56 + 96  # symmetric padding
                 card_y = y
 
                 # Semi-transparent dark card background with accent border
@@ -1164,41 +1186,41 @@ class InstagramImageComposer:
                     outline=(*sim_color, 80), width=2,
                 )
 
-                # Quote text
-                text_y = card_y + 12
+                # Quote text (20px top padding)
+                text_y = card_y + 20
                 for wline in wrapped:
                     draw.text(
                         (72, text_y), wline,
                         fill=(220, 220, 220, 240), font=font_quote,
                     )
-                    text_y += 42
+                    text_y += 56
 
-                # Attribution
+                # Attribution (8px gap after last line)
                 emotion_tag = f" [{rxn.get('emotion', '')}]" if rxn.get("emotion") else ""
                 attrib = f"\u2014 {rxn['agent_name']}{emotion_tag}"
                 draw.text(
-                    (72, text_y + 4), attrib,
+                    (72, text_y + 8), attrib,
                     fill=(*sim_color, 200), font=font_attrib,
                 )
 
-                y = card_y + card_h + 24  # A: grid-aligned (1*24)
+                y = card_y + card_h + 24
 
             # Section divider after reactions
             draw.line([(60, y), (w - 60, y)], fill=(*sim_color, 80), width=1)
             y += 48  # A: grid-aligned (2*24)
 
-        # ── Closing Line (centered, pushed to lower third) ──────────
+        # ── Closing Line (centered, in extended visible zone) ────────
         if narrative_closing:
-            closing_y = max(y + 96, 1320)  # A: grid-aligned — lower third
-            closing_y = min(closing_y, STORY_CLOSING_MAX_Y)
-            font_closing = _load_italic_font(42)  # C6: larger font
-            wrapped = self._wrap_text(narrative_closing[:160], font_closing, w - 140)
+            closing_y = max(y + 72, 1100)
+            closing_y = min(closing_y, 1300)
+            font_closing = _load_italic_font(52)
+            wrapped = self._wrap_text(narrative_closing[:120], font_closing, w - 140)
             draw = ImageDraw.Draw(img)
             for i, cline in enumerate(wrapped[:3]):
                 cbbox = draw.textbbox((0, 0), cline, font=font_closing)
                 ctw = cbbox[2] - cbbox[0]
                 self._text_with_glow(
-                    img, (w // 2 - ctw // 2, closing_y + i * 52), cline,
+                    img, (w // 2 - ctw // 2, closing_y + i * 64), cline,
                     font_closing, (*sim_color, 230), (*sim_color, 60), glow_radius=10,
                 )
 
@@ -1247,38 +1269,38 @@ class InstagramImageComposer:
         img = self._add_noise_grain(img, sigma=12, opacity=0.05)
 
         draw = ImageDraw.Draw(img)
-        font_md = _load_monospace_font(36)
-        font_sm = _load_monospace_font(28)
-        font_type = _load_bold_font(36)
-        font_symbol = _load_monospace_font(40)
+        font_md = _load_monospace_font(48)
+        font_sm = _load_monospace_font(36)
+        font_type = _load_bold_font(48)
+        font_symbol = _load_monospace_font(48)
 
         # Title backdrop panel (B: panel margin x=48)
         title_panel_y = 240
         draw.rounded_rectangle(
-            [(48, title_panel_y), (w - 48, title_panel_y + 76)],
+            [(48, title_panel_y), (w - 48, title_panel_y + 96)],
             radius=12, fill=(0, 0, 0, 100),
         )
 
         # Title with glow (C1: accent color title)
-        font_title = _load_bold_font(52)
+        font_title = _load_bold_font(60)
         y = 252
         self._text_with_glow(
             img, (60, y), "OPERATIVE ADVISORY",
             font_title, (*accent, 255), (*accent, 80), glow_radius=8,
         )
-        y += 96  # A: grid-aligned (4*24)
+        y += 84
 
         draw = ImageDraw.Draw(img)
         draw.line([(60, y), (w - 60, y)], fill=(*accent, 140), width=2)
         draw.line([(60, y + 4), (w - 60, y + 4)], fill=(*accent, 40), width=1)
-        y += 120  # A: grid-aligned (5*24)
+        y += 96
 
         draw.text(
             (60, y), f"Active Resonance: [{archetype.upper()}]",
             fill=(255, 255, 255, 255), font=font_md,
             stroke_width=1, stroke_fill=(0, 0, 0, 100),
         )
-        y += 168  # A: grid-aligned (7*24) — more space before columns
+        y += 120  # Tighter before columns
 
         # Two-column layout
         col_left_x = 80
@@ -1294,15 +1316,15 @@ class InstagramImageComposer:
             radius=12, fill=(0, 0, 0, 40),
         )
 
-        # ALIGNED column (A: 120px between items for more spread)
+        # ALIGNED column
         if aligned_types:
             draw.text(
                 (col_left_x, y), "ALIGNED",
                 fill=(*aligned_color, 255), font=font_type,
             )
             draw.text(
-                (col_left_x, y + 48), "+3% effectiveness",
-                fill=(*aligned_color, 160), font=_load_monospace_font(22),
+                (col_left_x, y + 56), "+3% effectiveness",
+                fill=(*aligned_color, 160), font=_load_monospace_font(32),
             )
             col_y = y + 96
             for op_type in aligned_types:
@@ -1318,15 +1340,15 @@ class InstagramImageComposer:
                 )
                 col_y += 120
 
-        # OPPOSED column (A: 120px between items)
+        # OPPOSED column
         if opposed_types:
             draw.text(
                 (col_right_x, y), "OPPOSED",
                 fill=(*opposed_color, 255), font=font_type,
             )
             draw.text(
-                (col_right_x, y + 48), "-2% effectiveness",
-                fill=(*opposed_color, 160), font=_load_monospace_font(22),
+                (col_right_x, y + 56), "-2% effectiveness",
+                fill=(*opposed_color, 160), font=_load_monospace_font(32),
             )
             col_y = y + 96
             for op_type in opposed_types:
@@ -1366,10 +1388,10 @@ class InstagramImageComposer:
         )
         y_bottom += 168  # A: grid-aligned (7*24)
 
-        # "Deploy accordingly." — pushed to lower third (Y~1350-1500)
-        cta_y = max(y_bottom, 1300)
-        cta_y = min(cta_y, 1550)
-        cta_font = _load_bold_font(48)
+        # "Deploy accordingly." — in visible zone (Y~1100-1300)
+        cta_y = max(y_bottom, 1100)
+        cta_y = min(cta_y, 1300)
+        cta_font = _load_bold_font(56)
         cta_text = "Deploy accordingly."
         cta_bbox = draw.textbbox((0, 0), cta_text, font=cta_font)
         cta_tw = cta_bbox[2] - cta_bbox[0]
@@ -1379,9 +1401,9 @@ class InstagramImageComposer:
         )
 
         # Status line below CTA
-        status_y = cta_y + 120  # A: grid-aligned (5*24)
+        status_y = cta_y + 96
         if status_y < STORY_FOOTER_Y - 60:
-            font_status = _load_monospace_font(20)
+            font_status = _load_monospace_font(28)
             status_text = f"ADVISORY CLASS: {archetype.upper().replace('THE ', '')}"
             sbbox = draw.textbbox((0, 0), status_text, font=font_status)
             sw = sbbox[2] - sbbox[0]
@@ -1444,47 +1466,47 @@ class InstagramImageComposer:
         # Title backdrop panel (B: panel margin x=48)
         title_panel_y = 240
         draw.rounded_rectangle(
-            [(48, title_panel_y), (w - 48, title_panel_y + 76)],
+            [(48, title_panel_y), (w - 48, title_panel_y + 96)],
             radius=12, fill=(0, 0, 0, 100),
         )
 
         # Title with faint glow (C1: accent color title)
-        font_title = _load_bold_font(52)
+        font_title = _load_bold_font(60)
         y = 252
         self._text_with_glow(
             img, (60, y), "SUBSTRATE STABILIZING",
             font_title, (*accent, 200), (*accent, 40), glow_radius=6,
         )
-        y += 96  # A: grid-aligned (4*24)
+        y += 84
 
         draw = ImageDraw.Draw(img)
-        font_sm = _load_monospace_font(28)
+        font_sm = _load_monospace_font(36)
         draw.line([(60, y), (w - 60, y)], fill=(*accent, 80), width=2)
         draw.line([(60, y + 4), (w - 60, y + 4)], fill=(*accent, 25), width=1)
         y += 120  # A: grid-aligned (5*24) — more breathing room
 
-        font_md = _load_monospace_font(36)
+        font_md = _load_monospace_font(48)
         draw.text(
             (60, y), f"[{archetype.upper()}] resonance subsiding.",
             fill=(180, 180, 180, 255), font=font_md,
             stroke_width=1, stroke_fill=(0, 0, 0, 100),
         )
-        y += 72  # A: grid-aligned (3*24)
+        y += 60
         draw.text(
             (60, y), "Residual effects at 50% magnitude.",
             fill=(120, 120, 120, 255), font=font_sm,
         )
-        y += 240  # A: grid-aligned (10*24) — push stats to vertical center
+        y += 168  # Push stats into visible zone
 
         # Large stat numbers (centered, dramatic) (C7: accent color stats)
-        font_stat = _load_bold_font(120)
-        font_label = _load_monospace_font(28)
+        font_stat = _load_bold_font(140)
+        font_label = _load_monospace_font(36)
 
         # Stats content panel (B: panel centered, wider)
-        stats_panel_y = y - 24  # A: grid-aligned
-        stats_panel_h = 600  # A: grid-aligned (25*24) — taller for more spread
+        stats_panel_y = y - 24
+        stats_panel_h = 580
         draw.rounded_rectangle(
-            [(w // 2 - 240, stats_panel_y), (w // 2 + 240, stats_panel_y + stats_panel_h)],
+            [(w // 2 - 280, stats_panel_y), (w // 2 + 280, stats_panel_y + stats_panel_h)],
             radius=12, fill=(0, 0, 0, 40),
         )
 
@@ -1502,10 +1524,10 @@ class InstagramImageComposer:
         lbbox = draw.textbbox((0, 0), label_text, font=font_label)
         lw = lbbox[2] - lbbox[0]
         draw.text(
-            (w // 2 - lw // 2, y + 125), label_text,
+            (w // 2 - lw // 2, y + 145), label_text,
             fill=(100, 100, 100, 255), font=font_label,
         )
-        y += 288  # A: grid-aligned (12*24)
+        y += 288
 
         # Shards affected (C7: stat numbers in accent color)
         shards_text = str(shards_affected)
@@ -1521,18 +1543,18 @@ class InstagramImageComposer:
         lbbox = draw.textbbox((0, 0), label_text, font=font_label)
         lw = lbbox[2] - lbbox[0]
         draw.text(
-            (w // 2 - lw // 2, y + 125), label_text,
+            (w // 2 - lw // 2, y + 145), label_text,
             fill=(100, 100, 100, 255), font=font_label,
         )
-        y += 312  # A: grid-aligned (13*24) — before closing
+        y += 264  # Tighter before closing
 
         # Faint horizontal divider between stats and closing
         draw.line([(200, y - 24), (w - 200, y - 24)], fill=(*accent, 50), width=1)
 
-        # Elegiac closing lines — pushed to lower third (around Y=1400-1500)
-        closing_y = max(y, 1380)
-        closing_y = min(closing_y, 1560)
-        font_closing = _load_italic_font(44)
+        # Elegiac closing lines — in extended visible zone (Y=1100-1300)
+        closing_y = max(y, 1100)
+        closing_y = min(closing_y, 1300)
+        font_closing = _load_italic_font(52)
         closing_1 = "The trembling fades."
         closing_2 = "The scars remain."
 
