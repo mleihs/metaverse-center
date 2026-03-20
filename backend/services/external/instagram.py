@@ -303,6 +303,30 @@ class InstagramService:
         })
         return result
 
+    # ── Media Management ────────────────────────────────────────────────
+
+    async def delete_media(self, media_id: str) -> bool:
+        """Delete a published media item (post, story, carousel).
+
+        Uses DELETE /{media_id} endpoint. Returns True if successful.
+        Stories auto-expire after 24h; this deletes them early.
+        """
+        url = f"{self.base_url}/{media_id}"
+        async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS) as client:
+            resp = await client.delete(
+                url,
+                params={"access_token": self.access_token},
+            )
+            self._check_response(resp)
+            result = resp.json()
+            success = result.get("success", False)
+            logger.info("Deleted Instagram media", extra={
+                "ig_user_id": self.ig_user_id,
+                "media_id": media_id,
+                "success": success,
+            })
+            return success
+
     # ── Insights ────────────────────────────────────────────────────────
 
     async def get_media_insights(self, media_id: str) -> dict[str, Any]:

@@ -11,6 +11,7 @@ Endpoints:
   POST /stories/{id}/unskip     — Re-enable a skipped story
   POST /stories/{id}/compose    — Force-compose story image
   POST /stories/{id}/publish    — Force-publish a single story
+  POST /stories/{id}/regenerate — Delete from IG, recompose, republish
   GET  /stories/settings        — Get resonance stories config
 """
 
@@ -330,6 +331,132 @@ async def force_publish(
         admin_supabase, None, user.id,
         "social_stories", story_id, "update",
         {"action": "force_publish"},
+    )
+
+    updated = (
+        admin_supabase.table("social_stories")
+        .select("*")
+        .eq("id", str(story_id))
+        .limit(1)
+        .execute()
+    )
+    return {"success": True, "data": updated.data[0]}
+
+
+# ── Regenerate ─────────────────────────────────────────────────────
+
+
+@router.post("/{story_id}/regenerate", response_model=SuccessResponse[SocialStoryResponse])
+@limiter.limit(RATE_LIMIT_EXTERNAL_API)
+async def regenerate_story(
+    request: Request,
+    story_id: UUID,
+    user: CurrentUser = Depends(require_platform_admin()),
+    admin_supabase: Client = Depends(get_admin_supabase),
+) -> dict:
+    """Delete published story from Instagram, recompose image, and republish.
+
+    Full pipeline: delete from IG → clear image → recompose → publish.
+    Works on any status — if the story has an ig_story_id, deletes it first.
+    """
+    logger.info("Admin regenerate story", extra={
+        "story_id": str(story_id),
+        "user_id": str(user.id),
+    })
+
+    # Get the story
+    resp = (
+        admin_supabase.table("social_stories")
+        .select("*")
+        .eq("id", str(story_id))
+        .limit(1)
+        .execute()
+    )
+    if not resp.data:
+        raise HTTPException(status_code=404, detail="Story not found.")
+    story = resp.data[0]
+
+    # Get Instagram credentials
+    config = await InstagramContentService.load_instagram_credentials(admin_supabase)
+    if not config["access_token"] or not config["ig_user_id"]:
+        raise HTTPException(status_code=400, detail="Instagram credentials not configured.")
+
+    ig = InstagramService(
+        access_token=config["access_token"],
+        ig_user_id=config["ig_user_id"],
+    )
+
+    # Step 1: Delete from Instagram if published
+    ig_story_id = story.get("ig_story_id")
+    if ig_story_id:
+        try:
+            await ig.delete_media(ig_story_id)
+            logger.info("Deleted story from Instagram", extra={
+                "story_id": str(story_id),
+                "ig_story_id": ig_story_id,
+            })
+        except Exception as exc:
+            # Story may have already expired (24h) — log but continue
+            logger.warning("Could not delete story from Instagram (may have expired)", extra={
+                "story_id": str(story_id),
+                "ig_story_id": ig_story_id,
+                "error": str(exc)[:200],
+            })
+
+    # Step 2: Reset status and clear old image reference
+    admin_supabase.table("social_stories").update({
+        "status": "pending",
+        "image_url": None,
+        "ig_story_id": None,
+        "ig_posted_at": None,
+        "published_at": None,
+        "failure_reason": None,
+    }).eq("id", str(story_id)).execute()
+
+    # Step 3: Recompose image with current template code
+    url = await SocialStoryService.compose_story_image(admin_supabase, story_id)
+    if not url:
+        raise HTTPException(status_code=500, detail="Image recomposition failed.")
+
+    # Step 4: Publish to Instagram
+    try:
+        from datetime import UTC, datetime
+
+        admin_supabase.table("social_stories").update(
+            {"status": "publishing"},
+        ).eq("id", str(story_id)).execute()
+
+        result = await ig.publish_story(url)
+        media_id = result.get("id", "")
+
+        admin_supabase.table("social_stories").update({
+            "status": "published",
+            "published_at": datetime.now(UTC).isoformat(),
+            "ig_story_id": media_id,
+            "ig_posted_at": datetime.now(UTC).isoformat(),
+        }).eq("id", str(story_id)).execute()
+
+    except Exception as exc:
+        logger.exception("Regenerate publish failed", extra={
+            "story_id": str(story_id),
+        })
+        admin_supabase.table("social_stories").update({
+            "status": "failed",
+            "failure_reason": f"Regenerate publish failed: {exc!s}"[:500],
+        }).eq("id", str(story_id)).execute()
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("instagram_phase", "regenerate_publish")
+            scope.set_context("story", {"story_id": str(story_id)})
+            sentry_sdk.capture_exception(exc)
+        raise HTTPException(
+            status_code=502,
+            detail=f"Recomposition succeeded but publish failed: {exc!s}"[:200],
+        ) from exc
+
+    await AuditService.safe_log(
+        admin_supabase, None, user.id,
+        "social_stories", story_id, "update",
+        {"action": "regenerate", "old_ig_story_id": ig_story_id},
     )
 
     updated = (
