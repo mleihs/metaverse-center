@@ -13,6 +13,7 @@ Platform settings: 9 keys prefixed ``resonance_stories_`` (migration 143).
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
@@ -563,24 +564,32 @@ class SocialStoryService:
         story: dict,
         accent_hex: str,
     ) -> bytes:
-        """Compose per-simulation impact report image."""
+        """Compose per-simulation cinematic impact report image.
+
+        Fetches simulation banner, agent portraits, and reaction quotes to
+        build a hero slide with blurred photo background, circular portraits,
+        and reaction cards. Falls back gracefully to text-only if assets are
+        unavailable.
+        """
         sim_id = story.get("simulation_id")
         eff_mag = float(story.get("effective_magnitude") or story.get("magnitude") or 0)
         resonance_id = story.get("resonance_id", "")
 
-        # Fetch simulation name and theme color
+        # Fetch simulation name, banner, and theme color
         sim_name = "Unknown Shard"
         sim_color = None
+        banner_url = None
         if sim_id:
             sim_resp = (
                 admin.table("simulations")
-                .select("name, slug")
+                .select("name, slug, banner_url")
                 .eq("id", sim_id)
                 .limit(1)
                 .execute()
             )
             if sim_resp.data:
                 sim_name = sim_resp.data[0]["name"]
+                banner_url = sim_resp.data[0].get("banner_url")
             # Fetch simulation design settings for color
             settings_resp = (
                 admin.table("simulation_settings")
@@ -593,7 +602,7 @@ class SocialStoryService:
             if settings_resp.data:
                 sim_color = str(settings_resp.data[0].get("setting_value", "")).strip('"')
 
-        # Fetch event titles
+        # Fetch spawned event IDs
         impact_resp = (
             admin.table("resonance_impacts")
             .select("spawned_event_ids")
@@ -613,6 +622,72 @@ class SocialStoryService:
             )
             event_titles = [e["title"] for e in (evt_resp.data or [])]
 
+        # Fetch agent reactions + portrait URLs for spawned events
+        portrait_candidates: list[dict] = []
+        reaction_data: list[dict] = []
+        if spawned_ids:
+            rxn_resp = (
+                admin.table("event_reactions")
+                .select(
+                    "agent_name, reaction_text, emotion, confidence_score,"
+                    " agent_id, agents(portrait_image_url)",
+                )
+                .in_("event_id", [str(eid) for eid in spawned_ids])
+                .order("confidence_score", desc=True)
+                .limit(12)
+                .execute()
+            )
+            # Deduplicate by agent — keep highest confidence per agent
+            seen_agents: set[str] = set()
+            for rxn in rxn_resp.data or []:
+                agent_id = rxn.get("agent_id", "")
+                if agent_id in seen_agents:
+                    continue
+                seen_agents.add(agent_id)
+
+                agent_data = rxn.get("agents") or {}
+                portrait_url = agent_data.get("portrait_image_url")
+                if portrait_url and len(portrait_candidates) < 4:
+                    portrait_candidates.append({
+                        "url": portrait_url,
+                        "agent_name": rxn["agent_name"],
+                    })
+                if len(reaction_data) < 3:
+                    reaction_data.append({
+                        "agent_name": rxn["agent_name"],
+                        "text": rxn["reaction_text"],
+                        "emotion": rxn.get("emotion"),
+                    })
+
+        # Download banner + portraits concurrently
+        urls_to_download: list[tuple[str, str]] = []
+        if banner_url:
+            urls_to_download.append(("banner", banner_url))
+        for i, p in enumerate(portrait_candidates):
+            urls_to_download.append((f"portrait_{i}", p["url"]))
+
+        downloaded: dict[str, bytes] = {}
+        if urls_to_download:
+            results = await asyncio.gather(
+                *[
+                    InstagramImageComposer._download_image_safe(url)
+                    for _, url in urls_to_download
+                ],
+            )
+            for (label, _), result in zip(urls_to_download, results, strict=True):
+                if result is not None:
+                    downloaded[label] = result
+
+        # Build portrait data with downloaded bytes
+        portraits: list[dict] = []
+        for i, p in enumerate(portrait_candidates):
+            img_bytes = downloaded.get(f"portrait_{i}")
+            if img_bytes:
+                portraits.append({
+                    "image_bytes": img_bytes,
+                    "agent_name": p["agent_name"],
+                })
+
         return composer.compose_story_impact(
             simulation_name=sim_name,
             effective_magnitude=eff_mag,
@@ -620,6 +695,9 @@ class SocialStoryService:
             narrative_closing=story.get("narrative_closing"),
             accent_hex=accent_hex,
             sim_color_hex=sim_color,
+            banner_bytes=downloaded.get("banner"),
+            portraits=portraits,
+            reactions=reaction_data,
         )
 
     @staticmethod

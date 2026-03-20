@@ -1,7 +1,7 @@
 # Bureau Social Media Presence — Feature Design Document
 
-> Version: 2.0 — 2026-03-20
-> Status: **Phase 1+2 LIVE on Instagram + Bluesky** / Phase 3 Planned / TikTok Planned
+> Version: 2.1 — 2026-03-20
+> Status: **Phase 1+2+3 LIVE on Instagram + Bluesky** / TikTok Planned
 
 ---
 
@@ -200,7 +200,7 @@ Full specification at `docs/specs/tiktok-integration.md`.
 
 ---
 
-## Resonance → Instagram Story Pipeline — IN PROGRESS (Phase 3)
+## Resonance → Instagram Story Pipeline — LIVE (Phase 3)
 
 ### Overview
 
@@ -212,23 +212,48 @@ When a substrate resonance impacts simulations, the system generates a sequence 
 |-----------|------|--------|
 | **Database** | `migrations/143_social_stories.sql` | DONE — `social_stories` table, indexes, RLS, 9 platform settings |
 | **Models** | `models/social_story.py` | DONE — Response models, archetype color map, operative alignment map |
-| **Story Service** | `services/social_story_service.py` | DONE — Sequence creation, image composition, 5-layer throttle system |
-| **Image Templates** | `services/instagram_image_composer.py` | DONE — 5 story templates (1080×1920): detection, classification, impact, advisory, subsiding |
+| **Story Service** | `services/social_story_service.py` | DONE — Sequence creation, cinematic image composition, 5-layer throttle, concurrent asset downloading |
+| **Cinematic Templates** | `services/instagram_image_composer.py` | DONE — 5 cinematic story templates (1080×1920): gradient backgrounds, archetype glyphs, circular magnitude gauges, portrait circles with glow rings, text glow effects, film grain, vignettes, reaction cards |
 | **Resonance Hook** | `services/resonance_service.py` | DONE — `process_impact()` calls `create_resonance_stories()`, `update_status()` calls `create_subsiding_story()` |
 | **Scheduler Extension** | `services/instagram_scheduler.py` | DONE — `_compose_pending_stories()` + `_process_due_stories()` in run loop |
-| **Admin UI** | — | TODO — Stories section in Social tab |
-| **AI closing lines** | — | TODO — Prompt template for poetic narrative closings |
+| **Admin UI** | `AdminInstagramTab.ts` | DONE — Stories section in Social tab: sequence accordion, status filters, compose/publish/skip actions |
+| **AI closing lines** | `GenerationService` | DONE — `story_closing_line` prompt template + `generate_story_closing_line()` |
 | **Story Highlights** | — | MANUAL — Instagram Stories API doesn't support Highlight management |
 
 ### Story Sequence
 
-Each resonance generates a narrative arc:
+Each resonance generates a cinematic narrative arc:
 
-1. **DETECTION** (posted immediately) — Military alert: archetype, signature, magnitude bar
-2. **CLASSIFICATION** (+15 min) — Bureaucratic document: source category, affected shards, susceptibility
-3. **IMPACT** (+30-45 min, one per high-impact simulation) — Per-shard report: events spawned, poetic closing
-4. **ADVISORY** (+60 min, epochs only) — Tactical briefing: aligned/opposed operative types
-5. **SUBSIDING** (on status transition) — Resolution: event count, elegiac closing
+1. **DETECTION** (posted immediately) — Emergency broadcast: gradient background (archetype color → black), large geometric archetype glyph, circular magnitude gauge, text glow, heavy scan lines + film grain + vignette
+2. **CLASSIFICATION** (+15 min) — Bureau dossier: paper-textured dark background, corner bracket framing, Bureau seal watermark, amber-accented dispatch text with left bar, classification markers
+3. **IMPACT** (+30-45 min, one per high-impact simulation) — Cinematic hero slide: simulation banner (darkened, blurred, full-bleed), circular agent portraits with glow rings, reaction quote cards on semi-transparent dark backgrounds, AI-generated poetic closing with text glow. Falls back to gradient+text when assets are unavailable
+4. **ADVISORY** (+60 min, epochs only) — Tactical briefing HUD: two-column layout with aligned (green ♜♞) and opposed (red ♝♛) operative types, chess piece symbols, accent-colored directive
+5. **SUBSIDING** (on status transition) — Elegiac resolution: near-black with faintest archetype hint, large centered stat numbers with glow, fading closing lines ("The trembling fades. The scars remain.")
+
+### Cinematic Template Architecture
+
+All story templates use RGBA compositing for proper alpha blending:
+
+| Visual Element | Implementation | Used In |
+|---------------|---------------|---------|
+| Gradient backgrounds | NumPy linear interpolation → RGBA | All slides |
+| Film grain | NumPy Gaussian noise overlay | All slides |
+| Vignette | NumPy radial distance → alpha mask | All slides |
+| Scan lines | RGBA overlay via `alpha_composite` | All slides |
+| Text glow | Cropped GaussianBlur layer + alpha composite | Titles, stats, closing lines |
+| Archetype glyphs | Pillow geometric primitives (8 unique shapes) | Detection |
+| Magnitude gauge | `draw.arc()` circular gauge | Detection |
+| Corner brackets | L-shaped line pairs at 4 corners | Classification |
+| Portrait circles | 4x supersampled mask + LANCZOS downscale + glow ring | Impact |
+| Reaction cards | `rounded_rectangle` with alpha fill + italic text | Impact |
+| Operative symbols | Unicode chess pieces (♜♞♝♛♚) | Advisory |
+
+**Asset pipeline for Impact (hero) slides:**
+1. Service fetches `banner_url` from `simulations` table
+2. Service fetches top reactions + agent portrait URLs from `event_reactions` JOIN `agents`
+3. All images downloaded concurrently via `asyncio.gather` + `_download_image_safe`
+4. Composer receives bytes — darkens/blurs banner, crops portraits to anti-aliased circles
+5. Graceful fallback: missing banner → gradient, missing portraits → event title list
 
 ### Throttle System (5 Layers)
 
@@ -348,7 +373,7 @@ Each post is visually tagged to its source simulation using the existing theming
 3. Add Bureau watermark (partially redacted seal text)
 4. Convert AVIF → JPEG at target dimensions, quality 90, max 8MB
 5. **Feed posts**: 1080×1350 (4:5 portrait)
-6. **Stories**: 1080×1920 (9:16 vertical) with scan lines, archetype color accents, glitch aesthetic
+6. **Stories**: 1080×1920 (9:16 vertical) cinematic templates — RGBA compositing with gradient backgrounds, archetype glyphs, film grain, vignettes, text glow, portrait circles with glow rings, reaction cards. Real simulation imagery (blurred banners, agent portraits) when available, graceful fallback to gradient-on-dark
 
 ---
 
@@ -429,6 +454,6 @@ Dashboard-generated tokens (IGAA prefix) are long-lived (60 days). The scheduler
 3. ~~Hashtag strategy overhaul~~ **DONE (2026-03-20)**
 4. ~~Instagram API domain fix~~ **DONE (2026-03-19)**
 5. **TikTok Developer App registration** — start NOW (critical path: 5-9 weeks)
-6. **Resonance → Story Pipeline** — Phase 3 backend DONE, admin UI + AI closings remaining
+6. ~~Resonance → Story Pipeline~~ **DONE (2026-03-20)** — Cinematic templates with real imagery, concurrent asset downloads, portrait circles, reaction cards
 7. **Content seeding sprint** — fill pipeline across simulations
 8. **IPTC/C2PA metadata** — EU AI Act compliance (deadline: August 2, 2026)
