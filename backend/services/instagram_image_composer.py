@@ -642,21 +642,21 @@ class InstagramImageComposer:
             badge_text, fill=(*accent, 255), font=font_stamp,
         )
 
-        # Title backdrop panel
-        title_panel_y = 296
+        # Title backdrop panel (tight around text, close to badge)
+        title_panel_y = 240
         draw.rounded_rectangle(
-            [(48, title_panel_y), (w - 48, title_panel_y + 170)],
-            radius=16, fill=(0, 0, 0, 100),
+            [(48, title_panel_y), (w - 48, title_panel_y + 140)],
+            radius=12, fill=(0, 0, 0, 100),
         )
 
         # Title with glow — large and dramatic (C1: accent color title)
         font_title = _load_bold_font(56)
-        y = 320
+        y = 252
         self._text_with_glow(
             img, (60, y), "SUBSTRATE ANOMALY",
             font_title, (*accent, 255), (*accent, 100), glow_radius=14,
         )
-        y += 72  # A: grid-aligned (3*24)
+        y += 56
         self._text_with_glow(
             img, (60, y), "DETECTED",
             font_title, (*accent, 255), (*accent, 100), glow_radius=14,
