@@ -45,11 +45,11 @@ CLASSIFICATION_LEVELS = ("PUBLIC", "AMBER", "RESTRICTED")
 
 # Story template layout constants
 STORY_HEADER_Y = 260       # Main content starts below top safe area
-STORY_FOOTER_Y = 1800      # Footer above bottom safe area
+STORY_FOOTER_Y = 1840      # Footer above bottom safe area
 STORY_LINE_HEIGHT = 48     # Line spacing for body text
 STORY_SCANLINE_ALPHA = 18  # Scan line overlay opacity (~7%)
 STORY_SAFE_TOP = 160       # Top safe area (notch/status bar)
-STORY_CLOSING_MIN_Y = 1400  # Earliest Y for poetic closing line
+STORY_CLOSING_MIN_Y = 1200  # Earliest Y for poetic closing line
 STORY_CLOSING_MAX_Y = 1680  # Latest Y (before footer)
 
 # Operative type symbols for advisory template
@@ -645,7 +645,7 @@ class InstagramImageComposer:
         # Title backdrop panel
         title_panel_y = 296
         draw.rounded_rectangle(
-            [(40, title_panel_y), (w - 40, title_panel_y + 200)],
+            [(40, title_panel_y), (w - 40, title_panel_y + 170)],
             radius=16, fill=(0, 0, 0, 100),
         )
 
@@ -656,7 +656,7 @@ class InstagramImageComposer:
             img, (60, y), "SUBSTRATE ANOMALY",
             font_title, (255, 255, 255, 255), (*accent, 100), glow_radius=14,
         )
-        y += 100
+        y += 70
         self._text_with_glow(
             img, (60, y), "DETECTED",
             font_title, (255, 255, 255, 255), (*accent, 100), glow_radius=14,
@@ -708,7 +708,7 @@ class InstagramImageComposer:
         self._draw_magnitude_arc(draw, w // 2, gauge_cy, 140, 20, magnitude, accent)
 
         # Magnitude value in gauge center
-        font_mag = _load_bold_font(64)
+        font_mag = _load_bold_font(80)
         mag_text = f"{magnitude:.2f}"
         bbox = draw.textbbox((0, 0), mag_text, font=font_mag)
         tw = bbox[2] - bbox[0]
@@ -718,14 +718,15 @@ class InstagramImageComposer:
             font_mag, (255, 255, 255, 255), (*accent, 80), glow_radius=8,
         )
 
-        # Directive — lower third (centered)
+        # Directive — lower third (centered, dynamic below gauge)
         draw = ImageDraw.Draw(img)
         font_directive = _load_italic_font(32)
         directive = "All operatives report to stations."
         dbbox = draw.textbbox((0, 0), directive, font=font_directive)
         dw = dbbox[2] - dbbox[0]
+        directive_y = max(gauge_cy + 280, 1200)
         self._text_with_glow(
-            img, (w // 2 - dw // 2, 1480), directive,
+            img, (w // 2 - dw // 2, directive_y), directive,
             font_directive, (*accent, 200), (*accent, 60), glow_radius=6,
         )
 
@@ -794,7 +795,7 @@ class InstagramImageComposer:
 
         # Title backdrop panel
         draw.rounded_rectangle(
-            [(40, y - 16), (w - 40, y + 80)],
+            [(40, y - 16), (w - 40, y + 50)],
             radius=16, fill=(0, 0, 0, 100),
         )
 
@@ -877,7 +878,7 @@ class InstagramImageComposer:
             y += 60
 
         # Closing line
-        closing_y = min(max(y + 80, 1400), STORY_CLOSING_MAX_Y)
+        closing_y = min(max(y + 80, STORY_CLOSING_MIN_Y), STORY_CLOSING_MAX_Y)
         self._text_with_glow(
             img, (60, closing_y),
             "The Substrate trembles. Reality bleeds.",
@@ -961,7 +962,7 @@ class InstagramImageComposer:
 
         # Title backdrop panel
         draw.rounded_rectangle(
-            [(40, y - 16), (w - 40, y + 80)],
+            [(40, y - 16), (w - 40, y + 50)],
             radius=16, fill=(0, 0, 0, 100),
         )
 
@@ -1095,7 +1096,7 @@ class InstagramImageComposer:
 
         # ── Closing Line (centered) ──────────────────────────────────
         if narrative_closing:
-            closing_y = max(y + 30, STORY_CLOSING_MIN_Y)
+            closing_y = max(y + 80, 1200)
             closing_y = min(closing_y, STORY_CLOSING_MAX_Y)
             font_closing = _load_italic_font(34)
             wrapped = self._wrap_text(narrative_closing[:160], font_closing, w - 140)
@@ -1165,7 +1166,7 @@ class InstagramImageComposer:
 
         # Title backdrop panel
         draw.rounded_rectangle(
-            [(40, y - 16), (w - 40, y + 80)],
+            [(40, y - 16), (w - 40, y + 50)],
             radius=16, fill=(0, 0, 0, 100),
         )
 
@@ -1268,7 +1269,7 @@ class InstagramImageComposer:
         y_bottom += 124
 
         # "Deploy accordingly." — centered, bigger, more dramatic glow
-        cta_y = min(max(y_bottom + 60, 1350), 1500)
+        cta_y = min(max(y_bottom + 60, 1100), 1500)
         cta_font = _load_bold_font(42)
         cta_text = "Deploy accordingly."
         cta_bbox = draw.textbbox((0, 0), cta_text, font=cta_font)
