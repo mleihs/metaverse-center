@@ -520,13 +520,13 @@ class InstagramImageComposer:
             total = size + border_width * 2
             result = Image.new("RGBA", (total, total), (0, 0, 0, 0))
 
-            # Soft glow ring
+            # Soft glow ring (brighter, wider blur)
             glow = Image.new("RGBA", (total, total), (0, 0, 0, 0))
             ImageDraw.Draw(glow).ellipse(
                 (0, 0, total - 1, total - 1),
-                outline=(*border_color, 160), width=border_width + 6,
+                outline=(*border_color, 200), width=border_width + 6,
             )
-            glow = glow.filter(ImageFilter.GaussianBlur(radius=6))
+            glow = glow.filter(ImageFilter.GaussianBlur(radius=10))
             result.alpha_composite(glow)
 
             # Crisp border ring
@@ -605,6 +605,8 @@ class InstagramImageComposer:
         """
         from PIL import ImageDraw
 
+        from backend.models.resonance import ARCHETYPE_DESCRIPTIONS
+
         accent = self._hex_to_rgb(accent_hex)
         w, h = IG_WIDTH, IG_HEIGHT_STORY
 
@@ -621,10 +623,31 @@ class InstagramImageComposer:
         # Heavy scan lines
         self._draw_scan_lines_rgba(img, accent, alpha=22)
 
-        # Classification stamp (top)
-        font_stamp = _load_monospace_font(22)
         draw = ImageDraw.Draw(img)
-        draw.text((60, STORY_SAFE_TOP), "CLASSIFICATION: AMBER", fill=(*accent, 180), font=font_stamp)
+
+        # Classification badge — rounded rectangle with text inside
+        font_stamp = _load_monospace_font(24)
+        badge_text = "CLASSIFICATION: AMBER"
+        badge_bbox = draw.textbbox((0, 0), badge_text, font=font_stamp)
+        badge_tw = badge_bbox[2] - badge_bbox[0]
+        badge_th = badge_bbox[3] - badge_bbox[1]
+        badge_pad_x, badge_pad_y = 16, 8
+        draw.rounded_rectangle(
+            [(56, STORY_SAFE_TOP - badge_pad_y),
+             (56 + badge_tw + badge_pad_x * 2, STORY_SAFE_TOP + badge_th + badge_pad_y)],
+            radius=8, fill=(*accent, 50),
+        )
+        draw.text(
+            (56 + badge_pad_x, STORY_SAFE_TOP),
+            badge_text, fill=(*accent, 255), font=font_stamp,
+        )
+
+        # Title backdrop panel
+        title_panel_y = 296
+        draw.rounded_rectangle(
+            [(40, title_panel_y), (w - 40, title_panel_y + 200)],
+            radius=16, fill=(0, 0, 0, 100),
+        )
 
         # Title with glow — large and dramatic
         font_title = _load_bold_font(56)
@@ -640,9 +663,10 @@ class InstagramImageComposer:
         )
         y += 90
 
-        # Separator line
+        # Accent divider line (double-line effect)
         draw = ImageDraw.Draw(img)
         draw.line([(60, y), (w - 60, y)], fill=(*accent, 120), width=2)
+        draw.line([(60, y + 4), (w - 60, y + 4)], fill=(*accent, 40), width=1)
         y += 50
 
         # Signature + archetype info
@@ -657,10 +681,30 @@ class InstagramImageComposer:
             (60, y), f"Archetype: {archetype.upper()}",
             fill=(255, 255, 255, 255), font=font_md,
         )
-        y += 160
+        y += 60
+
+        # Archetype description (italic, accent-tinted)
+        desc = ARCHETYPE_DESCRIPTIONS.get(archetype, "")
+        if desc:
+            font_desc = _load_italic_font(26)
+            desc_lines = self._wrap_text(desc, font_desc, w - 140)
+            for dline in desc_lines[:3]:
+                draw.text((60, y), dline, fill=(*accent, 150), font=font_desc)
+                y += 38
+        y += 60
+
+        # Accent divider before gauge
+        draw.line([(60, y), (w - 60, y)], fill=(*accent, 80), width=1)
+        y += 40
+
+        # Gauge backdrop — subtle dark circle behind magnitude gauge
+        gauge_cy = y + 180
+        draw.ellipse(
+            [(w // 2 - 160, gauge_cy - 160), (w // 2 + 160, gauge_cy + 160)],
+            fill=(0, 0, 0, 80),
+        )
 
         # Circular magnitude gauge — large, centered
-        gauge_cy = y + 180
         self._draw_magnitude_arc(draw, w // 2, gauge_cy, 140, 20, magnitude, accent)
 
         # Magnitude value in gauge center
@@ -674,7 +718,7 @@ class InstagramImageComposer:
             font_mag, (255, 255, 255, 255), (*accent, 80), glow_radius=8,
         )
 
-        # Directive — lower third
+        # Directive — lower third (centered)
         draw = ImageDraw.Draw(img)
         font_directive = _load_italic_font(32)
         directive = "All operatives report to stations."
@@ -689,10 +733,12 @@ class InstagramImageComposer:
         vignette = self._create_vignette(w, h, intensity=0.6)
         img.alpha_composite(vignette)
 
-        # Accent bars (top + bottom)
+        # Accent bars (top + bottom) — width 10, double-line effect
         draw = ImageDraw.Draw(img)
-        draw.rectangle([(0, 0), (w, 8)], fill=(*accent, 255))
-        draw.rectangle([(0, h - 8), (w, h)], fill=(*accent, 255))
+        draw.rectangle([(0, 0), (w, 10)], fill=(*accent, 255))
+        draw.rectangle([(0, 12), (w, 14)], fill=(*accent, 128))
+        draw.rectangle([(0, h - 10), (w, h)], fill=(*accent, 255))
+        draw.rectangle([(0, h - 14), (w, h - 12)], fill=(*accent, 128))
 
         # Bureau footer
         self._draw_story_footer(draw, accent)
@@ -740,11 +786,17 @@ class InstagramImageComposer:
         # Subtle scan lines (clinical document feel)
         self._draw_scan_lines_rgba(img, accent, alpha=10)
 
-        # Corner bracket frame around content area
+        # Corner bracket frame around content area — brighter brackets
         draw = ImageDraw.Draw(img)
-        self._draw_corner_brackets(draw, 40, 240, w - 80, h - 340, (*accent, 100), 60, 3)
+        self._draw_corner_brackets(draw, 40, 240, w - 80, h - 340, (*accent, 160), 60, 3)
 
         y = 300
+
+        # Title backdrop panel
+        draw.rounded_rectangle(
+            [(40, y - 16), (w - 40, y + 80)],
+            radius=16, fill=(0, 0, 0, 100),
+        )
 
         # Title with glow
         font_title = _load_bold_font(52)
@@ -757,8 +809,17 @@ class InstagramImageComposer:
         draw = ImageDraw.Draw(img)
         font_sm = _load_monospace_font(28)
         draw.line([(60, y), (w - 60, y)], fill=(*accent, 140), width=2)
+        draw.line([(60, y + 4), (w - 60, y + 4)], fill=(*accent, 40), width=1)
         y += 30
         y += 48
+
+        # Classification fields content panel
+        fields_panel_y = y - 16
+        fields_panel_h = 280
+        draw.rounded_rectangle(
+            [(44, fields_panel_y), (w - 44, fields_panel_y + fields_panel_h)],
+            radius=12, fill=(255, 255, 255, 10),
+        )
 
         # Classification fields
         font_md = _load_monospace_font(36)
@@ -782,7 +843,11 @@ class InstagramImageComposer:
         )
         y += 90
 
-        # Bureau dispatch text with left accent bar
+        # Accent divider between fields and dispatch
+        draw.line([(60, y), (w - 60, y)], fill=(*accent, 80), width=1)
+        y += 30
+
+        # Bureau dispatch text with left accent bar (wider bar + caps)
         if bureau_dispatch:
             bar_x = 56
             bar_top = y
@@ -794,9 +859,20 @@ class InstagramImageComposer:
                     draw.text((80, y), wline, fill=(150, 150, 150, 255), font=font_body)
                     y += 44
             bar_bottom = y
+            # Wider accent bar (6px) with horizontal caps
             draw.rectangle(
-                [(bar_x, bar_top - 4), (bar_x + 5, bar_bottom + 4)],
+                [(bar_x, bar_top - 4), (bar_x + 6, bar_bottom + 4)],
                 fill=(*accent, 180),
+            )
+            # Top cap
+            draw.line(
+                [(bar_x, bar_top - 4), (bar_x + 20, bar_top - 4)],
+                fill=(*accent, 140), width=2,
+            )
+            # Bottom cap
+            draw.line(
+                [(bar_x, bar_bottom + 4), (bar_x + 20, bar_bottom + 4)],
+                fill=(*accent, 140), width=2,
             )
             y += 60
 
@@ -808,10 +884,12 @@ class InstagramImageComposer:
             _load_monospace_font(32), (*accent, 220), (*accent, 60), glow_radius=6,
         )
 
-        # Accent bars
+        # Accent bars — width 10, double-line effect
         draw = ImageDraw.Draw(img)
-        draw.rectangle([(0, 0), (w, 8)], fill=(*accent, 255))
-        draw.rectangle([(0, h - 8), (w, h)], fill=(*accent, 255))
+        draw.rectangle([(0, 0), (w, 10)], fill=(*accent, 255))
+        draw.rectangle([(0, 12), (w, 14)], fill=(*accent, 128))
+        draw.rectangle([(0, h - 10), (w, h)], fill=(*accent, 255))
+        draw.rectangle([(0, h - 14), (w, h - 12)], fill=(*accent, 128))
 
         # Vignette (light)
         vignette = self._create_vignette(w, h, intensity=0.4)
@@ -880,6 +958,12 @@ class InstagramImageComposer:
         font_event = _load_monospace_font(26)
 
         y = 180
+
+        # Title backdrop panel
+        draw.rounded_rectangle(
+            [(40, y - 16), (w - 40, y + 80)],
+            radius=16, fill=(0, 0, 0, 100),
+        )
 
         # Simulation name with glow
         sim_display = f"SHARD IMPACT: [{simulation_name.upper()[:30]}]"
@@ -961,6 +1045,11 @@ class InstagramImageComposer:
                 y += 40
             y += 30
 
+        # Section divider after portrait strip / event list
+        draw = ImageDraw.Draw(img)
+        draw.line([(60, y), (w - 60, y)], fill=(*sim_color, 80), width=1)
+        y += 10
+
         # ── Reaction Quotes ───────────────────────────────────────────
         if reactions:
             font_quote = _load_italic_font(28)
@@ -973,11 +1062,12 @@ class InstagramImageComposer:
                 card_h = len(wrapped) * 38 + 56
                 card_y = y
 
-                # Semi-transparent dark card background
+                # Semi-transparent dark card background with accent border
                 draw = ImageDraw.Draw(img)
                 draw.rounded_rectangle(
                     [(50, card_y), (w - 50, card_y + card_h)],
                     radius=8, fill=(0, 0, 0, 140),
+                    outline=(*sim_color, 80), width=1,
                 )
 
                 # Quote text
@@ -999,15 +1089,22 @@ class InstagramImageComposer:
 
                 y = card_y + card_h + 24
 
-        # ── Closing Line ──────────────────────────────────────────────
+            # Section divider after reactions
+            draw.line([(60, y), (w - 60, y)], fill=(*sim_color, 80), width=1)
+            y += 10
+
+        # ── Closing Line (centered) ──────────────────────────────────
         if narrative_closing:
             closing_y = max(y + 30, STORY_CLOSING_MIN_Y)
             closing_y = min(closing_y, STORY_CLOSING_MAX_Y)
             font_closing = _load_italic_font(34)
             wrapped = self._wrap_text(narrative_closing[:160], font_closing, w - 140)
+            draw = ImageDraw.Draw(img)
             for i, cline in enumerate(wrapped[:3]):
+                cbbox = draw.textbbox((0, 0), cline, font=font_closing)
+                ctw = cbbox[2] - cbbox[0]
                 self._text_with_glow(
-                    img, (70, closing_y + i * 50), cline,
+                    img, (w // 2 - ctw // 2, closing_y + i * 50), cline,
                     font_closing, (*sim_color, 230), (*sim_color, 60), glow_radius=10,
                 )
 
@@ -1015,9 +1112,12 @@ class InstagramImageComposer:
         vignette = self._create_vignette(w, h, intensity=0.5)
         img.alpha_composite(vignette)
 
+        # Accent bars — width 10, double-line effect
         draw = ImageDraw.Draw(img)
-        draw.rectangle([(0, 0), (w, 8)], fill=(*sim_color, 255))
-        draw.rectangle([(0, h - 8), (w, h)], fill=(*sim_color, 255))
+        draw.rectangle([(0, 0), (w, 10)], fill=(*sim_color, 255))
+        draw.rectangle([(0, 12), (w, 14)], fill=(*sim_color, 128))
+        draw.rectangle([(0, h - 10), (w, h)], fill=(*sim_color, 255))
+        draw.rectangle([(0, h - 14), (w, h - 12)], fill=(*sim_color, 128))
 
         self._draw_story_footer(draw, sim_color)
 
@@ -1063,6 +1163,12 @@ class InstagramImageComposer:
 
         y = 320
 
+        # Title backdrop panel
+        draw.rounded_rectangle(
+            [(40, y - 16), (w - 40, y + 80)],
+            radius=16, fill=(0, 0, 0, 100),
+        )
+
         # Title with glow
         font_title = _load_bold_font(52)
         self._text_with_glow(
@@ -1073,6 +1179,7 @@ class InstagramImageComposer:
 
         draw = ImageDraw.Draw(img)
         draw.line([(60, y), (w - 60, y)], fill=(*accent, 140), width=2)
+        draw.line([(60, y + 4), (w - 60, y + 4)], fill=(*accent, 40), width=1)
         y += 110
 
         draw.text(
@@ -1086,6 +1193,14 @@ class InstagramImageComposer:
         col_right_x = w // 2 + 60
         aligned_color = (80, 220, 120)
         opposed_color = (220, 80, 80)
+
+        # Columns content panel
+        max_types = max(len(aligned_types), len(opposed_types), 1)
+        columns_panel_h = 100 + max_types * 100 + 40
+        draw.rounded_rectangle(
+            [(44, y - 16), (w - 44, y + columns_panel_h)],
+            radius=12, fill=(255, 255, 255, 8),
+        )
 
         # ALIGNED column
         if aligned_types:
@@ -1134,8 +1249,12 @@ class InstagramImageComposer:
                 col_y += 100
 
         # Zone pressure
-        max_types = max(len(aligned_types), len(opposed_types), 1)
-        y_bottom = y + 100 + max_types * 100 + 136
+        y_bottom = y + columns_panel_h + 36
+
+        # Horizontal accent divider between columns and zone text
+        draw.line([(60, y_bottom), (w - 60, y_bottom)], fill=(*accent, 80), width=1)
+        y_bottom += 30
+
         if zone_name:
             draw.text(
                 (60, y_bottom), f"Zone pressure elevated in {zone_name}.",
@@ -1148,21 +1267,27 @@ class InstagramImageComposer:
         )
         y_bottom += 124
 
-        # Call to action with glow
+        # "Deploy accordingly." — centered, bigger, more dramatic glow
         cta_y = min(max(y_bottom + 60, 1350), 1500)
+        cta_font = _load_bold_font(42)
+        cta_text = "Deploy accordingly."
+        cta_bbox = draw.textbbox((0, 0), cta_text, font=cta_font)
+        cta_tw = cta_bbox[2] - cta_bbox[0]
         self._text_with_glow(
-            img, (60, cta_y), "Deploy accordingly.",
-            _load_bold_font(42), (*accent, 255), (*accent, 80), glow_radius=8,
+            img, (w // 2 - cta_tw // 2, cta_y), cta_text,
+            cta_font, (*accent, 255), (*accent, 80), glow_radius=12,
         )
 
         # Vignette
         vignette = self._create_vignette(w, h, intensity=0.4)
         img.alpha_composite(vignette)
 
-        # Accent bars
+        # Accent bars — width 10, double-line effect
         draw = ImageDraw.Draw(img)
-        draw.rectangle([(0, 0), (w, 8)], fill=(*accent, 255))
-        draw.rectangle([(0, h - 8), (w, h)], fill=(*accent, 255))
+        draw.rectangle([(0, 0), (w, 10)], fill=(*accent, 255))
+        draw.rectangle([(0, 12), (w, 14)], fill=(*accent, 128))
+        draw.rectangle([(0, h - 10), (w, h)], fill=(*accent, 255))
+        draw.rectangle([(0, h - 14), (w, h - 12)], fill=(*accent, 128))
 
         self._draw_story_footer(draw, accent)
 
@@ -1209,6 +1334,7 @@ class InstagramImageComposer:
         draw = ImageDraw.Draw(img)
         font_sm = _load_monospace_font(28)
         draw.line([(60, y), (w - 60, y)], fill=(*accent, 80), width=2)
+        draw.line([(60, y + 4), (w - 60, y + 4)], fill=(*accent, 25), width=1)
         y += 90
 
         font_md = _load_monospace_font(36)
@@ -1226,6 +1352,14 @@ class InstagramImageComposer:
         # Large stat numbers (centered, dramatic)
         font_stat = _load_bold_font(96)
         font_label = _load_monospace_font(24)
+
+        # Stats content panel
+        stats_panel_y = y - 30
+        stats_panel_h = 500
+        draw.rounded_rectangle(
+            [(w // 2 - 200, stats_panel_y), (w // 2 + 200, stats_panel_y + stats_panel_h)],
+            radius=12, fill=(255, 255, 255, 8),
+        )
 
         # Events spawned
         events_text = str(events_spawned_total)
@@ -1265,7 +1399,10 @@ class InstagramImageComposer:
         )
         y += 260
 
-        # Elegiac closing lines (fading opacity)
+        # Faint horizontal divider between stats and closing
+        draw.line([(60, y - 20), (w - 60, y - 20)], fill=(*accent, 50), width=1)
+
+        # Elegiac closing lines (fading opacity, centered)
         font_closing = _load_italic_font(40)
         closing_1 = "The trembling fades."
         closing_2 = "The scars remain."
@@ -1289,10 +1426,12 @@ class InstagramImageComposer:
         vignette = self._create_vignette(w, h, intensity=0.35)
         img.alpha_composite(vignette)
 
-        # Faint accent bars
+        # Accent bars — width 10, double-line effect
         draw = ImageDraw.Draw(img)
-        draw.rectangle([(0, 0), (w, 6)], fill=(*accent, 80))
-        draw.rectangle([(0, h - 6), (w, h)], fill=(*accent, 80))
+        draw.rectangle([(0, 0), (w, 10)], fill=(*accent, 80))
+        draw.rectangle([(0, 12), (w, 14)], fill=(*accent, 40))
+        draw.rectangle([(0, h - 10), (w, h)], fill=(*accent, 80))
+        draw.rectangle([(0, h - 14), (w, h - 12)], fill=(*accent, 40))
 
         self._draw_story_footer(draw, accent)
 
