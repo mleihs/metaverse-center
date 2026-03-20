@@ -818,7 +818,7 @@ class InstagramImageComposer:
         fields_panel_h = 280
         draw.rounded_rectangle(
             [(48, fields_panel_y), (w - 48, fields_panel_y + fields_panel_h)],
-            radius=12, fill=(255, 255, 255, 10),
+            radius=12, fill=(0, 0, 0, 40),
         )
 
         # Classification fields (A: 72px between fields)
@@ -1195,7 +1195,7 @@ class InstagramImageComposer:
         columns_panel_h = 96 + max_types * 96 + 48  # A: grid-aligned internals
         draw.rounded_rectangle(
             [(48, y - 16), (w - 48, y + columns_panel_h)],
-            radius=12, fill=(255, 255, 255, 8),
+            radius=12, fill=(0, 0, 0, 40),
         )
 
         # ALIGNED column (A: headers to items 96, between items 96)
@@ -1354,7 +1354,7 @@ class InstagramImageComposer:
         stats_panel_h = 504  # A: grid-aligned (21*24)
         draw.rounded_rectangle(
             [(w // 2 - 200, stats_panel_y), (w // 2 + 200, stats_panel_y + stats_panel_h)],
-            radius=12, fill=(255, 255, 255, 8),
+            radius=12, fill=(0, 0, 0, 40),
         )
 
         # Events spawned (C7: stat numbers in accent color)
