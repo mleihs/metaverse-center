@@ -650,7 +650,7 @@ class InstagramImageComposer:
         )
 
         # Title with glow — large and dramatic (C1: accent color title)
-        font_title = _load_bold_font(56)
+        font_title = _load_bold_font(52)
         y = 252
         self._text_with_glow(
             img, (60, y), "SUBSTRATE ANOMALY",
@@ -737,9 +737,9 @@ class InstagramImageComposer:
         # Accent bars (top + bottom) — width 10, double-line effect
         draw = ImageDraw.Draw(img)
         draw.rectangle([(0, 0), (w, 10)], fill=(*accent, 255))
-        draw.rectangle([(0, 12), (w, 14)], fill=(*accent, 128))
+        draw.rectangle([(0, 12), (w, 14)], fill=(*accent, 80))
         draw.rectangle([(0, h - 10), (w, h)], fill=(*accent, 255))
-        draw.rectangle([(0, h - 14), (w, h - 12)], fill=(*accent, 128))
+        draw.rectangle([(0, h - 14), (w, h - 12)], fill=(*accent, 80))
 
         # Bureau footer
         self._draw_story_footer(draw, accent)
@@ -791,16 +791,16 @@ class InstagramImageComposer:
         draw = ImageDraw.Draw(img)
         self._draw_corner_brackets(draw, 48, 240, w - 96, h - 340, (*accent, 160), 60, 3)
 
-        y = 300
-
         # Title backdrop panel (B: panel margin x=48)
+        title_panel_y = 240
         draw.rounded_rectangle(
-            [(48, y - 16), (w - 48, y + 50)],
+            [(48, title_panel_y), (w - 48, title_panel_y + 140)],
             radius=16, fill=(0, 0, 0, 100),
         )
 
         # Title with glow (C1: accent color title)
         font_title = _load_bold_font(52)
+        y = 252
         self._text_with_glow(
             img, (60, y), "BUREAU CLASSIFICATION",
             font_title, (*accent, 255), (*accent, 80), glow_radius=8,
@@ -887,9 +887,9 @@ class InstagramImageComposer:
         # Accent bars — width 10, double-line effect
         draw = ImageDraw.Draw(img)
         draw.rectangle([(0, 0), (w, 10)], fill=(*accent, 255))
-        draw.rectangle([(0, 12), (w, 14)], fill=(*accent, 128))
+        draw.rectangle([(0, 12), (w, 14)], fill=(*accent, 80))
         draw.rectangle([(0, h - 10), (w, h)], fill=(*accent, 255))
-        draw.rectangle([(0, h - 14), (w, h - 12)], fill=(*accent, 128))
+        draw.rectangle([(0, h - 14), (w, h - 12)], fill=(*accent, 80))
 
         # Vignette (light)
         vignette = self._create_vignette(w, h, intensity=0.4)
@@ -957,15 +957,15 @@ class InstagramImageComposer:
         font_sm = _load_monospace_font(28)
         font_event = _load_monospace_font(26)
 
-        y = 180
-
         # Title backdrop panel (B: panel margin x=48)
+        title_panel_y = 240
         draw.rounded_rectangle(
-            [(48, y - 16), (w - 48, y + 50)],
+            [(48, title_panel_y), (w - 48, title_panel_y + 140)],
             radius=16, fill=(0, 0, 0, 100),
         )
 
         # Simulation name with glow (C1 exception: uses sim_color, already correct)
+        y = 252
         sim_display = f"SHARD IMPACT: [{simulation_name.upper()[:30]}]"
         self._text_with_glow(
             img, (60, y), sim_display,
@@ -1039,7 +1039,7 @@ class InstagramImageComposer:
             y += 24  # A: grid-aligned (1*24)
             for title in events_spawned[:5]:
                 draw.text(
-                    (80, y), f"\u25b8 {title[:55]}",
+                    (72, y), f"\u25b8 {title[:55]}",
                     fill=(220, 220, 220, 255), font=font_event,
                 )
                 y += 40
@@ -1115,9 +1115,9 @@ class InstagramImageComposer:
         # Accent bars — width 10, double-line effect
         draw = ImageDraw.Draw(img)
         draw.rectangle([(0, 0), (w, 10)], fill=(*sim_color, 255))
-        draw.rectangle([(0, 12), (w, 14)], fill=(*sim_color, 128))
+        draw.rectangle([(0, 12), (w, 14)], fill=(*sim_color, 80))
         draw.rectangle([(0, h - 10), (w, h)], fill=(*sim_color, 255))
-        draw.rectangle([(0, h - 14), (w, h - 12)], fill=(*sim_color, 128))
+        draw.rectangle([(0, h - 14), (w, h - 12)], fill=(*sim_color, 80))
 
         self._draw_story_footer(draw, sim_color)
 
@@ -1157,16 +1157,16 @@ class InstagramImageComposer:
         font_type = _load_bold_font(36)
         font_symbol = _load_monospace_font(40)
 
-        y = 320
-
         # Title backdrop panel (B: panel margin x=48)
+        title_panel_y = 240
         draw.rounded_rectangle(
-            [(48, y - 16), (w - 48, y + 50)],
+            [(48, title_panel_y), (w - 48, title_panel_y + 140)],
             radius=16, fill=(0, 0, 0, 100),
         )
 
         # Title with glow (C1: accent color title)
         font_title = _load_bold_font(52)
+        y = 252
         self._text_with_glow(
             img, (60, y), "OPERATIVE ADVISORY",
             font_title, (*accent, 255), (*accent, 80), glow_radius=8,
@@ -1281,9 +1281,9 @@ class InstagramImageComposer:
         # Accent bars — width 10, double-line effect
         draw = ImageDraw.Draw(img)
         draw.rectangle([(0, 0), (w, 10)], fill=(*accent, 255))
-        draw.rectangle([(0, 12), (w, 14)], fill=(*accent, 128))
+        draw.rectangle([(0, 12), (w, 14)], fill=(*accent, 80))
         draw.rectangle([(0, h - 10), (w, h)], fill=(*accent, 255))
-        draw.rectangle([(0, h - 14), (w, h - 12)], fill=(*accent, 128))
+        draw.rectangle([(0, h - 14), (w, h - 12)], fill=(*accent, 80))
 
         self._draw_story_footer(draw, accent)
 
@@ -1317,10 +1317,17 @@ class InstagramImageComposer:
         img = self._add_noise_grain(img, sigma=10, opacity=0.03)
 
         draw = ImageDraw.Draw(img)
-        y = STORY_HEADER_Y + 120
+
+        # Title backdrop panel (B: panel margin x=48)
+        title_panel_y = 240
+        draw.rounded_rectangle(
+            [(48, title_panel_y), (w - 48, title_panel_y + 140)],
+            radius=16, fill=(0, 0, 0, 100),
+        )
 
         # Title with faint glow (C1: accent color title)
         font_title = _load_bold_font(52)
+        y = 252
         self._text_with_glow(
             img, (60, y), "SUBSTRATE STABILIZING",
             font_title, (*accent, 200), (*accent, 40), glow_radius=6,
@@ -1424,10 +1431,10 @@ class InstagramImageComposer:
 
         # Accent bars — width 10, double-line effect
         draw = ImageDraw.Draw(img)
-        draw.rectangle([(0, 0), (w, 10)], fill=(*accent, 80))
-        draw.rectangle([(0, 12), (w, 14)], fill=(*accent, 40))
-        draw.rectangle([(0, h - 10), (w, h)], fill=(*accent, 80))
-        draw.rectangle([(0, h - 14), (w, h - 12)], fill=(*accent, 40))
+        draw.rectangle([(0, 0), (w, 10)], fill=(*accent, 255))
+        draw.rectangle([(0, 12), (w, 14)], fill=(*accent, 80))
+        draw.rectangle([(0, h - 10), (w, h)], fill=(*accent, 255))
+        draw.rectangle([(0, h - 14), (w, h - 12)], fill=(*accent, 80))
 
         self._draw_story_footer(draw, accent)
 
