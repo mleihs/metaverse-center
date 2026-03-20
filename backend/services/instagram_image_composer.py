@@ -731,7 +731,7 @@ class InstagramImageComposer:
         )
 
         # Vignette
-        vignette = self._create_vignette(w, h, intensity=0.6)
+        vignette = self._create_vignette(w, h, intensity=0.5)
         img.alpha_composite(vignette)
 
         # Accent bars (top + bottom) — width 10, double-line effect
