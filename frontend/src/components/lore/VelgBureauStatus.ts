@@ -668,7 +668,7 @@ export class VelgBureauStatus extends LitElement {
             @change=${this._onArcanumChange}
           >
             ${EVOLVABLE_ARCANUMS.map(
-              (a) => html`<option value=${a.key}>${msg('Arcanum')} ${a.key} — ${a.label}</option>`,
+              (a) => html`<option value=${a.key}>${msg('Arcanum')} ${a.key} – ${a.label}</option>`,
             )}
           </select>
         </div>
@@ -702,7 +702,7 @@ export class VelgBureauStatus extends LitElement {
           <span class="evo-form__budget-value ${this.hasBypass ? 'evo-form__budget-value--bypass' : ''}">
             ${
               this.hasBypass
-                ? msg('BYOK — unlimited')
+                ? msg('BYOK – unlimited')
                 : html`${this.regenBudgetRemaining} ${msg('remaining (first 3 free)')}`
             }
           </span>

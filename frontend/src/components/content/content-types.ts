@@ -11,7 +11,7 @@ import type { TemplateResult } from 'lit';
 /* ── Section ──────────────────────────────────────────── */
 
 export interface ContentSection {
-  /** DOM id — used for scroll-spy and TOC anchor links. */
+  /** DOM id – used for scroll-spy and TOC anchor links. */
   id: string;
   /** Short label displayed in the TOC sidebar. */
   tocLabel: string;
@@ -19,7 +19,7 @@ export interface ContentSection {
   number: string;
   /** Full section heading rendered as H2. */
   title: string;
-  /** Rich HTML content — must be a lit `html` TemplateResult. */
+  /** Rich HTML content – must be a lit `html` TemplateResult. */
   content: TemplateResult;
 }
 

@@ -84,7 +84,7 @@ function getOperativeTypes(): OperativeTypeInfo[] {
       type: 'assassin',
       cost: OPERATIVE_RP_COSTS.assassin,
       duration: msg('2 cycle deploy'),
-      effect: msg('Wounds target agent — reduces relationships by 2, removes ambassador status.'),
+      effect: msg('Wounds target agent – reduces relationships by 2, removes ambassador status.'),
       needsTarget: 'agent',
     },
     {

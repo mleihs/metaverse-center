@@ -4,471 +4,245 @@ import { customElement, state } from 'lit/decorators.js';
 import { adminApi } from '../../services/api/index.js';
 import type { HealthEffectsSimulation } from '../../services/api/AdminApiService.js';
 import { VelgToast } from '../shared/Toast.js';
+import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
+import {
+  adminAnimationStyles,
+  adminSectionHeaderStyles,
+  adminGlobalCardStyles,
+  adminToggleStyles,
+  adminLoadingStyles,
+} from './admin-shared-styles.js';
 
 @localized()
 @customElement('velg-admin-health-tab')
 export class VelgAdminHealthTab extends LitElement {
-  static styles = css`
-    :host {
-      display: block;
-      color: var(--color-text-primary);
-      font-family: var(--font-mono, monospace);
-    }
-
-    /* --- Section Headers --- */
-
-    .section-header {
-      display: flex;
-      align-items: center;
-      gap: var(--space-3);
-      margin-bottom: var(--space-4);
-    }
-
-    .section-header__marker {
-      width: 3px;
-      height: 20px;
-      background: var(--color-danger);
-      flex-shrink: 0;
-    }
-
-    .section-header__title {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-sm);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-widest);
-      color: var(--color-text-primary);
-      margin: 0;
-    }
-
-    /* --- Global Control Card --- */
-
-    .global-card {
-      position: relative;
-      padding: var(--space-5);
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      margin-bottom: var(--space-8);
-      overflow: hidden;
-      transition:
-        border-color 0.3s ease,
-        box-shadow 0.3s ease;
-    }
-
-    .global-card--active {
-      border-color: color-mix(in srgb, var(--color-danger) 40%, transparent);
-      box-shadow: inset 0 0 40px -20px color-mix(in srgb, var(--color-danger) 8%, transparent);
-    }
-
-    .global-card--suppressed {
-      border-color: var(--color-border);
-    }
-
-    .global-card__corner {
-      position: absolute;
-      width: 8px;
-      height: 8px;
-      border-color: var(--color-danger);
-      border-style: solid;
-      opacity: 0.4;
-      transition: opacity 0.3s ease;
-    }
-
-    .global-card--active .global-card__corner {
-      opacity: 0.7;
-    }
-
-    .global-card__corner--tl {
-      top: 4px;
-      left: 4px;
-      border-width: 1px 0 0 1px;
-    }
-
-    .global-card__corner--tr {
-      top: 4px;
-      right: 4px;
-      border-width: 1px 1px 0 0;
-    }
-
-    .global-card__corner--bl {
-      bottom: 4px;
-      left: 4px;
-      border-width: 0 0 1px 1px;
-    }
-
-    .global-card__corner--br {
-      bottom: 4px;
-      right: 4px;
-      border-width: 0 1px 1px 0;
-    }
-
-    .global-card__row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-4);
-    }
-
-    .global-card__info {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .global-card__label {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: var(--text-sm);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      color: var(--color-text-primary);
-      margin: 0 0 var(--space-1) 0;
-    }
-
-    .global-card__description {
-      font-size: var(--text-xs);
-      color: var(--color-text-secondary);
-      line-height: 1.6;
-      margin: 0;
-    }
-
-    .global-card__status {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-1-5);
-      font-family: var(--font-brutalist);
-      font-size: 10px;
-      font-weight: var(--font-bold);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-widest);
-      padding: var(--space-1) var(--space-2);
-      margin-top: var(--space-2);
-    }
-
-    .global-card__status--active {
-      color: var(--color-danger);
-      background: color-mix(in srgb, var(--color-danger) 10%, transparent);
-      border: 1px solid color-mix(in srgb, var(--color-danger) 25%, transparent);
-    }
-
-    .global-card__status--suppressed {
-      color: var(--color-text-muted);
-      background: color-mix(in srgb, var(--color-text-muted) 8%, transparent);
-      border: 1px solid color-mix(in srgb, var(--color-text-muted) 20%, transparent);
-    }
-
-    .global-card__status-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: currentColor;
-    }
-
-    .global-card__status--active .global-card__status-dot {
-      animation: status-pulse 2s ease-in-out infinite;
-    }
-
-    @keyframes status-pulse {
-      0%,
-      100% {
-        opacity: 1;
+  static styles = [
+    adminAnimationStyles,
+    adminSectionHeaderStyles,
+    adminGlobalCardStyles,
+    adminToggleStyles,
+    adminLoadingStyles,
+    infoBubbleStyles,
+    css`
+      :host {
+        display: block;
+        color: var(--color-text-primary);
+        font-family: var(--font-mono, monospace);
+        --_admin-accent: var(--color-danger);
+        --_toggle-active: var(--color-danger);
       }
-      50% {
-        opacity: 0.3;
+
+      /* --- Filter --- */
+
+      .filter-bar {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        margin-bottom: var(--space-4);
       }
-    }
 
-    /* --- Toggle Switch --- */
+      .filter-bar__input {
+        flex: 1;
+        max-width: 320px;
+        padding: var(--space-2) var(--space-3);
+        font-family: var(--font-mono, monospace);
+        font-size: var(--text-sm);
+        background: var(--color-surface);
+        color: var(--color-text-primary);
+        border: 1px solid var(--color-border);
+        border-radius: 0;
+        transition: border-color 0.2s ease;
+      }
 
-    .toggle {
-      position: relative;
-      display: inline-block;
-      width: 44px;
-      height: 24px;
-      flex-shrink: 0;
-    }
+      .filter-bar__input::placeholder {
+        color: var(--color-text-muted);
+      }
 
-    .toggle__input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-      position: absolute;
-    }
+      .filter-bar__input:focus {
+        outline: none;
+        border-color: var(--color-danger);
+        box-shadow: 0 0 0 1px var(--color-danger);
+      }
 
-    .toggle__track {
-      position: absolute;
-      inset: 0;
-      border-radius: 12px;
-      background: var(--color-border);
-      cursor: pointer;
-      transition:
-        background 0.25s ease,
-        box-shadow 0.25s ease;
-    }
+      .filter-bar__count {
+        font-size: var(--text-xs);
+        color: var(--color-text-muted);
+      }
 
-    .toggle__input:checked + .toggle__track {
-      background: var(--color-danger);
-      box-shadow: 0 0 10px color-mix(in srgb, var(--color-danger) 30%, transparent);
-    }
+      /* --- Simulation Grid --- */
 
-    .toggle__track::after {
-      content: '';
-      position: absolute;
-      top: 3px;
-      left: 3px;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: var(--color-text-primary);
-      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .toggle__input:checked + .toggle__track::after {
-      transform: translateX(20px);
-    }
-
-    .toggle--disabled .toggle__track {
-      opacity: 0.35;
-      cursor: not-allowed;
-    }
-
-    .toggle__input:focus-visible + .toggle__track {
-      outline: 2px solid var(--color-danger);
-      outline-offset: 2px;
-    }
-
-    /* --- Filter --- */
-
-    .filter-bar {
-      display: flex;
-      align-items: center;
-      gap: var(--space-3);
-      margin-bottom: var(--space-4);
-    }
-
-    .filter-bar__input {
-      flex: 1;
-      max-width: 320px;
-      padding: var(--space-2) var(--space-3);
-      font-family: var(--font-mono, monospace);
-      font-size: var(--text-sm);
-      background: var(--color-surface);
-      color: var(--color-text-primary);
-      border: 1px solid var(--color-border);
-      border-radius: 0;
-      transition: border-color 0.2s ease;
-    }
-
-    .filter-bar__input::placeholder {
-      color: var(--color-text-muted);
-    }
-
-    .filter-bar__input:focus {
-      outline: none;
-      border-color: var(--color-danger);
-      box-shadow: 0 0 0 1px var(--color-danger);
-    }
-
-    .filter-bar__count {
-      font-size: var(--text-xs);
-      color: var(--color-text-muted);
-    }
-
-    /* --- Simulation Grid --- */
-
-    .sim-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-      gap: var(--space-4);
-    }
-
-    .sim-card {
-      padding: var(--space-4);
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
-    }
-
-    .sim-card:hover {
-      border-color: var(--color-text-muted);
-    }
-
-    .sim-card--critical {
-      border-left: 3px solid var(--color-danger);
-    }
-
-    .sim-card--ascendant {
-      border-left: 3px solid var(--color-accent-gold);
-    }
-
-    .sim-card__header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: var(--space-3);
-      margin-bottom: var(--space-3);
-    }
-
-    .sim-card__name {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: var(--text-sm);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      color: var(--color-text-primary);
-      margin: 0;
-    }
-
-    .sim-card__slug {
-      font-size: var(--text-xs);
-      color: var(--color-text-muted);
-      margin: var(--space-0-5) 0 0 0;
-    }
-
-    /* --- Health Bar --- */
-
-    .health-bar {
-      margin-bottom: var(--space-3);
-    }
-
-    .health-bar__label-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: var(--space-1);
-    }
-
-    .health-bar__label {
-      font-size: 10px;
-      font-weight: var(--font-bold);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
-    }
-
-    .health-bar__value {
-      font-family: var(--font-mono, monospace);
-      font-size: var(--text-xs);
-      font-weight: var(--font-bold);
-    }
-
-    .health-bar__value--critical {
-      color: var(--color-danger);
-    }
-
-    .health-bar__value--normal {
-      color: var(--color-warning);
-    }
-
-    .health-bar__value--ascendant {
-      color: var(--color-success);
-    }
-
-    .health-bar__track {
-      height: 4px;
-      background: color-mix(in srgb, var(--color-border) 50%, transparent);
-      overflow: hidden;
-    }
-
-    .health-bar__fill {
-      height: 100%;
-      transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-    }
-
-    .health-bar__fill--critical {
-      background: var(--color-danger);
-      box-shadow: 0 0 6px color-mix(in srgb, var(--color-danger) 40%, transparent);
-    }
-
-    .health-bar__fill--normal {
-      background: var(--color-warning);
-    }
-
-    .health-bar__fill--ascendant {
-      background: var(--color-success);
-    }
-
-    /* --- Badges --- */
-
-    .sim-card__footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-2);
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-1);
-      font-family: var(--font-brutalist);
-      font-size: 10px;
-      font-weight: var(--font-bold);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      padding: 2px var(--space-2);
-    }
-
-    .badge--normal {
-      color: var(--color-text-muted);
-      background: color-mix(in srgb, var(--color-text-muted) 8%, transparent);
-      border: 1px solid color-mix(in srgb, var(--color-text-muted) 15%, transparent);
-    }
-
-    .badge--critical {
-      color: var(--color-danger);
-      background: color-mix(in srgb, var(--color-danger) 10%, transparent);
-      border: 1px solid color-mix(in srgb, var(--color-danger) 25%, transparent);
-    }
-
-    .badge--ascendant {
-      color: var(--color-accent-gold);
-      background: color-mix(in srgb, var(--color-accent-gold) 10%, transparent);
-      border: 1px solid color-mix(in srgb, var(--color-accent-gold) 25%, transparent);
-    }
-
-    .sim-card__toggle-area {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-    }
-
-    .sim-card__disabled-hint {
-      font-size: 10px;
-      color: var(--color-text-muted);
-      font-style: italic;
-    }
-
-    /* --- Empty / Loading --- */
-
-    .loading {
-      text-align: center;
-      padding: var(--space-8);
-      color: var(--color-text-muted);
-      font-family: var(--font-brutalist);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-    }
-
-    .empty {
-      text-align: center;
-      padding: var(--space-8);
-      color: var(--color-text-muted);
-      font-size: var(--text-sm);
-    }
-
-    @media (max-width: 768px) {
       .sim-grid {
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: var(--space-4);
       }
 
-      .global-card__row {
-        flex-direction: column;
-        align-items: flex-start;
+      .sim-card {
+        padding: var(--space-4);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        transition:
+          border-color 0.2s ease,
+          box-shadow 0.2s ease;
       }
-    }
-  `;
+
+      .sim-card:hover {
+        border-color: var(--color-text-muted);
+      }
+
+      .sim-card--critical {
+        border-left: 3px solid var(--color-danger);
+      }
+
+      .sim-card--ascendant {
+        border-left: 3px solid var(--color-accent-gold);
+      }
+
+      .sim-card__header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: var(--space-3);
+        margin-bottom: var(--space-3);
+      }
+
+      .sim-card__name {
+        font-family: var(--font-brutalist);
+        font-weight: var(--font-bold);
+        font-size: var(--text-sm);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-wide);
+        color: var(--color-text-primary);
+        margin: 0;
+      }
+
+      .sim-card__slug {
+        font-size: var(--text-xs);
+        color: var(--color-text-muted);
+        margin: var(--space-0-5) 0 0 0;
+      }
+
+      /* --- Health Bar --- */
+
+      .health-bar {
+        margin-bottom: var(--space-3);
+      }
+
+      .health-bar__label-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--space-1);
+      }
+
+      .health-bar__label {
+        font-size: 10px;
+        font-weight: var(--font-bold);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-wide);
+        color: var(--color-text-muted);
+      }
+
+      .health-bar__value {
+        font-family: var(--font-mono, monospace);
+        font-size: var(--text-xs);
+        font-weight: var(--font-bold);
+      }
+
+      .health-bar__value--critical {
+        color: var(--color-danger);
+      }
+
+      .health-bar__value--normal {
+        color: var(--color-warning);
+      }
+
+      .health-bar__value--ascendant {
+        color: var(--color-success);
+      }
+
+      .health-bar__track {
+        height: 4px;
+        background: color-mix(in srgb, var(--color-border) 50%, transparent);
+        overflow: hidden;
+      }
+
+      .health-bar__fill {
+        height: 100%;
+        transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      .health-bar__fill--critical {
+        background: var(--color-danger);
+        box-shadow: 0 0 6px color-mix(in srgb, var(--color-danger) 40%, transparent);
+      }
+
+      .health-bar__fill--normal {
+        background: var(--color-warning);
+      }
+
+      .health-bar__fill--ascendant {
+        background: var(--color-success);
+      }
+
+      /* --- Badges --- */
+
+      .sim-card__footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-2);
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-1);
+        font-family: var(--font-brutalist);
+        font-size: 10px;
+        font-weight: var(--font-bold);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-wide);
+        padding: 2px var(--space-2);
+      }
+
+      .badge--normal {
+        color: var(--color-text-muted);
+        background: color-mix(in srgb, var(--color-text-muted) 8%, transparent);
+        border: 1px solid color-mix(in srgb, var(--color-text-muted) 15%, transparent);
+      }
+
+      .badge--critical {
+        color: var(--color-danger);
+        background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+        border: 1px solid color-mix(in srgb, var(--color-danger) 25%, transparent);
+      }
+
+      .badge--ascendant {
+        color: var(--color-accent-gold);
+        background: color-mix(in srgb, var(--color-accent-gold) 10%, transparent);
+        border: 1px solid color-mix(in srgb, var(--color-accent-gold) 25%, transparent);
+      }
+
+      .sim-card__toggle-area {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+      }
+
+      .sim-card__disabled-hint {
+        font-size: 10px;
+        color: var(--color-text-muted);
+        font-style: italic;
+      }
+
+      @media (max-width: 768px) {
+        .sim-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    `,
+  ];
 
   @state() private _globalEnabled = true;
   @state() private _simulations: HealthEffectsSimulation[] = [];
@@ -560,7 +334,10 @@ export class VelgAdminHealthTab extends LitElement {
 
         <div class="global-card__row">
           <div class="global-card__info">
-            <p class="global-card__label">${msg('Critical Health Effects')}</p>
+            <p class="global-card__label">
+              ${msg('Critical Health Effects')}
+              ${renderInfoBubble(msg('Controls entropy overlay, text corruption, card distortion, deceleration hero moment, entropy timer, and desperate actions panel across all simulations.'), 'tip-health-global')}
+            </p>
             <p class="global-card__description">
               ${msg('Controls entropy overlay, text corruption, card distortion, deceleration hero moment, entropy timer, and desperate actions panel. When disabled, all critical-state visual effects are suppressed across every simulation.')}
             </p>
@@ -575,6 +352,8 @@ export class VelgAdminHealthTab extends LitElement {
               type="checkbox"
               .checked=${this._globalEnabled}
               ?disabled=${this._saving}
+              aria-label=${msg('Toggle critical health effects globally')}
+              aria-describedby="tip-health-global"
               @change=${this._toggleGlobal}
             />
             <span class="toggle__track"></span>
@@ -585,7 +364,10 @@ export class VelgAdminHealthTab extends LitElement {
       <!-- Per-Simulation Controls -->
       <div class="section-header">
         <div class="section-header__marker"></div>
-        <h2 class="section-header__title">${msg('Per-Simulation Overrides')}</h2>
+        <h2 class="section-header__title">
+          ${msg('Per-Simulation Overrides')}
+          ${renderInfoBubble(msg('Enable or disable health effects per simulation. Only applies when the master switch is active.'), 'tip-health-overrides')}
+        </h2>
       </div>
 
       ${this._simulations.length > 0
@@ -595,6 +377,7 @@ export class VelgAdminHealthTab extends LitElement {
                 class="filter-bar__input"
                 type="text"
                 placeholder=${msg('Filter simulations...')}
+                aria-label=${msg('Filter simulations by name')}
                 .value=${this._filter}
                 @input=${(e: Event) => {
                   this._filter = (e.target as HTMLInputElement).value;
@@ -669,6 +452,7 @@ export class VelgAdminHealthTab extends LitElement {
                 type="checkbox"
                 .checked=${sim.effects_enabled}
                 ?disabled=${isDisabledGlobally || this._saving}
+                aria-label=${msg('Toggle health effects for this simulation')}
                 @change=${() => this._toggleSimulation(sim.id, sim.effects_enabled)}
               />
               <span class="toggle__track"></span>

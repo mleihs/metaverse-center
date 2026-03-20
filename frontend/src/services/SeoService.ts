@@ -1,5 +1,5 @@
 const SITE_NAME = 'metaverse.center';
-const DEFAULT_TITLE = 'metaverse.center — Multiplayer Worldbuilding & Strategy Platform';
+const DEFAULT_TITLE = 'metaverse.center – Multiplayer Worldbuilding & Strategy Platform';
 const DEFAULT_DESCRIPTION =
   'Build civilizations, deploy operatives, shape the metaverse. A multiplayer worldbuilding and strategy platform with AI-powered agents, competitive epochs, and real-world resonances.';
 const BASE_URL = 'https://metaverse.center';
@@ -7,12 +7,12 @@ const DEFAULT_OG_IMAGE =
   'https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/og-image.jpg';
 
 class SeoService {
-  /** Set page title from parts: ['Agents', 'Station Null'] → "Agents — Station Null | metaverse.center" */
+  /** Set page title from parts: ['Agents', 'Station Null'] → "Agents – Station Null | metaverse.center" */
   setTitle(parts: string[]): void {
     if (parts.length === 0) {
       document.title = DEFAULT_TITLE;
     } else {
-      document.title = `${parts.join(' — ')} | ${SITE_NAME}`;
+      document.title = `${parts.join(' – ')} | ${SITE_NAME}`;
     }
     this._setMetaProperty('og:title', document.title);
     this._setMeta('twitter:title', document.title);

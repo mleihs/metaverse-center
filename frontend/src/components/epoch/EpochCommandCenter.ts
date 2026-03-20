@@ -1405,7 +1405,7 @@ export class VelgEpochCommandCenter extends LitElement {
     super.connectedCallback();
     seoService.setTitle([msg('Epoch Command Center')]);
     seoService.setDescription(
-      msg('Competitive PvP operations dashboard — manage epochs, deploy operatives, track scores.'),
+      msg('Competitive PvP operations dashboard – manage epochs, deploy operatives, track scores.'),
     );
 
     // Watch for cycle resolution broadcasts (from self or other players)
@@ -1911,7 +1911,7 @@ export class VelgEpochCommandCenter extends LitElement {
           </div>
           <span class="phase-overlay__name">${this._phaseOverlayPhase.toUpperCase()}</span>
           <span class="phase-overlay__subtitle">
-            ${this._phaseOverlayPhase === 'competition' ? msg('All operatives unlocked') : msg('Final cycles — double points')}
+            ${this._phaseOverlayPhase === 'competition' ? msg('All operatives unlocked') : msg('Final cycles – double points')}
           </span>
         </div>
       `

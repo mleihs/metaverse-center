@@ -10,10 +10,12 @@ import {
 import { forgeApi } from '../../services/api/index.js';
 import { settingsStyles } from '../shared/settings-styles.js';
 import { VelgToast } from '../shared/Toast.js';
+import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
+import { adminAnimationStyles, adminForgeSectionStyles, adminLoadingStyles } from './admin-shared-styles.js';
 import '../forge/ClearanceQueue.js';
 
 /**
- * AdminForgeTab — Global Simulation Forge settings, token economy admin tools,
+ * AdminForgeTab – Global Simulation Forge settings, token economy admin tools,
  * and Clearance Requests.
  */
 @localized()
@@ -21,26 +23,20 @@ import '../forge/ClearanceQueue.js';
 export class VelgAdminForgeTab extends LitElement {
   static styles = [
     settingsStyles,
+    adminAnimationStyles,
+    adminForgeSectionStyles,
+    adminLoadingStyles,
+    infoBubbleStyles,
     css`
-      /* ── Keyframes ── */
-
-      @keyframes panel-enter {
-        from { opacity: 0; transform: translateY(8px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
+      /* ── Keyframes (unique to ForgeTab) ── */
 
       @keyframes stat-count {
         from { opacity: 0; transform: scale(0.8); }
         to { opacity: 1; transform: scale(1); }
       }
 
-      @keyframes amber-pulse {
-        0%, 100% { opacity: 0.4; }
-        50% { opacity: 1; }
-      }
-
       @media (prefers-reduced-motion: reduce) {
-        .forge-section, .stat-card, .stat-card__value { animation: none !important; }
+        .stat-card, .stat-card__value { animation: none !important; }
       }
 
       /* ── Layout ── */
@@ -61,15 +57,7 @@ export class VelgAdminForgeTab extends LitElement {
         .forge-grid { grid-template-columns: 1fr; }
       }
 
-      /* ── Section Panel ── */
-
-      .forge-section {
-        position: relative;
-        background: var(--color-surface-sunken);
-        border: 1px solid var(--color-border);
-        padding: var(--space-5) var(--space-5) var(--space-5) var(--space-6);
-        animation: panel-enter 0.4s ease both;
-      }
+      /* ── Stagger Delays (unique to ForgeTab) ── */
 
       .forge-section:nth-child(1) { animation-delay: 0s; }
       .forge-section:nth-child(2) { animation-delay: 0.05s; }
@@ -79,61 +67,6 @@ export class VelgAdminForgeTab extends LitElement {
       .forge-section:nth-child(6) { animation-delay: 0.25s; }
       .forge-section:nth-child(7) { animation-delay: 0.3s; }
       .forge-section:nth-child(8) { animation-delay: 0.35s; }
-
-      /* Amber left accent bar */
-      .forge-section::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 3px;
-        height: 100%;
-        background: linear-gradient(
-          180deg,
-          var(--color-accent-amber) 0%,
-          var(--color-accent-amber-dim, rgba(245, 158, 11, 0.3)) 100%
-        );
-      }
-
-      /* Section header */
-      .forge-section__header {
-        display: flex;
-        align-items: baseline;
-        gap: var(--space-3);
-        margin-bottom: var(--space-1);
-      }
-
-      .forge-section__code {
-        font-family: var(--font-mono, 'SF Mono', monospace);
-        font-size: 9px;
-        letter-spacing: 2px;
-        color: var(--color-accent-amber);
-        opacity: 0.7;
-        white-space: nowrap;
-      }
-
-      .forge-section__title {
-        font-family: var(--font-brutalist, 'Courier New', monospace);
-        font-weight: 900;
-        font-size: var(--text-sm);
-        text-transform: uppercase;
-        letter-spacing: var(--tracking-wide);
-        color: var(--color-text-primary);
-        margin: 0;
-      }
-
-      .forge-section__desc {
-        font-size: var(--text-xs);
-        color: var(--color-text-muted);
-        margin-bottom: var(--space-4);
-        padding-left: 1px;
-      }
-
-      .forge-section__divider {
-        height: 1px;
-        background: linear-gradient(90deg, var(--color-accent-amber-dim, rgba(245, 158, 11, 0.2)) 0%, transparent 80%);
-        margin-bottom: var(--space-4);
-      }
 
       /* ── Stat Cards ── */
 
@@ -859,7 +792,15 @@ export class VelgAdminForgeTab extends LitElement {
         ${this._renderTokenEconomy()}
 
         <!-- SEC-03: Clearance Requests -->
-        <velg-clearance-queue variant="full"></velg-clearance-queue>
+        <div class="forge-section">
+          <div class="forge-section__header">
+            <span class="forge-section__code">SEC-03</span>
+            <h3 class="forge-section__title">${msg('Clearance Queue')}</h3>
+            ${renderInfoBubble(msg('Pending Forge creation requests from simulation architects. Approve to generate, reject to decline. Tokens are refunded on rejection.'), 'tip-clearance-queue')}
+          </div>
+          <div class="forge-section__divider"></div>
+          <velg-clearance-queue variant="full"></velg-clearance-queue>
+        </div>
 
         <!-- SEC-04 / SEC-05: Bundles + Grant (side by side on wide) -->
         ${this._renderBundleManagement()}
@@ -901,6 +842,7 @@ export class VelgAdminForgeTab extends LitElement {
               </div>
               <select
                 class="membership-role-select"
+                aria-label=${msg('BYOK Access Policy')}
                 .value=${this._byokAccessPolicy}
                 @change=${this._changeBYOKAccessPolicy}
               >
@@ -916,6 +858,7 @@ export class VelgAdminForgeTab extends LitElement {
                 <div class="settings-item__description">${msg('Number of forge tokens given to new architects.')}</div>
               </div>
               <input type="number" class="membership-role-select" style="width: 80px" value="1"
+                aria-label=${msg('Default Architect Grant')}
                 disabled title=${msg('Not yet configurable')} />
             </div>
 
@@ -925,6 +868,7 @@ export class VelgAdminForgeTab extends LitElement {
                 <div class="settings-item__description">${msg('Max test renders allowed per simulation draft.')}</div>
               </div>
               <input type="number" class="membership-role-select" style="width: 80px" value="5"
+                aria-label=${msg('Darkroom Test Limit')}
                 disabled title=${msg('Not yet configurable')} />
             </div>
           </div>
@@ -935,6 +879,7 @@ export class VelgAdminForgeTab extends LitElement {
           <div class="forge-section__header">
             <span class="forge-section__code">SEC-08</span>
             <h3 class="forge-section__title">${msg('Personal API Keys (BYOK)')}</h3>
+            ${renderInfoBubble(msg('Simulation-level API key override. When set, this simulation uses its own key instead of the platform default.'), 'tip-byok')}
           </div>
           <div class="forge-section__desc">${msg('AES-256 encrypted at rest. Bypass platform quota with your own keys.')}</div>
           <div class="forge-section__divider"></div>
@@ -948,6 +893,8 @@ export class VelgAdminForgeTab extends LitElement {
                 type="password"
                 class="form-control byok-input"
                 placeholder="sk-or-v1-..."
+                aria-label=${msg('OpenRouter API Key')}
+                aria-describedby="tip-byok"
                 .value=${this._openrouterKey}
                 @input=${(e: Event) => (this._openrouterKey = (e.target as HTMLInputElement).value)}
               />
@@ -961,6 +908,8 @@ export class VelgAdminForgeTab extends LitElement {
                 type="password"
                 class="form-control byok-input"
                 placeholder="r8_..."
+                aria-label=${msg('Replicate API Token')}
+                aria-describedby="tip-byok"
                 .value=${this._replicateKey}
                 @input=${(e: Event) => (this._replicateKey = (e.target as HTMLInputElement).value)}
               />
@@ -969,6 +918,7 @@ export class VelgAdminForgeTab extends LitElement {
               class="btn-primary"
               style="align-self: flex-start"
               ?disabled=${this._savingBYOK}
+              aria-label=${msg('Save BYOK API keys')}
               @click=${this._saveBYOK}
             >
               ${this._savingBYOK ? msg('Saving...') : msg('Save Keys')}
@@ -984,7 +934,7 @@ export class VelgAdminForgeTab extends LitElement {
           </div>
           <div class="forge-section__desc">${msg('Clean up unused assets and database records.')}</div>
           <div class="forge-section__divider"></div>
-          <button class="btn-primary" @click=${this._purgeStaleDrafts}>
+          <button class="btn-primary" aria-label=${msg('Purge stale forge drafts')} @click=${this._purgeStaleDrafts}>
             ${msg('Purge Stale Drafts')}
           </button>
         </div>
@@ -1004,6 +954,7 @@ export class VelgAdminForgeTab extends LitElement {
         <div class="forge-section__header">
           <span class="forge-section__code">SEC-02</span>
           <h3 class="forge-section__title">${msg('Token Economy')}</h3>
+          ${renderInfoBubble(msg('Overview of platform token allocation and consumption. Tokens gate Forge usage to prevent runaway generation costs.'), 'tip-token-economy')}
         </div>
         <div class="forge-section__desc">${msg('Aggregated metrics for the forge token economy.')}</div>
         <div class="forge-section__divider"></div>
@@ -1325,6 +1276,7 @@ export class VelgAdminForgeTab extends LitElement {
                 <button
                   class="ledger-pagination__btn"
                   ?disabled=${this._purchaseOffset <= 0}
+                  aria-label=${msg('Previous page')}
                   @click=${this._ledgerPrev}
                 >
                   &larr; ${msg('Prev')}
@@ -1332,6 +1284,7 @@ export class VelgAdminForgeTab extends LitElement {
                 <button
                   class="ledger-pagination__btn"
                   ?disabled=${this._purchaseOffset + this._purchaseLimit >= this._purchaseTotal}
+                  aria-label=${msg('Next page')}
                   @click=${this._ledgerNext}
                 >
                   ${msg('Next')} &rarr;
@@ -1360,7 +1313,7 @@ export class VelgAdminForgeTab extends LitElement {
   private _renderLedgerRow(p: AdminPurchaseLedgerEntry) {
     const bundleSlug =
       p.token_bundles?.slug ??
-      (p.payment_method === 'admin_grant' ? `(${msg('admin grant')})` : '—');
+      (p.payment_method === 'admin_grant' ? `(${msg('admin grant')})` : '–');
     const userId = `${p.user_id.slice(0, 8)}...`;
 
     return html`

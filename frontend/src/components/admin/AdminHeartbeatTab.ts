@@ -23,6 +23,14 @@ import type {
   PlatformSetting,
 } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
+import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
+import {
+  adminAnimationStyles,
+  adminSectionHeaderStyles,
+  adminGlobalCardStyles,
+  adminToggleStyles,
+  adminLoadingStyles,
+} from './admin-shared-styles.js';
 
 /* ── Local interfaces for config/cascade data ─────────────── */
 
@@ -70,731 +78,520 @@ const CONFIG_KEYS = [
 
 type ConfigKey = (typeof CONFIG_KEYS)[number];
 
+/** Tooltip text for each heartbeat config key (i18n-wrapped). */
+function getConfigTooltip(key: string): string {
+  const tooltips: Record<string, string> = {
+    heartbeat_enabled: msg('Master switch for the heartbeat tick engine. When disabled, no simulations receive periodic ticks.'),
+    heartbeat_interval_seconds: msg('Seconds between heartbeat ticks. Lower values increase server load but make simulations feel more responsive.'),
+    heartbeat_scar_decay_rate: msg('Rate at which scar tissue decays per tick. Higher values mean faster healing after critical events.'),
+    heartbeat_attunement_growth_rate: msg('Rate at which attunement grows per tick when conditions are met. Controls how quickly agents align with their environment.'),
+    heartbeat_anchor_growth_per_sim: msg('Anchor points gained per simulation per tick cycle. Anchors stabilize simulation health.'),
+    heartbeat_escalation_threshold: msg('Health threshold below which escalation mechanics activate. Lower values delay escalation longer.'),
+    heartbeat_cascade_pressure_trigger: msg('Pressure level that triggers cross-simulation cascade effects. Higher values make cascades harder to trigger.'),
+    heartbeat_bureau_contain_multiplier: msg('Multiplier for Bureau containment response strength. Higher values make containment more effective.'),
+    heartbeat_bureau_remediate_multiplier: msg('Multiplier for Bureau remediation response strength. Controls healing speed during active incidents.'),
+    heartbeat_bureau_adapt_multiplier: msg('Multiplier for Bureau adaptation response. Higher values accelerate post-crisis normalization.'),
+    heartbeat_bureau_max_agents: msg('Maximum Bureau agents that can be active simultaneously across all simulations.'),
+    heartbeat_positive_event_probability: msg('Probability of positive attunement events per tick. Range 0-1. Higher values create more hopeful moments.'),
+    heartbeat_max_attunements: msg('Maximum number of concurrent attunement bonds per simulation.'),
+    heartbeat_switching_cooldown_ticks: msg('Tick cooldown before an agent can switch attunement targets. Prevents rapid oscillation.'),
+    heartbeat_anchor_protection_cap: msg('Maximum anchor protection percentage. Caps how much anchors can shield a simulation from damage.'),
+    heartbeat_event_aging_rules: msg('JSON rules governing how events age and decay over time. Advanced – edit with caution.'),
+  };
+  return tooltips[key] ?? '';
+}
+
 @localized()
 @customElement('velg-admin-heartbeat-tab')
 export class VelgAdminHeartbeatTab extends LitElement {
-  static styles = css`
-    :host {
-      display: block;
-      color: var(--color-text-primary);
-      font-family: var(--font-mono, monospace);
-    }
-
-    /* ── Section Headers ─────────────────── */
-
-    .section-header {
-      display: flex;
-      align-items: center;
-      gap: var(--space-3);
-      margin-bottom: var(--space-4);
-    }
-
-    .section-header__marker {
-      width: 3px;
-      height: 20px;
-      background: var(--color-warning);
-      flex-shrink: 0;
-    }
-
-    .section-header__title {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-sm);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-widest);
-      color: var(--color-text-primary);
-      margin: 0;
-    }
-
-    .section {
-      margin-bottom: var(--space-8);
-    }
-
-    /* ── Global Config Card ──────────────── */
-
-    .global-card {
-      position: relative;
-      padding: var(--space-5);
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      margin-bottom: var(--space-4);
-      overflow: hidden;
-      transition:
-        border-color 0.3s ease,
-        box-shadow 0.3s ease;
-    }
-
-    .global-card--active {
-      border-color: color-mix(in srgb, var(--color-warning) 40%, transparent);
-      box-shadow: inset 0 0 40px -20px color-mix(in srgb, var(--color-warning) 8%, transparent);
-    }
-
-    .global-card--disabled {
-      border-color: var(--color-border);
-    }
-
-    .global-card__corner {
-      position: absolute;
-      width: 8px;
-      height: 8px;
-      border-color: var(--color-warning);
-      border-style: solid;
-      opacity: 0.4;
-      transition: opacity 0.3s ease;
-    }
-
-    .global-card--active .global-card__corner {
-      opacity: 0.7;
-    }
-
-    .global-card__corner--tl {
-      top: 4px;
-      left: 4px;
-      border-width: 1px 0 0 1px;
-    }
-
-    .global-card__corner--tr {
-      top: 4px;
-      right: 4px;
-      border-width: 1px 1px 0 0;
-    }
-
-    .global-card__corner--bl {
-      bottom: 4px;
-      left: 4px;
-      border-width: 0 0 1px 1px;
-    }
-
-    .global-card__corner--br {
-      bottom: 4px;
-      right: 4px;
-      border-width: 0 1px 1px 0;
-    }
-
-    .global-card__row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-4);
-    }
-
-    .global-card__info {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .global-card__label {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: var(--text-sm);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      color: var(--color-text-primary);
-      margin: 0 0 var(--space-1) 0;
-    }
-
-    .global-card__description {
-      font-size: var(--text-xs);
-      color: var(--color-text-secondary);
-      line-height: 1.6;
-      margin: 0;
-    }
-
-    .global-card__status {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-1-5);
-      font-family: var(--font-brutalist);
-      font-size: 10px;
-      font-weight: var(--font-bold);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-widest);
-      padding: var(--space-1) var(--space-2);
-      margin-top: var(--space-2);
-    }
-
-    .global-card__status--active {
-      color: var(--color-success);
-      background: color-mix(in srgb, var(--color-success) 10%, transparent);
-      border: 1px solid color-mix(in srgb, var(--color-success) 25%, transparent);
-    }
-
-    .global-card__status--disabled {
-      color: var(--color-text-muted);
-      background: color-mix(in srgb, var(--color-text-muted) 8%, transparent);
-      border: 1px solid color-mix(in srgb, var(--color-text-muted) 20%, transparent);
-    }
-
-    .global-card__status-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: currentColor;
-    }
-
-    .global-card__status--active .global-card__status-dot {
-      animation: status-pulse 2s ease-in-out infinite;
-    }
-
-    @keyframes status-pulse {
-      0%,
-      100% {
-        opacity: 1;
-      }
-      50% {
-        opacity: 0.3;
-      }
-    }
-
-    /* ── Toggle Switch ───────────────────── */
-
-    .toggle {
-      position: relative;
-      display: inline-block;
-      width: 44px;
-      height: 24px;
-      flex-shrink: 0;
-    }
-
-    .toggle__input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-      position: absolute;
-    }
-
-    .toggle__track {
-      position: absolute;
-      inset: 0;
-      border-radius: 12px;
-      background: var(--color-border);
-      cursor: pointer;
-      transition:
-        background 0.25s ease,
-        box-shadow 0.25s ease;
-    }
-
-    .toggle__input:checked + .toggle__track {
-      background: var(--color-success);
-      box-shadow: 0 0 10px color-mix(in srgb, var(--color-success) 30%, transparent);
-    }
-
-    .toggle__track::after {
-      content: '';
-      position: absolute;
-      top: 3px;
-      left: 3px;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: var(--color-text-primary);
-      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .toggle__input:checked + .toggle__track::after {
-      transform: translateX(20px);
-    }
-
-    .toggle--disabled .toggle__track {
-      opacity: 0.35;
-      cursor: not-allowed;
-    }
-
-    .toggle__input:focus-visible + .toggle__track {
-      outline: 2px solid var(--color-warning);
-      outline-offset: 2px;
-    }
-
-    /* ── Config Grid ─────────────────────── */
-
-    .config-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: var(--space-3);
-    }
-
-    .config-item {
-      padding: var(--space-3) var(--space-4);
-      border: var(--border-default);
-      background: var(--color-surface-raised);
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-2);
-    }
-
-    .config-item__header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-2);
-    }
-
-    .config-item__label {
-      font-family: var(--font-brutalist);
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--color-text-muted);
-    }
-
-    .config-item__value {
-      font-family: var(--font-mono, monospace);
-      font-size: var(--text-sm);
-      color: var(--color-text-primary);
-      font-weight: var(--font-bold);
-    }
-
-    .config-item__value--enabled {
-      color: var(--color-success);
-    }
-
-    .config-item__value--disabled {
-      color: var(--color-danger);
-    }
-
-    .config-item__input-row {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-    }
-
-    .config-input {
-      width: 100%;
-      max-width: 140px;
-      padding: var(--space-1-5) var(--space-2);
-      font-family: var(--font-mono, monospace);
-      font-size: var(--text-sm);
-      background: var(--color-surface);
-      color: var(--color-text-primary);
-      border: 1px solid var(--color-border);
-      border-radius: 0;
-      min-height: 36px;
-      transition: border-color 0.2s ease;
-    }
-
-    .config-input:focus {
-      outline: none;
-      border-color: var(--color-warning);
-      box-shadow: 0 0 0 1px var(--color-warning);
-    }
-
-    .config-input::-webkit-inner-spin-button,
-    .config-input::-webkit-outer-spin-button {
-      opacity: 1;
-    }
-
-    /* ── Aging Rules Sub-Grid ────────────── */
-
-    .aging-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: var(--space-3);
-    }
-
-    .aging-grid .config-item {
-      margin: 0;
-    }
-
-    /* ── Save Button ─────────────────────── */
-
-    .save-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-2);
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      padding: var(--space-2) var(--space-4);
-      background: transparent;
-      border: 1px solid var(--color-success);
-      color: var(--color-success);
-      cursor: pointer;
-      transition: all var(--transition-fast);
-      min-height: 44px;
-      min-width: 44px;
-    }
-
-    .save-btn:hover {
-      background: color-mix(in srgb, var(--color-success) 10%, transparent);
-    }
-
-    .save-btn:focus-visible {
-      outline: 2px solid var(--color-success);
-      outline-offset: 2px;
-    }
-
-    .save-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .save-btn--warning {
-      border-color: var(--color-warning);
-      color: var(--color-warning);
-    }
-
-    .save-btn--warning:hover {
-      background: color-mix(in srgb, var(--color-warning) 10%, transparent);
-    }
-
-    .save-btn--warning:focus-visible {
-      outline: 2px solid var(--color-warning);
-    }
-
-    /* ── Simulation Grid ─────────────────── */
-
-    .sim-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: var(--space-4);
-    }
-
-    .sim-card {
-      border: var(--border-default);
-      background: var(--color-surface-raised);
-      padding: var(--space-4);
-      opacity: 0;
-      animation: card-enter 0.35s ease-out forwards;
-      transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
-    }
-
-    .sim-card:hover {
-      border-color: var(--color-text-muted);
-    }
-
-    @keyframes card-enter {
-      from {
-        opacity: 0;
-        transform: translateY(6px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .sim-card__header {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-      margin-bottom: var(--space-3);
-    }
-
-    .sim-card__name {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: var(--text-sm);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      color: var(--color-text-primary);
-    }
-
-    .sim-card__tick {
-      margin-left: auto;
-      font-family: var(--font-mono, monospace);
-      font-size: 10px;
-      color: var(--color-text-muted);
-      background: var(--color-border-light);
-      padding: 1px 6px;
-      border: 1px solid var(--color-border);
-    }
-
-    .sim-card__stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: var(--space-2);
-      margin-bottom: var(--space-3);
-    }
-
-    .stat {
-      display: flex;
-      flex-direction: column;
-      gap: 1px;
-    }
-
-    .stat__label {
-      font-family: var(--font-mono, monospace);
-      font-size: 10px;
-      color: var(--color-text-muted);
-    }
-
-    .stat__value {
-      font-family: var(--font-mono, monospace);
-      font-size: var(--text-sm);
-      color: var(--color-text-primary);
-    }
-
-    .sim-card__countdown {
-      font-family: var(--font-mono, monospace);
-      font-size: var(--text-xs);
-      color: var(--color-text-muted);
-      margin-bottom: var(--space-3);
-    }
-
-    /* ── Force Tick Button ────────────────── */
-
-    .force-tick-btn {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      padding: var(--space-2) var(--space-4);
-      background: transparent;
-      border: 1px solid var(--color-warning);
-      color: var(--color-warning);
-      cursor: pointer;
-      transition: all var(--transition-fast);
-      min-height: 44px;
-      min-width: 44px;
-    }
-
-    .force-tick-btn:hover {
-      background: color-mix(in srgb, var(--color-warning) 10%, transparent);
-    }
-
-    .force-tick-btn:focus-visible {
-      outline: 2px solid var(--color-warning);
-      outline-offset: 2px;
-    }
-
-    .force-tick-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    /* ── Override Editor ──────────────────── */
-
-    .override-card {
-      padding: var(--space-5);
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      margin-bottom: var(--space-4);
-    }
-
-    .override-card__row {
-      display: flex;
-      align-items: center;
-      gap: var(--space-4);
-      flex-wrap: wrap;
-    }
-
-    .override-card__field {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-1);
-    }
-
-    .override-card__field-label {
-      font-family: var(--font-brutalist);
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--color-text-muted);
-    }
-
-    .override-select {
-      padding: var(--space-2) var(--space-3);
-      font-family: var(--font-mono, monospace);
-      font-size: var(--text-sm);
-      background: var(--color-surface);
-      color: var(--color-text-primary);
-      border: 1px solid var(--color-border);
-      border-radius: 0;
-      min-height: 44px;
-      min-width: 200px;
-      cursor: pointer;
-      transition: border-color 0.2s ease;
-      appearance: auto;
-    }
-
-    .override-select:focus {
-      outline: none;
-      border-color: var(--color-warning);
-      box-shadow: 0 0 0 1px var(--color-warning);
-    }
-
-    .override-form {
-      margin-top: var(--space-4);
-      padding: var(--space-4);
-      background: var(--color-surface-raised);
-      border: 1px solid var(--color-border);
-    }
-
-    .override-form__row {
-      display: flex;
-      align-items: center;
-      gap: var(--space-4);
-      flex-wrap: wrap;
-    }
-
-    .override-form__actions {
-      display: flex;
-      align-items: center;
-      gap: var(--space-3);
-      margin-top: var(--space-4);
-    }
-
-    .override-toggle-area {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-    }
-
-    .override-toggle-label {
-      font-family: var(--font-brutalist);
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--color-text-muted);
-    }
-
-    /* ── Cascade Rules Table ──────────────── */
-
-    .rules-table-wrap {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .rules-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-family: var(--font-mono, monospace);
-      font-size: var(--text-sm);
-    }
-
-    .rules-table th {
-      font-family: var(--font-brutalist);
-      font-size: 10px;
-      font-weight: var(--font-bold);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--color-text-muted);
-      text-align: left;
-      padding: var(--space-2) var(--space-3);
-      border-bottom: 1px solid var(--color-border);
-      white-space: nowrap;
-    }
-
-    .rules-table td {
-      padding: var(--space-2) var(--space-3);
-      border-bottom: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
-      color: var(--color-text-primary);
-      vertical-align: middle;
-      white-space: nowrap;
-    }
-
-    .rules-table tr:hover td {
-      background: color-mix(in srgb, var(--color-warning) 4%, transparent);
-    }
-
-    .rules-table__signature {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-1);
-      font-weight: var(--font-bold);
-    }
-
-    .rules-table__arrow {
-      color: var(--color-text-muted);
-      font-size: var(--text-xs);
-    }
-
-    .rules-table__inactive td {
-      opacity: 0.45;
-    }
-
-    .rules-table__timestamp {
-      font-size: var(--text-xs);
-      color: var(--color-text-muted);
-    }
-
-    /* ── Loading / Empty ─────────────────── */
-
-    .loading,
-    .empty {
-      font-family: var(--font-mono, monospace);
-      font-size: var(--text-sm);
-      color: var(--color-text-muted);
-      text-align: center;
-      padding: var(--space-6);
-    }
-
-    .status-dot {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      margin-right: var(--space-1);
-    }
-
-    .status-dot--active {
-      background: var(--color-success);
-    }
-
-    .status-dot--idle {
-      background: var(--color-text-muted);
-    }
-
-    /* ── Dirty indicator ─────────────────── */
-
-    .dirty-dot {
-      display: inline-block;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--color-warning);
-      margin-left: var(--space-1);
-      vertical-align: middle;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .sim-card {
-        animation: none;
-        opacity: 1;
+  static styles = [
+    adminAnimationStyles,
+    adminSectionHeaderStyles,
+    adminGlobalCardStyles,
+    adminToggleStyles,
+    adminLoadingStyles,
+    infoBubbleStyles,
+    css`
+      :host {
+        display: block;
+        color: var(--color-text-primary);
+        font-family: var(--font-mono, monospace);
+        --_admin-accent: var(--color-warning);
+        --_toggle-active: var(--color-success);
       }
 
-      .global-card__status--active .global-card__status-dot {
-        animation: none;
+      .section {
+        margin-bottom: var(--space-8);
       }
-    }
 
-    @media (max-width: 768px) {
-      .sim-grid {
-        grid-template-columns: 1fr;
-      }
+      /* ── Config Grid ─────────────────────── */
 
       .config-grid {
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: var(--space-3);
       }
 
-      .global-card__row {
+      .config-item {
+        padding: var(--space-3) var(--space-4);
+        border: var(--border-default);
+        background: var(--color-surface-raised);
+        display: flex;
         flex-direction: column;
-        align-items: flex-start;
+        gap: var(--space-2);
+      }
+
+      .config-item__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-2);
+      }
+
+      .config-item__label {
+        display: inline-flex;
+        align-items: center;
+        font-family: var(--font-brutalist);
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--color-text-muted);
+      }
+
+      .config-item__value {
+        font-family: var(--font-mono, monospace);
+        font-size: var(--text-sm);
+        color: var(--color-text-primary);
+        font-weight: var(--font-bold);
+      }
+
+      .config-item__value--enabled {
+        color: var(--color-success);
+      }
+
+      .config-item__value--disabled {
+        color: var(--color-danger);
+      }
+
+      .config-item__input-row {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+      }
+
+      .config-input {
+        width: 100%;
+        max-width: 140px;
+        padding: var(--space-1-5) var(--space-2);
+        font-family: var(--font-mono, monospace);
+        font-size: var(--text-sm);
+        background: var(--color-surface);
+        color: var(--color-text-primary);
+        border: 1px solid var(--color-border);
+        border-radius: 0;
+        min-height: 36px;
+        transition: border-color 0.2s ease;
+      }
+
+      .config-input:focus {
+        outline: none;
+        border-color: var(--color-warning);
+        box-shadow: 0 0 0 1px var(--color-warning);
+      }
+
+      .config-input::-webkit-inner-spin-button,
+      .config-input::-webkit-outer-spin-button {
+        opacity: 1;
+      }
+
+      /* ── Aging Rules Sub-Grid ────────────── */
+
+      .aging-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-3);
+      }
+
+      .aging-grid .config-item {
+        margin: 0;
+      }
+
+      /* ── Save Button ─────────────────────── */
+
+      .save-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
+        font-family: var(--font-brutalist);
+        font-weight: var(--font-bold);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        padding: var(--space-2) var(--space-4);
+        background: transparent;
+        border: 1px solid var(--color-success);
+        color: var(--color-success);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        min-height: 44px;
+        min-width: 44px;
+      }
+
+      .save-btn:hover {
+        background: color-mix(in srgb, var(--color-success) 10%, transparent);
+      }
+
+      .save-btn:focus-visible {
+        outline: 2px solid var(--color-success);
+        outline-offset: 2px;
+      }
+
+      .save-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .save-btn--warning {
+        border-color: var(--color-warning);
+        color: var(--color-warning);
+      }
+
+      .save-btn--warning:hover {
+        background: color-mix(in srgb, var(--color-warning) 10%, transparent);
+      }
+
+      .save-btn--warning:focus-visible {
+        outline: 2px solid var(--color-warning);
+      }
+
+      /* ── Simulation Grid ─────────────────── */
+
+      .sim-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: var(--space-4);
+      }
+
+      .sim-card {
+        border: var(--border-default);
+        background: var(--color-surface-raised);
+        padding: var(--space-4);
+        opacity: 0;
+        animation: card-enter 0.35s ease-out forwards;
+        transition:
+          border-color 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+
+      .sim-card:hover {
+        border-color: var(--color-text-muted);
+      }
+
+      .sim-card__header {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        margin-bottom: var(--space-3);
+      }
+
+      .sim-card__name {
+        font-family: var(--font-brutalist);
+        font-weight: var(--font-bold);
+        font-size: var(--text-sm);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--color-text-primary);
+      }
+
+      .sim-card__tick {
+        margin-left: auto;
+        font-family: var(--font-mono, monospace);
+        font-size: 10px;
+        color: var(--color-text-muted);
+        background: var(--color-border-light);
+        padding: 1px 6px;
+        border: 1px solid var(--color-border);
+      }
+
+      .sim-card__stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-2);
+        margin-bottom: var(--space-3);
+      }
+
+      .stat {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+      }
+
+      .stat__label {
+        font-family: var(--font-mono, monospace);
+        font-size: 10px;
+        color: var(--color-text-muted);
+      }
+
+      .stat__value {
+        font-family: var(--font-mono, monospace);
+        font-size: var(--text-sm);
+        color: var(--color-text-primary);
+      }
+
+      .sim-card__countdown {
+        font-family: var(--font-mono, monospace);
+        font-size: var(--text-xs);
+        color: var(--color-text-muted);
+        margin-bottom: var(--space-3);
+      }
+
+      /* ── Force Tick Button ────────────────── */
+
+      .force-tick-btn {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        font-family: var(--font-brutalist);
+        font-weight: var(--font-bold);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        padding: var(--space-2) var(--space-4);
+        background: transparent;
+        border: 1px solid var(--color-warning);
+        color: var(--color-warning);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        min-height: 44px;
+        min-width: 44px;
+      }
+
+      .force-tick-btn:hover {
+        background: color-mix(in srgb, var(--color-warning) 10%, transparent);
+      }
+
+      .force-tick-btn:focus-visible {
+        outline: 2px solid var(--color-warning);
+        outline-offset: 2px;
+      }
+
+      .force-tick-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      /* ── Override Editor ──────────────────── */
+
+      .override-card {
+        padding: var(--space-5);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        margin-bottom: var(--space-4);
       }
 
       .override-card__row {
+        display: flex;
+        align-items: center;
+        gap: var(--space-4);
+        flex-wrap: wrap;
+      }
+
+      .override-card__field {
+        display: flex;
         flex-direction: column;
-        align-items: stretch;
+        gap: var(--space-1);
+      }
+
+      .override-card__field-label {
+        font-family: var(--font-brutalist);
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--color-text-muted);
+      }
+
+      .override-select {
+        padding: var(--space-2) var(--space-3);
+        font-family: var(--font-mono, monospace);
+        font-size: var(--text-sm);
+        background: var(--color-surface);
+        color: var(--color-text-primary);
+        border: 1px solid var(--color-border);
+        border-radius: 0;
+        min-height: 44px;
+        min-width: 200px;
+        cursor: pointer;
+        transition: border-color 0.2s ease;
+        appearance: auto;
+      }
+
+      .override-select:focus {
+        outline: none;
+        border-color: var(--color-warning);
+        box-shadow: 0 0 0 1px var(--color-warning);
+      }
+
+      .override-form {
+        margin-top: var(--space-4);
+        padding: var(--space-4);
+        background: var(--color-surface-raised);
+        border: 1px solid var(--color-border);
       }
 
       .override-form__row {
-        flex-direction: column;
-        align-items: stretch;
+        display: flex;
+        align-items: center;
+        gap: var(--space-4);
+        flex-wrap: wrap;
+      }
+
+      .override-form__actions {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        margin-top: var(--space-4);
+      }
+
+      .override-toggle-area {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+      }
+
+      .override-toggle-label {
+        font-family: var(--font-brutalist);
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--color-text-muted);
+      }
+
+      /* ── Cascade Rules Table ──────────────── */
+
+      .rules-table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
       }
 
       .rules-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: var(--font-mono, monospace);
+        font-size: var(--text-sm);
+      }
+
+      .rules-table th {
+        font-family: var(--font-brutalist);
+        font-size: 10px;
+        font-weight: var(--font-bold);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--color-text-muted);
+        text-align: left;
+        padding: var(--space-2) var(--space-3);
+        border-bottom: 1px solid var(--color-border);
+        white-space: nowrap;
+      }
+
+      .rules-table td {
+        padding: var(--space-2) var(--space-3);
+        border-bottom: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
+        color: var(--color-text-primary);
+        vertical-align: middle;
+        white-space: nowrap;
+      }
+
+      .rules-table tr:hover td {
+        background: color-mix(in srgb, var(--color-warning) 4%, transparent);
+      }
+
+      .rules-table__signature {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-1);
+        font-weight: var(--font-bold);
+      }
+
+      .rules-table__arrow {
+        color: var(--color-text-muted);
         font-size: var(--text-xs);
       }
-    }
-  `;
+
+      .rules-table__inactive td {
+        opacity: 0.45;
+      }
+
+      .rules-table__timestamp {
+        font-size: var(--text-xs);
+        color: var(--color-text-muted);
+      }
+
+      /* ── Status Dots (unique to HeartbeatTab) ── */
+
+      .status-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: var(--space-1);
+      }
+
+      .status-dot--active {
+        background: var(--color-success);
+      }
+
+      .status-dot--idle {
+        background: var(--color-text-muted);
+      }
+
+      /* ── Dirty indicator ─────────────────── */
+
+      .dirty-dot {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--color-warning);
+        margin-left: var(--space-1);
+        vertical-align: middle;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .sim-card {
+          animation: none;
+          opacity: 1;
+        }
+
+        .global-card__status--active .global-card__status-dot {
+          animation: none;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .sim-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .config-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .override-card__row {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .override-form__row {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .rules-table {
+          font-size: var(--text-xs);
+        }
+      }
+    `,
+  ];
 
   /* ── State ─────────────────────────────── */
 
@@ -1125,7 +922,10 @@ export class VelgAdminHeartbeatTab extends LitElement {
 
           <div class="global-card__row">
             <div class="global-card__info">
-              <p class="global-card__label">${msg('Heartbeat System')}</p>
+              <p class="global-card__label">
+                ${msg('Heartbeat System')}
+                ${renderInfoBubble(getConfigTooltip('heartbeat_enabled'), 'tip-heartbeat_enabled')}
+              </p>
               <p class="global-card__description">
                 ${msg('Controls the heartbeat tick engine across all simulations. When disabled, no automatic ticks will fire, narrative arcs will not age, and scar tissue will not decay.')}
               </p>
@@ -1146,7 +946,8 @@ export class VelgAdminHeartbeatTab extends LitElement {
                   this._onConfigToggle('heartbeat_enabled');
                   this._saveConfig('heartbeat_enabled');
                 }}
-                aria-label=${msg('Toggle heartbeat system')}
+                aria-label=${msg('Toggle heartbeat engine')}
+                aria-describedby="tip-heartbeat_enabled"
               />
               <span class="toggle__track"></span>
             </label>
@@ -1212,12 +1013,14 @@ export class VelgAdminHeartbeatTab extends LitElement {
   private _renderConfigItem(key: ConfigKey) {
     const isDirty = this._configDirty.has(key);
     const isSaving = this._savingConfig === key;
+    const tooltip = getConfigTooltip(key);
 
     return html`
       <div class="config-item">
         <div class="config-item__header">
           <span class="config-item__label">
             ${this._configLabel(key)}
+            ${tooltip ? renderInfoBubble(tooltip, `tip-${key}`) : nothing}
             ${isDirty ? html`<span class="dirty-dot"></span>` : nothing}
           </span>
         </div>
@@ -1231,6 +1034,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
             @input=${(e: Event) =>
               this._onConfigChange(key, (e.target as HTMLInputElement).value)}
             aria-label=${this._configLabel(key)}
+            aria-describedby=${tooltip ? `tip-${key}` : nothing}
           />
           ${isDirty
             ? html`
@@ -1350,6 +1154,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
           <div class="section-header__marker"></div>
           <h2 class="section-header__title">
             ${msg('Event Aging Rules')}
+            ${renderInfoBubble(getConfigTooltip('heartbeat_event_aging_rules'), 'tip-heartbeat_event_aging_rules')}
             ${isDirty ? html`<span class="dirty-dot" title=${msg('Unsaved changes')}></span>` : nothing}
           </h2>
         </div>
@@ -1372,6 +1177,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
                     @input=${(e: Event) =>
                       onFieldChange(f.key, (e.target as HTMLInputElement).value)}
                     aria-label=${f.label}
+                    aria-describedby="tip-heartbeat_event_aging_rules"
                   />
                 </div>
               </div>
@@ -1420,6 +1226,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
                 class="override-select"
                 @change=${this._onSelectOverrideSim}
                 aria-label=${msg('Select simulation for override')}
+                aria-describedby="tip-override-select"
               >
                 <option value="">${msg('Select a simulation...')}</option>
                 ${d.simulations.map(
@@ -1463,7 +1270,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
               @input=${(e: Event) => {
                 this._overrideIntervalDraft = (e.target as HTMLInputElement).value;
               }}
-              aria-label=${msg('Interval override in seconds')}
+              aria-label=${msg('Override interval in seconds')}
             />
           </div>
 
@@ -1562,7 +1369,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
               .checked=${rule.is_active}
               ?disabled=${isToggling}
               @change=${() => this._toggleCascadeRule(rule.id)}
-              aria-label=${msg('Toggle cascade rule')}
+              aria-label=${`${msg('Toggle cascade rule')}: ${rule.source_signature} → ${rule.target_signature}`}
             />
             <span class="toggle__track"></span>
           </label>

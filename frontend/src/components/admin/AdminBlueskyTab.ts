@@ -822,7 +822,7 @@ export class VelgAdminBlueskyTab extends LitElement {
         if (resp.data.authenticated) {
           VelgToast.success(msg('Bluesky connection verified.'));
         } else if (resp.data.configured) {
-          VelgToast.error(msg('Authentication failed — check app password.'));
+          VelgToast.error(msg('Authentication failed – check app password.'));
         } else {
           VelgToast.error(msg('Bluesky credentials not configured.'));
         }
@@ -897,7 +897,7 @@ export class VelgAdminBlueskyTab extends LitElement {
       <div class="scif-header">
         <div>
           <h2 class="scif-header__title">${msg('Bluesky Relay')}</h2>
-          <span class="scif-header__subtitle">${msg('Cross-channel dispatch — AT Protocol')}</span>
+          <span class="scif-header__subtitle">${msg('Cross-channel dispatch – AT Protocol')}</span>
         </div>
       </div>
 
@@ -1171,7 +1171,7 @@ export class VelgAdminBlueskyTab extends LitElement {
 
           <div class="config-row">
             <div class="config-row__label">
-              <div class="config-row__name">${msg('Handle')} ${renderInfoBubble(msg('Your Bluesky handle (e.g. bureau.bsky.social). This is the account that will publish Bureau dispatches. Create a dedicated account for the pipeline — do not use a personal account.'))}</div>
+              <div class="config-row__name">${msg('Handle')} ${renderInfoBubble(msg('Your Bluesky handle (e.g. bureau.bsky.social). This is the account that will publish Bureau dispatches. Create a dedicated account for the pipeline – do not use a personal account.'))}</div>
               <div class="config-row__desc">${msg('Bluesky account handle (e.g. bureau.bsky.social)')}</div>
             </div>
             <div class="config-input-group">
@@ -1246,7 +1246,7 @@ export class VelgAdminBlueskyTab extends LitElement {
 
           <div class="config-row">
             <div class="config-row__label">
-              <div class="config-row__name">${msg('Bluesky Enabled')} ${renderInfoBubble(msg('Master switch for the entire Bluesky pipeline. When off, no posts are created or published — even if Auto Cross-Post is on. Turn this on after configuring Handle + App Password above.'))}</div>
+              <div class="config-row__name">${msg('Bluesky Enabled')} ${renderInfoBubble(msg('Master switch for the entire Bluesky pipeline. When off, no posts are created or published – even if Auto Cross-Post is on. Turn this on after configuring Handle + App Password above.'))}</div>
               <div class="config-row__desc">${msg('Master switch for the Bluesky pipeline')}</div>
             </div>
             <button

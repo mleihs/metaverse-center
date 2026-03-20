@@ -7,14 +7,14 @@ import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles
 import { settingsStyles } from '../shared/settings-styles.js';
 
 /**
- * Bleed mechanics settings panel — controls cross-simulation event propagation.
+ * Bleed mechanics settings panel – controls cross-simulation event propagation.
  *
  * Settings stored in `simulation_settings` with category='world':
- * - bleed_enabled (bool) — Master toggle
- * - bleed_min_impact (int 1-10) — Minimum event impact for bleed
- * - bleed_max_depth (int 1-3) — Maximum echo cascade depth
- * - bleed_strength_decay (float 0-1) — Strength decay per cascade level
- * - bleed_auto_approve (bool) — Auto-approve incoming echoes
+ * - bleed_enabled (bool) – Master toggle
+ * - bleed_min_impact (int 1-10) – Minimum event impact for bleed
+ * - bleed_max_depth (int 1-3) – Maximum echo cascade depth
+ * - bleed_strength_decay (float 0-1) – Strength decay per cascade level
+ * - bleed_auto_approve (bool) – Auto-approve incoming echoes
  */
 
 @localized()
@@ -204,7 +204,7 @@ export class VelgBleedSettingsPanel extends BaseSettingsPanel {
         <div class="settings-form__group">
           <label class="settings-form__label settings-form__label--xs">
             ${msg('Maximum Cascade Depth')}
-            ${renderInfoBubble(msg('How many times an echo can re-echo (1-3). Depth 1: direct echo only. Depth 2: echoes of echoes. Depth 3: maximum — reality fractures deeply. Each depth level applies strength decay.'))}
+            ${renderInfoBubble(msg('How many times an echo can re-echo (1-3). Depth 1: direct echo only. Depth 2: echoes of echoes. Depth 3: maximum – reality fractures deeply. Each depth level applies strength decay.'))}
           </label>
           <div class="bleed-range">
             <input

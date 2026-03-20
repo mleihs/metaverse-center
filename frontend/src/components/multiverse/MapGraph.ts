@@ -1353,7 +1353,7 @@ export class VelgMapGraph extends LitElement {
       <svg
         viewBox="${this._viewBox}"
         role="img"
-        aria-label="${msg("Cartographer's Map — multiverse simulation graph")}"
+        aria-label="${msg("Cartographer's Map – multiverse simulation graph")}"
         @mousedown=${this._handleMouseDown}
         @mousemove=${this._handleMouseMove}
         @mouseup=${this._handleMouseUp}

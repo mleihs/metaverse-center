@@ -1734,7 +1734,7 @@ export class VelgLandingPage extends LitElement {
                 this._trackCta('hero');
                 this._navigate('/register');
               }}
-              aria-label=${msg('Build Your World — Create your account')}
+              aria-label=${msg('Build Your World – Create your account')}
             >
               ${msg('Build Your World')}
               <span class="hero__cta-arrow" aria-hidden="true">\u2192</span>
@@ -1747,7 +1747,7 @@ export class VelgLandingPage extends LitElement {
                 this._trackCta('hero-explore');
                 this._navigate('/worlds');
               }}
-              aria-label=${msg('Explore Worlds — Browse player-created civilizations')}
+              aria-label=${msg('Explore Worlds – Browse player-created civilizations')}
             >
               ${msg('Explore Worlds')}
             </a>
@@ -1867,7 +1867,7 @@ export class VelgLandingPage extends LitElement {
               <div class="feature-card__body">
                 <h2 class="feature-card__title">${msg('Worldbuilding')}</h2>
                 <p class="feature-card__desc">
-                  ${msg('Describe a world in one sentence. The Forge builds it — geography, citizens, architecture, thousands of words of lore. Within minutes, you have a living civilization with characters who form opinions, hold grudges, and write their own newspapers.')}
+                  ${msg('Describe a world in one sentence. The Forge builds it – geography, citizens, architecture, thousands of words of lore. Within minutes, you have a living civilization with characters who form opinions, hold grudges, and write their own newspapers.')}
                 </p>
                 <div class="feature-card__ref">TIER-1 // ACTIVE</div>
               </div>
@@ -2055,7 +2055,7 @@ export class VelgLandingPage extends LitElement {
               <div class="step__badge">01</div>
               <h3 class="step__title">${msg('Create Your World')}</h3>
               <p class="step__desc">
-                ${msg('Type a premise. The Forge generates a complete civilization — dozens of characters with personalities, cities with architecture, and thousands of words of original lore. Minutes, not months.')}
+                ${msg('Type a premise. The Forge generates a complete civilization – dozens of characters with personalities, cities with architecture, and thousands of words of original lore. Minutes, not months.')}
               </p>
             </div>
 
@@ -2098,7 +2098,7 @@ export class VelgLandingPage extends LitElement {
             <p class="cta-frame__classification">${msg('Transmission Open')}</p>
             <h2 class="cta-frame__heading">${msg('Every World Writes Its Own History')}</h2>
             <p class="cta-frame__text">
-              ${msg('Explore worlds built by others — read their stories, meet their characters, follow the intrigue. Or build your own. Describe a world in one sentence. The Forge does the rest.')}
+              ${msg('Explore worlds built by others – read their stories, meet their characters, follow the intrigue. Or build your own. Describe a world in one sentence. The Forge does the rest.')}
             </p>
 
             <div class="cta-frame__actions">
@@ -2110,7 +2110,7 @@ export class VelgLandingPage extends LitElement {
                   this._trackCta('footer-create');
                   this._navigate('/register');
                 }}
-                aria-label=${msg('Create your world — Sign up')}
+                aria-label=${msg('Create your world – Sign up')}
               >
                 ${msg('Create Your World')}
               </a>

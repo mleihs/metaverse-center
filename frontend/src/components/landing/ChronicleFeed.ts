@@ -660,7 +660,7 @@ export class VelgChronicleFeed extends LitElement {
         <p class="wire-header__classification">${msg('Multiverse Intelligence Wire')}</p>
         <h1 class="wire-header__title">${msg('The Chronicle Feed')}</h1>
         <p class="wire-header__subtitle">
-          ${msg('Every world writes its own newspaper. This is the wire service — AI-generated broadsheets from every active simulation, decoded and delivered in real time.')}
+          ${msg('Every world writes its own newspaper. This is the wire service – AI-generated broadsheets from every active simulation, decoded and delivered in real time.')}
         </p>
       </div>
 

@@ -21,7 +21,7 @@ import '../shared/VelgStyleReferenceUpload.js';
 import './VelgForgeScanOverlay.js';
 
 /**
- * Phase III: The Darkroom — Aesthetic Control Center.
+ * Phase III: The Darkroom – Aesthetic Control Center.
  * AI theme generation + preview + image generation settings.
  */
 @localized()
@@ -565,7 +565,7 @@ export class VelgForgeDarkroom extends LitElement {
 
     return html`
       <div class="darkroom">
-        <div class="darkroom__section-header">${msg('Theme Forge — AI-Generated Visual Identity')}</div>
+        <div class="darkroom__section-header">${msg('Theme Forge – AI-Generated Visual Identity')}</div>
 
         <!-- Left: Theme Controls -->
         <div class="controls">
@@ -771,7 +771,7 @@ export class VelgForgeDarkroom extends LitElement {
             </label>
 
             <div style="display:flex;flex-direction:column;gap:var(--space-1)">
-              <label class="field__label" style="font-size:var(--text-xs);color:var(--color-text-muted)">${msg('Portraits')} — ${msg('agent character images')}</label>
+              <label class="field__label" style="font-size:var(--text-xs);color:var(--color-text-muted)">${msg('Portraits')} – ${msg('agent character images')}</label>
               <textarea class="field__textarea" rows="2"
                 .value=${this._stylePromptPortrait}
                 @input=${(e: Event) => {
@@ -783,7 +783,7 @@ export class VelgForgeDarkroom extends LitElement {
             </div>
 
             <div style="display:flex;flex-direction:column;gap:var(--space-1)">
-              <label class="field__label" style="font-size:var(--text-xs);color:var(--color-text-muted)">${msg('Buildings')} — ${msg('location and structure images')}</label>
+              <label class="field__label" style="font-size:var(--text-xs);color:var(--color-text-muted)">${msg('Buildings')} – ${msg('location and structure images')}</label>
               <textarea class="field__textarea" rows="2"
                 .value=${this._stylePromptBuilding}
                 @input=${(e: Event) => {
@@ -795,7 +795,7 @@ export class VelgForgeDarkroom extends LitElement {
             </div>
 
             <div style="display:flex;flex-direction:column;gap:var(--space-1)">
-              <label class="field__label" style="font-size:var(--text-xs);color:var(--color-text-muted)">${msg('Banner')} — ${msg('simulation hero image')}</label>
+              <label class="field__label" style="font-size:var(--text-xs);color:var(--color-text-muted)">${msg('Banner')} – ${msg('simulation hero image')}</label>
               <textarea class="field__textarea" rows="2"
                 .value=${this._stylePromptBanner}
                 @input=${(e: Event) => {
@@ -807,7 +807,7 @@ export class VelgForgeDarkroom extends LitElement {
             </div>
 
             <div style="display:flex;flex-direction:column;gap:var(--space-1)">
-              <label class="field__label" style="font-size:var(--text-xs);color:var(--color-text-muted)">${msg('Lore Illustrations')} — ${msg('world lore section art')}</label>
+              <label class="field__label" style="font-size:var(--text-xs);color:var(--color-text-muted)">${msg('Lore Illustrations')} – ${msg('world lore section art')}</label>
               <textarea class="field__textarea" rows="2"
                 .value=${this._stylePromptLore}
                 @input=${(e: Event) => {
@@ -827,7 +827,7 @@ export class VelgForgeDarkroom extends LitElement {
                   'Upload a reference image to guide the AI art style via img2img. The generated images will visually resemble the reference.',
                 ),
                 msg(
-                  'Upload a painting or photo — portraits and buildings will inherit its visual style.',
+                  'Upload a painting or photo – portraits and buildings will inherit its visual style.',
                 ),
               )}
             </label>

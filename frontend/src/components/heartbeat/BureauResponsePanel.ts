@@ -24,7 +24,7 @@ const RESPONSE_DESCRIPTIONS: Record<BureauResponseType, { label: () => string; d
   },
   remediate: {
     label: () => msg('Remediate'),
-    desc: () => msg('Full remediation protocol — higher effectiveness, can resolve event.'),
+    desc: () => msg('Full remediation protocol – higher effectiveness, can resolve event.'),
     cost: () => msg('2-3 agents, 2 ticks'),
   },
   adapt: {

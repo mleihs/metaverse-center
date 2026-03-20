@@ -101,9 +101,9 @@ export class SupabaseAuthService {
             VelgToast.success(
               tokens > 0
                 ? msg(
-                    str`Clearance granted — welcome to the Forge, Architect! ${tokens} tokens await you.`,
+                    str`Clearance granted – welcome to the Forge, Architect! ${tokens} tokens await you.`,
                   )
-                : msg('Clearance granted — welcome to the Forge, Architect'),
+                : msg('Clearance granted – welcome to the Forge, Architect'),
             );
             sessionStorage.setItem(CLEARANCE_TOAST_KEY, '1');
 

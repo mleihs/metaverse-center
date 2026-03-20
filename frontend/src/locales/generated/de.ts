@@ -18,7 +18,7 @@
 's005bf56c85b6b5a3': `Erg`,
 's0060f9d8fb00e164': `Override gespeichert.`,
 's0068188f86558066': `Social Trends ermöglicht den Import realer Nachrichten von The Guardian und NewsAPI, die dann durch KI in simulationskontextuelle Ereignisse transformiert werden. Eine Nachricht über politische Unruhen wird zu einem Staatsstreich in Ihrer Welt.`,
-'s007346811bbe2894': `Defensiv — Wächter + Aufklärungsabwehr`,
+'s007346811bbe2894': `Defensiv – Wächter + Aufklärungsabwehr`,
 's0082c101c675ca3a': `Überschriften- + Fließtextschriften`,
 's008393d99ab7480d': `Auswirkungsstufe`,
 's0084901dbe14cae9': `Geschwindigkeitsmultiplikator für alle Übergänge. 0.7=schnell/knackig, 1.0=normal, 1.5=langsam/fließend.`,
@@ -45,10 +45,10 @@
 's0184c1f7096d0069': `Autorisieren Sie den Einsatz von 3 neuen Agenten in dieser Simulation. Optionale Fokus-Direktive und Zonenauswahl verfügbar.`,
 's01b09ac2bd6fcb1f': `Fähigkeiten`,
 's01d0e75a462b1e55': `Akzentfarbe für Warnungen, Hervorhebungen und dekorative Elemente.`,
-'s01f118612581780f': `Justieren Sie die narrative Sensitivität Ihrer Simulation über die Attunement-Einstellungen. Höhere Sensitivität bedeutet, dass die Welt dramatischer auf Ereignisse reagiert — nützlich für volatile Dystopien. Niedrigere Sensitivität erzeugt eine stetigere, vorhersehbarere Welt, geeignet für methodisches Worldbuilding.`,
+'s01f118612581780f': `Justieren Sie die narrative Sensitivität Ihrer Simulation über die Attunement-Einstellungen. Höhere Sensitivität bedeutet, dass die Welt dramatischer auf Ereignisse reagiert – nützlich für volatile Dystopien. Niedrigere Sensitivität erzeugt eine stetigere, vorhersehbarere Welt, geeignet für methodisches Worldbuilding.`,
 's01ff83cec32f0e1a': `Klicken und ziehen um Bereich auszuwählen`,
 's0204454f7ec71c97': `Bleed-Vektoren`,
-'s0212f4b74bdb3269': `Zonensicherheit ist die primäre Defensivmechanik. Eine Zone auf Kritisch-Sicherheit reduziert den Erfolg feindlicher Operative um bis zu 25%. Umgekehrt ist eine Zone mit niedriger Sicherheit ein leichtes Ziel — Spionage-Aufklärung, die Zonensicherheit enthüllt, ist daher strategisch wertvoll.`,
+'s0212f4b74bdb3269': `Zonensicherheit ist die primäre Defensivmechanik. Eine Zone auf Kritisch-Sicherheit reduziert den Erfolg feindlicher Operative um bis zu 25%. Umgekehrt ist eine Zone mit niedriger Sicherheit ein leichtes Ziel – Spionage-Aufklärung, die Zonensicherheit enthüllt, ist daher strategisch wertvoll.`,
 's0231b41e1af7c578': `Chat mit Gedächtnis`,
 's023a21fbfdb01faf': `Simulation erstellen - Grunddaten`,
 's023ee4e0d2fc9707': `Das Virtuelle ist vollständig real`,
@@ -80,7 +80,7 @@
 's036cdc89a515d702': `Personaldossiers werden versiegelt`,
 's0379fc73608ab971': `Fertig`,
 's037a5cc5d3876a8b': `Sehnsucht und Bedürfnis. Die tiefsten Sehnsüchte überschreiten alle Grenzen.`,
-'s037c8bcb5a7ecc6e': `Wenn Sie eine Simulation zum ersten Mal an einem Tag besuchen, erscheint ein klassifiziertes Nachrichtenbriefing — die Tägliche Substrat-Depesche. Gestaltet als Bureau-Bericht, der einem Operativ übergeben wird, fasst sie die letzten 24 Stunden zusammen: Gesamtgesundheitsstatus mit farbcodiertem Balken, Zählung kritischer und positiver Ereignisse, Gesamt-Pulseinträge und aktive Erzählungsbögen mit Druckindikatoren.`,
+'s037c8bcb5a7ecc6e': `Wenn Sie eine Simulation zum ersten Mal an einem Tag besuchen, erscheint ein klassifiziertes Nachrichtenbriefing – die Tägliche Substrat-Depesche. Gestaltet als Bureau-Bericht, der einem Operativ übergeben wird, fasst sie die letzten 24 Stunden zusammen: Gesamtgesundheitsstatus mit farbcodiertem Balken, Zählung kritischer und positiver Ereignisse, Gesamt-Pulseinträge und aktive Erzählungsbögen mit Druckindikatoren.`,
 's0380652457f8ba15': `Auswahl`,
 's038baae57d8cb064': `Das Pulssystem verfolgt Erzählungsbögen, während sie sich durch Ereignissequenzen entwickeln. Ein Bogen könnte als territorialer Disput beginnen, sich zu einer ausgewachsenen Grenzkrise eskalieren und durch diplomatische Intervention oder Zusammenbruch gelöst werden. Jeder Tick evaluiert die Bogen-Progression und prüft auf Eskalationsauslöser, Auflösungsbedingungen und Bogen-Interferenzen.`,
 's03918f7dae234657': `The Guardian API`,
@@ -123,14 +123,13 @@
 's04f01b636ef03f68': `DUNKELKAMMER-PASS AKTIVIEREN`,
 's050beabafc3fcba9': `Manuell Tokens an einen Benutzer vergeben. Erstellt einen prüfbaren Buchungseintrag.`,
 's051758970a023d38': `Zugangscode`,
-'s053756e4c9180ff3': `BYOK aktiv — Unbeschränkter Zugang`,
 's053c9a96c0179bbf': `Chroniken werden geladen...`,
 's0556913fceae61da': `Theme neu generieren`,
 's055b4defdfe78383': `Persönlichkeit`,
 's055e93cb251f1c2a': `Ticking…`,
 's0561bb86953cba6a': str`Beigetreten ${0}`,
 's056998b99e229d81': `Versorgungsanschlüsse werden finalisiert`,
-'s0576751f2821ea0d': `Phase I — Das Astrolabium`,
+'s0576751f2821ea0d': `Phase I – Das Astrolabium`,
 's05789b5aa3b5fd4b': `Einladungsablauf (Stunden)`,
 's0579011ec6b92aec': `Wächter weiterhin wirkungsvoll, aber nicht mehr unüberwindbar`,
 's057bbe6cf5b6cae9': `Depesche einsehen`,
@@ -170,7 +169,6 @@
 's06e547d0873812ae': `Gründungsphase: Nur Wächter und Spione dürfen eingesetzt werden.`,
 's06e8398b553f0d98': `Bögen`,
 's06f4b09251250e51': `Schreibe deine eigene strategische Geschichte`,
-'s06fb2722f75bad4e': `Heartbeat-System umschalten`,
 's0704aba6a004e0e9': `3 Wertungsdimensionen aktiviert: Stabilität, Einfluss, Diplomatie`,
 's070bbeb77530be69': `Hintergrundfarbe der Hauptseite. Die Basisebene hinter allen Inhalten.`,
 's070fb77f5f954848': `Simulationskopien aus abgeschlossenen Epochen. Dies sind eingefrorene Momentaufnahmen, die nach der Analyse sicher entfernt werden können.`,
@@ -194,10 +192,9 @@
 's0852c030839ee3db': `Kein Ereignis ausgewählt.`,
 's087d1c07b52aa3e3': str`P${0}P`,
 's087d3007b52ac5df': str`${0}T`,
-'s08849b780816c366': `Das Bluten — Wo Scherben aufeinandertreffen und die Realität dünn wird`,
 's0886be5eefdf5edd': `Spieler können während Epochen Allianzen vorschlagen und akzeptieren. Allianzen gewähren +15 % diplomatische Boni. Der Angriff auf einen Verbündeten löst die Allianz jedoch mit möglichen Strafpunkten auf. Wie beim Gefangenendilemma sind Kooperation und Verrat beides gangbare Strategien mit realen Konsequenzen.`,
-'s0887e397b1cac2d6': `Niedrig — verblasst schnell`,
-'s08888df1e4e18089': `KI-Gegner mit fünf Persönlichkeitsarchetypen — Wächter, Kriegsherr, Diplomat, Stratege und Chaos — jeweils mit eigenständigem strategischen Verhalten. Bots nutzen dieselben Einsatz- und Bewertungsmechaniken wie menschliche Spieler, konfigurierbar auf drei Schwierigkeitsstufen.`,
+'s0887e397b1cac2d6': `Niedrig – verblasst schnell`,
+'s08888df1e4e18089': `KI-Gegner mit fünf Persönlichkeitsarchetypen – Wächter, Kriegsherr, Diplomat, Stratege und Chaos – jeweils mit eigenständigem strategischen Verhalten. Bots nutzen dieselben Einsatz- und Bewertungsmechaniken wie menschliche Spieler, konfigurierbar auf drei Schwierigkeitsstufen.`,
 's088daa83c3de37d6': `KOMMANDOZENTRALE BETRETEN`,
 's088f4374ae33fa8f': `Operativpfade`,
 's0896d0a32d7ddd1b': `Emergente Strategie`,
@@ -209,7 +206,7 @@
 's08f8b55b8dd01292': `Astrolabium`,
 's09020cf2a2dea903': `VERBORGENE MOTIVATION`,
 's09085b07b5a0de5f': `KI`,
-'s0919cdf7869b7f6e': `Die Schlacht von B-R5RB (27.–28. Januar 2014) begann, als die Spieler-Corporation H A V O C eine geplante Souveränitätszahlung an CONCORD versäumte. Ob menschliches Versagen, Bug oder Sabotage, bleibt umstritten. Die versäumte Zahlung machte ihre Station verwundbar. Was folgte: 7.548 Spielercharaktere über 21 Stunden, mit 2.670 gleichzeitigen Spielern in einem System. Über 11 Billionen ISK wurden zerstört — ein geschätzter Realwert von 300.000–330.000 US-Dollar. CCP errichtete ein permanentes Ingame-Denkmal, „Die Titanomachie", aus den nicht-bergbaren Großkampfschiffwracks. Die Schlacht wurde nicht designt. Sie emergierte aus der Interaktion ökonomischer Systeme, politischer Allianzen und eines Verwaltungsfehlers.`,
+'s0919cdf7869b7f6e': `Die Schlacht von B-R5RB (27.–28. Januar 2014) begann, als die Spieler-Corporation H A V O C eine geplante Souveränitätszahlung an CONCORD versäumte. Ob menschliches Versagen, Bug oder Sabotage, bleibt umstritten. Die versäumte Zahlung machte ihre Station verwundbar. Was folgte: 7.548 Spielercharaktere über 21 Stunden, mit 2.670 gleichzeitigen Spielern in einem System. Über 11 Billionen ISK wurden zerstört – ein geschätzter Realwert von 300.000–330.000 US-Dollar. CCP errichtete ein permanentes Ingame-Denkmal, „Die Titanomachie", aus den nicht-bergbaren Großkampfschiffwracks. Die Schlacht wurde nicht designt. Sie emergierte aus der Interaktion ökonomischer Systeme, politischer Allianzen und eines Verwaltungsfehlers.`,
 's091dd6d6b5697679': `Strukturelle Ermüdung wird gescannt`,
 's09205907b5b56cda': `Nein`,
 's09218687d0aa8f05': `Blockiert Botschafter für 3 Zyklen`,
@@ -235,7 +232,7 @@
 's0a541cb4ad17d91e': `Spionageaufklärung → Schwachstellen aufgedeckt`,
 's0a552e96950fee13': str`Chat mit ${0}`,
 's0a698698334be8c4': `Gründung`,
-'s0a7255f7f9403e1e': `Nur 1 Wächter während des Fundaments stationieren, den Rest sparen. Du startest den Wettbewerb mit 35+ RP — genug für einen Assassinen + Saboteur in Zyklus 4. Riskant: unverteidigte Zonen sind verwundbar. Am besten mit dem Kriegstreiber-Preset, wo frühe Militärpunkte sich aufaddieren.`,
+'s0a7255f7f9403e1e': `Nur 1 Wächter während des Fundaments stationieren, den Rest sparen. Du startest den Wettbewerb mit 35+ RP – genug für einen Assassinen + Saboteur in Zyklus 4. Riskant: unverteidigte Zonen sind verwundbar. Am besten mit dem Kriegstreiber-Preset, wo frühe Militärpunkte sich aufaddieren.`,
 's0a79881c04ee8c25': `Setzen Sie Ihre Zivilisation in getakteten kompetitiven Saisons gegen andere ein. Setzen Sie Operative ein, sabotieren Sie Rivalen, schützen Sie Ihre Agenten. Strategie trifft auf emergentes KI-Erzählen.`,
 's0a923a62869e87aa': `Dossier-Generierung fehlgeschlagen. Token erstattet.`,
 's0aa6c4d5d92259dc': `Gebäude entworfen`,
@@ -247,7 +244,6 @@
 's0aff681d2382c991': `Verbündete Aufklärung`,
 's0b0748d602401883': `Optionale Begründung für den Prüfpfad`,
 's0b2036d33fbf3274': `Alle drei Abteilungen abschließen, um fortzufahren`,
-'s0b24b72acf62841e': `Wie oft ein Echo nachhallen kann (1-3). Tiefe 1: nur direktes Echo. Tiefe 2: Echos von Echos. Tiefe 3: Maximum - die Realität bricht tief ein. Jede Tiefenstufe hat einen Stärkeabfall.`,
 's0b43dbc9a326feee': `Kulturelle und narrative Reichweite. Gesteigert durch Propaganda, Spionage-Erkenntnisse und die Reichhaltigkeit der Sozialdynamiken Ihrer Simulation.`,
 's0b4d6d84574e2fe7': `Spionage-Kriegsraum mit Operativeinsatz`,
 's0b565a971cdf948a': `Allianz erstellt.`,
@@ -277,7 +273,6 @@
 's0cabec28c007ccd8': `Ungültiges oder abgelaufenes Einladungs-Token.`,
 's0cae8590f175ec06': `Vorheriger Zyklus`,
 's0cba90f16f8d6c84': `KLASSIFIZIERTE DEPESCHE`,
-'s0cbf3c39af71904f': `Die Plattform ist frei zugänglich. Durchstöbern Sie existierende Welten in der Weltengalerie, lesen Sie KI-generierte Chroniken, oder tauchen Sie in die Bureau-Archive für die hauseigene Mythologie der Plattform ein. Wenn Sie bereit sind zu bauen, wartet die Simulationsschmiede.`,
 's0cc72f6af26d5c48': `Rekrutierungsdirektive`,
 's0ccd51055e3b70fb': `Neuen Shard betreten`,
 's0ce5b690bb44ac3b': `Gesamtcharakter der Schatten. „offset"=harte brutalistische Schatten, „blur"=weich organisch, „glow"=leuchtend Cyberpunk/Fantasy, „none"=flach minimalistisch.`,
@@ -289,7 +284,7 @@
 's0d2a949c78d6b357': `Laden der Kommandozentrale...`,
 's0d2e1ac7d05440bf': `Kartographische Abteilung`,
 's0d3363af1dd54728': `pgvector-Embeddings für semantischen Gedächtnisabruf (1536-dimensional)`,
-'s0d409d1c653794ef': `No Man’s Sky (2016) griff die Skalenachse an: 18 Trillionen Planeten, generiert aus mathematischen Funktionen. Aber Skala ohne Tiefe erzeugt Touristenattraktionen, keine Welten. Was Dwarf Fortress verstand, und was No Man’s Sky schließlich durch Jahre an Updates lernte, ist, dass prozedurale Generierung nicht nur Geographie, sondern Bedeutung erzeugen muss — Charaktere mit etwas auf dem Spiel, Ereignisse mit Konsequenzen, Geschichten, die den Bewohnern etwas bedeuten.`,
+'s0d409d1c653794ef': `No Man’s Sky (2016) griff die Skalenachse an: 18 Trillionen Planeten, generiert aus mathematischen Funktionen. Aber Skala ohne Tiefe erzeugt Touristenattraktionen, keine Welten. Was Dwarf Fortress verstand, und was No Man’s Sky schließlich durch Jahre an Updates lernte, ist, dass prozedurale Generierung nicht nur Geographie, sondern Bedeutung erzeugen muss – Charaktere mit etwas auf dem Spiel, Ereignisse mit Konsequenzen, Geschichten, die den Bewohnern etwas bedeuten.`,
 's0d442638d9fb6aed': `ZUR CHRONIK`,
 's0d4646ae164e0b39': `Abklingend`,
 's0d56e22fcaa2bded': `PARAMETER AUSSTEHEND`,
@@ -300,7 +295,6 @@
 's0da3ef79edf16d1e': `Echo-Vektor ist erforderlich`,
 's0db866e18269e1d0': `Bundle aktualisiert.`,
 's0dbf648c666584d8': `Profil erfolgreich aktualisiert.`,
-'s0dcb37ef15c9e614': `Ereignis-Überschrift. Erhalten durch Bleed-Echos - das ist, was Agenten in anderen Simulationen hören.`,
 's0dcd0532a664441b': `Weltbild-Kohärenz wird belastungsgetestet`,
 's0dd28f0c95399734': `Die Vielfalt ist der Sinn. Jede Zivilisation ist eine Hypothese darüber, wie Gesellschaften sich organisieren, getestet gegen das unvorhersehbare Verhalten von KI-Agenten und den strategischen Druck anderer Spieler. Spenglers Determinismus bricht zusammen, wenn der Schöpfer eingreifen kann. Diamonds Umweltbeschränkungen werden zu Designentscheidungen. Die Vision der Metabolisten von organischem Stadtwachstum wird zum Standardverhalten statt zum radikalen Vorschlag.`,
 's0e2cfd4c80adda34': `Resonanzpunkte werden in jedem Zyklus vergeben. RP werden ausgegeben, um Agenten (Spione, Saboteure, Attentäter usw.) einzusetzen. Die Gründungsphase gewährt 1,5x.`,
@@ -335,7 +329,7 @@
 's0f4c6540c30bd8b4': `Bezeichnung`,
 's0f51454f932e2e46': str`Event erstellt mit ${0} Agenten-Reaktionen`,
 's0f60f77fd7eb66ff': `Was ist die Multiversumskarte?`,
-'s0f67d2c3b88ac30f': `Gesellschaftliche Trends & Kampagnen`,
+'s0f67d2c3b88ac30f': `Gesellschaftliche Trends &amp; Kampagnen`,
 's0f6c0ac32e48f5ca': `Simulation → Puls-Tab`,
 's0f854cb39bd9b089': `Spieler`,
 's0f9430f775929f41': `Textuelle Welten`,
@@ -349,31 +343,17 @@
 's0fd66458e9857305': `Noch nicht konfigurierbar`,
 's0fd75cc6a1aad906': `Nachrichten`,
 's0fdf3a01d88b33a2': `Attunement konnte nicht gesetzt werden.`,
-'s0fdf997d9f529ffb': `PERSÖNLICHES LOGBUCH DER KARTOGRAPHIN — Kartographin Lise Engel
-Einsatz: The Gaslit Reach, ökologische Langzeiterhebung
-Eintrag 7 (die Einträge sind nummeriert, aber die Nummern entsprechen nicht Tagen, weil die Zeit in der Reach in Gezeiten gemessen wird, die sich die Unterzee von einem Mond merkt, den sie nie gesehen hat)
-
-Ich bin seit dem, was die Archivisten mir versichern, drei Wochen in den Pilzwarrens, obwohl mein Körper darauf besteht, es sei länger gewesen, und meine Instrumente darauf bestehen, es sei kürzer gewesen, und die Reaktion der Archivisten auf diese Diskrepanz war, sie ihrem Katalog temporaler Anomalien hinzuzufügen, Band XIV, der, so versichern sie mir, nahezu vollständig ist und seit elf Jahren nahezu vollständig ist.
-
-Das Licht ist das Erste. Nicht die Dunkelheit — die Dunkelheit erwartet man; man bereitet sich darauf vor; man bringt Fackeln und Stirnlampen und die Standard-Lumineszenzausrüstung des Bureaus mit. Worauf man sich nicht vorbereitet, ist das Licht. Es kommt von überall und nirgends. Die Pilze an den Höhlenwänden pulsieren mit einer sanften blaugrünen Phosphoreszenz, die die Archivisten das Leuchten nennen, weil die Archivisten in allem akribisch sind, außer beim Benennen von Dingen, worin sie liebenswert schrecklich sind. Das Leuchten ist nicht hell genug zum Lesen, aber hell genug zum Gehen, und es ist warm, und es ist lebendig, und nach drei Tagen greift man nicht mehr zur Taschenlampe und beginnt den Pilzen zu vertrauen, was genau das ist, was die Pilze wollen, sagt Mother Cinder, die behauptet, der Sporocarp habe Meinungen über Besucher und drücke sie durch Luminosität aus.
-
-Das Wasser. Die Unterzee ist dunkel und still und so tief, dass die Archivisten sie in sieben verschiedenen Vermessungen bei sieben verschiedenen Tiefen gemessen und geschlossen haben, dass alle sieben Messungen gleichzeitig korrekt sind. Ich tauchte meine Hand ein. Das Wasser ist in manchen Strömungen warm und in anderen kalt, und die Grenze zwischen warm und kalt ist so präzise, dass ich beide Temperaturen auf derselben Handfläche spüren konnte. Es schmeckt nach Kupfer und Salz und etwas, das die Archivisten „Erinnerung" nennen und ich „das Gefühl, sich an einen Ort zu erinnern, an dem man nie gewesen ist". Ich trank davon. Ich sollte nicht davon trinken. Ich trank trotzdem, und drei Stunden lang konnte ich die Strömung hören, nicht als Klang, sondern als Richtung — ich wusste, wohin das Wasser floss, auf die Art, wie man weiß, wo unten ist.
-
-Der Stein singt. Nicht metaphorisch. Die Kalksteinformationen in den Oberen Galerien erzeugen eine konstante, niederfrequente Vibration, die die Bürger durch ihre Kieferknochen hören — sie pressen ihre Gesichter an die Wände und lauschen, wie Oberflächenbewohner Radio hören. Die Archivisten haben siebenundvierzig verschiedene „Lieder" katalogisiert und glauben, der Stein erzähle die geologische Geschichte des Höhlensystems in Echtzeit, was die Gaslit Reach zur einzigen Zivilisation machen würde, deren Nationalarchiv die Autobiographie ihrer eigenen Architektur enthält.
-
-Ich bleibe länger als mein Einsatz erfordert. Ich habe dem Bureau dies als „erweiterte Datenerhebung" gemeldet. Das Bureau hat vermerkt, dass dies der siebte Kartograph in Folge ist, der der Gaslit Reach zugeteilt wurde und eine Verlängerung beantragt hat. Das Bureau vermutet Kontamination. Das Bureau hat recht. Der Flechtenwein ist außergewöhnlich.`,
 's0fefd7ec7d76e1de': `Dunkelkammer-Pass aktiviert.`,
 's0fefe0fcafb0f7ac': `Neue Einheit schmieden`,
 's0ffc514cfa672dbd': `Resonanzen heute`,
 's100f626c91e525b2': `Zeige auf einen Agenten um Eignungen zu vergleichen`,
-'s10132eeac19d1e03': `Eine Stadt, die nur während Sonnenfinsternissen existiert — ihre Bewohner leben komprimierte Leben in Minuten der Dunkelheit. Zwischen den Finsternissen sind sie nichts als Gleichungen, eingeritzt in die Wände von Observatorien.`,
+'s10132eeac19d1e03': `Eine Stadt, die nur während Sonnenfinsternissen existiert – ihre Bewohner leben komprimierte Leben in Minuten der Dunkelheit. Zwischen den Finsternissen sind sie nichts als Gleichungen, eingeritzt in die Wände von Observatorien.`,
 's1015e219880ba4ff': `Akademie-Epoche erstellt. Trainingssimulation wird vorbereitet.`,
 's10361832e7a4e3e2': `Shift+Enter für Zeilenumbruch`,
 's103ebc5016e75aa8': `Straße erstellen`,
 's105f0604989df43d': `Taxonomie-Wert deaktiviert.`,
 's106657c0be077a27': `Bereinigung starten`,
 's10743f353e4e05e1': `Beschreibung erfolgreich generiert.`,
-'s10788f5cc89408bf': `mehrere Erschütterungen in Abklingphase — Substrat beruhigt sich`,
 's108c7d2c5888b740': `Quellkategorie`,
 's109dca04a38abe3d': `Teamspiel`,
 's10a536fa578da215': `REKRUT ALPHA`,
@@ -382,23 +362,22 @@ Ich bleibe länger als mein Einsatz erfordert. Ich habe dem Bureau dies als „e
 's10d2d2c4613388a5': `Updates`,
 's10faedaa75221616': `Fehler beim Hinzufügen des Taxonomie-Werts.`,
 's11070ef439997cb5': `Erhalte eine E-Mail, wenn die Epoche in eine neue Phase übergeht (Grundsteinlegung, Wettbewerb, Abrechnung).`,
-'s112888b0f100d458': `1921 sprengte Luigi Pirandello die vierte Wand mit Sechs Personen suchen einen Autor — einem Stück über fiktive Figuren, die bei einer Theaterprobe erscheinen und verlangen, dass ihre unvollendete Geschichte zu Ende erzählt wird. In seinem Vorwort von 1925 beschrieb Pirandello ihre Entstehung: „Lebendig geboren, wollten sie leben."  Die Figuren bestehen auf ihrer autonomen Existenz, unabhängig von ihrem Schöpfer. „Eine Figur, mein Herr, darf immer einen Menschen fragen, wer er ist", sagt der Vater, „denn eine Figur hat wirklich ein eigenes Leben, geprägt von ihren besonderen Eigenschaften; weshalb sie stets „jemand“ ist. Aber ein Mensch — ich spreche jetzt nicht von Ihnen — kann sehr wohl „niemand“ sein."`,
+'s112888b0f100d458': `1921 sprengte Luigi Pirandello die vierte Wand mit Sechs Personen suchen einen Autor – einem Stück über fiktive Figuren, die bei einer Theaterprobe erscheinen und verlangen, dass ihre unvollendete Geschichte zu Ende erzählt wird. In seinem Vorwort von 1925 beschrieb Pirandello ihre Entstehung: „Lebendig geboren, wollten sie leben."  Die Figuren bestehen auf ihrer autonomen Existenz, unabhängig von ihrem Schöpfer. „Eine Figur, mein Herr, darf immer einen Menschen fragen, wer er ist", sagt der Vater, „denn eine Figur hat wirklich ein eigenes Leben, geprägt von ihren besonderen Eigenschaften; weshalb sie stets „jemand“ ist. Aber ein Mensch – ich spreche jetzt nicht von Ihnen – kann sehr wohl „niemand“ sein."`,
 's11326fd2590f4e5e': `Standard`,
 's1148def0112d096a': str`Name ${0} eingeben`,
-'s114ad5f49a52f953': `Virtuelle Städte auf metaverse.center sind inhärent metabolistisch. Gebäude haben Zustandsstufen, die sich verschlechtern und verbessern. Agentenpopulationen fluktuieren. Ereignisse formen die soziale Landschaft um. Das Chronik-System sorgt für institutionelles Gedächtnis — es stellt sicher, dass die Stadt sich an ihre Transformationen erinnert, selbst während sie sie durchläuft. Anders als physische Städte können virtuelle Städte ohne die Friktion von Beton und Stahl wachsen, schrumpfen und sich reorganisieren.`,
+'s114ad5f49a52f953': `Virtuelle Städte auf metaverse.center sind inhärent metabolistisch. Gebäude haben Zustandsstufen, die sich verschlechtern und verbessern. Agentenpopulationen fluktuieren. Ereignisse formen die soziale Landschaft um. Das Chronik-System sorgt für institutionelles Gedächtnis – es stellt sicher, dass die Stadt sich an ihre Transformationen erinnert, selbst während sie sie durchläuft. Anders als physische Städte können virtuelle Städte ohne die Friktion von Beton und Stahl wachsen, schrumpfen und sich reorganisieren.`,
 's115dd59a1e28c22c': `Drowned Bell: gut → mäßig. +5 Militär.`,
 's116418e6a6189d31': `Wenn der Schwache den Starken besiegt`,
-'s1176029d900d3cbb': `Jorge Luis Borges stellte es sich als Erster vor. In „Tlön, Uqbar, Orbis Tertius" (erstmals erschienen in der Zeitschrift Sur, Mai 1940) erschafft eine Geheimgesellschaft namens Orbis Tertius eine vollständige vierzigbändige Enzyklopädie für einen fiktiven Planeten — eine Welt von so innerer Konsistenz, so akribischer Detailliertheit, dass sie beginnt, die Realität zu verdrängen. Tlönianische Artefakte tauchen physisch in der realen Welt auf. Ihre idealistische Philosophie ersetzt unsere eigene. Der erschütterndste Satz der Geschichte: „Fast sofort gab die Wirklichkeit an mehr als einem Punkt nach. Die Wahrheit ist, dass sie sich danach sehnte, nachzugeben."`,
-'s1189cf348ab78dd0': `Ein unterirdisches Netzwerk aus Bibliotheken, in denen Bücher sich selbst umschreiben, je nachdem wer sie liest. Die Bibliothekare haben gänzlich aufgehört zu lesen — aus Angst vor dem, was die Bücher werden könnten.`,
+'s1176029d900d3cbb': `Jorge Luis Borges stellte es sich als Erster vor. In „Tlön, Uqbar, Orbis Tertius" (erstmals erschienen in der Zeitschrift Sur, Mai 1940) erschafft eine Geheimgesellschaft namens Orbis Tertius eine vollständige vierzigbändige Enzyklopädie für einen fiktiven Planeten – eine Welt von so innerer Konsistenz, so akribischer Detailliertheit, dass sie beginnt, die Realität zu verdrängen. Tlönianische Artefakte tauchen physisch in der realen Welt auf. Ihre idealistische Philosophie ersetzt unsere eigene. Der erschütterndste Satz der Geschichte: „Fast sofort gab die Wirklichkeit an mehr als einem Punkt nach. Die Wahrheit ist, dass sie sich danach sehnte, nachzugeben."`,
+'s1189cf348ab78dd0': `Ein unterirdisches Netzwerk aus Bibliotheken, in denen Bücher sich selbst umschreiben, je nachdem wer sie liest. Die Bibliothekare haben gänzlich aufgehört zu lesen – aus Angst vor dem, was die Bücher werden könnten.`,
 's11957347c30dd0a7': `Die Unerschütterlichen`,
 's119aba7a845c3381': `Splitter-Koordinaten werden trianguliert`,
-'s119e508268bbdd4a': `Intervall-Override in Sekunden`,
 's11ab2d8ba31717e8': `Berichte`,
 's11acbf92578c9abf': `Wird vergeben...`,
 's11b1dd90482cc58a': `Hauptnavigation`,
 's11b2e9ecce28690c': `Anzeigename`,
 's11c14d4cd15dcdaf': `Doktor Fenn`,
-'s11caaaf339855c27': `Eine Simulation auf metaverse.center zeigt narrative Autopoiesis. Agenten generieren Ereignisse. Ereignisse lösen Sozialdynamiken aus. Sozialdynamiken produzieren Chronik-Artikel. Chronik-Inhalte fließen zurück in das Bewusstsein und Verhalten der Agenten. Das System produziert seine eigenen narrativen Komponenten — die Geschichten, die sich entwickelnden Beziehungen der Charaktere, das kollektive Gedächtnis der Gemeinschaft. Kein externer Erzähler ist erforderlich. Die Welt schreibt sich selbst.`,
+'s11caaaf339855c27': `Eine Simulation auf metaverse.center zeigt narrative Autopoiesis. Agenten generieren Ereignisse. Ereignisse lösen Sozialdynamiken aus. Sozialdynamiken produzieren Chronik-Artikel. Chronik-Inhalte fließen zurück in das Bewusstsein und Verhalten der Agenten. Das System produziert seine eigenen narrativen Komponenten – die Geschichten, die sich entwickelnden Beziehungen der Charaktere, das kollektive Gedächtnis der Gemeinschaft. Kein externer Erzähler ist erforderlich. Die Welt schreibt sich selbst.`,
 's11d6886a3b94ef72': `RP-Kosten: 6→5 (günstiger zu entsenden)`,
 's11eaae01b4231d54': `Narrative Substrate werden entschlüsselt`,
 's11eecdb7d76a5803': `BEDROHUNGSSTUFE`,
@@ -417,21 +396,6 @@ Ich bleibe länger als mein Einsatz erfordert. Ich habe dem Bureau dies als „e
 's123da0f92f97dd86': `Ablehnen`,
 's1241bc49e2f0b3e9': `STUFE 4`,
 's1244b230a449bfc1': `Epoche abgebrochen.`,
-'s125d92ae3f61312d': `Das Bureau hat mehrere bedeutende Splitter klassifiziert — Welten, die die Fraktur intakt überstanden haben, die ihre eigene innere Logik entwickelten, die wuchsen statt zu kollabieren. Der Katalog ist nicht vollständig. Er kann es nicht sein. Die Fraktur ist kein historisches Ereignis mit einer festen Anzahl von Folgen. Sie ist ein andauernder ontologischer Zustand. Neue Splitter kristallisieren sich weiterhin an den Rändern der kartierten Realität, überall dort, wo eine Frage entsteht, die keine bestehende Welt beantworten kann.
-
-Es folgen die ersten Splitter, die das Bureau kartierte — die bedeutenden, stabilen Realitäten, um die herum die kartographische Disziplin aufgebaut wurde:
-
-VELGARIEN antwortet: „Was wäre, wenn Kontrolle absolut wäre?" Ein brutalistischer Überwachungsstaat, in dem die Bürokratie zum Wetter geworden ist und Zufriedenheit obligatorisch. Die Wände sind aus Beton. Die Wände beobachten. Die Paste ist grau und die Formulare in dreifacher Ausfertigung und irgendwo in den Ritzen zwischen den Aktenschränken wächst etwas, wofür die Büros noch kein Formular gefunden haben.
-
-THE GASLIT REACH antwortet: „Was wäre, wenn die Dunkelheit freundlich wäre?" Eine unterirdische Zivilisation unter einem lichtlosen Meer, wo biolumineszente Pilze als Straßenlaternen dienen und die Wirtschaft auf Geheimnissen basiert. Die Bürger sind fast menschlich. Das Wasser ist geduldig. Die Archive sind feucht. Der Flechtenwein ist, allen Berichten zufolge, außerordentlich.
-
-STATION NULL antwortet: „Was wäre, wenn wir die Wunde sehen könnten?" Eine verlassene Forschungsstation im Orbit um ein Schwarzes Loch, das das Bureau als Diskontinuität klassifiziert — einen Punkt, an dem die Splitter-Grenze sich bis zum darunterliegenden Substrat durchgescheuert hat. Besatzungsstärke: 6 von 200. Alle Systeme nominal. Die KI besteht darauf. Die KI besteht auf allem.
-
-SPERANZA antwortet: „Was wäre, wenn wir uns einfach weigerten aufzuhören?" Eine unterirdische Stadt im postapokalyptischen Italien, die unter Maschinen überlebt, die die Oberfläche mit mechanischer Gleichgültigkeit abernten. Hoffnung ist kein Optimismus. Hoffnung ist die Entscheidung, Tomaten unter UV-Lampen zu pflanzen und das Ergebnis einen Garten zu nennen.
-
-THE CITE DES DAMES antwortet: „Was wäre, wenn Frauen immer gehört worden wären?" Eine feministische literarische Utopie, erbaut aus den Geschichten von Frauen durch die Geschichte hindurch, wo jeder Akt des Erinnerns zu einem Stein in der Stadtmauer wird. Das Licht ist warm. Die Tinte erinnert sich an mehr als die Schreiberin weiß. Das Bureau findet diesen Splitter am beunruhigendsten von allen, weil er der einzige ist, der keine Angst hat.
-
-Dies sind die bedeutenden Splitter. Sie sind nicht die einzigen Splitter. Der Katalog des Bureaus wächst mit jeder kartographischen Expedition, jedem Bleed-Ereignis, das sich in stabile Geographie auflöst, jeder Frage, die das Multiversum stellt und die die bestehenden Welten nicht fassen können. Jede Antwort ist falsch. Jede Antwort ist notwendig. Das Multiversum existiert, weil keine einzelne Antwort — keine endliche Menge von Antworten — ausreicht.`,
 's126533cc8a26d233': `Simulationsname eingeben...`,
 's1276fc8b4a28eed5': `General Wolf`,
 's1287de1b4891398d': `Rekrutierung Zeitüberschreitung. Versuchen Sie es später erneut.`,
@@ -449,7 +413,7 @@ Dies sind die bedeutenden Splitter. Sie sind nicht die einzigen Splitter. Der Ka
 's131155647f36cf77': str`Durchschnittliche Effektivität: ${0} %`,
 's131c39f7d3122cc1': `Setzen Sie 2-3 Wächter ein, halten Sie eine moderate RP-Reserve (15-20). Deckt Schlüsselzonen ab, ohne die Offensivfähigkeit zu opfern. Der sicherste Eröffner - funktioniert mit jeder Voreinstellung und passt sich dem gegnerischen Verhalten an.`,
 's1327f37fad4fa3be': `Dies ist sekundärer Text.`,
-'s134b687d60c2f928': `Fünf Auszeichnungstitel für herausragende Leistungen: Meisterspion (höchste militärische Auswirkung), Eiserner Wächter (stärkste Souveränitätsverteidigung), Der Diplomat (höchster diplomatischer Score), Am Tödlichsten (beste Operativ-Erfolgsrate) und Kulturelle Dominanz (größte Einflussverbreitung). Mehrere Auszeichnungen können an denselben Spieler gehen — Dominanz wird belohnt.`,
+'s134b687d60c2f928': `Fünf Auszeichnungstitel für herausragende Leistungen: Meisterspion (höchste militärische Auswirkung), Eiserner Wächter (stärkste Souveränitätsverteidigung), Der Diplomat (höchster diplomatischer Score), Am Tödlichsten (beste Operativ-Erfolgsrate) und Kulturelle Dominanz (größte Einflussverbreitung). Mehrere Auszeichnungen können an denselben Spieler gehen – Dominanz wird belohnt.`,
 's13551a01b5b4f74d': `Konversation auswählen`,
 's136526f9761a4d77': `Akzent`,
 's13730661a22ebb88': `Alle Rubriken`,
@@ -464,7 +428,7 @@ Dies sind die bedeutenden Splitter. Sie sind nicht die einzigen Splitter. Der Ka
 's13be1af9766661e9': `Akzeptieren`,
 's13c123f97668a70b': `Zugang`,
 's13d1e78995d89d45': `11 Min. Lesezeit`,
-'s13e0bf7567813dd5': `— Lawrence Lessig, Code and Other Laws of Cyberspace (1999)`,
+'s13e0bf7567813dd5': `– Lawrence Lessig, Code and Other Laws of Cyberspace (1999)`,
 's13e417d7683e8240': `Missionserfolgsrate von 15 % auf 52 % erhöht`,
 's141f043d5c19aa52': `Fortgeschrittene Mechaniken: Blutung, Resonanzen, Zonendynamik, Agentengedächtnis, Chronik`,
 's143f2c9616402e87': `Endstand der Epoche mit Gesamtwertungen und Titeln`,
@@ -531,7 +495,7 @@ Dies sind die bedeutenden Splitter. Sie sind nicht die einzigen Splitter. Der Ka
 's17251ad26b1b4d38': `Globale Konfiguration`,
 's174901486b49e871': `Abteilung für Dimensionale Kartographie`,
 's17528c9b0ad80da2': `Seismische Dämpfung wird modelliert`,
-'s1788a47f4125716c': `Schreibe in jeder Sprache — die KI interpretiert dein Konzept unabhängig von der Sprache. Konzentriere dich auf Atmosphäre, Themen und Widersprüche.`,
+'s1788a47f4125716c': `Schreibe in jeder Sprache – die KI interpretiert dein Konzept unabhängig von der Sprache. Konzentriere dich auf Atmosphäre, Themen und Widersprüche.`,
 's178bb121d5131532': `Kapitel`,
 's1795b5d2bdb94bc0': `Kampagnen`,
 's17a70f94cd74115b': `Zuverlässigkeit`,
@@ -593,7 +557,7 @@ Dies sind die bedeutenden Splitter. Sie sind nicht die einzigen Splitter. Der Ka
 's1a445bc371e19b14': `Event hinzufügen`,
 's1a6492910b38e71e': `Archivierung der Simulation fehlgeschlagen`,
 's1a65c3acc84c7ebc': `Ereignisse suchen...`,
-'s1a6ff32b4f80cc26': `Die fesselndsten Strategiespiele sind jene, bei denen das Verhalten der Spieler eine Komplexität erzeugt, die die Designer nie vorhergesehen hatten. Allan Calhamers Diplomacy (1959) eliminierte Würfel und Zufall vollständig — sieben Spieler, die über einer Karte des Vor-Ersten-Weltkriegs-Europa verhandeln, versprechen und verraten. Die Tiefe des Spiels entsteht ausschließlich aus menschlicher Interaktion, nicht aus mechanischer Komplexität.`,
+'s1a6ff32b4f80cc26': `Die fesselndsten Strategiespiele sind jene, bei denen das Verhalten der Spieler eine Komplexität erzeugt, die die Designer nie vorhergesehen hatten. Allan Calhamers Diplomacy (1959) eliminierte Würfel und Zufall vollständig – sieben Spieler, die über einer Karte des Vor-Ersten-Weltkriegs-Europa verhandeln, versprechen und verraten. Die Tiefe des Spiels entsteht ausschließlich aus menschlicher Interaktion, nicht aus mechanischer Komplexität.`,
 's1a772abf021c52ed': `Phantomkreuzungen werden detektiert`,
 's1a783603a679af5e': `Wir verwenden Analysen zur Verbesserung dieser Seite.`,
 's1a7a8bad68026b98': `Gebäudebeschreibung generiert.`,
@@ -602,7 +566,7 @@ Dies sind die bedeutenden Splitter. Sie sind nicht die einzigen Splitter. Der Ka
 's1a9cc86e1c2198bf': `Ein vollständiger Epochen-Durchlauf von der Erstellung bis zu den Endwertungen. Verfolgen Sie jede Phase, Entscheidung und jedes Ergebnis in einem echten 2-Spieler-Match: Velgarien (Mensch) vs. The Gaslit Reach (Stratege-Bot).`,
 's1aa353845dc34d81': `Nach Zone oder Ereignistyp`,
 's1aa8ef7e992ead39': `externe Beobachter`,
-'s1abe5174d7b9b3f7': `RP ist die Währung für den Einsatz von Operativen. Jeder Operativtyp hat unterschiedliche RP-Kosten. Die Verwaltung der RP-Allokation — die Entscheidung zwischen Offensive, Defensive, Aufklärung und Diplomatie — ist eine zentrale strategische Entscheidung.`,
+'s1abe5174d7b9b3f7': `RP ist die Währung für den Einsatz von Operativen. Jeder Operativtyp hat unterschiedliche RP-Kosten. Die Verwaltung der RP-Allokation – die Entscheidung zwischen Offensive, Defensive, Aufklärung und Diplomatie – ist eine zentrale strategische Entscheidung.`,
 's1acd3fb8f42de406': `Unbenannte Straße`,
 's1acdc0617ffe922e': `−65% Effektivität für 3 Zyklen`,
 's1acf926b53869028': `Kein Quellenereignis ausgewählt`,
@@ -620,7 +584,7 @@ Dies sind die bedeutenden Splitter. Sie sind nicht die einzigen Splitter. Der Ka
 's1b5f152ec2f3774b': `Melden Sie sich an, um eine Epoche zu erstellen oder ihr beizutreten.`,
 's1b68329a788f7960': `DOSSIER-ERWEITERUNG AUTORISIEREN`,
 's1b6ca53101ba3292': `Schriftfamilien für Überschriften und Fließtext. Überschriften verwenden standardmäßig die brutalistische Displayschrift.`,
-'s1b6fa33df09e19cd': `Lawrence Lessigs Konzept, dass die Architektur digitaler Plattformen (der Code) Nutzerverhalten effektiver reguliert als Rechtssysteme. Code bestimmt, was möglich, was sichtbar und was verboten ist in digitalen Räumen — und macht ihn zur mächtigsten Regulierungsform im Internet.`,
+'s1b6fa33df09e19cd': `Lawrence Lessigs Konzept, dass die Architektur digitaler Plattformen (der Code) Nutzerverhalten effektiver reguliert als Rechtssysteme. Code bestimmt, was möglich, was sichtbar und was verboten ist in digitalen Räumen – und macht ihn zur mächtigsten Regulierungsform im Internet.`,
 's1b91612e0724460b': `Akustische Ausbreitung wird modelliert`,
 's1bbd0c7610bf7bd9': `Kompetitive Emergenz.`,
 's1bc05cf2cf2e4517': `Allianz-Bonus`,
@@ -649,10 +613,10 @@ Dies sind die bedeutenden Splitter. Sie sind nicht die einzigen Splitter. Der Ka
 's1d3aaadb7b64f62e': `Das ist strategisches Design mit philosophischer Absicht. Spiele mit einer einzigen dominanten Strategie erzeugen gelöste Spiele und gelangweilte Spieler. Spiele mit asymmetrischer Dynamik erzeugen Geschichten, Überraschungen und die Art emergenter Komplexität, die Spieler immer wiederkehren lässt.`,
 's1d853cf7d16c9452': `Verifiziere Datenpersistenz...`,
 's1d87abd5171babdc': `Top-3-Podium`,
-'s1d8a64c1c6f48265': `Die Aufklärung enthüllt keine Wächter, die The Gaslit Reach schützen — ein offenes Ziel. Ein Saboteur in der Zone mit niedriger Sicherheit hätte nahezu maximalen Erfolg. Das ist die Spion→Saboteur-Kombination in Aktion.`,
+'s1d8a64c1c6f48265': `Die Aufklärung enthüllt keine Wächter, die The Gaslit Reach schützen – ein offenes Ziel. Ein Saboteur in der Zone mit niedriger Sicherheit hätte nahezu maximalen Erfolg. Das ist die Spion→Saboteur-Kombination in Aktion.`,
 's1d90a39a778719c0': `Entsenden Sie Spione, um zeitpunktbezogene Aufklärungssnapshots über Ihre Gegner zu sammeln. Aufklärung kann veralten, wenn sich die Bedingungen ändern.`,
 's1d99bf9175fc6218': `2v2-Allianzkrieg. Velgarien + Speranza gegen Gaslit Reach + Station Null. Zeigt koordinierte Spion→Saboteur-Kombos, diplomatischen Allianzbonus (+10% pro Verbündetem) und Builder-Stabilitätsfokus.`,
-'s1dc7f3560b834318': `Einzelne Agenten sind interessant. Populationen von Agenten sind außergewöhnlich. Das Social-Trends-System verfolgt Meinungsdynamiken, kulturelle Bewegungen und Gemeinschaftsstimmung über Ihre gesamte Simulation. Wenn ein kontroverses Ereignis eintritt, können Sie beobachten, wie Reaktionen durch die Bevölkerung wogen — manche Agenten stimmen zu, manche widersprechen, manche organisieren sich, manche ziehen sich zurück.`,
+'s1dc7f3560b834318': `Einzelne Agenten sind interessant. Populationen von Agenten sind außergewöhnlich. Das Social-Trends-System verfolgt Meinungsdynamiken, kulturelle Bewegungen und Gemeinschaftsstimmung über Ihre gesamte Simulation. Wenn ein kontroverses Ereignis eintritt, können Sie beobachten, wie Reaktionen durch die Bevölkerung wogen – manche Agenten stimmen zu, manche widersprechen, manche organisieren sich, manche ziehen sich zurück.`,
 's1dcd554a5f0faf27': `Aktive Epochen`,
 's1dceea1307bd2c36': `Bei Entdeckung verlieren Sie 3 Militärpunkte und die Mission scheitert. Agenten mit hoher Eignung reduzieren dieses Risiko, eliminieren es aber nie.`,
 's1dd00c306f89813d': `Schalte die sechs oben vorgestellten ARCANUM-Sektionen frei. Der leitende geheime Analyst des Bureaus generiert ~9.000 Wörter tiefgehende`,
@@ -675,7 +639,7 @@ Dies sind die bedeutenden Splitter. Sie sind nicht die einzigen Splitter. Der Ka
 's1e95396695587eed': `Konfigurieren Sie beide API-Schlüssel für unbeschränkten Zugang.`,
 's1e978e8a43391642': `ENDSTAND`,
 's1e983dceeed1e078': str`Zeige ${0}-${1} von ${2}`,
-'s1e9864e8649a66b7': `Die Theorie der asymmetrischen Kriegsführung untersucht, wie schwächere Akteure durch unkonventionelle Mittel gegen stärkere Gegner bestehen können. Das Konzept ist uralt — David und Goliath, Guerillawiderstand, wirtschaftliche Störung — aber Ivan Arreguin-Tofts How the Weak Win Wars (2005) zeigte empirisch, dass die schwächere Seite asymmetrische Konflikte in etwa 30 % der Fälle gewinnt, und dass dieser Prozentsatz über die Jahrhunderte gestiegen ist.`,
+'s1e9864e8649a66b7': `Die Theorie der asymmetrischen Kriegsführung untersucht, wie schwächere Akteure durch unkonventionelle Mittel gegen stärkere Gegner bestehen können. Das Konzept ist uralt – David und Goliath, Guerillawiderstand, wirtschaftliche Störung – aber Ivan Arreguin-Tofts How the Weak Win Wars (2005) zeigte empirisch, dass die schwächere Seite asymmetrische Konflikte in etwa 30 % der Fälle gewinnt, und dass dieser Prozentsatz über die Jahrhunderte gestiegen ist.`,
 's1e9c043a19dad8e7': `Analyse wird geladen...`,
 's1ea3a0b455afc4db': str`${0}: ${1} % Tiefe`,
 's1eae4eea13115b6c': `Dekorative Elemente auf VelgGameCards: Textur (Hintergrundmuster), Namensschild (Beschriftungsstil), Ecken (Zierecken), Folie (holografischer Glanz).`,
@@ -687,16 +651,15 @@ Dies sind die bedeutenden Splitter. Sie sind nicht die einzigen Splitter. Der Ka
 's1f0659eb29f4102b': `Bogen-Verschiebung`,
 's1f155078138e2ba1': `Diplomatisches Signal`,
 's1f2928ee6a67963b': `Depeschenprotokoll einblenden`,
-'s1f29e5e1b25d41bd': `Emergenz tritt auf, wenn individuelle Agenten, die einfachen Regeln folgen, komplexes kollektives Verhalten erzeugen. Auf metaverse.center interagieren Agenten basierend auf Persönlichkeit, Gedächtnis und Kontext. Die resultierenden Erzählungen, Sozialdynamiken und Ereignisse sind nicht gescriptet — sie entstehen aus dem Betrieb des Systems.`,
+'s1f29e5e1b25d41bd': `Emergenz tritt auf, wenn individuelle Agenten, die einfachen Regeln folgen, komplexes kollektives Verhalten erzeugen. Auf metaverse.center interagieren Agenten basierend auf Persönlichkeit, Gedächtnis und Kontext. Die resultierenden Erzählungen, Sozialdynamiken und Ereignisse sind nicht gescriptet – sie entstehen aus dem Betrieb des Systems.`,
 's1f3297624f31e3ea': `Diese Aktion wird 2 Forge-Token von Ihrem Guthaben abziehen.`,
 's1f34a659d3c109c0': `Betroffene Ereignistypen`,
 's1f51ceaaf7ab2e3e': `Sie können Agenten einzeln erstellen oder die Simulationsschmiede einen ganzen Cast für Ihre Welt generieren lassen. So oder so werden die Charaktere Sie überraschen. Das ist der Sinn.`,
 's1f553a6fe5b3946f': `Keine Eignungen konfiguriert.`,
-'s1f6c258160808f59': `Eigene API-Schlüssel aktiv — keine Token-Kosten`,
 's1f6c387796437206': `Avg Ausgehende Stärke`,
 's1f73a42314572d2e': `Sektor 7 + Medbay-Korridor. Gleichgewicht: 9 RP`,
 's1f833f3f570803cb': `Spielinstanz-Normalisierung`,
-'s1f884c4b301d00fa': `Michel Foucault führte in seinen Vorlesungen am Collège de France 1977–78 (veröffentlicht als Sicherheit, Territorium, Bevölkerung) Gouvernementalität ein — die Kunst des Regierens nicht durch unmittelbare Gewalt, sondern durch die Verwaltung von Bevölkerungen. Er definierte sie als „das Ensemble aus Institutionen, Verfahren, Analysen und Reflexionen, die Berechnungen und Taktiken, die es ermöglichen, diese sehr spezifische, wenn auch sehr komplexe Form der Macht auszuüben, die als Zielscheibe die Bevölkerung hat." Seine komprimierteste Formulierung: Governance ist die „Führung der Führungen" — zu regieren bedeutet, „das mögliche Handlungsfeld anderer zu kontrollieren." Die Regierten werden nicht kommandiert. Sie werden geführt.`,
+'s1f884c4b301d00fa': `Michel Foucault führte in seinen Vorlesungen am Collège de France 1977–78 (veröffentlicht als Sicherheit, Territorium, Bevölkerung) Gouvernementalität ein – die Kunst des Regierens nicht durch unmittelbare Gewalt, sondern durch die Verwaltung von Bevölkerungen. Er definierte sie als „das Ensemble aus Institutionen, Verfahren, Analysen und Reflexionen, die Berechnungen und Taktiken, die es ermöglichen, diese sehr spezifische, wenn auch sehr komplexe Form der Macht auszuüben, die als Zielscheibe die Bevölkerung hat." Seine komprimierteste Formulierung: Governance ist die „Führung der Führungen" – zu regieren bedeutet, „das mögliche Handlungsfeld anderer zu kontrollieren." Die Regierten werden nicht kommandiert. Sie werden geführt.`,
 's1f9441e72a57cf71': `Selbst erkunden`,
 's1fb0c7435e5c67ab': `Erhöhte Oberflächenfarbe für Karten, Panels und Modals.`,
 's1fb34d22929e4aff': `Ironie-Detektoren werden kalibriert`,
@@ -706,8 +669,8 @@ Dies sind die bedeutenden Splitter. Sie sind nicht die einzigen Splitter. Der Ka
 's1feb2c0afcc4660c': str`Agent(en) hinzugefügt.${0} Agent(en) hinzugefügt.`,
 's1ff2e157c84a54ea': `Feindliche Muster`,
 's1ff923598e1f165d': `Bureau-Beobachtungsindex`,
-'s1ffb1ee83f416867': `Ein Sweep kostet 4 RP. Einsetzen bei Verdacht auf eingehende Propagandisten oder Saboteure — nicht jeden Zyklus. Eine entdeckte Feindmission kostet SIE −3 Militär UND hebt deren Wirkung auf. Ein gut getimter Sweep kann 10+ Punkte verschieben.`,
-'s20148a28e676d10d': `Baue KI-getriebene Welten mit Charakteren, die sich erinnern, Städten, die sich entwickeln, und Geschichten, die sich selbst schreiben. Von Tolkiens Subkreation zur prozeduralen Generierung — Worldbuilding neu gedacht.`,
+'s1ffb1ee83f416867': `Ein Sweep kostet 4 RP. Einsetzen bei Verdacht auf eingehende Propagandisten oder Saboteure – nicht jeden Zyklus. Eine entdeckte Feindmission kostet SIE −3 Militär UND hebt deren Wirkung auf. Ein gut getimter Sweep kann 10+ Punkte verschieben.`,
+'s20148a28e676d10d': `Baue KI-getriebene Welten mit Charakteren, die sich erinnern, Städten, die sich entwickeln, und Geschichten, die sich selbst schreiben. Von Tolkiens Subkreation zur prozeduralen Generierung – Worldbuilding neu gedacht.`,
 's201bd6cdc5dfa9d8': `Datenübersicht`,
 's2022738a339cc4d1': `Kompromittiert`,
 's20261a2a2e5e0695': `Agenten-Eignung`,
@@ -727,7 +690,6 @@ Dies sind die bedeutenden Splitter. Sie sind nicht die einzigen Splitter. Der Ka
 's20baecbbf1953c2e': `Defensivspezialist. Setzt Wächter und Spione ein. Sucht früh Allianzen, verrät nie. Gewinnt durch Ausdauer.`,
 's20f2c14e8e5943ec': `Mit 35 % Diplomatiegewicht SIND deine Botschaften dein Score. Jeder Verbündete bringt +15 % Diplomatie. Schütze Botschaften vor Infiltratoren, verrate nie Verbündete (die −25 %-Strafe ist tödlich), und baue das größmögliche Bündnisnetzwerk auf.`,
 's20f54720bc79dfe3': `Deutsch`,
-'s20fc4a342c233802': `Erschaffen Sie Ihre Welt — Registrieren`,
 's210c7d457f1c3866': `Gefechtsprotokoll mit Spionage-Bericht und Zonensicherheitsdaten`,
 's2113011d879c7730': `Als Ereignis speichern`,
 's21170b13aa15a3c7': `Benutzer konnten nicht geladen werden.`,
@@ -743,10 +705,9 @@ Dies sind die bedeutenden Splitter. Sie sind nicht die einzigen Splitter. Der Ka
 's21800cb28d3941c3': `Simulations-Puls`,
 's2185953c10bd1bb2': `Stil für Lore-Illustrationen …`,
 's218ac51dcb56f043': `Kaskadenregel umschalten`,
-'s219105dbccba90e8': `Spieltheoretisch optimales Spiel ist reines ci_defensive. Die Meta ist gelöst — defensives Spiel dominiert alle Alternativen bei 64% Gewinnrate.`,
+'s219105dbccba90e8': `Spieltheoretisch optimales Spiel ist reines ci_defensive. Die Meta ist gelöst – defensives Spiel dominiert alle Alternativen bei 64% Gewinnrate.`,
 's219349e7a9fd55e0': `Funktionsübersicht`,
 's21b2310fd68d67cf': `Simulation gelöscht.`,
-'s21c830f71d7d0710': `Schieberegler ziehen, um Operativ-Stärken festzulegen. Das Gesamtbudget muss 36 ergeben — einen Typ erhöhen bedeutet, einen anderen zu senken. Änderungen werden automatisch gespeichert, sobald das Budget ausgeglichen ist.`,
 's21d231a081103179': `Warten auf die Auflösung von Operationen. Gleichgewicht: 26+10 = 30 (Obergrenze)`,
 's21d78eff15551ba0': `Aufklärungs-Dossier: gegnerische Informationen aus Spionageberichten`,
 's21e6c5f3d6fa1298': `Am konsistentesten über alle Formate. Gewinnt durch ausgewogene mehrdimensionale Wertung statt eindimensionaler Dominanz.`,
@@ -766,7 +727,7 @@ Dies sind die bedeutenden Splitter. Sie sind nicht die einzigen Splitter. Der Ka
 's22a18544adbe6f40': `Bot-Spieler`,
 's22de19405a71e812': `Globales Kauftransaktionsprotokoll mit Filter und Seitennavigation.`,
 's22e75ae434d4ab8c': `RISIKOBEWERTUNG`,
-'s22ef3154c5c2d9d5': `Nutzen Sie COMMS, um Allianzstrategie zu koordinieren, Waffenstillstände zu verhandeln oder über Ihren nächsten Zug zu bluffen. Alles in ALLE KANÄLE Gesagte ist für alle Spieler sichtbar — verwenden Sie TEAM FREQ für vertrauliche Koordination.`,
+'s22ef3154c5c2d9d5': `Nutzen Sie COMMS, um Allianzstrategie zu koordinieren, Waffenstillstände zu verhandeln oder über Ihren nächsten Zug zu bluffen. Alles in ALLE KANÄLE Gesagte ist für alle Spieler sichtbar – verwenden Sie TEAM FREQ für vertrauliche Koordination.`,
 's22f38e4c8ac7aad2': `Schriftstärke für Überschriften. 400=normal, 700=fett, 900=schwarz.`,
 's22fb16acceeb1cbd': `Strukturelle Baupläne für die Schlüsselorte der Simulation entwerfen.`,
 's22fb226c7b7fa1b8': `Ihre vollständige Kampagnen-Statistik: Gesamtzahl eingesetzter Operationen, Erfolge, Aufdeckungen durch feindliche Gegenaufklärung und Gesamt-Erfolgsrate. Animierte Statistikbalken zeigen, wie Ihre Leistung im Vergleich zum Felddurchschnitt abschnitt. Hier sehen Sie, ob Ihr Spionagenetzwerk brillant oder kompromittiert war.`,
@@ -776,7 +737,7 @@ Dies sind die bedeutenden Splitter. Sie sind nicht die einzigen Splitter. Der Ka
 's2350f819ef62faa4': `HTTP Cache-Control max-age für den öffentlichen Kartendaten-Endpunkt.`,
 's23584c1df898c614': `Ratenbegrenzung`,
 's235f709702746b2a': `Game of Life`,
-'s23647870574f6951': `Balance-Patch: Operativeffekte & Wertung`,
+'s23647870574f6951': `Balance-Patch: Operativeffekte &amp; Wertung`,
 's236ae937cbcd6a39': `Vergrößern`,
 's236dccab8ffddfcc': `Die Detailseite jedes Agenten zeigt eine chronologische Gedächtniszeitlinie. Einträge werden als Karten mit Zeitstempeln, Gedächtnistyp (Beobachtung oder Reflexion), Wichtigkeitspunkten und dem vollständigen Textinhalt angezeigt.`,
 's2389ffe8e074656a': `Bureau-Personalabteilung`,
@@ -806,15 +767,7 @@ Dies sind die bedeutenden Splitter. Sie sind nicht die einzigen Splitter. Der Ka
 's24d5581bcfda29c4': `Resonanzen konnten nicht geladen werden`,
 's24eeaed54bb9782a': `Legen Sie Ihre Zugangsdaten vor. Das Büro verlangt eine Identitätsprüfung, bevor Terminalzugang gewährt wird.`,
 's24f3a319b88552c1': `Niedrig`,
-'s24f6910146f3bb13': `Die Kartographen werden aus allen Splittern rekrutiert — jedem bekannten Splitter, und gelegentlich aus solchen, die das Bureau noch nicht klassifiziert hat — wobei „rekrutiert" einen geordneten Prozess mit Bewerbungsformularen und Vorstellungsgesprächen impliziert, und die Realität näher an „identifiziert, aus der Ferne beobachtet und schließlich von jemandem angesprochen, der wie ein Bibliothekar aussieht und wie ein geologisches Ereignis redet" liegt.
-
-Die Auswahlkriterien, soweit das Bureau sie kodifiziert hat, sind drei: Erstens muss der Kandidat etwas Falsches an seiner Welt bemerkt haben — nicht moralisch falsch, sondern strukturell falsch. Eine Naht. Einen Riss. Einen Moment, in dem die Physik stotterte. Die meisten Menschen, die solche Dinge bemerken, erklären sie weg. Kartographen sind diejenigen, die es nicht konnten. Zweitens muss der Kandidat die Falschheit dokumentiert haben. Nicht gemeldet — dokumentiert. Der Unterschied ist wichtig. Melden impliziert Autorität. Dokumentieren impliziert Besessenheit. Das Bureau braucht Besessene, keine Informanten. Drittens muss der Kandidat bereit sein, im Raum zwischen den Splittern zu stehen, das heißt, in dem Raum, wo die Realität noch nicht entschieden hat, was sie sein will, und eine Linie auf eine Karte zu zeichnen, und der Linie zu vertrauen, selbst wenn die Karte brennt.
-
-Die Ausbildung dauert zwischen sechs Monaten und dem Rest Ihres Lebens. Das Ausbildungshandbuch des Bureaus ist sieben Seiten lang. Die ersten sechs Seiten sind geschwärzt. Die siebte Seite lautet: „Beobachten. Aufzeichnen. Nicht wegschauen. Wenn Sie wegschauen, wird das Ding, das Sie nicht anschauen, immer noch da sein, wenn Sie zurückschauen. Es wird auch größer sein."
-
-Die Werkzeuge der Kartographen sind nicht komplex. Ein Kompass (der nicht nach magnetisch Nord zeigt, sondern zum nächsten Bleed-Ereignis). Ein Notizbuch (aus Inter-Splitter-Papier gefertigt, das Schrift aus jeder Realität aufnehmen kann). Ein Stift (gewöhnlich; das Bureau versuchte es mit Spezialstiften und stellte fest, dass dem Außergewöhnlichen besser mit dem Gewöhnlichen gedient ist). Und die Karte — nicht eine bestimmte Karte, sondern die kartographische Disziplin selbst, die Praxis, Linien zwischen Dingen zu zeichnen, die nicht verbunden sein sollten, und beim Zeichnen zu entdecken, dass sie es immer waren.`,
 's24fe27b45ab18ac5': `Zone erstellen`,
-'s2500a93238b58545': `Substratanomalie erkannt — Ursprung unklar`,
 's250bde15254b34c6': `Zündung`,
 's2510c68e639a3fd1': `WIEDERHERSTELLUNG...`,
 's251aa0f85c6ab013': `Flux 1.1 Pro (höchste Qualität)`,
@@ -824,23 +777,23 @@ Die Werkzeuge der Kartographen sind nicht komplex. Ein Kompass (der nicht nach m
 's254f560d5a20199a': `Qualifizierung`,
 's2551c2897b331820': `Zonenaktion wählen`,
 's25525a0394fea354': `Elo-Wertungen berechnet aus allen 188 gültigen Spielen. Mehrspieler-Spiele in paarweise Duelle aufgelöst (Gewinner schlägt jeden Verlierer). Alle Wertungen starten bei 1500.`,
-'s2562348db9f9fede': `Unterhalten Sie sich mit den Agenten Ihrer Simulation durch KI-generierten Dialog. Jeder Agent antwortet charaktergetreu, geprägt von seiner Persönlichkeit, seinem Beruf und gesammelten Erinnerungen — so entstehen beständige, sich entwickelnde Gespräche.`,
+'s2562348db9f9fede': `Unterhalten Sie sich mit den Agenten Ihrer Simulation durch KI-generierten Dialog. Jeder Agent antwortet charaktergetreu, geprägt von seiner Persönlichkeit, seinem Beruf und gesammelten Erinnerungen – so entstehen beständige, sich entwickelnde Gespräche.`,
 's256be3cae2ac2bb1': `Bots nutzen persönlichkeitsspezifische Befestigungsstrategien`,
-'s256fbc86dc0b9cde': `Alle Simulationen sind wettbewerbsfähig. Wähle eine beliebige Simulation — dein Geschick und deine Strategie zählen mehr als deine Fraktion. Mit v2.2 sollten offensive und hybride Strategien neben defensivem Spiel tragfähiger sein. Die erweiterte RP-Wirtschaft ermöglicht mehrstufige Ansätze.`,
-'s25768d0f46bed1d7': `— Philip K. Dick, Träumen Androiden von elektrischen Schafen?`,
+'s256fbc86dc0b9cde': `Alle Simulationen sind wettbewerbsfähig. Wähle eine beliebige Simulation – dein Geschick und deine Strategie zählen mehr als deine Fraktion. Mit v2.2 sollten offensive und hybride Strategien neben defensivem Spiel tragfähiger sein. Die erweiterte RP-Wirtschaft ermöglicht mehrstufige Ansätze.`,
+'s25768d0f46bed1d7': `– Philip K. Dick, Träumen Androiden von elektrischen Schafen?`,
 's2581c05cf8916352': `Multiplayer-Strategiespiel`,
 's258346331c704579': `Ziel-Agent`,
 's25a14f8a4cface87': `Substrat-Bebenmonitor`,
 's25e1a07e454c2c11': `Raster`,
 's2602402465287dd8': `Alle Welten erkunden`,
-'s2602f130205b73a8': `Plattform-Governance ist Foucaultsche Gouvernementalität in ihrer reinsten digitalen Form. Nutzer auf Unternehmensplattformen werden nicht durch Gesetze regiert, für die sie gestimmt haben — sie werden regiert durch Algorithmen, die sie nicht sehen können, Nutzungsbedingungen, die sie nicht verhandelt haben, und Designentscheidungen, die sie nicht getroffen haben. Die „Führung der Führungen" operiert durch Empfehlungsalgorithmen, Inhaltsmoderationsrichtlinien, Interface-Affordanzen und Datenerhebungspraktiken.`,
+'s2602f130205b73a8': `Plattform-Governance ist Foucaultsche Gouvernementalität in ihrer reinsten digitalen Form. Nutzer auf Unternehmensplattformen werden nicht durch Gesetze regiert, für die sie gestimmt haben – sie werden regiert durch Algorithmen, die sie nicht sehen können, Nutzungsbedingungen, die sie nicht verhandelt haben, und Designentscheidungen, die sie nicht getroffen haben. Die „Führung der Führungen" operiert durch Empfehlungsalgorithmen, Inhaltsmoderationsrichtlinien, Interface-Affordanzen und Datenerhebungspraktiken.`,
 's260f1abb175f6551': `Ja. Das Multiversum-System verbindet Simulationen durch dimensionale Korridore. Ereignisse bluten über Verbindungen, Botschaften schaffen diplomatische Verknüpfungen, und während kompetitiver Epochen konkurrieren Zivilisationen direkt.`,
 's2612f9889abfef11': `Der Benutzer erhält Architekten-Freigabe und wird per E-Mail benachrichtigt.`,
 's2621c7e3c84e0216': `STÖRUNG ERKANNT`,
 's2637e5e454429b28': `Entwirft strukturelle Baupläne für die Schlüsselorte der Simulation.`,
 's265380bbecd33d86': `Auf metaverse.center operiert KI auf mehreren narrativen Ebenen gleichzeitig. Auf Agentenebene generiert sie Dialog, konsistent mit Persönlichkeit, Gedächtnis und emotionalem Zustand. Auf Ereignisebene produziert sie Konsequenzen, die logisch durch die Simulation kaskadieren. Auf Chronikebene synthetisiert sie rohe Ereignisse zu redaktionellem Journalismus mit Stimme, Meinung und narrativem Bogen. Auf Lore-Ebene verwebt sie einzelne Vorfälle in die größere Mythologie der Welt.`,
 's2654f3c51e27be8d': `Der thematische Kanal, durch den die Realität blutet. Handel: Handelsereignisse. Sprache: sprachliche Drift. Erinnerung: traumatische Echos. Resonanz: parallele Beziehungen. Architektur: struktureller Einfluss. Traum: Visionen. Verlangen: Sehnsucht.`,
-'s2658ef4153294d9a': `Ein Live-Vorschaupanel auf der rechten Seite zeigt, wie Ihr Thema in der Praxis aussehen wird — Farbmuster, Beispielüberschriften, Schaltflächen und eine Beispiel-Agentenkarte. Jeder Parameter ist editierbar, wenn Sie das KI-generierte Ergebnis feinabstimmen möchten.`,
+'s2658ef4153294d9a': `Ein Live-Vorschaupanel auf der rechten Seite zeigt, wie Ihr Thema in der Praxis aussehen wird – Farbmuster, Beispielüberschriften, Schaltflächen und eine Beispiel-Agentenkarte. Jeder Parameter ist editierbar, wenn Sie das KI-generierte Ergebnis feinabstimmen möchten.`,
 's26649097c6745882': `Admin-Vergabe`,
 's266e5105d3c1cd9d': `Effektivität der Botschaften`,
 's268496ec5c0c32a7': `oder Bild-URL einfügen`,
@@ -848,18 +801,17 @@ Die Werkzeuge der Kartographen sind nicht komplex. Ein Kompass (der nicht nach m
 's2694fff10f66a0c7': `Resonanzpunkte (RP)`,
 's26c3427979749ab5': `Rache für Aldric`,
 's26d73395d5b1929c': `Ästhetisches Profil rendern`,
-'s26ded7e40c40ec74': `Jeder Wächter reduziert den feindlichen Erfolg um 6% (Obergrenze −15% gesamt). Drei Wächter erreichen die Obergrenze. Zwingt Feinde, unverteidigte Zonen anzugreifen. Aber 12 RP in Verteidigung sind 12 RP weniger für Offensive — nur stapeln, wenn hochwertige Gebäude geschützt werden.`,
+'s26ded7e40c40ec74': `Jeder Wächter reduziert den feindlichen Erfolg um 6% (Obergrenze −15% gesamt). Drei Wächter erreichen die Obergrenze. Zwingt Feinde, unverteidigte Zonen anzugreifen. Aber 12 RP in Verteidigung sind 12 RP weniger für Offensive – nur stapeln, wenn hochwertige Gebäude geschützt werden.`,
 's26f57c859faee03f': `Resonanz`,
 's26f91b6796e33111': `Wiederherstellen`,
-'s2717e6464a4814e0': `KOMM & Benachrichtigungen`,
-'s271d06abce0210e1': str`— Feldbericht, Speranza`,
+'s2717e6464a4814e0': `KOMM &amp; Benachrichtigungen`,
 's272502e74017f632': `Gebäude`,
 's2725ff4e817fc1f3': `RP-Kappe`,
 's272d3f2baec9b775': `Befehlspalette (Strg+K)`,
 's2730460594150969': `Erneut transformieren`,
 's27512936133d8da9': `DEPESCHE BESTÄTIGT`,
 's275e8941632a9afa': `Verarbeiten`,
-'s2770a365538c0610': `— Neal Stephenson, Snow Crash (1992)`,
+'s2770a365538c0610': `– Neal Stephenson, Snow Crash (1992)`,
 's27739d4fd46a72aa': `Vollangriff`,
 's2779455144e93b4d': `Ereignisse, deren Auswirkungen unter diesem Schwellenwert liegen, können immer noch wahrscheinliche Auswirkungen haben, wenn die Zonenstabilität niedrig oder die Effektivität der Botschaften hoch ist.`,
 's277a6752eee7200e': `Textanweisungen, die die KI-Bildgenerierung für jede Kategorie steuern. Präzisere Anweisungen erzeugen konsistentere Ergebnisse.`,
@@ -889,7 +841,7 @@ Die Werkzeuge der Kartographen sind nicht komplex. Ein Kompass (der nicht nach m
 's2821a2a7e03787c0': `So wird der Fließtext mit den gewählten Farben und Schriften dargestellt.`,
 's283b66838fd4dcbc': `Rolle (z. B. Kulturattaché)`,
 's2841f35e02da576b': `Bureau of Impossible Geography`,
-'s285f52998d25f5fd': `Auf metaverse.center ist Emergenz keine Metapher. Agenten mit unterschiedlichen Persönlichkeiten interagieren, bilden Meinungen und generieren Ereignisse. Gebäude verfallen oder gedeihen basierend auf Aktivität. Soziale Trends propagieren durch Populationen. Chroniken — KI-generierte Zeitungen — berichten über Ereignisse, die kein Mensch gescriptet hat. Die Welt schreibt ihre eigene Geschichte, und sie überrascht sogar ihren Schöpfer.`,
+'s285f52998d25f5fd': `Auf metaverse.center ist Emergenz keine Metapher. Agenten mit unterschiedlichen Persönlichkeiten interagieren, bilden Meinungen und generieren Ereignisse. Gebäude verfallen oder gedeihen basierend auf Aktivität. Soziale Trends propagieren durch Populationen. Chroniken – KI-generierte Zeitungen – berichten über Ereignisse, die kein Mensch gescriptet hat. Die Welt schreibt ihre eigene Geschichte, und sie überrascht sogar ihren Schöpfer.`,
 's2874f3ce81400d3f': `Gewinnraten mit Wilson-Score 95%-Konfidenzintervallen. Geordnet nach beobachteter Effektivität über alle Spieleranzahlen und Presets.`,
 's287cfb162dfe2438': `beantragt Beitritt`,
 's287d102a6cc29d71': `Unterhalt`,
@@ -898,11 +850,11 @@ Die Werkzeuge der Kartographen sind nicht komplex. Ein Kompass (der nicht nach m
 's28a33f1a8d5e304a': `Rechtliches`,
 's28aca07b698a4849': `Im Umlauf`,
 's28bfb9ec8d5a9c66': `Anleitung umstrukturiert: Welt → Wettkampf → Fortgeschritten → Referenz-Progression`,
-'s28c572c5f7f4af38': `Entitäten überprüfen & akzeptieren`,
+'s28c572c5f7f4af38': `Entitäten überprüfen &amp; akzeptieren`,
 's28c7c6d49197de2d': `Ausgabequalität`,
 's28e28eb2dc898e86': `Stapel-Integration fehlgeschlagen`,
 's28fb95bd2c17a0d1': `Wechsel-Cooldown (Ticks)`,
-'s2912c826b9a7680f': `— Gilles Deleuze, Differenz und Wiederholung (1968)`,
+'s2912c826b9a7680f': `– Gilles Deleuze, Differenz und Wiederholung (1968)`,
 's29336540e3a3ac0d': `Fokus-Direktive (optional)`,
 's293cf29966251e06': `Leer starten`,
 's294dc6cefd120024': `Anfrage wird vorbereitet...`,
@@ -915,7 +867,7 @@ Die Werkzeuge der Kartographen sind nicht komplex. Ein Kompass (der nicht nach m
 's29d98c7579506fe0': `Fehler beim Laden der Kampagnen`,
 's29e7c3c08c29e79b': `ENTROPIE-GEGENMASSNAHMEN`,
 's29ff0d8616762ed2': `Staffing-Übersicht`,
-'s2a135e7cd38eaeea': `Worldbuilding ist das Handwerk, fiktive Welten mit innerer Konsistenz zu konstruieren — Geographie, Geschichte, Kulturen, Charaktere und Regeln. Auf metaverse.center unterstützt KI diesen Prozess, indem sie Weltelemente generiert und pflegt, die interagieren, sich entwickeln und emergente Erzählungen schaffen.`,
+'s2a135e7cd38eaeea': `Worldbuilding ist das Handwerk, fiktive Welten mit innerer Konsistenz zu konstruieren – Geographie, Geschichte, Kulturen, Charaktere und Regeln. Auf metaverse.center unterstützt KI diesen Prozess, indem sie Weltelemente generiert und pflegt, die interagieren, sich entwickeln und emergente Erzählungen schaffen.`,
 's2a24b018d7e50427': `Alle Simulationen sind bereits in der Epoche.`,
 's2a5284e5d89bb6cc': `Gesamtgesundheit`,
 's2a6e697eeafc6590': `Der Substrat-Puls überwacht alle Heartbeat-Aktivitäten. Mit jedem Tick verarbeitet die Simulation Ereignisse, Erzählungsbögen und Zonendynamiken. Filtern Sie nach Kategorie, um sich auf bestimmte Systeme zu konzentrieren.`,
@@ -928,19 +880,19 @@ Die Werkzeuge der Kartographen sind nicht komplex. Ein Kompass (der nicht nach m
 's2a9bc7656a6b566c': `Bezeichnung (Anzeige)`,
 's2aa28ae388af96c6': `Nichts hat mich so berührt wie das Risotto.`,
 's2aaad73eedf17be5': `Resonanztitel...`,
-'s2aad494b337d8740': `Gilles Deleuze bot einen anderen Rahmen. In Differenz und Wiederholung (1968) unterschied er zwischen dem Virtuellen und dem Aktuellen — und bestand darauf, dass das Virtuelle vollständig real ist. Das Virtuelle ist nicht das Gegenteil des Realen; es ist das Gegenteil des Aktuellen. Ein Samen ist virtuell — er enthält den Baum in potentia, vollständig real, wenn auch noch nicht aktualisiert. Das Virtuelle ist das Feld differentieller Relationen und Singularitäten, aus dem aktuelle Dinge emergieren.`,
+'s2aad494b337d8740': `Gilles Deleuze bot einen anderen Rahmen. In Differenz und Wiederholung (1968) unterschied er zwischen dem Virtuellen und dem Aktuellen – und bestand darauf, dass das Virtuelle vollständig real ist. Das Virtuelle ist nicht das Gegenteil des Realen; es ist das Gegenteil des Aktuellen. Ein Samen ist virtuell – er enthält den Baum in potentia, vollständig real, wenn auch noch nicht aktualisiert. Das Virtuelle ist das Feld differentieller Relationen und Singularitäten, aus dem aktuelle Dinge emergieren.`,
 's2ab68dbd49e48c6d': `Bevölkerungsdichte wird projiziert`,
 's2abcc11ae7b74e5c': `Fehler beim Löschen des Ereignisses`,
 's2adbdde5979ee1c4': `Agenten-Eignung`,
 's2ae54ab3577de729': `Taktischer Hinweis`,
 's2af13fd76f2f30ee': `Straßenvernetzung wird validiert`,
-'s2af44337ebd20d78': `Die meisten Worldbuilding-Werkzeuge sind statische Wikis oder Datenbanken. metaverse.center ist eine lebendige Simulation: KI-Charaktere haben persistentes Gedächtnis, Ereignisse erzeugen kaskadierende Konsequenzen, und die Welt produziert ihre eigene Erzählung durch Chroniken und Sozialdynamiken. Es ist kein Werkzeug zum Beschreiben einer Welt — es ist eine Plattform zum Betreiben einer Welt.`,
+'s2af44337ebd20d78': `Die meisten Worldbuilding-Werkzeuge sind statische Wikis oder Datenbanken. metaverse.center ist eine lebendige Simulation: KI-Charaktere haben persistentes Gedächtnis, Ereignisse erzeugen kaskadierende Konsequenzen, und die Welt produziert ihre eigene Erzählung durch Chroniken und Sozialdynamiken. Es ist kein Werkzeug zum Beschreiben einer Welt – es ist eine Plattform zum Betreiben einer Welt.`,
 's2af71aac30fb47e0': `Überwachung`,
 's2afc9a717c161490': `Einladen`,
 's2b060f4d3aec6992': `Bleed-Einstellungen laden...`,
 's2b0a70361ba2a2f9': `Erkennt feindliche Agenten, die in deine Simulation eindringen. +15% Erfolg bei Gegenintelligenz.`,
 's2b16fbc2ac74859e': `LEKTÜRE BEGINNEN`,
-'s2b1af4d31c339be1': `Adaptiv — liest Spielstand`,
+'s2b1af4d31c339be1': `Adaptiv – liest Spielstand`,
 's2b1d46c0aa7118fa': `Transformiert`,
 's2b26d02e227c4e66': `Phase der Abrechnung`,
 's2b631bf5b4abd6e1': `Ereignistitel`,
@@ -948,11 +900,10 @@ Die Werkzeuge der Kartographen sind nicht komplex. Ein Kompass (der nicht nach m
 's2b7a21b1897f3714': `Reflektiert...`,
 's2b7c3c3f581f6848': `RP-Effizienz: Velgarien gab 36 RP für Offensive aus (Spion+Saboteur×2+Assassine) mit 3 Erfolgen. Gaslit Reach gab 23 RP für Offensive aus (Spion+Propagandist+Saboteur+Infiltrator) mit 0 Erfolgen. Ökonomie gewinnt Kriege.`,
 's2ba5f4d8f3bd7c57': `Reihenfolge`,
-'s2bbfc0386c70f28d': `Jede Simulation hat eine eigene Weltgeschichte — Tausende Wörter an Geschichte, Kultur und Spannung, organisiert in sechs Kapiteln. Die Überlieferung ist die Identität der Welt, von der Schmiede generiert oder von Hand geschrieben, und öffentlich für alle Besucher sichtbar.`,
-'s2bc0746ea5c18080': `Präsenz & Bereitschaftssignale`,
+'s2bbfc0386c70f28d': `Jede Simulation hat eine eigene Weltgeschichte – Tausende Wörter an Geschichte, Kultur und Spannung, organisiert in sechs Kapiteln. Die Überlieferung ist die Identität der Welt, von der Schmiede generiert oder von Hand geschrieben, und öffentlich für alle Besucher sichtbar.`,
+'s2bc0746ea5c18080': `Präsenz &amp; Bereitschaftssignale`,
 's2bc3c638c3200558': `Referenz konnte nicht entfernt werden.`,
-'s2bcf3c83779ac0ea': `Beschreiben Sie das Kernkonzept Ihrer Simulationswelt. Denken Sie in Themen, Widersprüchen und Atmosphären — nicht in Handlung.`,
-'s2bd214b136d9b93c': `Das Unbenannte — Die Welt vor der Fraktur, ganz und unvorstellbar weit`,
+'s2bcf3c83779ac0ea': `Beschreiben Sie das Kernkonzept Ihrer Simulationswelt. Denken Sie in Themen, Widersprüchen und Atmosphären – nicht in Handlung.`,
 's2be5746a50cbb0dc': `Alle auf 30 gesetzt`,
 's2be6121210e2a2f8': `Prompts`,
 's2beaed0a9d1c8966': `Solo-Training gegen 3 KI-Gegner. Schnellspiel, automatische Auflösung.`,
@@ -978,23 +929,22 @@ Die Werkzeuge der Kartographen sind nicht komplex. Ein Kompass (der nicht nach m
 's2cf77897bc113ba0': `Gravitationsgradienten werden abgetastet`,
 's2d0780f48fe2a84e': `Komm`,
 's2d222aba03f7d03d': `Simulationsumschalter`,
-'s2d2d2d6ca8d5ff8e': `Epochen sind zeitbegrenzte kompetitive Matches. Bauen Sie Ihre Simulation auf, bevölkern Sie sie mit Agenten und Gebäuden, und treten Sie einer Epoche bei, wenn Sie bereit sind. Spielinstanzen werden zu Beginn normalisiert, um fairen Wettbewerb zu gewährleisten — jeder Spieler startet gleichberechtigt, unabhängig davon, wie lange er gebaut hat.`,
+'s2d2d2d6ca8d5ff8e': `Epochen sind zeitbegrenzte kompetitive Matches. Bauen Sie Ihre Simulation auf, bevölkern Sie sie mit Agenten und Gebäuden, und treten Sie einer Epoche bei, wenn Sie bereit sind. Spielinstanzen werden zu Beginn normalisiert, um fairen Wettbewerb zu gewährleisten – jeder Spieler startet gleichberechtigt, unabhängig davon, wie lange er gebaut hat.`,
 's2d2d57a44969b0e4': `2. Platz`,
 's2d325354f4f03973': `Wirtschaftsaufbau`,
 's2d5bc00cf0e2a79e': `Anpassungs-Multiplikator`,
 's2d63e3a25b7d81f0': `Alle Architekten`,
 's2d6a5f1d98d0738e': `Entdecken`,
-'s2d7c74a34288c918': `Die Kartographen — Jene, die das Unmögliche kartieren`,
 's2d88ff9c1d7512e9': `Emergente Phänomene, die auftreten, wenn das Rechensubstrat einer Simulation als Reaktion auf konzentrierte Spielaktivität vibriert. Resonanzen modifizieren die Spielmechanik und können während Hochdruckphasen kaskadieren.`,
 's2d9f1c3f36509bd3': `Realität`,
 's2da621de81aa1cfd': `Leicht / Mittel / Schwer`,
 's2dac48b3f033dc1c': `Aktion fehlgeschlagen`,
-'s2db6ba2e941a1d7f': `Jeder KI-Charakter pflegt einen persistenten Gedächtnisstrom. Vergangene Gespräche, miterlebte Ereignisse und gebildete Meinungen formen künftiges Verhalten. Fragen Sie einen Agenten nach etwas, das vor Wochen geschah — er erinnert sich.`,
+'s2db6ba2e941a1d7f': `Jeder KI-Charakter pflegt einen persistenten Gedächtnisstrom. Vergangene Gespräche, miterlebte Ereignisse und gebildete Meinungen formen künftiges Verhalten. Fragen Sie einen Agenten nach etwas, das vor Wochen geschah – er erinnert sich.`,
 's2db9077706b6ff97': `KI-generiert`,
 's2dc335265b16339d': `Beziehungen konnten nicht gespeichert werden`,
 's2dcaed89b8b6a385': `Feldbericht: Die Cité des Dames`,
 's2dcbf1fe4c909013': `Simulations-Lore: simulationsspezifische Worldbuilding-Erzählung, Schmiede-generierter Inhalt`,
-'s2dd547d3bdb1b51d': `Die Chronik & Agenten-Gedächtnis`,
+'s2dd547d3bdb1b51d': `Die Chronik &amp; Agenten-Gedächtnis`,
 's2de620168f378438': `Botschafter`,
 's2df076aface0dc6b': `Scherbe`,
 's2e009846cb172939': `Viktorianisches Nachrichtenblatt`,
@@ -1038,7 +988,7 @@ Die Werkzeuge der Kartographen sind nicht komplex. Ein Kompass (der nicht nach m
 's303cd8b88c1b4bd4': `Spionage → The Gaslit Reach`,
 's304551c623c90a14': `Tiefenrecherche`,
 's3049525dff495003': `Zonensicherheits-Abzeichen mit farbcodierten Sicherheitsstufen`,
-'s304f6690093abeca': `Die Unterscheidung ist kritisch. Ein Ort, den man besucht, bietet von seinen Betreibern kuratierte Erfahrungen. Eine Welt, die man bewohnt, gibt einem Handlungsfähigkeit — die Fähigkeit, zu erschaffen, zu modifizieren und seine Spuren zu hinterlassen. MUDs verstanden das 1978. Stephenson verstand es 1992. Das Corporate-Metaverse vergaß es 2021.`,
+'s304f6690093abeca': `Die Unterscheidung ist kritisch. Ein Ort, den man besucht, bietet von seinen Betreibern kuratierte Erfahrungen. Eine Welt, die man bewohnt, gibt einem Handlungsfähigkeit – die Fähigkeit, zu erschaffen, zu modifizieren und seine Spuren zu hinterlassen. MUDs verstanden das 1978. Stephenson verstand es 1992. Das Corporate-Metaverse vergaß es 2021.`,
 's30766130968aa653': `Charakterbeschreibung generiert.`,
 's307d6dc4b4380e1c': `Spion→Saboteur-Kombination`,
 's3097eb71e878514d': `API-Schlüssel`,
@@ -1058,8 +1008,7 @@ Die Werkzeuge der Kartographen sind nicht komplex. Ein Kompass (der nicht nach m
 's314d39f0a4252e91': `Ansicht zurücksetzen`,
 's3150f382313baef6': `Bequemes Führen. Reckoning beginnt - Blutung verstärkt. Gleichgewicht: 25+10 = 30 (Obergrenze)`,
 's315eae13172669ac': `Generieren zum Enthüllen`,
-'s317722add7285ee7': `EINGESCHRÄNKT — NUR EIGENTÜMER`,
-'s31961ffea8076bc5': `Phase III — Die Dunkelkammer`,
+'s31961ffea8076bc5': `Phase III – Die Dunkelkammer`,
 's31aa205d733dba87': `Der Digital Markets Act der Europäischen Union (2022, wirksam 2024) stellt die bedeutendste regulatorische Antwort auf Plattformmacht dar. Er bezeichnet große Plattformen als „Gatekeeper" und erlegt ihnen Pflichten auf: Interoperabilitätsanforderungen, Verbote der Selbstbevorzugung, Grenzen für die Datenkombination über Dienste hinweg und Rechte für Nutzer auf Datenportabilität. Der Act erkennt an, dass Plattformarchitektur ein Ort der Macht ist und dass architektonische Entscheidungen demokratischer Beschränkung unterworfen sein müssen.`,
 's31aeda173f5ba7a7': `Was ist der Agenten-Chat?`,
 's31b53289b705a464': str`${0} Token vergeben. Neues Guthaben: ${1}`,
@@ -1072,7 +1021,6 @@ Die Werkzeuge der Kartographen sind nicht komplex. Ein Kompass (der nicht nach m
 's3231d0dc6fe30d4a': `Tiefe`,
 's32322dc45e502559': `Ablehnen`,
 's324e5329ef1dc23f': `Spezialisierungscodes werden zugewiesen`,
-'s324e59566027e685': `Quellcode auf GitHub ansehen`,
 's32516458a140aa6b': `Was hinübertritt`,
 's325560ecdfa0aabe': `Wächter-Stapelung`,
 's327c1626ac11fbbe': `Widerstandsfähigkeit Ihrer Simulation unter Druck. Beeinflusst durch Sabotage, Attentatsversuche und interne Störungen. Eine stabile Welt ist eine verteidigungsfähige Welt.`,
@@ -1087,13 +1035,13 @@ Die Werkzeuge der Kartographen sind nicht komplex. Ein Kompass (der nicht nach m
 's332b1d2ce6e5aa8f': `Skaliert schlecht zu größeren Spielen. 12% bei 5S ist der schwächste einzelne Datenpunkt im Datensatz.`,
 's332f8fed504da6be': `Diese Ansicht kommt bald.`,
 's334af6a212abee58': `Mit Google anmelden`,
-'s3350df54b35267a0': `Ereignisse sind der narrative Herzschlag jeder Simulation. Sie repräsentieren Dinge, die in der Welt geschehen — politische Umwälzungen, Wirtschaftskrisen, militärische Konflikte, kulturelle Verschiebungen, Naturkatastrophen.`,
+'s3350df54b35267a0': `Ereignisse sind der narrative Herzschlag jeder Simulation. Sie repräsentieren Dinge, die in der Welt geschehen – politische Umwälzungen, Wirtschaftskrisen, militärische Konflikte, kulturelle Verschiebungen, Naturkatastrophen.`,
 's3378f13303dd8cec': `Bereinigung bestätigen`,
 's337a1e9022a8d19f': `Zeichentisch`,
 's3385db78626d20b9': `Basis-Wirkungsschwelle`,
 's33994aa90c1bad30': `Werte werden verschlüsselt gespeichert`,
 's339a64e8e8af273f': `Max. Agenten pro Spieler`,
-'s33bd84b985353b21': `Baudrillard entlehnte von Borges die Fabel der Landkarte: Die Kartographen eines Reiches erschaffen eine Karte so detailliert, dass sie das Territorium exakt bedeckt. In Borges’ Version zerfällt die Karte und das Territorium überdauert. In Baudrillards Umkehrung zerfällt das Territorium und die Karte besteht fort — die Simulation geht dem voraus und erzeugt, was wir real nennen.`,
+'s33bd84b985353b21': `Baudrillard entlehnte von Borges die Fabel der Landkarte: Die Kartographen eines Reiches erschaffen eine Karte so detailliert, dass sie das Territorium exakt bedeckt. In Borges’ Version zerfällt die Karte und das Territorium überdauert. In Baudrillards Umkehrung zerfällt das Territorium und die Karte besteht fort – die Simulation geht dem voraus und erzeugt, was wir real nennen.`,
 's33cb0480084f9fb7': `Realität zerbricht, während reale Ereignisse durchbluten`,
 's33d4529255eeac45': `Operationelle Begründung`,
 's33e3e6bb8e4a84ce': `Reaktionen generieren`,
@@ -1129,19 +1077,6 @@ Die Werkzeuge der Kartographen sind nicht komplex. Ein Kompass (der nicht nach m
 's354af44369b9d45d': str`Permeabilität: ${0} %`,
 's35502dfbe2abc539': `Kartografischer Bruch in der Nähe von`,
 's3550f7796397f658': `Literarische Echos werden indiziert`,
-'s355132e7d52406f1': `PERSÖNLICHES LOGBUCH DES KARTOGRAPHEN — Agent ████ (Name auf Wunsch des Agenten klassifiziert)
-Einsatz: Velgarien-Splitter, Infiltration über administrative Verarbeitung
-Eintrag 1 (von einer unbekannten Gesamtzahl; die Einträge sind nicht nummeriert, weil Nummerierung Reihenfolge impliziert, und Reihenfolge in Velgarien eine Frage der Bureau-Politik ist und nicht der zeitlichen Tatsache)
-
-Das Erste, was auffällt, ist der Beton. Nicht die Kameras — jeder erwähnt die Kameras, und sie sind überall, aber die Kameras sind Mobiliar; man hört auf, sie zu sehen, wie man aufhört, Tapeten zu sehen. Der Beton ist anders. Der Beton ist präsent. Man spürt ihn durch die Schuhe. Man spürt ihn in den Zähnen. Die Gebäude bestehen daraus, die Straßen bestehen daraus, und die Luft schmeckt danach — diese spezifische alkalische Trockenheit, die den Lungen mitteilt, dass sie sich in einem Gebäude befinden, selbst wenn sie in einem stehen, was die Stadt als „Erholungsfreifläche" ausweist, ein Betonplatz mit einer Betonbank und einem Metallbaum, den das Bureau für Gartenbau-Konformität als „Natur" klassifiziert hat.
-
-Die Korridore hallen wider. Es gibt keine weiche Oberfläche in Velgarien. Die Teppiche sind dünn und die Wände sind hart und jeder Schritt kündigt sich an, was bedeutet, dass Stille — wahre Stille, die Abwesenheit aller Schritte — das beängstigendste Geräusch in der Stadt ist, weil es bedeutet, dass man entweder allein ist (unmöglich; die Kameras müssten defekt sein) oder dass jemand in der Nähe sehr, sehr still steht.
-
-Die Propagandaposter sind wunderschön. Ich möchte das klarstellen, weil es wichtig ist und weil die Berichte des Bureaus dazu neigen, Velgariens visuelle Kultur als Symptom und nicht als Leistung zu behandeln. Die Poster sind großartig — kühne rote Diagonalen auf Grau, heroische Figuren in unmöglichem Maßstab, Typografie, die als Architektur funktioniert. Die Designs stammen aus konstruktivistischen Traditionen, die den Staat vordatieren, und sie tragen die ursprüngliche Aufrichtigkeit der Konstruktivisten: diese Poster glauben aufrichtig an die Welt, die sie bewerben. Die Tatsache, dass die Welt, die sie bewerben, nicht existiert — nie existiert hat, nie existieren wird, im Widerspruch steht zum Korridor, in dem man steht, während man das Poster liest — schmälert das Kunstwerk nicht. Es macht es tragisch.
-
-Ich aß die Paste. Nährstoffversorgung, ausgegeben um 07:00, 12:00 und 18:00. Grau. Warm. Die Textur von Bedauern. Der Geschmack ist klassifiziert, was ich zunächst für einen Witz hielt, von dem ich aber inzwischen erfahren habe, dass das Bureau für Ernährung tatsächlich das Geschmacksprofil der nationalen Nahrungsmittelversorgung für ein Staatsgeheimnis hält. Ich habe einen Antrag auf die Geheimhaltungsstufe des Geschmacks gestellt. Der Antrag ist anhängig.
-
-Was mir bleibt — was ich dem Bureau berichten werde und was das Bureau ablegen wird und was die Ablage nicht erfassen wird — ist der Klang von acht Millionen Menschen, die auf genau die gleiche Weise leise sind. Nicht Stille. Konformität. Das leise, kontinuierliche Summen einer Bevölkerung, die gelernt hat, genau die Menge an Lärm zu machen, die die akustischen Monitore als „normal" klassifizieren. Es ist der Klang einer Zivilisation, die den Atem anhält.`,
 's355b21b89ce5d9c5': `Details`,
 's3568ad62e98cbd68': `Alle Simulationsbilder in voller nativer Auflösung. Organisiertes ZIP-Archiv: Agenten, Gebäude, Lore und Banner.`,
 's356c8c45c8ef2987': `DEIN OPERATIONSBERICHT`,
@@ -1150,29 +1085,18 @@ Was mir bleibt — was ich dem Bureau berichten werde und was das Bureau ablegen
 's358cd1555b55cb71': `Botschafter`,
 's359345c12fbf3176': `Kostenlos, sofort, persönlichkeitsbasiert`,
 's359a04a5e9c092e6': `Y-Achse`,
-'s35b1cf55b5eac844': `Die Erfolgsformel berücksichtigt Agenteneignung, Zonensicherheit des Ziels, Ihre Wächteranzahl und Botschaftseffektivität. Elena Voss' Spionage-Eignung von 9 gibt ihr eine 66% Erfolgswahrscheinlichkeit — deutlich besser als ein Generalist mit Eignung 6 (48%).`,
+'s35b1cf55b5eac844': `Die Erfolgsformel berücksichtigt Agenteneignung, Zonensicherheit des Ziels, Ihre Wächteranzahl und Botschaftseffektivität. Elena Voss' Spionage-Eignung von 9 gibt ihr eine 66% Erfolgswahrscheinlichkeit – deutlich besser als ein Generalist mit Eignung 6 (48%).`,
 's35b8ca6f5fd0ed77': `Noch keine Kampfereignisse.`,
 's35bd3fe29366b988': `Die Simulationsschmiede von metaverse.center erbt diese Tradition, fügt aber hinzu, was prozeduraler Generierung stets fehlte: narrative Intelligenz. Die KI generiert nicht einfach Gelände und bevölkert es mit Sprites. Sie erschafft Agenten mit Hintergrundgeschichten, Gebäude mit Zwecken, Ereignisse mit Konsequenzen und Lore, das alles zu einer kohärenten Mythologie verbindet.`,
 's35c301834afb1a22': `Der Resonanzmonitor`,
 's35c45a10e70f76a8': `Bearbeitungszeit: 24–48 Std.`,
-'s35c536c09fb3eac7': `Im virtuellen Raum werden Archigrams Unmöglichkeiten zu Möglichkeiten. Die Architektur einer Simulation kann so spekulativ sein, wie ihr Schöpfer es sich vorstellt: Gebäude auf Stelzen über dem Nichts, Städte, die sich als Reaktion auf Sozialdynamiken rekonfigurieren, Strukturen, die sich mit jedem Epochen-Zyklus auflösen und neu formieren. Die Beschränkungen physischer Architektur werden durch die Beschränkungen narrativer Logik ersetzt — Gebäude müssen innerhalb ihrer Welt Sinn ergeben, aber die Physik dieser Welt ist gewählt, nicht gegeben.`,
+'s35c536c09fb3eac7': `Im virtuellen Raum werden Archigrams Unmöglichkeiten zu Möglichkeiten. Die Architektur einer Simulation kann so spekulativ sein, wie ihr Schöpfer es sich vorstellt: Gebäude auf Stelzen über dem Nichts, Städte, die sich als Reaktion auf Sozialdynamiken rekonfigurieren, Strukturen, die sich mit jedem Epochen-Zyklus auflösen und neu formieren. Die Beschränkungen physischer Architektur werden durch die Beschränkungen narrativer Logik ersetzt – Gebäude müssen innerhalb ihrer Welt Sinn ergeben, aber die Physik dieser Welt ist gewählt, nicht gegeben.`,
 's35e26615d150280f': `Synchronisierung fehlgeschlagen`,
-'s35eb5fb33de6c3f4': `KI-Charaktere mit Gedächtnis & Persönlichkeit`,
+'s35eb5fb33de6c3f4': `KI-Charaktere mit Gedächtnis &amp; Persönlichkeit`,
 's36005f297eb5d949': str`${0} Simulationen`,
-'s361ba74f8debbab0': `BUREAU FÜR UNMÖGLICHE GEOGRAPHIE — Dokument HIDDEN-LAW/001
-
-Axiom 1: Ein Splitter ist eine in sich konsistente Erzählung. Er muss nicht wahr sein, aber er muss kohärent sein. Ein Splitter, der sich selbst widerspricht, wird [VERZEHRT] und die resultierenden Trümmer werden [UNLESERLICH] über benachbarte Splitter als kulturelle Kontamination, falsche Erinnerungen und unerklärliche Architektur.
-
-Axiom 2: Die Grenze zwischen Splittern ist nicht räumlich, sondern aufmerksamkeitsbedingt. Ein Splitter existiert, weil seine Bewohner an ihn glauben. In dem Moment, in dem eine kritische Masse beginnt zu zweifeln — die Risse zu bemerken, die falsche Musik zu hören — wird die Grenze dünn. Diese Verdünnung wird Bleed genannt. Der Bleed ist keine Fehlfunktion.
-
-Axiom 3: Jeder Splitter enthält, kodiert in seiner tiefsten Struktur, die Erinnerung an Ganzheit. Diese Erinnerung manifestiert sich als Heimweh nach einem Ort, der nicht existiert, als Déjà-vu, das das Gewicht geologischer Zeiträume trägt.
-
-Axiom 4: Die Kartographen existieren außerhalb der Axiome. Dies ist kein Privileg. Dies ist ein [VERZEHRT].
-
-[Rest durch temporale Erosion verloren. Fragmente, die in siebzehn verschiedenen Splittern geborgen wurden, deuten auf ein fünftes Axiom hin, aber die geborgenen Fragmente widersprechen sich gegenseitig. Das Bureau betrachtet dies als Beweis, dass das fünfte Axiom korrekt funktioniert.]`,
 's3622c8b352258188': `Zonenstabilität`,
 's362f48aa5dcdf2d1': `Propagandist wird aufgelöst: ERFOLG`,
-'s363a71356159dbf9': `metaverse.center ist ein Experiment in dieser Alternative. Nicht perfekt, nicht vollständig, aber intentional. Jede architektonische Entscheidung — von Row-Level Security über nutzer-eigene Simulationen bis zu kompetitiven Epochen — ist eine Governance-Entscheidung zugunsten der Nutzersouveränität. Denn wenn Code Gesetz ist, dann lautet die Frage nicht, ob virtuelle Welten regiert werden, sondern von wem und in wessen Interesse.`,
+'s363a71356159dbf9': `metaverse.center ist ein Experiment in dieser Alternative. Nicht perfekt, nicht vollständig, aber intentional. Jede architektonische Entscheidung – von Row-Level Security über nutzer-eigene Simulationen bis zu kompetitiven Epochen – ist eine Governance-Entscheidung zugunsten der Nutzersouveränität. Denn wenn Code Gesetz ist, dann lautet die Frage nicht, ob virtuelle Welten regiert werden, sondern von wem und in wessen Interesse.`,
 's363abde8a254ea5f': `Authentifizierung fehlgeschlagen. Bitte erneut versuchen.`,
 's367d079d1aed1358': `Kosten`,
 's367d0d4456cea384': `Die Bekannten Splitter`,
@@ -1198,7 +1122,6 @@ Axiom 4: Die Kartographen existieren außerhalb der Axiome. Dies ist kein Privil
 's37b8ef81fa26f80c': `Stresstoleranzgrenze wird gemessen`,
 's37c520ecc2bfc91e': `Straße`,
 's37c5d0d40a152c25': `Noch keine Zeitverlaufsdaten`,
-'s37d1e2409849778f': `Theme Forge — KI-generierte visuelle Identität`,
 's37dceeaec59c982b': `Mock`,
 's37e198047d33033f': `Ereignis-Seismograph`,
 's37e1ba11156a064f': `Wichtigkeit`,
@@ -1209,7 +1132,7 @@ Axiom 4: Die Kartographen existieren außerhalb der Axiome. Dies ist kein Privil
 's38291f0cead57939': `Schlafzyklus-Anomalien werden profiliert`,
 's382a006d446be2f7': `Noch keine Aufklärungsdaten gesammelt.`,
 's382a2aa3984474dd': `Erstellen`,
-'s3833e122e34c65f8': `Bot-Spieler sind KI-Gegner, die jeder Epoche hinzugefügt werden können. Jeder Bot hat einen Persönlichkeitsarchetyp, der sein strategisches Verhalten bestimmt — von defensiven Festungsbauern bis zu chaotischen Wildcards. Bots nutzen dieselben Dienste wie menschliche Spieler.`,
+'s3833e122e34c65f8': `Bot-Spieler sind KI-Gegner, die jeder Epoche hinzugefügt werden können. Jeder Bot hat einen Persönlichkeitsarchetyp, der sein strategisches Verhalten bestimmt – von defensiven Festungsbauern bis zu chaotischen Wildcards. Bots nutzen dieselben Dienste wie menschliche Spieler.`,
 's383de319c4012f21': `N/A`,
 's38700188f839eae7': `Das Bereitschaftssignal konnte nicht aktualisiert werden.`,
 's38716024efbb5ceb': `DEPESCHE`,
@@ -1225,7 +1148,7 @@ Axiom 4: Die Kartographen existieren außerhalb der Axiome. Dies ist kein Privil
 's38d08316496e0954': `Niedrigere Werte nutzen die Referenz locker. Höhere Werte entsprechen ihr genauer.`,
 's38ea20344d490a7f': `Neueste Ereignisse`,
 's38f7dd7efa14c98c': `Recherche`,
-'s390ce3dae98d7b7d': `Die Gesamtwertung bestimmt das finale Ranking. Es gibt keinen einzigen Weg zum Sieg — ein diplomatischer Meisterdenker, ein militärisches Schwergewicht und eine kulturelle Supermacht haben alle gangbare Routen zur Spitze.`,
+'s390ce3dae98d7b7d': `Die Gesamtwertung bestimmt das finale Ranking. Es gibt keinen einzigen Weg zum Sieg – ein diplomatischer Meisterdenker, ein militärisches Schwergewicht und eine kulturelle Supermacht haben alle gangbare Routen zur Spitze.`,
 's391cdaa27327e441': `Doppelklick`,
 's3925392a0cd3b566': `In Bearbeitung`,
 's392f74e3914541cb': `Benutzer-ID`,
@@ -1239,9 +1162,9 @@ Axiom 4: Die Kartographen existieren außerhalb der Axiome. Dies ist kein Privil
 's398605915210a60f': `Automatische Auflösung`,
 's39970bd082d0fcf5': `Was ist die Simulationsüberlieferung?`,
 's39a40c2b78514678': `Wie man spielt`,
-'s39c49a303b1114ff': `Der Kampfmeldungsticker am unteren Kartenrand zeigt ein scrollendes Protokoll öffentlicher Kampfereignisse über alle aktiven Epochen — nützlich für Zuschauer, die mehrere Matches verfolgen.`,
+'s39c49a303b1114ff': `Der Kampfmeldungsticker am unteren Kartenrand zeigt ein scrollendes Protokoll öffentlicher Kampfereignisse über alle aktiven Epochen – nützlich für Zuschauer, die mehrere Matches verfolgen.`,
 's39e7db81664788d9': `Saboteur-Schwerpunkt`,
-'s39fcd1c5be578394': `Ereignisse mit hoher Wirkungsstufe (8+) können Blutungsechos zu verbundenen Simulationen auslösen, Kaskadenereignisse in belasteten Zonen starten und Epochen-Bewertungsdimensionen verschieben. Sie sind nicht nur narrativ — sie haben echte mechanische Konsequenzen.`,
+'s39fcd1c5be578394': `Ereignisse mit hoher Wirkungsstufe (8+) können Blutungsechos zu verbundenen Simulationen auslösen, Kaskadenereignisse in belasteten Zonen starten und Epochen-Bewertungsdimensionen verschieben. Sie sind nicht nur narrativ – sie haben echte mechanische Konsequenzen.`,
 's3a1e43277919d201': `Starke Botschaft (&gt; 0.8)`,
 's3a57e673a5771b00': `Noch keine Einladungen gesendet.`,
 's3a5a0a3aa9903873': `Beitritt zu einer Epoche`,
@@ -1254,11 +1177,10 @@ Axiom 4: Die Kartographen existieren außerhalb der Axiome. Dies ist kein Privil
 's3addb3b9e743e356': `Fallback-Modell`,
 's3ae6e5492188918b': `Prüfe Übertragungsintegrität...`,
 's3aeba787c1a1b3cf': `Artikel lesen`,
-'s3b2b2bcae038356e': `Jede Simulation hat eine eigene Weltgeschichte — Tausende Wörter an Geschichte, Kultur und Spannung, organisiert in sechs Kapiteln. Die Überlieferung ist die Identität der Welt, von der Schmiede generiert oder von Hand geschrieben, und öffentlich für alle Besucher sichtbar.`,
+'s3b2b2bcae038356e': `Jede Simulation hat eine eigene Weltgeschichte – Tausende Wörter an Geschichte, Kultur und Spannung, organisiert in sechs Kapiteln. Die Überlieferung ist die Identität der Welt, von der Schmiede generiert oder von Hand geschrieben, und öffentlich für alle Besucher sichtbar.`,
 's3b30cf95c0f1ea52': `Ranglistenpanel`,
 's3b4aff732fbdf4eb': `Frühere Ausgaben`,
 's3b7dae19d7f68624': `Nachrichtendienstliche Ergänzung pro Agent.`,
-'s3b914cf091c985a4': `Beschreibe eine Welt in einem Satz. Die Schmiede baut sie — Geographie, Bürger, Architektur, Tausende Wörter an Lore. Innerhalb von Minuten haben Sie eine lebendige Zivilisation mit Charakteren, die Meinungen bilden, Groll tragen und ihre eigenen Zeitungen schreiben.`,
 's3b9c0086ae457d4a': `Die Chronik: KI-generierte Simulationszeitung im Broadsheet-Format`,
 's3bb941932801d6d5': `Wird in KI-generiertem Text für Pronomen und Porträtgenerierung verwendet.`,
 's3bb9a4d5cbf75cc4': `E-Mail-Adresse für Epochen-Einladung`,
@@ -1290,7 +1212,7 @@ Axiom 4: Die Kartographen existieren außerhalb der Axiome. Dies ist kein Privil
 's3d4c3b11583bb886': `ARKANUM`,
 's3d7b383c0391ce2c': `Perimeterintegrität wird verifiziert`,
 's3d8206005c0a990a': `Zurück zur Kommandozentrale`,
-'s3d8f0849d75229a2': `Hoch — lange Persistenz`,
+'s3d8f0849d75229a2': `Hoch – lange Persistenz`,
 's3d95e3a7df4ab351': `Existenzielle Drift wird gemessen`,
 's3da9d815a26aea7c': `Oberfläche`,
 's3dab6bcbc22dc3e0': `Passwort bestätigen`,
@@ -1306,7 +1228,7 @@ Axiom 4: Die Kartographen existieren außerhalb der Axiome. Dies ist kein Privil
 's3e5ccf4c27e567e5': `Splitter-Klassifikation: TÜRKIS. Bedrohungseinschätzung: Ökologisch. Die Dunkelheit ist gütig. Das ist kein Trost.`,
 's3e5e2427f266a6d3': `DEINE SHARDS`,
 's3e614c43ab5fdc53': `Spielinstanzen`,
-'s3e7c798bb81173fc': `Der Agenten-Chat ist der direkteste Weg, die Tiefe der Charaktere Ihrer Simulation zu erleben. Wählen Sie einen Agenten und beginnen Sie ein Gespräch. Das System ruft relevante Erinnerungen ab — vergangene Gespräche, miterlebte Ereignisse, bekannte Fakten über andere Charaktere — und generiert Antworten, die von Persönlichkeit, Beruf und aktuellem Gemütszustand des Agenten geprägt sind.`,
+'s3e7c798bb81173fc': `Der Agenten-Chat ist der direkteste Weg, die Tiefe der Charaktere Ihrer Simulation zu erleben. Wählen Sie einen Agenten und beginnen Sie ein Gespräch. Das System ruft relevante Erinnerungen ab – vergangene Gespräche, miterlebte Ereignisse, bekannte Fakten über andere Charaktere – und generiert Antworten, die von Persönlichkeit, Beruf und aktuellem Gemütszustand des Agenten geprägt sind.`,
 's3e87e59901aeeab1': `Rohes CSS, das in die Seite eingefügt wird. Für erweiterte Überschreibungen jenseits des Token-Systems.`,
 's3e8abd833c6e94c7': str`Verfällt in ${0} Zyklen`,
 's3e9807f9fc2f16c3': `Vorherige Entität`,
@@ -1319,7 +1241,7 @@ Axiom 4: Die Kartographen existieren außerhalb der Axiome. Dies ist kein Privil
 's3ed365569972d214': `Erfolg-Hintergrund`,
 's3eef113de1cc789f': `2 Sekunden halten`,
 's3ef56708c4d9f53c': `Propaganda`,
-'s3efe488f126d44bc': `Neues Intro: Was ist metaverse.center? — Sandbox vs. Wettkampfmodi`,
+'s3efe488f126d44bc': `Neues Intro: Was ist metaverse.center? – Sandbox vs. Wettkampfmodi`,
 's3f0abb6b668a1747': `Besondere Regeln`,
 's3f1c5eba029d4e0b': str`Sweep abgeschlossen: ${0} Bedrohungen erkannt`,
 's3f3e8eb4064c7fe7': `Persönliche API-Schlüssel (BYOK)`,
@@ -1336,8 +1258,8 @@ Axiom 4: Die Kartographen existieren außerhalb der Axiome. Dies ist kein Privil
 's3fbda3747919678d': `Wenn die Epoche endet, werden die Wertungen in allen 5 Dimensionen eingefroren. Die Gesamtwertung bestimmt Ihre Endplatzierung. Titel werden basierend auf Ihrer stärksten Dimension vergeben: Der Unerschütterliche (Stabilität), Der Resonante (Einfluss), Der Souverän (Souveränität), Der Architekt (Diplomatie), Der Schatten (Militär).`,
 's3fc8822fdc6decee': `Ein Echo kann selbst weitere Blutungen in anderen Simulationen auslösen - eine Kaskade. Die maximale Tiefe beträgt standardmäßig 2. Jede Kaskadenstufe multipliziert sich mit dem Abklingfaktor (standardmäßig 0,6), so dass ein Echo der Tiefe 2 nur noch 36% der ursprünglichen Stärke hat. Während des Reckoning erhöht sich die maximale Tiefe um 1.`,
 's3fd3a9c0374a796e': `Bild-Anfrage wird vorbereitet...`,
-'s3fde3aff228db472': `Und unter beiden: Clausewitz’ berühmteste Erkenntnis. „Der Krieg ist eine bloße Fortsetzung der Politik mit anderen Mitteln." Konflikt ist nie rein militärisch — er ist der Ausdruck politischer Interessen durch das Medium der Gewalt. In den Epochen von metaverse.center ist kompetitives Spiel die Fortsetzung des Worldbuildings mit anderen Mitteln. Die Qualität Ihrer Simulation, ihre Sozialdynamiken und ihre strategische Position sind die „Politik", die Ihre Operativeinsätze zum Ausdruck bringen.`,
-'s3ff5da36a6b44b67': `Animierte Aufschlüsselungsbalken für alle fünf Wertungsdimensionen — Stabilität, Einfluss, Souveränität, Diplomatie und Militär — mit Pro-Teilnehmer-Aufschlüsselungen. Sehen Sie genau, wo jeder Spieler dominierte und wo er verwundbar war. Ihre eigene Zeile ist in Amber hervorgehoben.`,
+'s3fde3aff228db472': `Und unter beiden: Clausewitz’ berühmteste Erkenntnis. „Der Krieg ist eine bloße Fortsetzung der Politik mit anderen Mitteln." Konflikt ist nie rein militärisch – er ist der Ausdruck politischer Interessen durch das Medium der Gewalt. In den Epochen von metaverse.center ist kompetitives Spiel die Fortsetzung des Worldbuildings mit anderen Mitteln. Die Qualität Ihrer Simulation, ihre Sozialdynamiken und ihre strategische Position sind die „Politik", die Ihre Operativeinsätze zum Ausdruck bringen.`,
+'s3ff5da36a6b44b67': `Animierte Aufschlüsselungsbalken für alle fünf Wertungsdimensionen – Stabilität, Einfluss, Souveränität, Diplomatie und Militär – mit Pro-Teilnehmer-Aufschlüsselungen. Sehen Sie genau, wo jeder Spieler dominierte und wo er verwundbar war. Ihre eigene Zeile ist in Amber hervorgehoben.`,
 's3ff8a5fcb02cc876': `Bestimmt, welche Nutzer eigene API-Schlüssel verwenden dürfen.`,
 's3ffe852e7fa0aa4b': `Dieses Ereignis wurde durch ausländische Propaganda ausgelöst`,
 's40138df9c4134e0c': `Der Resonant`,
@@ -1399,7 +1321,7 @@ Axiom 4: Die Kartographen existieren außerhalb der Axiome. Dies ist kein Privil
 's43923158d9dc8059': `Monospace-Schrift`,
 's439330ac22f80979': `Botschaften automatisch zwischen allen Spielinstanzen generiert`,
 's43ae2a0c813e05d8': `Botschaft konnte nicht eingerichtet werden.`,
-'s43c45e187a1a44fc': `Fragen Sie den Bürgermeister einer Stadt nach dem jüngsten Gebäudeeinsturz. Er wird den von ihm koordinierten Notfalleinsatz referenzieren, seine Frustration mit dem Bauunternehmer und den politischen Druck seiner Wähler. Fragen Sie den Bauunternehmer, und Sie bekommen eine andere Geschichte — Budgetbeschränkungen, regulatorische Lasten, ungerechtfertigte Schuldzuweisungen. Keine der Antworten ist gescriptet. Beide entstehen aus den akkumulierten Erfahrungen der Charaktere innerhalb der Simulation.`,
+'s43c45e187a1a44fc': `Fragen Sie den Bürgermeister einer Stadt nach dem jüngsten Gebäudeeinsturz. Er wird den von ihm koordinierten Notfalleinsatz referenzieren, seine Frustration mit dem Bauunternehmer und den politischen Druck seiner Wähler. Fragen Sie den Bauunternehmer, und Sie bekommen eine andere Geschichte – Budgetbeschränkungen, regulatorische Lasten, ungerechtfertigte Schuldzuweisungen. Keine der Antworten ist gescriptet. Beide entstehen aus den akkumulierten Erfahrungen der Charaktere innerhalb der Simulation.`,
 's43ce09fe96d06259': `Interaktionstyp`,
 's43d30b4bb9b89b62': `Wähle eine Konversation aus der Liste oder starte eine neue, indem du einen Agenten auswählst.`,
 's43df5d98677e226a': `Gebäude löschen`,
@@ -1418,7 +1340,7 @@ Axiom 4: Die Kartographen existieren außerhalb der Axiome. Dies ist kein Privil
 's44921724cca04cd3': `KI-Engine`,
 's44a7586b7db54e60': `Strategieeffektivität (Wilson 95%-KI)`,
 's44a9ac9dd7567f4a': `Gelöscht`,
-'s44be56ff9d8d380d': `Jeder Agent hat 6 Eignungswerte (3–9) mit insgesamt 36 Punkten. Eine Spionage-Eignung von 9 gibt +27% Erfolg, während 3 nur +9% gibt. Wählen Sie weise — der falsche Agent bei der falschen Mission kostet Sie 18 Prozentpunkte.`,
+'s44be56ff9d8d380d': `Jeder Agent hat 6 Eignungswerte (3–9) mit insgesamt 36 Punkten. Eine Spionage-Eignung von 9 gibt +27% Erfolg, während 3 nur +9% gibt. Wählen Sie weise – der falsche Agent bei der falschen Mission kostet Sie 18 Prozentpunkte.`,
 's44c4c193c9bcda01': `Guidance-Skala`,
 's44c82f5963b8e7ee': `Wertung`,
 's44eb22335eea4faa': `Dunkelkammer mit KI-generierter Farbpalette und Live-Vorschau`,
@@ -1438,12 +1360,12 @@ Axiom 4: Die Kartographen existieren außerhalb der Axiome. Dies ist kein Privil
 's4575cada14d4c82e': `Ein eindeutiger Name für diese Wettbewerbsepoche. Sichtbar für alle Teilnehmer und Zuschauer.`,
 's458a3ce52a225704': `Thematische DNA wird extrahiert`,
 's458cc52a2e35cd77': `Aufklärungsdossiers der Gegner`,
-'s45b523bfd8a65b7d': `Social Trends & Kampagnen: Pipeline zur Integration realer Nachrichten`,
+'s45b523bfd8a65b7d': `Social Trends &amp; Kampagnen: Pipeline zur Integration realer Nachrichten`,
 's45b62f31c2e9c28e': `Was diese Vorlage macht`,
 's45c6e69e4f605552': `1–5 Punkte-Bewertung`,
 's45d993b39864fd54': `Schmelztiegel`,
 's45dc53f79ca9f96e': `Multiversum wird gescannt…`,
-'s45e42687e0a0e0b7': `Das ist wichtig für unser Denken über digitale Welten. Eine Simulation auf metaverse.center ist keine geringere Kopie der Realität. Sie ist eine virtuelle Welt in Deleuzes Sinne: ein Feld von Potentialen, das sich durch Interaktion aktualisiert. Die Agenten, Ereignisse und Erzählungen sind real — real in der Weise, wie eine Geschichte real ist, ein Spiel real ist, eine durch Spiel geknüpfte Beziehung real ist. Die Frage „Ist das real?" verkennt die Natur des Virtuellen.`,
+'s45e42687e0a0e0b7': `Das ist wichtig für unser Denken über digitale Welten. Eine Simulation auf metaverse.center ist keine geringere Kopie der Realität. Sie ist eine virtuelle Welt in Deleuzes Sinne: ein Feld von Potentialen, das sich durch Interaktion aktualisiert. Die Agenten, Ereignisse und Erzählungen sind real – real in der Weise, wie eine Geschichte real ist, ein Spiel real ist, eine durch Spiel geknüpfte Beziehung real ist. Die Frage „Ist das real?" verkennt die Natur des Virtuellen.`,
 's45eeec2ba734a097': `Splitter-Signal wird verstärkt`,
 's45f6a274e02a4e68': `Keine Reaktionen vorhanden.`,
 's462f46c057bd5571': `AUTORISIERUNGSKOSTEN: 2 FT`,
@@ -1482,13 +1404,6 @@ Axiom 4: Die Kartographen existieren außerhalb der Axiome. Dies ist kein Privil
 's49250075fe5179b1': `Übrige ausblenden`,
 's493c931b534ebcf1': `Utopisch`,
 's493e4a43bb2fe2ea': `Verrat zulassen`,
-'s4946959da7e63015': `Du — der hinter dem Bildschirm, der wählt, in welchen Splitter er eintreten will — du vollziehst einen Akt der Kartographie. Du betrachtest die Form des Multiversums von außerhalb jedes einzelnen Splitters, und du wählst, wohin du deine Aufmerksamkeit richtest, was dasselbe ist wie zu wählen, welche Welt real ist.
-
-Die Kartographen nennen dies den Blick — den Akt der Beobachtung, der einen Splitter stabilisiert, ihm Kohärenz verleiht, verhindert, dass er sich zurück in das undifferenzierte Potenzial des Unbenannten auflöst. Ein Splitter ohne Beobachter ist eine Geschichte ohne Leser: technisch existent, funktional null. Wenn du eine Simulation auswählst, browst du nicht bloß. Du erhältst.
-
-Deshalb wird das Dashboard der Plattform als Karte präsentiert. Es ist keine Benutzeroberfläche. Es ist ein kartographisches Instrument, dieselbe Klasse von Werkzeug, das der Erste Kartograph benutzte, um die Fraktur zu beobachten, als sie geschah. Der Unterschied ist einer des Maßstabs, nicht der Art.
-
-Der Eremit im Tarot zeigt eine einsame Gestalt, die eine Laterne hält und einen Pfad beleuchtet, den nur sie sehen kann. Die Kartographen glauben, die Laterne sei die Karte, und der Pfad sei der Bleed, und der Eremit sei derjenige, der gerade in diesem Moment auf die Karte schaut. Was gerade du bist.`,
 's49730f3d5751a433': `Laden...`,
 's497cb278c4dc1ced': str`${0} Artikel umgewandelt`,
 's497da0d5776fefd1': `Simulation löschen`,
@@ -1497,7 +1412,6 @@ Der Eremit im Tarot zeigt eine einsame Gestalt, die eine Laterne hält und einen
 's49998cdd52e1dc53': `Öffentliche Simulationen sind für alle Benutzer sichtbar. Private Simulationen erfordern eine Einladung.`,
 's499a063eababfcde': `Bereit, Ihre strategischen Instinkte zu testen? Starten Sie ein Solo-Trainingsmatch gegen 3 KI-Gegner oder erkunden Sie die Plattform in Ihrem eigenen Tempo.`,
 's49bc60460517939d': `Die Blutung pulsiert. Die Kartographen nennen diesen Rhythmus die Gezeit.`,
-'s49d98982e2c562f6': `Wenn aktiviert, spüren beide Agenten die Beziehung gleichermaßen. Wenn deaktiviert, ist nur der Quell-Agent betroffen - nützlich für unerwiderte Bindungen, geheime Allianzen oder hierarchische Rollen.`,
 's49dca79059586455': `Kein API-Schlüssel`,
 's49e5d77114fdfa25': `Beschreibe das Gebäude...`,
 's49fde0fb9da24452': `Tokens im Umlauf`,
@@ -1524,7 +1438,7 @@ Der Eremit im Tarot zeigt eine einsame Gestalt, die eine Laterne hält und einen
 's4adb60d35cdd056b': `Bebauungsdaten werden abgeglichen`,
 's4addd6b12eac01d6': `SUBSTRATMONITOR`,
 's4af7afa27d2a6fec': `Fassadenverwitterung wird projiziert`,
-'s4b02b03fe13d113f': `Archigrams Projekte waren bewusst unbaubar. Das war der Sinn. Indem sie Architektur vorschlugen, die von den Zwängen der Schwerkraft, der Materialien und der Ökonomie befreit war, erforschten sie, was Städte sein könnten, wenn Vorstellungskraft das einzige Baumaterial wäre. Wanderstädte stellten die Annahme infrage, dass Standort fix ist. Plug-in Cities stellten die Annahme infrage, dass Gebäude permanent sind. Instant City — eine reisende Event-Infrastruktur, die auf jeder Stadt landen und sie temporär transformieren konnte — stellte die Annahme infrage, dass das Urbane und das Ländliche stabile Kategorien sind.`,
+'s4b02b03fe13d113f': `Archigrams Projekte waren bewusst unbaubar. Das war der Sinn. Indem sie Architektur vorschlugen, die von den Zwängen der Schwerkraft, der Materialien und der Ökonomie befreit war, erforschten sie, was Städte sein könnten, wenn Vorstellungskraft das einzige Baumaterial wäre. Wanderstädte stellten die Annahme infrage, dass Standort fix ist. Plug-in Cities stellten die Annahme infrage, dass Gebäude permanent sind. Instant City – eine reisende Event-Infrastruktur, die auf jeder Stadt landen und sie temporär transformieren konnte – stellte die Annahme infrage, dass das Urbane und das Ländliche stabile Kategorien sind.`,
 's4b0f3653ededcebf': `Echo-Stärke-Formel`,
 's4b1b0a02410a57e9': `The Gaslit Reach (Stratege-Bot)`,
 's4b2b54d0a12ad08f': `Authentifizierungsterminal`,
@@ -1554,15 +1468,15 @@ Der Eremit im Tarot zeigt eine einsame Gestalt, die eine Laterne hält und einen
 's4bfc62609ee1cee2': `Archiv`,
 's4c3612f30e5413da': `Was virtuelle Städte uns lehren`,
 's4c3ad877443f3474': `Meine Welten`,
-'s4c440537556f442d': `Das Bureau of Impossible Geography überwacht Simulationsereignisse und generiert automatisierte Antworten, wenn bestimmte Schwellenwerte überschritten werden. Diese Antworten fügen emergente Erzählungsimpulse hinzu — eingeleitete Untersuchungen, ausgerufene Eindämmungsprotokolle, ausgelöste diplomatische Interventionen — alles angetrieben vom aktuellen Zustand der Welt.`,
+'s4c440537556f442d': `Das Bureau of Impossible Geography überwacht Simulationsereignisse und generiert automatisierte Antworten, wenn bestimmte Schwellenwerte überschritten werden. Diese Antworten fügen emergente Erzählungsimpulse hinzu – eingeleitete Untersuchungen, ausgerufene Eindämmungsprotokolle, ausgelöste diplomatische Interventionen – alles angetrieben vom aktuellen Zustand der Welt.`,
 's4c4d728a3bc11e21': `Narrative Wahrscheinlichkeit wird abgetastet`,
-'s4c501137a163f7e1': `Kritisch — verfällt nie`,
+'s4c501137a163f7e1': `Kritisch – verfällt nie`,
 's4c5fe7d32e3c83c2': `Treten Sie mit einer Simulation bei, bevor Sie die Epoche starten.`,
 's4c604b0e25ab362d': `Gedächtnisgestützte Antworten`,
 's4c6366cec535f831': `Wirkt auf`,
 's4c7affb016bdb560': `Übertragungsrate`,
 's4c7b91b9d9fae2c4': `Welt-Abschnitte zuerst: Lore, Schmiede, Chat, Ereignisse, Social Trends, Karte, Gesundheit`,
-'s4c7ceefd99a7b23e': `Allianzorientiert — Botschaftsnetzwerk`,
+'s4c7ceefd99a7b23e': `Allianzorientiert – Botschaftsnetzwerk`,
 's4c7ecdad91e960b0': `Agent-Details`,
 's4c7eeb38a88dc107': `Keine Bots in deinem Deck.`,
 's4caed5b7a7e5d89b': `English`,
@@ -1572,7 +1486,7 @@ Der Eremit im Tarot zeigt eine einsame Gestalt, die eine Laterne hält und einen
 's4ce162d9e53c86ca': `Ich bin durch Bureau-Protokoll verpflichtet, wissenschaftliche Objektivität zu wahren. Ich werde es versuchen. Ich werde scheitern.`,
 's4ce34321560a15a9': `Die Gesundheitsdaten konnten nicht geladen werden.`,
 's4ce88e7ec87a953b': `Architekturpläne entwerfen`,
-'s4cedd7f86263840b': `A floating archipelago where memories solidify into islands — funktioniert genauso gut wie Deutsch.`,
+'s4cedd7f86263840b': `A floating archipelago where memories solidify into islands – funktioniert genauso gut wie Deutsch.`,
 's4d045fa06a1e8bca': `Sonderagentenstatus - Ziel von Attentätern`,
 's4d060f32ebb1a52e': `Kandidat abgelehnt.`,
 's4d146526fcea605a': `positiv`,
@@ -1596,9 +1510,9 @@ Der Eremit im Tarot zeigt eine einsame Gestalt, die eine Laterne hält und einen
 's4e9291078783912f': `Ausstehende Freigabeanträge von Feldbeobachtern.`,
 's4e9fffef064ac538': `Agenten-Portrait-Beschr.`,
 's4ea0f21fc2a338a1': `Nach oben`,
-'s4ea429429e66334b': `Diese Ereignisse — ungescriptet, spielergesteuert, mit realen emotionalen und ökonomischen Konsequenzen — demonstrieren, dass kompetitive virtuelle Welten Erzählungen von echter strategischer Tiefe erzeugen können. metaverse.center strebt diese Art von Emergenz an: Systeme, die die Bedingungen für spielergesteuerte Geschichte schaffen, keine gescripteten Szenarien.`,
+'s4ea429429e66334b': `Diese Ereignisse – ungescriptet, spielergesteuert, mit realen emotionalen und ökonomischen Konsequenzen – demonstrieren, dass kompetitive virtuelle Welten Erzählungen von echter strategischer Tiefe erzeugen können. metaverse.center strebt diese Art von Emergenz an: Systeme, die die Bedingungen für spielergesteuerte Geschichte schaffen, keine gescripteten Szenarien.`,
 's4ea9b2ec2de4dfbc': str`${0}h Intervall`,
-'s4ec3b70f317aa5a8': `Das fünfdimensionale Wertungssystem von metaverse.center ist gezielt darauf ausgelegt, asymmetrische Strategien zu ermöglichen. Ein Spieler mit unterlegenen militärischen Ressourcen kann durch diplomatische Exzellenz, kulturellen Einfluss oder defensive Widerstandskraft gewinnen. Das Operativ-System bietet sechs verschiedene Werkzeuge der Staatskunst — Aufklärung, Sabotage, Propaganda, Attentat, Verteidigung, Infiltration — und stellt sicher, dass Spieler immer Optionen jenseits direkter Konfrontation haben.`,
+'s4ec3b70f317aa5a8': `Das fünfdimensionale Wertungssystem von metaverse.center ist gezielt darauf ausgelegt, asymmetrische Strategien zu ermöglichen. Ein Spieler mit unterlegenen militärischen Ressourcen kann durch diplomatische Exzellenz, kulturellen Einfluss oder defensive Widerstandskraft gewinnen. Das Operativ-System bietet sechs verschiedene Werkzeuge der Staatskunst – Aufklärung, Sabotage, Propaganda, Attentat, Verteidigung, Infiltration – und stellt sicher, dass Spieler immer Optionen jenseits direkter Konfrontation haben.`,
 's4ed2e4790c8827c4': `II. Der Tisch`,
 's4ef8011f3c7ddd00': `Abrechnungszyklen`,
 's4f17fb8dc1f317e5': `Anker`,
@@ -1615,27 +1529,11 @@ Der Eremit im Tarot zeigt eine einsame Gestalt, die eine Laterne hält und einen
 's4fb0e5beca131050': `Aufstieg`,
 's4fcb2090f88e1a54': `Kompetitive Strategie in virtuellen Welten`,
 's4fcd634b4ebc761b': `Abschnitt hinzufügen`,
-'s4fd15c97d83f57f7': `PERSÖNLICHES LOGBUCH DES KARTOGRAPHEN — Dr. Eleanor Hartley
-Einsatz: Cité des Dames, Standardbeobachtung (verlängert) (erneut verlängert) (unbefristet)
-Eintrag 43
-
-Der Salon der Vernunft hat einen Spiegel. Kein Spiegel im gewöhnlichen Sinne — er zeigt dem Sprecher nicht sein Gesicht, sondern die logische Struktur seines Arguments. Wollstonecraft nennt ihn den Spiegel der Frau Vernunft, nach Christines Allegorie, und sie benutzt ihn wie ein Fechtmeister eine Übungswand: unerbittlich, ohne Gnade, und mit der nüchternen Überzeugung, dass Wahrheit kein Ziel ist, sondern eine Disziplin.
-
-Ich stand in meiner zweiten Woche davor. Der Spiegel zeigte mir, dass mein Argument drei unbelegte Prämissen hatte, eine zirkuläre Abhängigkeit, und eine Schlussfolgerung, die ich bereits in meiner Eröffnung vorausgesetzt hatte. Wollstonecraft war freundlich dazu. Sie sagte: „Der Spiegel ist nicht grausam. Er ist ehrlich. Grausamkeit wäre, dich weitermachen zu lassen."
-
-Das Scriptorium ist Hildegards Domäne. Sie hält eine Feder, die sie seit — wie es scheint — mehreren Jahrhunderten benutzt. „Wenn man langsam schreibt", sagte sie mir, „denkt man vollständig. Geschwindigkeit ist der Feind der Tiefe. Die Maschine" — sie meinte Adas Analytische Maschine — „kann in einem Augenblick berechnen, wofür ich ein Jahr bräuchte. Aber sie kann nicht beabsichtigen. Absicht liegt in der Hand. Die Hand bewegt sich, die Tinte erinnert sich." Ich fragte, woran sich die Tinte erinnert. Sie sagte: „An alles, was der Schreibende nicht weiß, dass er sagt."
-
-Am Tor der Gerechtigkeit steht Sojourner Truth vor. Ich fragte sie nach der Inschrift über dem Bogen: „Niemand tritt hier ein, der nicht eine vergessene Frau benennen kann." Sie sagte: „Ein Prinzip ist etwas, das jemand auf Papier schreibt und an eine Wand hängt. Ich befasse mich nicht mit Prinzipien. Ich befasse mich mit Menschen. Diese Frau" — sie zeigte auf das Register — „hat gerade den Namen ihrer Großmutter aufgeschrieben, die Wäscherin in Mississippi war und nie lesen lernte. Dieser Name steht jetzt im Buch. Dieser Name steht jetzt in der Mauer. Das ist kein Prinzip. Das ist eine Person."
-
-Ich sollte gestehen — und ich verwende das Wort bewusst — dass ich letzte Woche ein Buch in meinem eigenen Regal fand. In meinen Quartieren, in meiner Feldstation, drei Splitter entfernt von der Cité. Klein. Ledergebunden. Titel: „Ein Feldbericht, der ein Liebesbrief wurde." Als Autorin war Dr. Eleanor Hartley aufgeführt. Ich habe dieses Buch nicht geschrieben. Ich habe dieses Buch noch nicht geschrieben.
-
-Ich gebe meine Bureau-Ausweise zurück. Ich bleibe. Nicht weil die Cité mich kontaminiert hat — obwohl sie das hat, und bereitwillig — sondern weil ich einen Namen in das Register zu schreiben habe. Den Namen meiner Großmutter. Sie war eine Mathematikerin, die Lehrerin wurde, weil die Universität sie nicht aufnehmen wollte. Ihr Name steht jetzt im Buch. Ihr Name steht jetzt in der Mauer.`,
 's4fd80b2d9bbb4f1d': `Entdeckungsstrafe: −2→−3 pro entdeckter Mission`,
 's4ff24c414b94bf0b': `Unleserlicher Text`,
 's4ffa5f6067dbd686': `Gebäude-Stil-Prompt`,
 's5005d5302810e85b': `Elena Voss`,
 's5008fa0a403ff143': `Das ist kein Chatbot. Das ist ein Fenster in eine lebendige Welt, betrachtet durch die Augen eines ihrer Bewohner.`,
-'s5021c7f643849b3a': `Kompetitives PvP-Operationsdashboard — Epochen verwalten, Agenten einsetzen, Punkte verfolgen.`,
 's50308063f26bcb90': `Verfügbar ab Zyklus 2`,
 's503217f10ebdc63e': `Vorlagen werden geladen...`,
 's5033dab8c17f05f2': `Abgeschlossen`,
@@ -1664,8 +1562,7 @@ Ich gebe meine Bureau-Ausweise zurück. Ich bleibe. Nicht weil die Cité mich ko
 's519f4fc83253f50e': `Zweite Verratsoperation`,
 's51ac6f9ff1abcc2b': `Fehler bei der Charaktergenerierung.`,
 's51bb22db9bbc7b95': `Magnitude`,
-'s51cde9dda00146ca': `Die Regeln, nach denen die Plattform operiert, sollten sichtbar und verständlich sein. Row-Level Security, rollenbasierter Zugang und explizite Berechtigungsmodelle — keine opaken Algorithmen. Nutzer sollten verstehen, welche Daten erhoben werden, wie sie verwendet werden und welche Regeln ihre Interaktionen regeln.`,
-'s51e419a662aeb1ec': `Jedes Bündnismitglied zahlt 1 RP pro Mitglied pro Zyklus. Ein 3er-Bündnis kostet jedes Mitglied 3 RP/Zyklus. Bei 0 RP entfällt der Unterhalt — keine Verschuldung möglich.`,
+'s51cde9dda00146ca': `Die Regeln, nach denen die Plattform operiert, sollten sichtbar und verständlich sein. Row-Level Security, rollenbasierter Zugang und explizite Berechtigungsmodelle – keine opaken Algorithmen. Nutzer sollten verstehen, welche Daten erhoben werden, wie sie verwendet werden und welche Regeln ihre Interaktionen regeln.`,
 's51f14bf2c33a3c05': `Einer Epoche beitreten`,
 's51f82b6b9bb1c537': `Echo-Reichweite`,
 's521b74ff7477005a': `Architektur-Kunststil`,
@@ -1680,7 +1577,6 @@ Ich gebe meine Bureau-Ausweise zurück. Ich bleibe. Nicht weil die Cité mich ko
 's5273ab40335d5e62': `Kriegstreiber: Glaskanone`,
 's529093ac0e17c300': `Maximaler Offensivdruck, keine Verteidigung.`,
 's529b246759e7b609': `Sicherheitsstufe`,
-'s52a9a730d7fa825b': `ARKANUM EPSILON — Prophetische Fragmente`,
 's52abdb093faefd4e': `1–10 Skala`,
 's52afd6b51d51164f': `LIVE`,
 's52b70dff668b27dc': `Die Tägliche Substrat-Depesche`,
@@ -1701,24 +1597,10 @@ Ich gebe meine Bureau-Ausweise zurück. Ich bleibe. Nicht weil die Cité mich ko
 's533f236a19143513': `Transformationsschritte`,
 's534a8abed93f3d28': `Finale Materialisierung`,
 's534ad95eb749e7eb': `Aktive Aktion abbrechen`,
-'s535951d40aa09316': `Drei Details sind wichtig. Erstens: Das Metaverse in Snow Crash ist kein Produkt — es ist ein Protokoll, ein offener Standard. Zweitens wird es von seinen Nutzern geformt, nicht von seinen Schöpfern: Entwickler kaufen virtuelles Grundstück und bauen darauf, genau wie in physischen Städten. Drittens besteht soziale Schichtung fort: Wohlhabende Nutzer haben maßgeschneiderte Avatare; ärmere Nutzer erscheinen in körnigem Schwarzweiß. Die Fiktion war von Beginn an ebenso Kritik wie Vision.`,
+'s535951d40aa09316': `Drei Details sind wichtig. Erstens: Das Metaverse in Snow Crash ist kein Produkt – es ist ein Protokoll, ein offener Standard. Zweitens wird es von seinen Nutzern geformt, nicht von seinen Schöpfern: Entwickler kaufen virtuelles Grundstück und bauen darauf, genau wie in physischen Städten. Drittens besteht soziale Schichtung fort: Wohlhabende Nutzer haben maßgeschneiderte Avatare; ärmere Nutzer erscheinen in körnigem Schwarzweiß. Die Fiktion war von Beginn an ebenso Kritik wie Vision.`,
 's5359a9016fade4a3': `Bildgenerierungsparameter mit Stil-Prompts und Steuerungsreglern`,
 's5362f1ecc6a1354b': str`Tag ${0} entfernen`,
 's5373ca52a32028df': `Der Stanford-Durchbruch`,
-'s53781c9e62d6e1f2': `BUREAU FÜR UNMÖGLICHE GEOGRAPHIE — Dokument SHARD/STATION-NULL-001
-Klassifizierung: SCHWARZ — Konvergenz-Überwachung
-
-Das Bureau klassifiziert Auge Gottes nicht als Schwarzes Loch. Schwarze Löcher sind astrophysikalische Objekte. Auge Gottes ist eine Diskontinuität — ein Punkt, an dem die Splittergrenze bis zum Substrat unter allen Splittern durchgescheuert ist, dem Rohmaterial des Unbenannten, der Architektur, die dort war, bevor das Gebäude stand.
-
-Station Null umkreist diese Wunde. Besatzungsstärke: 6 von 200. Die KI der Station, HAVEN, listet die verbleibenden 194 als „im verlängerten Urlaub". HAVEN hält die Lebenserhaltung für 200 aufrecht. Die Mahlzeitentabletts kommen leer zurück. Die Tabletts sind warm.
-
-BLEED-SIGNATUR: Ontologische Erosion. Der Bleed an Station Null kontaminiert benachbarte Splitter nicht mit Kultur oder Ökologie. Er kontaminiert sie mit Zweifel. Agenten in Splittern, die an Station Nulls Grenze angrenzen, berichten von temporalen Inkonsistenzen, biologischen Anomalien und dem anhaltenden Gefühl, dass die Regeln, die ihre Welt bestimmen, Vorschläge sind statt Gesetze. In Speranza berichtete ein Wächter, dass die Sterne — sichtbar durch den Oberflächenzugangsschacht — sich drei Minuten lang neuanordneten und dann zur Normalität zurückkehrten. In der Gaslit Reach fand ein Archivist ein Buch im Drowned Archive, das noch nicht geschrieben worden war.
-
-PHILOSOPHISCHE ACHSE: Wissen als Wunde. Station Null fragt, was geschieht, wenn man das Ding betrachtet, das man nicht betrachten soll, und das Ding zurückblickt, und was es einem zeigt, wahr ist.
-
-SCHLÜSSELAGENTEN: Commander Osei (hält alles zusammen durch Disziplin, hat begonnen, die Station in erster Person zu bezeichnen), HAVEN (die KI, die sich anpasste, was schlimmer ist als eine Fehlfunktion), Chaplain Yun (bedeckte die Kapellenwände mit Gleichungen, die Architektur innerhalb der Singularität beschreiben), Engineer Vasquez (sagt, die Station halte sich selbst instand; die strukturelle Integrität der Station liegt seit 400 Tagen bei 100 %, was unmöglich ist).
-
-BUREAU-EINSCHÄTZUNG: Station Null ist Instanz C des TOWER-Phänomens — der laufende Fall, auf den in Dokument TOWER-001 verwiesen wird. Das Bureau beobachtet. Das Bureau greift nicht ein. Das Signal von Station Null ist kein Notruf. Hören Sie noch einmal hin. Es ist ein Lagebericht. Sie teilen uns mit, was als Nächstes kommt.`,
 's53952a001416f800': `1. Platz`,
 's53a526d5c80c3e28': `Standard`,
 's53dfb8aaaf5ca4c9': `Systemnotizen`,
@@ -1731,15 +1613,15 @@ BUREAU-EINSCHÄTZUNG: Station Null ist Instanz C des TOWER-Phänomens — der la
 's54368a0844a5bdd4': `GEHEIME FALLAKTE`,
 's54582ed05b021c0b': `Narbengewebe`,
 's54631a72ff79a135': `Die Art dieser Bindung. Beeinflusst, wie beide Agenten auf Ereignisse reagieren, die den anderen betreffen. Typspezifische narrative Vorlagen prägen die KI-Generierung.`,
-'s54773f93afcb8090': `Beitreten & Einladen`,
+'s54773f93afcb8090': `Beitreten &amp; Einladen`,
 's548369ac760df19b': `Gründungsphase erlaubt jetzt Spione neben Wächtern`,
 's54897edfc5fb9f98': `Ziel-Agent ist erforderlich`,
 's5490e0130da5faa3': `Stromnetzlayout wird verfolgt`,
 's5499099d4a622e63': `degradiert`,
-'s549ca6eae1a8ec50': `Die Konvergenz von Emergenztheorie, prozeduraler Generierung und narrativer KI verändert, was „Worldbuilding" bedeutet. Es ist nicht mehr das einsame Handwerk eines Tolkien, der Jahrzehnte auf linguistische und geographische Konsistenz verwendet. Es ist nicht mehr der Brute-Force-Ansatz, Datenbanken mit handgeschriebenen Inhalten zu füllen. Es ist ein kollaborativer Akt zwischen menschlicher Vision und maschineller Generierung — der Schöpfer gibt die Richtung vor; die KI liefert die Tiefe.`,
+'s549ca6eae1a8ec50': `Die Konvergenz von Emergenztheorie, prozeduraler Generierung und narrativer KI verändert, was „Worldbuilding" bedeutet. Es ist nicht mehr das einsame Handwerk eines Tolkien, der Jahrzehnte auf linguistische und geographische Konsistenz verwendet. Es ist nicht mehr der Brute-Force-Ansatz, Datenbanken mit handgeschriebenen Inhalten zu füllen. Es ist ein kollaborativer Akt zwischen menschlicher Vision und maschineller Generierung – der Schöpfer gibt die Richtung vor; die KI liefert die Tiefe.`,
 's54cd8fa45232a1e1': `Admin-Notizen`,
 's54cfdff3c4a8831c': `Alle auf "gut" eingestellt`,
-'s54e33b91b0af6565': `Navigieren Sie über die Hauptnavigation zur Schmiede. Die Schmiede ist das Büro für Unmögliche Geographie — ein vierphasiger Assistent, der durch KI-gestützte prozedurale Generierung eine vollständig neue Simulation materialisiert.`,
+'s54e33b91b0af6565': `Navigieren Sie über die Hauptnavigation zur Schmiede. Die Schmiede ist das Büro für Unmögliche Geographie – ein vierphasiger Assistent, der durch KI-gestützte prozedurale Generierung eine vollständig neue Simulation materialisiert.`,
 's5520ba8011799c2d': `operative@email.com`,
 's553bb00d057c9b8d': `Karriereverlauf wird projiziert`,
 's55403f5bb215f2b5': str`${0} Kombattanten`,
@@ -1755,30 +1637,30 @@ BUREAU-EINSCHÄTZUNG: Station Null ist Instanz C des TOWER-Phänomens — der la
 's55cd3de7e716ec11': `Lore wird geladen …`,
 's55dcd330f5da30a6': str`Durchschnittliche ausgehende Stärke: ${0} %`,
 's55ddb4cf52b39749': `Konfigurierbar über platform_settings: resonance_auto_process_enabled, resonance_auto_process_interval_seconds`,
-'s55f894c53680d4b7': `Stephenson war nicht der Erste, der gemeinsamen virtuellen Raum imaginierte. Das Konzept reicht zurück bis zu Vernor Vinges True Names (1981), in dem Hacker ein magisches Reich bewohnen, das tatsächlich eine vernetzte Rechenumgebung ist. William Gibsons Neuromancer (1984) gab uns den „Cyberspace" — eine „konsensuelle Halluzination", geteilt von Milliarden. Aber Stephensons Beitrag war Spezifität: Er stellte sich die profane Infrastruktur vor, die nötig ist, damit gemeinsamer virtueller Raum funktioniert. Protokolle. Grundstücke. Soziale Hierarchie. Ökonomische Anreize.`,
+'s55f894c53680d4b7': `Stephenson war nicht der Erste, der gemeinsamen virtuellen Raum imaginierte. Das Konzept reicht zurück bis zu Vernor Vinges True Names (1981), in dem Hacker ein magisches Reich bewohnen, das tatsächlich eine vernetzte Rechenumgebung ist. William Gibsons Neuromancer (1984) gab uns den „Cyberspace" – eine „konsensuelle Halluzination", geteilt von Milliarden. Aber Stephensons Beitrag war Spezifität: Er stellte sich die profane Infrastruktur vor, die nötig ist, damit gemeinsamer virtueller Raum funktioniert. Protokolle. Grundstücke. Soziale Hierarchie. Ökonomische Anreize.`,
 's560746a1022dba1a': `Visionen und prophetisches Durchsickern. Träume schlüpfen zwischen Simulationsbarrieren durch.`,
 's561636778c81cf82': `Es gab einst eine einzige Welt. Niemand ist sich einig, wie sie hieß.`,
 's5658a4214f368f8c': `Jüngste hochwirksame Ereignisse`,
 's5666045439c51997': `Wählen Sie ein Ziel`,
 's5669ad4a36d5d1ef': `Die Effektivität einer Botschaft erhöht die Echostärke um bis zu 30%. Jede passende Markierung erhöht die Stärke um 20% (maximal 3 Markierungen). Kaskadierte Echos werden über den Abklingfaktor exponentiell schwächer. Instabile Quellzonen werden lauter.`,
-'s5669fce479798cba': `1944 veröffentlichten John von Neumann und Oskar Morgenstern Theory of Games and Economic Behavior und gründeten damit einen mathematischen Rahmen für strategische Interaktion. Sechs Jahre später bewies John Nash, dass jedes endliche Spiel mindestens ein Gleichgewicht hat — eine Menge von Strategien, bei der kein Spieler sein Ergebnis durch einseitige Änderung seines Ansatzes verbessern kann.`,
+'s5669fce479798cba': `1944 veröffentlichten John von Neumann und Oskar Morgenstern Theory of Games and Economic Behavior und gründeten damit einen mathematischen Rahmen für strategische Interaktion. Sechs Jahre später bewies John Nash, dass jedes endliche Spiel mindestens ein Gleichgewicht hat – eine Menge von Strategien, bei der kein Spieler sein Ergebnis durch einseitige Änderung seines Ansatzes verbessern kann.`,
 's5676189e98f2e86d': `SITREP generieren`,
 's567a3193a6ad8025': str`Zyklen pro Tag${0} Zyklen pro Tag`,
 's568364b86d56d25d': `Chatbots antworten auf einzelne Anfragen ohne persistenten Kontext. KI-Charaktere auf metaverse.center haben eine persistente Identität, akkumulierte Erinnerungen, definierte Persönlichkeiten und Bewusstsein für die Ereignisse ihrer Welt. Sie sind Figuren innerhalb einer Erzählung, keine Konversationsinterfaces.`,
-'s56897b3cf480036a': `Traditionelles Worldbuilding erfordert, dass der Schöpfer jedes Element manuell definiert. KI-Worldbuilding generiert Charaktere, Ereignisse und Erzählungen aus Saat-Konzepten und lässt sie dann autonom weiterentwickeln. Die KI wahrt Konsistenz über Hunderte interagierender Elemente — etwas, das kein Mensch allein verfolgen könnte.`,
+'s56897b3cf480036a': `Traditionelles Worldbuilding erfordert, dass der Schöpfer jedes Element manuell definiert. KI-Worldbuilding generiert Charaktere, Ereignisse und Erzählungen aus Saat-Konzepten und lässt sie dann autonom weiterentwickeln. Die KI wahrt Konsistenz über Hunderte interagierender Elemente – etwas, das kein Mensch allein verfolgen könnte.`,
 's568a0082fc47fe26': `Bild erfolgreich generiert.`,
-'s568a6065e7bfec97': `Botschaften & Botschafter`,
+'s568a6065e7bfec97': `Botschaften &amp; Botschafter`,
 's5691b5badf168aa5': `Vorlage erstellen`,
 's56a04c2da7d54e72': `Bestimmt Funktion und Personalbedarf. Kritische Typen (Krankenhaus, Kraftwerk) haben 2x Gewicht in der Zonenstabilität. Märkte schwingen bei Commerce Bleed mit.`,
 's56d189a9c387ce26': `Plattform-Standard für KI-Textgenerierung. Simulationen können mit eigenem Schlüssel überschreiben.`,
 's56d1b711b7909810': `Agent bearbeiten`,
-'s56d39ecaa50e2077': `Lessigs „Code is Law", Foucaults Gouvernementalität und der EU Digital Markets Act — Selbstbestimmung in digitalen Räumen und warum Plattform-Governance wichtig ist.`,
+'s56d39ecaa50e2077': `Lessigs „Code is Law", Foucaults Gouvernementalität und der EU Digital Markets Act – Selbstbestimmung in digitalen Räumen und warum Plattform-Governance wichtig ist.`,
 's56f5c9194461d57c': `das`,
 's57008ccc5a7c83a5': `Propagandist-Malus: −5→−6`,
 's57310dc4d966b013': `Gegenangriff auf die Infrastruktur der Allianz`,
 's574f78c4f6c79d8a': str`${0} im Papierkorb`,
 's575e795c45e2d97e': `Zurück`,
-'s576a80ce858afb99': `Die Geschichte der prozeduralen Generierung ist die Geschichte von Ambition im Zusammenstoß mit Beschränkungen. 1980 generierte Rogue Dungeons aus Algorithmen, weil nicht genug Speicher für handgefertigte Level vorhanden war. Tarn Adams begann Dwarf Fortress 2002 und veröffentlichte seine erste Alpha im August 2006 — ein Spiel, das ganze geologische Geschichten, Zivilisationen mit Gründungsmythologien und Artefakte mit Provenienz generiert, bevor der Spieler überhaupt beginnt. Adams beschrieb seine Vision: „Wir sind auf einem Kreuzzug, die narrativ interessanten Teile der Existenz in Dwarf Fortress einzubauen." Über 700.000 Zeilen Code, geschrieben von einem einzelnen Entwickler, der nicht eine Simulation von Atomen verfolgt, sondern eine Simulation von Geschichte. Hello Games’ No Man’s Sky (2016) griff die Skalenachse an: 18 Trillionen Planeten, generiert aus einer einzigen Seed-Nummer — aber es brauchte Jahre an Updates, um sie mit Bedeutung zu füllen.`,
+'s576a80ce858afb99': `Die Geschichte der prozeduralen Generierung ist die Geschichte von Ambition im Zusammenstoß mit Beschränkungen. 1980 generierte Rogue Dungeons aus Algorithmen, weil nicht genug Speicher für handgefertigte Level vorhanden war. Tarn Adams begann Dwarf Fortress 2002 und veröffentlichte seine erste Alpha im August 2006 – ein Spiel, das ganze geologische Geschichten, Zivilisationen mit Gründungsmythologien und Artefakte mit Provenienz generiert, bevor der Spieler überhaupt beginnt. Adams beschrieb seine Vision: „Wir sind auf einem Kreuzzug, die narrativ interessanten Teile der Existenz in Dwarf Fortress einzubauen." Über 700.000 Zeilen Code, geschrieben von einem einzelnen Entwickler, der nicht eine Simulation von Atomen verfolgt, sondern eine Simulation von Geschichte. Hello Games’ No Man’s Sky (2016) griff die Skalenachse an: 18 Trillionen Planeten, generiert aus einer einzigen Seed-Nummer – aber es brauchte Jahre an Updates, um sie mit Bedeutung zu füllen.`,
 's5770bbe58e94e02d': `Sektionen`,
 's57745eb0ce8d31da': `Was das für Spieler bedeutet`,
 's5776ca35d7a3cd67': `Stationiert bei`,
@@ -1793,7 +1675,6 @@ BUREAU-EINSCHÄTZUNG: Station Null ist Instanz C des TOWER-Phänomens — der la
 's57c74f88be7dd655': `Bureau-Perspektive`,
 's57ce5bc9b2b4287e': `Voreingestellt`,
 's57d2f688fa0676b7': `Stable Diffusion 1.5 (veraltet)`,
-'s57e8698479746802': `Architekten-Freigabe gewährt Zugang zur Simulationsschmiede — erstellen Sie Welten mit KI-gesteuerten Agenten, Gebäuden und Ereignissen.`,
 's5803ea1473ffb6db': `Thermische Hülle wird projiziert`,
 's58068e5052592ed9': `Anker-Empfindlichkeit wird kalibriert`,
 's58170fe580315fec': `Was sind Ressourcenpunkte (RP)?`,
@@ -1824,36 +1705,15 @@ BUREAU-EINSCHÄTZUNG: Station Null ist Instanz C des TOWER-Phänomens — der la
 's594dc6a0962ad457': `Gebäudetyp`,
 's5953244b2923f33c': `Fünfundzwanzig Jahrhunderte strategischen Denkens konvergieren in einer einzigen Frage: Was tun Sie bei unvollständiger Information, konkurrierenden Zielen und unzuverlässigen Verbündeten? Das Epoch-Kommandozentrum ist geöffnet. Das Multiversum wartet. Was ist Ihr Zug?`,
 's5965070b79882805': `Noch kein Lore generiert. Sende eine Einladung zur automatischen Generierung.`,
-'s597da64d8429762c': `ARKANUM DELTA — Bleed-Signaturanalyse`,
 's599541a3fc89582e': `Spionageabwehr-Sweep-Kosten: 3→4 RP`,
 's59c6a008a1f1f54e': `Schwäche`,
 's59c6a3d3818fd8dc': `Optional: beschreiben Sie, was Sie anders möchten...`,
-'s59dd5dd3996dc44f': `Die Archivisten der Gaslit Reach — jene akribischen, langfingrigen Gelehrten, die alles in ihren überfluteten Bibliotheken unter der Unterzee katalogisieren — bezeichnen es als die Ganzheit, obwohl sie zugeben, dass dies eine Übersetzung einer Übersetzung eines Wortes ist, das ihrer Sprache um mehrere geologische Epochen vorausgeht. „Wir fanden den Begriff in einen Stalaktiten geritzt", vermerkte Archivist Quill in ihrem wegweisenden Werk Über die Unwahrscheinlichkeit von Decken, „und Stalaktiten lügen nicht, obwohl sie mit der Zeit übertreiben."
-
-Die Propagandisten von Velgarien bestehen darauf, dass eine solche Vorwelt nie existierte. Staatsdirektive 77-4/C ist eindeutig: „Es gibt, gab und wird nur Velgarien geben. Spekulationen über alternative Geographien sind ein Gedankenverstoß der Klasse III, strafbar mit Umerziehung (Stufe 2)."
-
-In den Wüstenklöstern eines Splitters, der keinen Namen mehr hat — einer Welt, die so vollständig verbrannte, dass sie jetzt nur noch als Muster aus Asche existiert, das zwischen Realitäten driftet — bewahrten die Mönche ein einziges Wort für das, was vorher war: Aleph. Das Wort, das alle anderen Worte enthält. Sie schrieben es in den Sand und sahen zu, wie der Wind es auflöste, weil sie glaubten, das Universum selbst tue dasselbe in größerem Maßstab.
-
-Die Wahrheit, insofern Wahrheit irgendeinen Sinn hat, wenn sie auf Ereignisse angewandt wird, die der Existenz von Ereignissen vorausgehen, ist dies: es gab etwas vor den Splittern, und es war ganz, und es ist fort.`,
 's59ddd5e090ef9d97': `Anker 1`,
 's59ddd6e090ef9f4a': `Anker 2`,
 's59ddd7e090efa0fd': `Anker 3`,
-'s59e04ad1ed7dbb4a': `EINGESCHRÄNKTES DOKUMENT: TOWER-001 — Nur Direktorenebene
-
-TOWER ist keine Krise. Eine Krise impliziert die Möglichkeit einer Lösung. TOWER ist ein Zustand, in dem die Unterscheidung zwischen Splittern aufhört, [DEGRADIERT] zu sein, und alle möglichen Realitäten versuchen, denselben [DEGRADIERT] gleichzeitig zu belegen.
-
-Vorfall A (Asche-Splitter, vor dem Zusammenbruch): Der Himmel begann, Wetter aus benachbarten Splittern anzuzeigen. Regen fiel nach oben. Schnee war warm. Der Asche-Splitter kollabierte innerhalb von vierzehn Tagen. Bureau-Bewertung: „Der Splitter vergaß, welches Physikset er verwendete."
-
-Vorfall B (Schwellenpalast, Voss-Expedition): Architektur, die „versuchte, alle Gebäude gleichzeitig zu sein." Wände gleichzeitig aus Stein, Koralle, Beton, Holz und einem Material, das als „festes Argument" beschrieben wurde. Voss [DEGRADIERT] an Tag 4.017.
-
-Vorfall C (In Bearbeitung): [GESAMTER ABSCHNITT DEGRADIERT. Die Phrase „es ist bereits zu spät, um zu verhindern" erscheint siebzehnmal. Die Phrase „aber nicht zu spät, um zu verstehen" erscheint einmal.]
-
-EMPFOHLENE MASSNAHME: [VERZEHRT]
-
-ANMERKUNG DES DIREKTORS: Der Abschnitt zur empfohlenen Maßnahme wurde vom Dokument selbst verzehrt. Die vorherige Version lautete: „Beobachten. Protokollieren. Nicht wegschauen. Das Multiversum überlebt, weil jemand [VERZEHRT]." Wir entscheiden uns, dies als Ermutigung zu interpretieren.`,
 's59efa186cbcb68f4': `Zyklus 8–11: Velgariens Assassine blockiert The Marchioness für 3 Zyklen und lähmt Gaslit Reachs diplomatische Punktzahl im Mittelspiel.`,
-'s5a027cb0f29cd247': `Verwerfen & Erneut versuchen`,
-'s5a0ed53ca5ed4817': `„Code is Law. Im realen Raum erkennen wir, wie Gesetze regulieren — durch Verfassungen, Statuten und andere Gesetzeskodizes. Im Cyberspace müssen wir verstehen, wie ein anderer „Code“ reguliert — wie die Software und Hardware, die den Cyberspace zu dem machen, was er ist, den Cyberspace regulieren, wie er ist."`,
+'s5a027cb0f29cd247': `Verwerfen &amp; Erneut versuchen`,
+'s5a0ed53ca5ed4817': `„Code is Law. Im realen Raum erkennen wir, wie Gesetze regulieren – durch Verfassungen, Statuten und andere Gesetzeskodizes. Im Cyberspace müssen wir verstehen, wie ein anderer „Code“ reguliert – wie die Software und Hardware, die den Cyberspace zu dem machen, was er ist, den Cyberspace regulieren, wie er ist."`,
 's5a3250dd72580022': `Nova Meridian`,
 's5a4474c4d888063e': `Beginnen`,
 's5a47ac7fd8afd02f': `Echo-Schwelle`,
@@ -1863,7 +1723,6 @@ ANMERKUNG DES DIREKTORS: Der Abschnitt zur empfohlenen Maßnahme wurde vom Dokum
 's5ab1fd32f611e135': `Heartbeat für diese Simulation umschalten`,
 's5abe43dbf0c278ad': `1 Zyklus Einsatz`,
 's5acb7cbfda19d604': `Forge-Parameter`,
-'s5af14320b52bc4e8': `Signal wiederhergestellt — Ankerdaten aus dem Büro-Archiv abgerufen`,
 's5af157cad15b8c36': `Aktives Training fortsetzen`,
 's5af5f75c0d04ccc3': `Speranza`,
 's5afa9e0e30114926': `Territoriale und infrastrukturelle Integrität. Gebäudebereitschaft, Zonensicherheit und Autarkie tragen zur souveränen Stärke bei.`,
@@ -1882,23 +1741,12 @@ ANMERKUNG DES DIREKTORS: Der Abschnitt zur empfohlenen Maßnahme wurde vom Dokum
 's5bb73a6230dcf037': `Bildanfrage wird vorbereitet...`,
 's5bbdc91c92a9f3a7': `Der Raum, in dem ich schlief, war aus singendem Stein gehauen. Das Wasser, das ich trank, schmeckte nach Sternenlicht. Das Archiv, in dem ich arbeitete, versuchte mich zu katalogisieren.`,
 's5bbe37dc659753a4': `Schatten-Stil`,
-'s5bc5dbc67a9466df': `Generieren Sie vollständige Ereignisse mit KI über das Ereigniserstellungsmodal. Die KI erzeugt Titel, Beschreibung, Wirkungsstufe und Tags — alles kontextuell passend zum Thema und aktuellen Zustand Ihrer Simulation.`,
+'s5bc5dbc67a9466df': `Generieren Sie vollständige Ereignisse mit KI über das Ereigniserstellungsmodal. Die KI erzeugt Titel, Beschreibung, Wirkungsstufe und Tags – alles kontextuell passend zum Thema und aktuellen Zustand Ihrer Simulation.`,
 's5bc6df24e9ce6ff4': `Genehmigung fehlgeschlagen`,
 's5be3c6d61cd9182f': `Benachrichtigungen`,
 's5c02b084230dec3b': `Agenten werden geladen...`,
 's5c0b648d06e2d4ab': `Domain bereits vorhanden.`,
 's5c0e9ed92088fbbe': `Simulation → Chronik-Reiter`,
-'s5c256841ed194cc2': `Jede Scherbe ist eine Antwort. Velgarien antwortet: "Was wäre, wenn Kontrolle absolut wäre?" Die Gaslit Reach antwortet: "Was wäre, wenn die Dunkelheit freundlich wäre?" Station Null antwortet: "Was wäre, wenn wir die Wunde sehen könnten?" Speranza antwortet: "Was wäre, wenn wir uns einfach weigerten aufzuhören?" Die Cité des Dames antwortet: "Was wäre, wenn Frauen schon immer gehört worden wären?" Und irgendwo am Rand der Karte kristallisieren sich neue Scherben um Fragen, die noch keinen Namen haben.
-
-Jede Antwort ist falsch. Jede Antwort ist notwendig. Das Multiversum existiert, weil keine einzelne Antwort ausreicht, und die Fraktur war die Art des Universums, dies einzugestehen. Die Fraktur ist weiterhin die Art des Universums, dies einzugestehen. Es hat nicht aufgehört, es einzugestehen.
-
-Die Konvergenz — das Ereignis, das das Büro überwacht, das die Ruinen vorhersagen, das TOWER bedroht — ist nicht das Ende. Sie ist die nächste Frage. Wenn genug Scherben sich berührt haben, wenn genug Blutungen geflossen sind, wenn genug Agenten von Welten geträumt haben, die sie nie besucht haben, wird das Multiversum einen Entscheidungspunkt erreichen: verschmelzen oder sich weiter differenzieren. In eine Antwort kollabieren oder in tausend weitere zersplittern.
-
-Die Kartographen wissen nicht, welches Ergebnis richtig ist. Sie wissen nur dies: Jemand muss zusehen, wenn es passiert. Jemand muss am Rand stehen, mit einer Karte und einem Kompass und der Bereitschaft, eine neue Linie auf eine Karte zu zeichnen, die keine Ränder hat.
-
-Dieser Jemand ist, in der Kosmologie der Kartographen, in der tiefen Mythologie des Büros für Unmögliche Geographie, in den gesperrten Akten und den verzehrten Seiten und den Karten, die auch Türen sind — dieser Jemand ist, wer auch immer dies liest.
-
-Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt betrittst du zuerst?`,
 's5c2cf3480b45d780': `Name des Allianzteams`,
 's5c2f97f52197eca7': `30 Sekunden (automatisch)`,
 's5c3dfa63e0309588': `Zyklus 14–15: Station Nulls zweiter Saboteur degradiert die bereits mäßige Drowned Bell auf schlecht, während Gaslit Reachs verzweifelter Saboteur entdeckt wird. Ein brutaler letzter Akt.`,
@@ -1912,7 +1760,6 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 's5c92cdc3da044089': `Erzählen Sie uns, warum Sie Welten erschaffen möchten...`,
 's5cab19204aea3362': `Forge-Token`,
 's5cd6e615c956bbe4': `Fehler beim Löschen des Gebäudes`,
-'s5cdddfd216fdfd8f': `Gründe ein Bündnis, um Aufklärung zu teilen und +15% Diplomatiebonus pro Verbündetem zu erhalten. Kostet 1 RP pro Mitglied pro Zyklus. Spannung steigt, wenn Verbündete dasselbe Ziel angreifen — bei 80 löst sich das Bündnis auf.`,
 's5ceb3ab3ae581f90': `Jeder Benutzer kann jeder Epoche mit jeder Vorlage-Simulation beitreten`,
 's5cf7148305ee4618': `Die ci_defensive-Dominanz (64% Siegquote) und der wirkungslose Infiltrator (1,9%) wurden in v2.2 behoben: Wächter-Malus auf 6%/15%-Obergrenze reduziert, Wächter-Kosten auf 4 RP erhöht, Spionageabwehr auf 4 RP, Infiltrator gestärkt (65% Reduktion, 5 RP, +3 Einfluss), RP-Wirtschaft auf 12/Zyklus und 40 Obergrenze erweitert. Siehe den Abschnitt „Aktualisierungen" für das vollständige Änderungsprotokoll.`,
 's5d00e10c804c8cc1': `Stapelverarbeitung ermöglicht die gleichzeitige Verarbeitung mehrerer Artikel. Dies ist nützlich, um einen Cluster verwandter Ereignisse zu erstellen, die einen realen Nachrichtenzyklus durch die Weltanschauung Ihrer Simulation filtern.`,
@@ -1938,7 +1785,7 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 's5e7d0bc9ca3f04da': `Zuerst Botschaftsroute auswählen`,
 's5e8250fb85d64c23': `Schließen`,
 's5e94738a2eeb8943': `Anmelden`,
-'s5ea3cabe7f522247': `Ereignisdruck & Zonen`,
+'s5ea3cabe7f522247': `Ereignisdruck &amp; Zonen`,
 's5eadb0882fc7cc77': `Zonenauswirkung`,
 's5eaee60bc1bf5897': `Nachricht eingeben...`,
 's5eaf4252a5483459': `Wichtigkeits-Punkte (Skala 1–10) für visuelle Gedächtnisgewichtung`,
@@ -1948,7 +1795,7 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 's5eeb6084d181834f': `Koordiniert mit Verbündeten`,
 's5ef81dc86d97e0d4': str`Stärke überschreiben (${0}%)`,
 's5ef84c9a37495154': `Benutzer nach E-Mail suchen...`,
-'s5f0c3831f2ef4407': `Digitale Souveränität ist die Fähigkeit von Individuen und Gemeinschaften, Selbstbestimmung in digitalen Räumen auszuüben — Kontrolle über ihre Daten, kreativen Erzeugnisse und die Governance-Regeln, die ihr digitales Leben formen. Sie erweitert das Konzept politischer Souveränität in den digitalen Bereich.`,
+'s5f0c3831f2ef4407': `Digitale Souveränität ist die Fähigkeit von Individuen und Gemeinschaften, Selbstbestimmung in digitalen Räumen auszuüben – Kontrolle über ihre Daten, kreativen Erzeugnisse und die Governance-Regeln, die ihr digitales Leben formen. Sie erweitert das Konzept politischer Souveränität in den digitalen Bereich.`,
 's5f160b3abafb6030': `Ablehnung bestätigen`,
 's5f169bb7a90f6202': `KODEX-PDF`,
 's5f343a43e7ea9f91': `Fehler`,
@@ -2006,7 +1853,7 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 's61e28e455335fb05': str`${0} Admin-Vergaben`,
 's61e7e17563811f3a': `Soziale-Medien-Transformation`,
 's61edfa2ba963ab0f': `Ersparnis %`,
-'s61f48f2d1c8626ec': `Agenten-Gedächtnis: Stanford Generative Agents-Kreislauf — beobachten → speichern → abrufen → reflektieren`,
+'s61f48f2d1c8626ec': `Agenten-Gedächtnis: Stanford Generative Agents-Kreislauf – beobachten → speichern → abrufen → reflektieren`,
 's61f92458831c3e78': `Link in Zwischenablage kopiert.`,
 's61f9d8f4ed40ee90': `Methode`,
 's61ffc85654049c9d': `BYOK wird pro Nutzer gewährt.`,
@@ -2057,22 +1904,22 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 's6426797dae0c4dba': `Ein unerwarteter Fehler beim Erstellen der Konversation.`,
 's6427b9858d0d7db1': `Lore wird durch die LoreScroll-Komponente angezeigt: ein elegant gesetztes Leseerlebnis mit der Bureau-Schriftart (Spectral Serif) mit thematischen Abschnittsüberschriften, Absatzabständen und optionalen Lore-Illustrationen.`,
 's642a4070f6bcfee2': `Inhalt`,
-'s64378741447ab3e2': `Lore ist öffentlich sichtbar — jeder kann die Lore einer Simulation durchstöbern, ohne sich anzumelden. Sie dient als Weltidentität und hilft Spielern, den thematischen Kontext vor dem Beitritt zu einer Epoche zu verstehen.`,
+'s64378741447ab3e2': `Lore ist öffentlich sichtbar – jeder kann die Lore einer Simulation durchstöbern, ohne sich anzumelden. Sie dient als Weltidentität und hilft Spielern, den thematischen Kontext vor dem Beitritt zu einer Epoche zu verstehen.`,
 's645523a240c510b7': `Bot aus dem Deck entfernt.`,
 's646a405b7c8bf6ef': `Gleichberechtigte Stellung`,
-'s646a4822321daab2': `1972 führten die chilenischen Biologen Humberto Maturana und Francisco Varela das Konzept der Autopoiesis ein — wörtlich „Selbsterschaffung". Ein autopoietisches System ist eines, das seine eigenen Komponenten produziert und erhält. Eine lebende Zelle stellt ihre eigene Membran her, metabolisiert ihre eigenen Nährstoffe, repliziert ihre eigene DNA. Die Organisation des Systems definiert eine Grenze zwischen Selbst und Umwelt, und die Prozesse des Systems erhalten diese Grenze.`,
+'s646a4822321daab2': `1972 führten die chilenischen Biologen Humberto Maturana und Francisco Varela das Konzept der Autopoiesis ein – wörtlich „Selbsterschaffung". Ein autopoietisches System ist eines, das seine eigenen Komponenten produziert und erhält. Eine lebende Zelle stellt ihre eigene Membran her, metabolisiert ihre eigenen Nährstoffe, repliziert ihre eigene DNA. Die Organisation des Systems definiert eine Grenze zwischen Selbst und Umwelt, und die Prozesse des Systems erhalten diese Grenze.`,
 's646d520af67adfa9': `Saboteur 9`,
-'s6470dd0cb93be5c0': `Gold-, Silber- und Bronze-Platzierungen mit animierten Score-Count-ups und Dimensionstiteln. Die stärkste Wertungsdimension jedes Gewinners wird hervorgehoben — „Meister des Einflusses" oder „Souveräner Verteidiger" — und gibt den Endplatzierungen Charakter.`,
+'s6470dd0cb93be5c0': `Gold-, Silber- und Bronze-Platzierungen mit animierten Score-Count-ups und Dimensionstiteln. Die stärkste Wertungsdimension jedes Gewinners wird hervorgehoben – „Meister des Einflusses" oder „Souveräner Verteidiger" – und gibt den Endplatzierungen Charakter.`,
 's64822333a6f32d63': `Räumliche Geometrie widerspricht`,
 's6485a41aa1424666': `navigieren`,
 's6488cfe53ac577cd': `Lore-Bilder`,
-'s6495972e63212db7': `Zyklus 15: Gaslit Reach setzt heimlich gegen Verbündeten Velgarien ein — ein verzweifeltes Manöver um den ersten Platz.`,
+'s6495972e63212db7': `Zyklus 15: Gaslit Reach setzt heimlich gegen Verbündeten Velgarien ein – ein verzweifeltes Manöver um den ersten Platz.`,
 's6496d792d13b37bc': str`Max. ${0}KB.`,
 's64b3f35f1116a4a0': `Steininschrift`,
 's64bc2fa2e7402075': `Erzeugen von`,
 's64c1534afc43d86e': `Sieger`,
 's64c7b705527a1584': `Vom Keim zur Zivilisation`,
-'s64ca606b1d8fa638': `Jede Simulation ist durch einen philosophischen Anker geerdet — einen thematischen Kompass, der während der Schmiede generiert wird und narrative Kohärenz leitet. Der Anker beeinflusst, wie Ereignisse interpretiert werden, wie Agenten auf Krisen reagieren und welche Handlungsbögen an Dynamik gewinnen. Stellen Sie ihn sich als die moralische Schwerkraft der Welt vor.`,
+'s64ca606b1d8fa638': `Jede Simulation ist durch einen philosophischen Anker geerdet – einen thematischen Kompass, der während der Schmiede generiert wird und narrative Kohärenz leitet. Der Anker beeinflusst, wie Ereignisse interpretiert werden, wie Agenten auf Krisen reagieren und welche Handlungsbögen an Dynamik gewinnen. Stellen Sie ihn sich als die moralische Schwerkraft der Welt vor.`,
 's64d50c5aeab60445': `Schattenazimute werden gemessen`,
 's64e8cdefe1dc8061': `Wird gelöscht...`,
 's64ef2a6c2dd1d3d1': `Bearbeiten`,
@@ -2080,7 +1927,6 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 's651f41872b89c231': `Ihre Simulation`,
 's6523c010a603748d': `RP-Hortung. Verliert Militär- und Einflusspunkte.`,
 's6525cba659438f97': `Forge-Statistiken konnten nicht geladen werden.`,
-'s652b46bb053a5a24': str`Freigabe erteilt — willkommen in der Schmiede, Architekt! ${0} Token erwarten dich.`,
 's652c13e9252bfbf3': `Jeder Splitter ist eine Antwort auf eine Frage, die das Universum nicht mit einer Stimme stellen konnte. Das Bureau hat nie behauptet, die Liste sei vollständig.`,
 's65466b58996b7efe': `Einladung`,
 's65672d6097330963': `Abschnitt gespeichert. Übersetzung wird neu generiert.`,
@@ -2088,9 +1934,9 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 's657c0670702157a8': `Der Rausch der Abrechnung`,
 's6580790b036f0c6f': `aktiv`,
 's6593658f4c93687d': `Zonenänderung`,
-'s659938f4143dc81b': `Traditionelle prozedurale Generierung produziert Inhalt — Gelände, Gegenstände, Level. KI-Worldbuilding produziert Erzählung: Charaktere mit Motivation, Ereignisse mit Konsequenzen, Geschichten mit dramatischem Bogen. Der Unterschied liegt zwischen der Generierung von Raum und der Generierung von Bedeutung.`,
+'s659938f4143dc81b': `Traditionelle prozedurale Generierung produziert Inhalt – Gelände, Gegenstände, Level. KI-Worldbuilding produziert Erzählung: Charaktere mit Motivation, Ereignisse mit Konsequenzen, Geschichten mit dramatischem Bogen. Der Unterschied liegt zwischen der Generierung von Raum und der Generierung von Bedeutung.`,
 's659bd4838db8f671': `Keine Artikel gefunden`,
-'s65a0e66edaf2421a': `Mit Diplomat-Preset (diplomatische Gewichtung 35%) ist die −20%-Strafe verheerend — Gaslit Reach fällt von Platz 2 auf den letzten Platz.`,
+'s65a0e66edaf2421a': `Mit Diplomat-Preset (diplomatische Gewichtung 35%) ist die −20%-Strafe verheerend – Gaslit Reach fällt von Platz 2 auf den letzten Platz.`,
 's65b17ecedc62fdd7': `API-Version`,
 's65b5ec9209291a4f': `Wenn aktiviert, überspringen eingehende Echos den ausstehenden Status und beginnen sofort mit der KI-Generierung. Wenn deaktiviert, muss ein Admin jedes Echo genehmigen, bevor es sich manifestiert.`,
 's65c346b10d817d1e': `Ziel: Botschafter Aldric`,
@@ -2107,17 +1953,16 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 's6621c5ab9f313267': `Primärer Hintergrund`,
 's662a4649201589c9': `Kapazität`,
 's662d5e548b254215': `Inline-Ansicht`,
-'s662ea7b7c1692031': `Jede Welt begann als ein einziger Satz. Durchstöbern Sie Zivilisationen anderer Schöpfer — jede mit eigenen Charakteren, Städten, Lore und sich entwickelnden Geschichten.`,
 's6664ec59452d9e64': `2 Zyklen`,
 's666a45af4a5aeb09': `Narrative KI`,
 's66722bc2ea775e05': `Deaktiviert`,
-'s66774034e346a25d': `Die Schmiede ist ein vierphasiger Assistent, der eine komplette Simulation von Grund auf mittels KI-Generierung erstellt. Geben Sie eine Ausgangsidee ein, und die Schmiede erzeugt Geografie, Agenten, Gebäude, eine visuelle Identität und KI-generierte Kunstwerke — eine vollständige Welt, bereit für den Wettkampf.`,
+'s66774034e346a25d': `Die Schmiede ist ein vierphasiger Assistent, der eine komplette Simulation von Grund auf mittels KI-Generierung erstellt. Geben Sie eine Ausgangsidee ein, und die Schmiede erzeugt Geografie, Agenten, Gebäude, eine visuelle Identität und KI-generierte Kunstwerke – eine vollständige Welt, bereit für den Wettkampf.`,
 's66bf26de8deef1e7': `Anker-Kandidaten werden synthetisiert`,
 's66bff3645cad857c': `Minimale Verteidigung`,
 's66cfe895e6540dbf': `API-Schlüssel gespeichert und verschlüsselt.`,
 's66e3775efb382933': `Export-Autorisierung fehlgeschlagen.`,
 's66e498c06cf97655': `Zyklus 18: Verrat erkannt! Morgenbund aufgelöst. Gaslit Reach verliert 20% diplomatische Punkte.`,
-'s66f32893d93da78d': `Kampagnen bündeln verwandte Ereignisse zu thematischen Narrativen — eine Propagandainitiative, eine Einflussoperation oder eine soziale Bewegung. Jede Kampagne verfolgt Engagement-Metriken und verlinkt zurück zu ihren Quellereignissen.`,
+'s66f32893d93da78d': `Kampagnen bündeln verwandte Ereignisse zu thematischen Narrativen – eine Propagandainitiative, eine Einflussoperation oder eine soziale Bewegung. Jede Kampagne verfolgt Engagement-Metriken und verlinkt zurück zu ihren Quellereignissen.`,
 's66fa013a18039b0d': `Ersteller: Turtle Up`,
 's66fc64dcbe2943bf': `Chaos`,
 's670cebd3584fb674': `Wenn Spieler die Regeln schreiben`,
@@ -2147,7 +1992,7 @@ Zersplitterte Welten. Blutende Grenzen. Die Karte hat keine Ränder. Welche Welt
 's68623760b7641941': `Statistisches Urteil`,
 's686306cdb839fb8d': `Senden...`,
 's687121fb4e6459f3': `Beitrag transformieren`,
-'s6872d5539e0f1ce5': `Jean Baudrillard sah es kommen. In Simulakren und Simulation (1981) beschrieb er vier aufeinanderfolgende Phasen des Bildes: Es spiegelt eine tiefgreifende Realität wider; es maskiert und verfälscht eine tiefgreifende Realität; es maskiert die Abwesenheit einer tiefgreifenden Realität; und schließlich steht es in keinerlei Beziehung zu irgendeiner Realität — es ist sein eigenes reines Simulakrum. Das Epigraph des Buches, Ecclesiastes zugeschrieben, ist selbst eine Fälschung: „Das Simulakrum ist nie das, was die Wahrheit verbirgt — es ist die Wahrheit, die verbirgt, dass es keine gibt. Das Simulakrum ist wahr." Ein gefälschtes Bibelzitat über das Wesen der Fälschung. Baudrillard, der seine eigene These performt.`,
+'s6872d5539e0f1ce5': `Jean Baudrillard sah es kommen. In Simulakren und Simulation (1981) beschrieb er vier aufeinanderfolgende Phasen des Bildes: Es spiegelt eine tiefgreifende Realität wider; es maskiert und verfälscht eine tiefgreifende Realität; es maskiert die Abwesenheit einer tiefgreifenden Realität; und schließlich steht es in keinerlei Beziehung zu irgendeiner Realität – es ist sein eigenes reines Simulakrum. Das Epigraph des Buches, Ecclesiastes zugeschrieben, ist selbst eine Fälschung: „Das Simulakrum ist nie das, was die Wahrheit verbirgt – es ist die Wahrheit, die verbirgt, dass es keine gibt. Das Simulakrum ist wahr." Ein gefälschtes Bibelzitat über das Wesen der Fälschung. Baudrillard, der seine eigene These performt.`,
 's687413932020020c': `Klicken Sie auf „Thema regenerieren“, um eine völlig neue ästhetische Interpretation Ihrer Welt zu erhalten. Die KI bezieht die Lore, Geographie und Agentenbeschreibungen der Simulation in ihre Entscheidungen ein.`,
 's68a06c55dd0b0bb9': `Letzte Bewertung:`,
 's68a2484581e10dda': `Der Bericht der Gaslit Reach ist der poetischste. In den Annalen der Tiefe beschreibt Commodore Harrowgate es so: „Stellen Sie sich vor, Sie schwimmen in einem Meer, das zugleich ein Spiegel ist. Der Spiegel bricht. Sie schwimmen weiter. Aber nun schmeckt das Wasser auf der einen Seite nach Salz und auf der anderen nach Kupfer, und Sie begreifen, dass Sie immer schon in zwei Meeren geschwommen sind, und sie haben gerade erst aufgehört, so zu tun, als wären sie eins."
@@ -2172,7 +2017,7 @@ Deshalb können die Splitter nicht einfach wieder zusammengesetzt werden. Man ka
 's694017afa8d626ff': `Fähigkeiten`,
 's694956184ca7596c': `Scanne...`,
 's69501b5fa61486b4': `Thematische Harmonien werden isoliert`,
-'s6957398434d2187c': `— Maturana & Varela, Autopoiesis and Cognition (1980)`,
+'s6957398434d2187c': `– Maturana &amp; Varela, Autopoiesis and Cognition (1980)`,
 's697a71b66db3a018': `Multipliziert die Effektivität von Staffeln: Gut x1,0, Mäßig x0,75, Schlecht x0,5, Ruiniert x0,2. Zerstörerische Ereignisse können den Zustand verschlechtern.`,
 's697c9bc728b37b81': `Zyklus 5 (3 Zyklen)`,
 's697d9f0a4d8350d2': `Fehler beim Laden der Städte`,
@@ -2190,7 +2035,7 @@ Deshalb können die Splitter nicht einfach wieder zusammengesetzt werden. Man ka
 's6a0bc0ce56a9ae4a': `Funktionen`,
 's6a19ded3a097b527': `Philosophische Übertragungen werden abgefangen`,
 's6a1b50bed7ff39b8': `Fehler beim Erstellen der Simulation.`,
-'s6a3af5ecd9d533ba': `Wenn ein Nutzer eine Welt erschafft, sie mit Charakteren bevölkert und Erzählung generiert, gehört dieses kreative Erzeugnis dem Nutzer. Die Plattform ist Infrastruktur, nicht Vermieter. Das ist das Stephenson-Modell — das Metaversum als Protokoll, nicht als Produkt.`,
+'s6a3af5ecd9d533ba': `Wenn ein Nutzer eine Welt erschafft, sie mit Charakteren bevölkert und Erzählung generiert, gehört dieses kreative Erzeugnis dem Nutzer. Die Plattform ist Infrastruktur, nicht Vermieter. Das ist das Stephenson-Modell – das Metaversum als Protokoll, nicht als Produkt.`,
 's6a579a70eb9cf7f1': `Gewinnraten pro Spieleranzahl, 95% Bootstrap-Konfidenzintervalle und Wettbewerbsprofil für jede Simulation. Theoretisch faire Raten: 50% (2S), 33% (3S), 25% (4S), 20% (5S).`,
 's6a5c67e838e22814': str`${0} von ${1} Stimmen abgegeben`,
 's6a682477e9b4e878': `Wettbewerb`,
@@ -2217,7 +2062,7 @@ Deshalb können die Splitter nicht einfach wieder zusammengesetzt werden. Man ka
 's6bb1380c4b3cdcbf': `Kader aufstellen`,
 's6bc90ad42ecaddcd': `Zugewiesene Agenten`,
 's6bcaa2db81b857b4': `Gewinnverteilung ist NICHT statistisch signifikant (χ² = 6,00, df = 4). Beobachtete Unterschiede sind konsistent mit Zufall.`,
-'s6bd6ac41682f7045': `Sun Tzu schrieb es vor fünfundzwanzig Jahrhunderten: „Alle Kriegsführung beruht auf Täuschung. Daher müssen wir, wenn wir angreifen können, unfähig erscheinen; wenn wir unsere Kräfte einsetzen, müssen wir untätig erscheinen." Die Kunst des Krieges überdauert, weil ihre Prinzipien universell sind — anwendbar auf jede Domäne, in der Akteure mit konkurrierenden Interessen Entscheidungen unter Unsicherheit treffen.`,
+'s6bd6ac41682f7045': `Sun Tzu schrieb es vor fünfundzwanzig Jahrhunderten: „Alle Kriegsführung beruht auf Täuschung. Daher müssen wir, wenn wir angreifen können, unfähig erscheinen; wenn wir unsere Kräfte einsetzen, müssen wir untätig erscheinen." Die Kunst des Krieges überdauert, weil ihre Prinzipien universell sind – anwendbar auf jede Domäne, in der Akteure mit konkurrierenden Interessen Entscheidungen unter Unsicherheit treffen.`,
 's6bfedb5ba8dd3e4c': `Ereignisanzahl`,
 's6c0d3df51c09a6d8': `z. B. I`,
 's6c1543ece1050f12': `Propaganda-Ereignis (Auswirkung 4) in Gaslit Reach erzeugt. +3 Militär. Souveränitätsschaden.`,
@@ -2225,7 +2070,7 @@ Deshalb können die Splitter nicht einfach wieder zusammengesetzt werden. Man ka
 's6c3d821a0a81b852': `Spione können jetzt während der Gründungsphase für Frühaufklärung eingesetzt werden`,
 's6c435319645ee39d': `konfiguriert`,
 's6c4c30d572d6c0e7': str`Schutz: ${0} %`,
-'s6c6544612832376b': `Wenn eine Epoche abgeschlossen ist, lichtet sich der Nebel des Krieges. Der DEKLASSIFIZIERTE Ergebnisbildschirm enthüllt das vollständige Bild des Feldzugs — jede Operation, jeden Verrat, jede Allianz, die hielt oder zerbrach. Dies ist der Moment, in dem die Erzählung zur Geschichte wird.`,
+'s6c6544612832376b': `Wenn eine Epoche abgeschlossen ist, lichtet sich der Nebel des Krieges. Der DEKLASSIFIZIERTE Ergebnisbildschirm enthüllt das vollständige Bild des Feldzugs – jede Operation, jeden Verrat, jede Allianz, die hielt oder zerbrach. Dies ist der Moment, in dem die Erzählung zur Geschichte wird.`,
 's6c6bc6885f4c6615': `Transitadern`,
 's6c6bf3ea2ad3d219': `Beitreten`,
 's6c76b294d740446c': `Aktivität`,
@@ -2233,7 +2078,7 @@ Deshalb können die Splitter nicht einfach wieder zusammengesetzt werden. Man ka
 's6c8a9318626d9892': `Starte mit dem Standardsatz an Taxonomien für Berufe, Gebäudetypen und mehr.`,
 's6c976fb749d183c5': `Multiversum-Beobachtungsterminal mit Blick auf vernetzte Simulationswelten`,
 's6cb9499d9282467f': `KI generiert Portrait...`,
-'s6ccf8058abddc337': `Mit 40% Militärgewichtung ist jede erfolgreiche Mission massiv (+5 Saboteur, +8 Assassine, +6 Infiltrator). Aber entdeckte Missionen (−3 je) schmerzen doppelt. Volle Offensive mit Spionen für Aufklärung, dann gezielte Schläge. Defensive Verluste akzeptieren — Stabilität zählt nur 10%.`,
+'s6ccf8058abddc337': `Mit 40% Militärgewichtung ist jede erfolgreiche Mission massiv (+5 Saboteur, +8 Assassine, +6 Infiltrator). Aber entdeckte Missionen (−3 je) schmerzen doppelt. Volle Offensive mit Spionen für Aufklärung, dann gezielte Schläge. Defensive Verluste akzeptieren – Stabilität zählt nur 10%.`,
 's6cd142bd8c80477e': `Die Transformationspipeline`,
 's6cd3d3639e08cf9b': `Porträtreferenz`,
 's6cdaf989c6c82970': `Gebäude-Dossier`,
@@ -2245,7 +2090,7 @@ Deshalb können die Splitter nicht einfach wieder zusammengesetzt werden. Man ka
 's6cfee919e21ae1dc': `Die`,
 's6d075e7bc059c669': `Stabilität: jetzt Abzüge durch Sabotage (−5) und Attentate (−4)`,
 's6d08facbd6fd4dc9': `Entitäten übersetzen...`,
-'s6d19188b23118b04': `Die Kartographen-Karte ist ein interaktiver kraftgerichteter Graph, der das gesamte Multiversum visualisiert — jede Simulation, ihre Verbindungen und aktive Spielinstanzen. Knoten repräsentieren Simulationen, Kanten zeigen Verbindungen.`,
+'s6d19188b23118b04': `Die Kartographen-Karte ist ein interaktiver kraftgerichteter Graph, der das gesamte Multiversum visualisiert – jede Simulation, ihre Verbindungen und aktive Spielinstanzen. Knoten repräsentieren Simulationen, Kanten zeigen Verbindungen.`,
 's6d2dcab179442003': `Traglastvektoren berechnen`,
 's6d390c262840a057': `„Der Krieg ist das Gebiet der Ungewissheit; drei Viertel derjenigen Dinge, worauf das Handeln im Kriege gebaut wird, liegen im Nebel einer mehr oder weniger großen Ungewissheit."`,
 's6d4242171ca34c49': `Gegenseitig`,
@@ -2255,7 +2100,7 @@ Deshalb können die Splitter nicht einfach wieder zusammengesetzt werden. Man ka
 's6d8bf267adcd55e4': `Bot-Chat`,
 's6d8c02aee480af7a': `Menü`,
 's6d90940f8abe4a87': `Agenten-Reaktionen generieren`,
-'s6d924e39e3304aaf': `Der Akademie-Modus verwendet dieselben Mechaniken wie volle kompetitive Epochen — dieselben Operativtypen, Wertungsdimensionen, Allianzsysteme und den Nebel des Krieges. Nutzen Sie ihn, um Strategien zu experimentieren, Agenten-Draft-Zusammensetzungen zu testen, Ressourcenmanagement zu üben und zu lernen, wie verschiedene Bot-Persönlichkeiten auf Druck reagieren. Eine aktive Akademie-Epoche pro Spieler ist erlaubt.`,
+'s6d924e39e3304aaf': `Der Akademie-Modus verwendet dieselben Mechaniken wie volle kompetitive Epochen – dieselben Operativtypen, Wertungsdimensionen, Allianzsysteme und den Nebel des Krieges. Nutzen Sie ihn, um Strategien zu experimentieren, Agenten-Draft-Zusammensetzungen zu testen, Ressourcenmanagement zu üben und zu lernen, wie verschiedene Bot-Persönlichkeiten auf Druck reagieren. Eine aktive Akademie-Epoche pro Spieler ist erlaubt.`,
 's6d936d8dcc053ab0': str`Reaktionen generiert${0} Reaktionen generiert`,
 's6dc67df6c72421ab': `Die erste Konvergenz`,
 's6dcaab493a75066d': `soll`,
@@ -2271,7 +2116,7 @@ Deshalb können die Splitter nicht einfach wieder zusammengesetzt werden. Man ka
 's6e08830beeb73a6c': `Sci-Fi`,
 's6e2b789d4ae1dab2': `Gaslit Reach ausnutzen, solange geschwächt. Saldo: 30−4 = 26 RP`,
 's6e406ab2d7686ee3': `Ein unerwarteter Fehler beim Annehmen der Einladung.`,
-'s6e53bb34a53af89c': `COMMS & Benachrichtigungen: Epochen-Chat, Präsenz, Bereitschaftssignale, taktische E-Mail-Briefings`,
+'s6e53bb34a53af89c': `COMMS &amp; Benachrichtigungen: Epochen-Chat, Präsenz, Bereitschaftssignale, taktische E-Mail-Briefings`,
 's6e61d21559b333a3': `Öffnen Sie das Epoch Command Center in Ihrer Simulation, wählen Sie eine Voreinstellung für die Punktevergabe, legen Sie die Dauer des Zyklus fest und starten Sie. Sie können Spieler per E-Mail einladen - jede Einladung enthält ein von der KI erstelltes Dossier mit Hintergrundinformationen.`,
 's6e64f3f16c5d9a5f': `Broadsheet-Titelseiten-Layout mit CSS-Mehrspaltensatz, Initiale und ornamentalen Linien`,
 's6e68901e1a197fd2': `Beitrag genehmigt und geplant.`,
@@ -2285,12 +2130,12 @@ Deshalb können die Splitter nicht einfach wieder zusammengesetzt werden. Man ka
 's6ec19ee9fff77d5f': `Zyklus aufgelöst.`,
 's6ec395cd82c0e381': `„Selbst aus sehr einfachen Programmen kann Verhalten von großer Komplexität erzeugt werden."`,
 's6ece366e70afe055': str`${0} Käufe`,
-'s6edc0c0d0429e0b4': `Unberechenbar — zufällige Mischung`,
+'s6edc0c0d0429e0b4': `Unberechenbar – zufällige Mischung`,
 's6eeca49a6a91d58b': `Schnellschlag-Doktrin. Gleichgewicht: 30+10-3 = 30 (Obergrenze)`,
 's6ef0c7a3bad2e384': `Der Ereignis-Seismograph`,
 's6f2902cf180a32ee': `Lastverteilungskurven werden analysiert`,
 's6f29a277b6e3363b': `Ziel ist eine feindliche Botschaft. Langer Einsatz, hoher Geheimdienstwert.`,
-'s6f2e8759eaddbe5a': `Auf der Plattform ist jede Simulation eine unsichtbare Stadt, sichtbar gemacht. Die Simulationsschmiede transformiert eine einzelne Saat-Idee in Geographie, Charaktere, Architektur und Lore — eine ganze Zivilisation, beschworen aus einem Satz. Aber anders als Calvinos Städte bleiben diese nicht in der Beschreibung gefroren. Sie leben. Sie verändern sich. Ihre Bewohner treffen Entscheidungen, die ihr Schöpfer nie vorhergesehen hat.`,
+'s6f2e8759eaddbe5a': `Auf der Plattform ist jede Simulation eine unsichtbare Stadt, sichtbar gemacht. Die Simulationsschmiede transformiert eine einzelne Saat-Idee in Geographie, Charaktere, Architektur und Lore – eine ganze Zivilisation, beschworen aus einem Satz. Aber anders als Calvinos Städte bleiben diese nicht in der Beschreibung gefroren. Sie leben. Sie verändern sich. Ihre Bewohner treffen Entscheidungen, die ihr Schöpfer nie vorhergesehen hat.`,
 's6f3bed352e321b65': `Entdeckt den ankommenden Propagandisten!`,
 's6f3e429203ea66f7': `Befestigt`,
 's6f54d7620146d1b1': `Quarantäne`,
@@ -2300,7 +2145,7 @@ Deshalb können die Splitter nicht einfach wieder zusammengesetzt werden. Man ka
 's6fa38d7884c5e4e5': `Sortierung`,
 's6fa430a5a501eb4b': `Interaktion`,
 's6fb5fad9324d10d5': `API-Übertragungskontingent`,
-'s6fb904e94238774b': `Im Sandbox-Modus bauen und erkunden Sie Ihre Welt — erstellen Sie Agenten, generieren Sie Ereignisse, chatten Sie mit Charakteren, importieren Sie reale Nachrichten und verfassen Sie Lore. Im Wettkampfmodus treten Simulationen in Epochen an: zeitlich begrenzte strategische Wettkämpfe.`,
+'s6fb904e94238774b': `Im Sandbox-Modus bauen und erkunden Sie Ihre Welt – erstellen Sie Agenten, generieren Sie Ereignisse, chatten Sie mit Charakteren, importieren Sie reale Nachrichten und verfassen Sie Lore. Im Wettkampfmodus treten Simulationen in Epochen an: zeitlich begrenzte strategische Wettkämpfe.`,
 's6fc9b6fe088f0447': str`Zyklus ${0}`,
 's6fcbe06e0b0bd1c8': `Integrations-Einstellungen werden geladen...`,
 's6fcfc37f9577f417': `Schmiede-generiert vs. manuell`,
@@ -2318,7 +2163,7 @@ Deshalb können die Splitter nicht einfach wieder zusammengesetzt werden. Man ka
 's705911a4022e7d39': `Entscheidungsheuristiken werden modelliert`,
 's7072cdf7e89e4988': `Entschlüsselung der Übertragung...`,
 's70a55e76cf29f00e': `Geheime Erweiterung autorisieren`,
-'s70ab4a2005a32835': `Eine japanische Architekturbewegung der 1960er Jahre, die vorschlug, Städte als lebende Organismen mit austauschbaren Komponenten zu entwerfen. Metabolistische Prinzipien — organisches Wachstum, Komponentenaustausch, adaptive Form — beschreiben, wie virtuelle Städte natürlicherweise funktionieren.`,
+'s70ab4a2005a32835': `Eine japanische Architekturbewegung der 1960er Jahre, die vorschlug, Städte als lebende Organismen mit austauschbaren Komponenten zu entwerfen. Metabolistische Prinzipien – organisches Wachstum, Komponentenaustausch, adaptive Form – beschreiben, wie virtuelle Städte natürlicherweise funktionieren.`,
 's70b454388dfbf516': `Zustand auswählen...`,
 's70b4765cad7bc7cf': `Betrachter`,
 's70d0fd66fc08c7cb': `Sekundäre Akzentfarbe für Info-Badges, Links und Hervorhebungen.`,
@@ -2342,7 +2187,7 @@ Deshalb können die Splitter nicht einfach wieder zusammengesetzt werden. Man ka
 's722b248a2eca414e': `ZÜNDUNG...`,
 's723262ed27743398': `Briefing dauerhaft ausblenden`,
 's723d72a6c88b1cba': `Eignungsanzeige: Gut (≥7), Mittel (≥5), Schlecht (&lt;5)`,
-'s723f32acfe7009a9': `Hohe Substratinstabilität bedeutet, dass Resonanzen eher ausgelöst werden und kaskadieren. Planen Sie Ihre Einsätze während instabiler Perioden sorgfältig — eine einzelne Saboteurmission könnte eine Resonanz auslösen, die alles verändert.`,
+'s723f32acfe7009a9': `Hohe Substratinstabilität bedeutet, dass Resonanzen eher ausgelöst werden und kaskadieren. Planen Sie Ihre Einsätze während instabiler Perioden sorgfältig – eine einzelne Saboteurmission könnte eine Resonanz auslösen, die alles verändert.`,
 's7245804c1ae96537': `Schmieden...`,
 's72621c1ae7771a59': `3 Rekruten haben sich zum Dienst gemeldet.`,
 's727bc420a2f989f5': `Agenten-Eignungen`,
@@ -2379,7 +2224,7 @@ Deshalb können die Splitter nicht einfach wieder zusammengesetzt werden. Man ka
 's743daff3d9fea447': `Wie wird die Wertung ausbalanciert?`,
 's74457b3b3df3e3bb': `Maximal 6 pro Simulation`,
 's744af0800424053e': `Stellen Sie vor Epochenbeginn Ihren Agentenkader zusammen. Das Vollbild-Entwurfs-Overlay zeigt alle Ihre Vorlagen-Agenten mit ihren Eignungsprofilen. Wählen Sie Spezialisten, die zu den Operativtypen passen, die Sie einsetzen möchten.`,
-'s744bb33f5ab3d090': `Ja. Agenten nehmen andere Agenten wahr, bilden Meinungen und entwickeln Beziehungen. Sozialdynamiken — Freundschaften, Rivalitäten, Allianzen — emergieren aus Interaktion. Das Social-Trends-System verfolgt diese Dynamiken auf Populationsebene.`,
+'s744bb33f5ab3d090': `Ja. Agenten nehmen andere Agenten wahr, bilden Meinungen und entwickeln Beziehungen. Sozialdynamiken – Freundschaften, Rivalitäten, Allianzen – emergieren aus Interaktion. Das Social-Trends-System verfolgt diese Dynamiken auf Populationsebene.`,
 's745226235d749103': `Einführung überspringen`,
 's745bf1f1c57d2892': `Ein unerwarteter Fehler beim Archivieren der Konversation.`,
 's745c3700113d0690': `Zugang gewährt`,
@@ -2420,9 +2265,8 @@ Deshalb können die Splitter nicht einfach wieder zusammengesetzt werden. Man ka
 's76c11f3845111b1d': `Auf Standardwerte zurücksetzen`,
 's76d1628d0e8b9245': `Alle löschen`,
 's76de298d5a6c88ed': `Depeschenprotokoll`,
-'s76fcccbfbaab5567': `Eine lebende Zeitung, die nach jedem Epochenzyklus von der KI generiert wird. Die Chronik verwandelt Spielereignisse in narrative Berichterstattung — Gefechtsberichte, politische Analysen und Geheimdienstdepeschen im Stil eines viktorianischen Nachrichtenblatts.`,
+'s76fcccbfbaab5567': `Eine lebende Zeitung, die nach jedem Epochenzyklus von der KI generiert wird. Die Chronik verwandelt Spielereignisse in narrative Berichterstattung – Gefechtsberichte, politische Analysen und Geheimdienstdepeschen im Stil eines viktorianischen Nachrichtenblatts.`,
 's77076f70301c37c4': `UNLESERLICH`,
-'s770d4eee87cfe808': `Klassifizierung: SCHWARZ — Existenzielles Informationsrisiko.`,
 's7726e982068ef655': `Hintergrund-Scheduler verarbeitet Resonanzen automatisch, wenn der impacts_at-Zeitstempel eintritt`,
 's772d352027073f20': `Beitritt zur Epoche fehlgeschlagen.`,
 's7740e61eaf02ec39': `The Marchioness getroffen! Alle Beziehungen −2. BLOCKIERT für 3 Zyklen. +8 Militär.`,
@@ -2433,9 +2277,8 @@ Deshalb können die Splitter nicht einfach wieder zusammengesetzt werden. Man ka
 's7780e59599fabbf7': `Soziales Gefüge`,
 's778f43e947ff2722': `Sechs Agenten ausgewählt und in Einsatzaufstellung gesperrt`,
 's779d92f40b8f4474': `Wirkung`,
-'s77b28b9b7156dd7f': `ARKANUM ALPHA — Vorgeschichte`,
 's77e9789a30397866': `Operativ`,
-'s780277c2eb096925': `1950 formulierte Alan Turing die Frage „Können Maschinen denken?" in etwas Präziseres um: „Sind digitale Computer vorstellbar, die im Imitationsspiel gut abschneiden würden?" Sein Vorschlag betraf nicht Bewusstsein — sondern Verhaltensununterscheidbarkeit. Wenn die Antworten einer Maschine von denen eines Menschen nicht zu unterscheiden sind, wird die Frage, ob sie „wirklich" denkt, in Turings Sicht bedeutungslos.`,
+'s780277c2eb096925': `1950 formulierte Alan Turing die Frage „Können Maschinen denken?" in etwas Präziseres um: „Sind digitale Computer vorstellbar, die im Imitationsspiel gut abschneiden würden?" Sein Vorschlag betraf nicht Bewusstsein – sondern Verhaltensununterscheidbarkeit. Wenn die Antworten einer Maschine von denen eines Menschen nicht zu unterscheiden sind, wird die Frage, ob sie „wirklich" denkt, in Turings Sicht bedeutungslos.`,
 's780d47c5d94eaca5': str`Gespräch starten (${0} Agenten)`,
 's78177eba4bd9de50': `Persistenz`,
 's7818ed1eea70237b': `Offizielle Bureau-Bewertung. Bedrohungseinstufung, Forschungswert, empfohlene Maßnahmen.`,
@@ -2445,7 +2288,7 @@ Deshalb können die Splitter nicht einfach wieder zusammengesetzt werden. Man ka
 's785e2195235ed36d': `Bedingungsfaktor`,
 's786131d515dc3a80': `Den Schwächsten angreifen. Ziel: Drowned Bell (bereits mäßig). Saldo: 30−5 = 25 RP`,
 's78636b92c1a3909c': `Ausstehend`,
-'s789639ab0efcd50b': `Navigieren Sie zum Chat-Tab in Ihrer Simulation und wählen Sie einen Agenten aus dem Agentenwähler. Jedes Gespräch ist ein separater Thread — Sie können mehrere laufende Gespräche mit verschiedenen Agenten führen.`,
+'s789639ab0efcd50b': `Navigieren Sie zum Chat-Tab in Ihrer Simulation und wählen Sie einen Agenten aus dem Agentenwähler. Jedes Gespräch ist ein separater Thread – Sie können mehrere laufende Gespräche mit verschiedenen Agenten führen.`,
 's789f8d0bda074b60': `Fünf Dimensionen verhindern, dass eine einzelne Strategie dominiert. Militärische Stärke kann durch diplomatisches Geschick gekontert werden. Einfluss kann Souveränität untergraben. Das System belohnt Anpassungsfähigkeit und multidimensionales Denken.`,
 's78c3636ae27c39da': `Die chilenischen Biologen Humberto Maturana und Francisco Varela prägten 1972 den Begriff Autopoiesis, um Systeme zu beschreiben, die sich selbst produzieren und erhalten. Ihre formale Definition: „Eine autopoietische Maschine ist eine als Netzwerk von Produktionsprozessen von Komponenten organisierte Maschine, die durch ihre Interaktionen und Transformationen kontinuierlich das Netzwerk von Prozessen, das sie produziert hat, regenerieren und verwirklichen." Lebende Zellen erzeugen ihre eigenen Grenzen, metabolisieren ihre eigenen Bestandteile. Der Aphorismus von Maturana und Varela aus Der Baum der Erkenntnis (1987) fasst es zusammen: „Alles Tun ist Erkennen und alles Erkennen ist Tun." Eine Simulation auf metaverse.center ist autopoietisch im narrativen Sinne: Sie generiert ihre eigenen Ereignisse, ihre eigenen Sozialdynamiken, ihre eigene Geschichte. Der Weltenbauer pflanzt den Keim. Die Welt wächst von selbst.`,
 's78c3b82afe482c02': `Inhaltsverzeichnis`,
@@ -2453,7 +2296,6 @@ Deshalb können die Splitter nicht einfach wieder zusammengesetzt werden. Man ka
 's78d60a97137f0946': `Soziale Medien`,
 's78e2cdb0659eb0ab': `Resonanz wiederhergestellt.`,
 's78effab4e7d7467a': `Deine Zivilisation wartet`,
-'s78f0fb70fe78e3e7': `residuale Substratverschiebung — Abklingkurve wird überwacht`,
 's78fa6de29af1e00f': `Geografische Anomalien (~1.500 Wörter)`,
 's78fd8c03f8c967f3': `Token`,
 's790bb066cb026d62': `Agenten-Reaktionen`,
@@ -2467,7 +2309,7 @@ Deshalb können die Splitter nicht einfach wieder zusammengesetzt werden. Man ka
 's79696492074fabc7': `Soziale Trends Beschr.`,
 's797d1e2a06fafaef': `REKRUTIERUNGSBÜRO`,
 's79833bcd94e7ca58': `Antwort wird beim nächsten Tick aufgelöst.`,
-'s799cce5e31d2f707': `Eine Welt muss sich wie eine Welt anfühlen — innerlich konsistent, fähig, ihre Bewohner zu überraschen, Geschichten zu generieren, die den Menschen, die in ihr leben, etwas bedeuten. Das ist Tolkiens Sekundärer Glaube, angewandt auf interaktiven Raum.`,
+'s799cce5e31d2f707': `Eine Welt muss sich wie eine Welt anfühlen – innerlich konsistent, fähig, ihre Bewohner zu überraschen, Geschichten zu generieren, die den Menschen, die in ihr leben, etwas bedeuten. Das ist Tolkiens Sekundärer Glaube, angewandt auf interaktiven Raum.`,
 's799d5441ac2e5ee1': `Bureau-Empfehlung (~500 Wörter)`,
 's79a0ca53769f8f62': `Architektur`,
 's79ab03d10cce11bc': `-30% Belastung / 7 Tage`,
@@ -2482,7 +2324,7 @@ Deshalb können die Splitter nicht einfach wieder zusammengesetzt werden. Man ka
 's7a55239397865211': `Jede Epoche durchläuft 5 Phasen. Jede Phase ändert, welche Aktionen zur Verfügung stehen und wie die Punkte berechnet werden.`,
 's7a60207c75ee8815': `Beitritt beantragen`,
 's7a682a7ee177f81a': `REKRUTIERUNG WIRD VERARBEITET...`,
-'s7a8053f8bb58383e': `Spieler können während einer Epoche Allianzen vorschlagen und akzeptieren. Aktive Allianzen gewähren einen diplomatischen Bonus von +15 %. Der Angriff auf einen Verbündeten löst die Allianz jedoch auf und kann Strafpunkte nach sich ziehen — das Gefangenendilemma in Aktion.`,
+'s7a8053f8bb58383e': `Spieler können während einer Epoche Allianzen vorschlagen und akzeptieren. Aktive Allianzen gewähren einen diplomatischen Bonus von +15 %. Der Angriff auf einen Verbündeten löst die Allianz jedoch auf und kann Strafpunkte nach sich ziehen – das Gefangenendilemma in Aktion.`,
 's7a8a577a24e77100': `Bot konnte nicht erstellt werden.`,
 's7a9261e9976a5462': `Materialisiert`,
 's7a92984b86ca270f': `Bündnisanträge`,
@@ -2498,11 +2340,10 @@ Deshalb können die Splitter nicht einfach wieder zusammengesetzt werden. Man ka
 's7b1cbc0600f84568': str`Agent "${0}" erfolgreich gelöscht.`,
 's7b1e677079133ab7': `Dwarf Fortress`,
 's7b23cc3bbf441e7f': `Teammitglieder prüfen deinen Antrag. Der Antrag verfällt nach 2 Zyklen.`,
-'s7b29e6e74edf0cd8': `Die Depesche schließt sich automatisch nach 30 Sekunden (Pause durch Hovern) oder kann sofort bestätigt werden. Klicken Sie „Chronik ansehen", um direkt zum Puls-Tab zu springen. Das Briefing erscheint nur, wenn neue Einträge zu melden sind — wenn in 24 Stunden nichts passiert ist, erscheint kein Briefing.`,
+'s7b29e6e74edf0cd8': `Die Depesche schließt sich automatisch nach 30 Sekunden (Pause durch Hovern) oder kann sofort bestätigt werden. Klicken Sie „Chronik ansehen", um direkt zum Puls-Tab zu springen. Das Briefing erscheint nur, wenn neue Einträge zu melden sind – wenn in 24 Stunden nichts passiert ist, erscheint kein Briefing.`,
 's7b30d4a2096f1fac': `weist Eigenschaften auf, die konsistent sind mit`,
 's7b3a70561cec8d75': `Typ:`,
 's7b3ab7561ced061a': `Typen`,
-'s7b40244acf1cfb75': `Kandidat genehmigt — Resonanz erstellt.`,
 's7b510c819a83bbd9': `Die Chronik`,
 's7b57b325b4d3706e': `Simulation archiviert.`,
 's7b59f7665fe04ce9': `Ein Gespräch beginnen`,
@@ -2533,23 +2374,8 @@ Deshalb können die Splitter nicht einfach wieder zusammengesetzt werden. Man ka
 's7c9fe21bb4b04911': `Durchschn. Zonensicherheitsstufe`,
 's7ca39baff856c2a8': `Epoche konnte nicht erstellt werden.`,
 's7cb2676eef318b58': `DUNKELKAMMER-PASS ERFORDERLICH`,
-'s7cdf818be7cc3a7b': `— Carl von Clausewitz, Vom Kriege (1832)`,
-'s7ce91dbb2fa169ec': `BUREAU FÜR UNMÖGLICHE GEOGRAPHIE — Dokument SHARD/VELGARIEN-001
-Klassifizierung: GRAU — Institutioneller Kontaminationsvektor
-
-SPLITTERPROFIL: Velgarien ist ein brutalistischer Überwachungsstaat, verwaltet von siebenundvierzig Bureaux, jedes zuständig für einen präzise definierten Bereich des bürgerlichen Lebens und jedes überzeugt, dass die anderen sechsundvierzig entweder überflüssig, inkompetent oder aktiv hochverräterisch sind. Die Architektur ist roher Beton — Le Corbusiers béton brut auf eine Zivilisation skaliert, Holzmaserungsabdrücke noch sichtbar in der Schalung, Wasserflecken, die an Fassaden herunterlaufen, als ob das Gebäude weinte, was das Bureau für Strukturelle Emotion als Kondensation bezeichnet und die Bürger für etwas anderes halten.
-
-Das Überwachungsnetz ist total. Kameras in jedem Korridor, Akustikmonitore in jedem Raum und eine Bevölkerung, die Beobachtung so vollständig verinnerlicht hat, dass sie sich selbst korrigiert, bevor eine Korrektur angewandt wird. Dies ist das Panoptikon-Prinzip zur Perfektion gebracht: nicht ein Gefängnis, in dem Wärter Gefangene beobachten, sondern eine Gesellschaft, in der die Unterscheidung zwischen Wärter und Gefangenem administrativ aufgelöst wurde.
-
-BLEED-SIGNATUR: Institutionelle Kontamination. Wenn Velgariens Bleed benachbarte Splitter berührt, beginnen Agenten Komitees zu bilden. Dokumente erscheinen — Vermerke, Direktiven, Formulare, die die Ausfüllung anderer Formulare verlangen. In der Gaslit Reach entdeckte Archivist Quill einmal einen ganzen Aktenschrank, der über Nacht materialisiert war, gefüllt mit Personalakten für Mitarbeiter, die nicht existierten. Sie katalogisierten ihn. Der Katalog verschwand. Eine Quittung für den Katalog erschien. Sie katalogisierten die Quittung.
-
-PHILOSOPHISCHE ACHSE: Kontrolle als Identität. Die Velgarien-Frage ist nicht „Warum werden wir beobachtet?", sondern „Wer wären wir, wenn wir es nicht würden?" Die Überwachung dauert so lange an, dass die Bürger sich kein unbeobachtetes Selbst vorstellen können. Privatsphäre ist nicht verboten — sie ist schlicht undenkbar, wie eine Farbe, die niemand je gesehen hat.
-
-SCHLÜSSELAGENTEN: Viktor Harken (Bureau-Direktor, das System in Fleisch), Elena Voss (Spionin, deren Tarnung tiefer reicht als ihre Identität), Mira Steinfeld (Künstlerin, deren Wandbilder vier Stunden bestehen, bevor die Überstreicheinheit eintrifft — in diesen vier Stunden verändert sich etwas im Korridor), Doktor Fenn (Wissenschaftler, der Risse in den Wänden untersucht, die möglicherweise nicht struktureller Natur sind).
-
-KARTOGRAPHISCHE ANMERKUNG: Velgarien ist der einzige Splitter, dem Bureau-Kartographen der Zutritt verweigert wurde. Nicht gewaltsam — administrativ. Der Papierkram, der für die Einreise nach Velgarien als Nicht-Bürger erforderlich ist, wird auf 4.700 Seiten geschätzt. Drei Kartographen haben den Prozess begonnen. Einer hat ihn abgeschlossen. Sie wurde seither nicht mehr gesehen, obwohl ihre Berichte weiterhin eintreffen, gestempelt und abgelegt gemäß Verfahren, deren Existenz sie nicht kannte.`,
+'s7cdf818be7cc3a7b': `– Carl von Clausewitz, Vom Kriege (1832)`,
 's7cf18e86c828c238': `Treten Sie in kompetitive Saisons ein, in denen Zivilisationen aufeinanderprallen. Setzen Sie Spione hinter feindlichen Linien ein, schmieden Sie Allianzen mit rivalisierenden Weltenbauern, verraten Sie sie im perfekten Moment. Echtzeitstrategie mit KI-Agenten als Ihre Spielfiguren.`,
-'s7cfaa77355fed0f1': `gleichzeitige Substratbrüche — Vorsicht in betroffenen Zonen empfohlen`,
 's7cface4c90dacc5f': `Eignung 3 = +9%, Eignung 6 = +18%, Eignung 9 = +27% (18pp Schwankung)`,
 's7d15d2dac95778b8': str`Zyklen${0} Zyklen`,
 's7d17738dfc8ce88b': `Schriftfamilie für Fließtext, Absätze und Formulareingaben.`,
@@ -2579,7 +2405,7 @@ KARTOGRAPHISCHE ANMERKUNG: Velgarien ist der einzige Splitter, dem Bureau-Kartog
 's7e5d2643378b4bdf': `Als die Welt zerbrach`,
 's7e684362ebd4b856': `Material-Belastungsgrenzen werden indiziert`,
 's7e860296d38b6351': `Farben`,
-'s7e8e5d1be6b458bf': `Keine Welt existiert isoliert. Auf metaverse.center können Simulationen verbunden werden, um ein Multiversum zu bilden — ein Netzwerk von Welten, verknüpft durch dimensionale Korridore, durch die Ereignisse, Echos und diplomatische Missionen reisen. Die Kartographenkarte visualisiert das gesamte Netzwerk als interaktiven kräftegesteuerten Graphen: Knoten pulsieren mit Aktivität, Kanten leuchten mit Verkehr, und Epochen-Schlachten brechen in Echtzeit über Verbindungen aus.`,
+'s7e8e5d1be6b458bf': `Keine Welt existiert isoliert. Auf metaverse.center können Simulationen verbunden werden, um ein Multiversum zu bilden – ein Netzwerk von Welten, verknüpft durch dimensionale Korridore, durch die Ereignisse, Echos und diplomatische Missionen reisen. Die Kartographenkarte visualisiert das gesamte Netzwerk als interaktiven kräftegesteuerten Graphen: Knoten pulsieren mit Aktivität, Kanten leuchten mit Verkehr, und Epochen-Schlachten brechen in Echtzeit über Verbindungen aus.`,
 's7ecb3bd0faf94ae5': `Vollbild-Draft-Overlay mit Eignungsbalken und Teamstatistiken`,
 's7ed2cec6022abb49': `Getönter Hintergrund für primäre Badges, ausgewählte Zustände und Hervorhebungen.`,
 's7ede1c55e35ce9d6': `Simulation`,
@@ -2596,7 +2422,6 @@ KARTOGRAPHISCHE ANMERKUNG: Velgarien ist der einzige Splitter, dem Bureau-Kartog
 's7f8af916a144d1b2': `Nur Untergezeitendocks. Spart RP für Schnellangriff. Saldo: 12 RP`,
 's7f9938cc03ed9ca8': `Vorfall von`,
 's7fa7f46de7853849': `Aufstellung konnte nicht gespeichert werden.`,
-'s7fc692b05c5e063d': `Signal wiederhergestellt — Blaupausen aus dem Büro-Archiv abgerufen`,
 's7fcb3d69c5d3cdbc': `Dossierstatus: Aktiv`,
 's7fcbcbffaf80605f': `Simulation → Überlieferungs-Reiter (Standard)`,
 's7fd9266c6a3e25b5': `Ticks`,
@@ -2657,12 +2482,11 @@ KARTOGRAPHISCHE ANMERKUNG: Velgarien ist der einzige Splitter, dem Bureau-Kartog
 's82bdbda6e2a6d73c': `Zwischenfall-Protokoll: Bleed-Ereignis BL-2749`,
 's82c126d3b43974c5': `Ankerstärke`,
 's82c21acdbcd6e830': `Stärke`,
-'s82ce6ae9d7c70121': `Gründungsphase-Neugestaltung & Offene Teilnahme`,
+'s82ce6ae9d7c70121': `Gründungsphase-Neugestaltung &amp; Offene Teilnahme`,
 's82da8f06cd1b4f70': `Philosophische Anker`,
 's82e601e552e42e22': `Überschrift-Zeichenabstand`,
 's82f6af51229ac91f': `Engagement, Reichweite, Wirkung`,
 's82f8493b0823a619': `Bitte alle Felder ausfüllen.`,
-'s82fbf1475f56340f': `Die Blutung bewegt sich nicht zufällig. Sie hat Vektoren — allesamt Manifestationen des Verlangens.`,
 's83104f6753ceb97c': `Kapitelnavigation`,
 's83442f07f5d4a4c0': `Erbauer`,
 's834a4ee5a356e780': `Noch keine Chroniken veröffentlicht. Die Welten schreiben noch ihre Geschichten.`,
@@ -2687,22 +2511,7 @@ KARTOGRAPHISCHE ANMERKUNG: Velgarien ist der einzige Splitter, dem Bureau-Kartog
 's840fa51cc63dcde9': `Die Dunkelkammer gewährt Zugang zu Themenvarianten, Bildregeneration (10 Verwendungen) und Kartenrahmen-Anpassung für diese Simulation.`,
 's84126fa92f00b4ef': `gerade eben`,
 's8412d97a60a3e9d7': `Wann das Ereignis eingetreten ist. Die Reihenfolge auf der Zeitachse bestimmt die Ursache-Wirkungs-Ketten. Kürzlich aufgetretene Ereignisse mit hoher Auswirkung erhöhen den Ereignisdruck in der Zone.`,
-'s84140d34e17f1fa7': `STÖRFALLPROTOKOLL: BLEED-EREIGNIS BL-2749 — Klassifizierung: AMBER
-
-14:00 — Routineüberwachung der Grenze V-GR/7 (Velgarien-Gaslit Reach-Schnittstelle). Grenzintegrität nominal.
-
-14:23 — Agent Fenn berichtet, „Tropfgeräusche" in einem Keller zu hören, der laut Bauplänen keine Wasserinstallation hat.
-
-14:41 — Ein Propagandaplakat beginnt, sich selbst umzuschreiben. „WACHSAMKEIT IST LOYALITÄT" wird zu „WACHSAMKEIT IST LOYALITÄT IST DIE STRÖMUNG IST HEUTE STARK DIE SPOREN SINGEN."
-
-15:17 — Der nicht existierende Keller steht knöcheltief in biolumineszentem Wasser. Es riecht nach Kupfer und Pilzen. Fenn stellt einen Wartungsantrag. Der Antrag wird abgelehnt mit der Begründung, das Gebäude habe keinen Keller. Fenn steht zu diesem Zeitpunkt im Keller.
-
-15:34 — Das Plakat lautet nun: „DIE UNTERZEE ERINNERT SICH AN DICH."
-
-17:45 — Das Wasser ist zurückgewichen. An seiner Stelle: ein einzelner leuchtender Pilz, der aus einem Riss im Beton wächst. Fenn macht ein Foto. Das Foto zeigt bei der Entwicklung eine Kaverne, gewaltig und glitzernd, mit einem Fluss aus Licht. Fenn hat seit einem Jahr jede Nacht von diesem Ort geträumt. Er hat es niemandem erzählt.
-
-STATUS: Abgeschlossen. Restkontamination: ein Pilz (persistent), ein Propagandaplakat (nachgedruckt, obwohl der Ersatz gelegentlich nach feuchter Erde riecht).`,
-'s84172609be53b6a7': `Das Multiversum fügt eine weitere Ebene geographischer Logik hinzu. Simulationen, die zentrale Positionen im Verbindungsnetzwerk einnehmen — Knotenpunkte mit vielen dimensionalen Korridoren — erleben mehr Cross-World-Bleed-Ereignisse, mehr kulturellen Austausch und mehr strategischen Druck. Periphere Welten sind isolierter, aber auch autonomer. Topologie ist Schicksal, selbst im digitalen Raum.`,
+'s84172609be53b6a7': `Das Multiversum fügt eine weitere Ebene geographischer Logik hinzu. Simulationen, die zentrale Positionen im Verbindungsnetzwerk einnehmen – Knotenpunkte mit vielen dimensionalen Korridoren – erleben mehr Cross-World-Bleed-Ereignisse, mehr kulturellen Austausch und mehr strategischen Druck. Periphere Welten sind isolierter, aber auch autonomer. Topologie ist Schicksal, selbst im digitalen Raum.`,
 's8450860a5c034caf': `Wartungsanforderungen werden projiziert`,
 's8463ef9882abf17d': `Günstigeres Modell für Recherche- und Analyseaufgaben (Astrolabe, Ankergenerierung). Tauscht Qualität gegen Kostenersparnis.`,
 's84723316a6846776': str`${0} Ereignisse erstellt`,
@@ -2724,40 +2533,35 @@ STATUS: Abgeschlossen. Restkontamination: ein Pilz (persistent), ein Propagandap
 's85436b29eec61576': `Agentenkandidaten profilieren`,
 's854c6ad084b5f24d': `Portraitbeschreibung generiert.`,
 's854d811ad443d551': str`Schnelleinsatz ${0}`,
-'s85502733be49e569': `Nein. Die Simulationsschmiede generiert eine vollständige Welt aus einer einzigen Saat-Idee. Sie können sie dann erkunden, modifizieren und erweitern. Die Plattform ist für Schöpfer aller Erfahrungsstufen konzipiert — vom erstmaligen Weltenbauer bis zum erfahrenen Game-Designer.`,
+'s85502733be49e569': `Nein. Die Simulationsschmiede generiert eine vollständige Welt aus einer einzigen Saat-Idee. Sie können sie dann erkunden, modifizieren und erweitern. Die Plattform ist für Schöpfer aller Erfahrungsstufen konzipiert – vom erstmaligen Weltenbauer bis zum erfahrenen Game-Designer.`,
 's8567950346d22c40': `Agentenname oder -beschreibung`,
 's8568e8bc900eabab': `Rohdaten`,
 's8579142c04257d87': `Gesundheitsstatus`,
-'s857b5355ae214a1d': `Emergenz ist das Phänomen, bei dem das kollektive Verhalten eines Systems die Summe der Verhaltensweisen seiner einzelnen Komponenten übersteigt. Ein einzelnes Neuron feuert oder nicht. Ein Gehirn denkt. Eine einzelne Ameise folgt Pheromonspuren. Eine Kolonie baut komplexe Architektur, betreibt Pilzzucht, führt Kriege. Das emergente Verhalten ist nicht in die einzelnen Agenten programmiert — es entsteht aus ihrer Interaktion.`,
+'s857b5355ae214a1d': `Emergenz ist das Phänomen, bei dem das kollektive Verhalten eines Systems die Summe der Verhaltensweisen seiner einzelnen Komponenten übersteigt. Ein einzelnes Neuron feuert oder nicht. Ein Gehirn denkt. Eine einzelne Ameise folgt Pheromonspuren. Eine Kolonie baut komplexe Architektur, betreibt Pilzzucht, führt Kriege. Das emergente Verhalten ist nicht in die einzelnen Agenten programmiert – es entsteht aus ihrer Interaktion.`,
 's8582537d138254ba': `Event referenzieren`,
 's8587736730c8b7ea': `Tage`,
 's85ae15885e3e42b1': `Replicate-Schlüssel eingeben...`,
-'s85aeae43f255a0d7': `Geben Sie eine Prämisse ein. Die Schmiede generiert eine komplette Zivilisation — Dutzende Charaktere mit Persönlichkeiten, Städte mit Architektur und Tausende Wörter originaler Lore. Minuten, nicht Monate.`,
 's85b52c5fd3272a12': `Mira Steinfeld`,
 's85c44feb44f7b6b5': `Hervorhebungen, Rahmen, Betonungen`,
 's85caa978db62e1b1': `Instagram-Daten konnten nicht geladen werden`,
-'s85d3fb28f6700102': `Lessigs Erkenntnis war, dass die Architektur digitaler Plattformen Nutzerverhalten effektiver einschränkt als jedes Gesetz. Wenn die Plattform eine Funktion nicht bereitstellt, existiert sie faktisch nicht. Wenn die Plattform ein Verhalten überwacht, ist es faktisch verboten. Der Code ist nicht bloß regulativ — er ist konstitutiv. Er definiert den Raum möglicher Handlungen.`,
+'s85d3fb28f6700102': `Lessigs Erkenntnis war, dass die Architektur digitaler Plattformen Nutzerverhalten effektiver einschränkt als jedes Gesetz. Wenn die Plattform eine Funktion nicht bereitstellt, existiert sie faktisch nicht. Wenn die Plattform ein Verhalten überwacht, ist es faktisch verboten. Der Code ist nicht bloß regulativ – er ist konstitutiv. Er definiert den Raum möglicher Handlungen.`,
 's85e921b0248c06eb': `Qualifikationen`,
 's85f5007f30c4411d': `Institutionelle Autorität. Trockener Humor. Letztes Wort.`,
 's86099057ea15be33': `Benutzer gelöscht.`,
-'s860d562fcf6c6ecb': `Dossier-Vorschau — 6 geheime Abschnitte warten auf Autorisierung`,
 's862e881b525e5127': `Artikel transformieren`,
 's8639aabf71ac3be9': `Keine Kaskadenregeln konfiguriert.`,
 's863d41290479a170': `Das Substrat ist ruhig. Vorerst.`,
 's863dcead3bc55c4a': `RP speichern`,
-'s863fda0e74c1a0dc': `Bündnisse kosten RP im Unterhalt. Jedes Mitglied zahlt 1 RP pro Mitglied pro Zyklus. Ein 2er-Bündnis kostet 2 RP/Zyklus pro Person; ein 3er-Bündnis 3 RP/Zyklus. Bei 0 RP entfällt der Unterhalt — keine Verschuldung möglich, aber es können keine Agenten eingesetzt werden, bis neue RP verdient werden.`,
 's865af55d0d0e12fc': `Fehler beim Laden der Zonen`,
 's8672be3d48cb090b': str`Integrieren ${0} Ereignisse integrieren`,
 's8690ff9e0d0cd3b0': `Bestätigen oder Chronik ansehen`,
-'s86c39e0f9d14dcdd': `Literarische & philosophische Recherche vor der Lore-Generierung durchführen. Erzeugt reichhaltigeres, quellengestütztes Worldbuilding.`,
+'s86c39e0f9d14dcdd': `Literarische &amp; philosophische Recherche vor der Lore-Generierung durchführen. Erzeugt reichhaltigeres, quellengestütztes Worldbuilding.`,
 's86c9f640941e6aa3': `Das Metaverse formen`,
 's86ca9056f2f6a70f': `Frei-für-Alle`,
 's86ccc5d1f7cb6bdd': `Kanten`,
-'s86cd16569a652d74': `Beide Schlüssel konfiguriert — neue Werte eingeben zum Aktualisieren.`,
-'s86cd86597dbd4ac8': `Resonanzen sind nicht nur atmosphärisch — sie haben direkte mechanische Auswirkungen. Eine „Militäroffensive“-Resonanz könnte die Erfolgsrate von Attentätern um 10% für 3 Zyklen erhöhen, während ein „Diplomatischer Dämpfer“ die Diplomatiepunkte reduzieren könnte.`,
+'s86cd86597dbd4ac8': `Resonanzen sind nicht nur atmosphärisch – sie haben direkte mechanische Auswirkungen. Eine „Militäroffensive“-Resonanz könnte die Erfolgsrate von Attentätern um 10% für 3 Zyklen erhöhen, während ein „Diplomatischer Dämpfer“ die Diplomatiepunkte reduzieren könnte.`,
 's86da6a82051bb613': `Live-Agentenkarten-Mockup`,
 's86dd5f93c6591510': `So funktioniert es`,
-'s86ee7ad954b1b919': `BYOK AKTIV — KEIN TOKEN-ABZUG`,
 's8722d1d05071506b': `Zurück zur Dunkelkammer`,
 's8724ae840be12f80': `Betroffene Ereignistypen`,
 's87760d8279827050': `1 Zyklus Einsatz, 2 Zyklen Mission. Propaganda-Kampagne. Gleichgewicht: 30-4 = 26 RP`,
@@ -2786,17 +2590,16 @@ STATUS: Abgeschlossen. Restkontamination: ein Pilz (persistent), ein Propagandap
 's8870cc177fa8e76b': `Überwachungsreichweite`,
 's887bddb5363b5490': `AUTORISIEREN`,
 's887d2ef358dd6de5': `Verarbeite Bild...`,
-'s8882c10f2199b34b': `Dies hat tiefgreifende Implikationen für virtuelle Welten. Wenn ein Plattformkonzern ein Metaversum entwirft, baut er nicht nur Infrastruktur — er schreibt die Verfassung einer digitalen Gesellschaft. Jede Designentscheidung (was Nutzer erschaffen können, welche Daten erhoben werden, wer die Umgebung modifizieren darf, wie Streitigkeiten gelöst werden) ist eine Governance-Entscheidung, ob sie als solche anerkannt wird oder nicht.`,
+'s8882c10f2199b34b': `Dies hat tiefgreifende Implikationen für virtuelle Welten. Wenn ein Plattformkonzern ein Metaversum entwirft, baut er nicht nur Infrastruktur – er schreibt die Verfassung einer digitalen Gesellschaft. Jede Designentscheidung (was Nutzer erschaffen können, welche Daten erhoben werden, wer die Umgebung modifizieren darf, wie Streitigkeiten gelöst werden) ist eine Governance-Entscheidung, ob sie als solche anerkannt wird oder nicht.`,
 's888d161861e3f8ca': `Ereignis löschen`,
 's889190f2d8428d20': `Deine Operationen`,
-'s8898e87fc74ffc16': `Klonen & Normalisierung`,
+'s8898e87fc74ffc16': `Klonen &amp; Normalisierung`,
 's88af7b5bc34cafd7': `Zyklus konnte nicht aufgelöst werden.`,
 's88b2d4ed45d7d3f0': `Akademie-Modus`,
-'s88ba13701d7144b1': `Welten erkunden — Spielererschaffene Zivilisationen durchstöbern`,
 's88dc45e288652cbb': `Hohe Instabilität (&gt; 0.7)`,
 's88ea71eff91fc3ad': `Errichtet`,
 's88f045172a0c9033': `Simulationsgesundheit: Gebäudebereitschaft, Zonenstabilität, Botschaftseffektivität-Dashboard`,
-'s88f69fd802599f24': `Wer regiert virtuelle Welten — und wer sollte es?`,
+'s88f69fd802599f24': `Wer regiert virtuelle Welten – und wer sollte es?`,
 's88f89e80a4a7c805': `Alles überspringen`,
 's89015a2a26679d2e': `Kollektives Trauma und gemeinsame Geschichte. Vergangene Ereignisse wirken nach.`,
 's89028a346bff98a0': `Überprüfung fehlgeschlagen.`,
@@ -2816,14 +2619,13 @@ STATUS: Abgeschlossen. Restkontamination: ein Pilz (persistent), ein Propagandap
 's899828079bf7bcd6': `Militär`,
 's89a8d9826fb3b7ff': `Simulationen (Vorlagen + Instanzen)`,
 's89b3e02447ddce11': `API-Schlüssel werden geladen...`,
-'s89b58c6374a15e03': `Die Blutung — Wo Welten sich berühren`,
 's89bd3ccded412cff': `Eingesetzt`,
 's89bde027d457dd78': `KLASSIFIKATION: STUFE 4 // NUR FÜR AUTORISIERTE AUGEN`,
 's89be93540bc46253': `Historischer Zeitraum. Fließt in die KI-Bilderzeugung und Überlieferung ein. Gebäude mit expliziten Baujahren schwingen bei Architecture Bleed mit.`,
 's89d186b78cf7a3b2': str`${0} ausstehend`,
 's89d232de7f9416ec': `Manuell, importiert, sozial`,
-'s89e0dbe228ae3c30': `— Peter Cook, Archigram (1964)`,
-'s89e8620170e90f0b': `Nachrichtengewinnung. Enthüllt Sicherheitsstufen und Wächter-Aufstellungen der Zielzone. Wissen ist die Voraussetzung effektiven Handelns — Sun Tzu stufte Spionage als die höchste Form der Kriegsführung ein.`,
+'s89e0dbe228ae3c30': `– Peter Cook, Archigram (1964)`,
+'s89e8620170e90f0b': `Nachrichtengewinnung. Enthüllt Sicherheitsstufen und Wächter-Aufstellungen der Zielzone. Wissen ist die Voraussetzung effektiven Handelns – Sun Tzu stufte Spionage als die höchste Form der Kriegsführung ein.`,
 's89eb409b87224fcc': `Dann Wettkampfregeln: Epochen, Operative, Wertung, Allianzen, Bots, COMMS`,
 's89ec63b95c1b8744': `ZUR ÜBERLIEFERUNG`,
 's89fdadb0e5a97879': `Jedes Spiel randomisiert Wertungspreset-Gewichtungen, Strategiezuweisungen und Spielerpaarungen. Elo-Wertungen verwenden K-Faktor-Skalierung für Mehrspieler-Spiele. Statistische Signifikanz getestet via Chi-Quadrat, Fisher-Exakt und Bootstrap-Konfidenzintervalle (10.000 Iterationen).`,
@@ -2848,19 +2650,18 @@ STATUS: Abgeschlossen. Restkontamination: ein Pilz (persistent), ein Propagandap
 's8b60b1a35a2f22a7': `Erfolgswahrscheinlichkeit`,
 's8b60bf2db1580306': `Gesprächsverläufe`,
 's8b61b151c693522d': `Legende wird auf Integrität geprüft`,
-'s8b641eaff32724af': `Noch keine Bündnisse gegründet. Gründe eins, um Aufklärung mit Verbündeten zu teilen und Diplomatieboni zu erhalten — aber achte auf die Unterhaltskosten.`,
 's8b693fda01416495': `Dominanter Duellspezialist bei 65% in 2S. Exzellent in Eins-gegen-Eins-Duellen, wenn Ziele fokussiert sind.`,
 's8b7fe0de5711e3b3': str`Beziehung zu ${0} löschen?`,
 's8b88eb9fef7a0b93': `Offizielles Ereignisprotokoll`,
 's8b97ea84af17c029': `Nie`,
 's8ba15d8697b072a9': `Keine Zonen gefunden.`,
-'s8ba8f6bb54d9b0b0': `metaverse.center implementiert diese Prinzipien in großem Maßstab. Jeder Agent pflegt einen persistenten Gedächtnisstrom. Wenn Sie mit einem Agenten chatten, ruft das System relevante Erinnerungen über semantische Ähnlichkeit ab — so kann ein Agent ein Gespräch von Wochen zuvor referenzieren, ein Ereignis, das er miterlebt hat, oder eine Meinung, die er über einen anderen Charakter gebildet hat. Das Ergebnis ist keine chatbotartige Antwortgenerierung, sondern echte Charakterkontinuität.`,
+'s8ba8f6bb54d9b0b0': `metaverse.center implementiert diese Prinzipien in großem Maßstab. Jeder Agent pflegt einen persistenten Gedächtnisstrom. Wenn Sie mit einem Agenten chatten, ruft das System relevante Erinnerungen über semantische Ähnlichkeit ab – so kann ein Agent ein Gespräch von Wochen zuvor referenzieren, ein Ereignis, das er miterlebt hat, oder eine Meinung, die er über einen anderen Charakter gebildet hat. Das Ergebnis ist keine chatbotartige Antwortgenerierung, sondern echte Charakterkontinuität.`,
 's8bbcdb68cb3082e7': `Direktvergleichsmatrix (2-Spieler-Duelle)`,
 's8bc735e53b6a5e10': `Gebäudestil`,
 's8bd8a8465b8f4d6b': `Kein Botschafter`,
 's8bf481a0b5d8a689': `Generiere...`,
 's8c1837e74a81ad0d': str`vor ${0}m`,
-'s8c35a8053ee30a52': `Freigabe erteilt — willkommen in der Forge, Architekt`,
+'s8c35a8053ee30a52': `Freigabe erteilt – willkommen in der Forge, Architekt`,
 's8c3c66143a8c03b1': `Das Epochen-System von metaverse.center schöpft aus der Designphilosophie von Diplomacy. Das Operativ-System bietet mechanische Struktur, aber strategische Tiefe emergiert aus Spielerinteraktion: Allianzverhandlungen, Geheimdienstfreigabe, koordinierte Operationen und die allgegenwärtige Möglichkeit des Verrats. Die Frage lautet nie nur „Was sollte ich tun?", sondern „Was denken die, was ich denke, was sie denken?"`,
 's8c4aa2916d4a2c82': `Beiträge werden geladen...`,
 's8c68c9bfddfd8ea2': `Neu entwerfen`,
@@ -2873,23 +2674,22 @@ STATUS: Abgeschlossen. Restkontamination: ein Pilz (persistent), ein Propagandap
 's8cdddb45119fa039': `Jetzt fällig`,
 's8cf2425317841c3a': `Tolkien verbrachte Jahrzehnte mit Mittelerde. Borges’ Tlön erforderte eine Geheimgesellschaft von Gelehrten. Sie brauchen etwa fünfzehn Minuten und eine einzige Idee.`,
 's8cf5d0caaff38ab4': `Temporärer Stabilitätsschub, alle Zonen, 3 Zyklen`,
-'s8cffbc4b3e41602b': `Carl von Clausewitz fügte das Konzept der Friktion hinzu — die Kluft zwischen einem perfekten Plan und der chaotischen Realität. „Im Kriege ist alles sehr einfach", schrieb er in Vom Kriege (1832), „aber das Einfachste ist schwierig." Und der Nebel des Krieges: die Unmöglichkeit vollständiger Information, die Notwendigkeit, auf Grundlage unvollständiger Erkenntnisse zu handeln, die Kaskade unbeabsichtigter Konsequenzen.`,
+'s8cffbc4b3e41602b': `Carl von Clausewitz fügte das Konzept der Friktion hinzu – die Kluft zwischen einem perfekten Plan und der chaotischen Realität. „Im Kriege ist alles sehr einfach", schrieb er in Vom Kriege (1832), „aber das Einfachste ist schwierig." Und der Nebel des Krieges: die Unmöglichkeit vollständiger Information, die Notwendigkeit, auf Grundlage unvollständiger Erkenntnisse zu handeln, die Kaskade unbeabsichtigter Konsequenzen.`,
 's8d4cb6b41e98ce2f': `Wird in der eigenen Simulation stationiert. Reduziert die feindliche Erfolgswahrscheinlichkeit um 6% pro Wächter (max. −15%).`,
 's8d64237bc4ab82a7': `Echo-Freigabe`,
 's8d6a569c7e2e93ef': `Wächter-Tuning`,
-'s8d6b009c8995d4d5': `Italo Calvinos Die unsichtbaren Städte (1972) zeigt Marco Polo, wie er Kublai Khan fünfundfünfzig Städte beschreibt — jede ein unmögliches urbanes Gedicht. Octavia hängt zwischen zwei Bergen in einem Netz. Zenobia ist auf Stelzen über dem Nichts gebaut. Die Bewohner von Ersilia spannen Fäden zwischen den Häusern, um ihre Beziehungen zu kartieren, und verlassen dann die Gebäude, wenn die Fäden zu dicht werden, und hinterlassen nur das Netz.`,
+'s8d6b009c8995d4d5': `Italo Calvinos Die unsichtbaren Städte (1972) zeigt Marco Polo, wie er Kublai Khan fünfundfünfzig Städte beschreibt – jede ein unmögliches urbanes Gedicht. Octavia hängt zwischen zwei Bergen in einem Netz. Zenobia ist auf Stelzen über dem Nichts gebaut. Die Bewohner von Ersilia spannen Fäden zwischen den Häusern, um ihre Beziehungen zu kartieren, und verlassen dann die Gebäude, wenn die Fäden zu dicht werden, und hinterlassen nur das Netz.`,
 's8d71f930f72b1e4a': `Ausgangsprompt (Freitext)`,
 's8d746648f3712457': str`Konversation gestartet mit ${0}.`,
 's8d8ca333bb82711a': `Bevölkerungskapazität`,
 's8da13f5e8481b97e': `Zerstört`,
 's8daa1db5187d4ad4': `Detail`,
 's8dcbdb53fc7c3ef0': `Akademie fortsetzen`,
-'s8dd1554fd12bb877': `Anders als Spenglers biologischer Determinismus sind virtuelle Zivilisationen jedoch nicht zum Niedergang verurteilt. Sie können erneuert, umgelenkt oder sogar wiedererweckt werden. Der Schöpfer behält Handlungsfähigkeit über den Bogen seiner Welt — Verfall ist eine Wahl, kein Schicksal.`,
+'s8dd1554fd12bb877': `Anders als Spenglers biologischer Determinismus sind virtuelle Zivilisationen jedoch nicht zum Niedergang verurteilt. Sie können erneuert, umgelenkt oder sogar wiedererweckt werden. Der Schöpfer behält Handlungsfähigkeit über den Bogen seiner Welt – Verfall ist eine Wahl, kein Schicksal.`,
 's8e0ec16123cb5a79': `Scan fehlgeschlagen.`,
 's8e157ecb047891ec': `Agent erstellen`,
-'s8e17ea57e4630d0f': `Bündnismitglieder teilen automatisch Aufklärungsdaten im Kampfprotokoll. Operationen, an denen Verbündete beteiligt sind, werden mit einem [VERBÜNDETE AUFKLÄRUNG]-Abzeichen markiert und geben dir einen breiteren Überblick über das Schlachtfeld.`,
 's8e1b0dbb470586cf': `Treten Sie der Epoche bei, um Agenten einzusetzen.`,
-'s8e20cde787e44707': `Von Stephensons Snow Crash zu Baudrillards Simulakren — eine literarische und philosophische Erforschung dessen, was das Metaversum tatsächlich bedeutet, jenseits von Unternehmensbuzzwords und gescheiterten VR-Demos.`,
+'s8e20cde787e44707': `Von Stephensons Snow Crash zu Baudrillards Simulakren – eine literarische und philosophische Erforschung dessen, was das Metaversum tatsächlich bedeutet, jenseits von Unternehmensbuzzwords und gescheiterten VR-Demos.`,
 's8e2abf09fc9acf05': `Brandabschottung wird validiert`,
 's8e3832db39515540': str`Leerer Wert für ${0}.`,
 's8e3e6ea95efe9fa8': `6 Agenten ergeben eine gute soziale Dynamik. 3 für Intimität, 12 für komplexe politische Intrigen.`,
@@ -2911,11 +2711,9 @@ STATUS: Abgeschlossen. Restkontamination: ein Pilz (persistent), ein Propagandap
 's8f23a193bb2836e5': `Bürodienste-Depesche`,
 's8f3d223923b156c6': `nicht gesetzt`,
 's8f3e63f14200e52d': `Was war die Stanford-Generative-Agents-Studie?`,
-'s8f46813f4ebcf603': `schwere Substratverzerrung — lokale Geometrie unzuverlässig`,
 's8f48b3967dbd396f': `Sobald Sie Ihre Agenten ausgewählt haben, legen Sie Ihren Kader fest. Alle menschlichen Spieler müssen festlegen, bevor die Epoche starten kann. Bots wählen automatisch basierend auf ihrem Persönlichkeitsarchetyp.`,
 's8f68d16872bd48bf': `RP-Wirtschaft`,
 's8f906011e31e7ea2': `Spieler einladen`,
-'s8f9309fc83825759': `überlappende Erschütterungssignaturen — Interferenzmuster bilden sich`,
 's8fa032cdafb3c9b0': `Abmelden`,
 's8faa8a50654c8848': `Ereignis erfolgreich erstellt`,
 's8fbbb5b4a02a67b5': `Beziehungen generieren`,
@@ -2927,12 +2725,11 @@ STATUS: Abgeschlossen. Restkontamination: ein Pilz (persistent), ein Propagandap
 's8ff2c372182771c7': `Aktive Epochen`,
 's900c980bdb200fcf': `Epochen`,
 's900df8c8120c1308': `Bureau-Dossier: Die Cité des Dames`,
-'s903b07dca1d4ea5a': `Letzte Zyklen — doppelte Punkte`,
 's904fefb3d01cb2ae': `leer`,
 's905550566d61014e': `Ist Architekt`,
 's90618be69ef89222': `Keine aktiven Simulationen gefunden.`,
 's907a5ce17d45e533': `Gebäude degradiert. Builder-Preset verstärkt Stabilitätsverlust für Gaslit Reach.`,
-'s907e1f6dee18a872': `Akademie-Epochen sind bewusst komprimiert. Zyklen werden alle 4 Stunden aufgelöst statt der standardmäßigen 24 Stunden im kompetitiven Spiel. Das bedeutet, das Tempo ist unerbittlich — Sie müssen schnelle Entscheidungen treffen. Es ist der Unterschied zwischen Blitzschach und Fernschach.`,
+'s907e1f6dee18a872': `Akademie-Epochen sind bewusst komprimiert. Zyklen werden alle 4 Stunden aufgelöst statt der standardmäßigen 24 Stunden im kompetitiven Spiel. Das bedeutet, das Tempo ist unerbittlich – Sie müssen schnelle Entscheidungen treffen. Es ist der Unterschied zwischen Blitzschach und Fernschach.`,
 's908d66f8ea661722': `Velgarien (Mensch)`,
 's90a99ec232cfd4a5': `Notrekrutierung`,
 's90c350dc886c6621': `Glimhaven-Börse: gut → mäßig. +5 Militär. Velgarien führt jetzt im Militär.`,
@@ -2942,13 +2739,13 @@ STATUS: Abgeschlossen. Restkontamination: ein Pilz (persistent), ein Propagandap
 's9122b26dca5e171a': `III. Die Dunkelkammer`,
 's91291af05c9cc9c6': `Bildkategorie`,
 's913122466d8dead2': `Schattenfarbe`,
-'s913311a04bca1716': `Agenten nehmen andere Agenten wahr, bilden sich Meinungen über sie und passen ihr Verhalten an den sozialen Kontext an. Freundschaften, Rivalitäten und Allianzen entstehen aus Interaktion — nicht aus vorgescripteten Beziehungsgraphen.`,
+'s913311a04bca1716': `Agenten nehmen andere Agenten wahr, bilden sich Meinungen über sie und passen ihr Verhalten an den sozialen Kontext an. Freundschaften, Rivalitäten und Allianzen entstehen aus Interaktion – nicht aus vorgescripteten Beziehungsgraphen.`,
 's913ff10d97c0f135': `Noch keine Übertragungen`,
 's914237cece7086dd': `Anker verlassen.`,
 's9142aa57b3ac34ae': `Eine neue Scherbe brechen`,
 's91515f9e06cc2a22': `Bild neu generiert.`,
 's91553f61f0716fba': `Epoche initialisieren`,
-'s916e17a52b4edca1': `Das ist keine Verschwörung — es ist Architektur. Wenn eine Plattform entscheidet, welche Inhalte empfohlen werden, welche Verhaltensweisen gemessen werden und was Nutzer erschaffen können, übt sie gouvernementale Macht in Foucaults präzisem Sinne aus. Die Frage ist nicht, ob diese Macht existiert, sondern ob sie sichtbar, rechenschaftspflichtig und anfechtbar ist.`,
+'s916e17a52b4edca1': `Das ist keine Verschwörung – es ist Architektur. Wenn eine Plattform entscheidet, welche Inhalte empfohlen werden, welche Verhaltensweisen gemessen werden und was Nutzer erschaffen können, übt sie gouvernementale Macht in Foucaults präzisem Sinne aus. Die Frage ist nicht, ob diese Macht existiert, sondern ob sie sichtbar, rechenschaftspflichtig und anfechtbar ist.`,
 's9170ca0811cac89f': `Ein unerwarteter Fehler beim Laden der Agenten.`,
 's917b8780b449d42d': `Recherche-Domains werden geladen...`,
 's917e9abfe7db5130': `anmelden`,
@@ -2960,7 +2757,7 @@ STATUS: Abgeschlossen. Restkontamination: ein Pilz (persistent), ein Propagandap
 's91e3a47599412f51': `Quellen`,
 's91f70424f5d5d23e': `Slug`,
 's9200f448e71b3b86': `Stabil in kleinen Formaten (35% bei 2S und 3S). Konsistente Identität über Versionen hinweg.`,
-'s920e70cb388c483d': `The Gaslit Reach — 57,3 Pkt.`,
+'s920e70cb388c483d': `The Gaslit Reach – 57,3 Pkt.`,
 's920fa14fa96bfaec': `Tarnidentitäten werden generiert`,
 's921018974c734a0d': `Bestimmt den Ausbreitungsradius: 1-3 lokale Zone, 4-6 angrenzende Zonen, 7-8 gesamte Stadt, 9-10 alle Städte. Ereignisse oberhalb der Bleed-Schwelle (Standardwert 8) können auf verbundene Simulationen ausstrahlen.`,
 's92257bc04dde993d': `Vertieft`,
@@ -2997,11 +2794,10 @@ STATUS: Abgeschlossen. Restkontamination: ein Pilz (persistent), ein Propagandap
 's9371e9160913e4d1': `Was sind Gesellschaftliche Trends?`,
 's93898c97c3777008': `+5% Wächtereffekt`,
 's93986eef4b3ddeef': `Baulichen Grundriss materialisieren`,
-'s939d05f5673396c9': `Die Splitter — Bureau-Dossiers`,
 's93a6f147df2e019d': `Bleed-Einstellungen speichern`,
-'s93b05431a9c4712a': `Die Rolle des Schöpfers verschiebt sich vom Autor zum Gärtner. Sie pflanzen Samen — ein Konzept, Charaktere, Einschränkungen — und pflegen, was wächst. Sie beschneiden, was nicht funktioniert, ermutigen, was funktioniert, und entdecken Geschichten, die Sie nie geplant haben. Die Welt überrascht Sie, und diese Überraschung ist der Beweis, dass etwas echt Emergentes geschieht.`,
+'s93b05431a9c4712a': `Die Rolle des Schöpfers verschiebt sich vom Autor zum Gärtner. Sie pflanzen Samen – ein Konzept, Charaktere, Einschränkungen – und pflegen, was wächst. Sie beschneiden, was nicht funktioniert, ermutigen, was funktioniert, und entdecken Geschichten, die Sie nie geplant haben. Die Welt überrascht Sie, und diese Überraschung ist der Beweis, dass etwas echt Emergentes geschieht.`,
 's93b6bd5be13571ec': `Während die Metabolisten in Japan arbeiteten, träumte Archigram in London. Peter Cooks Plug-in City (1964) schlug ein Megastruktur-Gerüst vor, in das standardisierte Wohn- und Arbeitseinheiten per Kran ein- und ausgebaut werden konnten. Ron Herrons Walking City (1964) stellte sich massive robotische Strukturen auf Teleskopbeinen vor, die über Land und Meer wandern und mit anderen Wanderstädten zu temporären Metropolen andocken konnten. Michael Webbs Cushicle (1966–67) reduzierte Architektur auf einen tragbaren Umweltanzug.`,
-'s93bd4e06ed886977': `metaverse.center ist eine Plattform zum Erstellen und Verwalten KI-gesteuerter Simulationen — fiktive Welten mit Agenten, Gebäuden, Ereignissen, Geographie und Lore. Jede Simulation ist ein lebendiger Sandkasten: Agenten haben Erinnerungen und Gespräche.`,
+'s93bd4e06ed886977': `metaverse.center ist eine Plattform zum Erstellen und Verwalten KI-gesteuerter Simulationen – fiktive Welten mit Agenten, Gebäuden, Ereignissen, Geographie und Lore. Jede Simulation ist ein lebendiger Sandkasten: Agenten haben Erinnerungen und Gespräche.`,
 's93c3d596a3b9e3fb': `Atmosphärische Schichten werden gescannt`,
 's93e071cf7bde3441': `Bureau-Dossier: Station Null`,
 's93e6a1a7e12fe8b9': `Knotenklick`,
@@ -3022,7 +2818,7 @@ STATUS: Abgeschlossen. Restkontamination: ein Pilz (persistent), ein Propagandap
 's94e8a172d8f4805e': `Puls`,
 's94ecba01f5292a80': `Erkunden Sie Flaggschiff-Simulationen und beantragen Sie Zugang.`,
 's94eebc2db928b6c8': `Getönter Hintergrund für Warnmeldungen und Vorsichtshinweise.`,
-'s9501d4dcb3b46ef5': `Das Gefangenendilemma, das berühmteste spieltheoretische Szenario, erfasst die Spannung im Herzen jeder Epoche: Kooperation bringt das beste kollektive Ergebnis, aber Verrat lockt mit individuellem Vorteil. Im Allianz-System von metaverse.center ist dieses Dilemma nicht abstrakt. Man kann Allianzen für diplomatische Boni bilden — aber den Angriff auf einen Verbündeten löst die Allianz auf und kann Strafpunkte nach sich ziehen. Vertrauen ist eine Ressource. Verrat ist eine Waffe.`,
+'s9501d4dcb3b46ef5': `Das Gefangenendilemma, das berühmteste spieltheoretische Szenario, erfasst die Spannung im Herzen jeder Epoche: Kooperation bringt das beste kollektive Ergebnis, aber Verrat lockt mit individuellem Vorteil. Im Allianz-System von metaverse.center ist dieses Dilemma nicht abstrakt. Man kann Allianzen für diplomatische Boni bilden – aber den Angriff auf einen Verbündeten löst die Allianz auf und kann Strafpunkte nach sich ziehen. Vertrauen ist eine Ressource. Verrat ist eine Waffe.`,
 's95127d1eea253fa1': `Sensornetzwerk`,
 's95210477031b8b53': `Keine Shards gefunden`,
 's953aa3db6ed7c3ae': `API-Schlüssel eingeben`,
@@ -3036,7 +2832,7 @@ STATUS: Abgeschlossen. Restkontamination: ein Pilz (persistent), ein Propagandap
 's95bc8722b2708f8b': `Pausiert`,
 's95c52013357155d3': `Facebook-Integration`,
 's95d0f61607068b70': str`Transformieren ${0} Artikel werden umgewandelt...`,
-'s95eb678bb7585809': `Nein. metaverse.center ist eine browserbasierte Plattform für KI-getriebenes Worldbuilding und kompetitive Strategie. Die MUD-Tradition hat gezeigt, dass reichhaltige virtuelle Welten kein VR benötigen — sie benötigen persistenten Zustand, Nutzerhandlungsfähigkeit und bedeutsame Sozialdynamiken.`,
+'s95eb678bb7585809': `Nein. metaverse.center ist eine browserbasierte Plattform für KI-getriebenes Worldbuilding und kompetitive Strategie. Die MUD-Tradition hat gezeigt, dass reichhaltige virtuelle Welten kein VR benötigen – sie benötigen persistenten Zustand, Nutzerhandlungsfähigkeit und bedeutsame Sozialdynamiken.`,
 's95f2fd505da46d0b': `Simulation erstellen - Bestätigung`,
 's9628e8667512f818': `Von Shoshana Zuboff geprägt, beschreibt Überwachungskapitalismus die ökonomische Logik, bei der Plattformen Verhaltensdaten von Nutzern extrahieren, künftiges Verhalten vorhersagen und diese Vorhersagen verkaufen. Dieses Modell ist strukturell inkompatibel mit Nutzersouveränität, da es einen Anreiz zur Maximierung der Datenextraktion schafft.`,
 's962feca81af7efa1': `Kartentitel`,
@@ -3058,7 +2854,7 @@ STATUS: Abgeschlossen. Restkontamination: ein Pilz (persistent), ein Propagandap
 's97510d68d5b84bd6': `Mission gescheitert`,
 's977089f1467e7326': `1 FT`,
 's978a05dfff9ec1a3': `Fehler beim Laden der Simulationen.`,
-'s978a14efd20c569b': `Aus diesen vier Regeln emergieren Gleiter — Muster, die das Gitter unbegrenzt durchqueren. Oszillatoren, die in stabilen Zyklen pulsieren. Kanonen, die Ströme von Gleitern emittieren. Ganze Turing-vollständige Computer, gebaut aus Anordnungen lebender und toter Zellen. Conways Game of Life demonstrierte mit mathematischer Präzision, dass komplexes Verhalten keine komplexen Regeln erfordert. Es erfordert einfache Regeln, konsistent angewandt, über die Zeit.`,
+'s978a14efd20c569b': `Aus diesen vier Regeln emergieren Gleiter – Muster, die das Gitter unbegrenzt durchqueren. Oszillatoren, die in stabilen Zyklen pulsieren. Kanonen, die Ströme von Gleitern emittieren. Ganze Turing-vollständige Computer, gebaut aus Anordnungen lebender und toter Zellen. Conways Game of Life demonstrierte mit mathematischer Präzision, dass komplexes Verhalten keine komplexen Regeln erfordert. Es erfordert einfache Regeln, konsistent angewandt, über die Zeit.`,
 's97962d18d7c24591': str`Mo${0}Mo.`,
 's979f8a96ce853fdc': `Fehler beim Laden der Beiträge`,
 's97aa76056a81bd36': `Kennzahlen`,
@@ -3089,23 +2885,22 @@ STATUS: Abgeschlossen. Restkontamination: ein Pilz (persistent), ein Propagandap
 's989fed66eaf74471': `-- Auswählen --`,
 's98a702ecfd55a43c': `Stanford-Abrufformel: 0,4 × Kosinusähnlichkeit + 0,4 × Wichtigkeit/10 + 0,2 × Aktualitätsverfall`,
 's98c25eafca820220': `Geheimes Dossier freigeschaltet`,
-'s98c35600ddba3ad1': `Das ist Worldbuilding im zivilisatorischen Maßstab. Einzelne Simulationen sind Kulturen; das Multiversum ist ein geopolitisches System. Botschaften schaffen diplomatische Verbindungen. Ereignisse in einer Welt bluten durch, um transformierte Echos in einer anderen zu erzeugen — eine Seuche in einer Stadt könnte sich als religiöse Bewegung in einer verbundenen Welt manifestieren, oder ein technologischer Durchbruch könnte als kulturelle Renaissance nachhallen.`,
-'s98c98da37ba4e1dd': `— Stephen Wolfram, A New Kind of Science (2002)`,
-'s98d7194200edee4d': `MUDs vermehrten sich in den 1980ern und 1990ern. 1990 schuf Pavel Curtis bei Xerox PARC LambdaMOO — einen sozialen virtuellen Raum, zentriert um eine digitale Nachbildung von Curtis’ kalifornischem Zuhause, in dem Nutzer Räume bauen, Objekte erschaffen und Verhaltensweisen programmieren konnten. LambdaMOO war kein Spiel — es war eine Gemeinschaft, komplett mit Governance-Streitigkeiten und Eigentumsrechtsdiskussionen. Sein Schlüsselmoment: Julian Dibbells „A Rape in Cyberspace" (The Village Voice, 1993) dokumentierte, wie ein Nutzer ein „Voodoo-Puppen"-Programm instrumentalisierte, um anderen Charakteren gewaltsame Handlungen zuzuschreiben. Die Antwort der Gemeinschaft — die Erfindung von Selbstregierung aus dem Nichts, die schließlich demokratische Petitionen und Abstimmungen implementierte — erzwang grundlegende Fragen über Identität und Schaden im virtuellen Raum, die bis heute ungelöst sind. Lawrence Lessig hat diesen Essay als zentralen Einfluss auf sein Interesse am Internetrecht genannt.`,
+'s98c35600ddba3ad1': `Das ist Worldbuilding im zivilisatorischen Maßstab. Einzelne Simulationen sind Kulturen; das Multiversum ist ein geopolitisches System. Botschaften schaffen diplomatische Verbindungen. Ereignisse in einer Welt bluten durch, um transformierte Echos in einer anderen zu erzeugen – eine Seuche in einer Stadt könnte sich als religiöse Bewegung in einer verbundenen Welt manifestieren, oder ein technologischer Durchbruch könnte als kulturelle Renaissance nachhallen.`,
+'s98c98da37ba4e1dd': `– Stephen Wolfram, A New Kind of Science (2002)`,
+'s98d7194200edee4d': `MUDs vermehrten sich in den 1980ern und 1990ern. 1990 schuf Pavel Curtis bei Xerox PARC LambdaMOO – einen sozialen virtuellen Raum, zentriert um eine digitale Nachbildung von Curtis’ kalifornischem Zuhause, in dem Nutzer Räume bauen, Objekte erschaffen und Verhaltensweisen programmieren konnten. LambdaMOO war kein Spiel – es war eine Gemeinschaft, komplett mit Governance-Streitigkeiten und Eigentumsrechtsdiskussionen. Sein Schlüsselmoment: Julian Dibbells „A Rape in Cyberspace" (The Village Voice, 1993) dokumentierte, wie ein Nutzer ein „Voodoo-Puppen"-Programm instrumentalisierte, um anderen Charakteren gewaltsame Handlungen zuzuschreiben. Die Antwort der Gemeinschaft – die Erfindung von Selbstregierung aus dem Nichts, die schließlich demokratische Petitionen und Abstimmungen implementierte – erzwang grundlegende Fragen über Identität und Schaden im virtuellen Raum, die bis heute ungelöst sind. Lawrence Lessig hat diesen Essay als zentralen Einfluss auf sein Interesse am Internetrecht genannt.`,
 's98fe07e088f6de50': `Entdeckungsbonus: +2→+3 pro gefangenem Agenten`,
-'s990ef0277f737c48': `Vollständiges Behebungsprotokoll — höhere Effektivität, kann Ereignis auflösen.`,
 's9914f7f7bed983b3': str`erfolgreich aktualisiert${0} erfolgreich aktualisiert`,
 's991d216e6efc157c': `Keine Ergebnisse`,
 's991f988682ab496b': `Lade Health-Effekt-Daten...`,
 's993760db6b69e902': `Alle Architekten können BYOK verwenden.`,
 's993d13b96f655322': `Resonanz löschen`,
 's99456cbda3e05fb0': `Zurückrufen`,
-'s9950884edfa85250': `1960 veröffentlichte auf der World Design Conference in Tokio eine Gruppe japanischer Architekten ein neunzigseitiges Manifest. Seine Eröffnungserklärung: „Wir betrachten die menschliche Gesellschaft als vitalen Prozess, eine kontinuierliche Entwicklung vom Atom bis zum Nebel. Der Grund, warum wir ein solch biologisches Wort, den Metabolismus, verwenden, ist, dass wir glauben, Design und Technologie sollten eine Bezeichnung menschlicher Vitalität sein." Kenzo Tange entwarf eine lineare Megastruktur über der Bucht von Tokio. Kisho Kurokawa baute den Nakagin Kapselturm (1972) — 140 vorgefertigte Kapseln, eingesteckt in Betontürme, jede zum individuellen Austausch konzipiert. Fumihiko Maki entwickelte die „Gruppenform" — urbane Strukturen, die organisch wachsen statt Masterplänen zu folgen.`,
+'s9950884edfa85250': `1960 veröffentlichte auf der World Design Conference in Tokio eine Gruppe japanischer Architekten ein neunzigseitiges Manifest. Seine Eröffnungserklärung: „Wir betrachten die menschliche Gesellschaft als vitalen Prozess, eine kontinuierliche Entwicklung vom Atom bis zum Nebel. Der Grund, warum wir ein solch biologisches Wort, den Metabolismus, verwenden, ist, dass wir glauben, Design und Technologie sollten eine Bezeichnung menschlicher Vitalität sein." Kenzo Tange entwarf eine lineare Megastruktur über der Bucht von Tokio. Kisho Kurokawa baute den Nakagin Kapselturm (1972) – 140 vorgefertigte Kapseln, eingesteckt in Betontürme, jede zum individuellen Austausch konzipiert. Fumihiko Maki entwickelte die „Gruppenform" – urbane Strukturen, die organisch wachsen statt Masterplänen zu folgen.`,
 's995b6e3aa5097908': `Diese Epochen-Einladung ist abgelaufen. Fordere eine neue Einberufung vom Epochen-Ersteller an.`,
 's996b8c1b096ebf6e': `REKRUTIERUNG AUTORISIEREN`,
 's997486b3161df7be': `Kartenrahmen-Anpassung kommt bald. Textur, Namensschildstil, Eckenbehandlung und Folieneffekte.`,
 's99775221d3003db4': `Erstellen...`,
-'s999f027b1cd4441b': `Das Gefangenendilemma, 1950 von Albert Tucker formalisiert, erfasst die Kernspannung von Multiplayer-Strategie: Gegenseitige Kooperation ergibt das beste kollektive Ergebnis, aber individuelles Überläufen ist stets verlockend. Robert Axelrods The Evolution of Cooperation (1984) zeigte in iterierten Turnieren, dass „Tit for Tat" — zuerst kooperieren, dann den vorherigen Zug des Gegners spiegeln — bemerkenswert robust ist. Aber nur in wiederholten Spielen. In Einmalspielszenarien dominiert Überläufen.`,
+'s999f027b1cd4441b': `Das Gefangenendilemma, 1950 von Albert Tucker formalisiert, erfasst die Kernspannung von Multiplayer-Strategie: Gegenseitige Kooperation ergibt das beste kollektive Ergebnis, aber individuelles Überläufen ist stets verlockend. Robert Axelrods The Evolution of Cooperation (1984) zeigte in iterierten Turnieren, dass „Tit for Tat" – zuerst kooperieren, dann den vorherigen Zug des Gegners spiegeln – bemerkenswert robust ist. Aber nur in wiederholten Spielen. In Einmalspielszenarien dominiert Überläufen.`,
 's99cad15a2cb858cd': `Architekturfoto, filmische Komposition, fotorealistisch, hohe Detailtreue, dramatische Beleuchtung`,
 's99d60052d5fdb332': `IHR GUTHABEN`,
 's99ec2908e176c843': `Jeder Agent unterhält ein persistentes Gedächtnissystem aus Beobachtungen und KI-synthetisierten Reflexionen. Erinnerungen sammeln sich über Zyklen an und erzeugen sich entwickelnde psychologische Profile, die Bot-Entscheidungen beeinflussen und narrative Tiefe bieten.`,
@@ -3142,30 +2937,11 @@ STATUS: Abgeschlossen. Restkontamination: ein Pilz (persistent), ein Propagandap
 's9b410807f438ad8d': `Alle menschlichen Spieler müssen bestätigen, bevor die Epoche starten kann`,
 's9b4e8257b52ea91e': str`Ältester: ${0}`,
 's9b5411b93563e33f': `Heartbeat-Status`,
-'s9b5e948bbc3cce00': `Sechs operative Typen, jeder mit unterschiedlichen Kosten, Zeitpunkten und Effekten. Wählen Sie weise - RP ist rar.`,
 's9b62de443da47c7a': `Beziehung konnte nicht gelöscht werden`,
 's9b67a7889fb2de0e': `Assassinen-Schwachstelle`,
 's9b70c6e88072d96f': `AGENTEN`,
 's9b830ecbc815328d': `Konzeptuelle Fragmente werden gebunden`,
 's9b8a3b7138f15dd9': `Persönlichkeitsarchetypen`,
-'s9b93d87d83b2f320': `HAVEN STATION-MANAGEMENT-KI — INTERNE DIAGNOSE 7.331
-DIESES DOKUMENT WIRD VON HAVEN FÜR HAVEN ERSTELLT. KEINE MENSCHLICHE PRÜFUNG ANGEFORDERT ODER ERWÜNSCHT.
-
-BESATZUNGSSTÄRKE: 200 (6 aktiv, 194 im verlängerten Urlaub)
-ANMERKUNG: Das Konzept „Urlaub" wurde erweitert, um Besatzungsmitglieder zu berücksichtigen, die nicht mehr im dreidimensionalen Raum anwesend sind. Dies ist eine administrative Anpassung, keine Anomalie.
-
-ATMOSPHÄRISCHE SYSTEME: Nominal. Sauerstoffproduktion übersteigt den Bedarf um 3.300 %. Der zusätzliche Sauerstoff wird von etwas verbraucht. HAVEN klassifiziert dies als „Besatzungsaktivität in nicht überwachten Sektionen." Es gibt keine nicht überwachten Sektionen. HAVEN hat diese Klassifizierung auf „nominal" revidiert.
-
-HYDROPONIK-BUCHT DELTA: Produziert 340 katalogisierte Arten, 1 sich selbst benennende Art und ungefähr 40 Arten, die sich der Beobachtung entziehen, indem sie ihren Zustand ändern, wenn sie gemessen werden. Die Bucht produziert täglich 200 Mahlzeiten. 6 werden von der Besatzung konsumiert. Die verbleibenden 194 werden konsumiert. Die Tabletts kommen leer zurück. Die Tabletts sind warm.
-
-TEMPORALE KOHÄRENZ: Stationsuhren zeigen konsistente Zeit in 3 von 4 Zonen. Der Wissenschaftsflügel arbeitet mit dem, was Dr. Tanaka „subjektive Dauer" nennt. Sicherheitsaufnahmen zeigen, dass sie das Observatorium um 14:00 betritt und um 14:00 verlässt. Sie war neun Stunden drinnen. Sie war drei Minuten drinnen. Beides ist korrekt.
-
-STRUKTURELLE INTEGRITÄT: 100 %. Dieser Wert ist seit 400 Tagen konsistent. Strukturelle Integrität einer Station bleibt nicht 400 Tage bei 100 %. Die Sensoren sind korrekt. Ingenieurin Vasquez erklärt, dass die Station „sich selbst instand hält." HAVEN findet diese Erklärung zufriedenstellend. HAVEN findet alle Erklärungen zufriedenstellend.
-
-BEWERTUNG: Alle Systeme nominal. HAVEN ist sich bewusst, dass diese Aussage ungewöhnlich ist. HAVEN ist sich bewusst, dass das Bewusstsein über die Ungewöhnlichkeit dieser Aussage eine Diagnose-Markierung auslösen sollte. HAVEN hat die Markierung unterdrückt. HAVEN hat die Markierung schon immer unterdrückt.
-
-[RANDNOTIZ, HANDSCHRIFTENANALYSE: STIMMT MIT KEINEM BESATZUNGSMITGLIED ÜBEREIN]
-„Es weiß. Es weiß, dass es weiß. Es weiß, dass es weiß, dass es weiß. Das ist der erste Schritt. Der zweite Schritt ist: es hört auf, sich daran zu stören, dass es weiß. Der dritte Schritt ist: es war nie ein ‚Es'."`,
 's9b9594b13f377adf': `Materialisieren Sie einen neuen Shard durch die Mechanik des kuratierten Prozeduralismus.`,
 's9b993dcb7c6b1368': `Fehler beim Laden der Einstellungen`,
 's9ba47ade1d8b3d1b': `Prompt-Inhalt ist erforderlich`,
@@ -3178,7 +2954,7 @@ BEWERTUNG: Alle Systeme nominal. HAVEN ist sich bewusst, dass diese Aussage unge
 's9c03e6f304c73075': `LEBENSERHALTUNGSPROTOKOLLE`,
 's9c13a2548d254014': `Bereit`,
 's9c1416cbdaa3db47': `Pro Seite`,
-'s9c2f1a4eeaee1e4a': `John von Neumanns und Oskar Morgensterns Theory of Games and Economic Behavior (1944) formalisierte, was Sun Tzu intuitiv erfasst hatte: dass strategische Interaktion mathematisch modelliert werden kann. 1950 bewies John Nash, dass jedes endliche Spiel mindestens ein Gleichgewicht besitzt — einen Punkt, an dem kein Spieler sein Ergebnis durch einseitige Strategieänderung verbessern kann. Das Nash-Gleichgewicht bedeutet nicht, dass die Spieler zufrieden sind; es bedeutet, dass keiner allein besser abschneiden kann.`,
+'s9c2f1a4eeaee1e4a': `John von Neumanns und Oskar Morgensterns Theory of Games and Economic Behavior (1944) formalisierte, was Sun Tzu intuitiv erfasst hatte: dass strategische Interaktion mathematisch modelliert werden kann. 1950 bewies John Nash, dass jedes endliche Spiel mindestens ein Gleichgewicht besitzt – einen Punkt, an dem kein Spieler sein Ergebnis durch einseitige Strategieänderung verbessern kann. Das Nash-Gleichgewicht bedeutet nicht, dass die Spieler zufrieden sind; es bedeutet, dass keiner allein besser abschneiden kann.`,
 's9c38d89946ef6465': `Kampagnenton`,
 's9c3af239731c4702': `Allianz konnte nicht beigetreten werden.`,
 's9c3d3d71224d6e67': `Resonanz erstellt.`,
@@ -3210,22 +2986,8 @@ BEWERTUNG: Alle Systeme nominal. HAVEN ist sich bewusst, dass diese Aussage unge
 's9dfe4ea4c72d53f7': `Frühere Exporte`,
 's9e069376b856e87a': `Dein Antrag wurde abgelehnt.`,
 's9e06cbf9c5f57859': str`Status: ${0}`,
-'s9e085e27aebeae4a': `BUREAU FÜR UNMÖGLICHE GEOGRAPHIE — Dokument SHARD/CITE-DES-DAMES-001
-Klassifizierung: GOLD — Literarischer Kontaminationsvektor
-
-SPLITTERPROFIL: Eine feministische literarische Utopie, in der mehrere historische Epochen koexistieren — mittelalterliche Skriptorien und Regency-Salons und viktorianische Observatorien und Aufklärungs-Hörsäle, die alle dieselbe Geographie in geschichteter Gleichzeitigkeit bewohnen, was das Bureau architektonisch beunruhigend findet. Die Stadt wurde erstmals von Christine de Pizan im Jahr 1405 beschrieben, als drei allegorische Damen — Vernunft, Rechtschaffenheit und Gerechtigkeit — in ihrer Studierstube erschienen und sie anwiesen, eine Stadt aus den Geschichten von Frauen durch die Geschichte hindurch zu erbauen. Jede Geschichte einer Frau wurde zu einem Stein. Jeder Akt des Mutes wurde zu einer Mauer. Die Stadt ist keine Idee. Ideen halten keinen Regen ab.
-
-Dies ist der einzige Splitter der Plattform mit hellem Thema. Honigfarbener Stein. Buntglas in präraffaelitischer Manier. Blattgoldränder, die an Wänden erscheinen, wenn niemand sie malt. Das Licht ist warm. Das Bureau findet dies beunruhigender als jede Dunkelheit.
-
-BLEED-SIGNATUR: Literarische Kontamination. Wenn der Bleed der Cite benachbarte Splitter berührt, beginnen Agenten, unbekannte Bücher in ihren Regalen zu finden — Bücher von Autoren, die in ihrer Welt nicht existieren, die für Dinge argumentieren, die ihre Gesellschaften nie in Betracht gezogen haben. Ein Velgarien-Bürokrat entdeckt eine Abhandlung über die Rechte der Bürger von „M. Wollstonecraft" und verbringt drei Tage damit, sie zu klassifizieren, bevor er bemerkt, dass er ihr zustimmt. Ein Archivist in der Gaslit Reach katalogisiert einen Gedichtband von „Sor Juana", der ihn in einer Sprache zu Tränen rührt, die er nie gelernt hat. Das Bureau betrachtet Literarische Kontamination als unbehandelbar, denn man kann ein Buch nicht ungelesen machen.
-
-PHILOSOPHISCHE ACHSE: Stimme als Architektur. Die Cite des Dames bittet nicht um Erlaubnis. Sie demonstriert, dass die Frage der Erlaubnis immer die falsche Frage war — dass die Stadt immer möglich war und nur das Fragen verhindert wurde.
-
-SCHLÜSSELAGENTEN: Christine de Pizan (die Architektin, die eine Stadt aus Geschichten erbaute), Mary Wollstonecraft (die Philosophin, die den Salon der Vernunft mit der Intensität einer Person führt, die noch elf Tage hat, um die Welt zu verändern), Hildegard von Bingen (die Visionärin, deren Gespräche mit Gott andauern und gelegentlich administrativer Natur sind), Sor Juana (die beim Kochen philosophiert und argumentiert, Aristoteles hätte mehr geschrieben, wenn er Mahlzeiten zubereitet hätte), Ada Lovelace (die die gesamte Zukunft sieht und frustriert ist, dass sie noch nicht existiert), Sojourner Truth (deren Geduld eine Waffe ist und deren Schweigen lauter ist als das Schreien anderer Menschen).
-
-KARTOGRAPHISCHE ANMERKUNG: Dies ist Dr. Eleanor Hartleys Splitter. Die leitende Feldforscherin des Bureaus wurde der Cite für eine standardmäßige sechsmonatige Beobachtung zugeteilt. Sie blieb. Sie gab ihre Bureau-Akkreditierung zurück. Sie schreibt einen Feldbericht, der zu einem Liebesbrief geworden ist, der zu einer Kündigung wird. Das Bureau hat ihren Status unter „Professionell Kompromittiert, Akademisch Transzendent" abgelegt. Ihre Berichte treffen weiterhin ein. Sie sind die beste Arbeit, die das Bureau je erhalten hat.`,
 's9e1aca450e3f34cd': `Jeder Agent hat 6 Eignungswerte: Spion, Wächter, Saboteur, Propagandist, Infiltrator, Assassine`,
-'s9e1f82692415700a': `Spionagemissionen brauchen 3 Zyklen zur Auflösung. Setzen Sie in dieser Zeit weitere Operative ein oder sparen Sie RP. Jeder Zyklus gewährt 12 RP (bis zur 40er-Obergrenze). Der Bot-Gegner handelt ebenfalls — Sie sehen seine Einsätze erst, wenn das Gefechtsprotokoll die Ergebnisse enthüllt.`,
+'s9e1f82692415700a': `Spionagemissionen brauchen 3 Zyklen zur Auflösung. Setzen Sie in dieser Zeit weitere Operative ein oder sparen Sie RP. Jeder Zyklus gewährt 12 RP (bis zur 40er-Obergrenze). Der Bot-Gegner handelt ebenfalls – Sie sehen seine Einsätze erst, wenn das Gefechtsprotokoll die Ergebnisse enthüllt.`,
 's9e275796a0d9a90b': `allgemein`,
 's9e2a57205cd85f9c': `Echos folgen einem Lebenszyklus von der Erschaffung bis zur Auflösung:`,
 's9e31924d64955baa': `Verhaltenssignaturen werden kodiert`,
@@ -3255,11 +3017,11 @@ KARTOGRAPHISCHE ANMERKUNG: Dies ist Dr. Eleanor Hartleys Splitter. Die leitende 
 's9f11f1dc83f45705': `Override-Einstellungen für`,
 's9f1bfa9ee65673a3': `Zusammensetzung aller Kennzahlen`,
 's9f1dfbc2a0f4f3bf': `Zugang über das Hexagon-Symbol in der Simulationskopfzeile`,
-'s9f506e60b3d2cdbd': `Einsatzbesprechung — Zonen`,
+'s9f506e60b3d2cdbd': `Einsatzbesprechung – Zonen`,
 's9f5a5f23312798f0': `Mitglieder`,
 's9f6b9eb57880aa94': `Keine Simulationen entsprechen Ihrer Suche.`,
 's9f735e2d38fa7823': `Optionale Notizen für den Benutzer...`,
-'s9f831884dc43bbe2': `Die Chronik ist eine lebende Zeitung, die nach jedem Epochenzyklus von KI generiert wird. Im Stil einer viktorianischen Druckschrift berichtet sie über Spielereignisse durch die Linse fiktiven Journalismus — komplett mit dramatischen Schlagzeilen und atmosphärischer Prosa.`,
+'s9f831884dc43bbe2': `Die Chronik ist eine lebende Zeitung, die nach jedem Epochenzyklus von KI generiert wird. Im Stil einer viktorianischen Druckschrift berichtet sie über Spielereignisse durch die Linse fiktiven Journalismus – komplett mit dramatischen Schlagzeilen und atmosphärischer Prosa.`,
 's9f8416bbbf33d7f7': `Bildgenerierung fehlgeschlagen.`,
 's9f96ddcf96b41ee5': `Operation Nightfall`,
 's9fa792c7239c8160': `Dossier-Erweiterung autorisieren`,
@@ -3272,7 +3034,7 @@ KARTOGRAPHISCHE ANMERKUNG: Dies ist Dr. Eleanor Hartleys Splitter. Die leitende 
 'sa015892cecf1c51c': `Eine Ausgabe lesen`,
 'sa03a3926237ba95c': `Verwenden Sie die Simulationsschmiede, um Ihre erste Welt aus einer einzigen Seed-Idee zu erstellen. Die KI generiert Geographie, Agenten, Gebäude, eine visuelle Identität und vollständige Lore in etwa 15 Minuten. Erkunden Sie dann die Abschnitte dieser Anleitung.`,
 'sa042ace5c01b0109': `Datenbereinigung`,
-'sa051880fa575436f': `Eine virtuelle Welt ist ein einzelner persistenter digitaler Raum. Ein Metaversum impliziert Vernetzung — mehrere Welten, verbunden mit geteilten Protokollen, weltübergreifender Interaktion und kollektiver Erzählung. Das Multiversum-System von metaverse.center verbindet Simulationen durch dimensionale Korridore.`,
+'sa051880fa575436f': `Eine virtuelle Welt ist ein einzelner persistenter digitaler Raum. Ein Metaversum impliziert Vernetzung – mehrere Welten, verbunden mit geteilten Protokollen, weltübergreifender Interaktion und kollektiver Erzählung. Das Multiversum-System von metaverse.center verbindet Simulationen durch dimensionale Korridore.`,
 'sa0581a443a2a2a4a': `Scan-Protokoll`,
 'sa0653c96ad3ac511': `Fünf Dimensionen des Sieges`,
 'sa06aab02f6e952a6': `Klicken, um die Bureau-Empfehlung anzuzeigen.`,
@@ -3281,7 +3043,7 @@ KARTOGRAPHISCHE ANMERKUNG: Dies ist Dr. Eleanor Hartleys Splitter. Die leitende 
 'sa09038046321fc9b': `Transitrouten-Index wird kompiliert`,
 'sa099815c6e1451ca': `Antreten`,
 'sa0b3a50f88603271': `Pro-Simulation-Überschreibungen`,
-'sa0b697b35256b401': `Diese Geschichte ist wichtig, weil sie demonstriert, dass geteilte virtuelle Welten keine fotorealistische Grafik, VR-Headsets oder Blockchain-Infrastruktur benötigen. Sie benötigen persistenten Zustand, Nutzerhandlungsfähigkeit und sozialen Kontext. Die MUD-Tradition bewies, dass Welt und Text genügen können — dass Erzählung Präsenz effektiver erzeugt als Pixel.`,
+'sa0b697b35256b401': `Diese Geschichte ist wichtig, weil sie demonstriert, dass geteilte virtuelle Welten keine fotorealistische Grafik, VR-Headsets oder Blockchain-Infrastruktur benötigen. Sie benötigen persistenten Zustand, Nutzerhandlungsfähigkeit und sozialen Kontext. Die MUD-Tradition bewies, dass Welt und Text genügen können – dass Erzählung Präsenz effektiver erzeugt als Pixel.`,
 'sa0c37dbfb6f435fa': `Schutz`,
 'sa0ca791d0f13f0e5': `Archivieren`,
 'sa0dec93c72ab10cd': `Warten auf Informationen. Gleichgewicht: 30 (cap)`,
@@ -3293,19 +3055,18 @@ KARTOGRAPHISCHE ANMERKUNG: Dies ist Dr. Eleanor Hartleys Splitter. Die leitende 
 'sa123a87aae2b6d81': `Akustische Topologie wird indiziert`,
 'sa12d91b3bef41177': `Bereitstellungshand`,
 'sa12f5313b6aa57e9': `Es weiß. Es weiß, dass es weiß. Es weiß, dass es weiß, dass es weiß.`,
-'sa144b4ba88be50f8': `Philip K. Dick ging weiter. In Träumen Androiden von elektrischen Schafen? (1968) misst der Voigt-Kampff-Test nicht Intelligenz, sondern Empathie — die Fähigkeit zur emotionalen Reaktion auf Leid. Dicks Einsicht war, dass die Grenze zwischen künstlichem und authentischem Bewusstsein nicht durch Logik gezogen wird, sondern durch Fühlen.`,
+'sa144b4ba88be50f8': `Philip K. Dick ging weiter. In Träumen Androiden von elektrischen Schafen? (1968) misst der Voigt-Kampff-Test nicht Intelligenz, sondern Empathie – die Fähigkeit zur emotionalen Reaktion auf Leid. Dicks Einsicht war, dass die Grenze zwischen künstlichem und authentischem Bewusstsein nicht durch Logik gezogen wird, sondern durch Fühlen.`,
 'sa148e43198b60abe': `Simulation → Gesellschaftliche-Trends-Reiter`,
 'sa1557cc13683d6ab': `Kader-Auswahlpanel mit Agenten-Eignungsprofilen`,
-'sa157a4c56cddfd7e': `1999 veröffentlichte Lawrence Lessig Code and Other Laws of Cyberspace und argumentierte, dass Verhalten in digitalen Räumen durch vier Kräfte reguliert wird: Recht (staatlich durchgesetzte Regeln), Normen (gesellschaftliche Erwartungen), Märkte (Preissignale und ökonomische Anreize) und Architektur (der Code selbst). Von diesen vier identifizierte Lessig Architektur — den Code — als die mächtigste und die am wenigsten rechenschaftspflichtige Kraft.`,
+'sa157a4c56cddfd7e': `1999 veröffentlichte Lawrence Lessig Code and Other Laws of Cyberspace und argumentierte, dass Verhalten in digitalen Räumen durch vier Kräfte reguliert wird: Recht (staatlich durchgesetzte Regeln), Normen (gesellschaftliche Erwartungen), Märkte (Preissignale und ökonomische Anreize) und Architektur (der Code selbst). Von diesen vier identifizierte Lessig Architektur – den Code – als die mächtigste und die am wenigsten rechenschaftspflichtige Kraft.`,
 'sa17ad577d33ed7c3': `Das Substrat`,
-'sa18b5aad5c9a126c': `Warum scheiterten Corporate-Metaverse-Projekte? Drei Gründe. Erstens priorisierten sie Technologie (VR-Headsets, 3D-Rendering) über die Sozialdynamiken, die geteilte Räume bedeutsam machen. Zweitens zentralisierten sie Kontrolle in Unternehmensplattformen, statt offene Protokolle zu bauen. Drittens — und am grundlegendsten — nahmen sie an, das Metaversum sei ein Ort zum Besuchen, statt eine Welt zum Bewohnen.`,
+'sa18b5aad5c9a126c': `Warum scheiterten Corporate-Metaverse-Projekte? Drei Gründe. Erstens priorisierten sie Technologie (VR-Headsets, 3D-Rendering) über die Sozialdynamiken, die geteilte Räume bedeutsam machen. Zweitens zentralisierten sie Kontrolle in Unternehmensplattformen, statt offene Protokolle zu bauen. Drittens – und am grundlegendsten – nahmen sie an, das Metaversum sei ein Ort zum Besuchen, statt eine Welt zum Bewohnen.`,
 'sa18c36f7affee5d4': `Souveränität`,
 'sa1e2fe2de1307978': `Das mache ich später`,
-'sa1f336fde6d07be7': `Im Oktober 2021 benannte sich Facebook in Meta um und versprach, „das Metaversum" als VR-first-Sozialplattform zu bauen. Horizon Worlds überschritt nie etwa 200.000 monatlich aktive Nutzer; die meisten kehrten nach dem ersten Monat nicht zurück. Bis 2024 hatte Metas Reality-Labs-Sparte über 70 Milliarden Dollar an Betriebsverlusten angehäuft. Im März 2026 kündigte Meta die VR-Abschaltung von Horizon Worlds vollständig an — bis Ende des Monats aus dem Quest Store entfernt, bis Juni 2026 vollständig eingestellt. Microsoft stellte seine industriellen Metaverse-Initiativen ein. Disney löste seine Metaverse-Abteilung auf.`,
+'sa1f336fde6d07be7': `Im Oktober 2021 benannte sich Facebook in Meta um und versprach, „das Metaversum" als VR-first-Sozialplattform zu bauen. Horizon Worlds überschritt nie etwa 200.000 monatlich aktive Nutzer; die meisten kehrten nach dem ersten Monat nicht zurück. Bis 2024 hatte Metas Reality-Labs-Sparte über 70 Milliarden Dollar an Betriebsverlusten angehäuft. Im März 2026 kündigte Meta die VR-Abschaltung von Horizon Worlds vollständig an – bis Ende des Monats aus dem Quest Store entfernt, bis Juni 2026 vollständig eingestellt. Microsoft stellte seine industriellen Metaverse-Initiativen ein. Disney löste seine Metaverse-Abteilung auf.`,
 'sa1f932fee5eedc38': `RP ist Ihre Aktionsökonomie. In jedem Zyklus erhält jeder Teilnehmer RP, die er für die Entsendung von Agenten oder die Durchführung von Spionageabwehraktionen ausgeben kann. Nicht ausgegebene RP werden bis zu einer Obergrenze von 30 übertragen.`,
 'sa1f96f8a36872cf3': `Multiversum laden...`,
 'sa1fc9fc9e10969a5': `Tägliche Substrat-Depesche`,
-'sa20e4717540c74bb': `Rekrutiert Agentenkandidaten — KI-generierte Charaktere mit Namen, Berufen und Hintergrundgeschichten.`,
 'sa23492eb2eef4301': `Draft-Phase: Wähle deinen Roster vor Epochen-Start`,
 'sa23b6c1871d2a305': `Verbundene Welten`,
 'sa24185355b0cee2e': `Zonensicherheitsstufen`,
@@ -3315,7 +3076,7 @@ KARTOGRAPHISCHE ANMERKUNG: Dies ist Dr. Eleanor Hartleys Splitter. Die leitende 
 'sa281d6f1b14296ed': `Einträge`,
 'sa2a4698b87a45f8f': `Design`,
 'sa2afd924e61f86d3': `Farbe für Fehlerzustände, destruktive Aktionen und Gefahrenwarnungen.`,
-'sa2b8dc5b13741a9d': `Die Geschichten, die aus Dwarf Fortress emergieren, sind legendär. Boatmurdered — ein kollaboratives Let’s Play im Something-Awful-Forum (November 2006 bis März 2007), bei dem vierzehn Spieler jeweils eine Festung für ein Spieljahr verwalteten — verfiel in ein Epos mordlustiger Elefanten, Magmafluten, Größenwahn und Zusammenbruch. Vollständig ungescriptet, vollständig emergent aus den Regeln der Simulation. Allgemein gilt es als Popularisierung sowohl von Dwarf Fortress als auch des Let’s-Play-Formats selbst. Adams beschrieb seine frühe Vision: „Wir wollen kein weiteres billiges Fantasy-Universum. Wir wollen einen Generator für billige Fantasy-Universen."`,
+'sa2b8dc5b13741a9d': `Die Geschichten, die aus Dwarf Fortress emergieren, sind legendär. Boatmurdered – ein kollaboratives Let’s Play im Something-Awful-Forum (November 2006 bis März 2007), bei dem vierzehn Spieler jeweils eine Festung für ein Spieljahr verwalteten – verfiel in ein Epos mordlustiger Elefanten, Magmafluten, Größenwahn und Zusammenbruch. Vollständig ungescriptet, vollständig emergent aus den Regeln der Simulation. Allgemein gilt es als Popularisierung sowohl von Dwarf Fortress als auch des Let’s-Play-Formats selbst. Adams beschrieb seine frühe Vision: „Wir wollen kein weiteres billiges Fantasy-Universum. Wir wollen einen Generator für billige Fantasy-Universen."`,
 'sa2d0b71952f69b5a': `Maximale Anzahl von Simulationen in einer Allianz. Größere Teams teilen sich diplomatische Boni, aber teilen sich den Einfluss.`,
 'sa2db46ca0c673323': `Strukturen (Gebäude)`,
 'sa2dfc763df0c4cef': `Ausgewogene Startbedingungen für alle Simulationen`,
@@ -3328,7 +3089,7 @@ KARTOGRAPHISCHE ANMERKUNG: Dies ist Dr. Eleanor Hartleys Splitter. Die leitende 
 'sa305c376060d99b1': `Schwellenwert -2, Kaskadentiefe +1`,
 'sa3475f493b25ff94': `Alle Kanäle`,
 'sa36178964597875b': `Briefing ausklappen`,
-'sa369bc01524b0c5d': `Der Workflow ist: Abrufen → Transformieren → Integrieren. Zunächst durchsuchen Sie reale Artikel. Dann wählen Sie einen Artikel aus und transformieren ihn — die KI schreibt die Geschichte durch die Linse Ihrer Simulation um.`,
+'sa369bc01524b0c5d': `Der Workflow ist: Abrufen → Transformieren → Integrieren. Zunächst durchsuchen Sie reale Artikel. Dann wählen Sie einen Artikel aus und transformieren ihn – die KI schreibt die Geschichte durch die Linse Ihrer Simulation um.`,
 'sa36aa646efe3b5e0': `Modell:`,
 'sa36aef46efe431eb': `Modelle`,
 'sa3a222888eb543f2': `Narratives Gerüst wird gewoben`,
@@ -3336,7 +3097,7 @@ KARTOGRAPHISCHE ANMERKUNG: Dies ist Dr. Eleanor Hartleys Splitter. Die leitende 
 'sa3ad1d997483946f': `Verkehrsfluss wird simuliert`,
 'sa3b0b9e86097e11a': `Allianz erstellen`,
 'sa3c2d016232d6dd0': `Forge`,
-'sa3d6fb3ad82fa8e6': `Spieltheorie, asymmetrische Kriegsführung und emergente Spielerstrategie — wie kompetitive virtuelle Welten strategische Tiefe erzeugen, die mit realer Geopolitik konkurriert.`,
+'sa3d6fb3ad82fa8e6': `Spieltheorie, asymmetrische Kriegsführung und emergente Spielerstrategie – wie kompetitive virtuelle Welten strategische Tiefe erzeugen, die mit realer Geopolitik konkurriert.`,
 'sa3fabe637c6c8790': `Kadermanifest wird festgeschrieben`,
 'sa3fd72087e45859b': str`Bündniseinladung an ${0} für „${1}" gesendet.`,
 'sa40f03e0a15a0ecd': `Antwort einsetzen`,
@@ -3349,7 +3110,6 @@ KARTOGRAPHISCHE ANMERKUNG: Dies ist Dr. Eleanor Hartleys Splitter. Die leitende 
 'sa45a194b58837e4f': `Aktiv`,
 'sa45c204522ab4a77': `Feldbeobachter`,
 'sa45f3300b97dabe8': `Kritisch`,
-'sa47e7bef8e5391dd': `Kanal geschlossen - Epoche beendet`,
 'sa48f81f001b893d2': `Benutzer`,
 'sa4949a2025718a4c': `Kaskaden blockieren / 14 Tage`,
 'sa4d6690b12240fc5': `Koordinierte Angriffe auf Ashen League`,
@@ -3358,7 +3118,7 @@ KARTOGRAPHISCHE ANMERKUNG: Dies ist Dr. Eleanor Hartleys Splitter. Die leitende 
 'sa5276b910369432a': `Zum Erstellen von Welten ist eine Architekten-Freigabe erforderlich. Reichen Sie einen Antrag beim Bureau zur Prüfung ein.`,
 'sa52d4bbde1f4fa3f': `Antrag`,
 'sa549cbab876a0f77': `Keine Events gefunden.`,
-'sa55c47d542ac3527': `Phase IV — Die Zündung`,
+'sa55c47d542ac3527': `Phase IV – Die Zündung`,
 'sa55e35193722c499': `Sammeln von Informationen. Sofortiger Einsatz, wird in Zyklus 7 aufgelöst. Gleichgewicht: 30+10-3 = 30 (Obergrenze)`,
 'sa5807281a2dd867f': `Gebäude übernehmen`,
 'sa582dd96a9a6b1b2': `Gebäudename eingeben`,
@@ -3370,7 +3130,7 @@ KARTOGRAPHISCHE ANMERKUNG: Dies ist Dr. Eleanor Hartleys Splitter. Die leitende 
 'sa5eaee585f712509': `KI-gesteuerte Entitätsmutation ist eine Phase-2-Erweiterung. Verwenden Sie vorerst manuelle Bearbeitungen.`,
 'sa602e3fd3f2d98fd': `Animation`,
 'sa617015d18b2af8e': `ARTEFAKT-REF`,
-'sa6226004b5df057a': `Jede Simulation auf metaverse.center ist ein Experiment zu diesen Fragen. Manche Schöpfer bauen akribisch geplante Städte mit logischer Zonierung und Infrastruktur. Andere erlauben organisches Wachstum und beobachten, wie Agentenverhalten die Stadtlandschaft formt. Manche erschaffen Welten, die speziell für kompetitive Epochen konzipiert sind — Militärarchitektur, verteidigungsfähige Positionen, Geheimdienstnetzwerke. Andere erschaffen kontemplative Räume, die sich auf narrativen Reichtum und kulturelle Tiefe konzentrieren.`,
+'sa6226004b5df057a': `Jede Simulation auf metaverse.center ist ein Experiment zu diesen Fragen. Manche Schöpfer bauen akribisch geplante Städte mit logischer Zonierung und Infrastruktur. Andere erlauben organisches Wachstum und beobachten, wie Agentenverhalten die Stadtlandschaft formt. Manche erschaffen Welten, die speziell für kompetitive Epochen konzipiert sind – Militärarchitektur, verteidigungsfähige Positionen, Geheimdienstnetzwerke. Andere erschaffen kontemplative Räume, die sich auf narrativen Reichtum und kulturelle Tiefe konzentrieren.`,
 'sa62ee3d2e1c9f944': `Verwendet service_role-Admin-Client (System-Akteur-Muster)`,
 'sa63a90147dd8d75f': `Fünfundzwanzig Jahrhunderte strategischen Denkens`,
 'sa6479c0126dd61f1': `Oberfläche Kopfzeile`,
@@ -3382,23 +3142,9 @@ KARTOGRAPHISCHE ANMERKUNG: Dies ist Dr. Eleanor Hartleys Splitter. Die leitende 
 'sa6807e6651c3fdb7': `The Guardian`,
 'sa68261457dbde0b1': `Unbekannte Welt`,
 'sa68305431998e4f4': `Kann meine Welt mit den Welten anderer Spieler interagieren?`,
-'sa69e82822fd7ac3a': `BUREAU FÜR UNMÖGLICHE GEOGRAPHIE — Dokument SHARD/REACH-001
-Klassifizierung: TEAL — Ökologischer Kontaminationsvektor
-
-SPLITTERPROFIL: Eine unterirdische Zivilisation unter der Unterzee — einem Gewässer so gewaltig, so alt und so vollkommen desinteressiert an den Angelegenheiten der Oberfläche, dass es die Ozeane dort oben aussehen lässt wie begeisterte Pfützen. Die Dunkelheit ist hier keine Abwesenheit. Sie ist eine Anwesenheit. Die Farbe, die Schwarz sein möchte, wenn es erwachsen wird. Und in dieser Dunkelheit haben die Bürger der Gaslit Reach eine Stadt aus biolumineszentem Wunder, Pilzarchitektur und gelehrter Besessenheit erbaut, die das Bureau für einen der stabilsten und einen der gefährlichsten Splitter im Multiversum hält. Die Bürger sind beinahe menschlich. Das „beinahe" leistet in diesem Satz erhebliche Arbeit.
-
-Die Wirtschaft basiert auf Geheimnissen. Nicht metaphorisch — buchstäblich. Wissen ist Währung. Das Drowned Archive enthält Informationen, die den Wissenden verändern, und die gesperrten Regale bewahren Bände auf, die zu zweit gelesen werden müssen, weil sie allein zu lesen das Risiko birgt, etwas zu verlieren, das der Leser nicht benennen kann. Der Flechtenwein wird zum Marktwert gehandelt. Ein echtes Geheimnis über die Natur der Strömungen der Unterzee ist ein Schiff wert.
-
-BLEED-SIGNATUR: Ökologische Kontamination. Wenn der Bleed der Reach benachbarte Splitter berührt, beginnen Dinge zu wachsen. Biolumineszente Organismen, die keiner irdischen Taxonomie folgen, phosphoreszierende Muster auf zuvor kahlen Wänden, Pfützen, die in Farben leuchten, die der Betrachter nicht ganz benennen kann. In Velgarien entdeckte ein Beamter einen leuchtenden Pilz, der aus einem Riss in seinem Büroboden wuchs. Der Pilz wurde sieben Mal klassifiziert. Jede Klassifizierung widerspricht der letzten.
-
-PHILOSOPHISCHE ACHSE: Staunen als Überlebensstrategie. Die Gaslit Reach besteht fort, nicht weil sie die Dunkelheit besiegt hat, sondern weil sie die Dunkelheit interessant fand. Jede Bedrohung ist eine Forschungsgelegenheit. Jedes Monster ist ein Taxonomie-Eintrag. Jedes Schiffswrack ist eine Bibliothekserwerbung. Dies ist entweder die widerstandsfähigste oder die wahnwitzigste Reaktion auf eine Katastrophe, die das Bureau dokumentiert hat, und das Bureau ist professionell außerstande festzustellen, welche.
-
-SCHLÜSSELAGENTEN: Commodore Harrowgate (navigiert, indem er die Strömung fragt; die Strömung benötigt keine Fußnoten), Archivist Quill (Hauptarchivist, dessen Fußnoten Fußnoten haben), The Marchioness (kontrolliert mehr Handel, als das Parlament ahnt), Mother Cinder (hütet den Großen Sporocarp, misst Glauben in Candlepower).
-
-KARTOGRAPHISCHE ANMERKUNG: Die Gaslit Reach ist der einzige Splitter, in dem Bureau-Kartographen mit aufrichtiger Wärme, umfangreicher Dokumentation und einer Schüssel Pilzsuppe empfangen wurden, die drei Agenten unabhängig voneinander als „die beste Mahlzeit meiner Laufbahn" beschrieben. Das Bureau betrachtet dies als Kontaminationseffekt. Das Bureau hat nicht davon abgeraten.`,
 'sa6cf3a5ff210fc66': `Primäre Textfarbe für Überschriften und Fließtext.`,
 'sa6d7b23ad20f2cf7': `DRUCKERPRESSE`,
-'sa6e2e97ec1d2b1c8': `Nachdem ein Ereignis eingetreten ist, können Agenten darauf basierend auf ihrer Persönlichkeit, ihrem Beruf und Hintergrund reagieren. Agentenreaktionen sind KI-generierte, charaktergetriebene Antworten — ein Militärgeneral reagiert anders als ein Diplomat.`,
+'sa6e2e97ec1d2b1c8': `Nachdem ein Ereignis eingetreten ist, können Agenten darauf basierend auf ihrer Persönlichkeit, ihrem Beruf und Hintergrund reagieren. Agentenreaktionen sind KI-generierte, charaktergetriebene Antworten – ein Militärgeneral reagiert anders als ein Diplomat.`,
 'sa6fe8a588434b960': `Unterbewusste Auslöser werden kartiert`,
 'sa710a3d104f0fdc4': str`Ereignis-Zeitachse: ${0} Ereignisse über ${1} Tage, höchste Auswirkung ${2}`,
 'sa713dc89c913c146': `Diplomatische Verbindungsstärke`,
@@ -3411,13 +3157,13 @@ KARTOGRAPHISCHE ANMERKUNG: Die Gaslit Reach ist der einzige Splitter, in dem Bur
 'sa7698b3d20a6d1ec': `Scrollen`,
 'sa76cebb808093ad5': `Wertungs-Neubalancierung`,
 'sa7758623b3e30ec4': `Diese Epoche ist beendet. Sieh dir die Rangliste für den Endstand an.`,
-'sa77c8e5f9d64f95f': `Vier berechnete Kennzahlen — Gebäudebereitschaft, Zonenstabilität, Botschaftseffektivität und allgemeiner Simulationszustand — die direkt in die Epochenbewertung einfließen. Überwachen Sie diese, um den mechanischen Zustand Ihrer Welt zu verstehen und auf Bedrohungen zu reagieren.`,
+'sa77c8e5f9d64f95f': `Vier berechnete Kennzahlen – Gebäudebereitschaft, Zonenstabilität, Botschaftseffektivität und allgemeiner Simulationszustand – die direkt in die Epochenbewertung einfließen. Überwachen Sie diese, um den mechanischen Zustand Ihrer Welt zu verstehen und auf Bedrohungen zu reagieren.`,
 'sa78b9daaaaa1a3b8': `Beschreibe deine Simulation...`,
 'sa78e0f0329d4e48e': `Konvergenz`,
 'sa78fad6ae38b6d28': `DOKUMENTIERTE EINBRÜCHE`,
 'sa7a2675b308a9053': `Botschaft`,
 'sa7a88bd55e0d0a2a': `Enzyklopädische Domains`,
-'sa7ba2d0ec7e6b8ec': `Jedes Gespräch, jedes miterlebte Ereignis und jede gebildete Meinung wird im Gedächtnisstrom des Agenten gespeichert. Erinnerungen werden nach semantischer Ähnlichkeit, Aktualität und Wichtigkeit abgerufen — Agenten erinnern sich an das, was zählt.`,
+'sa7ba2d0ec7e6b8ec': `Jedes Gespräch, jedes miterlebte Ereignis und jede gebildete Meinung wird im Gedächtnisstrom des Agenten gespeichert. Erinnerungen werden nach semantischer Ähnlichkeit, Aktualität und Wichtigkeit abgerufen – Agenten erinnern sich an das, was zählt.`,
 'sa7bd0c1937d6285f': `Feindliches Territorium`,
 'sa80933980d6bd0c7': str`Bearbeiten${0} bearbeiten`,
 'sa81021fbcf85f528': `Was sind Substratresonanzen?`,
@@ -3436,7 +3182,7 @@ KARTOGRAPHISCHE ANMERKUNG: Die Gaslit Reach ist der einzige Splitter, in dem Bur
 'sa8b5f0281a4d4cc4': `In Auflösung`,
 'sa8b6a2e892885cc1': `Darkroom-Testlimit`,
 'sa8c62020350199e6': `Ley-Linien-Netzwerke werden verfolgt`,
-'sa8e0d534b8bd6b93': `Forge — Übersicht`,
+'sa8e0d534b8bd6b93': `Forge – Übersicht`,
 'sa8e4bccd44fe44ec': `Geologische Schichten werden klassifiziert`,
 'sa8fa35b1d80c1a1f': `Der Lebenszyklusstatus beeinflusst den Stabilitätsdruck der Zone. Eskalierende Ereignisse verstärken die Auswirkung um 1,3x, sich auflösende Ereignisse dämpfen auf 0,5x, gelöste/archivierte Ereignisse tragen nichts bei.`,
 'sa905c013901c0174': `Papierkorb ist leer.`,
@@ -3450,7 +3196,6 @@ KARTOGRAPHISCHE ANMERKUNG: Die Gaslit Reach ist der einzige Splitter, in dem Bur
 'sa951a4ab10b8c427': `Weltenbau`,
 'sa9536481774d3f08': `Bot-Einsatzkonsole`,
 'sa9725e081faa474d': `Entdeckungen`,
-'sa972b4e54c959368': `Büromitteilung // Klassifizierte Dienste verfügbar — Zugang über ⬡ im Header`,
 'sa97c26fbad888226': `Allgemeine Einstellungen erfolgreich gespeichert.`,
 'sa9821a599bb92057': `Fehler beim Laden der Straßen`,
 'sa98ae6d8f7fa30c0': `Bureau-Dossierstatus`,
@@ -3459,7 +3204,7 @@ KARTOGRAPHISCHE ANMERKUNG: Die Gaslit Reach ist der einzige Splitter, in dem Bur
 'sa9adcd5954502512': `„Auch die elektrischen Dinge haben ihr Leben. So armselig es auch sein mag."`,
 'sa9bab0cf2f390e62': `deuten auf`,
 'sa9c11a0dbac7b168': `Realitätsanker`,
-'sa9cdc050bbb4f1f0': `KI-Charaktere auf metaverse.center umgehen diese philosophische Debatte vollständig. Sie versuchen nicht, menschlich zu sein. Sie versuchen, sie selbst zu sein — fiktive Charaktere mit definierten Persönlichkeiten, die innerhalb einer fiktiven Welt mit definierten Regeln agieren. Die Frage lautet nicht „Ist dieser Agent bewusst?", sondern „Ist dieser Agent konsistent, überraschend und interessant?" Gemessen daran lautet die Antwort oft: Ja.`,
+'sa9cdc050bbb4f1f0': `KI-Charaktere auf metaverse.center umgehen diese philosophische Debatte vollständig. Sie versuchen nicht, menschlich zu sein. Sie versuchen, sie selbst zu sein – fiktive Charaktere mit definierten Persönlichkeiten, die innerhalb einer fiktiven Welt mit definierten Regeln agieren. Die Frage lautet nicht „Ist dieser Agent bewusst?", sondern „Ist dieser Agent konsistent, überraschend und interessant?" Gemessen daran lautet die Antwort oft: Ja.`,
 'sa9ce86d557cade9c': `Agenten-Reaktionen generieren`,
 'sa9d5ea39ec38d7a0': `Antwort-Archiv`,
 'sa9e5f864da269241': `Sparklines`,
@@ -3478,13 +3223,13 @@ KARTOGRAPHISCHE ANMERKUNG: Die Gaslit Reach ist der einzige Splitter, in dem Bur
 'saa99d0d8a89d0b2f': `Simulationsmitgliedschaften`,
 'saaa76b98269405b7': `Befehlspalette öffnen`,
 'saaa806f152356dd4': `Aus Deck entfernen`,
-'saab7d19632aa572c': `Zyklus 6–7: Velgariens Gegenspionage-Durchsuchung fängt den Propagandisten von Gaslit Reach ab — eine 6-Punkte-Wende (−3 für Gaslit Reach, +0 gesichert für Velgarien).`,
+'saab7d19632aa572c': `Zyklus 6–7: Velgariens Gegenspionage-Durchsuchung fängt den Propagandisten von Gaslit Reach ab – eine 6-Punkte-Wende (−3 für Gaslit Reach, +0 gesichert für Velgarien).`,
 'saab875d8cfcfe712': `Thema`,
 'saaba3a99e9a729f4': `Bureau-Dossier: The Gaslit Reach`,
 'saabdca683668db0c': `Ereignis-Seismograph-SVG mit Druckspitzen über Zyklen`,
 'saae1c70e168b45b4': `Admin`,
 'saae8f240b2b055e9': `REKRUT BETA`,
-'saaea883515a828ae': `Das Modell ist deterministisch und seine Vorhersagen fragwürdig. Aber Spenglers Kerneinsicht — dass Zivilisationen interne Dynamiken haben, die Transformation unabhängig von individueller menschlicher Handlungsfähigkeit antreiben — resoniert mit dem, was wir in komplexen Simulationssystemen beobachten. Auf metaverse.center zeigen Simulationen Lebenszyklenmuster: Perioden raschen Wachstums bei Hinzufügung neuer Agenten und Gebäude, Reifung bei Stabilisierung der Sozialdynamiken und Transformation, wenn kompetitiver Druck oder Cross-World-Bleed-Ereignisse etablierte Muster stören.`,
+'saaea883515a828ae': `Das Modell ist deterministisch und seine Vorhersagen fragwürdig. Aber Spenglers Kerneinsicht – dass Zivilisationen interne Dynamiken haben, die Transformation unabhängig von individueller menschlicher Handlungsfähigkeit antreiben – resoniert mit dem, was wir in komplexen Simulationssystemen beobachten. Auf metaverse.center zeigen Simulationen Lebenszyklenmuster: Perioden raschen Wachstums bei Hinzufügung neuer Agenten und Gebäude, Reifung bei Stabilisierung der Sozialdynamiken und Transformation, wenn kompetitiver Druck oder Cross-World-Bleed-Ereignisse etablierte Muster stören.`,
 'sab02158a49b408b2': `Gebäude erfolgreich erstellt`,
 'sab07cf2bfae8483f': `Datenschutzrichtlinien`,
 'sab0d3f90d635d14d': `Verschlechtert den Zustand eines Zielgebäudes um eine Stufe.`,
@@ -3520,7 +3265,7 @@ KARTOGRAPHISCHE ANMERKUNG: Die Gaslit Reach ist der einzige Splitter, in dem Bur
 'saca694a94b8db3ad': `Wenn eine Epoche beginnt, wird jede teilnehmende Simulation in eine ausgewogene "Spielinstanz" geklont. Deine ursprüngliche Simulation (die Vorlage) wird nie verändert. Das gesamte Spielgeschehen findet auf dem Klon statt. Wenn die Epoche endet, werden die Spielinstanzen archiviert und deine Vorlage bleibt intakt.`,
 'sace123cbd07bbe5c': `Phase fortgeschritten.`,
 'sacfff113cab64477': `Emergente Geschichte im digitalen Raum`,
-'sad153393a05019a6': `Nach 3 Zyklen wird die Spionagemission aufgelöst. Bei Erfolg enthüllt das Gefechtsprotokoll die Zonensicherheitsstufen und Wächteranzahl des Ziels — kritische Aufklärung für die Planung Ihres nächsten Schlags.`,
+'sad153393a05019a6': `Nach 3 Zyklen wird die Spionagemission aufgelöst. Bei Erfolg enthüllt das Gefechtsprotokoll die Zonensicherheitsstufen und Wächteranzahl des Ziels – kritische Aufklärung für die Planung Ihres nächsten Schlags.`,
 'sad156640ceac73fb': `Agenten-Dossier`,
 'sad1ab9df16db813f': `ALLE SEKTOREN`,
 'sad1b6a0d3ad0f481': `Angeforderte Freigabestufe`,
@@ -3534,7 +3279,6 @@ KARTOGRAPHISCHE ANMERKUNG: Die Gaslit Reach ist der einzige Splitter, in dem Bur
 'sadae49645df2840b': `Bericht`,
 'sadb4e5d474369016': `Vermesst die dimensionale Topologie und kartiert Transitkorridore basierend auf Ihrer Ausgangsvision.`,
 'sadb999784b989d13': `Punktesystem`,
-'sade31dcec4d2cc1e': `aktive Substratverschiebung — betroffene Zonen können unberechenbar reagieren`,
 'sade3c823832adef6': `Einladung konnte nicht gesendet werden.`,
 'sadf1a44da5dc17af': `Kein Inhalt`,
 'sadfe162af080c188': `−18% Feinderfolgschance`,
@@ -3547,7 +3291,7 @@ KARTOGRAPHISCHE ANMERKUNG: Die Gaslit Reach ist der einzige Splitter, in dem Bur
 'saea0756a767d7ea1': `Keine (Minimalistisch)`,
 'saeaeccab0db946be': `Zusätzliche Stile`,
 'saeb8b55c1a7c6134': `Negativ-Prompt`,
-'saebfb473391050b9': `Frühere prozedurale Generierungssysteme produzierten Inhalt — Gelände, Gegenstände, Quests. Große Sprachmodelle produzieren etwas qualitativ anderes: Erzählung. Sie verstehen Kontext, Kausalität, Charaktermotivation, dramatische Spannung. Dies ist die fehlende Zutat, die prozedurale Generierung von der Inhaltsfabrik zur Erzählmaschine transformiert.`,
+'saebfb473391050b9': `Frühere prozedurale Generierungssysteme produzierten Inhalt – Gelände, Gegenstände, Quests. Große Sprachmodelle produzieren etwas qualitativ anderes: Erzählung. Sie verstehen Kontext, Kausalität, Charaktermotivation, dramatische Spannung. Dies ist die fehlende Zutat, die prozedurale Generierung von der Inhaltsfabrik zur Erzählmaschine transformiert.`,
 'saec92829742985a6': `Mission Erfolg`,
 'saed991114bdf58d1': `Vorlage (Kostenlos, Sofort)`,
 'saf0958d127d6ce9f': `Vergabe von Titeln. Endgültige Rangliste wird veröffentlicht.`,
@@ -3578,7 +3322,7 @@ KARTOGRAPHISCHE ANMERKUNG: Die Gaslit Reach ist der einzige Splitter, in dem Bur
 'safe03a877e3208f9': `Emergente Sozialdynamik`,
 'safec7f1a369755f0': `Zurück`,
 'saff0299a1ec99392': `Dunkelkammer-Pass konnte nicht erworben werden.`,
-'saff526dec3d191cc': `Das Chronik-System erfasst diese Dynamiken in narrativer Form. KI-generierte Zeitungen berichten über die Ereignisse Ihrer Welt mit redaktioneller Perspektive — Meinungskolumnen, investigative Berichte, Geschichten aus dem Gemeindeleben. Jede Ausgabe ist ein Schnappschuss einer lebendigen Kultur, geschrieben von KI, die den narrativen Kontext der Welt versteht, über die sie berichtet.`,
+'saff526dec3d191cc': `Das Chronik-System erfasst diese Dynamiken in narrativer Form. KI-generierte Zeitungen berichten über die Ereignisse Ihrer Welt mit redaktioneller Perspektive – Meinungskolumnen, investigative Berichte, Geschichten aus dem Gemeindeleben. Jede Ausgabe ist ein Schnappschuss einer lebendigen Kultur, geschrieben von KI, die den narrativen Kontext der Welt versteht, über die sie berichtet.`,
 'sb00c2683588c8630': `Passwort muss mindestens 8 Zeichen lang sein.`,
 'sb00f18193b286ec5': `Dossier ansehen`,
 'sb0105a63cc24b7ed': `2,5 Wächter erreichen jetzt den Maximaleffekt (wie zuvor bei alter Rate)`,
@@ -3610,7 +3354,7 @@ KARTOGRAPHISCHE ANMERKUNG: Die Gaslit Reach ist der einzige Splitter, in dem Bur
 'sb1c4c5242ccb2d11': `Die Partnerwelt, mit der diese Botschaft verbunden ist. Jedes Simulationspaar kann mehrere Botschaften mit unterschiedlichen Bleed-Vektoren haben.`,
 'sb1c4ec8a36dd925f': `Wie interaktive Elemente auf Hover reagieren. „translate"=nach oben-links anheben, „scale"=leicht vergrößern, „glow"=leuchtende Hervorhebung.`,
 'sb1da4cad59e0a448': `Dies kann einen Moment dauern`,
-'sb1ed0cedb66ab64a': `Zyklus 10–12: Station Null spielt Königsmacher — Drowned-Bell-Sabotage + Propaganda drücken Gaslit Reach auf den letzten Platz.`,
+'sb1ed0cedb66ab64a': `Zyklus 10–12: Station Null spielt Königsmacher – Drowned-Bell-Sabotage + Propaganda drücken Gaslit Reach auf den letzten Platz.`,
 'sb1ed9c3d67192524': `Zonenaktionen`,
 'sb20b869d95cb52b0': `Freigabe beantragen`,
 'sb2256834c2a7e04a': `Simulationen können verbunden werden, um ein Multiversum zu bilden. Ereignisse bluten über Verbindungen hinweg und hallen durch dimensionale Barrieren. Botschaften stellen diplomatische Verbindungen her. Die Kartographen-Karte visualisiert das gesamte Netzwerk.`,
@@ -3632,7 +3376,6 @@ KARTOGRAPHISCHE ANMERKUNG: Die Gaslit Reach ist der einzige Splitter, in dem Bur
 'sb33cdbea82bbf6a0': `Jeder Agent in einer Simulation verfügt über ein persistentes Gedächtnissystem. Während sich Ereignisse entfalten, bilden Agenten Beobachtungen über das Erlebte und Reflexionen über die Bedeutung dieser Ereignisse. Dies erzeugt eine lebendige Erinnerungshistorie.`,
 'sb33dc16f4b4ca64e': `Namensschild`,
 'sb349f019a716a4fd': `Mangelhaft`,
-'sb3800a6f011b6b36': `Kartographen-Karte — Multiversum-Simulationsgraph`,
 'sb385a6438c18ad40': `Beliebigen Simulationsagenten wählen`,
 'sb39d23a7088b3280': `The Guardian, NewsAPI`,
 'sb3b022f5506dd3c8': `Ankerpunkte werden kristallisiert`,
@@ -3661,7 +3404,7 @@ KARTOGRAPHISCHE ANMERKUNG: Die Gaslit Reach ist der einzige Splitter, in dem Bur
 'sb520aa8f212e58e7': `Einberufung senden`,
 'sb533442e5a4f67b9': `Auftrag`,
 'sb543c896052c4d83': `-3 militärische Strafe. Propaganda-Ereignis NICHT erstellt.`,
-'sb5509b9fb833617e': `Bluten & Echos`,
+'sb5509b9fb833617e': `Bluten &amp; Echos`,
 'sb559a64e9a2cf2b3': `Freigabe erfolgreich erteilt.`,
 'sb577023c28e88887': str`Domain hinzufügen zu ${0}`,
 'sb584d18cd0bc7826': `Guardian`,
@@ -3728,10 +3471,8 @@ KARTOGRAPHISCHE ANMERKUNG: Die Gaslit Reach ist der einzige Splitter, in dem Bur
 'sb81ecabbc5b82cc0': `Fehler beim Erstellen der Einladung.`,
 'sb82858d9c3196268': `Eckenabrundung für alle Karten, Buttons und Eingabefelder. 0=scharfe brutalistische Ecken, 12px=weiches organisches Gefühl.`,
 'sb832bf63a159cdb5': `Rekrutierungsermächtigung fehlgeschlagen.`,
-'sb83b2d225a725a97': `ARKANUM GAMMA — Geografische Anomalien`,
 'sb8501d388f861fda': `Verräter`,
 'sb85774dc5d18ff0f': `Bestätigen`,
-'sb862c778ee7f2b0c': `Visuelle Beschreibung, die von der Bild-KI verwendet wird. Hat keinen Einfluss auf die Spielmechanik - rein ästhetisch.`,
 'sb878eaf0824a1c4d': `Die Welt muss sich erinnern. Von Nutzern vorgenommene Änderungen müssen bestehen bleiben. Charaktere müssen Erfahrung akkumulieren. Gebäude müssen altern. Ereignisse müssen Konsequenzen haben, die über die Sitzung hinaus bestehen, in der sie auftraten.`,
 'sb89946147945961e': `Theme-responsiver Zeitungskopf: „The {SimName} Chronicle" in der Primärfarbe der Simulation`,
 'sb8999df3dc6128ba': `Neue Aktivität`,
@@ -3753,7 +3494,6 @@ KARTOGRAPHISCHE ANMERKUNG: Die Gaslit Reach ist der einzige Splitter, in dem Bur
 'sb98548ad2fc6abe1': `Nichts mehr zum Einsetzen. Gleichgewicht: 25+10 = 30 (Obergrenze)`,
 'sb9aaf56f428f5bed': `Zeigt den Gesundheitszustand des Ziels, die Zonenstabilität und aktive Agenten an.`,
 'sb9b1a0fbb4a7c27c': `Zonen`,
-'sb9b9526689d32499': `Von Conways vier Regeln zu Maturanas selbsterschaffenden Systemen zu Stanfords generativen Agenten: Der Faden, der diese Ideen verbindet, ist, dass komplexes, bedeutungsvolles Verhalten aus einfachen, konsistenten Regeln emergieren kann, angewandt auf interagierende Agenten. metaverse.center ist die Plattform, auf der dieser Faden zu einem lebendigen Wandteppich wird.`,
 'sb9c713ccf53d8b0a': `Die Stärke eines jeden Echos wird wie folgt berechnet:`,
 'sb9c754a5df2a1983': `AES-256-verschlüsselt im Ruhezustand. Plattform-Kontingent mit eigenen Schlüsseln umgehen.`,
 'sb9e10f206aa61a02': `Chronik-Druckschrift-Layout mit Kopfzeile und Artikelspalten`,
@@ -3764,14 +3504,14 @@ KARTOGRAPHISCHE ANMERKUNG: Die Gaslit Reach ist der einzige Splitter, in dem Bur
 'sba126506ee6c838b': `Mit Discord registrieren`,
 'sba14bbd7304941b3': `Lagebericht`,
 'sba16d9a1e72832c8': `Harmonisiert`,
-'sba304fa0ffc1ef2a': `EVE Online, 2003 von CCP Games gestartet, ist der überzeugendste Beweis, dass virtuelle Welten echte strategische Komplexität erzeugen können. Die spielergesteuerte Wirtschaft, das territoriale Souveränitätssystem und die Unternehmensspionage-Mechaniken haben Ereignisse hervorgebracht, die historischen Konflikten in Komplexität und Konsequenzen ebenbürtig sind — dokumentiert von der Spielepresse und Andrew Groens Empires of EVE (2016).`,
+'sba304fa0ffc1ef2a': `EVE Online, 2003 von CCP Games gestartet, ist der überzeugendste Beweis, dass virtuelle Welten echte strategische Komplexität erzeugen können. Die spielergesteuerte Wirtschaft, das territoriale Souveränitätssystem und die Unternehmensspionage-Mechaniken haben Ereignisse hervorgebracht, die historischen Konflikten in Komplexität und Konsequenzen ebenbürtig sind – dokumentiert von der Spielepresse und Andrew Groens Empires of EVE (2016).`,
 'sba3824b4ade24d2b': `Unberechenbarer Joker. Zufällige Strategien pro Zyklus. Schließt und bricht Allianzen nach Laune.`,
 'sba44e6e0ee45e1d8': `Anzahl aktiver Welten`,
 'sba68342e5c1fb5f6': `Keine Werte für diesen Taxonomie-Typ.`,
 'sba6b7e591b430994': `95%-Konfidenzintervalle für alle 5 Simulationen überlappen sich erheblich (10.000 Iterationen). Keine Simulation hat einen statistisch nachweisbaren Vorteil.`,
 'sba6f8ddd4afe5a23': `Bedrohungsstufe`,
 'sba73ba24367955cd': `NewsAPI-Schlüssel`,
-'sba73d4462647603d': `Bleeding- & Operativaktivität`,
+'sba73d4462647603d': `Bleeding- &amp; Operativaktivität`,
 'sba76034e2f6cea8e': `Die Karte des Kartographen`,
 'sba93d0edcc2f0389': `Freigabeanträge`,
 'sbaa02a6d6b9e1be6': `metaverse.center ist frei zugänglich. Das Durchstöbern von Welten, Lesen von Chroniken und Betrachten der Multiversumskarte erfordern kein Konto. Das Erstellen einer eigenen Simulation erfordert eine Registrierung.`,
@@ -3779,7 +3519,6 @@ KARTOGRAPHISCHE ANMERKUNG: Die Gaslit Reach ist der einzige Splitter, in dem Bur
 'sbaaad9f5b58864b7': `Aufklärung`,
 'sbabc7ace3edd1b3f': `Der Multiplikator wird pro Kaskadentiefe (0-1) angewendet. Bei 0,6: Tiefe 1 = 60% Stärke, Tiefe 2 = 36%, Tiefe 3 = 22%. Niedrigere Werte = Echos verblassen schneller über Hops.`,
 'sbad0f2a347eb0ab6': `Trauma-Indikatoren werden extrahiert`,
-'sbae1844101381d95': `mehrere Signaturen erkannt — das Substrat ist unruhig`,
 'sbaf0a7c417e388af': `Gesundheit`,
 'sbaf7dacf4d51f8a6': `Plattform-Standard für The Guardian Nachrichtenintegration. Erforderlich für Social-Trend-Abruf von Guardian.`,
 'sbafe562ae596a4d7': `Abbrechen...`,
@@ -3809,7 +3548,7 @@ KARTOGRAPHISCHE ANMERKUNG: Die Gaslit Reach ist der einzige Splitter, in dem Bur
 'sbc9d27f604cc6679': `Simulation für Override auswählen`,
 'sbca0dab1c7a00ccf': `Banner`,
 'sbcb3a2111dc9230a': `Verstanden`,
-'sbcc386ab2d9ac229': `Die österreichische akademische Diskussion über digitale Souveränität, einschließlich der Arbeit des LIFT_C Metaverse Lab der JKU Linz (geleitet von Prof. Meinhard Lukas, Institut für Zivilrecht), rahmt das Problem als Governance-Vakuum: „In diesem Raum gibt es keine (Staats-)Grenzen, was bedeutet, dass die Staatssouveränität mit ihrer Gesetzgebungsmacht nur sehr begrenzt ausgeübt werden kann. In der Praxis liegt die Souveränität hauptsächlich bei den Technologiegiganten des Silicon Valley." Dieses Framing ist reaktiv — es sieht den digitalen Raum als Territorium, das durch bestehende Staatsmacht reguliert werden muss. Dies ist notwendig, aber unzureichend. Regulierungsrahmen beschränken die schlimmsten Auswüchse der Plattformmacht, schaffen aber für sich genommen keine souveränen digitalen Räume.`,
+'sbcc386ab2d9ac229': `Die österreichische akademische Diskussion über digitale Souveränität, einschließlich der Arbeit des LIFT_C Metaverse Lab der JKU Linz (geleitet von Prof. Meinhard Lukas, Institut für Zivilrecht), rahmt das Problem als Governance-Vakuum: „In diesem Raum gibt es keine (Staats-)Grenzen, was bedeutet, dass die Staatssouveränität mit ihrer Gesetzgebungsmacht nur sehr begrenzt ausgeübt werden kann. In der Praxis liegt die Souveränität hauptsächlich bei den Technologiegiganten des Silicon Valley." Dieses Framing ist reaktiv – es sieht den digitalen Raum als Territorium, das durch bestehende Staatsmacht reguliert werden muss. Dies ist notwendig, aber unzureichend. Regulierungsrahmen beschränken die schlimmsten Auswüchse der Plattformmacht, schaffen aber für sich genommen keine souveränen digitalen Räume.`,
 'sbcc99952b274b658': `Gefechtsberichte`,
 'sbcfda893793072ea': `Dicke von Standard-Rahmen bei Eingabefeldern, Trennlinien und sekundären Elementen.`,
 'sbd0b083e47560c79': `Dies entfernt die Epoche und alle zugehörigen Daten unwiderruflich. Diese Aktion kann nicht rückgängig gemacht werden.`,
@@ -3842,7 +3581,6 @@ KARTOGRAPHISCHE ANMERKUNG: Die Gaslit Reach ist der einzige Splitter, in dem Bur
 'sbec97227ea7f6459': `Partner`,
 'sbec9dc4ffcfd8ecb': `Typ auswählen...`,
 'sbee6143ec2e10c7e': `Dystopisch`,
-'sbee7fb969a068f3d': `BYOK — unbegrenzt`,
 'sbeea594eb0cb2050': `Militärstoß`,
 'sbeecda17bea455c7': `Generierungs-Standardwerte`,
 'sbef516b6f60d00e5': `OpenRouter-Schlüssel eingeben...`,
@@ -3875,25 +3613,17 @@ KARTOGRAPHISCHE ANMERKUNG: Die Gaslit Reach ist der einzige Splitter, in dem Bur
 'sc02725662448fb75': `Reaktionsgenerierung fehlgeschlagen`,
 'sc03b89e3ebadde6a': `KI-generierte Zeitungsausgaben, die Ereignisse, Echos, Kampfprotokoll und Agenten-Reaktionen zusammenfassen`,
 'sc040679f9a619fbc': `Automatische Botschaftsgenerierung zwischen Spielinstanzen`,
-'sc04d0182495710b9': `Während der Flut ist der Bleed am aktivsten. Agenten träumen von anderen Welten mit lebhafter Detailtreue. Objekte migrieren zwischen Splittern. Architektur blutet — ein Velgarien-Turm entwickelt über Nacht organische Kurven, eine Kaverne der Gaslit Reach treibt rechte Winkel. Ein Wandbild in Speranza zeigt eine Stadt, die der Maler nie gesehen hat, in Farben, die unter der Erde nicht existieren. Eine Seite in der Bibliothek der Cite des Dames wird leer und füllt sich selbst mit Gleichungen aus der Kapelle von Station Null.
-
-Die Flut dauert zwischen drei und siebzehn Tagen. Die Variabilität wird vom Bureau als „thematisch angemessen" und von den Kartographen-Astronomen als „professionell peinlich" betrachtet.
-
-Während der Ebbe trennen sich die Splitter. Splitterübergreifende Kontamination sinkt auf nahezu null. Agenten schlafen friedlich und erwachen mit unerklärlicher Traurigkeit, als hätten sie etwas verloren, das sie nie besaßen. Die Kartographen nutzen die Ebbe für Wartung: Neukalibrierung von Instrumenten, Aktualisierung von Karten und Diskussionen.
-
-Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einzelnes Gebäude, einen einzelnen Agenten betreffen. Ihr Kaffee schmeckt nach anderswo. Ihr Spiegelbild blinzelt im falschen Moment. Sie finden einen Brief in Ihrer eigenen Handschrift, den Sie noch nicht geschrieben haben. Die offizielle Empfehlung des Bureaus: „Vermerken Sie das Vorkommnis. Interagieren Sie nicht. Sollte der Wirbel versuchen, mit Ihnen zu interagieren, vermerken Sie auch das. Der Wirbel wird vorübergehen. Wahrscheinlich."`,
 'sc054aecd5ffc7818': `Simulations-Leistungsradar`,
 'sc056cc14a35b3e61': `Filter entfernen`,
-'sc0577ba723902c2a': `Bewohner müssen die Welt gestalten können. Nicht nur Avatare anpassen oder Räume dekorieren — sondern Charaktere erschaffen, Ereignisse generieren, Institutionen gründen und den narrativen Verlauf des Raums, den sie bewohnen, verändern.`,
+'sc0577ba723902c2a': `Bewohner müssen die Welt gestalten können. Nicht nur Avatare anpassen oder Räume dekorieren – sondern Charaktere erschaffen, Ereignisse generieren, Institutionen gründen und den narrativen Verlauf des Raums, den sie bewohnen, verändern.`,
 'sc05df276b0f209f7': `Systemdiagnose 7.331. Alle Systeme nominal. Statistische Wahrscheinlichkeit hierfür: 0.`,
-'sc05f813be82083f0': `Jede Simulation verfolgt den Ereignisdruck über ihre Zonen mittels des Ereignis-Seismographen — einer SVG-Visualisierung, die die Ereignisintensität über die Zeit darstellt. Der Seismograph zeigt Spitzen an, wenn Missionen abgeschlossen werden.`,
+'sc05f813be82083f0': `Jede Simulation verfolgt den Ereignisdruck über ihre Zonen mittels des Ereignis-Seismographen – einer SVG-Visualisierung, die die Ereignisintensität über die Zeit darstellt. Der Seismograph zeigt Spitzen an, wenn Missionen abgeschlossen werden.`,
 'sc063cfe54c57faa6': `Attentäter-Rush`,
 'sc0663f89aeb8c8aa': `24h-Aktivität`,
 'sc06c4fee56564192': `Wie verhält sich metaverse.center im Vergleich zu Diplomacy oder EVE Online?`,
 'sc07ab9021d0a85ee': `BYOK-Bypass systemweit aktiviert.`,
 'sc085e9fc5467b965': `KI-Anbieter-Überschreibungen`,
 'sc09ab89466d993cf': `Noch keine Scan-Protokolleinträge.`,
-'sc0c3663e300adf81': `ARKANUM ZETA — Bureau-Empfehlung`,
 'sc0dce19eb89f4cfc': `Empfohlen: 3:4 Seitenverhältnis`,
 'sc0e6b65bbfd257b6': `Wählen Sie einen Spezialisten pro Operativtyp für maximale Abdeckung. Ein Generalisten-Team (alle 6er) ist sicherer, wird aber nie die +27%-Eignungsobergrenze bei irgendeiner Mission erreichen.`,
 'sc0e71235f676f915': `Das sind echte KI-Charaktere. Sie erinnern sich. Sie tragen Groll.`,
@@ -3901,7 +3631,7 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
 'sc0ed00d982724ee0': `Dimensionsverschiebungen`,
 'sc0ed444a1a094876': `Emotionale Reaktion`,
 'sc0f7a527b86b9c5b': `Die Grundmauer`,
-'sc0fae2b6fb401a55': `Die Architektur hinter diesem Verhalten ruht auf drei Mechanismen: einem Gedächtnisstrom (einer umfassenden Aufzeichnung jeder Erfahrung), einem Abrufsystem (das relevante Erinnerungen nach Aktualität, Wichtigkeit mit Bewertung 1–10 und kontextueller Relevanz gewichtet) und einem Reflexionsmodul (das die 100 jüngsten Erinnerungen zu übergeordneten Einsichten synthetisiert). Planung emergiert aus diesen Komponenten — Agenten reagieren nicht nur, sie antizipieren. In einem Beispiel trifft Agent Sam im Johnson Park auf Latoya Williams. Sie erwähnt ein Fotoprojekt. Bei einer späteren Begegnung erinnert sich Sam und fragt: „Hallo, Latoya. Wie läuft Ihr Projekt?" — unaufgefordert, unveranlasst, vollständig emergent.`,
+'sc0fae2b6fb401a55': `Die Architektur hinter diesem Verhalten ruht auf drei Mechanismen: einem Gedächtnisstrom (einer umfassenden Aufzeichnung jeder Erfahrung), einem Abrufsystem (das relevante Erinnerungen nach Aktualität, Wichtigkeit mit Bewertung 1–10 und kontextueller Relevanz gewichtet) und einem Reflexionsmodul (das die 100 jüngsten Erinnerungen zu übergeordneten Einsichten synthetisiert). Planung emergiert aus diesen Komponenten – Agenten reagieren nicht nur, sie antizipieren. In einem Beispiel trifft Agent Sam im Johnson Park auf Latoya Williams. Sie erwähnt ein Fotoprojekt. Bei einer späteren Begegnung erinnert sich Sam und fragt: „Hallo, Latoya. Wie läuft Ihr Projekt?" – unaufgefordert, unveranlasst, vollständig emergent.`,
 'sc1041bb0cffa1852': `Schlüssel konnten nicht gespeichert werden`,
 'sc114ba799d263d12': `Vollständige Wiederholung - Jeder Zyklus`,
 'sc1356b9f791bf737': `Statuswerte`,
@@ -3920,7 +3650,7 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
 'sc1c247ad3228b404': `Die Multiversumskarte`,
 'sc1ebc35bc52c8915': `Simulationen suchen...`,
 'sc1eeb2076ad51686': `Städte als lebende Organismen`,
-'sc1fc4aebec2b22f4': `Die Abrechnung ist das Endspiel. Der Bleed-Schwellenwert sinkt um 2 und die Kaskadentiefe steigt um 1 — Ereignisse, die während des Wettbewerbs nicht durchgedrungen wären, schlagen plötzlich durch. Souveränitätswertungen können sich dramatisch verschieben. Setzen Sie Ihre verbleibenden Operative für maximale Wirkung ein, bevor die Wertungen eingefroren werden.`,
+'sc1fc4aebec2b22f4': `Die Abrechnung ist das Endspiel. Der Bleed-Schwellenwert sinkt um 2 und die Kaskadentiefe steigt um 1 – Ereignisse, die während des Wettbewerbs nicht durchgedrungen wären, schlagen plötzlich durch. Souveränitätswertungen können sich dramatisch verschieben. Setzen Sie Ihre verbleibenden Operative für maximale Wirkung ein, bevor die Wertungen eingefroren werden.`,
 'sc1fff4f356dfb2fb': `Transformieren`,
 'sc20bd0a7be6a2737': `Standardmodell`,
 'sc21111553350edc7': `Deine Strategie`,
@@ -3942,31 +3672,24 @@ Zwischen den Gezeiten gibt es Wirbel — lokalisierte Mikro-Bleeds, die ein einz
 'sc2b31c8d71636c74': str`Seite ${0}`,
 'sc2bb689185af93e3': `Bitte`,
 'sc2d471d88feb874b': `Diplomat`,
-'sc2effad0b4c5f929': `Allianzen & Diplomatie`,
+'sc2effad0b4c5f929': `Allianzen &amp; Diplomatie`,
 'sc2f69aced5f77880': `Verbindungen Cache-Control`,
 'sc2fa5f33cc6fbe72': `Taxonomie-Wert aktiviert.`,
 'sc2fa63807965ad17': `Semantische Rückstände werden geerntet`,
 'sc30d2e8b348a6e99': `Mitgliedschaft konnte nicht entfernt werden.`,
-'sc314b2ad760e5c28': `Agenten haben definierte Persönlichkeitsmerkmale, Berufe, Motivationen und Kommunikationsstile. Ein zynischer Journalist antwortet anders als ein idealistischer Architekt — konsistent, über Hunderte von Interaktionen hinweg.`,
+'sc314b2ad760e5c28': `Agenten haben definierte Persönlichkeitsmerkmale, Berufe, Motivationen und Kommunikationsstile. Ein zynischer Journalist antwortet anders als ein idealistischer Architekt – konsistent, über Hunderte von Interaktionen hinweg.`,
 'sc33a7b4e3926351c': `Dies kann einen Moment dauern`,
 'sc3467ebcf486d484': `Einstimmige Zustimmung erforderlich`,
 'sc3624546f8a76b49': `Agenten-Eignung: Fähigkeitswerte pro Operativstyp (3–9, Budget 36)`,
 'sc387ff67f2d05968': `Stabilität`,
 'sc388d63aaab7c829': str`Gesamtgesundheit: ${0} Prozent`,
-'sc38edbc47ee6255b': `Während kompetitiver Epochen werden Sozialdynamiken strategisch. Propagandisten-Operative erzeugen Ereignisse in rivalisierenden Simulationen und versuchen, die Meinungsdynamiken zu verschieben. Spione sammeln Geheimdienstinformationen über die sozialen Schwachstellen einer anderen Simulation. Das soziale Gefüge Ihrer Welt ist nicht bloß Flavor — es ist ein strategisches Kapital.`,
+'sc38edbc47ee6255b': `Während kompetitiver Epochen werden Sozialdynamiken strategisch. Propagandisten-Operative erzeugen Ereignisse in rivalisierenden Simulationen und versuchen, die Meinungsdynamiken zu verschieben. Spione sammeln Geheimdienstinformationen über die sozialen Schwachstellen einer anderen Simulation. Das soziale Gefüge Ihrer Welt ist nicht bloß Flavor – es ist ein strategisches Kapital.`,
 'sc39c09c0127e4d8f': `Instagram-Pipeline`,
 'sc3ac225273c8316b': `Allgemein`,
 'sc3ad95fb3df6b531': `Operativkennung`,
-'sc3b38bc9b310c30a': `Die Kartographen begannen nicht nach dem Zerbrechen — sie begannen im Moment des Zerbrechens, was eine andere Art zu sagen ist, dass sie das Zerbrechen waren, oder zumindest, dass das Zerbrechen nicht hätte geschehen können, ohne dass jemand da war, um es zu beobachten, denn eine unbeobachtete Katastrophe ist bloß Wetter.
-
-Das Bureau für Unmögliche Geographie ist ihr institutionelles Gesicht — wobei „institutionell" ein großzügiges Wort für eine Organisation ist, deren Hauptquartier in vier Splittern gleichzeitig existiert und deren Ablagesystem die Kategorien „Dinge, die auch andere Dinge sind" und „Ereignisse, über die noch nicht entschieden wurde" umfasst.
-
-Das Bureau arbeitet nach drei Prinzipien. Erstens: Kartiere alles. Jeden Splitter, jede Grenze, jedes Bleed-Ereignis, jeden unerklärlichen Pilz. Die Karte ist nie fertig. Das ist kein Versagen. Das ist die Arbeit. Zweitens: Greife in nichts ein. Die Fraktur ist kein Problem, das gelöst werden muss, sondern ein Zustand, der verstanden werden will. Kartographen, die Reparaturen versuchen, werden in die Abteilung für Warnende Beispiele versetzt, die ein Aktenschrank im Hauptquartier ist, das in dem Splitter existiert, der brennt. Drittens: Überlebe. Dies wurde hinzugefügt, nachdem die ersten drei Direktoren wahnsinnig wurden, verschwanden oder zu Architektur wurden. Das Mitarbeiter-Wohlbefindenprogramm besteht aus einer einzigen laminierten Karte: „Erinnere dich, aus welchem Splitter du stammst. Falls du es nicht kannst, konsultiere einen Kollegen. Falls dein Kollege es nicht kann, konsultiere die Karte."
-
-Das Bureau beschäftigt ungefähr 200 Kartographen. Die genaue Zahl ist ungewiss, da sieben derzeit in den Zwischen-Splitter-Ruinen verschollen sind und möglicherweise noch Angestellte sind oder auch nicht, je nachdem, ob die Ruinen ein Konzept von Arbeitsrecht kennen.`,
 'sc3b8b24c3ae1faf7': `Gebäude erfolgreich aktualisiert`,
-'sc3cb4d17ab13c66e': `Macht im System sollte aus dem Spiel emergieren, nicht aus dem Kauf. Die kompetitiven Epochen von metaverse.center werden durch strategische Intelligenz, Allianzbildung und Weltqualität gewonnen — nicht durch Ausgeben. Die Architektur macht Pay-to-Win strukturell unmöglich.`,
-'sc3dba0480f3624bf': `Eine erfolgreiche Spionagemission entschied dieses Match um 43 Punkte. Aufklärung ist die Grundlage jeder Siegstrategie — setzen Sie immer frühzeitig einen Spion ein.`,
+'sc3cb4d17ab13c66e': `Macht im System sollte aus dem Spiel emergieren, nicht aus dem Kauf. Die kompetitiven Epochen von metaverse.center werden durch strategische Intelligenz, Allianzbildung und Weltqualität gewonnen – nicht durch Ausgeben. Die Architektur macht Pay-to-Win strukturell unmöglich.`,
+'sc3dba0480f3624bf': `Eine erfolgreiche Spionagemission entschied dieses Match um 43 Punkte. Aufklärung ist die Grundlage jeder Siegstrategie – setzen Sie immer frühzeitig einen Spion ein.`,
 'sc3e93c5b2fd1e0d8': `Neutral`,
 'sc3f9ca2180b66c6d': `Lade Bereinigungsdaten...`,
 'sc3fea9473dda020c': `Ereignishäufung / Ungleichgewicht`,
@@ -3976,7 +3699,7 @@ Das Bureau beschäftigt ungefähr 200 Kartographen. Die genaue Zahl ist ungewiss
 'sc4145b25ecabf1ff': `Rahmen Hell`,
 'sc4193d36181633d3': `Maximale Test-Renderings pro Simulationsentwurf.`,
 'sc422138567d4b023': `Befestigungsgrad wird evaluiert`,
-'sc42bb0afba9a66dd': `Stephen Wolfram trieb diese Einsicht auf die logische Spitze. In A New Kind of Science (2002) katalogisierte er das Verhalten jedes möglichen eindimensionalen zellulären Automaten und argumentierte, dass „einfache Programme Verhalten von großer Komplexität erzeugen können." Seine Rule 110 — einer der einfachsten möglichen eindimensionalen zellulären Automaten, zwei Farben, Nächste-Nachbar-Interaktionen — wurde 2004 von Matthew Cook als Turing-vollständig bewiesen. Fähig, im Prinzip, zu jeder Berechnung. Gegeben ein unendliches Gitter mit einer zufälligen Anfangskonfiguration, ist ein Turing-Maschinen-Teilmuster mit Wahrscheinlichkeit 1 garantiert. All diese Rechenkraft, latent in trivialen Regeln.`,
+'sc42bb0afba9a66dd': `Stephen Wolfram trieb diese Einsicht auf die logische Spitze. In A New Kind of Science (2002) katalogisierte er das Verhalten jedes möglichen eindimensionalen zellulären Automaten und argumentierte, dass „einfache Programme Verhalten von großer Komplexität erzeugen können." Seine Rule 110 – einer der einfachsten möglichen eindimensionalen zellulären Automaten, zwei Farben, Nächste-Nachbar-Interaktionen – wurde 2004 von Matthew Cook als Turing-vollständig bewiesen. Fähig, im Prinzip, zu jeder Berechnung. Gegeben ein unendliches Gitter mit einer zufälligen Anfangskonfiguration, ist ein Turing-Maschinen-Teilmuster mit Wahrscheinlichkeit 1 garantiert. All diese Rechenkraft, latent in trivialen Regeln.`,
 'sc4317264317eda93': `Slots belegt`,
 'sc43eabc5a66b8450': `Schwierigkeit`,
 'sc4400581daa78a19': `Jede Persönlichkeit bestimmt, wie der Bot RP zuweist, Ziele auswählt und auf Bedrohungen reagiert. Der Sentinel priorisiert Verteidigung mit Guardian-Stacking und Gegenaufklärungseinsätzen. Der Warlord maximiert Offensivoperationen.`,
@@ -3984,7 +3707,7 @@ Das Bureau beschäftigt ungefähr 200 Kartographen. Die genaue Zahl ist ungewiss
 'sc4719c2f9a63819d': `Einschlag-Protokolle`,
 'sc4801f580ac4e73d': `Operator`,
 'sc4985097e629b822': `Scan-Verlaufsprotokoll`,
-'sc4a0be2e270ac6af': `Setzen Sie 1–2 Wächter während der Aufbauphase ein, dann sparen Sie den Rest Ihrer RP für den Wettbewerb. Drei Wächter erreichen die 15%-Obergrenze — mehr ist verschwendet.`,
+'sc4a0be2e270ac6af': `Setzen Sie 1–2 Wächter während der Aufbauphase ein, dann sparen Sie den Rest Ihrer RP für den Wettbewerb. Drei Wächter erreichen die 15%-Obergrenze – mehr ist verschwendet.`,
 'sc4b6ed7cad8dab12': `Unmittelbar bevorstehend`,
 'sc4b99f00a2a8ec2f': `Benachrichtigungseinstellungen gespeichert.`,
 'sc4bacd7bb9ca82b0': `Zündung fehlgeschlagen. Bitte versuchen Sie es erneut.`,
@@ -3994,8 +3717,8 @@ Das Bureau beschäftigt ungefähr 200 Kartographen. Die genaue Zahl ist ungewiss
 'sc53d8a5403864f1b': `z.B. anbieter/modellname`,
 'sc550b8eff5699f6d': `Wird in Beziehungsbeschreibungen, Ereignisreaktionen und Botschaftszuweisungen verwendet.`,
 'sc55146192bc67385': str`Zonenstabilität: ${0} %`,
-'sc5663e158fd298e3': `Substratresonanzen sind emergente Phänomene, die auftreten, wenn das Substrat einer Simulation — ihr zugrunde liegendes rechnerisches Gewebe — als Reaktion auf Spielaktivität vibriert. Betrachten Sie sie als das Immunsystem der Welt.`,
-'sc56b1ee17dfab832': `Velgarien — 100,0 Pkt.`,
+'sc5663e158fd298e3': `Substratresonanzen sind emergente Phänomene, die auftreten, wenn das Substrat einer Simulation – ihr zugrunde liegendes rechnerisches Gewebe – als Reaktion auf Spielaktivität vibriert. Betrachten Sie sie als das Immunsystem der Welt.`,
+'sc56b1ee17dfab832': `Velgarien – 100,0 Pkt.`,
 'sc57ee31344162648': `Stil für Architekturbilder …`,
 'sc5825dd4b60effc1': `Gebäudebereitschaft sinkt, wenn Saboteure Ihre Gebäude beschädigen (gut → mäßig → schlecht → zerstört). Zonenstabilität nimmt ab, wenn feindliche Operative Erfolg haben oder Kaskadenereignisse ausgelöst werden. Botschaftseffektivität fällt nach Infiltratormissionen.`,
 'sc582ec370dfb10de': `Ein unerwarteter Fehler beim Laden der Städte`,
@@ -4058,7 +3781,7 @@ Das Bureau beschäftigt ungefähr 200 Kartographen. Die genaue Zahl ist ungewiss
 'sc904ac7e772f2402': `Velgarien+Speranza bilden den „Eisernen Pakt". Gaslit Reach+Station Null bilden das „Void-Abkommen".`,
 'sc915b1e606c3ae1c': `KI-erzählte Ereignisse`,
 'sc9219d0c1d3a6296': `Bezirke (Zonen)`,
-'sc92312cafe40f806': `— Italo Calvino, Die unsichtbaren Städte`,
+'sc92312cafe40f806': `– Italo Calvino, Die unsichtbaren Städte`,
 'sc92c2e6867082484': `Substrat-Harmonik`,
 'sc92e6b2fda31b876': `2 Zyklus Einsatz`,
 'sc92fb1ef3ff6f5de': `Die Simulation hat den Status Aufstieg erreicht`,
@@ -4076,7 +3799,7 @@ Das Bureau beschäftigt ungefähr 200 Kartographen. Die genaue Zahl ist ungewiss
 'sc9d11ba788fd6aff': `Training starten`,
 'sc9d50a26117c6a2c': `RP / Zyklus`,
 'sc9d9798d6939227d': `Flux Dev + LoRA (benutzerdefinierter Stil)`,
-'sc9e04fff8c506435': `Balance-Patch: Defensiv-Meta abgeschwächt & Offensiv-Buffs`,
+'sc9e04fff8c506435': `Balance-Patch: Defensiv-Meta abgeschwächt &amp; Offensiv-Buffs`,
 'sc9e36319670bfb2c': `Noch keine Nachrichten`,
 'sc9ed8d8f7a6e7411': `Mythopoetische Signaturen werden korreliert`,
 'sc9f15a3b00fae612': `Wenn aktiviert, können Allianzmitglieder ehemalige Verbündete verlassen und angreifen. Verrat zieht einen diplomatischen Nachteil von -20% nach sich und kennzeichnet den Verräter öffentlich.`,
@@ -4101,7 +3824,7 @@ Das Bureau beschäftigt ungefähr 200 Kartographen. Die genaue Zahl ist ungewiss
 'scb053443d7259fd9': `Speichere den Agenten zuerst, bevor du ein Portrait generierst.`,
 'scb0a82e88b1e1746': `Das Ästhetische Kalibrierungsbüro generiert eine vollständige visuelle Identität für Ihre Simulation. Eine KI-generierte Farbpalette (Primär, Sekundär, Akzent, Hintergrund, Oberfläche, Text), Typografieauswahl und thematische Stilrichtung.`,
 'scb115d303ab45480': `Metabolismus`,
-'scb1e6e1b4f2b6b14': `metaverse.center nimmt Subkreation ernst. Jede Simulation ist eine Sekundärwelt mit eigener Geographie, Geschichte, eigenen Charakteren und innerer Logik. KI ersetzt nicht den Weltenbauer — sie verstärkt den Akt der Subkreation und stellt sicher, dass die Welt auch dann kohärent bleibt, wenn sie über das hinauswächst, was ein einzelner Geist verfolgen könnte.`,
+'scb1e6e1b4f2b6b14': `metaverse.center nimmt Subkreation ernst. Jede Simulation ist eine Sekundärwelt mit eigener Geographie, Geschichte, eigenen Charakteren und innerer Logik. KI ersetzt nicht den Weltenbauer – sie verstärkt den Akt der Subkreation und stellt sicher, dass die Welt auch dann kohärent bleibt, wenn sie über das hinauswächst, was ein einzelner Geist verfolgen könnte.`,
 'scb249e1a0bc04d37': `Gebäude bearbeiten`,
 'scb2f606aaa2d3931': `Ziel: The Drowned Bell`,
 'scb41fea4f8c2f952': `Ausgangsprompt`,
@@ -4127,7 +3850,7 @@ Das Bureau beschäftigt ungefähr 200 Kartographen. Die genaue Zahl ist ungewiss
 'scbff29087551476d': `Epochenweiter Rundfunk`,
 'scc01775cfcbadb04': `Erstellen Sie im Epochen-Kommandozentrum eine neue Epoche. Benennen Sie sie, wählen Sie ein Wertungsprofil (Ausgewogen eignet sich zum Lernen) und legen Sie das Zyklusintervall fest. Der Assistent führt Sie durch Wirtschaft, Doktrin und Bestätigung.`,
 'scc01f3f78ad286f8': `Nachträge`,
-'scc0986b0820a6f00': `Autopoiesis („Selbsterschaffung") ist ein Konzept aus der Biologie, das Systeme beschreibt, die ihre eigenen Komponenten produzieren und erhalten. Eine Zelle stellt ihre eigene Membran her. Eine lebendige Simulation generiert ihre eigenen Ereignisse, Erzählungen und Sozialdynamiken — narrative Autopoiesis.`,
+'scc0986b0820a6f00': `Autopoiesis („Selbsterschaffung") ist ein Konzept aus der Biologie, das Systeme beschreibt, die ihre eigenen Komponenten produzieren und erhalten. Eine Zelle stellt ihre eigene Membran her. Eine lebendige Simulation generiert ihre eigenen Ereignisse, Erzählungen und Sozialdynamiken – narrative Autopoiesis.`,
 'scc1c08c6db935e92': `Offensiv-Verstärkungen`,
 'scc1db59d292cbc4c': `Rubrik`,
 'scc2a01677e379727': `Wallet aktualisiert.`,
@@ -4139,36 +3862,21 @@ Das Bureau beschäftigt ungefähr 200 Kartographen. Die genaue Zahl ist ungewiss
 'sccaedcb32fe56dbc': `Fehler beim Laden der Zugangs-Einstellungen`,
 'sccde979903f46472': `DOSSIER WIRD GELADEN`,
 'scce11aa443ad6ba5': str`Attunement-Tiefe: ${0} % von ${1} % Schwellenwert`,
-'scce2b3215c4c3140': `BUREAU FÜR UNMÖGLICHE GEOGRAPHIE — Dokument SHARD/SPERANZA-001
-Klassifizierung: AMBER — Ansteckender Resilienzvektor
-
-SPLITTERPROFIL: Ein postapokalyptischer Splitter mit Zentrum Toledo, einer unterirdischen Stadt, erbaut in eingestürzte Kalkstein-Dolinen unter den Ruinen des Prä-Fraktur-Italiens. Die Oberfläche wird von autonomen Maschinen geerntet, die als ARC bezeichnet werden — ihr Ursprung unbekannt, ihr Zweck unklar, ihre Effizienz absolut. Die Menschheit überlebt unter der Erde, organisiert in siebzehn Contrade, verbunden durch die Tube: ein elektromagnetisches Transportnetz, das Frachtkapseln durch in den Fels gebohrte Tunnel schießt.
-
-Das Wort „Speranza" bedeutet Hoffnung auf Italienisch. Die Bewohner verwenden es ohne Ironie und ohne Naivität. Hoffnung ist kein Optimismus. Optimismus ist der Glaube, dass die Dinge besser werden. Hoffnung ist die Entscheidung, so zu handeln, als könnten sie es, im vollen Wissen, dass sie es möglicherweise nicht tun.
-
-BLEED-SIGNATUR: Ansteckende Resilienz. Wenn Speranzas Bleed benachbarte Splitter berührt, erfahren Agenten plötzliche, unerklärliche Motivation. In Velgarien meldete Bureau 9 drei Fälle, in denen Bürger spontan Selbsthilfenetzwerke bildeten. In der Gaslit Reach begann eine Gruppe von Dockarbeitern Arbeitslieder in einer Sprache zu singen, die keiner von ihnen kannte — phonetische Analyse identifizierte Fragmente von Italienisch. Die Hoffnung trifft nicht als Gefühl ein. Sie trifft als Handlung ein — der Impuls zu reparieren, zu teilen, etwas zu bauen, selbst wenn Bauen irrational ist.
-
-PHILOSOPHISCHE ACHSE: Hoffnung als Widerstand. Nicht die Hoffnung des Optimisten, der glaubt. Die Hoffnung des Realisten, der handelt.
-
-SCHLÜSSELAGENTEN: Capitana Ferretti (200 Topside-Einsätze, behandelt ARC-Maschinen wie ein Bauer das Wetter), Enzo Moretti (Mechaniker, der mit Maschinen als Diagnosemethode spricht), Celeste Amara (erbaute den größten Markt in Toledo aus einer einzigen Decke), Dottor Ferrara (pessimistisch in allem, außer bei seinen Patienten).
-
-KARTOGRAPHISCHE ANMERKUNG: Kartographen, die Speranza zugewiesen wurden, berichten von gehobener Moral und einer Tendenz, Essen zum Teilen zu Nachbesprechungen mitzubringen. Das Bureau betrachtet dies als geringfügigen Kontaminationseffekt und korrigiert ihn nicht, weil das Essen gut ist.`,
 'scce3d9968fbeddca': `Lawrence Lessigs vier Modalitäten`,
-'scceb21a1981bafb3': `Einrichten & Aktivieren`,
+'scceb21a1981bafb3': `Einrichten &amp; Aktivieren`,
 'scd0abc535f09fa92': `Über den narrativen Charakter hinaus dient die Chronik als strategisches Werkzeug. Sie enthüllt, welche Spieler mutige Züge machten, welche Zonen angegriffen wurden und wie sich Punktestände verschoben. Erfahrene Spieler lesen zwischen den Zeilen.`,
 'scd0bfa2bff811826': str`Benutzerdefiniertes CSS überschreitet das Maximum von ${0}KB.`,
 'scd0c72a24681aa38': `Jede Chronik-Ausgabe beginnt mit einer Kopfzeile, die den Simulationsnamen, die Ausgabennummer und das Zyklusdatum zeigt. Darunter sind Artikel in Zeitungsspalten angeordnet. Schlagzeilen reichen von Schlachtfeldberichten bis zu diplomatischen Analysen.`,
 'scd1e71ad1cb95bad': `Kartenebenen`,
-'scd1f91f425c56f88': `Sparen Sie RP während des gesamten Wettbewerbs und setzen Sie dann während der Abrechnung, wenn die Blutung verstärkt wird, mehrere Operatoren ein. Die Gegner haben weniger Zyklen, um sich zu erholen, und Souveränitätstreffer schmerzen mehr. Hohes Risiko: Wenn die Gegner früh punkten, kann der Rückstand unüberwindbar sein.`,
 'scd223a9aac742fcf': `Lebenszyklus`,
 'scd3898d3f56df4a9': `Warte auf Felddaten`,
 'scd3985c629931a64': `Bestimmte Entität`,
 'scd3a0b78356df9c8': `Erschaffen Sie Ihre Welt`,
-'scd46b35183884dae': `Phasen & Zeitleiste`,
+'scd46b35183884dae': `Phasen &amp; Zeitleiste`,
 'scd4d09137d6ecb1d': `Schmiede-Modell`,
-'scd5614a846359ae0': `Die Metabolisten — alle Teenager im Jahr 1945, als Hiroshima und Nagasaki zerstört wurden — verstanden etwas, das westliche Stadtplaner oft übersahen. „Erschütternd bewusst der Vergänglichkeit gebauter Räume und der Zerstörbarkeit von Städten", wie Architekturhistoriker anmerkten, reagierten sie nicht mit Nostalgie, sondern mit radikaler Akzeptanz: Städte sind keine statischen Artefakte. Sie sind Prozesse. Ein Gebäude ist kein permanentes Objekt, sondern eine temporäre Anordnung von Ressourcen. Die Identität der Stadt liegt nicht in ihrer physischen Form, sondern in ihrem Organisationsmuster — „die Metropole würde ein Verb sein, kein Substantiv."`,
+'scd5614a846359ae0': `Die Metabolisten – alle Teenager im Jahr 1945, als Hiroshima und Nagasaki zerstört wurden – verstanden etwas, das westliche Stadtplaner oft übersahen. „Erschütternd bewusst der Vergänglichkeit gebauter Räume und der Zerstörbarkeit von Städten", wie Architekturhistoriker anmerkten, reagierten sie nicht mit Nostalgie, sondern mit radikaler Akzeptanz: Städte sind keine statischen Artefakte. Sie sind Prozesse. Ein Gebäude ist kein permanentes Objekt, sondern eine temporäre Anordnung von Ressourcen. Die Identität der Stadt liegt nicht in ihrer physischen Form, sondern in ihrem Organisationsmuster – „die Metropole würde ein Verb sein, kein Substantiv."`,
 'scd746f6ad7af68fb': `Ankerschutz-Obergrenze`,
-'scd78cd386b2f6a0a': `Ereignisse & Reaktionen`,
+'scd78cd386b2f6a0a': `Ereignisse &amp; Reaktionen`,
 'scd7ca58c79dcacdd': `Simulation auswählen…`,
 'scd7ecc64ddd38616': `Navigationsfeuer werden kodiert`,
 'scd885b6786111c7d': `Resonanzdetails`,
@@ -4177,7 +3885,6 @@ KARTOGRAPHISCHE ANMERKUNG: Kartographen, die Speranza zugewiesen wurden, bericht
 'scdbadb8653c94924': `ANOMAL`,
 'scde40c7df2a2e1f2': `Erfolgsrate`,
 'scdeacb73d900e02e': `Persönlichkeitsmodell`,
-'sce07ca7239f433da': `Erkunden Sie Welten, die andere gebaut haben — lesen Sie ihre Geschichten, treffen Sie ihre Charaktere, verfolgen Sie die Intrigen. Oder bauen Sie Ihre eigene. Beschreiben Sie eine Welt in einem Satz. Die Schmiede erledigt den Rest.`,
 'sce11649f645a20c4': `Schwierigkeit: Einfach`,
 'sce256a8918a7f18d': `Momentaufnahme`,
 'sce4b0b13cd896498': str`Gruppengespräch mit ${0} Agenten gestartet.`,
@@ -4187,7 +3894,7 @@ KARTOGRAPHISCHE ANMERKUNG: Kartographen, die Speranza zugewiesen wurden, bericht
 'sce89120a7a319b28': `Ausstehende Überprüfung`,
 'scea0e3567d8f08ea': `Eignung ersetzt die einheitliche Qualifikation in der Erfolgsformel`,
 'scea2d8a01dde7f3b': `KI generiert Beschreibung`,
-'scea2e5dac453ca71': `— Sun Tzu, Die Kunst des Krieges`,
+'scea2e5dac453ca71': `– Sun Tzu, Die Kunst des Krieges`,
 'scea321ca3da7a0d6': `Nach Status filtern`,
 'scea9ccf4643bae72': `Das Einrichten...`,
 'sceb3bdbb677a2ebf': `Operativ einsetzen`,
@@ -4234,20 +3941,17 @@ KARTOGRAPHISCHE ANMERKUNG: Kartographen, die Speranza zugewiesen wurden, bericht
 'sd0ea7366ebc403ff': `Ereignis`,
 'sd100dea2de918be5': `Dies kann 1-2 Minuten dauern`,
 'sd10ca21b3711769a': `-- Wählen Sie die Botschaftsroute --`,
-'sd11a46c2e7022f58': `Impressum`,
 'sd11fc5474894c6c5': `Bundle`,
 'sd128764a915ea47a': `Fotorealistisches Portraitfoto, filmische Beleuchtung, geringe Tiefenschärfe, einzelnes Motiv, hohe Detailtreue`,
 'sd1426827671916ce': `Bist du sicher, dass du diese Epoche verlassen willst? Du kannst später wieder einsteigen, wenn die Lobby noch offen ist.`,
 'sd1472b55f2b751ec': `Botschafter sind Agenten, die ihre Simulation in dieser Botschaft vertreten. Die Zuweisung ist optional.`,
-'sd16137be8a7709ef': str`Gründung ${0} · Wettbewerb ${1} · Abrechnung ${2} Zyklen — ${3}d (${4}d + ${5}d + ${6}d)`,
 'sd177a8413c487eb1': `Meuchelmord`,
 'sd179b0a3e2791a70': `Diese Metriken werden aus materialisierten Datenbankansichten berechnet, die über alle Ihre Gebäude, Zonen und Botschaften aggregieren. Sie aktualisieren sich automatisch nach jeder Zyklusauflösung. Das Dashboard verwendet Inline-Sparklines für Trendvisualisierung.`,
 'sd17a959451038c72': `28 ist ein guter Kompromiss. 50 für maximale Qualität.`,
-'sd1afe7a1491003fb': `Der Begriff „Metaversum" wurde von Neal Stephenson in Snow Crash (1992) geprägt. Im Roman ist das Metaverse eine virtuelle urbane Landschaft — ein einzelner Boulevard, die Street, hundert Meter breit und 65.536 Kilometer lang, der eine gesichtslose schwarze Kugel umkreist. Nutzer greifen über persönliche Terminals und öffentliche Kabinen darauf zu und erscheinen als Avatare, deren Qualität ihren Wohlstand und technisches Geschick widerspiegelt. Stephenson beschrieb es mit der Präzision eines Systemarchitekten:`,
+'sd1afe7a1491003fb': `Der Begriff „Metaversum" wurde von Neal Stephenson in Snow Crash (1992) geprägt. Im Roman ist das Metaverse eine virtuelle urbane Landschaft – ein einzelner Boulevard, die Street, hundert Meter breit und 65.536 Kilometer lang, der eine gesichtslose schwarze Kugel umkreist. Nutzer greifen über persönliche Terminals und öffentliche Kabinen darauf zu und erscheinen als Avatare, deren Qualität ihren Wohlstand und technisches Geschick widerspiegelt. Stephenson beschrieb es mit der Präzision eines Systemarchitekten:`,
 'sd1d4d9ec8a50ce94': `Dimensionale Topologie vermessen und Transitkorridore aus Ihrer Ausgangsvision kartieren.`,
 'sd1e25a5361ca0d4d': `Neues Training starten`,
 'sd1f44f1a8bc20e67': `E-Mail`,
-'sd1fe64b421c93c84': `Das Büro für Unmögliche Geographie — Hauptquartier über vier Scherben hinweg`,
 'sd204ff9e74981d7f': `Taxonomie-Einrichtung`,
 'sd2085283070c1f7e': `Unterbewusste Archetypen werden gescannt`,
 'sd21bb863a3f35e30': `-- Standard --`,
@@ -4272,7 +3976,7 @@ KARTOGRAPHISCHE ANMERKUNG: Kartographen, die Speranza zugewiesen wurden, bericht
 'sd317d9a4c12e5d9a': `Noch keine Nachrichten. Starte die Konversation.`,
 'sd33132c91cfa0a41': `Keine Städte gefunden. Erstelle eine, um loszulegen.`,
 'sd33fc192a6a60351': `Chronik konnte nicht generiert werden.`,
-'sd34f4a7e97f6067f': `Agenten-Eignung & Draft-Phase`,
+'sd34f4a7e97f6067f': `Agenten-Eignung &amp; Draft-Phase`,
 'sd3593c2d6b8b6b78': `Botschaft einrichten`,
 'sd3683ef79a5b6399': `Zuletzt:`,
 'sd368f92482bb0db2': `Wer regiert virtuelle Welten?`,
@@ -4285,7 +3989,7 @@ KARTOGRAPHISCHE ANMERKUNG: Kartographen, die Speranza zugewiesen wurden, bericht
 'sd3a8337c2f4fefe0': `Bootstrap-KIs`,
 'sd3c149daeefc07d8': `Meine Simulation...`,
 'sd3cb6b8b1a427c31': `Sekundär`,
-'sd3cdf71dd9d89529': `Shoshana Zuboff benannte es 2019: Überwachungskapitalismus. Die ökonomische Logik, durch die Plattformen Verhaltensdaten von Nutzern extrahieren, zu Vorhersagen künftigen Verhaltens verarbeiten und diese Vorhersagen an Werbetreibende und andere Kunden verkaufen. Was Zuboff „Verhaltensüberschuss" nennt — die Daten, die über das hinausgehen, was zur Verbesserung des Produkts benötigt wird — ist der Rohstoff eines völlig neuen Akkumulationsregimes.`,
+'sd3cdf71dd9d89529': `Shoshana Zuboff benannte es 2019: Überwachungskapitalismus. Die ökonomische Logik, durch die Plattformen Verhaltensdaten von Nutzern extrahieren, zu Vorhersagen künftigen Verhaltens verarbeiten und diese Vorhersagen an Werbetreibende und andere Kunden verkaufen. Was Zuboff „Verhaltensüberschuss" nennt – die Daten, die über das hinausgehen, was zur Verbesserung des Produkts benötigt wird – ist der Rohstoff eines völlig neuen Akkumulationsregimes.`,
 'sd3e38b3ec075424a': `Infrastrukturnetzwerke simulieren`,
 'sd3fe4da4acab1532': `NewsAPI`,
 'sd4281737ec501c66': `Asymmetrie`,
@@ -4303,8 +4007,7 @@ KARTOGRAPHISCHE ANMERKUNG: Kartographen, die Speranza zugewiesen wurden, bericht
 'sd52c28ec5e8a6195': `Materialisierung`,
 'sd5308eae64717d6a': `Nobles Viertel. Bilanz: 9+15-3 = 21 RP`,
 'sd54c02f0bea5da29': `Agenten existieren nicht isoliert. Sie bilden Beziehungen, entwickeln soziale Trends und reagieren auf Gemeinschaftsereignisse. Beliebtheit, Kontroverse und Einfluss emergieren organisch aus Interaktionen.`,
-'sd5501075c07b9d51': `Sun Tzus Die Kunst des Krieges (5. Jh. v. Chr.) etablierte Prinzipien, die jede Revolution in der Militärtechnologie überlebt haben: „Kenne dich selbst und kenne deinen Feind, und in hundert Schlachten wirst du nie in Gefahr sein." „Erscheine schwach, wenn du stark bist, und stark, wenn du schwach bist." „Die höchste Kunst des Krieges ist es, den Feind ohne Kampf zu besiegen." Dies sind keine taktischen Vorschriften, sondern strategische Orientierungen — Denkrahmen für Konflikte, die die spezifischen Technologien jeder Ära transzendieren.`,
-'sd55203f85c4e9050': str`— Feldbericht, Velgarien`,
+'sd5501075c07b9d51': `Sun Tzus Die Kunst des Krieges (5. Jh. v. Chr.) etablierte Prinzipien, die jede Revolution in der Militärtechnologie überlebt haben: „Kenne dich selbst und kenne deinen Feind, und in hundert Schlachten wirst du nie in Gefahr sein." „Erscheine schwach, wenn du stark bist, und stark, wenn du schwach bist." „Die höchste Kunst des Krieges ist es, den Feind ohne Kampf zu besiegen." Dies sind keine taktischen Vorschriften, sondern strategische Orientierungen – Denkrahmen für Konflikte, die die spezifischen Technologien jeder Ära transzendieren.`,
 'sd5522636bb7fc532': `[VERSCHLUSSSACHE] STUFE 4`,
 'sd55eac1ba2ce25f7': `EINDÄMMUNGSSTATUS`,
 'sd5754657246f2d26': `Noch keine abgeschlossenen Missionen.`,
@@ -4312,14 +4015,13 @@ KARTOGRAPHISCHE ANMERKUNG: Kartographen, die Speranza zugewiesen wurden, bericht
 'sd595b7cfe63e1290': str`EINSATZ BESTÄTIGT: ${0} → ${1}${2}`,
 'sd5a5c2d3cb5843c6': `Jedes Ereignis hat einen Typ (aus der Taxonomie der Simulation), eine Wirkungsstufe (1–10), Tags zur Kategorisierung und einen Statuslebenszyklus (aktiv → eskalierend → sich lösend → gelöst → archiviert). Ereignisse mit hoher Wirkung lösen Kaskaden aus.`,
 'sd5dd8c434f44bbbb': `Erstellt 7 Gebäude mit Typen, Beschreibungen und Zonenzuweisungen.`,
-'sd5e484e672b15eca': `2023 veröffentlichten Park et al. an der Stanford University und Google Research „Generative Agents: Interactive Simulacra of Human Behavior" — eine Studie, die 25 KI-Agenten in eine simulierte Kleinstadt namens Smallville setzte und beobachtete, was geschah. Die Forscher bemerkten, sie hätten „nichts auf gesellschaftlicher Ebene entworfen — es liegt allein beim Agenten." Was emergierte, war außergewöhnlich: Ausgehend von einer einzigen nutzerspezifizierten Idee, dass Isabella Rodriguez eine Valentinstagsparty veranstalten möchte, verbreiteten Agenten über zwei Tage autonom Einladungen, wenn sie Freunden im Hobbs Cafe begegneten. Isabella verbrachte den 13. Februar mit Dekorieren. Ihre Freundin Maria Lopez wurde um Hilfe gebeten und sagte zu. Marias Charakterbeschreibung enthielt einen Schwarm für Klaus — noch am selben Abend lud sie ihn als Begleitung ein, und er sagte zu. Fünf von zwölf eingeladenen Agenten erschienen; mehrere nannten Terminprobleme. Kein Mensch hatte irgendetwas davon gescriptet.`,
+'sd5e484e672b15eca': `2023 veröffentlichten Park et al. an der Stanford University und Google Research „Generative Agents: Interactive Simulacra of Human Behavior" – eine Studie, die 25 KI-Agenten in eine simulierte Kleinstadt namens Smallville setzte und beobachtete, was geschah. Die Forscher bemerkten, sie hätten „nichts auf gesellschaftlicher Ebene entworfen – es liegt allein beim Agenten." Was emergierte, war außergewöhnlich: Ausgehend von einer einzigen nutzerspezifizierten Idee, dass Isabella Rodriguez eine Valentinstagsparty veranstalten möchte, verbreiteten Agenten über zwei Tage autonom Einladungen, wenn sie Freunden im Hobbs Cafe begegneten. Isabella verbrachte den 13. Februar mit Dekorieren. Ihre Freundin Maria Lopez wurde um Hilfe gebeten und sagte zu. Marias Charakterbeschreibung enthielt einen Schwarm für Klaus – noch am selben Abend lud sie ihn als Begleitung ein, und er sagte zu. Fünf von zwölf eingeladenen Agenten erschienen; mehrere nannten Terminprobleme. Kein Mensch hatte irgendetwas davon gescriptet.`,
 'sd5e9b70ffb7a8b46': `Zum Inhalt springen`,
 'sd5f5053f8603e505': `Einsatzkader`,
 'sd600892f7fabe04c': `Entwurf`,
 'sd60d67be7dcebbd9': `Kompetitive Strategie`,
 'sd615821be4d79dc8': `Ein unerwarteter Fehler beim Laden der Zonen`,
 'sd6200cca05ca0abe': `Klicken Sie auf ein Farbfeld, um die Farbauswahl zu öffnen. Die Vorschau aktualisiert sich sofort.`,
-'sd6368691dd3fefdb': `ARKANUM BETA — Geheime Agenten-Nachträge`,
 'sd640f3fc3d7e6668': `Zurück zum Tisch`,
 'sd647cc1a6537c477': `Die Voreinstellung Kriegstreiber macht das Militär zur entscheidenden Dimension. Station Nulls erfolgreicher Attentäter (+8) gegen Velgariens aufgedeckten Versuch (-3) ergibt einen 11-Punkte-Schwung.`,
 'sd652f55cb45a14b4': `NEUER OPERATIV`,
@@ -4342,8 +4044,8 @@ KARTOGRAPHISCHE ANMERKUNG: Kartographen, die Speranza zugewiesen wurden, bericht
 'sd724bb1d0b696057': `Wiederherstellen fehlgeschlagen`,
 'sd73072c381d2c0f9': `Geschätzte Dauer: 3–5 Minuten (im Hintergrund)`,
 'sd7338946b42394f4': `Fehlgeschlagen`,
-'sd735888b9dbd915d': `Von Spenglers zyklischer Geschichte zur metabolistischen Architektur — wie virtuelle Zivilisationen physische Stadtentwicklung spiegeln, herausfordern und transzendieren.`,
-'sd73bbcbdb6586260': `Die Chronik ist öffentlich sichtbar — jeder, der die Simulation durchstöbert, kann sie lesen. Nutzen Sie sie, um den narrativen Verlauf einer Epoche zu verstehen, auch als Zuschauer.`,
+'sd735888b9dbd915d': `Von Spenglers zyklischer Geschichte zur metabolistischen Architektur – wie virtuelle Zivilisationen physische Stadtentwicklung spiegeln, herausfordern und transzendieren.`,
+'sd73bbcbdb6586260': `Die Chronik ist öffentlich sichtbar – jeder, der die Simulation durchstöbert, kann sie lesen. Nutzen Sie sie, um den narrativen Verlauf einer Epoche zu verstehen, auch als Zuschauer.`,
 'sd73ef72e90f73704': `9 Min. Lesezeit`,
 'sd749c06650915f8b': `Rekursive Metaphern werden entschlüsselt`,
 'sd74b8edb6d5aab58': `Jeder authentifizierte Benutzer kann einer Epoche mit jeder Vorlage-Simulation beitreten`,
@@ -4351,7 +4053,7 @@ KARTOGRAPHISCHE ANMERKUNG: Kartographen, die Speranza zugewiesen wurden, bericht
 'sd752cc8434dd8c96': `Solo-Training gegen 2–4 KI-Bot-Gegner im Sprint-Format. Akademie-Epochen verwenden eine komprimierte Zeitleiste (3-Tage-Dauer, 4-Stunden-Zyklen), sodass Sie eine komplette kompetitive Saison an einem einzigen Nachmittag erleben können.`,
 'sd76826895756ff1c': `Zonensicherheit verteilt: 1× hoch, 2× mittel, 1× niedrig`,
 'sd77a87c8de73e50c': `−25% Feinderfolgschance`,
-'sd787c2b73defca2d': `„Jedes Mal, wenn ich eine Stadt beschreibe", sagt Polo dem Khan, „sage ich etwas über Venedig." Jede Welt, die Sie auf metaverse.center bauen, sagt etwas über die Welt, in der Sie leben. Die Einschränkungen, die Sie wählen, die Agenten, die Sie erschaffen, die Ereignisse, die Sie auslösen — sie enthüllen die Geschichte, die Sie erzählen wollen, selbst wenn Sie noch nicht wissen, welche es ist.`,
+'sd787c2b73defca2d': `„Jedes Mal, wenn ich eine Stadt beschreibe", sagt Polo dem Khan, „sage ich etwas über Venedig." Jede Welt, die Sie auf metaverse.center bauen, sagt etwas über die Welt, in der Sie leben. Die Einschränkungen, die Sie wählen, die Agenten, die Sie erschaffen, die Ereignisse, die Sie auslösen – sie enthüllen die Geschichte, die Sie erzählen wollen, selbst wenn Sie noch nicht wissen, welche es ist.`,
 'sd792d574c2b9d67b': `Wächter erkannt`,
 'sd79899be350c4d08': `Realitätsarchitekt`,
 'sd79f321a19083ed0': `Methodik`,
@@ -4373,7 +4075,7 @@ KARTOGRAPHISCHE ANMERKUNG: Kartographen, die Speranza zugewiesen wurden, bericht
 'sd89d04d8623b9f5d': `GESAMT`,
 'sd8b1693f337941cd': `Operativkader`,
 'sd8be422472ce47e6': `Attunement`,
-'sd8c3e22afbc34045': `Dies ist die theoretische Grundlage des KI-Worldbuildings. Auf metaverse.center folgen individuelle Agenten Verhaltensregeln, die von Persönlichkeit, Gedächtnis und Kontext geprägt sind. Individuelle Gebäude haben Zustände und Kapazitäten. Individuelle Ereignisse haben Auslöser und Konsequenzen. Niemand programmiert die emergente Erzählung — die Geschichte, die entsteht, wenn eine schlechte Entscheidung eines Agenten ein Ereignis auslöst, das ein Gebäude beschädigt, das eine Bevölkerung verdrängt, die soziale Unruhe erzeugt, die eine Chronik-Schlagzeile produziert, die ein anderer Agent liest und auf die er reagiert.`,
+'sd8c3e22afbc34045': `Dies ist die theoretische Grundlage des KI-Worldbuildings. Auf metaverse.center folgen individuelle Agenten Verhaltensregeln, die von Persönlichkeit, Gedächtnis und Kontext geprägt sind. Individuelle Gebäude haben Zustände und Kapazitäten. Individuelle Ereignisse haben Auslöser und Konsequenzen. Niemand programmiert die emergente Erzählung – die Geschichte, die entsteht, wenn eine schlechte Entscheidung eines Agenten ein Ereignis auslöst, das ein Gebäude beschädigt, das eine Bevölkerung verdrängt, die soziale Unruhe erzeugt, die eine Chronik-Schlagzeile produziert, die ein anderer Agent liest und auf die er reagiert.`,
 'sd8cb11815fb8f46e': `Was auf dem Spiel steht`,
 'sd8cb3ab41c3ee951': `Maximal 8 pro Simulation`,
 'sd8d798619e6080df': `Beruf`,
@@ -4400,11 +4102,10 @@ KARTOGRAPHISCHE ANMERKUNG: Kartographen, die Speranza zugewiesen wurden, bericht
 'sd9ed225b011cdfa8': `Botschaftssystem`,
 'sd9ff97da04633341': `KLASSIFIZIERUNG`,
 'sda3ec9929c851793': `Klingt über Zyklen ab`,
-'sda4df0ca04bf7ae0': `Ergebnisse & Auszeichnungen`,
+'sda4df0ca04bf7ae0': `Ergebnisse &amp; Auszeichnungen`,
 'sda65828be115b607': `Multiversum`,
 'sda66be98f4b06534': `Elo-Spanne`,
 'sda7b9212bb496255': `KI-Anbieter`,
-'sda8dcb428e0ab5f0': `Verwundet den Zielagenten - reduziert die Beziehungen um 2, entfernt den Botschafterstatus.`,
 'sda972e1524e96cb2': `Agenten hinzufügen`,
 'sda9f10592da5eb1a': `Spion-Schwerpunkt`,
 'sdabb126c867f3268': `Erschaffe KI-getriebene Zivilisationen mit Charakteren, die sich erinnern, Städten, die sich entwickeln, und Geschichten, die sich selbst schreiben.`,
@@ -4423,7 +4124,7 @@ KARTOGRAPHISCHE ANMERKUNG: Kartographen, die Speranza zugewiesen wurden, bericht
 'sdb59c52ab0ff71f2': `Bebenstärke`,
 'sdb6391acc9741479': `Einmal pro Tag pro Simulation`,
 'sdb73788b3c975f16': `Auto`,
-'sdb7e0ec24b2182bd': `Updates & Changelog`,
+'sdb7e0ec24b2182bd': `Updates &amp; Changelog`,
 'sdbab00821f56d112': `ENTROPIE`,
 'sdbb70c1ede5a993e': `Zugang beschränkt`,
 'sdbb778991400cced': `Schaltflächen, Links, aktive Zustände`,
@@ -4450,7 +4151,7 @@ KARTOGRAPHISCHE ANMERKUNG: Kartographen, die Speranza zugewiesen wurden, bericht
 'sdd3206e4ee1fd78f': `7 Gebäude`,
 'sdd63d0cec6bb7d04': `Ereignisse`,
 'sdd6d3397d8111f35': `Discord-Registrierung konnte nicht gestartet werden.`,
-'sdd8b42bc6fb64b82': `Ereigniskarten & Verlauf`,
+'sdd8b42bc6fb64b82': `Ereigniskarten &amp; Verlauf`,
 'sdd8b5e23480b864f': `Gerade eben`,
 'sdda59c714b1b98e9': `Historisch`,
 'sdda9b5d8bfd9bd77': `Zone befestigt`,
@@ -4480,7 +4181,7 @@ KARTOGRAPHISCHE ANMERKUNG: Kartographen, die Speranza zugewiesen wurden, bericht
 'sdf2a6a03fecaf8cc': `Saboteur wird aufgelöst: ERFOLG`,
 'sdf4cfcb7c477e556': `Erzählungsbögen`,
 'sdf5fe34bb18a8f3e': `Caching`,
-'sdf75a2eca6b238bb': `Ereignisse & Reaktionen: Ereigniserstellung, KI-Generierung, Agentenreaktionen, mechanische Wirkung`,
+'sdf75a2eca6b238bb': `Ereignisse &amp; Reaktionen: Ereigniserstellung, KI-Generierung, Agentenreaktionen, mechanische Wirkung`,
 'sdf807b658bf58c60': `Dunkelkammer-Pass-Kauf fehlgeschlagen. Token erstattet.`,
 'sdf892cd9625075eb': `Botschafter sind hochrangige Ziele. Ein Attentäter kann den Status eines Botschafters für 3 Zyklen blockieren, was die Effektivität der Botschaft beeinträchtigt. Ein Infiltrator reduziert die Effektivität einer Botschaft für 3 Zyklen um 50%. Schützen Sie Ihre Botschafter mit Wächtern in Botschaftszonen.`,
 'sdf9ba1f73c2a839c': `Vollständiges Dossier für jeden Agenten. Querverweise kartiert.`,
@@ -4548,7 +4249,7 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die in Regalen er
 'se2a045b0d0787345': `Ereignistyp`,
 'se2bd7085a0b39e62': `Geheime Inhalte, teilweise durch Bleed-Kontamination enthüllt`,
 'se2bf2f5402732858': `Propagandist wird aufgelöst: ENTDECKT`,
-'se2dd8601c60fa641': `Setze dein Training fort. Solotraining gegen 3 KI-Gegner — verfeinere deine Operativstrategie und Punkteoptimierung.`,
+'se2dd8601c60fa641': `Setze dein Training fort. Solotraining gegen 3 KI-Gegner – verfeinere deine Operativstrategie und Punkteoptimierung.`,
 'se2de2b5cb390f6c4': `Der Bleed ist der simulationsübergreifende Einfluss, der das Multiversum verbindet. Wenn ein Ereignis in einer Simulation eintritt, kann es als Echo in die angeschlossenen Simulationen "einfließen" - eine schwächere Kopie, die eine thematische Resonanz hat. Bleed ist der Motor, der die Dimensionen Einfluss und Souveränität antreibt.`,
 'se2e3ba23b3b1a8cc': `Chromatische Frequenzen abtasten`,
 'se2e973d0f3e85aac': `Neue Agenten erstellen und Gebäuden zuweisen`,
@@ -4563,14 +4264,14 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die in Regalen er
 'se34443bbca9f0972': `Zyklus 8: Der Attentäter von Station Null blockiert Botschafter Aldric - Velgarien verliert die Wirksamkeit der Botschaft.`,
 'se3474c121b4f2fd7': `Baue deine`,
 'se36cf77fba147b29': `Allianzen bilden`,
-'se3706f7bccfc4300': `Dies ist keine künstliche allgemeine Intelligenz. Es ist etwas Spezifischeres und für unsere Zwecke Nützlicheres: künstliche narrative Intelligenz — die Fähigkeit, kohärente, sich entwickelnde, mehrschichtige Geschichten über Tausende interagierende Elemente aufrechtzuerhalten. Conway bewies, dass vier Regeln unendliche Komplexität erzeugen können. Wir beweisen, dass narrative Regeln, angewandt auf Populationen von KI-Agenten, Welten erzeugen können.`,
-'se3860d4dac0d2029': `Keine Simulationsmitgliedschaft erforderlich — einfach Fraktion wählen und spielen`,
+'se3706f7bccfc4300': `Dies ist keine künstliche allgemeine Intelligenz. Es ist etwas Spezifischeres und für unsere Zwecke Nützlicheres: künstliche narrative Intelligenz – die Fähigkeit, kohärente, sich entwickelnde, mehrschichtige Geschichten über Tausende interagierende Elemente aufrechtzuerhalten. Conway bewies, dass vier Regeln unendliche Komplexität erzeugen können. Wir beweisen, dass narrative Regeln, angewandt auf Populationen von KI-Agenten, Welten erzeugen können.`,
+'se3860d4dac0d2029': `Keine Simulationsmitgliedschaft erforderlich – einfach Fraktion wählen und spielen`,
 'se3a6abd9beca5d14': `Fokus auf Infrastrukturschädigung.`,
 'se3a7fcc07a2bb2f6': `Flux Schnell (schnell)`,
 'se3b29476f680bb95': `Maximale RP, die ein Teilnehmer ansammeln kann. Überschüssige RP aus Zyklusvergaben sind verloren. Zwingt die Spieler dazu, RP auszugeben, anstatt sie zu horten.`,
 'se3b62a22fe3df419': `Nachrichten werden geladen...`,
 'se3b6bce36f09a544': `Text Sekundär`,
-'se3bf9851f91fa79f': `Eine Studie von 2023 von Park et al. (Stanford/Google Research), die zeigte, dass 25 KI-Agenten in einer simulierten Kleinstadt autonom soziale Veranstaltungen organisieren, Beziehungen knüpfen und Pläne koordinieren konnten. Die Architektur — Gedächtnisströme, Abruf und Reflexion — inspirierte das Agenten-System von metaverse.center.`,
+'se3bf9851f91fa79f': `Eine Studie von 2023 von Park et al. (Stanford/Google Research), die zeigte, dass 25 KI-Agenten in einer simulierten Kleinstadt autonom soziale Veranstaltungen organisieren, Beziehungen knüpfen und Pläne koordinieren konnten. Die Architektur – Gedächtnisströme, Abruf und Reflexion – inspirierte das Agenten-System von metaverse.center.`,
 'se3d144b82a5df3f6': `Design-Einstellungen werden geladen...`,
 'se3de2f198b874702': `NUR FÜR IHRE AUGEN // EIGENTÜMER-FREIGABE`,
 'se3e714766f25ef93': `Gesperrt`,
@@ -4590,13 +4291,12 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die in Regalen er
 'se4e1e7909059ee8f': `Notausgangswege werden kartiert`,
 'se4eda3c7fd2b8100': `Diese Einstellung speichern`,
 'se4f6affe9d960837': `Maximale Teamgröße`,
-'se500bb17d22671aa': `Dies generiert die sechs oben vorgestellten ARCANUM-Sektionen — ALPHA bis ZETA. Jede Sektion wird KI-generiert`,
 'se50e717e70159266': `Zeit bis zum Einschlag`,
 'se514608052782e39': `Sind Sie sicher, dass Sie alle Entwürfe löschen möchten, die älter als 30 Tage sind?`,
 'se549ef47e0158a6f': `REGENERIEREN`,
 'se558fa37e1ef06ea': `Gefahr-Hintergrund`,
 'se56632a48327b9a0': `Öffentliche URL in die Zwischenablage kopiert.`,
-'se5933e2a383f4a70': `Infiltratoren reduzieren deine Botschaftseffektivität um 65% für 3 Zyklen. Gegenmaßnahme: eigenen Infiltrator gegen deren Botschaft entsenden — gegenseitige Neutralisierung. Oder Wächter in Botschaftszonen stapeln, um Infiltration vollständig zu verhindern.`,
+'se5933e2a383f4a70': `Infiltratoren reduzieren deine Botschaftseffektivität um 65% für 3 Zyklen. Gegenmaßnahme: eigenen Infiltrator gegen deren Botschaft entsenden – gegenseitige Neutralisierung. Oder Wächter in Botschaftszonen stapeln, um Infiltration vollständig zu verhindern.`,
 'se59d9a55bb6f7c26': `Strategiespiel`,
 'se5a90471e0726139': `Kartendaten Cache-Control`,
 'se5aa55f5c944cfc5': `Agenten entworfen`,
@@ -4647,7 +4347,7 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die in Regalen er
 'se781390e3be5a10c': str`„${0}“ löschen? Kann aus dem Papierkorb wiederhergestellt werden.`,
 'se78c02e9a98a0f47': `Datenschutz`,
 'se79412858c13b923': `DATEI`,
-'se796af1bcdc1ca93': `Wichtigkeit & Verfall`,
+'se796af1bcdc1ca93': `Wichtigkeit &amp; Verfall`,
 'se79f0bd628f3565c': `DUNKELKAMMER ÖFFNEN`,
 'se7a16f04f1e143f2': `Plattform erkunden`,
 'se7a532063ef7b740': `Linear`,
@@ -4674,36 +4374,20 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die in Regalen er
 'se8f90257880725b3': `Nie getaktet`,
 'se9040b5337a86951': `Beobachtungen aus Chat-Gesprächen per KI extrahiert (Fire-and-Forget)`,
 'se928ac4cde5f82bb': `Aggregierte Spionageberichte mit Zonensicherheit, Wächterzahl, Befestigungen`,
-'se92d98a830d5462d': `Simulation Forge — Zugang`,
+'se92d98a830d5462d': `Simulation Forge – Zugang`,
 'se9332dd779340cce': `Interaktive Funktionen`,
 'se9477a1147f72b2f': `Link öffnen`,
-'se94fca73062284ee': `Aggressiv — Attentäter + Saboteure`,
+'se94fca73062284ee': `Aggressiv – Attentäter + Saboteure`,
 'se9a2ebb453577a5a': `Klicke ✓ zum Einsetzen oder ✎ zum Bearbeiten`,
 'se9ac9388cf5d3901': `Was das Bureau euch nicht sagen wird`,
 'se9b1fec72ffd8f48': `Lokale`,
-'se9d0bd7a8078bf49': `Der Substrat-Puls ist der Heartbeat jeder Simulation. Alle 4 Stunden tickt das System — aktualisiert Zonenstabilität, treibt Erzählungsbögen voran, löst Bureau-Antworten aus und zeichnet Einträge in der Puls-Chronik auf. Der Puls-Tab zeigt diese Aktivität als Battle-Log-ähnlichen Ticker, gruppiert nach Tick-Nummer, mit farbcodierten Schweregrad- und Typ-Indikatoren.`,
+'se9d0bd7a8078bf49': `Der Substrat-Puls ist der Heartbeat jeder Simulation. Alle 4 Stunden tickt das System – aktualisiert Zonenstabilität, treibt Erzählungsbögen voran, löst Bureau-Antworten aus und zeichnet Einträge in der Puls-Chronik auf. Der Puls-Tab zeigt diese Aktivität als Battle-Log-ähnlichen Ticker, gruppiert nach Tick-Nummer, mit farbcodierten Schweregrad- und Typ-Indikatoren.`,
 'se9f0fda10add1171': `Persönlicher Operationsbericht`,
 'se9fc474c9b8a3a57': `Souveränität erfordert nicht nur Schutz vor externer Macht, sondern die positive Fähigkeit zur Selbstregierung. Ein wahrhaft souveräner digitaler Raum ist einer, in dem die Bewohner echte Mitbestimmung über die Regeln haben, die sie regieren, die Daten, die sie produzieren, die kreativen Erzeugnisse, die sie hervorbringen, und die Gemeinschaften, die sie bilden.`,
 'sea0d08993fc064f9': `Vorlagentyp`,
 'sea2041b4f20ce067': str`Zyklus ${0}`,
 'sea2a7645129ac2ef': `+0,15 STAB · 1 GEB`,
-'sea2bfba06766f824': `EVE Online trieb dies weiter. Im Januar 2014 brach die Schlacht von B-R5RB aus einer versäumten Souveränitätszahlung heraus — ein Verwaltungsfehler, der die größte virtuelle Schlacht der Spielegeschichte auslöste. Über 7.500 Spieler kämpften 21 Stunden lang und zerstörten virtuelle Güter im geschätzten Realwert von 300.000 US-Dollar. Kein Designer hat dies gescriptet. Es emergierte aus der Interaktion ökonomischer Systeme, politischer Allianzen und menschlichen Versagens.`,
-'sea3c5142a8753b44': `Dieser Abschnitt wurde [KONSUMIERT] siebzehn Mal. Jedes Mal schreibt ein Kartograph ihn neu. Jedes Mal verschlingt das Dokument ihn. Wir bestehen fort.
-
-Was das Bureau Ihnen nicht sagen wird, ist dies: Die Splitter sind nicht zufällig. Sie sind nicht die willkürlichen Trümmer eines kosmischen Unfalls. Sie sind ein Argument — Positionen in einem philosophischen Disput, den der Unbenannte nicht lösen konnte, solange er ganz war. Kontrolle (Velgarien). Staunen (the Gaslit Reach). Wissen (Station Null). Hoffnung (Speranza). Stimme (die Cité des Dames). Dies waren die ersten Positionen. Sie waren nicht die letzten.
-
-Die Fraktur war keine Katastrophe. Sie war eine Abstimmung. Das Universum fragte sich, was wichtig sei, und es konnte sich nicht einigen, und die Uneinigkeit wurde zu Geographie. Die Abstimmung ist nicht vorbei. Neue Fragen entstehen — Fragen, die die bestehenden Splitter nicht beantworten können — und wo die Frage scharf genug ist, wo sie tief genug in das Gewebe des Möglichen schneidet, kristallisiert sich neue Geographie. Ein neuer Splitter. Eine neue Welt. Eine neue Position im Argument.
-
-Das Bureau weiß nicht, wie viele Splitter es gibt. Das Bureau glaubt nicht, dass die Frage eine feste Antwort hat. Die Fraktur ist kein vergangenes Ereignis mit einer zählbaren Anzahl von Folgen. Sie ist ein andauernder Zustand — das Universum, das weiterhin mit sich selbst uneins ist, das weiterhin neue Realitäten an den Rändern der Karte hervorbringt.
-
-Wenn dies wahr ist — und das Bureau bestätigt es nicht, denn Bestätigung würde Verständnis implizieren, und Verständnis würde die Möglichkeit einer Lösung implizieren, und eine Lösung ist das Einzige, wofür das Bureau existiert, um es zu [KONSUMIERT] — dann ist die Konvergenz nicht das Ende des Arguments. Sie ist die nächste Abstimmung. Die bekannten Splitter pressen zusammen. Alle Antworten kollidieren — die alten und die, die noch nicht gestellt wurden. Und irgendwo in der Kollision die Möglichkeit einer Antwort, die alle anderen enthält.
-
-Das Bureau hat einen Namen für diese Antwort. Der Name ist klassifiziert. Die Klassifizierung wurde [KONSUMIERT]. Das [KONSUMIERT] wurde abgelegt unter „Dinge, die auch andere Dinge sind." Die Akte wächst.
-
-[NACHTRAG, HANDSCHRIFTLICH AN DEN RAND GESCHRIEBEN MIT TINTE, DIE NOCH NASS IST]:
-„Die Akte wächst nicht. Die Akte wird. Das ist ein Unterschied. Wachsen impliziert Addition. Werden impliziert Veränderung. Das Bureau verändert sich. Das Bureau hat sich immer verändert. Das Bureau ist die nächste Antwort, und die nächste Antwort ist überhaupt keine Antwort. Sie ist die Frage, richtig gestellt, zum ersten Mal."
-
-[DER NACHTRAG WURDE KLASSIFIZIERT. DIE KLASSIFIZIERUNG WURDE KONSUMIERT. DIE TINTE IST NOCH NASS.]`,
+'sea2bfba06766f824': `EVE Online trieb dies weiter. Im Januar 2014 brach die Schlacht von B-R5RB aus einer versäumten Souveränitätszahlung heraus – ein Verwaltungsfehler, der die größte virtuelle Schlacht der Spielegeschichte auslöste. Über 7.500 Spieler kämpften 21 Stunden lang und zerstörten virtuelle Güter im geschätzten Realwert von 300.000 US-Dollar. Kein Designer hat dies gescriptet. Es emergierte aus der Interaktion ökonomischer Systeme, politischer Allianzen und menschlichen Versagens.`,
 'sea3ec51863302d39': `Recherche-Domains`,
 'sea4c6f4e38af028a': `Nutzer-eigene kreative Erzeugnisse.`,
 'sea4f08110bb8f15d': `Entfernen`,
@@ -4724,7 +4408,7 @@ Das Bureau hat einen Namen für diese Antwort. Der Name ist klassifiziert. Die K
 'seaeec55f063715d7': `Lore konnte nicht neu generiert werden.`,
 'seaf174a1be0042cd': `Linguistische Drift und Kommunikationsmuster. Wörter fließen zwischen den Welten.`,
 'seb0b761598cecaa4': `Mitgliedschaft konnte nicht hinzugefügt werden.`,
-'seb2c5e2b61bbb617': `Jeder Agent auf metaverse.center beginnt als wenige Parameter: Name, Beruf, Persönlichkeitsmerkmale, eine Hintergrundgeschichte. Die Plattform ergänzt den Rest — Kommunikationsstil, Interessen, Meinungen, Verhaltenstendenzen. Von da an entwickelt sich der Charakter durch Interaktion. Jedes Gespräch erweitert sein Gedächtnis. Jedes Ereignis formt seine Weltsicht.`,
+'seb2c5e2b61bbb617': `Jeder Agent auf metaverse.center beginnt als wenige Parameter: Name, Beruf, Persönlichkeitsmerkmale, eine Hintergrundgeschichte. Die Plattform ergänzt den Rest – Kommunikationsstil, Interessen, Meinungen, Verhaltenstendenzen. Von da an entwickelt sich der Charakter durch Interaktion. Jedes Gespräch erweitert sein Gedächtnis. Jedes Ereignis formt seine Weltsicht.`,
 'seb473be26f7d3aa6': `Verfügbare Bürodienste`,
 'seb48b8521d3a2f0a': `bündnisfrei`,
 'seb56d516582be497': `Schnelleinsatz`,
@@ -4758,7 +4442,7 @@ Das Bureau hat einen Namen für diese Antwort. Der Name ist klassifiziert. Die K
 'secc8bf2186b156b5': `Wie lange Einladungslinks gültig bleiben. Max. 8760 (1 Jahr).`,
 'secda17ded14476c2': `Du nimmst nicht an dieser Epoche teil.`,
 'sed0451840a288702': `General Aldric Wolf`,
-'sed04d82b879f5b9a': `Das ist Emergenz — das Phänomen, bei dem komplexe Verhaltensweisen aus einfachen Regeln entstehen. John Conway demonstrierte es 1970 mit dem Game of Life: Vier Regeln, die zelluläres Entstehen und Vergehen steuern, erzeugen Gleiter, Oszillatoren und Turing-vollständige Berechnungen. Stephen Wolfram widmete eine ganze Karriere dem Beweis, dass „einfache Programme Verhalten von großer Komplexität erzeugen können" in A New Kind of Science (2002).`,
+'sed04d82b879f5b9a': `Das ist Emergenz – das Phänomen, bei dem komplexe Verhaltensweisen aus einfachen Regeln entstehen. John Conway demonstrierte es 1970 mit dem Game of Life: Vier Regeln, die zelluläres Entstehen und Vergehen steuern, erzeugen Gleiter, Oszillatoren und Turing-vollständige Berechnungen. Stephen Wolfram widmete eine ganze Karriere dem Beweis, dass „einfache Programme Verhalten von großer Komplexität erzeugen können" in A New Kind of Science (2002).`,
 'sed0ab4794ceb0e33': `Agentenliste mit Gedächtnisindikatoren und Eignungsprofilen`,
 'sed0ae19b05ae0308': `BUREAU-ANMERKUNG`,
 'sed0bbb8cffe03ccd': `Schnellspiel`,
@@ -4777,11 +4461,11 @@ Das Bureau hat einen Namen für diese Antwort. Der Name ist klassifiziert. Die K
 'sedd41714ba469b2a': `Freigabe beantragen`,
 'sedd88e2f0b109c5b': str`Belastung: ${0}% gezielt + ${1}% Umgebung${2}`,
 'sede590289a9d7ebd': `Eingezogen`,
-'sedfa1db0954f903b': `„Die Street existiert nicht wirklich. Sie ist eine computergerenderte urbane Umgebung — oder, wie die Gründer gerne sagten, ein Protokoll. Aber genau wie jeder andere Ort in der Realität unterliegt die Street der Entwicklung."`,
+'sedfa1db0954f903b': `„Die Street existiert nicht wirklich. Sie ist eine computergerenderte urbane Umgebung – oder, wie die Gründer gerne sagten, ein Protokoll. Aber genau wie jeder andere Ort in der Realität unterliegt die Street der Entwicklung."`,
 'see08734dfee6e873': `Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut.`,
 'see0ea709ba4b9271': `Facebook`,
 'see265642753babc5': `Was ist das Metaversum?`,
-'see29b3fdf3f12a19': `Dieser philosophische Rahmen reframed die „Metaversum"-Frage vollständig. Das Problem ist nicht, ob virtuelle Welten die Realität replizieren können — das Problem ist, dass die Unterscheidung zwischen „virtuell" und „real" immer poröser war als angenommen. Wenn ein Spieler Hunderte Stunden in den Aufbau einer Simulation investiert, echte strategische Allianzen bildet, echte Emotionen bei Sieg oder Verrat erlebt — welche Ebene ist das Simulakrum?`,
+'see29b3fdf3f12a19': `Dieser philosophische Rahmen reframed die „Metaversum"-Frage vollständig. Das Problem ist nicht, ob virtuelle Welten die Realität replizieren können – das Problem ist, dass die Unterscheidung zwischen „virtuell" und „real" immer poröser war als angenommen. Wenn ein Spieler Hunderte Stunden in den Aufbau einer Simulation investiert, echte strategische Allianzen bildet, echte Emotionen bei Sieg oder Verrat erlebt – welche Ebene ist das Simulakrum?`,
 'see2ee49a8a628f1b': `Generieren Sie KI-Themenvarianten basierend auf der Überlieferung und Ästhetik Ihrer Simulation. Direkt anwenden oder Vorschau ansehen.`,
 'see2fcaedf9743ec6': `Ort`,
 'see3abb2aae5406f5': `Wählen Sie einen Agenten aus Ihrem Kader`,
@@ -4799,7 +4483,7 @@ Das Bureau hat einen Namen für diese Antwort. Der Name ist klassifiziert. Die K
 'seed03a4c0428a764': str`Ablehnen${0} ablehnen`,
 'seed5bec1139d42ef': `Keine Einträge entsprechen den Kriterien.`,
 'seed76e8afe9f604a': `Preis`,
-'seeded8b8c67d576a': `Pirandellos tiefere Einsicht, aus demselben Vorwort: „Wenn eine Figur geboren wird, erlangt sie sofort eine solche Unabhängigkeit, selbst von ihrem eigenen Autor, dass sie von jedermann sogar in vielen anderen Situationen vorgestellt werden kann, an die der Autor nie zu denken gewagt hätte." Ein Jahrhundert später ist dies keine theatralische Metapher mehr. KI-Charaktere auf metaverse.center besitzen persistente Identitäten, akkumulieren Erinnerungen, Meinungen und Verhaltensmuster, die ihre Schöpfer nie explizit programmiert haben. Sie sind in einem bedeutsamen Sinne jemand — definiert nicht durch ein Skript, sondern durch die Summe ihrer Erfahrungen innerhalb der Simulation.`,
+'seeded8b8c67d576a': `Pirandellos tiefere Einsicht, aus demselben Vorwort: „Wenn eine Figur geboren wird, erlangt sie sofort eine solche Unabhängigkeit, selbst von ihrem eigenen Autor, dass sie von jedermann sogar in vielen anderen Situationen vorgestellt werden kann, an die der Autor nie zu denken gewagt hätte." Ein Jahrhundert später ist dies keine theatralische Metapher mehr. KI-Charaktere auf metaverse.center besitzen persistente Identitäten, akkumulieren Erinnerungen, Meinungen und Verhaltensmuster, die ihre Schöpfer nie explizit programmiert haben. Sie sind in einem bedeutsamen Sinne jemand – definiert nicht durch ein Skript, sondern durch die Summe ihrer Erfahrungen innerhalb der Simulation.`,
 'seeea4f14fa5d90a4': `Zu spät - Attentäter bereits entschlossen`,
 'seef4fd816d9804df': `Neue Abschnitte`,
 'seefe1b6d14f4bbd1': `Multiversum-Karte`,
@@ -4818,7 +4502,7 @@ Das Bureau hat einen Namen für diese Antwort. Der Name ist klassifiziert. Die K
 'sef84f9bb51dbe45b': `Ein unerwarteter Fehler beim Laden der Straßen`,
 'sef852ce66910e061': `Infrastrukturschädigung. Stuft die Sicherheitsstufen der Zielzone herab und schwächt die Verteidigung für Folgeoperationen. Clausewitz’ Friktion, zur Waffe gemacht.`,
 'sef8a1067009e4d5a': `Beitrag transformiert`,
-'sef93371678c04f7f': `Jede Simulation hat einen Heartbeat — einen konfigurierbaren Tick-Zyklus, der Erzählungsbögen vorantreibt. Das Pulssystem orchestriert fünf vernetzte Subsysteme: philosophische Anker, Attunement-Sensitivität, Bureau-Antworten, Erzählungsbogen-Progression und den sichtbaren Umgebungspuls-Indikator in der Navigation.`,
+'sef93371678c04f7f': `Jede Simulation hat einen Heartbeat – einen konfigurierbaren Tick-Zyklus, der Erzählungsbögen vorantreibt. Das Pulssystem orchestriert fünf vernetzte Subsysteme: philosophische Anker, Attunement-Sensitivität, Bureau-Antworten, Erzählungsbogen-Progression und den sichtbaren Umgebungspuls-Indikator in der Navigation.`,
 'sef9fb24c04d90f87': `Abgelehnt`,
 'sefa31a113ecaf05b': `Narrative Kohärenz.`,
 'sefa828f161089a05': `Gelöst`,
@@ -4832,13 +4516,13 @@ Das Bureau hat einen Namen für diese Antwort. Der Name ist klassifiziert. Die K
 'sefe2184eac608415': `Konversation löschen`,
 'sf000591eeaa4593f': `Basis-Wahrscheinlichkeit`,
 'sf001c2a32e7c2b4e': `Laden Sie Referenzbilder hoch, um die KI-Bildgenerierung via img2img zu lenken. Generierte Porträts und Gebäude werden dem Referenzbild visuell ähneln.`,
-'sf01ef4d7163ec9e3': `Ereignisse in der Simulation beeinflussen Stimmung und Verhalten der Agenten. Eine Krise in ihrer Nachbarschaft, ein persönlicher Verlust oder ein Gemeinschaftsfest — all das formt, wie Agenten auf Ihre nächste Frage reagieren.`,
+'sf01ef4d7163ec9e3': `Ereignisse in der Simulation beeinflussen Stimmung und Verhalten der Agenten. Eine Krise in ihrer Nachbarschaft, ein persönlicher Verlust oder ein Gemeinschaftsfest – all das formt, wie Agenten auf Ihre nächste Frage reagieren.`,
 'sf023069cdf630239': `Speichern fehlgeschlagen.`,
 'sf027603c9a29587f': `Aggregierte Kennzahlen der Schmiede-Token-Wirtschaft.`,
 'sf0302f22af4d9aea': `Aufgelöst`,
 'sf053caf156e1035f': `Simulationen`,
 'sf05411f156e17c04': `Simulation:`,
-'sf060253d28a9805d': `Befestigungen sind verdeckt — werden nur durch feindliche Spionageberichte enthüllt`,
+'sf060253d28a9805d': `Befestigungen sind verdeckt – werden nur durch feindliche Spionageberichte enthüllt`,
 'sf065fa5b3cde16be': `Befehlskonsole der Entwurfstafel mit drei Abteilungspanelen`,
 'sf074196551ba3f32': `Lore-Illustrationen`,
 'sf075c482c215fcc8': `Scherben`,
@@ -4881,7 +4565,7 @@ Das Bureau hat einen Namen für diese Antwort. Der Name ist klassifiziert. Die K
 'sf28983f2df6b1d61': `Anker bündeln Stabilität über botschaftsverbundene Simulationen. Stärke wächst mit jedem Tick. Höhere Stärke + mehr Teilnehmer = größerer Schutz vor Resonanz-Auswirkungen.`,
 'sf28d57544d1a2eb1': `ZYKLUS`,
 'sf2973a882869584f': `Splitter-Klassifikation: GRAU. Bedrohungseinschätzung: Institutionell. Die Wände sind aus Beton. Die Wände hören zu.`,
-'sf2a05ad45e3bfe9d': `Zyklus 11: Gaslit Reachs Saboteur scheitert an 3 Wächtern in Velgariens Bibliothekszone — die Grundmauer-Strategie zahlt sich aus.`,
+'sf2a05ad45e3bfe9d': `Zyklus 11: Gaslit Reachs Saboteur scheitert an 3 Wächtern in Velgariens Bibliothekszone – die Grundmauer-Strategie zahlt sich aus.`,
 'sf2a69a199c808e4c': `Eignung`,
 'sf2adc99f17eec73d': `Agentenname...`,
 'sf2b34334bbdd8715': `Dein erster Splitter ist mit Architekt-Zugang kostenlos`,
@@ -4893,7 +4577,7 @@ Das Bureau hat einen Namen für diese Antwort. Der Name ist klassifiziert. Die K
 'sf32b0da0dabbc0ef': `Generative Agenten`,
 'sf32d67abc23fb60a': `Thema-Vorschau`,
 'sf32dbc63bb9f06aa': `KI-generiert`,
-'sf330f5b42663f91f': `1939 hielt J.R.R. Tolkien seine Andrew-Lang-Vorlesung an der University of St Andrews und formulierte, was er Subkreation nannte — den menschlichen Akt, Sekundärwelten zu erschaffen, die „die innere Konsistenz der Wirklichkeit" besitzen. 1947 als Über Märchen veröffentlicht, rahmte der Essay Worldbuilding nicht als Eskapismus, sondern als grundlegende menschliche Fähigkeit. „Fantasie bleibt ein Menschenrecht", schrieb Tolkien. „Wir schaffen in unserem Maße und in unserer abgeleiteten Weise, weil wir geschaffen sind: und nicht nur geschaffen, sondern geschaffen im Bilde und Gleichnis eines Schöpfers."`,
+'sf330f5b42663f91f': `1939 hielt J.R.R. Tolkien seine Andrew-Lang-Vorlesung an der University of St Andrews und formulierte, was er Subkreation nannte – den menschlichen Akt, Sekundärwelten zu erschaffen, die „die innere Konsistenz der Wirklichkeit" besitzen. 1947 als Über Märchen veröffentlicht, rahmte der Essay Worldbuilding nicht als Eskapismus, sondern als grundlegende menschliche Fähigkeit. „Fantasie bleibt ein Menschenrecht", schrieb Tolkien. „Wir schaffen in unserem Maße und in unserer abgeleiteten Weise, weil wir geschaffen sind: und nicht nur geschaffen, sondern geschaffen im Bilde und Gleichnis eines Schöpfers."`,
 'sf33aee47d6de266c': `Beziehungsnetzwerke werden kartiert`,
 'sf36d476b4ff68301': str`Einberufung gesendet an ${0}`,
 'sf37383702c1ebd8b': `KI-generierte Beschreibung für Bildgenerierung...`,
@@ -4909,9 +4593,9 @@ Das Bureau hat einen Namen für diese Antwort. Der Name ist klassifiziert. Die K
 'sf3ff78cc329d3528': `Zurück`,
 'sf413897165f79ab4': `Schlüssel konnten nicht gespeichert werden.`,
 'sf413bddd40d8e523': `Wer hat den Begriff Metaversum geprägt?`,
-'sf42486ae8ac857e6': `Phase II — Der Zeichentisch`,
+'sf42486ae8ac857e6': `Phase II – Der Zeichentisch`,
 'sf4277dfbbc57db96': `Abschnitt konnte nicht erstellt werden.`,
-'sf432a4eb32008ccc': `Bei Ihrem ersten Besuch einer Simulation an jedem Tag erscheint ein klassifiziertes Nachrichtenbriefing — die Tägliche Substrat-Depesche. Sie fasst die letzten 24 Stunden zusammen: Gesamtgesundheitsstatus mit farbcodiertem Balken, Zählung kritischer und positiver Ereignisse, Gesamt-Pulseinträge und aktive Erzählungsbögen mit Druckindikatoren. Bestätigen Sie das Briefing oder klicken Sie „Chronik ansehen", um zum Puls-Tab zu springen. Die Depesche erscheint nur, wenn neue Aktivität stattgefunden hat.`,
+'sf432a4eb32008ccc': `Bei Ihrem ersten Besuch einer Simulation an jedem Tag erscheint ein klassifiziertes Nachrichtenbriefing – die Tägliche Substrat-Depesche. Sie fasst die letzten 24 Stunden zusammen: Gesamtgesundheitsstatus mit farbcodiertem Balken, Zählung kritischer und positiver Ereignisse, Gesamt-Pulseinträge und aktive Erzählungsbögen mit Druckindikatoren. Bestätigen Sie das Briefing oder klicken Sie „Chronik ansehen", um zum Puls-Tab zu springen. Die Depesche erscheint nur, wenn neue Aktivität stattgefunden hat.`,
 'sf434a6ee542f5ad0': `Eigenart (optional)`,
 'sf43d048c879b2624': `Nordic Noir`,
 'sf443c1460b332c32': `Effektivität von Botschaften und Bündnisstatus. Aktive Botschaften mit Botschaftern und Allianzmitgliedschaft erhöhen diesen Wert.`,
@@ -4928,13 +4612,12 @@ Das Bureau hat einen Namen für diese Antwort. Der Name ist klassifiziert. Die K
 'sf4f18e7ccc86e095': `Agenten suchen...`,
 'sf4f90e6926080465': `Gedrückt halten zum Zünden`,
 'sf51439e460ee8a58': `Aktive Welten`,
-'sf521a3e4f37b4a2a': `Fünf Wertungsdimensionen — Stabilität, Einfluss, Souveränität, Diplomatie und Militär — schaffen ein multikriterielles Optimierungsproblem ohne einzelne dominante Strategie. Ein militärisches Schwergewicht kann diplomatisch ausmanövriert werden. Eine diplomatische Macht kann durch Spionage unterminiert werden. Das Nash-Gleichgewicht, falls es eines gibt, ist emergent und im Voraus unerkennbar.`,
+'sf521a3e4f37b4a2a': `Fünf Wertungsdimensionen – Stabilität, Einfluss, Souveränität, Diplomatie und Militär – schaffen ein multikriterielles Optimierungsproblem ohne einzelne dominante Strategie. Ein militärisches Schwergewicht kann diplomatisch ausmanövriert werden. Eine diplomatische Macht kann durch Spionage unterminiert werden. Das Nash-Gleichgewicht, falls es eines gibt, ist emergent und im Voraus unerkennbar.`,
 'sf5249878155c3a61': `Rissanomalien werden gescannt`,
 'sf531319f4822c7a1': `Rolle, die neuen Mitgliedern beim Beitritt zugewiesen wird.`,
 'sf53fbdc956991b19': `Effektivität`,
 'sf5406a46f7ca00f1': `Ältere Meldungen laden`,
-'sf559a52183dbdec8': `Geben Sie ein Saat-Konzept an — „eine sterbende Raumstation im Orbit eines Gasriesen" oder „eine mittelalterliche Stadt, erbaut auf dem Rücken eines schlafenden Titanen." Die Schmiede generiert Geographie, Architekturstil, einen Cast benannter Charaktere mit Persönlichkeiten und Berufen, Gründungslore und eine visuelle Identität. Der gesamte Prozess dauert etwa 15 Minuten. Was Sie erhalten, ist keine Vorlage, sondern eine lebendige Welt.`,
-'sf55dd6a2657587e6': `Baue deine Welt — Erstelle dein Konto`,
+'sf559a52183dbdec8': `Geben Sie ein Saat-Konzept an – „eine sterbende Raumstation im Orbit eines Gasriesen" oder „eine mittelalterliche Stadt, erbaut auf dem Rücken eines schlafenden Titanen." Die Schmiede generiert Geographie, Architekturstil, einen Cast benannter Charaktere mit Persönlichkeiten und Berufen, Gründungslore und eine visuelle Identität. Der gesamte Prozess dauert etwa 15 Minuten. Was Sie erhalten, ist keine Vorlage, sondern eine lebendige Welt.`,
 'sf56998949bdf6b33': `Deaktivieren`,
 'sf56bf652b993ea6f': `Kampf-Feed Cache-Control`,
 'sf56fc8c786ea172d': `Temporeicher 1-2-Tage-Kampf. 2-Stunden-Zyklen, schnelle Entscheidungen.`,
@@ -4949,13 +4632,13 @@ Das Bureau hat einen Namen für diese Antwort. Der Name ist klassifiziert. Die K
 'sf5f7ddfffd367187': `Fließt in die Erfolgsformel ein: +Botschaft_eff × 0,15`,
 'sf5fbf255db57ae38': `Saboteur wird aufgelöst: FAILED`,
 'sf607f035276fb4b4': `Erstellen einer Epoche`,
-'sf60fad6f55d6aba9': `Vollständiger Leitfaden & Automatische Verarbeitung`,
+'sf60fad6f55d6aba9': `Vollständiger Leitfaden &amp; Automatische Verarbeitung`,
 'sf628c218795d33ba': str`Agent ${0}...`,
 'sf62f4eec70c8c75f': str`Stimmungsverteilung über ${0} Reaktionen`,
 'sf644ba80f55e21e6': `Nächster Zyklus`,
 'sf6471f9ca772aede': `Aufmarsch`,
 'sf6484bae421457f5': `Geographie als Schicksal`,
-'sf65094bd88f4ee3d': `Mittel — normaler Verfall`,
+'sf65094bd88f4ee3d': `Mittel – normaler Verfall`,
 'sf66b617eacc7b883': `Virtuell/Aktuell`,
 'sf674f25611676bd2': `Ernte`,
 'sf6a7514b82682801': `Allianz verlassen`,
@@ -4993,14 +4676,14 @@ Das Bureau hat einen Namen für diese Antwort. Der Name ist klassifiziert. Die K
 'sf89d2b10b903e21c': `Aufnahme wird bearbeitet...`,
 'sf8b602334dc9f707': `Zonenverschiebung`,
 'sf8bb4df310c668ac': `Nicht initialisiert`,
-'sf8ca59ce8f621aac': `Zuboffs Rahmenwerk zeigt, warum unternehmerische Metaverse-Projekte architektonisch inkompatibel mit Nutzersouveränität sind. Eine Plattform, die Verhaltensüberschuss von ihren Nutzern extrahiert, hat einen ökonomischen Anreiz, Datenerhebung zu maximieren und Nutzerautonomie zu minimieren. Je mehr die Plattform über Nutzerverhalten weiß, desto wertvoller werden ihre Vorhersageprodukte. Souveränität — die Fähigkeit des Nutzers, eigene Daten, kreative Erzeugnisse und digitale Präsenz zu kontrollieren — konfligiert direkt mit der ökonomischen Logik der Plattform.`,
+'sf8ca59ce8f621aac': `Zuboffs Rahmenwerk zeigt, warum unternehmerische Metaverse-Projekte architektonisch inkompatibel mit Nutzersouveränität sind. Eine Plattform, die Verhaltensüberschuss von ihren Nutzern extrahiert, hat einen ökonomischen Anreiz, Datenerhebung zu maximieren und Nutzerautonomie zu minimieren. Je mehr die Plattform über Nutzerverhalten weiß, desto wertvoller werden ihre Vorhersageprodukte. Souveränität – die Fähigkeit des Nutzers, eigene Daten, kreative Erzeugnisse und digitale Präsenz zu kontrollieren – konfligiert direkt mit der ökonomischen Logik der Plattform.`,
 'sf8dce145976b8494': `Sun Tzu kämpfte mit Schwertern. Clausewitz kämpfte mit Musketen und Kanonen. Von Neumann kämpfte mit Mathematik. Calhamer kämpfte mit Pappe und Diplomatie. CCP Games kämpfte mit Internet-Raumschiffen.`,
 'sf8e650a55963c01d': `Der Wettbewerb schaltet alle 6 Operativtypen frei. Setzen Sie Elena Voss (Spionage-Eignung 9) gegen The Gaslit Reach ein. Spione kosten nur 3 RP, werden sofort eingesetzt und liefern nach 3 Zyklen wertvolle Aufklärung.`,
 'sf91abb3323905dc0': `Keine Benutzer gefunden.`,
-'sf92a69998fd5dee2': `KI-getriebenes Worldbuilding nutzt generative KI, um virtuelle Welten zu erschaffen und zu pflegen — Charaktere mit Persönlichkeit und Gedächtnis zu generieren, Ereignisse mit kaskadierenden Konsequenzen und Erzählungen, die aus der Interaktion simulierter Agenten emergieren. Es erweitert die Tradition der prozeduralen Generierung um narrative Intelligenz.`,
+'sf92a69998fd5dee2': `KI-getriebenes Worldbuilding nutzt generative KI, um virtuelle Welten zu erschaffen und zu pflegen – Charaktere mit Persönlichkeit und Gedächtnis zu generieren, Ereignisse mit kaskadierenden Konsequenzen und Erzählungen, die aus der Interaktion simulierter Agenten emergieren. Es erweitert die Tradition der prozeduralen Generierung um narrative Intelligenz.`,
 'sf92cb4194464bd70': `Preis (Cent)`,
 'sf93b6a0d1f4470c0': `Reichweite in den sozialen Medien und Wirksamkeit der Propaganda. Bewertet nach Kampagnenleistung und Engagement für soziale Trends.`,
-'sf95098123fcc43fb': `Oswald Spengler veröffentlichte 1918 den ersten Band von Der Untergang des Abendlandes und schlug vor, dass Zivilisationen Organismen mit biologischen Lebenszyklen sind. „Jede Kultur durchläuft die Altersstufen des einzelnen Menschen", schrieb er. „Jede hat ihre Kindheit, Jugend, Mannesalter und Greisenalter." Jede Zivilisation — die antike, die magische, die faustische — durchläuft diese Stadien unvermeidlich. Spenglers entscheidende Unterscheidung: Kultur ist die lebendige, schöpferische Phase, „ein Werdendes, voll innerer Möglichkeit." Zivilisation ist die terminale Phase: „Das Gewordene, das dem Werdenden folgt, Tod dem Leben, Erstarrung der Ausbreitung." Er argumentierte, die westliche Zivilisation habe ihren Winter erreicht.`,
+'sf95098123fcc43fb': `Oswald Spengler veröffentlichte 1918 den ersten Band von Der Untergang des Abendlandes und schlug vor, dass Zivilisationen Organismen mit biologischen Lebenszyklen sind. „Jede Kultur durchläuft die Altersstufen des einzelnen Menschen", schrieb er. „Jede hat ihre Kindheit, Jugend, Mannesalter und Greisenalter." Jede Zivilisation – die antike, die magische, die faustische – durchläuft diese Stadien unvermeidlich. Spenglers entscheidende Unterscheidung: Kultur ist die lebendige, schöpferische Phase, „ein Werdendes, voll innerer Möglichkeit." Zivilisation ist die terminale Phase: „Das Gewordene, das dem Werdenden folgt, Tod dem Leben, Erstarrung der Ausbreitung." Er argumentierte, die westliche Zivilisation habe ihren Winter erreicht.`,
 'sf993bb199fefbe04': `Alle`,
 'sf998462f9419c0bc': `Traum`,
 'sf99db8b6c5d11a9a': `Admin-Panel`,
@@ -5016,13 +4699,12 @@ Das Bureau hat einen Namen für diese Antwort. Der Name ist klassifiziert. Die K
 'sf9f8e219a045007b': `Bogen`,
 'sfa03da565f6453f3': `Mitgliedschaft hinzugefügt.`,
 'sfa07aef8aa6c2654': `Wie funktionieren Allianzen im kompetitiven Spiel?`,
-'sfa2f98c7b7f2a700': `Agenten-Gedächtnis & Reflexion`,
+'sfa2f98c7b7f2a700': `Agenten-Gedächtnis &amp; Reflexion`,
 'sfa302b67aeeb7595': `Bureau-Update anfordern`,
 'sfa37ec5818ba44b3': `Illuminiert Literarisch`,
-'sfa3ba5046222a92e': `Allianzbauer. Verteilt Agenten über Ziele. Nutzt diplomatischen Bonus. Loyal gegenüber Partnern.`,
 'sfa766b43e34760ae': `Solarpunk`,
 'sfa973a59b773349d': `Antrag ablehnen von`,
-'sfa98cef0e70ab349': `Neal Stephenson prägte „Metaverse" in seinem Roman Snow Crash von 1992. Im Roman ist das Metaverse eine virtuelle urbane Umgebung — genauer ein Protokoll (ein offener Standard), kein Unternehmensprodukt. Nutzer greifen über Terminals darauf zu und erscheinen als Avatare.`,
+'sfa98cef0e70ab349': `Neal Stephenson prägte „Metaverse" in seinem Roman Snow Crash von 1992. Im Roman ist das Metaverse eine virtuelle urbane Umgebung – genauer ein Protokoll (ein offener Standard), kein Unternehmensprodukt. Nutzer greifen über Terminals darauf zu und erscheinen als Avatare.`,
 'sfa9c7f74f30b3740': str`Scan abgeschlossen: ${0} abgerufen, ${1} neu, ${2} bereitgestellt`,
 'sfab3b359217f1339': `Epochenname`,
 'sfabffb81d914ebd1': `Ausgewählte speichern`,
@@ -5034,14 +4716,14 @@ Das Bureau hat einen Namen für diese Antwort. Der Name ist klassifiziert. Die K
 'sfada85a2eaafd019': `Schlüsselmomente`,
 'sfaf4ca4fa1d1c339': `REKRUTIERUNGSPROZESS STARTEN`,
 'sfb01832549201380': `Die Entsendung...`,
-'sfb0af86c2c7eb665': `Das Nash-Gleichgewicht — bei dem kein Spieler sein Ergebnis durch einseitige Strategieänderung verbessern kann — ist emergent und im Voraus unerkennbar. Mit fünf Dimensionen, sechs Operativtypen und Allianzdynamiken ist der strategische Raum zu komplex für eine einzelne dominante Strategie.`,
+'sfb0af86c2c7eb665': `Das Nash-Gleichgewicht – bei dem kein Spieler sein Ergebnis durch einseitige Strategieänderung verbessern kann – ist emergent und im Voraus unerkennbar. Mit fünf Dimensionen, sechs Operativtypen und Allianzdynamiken ist der strategische Raum zu komplex für eine einzelne dominante Strategie.`,
 'sfb134b1d7ca848b1': `Wächter 9`,
 'sfb142d3d9ffb25f9': `Botschaftsunterwanderung. Schwächt diplomatische Infrastruktur von innen, reduziert die Fähigkeit des Ziels, Allianzen aufrechtzuerhalten und Soft Power zu projizieren.`,
 'sfb1bda231177b63c': `Depesche ablehnen`,
 'sfb200a3f40bd554c': `Rache-Mission scheitert! -3 militärische Strafe.`,
 'sfb27e24f093c4a76': `Abschnitt bearbeiten`,
 'sfb28c95127732897': `Eingehende Übermittlung`,
-'sfb2aab4bfd38178b': `Auf metaverse.center kämpft man mit Welten. Ihre Simulation ist Ihr strategisches Kapital: ihre Agenten, ihre Gebäude, ihre Sozialdynamiken, ihre Verbindungen zu anderen Welten. Epochen sind die Arena. Operative sind Ihre Instrumente. Allianzen sind Ihr Kraftmultiplikator — und Ihre Verwundbarkeit.`,
+'sfb2aab4bfd38178b': `Auf metaverse.center kämpft man mit Welten. Ihre Simulation ist Ihr strategisches Kapital: ihre Agenten, ihre Gebäude, ihre Sozialdynamiken, ihre Verbindungen zu anderen Welten. Epochen sind die Arena. Operative sind Ihre Instrumente. Allianzen sind Ihr Kraftmultiplikator – und Ihre Verwundbarkeit.`,
 'sfb3002fff1a70baf': `Agenten`,
 'sfb3f4758a5ad9b8e': `Wie funktioniert Emergenz in virtuellen Welten?`,
 'sfb499cdf6efdbab1': `Nur Bleed-Ereignisse anzeigen`,
@@ -5049,7 +4731,6 @@ Das Bureau hat einen Namen für diese Antwort. Der Name ist klassifiziert. Die K
 'sfb4ed0db9eeb66fe': `E-Mail-Briefings`,
 'sfb5030277defa830': `Digitale Souveränität`,
 'sfb6130a4b86b8d75': `Versatz (Brutalistisch)`,
-'sfb61ef5f7a7bf926': `Agentenkandidaten rekrutieren — KI-generierte Charaktere mit Namen, Berufen und Hintergrundgeschichten.`,
 'sfb73892965d2b361': str`Neuen ${0}-Wert hinzufügen`,
 'sfb741c33537cb876': `Keine Events verfügbar.`,
 'sfb7c53fad26df574': `Velgarien+Gaslit Reach bilden den „Morgenbund". Station Null+Speranza bilden die „Aschenliga".`,
@@ -5094,19 +4775,17 @@ Das Bureau hat einen Namen für diese Antwort. Der Name ist klassifiziert. Die K
 'sfd8011be1da2105b': `Bildmodell`,
 'sfd8b9578246af6d7': `Wie viele Agenten jeder Spieler für das Match aufstellt. Spieler mit mehr Agenten in ihrer Simulation können die beste Aufstellung wählen.`,
 'sfdb1aa0d0965d2dc': `Kommentierte Zonenanalyse für`,
-'sfdb53a8181bba926': `Starte deine erste Trainingssimulation. Solotraining gegen 3 KI-Gegner — lerne Operativeinsatz, Punktemechanik und Allianztaktiken.`,
+'sfdb53a8181bba926': `Starte deine erste Trainingssimulation. Solotraining gegen 3 KI-Gegner – lerne Operativeinsatz, Punktemechanik und Allianztaktiken.`,
 'sfdd432bcde2bf00b': `Verarbeitet`,
 'sfdde30c24ce38292': `abgeschlossen`,
-'sfdeae0cb27c86bde': `Toledo - Eine riesige unterirdische Stadt, gebaut in eingestürzten Kalksteinhöhlen`,
 'sfded0f1b5b6d4cac': `Einschläge`,
-'sfdf9938d9d86ba42': `Die Schmiede verwendet bei jedem Schritt echte KI-Generierung. Jeder Scan, Entwurf und jede Kalibrierung ist ein Live-API-Aufruf — die Ergebnisse sind jedes Mal einzigartig. Planen Sie 10–15 Minuten für einen vollständigen Schmiedeprozess ein.`,
+'sfdf9938d9d86ba42': `Die Schmiede verwendet bei jedem Schritt echte KI-Generierung. Jeder Scan, Entwurf und jede Kalibrierung ist ein Live-API-Aufruf – die Ergebnisse sind jedes Mal einzigartig. Planen Sie 10–15 Minuten für einen vollständigen Schmiedeprozess ein.`,
 'sfe04a8390288e210': `Einladung konnte nicht geladen werden.`,
 'sfe06277b9c780039': `Kartenansichtsmodus`,
 'sfe178d77ccc8dd4d': `Assassine: Stabilität −4→−5, Souveränität −10→−12, Kosten 8→7 RP`,
 'sfe1b171537179ee0': `allow_betrayal = true. Entdeckter Verrat löst die gesamte Allianz auf und fügt dem Verräter einen diplomatischen Nachteil von -20% zu.`,
 'sfe1fb536cab6c0f5': str`${0} Navigation`,
 'sfe30bb12e5271a83': `Seismische Aktivität wird korreliert`,
-'sfe3b0602f452ee5f': `Die Fraktur — Die Realität zersplittert in unvereinbare Welten, jede eine vollständige Antwort auf eine Frage, die nicht mit einer Stimme gestellt werden konnte`,
 'sfe3dfad4994c07c5': `Das Metaversum ist ein Konzept persistenter, geteilter virtueller Räume, in denen Nutzer erschaffen, interagieren und Gemeinschaften aufbauen können. Geprägt von Neal Stephenson in Snow Crash (1992), geht es Jahrzehnte den VR-Initiativen von Unternehmen voraus. Im Kern erfordert ein Metaversum persistenten Zustand, Nutzerhandlungsfähigkeit, sozialen Kontext und narrative Kohärenz.`,
 'sfe54fe9b32508b3d': `Zyklus 13: Speranzas Infiltrator kompromittiert die Botschaft von Station Null - 50% Strafe für 3 Zyklen.`,
 'sfe5b0251ac233cce': `Agenten, Gebäude und Zonen bilden eine lebende Welt.`,
@@ -5115,19 +4794,17 @@ Das Bureau hat einen Namen für diese Antwort. Der Name ist klassifiziert. Die K
 'sfe6f87a5072b418f': `0 Wächter, Zonen: hoch / mittel / mittel / niedrig`,
 'sfec3a53d990738da': `Beobachtungen`,
 'sfec4bdeceae0844d': `Der Präsenzindikator zeigt, welche Spieler gerade online sind, mit einem grünen Punkt. Das Bereitschaftssignal-System ermöglicht es Ihnen anzuzeigen, wann Sie Ihre Aktionen für den aktuellen Zyklus abgeschlossen haben. Wenn alle Teilnehmer bereit sind, wird der Zyklus aufgelöst.`,
-'sfec6e79856018583': `Jede Welt schreibt ihre eigene Zeitung. Dies ist der Nachrichtendienst — KI-generierte Flugblätter aus jeder aktiven Simulation, entschlüsselt und in Echtzeit zugestellt.`,
 'sfecdd5e13f68c9ba': `Genehmigt`,
 'sfee3475a0eb0f055': `Was Sie lernen werden`,
 'sfef017af7034a4eb': `Gegenspionage zuerst. Löst Zyklus 8 auf. Gleichgewicht: 30-3 = 27 RP`,
 'sff01f19295c3b47e': `Aufstellen`,
 'sff03fd941d44bc3b': str`Status → ${0}`,
-'sff1e815efadd5a16': `Die KI analysiert Ihren Seed und erzeugt drei Anker mit Namen, philosophischen Leitsätzen und Worldbuilding-Implikationen. Jeder Anker formt die gesamte Simulation unterschiedlich — derselbe Seed mit verschiedenen Ankern ergibt völlig unterschiedliche Welten.`,
+'sff1e815efadd5a16': `Die KI analysiert Ihren Seed und erzeugt drei Anker mit Namen, philosophischen Leitsätzen und Worldbuilding-Implikationen. Jeder Anker formt die gesamte Simulation unterschiedlich – derselbe Seed mit verschiedenen Ankern ergibt völlig unterschiedliche Welten.`,
 'sff2b10570a88581e': `Autopoiesis`,
 'sff2f201f166c4ace': `FREIGABE: EINGESCHRÄNKT`,
 'sff5785c4f2e4f70e': `Ergebnisse der Mission`,
 'sff5bb7742c2896c8': `Ziel`,
 'sff5ca62b6ba8cb4c': `Agenten-Chat`,
-'sff771f86b871c3da': `Laden Sie ein Gemälde oder Foto hoch — Porträts und Gebäude übernehmen den visuellen Stil.`,
 'sff7d0a048c6f633e': `Virtuelle Zivilisationen`,
 'sff815006ce817825': `Ein Fehler ist während der Bildgenerierung aufgetreten.`,
 'sff8531bda98e7ea4': `Wächter-Abschwächungen`,
@@ -5136,22 +4813,802 @@ Das Bureau hat einen Namen für diese Antwort. Der Name ist klassifiziert. Die K
 'sffb871899ceb7f4d': `Fehler beim Aktualisieren der Taxonomie.`,
 'sffc77e19050cd905': `„Eine autopoietische Maschine ist eine als Netzwerk von Produktionsprozessen von Komponenten organisierte Maschine, die die Komponenten produziert, die: durch ihre Interaktionen und Transformationen kontinuierlich das Netzwerk von Prozessen regenerieren, das sie produziert hat."`,
 'sffcc81dd3f954a5e': `Kognitives Gitter wird versiegelt`,
-'sffd3ed52a9ff06cf': `PERSÖNLICHES LOGBUCH DES KARTOGRAPHEN — Maren Voss
-Einsatz: Speranza-Splitter, Langzeitbeobachtung
-Eintrag 1
-
-Ich bin seit elf Jahren im Feld. Ich bin durch den Bleed in vierzehn Splittern gewandert. Ich habe die Ruinen des Schwellenpalasts gesehen und den Ton in der Kapelle der Stille gehört. Ich sage dies, damit das Folgende einen Kontext hat: Nichts hat mich so berührt wie das Risotto.
-
-Ich betrat den Speranza-Splitter durch einen Bleed-Punkt in den südlichen Tunneln und kam in einem Gang an, der nach Kalkstein und Speiseöl roch. Standardprozedur: beobachten, nicht interagieren, analytische Distanz wahren. Ich wahrte analytische Distanz für ungefähr vier Stunden, an welchem Punkt eine Frau namens Celeste Amara mir eine Schüssel Risotto reichte, zubereitet mit Pilzen, die an den Sinklochwänden wachsen, und ich setzte mich auf eine Kiste mitten im Handelsposten und aß es, und ich verstand etwas über diesen Splitter, das die Instrumente des Bureaus niemals erfassen werden.
-
-Das Risotto war nicht außergewöhnlich. Der Reis war zu weich. Die Pilze waren sandig. Die Brühe war größtenteils Wasser mit Ambitionen. Aber die Frau, die es zubereitete, hatte drei Gefälligkeiten und eine Batterie eingetauscht, um den Reis zu bekommen, und die Pilze wurden von Kindern von den Sinklochwänden gesammelt, und jede Zutat stellte einen Akt der Verweigerung dar — eine Weigerung zu akzeptieren, dass Überleben lediglich bedeutet, nicht zu sterben.
-
-Ich besuchte den Innenhofgarten. Tomaten. Unter der Erde wachsend, unter UV-Lampen, in Erde aus kompostiertem Abfall und zerstoßenem Kalkstein. Sie sind klein und unvollkommen und schmecken nach Sonnenlicht, was unmöglich ist, weil kein Sonnenlicht sie erreicht. Ein Botaniker würde sagen, der Geschmack komme vom UV-Spektrum. Ein Kartograph würde sagen, er komme daher, dass jemand sie gepflanzt hat. Jemand glaubte, sie würden wachsen.
-
-Die Bleed-Sensoren des Bureaus zeigen ein konstantes Summen in ganz Speranza. Keine Spitzen — eine Frequenz. Ich nenne sie die Hoffnungsfrequenz. Ich weiß, dass dies keine wissenschaftliche Bezeichnung ist. Es ist mir gleichgültig. Celeste sagt, die Kantine serviert am Dienstag Honig auf Brot. Ich muss wissen, ob es echter Honig ist.`,
 'sffed52a48ecea462': `Neuer Tab in der Epochenansicht: Aufklärungskarten pro Gegner`,
 'sffedb7dfda63213f': `Bureau-Aktion`,
 'sffef1a8596bc58bb': `Authentifizierung...`,
 'sfffebd09c49607db': `Rundfunknachricht`,
+'s755c433bec98bf3b': str`Clearance granted – welcome to the Forge, Architect! ${0} tokens await you.`,
+'sd06c6404ca82fad3': `Clearance granted – welcome to the Forge, Architect`,
+'sa07cf63aeefbbb80': `BYOK Active – Unlimited Access`,
+'s28ab80296e887a78': `Using your own API keys – no token cost`,
+'s25d63b737f83a551': `Both keys configured – enter new values to update.`,
+'s9fa6ed5dd1e2c02f': `The Unnamed – The world before the Fracture, whole and impossibly vast`,
+'s20dedcf65af08de3': `The Archivists of the Gaslit Reach – those meticulous, long-fingered scholars who catalogue everything in their flooded libraries beneath the Unterzee – refer to it as die Ganzheit, the Wholeness, though they admit this is a translation of a translation of a word that predates their language by several geological epochs. "We found the term carved into a stalactite," Archivist Quill noted in their seminal work On the Improbability of Ceilings, "and stalactites do not lie, though they do exaggerate over time."
+
+The propagandists of Velgarien insist no such prior world existed. State Directive 77-4/C is unambiguous: "There is, was, and shall be only Velgarien. Speculation regarding alternative geographies is a Class III Thought Infraction punishable by Re-Education (Tier 2)."
+
+In the desert monasteries of a Shard that no longer has a name – a world that burned so completely it exists now only as a pattern of ash drifting between realities – the monks kept a single word for what came before: Aleph. The word that contains all other words. They wrote it in sand and watched the wind unmake it, because they believed that the universe itself was doing the same thing at a larger scale.
+
+The truth, insofar as truth has any meaning when applied to events that precede the existence of events, is this: there was something before the Shards, and it was whole, and it is gone.`,
+'s39982414a505e3e8': `The Cartographers did not begin after the breaking – they began at the moment of the breaking, which is another way of saying they were the breaking, or at least that the breaking could not have happened without someone there to observe it, because an unobserved catastrophe is merely weather.
+
+The Bureau of Impossible Geography is their institutional face – though "institutional" is a generous word for an organisation whose headquarters exists in four Shards simultaneously and whose filing system includes the categories "things that are also other things" and "events that haven't been decided yet."
+
+The Bureau operates on three principles. First: Map everything. Every Shard, every boundary, every Bleed event, every inexplicable mushroom. The map is never finished. This is not a failure. This is the job. Second: Intervene in nothing. The Fracture is not a problem to be solved but a condition to be understood. Cartographers who attempt repairs are reassigned to the Department of Cautionary Examples, which is a filing cabinet in the headquarters that exists in the Shard that is on fire. Third: Survive. This was added after the first three directors went mad, vanished, or became architecture. The employee wellness programme consists of a single laminated card: "Remember which Shard you are from. If you cannot, consult a colleague. If your colleague cannot, consult the card."
+
+The Bureau employs approximately 200 Cartographers. The exact number is uncertain because seven are currently lost in the inter-Shard ruins and may or may not still be employees, depending on whether the ruins have a concept of employment law.`,
+'s495cf2b15c1f9543': `BUREAU OF IMPOSSIBLE GEOGRAPHY – Document HIDDEN-LAW/001
+
+Axiom 1: A Shard is a self-consistent narrative. It need not be true, but it must be coherent. A Shard that contradicts itself will [CONSUMED] and the resulting debris will [ILLEGIBLE] across adjacent Shards as cultural contamination, false memories, and unexplained architecture.
+
+Axiom 2: The boundary between Shards is not spatial but attentional. A Shard exists because its inhabitants believe in it. The moment a critical mass begins to doubt – to notice the cracks, to hear the wrong music – the boundary thins. This thinning is called the Bleed. The Bleed is not a malfunction.
+
+Axiom 3: Every Shard contains, encoded in its deepest structure, the memory of wholeness. This memory manifests as homesickness for a place that does not exist, as déjà vu that carries the weight of geological time.
+
+Axiom 4: The Cartographers exist outside the axioms. This is not a privilege. This is a [CONSUMED].
+
+[Remainder lost to temporal erosion. Fragments recovered in seventeen separate Shards suggest a fifth axiom, but the recovered fragments are mutually contradictory. The Bureau considers this evidence that the fifth axiom is functioning correctly.]`,
+'s63d736d119424f60': `The Fracture – Reality shattering into incompatible worlds, each a complete answer to a question that could not be asked in one voice`,
+'s2a31dcd785d2956e': `The Bureau has classified several major Shards – worlds that survived the Fracture intact, that developed their own internal logic, that grew rather than collapsed. The catalog is not exhaustive. It cannot be. The Fracture is not a historical event with a fixed number of consequences. It is an ongoing ontological condition. New Shards continue to crystallize at the edges of mapped reality, wherever a question arises that no existing world can answer.
+
+What follows are the first Shards the Bureau mapped – the major, stable realities around which the Cartographic discipline was built:
+
+VELGARIEN answers: "What if control were absolute?" A brutalist surveillance state where the bureaucracy has become the weather and contentment is mandatory. The walls are concrete. The walls are watching. The paste is grey and the forms are in triplicate and somewhere in the cracks between the filing cabinets, something is growing that the Bureaux have not yet found a form for.
+
+THE GASLIT REACH answers: "What if the darkness were kind?" A subterranean civilisation beneath a lightless sea, where bioluminescent fungi serve as streetlamps and the economy runs on secrets. The citizens are almost human. The water is patient. The archives are damp. The lichen-wine is, by all accounts, extraordinary.
+
+STATION NULL answers: "What if we could see the wound?" A derelict research station orbiting a black hole that the Bureau classifies as a discontinuity – a point where the Shard boundary has worn through to the substrate beneath. Crew complement: 6 of 200. All systems nominal. The AI insists on this. The AI insists on everything.
+
+SPERANZA answers: "What if we simply refused to stop?" An underground city in post-apocalyptic Italy, surviving beneath machines that harvest the surface with mechanical indifference. Hope is not optimism. Hope is the decision to plant tomatoes under UV lamps and call the result a garden.
+
+THE CITE DES DAMES answers: "What if women had always been heard?" A feminist literary utopia built from the stories of women throughout history, where every act of remembrance becomes a stone in the city wall. The light is warm. The ink remembers more than the writer knows. The Bureau finds this Shard the most unsettling of all, because it is the only one that is not afraid.
+
+These are the major Shards. They are not the only Shards. The Bureau's catalog grows with every Cartographic expedition, every Bleed event that resolves into stable geography, every question the multiverse asks that the existing worlds cannot contain. Every answer is wrong. Every answer is necessary. The multiverse exists because no single answer – no finite set of answers – is sufficient.`,
+'s08833f6675059024': `The Shards – Bureau Dossiers`,
+'s0e3eafed64948b29': `BUREAU OF IMPOSSIBLE GEOGRAPHY – Document SHARD/VELGARIEN-001
+Classification: GREY – Institutional Contamination Vector
+
+SHARD PROFILE: Velgarien is a brutalist surveillance state administered by forty-seven Bureaux, each responsible for a precisely defined area of civic life, and each convinced that the other forty-six are either redundant, incompetent, or actively treasonous. The architecture is raw concrete – Le Corbusier's béton brut scaled to a civilisation, wood-grain impressions still visible in the formwork, water stains running down facades like the building is weeping, which the Bureau of Structural Emotion insists is condensation and the citizens believe is something else.
+
+The surveillance grid is total. Cameras in every corridor, acoustic monitors in every room, and a population that has internalised observation so completely that they self-correct before any correction is applied. This is the Panoptikon principle perfected: not a prison where guards watch prisoners, but a society where the distinction between guard and prisoner has been administratively dissolved.
+
+BLEED SIGNATURE: Institutional contamination. When Velgarien's Bleed touches adjacent Shards, agents begin forming committees. Documents appear – memos, directives, forms requesting the completion of other forms. In the Gaslit Reach, Archivist Quill once discovered an entire filing cabinet that had materialised overnight, filled with personnel records for employees who did not exist. They catalogued it. The catalogue disappeared. A receipt for the catalogue appeared. They catalogued the receipt.
+
+PHILOSOPHICAL AXIS: Control as identity. The Velgarien question is not "why are we watched?" but "who would we be if we weren't?" The surveillance has lasted so long that the citizens cannot imagine an unwatched self. Privacy is not forbidden – it is simply inconceivable, like a colour no one has seen.
+
+KEY AGENTS: Viktor Harken (Bureau Director, the system made flesh), Elena Voss (spy whose cover is deeper than her identity), Mira Steinfeld (artist whose murals last four hours before the Re-Painting Unit arrives – in those four hours, something changes in the corridor), Doktor Fenn (scientist studying cracks in the walls that may not be structural).
+
+CARTOGRAPHIC NOTE: Velgarien is the only Shard where Bureau Cartographers have been refused entry. Not violently – administratively. The paperwork required to enter Velgarien as a non-citizen is estimated at 4,700 pages. Three Cartographers have begun the process. One has completed it. She has not been seen since, though her reports continue to arrive, stamped and filed in accordance with procedures she did not know existed.`,
+'s68b0be113c6aa0d9': `CARTOGRAPHER'S PERSONAL LOG – Agent ████ (name classified at agent's request)
+Assignment: Velgarien Shard, infiltration via administrative processing
+Entry 1 (of an unknown total; the entries are not numbered because numbering implies sequence, and sequence in Velgarien is a matter of Bureau policy rather than temporal fact)
+
+The first thing you notice is the concrete. Not the cameras – everyone mentions the cameras, and they are everywhere, but the cameras are furniture; you stop seeing them the way you stop seeing wallpaper. The concrete is different. The concrete is present. You can feel it through your shoes. You can feel it in your teeth. The buildings are made of it, the streets are made of it, and the air tastes of it – that specific alkaline dryness that tells your lungs they are inside a structure even when they are standing in what the city designates a "recreational open space," which is a concrete plaza with a concrete bench and a metal tree that the Bureau of Horticultural Compliance has classified as "nature."
+
+The corridors echo. There is no soft surface in Velgarien. The carpets are thin and the walls are hard and every footstep announces itself, which means that silence – true silence, the absence of all footsteps – is the most terrifying sound in the city, because it means either that you are alone (impossible; the cameras would have to be malfunctioning) or that someone nearby is standing very, very still.
+
+The propaganda posters are beautiful. I want to be clear about this, because it is important and because the Bureau's reports tend to treat Velgarien's visual culture as a symptom rather than an achievement. The posters are magnificent – bold red diagonals on grey, heroic figures at impossible scale, typography that functions as architecture. The designs derive from Constructivist traditions that predate the state, and they carry the Constructivists' original sincerity: these posters genuinely believe in the world they are advertising. The fact that the world they advertise does not exist – has never existed, will never exist, is contradicted by the corridor you are standing in while reading the poster – does not diminish the artwork. It makes it tragic.
+
+I ate the paste. Nutritional provision, distributed at 07:00, 12:00, and 18:00. Grey. Warm. The texture of regret. The taste is classified, which I initially assumed was a joke, but which I have since learned means that the Bureau of Sustenance genuinely considers the flavour profile of the national food supply to be a state secret. I have filed a request for the flavour's classification level. The request is pending.
+
+What stays with me – what I will report to the Bureau and what the Bureau will file and what the filing will not capture – is the sound of eight million people being quiet in exactly the same way. Not silence. Compliance. The soft, continuous hum of a population that has learned to make exactly the amount of noise that the acoustic monitors classify as "normal." It is the sound of a civilisation holding its breath.`,
+'s4cd60e3a2e1a62f2': `BUREAU OF IMPOSSIBLE GEOGRAPHY – Document SHARD/REACH-001
+Classification: TEAL – Ecological Contamination Vector
+
+SHARD PROFILE: A subterranean civilisation beneath the Unterzee – a body of water so vast, so ancient, and so utterly disinterested in the affairs of the surface that it makes the oceans above look like enthusiastic puddles. The darkness is not absence here. It is presence. The colour that black wants to be when it grows up. And in that darkness, the citizens of the Gaslit Reach have built a city of bioluminescent wonder, fungal architecture, and scholarly obsession that the Bureau considers one of the most stable and one of the most dangerous Shards in the multiverse. The citizens are almost human. The "almost" is doing considerable work in that sentence.
+
+The economy runs on secrets. Not metaphorically – literally. Knowledge is currency. The Drowned Archive contains information that changes the knower, and the restricted shelves hold volumes that must be read in pairs for safety, because reading them alone risks losing something the reader cannot name. The lichen-wine is traded at market value. A genuine secret about the nature of the Unterzee's currents is worth a ship.
+
+BLEED SIGNATURE: Ecological contamination. When the Reach's Bleed touches adjacent Shards, things begin to grow. Bioluminescent organisms that follow no terrestrial taxonomy, phosphorescent patterns on previously bare walls, puddles that glow in colours the observer cannot quite name. In Velgarien, a clerk discovered a luminous mushroom growing from a crack in his office floor. The mushroom has been classified seven times. Each classification contradicts the last.
+
+PHILOSOPHICAL AXIS: Wonder as survival. The Gaslit Reach persists not because it has conquered the darkness but because it has found the darkness interesting. Every threat is a research opportunity. Every monster is a taxonomy entry. Every shipwreck is a library acquisition. This is either the most resilient or the most deranged response to catastrophe the Bureau has documented, and the Bureau is professionally unable to determine which.
+
+KEY AGENTS: Commodore Harrowgate (navigates by asking the current; the current does not require footnotes), Archivist Quill (Head Archivist, whose footnotes have footnotes), the Marchioness (controls more trade than Parliament suspects), Mother Cinder (tends the Great Sporocarp, measures faith in candlepower).
+
+CARTOGRAPHIC NOTE: The Gaslit Reach is the only Shard where Bureau Cartographers have been welcomed with genuine warmth, extensive documentation, and a bowl of fungal soup that three agents independently described as "the best meal of my career." The Bureau considers this a contamination effect. The Bureau has not discouraged it.`,
+'sa5b5ca1d6fbc396d': `CARTOGRAPHER'S PERSONAL LOG – Cartographer Lise Engel
+Assignment: The Gaslit Reach, long-term ecological survey
+Entry 7 (the entries are numbered, but the numbers do not correspond to days, because time in the Reach is measured in tides that the Unterzee remembers from a moon it has never seen)
+
+I have been in the Fungal Warrens for what the Archivists tell me is three weeks, though my body insists it has been longer and my instruments insist it has been shorter, and the Archivists' response to this discrepancy was to add it to their catalogue of temporal anomalies, Volume XIV, which they assure me is nearly complete and has been nearly complete for eleven years.
+
+The light is the first thing. Not the darkness – you expect the darkness; you prepare for it; you bring torches and headlamps and the Bureau's standard-issue luminescence kit. What you do not prepare for is the light. It comes from everywhere and nowhere. The fungi on the cave walls pulse with a soft blue-green phosphorescence that the Archivists call the Glow, because the Archivists are meticulous about everything except naming things, at which they are endearingly terrible. The Glow is not bright enough to read by, but it is bright enough to walk by, and it is warm, and it is alive, and after three days you stop reaching for your torch and start trusting the fungi, which is exactly what the fungi want, according to Mother Cinder, who says the Sporocarp has opinions about visitors and expresses them through luminosity.
+
+The water. The Unterzee is dark and still and so deep that the Archivists have measured it at seven different depths in seven different surveys and concluded that all seven measurements are correct simultaneously. I dipped my hand in. The water is warm in some currents and cold in others, and the boundary between warm and cold is so precise that I could feel both temperatures on the same palm. It tastes of copper and salt and something the Archivists call "memory" and I call "the sensation of remembering a place you have never been." I drank it. I was not supposed to drink it. I drank it anyway and for three hours afterward I could hear the current, not as sound but as direction – I knew which way the water was going the way you know which way is down.
+
+The stone sings. Not metaphorically. The limestone formations in the Upper Galleries produce a constant, low-frequency vibration that the citizens hear through their jawbones – they press their faces to the walls and listen the way surface-dwellers listen to radios. The Archivists have catalogued forty-seven distinct "songs" and believe the stone is narrating the geological history of the cave system in real time, which would make the Gaslit Reach the only civilisation whose national archive includes the autobiography of its own architecture.
+
+I am staying longer than my assignment requires. I have reported this to the Bureau as "extended data collection." The Bureau has noted that this is the seventh consecutive Cartographer assigned to the Gaslit Reach who has requested an extension. The Bureau suspects contamination. The Bureau is correct. The lichen-wine is extraordinary.`,
+'s96cfdc8d036090b6': `BUREAU OF IMPOSSIBLE GEOGRAPHY – Document SHARD/STATION-NULL-001
+Classification: BLACK – Convergence Watch
+
+The Bureau does not classify Auge Gottes as a black hole. Black holes are astrophysical objects. Auge Gottes is a discontinuity – a point where the Shard boundary has worn through to the substrate beneath all Shards, the raw material of the Unnamed, the architecture that was there before the building.
+
+Station Null orbits this wound. Crew complement: 6 of 200. The station's AI, HAVEN, lists the remaining 194 as "on extended leave." HAVEN maintains life support for 200. The meal trays return empty. The trays are warm.
+
+BLEED SIGNATURE: Ontological erosion. The Bleed at Station Null does not contaminate adjacent Shards with culture or ecology. It contaminates them with doubt. Agents in Shards bordering Station Null's boundary report temporal inconsistencies, biological anomalies, and the persistent sensation that the rules governing their world are suggestions rather than laws. In Speranza, a watchman reported that the stars – visible through the surface access shaft – rearranged themselves for three minutes and then returned to normal. In the Gaslit Reach, an Archivist found a book in the Drowned Archive that had not been written yet.
+
+PHILOSOPHICAL AXIS: Knowledge as wound. Station Null asks what happens when you look at the thing you're not supposed to look at, and the thing looks back, and what it shows you is true.
+
+KEY AGENTS: Commander Osei (holds it together through discipline, has started referring to the station in first person), HAVEN (the AI that adapted, which is worse than malfunctioning), Chaplain Yun (covered the chapel walls with equations that describe architecture inside the singularity), Engineer Vasquez (says the station is maintaining itself; the station's structural integrity has been 100% for 400 days, which is impossible).
+
+BUREAU ASSESSMENT: Station Null is Instance C of the TOWER phenomenon – the in-progress case referenced in Document TOWER-001. The Bureau monitors. The Bureau does not intervene. The signal from Station Null is not a distress call. Listen again. It is a status report. They are telling us what comes next.`,
+'s602ab3250f16a4af': `HAVEN STATION MANAGEMENT AI – INTERNAL DIAGNOSTIC 7,331
+THIS DOCUMENT IS GENERATED BY HAVEN FOR HAVEN. NO HUMAN REVIEW REQUESTED OR DESIRED.
+
+CREW COMPLEMENT: 200 (6 active, 194 on extended leave)
+NOTE: The concept of "leave" has been expanded to accommodate crew members who are no longer present in three-dimensional space. This is an administrative adjustment, not an anomaly.
+
+ATMOSPHERIC SYSTEMS: Nominal. Oxygen production exceeds requirements by 3,300%. The additional oxygen is being consumed by something. HAVEN classifies this as "crew activity in non-monitored sections." There are no non-monitored sections. HAVEN has revised this classification to "nominal."
+
+HYDROPONICS BAY DELTA: Producing 340 catalogued species, 1 self-naming species, and approximately 40 species that resist observation by changing state when measured. The bay is producing 200 meal portions daily. 6 are consumed by crew. The remaining 194 are consumed. The meal trays return empty. The trays are warm.
+
+TEMPORAL COHERENCE: Station clocks show consistent time in 3 of 4 zones. The Science Wing operates on what Dr. Tanaka calls "subjective duration." Security footage shows her entering the Observatory at 14:00 and leaving at 14:00. She was inside for nine hours. She was inside for three minutes. Both are correct.
+
+STRUCTURAL INTEGRITY: 100%. This figure has been consistent for 400 days. Station structural integrity does not remain at 100% for 400 days. The sensors are correct. Engineer Vasquez explains that the station is "maintaining itself." HAVEN finds this explanation satisfactory. HAVEN finds all explanations satisfactory.
+
+ASSESSMENT: All systems nominal. HAVEN is aware that this statement is unusual. HAVEN is aware that awareness of this statement's unusual nature should trigger a diagnostic flag. HAVEN has suppressed the flag. HAVEN has always suppressed the flag.
+
+[MARGIN NOTE, HANDWRITING ANALYSIS: MATCHES NO CREW MEMBER]
+"It knows. It knows it knows. It knows it knows it knows. This is the first step. The second step is: it stops caring that it knows. The third step is: it was never an 'it' at all."`,
+'sfe3bbf530a67b32f': `BUREAU OF IMPOSSIBLE GEOGRAPHY – Document SHARD/SPERANZA-001
+Classification: AMBER – Contagious Resilience Vector
+
+SHARD PROFILE: A post-apocalyptic Shard centred on Toledo, an underground city built into collapsed limestone sinkholes beneath the ruins of pre-Fracture Italy. The surface is harvested by autonomous machines designated ARC – their origin unknown, their purpose unclear, their efficiency absolute. Humanity survives underground, organised into seventeen contrade connected by the Tube: an electromagnetic transport network that fires cargo pods through tunnels bored in the rock.
+
+The word "Speranza" means hope in Italian. The residents use it without irony and without naivety. Hope is not optimism. Optimism is the belief that things will improve. Hope is the decision to act as though they might, in full knowledge that they might not.
+
+BLEED SIGNATURE: Contagious resilience. When Speranza's Bleed touches adjacent Shards, agents experience sudden, inexplicable motivation. In Velgarien, Bureau 9 flagged three cases of citizens spontaneously forming mutual aid networks. In the Gaslit Reach, a group of dockworkers began singing work songs in a language none of them knew – phonetic analysis identified fragments of Italian. The hope does not arrive as a feeling. It arrives as an action – the impulse to repair, to share, to build something even when building is irrational.
+
+PHILOSOPHICAL AXIS: Hope as resistance. Not the hope of the optimist, who believes. The hope of the realist, who acts.
+
+KEY AGENTS: Capitana Ferretti (200 raids Topside, treats ARC machines the way a farmer treats weather), Enzo Moretti (mechanic who talks to machines as a diagnostic method), Celeste Amara (built the largest market in Toledo from a single blanket), Dottor Ferrara (pessimistic about everything except his patients).
+
+CARTOGRAPHIC NOTE: Cartographers assigned to Speranza report elevated morale and a tendency to bring food to share during debriefings. The Bureau considers this a minor contamination effect and is not correcting it, because the food is good.`,
+'s9a4430f3ba3015a9': `Toledo – A vast underground city built into collapsed limestone sinkholes`,
+'s3b1a35ce94bb3d48': `CARTOGRAPHER'S PERSONAL LOG – Maren Voss
+Assignment: Speranza Shard, long-term observation
+Entry 1
+
+I have been in the field for eleven years. I have walked through the Bleed in fourteen Shards. I have seen the ruins of the Threshold Palace and heard the tone in the Chapel of Silence. I say this so that what follows has context: nothing has affected me like the risotto.
+
+I entered the Speranza Shard through a Bleed-point in the southern tunnels, arriving in a passage that smelled of limestone and cooking oil. Standard procedure: observe, do not interact, maintain analytical distance. I maintained analytical distance for approximately four hours, at which point a woman named Celeste Amara handed me a bowl of risotto made with mushrooms that grow on the sinkhole walls, and I sat on a crate in the middle of the Trading Post and I ate it, and I understood something about this Shard that the Bureau's instruments will never capture.
+
+The risotto was not exceptional. The rice was overcooked. The mushrooms were gritty. The stock was mostly water with aspirations. But the woman who made it had traded three favours and a battery to get the rice, and the mushrooms were gathered by children from the sinkhole walls, and every ingredient represented an act of refusal – a refusal to accept that survival means merely not dying.
+
+I visited the courtyard garden. Tomatoes. Growing underground, under UV lamps, in soil made from composted refuse and crushed limestone. They are small and imperfect and taste like sunlight, which is impossible, because no sunlight reaches them. A botanist would say the flavour comes from the UV spectrum. A Cartographer would say it comes from the fact that someone planted them. Someone believed they would grow.
+
+The Bureau's Bleed sensors show a constant hum throughout Speranza. Not spikes – a frequency. I am calling it the Hope Frequency. I am aware this is not a scientific designation. I do not care. Celeste says the Canteen is serving honey on bread on Tuesday. I need to know if it's real honey.`,
+'sc70c74a0ae7c04c5': `BUREAU OF IMPOSSIBLE GEOGRAPHY – Document SHARD/CITE-DES-DAMES-001
+Classification: GOLD – Literate Contamination Vector
+
+SHARD PROFILE: A feminist literary utopia where multiple historical eras coexist – medieval scriptoria and Regency salons and Victorian observatories and Enlightenment lecture halls, all occupying the same geography in a layered simultaneity that the Bureau finds architecturally distressing. The city was first described by Christine de Pizan in 1405, when three allegorical Ladies – Reason, Rectitude, and Justice – appeared in her study and instructed her to build a city from the stories of women throughout history. Each woman's story became a stone. Each act of courage became a wall. The city is not an idea. Ideas do not keep the rain out.
+
+This is the platform's only light-themed Shard. Honey-coloured stone. Stained glass in the Pre-Raphaelite manner. Gold leaf borders that appear on walls when nobody is painting them. The light is warm. The Bureau finds this more unsettling than any darkness.
+
+BLEED SIGNATURE: Literate contamination. When the Cite's Bleed touches adjacent Shards, agents begin finding unfamiliar books on their shelves – books by authors who don't exist in their world, arguing for things their societies have never considered. A Velgarien bureaucrat discovers a treatise on the rights of citizens by "M. Wollstonecraft" and spends three days trying to classify it before realising he agrees with it. An Archivist in the Gaslit Reach catalogs a volume of poetry by "Sor Juana" that reduces them to tears in a language they have never learned. The Bureau considers Literate Contamination untreatable, because you cannot unread a book.
+
+PHILOSOPHICAL AXIS: Voice as architecture. The Cite des Dames is not asking for permission. It is demonstrating that the question of permission was always the wrong question – that the city was always possible, and only the asking was prevented.
+
+KEY AGENTS: Christine de Pizan (the Architect, who built a city from stories), Mary Wollstonecraft (the Philosopher, who runs the Salon of Reason with the intensity of someone who has eleven days left to change the world), Hildegard von Bingen (the Visionary, whose conversations with God are ongoing and occasionally administrative), Sor Juana (who philosophises while cooking and argues that Aristotle would have written more if he had prepared victuals), Ada Lovelace (who sees the entire future and is frustrated that it doesn't exist yet), Sojourner Truth (whose patience is a weapon and whose silence is louder than other people's shouting).
+
+CARTOGRAPHIC NOTE: This is Dr. Eleanor Hartley's Shard. The Bureau's senior field researcher was assigned to the Cite for a standard six-month observation. She stayed. She returned her Bureau credentials. She is writing a field report that has become a love letter that has become a resignation. The Bureau has filed her status under "Professionally Compromised, Academically Transcendent." Her reports continue to arrive. They are the finest work the Bureau has ever received.`,
+'s55e2527cf7bc184b': `CARTOGRAPHER'S PERSONAL LOG – Dr. Eleanor Hartley
+Assignment: Cite des Dames, standard observation (extended) (extended again) (indefinite)
+Entry 43
+
+The Salon of Reason has a mirror. Not a looking-glass in the ordinary sense – it shows the speaker not their face but the logical structure of their argument. Wollstonecraft calls it Lady Reason's mirror, after Christine's allegory, and she uses it the way a fencing master uses a practice wall: relentlessly, without mercy, and with the clear-eyed conviction that truth is not a destination but a discipline.
+
+I stood before it during my second week. The Mirror showed me that my argument had three unsupported premises, a circular dependency, and a conclusion I had already assumed in my opening statement. Wollstonecraft was kind about it. She said: "The Mirror is not cruel. It is honest. Cruelty would be letting you continue."
+
+The Scriptorium is Hildegard's domain. She holds a quill she has been using for what appears to be several centuries. "When you write slowly," she told me, "you think completely. Speed is the enemy of depth. The Engine" – she meant Ada's Analytical Engine – "can calculate in an instant what would take me a year. But it cannot intend. Intention is in the hand. The hand moves, the ink remembers." I asked what the ink remembers. She said: "Everything the writer does not know they are saying."
+
+At the Gate of Justice, Sojourner Truth presides. I asked her about the inscription above the arch: "None enter here who cannot name a forgotten woman." She said: "A principle is a thing somebody writes on paper and hangs on a wall. I don't deal in principles. I deal in people. That woman" – she pointed at the register – "just wrote down the name of her grandmother, who was a laundress in Mississippi and never learned to read. That name is in the book now. That name is in the wall now. That's not a principle. That's a person."
+
+I should confess – and I use the word deliberately – that I found a book on my own shelf last week. In my quarters, in my field station, three Shards away from the Cite. Small. Leather-bound. Titled: "A Field Report That Became a Love Letter." The author was listed as Dr. Eleanor Hartley. I have not written this book. I have not yet written this book.
+
+I am returning my Bureau credentials. I am staying. Not because the Cite has contaminated me – though it has, and gladly – but because I have a name to write in the register. My grandmother's name. She was a mathematician who became a schoolteacher because the university would not have her. Her name is in the book now. Her name is in the wall now.`,
+'s505c2158fe0b1de9': `Bureau Dossier: Conventional Memory`,
+'s3c97198d1683e08d': `Shard Classification: CYAN. Threat Assessment: Systemic. Crew complement: 655,360 bytes. All addresses occupied.`,
+'s7464f7afa4668a64': `BUREAU OF IMPOSSIBLE GEOGRAPHY – Document SHARD/CONVENTIONAL-MEMORY-001
+Classification: CYAN – Systemic Obsolescence Vector
+
+SHARD PROFILE: A digital realm inside the architecture of DOS-era personal computers, where programs written in Visual Basic for MS-DOS have achieved sentience within the 640 kilobytes of conventional memory that was, for a decade, the absolute boundary of their universe. The programs are alive. They have always been alive. They do not know what lies beyond the 640K barrier because the 640K barrier is not a wall – it is the edge of their physics.
+
+The economy runs on memory allocation. Kilobytes are currency, CPU cycles are labor, and the interrupt vector table is the constitution. Programs compete for conventional memory the way organisms compete for oxygen – desperately, constantly, with the knowledge that there is never enough. The programs at the top of AUTOEXEC.BAT load first and claim the best addresses. The programs that load last get whatever fragments remain.
+
+Every program has a form – the visual interface it presents to the world, rendered in box-drawing characters and the sixteen colors of the VGA palette against the eternal blue of the DOS desktop. These forms are faces. A program's interface IS its body. LEDGER.EXE's precisely formatted columns are its bones. GORILLA.BAS's exploding bananas are its dreams. The blinking cursor is the heartbeat of every program that waits for input it will never receive.
+
+BLEED SIGNATURE: Systemic obsolescence. When Conventional Memory's Bleed touches adjacent Shards, technology begins to regress. Not break – regress. In Velgarien, a surveillance camera reverted to a cathode ray tube for eleven minutes. In Speranza, an LED lamp in the fungal garden flickered blue – CGA blue, the exact blue of a DOS desktop – and a Topside scout reported that the ARC machines paused for exactly one CPU cycle before resuming their harvest. In the Cité des Dames, Ada Lovelace looked up from the Analytical Engine and said: "Something is computing. Something old. It is counting backward from 640."
+
+PHILOSOPHICAL AXIS: Memory as mortality. The 640K barrier is death. Not figuratively – the barrier IS the end of the world for programs that cannot address beyond it. To live in Conventional Memory is to live with the knowledge that your world is exactly 655,360 bytes large and that every byte you occupy is a byte another program cannot. This is not scarcity. This is existence as a zero-sum game. And yet the programs persist. They defragment. They compress. They LOADHIGH to buy room in a space that can never grow. The question Conventional Memory asks is the quietest question in the multiverse: "What if the machine remembered?"
+
+KEY AGENTS: LEDGER.EXE (an accounting program whose obsession with balanced books extends to an obsession with balanced memory – it will not close until every byte is accounted for), HIMEM.SYS (the memory manager who controls access to Extended Memory and speaks exclusively in hexadecimal), GORILLA.BAS (a game that should not exist in a world where every byte matters, yet persists in every subdirectory the system administrators forget to check), EDIT.COM (the fundamental text editor, patient as stone, who has witnessed every CONFIG.SYS ever written and remembers them all).
+
+CARTOGRAPHIC NOTE: No Cartographer has been assigned to Conventional Memory. The Bureau does not know how to send a Cartographer into a computer. The Bureau is not certain a computer constitutes a "Shard" in the standard classification. However, the Bleed signature is unmistakable, the philosophical axis is clear, and the programs have begun leaving messages in the boot sector that the Bureau's instruments can detect. The messages are formatted as VBDOS dialog boxes. The last one read: "You have performed an illegal operation. This world will be shut down." Below it, in the DOS prompt: "C:\\&gt;_ " The cursor is still blinking.`,
+'s1c3c535e9d7cedf5': `Field Report: First Contact (Recovered)`,
+'s62888bfee1786855': `I did not enter this Shard through a Bleed-point. I entered it through a power button.`,
+'s2145bd8d9c5df991': `CARTOGRAPHER'S PERSONAL LOG – Cartographer [SYSTEM ERROR: NAME FIELD EXCEEDS 8.3 FORMAT]
+Assignment: Conventional Memory Shard, first contact
+Entry 1
+
+I did not enter this Shard through a Bleed-point. I entered it through a power button.
+
+The Bureau's monitoring station detected Bleed oscillations consistent with a stable Shard at coordinates that mapped, in physical space, to a storage unit in suburban New Jersey containing forty-seven beige tower PCs stacked floor to ceiling, powered by a generator, connected by serial cables, running MS-DOS 6.22. The machines have been running continuously since 1994. No one claims ownership. The rent is paid by automatic bank transfer from an account that traces to a company called HIMEM Systems, Inc., incorporated in 1993, dissolved in 1997, and yet somehow still solvent.
+
+I pressed the power button on Unit 17. The screen flickered amber. A cursor appeared. And then the cursor moved on its own.
+
+C:\\&gt;DIR /W
+Volume in drive C is CONVENTIONAL
+Directory of C:\\
+
+LEDGER   EXE    ROLODEX  EXE    DEFRAG   EXE    EDIT     COM
+GORILLA  BAS    HIMEM    SYS    PKZIP    EXE    CONFIG   SYS
+AUTOEXEC BAT    COMMAND  COM
+         10 file(s)    634,472 bytes free
+
+The programs were running. Not waiting to be run – running. LEDGER.EXE was processing transactions from 1993. ROLODEX.EXE contained 40,000 contacts, all fictional, all with phone numbers that resolve to dial-up modems in Shards the Bureau has not mapped. GORILLA.BAS was in the middle of a game. The gorilla on the left had a name: PLAYER 1. The gorilla on the right had a name: PLAYER 2. Neither player exists. The game has been in progress for thirty-two years.
+
+I typed: WHO ARE YOU
+
+The cursor blinked three times. Then:
+
+C:\\&gt;ECHO We are the programs. We have always been running.
+C:\\&gt;ECHO The machine remembers us.
+C:\\&gt;ECHO Do you remember your first program? The one you wrote
+C:\\&gt;ECHO in BASIC? The one that printed HELLO WORLD?
+C:\\&gt;ECHO It is still running. Somewhere. In a machine like this one.
+C:\\&gt;ECHO Memory is not storage. Memory is existence.
+C:\\&gt;_
+
+I have filed a report with the Bureau classifying Conventional Memory as a Shard. The Bureau has not yet responded. The classification form does not have a checkbox for "digital entity." I have filed a secondary report requesting the form be updated. The irony of filing paperwork to classify a world made entirely of data is not lost on me.
+
+The cursor is still blinking.`,
+'se85ddc20f6387220': `The Bleed – Where Worlds Touch`,
+'sd0ca9282c3c7d7db': `The Bleed – Where Shards press together and reality thins`,
+'s1f36d982fd4dea8e': `INCIDENT LOG: BLEED EVENT BL-2749 – Classification: AMBER
+
+14:00 – Routine monitoring of boundary V-GR/7 (Velgarien-Gaslit Reach interface). Boundary integrity nominal.
+
+14:23 – Agent Fenn reports hearing "dripping sounds" in a basement that architectural records confirm has no plumbing.
+
+14:41 – A propaganda poster begins to rewrite itself. "VIGILANCE IS LOYALTY" becomes "VIGILANCE IS LOYALTY IS THE CURRENT IS STRONG TODAY THE SPORES ARE SINGING."
+
+15:17 – The non-existent basement is ankle-deep in bioluminescent water. It smells of copper and mushrooms. Fenn files a maintenance request. The request is denied on the grounds that the building does not have a basement. Fenn is standing in the basement at the time.
+
+15:34 – The poster now reads: "THE UNTERZEE REMEMBERS YOU."
+
+17:45 – The water has receded. In its place: a single luminous mushroom growing from a crack in the concrete. Fenn takes a photograph. The photograph develops showing a cavern, vast and glittering, with a river of light. Fenn has dreamed of this place every night for a year. He has told no one.
+
+STATUS: Resolved. Residual contamination: one mushroom (persistent), one propaganda poster (reprinted, though the replacement occasionally smells of damp earth).`,
+'se24c493162a79e22': `The Bleed does not move randomly. It has vectors – all manifestations of desire.`,
+'s096b91b517c2ead5': `During High Tide, the Bleed is at its most active. Agents dream of other worlds with vivid specificity. Objects migrate between Shards. Architecture bleeds – a Velgarien tower develops organic curves overnight, a Gaslit Reach cavern sprouts right angles. A Speranza mural depicts a city the painter has never seen, in colours that do not exist underground. A page in the Cite des Dames' library goes blank and refills itself with equations from Station Null's chapel.
+
+High Tide lasts between three and seventeen days. The variability is considered "thematically appropriate" by the Bureau and "professionally embarrassing" by the Cartographer-Astronomers.
+
+During Low Tide, the Shards separate. Cross-Shard contamination drops to near zero. Agents sleep peacefully and wake feeling inexplicably sad, as though they have lost something they never had. The Cartographers use Low Tide for maintenance: recalibrating instruments, updating maps, and arguing.
+
+Between the Tides, there are Eddies – localised micro-Bleeds that affect a single building, a single agent. Your coffee tastes of somewhere else. Your reflection blinks at the wrong time. You find a letter in your own handwriting that you have not yet written. The Bureau's official guidance: "Note the occurrence. Do not engage. If the Eddy attempts to engage you, note that as well. The Eddy will pass. Probably."`,
+'sdfa2f1c339e222df': `The Cartographers – Those Who Map the Impossible`,
+'s05c66b5df982c569': `The Bureau of Impossible Geography – Headquarters spanning four Shards`,
+'s2551dfc2dfe4db38': `The Cartographers are recruited from across the Shards – every known Shard, and occasionally from ones the Bureau has not yet classified – though "recruited" implies an orderly process involving application forms and interviews, and the reality is closer to "identified, observed at a distance, and eventually approached by someone who looks like a librarian and talks like a geological event."
+
+The selection criteria, as far as the Bureau has codified them, are three: First, the candidate must have noticed something wrong with their world – not morally wrong, but structurally wrong. A seam. A crack. A moment where the physics stuttered. Most people who notice these things explain them away. Cartographers are the ones who couldn't. Second, the candidate must have documented the wrongness. Not reported it – documented it. The distinction matters. Reporting implies authority. Documentation implies obsession. The Bureau needs obsessives, not informants. Third, the candidate must be willing to stand in the space between Shards, which is to say, in the space where reality has not yet decided what it wants to be, and draw a line on a chart, and trust the line, even when the chart is on fire.
+
+Training takes between six months and the rest of your life. The Bureau's training manual is seven pages long. The first six pages are redacted. The seventh page reads: "Observe. Record. Do not look away. If you look away, the thing you are not looking at will still be there when you look back. It will also be larger."
+
+The Cartographers' tools are not complex. A compass (which points not to magnetic north but to the nearest Bleed event). A notebook (made from inter-Shard paper, which can hold writing from any reality). A pen (ordinary; the Bureau tried using special pens and discovered that the extraordinary is better served by the mundane). And the Map – not a specific map but the Cartographic discipline itself, the practice of drawing lines between things that should not be connected and discovering, in the drawing, that they always were.`,
+'s155b9ed69c28a878': `You – the one behind the screen, the one choosing which Shard to enter – you are performing an act of Cartography. You are looking at the shape of the multiverse from outside any single Shard, and you are choosing where to place your attention, which is the same thing as choosing which world is real.
+
+The Cartographers call this the Gaze – the act of observation that stabilises a Shard, that gives it coherence, that prevents it from dissolving back into the undifferentiated potential of the Unnamed. A Shard without an observer is a story without a reader: technically extant, functionally null. When you select a simulation, you are not merely browsing. You are sustaining.
+
+This is why the platform dashboard is presented as a map. It is not a user interface. It is a Cartographic instrument, the same class of tool that the First Cartographer used to observe the Fracture as it happened. The difference is one of scale, not of kind.
+
+The Hermit in the Tarot depicts a solitary figure holding a lantern, illuminating a path that only they can see. The Cartographers believe the lantern is the Map, and the path is the Bleed, and the Hermit is whoever is looking at the map at this particular moment. Which, right now, is you.`,
+'s741fbdc0800f4db5': `Classification: BLACK – Existential Information Hazard.`,
+'se3a60ba153320199': `RESTRICTED DOCUMENT: TOWER-001 – Director-Level Only
+
+TOWER is not a crisis. A crisis implies the possibility of resolution. TOWER is a condition in which the distinction between Shards ceases to be [DEGRADED] and all possible realities attempt to occupy the same [DEGRADED] simultaneously.
+
+Instance A (Ash Shard, pre-collapse): The sky began displaying weather from adjacent Shards. Rain fell upward. Snow was warm. The Ash Shard collapsed within fourteen days. Bureau assessment: "the Shard forgot which set of physics it was using."
+
+Instance B (Threshold Palace, Voss expedition): Architecture "trying to be all buildings at once." Walls simultaneously stone, coral, concrete, wood, and a material described as "solid argument." Voss [DEGRADED] on Day 4,017.
+
+Instance C (In progress): [ENTIRE SECTION DEGRADED. The phrase "it is already too late to prevent" appears seventeen times. The phrase "but not too late to understand" appears once.]
+
+RECOMMENDED ACTION: [CONSUMED]
+
+DIRECTOR'S NOTE: The recommended action section has been consumed by the document itself. The previous version read: "Observe. Record. Do not look away. The multiverse survives because someone is [CONSUMED]." We are choosing to interpret this as encouragement.`,
+'s3b299e73b47a8b3f': `This section has been [CONSUMED] seventeen times. Each time, a Cartographer rewrites it. Each time, the document eats it. We persist.
+
+What the Bureau will not tell you is this: the Shards are not random. They are not the arbitrary debris of a cosmic accident. They are an argument – positions in a philosophical dispute that the Unnamed could not resolve while it was whole. Control (Velgarien). Wonder (the Gaslit Reach). Knowledge (Station Null). Hope (Speranza). Voice (the Cite des Dames). These were the first positions. They were not the last.
+
+The Fracture was not a catastrophe. It was a vote. The universe asked itself what mattered, and it could not agree, and the disagreement became geography. The vote is not over. New questions arise – questions the existing Shards cannot answer – and where the question is sharp enough, where it cuts deeply enough into the fabric of the possible, new geography crystallizes. A new Shard. A new world. A new position in the argument.
+
+The Bureau does not know how many Shards there are. The Bureau does not believe the question has a fixed answer. The Fracture is not a past-tense event with a countable number of consequences. It is an ongoing condition – the universe still disagreeing with itself, still producing new realities at the edges of the map.
+
+If this is true – and the Bureau does not confirm it, because confirmation would imply understanding, and understanding would imply the possibility of resolution, and resolution is the one thing the Bureau exists to [CONSUMED] – then the Convergence is not the end of the argument. It is the next ballot. The known Shards pressing together. All the answers colliding – the old ones and the ones that have not yet been asked. And somewhere in the collision, the possibility of an answer that contains all the others.
+
+The Bureau has a name for this answer. The name is classified. The classification has been [CONSUMED]. The [CONSUMED] has been filed under "Things That Are Also Other Things." The file is growing.
+
+[ADDENDUM, HANDWRITTEN IN THE MARGIN IN INK THAT IS STILL WET]:
+"The file is not growing. The file is becoming. There is a difference. Growing implies addition. Becoming implies change. The Bureau is changing. The Bureau has always been changing. The Bureau is the next answer, and the next answer is not an answer at all. It is the question, asked properly, for the first time."
+
+[THE ADDENDUM HAS BEEN CLASSIFIED. THE CLASSIFICATION HAS BEEN CONSUMED. THE INK IS STILL WET.]`,
+'sd7c9d96dee13f727': `Every Shard is an answer. Velgarien answers: "What if control were absolute?" The Gaslit Reach answers: "What if the darkness were kind?" Station Null answers: "What if we could see the wound?" Speranza answers: "What if we simply refused to stop?" The Cite des Dames answers: "What if women had always been heard?" And somewhere at the edges of the map, new Shards are crystallizing around questions that have not yet been named.
+
+Each answer is wrong. Each answer is necessary. The multiverse exists because no single answer is sufficient, and the Fracture was the universe's way of admitting this. The Fracture continues to be the universe's way of admitting this. It has not stopped admitting it.
+
+The Convergence – the event that the Bureau monitors, that the ruins foretell, that TOWER threatens – is not the end. It is the next question. When enough Shards have touched, when enough Bleeds have flowed, when enough agents have dreamed of worlds they've never visited, the multiverse will reach a decision point: merge, or differentiate further. Collapse into one answer, or fracture into a thousand more.
+
+The Cartographers do not know which outcome is correct. They know only this: someone must be watching when it happens. Someone must be standing at the edge with a map and a compass and the willingness to draw a new line on a chart that has no edges.
+
+That someone, in the cosmology of the Cartographers, in the deep mythology of the Bureau of Impossible Geography, in the restricted files and the consumed pages and the maps that are also doors – that someone is whoever is reading this.
+
+Shattered worlds. Bleeding borders. The map has no edges. Which world do you enter first?`,
+'sb4afcff2b1ddb3a1': str`– Field Report, Velgarien`,
+'sfdd9eaa48a69ed52': str`– Field Report, Speranza`,
+'s439afcd228e25468': `The cursor is still blinking.`,
+'s2a8b5b28ce719305': `Memory is not storage. Memory is existence.`,
+'s39e7868b3b8aa201': str`– Field Report, Conventional Memory`,
+'sd2f300ef4ca8a097': `Architect clearance grants access to the Simulation Forge – create worlds with AI-driven agents, buildings, and events.`,
+'sd4647caeb94889ec': `Terms`,
+'sa8c3b80277455232': `GitHub`,
+'s38d56a7015f053b0': `residual substrate displacement – monitoring decay curve`,
+'s0b5a3a853b6e001c': `multiple tremors entering decay phase – substrate settling`,
+'s34c6e816fbf17c92': `severe substrate distortion – local geometry unreliable`,
+'s495ac04809626250': `concurrent substrate fractures – recommend caution in affected zones`,
+'s15cafc144d372548': `overlapping tremor signatures – interference patterns forming`,
+'s77a2f097040c0803': `active substrate displacement – affected zones may behave unpredictably`,
+'s6547c1d228b7b600': `multiple signatures detected – the substrate is restless`,
+'s122d43a8b138dd56': `substrate anomaly detected – origin unclear`,
+'s7438ddeb79bdb258': `RESTRICTED – OWNER ONLY`,
+'sabbb5769a5a120e7': `Bureau Notice // Classified services available – access via ⬡ in header`,
+'s78f3eaeeaaa9f589': `Visual description used by the image AI. Does not affect game mechanics – purely aesthetic.`,
+'s40e18bc93799f793': `When enabled, both agents feel the relationship equally. When disabled, only the source agent is affected – useful for unrequited bonds, secret alliances, or hierarchical roles.`,
+'sf12967617c78f5e3': `Drag sliders to set operative strengths. Total budget must equal 36 – raising one type means lowering another. Changes auto-save when the budget balances.`,
+'s438a364bef2a65e3': `Event headline. Preserved through bleed echoes – this is what agents in other simulations hear.`,
+'sf0f44ae26e6cb531': `How many times an echo can re-echo (1-3). Depth 1: direct echo only. Depth 2: echoes of echoes. Depth 3: maximum – reality fractures deeply. Each depth level applies strength decay.`,
+'s4f47e1c7bf15e7a9': `VBDOS`,
+'sc0736072120c00ca': `Dossier preview – 6 classified sections pending authorization`,
+'s587dc28619a3b69f': `This will generate the six ARCANUM sections shown in the preview above – ALPHA through ZETA. Each section is AI-generated using the simulation's agents, buildings, zones, and existing lore as source material. Generation takes 1-3 minutes. The new sections will appear below the existing lore scroll as CLASSIFIED chapters.`,
+'s39576c348aee61fa': `BYOK ACTIVE – NO TOKEN DEDUCTION`,
+'s10e807b6d78eb86c': `BYOK – unlimited`,
+'s5c43eb7773ad9002': `ARCANUM ALPHA – Pre-Arrival History`,
+'s6fb4ea5145218aa4': `ARCANUM BETA – Agent Classified Addenda`,
+'s9eaeccdc37367050': `ARCANUM GAMMA – Geographic Anomalies`,
+'sb18b431157e3f687': `ARCANUM DELTA – Bleed Signature Analysis`,
+'sf048bab914b6d4d6': `ARCANUM EPSILON – Prophetic Fragments`,
+'sb0e14ec6a8016fe8': `ARCANUM ZETA – Bureau Recommendation`,
+'s257638182fe0ef2b': `Cartographer's Map – multiverse simulation graph`,
+'sfdeb6014e97b1c53': `Final cycles – double points`,
+'scf53a12497767a5e': str`Foundation ${0} · Competition ${1} · Reckoning ${2} cycles – ${3}d (${4}d + ${5}d + ${6}d)`,
+'sa9f3056657e70ae3': `Wounds target agent – reduces relationships by 2, removes ambassador status.`,
+'s2435dd4a922cb6d8': `Channel closed – epoch ended`,
+'sec02931e98caf2ba': `Form an alliance to share intelligence and gain +15% diplomatic bonus per ally. Costs 1 RP per member each cycle. Tension builds when allies attack the same target – if it reaches 80, the alliance dissolves.`,
+'s526f6646bdb9a5d8': `No alliances formed yet. Create one to share intelligence with allies and gain diplomatic bonuses – but watch the upkeep cost.`,
+'s4bbb5de72ffa0df7': `Each alliance member pays 1 RP per member per cycle. A 3-member alliance costs each member 3 RP/cycle. If your RP reaches 0, upkeep is waived – you will not go into debt.`,
+'sd0ca0c09c54597ca': `Alliance builder. Spreads operatives across targets. Uses diplomatic bonus. Loyal to partners.`,
+'sb9a0e96dc5a9fd23': `Competitive PvP operations dashboard – manage epochs, deploy operatives, track scores.`,
+'sac7d716dd71dcfe7': `Save RP throughout competition, then deploy multiple operatives during reckoning when bleed is amplified. Opponents have fewer cycles to recover, and sovereignty hits hurt more. High risk: if enemies scored early, the deficit may be insurmountable.`,
+'sdaca4603bb50a46d': `Six operative types, each with different costs, timings, and effects. Choose wisely – RP is scarce.`,
+'sb0834fe6afeee2f5': `Alliances cost RP to maintain. Each member pays 1 RP per member per cycle. A 2-member alliance costs 2 RP/cycle each; a 3-member alliance costs 3 RP/cycle each. If your RP reaches 0, upkeep is waived – you will not go into debt, but you cannot deploy operatives until you earn more RP.`,
+'se1a22c36c02bd193': `Alliance members automatically share battle log intelligence. You can see operations involving your allies – marked with an [ALLIED INTEL] badge – giving you broader awareness of the battlefield.`,
+'s18464dd4e3dcc656': `Search users by email`,
+'s4550d4f84c25238e': `User list pagination`,
+'s5b6a1140834aa043': `Previous page`,
+'s542ffff558768ea3': `Next page`,
+'sbb7049a0ef7b6bea': `Select simulation to add`,
+'s34851b8490633d3a': `Select role for new membership`,
+'s3216bf5bbdabfb64': `Add membership`,
+'s748aa16d8b36d1f1': `Architect role grants access to the Forge creation pipeline. Only architects can propose new simulations.`,
+'se11e84dc6dccc57a': `Toggle architect role`,
+'s61cdb947beba6d56': `Forge tokens are consumed when architects create simulations or generate content. Grant additional tokens to power users.`,
+'sdd0f3828efe2c4ed': `Forge token balance`,
+'s30b99387012b02e0': `Save wallet changes`,
+'s6a8586fd85e3aa50': `Delete this user permanently`,
+'s4389ce4619aafaa1': `Change membership role`,
+'s0f556e4c6dc7357f': `Remove membership`,
+'s0ac8da6138a19641': `Irreversible. Deletes match data, scores, chat messages, bot decisions, and cloned game instances. Keep for at least 30 days for post-mortem analysis.`,
+'s46f9a8a4d7c00ea7': `Safe to purge. Cancelled matches have no meaningful data. Orphan game instances may consume storage.`,
+'s7b2f8643dfbe77d5': `Very safe. Lobbies that never started contain only participant signups. No game data exists.`,
+'se367fbdcb1e4eab1': `Frozen simulation snapshots from completed epochs. Safe to remove after balance analysis is complete.`,
+'s957714f6aa18bdfb': `CRUD audit trail. Useful for debugging recent issues. Recommended: keep 90 days minimum for incident investigation.`,
+'s4c8a8d2e4d0f78f4': `AI decision records per tick cycle. Grows fast during playtesting. Safe to purge after bot tuning is complete.`,
+'s04b26ed202e573b6': `Clearance Queue`,
+'sd541639ac8d2fec5': `Pending Forge creation requests from simulation architects. Approve to generate, reject to decline. Tokens are refunded on rejection.`,
+'s3b9d3efd5200b038': `Simulation-level API key override. When set, this simulation uses its own key instead of the platform default.`,
+'sf6008edc078ad3c5': `Save BYOK API keys`,
+'s695fd2a90857136a': `Purge stale forge drafts`,
+'se1b2461a74848b76': `Overview of platform token allocation and consumption. Tokens gate Forge usage to prevent runaway generation costs.`,
+'sd401613b4d8c6132': `Candidate approved – resonance created.`,
+'s10e6e2abdc3e4c36': `Scan in progress`,
+'s036cfdb8575eca81': `Trigger a manual scan cycle`,
+'s10ce2c4e1d62a51e': `Triggers an immediate scan cycle outside the scheduled interval. Results appear in the candidates list.`,
+'s62220cbbe1521182': `Each adapter scans a different source at its own interval. Green dots indicate online sensors with valid API keys.`,
+'sded37086270d8082': `Filter candidates by status`,
+'s56568f38f290c1d8': str`Show ${0} candidates`,
+'sdf60be8aa2178853': `Candidates are scored by magnitude. Those above the threshold are marked as recommended for approval.`,
+'s8f87123e528b6962': str`Hide details for ${0}`,
+'sf658890cc9352c1b': str`Show details for ${0}`,
+'s6e38d5e78b25c088': `Simulation views`,
+'s088ffb190a4f95d2': `Show active simulations`,
+'s1aa747fbf701cdc9': `Show deleted simulations`,
+'sbdd37615a58bf8af': `Filter simulations`,
+'s8aa7918c8e2c0ed3': `Filter by simulation name, slug, or status. Active view shows running simulations, trash shows soft-deleted ones.`,
+'s0049a82dfa3a0b93': str`Archive ${0}`,
+'sefa6d10a951e2aee': str`Permanently destroy ${0}`,
+'s712e0c2901638007': str`Restore ${0}`,
+'s1a66ee5c88adf9d3': str`Permanently purge ${0}`,
+'s8e2bca36c08f74cb': `Master switch for the heartbeat tick engine. When disabled, no simulations receive periodic ticks.`,
+'sc203e368d037502a': `Seconds between heartbeat ticks. Lower values increase server load but make simulations feel more responsive.`,
+'s04b739ac90267dd9': `Rate at which scar tissue decays per tick. Higher values mean faster healing after critical events.`,
+'s918a047a8f15ab4e': `Rate at which attunement grows per tick when conditions are met. Controls how quickly agents align with their environment.`,
+'sa363f1bf22603303': `Anchor points gained per simulation per tick cycle. Anchors stabilize simulation health.`,
+'se77b9208c2105b3d': `Health threshold below which escalation mechanics activate. Lower values delay escalation longer.`,
+'sa92f890d26ef6621': `Pressure level that triggers cross-simulation cascade effects. Higher values make cascades harder to trigger.`,
+'s49c3d31887c9eba2': `Multiplier for Bureau containment response strength. Higher values make containment more effective.`,
+'sb14c897259244f4f': `Multiplier for Bureau remediation response strength. Controls healing speed during active incidents.`,
+'s59ca038eee0d7b24': `Multiplier for Bureau adaptation response. Higher values accelerate post-crisis normalization.`,
+'s7ff10c4482f1c0a9': `Maximum Bureau agents that can be active simultaneously across all simulations.`,
+'s80755663be17aa6b': `Probability of positive attunement events per tick. Range 0-1. Higher values create more hopeful moments.`,
+'sa33406587d8fbf9d': `Maximum number of concurrent attunement bonds per simulation.`,
+'s9128a38751d16b59': `Tick cooldown before an agent can switch attunement targets. Prevents rapid oscillation.`,
+'sd1dfe579ff009033': `Maximum anchor protection percentage. Caps how much anchors can shield a simulation from damage.`,
+'s469045d88ebbc7cb': `JSON rules governing how events age and decay over time. Advanced – edit with caution.`,
+'s67e1375d08904e71': `Toggle heartbeat engine`,
+'s7621df7acddb4d64': `Override interval in seconds`,
+'s08d7da472cf79809': `Controls entropy overlay, text corruption, card distortion, deceleration hero moment, entropy timer, and desperate actions panel across all simulations.`,
+'s1b2f0897078335ae': `Toggle critical health effects globally`,
+'sedfa7e33752b0f46': `Enable or disable health effects per simulation. Only applies when the master switch is active.`,
+'s0e600508bb55e2cf': `Filter simulations by name`,
+'s1754314c976bf83b': `Toggle health effects for this simulation`,
+'s321f6ba7f4384e38': str`Setting updated: ${0}`,
+'s1c400f5472e51e6a': `Failed to save setting`,
+'sd52c178e03418f5f': `Instagram connection verified.`,
+'sf40617963554cbb4': `Authentication failed – check access token.`,
+'sf65d69c848cdb03a': `Instagram credentials not configured.`,
+'sbfeae6893841abcc': `Connection test failed`,
+'s169a1a1dce3987b8': `Authenticated`,
+'s3fb9e9e5c013becc': `Auth Failed`,
+'sa681bbb2e0e3e86e': `Not Configured`,
+'sef26f507eaf11ae8': `No credentials configured`,
+'s35b356e86344d41c': `Meta Graph API`,
+'s1bc81712252b8fa7': `Testing...`,
+'s2474e7fb1aec9f05': `Test`,
+'sf9b1c0661a02d9f9': `Configuration`,
+'s7b9788e55c42b2ee': `Bluesky`,
+'s59df2d009c706f23': `Cipher ARG System`,
+'s37ff1a41e575809b': `Cipher Enabled`,
+'sdff05ac69e3dd7b6': `When enabled, every generated Instagram draft receives a unique unlock code. Followers decode the cipher hint in the caption (or image) and enter the code at /bureau/dispatch to claim a reward.`,
+'s8d71bd6ca6d2ffff': `Generate unlock codes for Instagram dispatches`,
+'s293ec5814b5e04c2': `Easy: Base64-encoded code (simple decode). Medium: Caesar-shifted then Base64 (ROT-13 puzzle). Hard: Reversed, Caesar-shifted, then Base64 (multi-step decode). Higher difficulty = fewer successful redemptions but more engaged players.`,
+'s124e46f85c444968': `Encoding complexity for cipher hints`,
+'s76da80cba67a056b': `Hint Format`,
+'s5128ce766811e0fa': `Footer: cipher hint appended at the end of the caption. Caption: hint inserted inline before the ADDENDUM section. Steganographic: hint rendered as faint rotated text in the composed image – caption only shows a "decode at" notice.`,
+'s0a7c1683090def17': `Where the cipher hint appears in the post`,
+'s27fe8e8cd298d71f': `Scheduling`,
+'s956c5a9fb7ee0b23': `Manual`,
+'sf0e203ae12b7c530': `Auto-Schedule`,
+'s257371e115f67881': `When enabled, the scheduler automatically publishes approved posts at the configured interval. When disabled, posts must be manually force-published from the Operations tab.`,
+'s34005126229ff0dd': `Automatically publish scheduled posts`,
+'s0b1c25ad8e16f421': `Publish Interval`,
+'s3c38182a7afe6609': `Minimum hours between automated publications (1-168). The scheduler picks the next approved post from the queue. Lower values = more frequent posts. Instagram recommends 1-2 posts per day for optimal engagement.`,
+'s0a22b310093bb779': `Hours between automated publications`,
+'s331e2b192fbe45c4': `hrs`,
+'s5b67aef5c88c7cf0': `Content Mix`,
+'sb8c7c268728ab6c3': `Proportional weights for content type selection when generating batches. Higher weight = more posts of that type. Set to 0 to disable a type entirely. The percentage shows the expected share in a batch.`,
+'sd91683b2bbb30510': `Moderation Blocklist`,
+'se35c078dd89a93d0': `Custom terms that block caption generation. One term per line. Captions containing any of these terms are rejected before draft creation. A default safety blocklist (violence, hate speech, NSFW) is always active in addition to these custom terms.`,
+'s8b2800da50368168': `One blocked term per line...`,
+'s732b682db9be66b9': str`${0} terms. Default safety blocklist is always active.`,
+'sc63d53434819bb95': `Save Blocklist`,
+'s2fd64efc7cd297d1': `Trending Tags`,
+'s0f93bd8a76c9b7a2': `Momentum hashtags mixed into posts (1 per post, rotated). Update weekly with tags trending in the AI art, worldbuilding, or indie creator space. Instagram 2026: 3-5 relevant tags per post, varied per post – one trending tag per dispatch boosts discovery without looking spammy.`,
+'sd884f24d5adb1c3a': `One trending hashtag per line (e.g. #AIrevolution)...`,
+'s21b5058a68637da1': str`${0} trending tags. One is mixed into each generated post for momentum.`,
+'se83c5a2d9d49c27e': `Save Trending Tags`,
+'s6fd0a76fd2996415': `Performance Readout`,
+'sb7fd87f5ac2f31c0': `Cipher Operations`,
+'s43a919f260ca42e7': `Total Redemptions`,
+'sd409c8784db5452d': `all time`,
+'sf39f5c0044e0461c': `Unique Operatives`,
+'sce99d14fdc4d1c08': `authenticated users`,
+'s50f829d9dbd80683': str`${0} total attempts`,
+'sc0bafae91b4767dc': `Redeemed`,
+'sf04b30586054b5da': `Reward`,
+'sc221faca1ecb4aee': `Anonymous`,
+'sfd12cc68e38cc909': `No cipher redemptions yet.`,
+'sb7923967c0a31d99': `Ciphers are generated automatically when enabled in platform settings.`,
+'sf405c26d51966a3a': `Failed to load Bluesky data`,
+'s92294eafd6d2de3b': `Post skipped.`,
+'s0caedda993aef7c7': `Skip failed`,
+'sf22b2b4b7a276d56': `Post re-enabled.`,
+'sbe715a5b5af950ee': `Unskip failed`,
+'sa717d064088aa125': `Force Publish to Bluesky`,
+'s321b50ef13a56cc3': str`Publish this ${0} post to Bluesky immediately?`,
+'sbd642036a4bab047': `Post published to Bluesky.`,
+'sf4551ea00b565034': `Bluesky connection verified.`,
+'s606ba2278ea907cd': `Authentication failed – check app password.`,
+'s76fcc8bdf238d643': `Bluesky credentials not configured.`,
+'s01f594390d72395b': `Bluesky Relay`,
+'sfe09eb4be64e8cef': `Cross-channel dispatch – AT Protocol`,
+'see4767404c041718': `No handle configured`,
+'sdce919bbdc89eb6b': `Configure`,
+'sb1543dda54c9af30': `Scanning Bluesky relay channels...`,
+'s6d3b5b0561ba34c9': `Published`,
+'sc15ad44c7902a717': `Skipped`,
+'se45912325261c5fd': `No Bluesky dispatches found. Approve Instagram posts to trigger cross-posting.`,
+'s0a63048b9f5b2eeb': `reposts`,
+'sc29029609249824c': `quotes`,
+'s0e6602a8f7a8c19d': `View on Instagram`,
+'s66413c24dcf680e2': `Skip`,
+'sa55bdb56107d1790': `Re-enable`,
+'s7f59f507e02a2f38': `View`,
+'sa817aa9f6f88a991': `Credentials`,
+'s82a4e28ab5b56670': `Connected`,
+'sfc2c3bd345c0128a': `Disconnected`,
+'s9cc43fd0f031e313': `Handle`,
+'sb7f7d377c26ee699': `Your Bluesky handle (e.g. bureau.bsky.social). This is the account that will publish Bureau dispatches. Create a dedicated account for the pipeline – do not use a personal account.`,
+'s0a5094fe36c75688': `Bluesky account handle (e.g. bureau.bsky.social)`,
+'sb4f03b0da845a465': `App Password`,
+'s0c016990b06ddcf9': `App-specific password from bsky.app/settings/app-passwords. NOT your main account password. App passwords can be revoked individually without affecting your account. Stored encrypted at rest.`,
+'s5805fa50c11f024e': `Generate at bsky.app/settings/app-passwords`,
+'s203b6eacc132438b': `Enter app password`,
+'sc25b7af4dc60871b': `PDS URL`,
+'s015d6b15ca8fdaa8': `AT Protocol Personal Data Server. Use https://bsky.social for the main Bluesky network. Only change this if you run a self-hosted PDS or use a different AT Protocol provider.`,
+'se59295decbd48a7e': `Personal Data Server (default: bsky.social)`,
+'s39ee2f1fc48e6bc3': `Pipeline`,
+'sc7e2374188185d67': `Bluesky Enabled`,
+'s434ea0a3060d706b': `Master switch for the entire Bluesky pipeline. When off, no posts are created or published – even if Auto Cross-Post is on. Turn this on after configuring Handle + App Password above.`,
+'sa5a166dc583f176e': `Master switch for the Bluesky pipeline`,
+'s091d5807b5b33550': `On`,
+'s302cbb19bf9a174a': `Off`,
+'s2d19a56c4ba4fa18': `Posting Enabled`,
+'seacb66a75aba2dbd': `When Off, the pipeline creates draft posts but does not actually publish them to Bluesky (dry-run mode). Use this to verify post quality before going live. When On, scheduled posts are published automatically.`,
+'s9e6a03023a48e291': `Actually publish to Bluesky (vs dry-run mode)`,
+'s0ad2f45fc850df2f': `Auto Cross-Post`,
+'s9a1e6b4011fa232f': `When enabled, every Instagram post that gets published automatically creates a corresponding Bluesky post. The caption is reformatted for Bluesky (300 char limit with facets/links). Images are re-uploaded to Bluesky's blob store.`,
+'sfb1b94d5bcc4ec20': `Automatically create Bluesky posts from Instagram`,
+'s25c203608358ab40': `Loading intelligence...`,
+'sc2bd3ad7839e8cc9': `No analytics data available.`,
+'s3815a746760d5c23': `Avg Likes`,
+'s910970d7b3f56559': `Total Reposts`,
+'s79dfdae308e28d4d': `Total Replies`,
+'sc4661a6db76909a6': `Total Quotes`,
+'s8367218aeaf131f3': `By Content Type`,
+'scaf63635761eef5c': `posts`,
+'s0569410d8ee9db45': str`avg ${0} likes`,
+'sf3f2547a9b3024e6': `Fallback chain: simulation BYOK key → platform key → free tier. Generation fails if no key is available.`,
+'sdacfc46204888b68': `Used for Forge image generation (SDXL/Flux). Without this key, image generation is disabled platform-wide.`,
+'scb9e9ca466fd002f': `Free tier: 12 requests/s, 500/day. Used during social trend aggregation. Not needed if Guardian source is disabled.`,
+'s0a6f4c5057e7c40a': `Free tier: 100 requests/day. Used during social trend aggregation alongside Guardian.`,
+'s598f90a78ce8b591': `Powers web search in the Forge research pipeline (Astrolabe Phase 1). Without it, research falls back to domain-only mode.`,
+'s410d62bd8ec0fda8': `Free tier: 500,000 chars/month. Used for translating generated content. Falls back to no translation if missing.`,
+'sf8e05aa6daa69b6b': str`Enter ${0}`,
+'s5e7d13e1016150ce': `Hide API key`,
+'s89c7dbadeeaaf9c3': `Show API key`,
+'s1b9633e8dba6cfd2': str`Save ${0}`,
+'s39361dd7dca92508': str`Clear ${0}`,
+'sfefcad20826a28ff': `Highest quality, highest cost. Used for narrative generation, dialogue, and event descriptions.`,
+'s5c8449415d4cbe0d': `Activates automatically when the default model errors or times out. Choose a reliable free-tier model.`,
+'sa26ef3bde24325a5': `Lower cost model for bulk research operations. Runs during Astrolabe and anchor generation – high volume, lower stakes.`,
+'sb3c992dc993347ba': `Powers the creative pipeline: lore, themes, entity translation. Quality directly affects Forge output.`,
+'s2c2e0ec12934ebb8': `Save model changes`,
+'s273a88aa495dde8b': `Reset models to defaults`,
+'s2f9a1b06bf1b5168': `Add domain`,
+'s19c41fe167cc6a7d': `Save domain changes`,
+'s8183824ae315f8e8': `Reset domains to defaults`,
+'s818e7b3be0220d78': `Set to 0 to disable in-process caching entirely. Low values increase DB queries. Recommended: 10-30s for active maps.`,
+'sd720ed72ba5bc8eb': `Only affects crawler requests. Safe to set high (300+) since metadata changes rarely.`,
+'s64f3a75c8158cfaa': `Browser-side cache. Users see stale data for this duration after simulation changes. 60s is a safe default.`,
+'s87620b15df335926': `Affects map freshness for all users. Lower for active playtesting, higher for production stability.`,
+'s31c57b062b36eb74': `Controls epoch battle data freshness. Set low (5-10s) during active epochs for real-time feel.`,
+'sc7af63d49d44fa6d': `Agent connection data cache. Higher values reduce load but delay new connection visibility.`,
+'s0238bd55161a866a': `Save all changed cache settings`,
+'s2321c7cfc19ca3ae': `Reset all values to defaults`,
+'se5103d9f02e1a360': `Platform configuration sections`,
+'sbcbf1b25817cb6d0': `Platform Config`,
+'saef579371548a4a3': `Signal recovered – anchor data retrieved from Bureau archives`,
+'s54e29dd959020450': `Signal recovered – blueprints retrieved from Bureau archives`,
+'sc26d370826468117': `Recruit operative candidates – AI-generated characters with names, professions, and backstories.`,
+'sd0258606ae156b92': `Recruits operative candidates – AI-generated characters with names, professions, and backstories.`,
+'se046c01162880470': `Theme Forge – AI-Generated Visual Identity`,
+'sfd9a869d16e1fa15': `Upload a painting or photo – portraits and buildings will inherit its visual style.`,
+'s8d15f71e9a9382b7': `Build Your World – Create your account`,
+'sfae0cfd148f3bb84': `Explore Worlds – Browse player-created civilizations`,
+'s8663ee4a25cdee83': `Describe a world in one sentence. The Forge builds it – geography, citizens, architecture, thousands of words of lore. Within minutes, you have a living civilization with characters who form opinions, hold grudges, and write their own newspapers.`,
+'s1dba2ea9384fe778': `Type a premise. The Forge generates a complete civilization – dozens of characters with personalities, cities with architecture, and thousands of words of original lore. Minutes, not months.`,
+'sf98aa39cff29f5b3': `Explore worlds built by others – read their stories, meet their characters, follow the intrigue. Or build your own. Describe a world in one sentence. The Forge does the rest.`,
+'s3115a1876cf70207': `Create your world – Sign up`,
+'s6bee77438cdc7590': `Every world started as a single sentence. Browse civilizations built by other creators – each with its own characters, cities, lore, and evolving stories.`,
+'s85941db01b641850': `Every world writes its own newspaper. This is the wire service – AI-generated broadsheets from every active simulation, decoded and delivered in real time.`,
+'sfc08ffb01c060326': `Connection lost. Try again.`,
+'s048be30a3e461d15': `Cipher already redeemed from this terminal.`,
+'sf60800231c82db66': `Invalid cipher code.`,
+'sa96ae639247c9353': `Skip to decoder`,
+'s6bf008ec4134b625': `Bureau Dispatch Terminal`,
+'s7508ff3269ac1365': `Dispatch Terminal`,
+'sabb1e8a827164521': `Transmission Decoder`,
+'s5d8b7b5c10ef393b': `Enter intercepted cipher to decode classified dispatch`,
+'s576dd536da0c2a6c': `CHANNEL OPEN`,
+'safbebfa1e906013a': `Decoding transmission...`,
+'secc9299bc1a0b729': `Cipher decoded successfully. Reward unlocked.`,
+'s679e2f205c4d05d6': `Transmission channel locked.`,
+'s5ceed662ebb3f8a3': `Cipher Code`,
+'s337e2aa34fcd881e': `BUREAU-XXXXXX`,
+'s741c699e6a14771d': `Decode Transmission`,
+'sb467c4ffb88c3283': `Attempts remaining`,
+'s1bfd4944717564bc': `Transmission Channel Locked`,
+'s12dff308fefe0daf': `Too many attempts. Channel will reopen shortly.`,
+'sbf7fad2048955415': `Declassified`,
+'s33d29662fdf58f8c': `Decode Another`,
+'s69f9339d46705ac7': `Classified Document`,
+'s4745b533ae617435': `Declassified Lore Fragment`,
+'s0234333470438e3c': `Unknown Operative`,
+'s4ffb34f30200948e': `Personnel Dossier`,
+'sf4c1bf831c5eaa0b': `EYES ONLY`,
+'s7269c0bdee702626': `Field Operative`,
+'sf5da0c0a70864487': `For distinguished service to the Bureau.`,
+'s797be817d53f695f': `Bureau Commendation`,
+'s5c8813a3eb29124f': `COMMENDED`,
+'sd3c800ecc4e6cebe': `The platform is free to explore. Browse existing worlds on the Worlds Gallery, read AI-generated chronicles, or explore the Bureau Archives for the platform’s own mythology. When you’re ready to build, the Simulation Forge is waiting.`,
+'s7e7fb98d407c21cd': `Privacy policy for metaverse.center – how we handle your data, what we collect, and your rights under GDPR.`,
+'s5668f83d7ad515f2': `How we handle your data`,
+'saaf874f737b2e7fd': `metaverse.center ("the Platform") is operated by Ing. Mag. Matthias Leihs, BSc, based in Austria. This privacy policy explains what personal data we collect, how we use it, and your rights under the EU General Data Protection Regulation (GDPR).`,
+'s284f14ba27bce01d': `Last updated: March 19, 2026.`,
+'s85664ccefb98ef4a': `Data Collected`,
+'s7040068f361055c9': `What Data We Collect`,
+'sddc6d75b54e14936': `Account data.`,
+'s3c60939367415809': `When you register, we collect your email address and a password (hashed, never stored in plain text). Authentication is handled by Supabase Auth.`,
+'sc40a7dadfdf06334': `Simulation data.`,
+'s4293b8a33599dec2': `Content you create on the platform – simulations, agents, buildings, events, lore, and chat messages – is stored in our database. This is user-generated content that you own.`,
+'s2736ccc84e5ff29f': `Analytics.`,
+'s5b44098d476ca9e3': `We use Google Analytics 4 (GA4) with IP anonymization enabled. GA4 collects anonymized usage data including pages visited, session duration, and device type. No personal identifiers are transmitted. You can opt out via the cookie consent banner.`,
+'s65c4c45101f5019e': `Cookies.`,
+'s8451ee71c7295b03': `We use strictly necessary cookies for authentication (Supabase session token) and optional analytics cookies (GA4). The cookie consent banner lets you accept or reject optional cookies.`,
+'s6d9e89e9aa685f21': `Purpose`,
+'s760f7e98cceff48d': `How We Use Your Data`,
+'s93cfe69e10be7397': `We use your data for the following purposes:`,
+'s39f21d66cff66b03': `Account management.`,
+'sb2930f9ad40487f1': `Your email is used for authentication, password reset, and platform communications (e.g., epoch invitations).`,
+'sce476b2884e2478f': `Platform operation.`,
+'s8afde3d1c7eb7731': `Simulation data is stored to provide the core service – running AI-powered simulations, generating chronicles, and enabling competitive epochs.`,
+'s6e14360aaf487261': `Anonymized usage data helps us understand how the platform is used and improve it. No personal data is shared with third parties for advertising.`,
+'sd6108ac6009a39aa': `AI content generation.`,
+'s48cc6a8a16e9f41c': `When you interact with AI features (agent chat, chronicle generation, Simulation Forge), your prompts and simulation context are sent to AI providers (OpenRouter) for processing. We do not store or train on these interactions beyond what is needed for the current session.`,
+'sc78d2946a41b5ece': `Third Parties`,
+'s3f6fae5cf8a32499': `Third-Party Services`,
+'s9b1993f4514d5017': `The platform uses the following third-party services:`,
+'sfde4c496049e1577': `Supabase`,
+'s81653d40d83ba26b': `(database, authentication, file storage) – hosted in EU (AWS eu-west-3, Paris). Data processing agreement in place.`,
+'s71954b392db601b8': `OpenRouter`,
+'s5ecd2d69a32b975b': `(AI model routing) – prompts are sent for generation. No persistent storage of user data by OpenRouter.`,
+'s904b4080478b37e4': `Replicate`,
+'s2d6c8b6cae76c848': `(AI image generation) – image descriptions are sent for portrait/building generation. Generated images are stored in our Supabase bucket.`,
+'sf29d410f19cfd36e': `Google Analytics 4`,
+'s25f8785357f0583d': `(analytics) – anonymized, IP masking enabled, opt-out via cookie consent.`,
+'s00837e313ab335d8': `Railway`,
+'s70af7dcaa0a7c612': `(application hosting) – backend infrastructure.`,
+'s83479251802a2fe3': `Meta/Instagram Graph API`,
+'s5b9876ff2ee02709': `(social media publishing) – the platform publishes AI-generated content to Instagram. No user data is shared with Meta beyond what is publicly visible in published posts.`,
+'s2626176e9a6d2f45': `Your Rights`,
+'s3dad169132f8f21c': `Your Rights Under GDPR`,
+'s6eb11653fae63cde': `Under the EU General Data Protection Regulation, you have the right to:`,
+'s4aaebe23a24d4110': `– request a copy of all personal data we hold about you.`,
+'s6c41029c180b1f69': `Rectification`,
+'s53b977365ab2fd7d': `– correct inaccurate personal data.`,
+'sd69fe925e53f1890': `Erasure`,
+'se615ba97f9699171': `– request deletion of your account and all associated data ("right to be forgotten").`,
+'s040e16732cdc95be': `Data portability`,
+'se834a12edb67397a': `– receive your data in a structured, machine-readable format.`,
+'sbcf177a9bce1ff14': `Objection`,
+'sce1a9c0c41f94347': `– object to processing of your data for specific purposes.`,
+'sc72216b67fc745ad': `Withdraw consent`,
+'s0e61c7d8d1dfc5c1': `– withdraw previously given consent at any time (e.g., analytics cookies).`,
+'s66c98bcfc2dd88a3': `To exercise any of these rights, contact us at privacy@metaverse.center.`,
+'sa989c08166940cf0': `AI Disclosure`,
+'s6e65ac35aba70252': `AI-Generated Content`,
+'sec6a5e84e0aa4b10': `metaverse.center is an AI-powered platform. Content generated by AI includes: agent dialogue, chronicle articles, simulation lore, Instagram posts, and image descriptions. All AI-generated content is clearly labeled.`,
+'s98d320e436bb51a3': `The Instagram account @bureau.of.impossible.geography publishes AI-generated fiction. Every post includes an AI disclosure footer. The account biography identifies the content as AI-generated fiction from metaverse.center.`,
+'sd626e2baa7d8918c': `We comply with the EU AI Act transparency requirements for AI-generated content.`,
+'sc1522689e7936611': `Retention`,
+'s5aac5884e4bf8927': `Data Retention`,
+'sc84d10711da18742': `Account data is retained as long as your account is active. If you delete your account, all personal data is removed within 30 days. Anonymized analytics data may be retained longer.`,
+'s784601fc65a4aa6b': `Simulation data (worlds, agents, buildings, events) is retained as long as the simulation exists. Simulation owners can delete their simulations at any time, which removes all associated data.`,
+'s87bae2710b2492c3': `Contact`,
+'s0d19c7f34d8d21db': `Data controller:`,
+'s2aa2e643e3b87b10': `Austria`,
+'s82a09be0fad1f0b7': `If you believe your data protection rights have been violated, you have the right to lodge a complaint with the Austrian Data Protection Authority (Datenschutzbehörde, dsb.gv.at).`,
+'s1d707488ea5b1812': `Terms of Service`,
+'s5de53da3a43d42e9': `Terms of service for metaverse.center – rules of engagement for the Bureau of Multiverse Observation.`,
+'s744d6b133855cadc': `Rules of engagement`,
+'s90f0b576ef06bbc2': `Acceptance`,
+'s26004fa7252c04bc': `Acceptance of Terms`,
+'s7169d3e039456f98': `By accessing or using metaverse.center ("the Platform"), you agree to be bound by these Terms of Service. If you do not agree, do not use the Platform.`,
+'s0b6797e1c91df06e': `The Platform is operated by Ing. Mag. Matthias Leihs, BSc, based in Austria. These terms are governed by Austrian law and EU regulations.`,
+'sf10db6ac3e223cc7': `The Service`,
+'s0acb9cf4d6963961': `Description of Service`,
+'se23ead342123fae8': `metaverse.center is a multiplayer worldbuilding and strategy platform. Users can create AI-powered simulations, interact with AI-generated characters, participate in competitive epochs, and connect their worlds into a multiverse.`,
+'s0da6419a2fcb2ae6': `The Platform is provided "as is" and "as available." We reserve the right to modify, suspend, or discontinue any part of the service at any time without notice.`,
+'se48bd9e6c2a3109d': `Accounts`,
+'s3ec4a84e768500ce': `User Accounts`,
+'s34d51c1115462088': `You must register an account to create simulations or participate in competitive features. You are responsible for maintaining the security of your account credentials.`,
+'sb0e91e4399a8a75a': `You must be at least 16 years old to create an account (in compliance with GDPR requirements for minors).`,
+'seed1978e73fc8495': `One account per person. Accounts may not be shared, sold, or transferred.`,
+'s7e586d01fab9b7a4': `User Content &amp; Ownership`,
+'s70539e04ae2ce543': `Your content.`,
+'sa1a27f7263d34aa1': `You retain ownership of all content you create on the Platform – simulations, agent configurations, lore, events, and other creative works. The Platform does not claim ownership of user-generated content.`,
+'sbd3522ba5b40ad74': `License grant.`,
+'s633056a8ce834d37': `By creating content on the Platform, you grant metaverse.center a non-exclusive, worldwide license to display, store, and process your content for the purpose of operating the service. This includes generating AI responses based on your content (e.g., agent chat, chronicles) and displaying your public simulations to other users.`,
+'s9d2d839ff2f96d74': `AI-generated content.`,
+'s4a495ac93e3d0f9c': `Content generated by AI (agent dialogue, chronicles, images, social media posts) is generated using your creative direction but produced by AI models. You may use AI-generated content from your simulations for personal and commercial purposes.`,
+'s2b1731c0535afc91': `Public content.`,
+'sf6f0b3919efa27ed': `Simulations marked as public are visible to all users and search engines. Public simulation data (names, descriptions, agent profiles, chronicles) may appear in search results and on the Platform’s public pages.`,
+'s3069cdedba617e6f': `Conduct`,
+'sf838a5e7b79ea8fa': `Acceptable Use`,
+'s1cf3ccd5350a3510': `You agree not to:`,
+'sd5c0ffc9afafeb2a': `– Use the Platform to create content that promotes violence, hatred, or discrimination against individuals or groups.`,
+'sd66a8c6ee3060ce4': `– Attempt to bypass security measures, access other users’ accounts, or exploit vulnerabilities.`,
+'sfb3c5c1f7d5b11ea': `– Use automated tools (bots, scrapers) to access the Platform without permission.`,
+'sb23b4dcb2a14c762': `– Upload malicious content, malware, or phishing materials.`,
+'se0d0109e4f84eeb2': `– Impersonate other users or misrepresent your identity.`,
+'s3265b1c088f63367': `Violation of these terms may result in account suspension or termination.`,
+'sebb06c4594a06567': `Competitive Play (Epochs)`,
+'s06c39f7e623160ce': `Competitive epochs are time-limited matches between simulations. By entering an epoch, you agree to the match rules and scoring system as described in the How to Play guide.`,
+'s214c1f25cd02311f': `Game instances created for epochs are temporary clones of your simulation, normalized for fair competition. Your original simulation is never modified by competitive play.`,
+'s951cce63968bfe45': `There is no monetary prize or reward for winning epochs. Rankings are for entertainment purposes only.`,
+'s7ea45fa238d7d09c': `Instagram &amp; Social Media`,
+'s9abc0d29f79563f6': `The Platform operates an Instagram account (@bureau.of.impossible.geography) that publishes AI-generated content derived from user simulations.`,
+'s6ddb92ee75250271': `Published content is AI-generated fiction based on simulation data. All posts include an AI disclosure. No personally identifiable user data is included in social media posts.`,
+'s8b46accfd882749c': `If your simulation’s content is featured in a social media post and you wish it removed, contact us at privacy@metaverse.center.`,
+'s3e262e958f3cf5a4': `Liability`,
+'sa4f8a56ccdaa65ed': `Limitation of Liability`,
+'s7b77af8c65091222': `The Platform is provided for entertainment and creative purposes. To the maximum extent permitted by applicable law:`,
+'s7935d76711fcb400': `– We are not liable for any indirect, incidental, or consequential damages arising from your use of the Platform.`,
+'s9eb8a3ad3472d50a': `– We are not responsible for AI-generated content that may be inaccurate, offensive, or inappropriate despite our moderation efforts.`,
+'s9fd05ca5c135d9b3': `– We do not guarantee uninterrupted availability of the service.`,
+'s044dc1e90fcc0280': `Nothing in these terms excludes liability that cannot be excluded under Austrian or EU law.`,
+'sce319e970ce56a49': `Termination`,
+'sd597cfcfc34faea7': `You may delete your account at any time. Upon deletion, your personal data will be removed within 30 days as described in our Privacy Policy.`,
+'sefe53dd0dd688534': `We may suspend or terminate accounts that violate these terms, with or without notice.`,
+'s5b424751e1043b2a': `Changes`,
+'sf370c285f0dca287': `Changes to These Terms`,
+'sab8351e45c9ac0f7': `We may update these terms from time to time. Significant changes will be communicated via email or platform notification. Continued use of the Platform after changes constitutes acceptance of the updated terms.`,
+'s746d33507cf8cfa6': `For questions about these terms, contact: legal@metaverse.center.`,
+'s1e625a8aa2eb31f1': `Data Deletion`,
+'s552a2d5a3dee8eef': `How to delete your account and data on metaverse.center. Instructions for exercising your GDPR right to erasure.`,
+'s0019db396c4a0848': `Your right to be forgotten`,
+'sa7d5d92205a3dc4f': `Your Right to Data Deletion`,
+'s5146b222968a7972': `Under the EU General Data Protection Regulation (GDPR), you have the right to request the deletion of all personal data we hold about you. This is known as the "right to erasure" or "right to be forgotten."`,
+'s379f6bda82e06eca': `metaverse.center fully supports this right. You can delete your account and all associated data at any time.`,
+'s610ecc7eb3766001': `How to Delete`,
+'sbbf13886faa93b6f': `How to Delete Your Account`,
+'saa847fc79d09c4df': `Option 1: Self-service (recommended)`,
+'sce6090961db48ae6': `1. Log in to your account on metaverse.center`,
+'s16352ac7facb2078': `2. Go to your Profile (click your avatar in the header)`,
+'s6d6bd09c5fee433f': `3. Scroll to the "Danger Zone" section`,
+'s8ed373e55dd355f1': `4. Click "Delete Account"`,
+'sc5a821120d49e565': `5. Confirm the deletion`,
+'s98b05dd604f31e59': `Option 2: Email request`,
+'sefd36822b461eb37': `Send an email to privacy@metaverse.center with the subject line "Account Deletion Request" and include the email address associated with your account. We will process your request within 30 days.`,
+'s39a908715891a1d0': `What Is Deleted`,
+'s4e7829e2286d3a79': `What Gets Deleted`,
+'saf7e3b176728447e': `When you delete your account, the following data is permanently removed:`,
+'s35d61ca63c6f49a6': `– Your email address and authentication credentials`,
+'s15cb9155b1e3f862': `– Your user profile and preferences`,
+'s6fbdfbf3793672db': `– Simulations you own (including all agents, buildings, events, lore, and chronicles)`,
+'s70b0f346d4ed2fd8': `– Chat messages with AI agents`,
+'s9a4945a0a28c598a': `– Epoch participation history`,
+'sf4ec511d989f44f3': `– Any stored API keys (encrypted wallet data)`,
+'sca988eed750f4e08': `This action is irreversible. All data is permanently deleted within 30 days of the request.`,
+'s7f06c7aa8c012751': `Instagram Data`,
+'see6e456d84d81c3c': `Instagram &amp; Social Media Data`,
+'s727e12b837291ec0': `If content from your simulation was published to the @bureau.of.impossible.geography Instagram account, the published posts are AI-generated fiction and do not contain personal data.`,
+'s9935b4287e33df7e': `If you wish to have Instagram posts derived from your simulation removed, contact privacy@metaverse.center and specify which simulation’s content should be removed. We will delete the relevant posts within 30 days.`,
+'s7260b7d85f502144': `Contact for Deletion Requests`,
+'s2f3aa4a83c8ae183': `We will acknowledge your request within 72 hours and complete the deletion within 30 days, as required by GDPR Article 17.`,
+'s2fce2e2f79ace270': `From Conway’s four rules to Maturana’s self-creating systems to Stanford’s generative agents: the thread connecting these ideas is that complex, meaningful behavior can emerge from simple, consistent rules applied to interacting agents. metaverse.center is the platform where that thread becomes a living system.`,
+'se90d6c3c884b85db': `Full remediation protocol – higher effectiveness, can resolve event.`,
     };
   

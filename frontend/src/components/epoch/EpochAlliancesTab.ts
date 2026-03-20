@@ -1,5 +1,5 @@
 /**
- * Epoch Alliances Tab — active alliances with tension meters, proposals,
+ * Epoch Alliances Tab – active alliances with tension meters, proposals,
  * upkeep display, and participant overview.
  *
  * Military intelligence dossier aesthetic. Proposals as "INCOMING TRANSMISSION"
@@ -606,7 +606,7 @@ export class VelgEpochAlliancesTab extends LitElement {
                     }}>
                       + ${msg('Create Alliance')}
                     </button>
-                    <p class="alliance-cta__hint">${msg('Form an alliance to share intelligence and gain +15% diplomatic bonus per ally. Costs 1 RP per member each cycle. Tension builds when allies attack the same target — if it reaches 80, the alliance dissolves.')}</p>
+                    <p class="alliance-cta__hint">${msg('Form an alliance to share intelligence and gain +15% diplomatic bonus per ally. Costs 1 RP per member each cycle. Tension builds when allies attack the same target – if it reaches 80, the alliance dissolves.')}</p>
                   </div>
                 `
               }
@@ -616,7 +616,7 @@ export class VelgEpochAlliancesTab extends LitElement {
             ${
               activeTeams.length > 0
                 ? activeTeams.map((t) => this._renderAllianceCard(t, isAligned, isCompetitionPlus))
-                : html`<p class="empty-hint">${msg('No alliances formed yet. Create one to share intelligence with allies and gain diplomatic bonuses — but watch the upkeep cost.')}</p>`
+                : html`<p class="empty-hint">${msg('No alliances formed yet. Create one to share intelligence with allies and gain diplomatic bonuses – but watch the upkeep cost.')}</p>`
             }
           </div>
         </div>
@@ -661,7 +661,7 @@ export class VelgEpochAlliancesTab extends LitElement {
             <div class="alliance__name">${t.name}</div>
             <div class="alliance__upkeep">
               ${msg('Upkeep')}: ${memberCount} RP/${msg('cycle')}
-              ${renderInfoBubble(msg('Each alliance member pays 1 RP per member per cycle. A 3-member alliance costs each member 3 RP/cycle. If your RP reaches 0, upkeep is waived — you will not go into debt.'))}
+              ${renderInfoBubble(msg('Each alliance member pays 1 RP per member per cycle. A 3-member alliance costs each member 3 RP/cycle. If your RP reaches 0, upkeep is waived – you will not go into debt.'))}
             </div>
           </div>
         </div>
@@ -693,9 +693,9 @@ export class VelgEpochAlliancesTab extends LitElement {
               ${renderInfoBubble(msg('Tension increases when allies attack the same target (+10). Decays naturally each cycle (-5). Alliance dissolves at 80.'))}
               ${
                 tension >= 60
-                  ? html` — <strong class="tension-meter__critical">${msg('Critical!')}</strong>`
+                  ? html` – <strong class="tension-meter__critical">${msg('Critical!')}</strong>`
                   : tension >= 30
-                    ? html` — <span class="tension-meter__elevated">${msg('Elevated')}</span>`
+                    ? html` – <span class="tension-meter__elevated">${msg('Elevated')}</span>`
                     : nothing
               }
             </span>
@@ -718,7 +718,7 @@ export class VelgEpochAlliancesTab extends LitElement {
             ? html`
             <div class="proposal-card proposal-card--own">
               <span class="proposal-card__status">
-                ${msg('Your request is pending')} — ${(myOwnProposal.votes ?? []).filter((v) => v.vote === 'accept').length}/${memberCount} ${msg('approved')}
+                ${msg('Your request is pending')} – ${(myOwnProposal.votes ?? []).filter((v) => v.vote === 'accept').length}/${memberCount} ${msg('approved')}
               </span>
               <span class="proposal-card__hint">
                 ${msg('Team members are reviewing your request. The proposal expires after 2 cycles.')}

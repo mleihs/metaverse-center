@@ -1060,7 +1060,7 @@ export class VelgForgeTable extends LitElement {
 
     if (!forgeStateManager.error.value) {
       const toastMsg = forgeStateManager.lastGenerationRecovered.value
-        ? msg('Signal recovered — blueprints retrieved from Bureau archives')
+        ? msg('Signal recovered – blueprints retrieved from Bureau archives')
         : msg('Blueprint expanded successfully.');
       VelgToast.success(toastMsg);
       // Scroll to reveal the generated content
@@ -1210,13 +1210,13 @@ export class VelgForgeTable extends LitElement {
         ${this._renderCommandPanel({
           division: msg('Personnel Bureau'),
           description: msg(
-            'Recruit operative candidates — AI-generated characters with names, professions, and backstories.',
+            'Recruit operative candidates – AI-generated characters with names, professions, and backstories.',
           ),
           actionLabel: msg('Begin Recruitment'),
           regenLabel: msg('Re-draft'),
           stampLabel: msg('Recruited'),
           infoText: msg(
-            'Recruits operative candidates — AI-generated characters with names, professions, and backstories.',
+            'Recruits operative candidates – AI-generated characters with names, professions, and backstories.',
           ),
           infoExample: msg('Drafts 6 agents that appear in your staging hand for review.'),
           isComplete: hasAgents,
@@ -1365,7 +1365,7 @@ export class VelgForgeTable extends LitElement {
             ? html`
           <div class="staging-section">
             <div class="staging-label">
-              ${msg('Staging Hand')} —
+              ${msg('Staging Hand')} –
               <span class="staging-hint">${msg('Click \u2713 to deploy or \u270E to edit')}</span>
             </div>
             <div class="staging-hand">
@@ -1463,7 +1463,7 @@ export class VelgForgeTable extends LitElement {
             ? html`
           <div class="staging-section">
             <div class="staging-label">
-              ${msg('Staging Hand')} —
+              ${msg('Staging Hand')} –
               <span class="staging-hint">${msg('Click \u2713 to deploy or \u270E to edit')}</span>
             </div>
             <div class="staging-hand">

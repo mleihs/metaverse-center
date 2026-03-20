@@ -111,6 +111,12 @@ Exceptions: `EchartsChart.ts`, `forge-placeholders.ts`, `DailyBriefingModal.ts`,
 
 Run `frontend/scripts/lint-color-tokens.sh` to verify. CI will reject violations.
 
+### Content Quality (MANDATORY)
+
+No em dashes (U+2014) in user-facing `msg()` strings — use en dashes (U+2013). No LLM-ism words (tapestry, delve, unleash, seamlessly, holistic, multifaceted, bustling, game-changer, cutting-edge) in `msg()` strings.
+
+Run `frontend/scripts/lint-llm-content.sh` to verify. CI will reject violations.
+
 ---
 
 ## i18n (MANDATORY)

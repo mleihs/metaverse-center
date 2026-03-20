@@ -441,7 +441,7 @@ export class VelgEpochBattleLog extends LitElement {
         newPhase === 'competition'
           ? msg('All operatives unlocked')
           : newPhase === 'reckoning'
-            ? msg('Final cycles — double points')
+            ? msg('Final cycles – double points')
             : '';
       return html`
         <div

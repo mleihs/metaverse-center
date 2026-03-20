@@ -359,7 +359,7 @@ export class VelgForgeAccessModal extends LitElement {
         </div>
 
         <p class="description">
-          ${msg('Architect clearance grants access to the Simulation Forge — create worlds with AI-driven agents, buildings, and events.')}
+          ${msg('Architect clearance grants access to the Simulation Forge – create worlds with AI-driven agents, buildings, and events.')}
         </p>
 
         <div class="field-group">

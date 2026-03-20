@@ -169,7 +169,7 @@ export function getWorldbuildingPage(): ContentPageData {
             ${msg('Tolkien spent decades on Middle-earth. Borges\u2019s Tl\u00f6n took a secret society of scholars. You need about fifteen minutes and a single idea.')}
           </p>
           <p>
-            ${msg('The platform is free to explore. Browse existing worlds on the Worlds Gallery, read AI-generated chronicles, or dive into the Bureau Archives for the platform\u2019s own mythology. When you\u2019re ready to build, the Simulation Forge is waiting.')}
+            ${msg('The platform is free to explore. Browse existing worlds on the Worlds Gallery, read AI-generated chronicles, or explore the Bureau Archives for the platform\u2019s own mythology. When you\u2019re ready to build, the Simulation Forge is waiting.')}
           </p>
           <p>
             ${msg('Every civilization on metaverse.center started as a sentence. What will yours become?')}

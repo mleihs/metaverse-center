@@ -3,6 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { adminApi, simulationsApi } from '../../services/api/index.js';
 import type { AdminMembership, AdminUser, AdminUserDetail, Simulation } from '../../types/index.js';
+import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 
 import '../shared/ConfirmDialog.js';
@@ -10,7 +11,7 @@ import '../shared/ConfirmDialog.js';
 @localized()
 @customElement('velg-admin-users-tab')
 export class VelgAdminUsersTab extends LitElement {
-  static styles = css`
+  static styles = [infoBubbleStyles, css`
     :host {
       display: block;
       color: var(--color-text-primary);
@@ -373,7 +374,7 @@ export class VelgAdminUsersTab extends LitElement {
         max-width: none;
       }
     }
-  `;
+  `];
 
   @state() private _users: AdminUser[] = [];
   @state() private _loading = true;
@@ -518,6 +519,7 @@ export class VelgAdminUsersTab extends LitElement {
           type="text"
           class="search-input"
           placeholder=${msg('Search users by email...')}
+          aria-label=${msg('Search users by email')}
           .value=${this._search}
           @input=${(e: Event) => {
             this._search = (e.target as HTMLInputElement).value;
@@ -536,10 +538,11 @@ export class VelgAdminUsersTab extends LitElement {
         `
       }
 
-      <div class="pagination">
+      <nav class="pagination" aria-label=${msg('User list pagination')}>
         <button
           class="pagination__btn"
           ?disabled=${this._page <= 1}
+          aria-label=${msg('Previous page')}
           @click=${() => {
             this._page--;
             this._loadUsers();
@@ -549,12 +552,13 @@ export class VelgAdminUsersTab extends LitElement {
         <button
           class="pagination__btn"
           ?disabled=${users.length < 50}
+          aria-label=${msg('Next page')}
           @click=${() => {
             this._page++;
             this._loadUsers();
           }}
         >${msg('Next')}</button>
-      </div>
+      </nav>
 
       ${
         this._confirmDeleteUserId
@@ -629,6 +633,7 @@ export class VelgAdminUsersTab extends LitElement {
 
         <div class="add-membership">
           <select
+            aria-label=${msg('Select simulation to add')}
             .value=${this._addSimId}
             @change=${(e: Event) => {
               this._addSimId = (e.target as HTMLSelectElement).value;
@@ -638,6 +643,7 @@ export class VelgAdminUsersTab extends LitElement {
             ${this._simulations.map((sim) => html`<option value=${sim.id}>${sim.name}</option>`)}
           </select>
           <select
+            aria-label=${msg('Select role for new membership')}
             .value=${this._addRole}
             @change=${(e: Event) => {
               this._addRole = (e.target as HTMLSelectElement).value;
@@ -648,7 +654,7 @@ export class VelgAdminUsersTab extends LitElement {
             <option value="admin">${msg('Admin')}</option>
             <option value="owner">${msg('Owner')}</option>
           </select>
-          <button class="btn-sm btn-sm--primary" @click=${() => this._addMembership(detail.id)}>
+          <button class="btn-sm btn-sm--primary" aria-label=${msg('Add membership')} @click=${() => this._addMembership(detail.id)}>
             ${msg('Add')}
           </button>
         </div>
@@ -656,9 +662,11 @@ export class VelgAdminUsersTab extends LitElement {
         <p class="detail-section-title" style="margin-top:var(--space-6)">${msg('Simulation Forge Access')}</p>
         <div class="forge-access">
           <div class="forge-access__field">
-            <label class="forge-access__label">${msg('Is Architect')}</label>
-            <input 
-              type="checkbox" 
+            <label class="forge-access__label">${msg('Is Architect')} ${renderInfoBubble(msg('Architect role grants access to the Forge creation pipeline. Only architects can propose new simulations.'), 'tip-user-architect')}</label>
+            <input
+              type="checkbox"
+              aria-label=${msg('Toggle architect role')}
+              aria-describedby="tip-user-architect"
               ?checked=${detail.wallet?.is_architect}
               @change=${(e: Event) => {
                 const checked = (e.target as HTMLInputElement).checked;
@@ -681,10 +689,12 @@ export class VelgAdminUsersTab extends LitElement {
             />
           </div>
           <div class="forge-access__field">
-            <label class="forge-access__label">${msg('Forge Tokens')}</label>
-            <input 
-              type="number" 
-              class="membership-role-select forge-access__input" 
+            <label class="forge-access__label">${msg('Forge Tokens')} ${renderInfoBubble(msg('Forge tokens are consumed when architects create simulations or generate content. Grant additional tokens to power users.'), 'tip-user-tokens')}</label>
+            <input
+              type="number"
+              class="membership-role-select forge-access__input"
+              aria-label=${msg('Forge token balance')}
+              aria-describedby="tip-user-tokens"
               .value=${String(detail.wallet?.forge_tokens ?? 0)}
               @input=${(e: Event) => {
                 const val = parseInt((e.target as HTMLInputElement).value, 10) || 0;
@@ -706,7 +716,7 @@ export class VelgAdminUsersTab extends LitElement {
               }}
             />
           </div>
-          <button class="btn-sm btn-sm--primary" @click=${() => this._updateWallet(detail.id)}>
+          <button class="btn-sm btn-sm--primary" @click=${() => this._updateWallet(detail.id)} aria-label=${msg('Save wallet changes')}>
             ${msg('Save Wallet')}
           </button>
         </div>
@@ -714,6 +724,7 @@ export class VelgAdminUsersTab extends LitElement {
         <div class="detail-actions">
           <button
             class="btn-sm btn-sm--danger"
+            aria-label=${msg('Delete this user permanently')}
             @click=${() => {
               this._confirmDeleteUserId = detail.id;
             }}
@@ -729,6 +740,7 @@ export class VelgAdminUsersTab extends LitElement {
         <span class="membership-sim">${m.simulations?.name ?? m.simulation_id}</span>
         <select
           class="membership-role-select"
+          aria-label=${msg('Change membership role')}
           .value=${m.member_role}
           @change=${(e: Event) => this._changeRole(userId, m.simulation_id, e)}
           @click=${(e: Event) => e.stopPropagation()}
@@ -740,6 +752,7 @@ export class VelgAdminUsersTab extends LitElement {
         </select>
         <button
           class="btn-sm btn-sm--danger"
+          aria-label=${msg('Remove membership')}
           @click=${(e: Event) => {
             e.stopPropagation();
             this._removeMembership(userId, m.simulation_id);

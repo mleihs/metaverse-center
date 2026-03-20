@@ -170,7 +170,7 @@ export class VelgBureauNotice extends LitElement {
       <div class="notice" role="status" aria-live="polite">
         <div class="notice__marker" aria-hidden="true"></div>
         <span class="notice__text">
-          ${msg('Bureau Notice // Classified services available — access via ⬡ in header')}
+          ${msg('Bureau Notice // Classified services available – access via ⬡ in header')}
         </span>
         <button
           class="notice__cta"

@@ -1,7 +1,7 @@
 /**
- * Worlds Gallery — Public showcase of player-created simulations.
+ * Worlds Gallery – Public showcase of player-created simulations.
  *
- * Aesthetic: Classified surveillance wall — each world card is a declassified
+ * Aesthetic: Classified surveillance wall – each world card is a declassified
  * intelligence file under Bureau observation. Theme colors bleed outward on
  * hover like a portal trying to break containment.
  *
@@ -522,7 +522,7 @@ export class VelgWorldsGallery extends LitElement {
       '@type': 'CollectionPage',
       name: 'Explore Living Worlds',
       description:
-        'Browse player-created civilizations — each with AI-powered characters, evolving cities, and stories that write themselves.',
+        'Browse player-created civilizations – each with AI-powered characters, evolving cities, and stories that write themselves.',
       url: 'https://metaverse.center/worlds',
       numberOfItems: this._total,
       mainEntity: {
@@ -581,7 +581,7 @@ export class VelgWorldsGallery extends LitElement {
         <p class="gallery-header__classification">${msg('Bureau Observation Index')}</p>
         <h1 class="gallery-header__title">${msg('Explore Living Worlds')}</h1>
         <p class="gallery-header__subtitle">
-          ${msg('Every world started as a single sentence. Browse civilizations built by other creators — each with its own characters, cities, lore, and evolving stories.')}
+          ${msg('Every world started as a single sentence. Browse civilizations built by other creators – each with its own characters, cities, lore, and evolving stories.')}
         </p>
       </div>
 
@@ -655,13 +655,13 @@ export class VelgWorldsGallery extends LitElement {
                           : nothing}
                         <div class="world-card__stats">
                           <span class="world-card__stat">
-                            <span class="world-card__stat-value">${sim.agent_count ?? '—'}</span> ${msg('agents')}
+                            <span class="world-card__stat-value">${sim.agent_count ?? '–'}</span> ${msg('agents')}
                           </span>
                           <span class="world-card__stat">
-                            <span class="world-card__stat-value">${sim.building_count ?? '—'}</span> ${msg('buildings')}
+                            <span class="world-card__stat-value">${sim.building_count ?? '–'}</span> ${msg('buildings')}
                           </span>
                           <span class="world-card__stat">
-                            <span class="world-card__stat-value">${sim.event_count ?? '—'}</span> ${msg('events')}
+                            <span class="world-card__stat-value">${sim.event_count ?? '–'}</span> ${msg('events')}
                           </span>
                         </div>
                       </div>

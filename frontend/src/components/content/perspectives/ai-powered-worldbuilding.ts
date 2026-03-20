@@ -157,7 +157,7 @@ export function getAiPoweredWorldbuildingPage(): ContentPageData {
             ${msg('The creator\u2019s role shifts from author to gardener. You plant seeds \u2014 a concept, characters, constraints \u2014 and tend what grows. You prune what doesn\u2019t work, encourage what does, and discover stories you never planned. The world surprises you, and that surprise is the proof that something genuinely emergent is happening.')}
           </p>
           <p>
-            ${msg('From Conway\u2019s four rules to Maturana\u2019s self-creating systems to Stanford\u2019s generative agents: the thread connecting these ideas is that complex, meaningful behavior can emerge from simple, consistent rules applied to interacting agents. metaverse.center is the platform where that thread becomes a living tapestry.')}
+            ${msg('From Conway\u2019s four rules to Maturana\u2019s self-creating systems to Stanford\u2019s generative agents: the thread connecting these ideas is that complex, meaningful behavior can emerge from simple, consistent rules applied to interacting agents. metaverse.center is the platform where that thread becomes a living system.')}
           </p>
         `,
       },

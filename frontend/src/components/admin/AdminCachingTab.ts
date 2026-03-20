@@ -1,9 +1,23 @@
 import { localized, msg, str } from '@lit/localize';
-import { css, html, LitElement } from 'lit';
+import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { adminApi } from '../../services/api/index.js';
 import type { PlatformSetting } from '../../types/index.js';
+import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
+import { adminButtonStyles, adminLoadingStyles } from './admin-shared-styles.js';
+
+/** Operational tips for each cache setting (shown as info bubbles). */
+function getCacheTip(): Record<string, string> {
+  return {
+    cache_map_data_ttl: msg('Set to 0 to disable in-process caching entirely. Low values increase DB queries. Recommended: 10-30s for active maps.'),
+    cache_seo_metadata_ttl: msg('Only affects crawler requests. Safe to set high (300+) since metadata changes rarely.'),
+    cache_http_simulations_max_age: msg('Browser-side cache. Users see stale data for this duration after simulation changes. 60s is a safe default.'),
+    cache_http_map_data_max_age: msg('Affects map freshness for all users. Lower for active playtesting, higher for production stability.'),
+    cache_http_battle_feed_max_age: msg('Controls epoch battle data freshness. Set low (5-10s) during active epochs for real-time feel.'),
+    cache_http_connections_max_age: msg('Agent connection data cache. Higher values reduce load but delay new connection visibility.'),
+  };
+}
 
 /** Human-readable labels and descriptions for each cache setting key. */
 function getSettingMeta(): Record<string, { label: string; description: string; unit: string }> {
@@ -62,171 +76,110 @@ const DEFAULTS: Record<string, number> = {
 @localized()
 @customElement('velg-admin-caching-tab')
 export class VelgAdminCachingTab extends LitElement {
-  static styles = css`
-    :host {
-      display: block;
-      color: var(--color-text-primary);
-      font-family: var(--font-mono, monospace);
-    }
-
-    .cache-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-      gap: var(--space-4);
-      margin-bottom: var(--space-6);
-    }
-
-    .cache-card {
-      padding: var(--space-4);
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
-    }
-
-    .cache-card:hover {
-      border-color: var(--color-text-muted);
-    }
-
-    .cache-card--dirty {
-      border-color: var(--color-warning);
-      box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-warning) 50%, transparent);
-    }
-
-    .cache-card__label {
-      font-family: var(--font-brutalist);
-      font-size: var(--text-sm);
-      font-weight: var(--font-bold);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      color: var(--color-text-primary);
-      margin: 0 0 var(--space-2) 0;
-    }
-
-    .cache-card__description {
-      font-size: var(--text-xs);
-      color: var(--color-text-secondary);
-      line-height: 1.5;
-      margin: 0 0 var(--space-3) 0;
-    }
-
-    .cache-card__input-row {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-    }
-
-    .cache-card__input {
-      width: 90px;
-      padding: var(--space-2) var(--space-3);
-      font-family: var(--font-mono, monospace);
-      font-size: var(--text-sm);
-      text-align: right;
-      background: var(--color-surface);
-      color: var(--color-text-primary);
-      border: 1px solid var(--color-border);
-      border-radius: 0;
-      transition: border-color 0.2s ease;
-      -moz-appearance: textfield;
-    }
-
-    .cache-card__input::-webkit-outer-spin-button,
-    .cache-card__input::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
-
-    .cache-card__input:focus {
-      outline: none;
-      border-color: var(--color-danger);
-      box-shadow: 0 0 0 1px var(--color-danger);
-    }
-
-    .cache-card__unit {
-      font-size: var(--text-xs);
-      color: var(--color-text-muted);
-      text-transform: uppercase;
-    }
-
-    .cache-card__default {
-      font-size: var(--text-xs);
-      color: var(--color-text-muted);
-      margin-left: auto;
-    }
-
-    /* --- Actions --- */
-
-    .actions {
-      display: flex;
-      gap: var(--space-3);
-    }
-
-    .btn {
-      font-family: var(--font-brutalist);
-      font-size: var(--text-sm);
-      font-weight: var(--font-bold);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      padding: var(--space-2) var(--space-5);
-      cursor: pointer;
-      transition:
-        background 0.2s ease,
-        color 0.2s ease,
-        transform 0.15s ease,
-        box-shadow 0.2s ease;
-    }
-
-    .btn:hover {
-      transform: translateY(-1px);
-    }
-
-    .btn:active {
-      transform: translateY(0);
-    }
-
-    .btn:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .btn--save {
-      background: var(--color-danger);
-      color: var(--color-text-inverse);
-      border: 1px solid var(--color-danger);
-    }
-
-    .btn--save:hover:not(:disabled) {
-      background: var(--color-danger-hover);
-      box-shadow: 0 0 12px color-mix(in srgb, var(--color-danger) 30%, transparent);
-    }
-
-    .btn--reset {
-      background: transparent;
-      color: var(--color-text-secondary);
-      border: 1px solid var(--color-border);
-    }
-
-    .btn--reset:hover:not(:disabled) {
-      color: var(--color-danger);
-      border-color: color-mix(in srgb, var(--color-danger) 50%, transparent);
-    }
-
-    .loading {
-      text-align: center;
-      padding: var(--space-8);
-      color: var(--color-text-muted);
-      font-family: var(--font-brutalist);
-      text-transform: uppercase;
-    }
-
-    @media (max-width: 768px) {
-      .cache-grid {
-        grid-template-columns: 1fr;
+  static styles = [
+    adminButtonStyles,
+    adminLoadingStyles,
+    infoBubbleStyles,
+    css`
+      :host {
+        display: block;
+        color: var(--color-text-primary);
+        font-family: var(--font-mono, monospace);
       }
-    }
-  `;
+
+      .cache-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: var(--space-4);
+        margin-bottom: var(--space-6);
+      }
+
+      .cache-card {
+        padding: var(--space-4);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        transition:
+          border-color 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+
+      .cache-card:hover {
+        border-color: var(--color-text-muted);
+      }
+
+      .cache-card--dirty {
+        border-color: var(--color-warning);
+        box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-warning) 50%, transparent);
+      }
+
+      .cache-card__label {
+        font-family: var(--font-brutalist);
+        font-size: var(--text-sm);
+        font-weight: var(--font-bold);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-wide);
+        color: var(--color-text-primary);
+        margin: 0 0 var(--space-2) 0;
+      }
+
+      .cache-card__description {
+        font-size: var(--text-xs);
+        color: var(--color-text-secondary);
+        line-height: 1.5;
+        margin: 0 0 var(--space-3) 0;
+      }
+
+      .cache-card__input-row {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+      }
+
+      .cache-card__input {
+        width: 90px;
+        padding: var(--space-2) var(--space-3);
+        font-family: var(--font-mono, monospace);
+        font-size: var(--text-sm);
+        text-align: right;
+        background: var(--color-surface);
+        color: var(--color-text-primary);
+        border: 1px solid var(--color-border);
+        border-radius: 0;
+        transition: border-color 0.2s ease;
+        -moz-appearance: textfield;
+      }
+
+      .cache-card__input::-webkit-outer-spin-button,
+      .cache-card__input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      .cache-card__input:focus {
+        outline: none;
+        border-color: var(--color-danger);
+        box-shadow: 0 0 0 1px var(--color-danger);
+      }
+
+      .cache-card__unit {
+        font-size: var(--text-xs);
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+      }
+
+      .cache-card__default {
+        font-size: var(--text-xs);
+        color: var(--color-text-muted);
+        margin-left: auto;
+      }
+
+      @media (max-width: 768px) {
+        .cache-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    `,
+  ];
 
   @state() private _settings: PlatformSetting[] = [];
   @state() private _editValues: Record<string, string> = {};
@@ -310,6 +263,7 @@ export class VelgAdminCachingTab extends LitElement {
     }
 
     const meta = getSettingMeta();
+    const tips = getCacheTip();
 
     return html`
       <div class="cache-grid">
@@ -318,16 +272,19 @@ export class VelgAdminCachingTab extends LitElement {
           if (!m) return null;
           const isDirty = this._isDirty(setting.setting_key);
           const defaultVal = DEFAULTS[setting.setting_key];
+          const tip = tips[setting.setting_key];
 
           return html`
             <div class="cache-card ${isDirty ? 'cache-card--dirty' : ''}">
-              <p class="cache-card__label">${m.label}</p>
+              <p class="cache-card__label">${m.label} ${tip ? renderInfoBubble(tip, `tip-${setting.setting_key}`) : nothing}</p>
               <p class="cache-card__description">${m.description}</p>
               <div class="cache-card__input-row">
                 <input
                   type="number"
                   class="cache-card__input"
                   min="1"
+                  aria-label=${m.label}
+                  aria-describedby=${`tip-${setting.setting_key}`}
                   .value=${this._editValues[setting.setting_key] ?? ''}
                   @input=${(e: Event) => {
                     this._editValues = {
@@ -352,11 +309,13 @@ export class VelgAdminCachingTab extends LitElement {
         <button
           class="btn btn--save"
           ?disabled=${!this._hasDirty || this._saving}
+          aria-label=${msg('Save all changed cache settings')}
           @click=${this._saveAll}
         >${this._saving ? msg('Saving...') : msg('Save Changes')}</button>
         <button
           class="btn btn--reset"
           ?disabled=${this._saving}
+          aria-label=${msg('Reset all values to defaults')}
           @click=${this._resetToDefaults}
         >${msg('Reset to Defaults')}</button>
       </div>

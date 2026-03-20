@@ -643,7 +643,7 @@ export class VelgAgentDetailsPanel extends LitElement {
 
       this._agentIntel = parseAgentIntel(beta.body, this.agent.name);
     } catch {
-      // Non-critical — intel card simply won't show
+      // Non-critical – intel card simply won't show
     }
   }
 
@@ -678,7 +678,7 @@ export class VelgAgentDetailsPanel extends LitElement {
         const meta = embassy.embassy_metadata;
         if (!meta?.ambassador_a || !meta?.ambassador_b) continue;
 
-        // Check both ambassador entries — metadata ordering may not match simulation ordering
+        // Check both ambassador entries – metadata ordering may not match simulation ordering
         const isAmbassador =
           meta.ambassador_a?.name === agentName || meta.ambassador_b?.name === agentName;
         if (isAmbassador) {
@@ -716,7 +716,7 @@ export class VelgAgentDetailsPanel extends LitElement {
         this._aptitudes = set;
       }
     } catch {
-      // Aptitudes not critical — leave null
+      // Aptitudes not critical – leave null
     } finally {
       this._aptitudesLoading = false;
     }
@@ -727,7 +727,7 @@ export class VelgAgentDetailsPanel extends LitElement {
   ): void {
     this._aptitudes = e.detail.aptitudes;
 
-    // Debounced save — 800ms after last change
+    // Debounced save – 800ms after last change
     if (this._aptitudeSaveTimer) clearTimeout(this._aptitudeSaveTimer);
     this._aptitudeSaveTimer = setTimeout(() => this._saveAptitudes(), 800);
   }
@@ -735,7 +735,7 @@ export class VelgAgentDetailsPanel extends LitElement {
   private async _saveAptitudes(): Promise<void> {
     if (!this.agent || !this.simulationId || !this._aptitudes || this._aptitudesSaving) return;
 
-    // Only save when budget is exactly 36 — user may still be adjusting
+    // Only save when budget is exactly 36 – user may still be adjusting
     const total = Object.values(this._aptitudes).reduce((sum, v) => sum + v, 0);
     if (total !== 36) return;
 
@@ -971,7 +971,7 @@ export class VelgAgentDetailsPanel extends LitElement {
           <span>${msg('Professions')}</span>
           <span class="panel__influence-metric">${Math.round(professionWeight * 100)}%</span>
           <span>${msg('Diplomatic')}</span>
-          <span class="panel__influence-metric">${ambassadorWeight > 0 ? msg('Active') : '—'}</span>
+          <span class="panel__influence-metric">${ambassadorWeight > 0 ? msg('Active') : '–'}</span>
         </div>
       </div>
     `;
@@ -1353,7 +1353,7 @@ export class VelgAgentDetailsPanel extends LitElement {
           }
 
           <div class="panel__section">
-            <velg-section-header>${msg('Aptitudes')} ${renderInfoBubble(msg('Drag sliders to set operative strengths. Total budget must equal 36 — raising one type means lowering another. Changes auto-save when the budget balances.'))}</velg-section-header>
+            <velg-section-header>${msg('Aptitudes')} ${renderInfoBubble(msg('Drag sliders to set operative strengths. Total budget must equal 36 – raising one type means lowering another. Changes auto-save when the budget balances.'))}</velg-section-header>
             ${this._renderAptitudes()}
           </div>
 

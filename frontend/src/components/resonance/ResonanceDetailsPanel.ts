@@ -759,7 +759,7 @@ export class VelgResonanceDetailsPanel extends LitElement {
   }
 
   private _formatTimestamp(iso: string | undefined): string {
-    if (!iso) return '—';
+    if (!iso) return '–';
     const d = new Date(iso);
     return d.toLocaleString(undefined, {
       year: 'numeric',
@@ -1037,7 +1037,7 @@ export class VelgResonanceDetailsPanel extends LitElement {
               style="--row-i: ${i}"
               role="link"
               tabindex="0"
-              aria-label="${impact._simName} — ${msg('magnitude')} ${impact.effective_magnitude.toFixed(2)}"
+              aria-label="${impact._simName} – ${msg('magnitude')} ${impact.effective_magnitude.toFixed(2)}"
               @click=${() => this._navigateToSim(impact._simSlug)}
               @keydown=${(e: KeyboardEvent) => {
                 if (e.key === 'Enter') this._navigateToSim(impact._simSlug);

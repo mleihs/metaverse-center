@@ -9,6 +9,8 @@ import type {
   CleanupType,
 } from '../../types/index.js';
 import { VelgToast } from '../shared/Toast.js';
+import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
+import { adminLoadingStyles } from './admin-shared-styles.js';
 
 import '../shared/ConfirmDialog.js';
 
@@ -72,6 +74,17 @@ function getCleanupMeta(): Record<CleanupType, CleanupMeta> {
   };
 }
 
+function getCleanupTip(): Record<CleanupType, string> {
+  return {
+    completed_epochs: msg('Irreversible. Deletes match data, scores, chat messages, bot decisions, and cloned game instances. Keep for at least 30 days for post-mortem analysis.'),
+    cancelled_epochs: msg('Safe to purge. Cancelled matches have no meaningful data. Orphan game instances may consume storage.'),
+    stale_lobbies: msg('Very safe. Lobbies that never started contain only participant signups. No game data exists.'),
+    archived_instances: msg('Frozen simulation snapshots from completed epochs. Safe to remove after balance analysis is complete.'),
+    audit_log: msg('CRUD audit trail. Useful for debugging recent issues. Recommended: keep 90 days minimum for incident investigation.'),
+    bot_decision_log: msg('AI decision records per tick cycle. Grows fast during playtesting. Safe to purge after bot tuning is complete.'),
+  };
+}
+
 const CLEANUP_TYPES: CleanupType[] = [
   'completed_epochs',
   'cancelled_epochs',
@@ -86,7 +99,10 @@ const DEFAULT_THRESHOLD = 30;
 @localized()
 @customElement('velg-admin-cleanup-tab')
 export class VelgAdminCleanupTab extends LitElement {
-  static styles = css`
+  static styles = [
+    adminLoadingStyles,
+    infoBubbleStyles,
+    css`
     :host {
       display: block;
       color: var(--color-text-primary);
@@ -417,16 +433,6 @@ export class VelgAdminCleanupTab extends LitElement {
       white-space: nowrap;
     }
 
-    /* ── Loading / empty ─────────────────────────── */
-
-    .loading {
-      text-align: center;
-      padding: var(--space-8);
-      color: var(--color-text-muted);
-      font-family: var(--font-brutalist);
-      text-transform: uppercase;
-    }
-
     @media (max-width: 768px) {
       .overview-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -441,7 +447,8 @@ export class VelgAdminCleanupTab extends LitElement {
         grid-template-columns: 1fr;
       }
     }
-  `;
+  `,
+  ];
 
   @state() private _stats: CleanupStats | null = null;
   @state() private _loading = true;
@@ -630,6 +637,7 @@ export class VelgAdminCleanupTab extends LitElement {
             <input
               type="checkbox"
               class="item-row__check"
+              aria-label=${msg(`Select ${item.name}`)}
               .checked=${selected.has(item.id)}
               @change=${() => this._toggleItem(type, item.id)}
             />
@@ -672,6 +680,7 @@ export class VelgAdminCleanupTab extends LitElement {
 
   private _renderOperations() {
     const meta = getCleanupMeta();
+    const tips = getCleanupTip();
 
     return html`
       <h3 class="section-header">
@@ -696,6 +705,7 @@ export class VelgAdminCleanupTab extends LitElement {
               <div class="op-card__header">
                 <span class="op-card__icon">${m.icon}</span>
                 <h4 class="op-card__title">${m.label}</h4>
+                ${renderInfoBubble(tips[type], `tip-cleanup-${type}`)}
               </div>
               <p class="op-card__desc">${m.description}</p>
 
@@ -706,6 +716,8 @@ export class VelgAdminCleanupTab extends LitElement {
                   class="controls-row__input"
                   min="0"
                   max="3650"
+                  aria-label=${msg(`Minimum age in days for ${m.label}`)}
+                  aria-describedby=${`tip-cleanup-${type}`}
                   .value=${String(this._thresholds[type])}
                   @input=${(e: Event) => {
                     const val = Number.parseInt((e.target as HTMLInputElement).value, 10);
@@ -727,6 +739,7 @@ export class VelgAdminCleanupTab extends LitElement {
                 <button
                   class="btn btn--scan"
                   ?disabled=${isScanning || isExecuting}
+                  aria-label=${msg(`Scan for ${m.label}`)}
                   @click=${() => this._scan(type)}
                 >${isScanning ? msg('Scanning...') : msg('Scan')}</button>
               </div>
@@ -739,6 +752,7 @@ export class VelgAdminCleanupTab extends LitElement {
                 <button
                   class="btn btn--purge"
                   ?disabled=${isExecuting}
+                  aria-label=${msg(`Execute purge for ${m.label}`)}
                   @click=${() => {
                     this._confirmPurge = type;
                   }}

@@ -606,7 +606,7 @@ export class VelgHowToPlay extends LitElement {
       <section class="section" id="operatives">
         ${this._renderSectionHeader('13', msg('Operatives'))}
         <p class="section__text">
-          ${msg('Six operative types, each with different costs, timings, and effects. Choose wisely — RP is scarce.')}
+          ${msg('Six operative types, each with different costs, timings, and effects. Choose wisely – RP is scarce.')}
         </p>
 
         <div class="ops-grid">
@@ -812,7 +812,7 @@ export class VelgHowToPlay extends LitElement {
         <div class="callout callout--warning">
           <div class="callout__label">${msg('Upkeep')}</div>
           <div class="callout__text">
-            ${msg('Alliances cost RP to maintain. Each member pays 1 RP per member per cycle. A 2-member alliance costs 2 RP/cycle each; a 3-member alliance costs 3 RP/cycle each. If your RP reaches 0, upkeep is waived — you will not go into debt, but you cannot deploy operatives until you earn more RP.')}
+            ${msg('Alliances cost RP to maintain. Each member pays 1 RP per member per cycle. A 2-member alliance costs 2 RP/cycle each; a 3-member alliance costs 3 RP/cycle each. If your RP reaches 0, upkeep is waived – you will not go into debt, but you cannot deploy operatives until you earn more RP.')}
           </div>
         </div>
 
@@ -826,7 +826,7 @@ export class VelgHowToPlay extends LitElement {
         <div class="callout callout--tip">
           <div class="callout__label">${msg('Shared Intelligence')}</div>
           <div class="callout__text">
-            ${msg('Alliance members automatically share battle log intelligence. You can see operations involving your allies — marked with an [ALLIED INTEL] badge — giving you broader awareness of the battlefield.')}
+            ${msg('Alliance members automatically share battle log intelligence. You can see operations involving your allies – marked with an [ALLIED INTEL] badge – giving you broader awareness of the battlefield.')}
           </div>
         </div>
 

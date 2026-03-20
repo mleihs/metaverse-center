@@ -83,7 +83,7 @@ function getPersonalityDescriptions(): Record<BotPersonality, string> {
       'Aggressive attacker. Focuses fire on the leader with assassins and saboteurs. Betrays allies who become threats.',
     ),
     diplomat: msg(
-      'Alliance builder. Spreads operatives across targets. Leverages diplomatic bonus. Loyal to partners.',
+      'Alliance builder. Spreads operatives across targets. Uses diplomatic bonus. Loyal to partners.',
     ),
     strategist: msg(
       'Adaptive counter-strategist. Detects the dominant strategy and counters it. Heavy spy investment.',

@@ -1,5 +1,5 @@
 /**
- * Attunement Settings — Substrate Frequency Tuner.
+ * Attunement Settings – Substrate Frequency Tuner.
  *
  * 8 resonance signature cards styled as radio frequency channels.
  * Each card has a CSS sine-wave visualization, segmented VU-meter
@@ -660,7 +660,7 @@ export class VelgAttunementSettings extends LitElement {
         ?disabled=${this._loading || (isFull && !isAttuned)}
         @click=${() => this._toggleAttunement(sig.key)}
         aria-pressed=${isAttuned}
-        aria-label=${`${sig.label}${isAttuned ? ` — ${msg('attuned')}` : ''}${harmonized ? ` — ${msg('harmonized')}` : ''}`}
+        aria-label=${`${sig.label}${isAttuned ? ` – ${msg('attuned')}` : ''}${harmonized ? ` – ${msg('harmonized')}` : ''}`}
       >
         ${isFull
           ? html`

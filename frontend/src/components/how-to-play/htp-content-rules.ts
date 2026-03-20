@@ -253,7 +253,7 @@ export function getTactics(): TacticCard[] {
       title: msg('The Reckoning Rush'),
       category: 'timing',
       description: msg(
-        'Save RP throughout competition, then unleash multiple operatives during reckoning when bleed is amplified. Opponents have fewer cycles to recover, and sovereignty hits hurt more. High risk: if enemies scored early, the deficit may be insurmountable.',
+        'Save RP throughout competition, then deploy multiple operatives during reckoning when bleed is amplified. Opponents have fewer cycles to recover, and sovereignty hits hurt more. High risk: if enemies scored early, the deficit may be insurmountable.',
       ),
     },
     {

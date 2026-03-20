@@ -3,11 +3,8 @@ import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 
-import './AdminApiKeysTab.js';
 import './AdminUsersTab.js';
-import './AdminCachingTab.js';
 import './AdminCleanupTab.js';
-import './AdminModelsTab.js';
 import './AdminForgeTab.js';
 import './AdminResonancesTab.js';
 import './AdminScannerTab.js';
@@ -15,7 +12,7 @@ import './AdminSimulationsTab.js';
 import './AdminHeartbeatTab.js';
 import './AdminHealthTab.js';
 import './AdminSocialTab.js';
-import './AdminResearchTab.js';
+import './AdminPlatformConfigTab.js';
 
 type AdminTab =
   | 'users'
@@ -25,11 +22,8 @@ type AdminTab =
   | 'resonances'
   | 'scanner'
   | 'forge'
-  | 'apikeys'
-  | 'models'
-  | 'research'
+  | 'platform'
   | 'social'
-  | 'caching'
   | 'cleanup';
 
 @localized()
@@ -265,40 +259,19 @@ export class VelgAdminPanel extends LitElement {
             : ''
         }</button>
         <button
-          class="admin-tabs__tab ${this._activeTab === 'apikeys' ? 'admin-tabs__tab--active' : ''}"
+          class="admin-tabs__tab ${this._activeTab === 'platform' ? 'admin-tabs__tab--active' : ''}"
           role="tab"
-          aria-selected=${this._activeTab === 'apikeys'}
+          aria-selected=${this._activeTab === 'platform'}
           aria-controls="admin-tabpanel"
-          @click=${() => this._setTab('apikeys')}
-        >${msg('API Keys')}</button>
-        <button
-          class="admin-tabs__tab ${this._activeTab === 'models' ? 'admin-tabs__tab--active' : ''}"
-          role="tab"
-          aria-selected=${this._activeTab === 'models'}
-          aria-controls="admin-tabpanel"
-          @click=${() => this._setTab('models')}
-        >${msg('Models')}</button>
-        <button
-          class="admin-tabs__tab ${this._activeTab === 'research' ? 'admin-tabs__tab--active' : ''}"
-          role="tab"
-          aria-selected=${this._activeTab === 'research'}
-          aria-controls="admin-tabpanel"
-          @click=${() => this._setTab('research')}
-        >${msg('Research')}</button>
+          @click=${() => this._setTab('platform')}
+        >${msg('Platform Config')}</button>
         <button
           class="admin-tabs__tab ${this._activeTab === 'social' ? 'admin-tabs__tab--active' : ''}"
           role="tab"
           aria-selected=${this._activeTab === 'social'}
           aria-controls="admin-tabpanel"
           @click=${() => this._setTab('social')}
-        >${msg('Social')}</button>
-        <button
-          class="admin-tabs__tab ${this._activeTab === 'caching' ? 'admin-tabs__tab--active' : ''}"
-          role="tab"
-          aria-selected=${this._activeTab === 'caching'}
-          aria-controls="admin-tabpanel"
-          @click=${() => this._setTab('caching')}
-        >${msg('Caching')}</button>
+        >${msg('Social Media')}</button>
         <button
           class="admin-tabs__tab ${this._activeTab === 'cleanup' ? 'admin-tabs__tab--active' : ''}"
           role="tab"
@@ -330,16 +303,10 @@ export class VelgAdminPanel extends LitElement {
         return html`<velg-admin-scanner-tab></velg-admin-scanner-tab>`;
       case 'forge':
         return html`<velg-admin-forge-tab></velg-admin-forge-tab>`;
-      case 'apikeys':
-        return html`<velg-admin-api-keys-tab></velg-admin-api-keys-tab>`;
-      case 'models':
-        return html`<velg-admin-models-tab></velg-admin-models-tab>`;
-      case 'research':
-        return html`<velg-admin-research-tab></velg-admin-research-tab>`;
+      case 'platform':
+        return html`<velg-admin-platform-config-tab></velg-admin-platform-config-tab>`;
       case 'social':
         return html`<velg-admin-social-tab></velg-admin-social-tab>`;
-      case 'caching':
-        return html`<velg-admin-caching-tab></velg-admin-caching-tab>`;
       case 'cleanup':
         return html`<velg-admin-cleanup-tab></velg-admin-cleanup-tab>`;
     }

@@ -510,12 +510,12 @@ export class VelgDossierRequest extends LitElement {
 
         <div class="confirm__body">
           <p class="confirm__desc">
-            ${msg("This will generate the six ARCANUM sections shown in the preview above — ALPHA through ZETA. Each section is AI-generated using the simulation's agents, buildings, zones, and existing lore as source material. Generation takes 1-3 minutes. The new sections will appear below the existing lore scroll as CLASSIFIED chapters.")}
+            ${msg("This will generate the six ARCANUM sections shown in the preview above – ALPHA through ZETA. Each section is AI-generated using the simulation's agents, buildings, zones, and existing lore as source material. Generation takes 1-3 minutes. The new sections will appear below the existing lore scroll as CLASSIFIED chapters.")}
           </p>
           <div class="confirm__cost-line">
             ${
               this.hasBypass
-                ? msg('BYOK ACTIVE — NO TOKEN DEDUCTION')
+                ? msg('BYOK ACTIVE – NO TOKEN DEDUCTION')
                 : msg('This action will deduct 2 Forge Tokens from your balance.')
             }
           </div>

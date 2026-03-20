@@ -347,7 +347,7 @@ export class VelgRelationshipEditModal extends LitElement {
               />
               <label class="form__checkbox-label" for="rel-bidirectional">
                 ${msg('Bidirectional relationship')}
-                ${renderInfoBubble(msg('When enabled, both agents feel the relationship equally. When disabled, only the source agent is affected — useful for unrequited bonds, secret alliances, or hierarchical roles.'))}
+                ${renderInfoBubble(msg('When enabled, both agents feel the relationship equally. When disabled, only the source agent is affected – useful for unrequited bonds, secret alliances, or hierarchical roles.'))}
               </label>
             </div>
           </div>

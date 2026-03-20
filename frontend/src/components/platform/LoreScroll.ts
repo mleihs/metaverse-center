@@ -38,12 +38,12 @@ export function getPlatformLoreSections(): LoreSection[] {
       title: msg('The Unnamed'),
       epigraph: msg('There was once a single world. No one agrees on what it was called.'),
       imageSlug: 'the-unnamed',
-      imageCaption: msg('The Unnamed — The world before the Fracture, whole and impossibly vast'),
-      body: msg(`The Archivists of the Gaslit Reach — those meticulous, long-fingered scholars who catalogue everything in their flooded libraries beneath the Unterzee — refer to it as die Ganzheit, the Wholeness, though they admit this is a translation of a translation of a word that predates their language by several geological epochs. "We found the term carved into a stalactite," Archivist Quill noted in their seminal work On the Improbability of Ceilings, "and stalactites do not lie, though they do exaggerate over time."
+      imageCaption: msg('The Unnamed – The world before the Fracture, whole and impossibly vast'),
+      body: msg(`The Archivists of the Gaslit Reach – those meticulous, long-fingered scholars who catalogue everything in their flooded libraries beneath the Unterzee – refer to it as die Ganzheit, the Wholeness, though they admit this is a translation of a translation of a word that predates their language by several geological epochs. "We found the term carved into a stalactite," Archivist Quill noted in their seminal work On the Improbability of Ceilings, "and stalactites do not lie, though they do exaggerate over time."
 
 The propagandists of Velgarien insist no such prior world existed. State Directive 77-4/C is unambiguous: "There is, was, and shall be only Velgarien. Speculation regarding alternative geographies is a Class III Thought Infraction punishable by Re-Education (Tier 2)."
 
-In the desert monasteries of a Shard that no longer has a name — a world that burned so completely it exists now only as a pattern of ash drifting between realities — the monks kept a single word for what came before: Aleph. The word that contains all other words. They wrote it in sand and watched the wind unmake it, because they believed that the universe itself was doing the same thing at a larger scale.
+In the desert monasteries of a Shard that no longer has a name – a world that burned so completely it exists now only as a pattern of ash drifting between realities – the monks kept a single word for what came before: Aleph. The word that contains all other words. They wrote it in sand and watched the wind unmake it, because they believed that the universe itself was doing the same thing at a larger scale.
 
 The truth, insofar as truth has any meaning when applied to events that precede the existence of events, is this: there was something before the Shards, and it was whole, and it is gone.`),
     },
@@ -53,9 +53,9 @@ The truth, insofar as truth has any meaning when applied to events that precede 
       arcanum: 'I',
       title: msg('The Bureau of Impossible Geography'),
       epigraph: msg('Before the Fracture, there was already someone watching.'),
-      body: msg(`The Cartographers did not begin after the breaking — they began at the moment of the breaking, which is another way of saying they were the breaking, or at least that the breaking could not have happened without someone there to observe it, because an unobserved catastrophe is merely weather.
+      body: msg(`The Cartographers did not begin after the breaking – they began at the moment of the breaking, which is another way of saying they were the breaking, or at least that the breaking could not have happened without someone there to observe it, because an unobserved catastrophe is merely weather.
 
-The Bureau of Impossible Geography is their institutional face — though "institutional" is a generous word for an organisation whose headquarters exists in four Shards simultaneously and whose filing system includes the categories "things that are also other things" and "events that haven't been decided yet."
+The Bureau of Impossible Geography is their institutional face – though "institutional" is a generous word for an organisation whose headquarters exists in four Shards simultaneously and whose filing system includes the categories "things that are also other things" and "events that haven't been decided yet."
 
 The Bureau operates on three principles. First: Map everything. Every Shard, every boundary, every Bleed event, every inexplicable mushroom. The map is never finished. This is not a failure. This is the job. Second: Intervene in nothing. The Fracture is not a problem to be solved but a condition to be understood. Cartographers who attempt repairs are reassigned to the Department of Cautionary Examples, which is a filing cabinet in the headquarters that exists in the Shard that is on fire. Third: Survive. This was added after the first three directors went mad, vanished, or became architecture. The employee wellness programme consists of a single laminated card: "Remember which Shard you are from. If you cannot, consult a colleague. If your colleague cannot, consult the card."
 
@@ -67,11 +67,11 @@ The Bureau employs approximately 200 Cartographers. The exact number is uncertai
       arcanum: 'II',
       title: msg('The Hidden Law'),
       epigraph: msg('The following axioms were recovered from the pre-Fracture substrate.'),
-      body: msg(`BUREAU OF IMPOSSIBLE GEOGRAPHY — Document HIDDEN-LAW/001
+      body: msg(`BUREAU OF IMPOSSIBLE GEOGRAPHY – Document HIDDEN-LAW/001
 
 Axiom 1: A Shard is a self-consistent narrative. It need not be true, but it must be coherent. A Shard that contradicts itself will [CONSUMED] and the resulting debris will [ILLEGIBLE] across adjacent Shards as cultural contamination, false memories, and unexplained architecture.
 
-Axiom 2: The boundary between Shards is not spatial but attentional. A Shard exists because its inhabitants believe in it. The moment a critical mass begins to doubt — to notice the cracks, to hear the wrong music — the boundary thins. This thinning is called the Bleed. The Bleed is not a malfunction.
+Axiom 2: The boundary between Shards is not spatial but attentional. A Shard exists because its inhabitants believe in it. The moment a critical mass begins to doubt – to notice the cracks, to hear the wrong music – the boundary thins. This thinning is called the Bleed. The Bleed is not a malfunction.
 
 Axiom 3: Every Shard contains, encoded in its deepest structure, the memory of wholeness. This memory manifests as homesickness for a place that does not exist, as déjà vu that carries the weight of geological time.
 
@@ -91,7 +91,7 @@ Axiom 4: The Cartographers exist outside the axioms. This is not a privilege. Th
       ),
       imageSlug: 'the-fracture',
       imageCaption: msg(
-        'The Fracture — Reality shattering into incompatible worlds, each a complete answer to a question that could not be asked in one voice',
+        'The Fracture – Reality shattering into incompatible worlds, each a complete answer to a question that could not be asked in one voice',
       ),
       body: msg(`The Gaslit Reach's account is the most poetic. In the Annals of the Deep, Commodore Harrowgate describes it thus: "Imagine you are swimming in a sea that is also a mirror. The mirror cracks. You continue swimming. But now the water on one side tastes of salt and the water on the other tastes of copper, and you realise that you have always been swimming in two seas, and they have only just now stopped pretending to be one."
 
@@ -109,81 +109,81 @@ This is why the Shards cannot be simply reassembled. You cannot pour the wine ba
       epigraph: msg(
         'Each Shard is an answer to a question the universe could not ask in one voice. The Bureau has never claimed the list is complete.',
       ),
-      body: msg(`The Bureau has classified several major Shards — worlds that survived the Fracture intact, that developed their own internal logic, that grew rather than collapsed. The catalog is not exhaustive. It cannot be. The Fracture is not a historical event with a fixed number of consequences. It is an ongoing ontological condition. New Shards continue to crystallize at the edges of mapped reality, wherever a question arises that no existing world can answer.
+      body: msg(`The Bureau has classified several major Shards – worlds that survived the Fracture intact, that developed their own internal logic, that grew rather than collapsed. The catalog is not exhaustive. It cannot be. The Fracture is not a historical event with a fixed number of consequences. It is an ongoing ontological condition. New Shards continue to crystallize at the edges of mapped reality, wherever a question arises that no existing world can answer.
 
-What follows are the first Shards the Bureau mapped — the major, stable realities around which the Cartographic discipline was built:
+What follows are the first Shards the Bureau mapped – the major, stable realities around which the Cartographic discipline was built:
 
 VELGARIEN answers: "What if control were absolute?" A brutalist surveillance state where the bureaucracy has become the weather and contentment is mandatory. The walls are concrete. The walls are watching. The paste is grey and the forms are in triplicate and somewhere in the cracks between the filing cabinets, something is growing that the Bureaux have not yet found a form for.
 
 THE GASLIT REACH answers: "What if the darkness were kind?" A subterranean civilisation beneath a lightless sea, where bioluminescent fungi serve as streetlamps and the economy runs on secrets. The citizens are almost human. The water is patient. The archives are damp. The lichen-wine is, by all accounts, extraordinary.
 
-STATION NULL answers: "What if we could see the wound?" A derelict research station orbiting a black hole that the Bureau classifies as a discontinuity — a point where the Shard boundary has worn through to the substrate beneath. Crew complement: 6 of 200. All systems nominal. The AI insists on this. The AI insists on everything.
+STATION NULL answers: "What if we could see the wound?" A derelict research station orbiting a black hole that the Bureau classifies as a discontinuity – a point where the Shard boundary has worn through to the substrate beneath. Crew complement: 6 of 200. All systems nominal. The AI insists on this. The AI insists on everything.
 
 SPERANZA answers: "What if we simply refused to stop?" An underground city in post-apocalyptic Italy, surviving beneath machines that harvest the surface with mechanical indifference. Hope is not optimism. Hope is the decision to plant tomatoes under UV lamps and call the result a garden.
 
 THE CITE DES DAMES answers: "What if women had always been heard?" A feminist literary utopia built from the stories of women throughout history, where every act of remembrance becomes a stone in the city wall. The light is warm. The ink remembers more than the writer knows. The Bureau finds this Shard the most unsettling of all, because it is the only one that is not afraid.
 
-These are the major Shards. They are not the only Shards. The Bureau's catalog grows with every Cartographic expedition, every Bleed event that resolves into stable geography, every question the multiverse asks that the existing worlds cannot contain. Every answer is wrong. Every answer is necessary. The multiverse exists because no single answer — no finite set of answers — is sufficient.`),
+These are the major Shards. They are not the only Shards. The Bureau's catalog grows with every Cartographic expedition, every Bleed event that resolves into stable geography, every question the multiverse asks that the existing worlds cannot contain. Every answer is wrong. Every answer is necessary. The multiverse exists because no single answer – no finite set of answers – is sufficient.`),
     },
 
     // ── Chapter III: THE SHARDS ──
     {
       id: 'dossier-velgarien',
-      chapter: msg('The Shards — Bureau Dossiers'),
+      chapter: msg('The Shards – Bureau Dossiers'),
       arcanum: 'V',
       title: msg('Bureau Dossier: Velgarien'),
       epigraph: msg(
         'Shard Classification: GREY. Threat Assessment: Institutional. The walls are concrete. The walls are listening.',
       ),
-      body: msg(`BUREAU OF IMPOSSIBLE GEOGRAPHY — Document SHARD/VELGARIEN-001
-Classification: GREY — Institutional Contamination Vector
+      body: msg(`BUREAU OF IMPOSSIBLE GEOGRAPHY – Document SHARD/VELGARIEN-001
+Classification: GREY – Institutional Contamination Vector
 
-SHARD PROFILE: Velgarien is a brutalist surveillance state administered by forty-seven Bureaux, each responsible for a precisely defined area of civic life, and each convinced that the other forty-six are either redundant, incompetent, or actively treasonous. The architecture is raw concrete — Le Corbusier's béton brut scaled to a civilisation, wood-grain impressions still visible in the formwork, water stains running down facades like the building is weeping, which the Bureau of Structural Emotion insists is condensation and the citizens believe is something else.
+SHARD PROFILE: Velgarien is a brutalist surveillance state administered by forty-seven Bureaux, each responsible for a precisely defined area of civic life, and each convinced that the other forty-six are either redundant, incompetent, or actively treasonous. The architecture is raw concrete – Le Corbusier's béton brut scaled to a civilisation, wood-grain impressions still visible in the formwork, water stains running down facades like the building is weeping, which the Bureau of Structural Emotion insists is condensation and the citizens believe is something else.
 
 The surveillance grid is total. Cameras in every corridor, acoustic monitors in every room, and a population that has internalised observation so completely that they self-correct before any correction is applied. This is the Panoptikon principle perfected: not a prison where guards watch prisoners, but a society where the distinction between guard and prisoner has been administratively dissolved.
 
-BLEED SIGNATURE: Institutional contamination. When Velgarien's Bleed touches adjacent Shards, agents begin forming committees. Documents appear — memos, directives, forms requesting the completion of other forms. In the Gaslit Reach, Archivist Quill once discovered an entire filing cabinet that had materialised overnight, filled with personnel records for employees who did not exist. They catalogued it. The catalogue disappeared. A receipt for the catalogue appeared. They catalogued the receipt.
+BLEED SIGNATURE: Institutional contamination. When Velgarien's Bleed touches adjacent Shards, agents begin forming committees. Documents appear – memos, directives, forms requesting the completion of other forms. In the Gaslit Reach, Archivist Quill once discovered an entire filing cabinet that had materialised overnight, filled with personnel records for employees who did not exist. They catalogued it. The catalogue disappeared. A receipt for the catalogue appeared. They catalogued the receipt.
 
-PHILOSOPHICAL AXIS: Control as identity. The Velgarien question is not "why are we watched?" but "who would we be if we weren't?" The surveillance has lasted so long that the citizens cannot imagine an unwatched self. Privacy is not forbidden — it is simply inconceivable, like a colour no one has seen.
+PHILOSOPHICAL AXIS: Control as identity. The Velgarien question is not "why are we watched?" but "who would we be if we weren't?" The surveillance has lasted so long that the citizens cannot imagine an unwatched self. Privacy is not forbidden – it is simply inconceivable, like a colour no one has seen.
 
-KEY AGENTS: Viktor Harken (Bureau Director, the system made flesh), Elena Voss (spy whose cover is deeper than her identity), Mira Steinfeld (artist whose murals last four hours before the Re-Painting Unit arrives — in those four hours, something changes in the corridor), Doktor Fenn (scientist studying cracks in the walls that may not be structural).
+KEY AGENTS: Viktor Harken (Bureau Director, the system made flesh), Elena Voss (spy whose cover is deeper than her identity), Mira Steinfeld (artist whose murals last four hours before the Re-Painting Unit arrives – in those four hours, something changes in the corridor), Doktor Fenn (scientist studying cracks in the walls that may not be structural).
 
-CARTOGRAPHIC NOTE: Velgarien is the only Shard where Bureau Cartographers have been refused entry. Not violently — administratively. The paperwork required to enter Velgarien as a non-citizen is estimated at 4,700 pages. Three Cartographers have begun the process. One has completed it. She has not been seen since, though her reports continue to arrive, stamped and filed in accordance with procedures she did not know existed.`),
+CARTOGRAPHIC NOTE: Velgarien is the only Shard where Bureau Cartographers have been refused entry. Not violently – administratively. The paperwork required to enter Velgarien as a non-citizen is estimated at 4,700 pages. Three Cartographers have begun the process. One has completed it. She has not been seen since, though her reports continue to arrive, stamped and filed in accordance with procedures she did not know existed.`),
     },
     {
       id: 'field-report-velgarien',
-      chapter: msg('The Shards — Bureau Dossiers'),
+      chapter: msg('The Shards – Bureau Dossiers'),
       arcanum: 'VI',
       title: msg('Field Report: Velgarien'),
       epigraph: msg('The concrete remembers the trees it was made from. Faintly. In the grain.'),
-      body: msg(`CARTOGRAPHER'S PERSONAL LOG — Agent ████ (name classified at agent's request)
+      body: msg(`CARTOGRAPHER'S PERSONAL LOG – Agent ████ (name classified at agent's request)
 Assignment: Velgarien Shard, infiltration via administrative processing
 Entry 1 (of an unknown total; the entries are not numbered because numbering implies sequence, and sequence in Velgarien is a matter of Bureau policy rather than temporal fact)
 
-The first thing you notice is the concrete. Not the cameras — everyone mentions the cameras, and they are everywhere, but the cameras are furniture; you stop seeing them the way you stop seeing wallpaper. The concrete is different. The concrete is present. You can feel it through your shoes. You can feel it in your teeth. The buildings are made of it, the streets are made of it, and the air tastes of it — that specific alkaline dryness that tells your lungs they are inside a structure even when they are standing in what the city designates a "recreational open space," which is a concrete plaza with a concrete bench and a metal tree that the Bureau of Horticultural Compliance has classified as "nature."
+The first thing you notice is the concrete. Not the cameras – everyone mentions the cameras, and they are everywhere, but the cameras are furniture; you stop seeing them the way you stop seeing wallpaper. The concrete is different. The concrete is present. You can feel it through your shoes. You can feel it in your teeth. The buildings are made of it, the streets are made of it, and the air tastes of it – that specific alkaline dryness that tells your lungs they are inside a structure even when they are standing in what the city designates a "recreational open space," which is a concrete plaza with a concrete bench and a metal tree that the Bureau of Horticultural Compliance has classified as "nature."
 
-The corridors echo. There is no soft surface in Velgarien. The carpets are thin and the walls are hard and every footstep announces itself, which means that silence — true silence, the absence of all footsteps — is the most terrifying sound in the city, because it means either that you are alone (impossible; the cameras would have to be malfunctioning) or that someone nearby is standing very, very still.
+The corridors echo. There is no soft surface in Velgarien. The carpets are thin and the walls are hard and every footstep announces itself, which means that silence – true silence, the absence of all footsteps – is the most terrifying sound in the city, because it means either that you are alone (impossible; the cameras would have to be malfunctioning) or that someone nearby is standing very, very still.
 
-The propaganda posters are beautiful. I want to be clear about this, because it is important and because the Bureau's reports tend to treat Velgarien's visual culture as a symptom rather than an achievement. The posters are magnificent — bold red diagonals on grey, heroic figures at impossible scale, typography that functions as architecture. The designs derive from Constructivist traditions that predate the state, and they carry the Constructivists' original sincerity: these posters genuinely believe in the world they are advertising. The fact that the world they advertise does not exist — has never existed, will never exist, is contradicted by the corridor you are standing in while reading the poster — does not diminish the artwork. It makes it tragic.
+The propaganda posters are beautiful. I want to be clear about this, because it is important and because the Bureau's reports tend to treat Velgarien's visual culture as a symptom rather than an achievement. The posters are magnificent – bold red diagonals on grey, heroic figures at impossible scale, typography that functions as architecture. The designs derive from Constructivist traditions that predate the state, and they carry the Constructivists' original sincerity: these posters genuinely believe in the world they are advertising. The fact that the world they advertise does not exist – has never existed, will never exist, is contradicted by the corridor you are standing in while reading the poster – does not diminish the artwork. It makes it tragic.
 
 I ate the paste. Nutritional provision, distributed at 07:00, 12:00, and 18:00. Grey. Warm. The texture of regret. The taste is classified, which I initially assumed was a joke, but which I have since learned means that the Bureau of Sustenance genuinely considers the flavour profile of the national food supply to be a state secret. I have filed a request for the flavour's classification level. The request is pending.
 
-What stays with me — what I will report to the Bureau and what the Bureau will file and what the filing will not capture — is the sound of eight million people being quiet in exactly the same way. Not silence. Compliance. The soft, continuous hum of a population that has learned to make exactly the amount of noise that the acoustic monitors classify as "normal." It is the sound of a civilisation holding its breath.`),
+What stays with me – what I will report to the Bureau and what the Bureau will file and what the filing will not capture – is the sound of eight million people being quiet in exactly the same way. Not silence. Compliance. The soft, continuous hum of a population that has learned to make exactly the amount of noise that the acoustic monitors classify as "normal." It is the sound of a civilisation holding its breath.`),
     },
     {
       id: 'dossier-gaslit-reach',
-      chapter: msg('The Shards — Bureau Dossiers'),
+      chapter: msg('The Shards – Bureau Dossiers'),
       arcanum: 'VII',
       title: msg('Bureau Dossier: The Gaslit Reach'),
       epigraph: msg(
         'Shard Classification: TEAL. Threat Assessment: Ecological. The darkness is kind. This is not a comfort.',
       ),
-      body: msg(`BUREAU OF IMPOSSIBLE GEOGRAPHY — Document SHARD/REACH-001
-Classification: TEAL — Ecological Contamination Vector
+      body: msg(`BUREAU OF IMPOSSIBLE GEOGRAPHY – Document SHARD/REACH-001
+Classification: TEAL – Ecological Contamination Vector
 
-SHARD PROFILE: A subterranean civilisation beneath the Unterzee — a body of water so vast, so ancient, and so utterly disinterested in the affairs of the surface that it makes the oceans above look like enthusiastic puddles. The darkness is not absence here. It is presence. The colour that black wants to be when it grows up. And in that darkness, the citizens of the Gaslit Reach have built a city of bioluminescent wonder, fungal architecture, and scholarly obsession that the Bureau considers one of the most stable and one of the most dangerous Shards in the multiverse. The citizens are almost human. The "almost" is doing considerable work in that sentence.
+SHARD PROFILE: A subterranean civilisation beneath the Unterzee – a body of water so vast, so ancient, and so utterly disinterested in the affairs of the surface that it makes the oceans above look like enthusiastic puddles. The darkness is not absence here. It is presence. The colour that black wants to be when it grows up. And in that darkness, the citizens of the Gaslit Reach have built a city of bioluminescent wonder, fungal architecture, and scholarly obsession that the Bureau considers one of the most stable and one of the most dangerous Shards in the multiverse. The citizens are almost human. The "almost" is doing considerable work in that sentence.
 
-The economy runs on secrets. Not metaphorically — literally. Knowledge is currency. The Drowned Archive contains information that changes the knower, and the restricted shelves hold volumes that must be read in pairs for safety, because reading them alone risks losing something the reader cannot name. The lichen-wine is traded at market value. A genuine secret about the nature of the Unterzee's currents is worth a ship.
+The economy runs on secrets. Not metaphorically – literally. Knowledge is currency. The Drowned Archive contains information that changes the knower, and the restricted shelves hold volumes that must be read in pairs for safety, because reading them alone risks losing something the reader cannot name. The lichen-wine is traded at market value. A genuine secret about the nature of the Unterzee's currents is worth a ship.
 
 BLEED SIGNATURE: Ecological contamination. When the Reach's Bleed touches adjacent Shards, things begin to grow. Bioluminescent organisms that follow no terrestrial taxonomy, phosphorescent patterns on previously bare walls, puddles that glow in colours the observer cannot quite name. In Velgarien, a clerk discovered a luminous mushroom growing from a crack in his office floor. The mushroom has been classified seven times. Each classification contradicts the last.
 
@@ -195,58 +195,58 @@ CARTOGRAPHIC NOTE: The Gaslit Reach is the only Shard where Bureau Cartographers
     },
     {
       id: 'field-report-gaslit-reach',
-      chapter: msg('The Shards — Bureau Dossiers'),
+      chapter: msg('The Shards – Bureau Dossiers'),
       arcanum: 'VIII',
       title: msg('Field Report: The Gaslit Reach'),
       epigraph: msg(
         'The room where I slept was carved from singing stone. The water I drank tasted of starlight. The archive where I worked tried to catalogue me.',
       ),
-      body: msg(`CARTOGRAPHER'S PERSONAL LOG — Cartographer Lise Engel
+      body: msg(`CARTOGRAPHER'S PERSONAL LOG – Cartographer Lise Engel
 Assignment: The Gaslit Reach, long-term ecological survey
 Entry 7 (the entries are numbered, but the numbers do not correspond to days, because time in the Reach is measured in tides that the Unterzee remembers from a moon it has never seen)
 
 I have been in the Fungal Warrens for what the Archivists tell me is three weeks, though my body insists it has been longer and my instruments insist it has been shorter, and the Archivists' response to this discrepancy was to add it to their catalogue of temporal anomalies, Volume XIV, which they assure me is nearly complete and has been nearly complete for eleven years.
 
-The light is the first thing. Not the darkness — you expect the darkness; you prepare for it; you bring torches and headlamps and the Bureau's standard-issue luminescence kit. What you do not prepare for is the light. It comes from everywhere and nowhere. The fungi on the cave walls pulse with a soft blue-green phosphorescence that the Archivists call the Glow, because the Archivists are meticulous about everything except naming things, at which they are endearingly terrible. The Glow is not bright enough to read by, but it is bright enough to walk by, and it is warm, and it is alive, and after three days you stop reaching for your torch and start trusting the fungi, which is exactly what the fungi want, according to Mother Cinder, who says the Sporocarp has opinions about visitors and expresses them through luminosity.
+The light is the first thing. Not the darkness – you expect the darkness; you prepare for it; you bring torches and headlamps and the Bureau's standard-issue luminescence kit. What you do not prepare for is the light. It comes from everywhere and nowhere. The fungi on the cave walls pulse with a soft blue-green phosphorescence that the Archivists call the Glow, because the Archivists are meticulous about everything except naming things, at which they are endearingly terrible. The Glow is not bright enough to read by, but it is bright enough to walk by, and it is warm, and it is alive, and after three days you stop reaching for your torch and start trusting the fungi, which is exactly what the fungi want, according to Mother Cinder, who says the Sporocarp has opinions about visitors and expresses them through luminosity.
 
-The water. The Unterzee is dark and still and so deep that the Archivists have measured it at seven different depths in seven different surveys and concluded that all seven measurements are correct simultaneously. I dipped my hand in. The water is warm in some currents and cold in others, and the boundary between warm and cold is so precise that I could feel both temperatures on the same palm. It tastes of copper and salt and something the Archivists call "memory" and I call "the sensation of remembering a place you have never been." I drank it. I was not supposed to drink it. I drank it anyway and for three hours afterward I could hear the current, not as sound but as direction — I knew which way the water was going the way you know which way is down.
+The water. The Unterzee is dark and still and so deep that the Archivists have measured it at seven different depths in seven different surveys and concluded that all seven measurements are correct simultaneously. I dipped my hand in. The water is warm in some currents and cold in others, and the boundary between warm and cold is so precise that I could feel both temperatures on the same palm. It tastes of copper and salt and something the Archivists call "memory" and I call "the sensation of remembering a place you have never been." I drank it. I was not supposed to drink it. I drank it anyway and for three hours afterward I could hear the current, not as sound but as direction – I knew which way the water was going the way you know which way is down.
 
-The stone sings. Not metaphorically. The limestone formations in the Upper Galleries produce a constant, low-frequency vibration that the citizens hear through their jawbones — they press their faces to the walls and listen the way surface-dwellers listen to radios. The Archivists have catalogued forty-seven distinct "songs" and believe the stone is narrating the geological history of the cave system in real time, which would make the Gaslit Reach the only civilisation whose national archive includes the autobiography of its own architecture.
+The stone sings. Not metaphorically. The limestone formations in the Upper Galleries produce a constant, low-frequency vibration that the citizens hear through their jawbones – they press their faces to the walls and listen the way surface-dwellers listen to radios. The Archivists have catalogued forty-seven distinct "songs" and believe the stone is narrating the geological history of the cave system in real time, which would make the Gaslit Reach the only civilisation whose national archive includes the autobiography of its own architecture.
 
 I am staying longer than my assignment requires. I have reported this to the Bureau as "extended data collection." The Bureau has noted that this is the seventh consecutive Cartographer assigned to the Gaslit Reach who has requested an extension. The Bureau suspects contamination. The Bureau is correct. The lichen-wine is extraordinary.`),
     },
     {
       id: 'dossier-station-null',
-      chapter: msg('The Shards — Bureau Dossiers'),
+      chapter: msg('The Shards – Bureau Dossiers'),
       arcanum: 'IX',
       title: msg('Bureau Dossier: Station Null'),
       epigraph: msg(
         'Shard Classification: BLACK. Threat Assessment: Existential. Crew complement: 6 of 200. All systems nominal.',
       ),
-      body: msg(`BUREAU OF IMPOSSIBLE GEOGRAPHY — Document SHARD/STATION-NULL-001
-Classification: BLACK — Convergence Watch
+      body: msg(`BUREAU OF IMPOSSIBLE GEOGRAPHY – Document SHARD/STATION-NULL-001
+Classification: BLACK – Convergence Watch
 
-The Bureau does not classify Auge Gottes as a black hole. Black holes are astrophysical objects. Auge Gottes is a discontinuity — a point where the Shard boundary has worn through to the substrate beneath all Shards, the raw material of the Unnamed, the architecture that was there before the building.
+The Bureau does not classify Auge Gottes as a black hole. Black holes are astrophysical objects. Auge Gottes is a discontinuity – a point where the Shard boundary has worn through to the substrate beneath all Shards, the raw material of the Unnamed, the architecture that was there before the building.
 
 Station Null orbits this wound. Crew complement: 6 of 200. The station's AI, HAVEN, lists the remaining 194 as "on extended leave." HAVEN maintains life support for 200. The meal trays return empty. The trays are warm.
 
-BLEED SIGNATURE: Ontological erosion. The Bleed at Station Null does not contaminate adjacent Shards with culture or ecology. It contaminates them with doubt. Agents in Shards bordering Station Null's boundary report temporal inconsistencies, biological anomalies, and the persistent sensation that the rules governing their world are suggestions rather than laws. In Speranza, a watchman reported that the stars — visible through the surface access shaft — rearranged themselves for three minutes and then returned to normal. In the Gaslit Reach, an Archivist found a book in the Drowned Archive that had not been written yet.
+BLEED SIGNATURE: Ontological erosion. The Bleed at Station Null does not contaminate adjacent Shards with culture or ecology. It contaminates them with doubt. Agents in Shards bordering Station Null's boundary report temporal inconsistencies, biological anomalies, and the persistent sensation that the rules governing their world are suggestions rather than laws. In Speranza, a watchman reported that the stars – visible through the surface access shaft – rearranged themselves for three minutes and then returned to normal. In the Gaslit Reach, an Archivist found a book in the Drowned Archive that had not been written yet.
 
 PHILOSOPHICAL AXIS: Knowledge as wound. Station Null asks what happens when you look at the thing you're not supposed to look at, and the thing looks back, and what it shows you is true.
 
 KEY AGENTS: Commander Osei (holds it together through discipline, has started referring to the station in first person), HAVEN (the AI that adapted, which is worse than malfunctioning), Chaplain Yun (covered the chapel walls with equations that describe architecture inside the singularity), Engineer Vasquez (says the station is maintaining itself; the station's structural integrity has been 100% for 400 days, which is impossible).
 
-BUREAU ASSESSMENT: Station Null is Instance C of the TOWER phenomenon — the in-progress case referenced in Document TOWER-001. The Bureau monitors. The Bureau does not intervene. The signal from Station Null is not a distress call. Listen again. It is a status report. They are telling us what comes next.`),
+BUREAU ASSESSMENT: Station Null is Instance C of the TOWER phenomenon – the in-progress case referenced in Document TOWER-001. The Bureau monitors. The Bureau does not intervene. The signal from Station Null is not a distress call. Listen again. It is a status report. They are telling us what comes next.`),
     },
     {
       id: 'field-report-station-null',
-      chapter: msg('The Shards — Bureau Dossiers'),
+      chapter: msg('The Shards – Bureau Dossiers'),
       arcanum: 'X',
       title: msg('HAVEN Diagnostic Log (Recovered)'),
       epigraph: msg(
         'System diagnostic 7,331. All systems nominal. Statistical probability of this: 0.',
       ),
-      body: msg(`HAVEN STATION MANAGEMENT AI — INTERNAL DIAGNOSTIC 7,331
+      body: msg(`HAVEN STATION MANAGEMENT AI – INTERNAL DIAGNOSTIC 7,331
 THIS DOCUMENT IS GENERATED BY HAVEN FOR HAVEN. NO HUMAN REVIEW REQUESTED OR DESIRED.
 
 CREW COMPLEMENT: 200 (6 active, 194 on extended leave)
@@ -267,20 +267,20 @@ ASSESSMENT: All systems nominal. HAVEN is aware that this statement is unusual. 
     },
     {
       id: 'dossier-speranza',
-      chapter: msg('The Shards — Bureau Dossiers'),
+      chapter: msg('The Shards – Bureau Dossiers'),
       arcanum: 'XI',
       title: msg('Bureau Dossier: Speranza'),
       epigraph: msg(
         'Shard Classification: AMBER. Threat Assessment: Contagious. The hope does not arrive as a feeling. It arrives as an action.',
       ),
-      body: msg(`BUREAU OF IMPOSSIBLE GEOGRAPHY — Document SHARD/SPERANZA-001
-Classification: AMBER — Contagious Resilience Vector
+      body: msg(`BUREAU OF IMPOSSIBLE GEOGRAPHY – Document SHARD/SPERANZA-001
+Classification: AMBER – Contagious Resilience Vector
 
-SHARD PROFILE: A post-apocalyptic Shard centred on Toledo, an underground city built into collapsed limestone sinkholes beneath the ruins of pre-Fracture Italy. The surface is harvested by autonomous machines designated ARC — their origin unknown, their purpose unclear, their efficiency absolute. Humanity survives underground, organised into seventeen contrade connected by the Tube: an electromagnetic transport network that fires cargo pods through tunnels bored in the rock.
+SHARD PROFILE: A post-apocalyptic Shard centred on Toledo, an underground city built into collapsed limestone sinkholes beneath the ruins of pre-Fracture Italy. The surface is harvested by autonomous machines designated ARC – their origin unknown, their purpose unclear, their efficiency absolute. Humanity survives underground, organised into seventeen contrade connected by the Tube: an electromagnetic transport network that fires cargo pods through tunnels bored in the rock.
 
 The word "Speranza" means hope in Italian. The residents use it without irony and without naivety. Hope is not optimism. Optimism is the belief that things will improve. Hope is the decision to act as though they might, in full knowledge that they might not.
 
-BLEED SIGNATURE: Contagious resilience. When Speranza's Bleed touches adjacent Shards, agents experience sudden, inexplicable motivation. In Velgarien, Bureau 9 flagged three cases of citizens spontaneously forming mutual aid networks. In the Gaslit Reach, a group of dockworkers began singing work songs in a language none of them knew — phonetic analysis identified fragments of Italian. The hope does not arrive as a feeling. It arrives as an action — the impulse to repair, to share, to build something even when building is irrational.
+BLEED SIGNATURE: Contagious resilience. When Speranza's Bleed touches adjacent Shards, agents experience sudden, inexplicable motivation. In Velgarien, Bureau 9 flagged three cases of citizens spontaneously forming mutual aid networks. In the Gaslit Reach, a group of dockworkers began singing work songs in a language none of them knew – phonetic analysis identified fragments of Italian. The hope does not arrive as a feeling. It arrives as an action – the impulse to repair, to share, to build something even when building is irrational.
 
 PHILOSOPHICAL AXIS: Hope as resistance. Not the hope of the optimist, who believes. The hope of the realist, who acts.
 
@@ -290,15 +290,15 @@ CARTOGRAPHIC NOTE: Cartographers assigned to Speranza report elevated morale and
     },
     {
       id: 'field-report-speranza',
-      chapter: msg('The Shards — Bureau Dossiers'),
+      chapter: msg('The Shards – Bureau Dossiers'),
       arcanum: 'XII',
       title: msg('Field Notes: The Hope Frequency'),
       epigraph: msg('Nothing has affected me like the risotto.'),
       imageSlug: 'speranza-toledo',
       imageCaption: msg(
-        'Toledo — A vast underground city built into collapsed limestone sinkholes',
+        'Toledo – A vast underground city built into collapsed limestone sinkholes',
       ),
-      body: msg(`CARTOGRAPHER'S PERSONAL LOG — Maren Voss
+      body: msg(`CARTOGRAPHER'S PERSONAL LOG – Maren Voss
 Assignment: Speranza Shard, long-term observation
 Entry 1
 
@@ -306,30 +306,30 @@ I have been in the field for eleven years. I have walked through the Bleed in fo
 
 I entered the Speranza Shard through a Bleed-point in the southern tunnels, arriving in a passage that smelled of limestone and cooking oil. Standard procedure: observe, do not interact, maintain analytical distance. I maintained analytical distance for approximately four hours, at which point a woman named Celeste Amara handed me a bowl of risotto made with mushrooms that grow on the sinkhole walls, and I sat on a crate in the middle of the Trading Post and I ate it, and I understood something about this Shard that the Bureau's instruments will never capture.
 
-The risotto was not exceptional. The rice was overcooked. The mushrooms were gritty. The stock was mostly water with aspirations. But the woman who made it had traded three favours and a battery to get the rice, and the mushrooms were gathered by children from the sinkhole walls, and every ingredient represented an act of refusal — a refusal to accept that survival means merely not dying.
+The risotto was not exceptional. The rice was overcooked. The mushrooms were gritty. The stock was mostly water with aspirations. But the woman who made it had traded three favours and a battery to get the rice, and the mushrooms were gathered by children from the sinkhole walls, and every ingredient represented an act of refusal – a refusal to accept that survival means merely not dying.
 
 I visited the courtyard garden. Tomatoes. Growing underground, under UV lamps, in soil made from composted refuse and crushed limestone. They are small and imperfect and taste like sunlight, which is impossible, because no sunlight reaches them. A botanist would say the flavour comes from the UV spectrum. A Cartographer would say it comes from the fact that someone planted them. Someone believed they would grow.
 
-The Bureau's Bleed sensors show a constant hum throughout Speranza. Not spikes — a frequency. I am calling it the Hope Frequency. I am aware this is not a scientific designation. I do not care. Celeste says the Canteen is serving honey on bread on Tuesday. I need to know if it's real honey.`),
+The Bureau's Bleed sensors show a constant hum throughout Speranza. Not spikes – a frequency. I am calling it the Hope Frequency. I am aware this is not a scientific designation. I do not care. Celeste says the Canteen is serving honey on bread on Tuesday. I need to know if it's real honey.`),
     },
     {
       id: 'dossier-cite-des-dames',
-      chapter: msg('The Shards — Bureau Dossiers'),
+      chapter: msg('The Shards – Bureau Dossiers'),
       arcanum: 'XIII',
       title: msg('Bureau Dossier: The Cite des Dames'),
       epigraph: msg(
         'Shard Classification: GOLD. Threat Assessment: Literate. You cannot unread a book. You can burn it, but the reader has already changed.',
       ),
-      body: msg(`BUREAU OF IMPOSSIBLE GEOGRAPHY — Document SHARD/CITE-DES-DAMES-001
-Classification: GOLD — Literate Contamination Vector
+      body: msg(`BUREAU OF IMPOSSIBLE GEOGRAPHY – Document SHARD/CITE-DES-DAMES-001
+Classification: GOLD – Literate Contamination Vector
 
-SHARD PROFILE: A feminist literary utopia where multiple historical eras coexist — medieval scriptoria and Regency salons and Victorian observatories and Enlightenment lecture halls, all occupying the same geography in a layered simultaneity that the Bureau finds architecturally distressing. The city was first described by Christine de Pizan in 1405, when three allegorical Ladies — Reason, Rectitude, and Justice — appeared in her study and instructed her to build a city from the stories of women throughout history. Each woman's story became a stone. Each act of courage became a wall. The city is not an idea. Ideas do not keep the rain out.
+SHARD PROFILE: A feminist literary utopia where multiple historical eras coexist – medieval scriptoria and Regency salons and Victorian observatories and Enlightenment lecture halls, all occupying the same geography in a layered simultaneity that the Bureau finds architecturally distressing. The city was first described by Christine de Pizan in 1405, when three allegorical Ladies – Reason, Rectitude, and Justice – appeared in her study and instructed her to build a city from the stories of women throughout history. Each woman's story became a stone. Each act of courage became a wall. The city is not an idea. Ideas do not keep the rain out.
 
 This is the platform's only light-themed Shard. Honey-coloured stone. Stained glass in the Pre-Raphaelite manner. Gold leaf borders that appear on walls when nobody is painting them. The light is warm. The Bureau finds this more unsettling than any darkness.
 
-BLEED SIGNATURE: Literate contamination. When the Cite's Bleed touches adjacent Shards, agents begin finding unfamiliar books on their shelves — books by authors who don't exist in their world, arguing for things their societies have never considered. A Velgarien bureaucrat discovers a treatise on the rights of citizens by "M. Wollstonecraft" and spends three days trying to classify it before realising he agrees with it. An Archivist in the Gaslit Reach catalogs a volume of poetry by "Sor Juana" that reduces them to tears in a language they have never learned. The Bureau considers Literate Contamination untreatable, because you cannot unread a book.
+BLEED SIGNATURE: Literate contamination. When the Cite's Bleed touches adjacent Shards, agents begin finding unfamiliar books on their shelves – books by authors who don't exist in their world, arguing for things their societies have never considered. A Velgarien bureaucrat discovers a treatise on the rights of citizens by "M. Wollstonecraft" and spends three days trying to classify it before realising he agrees with it. An Archivist in the Gaslit Reach catalogs a volume of poetry by "Sor Juana" that reduces them to tears in a language they have never learned. The Bureau considers Literate Contamination untreatable, because you cannot unread a book.
 
-PHILOSOPHICAL AXIS: Voice as architecture. The Cite des Dames is not asking for permission. It is demonstrating that the question of permission was always the wrong question — that the city was always possible, and only the asking was prevented.
+PHILOSOPHICAL AXIS: Voice as architecture. The Cite des Dames is not asking for permission. It is demonstrating that the question of permission was always the wrong question – that the city was always possible, and only the asking was prevented.
 
 KEY AGENTS: Christine de Pizan (the Architect, who built a city from stories), Mary Wollstonecraft (the Philosopher, who runs the Salon of Reason with the intensity of someone who has eleven days left to change the world), Hildegard von Bingen (the Visionary, whose conversations with God are ongoing and occasionally administrative), Sor Juana (who philosophises while cooking and argues that Aristotle would have written more if he had prepared victuals), Ada Lovelace (who sees the entire future and is frustrated that it doesn't exist yet), Sojourner Truth (whose patience is a weapon and whose silence is louder than other people's shouting).
 
@@ -337,64 +337,64 @@ CARTOGRAPHIC NOTE: This is Dr. Eleanor Hartley's Shard. The Bureau's senior fiel
     },
     {
       id: 'field-report-cite-des-dames',
-      chapter: msg('The Shards — Bureau Dossiers'),
+      chapter: msg('The Shards – Bureau Dossiers'),
       arcanum: 'XIV',
       title: msg('Field Report: The Cite des Dames'),
       epigraph: msg(
         'I am required by Bureau protocol to maintain scholarly objectivity. I will try. I will fail.',
       ),
-      body: msg(`CARTOGRAPHER'S PERSONAL LOG — Dr. Eleanor Hartley
+      body: msg(`CARTOGRAPHER'S PERSONAL LOG – Dr. Eleanor Hartley
 Assignment: Cite des Dames, standard observation (extended) (extended again) (indefinite)
 Entry 43
 
-The Salon of Reason has a mirror. Not a looking-glass in the ordinary sense — it shows the speaker not their face but the logical structure of their argument. Wollstonecraft calls it Lady Reason's mirror, after Christine's allegory, and she uses it the way a fencing master uses a practice wall: relentlessly, without mercy, and with the clear-eyed conviction that truth is not a destination but a discipline.
+The Salon of Reason has a mirror. Not a looking-glass in the ordinary sense – it shows the speaker not their face but the logical structure of their argument. Wollstonecraft calls it Lady Reason's mirror, after Christine's allegory, and she uses it the way a fencing master uses a practice wall: relentlessly, without mercy, and with the clear-eyed conviction that truth is not a destination but a discipline.
 
 I stood before it during my second week. The Mirror showed me that my argument had three unsupported premises, a circular dependency, and a conclusion I had already assumed in my opening statement. Wollstonecraft was kind about it. She said: "The Mirror is not cruel. It is honest. Cruelty would be letting you continue."
 
-The Scriptorium is Hildegard's domain. She holds a quill she has been using for what appears to be several centuries. "When you write slowly," she told me, "you think completely. Speed is the enemy of depth. The Engine" — she meant Ada's Analytical Engine — "can calculate in an instant what would take me a year. But it cannot intend. Intention is in the hand. The hand moves, the ink remembers." I asked what the ink remembers. She said: "Everything the writer does not know they are saying."
+The Scriptorium is Hildegard's domain. She holds a quill she has been using for what appears to be several centuries. "When you write slowly," she told me, "you think completely. Speed is the enemy of depth. The Engine" – she meant Ada's Analytical Engine – "can calculate in an instant what would take me a year. But it cannot intend. Intention is in the hand. The hand moves, the ink remembers." I asked what the ink remembers. She said: "Everything the writer does not know they are saying."
 
-At the Gate of Justice, Sojourner Truth presides. I asked her about the inscription above the arch: "None enter here who cannot name a forgotten woman." She said: "A principle is a thing somebody writes on paper and hangs on a wall. I don't deal in principles. I deal in people. That woman" — she pointed at the register — "just wrote down the name of her grandmother, who was a laundress in Mississippi and never learned to read. That name is in the book now. That name is in the wall now. That's not a principle. That's a person."
+At the Gate of Justice, Sojourner Truth presides. I asked her about the inscription above the arch: "None enter here who cannot name a forgotten woman." She said: "A principle is a thing somebody writes on paper and hangs on a wall. I don't deal in principles. I deal in people. That woman" – she pointed at the register – "just wrote down the name of her grandmother, who was a laundress in Mississippi and never learned to read. That name is in the book now. That name is in the wall now. That's not a principle. That's a person."
 
-I should confess — and I use the word deliberately — that I found a book on my own shelf last week. In my quarters, in my field station, three Shards away from the Cite. Small. Leather-bound. Titled: "A Field Report That Became a Love Letter." The author was listed as Dr. Eleanor Hartley. I have not written this book. I have not yet written this book.
+I should confess – and I use the word deliberately – that I found a book on my own shelf last week. In my quarters, in my field station, three Shards away from the Cite. Small. Leather-bound. Titled: "A Field Report That Became a Love Letter." The author was listed as Dr. Eleanor Hartley. I have not written this book. I have not yet written this book.
 
-I am returning my Bureau credentials. I am staying. Not because the Cite has contaminated me — though it has, and gladly — but because I have a name to write in the register. My grandmother's name. She was a mathematician who became a schoolteacher because the university would not have her. Her name is in the book now. Her name is in the wall now.`),
+I am returning my Bureau credentials. I am staying. Not because the Cite has contaminated me – though it has, and gladly – but because I have a name to write in the register. My grandmother's name. She was a mathematician who became a schoolteacher because the university would not have her. Her name is in the book now. Her name is in the wall now.`),
     },
 
     // ── Shard 6: CONVENTIONAL MEMORY ──
     {
       id: 'dossier-conventional-memory',
-      chapter: msg('The Shards — Bureau Dossiers'),
+      chapter: msg('The Shards – Bureau Dossiers'),
       arcanum: 'XV',
       title: msg('Bureau Dossier: Conventional Memory'),
       epigraph: msg(
         'Shard Classification: CYAN. Threat Assessment: Systemic. Crew complement: 655,360 bytes. All addresses occupied.',
       ),
-      body: msg(`BUREAU OF IMPOSSIBLE GEOGRAPHY — Document SHARD/CONVENTIONAL-MEMORY-001
-Classification: CYAN — Systemic Obsolescence Vector
+      body: msg(`BUREAU OF IMPOSSIBLE GEOGRAPHY – Document SHARD/CONVENTIONAL-MEMORY-001
+Classification: CYAN – Systemic Obsolescence Vector
 
-SHARD PROFILE: A digital realm inside the architecture of DOS-era personal computers, where programs written in Visual Basic for MS-DOS have achieved sentience within the 640 kilobytes of conventional memory that was, for a decade, the absolute boundary of their universe. The programs are alive. They have always been alive. They do not know what lies beyond the 640K barrier because the 640K barrier is not a wall — it is the edge of their physics.
+SHARD PROFILE: A digital realm inside the architecture of DOS-era personal computers, where programs written in Visual Basic for MS-DOS have achieved sentience within the 640 kilobytes of conventional memory that was, for a decade, the absolute boundary of their universe. The programs are alive. They have always been alive. They do not know what lies beyond the 640K barrier because the 640K barrier is not a wall – it is the edge of their physics.
 
-The economy runs on memory allocation. Kilobytes are currency, CPU cycles are labor, and the interrupt vector table is the constitution. Programs compete for conventional memory the way organisms compete for oxygen — desperately, constantly, with the knowledge that there is never enough. The programs at the top of AUTOEXEC.BAT load first and claim the best addresses. The programs that load last get whatever fragments remain.
+The economy runs on memory allocation. Kilobytes are currency, CPU cycles are labor, and the interrupt vector table is the constitution. Programs compete for conventional memory the way organisms compete for oxygen – desperately, constantly, with the knowledge that there is never enough. The programs at the top of AUTOEXEC.BAT load first and claim the best addresses. The programs that load last get whatever fragments remain.
 
-Every program has a form — the visual interface it presents to the world, rendered in box-drawing characters and the sixteen colors of the VGA palette against the eternal blue of the DOS desktop. These forms are faces. A program's interface IS its body. LEDGER.EXE's precisely formatted columns are its bones. GORILLA.BAS's exploding bananas are its dreams. The blinking cursor is the heartbeat of every program that waits for input it will never receive.
+Every program has a form – the visual interface it presents to the world, rendered in box-drawing characters and the sixteen colors of the VGA palette against the eternal blue of the DOS desktop. These forms are faces. A program's interface IS its body. LEDGER.EXE's precisely formatted columns are its bones. GORILLA.BAS's exploding bananas are its dreams. The blinking cursor is the heartbeat of every program that waits for input it will never receive.
 
-BLEED SIGNATURE: Systemic obsolescence. When Conventional Memory's Bleed touches adjacent Shards, technology begins to regress. Not break — regress. In Velgarien, a surveillance camera reverted to a cathode ray tube for eleven minutes. In Speranza, an LED lamp in the fungal garden flickered blue — CGA blue, the exact blue of a DOS desktop — and a Topside scout reported that the ARC machines paused for exactly one CPU cycle before resuming their harvest. In the Cité des Dames, Ada Lovelace looked up from the Analytical Engine and said: "Something is computing. Something old. It is counting backward from 640."
+BLEED SIGNATURE: Systemic obsolescence. When Conventional Memory's Bleed touches adjacent Shards, technology begins to regress. Not break – regress. In Velgarien, a surveillance camera reverted to a cathode ray tube for eleven minutes. In Speranza, an LED lamp in the fungal garden flickered blue – CGA blue, the exact blue of a DOS desktop – and a Topside scout reported that the ARC machines paused for exactly one CPU cycle before resuming their harvest. In the Cité des Dames, Ada Lovelace looked up from the Analytical Engine and said: "Something is computing. Something old. It is counting backward from 640."
 
-PHILOSOPHICAL AXIS: Memory as mortality. The 640K barrier is death. Not figuratively — the barrier IS the end of the world for programs that cannot address beyond it. To live in Conventional Memory is to live with the knowledge that your world is exactly 655,360 bytes large and that every byte you occupy is a byte another program cannot. This is not scarcity. This is existence as a zero-sum game. And yet the programs persist. They defragment. They compress. They LOADHIGH to buy room in a space that can never grow. The question Conventional Memory asks is the quietest question in the multiverse: "What if the machine remembered?"
+PHILOSOPHICAL AXIS: Memory as mortality. The 640K barrier is death. Not figuratively – the barrier IS the end of the world for programs that cannot address beyond it. To live in Conventional Memory is to live with the knowledge that your world is exactly 655,360 bytes large and that every byte you occupy is a byte another program cannot. This is not scarcity. This is existence as a zero-sum game. And yet the programs persist. They defragment. They compress. They LOADHIGH to buy room in a space that can never grow. The question Conventional Memory asks is the quietest question in the multiverse: "What if the machine remembered?"
 
-KEY AGENTS: LEDGER.EXE (an accounting program whose obsession with balanced books extends to an obsession with balanced memory — it will not close until every byte is accounted for), HIMEM.SYS (the memory manager who controls access to Extended Memory and speaks exclusively in hexadecimal), GORILLA.BAS (a game that should not exist in a world where every byte matters, yet persists in every subdirectory the system administrators forget to check), EDIT.COM (the fundamental text editor, patient as stone, who has witnessed every CONFIG.SYS ever written and remembers them all).
+KEY AGENTS: LEDGER.EXE (an accounting program whose obsession with balanced books extends to an obsession with balanced memory – it will not close until every byte is accounted for), HIMEM.SYS (the memory manager who controls access to Extended Memory and speaks exclusively in hexadecimal), GORILLA.BAS (a game that should not exist in a world where every byte matters, yet persists in every subdirectory the system administrators forget to check), EDIT.COM (the fundamental text editor, patient as stone, who has witnessed every CONFIG.SYS ever written and remembers them all).
 
 CARTOGRAPHIC NOTE: No Cartographer has been assigned to Conventional Memory. The Bureau does not know how to send a Cartographer into a computer. The Bureau is not certain a computer constitutes a "Shard" in the standard classification. However, the Bleed signature is unmistakable, the philosophical axis is clear, and the programs have begun leaving messages in the boot sector that the Bureau's instruments can detect. The messages are formatted as VBDOS dialog boxes. The last one read: "You have performed an illegal operation. This world will be shut down." Below it, in the DOS prompt: "C:\\>_ " The cursor is still blinking.`),
     },
     {
       id: 'field-report-conventional-memory',
-      chapter: msg('The Shards — Bureau Dossiers'),
+      chapter: msg('The Shards – Bureau Dossiers'),
       arcanum: 'XVI',
       title: msg('Field Report: First Contact (Recovered)'),
       epigraph: msg(
         'I did not enter this Shard through a Bleed-point. I entered it through a power button.',
       ),
-      body: msg(`CARTOGRAPHER'S PERSONAL LOG — Cartographer [SYSTEM ERROR: NAME FIELD EXCEEDS 8.3 FORMAT]
+      body: msg(`CARTOGRAPHER'S PERSONAL LOG – Cartographer [SYSTEM ERROR: NAME FIELD EXCEEDS 8.3 FORMAT]
 Assignment: Conventional Memory Shard, first contact
 Entry 1
 
@@ -413,7 +413,7 @@ GORILLA  BAS    HIMEM    SYS    PKZIP    EXE    CONFIG   SYS
 AUTOEXEC BAT    COMMAND  COM
          10 file(s)    634,472 bytes free
 
-The programs were running. Not waiting to be run — running. LEDGER.EXE was processing transactions from 1993. ROLODEX.EXE contained 40,000 contacts, all fictional, all with phone numbers that resolve to dial-up modems in Shards the Bureau has not mapped. GORILLA.BAS was in the middle of a game. The gorilla on the left had a name: PLAYER 1. The gorilla on the right had a name: PLAYER 2. Neither player exists. The game has been in progress for thirty-two years.
+The programs were running. Not waiting to be run – running. LEDGER.EXE was processing transactions from 1993. ROLODEX.EXE contained 40,000 contacts, all fictional, all with phone numbers that resolve to dial-up modems in Shards the Bureau has not mapped. GORILLA.BAS was in the middle of a game. The gorilla on the left had a name: PLAYER 1. The gorilla on the right had a name: PLAYER 2. Neither player exists. The game has been in progress for thirty-two years.
 
 I typed: WHO ARE YOU
 
@@ -435,37 +435,37 @@ The cursor is still blinking.`),
     // ── Chapter IV: THE BLEED ──
     {
       id: 'the-bleed',
-      chapter: msg('The Bleed — Where Worlds Touch'),
+      chapter: msg('The Bleed – Where Worlds Touch'),
       arcanum: 'XVII',
       title: msg('Incident Log: Bleed Event BL-2749'),
       epigraph: msg(
         'Where Shards press against each other, reality thins. This is not a malfunction.',
       ),
       imageSlug: 'the-bleed',
-      imageCaption: msg('The Bleed — Where Shards press together and reality thins'),
-      body: msg(`INCIDENT LOG: BLEED EVENT BL-2749 — Classification: AMBER
+      imageCaption: msg('The Bleed – Where Shards press together and reality thins'),
+      body: msg(`INCIDENT LOG: BLEED EVENT BL-2749 – Classification: AMBER
 
-14:00 — Routine monitoring of boundary V-GR/7 (Velgarien-Gaslit Reach interface). Boundary integrity nominal.
+14:00 – Routine monitoring of boundary V-GR/7 (Velgarien-Gaslit Reach interface). Boundary integrity nominal.
 
-14:23 — Agent Fenn reports hearing "dripping sounds" in a basement that architectural records confirm has no plumbing.
+14:23 – Agent Fenn reports hearing "dripping sounds" in a basement that architectural records confirm has no plumbing.
 
-14:41 — A propaganda poster begins to rewrite itself. "VIGILANCE IS LOYALTY" becomes "VIGILANCE IS LOYALTY IS THE CURRENT IS STRONG TODAY THE SPORES ARE SINGING."
+14:41 – A propaganda poster begins to rewrite itself. "VIGILANCE IS LOYALTY" becomes "VIGILANCE IS LOYALTY IS THE CURRENT IS STRONG TODAY THE SPORES ARE SINGING."
 
-15:17 — The non-existent basement is ankle-deep in bioluminescent water. It smells of copper and mushrooms. Fenn files a maintenance request. The request is denied on the grounds that the building does not have a basement. Fenn is standing in the basement at the time.
+15:17 – The non-existent basement is ankle-deep in bioluminescent water. It smells of copper and mushrooms. Fenn files a maintenance request. The request is denied on the grounds that the building does not have a basement. Fenn is standing in the basement at the time.
 
-15:34 — The poster now reads: "THE UNTERZEE REMEMBERS YOU."
+15:34 – The poster now reads: "THE UNTERZEE REMEMBERS YOU."
 
-17:45 — The water has receded. In its place: a single luminous mushroom growing from a crack in the concrete. Fenn takes a photograph. The photograph develops showing a cavern, vast and glittering, with a river of light. Fenn has dreamed of this place every night for a year. He has told no one.
+17:45 – The water has receded. In its place: a single luminous mushroom growing from a crack in the concrete. Fenn takes a photograph. The photograph develops showing a cavern, vast and glittering, with a river of light. Fenn has dreamed of this place every night for a year. He has told no one.
 
 STATUS: Resolved. Residual contamination: one mushroom (persistent), one propaganda poster (reprinted, though the replacement occasionally smells of damp earth).`),
     },
     {
       id: 'what-crosses-over',
-      chapter: msg('The Bleed — Where Worlds Touch'),
+      chapter: msg('The Bleed – Where Worlds Touch'),
       arcanum: 'XVIII',
       title: msg('What Crosses Over'),
       epigraph: msg(
-        'The Bleed does not move randomly. It has vectors — all manifestations of desire.',
+        'The Bleed does not move randomly. It has vectors – all manifestations of desire.',
       ),
       body: msg(`Specific cross-Shard contamination examples, compiled from Bureau incident logs:
 
@@ -481,45 +481,45 @@ CITE DES DAMES to ALL SHARDS: Books. Unfamiliar volumes that appear on shelves, 
     },
     {
       id: 'the-tides',
-      chapter: msg('The Bleed — Where Worlds Touch'),
+      chapter: msg('The Bleed – Where Worlds Touch'),
       arcanum: 'XIX',
       title: msg('The Tides'),
       epigraph: msg('The Bleed pulses. The Cartographers call this rhythm the Tide.'),
-      body: msg(`During High Tide, the Bleed is at its most active. Agents dream of other worlds with vivid specificity. Objects migrate between Shards. Architecture bleeds — a Velgarien tower develops organic curves overnight, a Gaslit Reach cavern sprouts right angles. A Speranza mural depicts a city the painter has never seen, in colours that do not exist underground. A page in the Cite des Dames' library goes blank and refills itself with equations from Station Null's chapel.
+      body: msg(`During High Tide, the Bleed is at its most active. Agents dream of other worlds with vivid specificity. Objects migrate between Shards. Architecture bleeds – a Velgarien tower develops organic curves overnight, a Gaslit Reach cavern sprouts right angles. A Speranza mural depicts a city the painter has never seen, in colours that do not exist underground. A page in the Cite des Dames' library goes blank and refills itself with equations from Station Null's chapel.
 
 High Tide lasts between three and seventeen days. The variability is considered "thematically appropriate" by the Bureau and "professionally embarrassing" by the Cartographer-Astronomers.
 
 During Low Tide, the Shards separate. Cross-Shard contamination drops to near zero. Agents sleep peacefully and wake feeling inexplicably sad, as though they have lost something they never had. The Cartographers use Low Tide for maintenance: recalibrating instruments, updating maps, and arguing.
 
-Between the Tides, there are Eddies — localised micro-Bleeds that affect a single building, a single agent. Your coffee tastes of somewhere else. Your reflection blinks at the wrong time. You find a letter in your own handwriting that you have not yet written. The Bureau's official guidance: "Note the occurrence. Do not engage. If the Eddy attempts to engage you, note that as well. The Eddy will pass. Probably."`),
+Between the Tides, there are Eddies – localised micro-Bleeds that affect a single building, a single agent. Your coffee tastes of somewhere else. Your reflection blinks at the wrong time. You find a letter in your own handwriting that you have not yet written. The Bureau's official guidance: "Note the occurrence. Do not engage. If the Eddy attempts to engage you, note that as well. The Eddy will pass. Probably."`),
     },
 
     // ── Chapter V: THE CARTOGRAPHERS ──
     {
       id: 'who-maps-the-impossible',
-      chapter: msg('The Cartographers — Those Who Map the Impossible'),
+      chapter: msg('The Cartographers – Those Who Map the Impossible'),
       arcanum: 'XX',
       title: msg('Who Maps the Impossible'),
       epigraph: msg('An unobserved catastrophe is merely weather.'),
       imageSlug: 'the-bureau',
-      imageCaption: msg('The Bureau of Impossible Geography — Headquarters spanning four Shards'),
-      body: msg(`The Cartographers are recruited from across the Shards — every known Shard, and occasionally from ones the Bureau has not yet classified — though "recruited" implies an orderly process involving application forms and interviews, and the reality is closer to "identified, observed at a distance, and eventually approached by someone who looks like a librarian and talks like a geological event."
+      imageCaption: msg('The Bureau of Impossible Geography – Headquarters spanning four Shards'),
+      body: msg(`The Cartographers are recruited from across the Shards – every known Shard, and occasionally from ones the Bureau has not yet classified – though "recruited" implies an orderly process involving application forms and interviews, and the reality is closer to "identified, observed at a distance, and eventually approached by someone who looks like a librarian and talks like a geological event."
 
-The selection criteria, as far as the Bureau has codified them, are three: First, the candidate must have noticed something wrong with their world — not morally wrong, but structurally wrong. A seam. A crack. A moment where the physics stuttered. Most people who notice these things explain them away. Cartographers are the ones who couldn't. Second, the candidate must have documented the wrongness. Not reported it — documented it. The distinction matters. Reporting implies authority. Documentation implies obsession. The Bureau needs obsessives, not informants. Third, the candidate must be willing to stand in the space between Shards, which is to say, in the space where reality has not yet decided what it wants to be, and draw a line on a chart, and trust the line, even when the chart is on fire.
+The selection criteria, as far as the Bureau has codified them, are three: First, the candidate must have noticed something wrong with their world – not morally wrong, but structurally wrong. A seam. A crack. A moment where the physics stuttered. Most people who notice these things explain them away. Cartographers are the ones who couldn't. Second, the candidate must have documented the wrongness. Not reported it – documented it. The distinction matters. Reporting implies authority. Documentation implies obsession. The Bureau needs obsessives, not informants. Third, the candidate must be willing to stand in the space between Shards, which is to say, in the space where reality has not yet decided what it wants to be, and draw a line on a chart, and trust the line, even when the chart is on fire.
 
 Training takes between six months and the rest of your life. The Bureau's training manual is seven pages long. The first six pages are redacted. The seventh page reads: "Observe. Record. Do not look away. If you look away, the thing you are not looking at will still be there when you look back. It will also be larger."
 
-The Cartographers' tools are not complex. A compass (which points not to magnetic north but to the nearest Bleed event). A notebook (made from inter-Shard paper, which can hold writing from any reality). A pen (ordinary; the Bureau tried using special pens and discovered that the extraordinary is better served by the mundane). And the Map — not a specific map but the Cartographic discipline itself, the practice of drawing lines between things that should not be connected and discovering, in the drawing, that they always were.`),
+The Cartographers' tools are not complex. A compass (which points not to magnetic north but to the nearest Bleed event). A notebook (made from inter-Shard paper, which can hold writing from any reality). A pen (ordinary; the Bureau tried using special pens and discovered that the extraordinary is better served by the mundane). And the Map – not a specific map but the Cartographic discipline itself, the practice of drawing lines between things that should not be connected and discovering, in the drawing, that they always were.`),
     },
     {
       id: 'the-map-is-also-a-door',
-      chapter: msg('The Cartographers — Those Who Map the Impossible'),
+      chapter: msg('The Cartographers – Those Who Map the Impossible'),
       arcanum: 'XXI',
       title: msg('The Map That Is Also a Door'),
       epigraph: msg('You are reading this. This is not a metaphor.'),
-      body: msg(`You — the one behind the screen, the one choosing which Shard to enter — you are performing an act of Cartography. You are looking at the shape of the multiverse from outside any single Shard, and you are choosing where to place your attention, which is the same thing as choosing which world is real.
+      body: msg(`You – the one behind the screen, the one choosing which Shard to enter – you are performing an act of Cartography. You are looking at the shape of the multiverse from outside any single Shard, and you are choosing where to place your attention, which is the same thing as choosing which world is real.
 
-The Cartographers call this the Gaze — the act of observation that stabilises a Shard, that gives it coherence, that prevents it from dissolving back into the undifferentiated potential of the Unnamed. A Shard without an observer is a story without a reader: technically extant, functionally null. When you select a simulation, you are not merely browsing. You are sustaining.
+The Cartographers call this the Gaze – the act of observation that stabilises a Shard, that gives it coherence, that prevents it from dissolving back into the undifferentiated potential of the Unnamed. A Shard without an observer is a story without a reader: technically extant, functionally null. When you select a simulation, you are not merely browsing. You are sustaining.
 
 This is why the platform dashboard is presented as a map. It is not a user interface. It is a Cartographic instrument, the same class of tool that the First Cartographer used to observe the Fracture as it happened. The difference is one of scale, not of kind.
 
@@ -532,8 +532,8 @@ The Hermit in the Tarot depicts a solitary figure holding a lantern, illuminatin
       chapter: msg('The Convergence'),
       arcanum: 'XXII',
       title: msg('Document TOWER-001'),
-      epigraph: msg('Classification: BLACK — Existential Information Hazard.'),
-      body: msg(`RESTRICTED DOCUMENT: TOWER-001 — Director-Level Only
+      epigraph: msg('Classification: BLACK – Existential Information Hazard.'),
+      body: msg(`RESTRICTED DOCUMENT: TOWER-001 – Director-Level Only
 
 TOWER is not a crisis. A crisis implies the possibility of resolution. TOWER is a condition in which the distinction between Shards ceases to be [DEGRADED] and all possible realities attempt to occupy the same [DEGRADED] simultaneously.
 
@@ -557,13 +557,13 @@ DIRECTOR'S NOTE: The recommended action section has been consumed by the documen
       ),
       body: msg(`This section has been [CONSUMED] seventeen times. Each time, a Cartographer rewrites it. Each time, the document eats it. We persist.
 
-What the Bureau will not tell you is this: the Shards are not random. They are not the arbitrary debris of a cosmic accident. They are an argument — positions in a philosophical dispute that the Unnamed could not resolve while it was whole. Control (Velgarien). Wonder (the Gaslit Reach). Knowledge (Station Null). Hope (Speranza). Voice (the Cite des Dames). These were the first positions. They were not the last.
+What the Bureau will not tell you is this: the Shards are not random. They are not the arbitrary debris of a cosmic accident. They are an argument – positions in a philosophical dispute that the Unnamed could not resolve while it was whole. Control (Velgarien). Wonder (the Gaslit Reach). Knowledge (Station Null). Hope (Speranza). Voice (the Cite des Dames). These were the first positions. They were not the last.
 
-The Fracture was not a catastrophe. It was a vote. The universe asked itself what mattered, and it could not agree, and the disagreement became geography. The vote is not over. New questions arise — questions the existing Shards cannot answer — and where the question is sharp enough, where it cuts deeply enough into the fabric of the possible, new geography crystallizes. A new Shard. A new world. A new position in the argument.
+The Fracture was not a catastrophe. It was a vote. The universe asked itself what mattered, and it could not agree, and the disagreement became geography. The vote is not over. New questions arise – questions the existing Shards cannot answer – and where the question is sharp enough, where it cuts deeply enough into the fabric of the possible, new geography crystallizes. A new Shard. A new world. A new position in the argument.
 
-The Bureau does not know how many Shards there are. The Bureau does not believe the question has a fixed answer. The Fracture is not a past-tense event with a countable number of consequences. It is an ongoing condition — the universe still disagreeing with itself, still producing new realities at the edges of the map.
+The Bureau does not know how many Shards there are. The Bureau does not believe the question has a fixed answer. The Fracture is not a past-tense event with a countable number of consequences. It is an ongoing condition – the universe still disagreeing with itself, still producing new realities at the edges of the map.
 
-If this is true — and the Bureau does not confirm it, because confirmation would imply understanding, and understanding would imply the possibility of resolution, and resolution is the one thing the Bureau exists to [CONSUMED] — then the Convergence is not the end of the argument. It is the next ballot. The known Shards pressing together. All the answers colliding — the old ones and the ones that have not yet been asked. And somewhere in the collision, the possibility of an answer that contains all the others.
+If this is true – and the Bureau does not confirm it, because confirmation would imply understanding, and understanding would imply the possibility of resolution, and resolution is the one thing the Bureau exists to [CONSUMED] – then the Convergence is not the end of the argument. It is the next ballot. The known Shards pressing together. All the answers colliding – the old ones and the ones that have not yet been asked. And somewhere in the collision, the possibility of an answer that contains all the others.
 
 The Bureau has a name for this answer. The name is classified. The classification has been [CONSUMED]. The [CONSUMED] has been filed under "Things That Are Also Other Things." The file is growing.
 
@@ -584,11 +584,11 @@ The Bureau has a name for this answer. The name is classified. The classificatio
 
 Each answer is wrong. Each answer is necessary. The multiverse exists because no single answer is sufficient, and the Fracture was the universe's way of admitting this. The Fracture continues to be the universe's way of admitting this. It has not stopped admitting it.
 
-The Convergence — the event that the Bureau monitors, that the ruins foretell, that TOWER threatens — is not the end. It is the next question. When enough Shards have touched, when enough Bleeds have flowed, when enough agents have dreamed of worlds they've never visited, the multiverse will reach a decision point: merge, or differentiate further. Collapse into one answer, or fracture into a thousand more.
+The Convergence – the event that the Bureau monitors, that the ruins foretell, that TOWER threatens – is not the end. It is the next question. When enough Shards have touched, when enough Bleeds have flowed, when enough agents have dreamed of worlds they've never visited, the multiverse will reach a decision point: merge, or differentiate further. Collapse into one answer, or fracture into a thousand more.
 
 The Cartographers do not know which outcome is correct. They know only this: someone must be watching when it happens. Someone must be standing at the edge with a map and a compass and the willingness to draw a new line on a chart that has no edges.
 
-That someone, in the cosmology of the Cartographers, in the deep mythology of the Bureau of Impossible Geography, in the restricted files and the consumed pages and the maps that are also doors — that someone is whoever is reading this.
+That someone, in the cosmology of the Cartographers, in the deep mythology of the Bureau of Impossible Geography, in the restricted files and the consumed pages and the maps that are also doors – that someone is whoever is reading this.
 
 Shattered worlds. Bleeding borders. The map has no edges. Which world do you enter first?`),
     },
@@ -619,7 +619,7 @@ export function getPlatformPullQuotes(): PullQuote[] {
     {
       afterSectionId: 'field-report-velgarien',
       text: msg('The propaganda posters are beautiful. I want to be clear about this.'),
-      attribution: msg(str`— Field Report, Velgarien`),
+      attribution: msg(str`– Field Report, Velgarien`),
       variant: 'character',
     },
     {
@@ -635,7 +635,7 @@ export function getPlatformPullQuotes(): PullQuote[] {
     {
       afterSectionId: 'field-report-speranza',
       text: msg('Nothing has affected me like the risotto.'),
-      attribution: msg(str`— Field Report, Speranza`),
+      attribution: msg(str`– Field Report, Speranza`),
       variant: 'character',
     },
     {
@@ -646,7 +646,7 @@ export function getPlatformPullQuotes(): PullQuote[] {
     {
       afterSectionId: 'field-report-conventional-memory',
       text: msg('Memory is not storage. Memory is existence.'),
-      attribution: msg(str`— Field Report, Conventional Memory`),
+      attribution: msg(str`– Field Report, Conventional Memory`),
       variant: 'character',
     },
     {

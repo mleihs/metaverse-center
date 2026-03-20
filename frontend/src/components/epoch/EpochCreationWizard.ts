@@ -1268,7 +1268,7 @@ export class VelgEpochCreationWizard extends LitElement {
         </div>
 
         <span class="field__hint">
-          ${msg(str`Foundation ${phases.foundation} · Competition ${phases.competition} · Reckoning ${phases.reckoning} cycles — ${this._durationDays}d (${foundationDays}d + ${competitionDays}d + ${reckoningDays}d)`)}
+          ${msg(str`Foundation ${phases.foundation} · Competition ${phases.competition} · Reckoning ${phases.reckoning} cycles – ${this._durationDays}d (${foundationDays}d + ${competitionDays}d + ${reckoningDays}d)`)}
         </span>
       </div>
     `;

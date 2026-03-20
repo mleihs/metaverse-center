@@ -577,7 +577,7 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
                 RE: <span class="dispatch__meta-value">${msg('Available Bureau Services')}</span>
               </span>
               <span class="dispatch__meta-line">
-                ${msg('CLASSIFICATION')}: <span class="dispatch__meta-value">${msg('RESTRICTED — OWNER ONLY')}</span>
+                ${msg('CLASSIFICATION')}: <span class="dispatch__meta-value">${msg('RESTRICTED – OWNER ONLY')}</span>
               </span>
             </div>
 

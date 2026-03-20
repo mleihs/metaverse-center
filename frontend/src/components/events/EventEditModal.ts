@@ -304,7 +304,7 @@ export class VelgEventEditModal extends LitElement {
           <div class="form__group">
             <label class="form__label form__label--required">
               ${msg('Title')}
-              ${renderInfoBubble(msg('Event headline. Preserved through bleed echoes — this is what agents in other simulations hear.'))}
+              ${renderInfoBubble(msg('Event headline. Preserved through bleed echoes – this is what agents in other simulations hear.'))}
             </label>
             <input
               class="form__input"

@@ -6,12 +6,12 @@ import { dossierRevealStyles } from './dossier-reveal-styles.js';
 type CeremonyPhase = 'stamp' | 'typewriter' | 'sections' | 'ready';
 
 const SECTION_LABELS = [
-  () => msg('ARCANUM ALPHA — Pre-Arrival History'),
-  () => msg('ARCANUM BETA — Agent Classified Addenda'),
-  () => msg('ARCANUM GAMMA — Geographic Anomalies'),
-  () => msg('ARCANUM DELTA — Bleed Signature Analysis'),
-  () => msg('ARCANUM EPSILON — Prophetic Fragments'),
-  () => msg('ARCANUM ZETA — Bureau Recommendation'),
+  () => msg('ARCANUM ALPHA – Pre-Arrival History'),
+  () => msg('ARCANUM BETA – Agent Classified Addenda'),
+  () => msg('ARCANUM GAMMA – Geographic Anomalies'),
+  () => msg('ARCANUM DELTA – Bleed Signature Analysis'),
+  () => msg('ARCANUM EPSILON – Prophetic Fragments'),
+  () => msg('ARCANUM ZETA – Bureau Recommendation'),
 ];
 
 /**

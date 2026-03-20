@@ -643,7 +643,7 @@ export class VelgEpochChatPanel extends LitElement {
             ${
               !this.mySimulationId
                 ? msg('Join the epoch to send messages')
-                : msg('Channel closed — epoch ended')
+                : msg('Channel closed – epoch ended')
             }
           </div>
         `

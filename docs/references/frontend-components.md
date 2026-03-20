@@ -1638,6 +1638,39 @@ Individual resonance display card with magnitude indicator, status badge, and co
 
 ## Admin Panel Components
 
+### AdminPanel (`velg-admin-panel`)
+
+Platform admin dashboard with 10 tabs (consolidated from 13). Hero section with scanlines, tablist navigation, content panel.
+
+**Tag:** `<velg-admin-panel>`
+
+**Tabs (10):**
+
+| Tab | Component | Beschreibung |
+|-----|-----------|-------------|
+| Users | `velg-admin-users-tab` | User management, roles, memberships |
+| Simulations | `velg-admin-simulations-tab` | Active/trash simulation management |
+| Health | `velg-admin-health-tab` | Critical health effects master switch + per-sim overrides |
+| Heartbeat | `velg-admin-heartbeat-tab` | Tick engine config, cascade rules, sim status |
+| Resonances | `velg-admin-resonances-tab` | Substrate resonance CRUD + impact processing |
+| Scanner | `velg-admin-scanner-tab` | Content scanner dashboard, candidates, log |
+| Forge | `velg-admin-forge-tab` | Forge stats, BYOK keys, clearance queue |
+| Platform Config | `velg-admin-platform-config-tab` | Sub-tabs: API Keys, Models, Research, Caching |
+| Social Media | `velg-admin-social-tab` | Sub-tabs: Instagram, Bluesky |
+| Data Cleanup | `velg-admin-cleanup-tab` | 6-category data purge with preview |
+
+**Shared Styles:** `admin-shared-styles.ts` exports 9 CSS modules (animations, section headers, global cards, toggles, buttons, forge sections, loading states, config cards, config grids). Tabs compose via `static styles = [adminButtonStyles, ...]` with Tier-3 `--_admin-accent` / `--_toggle-active` overrides.
+
+**Info Bubbles:** All config inputs have `renderInfoBubble(msg('...'), 'tip-id')` with `aria-describedby` linkage. Shared `infoBubbleStyles` with amber hover glow, arrow decoration, `role="tooltip"`.
+
+### AdminPlatformConfigTab (`velg-admin-platform-config-tab`)
+
+Wrapper tab consolidating API Keys, Models, Research, and Caching into a single tab with sub-navigation. Same pattern as AdminSocialTab.
+
+**Tag:** `<velg-admin-platform-config-tab>`
+
+**Sub-tabs:** API Keys | Models | Research | Caching
+
 ### AdminApiKeysTab (`velg-admin-api-keys-tab`)
 
 Platform API key management panel. Displays 6 API keys grouped by category with masked values, edit fields, and save/clear actions.

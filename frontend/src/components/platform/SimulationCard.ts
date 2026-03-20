@@ -267,7 +267,7 @@ export class VelgSimulationCard extends LitElement {
       >
         ${
           sim.banner_url
-            ? html`<div class="shard__image" style="background-image: url(${sim.banner_url})" role="img" aria-label="${sim.name} — ${sim.description ?? sim.theme}"></div>`
+            ? html`<div class="shard__image" style="background-image: url(${sim.banner_url})" role="img" aria-label="${sim.name} – ${sim.description ?? sim.theme}"></div>`
             : html`<div class="shard__placeholder"></div>`
         }
         <div class="shard__overlay"></div>

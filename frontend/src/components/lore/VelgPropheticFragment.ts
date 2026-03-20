@@ -33,7 +33,7 @@ export class VelgPropheticFragment extends LitElement {
       <div
         class="fragment fragment--${type}"
         role="article"
-        aria-label="${msg('Prophetic fragment')} — ${label}"
+        aria-label="${msg('Prophetic fragment')} – ${label}"
       >
         ${this._renderWithDegradation(text)}
       </div>

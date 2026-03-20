@@ -193,7 +193,7 @@ export class VelgDossierPreview extends LitElement {
           .filter(Boolean);
       }
     } catch {
-      // Non-critical — preview works with fallback text
+      // Non-critical – preview works with fallback text
     }
 
     this._loaded = true;
@@ -230,7 +230,7 @@ export class VelgDossierPreview extends LitElement {
       {
         arcanum: 'EPSILON',
         label: msg('Prophetic Fragments (~1,000 words)'),
-        teaser: `${msg('Recovered documents, dream transcriptions, inscriptions.')} "${msg('the')} ${building} ${msg('shall')} ████... [${msg('ILLEGIBLE')}]" — ${msg('Source')}: ████████. ${msg('Reliability')}: [${msg('CONSUMED')}]. ${msg('Unreliable narration with degradation markers.')}`,
+        teaser: `${msg('Recovered documents, dream transcriptions, inscriptions.')} "${msg('the')} ${building} ${msg('shall')} ████... [${msg('ILLEGIBLE')}]" – ${msg('Source')}: ████████. ${msg('Reliability')}: [${msg('CONSUMED')}]. ${msg('Unreliable narration with degradation markers.')}`,
       },
       {
         arcanum: 'ZETA',
@@ -246,7 +246,7 @@ export class VelgDossierPreview extends LitElement {
     const slots = this._getSlots();
 
     return html`
-      <div class="preview" role="list" aria-label=${msg('Dossier preview — 6 classified sections pending authorization')}>
+      <div class="preview" role="list" aria-label=${msg('Dossier preview – 6 classified sections pending authorization')}>
         <div class="preview__header">
           ${msg('DOSSIER PREVIEW // 6 CLASSIFIED SECTIONS PENDING AUTHORIZATION')}
         </div>
@@ -260,7 +260,7 @@ export class VelgDossierPreview extends LitElement {
               >
                 <span class="slot__icon" aria-hidden="true">${icons.lock(14)}</span>
                 <div class="slot__content">
-                  <div class="slot__label">${msg('ARCANUM')} ${slot.arcanum} — ${slot.label}</div>
+                  <div class="slot__label">${msg('ARCANUM')} ${slot.arcanum} – ${slot.label}</div>
                   <div class="slot__teaser">${this._renderTeaser(slot.teaser)}</div>
                 </div>
               </div>

@@ -1692,7 +1692,7 @@ export class VelgAdminInstagramTab extends LitElement {
         if (resp.data.authenticated) {
           VelgToast.success(msg('Instagram connection verified.'));
         } else if (resp.data.configured) {
-          VelgToast.error(msg('Authentication failed — check access token.'));
+          VelgToast.error(msg('Authentication failed – check access token.'));
         } else {
           VelgToast.error(msg('Instagram credentials not configured.'));
         }
@@ -2172,7 +2172,7 @@ export class VelgAdminInstagramTab extends LitElement {
             <div class="config-row__label">
               <div class="config-row__name">
                 ${msg('Hint Format')}
-                ${renderInfoBubble(msg('Footer: cipher hint appended at the end of the caption. Caption: hint inserted inline before the ADDENDUM section. Steganographic: hint rendered as faint rotated text in the composed image — caption only shows a "decode at" notice.'))}
+                ${renderInfoBubble(msg('Footer: cipher hint appended at the end of the caption. Caption: hint inserted inline before the ADDENDUM section. Steganographic: hint rendered as faint rotated text in the composed image – caption only shows a "decode at" notice.'))}
               </div>
               <div class="config-row__desc">${msg('Where the cipher hint appears in the post')}</div>
             </div>
@@ -2300,7 +2300,7 @@ export class VelgAdminInstagramTab extends LitElement {
           <div class="config-card__header">
             <div class="config-card__title">
               ${icons.target(14)} ${msg('Trending Tags')}
-              ${renderInfoBubble(msg('Momentum hashtags mixed into posts (1 per post, rotated). Update weekly with tags trending in the AI art, worldbuilding, or indie creator space. Instagram 2026: 3-5 relevant tags per post, varied per post — one trending tag per dispatch boosts discovery without looking spammy.'))}
+              ${renderInfoBubble(msg('Momentum hashtags mixed into posts (1 per post, rotated). Update weekly with tags trending in the AI art, worldbuilding, or indie creator space. Instagram 2026: 3-5 relevant tags per post, varied per post – one trending tag per dispatch boosts discovery without looking spammy.'))}
             </div>
             ${this._savingKey === 'instagram_trending_tags'
               ? html`<span class="saving-indicator">${msg('Saving...')}</span>`

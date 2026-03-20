@@ -1330,6 +1330,35 @@ Wiederverwendbare CSS-Module in `components/shared/` und `components/how-to-play
 
 **grid-layout-styles.ts** — dedupliziert identische Grid-CSS aus 5 Views. Konfigurierbar via `--grid-min-width` Custom Property (default 240px, SocialMediaView/CampaignDashboard: 260px). Responsive Breakpoints: 640px (2 Spalten), 400px (1 Spalte).
 
+### Info Bubble Pattern
+
+Shared Tooltip-Komponente fuer Admin-Config-Inputs und Settings-Panels.
+
+**Files:** `shared/info-bubble-styles.ts` (CSS + Render-Helper)
+
+**Usage:**
+```ts
+import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
+
+// In render:
+${renderInfoBubble(msg('Tooltip text'), 'tip-my-input')}
+<input aria-describedby="tip-my-input" />
+```
+
+**Features:**
+- 16px kreisfoermiges "i"-Icon mit `tabindex="0"`
+- Amber-Glow bei Hover/Focus (`--color-accent-amber`)
+- 240px Tooltip mit Aufwaerts-Pfeil
+- `role="tooltip"` + optionale `id` fuer `aria-describedby`-Verknuepfung
+- Anzeige bei `:hover` und `:focus-within`
+
+### Content Lint Rules
+
+`frontend/scripts/lint-llm-content.sh` erzwingt:
+1. **Keine Em-Dashes (U+2014)** in `msg()` / Template-Literals — En-Dashes (U+2013) verwenden
+2. **Keine LLM-Woerter** in `msg()`-Strings: tapestry, delve, unleash, seamlessly, holistic, multifaceted, bustling, game-changer, cutting-edge
+3. **Keine Em-Dashes in XLIFF**-Uebersetzungsdateien
+
 ---
 
 ## Querverweise

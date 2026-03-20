@@ -1533,7 +1533,7 @@ export class VelgSimulationsDashboard extends LitElement {
         appState.setSimulations([...memberSims, ...community]);
       }
     } catch {
-      // Non-critical — community shards just won't show
+      // Non-critical – community shards just won't show
     }
   }
 
@@ -1557,7 +1557,7 @@ export class VelgSimulationsDashboard extends LitElement {
         this._dashboardData = res.data as DashboardData;
       }
     } catch {
-      // Non-critical — dashboard works without this
+      // Non-critical – dashboard works without this
     }
   }
 
@@ -1577,7 +1577,7 @@ export class VelgSimulationsDashboard extends LitElement {
       this._spotlightAgent = agents[Math.floor(Math.random() * agents.length)];
       this._spotlightSimSlug = sim.slug;
     } catch {
-      // Non-critical — placeholder remains
+      // Non-critical – placeholder remains
     }
   }
 
@@ -1660,17 +1660,17 @@ export class VelgSimulationsDashboard extends LitElement {
 
     if (allSubsiding) {
       return count === 1
-        ? msg('residual substrate displacement — monitoring decay curve')
-        : msg('multiple tremors entering decay phase — substrate settling');
+        ? msg('residual substrate displacement – monitoring decay curve')
+        : msg('multiple tremors entering decay phase – substrate settling');
     }
-    if (maxMag >= 8) return msg('severe substrate distortion — local geometry unreliable');
+    if (maxMag >= 8) return msg('severe substrate distortion – local geometry unreliable');
     if (impacting >= 3)
-      return msg('concurrent substrate fractures — recommend caution in affected zones');
-    if (impacting >= 2) return msg('overlapping tremor signatures — interference patterns forming');
+      return msg('concurrent substrate fractures – recommend caution in affected zones');
+    if (impacting >= 2) return msg('overlapping tremor signatures – interference patterns forming');
     if (impacting === 1)
-      return msg('active substrate displacement — affected zones may behave unpredictably');
-    if (count >= 3) return msg('multiple signatures detected — the substrate is restless');
-    return msg('substrate anomaly detected — origin unclear');
+      return msg('active substrate displacement – affected zones may behave unpredictably');
+    if (count >= 3) return msg('multiple signatures detected – the substrate is restless');
+    return msg('substrate anomaly detected – origin unclear');
   }
 
   private _getRelativeTime(dateStr: string): string {
@@ -2129,7 +2129,7 @@ export class VelgSimulationsDashboard extends LitElement {
       <div
         class="shard-grid__featured"
         role="link"
-        aria-label="${sim.name} — ${desc || sim.theme}"
+        aria-label="${sim.name} – ${desc || sim.theme}"
         @click=${() => {
           appState.setCurrentSimulation(sim);
           this._navigateTo(`/simulations/${sim.slug}/lore`);
@@ -2137,7 +2137,7 @@ export class VelgSimulationsDashboard extends LitElement {
       >
         ${
           bannerUrl
-            ? html`<img class="featured__bg" src=${bannerUrl} alt="${sim.name} — ${desc || sim.theme}" loading="lazy" />`
+            ? html`<img class="featured__bg" src=${bannerUrl} alt="${sim.name} – ${desc || sim.theme}" loading="lazy" />`
             : html`<div class="featured__bg" style="background: linear-gradient(135deg, var(--color-surface), var(--color-border-light));"></div>`
         }
         <div class="featured__gradient"></div>

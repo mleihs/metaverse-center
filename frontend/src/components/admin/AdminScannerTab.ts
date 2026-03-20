@@ -12,6 +12,7 @@ import type {
 } from '../../services/api/ScannerApiService.js';
 import { icons } from '../../utils/icons.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
+import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 
 type ScannerView = 'dashboard' | 'candidates' | 'log';
@@ -20,7 +21,7 @@ type CandidateFilter = 'all' | 'pending' | 'approved' | 'rejected';
 @localized()
 @customElement('velg-admin-scanner-tab')
 export class VelgAdminScannerTab extends LitElement {
-  static styles = css`
+  static styles = [infoBubbleStyles, css`
     :host {
       display: block;
       color: var(--color-text-primary);
@@ -1158,7 +1159,7 @@ export class VelgAdminScannerTab extends LitElement {
         gap: var(--space-2);
       }
     }
-  `;
+  `];
 
   @state() private _loading = true;
   @state() private _error: string | null = null;
@@ -1270,7 +1271,7 @@ export class VelgAdminScannerTab extends LitElement {
     try {
       const resp = await scannerApi.approveCandidate(candidate.id);
       if (resp.success) {
-        VelgToast.success(msg('Candidate approved — resonance created.'));
+        VelgToast.success(msg('Candidate approved – resonance created.'));
         await this._loadCandidates();
       } else {
         VelgToast.error(resp.error?.message ?? msg('Failed to approve'));
@@ -1401,10 +1402,13 @@ export class VelgAdminScannerTab extends LitElement {
           class="trigger-scan-btn ${this._scanning ? 'trigger-scan-btn--scanning' : ''}"
           ?disabled=${this._scanning}
           @click=${this._triggerScan}
+          aria-label=${this._scanning ? msg('Scan in progress') : msg('Trigger a manual scan cycle')}
+          aria-describedby="tip-scanner-force"
         >
           ${icons.radar(14)}
           ${this._scanning ? msg('Scanning...') : msg('Trigger Scan')}
         </button>
+        ${renderInfoBubble(msg('Triggers an immediate scan cycle outside the scheduled interval. Results appear in the candidates list.'), 'tip-scanner-force')}
         ${
           metrics.last_scan
             ? html`<span class="scan-info">${msg('Last scan:')} ${this._relativeTime(metrics.last_scan)}</span>`
@@ -1412,7 +1416,7 @@ export class VelgAdminScannerTab extends LitElement {
         }
       </div>
 
-      <div class="section-label">${msg('Sensor Network')}</div>
+      <div class="section-label">${msg('Sensor Network')} ${renderInfoBubble(msg('Each adapter scans a different source at its own interval. Green dots indicate online sensors with valid API keys.'), 'tip-scanner-sensors')}</div>
       <div class="sensor-grid">
         ${adapters.map((a) => this._renderAdapterCard(a))}
       </div>
@@ -1479,15 +1483,18 @@ export class VelgAdminScannerTab extends LitElement {
     ).length;
 
     return html`
-      <div class="filter-row">
+      <div class="filter-row" role="group" aria-label=${msg('Filter candidates by status')}>
         ${filters.map(
           (f) => html`
             <button
               class="filter-btn ${this._candidateFilter === f ? 'filter-btn--active' : ''}"
               @click=${() => this._setCandidateFilter(f)}
+              aria-label=${msg(str`Show ${f} candidates`)}
+              aria-pressed=${this._candidateFilter === f}
             >${f === 'all' ? msg('All') : f === 'pending' ? msg('Pending') : f === 'approved' ? msg('Approved') : msg('Rejected')}</button>
           `,
         )}
+        ${renderInfoBubble(msg('Candidates are scored by magnitude. Those above the threshold are marked as recommended for approval.'), 'tip-scanner-candidates')}
         ${
           recommendedCount > 0
             ? html`<span class="recommended-summary">${msg(str`◆ ${recommendedCount} recommended`)}</span>`
@@ -1564,7 +1571,7 @@ export class VelgAdminScannerTab extends LitElement {
               `
               : nothing
           }
-          <button class="action-btn" @click=${() => this._toggleExpand(c.id)}>
+          <button class="action-btn" @click=${() => this._toggleExpand(c.id)} aria-label=${isExpanded ? msg(str`Hide details for ${c.title}`) : msg(str`Show details for ${c.title}`)}>
             ${isExpanded ? msg('Hide') : msg('Detail')}
           </button>
         </div>

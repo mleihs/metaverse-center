@@ -412,7 +412,7 @@ export class VelgEventSeismograph extends LitElement {
       (a, b) => new Date(a.occurred_at).getTime() - new Date(b.occurred_at).getTime(),
     );
 
-    // Build pressure path — cumulative impact over a rolling 7-day window
+    // Build pressure path – cumulative impact over a rolling 7-day window
     const points: string[] = [];
     const windowMs = 7 * 24 * 60 * 60 * 1000;
 
@@ -530,7 +530,7 @@ export class VelgEventSeismograph extends LitElement {
             />
           `
           }
-          <title>${t(evt, 'title')} — ${msg('impact')} ${impact}${sourceLabel}</title>
+          <title>${t(evt, 'title')} – ${msg('impact')} ${impact}${sourceLabel}</title>
         </g>
       `;
     });

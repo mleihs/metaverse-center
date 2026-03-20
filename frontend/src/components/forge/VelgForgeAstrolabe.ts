@@ -699,7 +699,7 @@ export class VelgForgeAstrolabe extends LitElement {
     }
     await forgeStateManager.startResearch();
     if (forgeStateManager.lastGenerationRecovered.value) {
-      VelgToast.success(msg('Signal recovered — anchor data retrieved from Bureau archives'));
+      VelgToast.success(msg('Signal recovered – anchor data retrieved from Bureau archives'));
     }
   }
 

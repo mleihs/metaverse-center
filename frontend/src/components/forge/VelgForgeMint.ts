@@ -869,7 +869,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
           <span class="mint__keys-hint">
             ${
               byok.has_openrouter_key && byok.has_replicate_key
-                ? msg('Both keys configured — enter new values to update.')
+                ? msg('Both keys configured – enter new values to update.')
                 : msg('Set both keys to enable BYOK access.')
             }
           </span>

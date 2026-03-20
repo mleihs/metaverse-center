@@ -1,20 +1,37 @@
-import { css, html } from 'lit';
+import { css, html, nothing } from 'lit';
 
 /**
  * Shared info bubble styles + render helper for edit modals and settings panels.
- * Usage: static styles = [formStyles, infoBubbleStyles, css`...`];
- * Render: ${renderInfoBubble('Tooltip text')}
+ *
+ * Usage:
+ *   static styles = [infoBubbleStyles, css`...`];
+ *
+ * Basic:
+ *   ${renderInfoBubble(msg('Tooltip text'))}
+ *
+ * With aria-describedby linkage:
+ *   <input aria-describedby="tip-ttl" />
+ *   ${renderInfoBubble(msg('Cache TTL in seconds'), 'tip-ttl')}
  */
 
-/** Render an info bubble with tooltip text. */
-export function renderInfoBubble(text: string) {
+/**
+ * Render an info bubble with tooltip text.
+ * @param text  The tooltip content (should be wrapped in msg() by the caller)
+ * @param id    Optional id for the tooltip span — use with aria-describedby on the input
+ */
+export function renderInfoBubble(text: string, id?: string) {
   return html`
     <span class="info-bubble">
-      <span class="info-bubble__icon">i</span>
-      <span class="info-bubble__tooltip">${text}</span>
+      <span class="info-bubble__icon" tabindex="0" aria-label="Info">i</span>
+      <span
+        class="info-bubble__tooltip"
+        id=${id ?? nothing}
+        role="tooltip"
+      >${text}</span>
     </span>
   `;
 }
+
 export const infoBubbleStyles = css`
   .info-bubble {
     position: relative;
@@ -38,13 +55,29 @@ export const infoBubbleStyles = css`
     color: var(--color-surface);
     flex-shrink: 0;
     user-select: none;
+    transition:
+      background 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .info-bubble__icon:focus-visible {
+    outline: 2px solid var(--color-accent-amber);
+    outline-offset: 2px;
+  }
+
+  .info-bubble:hover .info-bubble__icon,
+  .info-bubble:focus-within .info-bubble__icon {
+    background: var(--color-accent-amber);
+    box-shadow: 0 0 6px
+      color-mix(in srgb, var(--color-accent-amber) 30%, transparent);
   }
 
   .info-bubble__tooltip {
     display: none;
     position: absolute;
-    top: calc(100% + 6px);
-    left: 0;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
     background: var(--color-text-primary);
     color: var(--color-surface);
     padding: var(--space-2) var(--space-3);
@@ -55,10 +88,21 @@ export const infoBubbleStyles = css`
     letter-spacing: 0;
     line-height: 1.5;
     white-space: normal;
-    width: 220px;
+    width: 240px;
     z-index: var(--z-tooltip);
     box-shadow: var(--shadow-md);
     pointer-events: none;
+  }
+
+  /* Arrow pointing up */
+  .info-bubble__tooltip::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-bottom-color: var(--color-text-primary);
   }
 
   .info-bubble:hover .info-bubble__tooltip,

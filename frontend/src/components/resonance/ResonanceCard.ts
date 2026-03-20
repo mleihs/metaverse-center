@@ -865,7 +865,7 @@ export class ResonanceCard extends LitElement {
         this._impactsLoaded = true;
       }
     } catch {
-      // Silently handle — panel just stays empty
+      // Silently handle – panel just stays empty
     } finally {
       this._impactsLoading = false;
     }
@@ -1078,7 +1078,7 @@ export class ResonanceCard extends LitElement {
               style="--row-i: ${i}"
               role="link"
               tabindex="0"
-              aria-label="${impact._simName} — ${msg('magnitude')} ${impact.effective_magnitude.toFixed(2)}"
+              aria-label="${impact._simName} – ${msg('magnitude')} ${impact.effective_magnitude.toFixed(2)}"
               @click=${(e: Event) => this._navigateToSim(e, impact._simSlug)}
               @keydown=${(e: KeyboardEvent) => {
                 if (e.key === 'Enter') this._navigateToSim(e, impact._simSlug);

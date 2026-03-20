@@ -4,7 +4,14 @@ import { customElement, state } from 'lit/decorators.js';
 import { adminApi } from '../../services/api/index.js';
 import type { PlatformSetting } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
+import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
+import {
+  adminAnimationStyles,
+  adminButtonStyles,
+  adminForgeSectionStyles,
+  adminLoadingStyles,
+} from './admin-shared-styles.js';
 
 interface DomainAxisMeta {
   label: string;
@@ -59,416 +66,207 @@ const DEFAULTS: Record<DomainSettingKey, string[]> = {
 @localized()
 @customElement('velg-admin-research-tab')
 export class VelgAdminResearchTab extends LitElement {
-  static styles = css`
-    :host {
-      display: block;
-      color: var(--color-text-primary);
-      font-family: var(--font-mono, monospace);
-    }
-
-    /* --- Animations --- */
-
-    @keyframes panel-enter {
-      from {
-        opacity: 0;
-        transform: translateY(8px);
+  static styles = [
+    adminAnimationStyles,
+    adminForgeSectionStyles,
+    adminButtonStyles,
+    adminLoadingStyles,
+    infoBubbleStyles,
+    css`
+      :host {
+        display: block;
+        color: var(--color-text-primary);
+        font-family: var(--font-mono, monospace);
+        --_admin-accent: var(--color-accent-amber);
+        --_admin-accent-contrast: var(--color-surface-sunken);
       }
-      to {
-        opacity: 1;
-        transform: translateY(0);
+
+      @media (prefers-reduced-motion: reduce) {
+        .domain-card {
+          animation: none !important;
+        }
       }
-    }
 
-    @media (prefers-reduced-motion: reduce) {
-      .forge-section,
-      .domain-card {
-        animation: none !important;
-      }
-    }
+      /* --- Domain Grid --- */
 
-    /* --- Bureau Section Wrapper --- */
-
-    .forge-section {
-      position: relative;
-      background: var(--color-surface-sunken);
-      border: 1px solid var(--color-border);
-      padding: var(--space-5) var(--space-5) var(--space-5) var(--space-6);
-      margin-bottom: var(--space-5);
-      animation: panel-enter 0.4s ease both;
-    }
-
-    .forge-section::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 3px;
-      height: 100%;
-      background: linear-gradient(
-        180deg,
-        var(--color-accent-amber) 0%,
-        var(--color-accent-amber-dim, rgba(245, 158, 11, 0.3)) 100%
-      );
-    }
-
-    .forge-section__header {
-      display: flex;
-      align-items: baseline;
-      gap: var(--space-3);
-      margin-bottom: var(--space-1);
-    }
-
-    .forge-section__code {
-      font-family: var(--font-mono, 'SF Mono', monospace);
-      font-size: 9px;
-      letter-spacing: 2px;
-      color: var(--color-accent-amber);
-      opacity: 0.7;
-      white-space: nowrap;
-    }
-
-    .forge-section__title {
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-weight: 900;
-      font-size: var(--text-sm);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      color: var(--color-text-primary);
-      margin: 0;
-    }
-
-    .forge-section__divider {
-      height: 1px;
-      background: linear-gradient(
-        90deg,
-        var(--color-accent-amber-dim, rgba(245, 158, 11, 0.2)) 0%,
-        transparent 80%
-      );
-      margin-bottom: var(--space-4);
-    }
-
-    /* --- Domain Grid --- */
-
-    .domain-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-      gap: var(--space-4);
-    }
-
-    .domain-card {
-      padding: var(--space-4);
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
-      animation: panel-enter 0.4s ease both;
-    }
-
-    .domain-card:nth-child(1) { animation-delay: 0s; }
-    .domain-card:nth-child(2) { animation-delay: 0.05s; }
-    .domain-card:nth-child(3) { animation-delay: 0.1s; }
-    .domain-card:nth-child(4) { animation-delay: 0.15s; }
-
-    .domain-card:hover {
-      border-color: var(--color-text-muted);
-    }
-
-    .domain-card--dirty {
-      border-color: var(--color-accent-amber);
-      box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-accent-amber) 40%, transparent);
-    }
-
-    /* --- Card Header --- */
-
-    .domain-card__header {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-      margin-bottom: var(--space-3);
-    }
-
-    .domain-card__label {
-      font-family: var(--font-brutalist);
-      font-size: var(--text-sm);
-      font-weight: var(--font-bold);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      color: var(--color-text-primary);
-      margin: 0;
-    }
-
-    /* --- Info Bubble --- */
-
-    .info-trigger {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      border: 1px solid var(--color-border);
-      background: none;
-      color: var(--color-text-muted);
-      font-family: var(--font-mono, monospace);
-      font-size: 10px;
-      font-weight: 700;
-      line-height: 1;
-      cursor: pointer;
-      padding: 0;
-      transition:
-        color 0.2s ease,
-        border-color 0.2s ease,
-        background 0.2s ease;
-      flex-shrink: 0;
-    }
-
-    .info-trigger:hover,
-    .info-trigger:focus-visible {
-      color: var(--color-accent-amber);
-      border-color: var(--color-accent-amber);
-      background: color-mix(in srgb, var(--color-accent-amber) 10%, transparent);
-      outline: none;
-    }
-
-    .info-bubble {
-      position: absolute;
-      top: calc(100% + 8px);
-      left: 50%;
-      transform: translateX(-50%);
-      width: max-content;
-      max-width: 260px;
-      padding: var(--space-2) var(--space-3);
-      background: var(--color-surface-sunken);
-      color: var(--color-text-secondary);
-      border: 1px solid var(--color-border);
-      font-family: var(--font-mono, monospace);
-      font-size: var(--text-xs);
-      line-height: 1.5;
-      z-index: 10;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.15s ease;
-    }
-
-    .info-bubble::before {
-      content: '';
-      position: absolute;
-      bottom: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-      border: 5px solid transparent;
-      border-bottom-color: var(--color-border);
-    }
-
-    .info-bubble::after {
-      content: '';
-      position: absolute;
-      bottom: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-      border: 4px solid transparent;
-      border-bottom-color: var(--color-surface-sunken);
-    }
-
-    .info-trigger:hover .info-bubble,
-    .info-trigger:focus-visible .info-bubble,
-    .info-bubble--visible {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    /* --- Domain Chips --- */
-
-    .domain-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-1-5);
-      margin-bottom: var(--space-3);
-      min-height: 28px;
-    }
-
-    .domain-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-1);
-      padding: var(--space-0-5) var(--space-1) var(--space-0-5) var(--space-2);
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      font-family: var(--font-mono, monospace);
-      font-size: var(--text-xs);
-      color: var(--color-text-secondary);
-      transition:
-        border-color 0.15s ease,
-        background 0.15s ease;
-    }
-
-    .domain-chip:hover {
-      border-color: var(--color-text-muted);
-    }
-
-    .domain-chip__remove {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 18px;
-      height: 18px;
-      padding: 0;
-      background: none;
-      border: none;
-      color: var(--color-text-muted);
-      cursor: pointer;
-      transition: color 0.15s ease;
-      flex-shrink: 0;
-    }
-
-    .domain-chip__remove:hover {
-      color: var(--color-danger);
-    }
-
-    .domain-chip__remove:focus-visible {
-      outline: 1px solid var(--color-danger);
-      outline-offset: -1px;
-    }
-
-    .domain-chips--empty {
-      font-size: var(--text-xs);
-      color: var(--color-text-muted);
-      padding: var(--space-1) 0;
-      font-style: italic;
-    }
-
-    /* --- Add Row --- */
-
-    .domain-card__add-row {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-    }
-
-    .domain-card__input {
-      flex: 1;
-      min-width: 0;
-      padding: var(--space-2) var(--space-3);
-      font-family: var(--font-mono, monospace);
-      font-size: var(--text-sm);
-      background: var(--color-surface);
-      color: var(--color-text-primary);
-      border: 1px solid var(--color-border);
-      border-radius: 0;
-      transition: border-color 0.2s ease;
-    }
-
-    .domain-card__input:focus {
-      outline: none;
-      border-color: var(--color-accent-amber);
-      box-shadow: 0 0 0 1px var(--color-accent-amber);
-    }
-
-    .domain-card__input::placeholder {
-      color: var(--color-text-muted);
-      opacity: 0.6;
-    }
-
-    .domain-card__add-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: var(--space-2);
-      background: none;
-      border: 1px solid var(--color-border);
-      color: var(--color-text-muted);
-      cursor: pointer;
-      transition:
-        color 0.2s ease,
-        border-color 0.2s ease;
-    }
-
-    .domain-card__add-btn:hover {
-      color: var(--color-accent-amber);
-      border-color: var(--color-accent-amber);
-    }
-
-    .domain-card__add-btn:focus-visible {
-      outline: none;
-      color: var(--color-accent-amber);
-      border-color: var(--color-accent-amber);
-      box-shadow: 0 0 0 1px var(--color-accent-amber);
-    }
-
-    /* --- Actions --- */
-
-    .actions {
-      display: flex;
-      gap: var(--space-3);
-      margin-top: var(--space-5);
-    }
-
-    .btn {
-      font-family: var(--font-brutalist);
-      font-size: var(--text-sm);
-      font-weight: var(--font-bold);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      padding: var(--space-2) var(--space-5);
-      cursor: pointer;
-      transition:
-        background 0.2s ease,
-        color 0.2s ease,
-        transform 0.15s ease,
-        box-shadow 0.2s ease;
-    }
-
-    .btn:hover {
-      transform: translateY(-1px);
-    }
-
-    .btn:active {
-      transform: translateY(0);
-    }
-
-    .btn:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .btn--save {
-      background: var(--color-accent-amber);
-      color: var(--color-surface-sunken);
-      border: 1px solid var(--color-accent-amber);
-    }
-
-    .btn--save:hover:not(:disabled) {
-      box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent-amber) 30%, transparent);
-    }
-
-    .btn--reset {
-      background: transparent;
-      color: var(--color-text-secondary);
-      border: 1px solid var(--color-border);
-    }
-
-    .btn--reset:hover:not(:disabled) {
-      color: var(--color-accent-amber);
-      border-color: color-mix(in srgb, var(--color-accent-amber) 50%, transparent);
-    }
-
-    .loading {
-      text-align: center;
-      padding: var(--space-8);
-      color: var(--color-text-muted);
-      font-family: var(--font-brutalist);
-      text-transform: uppercase;
-    }
-
-    @media (max-width: 768px) {
       .domain-grid {
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: var(--space-4);
       }
-    }
-  `;
+
+      .domain-card {
+        padding: var(--space-4);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        transition:
+          border-color 0.2s ease,
+          box-shadow 0.2s ease;
+        animation: panel-enter 0.4s ease both;
+      }
+
+      .domain-card:nth-child(1) { animation-delay: 0s; }
+      .domain-card:nth-child(2) { animation-delay: 0.05s; }
+      .domain-card:nth-child(3) { animation-delay: 0.1s; }
+      .domain-card:nth-child(4) { animation-delay: 0.15s; }
+
+      .domain-card:hover {
+        border-color: var(--color-text-muted);
+      }
+
+      .domain-card--dirty {
+        border-color: var(--color-accent-amber);
+        box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-accent-amber) 40%, transparent);
+      }
+
+      /* --- Card Header --- */
+
+      .domain-card__header {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        margin-bottom: var(--space-3);
+      }
+
+      .domain-card__label {
+        font-family: var(--font-brutalist);
+        font-size: var(--text-sm);
+        font-weight: var(--font-bold);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-wide);
+        color: var(--color-text-primary);
+        margin: 0;
+      }
+
+      /* --- Domain Chips --- */
+
+      .domain-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-1-5);
+        margin-bottom: var(--space-3);
+        min-height: 28px;
+      }
+
+      .domain-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-1);
+        padding: var(--space-0-5) var(--space-1) var(--space-0-5) var(--space-2);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        font-family: var(--font-mono, monospace);
+        font-size: var(--text-xs);
+        color: var(--color-text-secondary);
+        transition:
+          border-color 0.15s ease,
+          background 0.15s ease;
+      }
+
+      .domain-chip:hover {
+        border-color: var(--color-text-muted);
+      }
+
+      .domain-chip__remove {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 18px;
+        height: 18px;
+        padding: 0;
+        background: none;
+        border: none;
+        color: var(--color-text-muted);
+        cursor: pointer;
+        transition: color 0.15s ease;
+        flex-shrink: 0;
+      }
+
+      .domain-chip__remove:hover {
+        color: var(--color-danger);
+      }
+
+      .domain-chip__remove:focus-visible {
+        outline: 1px solid var(--color-danger);
+        outline-offset: -1px;
+      }
+
+      .domain-chips--empty {
+        font-size: var(--text-xs);
+        color: var(--color-text-muted);
+        padding: var(--space-1) 0;
+        font-style: italic;
+      }
+
+      /* --- Add Row --- */
+
+      .domain-card__add-row {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+      }
+
+      .domain-card__input {
+        flex: 1;
+        min-width: 0;
+        padding: var(--space-2) var(--space-3);
+        font-family: var(--font-mono, monospace);
+        font-size: var(--text-sm);
+        background: var(--color-surface);
+        color: var(--color-text-primary);
+        border: 1px solid var(--color-border);
+        border-radius: 0;
+        transition: border-color 0.2s ease;
+      }
+
+      .domain-card__input:focus {
+        outline: none;
+        border-color: var(--color-accent-amber);
+        box-shadow: 0 0 0 1px var(--color-accent-amber);
+      }
+
+      .domain-card__input::placeholder {
+        color: var(--color-text-muted);
+        opacity: 0.6;
+      }
+
+      .domain-card__add-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--space-2);
+        background: none;
+        border: 1px solid var(--color-border);
+        color: var(--color-text-muted);
+        cursor: pointer;
+        transition:
+          color 0.2s ease,
+          border-color 0.2s ease;
+      }
+
+      .domain-card__add-btn:hover {
+        color: var(--color-accent-amber);
+        border-color: var(--color-accent-amber);
+      }
+
+      .domain-card__add-btn:focus-visible {
+        outline: none;
+        color: var(--color-accent-amber);
+        border-color: var(--color-accent-amber);
+        box-shadow: 0 0 0 1px var(--color-accent-amber);
+      }
+
+      .actions {
+        margin-top: var(--space-5);
+      }
+
+      @media (max-width: 768px) {
+        .domain-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    `,
+  ];
 
   @state() private _loading = true;
   @state() private _saving = false;
@@ -628,14 +426,7 @@ export class VelgAdminResearchTab extends LitElement {
       <div class="domain-card ${isDirty ? 'domain-card--dirty' : ''}">
         <div class="domain-card__header">
           <p class="domain-card__label">${m.label}</p>
-          <button
-            class="info-trigger"
-            aria-describedby=${tooltipId}
-            @click=${(e: Event) => e.preventDefault()}
-          >
-            i
-            <span class="info-bubble" id=${tooltipId} role="tooltip">${m.description}</span>
-          </button>
+          ${renderInfoBubble(m.description, tooltipId)}
         </div>
 
         ${domains.length > 0
@@ -681,6 +472,7 @@ export class VelgAdminResearchTab extends LitElement {
           <button
             class="domain-card__add-btn"
             title=${msg('Add Domain')}
+            aria-label=${msg('Add domain')}
             @click=${() => this._addDomain(key)}
           >${icons.plus(12)}</button>
         </div>
@@ -708,12 +500,18 @@ export class VelgAdminResearchTab extends LitElement {
         <div class="actions">
           <button
             class="btn btn--save"
+            aria-label=${msg('Save domain changes')}
             ?disabled=${!this._hasDirty || this._saving}
             @click=${this._saveAll}
           >
             ${this._saving ? msg('Saving...') : msg('Save Changes')}
           </button>
-          <button class="btn btn--reset" ?disabled=${this._saving} @click=${this._resetToDefaults}>
+          <button
+            class="btn btn--reset"
+            aria-label=${msg('Reset domains to defaults')}
+            ?disabled=${this._saving}
+            @click=${this._resetToDefaults}
+          >
             ${msg('Reset to Defaults')}
           </button>
         </div>

@@ -3,7 +3,14 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { adminApi } from '../../services/api/index.js';
 import type { PlatformSetting } from '../../types/index.js';
+import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
+import {
+  adminAnimationStyles,
+  adminButtonStyles,
+  adminForgeSectionStyles,
+  adminLoadingStyles,
+} from './admin-shared-styles.js';
 
 interface ModelSettingMeta {
   label: string;
@@ -86,6 +93,26 @@ const MODEL_OPTIONS = [
   { id: 'google/gemini-2.5-pro-preview', label: 'Gemini 2.5 Pro' },
 ];
 
+function getModelTip(key: string): string {
+  const tips: Record<string, string> = {
+    model_default: msg(
+      'Highest quality, highest cost. Used for narrative generation, dialogue, and event descriptions.',
+    ),
+    model_fallback: msg(
+      'Activates automatically when the default model errors or times out. Choose a reliable free-tier model.',
+    ),
+    model_research: msg(
+      'Lower cost model for bulk research operations. Runs during Astrolabe and anchor generation – high volume, lower stakes.',
+    ),
+    model_forge: msg(
+      'Powers the creative pipeline: lore, themes, entity translation. Quality directly affects Forge output.',
+    ),
+  };
+  // Dev keys share the same tips as their prod counterparts
+  const baseKey = key.replace(/_dev$/, '');
+  return tips[baseKey] ?? '';
+}
+
 const DEFAULTS: Record<ModelSettingKey, string> = {
   model_default: 'anthropic/claude-sonnet-4-6',
   model_fallback: 'deepseek/deepseek-r1-0528:free',
@@ -100,383 +127,247 @@ const DEFAULTS: Record<ModelSettingKey, string> = {
 @localized()
 @customElement('velg-admin-models-tab')
 export class VelgAdminModelsTab extends LitElement {
-  static styles = css`
-    :host {
-      display: block;
-      color: var(--color-text-primary);
-      font-family: var(--font-mono, monospace);
-    }
-
-    /* --- Animations --- */
-
-    @keyframes panel-enter {
-      from {
-        opacity: 0;
-        transform: translateY(8px);
+  static styles = [
+    adminAnimationStyles,
+    adminForgeSectionStyles,
+    adminButtonStyles,
+    adminLoadingStyles,
+    infoBubbleStyles,
+    css`
+      :host {
+        display: block;
+        color: var(--color-text-primary);
+        font-family: var(--font-mono, monospace);
+        --_admin-accent: var(--color-accent-amber);
+        --_admin-accent-contrast: var(--color-surface-sunken);
       }
-      to {
-        opacity: 1;
-        transform: translateY(0);
+
+      @media (prefers-reduced-motion: reduce) {
+        .model-card {
+          animation: none !important;
+        }
       }
-    }
 
-    @keyframes amber-pulse {
-      0%,
-      100% {
-        opacity: 0.5;
-      }
-      50% {
-        opacity: 1;
-      }
-    }
+      /* --- Two-Column Layout --- */
 
-    @media (prefers-reduced-motion: reduce) {
-      .forge-section,
-      .model-card {
-        animation: none !important;
-      }
-    }
-
-    /* --- Bureau Section Wrapper --- */
-
-    .forge-section {
-      position: relative;
-      background: var(--color-surface-sunken);
-      border: 1px solid var(--color-border);
-      padding: var(--space-5) var(--space-5) var(--space-5) var(--space-6);
-      margin-bottom: var(--space-5);
-      animation: panel-enter 0.4s ease both;
-    }
-
-    .forge-section::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 3px;
-      height: 100%;
-      background: linear-gradient(
-        180deg,
-        var(--color-accent-amber) 0%,
-        var(--color-accent-amber-dim, rgba(245, 158, 11, 0.3)) 100%
-      );
-    }
-
-    .forge-section__header {
-      display: flex;
-      align-items: baseline;
-      gap: var(--space-3);
-      margin-bottom: var(--space-1);
-    }
-
-    .forge-section__code {
-      font-family: var(--font-mono, 'SF Mono', monospace);
-      font-size: 9px;
-      letter-spacing: 2px;
-      color: var(--color-accent-amber);
-      opacity: 0.7;
-      white-space: nowrap;
-    }
-
-    .forge-section__title {
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-weight: 900;
-      font-size: var(--text-sm);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      color: var(--color-text-primary);
-      margin: 0;
-    }
-
-    .forge-section__divider {
-      height: 1px;
-      background: linear-gradient(
-        90deg,
-        var(--color-accent-amber-dim, rgba(245, 158, 11, 0.2)) 0%,
-        transparent 80%
-      );
-      margin-bottom: var(--space-4);
-    }
-
-    /* --- Two-Column Layout --- */
-
-    .env-columns {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: var(--space-5);
-    }
-
-    .env-column__header {
-      display: flex;
-      align-items: center;
-      gap: var(--space-3);
-      margin-bottom: var(--space-4);
-    }
-
-    .env-column__label {
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-weight: 900;
-      font-size: var(--text-xs);
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      color: var(--color-text-muted);
-    }
-
-    .env-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 2px 8px;
-      font-family: var(--font-mono, 'SF Mono', monospace);
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      border-radius: 2px;
-      background: var(--color-accent-amber);
-      color: var(--color-surface-sunken);
-      animation: amber-pulse 2s ease infinite;
-    }
-
-    .env-badge::before {
-      content: '';
-      display: inline-block;
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: var(--color-surface-sunken);
-    }
-
-    /* --- Model Cards --- */
-
-    .model-cards {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-3);
-    }
-
-    .model-card {
-      padding: var(--space-4);
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
-      animation: panel-enter 0.4s ease both;
-    }
-
-    .model-card:nth-child(1) {
-      animation-delay: 0s;
-    }
-    .model-card:nth-child(2) {
-      animation-delay: 0.05s;
-    }
-    .model-card:nth-child(3) {
-      animation-delay: 0.1s;
-    }
-    .model-card:nth-child(4) {
-      animation-delay: 0.15s;
-    }
-
-    .model-card:hover {
-      border-color: var(--color-text-muted);
-    }
-
-    .model-card--dirty {
-      border-color: var(--color-accent-amber);
-      box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-accent-amber) 40%, transparent);
-    }
-
-    .model-card__label {
-      font-family: var(--font-brutalist);
-      font-size: var(--text-sm);
-      font-weight: var(--font-bold);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      color: var(--color-text-primary);
-      margin: 0 0 var(--space-2) 0;
-    }
-
-    .model-card__description {
-      font-size: var(--text-xs);
-      color: var(--color-text-secondary);
-      line-height: 1.5;
-      margin: 0 0 var(--space-3) 0;
-    }
-
-    .model-card__select-row {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-      margin-bottom: var(--space-2);
-    }
-
-    .model-card__select {
-      flex: 1;
-      min-width: 0;
-      padding: var(--space-2) var(--space-3);
-      font-family: var(--font-mono, monospace);
-      font-size: var(--text-sm);
-      background: var(--color-surface);
-      color: var(--color-text-primary);
-      border: 1px solid var(--color-border);
-      border-radius: 0;
-      cursor: pointer;
-      transition: border-color 0.2s ease;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23f59e0b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 10px center;
-      padding-right: var(--space-8);
-    }
-
-    .model-card__select:focus {
-      outline: none;
-      border-color: var(--color-accent-amber);
-      box-shadow: 0 0 0 1px var(--color-accent-amber);
-    }
-
-    .model-card__select option {
-      background: var(--color-surface);
-      color: var(--color-text-primary);
-    }
-
-    .model-card__custom-toggle {
-      font-family: var(--font-mono, monospace);
-      font-size: var(--text-xs);
-      text-transform: uppercase;
-      padding: var(--space-2);
-      background: none;
-      border: 1px solid var(--color-border);
-      color: var(--color-text-muted);
-      cursor: pointer;
-      transition:
-        color 0.2s ease,
-        border-color 0.2s ease;
-      white-space: nowrap;
-    }
-
-    .model-card__custom-toggle:hover {
-      color: var(--color-text-primary);
-      border-color: var(--color-text-muted);
-    }
-
-    .model-card__custom-toggle--active {
-      color: var(--color-accent-amber);
-      border-color: color-mix(in srgb, var(--color-accent-amber) 50%, transparent);
-    }
-
-    .model-card__custom-row {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-      margin-top: var(--space-2);
-    }
-
-    .model-card__custom-input {
-      flex: 1;
-      min-width: 0;
-      padding: var(--space-2) var(--space-3);
-      font-family: var(--font-mono, monospace);
-      font-size: var(--text-sm);
-      background: var(--color-surface);
-      color: var(--color-text-primary);
-      border: 1px solid var(--color-border);
-      border-radius: 0;
-      transition: border-color 0.2s ease;
-    }
-
-    .model-card__custom-input:focus {
-      outline: none;
-      border-color: var(--color-accent-amber);
-      box-shadow: 0 0 0 1px var(--color-accent-amber);
-    }
-
-    .model-card__custom-input::placeholder {
-      color: var(--color-text-muted);
-      opacity: 0.6;
-    }
-
-    .model-card__default {
-      font-size: var(--text-xs);
-      color: var(--color-text-muted);
-      margin: var(--space-2) 0 0 0;
-    }
-
-    /* --- Actions --- */
-
-    .actions {
-      display: flex;
-      gap: var(--space-3);
-      margin-top: var(--space-5);
-    }
-
-    .btn {
-      font-family: var(--font-brutalist);
-      font-size: var(--text-sm);
-      font-weight: var(--font-bold);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      padding: var(--space-2) var(--space-5);
-      cursor: pointer;
-      transition:
-        background 0.2s ease,
-        color 0.2s ease,
-        transform 0.15s ease,
-        box-shadow 0.2s ease;
-    }
-
-    .btn:hover {
-      transform: translateY(-1px);
-    }
-
-    .btn:active {
-      transform: translateY(0);
-    }
-
-    .btn:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .btn--save {
-      background: var(--color-accent-amber);
-      color: var(--color-surface-sunken);
-      border: 1px solid var(--color-accent-amber);
-    }
-
-    .btn--save:hover:not(:disabled) {
-      box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent-amber) 30%, transparent);
-    }
-
-    .btn--reset {
-      background: transparent;
-      color: var(--color-text-secondary);
-      border: 1px solid var(--color-border);
-    }
-
-    .btn--reset:hover:not(:disabled) {
-      color: var(--color-accent-amber);
-      border-color: color-mix(in srgb, var(--color-accent-amber) 50%, transparent);
-    }
-
-    .loading {
-      text-align: center;
-      padding: var(--space-8);
-      color: var(--color-text-muted);
-      font-family: var(--font-brutalist);
-      text-transform: uppercase;
-    }
-
-    @media (max-width: 768px) {
       .env-columns {
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-5);
       }
-    }
-  `;
+
+      .env-column__header {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        margin-bottom: var(--space-4);
+      }
+
+      .env-column__label {
+        font-family: var(--font-brutalist, 'Courier New', monospace);
+        font-weight: 900;
+        font-size: var(--text-xs);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--color-text-muted);
+      }
+
+      .env-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 8px;
+        font-family: var(--font-mono, 'SF Mono', monospace);
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        border-radius: 2px;
+        background: var(--color-accent-amber);
+        color: var(--color-surface-sunken);
+        animation: amber-pulse 2s ease infinite;
+      }
+
+      .env-badge::before {
+        content: '';
+        display: inline-block;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--color-surface-sunken);
+      }
+
+      /* --- Model Cards --- */
+
+      .model-cards {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+      }
+
+      .model-card {
+        padding: var(--space-4);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        transition:
+          border-color 0.2s ease,
+          box-shadow 0.2s ease;
+        animation: panel-enter 0.4s ease both;
+      }
+
+      .model-card:nth-child(1) {
+        animation-delay: 0s;
+      }
+      .model-card:nth-child(2) {
+        animation-delay: 0.05s;
+      }
+      .model-card:nth-child(3) {
+        animation-delay: 0.1s;
+      }
+      .model-card:nth-child(4) {
+        animation-delay: 0.15s;
+      }
+
+      .model-card:hover {
+        border-color: var(--color-text-muted);
+      }
+
+      .model-card--dirty {
+        border-color: var(--color-accent-amber);
+        box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-accent-amber) 40%, transparent);
+      }
+
+      .model-card__label {
+        display: flex;
+        align-items: center;
+        font-family: var(--font-brutalist);
+        font-size: var(--text-sm);
+        font-weight: var(--font-bold);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-wide);
+        color: var(--color-text-primary);
+        margin: 0 0 var(--space-2) 0;
+      }
+
+      .model-card__description {
+        font-size: var(--text-xs);
+        color: var(--color-text-secondary);
+        line-height: 1.5;
+        margin: 0 0 var(--space-3) 0;
+      }
+
+      .model-card__select-row {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        margin-bottom: var(--space-2);
+      }
+
+      .model-card__select {
+        flex: 1;
+        min-width: 0;
+        padding: var(--space-2) var(--space-3);
+        font-family: var(--font-mono, monospace);
+        font-size: var(--text-sm);
+        background: var(--color-surface);
+        color: var(--color-text-primary);
+        border: 1px solid var(--color-border);
+        border-radius: 0;
+        cursor: pointer;
+        transition: border-color 0.2s ease;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23f59e0b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        padding-right: var(--space-8);
+      }
+
+      .model-card__select:focus {
+        outline: none;
+        border-color: var(--color-accent-amber);
+        box-shadow: 0 0 0 1px var(--color-accent-amber);
+      }
+
+      .model-card__select option {
+        background: var(--color-surface);
+        color: var(--color-text-primary);
+      }
+
+      .model-card__custom-toggle {
+        font-family: var(--font-mono, monospace);
+        font-size: var(--text-xs);
+        text-transform: uppercase;
+        padding: var(--space-2);
+        background: none;
+        border: 1px solid var(--color-border);
+        color: var(--color-text-muted);
+        cursor: pointer;
+        transition:
+          color 0.2s ease,
+          border-color 0.2s ease;
+        white-space: nowrap;
+      }
+
+      .model-card__custom-toggle:hover {
+        color: var(--color-text-primary);
+        border-color: var(--color-text-muted);
+      }
+
+      .model-card__custom-toggle--active {
+        color: var(--color-accent-amber);
+        border-color: color-mix(in srgb, var(--color-accent-amber) 50%, transparent);
+      }
+
+      .model-card__custom-row {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        margin-top: var(--space-2);
+      }
+
+      .model-card__custom-input {
+        flex: 1;
+        min-width: 0;
+        padding: var(--space-2) var(--space-3);
+        font-family: var(--font-mono, monospace);
+        font-size: var(--text-sm);
+        background: var(--color-surface);
+        color: var(--color-text-primary);
+        border: 1px solid var(--color-border);
+        border-radius: 0;
+        transition: border-color 0.2s ease;
+      }
+
+      .model-card__custom-input:focus {
+        outline: none;
+        border-color: var(--color-accent-amber);
+        box-shadow: 0 0 0 1px var(--color-accent-amber);
+      }
+
+      .model-card__custom-input::placeholder {
+        color: var(--color-text-muted);
+        opacity: 0.6;
+      }
+
+      .model-card__default {
+        font-size: var(--text-xs);
+        color: var(--color-text-muted);
+        margin: var(--space-2) 0 0 0;
+      }
+
+      .actions {
+        margin-top: var(--space-5);
+      }
+
+      @media (max-width: 768px) {
+        .env-columns {
+          grid-template-columns: 1fr;
+        }
+      }
+    `,
+  ];
 
   @state() private _settings: PlatformSetting[] = [];
   @state() private _editValues: Record<string, string> = {};
@@ -607,11 +498,13 @@ export class VelgAdminModelsTab extends LitElement {
     const isCustom = this._customMode.has(key);
     const currentVal = this._editValues[key] ?? '';
     const defaultVal = DEFAULTS[key as ModelSettingKey];
+    const tip = getModelTip(key);
 
     return html`
       <div class="model-card ${isDirty ? 'model-card--dirty' : ''}">
         <p class="model-card__label">${m.label}</p>
         <p class="model-card__description">${m.description}</p>
+        ${tip ? renderInfoBubble(tip, `tip-${key}`) : nothing}
         <div class="model-card__select-row">
           ${
             isCustom
@@ -619,6 +512,7 @@ export class VelgAdminModelsTab extends LitElement {
               : html`
                 <select
                   class="model-card__select"
+                  aria-label=${m.label}
                   .value=${currentVal}
                   @change=${(e: Event) => {
                     this._editValues = {
@@ -652,6 +546,7 @@ export class VelgAdminModelsTab extends LitElement {
                 <input
                   type="text"
                   class="model-card__custom-input"
+                  aria-label=${msg('Custom model ID')}
                   placeholder=${msg('e.g. vendor/model-name')}
                   .value=${currentVal}
                   @input=${(e: Event) => {
@@ -708,12 +603,18 @@ export class VelgAdminModelsTab extends LitElement {
         <div class="actions">
           <button
             class="btn btn--save"
+            aria-label=${msg('Save model changes')}
             ?disabled=${!this._hasDirty || this._saving}
             @click=${this._saveAll}
           >
             ${this._saving ? msg('Saving...') : msg('Save Changes')}
           </button>
-          <button class="btn btn--reset" ?disabled=${this._saving} @click=${this._resetToDefaults}>
+          <button
+            class="btn btn--reset"
+            aria-label=${msg('Reset models to defaults')}
+            ?disabled=${this._saving}
+            @click=${this._resetToDefaults}
+          >
             ${msg('Reset to Defaults')}
           </button>
         </div>

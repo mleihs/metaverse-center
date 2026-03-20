@@ -496,7 +496,7 @@ export class VelgAgentEditModal extends LitElement {
                 <div class="form__group">
                   <label class="form__label" for="agent-portrait-desc">
                     ${msg('Portrait Description')}
-                    ${renderInfoBubble(msg('Visual description used by the image AI. Does not affect game mechanics — purely aesthetic.'))}
+                    ${renderInfoBubble(msg('Visual description used by the image AI. Does not affect game mechanics – purely aesthetic.'))}
                   </label>
                   <textarea
                     class="form__textarea form__textarea--sm"

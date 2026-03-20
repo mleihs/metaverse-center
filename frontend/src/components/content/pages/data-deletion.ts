@@ -67,12 +67,12 @@ export function getDataDeletionPage(): ContentPageData {
         title: msg('What Gets Deleted'),
         content: html`
           <p>${msg('When you delete your account, the following data is permanently removed:')}</p>
-          <p>${msg('\u2014 Your email address and authentication credentials')}</p>
-          <p>${msg('\u2014 Your user profile and preferences')}</p>
-          <p>${msg('\u2014 Simulations you own (including all agents, buildings, events, lore, and chronicles)')}</p>
-          <p>${msg('\u2014 Chat messages with AI agents')}</p>
-          <p>${msg('\u2014 Epoch participation history')}</p>
-          <p>${msg('\u2014 Any stored API keys (encrypted wallet data)')}</p>
+          <p>${msg('– Your email address and authentication credentials')}</p>
+          <p>${msg('– Your user profile and preferences')}</p>
+          <p>${msg('– Simulations you own (including all agents, buildings, events, lore, and chronicles)')}</p>
+          <p>${msg('– Chat messages with AI agents')}</p>
+          <p>${msg('– Epoch participation history')}</p>
+          <p>${msg('– Any stored API keys (encrypted wallet data)')}</p>
           <p>${msg('This action is irreversible. All data is permanently deleted within 30 days of the request.')}</p>
         `,
       },

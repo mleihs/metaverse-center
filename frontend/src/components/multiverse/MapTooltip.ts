@@ -128,7 +128,7 @@ export class VelgMapTooltip extends LitElement {
             ? html`
           <p class="tooltip__desc" style="color: var(--color-text-secondary); font-weight: 700;">
             ${msg('Game Instance')}
-            ${this.node.epochStatus ? html` — <span style="text-transform: uppercase">${this.node.epochStatus}</span>` : nothing}
+            ${this.node.epochStatus ? html` – <span style="text-transform: uppercase">${this.node.epochStatus}</span>` : nothing}
           </p>
         `
             : nothing
