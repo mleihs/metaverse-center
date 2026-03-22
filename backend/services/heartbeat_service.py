@@ -21,17 +21,25 @@ import random
 from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
+import sentry_sdk
+import structlog
 from fastapi import HTTPException
 from fastapi import status as http_status
 
 from backend.dependencies import get_admin_supabase
+from backend.services.agent_activity_service import AgentActivityService
+from backend.services.agent_mood_service import AgentMoodService
+from backend.services.agent_needs_service import AgentNeedsService
+from backend.services.agent_opinion_service import AgentOpinionService
 from backend.services.anchor_service import AnchorService
 from backend.services.attunement_service import AttunementService
+from backend.services.autonomous_event_service import AutonomousEventService
 from backend.services.bureau_response_service import BureauResponseService
 from backend.services.game_mechanics_service import GameMechanicsService
 from backend.services.heartbeat_entry_builder import make_heartbeat_entry
 from backend.services.narrative_arc_service import NarrativeArcService
 from backend.services.platform_config_service import PlatformConfigService
+from backend.utils.encryption import decrypt
 from supabase import Client
 
 logger = logging.getLogger(__name__)
@@ -373,10 +381,154 @@ class HeartbeatService:
             tick_stats["scar_tissue_delta"] = scar_delta
             entries.extend(scar_entries)
 
-            # Phase 9: Refresh materialized views
+            # Phase 9: Agent Autonomy — 3-tier gating:
+            #   1. Global: platform_settings.autonomy_feature_enabled
+            #   2. Per-sim: simulation_settings.agent_autonomy_enabled
+            #   3. Key: admin override (platform key) OR owner BYOK key
+            autonomy_sim_enabled = str(
+                overrides.get("agent_autonomy_enabled", "false")
+            ).lower() in ("true", "1")
+            autonomy_global = str(
+                config.get("autonomy_feature_enabled", "true")
+            ).lower() in ("true", "1")
+            autonomy_admin_override = str(
+                overrides.get("autonomy_admin_override", "false")
+            ).lower() in ("true", "1")
+            autonomy_stats: dict = {}
+
+            if autonomy_sim_enabled and autonomy_global:
+                try:
+                    structlog.contextvars.bind_contextvars(autonomy_phase="active")
+
+                    # Gate 3: Resolve API key for LLM calls
+                    byok_key, owner_has_key = await cls._resolve_autonomy_key(
+                        admin, sim_id, autonomy_admin_override,
+                    )
+
+                    # 9a: Decay agent needs
+                    rate_mult = float(overrides.get("autonomy_needs_decay_rate", 1.0))
+                    needs_updated = await AgentNeedsService.decay_all(admin, sim_id, rate_mult)
+
+                    # 9b: Mood housekeeping (expire moodlets, decay strengths, recalculate)
+                    mood_summary = await AgentMoodService.process_tick(admin, sim_id)
+
+                    # 9c: Opinion recalculation + relationship threshold checks
+                    opinion_summary = await AgentOpinionService.process_tick(admin, sim_id)
+
+                    autonomy_stats = {
+                        "needs_decayed": needs_updated,
+                        "mood": mood_summary,
+                        "opinions": opinion_summary,
+                    }
+
+                    # Generate entries for breakdowns
+                    breakdowns = mood_summary.get("breakdowns", [])
+                    for agent_id in breakdowns:
+                        entries.append(make_heartbeat_entry(
+                            heartbeat_id, sim_id, tick_number, "agent_crisis",
+                            f"Agent {agent_id[:8]}... is experiencing a stress breakdown.",
+                            f"Agent {agent_id[:8]}... erlebt einen Stresszusammenbruch.",
+                            severity="critical",
+                            metadata={"agent_id": agent_id, "type": "stress_breakdown"},
+                        ))
+
+                    # Generate entries for relationship threshold events
+                    for rel_event in opinion_summary.get("relationship_events", []):
+                        evt_type = rel_event["type"]
+                        sev = "warning" if "breakdown" in evt_type else "info"
+                        a_id = rel_event["agent_id"][:8]
+                        t_id = rel_event["target_agent_id"][:8]
+                        entries.append(make_heartbeat_entry(
+                            heartbeat_id, sim_id, tick_number,
+                            "relationship_shift",
+                            f"Relationship {evt_type}: {a_id}... / {t_id}...",
+                            f"Beziehung ({evt_type}): {a_id}... / {t_id}...",
+                            severity=sev, metadata=rel_event,
+                        ))
+
+                    # 9d: Activity selection + execution (Utility AI + Boltzmann)
+                    activity_results = await AgentActivityService.select_and_execute(
+                        admin, sim_id, tick_id=heartbeat_id,
+                    )
+                    autonomy_stats["activities"] = len(activity_results)
+
+                    # 9e: Social interactions (co-located agents)
+                    interaction_rate = float(
+                        overrides.get("autonomy_social_interaction_rate", 1.0)
+                    )
+                    social_results = (
+                        await AgentActivityService.generate_social_interactions(
+                            admin, sim_id, interaction_rate, tick_id=heartbeat_id,
+                        )
+                    )
+                    autonomy_stats["social_interactions"] = len(social_results)
+
+                    # Generate entries for significant social interactions
+                    for si in social_results:
+                        if si.get("significance", 0) >= 5:
+                            entries.append(make_heartbeat_entry(
+                                heartbeat_id, sim_id, tick_number,
+                                "social_event",
+                                f"Social interaction: {si['type']}",
+                                f"Soziale Interaktion: {si['type']}",
+                                severity="info",
+                                metadata=si,
+                            ))
+
+                    # 9f: Autonomous event generation (Tier 3 LLM)
+                    # Requires BYOK key — rule-based phases above run without it
+                    auto_events: list[dict] = []
+                    if owner_has_key:
+                        llm_budget = int(
+                            overrides.get("autonomy_llm_budget_per_tick", 5)
+                        )
+                        tick_ctx = {
+                            "breakdowns": mood_summary.get("breakdowns", []),
+                            "relationship_events": opinion_summary.get(
+                                "relationship_events", [],
+                            ),
+                            "social_interactions": [
+                                s for s in social_results
+                                if s.get("can_trigger_event")
+                            ],
+                        }
+                        auto_events = (
+                            await AutonomousEventService.check_and_generate(
+                                admin, sim_id, tick_ctx,
+                                llm_budget=llm_budget,
+                                openrouter_api_key=byok_key,
+                            )
+                        )
+                    autonomy_stats["autonomous_events"] = len(auto_events)
+                    autonomy_stats["byok_available"] = owner_has_key
+
+                    for ae in auto_events:
+                        entries.append(make_heartbeat_entry(
+                            heartbeat_id, sim_id, tick_number,
+                            "autonomous_event",
+                            ae.get("title", "Autonomous event"),
+                            ae.get("title_de", "Autonomes Ereignis"),
+                            severity="warning"
+                            if ae.get("impact_level", 0) >= 4
+                            else "info",
+                            metadata={
+                                "event_id": ae.get("id"),
+                                "trigger": ae.get("metadata", {}).get(
+                                    "trigger",
+                                ),
+                            },
+                        ))
+
+                except Exception:
+                    logger.exception("Agent autonomy phase failed")
+                    sentry_sdk.capture_exception()
+
+            tick_stats["autonomy"] = autonomy_stats
+
+            # Phase 10: Refresh materialized views
             await GameMechanicsService.refresh_metrics(admin)
 
-            # Phase 10: Produce chronicle entries (peacetime content if quiet)
+            # Phase 11: Produce chronicle entries (peacetime content if quiet)
             if not entries:
                 entries.extend(cls._generate_peacetime_entries(
                     admin, sim_id, tick_number, heartbeat_id,
@@ -396,15 +548,21 @@ class HeartbeatService:
             dispatch_en = cls._build_dispatch(entries, tick_number, "en")
             dispatch_de = cls._build_dispatch(entries, tick_number, "de")
 
-            # Phase 11: Finalize
+            # Phase 12: Finalize
             effective_interval = int(overrides.get("interval_override_seconds", interval))
             next_at = datetime.now(UTC) + timedelta(seconds=effective_interval)
 
+            # Move non-column keys into the summary JSONB field
+            summary_data = {
+                "phases_completed": 12,
+                "entry_count": len(entries),
+                "autonomy": tick_stats.pop("autonomy", {}),
+            }
             admin.table("simulation_heartbeats").update({
                 "status": "completed",
                 "dispatch_en": dispatch_en,
                 "dispatch_de": dispatch_de,
-                "summary": {"phases_completed": 11, "entry_count": len(entries)},
+                "summary": summary_data,
                 **tick_stats,
             }).eq("id", str(heartbeat_id)).execute()
 
@@ -441,6 +599,49 @@ class HeartbeatService:
             admin.table("simulations").update({
                 "next_heartbeat_at": next_at.isoformat(),
             }).eq("id", str(sim_id)).execute()
+
+    # ── Autonomy Key Resolution ─────────────────────────────────
+
+    @classmethod
+    async def _resolve_autonomy_key(
+        cls, admin: Client, sim_id: UUID, admin_override: bool,
+    ) -> tuple[str | None, bool]:
+        """Resolve the API key for autonomy LLM calls.
+
+        Returns (api_key, has_key):
+        - Admin override active → (None, True) — platform key handles cost
+        - Owner has BYOK key → (decrypted_key, True)
+        - No key available → (None, False) — LLM phases skipped
+        """
+        if admin_override:
+            return None, True
+
+        try:
+            owner_resp = (
+                admin.table("simulation_members")
+                .select("user_id")
+                .eq("simulation_id", str(sim_id))
+                .eq("role", "owner")
+                .limit(1)
+                .execute()
+            )
+            if not owner_resp.data:
+                return None, False
+
+            wallet_resp = (
+                admin.table("user_wallets")
+                .select("encrypted_openrouter_key")
+                .eq("user_id", owner_resp.data[0]["user_id"])
+                .maybe_single()
+                .execute()
+            )
+            enc_key = (wallet_resp.data or {}).get("encrypted_openrouter_key")
+            if enc_key:
+                return decrypt(enc_key), True
+        except Exception:
+            logger.debug("BYOK key resolution failed for autonomy")
+
+        return None, False
 
     # ── Phase 1: Expire Zone Actions ───────────────────────────
 

@@ -399,6 +399,31 @@ class OperativeMissionService:
         except Exception:
             logger.debug("Convergence modifiers unavailable (tables may not exist yet)")
 
+        # ── Agent autonomy: mood affects operative effectiveness ──
+        mood_modifier = 0.0
+        try:
+            mood_resp = (
+                supabase.table("agent_mood")
+                .select("mood_score, stress_level")
+                .eq("agent_id", str(body.agent_id))
+                .maybe_single()
+                .execute()
+            )
+            if mood_resp.data:
+                mood_score = mood_resp.data.get("mood_score", 0)
+                stress_level = mood_resp.data.get("stress_level", 0)
+                # High mood: +0.03 (confident operative)
+                if mood_score > 50:
+                    mood_modifier = 0.03
+                # Low mood: -0.03 (distracted operative)
+                elif mood_score < -50:
+                    mood_modifier = -0.03
+                # High stress: additional -0.03 (near breakdown)
+                if stress_level > 500:
+                    mood_modifier -= 0.03
+        except Exception:
+            logger.debug("Agent mood data unavailable for operative calculation")
+
         probability = (
             base
             + aptitude * 0.03
@@ -409,6 +434,7 @@ class OperativeMissionService:
             + resonance_operative_mod
             + attacker_pressure_penalty
             + convergence_mod
+            + mood_modifier
         )
 
         return max(0.05, min(0.95, probability))
@@ -516,7 +542,7 @@ class OperativeMissionService:
     @classmethod
     async def _resolve_mission(cls, supabase: Client, mission: dict) -> dict:
         """Resolve a single mission -- roll for success/failure."""
-        success_prob = float(mission.get("success_probability", 0.5))
+        success_prob = float(mission.get("success_probability") or 0.5)
         roll = secrets.SystemRandom().random()
 
         if roll <= success_prob:

@@ -21,6 +21,7 @@ export type SimulationRole = 'owner' | 'admin' | 'editor' | 'viewer';
 export type SettingCategory =
   | 'general'
   | 'world'
+  | 'autonomy'
   | 'ai'
   | 'integration'
   | 'design'

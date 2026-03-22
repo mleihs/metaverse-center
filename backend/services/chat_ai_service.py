@@ -72,6 +72,12 @@ class ChatAIService:
         prompt = await self._prompt_resolver.resolve("chat_system_prompt", locale)
         variables = self._build_agent_variables(agent, simulation, locale)
         variables["agent_memories"] = memory_text
+
+        # Inject mood context if autonomy data exists
+        mood_context = await self._build_mood_context(UUID(agent["id"]))
+        if mood_context:
+            variables["agent_mood"] = mood_context
+
         system_prompt = self._prompt_resolver.fill_template(prompt, variables)
         system_prompt += PromptResolver.build_language_instruction(locale)
 
@@ -244,6 +250,76 @@ class ChatAIService:
             "simulation_name": simulation.get("name", ""),
             "locale_name": LOCALE_NAMES.get(locale, locale),
         }
+
+    async def _build_mood_context(self, agent_id: UUID) -> str:
+        """Build mood context string for system prompt injection.
+
+        Returns empty string if no autonomy data exists for this agent.
+        """
+        mood_result = (
+            self._supabase.table("agent_mood")
+            .select("mood_score, dominant_emotion, stress_level")
+            .eq("agent_id", str(agent_id))
+            .maybe_single()
+            .execute()
+        )
+        if not mood_result.data:
+            return ""
+
+        mood = mood_result.data
+        score = mood["mood_score"]
+        emotion = mood["dominant_emotion"]
+        stress = mood["stress_level"]
+
+        # Mood descriptor
+        if score > 50:
+            mood_desc = "very positive, upbeat"
+        elif score > 20:
+            mood_desc = "content, at ease"
+        elif score > -20:
+            mood_desc = "neutral, composed"
+        elif score > -50:
+            mood_desc = "troubled, tense"
+        else:
+            mood_desc = "deeply distressed, volatile"
+
+        # Stress descriptor
+        if stress > 800:
+            stress_desc = "on the verge of a breakdown"
+        elif stress > 500:
+            stress_desc = "highly stressed"
+        elif stress > 200:
+            stress_desc = "moderately stressed"
+        else:
+            stress_desc = "relatively calm"
+
+        # Fetch active moodlets for detail
+        moodlets_result = (
+            self._supabase.table("agent_moodlets")
+            .select("moodlet_type, emotion, strength")
+            .eq("agent_id", str(agent_id))
+            .order("strength")
+            .limit(5)
+            .execute()
+        )
+        moodlet_lines = []
+        for ml in moodlets_result.data or []:
+            sign = "+" if ml["strength"] > 0 else ""
+            moodlet_lines.append(
+                f"  - {ml['moodlet_type']}: {ml['emotion']} ({sign}{ml['strength']})"
+            )
+
+        context = (
+            f"\nCurrent emotional state: {mood_desc} (mood {score}/100). "
+            f"Dominant emotion: {emotion}. {stress_desc} (stress {stress}/1000)."
+        )
+        if moodlet_lines:
+            context += "\nActive influences:\n" + "\n".join(moodlet_lines)
+        context += (
+            "\nLet this emotional state subtly influence your tone and responses. "
+            "Do not explicitly mention mood scores or stress numbers."
+        )
+        return context
 
     @staticmethod
     def _find_agent_name(agents: list[dict], agent_id: str | None) -> str | None:

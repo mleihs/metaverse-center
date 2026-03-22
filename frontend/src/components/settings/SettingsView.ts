@@ -14,6 +14,7 @@ import './IntegrationSettingsPanel.js';
 import './DesignSettingsPanel.js';
 import './AccessSettingsPanel.js';
 import './PromptsSettingsPanel.js';
+import './AutonomySettingsPanel.js';
 import './NotificationsSettingsPanel.js';
 
 interface SettingsTabDef extends TabDef {
@@ -24,6 +25,7 @@ function getTabs(): SettingsTabDef[] {
   return [
     { key: 'general', label: msg('General') },
     { key: 'world', label: msg('World') },
+    { key: 'autonomy', label: msg('Autonomy') },
     { key: 'ai', label: msg('AI') },
     { key: 'prompts', label: msg('Prompts') },
     { key: 'integration', label: msg('Integration') },
@@ -189,6 +191,14 @@ export class VelgSettingsView extends LitElement {
             @unsaved-change=${this._handleUnsavedChange}
             @settings-saved=${this._handleSettingsSaved}
           ></velg-world-settings-panel>
+        `;
+      case 'autonomy':
+        return html`
+          <velg-autonomy-settings-panel
+            .simulationId=${this.simulationId}
+            @unsaved-change=${this._handleUnsavedChange}
+            @settings-saved=${this._handleSettingsSaved}
+          ></velg-autonomy-settings-panel>
         `;
       case 'ai':
         return html`

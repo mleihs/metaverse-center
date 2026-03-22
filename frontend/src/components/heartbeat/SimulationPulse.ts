@@ -22,6 +22,7 @@ import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import { heartbeatApi } from '../../services/api/HeartbeatApiService.js';
+import './AgentLifeTimeline.js';
 import type { HeartbeatEntry, HeartbeatEntryType, HeartbeatOverview } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import { renderInfoBubble, infoBubbleStyles } from '../shared/info-bubble-styles.js';
@@ -989,6 +990,11 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
       ${this._loading
         ? html`<div class="loading" role="status" aria-live="polite">${msg('Loading chronicle...')}</div>`
         : this._renderFeed()}
+
+      <!-- Agent Autonomy Activity Log -->
+      <velg-agent-life-timeline
+        .simulationId=${this.simulationId}
+      ></velg-agent-life-timeline>
     `;
   }
 

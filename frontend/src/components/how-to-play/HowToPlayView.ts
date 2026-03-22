@@ -27,6 +27,7 @@ import {
   getEpochCommsGuideSteps,
   getEventsGuideSteps,
   getForgeGuideSteps,
+  getLivingWorldGuideSteps,
   getMultiverseMapGuideSteps,
   getResonanceGuideSteps,
   getSimulationHealthGuideSteps,
@@ -348,6 +349,7 @@ export class VelgHowToPlay extends LitElement {
           ${this._renderResonanceGuide()}
           ${this._renderZoneDynamicsGuide()}
           ${this._renderAgentMemoryGuide()}
+          ${this._renderLivingWorldGuide()}
           ${this._renderChronicleGuide()}
           <!-- Reference -->
           ${this._renderTactics()}
@@ -1964,6 +1966,23 @@ export class VelgHowToPlay extends LitElement {
         ${this._renderSectionHeader('22', msg('Agent Memory'))}
         <p class="section__text">
           ${msg('Every agent maintains a persistent memory system of observations and AI-synthesized reflections. Memories accumulate over cycles, creating evolving psychological profiles that influence bot decision-making and provide narrative depth.')}
+        </p>
+        <div class="demo-steps">
+          ${steps.map((step, i) => this._renderDemoStep(step, i))}
+        </div>
+      </section>
+    `;
+  }
+
+  /* ── Section 19b: The Living World ─────────────────── */
+
+  private _renderLivingWorldGuide() {
+    const steps = getLivingWorldGuideSteps();
+    return html`
+      <section class="section" id="living-world">
+        ${this._renderSectionHeader('23', msg('The Living World'))}
+        <p class="section__text">
+          ${msg('When Agent Autonomy is active, your simulation lives between visits. Agents develop moods, form opinions, pursue activities, argue, celebrate, and break down under stress. The Utility AI selects actions based on personality, needs, and social context. Autonomous events emerge from threshold conditions and are narrated by AI. The world accumulates history through every tick.')}
         </p>
         <div class="demo-steps">
           ${steps.map((step, i) => this._renderDemoStep(step, i))}

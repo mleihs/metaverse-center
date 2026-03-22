@@ -35,6 +35,7 @@ from backend.middleware.security import SecurityHeadersMiddleware
 from backend.middleware.seo import enrich_html_for_crawler, get_crawler_redirect, get_prerendered_html, is_crawler
 from backend.routers import (
     admin,
+    agent_autonomy,
     agent_memories,
     agent_professions,
     agents,
@@ -203,6 +204,7 @@ app.include_router(connections.router)
 app.include_router(forge.router)
 app.include_router(forge_access.router)
 app.include_router(chronicles.router)
+app.include_router(agent_autonomy.router)
 app.include_router(agent_memories.router)
 app.include_router(game_mechanics.router)
 app.include_router(epochs.router)

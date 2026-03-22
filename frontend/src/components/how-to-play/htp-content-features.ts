@@ -717,6 +717,173 @@ export function getSocialTrendsGuideSteps(): DemoStep[] {
   ];
 }
 
+/* ── The Living World (Agent Autonomy) ──────────── */
+
+export function getLivingWorldGuideSteps(): DemoStep[] {
+  return [
+    {
+      phase: 'competition',
+      title: msg('What is the Living World?'),
+      narration: msg(
+        'The Living World system makes agents act autonomously between your visits. Agents develop moods, form opinions about each other, pursue activities based on their personality, and generate social events. When you return, the world has lived \u2013 relationships shifted, conflicts emerged, celebrations happened. A morning briefing summarizes what occurred.',
+      ),
+      detail: msg(
+        'The system runs during each heartbeat tick (every 4 hours). It processes agent needs, updates moods, recalculates opinions, selects activities via Utility AI, generates social interactions between co-located agents, and triggers autonomous events when thresholds are crossed. Rule-based mechanics cost zero AI calls; only narrative generation uses LLM.',
+      ),
+      readout: [
+        { label: msg('Tick rate'), value: msg('Every 4 hours') },
+        { label: msg('AI cost'), value: msg('$0 rules + ~$4/month narrative') },
+        { label: msg('Activation'), value: msg('Settings \u2192 Autonomy tab') },
+        { label: msg('Requirement'), value: msg('BYOK key or admin activation') },
+      ],
+    },
+    {
+      phase: 'competition',
+      title: msg('Agent Mood & Stress'),
+      narration: msg(
+        'Every agent has a mood score (\u2212100 to +100) computed from active moodlets \u2013 individual emotional influences with three decay types. Permanent moodlets persist forever. Timed moodlets expire after a set duration. Decaying moodlets gradually weaken over time. The dominant emotion (joy, anxiety, anger, grief) is determined by the strongest active moodlet.',
+      ),
+      detail: msg(
+        'Stress accumulates when mood is negative and recovers when positive. Resilient agents (low neuroticism) recover faster. When stress exceeds 800, the agent experiences a breakdown \u2013 a crisis event that spreads anxiety moodlets to all agents in the same zone, potentially triggering cascade breakdowns.',
+      ),
+      readout: [
+        { label: msg('Mood range'), value: msg('\u2212100 (distressed) to +100 (euphoric)') },
+        { label: msg('Stress range'), value: msg('0 (calm) to 1000 (breakdown)') },
+        { label: msg('Breakdown'), value: msg('Stress > 800 \u2192 crisis event') },
+        { label: msg('Cascade'), value: msg('Zone-wide anxiety spread') },
+      ],
+    },
+    {
+      phase: 'competition',
+      title: msg('Agent Needs'),
+      narration: msg(
+        'Agents have five core needs that decay over time: Social (craving interaction), Purpose (meaningful work), Safety (zone security), Comfort (building conditions), and Stimulation (novelty). Each need ranges from 0 (desperate) to 100 (fully satisfied). Decay rates are personalized based on personality \u2013 extraverts lose social faster, conscientious agents need purpose more urgently.',
+      ),
+      detail: msg(
+        'Needs drive activity selection through a Utility AI system. When social need drops low, the agent is more likely to seek conversation. When purpose is urgent, they gravitate toward work. Activities fulfill specific needs: working fulfills purpose, socializing fulfills social, exploring fulfills stimulation.',
+      ),
+      readout: [
+        { label: msg('Social'), value: msg('Interaction, conversation') },
+        { label: msg('Purpose'), value: msg('Work, creation, maintenance') },
+        { label: msg('Safety'), value: msg('Zone stability, security') },
+        { label: msg('Comfort'), value: msg('Building condition, rest') },
+        { label: msg('Stimulation'), value: msg('Exploration, novelty') },
+      ],
+    },
+    {
+      phase: 'competition',
+      title: msg('Opinions & Relationships'),
+      narration: msg(
+        'Agents form opinions about each other (\u2212100 to +100) through stacking modifiers. Sharing a zone builds familiarity (+3). Surviving a crisis together creates a bond (+15). Arguments reduce opinion (\u221212). When opinion crosses +60, a positive relationship is automatically created. When it drops below \u221260, hostility erupts.',
+      ),
+      detail: msg(
+        'Base compatibility is computed deterministically from personality profiles \u2013 agents with similar Big Five traits start with higher natural affinity. Opinion modifiers have three decay types (permanent, timed, decaying) and stacking caps to prevent runaway escalation.',
+      ),
+      readout: [
+        { label: msg('Range'), value: msg('\u2212100 (enmity) to +100 (devotion)') },
+        { label: msg('Auto-create'), value: msg('> +60 \u2192 ally, < \u221260 \u2192 rival') },
+        { label: msg('Stacking'), value: msg('Capped per modifier type') },
+        { label: msg('Decay'), value: msg('Permanent / timed / decaying') },
+      ],
+    },
+    {
+      phase: 'competition',
+      title: msg('Activity Selection'),
+      narration: msg(
+        'Each tick, agents choose an activity using Utility AI with Boltzmann selection. The system scores 14 possible activities (work, socialize, rest, explore, create, reflect, confront, celebrate, mourn, and more) based on current needs, personality traits, mood, and social context. The highest-scoring activity usually wins \u2013 but stressed agents make erratic choices.',
+      ),
+      detail: msg(
+        'Boltzmann selection uses a temperature parameter scaled by stress. At low stress, agents make rational choices (best utility wins). At high stress, temperature rises and the probability distribution flattens \u2013 agents may choose suboptimal or destructive activities. This creates emergent drama without scripted narratives.',
+      ),
+      readout: [
+        { label: msg('Activities'), value: msg('14 types') },
+        { label: msg('Algorithm'), value: msg('Utility AI + Boltzmann') },
+        { label: msg('Low stress'), value: msg('Rational, predictable') },
+        { label: msg('High stress'), value: msg('Erratic, unpredictable') },
+      ],
+    },
+    {
+      phase: 'competition',
+      title: msg('Social Interactions'),
+      narration: msg(
+        'When two agents share a zone, they have a chance of interacting socially each tick. Interaction types include deep conversations (+8 opinion, +5 mood), casual chats (+3 opinion), insults (\u221215 opinion, only at low mood), comfort-seeking (+18 opinion from trusted friends), and confrontations (\u221220 opinion, can trigger conflict events).',
+      ),
+      detail: msg(
+        'Interaction probability scales with sociability, existing relationships, and social need urgency. High-intensity relationships increase frequency. Interactions generate opinion modifiers, mood moodlets, and need fulfillment. Some interactions (insults, confrontations) can escalate into autonomous events visible in the timeline and chronicle.',
+      ),
+      readout: [
+        { label: msg('Deep conversation'), value: msg('+8 opinion, +5 mood') },
+        { label: msg('Casual chat'), value: msg('+3 opinion, +2 mood') },
+        { label: msg('Insult'), value: msg('\u221215 opinion (bad mood only)') },
+        { label: msg('Confrontation'), value: msg('\u221220 opinion, triggers event') },
+        { label: msg('Comfort'), value: msg('+18 opinion (trusted friends)') },
+      ],
+    },
+    {
+      phase: 'competition',
+      title: msg('Autonomous Events'),
+      narration: msg(
+        'When conditions align, the system generates autonomous events with AI narrative text. Six trigger types exist: stress breakdowns (agent snaps), relationship breakthroughs (deep bond forms), relationship breakdowns (hostility erupts), celebrations (3+ happy agents gather), zone crisis reactions (agents panic in unstable zones), and conflict escalations (arguments become public).',
+      ),
+      detail: msg(
+        'Autonomous events are real entries in the events table \u2013 they participate in all standard flows: bleed threshold checks (high-impact events can echo to other simulations), chronicle generation (the AI newspaper reports on them), and zone stability impact. They also create moodlets for witness agents, potentially triggering cascade reactions.',
+      ),
+      readout: [
+        { label: msg('Triggers'), value: '6' },
+        { label: msg('Narrative'), value: msg('AI-generated (DeepSeek V3.2)') },
+        { label: msg('Integration'), value: msg('Bleed, Chronicle, Zone Stability') },
+        { label: msg('Budget'), value: msg('Configurable LLM calls per tick') },
+      ],
+    },
+    {
+      phase: 'competition',
+      title: msg('Epoch Impact'),
+      narration: msg(
+        'Agent autonomy directly affects competitive epoch gameplay. Happy agents (mood > 50) get a +3% bonus to operative success probability. Distressed agents (mood < \u221250) suffer a \u22123% penalty. Agents under high stress (> 500) take an additional \u22123% hit. This means maintaining agent welfare is a strategic advantage \u2013 neglecting your population weakens your military operations.',
+      ),
+      readout: [
+        { label: msg('Mood > 50'), value: msg('+3% operative success') },
+        { label: msg('Mood < \u221250'), value: msg('\u22123% operative success') },
+        { label: msg('Stress > 500'), value: msg('\u22123% additional penalty') },
+        { label: msg('Net effect'), value: msg('\u22126% to +3% swing') },
+      ],
+      tip: msg(
+        'A player who resolves conflicts, maintains buildings, and keeps zones stable will have happier, more effective operatives. This connects the sandbox (Living World) with competitive play (Epochs).',
+      ),
+    },
+    {
+      phase: 'competition',
+      title: msg('The Morning Briefing'),
+      narration: msg(
+        'The Daily Substrate Dispatch now includes an Agent Autonomy Report section. When you visit your simulation after agents have been active, you see: an AI-generated narrative summary in Bureau prose, a mood overview (happy/troubled/in crisis counts), significant activity highlights with priority classification, and relationship shifts since your last visit.',
+      ),
+      readout: [
+        { label: msg('Narrative'), value: msg('AI Bureau prose (optional)') },
+        { label: msg('Mood overview'), value: msg('Happy / Troubled / Crisis') },
+        { label: msg('Highlights'), value: msg('Critical / Important / Routine') },
+        { label: msg('Relationship shifts'), value: msg('Opinion changes') },
+      ],
+    },
+    {
+      phase: 'lobby',
+      title: msg('Configuring Autonomy'),
+      narration: msg(
+        'Agent autonomy is configured per simulation in Settings \u2192 Autonomy. The master toggle enables the Living World system. Below it, you can tune needs decay rate (how fast agents get restless), social interaction rate (how often they talk), event trigger sensitivity (how easily events fire), stress cascades (chain reactions), and the LLM budget per tick.',
+      ),
+      detail: msg(
+        'Activation requires either a personal OpenRouter API key (BYOK) or admin activation. When you provide your own key, AI narrative costs are charged to your account. When admin activates it, the platform covers costs. Rule-based mechanics (needs, mood, opinions, activities) always cost zero regardless.',
+      ),
+      readout: [
+        { label: msg('Needs decay'), value: msg('0.1x\u20133.0x speed') },
+        { label: msg('Social rate'), value: msg('0.1x\u20133.0x frequency') },
+        { label: msg('Event sensitivity'), value: msg('0.1\u20131.0 threshold') },
+        { label: msg('LLM budget'), value: msg('1\u201320 calls per tick') },
+        { label: msg('Briefing mode'), value: msg('Narrative or data-only') },
+      ],
+    },
+  ];
+}
+
 /* ── Epoch COMMS & Notifications ─────────────────── */
 
 export function getEpochCommsGuideSteps(): DemoStep[] {

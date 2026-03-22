@@ -19,7 +19,7 @@ metaverse.center is a multiplayer worldbuilding platform. Users create literary 
 
 Players shape their worlds through AI-assisted content generation and compete in **Epochs** – structured PvP campaigns where operatives are deployed, alliances form and fracture, and scoring spans five strategic dimensions. A cross-simulation diplomacy layer connects worlds through embassies. Ambassadors carry influence across borders. "Event Echoes" bleed narrative consequences from one simulation into another.
 
-A **simulation heartbeat system** drives narrative arcs forward through configurable tick cycles, with anchors, attunement bonds, and automated Bureau responses keeping each world's story coherent as it evolves.
+A **simulation heartbeat system** drives narrative arcs forward through configurable tick cycles, with anchors, attunement bonds, and automated Bureau responses keeping each world's story coherent as it evolves. The **Living World** agent autonomy system gives agents independent lives between player sessions: they develop moods, form opinions, pursue activities via Utility AI with Boltzmann selection, generate social interactions, and trigger autonomous events. When players return, a classified morning briefing summarizes what happened.
 
 Every number tells a story. Every story changes a number. Agent aptitudes shape operative success probabilities. Zone stability degrades under sabotage. Embassy effectiveness drops when infiltrators compromise diplomatic channels. Game balance is calibrated through deterministic simulation of hundreds of epoch matches, with statistical analysis driving each tuning pass.
 
@@ -229,7 +229,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
            ▼        │
 ┌────────────────┐    │
 │   FastAPI       │    │
-│  47 routers     │    │
+│  48 routers     │    │
 │   PyJWT auth    │    │
 │   Sentry SDK    │    │
 └──────┬─────────┘    │
@@ -237,9 +237,9 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
        ▼              ▼
 ┌──────────────────────────────┐
 │   Supabase (PostgreSQL)          │
-│   70+ tables + pgvector          │
-│   75+ functions, 59 triggers     │
-│   246 RLS policies               │
+│   85+ tables + pgvector          │
+│   85+ functions, 62 triggers     │
+│   258 RLS policies               │
 │   4 materialized views           │
 │   Realtime channels              │
 │   Auth (ES256/HS256)             │
@@ -266,7 +266,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 
 | Library | Version | Purpose |
 |:--------|:--------|:--------|
-| FastAPI | 0.135 | Async web framework, 47 routers |
+| FastAPI | 0.135 | Async web framework, 48 routers |
 | Pydantic v2 | 2.12 | Request/response validation, settings |
 | structlog | 25.5 | Structured logging (JSON production, console dev) |
 | Supabase Python | 2.25 | PostgreSQL client with RLS enforcement |

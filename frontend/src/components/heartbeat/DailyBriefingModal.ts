@@ -15,8 +15,9 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import { focusFirstElement, trapFocus } from '../shared/focus-trap.js';
+import './AutonomyBriefingSection.js';
 
-const AUTO_DISMISS_MS = 30_000;
+const AUTO_DISMISS_MS = 120_000;
 const EXIT_DURATION_MS = 300;
 
 interface BriefingData {
@@ -826,6 +827,11 @@ export class VelgDailyBriefing extends LitElement {
             ${this._renderHealth(pct, tier, label)}
             ${this._renderStats(data)}
             ${data.arc_details.length > 0 ? this._renderArcs(data.arc_details) : nothing}
+
+            <!-- Agent Autonomy Report (if enabled) -->
+            <velg-autonomy-briefing
+              .simulationId=${this.simulationId}
+            ></velg-autonomy-briefing>
           </div>
 
           <!-- Footer -->

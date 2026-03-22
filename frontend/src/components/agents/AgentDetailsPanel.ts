@@ -42,6 +42,7 @@ import {
   parseAgentIntel,
 } from '../lore/lore-content.js';
 import './AgentMemorySection.js';
+import './AgentMoodPanel.js';
 import './RelationshipCard.js';
 import './RelationshipEditModal.js';
 import './VelgIntelCard.js';
@@ -1377,6 +1378,14 @@ export class VelgAgentDetailsPanel extends LitElement {
               }
             </velg-section-header>
             ${this._renderRelationships()}
+          </div>
+
+          <div class="panel__section">
+            <velg-section-header>${msg('Psychological Profile')}</velg-section-header>
+            <velg-agent-mood-panel
+              .simulationId=${this.simulationId}
+              .agentId=${this.agent?.id ?? ''}
+            ></velg-agent-mood-panel>
           </div>
 
           <div class="panel__section">

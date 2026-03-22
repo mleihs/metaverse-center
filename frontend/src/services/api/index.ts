@@ -1,4 +1,5 @@
 export { AdminApiService, adminApi } from './AdminApiService.js';
+export { AgentAutonomyApiService, agentAutonomyApi } from './AgentAutonomyApiService.js';
 export { AgentMemoryApiService, agentMemoryApi } from './AgentMemoryApiService.js';
 export { AgentsApiService, agentsApi } from './AgentsApiService.js';
 export { BaseApiService } from './BaseApiService.js';

@@ -51,6 +51,7 @@ export function getTocSections(): TocSection[] {
     { id: 'resonance-guide', label: msg('Substrate Resonances') },
     { id: 'zone-dynamics', label: msg('Event Pressure & Zones') },
     { id: 'agent-memory', label: msg('Agent Memory') },
+    { id: 'living-world', label: msg('The Living World') },
     { id: 'chronicle-guide', label: msg('The Chronicle') },
     // ── Reference ──
     { id: 'tactics', label: msg('Tactics & Strategies') },
