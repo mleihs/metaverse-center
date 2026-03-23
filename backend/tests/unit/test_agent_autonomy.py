@@ -432,3 +432,149 @@ class TestActivityConstants:
     def test_all_base_scores_positive(self):
         for activity, score in ACTIVITY_BASE_SCORES.items():
             assert score > 0, f"{activity} has non-positive base score {score}"
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# Read Methods (Phase 4 — router/service separation)
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestAgentMoodReadMethods:
+    @pytest.mark.asyncio
+    async def test_get_agent_mood_returns_data(self):
+        mood_data = {"agent_id": str(AGENT_A), "mood_score": 42, "dominant_emotion": "curious"}
+        sb, _, resp = _mock_supabase(data=mood_data)
+        result = await AgentMoodService.get_agent_mood(sb, AGENT_A, SIM_ID)
+        assert result == mood_data
+
+    @pytest.mark.asyncio
+    async def test_get_agent_mood_returns_none_when_missing(self):
+        sb, _, resp = _mock_supabase(data=None)
+        result = await AgentMoodService.get_agent_mood(sb, AGENT_A, SIM_ID)
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_list_moodlets_returns_list(self):
+        moodlets = [{"moodlet_type": "happy", "strength": 5}, {"moodlet_type": "tired", "strength": 3}]
+        sb, _, resp = _mock_supabase(data=moodlets)
+        result = await AgentMoodService.list_moodlets(sb, AGENT_A, SIM_ID)
+        assert len(result) == 2
+        assert result[0]["moodlet_type"] == "happy"
+
+    @pytest.mark.asyncio
+    async def test_list_moodlets_returns_empty_list_when_none(self):
+        sb, _, resp = _mock_supabase(data=None)
+        result = await AgentMoodService.list_moodlets(sb, AGENT_A, SIM_ID)
+        assert result == []
+
+
+class TestAgentNeedsReadMethods:
+    @pytest.mark.asyncio
+    async def test_get_agent_needs_returns_data(self):
+        needs = {"social": 75.0, "purpose": 60.0, "safety": 80.0, "comfort": 50.0, "stimulation": 40.0}
+        sb, _, resp = _mock_supabase(data=needs)
+        result = await AgentNeedsService.get_agent_needs(sb, AGENT_A, SIM_ID)
+        assert result["social"] == 75.0
+
+    @pytest.mark.asyncio
+    async def test_get_agent_needs_returns_none_when_missing(self):
+        sb, _, resp = _mock_supabase(data=None)
+        result = await AgentNeedsService.get_agent_needs(sb, AGENT_A, SIM_ID)
+        assert result is None
+
+
+class TestAgentOpinionReadMethods:
+    @pytest.mark.asyncio
+    async def test_list_opinions_enriches_agent_data(self):
+        raw = [
+            {
+                "agent_id": str(AGENT_A), "target_agent_id": str(AGENT_B),
+                "opinion_score": 15,
+                "agents": {"name": "Bob", "portrait_image_url": "https://example.com/bob.avif"},
+            },
+        ]
+        sb, _, resp = _mock_supabase(data=raw)
+        result = await AgentOpinionService.list_opinions(sb, AGENT_A, SIM_ID)
+        assert len(result) == 1
+        assert result[0]["target_agent_name"] == "Bob"
+        assert result[0]["target_agent_portrait"] == "https://example.com/bob.avif"
+        assert "agents" not in result[0]  # Nested join data should be flattened out
+
+    @pytest.mark.asyncio
+    async def test_list_opinions_handles_empty(self):
+        sb, _, resp = _mock_supabase(data=[])
+        result = await AgentOpinionService.list_opinions(sb, AGENT_A, SIM_ID)
+        assert result == []
+
+    @pytest.mark.asyncio
+    async def test_list_modifiers_returns_all(self):
+        mods = [{"modifier_type": "social", "opinion_change": 5}, {"modifier_type": "event", "opinion_change": -3}]
+        sb, _, resp = _mock_supabase(data=mods)
+        result = await AgentOpinionService.list_modifiers(sb, AGENT_A, SIM_ID)
+        assert len(result) == 2
+
+    @pytest.mark.asyncio
+    async def test_list_modifiers_with_target_filter(self):
+        sb, builder, resp = _mock_supabase(data=[{"modifier_type": "social", "opinion_change": 5}])
+        await AgentOpinionService.list_modifiers(sb, AGENT_A, SIM_ID, target_agent_id=AGENT_B)
+        # Should have called .eq("target_agent_id", ...) on the builder
+        builder.eq.assert_any_call("target_agent_id", str(AGENT_B))
+
+
+class TestAgentActivityReadMethods:
+    @pytest.mark.asyncio
+    async def test_list_activities_returns_enriched_data(self):
+        raw = [
+            {
+                "activity_type": "explore", "significance": 5,
+                "agents": {"name": "Alice", "portrait_image_url": "https://example.com/alice.avif"},
+            },
+        ]
+        sb, _, resp = _mock_supabase(data=raw, count=1)
+        from datetime import UTC, datetime
+        data, total = await AgentActivityService.list_activities(
+            sb, SIM_ID, since=datetime(2026, 1, 1, tzinfo=UTC),
+        )
+        assert len(data) == 1
+        assert data[0]["agent_name"] == "Alice"
+        assert data[0]["agent_portrait"] == "https://example.com/alice.avif"
+        assert "agents" not in data[0]
+        assert total == 1
+
+    @pytest.mark.asyncio
+    async def test_list_activities_handles_empty(self):
+        sb, _, resp = _mock_supabase(data=[], count=0)
+        from datetime import UTC, datetime
+        data, total = await AgentActivityService.list_activities(
+            sb, SIM_ID, since=datetime(2026, 1, 1, tzinfo=UTC),
+        )
+        assert data == []
+        assert total == 0
+
+
+class TestPlatformConfigServiceAsync:
+    @pytest.mark.asyncio
+    async def test_get_returns_coerced_value(self):
+        from backend.services.platform_config_service import PlatformConfigService
+        sb, _, resp = _mock_supabase(data=[{"setting_value": '"true"'}])
+        result = await PlatformConfigService.get(sb, "test_flag", False)
+        assert result is True
+
+    @pytest.mark.asyncio
+    async def test_get_returns_default_on_missing(self):
+        from backend.services.platform_config_service import PlatformConfigService
+        sb, _, resp = _mock_supabase(data=[])
+        result = await PlatformConfigService.get(sb, "missing_key", 42)
+        assert result == 42
+
+    @pytest.mark.asyncio
+    async def test_get_returns_default_on_exception(self):
+        from backend.services.platform_config_service import PlatformConfigService
+        sb = MagicMock()
+        builder = MagicMock()
+        for m in ("select", "eq", "limit"):
+            getattr(builder, m).return_value = builder
+        builder.execute = AsyncMock(side_effect=Exception("DB down"))
+        sb.table.return_value = builder
+        result = await PlatformConfigService.get(sb, "any_key", "fallback")
+        assert result == "fallback"
