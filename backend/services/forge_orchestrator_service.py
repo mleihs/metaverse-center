@@ -787,13 +787,13 @@ class ForgeOrchestratorService:
         return theme_data
 
     @staticmethod
-    def _update_lore_progress(
+    async def _update_lore_progress(
         supabase: Client,
         simulation_id: UUID,
         progress: dict | None,
     ) -> None:
         """Write lore-generation progress to simulations.lore_progress."""
-        supabase.table("simulations").update(
+        await supabase.table("simulations").update(
             {"lore_progress": progress},
         ).eq("id", str(simulation_id)).execute()
 
@@ -828,30 +828,34 @@ class ForgeOrchestratorService:
                 logger.exception("Mock lore persist failed", extra={"simulation_id": str(simulation_id)})
 
             try:
-                mat_agents = await (
+                mat_agents_resp = await (
                     supabase.table("agents")
                     .select("name, character, background, primary_profession")
                     .eq("simulation_id", str(simulation_id))
                     .execute()
-                ).data or []
-                mat_buildings = await (
+                )
+                mat_agents = mat_agents_resp.data or []
+                mat_buildings_resp = await (
                     supabase.table("buildings")
                     .select("name, description, building_type, building_condition")
                     .eq("simulation_id", str(simulation_id))
                     .execute()
-                ).data or []
-                mat_zones = await (
+                )
+                mat_buildings = mat_buildings_resp.data or []
+                mat_zones_resp = await (
                     supabase.table("zones")
                     .select("name, description, zone_type")
                     .eq("simulation_id", str(simulation_id))
                     .execute()
-                ).data or []
-                mat_streets = await (
+                )
+                mat_zones = mat_zones_resp.data or []
+                mat_streets_resp = await (
                     supabase.table("city_streets")
                     .select("name, street_type")
                     .eq("simulation_id", str(simulation_id))
                     .execute()
-                ).data or []
+                )
+                mat_streets = mat_streets_resp.data or []
                 sim_desc = geography.get("description", "") or seed
                 mock_trans = mock.mock_entity_translations(mat_agents, mat_buildings, mat_zones, mat_streets, sim_desc)
                 await ForgeEntityTranslationService.persist_translations(supabase, simulation_id, mock_trans)
@@ -877,7 +881,7 @@ class ForgeOrchestratorService:
         )
         if gen_config.deep_research:
             logger.info("Step: deep research")
-            cls._update_lore_progress(supabase, simulation_id, {"phase": "research"})
+            await cls._update_lore_progress(supabase, simulation_id, {"phase": "research"})
             try:
                 research_context = await ResearchService.research_for_lore(
                     seed=seed,
@@ -896,7 +900,7 @@ class ForgeOrchestratorService:
                 )
 
         logger.info("Step: lore generation")
-        cls._update_lore_progress(supabase, simulation_id, {"phase": "generating"})
+        await cls._update_lore_progress(supabase, simulation_id, {"phase": "generating"})
         try:
             lore_sections = await ForgeLoreService.generate_lore(
                 seed=seed,
@@ -910,15 +914,15 @@ class ForgeOrchestratorService:
             logger.info("Step: lore translation")
             section_count = len(lore_sections)
 
-            def on_section_start(index: int, title: str) -> None:
-                cls._update_lore_progress(supabase, simulation_id, {
+            async def on_section_start(index: int, title: str) -> None:
+                await cls._update_lore_progress(supabase, simulation_id, {
                     "phase": "translating",
                     "current": index,
                     "total": section_count,
                     "section_title": title,
                 })
 
-            cls._update_lore_progress(supabase, simulation_id, {
+            await cls._update_lore_progress(supabase, simulation_id, {
                 "phase": "translating", "current": 0, "total": section_count, "section_title": "",
             })
             translations = None
@@ -945,14 +949,15 @@ class ForgeOrchestratorService:
 
         # Translate entity fields (skip if bilingual generation already populated _de)
         logger.info("Step: entity translation")
-        cls._update_lore_progress(supabase, simulation_id, {"phase": "entities"})
+        await cls._update_lore_progress(supabase, simulation_id, {"phase": "entities"})
         try:
-            mat_agents = (
+            mat_agents_resp = await (
                 supabase.table("agents")
                 .select("name, character, background, primary_profession, character_de")
                 .eq("simulation_id", str(simulation_id))
                 .execute()
-            ).data or []
+            )
+            mat_agents = mat_agents_resp.data or []
 
             agents_have_de = all(a.get("character_de") for a in mat_agents)
             if agents_have_de:
@@ -961,24 +966,27 @@ class ForgeOrchestratorService:
                     extra={"simulation_id": str(simulation_id)},
                 )
             else:
-                mat_buildings = (
+                mat_buildings_resp = await (
                     supabase.table("buildings")
                     .select("name, description, building_type, building_condition")
                     .eq("simulation_id", str(simulation_id))
                     .execute()
-                ).data or []
-                mat_zones = (
+                )
+                mat_buildings = mat_buildings_resp.data or []
+                mat_zones_resp = await (
                     supabase.table("zones")
                     .select("name, description, zone_type")
                     .eq("simulation_id", str(simulation_id))
                     .execute()
-                ).data or []
-                mat_streets = (
+                )
+                mat_zones = mat_zones_resp.data or []
+                mat_streets_resp = await (
                     supabase.table("city_streets")
                     .select("name, street_type")
                     .eq("simulation_id", str(simulation_id))
                     .execute()
-                ).data or []
+                )
+                mat_streets = mat_streets_resp.data or []
                 sim_desc = geography.get("description", "") or seed
 
                 entity_translations = await ForgeEntityTranslationService.translate_entities(
@@ -1000,7 +1008,7 @@ class ForgeOrchestratorService:
             logger.exception("Entity translation failed", extra={"simulation_id": str(simulation_id)})
 
         # Signal transition to image generation phase
-        cls._update_lore_progress(supabase, simulation_id, {"phase": "images"})
+        await cls._update_lore_progress(supabase, simulation_id, {"phase": "images"})
 
     @classmethod
     async def run_batch_generation(
@@ -1289,7 +1297,7 @@ class ForgeOrchestratorService:
                 )
 
         # Clear lore progress — ceremony no longer needs it
-        cls._update_lore_progress(supabase, simulation_id, None)
+        await cls._update_lore_progress(supabase, simulation_id, None)
 
         logger.info(
             "Batch generation DONE",
@@ -1571,7 +1579,7 @@ Generate exactly 3 new agents. Requirements:
             logger.exception("Darkroom regen failed")
 
     @staticmethod
-    def reconstruct_draft_data(
+    async def reconstruct_draft_data(
         supabase: Client,
         simulation_id: UUID,
     ) -> dict:
@@ -1580,24 +1588,24 @@ Generate exactly 3 new agents. Requirements:
         Used by the admin retrigger endpoint to re-run lore + translations
         for a simulation that has already been materialized.
         """
-        sim_resp = supabase.table("simulations").select(
+        sim_resp = await supabase.table("simulations").select(
             "name, description"
         ).eq("id", str(simulation_id)).single().execute()
         sim = sim_resp.data
 
-        agents_resp = supabase.table("agents").select(
+        agents_resp = await supabase.table("agents").select(
             "name, gender, system, primary_profession, character, background"
         ).eq("simulation_id", str(simulation_id)).execute()
 
-        buildings_resp = supabase.table("buildings").select(
+        buildings_resp = await supabase.table("buildings").select(
             "name, building_type, building_condition, description, style"
         ).eq("simulation_id", str(simulation_id)).execute()
 
-        zones_resp = supabase.table("zones").select(
+        zones_resp = await supabase.table("zones").select(
             "name, zone_type, description"
         ).eq("simulation_id", str(simulation_id)).execute()
 
-        streets_resp = supabase.table("city_streets").select(
+        streets_resp = await supabase.table("city_streets").select(
             "name, street_type"
         ).eq("simulation_id", str(simulation_id)).execute()
 

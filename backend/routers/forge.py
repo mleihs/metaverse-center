@@ -927,7 +927,7 @@ async def retrigger_batch(
 
     draft_data = None
     if include_lore:
-        draft_data = ForgeOrchestratorService.reconstruct_draft_data(
+        draft_data = await ForgeOrchestratorService.reconstruct_draft_data(
             admin_supabase, simulation_id,
         )
         # Delete existing lore to avoid duplicates on re-generation

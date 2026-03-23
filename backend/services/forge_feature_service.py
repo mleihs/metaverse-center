@@ -105,7 +105,7 @@ class ForgeFeatureService:
                 "Refund failed for purchase %s", purchase_id,
             )
         # Also store error in result
-        supabase.table("feature_purchases").update({
+        await supabase.table("feature_purchases").update({
             "result": {"error": error},
         }).eq("id", purchase_id).execute()
 
