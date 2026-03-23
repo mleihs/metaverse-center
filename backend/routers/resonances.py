@@ -12,6 +12,7 @@ from fastapi import APIRouter, Depends, Query
 
 from backend.dependencies import (
     CurrentUser,
+    get_admin_supabase,
     get_current_user,
     get_supabase,
     require_platform_admin,
@@ -136,14 +137,16 @@ async def process_impact(
     resonance_id: UUID,
     body: ProcessImpactRequest = ProcessImpactRequest(),
     user: CurrentUser = Depends(require_platform_admin()),
-    supabase: Client = Depends(get_supabase),
+    admin_supabase: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Process resonance impact across simulations (platform admin only).
 
     Spawns 2-3 events per simulation based on archetype + susceptibility.
+    Uses admin client because events are created across multiple simulations
+    where the calling user may not have editor role (ADR-009 exception).
     """
     impacts = await ResonanceService.process_impact(
-        supabase,
+        admin_supabase,
         resonance_id,
         user.id,
         simulation_ids=body.simulation_ids,
@@ -154,7 +157,7 @@ async def process_impact(
     completed = sum(1 for i in impacts if i.get("status") == "completed")
     failed = sum(1 for i in impacts if i.get("status") == "failed")
     await AuditService.safe_log(
-        supabase, None, user.id,
+        admin_supabase, None, user.id,
         "substrate_resonances", resonance_id, "process_impact",
         {"total": len(impacts), "completed": completed, "failed": failed},
     )
