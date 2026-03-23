@@ -72,6 +72,10 @@ export class AdminApiService extends BaseApiService {
     return this.get('/admin/cleanup/stats');
   }
 
+  async getAIUsageStats(days = 30): Promise<ApiResponse<AIUsageStats>> {
+    return this.get('/admin/ai-usage/stats', { days: String(days) });
+  }
+
   async previewCleanup(
     cleanupType: CleanupType,
     minAgeDays: number,
@@ -603,6 +607,28 @@ export interface SocialStorySequence {
   total_stories: number;
   published_count: number;
   status_summary: string;
+}
+
+// ── AI Usage Analytics ─────────────────────────────────────────────────
+
+export interface AIUsageBreakdown {
+  calls: number;
+  tokens: number;
+  cost: number;
+}
+
+export interface AIUsageStats {
+  period_days: number;
+  total_calls: number;
+  total_tokens: number;
+  total_cost_usd: number;
+  avg_cost_per_call: number;
+  by_provider: (AIUsageBreakdown & { provider: string })[];
+  by_model: (AIUsageBreakdown & { model: string })[];
+  by_purpose: (AIUsageBreakdown & { purpose: string })[];
+  by_simulation: (AIUsageBreakdown & { simulation_id: string })[];
+  daily_trend: (AIUsageBreakdown & { date: string })[];
+  key_sources: Record<string, AIUsageBreakdown>;
 }
 
 export const adminApi = new AdminApiService();

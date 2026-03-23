@@ -13,6 +13,7 @@ import './AdminHeartbeatTab.js';
 import './AdminHealthTab.js';
 import './AdminSocialTab.js';
 import './AdminPlatformConfigTab.js';
+import './AdminAIUsageTab.js';
 
 type AdminTab =
   | 'users'
@@ -22,6 +23,7 @@ type AdminTab =
   | 'resonances'
   | 'scanner'
   | 'forge'
+  | 'ai_usage'
   | 'platform'
   | 'social'
   | 'cleanup';
@@ -259,6 +261,13 @@ export class VelgAdminPanel extends LitElement {
             : ''
         }</button>
         <button
+          class="admin-tabs__tab ${this._activeTab === 'ai_usage' ? 'admin-tabs__tab--active' : ''}"
+          role="tab"
+          aria-selected=${this._activeTab === 'ai_usage'}
+          aria-controls="admin-tabpanel"
+          @click=${() => this._setTab('ai_usage')}
+        >${msg('AI Usage')}</button>
+        <button
           class="admin-tabs__tab ${this._activeTab === 'platform' ? 'admin-tabs__tab--active' : ''}"
           role="tab"
           aria-selected=${this._activeTab === 'platform'}
@@ -303,6 +312,8 @@ export class VelgAdminPanel extends LitElement {
         return html`<velg-admin-scanner-tab></velg-admin-scanner-tab>`;
       case 'forge':
         return html`<velg-admin-forge-tab></velg-admin-forge-tab>`;
+      case 'ai_usage':
+        return html`<velg-admin-ai-usage-tab></velg-admin-ai-usage-tab>`;
       case 'platform':
         return html`<velg-admin-platform-config-tab></velg-admin-platform-config-tab>`;
       case 'social':

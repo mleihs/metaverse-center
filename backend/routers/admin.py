@@ -508,3 +508,96 @@ def _invalidate_caches(key: str) -> None:
         ConnectionService._map_data_cache.clear()
     elif key == "cache_seo_metadata_ttl":
         _sim_meta_cache.clear()
+
+
+# ── AI Usage Analytics ─────────────────────────────────────────────────
+
+
+@router.get("/ai-usage/stats")
+async def get_ai_usage_stats(
+    days: int = Query(default=30, ge=1, le=365),
+    _user: CurrentUser = Depends(require_platform_admin()),
+    admin_supabase: Client = Depends(get_admin_supabase),
+) -> dict:
+    """Get aggregated AI usage stats for the platform.
+
+    Queries ``ai_usage_log`` (migration 150) for the specified period.
+    Returns breakdowns by provider, model, purpose, simulation, and daily trend.
+    """
+    from datetime import UTC, datetime, timedelta
+
+    since = (datetime.now(UTC) - timedelta(days=days)).isoformat()
+
+    # Fetch raw logs for the period (limit 10k for safety)
+    resp = await (
+        admin_supabase.table("ai_usage_log")
+        .select(
+            "provider, model, purpose, simulation_id, prompt_tokens,"
+            " completion_tokens, total_tokens, duration_ms,"
+            " estimated_cost_usd, key_source, created_at"
+        )
+        .gte("created_at", since)
+        .order("created_at", desc=True)
+        .limit(10000)
+        .execute()
+    )
+    rows = resp.data or []
+
+    # Aggregate in Python (small dataset, no need for PG function yet)
+    total_calls = len(rows)
+    total_tokens = sum(r.get("total_tokens", 0) for r in rows)
+    total_cost = sum(float(r.get("estimated_cost_usd", 0)) for r in rows)
+
+    by_provider: dict[str, dict] = {}
+    by_model: dict[str, dict] = {}
+    by_purpose: dict[str, dict] = {}
+    by_simulation: dict[str, dict] = {}
+    by_day: dict[str, dict] = {}
+    key_sources: dict[str, dict] = {}
+
+    for r in rows:
+        provider = r.get("provider", "unknown")
+        model = r.get("model", "unknown")
+        purpose = r.get("purpose", "unknown")
+        sim_id = r.get("simulation_id") or "platform"
+        cost = float(r.get("estimated_cost_usd", 0))
+        tokens = r.get("total_tokens", 0)
+        ks = r.get("key_source", "env")
+        day = (r.get("created_at") or "")[:10]
+
+        for key, bucket in [
+            (provider, by_provider), (model, by_model),
+            (purpose, by_purpose), (sim_id, by_simulation),
+            (day, by_day), (ks, key_sources),
+        ]:
+            if key not in bucket:
+                bucket[key] = {"calls": 0, "tokens": 0, "cost": 0.0}
+            bucket[key]["calls"] += 1
+            bucket[key]["tokens"] += tokens
+            bucket[key]["cost"] += cost
+
+    def _to_list(d: dict, key_name: str = "name") -> list[dict]:
+        return sorted(
+            [{key_name: k, **v} for k, v in d.items()],
+            key=lambda x: x["cost"], reverse=True,
+        )
+
+    return {
+        "success": True,
+        "data": {
+            "period_days": days,
+            "total_calls": total_calls,
+            "total_tokens": total_tokens,
+            "total_cost_usd": round(total_cost, 4),
+            "avg_cost_per_call": round(total_cost / total_calls, 6) if total_calls else 0,
+            "by_provider": _to_list(by_provider, "provider"),
+            "by_model": _to_list(by_model, "model"),
+            "by_purpose": _to_list(by_purpose, "purpose"),
+            "by_simulation": _to_list(by_simulation, "simulation_id"),
+            "daily_trend": sorted(
+                [{"date": k, **v} for k, v in by_day.items()],
+                key=lambda x: x["date"],
+            ),
+            "key_sources": key_sources,
+        },
+    }
