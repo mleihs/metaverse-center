@@ -191,6 +191,42 @@ class AgentMoodService:
         return result.data or []
 
     @classmethod
+    async def get_agent_mood(
+        cls,
+        supabase: Client,
+        agent_id: UUID,
+        simulation_id: UUID,
+    ) -> dict | None:
+        """Get the current mood record for an agent."""
+        result = await (
+            supabase.table("agent_mood")
+            .select("*")
+            .eq("agent_id", str(agent_id))
+            .eq("simulation_id", str(simulation_id))
+            .maybe_single()
+            .execute()
+        )
+        return result.data
+
+    @classmethod
+    async def list_moodlets(
+        cls,
+        supabase: Client,
+        agent_id: UUID,
+        simulation_id: UUID,
+    ) -> list[dict]:
+        """List all moodlets for an agent in a simulation."""
+        result = await (
+            supabase.table("agent_moodlets")
+            .select("*")
+            .eq("agent_id", str(agent_id))
+            .eq("simulation_id", str(simulation_id))
+            .order("created_at", desc=True)
+            .execute()
+        )
+        return result.data or []
+
+    @classmethod
     async def _update_stress_levels(
         cls,
         supabase: Client,

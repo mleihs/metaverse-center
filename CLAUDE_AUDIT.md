@@ -130,6 +130,15 @@ Die Architektur ist gut strukturiert (FastAPI Services/Routers, Lit Signals), le
 - PlatformConfigService.get/get_multiple auf async migriert, alle 9 Caller aktualisiert
 - SEO-Middleware bewusst sync (eigener create_client, separater Client-Lebenszyklus)
 
+### Pattern-Violations — BEHOBEN (23.03.2026)
+
+| Maßnahme | Datei | Status |
+|----------|-------|--------|
+| agent_autonomy.py: 6 DB-Queries in Services extrahiert | `routers/agent_autonomy.py` + 4 Service-Dateien | Done |
+| Cipher public dispatch: admin_supabase → anon_supabase | `routers/cipher.py`, Migration 149 | Done |
+| ADR-009: admin_supabase Usage Policy | `docs/adr/009-admin-supabase-usage-policy.md` | Done |
+| Fehlende Audit-Logs in invitations.py | `routers/invitations.py` | Done |
+
 ### Zusätzliche Findings (Deep-Dive-Verifizierung, 23.03.2026)
 
 1.  **Postgres-First-Verletzungen:** 8 Race Conditions in `operative_mission_service.py`, `cycle_resolution_service.py`, `heartbeat_service.py`, `lore_service.py` — fetch-compute-update statt atomischer RPCs.

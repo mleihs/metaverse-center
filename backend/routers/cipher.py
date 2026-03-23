@@ -14,7 +14,7 @@ from uuid import UUID
 import sentry_sdk
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
-from backend.dependencies import get_admin_supabase, get_current_user, require_platform_admin
+from backend.dependencies import get_admin_supabase, get_anon_supabase, get_current_user, require_platform_admin
 from backend.middleware.rate_limit import RATE_LIMIT_ADMIN_MUTATION, limiter
 from backend.models.cipher import (
     CipherRedeemRequest,
@@ -42,12 +42,15 @@ public_router = APIRouter(
 async def redeem_cipher(
     request: Request,
     body: CipherRedeemRequest,
-    admin_supabase: Client = Depends(get_admin_supabase),
+    supabase: Client = Depends(get_anon_supabase),
 ) -> CipherRedemptionResponse:
     """Redeem a cipher code from an Instagram dispatch.
 
     No authentication required, but authenticated users get
     their redemption linked to their account.
+
+    Uses anon client — the RPC is SECURITY DEFINER and handles
+    all validation internally (migration 149 grants anon access).
     """
     # Extract user ID if authenticated (optional — anonymous is fine)
     user_id: UUID | None = None
@@ -70,7 +73,7 @@ async def redeem_cipher(
 
     try:
         result = await CipherService.redeem_code(
-            admin_supabase,
+            supabase,
             code=body.code,
             user_id=user_id,
             ip_hash=ip_hash,

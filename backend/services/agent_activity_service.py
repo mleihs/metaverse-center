@@ -18,6 +18,7 @@ from __future__ import annotations
 import logging
 import math
 import random
+from datetime import datetime
 from itertools import combinations
 from uuid import UUID
 
@@ -177,6 +178,53 @@ BASE_INTERACTION_PROBABILITY = 0.15
 
 class AgentActivityService:
     """Selects and executes autonomous agent activities each heartbeat tick."""
+
+    # ── Read Methods ──────────────────────────────────────────────
+
+    @classmethod
+    async def list_activities(
+        cls,
+        supabase: Client,
+        simulation_id: UUID,
+        *,
+        agent_id: UUID | None = None,
+        activity_type: str | None = None,
+        min_significance: int = 1,
+        since: datetime | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> tuple[list[dict], int]:
+        """List activities with agent enrichment and pagination."""
+        query = (
+            supabase.table("agent_activities")
+            .select(
+                "*, agents!agent_activities_agent_id_fkey(name, portrait_image_url)",
+                count="exact",
+            )
+            .eq("simulation_id", str(simulation_id))
+            .gte("significance", min_significance)
+        )
+        if since:
+            query = query.gte("created_at", since.isoformat())
+        if agent_id:
+            query = query.eq("agent_id", str(agent_id))
+        if activity_type:
+            query = query.eq("activity_type", activity_type)
+
+        result = await (
+            query.order("created_at", desc=True)
+            .range(offset, offset + limit - 1)
+            .execute()
+        )
+
+        data = []
+        for row in result.data or []:
+            agent_data = row.pop("agents", {}) or {}
+            row["agent_name"] = agent_data.get("name")
+            row["agent_portrait"] = agent_data.get("portrait_image_url")
+            data.append(row)
+
+        return data, result.count or 0
 
     # ── Activity Selection (Tier 1: 0 LLM cost) ─────────────────
 

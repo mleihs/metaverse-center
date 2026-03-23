@@ -1,4 +1,4 @@
-"""Agent autonomy read endpoints — mood, needs, opinions, activities.
+"""Agent autonomy read endpoints -- mood, needs, opinions, activities.
 
 All data is publicly readable (public-first architecture).
 Write operations are handled by the heartbeat tick pipeline, not this router.
@@ -22,6 +22,10 @@ from backend.models.agent_autonomy import (
     SimulationMoodSummary,
 )
 from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.services.agent_activity_service import AgentActivityService
+from backend.services.agent_mood_service import AgentMoodService
+from backend.services.agent_needs_service import AgentNeedsService
+from backend.services.agent_opinion_service import AgentOpinionService
 from backend.services.morning_briefing_service import MorningBriefingService
 from supabase import AsyncClient as Client
 
@@ -33,7 +37,7 @@ router = APIRouter(
 )
 
 
-# ── Mood ─────────────────────────────────────────────────────────────────────
+# -- Mood -----------------------------------------------------------------------
 
 
 @router.get(
@@ -48,15 +52,8 @@ async def get_agent_mood(
     supabase: Client = Depends(get_supabase),
 ) -> dict:
     """Get the current emotional state of an agent."""
-    result = await (
-        supabase.table("agent_mood")
-        .select("*")
-        .eq("agent_id", str(agent_id))
-        .eq("simulation_id", str(simulation_id))
-        .maybe_single()
-        .execute()
-    )
-    return {"success": True, "data": result.data}
+    data = await AgentMoodService.get_agent_mood(supabase, agent_id, simulation_id)
+    return {"success": True, "data": data}
 
 
 @router.get(
@@ -71,18 +68,11 @@ async def list_agent_moodlets(
     supabase: Client = Depends(get_supabase),
 ) -> dict:
     """List all active moodlets for an agent."""
-    result = await (
-        supabase.table("agent_moodlets")
-        .select("*")
-        .eq("agent_id", str(agent_id))
-        .eq("simulation_id", str(simulation_id))
-        .order("created_at", desc=True)
-        .execute()
-    )
-    return {"success": True, "data": result.data}
+    data = await AgentMoodService.list_moodlets(supabase, agent_id, simulation_id)
+    return {"success": True, "data": data}
 
 
-# ── Needs ────────────────────────────────────────────────────────────────────
+# -- Needs -----------------------------------------------------------------------
 
 
 @router.get(
@@ -97,18 +87,11 @@ async def get_agent_needs(
     supabase: Client = Depends(get_supabase),
 ) -> dict:
     """Get the current need levels of an agent."""
-    result = await (
-        supabase.table("agent_needs")
-        .select("*")
-        .eq("agent_id", str(agent_id))
-        .eq("simulation_id", str(simulation_id))
-        .maybe_single()
-        .execute()
-    )
-    return {"success": True, "data": result.data}
+    data = await AgentNeedsService.get_agent_needs(supabase, agent_id, simulation_id)
+    return {"success": True, "data": data}
 
 
-# ── Opinions ─────────────────────────────────────────────────────────────────
+# -- Opinions --------------------------------------------------------------------
 
 
 @router.get(
@@ -123,21 +106,7 @@ async def list_agent_opinions(
     supabase: Client = Depends(get_supabase),
 ) -> dict:
     """List all opinions this agent holds about other agents."""
-    result = await (
-        supabase.table("agent_opinions")
-        .select("*, agents!agent_opinions_target_agent_id_fkey(name, portrait_image_url)")
-        .eq("agent_id", str(agent_id))
-        .eq("simulation_id", str(simulation_id))
-        .order("opinion_score", desc=True)
-        .execute()
-    )
-    # Flatten joined agent data
-    data = []
-    for row in result.data or []:
-        agent_data = row.pop("agents", {}) or {}
-        row["target_agent_name"] = agent_data.get("name")
-        row["target_agent_portrait"] = agent_data.get("portrait_image_url")
-        data.append(row)
+    data = await AgentOpinionService.list_opinions(supabase, agent_id, simulation_id)
     return {"success": True, "data": data}
 
 
@@ -154,19 +123,13 @@ async def list_agent_opinion_modifiers(
     supabase: Client = Depends(get_supabase),
 ) -> dict:
     """List active opinion modifiers for an agent, optionally filtered by target."""
-    query = (
-        supabase.table("agent_opinion_modifiers")
-        .select("*")
-        .eq("agent_id", str(agent_id))
-        .eq("simulation_id", str(simulation_id))
+    data = await AgentOpinionService.list_modifiers(
+        supabase, agent_id, simulation_id, target_agent_id,
     )
-    if target_agent_id:
-        query = query.eq("target_agent_id", str(target_agent_id))
-    result = await query.order("created_at", desc=True).execute()
-    return {"success": True, "data": result.data}
+    return {"success": True, "data": data}
 
 
-# ── Activities ───────────────────────────────────────────────────────────────
+# -- Activities ------------------------------------------------------------------
 
 
 @router.get(
@@ -187,37 +150,12 @@ async def list_activities(
 ) -> dict:
     """List autonomous activities for a simulation with filters."""
     since = datetime.now(UTC) - timedelta(hours=since_hours)
-
-    query = (
-        supabase.table("agent_activities")
-        .select(
-            "*, agents!agent_activities_agent_id_fkey(name, portrait_image_url)",
-            count="exact",
-        )
-        .eq("simulation_id", str(simulation_id))
-        .gte("significance", min_significance)
-        .gte("created_at", since.isoformat())
+    data, total = await AgentActivityService.list_activities(
+        supabase, simulation_id,
+        agent_id=agent_id, activity_type=activity_type,
+        min_significance=min_significance, since=since,
+        limit=limit, offset=offset,
     )
-    if agent_id:
-        query = query.eq("agent_id", str(agent_id))
-    if activity_type:
-        query = query.eq("activity_type", activity_type)
-
-    result = await (
-        query.order("created_at", desc=True)
-        .range(offset, offset + limit - 1)
-        .execute()
-    )
-
-    # Flatten joined agent data
-    data = []
-    for row in result.data or []:
-        agent_data = row.pop("agents", {}) or {}
-        row["agent_name"] = agent_data.get("name")
-        row["agent_portrait"] = agent_data.get("portrait_image_url")
-        data.append(row)
-
-    total = result.count or 0
     return {
         "success": True,
         "data": data,
@@ -225,7 +163,7 @@ async def list_activities(
     }
 
 
-# ── Simulation-Level Summaries ───────────────────────────────────────────────
+# -- Simulation-Level Summaries --------------------------------------------------
 
 
 @router.get(
@@ -245,7 +183,7 @@ async def get_simulation_mood_summary(
     return {"success": True, "data": summary}
 
 
-# ── Morning Briefing ─────────────────────────────────────────────────────
+# -- Morning Briefing ------------------------------------------------------------
 
 
 @router.get(

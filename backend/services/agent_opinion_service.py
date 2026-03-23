@@ -291,6 +291,44 @@ class AgentOpinionService:
         return added
 
     @classmethod
+    async def list_opinions(
+        cls, supabase: Client, agent_id: UUID, simulation_id: UUID,
+    ) -> list[dict]:
+        """List all opinions an agent holds, enriched with target agent name/portrait."""
+        result = await (
+            supabase.table("agent_opinions")
+            .select("*, agents!agent_opinions_target_agent_id_fkey(name, portrait_image_url)")
+            .eq("agent_id", str(agent_id))
+            .eq("simulation_id", str(simulation_id))
+            .order("opinion_score", desc=True)
+            .execute()
+        )
+        data = []
+        for row in result.data or []:
+            agent_data = row.pop("agents", {}) or {}
+            row["target_agent_name"] = agent_data.get("name")
+            row["target_agent_portrait"] = agent_data.get("portrait_image_url")
+            data.append(row)
+        return data
+
+    @classmethod
+    async def list_modifiers(
+        cls, supabase: Client, agent_id: UUID, simulation_id: UUID,
+        target_agent_id: UUID | None = None,
+    ) -> list[dict]:
+        """List opinion modifiers for an agent, optionally filtered by target."""
+        query = (
+            supabase.table("agent_opinion_modifiers")
+            .select("*")
+            .eq("agent_id", str(agent_id))
+            .eq("simulation_id", str(simulation_id))
+        )
+        if target_agent_id:
+            query = query.eq("target_agent_id", str(target_agent_id))
+        result = await query.order("created_at", desc=True).execute()
+        return result.data or []
+
+    @classmethod
     async def _ensure_opinion_record(
         cls,
         supabase: Client,

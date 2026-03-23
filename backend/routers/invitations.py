@@ -14,6 +14,7 @@ from backend.models.invitation import (
     InvitationResponse,
 )
 from backend.models.member import MemberResponse
+from backend.services.audit_service import AuditService
 from backend.services.invitation_service import InvitationService
 from supabase import AsyncClient as Client
 
@@ -42,6 +43,11 @@ async def create_invitation(
         invited_email=body.invited_email,
         invited_role=body.invited_role,
         expires_in_hours=body.expires_in_hours,
+    )
+    await AuditService.safe_log(
+        supabase, simulation_id, user.id,
+        "simulation_invitations", result.get("id"), "create",
+        details={"invited_email": body.invited_email, "invited_role": body.invited_role},
     )
     return {"success": True, "data": result}
 
@@ -105,4 +111,9 @@ async def accept_invitation(
 ) -> dict:
     """Accept an invitation — creates membership."""
     result = await InvitationService.accept_invitation(supabase, token, user.id)
+    await AuditService.safe_log(
+        supabase, result.get("simulation_id"), user.id,
+        "simulation_invitations", None, "accept",
+        details={"token": token[:8] + "..."},
+    )
     return {"success": True, "data": result}

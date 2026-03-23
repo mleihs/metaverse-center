@@ -164,6 +164,21 @@ class AgentNeedsService:
         return result.data or []
 
     @classmethod
+    async def get_agent_needs(
+        cls, supabase: Client, agent_id: UUID, simulation_id: UUID,
+    ) -> dict | None:
+        """Get need levels for a single agent."""
+        result = await (
+            supabase.table("agent_needs")
+            .select("*")
+            .eq("agent_id", str(agent_id))
+            .eq("simulation_id", str(simulation_id))
+            .maybe_single()
+            .execute()
+        )
+        return result.data
+
+    @classmethod
     async def apply_zone_modifiers(
         cls,
         supabase: Client,
