@@ -70,14 +70,14 @@ class ExternalServiceResolver:
         self._admin_supabase = admin_supabase
         self._cache: dict[str, str | None] | None = None
 
-    def _get_admin_client(self) -> Client | None:
+    async def _get_admin_client(self) -> Client | None:
         """Get admin client for platform key lookups, creating lazily if needed."""
         if self._admin_supabase:
             return self._admin_supabase
         try:
-            from supabase import create_client
+            from supabase import create_async_client
 
-            self._admin_supabase = create_client(
+            self._admin_supabase = await create_async_client(
                 platform_settings.supabase_url,
                 platform_settings.supabase_service_role_key,
             )
@@ -157,7 +157,7 @@ class ExternalServiceResolver:
             return None
 
         api_key = self._get_decrypted(settings, "guardian_api_key")
-        admin = self._get_admin_client()
+        admin = await self._get_admin_client()
         if not api_key and admin:
             api_key = await get_platform_api_key(admin, "guardian_api_key")
         if not api_key:
@@ -179,7 +179,7 @@ class ExternalServiceResolver:
             return None
 
         api_key = self._get_decrypted(settings, "newsapi_api_key")
-        admin = self._get_admin_client()
+        admin = await self._get_admin_client()
         if not api_key and admin:
             api_key = await get_platform_api_key(admin, "newsapi_api_key")
         if not api_key:
@@ -198,7 +198,7 @@ class ExternalServiceResolver:
         replicate_key = self._get_decrypted(settings, "replicate_api_key")
 
         # Platform settings fallback (before .env)
-        admin = self._get_admin_client()
+        admin = await self._get_admin_client()
         if not openrouter_key and admin:
             openrouter_key = await get_platform_api_key(admin, "openrouter_api_key")
         if not replicate_key and admin:

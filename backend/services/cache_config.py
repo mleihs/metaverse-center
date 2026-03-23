@@ -28,9 +28,9 @@ async def load_ttls_from_db() -> None:
     global _cache_ttls  # noqa: PLW0603
     try:
         from backend.config import settings
-        from supabase import create_client
+        from supabase import create_async_client
 
-        admin_client = create_client(settings.supabase_url, settings.supabase_service_role_key)
+        admin_client = await create_async_client(settings.supabase_url, settings.supabase_service_role_key)
         from backend.services.platform_settings_service import PlatformSettingsService
 
         _cache_ttls = await PlatformSettingsService.get_cache_ttls(admin_client)

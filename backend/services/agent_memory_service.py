@@ -10,7 +10,7 @@ from backend.services.embedding_service import EmbeddingService
 from backend.services.generation_service import GenerationService
 from backend.services.translation_service import schedule_auto_translation
 from supabase import AsyncClient as Client
-from supabase import create_client
+from supabase import create_async_client
 
 logger = logging.getLogger(__name__)
 
@@ -23,9 +23,9 @@ MOCK_REFLECTIONS = [
 ]
 
 
-def _admin_client() -> Client:
+async def _admin_client() -> Client:
     """Create a service-role Supabase client for memory writes."""
-    return create_client(settings.supabase_url, settings.supabase_service_role_key)
+    return await create_async_client(settings.supabase_url, settings.supabase_service_role_key)
 
 
 class AgentMemoryService:
@@ -99,7 +99,7 @@ class AgentMemoryService:
 
         Uses an admin client for writes (fire-and-forget from chat, RLS requires service_role).
         """
-        admin = _admin_client()
+        admin = await _admin_client()
 
         if settings.forge_mock_mode:
             logger.info("MOCK_MODE: returning template observations")
