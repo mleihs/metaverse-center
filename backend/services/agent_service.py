@@ -58,7 +58,7 @@ class AgentService(BaseService):
 
         total = response.count if response.count is not None else len(response.data or [])
         agents = response.data or []
-        cls._enrich_ambassador_flag(supabase, simulation_id, agents)
+        await cls._enrich_ambassador_flag(supabase, simulation_id, agents)
         return agents, total
 
     @classmethod
@@ -180,7 +180,7 @@ class AgentService(BaseService):
                 detail=f"Agent with slug '{slug}' not found in simulation '{simulation_id}'.",
             )
         agent = response.data[0]
-        cls._enrich_ambassador_flag(supabase, simulation_id, [agent])
+        await cls._enrich_ambassador_flag(supabase, simulation_id, [agent])
         return agent
 
     @classmethod
@@ -222,11 +222,11 @@ class AgentService(BaseService):
         agent["reactions"] = agent.pop("event_reactions", []) or []
         agent["building_relations"] = agent.pop("building_agent_relations", []) or []
 
-        cls._enrich_ambassador_flag(supabase, simulation_id, [agent])
+        await cls._enrich_ambassador_flag(supabase, simulation_id, [agent])
         return agent
 
     @classmethod
-    def _enrich_ambassador_flag(
+    async def _enrich_ambassador_flag(
         cls,
         supabase: Client,
         simulation_id: UUID,
@@ -242,7 +242,7 @@ class AgentService(BaseService):
 
         sim_str = str(simulation_id)
         try:
-            response = (
+            response = await (
                 supabase.table("embassies")
                 .select("simulation_a_id, simulation_b_id, embassy_metadata")
                 .eq("status", "active")

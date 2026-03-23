@@ -524,7 +524,7 @@ class HeartbeatService:
 
             # Phase 11: Produce chronicle entries (peacetime content if quiet)
             if not entries:
-                entries.extend(cls._generate_peacetime_entries(
+                entries.extend(await cls._generate_peacetime_entries(
                     admin, sim_id, tick_number, heartbeat_id,
                 ))
 
@@ -1128,7 +1128,7 @@ class HeartbeatService:
     # ── Peacetime Content ──────────────────────────────────────
 
     @classmethod
-    def _generate_peacetime_entries(
+    async def _generate_peacetime_entries(
         cls, admin: Client, sim_id: UUID,
         tick_number: int, heartbeat_id: UUID,
     ) -> list[dict]:
@@ -1138,13 +1138,14 @@ class HeartbeatService:
 
         # Check simulation health for prosperity flavor
         try:
-            health = (
+            _resp = await (
                 admin.table("mv_simulation_health")
                 .select("overall_health, health_label")
                 .eq("simulation_id", str(sim_id))
                 .limit(1)
                 .execute()
-            ).data
+            )
+            health = _resp.data
             if health:
                 h = float(health[0].get("overall_health", 0.5))
                 label = health[0].get("health_label", "functional")
