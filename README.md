@@ -230,6 +230,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 ┌────────────────┐    │
 │   FastAPI       │    │
 │  48 routers     │    │
+│  AsyncClient    │    │
 │   PyJWT auth    │    │
 │   Sentry SDK    │    │
 └──────┬─────────┘    │
@@ -239,7 +240,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 │   Supabase (PostgreSQL)          │
 │   85+ tables + pgvector          │
 │   85+ functions, 62 triggers     │
-│   258 RLS policies               │
+│   258 RLS policies, 9 ADRs       │
 │   4 materialized views           │
 │   Realtime channels              │
 │   Auth (ES256/HS256)             │
@@ -253,7 +254,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 - **Hybrid Supabase** – Frontend talks directly to Supabase for Auth, Storage, and Realtime. Business logic goes through FastAPI, which forwards the user's JWT so RLS is always enforced.
 - **Defense in Depth** – FastAPI `Depends()` validates roles (layer 1), Supabase RLS validates row-level access (layer 2). Neither layer trusts the other.
 - **Per-Simulation Theming** – CSS custom properties cascade through shadow DOM. Each simulation gets a theme preset validated against WCAG 2.1 AA.
-- **Database-First Logic** – Business invariants enforced in PostgreSQL via 75+ functions and 25 trigger functions. Epoch cloning (~250 lines PL/pgSQL) and forge materialization run as atomic transactions.
+- **Database-First Logic** – Business invariants enforced in PostgreSQL via 85+ functions and 27 trigger functions. Epoch cloning (~250 lines PL/pgSQL), forge materialization, and game mechanics (building degradation, zone security, RP grants, fortification expiry) run as atomic transactions. See ADR-007.
 - **Game Instance Isolation** – Epoch start atomically clones participating simulations into balanced game instances. Templates stay untouched.
 - **Structured Logging** – structlog over stdlib logging. JSON in production, console locally. Request context (user_id, request_id, path) injected via middleware.
 - **Admin-Configurable AI** – LLM model selection (default, fallback, research, forge) configurable at runtime with environment-specific overrides.
@@ -269,7 +270,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 | FastAPI | 0.135 | Async web framework, 48 routers |
 | Pydantic v2 | 2.12 | Request/response validation, settings |
 | structlog | 25.5 | Structured logging (JSON production, console dev) |
-| Supabase Python | 2.25 | PostgreSQL client with RLS enforcement |
+| Supabase Python | 2.25 | Native AsyncClient with RLS enforcement |
 | PyJWT | 2.11 | JWT verification (ES256 production, HS256 local) |
 | Sentry SDK | 2.29 | Error tracking, performance monitoring |
 | Pillow | 12.1 | Image processing, AVIF→JPEG conversion |
@@ -299,7 +300,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 
 | Component | Technology |
 |:----------|:-----------|
-| Database | PostgreSQL via Supabase (70+ tables, 75+ functions, 246 RLS policies, pgvector) |
+| Database | PostgreSQL via Supabase (85+ tables, 85+ functions, 258 RLS policies, pgvector) |
 | Auth | Supabase Auth (JWT with ES256 in production, HS256 locally) |
 | Email | SMTP SSL (bilingual tactical briefing emails, fog-of-war compliant) |
 | AI Text | OpenRouter (admin-configurable model chain with env-specific fallbacks) |
@@ -316,21 +317,22 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 
 | Metric | Count |
 |:-------|------:|
-| Database tables | 70+ |
-| PostgreSQL functions | 75+ |
-| Trigger functions | 25 (59 triggers total) |
+| Database tables | 85+ |
+| PostgreSQL functions | 85+ (incl. 6 atomic game RPCs) |
+| Trigger functions | 27 (62 triggers total) |
 | Views (regular + materialized) | 12 + 4 |
-| RLS policies | 246 |
-| SQL migrations | 153 |
-| Routers | 47 |
-| Web Components | 211 custom elements |
+| RLS policies | 258 |
+| SQL migrations | 159 |
+| Routers | 48 |
+| Web Components | 213 custom elements |
+| Unit tests | 889 (pytest + vitest) |
 | Localized UI strings | 5,319 (EN/DE, 0 missing) |
 | GA4 custom events | 44 |
-| Documentation files | 64 (Divio structure + ADRs) |
+| Documentation files | 66 (Divio structure + 9 ADRs) |
 | Flagship simulations | 5 + 1 joke preset |
 | Operative types | 6 |
 | Scoring dimensions | 5 |
-| Bot personalities | 5 archetypes × 3 difficulty levels |
+| Bot personalities | 5 archetypes x 3 difficulty levels |
 | Theme presets | 6 (WCAG 2.1 AA validated, 1 exempt) |
 | Email templates | 7 (bilingual, per-simulation themed) |
 

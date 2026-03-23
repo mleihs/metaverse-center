@@ -93,7 +93,7 @@ tags: [index, catalog, documentation]
 |----------|---------|------|------|--------|
 | [Simulation Forge — Live Playthrough Audit](audits/forge-playthrough-audit-2026-03-07.md) | 1.0 | 2026-03-07 | en | active |
 
-## Architecture Decision Records (8)
+## Architecture Decision Records (9)
 
 | ADR | Decision |
 |-----|----------|
@@ -105,6 +105,7 @@ tags: [index, catalog, documentation]
 | [ADR-006: Platform Admin via SECURITY DEFINER RPC](adr/006-platform-admin-security-definer.md) | Platform Admin via SECURITY DEFINER RPC |
 | [ADR-007: Datenbank-Logik in der Datenbank](adr/007-database-logic-in-database.md) | Datenbank-Logik in der Datenbank |
 | [ADR-008: Resonance Function Caps Hardcoded vs. Settings](adr/008-resonance-settings-hardcoded.md) | Resonance Function Caps Hardcoded vs. Settings |
+| [ADR-009: admin_supabase Usage Policy](adr/009-admin-supabase-usage-policy.md) | admin_supabase Usage Policy (Phase 0-6 audit) |
 
 ## Archive (2)
 
