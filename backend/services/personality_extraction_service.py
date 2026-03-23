@@ -140,7 +140,7 @@ class PersonalityExtractionService:
         # Call LLM
         openrouter = OpenRouterService(api_key=openrouter_api_key)
         try:
-            response = await openrouter.chat(
+            content = await openrouter.generate(
                 model=resolved.model_id,
                 messages=[
                     {"role": "system", "content": _EXTRACTION_SYSTEM_PROMPT},
@@ -148,15 +148,11 @@ class PersonalityExtractionService:
                 ],
                 temperature=0.3,
                 max_tokens=512,
-                response_format={"type": "json_object"},
             )
         except Exception:
             logger.exception("LLM call failed for personality extraction")
             sentry_sdk.capture_exception()
             return cls._default_profile()
-
-        # Parse response
-        content = response.get("content", "")
         profile = cls._parse_profile(content)
 
         # Store on agent

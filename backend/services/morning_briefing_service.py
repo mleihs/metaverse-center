@@ -353,7 +353,7 @@ class MorningBriefingService:
             resolved = await model_resolver.resolve_text_model("event_generation")
             openrouter = OpenRouterService(api_key=openrouter_api_key)
 
-            response = await openrouter.chat(
+            content = await openrouter.generate(
                 model=resolved.model_id,
                 messages=[
                     {"role": "system", "content": _BRIEFING_SYSTEM},
@@ -361,10 +361,7 @@ class MorningBriefingService:
                 ],
                 temperature=0.6,
                 max_tokens=800,
-                response_format={"type": "json_object"},
             )
-
-            content = response.get("content", "")
             repaired = repair_json_output(content)
             data = json.loads(repaired)
             return data.get("narrative_en"), data.get("narrative_de")

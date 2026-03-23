@@ -382,7 +382,7 @@ class AutonomousEventService:
             resolved = await model_resolver.resolve_text_model("event_generation")
             openrouter = OpenRouterService(api_key=openrouter_api_key)
 
-            response = await openrouter.chat(
+            content = await openrouter.generate(
                 model=resolved.model_id,
                 messages=[
                     {"role": "system", "content": _EVENT_NARRATIVE_SYSTEM},
@@ -390,10 +390,7 @@ class AutonomousEventService:
                 ],
                 temperature=0.7,
                 max_tokens=512,
-                response_format={"type": "json_object"},
             )
-
-            content = response.get("content", "")
             repaired = repair_json_output(content)
             narrative = json.loads(repaired)
 
