@@ -135,7 +135,7 @@ class PersonalityExtractionService:
 
         # Resolve model
         model_resolver = ModelResolver(supabase, simulation_id)
-        resolved = await model_resolver.resolve("agent_description")
+        resolved = await model_resolver.resolve_text_model("agent_description")
 
         # Call LLM
         openrouter = OpenRouterService(api_key=openrouter_api_key)

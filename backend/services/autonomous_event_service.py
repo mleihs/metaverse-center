@@ -379,7 +379,7 @@ class AutonomousEventService:
 
         try:
             model_resolver = ModelResolver(supabase, simulation_id)
-            resolved = await model_resolver.resolve("event_generation")
+            resolved = await model_resolver.resolve_text_model("event_generation")
             openrouter = OpenRouterService(api_key=openrouter_api_key)
 
             response = await openrouter.chat(
