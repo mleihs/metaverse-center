@@ -223,7 +223,7 @@ class AgentOpinionService:
         await cls._ensure_opinion_record(supabase, agent_id, target_agent_id, simulation_id)
 
         # Insert modifier
-        supabase.table("agent_opinion_modifiers").insert({
+        await supabase.table("agent_opinion_modifiers").insert({
             "agent_id": str(agent_id),
             "target_agent_id": str(target_agent_id),
             "simulation_id": str(simulation_id),
@@ -238,7 +238,7 @@ class AgentOpinionService:
         }).execute()
 
         # Atomic interaction tracking via fn_increment_opinion_interaction (migration 146)
-        supabase.rpc("fn_increment_opinion_interaction", {
+        await supabase.rpc("fn_increment_opinion_interaction", {
             "p_agent_id": str(agent_id),
             "p_target_agent_id": str(target_agent_id),
         }).execute()
