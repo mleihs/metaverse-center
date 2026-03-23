@@ -34,9 +34,19 @@ Admin Supabase (`service_role` client) is permitted ONLY in these contexts:
 
 5. **Game epoch mechanics** — where epoch-scoped operations require cross-participant writes. Examples: `cycle_resolution_service`, `operative_mission_service` (during resolution), `bot_service`.
 
+### Permitted Exception: Public Endpoints with SECURITY DEFINER RPCs
+
+Public (unauthenticated) endpoints MAY use `get_admin_supabase()` when ALL of these conditions are met:
+1. The endpoint delegates to a SECURITY DEFINER RPC that contains ALL validation internally (rate limiting, deduplication, input sanitization)
+2. The RPC is NOT granted to `anon` or `authenticated` (defense-in-depth: only service_role can call it)
+3. The endpoint has FastAPI-level rate limiting (`@limiter.limit()`)
+4. The RPC returns no sensitive data
+
+Example: `POST /api/v1/public/bureau/dispatch` (cipher redemption) uses `admin_supabase` to call `fn_redeem_cipher_code` — the RPC enforces per-IP rate limits, deduplication, and returns only safe reward data.
+
 ### Forbidden Uses
 
-1. **Public endpoints** — NEVER use admin client for unauthenticated routes. Use `get_anon_supabase()` with SECURITY DEFINER RPCs instead.
+1. **Granting SECURITY DEFINER RPCs to anon/authenticated** — NEVER. All SECURITY DEFINER RPCs must be callable only by service_role. The backend provides the security boundary. (See incident: migration 096→147.)
 
 2. **Normal user CRUD** — user-scoped reads/writes must use `get_supabase()` (user JWT) to enforce RLS.
 

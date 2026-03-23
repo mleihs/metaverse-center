@@ -135,7 +135,7 @@ Die Architektur ist gut strukturiert (FastAPI Services/Routers, Lit Signals), le
 | Maßnahme | Datei | Status |
 |----------|-------|--------|
 | agent_autonomy.py: 6 DB-Queries in Services extrahiert | `routers/agent_autonomy.py` + 4 Service-Dateien | Done |
-| Cipher public dispatch: admin_supabase → anon_supabase | `routers/cipher.py`, Migration 149 | Done |
+| Cipher public dispatch: admin_supabase beibehalten (SECURITY DEFINER RPC darf nicht an anon granted werden per ADR-006). Documented exception in ADR-009 | `routers/cipher.py`, `docs/adr/009-admin-supabase-usage-policy.md` | Done |
 | ADR-009: admin_supabase Usage Policy | `docs/adr/009-admin-supabase-usage-policy.md` | Done |
 | Fehlende Audit-Logs in invitations.py | `routers/invitations.py` | Done |
 
