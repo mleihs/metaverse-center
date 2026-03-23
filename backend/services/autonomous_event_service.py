@@ -401,7 +401,7 @@ class AutonomousEventService:
             logger.warning("LLM narrative failed, using template", exc_info=True)
             narrative = cls._template_narrative(trigger, agent_names, zone_name)
 
-        return cls._insert_event(
+        return await cls._insert_event(
             supabase, simulation_id, event_data, trigger_config, narrative,
         )
 
@@ -419,12 +419,12 @@ class AutonomousEventService:
         agent_names = ", ".join(a.get("name", "Unknown") for a in agents)
         narrative = cls._template_narrative(trigger, agent_names, "")
 
-        return cls._insert_event(
+        return await cls._insert_event(
             supabase, simulation_id, event_data, trigger_config, narrative,
         )
 
     @classmethod
-    def _insert_event(
+    async def _insert_event(
         cls,
         supabase: Client,
         simulation_id: UUID,
@@ -456,7 +456,7 @@ class AutonomousEventService:
             if zone_id:
                 record["zone_id"] = str(zone_id)
 
-            result = supabase.table("events").insert(record).execute()
+            result = await supabase.table("events").insert(record).execute()
             return result.data[0] if result.data else None
 
         except Exception:

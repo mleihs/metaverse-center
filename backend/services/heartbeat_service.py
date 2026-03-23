@@ -154,7 +154,7 @@ class HeartbeatService:
             "health_baseline_floor": 0.10,
             "resonance_warning_ticks": 2,
         }
-        return PlatformConfigService.get_multiple(
+        return await PlatformConfigService.get_multiple(
             admin, defaults, prefix="heartbeat_",
         )
 

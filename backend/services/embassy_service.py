@@ -318,7 +318,7 @@ class EmbassyService:
             }).eq("id", embassy["building_a_id"]).execute()
 
             # Update building B
-            admin_supabase.table("buildings").update({
+            await admin_supabase.table("buildings").update({
                 "special_type": "embassy",
                 "special_attributes": serialize_for_json({
                     "embassy_id": eid,

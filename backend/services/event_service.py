@@ -478,7 +478,7 @@ class EventService(BaseService):
                 .execute()
             ).data or []
             if crisis_events:
-                degradation = PlatformConfigService.get(
+                degradation = await PlatformConfigService.get(
                     supabase, "heartbeat_building_crisis_degradation", 0.10,
                 )
                 for ev in crisis_events:

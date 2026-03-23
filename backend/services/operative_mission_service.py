@@ -529,7 +529,7 @@ class OperativeMissionService:
 
             # Advance deploying -> active (migration 148: atomic compare-and-swap)
             if mission["status"] == "deploying":
-                use_rpc = PlatformConfigService.get(supabase, "use_atomic_game_rpcs", False)
+                use_rpc = await PlatformConfigService.get(supabase, "use_atomic_game_rpcs", False)
                 if use_rpc:
                     await supabase.rpc("fn_transition_mission_status", {
                         "p_mission_id": mission["id"],
@@ -784,7 +784,7 @@ class OperativeMissionService:
         result: dict = {"outcome": "success"}
 
         if mission.get("target_entity_id"):
-            use_rpc = PlatformConfigService.get(supabase, "use_atomic_game_rpcs", False)
+            use_rpc = await PlatformConfigService.get(supabase, "use_atomic_game_rpcs", False)
             if use_rpc:
                 # Atomic building degradation (migration 148)
                 rpc_result = await supabase.rpc("fn_degrade_building", {
@@ -836,7 +836,7 @@ class OperativeMissionService:
             )
             if zones_resp.data:
                 target_zone = secrets.SystemRandom().choice(zones_resp.data)
-                use_rpc = PlatformConfigService.get(supabase, "use_atomic_game_rpcs", False)
+                use_rpc = await PlatformConfigService.get(supabase, "use_atomic_game_rpcs", False)
                 if use_rpc:
                     # Atomic zone security downgrade (migration 148)
                     rpc_result = await supabase.rpc("fn_downgrade_zone_security", {
@@ -954,7 +954,7 @@ class OperativeMissionService:
         if not mission.get("target_entity_id"):
             return {"outcome": "success", "narrative": "Mission completed."}
 
-        use_rpc = PlatformConfigService.get(supabase, "use_atomic_game_rpcs", False)
+        use_rpc = await PlatformConfigService.get(supabase, "use_atomic_game_rpcs", False)
         if use_rpc:
             # Atomic batch relationship weakening (migration 148)
             rpc_result = await supabase.rpc("fn_weaken_relationships", {

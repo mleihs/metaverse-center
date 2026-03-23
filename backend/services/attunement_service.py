@@ -79,7 +79,7 @@ class AttunementService:
             )
 
         # Load max attunements from config via PlatformConfigService
-        att_config = PlatformConfigService.get_multiple(supabase, {
+        att_config = await PlatformConfigService.get_multiple(supabase, {
             "max_attunements": _DEFAULT_MAX_ATTUNEMENTS,
             "switching_cooldown_ticks": _DEFAULT_SWITCHING_COOLDOWN_TICKS,
         }, prefix="heartbeat_")

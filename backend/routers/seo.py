@@ -114,7 +114,7 @@ async def sitemap_xml(supabase: Client = Depends(get_anon_supabase)) -> Response
         # Individual lore chapters (long-form narrative content)
         if sim_id:
             try:
-                lore_sections = SeoService.get_lore_sections(supabase, sim_id)
+                lore_sections = await SeoService.get_lore_sections(supabase, sim_id)
                 for section in lore_sections:
                     section_updated = section.get("updated_at", sim_updated)
                     if isinstance(section_updated, str) and "T" in section_updated:
@@ -134,7 +134,7 @@ async def sitemap_xml(supabase: Client = Depends(get_anon_supabase)) -> Response
         # Individual agents (cool content — AI characters with personalities)
         if sim_id:
             try:
-                agents = SeoService.get_agents_for_sitemap(supabase, sim_id)
+                agents = await SeoService.get_agents_for_sitemap(supabase, sim_id)
                 for agent in agents:
                     agent_updated = agent.get("updated_at", sim_updated)
                     if isinstance(agent_updated, str) and "T" in agent_updated:
@@ -152,7 +152,7 @@ async def sitemap_xml(supabase: Client = Depends(get_anon_supabase)) -> Response
 
             # Individual buildings (world infrastructure)
             try:
-                buildings = SeoService.get_buildings_for_sitemap(supabase, sim_id)
+                buildings = await SeoService.get_buildings_for_sitemap(supabase, sim_id)
                 for bldg in buildings:
                     bldg_updated = bldg.get("updated_at", sim_updated)
                     if isinstance(bldg_updated, str) and "T" in bldg_updated:

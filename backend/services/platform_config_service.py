@@ -19,7 +19,7 @@ class PlatformConfigService:
     """Read platform_settings with type coercion and defaults."""
 
     @classmethod
-    def get(
+    async def get(
         cls,
         supabase: Client,
         key: str,
@@ -32,7 +32,7 @@ class PlatformConfigService:
         """
         try:
             row = (
-                supabase.table("platform_settings")
+                await supabase.table("platform_settings")
                 .select("setting_value")
                 .eq("setting_key", key)
                 .limit(1)
@@ -50,7 +50,7 @@ class PlatformConfigService:
             return default
 
     @classmethod
-    def get_multiple(
+    async def get_multiple(
         cls,
         supabase: Client,
         defaults: dict[str, Any],
@@ -73,7 +73,7 @@ class PlatformConfigService:
         try:
             db_keys = [f"{prefix}{k}" if prefix else k for k in defaults]
             rows = (
-                supabase.table("platform_settings")
+                await supabase.table("platform_settings")
                 .select("setting_key, setting_value")
                 .in_("setting_key", db_keys)
                 .execute()

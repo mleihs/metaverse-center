@@ -19,9 +19,9 @@ class SeoService:
     """Database queries for sitemap entity discovery."""
 
     @classmethod
-    def get_lore_sections(cls, supabase: Client, simulation_id: str) -> list[dict]:
+    async def get_lore_sections(cls, supabase: Client, simulation_id: str) -> list[dict]:
         """Fetch lore section slugs and timestamps for a simulation's sitemap entries."""
-        resp = (
+        resp = await (
             supabase.table("simulation_lore")
             .select("slug, updated_at")
             .eq("simulation_id", simulation_id)
@@ -32,9 +32,9 @@ class SeoService:
         return resp.data or []
 
     @classmethod
-    def get_agents_for_sitemap(cls, supabase: Client, simulation_id: str) -> list[dict]:
+    async def get_agents_for_sitemap(cls, supabase: Client, simulation_id: str) -> list[dict]:
         """Fetch agent slugs and timestamps for a simulation's sitemap entries."""
-        resp = (
+        resp = await (
             supabase.table("agents")
             .select("id, slug, name, updated_at")
             .eq("simulation_id", simulation_id)
@@ -45,9 +45,9 @@ class SeoService:
         return resp.data or []
 
     @classmethod
-    def get_buildings_for_sitemap(cls, supabase: Client, simulation_id: str) -> list[dict]:
+    async def get_buildings_for_sitemap(cls, supabase: Client, simulation_id: str) -> list[dict]:
         """Fetch building slugs and timestamps for a simulation's sitemap entries."""
-        resp = (
+        resp = await (
             supabase.table("buildings")
             .select("id, slug, name, updated_at")
             .eq("simulation_id", simulation_id)

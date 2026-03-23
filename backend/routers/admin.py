@@ -477,12 +477,12 @@ async def impersonate_user(
     admin_supabase: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Generate a magic link token to impersonate a user (platform admin only)."""
-    user_response = admin_supabase.auth.admin.get_user_by_id(str(body.user_id))
+    user_response = await admin_supabase.auth.admin.get_user_by_id(str(body.user_id))
     user = user_response.user
     if not user or not user.email:
         raise HTTPException(status_code=404, detail="User not found")
 
-    link_response = admin_supabase.auth.admin.generate_link({
+    link_response = await admin_supabase.auth.admin.generate_link({
         "type": "magiclink",
         "email": user.email,
     })

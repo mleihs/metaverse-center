@@ -93,7 +93,7 @@ class EpochLifecycleService:
 
         # Expire any pending alliance proposals — they reference template simulation IDs
         # which are now invalid after cloning into game instances.
-        admin.table("epoch_alliance_proposals").update(
+        await admin.table("epoch_alliance_proposals").update(
             {"status": "expired", "resolved_at": datetime.now(UTC).isoformat()}
         ).eq("epoch_id", str(epoch_id)).eq("status", "pending").execute()
 

@@ -118,7 +118,7 @@ class CycleResolutionService:
         config = {**DEFAULT_CONFIG, **(epoch_resp.data or {}).get("config", {})}
         rp_cap = config["rp_cap"]
 
-        use_rpc = PlatformConfigService.get(supabase, "use_atomic_game_rpcs", False)
+        use_rpc = await PlatformConfigService.get(supabase, "use_atomic_game_rpcs", False)
         if use_rpc:
             # Atomic RP grant with cap enforcement (migration 148)
             rpc_resp = await supabase.rpc("fn_grant_rp_single", {
@@ -231,7 +231,7 @@ class CycleResolutionService:
 
         # Expire zone fortifications that have passed their expiry cycle
         try:
-            use_rpc = PlatformConfigService.get(db, "use_atomic_game_rpcs", False)
+            use_rpc = await PlatformConfigService.get(db, "use_atomic_game_rpcs", False)
             if use_rpc:
                 # Atomic fortification expiry (migration 148): downgrades zones
                 # and deletes forts in a single transaction.
