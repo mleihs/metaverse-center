@@ -6,6 +6,7 @@ import io
 import logging
 from uuid import UUID, uuid4
 
+from backend.services.ai_usage_service import AIUsageService
 from backend.services.external.replicate import ReplicateService
 from backend.services.generation_service import GenerationService
 from backend.services.model_resolver import ModelResolver
@@ -38,7 +39,15 @@ class ImageService:
             openrouter_api_key=openrouter_api_key,
             world_context=world_context,
         )
+
         self._model_resolver = ModelResolver(supabase, simulation_id)
+
+    async def _log_image_usage(self, model: str, purpose: str) -> None:
+        """Fire-and-forget Replicate usage logging."""
+        await AIUsageService.log(
+            self._supabase, simulation_id=self._simulation_id,
+            provider="replicate", model=model, purpose=purpose,
+        )
 
     @staticmethod
     async def _download_reference_image(url: str) -> io.BytesIO:
@@ -148,6 +157,7 @@ class ImageService:
             {"portrait_image_url": url, "portrait_description": description[:2000]},
         ).eq("id", str(agent_id)).execute()
 
+        await self._log_image_usage(image_model.model_id, "portrait")
         logger.info("Portrait uploaded", extra={"entity_type": "agent", "entity_id": str(agent_id), "path": url})
         return url
 
@@ -236,6 +246,7 @@ class ImageService:
             {"image_url": url, "image_prompt_text": description[:2000]},
         ).eq("id", str(building_id)).execute()
 
+        await self._log_image_usage(image_model.model_id, "building")
         logger.info("Image uploaded", extra={"entity_type": "building", "entity_id": str(building_id), "path": url})
         return url
 
@@ -297,6 +308,7 @@ class ImageService:
             {"banner_url": url},
         ).eq("id", str(self._simulation_id)).execute()
 
+        await self._log_image_usage("replicate/image-model", "banner")
         logger.info(
             "Banner uploaded",
             extra={"entity_type": "banner", "simulation_id": str(self._simulation_id), "path": url},
@@ -360,6 +372,7 @@ class ImageService:
                 {"image_generated_at": "now()"},
             ).eq("id", section_id).execute()
 
+        await self._log_image_usage(image_model.model_id, "lore_image")
         logger.info("Lore image uploaded", extra={"entity_type": "lore", "path": url})
         return url
 

@@ -8,6 +8,7 @@ from uuid import UUID
 
 from backend.config import settings
 from backend.services.agent_memory_service import AgentMemoryService
+from backend.services.ai_usage_service import AIUsageService
 from backend.services.external.openrouter import OpenRouterService
 from backend.services.model_resolver import ModelResolver
 from backend.services.prompt_service import LOCALE_NAMES, PromptResolver
@@ -94,6 +95,13 @@ class ChatAIService:
             messages=messages,
             temperature=model.temperature,
             max_tokens=model.max_tokens,
+        )
+
+        # Log AI usage
+        await AIUsageService.log(
+            self._supabase, simulation_id=self._simulation_id,
+            provider="openrouter", model=model.model_id,
+            purpose="chat", usage=self._openrouter.last_usage,
         )
 
         # Save with agent_id attribution

@@ -8,6 +8,7 @@ import re
 from uuid import UUID
 
 from backend.config import settings
+from backend.services.ai_usage_service import AIUsageService
 from backend.services.constants import PLATFORM_DEFAULT_MODELS
 from backend.services.embassy_prompts import (
     VECTOR_PERSON_EFFECTS,
@@ -812,6 +813,7 @@ class GenerationService:
             model=model,
             system_prompt=system_prompt,
             user_prompt=filled_prompt,
+            purpose=template_type,
         )
 
         return {
@@ -826,39 +828,59 @@ class GenerationService:
         model: ResolvedModel,
         system_prompt: str,
         user_prompt: str,
+        *,
+        purpose: str = "description",
     ) -> str:
         """Call LLM with automatic fallback on rate limit or model unavailability."""
         try:
-            return await self._openrouter.generate_with_system(
+            result = await self._openrouter.generate_with_system(
                 model=model.model_id,
                 system_prompt=system_prompt,
                 user_prompt=user_prompt,
                 temperature=model.temperature,
                 max_tokens=model.max_tokens,
             )
+            await AIUsageService.log(
+                self._supabase, simulation_id=self._simulation_id,
+                provider="openrouter", model=model.model_id,
+                purpose=purpose, usage=self._openrouter.last_usage,
+            )
+            return result
         except RateLimitError:
             logger.warning(
                 "Rate limited on %s, falling back", model.model_id,
             )
             fallback = await self._model_resolver.resolve_text_model("fallback")
-            return await self._openrouter.generate_with_system(
+            result = await self._openrouter.generate_with_system(
                 model=fallback.model_id,
                 system_prompt=system_prompt,
                 user_prompt=user_prompt,
                 temperature=fallback.temperature,
                 max_tokens=fallback.max_tokens,
             )
+            await AIUsageService.log(
+                self._supabase, simulation_id=self._simulation_id,
+                provider="openrouter", model=fallback.model_id,
+                purpose=purpose, usage=self._openrouter.last_usage,
+            )
+            return result
         except ModelUnavailableError:
             logger.warning(
                 "Model %s unavailable, using platform default",
                 model.model_id,
             )
             default_model = PLATFORM_DEFAULT_MODELS["default"]
-            return await self._openrouter.generate_with_system(
+            result = await self._openrouter.generate_with_system(
                 model=default_model,
                 system_prompt=system_prompt,
                 user_prompt=user_prompt,
             )
+            await AIUsageService.log(
+                self._supabase, simulation_id=self._simulation_id,
+                provider="openrouter", model=default_model,
+                purpose=purpose, usage=self._openrouter.last_usage,
+            )
+            return result
 
     @staticmethod
     def _format_game_context(ctx: dict) -> str:
