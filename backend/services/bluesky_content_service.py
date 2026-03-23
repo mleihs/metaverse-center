@@ -396,7 +396,7 @@ class BlueskyContentService:
 
         Returns dict with handle, app_password, pds_url.
         """
-        rows = await (
+        _resp = await (
             admin_supabase.table("platform_settings")
             .select("setting_key, setting_value")
             .in_("setting_key", [
@@ -405,7 +405,8 @@ class BlueskyContentService:
                 "bluesky_pds_url",
             ])
             .execute()
-        ).data or []
+        )
+        rows = _resp.data or []
 
         result: dict[str, str] = {
             "handle": "",

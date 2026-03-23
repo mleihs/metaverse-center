@@ -134,13 +134,14 @@ class ConnectionService:
             for sim in (hb_resp.data or []):
                 sid = sim["id"]
                 # Get active arc count + total scar tissue
-                arc_data = await (
+                _resp = await (
                     supabase.table("narrative_arcs")
                     .select("id, scar_tissue_deposited")
                     .eq("simulation_id", sid)
                     .in_("status", ["building", "active", "climax"])
                     .execute()
-                ).data or []
+                )
+                arc_data = _resp.data or []
                 scar = sum(float(a.get("scar_tissue_deposited", 0)) for a in arc_data)
                 heartbeat_status[sid] = {
                     "last_tick": sim.get("last_heartbeat_tick", 0),

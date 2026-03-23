@@ -131,12 +131,13 @@ class SocialStoryService:
     @staticmethod
     async def get_pipeline_settings(admin: Client) -> dict[str, str]:
         """Get all resonance story pipeline settings."""
-        rows = await (
+        _resp = await (
             admin.table("platform_settings")
             .select("setting_key, setting_value")
             .like("setting_key", "resonance_stories_%")
             .execute()
-        ).data or []
+        )
+        rows = _resp.data or []
         return {row["setting_key"]: row["setting_value"] for row in rows}
 
     # ── Publish / Regenerate ───────────────────────────────────────────────
@@ -1102,7 +1103,7 @@ class SocialStoryService:
         }
 
         try:
-            rows = await (
+            _resp = await (
                 admin.table("platform_settings")
                 .select("setting_key, setting_value")
                 .in_("setting_key", [
@@ -1117,7 +1118,8 @@ class SocialStoryService:
                     "resonance_stories_feed_post_reserve",
                 ])
                 .execute()
-            ).data or []
+            )
+            rows = _resp.data or []
 
             m: dict[str, str] = {r["setting_key"]: r["setting_value"] for r in rows}
 

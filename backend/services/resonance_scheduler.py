@@ -62,7 +62,7 @@ class ResonanceScheduler:
         enabled = _DEFAULT_ENABLED
         interval = _DEFAULT_CHECK_INTERVAL
         try:
-            rows = await (
+            _resp = await (
                 admin.table("platform_settings")
                 .select("setting_key, setting_value")
                 .in_("setting_key", [
@@ -70,7 +70,8 @@ class ResonanceScheduler:
                     "resonance_auto_process_interval_seconds",
                 ])
                 .execute()
-            ).data or []
+            )
+            rows = _resp.data or []
             for row in rows:
                 key = row["setting_key"]
                 val = row["setting_value"]

@@ -1132,12 +1132,13 @@ class InstagramContentService:
         Shared utility used by both the router and scheduler to avoid
         duplicating credential loading + decryption logic.
         """
-        rows = await (
+        _resp = await (
             admin_supabase.table("platform_settings")
             .select("setting_key, setting_value")
             .in_("setting_key", ["instagram_access_token", "instagram_ig_user_id"])
             .execute()
-        ).data or []
+        )
+        rows = _resp.data or []
 
         result: dict[str, str] = {"access_token": "", "ig_user_id": ""}
         for row in rows:

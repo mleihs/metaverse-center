@@ -103,7 +103,7 @@ class HeartbeatService:
         enabled = _DEFAULT_ENABLED
         interval = _DEFAULT_INTERVAL
         try:
-            rows = await (
+            _resp = await (
                 admin.table("platform_settings")
                 .select("setting_key, setting_value")
                 .in_("setting_key", [
@@ -111,7 +111,8 @@ class HeartbeatService:
                     "heartbeat_interval_seconds",
                 ])
                 .execute()
-            ).data or []
+            )
+            rows = _resp.data or []
             for row in rows:
                 key = row["setting_key"]
                 val = row["setting_value"]
@@ -163,13 +164,14 @@ class HeartbeatService:
         """Load per-simulation heartbeat overrides from simulation_settings."""
         overrides: dict = {}
         try:
-            rows = await (
+            _resp = await (
                 admin.table("simulation_settings")
                 .select("setting_key, setting_value")
                 .eq("simulation_id", str(sim_id))
                 .eq("category", "heartbeat")
                 .execute()
-            ).data or []
+            )
+            rows = _resp.data or []
             for row in rows:
                 overrides[row["setting_key"]] = row["setting_value"]
         except Exception:
@@ -773,13 +775,14 @@ class HeartbeatService:
         scar_susceptibility = (config or {}).get("scar_susceptibility_multiplier", 0.50)
         if scar_susceptibility > 0:
             try:
-                scar_arcs = await (
+                _resp = await (
                     admin.table("narrative_arcs")
                     .select("scar_tissue_deposited")
                     .eq("simulation_id", str(sim_id))
                     .gt("scar_tissue_deposited", 0)
                     .execute()
-                ).data or []
+                )
+                scar_arcs = _resp.data or []
                 scar_total = sum(float(a.get("scar_tissue_deposited", 0)) for a in scar_arcs)
                 if scar_total > 0:
                     scar_mult = round(scar_total * scar_susceptibility, 4)
@@ -841,13 +844,14 @@ class HeartbeatService:
     @classmethod
     async def get_heartbeat_overview(cls, supabase: Client, simulation_id: UUID) -> dict:
         """Get latest heartbeat tick + summary counts for a simulation."""
-        sim = await (
+        _resp = await (
             supabase.table("simulations")
             .select("last_heartbeat_tick, last_heartbeat_at, next_heartbeat_at")
             .eq("id", str(simulation_id))
             .limit(1)
             .execute()
-        ).data
+        )
+        sim = _resp.data
         if not sim:
             return {"last_tick": 0}
 
@@ -950,20 +954,21 @@ class HeartbeatService:
         enabled, interval = await cls._load_config(admin)
 
         # Load active systems
-        systems_row = await (
+        _resp = await (
             admin.table("platform_settings")
             .select("setting_value")
             .eq("setting_key", "heartbeat_systems")
             .limit(1)
             .execute()
-        ).data
+        )
+        systems_row = _resp.data
         active_systems = []
         if systems_row:
             val = systems_row[0]["setting_value"]
             active_systems = json.loads(val) if isinstance(val, str) else val
 
         # Get all active simulations with heartbeat state
-        sims = await (
+        _resp = await (
             admin.table("simulations")
             .select("id, name, slug, last_heartbeat_tick, last_heartbeat_at, next_heartbeat_at, status")
             .eq("status", "active")
@@ -971,7 +976,8 @@ class HeartbeatService:
             .is_("deleted_at", "null")
             .order("name")
             .execute()
-        ).data or []
+        )
+        sims = _resp.data or []
 
         # Get arc counts and scar tissue per simulation
         sim_data = []
@@ -994,13 +1000,14 @@ class HeartbeatService:
                 .execute()
             )
 
-            scar_arcs = await (
+            _resp = await (
                 admin.table("narrative_arcs")
                 .select("scar_tissue_deposited")
                 .eq("simulation_id", sid)
                 .gt("scar_tissue_deposited", 0)
                 .execute()
-            ).data or []
+            )
+            scar_arcs = _resp.data or []
             total_scar = sum(float(a.get("scar_tissue_deposited", 0)) for a in scar_arcs)
 
             sim_data.append({
@@ -1033,24 +1040,26 @@ class HeartbeatService:
         notable entries since the last briefing.
         """
         # Get current health
-        health = await (
+        _resp = await (
             supabase.table("mv_simulation_health")
             .select("overall_health, health_label, avg_zone_stability, avg_readiness")
             .eq("simulation_id", str(sim_id))
             .limit(1)
             .execute()
-        ).data
+        )
+        health = _resp.data
         health_data = health[0] if health else {}
 
         # Get last 24h of heartbeat entries (summary counts)
         last_day = (datetime.now(UTC) - timedelta(hours=24)).isoformat()
-        entries = await (
+        _resp = await (
             supabase.table("heartbeat_entries")
             .select("entry_type, severity")
             .eq("simulation_id", str(sim_id))
             .gte("created_at", last_day)
             .execute()
-        ).data or []
+        )
+        entries = _resp.data or []
 
         type_counts: dict[str, int] = {}
         critical_count = 0

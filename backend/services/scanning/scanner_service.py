@@ -80,7 +80,7 @@ class ScannerService:
         }
 
         try:
-            rows = await (
+            _resp = await (
                 admin.table("platform_settings")
                 .select("setting_key, setting_value")
                 .in_("setting_key", [
@@ -92,7 +92,8 @@ class ScannerService:
                     "news_scanner_impacts_delay_hours",
                 ])
                 .execute()
-            ).data or []
+            )
+            rows = _resp.data or []
 
             for row in rows:
                 key = row["setting_key"]
@@ -125,14 +126,15 @@ class ScannerService:
                         pass
 
             # Also load API keys needed by adapters
-            api_key_rows = await (
+            _resp = await (
                 admin.table("platform_settings")
                 .select("setting_key, setting_value")
                 .in_("setting_key", [
                     "guardian_api_key", "newsapi_api_key",
                 ])
                 .execute()
-            ).data or []
+            )
+            api_key_rows = _resp.data or []
             config["api_keys"] = {r["setting_key"]: r["setting_value"] for r in api_key_rows}
 
         except Exception:

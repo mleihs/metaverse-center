@@ -93,7 +93,7 @@ class BureauResponseService:
                 )
 
         # Check event exists and is not archived
-        event = await (
+        _resp = await (
             supabase.table("events")
             .select("id, event_status, simulation_id")
             .eq("id", str(event_id))
@@ -101,7 +101,8 @@ class BureauResponseService:
             .is_("deleted_at", "null")
             .limit(1)
             .execute()
-        ).data
+        )
+        event = _resp.data
         if not event:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Event not found.")
         if event[0]["event_status"] in ("resolved", "archived"):
@@ -111,7 +112,7 @@ class BureauResponseService:
             )
 
         # Check no pending response exists for this event
-        existing = await (
+        _resp = await (
             supabase.table("bureau_responses")
             .select("id")
             .eq("simulation_id", str(sim_id))
@@ -119,7 +120,8 @@ class BureauResponseService:
             .eq("status", "pending")
             .limit(1)
             .execute()
-        ).data
+        )
+        existing = _resp.data
         if existing:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -127,13 +129,14 @@ class BureauResponseService:
             )
 
         # Get current tick
-        sim = await (
+        _resp = await (
             supabase.table("simulations")
             .select("last_heartbeat_tick")
             .eq("id", str(sim_id))
             .limit(1)
             .execute()
-        ).data
+        )
+        sim = _resp.data
         current_tick = (sim[0].get("last_heartbeat_tick") or 0) if sim else 0
 
         response = await (
@@ -231,14 +234,15 @@ class BureauResponseService:
         resolved_count = 0
 
         # Get pending responses due at this tick
-        pending = await (
+        _resp = await (
             admin.table("bureau_responses")
             .select("*, events!inner(title, title_de, impact_level, event_status)")
             .eq("simulation_id", str(sim_id))
             .eq("status", "pending")
             .lte("submitted_before_tick", tick_number)
             .execute()
-        ).data or []
+        )
+        pending = _resp.data or []
 
         if not pending:
             return resolved_count, entries
@@ -273,13 +277,14 @@ class BureauResponseService:
             # Apply pressure reduction to event (contain + remediate)
             if resp_type in ("contain", "remediate"):
                 # Read event's current pressure
-                ev = await (
+                _resp = await (
                     admin.table("events")
                     .select("heartbeat_pressure, event_status")
                     .eq("id", resp["event_id"])
                     .limit(1)
                     .execute()
-                ).data
+                )
+                ev = _resp.data
                 if ev:
                     current_pressure = float(ev[0].get("heartbeat_pressure", 0))
                     new_pressure = round(max(0, current_pressure - pressure_reduction), 4)

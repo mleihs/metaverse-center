@@ -33,13 +33,14 @@ class AnchorService:
     ) -> dict:
         """Create a collaborative anchor for a resonance."""
         # Validate resonance exists
-        resonance = await (
+        _resp = await (
             supabase.table("substrate_resonances")
             .select("id, status")
             .eq("id", str(resonance_id))
             .limit(1)
             .execute()
-        ).data
+        )
+        resonance = _resp.data
         if not resonance:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -47,7 +48,7 @@ class AnchorService:
             )
 
         # Check embassy connections exist
-        embassies = await (
+        _resp = await (
             supabase.table("embassies")
             .select("id")
             .or_(
@@ -56,7 +57,8 @@ class AnchorService:
             .eq("status", "active")
             .limit(1)
             .execute()
-        ).data
+        )
+        embassies = _resp.data
         if not embassies:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -64,13 +66,14 @@ class AnchorService:
             )
 
         # Get simulation's current tick
-        sim = await (
+        _resp = await (
             supabase.table("simulations")
             .select("last_heartbeat_tick")
             .eq("id", str(sim_id))
             .limit(1)
             .execute()
-        ).data
+        )
+        sim = _resp.data
         current_tick = (sim[0].get("last_heartbeat_tick") or 0) if sim else 0
 
         response = await (
@@ -112,14 +115,15 @@ class AnchorService:
         anchor_id: UUID, sim_id: UUID, user_id: UUID,
     ) -> dict:
         """Join an existing anchor."""
-        anchor = await (
+        _resp = await (
             supabase.table("collaborative_anchors")
             .select("*")
             .eq("id", str(anchor_id))
             .in_("status", ["forming", "active"])
             .limit(1)
             .execute()
-        ).data
+        )
+        anchor = _resp.data
         if not anchor:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -164,13 +168,14 @@ class AnchorService:
         anchor_id: UUID, sim_id: UUID,
     ) -> dict:
         """Leave an anchor."""
-        anchor = await (
+        _resp = await (
             supabase.table("collaborative_anchors")
             .select("*")
             .eq("id", str(anchor_id))
             .limit(1)
             .execute()
-        ).data
+        )
+        anchor = _resp.data
         if not anchor:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Anchor not found.",
@@ -289,13 +294,14 @@ class AnchorService:
         cls, admin: Client, sim_id: UUID,
     ) -> float:
         """Calculate total anchor protection for a simulation."""
-        anchors = await (
+        _resp = await (
             admin.table("collaborative_anchors")
             .select("strength, anchor_simulation_ids")
             .in_("status", ["active", "reinforcing"])
             .contains("anchor_simulation_ids", [str(sim_id)])
             .execute()
-        ).data or []
+        )
+        anchors = _resp.data or []
 
         total_protection = 0.0
         for anchor in anchors:

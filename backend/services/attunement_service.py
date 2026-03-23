@@ -87,12 +87,13 @@ class AttunementService:
         cooldown_ticks = att_config["switching_cooldown_ticks"]
 
         # Check current attunement count
-        existing = await (
+        _resp = await (
             supabase.table("substrate_attunements")
             .select("id, resonance_signature")
             .eq("simulation_id", str(sim_id))
             .execute()
-        ).data or []
+        )
+        existing = _resp.data or []
 
         if len(existing) >= max_attunements:
             raise HTTPException(
@@ -256,13 +257,14 @@ class AttunementService:
             return None
 
         # Get a random zone name
-        zones = await (
+        _resp = await (
             admin.table("zones")
             .select("name")
             .eq("simulation_id", str(sim_id))
             .limit(10)
             .execute()
-        ).data or []
+        )
+        zones = _resp.data or []
         zone_name = random.choice(zones)["name"] if zones else "the districts"  # noqa: S311
 
         title_template, desc_template = random.choice(templates)  # noqa: S311

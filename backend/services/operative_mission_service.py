@@ -363,24 +363,26 @@ class OperativeMissionService:
         convergence_mod = 0.0
         try:
             if body.target_simulation_id:
-                convergences = await (
+                _resp = await (
                     admin.table("narrative_arcs")
                     .select("id, primary_archetype, secondary_archetype")
                     .eq("simulation_id", str(body.target_simulation_id))
                     .eq("arc_type", "convergence")
                     .in_("status", ["active", "climax"])
                     .execute()
-                ).data or []
+                )
+                convergences = _resp.data or []
 
                 if convergences:
                     # Load convergence pairs config
-                    pairs_row = await (
+                    _resp = await (
                         admin.table("platform_settings")
                         .select("setting_value")
                         .eq("setting_key", "heartbeat_convergence_pairs")
                         .limit(1)
                         .execute()
-                    ).data
+                    )
+                    pairs_row = _resp.data
                     if pairs_row:
                         import json
                         pairs = pairs_row[0]["setting_value"]

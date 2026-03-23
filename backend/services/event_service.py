@@ -433,24 +433,26 @@ class EventService(BaseService):
 
         # ── Heartbeat integration: attach new events to matching arcs ──
         try:
-            arcs = await (
+            _resp = await (
                 supabase.table("narrative_arcs")
                 .select("id, primary_signature, source_event_ids")
                 .eq("simulation_id", str(simulation_id))
                 .in_("status", ["building", "active", "climax"])
                 .execute()
-            ).data or []
+            )
+            arcs = _resp.data or []
             if arcs:
                 # Get recently created events (last 60s) with resonance tags
                 cutoff = (datetime.now(UTC) - timedelta(seconds=60)).isoformat()
-                recent = await (
+                _resp = await (
                     supabase.table("events")
                     .select("id, tags")
                     .eq("simulation_id", str(simulation_id))
                     .is_("deleted_at", "null")
                     .gte("created_at", cutoff)
                     .execute()
-                ).data or []
+                )
+                recent = _resp.data or []
                 for event in recent:
                     tags = event.get("tags") or []
                     for arc in arcs:
@@ -468,7 +470,7 @@ class EventService(BaseService):
         # ── Building condition degradation from crisis/sabotage events ──
         try:
             cutoff_crisis = (datetime.now(UTC) - timedelta(seconds=60)).isoformat()
-            crisis_events = await (
+            _resp = await (
                 supabase.table("events")
                 .select("id, tags")
                 .eq("simulation_id", str(simulation_id))
@@ -476,28 +478,31 @@ class EventService(BaseService):
                 .gte("created_at", cutoff_crisis)
                 .overlaps("tags", ["sabotage", "crisis"])
                 .execute()
-            ).data or []
+            )
+            crisis_events = _resp.data or []
             if crisis_events:
                 degradation = await PlatformConfigService.get(
                     supabase, "heartbeat_building_crisis_degradation", 0.10,
                 )
                 for ev in crisis_events:
-                    zone_links = await (
+                    _resp = await (
                         supabase.table("event_zone_links")
                         .select("zone_id")
                         .eq("event_id", ev["id"])
                         .execute()
-                    ).data or []
+                    )
+                    zone_links = _resp.data or []
                     zone_ids = [zl["zone_id"] for zl in zone_links]
                     if zone_ids:
-                        buildings = await (
+                        _resp = await (
                             supabase.table("buildings")
                             .select("id, building_condition")
                             .eq("simulation_id", str(simulation_id))
                             .in_("zone_id", zone_ids)
                             .is_("deleted_at", "null")
                             .execute()
-                        ).data or []
+                        )
+                        buildings = _resp.data or []
                         for bldg in buildings:
                             old_cond = float(bldg.get("building_condition") or 1.0)
                             new_cond = round(max(0.0, old_cond - degradation), 4)

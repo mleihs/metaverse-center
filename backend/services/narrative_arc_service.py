@@ -96,7 +96,7 @@ class NarrativeArcService:
                 continue
 
             # Check if an escalation arc already exists for this signature
-            existing = await (
+            _resp = await (
                 admin.table("narrative_arcs")
                 .select("id, status, pressure")
                 .eq("simulation_id", str(sim_id))
@@ -105,7 +105,8 @@ class NarrativeArcService:
                 .in_("status", ["building", "active", "climax"])
                 .limit(1)
                 .execute()
-            ).data
+            )
+            existing = _resp.data
 
             if existing:
                 # Arc already tracked — advancement happens in _advance_arcs
@@ -166,7 +167,7 @@ class NarrativeArcService:
         trigger = config.get("cascade_pressure_trigger", 0.60)
 
         # Get active arcs above trigger
-        arcs = await (
+        _resp = await (
             admin.table("narrative_arcs")
             .select("id, primary_signature, pressure, status")
             .eq("simulation_id", str(sim_id))
@@ -174,18 +175,20 @@ class NarrativeArcService:
             .in_("status", ["active", "climax"])
             .gte("pressure", trigger)
             .execute()
-        ).data or []
+        )
+        arcs = _resp.data or []
 
         if not arcs:
             return entries, spawned
 
         # Load cascade rules
-        rules = await (
+        _resp = await (
             admin.table("resonance_cascade_rules")
             .select("*")
             .eq("is_active", True)
             .execute()
-        ).data or []
+        )
+        rules = _resp.data or []
 
         if not rules:
             return entries, spawned
@@ -213,7 +216,7 @@ class NarrativeArcService:
                         pass
 
                 # Check if cascade arc already exists
-                existing_cascade = await (
+                _resp = await (
                     admin.table("narrative_arcs")
                     .select("id")
                     .eq("simulation_id", str(sim_id))
@@ -223,7 +226,8 @@ class NarrativeArcService:
                     .in_("status", ["building", "active", "climax"])
                     .limit(1)
                     .execute()
-                ).data
+                )
+                existing_cascade = _resp.data
                 if existing_cascade:
                     continue
 
@@ -302,13 +306,14 @@ class NarrativeArcService:
 
         # Get convergence pairs config
         try:
-            pairs_row = await (
+            _resp = await (
                 admin.table("platform_settings")
                 .select("setting_value")
                 .eq("setting_key", "heartbeat_convergence_pairs")
                 .limit(1)
                 .execute()
-            ).data
+            )
+            pairs_row = _resp.data
             if not pairs_row:
                 return entries, detected
             pairs = pairs_row[0]["setting_value"]
@@ -319,13 +324,14 @@ class NarrativeArcService:
             return entries, detected
 
         # Get active arcs with archetypes
-        active_arcs = await (
+        _resp = await (
             admin.table("narrative_arcs")
             .select("id, primary_archetype, secondary_archetype, status")
             .eq("simulation_id", str(sim_id))
             .in_("status", ["active", "climax"])
             .execute()
-        ).data or []
+        )
+        active_arcs = _resp.data or []
 
         if len(active_arcs) < 2:
             return entries, detected
@@ -350,7 +356,7 @@ class NarrativeArcService:
             arch_a, arch_b = parts[0].strip(), parts[1].strip()
             if arch_a in active_archetypes and arch_b in active_archetypes:
                 # Check if convergence already exists for this tick
-                existing = await (
+                _resp = await (
                     admin.table("narrative_arcs")
                     .select("id")
                     .eq("simulation_id", str(sim_id))
@@ -360,7 +366,8 @@ class NarrativeArcService:
                     .in_("status", ["active", "climax"])
                     .limit(1)
                     .execute()
-                ).data
+                )
+                existing = _resp.data
                 if existing:
                     continue
 
@@ -465,13 +472,14 @@ class NarrativeArcService:
         """Increment ticks, update pressure, check climax, age dormant arcs."""
         entries: list[dict] = []
 
-        active_arcs = await (
+        _resp = await (
             admin.table("narrative_arcs")
             .select("*")
             .eq("simulation_id", str(sim_id))
             .in_("status", ["building", "active", "climax", "resolving"])
             .execute()
-        ).data or []
+        )
+        active_arcs = _resp.data or []
 
         for arc in active_arcs:
             arc_id = arc["id"]

@@ -110,7 +110,7 @@ class BlueskyScheduler:
         }
 
         try:
-            rows = await (
+            _resp = await (
                 admin.table("platform_settings")
                 .select("setting_key, setting_value")
                 .in_("setting_key", [
@@ -122,7 +122,8 @@ class BlueskyScheduler:
                     "bluesky_scheduler_interval_seconds",
                 ])
                 .execute()
-            ).data or []
+            )
+            rows = _resp.data or []
 
             settings_map: dict[str, str] = {}
             for row in rows:
