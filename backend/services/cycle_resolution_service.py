@@ -363,7 +363,7 @@ class CycleResolutionService:
         await cls._grant_rp_batch(db, epoch_id, rp_amount, config["rp_cap"])
 
         # Reset all cycle_ready flags before advancing
-        db.table("epoch_participants").update(
+        await db.table("epoch_participants").update(
             {"cycle_ready": False}
         ).eq("epoch_id", str(epoch_id)).execute()
 

@@ -28,9 +28,9 @@ def _mock_supabase_for_upload():
     """Supabase mock wired for storage + table calls."""
     mock = MagicMock()
     # Storage mock
-    mock.storage.from_.return_value.upload.return_value = None
-    mock.storage.from_.return_value.get_public_url.return_value = (
-        "https://storage.example.com/style-refs/portrait/test.avif"
+    mock.storage.from_.return_value.upload = AsyncMock(return_value=None)
+    mock.storage.from_.return_value.get_public_url = AsyncMock(
+        return_value="https://storage.example.com/style-refs/portrait/test.avif"
     )
     # Table mock (for upsert / update)
     mock.table.return_value = make_chain_mock()
@@ -358,7 +358,7 @@ class TestDeleteReference:
             return delete_chain
 
         mock_sb.table.side_effect = table_side_effect
-        mock_sb.storage.from_.return_value.remove.return_value = None
+        mock_sb.storage.from_.return_value.remove = AsyncMock(return_value=None)
 
         await StyleReferenceService.delete_reference(
             mock_sb, MOCK_SIM_ID, "portrait", "global",
@@ -388,7 +388,7 @@ class TestDeleteReference:
             return update_chain
 
         mock_sb.table.side_effect = table_side_effect
-        mock_sb.storage.from_.return_value.remove.return_value = None
+        mock_sb.storage.from_.return_value.remove = AsyncMock(return_value=None)
 
         await StyleReferenceService.delete_reference(
             mock_sb, MOCK_SIM_ID, "building", "entity",

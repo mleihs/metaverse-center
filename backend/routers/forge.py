@@ -931,7 +931,7 @@ async def retrigger_batch(
             admin_supabase, simulation_id,
         )
         # Delete existing lore to avoid duplicates on re-generation
-        ForgeOrchestratorService.delete_simulation_lore(
+        await ForgeOrchestratorService.delete_simulation_lore(
             admin_supabase, simulation_id,
         )
 

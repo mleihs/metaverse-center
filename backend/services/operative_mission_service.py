@@ -651,7 +651,7 @@ class OperativeMissionService:
             ).execute()
 
             # Apply -25% diplomatic penalty to betrayer
-            supabase.table("epoch_participants").update(
+            await supabase.table("epoch_participants").update(
                 {"betrayal_penalty": 0.25}
             ).eq("epoch_id", mission["epoch_id"]).eq(
                 "simulation_id", mission["source_simulation_id"]

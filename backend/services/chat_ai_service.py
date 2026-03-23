@@ -97,7 +97,7 @@ class ChatAIService:
         )
 
         # Save with agent_id attribution
-        self._supabase.table("chat_messages").insert({
+        await self._supabase.table("chat_messages").insert({
             "conversation_id": str(conversation_id),
             "content": response_text,
             "sender_role": "assistant",

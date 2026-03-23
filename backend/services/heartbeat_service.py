@@ -558,7 +558,7 @@ class HeartbeatService:
                 **tick_stats,
             }).eq("id", str(heartbeat_id)).execute()
 
-            admin.table("simulations").update({
+            await admin.table("simulations").update({
                 "last_heartbeat_tick": tick_number,
                 "last_heartbeat_at": datetime.now(UTC).isoformat(),
                 "next_heartbeat_at": next_at.isoformat(),

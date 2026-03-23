@@ -588,13 +588,13 @@ class ImageService:
         data: bytes,
     ) -> str:
         """Upload file to Supabase Storage and return the public URL."""
-        self._supabase.storage.from_(bucket).upload(
+        await self._supabase.storage.from_(bucket).upload(
             path,
             data,
             {"content-type": "image/avif", "upsert": "true"},
         )
 
-        result = self._supabase.storage.from_(bucket).get_public_url(path)
+        result = await self._supabase.storage.from_(bucket).get_public_url(path)
         return result
 
 

@@ -378,7 +378,7 @@ class BlueskyScheduler:
         result = await bsky.publish_post(content, uploaded_media)
 
         # Update post as published
-        admin.table("bluesky_posts").update({
+        await admin.table("bluesky_posts").update({
             "status": "published",
             "published_at": datetime.now(UTC).isoformat(),
             "bsky_uri": result.platform_post_id,

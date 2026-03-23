@@ -232,12 +232,12 @@ class InstagramImageComposer:
     ) -> str:
         """Upload composed JPEG to Supabase staging bucket. Returns public URL."""
         filename = f"instagram/{simulation_id}/{post_id or uuid4()}.jpg"
-        self._supabase.storage.from_("simulation.assets").upload(
+        await self._supabase.storage.from_("simulation.assets").upload(
             filename,
             jpeg_bytes,
             {"content-type": "image/jpeg", "upsert": "true"},
         )
-        url = self._supabase.storage.from_("simulation.assets").get_public_url(filename)
+        url = await self._supabase.storage.from_("simulation.assets").get_public_url(filename)
         logger.info("Uploaded composed image to staging", extra={
             "simulation_id": simulation_id,
             "output_size": len(jpeg_bytes),

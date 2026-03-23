@@ -532,7 +532,7 @@ class AllianceService:
         }).eq("id", str(team_id)).execute()
 
         # Clear members
-        admin_supabase.table("epoch_participants").update(
+        await admin_supabase.table("epoch_participants").update(
             {"team_id": None}
         ).eq("epoch_id", str(epoch_id)).eq("team_id", str(team_id)).execute()
 

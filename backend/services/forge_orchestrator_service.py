@@ -300,7 +300,7 @@ class ForgeOrchestratorService:
         return 500, "Shard materialization failed. Please contact support if the issue persists."
 
     @staticmethod
-    def _create_image_service(
+    async def _create_image_service(
         supabase: Client,
         simulation_id: UUID,
         sim_data: dict,
@@ -309,7 +309,7 @@ class ForgeOrchestratorService:
         openrouter_api_key: str | None = None,
     ) -> ImageService:
         """Build an ``ImageService`` with world context from the simulation."""
-        world_context = ForgeOrchestratorService._build_world_context(
+        world_context = await ForgeOrchestratorService._build_world_context(
             supabase, simulation_id, sim_data, anchor_data,
         )
         return ImageService(
@@ -1093,7 +1093,7 @@ class ForgeOrchestratorService:
         )
         sim_data = sim_resp.data or {}
 
-        image_service = cls._create_image_service(
+        image_service = await cls._create_image_service(
             supabase, simulation_id, sim_data, anchor_data,
             replicate_api_key=rep_key, openrouter_api_key=or_key,
         )
@@ -1408,7 +1408,7 @@ Generate exactly 3 new agents. Requirements:
             # 4. Generate portraits
             try:
                 sim_data = {"name": sim["name"], "description": sim.get("description", "")}
-                image_service = ForgeOrchestratorService._create_image_service(
+                image_service = await ForgeOrchestratorService._create_image_service(
                     admin_supabase, simulation_id, sim_data,
                     replicate_api_key=replicate_key, openrouter_api_key=openrouter_key,
                 )
@@ -1618,7 +1618,7 @@ Generate exactly 3 new agents. Requirements:
         }
 
         # Try to fetch the original anchor from simulation_settings
-        anchor_resp = supabase.table("simulation_settings").select(
+        anchor_resp = await supabase.table("simulation_settings").select(
             "setting_value"
         ).eq("simulation_id", str(simulation_id)).eq(
             "setting_key", "philosophical_anchor"
@@ -1644,17 +1644,17 @@ Generate exactly 3 new agents. Requirements:
         }
 
     @staticmethod
-    def delete_simulation_lore(supabase: Client, simulation_id: UUID) -> None:
+    async def delete_simulation_lore(supabase: Client, simulation_id: UUID) -> None:
         """Delete all lore entries for a simulation.
 
         Used before re-generating lore to avoid duplicates.
         """
-        supabase.table("simulation_lore").delete().eq(
+        await supabase.table("simulation_lore").delete().eq(
             "simulation_id", str(simulation_id),
         ).execute()
 
     @staticmethod
-    def _build_world_context(
+    async def _build_world_context(
         supabase: Client,
         simulation_id: UUID,
         sim_data: dict,
@@ -1670,7 +1670,7 @@ Generate exactly 3 new agents. Requirements:
         sim_name = sim_data.get("name", "Unknown")
 
         # Fetch the first 2 lore sections (gateway + second section)
-        lore_resp = (
+        lore_resp = await (
             supabase.table("simulation_lore")
             .select("title, body")
             .eq("simulation_id", str(simulation_id))

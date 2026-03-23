@@ -79,12 +79,12 @@ class StyleReferenceService:
             f"{simulation_id}/style-refs/{entity_type}/{file_id}.avif"
         )
 
-        supabase.storage.from_(STORAGE_BUCKET).upload(
+        await supabase.storage.from_(STORAGE_BUCKET).upload(
             storage_path,
             avif_bytes,
             {"content-type": "image/avif"},
         )
-        url = supabase.storage.from_(STORAGE_BUCKET).get_public_url(storage_path)
+        url = await supabase.storage.from_(STORAGE_BUCKET).get_public_url(storage_path)
 
         # Persist reference
         if scope == "global":
@@ -243,7 +243,7 @@ class StyleReferenceService:
             if resp.data:
                 old_url = resp.data[0].get("setting_value", "")
                 if isinstance(old_url, str):
-                    _try_delete_storage_file(supabase, old_url)
+                    await _try_delete_storage_file(supabase, old_url)
 
             # Clear settings
             (
@@ -274,7 +274,7 @@ class StyleReferenceService:
                 .execute()
             )
             if resp.data and resp.data[0].get("style_reference_url"):
-                _try_delete_storage_file(supabase, resp.data[0]["style_reference_url"])
+                await _try_delete_storage_file(supabase, resp.data[0]["style_reference_url"])
 
             supabase.table(table).update(
                 {"style_reference_url": None},
@@ -357,7 +357,7 @@ def _upsert_setting(
     ).execute()
 
 
-def _try_delete_storage_file(supabase: Client, url: str) -> None:
+async def _try_delete_storage_file(supabase: Client, url: str) -> None:
     """Best-effort delete of a storage file by its public URL."""
     try:
         # Extract path from public URL: .../<bucket>/object/public/<path>
@@ -367,7 +367,7 @@ def _try_delete_storage_file(supabase: Client, url: str) -> None:
             path = parts[1]
             if path.startswith("object/public/"):
                 path = path[len("object/public/"):]
-            supabase.storage.from_(STORAGE_BUCKET).remove([path])
+            await supabase.storage.from_(STORAGE_BUCKET).remove([path])
     except Exception:
         logger.warning("Failed to delete storage file: %s", url, exc_info=True)
 

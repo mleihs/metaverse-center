@@ -272,11 +272,11 @@ class SimulationService:
         slug = sim_info.get("slug", "")
 
         # ── Storage cleanup (best-effort) ────────────────────────────
-        SimulationService._purge_storage_folder(supabase, "agent.portraits", sim_id_str)
-        SimulationService._purge_storage_folder(supabase, "building.images", sim_id_str)
-        SimulationService._purge_storage_folder(supabase, "simulation.assets", sim_id_str)
+        await SimulationService._purge_storage_folder(supabase, "agent.portraits", sim_id_str)
+        await SimulationService._purge_storage_folder(supabase, "building.images", sim_id_str)
+        await SimulationService._purge_storage_folder(supabase, "simulation.assets", sim_id_str)
         if slug:
-            SimulationService._purge_storage_folder(supabase, "simulation.assets", slug)
+            await SimulationService._purge_storage_folder(supabase, "simulation.assets", slug)
 
         # ── DB delete (cascades to all dependent tables) ─────────────
         logger.warning(
@@ -291,10 +291,10 @@ class SimulationService:
         return sim_info
 
     @staticmethod
-    def _purge_storage_folder(supabase: Client, bucket: str, prefix: str) -> None:
+    async def _purge_storage_folder(supabase: Client, bucket: str, prefix: str) -> None:
         """Recursively delete all files under a storage prefix (best-effort)."""
         try:
-            files = supabase.storage.from_(bucket).list(prefix)
+            files = await supabase.storage.from_(bucket).list(prefix)
             if not files:
                 return
 
@@ -310,10 +310,10 @@ class SimulationService:
                     file_paths.append(f"{prefix}/{name}")
                 else:
                     # Subfolder — recurse
-                    SimulationService._purge_storage_folder(supabase, bucket, f"{prefix}/{name}")
+                    await SimulationService._purge_storage_folder(supabase, bucket, f"{prefix}/{name}")
 
             if file_paths:
-                supabase.storage.from_(bucket).remove(file_paths)
+                await supabase.storage.from_(bucket).remove(file_paths)
                 logger.info(
                     "Purged storage files",
                     extra={"bucket": bucket, "prefix": prefix, "count": len(file_paths)},

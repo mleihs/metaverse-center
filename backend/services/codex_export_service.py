@@ -99,12 +99,12 @@ class CodexExportService:
 
             download_url = ""
             try:
-                admin_supabase.storage.from_("simulation.assets").upload(
+                await admin_supabase.storage.from_("simulation.assets").upload(
                     f"{simulation_id}/exports/{filename}",
                     pdf_bytes,
                     {"content-type": content_type},
                 )
-                download_url = admin_supabase.storage.from_(
+                download_url = await admin_supabase.storage.from_(
                     "simulation.assets"
                 ).get_public_url(f"{simulation_id}/exports/{filename}")
             except Exception:
@@ -235,12 +235,12 @@ class CodexExportService:
 
             download_url = ""
             try:
-                admin_supabase.storage.from_("simulation.assets").upload(
+                await admin_supabase.storage.from_("simulation.assets").upload(
                     storage_path,
                     zip_bytes,
                     {"content-type": "application/zip"},
                 )
-                download_url = admin_supabase.storage.from_(
+                download_url = await admin_supabase.storage.from_(
                     "simulation.assets"
                 ).get_public_url(storage_path)
             except Exception:
