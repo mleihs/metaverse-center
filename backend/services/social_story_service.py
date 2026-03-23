@@ -698,7 +698,7 @@ class SocialStoryService:
             )
 
             # Update record
-            admin.table("social_stories").update({
+            await admin.table("social_stories").update({
                 "image_url": url,
                 "status": "ready",
             }).eq("id", str(story_id)).execute()

@@ -400,7 +400,7 @@ class InstagramScheduler:
                 })
 
         # Update post as published
-        admin.table("instagram_posts").update({
+        await admin.table("instagram_posts").update({
             "status": "published",
             "published_at": datetime.now(UTC).isoformat(),
             "ig_media_id": media_id,

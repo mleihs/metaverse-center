@@ -553,7 +553,7 @@ class ScannerService:
         resonance = await ResonanceService.create(admin, user_id, insert_data)
 
         # Mark candidate as created
-        admin.table("news_scan_candidates").update({
+        await admin.table("news_scan_candidates").update({
             "status": "created",
             "resonance_id": resonance["id"],
             "reviewed_at": datetime.now(UTC).isoformat(),
