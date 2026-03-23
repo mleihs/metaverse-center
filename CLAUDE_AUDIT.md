@@ -139,6 +139,18 @@ Die Architektur ist gut strukturiert (FastAPI Services/Routers, Lit Signals), le
 | ADR-009: admin_supabase Usage Policy | `docs/adr/009-admin-supabase-usage-policy.md` | Done |
 | Fehlende Audit-Logs in invitations.py | `routers/invitations.py` | Done |
 
+### [Frontend] unsafeHTML XSS — BEHOBEN (23.03.2026)
+
+| Maßnahme | Datei | Status |
+|----------|-------|--------|
+| Shared markdown utility mit marked + DOMPurify | `frontend/src/utils/markdown.ts` | Done |
+| EventDetailsPanel regex-Markdown durch renderSafeMarkdown ersetzt | `frontend/src/components/events/EventDetailsPanel.ts` | Done |
+
+**Verifikation:**
+- TypeScript: 0 Fehler
+- Color Token Lint: PASS
+- DOMPurify Config: Nur sichere Tags (h2-h4, p, br, strong, em, ul, ol, li, a, blockquote)
+
 ### Zusätzliche Findings (Deep-Dive-Verifizierung, 23.03.2026)
 
 1.  **Postgres-First-Verletzungen:** 8 Race Conditions in `operative_mission_service.py`, `cycle_resolution_service.py`, `heartbeat_service.py`, `lore_service.py` — fetch-compute-update statt atomischer RPCs.

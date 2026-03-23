@@ -1,7 +1,7 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { unsafeHTML } from 'lit/directives/unsafe-html.js';
+import { renderSafeMarkdown } from '../../utils/markdown.js';
 import { appState } from '../../services/AppStateManager.js';
 import { connectionsApi, echoesApi, eventsApi, simulationsApi } from '../../services/api/index.js';
 import { generationProgress } from '../../services/GenerationProgressService.js';
@@ -854,17 +854,9 @@ export class VelgEventDetailsPanel extends LitElement {
     }
   }
 
-  /** Convert basic markdown (headings, bold, italic, paragraphs) to HTML. */
+  /** Render markdown to sanitized HTML via marked + DOMPurify. */
   private _renderMarkdown(text: string) {
-    const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    const converted = escaped
-      .replace(/^### (.+)$/gm, '<h4>$1</h4>')
-      .replace(/^## (.+)$/gm, '<h3>$1</h3>')
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.+?)\*/g, '<em>$1</em>')
-      .replace(/\n\n/g, '</p><p>')
-      .replace(/\n/g, '<br>');
-    return unsafeHTML(`<p>${converted}</p>`);
+    return renderSafeMarkdown(text);
   }
 
   private _formatDate(dateStr: string): string {
