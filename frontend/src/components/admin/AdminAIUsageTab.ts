@@ -3,6 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { type AIUsageStats, adminApi } from '../../services/api/AdminApiService.js';
 import { adminAnimationStyles, adminForgeSectionStyles, adminLoadingStyles } from './admin-shared-styles.js';
+import '../shared/VelgMetricCard.js';
 
 /**
  * AdminAIUsageTab -- AI cost visibility dashboard.
@@ -18,43 +19,10 @@ export class VelgAdminAIUsageTab extends LitElement {
     adminForgeSectionStyles,
     adminLoadingStyles,
     css`
-      @keyframes stat-count {
-        from { opacity: 0; transform: scale(0.8); }
-        to { opacity: 1; transform: scale(1); }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        .stat-card, .stat-card__value { animation: none !important; }
-      }
-
       .stats-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
         gap: var(--space-3);
-      }
-
-      .stat-card {
-        position: relative;
-        background: var(--color-surface-elevated);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-md);
-        padding: var(--space-4);
-        animation: stat-count 0.3s ease-out both;
-      }
-
-      .stat-card__label {
-        color: var(--color-text-secondary);
-        font-size: var(--text-xs);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: var(--space-1);
-      }
-
-      .stat-card__value {
-        font-size: var(--text-xl);
-        font-weight: 700;
-        color: var(--color-text-primary);
-        font-variant-numeric: tabular-nums;
       }
 
       .breakdown-table {
@@ -164,10 +132,10 @@ export class VelgAdminAIUsageTab extends LitElement {
             </select>
           </div>
           <div class="stats-grid">
-            ${this._renderStat(msg('Total Calls'), s.total_calls.toLocaleString())}
-            ${this._renderStat(msg('Total Tokens'), this._formatTokens(s.total_tokens))}
-            ${this._renderStat(msg('Est. Cost'), '$' + s.total_cost_usd.toFixed(2))}
-            ${this._renderStat(msg('Avg/Call'), '$' + s.avg_cost_per_call.toFixed(4))}
+            <velg-metric-card label=${msg('Total Calls')} value=${s.total_calls.toLocaleString()}></velg-metric-card>
+            <velg-metric-card label=${msg('Total Tokens')} value=${this._formatTokens(s.total_tokens)}></velg-metric-card>
+            <velg-metric-card label=${msg('Est. Cost')} value=${'$' + s.total_cost_usd.toFixed(2)} variant="warning"></velg-metric-card>
+            <velg-metric-card label=${msg('Avg/Call')} value=${'$' + s.avg_cost_per_call.toFixed(4)}></velg-metric-card>
           </div>
         </div>
 
@@ -203,14 +171,7 @@ export class VelgAdminAIUsageTab extends LitElement {
     `;
   }
 
-  private _renderStat(label: string, value: string) {
-    return html`
-      <div class="stat-card">
-        <div class="stat-card__label">${label}</div>
-        <div class="stat-card__value">${value}</div>
-      </div>
-    `;
-  }
+
 
   private _formatTokens(n: number): string {
     if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
