@@ -1523,7 +1523,7 @@ Generate exactly 3 new agents. Requirements:
                     admin_supabase, user_id,
                 )
 
-            image_service = ForgeOrchestratorService._create_image_service(
+            image_service = await ForgeOrchestratorService._create_image_service(
                 admin_supabase, simulation_id, sim_data,
                 replicate_api_key=rep_key, openrouter_api_key=or_key,
             )

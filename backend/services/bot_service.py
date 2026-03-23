@@ -215,7 +215,7 @@ class BotService:
             logger.debug("Bot chat generation failed for %s", participant["id"], exc_info=True)
 
         # 7. Set cycle_ready
-        admin_supabase.table("epoch_participants").update(
+        await admin_supabase.table("epoch_participants").update(
             {"cycle_ready": True}
         ).eq("id", participant["id"]).execute()
 

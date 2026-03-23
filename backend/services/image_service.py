@@ -232,7 +232,7 @@ class ImageService:
         )
 
         # 5. Update building record (persist both URL and prompt for debugging)
-        self._supabase.table("buildings").update(
+        await self._supabase.table("buildings").update(
             {"image_url": url, "image_prompt_text": description[:2000]},
         ).eq("id", str(building_id)).execute()
 
@@ -293,7 +293,7 @@ class ImageService:
             raw_bytes=raw_bytes,
         )
 
-        self._supabase.table("simulations").update(
+        await self._supabase.table("simulations").update(
             {"banner_url": url},
         ).eq("id", str(self._simulation_id)).execute()
 
