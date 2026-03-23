@@ -124,6 +124,11 @@ Die Architektur ist gut strukturiert (FastAPI Services/Routers, Lit Signals), le
 - Ruff: 0 Fehler
 - TypeScript: 0 Fehler
 - AsyncClient verifiziert: `.auth.set_session()`, `.table().execute()` (async), `.rpc().execute()` (async)
+- AST-basierter Audit (Python-Parser): 0 un-awaited Calls über 238 Produktionsdateien
+- 9 iterative Deep Dives: 36 zusätzliche Bugs nach initialem Script gefunden und gefixt
+- Storage-Ops (.upload, .get_public_url, .remove, .list) alle async und awaited
+- PlatformConfigService.get/get_multiple auf async migriert, alle 9 Caller aktualisiert
+- SEO-Middleware bewusst sync (eigener create_client, separater Client-Lebenszyklus)
 
 ### Zusätzliche Findings (Deep-Dive-Verifizierung, 23.03.2026)
 
