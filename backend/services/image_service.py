@@ -144,7 +144,7 @@ class ImageService:
         )
 
         # 5. Update agent record (persist both URL and description for debugging)
-        self._supabase.table("agents").update(
+        await self._supabase.table("agents").update(
             {"portrait_image_url": url, "portrait_description": description[:2000]},
         ).eq("id", str(agent_id)).execute()
 

@@ -121,7 +121,7 @@ class InvitationService:
             )
 
         # Mark invitation as accepted
-        supabase.table("simulation_invitations").update({
+        await supabase.table("simulation_invitations").update({
             "accepted_at": datetime.now(UTC).isoformat(),
         }).eq("id", invitation["id"]).execute()
 

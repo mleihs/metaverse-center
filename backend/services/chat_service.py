@@ -203,7 +203,7 @@ class ChatService:
             )
 
         # Also update last_message_at on the conversation
-        supabase.table("chat_conversations").update({
+        await supabase.table("chat_conversations").update({
             "last_message_at": datetime.now(UTC).isoformat(),
         }).eq("id", str(conversation_id)).execute()
 

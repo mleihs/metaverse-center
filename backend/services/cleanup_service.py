@@ -255,7 +255,7 @@ class CleanupService:
         cascade_counts = await cls._count_cascade_targets(admin_supabase, matched_ids)
 
         # Step 1: Delete game instance simulations first (ON DELETE SET NULL on epoch_id)
-        admin_supabase.table("simulations").delete().in_(
+        await admin_supabase.table("simulations").delete().in_(
             "epoch_id", matched_ids,
         ).in_(
             "simulation_type", ["game_instance", "archived"],

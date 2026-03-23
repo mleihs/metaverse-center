@@ -259,7 +259,7 @@ class NarrativeArcService:
                 }).execute()
 
                 # Update cooldown on rule
-                admin.table("resonance_cascade_rules").update({
+                await admin.table("resonance_cascade_rules").update({
                     "last_triggered_at": now.isoformat(),
                 }).eq("id", rule["id"]).execute()
 
@@ -404,14 +404,14 @@ class NarrativeArcService:
                 )
 
                 # Generate new lore section from convergence (world evolution)
-                cls._create_convergence_lore(
+                await cls._create_convergence_lore(
                     admin, sim_id, arch_a, arch_b, conv_name, effects_desc,
                 )
 
         return entries, detected
 
     @classmethod
-    def _create_convergence_lore(
+    async def _create_convergence_lore(
         cls, admin: Client, sim_id: UUID,
         arch_a: str, arch_b: str, conv_name: str, effects_desc: str,
     ) -> None:
@@ -419,7 +419,7 @@ class NarrativeArcService:
         try:
             # Find next sort_order
             existing = (
-                admin.table("simulation_lore")
+                await admin.table("simulation_lore")
                 .select("sort_order")
                 .eq("simulation_id", str(sim_id))
                 .order("sort_order", desc=True)
@@ -428,7 +428,7 @@ class NarrativeArcService:
             ).data
             next_order = (existing[0]["sort_order"] + 1) if existing else 0
 
-            admin.table("simulation_lore").insert({
+            await admin.table("simulation_lore").insert({
                 "simulation_id": str(sim_id),
                 "sort_order": next_order,
                 "chapter": "Echoes of Convergence",
@@ -568,7 +568,7 @@ class NarrativeArcService:
 
                     # Scar zones if peak pressure was significant
                     if peak > 0.5:
-                        cls._scar_affected_zones(
+                        await cls._scar_affected_zones(
                             admin, sim_id, arc, arc_type, sig,
                         )
 
@@ -579,7 +579,7 @@ class NarrativeArcService:
     # ── Zone Scarring ──────────────────────────────────────────
 
     @classmethod
-    def _scar_affected_zones(
+    async def _scar_affected_zones(
         cls, admin: Client, sim_id: UUID,
         arc: dict, arc_type: str, signature: str,
     ) -> None:
@@ -591,7 +591,7 @@ class NarrativeArcService:
 
             # Find zones linked to the arc's source events
             zone_links = (
-                admin.table("event_zone_links")
+                await admin.table("event_zone_links")
                 .select("zone_id")
                 .in_("event_id", source_event_ids)
                 .execute()
@@ -607,7 +607,7 @@ class NarrativeArcService:
                 seen_zones.add(zone_id)
 
                 zone = (
-                    admin.table("zones")
+                    await admin.table("zones")
                     .select("id, description")
                     .eq("id", zone_id)
                     .limit(1)
@@ -616,7 +616,7 @@ class NarrativeArcService:
                 if zone:
                     current_desc = zone[0].get("description") or ""
                     if scar_suffix not in current_desc:
-                        admin.table("zones").update({
+                        await admin.table("zones").update({
                             "description": current_desc + scar_suffix,
                         }).eq("id", zone_id).execute()
 

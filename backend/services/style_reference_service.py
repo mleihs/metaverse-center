@@ -88,11 +88,11 @@ class StyleReferenceService:
 
         # Persist reference
         if scope == "global":
-            _upsert_setting(
+            await _upsert_setting(
                 supabase, simulation_id,
                 f"image_ref_global_{entity_type}", url,
             )
-            _upsert_setting(
+            await _upsert_setting(
                 supabase, simulation_id,
                 f"image_ref_strength_{entity_type}", str(strength),
             )
@@ -276,7 +276,7 @@ class StyleReferenceService:
             if resp.data and resp.data[0].get("style_reference_url"):
                 await _try_delete_storage_file(supabase, resp.data[0]["style_reference_url"])
 
-            supabase.table(table).update(
+            await supabase.table(table).update(
                 {"style_reference_url": None},
             ).eq("id", str(entity_id)).execute()
 
@@ -339,14 +339,14 @@ class StyleReferenceService:
         return results
 
 
-def _upsert_setting(
+async def _upsert_setting(
     supabase: Client,
     simulation_id: UUID,
     key: str,
     value: str,
 ) -> None:
     """Upsert a simulation_settings row in the 'ai' category."""
-    supabase.table("simulation_settings").upsert(
+    await supabase.table("simulation_settings").upsert(
         {
             "simulation_id": str(simulation_id),
             "category": "ai",

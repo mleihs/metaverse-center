@@ -295,7 +295,7 @@ class BureauResponseService:
 
             elif resp_type == "adapt":
                 # Adapt reduces scar tissue on the parent narrative arc
-                pressure_reduction = cls._apply_adapt_scar_reduction(
+                pressure_reduction = await cls._apply_adapt_scar_reduction(
                     admin, sim_id, resp["event_id"], config,
                 )
 
@@ -344,7 +344,7 @@ class BureauResponseService:
     # ── Adapt Scar Reduction ─────────────────────────────────────
 
     @classmethod
-    def _apply_adapt_scar_reduction(
+    async def _apply_adapt_scar_reduction(
         cls, admin: Client, sim_id: UUID,
         event_id: str, config: dict | None,
     ) -> float:
@@ -356,7 +356,7 @@ class BureauResponseService:
             (config or {}).get("bureau_adapt_scar_reduction", 0.20),
         )
         arcs = (
-            admin.table("narrative_arcs")
+            await admin.table("narrative_arcs")
             .select("id, scar_tissue_deposited, source_event_ids")
             .eq("simulation_id", str(sim_id))
             .in_("status", ["active", "climax", "resolving"])
@@ -368,7 +368,7 @@ class BureauResponseService:
             if event_id in source_ids:
                 current_scar = float(arc.get("scar_tissue_deposited", 0))
                 new_scar = round(max(0, current_scar * (1 - adapt_scar_reduction)), 4)
-                admin.table("narrative_arcs").update({
+                await admin.table("narrative_arcs").update({
                     "scar_tissue_deposited": new_scar,
                 }).eq("id", arc["id"]).execute()
                 reduction = round(current_scar - new_scar, 4)
