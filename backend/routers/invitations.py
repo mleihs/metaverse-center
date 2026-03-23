@@ -1,6 +1,7 @@
 """Simulation invitation endpoints."""
 
 import logging
+from datetime import UTC, datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -71,8 +72,6 @@ async def validate_invitation(
 ) -> dict:
     """Validate an invitation token (platform-level, no simulation context)."""
     invitation = await InvitationService.get_by_token(supabase, token)
-
-    from datetime import UTC, datetime
 
     expires_at = invitation["expires_at"]
     if isinstance(expires_at, str):

@@ -514,7 +514,7 @@ def _build_locations(
 
     jsonld = _safe_jsonld({
         "@context": "https://schema.org",
-        "@type": "CollectionPage",
+        "@type": "ItemList",
         "name": f"{sim_name} — Locations",
         "url": f"{BASE_URL}/simulations/{slug}/locations",
         "numberOfItems": len(zones) + len(streets),
@@ -551,7 +551,7 @@ def _build_events(
 
     jsonld = _safe_jsonld({
         "@context": "https://schema.org",
-        "@type": "CollectionPage",
+        "@type": "ItemList",
         "name": f"{sim_name} — Events",
         "url": f"{BASE_URL}/simulations/{slug}/events",
         "numberOfItems": len(events),

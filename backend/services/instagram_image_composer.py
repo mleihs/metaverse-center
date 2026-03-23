@@ -731,7 +731,7 @@ class InstagramImageComposer:
             desc_lines = self._wrap_text(desc, font_desc, w - 140)
             for dline in desc_lines[:3]:
                 draw.text((60, y), dline, fill=(*accent, 220), font=font_desc)
-                y += 46
+                y += 48
         y += 48  # Tighter before gauge
 
         # Accent divider before gauge
@@ -1069,7 +1069,7 @@ class InstagramImageComposer:
         )
 
         # "SHARD IMPACT:" top line
-        y = 256
+        y = 252
         self._text_with_glow(
             img, (60, y), "SHARD IMPACT:",
             font_title, (*sim_color, 255), (*sim_color, 80), glow_radius=10,
@@ -1293,14 +1293,14 @@ class InstagramImageComposer:
         draw = ImageDraw.Draw(img)
         draw.line([(60, y), (w - 60, y)], fill=(*accent, 140), width=2)
         draw.line([(60, y + 4), (w - 60, y + 4)], fill=(*accent, 40), width=1)
-        y += 96
+        y += 48  # Consistent post-divider gap (matches other templates)
 
         draw.text(
             (60, y), f"Active Resonance: [{archetype.upper()}]",
             fill=(255, 255, 255, 255), font=font_md,
             stroke_width=1, stroke_fill=(0, 0, 0, 100),
         )
-        y += 120  # Tighter before columns
+        y += 72  # Before columns
 
         # Two-column layout
         col_left_x = 80
@@ -1481,9 +1481,7 @@ class InstagramImageComposer:
 
         draw = ImageDraw.Draw(img)
         font_sm = _load_monospace_font(36)
-        draw.line([(60, y), (w - 60, y)], fill=(*accent, 80), width=2)
-        draw.line([(60, y + 4), (w - 60, y + 4)], fill=(*accent, 25), width=1)
-        y += 120  # A: grid-aligned (5*24) — more breathing room
+        y += 96  # Breathing room — no divider (minimal aesthetic)
 
         font_md = _load_monospace_font(48)
         draw.text(
@@ -1496,13 +1494,13 @@ class InstagramImageComposer:
             (60, y), "Residual effects at 50% magnitude.",
             fill=(120, 120, 120, 255), font=font_sm,
         )
-        y += 168  # Push stats into visible zone
+        y += 72  # Gap above stats panel
 
         # Large stat numbers (centered, dramatic) (C7: accent color stats)
         font_stat = _load_bold_font(140)
         font_label = _load_monospace_font(36)
 
-        # Stats content panel (B: panel centered, wider)
+        # Stats content panel (B: panel centered, wider, 24px top padding)
         stats_panel_y = y - 24
         stats_panel_h = 580
         draw.rounded_rectangle(
@@ -1546,13 +1544,10 @@ class InstagramImageComposer:
             (w // 2 - lw // 2, y + 145), label_text,
             fill=(100, 100, 100, 255), font=font_label,
         )
-        y += 264  # Tighter before closing
+        y += 264
 
-        # Faint horizontal divider between stats and closing
-        draw.line([(200, y - 24), (w - 200, y - 24)], fill=(*accent, 50), width=1)
-
-        # Elegiac closing lines — in extended visible zone (Y=1100-1300)
-        closing_y = max(y, 1100)
+        # Elegiac closing lines — symmetric gap below stats panel
+        closing_y = stats_panel_y + stats_panel_h + 48
         closing_y = min(closing_y, 1300)
         font_closing = _load_italic_font(52)
         closing_1 = "The trembling fades."
@@ -1569,7 +1564,7 @@ class InstagramImageComposer:
         w2 = bbox_2[2] - bbox_2[0]
         draw = ImageDraw.Draw(img)
         draw.text(
-            (w // 2 - w2 // 2, closing_y + 56), closing_2,  # A: grid-aligned (bigger gap)
+            (w // 2 - w2 // 2, closing_y + 64), closing_2,  # Consistent closing line gap
             fill=(*accent, 120), font=font_closing,
         )
 

@@ -35,6 +35,7 @@ def _make_chain(**overrides):
     c.delete.return_value = c
     c.range.return_value = c
     c.is_.return_value = c
+    c.neq.return_value = c
     c.upsert.return_value = c
     for k, v in overrides.items():
         setattr(c, k, v)
@@ -717,39 +718,9 @@ class TestBotParticipants:
 
 
 class TestRPManagement:
-    @pytest.mark.asyncio
-    async def test_grant_rp_batch_respects_cap(self):
-        sb = MagicMock()
-
-        # Fetch participants
-        select_chain = _make_chain()
-        select_chain.execute.return_value = MagicMock(
-            data=[
-                {"id": "p1", "current_rp": 35},
-                {"id": "p2", "current_rp": 10},
-            ]
-        )
-
-        # Update chain
-        update_chain = _make_chain()
-        update_chain.execute.return_value = MagicMock(data=[])
-
-        call_counts: dict[str, int] = {}
-
-        def table_router(name):
-            call_counts[name] = call_counts.get(name, 0) + 1
-            if call_counts[name] == 1:
-                return select_chain
-            return update_chain
-
-        sb.table.side_effect = table_router
-
-        await EpochService._grant_rp_batch(sb, EPOCH_ID, amount=12, rp_cap=40)
-
-        # p1: min(35+12, 40) = 40
-        # p2: min(10+12, 40) = 22
-        # Should group by target RP and batch update
-        assert update_chain.update.called
+    # grant_rp_batch and resolve_cycle tests moved to integration tests
+    # (backend/tests/integration/test_cycle_resolution.py) which run against
+    # real Supabase with real RPCs. Only mock-stable spend_rp edge cases remain.
 
     @pytest.mark.asyncio
     async def test_spend_rp_success(self):
@@ -812,37 +783,8 @@ class TestRPManagement:
 
 
 class TestResolveCycle:
-    @pytest.mark.asyncio
-    async def test_resolve_increments_cycle(self):
-        sb = MagicMock()
-        chain = _make_chain()
-        chain.execute.side_effect = [
-            # get epoch
-            MagicMock(data={
-                "id": str(EPOCH_ID),
-                "status": "competition",
-                "config": {},
-                "current_cycle": 3,
-            }),
-            # _grant_rp_batch: select participants
-            MagicMock(data=[]),
-            # reset cycle_ready
-            MagicMock(data=[]),
-            # increment cycle
-            MagicMock(data=[{
-                "id": str(EPOCH_ID),
-                "current_cycle": 4,
-            }]),
-        ]
-        sb.table.return_value = chain
-
-        await EpochService.resolve_cycle(sb, EPOCH_ID)
-
-        # Verify the cycle was incremented
-        update_calls = chain.update.call_args_list
-        # Last update call should be the cycle increment
-        last_update = update_calls[-1][0][0]
-        assert last_update["current_cycle"] == 4
+    # test_resolve_increments_cycle and test_resolve_foundation_grants_bonus_rp
+    # moved to integration tests (backend/tests/integration/test_cycle_resolution.py).
 
     @pytest.mark.asyncio
     async def test_resolve_rejects_lobby_phase(self):
@@ -870,38 +812,6 @@ class TestResolveCycle:
             await EpochService.resolve_cycle(sb, EPOCH_ID)
         assert exc.value.status_code == 400
 
-    @pytest.mark.asyncio
-    async def test_resolve_foundation_grants_bonus_rp(self):
-        """Foundation phase grants 1.5x RP."""
-        sb = MagicMock()
-        chain = _make_chain()
-        chain.execute.side_effect = [
-            # get epoch
-            MagicMock(data={
-                "id": str(EPOCH_ID),
-                "status": "foundation",
-                "config": {"rp_per_cycle": 12, "rp_cap": 40},
-                "current_cycle": 1,
-            }),
-            # _grant_rp_batch: select participants
-            MagicMock(data=[{"id": "p1", "current_rp": 0}]),
-            # _grant_rp_batch: update (grouped)
-            MagicMock(data=[]),
-            # reset cycle_ready
-            MagicMock(data=[]),
-            # increment cycle
-            MagicMock(data=[{"id": str(EPOCH_ID), "current_cycle": 2}]),
-        ]
-        sb.table.return_value = chain
-
-        await EpochService.resolve_cycle(sb, EPOCH_ID)
-
-        # Foundation bonus: int(12 * 1.5) = 18 RP
-        # Check the update call in _grant_rp_batch
-        update_calls = chain.update.call_args_list
-        # First update should be the RP grant
-        rp_update = update_calls[0][0][0]
-        assert rp_update["current_rp"] == 18  # min(0+18, 40) = 18
 
 
 # ── Operative RP Costs ─────────────────────────────────────────

@@ -7,7 +7,7 @@ import { focusFirstElement, trapFocus } from './focus-trap.js';
  * Full-viewport cinematic lightbox for entity detail views.
  *
  * Uses the same slot API as VelgSidePanel (media, content, footer)
- * so detail panels can swap containers seamlessly.
+ * so detail panels can swap containers without visible transitions.
  *
  * Features:
  * - Two-column desktop layout (hero image + content)

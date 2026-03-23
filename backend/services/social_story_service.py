@@ -49,6 +49,239 @@ _MAX_RETRIES = 3
 class SocialStoryService:
     """Generates and schedules Instagram Stories from resonance impacts."""
 
+    # ── CRUD ───────────────────────────────────────────────────────────────
+
+    @staticmethod
+    async def list_stories(
+        admin: Client,
+        *,
+        status_filter: str | None = None,
+        resonance_id: UUID | None = None,
+        limit: int = 25,
+        offset: int = 0,
+    ) -> tuple[list[dict], int]:
+        """List social stories with optional filters.
+
+        Returns (rows, total_count).
+        """
+        query = admin.table("social_stories").select("*", count="exact")
+        if status_filter:
+            query = query.eq("status", status_filter)
+        if resonance_id:
+            query = query.eq("resonance_id", str(resonance_id))
+        query = query.order("scheduled_at", desc=True).range(offset, offset + limit - 1)
+        response = query.execute()
+        data = response.data or []
+        total = response.count if response.count is not None else len(data)
+        return data, total
+
+    @staticmethod
+    async def get_by_id(admin: Client, story_id: UUID) -> dict | None:
+        """Get a single social story by ID. Returns None if not found."""
+        response = (
+            admin.table("social_stories")
+            .select("*")
+            .eq("id", str(story_id))
+            .limit(1)
+            .execute()
+        )
+        return response.data[0] if response.data else None
+
+    @staticmethod
+    async def get_sequence(admin: Client, resonance_id: UUID) -> list[dict]:
+        """Get all stories for a resonance, ordered by sequence index."""
+        response = (
+            admin.table("social_stories")
+            .select("*")
+            .eq("resonance_id", str(resonance_id))
+            .order("sequence_index")
+            .execute()
+        )
+        return response.data or []
+
+    @staticmethod
+    async def update_status(
+        admin: Client,
+        story_id: UUID,
+        status: str,
+        **fields: str | None,
+    ) -> dict | None:
+        """Update a story's status and optional extra fields. Returns updated record."""
+        payload: dict = {"status": status, **{k: v for k, v in fields.items() if v is not None}}
+        response = (
+            admin.table("social_stories")
+            .update(payload)
+            .eq("id", str(story_id))
+            .execute()
+        )
+        return response.data[0] if response.data else None
+
+    @staticmethod
+    async def clear_and_reset(admin: Client, story_id: UUID) -> None:
+        """Reset a story to pending, clearing image and IG metadata."""
+        admin.table("social_stories").update({
+            "status": "pending",
+            "image_url": None,
+            "ig_story_id": None,
+            "ig_posted_at": None,
+            "published_at": None,
+            "failure_reason": None,
+        }).eq("id", str(story_id)).execute()
+
+    @staticmethod
+    async def get_pipeline_settings(admin: Client) -> dict[str, str]:
+        """Get all resonance story pipeline settings."""
+        rows = (
+            admin.table("platform_settings")
+            .select("setting_key, setting_value")
+            .like("setting_key", "resonance_stories_%")
+            .execute()
+        ).data or []
+        return {row["setting_key"]: row["setting_value"] for row in rows}
+
+    # ── Publish / Regenerate ───────────────────────────────────────────────
+
+    @classmethod
+    async def publish_story(
+        cls,
+        admin: Client,
+        story_id: UUID,
+        ig_service: object,
+    ) -> dict:
+        """Force-publish a single story to Instagram.
+
+        Composes image if needed, publishes via IG API, updates status.
+        Returns the updated story record.
+        Raises HTTPException on validation/publish failures.
+        """
+        from fastapi import HTTPException, status
+
+        story = await cls.get_by_id(admin, story_id)
+        if not story:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Story not found.")
+
+        if story["status"] not in ("pending", "ready"):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot publish story with status '{story['status']}'.",
+            )
+
+        # Compose image if not yet ready
+        if not story.get("image_url"):
+            url = await cls.compose_story_image(admin, story_id)
+            if not url:
+                raise HTTPException(status_code=500, detail="Image composition failed.")
+            story["image_url"] = url
+
+        try:
+            await cls.update_status(admin, story_id, "publishing")
+            result = await ig_service.publish_story(story["image_url"])
+            media_id = result.get("id", "")
+            now_iso = datetime.now(UTC).isoformat()
+
+            updated = await cls.update_status(
+                admin, story_id, "published",
+                published_at=now_iso,
+                ig_story_id=media_id,
+                ig_posted_at=now_iso,
+            )
+            return updated or story
+
+        except HTTPException:
+            raise
+        except Exception as exc:
+            logger.exception("Force-publish story failed", extra={
+                "story_id": str(story_id),
+            })
+            await cls.update_status(
+                admin, story_id, "failed",
+                failure_reason=f"Force-publish failed: {exc!s}"[:500],
+            )
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("instagram_phase", "force_publish_story")
+                scope.set_context("story", {"story_id": str(story_id)})
+                sentry_sdk.capture_exception(exc)
+            raise HTTPException(
+                status_code=502,
+                detail=f"Force-publish failed: {exc!s}"[:200],
+            ) from exc
+
+    @classmethod
+    async def regenerate_story(
+        cls,
+        admin: Client,
+        story_id: UUID,
+        ig_service: object,
+    ) -> dict:
+        """Delete from IG, recompose, and republish a story.
+
+        Returns the updated story record.
+        Raises HTTPException on failures.
+        """
+        from fastapi import HTTPException
+
+        story = await cls.get_by_id(admin, story_id)
+        if not story:
+            raise HTTPException(status_code=404, detail="Story not found.")
+
+        # Step 1: Delete from Instagram if published
+        ig_story_id = story.get("ig_story_id")
+        if ig_story_id:
+            try:
+                await ig_service.delete_media(ig_story_id)
+                logger.info("Deleted story from Instagram", extra={
+                    "story_id": str(story_id),
+                    "ig_story_id": ig_story_id,
+                })
+            except Exception as exc:
+                logger.warning("Could not delete story from Instagram (may have expired)", extra={
+                    "story_id": str(story_id),
+                    "ig_story_id": ig_story_id,
+                    "error": str(exc)[:200],
+                })
+
+        # Step 2: Reset status and clear old image reference
+        await cls.clear_and_reset(admin, story_id)
+
+        # Step 3: Recompose image
+        url = await cls.compose_story_image(admin, story_id)
+        if not url:
+            raise HTTPException(status_code=500, detail="Image recomposition failed.")
+
+        # Step 4: Publish to Instagram
+        try:
+            await cls.update_status(admin, story_id, "publishing")
+            result = await ig_service.publish_story(url)
+            media_id = result.get("id", "")
+            now_iso = datetime.now(UTC).isoformat()
+
+            updated = await cls.update_status(
+                admin, story_id, "published",
+                published_at=now_iso,
+                ig_story_id=media_id,
+                ig_posted_at=now_iso,
+            )
+            return updated or story
+
+        except HTTPException:
+            raise
+        except Exception as exc:
+            logger.exception("Regenerate publish failed", extra={
+                "story_id": str(story_id),
+            })
+            await cls.update_status(
+                admin, story_id, "failed",
+                failure_reason=f"Regenerate publish failed: {exc!s}"[:500],
+            )
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("instagram_phase", "regenerate_publish")
+                scope.set_context("story", {"story_id": str(story_id)})
+                sentry_sdk.capture_exception(exc)
+            raise HTTPException(
+                status_code=502,
+                detail=f"Recomposition succeeded but publish failed: {exc!s}"[:200],
+            ) from exc
+
     # ── Story Sequence Creation ────────────────────────────────────────────
 
     @classmethod

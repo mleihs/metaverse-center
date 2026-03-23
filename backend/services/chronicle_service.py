@@ -15,11 +15,11 @@ from supabase import Client
 logger = logging.getLogger(__name__)
 
 MOCK_CHRONICLE = {
-    "title": "The Pulse of the City — Edition #{edition_number}",
+    "title": "The Pulse of the City \u2013 Edition #{edition_number}",
     "headline": "Shadows lengthen as tensions rise across the districts.",
     "content": (
         "Another cycle turns in this restless city. Events of note ripple through "
-        "every quarter — alliances shift, buildings crumble, and whispered echoes "
+        "every quarter \u2013 alliances shift, buildings crumble, and whispered echoes "
         "from foreign realities bleed through the walls of our embassies.\n\n"
         "Citizens report unease. The state assures all is well. As always, the "
         "truth lies somewhere in between, buried beneath layers of propaganda "

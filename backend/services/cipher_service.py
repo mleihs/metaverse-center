@@ -192,10 +192,10 @@ class CipherService:
             encoded_hint = cls.encode_hint(unlock_code, difficulty)
             # Caption gets a notice instead of the actual cipher
             notice = (
-                "\n\n—\nVISUAL CIPHER EMBEDDED — "
+                "\n\n\u2013\nVISUAL CIPHER EMBEDDED \u2013 "
                 "Decode at metaverse.center/bureau/dispatch"
             )
-            disclosure = "\n\n—\nAI-generated content from metaverse.center"
+            disclosure = "\n\n\u2013\nAI-generated content from metaverse.center"
             if disclosure in caption:
                 result_caption = caption.replace(disclosure, notice + disclosure)
             else:
@@ -272,12 +272,12 @@ class CipherService:
             return f"{caption}\n\n{hint}"
 
         # footer (default) — append before AI disclosure
-        disclosure = "\n\n—\nAI-generated content from metaverse.center"
+        disclosure = "\n\n\u2013\nAI-generated content from metaverse.center"
         if disclosure in caption:
             clean = caption.replace(disclosure, "")
-            return f"{clean}\n\n—\n{hint}\nDecode at metaverse.center/bureau/dispatch{disclosure}"
+            return f"{clean}\n\n\u2013\n{hint}\nDecode at metaverse.center/bureau/dispatch{disclosure}"
 
-        return f"{caption}\n\n—\n{hint}\nDecode at metaverse.center/bureau/dispatch"
+        return f"{caption}\n\n\u2013\n{hint}\nDecode at metaverse.center/bureau/dispatch"
 
     @staticmethod
     def _caesar_shift(text: str, shift: int) -> str:

@@ -64,7 +64,7 @@ class TestBuildViewContent:
         assert "Engineer" in html
         assert "Bob" in html
         parsed = json.loads(jsonld)
-        assert parsed["@type"] == "CollectionPage"
+        assert parsed["@type"] == "ItemList"
         assert parsed["numberOfItems"] == 2
 
     def test_buildings_produces_articles(self):
@@ -78,7 +78,7 @@ class TestBuildViewContent:
         assert "Tower" in html
         assert "residential" in html
         parsed = json.loads(jsonld)
-        assert parsed["@type"] == "CollectionPage"
+        assert parsed["@type"] == "ItemList"
         assert parsed["numberOfItems"] == 1
 
     def test_lore_produces_creative_work(self):
@@ -127,7 +127,7 @@ class TestBuildViewContent:
         assert "Market District" in html
         assert "Baker Street" in html
         parsed = json.loads(jsonld)
-        assert parsed["@type"] == "CollectionPage"
+        assert parsed["@type"] == "ItemList"
         assert parsed["numberOfItems"] == 2
 
     def test_events_produces_articles(self):
@@ -140,7 +140,7 @@ class TestBuildViewContent:
         assert "<article>" in html
         assert "Festival" in html
         parsed = json.loads(jsonld)
-        assert parsed["@type"] == "CollectionPage"
+        assert parsed["@type"] == "ItemList"
 
     def test_events_empty_graceful(self):
         client = self._mock_client({"events": []})

@@ -79,7 +79,7 @@ class ThresholdService:
         if overall >= 0.25:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail=f"Simulation health is {overall:.2f} — threshold actions require health below 0.25.",
+                detail=f"Simulation health is {overall:.2f} \u2013 threshold actions require health below 0.25.",
             )
         return health
 

@@ -363,22 +363,26 @@ class PhilosophicalAnchor(BaseModel):
     title: str
     title_de: str = Field(
         default="",
+        min_length=1,
         description="German equivalent of title, written as if originally German.",
     )
     literary_influence: str
     literary_influence_de: str = Field(
         default="",
-        description="German equivalent of literary_influence — use published German title if it exists.",
+        min_length=1,
+        description="German equivalent of literary_influence -- use published German title if it exists.",
     )
     core_question: str
     core_question_de: str = Field(
         default="",
+        min_length=1,
         description="German equivalent of core_question.",
     )
     bleed_signature_suggestion: str
     description: str
     description_de: str = Field(
         default="",
+        min_length=1,
         description="German equivalent of description.",
     )
 
@@ -397,7 +401,7 @@ class ForgeAgentDraft(BaseModel):
     )
     primary_profession: str = Field(max_length=100)
     primary_profession_de: str = Field(
-        default="",
+        min_length=1,
         description="German equivalent of primary_profession.",
         max_length=100,
     )
@@ -409,7 +413,7 @@ class ForgeAgentDraft(BaseModel):
         ),
     )
     character_de: str = Field(
-        default="",
+        min_length=1,
         description="German equivalent of character.",
     )
     background: str = Field(
@@ -419,7 +423,7 @@ class ForgeAgentDraft(BaseModel):
         ),
     )
     background_de: str = Field(
-        default="",
+        min_length=1,
         description="German equivalent of background.",
     )
 
@@ -429,7 +433,7 @@ class ForgeBuildingDraft(BaseModel):
     name: str = Field(max_length=100)
     building_type: str = Field(max_length=100)
     building_type_de: str = Field(
-        default="",
+        min_length=1,
         description="German equivalent of building_type.",
         max_length=100,
     )
@@ -442,7 +446,7 @@ class ForgeBuildingDraft(BaseModel):
         ),
     )
     description_de: str = Field(
-        default="",
+        min_length=1,
         description="German equivalent of description.",
     )
     building_condition: str = Field(
@@ -454,7 +458,7 @@ class ForgeBuildingDraft(BaseModel):
         ),
     )
     building_condition_de: str = Field(
-        default="",
+        min_length=1,
         description="German equivalent of building_condition.",
     )
 

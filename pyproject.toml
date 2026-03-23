@@ -62,6 +62,7 @@ asyncio_mode = "auto"
 markers = [
     "integration: Integration tests requiring app instantiation but not external services",
     "slow: Performance tests that may take several seconds",
+    "gamedb: Game mechanics integration tests against live Supabase",
 ]
 
 [tool.coverage.run]

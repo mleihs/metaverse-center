@@ -133,9 +133,9 @@ class NarrativeArcService:
             entries.append(make_heartbeat_entry(
                 heartbeat_id, sim_id, tick_number, "narrative_arc",
                 f"NARRATIVE ARC DETECTED: {len(sig_event_list)} '{signature}' events "
-                f"converging — escalation pattern building (pressure {initial_pressure:.2f}).",
+                f"converging \u2013 escalation pattern building (pressure {initial_pressure:.2f}).",
                 f"NARRATIVER BOGEN ERKANNT: {len(sig_event_list)} '{signature}'-Ereignisse "
-                f"konvergieren — Eskalationsmuster bildet sich (Druck {initial_pressure:.2f}).",
+                f"konvergieren \u2013 Eskalationsmuster bildet sich (Druck {initial_pressure:.2f}).",
                 severity="warning",
                 metadata={
                     "arc_id": str(arc_id), "arc_type": "escalation",
