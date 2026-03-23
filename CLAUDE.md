@@ -87,6 +87,9 @@ Write operations require:
 - Never place business logic inside routers.
 - Never change response shape without updating spec.
 - Never add columns to `agents`, `buildings`, `simulations`, or `events` without refreshing the corresponding `active_*` view (`CREATE OR REPLACE VIEW`) in the same migration. PostgreSQL `SELECT *` in views resolves columns at creation time, not query time.
+- Never grant SECURITY DEFINER functions to `anon` or `authenticated`. Admin RPCs must be callable only via backend with role validation (see ADR-006, incident migration 096→147).
+- Never use `httpx`/`requests` directly for user-provided URLs. Use `backend/utils/safe_fetch.py` for SSRF protection.
+- Never implement fetch-compute-update patterns in Python for concurrent-access data. Use atomic Postgres RPCs with compare-and-swap logic (see ADR-007, migration 148).
 
 ---
 

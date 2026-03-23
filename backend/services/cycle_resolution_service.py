@@ -12,6 +12,7 @@ from backend.models.epoch import EpochConfig
 from backend.services.battle_log_service import BattleLogService
 from backend.services.constants import SECURITY_TIER_ORDER
 from backend.services.game_instance_service import GameInstanceService
+from backend.services.platform_config_service import PlatformConfigService
 from supabase import Client
 
 logger = logging.getLogger(__name__)
@@ -101,7 +102,34 @@ class CycleResolutionService:
         simulation_id: UUID,
         amount: int,
     ) -> int:
-        """Grant RP to a single participant, respecting the cap. Returns new balance."""
+        """Grant RP to a single participant, respecting the cap. Returns new balance.
+
+        Uses ``fn_grant_rp_single`` RPC (migration 148) when ``use_atomic_game_rpcs``
+        platform setting is enabled. Falls back to Python fetch-compute-update otherwise.
+        """
+        # Read epoch config for rp_cap (needed by both paths)
+        epoch_resp = (
+            supabase.table("game_epochs")
+            .select("config")
+            .eq("id", str(epoch_id))
+            .single()
+            .execute()
+        )
+        config = {**DEFAULT_CONFIG, **(epoch_resp.data or {}).get("config", {})}
+        rp_cap = config["rp_cap"]
+
+        use_rpc = PlatformConfigService.get(supabase, "use_atomic_game_rpcs", False)
+        if use_rpc:
+            # Atomic RP grant with cap enforcement (migration 148)
+            rpc_resp = supabase.rpc("fn_grant_rp_single", {
+                "p_epoch_id": str(epoch_id),
+                "p_simulation_id": str(simulation_id),
+                "p_amount": amount,
+                "p_rp_cap": rp_cap,
+            }).execute()
+            return rpc_resp.data
+
+        # Legacy: fetch-compute-update with no locking
         resp = (
             supabase.table("epoch_participants")
             .select("id, current_rp")
@@ -112,17 +140,6 @@ class CycleResolutionService:
         )
         if not resp.data:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Not a participant.")
-
-        # Read epoch config for rp_cap
-        epoch_resp = (
-            supabase.table("game_epochs")
-            .select("config")
-            .eq("id", str(epoch_id))
-            .single()
-            .execute()
-        )
-        config = {**DEFAULT_CONFIG, **(epoch_resp.data or {}).get("config", {})}
-        rp_cap = config["rp_cap"]
 
         current = resp.data["current_rp"]
         new_rp = min(current + amount, rp_cap)
@@ -214,36 +231,43 @@ class CycleResolutionService:
 
         # Expire zone fortifications that have passed their expiry cycle
         try:
-            expired_forts = (
-                db.table("zone_fortifications")
-                .select("id, zone_id, security_bonus")
-                .eq("epoch_id", str(epoch_id))
-                .lte("expires_at_cycle", cycle_number)
-                .execute()
-            )
-            for fort in expired_forts.data or []:
-                # Downgrade zone security back by the bonus amount
-                zone_resp = (
-                    db.table("zones")
-                    .select("id, security_level")
-                    .eq("id", fort["zone_id"])
-                    .single()
+            use_rpc = PlatformConfigService.get(db, "use_atomic_game_rpcs", False)
+            if use_rpc:
+                # Atomic fortification expiry (migration 148): downgrades zones
+                # and deletes forts in a single transaction.
+                db.rpc("fn_expire_fortifications", {
+                    "p_epoch_id": str(epoch_id),
+                    "p_cycle_number": cycle_number,
+                }).execute()
+            else:
+                expired_forts = (
+                    db.table("zone_fortifications")
+                    .select("id, zone_id, security_bonus")
+                    .eq("epoch_id", str(epoch_id))
+                    .lte("expires_at_cycle", cycle_number)
                     .execute()
                 )
-                if zone_resp.data:
-                    current_level = zone_resp.data["security_level"]
-                    try:
-                        idx = SECURITY_TIER_ORDER.index(current_level)
-                        new_idx = max(0, idx - fort["security_bonus"])
-                        new_level = SECURITY_TIER_ORDER[new_idx]
-                    except ValueError:
-                        new_level = current_level
-                    if new_level != current_level:
-                        db.table("zones").update(
-                            {"security_level": new_level}
-                        ).eq("id", fort["zone_id"]).execute()
-                # Delete expired fortification
-                db.table("zone_fortifications").delete().eq("id", fort["id"]).execute()
+                for fort in expired_forts.data or []:
+                    zone_resp = (
+                        db.table("zones")
+                        .select("id, security_level")
+                        .eq("id", fort["zone_id"])
+                        .single()
+                        .execute()
+                    )
+                    if zone_resp.data:
+                        current_level = zone_resp.data["security_level"]
+                        try:
+                            idx = SECURITY_TIER_ORDER.index(current_level)
+                            new_idx = max(0, idx - fort["security_bonus"])
+                            new_level = SECURITY_TIER_ORDER[new_idx]
+                        except ValueError:
+                            new_level = current_level
+                        if new_level != current_level:
+                            db.table("zones").update(
+                                {"security_level": new_level}
+                            ).eq("id", fort["zone_id"]).execute()
+                    db.table("zone_fortifications").delete().eq("id", fort["id"]).execute()
         except Exception:
             logger.warning("Fortification expiry failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
             sentry_sdk.capture_exception()
@@ -366,16 +390,20 @@ class CycleResolutionService:
                 {"resolves_at": new_ts}
             ).in_("id", ids).execute()
 
-        # Increment cycle
+        # Increment cycle (optimistic lock: only if current_cycle hasn't changed)
         resp = (
             db.table("game_epochs")
             .update({"current_cycle": new_cycle})
             .eq("id", str(epoch_id))
+            .eq("current_cycle", epoch["current_cycle"])
             .execute()
         )
 
         if not resp.data:
-            raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Failed to resolve cycle.")
+            raise HTTPException(
+                status.HTTP_409_CONFLICT,
+                "Cycle was resolved concurrently. Please retry.",
+            )
 
         # Auto-advance phase if cycle crosses a boundary
         current_status = epoch["status"]

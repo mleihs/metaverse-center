@@ -254,16 +254,17 @@ class HeartbeatService:
             )
             return
 
-        # Idempotency check
-        existing = (
-            admin.table("simulation_heartbeats")
-            .select("id")
-            .eq("simulation_id", str(sim_id))
-            .eq("tick_number", tick_number)
-            .limit(1)
-            .execute()
-        ).data
-        if existing:
+        # Create heartbeat record (idempotent via UNIQUE(simulation_id, tick_number))
+        heartbeat_id = uuid4()
+        try:
+            admin.table("simulation_heartbeats").insert({
+                "id": str(heartbeat_id),
+                "simulation_id": str(sim_id),
+                "tick_number": tick_number,
+                "status": "processing",
+            }).execute()
+        except Exception:
+            # UNIQUE constraint violation → tick already processed (concurrent tick or retry)
             logger.warning(
                 "Heartbeat: tick %d already exists for %s, skipping",
                 tick_number, sim_name,
@@ -292,15 +293,6 @@ class HeartbeatService:
                 active_epoch_id = epoch_resp.data[0]["epoch_id"]
         except Exception:
             logger.debug("Epoch lookup unavailable for heartbeat tagging")
-
-        # Create heartbeat record
-        heartbeat_id = uuid4()
-        admin.table("simulation_heartbeats").insert({
-            "id": str(heartbeat_id),
-            "simulation_id": str(sim_id),
-            "tick_number": tick_number,
-            "status": "processing",
-        }).execute()
 
         entries: list[dict] = []
         tick_stats = {

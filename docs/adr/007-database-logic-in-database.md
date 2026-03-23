@@ -46,7 +46,7 @@ Vollstaendiger Katalog aller Postgres-Objekte: siehe `memory/postgres-views.md`.
 
 ## Consequences
 
-- ~48 Functions, 53 Trigger-Eintraege, 4 Materialized Views, 7 Views.
+- ~65 Functions (inkl. 6 atomischer Game-RPCs aus Migration 148), 54 Trigger-Eintraege, 4 Materialized Views, 9 Views.
 - Invarianten werden auf DB-Ebene erzwungen, unabhaengig vom Aufrufer (API, Migration, direkter DB-Zugriff).
 - Alle Python-Service-Docstrings referenzieren die zugehoerige Migration.
 - Siehe [Database Schema](../references/database-schema.md) fuer vollstaendige Dokumentation.

@@ -667,7 +667,8 @@ class TestSpyEffect:
 
 class TestSaboteurEffect:
     @pytest.mark.asyncio
-    async def test_saboteur_degrades_building_condition(self):
+    @patch("backend.services.operative_mission_service.PlatformConfigService.get", return_value=False)
+    async def test_saboteur_degrades_building_condition(self, _mock_config):
         sb = MagicMock()
 
         building_chain = MagicMock()
@@ -710,7 +711,43 @@ class TestSaboteurEffect:
         assert result["damage_dealt"]["new_condition"] == "moderate"
 
     @pytest.mark.asyncio
-    async def test_saboteur_downgrades_zone_security(self):
+    @patch("backend.services.operative_mission_service.PlatformConfigService.get", return_value=True)
+    async def test_saboteur_degrades_building_via_rpc(self, _mock_config):
+        sb = MagicMock()
+
+        # Mock RPC: fn_degrade_building returns JSONB
+        rpc_chain = MagicMock()
+        rpc_chain.execute.return_value = MagicMock(
+            data={"changed": True, "old_condition": "good", "new_condition": "moderate"}
+        )
+        sb.rpc.return_value = rpc_chain
+
+        zones_chain = MagicMock()
+        zones_chain.select.return_value = zones_chain
+        zones_chain.eq.return_value = zones_chain
+        zones_chain.execute.return_value = MagicMock(data=[])
+        sb.table.return_value = zones_chain
+
+        mission = {
+            "id": str(uuid4()),
+            "epoch_id": str(EPOCH_ID),
+            "operative_type": "saboteur",
+            "source_simulation_id": str(SIM_ID),
+            "target_simulation_id": str(TARGET_SIM_ID),
+            "target_entity_id": str(TARGET_ENTITY_ID),
+        }
+
+        result = await OperativeService._apply_saboteur_effect(sb, mission)
+
+        assert result["outcome"] == "success"
+        assert "damage_dealt" in result
+        assert result["damage_dealt"]["old_condition"] == "good"
+        assert result["damage_dealt"]["new_condition"] == "moderate"
+        sb.rpc.assert_called_with("fn_degrade_building", {"p_building_id": str(TARGET_ENTITY_ID)})
+
+    @pytest.mark.asyncio
+    @patch("backend.services.operative_mission_service.PlatformConfigService.get", return_value=False)
+    async def test_saboteur_downgrades_zone_security(self, _mock_config):
         sb = MagicMock()
 
         building_chain = MagicMock()
@@ -789,7 +826,8 @@ class TestPropagandistEffect:
 
 class TestAssassinEffect:
     @pytest.mark.asyncio
-    async def test_assassin_weakens_relationships(self):
+    @patch("backend.services.operative_mission_service.PlatformConfigService.get", return_value=False)
+    async def test_assassin_weakens_relationships(self, _mock_config):
         sb = MagicMock()
 
         rel_chain = MagicMock()

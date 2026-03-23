@@ -6,8 +6,6 @@ import io
 import logging
 from uuid import UUID, uuid4
 
-import httpx
-
 from backend.services.external.replicate import ReplicateService
 from backend.services.generation_service import GenerationService
 from backend.services.model_resolver import ModelResolver
@@ -44,9 +42,11 @@ class ImageService:
 
     @staticmethod
     async def _download_reference_image(url: str) -> io.BytesIO:
-        """Download a reference image, convert to PNG, and return as BytesIO.
+        """Download a reference image with SSRF protection, convert to PNG.
 
-        Two conversions happen:
+        Uses ``safe_download`` (``backend/utils/safe_fetch``) to validate the
+        URL before fetching.  Two conversions happen:
+
         1. Replicate runs remotely and cannot access local URLs
            (e.g. localhost Supabase storage), so we download the image.
         2. Storage uses AVIF for efficiency, but many Replicate models
@@ -54,10 +54,11 @@ class ImageService:
         """
         from PIL import Image
 
-        async with httpx.AsyncClient(timeout=30) as client:
-            resp = await client.get(url)
-            resp.raise_for_status()
-        img = Image.open(io.BytesIO(resp.content))
+        from backend.utils.safe_fetch import safe_download
+
+        allowed = {"image/png", "image/jpeg", "image/webp", "image/avif", "image/gif"}
+        data, _ = await safe_download(url, allowed_content_types=allowed)
+        img = Image.open(io.BytesIO(data))
         buf = io.BytesIO()
         img.save(buf, format="PNG")
         buf.seek(0)

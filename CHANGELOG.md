@@ -27,10 +27,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - **Admin email** moved from GUC to platform_settings table; `is_platform_admin()` rewired (migration 087)
 - **Spengbab** — lore image settings with cursed aesthetic + Flux Dev model (migration 083), image generation prompt templates (migration 092), slug fix after rename (migration 094)
-- **Admin user listing** — `admin_list_users` RPC granted to anon + authenticated for DevAccountSwitcher (migration 096)
+- **Admin user listing** — `admin_list_users` RPC granted to anon + authenticated for DevAccountSwitcher (migration 096). **REVOKED in migration 147** — see Fixed section
+- **DevAccountSwitcher** — now calls protected `/api/v1/admin/users` backend endpoint instead of direct Supabase RPC. Dev password moved to environment variable (`VITE_DEV_SWITCHER_PASSWORD`)
+- **Image fetching** — `image_service.py` and `style_reference_service.py` now delegate URL validation to centralized `safe_fetch.py` SSRF utility
 
 ### Fixed
 
+- **CRITICAL: User data leak via admin_list_users RPC** — migration 096 accidentally granted EXECUTE to anon/authenticated, allowing anyone to enumerate all users (emails, metadata, wallet balances, architect status) via PostgREST. Revoked in migration 147. DevAccountSwitcher rewired to backend admin API endpoint (`/api/v1/admin/users`)
+- **Race conditions in game mechanics** — 8 fetch-compute-update race conditions in `operative_mission_service.py`, `cycle_resolution_service.py`, and `heartbeat_service.py` replaced with 6 atomic Postgres RPCs (migration 148): `fn_transition_mission_status`, `fn_degrade_building`, `fn_downgrade_zone_security`, `fn_weaken_relationships`, `fn_grant_rp_single`, `fn_expire_fortifications`. Feature flag `use_atomic_game_rpcs` allows safe rollout (default: false). Heartbeat idempotency upgraded from TOCTOU pre-check to INSERT-first pattern
+- **SSRF vulnerability in image downloads** — `image_service._download_reference_image()` fetched user-controlled URLs without IP validation. Centralized `safe_fetch.py` utility with scheme checks, private/loopback/reserved/link-local IP rejection, and DNS-rebinding protection (resolves domain to IP before fetch). `style_reference_service.fetch_from_url()` also migrated
 - **Chronicle export download buttons** — DOWNLOAD buttons in Printing Press rendered with no `@click` handler after purchase. Now extracts `download_url` from completed purchase result, restores state on page reload from history, wires both codex PDF and full-res archive download handlers
 - **CI pipeline** — `sentry-sdk` and `deepl` added to `pyproject.toml` dependencies (were only in `requirements.txt`). Integration tests now check actual Supabase connectivity instead of just env var presence. Fixed stale mocks in echo service and wallet endpoint tests
 - **i18n coverage** — translated all 80 missing German strings in XLIFF (chronicle export, bureau status, dossier preview, command palette, navigation labels). Wrapped export type labels and status strings in `msg()`. Replaced inline styles with CSS classes

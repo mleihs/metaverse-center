@@ -21,6 +21,7 @@ from backend.services.constants import (
     _upgrade_security,
 )
 from backend.services.epoch_service import EpochService
+from backend.services.platform_config_service import PlatformConfigService
 from supabase import Client
 
 logger = logging.getLogger(__name__)
@@ -526,11 +527,19 @@ class OperativeMissionService:
             if mission["operative_type"] == "guardian":
                 continue
 
-            # Advance deploying -> active
+            # Advance deploying -> active (migration 148: atomic compare-and-swap)
             if mission["status"] == "deploying":
-                supabase.table("operative_missions").update(
-                    {"status": "active"}
-                ).eq("id", mission["id"]).execute()
+                use_rpc = PlatformConfigService.get(supabase, "use_atomic_game_rpcs", False)
+                if use_rpc:
+                    supabase.rpc("fn_transition_mission_status", {
+                        "p_mission_id": mission["id"],
+                        "p_from_status": "deploying",
+                        "p_to_status": "active",
+                    }).execute()
+                else:
+                    supabase.table("operative_missions").update(
+                        {"status": "active"}
+                    ).eq("id", mission["id"]).execute()
                 continue
 
             # Resolve active missions
@@ -775,29 +784,50 @@ class OperativeMissionService:
         result: dict = {"outcome": "success"}
 
         if mission.get("target_entity_id"):
-            building_resp = (
-                supabase.table("buildings")
-                .select("id, building_condition")
-                .eq("id", mission["target_entity_id"])
-                .single()
-                .execute()
-            )
-            if building_resp.data:
-                condition_map = {"good": "moderate", "moderate": "poor", "poor": "ruined"}
-                old_cond = building_resp.data["building_condition"]
-                new_cond = condition_map.get(old_cond, old_cond)
-                if old_cond != new_cond:
-                    supabase.table("buildings").update(
-                        {"building_condition": new_cond}
-                    ).eq("id", mission["target_entity_id"]).execute()
-                result["damage_dealt"] = {
-                    "building_id": mission["target_entity_id"],
-                    "old_condition": old_cond,
-                    "new_condition": new_cond,
-                }
+            use_rpc = PlatformConfigService.get(supabase, "use_atomic_game_rpcs", False)
+            if use_rpc:
+                # Atomic building degradation (migration 148)
+                rpc_result = supabase.rpc("fn_degrade_building", {
+                    "p_building_id": mission["target_entity_id"],
+                }).execute()
+                rpc_data = rpc_result.data or {}
+                if rpc_data.get("changed"):
+                    result["damage_dealt"] = {
+                        "building_id": mission["target_entity_id"],
+                        "old_condition": rpc_data["old_condition"],
+                        "new_condition": rpc_data["new_condition"],
+                    }
+                elif rpc_data.get("old_condition"):
+                    result["damage_dealt"] = {
+                        "building_id": mission["target_entity_id"],
+                        "old_condition": rpc_data["old_condition"],
+                        "new_condition": rpc_data["old_condition"],
+                    }
+            else:
+                building_resp = (
+                    supabase.table("buildings")
+                    .select("id, building_condition")
+                    .eq("id", mission["target_entity_id"])
+                    .single()
+                    .execute()
+                )
+                if building_resp.data:
+                    condition_map = {"good": "moderate", "moderate": "poor", "poor": "ruined"}
+                    old_cond = building_resp.data["building_condition"]
+                    new_cond = condition_map.get(old_cond, old_cond)
+                    if old_cond != new_cond:
+                        supabase.table("buildings").update(
+                            {"building_condition": new_cond}
+                        ).eq("id", mission["target_entity_id"]).execute()
+                    result["damage_dealt"] = {
+                        "building_id": mission["target_entity_id"],
+                        "old_condition": old_cond,
+                        "new_condition": new_cond,
+                    }
 
         target_sim_id = mission.get("target_simulation_id")
         if target_sim_id:
+            # Always fetch zones (needed for zone selection + crisis event labeling)
             zones_resp = (
                 supabase.table("zones")
                 .select("id, name, security_level")
@@ -806,17 +836,31 @@ class OperativeMissionService:
             )
             if zones_resp.data:
                 target_zone = secrets.SystemRandom().choice(zones_resp.data)
-                old_level = target_zone["security_level"]
-                new_level = _downgrade_security(old_level)
-                if old_level != new_level:
-                    supabase.table("zones").update(
-                        {"security_level": new_level}
-                    ).eq("id", target_zone["id"]).execute()
-                result["zone_downgraded"] = {
-                    "zone_id": target_zone["id"],
-                    "old_level": old_level,
-                    "new_level": new_level,
-                }
+                use_rpc = PlatformConfigService.get(supabase, "use_atomic_game_rpcs", False)
+                if use_rpc:
+                    # Atomic zone security downgrade (migration 148)
+                    rpc_result = supabase.rpc("fn_downgrade_zone_security", {
+                        "p_zone_id": target_zone["id"],
+                        "p_tiers_down": 1,
+                    }).execute()
+                    rpc_data = rpc_result.data or {}
+                    result["zone_downgraded"] = {
+                        "zone_id": target_zone["id"],
+                        "old_level": rpc_data.get("old_level", target_zone["security_level"]),
+                        "new_level": rpc_data.get("new_level", target_zone["security_level"]),
+                    }
+                else:
+                    old_level = target_zone["security_level"]
+                    new_level = _downgrade_security(old_level)
+                    if old_level != new_level:
+                        supabase.table("zones").update(
+                            {"security_level": new_level}
+                        ).eq("id", target_zone["id"]).execute()
+                    result["zone_downgraded"] = {
+                        "zone_id": target_zone["id"],
+                        "old_level": old_level,
+                        "new_level": new_level,
+                    }
 
         # Generate crisis event from sabotage (feeds event->pressure->cascade pipeline)
         # Diminishing returns: impact decreases with existing active sabotage events
@@ -910,20 +954,30 @@ class OperativeMissionService:
         if not mission.get("target_entity_id"):
             return {"outcome": "success", "narrative": "Mission completed."}
 
-        rel_resp = (
-            supabase.table("agent_relationships")
-            .select("id, intensity")
-            .or_(
-                f"source_agent_id.eq.{mission['target_entity_id']},"
-                f"target_agent_id.eq.{mission['target_entity_id']}"
+        use_rpc = PlatformConfigService.get(supabase, "use_atomic_game_rpcs", False)
+        if use_rpc:
+            # Atomic batch relationship weakening (migration 148)
+            rpc_result = supabase.rpc("fn_weaken_relationships", {
+                "p_agent_id": mission["target_entity_id"],
+                "p_delta": 2,
+            }).execute()
+            relationships_affected = rpc_result.data or 0
+        else:
+            rel_resp = (
+                supabase.table("agent_relationships")
+                .select("id, intensity")
+                .or_(
+                    f"source_agent_id.eq.{mission['target_entity_id']},"
+                    f"target_agent_id.eq.{mission['target_entity_id']}"
+                )
+                .execute()
             )
-            .execute()
-        )
-        for rel in rel_resp.data or []:
-            new_intensity = max(1, rel["intensity"] - 2)
-            supabase.table("agent_relationships").update(
-                {"intensity": new_intensity}
-            ).eq("id", rel["id"]).execute()
+            relationships_affected = len(rel_resp.data or [])
+            for rel in rel_resp.data or []:
+                new_intensity = max(1, rel["intensity"] - 2)
+                supabase.table("agent_relationships").update(
+                    {"intensity": new_intensity}
+                ).eq("id", rel["id"]).execute()
 
         epoch_resp = (
             supabase.table("game_epochs")
@@ -945,7 +999,7 @@ class OperativeMissionService:
                 "Assassination successful. Target agent's influence "
                 "diminished and ambassador status suspended."
             ),
-            "relationships_weakened": len(rel_resp.data or []),
+            "relationships_weakened": relationships_affected,
             "ambassador_blocked_until": blocked_until.isoformat(),
         }
 

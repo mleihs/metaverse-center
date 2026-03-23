@@ -2,12 +2,8 @@
 
 from __future__ import annotations
 
-import ipaddress
 import logging
-from urllib.parse import urlparse
 from uuid import UUID, uuid4
-
-import httpx
 
 from supabase import Client
 
@@ -122,6 +118,9 @@ class StyleReferenceService:
     async def fetch_from_url(url: str) -> tuple[bytes, str]:
         """Download image from URL with SSRF protection.
 
+        Delegates to ``backend.utils.safe_fetch.safe_download`` which provides
+        scheme validation, IP checks, and DNS-rebinding protection.
+
         Args:
             url: Public image URL.
 
@@ -131,39 +130,13 @@ class StyleReferenceService:
         Raises:
             ValueError: On validation failure or SSRF attempt.
         """
-        # SSRF protection: reject private/internal IPs
-        parsed = urlparse(url)
-        if not parsed.scheme or parsed.scheme not in ("http", "https"):
-            raise ValueError("Only HTTP/HTTPS URLs are allowed")
-        if not parsed.hostname:
-            raise ValueError("Invalid URL: no hostname")
+        from backend.utils.safe_fetch import safe_download
 
-        try:
-            ip = ipaddress.ip_address(parsed.hostname)
-            if ip.is_private or ip.is_loopback or ip.is_reserved or ip.is_link_local:
-                raise ValueError("URLs pointing to private/internal addresses are not allowed")
-        except ValueError as e:
-            if "not allowed" in str(e):
-                raise
-            # hostname is not an IP — that's fine, it's a domain name
-
-        async with httpx.AsyncClient(follow_redirects=True, timeout=30.0) as client:
-            response = await client.get(url)
-            response.raise_for_status()
-
-        content_type = response.headers.get("content-type", "").split(";")[0].strip()
-        if content_type not in ALLOWED_CONTENT_TYPES:
-            raise ValueError(
-                f"URL returned unsupported content type: {content_type}"
-            )
-
-        data = response.content
-        if len(data) > MAX_FILE_SIZE:
-            raise ValueError(
-                f"Downloaded file too large: {len(data)} bytes (max {MAX_FILE_SIZE // (1024 * 1024)} MB)"
-            )
-
-        return data, content_type
+        return await safe_download(
+            url,
+            max_size=MAX_FILE_SIZE,
+            allowed_content_types=ALLOWED_CONTENT_TYPES,
+        )
 
     @staticmethod
     async def resolve_reference(

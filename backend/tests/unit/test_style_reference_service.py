@@ -189,15 +189,20 @@ class TestFetchFromUrlSsrf:
         with pytest.raises(ValueError, match="private/internal"):
             await StyleReferenceService.fetch_from_url("http://169.254.169.254/latest/meta-data/")
 
-    async def test_allows_public_hostname(self):
-        """A public hostname should not be blocked by SSRF checks.
+    @patch("backend.utils.safe_fetch.socket.getaddrinfo")
+    async def test_allows_public_hostname(self, mock_dns):
+        """A public hostname should pass SSRF validation (DNS resolves to public IP).
 
         The actual HTTP request will fail (we don't mock httpx here),
-        but we verify it passes IP validation and reaches the network layer.
+        but we verify it passes URL/IP validation and reaches the network layer.
         """
         import httpx
 
-        with pytest.raises(httpx.ConnectError):
+        # Simulate DNS resolving to a public IP
+        mock_dns.return_value = [
+            (2, 1, 6, "", ("93.184.216.34", 0)),
+        ]
+        with pytest.raises((httpx.ConnectError, httpx.ConnectTimeout)):
             await StyleReferenceService.fetch_from_url(
                 "https://public-images.example.com/ref.png"
             )

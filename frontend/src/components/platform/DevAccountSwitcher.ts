@@ -15,8 +15,8 @@ import { adminApi } from '../../services/api/AdminApiService.js';
 import { supabase } from '../../services/supabase/client.js';
 import type { AdminUser } from '../../types/index.js';
 
-const DEV_PASSWORD = 'met123';
-const GATE_PASSWORD = 'met123';
+const DEV_PASSWORD = (import.meta.env.VITE_DEV_SWITCHER_PASSWORD as string) || '';
+const GATE_PASSWORD = (import.meta.env.VITE_DEV_SWITCHER_PASSWORD as string) || '';
 const GATE_STORAGE_KEY = 'dev-switcher-unlocked';
 
 interface ResolvedUser {
@@ -510,21 +510,16 @@ export class VelgDevAccountSwitcher extends LitElement {
     this._fetchError = '';
 
     try {
-      // Call SECURITY DEFINER RPC directly — bypasses admin auth requirement.
-      // The RPC reads auth.users and is safe because the DevAccountSwitcher
-      // is only rendered in dev mode (or behind production gate password).
-      const { data, error } = await supabase.rpc('admin_list_users', {
-        p_page: 1,
-        p_per_page: 200,
-      });
+      // Use the backend admin API — protected by require_platform_admin().
+      // Migration 147 revoked direct RPC access from anon/authenticated.
+      const response = await adminApi.listUsers(1, 200);
 
-      if (error) {
-        this._fetchError = error.message || 'Failed to load users';
+      if (!response.success || !response.data) {
+        this._fetchError = response.error?.message || 'Failed to load users';
         return;
       }
 
-      const payload = data as { users: AdminUser[]; total: number } | null;
-      const raw = payload?.users ?? [];
+      const raw = response.data.users ?? [];
       const currentEmail = this._currentEmail;
       this._users = raw.map((u) => resolveUser(u, u.email === currentEmail));
       this._userCache = this._users;
