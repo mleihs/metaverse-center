@@ -27,7 +27,7 @@ import structlog
 from backend.services.agent_mood_service import AgentMoodService
 from backend.services.agent_needs_service import AgentNeedsService
 from backend.services.agent_opinion_service import AgentOpinionService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -403,7 +403,7 @@ class AgentActivityService:
         }
 
         # Insert activity log
-        supabase.table("agent_activities").insert(record).execute()
+        await supabase.table("agent_activities").insert(record).execute()
 
         return record
 
@@ -581,7 +581,7 @@ class AgentActivityService:
             significance = interaction.get("significance", 1)
             for agent in [agent_a, agent_b]:
                 other = agent_b if agent == agent_a else agent_a
-                supabase.table("agent_activities").insert({
+                await supabase.table("agent_activities").insert({
                     "agent_id": str(agent["id"]),
                     "simulation_id": str(simulation_id),
                     "activity_type": "socialize",
@@ -624,7 +624,7 @@ class AgentActivityService:
     ) -> list[dict]:
         """Load all agents with their autonomy data (needs, mood, opinions)."""
         # Fetch agents (only those with autonomy enabled)
-        agents_result = (
+        agents_result = await (
             supabase.table("agents")
             .select(
                 "id, name, current_zone_id, current_building_id, personality_profile"
@@ -639,7 +639,7 @@ class AgentActivityService:
             return []
 
         # Batch fetch needs
-        needs_result = (
+        needs_result = await (
             supabase.table("agent_needs")
             .select("agent_id, social, purpose, safety, comfort, stimulation")
             .eq("simulation_id", str(simulation_id))
@@ -648,7 +648,7 @@ class AgentActivityService:
         needs_map = {n["agent_id"]: n for n in (needs_result.data or [])}
 
         # Batch fetch moods
-        mood_result = (
+        mood_result = await (
             supabase.table("agent_mood")
             .select("agent_id, mood_score, stress_level, sociability, volatility, resilience")
             .eq("simulation_id", str(simulation_id))
@@ -657,7 +657,7 @@ class AgentActivityService:
         mood_map = {m["agent_id"]: m for m in (mood_result.data or [])}
 
         # Batch fetch opinions (all pairs)
-        opinion_result = (
+        opinion_result = await (
             supabase.table("agent_opinions")
             .select("agent_id, target_agent_id, opinion_score")
             .eq("simulation_id", str(simulation_id))

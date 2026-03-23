@@ -34,19 +34,19 @@ def _mock_supabase(
     epoch_chain.select.return_value = epoch_chain
     epoch_chain.eq.return_value = epoch_chain
     epoch_chain.limit.return_value = epoch_chain
-    epoch_chain.execute.return_value = MagicMock(data=epoch_data)
+    epoch_chain.execute = AsyncMock(return_value=MagicMock(data=epoch_data))
 
     # epoch_participants query
     participant_chain = MagicMock()
     participant_chain.select.return_value = participant_chain
     participant_chain.eq.return_value = participant_chain
     participant_chain.limit.return_value = participant_chain
-    participant_chain.execute.return_value = MagicMock(data=participant_data)
+    participant_chain.execute = AsyncMock(return_value=MagicMock(data=participant_data))
 
     # epoch_chat_messages insert
     insert_chain = MagicMock()
     insert_chain.insert.return_value = insert_chain
-    insert_chain.execute.return_value = MagicMock(data=insert_data)
+    insert_chain.execute = AsyncMock(return_value=MagicMock(data=insert_data))
 
     # epoch_chat_messages select (list)
     chat_select_chain = MagicMock()
@@ -56,9 +56,9 @@ def _mock_supabase(
     chat_select_chain.order.return_value = chat_select_chain
     chat_select_chain.limit.return_value = chat_select_chain
     chat_select_chain.in_.return_value = chat_select_chain
-    chat_select_chain.execute.return_value = MagicMock(
+    chat_select_chain.execute = AsyncMock(return_value=MagicMock(
         data=select_data or [], count=select_count or 0
-    )
+    ))
 
     # simulations query
     sim_chain = MagicMock()
@@ -66,13 +66,13 @@ def _mock_supabase(
     sim_chain.eq.return_value = sim_chain
     sim_chain.limit.return_value = sim_chain
     sim_chain.in_.return_value = sim_chain
-    sim_chain.execute.return_value = MagicMock(data=sim_data or [])
+    sim_chain.execute = AsyncMock(return_value=MagicMock(data=sim_data or []))
 
     # update chain
     update_chain = MagicMock()
     update_chain.update.return_value = update_chain
     update_chain.eq.return_value = update_chain
-    update_chain.execute.return_value = MagicMock(data=update_data)
+    update_chain.execute = AsyncMock(return_value=MagicMock(data=update_data))
 
     def table_side_effect(name):
         if name == "game_epochs":
@@ -298,12 +298,12 @@ class TestEpochChatLogging:
         admin_chain = MagicMock()
         admin_chain.select.return_value = admin_chain
         admin_chain.eq.return_value = admin_chain
-        admin_chain.execute.return_value = MagicMock(
+        admin_chain.execute = AsyncMock(return_value=MagicMock(
             data=[
                 {"id": "p1", "cycle_ready": True, "is_bot": False},
                 {"id": "p2", "cycle_ready": True, "is_bot": True},
             ]
-        )
+        ))
         admin_sb.table.return_value = admin_chain
 
         with (
@@ -343,9 +343,9 @@ class TestEpochChatLogging:
         admin_chain = MagicMock()
         admin_chain.select.return_value = admin_chain
         admin_chain.eq.return_value = admin_chain
-        admin_chain.execute.return_value = MagicMock(
+        admin_chain.execute = AsyncMock(return_value=MagicMock(
             data=[{"id": "p1", "cycle_ready": True, "is_bot": False}]
-        )
+        ))
         admin_sb.table.return_value = admin_chain
 
         with (

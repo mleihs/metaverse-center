@@ -10,7 +10,7 @@ from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.settings import SettingCreate, SettingResponse, SettingUpdate
 from backend.services.audit_service import AuditService
 from backend.services.settings_service import SettingsService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

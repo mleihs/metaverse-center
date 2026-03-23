@@ -8,7 +8,7 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ class MemberService:
         user_id: UUID,
     ) -> list[dict]:
         """Get all simulation memberships for a user, including simulation names."""
-        response = (
+        response = await (
             supabase.table(cls.table_name)
             .select("simulation_id, member_role, simulations(name, slug)")
             .eq("user_id", str(user_id))
@@ -53,7 +53,7 @@ class MemberService:
         simulation_id: UUID,
     ) -> list[dict]:
         """List all members of a simulation, owners first."""
-        response = (
+        response = await (
             supabase.table(cls.table_name)
             .select("*")
             .eq("simulation_id", str(simulation_id))
@@ -72,7 +72,7 @@ class MemberService:
         invited_by_id: UUID,
     ) -> dict:
         """Add a new member to a simulation."""
-        response = (
+        response = await (
             supabase.table(cls.table_name)
             .insert({
                 "simulation_id": str(simulation_id),
@@ -107,7 +107,7 @@ class MemberService:
         Raises ``LastOwnerError`` if the DB trigger prevents the change.
         """
         try:
-            response = (
+            response = await (
                 supabase.table(cls.table_name)
                 .update({
                     "member_role": member_role,
@@ -151,7 +151,7 @@ class MemberService:
         Raises ``LastOwnerError`` if the DB trigger prevents removal.
         """
         try:
-            response = (
+            response = await (
                 supabase.table(cls.table_name)
                 .delete()
                 .eq("simulation_id", str(simulation_id))

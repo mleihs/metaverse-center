@@ -10,7 +10,7 @@ Covers:
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 from uuid import UUID
 
 MOCK_SIM_ID = UUID("22222222-2222-2222-2222-222222222222")
@@ -29,7 +29,7 @@ class TestListForReaction:
         ]
         mock_sb = MagicMock()
         chain = mock_sb.table.return_value.select.return_value.eq.return_value
-        chain.limit.return_value.execute.return_value = MagicMock(data=agents)
+        chain.limit.return_value.execute = AsyncMock(return_value=MagicMock(data=agents))
 
         result = await AgentService.list_for_reaction(mock_sb, MOCK_SIM_ID)
 
@@ -43,7 +43,7 @@ class TestListForReaction:
 
         mock_sb = MagicMock()
         chain = mock_sb.table.return_value.select.return_value.eq.return_value
-        chain.limit.return_value.execute.return_value = MagicMock(data=[])
+        chain.limit.return_value.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         await AgentService.list_for_reaction(mock_sb, MOCK_SIM_ID, limit=5)
 
@@ -60,7 +60,7 @@ class TestListForReaction:
         ]
         mock_sb = MagicMock()
         chain = mock_sb.table.return_value.select.return_value.eq.return_value
-        chain.in_.return_value.execute.return_value = MagicMock(data=agents)
+        chain.in_.return_value.execute = AsyncMock(return_value=MagicMock(data=agents))
 
         result = await AgentService.list_for_reaction(
             mock_sb, MOCK_SIM_ID, agent_ids=ids,
@@ -75,7 +75,7 @@ class TestListForReaction:
 
         mock_sb = MagicMock()
         chain = mock_sb.table.return_value.select.return_value.eq.return_value
-        chain.limit.return_value.execute.return_value = MagicMock(data=[])
+        chain.limit.return_value.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         await AgentService.list_for_reaction(
             mock_sb, MOCK_SIM_ID, select="id, name",
@@ -89,7 +89,7 @@ class TestListForReaction:
 
         mock_sb = MagicMock()
         chain = mock_sb.table.return_value.select.return_value.eq.return_value
-        chain.limit.return_value.execute.return_value = MagicMock(data=None)
+        chain.limit.return_value.execute = AsyncMock(return_value=MagicMock(data=None))
 
         result = await AgentService.list_for_reaction(mock_sb, MOCK_SIM_ID)
 
@@ -101,7 +101,7 @@ class TestListForReaction:
 
         mock_sb = MagicMock()
         chain = mock_sb.table.return_value.select.return_value.eq.return_value
-        chain.limit.return_value.execute.return_value = MagicMock(data=[])
+        chain.limit.return_value.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         await AgentService.list_for_reaction(mock_sb, MOCK_SIM_ID)
 

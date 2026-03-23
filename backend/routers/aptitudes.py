@@ -10,7 +10,7 @@ from backend.models.aptitude import AptitudeResponse, AptitudeSet
 from backend.models.common import CurrentUser, SuccessResponse
 from backend.services.aptitude_service import AptitudeService
 from backend.services.audit_service import AuditService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

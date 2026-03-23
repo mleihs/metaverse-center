@@ -8,7 +8,7 @@ from uuid import UUID
 
 from backend.models.forge import ForgeEntityTranslationOutput
 from backend.services.ai_utils import create_forge_agent, run_ai
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -122,7 +122,7 @@ class ForgeEntityTranslationService:
 
         # Update simulation description_de
         if translations.simulation.description_de:
-            supabase.table("simulations").update(
+            await supabase.table("simulations").update(
                 {"description_de": translations.simulation.description_de}
             ).eq("id", sim_id).execute()
             logger.debug("Updated simulation description_de", extra={"simulation_id": sim_id})
@@ -143,7 +143,7 @@ class ForgeEntityTranslationService:
             if at.primary_profession_de:
                 update_data["primary_profession_de"] = at.primary_profession_de
             if update_data:
-                supabase.table("agents").update(update_data).eq(
+                await supabase.table("agents").update(update_data).eq(
                     "simulation_id", sim_id
                 ).eq("name", at.name).execute()
             else:
@@ -171,7 +171,7 @@ class ForgeEntityTranslationService:
             if bt.building_condition_de:
                 update_data["building_condition_de"] = bt.building_condition_de
             if update_data:
-                supabase.table("buildings").update(update_data).eq(
+                await supabase.table("buildings").update(update_data).eq(
                     "simulation_id", sim_id
                 ).eq("name", bt.name).execute()
             else:
@@ -197,7 +197,7 @@ class ForgeEntityTranslationService:
             if zt.zone_type_de:
                 update_data["zone_type_de"] = zt.zone_type_de
             if update_data:
-                supabase.table("zones").update(update_data).eq(
+                await supabase.table("zones").update(update_data).eq(
                     "simulation_id", sim_id
                 ).eq("name", zt.name).execute()
             else:
@@ -221,7 +221,7 @@ class ForgeEntityTranslationService:
             if st.street_type_de:
                 update_data["street_type_de"] = st.street_type_de
             if update_data:
-                supabase.table("city_streets").update(update_data).eq(
+                await supabase.table("city_streets").update(update_data).eq(
                     "simulation_id", sim_id
                 ).eq("name", st.name).execute()
             else:

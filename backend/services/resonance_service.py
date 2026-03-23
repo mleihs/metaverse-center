@@ -18,7 +18,7 @@ from backend.services.event_service import EventService
 from backend.services.external_service_resolver import ExternalServiceResolver
 from backend.services.generation_service import GenerationService
 from backend.services.social_story_service import SocialStoryService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +57,7 @@ class ResonanceService(BaseService):
 
         query = query.order("detected_at", desc=True)
         query = query.range(offset, offset + limit - 1)
-        response = query.execute()
+        response = await query.execute()
         total = response.count if response.count is not None else len(response.data or [])
         results = response.data or []
         for r in results:
@@ -71,7 +71,7 @@ class ResonanceService(BaseService):
         resonance_id: UUID,
     ) -> dict:
         """Get a single resonance by ID."""
-        response = (
+        response = await (
             supabase.table(cls.view_name)
             .select("*")
             .eq("id", str(resonance_id))
@@ -99,7 +99,7 @@ class ResonanceService(BaseService):
             **data,
             "created_by_id": str(user_id),
         })
-        response = (
+        response = await (
             supabase.table(cls.table_name)
             .insert(insert_data)
             .execute()
@@ -120,7 +120,7 @@ class ResonanceService(BaseService):
     ) -> dict:
         """Update a resonance."""
         update_data = serialize_for_json(data)
-        response = (
+        response = await (
             supabase.table(cls.table_name)
             .update(update_data)
             .eq("id", str(resonance_id))
@@ -175,7 +175,7 @@ class ResonanceService(BaseService):
         resonance_id: UUID,
     ) -> dict:
         """Restore a soft-deleted resonance."""
-        response = (
+        response = await (
             supabase.table(cls.table_name)
             .update({"deleted_at": None})
             .eq("id", str(resonance_id))
@@ -206,7 +206,7 @@ class ResonanceService(BaseService):
         resonance_id: UUID,
     ) -> list[dict]:
         """List all impacts for a resonance, including simulation names/slugs."""
-        response = (
+        response = await (
             supabase.table("resonance_impacts")
             .select("*, simulations(name, slug)")
             .eq("resonance_id", str(resonance_id))
@@ -274,7 +274,7 @@ class ResonanceService(BaseService):
 
         # Get target simulations
         if simulation_ids:
-            sim_query = (
+            sim_query = await (
                 supabase.table("simulations")
                 .select("id, name, slug, description")
                 .in_("id", [str(sid) for sid in simulation_ids])
@@ -282,7 +282,7 @@ class ResonanceService(BaseService):
                 .execute()
             )
         else:
-            sim_query = (
+            sim_query = await (
                 supabase.table("simulations")
                 .select("id, name, slug, description")
                 .eq("status", "active")
@@ -348,7 +348,7 @@ class ResonanceService(BaseService):
                     "failure_reason": reason,
                 })
                 try:
-                    resp = (
+                    resp = await (
                         supabase.table("resonance_impacts")
                         .upsert(fail_data, on_conflict="resonance_id,simulation_id")
                         .execute()
@@ -415,7 +415,7 @@ class ResonanceService(BaseService):
 
         # ── 1. Susceptibility ──
         try:
-            susc_resp = supabase.rpc(
+            susc_resp = await supabase.rpc(
                 "fn_get_resonance_susceptibility",
                 {"p_simulation_id": sim_id, "p_signature": signature},
             ).execute()
@@ -429,7 +429,7 @@ class ResonanceService(BaseService):
 
         # ── 2. Event types ──
         try:
-            types_resp = supabase.rpc(
+            types_resp = await supabase.rpc(
                 "fn_get_resonance_event_types",
                 {"p_simulation_id": sim_id, "p_signature": signature},
             ).execute()
@@ -458,7 +458,7 @@ class ResonanceService(BaseService):
             "status": "generating",
             "failure_reason": None,  # clear previous failure if re-processing
         })
-        impact_resp = (
+        impact_resp = await (
             supabase.table("resonance_impacts")
             .upsert(impact_data, on_conflict="resonance_id,simulation_id")
             .execute()
@@ -595,7 +595,7 @@ class ResonanceService(BaseService):
             "failure_reason": failure_reason,
             "effective_magnitude": effective_mag,  # persist heartbeat-adjusted value
         })
-        update_resp = (
+        update_resp = await (
             supabase.table("resonance_impacts")
             .update(update_data)
             .eq("id", str(impact["id"]))
@@ -753,6 +753,6 @@ class ResonanceService(BaseService):
         new_status: str,
     ) -> None:
         """Update a resonance impact status."""
-        supabase.table("resonance_impacts").update(
+        await supabase.table("resonance_impacts").update(
             {"status": new_status}
         ).eq("id", impact_id).execute()

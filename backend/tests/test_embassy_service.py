@@ -1,6 +1,6 @@
 """Tests for EmbassyService — cross-simulation building link operations."""
 
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 from uuid import UUID
 
 import pytest
@@ -34,7 +34,7 @@ def _mock_supabase(data=None, count=None):
     builder.range.return_value = builder
     builder.limit.return_value = builder
     builder.single.return_value = builder
-    builder.execute.return_value = response
+    builder.execute = AsyncMock(return_value=response)
 
     mock.table.return_value = builder
     return mock, builder, response
@@ -201,14 +201,14 @@ class TestCreateEmbassy:
                 single_r = MagicMock()
                 single_r.data = created
                 single_b = MagicMock()
-                single_b.execute.return_value = single_r
+                single_b.execute = AsyncMock(return_value=single_r)
                 b.single.return_value = single_b
                 # update path for transition_status returns activated version
                 update_b = MagicMock()
                 update_b.eq.return_value = update_b
                 update_r = MagicMock()
                 update_r.data = [activated]
-                update_b.execute.return_value = update_r
+                update_b.execute = AsyncMock(return_value=update_r)
                 b.update.return_value = update_b
             elif table_name == "buildings":
                 r.data = {"name": "Test Building"}
@@ -216,7 +216,7 @@ class TestCreateEmbassy:
             else:
                 r.data = None
                 b.single.return_value = b
-            b.execute.return_value = r
+            b.execute = AsyncMock(return_value=r)
             return b
 
         mock.table.side_effect = make_builder
@@ -330,7 +330,7 @@ class TestTransitionStatus:
             else:
                 # Second call: update_embassy() returns updated
                 r.data = [{**MOCK_EMBASSY, "status": "active"}]
-            b.execute.return_value = r
+            b.execute = AsyncMock(return_value=r)
             return b
 
         mock.table.side_effect = make_builder
@@ -358,7 +358,7 @@ class TestTransitionStatus:
                 r.data = {**MOCK_EMBASSY, "status": "active"}
             else:
                 r.data = [{**MOCK_EMBASSY, "status": "suspended"}]
-            b.execute.return_value = r
+            b.execute = AsyncMock(return_value=r)
             return b
 
         mock.table.side_effect = make_builder
@@ -379,7 +379,7 @@ class TestTransitionStatus:
 
             r = MagicMock()
             r.data = {**MOCK_EMBASSY, "status": "proposed"}
-            b.execute.return_value = r
+            b.execute = AsyncMock(return_value=r)
             return b
 
         mock.table.side_effect = make_builder
@@ -402,7 +402,7 @@ class TestTransitionStatus:
 
             r = MagicMock()
             r.data = {**MOCK_EMBASSY, "status": "dissolved"}
-            b.execute.return_value = r
+            b.execute = AsyncMock(return_value=r)
             return b
 
         mock.table.side_effect = make_builder

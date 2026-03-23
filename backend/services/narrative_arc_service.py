@@ -12,7 +12,7 @@ from uuid import UUID, uuid4
 
 from backend.models.resonance import RESONANCE_SIGNATURES
 from backend.services.heartbeat_entry_builder import make_heartbeat_entry
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +70,7 @@ class NarrativeArcService:
         threshold = config.get("escalation_threshold", 3)
 
         # Get active events with resonance tags
-        response = (
+        response = await (
             admin.table("events")
             .select("id, title, tags, event_status")
             .eq("simulation_id", str(sim_id))
@@ -96,7 +96,7 @@ class NarrativeArcService:
                 continue
 
             # Check if an escalation arc already exists for this signature
-            existing = (
+            existing = await (
                 admin.table("narrative_arcs")
                 .select("id, status, pressure")
                 .eq("simulation_id", str(sim_id))
@@ -116,7 +116,7 @@ class NarrativeArcService:
             arc_id = uuid4()
             initial_pressure = round(min(1.0, 0.1 * (len(sig_event_list) - threshold + 1)), 4)
 
-            admin.table("narrative_arcs").insert({
+            await admin.table("narrative_arcs").insert({
                 "id": str(arc_id),
                 "simulation_id": str(sim_id),
                 "arc_type": "escalation",
@@ -166,7 +166,7 @@ class NarrativeArcService:
         trigger = config.get("cascade_pressure_trigger", 0.60)
 
         # Get active arcs above trigger
-        arcs = (
+        arcs = await (
             admin.table("narrative_arcs")
             .select("id, primary_signature, pressure, status")
             .eq("simulation_id", str(sim_id))
@@ -180,7 +180,7 @@ class NarrativeArcService:
             return entries, spawned
 
         # Load cascade rules
-        rules = (
+        rules = await (
             admin.table("resonance_cascade_rules")
             .select("*")
             .eq("is_active", True)
@@ -213,7 +213,7 @@ class NarrativeArcService:
                         pass
 
                 # Check if cascade arc already exists
-                existing_cascade = (
+                existing_cascade = await (
                     admin.table("narrative_arcs")
                     .select("id")
                     .eq("simulation_id", str(sim_id))
@@ -229,7 +229,7 @@ class NarrativeArcService:
 
                 # Check depth cap
                 depth_count = len((
-                    admin.table("narrative_arcs")
+                    await admin.table("narrative_arcs")
                     .select("id")
                     .eq("simulation_id", str(sim_id))
                     .eq("arc_type", "cascade")
@@ -244,7 +244,7 @@ class NarrativeArcService:
                 child_pressure = round(float(arc["pressure"]) * transfer, 4)
                 cascade_id = uuid4()
 
-                admin.table("narrative_arcs").insert({
+                await admin.table("narrative_arcs").insert({
                     "id": str(cascade_id),
                     "simulation_id": str(sim_id),
                     "arc_type": "cascade",
@@ -302,7 +302,7 @@ class NarrativeArcService:
 
         # Get convergence pairs config
         try:
-            pairs_row = (
+            pairs_row = await (
                 admin.table("platform_settings")
                 .select("setting_value")
                 .eq("setting_key", "heartbeat_convergence_pairs")
@@ -319,7 +319,7 @@ class NarrativeArcService:
             return entries, detected
 
         # Get active arcs with archetypes
-        active_arcs = (
+        active_arcs = await (
             admin.table("narrative_arcs")
             .select("id, primary_archetype, secondary_archetype, status")
             .eq("simulation_id", str(sim_id))
@@ -350,7 +350,7 @@ class NarrativeArcService:
             arch_a, arch_b = parts[0].strip(), parts[1].strip()
             if arch_a in active_archetypes and arch_b in active_archetypes:
                 # Check if convergence already exists for this tick
-                existing = (
+                existing = await (
                     admin.table("narrative_arcs")
                     .select("id")
                     .eq("simulation_id", str(sim_id))
@@ -367,7 +367,7 @@ class NarrativeArcService:
                 conv_name = pair_data.get("name", f"{arch_a} + {arch_b}")
                 conv_id = uuid4()
 
-                admin.table("narrative_arcs").insert({
+                await admin.table("narrative_arcs").insert({
                     "id": str(conv_id),
                     "simulation_id": str(sim_id),
                     "arc_type": "convergence",
@@ -465,7 +465,7 @@ class NarrativeArcService:
         """Increment ticks, update pressure, check climax, age dormant arcs."""
         entries: list[dict] = []
 
-        active_arcs = (
+        active_arcs = await (
             admin.table("narrative_arcs")
             .select("*")
             .eq("simulation_id", str(sim_id))
@@ -506,7 +506,7 @@ class NarrativeArcService:
                     # Count matching events
                     sig = arc.get("primary_signature", "")
                     event_count = len((
-                        admin.table("events")
+                        await admin.table("events")
                         .select("id")
                         .eq("simulation_id", str(sim_id))
                         .is_("deleted_at", "null")
@@ -572,7 +572,7 @@ class NarrativeArcService:
                             admin, sim_id, arc, arc_type, sig,
                         )
 
-            admin.table("narrative_arcs").update(update_data).eq("id", arc_id).execute()
+            await admin.table("narrative_arcs").update(update_data).eq("id", arc_id).execute()
 
         return entries
 
@@ -655,13 +655,13 @@ class NarrativeArcService:
         )
         if status_filter:
             query = query.eq("status", status_filter)
-        response = query.execute()
+        response = await query.execute()
         return response.data or [], response.count or 0
 
     @classmethod
     async def get_arc(cls, supabase: Client, sim_id: UUID, arc_id: UUID) -> dict | None:
         """Get a single narrative arc."""
-        response = (
+        response = await (
             supabase.table("narrative_arcs")
             .select("*")
             .eq("id", str(arc_id))

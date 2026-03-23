@@ -21,7 +21,7 @@ from backend.services.external.openrouter import (
 from backend.services.external.output_repair import repair_json_output
 from backend.services.model_resolver import ModelResolver, ResolvedModel
 from backend.services.prompt_service import LOCALE_NAMES, PromptResolver
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -909,7 +909,7 @@ class GenerationService:
 
     async def _get_simulation_name(self) -> str:
         """Get the simulation name from the database."""
-        response = (
+        response = await (
             self._supabase.table("simulations")
             .select("name")
             .eq("id", str(self._simulation_id))

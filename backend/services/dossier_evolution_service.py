@@ -13,7 +13,7 @@ from backend.models.translation import TranslationContext
 from backend.services.ai_utils import get_openrouter_model, run_ai
 from backend.services.platform_model_config import get_platform_model
 from backend.services.translation_service import TranslationService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +87,7 @@ class DossierEvolutionService:
         """
         try:
             # 1. Get existing section
-            resp = (
+            resp = await (
                 admin_supabase.table("simulation_lore")
                 .select("id, body, body_de, evolution_count")
                 .eq("simulation_id", str(simulation_id))
@@ -110,7 +110,7 @@ class DossierEvolutionService:
             # 2. Check budget (first 3 free, then uses regen budget)
             if evolution_count >= 3:
                 # Check if feature purchase has remaining regen budget
-                purchase_resp = (
+                purchase_resp = await (
                     admin_supabase.table("feature_purchases")
                     .select("regen_budget_remaining")
                     .eq("simulation_id", str(simulation_id))
@@ -131,7 +131,7 @@ class DossierEvolutionService:
                     return False
 
             # 3. Get simulation name + theme for translation context
-            sim_resp = (
+            sim_resp = await (
                 admin_supabase.table("simulations")
                 .select("name, description")
                 .eq("id", str(simulation_id))
@@ -198,7 +198,7 @@ class DossierEvolutionService:
             }
 
             # Fetch current evolution_log
-            log_resp = (
+            log_resp = await (
                 admin_supabase.table("simulation_lore")
                 .select("evolution_log")
                 .eq("id", section["id"])
@@ -211,7 +211,7 @@ class DossierEvolutionService:
             current_log.append(log_entry)
 
             # Update section
-            admin_supabase.table("simulation_lore").update({
+            await admin_supabase.table("simulation_lore").update({
                 "body": updated_body,
                 "body_de": updated_body_de,
                 "evolved_at": now,

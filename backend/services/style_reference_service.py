@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from uuid import UUID, uuid4
 
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +98,7 @@ class StyleReferenceService:
             )
         else:
             table = "agents" if entity_type == "portrait" else "buildings"
-            supabase.table(table).update(
+            await supabase.table(table).update(
                 {"style_reference_url": url},
             ).eq("id", str(entity_id)).execute()
 
@@ -161,7 +161,7 @@ class StyleReferenceService:
         # 1. Check entity-level reference
         if entity_id:
             table = "agents" if entity_type == "portrait" else "buildings"
-            resp = (
+            resp = await (
                 supabase.table(table)
                 .select("style_reference_url")
                 .eq("id", str(entity_id))
@@ -176,7 +176,7 @@ class StyleReferenceService:
                 }
 
         # 2. Check global reference in simulation_settings
-        resp = (
+        resp = await (
             supabase.table("simulation_settings")
             .select("setting_key, setting_value")
             .eq("simulation_id", str(simulation_id))
@@ -231,7 +231,7 @@ class StyleReferenceService:
         """
         if scope == "global":
             # Resolve current URL to delete from storage
-            resp = (
+            resp = await (
                 supabase.table("simulation_settings")
                 .select("setting_value")
                 .eq("simulation_id", str(simulation_id))
@@ -247,7 +247,7 @@ class StyleReferenceService:
 
             # Clear settings
             (
-                supabase.table("simulation_settings")
+                await supabase.table("simulation_settings")
                 .delete()
                 .eq("simulation_id", str(simulation_id))
                 .eq("category", "ai")
@@ -266,7 +266,7 @@ class StyleReferenceService:
             table = "agents" if entity_type == "portrait" else "buildings"
 
             # Resolve current URL to delete from storage
-            resp = (
+            resp = await (
                 supabase.table(table)
                 .select("style_reference_url")
                 .eq("id", str(entity_id))
@@ -318,7 +318,7 @@ class StyleReferenceService:
 
         # Per-entity references
         table = "agents" if entity_type == "portrait" else "buildings"
-        resp = (
+        resp = await (
             supabase.table(table)
             .select("id, name, style_reference_url")
             .eq("simulation_id", str(simulation_id))

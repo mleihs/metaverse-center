@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 from uuid import UUID, uuid4
 
 import pytest
@@ -62,7 +62,7 @@ class TestListForUser:
         ]
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute.return_value = MagicMock(data=bots, count=2)
+        chain.execute = AsyncMock(return_value=MagicMock(data=bots, count=2))
         sb.table.return_value = chain
 
         data, count = await BotPlayerService.list_for_user(sb, USER_ID)
@@ -75,7 +75,7 @@ class TestListForUser:
     async def test_returns_empty_list_when_no_bots(self):
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute.return_value = MagicMock(data=[], count=0)
+        chain.execute = AsyncMock(return_value=MagicMock(data=[], count=0))
         sb.table.return_value = chain
 
         data, count = await BotPlayerService.list_for_user(sb, USER_ID)
@@ -88,7 +88,7 @@ class TestListForUser:
         """Handles None data response gracefully."""
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute.return_value = MagicMock(data=None, count=None)
+        chain.execute = AsyncMock(return_value=MagicMock(data=None, count=None))
         sb.table.return_value = chain
 
         data, count = await BotPlayerService.list_for_user(sb, USER_ID)
@@ -100,7 +100,7 @@ class TestListForUser:
     async def test_filters_by_user_id(self):
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute.return_value = MagicMock(data=[], count=0)
+        chain.execute = AsyncMock(return_value=MagicMock(data=[], count=0))
         sb.table.return_value = chain
 
         await BotPlayerService.list_for_user(sb, USER_ID)
@@ -112,7 +112,7 @@ class TestListForUser:
     async def test_orders_by_created_at_desc(self):
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute.return_value = MagicMock(data=[], count=0)
+        chain.execute = AsyncMock(return_value=MagicMock(data=[], count=0))
         sb.table.return_value = chain
 
         await BotPlayerService.list_for_user(sb, USER_ID)
@@ -129,7 +129,7 @@ class TestGet:
         bot = _make_bot_data()
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute.return_value = MagicMock(data=bot)
+        chain.execute = AsyncMock(return_value=MagicMock(data=bot))
         sb.table.return_value = chain
 
         result = await BotPlayerService.get(sb, BOT_ID)
@@ -141,7 +141,7 @@ class TestGet:
     async def test_raises_404_when_not_found(self):
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute.return_value = MagicMock(data=None)
+        chain.execute = AsyncMock(return_value=MagicMock(data=None))
         sb.table.return_value = chain
 
         with pytest.raises(HTTPException) as exc:
@@ -154,7 +154,7 @@ class TestGet:
         bot = _make_bot_data()
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute.return_value = MagicMock(data=bot)
+        chain.execute = AsyncMock(return_value=MagicMock(data=bot))
         sb.table.return_value = chain
 
         await BotPlayerService.get(sb, BOT_ID)
@@ -172,7 +172,7 @@ class TestCreate:
         bot = _make_bot_data()
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute.return_value = MagicMock(data=[bot])
+        chain.execute = AsyncMock(return_value=MagicMock(data=[bot]))
         sb.table.return_value = chain
 
         result = await BotPlayerService.create(
@@ -188,7 +188,7 @@ class TestCreate:
     async def test_raises_500_on_failed_insert(self):
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute.return_value = MagicMock(data=None)
+        chain.execute = AsyncMock(return_value=MagicMock(data=None))
         sb.table.return_value = chain
 
         with pytest.raises(HTTPException) as exc:
@@ -201,7 +201,7 @@ class TestCreate:
     async def test_passes_all_data_fields(self):
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute.return_value = MagicMock(data=[_make_bot_data()])
+        chain.execute = AsyncMock(return_value=MagicMock(data=[_make_bot_data()]))
         sb.table.return_value = chain
 
         data = {
@@ -227,7 +227,7 @@ class TestUpdate:
         updated_bot = _make_bot_data(name="Updated Name")
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute.return_value = MagicMock(data=[updated_bot])
+        chain.execute = AsyncMock(return_value=MagicMock(data=[updated_bot]))
         sb.table.return_value = chain
 
         result = await BotPlayerService.update(
@@ -241,7 +241,7 @@ class TestUpdate:
         """Updating another user's bot returns 404 (RLS-style ownership check)."""
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute.return_value = MagicMock(data=[])  # empty = not found/owned
+        chain.execute = AsyncMock(return_value=MagicMock(data=[]))  # empty = not found/owned
         sb.table.return_value = chain
 
         with pytest.raises(HTTPException) as exc:
@@ -263,7 +263,7 @@ class TestUpdate:
     async def test_filters_by_bot_id_and_user_id(self):
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute.return_value = MagicMock(data=[_make_bot_data()])
+        chain.execute = AsyncMock(return_value=MagicMock(data=[_make_bot_data()]))
         sb.table.return_value = chain
 
         await BotPlayerService.update(sb, BOT_ID, USER_ID, {"name": "X"})
@@ -283,7 +283,7 @@ class TestDelete:
     async def test_deletes_own_bot(self):
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute.return_value = MagicMock(data=[_make_bot_data()])
+        chain.execute = AsyncMock(return_value=MagicMock(data=[_make_bot_data()]))
         sb.table.return_value = chain
 
         # Should not raise
@@ -295,7 +295,7 @@ class TestDelete:
     async def test_raises_404_for_other_users_bot(self):
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute.return_value = MagicMock(data=[])  # not found/owned
+        chain.execute = AsyncMock(return_value=MagicMock(data=[]))  # not found/owned)
         sb.table.return_value = chain
 
         with pytest.raises(HTTPException) as exc:
@@ -306,7 +306,7 @@ class TestDelete:
     async def test_raises_404_for_nonexistent_bot(self):
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute.return_value = MagicMock(data=[])
+        chain.execute = AsyncMock(return_value=MagicMock(data=[]))
         sb.table.return_value = chain
 
         with pytest.raises(HTTPException) as exc:
@@ -317,7 +317,7 @@ class TestDelete:
     async def test_filters_by_bot_id_and_user_id(self):
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute.return_value = MagicMock(data=[_make_bot_data()])
+        chain.execute = AsyncMock(return_value=MagicMock(data=[_make_bot_data()]))
         sb.table.return_value = chain
 
         await BotPlayerService.delete(sb, BOT_ID, USER_ID)

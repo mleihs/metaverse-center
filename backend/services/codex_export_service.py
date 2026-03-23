@@ -13,7 +13,7 @@ import httpx
 import structlog
 
 from backend.config import settings
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -39,33 +39,33 @@ class CodexExportService:
 
         try:
             # 1. Fetch all simulation data
-            sim_resp = admin_supabase.table("simulations").select(
+            sim_resp = await admin_supabase.table("simulations").select(
                 "name, slug, description, created_at"
             ).eq("id", str(simulation_id)).single().execute()
             sim = sim_resp.data
 
-            agents_resp = admin_supabase.table("agents").select(
+            agents_resp = await admin_supabase.table("agents").select(
                 "name, gender, primary_profession, character, background, portrait_image_url"
             ).eq("simulation_id", str(simulation_id)).order("name").execute()
             agents = agents_resp.data or []
 
-            buildings_resp = admin_supabase.table("buildings").select(
+            buildings_resp = await admin_supabase.table("buildings").select(
                 "name, building_type, description, building_condition, image_url"
             ).eq("simulation_id", str(simulation_id)).order("name").execute()
             buildings = buildings_resp.data or []
 
-            zones_resp = admin_supabase.table("zones").select(
+            zones_resp = await admin_supabase.table("zones").select(
                 "name, zone_type, description"
             ).eq("simulation_id", str(simulation_id)).order("name").execute()
             zones = zones_resp.data or []
 
-            lore_resp = admin_supabase.table("simulation_lore").select(
+            lore_resp = await admin_supabase.table("simulation_lore").select(
                 "chapter, arcanum, title, epigraph, body, image_slug, image_caption"
             ).eq("simulation_id", str(simulation_id)).order("sort_order").execute()
             lore = lore_resp.data or []
 
             # Fetch theme settings
-            settings_resp = admin_supabase.table("simulation_settings").select(
+            settings_resp = await admin_supabase.table("simulation_settings").select(
                 "setting_key, setting_value"
             ).eq("simulation_id", str(simulation_id)).eq("category", "design").execute()
             theme = {
@@ -153,24 +153,24 @@ class CodexExportService:
 
         try:
             # 1. Fetch simulation metadata
-            sim_resp = admin_supabase.table("simulations").select(
+            sim_resp = await admin_supabase.table("simulations").select(
                 "name, slug, banner_url"
             ).eq("id", str(simulation_id)).single().execute()
             sim = sim_resp.data
             slug = sim.get("slug", str(simulation_id)[:8])
 
             # 2. Fetch entities
-            agents_resp = admin_supabase.table("agents").select(
+            agents_resp = await admin_supabase.table("agents").select(
                 "name, portrait_image_url"
             ).eq("simulation_id", str(simulation_id)).order("name").execute()
             agents = agents_resp.data or []
 
-            buildings_resp = admin_supabase.table("buildings").select(
+            buildings_resp = await admin_supabase.table("buildings").select(
                 "name, image_url"
             ).eq("simulation_id", str(simulation_id)).order("name").execute()
             buildings = buildings_resp.data or []
 
-            lore_resp = admin_supabase.table("simulation_lore").select(
+            lore_resp = await admin_supabase.table("simulation_lore").select(
                 "image_slug"
             ).eq("simulation_id", str(simulation_id)).order("sort_order").execute()
             lore = [s for s in (lore_resp.data or []) if s.get("image_slug")]

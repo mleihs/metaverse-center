@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
 import pytest
@@ -38,7 +38,7 @@ def _mock_supabase(return_data: list[dict] | None = None):
     response = MagicMock()
     response.data = return_data
 
-    mock.table.return_value.insert.return_value.execute.return_value = response
+    mock.table.return_value.insert.return_value.execute = AsyncMock(return_value=response)
     return mock
 
 
@@ -183,7 +183,7 @@ class TestBaseServiceLogging:
         chain.update.return_value = chain
         chain.eq.return_value = chain
         chain.is_.return_value = chain
-        chain.execute.return_value = MagicMock(data=[])
+        chain.execute = AsyncMock(return_value=MagicMock(data=[]))
         mock_sb.table.return_value = chain
 
         entity_id = uuid4()
@@ -206,7 +206,7 @@ class TestBaseServiceLogging:
         chain = MagicMock()
         chain.delete.return_value = chain
         chain.eq.return_value = chain
-        chain.execute.return_value = MagicMock(data=[])
+        chain.execute = AsyncMock(return_value=MagicMock(data=[]))
         mock_sb.table.return_value = chain
 
         entity_id = uuid4()

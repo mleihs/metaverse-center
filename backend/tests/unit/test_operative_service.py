@@ -111,13 +111,13 @@ def _mock_supabase_for_deploy(
 
     # game_epochs
     epoch_chain = make_chain()
-    epoch_chain.execute.return_value = MagicMock(data=epoch_data)
+    epoch_chain.execute = AsyncMock(return_value=MagicMock(data=epoch_data))
 
     # embassies
     embassy_chain = make_chain()
     if embassy_data is None:
         embassy_data = {"id": str(EMBASSY_ID), "status": "active"}
-    embassy_chain.execute.return_value = MagicMock(data=embassy_data)
+    embassy_chain.execute = AsyncMock(return_value=MagicMock(data=embassy_data))
 
     # epoch_participants — for team check + spend_rp
     participant_chain = make_chain()
@@ -139,11 +139,11 @@ def _mock_supabase_for_deploy(
     participant_responses.append(
         MagicMock(data=[{"id": str(uuid4()), "current_rp": participant_rp - 3}])
     )
-    participant_chain.execute.side_effect = participant_responses
+    participant_chain.execute = AsyncMock(side_effect=participant_responses)
 
     # agents
     agents_chain = make_chain()
-    agents_chain.execute.return_value = MagicMock(data=agent_data)
+    agents_chain.execute = AsyncMock(return_value=MagicMock(data=agent_data))
 
     # operative_missions — existing check + insert
     missions_chain = make_chain()
@@ -151,23 +151,23 @@ def _mock_supabase_for_deploy(
         MagicMock(data=existing_missions or []),  # existing check
         MagicMock(data=[insert_data]),  # insert
     ]
-    missions_chain.execute.side_effect = missions_execute_responses
+    missions_chain.execute = AsyncMock(side_effect=missions_execute_responses)
 
     # agent_professions
     prof_chain = make_chain()
-    prof_chain.execute.return_value = MagicMock(data=professions_data or [])
+    prof_chain.execute = AsyncMock(return_value=MagicMock(data=professions_data or []))
 
     # zones
     zone_chain = make_chain()
-    zone_chain.execute.return_value = MagicMock(
+    zone_chain.execute = AsyncMock(return_value=MagicMock(
         data=zone_data or {"security_level": "moderate"}
-    )
+    ))
 
     # guardian count query
     guardian_chain = make_chain()
-    guardian_chain.execute.return_value = MagicMock(
+    guardian_chain.execute = AsyncMock(return_value=MagicMock(
         data=[{"id": str(uuid4())} for _ in range(guardian_count)]
-    )
+    ))
 
     call_counts: dict[str, int] = {}
 
@@ -260,9 +260,9 @@ class TestDeployValidation:
         epoch_chain.select.return_value = epoch_chain
         epoch_chain.eq.return_value = epoch_chain
         epoch_chain.single.return_value = epoch_chain
-        epoch_chain.execute.return_value = MagicMock(
+        epoch_chain.execute = AsyncMock(return_value=MagicMock(
             data={"id": str(EPOCH_ID), "status": "lobby", "config": {}}
-        )
+        ))
         sb.table.return_value = epoch_chain
 
         body = _make_deploy_body("spy", TARGET_SIM_ID, EMBASSY_ID)
@@ -277,9 +277,9 @@ class TestDeployValidation:
         epoch_chain.select.return_value = epoch_chain
         epoch_chain.eq.return_value = epoch_chain
         epoch_chain.single.return_value = epoch_chain
-        epoch_chain.execute.return_value = MagicMock(
+        epoch_chain.execute = AsyncMock(return_value=MagicMock(
             data={"id": str(EPOCH_ID), "status": "completed", "config": {}}
-        )
+        ))
         sb.table.return_value = epoch_chain
 
         body = _make_deploy_body("spy", TARGET_SIM_ID, EMBASSY_ID)
@@ -295,9 +295,9 @@ class TestDeployValidation:
         epoch_chain.select.return_value = epoch_chain
         epoch_chain.eq.return_value = epoch_chain
         epoch_chain.single.return_value = epoch_chain
-        epoch_chain.execute.return_value = MagicMock(
+        epoch_chain.execute = AsyncMock(return_value=MagicMock(
             data={"id": str(EPOCH_ID), "status": "foundation", "config": {}}
-        )
+        ))
         sb.table.return_value = epoch_chain
 
         body = _make_deploy_body("saboteur", TARGET_SIM_ID, EMBASSY_ID)
@@ -313,9 +313,9 @@ class TestDeployValidation:
         epoch_chain.select.return_value = epoch_chain
         epoch_chain.eq.return_value = epoch_chain
         epoch_chain.single.return_value = epoch_chain
-        epoch_chain.execute.return_value = MagicMock(
+        epoch_chain.execute = AsyncMock(return_value=MagicMock(
             data={"id": str(EPOCH_ID), "status": "competition", "config": {}}
-        )
+        ))
         sb.table.return_value = epoch_chain
 
         body = _make_deploy_body("guardian", target_simulation_id=TARGET_SIM_ID)
@@ -331,9 +331,9 @@ class TestDeployValidation:
         epoch_chain.select.return_value = epoch_chain
         epoch_chain.eq.return_value = epoch_chain
         epoch_chain.single.return_value = epoch_chain
-        epoch_chain.execute.return_value = MagicMock(
+        epoch_chain.execute = AsyncMock(return_value=MagicMock(
             data={"id": str(EPOCH_ID), "status": "competition", "config": {}}
-        )
+        ))
         sb.table.return_value = epoch_chain
 
         body = _make_deploy_body("spy", target_simulation_id=None)
@@ -349,9 +349,9 @@ class TestDeployValidation:
         epoch_chain.select.return_value = epoch_chain
         epoch_chain.eq.return_value = epoch_chain
         epoch_chain.single.return_value = epoch_chain
-        epoch_chain.execute.return_value = MagicMock(
+        epoch_chain.execute = AsyncMock(return_value=MagicMock(
             data={"id": str(EPOCH_ID), "status": "competition", "config": {}}
-        )
+        ))
         sb.table.return_value = epoch_chain
 
         body = _make_deploy_body("spy", target_simulation_id=TARGET_SIM_ID, embassy_id=None)
@@ -391,7 +391,7 @@ class TestSuccessProbability:
         chain.in_.return_value = chain
         chain.single.return_value = chain
         chain.maybe_single.return_value = chain
-        chain.execute.return_value = MagicMock(data=[])
+        chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         sb.table.return_value = chain
 
@@ -417,7 +417,7 @@ class TestSuccessProbability:
         chain.single.return_value = chain
         chain.maybe_single.return_value = chain
         # No professions
-        chain.execute.return_value = MagicMock(data=[])
+        chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         sb.table.side_effect = lambda name: chain
 
@@ -441,31 +441,31 @@ class TestSuccessProbability:
         aptitude_chain = MagicMock()
         aptitude_chain.select.return_value = aptitude_chain
         aptitude_chain.eq.return_value = aptitude_chain
-        aptitude_chain.execute.return_value = MagicMock(
+        aptitude_chain.execute = AsyncMock(return_value=MagicMock(
             data=[{"aptitude_level": 9}]
-        )
+        ))
 
         zone_chain = MagicMock()
         zone_chain.select.return_value = zone_chain
         zone_chain.eq.return_value = zone_chain
         zone_chain.maybe_single.return_value = zone_chain
-        zone_chain.execute.return_value = MagicMock(
+        zone_chain.execute = AsyncMock(return_value=MagicMock(
             data={"security_level": "lawless"}
-        )
+        ))
 
         guardian_chain = MagicMock()
         guardian_chain.select.return_value = guardian_chain
         guardian_chain.eq.return_value = guardian_chain
         guardian_chain.in_.return_value = guardian_chain
-        guardian_chain.execute.return_value = MagicMock(data=[])
+        guardian_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         embassy_chain = MagicMock()
         embassy_chain.select.return_value = embassy_chain
         embassy_chain.eq.return_value = embassy_chain
         embassy_chain.maybe_single.return_value = embassy_chain
-        embassy_chain.execute.return_value = MagicMock(
+        embassy_chain.execute = AsyncMock(return_value=MagicMock(
             data={"id": str(EMBASSY_ID), "infiltration_penalty": 0, "infiltration_penalty_expires_at": None}
-        )
+        ))
 
         # sb handles agent_aptitudes only
         sb.table.side_effect = lambda name: aptitude_chain if name == "agent_aptitudes" else MagicMock()
@@ -501,24 +501,24 @@ class TestSuccessProbability:
         aptitude_chain = MagicMock()
         aptitude_chain.select.return_value = aptitude_chain
         aptitude_chain.eq.return_value = aptitude_chain
-        aptitude_chain.execute.return_value = MagicMock(data=[])
+        aptitude_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         # 5 guardians -> 5 * 0.06 = 0.30, but capped at 0.15
         guardian_chain = MagicMock()
         guardian_chain.select.return_value = guardian_chain
         guardian_chain.eq.return_value = guardian_chain
         guardian_chain.in_.return_value = guardian_chain
-        guardian_chain.execute.return_value = MagicMock(
+        guardian_chain.execute = AsyncMock(return_value=MagicMock(
             data=[{"id": str(uuid4())} for _ in range(5)]
-        )
+        ))
 
         embassy_chain = MagicMock()
         embassy_chain.select.return_value = embassy_chain
         embassy_chain.eq.return_value = embassy_chain
         embassy_chain.maybe_single.return_value = embassy_chain
-        embassy_chain.execute.return_value = MagicMock(
+        embassy_chain.execute = AsyncMock(return_value=MagicMock(
             data={"id": str(EMBASSY_ID), "infiltration_penalty": 0, "infiltration_penalty_expires_at": None}
-        )
+        ))
 
         sb.table.side_effect = lambda name: aptitude_chain if name == "agent_aptitudes" else MagicMock()
 
@@ -535,7 +535,7 @@ class TestSuccessProbability:
 
         # Mock RPC calls for resonance modifiers (return 0 = no resonance effect)
         rpc_chain = MagicMock()
-        rpc_chain.execute.return_value = MagicMock(data=0)
+        rpc_chain.execute = AsyncMock(return_value=MagicMock(data=0))
         admin_mock.rpc.return_value = rpc_chain
 
         body = _make_deploy_body("spy", TARGET_SIM_ID, EMBASSY_ID)
@@ -554,23 +554,23 @@ class TestSuccessProbability:
         aptitude_chain = MagicMock()
         aptitude_chain.select.return_value = aptitude_chain
         aptitude_chain.eq.return_value = aptitude_chain
-        aptitude_chain.execute.return_value = MagicMock(
+        aptitude_chain.execute = AsyncMock(return_value=MagicMock(
             data=[{"aptitude_level": 9}]
-        )
+        ))
 
         guardian_chain = MagicMock()
         guardian_chain.select.return_value = guardian_chain
         guardian_chain.eq.return_value = guardian_chain
         guardian_chain.in_.return_value = guardian_chain
-        guardian_chain.execute.return_value = MagicMock(data=[])
+        guardian_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         embassy_chain = MagicMock()
         embassy_chain.select.return_value = embassy_chain
         embassy_chain.eq.return_value = embassy_chain
         embassy_chain.maybe_single.return_value = embassy_chain
-        embassy_chain.execute.return_value = MagicMock(
+        embassy_chain.execute = AsyncMock(return_value=MagicMock(
             data={"id": str(EMBASSY_ID), "infiltration_penalty": 0, "infiltration_penalty_expires_at": None}
-        )
+        ))
 
         sb.table.side_effect = lambda name: aptitude_chain if name == "agent_aptitudes" else MagicMock()
 
@@ -587,7 +587,7 @@ class TestSuccessProbability:
 
         # Mock RPC calls for resonance modifiers (return 0 = no resonance effect)
         rpc_chain = MagicMock()
-        rpc_chain.execute.return_value = MagicMock(data=0)
+        rpc_chain.execute = AsyncMock(return_value=MagicMock(data=0))
         admin_mock.rpc.return_value = rpc_chain
 
         body = _make_deploy_body("spy", TARGET_SIM_ID, EMBASSY_ID)
@@ -609,29 +609,40 @@ class TestSpyEffect:
         zones_chain = MagicMock()
         zones_chain.select.return_value = zones_chain
         zones_chain.eq.return_value = zones_chain
-        zones_chain.execute.return_value = MagicMock(
+        zones_chain.execute = AsyncMock(return_value=MagicMock(
             data=[
                 {"name": "The Iron Bastion", "security_level": "high"},
                 {"name": "The Undertide Docks", "security_level": "moderate"},
             ]
-        )
+        ))
 
         guardian_chain = MagicMock()
         guardian_chain.select.return_value = guardian_chain
         guardian_chain.eq.return_value = guardian_chain
-        guardian_chain.execute.return_value = MagicMock(data=[], count=2)
+        guardian_chain.execute = AsyncMock(return_value=MagicMock(data=[], count=2))
 
         epoch_chain = MagicMock()
         epoch_chain.select.return_value = epoch_chain
         epoch_chain.eq.return_value = epoch_chain
         epoch_chain.single.return_value = epoch_chain
-        epoch_chain.execute.return_value = MagicMock(
+        epoch_chain.maybe_single.return_value = epoch_chain
+        epoch_chain.execute = AsyncMock(return_value=MagicMock(
             data={"current_cycle": 3}
-        )
+        ))
 
         blog_chain = MagicMock()
         blog_chain.insert.return_value = blog_chain
-        blog_chain.execute.return_value = MagicMock(data=[{"id": "bl1"}])
+        blog_chain.execute = AsyncMock(return_value=MagicMock(data=[{"id": "bl1"}]))
+
+        def _async_fallback_chain():
+            """Return a chain with AsyncMock execute for unknown tables."""
+            fc = MagicMock()
+            fc.select.return_value = fc
+            fc.eq.return_value = fc
+            fc.in_.return_value = fc
+            fc.single.return_value = fc
+            fc.execute = AsyncMock(return_value=MagicMock(data=[]))
+            return fc
 
         def table_router(name):
             if name == "zones":
@@ -642,7 +653,7 @@ class TestSpyEffect:
                 return epoch_chain
             if name == "battle_log":
                 return blog_chain
-            return MagicMock()
+            return _async_fallback_chain()
 
         sb.table.side_effect = table_router
 
@@ -675,15 +686,15 @@ class TestSaboteurEffect:
         building_chain.select.return_value = building_chain
         building_chain.eq.return_value = building_chain
         building_chain.single.return_value = building_chain
-        building_chain.execute.return_value = MagicMock(
+        building_chain.execute = AsyncMock(return_value=MagicMock(
             data={"id": str(TARGET_ENTITY_ID), "building_condition": "good"}
-        )
+        ))
         building_chain.update.return_value = building_chain
 
         zones_chain = MagicMock()
         zones_chain.select.return_value = zones_chain
         zones_chain.eq.return_value = zones_chain
-        zones_chain.execute.return_value = MagicMock(data=[])
+        zones_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         def table_router(name):
             if name == "buildings":
@@ -717,15 +728,15 @@ class TestSaboteurEffect:
 
         # Mock RPC: fn_degrade_building returns JSONB
         rpc_chain = MagicMock()
-        rpc_chain.execute.return_value = MagicMock(
+        rpc_chain.execute = AsyncMock(return_value=MagicMock(
             data={"changed": True, "old_condition": "good", "new_condition": "moderate"}
-        )
+        ))
         sb.rpc.return_value = rpc_chain
 
         zones_chain = MagicMock()
         zones_chain.select.return_value = zones_chain
         zones_chain.eq.return_value = zones_chain
-        zones_chain.execute.return_value = MagicMock(data=[])
+        zones_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
         sb.table.return_value = zones_chain
 
         mission = {
@@ -754,15 +765,15 @@ class TestSaboteurEffect:
         building_chain.select.return_value = building_chain
         building_chain.eq.return_value = building_chain
         building_chain.single.return_value = building_chain
-        building_chain.execute.return_value = MagicMock(data=None)
+        building_chain.execute = AsyncMock(return_value=MagicMock(data=None))
 
         zones_chain = MagicMock()
         zones_chain.select.return_value = zones_chain
         zones_chain.eq.return_value = zones_chain
         zones_chain.update.return_value = zones_chain
-        zones_chain.execute.return_value = MagicMock(
+        zones_chain.execute = AsyncMock(return_value=MagicMock(
             data=[{"id": "z1", "security_level": "high"}]
-        )
+        ))
 
         def table_router(name):
             if name == "buildings":
@@ -799,7 +810,7 @@ class TestPropagandistEffect:
         admin_mock = MagicMock()
         events_chain = MagicMock()
         events_chain.insert.return_value = events_chain
-        events_chain.execute.return_value = MagicMock(data=[{"id": "e1"}])
+        events_chain.execute = AsyncMock(return_value=MagicMock(data=[{"id": "e1"}]))
         admin_mock.table.return_value = events_chain
 
         mission = {
@@ -835,25 +846,25 @@ class TestAssassinEffect:
         rel_chain.or_.return_value = rel_chain
         rel_chain.eq.return_value = rel_chain
         rel_chain.update.return_value = rel_chain
-        rel_chain.execute.return_value = MagicMock(
+        rel_chain.execute = AsyncMock(return_value=MagicMock(
             data=[
                 {"id": "r1", "intensity": 5},
                 {"id": "r2", "intensity": 3},
             ]
-        )
+        ))
 
         epoch_chain = MagicMock()
         epoch_chain.select.return_value = epoch_chain
         epoch_chain.eq.return_value = epoch_chain
         epoch_chain.single.return_value = epoch_chain
-        epoch_chain.execute.return_value = MagicMock(
+        epoch_chain.execute = AsyncMock(return_value=MagicMock(
             data={"config": {"cycle_hours": 8}}
-        )
+        ))
 
         agents_chain = MagicMock()
         agents_chain.update.return_value = agents_chain
         agents_chain.eq.return_value = agents_chain
-        agents_chain.execute.return_value = MagicMock(data=[])
+        agents_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         def table_router(name):
             if name == "agent_relationships":
@@ -910,14 +921,14 @@ class TestInfiltratorEffect:
         epoch_chain.select.return_value = epoch_chain
         epoch_chain.eq.return_value = epoch_chain
         epoch_chain.single.return_value = epoch_chain
-        epoch_chain.execute.return_value = MagicMock(
+        epoch_chain.execute = AsyncMock(return_value=MagicMock(
             data={"config": {"cycle_hours": 8}}
-        )
+        ))
 
         embassy_chain = MagicMock()
         embassy_chain.update.return_value = embassy_chain
         embassy_chain.eq.return_value = embassy_chain
-        embassy_chain.execute.return_value = MagicMock(data=[])
+        embassy_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         def table_router(name):
             if name == "game_epochs":
@@ -977,26 +988,45 @@ class TestRecall:
             "status": "active",
             "operative_type": "spy",
         }
-        # First call: get_mission (single) returns dict
-        # Second call: update returns list
+        # get_mission chain (operative_missions select)
         get_chain = MagicMock()
         get_chain.select.return_value = get_chain
         get_chain.eq.return_value = get_chain
         get_chain.single.return_value = get_chain
-        get_chain.execute.return_value = MagicMock(data=mission_data)
+        get_chain.execute = AsyncMock(return_value=MagicMock(data=mission_data))
 
+        # EpochService.get chain (game_epochs select)
+        epoch_chain = MagicMock()
+        epoch_chain.select.return_value = epoch_chain
+        epoch_chain.eq.return_value = epoch_chain
+        epoch_chain.single.return_value = epoch_chain
+        epoch_chain.execute = AsyncMock(return_value=MagicMock(
+            data={"id": str(EPOCH_ID), "status": "competition"}
+        ))
+
+        # update chain (operative_missions update)
         update_chain = MagicMock()
         update_chain.update.return_value = update_chain
         update_chain.eq.return_value = update_chain
-        update_chain.execute.return_value = MagicMock(data=[{**mission_data, "status": "returning"}])
+        update_chain.execute = AsyncMock(return_value=MagicMock(data=[{**mission_data, "status": "returning"}]))
 
-        call_count = {"n": 0}
+        mission_call_count = {"n": 0}
 
         def table_router(name):
-            call_count["n"] += 1
-            if call_count["n"] == 1:
-                return get_chain
-            return update_chain
+            if name == "game_epochs":
+                return epoch_chain
+            if name == "operative_missions":
+                mission_call_count["n"] += 1
+                if mission_call_count["n"] == 1:
+                    return get_chain
+                return update_chain
+            # Fallback with async execute
+            fc = MagicMock()
+            fc.select.return_value = fc
+            fc.eq.return_value = fc
+            fc.single.return_value = fc
+            fc.execute = AsyncMock(return_value=MagicMock(data=[]))
+            return fc
 
         sb.table.side_effect = table_router
 
@@ -1020,7 +1050,7 @@ class TestRecall:
         chain.select.return_value = chain
         chain.eq.return_value = chain
         chain.single.return_value = chain
-        chain.execute.return_value = MagicMock(data=mission_data)
+        chain.execute = AsyncMock(return_value=MagicMock(data=mission_data))
         sb.table.return_value = chain
 
         with pytest.raises(HTTPException) as exc:
@@ -1046,13 +1076,13 @@ class TestRecall:
             chain.eq.return_value = chain
             chain.single.return_value = chain
             if name == "operative_missions":
-                chain.execute.return_value = MagicMock(data=mission_data)
+                chain.execute = AsyncMock(return_value=MagicMock(data=mission_data))
             elif name == "game_epochs":
-                chain.execute.return_value = MagicMock(
+                chain.execute = AsyncMock(return_value=MagicMock(
                     data={"id": epoch_id, "status": "competition"}
-                )
+                ))
             else:
-                chain.execute.return_value = MagicMock(data=None)
+                chain.execute = AsyncMock(return_value=MagicMock(data=None))
             return chain
 
         sb.table.side_effect = table_router

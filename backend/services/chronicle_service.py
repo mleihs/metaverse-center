@@ -10,7 +10,7 @@ from uuid import UUID
 from backend.config import settings
 from backend.services.generation_service import GenerationService
 from backend.services.translation_service import schedule_auto_translation
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +41,7 @@ class ChronicleService:
         period_end: datetime,
     ) -> dict:
         """Fetch aggregated chronicle source data via Postgres ``get_chronicle_source_data`` (migration 066)."""
-        response = supabase.rpc(
+        response = await supabase.rpc(
             "get_chronicle_source_data",
             {
                 "p_simulation_id": str(simulation_id),
@@ -69,7 +69,7 @@ class ChronicleService:
     ) -> dict:
         """Generate a new chronicle edition."""
         # Get next edition number
-        max_resp = (
+        max_resp = await (
             supabase.table("simulation_chronicles")
             .select("edition_number")
             .eq("simulation_id", str(simulation_id))
@@ -93,14 +93,14 @@ class ChronicleService:
                 "content": MOCK_CHRONICLE["content"],
                 "model_used": "mock",
             }
-            resp = supabase.table("simulation_chronicles").insert(record).execute()
+            resp = await supabase.table("simulation_chronicles").insert(record).execute()
             return resp.data[0]
 
         # Fetch source data
         source = await cls.get_source_data(supabase, simulation_id, period_start, period_end)
 
         # Get simulation name for prompt
-        sim_resp = (
+        sim_resp = await (
             supabase.table("simulations")
             .select("name, theme")
             .eq("id", str(simulation_id))
@@ -147,7 +147,7 @@ class ChronicleService:
             "content": content,
             "model_used": result.get("model_used"),
         }
-        resp = supabase.table("simulation_chronicles").insert(record).execute()
+        resp = await supabase.table("simulation_chronicles").insert(record).execute()
         saved = resp.data[0]
 
         # Fire-and-forget translation
@@ -175,7 +175,7 @@ class ChronicleService:
         Returns chronicles joined with simulation name/slug/theme for the public
         chronicle feed page. Only includes chronicles from active template simulations.
         """
-        response = (
+        response = await (
             supabase.table("simulation_chronicles")
             .select(
                 "id, simulation_id, epoch_id, edition_number, period_start, period_end, "
@@ -209,7 +209,7 @@ class ChronicleService:
         offset: int = 0,
     ) -> tuple[list, int]:
         """List chronicle editions, paginated."""
-        response = (
+        response = await (
             supabase.table("simulation_chronicles")
             .select("*", count="exact")
             .eq("simulation_id", str(simulation_id))
@@ -229,7 +229,7 @@ class ChronicleService:
         chronicle_id: UUID,
     ) -> dict:
         """Get a single chronicle edition."""
-        response = (
+        response = await (
             supabase.table("simulation_chronicles")
             .select("*")
             .eq("id", str(chronicle_id))

@@ -9,7 +9,7 @@ Covers:
 from __future__ import annotations
 
 from datetime import UTC, date, datetime
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 from uuid import UUID, uuid4
 
 MOCK_SIM_ID = UUID("22222222-2222-2222-2222-222222222222")
@@ -120,7 +120,7 @@ class TestGetUserMemberships:
             .select.return_value
             .eq.return_value
         )
-        chain.execute.return_value = MagicMock(data=rows)
+        chain.execute = AsyncMock(return_value=MagicMock(data=rows))
 
         result = await MemberService.get_user_memberships(mock_sb, MOCK_USER_ID)
 
@@ -142,7 +142,7 @@ class TestGetUserMemberships:
             .select.return_value
             .eq.return_value
         )
-        chain.execute.return_value = MagicMock(data=None)
+        chain.execute = AsyncMock(return_value=MagicMock(data=None))
 
         result = await MemberService.get_user_memberships(mock_sb, MOCK_USER_ID)
 
@@ -157,7 +157,7 @@ class TestGetUserMemberships:
             .select.return_value
             .eq.return_value
         )
-        chain.execute.return_value = MagicMock(data=[])
+        chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         await MemberService.get_user_memberships(mock_sb, MOCK_USER_ID)
 
@@ -185,7 +185,7 @@ class TestLocationServiceFacade:
             .eq.return_value
             .order.return_value
         )
-        chain.range.return_value.execute.return_value = MagicMock(data=cities, count=1)
+        chain.range.return_value.execute = AsyncMock(return_value=MagicMock(data=cities, count=1))
 
         data, total = await LocationService.list_cities(mock_sb, MOCK_SIM_ID)
 
@@ -206,7 +206,7 @@ class TestLocationServiceFacade:
             .eq.return_value
             .limit.return_value
         )
-        chain.execute.return_value = MagicMock(data=[city])
+        chain.execute = AsyncMock(return_value=MagicMock(data=[city]))
 
         result = await LocationService.get_city(mock_sb, MOCK_SIM_ID, city_id)
 
@@ -218,7 +218,7 @@ class TestLocationServiceFacade:
 
         city = {"id": str(uuid4()), "name": "New City", "simulation_id": str(MOCK_SIM_ID)}
         mock_sb = MagicMock()
-        mock_sb.table.return_value.insert.return_value.execute.return_value = MagicMock(data=[city])
+        mock_sb.table.return_value.insert.return_value.execute = AsyncMock(return_value=MagicMock(data=[city]))
 
         result = await LocationService.create_city(mock_sb, MOCK_SIM_ID, {"name": "New City"})
 
@@ -241,7 +241,7 @@ class TestLocationServiceFacade:
             .order.return_value
         )
         # BaseService.list applies filters then range
-        chain.eq.return_value.range.return_value.execute.return_value = MagicMock(data=zones, count=1)
+        chain.eq.return_value.range.return_value.execute = AsyncMock(return_value=MagicMock(data=zones, count=1))
 
         data, total = await LocationService.list_zones(mock_sb, MOCK_SIM_ID, city_id=city_id)
 
@@ -258,7 +258,7 @@ class TestLocationServiceFacade:
             .eq.return_value
             .order.return_value
         )
-        chain.range.return_value.execute.return_value = MagicMock(data=[], count=0)
+        chain.range.return_value.execute = AsyncMock(return_value=MagicMock(data=[], count=0))
 
         await LocationService.list_streets(mock_sb, MOCK_SIM_ID)
 
@@ -269,7 +269,7 @@ class TestLocationServiceFacade:
 
         street = {"id": str(uuid4()), "name": "Main St"}
         mock_sb = MagicMock()
-        mock_sb.table.return_value.insert.return_value.execute.return_value = MagicMock(data=[street])
+        mock_sb.table.return_value.insert.return_value.execute = AsyncMock(return_value=MagicMock(data=[street]))
 
         result = await LocationService.create_street(
             mock_sb, MOCK_SIM_ID, {"name": "Main St"},
@@ -290,7 +290,7 @@ class TestLocationServiceFacade:
             .eq.return_value
             .eq.return_value
         )
-        chain.execute.return_value = MagicMock(data=[updated])
+        chain.execute = AsyncMock(return_value=MagicMock(data=[updated]))
 
         result = await LocationService.update_city(
             mock_sb, MOCK_SIM_ID, city_id, {"name": "Renamed City"},

@@ -48,7 +48,7 @@ from backend.services.simulation_service import SimulationService
 from backend.services.social_media_service import SocialMediaService
 from backend.services.social_trends_service import SocialTrendsService
 from backend.services.taxonomy_service import TaxonomyService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +99,7 @@ async def list_simulations(
     max_age = get_ttl("cache_http_simulations_max_age")
     http_response.headers["Cache-Control"] = f"public, max-age={max_age}, stale-while-revalidate={max_age * 5}"
     data, total = await SimulationService.list_active_public(supabase, limit=limit, offset=offset)
-    SimulationService.enrich_with_counts(supabase, data)
+    await SimulationService.enrich_with_counts(supabase, data)
     return _paginated(data, total, limit, offset)
 
 
@@ -115,7 +115,7 @@ async def get_simulation_by_slug(
     if not sim:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Simulation not found.")
     data = [sim]
-    SimulationService.enrich_with_counts(supabase, data)
+    await SimulationService.enrich_with_counts(supabase, data)
     return {"success": True, "data": data[0]}
 
 
@@ -149,7 +149,7 @@ async def get_simulation(
     if not sim:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Simulation not found.")
     data = [sim]
-    SimulationService.enrich_with_counts(supabase, data)
+    await SimulationService.enrich_with_counts(supabase, data)
     return {"success": True, "data": data[0]}
 
 

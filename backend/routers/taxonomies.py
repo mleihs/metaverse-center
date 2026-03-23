@@ -10,7 +10,7 @@ from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.taxonomy import TaxonomyCreate, TaxonomyResponse, TaxonomyUpdate
 from backend.services.audit_service import AuditService
 from backend.services.taxonomy_service import TaxonomyService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

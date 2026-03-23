@@ -19,7 +19,7 @@ from backend.models.cleanup import (
     CleanupStats,
     CleanupType,
 )
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -117,7 +117,7 @@ class CleanupService:
 
         # Best-effort audit log entry
         try:
-            admin_supabase.table("audit_log").insert({
+            await admin_supabase.table("audit_log").insert({
                 "entity_type": "cleanup",
                 "entity_id": None,
                 "action": "delete",
@@ -162,7 +162,7 @@ class CleanupService:
             query = query.in_("id", epoch_ids)
         else:
             query = query.lt("updated_at", cutoff.isoformat())
-        resp = query.order("updated_at", desc=False).execute()
+        resp = await query.order("updated_at", desc=False).execute()
         return [
             CleanupPreviewItem(
                 id=row["id"], name=row["name"], updated_at=row.get("updated_at"),
@@ -180,7 +180,7 @@ class CleanupService:
 
         cascade_counts: dict[str, int] = {}
         for table in _EPOCH_CASCADE_TABLES:
-            resp = (
+            resp = await (
                 admin_supabase.table(table)
                 .select("id", count="exact")
                 .in_("epoch_id", epoch_ids)
@@ -192,7 +192,7 @@ class CleanupService:
                 cascade_counts[table] = count
 
         # Game instance simulations
-        resp = (
+        resp = await (
             admin_supabase.table("simulations")
             .select("id", count="exact")
             .in_("epoch_id", epoch_ids)
@@ -262,7 +262,7 @@ class CleanupService:
         ).execute()
 
         # Step 2: Delete epoch rows — child tables cascade automatically
-        admin_supabase.table("game_epochs").delete().in_("id", matched_ids).execute()
+        await admin_supabase.table("game_epochs").delete().in_("id", matched_ids).execute()
 
         logger.info(
             "Cleanup completed",
@@ -295,7 +295,7 @@ class CleanupService:
             query = query.in_("id", instance_ids)
         else:
             query = query.lt("updated_at", cutoff.isoformat())
-        resp = query.order("updated_at", desc=False).execute()
+        resp = await query.order("updated_at", desc=False).execute()
         return [
             CleanupPreviewItem(
                 id=row["id"], name=row["name"], updated_at=row.get("updated_at"),
@@ -335,7 +335,7 @@ class CleanupService:
         matched_ids = [item.id for item in items]
 
         if matched_ids:
-            admin_supabase.table("simulations").delete().in_(
+            await admin_supabase.table("simulations").delete().in_(
                 "id", matched_ids,
             ).execute()
 
@@ -357,7 +357,7 @@ class CleanupService:
         cleanup_type: CleanupType,
         min_age_days: int,
     ) -> CleanupPreviewResult:
-        resp = (
+        resp = await (
             admin_supabase.table(table)
             .select("id", count="exact")
             .lt(date_column, cutoff.isoformat())
@@ -380,7 +380,7 @@ class CleanupService:
         cleanup_type: CleanupType,
         min_age_days: int,
     ) -> CleanupExecuteResult:
-        resp = (
+        resp = await (
             admin_supabase.table(table)
             .select("id", count="exact")
             .lt(date_column, cutoff.isoformat())
@@ -389,7 +389,7 @@ class CleanupService:
         count = len(resp.data or [])
 
         if count > 0:
-            admin_supabase.table(table).delete().lt(
+            await admin_supabase.table(table).delete().lt(
                 date_column, cutoff.isoformat(),
             ).execute()
 
@@ -405,7 +405,7 @@ class CleanupService:
     async def _count_epochs(
         cls, admin_supabase: Client, status: str,
     ) -> CleanupCategoryStats:
-        resp = (
+        resp = await (
             admin_supabase.table("game_epochs")
             .select("id,updated_at", count="exact")
             .eq("status", status)
@@ -421,7 +421,7 @@ class CleanupService:
     async def _count_archived_instances(
         cls, admin_supabase: Client,
     ) -> CleanupCategoryStats:
-        resp = (
+        resp = await (
             admin_supabase.table("simulations")
             .select("id,updated_at", count="exact")
             .eq("simulation_type", "archived")
@@ -437,7 +437,7 @@ class CleanupService:
     async def _count_table(
         cls, admin_supabase: Client, table: str, date_column: str,
     ) -> CleanupCategoryStats:
-        resp = (
+        resp = await (
             admin_supabase.table(table)
             .select("id," + date_column, count="exact")
             .order(date_column, desc=False)

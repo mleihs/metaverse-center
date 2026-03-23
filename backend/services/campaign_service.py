@@ -8,7 +8,7 @@ from uuid import UUID
 from fastapi import HTTPException, status
 
 from backend.services.base_service import BaseService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +53,7 @@ class CampaignService(BaseService):
         campaign_id: UUID,
     ) -> list[dict]:
         """Get all events linked to a campaign."""
-        response = (
+        response = await (
             supabase.table("campaign_events")
             .select("*, events(id, title, event_type, occurred_at)")
             .eq("simulation_id", str(simulation_id))
@@ -73,7 +73,7 @@ class CampaignService(BaseService):
         integration_type: str = "manual",
     ) -> dict:
         """Link an event to a campaign."""
-        response = (
+        response = await (
             supabase.table("campaign_events")
             .insert({
                 "simulation_id": str(simulation_id),
@@ -98,7 +98,7 @@ class CampaignService(BaseService):
         campaign_id: UUID,
     ) -> dict:
         """Aggregated campaign analytics via Postgres ``get_campaign_analytics`` (migration 065)."""
-        response = supabase.rpc("get_campaign_analytics", {
+        response = await supabase.rpc("get_campaign_analytics", {
             "p_simulation_id": str(simulation_id),
             "p_campaign_id": str(campaign_id),
         }).execute()
@@ -118,7 +118,7 @@ class CampaignService(BaseService):
         campaign_id: UUID,
     ) -> list[dict]:
         """Get metrics for a campaign."""
-        response = (
+        response = await (
             supabase.table("campaign_metrics")
             .select("*")
             .eq("simulation_id", str(simulation_id))

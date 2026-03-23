@@ -20,7 +20,7 @@ from backend.models.forge_access import (
 )
 from backend.services.audit_service import AuditService
 from backend.services.forge_access_service import ForgeAccessService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

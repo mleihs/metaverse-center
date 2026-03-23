@@ -9,7 +9,7 @@ from uuid import UUID
 from backend.config import settings as platform_settings
 from backend.services.platform_api_keys import get_platform_api_key
 from backend.utils.encryption import decrypt
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +91,7 @@ class ExternalServiceResolver:
         if self._cache is not None:
             return self._cache
 
-        response = (
+        response = await (
             self._supabase.table("simulation_settings")
             .select("setting_key, setting_value")
             .eq("simulation_id", str(self._simulation_id))

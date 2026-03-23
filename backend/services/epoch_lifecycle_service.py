@@ -9,7 +9,7 @@ from fastapi import HTTPException, status
 from backend.models.epoch import EpochConfig
 from backend.services.battle_log_service import BattleLogService
 from backend.services.game_instance_service import GameInstanceService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +56,7 @@ class EpochLifecycleService:
         # (Skip for academy epochs — human is joined via admin client)
         if epoch.get("epoch_type") != "academy":
             creator_id = str(epoch["created_by_id"])
-            member_resp = (
+            member_resp = await (
                 supabase.table("simulation_members")
                 .select("simulation_id")
                 .eq("user_id", creator_id)
@@ -80,7 +80,7 @@ class EpochLifecycleService:
         admin = admin_supabase or supabase
         config = {**DEFAULT_CONFIG, **epoch.get("config", {})}
         max_agents = config.get("max_agents_per_player", 6)
-        admin.rpc("fn_auto_draft_participants", {
+        await admin.rpc("fn_auto_draft_participants", {
             "p_epoch_id": str(epoch_id),
             "p_max_agents": max_agents,
         }).execute()
@@ -113,7 +113,7 @@ class EpochLifecycleService:
         duration = timedelta(days=config["duration_days"])
         now = datetime.now(UTC)
 
-        resp = (
+        resp = await (
             supabase.table("game_epochs")
             .update({
                 "status": "foundation",
@@ -175,7 +175,7 @@ class EpochLifecycleService:
                 f"Cannot advance from '{epoch['status']}'.",
             )
 
-        resp = (
+        resp = await (
             supabase.table("game_epochs")
             .update({"status": next_status})
             .eq("id", str(epoch_id))
@@ -189,7 +189,7 @@ class EpochLifecycleService:
 
             # Increment academy_epochs_played for academy epochs
             if epoch.get("epoch_type") == "academy":
-                profile = (
+                profile = await (
                     admin.table("user_profiles")
                     .select("academy_epochs_played")
                     .eq("id", str(epoch["created_by_id"]))
@@ -198,7 +198,7 @@ class EpochLifecycleService:
                 )
                 if profile.data:
                     count = (profile.data.get("academy_epochs_played") or 0) + 1
-                    admin.table("user_profiles").update(
+                    await admin.table("user_profiles").update(
                         {"academy_epochs_played": count}
                     ).eq("id", str(epoch["created_by_id"])).execute()
 
@@ -239,7 +239,7 @@ class EpochLifecycleService:
                 f"Cannot cancel epoch with status '{epoch['status']}'.",
             )
 
-        resp = (
+        resp = await (
             supabase.table("game_epochs")
             .update({"status": "cancelled"})
             .eq("id", str(epoch_id))
@@ -288,10 +288,10 @@ class EpochLifecycleService:
             "epoch_teams",
             "epoch_invitations",
         ]:
-            supabase.table(table).delete().eq("epoch_id", eid).execute()
+            await supabase.table(table).delete().eq("epoch_id", eid).execute()
 
         # Delete the epoch row itself
-        resp = supabase.table("game_epochs").delete().eq("id", eid).execute()
+        resp = await supabase.table("game_epochs").delete().eq("id", eid).execute()
         if not resp.data:
             raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Failed to delete epoch.")
         return resp.data[0]

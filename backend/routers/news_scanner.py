@@ -18,7 +18,7 @@ from backend.models.news_scanner import (
 )
 from backend.services.audit_service import AuditService
 from backend.services.scanning.scanner_service import ScannerService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

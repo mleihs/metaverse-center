@@ -6,7 +6,7 @@ import logging
 from uuid import UUID
 
 from backend.models.user import ActiveEpochParticipation, DashboardData, MembershipInfo
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ class UserDashboardService:
         user_id_str = str(user_id)
 
         # ── Memberships ──
-        mem_resp = (
+        mem_resp = await (
             supabase.table("simulation_members")
             .select("simulation_id, member_role, joined_at, simulations(name, slug)")
             .eq("user_id", user_id_str)
@@ -50,7 +50,7 @@ class UserDashboardService:
 
         # ── Active epoch participations ──
         active_statuses = ["lobby", "foundation", "competition", "reckoning"]
-        ep_resp = (
+        ep_resp = await (
             supabase.table("epoch_participants")
             .select(
                 "epoch_id, current_rp, "
@@ -89,7 +89,7 @@ class UserDashboardService:
             )
 
         # ── Academy epochs played ──
-        profile_resp = (
+        profile_resp = await (
             admin_supabase.table("user_profiles")
             .select("academy_epochs_played")
             .eq("id", user_id_str)
@@ -101,7 +101,7 @@ class UserDashboardService:
             academy_count = profile_resp.data.get("academy_epochs_played", 0)
 
         # ── Active resonance count ──
-        res_resp = (
+        res_resp = await (
             supabase.table("substrate_resonances")
             .select("id", count="exact")
             .in_("status", ["detected", "impacting", "subsiding"])

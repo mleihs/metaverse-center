@@ -3,7 +3,7 @@
 import logging
 from uuid import UUID
 
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ class BattleLogService:
             data["mission_id"] = str(mission_id)
 
         try:
-            resp = supabase.table("battle_log").insert(data).execute()
+            resp = await supabase.table("battle_log").insert(data).execute()
             return resp.data[0] if resp.data else data
         except Exception:
             logger.error(
@@ -91,19 +91,19 @@ class BattleLogService:
             # Fallback: fetch from DB (used by bot deploy path)
             try:
                 if mission.get("agent_id"):
-                    agent_resp = supabase.table("agents").select("name").eq(
+                    agent_resp = await supabase.table("agents").select("name").eq(
                         "id", str(mission["agent_id"])
                     ).maybe_single().execute()
                     if agent_resp.data:
                         metadata["agent_name"] = agent_resp.data["name"]
                 if mission.get("target_zone_id"):
-                    zone_resp = supabase.table("zones").select("name").eq(
+                    zone_resp = await supabase.table("zones").select("name").eq(
                         "id", str(mission["target_zone_id"])
                     ).maybe_single().execute()
                     if zone_resp.data:
                         metadata["target_zone_name"] = zone_resp.data["name"]
                 if mission.get("target_simulation_id"):
-                    sim_resp = supabase.table("simulations").select("name").eq(
+                    sim_resp = await supabase.table("simulations").select("name").eq(
                         "id", str(mission["target_simulation_id"])
                     ).maybe_single().execute()
                     if sim_resp.data:
@@ -394,7 +394,7 @@ class BattleLogService:
         limit: int = 20,
     ) -> list[dict]:
         """Get recent public battle log entries across all active epochs."""
-        resp = (
+        resp = await (
             supabase.table("battle_log")
             .select("*, game_epochs!inner(status)")
             .eq("is_public", True)
@@ -438,7 +438,7 @@ class BattleLogService:
             query = query.eq("event_type", event_type)
 
         query = query.order("created_at", desc=True).range(offset, offset + limit - 1)
-        resp = query.execute()
+        resp = await query.execute()
         return resp.data or [], resp.count or 0
 
     @classmethod

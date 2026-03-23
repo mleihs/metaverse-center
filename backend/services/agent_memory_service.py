@@ -9,7 +9,8 @@ from backend.config import settings
 from backend.services.embedding_service import EmbeddingService
 from backend.services.generation_service import GenerationService
 from backend.services.translation_service import schedule_auto_translation
-from supabase import Client, create_client
+from supabase import AsyncClient as Client
+from supabase import create_client
 
 logger = logging.getLogger(__name__)
 
@@ -58,11 +59,11 @@ class AgentMemoryService:
             "source_id": str(source_id) if source_id else None,
             "embedding": str(embedding),
         }
-        resp = supabase.table("agent_memories").insert(record).execute()
+        resp = await supabase.table("agent_memories").insert(record).execute()
         saved = resp.data[0]
 
         # Get simulation info for translation
-        sim_resp = (
+        sim_resp = await (
             supabase.table("simulations")
             .select("name, theme")
             .eq("id", str(simulation_id))
@@ -113,7 +114,7 @@ class AgentMemoryService:
             return saved
 
         # Get simulation name (reads are fine with any client)
-        sim_resp = (
+        sim_resp = await (
             supabase.table("simulations")
             .select("name")
             .eq("id", str(simulation_id))
@@ -123,7 +124,7 @@ class AgentMemoryService:
         sim_name = sim_resp.data[0]["name"] if sim_resp.data else "Unknown"
 
         # Get agent name
-        agent_resp = (
+        agent_resp = await (
             supabase.table("agents")
             .select("name")
             .eq("id", str(agent_id))
@@ -190,13 +191,13 @@ class AgentMemoryService:
         if embedding:
             params["p_query_embedding"] = str(embedding)
 
-        response = supabase.rpc("retrieve_agent_memories", params).execute()
+        response = await supabase.rpc("retrieve_agent_memories", params).execute()
         memories = response.data or []
 
         # Update last_accessed_at for retrieved memories
         if memories:
             memory_ids = [m["id"] for m in memories]
-            supabase.table("agent_memories").update(
+            await supabase.table("agent_memories").update(
                 {"last_accessed_at": "now()"}
             ).in_("id", memory_ids).execute()
 
@@ -215,7 +216,7 @@ class AgentMemoryService:
     ) -> list[dict]:
         """Synthesize higher-level reflections from recent observations."""
         # Fetch recent observations
-        obs_resp = (
+        obs_resp = await (
             supabase.table("agent_memories")
             .select("content, importance, created_at")
             .eq("agent_id", str(agent_id))
@@ -244,7 +245,7 @@ class AgentMemoryService:
             return saved
 
         # Get names
-        sim_resp = (
+        sim_resp = await (
             supabase.table("simulations")
             .select("name")
             .eq("id", str(simulation_id))
@@ -253,7 +254,7 @@ class AgentMemoryService:
         )
         sim_name = sim_resp.data[0]["name"] if sim_resp.data else "Unknown"
 
-        agent_resp = (
+        agent_resp = await (
             supabase.table("agents")
             .select("name")
             .eq("id", str(agent_id))
@@ -324,7 +325,7 @@ class AgentMemoryService:
         if memory_type:
             query = query.eq("memory_type", memory_type)
 
-        response = query.execute()
+        response = await query.execute()
         data = response.data or []
         total = response.count if response.count is not None else len(data)
         return data, total

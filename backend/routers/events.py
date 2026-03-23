@@ -26,7 +26,7 @@ from backend.services.audit_service import AuditService
 from backend.services.event_service import EventService
 from backend.services.external_service_resolver import ExternalServiceResolver
 from backend.services.generation_service import GenerationService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

@@ -28,7 +28,7 @@ from backend.services.external.newsapi import NewsAPIService
 from backend.services.external_service_resolver import ExternalServiceResolver
 from backend.services.generation_service import GenerationService
 from backend.services.social_trends_service import SocialTrendsService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

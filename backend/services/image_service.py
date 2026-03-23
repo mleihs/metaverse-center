@@ -10,7 +10,7 @@ from backend.services.external.replicate import ReplicateService
 from backend.services.generation_service import GenerationService
 from backend.services.model_resolver import ModelResolver
 from backend.services.style_reference_service import StyleReferenceService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -252,7 +252,7 @@ class ImageService:
         the same per-simulation customization used for portraits and buildings.
         """
         # Fetch zone descriptions for thematic context
-        zones_resp = (
+        zones_resp = await (
             self._supabase.table("zones")
             .select("name, description")
             .eq("simulation_id", str(self._simulation_id))
@@ -356,7 +356,7 @@ class ImageService:
 
         # Mark section as image-generated for progress tracking
         if section_id:
-            self._supabase.table("simulation_lore").update(
+            await self._supabase.table("simulation_lore").update(
                 {"image_generated_at": "now()"},
             ).eq("id", section_id).execute()
 
@@ -387,7 +387,7 @@ class ImageService:
             )
 
         # Fetch embassy record
-        embassy_resp = (
+        embassy_resp = await (
             self._supabase.table("embassies")
             .select("*")
             .eq("id", str(embassy_id))
@@ -417,7 +417,7 @@ class ImageService:
                 partner_sim_id = embassy["simulation_a_id"]
 
         # Fetch partner simulation name
-        partner_resp = (
+        partner_resp = await (
             self._supabase.table("simulations")
             .select("name")
             .eq("id", str(partner_sim_id))
@@ -429,7 +429,7 @@ class ImageService:
         )
 
         # Fetch partner style prompt
-        partner_style_resp = (
+        partner_style_resp = await (
             self._supabase.table("simulation_settings")
             .select("setting_value")
             .eq("simulation_id", str(partner_sim_id))
@@ -443,7 +443,7 @@ class ImageService:
         )
 
         # Fetch our own style prompt for the template
-        own_style_resp = (
+        own_style_resp = await (
             self._supabase.table("simulation_settings")
             .select("setting_value")
             .eq("simulation_id", str(self._simulation_id))
@@ -473,7 +473,7 @@ class ImageService:
         """Fetch embassy context and generate an ambassador portrait description."""
         # Find the first embassy this agent is associated with via embassy_metadata
         # Ambassadors are named in embassy_metadata.ambassador_a/b.name
-        embassy_resp = (
+        embassy_resp = await (
             self._supabase.table("embassies")
             .select("*")
             .or_(
@@ -505,7 +505,7 @@ class ImageService:
             partner_sim_id = embassy["simulation_a_id"]
 
         # Fetch partner simulation name
-        partner_resp = (
+        partner_resp = await (
             self._supabase.table("simulations")
             .select("name")
             .eq("id", str(partner_sim_id))
@@ -517,7 +517,7 @@ class ImageService:
         )
 
         # Fetch partner style prompt (portrait)
-        partner_style_resp = (
+        partner_style_resp = await (
             self._supabase.table("simulation_settings")
             .select("setting_value")
             .eq("simulation_id", str(partner_sim_id))
@@ -531,7 +531,7 @@ class ImageService:
         )
 
         # Fetch our own style prompt
-        own_style_resp = (
+        own_style_resp = await (
             self._supabase.table("simulation_settings")
             .select("setting_value")
             .eq("simulation_id", str(self._simulation_id))

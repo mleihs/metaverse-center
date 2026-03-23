@@ -10,7 +10,7 @@ from backend.models.bot import BotPlayerCreate, BotPlayerResponse, BotPlayerUpda
 from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.services.audit_service import AuditService
 from backend.services.bot_player_service import BotPlayerService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

@@ -21,7 +21,7 @@ from backend.models.common import (
 )
 from backend.services.audit_service import AuditService
 from backend.services.campaign_service import CampaignService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

@@ -7,7 +7,7 @@ from fastapi import HTTPException, status
 
 from backend.models.epoch import AcademyConfig
 from backend.services.epoch_service import EpochService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +44,7 @@ class AcademyService:
         and immediately starts the epoch (lobby → foundation).
         """
         # Guard: prevent duplicate active academy epochs
-        active = (
+        active = await (
             admin_supabase.table("game_epochs")
             .select("id, status")
             .eq("created_by_id", str(user_id))
@@ -73,7 +73,7 @@ class AcademyService:
         except Exception as exc:
             # DB unique index catches race condition — return existing epoch
             if "idx_one_active_academy_per_user" in str(exc):
-                existing = (
+                existing = await (
                     admin_supabase.table("game_epochs")
                     .select("*")
                     .eq("created_by_id", str(user_id))
@@ -112,7 +112,7 @@ class AcademyService:
         """Find template simulations, auto-join the human player, and create bot opponents."""
         # Need bot_count + 1 templates: one for the human, rest for bots
         needed = academy.bot_count + 1
-        templates = (
+        templates = await (
             admin_supabase.table("simulations")
             .select("id")
             .eq("simulation_type", "template")
@@ -131,7 +131,7 @@ class AcademyService:
         # First template goes to the human player
         human_sim_id = UUID(templates.data[0]["id"])
         try:
-            admin_supabase.table("epoch_participants").insert({
+            await admin_supabase.table("epoch_participants").insert({
                 "epoch_id": str(epoch_id),
                 "simulation_id": str(human_sim_id),
                 "user_id": str(user_id),
@@ -146,7 +146,7 @@ class AcademyService:
         for i, sim_row in enumerate(templates.data[1: academy.bot_count + 1]):
             personality = BOT_PERSONALITIES[i % len(BOT_PERSONALITIES)]
 
-            bot_resp = (
+            bot_resp = await (
                 admin_supabase.table("bot_players")
                 .insert({
                     "name": f"Academy {personality.title()}",

@@ -12,7 +12,7 @@ from fastapi import HTTPException, status
 
 from backend.models.epoch import EpochConfig
 from backend.services.battle_log_service import BattleLogService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +55,7 @@ class AllianceService:
         current_cycle = epoch.get("current_cycle", 0)
 
         # Verify proposer is a participant and unaligned
-        proposer = (
+        proposer = await (
             supabase.table("epoch_participants")
             .select("id, team_id")
             .eq("epoch_id", str(epoch_id))
@@ -72,7 +72,7 @@ class AllianceService:
             )
 
         # Verify team exists and is active
-        team = (
+        team = await (
             supabase.table("epoch_teams")
             .select("id, name, epoch_id")
             .eq("id", str(team_id))
@@ -85,7 +85,7 @@ class AllianceService:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Team not found or dissolved.")
 
         # Check team size limit
-        members = (
+        members = await (
             supabase.table("epoch_participants")
             .select("id")
             .eq("epoch_id", str(epoch_id))
@@ -107,14 +107,14 @@ class AllianceService:
                        "proposer_id": str(proposer_simulation_id)},
             )
             # Directly join the proposer to the team
-            supabase.table("epoch_participants").update(
+            await supabase.table("epoch_participants").update(
                 {"team_id": str(team_id)}
             ).eq("epoch_id", str(epoch_id)).eq(
                 "simulation_id", str(proposer_simulation_id)
             ).execute()
 
             # Create proposal record as accepted
-            resp = (
+            resp = await (
                 supabase.table("epoch_alliance_proposals")
                 .insert({
                     "epoch_id": str(epoch_id),
@@ -143,7 +143,7 @@ class AllianceService:
         )
 
         # Create pending proposal
-        resp = (
+        resp = await (
             supabase.table("epoch_alliance_proposals")
             .insert({
                 "epoch_id": str(epoch_id),
@@ -185,7 +185,7 @@ class AllianceService:
         which auto-accepts for solo teams.
         """
         # Verify inviter is on this team
-        inviter = (
+        inviter = await (
             supabase.table("epoch_participants")
             .select("id, team_id")
             .eq("epoch_id", str(epoch_id))
@@ -219,7 +219,7 @@ class AllianceService:
         Validates voter is a member of the proposal's target team.
         """
         # Fetch proposal
-        proposal = (
+        proposal = await (
             supabase.table("epoch_alliance_proposals")
             .select("*, epoch_teams(name)")
             .eq("id", str(proposal_id))
@@ -235,7 +235,7 @@ class AllianceService:
             )
 
         # Verify voter is a team member
-        voter = (
+        voter = await (
             supabase.table("epoch_participants")
             .select("id, team_id")
             .eq("epoch_id", proposal.data["epoch_id"])
@@ -256,7 +256,7 @@ class AllianceService:
         )
 
         # Insert vote — DB trigger resolves the proposal
-        resp = (
+        resp = await (
             supabase.table("epoch_alliance_votes")
             .insert({
                 "proposal_id": str(proposal_id),
@@ -272,7 +272,7 @@ class AllianceService:
             )
 
         # Check if proposal was resolved by the trigger
-        updated_proposal = (
+        updated_proposal = await (
             supabase.table("epoch_alliance_proposals")
             .select("status")
             .eq("id", str(proposal_id))
@@ -324,7 +324,7 @@ class AllianceService:
         if status_filter:
             query = query.eq("status", status_filter)
 
-        resp = query.execute()
+        resp = await query.execute()
         proposals = resp.data or []
 
         # Enrich with proposer_name from joined simulations
@@ -349,7 +349,7 @@ class AllianceService:
         Calls Postgres ``fn_expire_alliance_proposals`` (migration 090).
         Called during resolve_cycle pipeline.
         """
-        resp = supabase.rpc(
+        resp = await supabase.rpc(
             "fn_expire_alliance_proposals",
             {"p_epoch_id": str(epoch_id), "p_current_cycle": current_cycle},
         ).execute()
@@ -374,7 +374,7 @@ class AllianceService:
 
         Returns summary per team. Logs upkeep to battle log.
         """
-        resp = admin_supabase.rpc(
+        resp = await admin_supabase.rpc(
             "fn_deduct_alliance_upkeep",
             {"p_epoch_id": str(epoch_id)},
         ).execute()
@@ -417,7 +417,7 @@ class AllianceService:
         must call clear_dissolved_team_ids() afterward (after notifications
         have had a chance to read team membership).
         """
-        resp = admin_supabase.rpc(
+        resp = await admin_supabase.rpc(
             "fn_compute_alliance_tension",
             {"p_epoch_id": str(epoch_id), "p_cycle_number": cycle_number},
         ).execute()
@@ -447,7 +447,7 @@ class AllianceService:
                            "team_name": team_name, "final_tension": new_t},
                 )
                 # team_ids still set — read current members for logging
-                members_resp = (
+                members_resp = await (
                     admin_supabase.table("epoch_participants")
                     .select("simulation_id")
                     .eq("epoch_id", str(epoch_id))
@@ -476,7 +476,7 @@ class AllianceService:
         Called after notifications so they can still detect the dissolution
         via the team's dissolved_at field.
         """
-        dissolved_resp = (
+        dissolved_resp = await (
             admin_supabase.table("epoch_teams")
             .select("id")
             .eq("epoch_id", str(epoch_id))
@@ -490,7 +490,7 @@ class AllianceService:
                 extra={"epoch_id": str(epoch_id), "dissolved_teams": len(dissolved_teams)},
             )
         for team in dissolved_teams:
-            admin_supabase.table("epoch_participants").update(
+            await admin_supabase.table("epoch_participants").update(
                 {"team_id": None}
             ).eq("epoch_id", str(epoch_id)).eq(
                 "team_id", team["id"]
@@ -510,7 +510,7 @@ class AllianceService:
         from datetime import UTC, datetime
 
         # Get team name for logging
-        team_resp = (
+        team_resp = await (
             admin_supabase.table("epoch_teams")
             .select("name")
             .eq("id", str(team_id))
@@ -526,7 +526,7 @@ class AllianceService:
         )
 
         # Dissolve
-        admin_supabase.table("epoch_teams").update({
+        await admin_supabase.table("epoch_teams").update({
             "dissolved_at": datetime.now(UTC).isoformat(),
             "dissolved_reason": reason,
         }).eq("id", str(team_id)).execute()

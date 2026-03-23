@@ -10,7 +10,7 @@ from fastapi import HTTPException, status
 
 from backend.services.base_service import BaseService
 from backend.utils.search import apply_search_filter
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ class AgentService(BaseService):
             query = apply_search_filter(query, search)
 
         query = query.range(offset, offset + limit - 1)
-        response = query.execute()
+        response = await query.execute()
 
         total = response.count if response.count is not None else len(response.data or [])
         agents = response.data or []
@@ -81,7 +81,7 @@ class AgentService(BaseService):
             query = query.in_("id", agent_ids)
         else:
             query = query.limit(limit)
-        return (query.execute()).data or []
+        return (await query.execute()).data or []
 
     @classmethod
     async def list_for_relationships(
@@ -93,7 +93,7 @@ class AgentService(BaseService):
         limit: int = 20,
     ) -> list[dict]:
         """Fetch other agents in a simulation for relationship generation."""
-        response = (
+        response = await (
             supabase.table(cls._read_table())
             .select("id, name, system, character, background")
             .eq("simulation_id", str(simulation_id))
@@ -112,7 +112,7 @@ class AgentService(BaseService):
         agent_id: UUID,
     ) -> list[dict]:
         """Get all event reactions for an agent."""
-        response = (
+        response = await (
             supabase.table("event_reactions")
             .select("*, events(id, title)")
             .eq("simulation_id", str(simulation_id))
@@ -130,7 +130,7 @@ class AgentService(BaseService):
         agent_id: UUID,
     ) -> list[dict]:
         """Get all professions for an agent."""
-        response = (
+        response = await (
             supabase.table("agent_professions")
             .select("*")
             .eq("simulation_id", str(simulation_id))
@@ -148,7 +148,7 @@ class AgentService(BaseService):
         agent_id: UUID,
     ) -> list[dict]:
         """Get all building relations for an agent."""
-        response = (
+        response = await (
             supabase.table("building_agent_relations")
             .select("*, buildings(id, name, building_type)")
             .eq("simulation_id", str(simulation_id))
@@ -165,7 +165,7 @@ class AgentService(BaseService):
         slug: str,
     ) -> dict:
         """Get an agent by simulation-scoped slug."""
-        response = (
+        response = await (
             supabase.table(cls._read_table())
             .select("*")
             .eq("simulation_id", str(simulation_id))
@@ -195,7 +195,7 @@ class AgentService(BaseService):
         Uses a single Supabase query with foreign-key joins to fetch the agent
         and all related data in one round-trip, replacing 4 sequential queries.
         """
-        response = (
+        response = await (
             supabase.table(cls.table_name)
             .select(
                 "*, "

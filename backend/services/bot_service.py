@@ -24,7 +24,7 @@ from backend.services.bot_game_state import BotGameState
 from backend.services.bot_personality import create_personality
 from backend.services.epoch_service import EpochService
 from backend.services.operative_service import OperativeService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +90,7 @@ class BotService:
     ) -> dict:
         """Execute decisions for a single bot participant."""
         # Re-fetch participant to get fresh RP (after grant)
-        fresh_p = (
+        fresh_p = await (
             admin_supabase.table("epoch_participants")
             .select("*, bot_players(*)")
             .eq("id", participant["id"])
@@ -105,7 +105,7 @@ class BotService:
         participant["bot_player"] = bot_player
 
         # Add epoch status to config for state builder
-        epoch_resp = (
+        epoch_resp = await (
             admin_supabase.table("game_epochs")
             .select("status")
             .eq("id", epoch_id)
@@ -231,7 +231,7 @@ class BotService:
     @classmethod
     async def _get_bot_participants(cls, supabase: Client, epoch_id: str) -> list[dict]:
         """Get all bot participants in an epoch."""
-        resp = (
+        resp = await (
             supabase.table("epoch_participants")
             .select("*, bot_players(*)")
             .eq("epoch_id", epoch_id)
@@ -325,6 +325,6 @@ class BotService:
             },
         }
         try:
-            admin_supabase.table("bot_decision_log").insert(log_entry).execute()
+            await admin_supabase.table("bot_decision_log").insert(log_entry).execute()
         except Exception:
             logger.debug("Failed to log bot decision", exc_info=True)

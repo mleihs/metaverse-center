@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 import pytest
@@ -50,32 +50,32 @@ class TestResolveRecipients:
 
         # Participants: 1 human, 1 bot
         participants_chain = _make_chain()
-        participants_chain.execute.return_value = MagicMock(data=[
+        participants_chain.execute = AsyncMock(return_value=MagicMock(data=[
             {
                 "simulation_id": SIM_A,
                 "is_bot": False,
                 "simulations": {"name": "Velgarien", "slug": "velgarien", "source_template_id": TEMPLATE_A},
             },
-        ])
+        ]))
 
         members_chain = _make_chain()
-        members_chain.execute.return_value = MagicMock(data=[
+        members_chain.execute = AsyncMock(return_value=MagicMock(data=[
             {"user_id": USER_A, "simulation_id": TEMPLATE_A},
-        ])
+        ]))
 
         rpc_mock = MagicMock()
-        rpc_mock.execute.return_value = MagicMock(data=[
+        rpc_mock.execute = AsyncMock(return_value=MagicMock(data=[
             {"id": USER_A, "email": "player@test.com"},
-        ])
+        ]))
 
         prefs_chain = _make_chain()
-        prefs_chain.execute.return_value = MagicMock(data=[])
+        prefs_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         # Slugs for template sims
         slug_chain = _make_chain()
-        slug_chain.execute.return_value = MagicMock(data=[
+        slug_chain.execute = AsyncMock(return_value=MagicMock(data=[
             {"id": TEMPLATE_A, "slug": "velgarien"},
-        ])
+        ]))
 
         call_count = {"table": 0}
 
@@ -108,33 +108,33 @@ class TestResolveRecipients:
         admin_sb = MagicMock()
 
         participants_chain = _make_chain()
-        participants_chain.execute.return_value = MagicMock(data=[
+        participants_chain.execute = AsyncMock(return_value=MagicMock(data=[
             {
                 "simulation_id": SIM_A,
                 "is_bot": False,
                 "simulations": {"name": "Velgarien", "slug": "velgarien", "source_template_id": TEMPLATE_A},
             },
-        ])
+        ]))
 
         members_chain = _make_chain()
-        members_chain.execute.return_value = MagicMock(data=[
+        members_chain.execute = AsyncMock(return_value=MagicMock(data=[
             {"user_id": USER_A, "simulation_id": TEMPLATE_A},
-        ])
+        ]))
 
         rpc_mock = MagicMock()
-        rpc_mock.execute.return_value = MagicMock(data=[
+        rpc_mock.execute = AsyncMock(return_value=MagicMock(data=[
             {"id": USER_A, "email": "player@test.com"},
-        ])
+        ]))
 
         prefs_chain = _make_chain()
-        prefs_chain.execute.return_value = MagicMock(data=[
+        prefs_chain.execute = AsyncMock(return_value=MagicMock(data=[
             {"user_id": USER_A, "cycle_resolved": False, "phase_changed": True, "epoch_completed": True, "email_locale": "en"},
-        ])
+        ]))
 
         slug_chain = _make_chain()
-        slug_chain.execute.return_value = MagicMock(data=[
+        slug_chain.execute = AsyncMock(return_value=MagicMock(data=[
             {"id": TEMPLATE_A, "slug": "velgarien"},
-        ])
+        ]))
 
         def table_side_effect(name):
             if name == "epoch_participants":
@@ -162,7 +162,7 @@ class TestResolveRecipients:
         admin_sb = MagicMock()
 
         participants_chain = _make_chain()
-        participants_chain.execute.return_value = MagicMock(data=[])
+        participants_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         admin_sb.table.return_value = participants_chain
 
@@ -184,7 +184,7 @@ class TestBuildPlayerBriefing:
 
         # Current scores
         current_chain = _make_chain()
-        current_chain.execute.return_value = MagicMock(data=[
+        current_chain.execute = AsyncMock(return_value=MagicMock(data=[
             {
                 "simulation_id": SIM_A,
                 "composite_score": 72.3,
@@ -194,43 +194,43 @@ class TestBuildPlayerBriefing:
                 "diplomatic_score": 55.0,
                 "military_score": 30.0,
             },
-        ])
+        ]))
 
         # Previous scores (cycle 0 → no previous)
         prev_chain = _make_chain()
-        prev_chain.execute.return_value = MagicMock(data=[])
+        prev_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         # Operatives
         ops_chain = _make_chain()
-        ops_chain.execute.return_value = MagicMock(data=[
+        ops_chain.execute = AsyncMock(return_value=MagicMock(data=[
             {"operative_type": "spy", "status": "active", "target_simulation_id": SIM_B, "resolves_at": None},
             {"operative_type": "guardian", "status": "active", "target_simulation_id": None, "resolves_at": None},
             {"operative_type": "saboteur", "status": "success", "target_simulation_id": SIM_B, "resolves_at": None},
-        ])
+        ]))
 
         # Target sim names
         names_chain = _make_chain()
-        names_chain.execute.return_value = MagicMock(data=[
+        names_chain.execute = AsyncMock(return_value=MagicMock(data=[
             {"id": SIM_B, "name": "The Gaslit Reach"},
-        ])
+        ]))
 
         # RP + team_id
         rp_chain = _make_chain()
-        rp_chain.execute.return_value = MagicMock(data={"current_rp": 18, "team_id": None})
+        rp_chain.execute = AsyncMock(return_value=MagicMock(data={"current_rp": 18, "team_id": None}))
 
         # Threats (B1)
         threat_chain = _make_chain()
-        threat_chain.execute.return_value = MagicMock(data=[])
+        threat_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         # Spy intel (B2)
         intel_chain = _make_chain()
-        intel_chain.execute.return_value = MagicMock(data=[])
+        intel_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         # Battle log
         log_chain = _make_chain()
-        log_chain.execute.return_value = MagicMock(data=[
+        log_chain.execute = AsyncMock(return_value=MagicMock(data=[
             {"narrative": "An operative was detected.", "event_type": "detection"},
-        ])
+        ]))
 
         call_count = {"scores": 0, "operative_missions": 0, "simulations": 0, "battle_log": 0}
 
@@ -293,7 +293,7 @@ class TestBuildPlayerBriefing:
         admin_sb = MagicMock()
 
         current_chain = _make_chain()
-        current_chain.execute.return_value = MagicMock(data=[
+        current_chain.execute = AsyncMock(return_value=MagicMock(data=[
             {
                 "simulation_id": SIM_A,
                 "composite_score": 50.0,
@@ -303,22 +303,22 @@ class TestBuildPlayerBriefing:
                 "diplomatic_score": 50.0,
                 "military_score": 50.0,
             },
-        ])
+        ]))
 
         ops_chain = _make_chain()
-        ops_chain.execute.return_value = MagicMock(data=[
+        ops_chain.execute = AsyncMock(return_value=MagicMock(data=[
             {"operative_type": "guardian", "status": "active", "target_simulation_id": None, "resolves_at": None},
             {"operative_type": "spy", "status": "success", "target_simulation_id": SIM_B, "resolves_at": None},
-        ])
+        ]))
 
         names_chain = _make_chain()
-        names_chain.execute.return_value = MagicMock(data=[{"id": SIM_B, "name": "Target"}])
+        names_chain.execute = AsyncMock(return_value=MagicMock(data=[{"id": SIM_B, "name": "Target"}]))
 
         rp_chain = _make_chain()
-        rp_chain.execute.return_value = MagicMock(data={"current_rp": 10, "team_id": None})
+        rp_chain.execute = AsyncMock(return_value=MagicMock(data={"current_rp": 10, "team_id": None}))
 
         empty_chain = _make_chain()
-        empty_chain.execute.return_value = MagicMock(data=[])
+        empty_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         call_count = {"operative_missions": 0, "battle_log": 0}
 
@@ -360,10 +360,10 @@ class TestBuildStandingSnapshot:
         admin_sb = MagicMock()
 
         scores_chain = _make_chain()
-        scores_chain.execute.return_value = MagicMock(data=[
+        scores_chain.execute = AsyncMock(return_value=MagicMock(data=[
             {"simulation_id": SIM_A, "composite_score": 80.0},
             {"simulation_id": SIM_B, "composite_score": 60.0},
-        ])
+        ]))
 
         admin_sb.table.return_value = scores_chain
 
@@ -381,7 +381,7 @@ class TestBuildStandingSnapshot:
         admin_sb = MagicMock()
 
         scores_chain = _make_chain()
-        scores_chain.execute.return_value = MagicMock(data=[])
+        scores_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         admin_sb.table.return_value = scores_chain
 
@@ -402,12 +402,12 @@ class TestBuildCampaignStats:
         admin_sb = MagicMock()
 
         ops_chain = _make_chain()
-        ops_chain.execute.return_value = MagicMock(data=[
+        ops_chain.execute = AsyncMock(return_value=MagicMock(data=[
             {"operative_type": "spy", "status": "success"},
             {"operative_type": "spy", "status": "failed"},
             {"operative_type": "saboteur", "status": "success"},
             {"operative_type": "guardian", "status": "active"},
-        ])
+        ]))
 
         admin_sb.table.return_value = ops_chain
 

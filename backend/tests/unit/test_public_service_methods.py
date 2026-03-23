@@ -142,7 +142,8 @@ class TestGetActiveById:
 
 
 class TestEnrichWithCounts:
-    def test_enriches_simulations_with_counts(self):
+    @pytest.mark.asyncio
+    async def test_enriches_simulations_with_counts(self):
         sb = MagicMock()
         sid = str(uuid4())
         simulations = [{"id": sid, "name": "Sim A"}]
@@ -157,14 +158,15 @@ class TestEnrichWithCounts:
         chain = make_chain_mock(execute_data=[counts_row])
         sb.table.return_value = chain
 
-        SimulationService.enrich_with_counts(sb, simulations)
+        await SimulationService.enrich_with_counts(sb, simulations)
 
         assert simulations[0]["agent_count"] == 5
         assert simulations[0]["building_count"] == 3
         assert simulations[0]["event_count"] == 10
         assert simulations[0]["member_count"] == 2
 
-    def test_defaults_to_zero_when_no_counts(self):
+    @pytest.mark.asyncio
+    async def test_defaults_to_zero_when_no_counts(self):
         sb = MagicMock()
         sid = str(uuid4())
         simulations = [{"id": sid, "name": "Sim B"}]
@@ -172,17 +174,18 @@ class TestEnrichWithCounts:
         chain = make_chain_mock(execute_data=[])
         sb.table.return_value = chain
 
-        SimulationService.enrich_with_counts(sb, simulations)
+        await SimulationService.enrich_with_counts(sb, simulations)
 
         assert simulations[0]["agent_count"] == 0
         assert simulations[0]["building_count"] == 0
         assert simulations[0]["event_count"] == 0
         assert simulations[0]["member_count"] == 0
 
-    def test_noop_on_empty_list(self):
+    @pytest.mark.asyncio
+    async def test_noop_on_empty_list(self):
         sb = MagicMock()
 
-        SimulationService.enrich_with_counts(sb, [])
+        await SimulationService.enrich_with_counts(sb, [])
 
         sb.table.assert_not_called()
 

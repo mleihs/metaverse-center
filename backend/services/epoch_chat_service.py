@@ -6,7 +6,7 @@ from uuid import UUID
 from fastapi import HTTPException, status
 
 from backend.services.epoch_service import EpochService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class EpochChatService:
         - For team messages, the sender's participant has matching team_id
         """
         # Validate epoch is active
-        epoch_resp = (
+        epoch_resp = await (
             supabase.table("game_epochs")
             .select("id, status")
             .eq("id", str(epoch_id))
@@ -57,7 +57,7 @@ class EpochChatService:
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="team_id is required for team messages.",
                 )
-            participant_resp = (
+            participant_resp = await (
                 supabase.table("epoch_participants")
                 .select("id, team_id")
                 .eq("epoch_id", str(epoch_id))
@@ -87,7 +87,7 @@ class EpochChatService:
         if team_id and channel_type == "team":
             insert_data["team_id"] = str(team_id)
 
-        response = (
+        response = await (
             supabase.table("epoch_chat_messages")
             .insert(insert_data)
             .execute()
@@ -130,7 +130,7 @@ class EpochChatService:
             query = query.lt("created_at", before)
 
         query = query.order("created_at", desc=True).limit(limit)
-        response = query.execute()
+        response = await query.execute()
 
         messages = response.data or []
         total = response.count or 0
@@ -138,7 +138,7 @@ class EpochChatService:
         # Enrich with sender names (batch)
         if messages:
             sim_ids = list({m["sender_simulation_id"] for m in messages})
-            sim_resp = (
+            sim_resp = await (
                 supabase.table("simulations")
                 .select("id, name")
                 .in_("id", sim_ids)
@@ -167,7 +167,7 @@ class EpochChatService:
         Returns the participant row with optional `auto_resolved` and `new_cycle` fields.
         """
         # Validate epoch is in an active phase
-        epoch_resp = (
+        epoch_resp = await (
             supabase.table("game_epochs")
             .select("id, status")
             .eq("id", str(epoch_id))
@@ -185,7 +185,7 @@ class EpochChatService:
                 detail="Ready signals are only available during active epoch phases.",
             )
 
-        response = (
+        response = await (
             supabase.table("epoch_participants")
             .update({"cycle_ready": ready})
             .eq("epoch_id", str(epoch_id))
@@ -203,7 +203,7 @@ class EpochChatService:
         # Auto-resolve: if signalling ready, check if all humans are now ready
         if ready and admin_supabase:
             # Use admin client for consistent participant data regardless of RLS
-            all_participants = (
+            all_participants = await (
                 admin_supabase.table("epoch_participants")
                 .select("id, cycle_ready, is_bot")
                 .eq("epoch_id", str(epoch_id))
@@ -237,7 +237,7 @@ class EpochChatService:
     @staticmethod
     async def _enrich_sender_name(supabase: Client, message: dict) -> dict:
         """Add sender_name from simulations table."""
-        sim_resp = (
+        sim_resp = await (
             supabase.table("simulations")
             .select("name")
             .eq("id", message["sender_simulation_id"])

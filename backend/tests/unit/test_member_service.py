@@ -1,7 +1,7 @@
 """Unit tests for MemberService — CRUD operations and logging verification."""
 
 import logging
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
 import pytest
@@ -89,7 +89,7 @@ class TestMemberServiceChangeRole:
         chain = MagicMock()
         chain.update.return_value = chain
         chain.eq.return_value = chain
-        chain.execute.side_effect = Exception("cannot remove last owner")
+        chain.execute = AsyncMock(side_effect=Exception("cannot remove last owner"))
         sb.table.return_value = chain
 
         with caplog.at_level(logging.WARNING, logger="backend.services.member_service"):
@@ -109,7 +109,7 @@ class TestMemberServiceRemove:
         chain = MagicMock()
         chain.delete.return_value = chain
         chain.eq.return_value = chain
-        chain.execute.side_effect = Exception("cannot remove last owner")
+        chain.execute = AsyncMock(side_effect=Exception("cannot remove last owner"))
         sb.table.return_value = chain
 
         with caplog.at_level(logging.WARNING, logger="backend.services.member_service"):

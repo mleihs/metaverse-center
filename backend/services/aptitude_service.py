@@ -8,7 +8,7 @@ from uuid import UUID
 from fastapi import HTTPException, status
 
 from backend.models.aptitude import OPERATIVE_TYPES, AptitudeSet
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ class AptitudeService:
         cls, supabase: Client, simulation_id: UUID, agent_id: UUID
     ) -> list[dict]:
         """Get all aptitude rows for an agent."""
-        resp = (
+        resp = await (
             supabase.table("agent_aptitudes")
             .select("*")
             .eq("simulation_id", str(simulation_id))
@@ -36,7 +36,7 @@ class AptitudeService:
         cls, supabase: Client, simulation_id: UUID
     ) -> list[dict]:
         """Get all aptitude rows for all agents in a simulation."""
-        resp = (
+        resp = await (
             supabase.table("agent_aptitudes")
             .select("*")
             .eq("simulation_id", str(simulation_id))
@@ -58,7 +58,7 @@ class AptitudeService:
         Budget validation (sum=36, each 3-9) is handled by the Pydantic model.
         """
         # Verify agent belongs to simulation
-        agent_resp = (
+        agent_resp = await (
             supabase.table("agents")
             .select("id")
             .eq("id", str(agent_id))
@@ -82,7 +82,7 @@ class AptitudeService:
                 "aptitude_level": level,
             })
 
-        resp = (
+        resp = await (
             supabase.table("agent_aptitudes")
             .upsert(rows, on_conflict="agent_id,operative_type")
             .execute()
@@ -105,7 +105,7 @@ class AptitudeService:
 
         Returns the default (6) if no aptitude row exists.
         """
-        resp = (
+        resp = await (
             supabase.table("agent_aptitudes")
             .select("aptitude_level")
             .eq("agent_id", str(agent_id))

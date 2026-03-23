@@ -8,7 +8,7 @@ A5: SimulationDashboardResponse includes all dashboard view fields
 """
 
 from datetime import UTC, datetime
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 from uuid import UUID, uuid4
 
 import pytest
@@ -41,7 +41,7 @@ class TestAdminUserWalletFromRPC:
             "forge_tokens": 5,
             "is_architect": True,
         }
-        rpc_mock.execute.return_value = rpc_resp
+        rpc_mock.execute = AsyncMock(return_value=rpc_resp)
         admin_sb.rpc.return_value = rpc_mock
 
         # Memberships query
@@ -70,7 +70,7 @@ class TestAdminUserWalletFromRPC:
             "forge_tokens": None,
             "is_architect": None,
         }
-        rpc_mock.execute.return_value = rpc_resp
+        rpc_mock.execute = AsyncMock(return_value=rpc_resp)
         admin_sb.rpc.return_value = rpc_mock
 
         admin_sb.table.return_value = make_chain_mock(execute_data=[])
@@ -91,7 +91,7 @@ class TestAdminUserWalletFromRPC:
             "forge_tokens": 0,
             "is_architect": None,
         }
-        rpc_mock.execute.return_value = rpc_resp
+        rpc_mock.execute = AsyncMock(return_value=rpc_resp)
         admin_sb.rpc.return_value = rpc_mock
 
         admin_sb.table.return_value = make_chain_mock(execute_data=[])
@@ -110,7 +110,7 @@ class TestAdminUserWalletFromRPC:
         rpc_mock = MagicMock()
         rpc_resp = MagicMock()
         rpc_resp.data = None
-        rpc_mock.execute.return_value = rpc_resp
+        rpc_mock.execute = AsyncMock(return_value=rpc_resp)
         admin_sb.rpc.return_value = rpc_mock
 
         with pytest.raises(HTTPException) as exc_info:

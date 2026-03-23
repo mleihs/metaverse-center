@@ -14,7 +14,7 @@ from backend.config import settings
 from backend.models.forge import ForgeThemeOutput
 from backend.services.ai_utils import get_openrouter_model, run_ai
 from backend.services.platform_model_config import get_platform_model
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +147,7 @@ class ForgeThemeService:
 
         logger.info("Applying %d theme settings for simulation %s", len(rows), simulation_id)
 
-        supabase.table("simulation_settings").upsert(
+        await supabase.table("simulation_settings").upsert(
             rows,
             on_conflict="simulation_id,category,setting_key",
         ).execute()
@@ -168,7 +168,7 @@ class ForgeThemeService:
         capture the simulation's unique atmosphere.
         """
         # Load simulation + lore context
-        sim_resp = (
+        sim_resp = await (
             supabase.table("simulations")
             .select("name, description")
             .eq("id", str(simulation_id))
@@ -177,7 +177,7 @@ class ForgeThemeService:
         )
         sim = sim_resp.data or {}
 
-        lore_resp = (
+        lore_resp = await (
             supabase.table("simulation_lore")
             .select("title, chapter, epigraph, body")
             .eq("simulation_id", str(simulation_id))
@@ -191,7 +191,7 @@ class ForgeThemeService:
             return
 
         # Load current style prompts
-        style_resp = (
+        style_resp = await (
             supabase.table("simulation_settings")
             .select("setting_key, setting_value")
             .eq("simulation_id", str(simulation_id))
@@ -263,7 +263,7 @@ class ForgeThemeService:
                 if value and len(value) > 20  # Reject too-short prompts
             ]
             if rows:
-                supabase.table("simulation_settings").upsert(
+                await supabase.table("simulation_settings").upsert(
                     rows,
                     on_conflict="simulation_id,category,setting_key",
                 ).execute()
@@ -295,7 +295,7 @@ class ForgeThemeService:
         import json as _json
 
         # Load simulation + lore context
-        sim_resp = (
+        sim_resp = await (
             supabase.table("simulations")
             .select("name, description")
             .eq("id", str(simulation_id))
@@ -305,7 +305,7 @@ class ForgeThemeService:
         sim = sim_resp.data or {}
         sim_name = sim.get("name", "Unknown")
 
-        lore_resp = (
+        lore_resp = await (
             supabase.table("simulation_lore")
             .select("title, chapter, epigraph, body")
             .eq("simulation_id", str(simulation_id))
@@ -319,7 +319,7 @@ class ForgeThemeService:
             return
 
         # Load current style prompts for visual consistency
-        style_resp = (
+        style_resp = await (
             supabase.table("simulation_settings")
             .select("setting_key, setting_value")
             .eq("simulation_id", str(simulation_id))
@@ -455,12 +455,12 @@ class ForgeThemeService:
                 # Delete existing templates for this simulation first
                 # (partial unique index doesn't support standard upsert)
                 for r in rows:
-                    supabase.table("prompt_templates").delete().eq(
+                    await supabase.table("prompt_templates").delete().eq(
                         "simulation_id", str(simulation_id),
                     ).eq("template_type", r["template_type"]).eq(
                         "locale", "en",
                     ).execute()
-                supabase.table("prompt_templates").insert(rows).execute()
+                await supabase.table("prompt_templates").insert(rows).execute()
                 logger.info(
                     "Generated %d world-specific prompt templates",
                     len(rows),
@@ -490,13 +490,13 @@ class ForgeThemeService:
 
         try:
             # Fetch simulation data for context
-            sim_resp = admin_supabase.table("simulations").select(
+            sim_resp = await admin_supabase.table("simulations").select(
                 "name, description"
             ).eq("id", str(simulation_id)).single().execute()
             sim = sim_resp.data
 
             # Fetch current theme settings
-            settings_resp = admin_supabase.table("simulation_settings").select(
+            settings_resp = await admin_supabase.table("simulation_settings").select(
                 "setting_key, setting_value"
             ).eq("simulation_id", str(simulation_id)).eq("category", "design").execute()
             current_theme = {
@@ -506,7 +506,7 @@ class ForgeThemeService:
 
             # Get user BYOK key
             from backend.utils.encryption import decrypt
-            wallet_resp = admin_supabase.table("user_wallets").select(
+            wallet_resp = await admin_supabase.table("user_wallets").select(
                 "encrypted_openrouter_key"
             ).eq("user_id", str(user_id)).maybe_single().execute()
             or_key = None

@@ -10,7 +10,7 @@ from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.epoch import LeaderboardEntry, ScoreResponse
 from backend.services.audit_service import AuditService
 from backend.services.scoring_service import ScoringService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

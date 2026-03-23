@@ -5,7 +5,7 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ class BotPlayerService:
     @classmethod
     async def list_for_user(cls, supabase: Client, user_id: UUID) -> tuple[list[dict], int]:
         """List the current user's bot player presets."""
-        resp = (
+        resp = await (
             supabase.table("bot_players")
             .select("*", count="exact")
             .eq("created_by_id", str(user_id))
@@ -29,7 +29,7 @@ class BotPlayerService:
     @classmethod
     async def get(cls, supabase: Client, bot_id: UUID) -> dict:
         """Get a single bot player preset."""
-        resp = (
+        resp = await (
             supabase.table("bot_players")
             .select("*")
             .eq("id", str(bot_id))
@@ -44,7 +44,7 @@ class BotPlayerService:
     async def create(cls, supabase: Client, user_id: UUID, data: dict) -> dict:
         """Create a new bot player preset."""
         data["created_by_id"] = str(user_id)
-        resp = supabase.table("bot_players").insert(data).execute()
+        resp = await supabase.table("bot_players").insert(data).execute()
         if not resp.data:
             raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Failed to create bot player.")
         return resp.data[0]
@@ -54,7 +54,7 @@ class BotPlayerService:
         """Update a bot player preset (own bots only)."""
         if not updates:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "No fields to update.")
-        resp = (
+        resp = await (
             supabase.table("bot_players")
             .update(updates)
             .eq("id", str(bot_id))
@@ -68,7 +68,7 @@ class BotPlayerService:
     @classmethod
     async def delete(cls, supabase: Client, bot_id: UUID, user_id: UUID) -> None:
         """Delete a bot player preset (own bots only)."""
-        resp = (
+        resp = await (
             supabase.table("bot_players")
             .delete()
             .eq("id", str(bot_id))

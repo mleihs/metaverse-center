@@ -58,7 +58,7 @@ def _mock_supabase_with_role(role: str = "admin") -> MagicMock:
             r.data = [{"member_role": role}]
         else:
             r.data = None
-        b.execute.return_value = r
+        b.execute = AsyncMock(return_value=r)
         return b
 
     mock.table.side_effect = make_builder
@@ -189,7 +189,7 @@ class TestTriggerEcho:
                 }
             else:
                 r.data = None
-            b.execute.return_value = r
+            b.execute = AsyncMock(return_value=r)
             return b
 
         mock_supabase.table.side_effect = make_builder

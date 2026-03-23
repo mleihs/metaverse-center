@@ -14,7 +14,7 @@ from backend.models.agent_profession import (
 from backend.models.common import CurrentUser, SuccessResponse
 from backend.services.agent_profession_service import AgentProfessionService
 from backend.services.audit_service import AuditService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

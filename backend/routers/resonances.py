@@ -26,7 +26,7 @@ from backend.models.resonance import (
 )
 from backend.services.audit_service import AuditService
 from backend.services.resonance_service import ResonanceService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

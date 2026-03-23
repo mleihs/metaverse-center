@@ -24,7 +24,7 @@ from backend.models.cipher import (
 )
 from backend.models.common import CurrentUser, SuccessResponse
 from backend.services.cipher_service import CipherService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

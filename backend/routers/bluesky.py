@@ -29,7 +29,7 @@ from backend.services.audit_service import AuditService
 from backend.services.bluesky_content_service import BlueskyContentService
 from backend.services.bluesky_scheduler import BlueskyScheduler
 from backend.services.external.bluesky import BlueskyService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

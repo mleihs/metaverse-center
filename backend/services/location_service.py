@@ -11,7 +11,7 @@ import logging
 from uuid import UUID
 
 from backend.services.base_service import BaseService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

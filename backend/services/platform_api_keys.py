@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 import time
 
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

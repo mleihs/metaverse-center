@@ -12,7 +12,7 @@ from __future__ import annotations
 import logging
 import time
 
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ async def _load_all(admin_supabase: Client) -> None:
     global _cache, _cache_loaded_at  # noqa: PLW0603
 
     try:
-        response = (
+        response = await (
             admin_supabase.table("platform_settings")
             .select("setting_key, setting_value")
             .like("setting_key", "model_%")

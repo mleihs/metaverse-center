@@ -109,7 +109,21 @@ Die Architektur ist gut strukturiert (FastAPI Services/Routers, Lit Signals), le
 
 **Noch offen (spätere PRs):** instagram_image_composer.py, codex_export_service.py
 
-### [P1] Sync I/O — OFFEN
+### [P1] Sync I/O — BEHOBEN (23.03.2026)
+
+| Maßnahme | Datei | Status |
+|----------|-------|--------|
+| `dependencies.py`: `create_client` → `await create_async_client`, `Client` → `AsyncClient as Client` | `backend/dependencies.py` | Done |
+| ~970 `.execute()` Calls mit `await` versehen (alle async Funktionen) | 146 Backend-Dateien | Done |
+| Test-Mocks: `MagicMock.execute` → `AsyncMock` für alle Supabase Mocks | 29 Test-Dateien | Done |
+| SEO-Middleware: Eigener sync Client beibehalten (nicht async-migriert) | `backend/middleware/seo.py`, `seo_content.py` | Bewusst sync |
+
+**Verifikation:**
+- Unit Tests: 866 passed (0 failed)
+- Syntax: 0 Fehler (alle Dateien kompilierbar)
+- Ruff: 0 Fehler
+- TypeScript: 0 Fehler
+- AsyncClient verifiziert: `.auth.set_session()`, `.table().execute()` (async), `.rpc().execute()` (async)
 
 ### Zusätzliche Findings (Deep-Dive-Verifizierung, 23.03.2026)
 

@@ -10,7 +10,7 @@ from backend.middleware.rate_limit import RATE_LIMIT_STANDARD, limiter
 from backend.models.chronicle import ChronicleGenerateRequest
 from backend.models.common import PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.services.chronicle_service import ChronicleService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

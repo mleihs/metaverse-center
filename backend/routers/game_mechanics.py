@@ -19,7 +19,7 @@ from backend.models.game_mechanics import (
     ZoneStabilityResponse,
 )
 from backend.services.game_mechanics_service import GameMechanicsService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

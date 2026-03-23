@@ -10,11 +10,9 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import httpx
 import pytest
 
-from backend.utils.safe_fetch import safe_download, safe_fetch, validate_url
-
+from backend.utils.safe_fetch import safe_download, validate_url
 
 # ── Scheme validation ─────────────────────────────────────────────────
 

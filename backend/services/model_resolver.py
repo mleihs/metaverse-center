@@ -8,7 +8,7 @@ from uuid import UUID
 
 from backend.services.constants import PLATFORM_DEFAULT_MODELS
 from backend.services.platform_model_config import get_platform_model
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -207,7 +207,7 @@ class ModelResolver:
         if self._settings_cache is not None:
             return self._settings_cache
 
-        response = (
+        response = await (
             self._supabase.table("simulation_settings")
             .select("setting_key, setting_value")
             .eq("simulation_id", str(self._simulation_id))

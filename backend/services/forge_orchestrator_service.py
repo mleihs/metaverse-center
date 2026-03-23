@@ -32,7 +32,7 @@ from backend.services.image_service import ImageService
 from backend.services.research_service import ResearchService
 from backend.services.seo_service import notify_search_engines
 from backend.utils.encryption import decrypt
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -324,7 +324,7 @@ class ForgeOrchestratorService:
     async def _get_user_keys(supabase: Client, user_id: UUID) -> tuple[str | None, str | None]:
         """Fetch and decrypt a user's BYOK API keys."""
         logger.debug("Fetching BYOK keys for user %s", user_id)
-        resp = (
+        resp = await (
             supabase.table("user_wallets")
             .select("encrypted_openrouter_key, encrypted_replicate_key")
             .eq("user_id", str(user_id))
@@ -356,7 +356,7 @@ class ForgeOrchestratorService:
 
         Returns *None* when the slug does not match a simulation.
         """
-        resp = supabase.rpc("get_forge_progress", {"p_slug": slug}).execute()
+        resp = await supabase.rpc("get_forge_progress", {"p_slug": slug}).execute()
         return resp.data
 
     @staticmethod
@@ -651,7 +651,7 @@ class ForgeOrchestratorService:
 
         try:
             try:
-                response = supabase.rpc("fn_materialize_shard", {"p_draft_id": str(draft_id)}).execute()
+                response = await supabase.rpc("fn_materialize_shard", {"p_draft_id": str(draft_id)}).execute()
             except Exception as rpc_err:
                 # Parse PostgreSQL RAISE EXCEPTION into semantic HTTP codes
                 err_msg = str(rpc_err)
@@ -672,7 +672,7 @@ class ForgeOrchestratorService:
             sim_id = response.data
 
             # Resolve slug + name for frontend navigation and ceremony
-            slug_resp = (
+            slug_resp = await (
                 supabase.table("simulations")
                 .select("slug, name, description")
                 .eq("id", str(sim_id))
@@ -828,25 +828,25 @@ class ForgeOrchestratorService:
                 logger.exception("Mock lore persist failed", extra={"simulation_id": str(simulation_id)})
 
             try:
-                mat_agents = (
+                mat_agents = await (
                     supabase.table("agents")
                     .select("name, character, background, primary_profession")
                     .eq("simulation_id", str(simulation_id))
                     .execute()
                 ).data or []
-                mat_buildings = (
+                mat_buildings = await (
                     supabase.table("buildings")
                     .select("name, description, building_type, building_condition")
                     .eq("simulation_id", str(simulation_id))
                     .execute()
                 ).data or []
-                mat_zones = (
+                mat_zones = await (
                     supabase.table("zones")
                     .select("name, description, zone_type")
                     .eq("simulation_id", str(simulation_id))
                     .execute()
                 ).data or []
-                mat_streets = (
+                mat_streets = await (
                     supabase.table("city_streets")
                     .select("name, street_type")
                     .eq("simulation_id", str(simulation_id))
@@ -1076,7 +1076,7 @@ class ForgeOrchestratorService:
         logger.info("Phase B: image generation")
         t_b = time.monotonic()
 
-        sim_resp = (
+        sim_resp = await (
             supabase.table("simulations")
             .select("name, description, slug")
             .eq("id", str(simulation_id))
@@ -1100,17 +1100,17 @@ class ForgeOrchestratorService:
         if not _types or "banner" in _types:
             img_total_parts.append(1)
         if not _types or "agent" in _types:
-            agent_count_resp = supabase.table("agents").select("id", count="exact").eq(
+            agent_count_resp = await supabase.table("agents").select("id", count="exact").eq(
                 "simulation_id", str(simulation_id),
             ).execute()
             img_total_parts.append(agent_count_resp.count or 0)
         if not _types or "building" in _types:
-            bldg_count_resp = supabase.table("buildings").select("id", count="exact").eq(
+            bldg_count_resp = await supabase.table("buildings").select("id", count="exact").eq(
                 "simulation_id", str(simulation_id),
             ).execute()
             img_total_parts.append(bldg_count_resp.count or 0)
         if not _types or "lore" in _types:
-            lore_count_resp = supabase.table("simulation_lore").select("id", count="exact").eq(
+            lore_count_resp = await supabase.table("simulation_lore").select("id", count="exact").eq(
                 "simulation_id", str(simulation_id),
             ).not_.is_("image_slug", "null").execute()
             img_total_parts.append(lore_count_resp.count or 0)
@@ -1138,7 +1138,7 @@ class ForgeOrchestratorService:
 
             # 2. Agent portraits
             if not _types or "agent" in _types:
-                agents = (
+                agents = await (
                     supabase.table("agents")
                     .select("id, name, character, background")
                     .eq("simulation_id", str(simulation_id))
@@ -1171,7 +1171,7 @@ class ForgeOrchestratorService:
 
             # 3. Building images
             if not _types or "building" in _types:
-                buildings = (
+                buildings = await (
                     supabase.table("buildings")
                     .select(
                         "id, name, description, building_type, building_condition,"
@@ -1219,7 +1219,7 @@ class ForgeOrchestratorService:
             # 4. Lore images (sections with image_slug)
             if not _types or "lore" in _types:
                 sim_slug = sim_data.get("slug", str(simulation_id))
-                lore_sections = (
+                lore_sections = await (
                     supabase.table("simulation_lore")
                     .select("id, title, body, image_slug, image_caption")
                     .eq("simulation_id", str(simulation_id))
@@ -1324,17 +1324,17 @@ class ForgeOrchestratorService:
 
         try:
             # 1. Fetch simulation data
-            sim_resp = admin_supabase.table("simulations").select(
+            sim_resp = await admin_supabase.table("simulations").select(
                 "name, description"
             ).eq("id", str(simulation_id)).single().execute()
             sim = sim_resp.data
 
-            agents_resp = admin_supabase.table("agents").select(
+            agents_resp = await admin_supabase.table("agents").select(
                 "name, primary_profession, character"
             ).eq("simulation_id", str(simulation_id)).execute()
             existing_agents = agents_resp.data or []
 
-            zones_resp = admin_supabase.table("zones").select(
+            zones_resp = await admin_supabase.table("zones").select(
                 "id, name, zone_type, description"
             ).eq("simulation_id", str(simulation_id)).execute()
             zones = zones_resp.data or []
@@ -1387,7 +1387,7 @@ Generate exactly 3 new agents. Requirements:
 
             # 3. Insert agents into the simulation
             for agent_draft in generated:
-                admin_supabase.table("agents").insert({
+                await admin_supabase.table("agents").insert({
                     "simulation_id": str(simulation_id),
                     "name": agent_draft.name,
                     "gender": agent_draft.gender,
@@ -1406,7 +1406,7 @@ Generate exactly 3 new agents. Requirements:
                 )
 
                 for agent_draft in generated:
-                    agent_in_db = admin_supabase.table("agents").select(
+                    agent_in_db = await admin_supabase.table("agents").select(
                         "id"
                     ).eq("simulation_id", str(simulation_id)).eq(
                         "name", agent_draft.name
@@ -1430,7 +1430,7 @@ Generate exactly 3 new agents. Requirements:
 
             # 5. Translate
             try:
-                agent_rows = admin_supabase.table("agents").select(
+                agent_rows = await admin_supabase.table("agents").select(
                     "id, name, primary_profession, character, background"
                 ).eq("simulation_id", str(simulation_id)).in_(
                     "name", [a.name for a in generated]
@@ -1497,13 +1497,13 @@ Generate exactly 3 new agents. Requirements:
                 return
 
             select = "*, zones(name)" if entity_type == "building" else "*"
-            entity_resp = admin_supabase.table(table).select(select).eq(
+            entity_resp = await admin_supabase.table(table).select(select).eq(
                 "id", str(entity_id)
             ).single().execute()
             entity = entity_resp.data
 
             # Fetch simulation data + BYOK keys
-            sim_resp = admin_supabase.table("simulations").select(
+            sim_resp = await admin_supabase.table("simulations").select(
                 "name, description, slug"
             ).eq("id", str(simulation_id)).single().execute()
             sim_data = sim_resp.data or {}

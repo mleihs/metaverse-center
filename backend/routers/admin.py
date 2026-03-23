@@ -30,7 +30,7 @@ from backend.services.platform_settings_service import PlatformSettingsService
 from backend.services.settings_service import SettingsService
 from backend.services.simulation_service import SimulationService
 from backend.utils.encryption import encrypt as encrypt_value
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

@@ -12,7 +12,7 @@ from backend.config import settings
 from backend.models.translation import TranslationContext, TranslationResult
 from backend.services.ai_utils import get_openrouter_model, run_ai
 from backend.services.platform_model_config import get_platform_model
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -311,7 +311,7 @@ async def _run_auto_translate(
         return
 
     try:
-        supabase.table(table).update(update_data).eq("id", entity_id).execute()
+        await supabase.table(table).update(update_data).eq("id", entity_id).execute()
         logger.info(
             "Auto-translated fields",
             extra={"entity_type": table, "entity_id": entity_id, "entity_count": len(update_data)},

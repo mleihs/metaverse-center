@@ -7,7 +7,7 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ class ForgeFeatureService:
             )
 
         try:
-            resp = supabase.rpc("fn_purchase_feature", {
+            resp = await supabase.rpc("fn_purchase_feature", {
                 "p_user_id": str(user_id),
                 "p_simulation_id": str(simulation_id),
                 "p_feature_type": feature_type,
@@ -89,7 +89,7 @@ class ForgeFeatureService:
         update = {"status": "completed", "completed_at": "now()"}
         if result:
             update["result"] = result  # type: ignore[assignment]
-        supabase.table("feature_purchases").update(update).eq(
+        await supabase.table("feature_purchases").update(update).eq(
             "id", purchase_id
         ).execute()
 
@@ -99,7 +99,7 @@ class ForgeFeatureService:
     ) -> None:
         """Mark feature as failed and trigger token refund via RPC."""
         try:
-            supabase.rpc("fn_refund_feature", {"p_purchase_id": purchase_id}).execute()
+            await supabase.rpc("fn_refund_feature", {"p_purchase_id": purchase_id}).execute()
         except Exception:
             logger.exception(
                 "Refund failed for purchase %s", purchase_id,
@@ -112,7 +112,7 @@ class ForgeFeatureService:
     @staticmethod
     async def get_purchase(supabase: Client, purchase_id: str) -> dict | None:
         """Fetch a single feature purchase by ID."""
-        resp = (
+        resp = await (
             supabase.table("feature_purchases")
             .select("*")
             .eq("id", purchase_id)
@@ -139,7 +139,7 @@ class ForgeFeatureService:
             query = query.eq("user_id", str(user_id))
         if feature_type:
             query = query.eq("feature_type", feature_type)
-        resp = query.execute()
+        resp = await query.execute()
         return resp.data or []
 
     @staticmethod
@@ -147,7 +147,7 @@ class ForgeFeatureService:
         supabase: Client, simulation_id: UUID, user_id: UUID,
     ) -> dict | None:
         """Get the active (completed) Darkroom pass for a simulation, if any."""
-        resp = (
+        resp = await (
             supabase.table("feature_purchases")
             .select("*")
             .eq("simulation_id", str(simulation_id))
@@ -167,7 +167,7 @@ class ForgeFeatureService:
     ) -> int:
         """Decrement darkroom regen budget. Returns remaining count."""
         try:
-            resp = supabase.rpc("fn_darkroom_use_regen", {
+            resp = await supabase.rpc("fn_darkroom_use_regen", {
                 "p_purchase_id": purchase_id,
             }).execute()
             return resp.data

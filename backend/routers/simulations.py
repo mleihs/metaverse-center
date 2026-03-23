@@ -27,7 +27,7 @@ from backend.services.audit_service import AuditService
 from backend.services.lore_service import LoreService
 from backend.services.simulation_service import SimulationService
 from backend.services.threshold_service import ThresholdService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

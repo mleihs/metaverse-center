@@ -5,7 +5,7 @@ import logging
 import httpx
 
 from backend.config import settings
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

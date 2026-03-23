@@ -35,7 +35,7 @@ from backend.services.external.bluesky import (
     BlueskyService,
 )
 from backend.services.social.types import AdaptedContent
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +110,7 @@ class BlueskyScheduler:
         }
 
         try:
-            rows = (
+            rows = await (
                 admin.table("platform_settings")
                 .select("setting_key, setting_value")
                 .in_("setting_key", [
@@ -171,7 +171,7 @@ class BlueskyScheduler:
     async def _process_due_posts(cls, admin: Client, config: dict) -> None:
         """Find and publish all pending posts with scheduled_at <= now()."""
         now = datetime.now(UTC).isoformat()
-        response = (
+        response = await (
             admin.table("bluesky_posts")
             .select("id, caption, facets, alt_text, image_urls, retry_count, instagram_post_id")
             .eq("status", "pending")
@@ -236,7 +236,7 @@ class BlueskyScheduler:
                     })
                     sentry_sdk.capture_exception(exc)
                 # Disable posting
-                admin.table("platform_settings").update(
+                await admin.table("platform_settings").update(
                     {"setting_value": '"false"'},
                 ).eq("setting_key", "bluesky_posting_enabled").execute()
                 return
@@ -247,7 +247,7 @@ class BlueskyScheduler:
                 })
                 return
             except BlueskyBlobTooLargeError as exc:
-                admin.table("bluesky_posts").update({
+                await admin.table("bluesky_posts").update({
                     "status": "failed",
                     "failure_reason": f"Image too large for Bluesky: {str(exc)[:300]}",
                 }).eq("id", str(post_id)).execute()
@@ -258,7 +258,7 @@ class BlueskyScheduler:
             except BlueskyAPIError as exc:
                 retry_count = post.get("retry_count", 0)
                 if retry_count < _MAX_RETRIES:
-                    admin.table("bluesky_posts").update({
+                    await admin.table("bluesky_posts").update({
                         "status": "pending",
                         "retry_count": retry_count + 1,
                         "failure_reason": str(exc)[:500],
@@ -270,7 +270,7 @@ class BlueskyScheduler:
                         "iteration": cls._iteration_count,
                     })
                 else:
-                    admin.table("bluesky_posts").update({
+                    await admin.table("bluesky_posts").update({
                         "status": "failed",
                         "failure_reason": str(exc)[:500],
                     }).eq("id", str(post_id)).execute()
@@ -287,7 +287,7 @@ class BlueskyScheduler:
                         })
                         sentry_sdk.capture_exception(exc)
             except Exception as exc:
-                admin.table("bluesky_posts").update({
+                await admin.table("bluesky_posts").update({
                     "status": "failed",
                     "failure_reason": "Unexpected error during publishing",
                 }).eq("id", str(post_id)).execute()
@@ -321,7 +321,7 @@ class BlueskyScheduler:
         image_urls = post.get("image_urls") or []
 
         # Mark as publishing
-        admin.table("bluesky_posts").update(
+        await admin.table("bluesky_posts").update(
             {"status": "publishing"},
         ).eq("id", post_id).execute()
 
@@ -330,7 +330,7 @@ class BlueskyScheduler:
             try:
                 await BlueskyContentService.adapt_instagram_post(admin, UUID(post_id))
                 # Re-fetch the post to get the adapted caption
-                refreshed = (
+                refreshed = await (
                     admin.table("bluesky_posts")
                     .select("caption, facets, alt_text")
                     .eq("id", post_id)
@@ -401,7 +401,7 @@ class BlueskyScheduler:
 
         # Find published posts needing metric updates
         now = datetime.now(UTC)
-        response = (
+        response = await (
             admin.table("bluesky_posts")
             .select("id, bsky_uri, published_at, metrics_updated_at")
             .eq("status", "published")

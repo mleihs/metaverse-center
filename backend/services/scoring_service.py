@@ -8,7 +8,7 @@ from fastapi import HTTPException, status
 from backend.models.epoch import SCORING_DIMENSIONS
 from backend.services.constants import DETECTION_PENALTY, MISSION_SCORE_VALUES
 from backend.services.epoch_service import DEFAULT_CONFIG, EpochService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ class ScoringService:
         logger.info("Computing cycle scores", extra={"epoch_id": str(epoch_id), "cycle_number": cycle_number})
         # Refresh materialized views (migration 031) so freshly cloned game instances have data
         try:
-            supabase.rpc("refresh_all_game_metrics").execute()
+            await supabase.rpc("refresh_all_game_metrics").execute()
         except Exception:
             logger.warning("Failed to refresh materialized views before scoring")
 
@@ -49,7 +49,7 @@ class ScoringService:
             "military": weights.get("military", 20),
         }
 
-        resp = supabase.rpc("fn_compute_cycle_scores", {
+        resp = await supabase.rpc("fn_compute_cycle_scores", {
             "p_epoch_id": str(epoch_id),
             "p_cycle_number": cycle_number,
             "p_score_weights": score_weights,
@@ -96,7 +96,7 @@ class ScoringService:
         Uses ``mv_zone_stability`` (migration 031). Rewards keeping infrastructure healthy.
         Penalized by inbound propaganda events, sabotage, and assassinations.
         """
-        resp = (
+        resp = await (
             supabase.table("mv_zone_stability")
             .select("stability")
             .eq("simulation_id", simulation_id)
@@ -109,7 +109,7 @@ class ScoringService:
             base_stability = (sum(stabilities) / len(stabilities)) * 100
 
         # Count inbound propaganda events (created by propagandist operatives)
-        propaganda_resp = (
+        propaganda_resp = await (
             supabase.table("events")
             .select("id", count="exact")
             .eq("simulation_id", simulation_id)
@@ -119,7 +119,7 @@ class ScoringService:
         propaganda_count = propaganda_resp.count or 0
 
         # Count successful inbound saboteur and assassin missions
-        inbound_resp = (
+        inbound_resp = await (
             supabase.table("operative_missions")
             .select("operative_type")
             .eq("epoch_id", str(epoch_id))
@@ -146,7 +146,7 @@ class ScoringService:
         Rewards projecting cultural and intelligence power.
         """
         # Successful outbound propaganda, spy, and infiltrator missions
-        missions_resp = (
+        missions_resp = await (
             supabase.table("operative_missions")
             .select("operative_type")
             .eq("epoch_id", str(epoch_id))
@@ -166,7 +166,7 @@ class ScoringService:
         )
 
         # Echo strength (bleed system — may be 0 in competitive play)
-        echo_resp = (
+        echo_resp = await (
             supabase.table("event_echoes")
             .select("echo_strength")
             .eq("source_simulation_id", simulation_id)
@@ -201,7 +201,7 @@ class ScoringService:
         }
 
         # Successful inbound missions (attacks against this sim)
-        inbound_resp = (
+        inbound_resp = await (
             supabase.table("operative_missions")
             .select("operative_type, status")
             .eq("epoch_id", str(epoch_id))
@@ -219,7 +219,7 @@ class ScoringService:
                 detected_count += 1
 
         # Active guardians defending this sim
-        guardian_resp = (
+        guardian_resp = await (
             supabase.table("operative_missions")
             .select("id")
             .eq("epoch_id", str(epoch_id))
@@ -246,7 +246,7 @@ class ScoringService:
         """
         # Embassy effectiveness from mv_embassy_effectiveness (migration 031)
         # MV has simulation_a_id and simulation_b_id, not simulation_id
-        resp = (
+        resp = await (
             supabase.table("mv_embassy_effectiveness")
             .select("effectiveness")
             .or_(
@@ -258,7 +258,7 @@ class ScoringService:
         total_effectiveness = sum(float(e.get("effectiveness", 0)) for e in resp.data or [])
 
         # Count active embassies as base diplomatic score
-        embassy_resp = (
+        embassy_resp = await (
             supabase.table("embassies")
             .select("id")
             .eq("status", "active")
@@ -278,7 +278,7 @@ class ScoringService:
 
         # A4: Alliance bonus — +15% per active ally
         active_alliance_count = 0
-        participant_resp = (
+        participant_resp = await (
             supabase.table("epoch_participants")
             .select("team_id, betrayal_penalty")
             .eq("epoch_id", str(epoch_id))
@@ -291,7 +291,7 @@ class ScoringService:
             team_id = participant_resp.data.get("team_id")
             betrayal_penalty = float(participant_resp.data.get("betrayal_penalty") or 0)
             if team_id:
-                allies_resp = (
+                allies_resp = await (
                     supabase.table("epoch_participants")
                     .select("id")
                     .eq("team_id", team_id)
@@ -305,7 +305,7 @@ class ScoringService:
         betrayal_multiplier = 1.0 - betrayal_penalty
 
         # Spy diplomatic bonus: +1 per successful outbound spy mission
-        spy_resp = (
+        spy_resp = await (
             supabase.table("operative_missions")
             .select("id", count="exact")
             .eq("epoch_id", str(epoch_id))
@@ -326,7 +326,7 @@ class ScoringService:
 
         Rewards successful covert operations.
         """
-        resp = (
+        resp = await (
             supabase.table("operative_missions")
             .select("operative_type, status")
             .eq("epoch_id", str(epoch_id))
@@ -387,7 +387,7 @@ class ScoringService:
         weights = config.get("score_weights", {})
 
         # Fetch raw scores for this cycle
-        resp = (
+        resp = await (
             supabase.table("epoch_scores")
             .select("*")
             .eq("epoch_id", str(epoch_id))
@@ -431,7 +431,7 @@ class ScoringService:
                 normalized[dim] * w[dim] / 100 for dim in dimensions
             )
 
-            supabase.table("epoch_scores").update(
+            await supabase.table("epoch_scores").update(
                 {"composite_score": round(composite, 2)}
             ).eq("id", s["id"]).execute()
 
@@ -461,7 +461,7 @@ class ScoringService:
         # points one past the last resolved cycle, so querying it directly
         # returns empty for completed epochs.
         if cycle_number is None:
-            max_resp = (
+            max_resp = await (
                 supabase.table("epoch_scores")
                 .select("cycle_number")
                 .eq("epoch_id", str(epoch_id))
@@ -474,7 +474,7 @@ class ScoringService:
             else:
                 cycle_number = epoch.get("current_cycle", 1)
 
-        resp = (
+        resp = await (
             supabase.table("epoch_scores")
             .select(
                 "id, epoch_id, simulation_id, cycle_number,"
@@ -494,7 +494,7 @@ class ScoringService:
         # Batch-fetch simulation names (separate query avoids PostgREST
         # join coercion failures when FK cardinality is ambiguous)
         score_sim_ids = [s["simulation_id"] for s in scores]
-        sims_resp = (
+        sims_resp = await (
             supabase.table("simulations")
             .select("id, name, slug")
             .in_("id", score_sim_ids)
@@ -503,7 +503,7 @@ class ScoringService:
         sim_map: dict[str, dict] = {s["id"]: s for s in sims_resp.data or []}
 
         # Batch-fetch all participant team assignments + betrayal data for this epoch
-        participants_resp = (
+        participants_resp = await (
             supabase.table("epoch_participants")
             .select("simulation_id, team_id, betrayal_penalty, epoch_teams(name)")
             .eq("epoch_id", str(epoch_id))
@@ -570,7 +570,7 @@ class ScoringService:
         current_cycle = epoch.get("current_cycle", 1)
 
         # Fetch intel reports from this simulation
-        intel_resp = (
+        intel_resp = await (
             supabase.table("battle_log")
             .select("*, simulations:target_simulation_id(name, slug)")
             .eq("epoch_id", str(epoch_id))
@@ -620,7 +620,7 @@ class ScoringService:
         simulation_id: UUID,
     ) -> list[dict]:
         """Get all cycle scores for a simulation in an epoch."""
-        resp = (
+        resp = await (
             supabase.table("epoch_scores")
             .select("*")
             .eq("epoch_id", str(epoch_id))
@@ -656,7 +656,7 @@ class ScoringService:
         sim_ids = [p["simulation_id"] for p in participants]
 
         # Single batch query for all mission stats
-        all_missions_resp = (
+        all_missions_resp = await (
             supabase.table("operative_missions")
             .select("source_simulation_id, operative_type, status")
             .eq("epoch_id", str(epoch_id))
@@ -694,7 +694,7 @@ class ScoringService:
         mvp_awards = cls._compute_mvp_awards(standings, participant_stats)
 
         # Score history — batch query for all participants (no N+1)
-        all_scores_resp = (
+        all_scores_resp = await (
             supabase.table("epoch_scores")
             .select("*")
             .eq("epoch_id", str(epoch_id))

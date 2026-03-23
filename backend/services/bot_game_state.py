@@ -10,7 +10,7 @@ import logging
 from dataclasses import dataclass, field
 
 from backend.services.constants import SECURITY_LEVEL_MAP
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -144,7 +144,7 @@ class BotGameState:
     async def _load_own_data(self, supabase: Client, epoch_id: str, sim_id: str) -> None:
         """Load data the bot has full visibility over (own simulation)."""
         # Own missions (all statuses)
-        missions_resp = (
+        missions_resp = await (
             supabase.table("operative_missions")
             .select("*")
             .eq("epoch_id", epoch_id)
@@ -158,7 +158,7 @@ class BotGameState:
         )
 
         # Own zones (security levels)
-        zones_resp = (
+        zones_resp = await (
             supabase.table("zones")
             .select("id, name, security_level")
             .eq("simulation_id", sim_id)
@@ -167,7 +167,7 @@ class BotGameState:
         self.own_zones = zones_resp.data or []
 
         # Own agents (available for deployment) with aptitudes
-        agents_resp = (
+        agents_resp = await (
             supabase.table("agents")
             .select("id, name, simulation_id, ambassador_blocked_until")
             .eq("simulation_id", sim_id)
@@ -178,7 +178,7 @@ class BotGameState:
 
         # Load aptitudes for own agents (keyed by agent_id)
         if self.own_agents:
-            aptitudes_resp = (
+            aptitudes_resp = await (
                 supabase.table("agent_aptitudes")
                 .select("agent_id, operative_type, aptitude_level")
                 .eq("simulation_id", sim_id)
@@ -196,7 +196,7 @@ class BotGameState:
 
         # Own embassies (for offensive operations)
         # Embassies use simulation_a_id/simulation_b_id (bidirectional)
-        embassies_resp = (
+        embassies_resp = await (
             supabase.table("embassies")
             .select(
                 "id, simulation_a_id, simulation_b_id, status,"
@@ -215,7 +215,7 @@ class BotGameState:
         before this method is called.
         """
         # Detected enemy operations targeting us
-        detected_resp = (
+        detected_resp = await (
             supabase.table("operative_missions")
             .select("*")
             .eq("epoch_id", epoch_id)
@@ -227,7 +227,7 @@ class BotGameState:
 
         # Spy intel: own + allied reports (alliance = shared fog-of-war)
         intel_sources = [sim_id] + self.allies
-        intel_resp = (
+        intel_resp = await (
             supabase.table("battle_log")
             .select("*")
             .eq("epoch_id", epoch_id)
@@ -251,7 +251,7 @@ class BotGameState:
     async def _load_public_data(self, supabase: Client, epoch_id: str) -> None:
         """Load publicly visible data (all players see this)."""
         # Public battle log
-        blog_resp = (
+        blog_resp = await (
             supabase.table("battle_log")
             .select("*")
             .eq("epoch_id", epoch_id)
@@ -263,7 +263,7 @@ class BotGameState:
         self.battle_log = blog_resp.data or []
 
         # Current scores/standings
-        scores_resp = (
+        scores_resp = await (
             supabase.table("epoch_scores")
             .select("*")
             .eq("epoch_id", epoch_id)
@@ -273,7 +273,7 @@ class BotGameState:
         self.scores = scores_resp.data or []
 
         # Teams/alliances
-        teams_resp = (
+        teams_resp = await (
             supabase.table("epoch_teams")
             .select("*")
             .eq("epoch_id", epoch_id)
@@ -283,7 +283,7 @@ class BotGameState:
         self.teams = teams_resp.data or []
 
         # Participants (sim names, not strategies)
-        parts_resp = (
+        parts_resp = await (
             supabase.table("epoch_participants")
             .select("id, simulation_id, team_id, is_bot, simulations(name, slug)")
             .eq("epoch_id", epoch_id)
@@ -294,7 +294,7 @@ class BotGameState:
     async def _load_alliance_data(self, supabase: Client, epoch_id: str) -> None:
         """Load pending alliance proposals and own team tension."""
         try:
-            proposals_resp = (
+            proposals_resp = await (
                 supabase.table("epoch_alliance_proposals")
                 .select("id, team_id, proposer_simulation_id, expires_at_cycle")
                 .eq("epoch_id", epoch_id)
@@ -307,7 +307,7 @@ class BotGameState:
 
         if self.own_team_id:
             try:
-                tension_resp = (
+                tension_resp = await (
                     supabase.table("epoch_teams")
                     .select("tension")
                     .eq("id", self.own_team_id)
@@ -337,7 +337,7 @@ class BotGameState:
         """
         # Zone stability for own simulation (mv_zone_stability, migration 031)
         try:
-            stability_resp = (
+            stability_resp = await (
                 supabase.table("mv_zone_stability")
                 .select("zone_id, zone_name, stability, total_pressure")
                 .eq("simulation_id", sim_id)
@@ -353,7 +353,7 @@ class BotGameState:
 
         # Active resonances view (migration 011) — public, all players can see
         try:
-            resonance_resp = (
+            resonance_resp = await (
                 supabase.table("active_resonances")
                 .select("id, archetype, resonance_signature, magnitude, status")
                 .in_("status", ["detected", "impacting"])
@@ -370,7 +370,7 @@ class BotGameState:
 
         # ── Heartbeat awareness ──
         try:
-            arcs_resp = (
+            arcs_resp = await (
                 supabase.table("narrative_arcs")
                 .select("id, arc_type, primary_signature, status, pressure")
                 .eq("simulation_id", sim_id)
@@ -383,7 +383,7 @@ class BotGameState:
             ]
 
             # Scar tissue
-            scar_resp = (
+            scar_resp = await (
                 supabase.table("narrative_arcs")
                 .select("scar_tissue_deposited")
                 .eq("simulation_id", sim_id)
@@ -395,7 +395,7 @@ class BotGameState:
             )
 
             # Pending bureau responses
-            pending_resp = (
+            pending_resp = await (
                 supabase.table("bureau_responses")
                 .select("id", count="exact")
                 .eq("simulation_id", sim_id)
@@ -405,7 +405,7 @@ class BotGameState:
             self.pending_bureau_responses = pending_resp.count or 0
 
             # Own attunements
-            att_resp = (
+            att_resp = await (
                 supabase.table("substrate_attunements")
                 .select("resonance_signature, depth")
                 .eq("simulation_id", sim_id)

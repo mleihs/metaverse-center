@@ -25,7 +25,7 @@ from uuid import UUID
 
 import structlog
 
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -76,19 +76,19 @@ class AgentMoodService:
         )
 
         # 1. Expire old moodlets + opinion modifiers (PostgreSQL atomic)
-        expire_result = supabase.rpc("fn_expire_autonomy_modifiers", {
+        expire_result = await supabase.rpc("fn_expire_autonomy_modifiers", {
             "p_simulation_id": str(simulation_id),
         }).execute()
         expire_data = expire_result.data or {}
 
         # 2. Decay strength of decaying moodlets (PostgreSQL atomic)
-        decay_result = supabase.rpc("fn_decay_moodlet_strengths", {
+        decay_result = await supabase.rpc("fn_decay_moodlet_strengths", {
             "p_simulation_id": str(simulation_id),
         }).execute()
         decayed = decay_result.data if isinstance(decay_result.data, int) else 0
 
         # 3. Recalculate mood scores (PostgreSQL atomic)
-        mood_result = supabase.rpc("fn_recalculate_mood_scores", {
+        mood_result = await supabase.rpc("fn_recalculate_mood_scores", {
             "p_simulation_id": str(simulation_id),
         }).execute()
         recalculated = mood_result.data if isinstance(mood_result.data, int) else 0
@@ -134,7 +134,7 @@ class AgentMoodService:
         # Check stacking cap
         if stacking_group:
             cap = STACKING_CAPS.get(stacking_group, DEFAULT_STACKING_CAP)
-            count_result = supabase.rpc("fn_count_moodlet_stacking", {
+            count_result = await supabase.rpc("fn_count_moodlet_stacking", {
                 "p_agent_id": str(agent_id),
                 "p_stacking_group": stacking_group,
             }).execute()
@@ -153,7 +153,7 @@ class AgentMoodService:
             expires_at = (datetime.now(UTC) + timedelta(hours=duration_hours)).isoformat()
 
         # Insert moodlet
-        supabase.table("agent_moodlets").insert({
+        await supabase.table("agent_moodlets").insert({
             "agent_id": str(agent_id),
             "simulation_id": str(simulation_id),
             "moodlet_type": moodlet_type,
@@ -181,7 +181,7 @@ class AgentMoodService:
         agent_id: UUID,
     ) -> list[dict]:
         """Get all active (non-expired) moodlets for an agent."""
-        result = (
+        result = await (
             supabase.table("agent_moodlets")
             .select("*")
             .eq("agent_id", str(agent_id))
@@ -200,7 +200,7 @@ class AgentMoodService:
 
         Single SQL UPDATE with CASE logic — no Python loop, no race conditions.
         """
-        result = supabase.rpc("fn_update_stress_levels", {
+        result = await supabase.rpc("fn_update_stress_levels", {
             "p_simulation_id": str(simulation_id),
             "p_recovery_per_tick": STRESS_RECOVERY_PER_TICK,
         }).execute()
@@ -214,7 +214,7 @@ class AgentMoodService:
         simulation_id: UUID,
     ) -> list[str]:
         """Check for agents at breakdown stress level. Returns list of agent IDs."""
-        result = (
+        result = await (
             supabase.table("agent_mood")
             .select("agent_id")
             .eq("simulation_id", str(simulation_id))
@@ -238,7 +238,7 @@ class AgentMoodService:
         amount: float,
     ) -> None:
         """Atomically add stress via ``fn_add_agent_stress`` (migration 146)."""
-        supabase.rpc("fn_add_agent_stress", {
+        await supabase.rpc("fn_add_agent_stress", {
             "p_agent_id": str(agent_id),
             "p_amount": amount,
         }).execute()

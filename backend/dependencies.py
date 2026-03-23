@@ -10,7 +10,8 @@ from supabase_auth.errors import AuthApiError
 
 from backend.config import settings
 from backend.models.common import CurrentUser
-from supabase import Client, create_client
+from supabase import AsyncClient as Client
+from supabase import create_async_client
 
 logger = logging.getLogger(__name__)
 
@@ -113,9 +114,9 @@ async def get_supabase(
 
     This ensures RLS policies are applied for the current user.
     """
-    client = create_client(settings.supabase_url, settings.supabase_anon_key)
+    client = await create_async_client(settings.supabase_url, settings.supabase_anon_key)
     try:
-        client.auth.set_session(user.access_token, "")
+        await client.auth.set_session(user.access_token, "")
     except AuthApiError as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -129,7 +130,7 @@ async def get_anon_supabase() -> Client:
 
     Applies anon RLS policies — used for public read-only endpoints.
     """
-    return create_client(settings.supabase_url, settings.supabase_anon_key)
+    return await create_async_client(settings.supabase_url, settings.supabase_anon_key)
 
 
 async def get_admin_supabase() -> Client:
@@ -137,7 +138,7 @@ async def get_admin_supabase() -> Client:
 
     Use sparingly -- bypasses RLS. Only for admin operations.
     """
-    return create_client(settings.supabase_url, settings.supabase_service_role_key)
+    return await create_async_client(settings.supabase_url, settings.supabase_service_role_key)
 
 
 def require_role(required_role: str):
@@ -159,7 +160,7 @@ def require_role(required_role: str):
         supabase: Client = Depends(get_supabase),
     ) -> str:
         """Verify the user has the required role for this simulation."""
-        response = (
+        response = await (
             supabase.table("simulation_members")
             .select("member_role")
             .eq("simulation_id", str(simulation_id))
@@ -206,7 +207,7 @@ def require_epoch_creator():
         user: CurrentUser = Depends(get_current_user),
         supabase: Client = Depends(get_supabase),
     ) -> None:
-        response = (
+        response = await (
             supabase.table("game_epochs")
             .select("created_by_id")
             .eq("id", str(epoch_id))
@@ -269,7 +270,7 @@ def require_owner_or_platform_admin():
             return user, True
 
         # Otherwise must be an owner member
-        response = (
+        response = await (
             supabase.table("simulation_members")
             .select("member_role")
             .eq("simulation_id", str(simulation_id))
@@ -317,7 +318,7 @@ def require_architect():
         if user.email in PLATFORM_ADMIN_EMAILS:
             return user
 
-        wallet_resp = (
+        wallet_resp = await (
             admin_supabase.table("user_wallets")
             .select("is_architect")
             .eq("user_id", str(user.id))
@@ -347,7 +348,7 @@ def require_epoch_participant():
         user: CurrentUser = Depends(get_current_user),
         supabase: Client = Depends(get_supabase),
     ) -> dict:
-        resp = (
+        resp = await (
             supabase.table("epoch_participants")
             .select("id, simulation_id, user_id, current_rp")
             .eq("epoch_id", str(epoch_id))
@@ -379,7 +380,7 @@ def require_simulation_member(role: str = "viewer", *, param_name: str = "simula
         user: CurrentUser = Depends(get_current_user),
         supabase: Client = Depends(get_supabase),
     ) -> str:
-        response = (
+        response = await (
             supabase.table("simulation_members")
             .select("member_role")
             .eq("simulation_id", str(simulation_id))

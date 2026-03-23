@@ -10,7 +10,7 @@ from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.member import MemberCreate, MemberResponse, MemberUpdate
 from backend.services.audit_service import AuditService
 from backend.services.member_service import LastOwnerError, MemberService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

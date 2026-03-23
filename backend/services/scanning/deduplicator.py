@@ -7,7 +7,7 @@ import re
 from datetime import UTC, datetime, timedelta
 
 from backend.services.scanning.base_adapter import ScanResult
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +96,7 @@ async def deduplicate(
 
     for source_name, ids in sources_by_name.items():
         try:
-            resp = (
+            resp = await (
                 admin.table("news_scan_log")
                 .select("source_name, source_id")
                 .eq("source_name", source_name)
@@ -135,7 +135,7 @@ async def deduplicate_against_resonances(
     recent_titles: dict[str, list[str]] = {}
     for cat in categories:
         try:
-            resp = (
+            resp = await (
                 admin.table("substrate_resonances")
                 .select("title")
                 .eq("source_category", cat)
@@ -181,7 +181,7 @@ async def log_results(admin: Client, results: list[ScanResult]) -> None:
     ]
 
     try:
-        admin.table("news_scan_log").upsert(
+        await admin.table("news_scan_log").upsert(
             rows, on_conflict="source_name,source_id",
         ).execute()
     except Exception:
@@ -192,7 +192,7 @@ async def cleanup_old_logs(admin: Client, days: int = 30) -> int:
     """Delete scan log entries older than N days. Returns count deleted."""
     cutoff = (datetime.now(UTC) - timedelta(days=days)).isoformat()
     try:
-        resp = (
+        resp = await (
             admin.table("news_scan_log")
             .delete()
             .lt("scanned_at", cutoff)

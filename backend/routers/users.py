@@ -9,7 +9,7 @@ from backend.models.user import DashboardData, MembershipInfo, UserWithMembershi
 from backend.services.member_service import MemberService
 from backend.services.user_dashboard_service import UserDashboardService
 from backend.services.user_profile_service import UserProfileService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

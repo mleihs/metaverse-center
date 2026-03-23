@@ -1,6 +1,6 @@
 """Tests for ForgeDraftService."""
 
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 from uuid import UUID
 
 import pytest
@@ -29,7 +29,7 @@ def _mock_supabase(data=None, count=None):
     builder.order.return_value = builder
     builder.range.return_value = builder
     builder.single.return_value = builder
-    builder.execute.return_value = response
+    builder.execute = AsyncMock(return_value=response)
 
     mock.table.return_value = builder
     return mock, builder

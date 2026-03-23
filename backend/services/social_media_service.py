@@ -6,7 +6,7 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ class SocialMediaService:
             query = query.is_("transformed_content", "null")
 
         query = query.range(offset, offset + limit - 1)
-        response = query.execute()
+        response = await query.execute()
 
         total = response.count if response.count is not None else len(response.data or [])
         return response.data or [], total
@@ -48,7 +48,7 @@ class SocialMediaService:
     @staticmethod
     async def get_post(supabase: Client, simulation_id: UUID, post_id: UUID) -> dict:
         """Get a single post."""
-        response = (
+        response = await (
             supabase.table("social_media_posts")
             .select("*")
             .eq("simulation_id", str(simulation_id))
@@ -82,7 +82,7 @@ class SocialMediaService:
                 "last_synced_at": datetime.now(UTC).isoformat(),
             })
 
-        response = (
+        response = await (
             supabase.table("social_media_posts")
             .upsert(rows, on_conflict="simulation_id,platform,platform_id")
             .execute()
@@ -98,7 +98,7 @@ class SocialMediaService:
     ) -> dict:
         """Update a post (e.g., after transformation or sentiment analysis)."""
         data["updated_at"] = datetime.now(UTC).isoformat()
-        response = (
+        response = await (
             supabase.table("social_media_posts")
             .update(data)
             .eq("simulation_id", str(simulation_id))
@@ -120,7 +120,7 @@ class SocialMediaService:
         data: dict,
     ) -> dict:
         """Store a single comment for a post."""
-        response = (
+        response = await (
             supabase.table("social_media_comments")
             .insert({
                 **data,
@@ -143,7 +143,7 @@ class SocialMediaService:
         post_id: UUID,
     ) -> list[dict]:
         """Get all comments for a post."""
-        response = (
+        response = await (
             supabase.table("social_media_comments")
             .select("*")
             .eq("simulation_id", str(simulation_id))
@@ -160,7 +160,7 @@ class SocialMediaService:
         data: dict,
     ) -> dict:
         """Store an agent reaction to a post or comment."""
-        response = (
+        response = await (
             supabase.table("social_media_agent_reactions")
             .insert({**data, "simulation_id": str(simulation_id)})
             .execute()
@@ -179,7 +179,7 @@ class SocialMediaService:
         post_id: UUID,
     ) -> list[dict]:
         """Get all agent reactions for a post."""
-        response = (
+        response = await (
             supabase.table("social_media_agent_reactions")
             .select("*, agents(id, name, system)")
             .eq("simulation_id", str(simulation_id))

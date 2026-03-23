@@ -5,7 +5,7 @@ import logging
 
 from backend.config import settings
 from backend.services.generation_service import GenerationService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ class SitrepService:
         }
         if simulation_id:
             params["p_simulation_id"] = simulation_id
-        response = supabase.rpc("get_cycle_battle_summary", params).execute()
+        response = await supabase.rpc("get_cycle_battle_summary", params).execute()
         return response.data if response.data else {
             "cycle_number": cycle_number,
             "missions_deployed": 0,
@@ -74,9 +74,9 @@ class SitrepService:
         # Resolve simulation_id for GenerationService (use first participant if not specified)
         gen_sim_id = simulation_id
         if not gen_sim_id:
-            epoch = supabase.table("game_epochs").select("id").eq("id", epoch_id).limit(1).execute()
+            epoch = await supabase.table("game_epochs").select("id").eq("id", epoch_id).limit(1).execute()
             if epoch.data:
-                parts = (
+                parts = await (
                     supabase.table("epoch_participants")
                     .select("simulation_id")
                     .eq("epoch_id", epoch_id)

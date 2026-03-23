@@ -7,7 +7,7 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class InvitationService:
         token = secrets.token_urlsafe(32)
         expires_at = datetime.now(UTC) + timedelta(hours=expires_in_hours)
 
-        response = (
+        response = await (
             supabase.table("simulation_invitations")
             .insert({
                 "simulation_id": str(simulation_id),
@@ -53,7 +53,7 @@ class InvitationService:
     @staticmethod
     async def get_by_token(supabase: Client, token: str) -> dict:
         """Validate and return an invitation by token."""
-        response = (
+        response = await (
             supabase.table("simulation_invitations")
             .select("*, simulations(name)")
             .eq("invite_token", token)
@@ -76,7 +76,7 @@ class InvitationService:
     ) -> dict:
         """Accept an invitation — creates a member and marks invitation as accepted."""
         # Fetch invitation
-        inv_response = (
+        inv_response = await (
             supabase.table("simulation_invitations")
             .select("*")
             .eq("invite_token", token)
@@ -103,7 +103,7 @@ class InvitationService:
             )
 
         # Create member
-        member_response = (
+        member_response = await (
             supabase.table("simulation_members")
             .insert({
                 "simulation_id": invitation["simulation_id"],
@@ -137,7 +137,7 @@ class InvitationService:
         simulation_id: UUID,
     ) -> list[dict]:
         """List all invitations for a simulation."""
-        response = (
+        response = await (
             supabase.table("simulation_invitations")
             .select("*")
             .eq("simulation_id", str(simulation_id))

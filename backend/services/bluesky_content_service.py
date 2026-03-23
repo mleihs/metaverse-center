@@ -17,7 +17,7 @@ import sentry_sdk
 from fastapi import HTTPException, status
 
 from backend.services.external.bluesky import BlueskyService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +76,7 @@ class BlueskyContentService:
         4. Update the bluesky_posts row
         """
         # Load the Bluesky post
-        bp_resp = (
+        bp_resp = await (
             admin_supabase.table("bluesky_posts")
             .select("*, instagram_posts!bluesky_posts_instagram_post_id_fkey(caption, hashtags, simulation_id)")
             .eq("id", str(bluesky_post_id))
@@ -105,7 +105,7 @@ class BlueskyContentService:
 
         # Update
         update_data = {"caption": adapted, "facets": facets}
-        resp = (
+        resp = await (
             admin_supabase.table("bluesky_posts")
             .update(update_data)
             .eq("id", str(bluesky_post_id))
@@ -234,7 +234,7 @@ class BlueskyContentService:
             query = query.eq("status", status_filter)
 
         query = query.range(offset, offset + limit - 1)
-        response = query.execute()
+        response = await query.execute()
         data = response.data or []
         total = response.count if response.count is not None else len(data)
         return data, total
@@ -246,7 +246,7 @@ class BlueskyContentService:
         post_id: UUID,
     ) -> dict:
         """Get a single Bluesky post."""
-        resp = (
+        resp = await (
             admin_supabase.table("bluesky_posts")
             .select("*")
             .eq("id", str(post_id))
@@ -267,7 +267,7 @@ class BlueskyContentService:
         post_id: UUID,
     ) -> dict:
         """Admin: skip this post (don't publish to Bluesky)."""
-        resp = (
+        resp = await (
             admin_supabase.table("bluesky_posts")
             .update({"status": "skipped"})
             .eq("id", str(post_id))
@@ -288,7 +288,7 @@ class BlueskyContentService:
         post_id: UUID,
     ) -> dict:
         """Admin: re-enable a skipped post."""
-        resp = (
+        resp = await (
             admin_supabase.table("bluesky_posts")
             .update({"status": "pending"})
             .eq("id", str(post_id))
@@ -310,7 +310,7 @@ class BlueskyContentService:
         failure_reason: str,
     ) -> None:
         """Reset a post back to pending after a publish failure."""
-        admin_supabase.table("bluesky_posts").update({
+        await admin_supabase.table("bluesky_posts").update({
             "status": "pending",
             "failure_reason": failure_reason[:500],
         }).eq("id", post_id).execute()
@@ -330,7 +330,7 @@ class BlueskyContentService:
             "quotes_count": metrics.get("quotes", 0) or 0,
             "metrics_updated_at": datetime.now(UTC).isoformat(),
         }
-        resp = (
+        resp = await (
             admin_supabase.table("bluesky_posts")
             .update(update)
             .eq("id", str(post_id))
@@ -348,7 +348,7 @@ class BlueskyContentService:
     ) -> dict:
         """Get aggregated Bluesky analytics via Postgres RPC."""
         try:
-            response = admin_supabase.rpc(
+            response = await admin_supabase.rpc(
                 "fn_bluesky_analytics",
                 {"p_days": days},
             ).execute()
@@ -367,7 +367,7 @@ class BlueskyContentService:
     @classmethod
     async def get_pipeline_settings(cls, admin_supabase: Client) -> dict:
         """Get all Bluesky pipeline configuration settings as a flat dict."""
-        resp = (
+        resp = await (
             admin_supabase.table("platform_settings")
             .select("setting_key, setting_value, description")
             .in_("setting_key", cls.PIPELINE_SETTINGS_KEYS)
@@ -396,7 +396,7 @@ class BlueskyContentService:
 
         Returns dict with handle, app_password, pds_url.
         """
-        rows = (
+        rows = await (
             admin_supabase.table("platform_settings")
             .select("setting_key, setting_value")
             .in_("setting_key", [

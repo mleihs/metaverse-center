@@ -29,7 +29,7 @@ from backend.services.audit_service import AuditService
 from backend.services.bureau_response_service import BureauResponseService
 from backend.services.heartbeat_service import HeartbeatService
 from backend.services.narrative_arc_service import NarrativeArcService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

@@ -9,7 +9,7 @@ from backend.config import settings
 from backend.dependencies import get_anon_supabase
 from backend.services.seo_service import SeoService
 from backend.services.simulation_service import SimulationService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

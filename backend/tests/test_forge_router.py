@@ -1,6 +1,6 @@
 """Integration tests for the Forge router endpoints."""
 
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
 import pytest
@@ -36,7 +36,7 @@ def _mock_supabase():
     builder.order.return_value = builder
     builder.range.return_value = builder
     builder.single.return_value = builder
-    builder.execute.return_value = response
+    builder.execute = AsyncMock(return_value=response)
 
     mock.table.return_value = builder
     return mock
@@ -74,7 +74,7 @@ class TestCreateDraft:
         # Return a draft row on insert
         insert_resp = MagicMock()
         insert_resp.data = [{"id": str(DRAFT_ID), "user_id": str(MOCK_USER_ID), "status": "draft"}]
-        mock_sb.table.return_value.insert.return_value.execute.return_value = insert_resp
+        mock_sb.table.return_value.insert.return_value.execute = AsyncMock(return_value=insert_resp)
 
         resp = test_client.post("/api/v1/forge/drafts", json={"seed_prompt": "test"})
         assert resp.status_code == 200
@@ -103,7 +103,7 @@ class TestGetWallet:
             },
         }
         rpc_builder = MagicMock()
-        rpc_builder.execute.return_value = rpc_response
+        rpc_builder.execute = AsyncMock(return_value=rpc_response)
         mock_sb.rpc.return_value = rpc_builder
 
         resp = test_client.get("/api/v1/forge/wallet")

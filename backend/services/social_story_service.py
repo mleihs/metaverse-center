@@ -24,7 +24,7 @@ from backend.models.resonance import ARCHETYPE_DESCRIPTIONS
 from backend.models.social_story import ARCHETYPE_COLORS, ARCHETYPE_OPERATIVE_ALIGNMENT
 from backend.services.base_service import serialize_for_json
 from backend.services.instagram_image_composer import InstagramImageComposer
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +70,7 @@ class SocialStoryService:
         if resonance_id:
             query = query.eq("resonance_id", str(resonance_id))
         query = query.order("scheduled_at", desc=True).range(offset, offset + limit - 1)
-        response = query.execute()
+        response = await query.execute()
         data = response.data or []
         total = response.count if response.count is not None else len(data)
         return data, total
@@ -78,7 +78,7 @@ class SocialStoryService:
     @staticmethod
     async def get_by_id(admin: Client, story_id: UUID) -> dict | None:
         """Get a single social story by ID. Returns None if not found."""
-        response = (
+        response = await (
             admin.table("social_stories")
             .select("*")
             .eq("id", str(story_id))
@@ -90,7 +90,7 @@ class SocialStoryService:
     @staticmethod
     async def get_sequence(admin: Client, resonance_id: UUID) -> list[dict]:
         """Get all stories for a resonance, ordered by sequence index."""
-        response = (
+        response = await (
             admin.table("social_stories")
             .select("*")
             .eq("resonance_id", str(resonance_id))
@@ -108,7 +108,7 @@ class SocialStoryService:
     ) -> dict | None:
         """Update a story's status and optional extra fields. Returns updated record."""
         payload: dict = {"status": status, **{k: v for k, v in fields.items() if v is not None}}
-        response = (
+        response = await (
             admin.table("social_stories")
             .update(payload)
             .eq("id", str(story_id))
@@ -119,7 +119,7 @@ class SocialStoryService:
     @staticmethod
     async def clear_and_reset(admin: Client, story_id: UUID) -> None:
         """Reset a story to pending, clearing image and IG metadata."""
-        admin.table("social_stories").update({
+        await admin.table("social_stories").update({
             "status": "pending",
             "image_url": None,
             "ig_story_id": None,
@@ -131,7 +131,7 @@ class SocialStoryService:
     @staticmethod
     async def get_pipeline_settings(admin: Client) -> dict[str, str]:
         """Get all resonance story pipeline settings."""
-        rows = (
+        rows = await (
             admin.table("platform_settings")
             .select("setting_key, setting_value")
             .like("setting_key", "resonance_stories_%")
@@ -311,7 +311,7 @@ class SocialStoryService:
             return []
 
         # Fetch resonance record
-        res_resp = (
+        res_resp = await (
             admin.table("substrate_resonances")
             .select("*")
             .eq("id", str(resonance_id))
@@ -433,7 +433,7 @@ class SocialStoryService:
         highest_susc_val = 0.0
         if highest_susc:
             # Fetch simulation name
-            sim_resp = (
+            sim_resp = await (
                 admin.table("simulations")
                 .select("name")
                 .eq("id", highest_susc.get("simulation_id", ""))
@@ -467,7 +467,7 @@ class SocialStoryService:
             eff_mag = float(impact.get("effective_magnitude") or 0)
 
             # Fetch simulation name, description, and events
-            sim_resp = (
+            sim_resp = await (
                 admin.table("simulations")
                 .select("name, slug, description")
                 .eq("id", sim_id)
@@ -481,7 +481,7 @@ class SocialStoryService:
             event_titles: list[str] = []
             spawned_ids = impact.get("spawned_event_ids") or []
             if spawned_ids:
-                evt_resp = (
+                evt_resp = await (
                     admin.table("events")
                     .select("title")
                     .in_("id", [str(eid) for eid in spawned_ids[:5]])
@@ -568,7 +568,7 @@ class SocialStoryService:
         if not config["enabled"]:
             return None
 
-        res_resp = (
+        res_resp = await (
             admin.table("substrate_resonances")
             .select("*")
             .eq("id", str(resonance_id))
@@ -581,7 +581,7 @@ class SocialStoryService:
         archetype = resonance.get("archetype", "")
 
         # Count total events spawned and shards affected
-        impacts_resp = (
+        impacts_resp = await (
             admin.table("resonance_impacts")
             .select("simulation_id, spawned_event_ids")
             .eq("resonance_id", str(resonance_id))
@@ -595,7 +595,7 @@ class SocialStoryService:
         shards_affected = len(impacts)
 
         # Get highest sequence_index for this resonance
-        existing = (
+        existing = await (
             admin.table("social_stories")
             .select("sequence_index")
             .eq("resonance_id", str(resonance_id))
@@ -642,7 +642,7 @@ class SocialStoryService:
         Reads story record, selects template by story_type, composes 1080×1920
         image, uploads to Supabase storage, and updates the record.
         """
-        resp = (
+        resp = await (
             admin.table("social_stories")
             .select("*")
             .eq("id", str(story_id))
@@ -654,7 +654,7 @@ class SocialStoryService:
         story = resp.data[0]
 
         # Update status to composing
-        admin.table("social_stories").update(
+        await admin.table("social_stories").update(
             {"status": "composing"},
         ).eq("id", str(story_id)).execute()
 
@@ -684,7 +684,7 @@ class SocialStoryService:
                     "story_id": str(story_id),
                     "story_type": story_type,
                 })
-                admin.table("social_stories").update(
+                await admin.table("social_stories").update(
                     {"status": "failed", "failure_reason": f"Unknown story type: {story_type}"},
                 ).eq("id", str(story_id)).execute()
                 return None
@@ -715,7 +715,7 @@ class SocialStoryService:
                 "story_id": str(story_id),
                 "story_type": story_type,
             })
-            admin.table("social_stories").update({
+            await admin.table("social_stories").update({
                 "status": "failed",
                 "failure_reason": f"Image composition failed: {exc!s}"[:500],
             }).eq("id", str(story_id)).execute()
@@ -758,7 +758,7 @@ class SocialStoryService:
         archetype = story.get("archetype") or ""
 
         # Fetch resonance for source_category and bureau_dispatch
-        res_resp = (
+        res_resp = await (
             admin.table("substrate_resonances")
             .select("source_category, bureau_dispatch")
             .eq("id", resonance_id)
@@ -768,7 +768,7 @@ class SocialStoryService:
         res_data = res_resp.data[0] if res_resp.data else {}
 
         # Count impacts
-        impacts_resp = (
+        impacts_resp = await (
             admin.table("resonance_impacts")
             .select("simulation_id, susceptibility, simulations(name)")
             .eq("resonance_id", resonance_id)
@@ -813,7 +813,7 @@ class SocialStoryService:
         sim_color = None
         banner_url = None
         if sim_id:
-            sim_resp = (
+            sim_resp = await (
                 admin.table("simulations")
                 .select("name, slug, banner_url")
                 .eq("id", sim_id)
@@ -824,7 +824,7 @@ class SocialStoryService:
                 sim_name = sim_resp.data[0]["name"]
                 banner_url = sim_resp.data[0].get("banner_url")
             # Fetch simulation design settings for color
-            settings_resp = (
+            settings_resp = await (
                 admin.table("simulation_settings")
                 .select("setting_value")
                 .eq("simulation_id", sim_id)
@@ -836,7 +836,7 @@ class SocialStoryService:
                 sim_color = str(settings_resp.data[0].get("setting_value", "")).strip('"')
 
         # Fetch spawned event IDs
-        impact_resp = (
+        impact_resp = await (
             admin.table("resonance_impacts")
             .select("spawned_event_ids")
             .eq("resonance_id", resonance_id)
@@ -847,7 +847,7 @@ class SocialStoryService:
         spawned_ids = (impact_resp.data[0].get("spawned_event_ids") or []) if impact_resp.data else []
         event_titles: list[str] = []
         if spawned_ids:
-            evt_resp = (
+            evt_resp = await (
                 admin.table("events")
                 .select("title")
                 .in_("id", [str(eid) for eid in spawned_ids[:5]])
@@ -859,7 +859,7 @@ class SocialStoryService:
         portrait_candidates: list[dict] = []
         reaction_data: list[dict] = []
         if spawned_ids:
-            rxn_resp = (
+            rxn_resp = await (
                 admin.table("event_reactions")
                 .select(
                     "agent_name, reaction_text, emotion, confidence_score,"
@@ -964,7 +964,7 @@ class SocialStoryService:
         events_total = 0
         shards_affected = 0
         if resonance_id:
-            impacts_resp = (
+            impacts_resp = await (
                 admin.table("resonance_impacts")
                 .select("simulation_id, spawned_event_ids")
                 .eq("resonance_id", resonance_id)
@@ -990,7 +990,7 @@ class SocialStoryService:
     async def _count_sequences_today(admin: Client) -> int:
         """Count how many story sequences were created today (UTC)."""
         today_start = datetime.now(UTC).replace(hour=0, minute=0, second=0, microsecond=0)
-        resp = (
+        resp = await (
             admin.table("social_stories")
             .select("resonance_id", count="exact")
             .gte("created_at", today_start.isoformat())
@@ -1009,7 +1009,7 @@ class SocialStoryService:
         Returns True if dedup applies (should use simplified update).
         """
         cutoff = (datetime.now(UTC) - timedelta(hours=dedup_hours)).isoformat()
-        resp = (
+        resp = await (
             admin.table("social_stories")
             .select("id", count="exact")
             .eq("archetype", archetype)
@@ -1028,7 +1028,7 @@ class SocialStoryService:
         Returns True if within cooldown (should skip).
         """
         cutoff = (datetime.now(UTC) - timedelta(hours=cooldown_hours)).isoformat()
-        resp = (
+        resp = await (
             admin.table("social_stories")
             .select("published_at")
             .eq("status", "published")
@@ -1049,7 +1049,7 @@ class SocialStoryService:
         cutoff = (datetime.now(UTC) - timedelta(hours=24)).isoformat()
 
         # Count published stories in last 24h
-        story_resp = (
+        story_resp = await (
             admin.table("social_stories")
             .select("id", count="exact")
             .eq("status", "published")
@@ -1059,7 +1059,7 @@ class SocialStoryService:
         story_count = story_resp.count if story_resp.count is not None else 0
 
         # Count published feed posts in last 24h
-        post_resp = (
+        post_resp = await (
             admin.table("instagram_posts")
             .select("id", count="exact")
             .eq("status", "published")
@@ -1076,7 +1076,7 @@ class SocialStoryService:
     @staticmethod
     async def _has_active_epoch(admin: Client) -> bool:
         """Check if any epoch is currently active."""
-        resp = (
+        resp = await (
             admin.table("game_epochs")
             .select("id", count="exact")
             .in_("status", ["lobby", "foundation", "competition", "reckoning"])
@@ -1102,7 +1102,7 @@ class SocialStoryService:
         }
 
         try:
-            rows = (
+            rows = await (
                 admin.table("platform_settings")
                 .select("setting_key, setting_value")
                 .in_("setting_key", [
@@ -1192,7 +1192,7 @@ class SocialStoryService:
         """Insert a social_stories row. Returns the created record or None."""
         try:
             insert_data = serialize_for_json(data)
-            resp = admin.table("social_stories").insert(insert_data).execute()
+            resp = await admin.table("social_stories").insert(insert_data).execute()
             return resp.data[0] if resp.data else None
         except Exception:
             logger.exception("Failed to create social story record", extra={

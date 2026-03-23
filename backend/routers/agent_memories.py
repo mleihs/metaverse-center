@@ -10,7 +10,7 @@ from backend.middleware.rate_limit import RATE_LIMIT_STANDARD, limiter
 from backend.models.common import PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.models.memory import ReflectionRequest
 from backend.services.agent_memory_service import AgentMemoryService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

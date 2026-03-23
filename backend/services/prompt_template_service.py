@@ -7,7 +7,7 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ class PromptTemplateService:
             query = query.eq("prompt_category", prompt_category)
 
         query = query.range(offset, offset + limit - 1)
-        sim_response = query.execute()
+        sim_response = await query.execute()
 
         templates = sim_response.data or []
         total = sim_response.count or len(templates)
@@ -65,7 +65,7 @@ class PromptTemplateService:
             if prompt_category:
                 platform_query = platform_query.eq("prompt_category", prompt_category)
 
-            platform_response = platform_query.execute()
+            platform_response = await platform_query.execute()
             platform_templates = platform_response.data or []
 
             # Only include platform templates not overridden by simulation
@@ -84,7 +84,7 @@ class PromptTemplateService:
         template_id: UUID,
     ) -> dict:
         """Get a single prompt template by ID."""
-        response = (
+        response = await (
             supabase.table(cls.table_name)
             .select("*")
             .eq("id", str(template_id))
@@ -113,7 +113,7 @@ class PromptTemplateService:
             "created_by_id": str(user_id),
         }
 
-        response = (
+        response = await (
             supabase.table(cls.table_name)
             .insert(insert_data)
             .execute()
@@ -141,7 +141,7 @@ class PromptTemplateService:
                 detail="No fields to update.",
             )
 
-        response = (
+        response = await (
             supabase.table(cls.table_name)
             .update(data)
             .eq("id", str(template_id))
@@ -164,7 +164,7 @@ class PromptTemplateService:
         template_id: UUID,
     ) -> dict:
         """Soft-delete a prompt template by setting is_active=False."""
-        response = (
+        response = await (
             supabase.table(cls.table_name)
             .update({"is_active": False})
             .eq("id", str(template_id))

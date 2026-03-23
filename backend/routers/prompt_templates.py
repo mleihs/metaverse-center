@@ -15,7 +15,7 @@ from backend.models.prompt_template import (
 from backend.services.audit_service import AuditService
 from backend.services.prompt_service import PromptResolver
 from backend.services.prompt_template_service import PromptTemplateService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

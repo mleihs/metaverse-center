@@ -19,7 +19,7 @@ from backend.services.external.openrouter import OpenRouterService
 from backend.services.scanning import classifier, deduplicator, pre_filter
 from backend.services.scanning.base_adapter import ScanResult
 from backend.services.scanning.registry import get_adapter, get_adapter_names
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -80,7 +80,7 @@ class ScannerService:
         }
 
         try:
-            rows = (
+            rows = await (
                 admin.table("platform_settings")
                 .select("setting_key, setting_value")
                 .in_("setting_key", [
@@ -125,7 +125,7 @@ class ScannerService:
                         pass
 
             # Also load API keys needed by adapters
-            api_key_rows = (
+            api_key_rows = await (
                 admin.table("platform_settings")
                 .select("setting_key, setting_value")
                 .in_("setting_key", [
@@ -329,7 +329,7 @@ class ScannerService:
         })
 
         try:
-            admin.table("news_scan_candidates").insert(row).execute()
+            await admin.table("news_scan_candidates").insert(row).execute()
         except Exception:
             logger.exception("Failed to stage candidate: %s", result.title[:80])
 
@@ -396,7 +396,7 @@ class ScannerService:
         enabled: bool,
     ) -> dict:
         """Enable or disable an adapter in platform_settings."""
-        resp = (
+        resp = await (
             admin.table("platform_settings")
             .select("setting_value")
             .eq("setting_key", "news_scanner_adapters")
@@ -415,7 +415,7 @@ class ScannerService:
         elif not enabled and name in current:
             current.remove(name)
 
-        admin.table("platform_settings").update(
+        await admin.table("platform_settings").update(
             {"setting_value": json.dumps(current)},
         ).eq("setting_key", "news_scanner_adapters").execute()
 
@@ -462,7 +462,7 @@ class ScannerService:
         query = query.order("created_at", desc=True)
         query = query.range(offset, offset + limit - 1)
 
-        response = query.execute()
+        response = await query.execute()
         data = response.data or []
         total = response.count if response.count is not None else len(data)
         return data, total
@@ -478,7 +478,7 @@ class ScannerService:
         if not data:
             return None
 
-        resp = (
+        resp = await (
             admin.table("news_scan_candidates")
             .update(data)
             .eq("id", str(candidate_id))
@@ -504,7 +504,7 @@ class ScannerService:
         query = query.order("scanned_at", desc=True)
         query = query.range(offset, offset + limit - 1)
 
-        response = query.execute()
+        response = await query.execute()
         data = response.data or []
         total = response.count if response.count is not None else len(data)
         return data, total
@@ -521,7 +521,7 @@ class ScannerService:
         from backend.services.resonance_service import ResonanceService
 
         # Load candidate
-        resp = (
+        resp = await (
             admin.table("news_scan_candidates")
             .select("*")
             .eq("id", str(candidate_id))
@@ -570,7 +570,7 @@ class ScannerService:
         user_id: UUID,
     ) -> None:
         """Reject a candidate."""
-        admin.table("news_scan_candidates").update({
+        await admin.table("news_scan_candidates").update({
             "status": "rejected",
             "reviewed_at": datetime.now(UTC).isoformat(),
             "reviewed_by_id": str(user_id),
@@ -602,7 +602,7 @@ class ScannerService:
         # Get scan metrics
         today_start = datetime.now(UTC).replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
 
-        scanned_resp = (
+        scanned_resp = await (
             admin.table("news_scan_log")
             .select("id", count="exact")
             .gte("scanned_at", today_start)
@@ -610,7 +610,7 @@ class ScannerService:
         )
         scanned_today = scanned_resp.count or 0
 
-        classified_resp = (
+        classified_resp = await (
             admin.table("news_scan_log")
             .select("id", count="exact")
             .gte("scanned_at", today_start)
@@ -619,7 +619,7 @@ class ScannerService:
         )
         classified_today = classified_resp.count or 0
 
-        resonances_resp = (
+        resonances_resp = await (
             admin.table("substrate_resonances")
             .select("id", count="exact")
             .gte("created_at", today_start)
@@ -629,7 +629,7 @@ class ScannerService:
         resonances_today = resonances_resp.count or 0
 
         # Pending candidates count
-        pending_resp = (
+        pending_resp = await (
             admin.table("news_scan_candidates")
             .select("id", count="exact")
             .eq("status", "pending")
@@ -638,7 +638,7 @@ class ScannerService:
         pending_count = pending_resp.count or 0
 
         # Last scan timestamp
-        last_scan_resp = (
+        last_scan_resp = await (
             admin.table("news_scan_log")
             .select("scanned_at")
             .order("scanned_at", desc=True)

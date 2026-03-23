@@ -305,7 +305,7 @@ async def enrich_html_for_crawler(index_path: Path, url_path: str) -> str | None
                 query = query.eq("id", id_or_slug)
             else:
                 query = query.eq("slug", id_or_slug)
-            response = query.limit(1).execute()
+            response = await query.limit(1).execute()
             if not response.data:
                 return None
             sim = response.data[0]

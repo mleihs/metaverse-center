@@ -38,7 +38,7 @@ from backend.services.audit_service import AuditService
 from backend.services.external.instagram import InstagramService
 from backend.services.instagram_content_service import InstagramContentService
 from backend.services.instagram_scheduler import InstagramScheduler
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

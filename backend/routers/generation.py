@@ -15,7 +15,7 @@ from backend.services.external_service_resolver import ExternalServiceResolver
 from backend.services.game_mechanics_service import GameMechanicsService
 from backend.services.generation_service import GenerationService
 from backend.services.image_service import ImageService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

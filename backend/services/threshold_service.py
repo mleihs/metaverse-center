@@ -16,7 +16,7 @@ from fastapi import HTTPException, status
 from backend.services.audit_service import AuditService
 from backend.services.base_service import serialize_for_json
 from backend.services.game_mechanics_service import GameMechanicsService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ class ThresholdService:
         Returns the health data if valid, raises 409 if not an epoch or not critical.
         """
         # Check simulation type — threshold actions are epoch-only
-        sim_resp = (
+        sim_resp = await (
             supabase.table("simulations")
             .select("simulation_type, epoch_id")
             .eq("id", str(simulation_id))
@@ -126,7 +126,7 @@ class ThresholdService:
             "target_zone_id": str(target_zone_id) if target_zone_id else None,
             "result": result,
         }
-        admin_supabase.table("threshold_actions").insert(
+        await admin_supabase.table("threshold_actions").insert(
             serialize_for_json(log_data)
         ).execute()
 
@@ -164,7 +164,7 @@ class ThresholdService:
             )
 
         # Get the building to find its zone
-        building_resp = (
+        building_resp = await (
             supabase.table("buildings")
             .select("id, name, zone_id, building_type")
             .eq("id", str(building_id))
@@ -182,7 +182,7 @@ class ThresholdService:
         zone_id = building.get("zone_id")
 
         # Hard-delete the building
-        supabase.table("buildings").delete().eq("id", str(building_id)).execute()
+        await supabase.table("buildings").delete().eq("id", str(building_id)).execute()
 
         logger.info(
             "Scorched earth: destroyed building %s in zone %s",
@@ -209,7 +209,7 @@ class ThresholdService:
         agent at minimal quality. Costs RP if in an epoch context.
         """
         # Get existing professions for variety
-        agents_resp = (
+        agents_resp = await (
             supabase.table("active_agents")
             .select("primary_profession, system")
             .eq("simulation_id", str(simulation_id))
@@ -235,7 +235,7 @@ class ThresholdService:
             "background": "Pulled from civilian reserves during threshold crisis.",
         }
 
-        resp = supabase.table("agents").insert(serialize_for_json(new_agent)).execute()
+        resp = await supabase.table("agents").insert(serialize_for_json(new_agent)).execute()
         agent_data = resp.data[0] if resp.data else {}
 
         logger.info(
@@ -277,7 +277,7 @@ class ThresholdService:
         }
 
         # Upsert the setting
-        supabase.table("simulation_settings").upsert(
+        await supabase.table("simulation_settings").upsert(
             serialize_for_json(setting_data),
             on_conflict="simulation_id,category,setting_key",
         ).execute()

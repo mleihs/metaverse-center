@@ -7,7 +7,7 @@ import re
 from dataclasses import dataclass
 from uuid import UUID
 
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -187,7 +187,7 @@ class PromptResolver:
             self._sim_locale = "en"
             return "en"
 
-        response = (
+        response = await (
             self._supabase.table("simulation_settings")
             .select("setting_value")
             .eq("simulation_id", str(self._simulation_id))
@@ -281,7 +281,7 @@ class PromptResolver:
         else:
             query = query.is_("simulation_id", "null")
 
-        response = query.limit(1).execute()
+        response = await query.limit(1).execute()
         if response and response.data:
             return response.data[0] if isinstance(response.data, list) else response.data
         return None

@@ -8,7 +8,7 @@ from fastapi import HTTPException, status
 
 from backend.models.settings import is_sensitive_key
 from backend.utils.encryption import decrypt, encrypt, mask
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ class SettingsService:
         if category:
             query = query.eq("category", category)
 
-        response = query.execute()
+        response = await query.execute()
         return [_mask_if_encrypted(s) for s in (response.data or [])]
 
     @staticmethod
@@ -44,7 +44,7 @@ class SettingsService:
         setting_id: UUID,
     ) -> dict:
         """Get a single setting by ID."""
-        response = (
+        response = await (
             supabase.table("simulation_settings")
             .select("*")
             .eq("simulation_id", str(simulation_id))
@@ -83,7 +83,7 @@ class SettingsService:
             "updated_at": datetime.now(UTC).isoformat(),
         }
 
-        response = (
+        response = await (
             supabase.table("simulation_settings")
             .upsert(insert_data, on_conflict="simulation_id,category,setting_key")
             .execute()
@@ -107,7 +107,7 @@ class SettingsService:
         """Fetch a specific setting across multiple simulations."""
         if not simulation_ids:
             return []
-        response = (
+        response = await (
             supabase.table("simulation_settings")
             .select("simulation_id, setting_value")
             .eq("category", category)
@@ -124,7 +124,7 @@ class SettingsService:
         setting_id: UUID,
     ) -> dict:
         """Delete a setting."""
-        response = (
+        response = await (
             supabase.table("simulation_settings")
             .delete()
             .eq("simulation_id", str(simulation_id))

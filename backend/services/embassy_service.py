@@ -13,7 +13,7 @@ from uuid import UUID
 from fastapi import HTTPException, status
 
 from backend.services.base_service import serialize_for_json
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +57,7 @@ class EmbassyService:
             query = query.eq("status", status_filter)
 
         query = query.range(offset, offset + limit - 1)
-        response = query.execute()
+        response = await query.execute()
         total = response.count if response.count is not None else len(response.data or [])
         return response.data or [], total
 
@@ -69,7 +69,7 @@ class EmbassyService:
     ) -> list[dict]:
         """List embassies for a specific building."""
         bid = str(building_id)
-        response = (
+        response = await (
             supabase.table(cls.table_name)
             .select(_EMBASSY_SELECT)
             .or_(f"building_a_id.eq.{bid},building_b_id.eq.{bid}")
@@ -85,7 +85,7 @@ class EmbassyService:
         embassy_id: UUID,
     ) -> dict:
         """Get a single embassy by ID."""
-        response = (
+        response = await (
             supabase.table(cls.table_name)
             .select(_EMBASSY_SELECT)
             .eq("id", str(embassy_id))
@@ -107,7 +107,7 @@ class EmbassyService:
     ) -> dict | None:
         """Get the embassy for a specific building, or None."""
         bid = str(building_id)
-        response = (
+        response = await (
             supabase.table(cls.table_name)
             .select(_EMBASSY_SELECT)
             .or_(f"building_a_id.eq.{bid},building_b_id.eq.{bid}")
@@ -161,7 +161,7 @@ class EmbassyService:
             "created_by_id": str(created_by_id) if created_by_id else None,
         })
 
-        response = (
+        response = await (
             admin_supabase.table(cls.table_name)
             .insert(insert_data)
             .execute()
@@ -212,7 +212,7 @@ class EmbassyService:
 
         update_data = {**serialize_for_json(data), "updated_at": datetime.now(UTC).isoformat()}
 
-        response = (
+        response = await (
             admin_supabase.table(cls.table_name)
             .update(update_data)
             .eq("id", str(embassy_id))
@@ -277,7 +277,7 @@ class EmbassyService:
         supabase: Client,
     ) -> list[dict]:
         """List all active embassies (for map data)."""
-        response = (
+        response = await (
             supabase.table(cls.table_name)
             .select(_EMBASSY_SELECT)
             .eq("status", "active")
@@ -296,12 +296,18 @@ class EmbassyService:
         eid = embassy["id"]
 
         # Get partner building names
-        ba_resp = admin_supabase.table("buildings").select("name").eq("id", embassy["building_a_id"]).single().execute()
-        bb_resp = admin_supabase.table("buildings").select("name").eq("id", embassy["building_b_id"]).single().execute()
+        ba_resp = await (
+            admin_supabase.table("buildings")
+            .select("name").eq("id", embassy["building_a_id"]).single().execute()
+        )
+        bb_resp = await (
+            admin_supabase.table("buildings")
+            .select("name").eq("id", embassy["building_b_id"]).single().execute()
+        )
 
         if ba_resp.data and bb_resp.data:
             # Update building A
-            admin_supabase.table("buildings").update({
+            await admin_supabase.table("buildings").update({
                 "special_type": "embassy",
                 "special_attributes": serialize_for_json({
                     "embassy_id": eid,
@@ -330,7 +336,7 @@ class EmbassyService:
     ) -> None:
         """Clear special_type and special_attributes on dissolved embassy buildings."""
         for bid in [embassy["building_a_id"], embassy["building_b_id"]]:
-            admin_supabase.table("buildings").update({
+            await admin_supabase.table("buildings").update({
                 "special_type": None,
                 "special_attributes": {},
             }).eq("id", bid).execute()

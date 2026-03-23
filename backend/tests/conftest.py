@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 from uuid import UUID
 
 import pytest
@@ -42,7 +42,7 @@ def make_chain_mock(execute_data=None, execute_count=None):
     resp = MagicMock()
     resp.data = execute_data
     resp.count = execute_count
-    c.execute.return_value = resp
+    c.execute = AsyncMock(return_value=resp)
     return c
 
 

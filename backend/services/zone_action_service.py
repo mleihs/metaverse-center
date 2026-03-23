@@ -9,7 +9,7 @@ from uuid import UUID
 from fastapi import HTTPException, status
 
 from backend.services.game_mechanics_service import GameMechanicsService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +58,7 @@ class ZoneActionService:
         now = datetime.now(UTC)
 
         # Check for active action on this zone
-        active_check = (
+        active_check = await (
             supabase.table("zone_actions")
             .select("id, action_type, expires_at")
             .eq("zone_id", str(zone_id))
@@ -75,7 +75,7 @@ class ZoneActionService:
             )
 
         # Check cooldown — find most recent expired action of this type
-        cooldown_check = (
+        cooldown_check = await (
             supabase.table("zone_actions")
             .select("cooldown_until")
             .eq("zone_id", str(zone_id))
@@ -99,7 +99,7 @@ class ZoneActionService:
         expires_at = now + timedelta(days=config["duration_days"])
         cooldown_until = expires_at + timedelta(days=config["cooldown_days"])
 
-        response = (
+        response = await (
             supabase.table("zone_actions")
             .insert({
                 "zone_id": str(zone_id),
@@ -140,7 +140,7 @@ class ZoneActionService:
         action_id: UUID,
     ) -> dict:
         """Cancel an active zone action by setting deleted_at."""
-        response = (
+        response = await (
             supabase.table("zone_actions")
             .update({"deleted_at": datetime.now(UTC).isoformat()})
             .eq("id", str(action_id))
@@ -175,7 +175,7 @@ class ZoneActionService:
         zone_id: UUID,
     ) -> list[dict]:
         """List active + recently expired actions for a zone."""
-        response = (
+        response = await (
             supabase.table("zone_actions")
             .select("*")
             .eq("zone_id", str(zone_id))

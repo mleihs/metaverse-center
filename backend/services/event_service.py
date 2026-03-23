@@ -15,7 +15,7 @@ from backend.services.constants import EVENT_STATUSES
 from backend.services.game_mechanics_service import GameMechanicsService
 from backend.services.platform_config_service import PlatformConfigService
 from backend.utils.search import apply_search_filter
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ class EventService(BaseService):
             query = apply_search_filter(query, search, "search_vector", "title")
 
         query = query.range(offset, offset + limit - 1)
-        response = query.execute()
+        response = await query.execute()
 
         total = response.count if response.count is not None else len(response.data or [])
         return response.data or [], total
@@ -79,7 +79,7 @@ class EventService(BaseService):
         event_id: UUID,
     ) -> list[dict]:
         """Get all reactions for an event."""
-        response = (
+        response = await (
             supabase.table("event_reactions")
             .select("*, agents(id, name, portrait_image_url)")
             .eq("simulation_id", str(simulation_id))
@@ -104,7 +104,7 @@ class EventService(BaseService):
             "event_id": str(event_id),
         }
 
-        response = (
+        response = await (
             supabase.table("event_reactions")
             .insert(insert_data)
             .execute()
@@ -126,7 +126,7 @@ class EventService(BaseService):
         data: dict,
     ) -> dict:
         """Update an existing event reaction."""
-        response = (
+        response = await (
             supabase.table("event_reactions")
             .update(data)
             .eq("id", str(reaction_id))
@@ -149,7 +149,7 @@ class EventService(BaseService):
         reaction_id: UUID,
     ) -> dict:
         """Delete a single event reaction."""
-        response = (
+        response = await (
             supabase.table("event_reactions")
             .delete()
             .eq("id", str(reaction_id))
@@ -173,7 +173,7 @@ class EventService(BaseService):
         tags: list[str],
     ) -> list[dict]:
         """Get events that contain any of the specified tags."""
-        response = (
+        response = await (
             supabase.table(cls._read_table())
             .select("*")
             .eq("simulation_id", str(simulation_id))
@@ -209,7 +209,7 @@ class EventService(BaseService):
         event_id: UUID,
     ) -> list[dict]:
         """Get all chain links for an event (as parent or child)."""
-        response = (
+        response = await (
             supabase.table("event_chains")
             .select(
                 "*, parent:events!parent_event_id(id, title, event_status),"
@@ -234,7 +234,7 @@ class EventService(BaseService):
             **data,
             "simulation_id": str(simulation_id),
         }
-        response = (
+        response = await (
             supabase.table("event_chains")
             .insert(insert_data)
             .execute()
@@ -254,7 +254,7 @@ class EventService(BaseService):
         chain_id: UUID,
     ) -> dict:
         """Remove an event chain link."""
-        response = (
+        response = await (
             supabase.table("event_chains")
             .delete()
             .eq("id", str(chain_id))
@@ -403,7 +403,7 @@ class EventService(BaseService):
         event_id: UUID,
     ) -> list[dict]:
         """Get zone links for an event, flattening zone name/type into each link."""
-        response = (
+        response = await (
             supabase.table("event_zone_links")
             .select("*, zones(name, zone_type)")
             .eq("event_id", str(event_id))
@@ -433,7 +433,7 @@ class EventService(BaseService):
 
         # ── Heartbeat integration: attach new events to matching arcs ──
         try:
-            arcs = (
+            arcs = await (
                 supabase.table("narrative_arcs")
                 .select("id, primary_signature, source_event_ids")
                 .eq("simulation_id", str(simulation_id))
@@ -443,7 +443,7 @@ class EventService(BaseService):
             if arcs:
                 # Get recently created events (last 60s) with resonance tags
                 cutoff = (datetime.now(UTC) - timedelta(seconds=60)).isoformat()
-                recent = (
+                recent = await (
                     supabase.table("events")
                     .select("id, tags")
                     .eq("simulation_id", str(simulation_id))
@@ -459,7 +459,7 @@ class EventService(BaseService):
                             existing_ids = arc.get("source_event_ids") or []
                             if event["id"] not in existing_ids:
                                 existing_ids.append(event["id"])
-                                supabase.table("narrative_arcs").update({
+                                await supabase.table("narrative_arcs").update({
                                     "source_event_ids": existing_ids,
                                 }).eq("id", arc["id"]).execute()
         except Exception:
@@ -468,7 +468,7 @@ class EventService(BaseService):
         # ── Building condition degradation from crisis/sabotage events ──
         try:
             cutoff_crisis = (datetime.now(UTC) - timedelta(seconds=60)).isoformat()
-            crisis_events = (
+            crisis_events = await (
                 supabase.table("events")
                 .select("id, tags")
                 .eq("simulation_id", str(simulation_id))
@@ -482,7 +482,7 @@ class EventService(BaseService):
                     supabase, "heartbeat_building_crisis_degradation", 0.10,
                 )
                 for ev in crisis_events:
-                    zone_links = (
+                    zone_links = await (
                         supabase.table("event_zone_links")
                         .select("zone_id")
                         .eq("event_id", ev["id"])
@@ -490,7 +490,7 @@ class EventService(BaseService):
                     ).data or []
                     zone_ids = [zl["zone_id"] for zl in zone_links]
                     if zone_ids:
-                        buildings = (
+                        buildings = await (
                             supabase.table("buildings")
                             .select("id, building_condition")
                             .eq("simulation_id", str(simulation_id))
@@ -502,7 +502,7 @@ class EventService(BaseService):
                             old_cond = float(bldg.get("building_condition") or 1.0)
                             new_cond = round(max(0.0, old_cond - degradation), 4)
                             if new_cond < old_cond:
-                                supabase.table("buildings").update({
+                                await supabase.table("buildings").update({
                                     "building_condition": new_cond,
                                 }).eq("id", bldg["id"]).execute()
                         logger.info(
@@ -517,7 +517,7 @@ class EventService(BaseService):
         except Exception:
             logger.debug("Building crisis degradation unavailable", exc_info=True)
 
-        result = supabase.rpc(
+        result = await supabase.rpc(
             "process_cascade_events",
             {"p_simulation_id": str(simulation_id)},
         ).execute()

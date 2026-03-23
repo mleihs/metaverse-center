@@ -6,7 +6,7 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ class TaxonomyService:
         if active_only:
             query = query.eq("is_active", True)
 
-        response = query.execute()
+        response = await query.execute()
         return response.data or []
 
     @staticmethod
@@ -57,7 +57,7 @@ class TaxonomyService:
         )
         if taxonomy_type:
             query = query.eq("taxonomy_type", taxonomy_type)
-        response = query.execute()
+        response = await query.execute()
         data = response.data or []
         total = response.count if response.count is not None else len(data)
         return data, total
@@ -65,7 +65,7 @@ class TaxonomyService:
     @staticmethod
     async def create_taxonomy(supabase: Client, simulation_id: UUID, data: dict) -> dict:
         """Create a new taxonomy value."""
-        response = (
+        response = await (
             supabase.table("simulation_taxonomies")
             .insert({**data, "simulation_id": str(simulation_id)})
             .execute()
@@ -88,7 +88,7 @@ class TaxonomyService:
         if not data:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields to update.")
         data["updated_at"] = datetime.now(UTC).isoformat()
-        response = (
+        response = await (
             supabase.table("simulation_taxonomies")
             .update(data)
             .eq("simulation_id", str(simulation_id))
@@ -109,7 +109,7 @@ class TaxonomyService:
         taxonomy_id: UUID,
     ) -> dict:
         """Soft-delete a taxonomy by setting is_active=False."""
-        response = (
+        response = await (
             supabase.table("simulation_taxonomies")
             .update({"is_active": False, "updated_at": datetime.now(UTC).isoformat()})
             .eq("simulation_id", str(simulation_id))

@@ -22,7 +22,7 @@ from backend.config import settings
 from backend.services.cipher_service import CipherService
 from backend.services.generation_service import GenerationService
 from backend.services.instagram_image_composer import InstagramImageComposer
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -142,7 +142,7 @@ class InstagramContentService:
     async def create_post(cls, admin_supabase: Client, data: dict, user_id: str) -> dict:
         """Create a manual Instagram post draft."""
         record = {**data, "status": "draft", "ai_disclosure_included": True, "created_by_id": user_id}
-        resp = admin_supabase.table("instagram_posts").insert(record).execute()
+        resp = await admin_supabase.table("instagram_posts").insert(record).execute()
         if not resp.data:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -155,7 +155,7 @@ class InstagramContentService:
         cls, admin_supabase: Client, post_id: str, failure_reason: str,
     ) -> None:
         """Reset a post back to scheduled status after a publish failure."""
-        admin_supabase.table("instagram_posts").update({
+        await admin_supabase.table("instagram_posts").update({
             "status": "scheduled",
             "failure_reason": failure_reason[:500],
         }).eq("id", post_id).execute()
@@ -163,7 +163,7 @@ class InstagramContentService:
     @classmethod
     async def get_pipeline_settings(cls, admin_supabase: Client) -> dict:
         """Get all Instagram pipeline configuration settings as a flat dict."""
-        resp = (
+        resp = await (
             admin_supabase.table("platform_settings")
             .select("setting_key, setting_value, description")
             .in_("setting_key", cls.PIPELINE_SETTINGS_KEYS)
@@ -199,7 +199,7 @@ class InstagramContentService:
         image_url, simulation metadata, etc.
         """
         types = content_types or list(DEFAULT_CONTENT_MIX.keys())
-        response = admin_supabase.rpc(
+        response = await admin_supabase.rpc(
             "fn_select_instagram_candidates",
             {"p_content_types": types, "p_limit": limit},
         ).execute()
@@ -266,7 +266,7 @@ class InstagramContentService:
         # 3. Build hashtags (with trending tags from platform_settings)
         trending_tags: list[str] = []
         try:
-            trend_resp = (
+            trend_resp = await (
                 admin_supabase.table("platform_settings")
                 .select("setting_value")
                 .eq("setting_key", "instagram_trending_tags")
@@ -312,7 +312,7 @@ class InstagramContentService:
         unlock_code = None
         image_cipher_hint = None
         try:
-            cipher_resp = (
+            cipher_resp = await (
                 admin_supabase.table("platform_settings")
                 .select("setting_key, setting_value")
                 .in_("setting_key", [
@@ -431,7 +431,7 @@ class InstagramContentService:
             "created_by_id": str(user_id) if user_id else None,
         }
 
-        resp = (
+        resp = await (
             admin_supabase.table("instagram_posts")
             .insert(record)
             .execute()
@@ -483,7 +483,7 @@ class InstagramContentService:
         # Load configurable content mix from platform_settings
         mix = dict(DEFAULT_CONTENT_MIX)
         try:
-            mix_resp = (
+            mix_resp = await (
                 admin_supabase.table("platform_settings")
                 .select("setting_value")
                 .eq("setting_key", "instagram_content_mix")
@@ -629,7 +629,7 @@ class InstagramContentService:
             query = query.eq("status", status_filter)
 
         query = query.range(offset, offset + limit - 1)
-        response = query.execute()
+        response = await query.execute()
         data = response.data or []
         total = response.count if response.count is not None else len(data)
         return data, total
@@ -646,7 +646,7 @@ class InstagramContentService:
             "status": "scheduled",
             "scheduled_at": (scheduled_at or datetime.now(UTC)).isoformat(),
         }
-        resp = (
+        resp = await (
             admin_supabase.table("instagram_posts")
             .update(update)
             .eq("id", str(post_id))
@@ -673,7 +673,7 @@ class InstagramContentService:
             "status": "rejected",
             "failure_reason": reason,
         }
-        resp = (
+        resp = await (
             admin_supabase.table("instagram_posts")
             .update(update)
             .eq("id", str(post_id))
@@ -695,7 +695,7 @@ class InstagramContentService:
         post_id: UUID,
     ) -> dict:
         """Get a single Instagram post."""
-        resp = (
+        resp = await (
             admin_supabase.table("instagram_posts")
             .select("*")
             .eq("id", str(post_id))
@@ -739,7 +739,7 @@ class InstagramContentService:
             "engagement_rate": engagement_rate,
             "metrics_updated_at": datetime.now(UTC).isoformat(),
         }
-        resp = (
+        resp = await (
             admin_supabase.table("instagram_posts")
             .update(update)
             .eq("id", str(post_id))
@@ -755,7 +755,7 @@ class InstagramContentService:
     ) -> dict:
         """Get aggregated Instagram analytics via Postgres RPC."""
         try:
-            response = admin_supabase.rpc(
+            response = await admin_supabase.rpc(
                 "fn_instagram_analytics",
                 {"p_days": days},
             ).execute()
@@ -774,7 +774,7 @@ class InstagramContentService:
     @classmethod
     async def _get_next_dispatch_number(cls, admin_supabase: Client) -> int:
         """Get the next Bureau dispatch number (sequential across all posts)."""
-        count_resp = (
+        count_resp = await (
             admin_supabase.table("instagram_posts")
             .select("id", count="exact")
             .execute()
@@ -1051,7 +1051,7 @@ class InstagramContentService:
         if not simulation_id:
             return {"color_primary": "#e2e8f0", "color_background": "#0f172a"}
 
-        resp = (
+        resp = await (
             admin_supabase.table("simulation_settings")
             .select("setting_key, setting_value")
             .eq("simulation_id", simulation_id)
@@ -1094,7 +1094,7 @@ class InstagramContentService:
         # Load configurable blocklist from platform_settings
         blocklist = list(cls._DEFAULT_BLOCKLIST)
         try:
-            resp = (
+            resp = await (
                 admin_supabase.table("platform_settings")
                 .select("setting_value")
                 .eq("setting_key", "instagram_blocklist")
@@ -1132,7 +1132,7 @@ class InstagramContentService:
         Shared utility used by both the router and scheduler to avoid
         duplicating credential loading + decryption logic.
         """
-        rows = (
+        rows = await (
             admin_supabase.table("platform_settings")
             .select("setting_key, setting_value")
             .in_("setting_key", ["instagram_access_token", "instagram_ig_user_id"])

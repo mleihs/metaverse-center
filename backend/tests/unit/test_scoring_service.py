@@ -50,15 +50,15 @@ class TestComputeStability:
         sb = MagicMock()
 
         mv_chain = _make_chain()
-        mv_chain.execute.return_value = MagicMock(
+        mv_chain.execute = AsyncMock(return_value=MagicMock(
             data=[{"stability": 0.8}, {"stability": 0.6}]
-        )
+        ))
 
         events_chain = _make_chain()
-        events_chain.execute.return_value = MagicMock(data=[], count=0)
+        events_chain.execute = AsyncMock(return_value=MagicMock(data=[], count=0))
 
         missions_chain = _make_chain()
-        missions_chain.execute.return_value = MagicMock(data=[])
+        missions_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         def table_router(name):
             if name == "mv_zone_stability":
@@ -82,15 +82,15 @@ class TestComputeStability:
         sb = MagicMock()
 
         mv_chain = _make_chain()
-        mv_chain.execute.return_value = MagicMock(
+        mv_chain.execute = AsyncMock(return_value=MagicMock(
             data=[{"stability": 1.0}]
-        )
+        ))
 
         events_chain = _make_chain()
-        events_chain.execute.return_value = MagicMock(data=[], count=4)
+        events_chain.execute = AsyncMock(return_value=MagicMock(data=[], count=4))
 
         missions_chain = _make_chain()
-        missions_chain.execute.return_value = MagicMock(data=[])
+        missions_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         def table_router(name):
             if name == "mv_zone_stability":
@@ -114,21 +114,21 @@ class TestComputeStability:
         sb = MagicMock()
 
         mv_chain = _make_chain()
-        mv_chain.execute.return_value = MagicMock(
+        mv_chain.execute = AsyncMock(return_value=MagicMock(
             data=[{"stability": 1.0}]
-        )
+        ))
 
         events_chain = _make_chain()
-        events_chain.execute.return_value = MagicMock(data=[], count=0)
+        events_chain.execute = AsyncMock(return_value=MagicMock(data=[], count=0))
 
         missions_chain = _make_chain()
-        missions_chain.execute.return_value = MagicMock(
+        missions_chain.execute = AsyncMock(return_value=MagicMock(
             data=[
                 {"operative_type": "saboteur"},
                 {"operative_type": "saboteur"},
                 {"operative_type": "assassin"},
             ]
-        )
+        ))
 
         def table_router(name):
             if name == "mv_zone_stability":
@@ -152,17 +152,17 @@ class TestComputeStability:
         sb = MagicMock()
 
         mv_chain = _make_chain()
-        mv_chain.execute.return_value = MagicMock(
+        mv_chain.execute = AsyncMock(return_value=MagicMock(
             data=[{"stability": 0.1}]
-        )
+        ))
 
         events_chain = _make_chain()
-        events_chain.execute.return_value = MagicMock(data=[], count=20)
+        events_chain.execute = AsyncMock(return_value=MagicMock(data=[], count=20))
 
         missions_chain = _make_chain()
-        missions_chain.execute.return_value = MagicMock(
+        missions_chain.execute = AsyncMock(return_value=MagicMock(
             data=[{"operative_type": "saboteur"}] * 10
-        )
+        ))
 
         def table_router(name):
             if name == "mv_zone_stability":
@@ -185,13 +185,13 @@ class TestComputeStability:
         sb = MagicMock()
 
         mv_chain = _make_chain()
-        mv_chain.execute.return_value = MagicMock(data=[])
+        mv_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         events_chain = _make_chain()
-        events_chain.execute.return_value = MagicMock(data=[], count=0)
+        events_chain.execute = AsyncMock(return_value=MagicMock(data=[], count=0))
 
         missions_chain = _make_chain()
-        missions_chain.execute.return_value = MagicMock(data=[])
+        missions_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         def table_router(name):
             if name == "mv_zone_stability":
@@ -219,17 +219,17 @@ class TestComputeInfluence:
         sb = MagicMock()
 
         missions_chain = _make_chain()
-        missions_chain.execute.return_value = MagicMock(
+        missions_chain.execute = AsyncMock(return_value=MagicMock(
             data=[
                 {"operative_type": "propagandist"},
                 {"operative_type": "propagandist"},
                 {"operative_type": "spy"},
                 {"operative_type": "infiltrator"},
             ]
-        )
+        ))
 
         echo_chain = _make_chain()
-        echo_chain.execute.return_value = MagicMock(data=[])
+        echo_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         def table_router(name):
             if name == "operative_missions":
@@ -251,15 +251,15 @@ class TestComputeInfluence:
         sb = MagicMock()
 
         missions_chain = _make_chain()
-        missions_chain.execute.return_value = MagicMock(data=[])
+        missions_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         echo_chain = _make_chain()
-        echo_chain.execute.return_value = MagicMock(
+        echo_chain.execute = AsyncMock(return_value=MagicMock(
             data=[
                 {"echo_strength": 3},
                 {"echo_strength": 5},
             ]
-        )
+        ))
 
         def table_router(name):
             if name == "operative_missions":
@@ -279,10 +279,10 @@ class TestComputeInfluence:
         sb = MagicMock()
 
         missions_chain = _make_chain()
-        missions_chain.execute.return_value = MagicMock(data=[])
+        missions_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         echo_chain = _make_chain()
-        echo_chain.execute.return_value = MagicMock(data=[])
+        echo_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         def table_router(name):
             if name == "operative_missions":
@@ -308,10 +308,10 @@ class TestComputeSovereignty:
         sb = MagicMock()
 
         inbound_chain = _make_chain()
-        inbound_chain.execute.return_value = MagicMock(data=[])
+        inbound_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         guardian_chain = _make_chain()
-        guardian_chain.execute.return_value = MagicMock(data=[])
+        guardian_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         call_count = {"operative_missions": 0}
 
@@ -335,16 +335,16 @@ class TestComputeSovereignty:
         sb = MagicMock()
 
         inbound_chain = _make_chain()
-        inbound_chain.execute.return_value = MagicMock(
+        inbound_chain.execute = AsyncMock(return_value=MagicMock(
             data=[
                 {"operative_type": "spy", "status": "success"},
                 {"operative_type": "saboteur", "status": "success"},
                 {"operative_type": "assassin", "status": "success"},
             ]
-        )
+        ))
 
         guardian_chain = _make_chain()
-        guardian_chain.execute.return_value = MagicMock(data=[])
+        guardian_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         call_count = {"operative_missions": 0}
 
@@ -369,15 +369,15 @@ class TestComputeSovereignty:
         sb = MagicMock()
 
         inbound_chain = _make_chain()
-        inbound_chain.execute.return_value = MagicMock(
+        inbound_chain.execute = AsyncMock(return_value=MagicMock(
             data=[
                 {"operative_type": "spy", "status": "detected"},
                 {"operative_type": "saboteur", "status": "detected"},
             ]
-        )
+        ))
 
         guardian_chain = _make_chain()
-        guardian_chain.execute.return_value = MagicMock(data=[])
+        guardian_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         call_count = {"operative_missions": 0}
 
@@ -402,12 +402,12 @@ class TestComputeSovereignty:
         sb = MagicMock()
 
         inbound_chain = _make_chain()
-        inbound_chain.execute.return_value = MagicMock(data=[])
+        inbound_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         guardian_chain = _make_chain()
-        guardian_chain.execute.return_value = MagicMock(
+        guardian_chain.execute = AsyncMock(return_value=MagicMock(
             data=[{"id": "g1"}, {"id": "g2"}, {"id": "g3"}]
-        )
+        ))
 
         call_count = {"operative_missions": 0}
 
@@ -432,12 +432,12 @@ class TestComputeSovereignty:
         sb = MagicMock()
 
         inbound_chain = _make_chain()
-        inbound_chain.execute.return_value = MagicMock(
+        inbound_chain.execute = AsyncMock(return_value=MagicMock(
             data=[{"operative_type": "assassin", "status": "success"}] * 10
-        )
+        ))
 
         guardian_chain = _make_chain()
-        guardian_chain.execute.return_value = MagicMock(data=[])
+        guardian_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         call_count = {"operative_missions": 0}
 
@@ -467,22 +467,22 @@ class TestComputeDiplomatic:
         sb = MagicMock()
 
         mv_chain = _make_chain()
-        mv_chain.execute.return_value = MagicMock(
+        mv_chain.execute = AsyncMock(return_value=MagicMock(
             data=[{"effectiveness": 0.7}, {"effectiveness": 0.5}]
-        )
+        ))
 
         embassy_chain = _make_chain()
-        embassy_chain.execute.return_value = MagicMock(
+        embassy_chain.execute = AsyncMock(return_value=MagicMock(
             data=[{"id": "e1"}, {"id": "e2"}]
-        )
+        ))
 
         participant_chain = _make_chain()
-        participant_chain.execute.return_value = MagicMock(
+        participant_chain.execute = AsyncMock(return_value=MagicMock(
             data={"team_id": None, "betrayal_penalty": 0}
-        )
+        ))
 
         spy_chain = _make_chain()
-        spy_chain.execute.return_value = MagicMock(data=[], count=0)
+        spy_chain.execute = AsyncMock(return_value=MagicMock(data=[], count=0))
 
         def table_router(name):
             if name == "mv_embassy_effectiveness":
@@ -509,14 +509,14 @@ class TestComputeDiplomatic:
         team_id = str(uuid4())
 
         mv_chain = _make_chain()
-        mv_chain.execute.return_value = MagicMock(
+        mv_chain.execute = AsyncMock(return_value=MagicMock(
             data=[{"effectiveness": 1.0}]
-        )
+        ))
 
         embassy_chain = _make_chain()
-        embassy_chain.execute.return_value = MagicMock(
+        embassy_chain.execute = AsyncMock(return_value=MagicMock(
             data=[{"id": "e1"}]
-        )
+        ))
 
         participant_chain = _make_chain()
         # First call: own participant with team
@@ -525,10 +525,10 @@ class TestComputeDiplomatic:
             # Second call: allies count
             MagicMock(data=[{"id": "p1"}, {"id": "p2"}, {"id": "p3"}]),  # 3 members = 2 allies
         ]
-        participant_chain.execute.side_effect = participant_responses
+        participant_chain.execute = AsyncMock(side_effect=participant_responses)
 
         spy_chain = _make_chain()
-        spy_chain.execute.return_value = MagicMock(data=[], count=0)
+        spy_chain.execute = AsyncMock(return_value=MagicMock(data=[], count=0))
 
         def table_router(name):
             if name == "mv_embassy_effectiveness":
@@ -554,22 +554,22 @@ class TestComputeDiplomatic:
         sb = MagicMock()
 
         mv_chain = _make_chain()
-        mv_chain.execute.return_value = MagicMock(
+        mv_chain.execute = AsyncMock(return_value=MagicMock(
             data=[{"effectiveness": 1.0}]
-        )
+        ))
 
         embassy_chain = _make_chain()
-        embassy_chain.execute.return_value = MagicMock(
+        embassy_chain.execute = AsyncMock(return_value=MagicMock(
             data=[{"id": "e1"}]
-        )
+        ))
 
         participant_chain = _make_chain()
-        participant_chain.execute.return_value = MagicMock(
+        participant_chain.execute = AsyncMock(return_value=MagicMock(
             data={"team_id": None, "betrayal_penalty": 0.25}
-        )
+        ))
 
         spy_chain = _make_chain()
-        spy_chain.execute.return_value = MagicMock(data=[], count=0)
+        spy_chain.execute = AsyncMock(return_value=MagicMock(data=[], count=0))
 
         def table_router(name):
             if name == "mv_embassy_effectiveness":
@@ -595,22 +595,22 @@ class TestComputeDiplomatic:
         sb = MagicMock()
 
         mv_chain = _make_chain()
-        mv_chain.execute.return_value = MagicMock(
+        mv_chain.execute = AsyncMock(return_value=MagicMock(
             data=[{"effectiveness": 1.0}]
-        )
+        ))
 
         embassy_chain = _make_chain()
-        embassy_chain.execute.return_value = MagicMock(
+        embassy_chain.execute = AsyncMock(return_value=MagicMock(
             data=[{"id": "e1"}]
-        )
+        ))
 
         participant_chain = _make_chain()
-        participant_chain.execute.return_value = MagicMock(
+        participant_chain.execute = AsyncMock(return_value=MagicMock(
             data={"team_id": None, "betrayal_penalty": 0}
-        )
+        ))
 
         spy_chain = _make_chain()
-        spy_chain.execute.return_value = MagicMock(data=[], count=3)
+        spy_chain.execute = AsyncMock(return_value=MagicMock(data=[], count=3))
 
         def table_router(name):
             if name == "mv_embassy_effectiveness":
@@ -640,13 +640,13 @@ class TestComputeMilitary:
         """Each mission type has a score value on success."""
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute.return_value = MagicMock(
+        chain.execute = AsyncMock(return_value=MagicMock(
             data=[
                 {"operative_type": "spy", "status": "success"},       # +3
                 {"operative_type": "saboteur", "status": "success"},  # +5
                 {"operative_type": "assassin", "status": "success"},  # +8
             ]
-        )
+        ))
         sb.table.return_value = chain
 
         result = await ScoringService._compute_military(sb, EPOCH_ID, SIM_ID_A)
@@ -659,13 +659,13 @@ class TestComputeMilitary:
         """Detected missions incur DETECTION_PENALTY (3) each."""
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute.return_value = MagicMock(
+        chain.execute = AsyncMock(return_value=MagicMock(
             data=[
                 {"operative_type": "spy", "status": "success"},     # +3
                 {"operative_type": "spy", "status": "detected"},    # -3
                 {"operative_type": "spy", "status": "detected"},    # -3
             ]
-        )
+        ))
         sb.table.return_value = chain
 
         result = await ScoringService._compute_military(sb, EPOCH_ID, SIM_ID_A)
@@ -678,12 +678,12 @@ class TestComputeMilitary:
         """Military score cannot go negative."""
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute.return_value = MagicMock(
+        chain.execute = AsyncMock(return_value=MagicMock(
             data=[
                 {"operative_type": "spy", "status": "detected"},
                 {"operative_type": "spy", "status": "detected"},
             ]
-        )
+        ))
         sb.table.return_value = chain
 
         result = await ScoringService._compute_military(sb, EPOCH_ID, SIM_ID_A)
@@ -694,7 +694,7 @@ class TestComputeMilitary:
     async def test_military_zero_with_no_missions(self):
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute.return_value = MagicMock(data=[])
+        chain.execute = AsyncMock(return_value=MagicMock(data=[]))
         sb.table.return_value = chain
 
         result = await ScoringService._compute_military(sb, EPOCH_ID, SIM_ID_A)
@@ -706,12 +706,12 @@ class TestComputeMilitary:
         """Failed (but not detected) missions incur no penalty."""
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute.return_value = MagicMock(
+        chain.execute = AsyncMock(return_value=MagicMock(
             data=[
                 {"operative_type": "spy", "status": "success"},  # +3
                 {"operative_type": "spy", "status": "failed"},   # 0
             ]
-        )
+        ))
         sb.table.return_value = chain
 
         result = await ScoringService._compute_military(sb, EPOCH_ID, SIM_ID_A)
@@ -730,7 +730,7 @@ class TestNormalizationAndComposite:
         score_id = str(uuid4())
 
         scores_chain = _make_chain()
-        scores_chain.execute.return_value = MagicMock(
+        scores_chain.execute = AsyncMock(return_value=MagicMock(
             data=[{
                 "id": score_id,
                 "simulation_id": SIM_ID_A,
@@ -741,10 +741,10 @@ class TestNormalizationAndComposite:
                 "military_score": 12.0,
                 "composite_score": 0,
             }]
-        )
+        ))
 
         update_chain = _make_chain()
-        update_chain.execute.return_value = MagicMock(data=[{}])
+        update_chain.execute = AsyncMock(return_value=MagicMock(data=[{}]))
 
         def table_router(name):
             return scores_chain
@@ -790,10 +790,10 @@ class TestNormalizationAndComposite:
         ]
 
         scores_chain = _make_chain()
-        scores_chain.execute.return_value = MagicMock(data=scores_data)
+        scores_chain.execute = AsyncMock(return_value=MagicMock(data=scores_data))
 
         update_chain = _make_chain()
-        update_chain.execute.return_value = MagicMock(data=[{}])
+        update_chain.execute = AsyncMock(return_value=MagicMock(data=[{}]))
 
         sb.table.side_effect = lambda name: scores_chain
 
@@ -825,10 +825,10 @@ class TestNormalizationAndComposite:
         }]
 
         scores_chain = _make_chain()
-        scores_chain.execute.return_value = MagicMock(data=scores_data)
+        scores_chain.execute = AsyncMock(return_value=MagicMock(data=scores_data))
 
         update_chain = _make_chain()
-        update_chain.execute.return_value = MagicMock(data=[{}])
+        update_chain.execute = AsyncMock(return_value=MagicMock(data=[{}]))
 
         sb.table.side_effect = lambda name: scores_chain
 
@@ -860,9 +860,9 @@ class TestFinalStandings:
     async def test_rejects_non_completed_epoch(self):
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute.return_value = MagicMock(
+        chain.execute = AsyncMock(return_value=MagicMock(
             data={"id": str(EPOCH_ID), "status": "competition", "config": {}}
-        )
+        ))
         sb.table.return_value = chain
 
         with pytest.raises(HTTPException) as exc:
@@ -875,12 +875,12 @@ class TestFinalStandings:
         sb = MagicMock()
 
         epoch_chain = _make_chain()
-        epoch_chain.execute.return_value = MagicMock(
+        epoch_chain.execute = AsyncMock(return_value=MagicMock(
             data={"id": str(EPOCH_ID), "status": "completed", "config": {}, "current_cycle": 5}
-        )
+        ))
 
         scores_chain = _make_chain()
-        scores_chain.execute.return_value = MagicMock(data=[])
+        scores_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         def table_router(name):
             if name == "game_epochs":
@@ -898,12 +898,12 @@ class TestFinalStandings:
         sb = MagicMock()
 
         epoch_chain = _make_chain()
-        epoch_chain.execute.return_value = MagicMock(
+        epoch_chain.execute = AsyncMock(return_value=MagicMock(
             data={"id": str(EPOCH_ID), "status": "cancelled", "config": {}, "current_cycle": 3}
-        )
+        ))
 
         scores_chain = _make_chain()
-        scores_chain.execute.return_value = MagicMock(data=[])
+        scores_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         def table_router(name):
             if name == "game_epochs":
@@ -929,7 +929,7 @@ class TestScoringServiceLogging:
 
         # rpc chain for refresh_all_game_metrics
         rpc_chain = MagicMock()
-        rpc_chain.execute.return_value = MagicMock()
+        rpc_chain.execute = AsyncMock(return_value=MagicMock())
         sb.rpc.return_value = rpc_chain
 
         # Mock EpochService.get and list_participants
@@ -963,9 +963,9 @@ class TestScoringServiceLogging:
         def rpc_side_effect(name, *args, **kwargs):
             chain = MagicMock()
             if name == "fn_compute_cycle_scores":
-                chain.execute.return_value = MagicMock(data=[])
+                chain.execute = AsyncMock(return_value=MagicMock(data=[]))
             else:
-                chain.execute.return_value = MagicMock()
+                chain.execute = AsyncMock(return_value=MagicMock())
             return chain
 
         sb.rpc.side_effect = rpc_side_effect

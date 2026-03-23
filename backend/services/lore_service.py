@@ -9,7 +9,7 @@ from uuid import UUID
 from fastapi import HTTPException, status
 
 from backend.services.translation_service import null_de_fields_for_update, schedule_auto_translation
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class LoreService:
         sim_id = str(simulation_id)
 
         # Get next sort_order
-        existing = (
+        existing = await (
             supabase.table(TABLE)
             .select("sort_order")
             .eq("simulation_id", sim_id)
@@ -45,7 +45,7 @@ class LoreService:
             "sort_order": next_order,
         }
 
-        response = supabase.table(TABLE).insert(insert_data).execute()
+        response = await supabase.table(TABLE).insert(insert_data).execute()
 
         if not response.data:
             raise HTTPException(
@@ -56,7 +56,7 @@ class LoreService:
         section = response.data[0]
 
         # Auto-translate in background
-        sim = (
+        sim = await (
             supabase.table("simulations")
             .select("name, theme")
             .eq("id", sim_id)
@@ -98,7 +98,7 @@ class LoreService:
         if de_nulls:
             update_data.update(de_nulls)
 
-        response = (
+        response = await (
             supabase.table(TABLE)
             .update(update_data)
             .eq("simulation_id", sim_id)
@@ -116,7 +116,7 @@ class LoreService:
 
         # Re-translate in background if EN fields changed
         if de_nulls:
-            sim = (
+            sim = await (
                 supabase.table("simulations")
                 .select("name, theme")
                 .eq("id", sim_id)
@@ -145,7 +145,7 @@ class LoreService:
         """Delete a lore section and re-sort remaining sections."""
         sim_id = str(simulation_id)
 
-        response = (
+        response = await (
             supabase.table(TABLE)
             .delete()
             .eq("simulation_id", sim_id)
@@ -160,7 +160,7 @@ class LoreService:
             )
 
         # Re-sort remaining sections
-        remaining = (
+        remaining = await (
             supabase.table(TABLE)
             .select("id")
             .eq("simulation_id", sim_id)
@@ -168,7 +168,7 @@ class LoreService:
             .execute()
         )
         for i, row in enumerate(remaining.data or []):
-            supabase.table(TABLE).update({"sort_order": i}).eq("id", row["id"]).execute()
+            await supabase.table(TABLE).update({"sort_order": i}).eq("id", row["id"]).execute()
 
         return response.data[0]
 
@@ -182,12 +182,12 @@ class LoreService:
         sim_id = str(simulation_id)
 
         for i, sid in enumerate(section_ids):
-            supabase.table(TABLE).update({"sort_order": i}).eq(
+            await supabase.table(TABLE).update({"sort_order": i}).eq(
                 "simulation_id", sim_id
             ).eq("id", str(sid)).execute()
 
         # Return updated list
-        response = (
+        response = await (
             supabase.table(TABLE)
             .select("*")
             .eq("simulation_id", sim_id)

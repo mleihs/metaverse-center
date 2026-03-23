@@ -11,7 +11,7 @@ from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.epoch_invitation import EpochInvitationCreate, EpochInvitationResponse
 from backend.services.audit_service import AuditService
 from backend.services.epoch_invitation_service import EpochInvitationService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

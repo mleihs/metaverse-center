@@ -13,7 +13,7 @@ from uuid import UUID
 
 import sentry_sdk
 
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ class CipherService:
         Returns the unlock_code (what the user must type to redeem).
         """
         seed = f"{simulation_id}:{difficulty}:{entity_id or 'platform'}"
-        response = admin.rpc(
+        response = await admin.rpc(
             "fn_generate_cipher_code",
             {"p_difficulty": difficulty, "p_seed": seed},
         ).execute()
@@ -67,7 +67,7 @@ class CipherService:
         Returns the RPC result dict with success/error/reward info.
         """
         try:
-            response = supabase.rpc(
+            response = await supabase.rpc(
                 "fn_redeem_cipher_code",
                 {
                     "p_code": code.strip().upper(),
@@ -100,7 +100,7 @@ class CipherService:
     async def get_redemption_stats(cls, admin: Client) -> dict:
         """Get aggregated cipher statistics for admin panel."""
         # Total redemptions
-        redemptions_resp = (
+        redemptions_resp = await (
             admin.table("cipher_redemptions")
             .select("id", count="exact")
             .execute()
@@ -108,7 +108,7 @@ class CipherService:
         total_redemptions = redemptions_resp.count or 0
 
         # Unique users
-        users_resp = (
+        users_resp = await (
             admin.table("cipher_redemptions")
             .select("user_id")
             .not_.is_("user_id", "null")
@@ -117,7 +117,7 @@ class CipherService:
         unique_users = len({r["user_id"] for r in (users_resp.data or [])})
 
         # Total attempts (last 24h)
-        attempts_resp = (
+        attempts_resp = await (
             admin.table("cipher_attempts")
             .select("id, success", count="exact")
             .execute()
@@ -127,7 +127,7 @@ class CipherService:
         success_rate = round(successful / total_attempts, 4) if total_attempts > 0 else 0.0
 
         # Recent redemptions
-        recent_resp = (
+        recent_resp = await (
             admin.table("cipher_redemptions")
             .select("*")
             .order("redeemed_at", desc=True)
@@ -150,7 +150,7 @@ class CipherService:
         post_id: UUID,
     ) -> dict | None:
         """Fetch an Instagram post by ID. Returns None if not found."""
-        resp = (
+        resp = await (
             supabase.table("instagram_posts")
             .select("id, status")
             .eq("id", str(post_id))
@@ -167,7 +167,7 @@ class CipherService:
         unlock_code: str,
     ) -> None:
         """Update the unlock_code on an Instagram post."""
-        supabase.table("instagram_posts").update({
+        await supabase.table("instagram_posts").update({
             "unlock_code": unlock_code,
         }).eq("id", str(post_id)).execute()
 

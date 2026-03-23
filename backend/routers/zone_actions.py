@@ -10,7 +10,7 @@ from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.zone_action import ZoneActionCreate, ZoneActionResponse
 from backend.services.audit_service import AuditService
 from backend.services.zone_action_service import ZoneActionService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

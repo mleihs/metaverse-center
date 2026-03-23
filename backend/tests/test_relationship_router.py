@@ -48,7 +48,7 @@ def _mock_supabase_with_role(role: str = "editor") -> MagicMock:
 
     response = MagicMock()
     response.data = [{"member_role": role}]
-    builder.execute.return_value = response
+    builder.execute = AsyncMock(return_value=response)
 
     mock.table.return_value = builder
     return mock

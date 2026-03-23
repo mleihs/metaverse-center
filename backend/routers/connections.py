@@ -10,7 +10,7 @@ from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.echo import ConnectionCreate, ConnectionResponse, ConnectionUpdate
 from backend.services.audit_service import AuditService
 from backend.services.connection_service import ConnectionService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

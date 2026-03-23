@@ -281,9 +281,9 @@ class TestGenerateReactionsHelper:
 
         mock_sb = MagicMock()
         # No agents found
-        mock_sb.table.return_value.select.return_value.eq.return_value.limit.return_value.execute.return_value = MagicMock(
+        mock_sb.table.return_value.select.return_value.eq.return_value.limit.return_value.execute = AsyncMock(return_value=MagicMock(
             data=[]
-        )
+        ))
 
         event = {"id": str(uuid4()), "title": "Test", "description": "Test event"}
         mock_gen = MagicMock()

@@ -19,7 +19,7 @@ from backend.models.embassy import (
 )
 from backend.services.audit_service import AuditService
 from backend.services.embassy_service import EmbassyService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

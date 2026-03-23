@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
 import pytest
@@ -40,7 +40,7 @@ def _make_chain_mock(response):
     chain.limit.return_value = chain
     chain.delete.return_value = chain
     chain.insert.return_value = chain
-    chain.execute.return_value = response
+    chain.execute = AsyncMock(return_value=response)
     return chain
 
 
@@ -219,7 +219,7 @@ class TestExecute:
         sim_chain.delete.return_value = sim_chain
         sim_chain.order.return_value = sim_chain
         sim_chain.limit.return_value = sim_chain
-        sim_chain.execute.return_value = _mock_table_response(count=1)
+        sim_chain.execute = AsyncMock(return_value=_mock_table_response(count=1))
         audit_chain = _make_chain_mock(_mock_table_response())
 
         call_order = []
@@ -325,7 +325,7 @@ class TestCleanupServiceLogging:
         sim_chain.delete.return_value = sim_chain
         sim_chain.order.return_value = sim_chain
         sim_chain.limit.return_value = sim_chain
-        sim_chain.execute.return_value = _mock_table_response(count=1)
+        sim_chain.execute = AsyncMock(return_value=_mock_table_response(count=1))
         audit_chain = _make_chain_mock(_mock_table_response())
 
         sb = MagicMock()

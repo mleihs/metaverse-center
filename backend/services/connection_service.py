@@ -15,7 +15,7 @@ from fastapi import HTTPException, status
 from backend.services.base_service import serialize_for_json
 from backend.services.cache_config import get_ttl
 from backend.services.embassy_service import EmbassyService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ class ConnectionService:
         if active_only:
             query = query.eq("is_active", True)
 
-        response = query.execute()
+        response = await query.execute()
         return response.data or []
 
     @classmethod
@@ -73,7 +73,7 @@ class ConnectionService:
 
         # Connections: filter by sim_ids in SQL (no orphan fetch)
         sim_id_list = list(sim_ids)
-        conn_resp = (
+        conn_resp = await (
             supabase.table(cls.table_name)
             .select(
                 "*, simulation_a:simulations!simulation_a_id(id, name, slug, theme, banner_url, description),"
@@ -116,7 +116,7 @@ class ConnectionService:
         anchors: list[dict] = []
         heartbeat_status: dict[str, dict] = {}
         try:
-            anchor_resp = (
+            anchor_resp = await (
                 supabase.table("collaborative_anchors")
                 .select("id, name, resonance_signature, anchor_simulation_ids, strength, status")
                 .in_("status", ["forming", "active", "reinforcing"])
@@ -125,7 +125,7 @@ class ConnectionService:
             anchors = anchor_resp.data or []
 
             # Per-simulation heartbeat summary for map overlay
-            hb_resp = (
+            hb_resp = await (
                 supabase.table("simulations")
                 .select("id, last_heartbeat_tick, next_heartbeat_at")
                 .in_("id", sim_id_list)
@@ -134,7 +134,7 @@ class ConnectionService:
             for sim in (hb_resp.data or []):
                 sid = sim["id"]
                 # Get active arc count + total scar tissue
-                arc_data = (
+                arc_data = await (
                     supabase.table("narrative_arcs")
                     .select("id, scar_tissue_deposited")
                     .eq("simulation_id", sid)
@@ -180,7 +180,7 @@ class ConnectionService:
         - Joins simulation_dashboard for agent/building/event counts
         - Excludes game instances from completed/cancelled epochs
         """
-        resp = (
+        resp = await (
             supabase.table("map_simulations")
             .select("*")
             .execute()
@@ -204,7 +204,7 @@ class ConnectionService:
     @classmethod
     async def _fetch_echo_counts(cls, supabase: Client) -> dict[str, int]:
         """Fetch incoming completed echo counts per simulation."""
-        echo_resp = (
+        echo_resp = await (
             supabase.table("event_echoes")
             .select("target_simulation_id", count="exact")
             .eq("status", "completed")
@@ -221,7 +221,7 @@ class ConnectionService:
         """Fetch active operative flow between simulations."""
         flow: dict[str, dict] = {}
         try:
-            op_resp = (
+            op_resp = await (
                 supabase.table("operative_missions")
                 .select("source_simulation_id, target_simulation_id, operative_type")
                 .in_("status", ["deployed", "active", "en_route"])
@@ -249,7 +249,7 @@ class ConnectionService:
             return {}
         dimensions: dict[str, dict] = {}
         try:
-            score_resp = (
+            score_resp = await (
                 supabase.table("epoch_scores")
                 .select(
                     "simulation_id, stability_score, influence_score,"
@@ -284,7 +284,7 @@ class ConnectionService:
             return {}
         sparklines: dict[str, list[float]] = {}
         try:
-            spark_resp = (
+            spark_resp = await (
                 supabase.table("epoch_scores")
                 .select(
                     "simulation_id, composite_score, cycle_number,"
@@ -323,7 +323,7 @@ class ConnectionService:
         if not sim_ids:
             return empty
         try:
-            response = supabase.rpc(
+            response = await supabase.rpc(
                 "get_map_overlay_data",
                 {"p_simulation_ids": list(sim_ids)},
             ).execute()
@@ -340,7 +340,7 @@ class ConnectionService:
         data: dict,
     ) -> dict:
         """Create a simulation connection (admin only)."""
-        response = (
+        response = await (
             admin_supabase.table(cls.table_name)
             .insert(serialize_for_json(data))
             .execute()
@@ -361,7 +361,7 @@ class ConnectionService:
     ) -> dict:
         """Update a simulation connection (admin only)."""
         update_data = {**serialize_for_json(data), "updated_at": datetime.now(UTC).isoformat()}
-        response = (
+        response = await (
             admin_supabase.table(cls.table_name)
             .update(update_data)
             .eq("id", str(connection_id))
@@ -381,7 +381,7 @@ class ConnectionService:
         connection_id: UUID,
     ) -> dict:
         """Delete a simulation connection (admin only)."""
-        response = (
+        response = await (
             admin_supabase.table(cls.table_name)
             .delete()
             .eq("id", str(connection_id))

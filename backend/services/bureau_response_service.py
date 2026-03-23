@@ -13,7 +13,7 @@ from uuid import UUID
 from fastapi import HTTPException, status
 
 from backend.services.heartbeat_entry_builder import make_heartbeat_entry
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +69,7 @@ class BureauResponseService:
         if response_type == "adapt":
             # Adapt requires 5+ reactions on the event, not agents
             reaction_count = len((
-                supabase.table("event_reactions")
+                await supabase.table("event_reactions")
                 .select("id")
                 .eq("event_id", str(event_id))
                 .execute()
@@ -93,7 +93,7 @@ class BureauResponseService:
                 )
 
         # Check event exists and is not archived
-        event = (
+        event = await (
             supabase.table("events")
             .select("id, event_status, simulation_id")
             .eq("id", str(event_id))
@@ -111,7 +111,7 @@ class BureauResponseService:
             )
 
         # Check no pending response exists for this event
-        existing = (
+        existing = await (
             supabase.table("bureau_responses")
             .select("id")
             .eq("simulation_id", str(sim_id))
@@ -127,7 +127,7 @@ class BureauResponseService:
             )
 
         # Get current tick
-        sim = (
+        sim = await (
             supabase.table("simulations")
             .select("last_heartbeat_tick")
             .eq("id", str(sim_id))
@@ -136,7 +136,7 @@ class BureauResponseService:
         ).data
         current_tick = (sim[0].get("last_heartbeat_tick") or 0) if sim else 0
 
-        response = (
+        response = await (
             supabase.table("bureau_responses")
             .insert({
                 "simulation_id": str(sim_id),
@@ -175,7 +175,7 @@ class BureauResponseService:
         cls, supabase: Client, sim_id: UUID, response_id: UUID,
     ) -> dict:
         """Cancel a pending bureau response."""
-        response = (
+        response = await (
             supabase.table("bureau_responses")
             .update({
                 "status": "expired",
@@ -215,7 +215,7 @@ class BureauResponseService:
         )
         if event_id:
             query = query.eq("event_id", str(event_id))
-        response = query.execute()
+        response = await query.execute()
         return response.data or [], response.count or 0
 
     # ── Tick Resolution (Phase 5) ───────────────────────────────
@@ -231,7 +231,7 @@ class BureauResponseService:
         resolved_count = 0
 
         # Get pending responses due at this tick
-        pending = (
+        pending = await (
             admin.table("bureau_responses")
             .select("*, events!inner(title, title_de, impact_level, event_status)")
             .eq("simulation_id", str(sim_id))
@@ -273,7 +273,7 @@ class BureauResponseService:
             # Apply pressure reduction to event (contain + remediate)
             if resp_type in ("contain", "remediate"):
                 # Read event's current pressure
-                ev = (
+                ev = await (
                     admin.table("events")
                     .select("heartbeat_pressure, event_status")
                     .eq("id", resp["event_id"])
@@ -291,7 +291,7 @@ class BureauResponseService:
                             update_data["event_status"] = "resolving"
                             update_data["ticks_in_status"] = 0
 
-                    admin.table("events").update(update_data).eq("id", resp["event_id"]).execute()
+                    await admin.table("events").update(update_data).eq("id", resp["event_id"]).execute()
 
             elif resp_type == "adapt":
                 # Adapt reduces scar tissue on the parent narrative arc
@@ -300,7 +300,7 @@ class BureauResponseService:
                 )
 
             # Update response record
-            admin.table("bureau_responses").update({
+            await admin.table("bureau_responses").update({
                 "status": "resolved",
                 "resolved_at_tick": tick_number,
                 "effectiveness": effectiveness,

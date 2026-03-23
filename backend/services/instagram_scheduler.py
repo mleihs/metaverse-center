@@ -33,7 +33,7 @@ from backend.services.external.instagram import (
 )
 from backend.services.instagram_content_service import InstagramContentService
 from backend.services.social_story_service import SocialStoryService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -115,7 +115,7 @@ class InstagramScheduler:
         }
 
         try:
-            rows = (
+            rows = await (
                 admin.table("platform_settings")
                 .select("setting_key, setting_value")
                 .in_("setting_key", [
@@ -185,7 +185,7 @@ class InstagramScheduler:
     async def _process_due_posts(cls, admin: Client, config: dict) -> None:
         """Find and publish all posts with scheduled_at <= now()."""
         now = datetime.now(UTC).isoformat()
-        response = (
+        response = await (
             admin.table("instagram_posts")
             .select("id, caption, hashtags, image_urls, media_type, alt_text, ig_container_id, retry_count")
             .eq("status", "scheduled")
@@ -257,7 +257,7 @@ class InstagramScheduler:
                     })
                     sentry_sdk.capture_exception(exc)
                 # Disable posting (not the whole pipeline — drafts can still be generated)
-                admin.table("platform_settings").update(
+                await admin.table("platform_settings").update(
                     {"setting_value": json.dumps(False)},
                 ).eq("setting_key", "instagram_posting_enabled").execute()
                 return
@@ -270,7 +270,7 @@ class InstagramScheduler:
             except InstagramContainerError as exc:
                 retry_count = post.get("retry_count", 0)
                 if retry_count < _MAX_RETRIES:
-                    admin.table("instagram_posts").update({
+                    await admin.table("instagram_posts").update({
                         "status": "scheduled",
                         "retry_count": retry_count + 1,
                     }).eq("id", str(post_id)).execute()
@@ -281,7 +281,7 @@ class InstagramScheduler:
                         "iteration": cls._iteration_count,
                     })
                 else:
-                    admin.table("instagram_posts").update({
+                    await admin.table("instagram_posts").update({
                         "status": "failed",
                         "failure_reason": "Container processing failed after max retries",
                     }).eq("id", str(post_id)).execute()
@@ -298,7 +298,7 @@ class InstagramScheduler:
                         })
                         sentry_sdk.capture_exception(exc)
             except InstagramAPIError as exc:
-                admin.table("instagram_posts").update({
+                await admin.table("instagram_posts").update({
                     "status": "failed",
                     "failure_reason": str(exc)[:500],
                 }).eq("id", str(post_id)).execute()
@@ -314,7 +314,7 @@ class InstagramScheduler:
                     })
                     sentry_sdk.capture_exception(exc)
             except Exception as exc:
-                admin.table("instagram_posts").update({
+                await admin.table("instagram_posts").update({
                     "status": "failed",
                     "failure_reason": "Unexpected error during publishing",
                 }).eq("id", str(post_id)).execute()
@@ -356,7 +356,7 @@ class InstagramScheduler:
             caption = caption.rstrip() + "\n\n" + " ".join(hashtags)
 
         # Mark as publishing
-        admin.table("instagram_posts").update(
+        await admin.table("instagram_posts").update(
             {"status": "publishing"},
         ).eq("id", post_id).execute()
 
@@ -422,7 +422,7 @@ class InstagramScheduler:
         Composes images ahead of time so they're ready when the scheduled_at arrives.
         Only composes stories that don't yet have an image_url.
         """
-        response = (
+        response = await (
             admin.table("social_stories")
             .select("id")
             .eq("status", "pending")
@@ -457,7 +457,7 @@ class InstagramScheduler:
         Uses the same Instagram Graph API story container flow as feed posts.
         """
         now = datetime.now(UTC).isoformat()
-        response = (
+        response = await (
             admin.table("social_stories")
             .select("id, image_url, caption, retry_count")
             .eq("status", "ready")
@@ -501,7 +501,7 @@ class InstagramScheduler:
             image_url = story["image_url"]
             try:
                 # Mark as publishing
-                admin.table("social_stories").update(
+                await admin.table("social_stories").update(
                     {"status": "publishing"},
                 ).eq("id", story_id).execute()
 
@@ -510,7 +510,7 @@ class InstagramScheduler:
                 media_id = result.get("id", "")
 
                 # Update as published
-                admin.table("social_stories").update({
+                await admin.table("social_stories").update({
                     "status": "published",
                     "published_at": datetime.now(UTC).isoformat(),
                     "ig_story_id": media_id,
@@ -538,7 +538,7 @@ class InstagramScheduler:
             except (InstagramContainerError, InstagramAPIError) as exc:
                 retry_count = story.get("retry_count", 0)
                 if retry_count < _MAX_RETRIES:
-                    admin.table("social_stories").update({
+                    await admin.table("social_stories").update({
                         "status": "ready",
                         "retry_count": retry_count + 1,
                     }).eq("id", story_id).execute()
@@ -548,7 +548,7 @@ class InstagramScheduler:
                         "iteration": cls._iteration_count,
                     })
                 else:
-                    admin.table("social_stories").update({
+                    await admin.table("social_stories").update({
                         "status": "failed",
                         "failure_reason": str(exc)[:500],
                     }).eq("id", story_id).execute()
@@ -561,7 +561,7 @@ class InstagramScheduler:
                         scope.set_context("story", {"story_id": story_id})
                         sentry_sdk.capture_exception(exc)
             except Exception as exc:
-                admin.table("social_stories").update({
+                await admin.table("social_stories").update({
                     "status": "failed",
                     "failure_reason": "Unexpected error during story publishing",
                 }).eq("id", story_id).execute()
@@ -610,7 +610,7 @@ class InstagramScheduler:
                 if new_token != access_token:
                     from backend.utils.encryption import encrypt
                     encrypted = encrypt(new_token)
-                    admin.table("platform_settings").update(
+                    await admin.table("platform_settings").update(
                         {"setting_value": encrypted},
                     ).eq("setting_key", "instagram_access_token").execute()
 
@@ -662,7 +662,7 @@ class InstagramScheduler:
         # Find published posts that need metrics collection
         # Check at +1h, +6h, +24h, +48h after publishing
         now = datetime.now(UTC)
-        response = (
+        response = await (
             admin.table("instagram_posts")
             .select("id, ig_media_id, published_at, metrics_updated_at")
             .eq("status", "published")

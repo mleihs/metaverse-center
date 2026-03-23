@@ -25,7 +25,7 @@ from backend.models.location import (
 )
 from backend.services.audit_service import AuditService
 from backend.services.location_service import LocationService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

@@ -1,7 +1,7 @@
 """Unit tests for SEO middleware (crawler detection, HTML enrichment, escaping)."""
 
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -151,9 +151,9 @@ class TestEnrichHtmlForCrawler:
         with patch("backend.middleware.seo.create_client") as mock_create:
             mock_client = MagicMock()
             mock_create.return_value = mock_client
-            mock_client.table.return_value.select.return_value.eq.return_value.limit.return_value.execute.return_value = (
+            mock_client.table.return_value.select.return_value.eq.return_value.limit.return_value.execute = AsyncMock(return_value=(
                 mock_response
-            )
+            ))
 
             result = await enrich_html_for_crawler(
                 index,
@@ -187,9 +187,9 @@ class TestEnrichHtmlForCrawler:
         with patch("backend.middleware.seo.create_client") as mock_create:
             mock_client = MagicMock()
             mock_create.return_value = mock_client
-            mock_client.table.return_value.select.return_value.eq.return_value.limit.return_value.execute.return_value = (
+            mock_client.table.return_value.select.return_value.eq.return_value.limit.return_value.execute = AsyncMock(return_value=(
                 mock_response
-            )
+            ))
 
             result = await enrich_html_for_crawler(
                 index,
@@ -211,9 +211,9 @@ class TestEnrichHtmlForCrawler:
         with patch("backend.middleware.seo.create_client") as mock_create:
             mock_client = MagicMock()
             mock_create.return_value = mock_client
-            mock_client.table.return_value.select.return_value.eq.return_value.limit.return_value.execute.return_value = (
+            mock_client.table.return_value.select.return_value.eq.return_value.limit.return_value.execute = AsyncMock(return_value=(
                 mock_response
-            )
+            ))
 
             result = await enrich_html_for_crawler(
                 index,
@@ -252,9 +252,9 @@ class TestEnrichHtmlForCrawler:
              patch("backend.middleware.seo.seo_content.build_view_content") as mock_build:
             mock_client = MagicMock()
             mock_create.return_value = mock_client
-            mock_client.table.return_value.select.return_value.eq.return_value.limit.return_value.execute.return_value = (
+            mock_client.table.return_value.select.return_value.eq.return_value.limit.return_value.execute = AsyncMock(return_value=(
                 sim_response
-            )
+            ))
             mock_build.return_value = (
                 '<article><h3>Ada</h3></article>',
                 '{"@type":"CollectionPage"}',
@@ -300,9 +300,9 @@ class TestEnrichHtmlForCrawler:
              patch("backend.middleware.seo.seo_content.build_view_content") as mock_build:
             mock_client = MagicMock()
             mock_create.return_value = mock_client
-            mock_client.table.return_value.select.return_value.eq.return_value.limit.return_value.execute.return_value = (
+            mock_client.table.return_value.select.return_value.eq.return_value.limit.return_value.execute = AsyncMock(return_value=(
                 sim_response
-            )
+            ))
             mock_build.return_value = ("<p>lore</p>", '{"@type":"CreativeWork"}')
 
             result = await enrich_html_for_crawler(

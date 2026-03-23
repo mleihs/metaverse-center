@@ -41,7 +41,7 @@ from backend.services.epoch_chat_service import EpochChatService
 from backend.services.epoch_service import EpochService
 from backend.services.game_instance_service import GameInstanceService
 from backend.services.sitrep_service import SitrepService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

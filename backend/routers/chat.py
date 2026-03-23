@@ -21,7 +21,7 @@ from backend.services.audit_service import AuditService
 from backend.services.chat_ai_service import ChatAIService
 from backend.services.chat_service import ChatService
 from backend.services.external_service_resolver import ExternalServiceResolver
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

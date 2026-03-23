@@ -18,7 +18,7 @@ from backend.services.email_templates import (
     render_phase_change,
 )
 from backend.services.scoring_service import ScoringService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ class CycleNotificationService:
         Returns list of dicts: {user_id, email, simulation_id, simulation_name, simulation_slug, email_locale}
         """
         # 1. Get human participants (not bots) with simulation info
-        participants_resp = (
+        participants_resp = await (
             admin_supabase.table("epoch_participants")
             .select("simulation_id, is_bot, simulations(name, slug, source_template_id)")
             .eq("epoch_id", epoch_id)
@@ -72,7 +72,7 @@ class CycleNotificationService:
         template_ids = list(template_to_participant.keys())
 
         # Batch fetch members (editors+) for all template simulations
-        members_resp = (
+        members_resp = await (
             admin_supabase.table("simulation_members")
             .select("user_id, simulation_id")
             .in_("simulation_id", template_ids)
@@ -85,7 +85,7 @@ class CycleNotificationService:
 
         # 3. Get email addresses via SECURITY DEFINER RPC (get_user_emails_batch, migration 044)
         user_ids = list({m["user_id"] for m in members})
-        email_resp = admin_supabase.rpc(
+        email_resp = await admin_supabase.rpc(
             "get_user_emails_batch", {"user_ids": user_ids}
         ).execute()
         email_map: dict[str, str] = {
@@ -93,7 +93,7 @@ class CycleNotificationService:
         }
 
         # 4. Get notification preferences (batch)
-        prefs_resp = (
+        prefs_resp = await (
             admin_supabase.table("notification_preferences")
             .select("user_id, cycle_resolved, phase_changed, epoch_completed, email_locale")
             .in_("user_id", user_ids)
@@ -107,7 +107,7 @@ class CycleNotificationService:
         # The game instance slug may not be the right one — get the template slug
         template_slugs: dict[str, str] = {}
         if template_ids:
-            slug_resp = (
+            slug_resp = await (
                 admin_supabase.table("simulations")
                 .select("id, slug")
                 .in_("id", template_ids)
@@ -167,7 +167,7 @@ class CycleNotificationService:
         accent = get_sim_accent(simulation_slug)
 
         # Current cycle scores
-        current_resp = (
+        current_resp = await (
             admin_supabase.table("epoch_scores")
             .select("*")
             .eq("epoch_id", epoch_id)
@@ -181,7 +181,7 @@ class CycleNotificationService:
         prev_cycle = cycle_number - 1
         prev_scores_map: dict[str, dict] = {}
         if prev_cycle >= 1:
-            prev_resp = (
+            prev_resp = await (
                 admin_supabase.table("epoch_scores")
                 .select(
                 "simulation_id, composite_score,"
@@ -235,7 +235,7 @@ class CycleNotificationService:
         prev_composite = float(prev_score.get("composite_score", 0)) if prev_score else 0
 
         # ── Operative missions with per-mission detail (B7) ──
-        ops_resp = (
+        ops_resp = await (
             admin_supabase.table("operative_missions")
             .select("operative_type, status, target_simulation_id, resolves_at")
             .eq("epoch_id", epoch_id)
@@ -254,7 +254,7 @@ class CycleNotificationService:
         target_sim_ids = list({o.get("target_simulation_id") for o in ops if o.get("target_simulation_id")})
         sim_name_map: dict[str, str] = {}
         if target_sim_ids:
-            names_resp = (
+            names_resp = await (
                 admin_supabase.table("simulations")
                 .select("id, name")
                 .in_("id", target_sim_ids)
@@ -275,7 +275,7 @@ class CycleNotificationService:
             })
 
         # ── RP balance ──
-        rp_resp = (
+        rp_resp = await (
             admin_supabase.table("epoch_participants")
             .select("current_rp, team_id")
             .eq("epoch_id", epoch_id)
@@ -287,7 +287,7 @@ class CycleNotificationService:
         player_team_id = rp_resp.data.get("team_id") if rp_resp.data else None
 
         # ── Threat assessment (B1) — detected inbound ops ──
-        threat_resp = (
+        threat_resp = await (
             admin_supabase.table("operative_missions")
             .select("operative_type, status, source_simulation_id")
             .eq("epoch_id", epoch_id)
@@ -299,7 +299,7 @@ class CycleNotificationService:
         # Resolve source names
         threat_source_ids = list({t["source_simulation_id"] for t in threats_raw})
         if threat_source_ids:
-            threat_names_resp = (
+            threat_names_resp = await (
                 admin_supabase.table("simulations")
                 .select("id, name")
                 .in_("id", threat_source_ids)
@@ -319,7 +319,7 @@ class CycleNotificationService:
         ]
 
         # ── Spy intel digest (B2) — earned intelligence this cycle ──
-        intel_resp = (
+        intel_resp = await (
             admin_supabase.table("battle_log")
             .select("narrative, event_type, metadata, target_simulation_id")
             .eq("epoch_id", epoch_id)
@@ -337,7 +337,7 @@ class CycleNotificationService:
             if e.get("target_simulation_id")
         })
         if intel_target_ids:
-            intel_names_resp = (
+            intel_names_resp = await (
                 admin_supabase.table("simulations")
                 .select("id, name")
                 .in_("id", intel_target_ids)
@@ -362,7 +362,7 @@ class CycleNotificationService:
         dissolved_alliance_name = None
         if player_team_id:
             # Fetch team — check dissolved_at to distinguish active vs dissolved
-            team_resp = (
+            team_resp = await (
                 admin_supabase.table("epoch_teams")
                 .select("name, dissolved_at, dissolved_reason")
                 .eq("id", player_team_id)
@@ -377,7 +377,7 @@ class CycleNotificationService:
                     alliance_name = team_resp.data["name"]
                     alliance_bonus_active = True
                     # Get ally names
-                    ally_resp = (
+                    ally_resp = await (
                         admin_supabase.table("epoch_participants")
                         .select("simulation_id, simulations(name)")
                         .eq("epoch_id", epoch_id)
@@ -397,7 +397,7 @@ class CycleNotificationService:
         if player_team_id and alliance_bonus_active:
             try:
                 # Count pending proposals for this player's team
-                team_proposals = (
+                team_proposals = await (
                     admin_supabase.table("epoch_alliance_proposals")
                     .select("id", count="exact")
                     .eq("epoch_id", epoch_id)
@@ -407,7 +407,7 @@ class CycleNotificationService:
                 )
                 pending_proposals_count = team_proposals.count or 0
                 # Get tension from team
-                tension_resp = (
+                tension_resp = await (
                     admin_supabase.table("epoch_teams")
                     .select("tension")
                     .eq("id", player_team_id)
@@ -440,7 +440,7 @@ class CycleNotificationService:
         rp_projection = f"+{rp_per_cycle} \u2192 {projected_rp} / {rp_cap}"
 
         # Public battle log events from this cycle
-        log_resp = (
+        log_resp = await (
             admin_supabase.table("battle_log")
             .select("narrative, event_type")
             .eq("epoch_id", epoch_id)
@@ -504,7 +504,7 @@ class CycleNotificationService:
         simulation_id: str,
     ) -> dict | None:
         """Build a lightweight standing snapshot for phase change emails."""
-        scores_resp = (
+        scores_resp = await (
             admin_supabase.table("epoch_scores")
             .select("simulation_id, composite_score")
             .eq("epoch_id", epoch_id)
@@ -544,7 +544,7 @@ class CycleNotificationService:
         simulation_id: str,
     ) -> dict:
         """Build campaign statistics for epoch completed email."""
-        ops_resp = (
+        ops_resp = await (
             admin_supabase.table("operative_missions")
             .select("operative_type, status")
             .eq("epoch_id", epoch_id)
@@ -583,7 +583,7 @@ class CycleNotificationService:
         Returns the number of emails successfully sent.
         """
         # Fetch epoch info
-        epoch_resp = (
+        epoch_resp = await (
             admin_supabase.table("game_epochs")
             .select("name, status, config")
             .eq("id", epoch_id)
@@ -658,7 +658,7 @@ class CycleNotificationService:
         new_phase: str,
     ) -> int:
         """Send phase-change emails to all human participants (per-player with standing)."""
-        epoch_resp = (
+        epoch_resp = await (
             admin_supabase.table("game_epochs")
             .select("name, current_cycle")
             .eq("id", epoch_id)
@@ -734,7 +734,7 @@ class CycleNotificationService:
         epoch_id: str,
     ) -> int:
         """Send epoch-completed emails with final leaderboard + campaign stats."""
-        epoch_resp = (
+        epoch_resp = await (
             admin_supabase.table("game_epochs")
             .select("name, current_cycle")
             .eq("id", epoch_id)

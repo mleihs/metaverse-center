@@ -6,7 +6,7 @@ from fastapi import HTTPException, status
 
 from backend.models.simulation import SimulationCreate, SimulationUpdate
 from backend.utils.slug import slugify
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ class SimulationService:
         # Get simulation IDs the user is a member of (templates only).
         # Filter at join level to avoid URI-too-long errors when the user has
         # many game instance / archived memberships (PostgREST URI limit).
-        membership_response = (
+        membership_response = await (
             supabase.table("simulation_members")
             .select("simulation_id, simulations!inner(simulation_type)")
             .eq("user_id", str(user_id))
@@ -75,7 +75,7 @@ class SimulationService:
             query = query.eq("status", status_filter)
 
         query = query.range(offset, offset + limit - 1)
-        response = query.execute()
+        response = await query.execute()
 
         total = response.count if response.count is not None else len(response.data or [])
         data = response.data or []
@@ -97,7 +97,7 @@ class SimulationService:
         slug = data.slug if data.slug else slugify(data.name)
 
         # Check slug uniqueness
-        existing = (
+        existing = await (
             supabase.table("simulations")
             .select("id")
             .eq("slug", slug)
@@ -122,7 +122,7 @@ class SimulationService:
             "owner_id": str(user_id),
         }
 
-        sim_response = (
+        sim_response = await (
             supabase.table("simulations")
             .insert(sim_data)
             .execute()
@@ -141,7 +141,7 @@ class SimulationService:
         )
 
         # Add creator as owner member
-        supabase.table("simulation_members").insert({
+        await supabase.table("simulation_members").insert({
             "simulation_id": simulation["id"],
             "user_id": str(user_id),
             "member_role": "owner",
@@ -151,7 +151,7 @@ class SimulationService:
         # correct base preset instead of always falling back to brutalist.
         preset = _get_preset_for_theme(data.theme)
         if preset != "brutalist":
-            supabase.table("simulation_settings").upsert({
+            await supabase.table("simulation_settings").upsert({
                 "simulation_id": simulation["id"],
                 "category": "design",
                 "setting_key": "theme_preset",
@@ -167,7 +167,7 @@ class SimulationService:
         simulation_id: UUID,
     ) -> dict:
         """Get a single simulation from the ``simulation_dashboard`` view (migration 011, updated 035)."""
-        response = (
+        response = await (
             supabase.table("simulation_dashboard")
             .select("*")
             .eq("simulation_id", str(simulation_id))
@@ -200,7 +200,7 @@ class SimulationService:
 
         update_data["updated_at"] = datetime.now(UTC).isoformat()
 
-        response = (
+        response = await (
             supabase.table("simulations")
             .update(update_data)
             .eq("id", str(simulation_id))
@@ -222,7 +222,7 @@ class SimulationService:
         simulation_id: UUID,
     ) -> dict:
         """Soft-delete a simulation by setting deleted_at."""
-        response = (
+        response = await (
             supabase.table("simulations")
             .update({
                 "deleted_at": datetime.now(UTC).isoformat(),
@@ -254,7 +254,7 @@ class SimulationService:
 
         Uses admin (service_role) client to bypass RLS.
         """
-        fetch = (
+        fetch = await (
             supabase.table("simulations")
             .select("id, name, slug")
             .eq("id", str(simulation_id))
@@ -287,7 +287,7 @@ class SimulationService:
                 "slug": slug,
             },
         )
-        supabase.table("simulations").delete().eq("id", sim_id_str).execute()
+        await supabase.table("simulations").delete().eq("id", sim_id_str).execute()
         return sim_info
 
     @staticmethod
@@ -340,7 +340,7 @@ class SimulationService:
             query = query.is_("deleted_at", "null")
 
         query = query.range(offset, offset + limit - 1)
-        response = query.execute()
+        response = await query.execute()
 
         total = response.count if response.count is not None else len(response.data or [])
         return response.data or [], total
@@ -360,7 +360,7 @@ class SimulationService:
             .order("deleted_at", desc=True)
             .range(offset, offset + limit - 1)
         )
-        response = query.execute()
+        response = await query.execute()
 
         total = response.count if response.count is not None else len(response.data or [])
         return response.data or [], total
@@ -375,7 +375,7 @@ class SimulationService:
 
         Returns {"name": ..., "theme": ...} or None if not found.
         """
-        response = (
+        response = await (
             supabase.table("simulations")
             .select("name, theme")
             .eq("id", str(simulation_id))
@@ -391,7 +391,7 @@ class SimulationService:
         simulation_id: UUID,
     ) -> dict:
         """Verify a simulation exists and return its row, or raise 404."""
-        response = (
+        response = await (
             supabase.table("simulations")
             .select("id, name")
             .eq("id", str(simulation_id))
@@ -411,7 +411,7 @@ class SimulationService:
         supabase: Client,
     ) -> list[dict]:
         """List slugs, IDs, and updated_at for all active simulations (sitemap)."""
-        response = (
+        response = await (
             supabase.table("simulations")
             .select("id, slug, updated_at")
             .eq("status", "active")
@@ -425,7 +425,7 @@ class SimulationService:
         simulation_id: UUID,
     ) -> dict:
         """Restore a soft-deleted simulation."""
-        response = (
+        response = await (
             supabase.table("simulations")
             .update({
                 "deleted_at": None,
@@ -450,20 +450,20 @@ class SimulationService:
     @staticmethod
     async def get_platform_stats(supabase: Client) -> dict:
         """Aggregated platform statistics for landing page."""
-        sims = (
+        sims = await (
             supabase.table("simulations")
             .select("id", count="exact")
             .eq("simulation_type", "template")
             .is_("deleted_at", "null")
             .execute()
         )
-        epochs = (
+        epochs = await (
             supabase.table("game_epochs")
             .select("id", count="exact")
             .in_("status", ["lobby", "foundation", "competition", "reckoning"])
             .execute()
         )
-        resonances = (
+        resonances = await (
             supabase.table("substrate_resonances")
             .select("id", count="exact")
             .is_("deleted_at", "null")
@@ -476,12 +476,12 @@ class SimulationService:
         }
 
     @staticmethod
-    def enrich_with_counts(supabase: Client, simulations: list[dict]) -> None:
+    async def enrich_with_counts(supabase: Client, simulations: list[dict]) -> None:
         """Enrich simulation dicts with counts from the ``simulation_dashboard`` view (migration 011, updated 035)."""
         if not simulations:
             return
         ids = [s["id"] for s in simulations]
-        count_response = (
+        count_response = await (
             supabase.table("simulation_dashboard")
             .select("simulation_id, agent_count, building_count, event_count, member_count")
             .in_("simulation_id", ids)
@@ -503,7 +503,7 @@ class SimulationService:
         offset: int = 0,
     ) -> tuple[list[dict], int]:
         """List active template simulations (public, no auth)."""
-        response = (
+        response = await (
             supabase.table("simulations")
             .select("*", count="exact")
             .eq("status", "active")
@@ -520,7 +520,7 @@ class SimulationService:
     @staticmethod
     async def get_by_slug(supabase: Client, slug: str) -> dict | None:
         """Get a single active simulation by slug (public)."""
-        response = (
+        response = await (
             supabase.table("simulations")
             .select("*")
             .eq("slug", slug)
@@ -534,7 +534,7 @@ class SimulationService:
     @staticmethod
     async def get_active_by_id(supabase: Client, simulation_id: UUID) -> dict | None:
         """Get a single active simulation by ID (public)."""
-        response = (
+        response = await (
             supabase.table("simulations")
             .select("*")
             .eq("id", str(simulation_id))

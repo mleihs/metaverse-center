@@ -19,7 +19,7 @@ from backend.services.constants import (
     _downgrade_security,
     _upgrade_security,
 )
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +72,7 @@ class OperativeService:
         if status_filter:
             query = query.eq("status", status_filter)
         query = query.order("created_at", desc=True).range(offset, offset + limit - 1)
-        resp = query.execute()
+        resp = await query.execute()
         return resp.data or [], resp.count or 0
 
     @classmethod
@@ -82,7 +82,7 @@ class OperativeService:
             "*, agents(name, portrait_image_url),"
             " target_sim:simulations!target_simulation_id(name)"
         )
-        resp = (
+        resp = await (
             supabase.table("operative_missions")
             .select(select_fields)
             .eq("id", str(mission_id))
@@ -101,7 +101,7 @@ class OperativeService:
         target_simulation_id: UUID,
     ) -> list[dict]:
         """List detected incoming operative threats for a simulation."""
-        resp = (
+        resp = await (
             supabase.table("operative_missions")
             .select("*")
             .eq("epoch_id", str(epoch_id))

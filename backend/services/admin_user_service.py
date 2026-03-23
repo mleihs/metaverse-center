@@ -14,7 +14,7 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class AdminUserService:
         per_page: int = 50,
     ) -> dict:
         """List all auth users with pagination via Postgres ``admin_list_users`` (migration 040, updated 057)."""
-        response = admin_supabase.rpc(
+        response = await admin_supabase.rpc(
             "admin_list_users",
             {"p_page": page, "p_per_page": per_page},
         ).execute()
@@ -46,7 +46,7 @@ class AdminUserService:
         """Get a single user with all their simulation memberships."""
         # admin_get_user RPC already LEFT JOINs user_wallets (migration 057)
         # — returns forge_tokens + is_architect as flat fields (null when no wallet)
-        user_resp = admin_supabase.rpc(
+        user_resp = await admin_supabase.rpc(
             "admin_get_user",
             {"p_user_id": str(user_id)},
         ).execute()
@@ -60,7 +60,7 @@ class AdminUserService:
         user_data = user_resp.data
 
         # Fetch memberships via PostgREST
-        memberships_resp = (
+        memberships_resp = await (
             admin_supabase.table("simulation_members")
             .select("*, simulations(id, name, slug)")
             .eq("user_id", str(user_id))
@@ -97,7 +97,7 @@ class AdminUserService:
         if not update_data:
             raise HTTPException(status_code=400, detail="No update data provided.")
 
-        response = (
+        response = await (
             admin_supabase.table("user_wallets")
             .upsert({
                 "user_id": str(user_id),
@@ -117,7 +117,7 @@ class AdminUserService:
         Transfers simulation ownership to admin, nullifies FKs, cascades rest.
         """
         try:
-            admin_supabase.rpc(
+            await admin_supabase.rpc(
                 "admin_delete_user",
                 {"p_user_id": str(user_id)},
             ).execute()
@@ -138,7 +138,7 @@ class AdminUserService:
         role: str,
     ) -> dict:
         """Add a user to a simulation with a specific role."""
-        response = (
+        response = await (
             admin_supabase.table("simulation_members")
             .insert({
                 "user_id": str(user_id),
@@ -163,7 +163,7 @@ class AdminUserService:
         role: str,
     ) -> dict:
         """Change a user's role in a simulation."""
-        response = (
+        response = await (
             admin_supabase.table("simulation_members")
             .update({
                 "member_role": role,
@@ -188,7 +188,7 @@ class AdminUserService:
         simulation_id: UUID,
     ) -> dict:
         """Remove a user from a simulation."""
-        response = (
+        response = await (
             admin_supabase.table("simulation_members")
             .delete()
             .eq("user_id", str(user_id))

@@ -10,8 +10,7 @@ supabase.rpc() and verify correct arguments. Activity selection (Utility AI
 
 from __future__ import annotations
 
-import math
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 from uuid import UUID
 
 import pytest
@@ -63,7 +62,7 @@ def _mock_supabase(data=None, count=None, rpc_data=None):
         "range", "insert", "update", "delete", "upsert",
     ):
         getattr(builder, method).return_value = builder
-    builder.execute.return_value = response
+    builder.execute = AsyncMock(return_value=response)
 
     mock.table.return_value = builder
 
@@ -71,7 +70,7 @@ def _mock_supabase(data=None, count=None, rpc_data=None):
     rpc_response = MagicMock()
     rpc_response.data = rpc_data
     rpc_builder = MagicMock()
-    rpc_builder.execute.return_value = rpc_response
+    rpc_builder.execute = AsyncMock(return_value=rpc_response)
     mock.rpc.return_value = rpc_builder
 
     return mock, builder, response
@@ -260,7 +259,7 @@ class TestMoodProcessTick:
             resp = MagicMock()
             resp.data = rpc_returns[min(call_count, len(rpc_returns) - 1)]
             builder = MagicMock()
-            builder.execute.return_value = resp
+            builder.execute = AsyncMock(return_value=resp)
             call_count += 1
             return builder
 
@@ -316,7 +315,7 @@ class TestOpinionInteractionTracking:
         mock.table.return_value.maybe_single.return_value = mock.table.return_value
         resp = MagicMock()
         resp.data = []
-        mock.table.return_value.execute.return_value = resp
+        mock.table.return_value.execute = AsyncMock(return_value=resp)
 
         summary = await AgentOpinionService.process_tick(mock, SIM_ID)
         assert summary["recalculated"] == 5

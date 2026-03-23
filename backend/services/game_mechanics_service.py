@@ -16,7 +16,7 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ class GameMechanicsService:
         simulation_id: UUID,
     ) -> dict | None:
         """Get top-level health metrics for a simulation."""
-        response = (
+        response = await (
             supabase.table("mv_simulation_health")
             .select("*")
             .eq("simulation_id", str(simulation_id))
@@ -44,7 +44,7 @@ class GameMechanicsService:
         supabase: Client,
     ) -> list[dict]:
         """Get health metrics for all simulations (for map/dashboard)."""
-        response = (
+        response = await (
             supabase.table("mv_simulation_health")
             .select("*")
             .order("overall_health", desc=True)
@@ -59,7 +59,7 @@ class GameMechanicsService:
         building_id: UUID,
     ) -> dict:
         """Get readiness metrics for a single building."""
-        response = (
+        response = await (
             supabase.table("mv_building_readiness")
             .select("*")
             .eq("simulation_id", str(simulation_id))
@@ -97,7 +97,7 @@ class GameMechanicsService:
             query = query.eq("zone_id", str(zone_id))
 
         query = query.range(offset, offset + limit - 1)
-        response = query.execute()
+        response = await query.execute()
         total = response.count if response.count is not None else len(response.data or [])
         return response.data or [], total
 
@@ -108,7 +108,7 @@ class GameMechanicsService:
         zone_id: UUID,
     ) -> dict:
         """Get stability metrics for a single zone."""
-        response = (
+        response = await (
             supabase.table("mv_zone_stability")
             .select("*")
             .eq("simulation_id", str(simulation_id))
@@ -129,7 +129,7 @@ class GameMechanicsService:
         simulation_id: UUID,
     ) -> list[dict]:
         """List zone stability for all zones in a simulation."""
-        response = (
+        response = await (
             supabase.table("mv_zone_stability")
             .select("*")
             .eq("simulation_id", str(simulation_id))
@@ -144,7 +144,7 @@ class GameMechanicsService:
         simulation_id: UUID,
     ) -> list[dict]:
         """List embassy effectiveness for embassies involving a simulation."""
-        response = (
+        response = await (
             supabase.table("mv_embassy_effectiveness")
             .select("*")
             .or_(
@@ -186,7 +186,7 @@ class GameMechanicsService:
         )
 
         # Recent high-impact events (last 30 days, impact >= 7)
-        events_response = (
+        events_response = await (
             supabase.table("active_events")
             .select("id, title, impact_level, location, occurred_at, event_type, tags")
             .eq("simulation_id", str(simulation_id))
@@ -318,7 +318,7 @@ class GameMechanicsService:
         combines simulation health, active echoes, foreign themes, and lore
         in a single round-trip.
         """
-        response = supabase.rpc(
+        response = await supabase.rpc(
             "get_bleed_status",
             {"p_simulation_id": str(simulation_id)},
         ).execute()
@@ -339,4 +339,4 @@ class GameMechanicsService:
 
         Uses a Postgres RPC call to the refresh function.
         """
-        supabase.rpc("refresh_all_game_metrics", {}).execute()
+        await supabase.rpc("refresh_all_game_metrics", {}).execute()

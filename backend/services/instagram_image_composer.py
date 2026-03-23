@@ -22,7 +22,7 @@ from uuid import uuid4
 import httpx
 import sentry_sdk
 
-from supabase import Client
+from supabase import AsyncClient as Client
 
 if TYPE_CHECKING:
     from PIL.Image import Image as PILImage

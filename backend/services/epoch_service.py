@@ -12,7 +12,7 @@ from fastapi import HTTPException, status
 
 from backend.models.epoch import EpochConfig
 from backend.services.constants import OPERATIVE_RP_COSTS
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -47,13 +47,13 @@ class EpochService:
         if status_filter:
             query = query.eq("status", status_filter)
         query = query.order("created_at", desc=True).range(offset, offset + limit - 1)
-        resp = query.execute()
+        resp = await query.execute()
         return resp.data or [], resp.count or 0
 
     @classmethod
     async def get(cls, supabase: Client, epoch_id: UUID) -> dict:
         """Get a single epoch by ID."""
-        resp = (
+        resp = await (
             supabase.table("game_epochs")
             .select("*")
             .eq("id", str(epoch_id))
@@ -67,7 +67,7 @@ class EpochService:
     @classmethod
     async def get_active_epochs(cls, supabase: Client) -> list[dict]:
         """Get all active epochs (lobby/foundation/competition/reckoning)."""
-        resp = (
+        resp = await (
             supabase.table("game_epochs")
             .select("*")
             .in_("status", ["lobby", "foundation", "competition", "reckoning"])
@@ -98,7 +98,7 @@ class EpochService:
             "config": merged_config,
             "epoch_type": epoch_type,
         }
-        resp = supabase.table("game_epochs").insert(data).execute()
+        resp = await supabase.table("game_epochs").insert(data).execute()
         if not resp.data:
             raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Failed to create epoch.")
         return resp.data[0]
@@ -117,7 +117,7 @@ class EpochService:
                 status.HTTP_400_BAD_REQUEST,
                 "Can only edit epoch configuration during lobby phase.",
             )
-        resp = (
+        resp = await (
             supabase.table("game_epochs")
             .update(updates)
             .eq("id", str(epoch_id))

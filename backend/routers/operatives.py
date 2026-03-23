@@ -18,7 +18,7 @@ from backend.services.audit_service import AuditService
 from backend.services.battle_log_service import BattleLogService
 from backend.services.epoch_service import EpochService
 from backend.services.operative_service import OperativeService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

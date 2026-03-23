@@ -13,7 +13,7 @@ from uuid import UUID
 
 from backend.dependencies import get_admin_supabase
 from backend.services.resonance_service import ResonanceService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +62,7 @@ class ResonanceScheduler:
         enabled = _DEFAULT_ENABLED
         interval = _DEFAULT_CHECK_INTERVAL
         try:
-            rows = (
+            rows = await (
                 admin.table("platform_settings")
                 .select("setting_key, setting_value")
                 .in_("setting_key", [
@@ -89,7 +89,7 @@ class ResonanceScheduler:
     async def _check_and_process(cls, admin: Client) -> None:
         """Query due resonances and process each one."""
         now = datetime.now(UTC).isoformat()
-        response = (
+        response = await (
             admin.table("substrate_resonances")
             .select("id")
             .eq("status", "detected")

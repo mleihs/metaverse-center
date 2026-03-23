@@ -15,7 +15,7 @@ from backend.models.invitation import (
 )
 from backend.models.member import MemberResponse
 from backend.services.invitation_service import InvitationService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

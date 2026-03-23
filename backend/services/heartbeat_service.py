@@ -40,7 +40,7 @@ from backend.services.heartbeat_entry_builder import make_heartbeat_entry
 from backend.services.narrative_arc_service import NarrativeArcService
 from backend.services.platform_config_service import PlatformConfigService
 from backend.utils.encryption import decrypt
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +103,7 @@ class HeartbeatService:
         enabled = _DEFAULT_ENABLED
         interval = _DEFAULT_INTERVAL
         try:
-            rows = (
+            rows = await (
                 admin.table("platform_settings")
                 .select("setting_key, setting_value")
                 .in_("setting_key", [
@@ -163,7 +163,7 @@ class HeartbeatService:
         """Load per-simulation heartbeat overrides from simulation_settings."""
         overrides: dict = {}
         try:
-            rows = (
+            rows = await (
                 admin.table("simulation_settings")
                 .select("setting_key, setting_value")
                 .eq("simulation_id", str(sim_id))
@@ -187,7 +187,7 @@ class HeartbeatService:
         now = datetime.now(UTC)
 
         # Find active template simulations due for a tick
-        response = (
+        response = await (
             admin.table("simulations")
             .select("id, name, slug, last_heartbeat_tick, next_heartbeat_at")
             .eq("status", "active")
@@ -257,7 +257,7 @@ class HeartbeatService:
         # Create heartbeat record (idempotent via UNIQUE(simulation_id, tick_number))
         heartbeat_id = uuid4()
         try:
-            admin.table("simulation_heartbeats").insert({
+            await admin.table("simulation_heartbeats").insert({
                 "id": str(heartbeat_id),
                 "simulation_id": str(sim_id),
                 "tick_number": tick_number,
@@ -281,7 +281,7 @@ class HeartbeatService:
         # Check for active epoch (for tagging entries with epoch context)
         active_epoch_id: str | None = None
         try:
-            epoch_resp = (
+            epoch_resp = await (
                 admin.table("epoch_participants")
                 .select("epoch_id, game_epochs!inner(status)")
                 .eq("simulation_id", str(sim_id))
@@ -534,7 +534,7 @@ class HeartbeatService:
                     entry["metadata"] = meta
 
             # Batch insert entries
-            admin.table("heartbeat_entries").insert(entries).execute()
+            await admin.table("heartbeat_entries").insert(entries).execute()
 
             # Build dispatch summary
             dispatch_en = cls._build_dispatch(entries, tick_number, "en")
@@ -550,7 +550,7 @@ class HeartbeatService:
                 "entry_count": len(entries),
                 "autonomy": tick_stats.pop("autonomy", {}),
             }
-            admin.table("simulation_heartbeats").update({
+            await admin.table("simulation_heartbeats").update({
                 "status": "completed",
                 "dispatch_en": dispatch_en,
                 "dispatch_de": dispatch_de,
@@ -581,14 +581,14 @@ class HeartbeatService:
                 tick_number, sim_name,
                 extra={"simulation_id": str(sim_id), "tick_number": tick_number},
             )
-            admin.table("simulation_heartbeats").update({
+            await admin.table("simulation_heartbeats").update({
                 "status": "failed",
                 "summary": {"error": "See server logs"},
             }).eq("id", str(heartbeat_id)).execute()
 
             # Still advance next_heartbeat_at to prevent retry storms
             next_at = datetime.now(UTC) + timedelta(seconds=interval)
-            admin.table("simulations").update({
+            await admin.table("simulations").update({
                 "next_heartbeat_at": next_at.isoformat(),
             }).eq("id", str(sim_id)).execute()
 
@@ -609,7 +609,7 @@ class HeartbeatService:
             return None, True
 
         try:
-            owner_resp = (
+            owner_resp = await (
                 admin.table("simulation_members")
                 .select("user_id")
                 .eq("simulation_id", str(sim_id))
@@ -620,7 +620,7 @@ class HeartbeatService:
             if not owner_resp.data:
                 return None, False
 
-            wallet_resp = (
+            wallet_resp = await (
                 admin.table("user_wallets")
                 .select("encrypted_openrouter_key")
                 .eq("user_id", owner_resp.data[0]["user_id"])
@@ -641,7 +641,7 @@ class HeartbeatService:
     async def _phase_expire_zone_actions(cls, admin: Client, sim_id: UUID) -> int:
         """Soft-delete zone actions past their expires_at."""
         now = datetime.now(UTC).isoformat()
-        response = (
+        response = await (
             admin.table("zone_actions")
             .update({"deleted_at": now})
             .eq("simulation_id", str(sim_id))
@@ -673,7 +673,7 @@ class HeartbeatService:
         resolved = 0
 
         # Single RPC call replaces O(N) individual UPDATEs
-        result = admin.rpc("fn_age_events_batch", {
+        result = await admin.rpc("fn_age_events_batch", {
             "p_sim_id": str(sim_id),
             "p_active_to_escalating": aging_rules.get("active_to_escalating", 4),
             "p_escalating_to_resolving": aging_rules.get("escalating_to_resolving", 6),
@@ -758,7 +758,7 @@ class HeartbeatService:
         entries: list[dict] = []
 
         # Single RPC call computes and updates all event pressures
-        result = admin.rpc("fn_compute_event_pressure_batch", {
+        result = await admin.rpc("fn_compute_event_pressure_batch", {
             "p_sim_id": str(sim_id),
         }).execute()
 
@@ -773,7 +773,7 @@ class HeartbeatService:
         scar_susceptibility = (config or {}).get("scar_susceptibility_multiplier", 0.50)
         if scar_susceptibility > 0:
             try:
-                scar_arcs = (
+                scar_arcs = await (
                     admin.table("narrative_arcs")
                     .select("scar_tissue_deposited")
                     .eq("simulation_id", str(sim_id))
@@ -812,7 +812,7 @@ class HeartbeatService:
         entries: list[dict] = []
 
         # Single RPC call handles all arc scar tissue updates
-        result = admin.rpc("fn_drift_scar_tissue_batch", {
+        result = await admin.rpc("fn_drift_scar_tissue_batch", {
             "p_sim_id": str(sim_id),
             "p_growth_rate": config.get("scar_growth_rate", 0.05),
             "p_decay_rate": config.get("scar_decay_rate", 0.02),
@@ -841,7 +841,7 @@ class HeartbeatService:
     @classmethod
     async def get_heartbeat_overview(cls, supabase: Client, simulation_id: UUID) -> dict:
         """Get latest heartbeat tick + summary counts for a simulation."""
-        sim = (
+        sim = await (
             supabase.table("simulations")
             .select("last_heartbeat_tick, last_heartbeat_at, next_heartbeat_at")
             .eq("id", str(simulation_id))
@@ -855,7 +855,7 @@ class HeartbeatService:
         last_tick = sim.get("last_heartbeat_tick", 0)
 
         # Count active arcs
-        arcs = (
+        arcs = await (
             supabase.table("narrative_arcs")
             .select("id", count="exact")
             .eq("simulation_id", str(simulation_id))
@@ -864,7 +864,7 @@ class HeartbeatService:
         )
 
         # Count pending bureau responses
-        pending = (
+        pending = await (
             supabase.table("bureau_responses")
             .select("id", count="exact")
             .eq("simulation_id", str(simulation_id))
@@ -873,7 +873,7 @@ class HeartbeatService:
         )
 
         # Count active attunements
-        attunements = (
+        attunements = await (
             supabase.table("substrate_attunements")
             .select("id", count="exact")
             .eq("simulation_id", str(simulation_id))
@@ -881,7 +881,7 @@ class HeartbeatService:
         )
 
         # Count active anchors
-        anchors = (
+        anchors = await (
             supabase.table("collaborative_anchors")
             .select("id", count="exact")
             .in_("status", ["forming", "active", "reinforcing"])
@@ -928,13 +928,13 @@ class HeartbeatService:
         if tick_number is not None:
             query = query.eq("tick_number", tick_number)
 
-        response = query.execute()
+        response = await query.execute()
         return response.data or [], response.count or 0
 
     @classmethod
     async def list_cascade_rules(cls, admin: Client) -> list[dict]:
         """List all cascade rules from the resonance_cascade_rules table."""
-        response = (
+        response = await (
             admin.table("resonance_cascade_rules")
             .select("*")
             .order("source_signature")
@@ -950,7 +950,7 @@ class HeartbeatService:
         enabled, interval = await cls._load_config(admin)
 
         # Load active systems
-        systems_row = (
+        systems_row = await (
             admin.table("platform_settings")
             .select("setting_value")
             .eq("setting_key", "heartbeat_systems")
@@ -963,7 +963,7 @@ class HeartbeatService:
             active_systems = json.loads(val) if isinstance(val, str) else val
 
         # Get all active simulations with heartbeat state
-        sims = (
+        sims = await (
             admin.table("simulations")
             .select("id, name, slug, last_heartbeat_tick, last_heartbeat_at, next_heartbeat_at, status")
             .eq("status", "active")
@@ -978,7 +978,7 @@ class HeartbeatService:
         for sim in sims:
             sid = sim["id"]
 
-            arcs = (
+            arcs = await (
                 admin.table("narrative_arcs")
                 .select("id", count="exact")
                 .eq("simulation_id", sid)
@@ -986,7 +986,7 @@ class HeartbeatService:
                 .execute()
             )
 
-            pending = (
+            pending = await (
                 admin.table("bureau_responses")
                 .select("id", count="exact")
                 .eq("simulation_id", sid)
@@ -994,7 +994,7 @@ class HeartbeatService:
                 .execute()
             )
 
-            scar_arcs = (
+            scar_arcs = await (
                 admin.table("narrative_arcs")
                 .select("scar_tissue_deposited")
                 .eq("simulation_id", sid)
@@ -1033,7 +1033,7 @@ class HeartbeatService:
         notable entries since the last briefing.
         """
         # Get current health
-        health = (
+        health = await (
             supabase.table("mv_simulation_health")
             .select("overall_health, health_label, avg_zone_stability, avg_readiness")
             .eq("simulation_id", str(sim_id))
@@ -1044,7 +1044,7 @@ class HeartbeatService:
 
         # Get last 24h of heartbeat entries (summary counts)
         last_day = (datetime.now(UTC) - timedelta(hours=24)).isoformat()
-        entries = (
+        entries = await (
             supabase.table("heartbeat_entries")
             .select("entry_type, severity")
             .eq("simulation_id", str(sim_id))
@@ -1064,7 +1064,7 @@ class HeartbeatService:
                 positive_count += 1
 
         # Active arcs
-        arcs = (
+        arcs = await (
             supabase.table("narrative_arcs")
             .select("arc_type, primary_signature, status, pressure", count="exact")
             .eq("simulation_id", str(sim_id))
@@ -1087,7 +1087,7 @@ class HeartbeatService:
     @classmethod
     async def force_tick(cls, admin: Client, sim_id: UUID) -> dict:
         """Manually trigger a tick for a simulation (admin action)."""
-        response = (
+        response = await (
             admin.table("simulations")
             .select("id, name, slug, last_heartbeat_tick, next_heartbeat_at")
             .eq("id", str(sim_id))
@@ -1106,7 +1106,7 @@ class HeartbeatService:
 
         # Return the completed heartbeat record
         tick_number = (sim.get("last_heartbeat_tick") or 0) + 1
-        result = (
+        result = await (
             admin.table("simulation_heartbeats")
             .select("*")
             .eq("simulation_id", str(sim_id))

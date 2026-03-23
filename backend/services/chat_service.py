@@ -6,7 +6,7 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ class ChatService:
         user_id: UUID,
     ) -> list[dict]:
         """List all conversations for the current user in a simulation."""
-        response = (
+        response = await (
             supabase.table("chat_conversations")
             .select("*")
             .eq("simulation_id", str(simulation_id))
@@ -49,7 +49,7 @@ class ChatService:
         conversation_id: str,
     ) -> list[dict]:
         """Load agents for a conversation via junction table."""
-        response = (
+        response = await (
             supabase.table("chat_conversation_agents")
             .select("agent_id, agents(id, name, portrait_image_url)")
             .eq("conversation_id", conversation_id)
@@ -69,7 +69,7 @@ class ChatService:
         conversation_id: str,
     ) -> list[dict]:
         """Load event references for a conversation."""
-        response = (
+        response = await (
             supabase.table("chat_event_references")
             .select("id, event_id, referenced_at, events(title, event_type, description, occurred_at, impact_level)")
             .eq("conversation_id", conversation_id)
@@ -101,7 +101,7 @@ class ChatService:
     ) -> dict:
         """Create a new conversation with one or more agents."""
         # Create the conversation (agent_id set to first agent for backwards compat)
-        response = (
+        response = await (
             supabase.table("chat_conversations")
             .insert({
                 "simulation_id": str(simulation_id),
@@ -128,7 +128,7 @@ class ChatService:
             }
             for aid in agent_ids
         ]
-        supabase.table("chat_conversation_agents").insert(junction_rows).execute()
+        await supabase.table("chat_conversation_agents").insert(junction_rows).execute()
 
         # Load agents for response
         conversation["agents"] = await ChatService._load_conversation_agents(
@@ -158,7 +158,7 @@ class ChatService:
         if before:
             query = query.lt("created_at", before)
 
-        response = query.execute()
+        response = await query.execute()
         data = response.data or []
 
         # Flatten agent join into agent field
@@ -190,7 +190,7 @@ class ChatService:
         if agent_id:
             insert_data["agent_id"] = str(agent_id)
 
-        response = (
+        response = await (
             supabase.table("chat_messages")
             .insert(insert_data)
             .execute()
@@ -216,7 +216,7 @@ class ChatService:
         agent_id: UUID,
     ) -> dict:
         """Add an agent to a conversation."""
-        response = (
+        response = await (
             supabase.table("chat_conversation_agents")
             .insert({
                 "conversation_id": str(conversation_id),
@@ -239,7 +239,7 @@ class ChatService:
     ) -> None:
         """Remove an agent from a conversation (at least 1 must remain)."""
         # Check count
-        count_resp = (
+        count_resp = await (
             supabase.table("chat_conversation_agents")
             .select("id", count="exact")
             .eq("conversation_id", str(conversation_id))
@@ -251,7 +251,7 @@ class ChatService:
                 detail="Cannot remove last agent from conversation.",
             )
 
-        supabase.table("chat_conversation_agents").delete().eq(
+        await supabase.table("chat_conversation_agents").delete().eq(
             "conversation_id", str(conversation_id),
         ).eq("agent_id", str(agent_id)).execute()
 
@@ -263,7 +263,7 @@ class ChatService:
         user_id: UUID,
     ) -> dict:
         """Add an event reference to a conversation."""
-        response = (
+        response = await (
             supabase.table("chat_event_references")
             .insert({
                 "conversation_id": str(conversation_id),
@@ -280,7 +280,7 @@ class ChatService:
 
         # Load the event details for the response
         ref = response.data[0]
-        event_resp = (
+        event_resp = await (
             supabase.table("events")
             .select("title, event_type, description, occurred_at, impact_level")
             .eq("id", str(event_id))
@@ -307,7 +307,7 @@ class ChatService:
         event_id: UUID,
     ) -> None:
         """Remove an event reference from a conversation."""
-        supabase.table("chat_event_references").delete().eq(
+        await supabase.table("chat_event_references").delete().eq(
             "conversation_id", str(conversation_id),
         ).eq("event_id", str(event_id)).execute()
 
@@ -325,7 +325,7 @@ class ChatService:
         conversation_id: UUID,
     ) -> dict:
         """Archive a conversation."""
-        response = (
+        response = await (
             supabase.table("chat_conversations")
             .update({"status": "archived", "updated_at": datetime.now(UTC).isoformat()})
             .eq("id", str(conversation_id))
@@ -347,7 +347,7 @@ class ChatService:
     ) -> dict:
         """Permanently delete a conversation and all its messages (CASCADE)."""
         # Fetch conversation first to return it
-        fetch = (
+        fetch = await (
             supabase.table("chat_conversations")
             .select("*")
             .eq("id", str(conversation_id))
@@ -363,7 +363,7 @@ class ChatService:
         conversation = fetch.data[0]
 
         # Delete (messages cascade automatically)
-        supabase.table("chat_conversations").delete().eq(
+        await supabase.table("chat_conversations").delete().eq(
             "id", str(conversation_id),
         ).execute()
 
@@ -377,7 +377,7 @@ class ChatService:
         simulation_id: UUID,
     ) -> list[dict]:
         """List all conversations for a simulation (public, no user filter)."""
-        response = (
+        response = await (
             supabase.table("chat_conversations")
             .select("*")
             .eq("simulation_id", str(simulation_id))
@@ -395,7 +395,7 @@ class ChatService:
         offset: int = 0,
     ) -> tuple[list[dict], int]:
         """List messages in a conversation (public, paginated)."""
-        response = (
+        response = await (
             supabase.table("chat_messages")
             .select("*", count="exact")
             .eq("conversation_id", str(conversation_id))

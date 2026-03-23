@@ -6,7 +6,7 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +41,7 @@ class SocialTrendsService:
             query = query.eq("is_processed", is_processed)
 
         query = query.range(offset, offset + limit - 1)
-        response = query.execute()
+        response = await query.execute()
 
         total = response.count if response.count is not None else len(response.data or [])
         return response.data or [], total
@@ -49,7 +49,7 @@ class SocialTrendsService:
     @staticmethod
     async def get_trend(supabase: Client, simulation_id: UUID, trend_id: UUID) -> dict:
         """Get a single trend."""
-        response = (
+        response = await (
             supabase.table("social_trends")
             .select("*")
             .eq("simulation_id", str(simulation_id))
@@ -67,7 +67,7 @@ class SocialTrendsService:
     @staticmethod
     async def create_trend(supabase: Client, simulation_id: UUID, data: dict) -> dict:
         """Create a trend manually."""
-        response = (
+        response = await (
             supabase.table("social_trends")
             .insert({**data, "simulation_id": str(simulation_id)})
             .execute()
@@ -97,7 +97,7 @@ class SocialTrendsService:
                 "fetched_at": datetime.now(UTC).isoformat(),
             })
 
-        response = supabase.table("social_trends").insert(rows).execute()
+        response = await supabase.table("social_trends").insert(rows).execute()
         return response.data or []
 
     @staticmethod
@@ -107,7 +107,7 @@ class SocialTrendsService:
         trend_id: UUID,
     ) -> dict:
         """Mark a trend as processed."""
-        response = (
+        response = await (
             supabase.table("social_trends")
             .update({
                 "is_processed": True,

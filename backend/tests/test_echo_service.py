@@ -36,7 +36,7 @@ def _mock_supabase(data=None, count=None):
     builder.range.return_value = builder
     builder.limit.return_value = builder
     builder.single.return_value = builder
-    builder.execute.return_value = response
+    builder.execute = AsyncMock(return_value=response)
 
     mock.table.return_value = builder
     return mock, builder, response
@@ -179,7 +179,7 @@ class TestEvaluateEchoCandidates:
             b.limit.return_value = b
             r = MagicMock()
             r.data = table_data.get(name, [])
-            b.execute.return_value = r
+            b.execute = AsyncMock(return_value=r)
             return b
 
         mock.table.side_effect = make_table
@@ -517,7 +517,7 @@ class TestApproveEcho:
         get_builder.single.return_value = get_builder
         get_resp = MagicMock()
         get_resp.data = {"id": str(ECHO_ID), "status": "pending"}
-        get_builder.execute.return_value = get_resp
+        get_builder.execute = AsyncMock(return_value=get_resp)
 
         # Second call: update()
         update_builder = MagicMock()
@@ -525,7 +525,7 @@ class TestApproveEcho:
         update_builder.eq.return_value = update_builder
         update_resp = MagicMock()
         update_resp.data = [{"id": str(ECHO_ID), "status": "generating"}]
-        update_builder.execute.return_value = update_resp
+        update_builder.execute = AsyncMock(return_value=update_resp)
 
         mock.table.side_effect = [get_builder, update_builder]
 
@@ -555,14 +555,14 @@ class TestRejectEcho:
         get_builder.single.return_value = get_builder
         get_resp = MagicMock()
         get_resp.data = {"id": str(ECHO_ID), "status": "pending"}
-        get_builder.execute.return_value = get_resp
+        get_builder.execute = AsyncMock(return_value=get_resp)
 
         update_builder = MagicMock()
         update_builder.update.return_value = update_builder
         update_builder.eq.return_value = update_builder
         update_resp = MagicMock()
         update_resp.data = [{"id": str(ECHO_ID), "status": "rejected"}]
-        update_builder.execute.return_value = update_resp
+        update_builder.execute = AsyncMock(return_value=update_resp)
 
         mock.table.side_effect = [get_builder, update_builder]
 
@@ -655,7 +655,7 @@ class TestConnectionGetMapData:
                 r.count = 1
             else:
                 r.data = []
-            b.execute.return_value = r
+            b.execute = AsyncMock(return_value=r)
             return b
 
         mock.table.side_effect = make_table
@@ -664,7 +664,7 @@ class TestConnectionGetMapData:
         rpc_response = MagicMock()
         rpc_response.data = {"zone_topology": {}, "historical_events": {}, "active_bleed_details": {}}
         rpc_builder = MagicMock()
-        rpc_builder.execute.return_value = rpc_response
+        rpc_builder.execute = AsyncMock(return_value=rpc_response)
         mock.rpc.return_value = rpc_builder
 
         with patch("backend.services.embassy_service.EmbassyService.list_all_active", new_callable=AsyncMock, return_value=[]):

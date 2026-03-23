@@ -22,7 +22,7 @@ from backend.services.email_templates import (
     render_clearance_granted,
     render_clearance_request_admin_notification,
 )
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ class ForgeAccessService:
             "message": message,
         }
         try:
-            response = supabase.table("forge_access_requests").insert(insert_data).execute()
+            response = await supabase.table("forge_access_requests").insert(insert_data).execute()
         except APIError as e:
             if "idx_forge_access_one_pending" in str(e) or "duplicate" in str(e).lower():
                 raise HTTPException(
@@ -102,7 +102,7 @@ class ForgeAccessService:
         user_id: UUID,
     ) -> dict | None:
         """Get the latest request for a user (RLS enforced)."""
-        response = (
+        response = await (
             supabase.table("forge_access_requests")
             .select("*")
             .eq("user_id", str(user_id))
@@ -122,7 +122,7 @@ class ForgeAccessService:
         Uses ``fn_list_pending_forge_requests`` SECURITY DEFINER RPC
         (migration 134) — service_role only, no PostgREST exposure.
         """
-        response = admin_supabase.rpc("fn_list_pending_forge_requests").execute()
+        response = await admin_supabase.rpc("fn_list_pending_forge_requests").execute()
         return response.data or []
 
     @classmethod
@@ -132,7 +132,8 @@ class ForgeAccessService:
     ) -> int:
         """Count pending requests (admin)."""
         response = (
-            admin_supabase.table("forge_access_requests").select("id", count="exact").eq("status", "pending").execute()
+            await admin_supabase.table("forge_access_requests")
+            .select("id", count="exact").eq("status", "pending").execute()
         )
         return response.count or 0
 
@@ -153,7 +154,7 @@ class ForgeAccessService:
         """
         rpc_name = "fn_approve_forge_access" if action == "approve" else "fn_reject_forge_access"
         try:
-            response = admin_supabase.rpc(
+            response = await admin_supabase.rpc(
                 rpc_name,
                 {
                     "p_request_id": str(request_id),

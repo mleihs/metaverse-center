@@ -12,7 +12,7 @@ from backend.services.email_service import EmailService
 from backend.services.email_templates import epoch_invitation_subject, render_epoch_invitation
 from backend.services.external.openrouter import OpenRouterService
 from backend.services.prompt_service import PromptResolver
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ class EpochInvitationService:
         token = secrets.token_urlsafe(32)
         expires_at = datetime.now(UTC) + timedelta(hours=expires_in_hours)
 
-        response = (
+        response = await (
             supabase.table("epoch_invitations")
             .insert({
                 "epoch_id": str(epoch_id),
@@ -71,7 +71,7 @@ class EpochInvitationService:
         invite_url = f"{base_url}/epoch/join?token={invitation['invite_token']}"
 
         # Fetch epoch name for email subject
-        epoch_response = (
+        epoch_response = await (
             supabase.table("game_epochs")
             .select("name")
             .eq("id", str(epoch_id))
@@ -94,7 +94,7 @@ class EpochInvitationService:
     @staticmethod
     async def list_invitations(supabase: Client, epoch_id: UUID) -> list[dict]:
         """List all invitations for an epoch, ordered by creation date."""
-        response = (
+        response = await (
             supabase.table("epoch_invitations")
             .select("*")
             .eq("epoch_id", str(epoch_id))
@@ -106,7 +106,7 @@ class EpochInvitationService:
     @staticmethod
     async def get_by_token(supabase: Client, token: str) -> dict:
         """Validate and return invitation + epoch info by token."""
-        response = (
+        response = await (
             supabase.table("epoch_invitations")
             .select("*, game_epochs(name, description, status, config)")
             .eq("invite_token", token)
@@ -152,7 +152,7 @@ class EpochInvitationService:
         supabase: Client, invitation_id: UUID,
     ) -> dict:
         """Revoke an invitation by setting status to 'revoked'."""
-        response = (
+        response = await (
             supabase.table("epoch_invitations")
             .update({"status": "revoked"})
             .eq("id", str(invitation_id))
@@ -173,7 +173,7 @@ class EpochInvitationService:
     ) -> dict:
         """Mark an invitation as accepted."""
         # Fetch the invitation first
-        inv_response = (
+        inv_response = await (
             supabase.table("epoch_invitations")
             .select("*")
             .eq("invite_token", token)
@@ -201,7 +201,7 @@ class EpochInvitationService:
             )
 
         # Mark accepted
-        update_response = (
+        update_response = await (
             supabase.table("epoch_invitations")
             .update({
                 "status": "accepted",
@@ -227,7 +227,7 @@ class EpochInvitationService:
     async def generate_lore(supabase: Client, epoch_id: UUID) -> str:
         """Generate invitation lore via OpenRouter. Caches in game_epochs.config.invitation_lore."""
         # Fetch epoch
-        epoch_response = (
+        epoch_response = await (
             supabase.table("game_epochs")
             .select("name, description, config")
             .eq("id", str(epoch_id))
@@ -257,13 +257,13 @@ class EpochInvitationService:
                 "Will you answer the call? [MOCK LORE]"
             )
             config["invitation_lore"] = mock_lore
-            supabase.table("game_epochs").update({"config": config}).eq(
+            await supabase.table("game_epochs").update({"config": config}).eq(
                 "id", str(epoch_id)
             ).execute()
             return mock_lore
 
         # Fetch participant names
-        participants_response = (
+        participants_response = await (
             supabase.table("epoch_participants")
             .select("simulation_id, simulations(name)")
             .eq("epoch_id", str(epoch_id))
@@ -299,7 +299,7 @@ class EpochInvitationService:
 
         # Cache in config
         config["invitation_lore"] = lore_text
-        supabase.table("game_epochs").update({"config": config}).eq(
+        await supabase.table("game_epochs").update({"config": config}).eq(
             "id", str(epoch_id)
         ).execute()
 
@@ -309,7 +309,7 @@ class EpochInvitationService:
     async def regenerate_lore(supabase: Client, epoch_id: UUID) -> str:
         """Force-regenerate lore by clearing cache first."""
         # Clear cached lore
-        epoch_response = (
+        epoch_response = await (
             supabase.table("game_epochs")
             .select("config")
             .eq("id", str(epoch_id))
@@ -319,7 +319,7 @@ class EpochInvitationService:
         if epoch_response.data:
             config = epoch_response.data.get("config") or {}
             config.pop("invitation_lore", None)
-            supabase.table("game_epochs").update({"config": config}).eq(
+            await supabase.table("game_epochs").update({"config": config}).eq(
                 "id", str(epoch_id)
             ).execute()
 

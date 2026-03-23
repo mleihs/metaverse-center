@@ -31,7 +31,7 @@ def _mock_supabase_for_reactions(
         .eq.return_value
         .order.return_value
     )
-    reaction_chain.execute.return_value = MagicMock(data=existing_reactions or [])
+    reaction_chain.execute = AsyncMock(return_value=MagicMock(data=existing_reactions or []))
     return mock_sb
 
 

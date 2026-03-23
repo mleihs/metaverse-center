@@ -8,7 +8,7 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +91,7 @@ class BaseService:
                     query = query.eq(key, value)
 
         query = query.range(offset, offset + limit - 1)
-        response = query.execute()
+        response = await query.execute()
 
         total = response.count if response.count is not None else len(response.data or [])
         return response.data or [], total
@@ -108,7 +108,7 @@ class BaseService:
     ) -> dict:
         """Get a single entity by ID within a simulation."""
         table = cls._read_table(include_deleted)
-        response = (
+        response = await (
             supabase.table(table)
             .select(select)
             .eq("simulation_id", str(simulation_id))
@@ -149,7 +149,7 @@ class BaseService:
         if cls.supports_created_by and "created_by_id" not in insert_data:
             insert_data.setdefault("created_by_id", str(user_id))
 
-        response = (
+        response = await (
             supabase.table(cls.table_name)
             .insert(insert_data)
             .execute()
@@ -217,7 +217,7 @@ class BaseService:
         if if_updated_at is not None:
             query = query.eq("updated_at", if_updated_at)
 
-        response = query.execute()
+        response = await query.execute()
 
         if not response.data:
             # Distinguish "not found" from "conflict" when optimistic locking is active.
@@ -232,7 +232,7 @@ class BaseService:
                 )
                 if cls.view_name is not None:
                     exists_query = exists_query.is_("deleted_at", "null")
-                exists = exists_query.execute()
+                exists = await exists_query.execute()
                 if exists and exists.data:
                     logger.warning(
                         "Optimistic lock conflict",
@@ -282,7 +282,7 @@ class BaseService:
             for key, value in extra_filters.items():
                 query = query.eq(key, str(value))
 
-        response = query.execute()
+        response = await query.execute()
 
         if not response.data:
             logger.warning(
@@ -304,7 +304,7 @@ class BaseService:
         entity_id: UUID,
     ) -> dict:
         """Soft-delete an entity by setting deleted_at."""
-        response = (
+        response = await (
             supabase.table(cls.table_name)
             .update({"deleted_at": datetime.now(UTC).isoformat()})
             .eq("simulation_id", str(simulation_id))

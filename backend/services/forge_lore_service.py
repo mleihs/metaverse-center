@@ -13,7 +13,7 @@ import structlog
 from backend.config import settings
 from backend.models.forge import ForgeLoreOutput, ForgeLoreTranslatedOutput
 from backend.services.ai_utils import create_forge_agent, run_ai
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -280,7 +280,7 @@ class ForgeLoreService:
         supabase: Client, simulation_id: UUID,
     ) -> list[dict[str, Any]]:
         """List all lore sections for a simulation, ordered by sort_order."""
-        resp = (
+        resp = await (
             supabase.table("simulation_lore")
             .select("*")
             .eq("simulation_id", str(simulation_id))
@@ -294,7 +294,7 @@ class ForgeLoreService:
         supabase: Client, simulation_id: UUID, slug: str,
     ) -> dict[str, Any] | None:
         """Get a single lore section by simulation-scoped slug."""
-        resp = (
+        resp = await (
             supabase.table("simulation_lore")
             .select("*")
             .eq("simulation_id", str(simulation_id))
@@ -351,7 +351,7 @@ class ForgeLoreService:
             "Persisting lore sections",
             extra={"section_count": len(rows), "simulation_id": str(simulation_id)},
         )
-        supabase.table("simulation_lore").insert(rows).execute()
+        await supabase.table("simulation_lore").insert(rows).execute()
         logger.debug("Lore persisted", extra={"simulation_id": str(simulation_id)})
 
     @staticmethod
@@ -373,27 +373,27 @@ class ForgeLoreService:
 
         try:
             # 1. Fetch full simulation data
-            sim_resp = admin_supabase.table("simulations").select(
+            sim_resp = await admin_supabase.table("simulations").select(
                 "name, description"
             ).eq("id", str(simulation_id)).single().execute()
             sim = sim_resp.data
 
-            agents_resp = admin_supabase.table("agents").select(
+            agents_resp = await admin_supabase.table("agents").select(
                 "name, primary_profession, character, background"
             ).eq("simulation_id", str(simulation_id)).execute()
             agents = agents_resp.data or []
 
-            buildings_resp = admin_supabase.table("buildings").select(
+            buildings_resp = await admin_supabase.table("buildings").select(
                 "name, building_type, description"
             ).eq("simulation_id", str(simulation_id)).execute()
             buildings = buildings_resp.data or []
 
-            zones_resp = admin_supabase.table("zones").select(
+            zones_resp = await admin_supabase.table("zones").select(
                 "name, zone_type, description"
             ).eq("simulation_id", str(simulation_id)).execute()
             zones = zones_resp.data or []
 
-            lore_resp = admin_supabase.table("simulation_lore").select(
+            lore_resp = await admin_supabase.table("simulation_lore").select(
                 "title, body, chapter"
             ).eq("simulation_id", str(simulation_id)).order("sort_order").execute()
             existing_lore = lore_resp.data or []
@@ -418,7 +418,7 @@ class ForgeLoreService:
             )
 
             # Fetch user's other simulations for cross-shard references
-            other_sims_resp = admin_supabase.table("simulations").select(
+            other_sims_resp = await admin_supabase.table("simulations").select(
                 "name, description"
             ).eq("owner_id", str(user_id)).neq("id", str(simulation_id)).limit(5).execute()
             other_sims = other_sims_resp.data or []
@@ -548,7 +548,7 @@ REQUIREMENTS:
                         row["image_caption_de"] = tr.get("image_caption")
                     rows.append(row)
 
-                admin_supabase.table("simulation_lore").insert(rows).execute()
+                await admin_supabase.table("simulation_lore").insert(rows).execute()
 
             # 5. Generate dossier images
             try:
@@ -557,7 +557,7 @@ REQUIREMENTS:
                     from backend.services.image_service import ImageService
 
                     desc = section.get("image_caption", section["title"])
-                    style_resp = admin_supabase.table("simulation_settings").select(
+                    style_resp = await admin_supabase.table("simulation_settings").select(
                         "setting_value"
                     ).eq("simulation_id", str(simulation_id)).eq(
                         "setting_key", "image_style_prompt_lore"
@@ -569,7 +569,7 @@ REQUIREMENTS:
                     if style:
                         desc = f"{desc}. Style: {style}"
 
-                    lore_rows = admin_supabase.table("simulation_lore").select(
+                    lore_rows = await admin_supabase.table("simulation_lore").select(
                         "id"
                     ).eq("simulation_id", str(simulation_id)).eq(
                         "title", section["title"]

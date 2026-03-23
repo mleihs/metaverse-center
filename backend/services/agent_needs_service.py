@@ -22,7 +22,7 @@ from uuid import UUID
 
 import structlog
 
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +70,7 @@ class AgentNeedsService:
             phase="needs_decay",
         )
 
-        result = supabase.rpc("fn_decay_agent_needs", {
+        result = await supabase.rpc("fn_decay_agent_needs", {
             "p_simulation_id": str(simulation_id),
             "p_rate_multiplier": rate_multiplier,
         }).execute()
@@ -95,7 +95,7 @@ class AgentNeedsService:
             logger.warning("Invalid need type", extra={"need_type": need_type})
             return 0.0
 
-        result = supabase.rpc("fn_fulfill_agent_need", {
+        result = await supabase.rpc("fn_fulfill_agent_need", {
             "p_agent_id": str(agent_id),
             "p_need_type": need_type,
             "p_amount": amount,
@@ -134,7 +134,7 @@ class AgentNeedsService:
         agent_id: UUID,
     ) -> tuple[str, float]:
         """Get the most urgent (lowest) need for an agent. Read-only."""
-        result = (
+        result = await (
             supabase.table("agent_needs")
             .select("social, purpose, safety, comfort, stimulation")
             .eq("agent_id", str(agent_id))
@@ -155,7 +155,7 @@ class AgentNeedsService:
         simulation_id: UUID,
     ) -> list[dict]:
         """Get needs for all agents in a simulation. Read-only."""
-        result = (
+        result = await (
             supabase.table("agent_needs")
             .select("*, agents!agent_needs_agent_id_fkey(id, name)")
             .eq("simulation_id", str(simulation_id))
@@ -174,7 +174,7 @@ class AgentNeedsService:
 
         Uses ``fn_fulfill_agent_need`` (migration 146) for each affected agent.
         """
-        result = (
+        result = await (
             supabase.table("agents")
             .select("id, current_zone_id")
             .eq("simulation_id", str(simulation_id))

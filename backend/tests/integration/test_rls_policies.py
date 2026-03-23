@@ -9,7 +9,7 @@ Markers:
     integration: Requires app instantiation but not external services.
 """
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
 import pytest
@@ -53,7 +53,7 @@ def _mock_supabase():
     def _make_chainable():
         """Create a mock that returns execute_result for .execute() and itself for everything else."""
         chain = MagicMock()
-        chain.execute.return_value = execute_result
+        chain.execute = AsyncMock(return_value=execute_result)
         # Make all query methods return the chain itself so chaining works
         query_methods = (
             'select', 'eq', 'neq', 'gt', 'lt', 'order',
@@ -123,7 +123,7 @@ def _mock_supabase_with_role(role: str | None):
     # Build a separate chainable mock for simulation_members so it doesn't
     # share execute.return_value with entity queries.
     member_chain = MagicMock()
-    member_chain.execute.return_value = member_result
+    member_chain.execute = AsyncMock(return_value=member_result)
     for method in ('select', 'eq', 'neq', 'gt', 'lt', 'order',
                    'range', 'limit', 'offset', 'filter', 'ilike', 'in_'):
         getattr(member_chain, method).return_value = member_chain

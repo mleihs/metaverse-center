@@ -11,7 +11,7 @@ from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta
 from backend.models.epoch_chat import EpochChatMessageCreate, EpochChatMessageResponse
 from backend.services.audit_service import AuditService
 from backend.services.epoch_chat_service import EpochChatService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

@@ -10,7 +10,7 @@ import json
 import logging
 from typing import Any
 
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

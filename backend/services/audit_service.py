@@ -3,7 +3,7 @@
 import logging
 from uuid import UUID
 
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -60,4 +60,4 @@ class AuditService:
             entry["simulation_id"] = str(simulation_id)
         if entity_id is not None:
             entry["entity_id"] = str(entity_id)
-        supabase.table("audit_log").insert(entry).execute()
+        await supabase.table("audit_log").insert(entry).execute()

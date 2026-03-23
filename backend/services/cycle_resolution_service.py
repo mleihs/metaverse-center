@@ -13,7 +13,7 @@ from backend.services.battle_log_service import BattleLogService
 from backend.services.constants import SECURITY_TIER_ORDER
 from backend.services.game_instance_service import GameInstanceService
 from backend.services.platform_config_service import PlatformConfigService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ class CycleResolutionService:
         Uses ``fn_batch_grant_rp`` RPC (migration 126) — a single UPDATE
         with LEAST() for cap enforcement.
         """
-        supabase.rpc(
+        await supabase.rpc(
             "fn_batch_grant_rp",
             {"p_epoch_id": str(epoch_id), "p_amount": amount, "p_rp_cap": rp_cap},
         ).execute()
@@ -59,7 +59,7 @@ class CycleResolutionService:
         the first to write succeeds, the second fails because current_rp
         no longer matches.
         """
-        resp = (
+        resp = await (
             supabase.table("epoch_participants")
             .select("id, current_rp")
             .eq("epoch_id", str(epoch_id))
@@ -78,7 +78,7 @@ class CycleResolutionService:
             )
 
         new_rp = current - amount
-        update_resp = (
+        update_resp = await (
             supabase.table("epoch_participants")
             .update({"current_rp": new_rp})
             .eq("id", resp.data["id"])
@@ -108,7 +108,7 @@ class CycleResolutionService:
         platform setting is enabled. Falls back to Python fetch-compute-update otherwise.
         """
         # Read epoch config for rp_cap (needed by both paths)
-        epoch_resp = (
+        epoch_resp = await (
             supabase.table("game_epochs")
             .select("config")
             .eq("id", str(epoch_id))
@@ -121,7 +121,7 @@ class CycleResolutionService:
         use_rpc = PlatformConfigService.get(supabase, "use_atomic_game_rpcs", False)
         if use_rpc:
             # Atomic RP grant with cap enforcement (migration 148)
-            rpc_resp = supabase.rpc("fn_grant_rp_single", {
+            rpc_resp = await supabase.rpc("fn_grant_rp_single", {
                 "p_epoch_id": str(epoch_id),
                 "p_simulation_id": str(simulation_id),
                 "p_amount": amount,
@@ -130,7 +130,7 @@ class CycleResolutionService:
             return rpc_resp.data
 
         # Legacy: fetch-compute-update with no locking
-        resp = (
+        resp = await (
             supabase.table("epoch_participants")
             .select("id, current_rp")
             .eq("epoch_id", str(epoch_id))
@@ -144,7 +144,7 @@ class CycleResolutionService:
         current = resp.data["current_rp"]
         new_rp = min(current + amount, rp_cap)
 
-        supabase.table("epoch_participants").update(
+        await supabase.table("epoch_participants").update(
             {"current_rp": new_rp}
         ).eq("id", resp.data["id"]).execute()
 
@@ -235,12 +235,12 @@ class CycleResolutionService:
             if use_rpc:
                 # Atomic fortification expiry (migration 148): downgrades zones
                 # and deletes forts in a single transaction.
-                db.rpc("fn_expire_fortifications", {
+                await db.rpc("fn_expire_fortifications", {
                     "p_epoch_id": str(epoch_id),
                     "p_cycle_number": cycle_number,
                 }).execute()
             else:
-                expired_forts = (
+                expired_forts = await (
                     db.table("zone_fortifications")
                     .select("id, zone_id, security_bonus")
                     .eq("epoch_id", str(epoch_id))
@@ -248,7 +248,7 @@ class CycleResolutionService:
                     .execute()
                 )
                 for fort in expired_forts.data or []:
-                    zone_resp = (
+                    zone_resp = await (
                         db.table("zones")
                         .select("id, security_level")
                         .eq("id", fort["zone_id"])
@@ -264,10 +264,10 @@ class CycleResolutionService:
                         except ValueError:
                             new_level = current_level
                         if new_level != current_level:
-                            db.table("zones").update(
+                            await db.table("zones").update(
                                 {"security_level": new_level}
                             ).eq("id", fort["zone_id"]).execute()
-                    db.table("zone_fortifications").delete().eq("id", fort["id"]).execute()
+                    await db.table("zone_fortifications").delete().eq("id", fort["id"]).execute()
         except Exception:
             logger.warning("Fortification expiry failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
             sentry_sdk.capture_exception()
@@ -371,7 +371,7 @@ class CycleResolutionService:
         # in sync with admin-triggered cycle resolution (not wall-clock time).
         # Subtract cycle_hours from resolves_at for all non-guardian missions.
         cycle_hours = config.get("cycle_hours", 8)
-        active_missions = (
+        active_missions = await (
             db.table("operative_missions")
             .select("id, resolves_at, operative_type")
             .eq("epoch_id", str(epoch_id))
@@ -386,12 +386,12 @@ class CycleResolutionService:
             new_resolves = old_resolves - timedelta(hours=cycle_hours)
             by_new_resolve[new_resolves.isoformat()].append(m["id"])
         for new_ts, ids in by_new_resolve.items():
-            db.table("operative_missions").update(
+            await db.table("operative_missions").update(
                 {"resolves_at": new_ts}
             ).in_("id", ids).execute()
 
         # Increment cycle (optimistic lock: only if current_cycle hasn't changed)
-        resp = (
+        resp = await (
             db.table("game_epochs")
             .update({"current_cycle": new_cycle})
             .eq("id", str(epoch_id))
@@ -444,7 +444,7 @@ class CycleResolutionService:
                     "new_status": new_status, "cycle_number": new_cycle,
                 },
             )
-            phase_resp = (
+            phase_resp = await (
                 db.table("game_epochs")
                 .update({"status": new_status})
                 .eq("id", str(epoch_id))

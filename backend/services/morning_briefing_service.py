@@ -25,7 +25,7 @@ from backend.models.agent_autonomy import (
 from backend.services.external.openrouter import OpenRouterService
 from backend.services.external.output_repair import repair_json_output
 from backend.services.model_resolver import ModelResolver
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -174,7 +174,7 @@ class MorningBriefingService:
         cls, supabase: Client, simulation_id: UUID, since: datetime,
     ) -> list[dict]:
         """Fetch all activities since timestamp, ordered by significance."""
-        result = (
+        result = await (
             supabase.table("agent_activities")
             .select(
                 "*, agents!agent_activities_agent_id_fkey(name, portrait_image_url)"
@@ -201,7 +201,7 @@ class MorningBriefingService:
         cls, supabase: Client, simulation_id: UUID,
     ) -> SimulationMoodSummary:
         """Compute aggregate mood state."""
-        result = (
+        result = await (
             supabase.table("agent_mood")
             .select("mood_score, stress_level, dominant_emotion")
             .eq("simulation_id", str(simulation_id))
@@ -245,7 +245,7 @@ class MorningBriefingService:
         cls, supabase: Client, simulation_id: UUID, since: datetime,
     ) -> list[dict]:
         """Fetch significant opinion modifier additions since timestamp."""
-        result = (
+        result = await (
             supabase.table("agent_opinion_modifiers")
             .select(
                 "agent_id, target_agent_id, modifier_type, opinion_change, "
@@ -379,7 +379,7 @@ class MorningBriefingService:
         cls, supabase: Client, simulation_id: UUID,
     ) -> str:
         """Fetch simulation name."""
-        result = (
+        result = await (
             supabase.table("simulations")
             .select("name")
             .eq("id", str(simulation_id))

@@ -7,7 +7,7 @@ a public feed styled as Bureau of Impossible Geography dispatches.
 import logging
 import time
 
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +37,7 @@ class BleedGazetteService:
         if cached_data and (now - cached_at) < _CACHE_TTL:
             return cached_data[:limit]
 
-        response = supabase.rpc("get_bleed_gazette_feed", {
+        response = await supabase.rpc("get_bleed_gazette_feed", {
             "p_limit": limit,
         }).execute()
 

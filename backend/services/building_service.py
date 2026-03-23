@@ -9,7 +9,7 @@ from fastapi import HTTPException, status
 
 from backend.services.base_service import BaseService
 from backend.utils.search import apply_search_filter
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +57,7 @@ class BuildingService(BaseService):
             query = apply_search_filter(query, search)
 
         query = query.range(offset, offset + limit - 1)
-        response = query.execute()
+        response = await query.execute()
 
         total = response.count if response.count is not None else len(response.data or [])
         return response.data or [], total
@@ -70,7 +70,7 @@ class BuildingService(BaseService):
         slug: str,
     ) -> dict:
         """Get a building by simulation-scoped slug."""
-        response = (
+        response = await (
             supabase.table(cls._read_table())
             .select("*")
             .eq("simulation_id", str(simulation_id))
@@ -94,7 +94,7 @@ class BuildingService(BaseService):
         building_id: UUID,
     ) -> list[dict]:
         """Get all agents assigned to a building."""
-        response = (
+        response = await (
             supabase.table("building_agent_relations")
             .select("*, agents(id, name, primary_profession, portrait_image_url)")
             .eq("simulation_id", str(simulation_id))
@@ -113,7 +113,7 @@ class BuildingService(BaseService):
         relation_type: str = "works",
     ) -> dict:
         """Assign an agent to a building."""
-        response = (
+        response = await (
             supabase.table("building_agent_relations")
             .insert({
                 "simulation_id": str(simulation_id),
@@ -141,7 +141,7 @@ class BuildingService(BaseService):
         agent_id: UUID,
     ) -> None:
         """Remove an agent from a building."""
-        response = (
+        response = await (
             supabase.table("building_agent_relations")
             .delete()
             .eq("simulation_id", str(simulation_id))
@@ -164,7 +164,7 @@ class BuildingService(BaseService):
         building_id: UUID,
     ) -> list[dict]:
         """Get profession requirements for a building."""
-        response = (
+        response = await (
             supabase.table("building_profession_requirements")
             .select("*")
             .eq("simulation_id", str(simulation_id))
@@ -189,7 +189,7 @@ class BuildingService(BaseService):
             "building_id": str(building_id),
         }
 
-        response = (
+        response = await (
             supabase.table("building_profession_requirements")
             .upsert(insert_data, on_conflict="building_id,profession")
             .execute()
@@ -211,7 +211,7 @@ class BuildingService(BaseService):
         zone_id: UUID,
     ) -> list[dict]:
         """Get all buildings in a zone."""
-        response = (
+        response = await (
             supabase.table(cls._read_table())
             .select("*")
             .eq("simulation_id", str(simulation_id))

@@ -11,7 +11,7 @@ from backend.services.agent_memory_service import AgentMemoryService
 from backend.services.external.openrouter import OpenRouterService
 from backend.services.model_resolver import ModelResolver
 from backend.services.prompt_service import LOCALE_NAMES, PromptResolver
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +49,7 @@ class ChatAIService:
         if settings.forge_mock_mode:
             logger.info("MOCK_MODE: returning mock chat response")
             mock_text = "[MOCK] I acknowledge your message. This is a simulated response."
-            self._supabase.table("chat_messages").insert({
+            await self._supabase.table("chat_messages").insert({
                 "conversation_id": str(conversation_id),
                 "content": mock_text,
                 "sender_role": "assistant",
@@ -138,7 +138,7 @@ class ChatAIService:
             saved: list[dict] = []
             for agent in agents:
                 mock_text = f"[MOCK] {agent.get('name', 'Agent')} responds to the conversation."
-                resp = self._supabase.table("chat_messages").insert({
+                resp = await self._supabase.table("chat_messages").insert({
                     "conversation_id": str(conversation_id),
                     "content": mock_text,
                     "sender_role": "assistant",
@@ -220,7 +220,7 @@ class ChatAIService:
             )
 
             # Save with agent attribution
-            save_resp = self._supabase.table("chat_messages").insert({
+            save_resp = await self._supabase.table("chat_messages").insert({
                 "conversation_id": str(conversation_id),
                 "content": response_text,
                 "sender_role": "assistant",
@@ -256,7 +256,7 @@ class ChatAIService:
 
         Returns empty string if no autonomy data exists for this agent.
         """
-        mood_result = (
+        mood_result = await (
             self._supabase.table("agent_mood")
             .select("mood_score, dominant_emotion, stress_level")
             .eq("agent_id", str(agent_id))
@@ -294,7 +294,7 @@ class ChatAIService:
             stress_desc = "relatively calm"
 
         # Fetch active moodlets for detail
-        moodlets_result = (
+        moodlets_result = await (
             self._supabase.table("agent_moodlets")
             .select("moodlet_type, emotion, strength")
             .eq("agent_id", str(agent_id))
@@ -386,7 +386,7 @@ class ChatAIService:
         """Load reactions from event_reactions for the referenced events and agents."""
         if not event_ids or not agent_ids:
             return []
-        response = (
+        response = await (
             self._supabase.table("event_reactions")
             .select("agent_name, reaction_text, emotion, event_id, agent_id")
             .in_("event_id", event_ids)
@@ -397,7 +397,7 @@ class ChatAIService:
 
     async def _load_conversation(self, conversation_id: UUID) -> dict:
         """Load conversation details."""
-        response = (
+        response = await (
             self._supabase.table("chat_conversations")
             .select("*")
             .eq("id", str(conversation_id))
@@ -411,7 +411,7 @@ class ChatAIService:
 
     async def _load_agent(self, agent_id: str) -> dict:
         """Load agent profile."""
-        response = (
+        response = await (
             self._supabase.table("agents")
             .select("id, name, character, background, system, gender, primary_profession")
             .eq("id", agent_id)
@@ -422,7 +422,7 @@ class ChatAIService:
 
     async def _load_conversation_agents(self, conversation_id: UUID) -> list[dict]:
         """Load all agents for a conversation via junction table with full profiles."""
-        response = (
+        response = await (
             self._supabase.table("chat_conversation_agents")
             .select(
                 "agent_id, agents(id, name, character, background, system, gender,"
@@ -441,7 +441,7 @@ class ChatAIService:
 
     async def _load_event_references(self, conversation_id: UUID) -> list[dict]:
         """Load event references for a conversation."""
-        response = (
+        response = await (
             self._supabase.table("chat_event_references")
             .select("id, event_id, events(title, event_type, description, occurred_at, impact_level)")
             .eq("conversation_id", str(conversation_id))
@@ -452,7 +452,7 @@ class ChatAIService:
 
     async def _load_simulation(self) -> dict:
         """Load simulation details."""
-        response = (
+        response = await (
             self._supabase.table("simulations")
             .select("name, description")
             .eq("id", str(self._simulation_id))
@@ -463,7 +463,7 @@ class ChatAIService:
 
     async def _load_history(self, conversation_id: UUID) -> list[dict]:
         """Load the last N messages from conversation history."""
-        response = (
+        response = await (
             self._supabase.table("chat_messages")
             .select("content, sender_role, agent_id, created_at")
             .eq("conversation_id", str(conversation_id))
@@ -475,7 +475,7 @@ class ChatAIService:
 
     async def _get_locale(self) -> str:
         """Get the simulation's content locale."""
-        response = (
+        response = await (
             self._supabase.table("simulation_settings")
             .select("setting_value")
             .eq("simulation_id", str(self._simulation_id))

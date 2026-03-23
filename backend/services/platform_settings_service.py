@@ -14,7 +14,7 @@ from fastapi import HTTPException, status
 
 from backend.models.settings import is_sensitive_key
 from backend.utils.encryption import decrypt, mask
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ class PlatformSettingsService:
 
         When mask_sensitive=True, sensitive keys show masked values (for admin UI).
         """
-        response = (
+        response = await (
             admin_supabase.table(cls.table_name)
             .select("*")
             .order("setting_key")
@@ -74,7 +74,7 @@ class PlatformSettingsService:
     @classmethod
     async def get(cls, admin_supabase: Client, key: str) -> dict:
         """Fetch a single platform setting by key."""
-        response = (
+        response = await (
             admin_supabase.table(cls.table_name)
             .select("*")
             .eq("setting_key", key)
@@ -98,7 +98,7 @@ class PlatformSettingsService:
     ) -> dict:
         """Update or create a platform setting value."""
         now = datetime.now(UTC).isoformat()
-        response = (
+        response = await (
             admin_supabase.table(cls.table_name)
             .upsert(
                 {

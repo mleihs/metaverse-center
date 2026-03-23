@@ -14,7 +14,7 @@ from fastapi import HTTPException, status
 
 from backend.services.base_service import serialize_for_json
 from backend.services.game_mechanics_service import GameMechanicsService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +62,7 @@ class EchoService:
             query = query.eq("status", status_filter)
 
         query = query.range(offset, offset + limit - 1)
-        response = query.execute()
+        response = await query.execute()
         total = response.count if response.count is not None else len(response.data or [])
         return response.data or [], total
 
@@ -73,7 +73,7 @@ class EchoService:
         event_id: UUID,
     ) -> list[dict]:
         """List all echoes originating from a specific event."""
-        response = (
+        response = await (
             supabase.table(cls.table_name)
             .select("*")
             .eq("source_event_id", str(event_id))
@@ -89,7 +89,7 @@ class EchoService:
         echo_id: UUID,
     ) -> dict:
         """Get a single echo by ID."""
-        response = (
+        response = await (
             supabase.table(cls.table_name)
             .select("*")
             .eq("id", str(echo_id))
@@ -169,7 +169,7 @@ class EchoService:
             return []
 
         # Get source sim bleed settings
-        settings_resp = (
+        settings_resp = await (
             supabase.table("simulation_settings")
             .select("setting_key, setting_value")
             .eq("simulation_id", sim_str)
@@ -206,7 +206,7 @@ class EchoService:
             return []
 
         # Get active connections from this simulation
-        conn_resp = (
+        conn_resp = await (
             supabase.table("simulation_connections")
             .select("*")
             .eq("is_active", True)
@@ -342,7 +342,7 @@ class EchoService:
             },
         })
 
-        response = (
+        response = await (
             admin_supabase.table(cls.table_name)
             .insert(insert_data)
             .execute()
@@ -374,7 +374,7 @@ class EchoService:
         if metadata_update:
             update_data["bleed_metadata"] = metadata_update
 
-        response = (
+        response = await (
             admin_supabase.table(cls.table_name)
             .update(update_data)
             .eq("id", str(echo_id))
@@ -460,7 +460,7 @@ class EchoService:
 
         try:
             # 2. Fetch source event
-            source_event_resp = (
+            source_event_resp = await (
                 supabase.table("events")
                 .select("*")
                 .eq("id", source_event_id)
@@ -475,7 +475,7 @@ class EchoService:
             source_event = source_event_resp.data
 
             # Fetch target simulation info
-            target_sim_resp = (
+            target_sim_resp = await (
                 supabase.table("simulations")
                 .select("name, description")
                 .eq("id", target_sim_id)
@@ -523,7 +523,7 @@ class EchoService:
                 },
             })
 
-            event_resp = (
+            event_resp = await (
                 admin_supabase.table("events")
                 .insert(target_event_data)
                 .execute()
@@ -608,7 +608,7 @@ class EchoService:
                 emb_eff = max(emb_eff, float(emb.get("effectiveness", 0.0)))
 
         # Get strength decay
-        settings_resp = (
+        settings_resp = await (
             supabase.table("simulation_settings")
             .select("setting_value")
             .eq("simulation_id", sim_str)

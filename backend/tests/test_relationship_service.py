@@ -1,6 +1,6 @@
 """Tests for RelationshipService — agent relationship CRUD operations."""
 
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 from uuid import UUID, uuid4
 
 import pytest
@@ -32,7 +32,7 @@ def _mock_supabase(data=None, count=None):
     builder.range.return_value = builder
     builder.limit.return_value = builder
     builder.is_.return_value = builder
-    builder.execute.return_value = response
+    builder.execute = AsyncMock(return_value=response)
 
     mock.table.return_value = builder
     return mock, builder, response
@@ -57,7 +57,7 @@ class TestListForAgent:
             b.order.return_value = b
             r = MagicMock()
             r.data = data
-            b.execute.return_value = r
+            b.execute = AsyncMock(return_value=r)
             return b
 
         b1 = make_builder(source_rows)
@@ -82,7 +82,7 @@ class TestListForAgent:
             b.order.return_value = b
             r = MagicMock()
             r.data = []
-            b.execute.return_value = r
+            b.execute = AsyncMock(return_value=r)
             return b
 
         builders = [make_builder(), make_builder()]
@@ -103,7 +103,7 @@ class TestListForAgent:
             b.order.return_value = b
             r = MagicMock()
             r.data = None
-            b.execute.return_value = r
+            b.execute = AsyncMock(return_value=r)
             return b
 
         builders = [make_builder(), make_builder()]

@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from uuid import UUID
 
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class UserProfileService:
         Uses admin client because user_profiles may not be readable via user RLS.
         Returns an empty dict if no profile row exists.
         """
-        response = (
+        response = await (
             admin_supabase.table("user_profiles")
             .select("onboarding_completed, academy_epochs_played")
             .eq("id", str(user_id))
@@ -50,7 +50,7 @@ class UserProfileService:
 
         Returns sensible defaults if no preferences have been saved yet.
         """
-        response = (
+        response = await (
             supabase.table("notification_preferences")
             .select("cycle_resolved, phase_changed, epoch_completed, email_locale")
             .eq("user_id", str(user_id))
@@ -80,7 +80,7 @@ class UserProfileService:
             "email_locale": data["email_locale"],
         }
 
-        response = (
+        response = await (
             supabase.table("notification_preferences")
             .upsert(row, on_conflict="user_id")
             .execute()
@@ -108,7 +108,7 @@ class UserProfileService:
 
         Uses admin client because user_profiles may require elevated access.
         """
-        admin_supabase.table("user_profiles").update(
+        await admin_supabase.table("user_profiles").update(
             {"onboarding_completed": True}
         ).eq("id", str(user_id)).execute()
         logger.info(

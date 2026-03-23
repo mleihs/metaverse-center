@@ -11,7 +11,7 @@ Covers:
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
 import pytest
@@ -442,7 +442,7 @@ class TestListReferences:
         entity_chain.eq.return_value = entity_chain
         # .not_ is attribute access, then .is_() is called on it
         entity_chain.not_.is_.return_value = entity_chain
-        entity_chain.execute.return_value = entity_resp
+        entity_chain.execute = AsyncMock(return_value=entity_resp)
 
         def table_side_effect(table_name):
             if table_name == "simulation_settings":
@@ -468,7 +468,11 @@ class TestListReferences:
     async def test_returns_empty_when_none_configured(self):
         """Returns empty list when no references exist."""
         mock_sb = MagicMock()
-        mock_sb.table.return_value = make_chain_mock(execute_data=[])
+        chain = make_chain_mock(execute_data=[])
+        # .not_ is accessed as attribute (not called), so set it to chain itself
+        # to keep the fluent API working through .not_.is_().execute()
+        chain.not_ = chain
+        mock_sb.table.return_value = chain
 
         results = await StyleReferenceService.list_references(
             mock_sb, MOCK_SIM_ID, "building",

@@ -14,7 +14,7 @@ from backend.models.relationship import (
 )
 from backend.services.audit_service import AuditService
 from backend.services.relationship_service import RelationshipService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 

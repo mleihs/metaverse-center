@@ -9,7 +9,7 @@ from uuid import UUID
 from fastapi import HTTPException, status
 
 from backend.services.base_service import BaseService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ class RelationshipService(BaseService):
         sim_str = str(simulation_id)
 
         # Fetch where agent is source
-        r1 = (
+        r1 = await (
             supabase.table(cls.table_name)
             .select(cls._agent_select)
             .eq("simulation_id", sim_str)
@@ -48,7 +48,7 @@ class RelationshipService(BaseService):
         )
 
         # Fetch where agent is target
-        r2 = (
+        r2 = await (
             supabase.table(cls.table_name)
             .select(cls._agent_select)
             .eq("simulation_id", sim_str)
@@ -69,7 +69,7 @@ class RelationshipService(BaseService):
         offset: int = 0,
     ) -> tuple[list[dict], int]:
         """List all relationships in a simulation."""
-        response = (
+        response = await (
             supabase.table(cls.table_name)
             .select(cls._agent_select, count="exact")
             .eq("simulation_id", str(simulation_id))
@@ -96,7 +96,7 @@ class RelationshipService(BaseService):
             "target_agent_id": str(data["target_agent_id"]),
         }
 
-        response = (
+        response = await (
             supabase.table(cls.table_name)
             .insert(insert_data)
             .execute()
@@ -125,7 +125,7 @@ class RelationshipService(BaseService):
 
         update_data = {**data, "updated_at": datetime.now(UTC).isoformat()}
 
-        response = (
+        response = await (
             supabase.table(cls.table_name)
             .update(update_data)
             .eq("simulation_id", str(simulation_id))

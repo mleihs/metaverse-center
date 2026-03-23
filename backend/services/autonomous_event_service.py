@@ -27,7 +27,7 @@ from backend.services.echo_service import EchoService
 from backend.services.external.openrouter import OpenRouterService
 from backend.services.external.output_repair import repair_json_output
 from backend.services.model_resolver import ModelResolver
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -242,7 +242,7 @@ class AutonomousEventService:
         cls, supabase: Client, simulation_id: UUID,
     ) -> list[dict]:
         """Check for zones with 3+ happy agents (mood > 50)."""
-        result = (
+        result = await (
             supabase.table("agent_mood")
             .select("agent_id, agents!inner(name, current_zone_id)")
             .eq("simulation_id", str(simulation_id))
@@ -283,7 +283,7 @@ class AutonomousEventService:
     ) -> list[dict]:
         """Check for agents in critical zones with low safety need."""
         # Get zones with low stability
-        zones_result = (
+        zones_result = await (
             supabase.table("mv_zone_stability")
             .select("zone_id, stability")
             .eq("simulation_id", str(simulation_id))
@@ -298,7 +298,7 @@ class AutonomousEventService:
         # Get agents in crisis zones with low safety
         events = []
         for zone_id in crisis_zone_ids:
-            agents_result = (
+            agents_result = await (
                 supabase.table("agents")
                 .select("id, name, current_zone_id")
                 .eq("simulation_id", str(simulation_id))
@@ -311,7 +311,7 @@ class AutonomousEventService:
                 continue
 
             # Check safety needs
-            needs_result = (
+            needs_result = await (
                 supabase.table("agent_needs")
                 .select("agent_id, safety")
                 .in_("agent_id", agent_ids)
@@ -357,7 +357,7 @@ class AutonomousEventService:
         zone_name = "Unknown"
         zone_id = event_data.get("zone_id")
         if zone_id:
-            zone_result = (
+            zone_result = await (
                 supabase.table("zones")
                 .select("name")
                 .eq("id", str(zone_id))
@@ -482,7 +482,7 @@ class AutonomousEventService:
         # Witness moodlets (stress breakdown cascade — DF pattern)
         witness_moodlet = trigger_config.get("moodlet_for_witnesses")
         if witness_moodlet and event_data.get("zone_id"):
-            zone_agents = (
+            zone_agents = await (
                 supabase.table("agents")
                 .select("id")
                 .eq("simulation_id", str(simulation_id))
@@ -516,7 +516,7 @@ class AutonomousEventService:
         # Auto-create relationship (breakthrough)
         if trigger_config.get("creates_relationship") and len(agents) >= 2:
             try:
-                supabase.table("agent_relationships").upsert(
+                await supabase.table("agent_relationships").upsert(
                     {
                         "simulation_id": str(simulation_id),
                         "source_agent_id": str(agents[0]["id"]),
@@ -538,7 +538,7 @@ class AutonomousEventService:
         # Modify existing relationship (breakdown)
         if trigger_config.get("modifies_relationship") and len(agents) >= 2:
             try:
-                supabase.table("agent_relationships").update({
+                await supabase.table("agent_relationships").update({
                     "relationship_type": trigger_config.get(
                         "relationship_type", "rival"
                     ),
@@ -680,7 +680,7 @@ class AutonomousEventService:
     @classmethod
     async def _get_agent_data(cls, supabase: Client, agent_id: str) -> dict | None:
         """Fetch minimal agent data for event context."""
-        result = (
+        result = await (
             supabase.table("agents")
             .select("id, name, current_zone_id, primary_profession")
             .eq("id", str(agent_id))
@@ -694,7 +694,7 @@ class AutonomousEventService:
         cls, supabase: Client, simulation_id: UUID,
     ) -> str:
         """Fetch simulation name."""
-        result = (
+        result = await (
             supabase.table("simulations")
             .select("name")
             .eq("id", str(simulation_id))

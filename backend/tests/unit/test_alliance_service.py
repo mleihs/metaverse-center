@@ -49,11 +49,14 @@ def _make_chain(execute_data=None, execute_count=None):
     resp = MagicMock()
     resp.data = execute_data
     resp.count = execute_count
-    c.execute.return_value = resp
+    c.execute = AsyncMock(return_value=resp)
     return c
 
 
-def _make_sb(table_map=None, rpc_data=None):
+_UNSET = object()
+
+
+def _make_sb(table_map=None, rpc_data=_UNSET):
     """Create a mock Supabase client with table routing and optional RPC."""
     sb = MagicMock()
     table_map = table_map or {}
@@ -63,7 +66,7 @@ def _make_sb(table_map=None, rpc_data=None):
 
     sb.table.side_effect = _table
 
-    if rpc_data is not None:
+    if rpc_data is not _UNSET:
         rpc_chain = _make_chain(execute_data=rpc_data)
         sb.rpc.return_value = rpc_chain
 

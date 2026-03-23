@@ -21,7 +21,7 @@ import structlog
 
 from backend.services.external.openrouter import OpenRouterService
 from backend.services.model_resolver import ModelResolver
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -106,7 +106,7 @@ class PersonalityExtractionService:
         )
 
         # Fetch agent data
-        result = (
+        result = await (
             supabase.table("agents")
             .select("name, character, background, primary_profession, gender, personality_profile")
             .eq("id", str(agent_id))
@@ -160,7 +160,7 @@ class PersonalityExtractionService:
         profile = cls._parse_profile(content)
 
         # Store on agent
-        supabase.table("agents").update(
+        await supabase.table("agents").update(
             {"personality_profile": profile}
         ).eq("id", str(agent_id)).execute()
 
@@ -196,7 +196,7 @@ class PersonalityExtractionService:
         params = _derive_autonomy_params(profile)
 
         # Call PostgreSQL function to create mood + needs records (idempotent)
-        supabase.rpc("fn_initialize_agent_autonomy", {
+        await supabase.rpc("fn_initialize_agent_autonomy", {
             "p_agent_id": str(agent_id),
             "p_simulation_id": str(simulation_id),
             "p_resilience": params["resilience"],
@@ -223,7 +223,7 @@ class PersonalityExtractionService:
         openrouter_api_key: str | None = None,
     ) -> int:
         """Initialize autonomy for ALL agents in a simulation. Returns count processed."""
-        result = (
+        result = await (
             supabase.table("agents")
             .select("id")
             .eq("simulation_id", str(simulation_id))
@@ -260,7 +260,7 @@ class PersonalityExtractionService:
         simulation_id: UUID,
     ) -> int:
         """Create opinion records for all agent pairs in a simulation. Returns count created."""
-        result = (
+        result = await (
             supabase.table("agents")
             .select("id, personality_profile")
             .eq("simulation_id", str(simulation_id))
@@ -281,7 +281,7 @@ class PersonalityExtractionService:
 
                 # Create bidirectional opinion records
                 for source, target in [(agent_a, agent_b), (agent_b, agent_a)]:
-                    supabase.table("agent_opinions").upsert(
+                    await supabase.table("agent_opinions").upsert(
                         {
                             "agent_id": source["id"],
                             "target_agent_id": target["id"],

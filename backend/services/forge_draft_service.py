@@ -9,7 +9,7 @@ from fastapi import HTTPException, status
 
 from backend.models.forge import ForgeDraftCreate, ForgeDraftUpdate
 from backend.utils.encryption import encrypt
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ class ForgeDraftService:
         offset: int = 0,
     ) -> tuple[list[dict], int]:
         """List forge drafts for a user."""
-        response = (
+        response = await (
             supabase.table("forge_drafts")
             .select("*", count="exact")
             .eq("user_id", str(user_id))
@@ -42,7 +42,7 @@ class ForgeDraftService:
         draft_id: UUID,
     ) -> dict:
         """Get a single draft by ID."""
-        response = (
+        response = await (
             supabase.table("forge_drafts")
             .select("*")
             .eq("id", str(draft_id))
@@ -74,7 +74,7 @@ class ForgeDraftService:
             "current_phase": "astrolabe",
             "status": "draft",
         }
-        response = (
+        response = await (
             supabase.table("forge_drafts")
             .insert(insert_data)
             .execute()
@@ -98,7 +98,7 @@ class ForgeDraftService:
         if not update_data:
             return await ForgeDraftService.get_draft(supabase, user_id, draft_id)
 
-        response = (
+        response = await (
             supabase.table("forge_drafts")
             .update(update_data)
             .eq("id", str(draft_id))
@@ -139,7 +139,7 @@ class ForgeDraftService:
         draft_id: UUID,
     ) -> dict:
         """Permanently delete a forge draft."""
-        response = (
+        response = await (
             supabase.table("forge_drafts")
             .delete()
             .eq("id", str(draft_id))
@@ -162,7 +162,7 @@ class ForgeDraftService:
 
         Returns True if allowed, False otherwise.
         """
-        resp = supabase.rpc(
+        resp = await supabase.rpc(
             "fn_user_byok_allowed", {"p_user_id": str(user_id)}
         ).execute()
         return bool(resp.data)
@@ -193,7 +193,7 @@ class ForgeDraftService:
         if not has_update:
             return {"message": "No keys updated."}
 
-        resp = supabase.rpc("fn_update_user_byok_keys", params).execute()
+        resp = await supabase.rpc("fn_update_user_byok_keys", params).execute()
         result = resp.data or {}
 
         if not result.get("success"):
@@ -227,7 +227,7 @@ class ForgeDraftService:
             },
         }
         try:
-            resp = supabase.rpc(
+            resp = await supabase.rpc(
                 "fn_get_wallet_summary", {"p_user_id": str(user_id)}
             ).execute()
             return resp.data or _default
@@ -244,7 +244,7 @@ class ForgeDraftService:
 
         Reads from ``token_bundles`` table (migration 101).
         """
-        resp = (
+        resp = await (
             supabase.table("token_bundles")
             .select("id, slug, display_name, tokens, price_cents, savings_pct, sort_order")
             .eq("is_active", True)
@@ -256,7 +256,7 @@ class ForgeDraftService:
     @staticmethod
     async def purchase_tokens(supabase: Client, bundle_slug: str) -> dict:
         """Execute mock purchase via ``fn_purchase_tokens`` RPC (migration 101)."""
-        resp = supabase.rpc("fn_purchase_tokens", {"p_bundle_slug": bundle_slug}).execute()
+        resp = await supabase.rpc("fn_purchase_tokens", {"p_bundle_slug": bundle_slug}).execute()
         return resp.data
 
     @staticmethod
@@ -264,7 +264,7 @@ class ForgeDraftService:
         supabase: Client, user_id: UUID, limit: int = 20, offset: int = 0,
     ) -> tuple[list[dict], int]:
         """Fetch user's token purchase ledger, most recent first."""
-        resp = (
+        resp = await (
             supabase.table("token_purchases")
             .select("*", count="exact")
             .eq("user_id", str(user_id))
@@ -277,7 +277,7 @@ class ForgeDraftService:
     @staticmethod
     async def get_token_economy_stats(admin_supabase: Client) -> dict:
         """Aggregated token economy stats via ``token_economy_stats`` view (migration 102)."""
-        resp = (
+        resp = await (
             admin_supabase.table("token_economy_stats")
             .select("*")
             .single()
@@ -290,7 +290,7 @@ class ForgeDraftService:
         admin_supabase: Client, user_id: UUID, tokens: int, reason: str | None,
     ) -> dict:
         """Admin token grant via ``fn_admin_grant_tokens`` RPC (migration 102)."""
-        resp = admin_supabase.rpc("fn_admin_grant_tokens", {
+        resp = await admin_supabase.rpc("fn_admin_grant_tokens", {
             "p_user_id": str(user_id), "p_tokens": tokens, "p_reason": reason,
         }).execute()
         return resp.data
@@ -311,7 +311,7 @@ class ForgeDraftService:
         )
         if payment_method:
             query = query.eq("payment_method", payment_method)
-        resp = query.execute()
+        resp = await query.execute()
         return resp.data or [], resp.count or 0
 
     @staticmethod
@@ -319,7 +319,7 @@ class ForgeDraftService:
         admin_supabase: Client, bundle_id: UUID, updates: dict,
     ) -> dict:
         """Admin: update bundle pricing/availability."""
-        resp = (
+        resp = await (
             admin_supabase.table("token_bundles")
             .update(updates)
             .eq("id", str(bundle_id))
@@ -330,7 +330,7 @@ class ForgeDraftService:
     @staticmethod
     async def admin_list_all_bundles(admin_supabase: Client) -> list[dict]:
         """Admin: fetch ALL bundles including inactive. Uses admin client to bypass RLS."""
-        resp = (
+        resp = await (
             admin_supabase.table("token_bundles")
             .select("*")
             .order("sort_order")
@@ -345,7 +345,7 @@ class ForgeDraftService:
         Uses ``token_economy_stats`` view for token aggregation (server-side SUM)
         instead of fetching all wallet rows and summing in Python.
         """
-        drafts_resp = (
+        drafts_resp = await (
             admin_supabase.table("forge_drafts")
             .select("id", count="exact")
             .in_("status", ["draft", "processing"])
@@ -354,7 +354,7 @@ class ForgeDraftService:
         active_drafts = drafts_resp.count or 0
 
         # Server-side aggregation via the token_economy_stats view (migration 102)
-        economy_resp = (
+        economy_resp = await (
             admin_supabase.table("token_economy_stats")
             .select("tokens_in_circulation")
             .single()
@@ -362,7 +362,7 @@ class ForgeDraftService:
         )
         total_tokens = int(economy_resp.data.get("tokens_in_circulation", 0)) if economy_resp.data else 0
 
-        materialized_resp = (
+        materialized_resp = await (
             admin_supabase.table("forge_drafts")
             .select("id", count="exact")
             .eq("status", "completed")
@@ -381,7 +381,7 @@ class ForgeDraftService:
     @staticmethod
     async def get_byok_system_settings(admin_supabase: Client) -> dict:
         """Get all BYOK-related platform settings (admin only)."""
-        resp = (
+        resp = await (
             admin_supabase.table("platform_settings")
             .select("setting_key, setting_value")
             .in_("setting_key", ["byok_bypass_enabled", "byok_access_policy"])
@@ -402,7 +402,7 @@ class ForgeDraftService:
         admin_supabase: Client, enabled: bool, admin_id: UUID,
     ) -> dict:
         """Toggle system-wide BYOK bypass (admin only)."""
-        admin_supabase.table("platform_settings").update({
+        await admin_supabase.table("platform_settings").update({
             "setting_value": enabled,
             "updated_by_id": str(admin_id),
         }).eq("setting_key", "byok_bypass_enabled").execute()
@@ -413,7 +413,7 @@ class ForgeDraftService:
         admin_supabase: Client, policy: str, admin_id: UUID,
     ) -> dict:
         """Set global BYOK access policy: 'none', 'all', or 'per_user' (admin only)."""
-        admin_supabase.table("platform_settings").update({
+        await admin_supabase.table("platform_settings").update({
             "setting_value": policy,
             "updated_by_id": str(admin_id),
         }).eq("setting_key", "byok_access_policy").execute()
@@ -427,7 +427,7 @@ class ForgeDraftService:
 
         Raises HTTPException 404 if user wallet not found.
         """
-        resp = (
+        resp = await (
             admin_supabase.table("user_wallets")
             .update({"byok_bypass": enabled})
             .eq("user_id", str(target_user_id))
@@ -445,7 +445,7 @@ class ForgeDraftService:
 
         Raises HTTPException 404 if user wallet not found.
         """
-        resp = (
+        resp = await (
             admin_supabase.table("user_wallets")
             .update({"byok_allowed": enabled})
             .eq("user_id", str(target_user_id))
@@ -460,7 +460,7 @@ class ForgeDraftService:
         admin_supabase: Client, cutoff_iso: str
     ) -> int:
         """Purge stale drafts older than the given cutoff date."""
-        response = (
+        response = await (
             admin_supabase.table("forge_drafts")
             .delete()
             .in_("status", ["draft", "failed"])

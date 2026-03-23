@@ -259,7 +259,7 @@ class TestEventServiceCreateNoCrash:
         user_id = MOCK_USER_ID
         mock_sb = MagicMock()
         row = {"id": str(uuid4()), "title": "Test Event", "simulation_id": str(sim_id)}
-        mock_sb.table.return_value.insert.return_value.execute.return_value = MagicMock(data=[row])
+        mock_sb.table.return_value.insert.return_value.execute = AsyncMock(return_value=MagicMock(data=[row]))
 
         await EventService.create(mock_sb, sim_id, user_id, {
             "title": "15 Wege zur Verbesserung",
@@ -282,9 +282,9 @@ class TestEventServiceCreateNoCrash:
         from backend.services.event_service import EventService
 
         mock_sb = MagicMock()
-        mock_sb.table.return_value.insert.return_value.execute.return_value = MagicMock(
+        mock_sb.table.return_value.insert.return_value.execute = AsyncMock(return_value=MagicMock(
             data=[{"id": str(uuid4())}],
-        )
+        ))
 
         await EventService.create(mock_sb, MOCK_SIM_ID, MOCK_USER_ID, {
             "title": "Test",

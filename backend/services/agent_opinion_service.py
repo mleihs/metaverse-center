@@ -22,7 +22,7 @@ from uuid import UUID
 
 import structlog
 
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -136,7 +136,7 @@ class AgentOpinionService:
         )
 
         # 1. Recalculate all opinion scores (PostgreSQL atomic)
-        recalc_result = supabase.rpc("fn_recalculate_opinion_scores", {
+        recalc_result = await supabase.rpc("fn_recalculate_opinion_scores", {
             "p_simulation_id": str(simulation_id),
         }).execute()
         recalculated = recalc_result.data if isinstance(recalc_result.data, int) else 0
@@ -204,7 +204,7 @@ class AgentOpinionService:
         # Check stacking cap
         if stacking_group:
             cap = STACKING_CAPS.get(stacking_group, DEFAULT_STACKING_CAP)
-            count_result = supabase.rpc("fn_count_opinion_modifier_stacking", {
+            count_result = await supabase.rpc("fn_count_opinion_modifier_stacking", {
                 "p_agent_id": str(agent_id),
                 "p_target_agent_id": str(target_agent_id),
                 "p_stacking_group": stacking_group,
@@ -299,7 +299,7 @@ class AgentOpinionService:
         simulation_id: UUID,
     ) -> None:
         """Create opinion record if it doesn't exist (idempotent)."""
-        supabase.table("agent_opinions").upsert(
+        await supabase.table("agent_opinions").upsert(
             {
                 "agent_id": str(agent_id),
                 "target_agent_id": str(target_agent_id),
@@ -320,7 +320,7 @@ class AgentOpinionService:
         events: list[dict] = []
 
         # Find opinions above create threshold
-        high_result = (
+        high_result = await (
             supabase.table("agent_opinions")
             .select("agent_id, target_agent_id, opinion_score")
             .eq("simulation_id", str(simulation_id))
@@ -330,7 +330,7 @@ class AgentOpinionService:
 
         for opinion in high_result.data or []:
             # Check if relationship already exists
-            existing = (
+            existing = await (
                 supabase.table("agent_relationships")
                 .select("id")
                 .eq("source_agent_id", opinion["agent_id"])
@@ -347,7 +347,7 @@ class AgentOpinionService:
                 })
 
         # Find opinions below hostile threshold
-        low_result = (
+        low_result = await (
             supabase.table("agent_opinions")
             .select("agent_id, target_agent_id, opinion_score")
             .eq("simulation_id", str(simulation_id))

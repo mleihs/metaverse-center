@@ -14,7 +14,7 @@ from uuid import UUID
 from fastapi import HTTPException, status
 
 from backend.services.heartbeat_entry_builder import make_heartbeat_entry
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ class AnchorService:
     ) -> dict:
         """Create a collaborative anchor for a resonance."""
         # Validate resonance exists
-        resonance = (
+        resonance = await (
             supabase.table("substrate_resonances")
             .select("id, status")
             .eq("id", str(resonance_id))
@@ -47,7 +47,7 @@ class AnchorService:
             )
 
         # Check embassy connections exist
-        embassies = (
+        embassies = await (
             supabase.table("embassies")
             .select("id")
             .or_(
@@ -64,7 +64,7 @@ class AnchorService:
             )
 
         # Get simulation's current tick
-        sim = (
+        sim = await (
             supabase.table("simulations")
             .select("last_heartbeat_tick")
             .eq("id", str(sim_id))
@@ -73,7 +73,7 @@ class AnchorService:
         ).data
         current_tick = (sim[0].get("last_heartbeat_tick") or 0) if sim else 0
 
-        response = (
+        response = await (
             supabase.table("collaborative_anchors")
             .insert({
                 "name": name,
@@ -112,7 +112,7 @@ class AnchorService:
         anchor_id: UUID, sim_id: UUID, user_id: UUID,
     ) -> dict:
         """Join an existing anchor."""
-        anchor = (
+        anchor = await (
             supabase.table("collaborative_anchors")
             .select("*")
             .eq("id", str(anchor_id))
@@ -136,7 +136,7 @@ class AnchorService:
 
         # Add simulation
         sim_ids.append(str(sim_id))
-        response = (
+        response = await (
             supabase.table("collaborative_anchors")
             .update({
                 "anchor_simulation_ids": sim_ids,
@@ -164,7 +164,7 @@ class AnchorService:
         anchor_id: UUID, sim_id: UUID,
     ) -> dict:
         """Leave an anchor."""
-        anchor = (
+        anchor = await (
             supabase.table("collaborative_anchors")
             .select("*")
             .eq("id", str(anchor_id))
@@ -192,7 +192,7 @@ class AnchorService:
         if not sim_ids:
             update_data["status"] = "dissolved"
 
-        response = (
+        response = await (
             supabase.table("collaborative_anchors")
             .update(update_data)
             .eq("id", str(anchor_id))
@@ -225,7 +225,7 @@ class AnchorService:
             query = query.eq("status", status_filter)
         if sim_id:
             query = query.contains("anchor_simulation_ids", [str(sim_id)])
-        response = query.execute()
+        response = await query.execute()
         return response.data or [], response.count or 0
 
     # ── Tick Resolution (Phase 7) ───────────────────────────────
@@ -240,7 +240,7 @@ class AnchorService:
         entries: list[dict] = []
 
         # Single RPC call handles all anchor updates
-        result = admin.rpc("fn_strengthen_anchors_batch", {
+        result = await admin.rpc("fn_strengthen_anchors_batch", {
             "p_sim_id": str(sim_id),
             "p_growth_per_sim": config.get("anchor_growth_per_sim", 0.03),
             "p_protection_cap": config.get("anchor_protection_cap", 0.70),
@@ -289,7 +289,7 @@ class AnchorService:
         cls, admin: Client, sim_id: UUID,
     ) -> float:
         """Calculate total anchor protection for a simulation."""
-        anchors = (
+        anchors = await (
             admin.table("collaborative_anchors")
             .select("strength, anchor_simulation_ids")
             .in_("status", ["active", "reinforcing"])

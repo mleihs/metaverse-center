@@ -16,7 +16,7 @@ from fastapi import HTTPException, status
 from backend.models.resonance import RESONANCE_SIGNATURES
 from backend.services.heartbeat_entry_builder import make_heartbeat_entry
 from backend.services.platform_config_service import PlatformConfigService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +87,7 @@ class AttunementService:
         cooldown_ticks = att_config["switching_cooldown_ticks"]
 
         # Check current attunement count
-        existing = (
+        existing = await (
             supabase.table("substrate_attunements")
             .select("id, resonance_signature")
             .eq("simulation_id", str(sim_id))
@@ -107,7 +107,7 @@ class AttunementService:
                 detail=f"Already attuned to '{signature}'.",
             )
 
-        response = (
+        response = await (
             supabase.table("substrate_attunements")
             .insert({
                 "simulation_id": str(sim_id),
@@ -138,7 +138,7 @@ class AttunementService:
         cls, supabase: Client, sim_id: UUID, signature: str,
     ) -> dict:
         """Remove an attunement."""
-        response = (
+        response = await (
             supabase.table("substrate_attunements")
             .delete()
             .eq("simulation_id", str(sim_id))
@@ -162,7 +162,7 @@ class AttunementService:
         cls, supabase: Client, sim_id: UUID,
     ) -> list[dict]:
         """List all attunements for a simulation."""
-        response = (
+        response = await (
             supabase.table("substrate_attunements")
             .select("*")
             .eq("simulation_id", str(sim_id))
@@ -185,7 +185,7 @@ class AttunementService:
         passive_rate = config.get("attunement_passive_growth_rate", 0.01)
 
         # Single RPC call handles cooldown, event checks, and depth updates
-        result = admin.rpc("fn_deepen_attunements_batch", {
+        result = await admin.rpc("fn_deepen_attunements_batch", {
             "p_sim_id": str(sim_id),
             "p_growth_rate": growth_rate,
             "p_passive_rate": passive_rate,
@@ -256,7 +256,7 @@ class AttunementService:
             return None
 
         # Get a random zone name
-        zones = (
+        zones = await (
             admin.table("zones")
             .select("name")
             .eq("simulation_id", str(sim_id))
@@ -271,7 +271,7 @@ class AttunementService:
 
         # Create positive event
         event_id = uuid4()
-        admin.table("events").insert({
+        await admin.table("events").insert({
             "id": str(event_id),
             "simulation_id": str(sim_id),
             "title": title,

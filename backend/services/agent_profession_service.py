@@ -9,7 +9,7 @@ from uuid import UUID
 from fastapi import HTTPException, status
 
 from backend.services.base_service import BaseService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class AgentProfessionService(BaseService):
         agent_id: UUID,
     ) -> list[dict]:
         """List all professions for an agent, primary first."""
-        response = (
+        response = await (
             supabase.table(cls.table_name)
             .select("*")
             .eq("simulation_id", str(simulation_id))
@@ -85,7 +85,7 @@ class AgentProfessionService(BaseService):
             for key, value in extra_filters.items():
                 query = query.eq(key, str(value))
 
-        response = query.execute()
+        response = await query.execute()
 
         if not response.data:
             raise HTTPException(

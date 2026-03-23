@@ -23,7 +23,7 @@ from backend.models.agent_autonomy import (
 )
 from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.services.morning_briefing_service import MorningBriefingService
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ async def get_agent_mood(
     supabase: Client = Depends(get_supabase),
 ) -> dict:
     """Get the current emotional state of an agent."""
-    result = (
+    result = await (
         supabase.table("agent_mood")
         .select("*")
         .eq("agent_id", str(agent_id))
@@ -71,7 +71,7 @@ async def list_agent_moodlets(
     supabase: Client = Depends(get_supabase),
 ) -> dict:
     """List all active moodlets for an agent."""
-    result = (
+    result = await (
         supabase.table("agent_moodlets")
         .select("*")
         .eq("agent_id", str(agent_id))
@@ -97,7 +97,7 @@ async def get_agent_needs(
     supabase: Client = Depends(get_supabase),
 ) -> dict:
     """Get the current need levels of an agent."""
-    result = (
+    result = await (
         supabase.table("agent_needs")
         .select("*")
         .eq("agent_id", str(agent_id))
@@ -123,7 +123,7 @@ async def list_agent_opinions(
     supabase: Client = Depends(get_supabase),
 ) -> dict:
     """List all opinions this agent holds about other agents."""
-    result = (
+    result = await (
         supabase.table("agent_opinions")
         .select("*, agents!agent_opinions_target_agent_id_fkey(name, portrait_image_url)")
         .eq("agent_id", str(agent_id))
@@ -162,7 +162,7 @@ async def list_agent_opinion_modifiers(
     )
     if target_agent_id:
         query = query.eq("target_agent_id", str(target_agent_id))
-    result = query.order("created_at", desc=True).execute()
+    result = await query.order("created_at", desc=True).execute()
     return {"success": True, "data": result.data}
 
 
@@ -203,7 +203,7 @@ async def list_activities(
     if activity_type:
         query = query.eq("activity_type", activity_type)
 
-    result = (
+    result = await (
         query.order("created_at", desc=True)
         .range(offset, offset + limit - 1)
         .execute()

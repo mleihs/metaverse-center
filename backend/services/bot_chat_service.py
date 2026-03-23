@@ -14,7 +14,7 @@ from backend.config import settings
 from backend.services.bot_game_state import BotGameState
 from backend.services.external.openrouter import OpenRouterService
 from backend.services.model_resolver import ModelResolver
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -270,7 +270,7 @@ class BotChatService:
 
         # Insert via admin client (bot is a system actor)
         # Use epoch creator's user_id as sender_id (bots don't have auth accounts)
-        epoch_resp = (
+        epoch_resp = await (
             admin_supabase.table("game_epochs")
             .select("created_by_id")
             .eq("id", epoch_id)
@@ -289,13 +289,13 @@ class BotChatService:
             "content": content,
             "sender_type": "bot",
         }
-        resp = admin_supabase.table("epoch_chat_messages").insert(message).execute()
+        resp = await admin_supabase.table("epoch_chat_messages").insert(message).execute()
         return resp.data[0] if resp.data else None
 
     @classmethod
     async def _get_chat_mode(cls, supabase: Client, simulation_id: str) -> str:
         """Get bot_chat_mode from simulation AI settings."""
-        resp = (
+        resp = await (
             supabase.table("simulation_settings")
             .select("setting_value")
             .eq("simulation_id", simulation_id)

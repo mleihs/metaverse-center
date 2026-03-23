@@ -14,7 +14,7 @@ from backend.services.style_reference_service import (
     MAX_FILE_SIZE,
     StyleReferenceService,
 )
-from supabase import Client
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
