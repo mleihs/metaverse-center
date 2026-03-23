@@ -152,6 +152,18 @@ Die Architektur ist gut strukturiert (FastAPI Services/Routers, Lit Signals), le
 - Color Token Lint: PASS
 - DOMPurify Config: Nur sichere Tags (h2-h4, p, br, strong, em, ul, ol, li, a, blockquote)
 
+### [Phase 6] Kostenkontrolle — AI Usage Tracking (23.03.2026)
+
+| Maßnahme | Datei | Status |
+|----------|-------|--------|
+| OpenRouter: usage.prompt_tokens/completion_tokens extrahiert | `backend/services/external/openrouter.py` | Done |
+| ai_usage_log Tabelle (Migration 150) | `supabase/migrations/20260323400000_150_ai_usage_log.sql` | Done |
+| AIUsageService: fire-and-forget Logging | `backend/services/ai_usage_service.py` | Done |
+| Model-Pricing Map (hardcoded, ~8 Modelle) | `backend/services/ai_usage_service.py` | Done |
+| 8 Unit Tests | `backend/tests/unit/test_ai_usage_service.py` | Done |
+
+**Noch offen:** Integration in alle AI-Call-Sites (12 Dateien), Per-Sim Quotas, Usage Dashboard
+
 ### Zusätzliche Findings (Deep-Dive-Verifizierung, 23.03.2026)
 
 1.  **Postgres-First-Verletzungen:** 8 Race Conditions in `operative_mission_service.py`, `cycle_resolution_service.py`, `heartbeat_service.py`, `lore_service.py` — fetch-compute-update statt atomischer RPCs.

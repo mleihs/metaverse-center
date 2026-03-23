@@ -36,6 +36,7 @@ class OpenRouterService:
 
     def __init__(self, api_key: str | None = None):
         self.api_key = api_key or settings.openrouter_api_key
+        self.last_usage: dict | None = None  # Set after each generate() call
 
     async def generate(
         self,
@@ -143,9 +144,24 @@ class OpenRouterService:
 
                 data = response.json()
                 duration_ms = int((time.monotonic() - t0) * 1000)
+
+                # Extract usage data (prompt_tokens, completion_tokens, total_tokens)
+                usage = data.get("usage", {})
+                self.last_usage = {
+                    "model": model,
+                    "prompt_tokens": usage.get("prompt_tokens", 0),
+                    "completion_tokens": usage.get("completion_tokens", 0),
+                    "total_tokens": usage.get("total_tokens", 0),
+                    "duration_ms": duration_ms,
+                }
+
                 logger.info(
                     "OpenRouter response",
-                    extra={"model": model, "status": 200, "duration_ms": duration_ms},
+                    extra={
+                        "model": model, "status": 200, "duration_ms": duration_ms,
+                        "prompt_tokens": self.last_usage["prompt_tokens"],
+                        "completion_tokens": self.last_usage["completion_tokens"],
+                    },
                 )
                 return _extract_content(data)
 
