@@ -186,16 +186,24 @@ class AnalyticsService {
     this._measurementId = import.meta.env.VITE_GA4_MEASUREMENT_ID ?? '';
   }
 
-  /** Load gtag.js and configure GA4 with consent mode v2. */
+  /** Initialize GA4 with consent mode v2.
+   *
+   * Sets up the dataLayer queue immediately (so events are buffered),
+   * but defers the actual gtag.js script load until the main thread is
+   * idle. This avoids blocking LCP/FCP while preserving all event data
+   * — the dataLayer queue is processed retroactively when gtag.js loads.
+   */
   init(): void {
     if (this._initialized || !this._measurementId || !import.meta.env.PROD) return;
     this._initialized = true;
 
-    // Consent mode v2 defaults (GDPR-safe: denied until user accepts)
+    // Set up dataLayer queue immediately — events are buffered until gtag.js loads.
     window.dataLayer = window.dataLayer || [];
     window.gtag = (...args: unknown[]) => {
       window.dataLayer.push(args);
     };
+
+    // Consent mode v2 defaults (GDPR-safe: denied until user accepts)
     window.gtag('consent', 'default', {
       analytics_storage: 'denied',
       ad_storage: 'denied',
@@ -209,20 +217,29 @@ class AnalyticsService {
       window.gtag('consent', 'update', { analytics_storage: 'granted' });
     }
 
-    // Load gtag.js script
-    const script = document.createElement('script');
-    script.async = true;
-    script.src = `https://www.googletagmanager.com/gtag/js?id=${this._measurementId}`;
-    document.head.appendChild(script);
-
+    // Pre-configure GA4 (queued in dataLayer, processed when gtag.js loads)
     window.gtag('js', new Date());
     window.gtag('config', this._measurementId, {
       send_page_view: false,
       link_attribution: true,
     });
 
+    // Defer the heavy gtag.js script load until main thread is idle.
+    // Safari lacks requestIdleCallback — setTimeout(fn, 1) is equivalent.
+    const schedule = window.requestIdleCallback
+      ?? ((cb: () => void) => setTimeout(cb, 1));
+    schedule(() => this._loadGtagScript(), { timeout: 3000 } as IdleRequestOptions);
+
     this._initWebVitals();
     this._registerEventListeners();
+  }
+
+  /** Inject the gtag.js script tag. Called after main thread is idle. */
+  private _loadGtagScript(): void {
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${this._measurementId}`;
+    document.head.appendChild(script);
   }
 
   /** Set GA4 user properties for audience segmentation. */

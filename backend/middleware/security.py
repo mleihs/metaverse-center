@@ -29,4 +29,11 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         response.headers["Content-Security-Policy"] = _CSP
+
+        # Immutable caching for content-hashed static assets.
+        # Vite adds content hashes to filenames (e.g., index-fXYAEj1v.js),
+        # so a 1-year cache is safe — new deploys produce new filenames.
+        if request.url.path.startswith("/assets/"):
+            response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+
         return response
