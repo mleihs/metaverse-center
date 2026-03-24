@@ -979,36 +979,43 @@ class HeartbeatService:
         )
         sims = _resp.data or []
 
-        # Get arc counts and scar tissue per simulation
+        # Batch-fetch arc counts, scar tissue, and pending responses for ALL sims at once
+        # (replaces N*3 queries with 2 queries)
+        sim_ids = [sim["id"] for sim in sims]
+
+        all_arcs_resp = await (
+            admin.table("narrative_arcs")
+            .select("simulation_id, scar_tissue_deposited, status")
+            .in_("simulation_id", sim_ids)
+            .in_("status", ["building", "active", "climax"])
+            .execute()
+        )
+        # Build per-sim arc counts + scar totals
+        arc_counts: dict[str, int] = {}
+        scar_totals: dict[str, float] = {}
+        for arc in all_arcs_resp.data or []:
+            sid = arc["simulation_id"]
+            arc_counts[sid] = arc_counts.get(sid, 0) + 1
+            scar = float(arc.get("scar_tissue_deposited", 0))
+            if scar > 0:
+                scar_totals[sid] = scar_totals.get(sid, 0) + scar
+
+        all_pending_resp = await (
+            admin.table("bureau_responses")
+            .select("simulation_id")
+            .in_("simulation_id", sim_ids)
+            .eq("status", "pending")
+            .execute()
+        )
+        pending_counts: dict[str, int] = {}
+        for resp_row in all_pending_resp.data or []:
+            sid = resp_row["simulation_id"]
+            pending_counts[sid] = pending_counts.get(sid, 0) + 1
+
         sim_data = []
         for sim in sims:
             sid = sim["id"]
-
-            arcs = await (
-                admin.table("narrative_arcs")
-                .select("id", count="exact")
-                .eq("simulation_id", sid)
-                .in_("status", ["building", "active", "climax"])
-                .execute()
-            )
-
-            pending = await (
-                admin.table("bureau_responses")
-                .select("id", count="exact")
-                .eq("simulation_id", sid)
-                .eq("status", "pending")
-                .execute()
-            )
-
-            _resp = await (
-                admin.table("narrative_arcs")
-                .select("scar_tissue_deposited")
-                .eq("simulation_id", sid)
-                .gt("scar_tissue_deposited", 0)
-                .execute()
-            )
-            scar_arcs = _resp.data or []
-            total_scar = sum(float(a.get("scar_tissue_deposited", 0)) for a in scar_arcs)
+            total_scar = scar_totals.get(sid, 0)
 
             sim_data.append({
                 "simulation_id": sid,
@@ -1018,9 +1025,9 @@ class HeartbeatService:
                 "last_heartbeat_at": sim.get("last_heartbeat_at"),
                 "next_heartbeat_at": sim.get("next_heartbeat_at"),
                 "status": "active",
-                "active_arcs": arcs.count or 0,
+                "active_arcs": arc_counts.get(sid, 0),
                 "scar_tissue_level": round(total_scar, 4),
-                "pending_responses": pending.count or 0,
+                "pending_responses": pending_counts.get(sid, 0),
             })
 
         return {
