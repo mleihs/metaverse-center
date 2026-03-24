@@ -12,7 +12,9 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
+import httpx
 from fastapi import HTTPException, status
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from supabase import AsyncClient as Client
 
@@ -122,7 +124,7 @@ class AdminUserService:
                 {"p_user_id": str(user_id)},
             ).execute()
             logger.info("User deleted", extra={"user_id": str(user_id)})
-        except Exception as e:
+        except (PostgrestAPIError, httpx.HTTPError) as e:
             logger.warning("User deletion failed", extra={"user_id": str(user_id)}, exc_info=True)
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,

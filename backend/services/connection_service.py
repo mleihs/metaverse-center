@@ -9,8 +9,10 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
+import httpx
 from cachetools import TTLCache
 from fastapi import HTTPException, status
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.services.base_service import serialize_for_json
 from backend.services.cache_config import get_ttl
@@ -149,7 +151,7 @@ class ConnectionService:
                     "active_arcs": len(arc_data),
                     "scar_tissue": round(scar, 4),
                 }
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.debug("Heartbeat map data unavailable (tables may not exist yet)")
 
         result = {
@@ -239,7 +241,7 @@ class ConnectionService:
                     op_type = op.get("operative_type")
                     if op_type and op_type not in flow[key]["types"]:
                         flow[key]["types"].append(op_type)
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError):
             logger.debug("Operative flow query skipped (table may be empty)")
         return flow
 
@@ -274,7 +276,7 @@ class ConnectionService:
                     "diplomatic": row.get("diplomatic_score", 0),
                     "military": row.get("military_score", 0),
                 }
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError):
             logger.debug("Score dimensions query skipped")
         return dimensions
 
@@ -308,7 +310,7 @@ class ConnectionService:
                         template_scores[tmpl_id].append(float(row.get("composite_score", 0)))
             for tid, scores_list in template_scores.items():
                 sparklines[tid] = list(reversed(scores_list))
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError):
             logger.debug("Sparkline data query skipped")
         return sparklines
 
@@ -330,7 +332,7 @@ class ConnectionService:
             ).execute()
             if response.data:
                 return response.data
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError):
             logger.debug("Map overlay data RPC skipped")
         return empty
 

@@ -9,6 +9,9 @@ from __future__ import annotations
 import logging
 import time
 
+import httpx
+from postgrest.exceptions import APIError as PostgrestAPIError
+
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -57,7 +60,7 @@ async def _load_all(admin_supabase: Client) -> None:
                 new_cache[key] = raw
         _cache = new_cache
         _cache_loaded_at = time.monotonic()
-    except Exception:
+    except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError):
         logger.warning("Failed to load platform API keys from DB")
         _cache_loaded_at = time.monotonic()
 

@@ -10,6 +10,9 @@ import json
 import logging
 from typing import Any
 
+import httpx
+from postgrest.exceptions import APIError as PostgrestAPIError
+
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -41,7 +44,7 @@ class PlatformConfigService:
             if not row:
                 return default
             return cls._coerce(row[0]["setting_value"], default)
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, json.JSONDecodeError, KeyError, TypeError, ValueError):
             logger.warning(
                 "Failed to load platform setting '%s', using default",
                 key,
@@ -84,7 +87,7 @@ class PlatformConfigService:
                 key = raw_key.removeprefix(prefix) if prefix else raw_key
                 if key in defaults:
                     config[key] = cls._coerce(row["setting_value"], defaults[key])
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, json.JSONDecodeError, KeyError, TypeError, ValueError):
             logger.warning(
                 "Failed to load platform settings batch, using defaults",
                 extra={"keys": list(defaults.keys())},

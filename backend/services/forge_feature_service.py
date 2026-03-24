@@ -5,7 +5,9 @@ from __future__ import annotations
 import logging
 from uuid import UUID
 
+import httpx
 from fastapi import HTTPException, status
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from supabase import AsyncClient as Client
 
@@ -55,7 +57,7 @@ class ForgeFeatureService:
                 "p_token_cost": cost,
                 "p_config": config or {},
             }).execute()
-        except Exception as exc:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
             error_msg = str(exc).lower()
             if "insufficient tokens" in error_msg:
                 raise HTTPException(
@@ -100,7 +102,7 @@ class ForgeFeatureService:
         """Mark feature as failed and trigger token refund via RPC."""
         try:
             await supabase.rpc("fn_refund_feature", {"p_purchase_id": purchase_id}).execute()
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.exception(
                 "Refund failed for purchase %s", purchase_id,
             )
@@ -171,7 +173,7 @@ class ForgeFeatureService:
                 "p_purchase_id": purchase_id,
             }).execute()
             return resp.data
-        except Exception as exc:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Darkroom regen failed: {exc}",

@@ -7,6 +7,8 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
+import httpx
+from postgrest.exceptions import APIError as PostgrestAPIError
 from pydantic_ai import Agent
 
 from backend.models.translation import TranslationContext
@@ -184,7 +186,7 @@ class DossierEvolutionService:
                 )
                 separator_de = "\n\n─── BUREAU-NACHTRAG ───\n\n"
                 updated_body_de = updated_body_de + separator_de + addendum_de
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.exception("Dossier addendum translation failed, English only")
                 # Fallback: append English so body_de doesn't fall behind
                 updated_body_de = updated_body_de + separator + addendum
@@ -230,6 +232,6 @@ class DossierEvolutionService:
             )
             return True
 
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.exception("Dossier evolution failed")
             return False

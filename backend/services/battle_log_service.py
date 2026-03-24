@@ -3,6 +3,9 @@
 import logging
 from uuid import UUID
 
+import httpx
+from postgrest.exceptions import APIError as PostgrestAPIError
+
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -48,7 +51,7 @@ class BattleLogService:
         try:
             resp = await supabase.table("battle_log").insert(data).execute()
             return resp.data[0] if resp.data else data
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError):
             logger.error(
                 "Battle log insert failed for event_type=%s: %s",
                 event_type, data.get("narrative", "")[:100], exc_info=True,
@@ -108,7 +111,7 @@ class BattleLogService:
                     ).maybe_single().execute()
                     if sim_resp.data:
                         metadata["target_sim_name"] = sim_resp.data["name"]
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError):
                 logger.debug("Best-effort battle log enrichment failed", exc_info=True)
 
         return await cls.log_event(

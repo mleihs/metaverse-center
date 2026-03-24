@@ -15,8 +15,10 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
+import httpx
 import sentry_sdk
 from fastapi import HTTPException, status
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.config import settings
 from backend.services.cipher_service import CipherService
@@ -278,7 +280,7 @@ class InstagramContentService:
                 parsed = json.loads(raw) if isinstance(raw, str) else raw
                 if isinstance(parsed, list):
                     trending_tags = [t for t in parsed if isinstance(t, str)]
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.debug("Failed to load instagram_trending_tags")
 
         hashtags = cls._build_hashtags(
@@ -350,7 +352,7 @@ class InstagramContentService:
                     "has_image_cipher": image_cipher_hint is not None,
                     "simulation_id": simulation_id,
                 })
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.warning("Cipher generation failed, proceeding without cipher", exc_info=True)
 
         # 7. Compose image (after cipher so steganographic hint is available)
@@ -492,7 +494,7 @@ class InstagramContentService:
             )
             if mix_resp.data:
                 mix = json.loads(mix_resp.data[0]["setting_value"])
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.debug("Failed to load instagram_content_mix, using defaults")
 
         # Distribute count across types proportionally to weights.
@@ -507,7 +509,7 @@ class InstagramContentService:
                     admin_supabase, candidate, user_id=user_id,
                 )
                 results.append(post)
-            except Exception as exc:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
                 logger.exception(
                     "Failed to generate post for candidate %s",
                     candidate.get("id"),
@@ -760,7 +762,7 @@ class InstagramContentService:
                 {"p_days": days},
             ).execute()
             return response.data if response.data else {}
-        except Exception as exc:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
             logger.warning(
                 "Instagram analytics RPC failed — returning empty stats",
                 exc_info=True,
@@ -831,7 +833,7 @@ class InstagramContentService:
                     if len(caption) > 2200:
                         caption = caption[:2190] + "…"
                     return caption
-            except Exception as exc:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
                 logger.warning(
                     "AI caption generation failed for %s, using template",
                     content_type,
@@ -1105,7 +1107,7 @@ class InstagramContentService:
                 custom = json.loads(resp.data[0]["setting_value"])
                 if isinstance(custom, list):
                     blocklist.extend(custom)
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.debug("Failed to load instagram_blocklist, using defaults")
 
         # Check blocklist

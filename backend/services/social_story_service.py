@@ -18,7 +18,9 @@ import logging
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
+import httpx
 import sentry_sdk
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.models.resonance import ARCHETYPE_DESCRIPTIONS
 from backend.models.social_story import ARCHETYPE_COLORS, ARCHETYPE_OPERATIVE_ALIGNMENT
@@ -190,7 +192,7 @@ class SocialStoryService:
 
         except HTTPException:
             raise
-        except Exception as exc:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
             logger.exception("Force-publish story failed", extra={
                 "story_id": str(story_id),
             })
@@ -234,7 +236,7 @@ class SocialStoryService:
                     "story_id": str(story_id),
                     "ig_story_id": ig_story_id,
                 })
-            except Exception as exc:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
                 logger.warning("Could not delete story from Instagram (may have expired)", extra={
                     "story_id": str(story_id),
                     "ig_story_id": ig_story_id,
@@ -266,7 +268,7 @@ class SocialStoryService:
 
         except HTTPException:
             raise
-        except Exception as exc:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
             logger.exception("Regenerate publish failed", extra={
                 "story_id": str(story_id),
             })
@@ -711,7 +713,7 @@ class SocialStoryService:
             })
             return url
 
-        except Exception as exc:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
             logger.exception("Story image composition failed", extra={
                 "story_id": str(story_id),
                 "story_type": story_type,
@@ -1149,7 +1151,7 @@ class SocialStoryService:
                 except (ValueError, TypeError):
                     pass
 
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.warning("Failed to load resonance story config — using defaults")
 
         return config
@@ -1183,7 +1185,7 @@ class SocialStoryService:
                 simulation_name=simulation_name,
                 simulation_description=simulation_description,
             )
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.debug("AI closing line generation unavailable", exc_info=True)
             return None
 
@@ -1196,7 +1198,7 @@ class SocialStoryService:
             insert_data = serialize_for_json(data)
             resp = await admin.table("social_stories").insert(insert_data).execute()
             return resp.data[0] if resp.data else None
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.exception("Failed to create social story record", extra={
                 "story_type": data.get("story_type"),
                 "resonance_id": data.get("resonance_id"),

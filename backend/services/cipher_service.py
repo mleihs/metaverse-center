@@ -11,7 +11,9 @@ import hashlib
 import logging
 from uuid import UUID
 
+import httpx
 import sentry_sdk
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from supabase import AsyncClient as Client
 
@@ -84,7 +86,7 @@ class CipherService:
             })
             return result
 
-        except Exception as exc:
+        except (PostgrestAPIError, httpx.HTTPError) as exc:
             logger.exception("Cipher redemption RPC failed", extra={
                 "user_id": str(user_id) if user_id else "anonymous",
             })

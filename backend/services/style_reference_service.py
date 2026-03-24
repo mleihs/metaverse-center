@@ -5,6 +5,9 @@ from __future__ import annotations
 import logging
 from uuid import UUID, uuid4
 
+import httpx
+from postgrest.exceptions import APIError as PostgrestAPIError
+
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -368,7 +371,7 @@ async def _try_delete_storage_file(supabase: Client, url: str) -> None:
             if path.startswith("object/public/"):
                 path = path[len("object/public/"):]
             await supabase.storage.from_(STORAGE_BUCKET).remove([path])
-    except Exception:
+    except (PostgrestAPIError, httpx.HTTPError, OSError):
         logger.warning("Failed to delete storage file: %s", url, exc_info=True)
 
 

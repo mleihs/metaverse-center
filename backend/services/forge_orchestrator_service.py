@@ -7,9 +7,11 @@ import logging
 import time
 from uuid import UUID
 
+import httpx
 import sentry_sdk
 import structlog
 from fastapi import HTTPException, status
+from postgrest.exceptions import APIError as PostgrestAPIError
 from pydantic_ai.exceptions import ModelHTTPError, UnexpectedModelBehavior
 
 from backend.config import settings
@@ -652,7 +654,7 @@ class ForgeOrchestratorService:
         try:
             try:
                 response = await supabase.rpc("fn_materialize_shard", {"p_draft_id": str(draft_id)}).execute()
-            except Exception as rpc_err:
+            except (PostgrestAPIError, httpx.HTTPError) as rpc_err:
                 # Parse PostgreSQL RAISE EXCEPTION into semantic HTTP codes
                 err_msg = str(rpc_err)
                 status_code, detail = ForgeOrchestratorService._classify_rpc_error(err_msg)
@@ -694,7 +696,7 @@ class ForgeOrchestratorService:
             if theme_config:
                 try:
                     await ForgeThemeService.apply_theme_settings(write_client, sim_id, theme_config)
-                except Exception:
+                except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                     with sentry_sdk.push_scope() as scope:
                         scope.set_tag("forge_phase", "materialize")
                         scope.set_context("forge", {"simulation_id": str(sim_id)})
@@ -720,7 +722,7 @@ class ForgeOrchestratorService:
             }
         except HTTPException:
             raise
-        except Exception as e:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as e:
             with sentry_sdk.push_scope() as scope:
                 scope.set_tag("forge_phase", "materialize")
                 scope.set_context("forge", {"draft_id": str(draft_id)})
@@ -764,7 +766,10 @@ class ForgeOrchestratorService:
                 )
             except ModelHTTPError as exc:
                 raise ai_error_to_http(exc) from exc
-            except Exception as exc:
+            except (
+                PostgrestAPIError, httpx.HTTPError, UnexpectedModelBehavior,
+                KeyError, TypeError, ValueError,
+            ) as exc:
                 with sentry_sdk.push_scope() as scope:
                     scope.set_tag("forge_phase", "theme_generation")
                     scope.set_context("forge", {"draft_id": str(draft_id)})
@@ -824,7 +829,7 @@ class ForgeOrchestratorService:
                 await ForgeLoreService.persist_lore(
                     supabase, simulation_id, lore_sections, translations,
                 )
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError):
                 logger.exception("Mock lore persist failed", extra={"simulation_id": str(simulation_id)})
 
             try:
@@ -859,7 +864,7 @@ class ForgeOrchestratorService:
                 sim_desc = geography.get("description", "") or seed
                 mock_trans = mock.mock_entity_translations(mat_agents, mat_buildings, mat_zones, mat_streets, sim_desc)
                 await ForgeEntityTranslationService.persist_translations(supabase, simulation_id, mock_trans)
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError):
                 logger.exception("Mock entity translation failed", extra={"simulation_id": str(simulation_id)})
             return
 
@@ -889,7 +894,7 @@ class ForgeOrchestratorService:
                     astrolabe_context=astrolabe_ctx,
                     openrouter_key=or_key,
                 )
-            except Exception:
+            except (httpx.HTTPError, ModelHTTPError, UnexpectedModelBehavior, KeyError, TypeError, ValueError):
                 with sentry_sdk.push_scope() as scope:
                     scope.set_tag("forge_phase", "deep_research")
                     scope.set_context("forge", {"simulation_id": str(simulation_id), "seed": seed[:80]})
@@ -930,7 +935,7 @@ class ForgeOrchestratorService:
                 translations = await ForgeLoreService.translate_lore(
                     lore_sections, openrouter_key=or_key, on_section_start=on_section_start,
                 )
-            except Exception:
+            except (httpx.HTTPError, ModelHTTPError, UnexpectedModelBehavior, KeyError, TypeError, ValueError):
                 with sentry_sdk.push_scope() as scope:
                     scope.set_tag("forge_phase", "lore_translation")
                     scope.set_context("forge", {"simulation_id": str(simulation_id)})
@@ -940,7 +945,10 @@ class ForgeOrchestratorService:
             await ForgeLoreService.persist_lore(
                 supabase, simulation_id, lore_sections, translations,
             )
-        except Exception:
+        except (
+            PostgrestAPIError, httpx.HTTPError, ModelHTTPError,
+            UnexpectedModelBehavior, KeyError, TypeError, ValueError,
+        ):
             with sentry_sdk.push_scope() as scope:
                 scope.set_tag("forge_phase", "lore_generation")
                 scope.set_context("forge", {"simulation_id": str(simulation_id), "seed": seed[:80]})
@@ -1000,7 +1008,10 @@ class ForgeOrchestratorService:
                 await ForgeEntityTranslationService.persist_translations(
                     supabase, simulation_id, entity_translations,
                 )
-        except Exception:
+        except (
+            PostgrestAPIError, httpx.HTTPError, ModelHTTPError,
+            UnexpectedModelBehavior, KeyError, TypeError, ValueError,
+        ):
             with sentry_sdk.push_scope() as scope:
                 scope.set_tag("forge_phase", "entity_translation")
                 scope.set_context("forge", {"simulation_id": str(simulation_id)})
@@ -1038,7 +1049,7 @@ class ForgeOrchestratorService:
 
         try:
             or_key, rep_key = await ForgeOrchestratorService._get_user_keys(supabase, user_id)
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OSError):
             logger.exception("Failed to fetch BYOK keys — using platform keys")
             or_key, rep_key = None, None
 
@@ -1062,7 +1073,7 @@ class ForgeOrchestratorService:
                 await ForgeThemeService.refine_style_prompts(
                     supabase, simulation_id, or_key,
                 )
-            except Exception:
+            except (httpx.HTTPError, ModelHTTPError, UnexpectedModelBehavior, KeyError, TypeError, ValueError):
                 logger.warning(
                     "Style prompt refinement failed — using original prompts",
                     exc_info=True,
@@ -1074,7 +1085,7 @@ class ForgeOrchestratorService:
                 await ForgeThemeService.generate_simulation_templates(
                     supabase, simulation_id, or_key,
                 )
-            except Exception:
+            except (httpx.HTTPError, ModelHTTPError, UnexpectedModelBehavior, KeyError, TypeError, ValueError):
                 logger.warning(
                     "Prompt template generation failed — using platform defaults",
                     exc_info=True,
@@ -1140,7 +1151,7 @@ class ForgeOrchestratorService:
                     images_succeeded += 1
                 except ReplicateBillingError:
                     raise
-                except Exception:
+                except (httpx.HTTPError, KeyError, TypeError, ValueError, OSError):
                     images_failed += 1
                     logger.exception("Banner generation failed")
 
@@ -1170,7 +1181,7 @@ class ForgeOrchestratorService:
                         images_succeeded += 1
                     except ReplicateBillingError:
                         raise
-                    except Exception:
+                    except (httpx.HTTPError, KeyError, TypeError, ValueError, OSError):
                         images_failed += 1
                         logger.exception(
                             "Batch image gen failed for agent",
@@ -1217,7 +1228,7 @@ class ForgeOrchestratorService:
                         images_succeeded += 1
                     except ReplicateBillingError:
                         raise
-                    except Exception:
+                    except (httpx.HTTPError, KeyError, TypeError, ValueError, OSError):
                         images_failed += 1
                         logger.exception(
                             "Batch image gen failed for building",
@@ -1256,7 +1267,7 @@ class ForgeOrchestratorService:
                         images_succeeded += 1
                     except ReplicateBillingError:
                         raise
-                    except Exception:
+                    except (httpx.HTTPError, KeyError, TypeError, ValueError, OSError):
                         images_failed += 1
                         logger.exception(
                             "Lore image gen failed",
@@ -1432,7 +1443,7 @@ Generate exactly 3 new agents. Requirements:
                                 "background": agent_draft.background,
                             },
                         )
-            except Exception:
+            except (httpx.HTTPError, KeyError, TypeError, ValueError, OSError):
                 with sentry_sdk.push_scope() as scope:
                     scope.set_tag("forge_phase", "recruit_portraits")
                     scope.set_context("forge", {"simulation_id": str(simulation_id), "agent_count": len(generated)})
@@ -1454,7 +1465,7 @@ Generate exactly 3 new agents. Requirements:
                         sim.get("description", ""),
                         openrouter_key,
                     )
-            except Exception:
+            except (httpx.HTTPError, ModelHTTPError, UnexpectedModelBehavior, KeyError, TypeError, ValueError):
                 with sentry_sdk.push_scope() as scope:
                     scope.set_tag("forge_phase", "recruit_translation")
                     scope.set_context("forge", {"simulation_id": str(simulation_id), "agent_count": len(generated)})
@@ -1474,7 +1485,10 @@ Generate exactly 3 new agents. Requirements:
                 extra={"agents": len(generated)},
             )
 
-        except Exception as exc:
+        except (
+            PostgrestAPIError, httpx.HTTPError, ModelHTTPError,
+            UnexpectedModelBehavior, KeyError, TypeError, ValueError,
+        ) as exc:
             with sentry_sdk.push_scope() as scope:
                 scope.set_tag("forge_phase", "recruitment")
                 scope.set_context("forge", {"simulation_id": str(simulation_id), "purchase_id": purchase_id})
@@ -1570,7 +1584,7 @@ Generate exactly 3 new agents. Requirements:
                 )
 
             logger.info("Darkroom regen completed")
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OSError):
             with sentry_sdk.push_scope() as scope:
                 scope.set_tag("forge_phase", "darkroom_regen")
                 scope.set_context("forge", {

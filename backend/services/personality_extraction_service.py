@@ -16,8 +16,10 @@ import logging
 import math
 from uuid import UUID
 
+import httpx
 import sentry_sdk
 import structlog
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.services.external.openrouter import OpenRouterService
 from backend.services.model_resolver import ModelResolver
@@ -149,7 +151,7 @@ class PersonalityExtractionService:
                 temperature=0.3,
                 max_tokens=512,
             )
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.exception("LLM call failed for personality extraction")
             sentry_sdk.capture_exception()
             return cls._default_profile()
@@ -236,7 +238,7 @@ class PersonalityExtractionService:
                     openrouter_api_key=openrouter_api_key,
                 )
                 processed += 1
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.exception(
                     "Failed to initialize agent autonomy",
                     extra={"agent_id": agent_row["id"]},

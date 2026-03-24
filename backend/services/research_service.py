@@ -10,6 +10,7 @@ from __future__ import annotations
 import hashlib
 import logging
 
+import httpx
 import sentry_sdk
 
 from backend.models.forge import PhilosophicalAnchor
@@ -317,7 +318,7 @@ class ResearchService:
         try:
             result = await run_ai(research_agent, research_prompt, "research")
             parts.append(f"[LLM RESEARCH]\n{result.output}")
-        except Exception:
+        except (httpx.HTTPError, KeyError, TypeError, ValueError):
             with sentry_sdk.push_scope() as scope:
                 scope.set_tag("forge_phase", "lore_research")
                 scope.set_context("forge", {"seed": seed[:80], "anchor_title": title[:60]})

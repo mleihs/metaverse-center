@@ -1,11 +1,16 @@
 """Academy epoch creation — one-click solo training with auto-configured bots."""
 
 import logging
+from datetime import UTC, datetime
 from uuid import UUID
 
+import httpx
+import sentry_sdk
 from fastapi import HTTPException, status
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.models.epoch import AcademyConfig
+from backend.services.bot_personality import auto_draft
 from backend.services.epoch_service import EpochService
 from supabase import AsyncClient as Client
 
@@ -70,7 +75,7 @@ class AcademyService:
                 config=ACADEMY_SPRINT_CONFIG,
                 epoch_type="academy",
             )
-        except Exception as exc:
+        except (PostgrestAPIError, httpx.HTTPError) as exc:
             # DB unique index catches race condition — return existing epoch
             if "idx_one_active_academy_per_user" in str(exc):
                 existing = await (
@@ -109,8 +114,11 @@ class AcademyService:
         user_id: UUID,
         academy: AcademyConfig,
     ) -> None:
-        """Find template simulations, auto-join the human player, and create bot opponents."""
-        # Need bot_count + 1 templates: one for the human, rest for bots
+        """Find template simulations and deploy via batch RPC (migration 155).
+
+        Uses fn_deploy_academy_bots for atomic batch insert of bot_players +
+        epoch_participants, then runs personality-based auto_draft per bot.
+        """
         needed = academy.bot_count + 1
         templates = await (
             admin_supabase.table("simulations")
@@ -128,46 +136,94 @@ class AcademyService:
             )
             return
 
-        # First template goes to the human player
-        human_sim_id = UUID(templates.data[0]["id"])
+        human_sim_id = templates.data[0]["id"]
+        bot_sim_ids = [row["id"] for row in templates.data[1: academy.bot_count + 1]]
+
+        # Step 1: Atomic batch insert of bot_players + epoch_participants
         try:
-            await admin_supabase.table("epoch_participants").insert({
-                "epoch_id": str(epoch_id),
-                "simulation_id": str(human_sim_id),
-                "user_id": str(user_id),
-            }).execute()
-        except Exception:
-            logger.exception(
-                "Failed to add human player to academy epoch",
-                extra={"epoch_id": str(epoch_id), "user_id": str(user_id)},
-            )
+            resp = await admin_supabase.rpc(
+                "fn_deploy_academy_bots",
+                {
+                    "p_epoch_id": str(epoch_id),
+                    "p_user_id": str(user_id),
+                    "p_human_sim_id": human_sim_id,
+                    "p_bot_sim_ids": bot_sim_ids,
+                    "p_difficulty": academy.difficulty,
+                    "p_personalities": BOT_PERSONALITIES,
+                },
+            ).execute()
 
-        # Remaining templates go to bots
-        for i, sim_row in enumerate(templates.data[1: academy.bot_count + 1]):
-            personality = BOT_PERSONALITIES[i % len(BOT_PERSONALITIES)]
-
-            bot_resp = await (
-                admin_supabase.table("bot_players")
-                .insert({
-                    "name": f"Academy {personality.title()}",
-                    "personality": personality,
-                    "difficulty": academy.difficulty,
-                    "created_by_id": str(user_id),
-                })
-                .execute()
-            )
-            if not bot_resp.data:
-                continue
-
-            bot_player_id = UUID(bot_resp.data[0]["id"])
-            sim_id = UUID(sim_row["id"])
-
-            try:
-                await EpochService.add_bot(
-                    admin_supabase, epoch_id, sim_id, bot_player_id,
+            result = resp.data
+            if isinstance(result, dict) and result.get("error_code"):
+                logger.error(
+                    "fn_deploy_academy_bots error: %s",
+                    result.get("user_message"),
+                    extra={"epoch_id": str(epoch_id), "error_code": result["error_code"]},
                 )
-            except Exception:
+                return
+
+            bots = result.get("bots", []) if isinstance(result, dict) else []
+            logger.info(
+                "Academy bots deployed via batch RPC",
+                extra={"epoch_id": str(epoch_id), "deployed_count": len(bots)},
+            )
+        except (PostgrestAPIError, httpx.HTTPError) as exc:
+            logger.exception(
+                "fn_deploy_academy_bots RPC failed",
+                extra={"epoch_id": str(epoch_id)},
+            )
+            sentry_sdk.capture_exception(exc)
+            return
+
+        # Step 2: Auto-draft agents for each bot (personality-based aptitude scoring)
+        config = {**ACADEMY_SPRINT_CONFIG}
+        max_agents = config.get("max_agents_per_player", 6)
+
+        for bot in bots:
+            try:
+                sim_id = bot["simulation_id"]
+                personality = bot["personality"]
+                participant_id = bot["participant_id"]
+
+                # Load agents with aptitudes for this simulation
+                agents_resp = await (
+                    admin_supabase.table("agents")
+                    .select("id, name")
+                    .eq("simulation_id", sim_id)
+                    .is_("deleted_at", "null")
+                    .execute()
+                )
+                agents = agents_resp.data or []
+
+                aptitudes_resp = await (
+                    admin_supabase.table("agent_aptitudes")
+                    .select("agent_id, operative_type, aptitude_level")
+                    .eq("simulation_id", sim_id)
+                    .execute()
+                )
+                apt_map: dict[str, dict[str, int]] = {}
+                for row in aptitudes_resp.data or []:
+                    aid = row["agent_id"]
+                    if aid not in apt_map:
+                        apt_map[aid] = {}
+                    apt_map[aid][row["operative_type"]] = row["aptitude_level"]
+                for agent in agents:
+                    agent["aptitudes"] = apt_map.get(agent["id"], {})
+
+                drafted_ids = auto_draft(personality, agents, max_agents)
+
+                # Update participant with drafted agents
+                await (
+                    admin_supabase.table("epoch_participants")
+                    .update({
+                        "drafted_agent_ids": drafted_ids,
+                        "draft_completed_at": datetime.now(UTC).isoformat(),
+                    })
+                    .eq("id", participant_id)
+                    .execute()
+                )
+            except (PostgrestAPIError, httpx.HTTPError):
                 logger.exception(
-                    "Failed to add academy bot",
-                    extra={"epoch_id": str(epoch_id), "bot_player_id": str(bot_player_id)},
+                    "Failed to auto-draft for academy bot",
+                    extra={"epoch_id": str(epoch_id), "bot": bot},
                 )

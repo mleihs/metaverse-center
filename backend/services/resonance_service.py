@@ -6,8 +6,10 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
+import httpx
 import sentry_sdk
 from fastapi import HTTPException, status
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.dependencies import get_admin_supabase
 from backend.models.resonance import ARCHETYPE_DESCRIPTIONS
@@ -151,7 +153,7 @@ class ResonanceService(BaseService):
             try:
                 admin_sb = await get_admin_supabase()
                 await SocialStoryService.create_subsiding_story(admin_sb, resonance_id)
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.warning(
                     "Subsiding story creation failed (non-fatal)",
                     exc_info=True,
@@ -322,7 +324,7 @@ class ResonanceService(BaseService):
                     locale=locale,
                 )
                 impacts.append(impact)
-            except Exception as exc:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
                 failed_count += 1
                 logger.exception(
                     "Failed to process resonance impact for simulation %s (%s)",
@@ -355,7 +357,7 @@ class ResonanceService(BaseService):
                     )
                     if resp.data:
                         impacts.append(resp.data[0])
-                except Exception:
+                except (PostgrestAPIError, httpx.HTTPError):
                     logger.exception("Failed to record failure for simulation %s", sim_id)
 
         if failed_count:
@@ -378,7 +380,7 @@ class ResonanceService(BaseService):
                     "Created %d resonance stories for %s",
                     len(stories), resonance_id,
                 )
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.warning(
                 "Resonance story creation failed (non-fatal)",
                 exc_info=True,
@@ -434,7 +436,7 @@ class ResonanceService(BaseService):
                 {"p_simulation_id": sim_id, "p_signature": signature},
             ).execute()
             event_types = types_resp.data if types_resp.data else []
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError):
             logger.warning(
                 "Event type lookup failed for sim %s, using fallback",
                 sim_id, exc_info=True,
@@ -503,7 +505,7 @@ class ResonanceService(BaseService):
                     "Anchor protection reduced magnitude by %.1f%% for %s",
                     protection * 100, sim_name,
                 )
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.info(
                 "Heartbeat modifiers unavailable for sim %s (tables may not exist yet)",
                 sim_id,
@@ -525,7 +527,7 @@ class ResonanceService(BaseService):
                 resolver = ExternalServiceResolver(supabase, UUID(sim_id))
                 ai_config = await resolver.get_ai_provider_config()
                 gen_service = GenerationService(supabase, UUID(sim_id), ai_config.openrouter_api_key)
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.warning(
                     "AI generation unavailable for %s (%s), using template titles",
                     sim_name, sim_id, exc_info=True,
@@ -549,7 +551,7 @@ class ResonanceService(BaseService):
                 )
                 spawned_ids.append(event["id"])
                 spawned_events.append(event)
-            except Exception as exc:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
                 error_msg = f"{event_type}: {type(exc).__name__}: {exc!s}"[:200]
                 spawn_errors.append(error_msg)
                 logger.exception(
@@ -622,7 +624,7 @@ class ResonanceService(BaseService):
         if spawned_ids:
             try:
                 await EventService._post_event_mutation(supabase, UUID(sim_id))
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.warning(
                     "Post-mutation pipeline failed for %s (%s)",
                     sim_name, sim_id, exc_info=True,
@@ -634,7 +636,7 @@ class ResonanceService(BaseService):
                     await EventService.generate_reactions(
                         supabase, UUID(sim_id), event, gen_service,
                     )
-                except Exception:
+                except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                     logger.warning(
                         "Auto-reaction generation failed for event %s in %s",
                         event["id"], sim_name, exc_info=True,
@@ -698,12 +700,12 @@ class ResonanceService(BaseService):
                     )
                     title_de = generated_de.get("title")
                     description_de = generated_de.get("description")
-                except Exception:
+                except (httpx.HTTPError, KeyError, TypeError, ValueError):
                     logger.warning(
                         "German translation failed for resonance event, EN only",
                         exc_info=True,
                     )
-            except Exception:
+            except (httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.warning(
                     "AI generation failed for resonance event, using template",
                     exc_info=True,

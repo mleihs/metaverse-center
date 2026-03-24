@@ -24,6 +24,7 @@ from uuid import UUID
 import httpx
 import sentry_sdk
 import structlog
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.dependencies import get_admin_supabase
 from backend.services.bluesky_content_service import BlueskyContentService
@@ -85,7 +86,7 @@ class BlueskyScheduler:
                     "iteration": cls._iteration_count,
                     "retry_in_s": interval,
                 })
-            except Exception as exc:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
                 logger.exception("Bluesky scheduler loop error", extra={
                     "iteration": cls._iteration_count,
                 })
@@ -161,7 +162,7 @@ class BlueskyScheduler:
             except (ValueError, TypeError):
                 pass
 
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.warning("Failed to load Bluesky scheduler config, using defaults", extra={
                 "iteration": cls._iteration_count,
             })
@@ -287,7 +288,7 @@ class BlueskyScheduler:
                             "retry_count": _MAX_RETRIES,
                         })
                         sentry_sdk.capture_exception(exc)
-            except Exception as exc:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
                 await admin.table("bluesky_posts").update({
                     "status": "failed",
                     "failure_reason": "Unexpected error during publishing",
@@ -341,7 +342,7 @@ class BlueskyScheduler:
                 if refreshed.data:
                     caption = refreshed.data[0].get("caption", caption)
                     alt_text = refreshed.data[0].get("alt_text", alt_text)
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.warning(
                     "Caption adaptation failed, using trigger placeholder",
                     extra={"post_id": post_id},
@@ -363,7 +364,7 @@ class BlueskyScheduler:
 
                     media = await bsky.upload_media(img_data, mime)
                     uploaded_media.append(media)
-                except Exception as exc:
+                except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
                     logger.warning("Failed to download/upload image for Bluesky post", extra={
                         "post_id": post_id,
                         "image_url": url[:100],
@@ -449,7 +450,7 @@ class BlueskyScheduler:
                     "reposts": metrics.get("reposts", 0),
                     "iteration": cls._iteration_count,
                 })
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.warning("Failed to collect Bluesky metrics for post", extra={
                     "post_id": post["id"],
                     "iteration": cls._iteration_count,

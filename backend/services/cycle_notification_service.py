@@ -9,6 +9,10 @@ via email_locale and per-simulation accent colors.
 import asyncio
 import logging
 
+import httpx
+from postgrest.exceptions import APIError as PostgrestAPIError
+
+from backend.config import settings
 from backend.models.epoch import SCORING_DIMENSIONS
 from backend.services.email_service import EmailService
 from backend.services.email_templates import (
@@ -155,7 +159,7 @@ class CycleNotificationService:
         epoch_status: str,
         *,
         epoch_config: dict | None = None,
-        command_center_url: str = "https://metaverse.center/epoch",
+        command_center_url: str = "",
         simulation_slug: str = "",
     ) -> dict:
         """Gather fog-of-war compliant briefing data for a single player.
@@ -163,6 +167,8 @@ class CycleNotificationService:
         Returns dict with: rank, composite, delta, dimensions, operatives, rp, public_events,
         threats, spy_intel, missions, rank_gap, alliance info, next cycle preview
         """
+        if not command_center_url:
+            command_center_url = f"{settings.site_url}/epoch"
         config = epoch_config or {}
         accent = get_sim_accent(simulation_slug)
 
@@ -419,7 +425,7 @@ class CycleNotificationService:
                 # Compute upkeep cost
                 member_count = len(ally_names) + 1  # +1 for self
                 alliance_upkeep_cost = member_count
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError):
                 logger.debug("Best-effort alliance data retrieval failed", exc_info=True)
 
         # ── Rank gap (B3) — pass raw data, template handles i18n ──
@@ -609,7 +615,7 @@ class CycleNotificationService:
         sent_count = 0
         for recipient in recipients:
             try:
-                cta_url = f"https://metaverse.center/epoch/{epoch_id}"
+                cta_url = f"{settings.site_url}/epoch/{epoch_id}"
                 briefing = await cls._build_player_briefing(
                     admin_supabase,
                     epoch_id,
@@ -633,7 +639,7 @@ class CycleNotificationService:
                 # Rate limit: 200ms between sends
                 await asyncio.sleep(_SEND_DELAY_MS / 1000)
 
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, OSError, KeyError, TypeError, ValueError):
                 logger.warning(
                     "Failed to send cycle notification",
                     extra={"recipient": recipient["email"]},
@@ -677,7 +683,7 @@ class CycleNotificationService:
         if not recipients:
             return 0
 
-        cta_url = f"https://metaverse.center/epoch/{epoch_id}"
+        cta_url = f"{settings.site_url}/epoch/{epoch_id}"
 
         # Phase-scaled subject urgency (C2)
         if new_phase == "reckoning":
@@ -711,7 +717,7 @@ class CycleNotificationService:
                 if await EmailService.send(recipient["email"], subject, html_body):
                     sent_count += 1
                 await asyncio.sleep(_SEND_DELAY_MS / 1000)
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, OSError, KeyError, TypeError, ValueError):
                 logger.warning(
                     "Failed to send phase change notification",
                     extra={"recipient": recipient["email"]},
@@ -756,7 +762,7 @@ class CycleNotificationService:
         # Get final leaderboard
         leaderboard = await ScoringService.get_final_standings(admin_supabase, epoch_id)
 
-        cta_url = f"https://metaverse.center/epoch/{epoch_id}"
+        cta_url = f"{settings.site_url}/epoch/{epoch_id}"
 
         sent_count = 0
         for recipient in recipients:
@@ -783,7 +789,7 @@ class CycleNotificationService:
                 if await EmailService.send(recipient["email"], subject, html_body):
                     sent_count += 1
                 await asyncio.sleep(_SEND_DELAY_MS / 1000)
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, OSError, KeyError, TypeError, ValueError):
                 logger.warning(
                     "Failed to send epoch completed notification",
                     extra={"recipient": recipient["email"]},

@@ -77,7 +77,7 @@ class HackerNewsScannerAdapter(SourceAdapter):
                         magnitude=None,
                         is_structured=False,
                     ))
-                except Exception:
+                except (httpx.HTTPError, KeyError, TypeError, ValueError):
                     logger.debug("Failed to fetch HN item %d", story_id)
 
         return results

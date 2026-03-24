@@ -3,6 +3,9 @@
 import logging
 from uuid import UUID
 
+import httpx
+from postgrest.exceptions import APIError as PostgrestAPIError
+
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -26,7 +29,7 @@ class AuditService:
             await AuditService.log_action(
                 supabase, simulation_id, user_id, entity_type, entity_id, action, details,
             )
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError):
             logger.warning("Audit log skipped (RLS): %s %s %s", entity_type, action, entity_id)
 
     @staticmethod

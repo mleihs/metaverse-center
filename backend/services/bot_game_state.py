@@ -9,6 +9,9 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 
+import httpx
+from postgrest.exceptions import APIError as PostgrestAPIError
+
 from backend.services.constants import SECURITY_LEVEL_MAP
 from supabase import AsyncClient as Client
 
@@ -302,7 +305,7 @@ class BotGameState:
                 .execute()
             )
             self.pending_proposals = proposals_resp.data or []
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError):
             logger.debug("Alliance proposals load failed", exc_info=True)
 
         if self.own_team_id:
@@ -316,7 +319,7 @@ class BotGameState:
                 )
                 if tension_resp.data:
                     self.own_team_tension = tension_resp.data.get("tension", 0)
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError):
                 logger.debug("Team tension load failed", exc_info=True)
 
     def _derive_allies(self) -> None:
@@ -348,7 +351,7 @@ class BotGameState:
                 self.own_avg_pressure = sum(
                     float(z.get("total_pressure", 0)) for z in self.own_zone_stability
                 ) / len(self.own_zone_stability)
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.debug("Zone stability load failed", exc_info=True)
 
         # Active resonances view (migration 011) — public, all players can see
@@ -365,7 +368,7 @@ class BotGameState:
             self.resonance_aligned_types, self.resonance_opposed_types = (
                 _derive_resonance_affinities(self.active_resonances)
             )
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.debug("Active resonances load failed", exc_info=True)
 
         # ── Heartbeat awareness ──
@@ -412,7 +415,7 @@ class BotGameState:
                 .execute()
             )
             self.own_attunements = att_resp.data or []
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.debug("Heartbeat state load failed (tables may not exist yet)")
 
     # ── Query helpers for personality logic ──────────────────

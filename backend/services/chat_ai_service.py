@@ -6,6 +6,9 @@ import asyncio
 import logging
 from uuid import UUID
 
+import httpx
+from postgrest.exceptions import APIError as PostgrestAPIError
+
 from backend.config import settings
 from backend.services.agent_memory_service import AgentMemoryService
 from backend.services.ai_usage_service import AIUsageService
@@ -123,7 +126,7 @@ class ChatAIService:
                     self._supabase, self._simulation_id, UUID(agent["id"]),
                     user_message, response_text,
                 )
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.exception("Background memory extraction failed for agent %s", agent["id"])
 
         asyncio.create_task(_safe_extract())

@@ -6,6 +6,9 @@ import logging
 from dataclasses import dataclass
 from uuid import UUID
 
+import httpx
+from postgrest.exceptions import APIError as PostgrestAPIError
+
 from backend.config import settings as platform_settings
 from backend.services.platform_api_keys import get_platform_api_key
 from backend.utils.encryption import decrypt
@@ -82,7 +85,7 @@ class ExternalServiceResolver:
                 platform_settings.supabase_service_role_key,
             )
             return self._admin_supabase
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, OSError):
             logger.debug("Could not create admin client for platform key lookup")
             return None
 

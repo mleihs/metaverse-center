@@ -22,6 +22,7 @@ from uuid import UUID
 import httpx
 import sentry_sdk
 import structlog
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.dependencies import get_admin_supabase
 from backend.services.external.instagram import (
@@ -88,7 +89,7 @@ class InstagramScheduler:
                     "iteration": cls._iteration_count,
                     "retry_in_s": interval,
                 })
-            except Exception as exc:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
                 logger.exception("Instagram scheduler loop error", extra={
                     "iteration": cls._iteration_count,
                 })
@@ -175,7 +176,7 @@ class InstagramScheduler:
             except (json.JSONDecodeError, TypeError):
                 pass
 
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.warning("Failed to load Instagram scheduler config, using defaults", extra={
                 "iteration": cls._iteration_count,
             })
@@ -314,7 +315,7 @@ class InstagramScheduler:
                         "error": str(exc)[:500],
                     })
                     sentry_sdk.capture_exception(exc)
-            except Exception as exc:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
                 await admin.table("instagram_posts").update({
                     "status": "failed",
                     "failure_reason": "Unexpected error during publishing",
@@ -394,7 +395,7 @@ class InstagramScheduler:
         if media_id:
             try:
                 permalink = await ig.get_media_permalink(media_id)
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.warning("Failed to fetch permalink for media", extra={
                     "post_id": post_id,
                     "media_id": media_id,
@@ -445,7 +446,7 @@ class InstagramScheduler:
                         "story_id": str(story_id),
                         "iteration": cls._iteration_count,
                     })
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.warning("Failed to compose story image", extra={
                     "story_id": str(story_id),
                     "iteration": cls._iteration_count,
@@ -561,7 +562,7 @@ class InstagramScheduler:
                         scope.set_tag("instagram_phase", "story_publish")
                         scope.set_context("story", {"story_id": story_id})
                         sentry_sdk.capture_exception(exc)
-            except Exception as exc:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
                 await admin.table("social_stories").update({
                     "status": "failed",
                     "failure_reason": "Unexpected error during story publishing",
@@ -641,7 +642,7 @@ class InstagramScheduler:
                     })
                 cls._last_token_refresh = now  # Don't retry immediately
 
-        except Exception as exc:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
             logger.warning("Token refresh request failed", extra={
                 "iteration": cls._iteration_count,
                 "token_status": "request_failed",
@@ -709,7 +710,7 @@ class InstagramScheduler:
                     "saves": metrics.get("saved", 0),
                     "iteration": cls._iteration_count,
                 })
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.warning("Failed to collect metrics for post", extra={
                     "post_id": post["id"],
                     "iteration": cls._iteration_count,

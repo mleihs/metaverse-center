@@ -10,6 +10,9 @@ import json
 import logging
 import time
 
+import httpx
+from postgrest.exceptions import APIError as PostgrestAPIError
+
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -83,7 +86,7 @@ async def _load_all(admin_supabase: Client) -> None:
             "Research domain cache loaded",
             extra={"cached_keys": len(new_cache)},
         )
-    except Exception:
+    except (PostgrestAPIError, httpx.HTTPError, json.JSONDecodeError, KeyError, TypeError):
         logger.warning("Failed to load research domain config from DB")
         _cache_loaded_at = time.monotonic()
 

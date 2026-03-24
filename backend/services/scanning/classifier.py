@@ -7,6 +7,8 @@ import logging
 import re
 from typing import Any
 
+import httpx
+
 from backend.services.external.openrouter import OpenRouterService
 from backend.services.scanning.base_adapter import ScanResult
 
@@ -146,7 +148,7 @@ async def classify_batch(
 
         return structured + classified
 
-    except Exception:
+    except (httpx.HTTPError, json.JSONDecodeError, KeyError, TypeError, ValueError):
         logger.exception("LLM batch classification failed")
         # Return all results unmodified on failure
         return structured + [r for _, r in unstructured]

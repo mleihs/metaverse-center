@@ -98,7 +98,7 @@ class GDELTAdapter(SourceAdapter):
                             magnitude=None,
                             is_structured=False,
                         ))
-                except Exception:
+                except (httpx.HTTPError, KeyError, TypeError, ValueError):
                     logger.warning("GDELT query failed for category", exc_info=True)
 
         return results

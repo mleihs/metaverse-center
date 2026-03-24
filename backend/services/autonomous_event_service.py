@@ -19,8 +19,10 @@ import json
 import logging
 from uuid import UUID
 
+import httpx
 import sentry_sdk
 import structlog
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.services.agent_mood_service import AgentMoodService
 from backend.services.echo_service import EchoService
@@ -394,7 +396,7 @@ class AutonomousEventService:
             repaired = repair_json_output(content)
             narrative = json.loads(repaired)
 
-        except Exception:
+        except (httpx.HTTPError, json.JSONDecodeError, KeyError, TypeError, ValueError):
             logger.warning("LLM narrative failed, using template", exc_info=True)
             narrative = cls._template_narrative(trigger, agent_names, zone_name)
 
@@ -456,7 +458,7 @@ class AutonomousEventService:
             result = await supabase.table("events").insert(record).execute()
             return result.data[0] if result.data else None
 
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.exception("Failed to insert autonomous event")
             sentry_sdk.capture_exception()
             return None
@@ -529,7 +531,7 @@ class AutonomousEventService:
                     },
                     on_conflict="source_agent_id,target_agent_id,relationship_type",
                 ).execute()
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError):
                 logger.warning("Relationship creation failed", exc_info=True)
 
         # Modify existing relationship (breakdown)
@@ -545,7 +547,7 @@ class AutonomousEventService:
                 ).eq(
                     "target_agent_id", str(agents[1]["id"])
                 ).execute()
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError):
                 logger.warning("Relationship modification failed", exc_info=True)
 
     # ── Bleed Integration ────────────────────────────────────────
@@ -581,7 +583,7 @@ class AutonomousEventService:
                 )
                 # Echoes will be created by the normal heartbeat
                 # echo resolution pipeline in the next tick
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.warning(
                 "Bleed evaluation failed for autonomous event",
                 exc_info=True,

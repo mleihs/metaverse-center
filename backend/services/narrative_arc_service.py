@@ -10,6 +10,9 @@ import logging
 from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
+import httpx
+from postgrest.exceptions import APIError as PostgrestAPIError
+
 from backend.models.resonance import RESONANCE_SIGNATURES
 from backend.services.heartbeat_entry_builder import make_heartbeat_entry
 from supabase import AsyncClient as Client
@@ -319,7 +322,7 @@ class NarrativeArcService:
             pairs = pairs_row[0]["setting_value"]
             if isinstance(pairs, str):
                 pairs = json.loads(pairs)
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, json.JSONDecodeError, KeyError, TypeError, ValueError):
             logger.warning("Failed to load convergence pairs config")
             return entries, detected
 
@@ -454,7 +457,7 @@ class NarrativeArcService:
                 conv_name, next_order,
                 extra={"simulation_id": str(sim_id), "convergence_name": conv_name},
             )
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError):
             logger.warning(
                 "Failed to create convergence lore for '%s'",
                 conv_name,
@@ -638,7 +641,7 @@ class NarrativeArcService:
                         "zones_scarred": len(seen_zones),
                     },
                 )
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.warning(
                 "Failed to scar zones for arc %s", arc.get("id"),
                 extra={"simulation_id": str(sim_id)},

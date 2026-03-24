@@ -6,6 +6,7 @@ import logging
 from typing import Any
 from uuid import UUID
 
+import httpx
 import sentry_sdk
 import structlog
 from pydantic_ai import Agent
@@ -275,7 +276,7 @@ class ForgeThemeService:
                     },
                 )
 
-        except Exception as exc:
+        except (httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
             logger.warning("Style prompt refinement AI call failed", exc_info=True)
             sentry_sdk.capture_exception(exc)
 
@@ -470,7 +471,7 @@ class ForgeThemeService:
                     },
                 )
 
-        except Exception as exc:
+        except (httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
             logger.warning("Prompt template generation failed", exc_info=True)
             sentry_sdk.capture_exception(exc)
 
@@ -558,7 +559,7 @@ different typography. Same world, radically different visual identity."""
                 extra={"simulation_id": str(simulation_id), "count": len(variants)},
             )
 
-        except Exception as exc:
+        except (httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
             sentry_sdk.capture_exception(exc)
             logger.exception("Darkroom variant generation failed")
             await ForgeFeatureService.fail_feature(

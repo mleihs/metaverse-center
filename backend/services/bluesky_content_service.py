@@ -13,8 +13,10 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
+import httpx
 import sentry_sdk
 from fastapi import HTTPException, status
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.services.external.bluesky import BlueskyService
 from supabase import AsyncClient as Client
@@ -353,7 +355,7 @@ class BlueskyContentService:
                 {"p_days": days},
             ).execute()
             return response.data if response.data else {}
-        except Exception as exc:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
             logger.warning(
                 "Bluesky analytics RPC failed — returning empty stats",
                 exc_info=True,

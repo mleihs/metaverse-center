@@ -228,27 +228,54 @@ def require_epoch_creator():
     return _check_creator
 
 
-def require_platform_admin():
-    """Dependency that checks the user is a platform admin (by email allowlist).
+# Cached set of platform admin user IDs (refreshed every 5 min)
+_platform_admin_ids: set[str] = set()
+_platform_admin_ids_expires = 0.0
 
-    # TODO: SECURITY — email-based admin checks are fragile.
-    # The JWT `email` claim comes from the auth provider and could be spoofed
-    # if the provider is misconfigured or if email verification is disabled.
-    # Migrate to a `platform_admins` table with user ID lookup:
-    #   1. Create `platform_admins` table with `user_id UUID PRIMARY KEY`.
-    #   2. Replace email check with a DB lookup by `user.id`.
-    #   3. Remove `PLATFORM_ADMIN_EMAILS` config entirely.
+
+async def _refresh_platform_admin_ids(admin_supabase: "Client") -> None:
+    """Refresh the in-memory cache of platform admin user IDs from DB."""
+    global _platform_admin_ids, _platform_admin_ids_expires  # noqa: PLW0603
+    resp = await (
+        admin_supabase.table("platform_admins")
+        .select("user_id")
+        .execute()
+    )
+    _platform_admin_ids = {r["user_id"] for r in (resp.data or [])}
+    _platform_admin_ids_expires = time.monotonic() + 300  # 5 min TTL
+
+
+def require_platform_admin():
+    """Dependency that checks the user is a platform admin.
+
+    Uses a 3-tier check (cheapest first):
+    1. In-memory email allowlist (O(1), zero I/O)
+    2. Cached DB admin IDs (O(1), refreshed every 5 min)
+    3. Live DB query (on cache miss, populates cache)
     """
 
     async def _check_admin(
         user: CurrentUser = Depends(get_current_user),
+        admin_supabase: Client = Depends(get_admin_supabase),
     ) -> CurrentUser:
-        if user.email not in PLATFORM_ADMIN_EMAILS:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Platform admin access required.",
-            )
-        return user
+        # Tier 1: email allowlist (zero cost, backward-compat)
+        if user.email in PLATFORM_ADMIN_EMAILS:
+            return user
+
+        # Tier 2: cached DB admin IDs
+        if str(user.id) in _platform_admin_ids:
+            return user
+
+        # Tier 3: refresh cache from DB (cold start or cache miss)
+        if time.monotonic() >= _platform_admin_ids_expires:
+            await _refresh_platform_admin_ids(admin_supabase)
+            if str(user.id) in _platform_admin_ids:
+                return user
+
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Platform admin access required.",
+        )
 
     return _check_admin
 
@@ -264,10 +291,15 @@ def require_owner_or_platform_admin():
         simulation_id: Annotated[UUID, Path()],
         user: CurrentUser = Depends(get_current_user),
         supabase: Client = Depends(get_supabase),
+        admin_supabase: Client = Depends(get_admin_supabase),
     ) -> tuple[CurrentUser, bool]:
-        # Platform admin bypasses membership check
-        if user.email in PLATFORM_ADMIN_EMAILS:
+        # Platform admin bypasses membership check (email → cache → DB)
+        if user.email in PLATFORM_ADMIN_EMAILS or str(user.id) in _platform_admin_ids:
             return user, True
+        if time.monotonic() >= _platform_admin_ids_expires:
+            await _refresh_platform_admin_ids(admin_supabase)
+            if str(user.id) in _platform_admin_ids:
+                return user, True
 
         # Otherwise must be an owner member
         response = await (

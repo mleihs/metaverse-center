@@ -5,7 +5,10 @@ from __future__ import annotations
 import logging
 from uuid import UUID
 
+import httpx
+import sentry_sdk
 from fastapi import HTTPException, status
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.models.forge import ForgeDraftCreate, ForgeDraftUpdate
 from backend.utils.encryption import encrypt
@@ -231,8 +234,9 @@ class ForgeDraftService:
                 "fn_get_wallet_summary", {"p_user_id": str(user_id)}
             ).execute()
             return resp.data or _default
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError) as exc:
             logger.exception("fn_get_wallet_summary RPC failed")
+            sentry_sdk.capture_exception(exc)
             raise HTTPException(
                 status_code=503,
                 detail="Unable to retrieve wallet data. Please try again later.",

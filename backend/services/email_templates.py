@@ -12,6 +12,8 @@ from __future__ import annotations
 import logging
 from collections import Counter
 
+from backend.config import settings
+
 logger = logging.getLogger(__name__)
 
 # ── Per-simulation accent colors ──────────────────────────────────────────
@@ -395,14 +397,14 @@ def _language_divider() -> str:
 def _footer_row(email_locale: str | None = None) -> str:
     """Render the standard footer with notification management link."""
     if email_locale == "de":
-        manage_link = f'<a href="https://metaverse.center/settings" style="color:{_TEXT_DARK};text-decoration:underline;">Benachrichtigungen verwalten</a>'
+        manage_link = f'<a href="{settings.site_url}/settings" style="color:{_TEXT_DARK};text-decoration:underline;">Benachrichtigungen verwalten</a>'
     elif email_locale == "en":
-        manage_link = f'<a href="https://metaverse.center/settings" style="color:{_TEXT_DARK};text-decoration:underline;">Manage notifications</a>'
+        manage_link = f'<a href="{settings.site_url}/settings" style="color:{_TEXT_DARK};text-decoration:underline;">Manage notifications</a>'
     else:
         manage_link = (
-            f'<a href="https://metaverse.center/settings" style="color:{_TEXT_DARK};text-decoration:underline;">Manage notifications</a>'
+            f'<a href="{settings.site_url}/settings" style="color:{_TEXT_DARK};text-decoration:underline;">Manage notifications</a>'
             f"&nbsp;&middot;&nbsp;"
-            f'<a href="https://metaverse.center/settings" style="color:{_TEXT_DARK};text-decoration:underline;">Benachrichtigungen verwalten</a>'
+            f'<a href="{settings.site_url}/settings" style="color:{_TEXT_DARK};text-decoration:underline;">Benachrichtigungen verwalten</a>'
         )
 
     footer_lang = email_locale if email_locale in ("en", "de") else "en"
@@ -1329,7 +1331,7 @@ def render_cycle_briefing(data: dict, *, email_locale: str | None = None) -> str
     epoch_name = _esc(data.get("epoch_name", "Unknown"))
     cycle_number = data.get("cycle_number", 0)
     raw_phase = data.get("epoch_status", "competition")
-    cta_url = data.get("command_center_url", "https://metaverse.center/epoch")
+    cta_url = data.get("command_center_url", f"{settings.site_url}/epoch")
     accent = data.get("accent_color", _AMBER)
     sim_slug = data.get("simulation_slug")
     langs = _resolve_langs(email_locale)
@@ -1998,12 +2000,14 @@ def render_clearance_request_admin_notification(
     *,
     user_email: str,
     message: str | None = None,
-    admin_panel_url: str = "https://metaverse.center/admin",
+    admin_panel_url: str = "",
 ) -> str:
     """Render admin notification email for a new clearance request.
 
     Single-language (EN only) — admin email is fixed.
     """
+    if not admin_panel_url:
+        admin_panel_url = f"{settings.site_url}/admin"
     accent = _AMBER
     safe_email = _esc(user_email)
     safe_message = _esc(message) if message else None

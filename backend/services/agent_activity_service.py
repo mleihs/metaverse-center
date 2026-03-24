@@ -22,8 +22,10 @@ from datetime import datetime
 from itertools import combinations
 from uuid import UUID
 
+import httpx
 import sentry_sdk
 import structlog
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.services.agent_mood_service import AgentMoodService
 from backend.services.agent_needs_service import AgentNeedsService
@@ -261,7 +263,7 @@ class AgentActivityService:
                     supabase, simulation_id, agent, activity, tick_id,
                 )
                 activities.append(executed)
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.exception(
                     "Activity selection failed for agent",
                     extra={"agent_id": agent["id"]},
@@ -653,7 +655,7 @@ class AgentActivityService:
                 "can_trigger_event": interaction.get("can_trigger_event"),
             }
 
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.exception(
                 "Social interaction failed",
                 extra={

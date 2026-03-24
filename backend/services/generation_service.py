@@ -7,6 +7,9 @@ import logging
 import re
 from uuid import UUID
 
+import httpx
+import sentry_sdk
+
 from backend.config import settings
 from backend.services.ai_usage_service import AIUsageService
 from backend.services.constants import PLATFORM_DEFAULT_MODELS
@@ -186,7 +189,7 @@ class GenerationService:
             description = result.get("content", "")
             if description:
                 return description
-        except Exception:
+        except (httpx.HTTPError, json.JSONDecodeError, KeyError, TypeError, ValueError):
             logger.debug("No banner_description template — using hardcoded prompt")
 
         # Fallback: hardcoded prompt (backwards-compatible)
@@ -290,7 +293,7 @@ class GenerationService:
             description = result.get("content", "")
             if description:
                 return description
-        except Exception:
+        except (httpx.HTTPError, json.JSONDecodeError, KeyError, TypeError, ValueError):
             logger.debug("No lore_image_description template — using fallback")
 
         # Fallback: compose from section content directly
@@ -672,8 +675,9 @@ class GenerationService:
             if ". " in line:
                 line = line.split(". ")[0] + "."
             return line[:120] if line else None
-        except Exception:
+        except (httpx.HTTPError, json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
             logger.warning("Story closing line generation failed", exc_info=True)
+            sentry_sdk.capture_exception(exc)
             return None
 
     # --- JSON parsing ---

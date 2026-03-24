@@ -10,7 +10,9 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
+import httpx
 from fastapi import HTTPException, status
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.models.settings import is_sensitive_key
 from backend.utils.encryption import decrypt, mask
@@ -132,6 +134,6 @@ class PlatformSettingsService:
                     except (ValueError, TypeError):
                         pass
             return result
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError):
             logger.warning("Failed to load platform settings, using defaults")
             return dict(DEFAULT_SETTINGS)

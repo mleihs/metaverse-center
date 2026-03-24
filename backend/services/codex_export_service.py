@@ -11,6 +11,7 @@ from uuid import UUID
 
 import httpx
 import structlog
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.config import settings
 from supabase import AsyncClient as Client
@@ -107,7 +108,7 @@ class CodexExportService:
                 download_url = await admin_supabase.storage.from_(
                     "simulation.assets"
                 ).get_public_url(f"{simulation_id}/exports/{filename}")
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OSError):
                 logger.exception("Storage upload failed for codex")
 
             # 5. Mark feature purchase completed
@@ -129,7 +130,7 @@ class CodexExportService:
                 },
             )
 
-        except Exception as exc:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OSError) as exc:
             logger.exception("Chronicle generation failed")
             await ForgeFeatureService.fail_feature(
                 admin_supabase, purchase_id, str(exc),
@@ -243,7 +244,7 @@ class CodexExportService:
                 download_url = await admin_supabase.storage.from_(
                     "simulation.assets"
                 ).get_public_url(storage_path)
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OSError):
                 logger.exception("Storage upload failed for hires archive")
 
             # 6. Mark completed
@@ -264,7 +265,7 @@ class CodexExportService:
                 },
             )
 
-        except Exception as exc:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OSError) as exc:
             logger.exception("Hi-res archive generation failed")
             await ForgeFeatureService.fail_feature(
                 admin_supabase, purchase_id, str(exc),
@@ -460,7 +461,7 @@ async def _download_with_fallback(
         resp = await client.get(primary_url)
         if resp.status_code == 200:
             return resp.content
-    except Exception:
+    except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OSError):
         logger.debug("Primary download failed: %s", primary_url)
 
     if fallback_url:
@@ -468,7 +469,7 @@ async def _download_with_fallback(
             resp = await client.get(fallback_url)
             if resp.status_code == 200:
                 return resp.content
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OSError):
             logger.debug("Fallback download failed: %s", fallback_url)
 
     return None

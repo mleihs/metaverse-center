@@ -11,6 +11,10 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
+import httpx
+import sentry_sdk
+from postgrest.exceptions import APIError as PostgrestAPIError
+
 from backend.dependencies import get_admin_supabase
 from backend.services.resonance_service import ResonanceService
 from supabase import AsyncClient as Client
@@ -47,13 +51,12 @@ class ResonanceScheduler:
             except asyncio.CancelledError:
                 logger.info("Resonance scheduler shutting down")
                 raise
-            except Exception as exc:
+            except (httpx.ConnectError, httpx.ConnectTimeout):
                 # Transient connectivity errors are expected during DB restarts
-                # — log at warning level to avoid Sentry noise.
-                if type(exc).__name__ in ("ConnectError", "ConnectTimeout"):
-                    logger.warning("Resonance scheduler: database unavailable, retrying in %ds", interval)
-                else:
-                    logger.exception("Resonance scheduler loop error")
+                logger.warning("Resonance scheduler: database unavailable, retrying in %ds", interval)
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
+                logger.exception("Resonance scheduler loop error")
+                sentry_sdk.capture_exception(exc)
             await asyncio.sleep(interval)
 
     @classmethod
@@ -82,7 +85,7 @@ class ResonanceScheduler:
                         interval = max(10, int(val))  # floor at 10s
                     except (ValueError, TypeError):
                         pass
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError):
             logger.warning("Failed to load resonance scheduler config, using defaults")
         return enabled, interval
 
@@ -119,7 +122,7 @@ class ResonanceScheduler:
                     len(impacts),
                     extra={"resonance_id": str(resonance_id), "impact_count": len(impacts)},
                 )
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.exception(
                     "Failed to auto-process resonance %s",
                     resonance_id,

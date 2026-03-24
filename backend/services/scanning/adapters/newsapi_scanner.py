@@ -5,6 +5,8 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 
+import httpx
+
 from backend.services.external.newsapi import NewsAPIService
 from backend.services.scanning.base_adapter import ScanResult, SourceAdapter
 from backend.services.scanning.registry import register_adapter
@@ -57,7 +59,7 @@ class NewsAPIScannerAdapter(SourceAdapter):
                         magnitude=None,
                         is_structured=False,
                     ))
-            except Exception:
+            except (httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.warning("NewsAPI country=%s fetch failed", country, exc_info=True)
 
         return results

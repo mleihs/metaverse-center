@@ -15,8 +15,10 @@ import logging
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
+import httpx
 import sentry_sdk
 import structlog
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.models.agent_autonomy import (
     MorningBriefingData,
@@ -366,7 +368,7 @@ class MorningBriefingService:
             data = json.loads(repaired)
             return data.get("narrative_en"), data.get("narrative_de")
 
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.warning("Briefing narrative generation failed", exc_info=True)
             sentry_sdk.capture_exception()
             return None, None

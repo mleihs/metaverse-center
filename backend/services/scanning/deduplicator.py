@@ -6,6 +6,9 @@ import logging
 import re
 from datetime import UTC, datetime, timedelta
 
+import httpx
+from postgrest.exceptions import APIError as PostgrestAPIError
+
 from backend.services.scanning.base_adapter import ScanResult
 from supabase import AsyncClient as Client
 
@@ -105,7 +108,7 @@ async def deduplicate(
             )
             for row in resp.data or []:
                 existing.add((row["source_name"], row["source_id"]))
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.warning("Failed to check scan log for %s", source_name)
 
     novel = [r for r in results if (r.source_name, r.source_id) not in existing]
@@ -144,7 +147,7 @@ async def deduplicate_against_resonances(
                 .execute()
             )
             recent_titles[cat] = [r["title"] for r in resp.data or []]
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.warning("Failed to load recent resonances for %s", cat)
 
     for result in results:
@@ -184,7 +187,7 @@ async def log_results(admin: Client, results: list[ScanResult]) -> None:
         await admin.table("news_scan_log").upsert(
             rows, on_conflict="source_name,source_id",
         ).execute()
-    except Exception:
+    except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
         logger.exception("Failed to log %d scan results", len(rows))
 
 
@@ -202,6 +205,6 @@ async def cleanup_old_logs(admin: Client, days: int = 30) -> int:
         if count:
             logger.info("Cleaned up %d old scan log entries", count)
         return count
-    except Exception:
+    except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
         logger.exception("Failed to clean up old scan logs")
         return 0

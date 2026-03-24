@@ -15,7 +15,9 @@ from __future__ import annotations
 import logging
 from uuid import UUID
 
+import httpx
 import sentry_sdk
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.models.epoch import OperativeDeploy
 from backend.services.alliance_service import AllianceService
@@ -64,12 +66,12 @@ class BotService:
                     supabase, admin_supabase, epoch_id, bot_p, cycle_number, config
                 )
                 results.append(result)
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
                 logger.exception(
                     "Bot execution failed",
                     extra={"participant_id": bot_p["id"], "epoch_id": epoch_id},
                 )
-                sentry_sdk.capture_exception()
+                sentry_sdk.capture_exception(exc)
                 results.append({
                     "participant_id": bot_p["id"],
                     "success": False,
@@ -139,12 +141,14 @@ class BotService:
                     UUID(fort_plan.zone_id),
                 )
                 fortified.append(result)
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError) as exc:
                 logger.warning(
-                    "Bot fortification failed",
+                    "Bot fortification failed: %s",
+                    exc,
                     extra={"zone_id": fort_plan.zone_id},
                     exc_info=True,
                 )
+                sentry_sdk.capture_exception(exc)
 
         # 3b. Execute deployments (via same OperativeService humans use)
         deployed = []
@@ -163,9 +167,10 @@ class BotService:
                     body,
                 )
                 deployed.append(mission)
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError) as exc:
                 logger.warning(
-                    "Bot deployment failed",
+                    "Bot deployment failed: %s",
+                    exc,
                     extra={
                         "operative_type": plan.operative_type,
                         "agent_id": plan.agent_id,
@@ -173,6 +178,7 @@ class BotService:
                     },
                     exc_info=True,
                 )
+                sentry_sdk.capture_exception(exc)
 
         # 4. Execute alliance actions
         alliance_results = await cls._execute_alliances(
@@ -193,13 +199,15 @@ class BotService:
                     extra={"bot_id": participant.get("simulation_id"),
                            "proposal_id": pv.proposal_id, "vote": pv.vote},
                 )
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError) as exc:
                 logger.warning(
-                    "Bot proposal vote failed",
+                    "Bot proposal vote failed: %s",
+                    exc,
                     extra={"bot_id": participant.get("simulation_id"),
                            "proposal_id": pv.proposal_id, "vote": pv.vote},
                     exc_info=True,
                 )
+                sentry_sdk.capture_exception(exc)
 
         # 5. Log decisions for transparency
         await cls._log_decisions(
@@ -211,7 +219,7 @@ class BotService:
             await BotChatService.maybe_send_message(
                 admin_supabase, epoch_id, participant, game_state, config
             )
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError):
             logger.debug("Bot chat generation failed for %s", participant["id"], exc_info=True)
 
         # 7. Set cycle_ready
@@ -275,7 +283,7 @@ class BotService:
                     await EpochService.leave_team(admin_supabase, UUID(epoch_id), UUID(sim_id))
                     results.append({"action": action.action})
 
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError):
                 logger.debug("Bot alliance action failed: %s", action.action, exc_info=True)
 
         return results
@@ -326,5 +334,5 @@ class BotService:
         }
         try:
             await admin_supabase.table("bot_decision_log").insert(log_entry).execute()
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError):
             logger.debug("Failed to log bot decision", exc_info=True)

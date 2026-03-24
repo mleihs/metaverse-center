@@ -21,10 +21,12 @@ import random
 from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
+import httpx
 import sentry_sdk
 import structlog
 from fastapi import HTTPException
 from fastapi import status as http_status
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.dependencies import get_admin_supabase
 from backend.services.agent_activity_service import AgentActivityService
@@ -84,14 +86,14 @@ class HeartbeatService:
             except asyncio.CancelledError:
                 logger.info("Heartbeat service shutting down")
                 raise
-            except Exception as exc:
-                if type(exc).__name__ in ("ConnectError", "ConnectTimeout"):
-                    logger.warning(
-                        "Heartbeat service: database unavailable, retrying in %ds",
-                        interval,
-                    )
-                else:
-                    logger.exception("Heartbeat service loop error")
+            except (httpx.ConnectError, httpx.ConnectTimeout):
+                logger.warning(
+                    "Heartbeat service: database unavailable, retrying in %ds",
+                    interval,
+                )
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
+                logger.exception("Heartbeat service loop error")
+                sentry_sdk.capture_exception(exc)
             # Check every 60s for due simulations (not the full interval)
             await asyncio.sleep(min(60, interval))
 
@@ -123,7 +125,7 @@ class HeartbeatService:
                         interval = max(7200, int(val))
                     except (ValueError, TypeError):
                         pass
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError):
             logger.warning("Failed to load heartbeat config, using defaults")
         return enabled, interval
 
@@ -174,7 +176,7 @@ class HeartbeatService:
             rows = _resp.data or []
             for row in rows:
                 overrides[row["setting_key"]] = row["setting_value"]
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError):
             logger.warning(
                 "Failed to load sim heartbeat overrides for %s", sim_id,
                 extra={"simulation_id": str(sim_id)},
@@ -265,7 +267,7 @@ class HeartbeatService:
                 "tick_number": tick_number,
                 "status": "processing",
             }).execute()
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError):
             # UNIQUE constraint violation → tick already processed (concurrent tick or retry)
             logger.warning(
                 "Heartbeat: tick %d already exists for %s, skipping",
@@ -293,7 +295,7 @@ class HeartbeatService:
             )
             if epoch_resp.data:
                 active_epoch_id = epoch_resp.data[0]["epoch_id"]
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError):
             logger.debug("Epoch lookup unavailable for heartbeat tagging")
 
         entries: list[dict] = []
@@ -513,7 +515,7 @@ class HeartbeatService:
                             },
                         ))
 
-                except Exception:
+                except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                     logger.exception("Agent autonomy phase failed")
                     sentry_sdk.capture_exception()
 
@@ -577,7 +579,7 @@ class HeartbeatService:
                 },
             )
 
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, json.JSONDecodeError, KeyError, TypeError, ValueError):
             logger.exception(
                 "Heartbeat: tick #%d failed for %s",
                 tick_number, sim_name,
@@ -632,7 +634,7 @@ class HeartbeatService:
             enc_key = (wallet_resp.data or {}).get("encrypted_openrouter_key")
             if enc_key:
                 return decrypt(enc_key), True
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError, OSError):
             logger.debug("BYOK key resolution failed for autonomy")
 
         return None, False
@@ -787,7 +789,7 @@ class HeartbeatService:
                 if scar_total > 0:
                     scar_mult = round(scar_total * scar_susceptibility, 4)
                     total_pressure = round(total_pressure * (1 + scar_mult), 4)
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.debug("Failed to load scar tissue for pressure computation")
 
         # Produce entry if pressure is significant
@@ -1188,7 +1190,7 @@ class HeartbeatService:
                         severity="warning",
                         metadata={"health": h, "label": label, "peacetime": True},
                     ))
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.debug("Failed to generate peacetime content from health data")
 
         # Fallback if no entries generated

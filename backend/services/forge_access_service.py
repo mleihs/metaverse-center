@@ -12,6 +12,7 @@ import asyncio
 import logging
 from uuid import UUID
 
+import httpx
 from fastapi import HTTPException, status
 from postgrest.exceptions import APIError
 
@@ -92,7 +93,7 @@ class ForgeAccessService:
                     html_body=html_body,
                 )
             logger.info("Admin clearance notification sent for %s to %d recipients", user_email, len(admin_emails))
-        except Exception:
+        except (OSError, httpx.HTTPError):
             logger.exception("Failed to send admin clearance notification")
 
     @classmethod
@@ -162,7 +163,7 @@ class ForgeAccessService:
                     "p_reviewer_id": str(reviewer_id),
                 },
             ).execute()
-        except Exception as e:
+        except (APIError, httpx.HTTPError) as e:
             detail = str(e)
             if "not found" in detail.lower() or "already reviewed" in detail.lower():
                 raise HTTPException(
@@ -205,7 +206,7 @@ class ForgeAccessService:
                 logger.warning("No email for user %s, skipping notification", result.get("user_id"))
                 return
 
-            forge_url = "https://metaverse.center/forge"
+            forge_url = f"{settings.site_url}/forge"
 
             if action == "approve":
                 subject_en = "CLASSIFIED // CLEARANCE GRANTED"
@@ -233,5 +234,5 @@ class ForgeAccessService:
                 html_body=html_body,
             )
             logger.info("Clearance %s email sent to %s", action, user_email)
-        except Exception:
+        except (OSError, httpx.HTTPError):
             logger.exception("Failed to send clearance email")

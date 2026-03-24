@@ -501,7 +501,7 @@ class BlueskyService:
         # Parse error body
         try:
             body = resp.json()
-        except Exception:
+        except (ValueError, KeyError):
             body = {}
 
         error_name = body.get("error", "")

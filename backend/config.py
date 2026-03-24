@@ -55,6 +55,7 @@ class Settings(BaseSettings):
 
     # App
     app_title: str = "Velgarien Platform"
+    site_url: str = Field(default="https://metaverse.center", alias="SITE_URL")
     debug: bool = False
     cors_origins: str = Field(default="http://localhost:5173", alias="BACKEND_CORS_ORIGINS")
 

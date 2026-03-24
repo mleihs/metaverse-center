@@ -10,7 +10,9 @@ import random
 from datetime import UTC, datetime
 from uuid import UUID
 
+import httpx
 from fastapi import HTTPException, status
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.services.base_service import serialize_for_json
 from backend.services.game_mechanics_service import GameMechanicsService
@@ -551,7 +553,7 @@ class EchoService:
 
         except HTTPException:
             raise
-        except Exception as e:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as e:
             logger.exception("Echo transformation failed for echo %s", echo_id)
             await cls.update_echo_status(
                 admin_supabase, echo_id, "failed",

@@ -91,5 +91,5 @@ async def notify_search_engines(slug: str) -> None:
             len(urls), resp.status_code,
             extra={"slug": slug},
         )
-    except Exception:
+    except (httpx.HTTPError, OSError):
         logger.warning("IndexNow ping failed", extra={"slug": slug}, exc_info=True)

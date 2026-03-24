@@ -21,6 +21,7 @@ from uuid import uuid4
 
 import httpx
 import sentry_sdk
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from supabase import AsyncClient as Client
 
@@ -575,7 +576,7 @@ class InstagramImageComposer:
             result.paste(img, (border_width, border_width), img)
             return result
 
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OSError):
             logger.warning("Portrait circle crop failed", exc_info=True)
             return None
 
@@ -1041,7 +1042,7 @@ class InstagramImageComposer:
                 bg = ImageEnhance.Brightness(bg).enhance(0.25)
                 bg = bg.filter(ImageFilter.GaussianBlur(radius=30))
                 img = bg.convert("RGBA")
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OSError):
                 logger.warning("Banner processing failed — using gradient fallback")
                 img = self._create_gradient(w, h, (*sim_color, 30), (0, 0, 0, 255))
         else:
@@ -1696,7 +1697,7 @@ class InstagramImageComposer:
                     self._render_cipher_margin(
                         img, cipher_hint, primary_rgb, width, height,
                     )
-                except Exception as cipher_exc:
+                except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OSError) as cipher_exc:
                     # Non-fatal — post continues without visual cipher
                     logger.warning(
                         "Steganographic cipher rendering failed",
@@ -1719,7 +1720,7 @@ class InstagramImageComposer:
             })
             return result
 
-        except Exception as exc:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OSError) as exc:
             logger.exception("Image composition failed", extra={
                 "stage": "compose_overlay",
                 "title": title[:60],
@@ -1874,7 +1875,7 @@ class InstagramImageComposer:
                 resp = await client.get(url)
                 resp.raise_for_status()
                 return resp.content
-        except Exception as exc:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OSError) as exc:
             logger.error("Image download failed", extra={
                 "source_url": url,
                 "stage": "download",
@@ -1893,7 +1894,7 @@ class InstagramImageComposer:
                 resp = await client.get(url)
                 resp.raise_for_status()
                 return resp.content
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OSError):
             logger.warning("Story asset download failed (non-fatal)", extra={
                 "source_url": url[:200],
                 "stage": "story_asset_download",

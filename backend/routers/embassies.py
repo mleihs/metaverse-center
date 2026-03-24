@@ -18,6 +18,7 @@ from backend.models.embassy import (
     EmbassyUpdate,
 )
 from backend.services.audit_service import AuditService
+from backend.services.connection_service import ConnectionService
 from backend.services.embassy_service import EmbassyService
 from supabase import AsyncClient as Client
 
@@ -105,6 +106,7 @@ async def create_embassy(
     await AuditService.log_action(
         supabase, simulation_id, user.id, "embassies", result["id"], "create"
     )
+    ConnectionService._map_data_cache.clear()
     return {"success": True, "data": result}
 
 
@@ -129,6 +131,7 @@ async def update_embassy(
     await AuditService.log_action(
         supabase, simulation_id, user.id, "embassies", embassy_id, "update"
     )
+    ConnectionService._map_data_cache.clear()
     return {"success": True, "data": result}
 
 
@@ -149,6 +152,7 @@ async def activate_embassy(
     await AuditService.log_action(
         supabase, simulation_id, user.id, "embassies", embassy_id, "update"
     )
+    ConnectionService._map_data_cache.clear()
     return {"success": True, "data": result}
 
 
@@ -169,6 +173,7 @@ async def suspend_embassy(
     await AuditService.log_action(
         supabase, simulation_id, user.id, "embassies", embassy_id, "update"
     )
+    ConnectionService._map_data_cache.clear()
     return {"success": True, "data": result}
 
 
@@ -189,4 +194,5 @@ async def dissolve_embassy(
     await AuditService.log_action(
         supabase, simulation_id, user.id, "embassies", embassy_id, "update"
     )
+    ConnectionService._map_data_cache.clear()
     return {"success": True, "data": result}

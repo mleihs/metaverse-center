@@ -6,6 +6,7 @@ import asyncio
 import logging
 from uuid import UUID
 
+import httpx
 from pydantic_ai import Agent
 
 from backend.config import settings
@@ -296,7 +297,7 @@ async def _run_auto_translate(
         translated = await TranslationService.translate_fields(
             to_translate, context=context
         )
-    except Exception:
+    except (httpx.HTTPError, KeyError, TypeError, ValueError):
         logger.exception("Auto-translation failed", extra={"entity_type": table, "entity_id": entity_id})
         return
 
@@ -316,7 +317,7 @@ async def _run_auto_translate(
             "Auto-translated fields",
             extra={"entity_type": table, "entity_id": entity_id, "entity_count": len(update_data)},
         )
-    except Exception:
+    except (httpx.HTTPError, KeyError, TypeError, ValueError):
         logger.exception("Failed to persist auto-translation", extra={"entity_type": table, "entity_id": entity_id})
 
 

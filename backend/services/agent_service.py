@@ -6,7 +6,9 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
+import httpx
 from fastapi import HTTPException, status
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.services.base_service import BaseService
 from backend.utils.search import apply_search_filter
@@ -249,7 +251,7 @@ class AgentService(BaseService):
                 .or_(f"simulation_a_id.eq.{sim_str},simulation_b_id.eq.{sim_str}")
                 .execute()
             )
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError):
             logger.warning("Failed to query embassies for ambassador enrichment", exc_info=True)
             return
 

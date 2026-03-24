@@ -17,6 +17,8 @@ import logging
 import time
 from dataclasses import dataclass, field
 
+import httpx
+
 from backend.config import settings
 
 logger = logging.getLogger(__name__)
@@ -159,7 +161,7 @@ class TavilySearchService:
                         "elapsed_ms": round(elapsed_ms, 1),
                     },
                 )
-            except Exception as exc:
+            except (httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
                 elapsed_ms = (time.monotonic() - t0) * 1000
                 last_error = exc
                 logger.warning(

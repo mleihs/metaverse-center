@@ -10,6 +10,8 @@ from __future__ import annotations
 import logging
 import secrets
 
+import httpx
+
 from backend.config import settings
 from backend.services.bot_game_state import BotGameState
 from backend.services.external.openrouter import OpenRouterService
@@ -367,7 +369,7 @@ class BotChatService:
                 max_tokens=100,
             )
             return response.strip() if response else None
-        except Exception:
+        except (httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.debug("LLM chat generation failed, falling back to template", exc_info=True)
             return cls._generate_template_message(personality, game_state)
 

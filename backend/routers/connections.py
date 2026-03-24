@@ -45,6 +45,7 @@ async def create_connection(
         admin_supabase, None, user.id, "simulation_connections", result.get("id"), "create",
         details={"source_id": str(body.source_id) if hasattr(body, "source_id") else None},
     )
+    ConnectionService._map_data_cache.clear()
     return {"success": True, "data": result}
 
 
@@ -63,6 +64,7 @@ async def update_connection(
     await AuditService.safe_log(
         admin_supabase, None, user.id, "simulation_connections", connection_id, "update",
     )
+    ConnectionService._map_data_cache.clear()
     return {"success": True, "data": result}
 
 
@@ -78,4 +80,5 @@ async def delete_connection(
     await AuditService.safe_log(
         admin_supabase, None, user.id, "simulation_connections", connection_id, "delete",
     )
+    ConnectionService._map_data_cache.clear()
     return {"success": True, "data": {"message": "Connection deleted."}}

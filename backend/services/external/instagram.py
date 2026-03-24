@@ -385,7 +385,7 @@ class InstagramService:
         try:
             await self.check_rate_limit()
             return True
-        except Exception:
+        except (InstagramAPIError, httpx.HTTPError, OSError):
             return False
 
     # ── Token Exchange ──────────────────────────────────────────────────
@@ -504,7 +504,7 @@ class InstagramService:
 
         try:
             body = resp.json()
-        except Exception as parse_exc:
+        except (ValueError, KeyError) as parse_exc:
             api_exc = InstagramAPIError(
                 f"Instagram API error {resp.status_code}: {resp.text[:300]}",
             )

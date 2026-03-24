@@ -15,6 +15,7 @@ from backend.dependencies import (
 from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.models.echo import EchoCreate, EchoResponse
 from backend.services.audit_service import AuditService
+from backend.services.connection_service import ConnectionService
 from backend.services.echo_service import EchoService
 from backend.services.event_service import EventService
 from backend.services.external.openrouter import OpenRouterError
@@ -131,6 +132,7 @@ async def trigger_echo(
     await AuditService.log_action(
         supabase, simulation_id, user.id, "event_echoes", result["id"], "create"
     )
+    ConnectionService._map_data_cache.clear()
     return {"success": True, "data": result}
 
 
@@ -180,6 +182,7 @@ async def approve_echo(
         await AuditService.log_action(
             supabase, simulation_id, user.id, "event_echoes", echo_id, "update"
         )
+        ConnectionService._map_data_cache.clear()
         return {"success": True, "data": result}
 
     except OpenRouterError as e:
@@ -214,4 +217,5 @@ async def reject_echo(
     await AuditService.log_action(
         supabase, simulation_id, user.id, "event_echoes", echo_id, "update"
     )
+    ConnectionService._map_data_cache.clear()
     return {"success": True, "data": result}

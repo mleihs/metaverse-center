@@ -5,6 +5,8 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 
+import httpx
+
 from backend.services.external.guardian import GuardianService
 from backend.services.scanning.base_adapter import ScanResult, SourceAdapter
 from backend.services.scanning.registry import register_adapter
@@ -60,7 +62,7 @@ class GuardianScannerAdapter(SourceAdapter):
                         magnitude=None,
                         is_structured=False,
                     ))
-            except Exception:
+            except (httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.warning("Guardian section %s fetch failed", section, exc_info=True)
 
         return results

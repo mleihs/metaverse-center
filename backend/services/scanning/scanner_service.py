@@ -11,6 +11,9 @@ import logging
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
+import httpx
+from postgrest.exceptions import APIError as PostgrestAPIError
+
 from backend.config import settings
 from backend.dependencies import get_admin_supabase
 from backend.models.resonance import ARCHETYPE_DESCRIPTIONS, CATEGORY_ARCHETYPE_MAP
@@ -60,7 +63,7 @@ class ScannerService:
             except asyncio.CancelledError:
                 logger.info("Substrate Scanner shutting down")
                 raise
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.exception("Scanner loop error")
             await asyncio.sleep(interval)
 
@@ -137,7 +140,7 @@ class ScannerService:
             api_key_rows = _resp.data or []
             config["api_keys"] = {r["setting_key"]: r["setting_value"] for r in api_key_rows}
 
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.warning("Failed to load scanner config, using defaults")
 
         return config
@@ -193,7 +196,7 @@ class ScannerService:
                 metrics["adapters"][name] = {"status": "ok", "fetched": len(results)}
                 metrics["total_fetched"] += len(results)
                 all_results.extend(results)
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.exception("Adapter %s fetch failed", name)
                 metrics["adapters"][name] = {"status": "error", "fetched": 0}
 
@@ -245,7 +248,7 @@ class ScannerService:
                 else:
                     await cls._stage_candidate(admin, result, config)
                     metrics["candidates_staged"] += 1
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.exception("Failed to create/stage result: %s", result.title[:80])
 
         # Cleanup old scan log entries
@@ -332,7 +335,7 @@ class ScannerService:
 
         try:
             await admin.table("news_scan_candidates").insert(row).execute()
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.exception("Failed to stage candidate: %s", result.title[:80])
 
     @classmethod
@@ -384,7 +387,7 @@ class ScannerService:
                 max_tokens=512,
             )
             return dispatch.strip()
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.warning("Bureau dispatch generation failed for: %s", result.title[:80])
             return None
 
@@ -598,7 +601,7 @@ class ScannerService:
                 if adapter.requires_api_key and adapter.api_key_setting:
                     adapter._api_key = api_keys.get(adapter.api_key_setting)
                 info["available"] = await adapter.is_available()
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 info["available"] = False
 
         # Get scan metrics

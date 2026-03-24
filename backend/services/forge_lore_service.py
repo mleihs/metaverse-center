@@ -7,8 +7,10 @@ from collections.abc import Callable
 from typing import Any
 from uuid import UUID
 
+import httpx
 import sentry_sdk
 import structlog
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.config import settings
 from backend.models.forge import ForgeLoreOutput, ForgeLoreTranslatedOutput
@@ -252,7 +254,7 @@ class ForgeLoreService:
                         "entity_name": s["title"],
                     },
                 )
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.exception(
                     "Lore section translation failed — skipping",
                     extra={
@@ -522,7 +524,7 @@ REQUIREMENTS:
                 translations = await ForgeLoreService.translate_lore(
                     sections, openrouter_key,
                 )
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.exception("Dossier translation failed")
 
             # 4. Persist with sort_order 100+ (after standard lore)
@@ -579,7 +581,7 @@ REQUIREMENTS:
                             admin_supabase, simulation_id, "lore",
                             lore_rows.data["id"], desc, "", None,
                         )
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.exception("Dossier image generation failed")
 
             # 6. Mark purchase completed
@@ -592,7 +594,7 @@ REQUIREMENTS:
                 extra={"simulation_id": str(simulation_id), "sections": len(sections)},
             )
 
-        except Exception as exc:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
             sentry_sdk.capture_exception(exc)
             logger.exception("Dossier generation failed")
             await ForgeFeatureService.fail_feature(

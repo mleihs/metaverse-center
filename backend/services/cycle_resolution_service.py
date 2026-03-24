@@ -5,8 +5,10 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from uuid import UUID
 
+import httpx
 import sentry_sdk
 from fastapi import HTTPException, status
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.models.epoch import EpochConfig
 from backend.services.battle_log_service import BattleLogService
@@ -200,7 +202,7 @@ class CycleResolutionService:
                     "Alliance upkeep step complete",
                     extra={"epoch_id": str(epoch_id), "teams": len(upkeep_teams)},
                 )
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError):
             logger.warning("Alliance upkeep deduction failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
             sentry_sdk.capture_exception()
 
@@ -209,7 +211,7 @@ class CycleResolutionService:
             expired = await AllianceService.expire_proposals(db, epoch_id, cycle_number)
             if expired:
                 logger.info("Alliance proposals expired", extra={"epoch_id": str(epoch_id), "count": expired})
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError):
             logger.warning("Alliance proposal expiry failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
             sentry_sdk.capture_exception()
 
@@ -223,9 +225,9 @@ class CycleResolutionService:
                     await BattleLogService.log_mission_result(
                         db, epoch_id, cycle_number, mission
                     )
-                except Exception:
+                except (PostgrestAPIError, httpx.HTTPError):
                     logger.debug("Battle log write failed for mission result", exc_info=True)
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError):
             logger.warning("Mission resolution failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
             sentry_sdk.capture_exception()
 
@@ -268,7 +270,7 @@ class CycleResolutionService:
                                 {"security_level": new_level}
                             ).eq("id", fort["zone_id"]).execute()
                     await db.table("zone_fortifications").delete().eq("id", fort["id"]).execute()
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError):
             logger.warning("Fortification expiry failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
             sentry_sdk.capture_exception()
 
@@ -281,14 +283,14 @@ class CycleResolutionService:
                 cycle_number=cycle_number,
                 config=config,
             )
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.warning("Bot cycle execution failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
             sentry_sdk.capture_exception()
 
         # Compute scores after missions resolve (best-effort)
         try:
             await ScoringService.compute_cycle_scores(supabase, epoch_id, cycle_number)
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError):
             logger.warning(
                 "Scoring failed", extra={"epoch_id": str(epoch_id), "cycle_number": cycle_number}, exc_info=True
             )
@@ -303,7 +305,7 @@ class CycleResolutionService:
                     "epoch_id": str(epoch_id), "dissolved_count": len(dissolved),
                     "teams": [r.get("team_name") for r in dissolved],
                 })
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError):
             logger.warning("Alliance tension computation failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
             sentry_sdk.capture_exception()
 
@@ -314,14 +316,14 @@ class CycleResolutionService:
                 str(epoch_id),
                 cycle_number,
             )
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, OSError, KeyError, ValueError):
             logger.warning("Cycle notification failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
             sentry_sdk.capture_exception()
 
         # Clear team_ids for dissolved alliances (AFTER notifications have read them)
         try:
             await AllianceService.clear_dissolved_team_ids(db, epoch_id)
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError):
             logger.warning("Dissolved team cleanup failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
             sentry_sdk.capture_exception()
 
@@ -471,7 +473,7 @@ class CycleResolutionService:
                         await CycleNotificationService.send_phase_change_notifications(
                             admin_supabase or supabase, str(epoch_id), current_status, new_status,
                         )
-                except Exception:
+                except (PostgrestAPIError, httpx.HTTPError, OSError, KeyError, ValueError):
                     logger.warning("Auto-phase notification failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
                     sentry_sdk.capture_exception()
 
