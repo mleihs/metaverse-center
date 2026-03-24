@@ -41,7 +41,7 @@ tags: [index, catalog, documentation]
 | [Feature Catalog](references/feature-catalog.md) | 3.0 | 2026-03-17 | de | active |
 | [Frontend Components](references/frontend-components.md) | 3.1 | 2026-03-17 | de | active |
 
-## Guides (12)
+## Guides (13)
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
@@ -54,6 +54,7 @@ tags: [index, catalog, documentation]
 | [Epoch Playtest Methodology](guides/playtest-methodology.md) | 1.0 | 2026-03-09 | en | active |
 | [Public-First Architecture — Implementation Reference](guides/public-access.md) | 1.2 | 2026-03-14 | en | active |
 | [SEO, GA4 & Deep Linking Implementation](guides/seo-implementation.md) | 1.1 | — | en | active |
+| [Sentry CI/CD Integration](guides/sentry-cicd-integration.md) | 1.0 | 2026-03-24 | en | active |
 | [Simulation Blueprint](guides/simulation-blueprint.md) | 1.0 | 2026-03-07 | de | active |
 | [Simulation Creation Guide](guides/simulation-creation.md) | 1.0 | — | en | active |
 | [Testing Strategy](guides/testing-strategy.md) | 2.3 | 2026-03-09 | de | active |

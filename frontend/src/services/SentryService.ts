@@ -9,6 +9,7 @@
 import * as Sentry from '@sentry/browser';
 
 const DSN = import.meta.env.VITE_SENTRY_DSN as string | undefined;
+const RELEASE = import.meta.env.VITE_SENTRY_RELEASE as string | undefined;
 
 let _initialized = false;
 
@@ -18,6 +19,7 @@ export function initSentry(): void {
   Sentry.init({
     dsn: DSN,
     environment: import.meta.env.MODE,
+    release: RELEASE,
     // Keep sample rate low — we only care about errors, not transactions
     tracesSampleRate: 0,
     // Don't send PII (GDPR safe)

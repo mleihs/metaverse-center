@@ -181,6 +181,35 @@ curl -s https://metaverse.center/api/v1/health       # Health check
 Check Railway Dashboard for billing alerts. `railway redeploy --yes` will also fail
 with "We've paused free/trial deploys" in this case.
 
+## Post-Deploy Monitoring
+
+After every deploy, errors are automatically tagged with the git commit SHA via Sentry release tracking. Two automated systems verify deploy health:
+
+### Automated (GitHub Actions)
+
+The **Post-Deploy Health Check** workflow (`.github/workflows/post-deploy-check.yml`) runs automatically after CI completes on `main`:
+1. Polls `/health` endpoint until the new deploy is live (up to 10 min)
+2. Waits 5 minutes for errors to accumulate
+3. Queries Sentry API for new unresolved issues in this release
+4. Reports: >5 issues = red check, 1-5 = yellow warning, 0 = green
+
+### Manual Verification
+
+```bash
+# Check recent Sentry errors for this release
+export SENTRY_AUTH_TOKEN="sntryu_..."
+SHA=$(git rev-parse HEAD)
+curl -s "https://sentry.io/api/0/projects/ing-mag-matthias-leihs-bsc/metaverse_center/issues/?query=first-release:$SHA%20is:unresolved&statsPeriod=24h" \
+  -H "Authorization: Bearer $SENTRY_AUTH_TOKEN" | python3 -c "
+import sys, json
+issues = json.load(sys.stdin)
+print(f'{len(issues)} new issues')
+for i in issues: print(f'  - {i[\"title\"]}')
+"
+```
+
+For full architecture details, see [Sentry CI/CD Integration Guide](sentry-cicd-integration.md).
+
 ## Key Gotchas (Quick Reference)
 
 1. **MCP is local only** — `mcp__supabase__*` hits `127.0.0.1:54321`, never production

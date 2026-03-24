@@ -45,6 +45,7 @@
 - [Design Tokens Architecture](guides/design-tokens.md)
 - [Forge Mobile UX Plan](guides/forge-mobile-ux.md)
 - [Pillow Story Template Techniques](guides/pillow-story-templates.md)
+- [Sentry CI/CD Integration](guides/sentry-cicd-integration.md)
 
 ## Explanations
 - [The Velgarien Multiverse — Game Design Proposal](explanations/concept-lore.md)

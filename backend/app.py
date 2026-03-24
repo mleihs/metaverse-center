@@ -3,6 +3,7 @@ from backend.logging_config import setup_logging
 setup_logging()
 
 import logging
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -23,6 +24,7 @@ if app_settings.sentry_dsn and app_settings.environment not in ("development", "
     sentry_sdk.init(
         dsn=app_settings.sentry_dsn,
         environment=app_settings.sentry_environment,
+        release=os.environ.get("SENTRY_RELEASE"),
         traces_sample_rate=app_settings.sentry_traces_sample_rate,
         send_default_pii=False,  # GDPR safe
         enable_tracing=True,

@@ -91,6 +91,15 @@ Write operations require:
 - Never use `httpx`/`requests` directly for user-provided URLs. Use `backend/utils/safe_fetch.py` for SSRF protection.
 - Never implement fetch-compute-update patterns in Python for concurrent-access data. Use atomic Postgres RPCs with compare-and-swap logic (see ADR-007, migration 148).
 
+### Observability & Error Tracking
+
+- Source maps are uploaded during Docker build via `@sentry/vite-plugin` in `frontend/vite.config.ts`. Never rebuild the frontend separately for Sentry — this creates a dual-build mismatch where source maps don't correspond to production chunks.
+- `SENTRY_AUTH_TOKEN` is a Stage 1 Docker ARG only. It must never appear in the runtime image (Stage 3) or be committed to the repository.
+- Release tagging: backend reads `os.environ.get("SENTRY_RELEASE")`, frontend reads `import.meta.env.VITE_SENTRY_RELEASE`. Never hardcode release versions.
+- `development` and `test` environments are excluded from Sentry (`backend/app.py` checks `app_settings.environment`).
+- All `capture_exception()` calls should include contextual tags (service name, `simulation_id` where applicable) via `sentry_sdk.push_scope()`.
+- See `docs/guides/sentry-cicd-integration.md` for full architecture.
+
 ---
 
 ## Frontend Rules

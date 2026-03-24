@@ -1,0 +1,66 @@
+name: Post-Deploy Health Check
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  post-deploy-check:
+    name: Verify Production Deploy
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    env:
+      PRODUCTION_URL: ${{ secrets.PRODUCTION_URL }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+    steps:
+      - name: Wait for Railway deploy to go live
+        run: |
+          echo "Polling $PRODUCTION_URL/health ..."
+          for i in $(seq 1 20); do
+            STATUS=$(curl -s -o /dev/null -w '%{http_code}' "$PRODUCTION_URL/health" || true)
+            if [ "$STATUS" = "200" ]; then
+              echo "Production is healthy (attempt $i)"
+              exit 0
+            fi
+            echo "Attempt $i: status=$STATUS — retrying in 30s"
+            sleep 30
+          done
+          echo "::error::Production health check timed out after 10 minutes"
+          exit 1
+
+      - name: Wait for errors to accumulate
+        run: sleep 300
+
+      - name: Check Sentry for new issues in this release
+        run: |
+          SHA="${{ github.event.workflow_run.head_sha }}"
+          echo "Checking Sentry for issues first seen in release $SHA ..."
+
+          HTTP_CODE=$(curl -s -o /tmp/sentry_response.json -w '%{http_code}' \
+            -H "Authorization: Bearer $SENTRY_AUTH_TOKEN" \
+            "https://sentry.io/api/0/projects/$SENTRY_ORG/$SENTRY_PROJECT/issues/?query=first-release:$SHA%20is:unresolved&statsPeriod=24h")
+
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::warning::Sentry API returned HTTP $HTTP_CODE — skipping issue check"
+            cat /tmp/sentry_response.json
+            exit 0
+          fi
+
+          COUNT=$(jq 'if type == "array" then length else 0 end' /tmp/sentry_response.json)
+
+          echo "New unresolved issues: $COUNT"
+
+          if [ "$COUNT" -gt 5 ]; then
+            echo "::error::$COUNT new Sentry issues detected in release $SHA — possible regression"
+            jq '.[].title' /tmp/sentry_response.json
+            exit 1
+          elif [ "$COUNT" -gt 0 ]; then
+            echo "::warning::$COUNT new Sentry issue(s) detected in release $SHA — review recommended"
+            jq '.[].title' /tmp/sentry_response.json
+          else
+            echo "No new issues — deploy is clean"
+          fi
