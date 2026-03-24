@@ -5,7 +5,16 @@
  */
 
 import type { EChartsOption } from 'echarts';
-import * as echarts from 'echarts';
+import * as echarts from 'echarts/core';
+import { BarChart, CustomChart, HeatmapChart, LineChart, RadarChart } from 'echarts/charts';
+import {
+  GridComponent,
+  LegendComponent,
+  RadarComponent,
+  TooltipComponent,
+  VisualMapComponent,
+} from 'echarts/components';
+import { CanvasRenderer } from 'echarts/renderers';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 
@@ -46,6 +55,12 @@ const TACTICAL_THEME: Record<string, unknown> = {
     textStyle: { color: '#e2e8f0' },
   },
 };
+
+echarts.use([
+  BarChart, LineChart, HeatmapChart, RadarChart, CustomChart,
+  GridComponent, LegendComponent, TooltipComponent, VisualMapComponent, RadarComponent,
+  CanvasRenderer,
+]);
 
 echarts.registerTheme('tactical', TACTICAL_THEME);
 
