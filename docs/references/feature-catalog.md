@@ -116,7 +116,7 @@ Features die auf Plattform-Ebene existieren, unabhängig von einzelnen Simulatio
 
 | # | Feature | Status | Beschreibung |
 |---|---------|--------|-------------|
-| P20 | **Interaktive Analyse-Charts** | ✅ IMPL | Apache ECharts 6.0 Integration. `EchartsChart` Lit-Wrapper mit `tactical` Dark-Theme. 4 Charts: Radar (Simulations-Profile), Heatmap (Head-to-Head 2P-Duelle), Grouped Bar mit Wilson 95% CI-Whiskers (Strategie-Tiers), Multi-Line (Win-Rate nach Spieleranzahl). IntersectionObserver Scroll-Reveal mit "CLASSIFIED" / "INTEL GRADE" Eck-Bracket-Dekorativen Headers. 200-Game Epoch-Simulations-Datenbasis. |
+| P20 | **Interaktive Analyse-Charts** | ✅ IMPL | Apache ECharts 6.0 Integration (tree-shaken: BarChart, LineChart, HeatmapChart, RadarChart, CustomChart + CanvasRenderer). `EchartsChart` Lit-Wrapper mit `tactical` Dark-Theme. 4 Charts: Radar (Simulations-Profile), Heatmap (Head-to-Head 2P-Duelle), Grouped Bar mit Wilson 95% CI-Whiskers (Strategie-Tiers), Multi-Line (Win-Rate nach Spieleranzahl). IntersectionObserver Scroll-Reveal mit "CLASSIFIED" / "INTEL GRADE" Eck-Bracket-Dekorativen Headers. 200-Game Epoch-Simulations-Datenbasis. Lazy-loaded als separater Chunk (607 KB) nur auf /how-to-play. |
 
 #### A12. Landing Page & Public Showcase
 

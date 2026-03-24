@@ -1,8 +1,8 @@
 ---
 title: "Frontend Components"
 id: frontend-components
-version: "3.2"
-date: 2026-03-17
+version: "3.3"
+date: 2026-03-24
 lang: de
 type: reference
 status: active
@@ -12,6 +12,7 @@ tags: [frontend, components, lit, web-components]
 # 07 - Frontend Components: Komponenten + Simulation-Settings-UI
 
 **Änderung v1.1:** Zod-Validierung, @lit-labs/router, Biome-Tooling ergänzt
+**Änderung v3.3:** Route-basiertes Lazy Loading, ECharts Tree-Shaking, Bundle-Splitting Architektur
 
 ---
 
@@ -22,7 +23,7 @@ tags: [frontend, components, lit, web-components]
 **155 component files** across 21 subdirectories. **129 @customElement** components. **22 shared components + 10 CSS modules + 1 base class.**
 
 ```
-App (Root)
+App (Root)                           ⚡ = lazy-loaded via route enter()
 ├── PlatformHeader
 │   ├── HeaderCluster (reusable hover-to-open dropdown: OPS, INTEL, SYS)
 │   ├── SimulationSwitcher (◆ shard picker: My Worlds / Community via memberSimulationIds, theme badges, stats)
@@ -45,7 +46,7 @@ App (Root)
 │   ├── LoginView
 │   ├── LoginPanel (Slide-from-Right)
 │   └── RegisterView
-├── LandingPage (/ unauthenticated)
+├── LandingPage (/ unauthenticated, always-loaded for SEO)
 │   ├── Hero (signal decode animation, CTA)
 │   ├── Features (3-column capability showcase with Supabase Storage images)
 │   ├── WorldsPreview (monitor-card grid, responsive: 3→5→7 worlds at default/1440p/4K)
@@ -60,17 +61,17 @@ App (Root)
 │   ├── LiveData (platform stats counters)
 │   ├── HowItWorks (3-step process flow)
 │   └── CtaFooter (terminal-framed conversion CTA)
-├── WorldsGallery (/worlds)
+├── WorldsGallery (/worlds) ⚡
 │   ├── Search + Pagination
 │   └── World cards with theme-color portal bleed
-├── ChronicleFeed (/chronicles)
+├── ChronicleFeed (/chronicles) ⚡
 │   ├── Cross-simulation chronicle aggregation
 │   └── Pagination + search
-└── CartographerMap (/multiverse)
+└── CartographerMap (/multiverse) ⚡
     ├── MapGraph (2D SVG force-directed graph, default)
     │   ├── MapNode (circle + banner + label)
     │   └── MapEdge (bezier + flow animation)
-    ├── MapGraph3D (3D WebGL via 3d-force-graph + Three.js, lazy-loaded)
+    ├── MapGraph3D (3D WebGL via 3d-force-graph + Three.js, lazy-loaded on 3D toggle)
     │   └── map-three-render (Three.js node/edge factories)
     ├── MapTooltip (hover info)
     ├── MapConnectionPanel (edge detail, extends VelgSidePanel)
@@ -85,11 +86,11 @@ App (Root)
 ### Simulation-Level
 
 ```
-SimulationShell (Layout mit Navigation + Breadcrumb Simulation-Switcher)
+SimulationShell (Layout mit Navigation + Breadcrumb Simulation-Switcher, always-loaded)
 ├── SimulationHeader
 │   ├── Navigation (Tabs/Sidebar)
 │   └── SimulationInfo (Name, Theme)
-├── AgentsView
+├── AgentsView ⚡
 │   ├── SharedFilterBar
 │   ├── Lineup Overview Strip (aptitude bars per agent, horizontal scroll)
 │   ├── AgentCard
@@ -162,7 +163,7 @@ SimulationShell (Layout mit Navigation + Breadcrumb Simulation-Switcher)
 │   ├── MapLayerToggle (4 switchable layers: infrastructure, bleed, military, history)
 │   └── MapAnnotationTool (toggle-based annotation system)
 ├── SvgFilters (shared SVG filter definitions for visual effects)
-├── EpochCommandCenter (Competitive PvP — orchestrator, delegates to subcomponents)
+├── EpochCommandCenter ⚡ (Competitive PvP — orchestrator, delegates to subcomponents)
 │   ├── EpochOpsBoard (dossier cards + COMMS sidebar, dispatches select/join/create events)
 │   ├── EpochOverviewTab (overview + mission render + fortify zone, dispatches deploy/counter/recall/fortify events)
 │   ├── EpochIntelDossierTab (per-opponent intel cards from spy battle log: zone security, guardians, fortifications)
@@ -210,7 +211,7 @@ Shared (wiederverwendbar ueber alle Views)
 │   ├── VelgIconButton               30px icon action button
 │   ├── VelgSectionHeader            Section titles, 2 variants
 │   ├── VelgAptitudeBars             Operative aptitude bars (3 sizes: sm/md/lg, editable mode, highlight, budget tracking)
-│   ├── EchartsChart                 Apache ECharts 6.0 wrapper, custom tactical dark theme, IntersectionObserver scroll-reveal, auto-resize
+│   ├── EchartsChart                 Apache ECharts 6.0 wrapper (tree-shaken: 5 charts + 5 components + CanvasRenderer), custom tactical dark theme, IntersectionObserver scroll-reveal, auto-resize. Lazy-loaded via HowToPlayView connectedCallback.
 │   ├── ErrorState                   Einheitliches Error-Pattern
 │   ├── LoadingState                 Einheitliches Loading-Pattern
 │   ├── EmptyState                   "Keine Daten" Anzeige mit optionalem Action-Button

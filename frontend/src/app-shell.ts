@@ -14,42 +14,23 @@ import { seoService } from './services/SeoService.js';
 import { authService } from './services/supabase/SupabaseAuthService.js';
 import type { Simulation } from './types/index.js';
 
+import { lazyRoute } from './utils/lazy-route.js';
+import { getSimViewImport } from './utils/sim-view-imports.js';
+
+// Always-loaded: auth, layout, overlays, SEO-critical landing
 import './components/auth/LoginView.js';
 import './components/auth/LoginPanel.js';
 import './components/auth/RegisterView.js';
 import './components/platform/PlatformHeader.js';
 import './components/platform/SimulationsDashboard.js';
 import './components/layout/SimulationShell.js';
-import './components/agents/AgentsView.js';
-import './components/buildings/BuildingsView.js';
-import './components/events/EventsView.js';
-import './components/chat/ChatView.js';
-import './components/settings/SettingsView.js';
-import './components/social/SocialTrendsView.js';
-import './components/social/SocialMediaView.js';
-import './components/social/CampaignDashboard.js';
-import './components/locations/LocationsView.js';
 import './components/platform/InvitationAcceptView.js';
 import './components/platform/CreateSimulationWizard.js';
 import './components/platform/UserProfileView.js';
-import './components/lore/SimulationLoreView.js';
-import './components/health/SimulationHealthView.js';
-import './components/multiverse/CartographerMap.js';
-import './components/epoch/EpochCommandCenter.js';
-import './components/epoch/EpochInviteAcceptView.js';
-import './components/how-to-play/HowToPlayView.js';
-import './components/admin/AdminPanel.js';
-import './components/forge/VelgForgeWizard.js';
-import './components/chronicle/ChronicleView.js';
-import './components/heartbeat/SimulationPulse.js';
 import './components/shared/CookieConsent.js';
 import './components/shared/GuestBanner.js';
 import './components/landing/LandingPage.js';
-import './components/landing/WorldsGallery.js';
-import './components/landing/ChronicleFeed.js';
 import './components/onboarding/OnboardingWizard.js';
-import './components/lore/BureauArchives.js';
-import './components/bureau/BureauDispatchView.js';
 import './components/content/ContentPageView.js';
 
 @localized()
@@ -124,6 +105,23 @@ export class VelgApp extends LitElement {
       font-size: var(--text-base);
       color: var(--color-text-secondary);
     }
+
+    .route-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--color-primary);
+      z-index: 10000;
+      animation: route-slide 1.2s ease-in-out infinite;
+    }
+
+    @keyframes route-slide {
+      0% { transform: translateX(-100%); }
+      50% { transform: translateX(0); }
+      100% { transform: translateX(100%); }
+    }
   `;
 
   private _router = new Router(
@@ -184,6 +182,7 @@ export class VelgApp extends LitElement {
         render: () => html`<velg-cartographer-map></velg-cartographer-map>`,
         enter: async () => {
           await this._authReady;
+          if (!await this._lazy(() => import('./components/multiverse/CartographerMap.js'))) return false;
           seoService.setTitle(['Multiverse Map']);
           seoService.setDescription(
             'Explore the multiverse map — view active simulations, connections, and live battle statistics.',
@@ -202,6 +201,7 @@ export class VelgApp extends LitElement {
         render: () => html`<velg-epoch-command-center></velg-epoch-command-center>`,
         enter: async () => {
           await this._authReady;
+          if (!await this._lazy(() => import('./components/epoch/EpochCommandCenter.js'))) return false;
           seoService.setTitle(['Epoch Command Center']);
           seoService.setCanonical('/epoch');
           seoService.setBreadcrumbs([
@@ -217,6 +217,7 @@ export class VelgApp extends LitElement {
         render: () => html`<velg-epoch-invite-accept-view></velg-epoch-invite-accept-view>`,
         enter: async () => {
           await this._authReady;
+          if (!await this._lazy(() => import('./components/epoch/EpochInviteAcceptView.js'))) return false;
           seoService.setTitle(['Epoch Summons']);
           seoService.setDescription(
             'Accept an epoch invitation — join competitive PvP operations and deploy your simulation.',
@@ -236,6 +237,7 @@ export class VelgApp extends LitElement {
             this._router.goto('/dashboard');
             return false;
           }
+          if (!await this._lazy(() => import('./components/forge/VelgForgeWizard.js'))) return false;
           seoService.setTitle(['The Simulation Forge']);
           seoService.setDescription(
             'Create new simulations with the Simulation Forge — design worlds, set parameters, and launch your game.',
@@ -250,6 +252,7 @@ export class VelgApp extends LitElement {
         render: () => html`<velg-how-to-play></velg-how-to-play>`,
         enter: async () => {
           await this._authReady;
+          if (!await this._lazy(() => import('./components/how-to-play/HowToPlayView.js'))) return false;
           seoService.setTitle(['How to Play']);
           seoService.setCanonical('/how-to-play');
           seoService.setBreadcrumbs([
@@ -265,6 +268,7 @@ export class VelgApp extends LitElement {
         render: () => html`<velg-bureau-archives></velg-bureau-archives>`,
         enter: async () => {
           await this._authReady;
+          if (!await this._lazy(() => import('./components/lore/BureauArchives.js'))) return false;
           seoService.setTitle(['Bureau Archives']);
           seoService.setDescription(
             'Declassified archives of the Bureau of Impossible Geography — the complete mythology of the Fracture, the Bleed, and the Convergence.',
@@ -283,6 +287,7 @@ export class VelgApp extends LitElement {
         render: () => html`<velg-bureau-dispatch-terminal></velg-bureau-dispatch-terminal>`,
         enter: async () => {
           await this._authReady;
+          if (!await this._lazy(() => import('./components/bureau/BureauDispatchView.js'))) return false;
           seoService.setTitle(['Bureau Dispatch Terminal']);
           seoService.setDescription(
             'Decode classified Bureau transmissions. Enter your cipher code to unlock declassified dispatches.',
@@ -349,6 +354,7 @@ export class VelgApp extends LitElement {
             this._router.goto('/dashboard');
             return false;
           }
+          if (!await this._lazy(() => import('./components/admin/AdminPanel.js'))) return false;
           seoService.setTitle(['Admin']);
           seoService.setDescription(
             'Platform administration — manage users, simulations, settings, and system health.',
@@ -363,70 +369,70 @@ export class VelgApp extends LitElement {
         path: '/simulations/:id/lore/:entitySlug',
         render: ({ id, entitySlug }) =>
           this._renderSimulationView(id ?? '', 'lore', entitySlug),
-        enter: async ({ id }) => this._enterSimulationRoute(id),
+        enter: async ({ id }) => this._enterSimulationRoute(id, 'lore'),
       },
       {
         path: '/simulations/:id/lore',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'lore'),
-        enter: async ({ id }) => this._enterSimulationRoute(id),
+        enter: async ({ id }) => this._enterSimulationRoute(id, 'lore'),
       },
       {
         path: '/simulations/:id/chronicle',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'chronicle'),
-        enter: async ({ id }) => this._enterSimulationRoute(id),
+        enter: async ({ id }) => this._enterSimulationRoute(id, 'chronicle'),
       },
       {
         path: '/simulations/:id/health',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'health'),
-        enter: async ({ id }) => this._enterSimulationRoute(id),
+        enter: async ({ id }) => this._enterSimulationRoute(id, 'health'),
       },
       {
         path: '/simulations/:id/pulse',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'pulse'),
-        enter: async ({ id }) => this._enterSimulationRoute(id),
+        enter: async ({ id }) => this._enterSimulationRoute(id, 'pulse'),
       },
       // Entity slug routes BEFORE list routes (first-match routing)
       {
         path: '/simulations/:id/agents/:entitySlug',
         render: ({ id, entitySlug }) =>
           this._renderSimulationView(id ?? '', 'agents', entitySlug),
-        enter: async ({ id }) => this._enterSimulationRoute(id),
+        enter: async ({ id }) => this._enterSimulationRoute(id, 'agents'),
       },
       {
         path: '/simulations/:id/buildings/:entitySlug',
         render: ({ id, entitySlug }) =>
           this._renderSimulationView(id ?? '', 'buildings', entitySlug),
-        enter: async ({ id }) => this._enterSimulationRoute(id),
+        enter: async ({ id }) => this._enterSimulationRoute(id, 'buildings'),
       },
       {
         path: '/simulations/:id/agents',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'agents'),
-        enter: async ({ id }) => this._enterSimulationRoute(id),
+        enter: async ({ id }) => this._enterSimulationRoute(id, 'agents'),
       },
       {
         path: '/simulations/:id/buildings',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'buildings'),
-        enter: async ({ id }) => this._enterSimulationRoute(id),
+        enter: async ({ id }) => this._enterSimulationRoute(id, 'buildings'),
       },
       {
         path: '/simulations/:id/events',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'events'),
-        enter: async ({ id }) => this._enterSimulationRoute(id),
+        enter: async ({ id }) => this._enterSimulationRoute(id, 'events'),
       },
       {
         path: '/simulations/:id/chat',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'chat'),
-        enter: async ({ id }) => this._enterSimulationRoute(id),
+        enter: async ({ id }) => this._enterSimulationRoute(id, 'chat'),
       },
       {
         path: '/simulations/:id/social',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'social'),
-        enter: async ({ id }) => this._enterSimulationRoute(id),
+        enter: async ({ id }) => this._enterSimulationRoute(id, 'social'),
       },
       {
         path: '/simulations/:id/locations',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'locations'),
-        enter: async ({ id }) => this._enterSimulationRoute(id),
+        enter: async ({ id }) => this._enterSimulationRoute(id, 'locations'),
       },
       {
         path: '/simulations/:id/settings',
@@ -434,7 +440,7 @@ export class VelgApp extends LitElement {
         enter: async ({ id }) => {
           const ok = await this._guardAuth();
           if (!ok) return false;
-          return this._enterSimulationRoute(id);
+          return this._enterSimulationRoute(id, 'settings');
         },
       },
       {
@@ -452,6 +458,7 @@ export class VelgApp extends LitElement {
         render: () => html`<velg-worlds-gallery></velg-worlds-gallery>`,
         enter: async () => {
           await this._authReady;
+          if (!await this._lazy(() => import('./components/landing/WorldsGallery.js'))) return false;
           seoService.setTitle(['Explore Living Worlds']);
           seoService.setDescription(
             'Browse player-created civilizations — each with AI-powered characters, evolving cities, and stories that write themselves.',
@@ -470,6 +477,7 @@ export class VelgApp extends LitElement {
         render: () => html`<velg-chronicle-feed></velg-chronicle-feed>`,
         enter: async () => {
           await this._authReady;
+          if (!await this._lazy(() => import('./components/landing/ChronicleFeed.js'))) return false;
           seoService.setTitle(['The Chronicle Feed']);
           seoService.setDescription(
             'Every world writes its own newspaper. Read AI-generated broadsheets from active simulations — fiction tied to real gameplay events.',
@@ -575,6 +583,22 @@ export class VelgApp extends LitElement {
   @state() private _initializing = true;
   @state() private _showLoginPanel = false;
   @state() private _showOnboarding = false;
+  @state() private _routeLoading = false;
+
+  private _loadingTimer: ReturnType<typeof setTimeout> | undefined;
+
+  /** Lazy-load a chunk with 200ms delayed progress bar. */
+  private async _lazy(factory: () => Promise<unknown>): Promise<boolean> {
+    this._loadingTimer = setTimeout(() => {
+      this._routeLoading = true;
+    }, 200);
+    try {
+      return await lazyRoute(factory);
+    } finally {
+      clearTimeout(this._loadingTimer);
+      this._routeLoading = false;
+    }
+  }
 
   // Auth-ready gate: route guards await this before checking isAuthenticated.
   // Resolves after authService.initialize() completes (session restored or absent).
@@ -649,12 +673,16 @@ export class VelgApp extends LitElement {
    * BEFORE render runs. This ensures API services route correctly (public vs
    * authenticated) based on `currentRole` being set.
    */
-  private async _enterSimulationRoute(id: string | undefined): Promise<boolean> {
+  private async _enterSimulationRoute(id: string | undefined, view?: string): Promise<boolean> {
     await this._authReady;
     if (id) {
       const resolved = await this._resolveSimulation(id);
       if (!resolved) return false;
       await this._checkMembership(resolved);
+    }
+    if (view) {
+      const importFn = getSimViewImport(view);
+      if (importFn && !await this._lazy(importFn)) return false;
     }
     return true;
   }
@@ -979,6 +1007,7 @@ export class VelgApp extends LitElement {
     return html`
       <a class="skip-nav" href="#main-content">${msg('Skip to main content')}</a>
       ${isGuest && !isLanding ? html`<velg-guest-banner></velg-guest-banner>` : nothing}
+      ${this._routeLoading ? html`<div class="route-progress"></div>` : nothing}
       <velg-platform-header></velg-platform-header>
       <main class="app-main" id="main-content">
         ${this._router.outlet()}

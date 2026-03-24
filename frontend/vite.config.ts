@@ -6,6 +6,7 @@ export default defineConfig({
     target: 'es2022',
     sourcemap: 'hidden',
     outDir: '../static/dist',
+    chunkSizeWarningLimit: 500,
     rollupOptions: {
       output: {
         manualChunks: {
@@ -13,7 +14,7 @@ export default defineConfig({
           'signals': ['@preact/signals-core', '@lit-labs/preact-signals'],
           'router': ['@lit-labs/router'],
           'supabase': ['@supabase/supabase-js'],
-          'sentry': ['@sentry/browser'],
+          'markdown': ['marked', 'dompurify'],
         },
       },
     },

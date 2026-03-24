@@ -258,6 +258,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 - **Game Instance Isolation** – Epoch start atomically clones participating simulations into balanced game instances. Templates stay untouched.
 - **Structured Logging** – structlog over stdlib logging. JSON in production, console locally. Request context (user_id, request_id, path) injected via middleware.
 - **Admin-Configurable AI** – LLM model selection (default, fallback, research, forge) configurable at runtime with environment-specific overrides.
+- **Route-Level Code Splitting** – 21 route components lazy-loaded via `@lit-labs/router` async `enter()` guards. Main bundle 948 KB (192 KB gzip). Heavy features (Admin 423 KB, Epoch 523 KB, Forge 231 KB, ECharts 607 KB, Three.js 1.3 MB) load on demand. Retry-aware `lazyRoute()` utility handles chunk hash invalidation after deploys.
 
 ---
 
@@ -288,12 +289,12 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 | Lit | 3.3 | Web Components framework (211 custom elements) |
 | Preact Signals | 1.8 | Fine-grained reactive state management |
 | Supabase JS | 2.45 | Auth, Storage, Realtime channels |
-| Apache ECharts | 6.0 | Intelligence Report charts (radar, heatmap, bar, line) |
+| Apache ECharts | 6.0 | Intelligence Report charts (radar, heatmap, bar, line) – tree-shaken, lazy-loaded |
 | 3d-force-graph | 1.79 | Cartographer's Map visualization |
 | web-vitals | 5.1 | Core Web Vitals reporting |
 | Zod | 4.3 | Runtime schema validation |
 | TypeScript | 5.9 | Type safety |
-| Vite | 7.3 | Build tool with HMR |
+| Vite | 7.3 | Build tool with HMR, route-level code splitting (21 lazy chunks) |
 | Vitest | 4.0 | Unit/component testing |
 
 ### Infrastructure

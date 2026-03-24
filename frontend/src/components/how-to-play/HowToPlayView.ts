@@ -15,7 +15,7 @@ import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { analyticsService } from '../../services/AnalyticsService.js';
 import { seoService } from '../../services/SeoService.js';
-import '../shared/EchartsChart.js';
+// EchartsChart loaded on demand — see connectedCallback
 import '../shared/Lightbox.js';
 import { getDemoSteps } from './htp-content-demo.js';
 import type { ForgeStep } from './htp-content-features.js';
@@ -106,6 +106,7 @@ export class VelgHowToPlay extends LitElement {
     );
     analyticsService.trackPageView('/how-to-play', 'How to Play');
     this._injectFaqSchema();
+    import('../shared/EchartsChart.js');
     this.updateComplete.then(() => {
       this._setupScrollSpy();
       this._setupChartObserver();
