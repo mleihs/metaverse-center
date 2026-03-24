@@ -64,6 +64,27 @@ export class VelgApp extends LitElement {
       background: var(--color-surface);
     }
 
+    .skip-nav {
+      position: absolute;
+      top: -100%;
+      left: var(--space-4);
+      z-index: 9999;
+      padding: var(--space-2) var(--space-4);
+      background: var(--color-surface);
+      color: var(--color-text-primary);
+      border: 2px solid var(--color-primary);
+      font-family: var(--font-brutalist);
+      font-size: var(--text-sm);
+      font-weight: var(--font-bold);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+      text-decoration: none;
+    }
+
+    .skip-nav:focus {
+      top: var(--space-2);
+    }
+
     .app-main {
       padding: 0;
     }
@@ -928,9 +949,10 @@ export class VelgApp extends LitElement {
     const isLanding = window.location.pathname === '/';
 
     return html`
+      <a class="skip-nav" href="#main-content">${msg('Skip to main content')}</a>
       ${isGuest && !isLanding ? html`<velg-guest-banner></velg-guest-banner>` : nothing}
       <velg-platform-header></velg-platform-header>
-      <main class="app-main">
+      <main class="app-main" id="main-content">
         ${this._router.outlet()}
       </main>
       ${this._showLoginPanel ? html`<velg-login-panel></velg-login-panel>` : nothing}

@@ -13,6 +13,7 @@ import { BaseSettingsPanel } from '../shared/BaseSettingsPanel.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { VelgToast } from '../shared/Toast.js';
 import '../shared/VelgSectionHeader.js';
+import '../shared/VelgToggle.js';
 import { settingsStyles } from '../shared/settings-styles.js';
 
 interface AccessFormData {
@@ -531,11 +532,10 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
     };
   }
 
-  private _handleRegistrationToggle(e: Event): void {
-    const target = e.target as HTMLInputElement;
+  private _handleRegistrationToggle(checked: boolean): void {
     this._formData = {
       ...this._formData,
-      allow_registration: target.checked,
+      allow_registration: checked,
     };
   }
 
@@ -942,15 +942,10 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
           </div>
 
           <div class="settings-form__group settings-form__group--row">
-            <label class="settings-toggle">
-              <input
-                class="settings-toggle__input"
-                type="checkbox"
-                ?checked=${this._formData.allow_registration}
-                @change=${this._handleRegistrationToggle}
-              />
-              <span class="settings-toggle__slider"></span>
-            </label>
+            <velg-toggle
+              .checked=${this._formData.allow_registration}
+              @toggle-change=${(e: CustomEvent) => this._handleRegistrationToggle(e.detail.checked)}
+            ></velg-toggle>
             <div>
               <span class="settings-form__label">${msg('Allow Registration')}</span>
               <span class="settings-form__hint"> -- ${msg('Users can request to join without an invitation')}</span>

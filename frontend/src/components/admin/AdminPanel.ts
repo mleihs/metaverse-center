@@ -2,7 +2,9 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
+import type { TabDef } from '../shared/VelgTabs.js';
 
+import '../shared/VelgTabs.js';
 import './AdminUsersTab.js';
 import './AdminCleanupTab.js';
 import './AdminForgeTab.js';
@@ -96,64 +98,16 @@ export class VelgAdminPanel extends LitElement {
       margin: 0;
     }
 
-    .admin-tabs {
-      display: flex;
-      gap: 0;
+    .admin-tabs-wrapper {
       max-width: 1200px;
       margin: 0 auto;
       padding: 0 var(--space-6);
-      border-bottom: 2px solid var(--color-border);
     }
 
-    .admin-tabs__tab {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: var(--text-sm);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      padding: var(--space-3) var(--space-5);
-      background: none;
-      border: none;
-      color: var(--color-text-muted);
-      cursor: pointer;
-      position: relative;
-      transition:
-        color 0.2s ease,
-        background 0.2s ease;
-    }
-
-    .admin-tabs__tab:hover {
-      color: var(--color-text-primary);
-      background: rgba(255 255 255 / 0.04);
-    }
-
-    .admin-tabs__tab--active {
-      color: var(--color-danger);
-    }
-
-    .admin-tabs__tab--active::after {
-      content: '';
-      position: absolute;
-      bottom: -2px;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: var(--color-danger);
-    }
-
-    .admin-tabs__badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 18px;
-      height: 18px;
-      padding: 0 4px;
-      margin-left: var(--space-1);
-      font-size: 10px;
-      font-weight: var(--font-black);
-      background: var(--color-warning);
-      color: var(--color-surface-sunken);
-      border-radius: 9px;
+    /* Override VelgTabs active indicator for admin's classified-document theme.
+       Uses --tab-active-color (not --color-primary) to avoid coloring badges red. */
+    velg-tabs {
+      --tab-active-color: var(--color-danger);
     }
 
     .admin-content {
@@ -183,7 +137,7 @@ export class VelgAdminPanel extends LitElement {
         padding: var(--space-4);
       }
 
-      .admin-tabs {
+      .admin-tabs-wrapper {
         padding: 0 var(--space-4);
       }
     }
@@ -191,8 +145,29 @@ export class VelgAdminPanel extends LitElement {
 
   @state() private _activeTab: AdminTab = 'users';
 
-  private _setTab(tab: AdminTab): void {
-    this._activeTab = tab;
+  private _getAdminTabs(): TabDef[] {
+    const forgeCount = appState.pendingForgeRequestCount.value;
+    return [
+      // Content Management
+      { key: 'users', label: msg('Users'), group: msg('Content') },
+      { key: 'simulations', label: msg('Simulations'), group: msg('Content') },
+      // World Systems
+      { key: 'health', label: msg('Health'), group: msg('Systems') },
+      { key: 'heartbeat', label: msg('Heartbeat'), group: msg('Systems') },
+      { key: 'resonances', label: msg('Resonances'), group: msg('Systems') },
+      // AI & Generation
+      { key: 'forge', label: msg('Forge'), group: msg('AI & Gen'), badge: forgeCount > 0 ? forgeCount : undefined },
+      { key: 'ai_usage', label: msg('AI Usage'), group: msg('AI & Gen') },
+      { key: 'scanner', label: msg('Scanner'), group: msg('AI & Gen') },
+      // Configuration
+      { key: 'platform', label: msg('Platform Config'), group: msg('Config') },
+      { key: 'social', label: msg('Social Media'), group: msg('Config') },
+      { key: 'cleanup', label: msg('Data Cleanup'), group: msg('Config') },
+    ];
+  }
+
+  private _handleTabChange(e: CustomEvent<{ key: string }>): void {
+    this._activeTab = e.detail.key as AdminTab;
   }
 
   protected render() {
@@ -206,88 +181,12 @@ export class VelgAdminPanel extends LitElement {
         </div>
       </div>
 
-      <div class="admin-tabs" role="tablist">
-        <button
-          class="admin-tabs__tab ${this._activeTab === 'users' ? 'admin-tabs__tab--active' : ''}"
-          role="tab"
-          aria-selected=${this._activeTab === 'users'}
-          aria-controls="admin-tabpanel"
-          @click=${() => this._setTab('users')}
-        >${msg('Users')}</button>
-        <button
-          class="admin-tabs__tab ${this._activeTab === 'simulations' ? 'admin-tabs__tab--active' : ''}"
-          role="tab"
-          aria-selected=${this._activeTab === 'simulations'}
-          aria-controls="admin-tabpanel"
-          @click=${() => this._setTab('simulations')}
-        >${msg('Simulations')}</button>
-        <button
-          class="admin-tabs__tab ${this._activeTab === 'health' ? 'admin-tabs__tab--active' : ''}"
-          role="tab"
-          aria-selected=${this._activeTab === 'health'}
-          aria-controls="admin-tabpanel"
-          @click=${() => this._setTab('health')}
-        >${msg('Health')}</button>
-        <button
-          class="admin-tabs__tab ${this._activeTab === 'heartbeat' ? 'admin-tabs__tab--active' : ''}"
-          role="tab"
-          aria-selected=${this._activeTab === 'heartbeat'}
-          aria-controls="admin-tabpanel"
-          @click=${() => this._setTab('heartbeat')}
-        >${msg('Heartbeat')}</button>
-        <button
-          class="admin-tabs__tab ${this._activeTab === 'resonances' ? 'admin-tabs__tab--active' : ''}"
-          role="tab"
-          aria-selected=${this._activeTab === 'resonances'}
-          aria-controls="admin-tabpanel"
-          @click=${() => this._setTab('resonances')}
-        >${msg('Resonances')}</button>
-        <button
-          class="admin-tabs__tab ${this._activeTab === 'scanner' ? 'admin-tabs__tab--active' : ''}"
-          role="tab"
-          aria-selected=${this._activeTab === 'scanner'}
-          aria-controls="admin-tabpanel"
-          @click=${() => this._setTab('scanner')}
-        >${msg('Scanner')}</button>
-        <button
-          class="admin-tabs__tab ${this._activeTab === 'forge' ? 'admin-tabs__tab--active' : ''}"
-          role="tab"
-          aria-selected=${this._activeTab === 'forge'}
-          aria-controls="admin-tabpanel"
-          @click=${() => this._setTab('forge')}
-        >${msg('Forge')}${
-          appState.pendingForgeRequestCount.value > 0
-            ? html`<span class="admin-tabs__badge">${appState.pendingForgeRequestCount.value}</span>`
-            : ''
-        }</button>
-        <button
-          class="admin-tabs__tab ${this._activeTab === 'ai_usage' ? 'admin-tabs__tab--active' : ''}"
-          role="tab"
-          aria-selected=${this._activeTab === 'ai_usage'}
-          aria-controls="admin-tabpanel"
-          @click=${() => this._setTab('ai_usage')}
-        >${msg('AI Usage')}</button>
-        <button
-          class="admin-tabs__tab ${this._activeTab === 'platform' ? 'admin-tabs__tab--active' : ''}"
-          role="tab"
-          aria-selected=${this._activeTab === 'platform'}
-          aria-controls="admin-tabpanel"
-          @click=${() => this._setTab('platform')}
-        >${msg('Platform Config')}</button>
-        <button
-          class="admin-tabs__tab ${this._activeTab === 'social' ? 'admin-tabs__tab--active' : ''}"
-          role="tab"
-          aria-selected=${this._activeTab === 'social'}
-          aria-controls="admin-tabpanel"
-          @click=${() => this._setTab('social')}
-        >${msg('Social Media')}</button>
-        <button
-          class="admin-tabs__tab ${this._activeTab === 'cleanup' ? 'admin-tabs__tab--active' : ''}"
-          role="tab"
-          aria-selected=${this._activeTab === 'cleanup'}
-          aria-controls="admin-tabpanel"
-          @click=${() => this._setTab('cleanup')}
-        >${msg('Data Cleanup')}</button>
+      <div class="admin-tabs-wrapper">
+        <velg-tabs
+          .tabs=${this._getAdminTabs()}
+          .active=${this._activeTab}
+          @tab-change=${this._handleTabChange}
+        ></velg-tabs>
       </div>
 
       <div class="admin-content" id="admin-tabpanel" role="tabpanel">

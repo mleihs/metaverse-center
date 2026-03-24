@@ -166,7 +166,7 @@ export class VelgEchoCard extends LitElement {
     const vectorDisplay = this._getVectorDisplayName(echo.echo_vector);
 
     return html`
-      <div class="card" @click=${this._handleClick}>
+      <div class="card" role="button" tabindex="0" @click=${this._handleClick} @keydown=${(e: KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this._handleClick(); } }}>
         <div class="card__route">
           <span class="card__sim-name">${sourceName}</span>
           <span class="card__arrow">&rarr;</span>

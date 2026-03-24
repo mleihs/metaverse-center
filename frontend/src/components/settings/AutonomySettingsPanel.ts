@@ -15,6 +15,7 @@ import { customElement } from 'lit/decorators.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { BaseSettingsPanel } from '../shared/BaseSettingsPanel.js';
 import '../shared/VelgSectionHeader.js';
+import '../shared/VelgToggle.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { settingsStyles } from '../shared/settings-styles.js';
 
@@ -152,8 +153,7 @@ export class VelgAutonomySettingsPanel extends BaseSettingsPanel {
     }
   }
 
-  private _handleToggle(key: string, e: Event): void {
-    const checked = (e.target as HTMLInputElement).checked;
+  private _handleToggle(key: string, checked: boolean): void {
     this._values = { ...this._values, [key]: String(checked) };
   }
 
@@ -185,15 +185,10 @@ export class VelgAutonomySettingsPanel extends BaseSettingsPanel {
 
           ${this._canEnable ? html`
             <div class="toggle-row">
-              <label class="settings-toggle">
-                <input
-                  class="settings-toggle__input"
-                  type="checkbox"
-                  .checked=${this._enabled}
-                  @change=${(e: Event) => this._handleToggle('agent_autonomy_enabled', e)}
-                />
-                <span class="settings-toggle__slider"></span>
-              </label>
+              <velg-toggle
+                .checked=${this._enabled}
+                @toggle-change=${(e: CustomEvent) => this._handleToggle('agent_autonomy_enabled', e.detail.checked)}
+              ></velg-toggle>
               <span class="toggle-row__label">
                 ${msg('Enable Living World')}
                 ${this._adminActivated
@@ -314,15 +309,10 @@ export class VelgAutonomySettingsPanel extends BaseSettingsPanel {
         </div>
 
         <div class="toggle-row">
-          <label class="settings-toggle">
-            <input
-              class="settings-toggle__input"
-              type="checkbox"
-              .checked=${stressCascade}
-              @change=${(e: Event) => this._handleToggle('autonomy_stress_cascade_enabled', e)}
-            />
-            <span class="settings-toggle__slider"></span>
-          </label>
+          <velg-toggle
+            .checked=${stressCascade}
+            @toggle-change=${(e: CustomEvent) => this._handleToggle('autonomy_stress_cascade_enabled', e.detail.checked)}
+          ></velg-toggle>
           <span class="toggle-row__label">
             ${msg('Stress Cascades')}
             ${renderInfoBubble(msg('When an agent has a stress breakdown (stress > 800), all agents in the same zone receive a negative moodlet. This can trigger chain reactions where one breakdown destabilizes an entire zone. Inspired by Dwarf Fortress tantrum spirals. Disable for a calmer simulation.'))}
@@ -335,15 +325,10 @@ export class VelgAutonomySettingsPanel extends BaseSettingsPanel {
         <velg-section-header variant="large">${msg('Relationships')}</velg-section-header>
 
         <div class="toggle-row">
-          <label class="settings-toggle">
-            <input
-              class="settings-toggle__input"
-              type="checkbox"
-              .checked=${autoRelationships}
-              @change=${(e: Event) => this._handleToggle('autonomy_relationship_auto_create', e)}
-            />
-            <span class="settings-toggle__slider"></span>
-          </label>
+          <velg-toggle
+            .checked=${autoRelationships}
+            @toggle-change=${(e: CustomEvent) => this._handleToggle('autonomy_relationship_auto_create', e.detail.checked)}
+          ></velg-toggle>
           <span class="toggle-row__label">
             ${msg('Auto-Create Relationships')}
             ${renderInfoBubble(msg('When an agent\'s opinion of another crosses +60, a positive relationship (ally/friend) is automatically created. When it crosses -60, a hostile relationship (rival) is created or an existing one is downgraded. Disable to keep manual control over all relationships.'))}

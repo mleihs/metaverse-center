@@ -41,7 +41,7 @@ export class VelgCampaignCard extends LitElement {
     if (!c) return html``;
 
     return html`
-      <div class="card" @click=${this._handleClick}>
+      <div class="card" role="button" tabindex="0" @click=${this._handleClick} @keydown=${(e: KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this._handleClick(); } }}>
         <div class="card__header">
           <h3 class="card__title">${c.title}</h3>
         </div>

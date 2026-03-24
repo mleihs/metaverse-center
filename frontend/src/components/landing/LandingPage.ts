@@ -394,7 +394,7 @@ export class VelgLandingPage extends LitElement {
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+      background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-surface-inverse) 15%, transparent), transparent);
       transform: translateX(-100%);
       animation: hero-cta-shimmer 4s ease-in-out infinite 2s;
     }
@@ -416,14 +416,14 @@ export class VelgLandingPage extends LitElement {
     .hero__cta--secondary {
       background: transparent;
       color: var(--color-text-primary);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      border: 1px solid color-mix(in srgb, var(--color-surface-inverse) 20%, transparent);
       margin-left: 16px;
     }
 
     .hero__cta--secondary:hover {
-      background: rgba(255, 255, 255, 0.05);
+      background: color-mix(in srgb, var(--color-surface-inverse) 5%, transparent);
       color: var(--color-text-primary);
-      border-color: rgba(255, 255, 255, 0.4);
+      border-color: color-mix(in srgb, var(--color-surface-inverse) 40%, transparent);
       box-shadow: none;
     }
 
@@ -654,8 +654,8 @@ export class VelgLandingPage extends LitElement {
         180deg,
         transparent 0%,
         transparent 40%,
-        rgba(10, 10, 10, 0.7) 70%,
-        rgba(10, 10, 10, 0.95) 100%
+        color-mix(in srgb, var(--color-surface) 70%, transparent) 70%,
+        color-mix(in srgb, var(--color-surface) 95%, transparent) 100%
       );
       pointer-events: none;
     }
@@ -689,7 +689,7 @@ export class VelgLandingPage extends LitElement {
       letter-spacing: 2px;
       text-transform: uppercase;
       color: var(--color-accent-amber);
-      background: rgba(10, 10, 10, 0.7);
+      background: color-mix(in srgb, var(--color-surface) 70%, transparent);
       padding: 3px 8px;
       border: 1px solid var(--color-primary-glow);
     }
@@ -1122,7 +1122,7 @@ export class VelgLandingPage extends LitElement {
       inset: 0;
       background: repeating-linear-gradient(
         transparent 0px, transparent 2px,
-        rgba(0, 0, 0, 0.15) 2px, rgba(0, 0, 0, 0.15) 4px
+        color-mix(in srgb, var(--color-surface) 15%, transparent) 2px, color-mix(in srgb, var(--color-surface) 15%, transparent) 4px
       );
       pointer-events: none;
     }
@@ -1132,7 +1132,7 @@ export class VelgLandingPage extends LitElement {
       position: absolute;
       left: 0; right: 0;
       height: 2px;
-      background: rgba(255, 255, 255, 0.04);
+      background: color-mix(in srgb, var(--color-surface-inverse) 4%, transparent);
       animation: monitor-scan 4s linear infinite;
     }
 
@@ -1180,7 +1180,7 @@ export class VelgLandingPage extends LitElement {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 8px;
       letter-spacing: 1px;
-      color: rgba(255, 255, 255, 0.25);
+      color: color-mix(in srgb, var(--color-surface-inverse) 25%, transparent);
     }
 
     .monitor-card__body {
@@ -1238,7 +1238,7 @@ export class VelgLandingPage extends LitElement {
         repeating-linear-gradient(
           0deg,
           transparent, transparent 1px,
-          rgba(255, 255, 255, 0.015) 1px, rgba(255, 255, 255, 0.015) 2px
+          color-mix(in srgb, var(--color-surface-inverse) 1.5%, transparent) 1px, color-mix(in srgb, var(--color-surface-inverse) 1.5%, transparent) 2px
         );
       opacity: 0.6;
       transition: opacity 400ms;
@@ -1453,7 +1453,7 @@ export class VelgLandingPage extends LitElement {
     @media (min-width: 2560px) {
       :host {
         background:
-          radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.4) 100%),
+          radial-gradient(ellipse at center, transparent 60%, color-mix(in srgb, var(--color-surface) 40%, transparent) 100%),
           var(--color-surface);
       }
 

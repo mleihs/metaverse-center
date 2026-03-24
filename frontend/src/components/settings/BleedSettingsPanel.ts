@@ -3,6 +3,7 @@ import { css, html, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { BaseSettingsPanel } from '../shared/BaseSettingsPanel.js';
 import '../shared/VelgSectionHeader.js';
+import '../shared/VelgToggle.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { settingsStyles } from '../shared/settings-styles.js';
 
@@ -97,8 +98,7 @@ export class VelgBleedSettingsPanel extends BaseSettingsPanel {
     return this._values.bleed_enabled !== 'false';
   }
 
-  private _handleToggle(key: string, e: Event): void {
-    const checked = (e.target as HTMLInputElement).checked;
+  private _handleToggle(key: string, checked: boolean): void {
     this._values = { ...this._values, [key]: String(checked) };
   }
 
@@ -124,15 +124,10 @@ export class VelgBleedSettingsPanel extends BaseSettingsPanel {
           </p>
 
           <div class="bleed-toggle-row">
-            <label class="settings-toggle">
-              <input
-                class="settings-toggle__input"
-                type="checkbox"
-                .checked=${this._bleedEnabled}
-                @change=${(e: Event) => this._handleToggle('bleed_enabled', e)}
-              />
-              <span class="settings-toggle__slider"></span>
-            </label>
+            <velg-toggle
+              .checked=${this._bleedEnabled}
+              @toggle-change=${(e: CustomEvent) => this._handleToggle('bleed_enabled', e.detail.checked)}
+            ></velg-toggle>
             <span class="bleed-toggle-row__label">
               ${msg('Enable Bleed')}
               ${renderInfoBubble(msg('Master switch for cross-simulation event propagation. When disabled, no events from this simulation will echo to other worlds, and no incoming echoes will be accepted.'))}
@@ -245,15 +240,10 @@ export class VelgBleedSettingsPanel extends BaseSettingsPanel {
         <velg-section-header variant="large">${msg('Echo Approval')}</velg-section-header>
 
         <div class="bleed-toggle-row">
-          <label class="settings-toggle">
-            <input
-              class="settings-toggle__input"
-              type="checkbox"
-              .checked=${autoApprove}
-              @change=${(e: Event) => this._handleToggle('bleed_auto_approve', e)}
-            />
-            <span class="settings-toggle__slider"></span>
-          </label>
+          <velg-toggle
+            .checked=${autoApprove}
+            @toggle-change=${(e: CustomEvent) => this._handleToggle('bleed_auto_approve', e.detail.checked)}
+          ></velg-toggle>
           <span class="bleed-toggle-row__label">
             ${msg('Auto-Approve Incoming Echoes')}
             ${renderInfoBubble(msg('When enabled, incoming echoes skip pending status and immediately begin AI generation. When disabled, an admin must approve each echo before it manifests.'))}

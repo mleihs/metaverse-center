@@ -5,6 +5,7 @@ import { notificationPreferencesApi } from '../../services/api/NotificationPrefe
 import type { NotificationPreferences } from '../../types/index.js';
 import { settingsStyles } from '../shared/settings-styles.js';
 import { VelgToast } from '../shared/Toast.js';
+import '../shared/VelgToggle.js';
 
 const DEFAULT_PREFS: NotificationPreferences = {
   cycle_resolved: true,
@@ -83,10 +84,6 @@ export class VelgNotificationsSettingsPanel extends LitElement {
           flex-direction: column;
           align-items: flex-start;
         }
-
-        .settings-toggle {
-          min-height: 44px;
-        }
       }
     `,
   ];
@@ -120,10 +117,10 @@ export class VelgNotificationsSettingsPanel extends LitElement {
     );
   }
 
-  private _toggle(field: keyof NotificationPreferences): void {
+  private _setToggle(field: keyof NotificationPreferences, checked: boolean): void {
     this._prefs = {
       ...this._prefs,
-      [field]: !this._prefs[field],
+      [field]: checked,
     };
     this._emitUnsaved();
   }
@@ -160,15 +157,10 @@ export class VelgNotificationsSettingsPanel extends LitElement {
           <span class="notif-toggle-label">${label}</span>
           <span class="notif-toggle-desc">${description}</span>
         </div>
-        <label class="settings-toggle">
-          <input
-            type="checkbox"
-            class="settings-toggle__input"
-            .checked=${checked}
-            @change=${() => this._toggle(field)}
-          />
-          <span class="settings-toggle__slider"></span>
-        </label>
+        <velg-toggle
+          .checked=${checked}
+          @toggle-change=${(e: CustomEvent) => this._setToggle(field, e.detail.checked)}
+        ></velg-toggle>
       </div>
     `;
   }

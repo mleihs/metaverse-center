@@ -15,6 +15,8 @@ export interface TabDef {
   icon?: TemplateResult;
   badge?: string | number;
   hidden?: boolean;
+  /** Optional group label. Tabs with the same group are visually clustered. */
+  group?: string;
 }
 
 @customElement('velg-tabs')
@@ -89,7 +91,7 @@ export class VelgTabs extends LitElement {
 
     .tab--active {
       color: var(--color-text-primary);
-      border-bottom-color: var(--color-primary);
+      border-bottom-color: var(--tab-active-color, var(--color-primary));
     }
 
     .tab__badge {
@@ -107,11 +109,24 @@ export class VelgTabs extends LitElement {
       line-height: 1;
     }
 
+    /* ── Group separators (CSS-only, no extra DOM) ── */
+
+    .tab--group-start {
+      margin-left: var(--space-2);
+      border-left: 1px solid var(--color-border);
+      padding-left: var(--space-4);
+    }
+
     @media (max-width: 640px) {
       .tab {
         padding: var(--space-2) var(--space-2-5);
         font-size: 0.56rem;
         letter-spacing: 0;
+      }
+
+      .tab--group-start {
+        margin-left: var(--space-1);
+        padding-left: var(--space-2-5);
       }
     }
 
@@ -167,25 +182,30 @@ export class VelgTabs extends LitElement {
 
   protected render() {
     const visibleTabs = this.tabs.filter((t) => !t.hidden);
+    const hasGroups = visibleTabs.some((t) => t.group);
 
     return html`
       <nav class="tabs" role="tablist" aria-label="${msg('Navigation tabs')}" @keydown=${this._handleKeyDown}>
         ${visibleTabs.map(
-          (tab) => html`
-            <button
-              role="tab"
-              id="tab-${tab.key}"
-              aria-selected=${this.active === tab.key}
-              aria-controls="tabpanel-${tab.key}"
-              tabindex=${this.active === tab.key ? 0 : -1}
-              class="tab ${this.active === tab.key ? 'tab--active' : ''}"
-              @click=${() => this._handleClick(tab.key)}
-            >
-              ${tab.icon ?? ''}
-              ${tab.label}
-              ${tab.badge !== undefined ? html`<span class="tab__badge">${tab.badge}</span>` : ''}
-            </button>
-          `,
+          (tab, i) => {
+            const prevGroup = i > 0 ? visibleTabs[i - 1].group : undefined;
+            const isGroupStart = hasGroups && i > 0 && tab.group !== prevGroup;
+            return html`
+              <button
+                role="tab"
+                id="tab-${tab.key}"
+                aria-selected=${this.active === tab.key}
+                aria-controls="tabpanel-${tab.key}"
+                tabindex=${this.active === tab.key ? 0 : -1}
+                class="tab ${this.active === tab.key ? 'tab--active' : ''} ${isGroupStart ? 'tab--group-start' : ''}"
+                @click=${() => this._handleClick(tab.key)}
+              >
+                ${tab.icon ?? ''}
+                ${tab.label}
+                ${tab.badge !== undefined ? html`<span class="tab__badge">${tab.badge}</span>` : ''}
+              </button>
+            `;
+          },
         )}
       </nav>
     `;

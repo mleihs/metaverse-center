@@ -24,11 +24,11 @@ import type {
 } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
+import '../shared/VelgToggle.js';
 import {
   adminAnimationStyles,
   adminSectionHeaderStyles,
   adminGlobalCardStyles,
-  adminToggleStyles,
   adminLoadingStyles,
 } from './admin-shared-styles.js';
 
@@ -108,7 +108,6 @@ export class VelgAdminHeartbeatTab extends LitElement {
     adminAnimationStyles,
     adminSectionHeaderStyles,
     adminGlobalCardStyles,
-    adminToggleStyles,
     adminLoadingStyles,
     infoBubbleStyles,
     css`
@@ -117,7 +116,6 @@ export class VelgAdminHeartbeatTab extends LitElement {
         color: var(--color-text-primary);
         font-family: var(--font-mono, monospace);
         --_admin-accent: var(--color-warning);
-        --_toggle-active: var(--color-success);
       }
 
       .section {
@@ -936,21 +934,17 @@ export class VelgAdminHeartbeatTab extends LitElement {
                 ${enabled ? msg('System Active') : msg('System Disabled')}
               </div>
             </div>
-            <label class="toggle">
-              <input
-                class="toggle__input"
-                type="checkbox"
-                .checked=${enabled}
-                ?disabled=${this._savingConfig === 'heartbeat_enabled'}
-                @change=${() => {
-                  this._onConfigToggle('heartbeat_enabled');
-                  this._saveConfig('heartbeat_enabled');
-                }}
-                aria-label=${msg('Toggle heartbeat engine')}
-                aria-describedby="tip-heartbeat_enabled"
-              />
-              <span class="toggle__track"></span>
-            </label>
+            <velg-toggle
+              variant="scif"
+              .checked=${enabled}
+              ?disabled=${this._savingConfig === 'heartbeat_enabled'}
+              aria-label=${msg('Toggle heartbeat engine')}
+              aria-describedby="tip-heartbeat_enabled"
+              @toggle-change=${() => {
+                this._onConfigToggle('heartbeat_enabled');
+                this._saveConfig('heartbeat_enabled');
+              }}
+            ></velg-toggle>
           </div>
         </div>
       </div>
@@ -1277,19 +1271,15 @@ export class VelgAdminHeartbeatTab extends LitElement {
           <div class="override-card__field">
             <span class="override-card__field-label">${msg('Enabled')}</span>
             <div class="override-toggle-area">
-              <label class="toggle">
-                <input
-                  class="toggle__input"
-                  type="checkbox"
-                  .checked=${this._overrideEnabledDraft}
-                  ?disabled=${this._savingOverride}
-                  @change=${() => {
-                    this._overrideEnabledDraft = !this._overrideEnabledDraft;
-                  }}
-                  aria-label=${msg('Toggle heartbeat for this simulation')}
-                />
-                <span class="toggle__track"></span>
-              </label>
+              <velg-toggle
+                variant="scif"
+                .checked=${this._overrideEnabledDraft}
+                ?disabled=${this._savingOverride}
+                aria-label=${msg('Toggle heartbeat for this simulation')}
+                @toggle-change=${() => {
+                  this._overrideEnabledDraft = !this._overrideEnabledDraft;
+                }}
+              ></velg-toggle>
               <span class="override-toggle-label">
                 ${this._overrideEnabledDraft ? msg('Active') : msg('Paused')}
               </span>
@@ -1362,17 +1352,13 @@ export class VelgAdminHeartbeatTab extends LitElement {
         <td>${rule.transfer_rate.toFixed(3)}</td>
         <td>${rule.cooldown_hours}h</td>
         <td>
-          <label class="toggle ${isToggling ? 'toggle--disabled' : ''}">
-            <input
-              class="toggle__input"
-              type="checkbox"
-              .checked=${rule.is_active}
-              ?disabled=${isToggling}
-              @change=${() => this._toggleCascadeRule(rule.id)}
-              aria-label=${`${msg('Toggle cascade rule')}: ${rule.source_signature} → ${rule.target_signature}`}
-            />
-            <span class="toggle__track"></span>
-          </label>
+          <velg-toggle
+            variant="scif"
+            .checked=${rule.is_active}
+            ?disabled=${isToggling}
+            aria-label=${`${msg('Toggle cascade rule')}: ${rule.source_signature} → ${rule.target_signature}`}
+            @toggle-change=${() => this._toggleCascadeRule(rule.id)}
+          ></velg-toggle>
         </td>
         <td>
           <span class="rules-table__timestamp">

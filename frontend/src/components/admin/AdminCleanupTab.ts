@@ -13,6 +13,7 @@ import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles
 import { adminLoadingStyles } from './admin-shared-styles.js';
 
 import '../shared/ConfirmDialog.js';
+import '../shared/VelgMetricCard.js';
 
 interface CleanupMeta {
   label: string;
@@ -140,50 +141,7 @@ export class VelgAdminCleanupTab extends LitElement {
       margin-bottom: var(--space-8);
     }
 
-    .stat-card {
-      padding: var(--space-3) var(--space-4);
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-left: 3px solid var(--color-border);
-      transition: border-color 0.2s ease;
-    }
-
-    .stat-card--active {
-      border-left-color: var(--color-warning);
-    }
-
-    .stat-card__label {
-      font-family: var(--font-brutalist);
-      font-size: 10px;
-      font-weight: var(--font-bold);
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      color: var(--color-text-muted);
-      margin: 0 0 var(--space-1) 0;
-    }
-
-    .stat-card__row {
-      display: flex;
-      align-items: baseline;
-      gap: var(--space-2);
-    }
-
-    .stat-card__count {
-      font-family: var(--font-mono, monospace);
-      font-size: var(--text-lg, 1.125rem);
-      font-weight: var(--font-bold);
-      color: var(--color-text-primary);
-    }
-
-    .stat-card__count--zero {
-      color: var(--color-text-muted);
-    }
-
-    .stat-card__age {
-      font-size: 10px;
-      color: var(--color-text-muted);
-      margin-left: auto;
-    }
+    /* stat-card CSS removed — using <velg-metric-card> */
 
     /* ── Operations grid ─────────────────────────── */
 
@@ -560,17 +518,12 @@ export class VelgAdminCleanupTab extends LitElement {
           const hasRecords = cat.count > 0;
 
           return html`
-            <div class="stat-card ${hasRecords ? 'stat-card--active' : ''}">
-              <p class="stat-card__label">${m.label}</p>
-              <div class="stat-card__row">
-                <span class="stat-card__count ${hasRecords ? '' : 'stat-card__count--zero'}">
-                  ${cat.count}
-                </span>
-                <span class="stat-card__age">
-                  ${hasRecords ? msg(str`oldest: ${this._formatAge(cat.oldest_at)}`) : '\u2014'}
-                </span>
-              </div>
-            </div>
+            <velg-metric-card
+              label=${m.label}
+              value=${String(cat.count)}
+              sublabel=${hasRecords ? msg(str`oldest: ${this._formatAge(cat.oldest_at)}`) : '\u2014'}
+              variant=${hasRecords ? 'warning' : 'default'}
+            ></velg-metric-card>
           `;
         })}
       </div>

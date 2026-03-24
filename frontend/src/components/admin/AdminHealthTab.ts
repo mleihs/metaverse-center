@@ -5,11 +5,11 @@ import { adminApi } from '../../services/api/index.js';
 import type { HealthEffectsSimulation } from '../../services/api/AdminApiService.js';
 import { VelgToast } from '../shared/Toast.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
+import '../shared/VelgToggle.js';
 import {
   adminAnimationStyles,
   adminSectionHeaderStyles,
   adminGlobalCardStyles,
-  adminToggleStyles,
   adminLoadingStyles,
 } from './admin-shared-styles.js';
 
@@ -20,7 +20,6 @@ export class VelgAdminHealthTab extends LitElement {
     adminAnimationStyles,
     adminSectionHeaderStyles,
     adminGlobalCardStyles,
-    adminToggleStyles,
     adminLoadingStyles,
     infoBubbleStyles,
     css`
@@ -29,7 +28,6 @@ export class VelgAdminHealthTab extends LitElement {
         color: var(--color-text-primary);
         font-family: var(--font-mono, monospace);
         --_admin-accent: var(--color-danger);
-        --_toggle-active: var(--color-danger);
       }
 
       /* --- Filter --- */
@@ -346,18 +344,14 @@ export class VelgAdminHealthTab extends LitElement {
               ${this._globalEnabled ? msg('Effects Active') : msg('Effects Suppressed')}
             </div>
           </div>
-          <label class="toggle">
-            <input
-              class="toggle__input"
-              type="checkbox"
-              .checked=${this._globalEnabled}
-              ?disabled=${this._saving}
-              aria-label=${msg('Toggle critical health effects globally')}
-              aria-describedby="tip-health-global"
-              @change=${this._toggleGlobal}
-            />
-            <span class="toggle__track"></span>
-          </label>
+          <velg-toggle
+            variant="scif"
+            .checked=${this._globalEnabled}
+            ?disabled=${this._saving}
+            aria-label=${msg('Toggle critical health effects globally')}
+            aria-describedby="tip-health-global"
+            @toggle-change=${() => this._toggleGlobal()}
+          ></velg-toggle>
         </div>
       </div>
 
@@ -446,17 +440,13 @@ export class VelgAdminHealthTab extends LitElement {
             ${isDisabledGlobally
               ? html`<span class="sim-card__disabled-hint">${msg('Globally Disabled')}</span>`
               : nothing}
-            <label class="toggle ${isDisabledGlobally ? 'toggle--disabled' : ''}">
-              <input
-                class="toggle__input"
-                type="checkbox"
-                .checked=${sim.effects_enabled}
-                ?disabled=${isDisabledGlobally || this._saving}
-                aria-label=${msg('Toggle health effects for this simulation')}
-                @change=${() => this._toggleSimulation(sim.id, sim.effects_enabled)}
-              />
-              <span class="toggle__track"></span>
-            </label>
+            <velg-toggle
+              variant="scif"
+              .checked=${sim.effects_enabled}
+              ?disabled=${isDisabledGlobally || this._saving}
+              aria-label=${msg('Toggle health effects for this simulation')}
+              @toggle-change=${() => this._toggleSimulation(sim.id, sim.effects_enabled)}
+            ></velg-toggle>
           </div>
         </div>
       </div>

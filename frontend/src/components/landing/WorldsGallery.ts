@@ -208,7 +208,7 @@ export class VelgWorldsGallery extends LitElement {
       letter-spacing: 2px;
       text-transform: uppercase;
       padding: 4px 8px;
-      background: rgba(0, 0, 0, 0.7);
+      background: color-mix(in srgb, var(--color-surface) 70%, transparent);
       backdrop-filter: blur(4px);
       z-index: 2;
     }

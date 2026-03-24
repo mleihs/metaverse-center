@@ -25,6 +25,7 @@ function getTabs(): SettingsTabDef[] {
   return [
     { key: 'general', label: msg('General') },
     { key: 'world', label: msg('World') },
+    { key: 'bleed', label: msg('Bleed') },
     { key: 'autonomy', label: msg('Autonomy') },
     { key: 'ai', label: msg('AI') },
     { key: 'prompts', label: msg('Prompts') },
@@ -181,16 +182,19 @@ export class VelgSettingsView extends LitElement {
         `;
       case 'world':
         return html`
-          <velg-bleed-settings-panel
-            .simulationId=${this.simulationId}
-            @unsaved-change=${this._handleUnsavedChange}
-            @settings-saved=${this._handleSettingsSaved}
-          ></velg-bleed-settings-panel>
           <velg-world-settings-panel
             .simulationId=${this.simulationId}
             @unsaved-change=${this._handleUnsavedChange}
             @settings-saved=${this._handleSettingsSaved}
           ></velg-world-settings-panel>
+        `;
+      case 'bleed':
+        return html`
+          <velg-bleed-settings-panel
+            .simulationId=${this.simulationId}
+            @unsaved-change=${this._handleUnsavedChange}
+            @settings-saved=${this._handleSettingsSaved}
+          ></velg-bleed-settings-panel>
         `;
       case 'autonomy':
         return html`

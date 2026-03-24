@@ -235,68 +235,6 @@ export const adminGlobalCardStyles = css`
   }
 `;
 
-/* ─── Toggle Switch ───────────────────────────────────────────────── */
-
-export const adminToggleStyles = css`
-  .toggle {
-    position: relative;
-    display: inline-block;
-    width: 44px;
-    height: 24px;
-    flex-shrink: 0;
-  }
-
-  .toggle__input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-    position: absolute;
-  }
-
-  .toggle__track {
-    position: absolute;
-    inset: 0;
-    border-radius: 12px;
-    background: var(--color-border);
-    cursor: pointer;
-    transition:
-      background 0.25s ease,
-      box-shadow 0.25s ease;
-  }
-
-  .toggle__input:checked + .toggle__track {
-    background: var(--_toggle-active, var(--color-success));
-    box-shadow: 0 0 10px
-      color-mix(in srgb, var(--_toggle-active, var(--color-success)) 30%, transparent);
-  }
-
-  .toggle__track::after {
-    content: '';
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: var(--color-text-primary);
-    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .toggle__input:checked + .toggle__track::after {
-    transform: translateX(20px);
-  }
-
-  .toggle--disabled .toggle__track {
-    opacity: 0.35;
-    cursor: not-allowed;
-  }
-
-  .toggle__input:focus-visible + .toggle__track {
-    outline: 2px solid var(--_toggle-active, var(--color-success));
-    outline-offset: 2px;
-  }
-`;
-
 /* ─── Admin Buttons ───────────────────────────────────────────────── */
 
 export const adminButtonStyles = css`
@@ -527,70 +465,6 @@ export const adminConfigGridStyles = css`
     .config-grid {
       grid-template-columns: 1fr;
     }
-  }
-`;
-
-/* ─── SCIF Toggle (square / brutalist variant) ───────────────────── */
-
-export const adminToggleSCIFStyles = css`
-  .toggle {
-    position: relative;
-    width: 44px;
-    height: 22px;
-    flex-shrink: 0;
-    cursor: pointer;
-    z-index: 1;
-  }
-
-  .toggle__input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-    position: absolute;
-  }
-
-  .toggle__track {
-    position: absolute;
-    inset: 0;
-    background: color-mix(in srgb, var(--color-text-muted) 15%, var(--color-surface));
-    border: 1px solid var(--color-border);
-    transition: all 0.25s ease;
-  }
-
-  .toggle__track::after {
-    content: '';
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 16px;
-    height: 16px;
-    background: var(--color-text-muted);
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .toggle__input:checked + .toggle__track {
-    background: color-mix(in srgb, var(--color-primary) 20%, var(--color-surface));
-    border-color: var(--color-primary);
-  }
-
-  .toggle__input:checked + .toggle__track::after {
-    left: 24px;
-    background: var(--color-primary);
-    box-shadow: 0 0 8px color-mix(in srgb, var(--color-primary) 40%, transparent);
-  }
-
-  .toggle:hover .toggle__track {
-    border-color: var(--color-text-muted);
-  }
-
-  .toggle__input:disabled + .toggle__track {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-
-  .toggle__input:focus-visible + .toggle__track {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
   }
 `;
 
@@ -1062,78 +936,80 @@ export const adminDispatchStyles = css`
 `;
 
 /* ─── Intel / Metric Card Grid ───────────────────────────────────── */
+/* REMOVED: adminMetricCardStyles — migrated to <velg-metric-card> shared component.
+   See frontend/src/components/shared/VelgMetricCard.ts */
 
-export const adminMetricCardStyles = css`
-  .intel-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: var(--space-3);
+/* ─── Sub-Navigation (Segmented Control) ────────────────────────────── */
+
+/**
+ * Shared segmented-control sub-navigation for admin wrapper tabs
+ * (AdminPlatformConfigTab, AdminSocialTab, etc.).
+ *
+ * Usage:
+ *   <div class="subnav" role="tablist" aria-label=${msg('...')}>
+ *     <button class="subnav__btn ${active ? 'subnav__btn--active' : ''}" role="tab" ...>
+ *   </div>
+ *   <div class="subnav__content">...</div>
+ */
+export const adminSubNavStyles = css`
+  .subnav {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
     margin-bottom: var(--space-6);
-  }
-
-  .intel-card {
-    position: relative;
-    padding: var(--space-3) var(--space-4);
-    background: var(--color-surface);
     border: 1px solid var(--color-border);
+    border-radius: 4px;
     overflow: hidden;
+    background: var(--color-surface-sunken);
   }
 
-  .intel-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-  }
-
-  .intel-card__corner {
-    position: absolute;
-    width: 6px;
-    height: 6px;
-    border-style: solid;
-    opacity: 0.25;
-    z-index: 1;
-  }
-
-  .intel-card__corner--tl { top: 3px; left: 3px; border-width: 1px 0 0 1px; }
-  .intel-card__corner--br { bottom: 3px; right: 3px; border-width: 0 1px 1px 0; }
-
-  .intel-card__icon {
+  .subnav__btn {
+    flex: 1;
     display: flex;
     align-items: center;
-    margin-bottom: var(--space-1);
-    color: var(--color-text-muted);
-  }
-
-  .intel-card__label {
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
     font-family: var(--font-brutalist);
-    font-size: 8px;
     font-weight: var(--font-bold);
+    font-size: var(--text-sm);
     text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.08em;
+    background: none;
+    border: none;
     color: var(--color-text-muted);
-    margin-bottom: 2px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
   }
 
-  .intel-card__value {
-    font-family: var(--font-brutalist);
-    font-size: var(--text-xl);
-    font-weight: var(--font-black);
+  .subnav__btn + .subnav__btn {
+    border-left: 1px solid var(--color-border);
+  }
+
+  .subnav__btn:hover:not(.subnav__btn--active) {
     color: var(--color-text-primary);
-    line-height: 1;
+    background: color-mix(in srgb, var(--color-surface) 50%, transparent);
   }
 
-  .intel-card__value--unit {
-    font-size: 11px;
-    font-weight: var(--font-bold);
-    color: var(--color-text-muted);
+  .subnav__btn--active {
+    color: var(--color-primary);
+    background: var(--color-surface);
+    box-shadow: inset 0 -2px 0 var(--color-primary);
   }
 
-  .intel-card__sub {
-    font-size: 9px;
-    color: var(--color-text-muted);
-    margin-top: 2px;
+  .subnav__btn svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+  }
+
+  .subnav__content {
+    animation: subnav-fade 250ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1));
+  }
+
+  @keyframes subnav-fade {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 `;

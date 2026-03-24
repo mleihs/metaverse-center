@@ -13,6 +13,7 @@ import { VelgToast } from '../shared/Toast.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { adminAnimationStyles, adminForgeSectionStyles, adminLoadingStyles } from './admin-shared-styles.js';
 import '../forge/ClearanceQueue.js';
+import '../shared/VelgMetricCard.js';
 
 /**
  * AdminForgeTab – Global Simulation Forge settings, token economy admin tools,
@@ -28,16 +29,7 @@ export class VelgAdminForgeTab extends LitElement {
     adminLoadingStyles,
     infoBubbleStyles,
     css`
-      /* ── Keyframes (unique to ForgeTab) ── */
-
-      @keyframes stat-count {
-        from { opacity: 0; transform: scale(0.8); }
-        to { opacity: 1; transform: scale(1); }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        .stat-card, .stat-card__value { animation: none !important; }
-      }
+      /* (stat-card keyframes removed — using VelgMetricCard) */
 
       /* ── Layout ── */
 
@@ -74,54 +66,6 @@ export class VelgAdminForgeTab extends LitElement {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
         gap: var(--space-3);
-      }
-
-      .stat-card {
-        position: relative;
-        background: var(--color-surface);
-        border: 1px solid var(--color-border);
-        padding: var(--space-4) var(--space-4) var(--space-3);
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-1);
-        overflow: hidden;
-        animation: stat-count 0.5s ease both;
-      }
-
-      .stat-card::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: var(--color-accent-amber);
-        opacity: 0.5;
-      }
-
-      .stat-card__value {
-        font-family: var(--font-brutalist, 'Courier New', monospace);
-        font-size: var(--text-2xl);
-        font-weight: 900;
-        color: var(--color-accent-amber);
-        text-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
-        animation: stat-count 0.6s ease both;
-        animation-delay: 0.2s;
-      }
-
-      .stat-card__label {
-        font-family: var(--font-brutalist, 'Courier New', monospace);
-        font-size: 9px;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        color: var(--color-text-muted);
-      }
-
-      .stat-card__sub {
-        font-size: var(--text-xs);
-        color: var(--color-text-muted);
-        font-family: var(--font-mono, 'SF Mono', monospace);
-        opacity: 0.7;
       }
 
       /* ── BYOK Form ── */
@@ -773,18 +717,18 @@ export class VelgAdminForgeTab extends LitElement {
           </div>
           <div class="forge-section__divider"></div>
           <div class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-card__value">${this._draftCount}</div>
-              <div class="stat-card__label">${msg('Active Drafts')}</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-card__value">${this._totalTokens}</div>
-              <div class="stat-card__label">${msg('Tokens Circulating')}</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-card__value">${this._totalMaterialized}</div>
-              <div class="stat-card__label">${msg('Materialized')}</div>
-            </div>
+            <velg-metric-card
+              label=${msg('Active Drafts')}
+              value=${String(this._draftCount)}
+            ></velg-metric-card>
+            <velg-metric-card
+              label=${msg('Tokens Circulating')}
+              value=${String(this._totalTokens)}
+            ></velg-metric-card>
+            <velg-metric-card
+              label=${msg('Materialized')}
+              value=${String(this._totalMaterialized)}
+            ></velg-metric-card>
           </div>
         </div>
 
@@ -959,25 +903,25 @@ export class VelgAdminForgeTab extends LitElement {
         <div class="forge-section__desc">${msg('Aggregated metrics for the forge token economy.')}</div>
         <div class="forge-section__divider"></div>
         <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-card__value">${this._formatCents(Number(s.total_revenue_cents))}</div>
-            <div class="stat-card__label">${msg('Total Revenue')}</div>
-            <div class="stat-card__sub">${msg(str`${s.total_purchases - s.admin_grants} purchases`)}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-card__value">${s.total_tokens_granted}</div>
-            <div class="stat-card__label">${msg('Tokens Granted')}</div>
-            <div class="stat-card__sub">${msg(str`${s.admin_grants} admin grants`)}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-card__value">${s.tokens_in_circulation}</div>
-            <div class="stat-card__label">${msg('In Circulation')}</div>
-            <div class="stat-card__sub">${msg(str`${s.active_bundles} active bundles`)}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-card__value">${s.unique_buyers}</div>
-            <div class="stat-card__label">${msg('Unique Buyers')}</div>
-          </div>
+          <velg-metric-card
+            label=${msg('Total Revenue')}
+            value=${this._formatCents(Number(s.total_revenue_cents))}
+            sublabel=${msg(str`${s.total_purchases - s.admin_grants} purchases`)}
+          ></velg-metric-card>
+          <velg-metric-card
+            label=${msg('Tokens Granted')}
+            value=${String(s.total_tokens_granted)}
+            sublabel=${msg(str`${s.admin_grants} admin grants`)}
+          ></velg-metric-card>
+          <velg-metric-card
+            label=${msg('In Circulation')}
+            value=${String(s.tokens_in_circulation)}
+            sublabel=${msg(str`${s.active_bundles} active bundles`)}
+          ></velg-metric-card>
+          <velg-metric-card
+            label=${msg('Unique Buyers')}
+            value=${String(s.unique_buyers)}
+          ></velg-metric-card>
         </div>
       </div>
     `;

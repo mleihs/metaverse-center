@@ -248,56 +248,7 @@ export const settingsStyles = css`
     box-shadow: var(--shadow-md);
   }
 
-  /* --- Toggle Switch --- */
-
-  .settings-toggle {
-    position: relative;
-    display: inline-block;
-    width: 44px;
-    height: 24px;
-    flex-shrink: 0;
-  }
-
-  .settings-toggle__input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-    position: absolute;
-  }
-
-  .settings-toggle__slider {
-    position: absolute;
-    cursor: pointer;
-    inset: 0;
-    background: var(--color-surface-sunken);
-    border: var(--border-width-default) solid var(--color-border);
-    transition: all var(--transition-fast);
-  }
-
-  .settings-toggle__slider::before {
-    content: '';
-    position: absolute;
-    height: 16px;
-    width: 16px;
-    left: 3px;
-    bottom: 3px;
-    background: var(--color-text-muted);
-    transition: all var(--transition-fast);
-  }
-
-  .settings-toggle__input:checked + .settings-toggle__slider {
-    background: var(--color-primary);
-    border-color: var(--color-primary);
-  }
-
-  .settings-toggle__input:checked + .settings-toggle__slider::before {
-    transform: translateX(20px);
-    background: var(--color-text-inverse);
-  }
-
-  .settings-toggle__input:focus + .settings-toggle__slider {
-    box-shadow: var(--ring-focus);
-  }
+  /* Toggle switch: use <velg-toggle> shared component instead. */
 
   /* --- Sensitive hint --- */
 
@@ -343,8 +294,5 @@ export const settingsStyles = css`
       min-width: 44px;
     }
 
-    .settings-toggle {
-      min-height: 44px;
-    }
   }
 `;

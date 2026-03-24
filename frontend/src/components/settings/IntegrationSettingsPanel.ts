@@ -5,6 +5,7 @@ import { settingsApi } from '../../services/api/index.js';
 import { BaseSettingsPanel } from '../shared/BaseSettingsPanel.js';
 import { VelgToast } from '../shared/Toast.js';
 import '../shared/VelgSectionHeader.js';
+import '../shared/VelgToggle.js';
 import { settingsStyles } from '../shared/settings-styles.js';
 
 interface IntegrationSection {
@@ -206,9 +207,8 @@ export class VelgIntegrationSettingsPanel extends BaseSettingsPanel {
     }
   }
 
-  private _handleToggle(key: string, e: Event): void {
-    const target = e.target as HTMLInputElement;
-    this._values = { ...this._values, [key]: target.checked ? 'true' : 'false' };
+  private _handleToggle(key: string, checked: boolean): void {
+    this._values = { ...this._values, [key]: checked ? 'true' : 'false' };
   }
 
   private _hasSectionChanges(section: IntegrationSection): boolean {
@@ -269,16 +269,11 @@ export class VelgIntegrationSettingsPanel extends BaseSettingsPanel {
       const checked = this._values[field.key] === 'true';
       return html`
         <div class="settings-form__group settings-form__group--row">
-          <label class="settings-toggle">
-            <input
-              class="settings-toggle__input"
-              type="checkbox"
-              ?checked=${checked}
-              @change=${(e: Event) => this._handleToggle(field.key, e)}
-            />
-            <span class="settings-toggle__slider"></span>
-          </label>
-          <span class="settings-form__label settings-form__label--xs">${field.label}</span>
+          <velg-toggle
+            .checked=${checked}
+            label=${field.label}
+            @toggle-change=${(e: CustomEvent) => this._handleToggle(field.key, e.detail.checked)}
+          ></velg-toggle>
         </div>
       `;
     }

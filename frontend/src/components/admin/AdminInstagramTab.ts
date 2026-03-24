@@ -16,18 +16,18 @@ import { icons } from '../../utils/icons.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
+import '../shared/VelgToggle.js';
 import {
   adminActionStyles,
   adminBadgeStyles,
   adminConnectionCardStyles,
   adminDispatchStyles,
-  adminMetricCardStyles,
   adminStatusFilterStyles,
   adminTabNavStyles,
-  adminToggleSCIFStyles,
 } from './admin-shared-styles.js';
 
 import '../shared/ConfirmDialog.js';
+import '../shared/VelgMetricCard.js';
 
 type PanelTab = 'operations' | 'configure' | 'intelligence';
 type StatusFilter = 'all' | 'draft' | 'scheduled' | 'publishing' | 'published' | 'failed' | 'rejected';
@@ -116,8 +116,6 @@ export class VelgAdminInstagramTab extends LitElement {
     adminDispatchStyles,
     adminBadgeStyles,
     adminActionStyles,
-    adminMetricCardStyles,
-    adminToggleSCIFStyles,
     css`
     :host {
       display: block;
@@ -305,70 +303,30 @@ export class VelgAdminInstagramTab extends LitElement {
     }
 
     /* ══════════════════════════════════════════════════════
-       INTEL READOUT — Instagram-specific overrides
+       INTEL READOUT — Grid + quota gauge
        ══════════════════════════════════════════════════════ */
 
     .intel-grid {
+      display: grid;
       grid-template-columns: repeat(6, 1fr);
+      gap: var(--space-3);
+      margin-bottom: var(--space-6);
     }
 
-    .intel-card {
-      animation: intel-slide-up 0.4s ease both;
+    /* Quota card wrapper — allows gauge below metric card in grid cell */
+    .quota-card-wrapper {
+      display: flex;
+      flex-direction: column;
     }
 
-    .intel-card:nth-child(1) { animation-delay: 0ms; }
-    .intel-card:nth-child(2) { animation-delay: 60ms; }
-    .intel-card:nth-child(3) { animation-delay: 120ms; }
-    .intel-card:nth-child(4) { animation-delay: 180ms; }
-    .intel-card:nth-child(5) { animation-delay: 240ms; }
-    .intel-card:nth-child(6) { animation-delay: 300ms; }
-
-    @keyframes intel-slide-up {
-      from {
-        opacity: 0;
-        transform: translateY(12px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    .quota-card-wrapper velg-metric-card {
+      flex: 1;
     }
-
-    .intel-card::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 3px,
-        color-mix(in srgb, var(--color-text-primary) 1.5%, transparent) 3px,
-        color-mix(in srgb, var(--color-text-primary) 1.5%, transparent) 4px
-      );
-      pointer-events: none;
-    }
-
-    .intel-card--dispatches::before { background: var(--color-info); }
-    .intel-card--dispatches .intel-card__corner { border-color: var(--color-info); }
-
-    .intel-card--engagement::before { background: var(--color-primary); }
-    .intel-card--engagement .intel-card__corner { border-color: var(--color-primary); }
-
-    .intel-card--reach::before { background: var(--color-success); }
-    .intel-card--reach .intel-card__corner { border-color: var(--color-success); }
-
-    .intel-card--saves::before { background: var(--color-warning); }
-    .intel-card--saves .intel-card__corner { border-color: var(--color-warning); }
-
-    .intel-card--pipeline::before { background: var(--color-text-secondary); }
-    .intel-card--pipeline .intel-card__corner { border-color: var(--color-text-secondary); }
-
-    .intel-card--quota::before { background: var(--color-danger); }
-    .intel-card--quota .intel-card__corner { border-color: var(--color-danger); }
 
     /* Quota gauge */
     .quota-gauge {
       margin-top: var(--space-2);
+      padding: 0 var(--space-4);
     }
 
     .quota-gauge__track {
@@ -2207,6 +2165,7 @@ export class VelgAdminInstagramTab extends LitElement {
                 min="1"
                 max="168"
                 .value=${String(c.schedule_interval_hours)}
+                aria-label=${msg('Schedule interval in hours')}
                 @change=${(e: Event) => this._handleIntervalChange((e.target as HTMLInputElement).value)}
               />
               <span class="num-input__unit">${msg('hrs')}</span>
@@ -2245,6 +2204,7 @@ export class VelgAdminInstagramTab extends LitElement {
                     min="0"
                     max="10"
                     .value=${String(weight)}
+                    aria-label=${msg(str`Content mix weight for ${type}`)}
                     @change=${(e: Event) => this._handleMixChange(type, (e.target as HTMLInputElement).value)}
                   />
                   <span class="mix-row__pct">${pct}%</span>
@@ -2271,6 +2231,7 @@ export class VelgAdminInstagramTab extends LitElement {
             <textarea
               class="blocklist-editor__input"
               placeholder=${msg('One blocked term per line...')}
+              aria-label=${msg('Moderation blocklist')}
               .value=${this._blocklistDraft}
               @input=${(e: Event) => { this._blocklistDraft = (e.target as HTMLTextAreaElement).value; }}
             ></textarea>
@@ -2302,6 +2263,7 @@ export class VelgAdminInstagramTab extends LitElement {
             <textarea
               class="blocklist-editor__input"
               placeholder=${msg('One trending hashtag per line (e.g. #AIrevolution)...')}
+              aria-label=${msg('Trending hashtags')}
               .value=${this._trendingDraft}
               @input=${(e: Event) => { this._trendingDraft = (e.target as HTMLTextAreaElement).value; }}
             ></textarea>
@@ -2321,16 +2283,12 @@ export class VelgAdminInstagramTab extends LitElement {
 
   private _renderToggle(key: string, checked: boolean) {
     return html`
-      <label class="toggle">
-        <input
-          class="toggle__input"
-          type="checkbox"
-          .checked=${checked}
-          ?disabled=${this._savingKey === key}
-          @change=${() => this._handleToggle(key, checked)}
-        />
-        <span class="toggle__track"></span>
-      </label>
+      <velg-toggle
+        variant="scif"
+        .checked=${checked}
+        ?disabled=${this._savingKey === key}
+        @toggle-change=${() => this._handleToggle(key, checked)}
+      ></velg-toggle>
     `;
   }
 
@@ -2373,66 +2331,46 @@ export class VelgAdminInstagramTab extends LitElement {
         </div>
 
         <div class="intel-grid">
-          <div class="intel-card intel-card--dispatches">
-            <div class="intel-card__corner intel-card__corner--tl"></div>
-            <div class="intel-card__corner intel-card__corner--br"></div>
-            <div class="intel-card__icon">${icons.newspaper(14)}</div>
-            <div class="intel-card__label">${msg('Dispatches Filed')}</div>
-            <div class="intel-card__value">${a?.total_posts ?? 0}</div>
-            <div class="intel-card__sub">${msg('last 30 days')}</div>
-          </div>
+          <velg-metric-card
+            label=${msg('Dispatches Filed')}
+            value=${String(a?.total_posts ?? 0)}
+            sublabel=${msg('last 30 days')}
+          ></velg-metric-card>
 
-          <div class="intel-card intel-card--engagement">
-            <div class="intel-card__corner intel-card__corner--tl"></div>
-            <div class="intel-card__corner intel-card__corner--br"></div>
-            <div class="intel-card__icon">${icons.target(14)}</div>
-            <div class="intel-card__label">${msg('Engagement Rate')}</div>
-            <div class="intel-card__value">
-              ${a?.avg_engagement_rate != null
-                ? html`${(a.avg_engagement_rate * 100).toFixed(1)}<span class="intel-card__value--unit">%</span>`
-                : '\u2014'
-              }
-            </div>
-            <div class="intel-card__sub">${msg('avg across published')}</div>
-          </div>
+          <velg-metric-card
+            label=${msg('Engagement Rate')}
+            value=${a?.avg_engagement_rate != null
+              ? `${(a.avg_engagement_rate * 100).toFixed(1)}%`
+              : '\u2014'}
+            sublabel=${msg('avg across published')}
+          ></velg-metric-card>
 
-          <div class="intel-card intel-card--reach">
-            <div class="intel-card__corner intel-card__corner--tl"></div>
-            <div class="intel-card__corner intel-card__corner--br"></div>
-            <div class="intel-card__icon">${icons.eye(14)}</div>
-            <div class="intel-card__label">${msg('Surveillance Reach')}</div>
-            <div class="intel-card__value">${this._formatNumber(a?.total_reach)}</div>
-            <div class="intel-card__sub">${msg('external observers')}</div>
-          </div>
+          <velg-metric-card
+            label=${msg('Surveillance Reach')}
+            value=${this._formatNumber(a?.total_reach)}
+            sublabel=${msg('external observers')}
+            variant="success"
+          ></velg-metric-card>
 
-          <div class="intel-card intel-card--saves">
-            <div class="intel-card__corner intel-card__corner--tl"></div>
-            <div class="intel-card__corner intel-card__corner--br"></div>
-            <div class="intel-card__icon">${icons.stampClassified(14)}</div>
-            <div class="intel-card__label">${msg('Dossiers Saved')}</div>
-            <div class="intel-card__value">${this._formatNumber(a?.total_saves)}</div>
-            <div class="intel-card__sub">${msg('content archived by observers')}</div>
-          </div>
+          <velg-metric-card
+            label=${msg('Dossiers Saved')}
+            value=${this._formatNumber(a?.total_saves)}
+            sublabel=${msg('content archived by observers')}
+            variant="warning"
+          ></velg-metric-card>
 
-          <div class="intel-card intel-card--pipeline">
-            <div class="intel-card__corner intel-card__corner--tl"></div>
-            <div class="intel-card__corner intel-card__corner--br"></div>
-            <div class="intel-card__icon">${icons.clipboard(14)}</div>
-            <div class="intel-card__label">${msg('Pipeline Depth')}</div>
-            <div class="intel-card__value">${this._statusCount('draft') + this._statusCount('scheduled')}</div>
-            <div class="intel-card__sub">
-              ${msg(str`${this._statusCount('draft')} pending / ${this._statusCount('scheduled')} queued`)}
-            </div>
-          </div>
+          <velg-metric-card
+            label=${msg('Pipeline Depth')}
+            value=${String(this._statusCount('draft') + this._statusCount('scheduled'))}
+            sublabel=${msg(str`${this._statusCount('draft')} pending / ${this._statusCount('scheduled')} queued`)}
+          ></velg-metric-card>
 
-          <div class="intel-card intel-card--quota">
-            <div class="intel-card__corner intel-card__corner--tl"></div>
-            <div class="intel-card__corner intel-card__corner--br"></div>
-            <div class="intel-card__icon">${icons.radar(14)}</div>
-            <div class="intel-card__label">${msg('API Transmission Quota')}</div>
-            <div class="intel-card__value">
-              ${usage}<span class="intel-card__value--unit">/${total}</span>
-            </div>
+          <div class="quota-card-wrapper">
+            <velg-metric-card
+              label=${msg('API Transmission Quota')}
+              value="${usage}/${total}"
+              variant="danger"
+            ></velg-metric-card>
             <div class="quota-gauge">
               <div class="quota-gauge__track">
                 <div
@@ -2464,36 +2402,23 @@ export class VelgAdminInstagramTab extends LitElement {
         </div>
 
         <div class="intel-grid cipher-section__grid">
-          <div class="intel-card">
-            <div class="intel-card__corner intel-card__corner--tl"></div>
-            <div class="intel-card__corner intel-card__corner--br"></div>
-            <div class="intel-card__icon">${icons.key(14)}</div>
-            <div class="intel-card__label">${msg('Total Redemptions')}</div>
-            <div class="intel-card__value">${cs.total_redemptions}</div>
-            <div class="intel-card__sub">${msg('all time')}</div>
-          </div>
+          <velg-metric-card
+            label=${msg('Total Redemptions')}
+            value=${String(cs.total_redemptions)}
+            sublabel=${msg('all time')}
+          ></velg-metric-card>
 
-          <div class="intel-card">
-            <div class="intel-card__corner intel-card__corner--tl"></div>
-            <div class="intel-card__corner intel-card__corner--br"></div>
-            <div class="intel-card__icon">${icons.users(14)}</div>
-            <div class="intel-card__label">${msg('Unique Operatives')}</div>
-            <div class="intel-card__value">${cs.unique_users}</div>
-            <div class="intel-card__sub">${msg('authenticated users')}</div>
-          </div>
+          <velg-metric-card
+            label=${msg('Unique Operatives')}
+            value=${String(cs.unique_users)}
+            sublabel=${msg('authenticated users')}
+          ></velg-metric-card>
 
-          <div class="intel-card">
-            <div class="intel-card__corner intel-card__corner--tl"></div>
-            <div class="intel-card__corner intel-card__corner--br"></div>
-            <div class="intel-card__icon">${icons.target(14)}</div>
-            <div class="intel-card__label">${msg('Success Rate')}</div>
-            <div class="intel-card__value">
-              ${(cs.success_rate * 100).toFixed(1)}<span class="intel-card__value--unit">%</span>
-            </div>
-            <div class="intel-card__sub">
-              ${msg(str`${cs.total_attempts} total attempts`)}
-            </div>
-          </div>
+          <velg-metric-card
+            label=${msg('Success Rate')}
+            value="${(cs.success_rate * 100).toFixed(1)}%"
+            sublabel=${msg(str`${cs.total_attempts} total attempts`)}
+          ></velg-metric-card>
         </div>
 
         ${cs.recent_redemptions.length > 0
@@ -2540,6 +2465,7 @@ export class VelgAdminInstagramTab extends LitElement {
           <textarea
             class="reject-modal__input"
             placeholder=${msg('Rejection reason (required)...')}
+            aria-label=${msg('Rejection reason')}
             .value=${this._rejectReason}
             @input=${(e: Event) => {
               this._rejectReason = (e.target as HTMLTextAreaElement).value;

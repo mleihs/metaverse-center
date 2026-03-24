@@ -12,6 +12,7 @@ import '../shared/VelgSectionHeader.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { settingsStyles } from '../shared/settings-styles.js';
 import '../forge/VelgDarkroomStudio.js';
+import './VelgDesignPreview.js';
 
 // ---------------------------------------------------------------------------
 // Field definitions — functions so msg() evaluates at render time
@@ -596,106 +597,7 @@ export class VelgDesignSettingsPanel extends BaseSettingsPanel {
       gap: var(--space-4);
     }
 
-    /* --- Preview --- */
-
-    .preview {
-      padding: var(--space-4);
-      border: var(--border-default);
-    }
-
-    .preview__title {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-sm);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-secondary);
-      margin: 0 0 var(--space-3) 0;
-    }
-
-    .preview__content {
-      padding: var(--space-5);
-      border: 2px solid;
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-4);
-      transition: all 0.3s ease;
-    }
-
-    .preview__heading {
-      font-size: 1.25em;
-      margin: 0;
-    }
-
-    .preview__text {
-      font-size: 0.9em;
-      line-height: 1.6;
-      margin: 0;
-    }
-
-    .preview__text--muted {
-      opacity: 0.6;
-    }
-
-    .preview__swatch-row {
-      display: flex;
-      gap: var(--space-2);
-      flex-wrap: wrap;
-    }
-
-    .preview__swatch {
-      width: 32px;
-      height: 32px;
-      border: 1px solid rgba(128, 128, 128, 0.3);
-      transition: border-radius 0.3s ease;
-    }
-
-    .preview__btn-row {
-      display: flex;
-      gap: var(--space-3);
-      flex-wrap: wrap;
-    }
-
-    .preview__btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 6px 14px;
-      font-weight: 700;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      cursor: default;
-      width: fit-content;
-      transition: all 0.3s ease;
-    }
-
-    .preview__card {
-      padding: var(--space-4);
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-2);
-      transition: all 0.3s ease;
-    }
-
-    .preview__card-title {
-      font-size: 0.85em;
-      margin: 0;
-    }
-
-    .preview__card-text {
-      font-size: 0.8em;
-      margin: 0;
-      line-height: 1.5;
-    }
-
-    .preview__input {
-      padding: 6px 10px;
-      font-size: 0.85em;
-      width: 200px;
-      max-width: 100%;
-      box-sizing: border-box;
-    }
+    /* Preview rendering delegated to <velg-design-preview> */
 
     @media (max-width: 640px) {
       :host {
@@ -734,14 +636,6 @@ export class VelgDesignSettingsPanel extends BaseSettingsPanel {
       .form__select,
       .form__textarea {
         width: 100%;
-      }
-
-      .preview__input {
-        width: 100%;
-      }
-
-      .preview__btn-row {
-        flex-direction: column;
       }
     }
 
@@ -1173,191 +1067,12 @@ export class VelgDesignSettingsPanel extends BaseSettingsPanel {
     return html`
       <div class="section">
         <velg-section-header variant="large">${msg('Live Preview')}</velg-section-header>
-        ${this._renderPreview()}
+        <velg-design-preview .values=${this._values}></velg-design-preview>
       </div>
     `;
   }
 
-  // ---------------------------------------------------------------------------
-  // Preview
-  // ---------------------------------------------------------------------------
-
-  private _renderPreview() {
-    const bg = this._getColorValue('color_background', '#ffffff');
-    const surface = this._getColorValue('color_surface', '#f5f5f5');
-    const surfaceSunken = this._getColorValue('color_surface_sunken', '#e5e5e5');
-    const text = this._getColorValue('color_text', '#0a0a0a');
-    const textSecondary = this._getColorValue('color_text_secondary', '#525252');
-    const textMuted = this._getColorValue('color_text_muted', '#a3a3a3');
-    const primary = this._getColorValue('color_primary', '#000000');
-    const secondary = this._getColorValue('color_secondary', '#3b82f6');
-    const accent = this._getColorValue('color_accent', '#f59e0b');
-    const border = this._getColorValue('color_border', '#000000');
-    const borderLight = this._getColorValue('color_border_light', '#d4d4d4');
-    const danger = this._getColorValue('color_danger', '#dc2626');
-    const success = this._getColorValue('color_success', '#16a34a');
-    const textInverse = this._getColorValue('text_inverse', '#ffffff');
-    const fontHeading = this._values.font_heading || "'Courier New', monospace";
-    const fontBody = this._values.font_body || 'system-ui, sans-serif';
-    const baseFontSize = this._values.font_base_size || '16px';
-    const headingWeight = this._values.heading_weight || '900';
-    const headingTransform = this._values.heading_transform || 'uppercase';
-    const headingTracking = this._values.heading_tracking || '1px';
-    const borderRadius = this._values.border_radius || '0';
-    const borderWidth = this._values.border_width || '3px';
-    const shadowStyle = this._values.shadow_style || 'offset';
-    const shadowColor = this._values.shadow_color || '#000000';
-
-    const shadow = this._computePreviewShadow(shadowStyle, shadowColor, 'md');
-
-    return html`
-      <div class="preview">
-        <h3 class="preview__title">${msg('Theme Preview')}</h3>
-        <div
-          class="preview__content"
-          style="
-            background: ${bg};
-            color: ${text};
-            border-color: ${border};
-            border-width: ${borderWidth};
-            border-radius: ${borderRadius};
-            font-family: ${fontBody};
-            font-size: ${baseFontSize};
-          "
-        >
-          <h4
-            class="preview__heading"
-            style="
-              font-family: ${fontHeading};
-              color: ${text};
-              font-weight: ${headingWeight};
-              text-transform: ${headingTransform};
-              letter-spacing: ${headingTracking};
-            "
-          >
-            ${msg('Simulation Title')}
-          </h4>
-          <p class="preview__text">
-            ${msg('This is how body text will appear with the selected colors and fonts.')}
-          </p>
-          <p class="preview__text" style="color: ${textSecondary};">
-            ${msg('This is secondary text.')}
-          </p>
-          <p class="preview__text" style="color: ${textMuted};">
-            ${msg('This is muted/disabled text.')}
-          </p>
-
-          <div class="preview__swatch-row">
-            ${[
-              { c: primary, t: msg('Primary') },
-              { c: secondary, t: msg('Secondary') },
-              { c: accent, t: msg('Accent') },
-              { c: surface, t: msg('Surface') },
-              { c: surfaceSunken, t: msg('Sunken') },
-              { c: danger, t: msg('Danger') },
-              { c: success, t: msg('Success') },
-            ].map(
-              ({ c, t }) => html`
-                <div
-                  class="preview__swatch"
-                  style="background: ${c}; border-radius: ${borderRadius};"
-                  title=${t}
-                ></div>
-              `,
-            )}
-          </div>
-
-          <div class="preview__btn-row">
-            <div
-              class="preview__btn"
-              style="
-                background: ${primary};
-                color: ${textInverse};
-                border: ${borderWidth} solid ${primary};
-                border-radius: ${borderRadius};
-                box-shadow: ${shadow};
-              "
-            >
-              ${msg('Primary Button')}
-            </div>
-            <div
-              class="preview__btn"
-              style="
-                background: transparent;
-                color: ${text};
-                border: ${borderWidth} solid ${border};
-                border-radius: ${borderRadius};
-                box-shadow: ${shadow};
-              "
-            >
-              ${msg('Secondary')}
-            </div>
-          </div>
-
-          <div
-            class="preview__card"
-            style="
-              background: ${surface};
-              border: ${borderWidth} solid ${border};
-              border-radius: ${borderRadius};
-              box-shadow: ${shadow};
-            "
-          >
-            <h5
-              class="preview__card-title"
-              style="
-                font-family: ${fontHeading};
-                font-weight: ${headingWeight};
-                text-transform: ${headingTransform};
-                letter-spacing: ${headingTracking};
-              "
-            >
-              ${msg('Card Title')}
-            </h5>
-            <p class="preview__card-text" style="color: ${textSecondary};">
-              ${msg('A sample card showing how surfaces, borders, and shadows combine.')}
-            </p>
-          </div>
-
-          <input
-            class="preview__input"
-            style="
-              background: ${surfaceSunken};
-              color: ${text};
-              border: 1px solid ${borderLight};
-              border-radius: ${borderRadius};
-              font-family: ${fontBody};
-            "
-            type="text"
-            placeholder=${msg('Input field')}
-            readonly
-          />
-        </div>
-      </div>
-    `;
-  }
-
-  private _computePreviewShadow(style: string, color: string, size: 'sm' | 'md' | 'lg'): string {
-    const scales = {
-      sm: { offset: 3, blur: 8, glow: 6 },
-      md: { offset: 4, blur: 12, glow: 12 },
-      lg: { offset: 6, blur: 16, glow: 16 },
-    };
-    const s = scales[size];
-
-    switch (style) {
-      case 'offset':
-        return `${s.offset}px ${s.offset}px 0 ${color}`;
-      case 'blur':
-        return `0 ${Math.round(s.blur * 0.3)}px ${s.blur}px ${color}40`;
-      case 'glow':
-        return `0 0 ${s.glow}px ${color}60, 0 0 ${Math.round(s.glow * 0.3)}px ${color}30`;
-      case 'none':
-        return 'none';
-      default:
-        return `${s.offset}px ${s.offset}px 0 ${color}`;
-    }
-  }
+  // Preview rendering delegated to <velg-design-preview>
 }
 
 declare global {

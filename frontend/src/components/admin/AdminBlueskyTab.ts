@@ -17,12 +17,12 @@ import {
   adminBadgeStyles,
   adminConnectionCardStyles,
   adminDispatchStyles,
-  adminMetricCardStyles,
   adminStatusFilterStyles,
   adminTabNavStyles,
 } from './admin-shared-styles.js';
 
 import '../shared/ConfirmDialog.js';
+import '../shared/VelgMetricCard.js';
 
 type PanelTab = 'operations' | 'configure' | 'intelligence';
 type StatusFilter = 'all' | 'pending' | 'publishing' | 'published' | 'failed' | 'skipped';
@@ -46,7 +46,6 @@ export class VelgAdminBlueskyTab extends LitElement {
     adminDispatchStyles,
     adminBadgeStyles,
     adminActionStyles,
-    adminMetricCardStyles,
     css`
     :host {
       display: block;
@@ -252,9 +251,14 @@ export class VelgAdminBlueskyTab extends LitElement {
       align-items: center;
     }
 
-    /* ── Bluesky intel value accent ── */
+    /* ── Intel grid (local, replaces adminMetricCardStyles) ── */
 
-    .intel-card__value--accent { color: var(--color-primary); }
+    .intel-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: var(--space-3);
+      margin-bottom: var(--space-6);
+    }
 
     @media (max-width: 768px) {
       .dispatch {
@@ -775,6 +779,7 @@ export class VelgAdminBlueskyTab extends LitElement {
                 type="text"
                 .value=${this._handleDraft}
                 placeholder="handle.bsky.social"
+                aria-label=${msg('Bluesky Handle')}
                 @input=${(e: InputEvent) => { this._handleDraft = (e.target as HTMLInputElement).value; }}
               />
               <button
@@ -796,6 +801,7 @@ export class VelgAdminBlueskyTab extends LitElement {
                 type="password"
                 .value=${this._passwordDraft}
                 placeholder=${msg('Enter app password')}
+                aria-label=${msg('Bluesky App Password')}
                 @input=${(e: InputEvent) => { this._passwordDraft = (e.target as HTMLInputElement).value; }}
               />
               <button
@@ -817,6 +823,7 @@ export class VelgAdminBlueskyTab extends LitElement {
                 type="text"
                 .value=${this._pdsDraft}
                 placeholder="https://bsky.social"
+                aria-label=${msg('Personal Data Server URL')}
                 @input=${(e: InputEvent) => { this._pdsDraft = (e.target as HTMLInputElement).value; }}
               />
               <button
@@ -893,38 +900,38 @@ export class VelgAdminBlueskyTab extends LitElement {
 
     return html`
       <div class="intel-grid">
-        <div class="intel-card">
-          <div class="intel-card__label">${msg('Published')}</div>
-          <div class="intel-card__value">${a.total_posts}</div>
-        </div>
-        <div class="intel-card">
-          <div class="intel-card__label">${msg('Pending')}</div>
-          <div class="intel-card__value">${a.total_pending}</div>
-        </div>
-        <div class="intel-card">
-          <div class="intel-card__label">${msg('Failed')}</div>
-          <div class="intel-card__value">${a.total_failed}</div>
-        </div>
-        <div class="intel-card">
-          <div class="intel-card__label">${msg('Skipped')}</div>
-          <div class="intel-card__value">${a.total_skipped}</div>
-        </div>
-        <div class="intel-card">
-          <div class="intel-card__label">${msg('Avg Likes')}</div>
-          <div class="intel-card__value intel-card__value--accent">${a.avg_likes ?? '—'}</div>
-        </div>
-        <div class="intel-card">
-          <div class="intel-card__label">${msg('Total Reposts')}</div>
-          <div class="intel-card__value">${a.total_reposts ?? 0}</div>
-        </div>
-        <div class="intel-card">
-          <div class="intel-card__label">${msg('Total Replies')}</div>
-          <div class="intel-card__value">${a.total_replies ?? 0}</div>
-        </div>
-        <div class="intel-card">
-          <div class="intel-card__label">${msg('Total Quotes')}</div>
-          <div class="intel-card__value">${a.total_quotes ?? 0}</div>
-        </div>
+        <velg-metric-card
+          label=${msg('Published')}
+          value=${String(a.total_posts)}
+        ></velg-metric-card>
+        <velg-metric-card
+          label=${msg('Pending')}
+          value=${String(a.total_pending)}
+        ></velg-metric-card>
+        <velg-metric-card
+          label=${msg('Failed')}
+          value=${String(a.total_failed)}
+        ></velg-metric-card>
+        <velg-metric-card
+          label=${msg('Skipped')}
+          value=${String(a.total_skipped)}
+        ></velg-metric-card>
+        <velg-metric-card
+          label=${msg('Avg Likes')}
+          value=${String(a.avg_likes ?? '\u2014')}
+        ></velg-metric-card>
+        <velg-metric-card
+          label=${msg('Total Reposts')}
+          value=${String(a.total_reposts ?? 0)}
+        ></velg-metric-card>
+        <velg-metric-card
+          label=${msg('Total Replies')}
+          value=${String(a.total_replies ?? 0)}
+        ></velg-metric-card>
+        <velg-metric-card
+          label=${msg('Total Quotes')}
+          value=${String(a.total_quotes ?? 0)}
+        ></velg-metric-card>
       </div>
 
       ${a.engagement_by_type.length > 0 ? html`
@@ -933,13 +940,11 @@ export class VelgAdminBlueskyTab extends LitElement {
         </h3>
         <div class="intel-grid">
           ${a.engagement_by_type.map((e) => html`
-            <div class="intel-card">
-              <div class="intel-card__label">${e.content_type}</div>
-              <div class="intel-card__value">${e.post_count} ${msg('posts')}</div>
-              <div style="font-size: var(--text-xs); color: var(--color-text-muted); margin-top: var(--space-1);">
-                ${msg(str`avg ${e.avg_likes} likes`)}
-              </div>
-            </div>
+            <velg-metric-card
+              label=${e.content_type}
+              value="${e.post_count} ${msg('posts')}"
+              sublabel=${msg(str`avg ${e.avg_likes} likes`)}
+            ></velg-metric-card>
           `)}
         </div>
       ` : nothing}

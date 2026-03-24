@@ -47,6 +47,8 @@ export class VelgLandingAgentShowcase extends LitElement {
       --_primary-10: color-mix(in srgb, var(--color-primary) 10%, transparent);
       --_primary-22: color-mix(in srgb, var(--color-primary) 22%, transparent);
       --_primary-25: color-mix(in srgb, var(--color-primary) 25%, transparent);
+      --_nebula-violet: color-mix(in srgb, var(--color-epoch-influence) 4%, transparent);
+      --_nebula-cyan: color-mix(in srgb, var(--color-info) 3.5%, transparent);
     }
 
     /* ── Section: cosmic void + nebula tints ──── */
@@ -55,8 +57,8 @@ export class VelgLandingAgentShowcase extends LitElement {
       position: relative;
       padding: var(--space-16, 64px) 0 var(--space-20, 80px);
       background:
-        radial-gradient(ellipse at 15% 50%, rgba(139, 92, 246, 0.04) 0%, transparent 50%),
-        radial-gradient(ellipse at 85% 30%, rgba(6, 182, 212, 0.035) 0%, transparent 45%),
+        radial-gradient(ellipse at 15% 50%, var(--_nebula-violet) 0%, transparent 50%),
+        radial-gradient(ellipse at 85% 30%, var(--_nebula-cyan) 0%, transparent 45%),
         radial-gradient(ellipse at 50% 90%, var(--_primary-2) 0%, transparent 40%),
         radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-surface-inverse) 1%, transparent) 0%, transparent 30%),
         var(--color-surface);
