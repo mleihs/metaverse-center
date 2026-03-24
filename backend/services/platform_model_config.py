@@ -56,7 +56,7 @@ async def _load_all(admin_supabase: Client) -> None:
                 new_cache[key] = raw
         _cache = new_cache
         _cache_loaded_at = time.monotonic()
-    except Exception:
+    except Exception:  # noqa: BLE001 — config loading is best-effort, fall back to in-memory cache
         logger.warning("Failed to load platform model config from DB")
         _cache_loaded_at = time.monotonic()
 

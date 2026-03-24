@@ -117,7 +117,7 @@ class MemberService:
                 .eq("id", str(member_id))
                 .execute()
             )
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 — catch broadly to check for last-owner trigger
             try:
                 _check_last_owner_error(e)
             except LastOwnerError:
@@ -158,7 +158,7 @@ class MemberService:
                 .eq("id", str(member_id))
                 .execute()
             )
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 — catch broadly to check for last-owner trigger
             try:
                 _check_last_owner_error(e)
             except LastOwnerError:

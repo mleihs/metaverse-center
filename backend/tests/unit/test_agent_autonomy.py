@@ -13,6 +13,7 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock
 from uuid import UUID
 
+import httpx
 import pytest
 
 from backend.services.agent_activity_service import (
@@ -574,7 +575,7 @@ class TestPlatformConfigServiceAsync:
         builder = MagicMock()
         for m in ("select", "eq", "limit"):
             getattr(builder, m).return_value = builder
-        builder.execute = AsyncMock(side_effect=Exception("DB down"))
+        builder.execute = AsyncMock(side_effect=httpx.ConnectError("DB down"))
         sb.table.return_value = builder
         result = await PlatformConfigService.get(sb, "any_key", "fallback")
         assert result == "fallback"

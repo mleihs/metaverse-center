@@ -107,5 +107,16 @@ class AIUsageService:
                 "metadata": metadata or {},
             }).execute()
 
-        except Exception:
+        except Exception:  # noqa: BLE001 — fire-and-forget, must never propagate
             logger.debug("AI usage log insert failed (non-blocking)", exc_info=True)
+
+    @staticmethod
+    async def get_platform_stats(
+        admin_supabase: Client,
+        days: int = 30,
+    ) -> dict:
+        """Get aggregated AI usage stats via ``get_ai_usage_stats`` PG function (migration 152)."""
+        resp = await admin_supabase.rpc(
+            "get_ai_usage_stats", {"p_days": days}
+        ).execute()
+        return resp.data

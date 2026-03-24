@@ -61,7 +61,7 @@ async def repair_json_output(
             temperature=temperature,
             max_tokens=2048,
         )
-    except Exception:
+    except Exception:  # noqa: BLE001 — repair is best-effort, always return None on failure
         logger.warning("LLM repair call failed for malformed output")
         return None
 

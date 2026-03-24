@@ -164,7 +164,8 @@ class TestEpochUpdate:
 
 class TestLifecycleTransitions:
     @pytest.mark.asyncio
-    async def test_advance_foundation_to_competition(self):
+    @patch("backend.services.epoch_lifecycle_service.BattleLogService.log_phase_change", new_callable=AsyncMock)
+    async def test_advance_foundation_to_competition(self, _mock_log):
         sb = MagicMock()
         chain = _make_chain()
         chain.execute = AsyncMock(side_effect=[
@@ -179,7 +180,8 @@ class TestLifecycleTransitions:
         assert update_call["status"] == "competition"
 
     @pytest.mark.asyncio
-    async def test_advance_competition_to_reckoning(self):
+    @patch("backend.services.epoch_lifecycle_service.BattleLogService.log_phase_change", new_callable=AsyncMock)
+    async def test_advance_competition_to_reckoning(self, _mock_log):
         sb = MagicMock()
         chain = _make_chain()
         chain.execute = AsyncMock(side_effect=[
@@ -194,8 +196,9 @@ class TestLifecycleTransitions:
         assert update_call["status"] == "reckoning"
 
     @pytest.mark.asyncio
+    @patch("backend.services.epoch_lifecycle_service.BattleLogService.log_phase_change", new_callable=AsyncMock)
     @patch("backend.services.epoch_lifecycle_service.GameInstanceService")
-    async def test_advance_reckoning_to_completed_archives_instances(self, mock_gis):
+    async def test_advance_reckoning_to_completed_archives_instances(self, mock_gis, _mock_log):
         mock_gis.archive_instances = AsyncMock()
 
         sb = MagicMock()
@@ -256,7 +259,8 @@ class TestLifecycleTransitions:
 
 class TestCancelEpoch:
     @pytest.mark.asyncio
-    async def test_cancel_lobby_epoch(self):
+    @patch("backend.services.epoch_lifecycle_service.BattleLogService.log_phase_change", new_callable=AsyncMock)
+    async def test_cancel_lobby_epoch(self, _mock_log):
         sb = MagicMock()
         chain = _make_chain()
         chain.execute = AsyncMock(side_effect=[
@@ -271,8 +275,9 @@ class TestCancelEpoch:
         assert update_call["status"] == "cancelled"
 
     @pytest.mark.asyncio
+    @patch("backend.services.epoch_lifecycle_service.BattleLogService.log_phase_change", new_callable=AsyncMock)
     @patch("backend.services.epoch_lifecycle_service.GameInstanceService")
-    async def test_cancel_active_epoch_deletes_instances(self, mock_gis):
+    async def test_cancel_active_epoch_deletes_instances(self, mock_gis, _mock_log):
         mock_gis.delete_instances = AsyncMock()
 
         sb = MagicMock()

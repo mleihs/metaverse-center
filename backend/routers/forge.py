@@ -537,7 +537,6 @@ async def evolve_dossier_section(
         )
 
     # Get user's BYOK key if available
-    Depends(get_supabase)
     or_key = None
     try:
         or_key, _ = await _orchestrator_service._get_user_keys(

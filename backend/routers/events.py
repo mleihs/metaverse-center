@@ -21,7 +21,6 @@ from backend.models.event import (
     EventUpdate,
     GenerateEventReactionsRequest,
 )
-from backend.services.agent_service import AgentService
 from backend.services.audit_service import AuditService
 from backend.services.event_service import EventService
 from backend.services.external_service_resolver import ExternalServiceResolver
@@ -213,68 +212,19 @@ async def generate_reactions(
     ai_config = await resolver.get_ai_provider_config()
     gen = GenerationService(supabase, simulation_id, ai_config.openrouter_api_key)
 
-    if body.agent_ids:
-        # Specific agents requested
-        agents = await AgentService.list_for_reaction(
-            supabase, simulation_id, agent_ids=body.agent_ids,
+    # Delegate fully to EventService — supports both specific agent_ids and auto-selection
+    agent_id_strs = [str(a) for a in body.agent_ids] if body.agent_ids else None
+    reactions = await EventService.generate_reactions(
+        supabase, simulation_id, event, gen,
+        agent_ids=agent_id_strs,
+        max_agents=body.max_agents,
+    )
+
+    if not reactions:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No agents found for reaction generation.",
         )
-
-        if not agents:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="No agents found for reaction generation.",
-            )
-
-        existing = await _service.get_reactions(supabase, simulation_id, event_id)
-        existing_map: dict[str, dict] = {r["agent_id"]: r for r in existing}
-
-        reactions: list[dict] = []
-        for agent in agents:
-            try:
-                reaction_text = await gen.generate_agent_reaction(
-                    agent_data={
-                        "name": agent["name"],
-                        "character": agent.get("character", ""),
-                        "system": agent.get("system", ""),
-                    },
-                    event_data={
-                        "title": event["title"],
-                        "description": event.get("description", ""),
-                    },
-                )
-
-                prev = existing_map.get(agent["id"])
-                if prev:
-                    reaction = await _service.update_reaction(
-                        supabase, prev["id"],
-                        {"reaction_text": reaction_text, "data_source": "ai_generated"},
-                    )
-                else:
-                    reaction = await _service.add_reaction(
-                        supabase, simulation_id, event_id,
-                        {
-                            "agent_id": agent["id"],
-                            "agent_name": agent["name"],
-                            "reaction_text": reaction_text,
-                            "data_source": "ai_generated",
-                        },
-                    )
-                reactions.append(reaction)
-            except Exception:
-                logger.warning("Agent reaction generation failed", extra={"agent_id": agent["id"]}, exc_info=True)
-        # NOTE: reaction_modifier auto-computed by Postgres trigger on event_reactions
-    else:
-        # General reaction generation via EventService
-        reactions = await EventService.generate_reactions(
-            supabase, simulation_id, event, gen,
-            max_agents=body.max_agents,
-        )
-
-        if not reactions:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="No agents found for reaction generation.",
-            )
 
     return {"success": True, "data": reactions}
 

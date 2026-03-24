@@ -318,7 +318,7 @@ class SimulationService:
                     "Purged storage files",
                     extra={"bucket": bucket, "prefix": prefix, "count": len(file_paths)},
                 )
-        except Exception:
+        except Exception:  # noqa: BLE001 — storage cleanup is best-effort
             logger.warning("Storage cleanup failed for %s/%s", bucket, prefix, exc_info=True)
 
     @staticmethod

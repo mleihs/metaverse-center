@@ -334,6 +334,74 @@ class GameMechanicsService:
         }
 
     @staticmethod
+    async def get_health_effects_dashboard(
+        admin_supabase: Client,
+    ) -> dict:
+        """Assemble health effects admin dashboard: global toggle + per-sim state.
+
+        Combines platform setting, simulation list, health MVs, and per-sim
+        settings into a single response dict for the admin panel.
+        """
+        from backend.services.platform_settings_service import PlatformSettingsService
+        from backend.services.settings_service import SettingsService
+        from backend.services.simulation_service import SimulationService
+
+        # 1. Global setting
+        try:
+            row = await PlatformSettingsService.get(
+                admin_supabase, "critical_health_effects_enabled",
+            )
+            global_enabled = str(row.get("setting_value", "true")).strip('"') != "false"
+        except Exception:
+            global_enabled = True
+
+        # 2. All active simulations
+        sims_data, _total = await SimulationService.list_all_simulations(
+            admin_supabase, include_deleted=False, limit=200, offset=0,
+        )
+        sim_ids = [str(s["id"]) for s in sims_data]
+
+        # 3. Health data from materialized view
+        health_rows = await GameMechanicsService.list_simulation_health(admin_supabase)
+        health_map: dict[str, dict] = {h["simulation_id"]: h for h in health_rows}
+
+        # 4. Per-sim health effects settings
+        effects_rows = await SettingsService.batch_get_by_key(
+            admin_supabase, sim_ids, "game", "critical_health_effects_enabled",
+        )
+        effects_map: dict[str, str] = {}
+        for s in effects_rows:
+            raw = s.get("setting_value", "true")
+            effects_map[s["simulation_id"]] = str(raw).strip('"')
+
+        # 5. Build per-sim entries with threshold state
+        simulations = []
+        for sim in sims_data:
+            sid = str(sim["id"])
+            health = health_map.get(sid, {})
+            oh = health.get("overall_health", 0.5)
+            if oh < 0.25:
+                threshold_state = "critical"
+            elif oh > 0.85:
+                threshold_state = "ascendant"
+            else:
+                threshold_state = "normal"
+
+            simulations.append({
+                "id": sid,
+                "name": sim.get("name", ""),
+                "slug": sim.get("slug", ""),
+                "overall_health": round(oh, 4),
+                "threshold_state": threshold_state,
+                "effects_enabled": effects_map.get(sid, "true") != "false",
+            })
+
+        return {
+            "global_enabled": global_enabled,
+            "simulations": simulations,
+        }
+
+    @staticmethod
     async def refresh_metrics(supabase: Client) -> None:
         """Trigger a full refresh of all game mechanics materialized views.
 

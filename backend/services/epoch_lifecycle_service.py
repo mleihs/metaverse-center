@@ -148,7 +148,7 @@ class EpochLifecycleService:
                 await CycleNotificationService.send_phase_change_notifications(
                     admin or supabase, str(epoch_id), "lobby", "foundation",
                 )
-            except Exception:
+            except Exception:  # noqa: BLE001 — notifications are best-effort
                 logger.warning("Epoch start notification failed for epoch %s", epoch_id, exc_info=True)
 
         return resp.data[0]
@@ -219,7 +219,7 @@ class EpochLifecycleService:
                 await CycleNotificationService.send_phase_change_notifications(
                     admin_supabase or supabase, str(epoch_id), old_status, next_status,
                 )
-        except Exception:
+        except Exception:  # noqa: BLE001 — notifications are best-effort
             logger.warning("Phase notification failed for epoch %s", epoch_id, exc_info=True)
 
         return resp.data[0]

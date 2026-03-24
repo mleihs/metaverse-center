@@ -77,4 +77,4 @@
 - [ADR-009: admin_supabase Usage Policy](adr/009-admin-supabase-usage-policy.md)
 
 ## Audit Remediation
-- [CLAUDE_AUDIT.md](../CLAUDE_AUDIT.md) — Full security + architecture audit (Phase 0-6, 23.03.2026)
+- [CLAUDE_AUDIT.md](../CLAUDE_AUDIT.md) — Full security + architecture audit (Phase 0-6, 23.03.2026) — remediation completed 24.03.2026

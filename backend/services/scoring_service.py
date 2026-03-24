@@ -3,7 +3,9 @@
 import logging
 from uuid import UUID
 
+import httpx
 from fastapi import HTTPException, status
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.models.epoch import SCORING_DIMENSIONS
 from backend.services.constants import DETECTION_PENALTY, MISSION_SCORE_VALUES
@@ -35,7 +37,7 @@ class ScoringService:
         # Refresh materialized views (migration 031) so freshly cloned game instances have data
         try:
             await supabase.rpc("refresh_all_game_metrics").execute()
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError):
             logger.warning("Failed to refresh materialized views before scoring")
 
         epoch = await EpochService.get(supabase, epoch_id)
@@ -731,10 +733,6 @@ class ScoringService:
         awards: list[dict] = []
         if not standings:
             return awards
-
-        {
-            s["simulation_id"]: s for s in participant_stats
-        }
 
         # Master Spy — highest military score
         best_military = max(standings, key=lambda e: e.get("military", 0))

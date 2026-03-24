@@ -229,7 +229,7 @@ class EpochChatService:
                     )
                     result["auto_resolved"] = True
                     result["new_cycle"] = epoch_data.get("current_cycle", 1)
-                except Exception:
+                except Exception:  # noqa: BLE001 — auto-resolve is best-effort, must not crash toggle_ready
                     logger.exception("Auto-resolve failed", extra={"epoch_id": str(epoch_id)})
 
         return result

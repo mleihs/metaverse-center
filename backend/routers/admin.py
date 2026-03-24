@@ -15,7 +15,7 @@ from backend.dependencies import get_admin_supabase, require_platform_admin
 from backend.middleware.rate_limit import RATE_LIMIT_ADMIN_MUTATION, limiter
 from backend.middleware.seo import _sim_meta_cache
 from backend.models.cleanup import CleanupExecuteRequest, CleanupPreviewRequest
-from backend.models.common import CurrentUser, PaginationMeta
+from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.models.settings import is_sensitive_key
 from backend.services.admin_user_service import AdminUserService
 from backend.services.audit_service import AuditService
@@ -72,7 +72,7 @@ class ImpersonateRequest(BaseModel):
 # --- Environment ---
 
 
-@router.get("/environment")
+@router.get("/environment", response_model=SuccessResponse[dict])
 async def get_environment(
     _user: CurrentUser = Depends(require_platform_admin()),
 ) -> dict:
@@ -83,7 +83,7 @@ async def get_environment(
 # --- Platform Settings Endpoints ---
 
 
-@router.get("/settings")
+@router.get("/settings", response_model=SuccessResponse[list])
 async def list_settings(
     _user: CurrentUser = Depends(require_platform_admin()),
     admin_supabase: Client = Depends(get_admin_supabase),
@@ -93,7 +93,7 @@ async def list_settings(
     return {"success": True, "data": data}
 
 
-@router.put("/settings/{key}")
+@router.put("/settings/{key}", response_model=SuccessResponse[dict])
 async def update_setting(
     key: str,
     body: UpdateSettingRequest,
@@ -134,7 +134,7 @@ async def update_setting(
 # --- User Management Endpoints ---
 
 
-@router.get("/users")
+@router.get("/users", response_model=SuccessResponse[list])
 async def list_users(
     page: int = Query(default=1, ge=1),
     per_page: int = Query(default=50, ge=1, le=100),
@@ -146,7 +146,7 @@ async def list_users(
     return {"success": True, "data": data}
 
 
-@router.get("/users/{user_id}")
+@router.get("/users/{user_id}", response_model=SuccessResponse[dict])
 async def get_user(
     user_id: UUID,
     _user: CurrentUser = Depends(require_platform_admin()),
@@ -157,7 +157,7 @@ async def get_user(
     return {"success": True, "data": data}
 
 
-@router.delete("/users/{user_id}")
+@router.delete("/users/{user_id}", response_model=SuccessResponse[dict])
 @limiter.limit(RATE_LIMIT_ADMIN_MUTATION)
 async def delete_user(
     request: Request,
@@ -173,7 +173,7 @@ async def delete_user(
     return {"success": True, "data": {"deleted": True}}
 
 
-@router.post("/users/{user_id}/memberships")
+@router.post("/users/{user_id}/memberships", response_model=SuccessResponse[dict])
 async def add_membership(
     user_id: UUID,
     body: AddMembershipRequest,
@@ -191,7 +191,7 @@ async def add_membership(
     return {"success": True, "data": data}
 
 
-@router.put("/users/{user_id}/memberships/{simulation_id}")
+@router.put("/users/{user_id}/memberships/{simulation_id}", response_model=SuccessResponse[dict])
 async def change_membership_role(
     user_id: UUID,
     simulation_id: UUID,
@@ -210,7 +210,7 @@ async def change_membership_role(
     return {"success": True, "data": data}
 
 
-@router.delete("/users/{user_id}/memberships/{simulation_id}")
+@router.delete("/users/{user_id}/memberships/{simulation_id}", response_model=SuccessResponse[dict])
 async def remove_membership(
     user_id: UUID,
     simulation_id: UUID,
@@ -225,7 +225,7 @@ async def remove_membership(
     return {"success": True, "data": data}
 
 
-@router.put("/users/{user_id}/wallet")
+@router.put("/users/{user_id}/wallet", response_model=SuccessResponse[dict])
 @limiter.limit(RATE_LIMIT_ADMIN_MUTATION)
 async def update_user_wallet(
     request: Request,
@@ -248,7 +248,7 @@ async def update_user_wallet(
 # --- Data Cleanup Endpoints ---
 
 
-@router.get("/cleanup/stats")
+@router.get("/cleanup/stats", response_model=SuccessResponse[dict])
 async def get_cleanup_stats(
     _user: CurrentUser = Depends(require_platform_admin()),
     admin_supabase: Client = Depends(get_admin_supabase),
@@ -258,7 +258,7 @@ async def get_cleanup_stats(
     return {"success": True, "data": data.model_dump(mode="json")}
 
 
-@router.post("/cleanup/preview")
+@router.post("/cleanup/preview", response_model=SuccessResponse[dict])
 async def preview_cleanup(
     body: CleanupPreviewRequest,
     _user: CurrentUser = Depends(require_platform_admin()),
@@ -271,7 +271,7 @@ async def preview_cleanup(
     return {"success": True, "data": data.model_dump(mode="json")}
 
 
-@router.post("/cleanup/execute")
+@router.post("/cleanup/execute", response_model=SuccessResponse[dict])
 async def execute_cleanup(
     body: CleanupExecuteRequest,
     user: CurrentUser = Depends(require_platform_admin()),
@@ -294,7 +294,7 @@ async def execute_cleanup(
 _sim_service = SimulationService()
 
 
-@router.get("/simulations")
+@router.get("/simulations", response_model=PaginatedResponse[dict])
 async def list_simulations(
     include_deleted: bool = Query(default=False),
     page: int = Query(default=1, ge=1),
@@ -314,7 +314,7 @@ async def list_simulations(
     }
 
 
-@router.get("/simulations/deleted")
+@router.get("/simulations/deleted", response_model=PaginatedResponse[dict])
 async def list_deleted_simulations(
     page: int = Query(default=1, ge=1),
     per_page: int = Query(default=50, ge=1, le=100),
@@ -333,7 +333,7 @@ async def list_deleted_simulations(
     }
 
 
-@router.post("/simulations/{simulation_id}/restore")
+@router.post("/simulations/{simulation_id}/restore", response_model=SuccessResponse[dict])
 async def restore_simulation(
     simulation_id: UUID,
     _user: CurrentUser = Depends(require_platform_admin()),
@@ -347,7 +347,7 @@ async def restore_simulation(
     return {"success": True, "data": data}
 
 
-@router.delete("/simulations/{simulation_id}")
+@router.delete("/simulations/{simulation_id}", response_model=SuccessResponse[dict])
 async def admin_delete_simulation(
     simulation_id: UUID,
     hard: bool = Query(default=False, description="Permanently delete instead of soft-delete"),
@@ -372,74 +372,17 @@ async def admin_delete_simulation(
 # --- Health Effects Control ---
 
 
-@router.get("/health-effects")
+@router.get("/health-effects", response_model=SuccessResponse[dict])
 async def get_health_effects(
     _user: CurrentUser = Depends(require_platform_admin()),
     admin_supabase: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Return global + per-simulation health effects state for admin tab."""
-    # 1. Global setting
-    try:
-        row = await PlatformSettingsService.get(
-            admin_supabase, "critical_health_effects_enabled",
-        )
-        global_enabled = str(row.get("setting_value", "true")).strip('"') != "false"
-    except HTTPException:
-        global_enabled = True
-
-    # 2. All active simulations
-    sims_data, _total = await _sim_service.list_all_simulations(
-        admin_supabase, include_deleted=False, limit=200, offset=0,
-    )
-
-    sim_ids = [str(s["id"]) for s in sims_data]
-
-    # 3. Health data from materialized view (via service)
-    health_rows = await GameMechanicsService.list_simulation_health(admin_supabase)
-    health_map: dict[str, dict] = {h["simulation_id"]: h for h in health_rows}
-
-    # 4. Per-sim health effects settings (via service)
-    effects_rows = await SettingsService.batch_get_by_key(
-        admin_supabase, sim_ids, "game", "critical_health_effects_enabled",
-    )
-    effects_map: dict[str, str] = {}
-    for s in effects_rows:
-        raw = s.get("setting_value", "true")
-        effects_map[s["simulation_id"]] = str(raw).strip('"')
-
-    # 5. Build response
-    simulations = []
-    for sim in sims_data:
-        sid = str(sim["id"])
-        health = health_map.get(sid, {})
-        oh = health.get("overall_health", 0.5)
-        if oh < 0.25:
-            ts = "critical"
-        elif oh > 0.85:
-            ts = "ascendant"
-        else:
-            ts = "normal"
-
-        sim_enabled = effects_map.get(sid, "true") != "false"
-        simulations.append({
-            "id": sid,
-            "name": sim.get("name", ""),
-            "slug": sim.get("slug", ""),
-            "overall_health": round(oh, 4),
-            "threshold_state": ts,
-            "effects_enabled": sim_enabled,
-        })
-
-    return {
-        "success": True,
-        "data": {
-            "global_enabled": global_enabled,
-            "simulations": simulations,
-        },
-    }
+    data = await GameMechanicsService.get_health_effects_dashboard(admin_supabase)
+    return {"success": True, "data": data}
 
 
-@router.put("/health-effects/simulations/{simulation_id}")
+@router.put("/health-effects/simulations/{simulation_id}", response_model=SuccessResponse[dict])
 async def update_simulation_health_effects(
     simulation_id: UUID,
     body: HealthEffectsToggle,
@@ -468,7 +411,7 @@ async def update_simulation_health_effects(
 # --- Impersonation ---
 
 
-@router.post("/impersonate")
+@router.post("/impersonate", response_model=SuccessResponse[dict])
 @limiter.limit(RATE_LIMIT_ADMIN_MUTATION)
 async def impersonate_user(
     request: Request,
@@ -513,91 +456,14 @@ def _invalidate_caches(key: str) -> None:
 # ── AI Usage Analytics ─────────────────────────────────────────────────
 
 
-@router.get("/ai-usage/stats")
+@router.get("/ai-usage/stats", response_model=SuccessResponse[dict])
 async def get_ai_usage_stats(
     days: int = Query(default=30, ge=1, le=365),
     _user: CurrentUser = Depends(require_platform_admin()),
     admin_supabase: Client = Depends(get_admin_supabase),
 ) -> dict:
-    """Get aggregated AI usage stats for the platform.
+    """Get aggregated AI usage stats for the platform."""
+    from backend.services.ai_usage_service import AIUsageService
 
-    Queries ``ai_usage_log`` (migration 150) for the specified period.
-    Returns breakdowns by provider, model, purpose, simulation, and daily trend.
-    """
-    from datetime import UTC, datetime, timedelta
-
-    since = (datetime.now(UTC) - timedelta(days=days)).isoformat()
-
-    # Fetch raw logs for the period (limit 10k for safety)
-    resp = await (
-        admin_supabase.table("ai_usage_log")
-        .select(
-            "provider, model, purpose, simulation_id, prompt_tokens,"
-            " completion_tokens, total_tokens, duration_ms,"
-            " estimated_cost_usd, key_source, created_at"
-        )
-        .gte("created_at", since)
-        .order("created_at", desc=True)
-        .limit(10000)
-        .execute()
-    )
-    rows = resp.data or []
-
-    # Aggregate in Python (small dataset, no need for PG function yet)
-    total_calls = len(rows)
-    total_tokens = sum(r.get("total_tokens", 0) for r in rows)
-    total_cost = sum(float(r.get("estimated_cost_usd", 0)) for r in rows)
-
-    by_provider: dict[str, dict] = {}
-    by_model: dict[str, dict] = {}
-    by_purpose: dict[str, dict] = {}
-    by_simulation: dict[str, dict] = {}
-    by_day: dict[str, dict] = {}
-    key_sources: dict[str, dict] = {}
-
-    for r in rows:
-        provider = r.get("provider", "unknown")
-        model = r.get("model", "unknown")
-        purpose = r.get("purpose", "unknown")
-        sim_id = r.get("simulation_id") or "platform"
-        cost = float(r.get("estimated_cost_usd", 0))
-        tokens = r.get("total_tokens", 0)
-        ks = r.get("key_source", "env")
-        day = (r.get("created_at") or "")[:10]
-
-        for key, bucket in [
-            (provider, by_provider), (model, by_model),
-            (purpose, by_purpose), (sim_id, by_simulation),
-            (day, by_day), (ks, key_sources),
-        ]:
-            if key not in bucket:
-                bucket[key] = {"calls": 0, "tokens": 0, "cost": 0.0}
-            bucket[key]["calls"] += 1
-            bucket[key]["tokens"] += tokens
-            bucket[key]["cost"] += cost
-
-    def _to_list(d: dict, key_name: str = "name") -> list[dict]:
-        return sorted(
-            [{key_name: k, **v} for k, v in d.items()],
-            key=lambda x: x["cost"], reverse=True,
-        )
-
-    return {
-        "success": True,
-        "data": {
-            "period_days": days,
-            "total_calls": total_calls,
-            "total_tokens": total_tokens,
-            "total_cost_usd": round(total_cost, 4),
-            "avg_cost_per_call": round(total_cost / total_calls, 6) if total_calls else 0,
-            "by_provider": _to_list(by_provider, "provider"),
-            "by_model": _to_list(by_model, "model"),
-            "by_purpose": _to_list(by_purpose, "purpose"),
-            "by_simulation": _to_list(by_simulation, "simulation_id"),
-            "daily_trend": sorted(
-                [{"date": k, **v} for k, v in by_day.items()],
-                key=lambda x: x["date"],
-            ),
-            "key_sources": key_sources,
-        },
-    }
+    data = await AIUsageService.get_platform_stats(admin_supabase, days=days)
+    return {"success": True, "data": data}

@@ -129,7 +129,7 @@ class CleanupService:
                     "cascade_counts": result.cascade_counts,
                 },
             }).execute()
-        except Exception:
+        except Exception:  # noqa: BLE001 — best-effort audit, must not block cleanup
             logger.warning("Failed to audit cleanup operation", exc_info=True)
 
         return result

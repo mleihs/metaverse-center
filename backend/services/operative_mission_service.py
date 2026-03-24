@@ -1,11 +1,14 @@
 """Operative mission execution: deploy, resolve, recall, and fortification logic."""
 
+import json
 import logging
 import secrets
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
+import httpx
 from fastapi import HTTPException, status
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.models.epoch import OperativeDeploy
 from backend.services.aptitude_service import AptitudeService
@@ -232,7 +235,7 @@ class OperativeMissionService:
                 )
                 if zone_resp.data:
                     context["target_zone_name"] = zone_resp.data["name"]
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError):
             logger.debug("Context lookup failed", exc_info=True)
 
         # Log deployment to battle log with pre-fetched context
@@ -241,7 +244,7 @@ class OperativeMissionService:
                 supabase, epoch_id, epoch.get("current_cycle", 1),
                 mission, context=context,
             )
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError):
             logger.debug("Battle log write failed for deployment", exc_info=True)
 
         # Attach context to response for frontend toast (no re-query needed)
@@ -384,7 +387,6 @@ class OperativeMissionService:
                     )
                     pairs_row = _resp.data
                     if pairs_row:
-                        import json
                         pairs = pairs_row[0]["setting_value"]
                         if isinstance(pairs, str):
                             pairs = json.loads(pairs)
@@ -399,7 +401,7 @@ class OperativeMissionService:
                                 op_type = body.operative_type
                                 if op_type in effects:
                                     convergence_mod += float(effects[op_type])
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, json.JSONDecodeError, KeyError, TypeError, ValueError):
             logger.debug("Convergence modifiers unavailable (tables may not exist yet)")
 
         # ── Agent autonomy: mood affects operative effectiveness ──
@@ -424,7 +426,7 @@ class OperativeMissionService:
                 # High stress: additional -0.03 (near breakdown)
                 if stress_level > 500:
                     mood_modifier -= 0.03
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError):
             logger.debug("Agent mood data unavailable for operative calculation")
 
         probability = (
@@ -459,7 +461,7 @@ class OperativeMissionService:
                 {"p_simulation_id": target_sim_id, "p_zone_id": str(target_zone_id) if target_zone_id else None},
             ).execute()
             return float(result.data) if result.data is not None else 0.0
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, TypeError, ValueError):
             logger.debug("Zone pressure lookup failed, defaulting to 0.0", exc_info=True)
             return 0.0
 
@@ -479,7 +481,7 @@ class OperativeMissionService:
                 {"p_simulation_id": target_sim_id, "p_operative_type": operative_type},
             ).execute()
             return float(result.data) if result.data is not None else 0.0
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, TypeError, ValueError):
             logger.debug("Resonance operative modifier lookup failed, defaulting to 0.0", exc_info=True)
             return 0.0
 
@@ -498,7 +500,7 @@ class OperativeMissionService:
                 {"p_simulation_id": source_sim_id},
             ).execute()
             return float(result.data) if result.data is not None else 0.0
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, TypeError, ValueError):
             logger.debug("Attacker pressure penalty lookup failed, defaulting to 0.0", exc_info=True)
             return 0.0
 
@@ -910,7 +912,7 @@ class OperativeMissionService:
                     result["event_created"] = True
                 else:
                     result["event_saturated"] = True
-            except Exception:
+            except Exception:  # noqa: BLE001 — crisis event is supplemental, sabotage effect already applied
                 logger.debug("Sabotage crisis event creation failed", exc_info=True)
 
         narrative_parts = ["Sabotage successful."]
@@ -1241,7 +1243,7 @@ class OperativeMissionService:
                     "expires_at_cycle": expires_at_cycle,
                 },
             )
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError):
             logger.debug("Battle log write failed for zone fortification", exc_info=True)
 
         return fort_resp.data[0] if fort_resp.data else fort_data

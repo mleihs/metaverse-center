@@ -6,7 +6,10 @@ import logging
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
+import httpx
+import sentry_sdk
 from fastapi import HTTPException, status
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.services.agent_memory_service import AgentMemoryService
 from backend.services.agent_service import AgentService
@@ -276,6 +279,7 @@ class EventService(BaseService):
         event: dict,
         gen_service: object,
         *,
+        agent_ids: list[str] | None = None,
         max_agents: int = 20,
     ) -> list[dict]:
         """Generate AI reactions from agents for an event.
@@ -286,13 +290,14 @@ class EventService(BaseService):
             event: Event dict (must have ``id``, ``title``, optionally ``description``).
             gen_service: A ``GenerationService`` instance (typed as ``object`` to avoid
                 circular import).
+            agent_ids: If provided, generate reactions only for these specific agents.
             max_agents: Maximum number of agents to generate reactions for.
 
         Returns:
             List of created/updated reaction dicts.
         """
         agents = await AgentService.list_for_reaction(
-            supabase, simulation_id, limit=max_agents,
+            supabase, simulation_id, agent_ids=agent_ids, limit=max_agents,
         )
 
         if not agents:
@@ -340,8 +345,9 @@ class EventService(BaseService):
                         },
                     )
                 reactions.append(reaction)
-            except Exception:
+            except Exception:  # noqa: BLE001 — per-agent failure must not abort the loop
                 logger.warning("Agent reaction generation failed", extra={"agent_id": agent["id"]}, exc_info=True)
+                sentry_sdk.capture_exception()
 
         # NOTE: reaction_modifier is computed automatically by the
         # recompute_reaction_modifier() Postgres trigger on event_reactions.
@@ -389,7 +395,7 @@ class EventService(BaseService):
                     source_type="event_reaction",
                     source_id=UUID(reaction["id"]),
                 )
-            except Exception:
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.debug(
                     "Failed to create event memory for agent %s",
                     agent_id,
@@ -464,7 +470,7 @@ class EventService(BaseService):
                                 await supabase.table("narrative_arcs").update({
                                     "source_event_ids": existing_ids,
                                 }).eq("id", arc["id"]).execute()
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError):
             logger.debug("Heartbeat arc attachment unavailable")
 
         # ── Building condition degradation from crisis/sabotage events ──
@@ -519,7 +525,7 @@ class EventService(BaseService):
                                 "buildings_affected": len(buildings),
                             },
                         )
-        except Exception:
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.debug("Building crisis degradation unavailable", exc_info=True)
 
         result = await supabase.rpc(
