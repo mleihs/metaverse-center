@@ -1393,9 +1393,9 @@ Generate exactly 3 new agents. Requirements:
                 result = await run_ai(agent, prompt, "chunk", output_type=list[ForgeAgentDraft])
                 generated = result.output
 
-            # 3. Insert agents into the simulation
-            for agent_draft in generated:
-                await admin_supabase.table("agents").insert({
+            # 3. Insert agents into the simulation (batch insert — single round-trip)
+            agent_rows = [
+                {
                     "simulation_id": str(simulation_id),
                     "name": agent_draft.name,
                     "gender": agent_draft.gender,
@@ -1403,7 +1403,10 @@ Generate exactly 3 new agents. Requirements:
                     "primary_profession": agent_draft.primary_profession,
                     "character": agent_draft.character,
                     "background": agent_draft.background,
-                }).execute()
+                }
+                for agent_draft in generated
+            ]
+            await admin_supabase.table("agents").insert(agent_rows).execute()
 
             # 4. Generate portraits
             try:
