@@ -71,10 +71,11 @@ def build_view_content(
 def build_entity_detail_content(
     client: Client, sim_id: str, sim_name: str, slug: str,
     view: str, entity_id: str,
-) -> tuple[str, str]:
+) -> tuple[str, str, str]:
     """Build HTML and JSON-LD for an individual entity detail page.
 
-    Returns (entity_html, jsonld_script_content).
+    Returns (entity_html, jsonld_script_content, entity_image_url).
+    The image_url can be used for og:image to override the simulation banner.
     """
     detail_builders: dict[str, callable] = {
         "agents": _build_agent_detail,
@@ -84,22 +85,26 @@ def build_entity_detail_content(
 
     builder = detail_builders.get(view)
     if not builder:
-        return "", ""
+        return "", "", ""
 
     try:
-        return builder(client, sim_id, sim_name, slug, entity_id)
+        result = builder(client, sim_id, sim_name, slug, entity_id)
+        # Detail builders return (html, jsonld) — extend with image from JSON-LD
+        if len(result) == 3:
+            return result
+        return result[0], result[1], ""
     except Exception:
         logger.warning(
             "Failed to build entity detail for %s/%s/%s",
             slug, view, entity_id, exc_info=True,
         )
-        return "", ""
+        return "", "", ""
 
 
 def _build_agent_detail(
     client: Client, sim_id: str, sim_name: str, slug: str,
     entity_id: str,
-) -> tuple[str, str]:
+) -> tuple[str, str, str]:
     """Build Person schema for an individual agent."""
     query = (
         client.table("agents")
@@ -114,7 +119,7 @@ def _build_agent_detail(
 
     agents = (query.limit(1).execute()).data or []
     if not agents:
-        return "", ""
+        return "", "", ""
 
     a = agents[0]
     name = a.get("name", "")
@@ -146,13 +151,13 @@ def _build_agent_detail(
     if gender:
         person["gender"] = gender
 
-    return entity_html, _safe_jsonld(person)
+    return entity_html, _safe_jsonld(person), portrait
 
 
 def _build_building_detail(
     client: Client, sim_id: str, sim_name: str, slug: str,
     entity_id: str,
-) -> tuple[str, str]:
+) -> tuple[str, str, str]:
     """Build Place schema for an individual building."""
     query = (
         client.table("buildings")
@@ -167,7 +172,7 @@ def _build_building_detail(
 
     buildings = (query.limit(1).execute()).data or []
     if not buildings:
-        return "", ""
+        return "", "", ""
 
     b = buildings[0]
     name = b.get("name", "")
@@ -194,7 +199,7 @@ def _build_building_detail(
     if image:
         place["image"] = image
 
-    return entity_html, _safe_jsonld(place)
+    return entity_html, _safe_jsonld(place), image
 
 
 def _build_lore_detail(

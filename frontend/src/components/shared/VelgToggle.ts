@@ -33,6 +33,7 @@ export class VelgToggle extends LitElement {
     :host {
       display: inline-flex;
       align-items: center;
+      flex-shrink: 0;
       gap: var(--space-2, 8px);
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
@@ -112,6 +113,13 @@ export class VelgToggle extends LitElement {
 
     :host(:hover:not([disabled])) .track {
       border-color: var(--color-text-muted, #888);
+    }
+
+    /* ── Switch label (wraps input + track) ──────────── */
+
+    label {
+      display: inline-flex;
+      align-items: center;
     }
 
     /* ── Focus-visible ───────────────────────────────── */

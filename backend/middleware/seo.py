@@ -389,19 +389,22 @@ def _inject_entity_content(
     """Inject entity content HTML and JSON-LD into crawler response."""
     cache_key = f"{slug}:{view}:{entity_id}" if entity_id else f"{slug}:{view}"
     cached = _entity_cache.get(cache_key)
+    entity_og_image = ""
     if cached is not None:
-        entity_html, entity_jsonld = cached
+        entity_html, entity_jsonld, *rest = cached
+        entity_og_image = rest[0] if rest else ""
     else:
         client = _get_anon_client()
+        entity_og_image = ""
         if entity_id:
-            entity_html, entity_jsonld = seo_content.build_entity_detail_content(
+            entity_html, entity_jsonld, entity_og_image = seo_content.build_entity_detail_content(
                 client, sim_id, sim_name, slug, view, entity_id,
             )
         else:
             entity_html, entity_jsonld = seo_content.build_view_content(
                 client, sim_id, sim_name, slug, view,
             )
-        _entity_cache[cache_key] = (entity_html, entity_jsonld)
+        _entity_cache[cache_key] = (entity_html, entity_jsonld, entity_og_image)
 
     if entity_html:
         seo_div = f'<div id="seo-content" style="display:none">{entity_html}</div>'
@@ -410,6 +413,11 @@ def _inject_entity_content(
     if entity_jsonld:
         jsonld_tag = f'<script type="application/ld+json">{entity_jsonld}</script>'
         html_str = html_str.replace("</head>", f"    {jsonld_tag}\n  </head>")
+
+    # Override og:image with entity-specific image (agent portrait, building image)
+    if entity_og_image:
+        html_str = _replace_meta(html_str, 'property', 'og:image', _escape(entity_og_image))
+        html_str = _replace_meta(html_str, 'name', 'twitter:image', _escape(entity_og_image))
 
     return html_str
 

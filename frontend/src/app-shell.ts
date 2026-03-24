@@ -171,6 +171,10 @@ export class VelgApp extends LitElement {
             'Your operative command center — monitor active epochs, browse simulation worlds, and track substrate anomalies.',
           );
           seoService.setCanonical('/dashboard');
+          seoService.setBreadcrumbs([
+            { name: 'Home', url: 'https://metaverse.center/' },
+            { name: 'Dashboard', url: 'https://metaverse.center/dashboard' },
+          ]);
           analyticsService.trackPageView('/dashboard', document.title);
           return true;
         },
@@ -185,6 +189,10 @@ export class VelgApp extends LitElement {
             'Explore the multiverse map — view active simulations, connections, and live battle statistics.',
           );
           seoService.setCanonical('/multiverse');
+          seoService.setBreadcrumbs([
+            { name: 'Home', url: 'https://metaverse.center/' },
+            { name: 'Multiverse Map', url: 'https://metaverse.center/multiverse' },
+          ]);
           analyticsService.trackPageView('/multiverse', document.title);
           return true;
         },
@@ -196,6 +204,10 @@ export class VelgApp extends LitElement {
           await this._authReady;
           seoService.setTitle(['Epoch Command Center']);
           seoService.setCanonical('/epoch');
+          seoService.setBreadcrumbs([
+            { name: 'Home', url: 'https://metaverse.center/' },
+            { name: 'Epoch', url: 'https://metaverse.center/epoch' },
+          ]);
           analyticsService.trackPageView('/epoch', document.title);
           return true;
         },
@@ -240,6 +252,10 @@ export class VelgApp extends LitElement {
           await this._authReady;
           seoService.setTitle(['How to Play']);
           seoService.setCanonical('/how-to-play');
+          seoService.setBreadcrumbs([
+            { name: 'Home', url: 'https://metaverse.center/' },
+            { name: 'How to Play', url: 'https://metaverse.center/how-to-play' },
+          ]);
           analyticsService.trackPageView('/how-to-play', document.title);
           return true;
         },
@@ -254,6 +270,10 @@ export class VelgApp extends LitElement {
             'Declassified archives of the Bureau of Impossible Geography — the complete mythology of the Fracture, the Bleed, and the Convergence.',
           );
           seoService.setCanonical('/archives');
+          seoService.setBreadcrumbs([
+            { name: 'Home', url: 'https://metaverse.center/' },
+            { name: 'Archives', url: 'https://metaverse.center/archives' },
+          ]);
           analyticsService.trackPageView('/archives', document.title);
           return true;
         },
@@ -437,6 +457,10 @@ export class VelgApp extends LitElement {
             'Browse player-created civilizations — each with AI-powered characters, evolving cities, and stories that write themselves.',
           );
           seoService.setCanonical('/worlds');
+          seoService.setBreadcrumbs([
+            { name: 'Home', url: 'https://metaverse.center/' },
+            { name: 'Worlds', url: 'https://metaverse.center/worlds' },
+          ]);
           analyticsService.trackPageView('/worlds', document.title);
           return true;
         },
@@ -451,6 +475,10 @@ export class VelgApp extends LitElement {
             'Every world writes its own newspaper. Read AI-generated broadsheets from active simulations — fiction tied to real gameplay events.',
           );
           seoService.setCanonical('/chronicles');
+          seoService.setBreadcrumbs([
+            { name: 'Home', url: 'https://metaverse.center/' },
+            { name: 'Chronicles', url: 'https://metaverse.center/chronicles' },
+          ]);
           analyticsService.trackPageView('/chronicles', document.title);
           return true;
         },

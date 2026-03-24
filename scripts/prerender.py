@@ -39,7 +39,10 @@ VIEW_LABELS: dict[str, str] = {
 PLATFORM_PAGES: dict[str, dict[str, str]] = {
     "index": {
         "title": "metaverse.center — a worldbuilding framework",
-        "description": "Build and explore simulated worlds. Create agents, buildings, events, and social dynamics in interconnected shards of reality.",
+        "description": (
+            "Build and explore simulated worlds. Create agents, buildings,"
+            " events, and social dynamics in interconnected shards of reality."
+        ),
         "canonical": f"{BASE_URL}/",
         "content": (
             "<h1>metaverse.center</h1>"
@@ -49,7 +52,10 @@ PLATFORM_PAGES: dict[str, dict[str, str]] = {
     },
     "dashboard": {
         "title": "Dashboard | metaverse.center",
-        "description": "Explore simulated worlds — Velgarien, The Gaslit Reach, Station Null, Speranza, and Cit\u00e9 des Dames.",
+        "description": (
+            "Explore simulated worlds \u2014 Velgarien, The Gaslit Reach,"
+            " Station Null, Speranza, and Cit\u00e9 des Dames."
+        ),
         "canonical": f"{BASE_URL}/dashboard",
         "content": (
             "<h1>Dashboard</h1>"
@@ -237,7 +243,10 @@ def _write_page(rel_path: str, content: str) -> None:
 
 def _build_agents_content(sim_id: str, sim_name: str) -> str:
     """Build HTML content for agents view."""
-    agents = _supabase_get("agents", "name,character,primary_profession", {"simulation_id": sim_id, "deleted_at": "null"})
+    agents = _supabase_get(
+        "agents", "name,character,primary_profession",
+        {"simulation_id": sim_id, "deleted_at": "null"},
+    )
     sections = []
     for a in agents:
         name = _esc_content(a.get("name"))
@@ -250,7 +259,10 @@ def _build_agents_content(sim_id: str, sim_name: str) -> str:
 
 def _build_buildings_content(sim_id: str, sim_name: str) -> str:
     """Build HTML content for buildings view."""
-    buildings = _supabase_get("buildings", "name,description,building_type", {"simulation_id": sim_id, "deleted_at": "null"})
+    buildings = _supabase_get(
+        "buildings", "name,description,building_type",
+        {"simulation_id": sim_id, "deleted_at": "null"},
+    )
     sections = []
     for b in buildings:
         name = _esc_content(b.get("name"))
@@ -293,7 +305,10 @@ def _build_events_content(sim_name: str) -> str:
 
 def _build_social_content(sim_name: str) -> str:
     """Build minimal HTML for social view."""
-    return f"<h1>{_esc_content(sim_name)} — Social</h1>\n<p>Social interactions and trends in {_esc_content(sim_name)}.</p>"
+    return (
+        f"<h1>{_esc_content(sim_name)} \u2014 Social</h1>\n"
+        f"<p>Social interactions and trends in {_esc_content(sim_name)}.</p>"
+    )
 
 
 def _build_trends_content(sim_name: str) -> str:
@@ -394,7 +409,82 @@ def main() -> None:
             )
             _write_page(f"simulations/{slug}/{view}", page)
 
+        # 3. Entity detail pages (agents, buildings)
+        _prerender_entity_details(head_content, script_tags, sim, slug, sim_name, banner_url)
+
     print("Done.")
+
+
+def _prerender_entity_details(
+    head_content: str, script_tags: str,
+    sim: dict, slug: str, sim_name: str, banner_url: str,
+) -> None:
+    """Prerender individual agent and building detail pages for a simulation."""
+    sim_id = sim["id"]
+
+    # Agent detail pages
+    agents = _supabase_get(
+        "agents",
+        "slug,name,character,primary_profession,portrait_image_url",
+        {"simulation_id": sim_id, "deleted_at": "null"},
+    )
+    for a in agents:
+        a_slug = a.get("slug")
+        if not a_slug:
+            continue
+        name = _esc_content(a.get("name", ""))
+        profession = _esc_content(a.get("primary_profession", ""))
+        char_text = a.get("character") or ""
+        desc = _esc_content(char_text[:500] + "..." if len(char_text) > 500 else char_text)
+        portrait = a.get("portrait_image_url") or banner_url
+
+        content = (
+            f"<h1>{name}</h1>\n"
+            f"<p class=\"role\">{profession}</p>\n"
+            f"<p>{desc}</p>\n"
+            f"<p>From the simulation <em>{_esc_content(sim_name)}</em>.</p>"
+        )
+        page = _build_page(
+            head_content, script_tags,
+            title=f"{a.get('name', '')} — {sim_name} | metaverse.center",
+            description=char_text[:160] if char_text else f"{a.get('name', '')} in {sim_name}",
+            canonical=f"{BASE_URL}/simulations/{slug}/agents/{a_slug}",
+            content_html=content,
+            og_image=portrait,
+        )
+        _write_page(f"simulations/{slug}/agents/{a_slug}", page)
+
+    # Building detail pages
+    buildings = _supabase_get(
+        "buildings",
+        "slug,name,description,building_type,image_url",
+        {"simulation_id": sim_id, "deleted_at": "null"},
+    )
+    for b in buildings:
+        b_slug = b.get("slug")
+        if not b_slug:
+            continue
+        name = _esc_content(b.get("name", ""))
+        btype = _esc_content(b.get("building_type", ""))
+        b_desc = b.get("description") or ""
+        desc = _esc_content(b_desc[:500] + "..." if len(b_desc) > 500 else b_desc)
+        image = b.get("image_url") or banner_url
+
+        content = (
+            f"<h1>{name}</h1>\n"
+            f"<p class=\"type\">{btype}</p>\n"
+            f"<p>{desc}</p>\n"
+            f"<p>Located in <em>{_esc_content(sim_name)}</em>.</p>"
+        )
+        page = _build_page(
+            head_content, script_tags,
+            title=f"{b.get('name', '')} — {sim_name} | metaverse.center",
+            description=b_desc[:160] if b_desc else f"{b.get('name', '')} in {sim_name}",
+            canonical=f"{BASE_URL}/simulations/{slug}/buildings/{b_slug}",
+            content_html=content,
+            og_image=image,
+        )
+        _write_page(f"simulations/{slug}/buildings/{b_slug}", page)
 
 
 if __name__ == "__main__":

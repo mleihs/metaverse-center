@@ -238,8 +238,8 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
        ▼              ▼
 ┌──────────────────────────────┐
 │   Supabase (PostgreSQL)          │
-│   85+ tables + pgvector          │
-│   85+ functions, 62 triggers     │
+│   87 tables + pgvector            │
+│   151 functions, 62 triggers     │
 │   258 RLS policies, 9 ADRs       │
 │   4 materialized views           │
 │   Realtime channels              │
@@ -254,7 +254,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 - **Hybrid Supabase** – Frontend talks directly to Supabase for Auth, Storage, and Realtime. Business logic goes through FastAPI, which forwards the user's JWT so RLS is always enforced.
 - **Defense in Depth** – FastAPI `Depends()` validates roles (layer 1), Supabase RLS validates row-level access (layer 2). Neither layer trusts the other.
 - **Per-Simulation Theming** – CSS custom properties cascade through shadow DOM. Each simulation gets a theme preset validated against WCAG 2.1 AA.
-- **Database-First Logic** – Business invariants enforced in PostgreSQL via 85+ functions and 27 trigger functions. Epoch cloning (~250 lines PL/pgSQL), forge materialization, and game mechanics (building degradation, zone security, RP grants, fortification expiry) run as atomic transactions. See ADR-007.
+- **Database-First Logic** – Business invariants enforced in PostgreSQL via 151 functions and 27 trigger functions. Epoch cloning (~250 lines PL/pgSQL), forge materialization, and game mechanics (building degradation, zone security, RP grants, fortification expiry) run as atomic transactions. See ADR-007.
 - **Game Instance Isolation** – Epoch start atomically clones participating simulations into balanced game instances. Templates stay untouched.
 - **Structured Logging** – structlog over stdlib logging. JSON in production, console locally. Request context (user_id, request_id, path) injected via middleware.
 - **Admin-Configurable AI** – LLM model selection (default, fallback, research, forge) configurable at runtime with environment-specific overrides.
