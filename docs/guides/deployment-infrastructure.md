@@ -40,7 +40,20 @@ tags: [deployment, railway, supabase, production]
 │                      └──────────────────────────┘                │
 │                         User-JWT (RLS active)                     │
 └──────────────────────────────────────────────────────────────────┘
+
+           ┌──────────────────────────────────┐
+           │   Sentry (SaaS)                  │
+           │   Error tracking + source maps   │
+           │   Release tagging (git SHA)      │
+           │   Post-deploy regression check   │
+           └──────────────────────────────────┘
+             ▲ errors (backend sentry_sdk)
+             ▲ errors (frontend @sentry/browser)
+             ▲ source maps (Docker build via @sentry/vite-plugin)
+             ▲ commit association (GitHub Actions CI)
 ```
+
+Source maps are uploaded during the Docker build (Stage 1) via `@sentry/vite-plugin`, ensuring they match the exact production JS. See [Sentry CI/CD Integration Guide](sentry-cicd-integration.md) for full architecture.
 
 **Production URLs:**
 
@@ -50,6 +63,7 @@ tags: [deployment, railway, supabase, production]
 | Railway (internal) | `https://backend-production-8f7a.up.railway.app` |
 | Supabase (hosted) | `https://bffjoupddfjaljqrwqck.supabase.co` |
 | Supabase MCP | `https://mcp.supabase.com/mcp?project_ref=bffjoupddfjaljqrwqck` |
+| Sentry dashboard | `https://metaverse-center.sentry.io/issues/` |
 
 ### Local Development Topology
 

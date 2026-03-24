@@ -399,6 +399,8 @@ Deterministischer Fallback fuer lokale Entwicklung. 6 thematische Linsen (entrop
 
 Alle Tavily-Fehlschlaege werden ueber `sentry_sdk.capture_message()` mit `push_scope()` gemeldet (Tag: `forge_phase`, Context: `seed_preview`/`simulation_id`). Einzelne Tavily-Fehler (Timeouts, 429) sind nur Warnings — diese sind transient und werden per Retry behandelt. Nur vollstaendiger Fehlschlag (alle Achsen gescheitert → Emulator-Fallback) triggert Sentry.
 
+**Release Tracking:** Alle Sentry-Events (Backend + Frontend) werden mit dem Git-Commit-SHA getaggt (`SENTRY_RELEASE`). Source Maps werden waehrend des Docker-Builds via `@sentry/vite-plugin` hochgeladen. CI assoziiert Commits und registriert Deploys via `getsentry/action-release@v3`. Ein Post-Deploy Health Check prueft automatisch auf neue Sentry-Issues nach jedem Deploy. Vollstaendige Architektur: siehe `docs/guides/sentry-cicd-integration.md`.
+
 ---
 
 ## 7. Platform API Key Management

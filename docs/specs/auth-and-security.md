@@ -622,6 +622,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 - **Frontend:** `@sentry/browser` Integration in `main.ts`. `SentryService` initialisiert Sentry mit DSN, Environment, Release-Tag. `BaseApiService` faengt API-Fehler und leitet sie an Sentry weiter.
 - **Backend:** `sentry_sdk.capture_exception()` in kritischen Service-Pfaden: `cycle_resolution`, `email_service`, `bot_decision_service`, `ForgeOrchestratorService` (13 Capture-Points), `ResearchService` (3 Capture-Points). Sentry Scope Context mit Tags (`forge_phase`, `service`) und Context-Daten (simulation_id, draft_id, epoch_id).
 - **42 Loggers:** Alle Routers und Services verwenden modul-spezifische `logging.getLogger(__name__)`-Instanzen fuer strukturiertes Logging.
+- **CI/CD Release Tracking (v1.7):** Alle Sentry-Events (Frontend + Backend) werden mit dem Git-Commit-SHA getaggt (`SENTRY_RELEASE`). Source Maps werden waehrend des Docker-Builds (Stage 1) via `@sentry/vite-plugin` hochgeladen und danach geloescht (kein Leak in Runtime-Image). GitHub Actions CI assoziiert Commits (`getsentry/action-release@v3`) und ein Post-Deploy Health Check prueft automatisch auf neue Sentry-Issues. `SENTRY_AUTH_TOKEN` ist nur im Docker-Build-Stage verfuegbar (nicht im Runtime-Image). Vollstaendige Architektur: `docs/guides/sentry-cicd-integration.md`.
 
 ### Input-Validierung
 
