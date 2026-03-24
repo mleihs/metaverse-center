@@ -6,11 +6,12 @@ Delegates to existing service layer where possible (keeps query logic in sync).
 """
 
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 
-from backend.dependencies import get_anon_supabase
+from backend.dependencies import get_anon_supabase, resolve_simulation_id
 from backend.middleware.rate_limit import RATE_LIMIT_STANDARD, limiter
 from backend.models.common import PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.services.agent_memory_service import AgentMemoryService
@@ -51,6 +52,9 @@ from backend.services.taxonomy_service import TaxonomyService
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
+
+# Type alias: simulation path param that accepts UUID or slug, resolves to UUID.
+SimId = Annotated[UUID, Depends(resolve_simulation_id)]
 
 router = APIRouter(prefix="/api/v1/public", tags=["Public"])
 
@@ -103,22 +107,6 @@ async def list_simulations(
     return _paginated(data, total, limit, offset)
 
 
-@router.get("/simulations/by-slug/{slug}", response_model=SuccessResponse)
-@limiter.limit(RATE_LIMIT_PUBLIC)
-async def get_simulation_by_slug(
-    request: Request,
-    slug: str,
-    supabase: Client = Depends(get_anon_supabase),
-) -> dict:
-    """Get a single active simulation by its slug (public)."""
-    sim = await SimulationService.get_by_slug(supabase, slug)
-    if not sim:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Simulation not found.")
-    data = [sim]
-    await SimulationService.enrich_with_counts(supabase, data)
-    return {"success": True, "data": data[0]}
-
-
 @router.get("/simulations/by-slug/{slug}/forge-progress", response_model=SuccessResponse)
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_forge_progress(
@@ -141,7 +129,7 @@ async def get_forge_progress(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_simulation(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
     """Get a single active simulation (public)."""
@@ -160,7 +148,7 @@ async def get_simulation(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_bleed_status(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
     """Get aggregated bleed status for a simulation (public).
@@ -179,7 +167,7 @@ async def get_bleed_status(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_agents(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     supabase: Client = Depends(get_anon_supabase),
     search: str | None = Query(default=None),
     limit: int = Query(default=25, ge=1, le=100),
@@ -196,7 +184,7 @@ async def list_agents(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_agent_by_slug(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     slug: str,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
@@ -209,7 +197,7 @@ async def get_agent_by_slug(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_agent(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     agent_id: UUID,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
@@ -225,7 +213,7 @@ async def get_agent(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_buildings(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     supabase: Client = Depends(get_anon_supabase),
     search: str | None = Query(default=None),
     limit: int = Query(default=25, ge=1, le=100),
@@ -242,7 +230,7 @@ async def list_buildings(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_building_by_slug(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     slug: str,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
@@ -255,7 +243,7 @@ async def get_building_by_slug(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_building(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     building_id: UUID,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
@@ -271,7 +259,7 @@ async def get_building(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_events(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     supabase: Client = Depends(get_anon_supabase),
     search: str | None = Query(default=None),
     limit: int = Query(default=25, ge=1, le=100),
@@ -288,7 +276,7 @@ async def list_events(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_event(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     event_id: UUID,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
@@ -304,7 +292,7 @@ async def get_event(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_anchor(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
     """Get philosophical anchor data (public)."""
@@ -320,7 +308,7 @@ async def get_anchor(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_lore_by_slug(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     slug: str,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
@@ -335,7 +323,7 @@ async def get_lore_by_slug(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_simulation_lore(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
     """Get lore sections for a simulation (public)."""
@@ -366,7 +354,7 @@ async def list_chronicles_global(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_chronicles_public(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     supabase: Client = Depends(get_anon_supabase),
     limit: int = Query(default=25, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
@@ -380,7 +368,7 @@ async def list_chronicles_public(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_chronicle_public(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     chronicle_id: UUID,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
@@ -396,7 +384,7 @@ async def get_chronicle_public(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_agent_memories_public(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     agent_id: UUID,
     supabase: Client = Depends(get_anon_supabase),
     memory_type: str | None = Query(default=None),
@@ -418,7 +406,7 @@ async def list_agent_memories_public(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_cities(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
     """List cities (public)."""
@@ -433,7 +421,7 @@ async def list_cities(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_city(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     city_id: UUID,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
@@ -446,7 +434,7 @@ async def get_city(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_zones(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
     """List zones (public)."""
@@ -461,7 +449,7 @@ async def list_zones(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_zone(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     zone_id: UUID,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
@@ -474,7 +462,7 @@ async def get_zone(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_streets(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
     """List streets (public)."""
@@ -491,7 +479,7 @@ async def list_streets(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_conversations(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
     """List chat conversations (public, read-only)."""
@@ -506,7 +494,7 @@ async def list_conversations(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_messages(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     conversation_id: UUID,
     supabase: Client = Depends(get_anon_supabase),
     limit: int = Query(default=50, ge=1, le=200),
@@ -524,7 +512,7 @@ async def list_messages(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_taxonomies(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     supabase: Client = Depends(get_anon_supabase),
     taxonomy_type: str | None = Query(default=None),
     limit: int = Query(default=500, ge=1, le=1000),
@@ -544,7 +532,7 @@ async def list_taxonomies(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_settings(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
     """List design settings only (public — for theming)."""
@@ -559,7 +547,7 @@ async def list_settings(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_social_trends(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     supabase: Client = Depends(get_anon_supabase),
     limit: int = Query(default=25, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
@@ -575,7 +563,7 @@ async def list_social_trends(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_social_posts(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     supabase: Client = Depends(get_anon_supabase),
     limit: int = Query(default=25, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
@@ -594,7 +582,7 @@ async def list_social_posts(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_campaigns(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     supabase: Client = Depends(get_anon_supabase),
     limit: int = Query(default=25, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
@@ -613,7 +601,7 @@ async def list_campaigns(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_agent_relationships(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     agent_id: UUID,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
@@ -626,7 +614,7 @@ async def list_agent_relationships(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_agent_aptitudes(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     agent_id: UUID,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
@@ -639,7 +627,7 @@ async def get_agent_aptitudes(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_simulation_aptitudes(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
     """Get all aptitude scores for all agents in a simulation (public)."""
@@ -651,7 +639,7 @@ async def get_simulation_aptitudes(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_simulation_relationships(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     supabase: Client = Depends(get_anon_supabase),
     limit: int = Query(default=100, ge=1, le=500),
     offset: int = Query(default=0, ge=0),
@@ -670,7 +658,7 @@ async def list_simulation_relationships(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_echoes(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     supabase: Client = Depends(get_anon_supabase),
     limit: int = Query(default=25, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
@@ -686,7 +674,7 @@ async def list_echoes(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_event_echoes(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     event_id: UUID,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
@@ -768,7 +756,7 @@ async def get_bleed_gazette(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_embassies(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     supabase: Client = Depends(get_anon_supabase),
     limit: int = Query(default=25, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
@@ -785,7 +773,7 @@ async def list_embassies(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_embassy(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     embassy_id: UUID,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
@@ -798,7 +786,7 @@ async def get_embassy(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_building_embassy(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     building_id: UUID,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
@@ -825,7 +813,7 @@ async def list_all_embassies(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_simulation_health_dashboard(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
     """Full health dashboard for a simulation (public)."""
@@ -837,7 +825,7 @@ async def get_simulation_health_dashboard(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_building_readiness(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     supabase: Client = Depends(get_anon_supabase),
     zone_id: UUID | None = Query(default=None),
     order_by: str = Query(default="readiness"),
@@ -858,7 +846,7 @@ async def list_building_readiness(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_zone_stability(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
     """List zone stability for a simulation (public)."""
@@ -870,7 +858,7 @@ async def list_zone_stability(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_embassy_effectiveness(
     request: Request,
-    simulation_id: UUID,
+    simulation_id: SimId,
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
     """List embassy effectiveness for a simulation (public)."""

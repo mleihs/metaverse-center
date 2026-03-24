@@ -18,7 +18,7 @@ export class SimulationsApiService extends BaseApiService {
   }
 
   getBySlug(slug: string): Promise<ApiResponse<Simulation>> {
-    return this.getPublic(`/simulations/by-slug/${slug}`);
+    return this.getPublic(`/simulations/${slug}`);
   }
 
   create(data: Partial<Simulation>): Promise<ApiResponse<Simulation>> {

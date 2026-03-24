@@ -1,9 +1,11 @@
 import logging
+import re
 import time
 from typing import Annotated
 from uuid import UUID
 
 import jwt as pyjwt
+from cachetools import TTLCache
 from fastapi import Depends, Header, HTTPException, Path, Query, status
 from jwt import PyJWKClient
 from supabase_auth.errors import AuthApiError
@@ -131,6 +133,47 @@ async def get_anon_supabase() -> Client:
     Applies anon RLS policies — used for public read-only endpoints.
     """
     return await create_async_client(settings.supabase_url, settings.supabase_anon_key)
+
+
+# ── Slug/UUID Resolution ───────────────────────────────────────────────
+
+_SLUG_UUID_CACHE: TTLCache = TTLCache(maxsize=64, ttl=300)
+_UUID_RE = re.compile(
+    r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+    re.IGNORECASE,
+)
+
+
+async def resolve_simulation_id(
+    simulation_id: str = Path(..., description="Simulation UUID or slug"),
+    supabase: Client = Depends(get_anon_supabase),
+) -> UUID:
+    """Accept a simulation UUID or slug and resolve to UUID.
+
+    Uses a 5-minute TTL cache to avoid DB lookups on repeated slug requests.
+    UUID values pass through at zero cost (no DB query).
+    """
+    # Fast path: already a UUID
+    if _UUID_RE.match(simulation_id):
+        return UUID(simulation_id)
+
+    # Check in-memory cache
+    cached = _SLUG_UUID_CACHE.get(simulation_id)
+    if cached is not None:
+        return cached
+
+    # DB lookup via SimulationService
+    from backend.services.simulation_service import SimulationService
+
+    sim = await SimulationService.get_by_slug(supabase, simulation_id)
+    if not sim:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Simulation '{simulation_id}' not found.",
+        )
+    resolved = UUID(sim["id"])
+    _SLUG_UUID_CACHE[simulation_id] = resolved
+    return resolved
 
 
 async def get_admin_supabase() -> Client:
