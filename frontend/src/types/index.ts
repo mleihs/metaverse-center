@@ -30,7 +30,8 @@ export type SettingCategory =
   | 'prompts'
   | 'notifications'
   | 'anchor'
-  | 'heartbeat';
+  | 'heartbeat'
+  | 'weather';
 
 export type TaxonomyType =
   | 'gender'

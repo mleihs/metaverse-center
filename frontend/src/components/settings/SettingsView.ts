@@ -15,6 +15,7 @@ import './DesignSettingsPanel.js';
 import './AccessSettingsPanel.js';
 import './PromptsSettingsPanel.js';
 import './AutonomySettingsPanel.js';
+import './WeatherSettingsPanel.js';
 import './NotificationsSettingsPanel.js';
 
 interface SettingsTabDef extends TabDef {
@@ -27,6 +28,7 @@ function getTabs(): SettingsTabDef[] {
     { key: 'world', label: msg('World') },
     { key: 'bleed', label: msg('Bleed') },
     { key: 'autonomy', label: msg('Autonomy') },
+    { key: 'weather', label: msg('Weather') },
     { key: 'ai', label: msg('AI') },
     { key: 'prompts', label: msg('Prompts') },
     { key: 'integration', label: msg('Integration') },
@@ -203,6 +205,14 @@ export class VelgSettingsView extends LitElement {
             @unsaved-change=${this._handleUnsavedChange}
             @settings-saved=${this._handleSettingsSaved}
           ></velg-autonomy-settings-panel>
+        `;
+      case 'weather':
+        return html`
+          <velg-weather-settings-panel
+            .simulationId=${this.simulationId}
+            @unsaved-change=${this._handleUnsavedChange}
+            @settings-saved=${this._handleSettingsSaved}
+          ></velg-weather-settings-panel>
         `;
       case 'ai':
         return html`
