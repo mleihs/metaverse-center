@@ -33,6 +33,7 @@ from backend.services.agent_activity_service import AgentActivityService
 from backend.services.agent_mood_service import AgentMoodService
 from backend.services.agent_needs_service import AgentNeedsService
 from backend.services.agent_opinion_service import AgentOpinionService
+from backend.services.ambient_weather_service import AmbientWeatherService
 from backend.services.anchor_service import AnchorService
 from backend.services.attunement_service import AttunementService
 from backend.services.autonomous_event_service import AutonomousEventService
@@ -193,7 +194,7 @@ class HeartbeatService:
         # Find active template simulations due for a tick
         response = await (
             admin.table("simulations")
-            .select("id, name, slug, last_heartbeat_tick, next_heartbeat_at")
+            .select("id, name, slug, theme, weather_lat, weather_lon, last_heartbeat_tick, next_heartbeat_at")
             .eq("status", "active")
             .eq("simulation_type", "template")
             .is_("deleted_at", "null")
@@ -521,6 +522,21 @@ class HeartbeatService:
                     sentry_sdk.capture_exception()
 
             tick_stats["autonomy"] = autonomy_stats
+
+            # Phase 9.5: Ambient weather events (real-world weather → zone narratives + moodlets)
+            weather_enabled = str(
+                overrides.get("weather_enabled", "false")
+            ).lower() in ("true", "1")
+            if weather_enabled:
+                try:
+                    weather_entries = await AmbientWeatherService.process_tick(
+                        admin, sim_id, sim, heartbeat_id, tick_number,
+                    )
+                    entries.extend(weather_entries)
+                    tick_stats["weather_events"] = len(weather_entries)
+                except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+                    logger.exception("Ambient weather phase failed")
+                    sentry_sdk.capture_exception()
 
             # Phase 10: Refresh materialized views
             await GameMechanicsService.refresh_metrics(admin)
