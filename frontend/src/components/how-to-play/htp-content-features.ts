@@ -884,6 +884,100 @@ export function getLivingWorldGuideSteps(): DemoStep[] {
   ];
 }
 
+/* ── Ambient Weather System ──────────────────────── */
+
+export function getAmbientWeatherGuideSteps(): DemoStep[] {
+  return [
+    {
+      phase: 'foundation',
+      title: msg('What is the Weather System?'),
+      narration: msg(
+        'Each simulation is anchored to a real-world geographic location. Every heartbeat tick (4 hours), the platform fetches actual weather data from that location and transforms it into atmospheric zone events. Velgarien experiences Prague weather, Station Null gets Svalbard conditions, Speranza feels the Amalfi coast. The weather is real \u2013 if it rains in Prague right now, fog drifts through the Regierungsviertel.',
+      ),
+      readout: [
+        { label: msg('Data source'), value: 'Open-Meteo API' },
+        { label: msg('AI cost'), value: msg('Zero (template-based)') },
+        { label: msg('Update frequency'), value: msg('Every heartbeat tick') },
+        { label: msg('Activation'), value: msg('Settings \u2192 Weather tab') },
+      ],
+    },
+    {
+      phase: 'foundation',
+      title: msg('How Weather Affects Agents'),
+      narration: msg(
+        'Weather conditions apply zone-ambient moodlets to every agent in the zone. Clear skies give +3 contentment. Thunderstorms cause -6 fear. Bitter cold (-10\u00b0C or below) adds -5 distress. Snow brings +1 wonder. These moodlets stack with the agent\u2019s existing mood and personality, creating emergent behaviors: a neurotic agent in a thunderstorm may spiral toward a stress breakdown, while a resilient agent barely notices.',
+      ),
+      detail: msg(
+        'Moodlet strength ranges from -8 (severe thunderstorm with hail) to +3 (clear sky). Each zone gets at most one weather moodlet at a time (stacking cap: 1). When the weather changes on the next tick, the old moodlet is replaced. Composite conditions (fog + cold, rain + wind) amplify the effect by 30%.',
+      ),
+      readout: [
+        { label: msg('Moodlet range'), value: msg('-8 to +3') },
+        { label: msg('Stacking cap'), value: msg('1 per agent') },
+        { label: msg('Duration'), value: msg('Until next tick') },
+        { label: msg('Composite bonus'), value: msg('+30% amplification') },
+      ],
+    },
+    {
+      phase: 'foundation',
+      title: msg('Narrative Descriptions'),
+      narration: msg(
+        'Weather events appear as bilingual narrative entries in the heartbeat log and daily briefing. Each narrative is composed from four layers: an atmospheric opener (time of day), a core weather description, a theme-specific consequence, and an agent reaction based on the zone\u2019s average mood. Over 1,000 unique template fragments per language combine into thousands of distinct descriptions that never repeat.',
+      ),
+      detail: msg(
+        'The system uses Tetris 7-bag anti-repetition: all template variants are shuffled into a bag and dealt sequentially. When the bag empties, it is reshuffled. Maximum drought before any variant repeats: 2N-1 draws. Combined with real weather data interpolation (actual temperature, wind speed, visibility), every narrative is effectively unique.',
+      ),
+      readout: [
+        { label: msg('Template fragments'), value: msg('1,025 bilingual pairs') },
+        { label: msg('Themes'), value: msg('5 (spy, scifi, biopunk, post-apo, medieval)') },
+        { label: msg('Anti-repetition'), value: msg('Tetris 7-bag') },
+        { label: msg('Real data'), value: msg('Temperature, wind, visibility') },
+      ],
+    },
+    {
+      phase: 'foundation',
+      title: msg('Geographic Anchors'),
+      narration: msg(
+        'Each main simulation is anchored to a location chosen for thematic resonance. Velgarien uses Prague \u2013 Cold War fog, gothic atmosphere. The Gaslit Reach uses Lofoten, Norway \u2013 dramatic Arctic storms. Station Null uses Svalbard \u2013 polar night and midnight sun. Speranza uses the Amalfi Coast \u2013 Mediterranean heat and storms. Cite des Dames uses Carcassonne \u2013 the Tramontane wind and medieval climate.',
+      ),
+      detail: msg(
+        'User-created simulations automatically receive coordinates matching their theme. You can override the coordinates in Settings \u2192 Weather to anchor your simulation anywhere in the world. Want your fantasy world to experience Tokyo weather? Set the coordinates to 35.68, 139.69.',
+      ),
+      readout: [
+        { label: msg('Velgarien'), value: msg('Prague (50.08, 14.44)') },
+        { label: msg('Station Null'), value: msg('Svalbard (78.22, 15.63)') },
+        { label: msg('Speranza'), value: msg('Amalfi (40.63, 14.60)') },
+        { label: msg('Custom'), value: msg('Any lat/lon via Settings') },
+      ],
+    },
+    {
+      phase: 'foundation',
+      title: msg('Moon Phases'),
+      narration: msg(
+        'The system calculates real moon phases using astronomical math (no API call needed). Full moons (illumination 45-55%) add -2 unease to agents \u2013 the Bureau reports increased activity. New moons (illumination below 5%) add +2 calm \u2013 ideal for covert operations. Moon phase is shown in the weather metadata and influences narrative tone.',
+      ),
+      readout: [
+        { label: msg('Full moon'), value: msg('-2 unease') },
+        { label: msg('New moon'), value: msg('+2 calm') },
+        { label: msg('Calculation'), value: msg('Synodic month (29.53 days)') },
+        { label: msg('Accuracy'), value: msg('\u00b11 day') },
+      ],
+    },
+    {
+      phase: 'foundation',
+      title: msg('Configuring Weather'),
+      narration: msg(
+        'Weather is configured per simulation in Settings \u2192 Weather. The master toggle enables weather seeding. Below it, you can set custom geographic coordinates (latitude and longitude) and override the narrative theme. By default, the narrative style matches your simulation\u2019s theme \u2013 but you can mix: a medieval simulation with sci-fi weather descriptions, or a spy thriller with biopunk atmosphere.',
+      ),
+      readout: [
+        { label: msg('Toggle'), value: msg('Enable/disable per simulation') },
+        { label: msg('Coordinates'), value: msg('Custom lat/lon override') },
+        { label: msg('Theme override'), value: msg('5 narrative styles') },
+        { label: msg('Fallback'), value: msg('Theme defaults if not set') },
+      ],
+    },
+  ];
+}
+
 /* ── Epoch COMMS & Notifications ─────────────────── */
 
 export function getEpochCommsGuideSteps(): DemoStep[] {

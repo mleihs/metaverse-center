@@ -59,12 +59,13 @@ tags: [index, catalog, documentation]
 | [Simulation Creation Guide](guides/simulation-creation.md) | 1.0 | — | en | active |
 | [Testing Strategy](guides/testing-strategy.md) | 2.3 | 2026-03-09 | de | active |
 
-## Concepts (2)
+## Concepts (3)
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
 | [Feature Discovery Proposals](feature-discovery-proposals.md) | 1.0 | 2026-03-20 | en | active |
 | [Post-Generation Engagement Proposals (8 Features)](concepts/post-generation-engagement-proposals.md) | 1.0 | 2026-03-22 | de/en | active |
+| [10 Proposals zur Tamagotchisierung](concepts/tamagotchi-proposals.md) | 1.0 | 2026-03-25 | de | active |
 
 ## Explanations (5)
 

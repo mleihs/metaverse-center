@@ -22,6 +22,7 @@ import type { ForgeStep } from './htp-content-features.js';
 import {
   getAgentChatGuideSteps,
   getAgentMemoryGuideSteps,
+  getAmbientWeatherGuideSteps,
   getBotPlayersGuideSteps,
   getChronicleGuideSteps,
   getEpochCommsGuideSteps,
@@ -351,6 +352,7 @@ export class VelgHowToPlay extends LitElement {
           ${this._renderZoneDynamicsGuide()}
           ${this._renderAgentMemoryGuide()}
           ${this._renderLivingWorldGuide()}
+          ${this._renderAmbientWeatherGuide()}
           ${this._renderChronicleGuide()}
           <!-- Reference -->
           ${this._renderTactics()}
@@ -1984,6 +1986,23 @@ export class VelgHowToPlay extends LitElement {
         ${this._renderSectionHeader('23', msg('The Living World'))}
         <p class="section__text">
           ${msg('When Agent Autonomy is active, your simulation lives between visits. Agents develop moods, form opinions, pursue activities, argue, celebrate, and break down under stress. The Utility AI selects actions based on personality, needs, and social context. Autonomous events emerge from threshold conditions and are narrated by AI. The world accumulates history through every tick.')}
+        </p>
+        <div class="demo-steps">
+          ${steps.map((step, i) => this._renderDemoStep(step, i))}
+        </div>
+      </section>
+    `;
+  }
+
+  /* ── Section 19c: Ambient Weather ─────────────────── */
+
+  private _renderAmbientWeatherGuide() {
+    const steps = getAmbientWeatherGuideSteps();
+    return html`
+      <section class="section" id="ambient-weather">
+        ${this._renderSectionHeader('24', msg('Ambient Weather'))}
+        <p class="section__text">
+          ${msg('Real-world weather data from your simulation\'s geographic anchor influences zone atmosphere and agent mood every heartbeat tick. Prague fog drifts through Velgarien\'s government quarter, Arctic storms batter Station Null, Mediterranean heat parches Speranza. Over 1,000 bilingual template fragments compose unique narrative descriptions that never repeat. Zero AI cost.')}
         </p>
         <div class="demo-steps">
           ${steps.map((step, i) => this._renderDemoStep(step, i))}
