@@ -55,4 +55,4 @@ ALTER TABLE heartbeat_entries
 
 INSERT INTO simulation_settings (simulation_id, category, setting_key, setting_value)
 VALUES ('10000000-0000-0000-0000-000000000001', 'heartbeat', 'weather_enabled', 'true')
-ON CONFLICT DO NOTHING;
+ON CONFLICT (simulation_id, category, setting_key) DO NOTHING;

@@ -142,7 +142,7 @@ class AmbientWeatherService:
                     wind_speed=cached_weather.get("wind_speed", 10.0),
                     precipitation=cached_weather.get("precipitation", 0.0),
                     visibility=cached_weather.get("visibility", 10000.0),
-                    is_day=8 <= now.hour <= 20,
+                    is_day=cached_weather.get("is_day", True),
                     moon_phase=calculate_moon_phase(now.year, now.month, now.day),
                 )
 
