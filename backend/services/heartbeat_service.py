@@ -455,6 +455,7 @@ class HeartbeatService:
                     social_results = (
                         await AgentActivityService.generate_social_interactions(
                             admin, sim_id, interaction_rate, tick_id=heartbeat_id,
+                            sim_name=sim_name, sim_theme=sim.get("theme", ""),
                         )
                     )
                     autonomy_stats["social_interactions"] = len(social_results)

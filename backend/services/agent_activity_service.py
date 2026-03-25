@@ -30,6 +30,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 from backend.services.agent_mood_service import AgentMoodService
 from backend.services.agent_needs_service import AgentNeedsService
 from backend.services.agent_opinion_service import AgentOpinionService
+from backend.services.translation_service import schedule_auto_translation
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -177,6 +178,34 @@ SOCIAL_INTERACTIONS: dict[str, dict] = {
 # Base probability of interaction per tick for co-located agents
 BASE_INTERACTION_PROBABILITY = 0.15
 
+# ── Narrative templates (EN — auto-translated to DE via DeepL) ────────────────
+
+ACTIVITY_NARRATIVES: dict[str, str] = {
+    "work": "{agent} worked at {building}",
+    "socialize": "{agent} socialized in {zone}",
+    "rest": "{agent} rested in {zone}",
+    "explore": "{agent} explored {zone}",
+    "maintain": "{agent} performed maintenance at {building}",
+    "reflect": "{agent} spent time in quiet reflection in {zone}",
+    "avoid": "{agent} withdrew from {zone}",
+    "confront": "{agent} confronted {target} in {zone}",
+    "celebrate": "{agent} celebrated in {zone}",
+    "mourn": "{agent} mourned quietly in {zone}",
+    "seek_comfort": "{agent} sought comfort from {target}",
+    "collaborate": "{agent} collaborated with {target} at {building}",
+    "create": "{agent} engaged in creative work in {zone}",
+    "investigate": "{agent} investigated in {zone}",
+}
+
+INTERACTION_NARRATIVES: dict[str, str] = {
+    "deep_conversation": "{agent_a} had a deep conversation with {agent_b}",
+    "casual_chat": "{agent_a} exchanged pleasantries with {agent_b}",
+    "insult": "{agent_a} insulted {agent_b}",
+    "seek_comfort_interaction": "{agent_a} sought comfort from {agent_b}",
+    "collaboration": "{agent_a} collaborated with {agent_b}",
+    "confrontation": "{agent_a} confronted {agent_b}",
+}
+
 
 class AgentActivityService:
     """Selects and executes autonomous agent activities each heartbeat tick."""
@@ -246,6 +275,18 @@ class AgentActivityService:
             phase="activity_selection",
         )
 
+        # Load simulation context once (for narrative translation)
+        sim_result = await (
+            supabase.table("simulations")
+            .select("name, theme")
+            .eq("id", str(simulation_id))
+            .limit(1)
+            .execute()
+        )
+        sim_info = sim_result.data[0] if sim_result.data else {"name": "Unknown", "theme": "unknown"}
+        sim_name = sim_info["name"]
+        sim_theme = sim_info["theme"]
+
         # Load all agent data in batch
         agents = await cls._load_agent_context(supabase, simulation_id)
         if not agents:
@@ -261,6 +302,7 @@ class AgentActivityService:
                 activity = cls._select_activity(agent, zone_agents)
                 executed = await cls._execute_activity(
                     supabase, simulation_id, agent, activity, tick_id,
+                    sim_name, sim_theme,
                 )
                 activities.append(executed)
             except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
@@ -424,9 +466,12 @@ class AgentActivityService:
         agent: dict,
         activity_type: str,
         tick_id: UUID | None,
+        sim_name: str = "",
+        sim_theme: str = "",
     ) -> dict:
-        """Execute a selected activity: fulfill needs, log to DB."""
+        """Execute a selected activity: fulfill needs, log to DB, schedule translation."""
         agent_id = agent["id"]
+        agent_name = agent.get("name", "An agent")
 
         # Fulfill needs from activity
         fulfilled = await AgentNeedsService.fulfill_from_activity(
@@ -440,6 +485,15 @@ class AgentActivityService:
         elif activity_type in ("socialize", "seek_comfort", "create"):
             significance = 3
 
+        # Build English narrative from template
+        template = ACTIVITY_NARRATIVES.get(activity_type, "{agent} was active in {zone}")
+        narrative = template.format(
+            agent=agent_name,
+            zone=agent.get("zone_name") or "the area",
+            building=agent.get("building_name") or "a building",
+            target="",
+        )
+
         # Build activity record
         record = {
             "agent_id": str(agent_id),
@@ -450,12 +504,24 @@ class AgentActivityService:
             "significance": significance,
             "effects": {"needs_fulfilled": fulfilled},
             "heartbeat_tick_id": str(tick_id) if tick_id else None,
+            "narrative_text": narrative,
         }
 
         # Insert activity log
-        await supabase.table("agent_activities").insert(record).execute()
+        resp = await supabase.table("agent_activities").insert(record).execute()
+        saved = resp.data[0] if resp.data else record
 
-        return record
+        # Schedule async DeepL translation (fire-and-forget)
+        if sim_name and saved.get("id"):
+            schedule_auto_translation(
+                supabase, "agent_activities", saved["id"],
+                {"narrative_text": narrative, "name": agent_name},
+                simulation_name=sim_name,
+                simulation_theme=sim_theme,
+                entity_type="agent_activity",
+            )
+
+        return saved
 
     # ── Social Interaction Generation ────────────────────────────
 
@@ -466,6 +532,8 @@ class AgentActivityService:
         simulation_id: UUID,
         interaction_rate: float = 1.0,
         tick_id: UUID | None = None,
+        sim_name: str = "",
+        sim_theme: str = "",
     ) -> list[dict]:
         """Generate social interactions between co-located agents.
 
@@ -500,7 +568,7 @@ class AgentActivityService:
                 # Execute interaction effects
                 result = await cls._execute_interaction(
                     supabase, simulation_id, agent_a, agent_b,
-                    interaction, tick_id,
+                    interaction, tick_id, sim_name, sim_theme,
                 )
                 if result:
                     interactions.append(result)
@@ -572,6 +640,8 @@ class AgentActivityService:
         agent_b: dict,
         interaction: dict,
         tick_id: UUID | None,
+        sim_name: str = "",
+        sim_theme: str = "",
     ) -> dict | None:
         """Execute a social interaction: apply opinion/mood/need effects."""
         try:
@@ -627,11 +697,17 @@ class AgentActivityService:
                     supabase, agent_b["id"], need_type, need_amount * 0.7,
                 )
 
-            # Log activity for both agents
+            # Log activity for both agents (with bilingual narrative)
             significance = interaction.get("significance", 1)
-            for agent in [agent_a, agent_b]:
-                other = agent_b if agent == agent_a else agent_a
-                await supabase.table("agent_activities").insert({
+            interaction_template = INTERACTION_NARRATIVES.get(
+                name, "{agent_a} interacted with {agent_b}",
+            )
+            for agent, other in [(agent_a, agent_b), (agent_b, agent_a)]:
+                narrative = interaction_template.format(
+                    agent_a=agent.get("name", "Agent"),
+                    agent_b=other.get("name", "Agent"),
+                )
+                resp = await supabase.table("agent_activities").insert({
                     "agent_id": str(agent["id"]),
                     "simulation_id": str(simulation_id),
                     "activity_type": "socialize",
@@ -645,7 +721,19 @@ class AgentActivityService:
                         "mood_effect": mood_effect,
                     },
                     "heartbeat_tick_id": str(tick_id) if tick_id else None,
+                    "narrative_text": narrative,
                 }).execute()
+
+                # Schedule async DeepL translation
+                saved = resp.data[0] if resp.data else None
+                if sim_name and saved and saved.get("id"):
+                    schedule_auto_translation(
+                        supabase, "agent_activities", saved["id"],
+                        {"narrative_text": narrative, "name": agent.get("name", "")},
+                        simulation_name=sim_name,
+                        simulation_theme=sim_theme,
+                        entity_type="agent_activity",
+                    )
 
             return {
                 "type": name,
@@ -723,12 +811,32 @@ class AgentActivityService:
                 "opinion_score": op["opinion_score"],
             }
 
+        # Batch fetch zone names for narrative templates
+        zone_ids = list({a["current_zone_id"] for a in agents if a.get("current_zone_id")})
+        zone_name_map: dict[str, str] = {}
+        if zone_ids:
+            zone_result = await (
+                supabase.table("zones").select("id, name").in_("id", zone_ids).execute()
+            )
+            zone_name_map = {z["id"]: z["name"] for z in (zone_result.data or [])}
+
+        # Batch fetch building names for narrative templates
+        building_ids = list({a["current_building_id"] for a in agents if a.get("current_building_id")})
+        building_name_map: dict[str, str] = {}
+        if building_ids:
+            building_result = await (
+                supabase.table("buildings").select("id, name").in_("id", building_ids).execute()
+            )
+            building_name_map = {b["id"]: b["name"] for b in (building_result.data or [])}
+
         # Enrich agents
         for agent in agents:
             aid = agent["id"]
             agent["needs"] = needs_map.get(aid, {})
             agent["mood"] = mood_map.get(aid, {})
             agent["opinions"] = opinion_map.get(aid, {})
+            agent["zone_name"] = zone_name_map.get(agent.get("current_zone_id", ""), "")
+            agent["building_name"] = building_name_map.get(agent.get("current_building_id", ""), "")
 
         return agents
 

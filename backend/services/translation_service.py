@@ -54,6 +54,9 @@ TRANSLATABLE_FIELDS: dict[str, dict[str, str]] = {
     "agent_memories": {
         "content": "content_de",
     },
+    "agent_activities": {
+        "narrative_text": "narrative_text_de",
+    },
 }
 
 TRANSLATOR_SYSTEM_PROMPT = (
