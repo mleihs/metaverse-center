@@ -2,8 +2,9 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
-import { healthApi, locationsApi } from '../../services/api/index.js';
+import { heartbeatApi, healthApi, locationsApi } from '../../services/api/index.js';
 import type { City, CityStreet, Zone, ZoneStability } from '../../types/index.js';
+import type { ZoneWeather } from './ZoneList.js';
 import { viewHeaderStyles } from '../shared/view-header-styles.js';
 import '../shared/LoadingState.js';
 import '../shared/ErrorState.js';
@@ -122,6 +123,7 @@ export class VelgLocationsView extends LitElement {
   @state() private _loading = false;
   @state() private _error: string | null = null;
   @state() private _stabilityMap: Map<string, ZoneStability> = new Map();
+  @state() private _weatherMap: Map<string, ZoneWeather> = new Map();
   @state() private _viewMode: ViewMode = 'list';
   @state() private _showEditModal = false;
   @state() private _editType: 'city' | 'zone' | 'street' = 'city';
@@ -176,6 +178,7 @@ export class VelgLocationsView extends LitElement {
       if (response.success && response.data) {
         this._zones = response.data ?? [];
         this._loadZoneStability();
+        this._loadWeatherData();
       } else {
         this._error = response.error?.message ?? msg('Failed to load zones');
       }
@@ -220,6 +223,35 @@ export class VelgLocationsView extends LitElement {
       }
     } catch {
       // Stability data not critical
+    }
+  }
+
+  private async _loadWeatherData(): Promise<void> {
+    try {
+      const response = await heartbeatApi.listEntries(this.simulationId, {
+        entry_type: 'ambient_weather',
+        limit: '20',
+        order: 'created_at.desc',
+      });
+      if (response.success && response.data) {
+        const map = new Map<string, ZoneWeather>();
+        for (const entry of response.data) {
+          const zoneId = entry.metadata?.zone_id as string | undefined;
+          // Keep only the most recent entry per zone (already sorted desc)
+          if (zoneId && !map.has(zoneId)) {
+            map.set(zoneId, {
+              narrative: entry.narrative_en,
+              narrative_de: entry.narrative_de ?? '',
+              categories: (entry.metadata?.categories as string[]) ?? [],
+              temperature: (entry.metadata?.temperature as number) ?? 0,
+              weather_code: (entry.metadata?.weather_code as number) ?? 0,
+            });
+          }
+        }
+        this._weatherMap = map;
+      }
+    } catch {
+      // Weather data not critical — graceful degradation
     }
   }
 
@@ -382,6 +414,7 @@ export class VelgLocationsView extends LitElement {
         <velg-zone-list
           .zones=${this._zones}
           .stabilityMap=${this._stabilityMap}
+          .weatherMap=${this._weatherMap}
           @zone-select=${this._handleZoneSelect}
         ></velg-zone-list>
       `;

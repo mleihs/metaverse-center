@@ -951,6 +951,11 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
       positive_event: () => icons.bolt(16),
       narrative_arc: () => icons.book(16),
       system_note: () => icons.magnifyingGlass(16),
+      agent_crisis: () => icons.alertTriangle(16),
+      relationship_shift: () => icons.handshake(16),
+      social_event: () => icons.handshake(16),
+      autonomous_event: () => icons.bolt(16),
+      ambient_weather: () => icons.compassRose(16),
     };
     return (iconMap[type] ?? (() => icons.bolt(16)))();
   }
@@ -971,6 +976,11 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
       case 'positive_event': return msg('Harvest');
       case 'narrative_arc': return msg('Arc');
       case 'system_note': return msg('System');
+      case 'agent_crisis': return msg('Crisis');
+      case 'relationship_shift': return msg('Relationship');
+      case 'social_event': return msg('Social');
+      case 'autonomous_event': return msg('Autonomous');
+      case 'ambient_weather': return msg('Weather');
       default: return type;
     }
   }

@@ -1598,7 +1598,12 @@ export type HeartbeatEntryType =
   | 'convergence'
   | 'positive_event'
   | 'narrative_arc'
-  | 'system_note';
+  | 'system_note'
+  | 'agent_crisis'
+  | 'relationship_shift'
+  | 'social_event'
+  | 'autonomous_event'
+  | 'ambient_weather';
 
 export type HeartbeatSeverity = 'info' | 'warning' | 'critical' | 'positive';
 
