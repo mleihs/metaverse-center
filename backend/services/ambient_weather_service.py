@@ -21,7 +21,7 @@ from __future__ import annotations
 import hashlib
 import logging
 import random
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 import httpx
@@ -218,10 +218,33 @@ class AmbientWeatherService:
 
     @classmethod
     def determine_time_of_day(cls, conditions: WeatherConditions) -> TimeOfDay:
-        """Determine time-of-day slot from is_day and current hour."""
+        """Determine time-of-day slot using sunrise/sunset from the simulation's location.
+
+        Uses the actual sunrise/sunset times returned by Open-Meteo (location-aware,
+        timezone-correct) instead of fixed UTC hour thresholds. Dawn = first 90min
+        after sunrise, dusk = last 90min before sunset.
+        """
         if not conditions.is_day:
             return TimeOfDay.NIGHT
-        hour = datetime.now(UTC).hour
+
+        # Use location-aware sunrise/sunset from Open-Meteo if available
+        now = datetime.now(UTC)
+        try:
+            if conditions.sunrise and conditions.sunset:
+                sunrise = datetime.fromisoformat(conditions.sunrise.replace("Z", "+00:00"))
+                sunset = datetime.fromisoformat(conditions.sunset.replace("Z", "+00:00"))
+                # Dawn = within 90min after sunrise
+                if now < sunrise + timedelta(minutes=90):
+                    return TimeOfDay.DAWN
+                # Dusk = within 90min before sunset
+                if now > sunset - timedelta(minutes=90):
+                    return TimeOfDay.DUSK
+                return TimeOfDay.DAY
+        except (ValueError, TypeError):
+            pass  # Fall through to UTC-based estimation
+
+        # Fallback: UTC-based estimation (for climate fallback without sunrise data)
+        hour = now.hour
         if hour < 8:
             return TimeOfDay.DAWN
         if hour >= 18:
@@ -363,10 +386,10 @@ class AmbientWeatherService:
         categories = cls.classify(conditions)
         time_of_day = cls.determine_time_of_day(conditions)
 
-        # Step 3: Compose zone events
+        # Step 3: Compose zone events (pass cached_weather to avoid redundant DB query)
         entries, bag_state = await cls._compose_zone_events(
             supabase, sim_id, sim, categories, conditions, time_of_day,
-            heartbeat_id, tick_number, overrides,
+            heartbeat_id, tick_number, overrides, cached_weather,
         )
 
         # Step 4: Apply moodlets
@@ -403,6 +426,7 @@ class AmbientWeatherService:
         heartbeat_id: UUID,
         tick_number: int,
         overrides: dict | None = None,
+        cached_weather: dict | None = None,
     ) -> tuple[list[dict], dict]:
         """Compose narrative entries for each zone. Returns (entries, bag_state)."""
         theme = sim.get("theme", "custom")
@@ -419,9 +443,8 @@ class AmbientWeatherService:
 
         zone_moods = await cls._get_zone_moods(supabase, sim_id)
 
-        # Load bag state from last heartbeat (for 7-bag continuity across ticks)
-        cached = await cls._load_cached_weather(supabase, sim_id)
-        bag_state: dict = cached.get("bag_state", {}) if cached else {}
+        # Restore bag state from cached weather (passed from process_tick to avoid double query)
+        bag_state: dict = cached_weather.get("bag_state", {}) if cached_weather else {}
 
         entries: list[dict] = []
         for zone in zones:
