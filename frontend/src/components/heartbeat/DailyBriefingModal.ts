@@ -14,11 +14,20 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
+import { t } from '../../utils/locale-fields.js';
 import { focusFirstElement, trapFocus } from '../shared/focus-trap.js';
 import './AutonomyBriefingSection.js';
 
 const AUTO_DISMISS_MS = 120_000;
 const EXIT_DURATION_MS = 300;
+
+interface BriefingWeatherZone {
+  zone_name: string;
+  narrative_en: string;
+  narrative_de: string;
+  temperature: number;
+  categories: string[];
+}
 
 interface BriefingData {
   health: {
@@ -38,6 +47,7 @@ interface BriefingData {
     status: string;
     pressure: number;
   }>;
+  weather_zones?: BriefingWeatherZone[];
 }
 
 @localized()
@@ -421,6 +431,48 @@ export class VelgDailyBriefing extends LitElement {
       letter-spacing: 0.06em;
       color: var(--color-text-muted);
       text-transform: uppercase;
+    }
+
+    /* ── Weather Section ─────────────────────────────────── */
+
+    .weather-section {
+      margin-bottom: var(--space-4);
+    }
+
+    .weather-zone {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: var(--space-1) var(--space-3);
+      padding: var(--space-2) 0;
+      border-bottom: 1px solid var(--color-border-light);
+    }
+
+    .weather-zone:last-child {
+      border-bottom: none;
+    }
+
+    .weather-zone__name {
+      font-family: var(--font-brutalist);
+      font-size: var(--text-xs);
+      font-weight: var(--font-bold);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-text-primary);
+    }
+
+    .weather-zone__temp {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      text-align: right;
+    }
+
+    .weather-zone__narrative {
+      grid-column: 1 / -1;
+      font-family: var(--font-body);
+      font-size: 11px;
+      line-height: 1.4;
+      color: var(--color-text-secondary);
     }
 
     /* ── Arc Details ────────────────────────────────────── */
@@ -827,6 +879,7 @@ export class VelgDailyBriefing extends LitElement {
             ${this._renderHealth(pct, tier, label)}
             ${this._renderStats(data)}
             ${data.arc_details.length > 0 ? this._renderArcs(data.arc_details) : nothing}
+            ${data.weather_zones?.length ? this._renderWeather(data.weather_zones) : nothing}
 
             <!-- Agent Autonomy Report (if enabled) -->
             <velg-autonomy-briefing
@@ -899,6 +952,27 @@ export class VelgDailyBriefing extends LitElement {
           <div class="stat__value stat__value--accent">${data.active_arcs}</div>
           <div class="stat__label">${msg('active arcs')}</div>
         </div>
+      </div>
+    `;
+  }
+
+  private _renderWeather(zones: BriefingWeatherZone[]) {
+    return html`
+      <div class="weather-section">
+        <div class="section-label">${msg('Ambient Conditions')}</div>
+        ${zones.map((zone) => {
+          const narrative = t(
+            { narrative: zone.narrative_en, narrative_de: zone.narrative_de },
+            'narrative',
+          ) as string;
+          return html`
+            <div class="weather-zone">
+              <span class="weather-zone__name">${zone.zone_name}</span>
+              <span class="weather-zone__temp">${zone.temperature}°C</span>
+              <div class="weather-zone__narrative">${narrative}</div>
+            </div>
+          `;
+        })}
       </div>
     `;
   }
