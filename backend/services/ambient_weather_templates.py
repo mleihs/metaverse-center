@@ -2,12 +2,11 @@
 
 4-layer composition system: Opener + Core Weather + Consequence + Agent Reaction.
 Each layer is a pool of (EN, DE) tuples, selected via SHA-256 seeded randomness
-with 7-bag anti-repetition. Templates use {zone}, {temperature}, {visibility},
-{wind_speed}, {precipitation} interpolation from live weather data.
+with Tetris 7-bag anti-repetition. Templates use {zone}, {temperature}, {visibility},
+{wind_speed}, {precipitation}, {humidity} interpolation from live weather data.
 
-~510 fragments per theme × 5 themes × 2 languages = ~5,100 authored fragments.
-Unique combinations per theme: 5 × 15 × 10 × 5 = 3,750 distinct narratives.
-With weather data interpolation: effectively infinite perceived variation.
+All templates are validated at import time (_validate_templates). Any invalid
+placeholder triggers an immediate ValueError, preventing deployment of broken templates.
 
 Research basis: NWS Graphical Forecast Editor (rule/template NLG), Caves of Qud
 (FDG'17 replacement grammar), Emily Short (multi-tag salience), Tetris 7-bag.
@@ -1525,3 +1524,60 @@ COMPOSITE_CONSEQUENCES: dict[tuple[str, str], list[T]] = {
         ("The overcast cold saps energy and optimism alike.", "Die bewoelkte Kaelte saugt Energie und Optimismus gleichermassen ab."),
     ],
 }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TEMPLATE VALIDATION (runs at import time — catches typos before production)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+VALID_PLACEHOLDERS = frozenset({"zone", "temperature", "visibility", "wind_speed", "precipitation", "humidity"})
+
+
+def _validate_templates() -> None:
+    """Verify all templates use only valid placeholders.
+
+    Runs once at module import. A typo like {temperatur} instead of {temperature}
+    raises ValueError immediately, preventing deployment of broken templates.
+    """
+    import re
+
+    errors: list[str] = []
+
+    def _check_pool(pool: list[tuple[str, str]], context: str) -> None:
+        for i, (en, de) in enumerate(pool):
+            for text, lang in [(en, "en"), (de, "de")]:
+                placeholders = set(re.findall(r"\{(\w+)\}", text))
+                invalid = placeholders - VALID_PLACEHOLDERS
+                if invalid:
+                    errors.append(f"{context}[{i}] ({lang}): invalid placeholder(s): {invalid}")
+
+    # Validate OPENERS
+    for theme, time_slots in OPENERS.items():
+        for slot, pool in time_slots.items():
+            _check_pool(pool, f"OPENERS/{theme}/{slot}")
+
+    # Validate CORE_WEATHER
+    for theme, categories in CORE_WEATHER.items():
+        for cat, pool in categories.items():
+            _check_pool(pool, f"CORE_WEATHER/{theme}/{cat}")
+
+    # Validate CONSEQUENCES
+    for theme, categories in CONSEQUENCES.items():
+        for cat, pool in categories.items():
+            _check_pool(pool, f"CONSEQUENCES/{theme}/{cat}")
+
+    # Validate AGENT_REACTIONS
+    for mood_band, pool in AGENT_REACTIONS.items():
+        _check_pool(pool, f"AGENT_REACTIONS/{mood_band}")
+
+    # Validate COMPOSITE_CONSEQUENCES
+    for key, pool in COMPOSITE_CONSEQUENCES.items():
+        _check_pool(pool, f"COMPOSITE_CONSEQUENCES/{key}")
+
+    if errors:
+        raise ValueError(
+            f"Template validation failed ({len(errors)} error(s)):\n" + "\n".join(errors)
+        )
+
+
+_validate_templates()

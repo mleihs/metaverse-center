@@ -186,6 +186,26 @@ def get_climate_zone(lat: float) -> str:
     return "tropical"
 
 
+# ── Theme → Template Key Mapping ──────────────────────────────────────────────
+
+AVAILABLE_TEMPLATE_THEMES: set[str] = {
+    "spy-thriller", "scifi", "biopunk", "post-apocalyptic", "medieval",
+}
+
+DEFAULT_THEME_MAPPING: dict[str, str] = {
+    "spy-thriller": "spy-thriller",
+    "dystopian": "spy-thriller",
+    "scifi": "scifi",
+    "biopunk": "biopunk",
+    "post-apocalyptic": "post-apocalyptic",
+    "arc-raiders": "post-apocalyptic",
+    "medieval": "medieval",
+    "historical": "medieval",
+    "utopian": "medieval",
+    "fantasy": "biopunk",
+    "custom": "spy-thriller",
+}
+
 # ── Theme → Default Coordinates (for user-created simulations) ────────────────
 
 THEME_DEFAULT_COORDS: dict[str, tuple[float, float]] = {

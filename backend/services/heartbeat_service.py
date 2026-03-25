@@ -529,11 +529,13 @@ class HeartbeatService:
             ).lower() in ("true", "1")
             if weather_enabled:
                 try:
-                    weather_entries = await AmbientWeatherService.process_tick(
+                    weather_entries, weather_summary = await AmbientWeatherService.process_tick(
                         admin, sim_id, sim, heartbeat_id, tick_number,
+                        overrides=overrides,
                     )
                     entries.extend(weather_entries)
                     tick_stats["weather_events"] = len(weather_entries)
+                    tick_stats["weather"] = weather_summary
                 except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                     logger.exception("Ambient weather phase failed")
                     sentry_sdk.capture_exception()
