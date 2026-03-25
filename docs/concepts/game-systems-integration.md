@@ -1,6 +1,6 @@
 ---
 title: "Game Systems Integration — Connecting the Living World"
-version: "2.0"
+version: "3.0"
 date: "2026-03-25"
 type: concept
 status: active
@@ -81,7 +81,11 @@ If any answer is "no", the connection is technical complexity without gameplay v
 
 **The New Situation:** "My Industriegebiet Nord is failing. Do I move General Wolf from the stable Regierungsviertel to save it? But that weakens the Regierungsviertel..."
 
-**Game Design Reference:** This mirrors Crusader Kings 3's council system, where placing the right advisor on the right position directly affects realm stability. CK3's prestige/piety system makes every assignment feel consequential because the numbers visibly change (GDC Vault: CK3 character system design). The key insight from CK3: **influence must be VISIBLE in the readiness number, not hidden**.
+**Game Design Reference:** This mirrors Crusader Kings 3's council system, where placing the right advisor on the right position directly affects realm stability. CK3's Fame system has 6 tiers with SPECIFIC mechanical breakpoints: Tier 4 (Illustrious, 4,000 Fame) gives +10% feudal opinion and +2 Knights; Tier 5 (Exalted, 8,000) gives +20% and +3; Tier 6 (Living Legend, 16,000) gives +30% and +4. Every tier is mechanically distinct — players FEEL the difference. The key insight: **influence must have CLEAR THRESHOLDS where behavior changes, not a smooth gradient**.
+
+Stellaris's Influence system adds another lesson: it has a **hard cap of 1,000** with specific costs per action (claims, edicts, pacts). Scarcity creates trade-offs. Our influence should similarly GATE specific actions — e.g., only agents with influence >50% can serve as ambassadors, or high-influence agents provide a readiness multiplier while low-influence agents are a penalty.
+
+Mount & Blade Bannerlord shows a third pattern: each fief grant gives +10 to the recipient and -3 to -8 to all other lords. Influence is zero-sum — making one agent more influential weakens others' relative position. This creates genuine dilemmas.
 
 **UX Requirement:** The building detail panel must show: "Readiness: 72% (staffing 3/8 × qualification 85% × condition 0.75 × **avg influence 62%**)". The influence factor must be explicitly named, not buried in a formula.
 
@@ -100,7 +104,15 @@ The function approach is cleaner (ADR-007: database logic in database). Performa
 
 **The New Situation:** "Altstadt is at 17% stability. Two new events just spawned there. If I fortify now, I spend resources. If I don't, it could cascade into the other zones."
 
-**Game Design Reference:** This is Frostpunk's Hope/Discontent system. Frostpunk's key design decision: discontent increases event frequency, but the player ALWAYS has a tool to respond (laws, buildings, expeditions). RimWorld uses a similar pattern where colony wealth attracts raids, but the player can build defenses. The critical lesson: **the feedback loop must have a BRAKE** — a player action that slows or reverses the spiral.
+**Game Design Reference — Three Stability Models:**
+
+**Civilization 7 (2025):** Per-settlement happiness with escalating consequences. Unhappy: -2% penalty to ALL yields per unhappiness point (caps at -50%). Unrest: cannot purchase buildings, switch focus, or increase population. Revolt: triggered after staying Unhappy for a full turn during Crisis; 10 turns to fix or **permanently lose the settlement**. The escalation is gradual, predictable, and recoverable — but ignoring it is fatal.
+
+**Frostpunk (2018):** Hope/Discontent are two INDEPENDENT bars (not a single spectrum). Hope falls from cold, starvation, death. Discontent rises from overwork, harsh laws, inequality. The game's thesis: "Failure isn't a wave crushing a sandcastle, but the tide grinding a cliff to dust." When Hope drops to zero and stays there — **game over**. The player ALWAYS has tools (laws, buildings, expeditions) but each tool has moral costs.
+
+**Frostpunk 2 (2024):** Replaced Hope/Discontent with a Trust system: Revered → Respected → Accepted → Tolerated → Despised. Low trust causes riots, sabotage, and votes of no confidence (game over). Each faction has independent trust. Funding projects increases trust but costs resources — funding one faction repeatedly makes others suspicious. This is **zero-sum diplomacy**.
+
+**The critical lesson from all three: the feedback loop must have a BRAKE** — a player action that slows or reverses the spiral. Without it, the system becomes a clock counting down to inevitable failure.
 
 **Balance Parameters (Game Designer):**
 ```
@@ -150,7 +162,13 @@ stability 0.1  → event multiplier 1.5x (critical = max, NOT 2.0x)
 - RimWorld: A raid damages buildings → colonists get "saw corpse" debuff → colonists break → you must FIX the situation (build recreation, assign comfort tasks). The FIXING is the gameplay.
 - This platform: Event hits zone → agent safety drops → agent seeks safety activity → ??? What does the player DO? There's no "assign comfort tasks" or "build recreation room" equivalent.
 
-**Game Design Reference:** Dwarf Fortress's tantrum spiral is the canonical example of system-to-system feedback without player agency becoming a PROBLEM. A dwarf sees a corpse → gets sad → tantrums → attacks another dwarf → that dwarf gets sad → tantrum spiral → everyone dies. This is a known design flaw, not a feature. (Theseus thesis: "Systems-Based Game Design in Dwarf Fortress", 2024)
+**Game Design Reference — Why System-to-System Without Player Agency Fails:**
+
+**Dwarf Fortress Stress System:** Dwarves have long-term stress (-50,000 to +120,000) with thresholds at +25,000 (stressed), +50,000 (haggard), +100,000 (harrowed). At harrowed, observing death causes insanity. Recovery is painfully slow: max -43,564 points/year under PERFECT conditions, but max +20,160/year under stress. The asymmetry means once a dwarf enters the danger zone, it's nearly impossible to save them. The tantrum spiral (tantrum → destroys items → punishment → witnesses get stressed → their tantrums → cascading failure) is widely considered a **design flaw, not a feature.** (Theseus thesis: "Systems-Based Game Design in Dwarf Fortress", 2024)
+
+**RimWorld's Break Thresholds** show the RIGHT way: Minor breaks at mood 35% (food binge, sad wander — annoying but manageable), Major at 20% (tantrum, drug binge — destructive but survivable), Extreme at 5% (berserk rage, fire starting, permanently leaving colony — catastrophic). Critically, after ANY break, the colonist gets a **+40 catharsis mood bonus for 2.5 days** — this PREVENTS cascading spirals. The catharsis mechanic is the key innovation: bad things happen, but recovery is built into the system.
+
+**The lesson for our platform:** If events reduce agent needs, the agent spiral is: low safety → seek safety activity → less productive → zone stability drops → more events → lower safety → deeper spiral. There is NO catharsis mechanic and NO player intervention point. This is the DF tantrum spiral, not the RimWorld break system.
 
 **Recommendation:** Skip A4 entirely. The autonomy system already models agent behavior through needs decay + activity selection. Adding event→needs feedback creates simulation depth that no player can meaningfully interact with. If events should affect agents, do it through MOODLETS (which are already implemented) not NEEDS (which are invisible).
 
@@ -185,7 +203,11 @@ Agent zone assignment:
 
 ### 3.1 The "Victoria 3 Tooltip" Pattern
 
-Victoria 3 (Paradox, 2022) solved the "meaningless numbers" problem with what the community calls "explanation chains": hover over ANY number → tooltip shows the FULL calculation tree with every contributing factor, each one ALSO hoverable. This creates infinite drill-down depth while keeping the surface clean.
+Victoria 3 (Paradox, 2022) solved the "meaningless numbers" problem with what the community calls "explanation chains": hover over ANY number → tooltip shows the FULL calculation tree with every contributing factor, each one ALSO hoverable. This creates infinite drill-down depth while keeping the surface clean. PC Games N described it as "basically having the game's official wiki sitting right alongside your mouse pointer."
+
+**Implementation detail:** Tooltips are "lockable" — holding the cursor still causes the tooltip to gain a solid border, preventing it from disappearing when you move to hover over highlighted terms inside it. This is critical UX: without locking, nested tooltips would be unusable because moving the cursor to the inner text would dismiss the outer tooltip.
+
+**Dev Diary #74** specifically discusses this as a UX improvement: presenting "breakdowns of the calculations involved" so players can always understand WHY a number is what it is. The key principle from Philip Davis's tooltip analysis: "Advantages: matches cognitive learning patterns, minimal space, progressive learning. Challenges: needs keyboard navigation for accessibility, cursor sensitivity, mobile adaptation."
 
 **Example from Victoria 3:**
 ```
@@ -295,9 +317,21 @@ The current GUI treats the player as an ANALYST looking at reports. A MUD treats
 - **Conversation as interrogation.** `talk Elena Voss` in a terminal feels like an intelligence briefing, not a chat widget.
 
 **Game Design Reference:**
-- **Procedural Realms** (proceduralrealms.com): Modern web MUD with procedural content. Proves the format is commercially viable in 2024+.
+- **Procedural Realms** (proceduralrealms.com): Modern web MUD combining JRPG combat with procedural generation. Plays directly in browser. Widely regarded as top-tier modern MUD.
 - **AI Dungeon** (aidungeon.com): Showed that AI + text interface creates compelling emergent narrative. Our agent chat system + MUD commands would achieve similar effect.
-- **Superhuman's Command Palette**: Demonstrated that power users PREFER keyboard-driven interfaces over point-and-click. The MUD is essentially a domain-specific command palette.
+- **Superhuman's Command Palette**: Demonstrated that power users PREFER keyboard-driven interfaces. The broader "command line comeback" (Raycast, Linear, VS Code) creates cultural readiness for text-first game interfaces.
+- **Written Realms** (writtenrealms.com): Playable "100% through typed commands OR by clicking, tapping, and using hotkeys." Supports viewports as small as 375px. Has been praised for having "the best text-based UI and presentation." This hybrid model is exactly what we need.
+
+**Commercial Viability — The Numbers:**
+- **Torn City**: **$10-15M annual revenue**, 80,000+ daily unique players, running since 2004 (21 years). Creator became a millionaire at age 21. A "graphic-less game" generating substantial profit. 12-person team, custom engine.
+- **Iron Realms Entertainment**: **$5.1M annual revenue** (2025). Pioneered the freemium model in 1997. IGDA noted "substantially higher average revenue per customer" than subscription MMOs.
+- These are not niche curiosities — they are profitable businesses built on text interfaces.
+
+**Accessibility — A Strategic Advantage:**
+- At Materia Magica, blind players constitute **50% of online users on some nights**
+- MUDRammer (iOS MUD client) discovered that **14% of its players were blind** — only after implementing VoiceOver support
+- A MUD interface would IMPROVE our WCAG AA compliance by providing an accessible alternative to graphical components (EchartsCharts, maps) that are harder to make screen-reader-friendly
+- This is not just ethics — it's a market differentiator
 
 **The Multiplayer Dimension:**
 During epochs, multiple players' operatives occupy the same simulation. A MUD would let them:
@@ -329,11 +363,19 @@ status             →  GET /simulations/{id}/health      →  SimulationHealthV
 4. Display in a terminal component
 
 **Implementation options:**
-- **xterm.js**: Full terminal emulator, supports ANSI colors, cursor positioning. Overkill but beautiful.
-- **Custom Lit component**: Simple `<pre>` with typewriter effect + input field. Lighter, matches existing patterns.
-- **Hybrid**: Input field at bottom, scrolling output above. Like Discord but monospace.
 
-**Recommendation:** Custom Lit component (`<velg-bureau-terminal>`). No need for full terminal emulation. The aesthetic comes from CSS (CRT glow, scanlines, monospace font), not from terminal protocols.
+- **jQuery Terminal** (terminal.jcubic.pl): JavaScript library purpose-built for browser command-line interpreters. Supports custom command objects (each method becomes a command), **nested interpreters** (enter a zone → command context changes), tab completion, command history, Bash shortcuts, ANSI escape codes, typing effects. Includes built-in games. Can auto-call JSON-RPC services when users type commands. **Best fit for our use case** — the nested interpreter pattern maps perfectly to simulation navigation.
+
+- **xterm.js** (xtermjs.org): Full terminal emulator (used in VS Code). Has dedicated **screen reader mode** with ARIA live regions, virtual list navigation, and intelligent input echo suppression. Overkill for our needs but best accessibility story.
+
+- **Custom Lit component**: Simple `<pre>` with typewriter effect + input field. Lightest, matches existing patterns, but requires building command routing from scratch.
+
+**Recommendation:** `<velg-bureau-terminal>` LitElement wrapping **jQuery Terminal** for command routing + tab completion, with **CSS CRT effects** (scanlines via `linear-gradient` pseudo-element, subtle chromatic aberration via `text-shadow` with RGB channel separation, amber-on-dark color scheme from existing design tokens). The CRT aesthetic should be SUBTLE — atmospheric enhancement, not retro gimmick.
+
+**Command Parser Architecture** (Richard Bartle's six-stage model):
+1. Tokenization → 2. Dictionary lookup → 3. Grammar parsing → 4. Binding (match objects to nouns) → 5. Dispatch → 6. Execution. For our bounded command space (~15 verbs, ~50 nouns), a simple verb-noun parser with synonym resolution is sufficient. Full Bartle parsing is overkill.
+
+**Real-time Updates:** Use existing Supabase Realtime subscriptions to push heartbeat entries, weather changes, and agent activities to the terminal as they happen. The MUD output scrolls with new events — the world narrates itself while the player watches.
 
 ### 4.4 UX Assessment — ⚠️ REQUIRES CAREFUL ONBOARDING
 
@@ -435,6 +477,10 @@ With autonomy ON and stability→events feedback:
 
 **Critical balance parameter:** Event aging must be fast enough to prevent death spirals but slow enough to create urgency. Current values (4+6+3+8 = 21 ticks ≈ 3.5 days for full event lifecycle) seem well-tuned.
 
+**Catharsis Mechanic (from RimWorld research):** RimWorld prevents death spirals by giving colonists a +40 mood bonus for 2.5 days after ANY mental break. This is brilliant: the worse things get, the more catharsis events fire, creating natural recovery cycles. **We should implement an equivalent:** when zone stability drops below 20%, there's a 25% chance per tick of a "community resilience" positive event that temporarily boosts stability by +10%. This prevents zones from hitting 0% while still making low stability feel dangerous.
+
+**Dwarf Fortress Anti-Pattern (what NOT to do):** DF's stress system has asymmetric rates: max recovery -43,564/year but max stress gain +20,160/year. This means once a dwarf enters the danger zone, it's nearly impossible to recover. Our system must have **symmetric or recovery-biased rates** — a zone that drops to 15% stability should be able to recover to 40%+ within a few ticks of player attention (fortification + agent assignment + event resolution).
+
 ---
 
 ## Part VII: Performance Budget
@@ -455,6 +501,8 @@ With autonomy ON and stability→events feedback:
 
 Supabase free tier handles millions of queries/day. This is **0.05% of capacity**. Performance is not a concern.
 
+**Benchmark reference:** Screeps (persistent MMO simulation) achieves **30,000 update requests per second** on 160 Xeon cores with MongoDB. Our workload of ~5,000 queries/DAY is roughly 0.003 queries/second. We are six orders of magnitude below a proven simulation game's load. Even scaling to 1,000 simulations × 20 agents would remain trivial for PostgreSQL.
+
 **The bottleneck is not the database — it's the Open-Meteo API calls.** 14 simulations × 6 ticks = 84 calls/day. Open-Meteo allows 10,000/day. We use 0.84%. Also not a concern.
 
 ---
@@ -468,12 +516,52 @@ Supabase free tier handles millions of queries/day. This is **0.05% of capacity*
 
 ## Research Sources
 
-- GDC Vault: "RimWorld — Contrarian, Ridiculous, and Successful" (Tynan Sylvester, 2017)
-- GDC Vault: "Systemic AI in Just Cause 3" (2017)
-- GDC Vault: "Authored vs Systemic: Finding a Balance in Uncharted 4" (2017)
-- Theseus: "Systems-Based Game Design in Dwarf Fortress" (Niilo Lehner, 2024)
-- ResearchGate: "Subverting Historical Cause & Effect: Caves of Qud" (Grinblat & Bucklew, FDG'17)
-- Concordia University: "Emergent Narratives in Games" (2025)
-- MUD Coders Guild: mudcoders.com — modern MUD development community
-- Procedural Realms: proceduralrealms.com — modern web MUD reference
-- Superhuman: "How to Build a Remarkable Command Palette" (2023)
+### Systemic Game Design
+- GDC Vault: "RimWorld — Contrarian, Ridiculous, and Successful" (Tynan Sylvester, 2017) — [gdcvault.com](https://www.gdcvault.com/play/1024232/-RimWorld-Contrarian-Ridiculous-and)
+- GDC Vault: "Systemic AI in Just Cause 3" (2017) — [gdcvault.com](https://gdcvault.com/play/1024605/Tree-s-Company-Systemic-AI)
+- GDC Vault: "Authored vs Systemic: Finding a Balance in Uncharted 4" (2017) — [gdcvault.com](https://www.gdcvault.com/play/1024467/Authored-vs-Systemic-Finding-a)
+- Theseus: "Systems-Based Game Design in Dwarf Fortress" (Niilo Lehner, 2024) — [theseus.fi](https://www.theseus.fi/bitstream/handle/10024/814557/Lehner_Niilo.pdf)
+- ResearchGate: "Subverting Historical Cause & Effect: Caves of Qud" (Grinblat & Bucklew, FDG'17) — [researchgate.net](https://www.researchgate.net/publication/319364267)
+- Concordia University: "Emergent Narratives in Games" (2025) — [concordia.ca](https://www.concordia.ca/cuevents/offices/provost/fourth-space/2025/02/07/emergent-narratives-in-games.html)
+- Tynan Sylvester: "The Simulation Dream" (2013) — [tynansylvester.com](https://tynansylvester.com/2013/06/the-simulation-dream/)
+- Unity: "Systems That Create Ecosystems — Emergent Game Design" — [unity.com](https://unity.com/blog/games/systems-that-create-ecosystems-emergent-game-design)
+- ArXiv: "Player-Driven Emergence in LLM-Driven Game Narrative" (Microsoft Research, 2024) — [arxiv.org/abs/2404.17027](https://arxiv.org/abs/2404.17027)
+
+### Metrics & UX
+- Victoria 3 Nested Tooltip System — [pcgamesn.com](https://www.pcgamesn.com/victoria-3/nested-tooltip-system)
+- Victoria 3 Dev Diary #74: UX Improvements — [paradoxinteractive.com](https://www.paradoxinteractive.com/games/victoria-3/news/dev-diary-74-ux-improvements)
+- Philip Davis: "Tooltips in Tooltips" Design Analysis — [philip.design](https://philip.design/blog/tooltips-in-tooltips/)
+- Gamedeveloper: "Informed Decisions and Their Role on Game Design" — [gamedeveloper.com](https://www.gamedeveloper.com/design/informed-decisions-and-their-role-on-game-design)
+- Gamedeveloper: "Strategy Game UI Dos and Don'ts" — [gamedeveloper.com](https://www.gamedeveloper.com/design/ui-strategy-game-design-dos-and-don-ts)
+
+### Influence & Stability Reference Games
+- CK3 Wiki: Resources (Prestige/Fame Tiers) — [ck3.paradoxwikis.com](https://ck3.paradoxwikis.com/Resources)
+- Gamer Empire: CK3 How to Gain Prestige — [gamerempire.net](https://gamerempire.net/crusader-kings-3-how-to-gain-prestige/)
+- Stellaris: How to Get Influence — [thegamer.com](https://www.thegamer.com/stellaris-how-to-get-gain-more-political-influence-power-projection/)
+- Civilization 7 Happiness Guide — [thegamer.com](https://www.thegamer.com/civilization-7-civ-happiness-guide-explained/)
+- Frostpunk Wiki: Hope — [frostpunk.fandom.com](https://frostpunk.fandom.com/wiki/Hope)
+- Frostpunk 2 Trust System — [pcgamesn.com](https://www.pcgamesn.com/frostpunk-2/trust)
+- RimWorld Wiki: Mood & Mental Breaks — [rimworldwiki.com](https://rimworldwiki.com/wiki/Mood)
+- Dwarf Fortress Wiki: Stress — [dwarffortresswiki.org](https://dwarffortresswiki.org/Stress)
+
+### MUD & Terminal Interfaces
+- Torn City: 21-Year Public Safety Briefing ($10-15M revenue) — [gamespress.com](https://www.gamespress.com/TORN-CITY-21-YEAR-PUBLIC-SAFETY-BRIEFING)
+- Iron Realms Entertainment ($5.1M revenue) — [Wikipedia](https://en.wikipedia.org/wiki/Iron_Realms_Entertainment)
+- Iron Realms Nexus 3.0 Client — [ironrealms.com](https://www.ironrealms.com/nexus/)
+- Written Realms (hybrid text+click) — [writtenrealms.com](https://writtenrealms.com/)
+- Procedural Realms — [proceduralrealms.com](https://proceduralrealms.com/)
+- MUD Coders Guild — [mudcoders.com](https://mudcoders.com/)
+- jQuery Terminal — [terminal.jcubic.pl](https://terminal.jcubic.pl)
+- xterm.js Screen Reader Mode — [github.com/xtermjs](https://github.com/xtermjs/xterm.js/wiki/Design-Document:-Screen-Reader-Mode)
+- Richard Bartle: Command Parsers — [mud.co.uk](https://mud.co.uk/richard/commpars.htm)
+- LlamaTale (LLM-powered MUD) — [github.com/neph1/LlamaTale](https://github.com/neph1/LlamaTale)
+- Superhuman: "How to Build a Remarkable Command Palette" — [superhuman.com](https://blog.superhuman.com/how-to-build-a-remarkable-command-palette/)
+- Gaby Goldberg: "The Command Line Comeback" — [medium.com](https://gabygoldberg.medium.com/the-command-line-comeback-9857b49c7423)
+- Building MUDs for Screen Readers — [writing-games.org](https://writing-games.org/building-a-better-mud/)
+- Vice: How Blind Players Made MUDs Accessible — [vice.com](https://www.vice.com/en/article/how-blind-players-made-a-text-only-rpg-more-accessible/)
+
+### Performance
+- Screeps Server Architecture (30K updates/sec) — [docs.screeps.com](https://docs.screeps.com/architecture.html)
+- Epsio: PostgreSQL Materialized View Refresh Guide — [epsio.io](https://www.epsio.io/blog/postgres-refresh-materialized-view-a-comprehensive-guide)
+- Supabase: Processing Large Jobs — [supabase.com](https://supabase.com/blog/processing-large-jobs-with-edge-functions)
+- Martin Fowler: Feature Toggles — [martinfowler.com](https://martinfowler.com/articles/feature-toggles.html)
