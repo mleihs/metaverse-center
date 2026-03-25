@@ -79,6 +79,9 @@
 
 ## Concepts
 - [10 Proposals zur Tamagotchisierung](concepts/tamagotchi-proposals.md)
+- [Game Systems Integration — Connecting the Living World](concepts/game-systems-integration.md)
+- [Post-Generation Engagement Proposals](concepts/post-generation-engagement-proposals.md)
+- [Feature Discovery Proposals](feature-discovery-proposals.md)
 
 ## Audit Remediation
 - [CLAUDE_AUDIT.md](../CLAUDE_AUDIT.md) — Full security + architecture audit (Phase 0-6, 23.03.2026) — remediation completed 24.03.2026

@@ -1,6 +1,6 @@
 ---
 title: "Game Systems Integration — Connecting the Living World"
-version: "3.0"
+version: "3.1"
 date: "2026-03-25"
 type: concept
 status: active
@@ -196,6 +196,22 @@ Agent zone assignment:
 **Recommendation:** Enable default ON, but monitor the first few ticks via Sentry. If any simulation has issues, the per-sim override (`agent_autonomy_enabled=false`) provides an instant kill switch.
 
 **Data bootstrapping:** Before enabling, all main simulations need agents assigned to zones/buildings (like we did for Velgarien). Otherwise autonomy ticks produce empty results. Write a migration or script that assigns agents to buildings based on zone/building type affinity.
+
+#### A5 Implementation Notes (2026-03-25)
+
+**Implemented in:**
+- `backend/services/heartbeat_service.py:386` — default changed from `"false"` to `"true"`
+- `supabase/migrations/20260325200000_157_agent_autonomy_bootstrap.sql` — full bootstrapping
+
+**Migration 157 performs 5 steps (all pure SQL, ADR-007 compliant):**
+
+1. **Zone assignment** — affinity-based matching (agent.system to zone.zone_type) with round-robin fallback for even distribution. Maps: politics/military to government/command zones, economy to industrial/commercial, religion to residential/cultural, media to residential/commercial.
+2. **Building assignment** — same affinity pattern within assigned zones. Agents get buildings matching their system where available.
+3. **agent_needs bootstrap** — creates records with sensible defaults (all needs at 60.0, standard decay rates). PersonalityExtractionService can refine per-agent later.
+4. **agent_mood bootstrap** — creates records with neutral baseline (mood_score=0, stress=0, resilience/volatility/sociability=0.5). Personality extraction can refine later.
+5. **agent_opinions bootstrap** — creates bidirectional opinion records for all co-simulation agent pairs (base_compatibility=0.0 neutral). PersonalityExtractionService.initialize_opinions() can refine with Big Five compatibility later.
+
+**Kill switch preserved:** Any simulation can opt out via `simulation_settings` row: `(sim_id, 'heartbeat', 'agent_autonomy_enabled', 'false')`.
 
 ---
 
@@ -429,16 +445,16 @@ status             →  GET /simulations/{id}/health      →  SimulationHealthV
 
 ### Priority Order (by gameplay value)
 
-| Priority | Item | Gameplay Value | Effort | Dependencies |
-|----------|------|---------------|--------|-------------|
-| 1 | **A5: Autonomy ON** | ✅✅ Prerequisite | Tiny (1 line change + agent bootstrapping) | Agent zone assignment for all sims |
-| 2 | **A1: Influence → Readiness** | ✅✅ High | Medium (PG function + MV update) | A5 must be active |
-| 3 | **A2: Stability → Events** | ✅✅ High | Small (multiplier in event service) | A5 must be active |
-| 4 | **B1-B3: Info Bubbles + UX** | ✅ High (communication) | Medium (6 components, ~80 lines) | A1+A2 must be real first |
-| 5 | **MUD (Template, 5 commands)** | ✅✅ Potentially highest | Medium-Large (new component) | Existing APIs sufficient |
-| 6 | **A3: Resonance → Mood** | ⚠️ Medium | Medium | A5 must be active |
-| 7 | **MUD (Epoch extension)** | ✅ High | Medium | MUD template must work first |
-| — | ~~A4: Events → Needs~~ | ❌ Skip | — | No player agency |
+| Priority | Item | Gameplay Value | Effort | Dependencies | Status |
+|----------|------|---------------|--------|-------------|--------|
+| 1 | **A5: Autonomy ON** | ✅✅ Prerequisite | Tiny (1 line change + agent bootstrapping) | Agent zone assignment for all sims | **DONE** (migration 157, 2026-03-25) |
+| 2 | **A1: Influence → Readiness** | ✅✅ High | Medium (PG function + MV update) | A5 must be active | Pending |
+| 3 | **A2: Stability → Events** | ✅✅ High | Small (multiplier in event service) | A5 must be active | Pending |
+| 4 | **B1-B3: Info Bubbles + UX** | ✅ High (communication) | Medium (6 components, ~80 lines) | A1+A2 must be real first | Pending |
+| 5 | **MUD (Template, 5 commands)** | ✅✅ Potentially highest | Medium-Large (new component) | Existing APIs sufficient | Pending |
+| 6 | **A3: Resonance → Mood** | ⚠️ Medium | Medium | A5 must be active | Pending |
+| 7 | **MUD (Epoch extension)** | ✅ High | Medium | MUD template must work first | Pending |
+| — | ~~A4: Events → Needs~~ | ❌ Skip | — | No player agency | Skipped |
 
 ### Skip Recommendation: A4 (Events → Needs)
 

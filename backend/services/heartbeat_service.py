@@ -383,7 +383,7 @@ class HeartbeatService:
             #   2. Per-sim: simulation_settings.agent_autonomy_enabled
             #   3. Key: admin override (platform key) OR owner BYOK key
             autonomy_sim_enabled = str(
-                overrides.get("agent_autonomy_enabled", "false")
+                overrides.get("agent_autonomy_enabled", "true")
             ).lower() in ("true", "1")
             autonomy_global = str(
                 config.get("autonomy_feature_enabled", "true")

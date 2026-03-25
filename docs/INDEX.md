@@ -66,7 +66,7 @@ tags: [index, catalog, documentation]
 | [Feature Discovery Proposals](feature-discovery-proposals.md) | 1.0 | 2026-03-20 | en | active |
 | [Post-Generation Engagement Proposals (8 Features)](concepts/post-generation-engagement-proposals.md) | 1.0 | 2026-03-22 | de/en | active |
 | [10 Proposals zur Tamagotchisierung](concepts/tamagotchi-proposals.md) | 1.0 | 2026-03-25 | de | active |
-| [Game Systems Integration](concepts/game-systems-integration.md) | 1.0 | 2026-03-25 | en | active |
+| [Game Systems Integration](concepts/game-systems-integration.md) | 3.1 | 2026-03-25 | en | active |
 
 ## Explanations (5)
 
