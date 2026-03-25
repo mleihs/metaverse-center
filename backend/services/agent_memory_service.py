@@ -140,8 +140,8 @@ class AgentMemoryService:
             variables={
                 "agent_name": agent_name,
                 "simulation_name": sim_name,
-                "user_message": user_message[:500],
-                "agent_response": agent_response[:500],
+                "user_message": user_message[:2000],
+                "agent_response": agent_response[:2000],
             },
             locale="en",
         )
