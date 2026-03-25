@@ -4,6 +4,39 @@ import { customElement, property } from 'lit/decorators.js';
 import type { Zone, ZoneStability } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
 
+/** Ambient weather data for a zone (from heartbeat entries).
+ * Field naming follows t() convention: `narrative` (EN) + `narrative_de` (DE).
+ * Parent maps heartbeat entry's narrative_en → narrative when building this.
+ */
+export interface ZoneWeather {
+  narrative: string;      // EN (t() base field)
+  narrative_de: string;   // DE (t() locale field)
+  categories: string[];
+  temperature: number;
+  weather_code: number;
+}
+
+/** Map WMO weather code categories to Unicode weather symbols. */
+const WEATHER_SYMBOLS: Record<string, string> = {
+  clear: '\u2600',           // ☀
+  overcast: '\u2601',        // ☁
+  fog: '\uD83C\uDF2B\uFE0F', // 🌫️
+  fog_dense: '\uD83C\uDF2B\uFE0F',
+  rain_light: '\uD83C\uDF26\uFE0F', // 🌦️
+  rain: '\uD83C\uDF27\uFE0F', // 🌧️
+  rain_freezing: '\u2744\uFE0F', // ❄️
+  storm: '\u26C8\uFE0F',    // ⛈️
+  snow: '\u2744\uFE0F',      // ❄️
+  storm_snow: '\u2744\uFE0F',
+  thunderstorm: '\u26A1',    // ⚡
+  thunderstorm_severe: '\u26A1',
+  heat: '\uD83D\uDD25',      // 🔥
+  cold: '\u2744\uFE0F',      // ❄️
+  wind: '\uD83D\uDCA8',      // 💨
+  full_moon: '\uD83C\uDF15', // 🌕
+  new_moon: '\uD83C\uDF11',  // 🌑
+};
+
 @localized()
 @customElement('velg-zone-list')
 export class VelgZoneList extends LitElement {
@@ -196,10 +229,43 @@ export class VelgZoneList extends LitElement {
       color: var(--color-text-muted);
       margin-top: var(--space-1);
     }
+
+    /* --- Ambient weather indicator --- */
+
+    .item__weather {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-2);
+      margin-top: var(--space-3);
+      padding: var(--space-2) var(--space-3);
+      background: var(--color-surface-sunken);
+      border-left: 2px solid var(--color-border-light);
+    }
+
+    .item__weather-symbol {
+      font-size: var(--text-lg);
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .item__weather-text {
+      font-family: var(--font-body);
+      font-size: var(--text-xs);
+      color: var(--color-text-secondary);
+      line-height: 1.4;
+    }
+
+    .item__weather-temp {
+      font-family: var(--font-mono, monospace);
+      font-size: 10px;
+      color: var(--color-text-muted);
+      margin-top: var(--space-0-5);
+    }
   `;
 
   @property({ attribute: false }) zones: Zone[] = [];
   @property({ attribute: false }) stabilityMap: Map<string, ZoneStability> = new Map();
+  @property({ attribute: false }) weatherMap: Map<string, ZoneWeather> = new Map();
 
   private _stabilityColor(value: number): string {
     if (value < 0.3) return 'var(--color-danger)';
@@ -283,6 +349,27 @@ export class VelgZoneList extends LitElement {
     `;
   }
 
+  private _renderWeather(zoneId: string) {
+    const weather = this.weatherMap.get(zoneId);
+    if (!weather) return nothing;
+
+    const narrative = t(weather, 'narrative') as string;
+    if (!narrative) return nothing;
+
+    const primaryCategory = weather.categories?.[0] || 'clear';
+    const symbol = WEATHER_SYMBOLS[primaryCategory] || '\u2601';
+
+    return html`
+      <div class="item__weather" aria-label=${msg('Current conditions')}>
+        <span class="item__weather-symbol" aria-hidden="true">${symbol}</span>
+        <div>
+          <div class="item__weather-text">${narrative}</div>
+          <div class="item__weather-temp">${weather.temperature}°C</div>
+        </div>
+      </div>
+    `;
+  }
+
   protected render() {
     return html`
       <div class="list">
@@ -325,6 +412,7 @@ export class VelgZoneList extends LitElement {
               </div>
               ${this._renderStabilityBar(zone.id)}
               ${this._renderOverlays(zone.id)}
+              ${this._renderWeather(zone.id)}
             </div>
           `;
         })}
