@@ -252,7 +252,13 @@ class AgentOpinionService:
         simulation_id: UUID,
         zone_agent_map: dict[UUID, list[UUID]],
     ) -> int:
-        """Add zone cohabitation modifiers for all co-located agent pairs."""
+        """Add zone cohabitation modifiers for all co-located agent pairs.
+
+        TODO(ADR-007): This O(N²) Python loop makes 4 DB calls per agent pair.
+        When integrated into the heartbeat pipeline, replace with a bulk PG function
+        ``fn_add_opinion_modifiers_batch`` that checks caps + inserts in one call.
+        Currently dormant — no callers exist.
+        """
         added = 0
         for _zone_id, agent_ids in zone_agent_map.items():
             for i, agent_a in enumerate(agent_ids):
@@ -275,7 +281,11 @@ class AgentOpinionService:
         affected_agent_ids: list[UUID],
         impact_level: int,
     ) -> int:
-        """Add shared experience modifiers for agents affected by an event."""
+        """Add shared experience modifiers for agents affected by an event.
+
+        TODO(ADR-007): Same O(N²) pattern as add_proximity_modifiers — batch via
+        PG function when integrated into a caller. Currently dormant.
+        """
         preset = "survived_crisis_together" if impact_level >= 6 else "shared_experience"
         added = 0
 
