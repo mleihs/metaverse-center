@@ -52,18 +52,19 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
         height: 100%;
         min-height: 0;
         /* CRT terminals are ALWAYS dark regardless of simulation theme.
-           Override surface tokens to force dark palette. */
-        --_phosphor: var(--color-accent-amber, #f59e0b);
-        --_phosphor-dim: var(--color-accent-amber-dim, #b45309);
-        --_phosphor-glow: var(--color-accent-amber-glow, #fbbf2480);
-        --_screen-bg: color-mix(in srgb, black 92%, var(--color-accent-amber, #f59e0b) 2%);
-        --_surface: color-mix(in srgb, black 85%, var(--color-accent-amber, #f59e0b) 3%);
-        --_border: color-mix(in srgb, var(--color-accent-amber, #f59e0b) 25%, black);
-        --_text: color-mix(in srgb, var(--color-accent-amber, #f59e0b) 90%, white);
-        --_text-dim: color-mix(in srgb, var(--color-accent-amber, #f59e0b) 50%, black);
+           Hard amber palette ensures WCAG AA contrast (>4.5:1) on near-black bg.
+           lint-color-ok: CRT emulation requires fixed dark palette, cannot use theme tokens. */
+        --_phosphor: #f59e0b; /* lint-color-ok */
+        --_phosphor-dim: #d97706; /* lint-color-ok */
+        --_phosphor-glow: #fbbf2480; /* lint-color-ok */
+        --_screen-bg: #0a0a08; /* lint-color-ok */
+        --_surface: #12120e; /* lint-color-ok */
+        --_border: #3d3200; /* lint-color-ok */
+        --_text: #f5c542; /* lint-color-ok */
+        --_text-dim: #a68a2e; /* lint-color-ok */
         --_mono: var(--font-mono, 'SF Mono', 'Fira Code', 'Cascadia Code', monospace);
-        --_danger: var(--color-danger, #ef4444);
-        --_success: var(--color-success, #22c55e);
+        --_danger: #ef4444; /* lint-color-ok */
+        --_success: #22c55e; /* lint-color-ok */
       }
 
       /* ── Terminal Frame ── */
