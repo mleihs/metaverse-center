@@ -13,6 +13,7 @@ PostgreSQL functions used:
 - ``fn_count_moodlet_stacking`` (migration 145) — stacking cap check
 - ``fn_update_stress_levels`` (migration 146) — bulk stress update with mood logic
 - ``fn_add_agent_stress`` (migration 146) — atomic stress increment
+- ``fn_apply_resonance_moodlets`` (migration 161) — A3 resonance→mood bridge
 
 Inspired by Dwarf Fortress stress system, RimWorld moodlets, CK3 modifiers.
 """
@@ -41,7 +42,8 @@ STACKING_CAPS: dict[str, int] = {
     "celebration": 2,
     "loss": 3,
     "community_response": 2,
-    "resonance_pressure": 1,
+    # NOTE: resonance_pressure moodlets are managed by fn_apply_resonance_moodlets
+    # (atomic delete-and-replace per tick), NOT by add_moodlet(). No cap entry needed.
 }
 
 DEFAULT_STACKING_CAP = 5

@@ -181,11 +181,13 @@ stability 0.1  → event multiplier 1.5x (critical = max, NOT 2.0x)
 
 **Key design decisions:**
 - Strength LOW: -2 to +2 (vs. normal moodlet range of -20 to +20). Background pressure, not dominant.
-- Stacking cap: 1 per agent (resonance_pressure group). Only the strongest resonance matters.
+- One moodlet per active archetype per agent: with 2 simultaneous resonances (rare), agents get 2 moodlets. Combined max +-4, still background.
+- Lifecycle via atomic PG delete-and-replace (NOT via Python `add_moodlet()` stacking caps). Every tick: DELETE all resonance_pressure moodlets, INSERT fresh ones for current resonances. No stale accumulation possible.
 - Subsiding resonances contribute at 0.5x strength (decay into silence).
 - Effective magnitude = MIN(resonance.magnitude x susceptibility, 1.0). Scales the base strength.
-- Atomic PostgreSQL function (`fn_apply_resonance_moodlets`): delete-and-replace per tick. No Python loop.
+- No direct stress from resonance moodlets: unlike `add_moodlet()` which calls `fn_add_agent_stress` on negative moodlets, the PG function lets the mood->stress pipeline handle it naturally in Phase 9b. At -2 strength, this means near-zero stress impact (stress gain requires mood < -20). Correct for "background pressure".
 - Wired as HeartbeatService Phase 3b (after resonance pressure computation, before narrative arcs).
+- Self-gating: PG function joins on `agent_mood` table, which only has rows when autonomy is bootstrapped. Zero work for non-autonomy simulations.
 - Timed moodlets (5h duration, slightly longer than 4h tick to avoid gaps).
 - Source type: "system" with resonance_id for traceability.
 - No feature gate -- always active when resonances exist. Impact is negligible without active resonances.

@@ -1366,8 +1366,8 @@ class HeartbeatService:
                 label = health[0].get("health_label", "functional")
 
                 if h >= 0.7:
-                    prosperity = random.choice(
-                        [  # noqa: S311
+                    prosperity = random.choice(  # noqa: S311
+                        [
                             (
                                 "Trade routes hum with quiet commerce. The districts prosper.",
                                 "Handelsrouten summen vor stillem Handel. Die Bezirke gedeihen.",

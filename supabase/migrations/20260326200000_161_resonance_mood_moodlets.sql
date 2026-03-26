@@ -7,7 +7,7 @@
 -- Design principles (per game-systems-integration.md §A3):
 --   - Background pressure, NOT dominant force
 --   - Moodlet strength LOW: −2 to +2 (vs. normal −20 to +20)
---   - Stacking cap: 1 per agent (only one resonance moodlet at a time)
+--   - One moodlet per active archetype (multiple resonances = multiple moodlets)
 --   - Subsiding resonances contribute at 0.5× strength
 --   - Effective magnitude = MIN(resonance.magnitude × susceptibility, 1.0)
 --
