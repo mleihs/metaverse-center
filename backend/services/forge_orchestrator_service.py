@@ -1091,6 +1091,43 @@ class ForgeOrchestratorService:
                     exc_info=True,
                 )
 
+        # ── Phase A.7: Generate terminal boot art ──
+        if draft_data:
+            try:
+                from backend.services.forge_ascii_art_service import ForgeAsciiArtService
+
+                sim_row = await supabase.table("simulations").select("name").eq(
+                    "id", str(simulation_id),
+                ).maybe_single().execute()
+                sim_name = sim_row.data.get("name", "Unknown") if sim_row.data else "Unknown"
+                boot_art = await ForgeAsciiArtService.generate_boot_art(
+                    seed=draft_data.get("seed_prompt", ""),
+                    anchor=draft_data.get("philosophical_anchor", {}).get("selected", {}),
+                    geography=draft_data.get("geography", {}),
+                    simulation_name=sim_name,
+                    theme_data=draft_data.get("theme_config", {}),
+                    openrouter_key=or_key,
+                )
+                await supabase.table("simulation_settings").upsert(
+                    [{
+                        "simulation_id": str(simulation_id),
+                        "setting_key": "terminal_boot_art",
+                        "setting_value": boot_art,
+                        "category": "design",
+                    }],
+                    on_conflict="simulation_id,category,setting_key",
+                ).execute()
+                logger.info(
+                    "Terminal boot art generated (%d chars)",
+                    len(boot_art),
+                    extra={"simulation_id": str(simulation_id)},
+                )
+            except (httpx.HTTPError, ModelHTTPError, UnexpectedModelBehavior, KeyError, TypeError, ValueError):
+                logger.warning(
+                    "Terminal boot art generation failed — using theme defaults",
+                    exc_info=True,
+                )
+
         # ── Phase B: Image generation ──
         logger.info("Phase B: image generation")
         t_b = time.monotonic()

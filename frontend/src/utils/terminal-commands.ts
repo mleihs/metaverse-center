@@ -877,5 +877,15 @@ export async function parseAndExecute(input: string): Promise<TerminalLine[]> {
 /** Get boot sequence lines for first-time display. */
 export function getBootSequence(): TerminalLine[] {
   const simName = appState.currentSimulation.value?.name ?? 'Unknown';
-  return formatBootSequence(simName);
+  const theme = appState.currentSimulation.value?.theme;
+
+  // Read AI-generated boot art from simulation design settings
+  const bootArtSetting = appState.settings.value.find(
+    (s) => s.setting_key === 'terminal_boot_art',
+  );
+  const customArt = typeof bootArtSetting?.setting_value === 'string'
+    ? bootArtSetting.setting_value
+    : undefined;
+
+  return formatBootSequence(simName, theme, customArt);
 }

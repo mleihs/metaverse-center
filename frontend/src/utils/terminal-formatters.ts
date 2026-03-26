@@ -590,13 +590,16 @@ function getThemeAsciiArt(theme: string): string[] {
   }
 }
 
-export function formatBootSequence(simulationName: string, theme?: string): TerminalLine[] {
-  const art = getThemeAsciiArt(theme ?? 'custom');
+export function formatBootSequence(simulationName: string, theme?: string, customArt?: string): TerminalLine[] {
+  // Prefer AI-generated art from simulation_settings, fall back to theme defaults
+  const artLines = customArt
+    ? customArt.split('\n')
+    : getThemeAsciiArt(theme ?? 'custom');
   const lines: TerminalLine[] = [];
 
-  // ASCII art header
+  // ASCII art header (AI-generated or theme fallback)
   lines.push(systemLine(''));
-  for (const artLine of art) {
+  for (const artLine of artLines) {
     lines.push(systemLine(artLine));
   }
   lines.push(systemLine(''));

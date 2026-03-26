@@ -32,6 +32,7 @@ PYDANTIC_AI_MAX_TOKENS: dict[str, int] = {
     "translation": 4096,   # entity translation batch
     "dossier_evolution": 1024,  # short 100-250 word addenda
     "entity": 3072,             # single agent/building (character + background + DE)
+    "ascii_art": 1024,          # terminal boot art (monospace scene)
 }
 
 # ── Centralized timeout budgets (seconds) ────────────────────────────
@@ -50,6 +51,7 @@ PYDANTIC_AI_TIMEOUTS: dict[str, int] = {
     "translation": 120,
     "dossier_evolution": 60,
     "entity": 120,
+    "ascii_art": 60,
 }
 
 
