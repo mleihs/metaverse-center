@@ -20,6 +20,7 @@ import '../health/DesperateActionsPanel.js';
 import '../health/EntropyOverlay.js';
 import '../health/EntropyTimer.js';
 import '../shared/SvgFilters.js';
+import '../shared/PlatformFooter.js';
 import './SimulationHeader.js';
 import './SimulationNav.js';
 
@@ -1097,6 +1098,7 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
       `
           : nothing
       }
+      <velg-platform-footer></velg-platform-footer>
     `;
   }
 
