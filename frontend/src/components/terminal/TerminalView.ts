@@ -13,7 +13,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { terminalState } from '../../services/TerminalStateManager.js';
 import { locationsApi } from '../../services/api/index.js';
-import { terminalTokens } from '../shared/terminal-theme-styles.js';
+import { terminalTokens, terminalAnimations, terminalWrapperStyles } from '../shared/terminal-theme-styles.js';
 import './BureauTerminal.js';
 
 @localized()
@@ -21,6 +21,8 @@ import './BureauTerminal.js';
 export class VelgTerminalView extends SignalWatcher(LitElement) {
   static styles = [
     terminalTokens,
+    terminalAnimations,
+    terminalWrapperStyles,
     css`
       :host {
         display: flex;
@@ -28,44 +30,6 @@ export class VelgTerminalView extends SignalWatcher(LitElement) {
         height: calc(100vh - var(--header-height, 64px) - 120px);
         min-height: 400px;
         padding: 0 16px 16px;
-      }
-
-      .terminal-wrapper {
-        flex: 1;
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-      }
-
-      .terminal-error {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 40px;
-        font-family: var(--font-mono, monospace);
-        font-size: 13px;
-        color: var(--color-text-muted);
-      }
-
-      .terminal-loading {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 40px;
-        font-family: var(--font-mono, monospace);
-        font-size: 13px;
-        color: var(--amber-dim);
-      }
-
-      @media (prefers-reduced-motion: no-preference) {
-        .terminal-loading {
-          animation: cursor-blink 1s step-end infinite;
-        }
-
-        @keyframes cursor-blink {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.3; }
-        }
       }
 
       @media (max-width: 640px) {

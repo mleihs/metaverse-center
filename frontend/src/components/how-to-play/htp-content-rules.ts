@@ -227,7 +227,7 @@ export function getTactics(): TacticCard[] {
       title: msg('The Quick Strike'),
       category: 'opener',
       description: msg(
-        'Deploy only 1 guardian during foundation, save the rest. You enter competition with 35+ RP \u2014 enough for an assassin + saboteur on cycle 4. Risky: undefended zones are vulnerable. Best with Warmonger preset where early military points compound.',
+        'Deploy only 1 guardian during foundation, save the rest. You enter competition with 35+ RP \u2013 enough for an assassin + saboteur on cycle 4. Risky: undefended zones are vulnerable. Best with Warmonger preset where early military points compound.',
       ),
     },
     {
@@ -241,7 +241,7 @@ export function getTactics(): TacticCard[] {
       title: msg('The Balanced Start'),
       category: 'opener',
       description: msg(
-        'Deploy 2\u20133 guardians, keep a moderate RP reserve (15\u201320). Covers key zones without sacrificing offensive capability. The safest opener \u2014 works with any preset and adapts to opponent behavior.',
+        'Deploy 2\u20133 guardians, keep a moderate RP reserve (15\u201320). Covers key zones without sacrificing offensive capability. The safest opener \u2013 works with any preset and adapts to opponent behavior.',
       ),
     },
     // Timing
@@ -278,7 +278,7 @@ export function getTactics(): TacticCard[] {
       title: msg('Counter-Intel Timing'),
       category: 'economy',
       description: msg(
-        'A sweep costs 4 RP. Use it when you suspect incoming propagandists or saboteurs \u2014 not every cycle. A detected enemy mission costs THEM \u22123 military AND negates their effect. One well-timed sweep can swing 10+ points.',
+        'A sweep costs 4 RP. Use it when you suspect incoming propagandists or saboteurs \u2013 not every cycle. A detected enemy mission costs THEM \u22123 military AND negates their effect. One well-timed sweep can swing 10+ points.',
       ),
     },
     // Counter-Play
@@ -286,14 +286,14 @@ export function getTactics(): TacticCard[] {
       title: msg('Guardian Stacking'),
       category: 'counter',
       description: msg(
-        'Each guardian reduces enemy success by 6% (capped at \u221215% total). Three guardians reach the cap. Forces enemies to target undefended zones instead. But 12 RP on defense is 12 RP not spent on offense \u2014 only stack when protecting high-value buildings.',
+        'Each guardian reduces enemy success by 6% (capped at \u221215% total). Three guardians reach the cap. Forces enemies to target undefended zones instead. But 12 RP on defense is 12 RP not spent on offense \u2013 only stack when protecting high-value buildings.',
       ),
     },
     {
       title: msg('The Embassy Shield'),
       category: 'counter',
       description: msg(
-        'Infiltrators reduce your embassy effectiveness by 65% for 3 cycles. Counter by deploying your own infiltrator against their embassy \u2014 mutual neutralization. Or stack guardians near embassy zones to prevent infiltration entirely.',
+        'Infiltrators reduce your embassy effectiveness by 65% for 3 cycles. Counter by deploying your own infiltrator against their embassy \u2013 mutual neutralization. Or stack guardians near embassy zones to prevent infiltration entirely.',
       ),
     },
     // Preset-Specific
@@ -308,7 +308,7 @@ export function getTactics(): TacticCard[] {
       title: msg('Warmonger: Glass Cannon'),
       category: 'preset',
       description: msg(
-        'With 40% military weight, every successful mission is massive (+5 saboteur, +8 assassin, +6 infiltrator). But detected missions (\u22123 each) hurt double. Go all-in on offense with spies for intel, then targeted strikes. Accept defensive losses \u2014 stability only counts for 10%.',
+        'With 40% military weight, every successful mission is massive (+5 saboteur, +8 assassin, +6 infiltrator). But detected missions (\u22123 each) hurt double. Go all-in on offense with spies for intel, then targeted strikes. Accept defensive losses \u2013 stability only counts for 10%.',
       ),
     },
     {
@@ -342,7 +342,7 @@ export function getEmbassyInfo(): EmbassyInfoCard[] {
       label: msg('Creation'),
       value: msg('4-step wizard: partner \u2192 protocol \u2192 ambassadors \u2192 confirm'),
     },
-    { label: msg('Ambassador'), value: msg('Special agent status \u2014 targeted by assassins') },
+    { label: msg('Ambassador'), value: msg('Special agent status \u2013 targeted by assassins') },
     {
       label: msg('Effectiveness'),
       value: msg('Feeds into success formula: +embassy_eff \u00D7 0.15'),
@@ -503,7 +503,7 @@ export function getChangelog(): ChangelogEntry[] {
           category: msg('Guide Restructure'),
           changes: [
             msg('Reorganized from 19 to 28 sections with logical learning progression'),
-            msg('New intro: What is metaverse.center? \u2014 sandbox vs competitive modes'),
+            msg('New intro: What is metaverse.center? \u2013 sandbox vs competitive modes'),
             msg('World sections first: Lore, Forge, Chat, Events, Social Trends, Map, Health'),
             msg('Then competitive rules: Epochs, Operatives, Scoring, Alliances, Bots, COMMS'),
             msg('Advanced mechanics: Bleed, Resonances, Zone Dynamics, Agent Memory, Chronicle'),
@@ -614,7 +614,7 @@ export function getChangelog(): ChangelogEntry[] {
             msg(
               'Zone fortification: 2 RP, +1 security tier, lasts 5 competition cycles, max 1 per zone',
             ),
-            msg('Fortifications are hidden \u2014 only revealed by enemy spy intel reports'),
+            msg('Fortifications are hidden \u2013 only revealed by enemy spy intel reports'),
             msg('Bots use personality-specific fortification strategies'),
           ],
         },
@@ -631,7 +631,7 @@ export function getChangelog(): ChangelogEntry[] {
           category: msg('Open Epoch Participation'),
           changes: [
             msg('Any authenticated user can join an epoch with any template simulation'),
-            msg('No simulation membership required \u2014 just pick a faction and play'),
+            msg('No simulation membership required \u2013 just pick a faction and play'),
             msg('Animated faction picker with staggered entrance and lock-in state'),
             msg('One user per epoch, one simulation per epoch (duplicate prevention)'),
           ],
@@ -1091,7 +1091,7 @@ export function getBalanceInsights(): BalanceInsight[] {
       label: msg('Nash Equilibrium'),
       value: msg('100% Defensive'),
       description: msg(
-        'Game-theoretic optimal play is pure ci_defensive. The meta is solved \u2014 defensive play dominates all alternatives at 64% win rate.',
+        'Game-theoretic optimal play is pure ci_defensive. The meta is solved \u2013 defensive play dominates all alternatives at 64% win rate.',
       ),
     },
     {

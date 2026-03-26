@@ -1916,7 +1916,7 @@ CREATE POLICY simulation_assets_insert ON storage.objects FOR INSERT
 | Epoch/Forge/Chronicle Functions | 27 (clone_simulations_for_epoch, archive_epoch_instances, delete_epoch_instances, fn_materialize_shard, get_chronicle_source_data, retrieve_agent_memories, get_campaign_analytics, get_cycle_battle_summary, process_cascade_events, fn_get_resonance_susceptibility, fn_get_resonance_event_types, assign_event_zones, fn_expire_alliance_proposals, fn_deduct_alliance_upkeep, fn_compute_alliance_tension, fn_approve_forge_access, fn_reject_forge_access, fn_purchase_tokens, fn_admin_grant_tokens, fn_purchase_feature, fn_refund_feature, fn_darkroom_use_regen, fn_user_byok_allowed, fn_update_user_byok_keys, fn_batch_grant_rp, fn_compute_cycle_scores, fn_auto_draft_participants) |
 | Admin RPC Functions | 3 (admin_list_users, admin_get_user, admin_delete_user) |
 | RLS Functions | 4 (user_has_simulation_access, user_has_simulation_role, user_simulation_role, role_meets_minimum) |
-| Functions gesamt | ~68 (ohne unaccent-Varianten und interne Helfer; +fn_compute_agent_influence mig 158, +fn_bootstrap_building_relations mig 160) |
+| Functions gesamt | ~70 (ohne unaccent-Varianten und interne Helfer; +fn_compute_agent_influence mig 158, +fn_bootstrap_building_relations mig 160, +fn_add_moodlet_capped mig 162, +fn_apply_zone_need_modifiers mig 162) |
 | Triggers | 56 Eintraege (19 unique Trigger-Functions auf 56 Tabellen/Spalten-Kombinationen) |
 | Regular Views | 10 (4x active_* + simulation_dashboard + conversation_summaries + agent_statistics + campaign_performance + v_pending_forge_requests + token_economy_stats) |
 | Materialized Views | 4 (mv_building_readiness + mv_zone_stability + mv_embassy_effectiveness + mv_simulation_health) |

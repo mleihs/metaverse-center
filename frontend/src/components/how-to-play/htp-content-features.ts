@@ -28,7 +28,7 @@ export function getForgeGuideSteps(): ForgeStep[] {
       phase: 'astrolabe',
       title: msg('Enter the Forge'),
       narration: msg(
-        'Navigate to the Forge from the main navigation. The Forge is the Bureau of Impossible Geography \u2014 a four-phase wizard that materializes an entirely new simulation through AI-assisted procedural generation. Each phase builds on the previous, culminating in a fully realized world with geography, agents, buildings, lore, and a unique visual identity.',
+        'Navigate to the Forge from the main navigation. The Forge is the Bureau of Impossible Geography \u2013 a four-phase wizard that materializes an entirely new simulation through AI-assisted procedural generation. Each phase builds on the previous, culminating in a fully realized world with geography, agents, buildings, lore, and a unique visual identity.',
       ),
       readout: [
         { label: msg('Phases'), value: '4' },
@@ -36,19 +36,19 @@ export function getForgeGuideSteps(): ForgeStep[] {
         { label: msg('Output'), value: msg('Complete simulation') },
       ],
       tip: msg(
-        'The Forge uses real AI generation at every step. Each scan, draft, and calibration is a live API call \u2014 results are unique every time. Budget 10\u201315 minutes for a full forge run.',
+        'The Forge uses real AI generation at every step. Each scan, draft, and calibration is a live API call \u2013 results are unique every time. Budget 10\u201315 minutes for a full forge run.',
       ),
       image: tutorialImage('htp-forge-01-seed-input.avif'),
       imageAlt: msg('The Simulation Forge seed input and suggestion cards'),
     },
     {
       phase: 'astrolabe',
-      title: msg('Phase I \u2014 The Astrolabe'),
+      title: msg('Phase I \u2013 The Astrolabe'),
       narration: msg(
-        'Enter a seed prompt describing the world you want to create. This can be as simple as "a cyberpunk megacity" or as evocative as "a floating archipelago where memories solidify into islands." Click Scan Multiverse to generate three philosophical anchor cards \u2014 each offers a distinct thematic interpretation of your seed.',
+        'Enter a seed prompt describing the world you want to create. This can be as simple as "a cyberpunk megacity" or as evocative as "a floating archipelago where memories solidify into islands." Click Scan Multiverse to generate three philosophical anchor cards \u2013 each offers a distinct thematic interpretation of your seed.',
       ),
       detail: msg(
-        'The AI analyzes your seed and produces three anchors with names, philosophical tenets, and worldbuilding implications. Each anchor shapes the entire simulation differently \u2014 the same seed with different anchors creates radically different worlds.',
+        'The AI analyzes your seed and produces three anchors with names, philosophical tenets, and worldbuilding implications. Each anchor shapes the entire simulation differently \u2013 the same seed with different anchors creates radically different worlds.',
       ),
       readout: [
         { label: msg('Input'), value: msg('Seed prompt (free text)') },
@@ -61,7 +61,7 @@ export function getForgeGuideSteps(): ForgeStep[] {
     // ── Phase II: The Drafting Table ────────────────
     {
       phase: 'table',
-      title: msg('Phase II \u2014 The Drafting Table'),
+      title: msg('Phase II \u2013 The Drafting Table'),
       narration: msg(
         'The Table has three divisions that can be completed in any order. The Cartographic Division generates geography (zones and transit arteries). The Personnel Bureau recruits AI-generated agents with names, professions, and detailed backstories. The Infrastructure Corps blueprints buildings with rich architectural descriptions.',
       ),
@@ -97,12 +97,12 @@ export function getForgeGuideSteps(): ForgeStep[] {
     // ── Phase III: The Darkroom ─────────────────────
     {
       phase: 'darkroom',
-      title: msg('Phase III \u2014 The Darkroom'),
+      title: msg('Phase III \u2013 The Darkroom'),
       narration: msg(
         'The Aesthetic Calibration Bureau generates a complete visual identity for your simulation. An AI-generated color palette (primary, secondary, accent, background, surface, text), typography selection (heading and body fonts), and character styling (border radius, shadow, hover effects, card texture, nameplate style, corner decorations, foil effects) are all auto-calibrated from your world\u2019s theme.',
       ),
       detail: msg(
-        'A live preview panel on the right shows how your theme will look in practice \u2014 color swatches, sample headings, buttons, and a mock agent card. Every parameter is editable if you want to fine-tune the AI\u2019s choices.',
+        'A live preview panel on the right shows how your theme will look in practice \u2013 color swatches, sample headings, buttons, and a mock agent card. Every parameter is editable if you want to fine-tune the AI\u2019s choices.',
       ),
       readout: [
         { label: msg('Colors'), value: msg('6-color palette') },
@@ -134,7 +134,7 @@ export function getForgeGuideSteps(): ForgeStep[] {
     // ── Phase IV: The Ignition ──────────────────────
     {
       phase: 'ignition',
-      title: msg('Phase IV \u2014 The Ignition'),
+      title: msg('Phase IV \u2013 The Ignition'),
       narration: msg(
         'The final phase presents an Ignition Summary readout: seed prompt, philosophical anchor, agent count, building count, zone count, and theme type. Below, an image generation estimate shows how many images will be created (typically 15\u201320: 1 banner + portraits + building images + lore illustrations).',
       ),
@@ -164,7 +164,7 @@ export function getSubstratePulseGuideSteps(): DemoStep[] {
       phase: 'competition',
       title: msg('What is the Substrate Pulse?'),
       narration: msg(
-        'The Substrate Pulse is the heartbeat of every simulation. Every 4 hours, the system ticks \u2014 updating zone stability, progressing narrative arcs, triggering bureau responses, and recording entries in the pulse chronicle. The Pulse tab shows this activity as a battle-log-style ticker, grouped by tick number, with color-coded severity and type indicators.',
+        'The Substrate Pulse is the heartbeat of every simulation. Every 4 hours, the system ticks \u2013 updating zone stability, progressing narrative arcs, triggering bureau responses, and recording entries in the pulse chronicle. The Pulse tab shows this activity as a battle-log-style ticker, grouped by tick number, with color-coded severity and type indicators.',
       ),
       readout: [
         { label: msg('Tick interval'), value: msg('4 hours (configurable)') },
@@ -176,10 +176,10 @@ export function getSubstratePulseGuideSteps(): DemoStep[] {
       phase: 'competition',
       title: msg('The Daily Substrate Dispatch'),
       narration: msg(
-        'When you visit a simulation for the first time each day, a classified intelligence briefing appears \u2014 the Daily Substrate Dispatch. Styled as a Bureau report handed to an operative, it summarizes the last 24 hours: overall health status with a color-coded bar, counts of critical and positive events, total pulse entries, and active narrative arcs with pressure indicators.',
+        'When you visit a simulation for the first time each day, a classified intelligence briefing appears \u2013 the Daily Substrate Dispatch. Styled as a Bureau report handed to an operative, it summarizes the last 24 hours: overall health status with a color-coded bar, counts of critical and positive events, total pulse entries, and active narrative arcs with pressure indicators.',
       ),
       detail: msg(
-        'The dispatch auto-dismisses after 30 seconds (pause by hovering) or can be acknowledged immediately. Click "View Chronicle" to jump straight to the Pulse tab. The briefing only appears when there are new entries to report \u2014 if nothing happened in 24 hours, no briefing is shown.',
+        'The dispatch auto-dismisses after 30 seconds (pause by hovering) or can be acknowledged immediately. Click "View Chronicle" to jump straight to the Pulse tab. The briefing only appears when there are new entries to report \u2013 if nothing happened in 24 hours, no briefing is shown.',
       ),
       readout: [
         { label: msg('Frequency'), value: msg('Once per day per simulation') },
@@ -211,7 +211,7 @@ export function getChronicleGuideSteps(): DemoStep[] {
       phase: 'competition',
       title: msg('What is the Chronicle?'),
       narration: msg(
-        'The Chronicle is a living newspaper generated by AI after each epoch cycle. Styled as a Victorian-era broadsheet, it reports on in-game events through the lens of fictional journalism \u2014 complete with dramatic headlines, editorial commentary, and intelligence dispatches.',
+        'The Chronicle is a living newspaper generated by AI after each epoch cycle. Styled as a Victorian-era broadsheet, it reports on in-game events through the lens of fictional journalism \u2013 complete with dramatic headlines, editorial commentary, and intelligence dispatches.',
       ),
       detail: msg(
         'Each edition covers one cycle\u2019s worth of events: operative deployments, mission outcomes, score changes, and diplomatic shifts. The AI weaves these mechanical events into narrative prose, giving your simulation a sense of history and drama.',
@@ -232,7 +232,7 @@ export function getChronicleGuideSteps(): DemoStep[] {
         'Each Chronicle edition opens with a masthead showing the simulation name, edition number, and cycle date. Below, articles are arranged in newspaper columns. Headlines range from battlefield reports ("SABOTEUR STRIKES THE INDUSTRIAL QUARTER") to political analysis ("DIPLOMATIC TENSIONS RISE AS EMBASSY EFFECTIVENESS WANES").',
       ),
       tip: msg(
-        'The Chronicle is publicly visible \u2014 anyone browsing the simulation can read it. Use it to understand the narrative arc of an epoch, even as a spectator.',
+        'The Chronicle is publicly visible \u2013 anyone browsing the simulation can read it. Use it to understand the narrative arc of an epoch, even as a spectator.',
       ),
       image: tutorialImage('htp-chronicle-01-broadsheet.avif'),
       imageAlt: msg('Chronicle edition with headlines and article columns'),
@@ -263,7 +263,7 @@ export function getResonanceGuideSteps(): DemoStep[] {
       phase: 'competition',
       title: msg('What are Substrate Resonances?'),
       narration: msg(
-        'Substrate Resonances are emergent phenomena that arise when a simulation\u2019s substrate \u2014 its underlying computational fabric \u2014 vibrates in response to in-game activity. Think of them as the world\u2019s immune system: when events cluster too densely or score dimensions become imbalanced, the substrate begins to resonate.',
+        'Substrate Resonances are emergent phenomena that arise when a simulation\u2019s substrate \u2013 its underlying computational fabric \u2013 vibrates in response to in-game activity. Think of them as the world\u2019s immune system: when events cluster too densely or score dimensions become imbalanced, the substrate begins to resonate.',
       ),
       detail: msg(
         'Each resonance has a signature (a unique waveform identifier), a magnitude (how strong the effect), and a decay rate (how quickly it fades). Active resonances modify gameplay mechanics: they can boost or suppress certain operative types, alter RP generation, or shift score weights temporarily.',
@@ -281,10 +281,10 @@ export function getResonanceGuideSteps(): DemoStep[] {
       phase: 'competition',
       title: msg('The Resonance Monitor'),
       narration: msg(
-        'The Substrate Tremor Monitor displays all active resonances in real time. Each resonance is shown as a card with its signature label, magnitude bar, and remaining decay cycles. The monitor also shows the simulation\u2019s overall substrate stability \u2014 a composite measure of how far the world\u2019s fabric has been stressed.',
+        'The Substrate Tremor Monitor displays all active resonances in real time. Each resonance is shown as a card with its signature label, magnitude bar, and remaining decay cycles. The monitor also shows the simulation\u2019s overall substrate stability \u2013 a composite measure of how far the world\u2019s fabric has been stressed.',
       ),
       tip: msg(
-        'High substrate instability means resonances are more likely to trigger and cascade. Plan your deployments carefully during unstable periods \u2014 a single saboteur mission could trigger a resonance that rebounds against you.',
+        'High substrate instability means resonances are more likely to trigger and cascade. Plan your deployments carefully during unstable periods \u2013 a single saboteur mission could trigger a resonance that rebounds against you.',
       ),
       image: tutorialImage('htp-resonance-02-monitor.avif'),
       imageAlt: msg('Substrate Tremor Monitor with active resonance cards'),
@@ -293,7 +293,7 @@ export function getResonanceGuideSteps(): DemoStep[] {
       phase: 'competition',
       title: msg('Strategic Implications'),
       narration: msg(
-        'Resonances are not just atmospheric \u2014 they have direct mechanical impact. A "Military Surge" resonance might increase assassin success rates by 10% for 3 cycles, while a "Diplomatic Dampener" could reduce embassy effectiveness. Understanding which actions trigger which resonances is key to advanced strategy.',
+        'Resonances are not just atmospheric \u2013 they have direct mechanical impact. A "Military Surge" resonance might increase assassin success rates by 10% for 3 cycles, while a "Diplomatic Dampener" could reduce embassy effectiveness. Understanding which actions trigger which resonances is key to advanced strategy.',
       ),
       readout: [
         { label: msg('Military Surge'), value: msg('+10% assassin success') },
@@ -334,7 +334,7 @@ export function getZoneDynamicsGuideSteps(): DemoStep[] {
       phase: 'competition',
       title: msg('The Event Seismograph'),
       narration: msg(
-        'Every simulation tracks event pressure across its zones through the Event Seismograph \u2014 an SVG visualization that plots event intensity over time. The seismograph shows spikes when missions resolve, guardians deploy, or bleed events cascade. Hover over any point to see the exact event details.',
+        'Every simulation tracks event pressure across its zones through the Event Seismograph \u2013 an SVG visualization that plots event intensity over time. The seismograph shows spikes when missions resolve, guardians deploy, or bleed events cascade. Hover over any point to see the exact event details.',
       ),
       readout: [
         { label: msg('X-axis'), value: msg('Cycle timeline') },
@@ -352,7 +352,7 @@ export function getZoneDynamicsGuideSteps(): DemoStep[] {
         'Each zone maintains a security level that affects operative success rates. Security ranges from Low to Critical and changes based on guardian deployments, fortification actions, and successful enemy infiltrations. The zone dynamics panel shows current security levels with color-coded indicators.',
       ),
       detail: msg(
-        'Zone security is the primary defensive mechanic. A zone at Critical security reduces enemy operative success by up to 25%. Conversely, a Low security zone is a soft target \u2014 spy intel that reveals zone security levels is enormously valuable for planning strikes.',
+        'Zone security is the primary defensive mechanic. A zone at Critical security reduces enemy operative success by up to 25%. Conversely, a Low security zone is a soft target \u2013 spy intel that reveals zone security levels is enormously valuable for planning strikes.',
       ),
       readout: [
         { label: msg('Low'), value: msg('Minimal defense') },
@@ -389,7 +389,7 @@ export function getAgentMemoryGuideSteps(): DemoStep[] {
         'Every agent in a simulation maintains a persistent memory system. As events unfold, agents form observations about what they witness and reflections about what those events mean. This creates a living psychological profile that evolves over the course of an epoch.',
       ),
       detail: msg(
-        'Agent memory uses a dual-layer architecture: observations are raw factual records ("I deployed as a spy against The Gaslit Reach"), while reflections are synthesized interpretations ("My infiltration revealed a pattern of weak northern defenses \u2014 the enemy is concentrating forces in the south"). Reflections are AI-generated from accumulated observations.',
+        'Agent memory uses a dual-layer architecture: observations are raw factual records ("I deployed as a spy against The Gaslit Reach"), while reflections are synthesized interpretations ("My infiltration revealed a pattern of weak northern defenses \u2013 the enemy is concentrating forces in the south"). Reflections are AI-generated from accumulated observations.',
       ),
       readout: [
         { label: msg('Observations'), value: msg('Factual event records') },
@@ -419,10 +419,10 @@ export function getAgentMemoryGuideSteps(): DemoStep[] {
         'Each memory entry has an importance rating from 1 to 5, shown as pips. High-importance memories (mission outcomes, major score shifts) persist longer and weigh more heavily in AI reflections. Low-importance memories may decay over time, simulating the natural fading of routine observations.',
       ),
       readout: [
-        { label: msg('5 pips'), value: msg('Critical \u2014 never decays') },
-        { label: msg('4 pips'), value: msg('High \u2014 long persistence') },
-        { label: msg('3 pips'), value: msg('Medium \u2014 standard decay') },
-        { label: msg('1\u20132 pips'), value: msg('Low \u2014 fades quickly') },
+        { label: msg('5 pips'), value: msg('Critical \u2013 never decays') },
+        { label: msg('4 pips'), value: msg('High \u2013 long persistence') },
+        { label: msg('3 pips'), value: msg('Medium \u2013 standard decay') },
+        { label: msg('1\u20132 pips'), value: msg('Low \u2013 fades quickly') },
       ],
       image: tutorialImage('htp-agent-memory-01-list.avif'),
       imageAlt: msg('Memory entries with importance pip ratings'),
@@ -438,7 +438,7 @@ export function getMultiverseMapGuideSteps(): DemoStep[] {
       phase: 'competition',
       title: msg('What is the Multiverse Map?'),
       narration: msg(
-        'The Cartographer\u2019s Map is an interactive force-directed graph that visualizes the entire multiverse \u2014 every simulation, their connections, and active game instances. Nodes represent simulations, edges represent cross-dimensional connections, and energy pulses flow along the connections to show bleed activity.',
+        'The Cartographer\u2019s Map is an interactive force-directed graph that visualizes the entire multiverse \u2013 every simulation, their connections, and active game instances. Nodes represent simulations, edges represent cross-dimensional connections, and energy pulses flow along the connections to show bleed activity.',
       ),
       detail: msg(
         'Template simulations appear as solid nodes with ambient glow. When an epoch is active, game instances orbit their parent template with dashed rotating borders and phase-colored rings (green for foundation, amber for competition, red for reckoning). The map auto-refreshes every 30 seconds during active epochs.',
@@ -463,7 +463,7 @@ export function getMultiverseMapGuideSteps(): DemoStep[] {
         { label: msg('Search'), value: msg('Filter by name') },
       ],
       tip: msg(
-        'The battle feed ticker at the bottom of the map shows a scrolling log of public battle events across all active epochs \u2014 useful for spectators following multiple matches.',
+        'The battle feed ticker at the bottom of the map shows a scrolling log of public battle events across all active epochs \u2013 useful for spectators following multiple matches.',
       ),
     },
     {
@@ -490,7 +490,7 @@ export function getBotPlayersGuideSteps(): DemoStep[] {
       phase: 'lobby',
       title: msg('What are Bot Players?'),
       narration: msg(
-        'Bot players are AI opponents that can be added to any epoch. Each bot has a personality archetype that determines its strategic behavior \u2014 from defensive fortress-builders to chaotic wild cards. Bots use the exact same deployment and scoring mechanics as human players, ensuring fair competition.',
+        'Bot players are AI opponents that can be added to any epoch. Each bot has a personality archetype that determines its strategic behavior \u2013 from defensive fortress-builders to chaotic wild cards. Bots use the exact same deployment and scoring mechanics as human players, ensuring fair competition.',
       ),
       detail: msg(
         'Bots are configured through reusable presets with a name, personality, and difficulty level. The epoch creator adds bots from the Bot Deployment Console during the lobby phase. Bots auto-draft their agent roster based on their personality preferences and make decisions synchronously during cycle resolution.',
@@ -509,11 +509,11 @@ export function getBotPlayersGuideSteps(): DemoStep[] {
         'Each personality shapes how the bot allocates RP, chooses targets, and responds to threats. The Sentinel prioritizes defense with guardian stacking and counter-intel sweeps. The Warlord maximizes offensive pressure with assassins and saboteurs. The Diplomat builds embassy networks and avoids betrayal. The Strategist adapts dynamically based on game state. The Chaos agent acts unpredictably, mixing strategies each cycle.',
       ),
       readout: [
-        { label: msg('Sentinel'), value: msg('Defensive \u2014 guardians + sweeps') },
-        { label: msg('Warlord'), value: msg('Aggressive \u2014 assassins + saboteurs') },
-        { label: msg('Diplomat'), value: msg('Alliance-focused \u2014 embassy network') },
-        { label: msg('Strategist'), value: msg('Adaptive \u2014 reads game state') },
-        { label: msg('Chaos'), value: msg('Unpredictable \u2014 random mix') },
+        { label: msg('Sentinel'), value: msg('Defensive \u2013 guardians + sweeps') },
+        { label: msg('Warlord'), value: msg('Aggressive \u2013 assassins + saboteurs') },
+        { label: msg('Diplomat'), value: msg('Alliance-focused \u2013 embassy network') },
+        { label: msg('Strategist'), value: msg('Adaptive \u2013 reads game state') },
+        { label: msg('Chaos'), value: msg('Unpredictable \u2013 random mix') },
       ],
       tip: msg(
         'Difficulty affects decision quality: easy bots make suboptimal choices and waste RP, medium bots play competently, and hard bots optimize their strategy and exploit weaknesses.',
@@ -523,7 +523,7 @@ export function getBotPlayersGuideSteps(): DemoStep[] {
       phase: 'competition',
       title: msg('Bot Chat'),
       narration: msg(
-        'Bots can participate in epoch chat with two modes. Template mode generates instant, cost-free responses based on personality templates. LLM mode uses OpenRouter to produce context-aware, strategically nuanced messages \u2014 bots will taunt, negotiate, and bluff based on the game state. The mode is configurable per simulation in AI Settings.',
+        'Bots can participate in epoch chat with two modes. Template mode generates instant, cost-free responses based on personality templates. LLM mode uses OpenRouter to produce context-aware, strategically nuanced messages \u2013 bots will taunt, negotiate, and bluff based on the game state. The mode is configurable per simulation in AI Settings.',
       ),
       readout: [
         { label: msg('Template mode'), value: msg('Free, instant, personality-based') },
@@ -558,7 +558,7 @@ export function getAgentChatGuideSteps(): DemoStep[] {
       phase: 'competition',
       title: msg('Memory-Augmented Responses'),
       narration: msg(
-        'When an agent responds, the system retrieves their most relevant memories using a Stanford Generative Agents-style retrieval formula that balances semantic similarity, importance, and recency. These memories are injected into the agent\u2019s system prompt, so their responses reflect what they\u2019ve experienced \u2014 events they witnessed, missions they participated in, and reflections they\u2019ve formed.',
+        'When an agent responds, the system retrieves their most relevant memories using a Stanford Generative Agents-style retrieval formula that balances semantic similarity, importance, and recency. These memories are injected into the agent\u2019s system prompt, so their responses reflect what they\u2019ve experienced \u2013 events they witnessed, missions they participated in, and reflections they\u2019ve formed.',
       ),
       tip: msg(
         'After each chat exchange, the system automatically extracts noteworthy observations from the conversation and stores them as new agent memories. Over time, agents develop richer, more nuanced personalities through accumulated interactions.',
@@ -568,7 +568,7 @@ export function getAgentChatGuideSteps(): DemoStep[] {
       phase: 'competition',
       title: msg('Starting a Conversation'),
       narration: msg(
-        'Navigate to the Chat tab in your simulation and select an agent from the agent selector. Each conversation is a separate thread \u2014 you can maintain multiple ongoing conversations with different agents. Messages appear with directional animations, and AI responses are generated in real time via OpenRouter.',
+        'Navigate to the Chat tab in your simulation and select an agent from the agent selector. Each conversation is a separate thread \u2013 you can maintain multiple ongoing conversations with different agents. Messages appear with directional animations, and AI responses are generated in real time via OpenRouter.',
       ),
       readout: [
         { label: msg('Rate limit'), value: msg('10 messages per minute') },
@@ -587,7 +587,7 @@ export function getEventsGuideSteps(): DemoStep[] {
       phase: 'competition',
       title: msg('What are Events?'),
       narration: msg(
-        'Events are the narrative heartbeat of every simulation. They represent things that happen in the world \u2014 political upheavals, economic crises, military conflicts, cultural shifts, natural disasters. Events can be created manually, generated by AI, or produced automatically through game mechanics like operative missions and bleed echoes.',
+        'Events are the narrative heartbeat of every simulation. They represent things that happen in the world \u2013 political upheavals, economic crises, military conflicts, cultural shifts, natural disasters. Events can be created manually, generated by AI, or produced automatically through game mechanics like operative missions and bleed echoes.',
       ),
       detail: msg(
         'Each event has a type (from the simulation\u2019s taxonomy), an impact level (1\u201310), tags for categorization, and a status lifecycle (active \u2192 escalating \u2192 resolving \u2192 resolved \u2192 archived). High-impact events trigger zone pressure, cascade mechanics, and bleed echoes to connected simulations.',
@@ -603,7 +603,7 @@ export function getEventsGuideSteps(): DemoStep[] {
       phase: 'competition',
       title: msg('AI Event Generation'),
       narration: msg(
-        'Generate complete events using AI through the event creation modal. The AI produces a title, description, impact level, and tags \u2014 all contextually appropriate to your simulation\u2019s theme and current state. Each simulation can configure its own AI model and prompt templates to control the tone and style of generated events.',
+        'Generate complete events using AI through the event creation modal. The AI produces a title, description, impact level, and tags \u2013 all contextually appropriate to your simulation\u2019s theme and current state. Each simulation can configure its own AI model and prompt templates to control the tone and style of generated events.',
       ),
       readout: [
         { label: msg('AI Engine'), value: msg('OpenRouter (configurable model)') },
@@ -615,10 +615,10 @@ export function getEventsGuideSteps(): DemoStep[] {
       phase: 'competition',
       title: msg('Agent Reactions'),
       narration: msg(
-        'After an event occurs, agents can react to it based on their personality, profession, and background. Agent reactions are AI-generated character-driven responses \u2014 a military general reacts differently to an invasion than a merchant or a priest. Reactions appear as expandable cards below the event details.',
+        'After an event occurs, agents can react to it based on their personality, profession, and background. Agent reactions are AI-generated character-driven responses \u2013 a military general reacts differently to an invasion than a merchant or a priest. Reactions appear as expandable cards below the event details.',
       ),
       tip: msg(
-        'Events with high impact levels (8+) can trigger bleed echoes to connected simulations, cascade events in stressed zones, and shift epoch scoring dimensions. They\u2019re not just narrative \u2014 they have real mechanical consequences.',
+        'Events with high impact levels (8+) can trigger bleed echoes to connected simulations, cascade events in stressed zones, and shift epoch scoring dimensions. They\u2019re not just narrative \u2013 they have real mechanical consequences.',
       ),
     },
   ];
@@ -632,10 +632,10 @@ export function getSimulationLoreGuideSteps(): DemoStep[] {
       phase: 'lobby',
       title: msg('What is Simulation Lore?'),
       narration: msg(
-        'Every simulation has a dedicated Lore section \u2014 an in-world narrative of 3,000\u20135,000 words organized into six chapters. Lore describes the world\u2019s history, geography, political systems, culture, and defining tensions. It\u2019s the first thing visitors see when entering a simulation, setting the tone for everything that follows.',
+        'Every simulation has a dedicated Lore section \u2013 an in-world narrative of 3,000\u20135,000 words organized into six chapters. Lore describes the world\u2019s history, geography, political systems, culture, and defining tensions. It\u2019s the first thing visitors see when entering a simulation, setting the tone for everything that follows.',
       ),
       detail: msg(
-        'Lore is displayed through the LoreScroll component: an elegantly typeset reading experience using the Bureau font (Spectral serif) with themed section headers, paragraph spacing, and optional lore illustrations. The visual design adapts to each simulation\u2019s theme \u2014 dark brutalist for Velgarien, Victorian gaslight for The Gaslit Reach, deep-space horror for Station Null.',
+        'Lore is displayed through the LoreScroll component: an elegantly typeset reading experience using the Bureau font (Spectral serif) with themed section headers, paragraph spacing, and optional lore illustrations. The visual design adapts to each simulation\u2019s theme \u2013 dark brutalist for Velgarien, Victorian gaslight for The Gaslit Reach, deep-space horror for Station Null.',
       ),
       readout: [
         { label: msg('Length'), value: msg('3,000\u20135,000 words') },
@@ -651,7 +651,7 @@ export function getSimulationLoreGuideSteps(): DemoStep[] {
         'Simulations created through the Forge receive AI-generated lore that weaves together the seed prompt, philosophical anchor, geography, agents, and buildings into a cohesive narrative. Lore is auto-translated to German. Simulations created manually can have lore written and edited by the owner through the Lore editor.',
       ),
       tip: msg(
-        'Lore is publicly visible \u2014 anyone can browse a simulation\u2019s lore without logging in. It serves as the world\u2019s identity and helps players understand the thematic context before joining an epoch.',
+        'Lore is publicly visible \u2013 anyone can browse a simulation\u2019s lore without logging in. It serves as the world\u2019s identity and helps players understand the thematic context before joining an epoch.',
       ),
     },
   ];
@@ -665,7 +665,7 @@ export function getSimulationHealthGuideSteps(): DemoStep[] {
       phase: 'competition',
       title: msg('What is Simulation Health?'),
       narration: msg(
-        'The Simulation Health dashboard shows the mechanical state of your world through four computed metrics: Building Readiness, Zone Stability, Embassy Effectiveness, and overall Simulation Health. These metrics directly feed into epoch scoring \u2014 they\u2019re not just flavor, they determine your score.',
+        'The Simulation Health dashboard shows the mechanical state of your world through four computed metrics: Building Readiness, Zone Stability, Embassy Effectiveness, and overall Simulation Health. These metrics directly feed into epoch scoring \u2013 they\u2019re not just flavor, they determine your score.',
       ),
       readout: [
         { label: msg('Building Readiness'), value: msg('Avg. building condition') },
@@ -711,7 +711,7 @@ export function getSocialTrendsGuideSteps(): DemoStep[] {
       phase: 'lobby',
       title: msg('The Transform Pipeline'),
       narration: msg(
-        'The workflow is: Fetch \u2192 Transform \u2192 Integrate. First, browse or search real-world articles. Then, select an article and transform it \u2014 the AI rewrites the story through your simulation\u2019s lens, matching its theme, tone, and internal logic. Finally, integrate the transformed content as a new simulation event, optionally linking it to a campaign.',
+        'The workflow is: Fetch \u2192 Transform \u2192 Integrate. First, browse or search real-world articles. Then, select an article and transform it \u2013 the AI rewrites the story through your simulation\u2019s lens, matching its theme, tone, and internal logic. Finally, integrate the transformed content as a new simulation event, optionally linking it to a campaign.',
       ),
       tip: msg(
         'Batch transform lets you process multiple articles at once. This is useful for creating a cluster of related events that simulate a real-world news cycle filtered through your simulation\u2019s worldview.',
@@ -721,7 +721,7 @@ export function getSocialTrendsGuideSteps(): DemoStep[] {
       phase: 'lobby',
       title: msg('Campaigns'),
       narration: msg(
-        'Campaigns group related events into thematic narratives \u2014 a propaganda initiative, an influence operation, or a social movement. Each campaign tracks engagement metrics and links back to its source events. The campaign dashboard shows an overview of all active campaigns with performance analytics.',
+        'Campaigns group related events into thematic narratives \u2013 a propaganda initiative, an influence operation, or a social movement. Each campaign tracks engagement metrics and links back to its source events. The campaign dashboard shows an overview of all active campaigns with performance analytics.',
       ),
       readout: [
         { label: msg('Types'), value: msg('Marketing, political, social') },
@@ -1002,7 +1002,7 @@ export function getEpochCommsGuideSteps(): DemoStep[] {
       phase: 'competition',
       title: msg('What is the COMMS System?'),
       narration: msg(
-        'The COMMS sidebar on the Epoch Operations Board provides real-time communication during competitive play. Two channels are available: ALL CHANNELS broadcasts to every participant, while TEAM FREQ is restricted to your alliance members. Messages update in real time via WebSocket \u2014 no page refresh needed.',
+        'The COMMS sidebar on the Epoch Operations Board provides real-time communication during competitive play. Two channels are available: ALL CHANNELS broadcasts to every participant, while TEAM FREQ is restricted to your alliance members. Messages update in real time via WebSocket \u2013 no page refresh needed.',
       ),
       readout: [
         { label: msg('ALL CHANNELS'), value: msg('Epoch-wide broadcast') },
@@ -1015,17 +1015,17 @@ export function getEpochCommsGuideSteps(): DemoStep[] {
       phase: 'competition',
       title: msg('Presence & Ready Signals'),
       narration: msg(
-        'The presence indicator shows which players are currently online with a green dot. The ready signal system lets you indicate when you\u2019ve completed your actions for the current cycle. When all human participants signal ready, the cycle auto-resolves \u2014 no waiting for the timer.',
+        'The presence indicator shows which players are currently online with a green dot. The ready signal system lets you indicate when you\u2019ve completed your actions for the current cycle. When all human participants signal ready, the cycle auto-resolves \u2013 no waiting for the timer.',
       ),
       tip: msg(
-        'Use the COMMS to coordinate alliance strategy, negotiate truces, or bluff about your next move. Everything said in ALL CHANNELS is visible to all players \u2014 use TEAM FREQ for sensitive coordination.',
+        'Use the COMMS to coordinate alliance strategy, negotiate truces, or bluff about your next move. Everything said in ALL CHANNELS is visible to all players \u2013 use TEAM FREQ for sensitive coordination.',
       ),
     },
     {
       phase: 'competition',
       title: msg('Email Briefings'),
       narration: msg(
-        'After each cycle resolves, all participants receive a tactical briefing email. The email is bilingual (EN/DE), fog-of-war compliant (you only see your own operations), and includes your current rank, score gaps, mission outcomes, spy intel summaries, threat assessments, and a preview of the next cycle phase. Emails respect notification preferences \u2014 opt out anytime in Settings.',
+        'After each cycle resolves, all participants receive a tactical briefing email. The email is bilingual (EN/DE), fog-of-war compliant (you only see your own operations), and includes your current rank, score gaps, mission outcomes, spy intel summaries, threat assessments, and a preview of the next cycle phase. Emails respect notification preferences \u2013 opt out anytime in Settings.',
       ),
       readout: [
         { label: msg('Triggers'), value: msg('Cycle resolve, phase change, epoch start') },

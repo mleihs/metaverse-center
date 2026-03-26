@@ -62,29 +62,29 @@ function needsBar(value: number, width = 5): string {
 
 /** Get stability label from percentage. */
 function stabilityLabel(pct: number): string {
-  if (pct < 20) return 'CRITICAL';
-  if (pct < 40) return 'UNSTABLE';
-  if (pct < 60) return 'CONTESTED';
-  if (pct < 80) return 'STABLE';
-  return 'FORTIFIED';
+  if (pct < 20) return msg('CRITICAL');
+  if (pct < 40) return msg('UNSTABLE');
+  if (pct < 60) return msg('CONTESTED');
+  if (pct < 80) return msg('STABLE');
+  return msg('FORTIFIED');
 }
 
 /** Get health label from 0-1 value. */
 function healthLabel(value: number): string {
   const pct = value * 100;
-  if (pct < 25) return 'CRITICAL';
-  if (pct < 50) return 'STRUGGLING';
-  if (pct < 75) return 'STABLE';
-  return 'THRIVING';
+  if (pct < 25) return msg('CRITICAL');
+  if (pct < 50) return msg('STRUGGLING');
+  if (pct < 75) return msg('STABLE');
+  return msg('THRIVING');
 }
 
 /** Format a mood score (-100 to +100) into a label. */
 function moodLabel(score: number): string {
-  if (score >= 15) return 'Content';
-  if (score >= 5) return 'Calm';
-  if (score >= -5) return 'Neutral';
-  if (score >= -15) return 'Uneasy';
-  return 'Distressed';
+  if (score >= 15) return msg('Content');
+  if (score >= 5) return msg('Calm');
+  if (score >= -5) return msg('Neutral');
+  if (score >= -15) return msg('Uneasy');
+  return msg('Distressed');
 }
 
 /** Resolve a command description (may be a lazy function or plain string). */
@@ -284,7 +284,7 @@ export function formatExamineBuilding(
       `  ${msg('Condition')}: ${Math.round(readiness.condition_factor * 100)}%`,
     ));
     const influencePct = Math.round(readiness.avg_influence * 100);
-    const influenceTier = influencePct > 55 ? 'STRONG' : influencePct > 30 ? 'AVG' : 'WEAK';
+    const influenceTier = influencePct > 55 ? msg('STRONG') : influencePct > 30 ? msg('AVG') : msg('WEAK');
     lines.push(responseLine(
       `  ${msg('Influence')}: ${influencePct}% [${influenceTier}]`,
     ));
@@ -330,8 +330,8 @@ export function formatWeather(entry: HeartbeatEntry | null): TerminalLine[] {
     }
     if (typeof meta.moon_phase === 'number') {
       const mp = meta.moon_phase as number;
-      const phase = mp < 0.125 ? 'New Moon' : mp < 0.375 ? 'Waxing Crescent' :
-        mp < 0.625 ? 'Full Moon' : mp < 0.875 ? 'Waning Gibbous' : 'New Moon';
+      const phase = mp < 0.125 ? msg('New Moon') : mp < 0.375 ? msg('Waxing Crescent') :
+        mp < 0.625 ? msg('Full Moon') : mp < 0.875 ? msg('Waning Gibbous') : msg('New Moon');
       parts.push(`${msg('Moon')}: ${phase} (${Math.round(mp * 100)}%)`);
     }
     if (parts.length > 0) {

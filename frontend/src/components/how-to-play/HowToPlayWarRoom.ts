@@ -182,7 +182,7 @@ export class HowToPlayWarRoom extends LitElement {
     );
     seoService.setCanonical('/how-to-play/competitive');
     seoService.setBreadcrumbs([
-      { name: 'Home', url: 'https://metaverse.center/' },
+      { name: msg('Home'), url: 'https://metaverse.center/' },
       { name: msg('How to Play'), url: 'https://metaverse.center/how-to-play' },
       { name: msg('War Room'), url: 'https://metaverse.center/how-to-play/competitive' },
     ]);
@@ -230,7 +230,7 @@ export class HowToPlayWarRoom extends LitElement {
   protected render() {
     return html`
       <a class="back" href="/how-to-play" @click=${this._handleNavClick}>
-        <span class="back__arrow">\u25C2</span> ${msg('How to Play')}
+        <span class="back__arrow" aria-hidden="true">\u25C2</span> ${msg('How to Play')}
       </a>
 
       ${this._renderHero()}

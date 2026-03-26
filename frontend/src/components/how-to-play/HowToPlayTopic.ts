@@ -1163,7 +1163,7 @@ export class VelgHowToPlayTopic extends LitElement {
     seoService.setDescription(def.description);
     seoService.setCanonical(`/how-to-play/guide/${def.slug}`);
     seoService.setBreadcrumbs([
-      { name: 'Home', url: 'https://metaverse.center/' },
+      { name: msg('Home'), url: 'https://metaverse.center/' },
       { name: msg('How to Play'), url: 'https://metaverse.center/how-to-play' },
       { name: msg('Game Guide'), url: 'https://metaverse.center/how-to-play/guide' },
       { name: def.title, url: `https://metaverse.center/how-to-play/guide/${def.slug}` },

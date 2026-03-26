@@ -537,7 +537,7 @@ export class VelgHowToPlayGuideHub extends LitElement {
     seoService.setDescription(msg('Browse 12 topics covering every game system in metaverse.center.'));
     seoService.setCanonical('/how-to-play/guide');
     seoService.setBreadcrumbs([
-      { name: 'Home', url: 'https://metaverse.center/' },
+      { name: msg('Home'), url: 'https://metaverse.center/' },
       { name: msg('How to Play'), url: 'https://metaverse.center/how-to-play' },
       { name: msg('Game Guide'), url: 'https://metaverse.center/how-to-play/guide' },
     ]);

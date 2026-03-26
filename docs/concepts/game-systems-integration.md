@@ -1112,6 +1112,7 @@ Supabase free tier handles millions of queries/day. This is **0.05% of capacity*
 - [10 Proposals zur Tamagotchisierung](tamagotchi-proposals.md) — engagement features building on this foundation
 - [Sentry CI/CD Integration](../guides/sentry-cicd-integration.md) — observability for monitoring system health
 - [ADR-007: Database Logic in Database](../adr/007-database-logic-in-database.md) — pattern for influence calculation
+- Migration 162: `fn_add_moodlet_capped` (atomic stacking cap) + `fn_apply_zone_need_modifiers` (bulk zone safety) — ADR-007 audit fixes
 - [Ambient Weather System](../guides/sentry-cicd-integration.md) — already implemented, first system connection
 
 ## Research Sources

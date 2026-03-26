@@ -20,7 +20,10 @@ from __future__ import annotations
 import logging
 from uuid import UUID
 
+import httpx
+import sentry_sdk
 import structlog
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from supabase import AsyncClient as Client
 
@@ -32,7 +35,7 @@ NEED_TYPES = ("social", "purpose", "safety", "comfort", "stimulation")
 # Which activities fulfill which needs (activity_type → need_type → amount)
 ACTIVITY_NEED_FULFILLMENT: dict[str, dict[str, float]] = {
     "socialize": {"social": 15.0},
-    "seek_comfort": {"social": 20.0, "comfort": 5.0},
+    "seek_comfort": {"comfort": 20.0, "social": 5.0},
     "collaborate": {"social": 8.0, "purpose": 10.0},
     "work": {"purpose": 15.0},
     "maintain": {"purpose": 8.0, "comfort": 5.0},
@@ -184,27 +187,35 @@ class AgentNeedsService:
         supabase: Client,
         simulation_id: UUID,
         zone_stability_map: dict[UUID, float],
-    ) -> None:
-        """Modify safety needs based on zone stability via atomic PG calls.
+    ) -> int:
+        """Modify safety needs based on zone stability via bulk PG function.
 
-        Uses ``fn_fulfill_agent_need`` (migration 146) for each affected agent.
+        Delegates to ``fn_apply_zone_need_modifiers`` (migration 162) which
+        performs a single UPDATE for all agents, eliminating N individual RPCs.
+        Returns the number of agents updated.
         """
-        result = await (
-            supabase.table("agents")
-            .select("id, current_zone_id")
-            .eq("simulation_id", str(simulation_id))
-            .is_("deleted_at", "null")
-            .not_.is_("current_zone_id", "null")
-            .execute()
-        )
+        if not zone_stability_map:
+            return 0
 
-        for agent in result.data or []:
-            zone_id = agent.get("current_zone_id")
-            if not zone_id or zone_id not in zone_stability_map:
-                continue
+        # Convert UUID keys to string for JSONB
+        stability_jsonb = {str(k): v for k, v in zone_stability_map.items()}
 
-            stability = zone_stability_map[zone_id]
-            if stability < 0.3:
-                await cls.fulfill_need(supabase, agent["id"], "safety", -5.0)
-            elif stability > 0.8:
-                await cls.fulfill_need(supabase, agent["id"], "safety", 3.0)
+        try:
+            result = await supabase.rpc(
+                "fn_apply_zone_need_modifiers",
+                {
+                    "p_simulation_id": str(simulation_id),
+                    "p_zone_stability": stability_jsonb,
+                },
+            ).execute()
+            updated = result.data if isinstance(result.data, int) else 0
+            if updated > 0:
+                logger.info(
+                    "Zone need modifiers applied",
+                    extra={"simulation_id": str(simulation_id), "agents_updated": updated},
+                )
+            return updated
+        except (PostgrestAPIError, httpx.HTTPError) as exc:
+            logger.warning("Failed to apply zone need modifiers")
+            sentry_sdk.capture_exception(exc)
+            return 0

@@ -307,7 +307,7 @@ export class VelgHowToPlayQuickstart extends LitElement {
     );
     seoService.setCanonical('/how-to-play/quickstart');
     seoService.setBreadcrumbs([
-      { name: 'Home', url: 'https://metaverse.center/' },
+      { name: msg('Home'), url: 'https://metaverse.center/' },
       { name: msg('How to Play'), url: 'https://metaverse.center/how-to-play' },
       { name: msg('Quick Start'), url: 'https://metaverse.center/how-to-play/quickstart' },
     ]);

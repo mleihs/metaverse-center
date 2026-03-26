@@ -469,8 +469,8 @@ Features die innerhalb einer Simulation existieren. Benutzer können beliebig vi
 | **Trigger** | 41+ |
 | **Views** | 8 Standard + 6 Materialized |
 | **API-Endpoints** | ~295 (über 37 Router) |
-| **Backend-Tests** | 912 (pytest: unit + integration + security + performance) |
-| **Frontend-Tests** | 453 (vitest: validation + API + theme contrast + SEO) |
+| **Backend-Tests** | 917 (pytest: unit + integration + security + performance) |
+| **Frontend-Tests** | 667 (vitest: validation + API + theme contrast + SEO + terminal-formatters + fuzzy-search + date-format) |
 | **E2E-Tests** | 81 (Playwright: 12 Dateien) |
 | **i18n-Strings** | 5848 (EN/DE, 100% coverage) |
 | **Background-Tasks** | 1 (ResonanceScheduler) |

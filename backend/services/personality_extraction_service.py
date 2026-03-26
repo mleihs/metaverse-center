@@ -278,7 +278,14 @@ class PersonalityExtractionService:
         supabase: Client,
         simulation_id: UUID,
     ) -> int:
-        """Create opinion records for all agent pairs in a simulation. Returns count created."""
+        """Create opinion records for all agent pairs in a simulation.
+
+        Computes base compatibility from Big Five profiles (deterministic,
+        requires hashlib — stays in Python), then batch-upserts all pairs
+        in a single DB call instead of N*(N-1) individual upserts.
+
+        Returns count of opinion records created/updated.
+        """
         result = await (
             supabase.table("agents")
             .select("id, personality_profile")
@@ -287,8 +294,11 @@ class PersonalityExtractionService:
             .execute()
         )
         agents = result.data or []
-        created = 0
+        if len(agents) < 2:
+            return 0
 
+        # Build all opinion rows in Python (O(N²) computation, but no DB calls)
+        rows: list[dict] = []
         for i, agent_a in enumerate(agents):
             for agent_b in agents[i + 1:]:
                 compat = cls.compute_base_compatibility(
@@ -297,23 +307,27 @@ class PersonalityExtractionService:
                     agent_a["id"],
                     agent_b["id"],
                 )
+                opinion_score = round(compat * 20)
 
-                # Create bidirectional opinion records
+                # Bidirectional: A→B and B→A
                 for source, target in [(agent_a, agent_b), (agent_b, agent_a)]:
-                    await supabase.table("agent_opinions").upsert(
-                        {
-                            "agent_id": source["id"],
-                            "target_agent_id": target["id"],
-                            "simulation_id": str(simulation_id),
-                            "base_compatibility": compat,
-                            "opinion_score": round(compat * 20),
-                        },
-                        on_conflict="agent_id,target_agent_id",
-                    ).execute()
-                    created += 1
+                    rows.append({
+                        "agent_id": source["id"],
+                        "target_agent_id": target["id"],
+                        "simulation_id": str(simulation_id),
+                        "base_compatibility": compat,
+                        "opinion_score": opinion_score,
+                    })
 
-        logger.info("Opinions initialized", extra={"created": created})
-        return created
+        # Single batch upsert — 1 DB call instead of N*(N-1)
+        if rows:
+            await supabase.table("agent_opinions").upsert(
+                rows,
+                on_conflict="agent_id,target_agent_id",
+            ).execute()
+
+        logger.info("Opinions initialized", extra={"created": len(rows)})
+        return len(rows)
 
     @staticmethod
     def compute_base_compatibility(

@@ -561,7 +561,9 @@ export class VelgBuildingDetailsPanel extends LitElement {
     return html`
       <div class="panel__readiness">
         <div class="panel__readiness-bar">
-          <div class="panel__readiness-track">
+          <div class="panel__readiness-track" role="meter"
+            aria-valuenow=${pct} aria-valuemin="0" aria-valuemax="100"
+            aria-label=${msg('Building readiness level')}>
             <div
               class="panel__readiness-fill"
               style="width: ${pct}%; background: ${fillColor}"

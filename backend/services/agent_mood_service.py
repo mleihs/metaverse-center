@@ -24,7 +24,10 @@ import logging
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
+import httpx
+import sentry_sdk
 import structlog
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from supabase import AsyncClient as Client
 
@@ -79,38 +82,60 @@ class AgentMoodService:
             phase="mood_housekeeping",
         )
 
+        # Each phase is independently wrapped so a failure in one
+        # does not abort the remaining phases (partial progress > no progress).
+        expire_data: dict = {}
+        decayed = 0
+        recalculated = 0
+        stress_updates = 0
+        breakdowns: list[str] = []
+
         # 1. Expire old moodlets + opinion modifiers (PostgreSQL atomic)
-        expire_result = await supabase.rpc(
-            "fn_expire_autonomy_modifiers",
-            {
-                "p_simulation_id": str(simulation_id),
-            },
-        ).execute()
-        expire_data = expire_result.data or {}
+        try:
+            expire_result = await supabase.rpc(
+                "fn_expire_autonomy_modifiers",
+                {"p_simulation_id": str(simulation_id)},
+            ).execute()
+            expire_data = expire_result.data or {}
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
+            logger.exception("Mood tick phase 1 (expire) failed")
+            sentry_sdk.capture_exception(exc)
 
         # 2. Decay strength of decaying moodlets (PostgreSQL atomic)
-        decay_result = await supabase.rpc(
-            "fn_decay_moodlet_strengths",
-            {
-                "p_simulation_id": str(simulation_id),
-            },
-        ).execute()
-        decayed = decay_result.data if isinstance(decay_result.data, int) else 0
+        try:
+            decay_result = await supabase.rpc(
+                "fn_decay_moodlet_strengths",
+                {"p_simulation_id": str(simulation_id)},
+            ).execute()
+            decayed = decay_result.data if isinstance(decay_result.data, int) else 0
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
+            logger.exception("Mood tick phase 2 (decay) failed")
+            sentry_sdk.capture_exception(exc)
 
         # 3. Recalculate mood scores (PostgreSQL atomic)
-        mood_result = await supabase.rpc(
-            "fn_recalculate_mood_scores",
-            {
-                "p_simulation_id": str(simulation_id),
-            },
-        ).execute()
-        recalculated = mood_result.data if isinstance(mood_result.data, int) else 0
+        try:
+            mood_result = await supabase.rpc(
+                "fn_recalculate_mood_scores",
+                {"p_simulation_id": str(simulation_id)},
+            ).execute()
+            recalculated = mood_result.data if isinstance(mood_result.data, int) else 0
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
+            logger.exception("Mood tick phase 3 (recalculate) failed")
+            sentry_sdk.capture_exception(exc)
 
         # 4. Update stress levels based on current mood
-        stress_updates = await cls._update_stress_levels(supabase, simulation_id)
+        try:
+            stress_updates = await cls._update_stress_levels(supabase, simulation_id)
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
+            logger.exception("Mood tick phase 4 (stress) failed")
+            sentry_sdk.capture_exception(exc)
 
         # 5. Check for breakdowns
-        breakdowns = await cls._check_breakdowns(supabase, simulation_id)
+        try:
+            breakdowns = await cls._check_breakdowns(supabase, simulation_id)
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
+            logger.exception("Mood tick phase 5 (breakdowns) failed")
+            sentry_sdk.capture_exception(exc)
 
         summary = {
             "expired_moodlets": expire_data.get("expired_moodlets", 0),
@@ -142,59 +167,57 @@ class AgentMoodService:
     ) -> bool:
         """Add a moodlet to an agent with stacking cap enforcement.
 
+        Delegates to ``fn_add_moodlet_capped`` (migration 162) which
+        atomically checks the stacking cap and inserts in one transaction,
+        eliminating the TOCTOU race (ADR-007).
+
         Returns True if moodlet was added, False if stacking cap was hit.
         """
-        # Check stacking cap
-        if stacking_group:
-            cap = STACKING_CAPS.get(stacking_group, DEFAULT_STACKING_CAP)
-            count_result = await supabase.rpc(
-                "fn_count_moodlet_stacking",
-                {
-                    "p_agent_id": str(agent_id),
-                    "p_stacking_group": stacking_group,
-                },
-            ).execute()
-            current_count = count_result.data if isinstance(count_result.data, int) else 0
-
-            if current_count >= cap:
-                logger.debug(
-                    "Stacking cap reached",
-                    extra={"group": stacking_group, "cap": cap, "current": current_count},
-                )
-                return False
-
         # Compute expiry
         expires_at = None
         if decay_type in ("timed", "decaying"):
             expires_at = (datetime.now(UTC) + timedelta(hours=duration_hours)).isoformat()
 
-        # Insert moodlet
-        await (
-            supabase.table("agent_moodlets")
-            .insert(
+        # Resolve stacking cap from Python constants (passed to PG for atomic check)
+        cap = DEFAULT_STACKING_CAP
+        if stacking_group:
+            cap = STACKING_CAPS.get(stacking_group, DEFAULT_STACKING_CAP)
+
+        try:
+            result = await supabase.rpc(
+                "fn_add_moodlet_capped",
                 {
-                    "agent_id": str(agent_id),
-                    "simulation_id": str(simulation_id),
-                    "moodlet_type": moodlet_type,
-                    "emotion": emotion,
-                    "strength": max(-20, min(20, strength)),
-                    "source_type": source_type,
-                    "source_id": str(source_id) if source_id else None,
-                    "source_description": source_description,
-                    "decay_type": decay_type,
-                    "initial_strength": strength,
-                    "expires_at": expires_at,
-                    "stacking_group": stacking_group,
-                }
+                    "p_agent_id": str(agent_id),
+                    "p_simulation_id": str(simulation_id),
+                    "p_moodlet_type": moodlet_type,
+                    "p_emotion": emotion,
+                    "p_strength": strength,
+                    "p_source_type": source_type,
+                    "p_source_id": str(source_id) if source_id else None,
+                    "p_source_description": source_description,
+                    "p_decay_type": decay_type,
+                    "p_initial_strength": strength,
+                    "p_expires_at": expires_at,
+                    "p_stacking_group": stacking_group,
+                    "p_stacking_cap": cap,
+                },
+            ).execute()
+
+            inserted = result.data is True or result.data == "true"
+            if not inserted and stacking_group:
+                logger.debug(
+                    "Stacking cap reached",
+                    extra={"group": stacking_group, "cap": cap},
+                )
+            return inserted
+
+        except (PostgrestAPIError, httpx.HTTPError) as exc:
+            logger.warning(
+                "Failed to add moodlet",
+                extra={"agent_id": str(agent_id), "moodlet_type": moodlet_type},
             )
-            .execute()
-        )
-
-        # Update stress based on negative moodlets
-        if strength < 0:
-            await cls._add_stress(supabase, agent_id, abs(strength) * STRESS_GAIN_MULTIPLIER)
-
-        return True
+            sentry_sdk.capture_exception(exc)
+            return False
 
     @classmethod
     async def get_active_moodlets(
@@ -263,7 +286,7 @@ class AgentMoodService:
         Archetype → emotion mapping (strength −2 to +2):
           The Tower     → anxiety (−2)    The Prometheus → hope (+2)
           The Shadow    → anxiety (−2)    The Awakening  → wonder (+1)
-          The Devourer  → dread (−2)      The Overthrow  → unease (−1)
+          The Devouring Mother → dread (−2) The Overthrow  → unease (−1)
           The Deluge    → fear (−2)       The Entropy    → despair (−2)
 
         Returns the number of moodlets inserted.

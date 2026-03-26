@@ -678,64 +678,70 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
     const filter = terminalState.feedFilter.value;
     if (filter === 'off') return;
 
-    const params: Record<string, string> = { limit: '10' };
+    try {
+      const params: Record<string, string> = { limit: '10' };
 
-    const resp = await heartbeatApi.listEntries(sid, params);
-    if (!resp.success || !resp.data || resp.data.length === 0) return;
+      const resp = await heartbeatApi.listEntries(sid, params);
+      if (!resp.success || !resp.data || resp.data.length === 0) return;
 
-    const currentZoneId = terminalState.currentZoneId.value;
-    const feedLines: TerminalLine[] = [];
+      const currentZoneId = terminalState.currentZoneId.value;
+      const feedLines: TerminalLine[] = [];
 
-    for (const entry of resp.data) {
-      // Deduplicate by entry ID: skip entries we've already shown
-      if (this._seenFeedEntryIds.has(entry.id)) continue;
-      this._seenFeedEntryIds.add(entry.id);
+      for (const entry of resp.data) {
+        // Deduplicate by entry ID: skip entries we've already shown
+        if (this._seenFeedEntryIds.has(entry.id)) continue;
+        this._seenFeedEntryIds.add(entry.id);
 
-      // Skip peacetime system_notes (flavor text that repeats every tick)
-      const meta = entry.metadata as Record<string, unknown> | undefined;
-      if (entry.entry_type === 'system_note' && meta?.peacetime) continue;
+        // Skip peacetime system_notes (flavor text that repeats every tick)
+        const meta = entry.metadata as Record<string, unknown> | undefined;
+        if (entry.entry_type === 'system_note' && meta?.peacetime) continue;
 
-      // Content dedup: skip entries with identical narrative to one already shown
-      // (e.g., repeated "An uneasy calm" from different ticks with different UUIDs)
-      const narrative = entry.narrative_en ?? '';
-      if (narrative && this._seenFeedNarratives.has(narrative)) continue;
-      if (narrative) this._seenFeedNarratives.add(narrative);
+        // Content dedup: skip entries with identical narrative to one already shown
+        // (e.g., repeated "An uneasy calm" from different ticks with different UUIDs)
+        const narrative = entry.narrative_en ?? '';
+        if (narrative && this._seenFeedNarratives.has(narrative)) continue;
+        if (narrative) this._seenFeedNarratives.add(narrative);
 
-      // Skip weather in feed if already handled by boot/look
-      if (entry.entry_type === 'ambient_weather' && filter !== 'weather' && filter !== 'all') {
-        continue;
-      }
-
-      const line = formatFeedEntry(entry, currentZoneId);
-      if (!line) continue;
-
-      // Apply feed filter
-      if (filter !== 'all') {
-        const channelLower = line.channel?.toLowerCase() ?? '';
-        if (channelLower !== filter && !(filter === 'intel' && channelLower === 'distant')) {
+        // Skip weather in feed if already handled by boot/look
+        if (entry.entry_type === 'ambient_weather' && filter !== 'weather' && filter !== 'all') {
           continue;
         }
+
+        const line = formatFeedEntry(entry, currentZoneId);
+        if (!line) continue;
+
+        // Apply feed filter
+        if (filter !== 'all') {
+          const channelLower = line.channel?.toLowerCase() ?? '';
+          if (channelLower !== filter && !(filter === 'intel' && channelLower === 'distant')) {
+            continue;
+          }
+        }
+
+        feedLines.push(line);
       }
 
-      feedLines.push(line);
-    }
+      if (feedLines.length > 0) {
+        terminalState.appendOutput(feedLines);
 
-    if (feedLines.length > 0) {
-      terminalState.appendOutput(feedLines);
+        // Announce for screen readers
+        this._announcement = msg('New intelligence feed entries received.');
+        setTimeout(() => { this._announcement = ''; }, 3000);
+      }
 
-      // Announce for screen readers
-      this._announcement = msg('New intelligence feed entries received.');
-      setTimeout(() => { this._announcement = ''; }, 3000);
-    }
-
-    // Cap seen sets to prevent memory leak
-    if (this._seenFeedEntryIds.size > 200) {
-      const arr = Array.from(this._seenFeedEntryIds);
-      this._seenFeedEntryIds = new Set(arr.slice(arr.length - 100));
-    }
-    if (this._seenFeedNarratives.size > 200) {
-      const arr = Array.from(this._seenFeedNarratives);
-      this._seenFeedNarratives = new Set(arr.slice(arr.length - 100));
+      // Cap seen sets to prevent memory leak
+      if (this._seenFeedEntryIds.size > 200) {
+        const arr = Array.from(this._seenFeedEntryIds);
+        this._seenFeedEntryIds = new Set(arr.slice(arr.length - 100));
+      }
+      if (this._seenFeedNarratives.size > 200) {
+        const arr = Array.from(this._seenFeedNarratives);
+        this._seenFeedNarratives = new Set(arr.slice(arr.length - 100));
+      }
+    } catch (err) {
+      // Network errors from setInterval-driven polling are non-critical.
+      // Log for debugging but don't surface to the user — retry on next interval.
+      console.debug('[BureauTerminal] Feed poll failed, will retry:', err);
     }
   }
 
@@ -751,7 +757,6 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
 
     return html`<div
       class=${classMap(classes)}
-      role="listitem"
       .style=${line.type === 'system' && !this._bootComplete
         ? `animation-delay: ${(this._getBootIndex(line)) * BOOT_LINE_DELAY_MS}ms`
         : ''}

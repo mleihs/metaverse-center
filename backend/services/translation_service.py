@@ -6,7 +6,9 @@ import asyncio
 import logging
 from uuid import UUID
 
+import deepl
 import httpx
+import sentry_sdk
 from pydantic_ai import Agent
 
 from backend.config import settings
@@ -204,12 +206,15 @@ class TranslationService:
         target_lang: str,
         context: TranslationContext | None,
     ) -> str:
-        """Single-text translation via DeepL API."""
-        import deepl
+        """Single-text translation via DeepL API.
 
+        Runs the synchronous DeepL SDK call in a thread to avoid blocking
+        the asyncio event loop.
+        """
         translator = deepl.Translator(settings.deepl_api_key)
         deepl_context = _build_deepl_context(context)
-        result = translator.translate_text(
+        result = await asyncio.to_thread(
+            translator.translate_text,
             text,
             source_lang=source_lang.upper(),
             target_lang=_deepl_target(target_lang),
@@ -224,15 +229,18 @@ class TranslationService:
         target_lang: str,
         context: TranslationContext | None,
     ) -> dict[str, str]:
-        """Batch field translation via DeepL (one call with multiple texts)."""
-        import deepl
+        """Batch field translation via DeepL (one call with multiple texts).
 
+        Runs the synchronous DeepL SDK call in a thread to avoid blocking
+        the asyncio event loop.
+        """
         translator = deepl.Translator(settings.deepl_api_key)
         deepl_context = _build_deepl_context(context)
         names = list(fields.keys())
         texts = list(fields.values())
 
-        results = translator.translate_text(
+        results = await asyncio.to_thread(
+            translator.translate_text,
             texts,
             source_lang=source_lang.upper(),
             target_lang=_deepl_target(target_lang),
@@ -302,8 +310,9 @@ async def _run_auto_translate(
         translated = await TranslationService.translate_fields(
             to_translate, context=context
         )
-    except (httpx.HTTPError, KeyError, TypeError, ValueError):
+    except (httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
         logger.exception("Auto-translation failed", extra={"entity_type": table, "entity_id": entity_id})
+        sentry_sdk.capture_exception(exc)
         return
 
     # Map back to _de column names
@@ -322,8 +331,19 @@ async def _run_auto_translate(
             "Auto-translated fields",
             extra={"entity_type": table, "entity_id": entity_id, "entity_count": len(update_data)},
         )
-    except (httpx.HTTPError, KeyError, TypeError, ValueError):
+    except (httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
         logger.exception("Failed to persist auto-translation", extra={"entity_type": table, "entity_id": entity_id})
+        sentry_sdk.capture_exception(exc)
+
+
+def _on_translate_task_done(task: asyncio.Task[None]) -> None:
+    """Log and report unhandled exceptions from background translation tasks."""
+    if task.cancelled():
+        return
+    exc = task.exception()
+    if exc:
+        logger.exception("Background translation task failed unexpectedly", exc_info=exc)
+        sentry_sdk.capture_exception(exc)
 
 
 def schedule_auto_translation(
@@ -337,7 +357,8 @@ def schedule_auto_translation(
 ) -> None:
     """Fire-and-forget background translation for an entity.
 
-    Safe to call from sync or async context — creates a background task.
+    Safe to call from sync or async context — creates a background task
+    with an error callback to prevent silent exception swallowing.
     """
     context = TranslationContext(
         simulation_name=simulation_name,
@@ -345,6 +366,7 @@ def schedule_auto_translation(
         entity_type=entity_type or table,
         entity_name=entity_data.get("name"),
     )
-    asyncio.create_task(
+    task = asyncio.create_task(
         _run_auto_translate(supabase, table, str(entity_id), entity_data, context),
     )
+    task.add_done_callback(_on_translate_task_done)

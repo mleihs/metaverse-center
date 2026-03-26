@@ -285,6 +285,140 @@ class TestMoodletStacking:
         assert STRESS_BREAKDOWN_THRESHOLD == 800
 
 
+class TestAddMoodlet:
+    """Test add_moodlet delegates to fn_add_moodlet_capped RPC."""
+
+    @pytest.mark.asyncio
+    async def test_calls_fn_add_moodlet_capped(self):
+        """Verify the RPC is called with correct function name and parameters."""
+        mock, _, _ = _mock_supabase(rpc_data=True)
+        result = await AgentMoodService.add_moodlet(
+            mock, AGENT_A, SIM_ID,
+            moodlet_type="social_positive",
+            emotion="joy",
+            strength=5,
+            source_type="social",
+            stacking_group="social_positive",
+        )
+        assert result is True
+        mock.rpc.assert_called_once()
+        call_args = mock.rpc.call_args
+        assert call_args[0][0] == "fn_add_moodlet_capped"
+        params = call_args[0][1]
+        assert params["p_agent_id"] == str(AGENT_A)
+        assert params["p_simulation_id"] == str(SIM_ID)
+        assert params["p_moodlet_type"] == "social_positive"
+        assert params["p_emotion"] == "joy"
+        assert params["p_strength"] == 5
+        assert params["p_source_type"] == "social"
+        assert params["p_stacking_group"] == "social_positive"
+        assert params["p_stacking_cap"] == STACKING_CAPS["social_positive"]
+
+    @pytest.mark.asyncio
+    async def test_returns_false_when_rpc_returns_false(self):
+        """When PG function returns FALSE (cap reached), Python returns False."""
+        mock, _, _ = _mock_supabase(rpc_data=False)
+        result = await AgentMoodService.add_moodlet(
+            mock, AGENT_A, SIM_ID,
+            moodlet_type="crisis",
+            emotion="dread",
+            strength=-3,
+            source_type="event",
+            stacking_group="crisis_witness",
+        )
+        assert result is False
+
+    @pytest.mark.asyncio
+    async def test_uses_default_cap_when_no_stacking_group(self):
+        """Without stacking_group, default cap is passed to PG."""
+        from backend.services.agent_mood_service import DEFAULT_STACKING_CAP
+
+        mock, _, _ = _mock_supabase(rpc_data=True)
+        await AgentMoodService.add_moodlet(
+            mock, AGENT_A, SIM_ID,
+            moodlet_type="custom",
+            emotion="neutral",
+            strength=1,
+            source_type="system",
+        )
+        params = mock.rpc.call_args[0][1]
+        assert params["p_stacking_group"] is None
+        assert params["p_stacking_cap"] == DEFAULT_STACKING_CAP
+
+    @pytest.mark.asyncio
+    async def test_computes_expiry_for_timed_decay(self):
+        """Timed moodlets should have a non-null expires_at."""
+        mock, _, _ = _mock_supabase(rpc_data=True)
+        await AgentMoodService.add_moodlet(
+            mock, AGENT_A, SIM_ID,
+            moodlet_type="test",
+            emotion="calm",
+            strength=2,
+            source_type="system",
+            decay_type="timed",
+            duration_hours=24.0,
+        )
+        params = mock.rpc.call_args[0][1]
+        assert params["p_expires_at"] is not None
+        assert params["p_decay_type"] == "timed"
+
+    @pytest.mark.asyncio
+    async def test_no_expiry_for_permanent_decay(self):
+        """Permanent moodlets should have null expires_at."""
+        mock, _, _ = _mock_supabase(rpc_data=True)
+        await AgentMoodService.add_moodlet(
+            mock, AGENT_A, SIM_ID,
+            moodlet_type="trait",
+            emotion="resilient",
+            strength=3,
+            source_type="system",
+            decay_type="permanent",
+        )
+        params = mock.rpc.call_args[0][1]
+        assert params["p_expires_at"] is None
+
+    @pytest.mark.asyncio
+    async def test_handles_rpc_error_gracefully(self):
+        """Database errors return False instead of raising."""
+        mock, _, _ = _mock_supabase(rpc_data=True)
+        mock.rpc.side_effect = httpx.HTTPError("connection failed")
+        result = await AgentMoodService.add_moodlet(
+            mock, AGENT_A, SIM_ID,
+            moodlet_type="test",
+            emotion="fear",
+            strength=-5,
+            source_type="event",
+        )
+        assert result is False
+
+
+class TestApplyResonanceMoodlets:
+    """Test apply_resonance_moodlets delegates to fn_apply_resonance_moodlets."""
+
+    @pytest.mark.asyncio
+    async def test_calls_correct_rpc(self):
+        mock, _, _ = _mock_supabase(rpc_data=12)
+        result = await AgentMoodService.apply_resonance_moodlets(mock, SIM_ID)
+        assert result == 12
+        mock.rpc.assert_called_once_with(
+            "fn_apply_resonance_moodlets",
+            {"p_simulation_id": str(SIM_ID)},
+        )
+
+    @pytest.mark.asyncio
+    async def test_returns_zero_for_non_integer(self):
+        """When RPC returns non-integer (e.g. null), returns 0."""
+        mock, _, _ = _mock_supabase(rpc_data=None)
+        result = await AgentMoodService.apply_resonance_moodlets(mock, SIM_ID)
+        assert result == 0
+
+    @pytest.mark.asyncio
+    async def test_returns_zero_when_no_resonances(self):
+        mock, _, _ = _mock_supabase(rpc_data=0)
+        result = await AgentMoodService.apply_resonance_moodlets(mock, SIM_ID)
+        assert result == 0
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # AgentOpinionService
 # ═══════════════════════════════════════════════════════════════════════

@@ -6,7 +6,7 @@
  * 3D tilt on hover, holographic foil for legendary cards, stat gems, aptitude pips.
  */
 
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
@@ -46,6 +46,7 @@ export interface CapacityBar {
   max: number;
 }
 
+@localized()
 @customElement('velg-game-card')
 export class VelgGameCard extends LitElement {
   static styles = css`

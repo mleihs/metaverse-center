@@ -306,7 +306,9 @@ export class VelgZoneList extends LitElement {
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .item__cascade-dot { animation: none; }
+      .item__cascade-dot,
+      .item__risk-tier--critical,
+      .item__quarantine-badge { animation: none; }
     }
 
     .item__pressure-text {

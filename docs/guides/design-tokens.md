@@ -168,6 +168,7 @@ These files are exempt from the token-only rule:
 | `DesignSettingsPanel.ts` | Color picker config values |
 | `map-data.ts` / `map-three-render.ts` | Three.js/WebGL API calls |
 | `HowToPlayView.ts` | ECharts config (requires raw hex) |
+| `HowToPlayWarRoom.ts` | ECharts config — simulation hex colors, radar/heatmap/bar charts |
 | `CartographerMap.ts` | Always-dark `:host` theme override |
 | `VelgForgeTable.ts` | Card preview theme blocks |
 | `CartographicMap.ts` | SVG texture pattern definitions |

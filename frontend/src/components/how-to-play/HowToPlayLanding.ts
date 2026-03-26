@@ -367,7 +367,7 @@ export class VelgHowToPlayLanding extends LitElement {
     );
     seoService.setCanonical('/how-to-play');
     seoService.setBreadcrumbs([
-      { name: 'Home', url: 'https://metaverse.center/' },
+      { name: msg('Home'), url: 'https://metaverse.center/' },
       { name: msg('How to Play'), url: 'https://metaverse.center/how-to-play' },
     ]);
     analyticsService.trackPageView('/how-to-play', document.title);
@@ -488,8 +488,6 @@ export class VelgHowToPlayLanding extends LitElement {
           <a
             class="door"
             href=${door.href}
-            role="link"
-            tabindex="0"
             aria-label=${door.title}
             @click=${(e: Event) => this._handleDoorClick(e, door.href)}
             @keydown=${(e: KeyboardEvent) => this._handleDoorKeydown(e, door.href)}

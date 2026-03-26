@@ -96,7 +96,7 @@ describe('SeoService', () => {
 
   beforeEach(async () => {
     // Reset DOM between tests
-    document.title = 'metaverse.center — Multiplayer Worldbuilding & Strategy Platform';
+    document.title = 'metaverse.center \u2013 Multiplayer Worldbuilding & Strategy Platform';
 
     // Remove any existing meta tags
     for (const el of document.querySelectorAll('meta[name], meta[property], link[rel="canonical"]')) {
@@ -162,12 +162,12 @@ describe('SeoService', () => {
 
   it('setTitle with parts joins with separator', () => {
     seoService.setTitle(['Agents', 'Station Null']);
-    expect(document.title).toBe('Agents — Station Null | metaverse.center');
+    expect(document.title).toBe('Agents \u2013 Station Null | metaverse.center');
   });
 
   it('setTitle with empty array sets default', () => {
     seoService.setTitle([]);
-    expect(document.title).toBe('metaverse.center — Multiplayer Worldbuilding & Strategy Platform');
+    expect(document.title).toBe('metaverse.center \u2013 Multiplayer Worldbuilding & Strategy Platform');
   });
 
   it('setTitle with single part', () => {
@@ -179,8 +179,8 @@ describe('SeoService', () => {
     seoService.setTitle(['Buildings', 'Velgarien']);
     const ogTitle = document.querySelector<HTMLMetaElement>('meta[property="og:title"]');
     const twTitle = document.querySelector<HTMLMetaElement>('meta[name="twitter:title"]');
-    expect(ogTitle?.content).toBe('Buildings — Velgarien | metaverse.center');
-    expect(twTitle?.content).toBe('Buildings — Velgarien | metaverse.center');
+    expect(ogTitle?.content).toBe('Buildings \u2013 Velgarien | metaverse.center');
+    expect(twTitle?.content).toBe('Buildings \u2013 Velgarien | metaverse.center');
   });
 
   it('setDescription updates all three meta tags', () => {
@@ -213,7 +213,7 @@ describe('SeoService', () => {
     seoService.setTitle(['Test']);
     seoService.setDescription('Custom');
     seoService.reset();
-    expect(document.title).toBe('metaverse.center — Multiplayer Worldbuilding & Strategy Platform');
+    expect(document.title).toBe('metaverse.center \u2013 Multiplayer Worldbuilding & Strategy Platform');
     const desc = document.querySelector<HTMLMetaElement>('meta[name="description"]');
     expect(desc?.content).toContain('Build civilizations');
   });

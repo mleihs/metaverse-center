@@ -16,9 +16,12 @@ import io
 import logging
 from typing import Any
 
-import httpx
 import pyfiglet
+import sentry_sdk
+import structlog
 from PIL import Image
+
+from backend.utils.safe_fetch import safe_download
 
 logger = logging.getLogger(__name__)
 
@@ -119,15 +122,19 @@ class ForgeAsciiArtService:
     ) -> Image.Image | None:
         """Download a simulation banner image and return as PIL Image.
 
+        Uses ``safe_download`` for SSRF protection (blocks private/internal IPs).
         Returns None if the fetch fails (network error, 404, invalid image).
         """
         try:
-            async with httpx.AsyncClient(timeout=timeout) as client:
-                resp = await client.get(banner_url)
-                resp.raise_for_status()
-                return Image.open(io.BytesIO(resp.content))
-        except (httpx.HTTPError, OSError, ValueError):
+            data, _content_type = await safe_download(
+                banner_url,
+                timeout=timeout,
+                allowed_content_types={"image/png", "image/jpeg", "image/webp", "image/gif"},
+            )
+            return Image.open(io.BytesIO(data))
+        except (ValueError, OSError) as exc:
             logger.warning("Failed to fetch banner image: %s", banner_url, exc_info=True)
+            sentry_sdk.capture_exception(exc)
             return None
 
     @staticmethod
@@ -175,6 +182,11 @@ class ForgeAsciiArtService:
 
         Always returns a valid string.
         """
+        structlog.contextvars.bind_contextvars(
+            simulation_name=simulation_name,
+            phase="terminal_boot_art",
+        )
+
         # Step 1: Generate reliable figlet title
         title = ForgeAsciiArtService.generate_figlet_title(simulation_name)
 

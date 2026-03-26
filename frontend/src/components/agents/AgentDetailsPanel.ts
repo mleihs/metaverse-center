@@ -1039,7 +1039,9 @@ export class VelgAgentDetailsPanel extends LitElement {
           </span>
           <span class="panel__influence-value" style="color: ${color}">${pct}%</span>
         </div>
-        <div class="panel__influence-track">
+        <div class="panel__influence-track" role="meter"
+          aria-valuenow=${pct} aria-valuemin="0" aria-valuemax="100"
+          aria-label=${msg('Agent influence level')}>
           <div
             class="panel__influence-fill"
             style="width: ${pct}%; background: ${color}"
