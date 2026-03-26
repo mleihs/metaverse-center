@@ -152,23 +152,43 @@ stability 0.1  → event multiplier 1.5x (critical = max, NOT 2.0x)
 
 ---
 
-#### A3: Resonance → Agent Mood — ⚠️ MEDIUM VALUE, HIGH COMPLEXITY
+#### A3: Resonance → Agent Mood — ✅ IMPLEMENTED (migration 161)
 
 **The Decision:** Resonances are platform-level events (real-world news transformed into archetypal forces). The player's decision is whether to ATTUNE to a resonance (lean into it) or resist it. Attunement at depth ≥ 0.50 generates positive events. But getting there takes many ticks.
 
 **The Consequence:** Agents in susceptible simulations get mood moodlets. "The Shadow" (conflict) = anxiety. "The Prometheus" (innovation) = inspiration. This creates atmospheric pressure that varies by simulation theme.
 
 **The Problem (Game Designer):** This chain is hard to communicate because:
-1. Resonances are abstract — "The Shadow" doesn't obviously connect to agent anxiety
+1. Resonances are abstract -- "The Shadow" doesn't obviously connect to agent anxiety
 2. Susceptibility is per-simulation and invisible to the player
 3. The player can't directly counter resonance effects (no "shield" action)
-4. The causal chain is: real-world news → resonance → susceptibility → moodlet → mood → activity — too many indirections
+4. The causal chain is: real-world news → resonance → susceptibility → moodlet → mood → activity -- too many indirections
 
-**Game Design Reference:** Victoria 3's "interest groups" are a comparable system: abstract forces that affect population mood based on complex interactions. Victoria 3 makes this work through exhaustive tooltips that show the FULL chain: "Interest Group: Industrialists → Approval: -12 → Because: Tax policy (+3), Working conditions (-8), Trade rights (-7)". The tooltip IS the game — without it, the numbers are meaningless.
+**Game Design Reference:** Victoria 3's "interest groups" are a comparable system: abstract forces that affect population mood based on complex interactions. Victoria 3 makes this work through exhaustive tooltips that show the FULL chain: "Interest Group: Industrialists → Approval: -12 → Because: Tax policy (+3), Working conditions (-8), Trade rights (-7)". The tooltip IS the game -- without it, the numbers are meaningless.
 
-**Recommendation (Game Designer):** Implement this LAST. The resonance→mood connection adds atmospheric depth but limited player agency. The player can't DO anything about "The Shadow" except wait for it to pass or attune (which takes weeks of ticks). This is simulation depth, not gameplay depth.
+**Implementation (2026-03-26):** Followed the game designer's recommendation for LOW impact:
 
-**If implemented:** Keep the moodlet strength LOW (-2 to +2). Resonance should be background pressure, not a dominant force. The weather system already provides zone-level mood effects; resonance should layer on top gently.
+| Archetype | Moodlet type | Emotion | Base strength |
+|-----------|-------------|---------|---------------|
+| The Tower (economic) | economic_pressure | anxiety | -2 |
+| The Shadow (conflict) | conflict_pressure | anxiety | -2 |
+| The Devouring Mother (pandemic) | plague_dread | dread | -2 |
+| The Deluge (disaster) | natural_upheaval | fear | -2 |
+| The Overthrow (politics) | political_uncertainty | unease | -1 |
+| The Prometheus (tech) | innovation_wave | hope | +2 |
+| The Awakening (culture) | consciousness_shift | wonder | +1 |
+| The Entropy (environment) | decay_pressure | despair | -2 |
+
+**Key design decisions:**
+- Strength LOW: -2 to +2 (vs. normal moodlet range of -20 to +20). Background pressure, not dominant.
+- Stacking cap: 1 per agent (resonance_pressure group). Only the strongest resonance matters.
+- Subsiding resonances contribute at 0.5x strength (decay into silence).
+- Effective magnitude = MIN(resonance.magnitude x susceptibility, 1.0). Scales the base strength.
+- Atomic PostgreSQL function (`fn_apply_resonance_moodlets`): delete-and-replace per tick. No Python loop.
+- Wired as HeartbeatService Phase 3b (after resonance pressure computation, before narrative arcs).
+- Timed moodlets (5h duration, slightly longer than 4h tick to avoid gaps).
+- Source type: "system" with resonance_id for traceability.
+- No feature gate -- always active when resonances exist. Impact is negligible without active resonances.
 
 ---
 

@@ -41,6 +41,7 @@ STACKING_CAPS: dict[str, int] = {
     "celebration": 2,
     "loss": 3,
     "community_response": 2,
+    "resonance_pressure": 1,
 }
 
 DEFAULT_STACKING_CAP = 5
@@ -244,6 +245,39 @@ class AgentMoodService:
             .execute()
         )
         return result.data or []
+
+    @classmethod
+    async def apply_resonance_moodlets(
+        cls,
+        supabase: Client,
+        simulation_id: UUID,
+    ) -> int:
+        """Apply resonance-driven moodlets to all agents in a simulation.
+
+        Delegates to ``fn_apply_resonance_moodlets`` (migration 161) which
+        atomically replaces stale resonance_pressure moodlets with fresh ones
+        based on currently active/subsiding platform resonances.
+
+        Archetype → emotion mapping (strength −2 to +2):
+          The Tower     → anxiety (−2)    The Prometheus → hope (+2)
+          The Shadow    → anxiety (−2)    The Awakening  → wonder (+1)
+          The Devourer  → dread (−2)      The Overthrow  → unease (−1)
+          The Deluge    → fear (−2)       The Entropy    → despair (−2)
+
+        Returns the number of moodlets inserted.
+        """
+        result = await supabase.rpc(
+            "fn_apply_resonance_moodlets",
+            {"p_simulation_id": str(simulation_id)},
+        ).execute()
+        inserted = result.data if isinstance(result.data, int) else 0
+
+        if inserted > 0:
+            logger.info(
+                "Resonance moodlets applied",
+                extra={"simulation_id": str(simulation_id), "inserted": inserted},
+            )
+        return inserted
 
     @classmethod
     async def _update_stress_levels(

@@ -109,10 +109,13 @@ class HeartbeatService:
             _resp = await (
                 admin.table("platform_settings")
                 .select("setting_key, setting_value")
-                .in_("setting_key", [
-                    "heartbeat_enabled",
-                    "heartbeat_interval_seconds",
-                ])
+                .in_(
+                    "setting_key",
+                    [
+                        "heartbeat_enabled",
+                        "heartbeat_interval_seconds",
+                    ],
+                )
                 .execute()
             )
             rows = _resp.data or []
@@ -159,7 +162,9 @@ class HeartbeatService:
             "resonance_warning_ticks": 2,
         }
         return await PlatformConfigService.get_multiple(
-            admin, defaults, prefix="heartbeat_",
+            admin,
+            defaults,
+            prefix="heartbeat_",
         )
 
     @classmethod
@@ -179,7 +184,8 @@ class HeartbeatService:
                 overrides[row["setting_key"]] = row["setting_value"]
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError):
             logger.warning(
-                "Failed to load sim heartbeat overrides for %s", sim_id,
+                "Failed to load sim heartbeat overrides for %s",
+                sim_id,
                 extra={"simulation_id": str(sim_id)},
             )
         return overrides
@@ -242,7 +248,10 @@ class HeartbeatService:
 
     @classmethod
     async def _tick_simulation(
-        cls, admin: Client, sim: dict, interval: int,
+        cls,
+        admin: Client,
+        sim: dict,
+        interval: int,
     ) -> None:
         """Execute the full tick pipeline for one simulation."""
         sim_id = UUID(sim["id"])
@@ -254,7 +263,8 @@ class HeartbeatService:
         # Check per-sim enable
         if str(overrides.get("enabled", "true")).lower() in ("false", "0"):
             logger.debug(
-                "Heartbeat: sim %s disabled, skipping", sim_name,
+                "Heartbeat: sim %s disabled, skipping",
+                sim_name,
                 extra={"simulation_id": str(sim_id)},
             )
             return
@@ -262,24 +272,32 @@ class HeartbeatService:
         # Create heartbeat record (idempotent via UNIQUE(simulation_id, tick_number))
         heartbeat_id = uuid4()
         try:
-            await admin.table("simulation_heartbeats").insert({
-                "id": str(heartbeat_id),
-                "simulation_id": str(sim_id),
-                "tick_number": tick_number,
-                "status": "processing",
-            }).execute()
+            await (
+                admin.table("simulation_heartbeats")
+                .insert(
+                    {
+                        "id": str(heartbeat_id),
+                        "simulation_id": str(sim_id),
+                        "tick_number": tick_number,
+                        "status": "processing",
+                    }
+                )
+                .execute()
+            )
         except (PostgrestAPIError, httpx.HTTPError):
             # UNIQUE constraint violation → tick already processed (concurrent tick or retry)
             logger.warning(
                 "Heartbeat: tick %d already exists for %s, skipping",
-                tick_number, sim_name,
+                tick_number,
+                sim_name,
                 extra={"simulation_id": str(sim_id), "tick_number": tick_number},
             )
             return
 
         logger.info(
             "Heartbeat: ticking %s (tick #%d)",
-            sim_name, tick_number,
+            sim_name,
+            tick_number,
             extra={"simulation_id": str(sim_id), "tick_number": tick_number},
         )
 
@@ -317,20 +335,29 @@ class HeartbeatService:
             expired = await cls._phase_expire_zone_actions(admin, sim_id)
             tick_stats["zone_actions_expired"] = expired
             if expired > 0:
-                entries.append(make_heartbeat_entry(
-                    heartbeat_id, sim_id, tick_number, "zone_shift",
-                    f"{expired} zone action(s) expired.",
-                    f"{expired} Zonenaktion(en) abgelaufen.",
-                    severity="info",
-                    metadata={"expired_count": expired},
-                ))
+                entries.append(
+                    make_heartbeat_entry(
+                        heartbeat_id,
+                        sim_id,
+                        tick_number,
+                        "zone_shift",
+                        f"{expired} zone action(s) expired.",
+                        f"{expired} Zonenaktion(en) abgelaufen.",
+                        severity="info",
+                        metadata={"expired_count": expired},
+                    )
+                )
 
             # Phase 2: Age events
             aging_rules = overrides.get("event_aging_rules", config["event_aging_rules"])
             if isinstance(aging_rules, str):
                 aging_rules = json.loads(aging_rules)
             aged, escalated, resolved, aging_entries = await cls._phase_age_events(
-                admin, sim_id, tick_number, heartbeat_id, aging_rules,
+                admin,
+                sim_id,
+                tick_number,
+                heartbeat_id,
+                aging_rules,
             )
             tick_stats["events_aged"] = aged
             tick_stats["events_escalated"] = escalated
@@ -339,14 +366,47 @@ class HeartbeatService:
 
             # Phase 3: Compute resonance pressure
             pressure_delta, pressure_entries = await cls._phase_compute_pressure(
-                admin, sim_id, tick_number, heartbeat_id, config,
+                admin,
+                sim_id,
+                tick_number,
+                heartbeat_id,
+                config,
             )
             tick_stats["resonance_pressure_delta"] = pressure_delta
             entries.extend(pressure_entries)
 
+            # Phase 3b: Resonance → Agent Mood (A3)
+            # Active platform resonances generate low-strength moodlets (−2 to +2)
+            # for agents in susceptible simulations. Background pressure, not dominant.
+            resonance_moodlets = await AgentMoodService.apply_resonance_moodlets(
+                admin,
+                sim_id,
+            )
+            tick_stats["resonance_moodlets_applied"] = resonance_moodlets
+            if resonance_moodlets > 0:
+                entries.append(
+                    make_heartbeat_entry(
+                        heartbeat_id,
+                        sim_id,
+                        tick_number,
+                        "resonance_mood",
+                        f"Substrate resonance affecting {resonance_moodlets} agents.",
+                        f"Substratresonanz beeinflusst {resonance_moodlets} Agenten.",
+                        severity="info",
+                        metadata={
+                            "moodlets_applied": resonance_moodlets,
+                            "pressure_delta": pressure_delta,
+                        },
+                    )
+                )
+
             # Phase 4: Detect narrative arcs (escalation, cascade, convergence)
             arc_entries, cascade_spawned, convergence = await NarrativeArcService.detect_and_advance(
-                admin, sim_id, tick_number, heartbeat_id, config,
+                admin,
+                sim_id,
+                tick_number,
+                heartbeat_id,
+                config,
             )
             tick_stats["cascade_events_spawned"] = cascade_spawned
             tick_stats["convergence_detected"] = convergence
@@ -354,26 +414,42 @@ class HeartbeatService:
 
             # Phase 5: Resolve bureau responses
             resolved_count, bureau_entries = await BureauResponseService.resolve_at_tick(
-                admin, sim_id, tick_number, heartbeat_id, config=config,
+                admin,
+                sim_id,
+                tick_number,
+                heartbeat_id,
+                config=config,
             )
             tick_stats["bureau_responses_resolved"] = resolved_count
             entries.extend(bureau_entries)
 
             # Phase 6: Deepen attunements
             attunement_entries = await AttunementService.deepen_at_tick(
-                admin, sim_id, tick_number, heartbeat_id, config,
+                admin,
+                sim_id,
+                tick_number,
+                heartbeat_id,
+                config,
             )
             entries.extend(attunement_entries)
 
             # Phase 7: Strengthen anchors
             anchor_entries = await AnchorService.strengthen_at_tick(
-                admin, sim_id, tick_number, heartbeat_id, config,
+                admin,
+                sim_id,
+                tick_number,
+                heartbeat_id,
+                config,
             )
             entries.extend(anchor_entries)
 
             # Phase 8: Drift scar tissue
             scar_delta, scar_entries = await cls._phase_drift_scar_tissue(
-                admin, sim_id, tick_number, heartbeat_id, config,
+                admin,
+                sim_id,
+                tick_number,
+                heartbeat_id,
+                config,
             )
             tick_stats["scar_tissue_delta"] = scar_delta
             entries.extend(scar_entries)
@@ -382,15 +458,9 @@ class HeartbeatService:
             #   1. Global: platform_settings.autonomy_feature_enabled
             #   2. Per-sim: simulation_settings.agent_autonomy_enabled
             #   3. Key: admin override (platform key) OR owner BYOK key
-            autonomy_sim_enabled = str(
-                overrides.get("agent_autonomy_enabled", "true")
-            ).lower() in ("true", "1")
-            autonomy_global = str(
-                config.get("autonomy_feature_enabled", "true")
-            ).lower() in ("true", "1")
-            autonomy_admin_override = str(
-                overrides.get("autonomy_admin_override", "false")
-            ).lower() in ("true", "1")
+            autonomy_sim_enabled = str(overrides.get("agent_autonomy_enabled", "true")).lower() in ("true", "1")
+            autonomy_global = str(config.get("autonomy_feature_enabled", "true")).lower() in ("true", "1")
+            autonomy_admin_override = str(overrides.get("autonomy_admin_override", "false")).lower() in ("true", "1")
             autonomy_stats: dict = {}
 
             if autonomy_sim_enabled and autonomy_global:
@@ -399,7 +469,9 @@ class HeartbeatService:
 
                     # Gate 3: Resolve API key for LLM calls
                     byok_key, owner_has_key = await cls._resolve_autonomy_key(
-                        admin, sim_id, autonomy_admin_override,
+                        admin,
+                        sim_id,
+                        autonomy_admin_override,
                     )
 
                     # 9a: Decay agent needs
@@ -421,13 +493,18 @@ class HeartbeatService:
                     # Generate entries for breakdowns
                     breakdowns = mood_summary.get("breakdowns", [])
                     for agent_id in breakdowns:
-                        entries.append(make_heartbeat_entry(
-                            heartbeat_id, sim_id, tick_number, "agent_crisis",
-                            f"Agent {agent_id[:8]}... is experiencing a stress breakdown.",
-                            f"Agent {agent_id[:8]}... erlebt einen Stresszusammenbruch.",
-                            severity="critical",
-                            metadata={"agent_id": agent_id, "type": "stress_breakdown"},
-                        ))
+                        entries.append(
+                            make_heartbeat_entry(
+                                heartbeat_id,
+                                sim_id,
+                                tick_number,
+                                "agent_crisis",
+                                f"Agent {agent_id[:8]}... is experiencing a stress breakdown.",
+                                f"Agent {agent_id[:8]}... erlebt einen Stresszusammenbruch.",
+                                severity="critical",
+                                metadata={"agent_id": agent_id, "type": "stress_breakdown"},
+                            )
+                        )
 
                     # Generate entries for relationship threshold events
                     for rel_event in opinion_summary.get("relationship_events", []):
@@ -435,87 +512,96 @@ class HeartbeatService:
                         sev = "warning" if "breakdown" in evt_type else "info"
                         a_id = rel_event["agent_id"][:8]
                         t_id = rel_event["target_agent_id"][:8]
-                        entries.append(make_heartbeat_entry(
-                            heartbeat_id, sim_id, tick_number,
-                            "relationship_shift",
-                            f"Relationship {evt_type}: {a_id}... / {t_id}...",
-                            f"Beziehung ({evt_type}): {a_id}... / {t_id}...",
-                            severity=sev, metadata=rel_event,
-                        ))
+                        entries.append(
+                            make_heartbeat_entry(
+                                heartbeat_id,
+                                sim_id,
+                                tick_number,
+                                "relationship_shift",
+                                f"Relationship {evt_type}: {a_id}... / {t_id}...",
+                                f"Beziehung ({evt_type}): {a_id}... / {t_id}...",
+                                severity=sev,
+                                metadata=rel_event,
+                            )
+                        )
 
                     # 9d: Activity selection + execution (Utility AI + Boltzmann)
                     activity_results = await AgentActivityService.select_and_execute(
-                        admin, sim_id, tick_id=heartbeat_id,
+                        admin,
+                        sim_id,
+                        tick_id=heartbeat_id,
                     )
                     autonomy_stats["activities"] = len(activity_results)
 
                     # 9e: Social interactions (co-located agents)
-                    interaction_rate = float(
-                        overrides.get("autonomy_social_interaction_rate", 1.0)
-                    )
-                    social_results = (
-                        await AgentActivityService.generate_social_interactions(
-                            admin, sim_id, interaction_rate, tick_id=heartbeat_id,
-                            sim_name=sim_name, sim_theme=sim.get("theme", ""),
-                        )
+                    interaction_rate = float(overrides.get("autonomy_social_interaction_rate", 1.0))
+                    social_results = await AgentActivityService.generate_social_interactions(
+                        admin,
+                        sim_id,
+                        interaction_rate,
+                        tick_id=heartbeat_id,
+                        sim_name=sim_name,
+                        sim_theme=sim.get("theme", ""),
                     )
                     autonomy_stats["social_interactions"] = len(social_results)
 
                     # Generate entries for significant social interactions
                     for si in social_results:
                         if si.get("significance", 0) >= 5:
-                            entries.append(make_heartbeat_entry(
-                                heartbeat_id, sim_id, tick_number,
-                                "social_event",
-                                f"Social interaction: {si['type']}",
-                                f"Soziale Interaktion: {si['type']}",
-                                severity="info",
-                                metadata=si,
-                            ))
+                            entries.append(
+                                make_heartbeat_entry(
+                                    heartbeat_id,
+                                    sim_id,
+                                    tick_number,
+                                    "social_event",
+                                    f"Social interaction: {si['type']}",
+                                    f"Soziale Interaktion: {si['type']}",
+                                    severity="info",
+                                    metadata=si,
+                                )
+                            )
 
                     # 9f: Autonomous event generation (Tier 3 LLM)
                     # Requires BYOK key — rule-based phases above run without it
                     auto_events: list[dict] = []
                     if owner_has_key:
-                        llm_budget = int(
-                            overrides.get("autonomy_llm_budget_per_tick", 5)
-                        )
+                        llm_budget = int(overrides.get("autonomy_llm_budget_per_tick", 5))
                         tick_ctx = {
                             "breakdowns": mood_summary.get("breakdowns", []),
                             "relationship_events": opinion_summary.get(
-                                "relationship_events", [],
+                                "relationship_events",
+                                [],
                             ),
-                            "social_interactions": [
-                                s for s in social_results
-                                if s.get("can_trigger_event")
-                            ],
+                            "social_interactions": [s for s in social_results if s.get("can_trigger_event")],
                         }
-                        auto_events = (
-                            await AutonomousEventService.check_and_generate(
-                                admin, sim_id, tick_ctx,
-                                llm_budget=llm_budget,
-                                openrouter_api_key=byok_key,
-                            )
+                        auto_events = await AutonomousEventService.check_and_generate(
+                            admin,
+                            sim_id,
+                            tick_ctx,
+                            llm_budget=llm_budget,
+                            openrouter_api_key=byok_key,
                         )
                     autonomy_stats["autonomous_events"] = len(auto_events)
                     autonomy_stats["byok_available"] = owner_has_key
 
                     for ae in auto_events:
-                        entries.append(make_heartbeat_entry(
-                            heartbeat_id, sim_id, tick_number,
-                            "autonomous_event",
-                            ae.get("title", "Autonomous event"),
-                            ae.get("title_de", "Autonomes Ereignis"),
-                            severity="warning"
-                            if ae.get("impact_level", 0) >= 4
-                            else "info",
-                            metadata={
-                                "event_id": ae.get("id"),
-                                "trigger": ae.get("metadata", {}).get(
-                                    "trigger",
-                                ),
-                            },
-                        ))
+                        entries.append(
+                            make_heartbeat_entry(
+                                heartbeat_id,
+                                sim_id,
+                                tick_number,
+                                "autonomous_event",
+                                ae.get("title", "Autonomous event"),
+                                ae.get("title_de", "Autonomes Ereignis"),
+                                severity="warning" if ae.get("impact_level", 0) >= 4 else "info",
+                                metadata={
+                                    "event_id": ae.get("id"),
+                                    "trigger": ae.get("metadata", {}).get(
+                                        "trigger",
+                                    ),
+                                },
+                            )
+                        )
 
                 except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                     logger.exception("Agent autonomy phase failed")
@@ -524,13 +610,15 @@ class HeartbeatService:
             tick_stats["autonomy"] = autonomy_stats
 
             # Phase 9.5: Ambient weather events (real-world weather → zone narratives + moodlets)
-            weather_enabled = str(
-                overrides.get("weather_enabled", "false")
-            ).lower() in ("true", "1")
+            weather_enabled = str(overrides.get("weather_enabled", "false")).lower() in ("true", "1")
             if weather_enabled:
                 try:
                     weather_entries, weather_summary = await AmbientWeatherService.process_tick(
-                        admin, sim_id, sim, heartbeat_id, tick_number,
+                        admin,
+                        sim_id,
+                        sim,
+                        heartbeat_id,
+                        tick_number,
                         overrides=overrides,
                     )
                     entries.extend(weather_entries)
@@ -545,9 +633,14 @@ class HeartbeatService:
 
             # Phase 11: Produce chronicle entries (peacetime content if quiet)
             if not entries:
-                entries.extend(await cls._generate_peacetime_entries(
-                    admin, sim_id, tick_number, heartbeat_id,
-                ))
+                entries.extend(
+                    await cls._generate_peacetime_entries(
+                        admin,
+                        sim_id,
+                        tick_number,
+                        heartbeat_id,
+                    )
+                )
 
             # Tag entries with epoch context if active
             if active_epoch_id:
@@ -573,23 +666,39 @@ class HeartbeatService:
                 "entry_count": len(entries),
                 "autonomy": tick_stats.pop("autonomy", {}),
             }
-            await admin.table("simulation_heartbeats").update({
-                "status": "completed",
-                "dispatch_en": dispatch_en,
-                "dispatch_de": dispatch_de,
-                "summary": summary_data,
-                **tick_stats,
-            }).eq("id", str(heartbeat_id)).execute()
+            await (
+                admin.table("simulation_heartbeats")
+                .update(
+                    {
+                        "status": "completed",
+                        "dispatch_en": dispatch_en,
+                        "dispatch_de": dispatch_de,
+                        "summary": summary_data,
+                        **tick_stats,
+                    }
+                )
+                .eq("id", str(heartbeat_id))
+                .execute()
+            )
 
-            await admin.table("simulations").update({
-                "last_heartbeat_tick": tick_number,
-                "last_heartbeat_at": datetime.now(UTC).isoformat(),
-                "next_heartbeat_at": next_at.isoformat(),
-            }).eq("id", str(sim_id)).execute()
+            await (
+                admin.table("simulations")
+                .update(
+                    {
+                        "last_heartbeat_tick": tick_number,
+                        "last_heartbeat_at": datetime.now(UTC).isoformat(),
+                        "next_heartbeat_at": next_at.isoformat(),
+                    }
+                )
+                .eq("id", str(sim_id))
+                .execute()
+            )
 
             logger.info(
                 "Heartbeat: tick #%d completed for %s — %d entries",
-                tick_number, sim_name, len(entries),
+                tick_number,
+                sim_name,
+                len(entries),
                 extra={
                     "simulation_id": str(sim_id),
                     "tick_number": tick_number,
@@ -601,28 +710,44 @@ class HeartbeatService:
         except (PostgrestAPIError, httpx.HTTPError, json.JSONDecodeError, KeyError, TypeError, ValueError):
             logger.exception(
                 "Heartbeat: tick #%d failed for %s",
-                tick_number, sim_name,
+                tick_number,
+                sim_name,
                 extra={"simulation_id": str(sim_id), "tick_number": tick_number},
             )
 
             # Mark heartbeat as failed — nested try to prevent double-fault
             try:
-                await admin.table("simulation_heartbeats").update({
-                    "status": "failed",
-                    "summary": {"error": "See server logs"},
-                }).eq("id", str(heartbeat_id)).execute()
+                await (
+                    admin.table("simulation_heartbeats")
+                    .update(
+                        {
+                            "status": "failed",
+                            "summary": {"error": "See server logs"},
+                        }
+                    )
+                    .eq("id", str(heartbeat_id))
+                    .execute()
+                )
             except Exception:
                 logger.exception(
                     "Heartbeat: DOUBLE FAULT — failed to mark tick #%d as failed for %s",
-                    tick_number, sim_name,
+                    tick_number,
+                    sim_name,
                 )
 
             # Always advance next_heartbeat_at to prevent permanent stuck state
             try:
                 next_at = datetime.now(UTC) + timedelta(seconds=interval)
-                await admin.table("simulations").update({
-                    "next_heartbeat_at": next_at.isoformat(),
-                }).eq("id", str(sim_id)).execute()
+                await (
+                    admin.table("simulations")
+                    .update(
+                        {
+                            "next_heartbeat_at": next_at.isoformat(),
+                        }
+                    )
+                    .eq("id", str(sim_id))
+                    .execute()
+                )
             except Exception:
                 logger.exception(
                     "Heartbeat: CRITICAL — failed to advance next_heartbeat_at for %s, sim may be stuck",
@@ -633,7 +758,10 @@ class HeartbeatService:
 
     @classmethod
     async def _resolve_autonomy_key(
-        cls, admin: Client, sim_id: UUID, admin_override: bool,
+        cls,
+        admin: Client,
+        sim_id: UUID,
+        admin_override: bool,
     ) -> tuple[str | None, bool]:
         """Resolve the API key for autonomy LLM calls.
 
@@ -690,7 +818,8 @@ class HeartbeatService:
         if expired > 0:
             logger.debug(
                 "Heartbeat phase 1: expired %d zone actions for sim %s",
-                expired, sim_id,
+                expired,
+                sim_id,
                 extra={"simulation_id": str(sim_id), "expired": expired},
             )
         return expired
@@ -699,8 +828,11 @@ class HeartbeatService:
 
     @classmethod
     async def _phase_age_events(
-        cls, admin: Client, sim_id: UUID,
-        tick_number: int, heartbeat_id: UUID,
+        cls,
+        admin: Client,
+        sim_id: UUID,
+        tick_number: int,
+        heartbeat_id: UUID,
         aging_rules: dict,
     ) -> tuple[int, int, int, list[dict]]:
         """Increment ticks_in_status, auto-transition event statuses via batch RPC."""
@@ -710,13 +842,16 @@ class HeartbeatService:
         resolved = 0
 
         # Single RPC call replaces O(N) individual UPDATEs
-        result = await admin.rpc("fn_age_events_batch", {
-            "p_sim_id": str(sim_id),
-            "p_active_to_escalating": aging_rules.get("active_to_escalating", 4),
-            "p_escalating_to_resolving": aging_rules.get("escalating_to_resolving", 6),
-            "p_resolving_to_resolved": aging_rules.get("resolving_to_resolved", 3),
-            "p_resolved_to_archived": aging_rules.get("resolved_to_archived", 8),
-        }).execute()
+        result = await admin.rpc(
+            "fn_age_events_batch",
+            {
+                "p_sim_id": str(sim_id),
+                "p_active_to_escalating": aging_rules.get("active_to_escalating", 4),
+                "p_escalating_to_resolving": aging_rules.get("escalating_to_resolving", 6),
+                "p_resolving_to_resolved": aging_rules.get("resolving_to_resolved", 3),
+                "p_resolved_to_archived": aging_rules.get("resolved_to_archived", 8),
+            },
+        ).execute()
 
         changes = result.data or []
         if isinstance(changes, str):
@@ -736,50 +871,66 @@ class HeartbeatService:
             if transitioned:
                 if new_status == "escalating":
                     escalated += 1
-                    entries.append(make_heartbeat_entry(
-                        heartbeat_id, sim_id, tick_number, "event_escalation",
-                        f"'{title}' escalated. Zone pressure increasing.",
-                        f"'{title}' eskaliert. Zonendruck steigt.",
-                        severity="warning",
-                        metadata={"event_id": event_id, "old_status": old_status,
-                                  "new_status": new_status},
-                    ))
+                    entries.append(
+                        make_heartbeat_entry(
+                            heartbeat_id,
+                            sim_id,
+                            tick_number,
+                            "event_escalation",
+                            f"'{title}' escalated. Zone pressure increasing.",
+                            f"'{title}' eskaliert. Zonendruck steigt.",
+                            severity="warning",
+                            metadata={"event_id": event_id, "old_status": old_status, "new_status": new_status},
+                        )
+                    )
                 elif new_status in ("resolving", "resolved"):
                     resolved += 1
                     entry_type = "event_resolution" if new_status == "resolved" else "event_aging"
                     pressure_msg = "removed" if new_status == "resolved" else "decaying"
                     druck_msg = "entfernt" if new_status == "resolved" else "abklingend"
-                    entries.append(make_heartbeat_entry(
-                        heartbeat_id, sim_id, tick_number, entry_type,
-                        f"'{title}' transitioned to {new_status}. Pressure contribution {pressure_msg}.",
-                        f"'{title}' wechselte zu {new_status}. Druckbeitrag {druck_msg}.",
-                        severity="positive" if new_status == "resolved" else "info",
-                        metadata={"event_id": event_id, "old_status": old_status,
-                                  "new_status": new_status},
-                    ))
+                    entries.append(
+                        make_heartbeat_entry(
+                            heartbeat_id,
+                            sim_id,
+                            tick_number,
+                            entry_type,
+                            f"'{title}' transitioned to {new_status}. Pressure contribution {pressure_msg}.",
+                            f"'{title}' wechselte zu {new_status}. Druckbeitrag {druck_msg}.",
+                            severity="positive" if new_status == "resolved" else "info",
+                            metadata={"event_id": event_id, "old_status": old_status, "new_status": new_status},
+                        )
+                    )
                 elif new_status == "archived":
-                    entries.append(make_heartbeat_entry(
-                        heartbeat_id, sim_id, tick_number, "event_aging",
-                        f"'{title}' archived. No longer contributing to substrate pressure.",
-                        f"'{title}' archiviert. Traegt nicht mehr zum Substratdruck bei.",
-                        severity="info",
-                        metadata={"event_id": event_id, "old_status": old_status,
-                                  "new_status": new_status},
-                    ))
+                    entries.append(
+                        make_heartbeat_entry(
+                            heartbeat_id,
+                            sim_id,
+                            tick_number,
+                            "event_aging",
+                            f"'{title}' archived. No longer contributing to substrate pressure.",
+                            f"'{title}' archiviert. Traegt nicht mehr zum Substratdruck bei.",
+                            severity="info",
+                            metadata={"event_id": event_id, "old_status": old_status, "new_status": new_status},
+                        )
+                    )
             else:
                 # Approaching threshold warning
                 auto_en = "escalating" if old_status == "active" else "resolving"
                 auto_de = "Eskalation" if old_status == "active" else "Loesung"
-                entries.append(make_heartbeat_entry(
-                    heartbeat_id, sim_id, tick_number, "event_aging",
-                    f"'{title}' has been {old_status} for {ticks} ticks. "
-                    f"Auto-{auto_en} in {remaining} more tick(s).",
-                    f"'{title}' ist seit {ticks} Ticks {old_status}. "
-                    f"Automatische {auto_de} in {remaining} weiteren Tick(s).",
-                    severity="warning" if old_status == "active" else "info",
-                    metadata={"event_id": event_id, "ticks_in_status": ticks,
-                              "remaining": remaining},
-                ))
+                entries.append(
+                    make_heartbeat_entry(
+                        heartbeat_id,
+                        sim_id,
+                        tick_number,
+                        "event_aging",
+                        f"'{title}' has been {old_status} for {ticks} ticks. "
+                        f"Auto-{auto_en} in {remaining} more tick(s).",
+                        f"'{title}' ist seit {ticks} Ticks {old_status}. "
+                        f"Automatische {auto_de} in {remaining} weiteren Tick(s).",
+                        severity="warning" if old_status == "active" else "info",
+                        metadata={"event_id": event_id, "ticks_in_status": ticks, "remaining": remaining},
+                    )
+                )
 
         return aged, escalated, resolved, entries
 
@@ -787,17 +938,23 @@ class HeartbeatService:
 
     @classmethod
     async def _phase_compute_pressure(
-        cls, admin: Client, sim_id: UUID,
-        tick_number: int, heartbeat_id: UUID,
+        cls,
+        admin: Client,
+        sim_id: UUID,
+        tick_number: int,
+        heartbeat_id: UUID,
         config: dict | None = None,
     ) -> tuple[float, list[dict]]:
         """Accumulate pressure from active/escalating events via batch RPC."""
         entries: list[dict] = []
 
         # Single RPC call computes and updates all event pressures
-        result = await admin.rpc("fn_compute_event_pressure_batch", {
-            "p_sim_id": str(sim_id),
-        }).execute()
+        result = await admin.rpc(
+            "fn_compute_event_pressure_batch",
+            {
+                "p_sim_id": str(sim_id),
+            },
+        ).execute()
 
         data = result.data or {}
         if isinstance(data, str):
@@ -828,13 +985,18 @@ class HeartbeatService:
         # Produce entry if pressure is significant
         if total_pressure > 0.3:
             severity = "critical" if total_pressure > 0.8 else "warning" if total_pressure > 0.5 else "info"
-            entries.append(make_heartbeat_entry(
-                heartbeat_id, sim_id, tick_number, "resonance_pressure",
-                f"Substrate pressure from {event_count} active event(s): {total_pressure:.2f}.",
-                f"Substratdruck von {event_count} aktiven Ereignis(sen): {total_pressure:.2f}.",
-                severity=severity,
-                metadata={"total_pressure": total_pressure, "event_count": event_count},
-            ))
+            entries.append(
+                make_heartbeat_entry(
+                    heartbeat_id,
+                    sim_id,
+                    tick_number,
+                    "resonance_pressure",
+                    f"Substrate pressure from {event_count} active event(s): {total_pressure:.2f}.",
+                    f"Substratdruck von {event_count} aktiven Ereignis(sen): {total_pressure:.2f}.",
+                    severity=severity,
+                    metadata={"total_pressure": total_pressure, "event_count": event_count},
+                )
+            )
 
         return total_pressure, entries
 
@@ -842,19 +1004,25 @@ class HeartbeatService:
 
     @classmethod
     async def _phase_drift_scar_tissue(
-        cls, admin: Client, sim_id: UUID,
-        tick_number: int, heartbeat_id: UUID,
+        cls,
+        admin: Client,
+        sim_id: UUID,
+        tick_number: int,
+        heartbeat_id: UUID,
         config: dict,
     ) -> tuple[float, list[dict]]:
         """Grow scar tissue from active arcs, decay from healed ones — via batch RPC."""
         entries: list[dict] = []
 
         # Single RPC call handles all arc scar tissue updates
-        result = await admin.rpc("fn_drift_scar_tissue_batch", {
-            "p_sim_id": str(sim_id),
-            "p_growth_rate": config.get("scar_growth_rate", 0.05),
-            "p_decay_rate": config.get("scar_decay_rate", 0.02),
-        }).execute()
+        result = await admin.rpc(
+            "fn_drift_scar_tissue_batch",
+            {
+                "p_sim_id": str(sim_id),
+                "p_growth_rate": config.get("scar_growth_rate", 0.05),
+                "p_decay_rate": config.get("scar_decay_rate", 0.02),
+            },
+        ).execute()
 
         data = result.data or {}
         if isinstance(data, str):
@@ -864,13 +1032,18 @@ class HeartbeatService:
 
         if abs(scar_delta) > 0.001:
             direction = "deepening" if scar_delta > 0 else "healing"
-            entries.append(make_heartbeat_entry(
-                heartbeat_id, sim_id, tick_number, "scar_tissue",
-                f"Substrate scar tissue {direction} ({scar_delta:+.4f}).",
-                f"Substrat-Narbengewebe {direction} ({scar_delta:+.4f}).",
-                severity="warning" if scar_delta > 0 else "positive",
-                metadata={"scar_delta": scar_delta},
-            ))
+            entries.append(
+                make_heartbeat_entry(
+                    heartbeat_id,
+                    sim_id,
+                    tick_number,
+                    "scar_tissue",
+                    f"Substrate scar tissue {direction} ({scar_delta:+.4f}).",
+                    f"Substrat-Narbengewebe {direction} ({scar_delta:+.4f}).",
+                    severity="warning" if scar_delta > 0 else "positive",
+                    metadata={"scar_delta": scar_delta},
+                )
+            )
 
         return scar_delta, entries
 
@@ -973,12 +1146,7 @@ class HeartbeatService:
     @classmethod
     async def list_cascade_rules(cls, admin: Client) -> list[dict]:
         """List all cascade rules from the resonance_cascade_rules table."""
-        response = await (
-            admin.table("resonance_cascade_rules")
-            .select("*")
-            .order("source_signature")
-            .execute()
-        )
+        response = await admin.table("resonance_cascade_rules").select("*").order("source_signature").execute()
         return response.data or []
 
     # ── Admin Dashboard ────────────────────────────────────────
@@ -1052,18 +1220,20 @@ class HeartbeatService:
             sid = sim["id"]
             total_scar = scar_totals.get(sid, 0)
 
-            sim_data.append({
-                "simulation_id": sid,
-                "simulation_name": sim.get("name", ""),
-                "slug": sim.get("slug", ""),
-                "last_tick": sim.get("last_heartbeat_tick", 0),
-                "last_heartbeat_at": sim.get("last_heartbeat_at"),
-                "next_heartbeat_at": sim.get("next_heartbeat_at"),
-                "status": "active",
-                "active_arcs": arc_counts.get(sid, 0),
-                "scar_tissue_level": round(total_scar, 4),
-                "pending_responses": pending_counts.get(sid, 0),
-            })
+            sim_data.append(
+                {
+                    "simulation_id": sid,
+                    "simulation_name": sim.get("name", ""),
+                    "slug": sim.get("slug", ""),
+                    "last_tick": sim.get("last_heartbeat_tick", 0),
+                    "last_heartbeat_at": sim.get("last_heartbeat_at"),
+                    "next_heartbeat_at": sim.get("next_heartbeat_at"),
+                    "status": "active",
+                    "active_arcs": arc_counts.get(sid, 0),
+                    "scar_tissue_level": round(total_scar, 4),
+                    "pending_responses": pending_counts.get(sid, 0),
+                }
+            )
 
         return {
             "global_enabled": enabled,
@@ -1171,8 +1341,11 @@ class HeartbeatService:
 
     @classmethod
     async def _generate_peacetime_entries(
-        cls, admin: Client, sim_id: UUID,
-        tick_number: int, heartbeat_id: UUID,
+        cls,
+        admin: Client,
+        sim_id: UUID,
+        tick_number: int,
+        heartbeat_id: UUID,
     ) -> list[dict]:
         """Generate ambient content when no significant activity occurred."""
 
@@ -1193,47 +1366,76 @@ class HeartbeatService:
                 label = health[0].get("health_label", "functional")
 
                 if h >= 0.7:
-                    prosperity = random.choice([  # noqa: S311
-                        ("Trade routes hum with quiet commerce. The districts prosper.",
-                         "Handelsrouten summen vor stillem Handel. Die Bezirke gedeihen."),
-                        ("Citizens report a rare sense of optimism in the streets.",
-                         "Buerger berichten von seltener Zuversicht in den Strassen."),
-                        ("Building occupancy is high. The simulation breathes steadily.",
-                         "Die Gebaeudebelegung ist hoch. Die Simulation atmet gleichmaessig."),
-                    ])
-                    entries.append(make_heartbeat_entry(
-                        heartbeat_id, sim_id, tick_number, "system_note",
-                        prosperity[0], prosperity[1],
-                        severity="positive",
-                        metadata={"health": h, "label": label, "peacetime": True},
-                    ))
+                    prosperity = random.choice(
+                        [  # noqa: S311
+                            (
+                                "Trade routes hum with quiet commerce. The districts prosper.",
+                                "Handelsrouten summen vor stillem Handel. Die Bezirke gedeihen.",
+                            ),
+                            (
+                                "Citizens report a rare sense of optimism in the streets.",
+                                "Buerger berichten von seltener Zuversicht in den Strassen.",
+                            ),
+                            (
+                                "Building occupancy is high. The simulation breathes steadily.",
+                                "Die Gebaeudebelegung ist hoch. Die Simulation atmet gleichmaessig.",
+                            ),
+                        ]
+                    )
+                    entries.append(
+                        make_heartbeat_entry(
+                            heartbeat_id,
+                            sim_id,
+                            tick_number,
+                            "system_note",
+                            prosperity[0],
+                            prosperity[1],
+                            severity="positive",
+                            metadata={"health": h, "label": label, "peacetime": True},
+                        )
+                    )
                 elif h >= 0.5:
-                    entries.append(make_heartbeat_entry(
-                        heartbeat_id, sim_id, tick_number, "system_note",
-                        "The substrate holds steady. No significant disturbances detected.",
-                        "Das Substrat haelt sich stabil. Keine nennenswerten Stoerungen erkannt.",
-                        severity="info",
-                        metadata={"health": h, "label": label, "peacetime": True},
-                    ))
+                    entries.append(
+                        make_heartbeat_entry(
+                            heartbeat_id,
+                            sim_id,
+                            tick_number,
+                            "system_note",
+                            "The substrate holds steady. No significant disturbances detected.",
+                            "Das Substrat haelt sich stabil. Keine nennenswerten Stoerungen erkannt.",
+                            severity="info",
+                            metadata={"health": h, "label": label, "peacetime": True},
+                        )
+                    )
                 else:
-                    entries.append(make_heartbeat_entry(
-                        heartbeat_id, sim_id, tick_number, "system_note",
-                        "An uneasy calm. The substrate's silence may not last.",
-                        "Eine unruhige Stille. Das Schweigen des Substrats duerfte nicht anhalten.",
-                        severity="warning",
-                        metadata={"health": h, "label": label, "peacetime": True},
-                    ))
+                    entries.append(
+                        make_heartbeat_entry(
+                            heartbeat_id,
+                            sim_id,
+                            tick_number,
+                            "system_note",
+                            "An uneasy calm. The substrate's silence may not last.",
+                            "Eine unruhige Stille. Das Schweigen des Substrats duerfte nicht anhalten.",
+                            severity="warning",
+                            metadata={"health": h, "label": label, "peacetime": True},
+                        )
+                    )
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.debug("Failed to generate peacetime content from health data")
 
         # Fallback if no entries generated
         if not entries:
-            entries.append(make_heartbeat_entry(
-                heartbeat_id, sim_id, tick_number, "system_note",
-                "All quiet in the districts. No significant substrate activity.",
-                "Alles ruhig in den Bezirken. Keine nennenswerte Substrataktivitaet.",
-                severity="info",
-            ))
+            entries.append(
+                make_heartbeat_entry(
+                    heartbeat_id,
+                    sim_id,
+                    tick_number,
+                    "system_note",
+                    "All quiet in the districts. No significant substrate activity.",
+                    "Alles ruhig in den Bezirken. Keine nennenswerte Substrataktivitaet.",
+                    severity="info",
+                )
+            )
 
         return entries
 
