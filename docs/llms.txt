@@ -1,7 +1,7 @@
 # metaverse.center
 
 > Multiplayer worldbuilding platform with AI-driven simulations and competitive PvP epochs.
-> 87 database tables, 161 PostgreSQL functions, 437 API endpoints, 219 web components. 5789 i18n strings (100% EN/DE).
+> 87 database tables, 161 PostgreSQL functions, 437 API endpoints, 223 web components. 5906 i18n strings (100% EN/DE).
 > Stack: FastAPI + Lit 3 + Supabase + OpenRouter. Bilingual EN/DE.
 
 ## Specifications

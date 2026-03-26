@@ -1,6 +1,6 @@
 ---
 title: "Game Systems Integration — Connecting the Living World"
-version: "3.3"
+version: "3.4"
 date: "2026-03-26"
 type: concept
 status: active

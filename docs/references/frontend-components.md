@@ -1,7 +1,7 @@
 ---
 title: "Frontend Components"
 id: frontend-components
-version: "3.4"
+version: "3.5"
 date: 2026-03-26
 lang: de
 type: reference
@@ -818,7 +818,7 @@ Alle √Ñnderungen zeigen eine Live-Preview innerhalb der Shell. Preset-Auswahl f√
 | agents/ | 6 | 6 | View, Card, EditModal, DetailsPanel, RelationshipCard/EditModal |
 | buildings/ | 6 | 6 | View, Card, EditModal, DetailsPanel, EmbassyCreate/Link |
 | events/ | 6 | 6 | View, Card, EditModal, DetailsPanel, EchoCard/TriggerModal |
-| terminal/ | 3 | 3 | BureauTerminal (CRT MUD interface, Stage 1-3: 19 commands), TerminalQuickActions, TerminalView (tab wrapper) |
+| terminal/ | 4 | 4 | BureauTerminal (CRT MUD interface, Stage 1-3 + Epoch Tier 4: 23 commands), TerminalQuickActions, TerminalView (template wrapper), EpochTerminalView (epoch wrapper) |
 | chat/ | 7 | 7 | View, Window, ConversationList, MessageList/Input, AgentSelector, EventPicker |
 | social/ | 9 | 9 | TrendsView, MediaView, CampaignDashboard, Cards, Modals, TrendFilterBar |
 | locations/ | 5 | 5 | View, CityList, ZoneList, StreetList, LocationEditModal |

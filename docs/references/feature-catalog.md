@@ -1,7 +1,7 @@
 ---
 title: "Feature Catalog"
 id: feature-catalog
-version: "3.2"
+version: "3.3"
 date: 2026-03-26
 lang: de
 type: reference

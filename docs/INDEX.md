@@ -38,8 +38,8 @@ tags: [index, catalog, documentation]
 | [Database Schema: Neues Multi-Simulations-Schema](references/database-schema.md) | 3.8 | 2026-03-17 | de | active |
 | [Design System](references/design-system.md) | 1.4 | 2026-03-17 | de | active |
 | [Domain Models](references/domain-models.md) | 3.3 | 2026-03-13 | de | active |
-| [Feature Catalog](references/feature-catalog.md) | 3.2 | 2026-03-26 | de | active |
-| [Frontend Components](references/frontend-components.md) | 3.4 | 2026-03-26 | de | active |
+| [Feature Catalog](references/feature-catalog.md) | 3.3 | 2026-03-26 | de | active |
+| [Frontend Components](references/frontend-components.md) | 3.5 | 2026-03-26 | de | active |
 
 ## Guides (13)
 
@@ -66,7 +66,7 @@ tags: [index, catalog, documentation]
 | [Feature Discovery Proposals](feature-discovery-proposals.md) | 1.0 | 2026-03-20 | en | active |
 | [Post-Generation Engagement Proposals (8 Features)](concepts/post-generation-engagement-proposals.md) | 1.0 | 2026-03-22 | de/en | active |
 | [10 Proposals zur Tamagotchisierung](concepts/tamagotchi-proposals.md) | 1.0 | 2026-03-25 | de | active |
-| [Game Systems Integration](concepts/game-systems-integration.md) | 3.3 | 2026-03-26 | en | active |
+| [Game Systems Integration](concepts/game-systems-integration.md) | 3.4 | 2026-03-26 | en | active |
 
 ## Explanations (5)
 
