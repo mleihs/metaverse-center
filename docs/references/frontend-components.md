@@ -533,7 +533,12 @@ export class AppShell extends LitElement {
 /simulations/:slug/settings         → SettingsView
 /simulations/:slug/settings/:tab    → SettingsView (spezifischer Tab)
 /simulations/:slug/members          → MembersView
-/how-to-play                        → HowToPlayView
+/how-to-play                        → HowToPlayLanding
+/how-to-play/quickstart             → HowToPlayQuickstart
+/how-to-play/guide                  → HowToPlayGuideHub
+/how-to-play/guide/:topic           → HowToPlayTopic
+/how-to-play/competitive            → HowToPlayWarRoom
+/how-to-play/legacy                 → HowToPlayView (monolith, Phase 5 removal)
 /epoch/join                         → EpochInviteAcceptView (token-based invite acceptance)
 /auth/login                         → LoginView
 /auth/register                      → RegisterView
@@ -829,9 +834,9 @@ Alle Änderungen zeigen eine Live-Preview innerhalb der Shell. Preset-Auswahl f�
 | bleed/ | 3 | 3 | BleedPalimpsestOverlay, BleedMarginalia, BleedRedaction |
 | map/ | 5 | 5 | CartographersDesk, CartographicMap, MapAnnotationTool, MapLayerToggle, MultiverseConspiracyBoard |
 | epoch/ | 19 | 19 | CommandCenter (orchestrator), OpsBoard, OverviewTab, IntelDossierTab, OperationsTab, AlliancesTab, LobbyActions, CreationWizard, DraftRosterPanel, Leaderboard, BattleLog, MissionCard, DeployOperativeModal, InvitePanel, InviteAcceptView, ChatPanel, PresenceIndicator, ReadyPanel, BotConfigPanel |
-| how-to-play/ | 5 | 1 | HowToPlayView + htp-styles (extracted CSS) + 3 content/type files (htp-types, htp-content-rules, htp-content-matches) |
+| how-to-play/ | 15 | 6 | HowToPlayLanding, HowToPlayQuickstart, HowToPlayGuideHub, HowToPlayTopic, HowToPlayWarRoom, HowToPlayView (legacy) + htp-shared-styles, htp-styles, htp-search, htp-topic-data + 4 content/type files (htp-content-features, htp-content-rules, htp-content-matches, htp-content-demo, htp-types) |
 | shared/ | 32 | 21 | 21 components + 10 CSS modules + 1 base class |
-| **Gesamt** | **162** | **135** (in components/) | **22 Verzeichnisse** |
+| **Gesamt** | **172** | **140** (in components/) | **22 Verzeichnisse** |
 
 ### Utilities
 

@@ -9,9 +9,9 @@ tags: [index, catalog, documentation]
 
 # Documentation Index
 
-> Auto-generated from frontmatter. 66 documents, 6 categories + 9 ADRs.
+> Auto-generated from frontmatter. 67 documents, 7 categories + 9 ADRs.
 
-## Specifications (15)
+## Specifications (16)
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
@@ -30,6 +30,7 @@ tags: [index, catalog, documentation]
 | [Substrate Resonances: Platform-Level Event Propagation](specs/substrate-resonances.md) | 1.3 | 2026-03-17 | en | active |
 | [Substrate Scanner — Automated Real-World Event Detection](specs/substrate-scanner.md) | 1.1 | 2026-03-17 | en | active |
 | [Theming System](specs/theming-system.md) | 1.3 | 2026-03-09 | de | active |
+| [TikTok Integration](specs/tiktok-integration.md) | 1.0 | 2026-03-22 | en | active |
 
 ## References (5)
 
@@ -41,7 +42,7 @@ tags: [index, catalog, documentation]
 | [Feature Catalog](references/feature-catalog.md) | 3.3 | 2026-03-26 | de | active |
 | [Frontend Components](references/frontend-components.md) | 3.5 | 2026-03-26 | de | active |
 
-## Guides (13)
+## Guides (16)
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
@@ -49,8 +50,11 @@ tags: [index, catalog, documentation]
 | [Deployment Infrastructure](guides/deployment-infrastructure.md) | 1.3 | 2026-03-07 | de | active |
 | [Production Deployment Procedures](guides/deployment-procedures.md) | 1.0 | — | en | active |
 | [Epoch Gameplay Guide](guides/epoch-gameplay-guide.md) | 1.0 | 2026-03-09 | en | active |
+| [Forge Mobile UX Overhaul](guides/forge-mobile-ux.md) | 1.0 | 2026-03-25 | en | active |
+| [How to Play Restructure](guides/how-to-play-restructure.md) | 1.0 | 2026-03-26 | en | active |
 | [Local DB Reset & Storage Recovery Guide](guides/local-db-reset.md) | 1.0 | — | en | active |
 | [Migration Strategy](guides/migration-strategy.md) | 1.2 | 2026-02-25 | de | active |
+| [Pillow Story Template Design Guide](guides/pillow-story-templates.md) | 1.0 | — | en | active |
 | [Epoch Playtest Methodology](guides/playtest-methodology.md) | 1.0 | 2026-03-09 | en | active |
 | [Public-First Architecture — Implementation Reference](guides/public-access.md) | 1.2 | 2026-03-14 | en | active |
 | [SEO, GA4 & Deep Linking Implementation](guides/seo-implementation.md) | 1.1 | — | en | active |
@@ -59,11 +63,12 @@ tags: [index, catalog, documentation]
 | [Simulation Creation Guide](guides/simulation-creation.md) | 1.0 | — | en | active |
 | [Testing Strategy](guides/testing-strategy.md) | 2.3 | 2026-03-09 | de | active |
 
-## Concepts (4)
+## Concepts (5)
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
-| [Feature Discovery Proposals](feature-discovery-proposals.md) | 1.0 | 2026-03-20 | en | active |
+| [Bureau Social Media Presence](concepts/social-media-bureau-presence.md) | 2.1 | 2026-03-20 | en | active |
+| [Feature Discovery Proposals](concepts/feature-discovery-proposals.md) | 1.0 | 2026-03-20 | en | active |
 | [Post-Generation Engagement Proposals (8 Features)](concepts/post-generation-engagement-proposals.md) | 1.0 | 2026-03-22 | de/en | active |
 | [10 Proposals zur Tamagotchisierung](concepts/tamagotchi-proposals.md) | 1.0 | 2026-03-25 | de | active |
 | [Game Systems Integration](concepts/game-systems-integration.md) | 3.4 | 2026-03-26 | en | active |
@@ -90,10 +95,11 @@ tags: [index, catalog, documentation]
 | [Epoch Cross-Reference Analysis: Game Balance Report](analysis/epoch-cross-reference-analysis.md) | 1.0 | 2026-03-02 | en | active |
 | [Epoch Playthrough: Bug Fix Verification](analysis/epoch-playthrough.md) | 1.0 | 2026-02-28 | en | active |
 
-## Audits (1)
+## Audits (2)
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
+| [Epoch Gameplay Audit](audits/audit-epoch-gameplay-2026-03-09.md) | 1.0 | 2026-03-09 | en | active |
 | [Simulation Forge — Live Playthrough Audit](audits/forge-playthrough-audit-2026-03-07.md) | 1.0 | 2026-03-07 | en | active |
 
 ## Architecture Decision Records (9)

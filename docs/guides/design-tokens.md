@@ -189,6 +189,61 @@ These files are exempt from the token-only rule:
 
 ---
 
+## Typography Tokens
+
+Source file: `frontend/src/styles/tokens/_typography.css`
+
+### Font Families
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--font-brutalist` | Courier New, Monaco, Lucida Console, monospace | Headings — "intelligence dossier" typewriter aesthetic |
+| `--font-sans` | system-ui stack | UI text (buttons, labels, navigation) |
+| `--font-mono` | SF Mono, Monaco, Inconsolata, Roboto Mono | Code blocks, terminal output |
+| `--font-bureau` | Spectral, Georgia, Times New Roman, serif | Literary prose — loaded dynamically via `ThemeService.ts` Google Fonts API |
+
+### Semantic Font Tokens
+
+| Token | Value | Notes |
+|-------|-------|-------|
+| `--font-body` | `var(--font-sans)` | Themed per simulation |
+| `--font-prose` | `var(--font-bureau)` | Literary prose — Spectral on platform, themed per simulation |
+| `--heading-font` | `var(--font-brutalist)` | All h1-h6 |
+| `--heading-weight` | `var(--font-bold)` = 700 | Courier New only ships 400/700. Weight 900 triggers browser faux bold synthesis (ugly, inconsistent). |
+| `--heading-tracking` | `var(--tracking-brutalist)` = 0.08em | Relative — auto-scales: 3.12px at h1, 1.28px at h6. Was 1px fixed (too tight at large sizes). |
+| `--heading-transform` | uppercase | |
+
+### Font Loading
+
+Spectral is loaded dynamically via `ThemeService.ts` (`loadGoogleFont()`):
+- Weights: 400 (normal), 500 (medium/dark-mode body), 700 (bold), 800 (extra-bold)
+- Italic: 400
+- `font-display: swap`
+
+**Dark mode:** Spectral 500 (Medium) for body text. CHI 2023 research shows thin serif strokes (400 weight) cause halation (light bleeding into dark background) with ~25% more eye strain. Affects 30-60% of population (astigmatism).
+
+### Modular Scale
+
+1.25 ratio, mobile override at 767px:
+
+| Token | Desktop | Mobile |
+|-------|---------|--------|
+| `--text-xs` | 0.64rem (10.24px) | — |
+| `--text-sm` | 0.8rem (12.8px) | — |
+| `--text-base` | 1rem (16px) | — |
+| `--text-md` | 1.125rem (18px) | — |
+| `--text-lg` | 1.25rem (20px) | — |
+| `--text-xl` | 1.563rem (25px) | — |
+| `--text-2xl` | 1.953rem (31.25px) | — |
+| `--text-3xl` | 2.441rem (39px) | 1.953rem (31px) |
+| `--text-4xl` | 3.052rem (48.8px) | 2.441rem (39px) |
+
+### Design Rationale
+
+The three-font-family system (mono headings + serif body + sans UI) is the "intelligence dossier" layered-era aesthetic. CIA Cold War documents mix Courier (typewriter), Times New Roman (printed reports), and Helvetica (modern systems). The visual layering communicates the simulation's surveillance/intelligence narrative.
+
+---
+
 ## Enforcement
 
 Run the lint gate to check for violations:

@@ -137,3 +137,42 @@ Every user-facing string must use:
 
 ```ts
 msg('...')
+```
+
+---
+
+## Claude Collaboration Rules
+
+### Safety (HARD BLOCKS)
+
+- NEVER destroy, delete, reset, drop, or truncate production database data.
+- Python 3.13 everywhere (production + local venv), NOT system Python 3.9.
+
+### Architecture & Quality
+
+- SAUBERSTE Architektur: no shortcuts, verify every pattern against existing codebase.
+- Before ANY new service: list all existing patterns the new code must follow.
+- Every JOIN must be LEFT JOIN unless documented reason for INNER.
+- Never hardcode mappings that should be configurable.
+- Self-audit checklist before presenting code as "done".
+- No hacks/shortcuts: clean architecture, configurable settings, proper logging.
+- Fix surrounding code problems while you're there.
+
+### Frontend
+
+- MUST invoke `frontend-design` skill before writing any component code.
+- Maximum creative effort: dramatic animations, modern UI, WCAG AA.
+- Always check shared components before creating new ones.
+
+### Process
+
+- Run full lint pipeline (`ruff` + `tsc`) after EVERY change, fix before presenting.
+- MOST DETAILED commit messages: explain why, impact, verification for every change.
+- Update docs + memory at EVERY implementation step, not batched at the end.
+- Give step-by-step status updates during multi-step work — don't go silent.
+- Never convert stdlib `logging` to `structlog` (injection middleware handles it).
+
+### Mindset
+
+- Always deep dive, ultrathink, 4 perspectives (architect, game designer, UX, research).
+- Perfection over speed: take time, question every step, deep dive when unclear.

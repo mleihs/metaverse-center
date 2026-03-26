@@ -114,39 +114,28 @@ Restructuring the monolithic HowToPlayView (8,239 LOC, 33 sections, 1,237 i18n s
 
 **22 components updated** to import from shared module, all private `_formatDate`/`_formatTime`/etc. methods removed.
 
----
+### Phase 3: Game Guide Hub + 12 Topic Pages + Fuzzy Search (DONE)
 
-## Pending Phases
+**Completed:** 2026-03-26, commit d45a35e
 
-### Phase 3: Game Guide Hub + 12 Topic Pages + Fuzzy Search
+**The LARGEST phase.** Full content migration from the monolith into a hub-and-spoke architecture.
 
-**This is the LARGEST phase.** Content migration from the monolith.
+**New files created:**
+- `htp-topic-data.ts` — Content data organized by topic (12 topics, migrated from htp-content-features.ts + htp-content-rules.ts)
+- `htp-search.ts` — Fuzzy search system reusing `utils/fuzzy-search.ts`, debounced input, keyboard nav, highlighted matches
+- `htp-shared-styles.ts` — Shared style module extracted from duplicated CSS (~400 LOC eliminated)
+- `HowToPlayGuideHub.ts` — Full implementation: 12 topic card grid, glassmorphism cards, staggered entrance, search bar
+- `HowToPlayTopic.ts` — Full implementation: shared template for all 12 topics, two-column layout, TL;DR box, breadcrumb, prev/next nav
 
-**New files to create:**
-- `HowToPlayGuideHub.ts` — Replace stub. Visual grid of 12 topic cards.
-  - Glassmorphism-inspired cards: `backdrop-filter: blur(8px)` on --color-surface-raised
-  - Hover lift + shadow + --color-primary border glow
-  - Staggered entrance (animation-delay per card)
-  - Click triggers View Transition API morph (card → full page)
-  - Icon per topic, one-line description, estimated read time badge
+**Refactored:**
+- `HowToPlayLanding.ts` — Updated to use shared styles
+- `HowToPlayQuickstart.ts` — Updated to use shared styles
+- `app-shell.ts` — Route config updates
 
-- `HowToPlayTopic.ts` — Replace stub. Shared template for all 12 topics.
-  - Two-column: content (max-width 72ch) + right sidebar ("In this topic" nav + related links)
-  - TL;DR box: frosted-glass (`backdrop-filter: blur(12px)`, 80% opacity --color-surface)
-  - "How it works" main section
-  - "Tips" callout blocks (reuse existing callout patterns)
-  - "Related Topics" cross-links
-  - Previous/Next topic navigation at bottom
-  - Breadcrumb: How to Play > Game Guide > [Topic]
-  - View Transition on topic change morphs breadcrumb + heading
-
-- `htp-topic-data.ts` — Content data organized by topic (migrated from htp-content-features.ts + htp-content-rules.ts)
-
-- `htp-search.ts` — Fuzzy search system
-  - Build index from all topic content (title + TL;DR + body keywords)
-  - Reuse `levenshtein` + `fuzzyMatch` from `utils/fuzzy-search.ts`
-  - Debounced input (150ms), keyboard navigation (arrow keys + Enter)
-  - Results dropdown: animated slide-in, highlighted matches in --color-primary
+**Quality pass integrated:**
+- Typography: `--heading-weight: 700` (no faux bold), `--tracking-brutalist: 0.08em` (relative), Spectral 500 for dark mode
+- Unified breakpoints: 768/1024/1440/2560px across all HTP components
+- 11 audit issues found and fixed during implementation
 
 **12 Topics (content migration map):**
 
@@ -169,6 +158,10 @@ Restructuring the monolithic HowToPlayView (8,239 LOC, 33 sections, 1,237 i18n s
 ```
 Breadcrumb → TL;DR box (3-4 bullets) → "How it works" → "Tips" → "Related Topics" → Prev/Next nav
 ```
+
+---
+
+## Pending Phases
 
 ### Phase 4: War Room (Competitive Reference)
 
@@ -250,9 +243,12 @@ Breadcrumb → TL;DR box (3-4 bullets) → "How it works" → "Tips" → "Relate
 - `frontend/src/utils/date-format.ts` — Shared date/time formatters (12 functions)
 - `frontend/src/components/how-to-play/HowToPlayLanding.ts` — Three Doors landing
 - `frontend/src/components/how-to-play/HowToPlayQuickstart.ts` — 5-step timeline
-- `frontend/src/components/how-to-play/HowToPlayGuideHub.ts` — Stub (Phase 3)
-- `frontend/src/components/how-to-play/HowToPlayTopic.ts` — Stub (Phase 3)
+- `frontend/src/components/how-to-play/HowToPlayGuideHub.ts` — 12 topic card grid (Phase 3)
+- `frontend/src/components/how-to-play/HowToPlayTopic.ts` — Shared topic template (Phase 3)
 - `frontend/src/components/how-to-play/HowToPlayWarRoom.ts` — Stub (Phase 4)
+- `frontend/src/components/how-to-play/htp-topic-data.ts` — Topic content data (Phase 3)
+- `frontend/src/components/how-to-play/htp-search.ts` — Fuzzy search system (Phase 3)
+- `frontend/src/components/how-to-play/htp-shared-styles.ts` — Shared CSS module (Phase 3)
 - `docs/guides/how-to-play-restructure.md` — This file
 
 ### Modified files:
@@ -261,7 +257,5 @@ Breadcrumb → TL;DR box (3-4 bullets) → "How it works" → "Tips" → "Relate
 - `frontend/src/utils/terminal-commands.ts` — Imports from fuzzy-search.ts
 - `frontend/src/components/how-to-play/htp-content-rules.ts` — Spy/Propagandist score fixes
 - `frontend/src/components/how-to-play/htp-content-features.ts` — Terminal tiers fix + Tier 4 section
+- `frontend/src/styles/tokens/_typography.css` — font-weight 700, letter-spacing 0.08em (Typography pass)
 - 22 component files — Date formatter migration (see date-format.ts section above)
-
-### Plan file:
-- `.claude/plans/polymorphic-napping-lightning.md` — Full design analysis + implementation plan
