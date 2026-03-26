@@ -20,6 +20,7 @@ import { customElement, query } from 'lit/decorators.js';
 import { analyticsService } from '../../services/AnalyticsService.js';
 import { seoService } from '../../services/SeoService.js';
 import { icons } from '../../utils/icons.js';
+import { htpHeroStyles } from './htp-shared-styles.js';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -41,7 +42,9 @@ interface DoorCard {
 export class VelgHowToPlayLanding extends LitElement {
   // ── Styles ───────────────────────────────────────────────────────────────
 
-  static styles = css`
+  static styles = [
+    htpHeroStyles,
+    css`
     /* ═══ HOST ═══════════════════════════════════════════════════════════ */
 
     :host {
@@ -62,47 +65,15 @@ export class VelgHowToPlayLanding extends LitElement {
       padding: var(--space-12) var(--content-padding) var(--space-16);
     }
 
-    /* ═══ HERO ══════════════════════════════════════════════════════════ */
+    /* ═══ HERO OVERRIDES ═══════════════════════════════════════════════ */
 
     .hero {
       text-align: center;
-      margin-bottom: var(--space-12);
-    }
-
-    .hero__eyebrow {
-      display: inline-block;
-      font-family: var(--font-brutalist);
-      font-size: var(--text-xs);
-      font-weight: var(--font-bold);
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--color-primary);
-      border: var(--border-width-thick) solid var(--color-primary);
-      padding: var(--space-1) var(--space-3);
-      margin-bottom: var(--space-4);
-    }
-
-    .hero__title {
-      font-family: var(--font-brutalist);
-      font-size: var(--text-4xl);
-      font-weight: var(--font-black);
-      line-height: 1.1;
-      letter-spacing: -0.02em;
-      color: var(--color-text-primary);
-      margin: 0 0 var(--space-4);
-      text-transform: uppercase;
     }
 
     .hero__subtitle {
-      font-family: var(--font-prose);
-      font-size: var(--text-lg);
-      font-weight: var(--font-normal);
-      font-style: italic;
-      color: var(--color-text-secondary);
-      margin: 0;
       max-width: 48ch;
       margin-inline: auto;
-      line-height: var(--leading-relaxed);
     }
 
     /* ═══ CARD GRID ═════════════════════════════════════════════════════ */
@@ -114,7 +85,7 @@ export class VelgHowToPlayLanding extends LitElement {
       margin-bottom: var(--space-12);
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 767px) {
       .doors {
         grid-template-columns: 1fr;
         gap: var(--space-4);
@@ -369,26 +340,18 @@ export class VelgHowToPlayLanding extends LitElement {
       }
     }
 
-    /* ═══ SMALL SCREENS ════════════════════════════════════════════════ */
+    /* ═══ RESPONSIVE: MOBILE (<768px) ═════════════════════════════════ */
 
-    @media (max-width: 640px) {
+    @media (max-width: 767px) {
       .landing {
         padding: var(--space-8) var(--space-4) var(--space-12);
-      }
-
-      .hero__title {
-        font-size: var(--text-3xl);
-      }
-
-      .hero__subtitle {
-        font-size: var(--text-base);
       }
 
       .door {
         padding: var(--space-6) var(--space-4) var(--space-4);
       }
     }
-  `;
+  `];
 
   // ── State ──────────────────────────────────────────────────────────────
 

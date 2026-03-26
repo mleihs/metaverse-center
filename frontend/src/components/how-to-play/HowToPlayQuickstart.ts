@@ -21,6 +21,12 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { analyticsService } from '../../services/AnalyticsService.js';
 import { seoService } from '../../services/SeoService.js';
+import {
+  htpBackStyles,
+  htpFooterNavStyles,
+  htpHeroStyles,
+  htpReducedMotionBase,
+} from './htp-shared-styles.js';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -39,7 +45,12 @@ interface QuickStep {
 export class VelgHowToPlayQuickstart extends LitElement {
   // ── Styles ───────────────────────────────────────────────────────────────
 
-  static styles = css`
+  static styles = [
+    htpHeroStyles,
+    htpBackStyles,
+    htpFooterNavStyles,
+    htpReducedMotionBase,
+    css`
     /* ═══ HOST ═══════════════════════════════════════════════════════════ */
 
     :host {
@@ -57,74 +68,10 @@ export class VelgHowToPlayQuickstart extends LitElement {
       padding: var(--space-8) var(--content-padding) var(--space-16);
     }
 
-    /* ═══ BACK LINK ════════════════════════════════════════════════════ */
-
-    .back {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-2);
-      font-family: var(--font-brutalist);
-      font-size: var(--text-xs);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--color-text-muted);
-      text-decoration: none;
-      padding: var(--space-2) 0;
-      margin-bottom: var(--space-8);
-      cursor: pointer;
-      transition: color var(--duration-fast) var(--ease-default);
-    }
-
-    .back:hover,
-    .back:focus-visible {
-      color: var(--color-primary);
-    }
-
-    .back__arrow {
-      transition: transform var(--duration-fast) var(--ease-default);
-    }
-
-    .back:hover .back__arrow {
-      transform: translateX(-3px);
-    }
-
-    /* ═══ HERO ══════════════════════════════════════════════════════════ */
+    /* ═══ HERO OVERRIDES ═══════════════════════════════════════════════ */
 
     .hero {
-      margin-bottom: var(--space-12);
-    }
-
-    .hero__eyebrow {
-      display: inline-block;
-      font-family: var(--font-brutalist);
-      font-size: var(--text-xs);
-      font-weight: var(--font-bold);
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--color-primary);
-      border: var(--border-width-thick) solid var(--color-primary);
-      padding: var(--space-1) var(--space-3);
-      margin-bottom: var(--space-4);
-    }
-
-    .hero__title {
-      font-family: var(--font-brutalist);
-      font-size: var(--text-4xl);
-      font-weight: var(--font-black);
-      line-height: 1.1;
-      letter-spacing: -0.02em;
-      color: var(--color-text-primary);
-      margin: 0 0 var(--space-3);
-      text-transform: uppercase;
-    }
-
-    .hero__subtitle {
-      font-family: var(--font-prose);
-      font-size: var(--text-lg);
-      font-style: italic;
-      color: var(--color-text-secondary);
-      margin: 0;
-      line-height: var(--leading-relaxed);
+      --_hero-title-margin: var(--space-3);
     }
 
     /* ═══ TIMELINE ══════════════════════════════════════════════════════ */
@@ -290,61 +237,17 @@ export class VelgHowToPlayQuickstart extends LitElement {
       text-align: right;
     }
 
-    /* ═══ FOOTER NAV ═══════════════════════════════════════════════════ */
+    /* ═══ FOOTER NAV OVERRIDES ═════════════════════════════════════════ */
 
     .footer-nav {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding-top: var(--space-8);
-      border-top: var(--border-width-thick) solid var(--color-border);
-
       /* Entrance after steps */
       opacity: 0;
       animation: step-enter var(--duration-entrance) var(--ease-dramatic) forwards;
       animation-delay: 600ms;
     }
 
-    .footer-nav__link {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-2);
-      font-family: var(--font-brutalist);
-      font-size: var(--text-sm);
-      font-weight: var(--font-bold);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      text-decoration: none;
-      color: var(--color-text-primary);
-      padding: var(--space-3) var(--space-5);
-      border: var(--border-width-thick) solid var(--color-primary);
-      cursor: pointer;
-      transition:
-        background var(--duration-normal) var(--ease-default),
-        color var(--duration-normal) var(--ease-default),
-        box-shadow var(--duration-normal) var(--ease-default);
-    }
-
-    .footer-nav__link:hover,
-    .footer-nav__link:focus-visible {
-      background: var(--color-primary);
-      color: var(--color-surface);
-      box-shadow: 4px 4px 0 color-mix(in srgb, var(--color-primary) 30%, transparent);
-    }
-
-    .footer-nav__link:active {
-      box-shadow: 2px 2px 0 color-mix(in srgb, var(--color-primary) 30%, transparent);
-    }
-
-    .footer-nav__arrow {
-      transition: transform var(--duration-fast) var(--ease-default);
-    }
-
-    .footer-nav__link:hover .footer-nav__arrow {
-      transform: translateX(3px);
-    }
-
-    /* ═══ REDUCED MOTION ═══════════════════════════════════════════════ */
+    /* ═══ REDUCED MOTION (component-specific) ═════════════════════════ */
+    /* Back/footer-nav transforms handled by htpReducedMotionBase */
 
     @media (prefers-reduced-motion: reduce) {
       .step,
@@ -355,26 +258,17 @@ export class VelgHowToPlayQuickstart extends LitElement {
         transform: none;
       }
 
-      .back:hover .back__arrow,
-      .footer-nav__link:hover .footer-nav__arrow {
-        transform: none;
-      }
-
       .step__action:hover,
       .step__action:focus-visible {
         gap: var(--space-2);
       }
     }
 
-    /* ═══ SMALL SCREENS ════════════════════════════════════════════════ */
+    /* ═══ RESPONSIVE: MOBILE (<768px) ═════════════════════════════════ */
 
-    @media (max-width: 640px) {
+    @media (max-width: 767px) {
       .quickstart {
         padding: var(--space-6) var(--space-4) var(--space-12);
-      }
-
-      .hero__title {
-        font-size: var(--text-3xl);
       }
 
       .timeline {
@@ -401,7 +295,7 @@ export class VelgHowToPlayQuickstart extends LitElement {
         font-size: var(--text-xs);
       }
     }
-  `;
+  `];
 
   // ── Lifecycle ──────────────────────────────────────────────────────────
 

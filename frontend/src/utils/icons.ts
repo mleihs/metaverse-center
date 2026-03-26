@@ -840,3 +840,6 @@ export const icons = {
     </svg>
   `,
 };
+
+/** Valid icon key — use for compile-time validation of icon references. */
+export type IconKey = keyof typeof icons;
