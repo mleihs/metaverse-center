@@ -117,7 +117,7 @@ export class VelgZoneList extends LitElement {
       color: var(--color-warning);
     }
 
-    /* --- Stability bar --- */
+    /* --- Stability bar with threshold markers --- */
 
     .item__stability {
       display: flex;
@@ -141,12 +141,23 @@ export class VelgZoneList extends LitElement {
       height: 6px;
       background: var(--color-surface-sunken);
       border: var(--border-width-thin) solid var(--color-border);
-      overflow: hidden;
+      overflow: visible;
+      position: relative;
     }
 
     .item__stability-fill {
       height: 100%;
       transition: width 0.3s ease;
+    }
+
+    /* RimWorld-style threshold markers at stability breakpoints */
+    .item__stability-threshold {
+      position: absolute;
+      top: -2px;
+      bottom: -2px;
+      width: 1px;
+      background: color-mix(in srgb, var(--color-text-primary) 25%, transparent);
+      pointer-events: none;
     }
 
     .item__stability-value {
@@ -155,6 +166,81 @@ export class VelgZoneList extends LitElement {
       font-size: var(--text-xs);
       min-width: 28px;
       text-align: right;
+    }
+
+    /* --- Event risk indicator --- */
+
+    .item__event-risk {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-top: var(--space-2);
+      padding: var(--space-1-5) var(--space-3);
+      border-left: 2px solid var(--color-border-light);
+      background: var(--color-surface-sunken);
+    }
+
+    .item__event-risk--high {
+      border-left-color: var(--color-warning);
+      background: color-mix(in srgb, var(--color-warning) 4%, var(--color-surface-sunken));
+    }
+
+    .item__event-risk--critical {
+      border-left-color: var(--color-danger);
+      background: color-mix(in srgb, var(--color-danger) 6%, var(--color-surface-sunken));
+    }
+
+    .item__risk-tier {
+      display: inline-flex;
+      padding: 1px var(--space-1-5);
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-black);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-brutalist);
+      flex-shrink: 0;
+    }
+
+    .item__risk-tier--low {
+      background: color-mix(in srgb, var(--color-success) 15%, transparent);
+      border: var(--border-width-thin) solid color-mix(in srgb, var(--color-success) 40%, transparent);
+      color: var(--color-success);
+    }
+
+    .item__risk-tier--medium {
+      background: color-mix(in srgb, var(--color-info, var(--color-primary)) 15%, transparent);
+      border: var(--border-width-thin) solid color-mix(in srgb, var(--color-info, var(--color-primary)) 40%, transparent);
+      color: var(--color-info, var(--color-primary));
+    }
+
+    .item__risk-tier--high {
+      background: color-mix(in srgb, var(--color-warning) 15%, transparent);
+      border: var(--border-width-thin) solid color-mix(in srgb, var(--color-warning) 40%, transparent);
+      color: var(--color-warning);
+    }
+
+    .item__risk-tier--critical {
+      background: color-mix(in srgb, var(--color-danger) 15%, transparent);
+      border: var(--border-width-thin) solid color-mix(in srgb, var(--color-danger) 40%, transparent);
+      color: var(--color-danger);
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .item__risk-multiplier {
+      font-family: var(--font-mono, monospace);
+      font-size: 10px;
+      color: var(--color-text-secondary);
+    }
+
+    .item__risk-hint {
+      font-size: 10px;
+      color: var(--color-text-muted);
+      margin-left: auto;
+    }
+
+    /* Critical zone background wash */
+    .item--critical-zone {
+      background: color-mix(in srgb, var(--color-danger) 3%, var(--color-surface-raised));
     }
 
     /* Fortification / Quarantine / Cascade overlays */
@@ -274,6 +360,45 @@ export class VelgZoneList extends LitElement {
     return 'var(--color-primary)';
   }
 
+  /**
+   * Piecewise linear event multiplier — mirrors backend _stability_event_multiplier().
+   * Low stability → more events (up to 1.5x); high stability → fewer (down to 0.5x).
+   */
+  private _eventMultiplier(stability: number): number {
+    const bp: [number, number][] = [
+      [0.0, 1.5], [0.1, 1.5], [0.3, 1.3], [0.5, 1.0],
+      [0.7, 0.8], [0.9, 0.5], [1.0, 0.5],
+    ];
+    const s = Math.max(0, Math.min(1, stability));
+    for (let i = 0; i < bp.length - 1; i++) {
+      const [x0, y0] = bp[i];
+      const [x1, y1] = bp[i + 1];
+      if (s <= x1) {
+        if (x1 === x0) return y0;
+        const t = (s - x0) / (x1 - x0);
+        return y0 + t * (y1 - y0);
+      }
+    }
+    return bp[bp.length - 1][1];
+  }
+
+  private _riskTier(multiplier: number): 'low' | 'medium' | 'high' | 'critical' {
+    if (multiplier <= 0.7) return 'low';
+    if (multiplier <= 1.0) return 'medium';
+    if (multiplier <= 1.3) return 'high';
+    return 'critical';
+  }
+
+  private _riskLabel(tier: string): string {
+    switch (tier) {
+      case 'low': return msg('LOW');
+      case 'medium': return msg('MEDIUM');
+      case 'high': return msg('HIGH');
+      case 'critical': return msg('CRITICAL');
+      default: return msg('UNKNOWN');
+    }
+  }
+
   private _handleSelect(zone: Zone): void {
     this.dispatchEvent(
       new CustomEvent('zone-select', {
@@ -291,16 +416,34 @@ export class VelgZoneList extends LitElement {
     const pct = Math.round(stability.stability * 100);
     const color = this._stabilityColor(stability.stability);
 
+    const multiplier = this._eventMultiplier(stability.stability);
+    const tier = this._riskTier(multiplier);
+    const riskHint =
+      tier === 'critical' ? msg('Fortify to reduce pressure')
+        : tier === 'high' ? msg('Consider zone fortification')
+          : '';
+
     return html`
       <div class="item__stability">
         <span class="item__stability-label">${msg('Stability')}</span>
-        <div class="item__stability-track">
+        <div class="item__stability-track"
+          role="meter" aria-label=${msg('Zone stability')}
+          aria-valuenow=${pct} aria-valuemin=${0} aria-valuemax=${100}>
           <div
             class="item__stability-fill"
             style="width: ${pct}%; background: ${color}"
           ></div>
+          <!-- Threshold markers at critical (30%) and functional (50%) boundaries -->
+          <span class="item__stability-threshold" style="left: 30%"></span>
+          <span class="item__stability-threshold" style="left: 50%"></span>
         </div>
         <span class="item__stability-value" style="color: ${color}">${pct}%</span>
+      </div>
+      <div class="item__event-risk ${tier === 'high' ? 'item__event-risk--high' : tier === 'critical' ? 'item__event-risk--critical' : ''}"
+        aria-label=${msg(str`Event risk: ${this._riskLabel(tier)}`)}>
+        <span class="item__risk-tier item__risk-tier--${tier}">${this._riskLabel(tier)}</span>
+        <span class="item__risk-multiplier">${multiplier.toFixed(1)}x</span>
+        ${riskHint ? html`<span class="item__risk-hint">${riskHint}</span>` : nothing}
       </div>
     `;
   }
@@ -376,8 +519,9 @@ export class VelgZoneList extends LitElement {
         ${this.zones.map((zone) => {
           const stability = this.stabilityMap.get(zone.id);
           const isQuarantined = stability?.is_quarantined ?? false;
+          const isCriticalZone = (stability?.stability ?? 1) < 0.3;
           return html`
-            <div class="item ${isQuarantined ? 'item--quarantined' : ''}" role="button" tabindex="0" @click=${() => this._handleSelect(zone)} @keydown=${(
+            <div class="item ${isQuarantined ? 'item--quarantined' : ''} ${isCriticalZone ? 'item--critical-zone' : ''}" role="button" tabindex="0" @click=${() => this._handleSelect(zone)} @keydown=${(
               e: KeyboardEvent,
             ) => {
               if (e.key === 'Enter' || e.key === ' ') {
