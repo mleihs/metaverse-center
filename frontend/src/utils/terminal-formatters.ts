@@ -1,0 +1,678 @@
+/**
+ * Bureau Terminal — Pure formatter functions.
+ * Convert API responses into TerminalLine[] prose output.
+ * No API calls here — only data transformation.
+ */
+
+import { msg } from '@lit/localize';
+import type {
+  Agent,
+  Building,
+  BuildingReadiness,
+  HeartbeatEntry,
+  SimulationHealthDashboard,
+  Zone,
+  ZoneStability,
+} from '../types/index.js';
+import type { AgentMood, AgentMoodlet, AgentNeeds } from '../services/api/AgentAutonomyApiService.js';
+import type { TerminalCommand, TerminalLine } from '../types/terminal.js';
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+let _lineCounter = 0;
+
+function lineId(): string {
+  return `tl-${Date.now()}-${++_lineCounter}`;
+}
+
+function responseLine(content: string, zoneId?: string): TerminalLine {
+  return { id: lineId(), type: 'response', content, timestamp: new Date(), zoneId };
+}
+
+function systemLine(content: string): TerminalLine {
+  return { id: lineId(), type: 'system', content, timestamp: new Date() };
+}
+
+function errorLine(content: string): TerminalLine {
+  return { id: lineId(), type: 'error', content, timestamp: new Date() };
+}
+
+function hintLine(content: string): TerminalLine {
+  return { id: lineId(), type: 'hint', content, timestamp: new Date() };
+}
+
+function commandLine(input: string): TerminalLine {
+  return { id: lineId(), type: 'command', content: `> ${input}`, timestamp: new Date() };
+}
+
+/** Render a horizontal bar: ###-------- (width chars total). */
+function stabilityBar(value: number, width = 15): string {
+  const filled = Math.round((value / 100) * width);
+  return '#'.repeat(Math.max(0, filled)) + '-'.repeat(Math.max(0, width - filled));
+}
+
+/** Render a needs bar: ###-- value (width chars). */
+function needsBar(value: number, width = 5): string {
+  const filled = Math.round((value / 100) * width);
+  return '#'.repeat(Math.max(0, filled)) + '-'.repeat(Math.max(0, width - filled));
+}
+
+/** Get stability label from percentage. */
+function stabilityLabel(pct: number): string {
+  if (pct < 20) return 'CRITICAL';
+  if (pct < 40) return 'UNSTABLE';
+  if (pct < 60) return 'CONTESTED';
+  if (pct < 80) return 'STABLE';
+  return 'FORTIFIED';
+}
+
+/** Get health label from 0-1 value. */
+function healthLabel(value: number): string {
+  const pct = value * 100;
+  if (pct < 25) return 'CRITICAL';
+  if (pct < 50) return 'STRUGGLING';
+  if (pct < 75) return 'STABLE';
+  return 'THRIVING';
+}
+
+/** Format a mood score (-100 to +100) into a label. */
+function moodLabel(score: number): string {
+  if (score >= 15) return 'Content';
+  if (score >= 5) return 'Calm';
+  if (score >= -5) return 'Neutral';
+  if (score >= -15) return 'Uneasy';
+  return 'Distressed';
+}
+
+/** Uppercase first letter. */
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+/** Pad string to fixed width. */
+function pad(s: string, width: number): string {
+  return s.length >= width ? s : s + ' '.repeat(width - s.length);
+}
+
+// ── Event-Related Types ────────────────────────────────────────────────────
+
+interface ActiveEvent {
+  title: string;
+  event_status: string;
+  event_type?: string;
+}
+
+// ── Formatters ─────────────────────────────────────────────────────────────
+
+/**
+ * Format the `look` command output — current zone overview.
+ */
+export function formatLook(
+  zone: Zone,
+  stability: ZoneStability | null,
+  agents: Agent[],
+  buildings: Building[],
+  readinessMap: Map<string, BuildingReadiness>,
+  events: ActiveEvent[],
+  allZones: Zone[],
+  weatherNarrative?: string,
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+  const stabPct = stability ? Math.round(stability.stability * 100) : 0;
+  const stabLbl = stability?.stability_label?.toUpperCase() ?? stabilityLabel(stabPct);
+  const security = stability?.security_level ?? zone.security_level ?? 'unknown';
+
+  // Header
+  lines.push(responseLine(
+    `${zone.name.toUpperCase()}${zone.description ? ` \u2013 ${zone.description}` : ''}`,
+  ));
+
+  // Stability + Security
+  lines.push(responseLine(
+    `${msg('Stability')}: ${stabPct}% [${stabLbl}] | ${msg('Security')}: ${security}`,
+  ));
+
+  // Weather
+  if (weatherNarrative) {
+    lines.push(responseLine(weatherNarrative));
+  }
+
+  // Buildings
+  if (buildings.length > 0) {
+    const bldgStrs = buildings.map((b) => {
+      const r = readinessMap.get(b.id);
+      const pct = r ? Math.round(r.readiness * 100) : 0;
+      return `${b.name} (${pct}% ${msg('ready')})`;
+    });
+    lines.push(responseLine(`${msg('Buildings')}: ${bldgStrs.join(', ')}`));
+  } else {
+    lines.push(responseLine(msg('No buildings in this zone.')));
+  }
+
+  // Agents
+  if (agents.length > 0) {
+    const agentNames = agents.map((a) => a.name);
+    lines.push(responseLine(`${msg('Agents present')}: ${agentNames.join(', ')}`));
+  } else {
+    lines.push(responseLine(msg('No agents present.')));
+  }
+
+  // Active events
+  if (events.length > 0) {
+    const eventStrs = events.map((e) => `${e.title} [${e.event_status}]`);
+    lines.push(responseLine(
+      `${msg('Active events')}: ${events.length} (${eventStrs.join(', ')})`,
+    ));
+  }
+
+  // Exits (all other zones)
+  const exits = allZones
+    .filter((z) => z.id !== zone.id)
+    .map((z) => z.name);
+  if (exits.length > 0) {
+    lines.push(responseLine(`${msg('Exits')}: ${exits.join(', ')}`));
+  }
+
+  return lines;
+}
+
+/**
+ * Format the `examine {agent}` command output.
+ */
+export function formatExamineAgent(
+  agent: Agent,
+  mood: AgentMood | null,
+  needs: AgentNeeds | null,
+  moodlets: AgentMoodlet[],
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+  const professions = agent.professions ?? [];
+  const primaryProf = professions.find((p) => p.is_primary);
+  const relations = agent.building_relations ?? [];
+
+  // Header
+  const currentBuilding = relations.length > 0 ? relations[0] : null;
+  const buildingStr = currentBuilding
+    ? ` \u2013 ${(currentBuilding as unknown as Record<string, string>).building_name ?? msg('Assigned')}`
+    : '';
+  lines.push(responseLine(`${agent.name.toUpperCase()}${buildingStr}`));
+
+  // System + Profession
+  const systemStr = agent.system ? capitalize(agent.system) : msg('Unknown');
+  const profStr = primaryProf
+    ? `${primaryProf.profession} (Lv ${primaryProf.qualification_level})`
+    : agent.primary_profession ?? msg('None');
+  lines.push(responseLine(
+    `${msg('System')}: ${systemStr} | ${msg('Profession')}: ${profStr}`,
+  ));
+
+  // Mood + Stress
+  if (mood) {
+    const moodLbl = moodLabel(mood.mood_score);
+    lines.push(responseLine(
+      `${msg('Mood')}: ${mood.mood_score > 0 ? '+' : ''}${mood.mood_score} (${moodLbl}) | ${msg('Stress')}: ${mood.stress_level} (${mood.dominant_emotion})`,
+    ));
+  }
+
+  // Needs
+  if (needs) {
+    lines.push(responseLine(
+      `${msg('Needs')}: ` +
+      `${msg('Social')} ${needsBar(needs.social)} ${Math.round(needs.social)}  ` +
+      `${msg('Purpose')} ${needsBar(needs.purpose)} ${Math.round(needs.purpose)}  ` +
+      `${msg('Safety')} ${needsBar(needs.safety)} ${Math.round(needs.safety)}`,
+    ));
+  }
+
+  // Moodlets
+  if (moodlets.length > 0) {
+    const moodletStrs = moodlets.map((m) =>
+      `${m.moodlet_type} (${m.emotion}, ${m.strength > 0 ? '+' : ''}${m.strength})`,
+    );
+    lines.push(responseLine(`${msg('Moodlets')}: ${moodletStrs.join(', ')}`));
+  }
+
+  // Ambassador
+  if (agent.is_ambassador) {
+    const blocked = agent.ambassador_blocked_until
+      ? ` (${msg('blocked until')} ${new Date(agent.ambassador_blocked_until).toLocaleDateString()})`
+      : ` (${msg('active')})`;
+    lines.push(responseLine(`${msg('Ambassador')}${blocked}`));
+  }
+
+  return lines;
+}
+
+/**
+ * Format the `examine {building}` command output.
+ */
+export function formatExamineBuilding(
+  building: Building,
+  readiness: BuildingReadiness | null,
+  assignedAgents: Agent[],
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+
+  // Header
+  lines.push(responseLine(`${building.name.toUpperCase()}`));
+
+  // Type + Condition
+  const bType = building.building_type ?? msg('Unknown');
+  const condition = building.building_condition ?? msg('Unknown');
+  lines.push(responseLine(
+    `${msg('Type')}: ${bType} | ${msg('Condition')}: ${condition} | ${msg('Capacity')}: ${building.population_capacity}`,
+  ));
+
+  // Readiness factors (Victoria 3 pattern)
+  if (readiness) {
+    const pct = Math.round(readiness.readiness * 100);
+    lines.push(responseLine(`${msg('Readiness')}: ${pct}%`));
+    lines.push(responseLine(
+      `  ${msg('Staffing')}: ${Math.round(readiness.staffing_ratio * 100)}% (${readiness.assigned_agents}/${building.population_capacity}) [${readiness.staffing_status}]`,
+    ));
+    lines.push(responseLine(
+      `  ${msg('Qualification')}: ${Math.round(readiness.qualification_match * 100)}%`,
+    ));
+    lines.push(responseLine(
+      `  ${msg('Condition')}: ${Math.round(readiness.condition_factor * 100)}%`,
+    ));
+    const influencePct = Math.round(readiness.avg_influence * 100);
+    const influenceTier = influencePct > 55 ? 'STRONG' : influencePct > 30 ? 'AVG' : 'WEAK';
+    lines.push(responseLine(
+      `  ${msg('Influence')}: ${influencePct}% [${influenceTier}]`,
+    ));
+  }
+
+  // Assigned agents
+  if (assignedAgents.length > 0) {
+    const names = assignedAgents.map((a) => a.name);
+    lines.push(responseLine(`${msg('Assigned')}: ${names.join(', ')}`));
+  } else {
+    lines.push(responseLine(msg('No agents assigned.')));
+  }
+
+  return lines;
+}
+
+/**
+ * Format the `weather` command output.
+ */
+export function formatWeather(entry: HeartbeatEntry | null): TerminalLine[] {
+  if (!entry) {
+    return [responseLine(msg('No weather data available.'))];
+  }
+
+  const lines: TerminalLine[] = [];
+  const meta = entry.metadata as Record<string, unknown> | undefined;
+
+  lines.push(responseLine(msg('CURRENT CONDITIONS')));
+
+  // Narrative is the primary content
+  if (entry.narrative_en) {
+    lines.push(responseLine(entry.narrative_en));
+  }
+
+  // Extract structured data if available in metadata
+  if (meta) {
+    const parts: string[] = [];
+    if (typeof meta.temperature === 'number') parts.push(`${meta.temperature.toFixed(1)}\u00B0C`);
+    if (typeof meta.wind_speed === 'number') parts.push(`${msg('Wind')}: ${meta.wind_speed} km/h`);
+    if (typeof meta.visibility === 'number') {
+      const vis = meta.visibility as number;
+      parts.push(`${msg('Visibility')}: ${vis >= 1000 ? `${(vis / 1000).toFixed(1)}km` : `${Math.round(vis)}m`}`);
+    }
+    if (typeof meta.moon_phase === 'number') {
+      const mp = meta.moon_phase as number;
+      const phase = mp < 0.125 ? 'New Moon' : mp < 0.375 ? 'Waxing Crescent' :
+        mp < 0.625 ? 'Full Moon' : mp < 0.875 ? 'Waning Gibbous' : 'New Moon';
+      parts.push(`${msg('Moon')}: ${phase} (${Math.round(mp * 100)}%)`);
+    }
+    if (parts.length > 0) {
+      lines.push(responseLine(parts.join(' | ')));
+    }
+  }
+
+  return lines;
+}
+
+/**
+ * Format the `status` command output — simulation sitrep.
+ */
+export function formatStatus(
+  dashboard: SimulationHealthDashboard,
+  opsPoints: number,
+  intelPoints: number,
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+  const h = dashboard.health;
+  const overallPct = Math.round(h.overall_health * 100);
+  const label = h.health_label?.toUpperCase() ?? healthLabel(h.overall_health);
+
+  lines.push(responseLine(`${msg('SITUATION REPORT')} \u2013 ${h.simulation_name}`));
+  lines.push(responseLine(`${msg('Overall health')}: ${overallPct}% [${label}]`));
+
+  // Zone stability table
+  lines.push(responseLine(msg('Zone stability:')));
+  for (const zs of dashboard.zones) {
+    const pct = Math.round(zs.stability * 100);
+    const lbl = zs.stability_label?.toUpperCase() ?? stabilityLabel(pct);
+    const bar = stabilityBar(pct);
+    lines.push(responseLine(
+      `  ${pad(zs.zone_name, 22)} ${pad(String(pct) + '%', 5)} [${pad(lbl, 10)}] ${bar}`,
+    ));
+  }
+
+  // Embassies
+  if (dashboard.embassies && dashboard.embassies.length > 0) {
+    const active = dashboard.embassies.filter((e) => (e as unknown as Record<string, unknown>).is_active);
+    lines.push(responseLine(
+      `${msg('Embassies')}: ${active.length} ${msg('active')}`,
+    ));
+  }
+
+  // Resource budgets
+  lines.push(responseLine(
+    `${msg('Operations points')}: ${opsPoints}/${3} | ${msg('Intel points')}: ${intelPoints}/${2}`,
+  ));
+
+  return lines;
+}
+
+/**
+ * Format the `map` command output — flat zone list with stability.
+ * No adjacency exists, so we show a list instead of ASCII art.
+ */
+export function formatMap(
+  zones: Zone[],
+  stabilities: ZoneStability[],
+  currentZoneId: string,
+  simulationName: string,
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+  const stabMap = new Map(stabilities.map((zs) => [zs.zone_id, zs]));
+
+  lines.push(responseLine(`${msg('SECTOR MAP')} \u2013 ${simulationName}`));
+
+  for (const zone of zones) {
+    const marker = zone.id === currentZoneId ? '* ' : '  ';
+    const zs = stabMap.get(zone.id);
+    const pct = zs ? Math.round(zs.stability * 100) : 0;
+    const lbl = zs?.stability_label?.toUpperCase() ?? stabilityLabel(pct);
+    lines.push(responseLine(
+      `${marker}${pad(zone.name.toUpperCase(), 24)} ${pad(String(pct) + '%', 5)} [${lbl}]`,
+    ));
+  }
+
+  lines.push(responseLine(''));
+  lines.push(responseLine(
+    `* = ${msg('current position')} | ${msg("Use 'go {zone name}' to travel")}`,
+  ));
+
+  return lines;
+}
+
+/**
+ * Format the `where` command output.
+ */
+export function formatWhere(zone: Zone): TerminalLine[] {
+  const desc = zone.description ? ` (${zone.description})` : '';
+  return [
+    responseLine(`${msg('You are in')} ${zone.name.toUpperCase()}${desc}.`),
+  ];
+}
+
+/**
+ * Format the `help` command output — list all available commands.
+ */
+export function formatHelp(
+  commands: TerminalCommand[],
+  clearanceLevel: number,
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+  const available = commands.filter((c) => c.tier <= clearanceLevel);
+
+  lines.push(responseLine(
+    `${msg('AVAILABLE COMMANDS')} (${msg('Clearance Level')} ${clearanceLevel})`,
+  ));
+
+  for (const cmd of available) {
+    lines.push(responseLine(`  ${pad(cmd.verb, 14)} ${cmd.description}`));
+  }
+
+  lines.push(responseLine(''));
+  lines.push(responseLine(msg("Type 'help {command}' for detailed usage.")));
+
+  return lines;
+}
+
+/**
+ * Format `help {command}` — detailed usage for a single command.
+ */
+export function formatHelpCommand(cmd: TerminalCommand): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+  lines.push(responseLine(`${cmd.verb.toUpperCase()}`));
+  lines.push(responseLine(`${msg('Syntax')}: ${cmd.syntax}`));
+  lines.push(responseLine(`${cmd.description}`));
+  if (cmd.synonyms.length > 0) {
+    lines.push(responseLine(`${msg('Aliases')}: ${cmd.synonyms.join(', ')}`));
+  }
+  lines.push(responseLine(`${msg('Clearance')}: ${msg('Level')} ${cmd.tier}`));
+  return lines;
+}
+
+// ── Zone Action Formatters ─────────────────────────────────────────────────
+
+export function formatFortify(zoneName: string, remainingOps: number): TerminalLine[] {
+  return [
+    responseLine(`[${msg('ZONE ACTION')}] ${msg('Deploying fortification resources to')} ${zoneName}.`),
+    responseLine(`${msg('Effect')}: -15% ${msg('event pressure for 7 days')}.`),
+    responseLine(`${msg('Cost')}: 1 ${msg('ops point')} (${remainingOps} ${msg('remaining')}). ${msg('Cooldown')}: 14 ${msg('days')}.`),
+  ];
+}
+
+export function formatQuarantine(zoneName: string, remainingOps: number): TerminalLine[] {
+  return [
+    responseLine(`[${msg('ZONE ACTION')}] ${msg('Quarantine established in')} ${zoneName}.`),
+    responseLine(`${msg('Effect')}: ${msg('Events cannot spread to/from zone for 14 days. Agents locked in place.')}`),
+    responseLine(`${msg('Cost')}: 2 ${msg('ops points')} (${remainingOps} ${msg('remaining')}).`),
+  ];
+}
+
+export function formatAssign(agentName: string, buildingName: string): TerminalLine[] {
+  return [
+    responseLine(`[${msg('TRANSFER')}] ${agentName} ${msg('assigned to')} ${buildingName}.`),
+  ];
+}
+
+export function formatUnassign(agentName: string): TerminalLine[] {
+  return [
+    responseLine(`[${msg('TRANSFER')}] ${agentName} ${msg('unassigned from current post.')}`),
+  ];
+}
+
+// ── Conversation Formatters ────────────────────────────────────────────────
+
+export function formatTalkEnter(agentName: string): TerminalLine[] {
+  return [
+    responseLine(`${msg('You approach')} ${agentName}.`),
+    systemLine(`[${msg("Entering conversation. Type 'leave' to exit.")}]`),
+  ];
+}
+
+export function formatTalkResponse(
+  messages: Array<{ content: string; sender_role: string; agent?: { name: string } | null }>,
+): TerminalLine[] {
+  return messages
+    .filter((m) => m.sender_role === 'assistant')
+    .map((m) => {
+      const name = m.agent?.name ?? msg('Agent');
+      return responseLine(`${name}: "${m.content}"`);
+    });
+}
+
+export function formatTalkExit(): TerminalLine[] {
+  return [systemLine(`[${msg('Conversation ended.')}]`)];
+}
+
+// ── Boot Sequence + Onboarding ─────────────────────────────────────────────
+
+export function formatBootSequence(simulationName: string): TerminalLine[] {
+  return [
+    systemLine('+----------------------------------------------+'),
+    systemLine('| BUREAU OF IMPOSSIBLE GEOGRAPHY               |'),
+    systemLine('| FIELD TERMINAL v3.7 -- CLASSIFIED            |'),
+    systemLine('|                                              |'),
+    systemLine('| Initializing secure connection...            |'),
+    systemLine(`| ${msg('Operator clearance')}: LEVEL 1${' '.repeat(18)}|`),
+    systemLine(`| ${msg('Assigned sector')}: ${pad(simulationName, 25)}|`),
+    systemLine('|                                              |'),
+    systemLine(`| ${msg("Type 'help' for available commands.")}${' '.repeat(9)}|`),
+    systemLine(`| ${msg("Type 'look' to observe your surroundings.")}${' '.repeat(3)}|`),
+    systemLine('+----------------------------------------------+'),
+  ];
+}
+
+/**
+ * Get the onboarding hint for a given step (Achaea pattern).
+ * Returns null if onboarding is complete.
+ */
+export function formatOnboardingHint(step: number, _context?: string): TerminalLine | null {
+  switch (step) {
+    case 0:
+      return hintLine(
+        msg("Hint: Use 'examine {agent name}' to access a dossier."),
+      );
+    case 1:
+      return hintLine(
+        msg("Hint: Use 'talk {agent name}' to initiate contact."),
+      );
+    case 2:
+      return hintLine(
+        msg("Hint: Use 'go {zone name}' to move to another sector."),
+      );
+    case 3:
+      return hintLine(
+        msg("Hint: Use 'status' for a full situation report."),
+      );
+    case 4:
+      return hintLine(
+        msg('Onboarding complete. You have full LEVEL 1 clearance.'),
+      );
+    default:
+      return null;
+  }
+}
+
+export function formatClearanceUpgrade(newLevel: number, commands: string[]): TerminalLine[] {
+  return [
+    systemLine(`[SYSTEM] ${msg('Clearance upgraded to LEVEL')} ${newLevel}.`),
+    systemLine(`${msg('New commands available')}: ${commands.join(', ')}.`),
+    systemLine(msg("Type 'help {command}' for details.")),
+  ];
+}
+
+// ── Feed Entry Formatter ───────────────────────────────────────────────────
+
+/**
+ * Format a heartbeat entry as a realtime feed line.
+ */
+export function formatFeedEntry(
+  entry: HeartbeatEntry,
+  currentZoneId: string | null,
+): TerminalLine | null {
+  const meta = entry.metadata as Record<string, unknown> | undefined;
+  const entryZoneId = meta?.zone_id as string | undefined;
+  const isLocal = entryZoneId === currentZoneId;
+
+  // Determine channel from entry_type
+  let channel: 'INTEL' | 'WEATHER' | 'ALERT' | 'DISTANT';
+  switch (entry.entry_type) {
+    case 'ambient_weather':
+      channel = 'WEATHER';
+      break;
+    case 'event_escalation':
+    case 'agent_crisis':
+    case 'cascade_spawn':
+      channel = 'ALERT';
+      break;
+    default:
+      channel = isLocal ? 'INTEL' : 'DISTANT';
+  }
+
+  const narrative = entry.narrative_en || entry.entry_type;
+
+  // Build content: non-local non-weather entries get [DISTANT] prefix before channel tag.
+  // When channel is already DISTANT, skip the redundant prefix.
+  let content: string;
+  if (!isLocal && channel !== 'WEATHER' && channel !== 'DISTANT') {
+    content = `[DISTANT] [${channel}] ${narrative}`;
+  } else {
+    content = `[${channel}] ${narrative}`;
+  }
+
+  return {
+    id: lineId(),
+    type: 'feed',
+    channel,
+    content,
+    timestamp: new Date(entry.created_at),
+    zoneId: entryZoneId,
+  };
+}
+
+// ── Error Formatters ───────────────────────────────────────────────────────
+
+export function formatUnknownCommand(input: string, suggestion?: string): TerminalLine[] {
+  const lines = [
+    errorLine(`${msg('Unknown command')} '${input}'. ${msg("Type 'help' for available commands.")}`),
+  ];
+  if (suggestion) {
+    lines.push(hintLine(`${msg('Did you mean')} '${suggestion}'?`));
+  }
+  return lines;
+}
+
+export function formatInsufficientClearance(verb: string, requiredTier: number): TerminalLine[] {
+  return [
+    errorLine(
+      `${msg('Insufficient clearance for')} '${verb}'. ${msg('Requires Level')} ${requiredTier}.`,
+    ),
+  ];
+}
+
+export function formatInsufficientPoints(
+  poolName: string,
+  have: number,
+  need: number,
+): TerminalLine[] {
+  return [
+    errorLine(
+      `${msg('Insufficient')} ${poolName} (${have}/${need} ${msg('required')}).`,
+    ),
+  ];
+}
+
+export function formatAmbiguousTarget(
+  matches: Array<{ name: string }>,
+): TerminalLine[] {
+  const names = matches.map((m) => m.name).join(', ');
+  return [
+    errorLine(`${msg('Multiple matches')}: ${names}. ${msg('Please be more specific.')}`),
+  ];
+}
+
+export function formatDirectionNotAvailable(): TerminalLine[] {
+  return [
+    errorLine(
+      msg("Directional navigation is not available. Use 'go {zone name}' or type 'map' to see available zones."),
+    ),
+  ];
+}
+
+export function formatNoTarget(verb: string): TerminalLine[] {
+  return [
+    errorLine(`${verb} ${msg('requires a target. Example')}: ${verb} {${msg('name')}}`),
+  ];
+}
+
+export { commandLine, systemLine, errorLine, responseLine, hintLine };

@@ -818,6 +818,7 @@ Alle √Ñnderungen zeigen eine Live-Preview innerhalb der Shell. Preset-Auswahl f√
 | agents/ | 6 | 6 | View, Card, EditModal, DetailsPanel, RelationshipCard/EditModal |
 | buildings/ | 6 | 6 | View, Card, EditModal, DetailsPanel, EmbassyCreate/Link |
 | events/ | 6 | 6 | View, Card, EditModal, DetailsPanel, EchoCard/TriggerModal |
+| terminal/ | 3 | 3 | BureauTerminal (CRT MUD interface), TerminalQuickActions, TerminalView (tab wrapper) |
 | chat/ | 7 | 7 | View, Window, ConversationList, MessageList/Input, AgentSelector, EventPicker |
 | social/ | 9 | 9 | TrendsView, MediaView, CampaignDashboard, Cards, Modals, TrendFilterBar |
 | locations/ | 5 | 5 | View, CityList, ZoneList, StreetList, LocationEditModal |

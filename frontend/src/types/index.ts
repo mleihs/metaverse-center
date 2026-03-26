@@ -177,6 +177,8 @@ export interface Agent {
   deleted_at?: string;
   is_ambassador?: boolean;
   ambassador_blocked_until?: string;
+  current_zone_id?: UUID;
+  current_building_id?: UUID;
   professions?: AgentProfession[];
   aptitudes?: AgentAptitude[];
   reactions?: EventReaction[];

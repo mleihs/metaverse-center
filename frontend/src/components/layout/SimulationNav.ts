@@ -25,6 +25,7 @@ function getTabs(): NavTab[] {
     { label: msg('Chat'), path: 'chat', icon: () => icons.messageCircle(14) },
     { label: msg('Social'), path: 'social', icon: () => icons.megaphone(14) },
     { label: msg('Locations'), path: 'locations', icon: () => icons.mapPin(14) },
+    { label: msg('Terminal'), path: 'terminal', icon: () => icons.terminal(14) },
     { label: msg('Settings'), path: 'settings', icon: () => icons.gear(14), requireAdmin: true },
   ];
 }

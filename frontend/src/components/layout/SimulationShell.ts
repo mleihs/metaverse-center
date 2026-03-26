@@ -35,6 +35,7 @@ function getTabLabel(path: string): string {
     chat: () => msg('Chat'),
     social: () => msg('Social'),
     locations: () => msg('Locations'),
+    terminal: () => msg('Terminal'),
     settings: () => msg('Settings'),
   };
   return labels[path]?.() ?? path.charAt(0).toUpperCase() + path.slice(1);

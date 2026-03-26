@@ -435,6 +435,11 @@ export class VelgApp extends LitElement {
         enter: async ({ id }) => this._enterSimulationRoute(id, 'locations'),
       },
       {
+        path: '/simulations/:id/terminal',
+        render: ({ id }) => this._renderSimulationView(id ?? '', 'terminal'),
+        enter: async ({ id }) => this._enterSimulationRoute(id, 'terminal'),
+      },
+      {
         path: '/simulations/:id/settings',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'settings'),
         enter: async ({ id }) => {
@@ -977,6 +982,9 @@ export class VelgApp extends LitElement {
         break;
       case 'locations':
         content = html`<velg-locations-view .simulationId=${resolvedId}></velg-locations-view>`;
+        break;
+      case 'terminal':
+        content = html`<velg-terminal-view .simulationId=${resolvedId}></velg-terminal-view>`;
         break;
       default:
         content = html`
