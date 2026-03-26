@@ -524,25 +524,99 @@ export function formatTalkExit(): TerminalLine[] {
 
 // ── Boot Sequence + Onboarding ─────────────────────────────────────────────
 
-export function formatBootSequence(simulationName: string): TerminalLine[] {
-  return [
-    systemLine('+----------------------------------------------------+'),
-    systemLine('| BUREAU OF IMPOSSIBLE GEOGRAPHY                     |'),
-    systemLine('| FIELD TERMINAL v3.7 -- CLASSIFIED                  |'),
-    systemLine('|                                                    |'),
-    systemLine('| Initializing secure connection...                  |'),
-    systemLine(`| ${msg('Operator clearance')}: LEVEL 1                          |`),
-    systemLine(`| ${msg('Assigned sector')}: ${pad(simulationName, 31)}|`),
-    systemLine('|                                                    |'),
-    systemLine(`| ${msg('You are a Bureau field operative. Observe zones,')}    |`),
-    systemLine(`| ${msg('interrogate agents, and manage field operations.')}    |`),
-    systemLine(`| ${msg('This terminal provides local intelligence that')}     |`),
-    systemLine(`| ${msg('the overview tabs cannot.')}                           |`),
-    systemLine('|                                                    |'),
-    systemLine(`| ${msg("Type 'help' for available commands.")}                 |`),
-    systemLine(`| ${msg("Type 'look' to observe your surroundings.")}           |`),
-    systemLine('+----------------------------------------------------+'),
-  ];
+/** Theme-specific ASCII art for the boot sequence. */
+function getThemeAsciiArt(theme: string): string[] {
+  switch (theme) {
+    case 'dystopian':
+      return [
+        '        _____  ',
+        '       /     \\ ',
+        '      | () () |',
+        '       \\_____/ ',
+        '      /|     |\\ ',
+        '     / |     | \\',
+        '    [SURVEILLANCE]',
+      ];
+    case 'scifi':
+      return [
+        '     .  *  .  *  .',
+        '   *  /\\  *  /\\  *',
+        '     /  \\   /  \\  ',
+        '  --/----\\_/----\\--',
+        '   / STATION LINK \\',
+        '  /________________\\',
+      ];
+    case 'fantasy':
+      return [
+        '       /\\       ',
+        '      /  \\      ',
+        '     / ** \\     ',
+        '    /______\\    ',
+        '    | ]==[ |    ',
+        '    |______|    ',
+        '   CITADEL GATE ',
+      ];
+    case 'historical':
+      return [
+        '    _________   ',
+        '   /  _____  \\  ',
+        '  |  |     |  | ',
+        '  |  | III |  | ',
+        '  |  |_____|  | ',
+        '  |___________|  ',
+        '   ARCHIVE WING  ',
+      ];
+    case 'utopian':
+      return [
+        '     ,-.       ',
+        '    / \\ \\      ',
+        '   /   \\ \\     ',
+        '  /  *  \\ \\    ',
+        ' /-------\\ \\   ',
+        ' \\  TOWER  /   ',
+        '  \\_______/    ',
+      ];
+    default:
+      // Generic Bureau sigil
+      return [
+        '    ___________    ',
+        '   /    BMO    \\   ',
+        '  | +---------+ |  ',
+        '  | | FIELD   | |  ',
+        '  | | TERMINAL| |  ',
+        '  | +---------+ |  ',
+        '   \\___________/   ',
+      ];
+  }
+}
+
+export function formatBootSequence(simulationName: string, theme?: string): TerminalLine[] {
+  const art = getThemeAsciiArt(theme ?? 'custom');
+  const lines: TerminalLine[] = [];
+
+  // ASCII art header
+  lines.push(systemLine(''));
+  for (const artLine of art) {
+    lines.push(systemLine(artLine));
+  }
+  lines.push(systemLine(''));
+
+  // System info
+  lines.push(systemLine('BUREAU OF IMPOSSIBLE GEOGRAPHY'));
+  lines.push(systemLine('FIELD TERMINAL v3.7 -- CLASSIFIED'));
+  lines.push(systemLine(''));
+  lines.push(systemLine(`${msg('Operator clearance')}: LEVEL 1`));
+  lines.push(systemLine(`${msg('Assigned sector')}: ${simulationName}`));
+  lines.push(systemLine(''));
+  lines.push(systemLine(msg('You are a Bureau field operative. Observe zones,')));
+  lines.push(systemLine(msg('interrogate agents, and manage field operations.')));
+  lines.push(systemLine(msg('This terminal provides local intelligence that')));
+  lines.push(systemLine(msg('the overview tabs cannot.')));
+  lines.push(systemLine(''));
+  lines.push(systemLine(msg("Type 'help' for available commands.")));
+  lines.push(systemLine(msg("Type 'look' to observe your surroundings.")));
+
+  return lines;
 }
 
 /**
