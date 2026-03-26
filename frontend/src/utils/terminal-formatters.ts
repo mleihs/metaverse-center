@@ -9,6 +9,7 @@ import type {
   Agent,
   Building,
   BuildingReadiness,
+  Event,
   HeartbeatEntry,
   SimulationHealthDashboard,
   Zone,
@@ -763,6 +764,240 @@ export function formatNoTarget(verb: string): TerminalLine[] {
   return [
     errorLine(`${verb} ${msg('requires a target. Example')}: ${verb} {${msg('name')}}`),
   ];
+}
+
+// ── Stage 3: Intelligence Network Formatters ─────────────────────────────
+
+/**
+ * Format scan output: all-zone radar sweep as table.
+ */
+export function formatScan(
+  stabilities: ZoneStability[],
+  currentZoneId: string | null,
+  remainingIntel: number,
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+  lines.push(systemLine(`[${msg('RADAR SWEEP')}] ${msg('All sectors')}`));
+  lines.push(systemLine(`${msg('Intel cost')}: 1 ${msg('point')} (${remainingIntel} ${msg('remaining')})`));
+  lines.push(systemLine(''));
+
+  // Table header
+  const nameCol = msg('Zone').padEnd(24);
+  const stabCol = msg('Stability').padEnd(12);
+  const evtCol = msg('Events').padEnd(8);
+  const agentCol = msg('Agents');
+  lines.push(responseLine(`  ${nameCol}${stabCol}${evtCol}${agentCol}`));
+  lines.push(responseLine(`  ${'─'.repeat(54)}`));
+
+  // Sort by stability ascending (worst first — intelligence priority)
+  const sorted = [...stabilities].sort((a, b) => a.stability - b.stability);
+
+  for (const zs of sorted) {
+    const marker = zs.zone_id === currentZoneId ? '►' : ' ';
+    const name = zs.zone_name.padEnd(23);
+    const stab = `${Math.round(zs.stability * 100)}%`.padEnd(12);
+    const pressure = zs.event_pressure > 0
+      ? `${zs.event_pressure.toFixed(1)}`.padEnd(8)
+      : '–'.padEnd(8);
+    const agents = `${zs.total_agents}`;
+    lines.push(responseLine(`${marker} ${name}${stab}${pressure}${agents}`));
+  }
+
+  lines.push(systemLine(''));
+  lines.push(hintLine(`► = ${msg('current position')}`));
+  return lines;
+}
+
+/**
+ * Format investigate output: event deep dive.
+ */
+export function formatInvestigate(
+  event: Event,
+  remainingIntel: number,
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+
+  lines.push(systemLine(`[${msg('INVESTIGATE')}] ${event.title}`));
+  lines.push(systemLine(`${msg('Intel cost')}: 1 ${msg('point')} (${remainingIntel} ${msg('remaining')})`));
+  lines.push(systemLine(''));
+
+  // Event metadata
+  const occurred = new Date(event.occurred_at);
+  const ago = _timeAgo(occurred);
+  lines.push(responseLine(`${msg('Status')}: ${event.event_status.toUpperCase()}`));
+  lines.push(responseLine(`${msg('Type')}: ${event.event_type ?? '–'}`));
+  lines.push(responseLine(`${msg('Impact')}: ${event.impact_level}/10`));
+  lines.push(responseLine(`${msg('Occurred')}: ${ago}`));
+  if (event.location) {
+    lines.push(responseLine(`${msg('Location')}: ${event.location}`));
+  }
+
+  // Description
+  if (event.description) {
+    lines.push(systemLine(''));
+    // Wrap long descriptions
+    const wrapped = _wordWrap(event.description, 60);
+    for (const w of wrapped) {
+      lines.push(responseLine(w));
+    }
+  }
+
+  // Tags
+  if (event.tags && event.tags.length > 0) {
+    lines.push(systemLine(''));
+    lines.push(responseLine(`${msg('Tags')}: ${event.tags.join(', ')}`));
+  }
+
+  // Reactions
+  if (event.reactions && event.reactions.length > 0) {
+    lines.push(systemLine(''));
+    lines.push(systemLine(`${msg('Agent reactions')}:`));
+    for (const r of event.reactions) {
+      const emotion = r.emotion ? ` [${r.emotion}]` : '';
+      lines.push(responseLine(`  ${r.agent_name}${emotion}: ${_truncate(r.reaction_text, 50)}`));
+    }
+  }
+
+  return lines;
+}
+
+/**
+ * Format report output: session summary as Bureau document.
+ */
+export function formatReport(
+  commandCount: number,
+  zonesVisited: string[],
+  commandHistory: string[],
+  currentZone: string | null,
+  clearanceLevel: number,
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+  const now = new Date();
+  const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+  lines.push(systemLine(`[${msg('SESSION REPORT')}]`));
+  lines.push(systemLine(`${msg('Filed')}: ${timestamp}`));
+  lines.push(systemLine(`${msg('Clearance')}: ${msg('Level')} ${clearanceLevel}`));
+  lines.push(systemLine(''));
+
+  // Commands issued
+  lines.push(responseLine(`${msg('Commands issued')}: ${commandCount}`));
+
+  // Zones visited (deduplicated from go commands)
+  if (zonesVisited.length > 0) {
+    lines.push(responseLine(`${msg('Sectors visited')}: ${zonesVisited.join(', ')}`));
+  }
+
+  // Current position
+  if (currentZone) {
+    lines.push(responseLine(`${msg('Current position')}: ${currentZone}`));
+  }
+
+  // Recent commands breakdown
+  lines.push(systemLine(''));
+  const verbCounts = new Map<string, number>();
+  for (const cmd of commandHistory) {
+    const verb = cmd.split(/\s+/)[0].toLowerCase();
+    verbCounts.set(verb, (verbCounts.get(verb) ?? 0) + 1);
+  }
+  lines.push(systemLine(`${msg('Activity breakdown')}:`));
+  const sorted = [...verbCounts.entries()].sort((a, b) => b[1] - a[1]);
+  for (const [verb, count] of sorted.slice(0, 8)) {
+    lines.push(responseLine(`  ${verb}: ${count}`));
+  }
+
+  lines.push(systemLine(''));
+  lines.push(systemLine(msg('End of report.')));
+  return lines;
+}
+
+/**
+ * Format debrief output: AI-generated formal agent report.
+ */
+export function formatDebrief(
+  agent: Agent,
+  responseText: string,
+  remainingIntel: number,
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+
+  const buildingName = (agent as unknown as Record<string, unknown>).current_building_name
+    ?? msg('field position');
+  lines.push(systemLine(`[${msg('DEBRIEF')}] ${agent.name} – ${buildingName}`));
+  lines.push(systemLine(`${msg('Intel cost')}: 1 ${msg('point')} (${remainingIntel} ${msg('remaining')})`));
+  lines.push(systemLine(''));
+
+  // AI response wrapped
+  const wrapped = _wordWrap(responseText, 60);
+  for (const w of wrapped) {
+    lines.push(responseLine(w));
+  }
+
+  return lines;
+}
+
+/**
+ * Format ask output: AI-generated conversational response.
+ */
+export function formatAskResponse(
+  agent: Agent,
+  topic: string,
+  responseText: string,
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+
+  lines.push(systemLine(`[${msg('QUERY')}] ${agent.name} – ${topic}`));
+  lines.push(systemLine(''));
+
+  const wrapped = _wordWrap(responseText, 60);
+  for (const w of wrapped) {
+    lines.push(responseLine(w));
+  }
+
+  return lines;
+}
+
+// ── Text Utilities ─────────────────────────────────────────────────────────
+
+/** Word-wrap text to a given width. */
+function _wordWrap(text: string, width: number): string[] {
+  const result: string[] = [];
+  for (const paragraph of text.split('\n')) {
+    if (paragraph.trim() === '') {
+      result.push('');
+      continue;
+    }
+    const words = paragraph.split(/\s+/);
+    let line = '';
+    for (const word of words) {
+      if (line.length + word.length + 1 > width && line.length > 0) {
+        result.push(line);
+        line = word;
+      } else {
+        line = line ? `${line} ${word}` : word;
+      }
+    }
+    if (line) result.push(line);
+  }
+  return result;
+}
+
+/** Truncate text with ellipsis. */
+function _truncate(text: string, maxLen: number): string {
+  if (text.length <= maxLen) return text;
+  return text.slice(0, maxLen - 1) + '…';
+}
+
+/** Format a date as relative time ago. */
+function _timeAgo(date: Date): string {
+  const diff = Date.now() - date.getTime();
+  const mins = Math.floor(diff / 60_000);
+  if (mins < 1) return msg('just now');
+  if (mins < 60) return `${mins}m ${msg('ago')}`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ${msg('ago')}`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ${msg('ago')}`;
 }
 
 export { commandLine, systemLine, errorLine, responseLine, hintLine };

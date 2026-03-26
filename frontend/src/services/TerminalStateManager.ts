@@ -25,7 +25,8 @@ const DEFAULT_INTEL_POINTS = 2;
 /** Command count thresholds for clearance upgrades (spec 4.4.4). */
 const CLEARANCE_THRESHOLDS: Record<number, number> = {
   2: 10,  // Tier 2 unlocks after 10 successful commands
-  // Tier 3-5 are gated by Stage 3-5 features, not command count
+  3: 25,  // Tier 3 unlocks after 25 commands (Intelligence Network)
+  // Tier 4-5 are gated by Stage 4-5 features (Epoch)
 };
 
 // ── State Manager ──────────────────────────────────────────────────────────
@@ -165,14 +166,17 @@ class TerminalStateManager {
     const count = this.commandCount.value;
     const current = this.clearanceLevel.value;
 
+    const TIER_COMMANDS: Record<number, string[]> = {
+      2: ['fortify', 'quarantine', 'assign', 'unassign', 'ceremony'],
+      3: ['debrief', 'ask', 'investigate', 'scan', 'report'],
+    };
+
     for (const [level, threshold] of Object.entries(CLEARANCE_THRESHOLDS)) {
       const lvl = Number(level);
       if (lvl > current && count >= threshold) {
         this.clearanceLevel.value = lvl;
         this._debouncedPersist();
-
-        const tier2Commands = ['fortify', 'quarantine', 'assign', 'unassign', 'ceremony'];
-        return { newLevel: lvl, commands: tier2Commands };
+        return { newLevel: lvl, commands: TIER_COMMANDS[lvl] ?? [] };
       }
     }
     return null;

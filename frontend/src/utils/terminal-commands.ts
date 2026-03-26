@@ -15,19 +15,22 @@ import { healthApi } from '../services/api/index.js';
 import { heartbeatApi } from '../services/api/index.js';
 import { zoneActionsApi } from '../services/api/index.js';
 import { terminalState } from '../services/TerminalStateManager.js';
-import type { Agent, BuildingReadiness } from '../types/index.js';
+import type { Agent, BuildingReadiness, ChatMessage } from '../types/index.js';
 import type { CommandContext, TerminalCommand, TerminalLine } from '../types/terminal.js';
 import {
   commandLine,
   formatAmbiguousTarget,
+  formatAskResponse,
   formatAssign,
   formatBootSequence,
   formatClearanceUpgrade,
+  formatDebrief,
   formatDirectionNotAvailable,
   formatExamineAgent,
   formatExamineBuilding,
   formatFortify,
   formatHelp,
+  formatInvestigate,
   formatHelpCommand,
   formatInsufficientClearance,
   formatInsufficientPoints,
@@ -36,6 +39,8 @@ import {
   formatNoTarget,
   formatOnboardingHint,
   formatQuarantine,
+  formatReport,
+  formatScan,
   formatStatus,
   formatTalkEnter,
   formatTalkExit,
@@ -44,6 +49,7 @@ import {
   formatUnknownCommand,
   formatWeather,
   formatWhere,
+  errorLine,
   systemLine,
 } from './terminal-formatters.js';
 
@@ -92,6 +98,12 @@ const SYNONYM_MAP = new Map<string, string>([
   ['feed', 'filter'],
   // config
   ['settings', 'config'],
+  // Stage 3: Intelligence
+  ['intel', 'debrief'], ['brief', 'debrief'],
+  ['query', 'ask'], ['question', 'ask'],
+  ['probe', 'investigate'], ['research', 'investigate'],
+  ['radar', 'scan'], ['sweep', 'scan'],
+  ['summary', 'report'], ['log', 'report'],
 ]);
 
 // ── Cardinal Directions ────────────────────────────────────────────────────
@@ -662,6 +674,227 @@ async function handleCeremony(_ctx: CommandContext): Promise<TerminalLine[]> {
   return [systemLine(`[${msg('Redirecting to Simulation Forge...')}]`)];
 }
 
+// ── Stage 3: Intelligence Network Handlers ──────────────────────────────
+
+async function handleScan(_ctx: CommandContext): Promise<TerminalLine[]> {
+  const sid = simId();
+  if (!sid) return [systemLine(msg('No simulation context.'))];
+
+  if (!terminalState.consumeIntel(1)) {
+    return formatInsufficientPoints(msg('intel points'), terminalState.intelPoints.value, 1);
+  }
+
+  const resp = await healthApi.listZoneStability(sid);
+  if (!resp.success || !resp.data) {
+    terminalState.intelPoints.value += 1; // Refund on failure
+    return [errorLine(msg('Scan failed. Points refunded.'))];
+  }
+
+  // Cache stabilities for other commands
+  terminalState.zoneStabilities.value = resp.data;
+
+  return formatScan(
+    resp.data,
+    terminalState.currentZoneId.value,
+    terminalState.intelPoints.value,
+  );
+}
+
+async function handleInvestigate(ctx: CommandContext): Promise<TerminalLine[]> {
+  const target = ctx.args.join(' ').trim();
+  if (!target) return formatNoTarget('investigate');
+
+  const sid = simId();
+  if (!sid) return [systemLine(msg('No simulation context.'))];
+
+  if (!terminalState.consumeIntel(1)) {
+    return formatInsufficientPoints(msg('intel points'), terminalState.intelPoints.value, 1);
+  }
+
+  // Fetch recent events and fuzzy-match by title
+  const listResp = await eventsApi.list(sid, { limit: '50' });
+  if (!listResp.success || !listResp.data) {
+    terminalState.intelPoints.value += 1;
+    return [errorLine(msg('Investigation failed. Points refunded.'))];
+  }
+
+  const matches = fuzzyMatch(target, listResp.data.map((e) => ({ id: e.id, name: e.title })));
+  if (matches.length === 0) {
+    terminalState.intelPoints.value += 1;
+    return [errorLine(`${msg('No matching event found for')}: "${target}"`)];
+  }
+  if (matches.length > 1) {
+    terminalState.intelPoints.value += 1;
+    return formatAmbiguousTarget(matches);
+  }
+
+  // Fetch full event detail with reactions
+  const eventResp = await eventsApi.getById(sid, matches[0].id);
+  if (!eventResp.success || !eventResp.data) {
+    terminalState.intelPoints.value += 1;
+    return [errorLine(msg('Investigation failed. Points refunded.'))];
+  }
+
+  return formatInvestigate(eventResp.data, terminalState.intelPoints.value);
+}
+
+async function handleReport(_ctx: CommandContext): Promise<TerminalLine[]> {
+  // Pure client-side — no API call, no intel cost
+  const history = terminalState.commandHistory.value;
+  const zones = Array.from(terminalState.zoneCache.value.values());
+  const currentZone = terminalState.currentZone.value;
+
+  // Derive zones visited from 'go' commands in history
+  const zonesVisited: string[] = [];
+  for (const cmd of history) {
+    if (cmd.toLowerCase().startsWith('go ')) {
+      const target = cmd.slice(3).trim();
+      const match = zones.find((z) => z.name.toLowerCase().includes(target.toLowerCase()));
+      if (match && !zonesVisited.includes(match.name)) {
+        zonesVisited.push(match.name);
+      }
+    }
+  }
+
+  return formatReport(
+    terminalState.commandCount.value,
+    zonesVisited,
+    history,
+    currentZone?.name ?? null,
+    terminalState.clearanceLevel.value,
+  );
+}
+
+async function handleDebrief(ctx: CommandContext): Promise<TerminalLine[]> {
+  const target = ctx.args.join(' ').trim();
+  if (!target) return formatNoTarget('debrief');
+
+  const sid = simId();
+  const zoneId = terminalState.currentZoneId.value;
+  if (!sid || !zoneId) return [systemLine(msg('No zone selected.'))];
+
+  if (!terminalState.consumeIntel(1)) {
+    return formatInsufficientPoints(msg('intel points'), terminalState.intelPoints.value, 1);
+  }
+
+  await ensureZoneData(zoneId);
+  const agents = terminalState.currentZoneAgents.value;
+  const matches = fuzzyMatch(target, agents);
+
+  if (matches.length === 0) {
+    terminalState.intelPoints.value += 1;
+    return formatUnknownCommand(target);
+  }
+  if (matches.length > 1) {
+    terminalState.intelPoints.value += 1;
+    return formatAmbiguousTarget(matches);
+  }
+
+  const agent = matches[0];
+
+  // Reuse or create conversation for debrief
+  let conversationId = terminalState.getConversationForAgent(agent.id);
+  if (!conversationId) {
+    const resp = await chatApi.createConversation(sid, {
+      agent_ids: [agent.id],
+      title: `Bureau Debrief: ${agent.name}`,
+    });
+    if (!resp.success || !resp.data) {
+      terminalState.intelPoints.value += 1;
+      return [errorLine(msg('Debrief failed. Points refunded.'))];
+    }
+    conversationId = resp.data.id;
+    terminalState.enterConversation(agent.id, agent.name, conversationId);
+    terminalState.exitConversation(); // Don't stay in conversation mode
+  }
+
+  // Send debrief request
+  const debriefPrompt = [
+    'Provide a formal Bureau debrief report.',
+    'Structure your response in THREE sections:',
+    'ZONE ASSESSMENT: Current zone stability, active threats, staffing.',
+    'PERSONNEL NOTE: Other agents, relationships, suspicious activity.',
+    'RECOMMENDATION: Suggested actions for the operator.',
+    'Stay in character. Report only what you would realistically know.',
+  ].join(' ');
+
+  const msgResp = await chatApi.sendMessage(sid, conversationId, {
+    content: debriefPrompt,
+    generate_response: true,
+  });
+
+  if (!msgResp.success || !msgResp.data) {
+    terminalState.intelPoints.value += 1;
+    return [errorLine(msg('Debrief failed. Points refunded.'))];
+  }
+
+  const messages = (Array.isArray(msgResp.data) ? msgResp.data : [msgResp.data]) as ChatMessage[];
+  const aiResponse = messages.find((m) => m.sender_role === 'assistant');
+  const responseText = aiResponse?.content ?? msg('No response received.');
+
+  return formatDebrief(agent, responseText, terminalState.intelPoints.value);
+}
+
+async function handleAsk(ctx: CommandContext): Promise<TerminalLine[]> {
+  // Parse: ask {agent} about {topic}
+  const raw = ctx.args.join(' ').trim();
+  const aboutIdx = raw.toLowerCase().indexOf(' about ');
+  if (aboutIdx === -1 || !raw) {
+    return [errorLine(`${msg('Syntax')}: ask {${msg('agent name')}} about {${msg('topic')}}`)];
+  }
+
+  const agentQuery = raw.slice(0, aboutIdx).trim();
+  const topic = raw.slice(aboutIdx + 7).trim();
+  if (!agentQuery || !topic) {
+    return [errorLine(`${msg('Syntax')}: ask {${msg('agent name')}} about {${msg('topic')}}`)];
+  }
+
+  const sid = simId();
+  const zoneId = terminalState.currentZoneId.value;
+  if (!sid || !zoneId) return [systemLine(msg('No zone selected.'))];
+
+  await ensureZoneData(zoneId);
+  const agents = terminalState.currentZoneAgents.value;
+  const matches = fuzzyMatch(agentQuery, agents);
+
+  if (matches.length === 0) return formatUnknownCommand(agentQuery);
+  if (matches.length > 1) return formatAmbiguousTarget(matches);
+
+  const agent = matches[0];
+
+  // Reuse or create conversation
+  let conversationId = terminalState.getConversationForAgent(agent.id);
+  if (!conversationId) {
+    const resp = await chatApi.createConversation(sid, {
+      agent_ids: [agent.id],
+      title: `Bureau Query: ${agent.name}`,
+    });
+    if (!resp.success || !resp.data) {
+      return [errorLine(msg('Failed to establish communication channel.'))];
+    }
+    conversationId = resp.data.id;
+    terminalState.enterConversation(agent.id, agent.name, conversationId);
+    terminalState.exitConversation();
+  }
+
+  const askPrompt = `The Bureau operator asks you about: ${topic}. Answer only about this topic. If you don't have information, say so. Stay in character. Be concise.`;
+
+  const msgResp = await chatApi.sendMessage(sid, conversationId, {
+    content: askPrompt,
+    generate_response: true,
+  });
+
+  if (!msgResp.success || !msgResp.data) {
+    return [errorLine(msg('Communication interrupted. Try again.'))];
+  }
+
+  const messages = (Array.isArray(msgResp.data) ? msgResp.data : [msgResp.data]) as ChatMessage[];
+  const aiResponse = messages.find((m) => m.sender_role === 'assistant');
+  const responseText = aiResponse?.content ?? msg('No response received.');
+
+  return formatAskResponse(agent, topic, responseText);
+}
+
 // ── Command Registry ───────────────────────────────────────────────────────
 
 export const COMMAND_REGISTRY = new Map<string, TerminalCommand>([
@@ -753,6 +986,33 @@ export const COMMAND_REGISTRY = new Map<string, TerminalCommand>([
     verb: 'ceremony', synonyms: [], tier: 2,
     syntax: 'ceremony', description: () => msg('Initiate a Forge ceremony'),
     requiresTarget: false, handler: handleCeremony,
+  }],
+
+  // Stage 3: Intelligence Network
+  ['scan', {
+    verb: 'scan', synonyms: ['radar', 'sweep'], tier: 3,
+    syntax: 'scan', description: () => msg('Radar sweep of all sectors (1 intel point)'),
+    requiresTarget: false, handler: handleScan,
+  }],
+  ['investigate', {
+    verb: 'investigate', synonyms: ['probe', 'research'], tier: 3,
+    syntax: 'investigate {event}', description: () => msg('Deep investigation of an event (1 intel point)'),
+    requiresTarget: true, targetType: 'event', handler: handleInvestigate,
+  }],
+  ['report', {
+    verb: 'report', synonyms: ['summary', 'log'], tier: 3,
+    syntax: 'report', description: () => msg('Generate session report'),
+    requiresTarget: false, handler: handleReport,
+  }],
+  ['debrief', {
+    verb: 'debrief', synonyms: ['intel', 'brief'], tier: 3,
+    syntax: 'debrief {agent}', description: () => msg('Formal agent debrief (1 intel point, AI)'),
+    requiresTarget: true, targetType: 'agent', handler: handleDebrief,
+  }],
+  ['ask', {
+    verb: 'ask', synonyms: ['query', 'question'], tier: 3,
+    syntax: 'ask {agent} about {topic}', description: () => msg('Ask agent about a specific topic (AI)'),
+    requiresTarget: true, targetType: 'freetext', handler: handleAsk,
   }],
 ]);
 
