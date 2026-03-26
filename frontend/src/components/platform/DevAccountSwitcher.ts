@@ -651,6 +651,10 @@ export class VelgDevAccountSwitcher extends LitElement {
 
   private _handleGateSubmit() {
     const value = this._gateInput?.value ?? '';
+    if (!GATE_PASSWORD) {
+      this._gateError = 'Gate not configured';
+      return;
+    }
     if (value === GATE_PASSWORD) {
       this._unlocked = true;
       this._gateOpen = false;
