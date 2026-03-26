@@ -21,7 +21,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { terminalState } from '../../services/TerminalStateManager.js';
 import { heartbeatApi } from '../../services/api/index.js';
 import { appState } from '../../services/AppStateManager.js';
-import { parseAndExecute, getBootSequence } from '../../utils/terminal-commands.js';
+import { parseAndExecute, getBootSequence, getReentrySequence } from '../../utils/terminal-commands.js';
 import { formatFeedEntry } from '../../utils/terminal-formatters.js';
 import {
   terminalTokens,
@@ -468,10 +468,14 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
     await this.updateComplete;
     this._focusInput();
 
-    // Boot sequence for first visit
+    // Boot sequence for first visit, re-entry for returning users
     if (!terminalState.onboarded.value) {
       await this._playBootSequence();
     } else {
+      // Returning user — output was cleared on navigation. Show compact re-entry.
+      if (terminalState.outputLines.value.length === 0) {
+        terminalState.appendOutput(getReentrySequence());
+      }
       this._bootComplete = true;
     }
   }

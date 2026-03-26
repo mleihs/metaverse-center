@@ -889,3 +889,24 @@ export function getBootSequence(): TerminalLine[] {
 
   return formatBootSequence(simName, theme, customArt);
 }
+
+/**
+ * Get compact re-entry lines when terminal is revisited (onboarded but output cleared).
+ * Short wake-from-sleep message: sector + zone + hint. Not the full cinematic boot.
+ */
+export function getReentrySequence(): TerminalLine[] {
+  const simName = appState.currentSimulation.value?.name ?? 'Unknown';
+  const zone = terminalState.currentZone.value;
+  const level = terminalState.clearanceLevel.value;
+
+  const lines: TerminalLine[] = [];
+  lines.push(systemLine(''));
+  lines.push(systemLine(`BUREAU FIELD TERMINAL — ${simName.toUpperCase()}`));
+  lines.push(systemLine(`${msg('Operator clearance')}: LEVEL ${level}`));
+  if (zone) {
+    lines.push(systemLine(`${msg('Assigned sector')}: ${zone.name}`));
+  }
+  lines.push(systemLine(''));
+  lines.push(systemLine(msg("Type 'look' to observe your surroundings.")));
+  return lines;
+}
