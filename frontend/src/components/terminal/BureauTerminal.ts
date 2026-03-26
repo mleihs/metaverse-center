@@ -51,17 +51,19 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
         flex-direction: column;
         height: 100%;
         min-height: 0;
-        --_phosphor: var(--amber);
-        --_phosphor-dim: var(--amber-dim);
-        --_phosphor-glow: var(--amber-glow);
-        --_screen-bg: var(--hud-bg);
-        --_surface: var(--hud-surface);
-        --_border: var(--hud-border);
-        --_text: var(--hud-text);
-        --_text-dim: var(--hud-text-dim);
+        /* CRT terminals are ALWAYS dark regardless of simulation theme.
+           Override surface tokens to force dark palette. */
+        --_phosphor: var(--color-accent-amber, #f59e0b);
+        --_phosphor-dim: var(--color-accent-amber-dim, #b45309);
+        --_phosphor-glow: var(--color-accent-amber-glow, #fbbf2480);
+        --_screen-bg: color-mix(in srgb, black 92%, var(--color-accent-amber, #f59e0b) 2%);
+        --_surface: color-mix(in srgb, black 85%, var(--color-accent-amber, #f59e0b) 3%);
+        --_border: color-mix(in srgb, var(--color-accent-amber, #f59e0b) 25%, black);
+        --_text: color-mix(in srgb, var(--color-accent-amber, #f59e0b) 90%, white);
+        --_text-dim: color-mix(in srgb, var(--color-accent-amber, #f59e0b) 50%, black);
         --_mono: var(--font-mono, 'SF Mono', 'Fira Code', 'Cascadia Code', monospace);
-        --_danger: var(--color-danger);
-        --_success: var(--color-success);
+        --_danger: var(--color-danger, #ef4444);
+        --_success: var(--color-success, #22c55e);
       }
 
       /* ── Terminal Frame ── */
