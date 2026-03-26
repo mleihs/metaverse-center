@@ -251,6 +251,91 @@ export class VelgBuildingDetailsPanel extends LitElement {
       background: var(--color-info-bg);
       color: var(--color-secondary);
     }
+
+    /* --- Factor pipeline (Victoria 3-style formula breakdown) --- */
+
+    .panel__pipeline {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-1-5);
+      margin-top: var(--space-3);
+      padding-top: var(--space-3);
+      border-top: var(--border-width-thin) solid var(--color-border);
+    }
+
+    .panel__factor {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: var(--space-1-5);
+      border-left: 2px solid transparent;
+      transition: border-color 0.3s ease;
+    }
+
+    .panel__factor--bottleneck {
+      border-left-color: var(--color-danger);
+      background: color-mix(in srgb, var(--color-danger) 4%, transparent);
+    }
+
+    .panel__factor-label {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-bold);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-brutalist);
+      color: var(--color-text-muted);
+      line-height: 1;
+    }
+
+    .panel__factor-track {
+      height: 4px;
+      background: var(--color-surface-sunken);
+      border: var(--border-width-thin) solid var(--color-border);
+      overflow: hidden;
+    }
+
+    .panel__factor-fill {
+      height: 100%;
+      transition: width 0.6s var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1));
+    }
+
+    .panel__factor-value {
+      font-family: var(--font-mono, monospace);
+      font-size: 10px;
+      color: var(--color-text-secondary);
+      line-height: 1;
+    }
+
+    /* --- Influence tier badges --- */
+
+    .panel__tier {
+      display: inline-flex;
+      padding: 0 var(--space-1);
+      font-family: var(--font-brutalist);
+      font-size: 8px;
+      font-weight: var(--font-black);
+      letter-spacing: var(--tracking-brutalist);
+      text-transform: uppercase;
+      line-height: 1.4;
+    }
+
+    .panel__tier--weak {
+      background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+      border: var(--border-width-thin) solid color-mix(in srgb, var(--color-danger) 35%, transparent);
+      color: var(--color-danger);
+    }
+
+    .panel__tier--average {
+      background: color-mix(in srgb, var(--color-warning) 12%, transparent);
+      border: var(--border-width-thin) solid color-mix(in srgb, var(--color-warning) 35%, transparent);
+      color: var(--color-warning);
+    }
+
+    .panel__tier--strong {
+      background: color-mix(in srgb, var(--color-success) 12%, transparent);
+      border: var(--border-width-thin) solid color-mix(in srgb, var(--color-success) 35%, transparent);
+      color: var(--color-success);
+    }
   `,
   ];
 
@@ -440,6 +525,24 @@ export class VelgBuildingDetailsPanel extends LitElement {
     return 'var(--color-primary)';
   }
 
+  private _factorColor(value: number): string {
+    if (value >= 0.75) return 'var(--color-success)';
+    if (value >= 0.5) return 'var(--color-warning)';
+    return 'var(--color-danger)';
+  }
+
+  private _influenceTier(avgInfluence: number): 'weak' | 'average' | 'strong' {
+    if (avgInfluence < 0.25) return 'weak';
+    if (avgInfluence <= 0.55) return 'average';
+    return 'strong';
+  }
+
+  private _influenceTierLabel(tier: string): string {
+    if (tier === 'weak') return msg('WEAK');
+    if (tier === 'strong') return msg('STRONG');
+    return msg('AVG');
+  }
+
   private _staffingLabelClass(status: string): string {
     const s = status.toLowerCase();
     if (s.includes('critical')) return 'panel__readiness-label--critical';
@@ -467,6 +570,7 @@ export class VelgBuildingDetailsPanel extends LitElement {
           <span class="panel__readiness-value" style="color: ${fillColor}">${pct}%</span>
         </div>
 
+        <!-- Staffing headline with natural numbers -->
         <div class="panel__detail-grid">
           <div class="panel__detail-item">
             <span class="panel__detail-label">${msg('Staffing')}</span>
@@ -478,17 +582,67 @@ export class VelgBuildingDetailsPanel extends LitElement {
             </span>
           </div>
           <div class="panel__detail-item">
-            <span class="panel__detail-label">${msg('Qualification')}</span>
-            <span class="panel__detail-value">${(r.qualification_match * 100).toFixed(0)}%</span>
-          </div>
-          <div class="panel__detail-item">
-            <span class="panel__detail-label">${msg('Condition Factor')}</span>
-            <span class="panel__detail-value">${r.condition_factor}</span>
-          </div>
-          <div class="panel__detail-item">
             <span class="panel__detail-label">${msg('Criticality')}</span>
             <span class="panel__detail-value">${r.criticality_weight}x</span>
           </div>
+        </div>
+
+        <!-- Factor pipeline: 4 gauges showing readiness formula components -->
+        ${this._renderFactorPipeline(r)}
+      </div>
+    `;
+  }
+
+  private _renderFactorPipeline(r: BuildingReadiness) {
+    // Normalize influence to 0-1 for bar display (max raw influence is 0.85)
+    const influenceNorm = Math.min(1, r.avg_influence / 0.85);
+    const tier = this._influenceTier(r.avg_influence);
+
+    // Identify bottleneck (lowest factor)
+    const factors = [
+      { key: 'staff', value: r.staffing_ratio },
+      { key: 'qual', value: r.qualification_match },
+      { key: 'cond', value: r.condition_factor },
+      { key: 'infl', value: influenceNorm },
+    ];
+    const minValue = Math.min(...factors.map((f) => f.value));
+    const bottleneckKey = factors.find((f) => f.value === minValue)?.key ?? '';
+
+    return html`
+      <div class="panel__pipeline" aria-label=${msg('Readiness formula breakdown')}>
+        <div class="panel__factor ${bottleneckKey === 'staff' ? 'panel__factor--bottleneck' : ''}">
+          <span class="panel__factor-label">${msg('Staff')}</span>
+          <div class="panel__factor-track">
+            <div class="panel__factor-fill" style="width: ${Math.round(r.staffing_ratio * 100)}%; background: ${this._factorColor(r.staffing_ratio)}"></div>
+          </div>
+          <span class="panel__factor-value">${Math.round(r.staffing_ratio * 100)}%</span>
+        </div>
+
+        <div class="panel__factor ${bottleneckKey === 'qual' ? 'panel__factor--bottleneck' : ''}">
+          <span class="panel__factor-label">${msg('Qual')}</span>
+          <div class="panel__factor-track">
+            <div class="panel__factor-fill" style="width: ${Math.round(r.qualification_match * 100)}%; background: ${this._factorColor(r.qualification_match)}"></div>
+          </div>
+          <span class="panel__factor-value">${Math.round(r.qualification_match * 100)}%</span>
+        </div>
+
+        <div class="panel__factor ${bottleneckKey === 'cond' ? 'panel__factor--bottleneck' : ''}">
+          <span class="panel__factor-label">${msg('Cond')}</span>
+          <div class="panel__factor-track">
+            <div class="panel__factor-fill" style="width: ${Math.round(r.condition_factor * 100)}%; background: ${this._factorColor(r.condition_factor)}"></div>
+          </div>
+          <span class="panel__factor-value">${Math.round(r.condition_factor * 100)}%</span>
+        </div>
+
+        <div class="panel__factor ${bottleneckKey === 'infl' ? 'panel__factor--bottleneck' : ''}">
+          <span class="panel__factor-label">${msg('Infl')}</span>
+          <div class="panel__factor-track">
+            <div class="panel__factor-fill" style="width: ${Math.round(influenceNorm * 100)}%; background: ${this._factorColor(influenceNorm)}"></div>
+          </div>
+          <span class="panel__factor-value">
+            ${r.influence_factor.toFixed(2)}x
+            <span class="panel__tier panel__tier--${tier}">${this._influenceTierLabel(tier)}</span>
+          </span>
         </div>
       </div>
     `;
