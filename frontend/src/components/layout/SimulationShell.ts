@@ -423,7 +423,7 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
   private async _fetchDailyBriefing(): Promise<void> {
     if (!this.simulationId) return;
     const today = new Date().toISOString().split('T')[0];
-    const key = `briefing_${this.simulationId}_${today}`;
+    const key = `briefing_dismissed_${today}`;
     if (localStorage.getItem(key)) return;
 
     const result = await heartbeatApi.getDailyBriefing(this.simulationId);

@@ -325,15 +325,6 @@ export class VelgTransformationModal extends LitElement {
       padding: var(--space-4);
     }
 
-    .crucible__model-info {
-      font-family: var(--font-brutalist);
-      font-size: var(--text-xs);
-      color: var(--color-text-muted);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      margin-top: var(--space-1);
-    }
-
     /* ======================================== */
     /* INTEGRATE FORM — Simulation aesthetic    */
     /* ======================================== */
@@ -445,7 +436,6 @@ export class VelgTransformationModal extends LitElement {
 
   // Transform result
   @state() private _transformedContent = '';
-  @state() private _modelUsed = '';
 
   // Integrate form
   @state() private _eventTitle = '';
@@ -533,7 +523,6 @@ export class VelgTransformationModal extends LitElement {
     this._loading = false;
     this._error = null;
     this._transformedContent = '';
-    this._modelUsed = '';
     this._eventTitle = '';
     this._eventDescription = '';
     this._eventType = 'news';
@@ -597,7 +586,6 @@ export class VelgTransformationModal extends LitElement {
           const t = data.transformation;
 
           this._transformedContent = t?.narrative || this._cleanContent(t?.content || '');
-          this._modelUsed = t?.model_used || '';
           this._eventTitle = t?.title || this._extractTitle(t?.content || '') || this._articleName;
           this._eventDescription = t?.description || this._transformedContent;
           if (t?.event_type) this._eventType = t.event_type;
@@ -790,11 +778,6 @@ export class VelgTransformationModal extends LitElement {
           <div class="crucible__output" aria-live="polite">
             ${this._cleanContent(this._transformedContent)}
           </div>
-          ${
-            this._modelUsed
-              ? html`<div class="crucible__model-info">${msg(str`Model: ${this._modelUsed}`)}</div>`
-              : nothing
-          }
         </div>
       </div>
     `;

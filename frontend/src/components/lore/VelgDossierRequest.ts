@@ -461,7 +461,7 @@ export class VelgDossierRequest extends LitElement {
         </p>
 
         <p class="cta__cost ${this.hasBypass ? 'cta__cost--bypass' : ''}">
-          ${this.hasBypass ? msg('BYOK: NO COST') : msg('AUTHORIZATION COST: 2 FT')}
+          ${this.hasBypass ? msg('NO COST') : msg('AUTHORIZATION COST: 2 FT')}
         </p>
 
         <button
@@ -515,7 +515,7 @@ export class VelgDossierRequest extends LitElement {
           <div class="confirm__cost-line">
             ${
               this.hasBypass
-                ? msg('BYOK ACTIVE – NO TOKEN DEDUCTION')
+                ? msg('API KEY ACTIVE – NO TOKEN DEDUCTION')
                 : msg('This action will deduct 2 Forge Tokens from your balance.')
             }
           </div>

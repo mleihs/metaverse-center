@@ -46,6 +46,10 @@ HeartbeatEntryType = Literal[
     "scar_tissue", "resonance_pressure", "cascade_spawn", "bureau_response",
     "attunement_deepen", "anchor_strengthen", "convergence", "positive_event",
     "narrative_arc", "system_note",
+    # Phase A5 autonomy entry types (CHECK constraint extended in migration 156)
+    "autonomous_event", "agent_crisis", "relationship_shift", "social_event",
+    # Ambient weather (migration 156)
+    "ambient_weather",
 ]
 
 HeartbeatSeverity = Literal["info", "warning", "critical", "positive"]

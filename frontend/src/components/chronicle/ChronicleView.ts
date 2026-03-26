@@ -711,7 +711,6 @@ export class VelgChronicleView extends LitElement {
         <div class="article">
           ${this._renderArticle(t(c, 'content'))}
           <footer class="article__footer">
-            ${c.model_used ? html`<span>${msg('Model:')} ${c.model_used}</span>` : nothing}
             ${
               c.published_at
                 ? html`<span>${new Date(c.published_at).toLocaleDateString(this._dateLocale)}</span>`

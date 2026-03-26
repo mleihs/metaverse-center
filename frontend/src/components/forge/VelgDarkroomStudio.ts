@@ -816,7 +816,7 @@ export class VelgDarkroomStudio extends LitElement {
           ${msg('The Darkroom grants access to theme variants, image regeneration (10 uses), and card frame customization for this simulation.')}
         </p>
         <p class="purchase-cta__cost ${hasBypass ? 'purchase-cta__cost--bypass' : ''}">
-          ${hasBypass ? msg('BYOK: NO COST') : msg('COST: 2 FT')}
+          ${hasBypass ? msg('NO COST') : msg('COST: 2 FT')}
         </p>
         <button
           class="purchase-cta__btn"

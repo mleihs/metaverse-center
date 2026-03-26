@@ -109,7 +109,7 @@ export class VelgForgeWalletBadge extends SignalWatcher(LitElement) {
     const balance = forgeStateManager.walletBalance.value;
     const bypass = forgeStateManager.byokStatus.value.effective_bypass;
     const label = bypass
-      ? msg('BYOK Active – Unlimited Access')
+      ? msg('API Key Active – Unlimited Access')
       : `${msg('Forge Tokens')}: ${balance}`;
 
     return html`
@@ -127,7 +127,7 @@ export class VelgForgeWalletBadge extends SignalWatcher(LitElement) {
           bypass
             ? html`
               <span class="wallet-badge__icon" aria-hidden="true">&#x1F511;</span>
-              <span class="wallet-badge__count">BYOK</span>
+              <span class="wallet-badge__count">${msg('KEY')}</span>
             `
             : html`
               <span class="wallet-badge__icon" aria-hidden="true">&#x2B23;</span>

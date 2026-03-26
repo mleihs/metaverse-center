@@ -949,7 +949,7 @@ export class VelgSimulationHealthView extends LitElement {
               <strong>${h.building_count}</strong> ${msg('buildings')}
             </span>
             <span class="health-hero__stat">
-              <strong>${h.total_agents_assigned}</strong> / ${h.total_capacity} ${msg('agents')}
+              <strong>${h.total_agents_assigned}</strong> / ${h.total_capacity} ${msg('staffing')}
             </span>
             <span class="health-hero__stat">
               <strong>${h.active_embassy_count}</strong> ${msg('embassies')}

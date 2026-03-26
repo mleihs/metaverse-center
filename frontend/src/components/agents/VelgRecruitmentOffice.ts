@@ -474,7 +474,7 @@ export class VelgRecruitmentOffice extends LitElement {
         </p>
 
         <p class="recruit__cost ${this.hasBypass ? 'recruit__cost--bypass' : ''}">
-          ${this.hasBypass ? msg('BYOK: NO COST') : msg('AUTHORIZATION COST: 1 FT')}
+          ${this.hasBypass ? msg('NO COST') : msg('AUTHORIZATION COST: 1 FT')}
         </p>
 
         <button
@@ -532,7 +532,7 @@ export class VelgRecruitmentOffice extends LitElement {
         }
 
         <p class="config__cost ${this.hasBypass ? 'config__cost--bypass' : ''}">
-          ${this.hasBypass ? msg('BYOK: NO COST') : msg('COST: 1 FT')}
+          ${this.hasBypass ? msg('NO COST') : msg('COST: 1 FT')}
         </p>
 
         <div class="config__actions">

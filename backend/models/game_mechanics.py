@@ -24,6 +24,8 @@ class BuildingReadinessResponse(BaseModel):
     qualification_match: float = 1.0
     condition_factor: float = 0.5
     criticality_weight: float = 1.0
+    avg_influence: float = 0.0
+    influence_factor: float = 1.0
     readiness: float = 0.0
 
 

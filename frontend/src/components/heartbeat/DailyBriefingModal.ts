@@ -706,7 +706,7 @@ export class VelgDailyBriefing extends LitElement {
 
   private get _storageKey(): string {
     const today = new Date().toISOString().split('T')[0];
-    return `briefing_${this.simulationId}_${today}`;
+    return `briefing_dismissed_${today}`;
   }
 
   private get _isDismissedToday(): boolean {

@@ -71,7 +71,7 @@ scored AS (
         AND zl.zone_type IN ('residential', 'commercial')
         THEN 100
       -- Round-robin fallback: distribute evenly by index modulo
-      WHEN zl.zone_idx = u.agent_idx % zl.zone_count
+      WHEN zl.zone_count > 0 AND zl.zone_idx = u.agent_idx % zl.zone_count
         THEN 50
       ELSE 0
     END AS affinity
@@ -136,7 +136,7 @@ scored AS (
         AND bl.building_type IN ('commercial', 'media')
         THEN 100
       -- Round-robin fallback within zone
-      WHEN bl.bldg_idx = u.agent_idx % bl.bldg_count
+      WHEN bl.bldg_count > 0 AND bl.bldg_idx = u.agent_idx % bl.bldg_count
         THEN 50
       ELSE 0
     END AS affinity

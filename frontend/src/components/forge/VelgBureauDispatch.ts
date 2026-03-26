@@ -598,7 +598,7 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
                     <p class="service__desc">${svc.desc()}</p>
                     <div class="service__footer">
                       <span class="service__cost ${bypass ? 'service__cost--bypass' : ''}">
-                        ${bypass ? msg('BYOK: NO COST') : msg(html`COST: ${svc.cost} FT`)}
+                        ${bypass ? msg('NO COST') : msg(html`COST: ${svc.cost} FT`)}
                       </span>
                       <button
                         class="service__nav-btn"

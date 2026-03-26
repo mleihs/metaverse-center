@@ -702,7 +702,7 @@ export class VelgBureauStatus extends LitElement {
           <span class="evo-form__budget-value ${this.hasBypass ? 'evo-form__budget-value--bypass' : ''}">
             ${
               this.hasBypass
-                ? msg('BYOK – unlimited')
+                ? msg('Unlimited')
                 : html`${this.regenBudgetRemaining} ${msg('remaining (first 3 free)')}`
             }
           </span>

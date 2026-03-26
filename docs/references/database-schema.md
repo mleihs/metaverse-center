@@ -1715,7 +1715,7 @@ CREATE UNIQUE INDEX idx_mv_simulation_health_pk ON mv_simulation_health(simulati
 ```
 
 **Spalten pro View:**
-- **mv_building_readiness:** `building_id`, `simulation_id`, `name`, `building_type`, `building_condition`, `population_capacity`, `assigned_agents`, `required_professions`, `staffing_ratio`, `condition_score`, `readiness`
+- **mv_building_readiness:** `building_id`, `simulation_id`, `zone_id`, `building_name`, `building_type`, `building_condition`, `population_capacity`, `special_type`, `assigned_agents`, `staffing_ratio`, `staffing_status`, `qualification_match`, `condition_factor`, `criticality_weight`, `avg_influence`, `influence_factor`, `readiness` (migration 158: added `avg_influence` + `influence_factor`, readiness formula now includes influence)
 - **mv_zone_stability:** `zone_id`, `simulation_id`, `name`, `zone_type`, `security_level`, `building_count`, `avg_readiness`, `stability`
 - **mv_embassy_effectiveness:** `embassy_id`, `simulation_a_id`, `simulation_b_id`, `status`, `bleed_vector`, `building_health`, `ambassador_quality`, `vector_alignment`, `effectiveness`
 - **mv_simulation_health:** `simulation_id`, `name`, `avg_zone_stability`, `avg_readiness`, `diplomatic_reach`, `bleed_permeability`, `overall_health`

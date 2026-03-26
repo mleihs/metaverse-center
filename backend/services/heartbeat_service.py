@@ -604,16 +604,30 @@ class HeartbeatService:
                 tick_number, sim_name,
                 extra={"simulation_id": str(sim_id), "tick_number": tick_number},
             )
-            await admin.table("simulation_heartbeats").update({
-                "status": "failed",
-                "summary": {"error": "See server logs"},
-            }).eq("id", str(heartbeat_id)).execute()
 
-            # Still advance next_heartbeat_at to prevent retry storms
-            next_at = datetime.now(UTC) + timedelta(seconds=interval)
-            await admin.table("simulations").update({
-                "next_heartbeat_at": next_at.isoformat(),
-            }).eq("id", str(sim_id)).execute()
+            # Mark heartbeat as failed — nested try to prevent double-fault
+            try:
+                await admin.table("simulation_heartbeats").update({
+                    "status": "failed",
+                    "summary": {"error": "See server logs"},
+                }).eq("id", str(heartbeat_id)).execute()
+            except Exception:
+                logger.exception(
+                    "Heartbeat: DOUBLE FAULT — failed to mark tick #%d as failed for %s",
+                    tick_number, sim_name,
+                )
+
+            # Always advance next_heartbeat_at to prevent permanent stuck state
+            try:
+                next_at = datetime.now(UTC) + timedelta(seconds=interval)
+                await admin.table("simulations").update({
+                    "next_heartbeat_at": next_at.isoformat(),
+                }).eq("id", str(sim_id)).execute()
+            except Exception:
+                logger.exception(
+                    "Heartbeat: CRITICAL — failed to advance next_heartbeat_at for %s, sim may be stuck",
+                    sim_name,
+                )
 
     # ── Autonomy Key Resolution ─────────────────────────────────
 

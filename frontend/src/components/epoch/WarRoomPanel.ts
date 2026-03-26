@@ -262,14 +262,6 @@ export class VelgWarRoomPanel extends LitElement {
       gap: var(--space-2);
     }
 
-    .sitrep__model {
-      font-size: 10px;
-      color: var(--color-text-muted);
-      background: var(--color-surface-raised);
-      padding: 1px 5px;
-      border-radius: 2px;
-    }
-
     .sitrep__btn {
       background: var(--color-surface-raised);
       border: 1px solid var(--color-border);
@@ -695,11 +687,6 @@ export class VelgWarRoomPanel extends LitElement {
             <h3 class="sitrep__title">${msg('Situation Report')}</h3>
           </div>
           <div class="sitrep__actions">
-            ${
-              this._sitrep?.model_used
-                ? html`<span class="sitrep__model">${this._sitrep.model_used}</span>`
-                : nothing
-            }
             <button
               class="sitrep__btn"
               @click=${this._loadSitrep}

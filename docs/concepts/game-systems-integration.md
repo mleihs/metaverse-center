@@ -1,7 +1,7 @@
 ---
 title: "Game Systems Integration — Connecting the Living World"
-version: "3.1"
-date: "2026-03-25"
+version: "3.2"
+date: "2026-03-26"
 type: concept
 status: active
 lang: en
@@ -77,9 +77,29 @@ If any answer is "no", the connection is technical complexity without gameplay v
 
 **The Decision:** "Which agent do I assign to which building?" Agents with high influence (strong relationships + matching profession + ambassador status) contribute more to building readiness.
 
+**Player Agency Analysis (audit 2026-03-25):**
+
+| Component | Weight | Player Control | Mechanism |
+|-----------|--------|---------------|-----------|
+| Relationships | 40% | INDIRECT | Co-locate agents → autonomy social interactions → opinions → relationships form. Player controls placement, not the relationship itself. |
+| Professions | 30% | FUTURE: training mechanic | Currently static. **Must implement:** qualification_level increases when agent works in matching building type over time (e.g., military agent in Militärakademie: +0.2 ql per epoch). This creates the "training assignment" decision. |
+| Ambassador | 30% | DIRECT | Player assigns ambassadors via embassy system. Clear, immediate impact. |
+
+**Critical insight:** Without the profession training mechanic, 30% of influence is a dead number the player cannot affect. This MUST be addressed — either by implementing training (preferred) or by reweighting the formula to reduce professions weight in favor of controllable factors.
+
+**Feedback loops the player MUST see:**
+1. Agent placed in matching building → qualification increases → influence rises → readiness improves → zone stabilizes (positive loop, 1-3 epochs delay)
+2. Agent placed in mismatched building → no qualification growth → influence stagnates → readiness penalized → zone weakens (negative loop, immediate)
+3. Co-located agents → social interactions → relationship intensity grows → influence rises (emergent, player discovers through observation)
+
+**How this is communicated to the player (B1-B3 requirement):**
+- Agent panel: "General Wolf — Military (Lv. 3/5). Assigned to Militärakademie (+training). Influence: AVERAGE (28%). 3 allies in zone."
+- Building panel: "Readiness 72% = Staffing 38% × Qualification 85% × Condition 75% × Influence 62% (AVERAGE tier)"
+- Tooltip on influence: "Assign agents with matching professions and strong relationships for higher readiness. Ambassador status gives maximum boost."
+
 **The Consequence:** Building readiness directly feeds zone stability. A well-staffed government building with qualified, well-connected agents makes the whole zone more stable. A poorly staffed one drags it down.
 
-**The New Situation:** "My Industriegebiet Nord is failing. Do I move General Wolf from the stable Regierungsviertel to save it? But that weakens the Regierungsviertel..."
+**The New Situation:** "My Industriegebiet Nord is failing. Do I move General Wolf from the stable Regierungsviertel to save it? But that weakens the Regierungsviertel... Or do I train a new agent at the Industriewerk first?"
 
 **Game Design Reference:** This mirrors Crusader Kings 3's council system, where placing the right advisor on the right position directly affects realm stability. CK3's Fame system has 6 tiers with SPECIFIC mechanical breakpoints: Tier 4 (Illustrious, 4,000 Fame) gives +10% feudal opinion and +2 Knights; Tier 5 (Exalted, 8,000) gives +20% and +3; Tier 6 (Living Legend, 16,000) gives +30% and +4. Every tier is mechanically distinct — players FEEL the difference. The key insight: **influence must have CLEAR THRESHOLDS where behavior changes, not a smooth gradient**.
 
@@ -447,10 +467,10 @@ status             →  GET /simulations/{id}/health      →  SimulationHealthV
 
 | Priority | Item | Gameplay Value | Effort | Dependencies | Status |
 |----------|------|---------------|--------|-------------|--------|
-| 1 | **A5: Autonomy ON** | ✅✅ Prerequisite | Tiny (1 line change + agent bootstrapping) | Agent zone assignment for all sims | **DONE** (migration 157, 2026-03-25) |
-| 2 | **A1: Influence → Readiness** | ✅✅ High | Medium (PG function + MV update) | A5 must be active | Pending |
-| 3 | **A2: Stability → Events** | ✅✅ High | Small (multiplier in event service) | A5 must be active | Pending |
-| 4 | **B1-B3: Info Bubbles + UX** | ✅ High (communication) | Medium (6 components, ~80 lines) | A1+A2 must be real first | Pending |
+| 1 | **A5: Autonomy ON** | ✅✅ Prerequisite | Tiny (1 line change + agent bootstrapping) | Agent zone assignment for all sims | **DONE** (migration 157, 2026-03-25). **Post-audit (2026-03-26):** Fixed division-by-zero in zone/building assignment for sims with 0 zones |
+| 2 | **A1: Influence → Readiness** | ✅✅ High | Medium (PG function + MV update) | A5 must be active | **DONE** (migration 158 + Pydantic/TS types, 2026-03-25). UX display → B1-B3. **Post-audit (2026-03-26):** Fixed cross-simulation data leak (simulation_id filter on agent_professions) |
+| 3 | **A2: Stability → Events** | ✅✅ High | Small (multiplier in event service) | A5 must be active | **DONE** (autonomous_event_service.py + catharsis mechanic, 2026-03-25). UX display → B1-B3. **Post-audit (2026-03-26):** 10 defensive access fixes, try-except on _get_agent_data, nested error handler in heartbeat tick |
+| 4 | **B1-B3: Info Bubbles + UX** | ✅ High (communication) | Medium (6 components, ~80 lines) | A1+A2 must be real first | Pending — must show influence factor on building panels + event multiplier on zone cards |
 | 5 | **MUD (Template, 5 commands)** | ✅✅ Potentially highest | Medium-Large (new component) | Existing APIs sufficient | Pending |
 | 6 | **A3: Resonance → Mood** | ⚠️ Medium | Medium | A5 must be active | Pending |
 | 7 | **MUD (Epoch extension)** | ✅ High | Medium | MUD template must work first | Pending |
@@ -459,6 +479,26 @@ status             →  GET /simulations/{id}/health      →  SimulationHealthV
 ### Skip Recommendation: A4 (Events → Needs)
 
 Events should affect agents through MOODLETS (already implemented via weather and social interactions), not through NEEDS (invisible, automatic, no player decision). The existing moodlet system is the correct abstraction. Adding needs feedback creates simulation depth without gameplay depth — the player observes but cannot act.
+
+### B1-B3 Game Design Requirements (from UI audit 2026-03-25)
+
+**Critical finding:** The current influence display on AgentDetailsPanel is **player-hostile**. Showing "Professions: 0%" when the agent's tag reads "MILITARY" is contradictory and confusing. Raw percentages ("Relationships: 60%") give no actionable insight. The player cannot answer: "What should I DO about this?"
+
+**Design principles for B1-B3 (from CK3, Victoria 3, Frostpunk 2 research):**
+
+1. **Qualitative labels on overview, numbers in tooltips.** CK3 shows "Martial: 14 (★★★★☆)", not "Martial: 47%". Our influence section should show: "STRONG" / "AVERAGE" / "WEAK" tier labels, not raw percentages.
+
+2. **Show the WHY, not just the WHAT.** Instead of "Relationships: 60%", show: "3 allies (avg. intensity 6/10)". Instead of "Professions: 0%", show: "Military (Lv. 3/5)". Instead of "Diplomatic: -", show: "Not an ambassador".
+
+3. **Actionable hints.** If an agent is in WEAK tier, show WHY and WHAT the player can do: "Low influence — assign to a building matching their profession to increase readiness." This creates the DECISION from the concept doc A1 gameplay loop.
+
+4. **Building panel: show the formula transparently.** Per original A1 UX requirement: "Readiness: 72% = staffing (38%) x qualification (85%) x condition (75%) x influence (62%)". Each factor should be a labeled bar, not hidden behind a single number.
+
+5. **Zone cards: show event risk.** Per original A2 UX requirement: "Event Risk: HIGH (stability 17% → 1.3x event chance). Fortify to reduce pressure." The multiplier should be visible and explain what it means in plain language.
+
+6. **Influence tier indicator on agent cards.** In the agent list/lineup, show a small icon (shield/star/skull) for STRONG/AVERAGE/WEAK tier next to the agent portrait. Players should see at a glance who their high-influence agents are.
+
+**Data prerequisite:** Migration 159 bootstraps `agent_professions` from `primary_profession` (default qualification_level = 3). Without this, professions contribution is always 0.
 
 ---
 

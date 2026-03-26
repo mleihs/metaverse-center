@@ -910,6 +910,10 @@ export interface BuildingReadiness {
   qualification_match: number;
   condition_factor: number;
   criticality_weight: number;
+  /** Average agent influence score for this building (0.0–0.85) */
+  avg_influence: number;
+  /** 3-tier influence factor: WEAK(0.85) / AVERAGE(1.0) / STRONG(1.15) */
+  influence_factor: number;
   readiness: number;
 }
 

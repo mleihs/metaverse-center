@@ -470,7 +470,7 @@ export class VelgChronicleExport extends LitElement {
             `
               : html`
               <p class="card__cost ${this._hasBypass ? 'card__cost--bypass' : ''}">
-                ${this._hasBypass ? msg('BYOK: NO COST') : msg('1 FT')}
+                ${this._hasBypass ? msg('NO COST') : msg('1 FT')}
               </p>
               <button
                 class="card__btn card__btn--authorize"
@@ -511,7 +511,7 @@ export class VelgChronicleExport extends LitElement {
             `
               : html`
               <p class="card__cost ${this._hasBypass ? 'card__cost--bypass' : ''}">
-                ${this._hasBypass ? msg('BYOK: NO COST') : msg('1 FT')}
+                ${this._hasBypass ? msg('NO COST') : msg('1 FT')}
               </p>
               <button
                 class="card__btn card__btn--authorize"
