@@ -480,9 +480,8 @@ class TestDataIsolation:
     async def test_supabase_client_uses_user_jwt(self, user_a):
         """The Supabase client should be initialized with the requesting user's JWT."""
         # Patch create_async_client (the actual import in dependencies.py)
-        with patch("backend.dependencies.create_async_client") as mock_create:
-            mock_client = AsyncMock()
-            mock_create.return_value = mock_client
+        mock_client = AsyncMock()
+        with patch("backend.dependencies.create_async_client", new_callable=AsyncMock, return_value=mock_client):
 
             from backend.dependencies import get_supabase
 
