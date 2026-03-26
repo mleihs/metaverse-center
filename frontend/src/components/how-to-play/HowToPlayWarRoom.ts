@@ -1343,7 +1343,7 @@ export class HowToPlayWarRoom extends LitElement {
     const href = (e.currentTarget as HTMLAnchorElement).getAttribute('href');
     if (href) {
       this.dispatchEvent(
-        new CustomEvent('navigate', { detail: { path: href }, bubbles: true, composed: true }),
+        new CustomEvent('navigate', { detail: href, bubbles: true, composed: true }),
       );
     }
   }
