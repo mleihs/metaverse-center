@@ -12,15 +12,17 @@ import pytest
 from backend.config import settings
 from backend.services.cycle_resolution_service import CycleResolutionService
 from backend.tests.integration.conftest import EpochFixture, requires_supabase
-from supabase import create_client
+from supabase import create_async_client
 
 pytestmark = [requires_supabase, pytest.mark.gamedb]
 
 
 def _resolve_in_thread(epoch_id):
-    """Run resolve_cycle in a separate thread with its own Supabase client."""
-    client = create_client(settings.supabase_url, settings.supabase_service_role_key)
-    return asyncio.run(CycleResolutionService.resolve_cycle(client, epoch_id))
+    """Run resolve_cycle in a separate thread with its own async Supabase client."""
+    async def _run():
+        client = await create_async_client(settings.supabase_url, settings.supabase_service_role_key)
+        return await CycleResolutionService.resolve_cycle(client, epoch_id)
+    return asyncio.run(_run())
 
 
 class TestConcurrentCycleResolve:

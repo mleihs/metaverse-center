@@ -476,22 +476,17 @@ class TestDataIsolation:
         assert "b" in clients_by_user
         assert clients_by_user["a"] is not clients_by_user["b"]
 
-    def test_supabase_client_uses_user_jwt(self, user_a):
+    @pytest.mark.asyncio
+    async def test_supabase_client_uses_user_jwt(self, user_a):
         """The Supabase client should be initialized with the requesting user's JWT."""
-        # We patch the actual create_client to verify it receives the right token.
-        with patch("backend.dependencies.create_client") as mock_create:
-            mock_client = MagicMock()
+        # Patch create_async_client (the actual import in dependencies.py)
+        with patch("backend.dependencies.create_async_client") as mock_create:
+            mock_client = AsyncMock()
             mock_create.return_value = mock_client
-
-            import asyncio
 
             from backend.dependencies import get_supabase
 
-            loop = asyncio.new_event_loop()
-            try:
-                loop.run_until_complete(get_supabase(user=user_a))
-            finally:
-                loop.close()
+            await get_supabase(user=user_a)
 
             # Verify the client had set_session called with user_a's token
             mock_client.auth.set_session.assert_called_once_with(

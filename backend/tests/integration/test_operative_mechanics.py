@@ -37,7 +37,7 @@ def _get_participant_rp(client, epoch_id, simulation_id):
 
 class TestCounterIntelSweep:
     @pytest.mark.asyncio
-    async def test_detects_active_enemy_missions(self, admin_client, epoch_factory):
+    async def test_detects_active_enemy_missions(self, admin_client, async_admin_client, epoch_factory):
         """Sweep reveals active enemy missions targeting your simulation."""
         epoch: EpochFixture = epoch_factory(status="competition", cycle=3, rp=20)
 
@@ -63,7 +63,7 @@ class TestCounterIntelSweep:
         }).execute()
 
         detected = await OperativeMissionService.counter_intel_sweep(
-            admin_client, epoch.epoch_id, SIM_VELGARIEN,
+            async_admin_client, epoch.epoch_id, SIM_VELGARIEN,
         )
 
         assert len(detected) == 1
@@ -84,12 +84,12 @@ class TestCounterIntelSweep:
         assert rp == 16
 
     @pytest.mark.asyncio
-    async def test_sweep_insufficient_rp_rejected(self, admin_client, epoch_factory):
+    async def test_sweep_insufficient_rp_rejected(self, admin_client, async_admin_client, epoch_factory):
         epoch: EpochFixture = epoch_factory(status="competition", cycle=3, rp=2)
 
         with pytest.raises(HTTPException) as exc:
             await OperativeMissionService.counter_intel_sweep(
-                admin_client, epoch.epoch_id, SIM_VELGARIEN,
+                async_admin_client, epoch.epoch_id, SIM_VELGARIEN,
             )
         assert exc.value.status_code == 400
         # RP unchanged
@@ -102,7 +102,7 @@ class TestCounterIntelSweep:
 
 class TestFortifyZone:
     @pytest.mark.asyncio
-    async def test_fortify_upgrades_security(self, admin_client, epoch_factory):
+    async def test_fortify_upgrades_security(self, admin_client, async_admin_client, epoch_factory):
         """Fortifying a zone upgrades its security tier and creates a record."""
         epoch: EpochFixture = epoch_factory(status="foundation", cycle=1, rp=20)
 
@@ -117,7 +117,7 @@ class TestFortifyZone:
 
         try:
             result = await OperativeMissionService.fortify_zone(
-                admin_client, epoch.epoch_id, SIM_VELGARIEN, ZONE_ALTSTADT,
+                async_admin_client, epoch.epoch_id, SIM_VELGARIEN, ZONE_ALTSTADT,
             )
 
             assert result is not None
@@ -142,13 +142,13 @@ class TestFortifyZone:
             ).eq("id", str(ZONE_ALTSTADT)).execute()
 
     @pytest.mark.asyncio
-    async def test_fortify_wrong_phase_rejected(self, admin_client, epoch_factory):
+    async def test_fortify_wrong_phase_rejected(self, admin_client, async_admin_client, epoch_factory):
         """Fortification only works during foundation phase."""
         epoch: EpochFixture = epoch_factory(status="competition", cycle=3, rp=20)
 
         with pytest.raises(HTTPException) as exc:
             await OperativeMissionService.fortify_zone(
-                admin_client, epoch.epoch_id, SIM_VELGARIEN, ZONE_ALTSTADT,
+                async_admin_client, epoch.epoch_id, SIM_VELGARIEN, ZONE_ALTSTADT,
             )
         assert exc.value.status_code == 400
 
@@ -158,7 +158,7 @@ class TestFortifyZone:
 
 class TestMissionResolution:
     @pytest.mark.asyncio
-    async def test_resolve_pending_processes_expired_missions(self, admin_client, epoch_factory):
+    async def test_resolve_pending_processes_expired_missions(self, admin_client, async_admin_client, epoch_factory):
         """Missions past their resolves_at time get resolved."""
         epoch: EpochFixture = epoch_factory(status="competition", cycle=3, rp=20)
 
@@ -184,7 +184,7 @@ class TestMissionResolution:
         }).execute()
 
         resolved = await OperativeMissionService.resolve_pending_missions(
-            admin_client, epoch.epoch_id,
+            async_admin_client, epoch.epoch_id,
         )
 
         assert len(resolved) >= 1

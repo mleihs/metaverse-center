@@ -15,7 +15,7 @@ from backend.tests.integration.game_constants import (
     SIM_STATION_NULL,
     SIM_VELGARIEN,
 )
-from supabase import Client, create_client
+from supabase import AsyncClient, Client, create_async_client, create_client
 
 
 def _supabase_available() -> bool:
@@ -90,8 +90,14 @@ class EpochFixture:
 
 @pytest.fixture(scope="session")
 def admin_client() -> Client:
-    """Real Supabase client with service_role for integration tests."""
+    """Sync Supabase client with service_role — for test setup/teardown only."""
     return create_client(settings.supabase_url, settings.supabase_service_role_key)
+
+
+@pytest.fixture()
+async def async_admin_client() -> AsyncClient:
+    """Async Supabase client with service_role — for calling async services."""
+    return await create_async_client(settings.supabase_url, settings.supabase_service_role_key)
 
 
 @pytest.fixture(scope="session")

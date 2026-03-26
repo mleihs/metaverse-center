@@ -59,53 +59,53 @@ def _get_participant_rp(client, epoch_id, simulation_id):
 
 class TestResolveCycle:
     @pytest.mark.asyncio
-    async def test_increments_cycle(self, admin_client, epoch_factory):
+    async def test_increments_cycle(self, admin_client, async_admin_client, epoch_factory):
         epoch: EpochFixture = epoch_factory(status="competition", cycle=3)
 
-        await CycleResolutionService.resolve_cycle(admin_client, epoch.epoch_id)
+        await CycleResolutionService.resolve_cycle(async_admin_client, epoch.epoch_id)
 
         row = _get_epoch(admin_client, epoch.epoch_id)
         assert row["current_cycle"] == 4
 
     @pytest.mark.asyncio
-    async def test_grants_rp_to_all_participants(self, admin_client, epoch_factory):
+    async def test_grants_rp_to_all_participants(self, admin_client, async_admin_client, epoch_factory):
         epoch: EpochFixture = epoch_factory(
             status="competition", cycle=1, rp=10, rp_per_cycle=8, rp_cap=40,
         )
 
-        await CycleResolutionService.resolve_cycle(admin_client, epoch.epoch_id)
+        await CycleResolutionService.resolve_cycle(async_admin_client, epoch.epoch_id)
 
         for p in epoch.participants:
             rp = _get_participant_rp(admin_client, epoch.epoch_id, p.simulation_id)
             assert rp == 18, f"Player {p.user_id} should have 10+8=18 RP, got {rp}"
 
     @pytest.mark.asyncio
-    async def test_respects_rp_cap(self, admin_client, epoch_factory):
+    async def test_respects_rp_cap(self, admin_client, async_admin_client, epoch_factory):
         epoch: EpochFixture = epoch_factory(
             status="competition", cycle=1, rp=35, rp_per_cycle=10, rp_cap=40,
         )
 
-        await CycleResolutionService.resolve_cycle(admin_client, epoch.epoch_id)
+        await CycleResolutionService.resolve_cycle(async_admin_client, epoch.epoch_id)
 
         for p in epoch.participants:
             rp = _get_participant_rp(admin_client, epoch.epoch_id, p.simulation_id)
             assert rp == 40, f"RP should be capped at 40, got {rp}"
 
     @pytest.mark.asyncio
-    async def test_foundation_bonus(self, admin_client, epoch_factory):
+    async def test_foundation_bonus(self, admin_client, async_admin_client, epoch_factory):
         """Foundation phase grants int(rp_per_cycle * 1.5) RP."""
         epoch: EpochFixture = epoch_factory(
             status="foundation", cycle=1, rp=0, rp_per_cycle=12, rp_cap=40,
         )
 
-        await CycleResolutionService.resolve_cycle(admin_client, epoch.epoch_id)
+        await CycleResolutionService.resolve_cycle(async_admin_client, epoch.epoch_id)
 
         for p in epoch.participants:
             rp = _get_participant_rp(admin_client, epoch.epoch_id, p.simulation_id)
             assert rp == 18, f"Foundation bonus: int(12*1.5)=18, got {rp}"
 
     @pytest.mark.asyncio
-    async def test_resets_cycle_ready_flags(self, admin_client, epoch_factory):
+    async def test_resets_cycle_ready_flags(self, admin_client, async_admin_client, epoch_factory):
         epoch: EpochFixture = epoch_factory(status="competition", cycle=2)
 
         # Set some participants to ready
@@ -114,14 +114,14 @@ class TestResolveCycle:
                 {"cycle_ready": True}
             ).eq("id", str(p.participant_id)).execute()
 
-        await CycleResolutionService.resolve_cycle(admin_client, epoch.epoch_id)
+        await CycleResolutionService.resolve_cycle(async_admin_client, epoch.epoch_id)
 
         participants = _get_participants(admin_client, epoch.epoch_id)
         for p in participants:
             assert p["cycle_ready"] is False, f"Participant {p['id']} should have cycle_ready=False"
 
     @pytest.mark.asyncio
-    async def test_advances_mission_timers(self, admin_client, epoch_factory):
+    async def test_advances_mission_timers(self, admin_client, async_admin_client, epoch_factory):
         epoch: EpochFixture = epoch_factory(
             status="competition", cycle=2, cycle_hours=8,
         )
@@ -148,7 +148,7 @@ class TestResolveCycle:
             "resolves_at": resolves_at.isoformat(),
         }).execute()
 
-        await CycleResolutionService.resolve_cycle(admin_client, epoch.epoch_id)
+        await CycleResolutionService.resolve_cycle(async_admin_client, epoch.epoch_id)
 
         mission = (
             admin_client.table("operative_missions")
@@ -163,7 +163,7 @@ class TestResolveCycle:
         assert abs((new_resolves - expected).total_seconds()) < 2
 
     @pytest.mark.asyncio
-    async def test_auto_phase_foundation_to_competition(self, admin_client, epoch_factory):
+    async def test_auto_phase_foundation_to_competition(self, admin_client, async_admin_client, epoch_factory):
         """Epoch transitions from foundation to competition when new_cycle > foundation_cycles."""
         epoch: EpochFixture = epoch_factory(
             status="foundation",
@@ -177,7 +177,7 @@ class TestResolveCycle:
             "config": {**epoch.config, "foundation_cycles": 3},
         }).eq("id", str(epoch.epoch_id)).execute()
 
-        await CycleResolutionService.resolve_cycle(admin_client, epoch.epoch_id)
+        await CycleResolutionService.resolve_cycle(async_admin_client, epoch.epoch_id)
 
         row = _get_epoch(admin_client, epoch.epoch_id)
         assert row["status"] == "competition", f"Expected 'competition', got '{row['status']}'"
@@ -188,11 +188,11 @@ class TestResolveCycle:
 
 class TestSpendRP:
     @pytest.mark.asyncio
-    async def test_spend_success(self, admin_client, epoch_factory):
+    async def test_spend_success(self, admin_client, async_admin_client, epoch_factory):
         epoch: EpochFixture = epoch_factory(rp=20)
 
         remaining = await CycleResolutionService.spend_rp(
-            admin_client, epoch.epoch_id, SIM_VELGARIEN, 5,
+            async_admin_client, epoch.epoch_id, SIM_VELGARIEN, 5,
         )
 
         assert remaining == 15
@@ -200,12 +200,12 @@ class TestSpendRP:
         assert db_rp == 15
 
     @pytest.mark.asyncio
-    async def test_spend_insufficient_rejected(self, admin_client, epoch_factory):
+    async def test_spend_insufficient_rejected(self, admin_client, async_admin_client, epoch_factory):
         epoch: EpochFixture = epoch_factory(rp=3)
 
         with pytest.raises(HTTPException) as exc:
             await CycleResolutionService.spend_rp(
-                admin_client, epoch.epoch_id, SIM_VELGARIEN, 10,
+                async_admin_client, epoch.epoch_id, SIM_VELGARIEN, 10,
             )
         assert exc.value.status_code == 400
         # RP should be unchanged
@@ -213,18 +213,18 @@ class TestSpendRP:
         assert db_rp == 3
 
     @pytest.mark.asyncio
-    async def test_spend_optimistic_lock(self, admin_client, epoch_factory):
+    async def test_spend_optimistic_lock(self, admin_client, async_admin_client, epoch_factory):
         """Concurrent spend attempt should fail if balance changed."""
         epoch: EpochFixture = epoch_factory(rp=10)
 
         # First spend succeeds
         await CycleResolutionService.spend_rp(
-            admin_client, epoch.epoch_id, SIM_VELGARIEN, 8,
+            async_admin_client, epoch.epoch_id, SIM_VELGARIEN, 8,
         )
 
         # Second spend should fail (only 2 RP left)
         with pytest.raises(HTTPException) as exc:
             await CycleResolutionService.spend_rp(
-                admin_client, epoch.epoch_id, SIM_VELGARIEN, 5,
+                async_admin_client, epoch.epoch_id, SIM_VELGARIEN, 5,
             )
         assert exc.value.status_code == 400

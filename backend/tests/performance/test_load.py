@@ -192,12 +192,11 @@ class TestRateLimiting:
         Without a valid role check, the endpoint should fail at the role
         dependency level (not succeed with 200).
         """
-        from unittest.mock import MagicMock
-
         from backend.dependencies import get_supabase
+        from backend.tests.conftest import make_async_supabase_mock
 
-        # Also mock get_supabase to prevent Supabase client creation
-        app.dependency_overrides[get_supabase] = lambda: MagicMock()
+        # Mock get_supabase with async-compatible mock
+        app.dependency_overrides[get_supabase] = lambda: make_async_supabase_mock()
 
         transport = ASGITransport(app=app)
 
@@ -231,15 +230,13 @@ class TestRateLimiting:
         In test mode, the limiter may not be active, so we accept both
         scenarios: all requests pass (limiter inactive) or some get 429.
         """
-        from unittest.mock import MagicMock
-
         from backend.dependencies import get_supabase, require_role
+        from backend.tests.conftest import make_async_supabase_mock
 
         # Set up full auth chain for the generation endpoint
         app.dependency_overrides[get_current_user] = lambda: MOCK_USER
 
-        mock_sb = MagicMock()
-        app.dependency_overrides[get_supabase] = lambda: mock_sb
+        app.dependency_overrides[get_supabase] = lambda: make_async_supabase_mock()
 
         async def _fake_role():
             return "editor"

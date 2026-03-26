@@ -44,10 +44,14 @@ MOCK_CONN = {
 @pytest.fixture()
 def client():
     """TestClient with platform admin auth + admin supabase overridden."""
+    from backend.tests.conftest import make_async_supabase_mock
+
     user = CurrentUser(id=MOCK_USER_ID, email=ADMIN_EMAIL, access_token="mock-token")
+    mock_sb = make_async_supabase_mock()
+
     app.dependency_overrides[get_current_user] = lambda: user
-    app.dependency_overrides[get_supabase] = lambda: MagicMock()
-    app.dependency_overrides[get_admin_supabase] = lambda: MagicMock()
+    app.dependency_overrides[get_supabase] = lambda: mock_sb
+    app.dependency_overrides[get_admin_supabase] = lambda: mock_sb
 
     yield TestClient(app)
     app.dependency_overrides.clear()

@@ -46,6 +46,19 @@ def make_chain_mock(execute_data=None, execute_count=None):
     return c
 
 
+def make_async_supabase_mock(execute_data=None):
+    """Build a full Supabase mock whose .table()/.rpc() chains return AsyncMock.
+
+    Use as dependency override for get_supabase / get_admin_supabase in tests
+    that go through the FastAPI app (TestClient) and hit async service code.
+    """
+    chain = make_chain_mock(execute_data=execute_data)
+    mock_sb = MagicMock()
+    mock_sb.table.return_value = chain
+    mock_sb.rpc.return_value = chain
+    return mock_sb
+
+
 @pytest.fixture()
 def mock_current_user():
     """Patch get_current_user to return a mock user without JWT validation."""
