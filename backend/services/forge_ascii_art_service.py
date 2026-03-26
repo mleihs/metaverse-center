@@ -16,6 +16,7 @@ import io
 import logging
 from typing import Any
 
+import httpx
 import pyfiglet
 import sentry_sdk
 import structlog
@@ -132,7 +133,7 @@ class ForgeAsciiArtService:
                 allowed_content_types={"image/png", "image/jpeg", "image/webp", "image/gif"},
             )
             return Image.open(io.BytesIO(data))
-        except (ValueError, OSError) as exc:
+        except (ValueError, httpx.HTTPStatusError, OSError) as exc:
             logger.warning("Failed to fetch banner image: %s", banner_url, exc_info=True)
             sentry_sdk.capture_exception(exc)
             return None

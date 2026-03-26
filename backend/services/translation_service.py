@@ -209,18 +209,22 @@ class TranslationService:
         """Single-text translation via DeepL API.
 
         Runs the synchronous DeepL SDK call in a thread to avoid blocking
-        the asyncio event loop.
+        the asyncio event loop. Translator is created inside the thread
+        to ensure thread-safety of the HTTP session.
         """
-        translator = deepl.Translator(settings.deepl_api_key)
         deepl_context = _build_deepl_context(context)
-        result = await asyncio.to_thread(
-            translator.translate_text,
-            text,
-            source_lang=source_lang.upper(),
-            target_lang=_deepl_target(target_lang),
-            context=deepl_context,
-        )
-        return result.text
+        target = _deepl_target(target_lang)
+
+        def _run() -> str:
+            translator = deepl.Translator(settings.deepl_api_key)
+            return translator.translate_text(
+                text,
+                source_lang=source_lang.upper(),
+                target_lang=target,
+                context=deepl_context,
+            ).text
+
+        return await asyncio.to_thread(_run)
 
     @staticmethod
     async def _translate_fields_deepl(
@@ -232,20 +236,24 @@ class TranslationService:
         """Batch field translation via DeepL (one call with multiple texts).
 
         Runs the synchronous DeepL SDK call in a thread to avoid blocking
-        the asyncio event loop.
+        the asyncio event loop. Translator is created inside the thread
+        to ensure thread-safety of the HTTP session.
         """
-        translator = deepl.Translator(settings.deepl_api_key)
         deepl_context = _build_deepl_context(context)
         names = list(fields.keys())
         texts = list(fields.values())
+        target = _deepl_target(target_lang)
 
-        results = await asyncio.to_thread(
-            translator.translate_text,
-            texts,
-            source_lang=source_lang.upper(),
-            target_lang=_deepl_target(target_lang),
-            context=deepl_context,
-        )
+        def _run() -> list:
+            translator = deepl.Translator(settings.deepl_api_key)
+            return translator.translate_text(
+                texts,
+                source_lang=source_lang.upper(),
+                target_lang=target,
+                context=deepl_context,
+            )
+
+        results = await asyncio.to_thread(_run)
         return {name: r.text for name, r in zip(names, results, strict=False)}
 
 
