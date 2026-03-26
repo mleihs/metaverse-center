@@ -176,7 +176,7 @@ class AgentNeedsService:
             .maybe_single()
             .execute()
         )
-        return result.data
+        return result.data if result else None
 
     @classmethod
     async def apply_zone_modifiers(

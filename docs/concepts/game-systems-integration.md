@@ -33,11 +33,11 @@ Each system works individually. They don't work together.
 
 | # | System A | Should affect | System B | Connected? | Gameplay value if connected? |
 |---|----------|--------------|----------|------------|------------------------------|
-| A1 | Agent Influence | → | Building Readiness | ❌ Influence is frontend-only, used nowhere in backend | ✅ HIGH — creates agent placement decisions |
-| A2 | Zone Stability | → | Event Probability | ❌ Stability is displayed, not mechanically consequential | ✅ HIGH — creates urgency and resource allocation |
+| A1 | Agent Influence | → | Building Readiness | ✅ `fn_compute_agent_influence` (mig 158) + `fn_bootstrap_building_relations` (mig 160) | ✅ HIGH — creates agent placement decisions |
+| A2 | Zone Stability | → | Event Probability | ✅ Stability multiplier in autonomous_event_service (2026-03-25) | ✅ HIGH — creates urgency and resource allocation |
 | A3 | Resonance | → | Agent Mood | ❌ Resonance is decorative, doesn't affect agents | ⚠️ MEDIUM — abstract, hard to communicate |
 | A4 | Events | → | Agent Needs | ❌ Events age passively, don't affect agents | ❌ LOW — no player decision, purely automatic |
-| A5 | Autonomy | → | Everything | ❌ OFF by default, never activated for most simulations | ✅ PREREQUISITE — nothing works without this |
+| A5 | Autonomy | → | Everything | ✅ ON by default (mig 157), zone/building bootstrap | ✅ PREREQUISITE — nothing works without this |
 
 ### 1.3 The Core Problem: Vanity Metrics
 
@@ -109,10 +109,10 @@ Mount & Blade Bannerlord shows a third pattern: each fief grant gives +10 to the
 
 **UX Requirement:** The building detail panel must show: "Readiness: 72% (staffing 3/8 × qualification 85% × condition 0.75 × **avg influence 62%**)". The influence factor must be explicitly named, not buried in a formula.
 
-**Architect Note:** Influence currently exists only in frontend TypeScript. Moving it to PostgreSQL requires either:
-- A PostgreSQL function `fn_compute_agent_influence(agent_id)` that JOINs relationships, professions, and ambassador status
-- OR a denormalized `influence_score` column updated by trigger
-The function approach is cleaner (ADR-007: database logic in database). Performance: one extra JOIN per agent per MV refresh. With 270 agents, negligible.
+**Architect Note:** ~~Influence currently exists only in frontend TypeScript.~~ **IMPLEMENTED** (migrations 158+160):
+- `fn_compute_agent_influence(agent_id, simulation_id)` — SQL STABLE function, inlined by planner into MV refresh. Formula: relationships(top5) × 0.4 + professions(avg ql) × 0.3 + ambassador × 0.3
+- `mv_building_readiness` rebuilt with `avg_influence` + `influence_factor` columns (3-tier: WEAK 0.85 / AVG 1.0 / STRONG 1.15)
+- `fn_bootstrap_building_relations(simulation_id)` (migration 160) — populates `building_agent_relations` from `agents.current_building_id`, fixing the data pipeline gap where migration 157 assigned agents to buildings but never created relation records
 
 ---
 
@@ -468,7 +468,7 @@ status             →  GET /simulations/{id}/health      →  SimulationHealthV
 | Priority | Item | Gameplay Value | Effort | Dependencies | Status |
 |----------|------|---------------|--------|-------------|--------|
 | 1 | **A5: Autonomy ON** | ✅✅ Prerequisite | Tiny (1 line change + agent bootstrapping) | Agent zone assignment for all sims | **DONE** (migration 157, 2026-03-25). **Post-audit (2026-03-26):** Fixed division-by-zero in zone/building assignment for sims with 0 zones |
-| 2 | **A1: Influence → Readiness** | ✅✅ High | Medium (PG function + MV update) | A5 must be active | **DONE** (migration 158 + Pydantic/TS types, 2026-03-25). UX display → B1-B3. **Post-audit (2026-03-26):** Fixed cross-simulation data leak (simulation_id filter on agent_professions) |
+| 2 | **A1: Influence → Readiness** | ✅✅ High | Medium (PG function + MV update) | A5 must be active | **DONE** (migration 158 + Pydantic/TS types, 2026-03-25). UX display → B1-B3. **Post-audit (2026-03-26):** Fixed cross-simulation data leak (simulation_id filter on agent_professions). **Data pipeline fix (2026-03-26):** Migration 160 — `fn_bootstrap_building_relations` populates building_agent_relations from agents.current_building_id (blocker: MV showed 0% readiness because relation table was empty) |
 | 3 | **A2: Stability → Events** | ✅✅ High | Small (multiplier in event service) | A5 must be active | **DONE** (autonomous_event_service.py + catharsis mechanic, 2026-03-25). UX display → B1-B3. **Post-audit (2026-03-26):** 10 defensive access fixes, try-except on _get_agent_data, nested error handler in heartbeat tick |
 | 4 | **B1-B3: Info Bubbles + UX** | ✅ High (communication) | Medium (6 components, ~80 lines) | A1+A2 must be real first | **DONE** (2026-03-26). B3: Zone event risk display (RimWorld threshold markers + CRITICAL/HIGH/MEDIUM/LOW tier badges + multiplier + actionable hints + critical zone wash). B2: Building readiness factor pipeline (4-gauge Victoria 3 pattern, bottleneck detection with red accent, influence tier badge WEAK/AVG/STRONG). B1: Agent influence panel redesign (natural language breakdown: "3 allies avg 6/10" instead of "60%", profession names + levels, actionable hint for WEAK tier). Also fixed: diamond badge overflow on VelgGameCard (4+ digit numbers now show "1K" format). |
 | 5 | **MUD (Template, 5 commands)** | ✅✅ Potentially highest | Medium-Large (new component) | Existing APIs sufficient | Pending |

@@ -6,6 +6,7 @@ bootstraps the autonomy data (mood, needs) for new or existing agents.
 
 PostgreSQL functions used:
 - ``fn_initialize_agent_autonomy`` (migration 145) — idempotent mood+needs bootstrap
+- ``fn_bootstrap_building_relations`` (migration 160) — populate building_agent_relations from current_building_id
 """
 
 from __future__ import annotations
@@ -244,6 +245,26 @@ class PersonalityExtractionService:
                     extra={"agent_id": agent_row["id"]},
                 )
                 sentry_sdk.capture_exception()
+
+        # Bootstrap building_agent_relations from agents.current_building_id.
+        # Creates 'works' records for agents assigned to buildings (idempotent).
+        # Must run AFTER agents have current_building_id set (migration 157 or manual).
+        try:
+            bar_result = await supabase.rpc(
+                "fn_bootstrap_building_relations",
+                {"p_simulation_id": str(simulation_id)},
+            ).execute()
+            bar_count = bar_result.data if isinstance(bar_result.data, int) else 0
+            logger.info(
+                "Building agent relations bootstrapped",
+                extra={"inserted": bar_count, "simulation_id": str(simulation_id)},
+            )
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+            logger.exception(
+                "Failed to bootstrap building agent relations",
+                extra={"simulation_id": str(simulation_id)},
+            )
+            sentry_sdk.capture_exception()
 
         logger.info(
             "Simulation agents initialized",

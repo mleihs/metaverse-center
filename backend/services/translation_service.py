@@ -156,6 +156,7 @@ class TranslationService:
         agent = Agent(
             get_openrouter_model(openrouter_key, model_id=get_platform_model("forge")),
             system_prompt=system,
+            retries=3,
         )
         result = await run_ai(
             agent, f"Translate the following text:\n\n{text}", "translation", output_type=str,
@@ -187,6 +188,7 @@ class TranslationService:
         agent = Agent(
             get_openrouter_model(openrouter_key, model_id=get_platform_model("forge")),
             system_prompt=system,
+            retries=3,
         )
         result = await run_ai(
             agent, "\n".join(prompt_parts), "translation", output_type=TranslationResult,

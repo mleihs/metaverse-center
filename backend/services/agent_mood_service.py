@@ -225,7 +225,7 @@ class AgentMoodService:
             .maybe_single()
             .execute()
         )
-        return result.data
+        return result.data if result else None
 
     @classmethod
     async def list_moodlets(

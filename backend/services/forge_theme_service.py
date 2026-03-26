@@ -98,6 +98,7 @@ class ForgeThemeService:
         agent = Agent(
             get_openrouter_model(openrouter_key, model_id=get_platform_model("forge")),
             system_prompt=THEME_ARCHITECT_PROMPT,
+            retries=3,
         )
 
         result = await run_ai(agent, prompt, "theme", output_type=ForgeThemeOutput)
@@ -386,6 +387,7 @@ class ForgeThemeService:
                     "as valid JSON. Each template must be deeply specific to the world's "
                     "identity — never generic. Return ONLY the JSON object, no markdown."
                 ),
+                retries=3,
             )
             result = await run_ai(agent, prompt, "templates")
             text = result.output if isinstance(result.output, str) else str(result.output)
