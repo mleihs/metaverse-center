@@ -515,7 +515,7 @@ function loadSingleGoogleFont(family: string): void {
   ensurePreconnect();
 
   const encoded = family.replace(/\s+/g, '+');
-  const url = `https://fonts.googleapis.com/css2?family=${encoded}:ital,wght@0,400;0,700;0,900;1,400&display=swap`;
+  const url = `https://fonts.googleapis.com/css2?family=${encoded}:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap`;
 
   const link = document.createElement('link');
   link.id = `${GOOGLE_FONTS_PREFIX}${key.replace(/\s+/g, '-')}`;

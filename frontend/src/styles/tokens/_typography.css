@@ -39,7 +39,7 @@
   --tracking-wide: 0.025em;
   --tracking-wider: 0.05em;
   --tracking-widest: 0.1em;
-  --tracking-brutalist: 1px;
+  --tracking-brutalist: 0.08em; /* Relative — scales with font size (was 1px fixed, too tight at large sizes) */
 
   /* === SEMANTIC TOKENS (analogous to --heading-font for headings) === */
   --font-body: var(--font-sans);    /* UI text — themed per simulation */
@@ -47,7 +47,7 @@
 
   /* === HEADING TOKENS === */
   --heading-font: var(--font-brutalist);
-  --heading-weight: var(--font-black);
+  --heading-weight: var(--font-bold); /* 700 — Courier New only ships 400/700; 900 triggers faux bold synthesis */
   --heading-transform: uppercase;
   --heading-tracking: var(--tracking-brutalist);
 
@@ -60,7 +60,7 @@
 }
 
 /* === Mobile Typography Scale === */
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   :root {
     --text-3xl: 1.953rem;   /* 31px, was 39px */
     --text-4xl: 2.441rem;   /* 39px, was 49px */
