@@ -674,6 +674,52 @@ async function handleCeremony(_ctx: CommandContext): Promise<TerminalLine[]> {
   return [systemLine(`[${msg('Redirecting to Simulation Forge...')}]`)];
 }
 
+// ── Helper: Ensure agent conversation exists ─────────────────────────────
+
+/**
+ * Get or create a conversation for an agent (used by debrief, ask, talk).
+ * Returns conversationId or null on failure.
+ */
+async function ensureAgentConversation(
+  sid: string,
+  agent: Agent,
+  titlePrefix: string,
+): Promise<string | null> {
+  const existing = terminalState.getConversationForAgent(agent.id);
+  if (existing) return existing;
+
+  const resp = await chatApi.createConversation(sid, {
+    agent_ids: [agent.id],
+    title: `${titlePrefix}: ${agent.name}`,
+  });
+  if (!resp.success || !resp.data) return null;
+
+  const conversationId = resp.data.id;
+  // Cache for reuse, but don't enter conversation mode (debrief/ask are one-shot)
+  terminalState.enterConversation(agent.id, agent.name, conversationId);
+  terminalState.exitConversation();
+  return conversationId;
+}
+
+/**
+ * Send a prompt to an agent conversation and extract the AI response text.
+ */
+async function sendAgentPrompt(
+  sid: string,
+  conversationId: string,
+  prompt: string,
+): Promise<string | null> {
+  const resp = await chatApi.sendMessage(sid, conversationId, {
+    content: prompt,
+    generate_response: true,
+  });
+  if (!resp.success || !resp.data) return null;
+
+  const messages = (Array.isArray(resp.data) ? resp.data : [resp.data]) as ChatMessage[];
+  const aiResponse = messages.find((m) => m.sender_role === 'assistant');
+  return aiResponse?.content ?? null;
+}
+
 // ── Stage 3: Intelligence Network Handlers ──────────────────────────────
 
 async function handleScan(_ctx: CommandContext): Promise<TerminalLine[]> {
@@ -792,23 +838,12 @@ async function handleDebrief(ctx: CommandContext): Promise<TerminalLine[]> {
 
   const agent = matches[0];
 
-  // Reuse or create conversation for debrief
-  let conversationId = terminalState.getConversationForAgent(agent.id);
+  const conversationId = await ensureAgentConversation(sid, agent, 'Bureau Debrief');
   if (!conversationId) {
-    const resp = await chatApi.createConversation(sid, {
-      agent_ids: [agent.id],
-      title: `Bureau Debrief: ${agent.name}`,
-    });
-    if (!resp.success || !resp.data) {
-      terminalState.intelPoints.value += 1;
-      return [errorLine(msg('Debrief failed. Points refunded.'))];
-    }
-    conversationId = resp.data.id;
-    terminalState.enterConversation(agent.id, agent.name, conversationId);
-    terminalState.exitConversation(); // Don't stay in conversation mode
+    terminalState.intelPoints.value += 1;
+    return [errorLine(msg('Debrief failed. Points refunded.'))];
   }
 
-  // Send debrief request
   const debriefPrompt = [
     'Provide a formal Bureau debrief report.',
     'Structure your response in THREE sections:',
@@ -818,19 +853,11 @@ async function handleDebrief(ctx: CommandContext): Promise<TerminalLine[]> {
     'Stay in character. Report only what you would realistically know.',
   ].join(' ');
 
-  const msgResp = await chatApi.sendMessage(sid, conversationId, {
-    content: debriefPrompt,
-    generate_response: true,
-  });
-
-  if (!msgResp.success || !msgResp.data) {
+  const responseText = await sendAgentPrompt(sid, conversationId, debriefPrompt);
+  if (!responseText) {
     terminalState.intelPoints.value += 1;
     return [errorLine(msg('Debrief failed. Points refunded.'))];
   }
-
-  const messages = (Array.isArray(msgResp.data) ? msgResp.data : [msgResp.data]) as ChatMessage[];
-  const aiResponse = messages.find((m) => m.sender_role === 'assistant');
-  const responseText = aiResponse?.content ?? msg('No response received.');
 
   return formatDebrief(agent, responseText, terminalState.intelPoints.value);
 }
@@ -839,7 +866,7 @@ async function handleAsk(ctx: CommandContext): Promise<TerminalLine[]> {
   // Parse: ask {agent} about {topic}
   const raw = ctx.args.join(' ').trim();
   const aboutIdx = raw.toLowerCase().indexOf(' about ');
-  if (aboutIdx === -1 || !raw) {
+  if (aboutIdx === -1) {
     return [errorLine(`${msg('Syntax')}: ask {${msg('agent name')}} about {${msg('topic')}}`)];
   }
 
@@ -862,35 +889,16 @@ async function handleAsk(ctx: CommandContext): Promise<TerminalLine[]> {
 
   const agent = matches[0];
 
-  // Reuse or create conversation
-  let conversationId = terminalState.getConversationForAgent(agent.id);
+  const conversationId = await ensureAgentConversation(sid, agent, 'Bureau Query');
   if (!conversationId) {
-    const resp = await chatApi.createConversation(sid, {
-      agent_ids: [agent.id],
-      title: `Bureau Query: ${agent.name}`,
-    });
-    if (!resp.success || !resp.data) {
-      return [errorLine(msg('Failed to establish communication channel.'))];
-    }
-    conversationId = resp.data.id;
-    terminalState.enterConversation(agent.id, agent.name, conversationId);
-    terminalState.exitConversation();
+    return [errorLine(msg('Failed to establish communication channel.'))];
   }
 
   const askPrompt = `The Bureau operator asks you about: ${topic}. Answer only about this topic. If you don't have information, say so. Stay in character. Be concise.`;
-
-  const msgResp = await chatApi.sendMessage(sid, conversationId, {
-    content: askPrompt,
-    generate_response: true,
-  });
-
-  if (!msgResp.success || !msgResp.data) {
+  const responseText = await sendAgentPrompt(sid, conversationId, askPrompt);
+  if (!responseText) {
     return [errorLine(msg('Communication interrupted. Try again.'))];
   }
-
-  const messages = (Array.isArray(msgResp.data) ? msgResp.data : [msgResp.data]) as ChatMessage[];
-  const aiResponse = messages.find((m) => m.sender_role === 'assistant');
-  const responseText = aiResponse?.content ?? msg('No response received.');
 
   return formatAskResponse(agent, topic, responseText);
 }
