@@ -165,12 +165,11 @@ export function formatLook(
     ));
   }
 
-  // Exits (all other zones)
-  const exits = allZones
-    .filter((z) => z.id !== zone.id)
-    .map((z) => z.name);
-  if (exits.length > 0) {
-    lines.push(responseLine(`${msg('Exits')}: ${exits.join(', ')}`));
+  // Exits (all other zones, numbered for quick navigation: "go 1")
+  const exitZones = allZones.filter((z) => z.id !== zone.id);
+  if (exitZones.length > 0) {
+    const exitStrs = exitZones.map((z, i) => `[${i + 1}] ${z.name}`);
+    lines.push(responseLine(`${msg('Exits')}: ${exitStrs.join(', ')}`));
   }
 
   return lines;

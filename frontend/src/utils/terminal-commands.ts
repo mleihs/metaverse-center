@@ -241,8 +241,24 @@ async function handleGo(ctx: CommandContext): Promise<TerminalLine[]> {
     return formatDirectionNotAvailable();
   }
 
-  // Fuzzy match against zones
   const zones = Array.from(terminalState.zoneCache.value.values());
+  const currentZoneId = terminalState.currentZoneId.value;
+
+  // Numeric shortcut: "go 1" → first exit zone (zones excluding current, same order as look)
+  const num = parseInt(target, 10);
+  if (!isNaN(num) && num >= 1) {
+    const exitZones = zones.filter((z) => z.id !== currentZoneId);
+    if (num > exitZones.length) {
+      return [systemLine(`${msg('Invalid exit number')}. ${msg('Valid')}: 1-${exitZones.length}`)];
+    }
+    const zone = exitZones[num - 1];
+    terminalState.setCurrentZone(zone.id);
+    terminalState.invalidateZoneCaches();
+    const lookLines = await handleLook(ctx);
+    return lookLines;
+  }
+
+  // Fuzzy match against zones
   const matches = fuzzyMatch(target, zones);
 
   if (matches.length === 0) {
