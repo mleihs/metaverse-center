@@ -1,8 +1,8 @@
 ---
 title: "Feature Catalog"
 id: feature-catalog
-version: "3.1"
-date: 2026-03-17
+version: "3.2"
+date: 2026-03-26
 lang: de
 type: reference
 status: active
@@ -434,13 +434,37 @@ Features die innerhalb einer Simulation existieren. Benutzer können beliebig vi
 
 ---
 
+### M. Living World & Bureau Terminal (MUD)
+
+#### M1. Agent Autonomy & Living World
+
+| # | Feature | Status | Beschreibung |
+|---|---------|--------|-------------|
+| M1 | **Agent Autonomy Bootstrap** | ✅ IMPL | `agent_autonomy_enabled` ON by default (Migration 157). Agent zone/building assignment bootstrap. Division-by-zero fix for sims with 0 zones. |
+| M2 | **Influence → Building Readiness** | ✅ IMPL | `fn_compute_agent_influence` (Migration 158) + `fn_bootstrap_building_relations` (Migration 160). Influence = Relationships(40%) + Professions(30%) + Diplomatic(30%). Cross-simulation data leak fix (simulation_id filter on agent_professions). |
+| M3 | **Stability → Event Probability** | ✅ IMPL | Stability multiplier in autonomous_event_service: 0.9→0.5x, 0.5→1.0x, 0.1→1.5x (capped). Catharsis mechanic: 20% community response events. |
+| M4 | **Resonance → Agent Mood** | ✅ IMPL | `fn_apply_resonance_moodlets` (Migration 161). 8 Jungian archetypes → moodlet types (−2 to +2 strength). Atomic PG delete-and-replace per tick. Heartbeat Phase 3b. Self-gating via agent_mood join. Stacking cap 1. Subsiding resonances at 0.5× strength. 5h timed decay. |
+| M5 | **Info Bubbles & UX (B1-B3)** | ✅ IMPL | B1: Agent influence panel (natural language breakdown, profession names + levels, WEAK/AVG/STRONG tier). B2: Building readiness 4-gauge Victoria 3 pattern (bottleneck detection). B3: Zone event risk display (threshold markers, CRITICAL/HIGH/MEDIUM/LOW badges, multiplier). Diamond badge overflow fix (4+ digit "1K" format). |
+
+#### M2. Bureau Terminal (MUD Interface)
+
+| # | Feature | Status | Beschreibung |
+|---|---------|--------|-------------|
+| M10 | **MUD Stage 1: Observation Terminal** | ✅ IMPL | 9 commands: look, go, examine, talk, weather, status, help, map, where + history, filter. BureauTerminal CRT component, TerminalStateManager, command parser (synonym map, Levenshtein fuzzy match), terminal-formatters (20+ format functions), TerminalQuickActions, TerminalView. Full CRT aesthetic (scanlines, phosphor glow, chromatic aberration), boot sequence, onboarding hints. Route: `/simulations/:slug/terminal`. |
+| M11 | **MUD Stage 2: Field Operations** | ✅ IMPL | 5 commands: fortify, quarantine, assign, unassign, ceremony. Operations Points budget. Progressive disclosure (Tier 2 at 10 commands). Realtime feed polling. Conversation mode for talk. |
+| M12 | **MUD Stage 3: Intelligence Network** | ✅ IMPL | 5 commands: scan (all-zone radar, 1 intel), investigate (event deep dive, 1 intel), report (session doc, free), debrief (AI structured 3-section report, 1 intel), ask (AI targeted query, free). Tier 3 clearance at 25 commands. Shared conversation + prompt helpers (ensureAgentConversation, sendAgentPrompt). ~1,300 LOC. 31 German translations. |
+| M13 | **Bureau CRT Palette** | ✅ IMPL | Hard amber CRT palette forced regardless of simulation theme. WCAG AA contrast fix. Dark CRT palette override. Empty screen on re-entry after navigation fix. |
+| M14 | **MUD Epoch Intelligence Station** | ✅ IMPL | Complementary design: terminal = intelligence gathering, GUI = command-and-control (no GUI duplication). 4 Tier 4 commands: sitrep (AI briefing), dossier (player intel file), threats (incoming operatives), intercept (counter-intel sweep, 4 RP). Enhanced Stage 1-3: look (threat detection), status (RP/cycle/rank/missions). EpochTerminalView wrapper. Terminal tab in EpochCommandCenter. `effectiveClearance` computed (epoch tier 4 is context-derived, not persisted). `simId()` + `resolveSimulationName()` epoch-aware. Zone ID validation for game_instance UUIDs. 58 German translations (5906 total). |
+
+---
+
 ## Technische Infrastruktur-Übersicht
 
 | Kennzahl | Wert |
 |----------|------|
 | **Simulationen** | 5 (Velgarien, The Gaslit Reach, Station Null, Speranza, Cité des Dames) |
 | **Datenbanktabellen** | 58 |
-| **SQL-Migrationen** | 126 |
+| **SQL-Migrationen** | 161 |
 | **RLS-Policies** | 150+ |
 | **Trigger** | 41+ |
 | **Views** | 8 Standard + 6 Materialized |
@@ -448,7 +472,7 @@ Features die innerhalb einer Simulation existieren. Benutzer können beliebig vi
 | **Backend-Tests** | 912 (pytest: unit + integration + security + performance) |
 | **Frontend-Tests** | 453 (vitest: validation + API + theme contrast + SEO) |
 | **E2E-Tests** | 81 (Playwright: 12 Dateien) |
-| **i18n-Strings** | 3220+ (EN/DE) |
+| **i18n-Strings** | 5848 (EN/DE, 100% coverage) |
 | **Background-Tasks** | 1 (ResonanceScheduler) |
 | **Storage Buckets** | 4 (agent.portraits, building.images, user.agent.portraits, simulation.assets) |
 | **Theme-Presets** | 6 (dark-brutalist, deep-space-horror, arc-raiders, gaslit-reach, illuminated-literary, custom) |
@@ -460,7 +484,7 @@ Features die innerhalb einer Simulation existieren. Benutzer können beliebig vi
 
 ## Phasen-Übersicht (historisch)
 
-Alle 6 Phasen abgeschlossen. 160 Tasks implementiert.
+Alle 6 Phasen + Post-Phase Living World abgeschlossen. 170+ Tasks implementiert.
 
 ### Phase 1: MVP (Plattform-Grundgerüst)
 - P1-P5 (Simulations-Management + Auth)
@@ -520,3 +544,8 @@ Alle 6 Phasen abgeschlossen. 160 Tasks implementiert.
 - S62-S64 (Forge Ceremony Card Dealer Spread, Image Progress Polling, Post-Ceremony Loading States)
 - D9-D13 (Cartographer's Desk, Map Layers, Cartographic Map, Annotations, Map Overlay RPC)
 - E5-E9 (Threshold System, Entropy UI, Ascendancy UI, Threshold Actions, Bleed Status RPC)
+
+### Post-Phase: Living World & Bureau Terminal
+- M1-M5 (Agent Autonomy Bootstrap, Influence → Readiness, Stability → Events, Resonance → Mood, Info Bubbles B1-B3)
+- M10-M13 (Bureau Terminal MUD Stages 1-3: Observation, Field Ops, Intelligence Network, CRT Palette)
+- i18n: 452 new German translations (100% coverage, 5789 total strings)

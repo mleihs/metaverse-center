@@ -15,6 +15,7 @@ import { customElement, state } from 'lit/decorators.js';
 import { chronicleApi } from '../../services/api/ChronicleApiService.js';
 import { seoService } from '../../services/SeoService.js';
 import { appState } from '../../services/AppStateManager.js';
+import { formatDate } from '../../utils/date-format.js';
 import { getThemeColor } from '../../utils/theme-colors.js';
 import type { Chronicle } from '../../types/index.js';
 import '../shared/PlatformFooter.js';
@@ -530,18 +531,6 @@ export class VelgChronicleFeed extends LitElement {
     for (const el of els) this._observer.observe(el);
   }
 
-  private _formatDate(dateStr: string): string {
-    try {
-      const d = new Date(dateStr);
-      return d.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      });
-    } catch {
-      return dateStr;
-    }
-  }
 
   /** Extract first paragraph or first N characters as excerpt. */
   private _excerpt(content: string, maxLen = 300): string {
@@ -622,7 +611,7 @@ export class VelgChronicleFeed extends LitElement {
           <span class="dispatch__meta">
             ${msg('Edition')} #${chronicle.edition_number}
             &middot;
-            ${this._formatDate(chronicle.created_at)}
+            ${formatDate(chronicle.created_at, { locale: 'en-US' })}
           </span>
         </div>
 
@@ -647,7 +636,7 @@ export class VelgChronicleFeed extends LitElement {
           <span class="dispatch__read-more-arrow">\u2192</span>
         </a>
 
-        <div class="dispatch__stamp">${msg('Decoded')} // ${this._formatDate(chronicle.created_at)}</div>
+        <div class="dispatch__stamp">${msg('Decoded')} // ${formatDate(chronicle.created_at, { locale: 'en-US' })}</div>
       </article>
     `;
   }

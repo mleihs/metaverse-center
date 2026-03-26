@@ -7,6 +7,7 @@
 import { msg } from '@lit/localize';
 import { appState } from '../services/AppStateManager.js';
 import { agentAutonomyApi } from '../services/api/AgentAutonomyApiService.js';
+import { epochsApi } from '../services/api/EpochsApiService.js';
 import { agentsApi } from '../services/api/index.js';
 import { buildingsApi } from '../services/api/index.js';
 import { chatApi } from '../services/api/index.js';
@@ -49,27 +50,20 @@ import {
   formatUnknownCommand,
   formatWeather,
   formatWhere,
+  formatSitrep,
+  formatDossier,
+  formatThreats,
+  formatInterceptSweep,
+  formatEpochStatusExtension,
+  formatInsufficientRP,
   errorLine,
+  hintLine,
   systemLine,
 } from './terminal-formatters.js';
 
-// ── Levenshtein Distance ───────────────────────────────────────────────────
+// ── Levenshtein Distance (shared) ─────────────────────────────────────────
 
-function levenshtein(a: string, b: string): number {
-  const m = a.length;
-  const n = b.length;
-  const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0) as number[]);
-  for (let i = 0; i <= m; i++) dp[i][0] = i;
-  for (let j = 0; j <= n; j++) dp[0][j] = j;
-  for (let i = 1; i <= m; i++) {
-    for (let j = 1; j <= n; j++) {
-      dp[i][j] = a[i - 1] === b[j - 1]
-        ? dp[i - 1][j - 1]
-        : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
-    }
-  }
-  return dp[m][n];
-}
+import { levenshtein, fuzzyMatch } from './fuzzy-search.js';
 
 // ── Synonym Map ────────────────────────────────────────────────────────────
 
@@ -85,7 +79,7 @@ const SYNONYM_MAP = new Map<string, string>([
   // weather
   ['wx', 'weather'], ['conditions', 'weather'],
   // status
-  ['sitrep', 'status'], ['sit', 'status'],
+  ['sit', 'status'],
   // fortify
   ['reinforce', 'fortify'], ['defend', 'fortify'],
   // quarantine
@@ -104,6 +98,11 @@ const SYNONYM_MAP = new Map<string, string>([
   ['probe', 'investigate'], ['research', 'investigate'],
   ['radar', 'scan'], ['sweep', 'scan'],
   ['summary', 'report'], ['log', 'report'],
+  // Stage 4: Epoch Intelligence (tier 4)
+  ['briefing', 'sitrep'],
+  ['file', 'dossier'], ['profile', 'dossier'],
+  ['incoming', 'threats'], ['alert', 'threats'],
+  ['counter', 'intercept'], ['countersweep', 'intercept'],
 ]);
 
 // ── Cardinal Directions ────────────────────────────────────────────────────
@@ -114,45 +113,17 @@ const DIRECTIONS = new Set([
   'ne', 'nw', 'se', 'sw', 'up', 'down',
 ]);
 
-// ── Fuzzy Entity Matching ──────────────────────────────────────────────────
-
-interface NamedEntity {
-  id: string;
-  name: string;
-}
-
-/**
- * Find entities matching a search string.
- * 1. Exact case-insensitive match
- * 2. Substring match
- * 3. Levenshtein distance <= 2
- */
-function fuzzyMatch<T extends NamedEntity>(
-  query: string,
-  entities: T[],
-): T[] {
-  const q = query.toLowerCase().trim();
-  if (!q) return [];
-
-  // Exact match
-  const exact = entities.filter((e) => e.name.toLowerCase() === q);
-  if (exact.length > 0) return exact;
-
-  // Substring match
-  const substring = entities.filter((e) => e.name.toLowerCase().includes(q));
-  if (substring.length > 0) return substring;
-
-  // Levenshtein fallback (match against individual words in name)
-  const lev = entities.filter((e) => {
-    const words = e.name.toLowerCase().split(/\s+/);
-    return words.some((w) => levenshtein(q, w) <= 2);
-  });
-  return lev;
-}
-
 // ── Helper: Get Simulation ID ──────────────────────────────────────────────
 
+/**
+ * Resolve the active simulation ID.
+ * In epoch mode, uses the participant's game_instance ID;
+ * in template mode, uses the global AppStateManager.
+ */
 function simId(): string {
+  if (terminalState.isEpochMode.value) {
+    return terminalState.epochParticipant.value?.simulation_id ?? '';
+  }
   return appState.simulationId.value ?? '';
 }
 
@@ -239,9 +210,31 @@ async function handleLook(_ctx: CommandContext): Promise<TerminalLine[]> {
 
   const allZones = Array.from(terminalState.zoneCache.value.values());
 
-  return formatLook(
+  const lookOutput = formatLook(
     zone, stability, agents, buildings, readinessMap, zoneEvents, allZones, weatherNarrative,
   );
+
+  // Epoch mode: append threat detection for current zone
+  if (terminalState.isEpochMode.value) {
+    const epochId = terminalState.epochId.value!;
+    const participant = terminalState.epochParticipant.value!;
+    try {
+      const threatResp = await epochsApi.listThreats(epochId, participant.simulation_id);
+      if (threatResp.success && Array.isArray(threatResp.data) && threatResp.data.length > 0) {
+        lookOutput.push(systemLine(''));
+        lookOutput.push(systemLine(
+          `[!] ${msg('Foreign operative detected in this zone. Identity unknown.')}`,
+        ));
+        lookOutput.push(hintLine(
+          msg("Use 'intercept' to attempt identification and capture."),
+        ));
+      }
+    } catch {
+      // Silently degrade — threat detection is supplementary
+    }
+  }
+
+  return lookOutput;
 }
 
 async function handleGo(ctx: CommandContext): Promise<TerminalLine[]> {
@@ -437,11 +430,67 @@ async function handleStatus(_ctx: CommandContext): Promise<TerminalLine[]> {
     return [systemLine(msg('Failed to retrieve situation report.'))];
   }
 
-  return formatStatus(
+  const statusOutput = formatStatus(
     resp.data,
     terminalState.operationsPoints.value,
     terminalState.intelPoints.value,
   );
+
+  // Epoch mode: append epoch-specific intel
+  if (terminalState.isEpochMode.value) {
+    const epochId = terminalState.epochId.value!;
+    const participant = terminalState.epochParticipant.value!;
+    try {
+      const [leaderResp, missionsResp] = await Promise.all([
+        epochsApi.getLeaderboard(epochId),
+        epochsApi.listMissions(epochId, { simulation_id: participant.simulation_id }),
+      ]);
+
+      const leaderboard = leaderResp.success && Array.isArray(leaderResp.data) ? leaderResp.data : [];
+      const myRank = leaderboard.findIndex(
+        (e: { simulation_id: string }) => e.simulation_id === participant.simulation_id,
+      );
+      const missions = missionsResp.success && Array.isArray(missionsResp.data) ? missionsResp.data : [];
+      const activeMissions = missions.filter(
+        (m: { status: string }) => m.status === 'active' || m.status === 'deploying',
+      ).length;
+
+      // Refresh RP from participant data
+      const pResp = await epochsApi.listParticipants(epochId);
+      if (pResp.success && pResp.data) {
+        const me = (Array.isArray(pResp.data) ? pResp.data : []).find(
+          (p: { simulation_id: string }) => p.simulation_id === participant.simulation_id,
+        );
+        if (me) terminalState.updateParticipant(me);
+      }
+
+      statusOutput.push(...formatEpochStatusExtension(
+        terminalState.epochStatus.value ?? 'competition',
+        0, // cycle — will be fetched below
+        terminalState.currentRP.value,
+        activeMissions,
+        myRank >= 0 ? myRank + 1 : null,
+      ));
+
+      // Get current cycle from epoch data
+      const epochResp = await epochsApi.getEpoch(epochId);
+      if (epochResp.success && epochResp.data) {
+        // Replace the placeholder cycle with actual value
+        const cycleIdx = statusOutput.findIndex((l) => l.content.includes(`${msg('Cycle')}: 0`));
+        if (cycleIdx >= 0) {
+          const line = statusOutput[cycleIdx];
+          statusOutput[cycleIdx] = {
+            ...line,
+            content: line.content.replace(`${msg('Cycle')}: 0`, `${msg('Cycle')}: ${epochResp.data.current_cycle}`),
+          };
+        }
+      }
+    } catch {
+      // Silently degrade — epoch status is supplementary
+    }
+  }
+
+  return statusOutput;
 }
 
 async function handleMap(_ctx: CommandContext): Promise<TerminalLine[]> {
@@ -459,10 +508,9 @@ async function handleMap(_ctx: CommandContext): Promise<TerminalLine[]> {
     }
   }
 
-  const simName = appState.currentSimulation.value?.name ?? '';
   const currentZoneId = terminalState.currentZoneId.value ?? '';
 
-  return formatMap(zones, stabilities, currentZoneId, simName);
+  return formatMap(zones, stabilities, currentZoneId, resolveSimulationName());
 }
 
 async function handleWhere(_ctx: CommandContext): Promise<TerminalLine[]> {
@@ -482,7 +530,7 @@ async function handleHelp(ctx: CommandContext): Promise<TerminalLine[]> {
   }
 
   const commands = Array.from(COMMAND_REGISTRY.values());
-  return formatHelp(commands, terminalState.clearanceLevel.value);
+  return formatHelp(commands, terminalState.effectiveClearance.value);
 }
 
 async function handleHistory(_ctx: CommandContext): Promise<TerminalLine[]> {
@@ -807,7 +855,7 @@ async function handleReport(_ctx: CommandContext): Promise<TerminalLine[]> {
     zonesVisited,
     history,
     currentZone?.name ?? null,
-    terminalState.clearanceLevel.value,
+    terminalState.effectiveClearance.value,
   );
 }
 
@@ -905,6 +953,137 @@ async function handleAsk(ctx: CommandContext): Promise<TerminalLine[]> {
 
 // ── Command Registry ───────────────────────────────────────────────────────
 
+// ── Stage 4: Epoch Intelligence Handlers ──────────────────────────────────
+
+/** Sitrep — AI-generated tactical narrative briefing. */
+async function handleSitrep(_ctx: CommandContext): Promise<TerminalLine[]> {
+  const epochId = terminalState.epochId.value;
+  const participant = terminalState.epochParticipant.value;
+  if (!epochId || !participant) {
+    return [errorLine(msg('Sitrep requires OPERATIONAL MODE (epoch context).'))];
+  }
+
+  // Fetch the epoch to get current_cycle
+  const epochResp = await epochsApi.getEpoch(epochId);
+  if (!epochResp.success || !epochResp.data) {
+    return [errorLine(msg('Failed to retrieve epoch data.'))];
+  }
+  const currentCycle = epochResp.data.current_cycle ?? 1;
+
+  const resp = await epochsApi.getSitrep(epochId, currentCycle, participant.simulation_id);
+  if (!resp.success || !resp.data) {
+    return [errorLine(msg('Failed to generate situation report.'))];
+  }
+
+  const narrative = typeof resp.data === 'string'
+    ? resp.data
+    : (resp.data as { narrative?: string }).narrative ?? JSON.stringify(resp.data);
+  return formatSitrep(narrative, currentCycle, terminalState.epochStatus.value ?? 'competition');
+}
+
+/** Dossier — formatted intelligence file on an opponent. */
+async function handleDossier(ctx: CommandContext): Promise<TerminalLine[]> {
+  const epochId = terminalState.epochId.value;
+  const participant = terminalState.epochParticipant.value;
+  if (!epochId || !participant) {
+    return [errorLine(msg('Dossier requires OPERATIONAL MODE (epoch context).'))];
+  }
+
+  const target = ctx.args.join(' ').trim();
+  if (!target) {
+    return [errorLine(msg('Usage: dossier {player name}'))];
+  }
+
+  // Resolve player from epoch participants
+  const players = terminalState.epochParticipants.value
+    .filter((p) => p.simulation_id !== participant.simulation_id)
+    .map((p) => ({
+      id: p.simulation_id,
+      name: p.simulations?.name ?? p.simulation_id,
+    }));
+
+  const matches = fuzzyMatch(target, players);
+  if (matches.length === 0) {
+    return [errorLine(msg('Unknown operative. Available targets: ') + players.map((p) => p.name).join(', '))];
+  }
+  if (matches.length > 1) {
+    return formatAmbiguousTarget(matches);
+  }
+
+  const targetPlayer = matches[0];
+
+  const resp = await epochsApi.getIntelDossiers(epochId, participant.simulation_id);
+  if (!resp.success || !resp.data) {
+    return [errorLine(msg('Failed to retrieve intelligence data.'))];
+  }
+
+  const dossiers = Array.isArray(resp.data) ? resp.data : [];
+  const dossier = dossiers.find(
+    (d: { simulation_id?: string; simulation_name?: string }) =>
+      d.simulation_id === targetPlayer.id || d.simulation_name === targetPlayer.name,
+  );
+
+  if (!dossier) {
+    return [systemLine(msg('No intelligence gathered on ') + targetPlayer.name + '.'),
+      systemLine(msg('Recommend spy deployment via Operations Console.'))];
+  }
+
+  return formatDossier(dossier, targetPlayer.name);
+}
+
+/** Threats — list detected incoming operatives. */
+async function handleThreats(_ctx: CommandContext): Promise<TerminalLine[]> {
+  const epochId = terminalState.epochId.value;
+  const participant = terminalState.epochParticipant.value;
+  if (!epochId || !participant) {
+    return [errorLine(msg('Threat detection requires OPERATIONAL MODE (epoch context).'))];
+  }
+
+  const resp = await epochsApi.listThreats(epochId, participant.simulation_id);
+  if (!resp.success) {
+    return [errorLine(msg('Threat scan failed.'))];
+  }
+
+  const threats = Array.isArray(resp.data) ? resp.data : [];
+  return formatThreats(threats);
+}
+
+/** Intercept — counter-intelligence sweep of current zone. */
+async function handleIntercept(_ctx: CommandContext): Promise<TerminalLine[]> {
+  const epochId = terminalState.epochId.value;
+  const participant = terminalState.epochParticipant.value;
+  if (!epochId || !participant) {
+    return [errorLine(msg('Counter-intelligence requires OPERATIONAL MODE (epoch context).'))];
+  }
+
+  const resp = await epochsApi.counterIntelSweep(epochId, participant.simulation_id);
+  if (!resp.success) {
+    const errMsg = typeof resp.error === 'string' ? resp.error : msg('Counter-intelligence sweep failed.');
+    // Check for insufficient RP
+    if (errMsg.toLowerCase().includes('rp') || errMsg.toLowerCase().includes('points')) {
+      return formatInsufficientRP(terminalState.currentRP.value, 4);
+    }
+    return [errorLine(errMsg)];
+  }
+
+  // Refresh participant data (RP may have changed)
+  const pResp = await epochsApi.listParticipants(epochId);
+  if (pResp.success && pResp.data) {
+    const me = (Array.isArray(pResp.data) ? pResp.data : []).find(
+      (p: { simulation_id: string }) => p.simulation_id === participant.simulation_id,
+    );
+    if (me) terminalState.updateParticipant(me);
+  }
+
+  // Fetch threats to show results
+  const threatResp = await epochsApi.listThreats(epochId, participant.simulation_id);
+  const detected = threatResp.success && Array.isArray(threatResp.data) ? threatResp.data : [];
+
+  return formatInterceptSweep(detected, terminalState.currentRP.value);
+}
+
+// ── Command Registry ──────────────────────────────────────────────────────
+
 export const COMMAND_REGISTRY = new Map<string, TerminalCommand>([
   // Stage 1: Observation
   // NOTE: descriptions use () => msg() to avoid module-level i18n gotcha (see i18n-gotchas.md)
@@ -934,7 +1113,7 @@ export const COMMAND_REGISTRY = new Map<string, TerminalCommand>([
     requiresTarget: false, handler: handleWeather,
   }],
   ['status', {
-    verb: 'status', synonyms: ['sitrep', 'sit'], tier: 1,
+    verb: 'status', synonyms: ['sit'], tier: 1,
     syntax: 'status', description: () => msg('Full situation report'),
     requiresTarget: false, handler: handleStatus,
   }],
@@ -1022,6 +1201,28 @@ export const COMMAND_REGISTRY = new Map<string, TerminalCommand>([
     syntax: 'ask {agent} about {topic}', description: () => msg('Ask agent about a specific topic (AI)'),
     requiresTarget: true, targetType: 'freetext', handler: handleAsk,
   }],
+
+  // Stage 4: Epoch Intelligence (OPERATIONAL MODE only)
+  ['sitrep', {
+    verb: 'sitrep', synonyms: ['briefing'], tier: 4,
+    syntax: 'sitrep', description: () => msg('AI tactical situation briefing'),
+    requiresTarget: false, handler: handleSitrep,
+  }],
+  ['dossier', {
+    verb: 'dossier', synonyms: ['file', 'profile'], tier: 4,
+    syntax: 'dossier {player}', description: () => msg('Intelligence file on an opponent'),
+    requiresTarget: true, targetType: 'player', handler: handleDossier,
+  }],
+  ['threats', {
+    verb: 'threats', synonyms: ['incoming', 'alert'], tier: 4,
+    syntax: 'threats', description: () => msg('List detected incoming operatives'),
+    requiresTarget: false, handler: handleThreats,
+  }],
+  ['intercept', {
+    verb: 'intercept', synonyms: ['counter', 'countersweep'], tier: 4,
+    syntax: 'intercept', description: () => msg('Counter-intelligence sweep (4 RP)'),
+    requiresTarget: false, handler: handleIntercept,
+  }],
 ]);
 
 // ── Main Parser ────────────────────────────────────────────────────────────
@@ -1092,7 +1293,7 @@ export async function parseAndExecute(input: string): Promise<TerminalLine[]> {
   }
 
   // Check clearance
-  if (cmd.tier > terminalState.clearanceLevel.value) {
+  if (cmd.tier > terminalState.effectiveClearance.value) {
     output.push(...formatInsufficientClearance(verb, cmd.tier));
     return output;
   }
@@ -1106,6 +1307,10 @@ export async function parseAndExecute(input: string): Promise<TerminalLine[]> {
       rawInput: trimmed,
       verb,
       args,
+      // Epoch context (undefined in template mode)
+      epochId: terminalState.epochId.value ?? undefined,
+      epochParticipant: terminalState.epochParticipant.value ?? undefined,
+      epochStatus: terminalState.epochStatus.value ?? undefined,
     };
     const result = await cmd.handler(ctx);
     output.push(...result);
@@ -1143,8 +1348,22 @@ export async function parseAndExecute(input: string): Promise<TerminalLine[]> {
 }
 
 /** Get boot sequence lines for first-time display. */
+/**
+ * Resolve the current simulation name.
+ * In epoch mode, reads from the participant's game_instance;
+ * in template mode, reads from the global AppStateManager.
+ */
+function resolveSimulationName(): string {
+  if (terminalState.isEpochMode.value) {
+    return terminalState.epochParticipant.value?.simulations?.name
+      ?? appState.currentSimulation.value?.name
+      ?? 'Unknown';
+  }
+  return appState.currentSimulation.value?.name ?? 'Unknown';
+}
+
 export function getBootSequence(): TerminalLine[] {
-  const simName = appState.currentSimulation.value?.name ?? 'Unknown';
+  const simName = resolveSimulationName();
   const theme = appState.currentSimulation.value?.theme;
 
   // Read AI-generated boot art from simulation design settings
@@ -1163,14 +1382,23 @@ export function getBootSequence(): TerminalLine[] {
  * Short wake-from-sleep message: sector + zone + hint. Not the full cinematic boot.
  */
 export function getReentrySequence(): TerminalLine[] {
-  const simName = appState.currentSimulation.value?.name ?? 'Unknown';
+  const simName = resolveSimulationName();
   const zone = terminalState.currentZone.value;
-  const level = terminalState.clearanceLevel.value;
+  const level = terminalState.effectiveClearance.value;
+  const isEpoch = terminalState.isEpochMode.value;
 
   const lines: TerminalLine[] = [];
   lines.push(systemLine(''));
-  lines.push(systemLine(`BUREAU FIELD TERMINAL — ${simName.toUpperCase()}`));
-  lines.push(systemLine(`${msg('Operator clearance')}: LEVEL ${level}`));
+
+  if (isEpoch) {
+    lines.push(systemLine(`BUREAU INTELLIGENCE STATION — ${simName.toUpperCase()}`));
+    lines.push(systemLine(`${msg('Mode')}: OPERATIONAL | ${msg('Operator clearance')}: LEVEL ${level}`));
+    lines.push(systemLine(`${msg('Resource Points')}: ${terminalState.currentRP.value} | ${msg('Phase')}: ${(terminalState.epochStatus.value ?? 'competition').toUpperCase()}`));
+  } else {
+    lines.push(systemLine(`BUREAU FIELD TERMINAL — ${simName.toUpperCase()}`));
+    lines.push(systemLine(`${msg('Operator clearance')}: LEVEL ${level}`));
+  }
+
   if (zone) {
     lines.push(systemLine(`${msg('Assigned sector')}: ${zone.name}`));
   }

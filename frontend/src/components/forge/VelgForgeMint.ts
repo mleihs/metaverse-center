@@ -11,6 +11,7 @@ import { appState } from '../../services/AppStateManager.js';
 import type { TokenBundle } from '../../services/api/ForgeApiService.js';
 import { forgeApi } from '../../services/api/ForgeApiService.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
+import { formatDate } from '../../utils/date-format.js';
 import { forgeButtonStyles } from './forge-console-styles.js';
 
 @localized()
@@ -736,13 +737,6 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
     return `$${(cents / 100).toFixed(2)}`;
   }
 
-  private _formatDate(iso: string): string {
-    return new Date(iso).toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  }
 
   private _renderBundle(bundle: TokenBundle) {
     const selected = this._selectedSlug === bundle.slug;
@@ -798,7 +792,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
                       <li class="mint__history-item">
                         <span class="mint__history-tokens">+${p.tokens_granted}</span>
                         <span class="mint__history-price">${this._formatPrice(p.price_cents)}</span>
-                        <span class="mint__history-date">${this._formatDate(p.created_at)}</span>
+                        <span class="mint__history-date">${formatDate(p.created_at)}</span>
                       </li>
                     `,
                   )}

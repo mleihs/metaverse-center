@@ -1,6 +1,7 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, type TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { formatDate } from '../../utils/date-format.js';
 import { eventsApi } from '../../services/api/index.js';
 import type { Event as SimEvent } from '../../types/index.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -250,18 +251,6 @@ export class VelgEventPicker extends LitElement {
     );
   }
 
-  private _formatDate(dateString: string | undefined): string {
-    if (!dateString) return '';
-    try {
-      return new Date(dateString).toLocaleDateString(undefined, {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      });
-    } catch {
-      return '';
-    }
-  }
 
   private _renderImpactBar(level: number): TemplateResult {
     const pct = Math.max(0, Math.min(100, level * 10));
@@ -290,7 +279,7 @@ export class VelgEventPicker extends LitElement {
         <div class="picker__item-meta">
           ${event.event_type ? html`<span class="picker__type-badge">${event.event_type}</span>` : null}
           ${this._renderImpactBar(event.impact_level ?? 0)}
-          <span class="picker__item-date">${this._formatDate(event.occurred_at)}</span>
+          <span class="picker__item-date">${formatDate(event.occurred_at)}</span>
         </div>
         ${event.description ? html`<div class="picker__item-desc">${event.description}</div>` : null}
       </div>

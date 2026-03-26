@@ -777,7 +777,7 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
     const zone = terminalState.currentZone.value;
     const ops = terminalState.operationsPoints.value;
     const intel = terminalState.intelPoints.value;
-    const clearance = terminalState.clearanceLevel.value;
+    const clearance = terminalState.effectiveClearance.value;
     const inConversation = terminalState.isInConversation.value;
 
     return html`
@@ -832,6 +832,7 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
       <velg-terminal-quick-actions
         .clearanceLevel=${clearance}
         .inConversation=${inConversation}
+        .epochMode=${terminalState.isEpochMode.value}
         @terminal-command=${this._handleQuickAction}
       ></velg-terminal-quick-actions>
 

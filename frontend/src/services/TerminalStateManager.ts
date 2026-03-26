@@ -11,7 +11,15 @@ import type {
   TerminalLine,
   TerminalPersistedState,
 } from '../types/terminal.js';
-import type { Agent, Building, Zone, ZoneStability } from '../types/index.js';
+import type {
+  Agent,
+  Building,
+  EpochParticipant,
+  EpochStatus,
+  EpochTeam,
+  Zone,
+  ZoneStability,
+} from '../types/index.js';
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
@@ -62,7 +70,30 @@ class TerminalStateManager {
   /** Timestamp of last fetched heartbeat entry (for polling delta). */
   readonly lastFeedTimestamp = signal<string | null>(null);
 
+  // --- Epoch State (NOT persisted — server-authoritative) ---
+  readonly epochId = signal<string | null>(null);
+  readonly epochParticipant = signal<EpochParticipant | null>(null);
+  readonly epochParticipants = signal<EpochParticipant[]>([]);
+  readonly epochStatus = signal<EpochStatus | null>(null);
+  readonly epochTeams = signal<EpochTeam[]>([]);
+  /** Timestamp of last fetched battle log entry (for epoch feed polling). */
+  readonly lastBattleLogTimestamp = signal<string | null>(null);
+
   // --- Computed ---
+  readonly isEpochMode = computed(() => this.epochId.value !== null);
+  readonly currentRP = computed(() => this.epochParticipant.value?.current_rp ?? 0);
+  readonly myTeamId = computed(() => this.epochParticipant.value?.team_id ?? null);
+
+  /**
+   * Effective clearance level — the actual tier used for command access.
+   * In epoch mode, tier 4 is granted as a context privilege (not persisted).
+   * In template mode, reflects the earned tier (1-3 based on command count).
+   */
+  readonly effectiveClearance = computed(() => {
+    const earned = this.clearanceLevel.value;
+    if (this.isEpochMode.value) return Math.max(earned, 4);
+    return Math.min(earned, 3); // Template mode caps at tier 3
+  });
   readonly isInConversation = computed(() => this.conversationMode.value !== null);
   readonly currentZone = computed(() => {
     const zoneId = this.currentZoneId.value;
@@ -117,6 +148,45 @@ class TerminalStateManager {
     this.lastFeedTimestamp.value = null;
   }
 
+  // ── Epoch Context ────────────────────────────────────────────────────
+
+  /**
+   * Initialize epoch context for OPERATIONAL MODE.
+   * Called by EpochTerminalView after base initialize().
+   * Epoch state is NOT persisted — it's server-authoritative and set fresh each session.
+   */
+  initializeEpoch(
+    epochId: string,
+    participant: EpochParticipant,
+    participants: EpochParticipant[],
+    teams: EpochTeam[],
+    status: EpochStatus,
+  ): void {
+    this.epochId.value = epochId;
+    this.epochParticipant.value = participant;
+    this.epochParticipants.value = participants;
+    this.epochTeams.value = teams;
+    this.epochStatus.value = status;
+    this.lastBattleLogTimestamp.value = null;
+    // Tier 4 clearance is derived via effectiveClearance computed — no mutation needed.
+  }
+
+  /** Clear all epoch state. Called when leaving the epoch terminal. */
+  clearEpoch(): void {
+    this.epochId.value = null;
+    this.epochParticipant.value = null;
+    this.epochParticipants.value = [];
+    this.epochTeams.value = [];
+    this.epochStatus.value = null;
+    this.lastBattleLogTimestamp.value = null;
+    // effectiveClearance automatically reverts to earned tier (1-3) when isEpochMode becomes false.
+  }
+
+  /** Update participant data (e.g., after RP change from intercept). */
+  updateParticipant(participant: EpochParticipant): void {
+    this.epochParticipant.value = participant;
+  }
+
   // ── Output Management ──────────────────────────────────────────────────
 
   /** Append lines to the terminal output buffer, trimming to MAX_OUTPUT_LINES. */
@@ -169,8 +239,10 @@ class TerminalStateManager {
     const TIER_COMMANDS: Record<number, string[]> = {
       2: ['fortify', 'quarantine', 'assign', 'unassign', 'ceremony'],
       3: ['debrief', 'ask', 'investigate', 'scan', 'report'],
+      4: ['sitrep', 'dossier', 'threats', 'intercept'],
     };
 
+    // Tier 4 is epoch-context-based (handled in initializeEpoch), not command-count-based.
     for (const [level, threshold] of Object.entries(CLEARANCE_THRESHOLDS)) {
       const lvl = Number(level);
       if (lvl > current && count >= threshold) {

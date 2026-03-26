@@ -8,6 +8,7 @@ import {
   type BlueskyPipelineSettings,
   type BlueskyQueueItem,
 } from '../../services/api/AdminApiService.js';
+import { formatDateTimeShort } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
@@ -474,15 +475,6 @@ export class VelgAdminBlueskyTab extends LitElement {
 
   // ── Formatting ───────────────────────────────────────
 
-  private _formatDate(iso: string | null): string {
-    if (!iso) return '—';
-    try {
-      const d = new Date(iso);
-      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-    } catch {
-      return iso;
-    }
-  }
 
   private _formatNumber(n: number): string {
     if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
@@ -679,10 +671,10 @@ export class VelgAdminBlueskyTab extends LitElement {
             <span class="badge badge--${badgeColor}">${post.status}</span>
             <span class="dispatch__timestamp">
               ${post.status === 'published'
-                ? this._formatDate(post.published_at)
+                ? formatDateTimeShort(post.published_at)
                 : post.status === 'pending'
-                  ? this._formatDate(post.scheduled_at)
-                  : this._formatDate(post.created_at)
+                  ? formatDateTimeShort(post.scheduled_at)
+                  : formatDateTimeShort(post.created_at)
               }
             </span>
           </div>

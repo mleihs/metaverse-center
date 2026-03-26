@@ -11,6 +11,7 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { epochsApi } from '../../services/api/EpochsApiService.js';
+import { formatDateTimeShort } from '../../utils/date-format.js';
 import { localeService } from '../../services/i18n/locale-service.js';
 import type { EpochInvitation } from '../../types/index.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -418,20 +419,6 @@ export class VelgEpochInvitePanel extends LitElement {
     if (e.key === 'Enter') this._handleSend();
   }
 
-  private _formatTime(iso: string): string {
-    try {
-      const d = new Date(iso);
-      return d.toLocaleDateString(undefined, {
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch {
-      return iso;
-    }
-  }
-
   protected render() {
     return html`
       <velg-side-panel
@@ -502,7 +489,7 @@ export class VelgEpochInvitePanel extends LitElement {
                         <div class="inv-row">
                           <div class="inv-row__info">
                             <span class="inv-row__email">${inv.invited_email}</span>
-                            <span class="inv-row__time">${this._formatTime(inv.created_at)}</span>
+                            <span class="inv-row__time">${formatDateTimeShort(inv.created_at)}</span>
                           </div>
                           <span class="status-badge status-badge--${inv.status}">
                             <span class="status-badge__dot"></span>

@@ -2,6 +2,7 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
+import { formatDate } from '../../utils/date-format.js';
 import { usersApi } from '../../services/api/index.js';
 import type { MembershipInfo } from '../../types/index.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -314,17 +315,6 @@ export class VelgUserProfileView extends LitElement {
     );
   }
 
-  private _formatDate(dateStr: string): string {
-    try {
-      return new Date(dateStr).toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      });
-    } catch {
-      return dateStr;
-    }
-  }
 
   private _renderProfileForm() {
     const user = appState.user.value;
@@ -428,7 +418,7 @@ export class VelgUserProfileView extends LitElement {
                               ${m.member_role}
                             </span>
                             <span class="profile__membership-date">
-                              ${msg(str`Joined ${this._formatDate(m.joined_at)}`)}
+                              ${msg(str`Joined ${formatDate(m.joined_at)}`)}
                             </span>
                           </div>
                         </div>

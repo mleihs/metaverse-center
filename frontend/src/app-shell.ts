@@ -249,17 +249,59 @@ export class VelgApp extends LitElement {
       },
       {
         path: '/how-to-play',
+        render: () => html`<velg-how-to-play-landing></velg-how-to-play-landing>`,
+        enter: async () => {
+          await this._authReady;
+          if (!await this._lazy(() => import('./components/how-to-play/HowToPlayLanding.js'))) return false;
+          // SEO handled inside component
+          return true;
+        },
+      },
+      {
+        path: '/how-to-play/quickstart',
+        render: () => html`<velg-how-to-play-quickstart></velg-how-to-play-quickstart>`,
+        enter: async () => {
+          await this._authReady;
+          if (!await this._lazy(() => import('./components/how-to-play/HowToPlayQuickstart.js'))) return false;
+          return true;
+        },
+      },
+      {
+        path: '/how-to-play/guide',
+        render: () => html`<velg-how-to-play-guide-hub></velg-how-to-play-guide-hub>`,
+        enter: async () => {
+          await this._authReady;
+          if (!await this._lazy(() => import('./components/how-to-play/HowToPlayGuideHub.js'))) return false;
+          return true;
+        },
+      },
+      {
+        path: '/how-to-play/guide/:topic',
+        render: ({ topic }) => html`<velg-how-to-play-topic .topic=${topic ?? ''}></velg-how-to-play-topic>`,
+        enter: async () => {
+          await this._authReady;
+          if (!await this._lazy(() => import('./components/how-to-play/HowToPlayTopic.js'))) return false;
+          return true;
+        },
+      },
+      {
+        path: '/how-to-play/competitive',
+        render: () => html`<velg-how-to-play-war-room></velg-how-to-play-war-room>`,
+        enter: async () => {
+          await this._authReady;
+          if (!await this._lazy(() => import('./components/how-to-play/HowToPlayWarRoom.js'))) return false;
+          return true;
+        },
+      },
+      {
+        path: '/how-to-play/legacy',
         render: () => html`<velg-how-to-play></velg-how-to-play>`,
         enter: async () => {
           await this._authReady;
           if (!await this._lazy(() => import('./components/how-to-play/HowToPlayView.js'))) return false;
-          seoService.setTitle(['How to Play']);
+          seoService.setTitle(['How to Play (Legacy)']);
           seoService.setCanonical('/how-to-play');
-          seoService.setBreadcrumbs([
-            { name: 'Home', url: 'https://metaverse.center/' },
-            { name: 'How to Play', url: 'https://metaverse.center/how-to-play' },
-          ]);
-          analyticsService.trackPageView('/how-to-play', document.title);
+          analyticsService.trackPageView('/how-to-play/legacy', document.title);
           return true;
         },
       },

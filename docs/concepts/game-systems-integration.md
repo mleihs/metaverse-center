@@ -1,6 +1,6 @@
 ---
 title: "Game Systems Integration — Connecting the Living World"
-version: "3.2"
+version: "3.3"
 date: "2026-03-26"
 type: concept
 status: active
@@ -35,7 +35,7 @@ Each system works individually. They don't work together.
 |---|----------|--------------|----------|------------|------------------------------|
 | A1 | Agent Influence | → | Building Readiness | ✅ `fn_compute_agent_influence` (mig 158) + `fn_bootstrap_building_relations` (mig 160) | ✅ HIGH — creates agent placement decisions |
 | A2 | Zone Stability | → | Event Probability | ✅ Stability multiplier in autonomous_event_service (2026-03-25) | ✅ HIGH — creates urgency and resource allocation |
-| A3 | Resonance | → | Agent Mood | ❌ Resonance is decorative, doesn't affect agents | ⚠️ MEDIUM — abstract, hard to communicate |
+| A3 | Resonance | → | Agent Mood | ✅ `fn_apply_resonance_moodlets` (mig 161) | ⚠️ MEDIUM — abstract, hard to communicate |
 | A4 | Events | → | Agent Needs | ❌ Events age passively, don't affect agents | ❌ LOW — no player decision, purely automatic |
 | A5 | Autonomy | → | Everything | ✅ ON by default (mig 157), zone/building bootstrap | ✅ PREREQUISITE — nothing works without this |
 
@@ -362,7 +362,7 @@ Each stage adds new commands, new gameplay mechanics, and a new player role. Lat
 
 **Backend requirements:** Small. Zone Action Budget needs a new `terminal_action_budgets` table or PG function to track point spending per simulation per user per cycle.
 
-#### Stage 3: Intelligence Network
+#### Stage 3: Intelligence Network — ✅ IMPLEMENTED (2026-03-26)
 
 **Player role:** Intelligence officer. Structured information gathering.
 
@@ -373,35 +373,31 @@ Each stage adds new commands, new gameplay mechanics, and a new player role. Lat
 - Intelligence Points pool -- debriefs and scans cost Intel Points (see 4.4.3)
 - Agent knowledge boundaries -- agents only know about their zone, their building, their relationships
 
-**Backend requirements:** Medium. New AI prompt template for `debrief` responses. Intel Points tracking. Agent knowledge scope logic (which agent knows what).
+**Implementation (2026-03-26):** All 5 commands implemented in `terminal-commands.ts` + `terminal-formatters.ts`. AI commands (`debrief`, `ask`) use existing ChatAIService with Bureau-style structured prompts. Conversation management extracted into shared helpers (`ensureAgentConversation`, `sendAgentPrompt`). Tier 3 clearance unlocks at 25 total commands. 31 new German translations. ~1,300 LOC total.
 
-#### Stage 4: Epoch Operations (PvP)
+#### Stage 4-5: Epoch Intelligence Station — ✅ IMPLEMENTED (2026-03-26)
 
-**Player role:** Operative handler. Command agents against other players.
+**Design decision:** The epoch GUI (`EpochCommandCenter`) already provides polished visual UX for operative deployment, alliance management, chat, and scoring. Duplicating these actions as terminal commands would create a worse interface with no new gameplay decisions. Instead, the terminal in epoch mode serves as a **complementary intelligence gathering station**: the terminal reveals information through narrative interrogation, while the GUI handles command-and-control actions.
 
-**Commands:** `deploy`, `scout`, `intercept`, `sabotage`
+**Player role:** Intelligence analyst. Gather, analyze, and act on intel -- then switch to the GUI to execute.
 
-**New mechanics:**
-- Fog of war -- three types: spatial (only current zone visible), temporal (scout reports delayed 1-2 ticks), intentional (opponents can deceive)
-- Operative detection -- `look` in epoch shows "Foreign operative detected" without revealing identity
-- Noise system -- actions generate detectable "noise" (fortify = loud, scout = quiet, sabotage = medium)
+| Terminal ("Field Agent") | GUI ("Command Center") |
+|--------------------------|------------------------|
+| Discover intel narratively (debrief, ask) | View intel as data tables (dossiers) |
+| Detect threats locally (look in a zone) | See all threats in a list |
+| Read AI situation reports (sitrep) | See charts and scores |
+| Sweep for operatives (intercept) | Deploy operatives (modal) |
 
-**Backend requirements:** Large. Visibility system (what each player can see per zone), delayed scout report delivery, noise detection triggers. Integrates with existing `operative_mission_service.py`.
+**New Tier 4 commands:** `sitrep`, `dossier {player}`, `threats`, `intercept`
 
-#### Stage 5: Spymaster (Multiplayer Diplomacy)
+**Enhanced Stage 1-3 for epoch:**
+- `look` appends threat detection ("Foreign operative detected in this zone")
+- `status` appends epoch context (RP, cycle, phase, active missions, rank)
+- Re-entry sequence shows OPERATIONAL MODE + RP status
 
-**Player role:** Spymaster. Negotiate, deceive, betray.
+**Graceful GUI redirects:** Typing `deploy`, `ally`, `broadcast`, or `encrypt` in the terminal shows a helpful redirect message ("Operative deployment requires the Operations Console. Switch to Operations tab.") instead of "unknown command".
 
-**Commands:** `ally`, `betray`, `broadcast`, `encrypt`, `dossier`
-
-**New mechanics:**
-- No binding agreements (Diplomacy board game pattern -- promises are just words)
-- Broadcast as disinformation tool -- public messages visible to all, content unverifiable
-- Encrypted communication -- private messages, but other players see "[ENCRYPTED TRANSMISSION DETECTED]"
-- Alliance = shared scout reports; betrayal = reports severed + opponent warned
-- Dossier -- accumulated intelligence on a specific player from all sources
-
-**Backend requirements:** Medium. Messaging system for epoch players. Alliance state extension. Dossier aggregation query.
+**Backend requirements:** None. All APIs already exist in `EpochsApiService` and `EpochChatApiService`.
 
 ### 4.3 Command Reference
 
@@ -1019,9 +1015,9 @@ Existing `terminal-theme-styles.ts` provides the foundation (amber tokens, curso
 | 3 | **A2: Stability → Events** | ✅✅ High | Small (multiplier in event service) | A5 must be active | **DONE** (autonomous_event_service.py + catharsis mechanic, 2026-03-25). UX display → B1-B3. **Post-audit (2026-03-26):** 10 defensive access fixes, try-except on _get_agent_data, nested error handler in heartbeat tick |
 | 4 | **B1-B3: Info Bubbles + UX** | ✅ High (communication) | Medium (6 components, ~80 lines) | A1+A2 must be real first | **DONE** (2026-03-26). B3: Zone event risk display (RimWorld threshold markers + CRITICAL/HIGH/MEDIUM/LOW tier badges + multiplier + actionable hints + critical zone wash). B2: Building readiness factor pipeline (4-gauge Victoria 3 pattern, bottleneck detection with red accent, influence tier badge WEAK/AVG/STRONG). B1: Agent influence panel redesign (natural language breakdown: "3 allies avg 6/10" instead of "60%", profession names + levels, actionable hint for WEAK tier). Also fixed: diamond badge overflow on VelgGameCard (4+ digit numbers now show "1K" format). |
 | 5 | **MUD Stage 1-2: Observation + Field Ops** | ✅✅ Potentially highest | Medium-Large (new component + command parser) | Existing APIs sufficient, Zone Action Budget needs small backend | **DONE** (2026-03-26). 8 new files + 5 edits (~1,800 LOC). BureauTerminal CRT component, TerminalStateManager, command parser (14 commands, synonym map, Levenshtein fuzzy match), terminal-formatters (20+ format functions), TerminalQuickActions, TerminalView tab wrapper. Route wired at `/simulations/:slug/terminal`. Stage 1: look/go/examine/talk/weather/status/help/map/where/history/filter. Stage 2: fortify/quarantine/assign/unassign/ceremony. Full CRT aesthetic (scanlines, phosphor glow, chromatic aberration), boot sequence, onboarding hints, progressive disclosure (Tier 2 at 10 commands), realtime feed polling, conversation mode. |
-| 6 | **A3: Resonance → Mood** | ⚠️ Medium | Medium | A5 must be active | Pending |
-| 7 | **MUD Stage 3: Intelligence Network** | ✅ High | Medium (AI debrief prompts) | MUD Stage 1-2 must work first | Pending |
-| 8 | **MUD Stage 4-5: Epoch PvP + Diplomacy** | ✅ High | Large (visibility system, messaging) | MUD Stage 3 + Epoch system | Pending |
+| 6 | **A3: Resonance → Mood** | ⚠️ Medium | Medium | A5 must be active | **DONE** (migration 161, 2026-03-26). Atomic PG delete-and-replace: 8 Jungian archetypes → moodlet types (strength −2 to +2). Heartbeat Phase 3b. Self-gating via agent_mood join. Stacking cap 1 per agent. |
+| 7 | **MUD Stage 3: Intelligence Network** | ✅ High | Medium (AI debrief prompts) | MUD Stage 1-2 must work first | **DONE** (2026-03-26). 5 commands: `scan` (all-zone radar), `investigate` (event deep dive), `report` (session doc), `debrief` (AI structured report), `ask` (AI targeted query). Tier 3 clearance at 25 commands. Conversation + prompt helpers extracted into shared functions. ~1,300 LOC across terminal-commands.ts + terminal-formatters.ts. |
+| 8 | **MUD Epoch Mode: Intelligence Station** | ✅ High | Medium (epoch context + 4 commands) | MUD Stage 3 + Epoch system | **DONE** (2026-03-26). Complementary design: terminal = intelligence gathering station, GUI = command-and-control. 4 new Tier 4 commands: `sitrep` (AI briefing), `dossier` (player intel file), `threats` (incoming operatives), `intercept` (counter-intel sweep, 4 RP). Enhanced Stage 1-3 for epoch: `look` appends threat detection, `status` appends RP/cycle/rank/missions. Graceful GUI redirects for action commands (deploy, ally, broadcast, encrypt). EpochTerminalView wrapper, Terminal tab in EpochCommandCenter. |
 | — | ~~A4: Events → Needs~~ | ❌ Skip | — | No player agency | Skipped |
 
 ### Skip Recommendation: A4 (Events → Needs)

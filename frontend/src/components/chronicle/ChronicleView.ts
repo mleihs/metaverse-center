@@ -3,7 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { chronicleApi } from '../../services/api/index.js';
-import { localeService } from '../../services/i18n/locale-service.js';
+import { formatDateRange, formatShortDateRange, getDateLocale } from '../../utils/date-format.js';
 import { seoService } from '../../services/SeoService.js';
 import type { Chronicle } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
@@ -554,25 +554,6 @@ export class VelgChronicleView extends LitElement {
     this._load();
   }
 
-  private get _dateLocale(): string {
-    return localeService.currentLocale === 'de' ? 'de-DE' : 'en-GB';
-  }
-
-  private _formatDateRange(start: string, end: string): string {
-    const s = new Date(start);
-    const e = new Date(end);
-    const locale = this._dateLocale;
-    const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' };
-    return `${s.toLocaleDateString(locale, opts)} \u2013 ${e.toLocaleDateString(locale, opts)}`;
-  }
-
-  private _formatShortDate(start: string, end: string): string {
-    const s = new Date(start);
-    const e = new Date(end);
-    const locale = this._dateLocale;
-    const o: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
-    return `${s.toLocaleDateString(locale, o)} \u2013 ${e.toLocaleDateString(locale, o)}`;
-  }
 
   private _renderArticle(content: string) {
     // Replace literal \n sequences (backslash + n) with actual newlines
@@ -614,7 +595,7 @@ export class VelgChronicleView extends LitElement {
 
   private _renderMasthead() {
     const simName = appState.currentSimulation.value?.name ?? '';
-    const today = new Date().toLocaleDateString(this._dateLocale, {
+    const today = new Date().toLocaleDateString(getDateLocale(), {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -703,7 +684,7 @@ export class VelgChronicleView extends LitElement {
     return html`
       <article class="front-page">
         <div class="front-page__vol">
-          ${msg('Vol.')} ${c.edition_number} \u2014 ${this._formatDateRange(c.period_start, c.period_end)}
+          ${msg('Vol.')} ${c.edition_number} \u2014 ${formatDateRange(c.period_start, c.period_end, { locale: getDateLocale() })}
         </div>
         <h2 class="front-page__headline">${t(c, 'title')}</h2>
         ${c.headline ? html`<div class="front-page__subhead">${t(c, 'headline')}</div>` : nothing}
@@ -713,7 +694,7 @@ export class VelgChronicleView extends LitElement {
           <footer class="article__footer">
             ${
               c.published_at
-                ? html`<span>${new Date(c.published_at).toLocaleDateString(this._dateLocale)}</span>`
+                ? html`<span>${new Date(c.published_at).toLocaleDateString(getDateLocale())}</span>`
                 : nothing
             }
           </footer>
@@ -746,7 +727,7 @@ export class VelgChronicleView extends LitElement {
                 <span class="archive__num">${c.edition_number}</span>
                 <span class="archive__title">${t(c, 'title')}</span>
                 <span class="archive__dots"></span>
-                <span class="archive__date">${this._formatShortDate(c.period_start, c.period_end)}</span>
+                <span class="archive__date">${formatShortDateRange(c.period_start, c.period_end, { locale: getDateLocale() })}</span>
               </li>
             `,
           )}

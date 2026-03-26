@@ -57,6 +57,7 @@ import './BotConfigPanel.js';
 import './DraftRosterPanel.js';
 import './WarRoomPanel.js';
 import './EpochResultsView.js';
+import '../terminal/EpochTerminalView.js';
 
 type TabId =
   | 'overview'
@@ -66,6 +67,7 @@ type TabId =
   | 'war-room'
   | 'alliances'
   | 'chat'
+  | 'terminal'
   | 'results';
 
 @localized()
@@ -2093,6 +2095,7 @@ export class VelgEpochCommandCenter extends LitElement {
       { id: 'battle-log', label: msg('Battle Log') },
       { id: 'war-room', label: msg('War Room') },
       { id: 'alliances', label: msg('Alliances') },
+      { id: 'terminal', label: msg('Terminal') },
       ...(this._epoch?.status === 'completed'
         ? [{ id: 'results' as TabId, label: msg('Results') }]
         : []),
@@ -2206,6 +2209,16 @@ export class VelgEpochCommandCenter extends LitElement {
             @leave-team=${() => this._onLeaveTeam()}
             @invite-player=${(e: CustomEvent) => this._onInvitePlayer(e.detail.simulationId, e.detail.simulationName)}
           ></velg-epoch-alliances-tab>
+        `;
+      case 'terminal':
+        return html`
+          <velg-epoch-terminal-view
+            .epochId=${this._epoch?.id ?? ''}
+            .participant=${this._myParticipant}
+            .participants=${this._participants}
+            .teams=${this._teams}
+            .epochStatus=${this._epoch?.status ?? 'lobby'}
+          ></velg-epoch-terminal-view>
         `;
       case 'results':
         return html`

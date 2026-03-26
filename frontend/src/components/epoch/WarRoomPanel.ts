@@ -3,6 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { epochsApi } from '../../services/api/index.js';
 import type { BattleLogEntry, BattleSummary, Sitrep } from '../../types/index.js';
+import { formatTime } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
 import '../shared/LoadingState.js';
 
@@ -614,14 +615,6 @@ export class VelgWarRoomPanel extends LitElement {
     );
   }
 
-  private _formatTime(iso: string): string {
-    try {
-      const d = new Date(iso);
-      return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
-    } catch {
-      return '';
-    }
-  }
 
   private _renderHeader() {
     const phaseColor = PHASE_COLORS[this.status] || 'var(--color-text-muted)';
@@ -751,7 +744,7 @@ export class VelgWarRoomPanel extends LitElement {
                     class="bl-entry ${isPhase ? 'bl-entry--phase' : ''} ${isBetrayal ? 'bl-entry--betrayal' : ''} ${classified ? 'bl-entry--classified' : ''}"
                     style="--entry-color: ${color}; animation-delay: ${delay}ms"
                   >
-                    <span class="bl-entry__time">${this._formatTime(entry.created_at)}</span>
+                    <span class="bl-entry__time">${formatTime(entry.created_at)}</span>
                     <div class="bl-entry__body">
                       <div class="bl-entry__type">
                         ${entry.event_type.replace(/_/g, ' ')}

@@ -3,6 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import type { EventStatus, Event as SimEvent } from '../../types/index.js';
+import { formatDate } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
 import { t } from '../../utils/locale-fields.js';
 import '../shared/VelgBadge.js';
@@ -242,18 +243,6 @@ export class VelgEventCard extends LitElement {
 
   @property({ type: Object }) event!: SimEvent;
 
-  private _formatDate(dateStr: string): string {
-    try {
-      const date = new Date(dateStr);
-      return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      });
-    } catch {
-      return dateStr;
-    }
-  }
 
   private _getImpactClass(level: number): string {
     if (level >= 8) return 'high';
@@ -383,7 +372,7 @@ export class VelgEventCard extends LitElement {
                 ? html`
                 <span class="card__meta-item">
                   <span class="card__meta-icon">${icons.calendar()}</span>
-                  ${this._formatDate(evt.occurred_at)}
+                  ${formatDate(evt.occurred_at)}
                 </span>
               `
                 : null

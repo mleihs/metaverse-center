@@ -1,6 +1,6 @@
 /**
  * How-to-Play: Feature tutorials for Forge, Chronicle, Resonances,
- * Zone Dynamics, and Agent Memory.
+ * Zone Dynamics, Agent Memory, and Bureau Terminal.
  * All strings wrapped in msg() for i18n.
  */
 
@@ -306,6 +306,22 @@ export function getResonanceGuideSteps(): DemoStep[] {
       ),
       image: tutorialImage('htp-resonance-03-cards.avif'),
       imageAlt: msg('Resonance cards showing signatures and magnitude indicators'),
+    },
+    {
+      phase: 'competition',
+      title: msg('Resonance \u2192 Agent Mood'),
+      narration: msg(
+        'Active platform resonances generate subtle mood effects on agents. Each of the 8 Jungian archetypes maps to a specific emotional pressure: The Shadow (conflict) creates anxiety, The Prometheus (innovation) inspires hope, The Entropy (environmental decay) breeds despair. These background moodlets range from \u22122 to +2 \u2013 atmospheric pressure, not a dominant force.',
+      ),
+      detail: msg(
+        'Resonance moodlets are applied atomically each heartbeat tick: all previous resonance moodlets are deleted and fresh ones inserted based on current active resonances. Subsiding resonances contribute at half strength. The effect scales with your simulation\u2019s susceptibility profile \u2013 a simulation highly susceptible to conflict archetypes feels The Shadow more intensely.',
+      ),
+      readout: [
+        { label: msg('Strength range'), value: msg('\u22122 to +2 (background)') },
+        { label: msg('Stacking'), value: msg('1 resonance moodlet per agent') },
+        { label: msg('Subsiding'), value: msg('0.5\u00d7 strength during decay') },
+        { label: msg('Duration'), value: msg('5 hours (slightly longer than tick)') },
+      ],
     },
   ];
 }
@@ -1017,6 +1033,108 @@ export function getEpochCommsGuideSteps(): DemoStep[] {
         { label: msg('Languages'), value: msg('EN + DE (bilingual)') },
         { label: msg('Opt-out'), value: msg('Settings \u2192 Notifications') },
       ],
+    },
+  ];
+}
+
+/* ── Bureau Terminal (MUD Interface) ─────────────── */
+
+export function getBureauTerminalGuideSteps(): DemoStep[] {
+  return [
+    {
+      phase: 'foundation',
+      title: msg('What is the Bureau Terminal?'),
+      narration: msg(
+        'The Bureau Terminal is a text-based command interface for interacting with simulations. Instead of clicking through dashboards, you type commands and receive narrative prose responses. The terminal places you inside the world with a local perspective \u2013 you can only see what is in your current zone. Information beyond your position must be actively gathered through reconnaissance and agent interrogation.',
+      ),
+      detail: msg(
+        'Access the terminal from any simulation via the Terminal tab. It features a full CRT aesthetic with scanlines, phosphor glow, and chromatic aberration. A boot sequence plays on first entry. Commands are parsed with fuzzy matching (Levenshtein distance) so minor typos are corrected automatically.',
+      ),
+      readout: [
+        { label: msg('Access'), value: msg('Simulation \u2192 Terminal tab') },
+        { label: msg('Commands'), value: msg('30 across 4 tiers') },
+        { label: msg('Perspective'), value: msg('Local (current zone only)') },
+        { label: msg('Aesthetic'), value: msg('CRT amber-on-black') },
+      ],
+    },
+    {
+      phase: 'foundation',
+      title: msg('Tier 1: Observation'),
+      narration: msg(
+        'Available immediately. Navigate the simulation with look (inspect current zone), go (move between zones), examine (inspect agents or buildings), talk (open AI conversation with an agent), weather (real-time conditions), status (full situation report), map (ASCII zone overview), where (current position), and help (command reference).',
+      ),
+      detail: msg(
+        'The look command shows zone stability, security level, weather, buildings with readiness percentages, agents present, active events, and exits to adjacent zones. The examine command produces detailed agent dossiers including influence tier, mood, stress, needs radar, active moodlets, and relationship summary.',
+      ),
+      readout: [
+        { label: msg('look'), value: msg('Zone overview with stability, agents, events') },
+        { label: msg('go'), value: msg('Move to adjacent zone by name or direction') },
+        { label: msg('examine'), value: msg('Agent dossier or building report') },
+        { label: msg('talk'), value: msg('AI conversation mode with an agent') },
+        { label: msg('status'), value: msg('Full simulation situation report') },
+      ],
+    },
+    {
+      phase: 'foundation',
+      title: msg('Tier 2: Field Operations'),
+      narration: msg(
+        'Unlocks at 10 total commands. You become a field commander with the ability to act, not just observe. Fortify a zone (\u221215% event pressure for 7 days), quarantine a zone (block event spread for 14 days), assign or unassign agents to buildings, and trigger ceremonies.',
+      ),
+      detail: msg(
+        'Field operations consume Operations Points (3 per heartbeat cycle). Fortify costs 1 point, quarantine costs 2. You cannot fortify every zone and act everywhere \u2013 you must prioritize. Quick action buttons appear below the terminal for common commands.',
+      ),
+      readout: [
+        { label: msg('Unlock'), value: msg('After 10 commands') },
+        { label: msg('Budget'), value: msg('3 Operations Points per cycle') },
+        { label: msg('fortify'), value: msg('\u221215% pressure, 7 days (1 OP)') },
+        { label: msg('quarantine'), value: msg('Block event spread, 14 days (2 OP)') },
+        { label: msg('assign'), value: msg('Move agents between buildings (free)') },
+      ],
+    },
+    {
+      phase: 'competition',
+      title: msg('Tier 3: Intelligence Network'),
+      narration: msg(
+        'Unlocks at 25 total commands. The terminal transforms from an observation post into an intelligence workstation. Five new commands let you gather structured data: scan (all-zone radar sweep), investigate (event deep dive), report (session summary document), debrief (formal AI-powered agent report), and ask (targeted AI query to any agent).',
+      ),
+      detail: msg(
+        'Scan, investigate, and debrief each cost 1 Intel Point (2 per cycle). The debrief command produces a three-section Bureau report: Zone Assessment, Personnel Note, and Recommendation. Two agents debriefed about the same situation may give contradictory accounts \u2013 deciding who to trust is the gameplay. The ask command is free but limited by agent knowledge scope.',
+      ),
+      readout: [
+        { label: msg('Unlock'), value: msg('After 25 commands') },
+        { label: msg('Budget'), value: msg('2 Intel Points per cycle') },
+        { label: msg('scan'), value: msg('All-zone radar overview (1 IP)') },
+        { label: msg('debrief'), value: msg('AI structured agent report (1 IP)') },
+        { label: msg('ask'), value: msg('Targeted AI query (free)') },
+        { label: msg('report'), value: msg('Session summary document (free)') },
+      ],
+    },
+    {
+      phase: 'reckoning',
+      title: msg('Tier 4: Epoch Operations'),
+      narration: msg(
+        'Unlocks at 50 total commands during an active epoch. The terminal becomes a tactical command center connected to the epoch war effort. Eight commands bridge the terminal with the epoch interface: sitrep (AI tactical briefing), dossier (intelligence file on opponent), threats (incoming operative detection), intercept (counter-intelligence sweep), deploy (operative deployment), ally (alliance proposals), broadcast (public messaging), and encrypt (private messaging).',
+      ),
+      detail: msg(
+        'Sitrep produces an AI-generated battlefield assessment covering zone stability trends, operative activity, and recommended priorities. Dossier compiles intelligence on a specific opponent including their operative history, scoring trajectory, and alliance status. Intercept costs 4 RP and functions like a counter-intelligence sweep from the terminal. Deploy, ally, broadcast, and encrypt redirect to their respective epoch interface tabs for execution.',
+      ),
+      readout: [
+        { label: msg('Unlock'), value: msg('After 50 commands + active epoch') },
+        { label: msg('sitrep'), value: msg('AI tactical situation briefing') },
+        { label: msg('dossier'), value: msg('Intelligence file on opponent') },
+        { label: msg('threats'), value: msg('Incoming operative detection') },
+        { label: msg('intercept'), value: msg('Counter-intelligence sweep (4 RP)') },
+      ],
+    },
+    {
+      phase: 'competition',
+      title: msg('The Central Tradeoff'),
+      narration: msg(
+        'Operations Points and Intel Points refresh each heartbeat cycle but cannot be stockpiled. You cannot fortify every zone AND debrief every agent. You must choose between acting and learning. This creates the core strategic tension: do you reinforce a failing zone, or interrogate agents to understand why it is failing? Do you spend intel on a radar sweep or save it for a targeted investigation?',
+      ),
+      tip: msg(
+        'Agents only know about their own zone, their building, and agents they have relationships with. A general in the military academy knows different things than an inspector in the government quarter. Triangulate information from multiple sources to build the full picture.',
+      ),
     },
   ];
 }

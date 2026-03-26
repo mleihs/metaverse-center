@@ -1,8 +1,8 @@
 ---
 title: "Frontend Components"
 id: frontend-components
-version: "3.3"
-date: 2026-03-24
+version: "3.4"
+date: 2026-03-26
 lang: de
 type: reference
 status: active
@@ -818,7 +818,7 @@ Alle Änderungen zeigen eine Live-Preview innerhalb der Shell. Preset-Auswahl f�
 | agents/ | 6 | 6 | View, Card, EditModal, DetailsPanel, RelationshipCard/EditModal |
 | buildings/ | 6 | 6 | View, Card, EditModal, DetailsPanel, EmbassyCreate/Link |
 | events/ | 6 | 6 | View, Card, EditModal, DetailsPanel, EchoCard/TriggerModal |
-| terminal/ | 3 | 3 | BureauTerminal (CRT MUD interface), TerminalQuickActions, TerminalView (tab wrapper) |
+| terminal/ | 3 | 3 | BureauTerminal (CRT MUD interface, Stage 1-3: 19 commands), TerminalQuickActions, TerminalView (tab wrapper) |
 | chat/ | 7 | 7 | View, Window, ConversationList, MessageList/Input, AgentSelector, EventPicker |
 | social/ | 9 | 9 | TrendsView, MediaView, CampaignDashboard, Cards, Modals, TrendFilterBar |
 | locations/ | 5 | 5 | View, CityList, ZoneList, StreetList, LocationEditModal |
@@ -840,6 +840,8 @@ frontend/src/utils/
 ├── text.ts                         # humanizeEnum(), getInitials(), pluralCount(), agentAltText(), buildingAltText()
 ├── icons.ts                        # Centralized SVG icons with aria-hidden="true" (includes chevronDown, fracture, anchor, scorchedEarth, emergencyDraft, compassRose, stampClassified, magnifyingGlass, pencilAnnotate, layerInfrastructure, layerBleed, layerMilitary, layerHistory, heartline, flatline)
 ├── operative-icons.ts              # Centralized operative-type SVG icons (spy, guardian, saboteur, propagandist, infiltrator, assassin, zone_fortified)
+├── terminal-commands.ts            # MUD command handlers (19 commands across 3 stages), ensureAgentConversation(), sendAgentPrompt(), synonym map, Levenshtein fuzzy match
+├── terminal-formatters.ts          # 20+ format functions: formatLook, formatExamine, formatScan, formatInvestigate, formatReport, formatDebrief, formatAskResponse, _wordWrap, _truncate, _timeAgo
 └── theme-colors.ts                 # getThemeColor(), getThemeVariant(), getGlowColor(), THEME_COLORS map
 ```
 

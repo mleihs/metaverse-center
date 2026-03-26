@@ -1,6 +1,7 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { formatDate } from '../../utils/date-format.js';
 import type { SocialMediaPost } from '../../types/index.js';
 import '../shared/VelgBadge.js';
 import { cardStyles } from '../shared/card-styles.js';
@@ -41,17 +42,6 @@ export class VelgPostCard extends LitElement {
 
   @property({ type: Object }) post!: SocialMediaPost;
 
-  private _formatDate(dateStr: string): string {
-    try {
-      return new Date(dateStr).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      });
-    } catch {
-      return dateStr;
-    }
-  }
 
   private _handleTransform(): void {
     this.dispatchEvent(
@@ -73,7 +63,7 @@ export class VelgPostCard extends LitElement {
       <div class="card">
         <div class="card__header">
           <span class="card__author">${p.author || msg('Unknown')}</span>
-          <span class="card__date">${this._formatDate(p.source_created_at)}</span>
+          <span class="card__date">${formatDate(p.source_created_at)}</span>
         </div>
         <div class="card__body">
           ${p.message ? html`<div class="card__message">${p.message}</div>` : ''}

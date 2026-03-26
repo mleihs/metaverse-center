@@ -1,6 +1,7 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, type TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { formatRelativeTime } from '../../utils/date-format.js';
 import type { AgentBrief, ChatConversation } from '../../types/index.js';
 import '../shared/VelgAvatar.js';
 
@@ -203,26 +204,6 @@ export class VelgConversationList extends LitElement {
   @property({ type: String }) selectedId = '';
   @property({ type: Boolean }) readonly = false;
 
-  private _formatTime(dateString: string | undefined): string {
-    if (!dateString) return '';
-    try {
-      const date = new Date(dateString);
-      const now = new Date();
-      const diffMs = now.getTime() - date.getTime();
-      const diffMins = Math.floor(diffMs / 60000);
-      const diffHours = Math.floor(diffMs / 3600000);
-      const diffDays = Math.floor(diffMs / 86400000);
-
-      if (diffMins < 1) return msg('Now');
-      if (diffMins < 60) return `${diffMins}m`;
-      if (diffHours < 24) return `${diffHours}h`;
-      if (diffDays < 7) return `${diffDays}d`;
-
-      return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-    } catch {
-      return '';
-    }
-  }
 
   private _truncate(text: string, maxLength: number): string {
     if (text.length <= maxLength) return text;
@@ -342,7 +323,7 @@ export class VelgConversationList extends LitElement {
 
         <div class="conversation__footer">
           <div class="conversation__time">
-            ${this._formatTime(conversation.last_message_at ?? conversation.created_at)}
+            ${formatRelativeTime(conversation.last_message_at ?? conversation.created_at)}
           </div>
 
           ${

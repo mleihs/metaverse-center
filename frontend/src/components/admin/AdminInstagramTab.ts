@@ -12,6 +12,7 @@ import {
   type InstagramRateLimit,
   type SocialStoryItem,
 } from '../../services/api/AdminApiService.js';
+import { formatDateTimeShort } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
@@ -1526,15 +1527,6 @@ export class VelgAdminInstagramTab extends LitElement {
   // HELPERS
   // ══════════════════════════════════════════════════════
 
-  private _formatDate(dateStr: string | null): string {
-    if (!dateStr) return '\u2014';
-    return new Date(dateStr).toLocaleDateString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  }
 
   private _formatNumber(n: number | null | undefined): string {
     if (n == null) return '0';
@@ -1789,10 +1781,10 @@ export class VelgAdminInstagramTab extends LitElement {
             ` : nothing}
             <span class="dispatch__timestamp">
               ${post.status === 'published'
-                ? this._formatDate(post.published_at)
+                ? formatDateTimeShort(post.published_at)
                 : post.status === 'scheduled'
-                  ? this._formatDate(post.scheduled_at)
-                  : this._formatDate(post.created_at)
+                  ? formatDateTimeShort(post.scheduled_at)
+                  : formatDateTimeShort(post.created_at)
               }
             </span>
           </div>
@@ -1991,7 +1983,7 @@ export class VelgAdminInstagramTab extends LitElement {
             <span class="story-card__type">${typeLabel}</span>
             <span class="story-card__seq">#${story.sequence_index}</span>
             <span class="badge badge--${badgeColor}">${story.status}</span>
-            <span class="story-card__time">${this._formatDate(story.scheduled_at)}</span>
+            <span class="story-card__time">${formatDateTimeShort(story.scheduled_at, { fallback: '\u2014' })}</span>
           </div>
           <div class="story-card__caption">${story.caption ?? ''}</div>
           ${story.failure_reason ? html`
@@ -2432,7 +2424,7 @@ export class VelgAdminInstagramTab extends LitElement {
               ${cs.recent_redemptions.slice(0, 10).map(
                 (r: CipherRedemptionRecord) => html`
                   <div class="cipher-table__row">
-                    <span>${this._formatDate(r.redeemed_at)}</span>
+                    <span>${formatDateTimeShort(r.redeemed_at, { fallback: '\u2014' })}</span>
                     <span class="dispatch__type-tag">${r.reward_type}</span>
                     <span style="color: var(--color-text-muted)">
                       ${r.user_id ? r.user_id.slice(0, 8) + '\u2026' : msg('Anonymous')}

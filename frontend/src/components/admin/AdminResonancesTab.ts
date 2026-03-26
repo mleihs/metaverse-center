@@ -3,6 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { resonanceApi } from '../../services/api/ResonanceApiService.js';
 import type { Resonance, ResonanceImpact } from '../../types/index.js';
+import { formatDate } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
@@ -878,14 +879,6 @@ export class VelgAdminResonancesTab extends LitElement {
     return new Date(isoStr).getTime() <= Date.now();
   }
 
-  private _formatDate(dateStr: string | null | undefined): string {
-    if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  }
 
   // ── Render ────────────────────────────────────────────
 
@@ -1052,7 +1045,7 @@ export class VelgAdminResonancesTab extends LitElement {
             </div>
           `
               : html`
-            <div>${this._formatDate(r.updated_at)}</div>
+            <div>${formatDate(r.updated_at, { fallback: '\u2014' })}</div>
           `
           }
         </div>

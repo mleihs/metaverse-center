@@ -20,6 +20,7 @@ import {
   agentAutonomyApi,
   type AgentActivity,
 } from '../../services/api/AgentAutonomyApiService.js';
+import { formatTimestamp } from '../../utils/date-format.js';
 import '../shared/VelgAvatar.js';
 import '../shared/VelgBadge.js';
 
@@ -81,14 +82,6 @@ const ACTIVITY_BADGE_VARIANT: Record<string, string> = {
   mourn: 'default',
 };
 
-function formatTimestamp(iso: string): string {
-  const d = new Date(iso);
-  const h = d.getHours().toString().padStart(2, '0');
-  const m = d.getMinutes().toString().padStart(2, '0');
-  const day = d.getDate().toString().padStart(2, '0');
-  const mon = (d.getMonth() + 1).toString().padStart(2, '0');
-  return `${day}.${mon} ${h}:${m}`;
-}
 
 function significanceLevel(sig: number): 'routine' | 'important' | 'critical' {
   if (sig >= 8) return 'critical';

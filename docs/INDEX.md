@@ -22,7 +22,7 @@ tags: [index, catalog, documentation]
 | [Epochs & Competitive Layer](specs/epochs-competitive-layer.md) | 2.2 | 2026-03-17 | de | active |
 | [External Services](specs/external-services.md) | 1.0 | 2026-02-15 | de | active |
 | [Game Systems Design](specs/game-systems.md) | 1.0 | 2026-03-08 | de | active |
-| [i18n Architecture](specs/i18n-architecture.md) | 2.0 | 2026-03-03 | de | active |
+| [i18n Architecture](specs/i18n-architecture.md) | 2.1 | 2026-03-26 | de | active |
 | [Microanimations](specs/microanimations.md) | 1.1 | 2026-03-16 | en | active |
 | [Platform Architecture: Multi-Simulations-Plattform](specs/platform-architecture.md) | 2.2 | 2026-03-10 | de | active |
 | [Relationships, Echoes & Map](specs/relationships-echoes-map.md) | 1.1 | 2026-02-26 | de | active |
@@ -38,8 +38,8 @@ tags: [index, catalog, documentation]
 | [Database Schema: Neues Multi-Simulations-Schema](references/database-schema.md) | 3.8 | 2026-03-17 | de | active |
 | [Design System](references/design-system.md) | 1.4 | 2026-03-17 | de | active |
 | [Domain Models](references/domain-models.md) | 3.3 | 2026-03-13 | de | active |
-| [Feature Catalog](references/feature-catalog.md) | 3.0 | 2026-03-17 | de | active |
-| [Frontend Components](references/frontend-components.md) | 3.1 | 2026-03-17 | de | active |
+| [Feature Catalog](references/feature-catalog.md) | 3.2 | 2026-03-26 | de | active |
+| [Frontend Components](references/frontend-components.md) | 3.4 | 2026-03-26 | de | active |
 
 ## Guides (13)
 
@@ -66,7 +66,7 @@ tags: [index, catalog, documentation]
 | [Feature Discovery Proposals](feature-discovery-proposals.md) | 1.0 | 2026-03-20 | en | active |
 | [Post-Generation Engagement Proposals (8 Features)](concepts/post-generation-engagement-proposals.md) | 1.0 | 2026-03-22 | de/en | active |
 | [10 Proposals zur Tamagotchisierung](concepts/tamagotchi-proposals.md) | 1.0 | 2026-03-25 | de | active |
-| [Game Systems Integration](concepts/game-systems-integration.md) | 3.2 | 2026-03-26 | en | active |
+| [Game Systems Integration](concepts/game-systems-integration.md) | 3.3 | 2026-03-26 | en | active |
 
 ## Explanations (5)
 

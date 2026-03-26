@@ -11,6 +11,8 @@ import type {
   BuildingReadiness,
   Event,
   HeartbeatEntry,
+  IntelDossier,
+  OperativeMission,
   SimulationHealthDashboard,
   Zone,
   ZoneStability,
@@ -998,6 +1000,124 @@ function _timeAgo(date: Date): string {
   if (hours < 24) return `${hours}h ${msg('ago')}`;
   const days = Math.floor(hours / 24);
   return `${days}d ${msg('ago')}`;
+}
+
+// ── Epoch Intelligence Formatters ──────────────────────────────────────────
+
+/** Format AI sitrep narrative. */
+export function formatSitrep(narrative: string, cycle: number, status: string): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+  lines.push(systemLine(`[SITREP] ${msg('Tactical Briefing')} \u2013 ${msg('Cycle')} ${cycle} (${status.toUpperCase()})`));
+  lines.push(systemLine('\u2500'.repeat(60)));
+
+  // Word-wrap the narrative into terminal-width lines
+  const wrapped = _wordWrap(narrative, 70);
+  for (const line of wrapped) {
+    lines.push(responseLine(line));
+  }
+
+  lines.push(systemLine('\u2500'.repeat(60)));
+  lines.push(systemLine(`[${msg('END BRIEFING')}]`));
+  return lines;
+}
+
+/** Format intelligence dossier on a player. */
+export function formatDossier(dossier: IntelDossier, playerName: string): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+  lines.push(systemLine(`[DOSSIER] ${playerName.toUpperCase()}`));
+  lines.push(systemLine('\u2500'.repeat(50)));
+
+  if (dossier.zone_details && dossier.zone_details.length > 0) {
+    lines.push(responseLine(`${msg('Zone Security')}:`));
+    for (const z of dossier.zone_details) {
+      lines.push(responseLine(`  ${z.name}: ${z.security_level.toUpperCase()}`));
+    }
+  }
+
+  lines.push(responseLine(`${msg('Active Guardians')}: ${dossier.guardian_count ?? 0}`));
+
+  if (dossier.fortifications && dossier.fortifications.length > 0) {
+    lines.push(responseLine(`${msg('Fortifications')}:`));
+    for (const f of dossier.fortifications) {
+      lines.push(responseLine(`  ${f.zone_name}: +${f.security_bonus} (${msg('expires cycle')} ${f.expires_at_cycle})`));
+    }
+  } else {
+    lines.push(responseLine(`${msg('Fortifications')}: ${msg('none detected')}`));
+  }
+
+  lines.push(responseLine(`${msg('Intel Reports')}: ${dossier.report_count ?? 0} | ${msg('Last Update')}: ${msg('Cycle')} ${dossier.last_intel_cycle ?? 0}${dossier.is_stale ? ` [${msg('STALE')}]` : ''}`));
+
+  lines.push(systemLine('\u2500'.repeat(50)));
+  return lines;
+}
+
+/** Format detected incoming threats. */
+export function formatThreats(threats: OperativeMission[]): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+  lines.push(systemLine(`[THREAT ASSESSMENT] ${msg('Incoming Operatives')}`));
+
+  if (threats.length === 0) {
+    lines.push(responseLine(msg('No incoming threats detected. Sector clear.')));
+    return lines;
+  }
+
+  lines.push(systemLine('\u2500'.repeat(55)));
+  for (const t of threats) {
+    const type = (t.operative_type ?? 'unknown').toUpperCase();
+    const status = (t.status ?? 'active').toUpperCase();
+    const sourceName = t.target_sim?.name ?? msg('Unknown');
+    lines.push(responseLine(`  ${type} | ${msg('Source')}: ${sourceName} | ${msg('Status')}: ${status}`));
+  }
+  lines.push(systemLine('\u2500'.repeat(55)));
+  lines.push(systemLine(`${threats.length} ${msg('threat(s) detected')}. ${msg("Use 'intercept' to attempt capture.")}`));
+  return lines;
+}
+
+/** Format counter-intelligence sweep results. */
+export function formatInterceptSweep(detected: OperativeMission[], remainingRP: number): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+  lines.push(systemLine(`[COUNTER-INTEL] ${msg('Sweep Complete')}`));
+
+  if (detected.length === 0) {
+    lines.push(responseLine(msg('No foreign operatives found in sector.')));
+  } else {
+    for (const t of detected) {
+      const type = (t.operative_type ?? 'unknown').toUpperCase();
+      const status = (t.status ?? 'detected').toUpperCase();
+      lines.push(responseLine(`  ${msg('Detected')}: ${type} \u2013 ${msg('Status')}: ${status}`));
+    }
+    lines.push(responseLine(`${detected.length} ${msg('operative(s) identified.')}`));
+  }
+
+  lines.push(systemLine(`${msg('Remaining RP')}: ${remainingRP}`));
+  return lines;
+}
+
+/** Format epoch status extension (appended to normal status output). */
+export function formatEpochStatusExtension(
+  epochStatus: string,
+  currentCycle: number,
+  rp: number,
+  missionCount: number,
+  rank: number | null,
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+  lines.push(systemLine(''));
+  lines.push(systemLine(`\u2550\u2550\u2550 ${msg('EPOCH INTELLIGENCE')} \u2550\u2550\u2550`));
+  lines.push(responseLine(`${msg('Phase')}: ${epochStatus.toUpperCase()} | ${msg('Cycle')}: ${currentCycle}`));
+  lines.push(responseLine(`${msg('Resource Points')}: ${rp} | ${msg('Active Missions')}: ${missionCount}`));
+  if (rank !== null) {
+    lines.push(responseLine(`${msg('Current Rank')}: #${rank}`));
+  }
+  return lines;
+}
+
+/** Format insufficient RP error. */
+export function formatInsufficientRP(have: number, need: number): TerminalLine[] {
+  return [
+    errorLine(`${msg('Insufficient Resource Points.')} ${msg('Required')}: ${need} | ${msg('Available')}: ${have}`),
+    hintLine(msg('RP refreshes each cycle. Plan operations carefully.')),
+  ];
 }
 
 export { commandLine, systemLine, errorLine, responseLine, hintLine };

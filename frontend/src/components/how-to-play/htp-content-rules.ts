@@ -54,6 +54,7 @@ export function getTocSections(): TocSection[] {
     { id: 'living-world', label: msg('The Living World') },
     { id: 'ambient-weather', label: msg('Ambient Weather') },
     { id: 'chronicle-guide', label: msg('The Chronicle') },
+    { id: 'bureau-terminal', label: msg('Bureau Terminal') },
     // ── Reference ──
     { id: 'tactics', label: msg('Tactics & Strategies') },
     { id: 'demo-run', label: msg('Demo Run') },
@@ -104,7 +105,7 @@ export function getOperativeCards(): OperativeCard[] {
       rpCost: 3,
       deployCycles: 0,
       missionCycles: 3,
-      scoreValue: 2,
+      scoreValue: 3,
       description: msg(
         'Gathers intelligence from target simulation. Instant deployment, low cost, low risk.',
       ),
@@ -130,7 +131,7 @@ export function getOperativeCards(): OperativeCard[] {
       rpCost: 4,
       deployCycles: 1,
       missionCycles: 2,
-      scoreValue: 3,
+      scoreValue: 4,
       description: msg('Launches a propaganda campaign in target simulation.'),
       effect: msg(
         'Creates a destabilizing event (impact 3\u20135) in the target. Reduces their sovereignty.',

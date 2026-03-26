@@ -1,8 +1,8 @@
 ---
 title: "i18n Architecture"
 id: i18n-architecture
-version: "2.0"
-date: 2026-03-03
+version: "2.1"
+date: 2026-03-26
 lang: de
 type: spec
 status: active
@@ -47,10 +47,10 @@ Die Internationalisierung betrifft drei unabhangige Ebenen, die jeweils eigene M
 
 ### Frontend: Alle Strings mit msg() gewrappt
 
-**2279 UI-Strings** in 114+ Komponenten + Services mit `msg()` / `msg(str\`...\`)` gewrappt.
-Komplette deutsche Uebersetzung in XLIFF (2279 trans-units) und generiertem `de.ts`.
+**5848 UI-Strings** in 130+ Komponenten + Services mit `msg()` / `msg(str\`...\`)` gewrappt.
+**100% deutsche Uebersetzung** in XLIFF (5848 trans-units) und generiertem `de.ts`. Keine fehlenden `<target>`-Elemente.
 
-> **Hinweis:** Die folgende Tabelle ist ein historischer Snapshot aus Phase 2 (v1.2). Der tatsaechliche Stand ist deutlich hoeher: **2279 Strings** in **114+ Komponenten** — inklusive Epoch (EpochCommandCenter, EpochOpsBoard, EpochOverviewTab, EpochOperationsTab, EpochAlliancesTab, EpochLobbyActions, EpochCreationWizard, EpochInvitePanel, EpochChatPanel, EpochReadyPanel, DraftRosterPanel), Bot (BotConfigPanel), Admin (AdminPanel, AdminUsersTab, AdminCachingTab, AdminCleanupTab), How-to-Play (HowToPlayView), Aptitudes (VelgAptitudeBars), Multiverse (CartographerMap, MapGraph, MapBattleFeed, MapLeaderboardPanel) und viele weitere Bereiche.
+> **Hinweis:** Die folgende Tabelle ist ein historischer Snapshot aus Phase 2 (v1.2). Der tatsaechliche Stand ist deutlich hoeher: **5848 Strings** in **130+ Komponenten** — inklusive Bureau Terminal/MUD (19 Befehle, Boot-Sequenz, Onboarding, Formatters), Living World Explainer (Autonomie, Wetter, Mood/Stress, Needs, Opinions, Activities, Social Interactions, Autonomous Events, Epoch Impact), Epoch (EpochCommandCenter, EpochOpsBoard, alle Tabs), Bot (BotConfigPanel), Admin (AdminPanel, alle Tabs), How-to-Play (HowToPlayView), Aptitudes, Multiverse und viele weitere Bereiche. **Update 2026-03-26:** 452 fehlende Strings uebersetzt (MUD Terminal, Living World Explainer, Autonomy/Weather Settings, Agent Psych Profile, Activity Feed, Admin Panels).
 
 | Bereich | Dateien (v1.2) | Strings (v1.2) |
 |---------|---------|---------|
@@ -67,7 +67,7 @@ Komplette deutsche Uebersetzung in XLIFF (2279 trans-units) und generiertem `de.
 | Settings | 8 | ~130 |
 | Services | 3 | ~25 |
 | **Gesamt (v1.2)** | **68+3** | **~875** |
-| **Aktuell (v2.0)** | **114+** | **~2279** |
+| **Aktuell (v2.1)** | **130+** | **5848** |
 
 ### Fruehere Probleme (GELOEST)
 
@@ -220,8 +220,8 @@ Ohne diesen Fix werden z.B. "Chaos & Order" als "Chaos &amp;amp; Order" im UI an
 
 **Generierte Dateien:**
 - `frontend/src/locales/generated/locale-codes.ts` — Source/Target Locale Konstanten
-- `frontend/src/locales/generated/de.ts` — Hash-basierte Template-Map (2279 Eintraege, auto-generiert)
-- `frontend/src/locales/xliff/de.xlf` — XLIFF 1.2 Interchange-Datei (2279 trans-units)
+- `frontend/src/locales/generated/de.ts` — Hash-basierte Template-Map (5848 Eintraege, auto-generiert)
+- `frontend/src/locales/xliff/de.xlf` — XLIFF 1.2 Interchange-Datei (5848 trans-units)
 
 **Wichtig:** Die `de.ts` Datei wird automatisch generiert und darf NICHT manuell bearbeitet werden.
 Aenderungen erfolgen ausschliesslich ueber die XLIFF-Datei + `lit-localize build` + `sed`-Fix.

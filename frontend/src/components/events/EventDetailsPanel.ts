@@ -1,6 +1,7 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { formatDateFull } from '../../utils/date-format.js';
 import { renderSafeMarkdown } from '../../utils/markdown.js';
 import { appState } from '../../services/AppStateManager.js';
 import { connectionsApi, echoesApi, eventsApi, simulationsApi } from '../../services/api/index.js';
@@ -859,21 +860,6 @@ export class VelgEventDetailsPanel extends LitElement {
     return renderSafeMarkdown(text);
   }
 
-  private _formatDate(dateStr: string): string {
-    try {
-      const date = new Date(dateStr);
-      return date.toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch {
-      return dateStr;
-    }
-  }
 
   private _getImpactClass(level: number): string {
     if (level >= 8) return 'high';
@@ -1474,7 +1460,7 @@ export class VelgEventDetailsPanel extends LitElement {
                       ? html`
                       <div class="panel__section">
                         <velg-section-header>${msg('Occurred At')}</velg-section-header>
-                        <div class="panel__text">${this._formatDate(evt.occurred_at)}</div>
+                        <div class="panel__text">${formatDateFull(evt.occurred_at)}</div>
                       </div>
                     `
                       : null

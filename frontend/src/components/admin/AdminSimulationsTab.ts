@@ -2,6 +2,7 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { type AdminSimulation, adminApi } from '../../services/api/AdminApiService.js';
+import { formatDate } from '../../utils/date-format.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -428,14 +429,6 @@ export class VelgAdminSimulationsTab extends LitElement {
     }
   }
 
-  private _formatDate(dateStr: string | null): string {
-    if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  }
 
   private _getStatusBadgeClass(sim: AdminSimulation): string {
     if (sim.deleted_at) return 'badge badge--deleted';
@@ -528,7 +521,7 @@ export class VelgAdminSimulationsTab extends LitElement {
                 <span class="sim-slug">/${sim.slug}</span>
               </div>
               <span class=${this._getStatusBadgeClass(sim)}>${this._getStatusLabel(sim)}</span>
-              <span class="sim-date">${this._formatDate(sim.created_at)}</span>
+              <span class="sim-date">${formatDate(sim.created_at)}</span>
               <div class="sim-actions">
                 <button
                   class="action-btn"
@@ -570,7 +563,7 @@ export class VelgAdminSimulationsTab extends LitElement {
                 <span class="sim-slug">/${sim.slug}</span>
               </div>
               <span class="badge badge--deleted">${msg('Deleted')}</span>
-              <span class="sim-date">${msg('Deleted')} ${this._formatDate(sim.deleted_at)}</span>
+              <span class="sim-date">${msg('Deleted')} ${formatDate(sim.deleted_at)}</span>
               <div class="sim-actions">
                 <button
                   class="action-btn action-btn--restore"

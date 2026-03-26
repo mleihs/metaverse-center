@@ -13,6 +13,7 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
+import { formatDateTime } from '../../utils/date-format.js';
 import { forgeApi } from '../../services/api/index.js';
 import type { ForgeAccessRequestWithEmail } from '../../types/index.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -446,22 +447,6 @@ export class VelgClearanceQueue extends LitElement {
     });
   }
 
-  // ── Utilities ──
-
-  private _formatDate(isoDate: string): string {
-    try {
-      return new Date(isoDate).toLocaleString(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch {
-      return isoDate;
-    }
-  }
-
   // ── Render ──
 
   protected render() {
@@ -531,7 +516,7 @@ export class VelgClearanceQueue extends LitElement {
       >
         <div class="request-card__header">
           <span class="request-card__email">${req.user_email}</span>
-          <span class="request-card__date">${this._formatDate(req.created_at)}</span>
+          <span class="request-card__date">${formatDateTime(req.created_at)}</span>
         </div>
 
         ${

@@ -5,6 +5,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { appState } from '../../services/AppStateManager.js';
 import { resonanceApi } from '../../services/api/index.js';
 import type { Resonance, ResonanceImpact } from '../../types/index.js';
+import { formatDateTime } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
 import { panelButtonStyles } from '../shared/panel-button-styles.js';
 import { panelCascadeStyles } from '../shared/panel-cascade-styles.js';
@@ -758,17 +759,6 @@ export class VelgResonanceDetailsPanel extends LitElement {
     }
   }
 
-  private _formatTimestamp(iso: string | undefined): string {
-    if (!iso) return '–';
-    const d = new Date(iso);
-    return d.toLocaleString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  }
 
   private _navigateToSim(slug: string): void {
     if (!slug) return;
@@ -960,7 +950,7 @@ export class VelgResonanceDetailsPanel extends LitElement {
                   >${msg('Detected')}</span
                 >
                 <span class="timeline-entry__value"
-                  >${this._formatTimestamp(r.detected_at)}</span
+                  >${formatDateTime(r.detected_at)}</span
                 >
               </div>
               <div class="timeline-entry">
@@ -968,7 +958,7 @@ export class VelgResonanceDetailsPanel extends LitElement {
                   >${msg('Impacts at')}</span
                 >
                 <span class="timeline-entry__value"
-                  >${this._formatTimestamp(r.impacts_at)}</span
+                  >${formatDateTime(r.impacts_at)}</span
                 >
               </div>
               ${
@@ -979,7 +969,7 @@ export class VelgResonanceDetailsPanel extends LitElement {
                         >${msg('Subsides at')}</span
                       >
                       <span class="timeline-entry__value"
-                        >${this._formatTimestamp(r.subsides_at)}</span
+                        >${formatDateTime(r.subsides_at)}</span
                       >
                     </div>
                   `

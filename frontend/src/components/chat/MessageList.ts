@@ -1,7 +1,8 @@
-import { localized, msg, str } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, type TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import type { AgentBrief, ChatEventReference, ChatMessage } from '../../types/index.js';
+import { formatDate, formatDateLabel, formatRelativeTimeVerbose } from '../../utils/date-format.js';
 import { agentAltText } from '../../utils/text.js';
 import '../shared/Lightbox.js';
 import '../shared/VelgAvatar.js';
@@ -264,30 +265,6 @@ export class VelgMessageList extends LitElement {
   /** Event references to show as in-chat separators */
   @property({ type: Array }) eventReferences: ChatEventReference[] = [];
 
-  private _formatTime(dateString: string): string {
-    try {
-      const date = new Date(dateString);
-      const now = new Date();
-      const diffMs = now.getTime() - date.getTime();
-      const diffMins = Math.floor(diffMs / 60000);
-      const diffHours = Math.floor(diffMs / 3600000);
-      const diffDays = Math.floor(diffMs / 86400000);
-
-      if (diffMins < 1) return msg('Just now');
-      if (diffMins < 60) return msg(str`${diffMins}m ago`);
-      if (diffHours < 24) return msg(str`${diffHours}h ago`);
-      if (diffDays < 7) return msg(str`${diffDays}d ago`);
-
-      return date.toLocaleDateString(undefined, {
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch {
-      return '';
-    }
-  }
 
   private _isSameDay(a: string, b: string): boolean {
     try {
@@ -303,26 +280,6 @@ export class VelgMessageList extends LitElement {
     }
   }
 
-  private _formatDateLabel(dateString: string): string {
-    try {
-      const date = new Date(dateString);
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const target = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-      const diffDays = Math.round((today.getTime() - target.getTime()) / 86400000);
-
-      if (diffDays === 0) return msg('Today');
-      if (diffDays === 1) return msg('Yesterday');
-
-      return date.toLocaleDateString(undefined, {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-      });
-    } catch {
-      return '';
-    }
-  }
 
   /** Get agent color by position in agents array */
   private _getAgentColor(agentId: string | undefined): string {
@@ -404,7 +361,7 @@ export class VelgMessageList extends LitElement {
     return html`
       <div class="date-separator">
         <span class="date-separator__line"></span>
-        <span class="date-separator__label">${this._formatDateLabel(dateString)}</span>
+        <span class="date-separator__label">${formatDateLabel(dateString)}</span>
         <span class="date-separator__line"></span>
       </div>
     `;
@@ -418,24 +375,13 @@ export class VelgMessageList extends LitElement {
           <div class="event-separator__title">${ref.event_title}</div>
           <div class="event-separator__meta">
             ${ref.event_type ?? ''} ${ref.impact_level != null ? `\u00B7 Impact ${ref.impact_level}/10` : ''}
-            ${ref.occurred_at ? `\u00B7 ${this._formatDate(ref.occurred_at)}` : ''}
+            ${ref.occurred_at ? `\u00B7 ${formatDate(ref.occurred_at)}` : ''}
           </div>
         </div>
       </div>
     `;
   }
 
-  private _formatDate(dateString: string): string {
-    try {
-      return new Date(dateString).toLocaleDateString(undefined, {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      });
-    } catch {
-      return '';
-    }
-  }
 
   protected render() {
     if (this.messages.length === 0) {
@@ -494,7 +440,7 @@ export class VelgMessageList extends LitElement {
             >
               ${message.content}
             </div>
-            ${showTime ? html`<div class="message__time">${this._formatTime(message.created_at)}</div>` : null}
+            ${showTime ? html`<div class="message__time">${formatRelativeTimeVerbose(message.created_at)}</div>` : null}
           </div>
         </div>
       `);

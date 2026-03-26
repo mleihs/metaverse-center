@@ -4,6 +4,7 @@
  */
 
 import type { TemplateResult } from 'lit';
+import type { EpochParticipant, EpochStatus } from './index.js';
 
 // ── Terminal Output ────────────────────────────────────────────────────────
 
@@ -44,7 +45,7 @@ export interface TerminalLine {
 export type ClearanceTier = 1 | 2 | 3 | 4 | 5;
 
 /** Entity types the parser can resolve targets to. */
-export type TargetType = 'agent' | 'building' | 'zone' | 'event' | 'freetext';
+export type TargetType = 'agent' | 'building' | 'zone' | 'event' | 'player' | 'freetext';
 
 /** Result of fuzzy entity resolution. */
 export interface ResolvedEntity {
@@ -62,6 +63,10 @@ export interface CommandContext {
   readonly verb: string;
   readonly args: string[];
   readonly target?: ResolvedEntity;
+  /** Epoch context — present when terminal is in OPERATIONAL MODE (game_instance). */
+  readonly epochId?: string;
+  readonly epochParticipant?: EpochParticipant;
+  readonly epochStatus?: EpochStatus;
 }
 
 /** A registered terminal command definition. */

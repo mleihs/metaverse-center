@@ -16,6 +16,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { epochChatApi } from '../../services/api/EpochChatApiService.js';
 import { realtimeService } from '../../services/realtime/RealtimeService.js';
 import type { EpochChatMessage } from '../../types/index.js';
+import { formatTime } from '../../utils/date-format.js';
 import { VelgToast } from '../shared/Toast.js';
 
 type ChatChannel = 'epoch' | 'team';
@@ -519,14 +520,6 @@ export class VelgEpochChatPanel extends LitElement {
     });
   }
 
-  private _formatTime(iso: string): string {
-    try {
-      const d = new Date(iso);
-      return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
-    } catch {
-      return '';
-    }
-  }
 
   private _isActive(): boolean {
     return !['completed', 'cancelled'].includes(this.epochStatus);
@@ -592,7 +585,7 @@ export class VelgEpochChatPanel extends LitElement {
                 <div class="msg ${msgClass}">
                   <div class="msg__header">
                     <span class="msg__sender">${m.sender_name ?? msg('Unknown')}${isBot ? html`<span class="msg__bot-badge">BOT</span>` : nothing}</span>
-                    <span class="msg__time">${this._formatTime(m.created_at)}</span>
+                    <span class="msg__time">${formatTime(m.created_at)}</span>
                   </div>
                   <div class="msg__body">${m.content}</div>
                 </div>

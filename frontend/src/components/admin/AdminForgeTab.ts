@@ -7,6 +7,7 @@ import {
   adminApi,
   type TokenEconomyStats,
 } from '../../services/api/AdminApiService.js';
+import { formatDateTime } from '../../utils/date-format.js';
 import { forgeApi } from '../../services/api/index.js';
 import { settingsStyles } from '../shared/settings-styles.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -685,19 +686,6 @@ export class VelgAdminForgeTab extends LitElement {
 
   // ── Helpers ──
 
-  private _formatDate(isoDate: string): string {
-    try {
-      return new Date(isoDate).toLocaleString(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch {
-      return isoDate;
-    }
-  }
 
   private _formatCents(cents: number): string {
     return `$${(cents / 100).toFixed(2)}`;
@@ -1262,7 +1250,7 @@ export class VelgAdminForgeTab extends LitElement {
 
     return html`
       <tr>
-        <td>${this._formatDate(p.created_at)}</td>
+        <td>${formatDateTime(p.created_at)}</td>
         <td title=${p.user_id}>${userId}</td>
         <td>${bundleSlug}</td>
         <td>${p.tokens_granted}</td>

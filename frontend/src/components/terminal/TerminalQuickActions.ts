@@ -96,6 +96,7 @@ export class VelgTerminalQuickActions extends LitElement {
 
   @property({ type: Number }) clearanceLevel = 1;
   @property({ type: Boolean }) inConversation = false;
+  @property({ type: Boolean }) epochMode = false;
 
   private _dispatch(command: string): void {
     this.dispatchEvent(
@@ -136,13 +137,29 @@ export class VelgTerminalQuickActions extends LitElement {
         <button class="action-btn" @click=${() => this._dispatch('help')}>
           ${msg('Help')}
         </button>
-        ${this.clearanceLevel >= 2
+        ${this.clearanceLevel >= 2 && !this.epochMode
           ? html`
             <button class="action-btn action-btn--tier2" @click=${() => this._dispatch('fortify')}>
               ${msg('Fortify')}
             </button>
             <button class="action-btn action-btn--tier2" @click=${() => this._dispatch('assign')}>
               ${msg('Assign')}
+            </button>
+          `
+          : ''}
+        ${this.epochMode
+          ? html`
+            <button class="action-btn action-btn--tier2" @click=${() => this._dispatch('sitrep')}>
+              ${msg('Sitrep')}
+            </button>
+            <button class="action-btn action-btn--tier2" @click=${() => this._dispatch('threats')}>
+              ${msg('Threats')}
+            </button>
+            <button class="action-btn action-btn--tier2" @click=${() => this._dispatch('intercept')}>
+              ${msg('Intercept')}
+            </button>
+            <button class="action-btn action-btn--tier2" @click=${() => this._dispatch('dossier')}>
+              ${msg('Dossier')}
             </button>
           `
           : ''}

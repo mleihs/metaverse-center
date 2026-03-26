@@ -1,4 +1,5 @@
 import { localized, msg } from '@lit/localize';
+import { formatElapsedMs } from '../../utils/date-format.js';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
@@ -595,12 +596,6 @@ export class VelgForgeScanOverlay extends LitElement {
     return this._scanPhase >= threshold;
   }
 
-  private _formatTime(ms: number): string {
-    const totalSec = Math.max(0, Math.floor(ms / 1000));
-    const min = Math.floor(totalSec / 60);
-    const sec = totalSec % 60;
-    return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
-  }
 
   private _renderTimer() {
     if (this.estimatedDurationMs <= 0 && this.entityTotal <= 0) return nothing;
@@ -608,7 +603,7 @@ export class VelgForgeScanOverlay extends LitElement {
     if (this.recovering) {
       return html`
         <div class="scan-timer">
-          <span class="scan-timer__elapsed">${msg('MISSION CLOCK')}: ${this._formatTime(this._elapsedMs)}</span>
+          <span class="scan-timer__elapsed">${msg('MISSION CLOCK')}: ${formatElapsedMs(this._elapsedMs)}</span>
           <span class="scan-timer__recovering">${msg('RECOVERING...')}</span>
         </div>
       `;
@@ -619,8 +614,8 @@ export class VelgForgeScanOverlay extends LitElement {
       const remaining = (this.entityTotal - this.entityCurrent) * this.estimatedDurationMs;
       return html`
         <div class="scan-timer">
-          <span class="scan-timer__elapsed">${msg('MISSION CLOCK')}: ${this._formatTime(this._elapsedMs)}</span>
-          <span class="scan-timer__eta">ETA: ~${this._formatTime(remaining)}</span>
+          <span class="scan-timer__elapsed">${msg('MISSION CLOCK')}: ${formatElapsedMs(this._elapsedMs)}</span>
+          <span class="scan-timer__eta">ETA: ~${formatElapsedMs(remaining)}</span>
         </div>
       `;
     }
@@ -630,10 +625,10 @@ export class VelgForgeScanOverlay extends LitElement {
 
     return html`
       <div class="scan-timer">
-        <span class="scan-timer__elapsed">${msg('MISSION CLOCK')}: ${this._formatTime(this._elapsedMs)}</span>
+        <span class="scan-timer__elapsed">${msg('MISSION CLOCK')}: ${formatElapsedMs(this._elapsedMs)}</span>
         ${isPastEstimate
           ? html`<span class="scan-timer__recalibrating">${msg('RECALIBRATING...')}</span>`
-          : html`<span class="scan-timer__eta">ETA: ~${this._formatTime(remaining)}</span>`
+          : html`<span class="scan-timer__eta">ETA: ~${formatElapsedMs(remaining)}</span>`
         }
       </div>
     `;
