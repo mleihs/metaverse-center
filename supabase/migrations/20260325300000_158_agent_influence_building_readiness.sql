@@ -54,6 +54,7 @@ CREATE OR REPLACE FUNCTION fn_compute_agent_influence(
 RETURNS NUMERIC
 LANGUAGE sql
 STABLE
+SET search_path = public
 AS $$
   SELECT
     -- Relationship component: top 5 by intensity, avg / 10
@@ -61,7 +62,7 @@ AS $$
       SELECT AVG(sub.intensity)::numeric / 10.0
       FROM (
         SELECT ar.intensity
-        FROM agent_relationships ar
+        FROM public.agent_relationships ar
         WHERE (ar.source_agent_id = p_agent_id OR ar.target_agent_id = p_agent_id)
           AND ar.simulation_id = p_simulation_id
         ORDER BY ar.intensity DESC
@@ -72,7 +73,7 @@ AS $$
     -- Profession component: avg qualification / 10 (scoped to THIS simulation)
     + COALESCE((
       SELECT AVG(ap.qualification_level)::numeric / 10.0
-      FROM agent_professions ap
+      FROM public.agent_professions ap
       WHERE ap.agent_id = p_agent_id
         AND ap.simulation_id = p_simulation_id
     ), 0.0) * 0.3
@@ -80,8 +81,8 @@ AS $$
     -- Ambassador component: 1.0 if active ambassador (not blocked), else 0.0
     + CASE WHEN EXISTS(
       SELECT 1
-      FROM embassies e
-      JOIN agents a ON a.id = p_agent_id
+      FROM public.embassies e
+      JOIN public.agents a ON a.id = p_agent_id
       WHERE e.status = 'active'
         AND (
           (e.simulation_a_id = p_simulation_id
