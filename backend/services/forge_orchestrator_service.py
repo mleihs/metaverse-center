@@ -1091,43 +1091,6 @@ class ForgeOrchestratorService:
                     exc_info=True,
                 )
 
-        # ── Phase A.7: Generate terminal boot art ──
-        if draft_data:
-            try:
-                from backend.services.forge_ascii_art_service import ForgeAsciiArtService
-
-                sim_row = await supabase.table("simulations").select("name").eq(
-                    "id", str(simulation_id),
-                ).maybe_single().execute()
-                sim_name = sim_row.data.get("name", "Unknown") if sim_row.data else "Unknown"
-                boot_art = await ForgeAsciiArtService.generate_boot_art(
-                    seed=draft_data.get("seed_prompt", ""),
-                    anchor=draft_data.get("philosophical_anchor", {}).get("selected", {}),
-                    geography=draft_data.get("geography", {}),
-                    simulation_name=sim_name,
-                    theme_data=draft_data.get("theme_config", {}),
-                    openrouter_key=or_key,
-                )
-                await supabase.table("simulation_settings").upsert(
-                    [{
-                        "simulation_id": str(simulation_id),
-                        "setting_key": "terminal_boot_art",
-                        "setting_value": boot_art,
-                        "category": "design",
-                    }],
-                    on_conflict="simulation_id,category,setting_key",
-                ).execute()
-                logger.info(
-                    "Terminal boot art generated (%d chars)",
-                    len(boot_art),
-                    extra={"simulation_id": str(simulation_id)},
-                )
-            except (httpx.HTTPError, ModelHTTPError, UnexpectedModelBehavior, KeyError, TypeError, ValueError):
-                logger.warning(
-                    "Terminal boot art generation failed — using theme defaults",
-                    exc_info=True,
-                )
-
         # ── Phase B: Image generation ──
         logger.info("Phase B: image generation")
         t_b = time.monotonic()
@@ -1191,6 +1154,46 @@ class ForgeOrchestratorService:
                 except (httpx.HTTPError, KeyError, TypeError, ValueError, OSError):
                     images_failed += 1
                     logger.exception("Banner generation failed")
+
+                # ── Generate terminal boot art from the banner image ──
+                try:
+                    from backend.services.forge_ascii_art_service import ForgeAsciiArtService
+
+                    # Find the banner URL from storage
+                    banner_resp = await supabase.storage.from_(
+                        "simulation.banners",
+                    ).list(str(simulation_id))
+                    banner_url = None
+                    if banner_resp:
+                        # Pick the most recent banner file
+                        files = sorted(banner_resp, key=lambda f: f.get("created_at", ""), reverse=True)
+                        if files:
+                            banner_url = (
+                                f"{supabase.supabase_url}/storage/v1/object/public/"
+                                f"simulation.banners/{simulation_id}/{files[0]['name']}"
+                            )
+
+                    sim_name = sim_data.get("name", "Unknown")
+                    boot_art = await ForgeAsciiArtService.generate_boot_art(
+                        simulation_name=sim_name,
+                        banner_url=banner_url,
+                    )
+                    await supabase.table("simulation_settings").upsert(
+                        [{
+                            "simulation_id": str(simulation_id),
+                            "setting_key": "terminal_boot_art",
+                            "setting_value": boot_art,
+                            "category": "design",
+                        }],
+                        on_conflict="simulation_id,category,setting_key",
+                    ).execute()
+                    logger.info(
+                        "Terminal boot art generated (%d chars, banner=%s)",
+                        len(boot_art),
+                        "yes" if banner_url else "figlet-only",
+                    )
+                except (httpx.HTTPError, KeyError, TypeError, ValueError, OSError):
+                    logger.warning("Terminal boot art generation failed", exc_info=True)
 
             # 2. Agent portraits
             if not _types or "agent" in _types:
