@@ -84,6 +84,11 @@ function moodLabel(score: number): string {
   return 'Distressed';
 }
 
+/** Resolve a command description (may be a lazy function or plain string). */
+function resolveDescription(desc: string | (() => string)): string {
+  return typeof desc === 'function' ? desc() : desc;
+}
+
 /** Uppercase first letter. */
 function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -435,11 +440,15 @@ export function formatHelp(
   ));
 
   for (const cmd of available) {
-    lines.push(responseLine(`  ${pad(cmd.verb, 14)} ${cmd.description}`));
+    lines.push(responseLine(`  ${pad(cmd.verb, 14)} ${resolveDescription(cmd.description)}`));
   }
 
   lines.push(responseLine(''));
   lines.push(responseLine(msg("Type 'help {command}' for detailed usage.")));
+  lines.push(responseLine(''));
+  lines.push(responseLine(
+    `OPS = ${msg('Operations Points (fortify, quarantine)')} | INT = ${msg('Intel Points (future: debrief, scan)')}`,
+  ));
 
   return lines;
 }
@@ -451,7 +460,7 @@ export function formatHelpCommand(cmd: TerminalCommand): TerminalLine[] {
   const lines: TerminalLine[] = [];
   lines.push(responseLine(`${cmd.verb.toUpperCase()}`));
   lines.push(responseLine(`${msg('Syntax')}: ${cmd.syntax}`));
-  lines.push(responseLine(`${cmd.description}`));
+  lines.push(responseLine(`${resolveDescription(cmd.description)}`));
   if (cmd.synonyms.length > 0) {
     lines.push(responseLine(`${msg('Aliases')}: ${cmd.synonyms.join(', ')}`));
   }
@@ -517,17 +526,22 @@ export function formatTalkExit(): TerminalLine[] {
 
 export function formatBootSequence(simulationName: string): TerminalLine[] {
   return [
-    systemLine('+----------------------------------------------+'),
-    systemLine('| BUREAU OF IMPOSSIBLE GEOGRAPHY               |'),
-    systemLine('| FIELD TERMINAL v3.7 -- CLASSIFIED            |'),
-    systemLine('|                                              |'),
-    systemLine('| Initializing secure connection...            |'),
-    systemLine(`| ${msg('Operator clearance')}: LEVEL 1${' '.repeat(18)}|`),
-    systemLine(`| ${msg('Assigned sector')}: ${pad(simulationName, 25)}|`),
-    systemLine('|                                              |'),
-    systemLine(`| ${msg("Type 'help' for available commands.")}${' '.repeat(9)}|`),
-    systemLine(`| ${msg("Type 'look' to observe your surroundings.")}${' '.repeat(3)}|`),
-    systemLine('+----------------------------------------------+'),
+    systemLine('+----------------------------------------------------+'),
+    systemLine('| BUREAU OF IMPOSSIBLE GEOGRAPHY                     |'),
+    systemLine('| FIELD TERMINAL v3.7 -- CLASSIFIED                  |'),
+    systemLine('|                                                    |'),
+    systemLine('| Initializing secure connection...                  |'),
+    systemLine(`| ${msg('Operator clearance')}: LEVEL 1                          |`),
+    systemLine(`| ${msg('Assigned sector')}: ${pad(simulationName, 31)}|`),
+    systemLine('|                                                    |'),
+    systemLine(`| ${msg('You are a Bureau field operative. Observe zones,')}    |`),
+    systemLine(`| ${msg('interrogate agents, and manage field operations.')}    |`),
+    systemLine(`| ${msg('This terminal provides local intelligence that')}     |`),
+    systemLine(`| ${msg('the overview tabs cannot.')}                           |`),
+    systemLine('|                                                    |'),
+    systemLine(`| ${msg("Type 'help' for available commands.")}                 |`),
+    systemLine(`| ${msg("Type 'look' to observe your surroundings.")}           |`),
+    systemLine('+----------------------------------------------------+'),
   ];
 }
 

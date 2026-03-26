@@ -88,7 +88,7 @@ export class VelgTerminalQuickActions extends LitElement {
         .action-btn {
           font-size: 12px;
           padding: 8px 16px;
-          min-height: 38px;
+          min-height: 44px;
         }
       }
     `,

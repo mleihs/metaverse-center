@@ -70,7 +70,8 @@ export interface TerminalCommand {
   readonly synonyms: readonly string[];
   readonly tier: ClearanceTier;
   readonly syntax: string;
-  readonly description: string;
+  /** Lazy-evaluated to avoid module-level msg() i18n gotcha. */
+  readonly description: string | (() => string);
   readonly requiresTarget: boolean;
   readonly targetType?: TargetType;
   readonly handler: (ctx: CommandContext) => Promise<TerminalLine[]>;

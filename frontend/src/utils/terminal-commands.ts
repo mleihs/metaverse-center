@@ -666,91 +666,92 @@ async function handleCeremony(_ctx: CommandContext): Promise<TerminalLine[]> {
 
 export const COMMAND_REGISTRY = new Map<string, TerminalCommand>([
   // Stage 1: Observation
+  // NOTE: descriptions use () => msg() to avoid module-level i18n gotcha (see i18n-gotchas.md)
   ['look', {
     verb: 'look', synonyms: ['l', 'observe', 'survey'], tier: 1,
-    syntax: 'look', description: msg('Observe your current zone'),
+    syntax: 'look', description: () => msg('Observe your current zone'),
     requiresTarget: false, handler: handleLook,
   }],
   ['go', {
     verb: 'go', synonyms: ['move', 'walk', 'travel'], tier: 1,
-    syntax: 'go {zone name}', description: msg('Travel to another zone'),
+    syntax: 'go {zone name}', description: () => msg('Travel to another zone'),
     requiresTarget: true, targetType: 'zone', handler: handleGo,
   }],
   ['examine', {
     verb: 'examine', synonyms: ['ex', 'inspect', 'x'], tier: 1,
-    syntax: 'examine {name}', description: msg('Inspect an agent or building'),
+    syntax: 'examine {name}', description: () => msg('Inspect an agent or building'),
     requiresTarget: true, targetType: 'agent', handler: handleExamine,
   }],
   ['talk', {
     verb: 'talk', synonyms: ['speak', 'contact', 'hail'], tier: 1,
-    syntax: 'talk {agent name}', description: msg('Start a conversation with an agent'),
+    syntax: 'talk {agent name}', description: () => msg('Start a conversation with an agent'),
     requiresTarget: true, targetType: 'agent', handler: handleTalk,
   }],
   ['weather', {
     verb: 'weather', synonyms: ['wx', 'conditions'], tier: 1,
-    syntax: 'weather', description: msg('Show current weather conditions'),
+    syntax: 'weather', description: () => msg('Show current weather conditions'),
     requiresTarget: false, handler: handleWeather,
   }],
   ['status', {
     verb: 'status', synonyms: ['sitrep', 'sit'], tier: 1,
-    syntax: 'status', description: msg('Full situation report'),
+    syntax: 'status', description: () => msg('Full situation report'),
     requiresTarget: false, handler: handleStatus,
   }],
   ['help', {
     verb: 'help', synonyms: [], tier: 1,
-    syntax: 'help [command]', description: msg('List available commands'),
+    syntax: 'help [command]', description: () => msg('List available commands'),
     requiresTarget: false, handler: handleHelp,
   }],
   ['map', {
     verb: 'map', synonyms: [], tier: 1,
-    syntax: 'map', description: msg('Show sector map'),
+    syntax: 'map', description: () => msg('Show sector map'),
     requiresTarget: false, handler: handleMap,
   }],
   ['where', {
     verb: 'where', synonyms: [], tier: 1,
-    syntax: 'where', description: msg('Show your current location'),
+    syntax: 'where', description: () => msg('Show your current location'),
     requiresTarget: false, handler: handleWhere,
   }],
   ['history', {
     verb: 'history', synonyms: [], tier: 1,
-    syntax: 'history', description: msg('Show command history'),
+    syntax: 'history', description: () => msg('Show command history'),
     requiresTarget: false, handler: handleHistory,
   }],
   ['filter', {
     verb: 'filter', synonyms: ['feed'], tier: 1,
-    syntax: 'filter {channel}', description: msg('Filter realtime feed'),
+    syntax: 'filter {channel}', description: () => msg('Filter realtime feed'),
     requiresTarget: false, handler: handleFilter,
   }],
   ['exitconversation', {
     verb: 'exitconversation', synonyms: ['leave', 'bye', 'exit'], tier: 1,
-    syntax: 'leave', description: msg('Exit current conversation'),
+    syntax: 'leave', description: () => msg('Exit current conversation'),
     requiresTarget: false, handler: handleExitConversation,
   }],
 
   // Stage 2: Field Operations
   ['fortify', {
     verb: 'fortify', synonyms: ['reinforce', 'defend'], tier: 2,
-    syntax: 'fortify [zone]', description: msg('Fortify a zone (-15% event pressure, 7 days)'),
+    syntax: 'fortify [zone]', description: () => msg('Fortify a zone (-15% event pressure, 7 days)'),
     requiresTarget: false, handler: handleFortify,
   }],
   ['quarantine', {
     verb: 'quarantine', synonyms: ['lockdown', 'isolate'], tier: 2,
-    syntax: 'quarantine [zone]', description: msg('Quarantine a zone (14 days, 2 ops points)'),
+    syntax: 'quarantine [zone]', description: () => msg('Quarantine a zone (14 days, 2 ops points)'),
     requiresTarget: false, handler: handleQuarantine,
   }],
   ['assign', {
     verb: 'assign', synonyms: ['station', 'post', 'transfer'], tier: 2,
-    syntax: 'assign {agent} to {building}', description: msg('Assign agent to building'),
+    syntax: 'assign {agent} to {building}', description: () => msg('Assign agent to building'),
     requiresTarget: true, targetType: 'freetext', handler: handleAssign,
   }],
   ['unassign', {
     verb: 'unassign', synonyms: [], tier: 2,
-    syntax: 'unassign {agent}', description: msg('Remove agent from current building'),
+    syntax: 'unassign {agent}', description: () => msg('Remove agent from current building'),
     requiresTarget: true, targetType: 'agent', handler: handleUnassign,
   }],
   ['ceremony', {
     verb: 'ceremony', synonyms: [], tier: 2,
-    syntax: 'ceremony', description: msg('Initiate a Forge ceremony'),
+    syntax: 'ceremony', description: () => msg('Initiate a Forge ceremony'),
     requiresTarget: false, handler: handleCeremony,
   }],
 ]);
