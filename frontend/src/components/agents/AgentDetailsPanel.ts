@@ -379,17 +379,74 @@ export class VelgAgentDetailsPanel extends LitElement {
     }
 
     .panel__influence-breakdown {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: var(--space-0-5) var(--space-3);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1-5);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-secondary);
     }
 
-    .panel__influence-metric {
-      text-align: right;
+    .panel__influence-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: var(--space-2);
+    }
+
+    .panel__influence-row-label {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+      color: var(--color-text-muted);
+      flex-shrink: 0;
+    }
+
+    .panel__influence-row-detail {
+      font-family: var(--font-body);
+      font-size: var(--text-xs);
+      color: var(--color-text-primary);
+      text-align: right;
+    }
+
+    .panel__influence-hint {
+      font-size: 10px;
+      color: var(--color-text-muted);
+      padding: var(--space-1-5) var(--space-2);
+      border-left: 2px solid var(--color-warning);
+      background: color-mix(in srgb, var(--color-warning) 4%, transparent);
+      line-height: 1.4;
+    }
+
+    /* Influence tier badges (shared pattern with BuildingDetailsPanel) */
+    .panel__tier {
+      display: inline-flex;
+      padding: 1px var(--space-1-5);
+      font-family: var(--font-brutalist);
+      font-size: 9px;
+      font-weight: var(--font-black);
+      letter-spacing: var(--tracking-brutalist);
+      text-transform: uppercase;
+      line-height: 1.4;
+    }
+
+    .panel__tier--weak {
+      background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+      border: var(--border-width-thin) solid color-mix(in srgb, var(--color-danger) 35%, transparent);
+      color: var(--color-danger);
+    }
+
+    .panel__tier--average {
+      background: color-mix(in srgb, var(--color-warning) 12%, transparent);
+      border: var(--border-width-thin) solid color-mix(in srgb, var(--color-warning) 35%, transparent);
+      color: var(--color-warning);
+    }
+
+    .panel__tier--strong {
+      background: color-mix(in srgb, var(--color-success) 12%, transparent);
+      border: var(--border-width-thin) solid color-mix(in srgb, var(--color-success) 35%, transparent);
+      color: var(--color-success);
     }
 
     /* --- Relationship suggestions --- */
@@ -949,15 +1006,37 @@ export class VelgAgentDetailsPanel extends LitElement {
   private _renderInfluence() {
     if (!this.agent) return nothing;
 
-    const { score, relationshipWeight, professionWeight, ambassadorWeight } =
-      this._computeInfluence();
+    const { score } = this._computeInfluence();
     const pct = Math.round(score * 100);
     const color = this._influenceColor(score);
+    const tier = score < 0.25 ? 'weak' : score <= 0.55 ? 'average' : 'strong';
+    const tierLabel = tier === 'weak' ? msg('WEAK') : tier === 'strong' ? msg('STRONG') : msg('AVG');
+
+    // Natural language: relationships
+    const relCount = Math.min(this._relationships.length, 5);
+    const avgIntensity = relCount > 0
+      ? Math.round(this._relationships.slice(0, 5).reduce((s, r) => s + (r.intensity ?? 5), 0) / relCount)
+      : 0;
+    const relText = relCount > 0
+      ? msg(str`${relCount} allies (avg ${avgIntensity}/10)`)
+      : msg('No relationships');
+
+    // Natural language: professions
+    const profs = this.agent.professions ?? [];
+    const profText = profs.length > 0
+      ? profs.map((p) => `${p.profession} (Lv. ${p.qualification_level ?? 1}/5)`).join(', ')
+      : msg('No professions');
+
+    // Natural language: ambassador
+    const ambText = this.agent.is_ambassador ? msg('Ambassador (active)') : msg('Not an ambassador');
 
     return html`
       <div class="panel__influence">
         <div class="panel__influence-header">
-          <span class="panel__influence-label">${msg('Influence')}</span>
+          <span class="panel__influence-label">
+            ${msg('Influence')}
+            <span class="panel__tier panel__tier--${tier}">${tierLabel}</span>
+          </span>
           <span class="panel__influence-value" style="color: ${color}">${pct}%</span>
         </div>
         <div class="panel__influence-track">
@@ -967,13 +1046,24 @@ export class VelgAgentDetailsPanel extends LitElement {
           ></div>
         </div>
         <div class="panel__influence-breakdown">
-          <span>${msg('Relationships')}</span>
-          <span class="panel__influence-metric">${Math.round(relationshipWeight * 100)}%</span>
-          <span>${msg('Professions')}</span>
-          <span class="panel__influence-metric">${Math.round(professionWeight * 100)}%</span>
-          <span>${msg('Diplomatic')}</span>
-          <span class="panel__influence-metric">${ambassadorWeight > 0 ? msg('Active') : '–'}</span>
+          <div class="panel__influence-row">
+            <span class="panel__influence-row-label">${msg('Relations')}</span>
+            <span class="panel__influence-row-detail">${relText}</span>
+          </div>
+          <div class="panel__influence-row">
+            <span class="panel__influence-row-label">${msg('Professions')}</span>
+            <span class="panel__influence-row-detail">${profText}</span>
+          </div>
+          <div class="panel__influence-row">
+            <span class="panel__influence-row-label">${msg('Diplomatic')}</span>
+            <span class="panel__influence-row-detail">${ambText}</span>
+          </div>
         </div>
+        ${tier === 'weak' ? html`
+          <div class="panel__influence-hint">
+            ${msg('Low influence. Assign to a building matching their profession to increase readiness.')}
+          </div>
+        ` : nothing}
       </div>
     `;
   }

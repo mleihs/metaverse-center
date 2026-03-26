@@ -282,6 +282,8 @@ export class VelgGameCard extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
+      min-width: 24px;
+      min-height: 24px;
       width: 24px;
       height: 24px;
       font-family: var(--card-font-mono);
@@ -294,9 +296,17 @@ export class VelgGameCard extends LitElement {
       border-radius: 4px;
     }
 
+    /* Scale up diamond for wide numbers (4+ chars) */
+    .gem--wide {
+      width: 30px;
+      height: 30px;
+      font-size: 9px;
+    }
+
     .gem__inner {
       transform: rotate(-45deg);
       line-height: 1;
+      white-space: nowrap;
     }
 
     .gem--glow {
@@ -996,6 +1006,13 @@ export class VelgGameCard extends LitElement {
     `;
   }
 
+  /** Format stat for diamond gem: abbreviate 4+ digit numbers */
+  private _formatGemStat(n: number): string {
+    if (n >= 10000) return `${Math.round(n / 1000)}K`;
+    if (n >= 1000) return `${(n / 1000).toFixed(1).replace(/\.0$/, '')}K`;
+    return String(n);
+  }
+
   private _renderGems(best: { type: OperativeType; level: number } | null) {
     if (this.size === 'xs') return nothing;
 
@@ -1007,8 +1024,8 @@ export class VelgGameCard extends LitElement {
         ${
           this.primaryStat != null
             ? html`
-          <div class="gem" style=${bestColor ? `--gem-color: ${bestColor}` : ''}>
-            <span class="gem__inner">${this.primaryStat}</span>
+          <div class="gem ${String(this.primaryStat).length >= 4 ? 'gem--wide' : ''}" style=${bestColor ? `--gem-color: ${bestColor}` : ''}>
+            <span class="gem__inner">${this._formatGemStat(this.primaryStat)}</span>
           </div>
         `
             : html`<span></span>`
