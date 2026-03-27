@@ -724,7 +724,11 @@ export class VelgApp extends LitElement {
     await this._authReady;
     if (id) {
       const resolved = await this._resolveSimulation(id);
-      if (!resolved) return false;
+      if (!resolved) {
+        // Simulation not found — redirect to dashboard instead of blank page
+        this._router.goto('/dashboard');
+        return false;
+      }
       await this._checkMembership(resolved);
     }
     if (view) {

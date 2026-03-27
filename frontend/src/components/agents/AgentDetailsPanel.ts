@@ -1018,7 +1018,7 @@ export class VelgAgentDetailsPanel extends LitElement {
       ? Math.round(this._relationships.slice(0, 5).reduce((s, r) => s + (r.intensity ?? 5), 0) / relCount)
       : 0;
     const relText = relCount > 0
-      ? msg(str`${relCount} allies (avg ${avgIntensity}/10)`)
+      ? msg(str`${relCount} ${relCount === 1 ? 'ally' : 'allies'} (avg ${avgIntensity}/10)`)
       : msg('No relationships');
 
     // Natural language: professions

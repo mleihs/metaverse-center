@@ -105,6 +105,8 @@ export class VelgEventsView extends LitElement {
   protected willUpdate(changedProperties: Map<PropertyKey, unknown>): void {
     if (changedProperties.has('simulationId') && this.simulationId) {
       this._offset = 0;
+      this._search = '';
+      this._filters = {};
       this._loadEvents();
       this._loadSeismographEvents();
     }

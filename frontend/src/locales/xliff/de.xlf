@@ -292,7 +292,7 @@
 </trans-unit>
 <trans-unit id="s9a75aea85d85be7a">
   <source><x id="0" equiv-text="${this._total}"/> Agent<x id="1" equiv-text="${this._total !== 1 ? 's' : ''}"/></source>
-  <target>Agent<x id="0" equiv-text="${this._total}"/> Agent<x id="1" equiv-text="${this._total !== 1 ? 's' : ''}"/></target>
+  <target><x id="0" equiv-text="${this._total}"/> Agent<x id="1" equiv-text="${this._total !== 1 ? 's' : ''}"/>en</target>
 </trans-unit>
 <trans-unit id="see08734dfee6e873">
   <source>An unexpected error occurred. Please try again.</source>
