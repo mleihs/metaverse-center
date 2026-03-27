@@ -310,6 +310,11 @@ export class VelgToast extends LitElement {
       50% { opacity: 0.3; }
     }
 
+    @keyframes progress-decay {
+      from { transform: scaleX(1); }
+      to { transform: scaleX(0); }
+    }
+
     /* ── Reduced motion ──────────────────────────────────── */
 
     @media (prefers-reduced-motion: reduce) {
