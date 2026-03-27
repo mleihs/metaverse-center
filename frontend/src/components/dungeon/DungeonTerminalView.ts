@@ -255,7 +255,8 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
       const recovered = await dungeonState.tryRecover();
 
       if (recovered) {
-        // Active dungeon found — acquire wake lock for long session
+        // Active dungeon found — sync terminal mode + acquire wake lock
+        terminalState.initializeDungeon(dungeonState.runId.value!);
         await this._acquireWakeLock();
       } else {
         // No active dungeon — load available archetypes for lobby
