@@ -107,6 +107,8 @@ export interface TerminalPersistedState {
   feedFilter: 'all' | 'intel' | 'alert' | 'weather' | 'off';
   /** Map of agentId -> conversationId for reusing terminal conversations. */
   conversationMap: Record<string, string>;
+  /** Last N output lines persisted for session continuity across re-mounts. */
+  recentOutput?: Array<{ type: string; content: string }>;
 }
 
 // ── Feed Filter ────────────────────────────────────────────────────────────

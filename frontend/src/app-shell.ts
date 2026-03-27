@@ -622,7 +622,11 @@ export class VelgApp extends LitElement {
     ],
     {
       fallback: {
-        render: () => html`<velg-simulations-dashboard></velg-simulations-dashboard>`,
+        render: () => html`<velg-not-found></velg-not-found>`,
+        enter: async () => {
+          await import('./components/platform/NotFoundView.js');
+          return true;
+        },
       },
     },
   );
@@ -725,8 +729,7 @@ export class VelgApp extends LitElement {
     if (id) {
       const resolved = await this._resolveSimulation(id);
       if (!resolved) {
-        // Simulation not found — redirect to dashboard instead of blank page
-        this._router.goto('/dashboard');
+        // Simulation not found — the fallback route will render velg-not-found
         return false;
       }
       await this._checkMembership(resolved);

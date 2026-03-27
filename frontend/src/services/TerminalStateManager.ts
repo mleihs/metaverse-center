@@ -141,8 +141,18 @@ class TerminalStateManager {
       this._resetToDefaults();
     }
 
-    // Always clear transient state
-    this.outputLines.value = [];
+    // Restore recent output from localStorage if available (session continuity)
+    if (stored?.recentOutput?.length) {
+      let counter = 0;
+      this.outputLines.value = stored.recentOutput.map((r) => ({
+        id: `restored-${counter++}`,
+        type: r.type as import('../types/terminal.js').TerminalLineType,
+        content: r.content,
+        timestamp: new Date(),
+      }));
+    } else {
+      this.outputLines.value = [];
+    }
     this.conversationMode.value = null;
     this.isLoading.value = false;
     this.lastFeedTimestamp.value = null;
@@ -382,6 +392,10 @@ class TerminalStateManager {
 
   private _persist(): void {
     if (!this._simulationId) return;
+    // Persist last 50 output lines (stripped to content+type for JSON safety)
+    const recentOutput = this.outputLines.value
+      .slice(-50)
+      .map((l) => ({ type: l.type, content: l.content }));
     const state: TerminalPersistedState = {
       currentZoneId: this.currentZoneId.value,
       clearanceLevel: this.clearanceLevel.value,
@@ -393,6 +407,7 @@ class TerminalStateManager {
       intelPoints: this.intelPoints.value,
       feedFilter: this.feedFilter.value,
       conversationMap: this.conversationMap.value,
+      recentOutput,
     };
     try {
       localStorage.setItem(this._storageKey(), JSON.stringify(state));
