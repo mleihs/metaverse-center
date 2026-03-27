@@ -271,6 +271,7 @@ class TestGetRunState:
         }
         with patch(
             "backend.routers.resonance_dungeons.DungeonEngineService.get_client_state",
+            new_callable=AsyncMock,
             return_value=state,
         ):
             resp = client.get(f"/api/v1/dungeons/runs/{RUN_ID}/state")
@@ -278,32 +279,18 @@ class TestGetRunState:
         assert resp.json()["data"]["archetype"] == "The Shadow"
 
     def test_fallback_to_checkpoint_recovery(self, client):
-        from fastapi import HTTPException
-
+        """Auto-recovery is now inside get_client_state → _get_instance.
+        Test that the endpoint returns 200 when the service recovers successfully."""
         state = MagicMock()
         state.model_dump.return_value = {"run_id": str(RUN_ID), "archetype": "The Shadow",
             "signature": "s", "difficulty": 1, "depth": 0, "current_room": 0,
             "rooms": [], "party": [], "archetype_state": {}, "combat": None,
             "phase": "exploring", "phase_timer": None}
 
-        call_count = 0
-        def _get_state_side_effect(run_id):
-            nonlocal call_count
-            call_count += 1
-            if call_count == 1:
-                raise HTTPException(404, "not found")
-            return state
-
-        with (
-            patch(
-                "backend.routers.resonance_dungeons.DungeonEngineService.get_client_state",
-                side_effect=_get_state_side_effect,
-            ),
-            patch(
-                "backend.routers.resonance_dungeons.DungeonEngineService.recover_from_checkpoint",
-                new_callable=AsyncMock,
-                return_value=MagicMock(),
-            ),
+        with patch(
+            "backend.routers.resonance_dungeons.DungeonEngineService.get_client_state",
+            new_callable=AsyncMock,
+            return_value=state,
         ):
             resp = client.get(f"/api/v1/dungeons/runs/{RUN_ID}/state")
         assert resp.status_code == 200
@@ -311,16 +298,10 @@ class TestGetRunState:
     def test_not_active_returns_404(self, client):
         from fastapi import HTTPException
 
-        with (
-            patch(
-                "backend.routers.resonance_dungeons.DungeonEngineService.get_client_state",
-                side_effect=HTTPException(404, "not found"),
-            ),
-            patch(
-                "backend.routers.resonance_dungeons.DungeonEngineService.recover_from_checkpoint",
-                new_callable=AsyncMock,
-                return_value=None,
-            ),
+        with patch(
+            "backend.routers.resonance_dungeons.DungeonEngineService.get_client_state",
+            new_callable=AsyncMock,
+            side_effect=HTTPException(404, "not found"),
         ):
             resp = client.get(f"/api/v1/dungeons/runs/{RUN_ID}/state")
         assert resp.status_code == 404
