@@ -1,8 +1,8 @@
 ---
 title: "API Specification"
 id: api-specification
-version: "2.7"
-date: 2026-03-17
+version: "2.8"
+date: 2026-03-27
 lang: de
 type: spec
 status: active
@@ -1965,7 +1965,75 @@ Aktive Zonenaktion abbrechen (Soft-Delete).
 
 ---
 
-## 32. Substrate Resonances (Platform-Level)
+## 32. Resonance Dungeons (Simulation-Scoped)
+
+Prozedurale Dungeons die sich aus aktiven Substrate-Resonanzen oeffnen. Party-basierte Exploration mit phasenbasiertem Kampfsystem. 12 Endpoints unter `/api/v1/dungeons`. Vollstaendige Dokumentation: [Resonance Dungeons Spec](../concepts/resonance-dungeons-spec.md).
+
+**Migrations:** 163 (Tabellen, RLS, Basis-RPCs), 164 (atomare RPCs, VIEW, Loot-Tracking)
+
+### `GET /api/v1/dungeons/available?simulation_id=<uuid>`
+Verfuegbare Dungeon-Archetypen mit aktiven Resonanzen ueber Schwellenwert. Nutzt `available_dungeons` VIEW (Migration 164).
+
+**Rolle:** `viewer` | **Response:** `SuccessResponse[list[AvailableDungeonResponse]]`
+
+### `POST /api/v1/dungeons/runs?simulation_id=<uuid>`
+Neuen Dungeon-Run starten. Body: `{ archetype, party_agent_ids[], difficulty }`. Unique-Index verhindert parallele Runs pro Simulation.
+
+**Rolle:** `editor` | **Response:** `SuccessResponse` (201)
+
+### `GET /api/v1/dungeons/runs/{run_id}`
+Run-Metadaten abrufen (Status, Fortschritt, Outcome).
+
+**Rolle:** `viewer` | **Response:** `SuccessResponse[DungeonRunResponse]`
+
+### `GET /api/v1/dungeons/runs/{run_id}/state`
+Vollstaendiger Client-State (Fog-of-War gefiltert). Versucht In-Memory zuerst, Checkpoint-Recovery als Fallback.
+
+**Rolle:** `viewer` | **Response:** `SuccessResponse[DungeonClientState]`
+
+### `POST /api/v1/dungeons/runs/{run_id}/move`
+Party in angrenzenden Raum bewegen. Validiert Adjazenz, verarbeitet Raum-Eintritt, Archetype-Effekte, Banter.
+
+**Rolle:** `editor` | **Response:** `SuccessResponse`
+
+### `POST /api/v1/dungeons/runs/{run_id}/action`
+Encounter-Choice oder Interaktion ausfuehren. Skill-Check-Resolution ueber `skill_checks.py`.
+
+**Rolle:** `editor` | **Response:** `SuccessResponse`
+
+### `POST /api/v1/dungeons/runs/{run_id}/combat/submit`
+Kampfaktionen fuer Planning-Phase einreichen. Automatische Resolution wenn alle Spieler eingereicht haben.
+
+**Rolle:** `editor` | **Response:** `SuccessResponse`
+
+### `POST /api/v1/dungeons/runs/{run_id}/scout`
+Spy-Faehigkeit: Angrenzende Raeume aufdecken, Visibility wiederherstellen (Shadow-Mechanik).
+
+**Rolle:** `editor` | **Response:** `SuccessResponse`
+
+### `POST /api/v1/dungeons/runs/{run_id}/rest`
+An Rastplatz rasten. Stress-Heilung, Condition-Recovery. Kann Hinterhalt ausloesen (Shadow VP 0).
+
+**Rolle:** `editor` | **Response:** `SuccessResponse`
+
+### `POST /api/v1/dungeons/runs/{run_id}/retreat`
+Dungeon verlassen (partieller Loot). Atomisch via `fn_abandon_dungeon_run` RPC.
+
+**Rolle:** `editor` | **Response:** `SuccessResponse`
+
+### `GET /api/v1/dungeons/runs/{run_id}/events`
+Dungeon Event-Log (paginiert). Kampflog, Entdeckungen, Narrative.
+
+**Rolle:** `viewer` | **Response:** `PaginatedResponse[DungeonEventResponse]`
+
+### `GET /api/v1/dungeons/history?simulation_id=<uuid>`
+Vergangene Dungeon-Runs einer Simulation (paginiert).
+
+**Rolle:** `viewer` | **Response:** `PaginatedResponse[DungeonRunResponse]`
+
+---
+
+## 33. Substrate Resonances (Platform-Level)
 
 Platform-Level Resonanzen die ueber alle Simulationen propagieren. Oeffentlich lesbar, Schreibzugriff nur fuer Platform-Admin. Vollstaendige Dokumentation: [Substrate Resonances Spec](../specs/substrate-resonances.md).
 
@@ -2054,7 +2122,7 @@ Resonanz soft-deleten.
 
 ---
 
-## 33. Forge Access Requests (Platform-Level)
+## 34. Forge Access Requests (Platform-Level)
 
 Account-Tier-System (observer → architect → director) mit Request/Approve/Reject-Workflow. Bureau Clearance fuer Forge-Zugang.
 
@@ -2114,7 +2182,7 @@ Antrag genehmigen oder ablehnen. Ruft SECURITY DEFINER RPC auf, loest bilinguale
 
 ---
 
-## 34. Forge Token Economy
+## 35. Forge Token Economy
 
 Token-Kaufsystem (Mock-Monetarisierung), Wallet-Verwaltung, BYOK-Schluessel, Feature-Kaeufe (Darkroom, Dossier, Recruitment, Chronicle Export). Admin-Tools fuer Token-Grants und Bundle-Verwaltung.
 
@@ -2189,8 +2257,9 @@ Token-Kaufsystem (Mock-Monetarisierung), Wallet-Verwaltung, BYOK-Schluessel, Fea
 | Aptitudes | 3 | GetForAgent + UpdateForAgent + ListForSimulation |
 | Zone Actions | 3 | List + Create + Cancel |
 | Resonances | 9 | CRUD + ProcessImpact + Impacts + Status + Restore |
+| Resonance Dungeons | 12 | Available + CreateRun + GetRun + State + Move + Action + Combat + Scout + Rest + Retreat + Events + History |
 | Forge Access | 5 | Create + Me + Pending + PendingCount + Review |
 | Forge Token Economy | 20 | Bundles (1) + Wallet (3) + Feature Purchases (7) + Darkroom Regen (1) + Admin Bundles (2) + Admin Purchases (1) + Admin Grant (1) + Admin BYOK (2) + Admin Stats (2) |
 | Admin | 11 | Settings (2) + Users (3) + Memberships (3) + Cleanup (3) |
 | Public | 49 | Anonymer Lesezugriff (alle GET-only) |
-| **Gesamt** | **295** | **37 Router** |
+| **Gesamt** | **307** | **38 Router** |

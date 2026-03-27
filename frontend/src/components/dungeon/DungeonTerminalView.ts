@@ -1,0 +1,389 @@
+/**
+ * Dungeon Terminal View — route entry and layout shell for Resonance Dungeons.
+ *
+ * Pattern: EpochTerminalView.ts (wraps BureauTerminal with context-specific HUD).
+ * The terminal is ALWAYS the primary interaction layer. HUD components (header,
+ * quick actions, party panel) supplement it when a dungeon run is active.
+ *
+ * Layout states:
+ *   - No active dungeon: terminal-themed lobby (available archetypes + terminal)
+ *   - Active dungeon: grid HUD (header + terminal + party sidebar + quick actions)
+ *
+ * Lifecycle:
+ *   connectedCallback → initialize terminal → try dungeon recovery → load available
+ *   disconnectedCallback → release Wake Lock → clean up dungeon mode
+ *
+ * Route: /simulations/:slug/dungeon
+ */
+
+import { localized, msg } from '@lit/localize';
+import { SignalWatcher } from '@lit-labs/preact-signals';
+import { css, html, LitElement, nothing } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
+
+import { appState } from '../../services/AppStateManager.js';
+import { dungeonState } from '../../services/DungeonStateManager.js';
+import { terminalState } from '../../services/TerminalStateManager.js';
+import { initializeTerminalZones } from '../../utils/terminal-initialization.js';
+import type { AvailableDungeonResponse } from '../../types/dungeon.js';
+import {
+  terminalAnimations,
+  terminalComponentTokens,
+  terminalTokens,
+  terminalWrapperStyles,
+} from '../shared/terminal-theme-styles.js';
+import '../terminal/BureauTerminal.js';
+import './DungeonHeader.js';
+import './DungeonQuickActions.js';
+
+@localized()
+@customElement('velg-dungeon-terminal-view')
+export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
+  static styles = [
+    terminalTokens,
+    terminalComponentTokens,
+    terminalAnimations,
+    terminalWrapperStyles,
+    css`
+      :host {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - var(--header-height, 64px) - 120px);
+        min-height: 400px;
+        padding: 0 16px 16px;
+      }
+
+      /* ── HUD Grid Layout (active dungeon) ── */
+      .dungeon-hud {
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        grid-template-columns: 1fr 280px;
+        flex: 1;
+        min-height: 0;
+        gap: 0;
+      }
+
+      .dungeon-hud__header {
+        grid-column: 1 / -1;
+      }
+
+      .dungeon-hud__main {
+        grid-column: 1;
+        grid-row: 2;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        overflow: hidden;
+      }
+
+      .dungeon-hud__party {
+        grid-column: 2;
+        grid-row: 2;
+        overflow-y: auto;
+        border-left: 1px dashed color-mix(in srgb, var(--_border) 40%, transparent);
+        padding: 8px;
+        font-family: var(--_mono);
+        font-size: 10px;
+        color: var(--_phosphor-dim);
+      }
+
+      .dungeon-hud__actions {
+        grid-column: 1 / -1;
+        grid-row: 3;
+      }
+
+      /* Party placeholder (Phase 4 replaces this) */
+      .party-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        opacity: 0.4;
+      }
+
+      /* ── Lobby Layout (no active dungeon) ── */
+      .dungeon-lobby {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+      }
+
+      .lobby-info {
+        padding: 12px;
+        border: 1px dashed color-mix(in srgb, var(--_border) 50%, transparent);
+        background: color-mix(in srgb, var(--_screen-bg) 85%, transparent);
+        margin-bottom: 0;
+        font-family: var(--_mono);
+        font-size: 11px;
+        color: var(--_phosphor-dim);
+      }
+
+      .lobby-info__title {
+        font-family: var(--font-brutalist, var(--_mono));
+        font-weight: 700;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--_phosphor);
+        margin-bottom: 8px;
+      }
+
+      .lobby-info__hint {
+        font-size: 10px;
+        opacity: 0.7;
+        margin-top: 8px;
+      }
+
+      .lobby-dungeons {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-top: 8px;
+      }
+
+      .lobby-dungeon {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 6px 10px;
+        border: 1px solid color-mix(in srgb, var(--_border) 30%, transparent);
+        font-family: var(--_mono);
+        font-size: 11px;
+        color: var(--_phosphor-dim);
+      }
+
+      .lobby-dungeon__name {
+        font-weight: 600;
+        color: var(--_phosphor);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .lobby-dungeon__meta {
+        display: flex;
+        gap: 12px;
+        font-size: 10px;
+        opacity: 0.7;
+      }
+
+      .lobby-dungeon--unavailable {
+        opacity: 0.4;
+      }
+
+      /* ── Mobile ── */
+      @media (max-width: 767px) {
+        :host {
+          padding: 0 8px 8px;
+          height: calc(100vh - var(--header-height, 64px) - 100px);
+        }
+
+        .dungeon-hud {
+          grid-template-columns: 1fr;
+        }
+
+        .dungeon-hud__party {
+          grid-column: 1;
+          grid-row: unset;
+          max-height: 80px;
+          border-left: none;
+          border-top: 1px dashed color-mix(in srgb, var(--_border) 40%, transparent);
+          overflow-x: auto;
+          overflow-y: hidden;
+        }
+
+        .dungeon-hud__actions {
+          grid-column: 1;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .lobby-dungeon {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 4px;
+        }
+      }
+    `,
+  ];
+
+  @property({ type: String }) simulationId = '';
+
+  @state() private _initialized = false;
+  @state() private _error: string | null = null;
+
+  private _wakeLock: WakeLockSentinel | null = null;
+
+  override async connectedCallback(): Promise<void> {
+    super.connectedCallback();
+    await this._initialize();
+  }
+
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this._releaseWakeLock();
+    terminalState.clearDungeon();
+    terminalState.dispose();
+  }
+
+  // ── Initialization ──────────────────────────────────────────────────────
+
+  private async _initialize(): Promise<void> {
+    const sid = this.simulationId || appState.simulationId.value;
+    if (!sid) {
+      this._error = msg('No simulation context.');
+      return;
+    }
+
+    try {
+      // 1. Initialize terminal state + zones
+      terminalState.initialize(sid);
+      await initializeTerminalZones(sid);
+
+      // 2. Try to recover active dungeon from localStorage
+      const recovered = await dungeonState.tryRecover();
+
+      if (recovered) {
+        // Active dungeon found — acquire wake lock for long session
+        await this._acquireWakeLock();
+      } else {
+        // No active dungeon — load available archetypes for lobby
+        await dungeonState.loadAvailable(sid);
+      }
+
+      this._initialized = true;
+    } catch (err) {
+      this._error = err instanceof Error ? err.message : msg('Initialization failed.');
+    }
+  }
+
+  // ── Wake Lock (prevents screen sleep during dungeon runs) ───────────────
+
+  private async _acquireWakeLock(): Promise<void> {
+    try {
+      if ('wakeLock' in navigator) {
+        this._wakeLock = await (navigator as Navigator & {
+          wakeLock: { request(type: string): Promise<WakeLockSentinel> };
+        }).wakeLock.request('screen');
+      }
+    } catch {
+      // Non-critical — silently fail (battery saver, permissions, etc.)
+    }
+  }
+
+  private _releaseWakeLock(): void {
+    if (this._wakeLock) {
+      this._wakeLock.release().catch(() => {});
+      this._wakeLock = null;
+    }
+  }
+
+  // ── Render ──────────────────────────────────────────────────────────────
+
+  protected render() {
+    if (this._error) {
+      return html`<div class="terminal-error">[ERROR] ${this._error}</div>`;
+    }
+
+    if (!this._initialized) {
+      return html`<div class="terminal-loading">${msg('Initializing dungeon interface...')}_</div>`;
+    }
+
+    const sid = this.simulationId || appState.simulationId.value || '';
+    const inDungeon = dungeonState.isInDungeon.value;
+
+    if (inDungeon) {
+      return this._renderHUD(sid);
+    }
+
+    return this._renderLobby(sid);
+  }
+
+  /** Active dungeon: grid HUD layout with header, terminal, sidebar, actions. */
+  private _renderHUD(simulationId: string) {
+    return html`
+      <div class="dungeon-hud">
+        <div class="dungeon-hud__header">
+          <velg-dungeon-header></velg-dungeon-header>
+        </div>
+        <div class="dungeon-hud__main">
+          <div class="terminal-wrapper">
+            <velg-bureau-terminal .simulationId=${simulationId}></velg-bureau-terminal>
+          </div>
+        </div>
+        <div class="dungeon-hud__party">
+          <div class="party-placeholder">${msg('Party panel')}</div>
+        </div>
+        <div class="dungeon-hud__actions">
+          <velg-dungeon-quick-actions></velg-dungeon-quick-actions>
+        </div>
+      </div>
+    `;
+  }
+
+  /** No active dungeon: info panel with available archetypes + terminal below. */
+  private _renderLobby(simulationId: string) {
+    const available = dungeonState.availableDungeons.value;
+    const loading = dungeonState.loading.value;
+
+    return html`
+      <div class="dungeon-lobby">
+        <div class="lobby-info">
+          <div class="lobby-info__title">${msg('Resonance Dungeons')}</div>
+          ${loading
+            ? html`<span>${msg('Scanning resonance frequencies...')}</span>`
+            : available.length > 0
+              ? this._renderAvailableList(available)
+              : html`<span>${msg('No dungeon archetypes detected in this simulation.')}</span>`}
+          <div class="lobby-info__hint">
+            ${msg("Type 'dungeon' in the terminal to start a run.")}
+          </div>
+        </div>
+        <div class="terminal-wrapper" style="flex:1;min-height:0">
+          <velg-bureau-terminal .simulationId=${simulationId}></velg-bureau-terminal>
+        </div>
+      </div>
+    `;
+  }
+
+  /** Available archetype list for the lobby info panel. */
+  private _renderAvailableList(dungeons: AvailableDungeonResponse[]) {
+    return html`
+      <div class="lobby-dungeons" role="list" aria-label=${msg('Available dungeons')}>
+        ${dungeons.map(
+          (d) => html`
+            <div
+              class="lobby-dungeon ${d.available ? '' : 'lobby-dungeon--unavailable'}"
+              role="listitem"
+            >
+              <span class="lobby-dungeon__name">${d.archetype}</span>
+              <span class="lobby-dungeon__meta">
+                <span>${msg('Magnitude')}: ${d.effective_magnitude.toFixed(1)}</span>
+                <span>${msg('Difficulty')}: ${d.suggested_difficulty}</span>
+                <span>${msg('Depth')}: ${d.suggested_depth}</span>
+                ${d.last_run_at
+                  ? html`<span>${msg('Last run')}: ${new Date(d.last_run_at).toLocaleDateString()}</span>`
+                  : nothing}
+              </span>
+            </div>
+          `,
+        )}
+      </div>
+    `;
+  }
+}
+
+// Wake Lock API types (not yet in all TS libs)
+interface WakeLockSentinel {
+  readonly released: boolean;
+  readonly type: string;
+  release(): Promise<void>;
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'velg-dungeon-terminal-view': VelgDungeonTerminalView;
+  }
+}

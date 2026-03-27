@@ -834,6 +834,186 @@ export const icons = {
     </svg>
   `,
 
+  // ── Dungeon Icons ─────────────────────────────────────────────────────────
+
+  /** Depth gauge — staircase descending. */
+  dungeonDepth: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 4h4v4h4v4h4v4h4" />
+      <path d="M4 8v-4" /><path d="M20 16v4" />
+    </svg>
+  `,
+
+  /** Room counter — door frame. */
+  doorOpen: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 -1h-14a1 1 0 0 1 -1 -1v-14a1 1 0 0 1 1 -1" />
+      <path d="M12 4v16" /><path d="M14 12h.01" />
+    </svg>
+  `,
+
+  /** Visibility — diamond pip (filled). */
+  diamond: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="currentColor" stroke="none">
+      <path d="M12 3l7 9l-7 9l-7 -9z" />
+    </svg>
+  `,
+
+  /** Visibility — diamond pip (empty). */
+  diamondEmpty: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3l7 9l-7 9l-7 -9z" />
+    </svg>
+  `,
+
+  /** Scout action — binoculars. */
+  binoculars: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M7 16a4 4 0 0 1 -4 -4v-2a2 2 0 0 1 2 -2h2" />
+      <path d="M17 16a4 4 0 0 0 4 -4v-2a2 2 0 0 0 -2 -2h-2" />
+      <path d="M7 8v-2a2 2 0 0 1 2 -2h6a2 2 0 0 1 2 2v2" />
+      <path d="M7 16h10" />
+      <circle cx="7" cy="16" r="2" /><circle cx="17" cy="16" r="2" />
+    </svg>
+  `,
+
+  /** Retreat action — door with arrow. */
+  doorExit: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2" />
+      <path d="M9 12h12l-3 -3" /><path d="M18 15l3 -3" />
+    </svg>
+  `,
+
+  /** Rest action — campfire. */
+  campfire: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 4c1.5 2 2 4 1 6s-2 4 -1 6" />
+      <path d="M10 12c0 -2 1 -3 2 -4c1 1 2 2 2 4c0 1.5 -1 3 -2 3s-2 -1.5 -2 -3z" />
+      <path d="M4 20l4 -2l4 2l4 -2l4 2" />
+    </svg>
+  `,
+
+  /** Interact/encounter — hand raised. */
+  handClick: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8 13v-7.5a1.5 1.5 0 0 1 3 0v6.5" />
+      <path d="M11 5.5a1.5 1.5 0 0 1 3 0v6.5" />
+      <path d="M14 5.5a1.5 1.5 0 0 1 3 0v6.5" />
+      <path d="M17 7.5a1.5 1.5 0 0 1 3 0v8.5a6 6 0 0 1 -6 6h-2a6 6 0 0 1 -6 -6v-1.5" />
+    </svg>
+  `,
+
+  /** Room type: treasure — chest. */
+  treasure: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="12" width="18" height="8" rx="1" />
+      <path d="M3 12a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4" />
+      <path d="M12 12v3" /><circle cx="12" cy="16" r="1" />
+    </svg>
+  `,
+
+  /** Room type: boss — crown. */
+  crown: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 6l4 6l5 -4l-2 10h-14l-2 -10l5 4z" />
+    </svg>
+  `,
+
+  /** Room type: entrance — door enter. */
+  doorEnter: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2" />
+      <path d="M20 12h-12l3 -3" /><path d="M11 15l-3 -3" />
+    </svg>
+  `,
+
+  /** Shield — guardian school / defense. */
+  shield: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1 -8.5 15a12 12 0 0 1 -8.5 -15a12 12 0 0 0 8.5 -3" />
+    </svg>
+  `,
+
+  /** Dagger — assassin school. */
+  dagger: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2l2 10l-2 2l-2 -2z" />
+      <path d="M8 14l8 0" />
+      <path d="M12 16v4" />
+    </svg>
+  `,
+
+  /** Mask — infiltrator school. */
+  mask: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 4c4.418 0 8 2.686 8 6s-3.582 6 -8 6s-8 -2.686 -8 -6s3.582 -6 8 -6z" />
+      <circle cx="9" cy="9" r="1.5" /><circle cx="15" cy="9" r="1.5" />
+    </svg>
+  `,
+
+  /** Bomb — saboteur school. */
+  bomb: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="14" r="7" />
+      <path d="M14 7l2 -2" /><path d="M18 3l-1.5 1.5" />
+      <path d="M18 3l0 3" /><path d="M18 3l3 0" />
+    </svg>
+  `,
+
+  /** Footprints — move action. */
+  footprints: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8 3c0 1.657 -1 3 -2 4s-2 3 -2 5a4 4 0 0 0 4 4c2 0 4 -1.5 4 -4c0 -2 -1 -3 -2 -5s-2 -2.343 -2 -4" />
+      <path d="M16 9c0 1.657 -1 3 -2 4s-2 3 -2 5a4 4 0 0 0 4 4c2 0 4 -1.5 4 -4c0 -2 -1 -3 -2 -5s-2 -2.343 -2 -4" />
+    </svg>
+  `,
+
+  /** Dungeon map — folded map with route lines. */
+  dungeonMap: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 7l6 -3l6 3l6 -3v13l-6 3l-6 -3l-6 3v-13" />
+      <circle cx="12" cy="10" r="2" />
+      <path d="M12 12v2" />
+    </svg>
+  `,
+
+  /** Room type: elite combat — skull with lightning. */
+  skullBolt: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 4a7 7 0 0 1 7 7c0 2.5 -1.5 4.5 -3.5 5.5v1.5a1 1 0 0 1 -1 1h-5a1 1 0 0 1 -1 -1v-1.5c-2 -1 -3.5 -3 -3.5 -5.5a7 7 0 0 1 7 -7z" />
+      <path d="M10 20h4" /><path d="M12 4l-1 4h2l-1 4" />
+    </svg>
+  `,
+
+  /** Room type: encounter/event — question mark in circle. */
+  questionCircle: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 17l0 .01" />
+      <path d="M12 13.5a1.5 1.5 0 0 1 1 -1.5a2.6 2.6 0 1 0 -3 -2.5" />
+    </svg>
+  `,
+
   discordOAuth: (size = 18) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="#5865F2" aria-hidden="true">
       <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>

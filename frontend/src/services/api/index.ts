@@ -9,6 +9,7 @@ export { CampaignsApiService, campaignsApi } from './CampaignsApiService.js';
 export { ChatApiService, chatApi } from './ChatApiService.js';
 export { ChronicleApiService, chronicleApi } from './ChronicleApiService.js';
 export { ConnectionsApiService, connectionsApi } from './ConnectionsApiService.js';
+export { DungeonApiService, dungeonApi } from './DungeonApiService.js';
 export { EchoesApiService, echoesApi } from './EchoesApiService.js';
 export { EmbassiesApiService, embassiesApi } from './EmbassiesApiService.js';
 export { EpochsApiService, epochsApi } from './EpochsApiService.js';

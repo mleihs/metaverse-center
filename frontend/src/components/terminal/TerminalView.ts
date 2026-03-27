@@ -12,7 +12,7 @@ import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { terminalState } from '../../services/TerminalStateManager.js';
-import { locationsApi } from '../../services/api/index.js';
+import { initializeTerminalZones } from '../../utils/terminal-initialization.js';
 import { terminalTokens, terminalAnimations, terminalWrapperStyles } from '../shared/terminal-theme-styles.js';
 import './BureauTerminal.js';
 
@@ -64,25 +64,8 @@ export class VelgTerminalView extends SignalWatcher(LitElement) {
     }
 
     try {
-      // Initialize state manager (loads from localStorage)
       terminalState.initialize(sid);
-
-      // Fetch all zones for this simulation
-      const zonesResp = await locationsApi.listZones(sid);
-      if (!zonesResp.success || !zonesResp.data || zonesResp.data.length === 0) {
-        this._error = msg('No zones found in this simulation.');
-        return;
-      }
-
-      terminalState.cacheZones(zonesResp.data);
-
-      // Set initial zone if none persisted
-      if (!terminalState.currentZoneId.value) {
-        // Default to first zone alphabetically
-        const sorted = [...zonesResp.data].sort((a, b) => a.name.localeCompare(b.name));
-        terminalState.setCurrentZone(sorted[0].id);
-      }
-
+      await initializeTerminalZones(sid);
       this._initialized = true;
     } catch (err) {
       this._error = err instanceof Error ? err.message : msg('Initialization failed.');

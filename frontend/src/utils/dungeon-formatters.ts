@@ -1,0 +1,721 @@
+/**
+ * Resonance Dungeons — Pure formatter functions.
+ * Convert dungeon state and API responses into TerminalLine[] output.
+ * No API calls, no state manager imports — only data transformation.
+ *
+ * Pattern: terminal-formatters.ts (pure functions, explicit params, TerminalLine[]).
+ */
+
+import { msg } from '@lit/localize';
+
+import type {
+  AgentCombatStateClient,
+  CombatRoundResult,
+  CombatStateClient,
+  DungeonClientState,
+  EncounterChoiceClient,
+  LootItem,
+  RoomNodeClient,
+  SkillCheckDetail,
+} from '../types/dungeon.js';
+import type { TerminalLine } from '../types/terminal.js';
+import { responseLine, systemLine, hintLine } from './terminal-formatters.js';
+
+// ── Room Type Symbols (ASCII map) ────────────────────────────────────────────
+
+const ROOM_SYMBOLS: Record<string, string> = {
+  entrance: 'E',
+  combat: 'C',
+  elite: '!',
+  encounter: '?',
+  rest: 'R',
+  treasure: 'T',
+  boss: 'B',
+  exit: '\u21E4', // ⇤
+};
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+/** Get maximum depth in the room graph. Returns 0 for empty rooms. */
+function getMaxDepth(rooms: RoomNodeClient[]): number {
+  if (rooms.length === 0) return 0;
+  return Math.max(...rooms.map(r => r.depth));
+}
+
+// ── Condition Display ────────────────────────────────────────────────────────
+
+const CONDITION_LABELS: Record<string, string> = {
+  operational: 'OPERATIONAL',
+  stressed: 'STRESSED',
+  wounded: 'WOUNDED',
+  afflicted: 'AFFLICTED',
+  captured: 'CAPTURED',
+};
+
+// ── Bar Renderers ────────────────────────────────────────────────────────────
+
+function progressBar(current: number, max: number, width = 10): string {
+  const filled = Math.round((current / Math.max(max, 1)) * width);
+  return '\u2588'.repeat(Math.max(0, filled)) + '\u2591'.repeat(Math.max(0, width - filled));
+}
+
+function stressBar(stress: number, width = 10): string {
+  const max = 1000;
+  const filled = Math.round((Math.min(stress, max) / max) * width);
+  return '\u2588'.repeat(Math.max(0, filled)) + '\u2591'.repeat(Math.max(0, width - filled));
+}
+
+// ── Dungeon Entry ────────────────────────────────────────────────────────────
+
+export function formatDungeonEntry(
+  state: DungeonClientState,
+  atmosphereText: string,
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+
+  lines.push(systemLine('\u2550'.repeat(50)));
+  lines.push(systemLine(`  RESONANCE DUNGEON \u2014 ${state.archetype.toUpperCase()}`));
+  const depthDisplay = getMaxDepth(state.rooms) || '?';
+  lines.push(systemLine(`  ${msg('Difficulty')}: ${'*'.repeat(state.difficulty)}${'·'.repeat(5 - state.difficulty)}  ${msg('Depth')}: ${depthDisplay}`));
+  lines.push(systemLine('\u2550'.repeat(50)));
+  lines.push(responseLine(''));
+
+  if (atmosphereText) {
+    lines.push(responseLine(atmosphereText));
+    lines.push(responseLine(''));
+  }
+
+  // Party summary
+  lines.push(systemLine(msg('PARTY:')));
+  for (const agent of state.party) {
+    const primaryApt = Object.entries(agent.aptitudes)
+      .sort(([, a], [, b]) => b - a)[0];
+    const aptStr = primaryApt ? `${primaryApt[0].charAt(0).toUpperCase() + primaryApt[0].slice(1)} ${primaryApt[1]}` : '';
+    lines.push(responseLine(`  ${agent.agent_name} \u2014 ${aptStr} \u2014 ${CONDITION_LABELS[agent.condition] ?? agent.condition}`));
+  }
+
+  lines.push(responseLine(''));
+  lines.push(hintLine(msg('Type "map" to see the dungeon layout, "move <room>" to move.')));
+
+  return lines;
+}
+
+// ── Dungeon Map (ASCII FTL-style) ────────────────────────────────────────────
+
+export function formatDungeonMap(state: DungeonClientState): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+  const mxDepth = getMaxDepth(state.rooms);
+
+  lines.push(systemLine(`DUNGEON MAP \u2014 ${state.archetype.toUpperCase()}, ${msg('Depth')} ${state.depth}/${mxDepth}`));
+  lines.push(systemLine(''));
+
+  // Group rooms by depth
+  const byDepth = new Map<number, RoomNodeClient[]>();
+  for (const room of state.rooms) {
+    const list = byDepth.get(room.depth) ?? [];
+    list.push(room);
+    byDepth.set(room.depth, list);
+  }
+
+  // Render each depth layer
+  for (const [depth, rooms] of [...byDepth.entries()].sort((a, b) => a[0] - b[0])) {
+    const roomStrs = rooms.map(r => {
+      let symbol: string;
+      if (r.current) symbol = '*';
+      else if (!r.revealed) symbol = '\u2591';
+      else if (r.cleared) symbol = '\u25A0';
+      else symbol = ROOM_SYMBOLS[r.room_type] ?? '?';
+      return `[${symbol}]`;
+    });
+
+    // Pad depth label
+    const depthLabel = `D${depth}`;
+    lines.push(responseLine(`  ${depthLabel.padEnd(3)} ${roomStrs.join('\u2500\u2500\u2500')}`));
+
+    // Draw vertical connections to next depth
+    if (byDepth.has(depth + 1)) {
+      const connStrs = rooms.map(r => {
+        const hasDown = r.connections.some(c => {
+          const target = state.rooms.find(t => t.index === c);
+          return target && target.depth === depth + 1;
+        });
+        return hasDown ? ' \u2502 ' : '   ';
+      });
+      lines.push(responseLine(`      ${connStrs.join('   ')}`));
+    }
+  }
+
+  lines.push(systemLine(''));
+  lines.push(hintLine(msg('[E]ntrance [C]ombat [!]Elite [?]Unknown [R]est [T]reasure [B]oss')));
+  lines.push(hintLine(msg('* Current  \u25A0 Cleared  \u2591 Unrevealed')));
+
+  return lines;
+}
+
+// ── Room Entry ───────────────────────────────────────────────────────────────
+
+export function formatRoomEntry(
+  room: RoomNodeClient,
+  banterText: string | null,
+  archetypeState: Record<string, unknown>,
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+
+  // Banter first (agent personality reaction)
+  if (banterText) {
+    lines.push(responseLine(''));
+    lines.push(responseLine(banterText));
+  }
+
+  // Room header
+  lines.push(responseLine(''));
+  lines.push(systemLine(`\u2550\u2550\u2550 ${msg('DEPTH')} ${room.depth} \u2014 ${msg('ROOM')} ${room.index} \u2550\u2550\u2550`));
+
+  // Archetype-specific state (Shadow: visibility)
+  if (archetypeState.visibility !== undefined) {
+    const vis = archetypeState.visibility as number;
+    const maxVis = (archetypeState.max_visibility ?? 3) as number;
+    const bar = '\u2588'.repeat(vis) + '\u2591'.repeat(Math.max(0, maxVis - vis));
+    lines.push(systemLine(`VISIBILITY: ${bar} [${vis}/${maxVis}]`));
+  }
+
+  // Room type header
+  const roomType = room.room_type.toUpperCase();
+  switch (room.room_type) {
+    case 'combat':
+      lines.push(systemLine(`[${msg('COMBAT ENCOUNTER')}]`));
+      break;
+    case 'elite':
+      lines.push(systemLine(`[${msg('ELITE ENCOUNTER')}]`));
+      break;
+    case 'encounter':
+      lines.push(systemLine(`[${msg('ENCOUNTER')}]`));
+      break;
+    case 'rest':
+      lines.push(systemLine(`[${msg('REST SITE')}]`));
+      lines.push(responseLine(msg('A fragile pocket of stillness in the darkness.')));
+      lines.push(hintLine(msg('Use "rest" to recover stress. Risk of ambush.')));
+      break;
+    case 'treasure':
+      lines.push(systemLine(`[${msg('TREASURE')}]`));
+      lines.push(responseLine(msg('Something glints in the shadow.')));
+      break;
+    case 'boss':
+      lines.push(systemLine(`[${msg('BOSS CHAMBER')}]`));
+      lines.push(responseLine(msg('The darkness is thicker here. Absolute. Intentional.')));
+      break;
+    case 'exit':
+      lines.push(systemLine(`[${msg('EXIT')}]`));
+      lines.push(hintLine(msg('Use "retreat" to leave with partial loot.')));
+      break;
+    default:
+      lines.push(systemLine(`[${roomType}]`));
+  }
+
+  return lines;
+}
+
+// ── Combat Start ─────────────────────────────────────────────────────────────
+
+export function formatCombatStart(
+  combat: CombatStateClient,
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+
+  lines.push(systemLine(''));
+  lines.push(systemLine(`\u2550\u2550\u2550 ${msg('COMBAT')} \u2014 ${msg('Round')} ${combat.round_num}/${combat.max_rounds} \u2550\u2550\u2550`));
+  lines.push(systemLine(''));
+
+  // Enemies
+  lines.push(systemLine(msg('ENEMIES:')));
+  for (const enemy of combat.enemies) {
+    if (!enemy.is_alive) continue;
+    const condBar = _enemyConditionBar(enemy.condition_display);
+    const threatBadge = `[${enemy.threat_level.toUpperCase()}]`;
+    const intentStr = enemy.telegraphed_action
+      ? `  ${msg('INTENT')}: \u25BA ${enemy.telegraphed_action.intent}`
+      : '';
+    lines.push(responseLine(`  ${enemy.name_en} ${condBar} ${threatBadge}${intentStr}`));
+  }
+
+  lines.push(systemLine(''));
+
+  // Telegraphed actions summary
+  if (combat.telegraphed_actions.length > 0) {
+    lines.push(systemLine(msg('ENEMY INTENTIONS:')));
+    for (const ta of combat.telegraphed_actions) {
+      const threatColor = ta.threat_level === 'critical' ? '!!!' : ta.threat_level === 'high' ? '!!' : ta.threat_level === 'medium' ? '!' : '';
+      lines.push(responseLine(`  ${threatColor} ${ta.enemy_name}: ${ta.intent}${ta.target ? ` \u2192 ${ta.target}` : ''}`));
+    }
+    lines.push(systemLine(''));
+  }
+
+  return lines;
+}
+
+// ── Combat Planning (ability list per agent) ─────────────────────────────────
+
+export function formatCombatPlanning(
+  party: AgentCombatStateClient[],
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+
+  lines.push(systemLine(msg('SELECT ACTIONS:')));
+  lines.push(systemLine(''));
+
+  for (const agent of party) {
+    if (agent.condition === 'captured') continue;
+
+    const aptEntries = Object.entries(agent.aptitudes).sort(([, a], [, b]) => b - a);
+    const primaryApt = aptEntries[0] ? `${aptEntries[0][0]} ${aptEntries[0][1]}` : '';
+    lines.push(systemLine(`${agent.agent_name.toUpperCase()} (${primaryApt}) \u2014 ${CONDITION_LABELS[agent.condition] ?? agent.condition}`));
+
+    if (agent.available_abilities.length === 0) {
+      lines.push(responseLine(msg('  (no actions available)')));
+      continue;
+    }
+
+    for (const ability of agent.available_abilities) {
+      const cdStr = ability.cooldown_remaining > 0 ? ` [CD: ${ability.cooldown_remaining}]` : '';
+      const ultStr = ability.is_ultimate ? ' \u2605' : '';
+      const checkStr = ability.check_info ? ` (${ability.check_info})` : '';
+      const available = ability.cooldown_remaining === 0;
+      const marker = ability.is_ultimate ? '\u2605' : available ? '\u25C9' : '\u25CB';
+      lines.push(responseLine(`  ${marker} ${ability.name}${checkStr}${cdStr}${ultStr}`));
+      lines.push(responseLine(`    ${ability.description}`));
+    }
+    lines.push(systemLine(''));
+  }
+
+  lines.push(hintLine(msg('Use "attack <agent> <ability> [target]" to select, "submit" when ready.')));
+
+  return lines;
+}
+
+// ── Combat Resolution ────────────────────────────────────────────────────────
+
+export function formatCombatResolution(
+  result: CombatRoundResult,
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+
+  lines.push(systemLine(`\u2550\u2550\u2550 ${msg('RESOLUTION')} \u2014 ${msg('Round')} ${result.round} \u2550\u2550\u2550`));
+  lines.push(responseLine(''));
+
+  // Narrative text
+  if (result.narrative_en) {
+    for (const para of result.narrative_en.split('\n')) {
+      lines.push(responseLine(para));
+    }
+    lines.push(responseLine(''));
+  }
+
+  // Mechanical outcomes
+  for (const event of result.events) {
+    const hitStr = event.hit ? msg('HIT') : msg('MISS');
+    lines.push(systemLine(`[${hitStr}] ${event.actor} \u2192 ${event.action} \u2192 ${event.target}`));
+    if (event.damage > 0) {
+      lines.push(responseLine(`  \u2192 ${msg('Condition')}: -${event.damage} ${event.damage === 1 ? msg('step') : msg('steps')}`));
+    }
+    if (event.stress !== 0) {
+      const sign = event.stress > 0 ? '+' : '';
+      lines.push(responseLine(`  \u2192 ${msg('Stress')}: ${sign}${event.stress}`));
+    }
+    if (event.narrative_en) {
+      lines.push(responseLine(`  ${event.narrative_en}`));
+    }
+  }
+
+  // Victory / Wipe
+  if (result.victory) {
+    lines.push(systemLine(''));
+    lines.push(systemLine(`\u2550\u2550\u2550 ${msg('VICTORY')} \u2550\u2550\u2550`));
+  }
+  if (result.wipe) {
+    lines.push(systemLine(''));
+    lines.push(systemLine(`\u2550\u2550\u2550 ${msg('PARTY WIPE')} \u2550\u2550\u2550`));
+  }
+
+  return lines;
+}
+
+// ── Resolve Check (Darkest Dungeon moment) ───────────────────────────────────
+
+export function formatResolveCheck(
+  agentName: string,
+  isVirtue: boolean,
+  resultName: string,
+  effects: string[],
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+
+  lines.push(systemLine(''));
+  lines.push(systemLine(`${agentName} ${msg("reaches critical stress")}`));
+  lines.push(systemLine(''));
+  lines.push(systemLine(`[SYSTEM] \u2550\u2550\u2550 ${msg('RESOLVE CHECK')} \u2550\u2550\u2550`));
+  lines.push(systemLine('[SYSTEM]'));
+  lines.push(systemLine(`[SYSTEM] ${msg('Resolving')}...`));
+
+  // 3-second dramatic pause is handled by the command handler
+  // via delayed line rendering (staggered timestamps)
+
+  if (isVirtue) {
+    lines.push(systemLine(''));
+    lines.push(systemLine('\u2588'.repeat(40)));
+    lines.push(systemLine(`\u2588\u2588     V I R T U E :  ${resultName.toUpperCase()}     \u2588\u2588`));
+    lines.push(systemLine('\u2588'.repeat(40)));
+  } else {
+    lines.push(systemLine(''));
+    lines.push(systemLine('\u2591'.repeat(40)));
+    lines.push(systemLine(`\u2591\u2591  A F F L I C T I O N :  ${resultName.toUpperCase()}  \u2591\u2591`));
+    lines.push(systemLine('\u2591'.repeat(40)));
+  }
+
+  lines.push(systemLine(''));
+  for (const effect of effects) {
+    lines.push(responseLine(`  \u2192 ${effect}`));
+  }
+
+  return lines;
+}
+
+// ── Encounter Choices ────────────────────────────────────────────────────────
+
+export function formatEncounterChoices(
+  descriptionEn: string,
+  choices: EncounterChoiceClient[],
+  party: AgentCombatStateClient[],
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+
+  // Narrative text
+  for (const para of descriptionEn.split('\n')) {
+    lines.push(responseLine(para));
+  }
+  lines.push(responseLine(''));
+
+  // Choices
+  for (let i = 0; i < choices.length; i++) {
+    const choice = choices[i];
+    lines.push(systemLine(`[${i + 1}] ${choice.label_en}`));
+
+    // Aptitude requirements
+    if (choice.requires_aptitude) {
+      for (const [apt, level] of Object.entries(choice.requires_aptitude)) {
+        lines.push(responseLine(`    ${msg('Requires')}: ${apt.charAt(0).toUpperCase() + apt.slice(1)} ${level}`));
+      }
+    }
+
+    // Check info — which agent can do it best?
+    if (choice.check_aptitude) {
+      const bestAgent = _findBestAgent(party, choice.check_aptitude);
+      if (bestAgent) {
+        const aptLevel = bestAgent.aptitudes[choice.check_aptitude] ?? 0;
+        lines.push(responseLine(`    ${bestAgent.agent_name} ${msg('volunteers')} (${choice.check_aptitude} ${aptLevel})`));
+      }
+    }
+
+    if (i < choices.length - 1) {
+      lines.push(responseLine(''));
+    }
+  }
+
+  lines.push(responseLine(''));
+  lines.push(hintLine(msg('Type "interact <number>" to choose.')));
+
+  return lines;
+}
+
+// ── Skill Check Result ───────────────────────────────────────────────────────
+
+export function formatSkillCheckResult(
+  check: SkillCheckDetail,
+  narrativeEn: string,
+  effects: string[],
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+
+  // Probability breakdown
+  const breakdownParts = Object.entries(check.breakdown)
+    .map(([key, val]) => `${key}: ${val > 0 ? '+' : ''}${val}%`)
+    .join(', ');
+  lines.push(systemLine(`[${check.aptitude.toUpperCase()} CHECK \u2014 ${msg('Level')} ${check.level}: ${check.chance}%]`));
+  if (breakdownParts) {
+    lines.push(systemLine(`  ${breakdownParts}`));
+  }
+  lines.push(systemLine(''));
+
+  // Rolling bar
+  const rollBar = progressBar(check.chance, 100);
+  lines.push(systemLine(`${msg('Rolling')}... ${rollBar} ${check.chance}%`));
+  lines.push(systemLine(''));
+
+  // Result
+  const resultLabel = check.result === 'success'
+    ? msg('SUCCESS')
+    : check.result === 'partial'
+      ? msg('PARTIAL SUCCESS')
+      : msg('FAILURE');
+  lines.push(systemLine(`${msg('Result')}: ${check.roll} \u2014 ${resultLabel}`));
+  lines.push(responseLine(''));
+
+  // Narrative
+  if (narrativeEn) {
+    for (const para of narrativeEn.split('\n')) {
+      lines.push(responseLine(para));
+    }
+  }
+
+  // Effects
+  for (const effect of effects) {
+    lines.push(responseLine(`  \u2192 ${effect}`));
+  }
+
+  return lines;
+}
+
+// ── Loot ─────────────────────────────────────────────────────────────────────
+
+export function formatLootDrop(items: LootItem[]): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+
+  lines.push(systemLine(`\u2550\u2550\u2550 ${msg('LOOT FOUND')} \u2550\u2550\u2550`));
+  lines.push(systemLine(''));
+
+  const tierMarkers: Record<number, string> = { 1: '\u25C6', 2: '\u2605', 3: '\u2726' };
+
+  for (const item of items) {
+    const marker = tierMarkers[item.tier] ?? '\u25C6';
+    lines.push(responseLine(`  ${marker} ${item.name_en} (${msg('Tier')} ${item.tier})`));
+    lines.push(responseLine(`    ${item.description_en}`));
+  }
+
+  return lines;
+}
+
+// ── Scout Result ─────────────────────────────────────────────────────────────
+
+export function formatScoutResult(
+  agentName: string,
+  revealedRooms: number,
+  visibility: number | undefined,
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+
+  lines.push(responseLine(`${agentName} ${msg('scans the surrounding darkness')}...`));
+
+  if (revealedRooms > 0) {
+    lines.push(systemLine(`[${msg('OBSERVE SUCCESS')}]`));
+    lines.push(responseLine(`  \u2192 ${revealedRooms} ${revealedRooms === 1 ? msg('room revealed') : msg('rooms revealed')}`));
+  } else {
+    lines.push(systemLine(`[${msg('OBSERVE')}]`));
+    lines.push(responseLine(`  \u2192 ${msg('No new rooms to reveal')}`));
+  }
+
+  if (visibility !== undefined) {
+    lines.push(responseLine(`  \u2192 ${msg('Visibility')}: ${visibility}`));
+  }
+
+  lines.push(hintLine(msg('Type "map" to see updated layout.')));
+
+  return lines;
+}
+
+// ── Rest Result ──────────────────────────────────────────────────────────────
+
+export function formatRestResult(
+  healed: boolean,
+  ambushed: boolean,
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+
+  if (ambushed) {
+    lines.push(systemLine(`[${msg('AMBUSH')}!]`));
+    lines.push(responseLine(msg('The shadows were waiting. Rest interrupted.')));
+  } else if (healed) {
+    lines.push(systemLine(`[${msg('REST COMPLETE')}]`));
+    lines.push(responseLine(msg('A moment of calm. Stress reduced.')));
+  } else {
+    lines.push(systemLine(`[${msg('REST')}]`));
+    lines.push(responseLine(msg('The party rests, but tension lingers.')));
+  }
+
+  return lines;
+}
+
+// ── Retreat Result ───────────────────────────────────────────────────────────
+
+export function formatRetreatResult(loot: LootItem[]): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+
+  lines.push(systemLine(`\u2550\u2550\u2550 ${msg('RETREAT')} \u2550\u2550\u2550`));
+  lines.push(responseLine(msg('The party withdraws from the dungeon.')));
+
+  if (loot.length > 0) {
+    lines.push(responseLine(''));
+    lines.push(systemLine(msg('PARTIAL LOOT:')));
+    const tierMarkers: Record<number, string> = { 1: '\u25C6', 2: '\u2605', 3: '\u2726' };
+    for (const item of loot) {
+      const marker = tierMarkers[item.tier] ?? '\u25C6';
+      lines.push(responseLine(`  ${marker} ${item.name_en}`));
+    }
+  }
+
+  return lines;
+}
+
+// ── Dungeon Complete ─────────────────────────────────────────────────────────
+
+export function formatDungeonComplete(
+  state: DungeonClientState,
+  loot: LootItem[],
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+  const mxDepth = getMaxDepth(state.rooms);
+
+  lines.push(systemLine('\u2550'.repeat(50)));
+  lines.push(systemLine(`  ${msg('DUNGEON COMPLETE')} \u2014 ${state.archetype.toUpperCase()}`));
+  lines.push(systemLine('\u2550'.repeat(50)));
+  lines.push(systemLine(''));
+
+  lines.push(responseLine(`  ${msg('Depth Reached')}: ${state.depth}/${mxDepth}`));
+
+  const totalRooms = state.rooms.length;
+  const clearedRooms = state.rooms.filter(r => r.cleared).length;
+  lines.push(responseLine(`  ${msg('Rooms Cleared')}: ${clearedRooms}/${totalRooms}`));
+  lines.push(systemLine(''));
+
+  // Party status
+  lines.push(systemLine(msg('PARTY STATUS:')));
+  for (const agent of state.party) {
+    const stressLabel = agent.stress_threshold === 'critical'
+      ? `${msg('Stress')}: ${agent.stress} [${msg('CRITICAL')}]`
+      : `${msg('Stress')}: ${agent.stress}`;
+    lines.push(responseLine(`  ${agent.agent_name} \u2014 ${CONDITION_LABELS[agent.condition] ?? agent.condition} (${stressLabel})`));
+  }
+
+  // Loot
+  if (loot.length > 0) {
+    lines.push(systemLine(''));
+    lines.push(systemLine(msg('LOOT:')));
+    const tierMarkers: Record<number, string> = { 1: '\u25C6', 2: '\u2605', 3: '\u2726' };
+    for (const item of loot) {
+      const marker = tierMarkers[item.tier] ?? '\u25C6';
+      lines.push(responseLine(`  ${marker} ${item.name_en} \u2014 ${item.description_en}`));
+    }
+  }
+
+  lines.push(systemLine(''));
+  lines.push(systemLine('\u2550'.repeat(50)));
+
+  return lines;
+}
+
+// ── Party Wipe ───────────────────────────────────────────────────────────────
+
+export function formatPartyWipe(): TerminalLine[] {
+  return [
+    systemLine(''),
+    systemLine('\u2591'.repeat(50)),
+    systemLine(`\u2591\u2591       ${msg('THE DARKNESS TAKES THEM')}       \u2591\u2591`),
+    systemLine('\u2591'.repeat(50)),
+    systemLine(''),
+    responseLine(msg('All agents have fallen. The dungeon claims its due.')),
+    systemLine(''),
+  ];
+}
+
+// ── Dungeon Status ───────────────────────────────────────────────────────────
+
+export function formatDungeonStatus(state: DungeonClientState): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+  const mxDepth = getMaxDepth(state.rooms);
+  const clearedRooms = state.rooms.filter(r => r.cleared).length;
+
+  lines.push(systemLine(`\u2550\u2550\u2550 ${state.archetype.toUpperCase()} \u2014 ${msg('STATUS')} \u2550\u2550\u2550`));
+  lines.push(systemLine(''));
+  lines.push(responseLine(`${msg('Phase')}: ${state.phase}`));
+  lines.push(responseLine(`${msg('Depth')}: ${state.depth}/${mxDepth}`));
+  lines.push(responseLine(`${msg('Rooms')}: ${clearedRooms}/${state.rooms.length}`));
+  lines.push(responseLine(`${msg('Difficulty')}: ${'*'.repeat(state.difficulty)}`));
+
+  // Archetype-specific
+  if (state.archetype_state.visibility !== undefined) {
+    const vis = state.archetype_state.visibility as number;
+    const maxVis = (state.archetype_state.max_visibility ?? 3) as number;
+    lines.push(responseLine(`${msg('Visibility')}: ${'\u2588'.repeat(vis)}${'\u2591'.repeat(Math.max(0, maxVis - vis))} [${vis}/${maxVis}]`));
+  }
+
+  lines.push(systemLine(''));
+  lines.push(systemLine(msg('PARTY:')));
+  for (const agent of state.party) {
+    const stressStr = stressBar(agent.stress);
+    const condLabel = CONDITION_LABELS[agent.condition] ?? agent.condition;
+    lines.push(responseLine(`  ${agent.agent_name}: ${condLabel} | ${msg('Stress')}: ${stressStr} ${agent.stress}`));
+
+    // Active buffs/debuffs
+    if (agent.active_buffs.length > 0 || agent.active_debuffs.length > 0) {
+      const buffs = agent.active_buffs.map(b => `+${b.name}`);
+      const debuffs = agent.active_debuffs.map(d => `-${d.name}`);
+      lines.push(responseLine(`    ${[...buffs, ...debuffs].join(', ')}`));
+    }
+  }
+
+  return lines;
+}
+
+// ── Available Dungeons ───────────────────────────────────────────────────────
+
+export function formatAvailableDungeons(
+  dungeons: Array<{ archetype: string; signature: string; suggested_difficulty: number; available: boolean }>,
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+
+  if (dungeons.length === 0) {
+    lines.push(systemLine(msg('No resonance dungeons available.')));
+    lines.push(hintLine(msg('Dungeons appear when Substrate Resonance magnitude is high enough.')));
+    return lines;
+  }
+
+  lines.push(systemLine(msg('AVAILABLE RESONANCE DUNGEONS:')));
+  lines.push(systemLine(''));
+
+  for (const d of dungeons) {
+    const availStr = d.available ? '' : ` [${msg('COOLDOWN')}]`;
+    lines.push(responseLine(`  ${d.archetype} (${d.signature}) \u2014 ${msg('Suggested')}: ${'*'.repeat(d.suggested_difficulty)}${availStr}`));
+  }
+
+  lines.push(responseLine(''));
+  lines.push(hintLine(msg('Type "dungeon <archetype>" to enter. Example: dungeon shadow')));
+
+  return lines;
+}
+
+// ── Private Helpers ──────────────────────────────────────────────────────────
+
+function _enemyConditionBar(display: string): string {
+  switch (display) {
+    case 'healthy': return progressBar(10, 10, 8);
+    case 'damaged': return progressBar(6, 10, 8);
+    case 'critical': return progressBar(3, 10, 8);
+    case 'defeated': return progressBar(0, 10, 8);
+    default: return progressBar(5, 10, 8);
+  }
+}
+
+function _findBestAgent(
+  party: AgentCombatStateClient[],
+  aptitude: string,
+): AgentCombatStateClient | null {
+  let best: AgentCombatStateClient | null = null;
+  let bestLevel = -1;
+  for (const agent of party) {
+    if (agent.condition === 'captured') continue;
+    const level = agent.aptitudes[aptitude] ?? 0;
+    if (level > bestLevel) {
+      bestLevel = level;
+      best = agent;
+    }
+  }
+  return best;
+}

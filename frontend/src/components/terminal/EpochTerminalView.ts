@@ -14,7 +14,7 @@ import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { terminalState } from '../../services/TerminalStateManager.js';
-import { locationsApi } from '../../services/api/index.js';
+import { initializeTerminalZones } from '../../utils/terminal-initialization.js';
 import type {
   EpochParticipant,
   EpochStatus,
@@ -86,25 +86,7 @@ export class VelgEpochTerminalView extends SignalWatcher(LitElement) {
         this.epochStatus,
       );
 
-      // Fetch zones for the participant's game_instance simulation
-      const zonesResp = await locationsApi.listZones(sid);
-      if (!zonesResp.success || !zonesResp.data || zonesResp.data.length === 0) {
-        this._error = msg('No zones found in this simulation.');
-        return;
-      }
-
-      terminalState.cacheZones(zonesResp.data);
-
-      // Always validate persisted zone against loaded zones.
-      // Game instances have different UUIDs than their source template,
-      // so a persisted zone ID from a template session won't match.
-      const currentZone = terminalState.currentZoneId.value;
-      const zoneIds = new Set(zonesResp.data.map((z) => z.id));
-      if (!currentZone || !zoneIds.has(currentZone)) {
-        const sorted = [...zonesResp.data].sort((a, b) => a.name.localeCompare(b.name));
-        terminalState.setCurrentZone(sorted[0].id);
-      }
-
+      await initializeTerminalZones(sid);
       this._initialized = true;
     } catch (err) {
       this._error = err instanceof Error ? err.message : msg('Initialization failed.');

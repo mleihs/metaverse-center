@@ -21,6 +21,25 @@ export const terminalTokens = css`
   }
 `;
 
+/* ── Component-local (Tier 3) token aliases for terminal HUD components ──
+ * Bridges Tier 2 HUD tokens (--amber, --hud-bg, etc.) to component-local
+ * --_* variables. Used by TerminalQuickActions, DungeonQuickActions,
+ * DungeonHeader, DungeonTerminalView, and terminalActionStyles.
+ *
+ * Components that need additional Tier 3 vars (e.g. --_danger) add their own
+ * :host block alongside this shared set.
+ */
+export const terminalComponentTokens = css`
+  :host {
+    --_phosphor: var(--amber);
+    --_phosphor-dim: var(--amber-dim);
+    --_phosphor-glow: var(--amber-glow);
+    --_screen-bg: var(--hud-bg);
+    --_border: var(--hud-border);
+    --_mono: var(--font-mono, 'SF Mono', 'Fira Code', 'Cascadia Code', monospace);
+  }
+`;
+
 /* ── Keyframe animations + reduced-motion overrides ── */
 export const terminalAnimations = css`
   @keyframes terminal-boot {
@@ -402,6 +421,88 @@ export const terminalWrapperStyles = css`
   @media (prefers-reduced-motion: no-preference) {
     .terminal-loading {
       animation: cursor-blink 1s step-end infinite;
+    }
+  }
+`;
+
+/* ── Terminal action buttons: shared by TerminalQuickActions + DungeonQuickActions ── */
+export const terminalActionStyles = css`
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 8px 12px;
+    background: color-mix(in srgb, var(--_screen-bg) 80%, transparent);
+    border: 1px solid color-mix(in srgb, var(--_border) 50%, transparent);
+    border-top: none;
+  }
+
+  .action-btn {
+    font-family: var(--_mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    background: transparent;
+    color: var(--_phosphor-dim);
+    border: 1px solid color-mix(in srgb, var(--_border) 70%, transparent);
+    cursor: pointer;
+    transition: all 150ms;
+    white-space: nowrap;
+  }
+
+  .action-btn:hover {
+    color: var(--_phosphor);
+    border-color: var(--_phosphor-dim);
+    background: color-mix(in srgb, var(--_phosphor) 5%, transparent);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .action-btn:hover {
+      box-shadow: 0 0 8px color-mix(in srgb, var(--_phosphor-glow) 30%, transparent);
+    }
+  }
+
+  .action-btn:active {
+    transform: scale(0.96);
+  }
+
+  .action-btn:focus-visible {
+    outline: 2px solid var(--_phosphor);
+    outline-offset: 2px;
+  }
+
+  .action-btn--tier2 {
+    border-style: dashed;
+  }
+
+  .action-btn--primary {
+    border-color: var(--_phosphor-dim);
+    color: var(--_phosphor);
+  }
+
+  .phase-label {
+    font-family: var(--_mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--_phosphor-dim);
+    opacity: 0.6;
+    padding: 5px 0;
+    align-self: center;
+  }
+
+  /* Mobile: 44px min touch targets (WCAG) */
+  @media (max-width: 640px) {
+    .actions {
+      padding: 10px 14px;
+      gap: 8px;
+    }
+    .action-btn {
+      font-size: 12px;
+      padding: 8px 16px;
+      min-height: 44px;
     }
   }
 `;

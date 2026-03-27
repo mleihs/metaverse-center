@@ -153,6 +153,52 @@ Low z-index values (1-20) are local stacking contexts within components and do n
 
 ---
 
+## Terminal HUD Tokens (`terminal-theme-styles.ts`)
+
+Shared CSS exports for terminal and dungeon HUD components. Defined in `frontend/src/components/shared/terminal-theme-styles.ts`.
+
+### `terminalTokens` — Tier 2 HUD Aliases
+
+Maps platform Tier 1 tokens to terminal-semantic names on `:host`:
+
+| Token | Source | Purpose |
+|-------|--------|---------|
+| `--amber` | `--color-accent-amber` | Primary phosphor color |
+| `--amber-dim` | `--color-accent-amber-dim` | Dimmed phosphor (inactive) |
+| `--amber-glow` | `--color-accent-amber-glow` | Glow/shadow effects |
+| `--hud-bg` | `--color-surface` | Screen background |
+| `--hud-surface` | `--color-surface-raised` | Raised panel background |
+| `--hud-border` | `--color-border` | Panel borders |
+| `--hud-text` | `--color-text-primary` | Primary text |
+| `--hud-text-dim` | `--color-text-muted` | Muted text |
+
+### `terminalComponentTokens` — Tier 3 Component-Local Aliases
+
+Bridges Tier 2 HUD tokens to `--_*` component-local variables. Used by TerminalQuickActions, DungeonQuickActions, DungeonHeader, DungeonTerminalView.
+
+| Token | Source | Purpose |
+|-------|--------|---------|
+| `--_phosphor` | `--amber` | Active phosphor accent |
+| `--_phosphor-dim` | `--amber-dim` | Inactive phosphor state |
+| `--_phosphor-glow` | `--amber-glow` | Hover/focus glow shadow |
+| `--_screen-bg` | `--hud-bg` | Component background |
+| `--_border` | `--hud-border` | Component border color |
+| `--_mono` | `--font-mono` | Monospace font stack |
+
+Components that need additional Tier 3 vars (e.g. DungeonHeader: `--_danger`, `--_text-dim`) add their own `:host` block alongside the shared set.
+
+### Other Shared Exports
+
+| Export | Consumers | Purpose |
+|--------|-----------|---------|
+| `terminalAnimations` | All terminal views | `cursor-blink`, `terminal-boot`, `field-reveal`, `line-expand`, `btn-materialize` |
+| `terminalFormStyles` | Auth views | Form fields, buttons, error/success messages |
+| `terminalFrameStyles` | BureauTerminal | Corner brackets, scanlines, dashed borders |
+| `terminalWrapperStyles` | TerminalView, EpochTerminalView, DungeonTerminalView | `.terminal-wrapper`, `.terminal-error`, `.terminal-loading` |
+| `terminalActionStyles` | TerminalQuickActions, DungeonQuickActions | `.actions`, `.action-btn`, `.action-btn--tier2`, `.action-btn--primary`, `.phase-label` |
+
+---
+
 ## Intentional Exceptions
 
 These files are exempt from the token-only rule:

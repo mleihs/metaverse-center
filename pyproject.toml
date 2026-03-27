@@ -56,6 +56,14 @@ select = ["E", "F", "W", "I", "N", "UP", "S", "B", "A", "C4", "DTZ", "T20", "ICN
 "backend/services/**/*.py" = ["A003"]
 "backend/services/email_templates.py" = ["A003", "E501"]
 "backend/services/ambient_weather_templates.py" = ["E501"]  # Bilingual template tuples are naturally long
+"backend/services/combat/ability_schools.py" = ["E501"]  # Bilingual ability descriptions
+"backend/services/combat/combat_engine.py" = ["S311", "E501"]  # Game RNG, bilingual combat narratives
+"backend/services/combat/stress_system.py" = ["S311"]  # Game RNG is intentional
+"backend/services/dungeon/dungeon_archetypes.py" = ["E501"]  # Config dict lines
+"backend/services/dungeon/dungeon_generator.py" = ["S311"]  # Game RNG is intentional
+"backend/services/dungeon/dungeon_encounters.py" = ["S311", "E501"]  # Game RNG + bilingual narratives
+"backend/services/dungeon/dungeon_combat.py" = ["S311", "E501"]  # Game RNG + bilingual descriptions
+"backend/services/dungeon/dungeon_loot.py" = ["S311", "E501"]  # Game RNG + bilingual descriptions
 "backend/services/ambient_weather_service.py" = ["S311"]  # SHA-256 seeded PRNG is intentional (deterministic text, not crypto)
 "scripts/**/*.py" = ["T201", "E402"]
 

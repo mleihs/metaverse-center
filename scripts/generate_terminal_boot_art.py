@@ -124,7 +124,13 @@ async def main() -> None:
     if args.simulation_id:
         sim_resp = await supabase.table("simulations").select("id, name, slug").eq("id", args.simulation_id).execute()
     else:
-        sim_resp = await supabase.table("simulations").select("id, name, slug").is_("deleted_at", "null").execute()
+        sim_resp = (
+            await supabase.table("simulations")
+            .select("id, name, slug, simulation_type")
+            .is_("deleted_at", "null")
+            .neq("simulation_type", "game_instance")
+            .execute()
+        )
 
     simulations = sim_resp.data or []
     if not simulations:

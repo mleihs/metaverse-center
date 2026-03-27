@@ -79,7 +79,12 @@ class TerminalStateManager {
   /** Timestamp of last fetched battle log entry (for epoch feed polling). */
   readonly lastBattleLogTimestamp = signal<string | null>(null);
 
+  // --- Dungeon State (NOT persisted — DungeonStateManager owns actual state) ---
+  /** Active dungeon run ID. Only used for command routing (isDungeonMode). */
+  readonly dungeonRunId = signal<string | null>(null);
+
   // --- Computed ---
+  readonly isDungeonMode = computed(() => this.dungeonRunId.value !== null);
   readonly isEpochMode = computed(() => this.epochId.value !== null);
   readonly currentRP = computed(() => this.epochParticipant.value?.current_rp ?? 0);
   readonly myTeamId = computed(() => this.epochParticipant.value?.team_id ?? null);
@@ -195,6 +200,22 @@ class TerminalStateManager {
   /** Update participant data (e.g., after RP change from intercept). */
   updateParticipant(participant: EpochParticipant): void {
     this.epochParticipant.value = participant;
+  }
+
+  // ── Dungeon Context ─────────────────────────────────────────────────────
+
+  /**
+   * Enter dungeon mode. Called by dungeon command handler after run creation.
+   * Actual dungeon state lives in DungeonStateManager — this only tracks
+   * the mode flag for command routing (move → room-move, look → room-look).
+   */
+  initializeDungeon(runId: string): void {
+    this.dungeonRunId.value = runId;
+  }
+
+  /** Exit dungeon mode. Called after completion, wipe, or retreat. */
+  clearDungeon(): void {
+    this.dungeonRunId.value = null;
   }
 
   // ── Output Management ──────────────────────────────────────────────────

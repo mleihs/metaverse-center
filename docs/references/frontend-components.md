@@ -823,7 +823,8 @@ Alle Änderungen zeigen eine Live-Preview innerhalb der Shell. Preset-Auswahl f�
 | agents/ | 6 | 6 | View, Card, EditModal, DetailsPanel, RelationshipCard/EditModal |
 | buildings/ | 6 | 6 | View, Card, EditModal, DetailsPanel, EmbassyCreate/Link |
 | events/ | 6 | 6 | View, Card, EditModal, DetailsPanel, EchoCard/TriggerModal |
-| terminal/ | 4 | 4 | BureauTerminal (CRT MUD interface, Stage 1-3 + Epoch Tier 4: 23 commands), TerminalQuickActions, TerminalView (template wrapper), EpochTerminalView (epoch wrapper) |
+| terminal/ | 4 | 4 | BureauTerminal (CRT MUD interface, Stage 1-3 + Epoch Tier 4: 23 commands), TerminalQuickActions (uses shared terminalActionStyles), TerminalView (template wrapper), EpochTerminalView (epoch wrapper) |
+| dungeon/ | 3 | 3 | DungeonTerminalView (route entry, HUD grid + lobby, Wake Lock), DungeonHeader (depth gauge, archetype, visibility pips), DungeonQuickActions (phase-driven, shares terminalActionStyles) |
 | chat/ | 7 | 7 | View, Window, ConversationList, MessageList/Input, AgentSelector, EventPicker |
 | social/ | 9 | 9 | TrendsView, MediaView, CampaignDashboard, Cards, Modals, TrendFilterBar |
 | locations/ | 5 | 5 | View, CityList, ZoneList, StreetList, LocationEditModal |
@@ -835,18 +836,21 @@ Alle Änderungen zeigen eine Live-Preview innerhalb der Shell. Preset-Auswahl f�
 | map/ | 5 | 5 | CartographersDesk, CartographicMap, MapAnnotationTool, MapLayerToggle, MultiverseConspiracyBoard |
 | epoch/ | 19 | 19 | CommandCenter (orchestrator), OpsBoard, OverviewTab, IntelDossierTab, OperationsTab, AlliancesTab, LobbyActions, CreationWizard, DraftRosterPanel, Leaderboard, BattleLog, MissionCard, DeployOperativeModal, InvitePanel, InviteAcceptView, ChatPanel, PresenceIndicator, ReadyPanel, BotConfigPanel |
 | how-to-play/ | 15 | 6 | HowToPlayLanding, HowToPlayQuickstart, HowToPlayGuideHub, HowToPlayTopic, HowToPlayWarRoom, HowToPlayView (legacy) + htp-shared-styles, htp-styles, htp-search, htp-topic-data + 4 content/type files (htp-content-features, htp-content-rules, htp-content-matches, htp-content-demo, htp-types) |
-| shared/ | 32 | 21 | 21 components + 10 CSS modules + 1 base class |
-| **Gesamt** | **172** | **140** (in components/) | **22 Verzeichnisse** |
+| shared/ | 32 | 21 | 21 components + 10 CSS modules + 1 base class. terminal-theme-styles.ts exports: terminalTokens, terminalComponentTokens, terminalAnimations, terminalFormStyles, terminalOAuthStyles, terminalFrameStyles, terminalWrapperStyles, terminalActionStyles |
+| **Gesamt** | **175** | **143** (in components/) | **23 Verzeichnisse** |
 
 ### Utilities
 
 ```
 frontend/src/utils/
 ├── text.ts                         # humanizeEnum(), getInitials(), pluralCount(), agentAltText(), buildingAltText()
-├── icons.ts                        # Centralized SVG icons with aria-hidden="true" (includes chevronDown, fracture, anchor, scorchedEarth, emergencyDraft, compassRose, stampClassified, magnifyingGlass, pencilAnnotate, layerInfrastructure, layerBleed, layerMilitary, layerHistory, heartline, flatline)
+├── icons.ts                        # Centralized SVG icons with aria-hidden="true" (~95 icons). Includes dungeon set: dungeonDepth, doorOpen, diamond/diamondEmpty, binoculars, doorExit/doorEnter, campfire, handClick, treasure, crown, shield, dagger, mask, bomb, footprints, dungeonMap, skullBolt, questionCircle
 ├── operative-icons.ts              # Centralized operative-type SVG icons (spy, guardian, saboteur, propagandist, infiltrator, assassin, zone_fortified)
 ├── terminal-commands.ts            # MUD command handlers (19 commands across 3 stages), ensureAgentConversation(), sendAgentPrompt(), synonym map, Levenshtein fuzzy match
 ├── terminal-formatters.ts          # 20+ format functions: formatLook, formatExamine, formatScan, formatInvestigate, formatReport, formatDebrief, formatAskResponse, _wordWrap, _truncate, _timeAgo
+├── terminal-initialization.ts      # initializeTerminalZones() — shared zone init (TerminalView, EpochTerminalView, DungeonTerminalView)
+├── dungeon-commands.ts             # Dungeon-mode dispatcher + 10 handlers (dungeon, move, map, look, status, scout, rest, retreat, interact, attack, submit), 3 verb categories with clearance tiers
+├── dungeon-formatters.ts           # 16 pure formatters: formatDungeonMap, formatRoomEntry, formatCombatStart, formatCombatResolution, formatEncounterChoices, formatLootDrop, formatSkillCheckResult, formatPartyWipe, formatDungeonComplete, etc.
 └── theme-colors.ts                 # getThemeColor(), getThemeVariant(), getGlowColor(), THEME_COLORS map
 ```
 

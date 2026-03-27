@@ -71,6 +71,7 @@ from backend.routers import (
     prompt_templates,
     public,
     relationships,
+    resonance_dungeons,
     resonances,
     scores,
     seo,
@@ -218,6 +219,7 @@ app.include_router(scores.router)
 app.include_router(zone_actions.router)
 app.include_router(heartbeat.router)
 app.include_router(resonances.router)
+app.include_router(resonance_dungeons.router)
 app.include_router(news_scanner.router)
 app.include_router(style_references.router)
 app.include_router(instagram.router)

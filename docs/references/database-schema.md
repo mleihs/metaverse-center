@@ -1,8 +1,8 @@
 ---
 title: "Database Schema: Neues Multi-Simulations-Schema"
 id: database-schema
-version: "3.8"
-date: 2026-03-17
+version: "3.9"
+date: 2026-03-27
 lang: de
 type: reference
 status: active
@@ -3477,3 +3477,47 @@ CREATE OR REPLACE FUNCTION public.fn_auto_draft_participants(
     p_epoch_id uuid, p_max_agents integer
 ) RETURNS integer LANGUAGE plpgsql SECURITY DEFINER;
 ```
+
+### Migration 163: Resonance Dungeons — Tabellen + Basis-RPCs
+
+Erstellt die Grundlage fuer das Resonance-Dungeon-System.
+
+**Tabellen:**
+
+| Tabelle | Zweck |
+|---------|-------|
+| `resonance_dungeon_runs` | Run-Metadaten, Party, Fortschritt, Checkpoint. Unique-Index verhindert parallele aktive Runs pro Simulation. |
+| `resonance_dungeon_events` | Event-Log: Kampf, Entdeckungen, Narrative (bilingual en/de). |
+
+**RLS:** Public-First — abgeschlossene Runs oeffentlich lesbar, aktive Runs nur fuer Simulations-Mitglieder. Alle Mutationen via `service_role`.
+
+**RPCs:**
+
+| Funktion | Zweck |
+|----------|-------|
+| `fn_apply_dungeon_outcome(p_run_id, p_simulation_id, p_agent_outcomes)` | Atomisch: Mood + Moodlets + Activity-Records fuer Party-Agenten |
+| `fn_expire_abandoned_dungeon_runs(p_ttl_seconds)` | Bulk-Expire inaktiver Runs (Default 30min TTL) |
+
+### Migration 164: Resonance Dungeons — Atomare RPCs + VIEW
+
+Vervollstaendigt das Dungeon-System mit atomaren Transaktionen (ADR-007 Pattern) und einer Verfuegbarkeits-VIEW.
+
+**Neue Tabelle:**
+
+| Tabelle | Zweck |
+|---------|-------|
+| `agent_dungeon_loot_effects` | Persistente Loot-Effekte: Aptitude-Boost-Cap (+2 per Agent), permanente Dungeon-Boni, Event-Modifier. RLS: Simulations-Mitglieder koennen lesen. |
+
+**RPCs:**
+
+| Funktion | Zweck | Pattern |
+|----------|-------|---------|
+| `fn_apply_dungeon_loot(p_run_id, p_simulation_id, p_loot_items)` | CAS mit Advisory Lock fuer Aptitude-Cap, Memory-Erzeugung, Moodlets, Event-Modifier, Arc-Pressure | ADR-007 CAS |
+| `fn_complete_dungeon_run(...)` | Atomisch: Status=completed + Outcome + Agent-Effekte + Loot + Event. Ruft intern `fn_apply_dungeon_outcome` + `fn_apply_dungeon_loot` auf. | ADR-007 |
+| `fn_abandon_dungeon_run(...)` | Atomisch: Status=abandoned + Partial-Outcome + Event | ADR-007 |
+| `fn_wipe_dungeon_run(...)` | Atomisch: Status=wiped + Trauma-Outcomes + Event | ADR-007 |
+| `fn_get_party_combat_state(p_agent_ids, p_simulation_id)` | 3 Queries → 1 RPC: Agents + Aptitudes + Mood + Personality als JSONB-Array | Performance |
+
+**VIEW:** `available_dungeons` — Pre-gefilterte Resonances mit Difficulty/Depth-Berechnung. Composite-Index `idx_dungeon_runs_sim_archetype`.
+
+**Sicherheit:** Alle Mutations-RPCs: `REVOKE FROM PUBLIC, anon, authenticated` + `GRANT TO service_role` (ADR-006).

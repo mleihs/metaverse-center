@@ -1,0 +1,464 @@
+/**
+ * TypeScript types for the Resonance Dungeon system.
+ *
+ * Mirrors backend Pydantic models:
+ *   backend/models/resonance_dungeon.py — dungeon-specific types
+ *   backend/models/combat.py — shared combat types
+ *
+ * Three layers:
+ * 1. Enums / Union types — shared literals
+ * 2. Client state — fog-of-war filtered, rendered by components
+ * 3. Request / Response — API contract
+ */
+
+import type { UUID } from './index.js';
+
+// ── Enums / Union Types ─────────────────────────────────────────────────────
+
+/** Database-level run status. */
+export type DungeonStatus =
+  | 'active'
+  | 'combat'
+  | 'exploring'
+  | 'completed'
+  | 'abandoned'
+  | 'wiped';
+
+/** State machine phase — drives HUD panel visibility. */
+export type DungeonPhase =
+  | 'exploring'
+  | 'encounter'
+  | 'combat_planning'
+  | 'combat_resolving'
+  | 'combat_outcome'
+  | 'rest'
+  | 'treasure'
+  | 'boss'
+  | 'exit'
+  | 'room_clear'
+  | 'completed'
+  | 'retreated'
+  | 'wiped';
+
+/** Event types logged to resonance_dungeon_events. */
+export type DungeonEventType =
+  | 'room_entered'
+  | 'combat_started'
+  | 'combat_resolved'
+  | 'skill_check'
+  | 'encounter_choice'
+  | 'loot_found'
+  | 'agent_stressed'
+  | 'agent_afflicted'
+  | 'agent_virtue'
+  | 'agent_wounded'
+  | 'party_wipe'
+  | 'boss_defeated'
+  | 'dungeon_completed'
+  | 'dungeon_abandoned'
+  | 'banter'
+  | 'discovery';
+
+/** Room types in the dungeon DAG. "?" for unrevealed (fog of war). */
+export type RoomType =
+  | 'combat'
+  | 'elite'
+  | 'encounter'
+  | 'treasure'
+  | 'rest'
+  | 'boss'
+  | 'entrance'
+  | 'exit';
+
+/** The 8 Substrate Archetypes. */
+export type ArchetypeName =
+  | 'The Tower'
+  | 'The Shadow'
+  | 'The Devouring Mother'
+  | 'The Deluge'
+  | 'The Overthrow'
+  | 'The Prometheus'
+  | 'The Awakening'
+  | 'The Entropy';
+
+/** Agent condition track (Operational → Stressed → Wounded → Afflicted → Captured). */
+export type Condition = 'operational' | 'stressed' | 'wounded' | 'afflicted' | 'captured';
+
+/** Computed stress display threshold. */
+export type StressThreshold = 'normal' | 'tense' | 'critical';
+
+/** Enemy power classification. */
+export type ThreatLevel = 'minion' | 'standard' | 'elite' | 'boss';
+
+/** Abstracted enemy health (exact HP hidden from client). */
+export type EnemyConditionDisplay = 'healthy' | 'damaged' | 'critical' | 'defeated';
+
+/** The 6 ability schools. */
+export type AbilitySchool =
+  | 'spy'
+  | 'guardian'
+  | 'saboteur'
+  | 'propagandist'
+  | 'infiltrator'
+  | 'assassin';
+
+/** Combat sub-phase within a round. */
+export type CombatPhase = 'assessment' | 'planning' | 'resolving' | 'outcome';
+
+/** 3-tier skill check result (Disco Elysium + PbtA hybrid). */
+export type SkillCheckResult = 'success' | 'partial' | 'fail';
+
+// ── Client State (fog-of-war filtered, from backend) ────────────────────────
+
+/** Full state sent to client for rendering. Single source of truth. */
+export interface DungeonClientState {
+  run_id: UUID;
+  archetype: string;
+  signature: string;
+  difficulty: number;
+  depth: number;
+  current_room: number;
+
+  /** Room graph with fog of war applied. Unrevealed rooms show room_type "?". */
+  rooms: RoomNodeClient[];
+
+  /** Party agents with combat-relevant state. */
+  party: AgentCombatStateClient[];
+
+  /** Archetype-specific state (e.g. Shadow: {visibility, max_visibility, rooms_since_vp_loss}). */
+  archetype_state: Record<string, unknown>;
+
+  /** Active combat (null when not in combat). */
+  combat: CombatStateClient | null;
+
+  /** Current state machine phase — drives HUD panel visibility. */
+  phase: DungeonPhase;
+
+  /** Timer for timed phases (combat planning). Null when no timer active. */
+  phase_timer: PhaseTimer | null;
+}
+
+/** Room as seen by the client (fog of war applied). */
+export interface RoomNodeClient {
+  index: number;
+  depth: number;
+  /** "?" if not revealed, otherwise a RoomType value. */
+  room_type: string;
+  /** Connected room indices. Empty if not revealed. */
+  connections: number[];
+  cleared: boolean;
+  /** Is the party currently in this room? */
+  current: boolean;
+  revealed: boolean;
+}
+
+/** Agent state as seen by the client. */
+export interface AgentCombatStateClient {
+  agent_id: UUID;
+  agent_name: string;
+  portrait_url: string | null;
+  condition: Condition;
+  /** Raw stress value (0-1000+). */
+  stress: number;
+  /** Pre-computed display threshold: "normal" | "tense" | "critical". */
+  stress_threshold: StressThreshold;
+  /** Mood value (-100 to +100). */
+  mood: number;
+  active_buffs: BuffDebuff[];
+  active_debuffs: BuffDebuff[];
+  /** Aptitude levels keyed by school name (e.g. {"spy": 8, "guardian": 3}). */
+  aptitudes: Record<string, number>;
+  /** Abilities available for combat planning. */
+  available_abilities: AbilityOption[];
+  /** Short personality summary (e.g. "cautious, analytical, reserved"). */
+  personality_summary: string;
+}
+
+/** Active buff or debuff on an agent. */
+export interface BuffDebuff {
+  id: string;
+  name: string;
+  /** Icon key from icons.ts. */
+  icon: string;
+  /** Rounds remaining. Null = permanent. */
+  duration_rounds: number | null;
+  description: string;
+}
+
+/** Available ability for combat planning. */
+export interface AbilityOption {
+  id: string;
+  name: string;
+  /** Ability school (spy, guardian, etc.). */
+  school: string;
+  description: string;
+  /** Pre-calculated check info (e.g. "Spy 8: 73% success"). Null if auto-success. */
+  check_info: string | null;
+  /** Rounds until usable. 0 = ready. */
+  cooldown_remaining: number;
+  /** Once-per-dungeon ultimate ability. */
+  is_ultimate: boolean;
+}
+
+/** Combat state as seen by the client. */
+export interface CombatStateClient {
+  round_num: number;
+  max_rounds: number;
+  enemies: EnemyCombatStateClient[];
+  phase: CombatPhase;
+  timer: PhaseTimer | null;
+  /** Into-the-Breach-style enemy intention previews. */
+  telegraphed_actions: TelegraphedAction[];
+}
+
+/** Enemy state as seen by the client. Exact HP/steps hidden. */
+export interface EnemyCombatStateClient {
+  instance_id: string;
+  name_en: string;
+  name_de: string;
+  /** Abstracted condition display, not exact steps. */
+  condition_display: string;
+  threat_level: string;
+  is_alive: boolean;
+  telegraphed_action: TelegraphedAction | null;
+}
+
+/** Enemy's telegraphed intent (Into the Breach style). */
+export interface TelegraphedAction {
+  enemy_name: string;
+  /** Description of planned action (e.g. "will attack Agent Kovacs"). */
+  intent: string;
+  /** Target agent or "all". Null for untargeted abilities. */
+  target: string | null;
+  threat_level: 'low' | 'medium' | 'high' | 'critical';
+}
+
+/** Timer for timed phases (combat planning countdown). */
+export interface PhaseTimer {
+  /** ISO 8601 timestamp of when the timer started (server clock). */
+  started_at: string;
+  /** Total duration in milliseconds. */
+  duration_ms: number;
+  /** Phase this timer belongs to. */
+  phase: string;
+}
+
+// ── Request Types ───────────────────────────────────────────────────────────
+
+/** POST /dungeons/runs — start a new dungeon run. */
+export interface DungeonRunCreate {
+  archetype: ArchetypeName;
+  /** 2-4 agent UUIDs forming the party. */
+  party_agent_ids: UUID[];
+  /** Difficulty 1-5. */
+  difficulty: number;
+}
+
+/** POST /dungeons/runs/{id}/move — move party to adjacent room. */
+export interface DungeonMoveRequest {
+  room_index: number;
+}
+
+/** POST /dungeons/runs/{id}/action — generic encounter/interaction action. */
+export interface DungeonAction {
+  action_type: 'encounter_choice' | 'combat_action' | 'interact' | 'use_ability';
+  agent_id?: UUID | null;
+  choice_id?: string | null;
+  ability_id?: string | null;
+  target_id?: string | null;
+}
+
+/** Single agent's combat action for the planning phase. */
+export interface CombatAction {
+  agent_id: UUID;
+  ability_id: string;
+  target_id?: string | null;
+}
+
+/** POST /dungeons/runs/{id}/combat/submit — all actions for one planning phase. */
+export interface CombatSubmission {
+  actions: CombatAction[];
+}
+
+/** POST /dungeons/runs/{id}/scout — spy scout request. */
+export interface ScoutRequest {
+  agent_id: UUID;
+}
+
+/** POST /dungeons/runs/{id}/rest — rest at rest site. */
+export interface RestRequest {
+  agent_ids: UUID[];
+}
+
+// ── Response Types ──────────────────────────────────────────────────────────
+
+/** Dungeon run record (DB row). */
+export interface DungeonRunResponse {
+  id: UUID;
+  simulation_id: UUID;
+  resonance_id: UUID | null;
+  archetype: string;
+  resonance_signature: string;
+  party_agent_ids: UUID[];
+  party_player_ids: UUID[];
+  difficulty: number;
+  depth_target: number;
+  current_depth: number;
+  rooms_cleared: number;
+  rooms_total: number;
+  status: DungeonStatus;
+  outcome: Record<string, unknown> | null;
+  completed_at: string | null;
+  created_at: string;
+}
+
+/** Extended run response with denormalized agent data. */
+export interface DungeonRunDetailResponse extends DungeonRunResponse {
+  party_agents: Record<string, unknown>[];
+  events_count: number;
+  duration_seconds: number | null;
+}
+
+/** POST /dungeons/runs — create run response. */
+export interface CreateRunResponse {
+  run: DungeonRunResponse;
+  state: DungeonClientState;
+}
+
+/** POST /dungeons/runs/{id}/move — room entry response. */
+export interface MoveToRoomResponse {
+  banter?: Record<string, string> | null;
+  combat?: boolean;
+  encounter?: boolean;
+  encounter_id?: string;
+  description_en?: string;
+  description_de?: string;
+  choices?: EncounterChoiceClient[];
+  rest?: boolean;
+  treasure?: boolean;
+  auto_loot?: boolean;
+  loot?: LootItem[];
+  exit_available?: boolean;
+  state: DungeonClientState;
+}
+
+/** Encounter choice as presented to the client. */
+export interface EncounterChoiceClient {
+  id: string;
+  label_en: string;
+  label_de: string;
+  requires_aptitude: Record<string, number> | null;
+  check_aptitude: string | null;
+  check_difficulty: number;
+}
+
+/** POST /dungeons/runs/{id}/combat/submit — combat submission response. */
+export interface CombatSubmitResponse {
+  round_result?: CombatRoundResult | null;
+  waiting_for_players?: boolean;
+  state: DungeonClientState;
+}
+
+/** Resolved combat round result. */
+export interface CombatRoundResult {
+  round: number;
+  events: CombatEvent[];
+  narrative_en: string;
+  narrative_de: string;
+  victory: boolean;
+  wipe: boolean;
+}
+
+/** Single combat event within a round resolution. */
+export interface CombatEvent {
+  actor: string;
+  action: string;
+  target: string;
+  hit: boolean;
+  damage: number;
+  stress: number;
+  narrative_en: string;
+  narrative_de: string;
+}
+
+/** POST /dungeons/runs/{id}/action — encounter choice response. */
+export interface EncounterChoiceResponse {
+  result: SkillCheckResult;
+  check?: SkillCheckDetail | null;
+  effects: Record<string, unknown>;
+  narrative_en: string;
+  narrative_de: string;
+  state: DungeonClientState;
+}
+
+/** Detailed skill check breakdown. */
+export interface SkillCheckDetail {
+  aptitude: string;
+  level: number;
+  chance: number;
+  roll: number;
+  result: SkillCheckResult;
+  breakdown: Record<string, number>;
+}
+
+/** POST /dungeons/runs/{id}/scout — scout response. */
+export interface ScoutResponse {
+  revealed_rooms: number;
+  visibility?: number;
+  state: DungeonClientState;
+}
+
+/** POST /dungeons/runs/{id}/rest — rest response. */
+export interface RestResponse {
+  healed: boolean;
+  ambushed: boolean;
+  state: DungeonClientState;
+}
+
+/** POST /dungeons/runs/{id}/retreat — retreat response. */
+export interface RetreatResponse {
+  retreated: boolean;
+  loot: LootItem[];
+  rpc_failed?: boolean;
+}
+
+/** GET /dungeons/available — available dungeon archetype. */
+export interface AvailableDungeonResponse {
+  archetype: string;
+  signature: string;
+  resonance_id: UUID;
+  magnitude: number;
+  susceptibility: number;
+  effective_magnitude: number;
+  suggested_difficulty: number;
+  suggested_depth: number;
+  last_run_at: string | null;
+  available: boolean;
+}
+
+/** Single dungeon event from the event log. */
+export interface DungeonEventResponse {
+  id: UUID;
+  run_id: UUID;
+  depth: number;
+  room_index: number;
+  event_type: DungeonEventType;
+  narrative_en: string | null;
+  narrative_de: string | null;
+  outcome: Record<string, unknown>;
+  created_at: string;
+}
+
+/** Loot item drop. */
+export interface LootItem {
+  id: string;
+  name_en: string;
+  name_de: string;
+  /** 1=minor, 2=major, 3=legendary. */
+  tier: number;
+  /** Effect category (e.g. "stress_heal", "aptitude_boost", "memory", "moodlet"). */
+  effect_type: string;
+  effect_params: Record<string, unknown>;
+  description_en: string;
+  description_de: string;
+}

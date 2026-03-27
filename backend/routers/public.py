@@ -1075,3 +1075,57 @@ async def validate_epoch_invitation(
     """Validate an epoch invitation token and return epoch info + lore."""
     data = await EpochInvitationService.validate_token(supabase, token)
     return {"success": True, "data": data}
+
+
+# ── Resonance Dungeons (Public) ───────────────────────────────────────
+
+
+@router.get(
+    "/simulations/{simulation_id}/dungeons/history",
+    response_model=PaginatedResponse,
+)
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def public_dungeon_history(
+    request: Request,
+    simulation_id: SimId,
+    supabase: Client = Depends(get_anon_supabase),
+    limit: int = Query(default=25, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+) -> dict:
+    """Public: list completed dungeon runs for a simulation."""
+    resp = await supabase.table("resonance_dungeon_runs").select(
+        "id, simulation_id, archetype, resonance_signature, difficulty, "
+        "depth_target, current_depth, rooms_cleared, rooms_total, status, "
+        "outcome, completed_at, created_at",
+        count="exact",
+    ).eq("simulation_id", str(simulation_id)).in_(
+        "status", ["completed", "abandoned", "wiped"],
+    ).order("created_at", desc=True).range(offset, offset + limit - 1).execute()
+    return {
+        "success": True,
+        "data": resp.data or [],
+        "meta": PaginationMeta(
+            count=len(resp.data or []),
+            total=resp.count or 0,
+            limit=limit,
+            offset=offset,
+        ),
+    }
+
+
+@router.get("/dungeons/runs/{run_id}", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def public_dungeon_run(
+    request: Request,
+    run_id: UUID,
+    supabase: Client = Depends(get_anon_supabase),
+) -> dict:
+    """Public: get a completed dungeon run detail."""
+    resp = await supabase.table("resonance_dungeon_runs").select(
+        "*",
+    ).eq("id", str(run_id)).in_(
+        "status", ["completed", "abandoned", "wiped"],
+    ).maybe_single().execute()
+    if not resp.data:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Dungeon run not found or still active")
+    return {"success": True, "data": resp.data}

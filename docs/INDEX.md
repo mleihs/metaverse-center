@@ -63,7 +63,7 @@ tags: [index, catalog, documentation]
 | [Simulation Creation Guide](guides/simulation-creation.md) | 1.0 | — | en | active |
 | [Testing Strategy](guides/testing-strategy.md) | 2.3 | 2026-03-09 | de | active |
 
-## Concepts (5)
+## Concepts (8)
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
@@ -72,6 +72,9 @@ tags: [index, catalog, documentation]
 | [Post-Generation Engagement Proposals (8 Features)](concepts/post-generation-engagement-proposals.md) | 1.0 | 2026-03-22 | de/en | active |
 | [10 Proposals zur Tamagotchisierung](concepts/tamagotchi-proposals.md) | 1.0 | 2026-03-25 | de | active |
 | [Game Systems Integration](concepts/game-systems-integration.md) | 3.4 | 2026-03-26 | en | active |
+| [MUD/Terminal Adventure Concepts (5 Designs)](concepts/mud-terminal-adventure-concepts.md) | 1.0 | 2026-03-27 | de | draft |
+| [MUD Combat & Gameplay Feasibility Analysis](concepts/mud-combat-feasibility-analysis.md) | 1.0 | 2026-03-27 | de | draft |
+| [Resonance Dungeons — Full Technical Spec](concepts/resonance-dungeons-spec.md) | 1.1 | 2026-03-27 | en | backend-phase-0 + frontend-phase-1-3 |
 
 ## Explanations (5)
 

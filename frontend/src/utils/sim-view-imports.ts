@@ -15,6 +15,7 @@ const viewImports: Record<string, () => Promise<unknown>> = {
   social: () => import('../components/social/SocialTrendsView.js'),
   locations: () => import('../components/locations/LocationsView.js'),
   terminal: () => import('../components/terminal/TerminalView.js'),
+  dungeon: () => import('../components/dungeon/DungeonTerminalView.js'),
 };
 
 export function getSimViewImport(view: string): (() => Promise<unknown>) | undefined {

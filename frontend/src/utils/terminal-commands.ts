@@ -18,6 +18,7 @@ import { zoneActionsApi } from '../services/api/index.js';
 import { terminalState } from '../services/TerminalStateManager.js';
 import type { Agent, BuildingReadiness, ChatMessage } from '../types/index.js';
 import type { CommandContext, TerminalCommand, TerminalLine } from '../types/terminal.js';
+import { dispatchDungeonCommand } from './dungeon-commands.js';
 import {
   commandLine,
   formatAmbiguousTarget,
@@ -98,6 +99,13 @@ const SYNONYM_MAP = new Map<string, string>([
   ['probe', 'investigate'], ['research', 'investigate'],
   ['radar', 'scan'], ['sweep', 'scan'],
   ['summary', 'report'], ['log', 'report'],
+  // Dungeon commands
+  ['explore', 'dungeon'], ['delve', 'dungeon'],
+  ['camp', 'rest'],
+  ['flee', 'retreat'], ['escape', 'retreat'],
+  ['choose', 'interact'],
+  ['fight', 'attack'], ['strike', 'attack'],
+  ['ready', 'submit'],
   // Stage 4: Epoch Intelligence (tier 4)
   ['briefing', 'sitrep'],
   ['file', 'dossier'], ['profile', 'dossier'],
@@ -1149,6 +1157,42 @@ export const COMMAND_REGISTRY = new Map<string, TerminalCommand>([
   }],
 
   // Stage 2: Field Operations
+  // Resonance Dungeons — Registry entries for help listing and Levenshtein matching.
+  // Actual dispatch happens via dispatchDungeonCommand() intercept in parseAndExecute().
+  // These handlers are fallback-only (dispatcher handles all cases including error states).
+  ['dungeon', {
+    verb: 'dungeon', synonyms: ['explore', 'delve'], tier: 2,
+    syntax: 'dungeon [archetype]', description: () => msg('Enter a resonance dungeon'),
+    requiresTarget: false, handler: async (ctx) => {
+      const result = await dispatchDungeonCommand('dungeon', ctx.args, ctx);
+      return result ?? [errorLine(msg('Dungeon command unavailable.'))];
+    },
+  }],
+  ['scout', {
+    verb: 'scout', synonyms: [], tier: 2,
+    syntax: 'scout [agent]', description: () => msg('Spy: reveal adjacent dungeon rooms'),
+    requiresTarget: false, handler: async () => [errorLine(msg('Not in a dungeon. Type "dungeon" to enter one.'))],
+  }],
+  ['retreat', {
+    verb: 'retreat', synonyms: ['flee', 'escape'], tier: 2,
+    syntax: 'retreat', description: () => msg('Leave dungeon with partial loot'),
+    requiresTarget: false, handler: async () => [errorLine(msg('Not in a dungeon. Type "dungeon" to enter one.'))],
+  }],
+  ['interact', {
+    verb: 'interact', synonyms: ['choose'], tier: 2,
+    syntax: 'interact {choice}', description: () => msg('Make an encounter choice'),
+    requiresTarget: false, handler: async () => [errorLine(msg('Not in a dungeon. Type "dungeon" to enter one.'))],
+  }],
+  ['attack', {
+    verb: 'attack', synonyms: ['fight', 'strike'], tier: 2,
+    syntax: 'attack {agent} {ability} [target]', description: () => msg('Select combat action'),
+    requiresTarget: false, handler: async () => [errorLine(msg('Not in a dungeon. Type "dungeon" to enter one.'))],
+  }],
+  ['submit', {
+    verb: 'submit', synonyms: ['ready'], tier: 2,
+    syntax: 'submit', description: () => msg('Submit combat actions'),
+    requiresTarget: false, handler: async () => [errorLine(msg('Not in a dungeon. Type "dungeon" to enter one.'))],
+  }],
   ['fortify', {
     verb: 'fortify', synonyms: ['reinforce', 'defend'], tier: 2,
     syntax: 'fortify [zone]', description: () => msg('Fortify a zone (-15% event pressure, 7 days)'),
@@ -1266,6 +1310,25 @@ export async function parseAndExecute(input: string): Promise<TerminalLine[]> {
 
   // Resolve synonym
   const verb = SYNONYM_MAP.get(rawVerb) ?? rawVerb;
+
+  // ── Dungeon Mode Intercept ──────────────────────────────────────────
+  // In dungeon mode, dungeon-specific verbs (move, map, look, status, etc.)
+  // are dispatched to dungeon-commands.ts BEFORE the standard registry lookup.
+  // Commands not handled by the dungeon dispatcher fall through.
+  {
+    const dungeonCtx: CommandContext = {
+      simulationId: simId(),
+      currentZoneId: terminalState.currentZoneId.value ?? '',
+      rawInput: trimmed,
+      verb,
+      args,
+    };
+    const dungeonResult = await dispatchDungeonCommand(verb, args, dungeonCtx);
+    if (dungeonResult !== null) {
+      output.push(...dungeonResult);
+      return output;
+    }
+  }
 
   // Look up command
   const cmd = COMMAND_REGISTRY.get(verb);
