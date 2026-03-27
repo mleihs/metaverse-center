@@ -2555,16 +2555,22 @@ frontend/src/services/
 
 frontend/src/utils/
 ├── dungeon-commands.ts       ✅ Dispatcher + 10 handlers, 3 verb categories, clearance tiers
-├── dungeon-formatters.ts     ✅ 16 pure formatters (map, room, combat, loot, resolve check)
+├── dungeon-formatters.ts     ✅ 16 pure formatters + 2 shared i18n helpers (getConditionLabel, getRoomTypeLabel)
 └── terminal-initialization.ts ✅ Shared zone init (used by TerminalView, EpochTerminalView, DungeonTerminalView)
 ```
 
-**Phase 4-5 (planned):**
+**Phase 4 (done):**
 
 ```
 frontend/src/components/dungeon/
-├── DungeonPartyPanel.ts      ⏳ Right sidebar: agent cards, condition/stress bars, buffs
-├── DungeonMap.ts             ⏳ SVG DAG with fog-of-war, click-to-move
+├── DungeonPartyPanel.ts      ✅ Right sidebar: agent cards, condition/stress/mood bars, buffs/debuffs
+├── DungeonMap.ts             ✅ SVG DAG with fog-of-war, click-to-move, collapsible
+```
+
+**Phase 5 (planned):**
+
+```
+frontend/src/components/dungeon/
 ├── DungeonCombatBar.ts       ⏳ Combat: ability selection per agent, timer, submit
 └── DungeonEnemyPanel.ts      ⏳ Enemy status + Into-the-Breach-style telegraphs
 ```

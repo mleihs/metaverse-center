@@ -52,6 +52,33 @@ const CONDITION_LABELS: Record<string, string> = {
   captured: 'CAPTURED',
 };
 
+/** i18n-aware condition label for UI components (not terminal ASCII). */
+export function getConditionLabel(condition: string): string {
+  const labels: Record<string, () => string> = {
+    operational: () => msg('Operational'),
+    stressed: () => msg('Stressed'),
+    wounded: () => msg('Wounded'),
+    afflicted: () => msg('Afflicted'),
+    captured: () => msg('Captured'),
+  };
+  return labels[condition]?.() ?? condition;
+}
+
+/** i18n-aware room type label for UI components. */
+export function getRoomTypeLabel(type: string, fallbackIndex?: number): string {
+  const labels: Record<string, () => string> = {
+    combat: () => msg('Combat'),
+    elite: () => msg('Elite'),
+    encounter: () => msg('Encounter'),
+    treasure: () => msg('Treasure'),
+    rest: () => msg('Rest'),
+    boss: () => msg('Boss'),
+    entrance: () => msg('Entrance'),
+    exit: () => msg('Exit'),
+  };
+  return labels[type]?.() ?? (fallbackIndex !== undefined ? `${msg('Room')} ${fallbackIndex}` : type);
+}
+
 // ── Bar Renderers ────────────────────────────────────────────────────────────
 
 function progressBar(current: number, max: number, width = 10): string {

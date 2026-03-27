@@ -26,6 +26,7 @@ import { customElement } from 'lit/decorators.js';
 
 import { dungeonState } from '../../services/DungeonStateManager.js';
 import type { DungeonPhase } from '../../types/dungeon.js';
+import { getRoomTypeLabel } from '../../utils/dungeon-formatters.js';
 import { terminalActionStyles, terminalComponentTokens, terminalTokens } from '../shared/terminal-theme-styles.js';
 
 @localized()
@@ -163,25 +164,10 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
           class="action-btn action-btn--primary"
           @click=${() => this._dispatch(`move ${room.index}`)}
         >
-          ${msg('Move')} \u2192 ${this._roomLabel(room.room_type, room.index)}
+          ${msg('Move')} \u2192 ${getRoomTypeLabel(room.room_type, room.index)}
         </button>
       `,
     );
-  }
-
-  /** Human-readable label for a room type + index. */
-  private _roomLabel(type: string, index: number): string {
-    const labels: Record<string, string> = {
-      combat: msg('Combat'),
-      elite: msg('Elite'),
-      encounter: msg('Event'),
-      treasure: msg('Treasure'),
-      rest: msg('Rest'),
-      boss: msg('Boss'),
-      entrance: msg('Entrance'),
-      exit: msg('Exit'),
-    };
-    return labels[type] ?? `${msg('Room')} ${index}`;
   }
 }
 

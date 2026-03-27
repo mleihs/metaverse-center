@@ -34,6 +34,8 @@ import {
 } from '../shared/terminal-theme-styles.js';
 import '../terminal/BureauTerminal.js';
 import './DungeonHeader.js';
+import './DungeonMap.js';
+import './DungeonPartyPanel.js';
 import './DungeonQuickActions.js';
 
 @localized()
@@ -90,17 +92,6 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
       .dungeon-hud__actions {
         grid-column: 1 / -1;
         grid-row: 3;
-      }
-
-      /* Party placeholder (Phase 4 replaces this) */
-      .party-placeholder {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        opacity: 0.4;
       }
 
       /* ── Lobby Layout (no active dungeon) ── */
@@ -204,6 +195,24 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
           flex-direction: column;
           align-items: flex-start;
           gap: 4px;
+        }
+      }
+
+      /* ── Large screens ── */
+      @media (min-width: 1440px) {
+        .dungeon-hud {
+          grid-template-columns: 1fr 320px;
+        }
+      }
+
+      /* ── 4K / Ultra-wide ── */
+      @media (min-width: 2560px) {
+        .dungeon-hud {
+          grid-template-columns: 1fr 380px;
+        }
+
+        .dungeon-hud__party {
+          padding: 10px;
         }
       }
     `,
@@ -312,9 +321,10 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
           <div class="terminal-wrapper">
             <velg-bureau-terminal .simulationId=${simulationId}></velg-bureau-terminal>
           </div>
+          <velg-dungeon-map></velg-dungeon-map>
         </div>
         <div class="dungeon-hud__party">
-          <div class="party-placeholder">${msg('Party panel')}</div>
+          <velg-dungeon-party-panel></velg-dungeon-party-panel>
         </div>
         <div class="dungeon-hud__actions">
           <velg-dungeon-quick-actions></velg-dungeon-quick-actions>
