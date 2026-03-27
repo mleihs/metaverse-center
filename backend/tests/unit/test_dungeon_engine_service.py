@@ -827,7 +827,11 @@ class TestSubmitCombatActions:
 
     @pytest.mark.asyncio
     async def test_auto_resolve_when_all_submitted(self, noop_checkpoint, noop_timer):
-        """When all players have submitted, _resolve_combat is called immediately."""
+        """When all players have submitted, combat resolves immediately.
+
+        This exercises the full _resolve_combat path including the UUID
+        handling fix (model_dump() preserves UUID objects, not strings).
+        """
         player1 = uuid4()
         enemy = _make_enemy()
         combat = CombatState(enemies=[enemy], phase="planning")
@@ -838,22 +842,26 @@ class TestSubmitCombatActions:
         agent_id = instance.party[0].agent_id
         sub = CombatSubmission(actions=[CombatAction(agent_id=agent_id, ability_id="spy_observe", target_id="enemy_1")])
 
-        # Patch _resolve_combat directly — we're testing the auto-resolve TRIGGER,
-        # not combat resolution itself (that's tested in test_combat_engine.py).
-        # Also avoids Gotcha #2: model_dump() preserves UUID objects, but
-        # _resolve_combat does UUID(uuid_obj) which raises AttributeError.
-        with patch.object(
-            DungeonEngineService, "_resolve_combat", new_callable=AsyncMock
-        ) as mock_resolve:
-            mock_resolve.return_value = {"round_result": {"round": 1}, "state": {}}
+        with (
+            patch("backend.services.dungeon_engine_service.generate_enemy_actions", return_value=[]),
+            patch("backend.services.dungeon_engine_service.get_enemy_templates_dict", return_value={}),
+            patch("backend.services.dungeon_engine_service.resolve_combat_round") as mock_resolve,
+        ):
+            mock_result = MagicMock()
+            mock_result.round_num = 1
+            mock_result.events = []
+            mock_result.combat_over = False
+            mock_result.victory = False
+            mock_result.party_wipe = False
+            mock_resolve.return_value = mock_result
 
             result = await DungeonEngineService.submit_combat_actions(
                 _make_mock_supabase(), instance.run_id, player1, sub
             )
 
-        # _resolve_combat was called (auto-resolve triggered)
-        mock_resolve.assert_called_once()
+        # Should have resolved (not waiting) — verifies UUID fix works
         assert "round_result" in result
+        mock_resolve.assert_called_once()
 
 
 # ── handle_encounter_choice ──────────────────────────────────────────────
