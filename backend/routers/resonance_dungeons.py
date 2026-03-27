@@ -123,14 +123,7 @@ async def get_run_state(
 
     Tries in-memory first, falls back to checkpoint recovery.
     """
-    try:
-        state = DungeonEngineService.get_client_state(run_id)
-    except HTTPException:
-        # Try recovering from checkpoint
-        instance = await DungeonEngineService.recover_from_checkpoint(admin, run_id)
-        if not instance:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Dungeon run not active") from None
-        state = DungeonEngineService.get_client_state(run_id)
+    state = await DungeonEngineService.get_client_state(run_id, admin)
     return {"success": True, "data": state.model_dump()}
 
 

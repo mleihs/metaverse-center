@@ -199,17 +199,19 @@ class TestConstants:
 
 
 class TestGetInstance:
-    def test_found(self):
+    @pytest.mark.asyncio
+    async def test_found(self):
         instance = _make_instance()
         _register_instance(instance)
-        result = DungeonEngineService._get_instance(instance.run_id)
+        result = await DungeonEngineService._get_instance(instance.run_id)
         assert result is instance
 
-    def test_not_found_raises_404(self):
+    @pytest.mark.asyncio
+    async def test_not_found_raises_404(self):
         from fastapi import HTTPException
 
         with pytest.raises(HTTPException) as exc_info:
-            DungeonEngineService._get_instance(uuid4())
+            await DungeonEngineService._get_instance(uuid4())
         assert exc_info.value.status_code == 404
 
 
@@ -356,17 +358,19 @@ class TestBuildClientState:
 
 
 class TestGetClientState:
-    def test_returns_state_for_active_instance(self):
+    @pytest.mark.asyncio
+    async def test_returns_state_for_active_instance(self):
         instance = _make_instance()
         _register_instance(instance)
-        state = DungeonEngineService.get_client_state(instance.run_id)
+        state = await DungeonEngineService.get_client_state(instance.run_id)
         assert state.run_id == instance.run_id
 
-    def test_raises_404_for_unknown_run(self):
+    @pytest.mark.asyncio
+    async def test_raises_404_for_unknown_run(self):
         from fastapi import HTTPException
 
         with pytest.raises(HTTPException) as exc_info:
-            DungeonEngineService.get_client_state(uuid4())
+            await DungeonEngineService.get_client_state(uuid4())
         assert exc_info.value.status_code == 404
 
 

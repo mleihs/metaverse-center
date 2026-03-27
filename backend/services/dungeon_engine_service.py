@@ -274,7 +274,7 @@ class DungeonEngineService:
         Validates adjacency, processes room entry, applies archetype effects,
         generates banter, checkpoints, and returns new state.
         """
-        instance = cls._get_instance(run_id)
+        instance = await cls._get_instance(run_id, admin_supabase)
 
         if instance.phase not in ("exploring", "room_clear"):
             raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Cannot move in phase: {instance.phase}")
@@ -375,7 +375,7 @@ class DungeonEngineService:
         submission: CombatSubmission,
     ) -> dict:
         """Submit combat actions for planning phase."""
-        instance = cls._get_instance(run_id)
+        instance = await cls._get_instance(run_id, admin_supabase)
 
         if instance.phase != "combat_planning" or not instance.combat:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Not in combat planning phase")
@@ -616,7 +616,7 @@ class DungeonEngineService:
         action: DungeonAction,
     ) -> dict:
         """Handle an encounter choice (skill check resolution)."""
-        instance = cls._get_instance(run_id)
+        instance = await cls._get_instance(run_id, admin_supabase)
 
         if instance.phase != "encounter":
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Not in encounter phase")
@@ -716,7 +716,7 @@ class DungeonEngineService:
     @classmethod
     async def scout(cls, admin_supabase: Client, run_id: UUID, agent_id: UUID) -> dict:
         """Spy: reveal adjacent rooms and restore visibility."""
-        instance = cls._get_instance(run_id)
+        instance = await cls._get_instance(run_id, admin_supabase)
         agent = next((a for a in instance.party if a.agent_id == agent_id), None)
         if not agent:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent not in party")
@@ -759,7 +759,7 @@ class DungeonEngineService:
     @classmethod
     async def rest(cls, admin_supabase: Client, run_id: UUID, agent_ids: list[UUID]) -> dict:
         """Rest at a rest site."""
-        instance = cls._get_instance(run_id)
+        instance = await cls._get_instance(run_id, admin_supabase)
 
         if instance.phase not in ("rest", "encounter"):
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Not at a rest site")
@@ -825,7 +825,7 @@ class DungeonEngineService:
     @classmethod
     async def retreat(cls, admin_supabase: Client, run_id: UUID) -> dict:
         """Abandon dungeon run (keep partial loot). Uses atomic RPC."""
-        instance = cls._get_instance(run_id)
+        instance = await cls._get_instance(run_id, admin_supabase)
 
         # Cancel any active combat timer
         timer = _combat_timers.pop(str(run_id), None)
@@ -952,9 +952,9 @@ class DungeonEngineService:
     # ── Client State (Fog of War) ───────────────────────────────────────
 
     @classmethod
-    def get_client_state(cls, run_id: UUID) -> DungeonClientState:
+    async def get_client_state(cls, run_id: UUID, admin_supabase: Client | None = None) -> DungeonClientState:
         """Get fog-of-war filtered state for client rendering."""
-        instance = cls._get_instance(run_id)
+        instance = await cls._get_instance(run_id, admin_supabase)
         return cls._build_client_state(instance)
 
     @classmethod
@@ -1056,12 +1056,17 @@ class DungeonEngineService:
         return "defeated"
 
     @classmethod
-    def _get_instance(cls, run_id: UUID) -> DungeonInstance:
-        """Get active instance or raise 404."""
+    async def _get_instance(cls, run_id: UUID, admin_supabase: Client | None = None) -> DungeonInstance:
+        """Get active instance, auto-recovering from checkpoint if needed."""
         instance = _active_instances.get(str(run_id))
-        if not instance:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Dungeon run not found or not active")
-        return instance
+        if instance:
+            return instance
+        # Try checkpoint recovery (survives server restarts)
+        if admin_supabase:
+            recovered = await cls.recover_from_checkpoint(admin_supabase, run_id)
+            if recovered:
+                return recovered
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Dungeon run not found or not active")
 
     @classmethod
     async def _checkpoint(cls, admin_supabase: Client, instance: DungeonInstance) -> None:
