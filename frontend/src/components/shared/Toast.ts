@@ -81,6 +81,25 @@ export class VelgToast extends LitElement {
       overflow: hidden;
     }
 
+    /* Type-specific tinted backgrounds — uses Tier 2 auto-derived tokens
+       (8% status color mixed with surface) for subtle color coding */
+    .dispatch--success {
+      background: var(--color-success-bg);
+      border-color: var(--color-success-border);
+    }
+    .dispatch--error {
+      background: var(--color-danger-bg);
+      border-color: var(--color-danger-border);
+    }
+    .dispatch--warning {
+      background: var(--color-warning-bg);
+      border-color: var(--color-warning-border);
+    }
+    .dispatch--info {
+      background: var(--color-info-bg);
+      border-color: var(--color-info-border);
+    }
+
     .dispatch::before,
     .dispatch::after {
       content: '';
@@ -129,10 +148,22 @@ export class VelgToast extends LitElement {
       z-index: 2;
     }
 
-    .dispatch__accent--success { background: var(--color-success); }
-    .dispatch__accent--error { background: var(--color-danger); }
-    .dispatch__accent--warning { background: var(--color-warning); }
-    .dispatch__accent--info { background: var(--color-info); }
+    .dispatch__accent--success {
+      background: var(--color-success);
+      box-shadow: 0 0 8px var(--color-success-glow);
+    }
+    .dispatch__accent--error {
+      background: var(--color-danger);
+      box-shadow: 0 0 10px var(--color-danger-glow);
+    }
+    .dispatch__accent--warning {
+      background: var(--color-warning);
+      box-shadow: 0 0 8px var(--color-warning-glow);
+    }
+    .dispatch__accent--info {
+      background: var(--color-info);
+      box-shadow: 0 0 8px var(--color-info-glow);
+    }
 
     .dispatch__accent--error::after {
       content: '';
@@ -218,7 +249,7 @@ export class VelgToast extends LitElement {
     .dispatch__message {
       font-family: var(--font-sans);
       font-size: 13px;
-      color: var(--color-text-secondary);
+      color: var(--color-text-primary);
       line-height: 1.45;
       word-break: break-word;
     }
@@ -446,7 +477,7 @@ export class VelgToast extends LitElement {
       ${this._toasts.map(
         (toast) => html`
           <div
-            class="dispatch ${toast.removing ? 'dispatch--removing' : ''} ${toast.paused ? 'dispatch--paused' : ''}"
+            class="dispatch dispatch--${toast.type} ${toast.removing ? 'dispatch--removing' : ''} ${toast.paused ? 'dispatch--paused' : ''}"
             role="status"
             aria-live="polite"
             @mouseenter=${() => this._handleMouseEnter(toast.id)}
