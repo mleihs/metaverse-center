@@ -2575,6 +2575,14 @@ frontend/src/components/dungeon/
 └── DungeonEnemyPanel.ts      ⏳ Enemy status + Into-the-Breach-style telegraphs
 ```
 
+**Known Patterns & Accepted Tradeoffs (Phase 4 audit):**
+
+1. **OPERATIVE_COLORS uses raw hex values** (`#64748b`, `#10b981`, etc.) in `operative-constants.ts`. These are applied via inline style, not component CSS, so the color token lint doesn't flag them. Established pattern shared with VelgAptitudeBars. Converting to design tokens requires a cross-cutting refactor of the operative color system — out of scope for dungeon work.
+2. **Aptitude names displayed untranslated** ("SPY 8", "GUARDIAN 3") in DungeonPartyPanel. `getOperativeLabel()` exists in VelgAptitudeBars but is not exported. Exporting and wiring it is Phase 8 (Polish) scope — the uppercase abbreviation reads well in the terminal context across languages.
+3. **`RoomNodeClient.current` property naming** — mirrors the backend Python `current` field. The frontend also has `dungeonState.currentRoom` (computed). Dual access pattern is intentional: `current` is per-room state from the API, `currentRoom` is a computed convenience. No rename needed.
+4. **SVG event handlers use `nothing` sentinel** for conditional binding (`@click=${isAdj ? handler : nothing}`). Same pattern as `VelgAvatar.ts:99`. Verified working in Lit's svg template context.
+5. **Stress bar "/1000" not in msg()** — universal numeric format, not a translatable string. The denominator 1000 is a game constant.
+
 **Shared CSS exports** (in `frontend/src/components/shared/terminal-theme-styles.ts`):
 - `terminalTokens` — Tier 2 HUD aliases (--amber, --hud-bg, etc.)
 - `terminalComponentTokens` — Tier 3 bridges (--_phosphor, --_screen-bg, --_mono)
