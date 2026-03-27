@@ -692,12 +692,17 @@ export class VelgApp extends LitElement {
   };
 
   private _handleNavigate = (e: CustomEvent<string>): void => {
-    const path = e.detail;
+    const fullPath = e.detail;
     seoService.removeServerContent();
-    if (path !== window.location.pathname) {
-      window.history.pushState({}, '', path);
+    // Push the full path (with query/hash) into the browser URL
+    const currentFull = window.location.pathname + window.location.search;
+    if (fullPath !== currentFull) {
+      window.history.pushState({}, '', fullPath);
     }
-    this._router.goto(path);
+    // Lit Router matches on pathname only — strip query params and hash.
+    // Target components read query params from window.location.search.
+    const url = new URL(fullPath, window.location.origin);
+    this._router.goto(url.pathname);
   };
 
   private _handleLoginPanelOpen = (): void => {
