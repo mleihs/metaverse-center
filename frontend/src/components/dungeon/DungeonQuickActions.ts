@@ -128,13 +128,8 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
       case 'combat_resolving':
       case 'combat_outcome':
       case 'boss':
-        // Combat phases: minimal actions. DungeonCombatBar (Phase 5) replaces this.
-        return html`
-          <span class="phase-label">${msg('Combat in progress')}</span>
-          <button class="action-btn" @click=${() => this._dispatch('status')}>
-            ${msg('Status')}
-          </button>
-        `;
+        // Combat UI handled by DungeonCombatBar (rendered by DungeonTerminalView).
+        return nothing;
 
       case 'completed':
       case 'retreated':

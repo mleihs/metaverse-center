@@ -1,6 +1,6 @@
 # Resonance Dungeons — Frontend Implementation Plan
 
-## Status: PHASE 1+2+3+4 COMPLETE — Phase 5 next
+## Status: PHASE 1+2+3+4+5 COMPLETE — Phase 6 next
 
 **Created:** 2026-03-27
 **Basis:** `docs/concepts/resonance-dungeons-spec.md` (§14), `research/dungeon-frontend-deep-dive.md`, backend Phase 0 (complete, 576 tests passing)
@@ -14,8 +14,8 @@
 | **Phase 2: Terminal Integration** | ✅ DONE | 2 new + 2 modified | 1396+85 | tsc ✅, WebMCP 8 tests ✅, deep audit ✅ |
 | **Phase 3: View Shell & Header** | ✅ DONE | 3 new + 4 modified | 897+70 | tsc ✅, lint ✅, deep audit ✅ |
 | **Phase 4: Party Panel & Map** | ✅ DONE | 2 new + 3 modified | 1067+27 | tsc ✅, lint ✅, 4-agent deep audit ✅ |
-| Phase 5: Combat System | ⬜ NEXT | 2 new | — | — |
-| Phase 6: Encounters & Events | ⬜ | extensions | — | — |
+| **Phase 5: Combat System** | ✅ DONE | 2 new + 2 modified | 750+40 | tsc ✅, lint ✅, event forwarding bugfix |
+| Phase 6: Encounters & Events | ⬜ NEXT | extensions | — | — |
 | Phase 7: Realtime & Recovery | ⬜ | extensions | — | — |
 | Phase 8: Polish & Mobile | ⬜ | refinements | — | — |
 
@@ -30,6 +30,7 @@
 8. **Phase 4: Missing stress threshold escalation** — Spec requires dim→bright→red + TENSE/CRITICAL labels. Added CSS classes + threshold text.
 9. **Phase 4: Redundant `.terminal-wrapper` CSS rule** — Duplicated terminalWrapperStyles. Removed.
 10. **Phase 4: Media query cascade order** — max-width: 640px was before 767px. Fixed: wider first, narrower second.
+11. **Phase 5: `terminal-command` event forwarding** — DungeonQuickActions/Map/CombatBar dispatch `terminal-command` events that never reached BureauTerminal (siblings in shadow DOM, not ancestors). Fixed: added `_handleTerminalCommand` on HUD div in DungeonTerminalView that catches all events and routes through `parseAndExecute`.
 
 ### DB Migrations Applied
 - Migration 163: `resonance_dungeon_runs` + `resonance_dungeon_events` tables + RPCs

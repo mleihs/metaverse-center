@@ -24,8 +24,10 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { dungeonState } from '../../services/DungeonStateManager.js';
 import { terminalState } from '../../services/TerminalStateManager.js';
-import { initializeTerminalZones } from '../../utils/terminal-initialization.js';
 import type { AvailableDungeonResponse } from '../../types/dungeon.js';
+import { parseAndExecute } from '../../utils/terminal-commands.js';
+import { systemLine } from '../../utils/terminal-formatters.js';
+import { initializeTerminalZones } from '../../utils/terminal-initialization.js';
 import {
   terminalAnimations,
   terminalComponentTokens,
@@ -33,6 +35,8 @@ import {
   terminalWrapperStyles,
 } from '../shared/terminal-theme-styles.js';
 import '../terminal/BureauTerminal.js';
+import './DungeonCombatBar.js';
+import './DungeonEnemyPanel.js';
 import './DungeonHeader.js';
 import './DungeonMap.js';
 import './DungeonPartyPanel.js';
@@ -290,6 +294,30 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
     }
   }
 
+  // ── Terminal Command Forwarding ──────────────────────────────────────────
+  // Catches 'terminal-command' events from dungeon HUD components
+  // (QuickActions, Map, CombatBar) and executes them through the command
+  // pipeline. Required because these components are siblings of BureauTerminal
+  // in the shadow DOM — composed events bubble upward, not sideways.
+
+  private async _handleTerminalCommand(e: CustomEvent<string>): Promise<void> {
+    e.stopPropagation();
+    const command = e.detail;
+    if (!command) return;
+
+    terminalState.isLoading.value = true;
+    try {
+      const lines = await parseAndExecute(command);
+      terminalState.appendOutput(lines);
+    } catch (err) {
+      terminalState.appendOutput([
+        systemLine(`[ERROR] ${err instanceof Error ? err.message : 'Command failed.'}`),
+      ]);
+    } finally {
+      terminalState.isLoading.value = false;
+    }
+  }
+
   // ── Render ──────────────────────────────────────────────────────────────
 
   protected render() {
@@ -311,14 +339,20 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
     return this._renderLobby(sid);
   }
 
-  /** Active dungeon: grid HUD layout with header, terminal, sidebar, actions. */
+  /** Active dungeon: grid HUD layout with header, terminal, sidebar, actions.
+   *  @terminal-command on the HUD div catches events from all dungeon
+   *  components (QuickActions, Map, CombatBar) and routes them through
+   *  the command pipeline via _handleTerminalCommand. */
   private _renderHUD(simulationId: string) {
+    const inCombat = dungeonState.isInCombat.value;
+
     return html`
-      <div class="dungeon-hud">
+      <div class="dungeon-hud" @terminal-command=${this._handleTerminalCommand}>
         <div class="dungeon-hud__header">
           <velg-dungeon-header></velg-dungeon-header>
         </div>
         <div class="dungeon-hud__main">
+          ${inCombat ? html`<velg-dungeon-enemy-panel></velg-dungeon-enemy-panel>` : nothing}
           <div class="terminal-wrapper">
             <velg-bureau-terminal .simulationId=${simulationId}></velg-bureau-terminal>
           </div>
@@ -328,7 +362,9 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
           <velg-dungeon-party-panel></velg-dungeon-party-panel>
         </div>
         <div class="dungeon-hud__actions">
-          <velg-dungeon-quick-actions></velg-dungeon-quick-actions>
+          ${inCombat
+            ? html`<velg-dungeon-combat-bar></velg-dungeon-combat-bar>`
+            : html`<velg-dungeon-quick-actions></velg-dungeon-quick-actions>`}
         </div>
       </div>
     `;
