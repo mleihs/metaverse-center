@@ -194,9 +194,10 @@ export class VelgEntityLightbox extends LitElement {
     .lightbox__body {
       overflow-y: auto;
       overscroll-behavior: contain;
-      padding-bottom: var(--space-4);
+      padding-bottom: var(--space-6);
       scrollbar-width: thin;
       scrollbar-color: var(--color-border) transparent;
+      scrollbar-gutter: stable;
     }
 
     /* Entity transition: crossfade on navigate */
@@ -218,6 +219,19 @@ export class VelgEntityLightbox extends LitElement {
       border-top: var(--border-medium);
       background: var(--color-surface-header);
       min-height: 48px;
+      position: relative;
+    }
+
+    /* Gradient fade above footer — scroll affordance (Figma/Notion pattern) */
+    .lightbox__footer::before {
+      content: '';
+      position: absolute;
+      bottom: 100%;
+      left: 0;
+      right: 0;
+      height: var(--space-6);
+      background: linear-gradient(to bottom, transparent, var(--color-surface-raised));
+      pointer-events: none;
     }
 
     .lightbox__nav {
