@@ -111,6 +111,7 @@ Write operations require:
 - Use shared components before creating new ones.
 - Use design tokens — never hardcode colors or spacing.
 - All icons must come from `utils/icons.ts`.
+- Never apply CSS `filter`, `transform`, `will-change`, `contain: paint`, or `perspective` on layout containers (shells, views, panels). These create new containing blocks that break `position: fixed` modals/lightboxes. Use `backdrop-filter` on a `::after` overlay or apply filters to leaf elements only.
 
 ### Color Tokens (MANDATORY)
 
