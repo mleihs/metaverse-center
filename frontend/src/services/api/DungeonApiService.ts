@@ -1,5 +1,5 @@
 /**
- * API service for Resonance Dungeons — 12 authenticated + 2 public endpoints.
+ * API service for Resonance Dungeons — 13 authenticated + 2 public endpoints.
  *
  * Backend router: backend/routers/resonance_dungeons.py
  * Public router:  backend/routers/public.py (dungeon section)
@@ -9,6 +9,7 @@
 
 import type { ApiResponse } from '../../types/index.js';
 import type {
+  AgentLootEffect,
   AvailableDungeonResponse,
   CombatSubmission,
   CombatSubmitResponse,
@@ -97,6 +98,16 @@ export class DungeonApiService extends BaseApiService {
     return this.get(`/dungeons/runs/${runId}/events`, {
       limit: String(limit),
       offset: String(offset),
+    });
+  }
+
+  /** Get all persistent dungeon loot effects for an agent (provenance). */
+  getAgentLootEffects(
+    agentId: string,
+    simulationId: string,
+  ): Promise<ApiResponse<AgentLootEffect[]>> {
+    return this.get(`/dungeons/agents/${agentId}/loot-effects`, {
+      simulation_id: simulationId,
     });
   }
 

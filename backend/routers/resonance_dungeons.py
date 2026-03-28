@@ -1,6 +1,6 @@
 """REST API router for Resonance Dungeons.
 
-12 endpoints under /api/v1/dungeons.
+13 endpoints under /api/v1/dungeons.
 Auth: simulation membership checked via require_simulation_member().
 All mutations use admin_supabase (Review #16).
 """
@@ -25,6 +25,7 @@ from backend.models.common import (
     SuccessResponse,
 )
 from backend.models.resonance_dungeon import (
+    AgentLootEffectResponse,
     AvailableDungeonResponse,
     CombatSubmission,
     DungeonAction,
@@ -302,3 +303,49 @@ async def list_history(
             offset=offset,
         ),
     }
+
+
+# ── Agent Loot Effects (Provenance) ─────────────────────────────────────────
+
+
+@router.get(
+    "/agents/{agent_id}/loot-effects",
+    response_model=SuccessResponse[list[AgentLootEffectResponse]],
+)
+async def get_agent_loot_effects(
+    agent_id: UUID,
+    simulation_id: UUID = Query(...),
+    user: CurrentUser = Depends(get_current_user),
+    _member: str = Depends(require_simulation_member("viewer")),
+    supabase: Client = Depends(get_supabase),
+) -> dict:
+    """Get all persistent dungeon loot effects for an agent.
+
+    Joins with source run to provide provenance (archetype, difficulty, date).
+    RLS enforced: user must be simulation member.
+    """
+    resp = (
+        await supabase.table("agent_dungeon_loot_effects")
+        .select(
+            "id, agent_id, effect_type, effect_params, source_run_id, "
+            "source_loot_id, consumed, created_at, "
+            "resonance_dungeon_runs!source_run_id(archetype, difficulty, completed_at)"
+        )
+        .eq("agent_id", str(agent_id))
+        .eq("simulation_id", str(simulation_id))
+        .order("created_at", desc=True)
+        .execute()
+    )
+
+    # Flatten the joined run data into the response shape
+    effects = []
+    for row in resp.data or []:
+        run_data = row.pop("resonance_dungeon_runs", None) or {}
+        effects.append({
+            **row,
+            "source_archetype": run_data.get("archetype"),
+            "source_difficulty": run_data.get("difficulty"),
+            "source_completed_at": run_data.get("completed_at"),
+        })
+
+    return {"success": True, "data": effects}

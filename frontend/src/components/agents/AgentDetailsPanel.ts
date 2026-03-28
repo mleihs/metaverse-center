@@ -21,6 +21,7 @@ import { icons } from '../../utils/icons.js';
 import { getFullResUrl } from '../../utils/image.js';
 import { t } from '../../utils/locale-fields.js';
 import { agentAltText } from '../../utils/text.js';
+import './AgentDungeonRewards.js';
 import '../buildings/EmbassyLink.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
@@ -1486,6 +1487,14 @@ export class VelgAgentDetailsPanel extends LitElement {
               .simulationId=${this.simulationId}
               .agentId=${this.agent?.id ?? ''}
             ></velg-agent-memory-section>
+          </div>
+
+          <div class="panel__section">
+            <velg-section-header>${msg('Dungeon Rewards')}</velg-section-header>
+            <velg-agent-dungeon-rewards
+              .simulationId=${this.simulationId}
+              .agentId=${this.agent?.id ?? ''}
+            ></velg-agent-dungeon-rewards>
           </div>
         </div>
       </div>

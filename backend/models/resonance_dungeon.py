@@ -313,6 +313,23 @@ class AvailableDungeonResponse(BaseModel):
     available: bool = True
 
 
+class AgentLootEffectResponse(BaseModel):
+    """A persistent dungeon loot effect applied to an agent."""
+
+    id: UUID
+    agent_id: UUID
+    effect_type: str
+    effect_params: dict = Field(default_factory=dict)
+    source_run_id: UUID | None = None
+    source_loot_id: str
+    consumed: bool = False
+    created_at: datetime
+    # Denormalized from source run (joined)
+    source_archetype: str | None = None
+    source_difficulty: int | None = None
+    source_completed_at: datetime | None = None
+
+
 # ── Client State Schemas (fog-of-war filtered) ─────────────────────────────
 # These are the security boundary: unrevealed rooms show as "?" type,
 # hidden enemy stats are never exposed.

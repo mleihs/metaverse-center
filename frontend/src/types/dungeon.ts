@@ -486,3 +486,19 @@ export interface LootItem {
   description_en: string;
   description_de: string;
 }
+
+/** Persistent dungeon loot effect applied to an agent (provenance UI). */
+export interface AgentLootEffect {
+  id: string;
+  agent_id: string;
+  effect_type: string;
+  effect_params: Record<string, unknown>;
+  source_run_id: string | null;
+  source_loot_id: string;
+  consumed: boolean;
+  created_at: string;
+  /** Denormalized from source run */
+  source_archetype: string | null;
+  source_difficulty: number | null;
+  source_completed_at: string | null;
+}
