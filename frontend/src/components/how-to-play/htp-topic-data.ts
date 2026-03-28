@@ -776,7 +776,90 @@ export const TOPICS: TopicDefinition[] = [
     sections: () => [
       { kind: 'steps', title: msg('The Bureau Terminal'), steps: getBureauTerminalGuideSteps },
     ],
-    related: ['agents', 'epochs', 'operatives'],
+    related: ['agents', 'epochs', 'operatives', 'dungeons'],
+  },
+
+  // ────────────────────────────────────────────────────────────────────────
+  // 13: RESONANCE DUNGEONS
+  // ────────────────────────────────────────────────────────────────────────
+  {
+    slug: 'dungeons',
+    title: msg('Resonance Dungeons'),
+    icon: 'dungeonMap',
+    description: msg('Procedural dungeons born from substrate resonances. Combat, loot, and permanent agent upgrades.'),
+    accent: '--color-danger',
+    readTime: msg('10 min'),
+    tldr: () => [
+      msg('Substrate resonances spawn explorable dungeons with FTL-style node maps'),
+      msg('Phase-based combat: 30-second planning phase, then simultaneous resolution'),
+      msg('8 dungeon archetypes \u2013 each tied to a resonance type with unique enemies and encounters'),
+      msg('Loot grants permanent aptitude boosts (+2 cap per agent), memories, and moodlets'),
+      msg('Party of up to 4 agents \u2013 condition tracks from Operational to Afflicted'),
+    ],
+    sections: () => [
+      {
+        kind: 'text',
+        content: msg(
+          'Resonance Dungeons transform substrate resonances into explorable procedural dungeons. When a resonance event occurs in your simulation, it may open a dungeon tied to that resonance archetype. Each dungeon is a branching node graph \u2013 inspired by FTL \u2013 where your agents explore rooms, face encounters, and fight enemies shaped by the resonance that spawned the dungeon.',
+        ),
+      },
+      {
+        kind: 'callouts',
+        items: [
+          {
+            type: 'info',
+            label: msg('How to Enter'),
+            text: msg(
+              'Navigate to the Terminal tab and type "dungeon" to see available dungeons. Select an archetype and choose your party (up to 4 agents). The dungeon launches in the terminal with a submarine war room HUD showing the map, party status, and combat interface.',
+            ),
+          },
+        ],
+      },
+      {
+        kind: 'text',
+        content: msg(
+          'Gameplay flows through room exploration: move between connected nodes on the dungeon map, each containing encounters, treasure, rest points, or the final boss. Encounters range from skill checks (using agent aptitudes and personality) to full combat sequences. Rooms you have visited are marked; rooms ahead show threat indicators based on scouting.',
+        ),
+      },
+      {
+        kind: 'callouts',
+        items: [
+          {
+            type: 'warn',
+            label: msg('Combat System'),
+            text: msg(
+              'Combat is phase-based. During the 30-second planning phase, assign abilities from 6 schools (one per operative type) to your agents. Then the round resolves simultaneously \u2013 your agents and the enemies act at the same time. Agents have condition tracks (Operational, Stressed, Wounded, Afflicted) and accumulate stress. If the entire party is defeated, the run is wiped and agents suffer trauma outcomes.',
+            ),
+          },
+          {
+            type: 'tip',
+            label: msg('Ability Schools'),
+            text: msg(
+              'Each operative type unlocks a school of abilities. Spy abilities reveal enemy weaknesses. Guardian abilities protect allies. Saboteur abilities deal area damage. Propagandist abilities manipulate enemy stress. Infiltrator abilities bypass defenses. Assassin abilities deal concentrated damage. Higher agent aptitudes unlock stronger abilities within each school.',
+            ),
+          },
+        ],
+      },
+      {
+        kind: 'text',
+        content: msg(
+          'After defeating the boss, you enter the Debrief Terminal \u2013 a loot distribution phase where you assign rewards to individual party members. Loot includes aptitude boosts (capped at +2 per agent to prevent runaway power), memories that shape agent personality, moodlets that affect behavior, and event modifiers that influence future resonances.',
+        ),
+      },
+      {
+        kind: 'callouts',
+        items: [
+          {
+            type: 'info',
+            label: msg('The 8 Archetypes'),
+            text: msg(
+              'Each resonance type spawns a distinct dungeon archetype: The Shadow (espionage), The Choir (propaganda), The Fracture (sabotage), The Bastion (defense), The Veil (infiltration), The Reaper (assassination), The Nexus (diplomacy), The Void (cosmic horror). Archetype determines enemy types, room layouts, encounter difficulty, and available loot.',
+            ),
+          },
+        ],
+      },
+    ],
+    related: ['terminal', 'agents', 'operatives', 'advanced'],
   },
 ];
 
