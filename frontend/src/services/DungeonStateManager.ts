@@ -192,7 +192,9 @@ class DungeonStateManager {
     this.clientState.value = state;
     this.runId.value = String(state.run_id);
     this.error.value = null;
-    this._autoSubmitFired = false;
+    // NOTE: _autoSubmitFired is NOT reset here. It's only reset when
+    // _startTimer detects a fresh (non-expired) timer, preventing the
+    // recursive auto-submit loop.
     this._persistRunId(String(state.run_id));
 
     // Reset combat selections when leaving planning phase
@@ -338,21 +340,31 @@ class DungeonStateManager {
 
   private _startTimer(timer: PhaseTimer): void {
     this._stopTimer();
-    this._autoSubmitFired = false;
 
     const startMs = new Date(timer.started_at).getTime();
     const endMs = startMs + timer.duration_ms;
+    const remaining = endMs - Date.now();
+
+    // If the timer already expired (stale from server checkpoint), don't
+    // start a countdown. This prevents a recursive loop where auto-submit
+    // → applyState → _startTimer → tick(expired) → auto-submit again.
+    if (remaining <= 0) {
+      this.timerRemaining.value = 0;
+      return;
+    }
+
+    this._autoSubmitFired = false;
 
     const tick = (): void => {
-      const remaining = endMs - Date.now();
-      this.timerRemaining.value = Math.max(0, remaining);
-      if (remaining <= 0) {
+      const rem = endMs - Date.now();
+      this.timerRemaining.value = Math.max(0, rem);
+      if (rem <= 0) {
         this._stopTimer();
         this._autoSubmitOnExpiry();
       }
     };
 
-    tick(); // Immediate first tick
+    tick(); // Immediate first tick (only when timer is still valid)
     this._timerInterval = setInterval(tick, TIMER_TICK_MS);
   }
 
@@ -376,10 +388,8 @@ class DungeonStateManager {
       };
       const resp = await dungeonApi.submitCombat(runId, submission);
       if (resp.success && resp.data) {
-        this.combatSubmitting.value = false;
-        this.applyState(resp.data.state);
-
-        // Render battle log directly into terminal
+        // Render battle log BEFORE applyState so lines are in the buffer
+        // before the re-render cycle triggered by state change.
         if (resp.data.round_result) {
           const partyNames = this.party.value.map((a) => a.agent_name);
           const lines = [
@@ -392,6 +402,8 @@ class DungeonStateManager {
           }
           terminalState.appendOutput(lines);
         }
+        this.combatSubmitting.value = false;
+        this.applyState(resp.data.state);
         return;
       }
     } catch {
