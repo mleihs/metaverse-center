@@ -18,6 +18,7 @@ import type {
   RoomNodeClient,
   SkillCheckDetail,
 } from '../types/dungeon.js';
+import type { Agent, AptitudeSet } from '../types/index.js';
 import type { TerminalLine } from '../types/terminal.js';
 import { responseLine, systemLine, hintLine } from './terminal-formatters.js';
 
@@ -714,6 +715,65 @@ export function formatAvailableDungeons(
 
   lines.push(responseLine(''));
   lines.push(hintLine(msg('Type "dungeon <archetype>" to enter. Example: dungeon shadow')));
+
+  return lines;
+}
+
+// ── Party Picker ─────────────────────────────────────────────────────────────
+
+/** Operative type abbreviations for compact display. */
+const APT_LABELS: Record<string, string> = {
+  spy: 'SPY',
+  guardian: 'GRD',
+  saboteur: 'SAB',
+  propagandist: 'PRP',
+  infiltrator: 'INF',
+  assassin: 'ASN',
+};
+
+/**
+ * Format an agent picker list for terminal display.
+ * Shows numbered agents with top aptitudes for party selection.
+ */
+export function formatAgentPicker(
+  agents: Agent[],
+  aptitudeMap: Map<string, AptitudeSet>,
+  archetype: string,
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+
+  if (agents.length === 0) {
+    lines.push(systemLine(msg('No agents available in this simulation.')));
+    return lines;
+  }
+
+  lines.push(systemLine(`${msg('AVAILABLE AGENTS FOR')} ${archetype.toUpperCase()}:`));
+  lines.push(systemLine(''));
+
+  for (let i = 0; i < agents.length; i++) {
+    const agent = agents[i];
+    const apts = aptitudeMap.get(agent.id);
+
+    // Build aptitude string: top 3 by level
+    let aptStr = '';
+    if (apts) {
+      const sorted = Object.entries(apts)
+        .filter(([, v]) => v > 0)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 3);
+      aptStr = sorted
+        .map(([k, v]) => `${APT_LABELS[k] ?? k.toUpperCase()} ${v}`)
+        .join(' | ');
+    }
+    if (!aptStr) aptStr = msg('no aptitudes');
+
+    const num = String(i + 1).padStart(2, ' ');
+    lines.push(responseLine(`  ${num}. ${agent.name.padEnd(20)} ${aptStr}`));
+  }
+
+  lines.push(systemLine(''));
+  lines.push(hintLine(msg('Select 2\u20134 agents: "dungeon <archetype> 1 2 3"')));
+  lines.push(hintLine(msg('Auto-pick best party: "dungeon <archetype> auto"')));
 
   return lines;
 }

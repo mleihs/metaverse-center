@@ -40,6 +40,7 @@ from backend.models.resonance_dungeon import (
     DungeonRunCreate,
     DungeonRunResponse,
     EnemyCombatStateClient,
+    PhaseTimer,
     RoomNode,
     RoomNodeClient,
 )
@@ -139,6 +140,14 @@ class DungeonEngineService:
         for agent_data in party_data:
             aptitudes_raw = agent_data.get("aptitudes", {})
             aptitudes = {k: int(v) for k, v in aptitudes_raw.items()} if aptitudes_raw else {}
+            if not aptitudes:
+                # Agents must have at least one aptitude school for combat abilities.
+                # DB can return null/empty for aptitudes — assign viable defaults.
+                aptitudes = {"spy": 3, "guardian": 2}
+                logger.warning(
+                    "Agent %s has no aptitudes, assigning defaults",
+                    agent_data.get("name", agent_data["id"]),
+                )
 
             # Extract Big Five traits from personality_profile for combat modifiers
             personality_raw = agent_data.get("personality", {})
@@ -380,8 +389,8 @@ class DungeonEngineService:
         if instance.phase != "combat_planning" or not instance.combat:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Not in combat planning phase")
 
-        # Store actions for this player
-        instance.combat.submitted_actions[str(user_id)] = [a.model_dump() for a in submission.actions]
+        # Store actions for this player (mode="json" → UUID → str for checkpoint safety)
+        instance.combat.submitted_actions[str(user_id)] = [a.model_dump(mode="json") for a in submission.actions]
 
         # Check if all players submitted
         all_submitted = len(instance.combat.submitted_actions) >= len(instance.player_ids)
@@ -404,6 +413,7 @@ class DungeonEngineService:
 
         instance.phase = "combat_resolving"
         instance.combat.phase = "resolving"
+        instance.phase_timer = None  # Clear timer — planning phase is over
 
         # Build agent actions from submissions
         agent_actions: list[AgentAction] = []
@@ -832,6 +842,7 @@ class DungeonEngineService:
         if timer and not timer.done():
             timer.cancel()
         instance.phase = "retreated"
+        instance.phase_timer = None
 
         # Partial loot: Tier 1 for rooms cleared
         loot = []
@@ -1014,8 +1025,8 @@ class DungeonEngineService:
                         instance_id=e.instance_id,
                         name_en=e.name_en,
                         name_de=e.name_de,
-                        condition_display=cls._enemy_condition_display(e.condition_steps_remaining),
-                        threat_level="elite" if e.condition_steps_remaining > 4 else "standard",
+                        condition_display=e.condition_display,
+                        threat_level=e.threat_level,
                         is_alive=e.is_alive,
                     )
                     for e in instance.combat.enemies
@@ -1035,25 +1046,10 @@ class DungeonEngineService:
             archetype_state=instance.archetype_state,
             combat=combat_client,
             phase=instance.phase,
+            phase_timer=instance.phase_timer,
         )
 
     # ── Private Helpers ─────────────────────────────────────────────────
-
-    @staticmethod
-    def _enemy_condition_display(steps_remaining: int) -> str:
-        """Map enemy condition steps to a display string for the client.
-
-        Agents use the Condition track (operational→stressed→wounded→afflicted→captured).
-        Enemies use raw step counts — this maps them to the same vocabulary
-        for consistent UI without exposing exact HP.
-        """
-        if steps_remaining > 3:
-            return "healthy"
-        if steps_remaining > 1:
-            return "damaged"
-        if steps_remaining == 1:
-            return "critical"
-        return "defeated"
 
     @classmethod
     async def _get_instance(cls, run_id: UUID, admin_supabase: Client | None = None) -> DungeonInstance:
@@ -1318,7 +1314,7 @@ class DungeonEngineService:
             "loot": [item.model_dump() for item in loot],
             "rooms_cleared": instance.rooms_cleared,
             "depth_reached": instance.depth,
-            "party_state": [a.model_dump() for a in instance.party],
+            "party_state": [a.model_dump(mode="json") for a in instance.party],
         }
 
         # Build agent outcomes (mood, stress, moodlets, activities)
@@ -1443,6 +1439,9 @@ class DungeonEngineService:
     async def _start_combat_timer(cls, _admin_supabase: Client, instance: DungeonInstance) -> None:
         """Start asyncio timer for combat planning timeout.
 
+        Sets phase_timer metadata on the instance so _build_client_state
+        can pass it to the frontend for countdown display.
+
         Note: The timer callback fetches a fresh admin_supabase client
         to avoid stale connections from the closure (30s delay).
         """
@@ -1453,8 +1452,18 @@ class DungeonEngineService:
         if existing and not existing.done():
             existing.cancel()
 
+        # Store timer metadata for client-side countdown
+        instance.phase_timer = PhaseTimer(
+            started_at=datetime.now(UTC).isoformat(),
+            duration_ms=COMBAT_PLANNING_TIMEOUT_MS,
+            phase="combat_planning",
+        )
+
         async def _timer() -> None:
             await asyncio.sleep(COMBAT_PLANNING_TIMEOUT_MS / 1000)
+            # Atomically pop timer to prevent double-resolve with user submission
+            if not _combat_timers.pop(run_id_str, None):
+                return  # Already resolved by user submission
             inst = _active_instances.get(run_id_str)
             if inst and inst.phase == "combat_planning":
                 logger.info("Combat timer expired for run %s, auto-resolving", run_id_str)

@@ -21,6 +21,8 @@ import type {
   PhaseTimer,
   RoomNodeClient,
 } from '../types/dungeon.js';
+import type { Agent, AgentAptitude, AptitudeSet } from '../types/index.js';
+import { agentsApi } from './api/AgentsApiService.js';
 import { dungeonApi } from './api/DungeonApiService.js';
 import { captureError } from './SentryService.js';
 
@@ -50,6 +52,12 @@ class DungeonStateManager {
 
   /** Available dungeon archetypes for the current simulation. */
   readonly availableDungeons = signal<AvailableDungeonResponse[]>([]);
+
+  /** Agents available for party selection (cached after first fetch). */
+  readonly pickerAgents = signal<Agent[]>([]);
+
+  /** Aptitude map for picker agents: agent_id → {spy: N, guardian: N, ...}. */
+  readonly pickerAptitudes = signal<Map<string, AptitudeSet>>(new Map());
 
   // ── Combat Planning (client-only, ephemeral) ───────────────────────────
 
@@ -206,6 +214,8 @@ class DungeonStateManager {
     this.error.value = null;
     this.loading.value = false;
     this.combatSubmitting.value = false;
+    this.pickerAgents.value = [];
+    this.pickerAptitudes.value = new Map();
     this._stopTimer();
     this._clearPersistedRunId();
   }
@@ -249,6 +259,45 @@ class DungeonStateManager {
       }
     } catch (err) {
       captureError(err, { source: 'DungeonStateManager.loadAvailable', simulationId });
+    } finally {
+      this.loading.value = false;
+    }
+  }
+
+  /**
+   * Load all simulation agents with aptitudes for party selection.
+   * Parallelizes agent list + aptitudes fetch. Cached until clear().
+   */
+  async loadPickerAgents(simulationId: string): Promise<void> {
+    // Return cached if already loaded
+    if (this.pickerAgents.value.length > 0) return;
+
+    this.loading.value = true;
+    this.error.value = null;
+    try {
+      const [agentsResp, aptResp] = await Promise.all([
+        agentsApi.list(simulationId, { limit: '100' }),
+        agentsApi.getAllAptitudes(simulationId),
+      ]);
+
+      if (!agentsResp.success) {
+        this.error.value = agentsResp.error?.message ?? 'Failed to load agents';
+        return;
+      }
+      this.pickerAgents.value = agentsResp.data ?? [];
+
+      if (aptResp.success && aptResp.data) {
+        const aptMap = new Map<string, AptitudeSet>();
+        for (const apt of aptResp.data) {
+          const existing = aptMap.get(apt.agent_id) ?? ({} as AptitudeSet);
+          existing[apt.operative_type] = apt.aptitude_level;
+          aptMap.set(apt.agent_id, existing);
+        }
+        this.pickerAptitudes.value = aptMap;
+      }
+    } catch (err) {
+      this.error.value = err instanceof Error ? err.message : 'Failed to load agents';
+      captureError(err, { source: 'DungeonStateManager.loadPickerAgents', simulationId });
     } finally {
       this.loading.value = false;
     }

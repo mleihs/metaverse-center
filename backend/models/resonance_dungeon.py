@@ -148,6 +148,9 @@ class DungeonInstance(BaseModel):
     # Banter tracking (no-repeat per run)
     used_banter_ids: list[str] = Field(default_factory=list)
 
+    # Phase timer metadata (set during combat planning for client countdown)
+    phase_timer: PhaseTimer | None = None
+
     def to_checkpoint(self) -> dict:
         """Serialize only mutable state for DB checkpoint (Review #17).
 
@@ -157,8 +160,8 @@ class DungeonInstance(BaseModel):
         """
         return {
             "current_room": self.current_room,
-            "party": [a.model_dump() for a in self.party],
-            "combat": self.combat.model_dump() if self.combat else None,
+            "party": [a.model_dump(mode="json") for a in self.party],
+            "combat": self.combat.model_dump(mode="json") if self.combat else None,
             "archetype_state": self.archetype_state,
             "phase": self.phase,
             "depth": self.depth,
@@ -167,6 +170,7 @@ class DungeonInstance(BaseModel):
             "room_cleared_flags": [r.index for r in self.rooms if r.cleared],
             "room_revealed_flags": [r.index for r in self.rooms if r.revealed],
             "used_banter_ids": self.used_banter_ids,
+            "phase_timer": self.phase_timer.model_dump(mode="json") if self.phase_timer else None,
         }
 
     def restore_from_checkpoint(self, checkpoint: dict) -> None:
@@ -180,6 +184,8 @@ class DungeonInstance(BaseModel):
         self.rooms_cleared = checkpoint["rooms_cleared"]
         self.turn = checkpoint.get("turn", 0)
         self.used_banter_ids = checkpoint.get("used_banter_ids", [])
+        timer_data = checkpoint.get("phase_timer")
+        self.phase_timer = PhaseTimer(**timer_data) if timer_data else None
         # Restore room flags
         cleared = set(checkpoint.get("room_cleared_flags", []))
         revealed = set(checkpoint.get("room_revealed_flags", []))

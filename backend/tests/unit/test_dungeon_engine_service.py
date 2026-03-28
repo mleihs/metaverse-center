@@ -13,7 +13,7 @@ Covers all public classmethods and key private methods:
   - get_client_state / _build_client_state: fog-of-war filtering
   - _apply_shadow_visibility: VP cost per 2 rooms
   - _enter_combat_room / _enter_encounter_room / etc.
-  - _enemy_condition_display: step→display mapping
+  - EnemyInstance.condition_display: percentage-based step→display property
   - _build_loot_items_for_rpc: loot serialization
 
 Mock strategy:
@@ -139,13 +139,15 @@ def _make_mock_supabase():
     return make_async_supabase_mock()
 
 
-def _make_enemy(instance_id: str = "enemy_1", steps: int = 4) -> EnemyInstance:
+def _make_enemy(instance_id: str = "enemy_1", steps: int = 4, max_steps: int | None = None) -> EnemyInstance:
     return EnemyInstance(
         instance_id=instance_id,
         template_id="shadow_whisper",
         name_en="Shadow Whisper",
         name_de="Schattenfluesterer",
         condition_steps_remaining=steps,
+        condition_steps_max=max_steps if max_steps is not None else steps,
+        threat_level="standard",
         stress_resistance=10,
         evasion=5,
     )
@@ -215,24 +217,40 @@ class TestGetInstance:
         assert exc_info.value.status_code == 404
 
 
-# ── _enemy_condition_display ─────────────────────────────────────────────
+# ── EnemyInstance.condition_display ──────────────────────────────────────
 
 
 class TestEnemyConditionDisplay:
+    """Percentage-based condition display: ratio = remaining / max.
+
+    Property lives on EnemyInstance (tell-don't-ask), not on the service.
+    """
+
     @pytest.mark.parametrize(
-        ("steps", "expected"),
+        ("remaining", "max_steps", "expected"),
         [
-            (6, "healthy"),
-            (5, "healthy"),
-            (4, "healthy"),
-            (3, "damaged"),
-            (2, "damaged"),
-            (1, "critical"),
-            (0, "defeated"),
+            # Full health → healthy (ratio 1.0)
+            (6, 6, "healthy"),
+            (1, 1, "healthy"),
+            (3, 3, "healthy"),
+            # >60% → healthy
+            (4, 6, "healthy"),
+            (5, 6, "healthy"),
+            # 31-60% → damaged
+            (3, 6, "damaged"),
+            (2, 6, "damaged"),
+            (2, 5, "damaged"),
+            # 1-30% → critical
+            (1, 6, "critical"),
+            (1, 4, "critical"),
+            # 0 → defeated
+            (0, 6, "defeated"),
+            (0, 1, "defeated"),
         ],
     )
-    def test_display_mapping(self, steps, expected):
-        assert DungeonEngineService._enemy_condition_display(steps) == expected
+    def test_display_mapping(self, remaining, max_steps, expected):
+        enemy = _make_enemy(steps=remaining, max_steps=max_steps)
+        assert enemy.condition_display == expected
 
 
 # ── _apply_shadow_visibility ─────────────────────────────────────────────

@@ -77,6 +77,8 @@ def _make_enemy(
         name_en="Shadow Wisp",
         name_de="Schattenglimmer",
         condition_steps_remaining=condition_steps,
+        condition_steps_max=condition_steps,
+        threat_level="minion",
         stress_resistance=50,
         evasion=evasion,
         active_effects=list(effects or []),

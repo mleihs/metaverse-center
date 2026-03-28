@@ -336,10 +336,14 @@ def get_agent_all_abilities(aptitudes: dict[str, int]) -> list[Ability]:
         aptitudes: Dict of school -> aptitude level, e.g. {"spy": 8, "guardian": 3}.
 
     Returns:
-        Combined list of all unlocked abilities.
+        Combined list of all unlocked abilities. Always non-empty: if aptitudes
+        yields no abilities, returns basic spy abilities as a safety net.
     """
     result: list[Ability] = []
     for school, level in aptitudes.items():
         if level > 0:
             result.extend(get_available_abilities(school, level))
+    if not result:
+        # Safety net: every combatant must have at least one action.
+        result = get_available_abilities("spy", 3)
     return result

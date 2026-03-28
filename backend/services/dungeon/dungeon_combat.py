@@ -264,6 +264,8 @@ def spawn_enemies(
                     name_en=template.name_en,
                     name_de=template.name_de,
                     condition_steps_remaining=scaled_condition,
+                    condition_steps_max=scaled_condition,
+                    threat_level=template.threat_level,
                     stress_resistance=template.stress_resistance,
                     evasion=template.evasion,
                 )

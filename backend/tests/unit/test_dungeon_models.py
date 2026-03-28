@@ -370,6 +370,8 @@ class TestCheckpointRoundTrip:
             name_en="Shadow Whisper",
             name_de="Schattenfluesterer",
             condition_steps_remaining=4,
+            condition_steps_max=4,
+            threat_level="standard",
             stress_resistance=10,
             evasion=5,
         )
@@ -476,6 +478,7 @@ class TestCheckpointRoundTrip:
             "room_cleared_flags",
             "room_revealed_flags",
             "used_banter_ids",
+            "phase_timer",
         }
         assert set(checkpoint.keys()) == expected_keys
 

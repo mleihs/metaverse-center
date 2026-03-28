@@ -20,6 +20,7 @@ import type {
 } from '../types/dungeon.js';
 import type { CommandContext, TerminalLine } from '../types/terminal.js';
 import {
+  formatAgentPicker,
   formatAvailableDungeons,
   formatCombatPlanning,
   formatCombatResolution,
@@ -154,15 +155,15 @@ async function handleDungeonEnter(ctx: CommandContext): Promise<TerminalLine[]> 
   await dungeonState.loadAvailable(sid);
   const available = dungeonState.availableDungeons.value;
 
-  // No archetype specified → list available
+  // No args → list available archetypes
   if (ctx.args.length === 0) {
     return formatAvailableDungeons(available);
   }
 
-  // Parse archetype from args (fuzzy match)
-  const archetypeArg = ctx.args.join(' ').toLowerCase();
+  // Parse archetype from first arg (fuzzy match against known names)
   const archetypeNames = available.map(d => d.archetype);
-  const matched = fuzzyName(archetypeArg, archetypeNames);
+  const firstArg = ctx.args[0].toLowerCase();
+  const matched = fuzzyName(firstArg, archetypeNames);
 
   if (!matched) {
     return [
@@ -176,13 +177,65 @@ async function handleDungeonEnter(ctx: CommandContext): Promise<TerminalLine[]> 
     return [errorLine(msg('That dungeon is not available (cooldown active or no resonance).'))];
   }
 
-  // For MVP: auto-select party (first 2-4 agents by top aptitude)
-  // TODO: Add agent selection flow (interactive or via args)
-  return [
-    systemLine(`${msg('Starting')} ${matched}...`),
-    hintLine(msg('Agent selection coming soon. Use the API directly for now.')),
-    hintLine(msg('POST /dungeons/runs with party_agent_ids to start a run.')),
-  ];
+  // Load agents for the picker (cached after first call)
+  await dungeonState.loadPickerAgents(sid);
+  if (dungeonState.error.value) {
+    return [errorLine(msg('Failed to load agents. Try again.'))];
+  }
+  const agents = dungeonState.pickerAgents.value;
+  const aptMap = dungeonState.pickerAptitudes.value;
+
+  if (agents.length < 2) {
+    return [errorLine(msg('Need at least 2 agents for a dungeon party. Recruit more agents first.'))];
+  }
+
+  // Remaining args after archetype determine action
+  const selectionArgs = ctx.args.slice(1);
+
+  // No selection args → show picker
+  if (selectionArgs.length === 0) {
+    return formatAgentPicker(agents, aptMap, matched);
+  }
+
+  // "auto" → smart-pick top 3 by aggregate aptitude score
+  if (selectionArgs[0] === 'auto') {
+    const scored = agents.map(a => {
+      const apts = aptMap.get(a.id);
+      const total = apts ? Object.values(apts).reduce((s, v) => s + v, 0) : 0;
+      return { agent: a, score: total };
+    });
+    scored.sort((a, b) => b.score - a.score);
+    const partyIds = scored.slice(0, 3).map(s => s.agent.id);
+    return startDungeonRun(sid, {
+      archetype: selectedDungeon.archetype as DungeonRunCreate['archetype'],
+      party_agent_ids: partyIds,
+      difficulty: selectedDungeon.suggested_difficulty,
+    });
+  }
+
+  // Numeric args → indices into the agent list (1-based)
+  const indices = selectionArgs.map(Number).filter(n => !isNaN(n) && n >= 1 && n <= agents.length);
+  if (indices.length < 2) {
+    return [
+      errorLine(msg('Select 2\u20134 agents by number.')),
+      ...formatAgentPicker(agents, aptMap, matched),
+    ];
+  }
+  if (indices.length > 4) {
+    return [errorLine(msg('Maximum 4 agents per party.'))];
+  }
+
+  // Map 1-based indices to agent IDs
+  const partyIds = [...new Set(indices)].map(i => agents[i - 1].id);
+  if (partyIds.length < 2) {
+    return [errorLine(msg('Need at least 2 unique agents.'))];
+  }
+
+  return startDungeonRun(sid, {
+    archetype: selectedDungeon.archetype as DungeonRunCreate['archetype'],
+    party_agent_ids: partyIds,
+    difficulty: selectedDungeon.suggested_difficulty,
+  });
 }
 
 /**

@@ -67,10 +67,28 @@ class EnemyInstance(BaseModel):
     name_en: str
     name_de: str
     condition_steps_remaining: int
+    condition_steps_max: int  # Max steps at spawn — for percentage-based condition display
+    threat_level: ThreatLevel = "standard"  # From template — minion/standard/elite/boss
     stress_resistance: int
     evasion: int
     is_alive: bool = True
     active_effects: list[str] = Field(default_factory=list)
+
+    @property
+    def condition_display(self) -> str:
+        """Percentage-based condition label for client display.
+
+        Uses ratio of remaining/max so enemies with low max health
+        (e.g. Shadow Wisp: 1 step) show "healthy" at full HP.
+        """
+        if self.condition_steps_remaining <= 0:
+            return "defeated"
+        ratio = self.condition_steps_remaining / max(self.condition_steps_max, 1)
+        if ratio > 0.6:
+            return "healthy"
+        if ratio > 0.3:
+            return "damaged"
+        return "critical"
 
 
 class CombatState(BaseModel):
