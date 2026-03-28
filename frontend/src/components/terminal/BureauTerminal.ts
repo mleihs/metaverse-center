@@ -255,50 +255,51 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
 
       /* ── Combat Log Lines — Submarine CIC tactical display ── */
       /* lint-color-ok: CRT-fixed palette, exempt per design-tokens.md */
+      /* Colors are SATURATED for maximum scannability on CRT dark bg. */
 
       .line--combat-player {
-        color: var(--_phosphor);
+        color: #fbbf24; /* bright gold — distinct from dim amber system lines */
         font-weight: 600;
       }
 
       .line--combat-miss {
         color: var(--_text-dim);
         font-style: italic;
-        opacity: 0.65;
+        opacity: 0.5;
       }
 
       .line--combat-damage {
-        color: color-mix(in srgb, var(--_danger) 80%, var(--_phosphor));
+        color: var(--_danger); /* pure red — hull breach alarm */
+        font-weight: 600;
       }
 
       .line--combat-heal {
-        color: color-mix(in srgb, var(--_success) 65%, var(--_phosphor));
+        color: var(--_success); /* pure green — life support confirmation */
+        font-weight: 600;
       }
 
       .line--combat-system {
         color: var(--_phosphor);
         font-weight: 700;
         letter-spacing: 0.5px;
+        text-transform: uppercase;
       }
 
       @media (prefers-reduced-motion: no-preference) {
         .line--combat-player {
-          text-shadow: 0 0 6px var(--_phosphor-glow);
+          text-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
         }
 
         .line--combat-damage {
-          text-shadow: 0 0 8px color-mix(in srgb, var(--_danger) 35%, transparent);
+          text-shadow: 0 0 10px color-mix(in srgb, var(--_danger) 50%, transparent);
         }
 
         .line--combat-heal {
-          text-shadow: 0 0 6px color-mix(in srgb, var(--_success) 25%, transparent);
+          text-shadow: 0 0 10px color-mix(in srgb, var(--_success) 50%, transparent);
         }
 
         .line--combat-system {
-          text-shadow:
-            0 0 8px var(--_phosphor-glow),
-            0 0 2px color-mix(in srgb, var(--_danger) 10%, transparent),
-            0 0 2px color-mix(in srgb, var(--_success) 10%, transparent);
+          text-shadow: 0 0 8px var(--_phosphor-glow);
         }
       }
 
