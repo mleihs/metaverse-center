@@ -55,9 +55,11 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
       :host {
         display: flex;
         flex-direction: column;
+        width: 100%;
         height: calc(100vh - var(--header-height, 64px) - var(--sim-nav-height, 48px));
         min-height: 400px;
         padding: 0 16px 16px;
+        box-sizing: border-box;
       }
 
       /* ── HUD Grid Layout (active dungeon) ── */

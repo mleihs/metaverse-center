@@ -89,6 +89,9 @@ _combat_timers: dict[str, asyncio.Task] = {}
 MAX_CONCURRENT_PER_SIM = 1
 INSTANCE_TTL_SECONDS = 1800  # 30 min inactive → auto-cleanup
 COMBAT_PLANNING_TIMEOUT_MS = 30_000
+# Client timer expires before server to win the submission race.
+# Server auto-resolves at COMBAT_PLANNING_TIMEOUT_MS; client submits earlier.
+CLIENT_TIMER_BUFFER_MS = 3_000
 
 
 class DungeonEngineService:
@@ -429,20 +432,40 @@ class DungeonEngineService:
                     )
                 )
 
-        # Auto-defend for agents without submitted actions
+        # Auto-defend for agents without submitted actions.
+        # Prefers damage abilities so AFK combat can still win.
         submitted_agent_ids = {str(a.agent_id) for a in agent_actions}
         for agent in instance.party:
             if can_act(agent.condition) and str(agent.agent_id) not in submitted_agent_ids:
-                # Default: use first available ability on first enemy
                 first_enemy = next((e for e in instance.combat.enemies if e.is_alive), None)
-                if first_enemy:
+                if not first_enemy:
+                    continue
+                abilities = get_agent_all_abilities(agent.aptitudes)
+                # Prefer damage ability → target enemy. Fall back to self-buff.
+                damage_ability = next(
+                    (a for a in abilities if a.effect_type == "damage" and a.targets == "single_enemy"),
+                    None,
+                )
+                if damage_ability:
                     agent_actions.append(
                         AgentAction(
                             agent_id=agent.agent_id,
-                            ability_id="guardian_shield" if "guardian" in agent.aptitudes else "spy_observe",
-                            target_id=str(agent.agent_id),
+                            ability_id=damage_ability.id,
+                            target_id=first_enemy.instance_id,
                         )
                     )
+                else:
+                    # No damage ability (pure support/tank): use first available
+                    fallback = abilities[0] if abilities else None
+                    if fallback:
+                        target = str(agent.agent_id) if fallback.targets == "self" else first_enemy.instance_id
+                        agent_actions.append(
+                            AgentAction(
+                                agent_id=agent.agent_id,
+                                ability_id=fallback.id,
+                                target_id=target,
+                            )
+                        )
 
         # Generate enemy actions
         enemy_templates = get_enemy_templates_dict()
@@ -1525,10 +1548,12 @@ class DungeonEngineService:
         if existing and not existing.done():
             existing.cancel()
 
-        # Store timer metadata for client-side countdown
+        # Client timer is shorter than server timer so the client submits
+        # before the server auto-resolves, winning the race and receiving
+        # the round_result for battle log display.
         instance.phase_timer = PhaseTimer(
             started_at=datetime.now(UTC).isoformat(),
-            duration_ms=COMBAT_PLANNING_TIMEOUT_MS,
+            duration_ms=COMBAT_PLANNING_TIMEOUT_MS - CLIENT_TIMER_BUFFER_MS,
             phase="combat_planning",
         )
 

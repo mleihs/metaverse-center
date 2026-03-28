@@ -140,9 +140,11 @@ def _pick_room_type(
     """Weighted random room type selection with constraints."""
     weights = dict(base_weights)
 
-    # No elites before depth 2
+    # No elites or narrative encounters before depth 2 — encounter templates
+    # have min_depth=2 and would auto-clear if placed at depth 1.
     if current_depth < 2:
         weights.pop("elite", None)
+        weights.pop("encounter", None)
 
     # No exit rooms before depth 3 (Review #8)
     if current_depth < 3:
