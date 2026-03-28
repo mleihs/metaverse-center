@@ -301,23 +301,35 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
 
     /* ── Threshold State Modifiers ── */
 
+    /* Entropy filter via ::after overlay — avoids CSS filter on .shell which
+       breaks position:fixed for all descendants (modals, lightboxes, overlays).
+       Per CSS spec, filter != none creates a new containing block for fixed elements. */
     :host(.shell--critical) .shell {
+      position: relative;
+    }
+
+    :host(.shell--critical) .shell::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: var(--z-raised);
+      pointer-events: none;
       animation: entropy-drift 12s ease-in-out infinite;
     }
 
     @keyframes entropy-drift {
       0%, 100% {
-        filter: saturate(0.3) brightness(0.85) sepia(0.06) hue-rotate(-25deg);
+        backdrop-filter: saturate(0.3) brightness(0.85) sepia(0.06) hue-rotate(-25deg);
       }
       50% {
-        filter: saturate(0.2) brightness(0.75) sepia(0.15) hue-rotate(-35deg);
+        backdrop-filter: saturate(0.2) brightness(0.75) sepia(0.15) hue-rotate(-35deg);
       }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      :host(.shell--critical) .shell {
+      :host(.shell--critical) .shell::after {
         animation: none;
-        filter: saturate(0.25) brightness(0.8) sepia(0.1) hue-rotate(-30deg);
+        backdrop-filter: saturate(0.25) brightness(0.8) sepia(0.1) hue-rotate(-30deg);
       }
     }
 
