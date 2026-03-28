@@ -12,7 +12,7 @@ Covers all public classmethods and key private methods:
   - recover_from_checkpoint: DB restore, graph + mutable state
   - get_client_state / _build_client_state: fog-of-war filtering
   - _apply_shadow_visibility: VP cost per 2 rooms
-  - _enter_combat_room / _enter_encounter_room / etc.
+  - _enter_combat_room / _enter_interactive_room (encounter/rest/treasure)
   - EnemyInstance.condition_display: percentage-based step→display property
   - _build_loot_items_for_rpc: loot serialization
 
@@ -716,11 +716,13 @@ class TestMoveToRoom:
         assert captured_agent.stress == 100  # unchanged
 
 
-# ── _enter_encounter_room ────────────────────────────────────────────────
+# ── _enter_interactive_room (unified encounter/rest/treasure) ────────────
 
 
-class TestEnterEncounterRoom:
-    def test_with_encounter(self):
+class TestEnterInteractiveRoom:
+    """Tests for the unified _enter_interactive_room method (encounter, rest, treasure)."""
+
+    def test_encounter_with_template(self):
         from backend.models.resonance_dungeon import EncounterChoice, EncounterTemplate
 
         enc = EncounterTemplate(
@@ -737,7 +739,7 @@ class TestEnterEncounterRoom:
         room = instance.rooms[2]  # encounter room
 
         with patch("backend.services.dungeon_engine_service.select_encounter", return_value=enc):
-            result = DungeonEngineService._enter_encounter_room(instance, room)
+            result = DungeonEngineService._enter_interactive_room(instance, room)
 
         assert result["encounter"] is True
         assert result["encounter_id"] == "enc_test"
@@ -745,38 +747,28 @@ class TestEnterEncounterRoom:
         assert room.encounter_template_id == "enc_test"
         assert len(result["choices"]) == 1
 
-    def test_without_encounter_clears_room(self):
+    def test_encounter_without_template_clears_room(self):
         instance = _make_instance()
         room = instance.rooms[2]
 
         with patch("backend.services.dungeon_engine_service.select_encounter", return_value=None):
-            result = DungeonEngineService._enter_encounter_room(instance, room)
+            result = DungeonEngineService._enter_interactive_room(instance, room)
 
         assert result["encounter"] is False
         assert instance.phase == "room_clear"
         assert room.cleared is True
 
-
-# ── _enter_rest_room ─────────────────────────────────────────────────────
-
-
-class TestEnterRestRoom:
-    def test_sets_rest_phase(self):
+    def test_rest_sets_rest_phase(self):
         instance = _make_instance()
         room = instance.rooms[3]  # rest room
 
         with patch("backend.services.dungeon_engine_service.select_encounter", return_value=None):
-            result = DungeonEngineService._enter_rest_room(instance, room)
+            result = DungeonEngineService._enter_interactive_room(instance, room)
 
         assert result["rest"] is True
         assert instance.phase == "rest"
 
-
-# ── _enter_treasure_room ─────────────────────────────────────────────────
-
-
-class TestEnterTreasureRoom:
-    def test_auto_loot_without_encounter(self):
+    def test_treasure_auto_loot_without_encounter(self):
         instance = _make_instance()
         room = instance.rooms[4]  # treasure room
         initial_cleared = instance.rooms_cleared
@@ -788,7 +780,7 @@ class TestEnterTreasureRoom:
             patch("backend.services.dungeon_engine_service.select_encounter", return_value=None),
             patch("backend.services.dungeon_engine_service.roll_loot", return_value=loot_items),
         ):
-            result = DungeonEngineService._enter_treasure_room(instance, room)
+            result = DungeonEngineService._enter_interactive_room(instance, room)
 
         assert result["treasure"] is True
         assert result["auto_loot"] is True
@@ -806,7 +798,7 @@ class TestEnterTreasureRoom:
             patch("backend.services.dungeon_engine_service.select_encounter", return_value=None),
             patch("backend.services.dungeon_engine_service.roll_loot", return_value=[]),
         ):
-            DungeonEngineService._enter_treasure_room(instance, room)
+            DungeonEngineService._enter_interactive_room(instance, room)
 
         # Shadow treasure restores VP (restore_on_treasure from ARCHETYPE_CONFIGS)
         assert instance.archetype_state["visibility"] > 1

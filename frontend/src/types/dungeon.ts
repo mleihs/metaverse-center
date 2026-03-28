@@ -108,6 +108,23 @@ export type CombatPhase = 'assessment' | 'planning' | 'resolving' | 'outcome';
 /** 3-tier skill check result (Disco Elysium + PbtA hybrid). */
 export type SkillCheckResult = 'success' | 'partial' | 'fail';
 
+// ── Archetype-Specific State ───────────────���────────────────────────────────
+
+/** Shadow archetype: visibility-point mechanic state. */
+export interface ShadowArchetypeState {
+  visibility: number;
+  max_visibility: number;
+  rooms_since_vp_loss: number;
+}
+
+/** Archetype-specific state. Only Shadow has a typed shape; others are empty objects. */
+export type ArchetypeState = ShadowArchetypeState | Record<string, unknown>;
+
+/** Type guard: narrows ArchetypeState to ShadowArchetypeState. */
+export function isShadowState(state: ArchetypeState): state is ShadowArchetypeState {
+  return 'visibility' in state && typeof state.visibility === 'number';
+}
+
 // ── Client State (fog-of-war filtered, from backend) ────────────────────────
 
 /** Full state sent to client for rendering. Single source of truth. */
@@ -126,7 +143,7 @@ export interface DungeonClientState {
   party: AgentCombatStateClient[];
 
   /** Archetype-specific state (e.g. Shadow: {visibility, max_visibility, rooms_since_vp_loss}). */
-  archetype_state: Record<string, unknown>;
+  archetype_state: ArchetypeState;
 
   /** Active combat (null when not in combat). */
   combat: CombatStateClient | null;

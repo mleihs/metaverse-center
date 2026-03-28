@@ -10,6 +10,7 @@ import { msg } from '@lit/localize';
 
 import type {
   AgentCombatStateClient,
+  ArchetypeState,
   CombatRoundResult,
   CombatStateClient,
   DungeonClientState,
@@ -18,6 +19,7 @@ import type {
   RoomNodeClient,
   SkillCheckDetail,
 } from '../types/dungeon.js';
+import { isShadowState } from '../types/dungeon.js';
 import type { Agent, AptitudeSet } from '../types/index.js';
 import type { TerminalLine } from '../types/terminal.js';
 import { OPERATIVE_LABEL } from './operative-constants.js';
@@ -45,6 +47,11 @@ const ROOM_SYMBOLS: Record<string, string> = {
   exit: '\u21E4', // ⇤
 };
 
+// ── Loot Tier Markers ───────────────────────────────────────────────────────
+
+/** Unicode markers for loot tiers: ◆ minor, ★ major, ✦ legendary. */
+const LOOT_TIER_MARKERS: Record<number, string> = { 1: '\u25C6', 2: '\u2605', 3: '\u2726' };
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 /** Get maximum depth in the room graph. Returns 0 for empty rooms. */
@@ -55,15 +62,7 @@ function getMaxDepth(rooms: RoomNodeClient[]): number {
 
 // ── Condition Display ────────────────────────────────────────────────────────
 
-const CONDITION_LABELS: Record<string, string> = {
-  operational: 'OPERATIONAL',
-  stressed: 'STRESSED',
-  wounded: 'WOUNDED',
-  afflicted: 'AFFLICTED',
-  captured: 'CAPTURED',
-};
-
-/** i18n-aware condition label for UI components (not terminal ASCII). */
+/** i18n-aware condition label. Use `.toUpperCase()` for terminal ASCII contexts. */
 export function getConditionLabel(condition: string): string {
   const labels: Record<string, () => string> = {
     operational: () => msg('Operational'),
@@ -129,7 +128,7 @@ export function formatDungeonEntry(
     const primaryApt = Object.entries(agent.aptitudes)
       .sort(([, a], [, b]) => b - a)[0];
     const aptStr = primaryApt ? `${primaryApt[0].charAt(0).toUpperCase() + primaryApt[0].slice(1)} ${primaryApt[1]}` : '';
-    lines.push(responseLine(`  ${agent.agent_name} \u2014 ${aptStr} \u2014 ${CONDITION_LABELS[agent.condition] ?? agent.condition}`));
+    lines.push(responseLine(`  ${agent.agent_name} \u2014 ${aptStr} \u2014 ${getConditionLabel(agent.condition).toUpperCase()}`));
   }
 
   lines.push(responseLine(''));
@@ -195,7 +194,7 @@ export function formatDungeonMap(state: DungeonClientState): TerminalLine[] {
 export function formatRoomEntry(
   room: RoomNodeClient,
   banterText: string | null,
-  archetypeState: Record<string, unknown>,
+  archetypeState: ArchetypeState,
 ): TerminalLine[] {
   const lines: TerminalLine[] = [];
 
@@ -210,11 +209,9 @@ export function formatRoomEntry(
   lines.push(systemLine(`\u2550\u2550\u2550 ${msg('DEPTH')} ${room.depth} \u2014 ${msg('ROOM')} ${room.index} \u2550\u2550\u2550`));
 
   // Archetype-specific state (Shadow: visibility)
-  if (archetypeState.visibility !== undefined) {
-    const vis = archetypeState.visibility as number;
-    const maxVis = (archetypeState.max_visibility ?? 3) as number;
-    const bar = '\u2588'.repeat(vis) + '\u2591'.repeat(Math.max(0, maxVis - vis));
-    lines.push(systemLine(`VISIBILITY: ${bar} [${vis}/${maxVis}]`));
+  if (isShadowState(archetypeState)) {
+    const bar = '\u2588'.repeat(archetypeState.visibility) + '\u2591'.repeat(Math.max(0, archetypeState.max_visibility - archetypeState.visibility));
+    lines.push(systemLine(`VISIBILITY: ${bar} [${archetypeState.visibility}/${archetypeState.max_visibility}]`));
   }
 
   // Room type header
@@ -306,7 +303,7 @@ export function formatCombatPlanning(
 
     const aptEntries = Object.entries(agent.aptitudes).sort(([, a], [, b]) => b - a);
     const primaryApt = aptEntries[0] ? `${aptEntries[0][0]} ${aptEntries[0][1]}` : '';
-    lines.push(systemLine(`${agent.agent_name.toUpperCase()} (${primaryApt}) \u2014 ${CONDITION_LABELS[agent.condition] ?? agent.condition}`));
+    lines.push(systemLine(`${agent.agent_name.toUpperCase()} (${primaryApt}) \u2014 ${getConditionLabel(agent.condition).toUpperCase()}`));
 
     if (agent.available_abilities.length === 0) {
       lines.push(responseLine(msg('  (no actions available)')));
@@ -570,10 +567,8 @@ export function formatLootDrop(items: LootItem[]): TerminalLine[] {
   lines.push(combatSystemLine(`\u2550\u2550\u2550 ${msg('LOOT FOUND')} \u2550\u2550\u2550`));
   lines.push(systemLine(''));
 
-  const tierMarkers: Record<number, string> = { 1: '\u25C6', 2: '\u2605', 3: '\u2726' };
-
   for (const item of items) {
-    const marker = tierMarkers[item.tier] ?? '\u25C6';
+    const marker = LOOT_TIER_MARKERS[item.tier] ?? '\u25C6';
     lines.push(combatHealLine(`  ${marker} ${item.name_en} (${msg('Tier')} ${item.tier})`));
     lines.push(combatHealLine(`    ${item.description_en}`));
   }
@@ -642,9 +637,8 @@ export function formatRetreatResult(loot: LootItem[]): TerminalLine[] {
   if (loot.length > 0) {
     lines.push(responseLine(''));
     lines.push(systemLine(msg('PARTIAL LOOT:')));
-    const tierMarkers: Record<number, string> = { 1: '\u25C6', 2: '\u2605', 3: '\u2726' };
     for (const item of loot) {
-      const marker = tierMarkers[item.tier] ?? '\u25C6';
+      const marker = LOOT_TIER_MARKERS[item.tier] ?? '\u25C6';
       lines.push(responseLine(`  ${marker} ${item.name_en}`));
     }
   }
@@ -700,7 +694,7 @@ export function formatDungeonComplete(
   lines.push(combatSystemLine(msg('PARTY STATUS')));
   const nameWidth = Math.max(...state.party.map(a => a.agent_name.length), 12);
   for (const agent of state.party) {
-    const cond = CONDITION_LABELS[agent.condition] ?? agent.condition;
+    const cond = getConditionLabel(agent.condition).toUpperCase();
     const bar = stressBar(agent.stress, 10);
     const stressStr = String(agent.stress).padStart(4);
     const label = `  ${agent.agent_name.padEnd(nameWidth)}  ${cond.padEnd(12)} ${stressStr}/1000 ${bar}`;
@@ -711,9 +705,8 @@ export function formatDungeonComplete(
   // ── Spoils ──
   if (loot.length > 0) {
     lines.push(combatSystemLine(msg('SPOILS CLAIMED')));
-    const tierMarkers: Record<number, string> = { 1: '\u25C6', 2: '\u2605', 3: '\u2726' };
     for (const item of loot) {
-      const marker = tierMarkers[item.tier] ?? '\u25C6';
+      const marker = LOOT_TIER_MARKERS[item.tier] ?? '\u25C6';
       lines.push(combatHealLine(`  ${marker} ${item.name_en} \u2014 ${item.description_en}`));
     }
     lines.push(systemLine(''));
@@ -770,17 +763,16 @@ export function formatDungeonStatus(state: DungeonClientState): TerminalLine[] {
   lines.push(responseLine(`${msg('Difficulty')}: ${'*'.repeat(state.difficulty)}`));
 
   // Archetype-specific
-  if (state.archetype_state.visibility !== undefined) {
-    const vis = state.archetype_state.visibility as number;
-    const maxVis = (state.archetype_state.max_visibility ?? 3) as number;
-    lines.push(responseLine(`${msg('Visibility')}: ${'\u2588'.repeat(vis)}${'\u2591'.repeat(Math.max(0, maxVis - vis))} [${vis}/${maxVis}]`));
+  if (isShadowState(state.archetype_state)) {
+    const { visibility, max_visibility } = state.archetype_state;
+    lines.push(responseLine(`${msg('Visibility')}: ${'\u2588'.repeat(visibility)}${'\u2591'.repeat(Math.max(0, max_visibility - visibility))} [${visibility}/${max_visibility}]`));
   }
 
   lines.push(systemLine(''));
   lines.push(systemLine(msg('PARTY:')));
   for (const agent of state.party) {
     const stressStr = stressBar(agent.stress);
-    const condLabel = CONDITION_LABELS[agent.condition] ?? agent.condition;
+    const condLabel = getConditionLabel(agent.condition).toUpperCase();
     lines.push(responseLine(`  ${agent.agent_name}: ${condLabel} | ${msg('Stress')}: ${stressStr} ${agent.stress}`));
 
     // Active buffs/debuffs

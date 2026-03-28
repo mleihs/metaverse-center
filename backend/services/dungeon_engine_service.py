@@ -368,12 +368,8 @@ class DungeonEngineService:
 
         if target_room.room_type in ("combat", "elite"):
             result.update(await cls._enter_combat_room(admin_supabase, instance, target_room))
-        elif target_room.room_type == "encounter":
-            result.update(cls._enter_encounter_room(instance, target_room))
-        elif target_room.room_type == "rest":
-            result.update(cls._enter_rest_room(instance, target_room))
-        elif target_room.room_type == "treasure":
-            result.update(cls._enter_treasure_room(instance, target_room))
+        elif target_room.room_type in ("encounter", "rest", "treasure"):
+            result.update(cls._enter_interactive_room(instance, target_room))
         elif target_room.room_type == "boss":
             result.update(await cls._enter_combat_room(admin_supabase, instance, target_room, is_boss=True))
         elif target_room.room_type == "exit":
@@ -1353,53 +1349,40 @@ class DungeonEngineService:
         }
 
     @classmethod
-    def _enter_encounter_room(cls, instance: DungeonInstance, room) -> dict:
-        """Set up narrative encounter."""
-        encounter = select_encounter("encounter", instance.depth, instance.difficulty)
+    def _enter_interactive_room(cls, instance: DungeonInstance, room) -> dict:
+        """Set up encounter / rest / treasure room.
+
+        Shared encounter-selection path: if an encounter template matches, the player
+        sees description + choices. Otherwise, a room-type-specific fallback runs.
+        """
+        room_type: str = room.room_type
+        encounter = select_encounter(room_type, instance.depth, instance.difficulty)
+
+        # ── Common path: encounter template found ──
         if encounter:
             room.encounter_template_id = encounter.id
-            instance.phase = "encounter"
-            return {
-                "encounter": True,
-                "encounter_id": encounter.id,
+            instance.phase = "rest" if room_type == "rest" else "encounter"
+            result: dict = {
+                room_type: True,
                 "description_en": encounter.description_en,
                 "description_de": encounter.description_de,
                 "choices": cls._format_encounter_choices(encounter.choices),
             }
-        instance.phase = "room_clear"
-        room.cleared = True
-        return {"encounter": False}
+            if room_type == "encounter":
+                result["encounter_id"] = encounter.id
+            return result
 
-    @classmethod
-    def _enter_rest_room(cls, instance: DungeonInstance, room) -> dict:
-        """Set up rest site."""
-        encounter = select_encounter("rest", instance.depth, instance.difficulty)
-        if encounter:
-            room.encounter_template_id = encounter.id
+        # ── Fallbacks (no encounter template) ──
+        if room_type == "encounter":
+            instance.phase = "room_clear"
+            room.cleared = True
+            return {"encounter": False}
+
+        if room_type == "rest":
             instance.phase = "rest"
-            return {
-                "rest": True,
-                "description_en": encounter.description_en,
-                "description_de": encounter.description_de,
-                "choices": cls._format_encounter_choices(encounter.choices),
-            }
-        instance.phase = "rest"
-        return {"rest": True}
+            return {"rest": True}
 
-    @classmethod
-    def _enter_treasure_room(cls, instance: DungeonInstance, room) -> dict:
-        """Set up treasure room."""
-        encounter = select_encounter("treasure", instance.depth, instance.difficulty)
-        if encounter:
-            room.encounter_template_id = encounter.id
-            instance.phase = "encounter"
-            return {
-                "treasure": True,
-                "description_en": encounter.description_en,
-                "description_de": encounter.description_de,
-                "choices": cls._format_encounter_choices(encounter.choices),
-            }
-        # No encounter template: auto-loot
+        # Treasure: auto-loot
         loot = roll_loot(room.loot_tier, instance.difficulty, instance.depth, instance.archetype_state)
         room.cleared = True
         instance.rooms_cleared += 1

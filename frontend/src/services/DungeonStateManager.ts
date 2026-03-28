@@ -15,6 +15,7 @@ import type {
   AgentCombatStateClient,
   AvailableDungeonResponse,
   CombatAction,
+  ArchetypeState,
   CombatSubmission,
   CombatSubmitResponse,
   CombatStateClient,
@@ -160,7 +161,7 @@ class DungeonStateManager {
 
   /** Archetype-specific state (e.g. Shadow visibility). */
   readonly archetypeState = computed(
-    (): Record<string, unknown> =>
+    (): ArchetypeState =>
       this.clientState.value?.archetype_state ?? {},
   );
 
