@@ -36,10 +36,10 @@ interface NodePosition {
   y: number;
 }
 
-const NODE_R = 12;
-const H_GAP = 80;
-const V_GAP = 48;
-const PAD = 24;
+const NODE_R = 18;
+const H_GAP = 100;
+const V_GAP = 60;
+const PAD = 28;
 
 /** Room type → color CSS value (all reference design tokens). */
 const ROOM_COLOR: Record<string, string> = {
@@ -211,7 +211,7 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
       .node__label {
         fill: var(--_node-color, var(--_phosphor-dim));
         font-family: var(--_mono);
-        font-size: 10px;
+        font-size: 12px;
         font-weight: 700;
         pointer-events: none;
       }
@@ -223,8 +223,8 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
 
       .node--current .node__circle {
         stroke-width: 2.5;
-        filter: drop-shadow(0 0 4px var(--_phosphor-glow))
-          drop-shadow(0 0 2px var(--_phosphor));
+        filter: drop-shadow(0 0 6px var(--_phosphor-glow))
+          drop-shadow(0 0 3px var(--_phosphor));
       }
 
       @keyframes current-pulse {

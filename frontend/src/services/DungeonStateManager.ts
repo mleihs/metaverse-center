@@ -69,8 +69,8 @@ class DungeonStateManager {
 
   // ── UI State (client-only) ─────────────────────────────────────────────
 
-  /** Whether the SVG map panel is expanded. */
-  readonly mapExpanded = signal(true);
+  /** Whether the SVG map panel is expanded (default: collapsed for terminal-first layout). */
+  readonly mapExpanded = signal(false);
 
   /** Whether the party panel is expanded (relevant on mobile). */
   readonly partyPanelExpanded = signal(true);

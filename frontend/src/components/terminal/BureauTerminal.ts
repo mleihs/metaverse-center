@@ -429,6 +429,9 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
 
   @property({ type: String }) simulationId = '';
 
+  /** When true, hides the terminal's own quick-action buttons (dungeon provides its own). */
+  @property({ type: Boolean }) dungeonMode = false;
+
   // ── Internal State ───────────────────────────────────────────────────────
 
   @state() private _historyIndex = -1;
@@ -834,12 +837,14 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
         <div class="terminal__bottom-corners"></div>
       </div>
 
-      <velg-terminal-quick-actions
-        .clearanceLevel=${clearance}
-        .inConversation=${inConversation}
-        .epochMode=${terminalState.isEpochMode.value}
-        @terminal-command=${this._handleQuickAction}
-      ></velg-terminal-quick-actions>
+      ${this.dungeonMode ? nothing : html`
+        <velg-terminal-quick-actions
+          .clearanceLevel=${clearance}
+          .inConversation=${inConversation}
+          .epochMode=${terminalState.isEpochMode.value}
+          @terminal-command=${this._handleQuickAction}
+        ></velg-terminal-quick-actions>
+      `}
 
       <!-- Screen reader announcements -->
       <div class="sr-announce" role="status" aria-live="assertive">

@@ -36,6 +36,16 @@ import '../shared/VelgBadge.js';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
+/** Operative type → compact 1-letter abbreviation for aptitude row. */
+const APT_SHORT: Record<string, string> = {
+  spy: 'S',
+  guardian: 'G',
+  saboteur: 'B',
+  propagandist: 'P',
+  infiltrator: 'I',
+  assassin: 'A',
+};
+
 /** Condition → gauge fill percentage (operational capacity). */
 const CONDITION_FILL: Record<Condition, number> = {
   operational: 100,
@@ -160,6 +170,19 @@ export class VelgDungeonPartyPanel extends SignalWatcher(LitElement) {
         letter-spacing: 0.5px;
         text-transform: uppercase;
         margin-top: 1px;
+      }
+
+      .card-aptitudes {
+        display: flex;
+        gap: 6px;
+        padding: 2px 0 4px;
+        font-family: var(--_mono);
+        font-size: 8px;
+        color: var(--_phosphor-dim);
+      }
+
+      .apt {
+        letter-spacing: 0.3px;
       }
 
       /* ── Gauge Bars ── */
@@ -459,6 +482,16 @@ export class VelgDungeonPartyPanel extends SignalWatcher(LitElement) {
               : nothing}
           </div>
         </div>
+
+        <!-- All Aptitudes (compact) -->
+        ${Object.keys(agent.aptitudes).length > 0 ? html`
+          <div class="card-aptitudes">
+            ${Object.entries(agent.aptitudes)
+              .filter(([, v]) => v > 0)
+              .sort(([, a], [, b]) => (b as number) - (a as number))
+              .map(([k, v]) => html`<span class="apt">${APT_SHORT[k] ?? k.charAt(0).toUpperCase()}${v}</span>`)}
+          </div>
+        ` : nothing}
 
         <!-- Gauge Bars -->
         <div class="bars">

@@ -13,6 +13,7 @@ import { msg } from '@lit/localize';
 import { appState } from '../services/AppStateManager.js';
 import { dungeonApi } from '../services/api/DungeonApiService.js';
 import { dungeonState } from '../services/DungeonStateManager.js';
+import { captureError } from '../services/SentryService.js';
 import { terminalState } from '../services/TerminalStateManager.js';
 import type {
   CombatSubmission,
@@ -140,7 +141,7 @@ export async function dispatchDungeonCommand(
 // ── Command: dungeon ─────────────────────────────────────────────────────────
 
 async function handleDungeonEnter(ctx: CommandContext): Promise<TerminalLine[]> {
-  const sid = appState.simulationId.value;
+  const sid = ctx.simulationId || appState.simulationId.value;
   if (!sid) return [errorLine(msg('No simulation active.'))];
 
   // Already in a dungeon?
@@ -262,6 +263,7 @@ export async function startDungeonRun(
 
     return formatDungeonEntry(state, atmosphereText);
   } catch (err) {
+    captureError(err, { source: 'dungeon-commands.startDungeonRun' });
     const message = err instanceof Error ? err.message : msg('Failed to create dungeon run.');
     return [errorLine(message)];
   } finally {
@@ -360,6 +362,7 @@ async function handleDungeonMove(ctx: CommandContext): Promise<TerminalLine[]> {
 
     return lines;
   } catch (err) {
+    captureError(err, { source: 'dungeon-commands.handleDungeonMove' });
     const message = err instanceof Error ? err.message : msg('Move failed.');
     return [errorLine(message)];
   } finally {
@@ -433,6 +436,7 @@ async function handleDungeonScout(ctx: CommandContext): Promise<TerminalLine[]> 
     dungeonState.applyState(resp.data.state);
     return formatScoutResult(agent.agent_name, resp.data.revealed_rooms, resp.data.visibility);
   } catch (err) {
+    captureError(err, { source: 'dungeon-commands.handleDungeonScout' });
     const message = err instanceof Error ? err.message : msg('Scout failed.');
     return [errorLine(message)];
   } finally {
@@ -478,6 +482,7 @@ async function handleDungeonRest(): Promise<TerminalLine[]> {
 
     return lines;
   } catch (err) {
+    captureError(err, { source: 'dungeon-commands.handleDungeonRest' });
     const message = err instanceof Error ? err.message : msg('Rest failed.');
     return [errorLine(message)];
   } finally {
@@ -502,6 +507,7 @@ async function handleDungeonRetreat(): Promise<TerminalLine[]> {
     _exitDungeon();
     return lines;
   } catch (err) {
+    captureError(err, { source: 'dungeon-commands.handleDungeonRetreat' });
     const message = err instanceof Error ? err.message : msg('Retreat failed.');
     return [errorLine(message)];
   } finally {
@@ -563,6 +569,7 @@ async function handleDungeonInteract(ctx: CommandContext): Promise<TerminalLine[
 
     return lines;
   } catch (err) {
+    captureError(err, { source: 'dungeon-commands.handleDungeonInteract' });
     const message = err instanceof Error ? err.message : msg('Interaction failed.');
     return [errorLine(message)];
   } finally {
@@ -713,6 +720,7 @@ async function handleDungeonSubmit(): Promise<TerminalLine[]> {
 
     return lines;
   } catch (err) {
+    captureError(err, { source: 'dungeon-commands.handleDungeonSubmit' });
     const message = err instanceof Error ? err.message : msg('Submission failed.');
     return [errorLine(message)];
   } finally {

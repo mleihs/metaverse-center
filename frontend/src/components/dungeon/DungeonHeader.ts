@@ -112,7 +112,7 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
 
       .depth__tick {
         flex: 1;
-        border-right: 1px solid color-mix(in srgb, var(--_border) 25%, transparent);
+        border-right: 1px solid color-mix(in srgb, var(--_phosphor-dim) 50%, transparent);
       }
 
       .depth__tick:last-child {

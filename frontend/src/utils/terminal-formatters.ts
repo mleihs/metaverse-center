@@ -593,7 +593,7 @@ function getThemeAsciiArt(theme: string): string[] {
   }
 }
 
-export function formatBootSequence(simulationName: string, theme?: string, customArt?: string): TerminalLine[] {
+export function formatBootSequence(simulationName: string, theme?: string, customArt?: string, clearanceLevel = 1): TerminalLine[] {
   // Prefer AI-generated art from simulation_settings, fall back to theme defaults
   const artLines = customArt
     ? customArt.split('\n')
@@ -611,7 +611,7 @@ export function formatBootSequence(simulationName: string, theme?: string, custo
   lines.push(systemLine('BUREAU OF IMPOSSIBLE GEOGRAPHY'));
   lines.push(systemLine('FIELD TERMINAL v3.7 -- CLASSIFIED'));
   lines.push(systemLine(''));
-  lines.push(systemLine(`${msg('Operator clearance')}: LEVEL 1`));
+  lines.push(systemLine(`${msg('Operator clearance')}: LEVEL ${clearanceLevel}`));
   lines.push(systemLine(`${msg('Assigned sector')}: ${simulationName}`));
   lines.push(systemLine(''));
   lines.push(systemLine(msg('You are a Bureau field operative. Observe zones,')));

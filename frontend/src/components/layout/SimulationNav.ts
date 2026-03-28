@@ -26,6 +26,7 @@ function getTabs(): NavTab[] {
     { label: msg('Social'), path: 'social', icon: () => icons.megaphone(14) },
     { label: msg('Locations'), path: 'locations', icon: () => icons.mapPin(14) },
     { label: msg('Terminal'), path: 'terminal', icon: () => icons.terminal(14) },
+    { label: msg('Dungeon'), path: 'dungeon', icon: () => icons.dungeonDepth(14) },
     { label: msg('Settings'), path: 'settings', icon: () => icons.gear(14), requireAdmin: true },
   ];
 }

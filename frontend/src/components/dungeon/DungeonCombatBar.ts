@@ -54,9 +54,9 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
 
       /* -- Bar Container -- */
       .combat-bar {
-        background: color-mix(in srgb, var(--_screen-bg) 90%, transparent);
+        background: var(--_screen-bg);
         border: 1px solid color-mix(in srgb, var(--_border) 50%, transparent);
-        border-top: none;
+        border-top: 2px solid var(--_phosphor-dim);
       }
 
       /* -- Timer Section -- */
@@ -80,7 +80,7 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
 
       .timer__track {
         flex: 1;
-        height: 8px;
+        height: 12px;
         background: color-mix(in srgb, var(--_screen-bg) 60%, var(--_border));
         border: 1px solid color-mix(in srgb, var(--_border) 30%, transparent);
         overflow: hidden;
@@ -102,11 +102,12 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
 
       .timer__seconds {
         font-family: var(--_mono);
-        font-size: 16px;
+        font-size: 24px;
         font-weight: 700;
         letter-spacing: 1px;
         color: var(--_phosphor);
-        min-width: 24px;
+        text-shadow: 0 0 8px var(--_phosphor-glow);
+        min-width: 32px;
         text-align: right;
         font-variant-numeric: tabular-nums;
       }
@@ -115,8 +116,22 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         color: var(--color-warning);
       }
 
+      .timer--critical {
+        animation: crt-flicker 0.15s infinite alternate;
+      }
+
+      @keyframes crt-flicker {
+        from { opacity: 1; }
+        to { opacity: 0.85; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .timer--critical { animation: none; }
+      }
+
       .timer--critical .timer__seconds {
         color: var(--color-danger);
+        text-shadow: 0 0 8px var(--color-danger);
       }
 
       /* -- Agent Strips -- */
@@ -282,7 +297,7 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
 
       .counter {
         font-family: var(--_mono);
-        font-size: 9px;
+        font-size: 12px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         color: var(--_phosphor-dim);
@@ -308,8 +323,19 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         opacity: 1;
         cursor: pointer;
         color: var(--_phosphor);
-        border-color: var(--_phosphor);
+        border: 2px solid var(--_phosphor);
         background: color-mix(in srgb, var(--_phosphor) 8%, transparent);
+        box-shadow: 0 0 12px var(--_phosphor-glow);
+        animation: execute-pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes execute-pulse {
+        0%, 100% { box-shadow: 0 0 8px var(--_phosphor-glow); }
+        50% { box-shadow: 0 0 16px var(--_phosphor-glow), 0 0 24px color-mix(in srgb, var(--_phosphor-glow) 30%, transparent); }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .execute--ready { animation: none; }
       }
 
       .execute--ready:hover {
@@ -615,7 +641,7 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
 
         <div class="footer">
           <span class="counter" aria-live="polite">
-            ${selected.size}/${actionable.length}
+            ${selected.size}/${actionable.length} ${msg('ACTIONS')}
           </span>
           <button
             class="execute ${allSelected && !submitting ? 'execute--ready' : ''}"

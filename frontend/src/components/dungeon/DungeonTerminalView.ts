@@ -23,6 +23,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 
 import { appState } from '../../services/AppStateManager.js';
 import { dungeonState } from '../../services/DungeonStateManager.js';
+import { captureError } from '../../services/SentryService.js';
 import { terminalState } from '../../services/TerminalStateManager.js';
 import type { AvailableDungeonResponse } from '../../types/dungeon.js';
 import { parseAndExecute } from '../../utils/terminal-commands.js';
@@ -54,7 +55,7 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
       :host {
         display: flex;
         flex-direction: column;
-        height: calc(100vh - var(--header-height, 64px) - 120px);
+        height: calc(100vh - var(--header-height, 64px) - var(--sim-nav-height, 48px));
         min-height: 400px;
         padding: 0 16px 16px;
       }
@@ -62,7 +63,7 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
       /* ── HUD Grid Layout (active dungeon) ── */
       .dungeon-hud {
         display: grid;
-        grid-template-rows: auto 1fr auto;
+        grid-template-rows: auto 1fr auto auto;
         grid-template-columns: 1fr 280px;
         flex: 1;
         min-height: 0;
@@ -71,6 +72,7 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
 
       .dungeon-hud__header {
         grid-column: 1 / -1;
+        grid-row: 1;
       }
 
       .dungeon-hud__main {
@@ -93,9 +95,14 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
         color: var(--_phosphor-dim);
       }
 
-      .dungeon-hud__actions {
+      .dungeon-hud__map {
         grid-column: 1 / -1;
         grid-row: 3;
+      }
+
+      .dungeon-hud__actions {
+        grid-column: 1 / -1;
+        grid-row: 4;
       }
 
       /* ── Lobby Layout (no active dungeon) ── */
@@ -172,7 +179,7 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
       @media (max-width: 767px) {
         :host {
           padding: 0 8px 8px;
-          height: calc(100vh - var(--header-height, 64px) - 100px);
+          height: calc(100vh - var(--header-height, 64px) - var(--sim-nav-height, 48px));
         }
 
         .dungeon-hud {
@@ -189,6 +196,7 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
           overflow-y: hidden;
         }
 
+        .dungeon-hud__map,
         .dungeon-hud__actions {
           grid-column: 1;
         }
@@ -310,6 +318,7 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
       const lines = await parseAndExecute(command);
       terminalState.appendOutput(lines);
     } catch (err) {
+      captureError(err, { source: 'DungeonTerminalView._handleTerminalCommand', command });
       terminalState.appendOutput([
         systemLine(`[ERROR] ${err instanceof Error ? err.message : 'Command failed.'}`),
       ]);
@@ -354,12 +363,14 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
         <div class="dungeon-hud__main">
           ${inCombat ? html`<velg-dungeon-enemy-panel></velg-dungeon-enemy-panel>` : nothing}
           <div class="terminal-wrapper">
-            <velg-bureau-terminal .simulationId=${simulationId}></velg-bureau-terminal>
+            <velg-bureau-terminal .simulationId=${simulationId} .dungeonMode=${true}></velg-bureau-terminal>
           </div>
-          <velg-dungeon-map></velg-dungeon-map>
         </div>
         <div class="dungeon-hud__party">
           <velg-dungeon-party-panel></velg-dungeon-party-panel>
+        </div>
+        <div class="dungeon-hud__map">
+          <velg-dungeon-map></velg-dungeon-map>
         </div>
         <div class="dungeon-hud__actions">
           ${inCombat

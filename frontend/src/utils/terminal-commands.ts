@@ -1437,7 +1437,7 @@ export function getBootSequence(): TerminalLine[] {
     ? bootArtSetting.setting_value
     : undefined;
 
-  return formatBootSequence(simName, theme, customArt);
+  return formatBootSequence(simName, theme, customArt, terminalState.effectiveClearance.value);
 }
 
 /**

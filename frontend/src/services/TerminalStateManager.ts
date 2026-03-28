@@ -132,6 +132,13 @@ class TerminalStateManager {
     const stored = this._loadFromStorage();
 
     if (stored) {
+      // Guard against corrupt localStorage values
+      if (!Array.isArray(stored.commandHistory)) stored.commandHistory = [];
+      if (!Array.isArray(stored.recentOutput)) stored.recentOutput = [];
+      if (typeof stored.conversationMap !== 'object' || stored.conversationMap === null) {
+        stored.conversationMap = {};
+      }
+
       this.currentZoneId.value = stored.currentZoneId;
       this.clearanceLevel.value = stored.clearanceLevel;
       this.commandCount.value = stored.commandCount;
