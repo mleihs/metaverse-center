@@ -229,7 +229,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
            ▼        │
 ┌────────────────┐    │
 │   FastAPI       │    │
-│  48 routers     │    │
+│  49 routers     │    │
 │  AsyncClient    │    │
 │   PyJWT auth    │    │
 │   Sentry SDK    │    │
@@ -238,8 +238,8 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
        ▼              ▼
 ┌──────────────────────────────┐
 │   Supabase (PostgreSQL)          │
-│   87 tables + pgvector            │
-│   151 functions, 62 triggers     │
+│   90+ tables + pgvector           │
+│   165+ functions, 62 triggers    │
 │   258 RLS policies, 9 ADRs       │
 │   4 materialized views           │
 │   Realtime channels              │
@@ -254,7 +254,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 - **Hybrid Supabase** – Frontend talks directly to Supabase for Auth, Storage, and Realtime. Business logic goes through FastAPI, which forwards the user's JWT so RLS is always enforced.
 - **Defense in Depth** – FastAPI `Depends()` validates roles (layer 1), Supabase RLS validates row-level access (layer 2). Neither layer trusts the other.
 - **Per-Simulation Theming** – CSS custom properties cascade through shadow DOM. Each simulation gets a theme preset validated against WCAG 2.1 AA.
-- **Database-First Logic** – Business invariants enforced in PostgreSQL via 151 functions and 27 trigger functions. Epoch cloning (~250 lines PL/pgSQL), forge materialization, and game mechanics (building degradation, zone security, RP grants, fortification expiry) run as atomic transactions. See ADR-007.
+- **Database-First Logic** – Business invariants enforced in PostgreSQL via 165+ functions and 27 trigger functions. Epoch cloning (~250 lines PL/pgSQL), forge materialization, and game mechanics (building degradation, zone security, RP grants, fortification expiry) run as atomic transactions. See ADR-007.
 - **Game Instance Isolation** – Epoch start atomically clones participating simulations into balanced game instances. Templates stay untouched.
 - **Structured Logging** – structlog over stdlib logging. JSON in production, console locally. Request context (user_id, request_id, path) injected via middleware.
 - **Admin-Configurable AI** – LLM model selection (default, fallback, research, forge) configurable at runtime with environment-specific overrides.
@@ -318,19 +318,20 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 
 | Metric | Count |
 |:-------|------:|
-| Database tables | 85+ |
-| PostgreSQL functions | 85+ (incl. 6 atomic game RPCs) |
+| Database tables | 90+ |
+| PostgreSQL functions | 165+ (incl. 12 atomic game RPCs) |
 | Trigger functions | 27 (62 triggers total) |
-| Views (regular + materialized) | 12 + 4 |
-| RLS policies | 258 |
-| SQL migrations | 159 |
-| Routers | 48 |
-| Web Components | 213 custom elements |
-| Unit tests | 889 (pytest + vitest) |
-| Localized UI strings | 5,319 (EN/DE, 0 missing) |
+| Views (regular + materialized) | 14 + 4 |
+| RLS policies | 270+ |
+| SQL migrations | 165 |
+| Routers | 49 |
+| Web Components | 238 custom elements |
+| Unit tests | 1,465 (pytest + vitest) |
+| Localized UI strings | 5,906 (EN/DE, 0 missing) |
 | GA4 custom events | 44 |
-| Documentation files | 66 (Divio structure + 9 ADRs) |
-| Flagship simulations | 5 + 1 joke preset |
+| Documentation files | 73 (Divio structure + 9 ADRs) |
+| Dungeon archetypes | 8 (tied to resonance types) |
+| Flagship simulations | 5 + 2 community presets |
 | Operative types | 6 |
 | Scoring dimensions | 5 |
 | Bot personalities | 5 archetypes x 3 difficulty levels |
@@ -356,6 +357,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 - **Alliances** – Proposal-based, shared intelligence, RP upkeep, tension mechanic, betrayal penalties
 - **Bot AI** – 5 personality archetypes, 3 difficulty levels, fog-of-war compliant, dual-mode chat
 - **Academy Mode** – Solo training against AI opponents
+- **Resonance Dungeons** – Procedural FTL-style dungeons spawned from substrate resonances. 8 archetypes with unique enemies and encounters. Phase-based combat (30s planning → simultaneous resolution), 6 ability schools tied to operative types, condition tracks (Operational → Afflicted), stress system. Loot distribution debrief terminal with aptitude boosts (+2 cap per agent), memories, moodlets. Terminal-based submarine war room HUD.
 
 ### Cross-Simulation
 - **Diplomacy** – Embassies, ambassadors, event echoes (narrative bleed between worlds)
@@ -431,32 +433,37 @@ npx playwright test
 
 ```
 backend/
-  app.py                    # FastAPI entry (47 routers)
+  app.py                    # FastAPI entry (49 routers)
   logging_config.py         # structlog setup
   dependencies.py           # JWT auth, Supabase clients, role checking
-  routers/                  # 47 route modules
+  routers/                  # 49 route modules
   models/                   # Pydantic models
   services/                 # Business logic (BaseService CRUD, AI, email, bots, scanning)
+    combat/                 # Shared combat engine (ability schools, skill checks, conditions, stress)
+    dungeon/                # Dungeon generator, encounters, combat, loot, archetypes (75K+ LOC)
   middleware/               # SEO injection, security headers, logging context
   tests/                    # pytest
 frontend/
   src/
     app-shell.ts            # Router + auth + simulation context
-    components/             # 211 Lit web components across 29 directories
+    components/             # 238 Lit web components across 31 directories
+      dungeon/              # Resonance Dungeons HUD (terminal, combat, map, party, enemy)
     services/               # API, state, theme, i18n, realtime, SEO, analytics
     styles/tokens/          # CSS design tokens (8 files)
     types/                  # TypeScript interfaces + Zod schemas
     locales/                # i18n (XLIFF source + generated output)
 supabase/
-  migrations/               # 153 SQL migrations
+  migrations/               # 165 SQL migrations
   seed/                     # Seed data (21 files)
 scripts/                    # Image generation, epoch simulation, doc index, env sync
-docs/                       # 64 documents (Divio structure)
+docs/                       # 73 documents (Divio structure)
   specs/                    # 16 hard contracts
   references/               # 5 canonical data
-  guides/                   # 14 procedural guides
+  guides/                   # 16 procedural guides
+  concepts/                 # 8 research & proposals (incl. Resonance Dungeons spec)
   explanations/             # 5 understanding docs
-  analysis/                 # 8 epoch balance + accessibility reports
+  analysis/                 # 7 epoch balance + accessibility reports
+  audits/                   # 2 gameplay audit reports
   adr/                      # 9 Architecture Decision Records
   INDEX.md                  # Auto-generated catalog
   llms.txt                  # AI-friendly doc index
@@ -467,7 +474,7 @@ e2e/                        # Playwright E2E tests (13 spec files)
 
 ## Documentation
 
-The `docs/` directory contains 64 documents in [Divio](https://docs.divio.com/documentation-system/) structure with YAML frontmatter. See [`docs/INDEX.md`](docs/INDEX.md) for the catalog or [`docs/llms.txt`](docs/llms.txt) for AI-friendly consumption. See [`CHANGELOG.md`](CHANGELOG.md) for recent changes.
+The `docs/` directory contains 73 documents in [Divio](https://docs.divio.com/documentation-system/) structure with YAML frontmatter. See [`docs/INDEX.md`](docs/INDEX.md) for the catalog or [`docs/llms.txt`](docs/llms.txt) for AI-friendly consumption. See [`CHANGELOG.md`](CHANGELOG.md) for recent changes.
 
 ---
 
