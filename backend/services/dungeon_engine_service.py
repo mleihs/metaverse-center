@@ -90,9 +90,15 @@ _combat_timers: dict[str, asyncio.Task] = {}
 MAX_CONCURRENT_PER_SIM = 1
 INSTANCE_TTL_SECONDS = 1800  # 30 min inactive → auto-cleanup
 COMBAT_PLANNING_TIMEOUT_MS = 30_000
+DISTRIBUTION_TIMEOUT_MS = 300_000  # 5 min for loot distribution
 # Client timer expires before server to win the submission race.
 # Server auto-resolves at COMBAT_PLANNING_TIMEOUT_MS; client submits earlier.
 CLIENT_TIMER_BUFFER_MS = 3_000
+
+# Effect types that auto-apply without player choice:
+# stress_heal → all operational agents, event/arc_modifier → simulation-wide, dungeon_buff → runtime
+_AUTO_APPLY_EFFECT_TYPES = frozenset({"stress_heal", "event_modifier", "arc_modifier", "dungeon_buff"})
+_distribution_timers: dict[str, asyncio.Task] = {}
 
 
 class DungeonEngineService:
@@ -612,9 +618,20 @@ class DungeonEngineService:
         loot = roll_loot(current_room.loot_tier, instance.difficulty, instance.depth, instance.archetype_state)
 
         if current_room.room_type == "boss":
-            instance.phase = "completed"
-            await cls._complete_run(admin_supabase, instance, loot)
-            # No checkpoint — _complete_run RPC handled all persistence atomically
+            # Classify loot: auto-apply (simulation-wide + stress) vs distributable (agent-specific)
+            distributable = [
+                item for item in loot
+                if item.effect_type not in _AUTO_APPLY_EFFECT_TYPES
+            ]
+            operational_count = sum(1 for a in instance.party if can_act(a.condition))
+
+            if not distributable or operational_count <= 1:
+                # No distributable items or only 1 agent → auto-assign + complete immediately
+                instance.phase = "completed"
+                await cls._complete_run(admin_supabase, instance, loot)
+            else:
+                # Enter distribution phase — player chooses who gets what
+                await cls._begin_distribution(admin_supabase, instance, loot)
         else:
             instance.phase = "room_clear"
             await cls._checkpoint(admin_supabase, instance)
@@ -1050,7 +1067,7 @@ class DungeonEngineService:
             .eq("id", str(run_id))
             .in_(
                 "status",
-                ["active", "combat", "exploring"],
+                ["active", "combat", "exploring", "distributing"],
             )
             .maybe_single()
             .execute()
@@ -1159,6 +1176,15 @@ class DungeonEngineService:
                 phase=instance.combat.phase,
             )
 
+        # Distribution fields (only during distributing phase)
+        pending_loot = None
+        loot_assignments: dict[str, str] = {}
+        loot_suggestions: dict[str, str] = {}
+        if instance.phase == "distributing" and instance.pending_loot:
+            pending_loot = instance.pending_loot
+            loot_assignments = instance.loot_assignments
+            loot_suggestions = cls._compute_loot_suggestions(instance)
+
         return DungeonClientState(
             run_id=instance.run_id,
             archetype=instance.archetype,
@@ -1172,6 +1198,9 @@ class DungeonEngineService:
             combat=combat_client,
             phase=instance.phase,
             phase_timer=instance.phase_timer,
+            pending_loot=pending_loot,
+            loot_assignments=loot_assignments,
+            loot_suggestions=loot_suggestions,
         )
 
     @staticmethod
@@ -1222,6 +1251,7 @@ class DungeonEngineService:
                 "retreated": "abandoned",
                 "wiped": "wiped",
                 "boss": "combat",
+                "distributing": "distributing",
             }
             db_status = status_map.get(instance.phase, "active")
 
@@ -1537,6 +1567,284 @@ class DungeonEngineService:
                 )
 
         return items
+
+    # ── Loot Distribution (Debrief Terminal) ────────────────────────────
+
+    @classmethod
+    async def _begin_distribution(
+        cls,
+        admin_supabase: Client,
+        instance: DungeonInstance,
+        loot: list,
+    ) -> None:
+        """Enter loot distribution phase after boss victory.
+
+        Applies agent outcomes (mood, stress, moodlets) immediately,
+        but holds loot for player assignment via the debrief terminal.
+        """
+        instance.phase = "distributing"
+        instance.pending_loot = [item.model_dump() for item in loot]
+        instance.loot_assignments = {}
+
+        # Pre-build auto-apply items (stress_heal → all agents, sim-wide → first agent)
+        operational_agents = [a for a in instance.party if can_act(a.condition)]
+        if not operational_agents:
+            operational_agents = instance.party[:1]
+        first_agent_id = str(operational_agents[0].agent_id) if operational_agents else None
+
+        auto_items: list[dict] = []
+        for item in loot:
+            if item.effect_type == "dungeon_buff":
+                continue
+            if item.effect_type == "stress_heal":
+                for agent in operational_agents:
+                    auto_items.append({
+                        "loot_id": item.id,
+                        "agent_id": str(agent.agent_id),
+                        "effect_type": item.effect_type,
+                        "effect_params": item.effect_params,
+                    })
+            elif item.effect_type in ("event_modifier", "arc_modifier") and first_agent_id:
+                auto_items.append({
+                    "loot_id": item.id,
+                    "agent_id": first_agent_id,
+                    "effect_type": item.effect_type,
+                    "effect_params": item.effect_params,
+                })
+        instance.auto_apply_loot = auto_items
+
+        # Build agent outcomes (same as _complete_run)
+        outcome = {
+            "loot": [item.model_dump() for item in loot],
+            "rooms_cleared": instance.rooms_cleared,
+            "depth_reached": instance.depth,
+            "party_state": [a.model_dump(mode="json") for a in instance.party],
+        }
+        agent_outcomes = []
+        for agent in instance.party:
+            agent_outcomes.append({
+                "agent_id": str(agent.agent_id),
+                "mood_delta": -10 if agent.stress > 500 else 10,
+                "stress_delta": agent.stress,
+                "moodlets": [{
+                    "moodlet_type": "dungeon_survivor",
+                    "emotion": "pride" if agent.condition != "afflicted" else "dread",
+                    "strength": 10 if agent.condition != "afflicted" else -10,
+                    "source_description": f"Survived {instance.archetype} dungeon",
+                    "decay_type": "timed",
+                }],
+                "activity_narrative_en": f"Explored {instance.archetype} resonance dungeon and prevailed.",
+                "activity_narrative_de": f"Erkundete {instance.archetype} Resonanz-Dungeon und bestand.",
+                "significance": 8,
+            })
+
+        try:
+            await admin_supabase.rpc(
+                "fn_begin_distribution",
+                {
+                    "p_run_id": str(instance.run_id),
+                    "p_simulation_id": str(instance.simulation_id),
+                    "p_outcome": outcome,
+                    "p_agent_outcomes": agent_outcomes,
+                    "p_depth": instance.depth,
+                    "p_room_index": instance.current_room,
+                },
+            ).execute()
+        except PostgrestAPIError:
+            logger.exception("Failed to begin distribution for run %s", instance.run_id)
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("service", "dungeon_engine")
+                scope.set_tag("run_id", str(instance.run_id))
+                scope.set_tag("phase", "begin_distribution")
+                sentry_sdk.capture_exception()
+            return
+
+        await cls._checkpoint(admin_supabase, instance)
+        logger.info(
+            "Distribution started: run_id=%s, %d distributable items, %d auto-apply items",
+            instance.run_id,
+            len([i for i in instance.pending_loot if i.get("effect_type") not in _AUTO_APPLY_EFFECT_TYPES]),
+            len(auto_items),
+        )
+
+    @classmethod
+    async def assign_loot(
+        cls,
+        admin_supabase: Client,
+        run_id: UUID,
+        loot_id: str,
+        agent_id: UUID,
+    ) -> dict:
+        """Assign one distributable loot item to an agent."""
+        instance = _active_instances.get(str(run_id))
+        if not instance:
+            instance = await cls.recover_from_checkpoint(admin_supabase, run_id)
+            if instance:
+                _active_instances[str(run_id)] = instance
+
+        if not instance:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Dungeon run not found")
+        if instance.phase != "distributing":
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Not in distribution phase")
+
+        # Validate loot_id exists and is distributable
+        loot_item = next((i for i in instance.pending_loot if i["id"] == loot_id), None)
+        if not loot_item:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Loot item '{loot_id}' not found")
+        if loot_item.get("effect_type") in _AUTO_APPLY_EFFECT_TYPES:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "This item is auto-applied")
+
+        # Validate agent is in party and operational
+        agent = next((a for a in instance.party if a.agent_id == agent_id), None)
+        if not agent:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent not in party")
+        if not can_act(agent.condition):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent is captured and cannot receive loot")
+
+        instance.loot_assignments[loot_id] = str(agent_id)
+        await cls._checkpoint(admin_supabase, instance)
+
+        return {
+            "assignments": instance.loot_assignments,
+            "remaining": cls._count_unassigned(instance),
+            "all_assigned": cls._count_unassigned(instance) == 0,
+            "state": cls._build_client_state(instance).model_dump(),
+        }
+
+    @classmethod
+    async def confirm_distribution(
+        cls,
+        admin_supabase: Client,
+        run_id: UUID,
+    ) -> dict:
+        """Finalize loot distribution and complete the dungeon run."""
+        instance = _active_instances.get(str(run_id))
+        if not instance:
+            instance = await cls.recover_from_checkpoint(admin_supabase, run_id)
+            if instance:
+                _active_instances[str(run_id)] = instance
+
+        if not instance:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Dungeon run not found")
+        if instance.phase != "distributing":
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Not in distribution phase")
+        if cls._count_unassigned(instance) > 0:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Not all items assigned")
+
+        # Build final loot items: auto-applied + player-assigned
+        loot_items = list(instance.auto_apply_loot)
+        for loot_data in instance.pending_loot:
+            loot_id = loot_data["id"]
+            effect_type = loot_data.get("effect_type", "")
+            if effect_type in _AUTO_APPLY_EFFECT_TYPES:
+                continue  # Already in auto_apply_loot
+            assigned_agent = instance.loot_assignments.get(loot_id)
+            if assigned_agent:
+                loot_items.append({
+                    "loot_id": loot_id,
+                    "agent_id": assigned_agent,
+                    "effect_type": effect_type,
+                    "effect_params": loot_data.get("effect_params", {}),
+                })
+
+        # Cancel distribution timer
+        timer = _distribution_timers.pop(str(run_id), None)
+        if timer and not timer.done():
+            timer.cancel()
+
+        try:
+            rpc_result = await admin_supabase.rpc(
+                "fn_finalize_dungeon_run",
+                {
+                    "p_run_id": str(instance.run_id),
+                    "p_simulation_id": str(instance.simulation_id),
+                    "p_loot_items": loot_items,
+                    "p_depth": instance.depth,
+                    "p_room_index": instance.current_room,
+                },
+            ).execute()
+        except PostgrestAPIError:
+            logger.exception("Failed to finalize distribution for run %s", instance.run_id)
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("service", "dungeon_engine")
+                scope.set_tag("run_id", str(instance.run_id))
+                scope.set_tag("phase", "finalize_distribution")
+                sentry_sdk.capture_exception()
+            raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Failed to finalize") from None
+
+        loot_result = rpc_result.data if rpc_result and rpc_result.data else {}
+        if isinstance(loot_result, dict) and loot_result.get("loot_result", {}).get("skipped"):
+            logger.warning(
+                "Loot items skipped for run %s: %s",
+                instance.run_id,
+                loot_result["loot_result"]["skipped"],
+            )
+
+        instance.phase = "completed"
+        _active_instances.pop(str(instance.run_id), None)
+        logger.info(
+            "Distribution finalized: run_id=%s sim=%s archetype=%s loot_items=%d",
+            instance.run_id,
+            instance.simulation_id,
+            instance.archetype,
+            len(loot_items),
+        )
+
+        return {
+            "loot_result": loot_result,
+            "state": cls._build_client_state(instance).model_dump(),
+        }
+
+    @classmethod
+    def _count_unassigned(cls, instance: DungeonInstance) -> int:
+        """Count distributable loot items not yet assigned."""
+        return sum(
+            1
+            for item in instance.pending_loot
+            if item.get("effect_type") not in _AUTO_APPLY_EFFECT_TYPES
+            and item["id"] not in instance.loot_assignments
+        )
+
+    @classmethod
+    def _compute_loot_suggestions(cls, instance: DungeonInstance) -> dict[str, str]:
+        """Suggest the best agent for each distributable loot item.
+
+        aptitude_boost → agent with lowest level in the boost's aptitude
+        memory/moodlet → round-robin across operational agents
+        *_bonus → first operational agent
+        """
+        operational = [a for a in instance.party if can_act(a.condition)]
+        if not operational:
+            return {}
+
+        suggestions: dict[str, str] = {}
+        robin_idx = 0
+
+        for item in instance.pending_loot:
+            effect_type = item.get("effect_type", "")
+            if effect_type in _AUTO_APPLY_EFFECT_TYPES:
+                continue
+
+            if effect_type == "aptitude_boost":
+                # Find agent with lowest aptitude level in the boost's choices
+                choices = item.get("effect_params", {}).get("aptitude_choices", [])
+                if choices:
+                    best_agent = min(
+                        operational,
+                        key=lambda a: min(a.aptitudes.get(c, 0) for c in choices),
+                    )
+                    suggestions[item["id"]] = str(best_agent.agent_id)
+                else:
+                    suggestions[item["id"]] = str(operational[0].agent_id)
+            elif effect_type in ("memory", "moodlet"):
+                # Round-robin
+                suggestions[item["id"]] = str(operational[robin_idx % len(operational)].agent_id)
+                robin_idx += 1
+            else:
+                # permanent_dungeon_bonus, next_dungeon_bonus → first
+                suggestions[item["id"]] = str(operational[0].agent_id)
+
+        return suggestions
 
     @classmethod
     async def _start_combat_timer(cls, _admin_supabase: Client, instance: DungeonInstance) -> None:

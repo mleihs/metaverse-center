@@ -129,6 +129,9 @@ class DungeonStateManager {
     );
   });
 
+  /** Whether the player is distributing loot after boss victory. */
+  readonly isDistributing = computed(() => this.phase.value === 'distributing');
+
   /** Party agents with combat state. */
   readonly party = computed((): AgentCombatStateClient[] =>
     this.clientState.value?.party ?? [],

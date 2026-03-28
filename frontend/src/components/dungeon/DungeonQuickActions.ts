@@ -131,6 +131,9 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
         // Combat UI handled by DungeonCombatBar (rendered by DungeonTerminalView).
         return nothing;
 
+      case 'distributing':
+        return this._renderDistributionButtons();
+
       case 'completed':
       case 'retreated':
       case 'wiped':
@@ -146,6 +149,50 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
           </button>
         `;
     }
+  }
+
+  /** Render assignment + confirm buttons for loot distribution phase. */
+  private _renderDistributionButtons() {
+    const state = dungeonState.clientState.value;
+    if (!state?.pending_loot) return nothing;
+
+    const autoEffects = new Set(['stress_heal', 'event_modifier', 'arc_modifier', 'dungeon_buff']);
+    const distributable = state.pending_loot.filter(i => !autoEffects.has(i.effect_type));
+    const assignments = state.loot_assignments ?? {};
+    const suggestions = state.loot_suggestions ?? {};
+    const party = state.party.filter(a => a.condition !== 'captured');
+
+    // Find first unassigned item
+    const nextItem = distributable.find(i => !assignments[i.id]);
+    const nextIndex = nextItem ? distributable.indexOf(nextItem) + 1 : -1;
+
+    if (nextItem) {
+      // Show agent buttons for the next unassigned item
+      const suggestedId = suggestions[nextItem.id];
+      return html`
+        <span class="phase-label">${nextItem.name_en}:</span>
+        ${party.map(
+          agent => html`
+            <button
+              class="action-btn ${agent.agent_id === suggestedId ? 'action-btn--primary' : ''}"
+              @click=${() => this._dispatch(`assign ${nextIndex} ${agent.agent_name}`)}
+            >
+              \u2192 ${agent.agent_name}
+            </button>
+          `,
+        )}
+      `;
+    }
+
+    // All assigned — show confirm button
+    return html`
+      <button
+        class="action-btn action-btn--primary"
+        @click=${() => this._dispatch('confirm')}
+      >
+        ${msg('Confirm Distribution')}
+      </button>
+    `;
   }
 
   /** Render move buttons for each adjacent revealed room. */

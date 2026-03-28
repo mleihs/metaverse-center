@@ -32,6 +32,7 @@ import {
   formatDungeonMap,
   formatDungeonStatus,
   formatEncounterChoices,
+  formatLootDistribution,
   formatLootDrop,
   formatPartyWipe,
   formatRestResult,
@@ -67,7 +68,7 @@ const DUNGEON_OVERRIDE_VERBS = new Set(['move', 'go', 'map', 'look', 'status']);
  * Outside dungeon mode → return error message (not null).
  */
 const DUNGEON_ONLY_VERBS = new Set([
-  'scout', 'rest', 'retreat', 'interact', 'attack', 'submit',
+  'scout', 'rest', 'retreat', 'interact', 'attack', 'submit', 'assign', 'confirm',
 ]);
 
 /**
@@ -79,6 +80,7 @@ const DUNGEON_VERB_TIER: Record<string, number> = {
   move: 1, go: 1, map: 1, look: 1, status: 1,
   dungeon: 2, scout: 2, rest: 2, retreat: 2,
   interact: 2, attack: 2, submit: 2,
+  assign: 2, confirm: 2,
 };
 
 // ── Main Dispatcher ──────────────────────────────────────────────────────────
@@ -135,6 +137,8 @@ export async function dispatchDungeonCommand(
     case 'interact': return handleDungeonInteract(ctx);
     case 'attack': return handleDungeonAttack(ctx);
     case 'submit': return handleDungeonSubmit();
+    case 'assign': return handleDungeonAssign(ctx);
+    case 'confirm': return handleDungeonConfirm();
     default: return null;
   }
 }
@@ -517,6 +521,113 @@ async function handleDungeonRetreat(): Promise<TerminalLine[]> {
   }
 }
 
+// ── Command: assign (loot distribution) ─────────────────────────────────────
+
+async function handleDungeonAssign(ctx: CommandContext): Promise<TerminalLine[]> {
+  const state = dungeonState.clientState.value;
+  const runId = dungeonState.runId.value;
+  if (!state || !runId) return [errorLine(msg('No active dungeon.'))];
+
+  if (state.phase !== 'distributing') {
+    return [errorLine(msg('Not in distribution phase.'))];
+  }
+
+  if (ctx.args.length < 2) {
+    return [hintLine(msg('Usage: assign <item#> <agent_name>'))];
+  }
+
+  const itemNum = parseInt(ctx.args[0], 10);
+  const agentNameInput = ctx.args.slice(1).join(' ').toLowerCase();
+
+  // Find the distributable items (same filter as formatter)
+  const autoEffects = new Set(['stress_heal', 'event_modifier', 'arc_modifier', 'dungeon_buff']);
+  const distributable = (state.pending_loot ?? []).filter(
+    i => !autoEffects.has(i.effect_type),
+  );
+
+  if (isNaN(itemNum) || itemNum < 1 || itemNum > distributable.length) {
+    return [errorLine(msg('Invalid item number.'))];
+  }
+
+  const lootItem = distributable[itemNum - 1];
+
+  // Fuzzy match agent name
+  const agent = state.party.find(
+    a => a.agent_name.toLowerCase().includes(agentNameInput) && a.condition !== 'captured',
+  );
+  if (!agent) {
+    return [errorLine(msg('Agent not found or captured.'))];
+  }
+
+  try {
+    const resp = await dungeonApi.assignLoot(runId, {
+      loot_id: lootItem.id,
+      agent_id: agent.agent_id,
+    });
+    if (!resp.success || !resp.data) {
+      return [errorLine(resp.error?.message ?? msg('Assignment failed.'))];
+    }
+
+    dungeonState.applyState(resp.data.state);
+
+    // Re-render distribution screen with updated assignments
+    return formatLootDistribution(
+      resp.data.state,
+      state.pending_loot ?? [],
+      resp.data.state.loot_assignments ?? {},
+      resp.data.state.loot_suggestions ?? {},
+    );
+  } catch (err) {
+    captureError(err, { source: 'dungeon-commands.handleDungeonAssign' });
+    const message = err instanceof Error ? err.message : msg('Assignment failed.');
+    return [errorLine(message)];
+  }
+}
+
+// ── Command: confirm (finalize distribution) ────────────────────────────────
+
+async function handleDungeonConfirm(): Promise<TerminalLine[]> {
+  const state = dungeonState.clientState.value;
+  const runId = dungeonState.runId.value;
+  if (!state || !runId) return [errorLine(msg('No active dungeon.'))];
+
+  if (state.phase !== 'distributing') {
+    return [errorLine(msg('Not in distribution phase.'))];
+  }
+
+  // Check all distributable items are assigned
+  const autoEffects = new Set(['stress_heal', 'event_modifier', 'arc_modifier', 'dungeon_buff']);
+  const distributable = (state.pending_loot ?? []).filter(
+    i => !autoEffects.has(i.effect_type),
+  );
+  const assignments = state.loot_assignments ?? {};
+  const unassigned = distributable.filter(i => !assignments[i.id]);
+  if (unassigned.length > 0) {
+    return [errorLine(msg('Not all items assigned. Use "assign" first.'))];
+  }
+
+  dungeonState.loading.value = true;
+  try {
+    const resp = await dungeonApi.confirmDistribution(runId);
+    if (!resp.success || !resp.data) {
+      return [errorLine(resp.error?.message ?? msg('Confirmation failed.'))];
+    }
+
+    dungeonState.applyState(resp.data.state);
+
+    // Show completion banner + exit
+    const lines = formatDungeonComplete(resp.data.state, state.pending_loot ?? []);
+    _exitDungeon();
+    return lines;
+  } catch (err) {
+    captureError(err, { source: 'dungeon-commands.handleDungeonConfirm' });
+    const message = err instanceof Error ? err.message : msg('Confirmation failed.');
+    return [errorLine(message)];
+  } finally {
+    dungeonState.loading.value = false;
+  }
+}
+
 // ── Command: interact ────────────────────────────────────────────────────────
 
 async function handleDungeonInteract(ctx: CommandContext): Promise<TerminalLine[]> {
@@ -746,7 +857,17 @@ async function handleDungeonSubmit(): Promise<TerminalLine[]> {
       }
     }
 
-    // Check for completion (boss victory)
+    // Check for distribution phase (boss victory with distributable loot)
+    if (resp.data.state.phase === 'distributing') {
+      lines.push(...formatLootDistribution(
+        resp.data.state,
+        resp.data.loot ?? [],
+        resp.data.state.loot_assignments ?? {},
+        resp.data.state.loot_suggestions ?? {},
+      ));
+    }
+
+    // Check for completion (boss victory — auto-complete path)
     if (resp.data.state.phase === 'completed') {
       lines.push(...formatDungeonComplete(resp.data.state, resp.data.loot ?? []));
       _exitDungeon();

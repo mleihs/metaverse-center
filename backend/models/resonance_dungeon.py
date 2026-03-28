@@ -31,6 +31,7 @@ DungeonStatus = Literal[
     "active",
     "combat",
     "exploring",
+    "distributing",
     "completed",
     "abandoned",
     "wiped",
@@ -47,6 +48,7 @@ DungeonPhase = Literal[
     "boss",
     "exit",
     "room_clear",
+    "distributing",
     "completed",
     "retreated",
     "wiped",
@@ -151,6 +153,11 @@ class DungeonInstance(BaseModel):
     # Phase timer metadata (set during combat planning for client countdown)
     phase_timer: PhaseTimer | None = None
 
+    # Loot distribution (populated during 'distributing' phase after boss victory)
+    pending_loot: list[dict] = Field(default_factory=list)
+    loot_assignments: dict[str, str] = Field(default_factory=dict)  # loot_id → agent_id
+    auto_apply_loot: list[dict] = Field(default_factory=list)  # pre-built auto-apply items
+
     def to_checkpoint(self) -> dict:
         """Serialize only mutable state for DB checkpoint (Review #17).
 
@@ -171,6 +178,9 @@ class DungeonInstance(BaseModel):
             "room_revealed_flags": [r.index for r in self.rooms if r.revealed],
             "used_banter_ids": self.used_banter_ids,
             "phase_timer": self.phase_timer.model_dump(mode="json") if self.phase_timer else None,
+            "pending_loot": self.pending_loot,
+            "loot_assignments": self.loot_assignments,
+            "auto_apply_loot": self.auto_apply_loot,
         }
 
     def restore_from_checkpoint(self, checkpoint: dict) -> None:
@@ -186,6 +196,9 @@ class DungeonInstance(BaseModel):
         self.used_banter_ids = checkpoint.get("used_banter_ids", [])
         timer_data = checkpoint.get("phase_timer")
         self.phase_timer = PhaseTimer(**timer_data) if timer_data else None
+        self.pending_loot = checkpoint.get("pending_loot", [])
+        self.loot_assignments = checkpoint.get("loot_assignments", {})
+        self.auto_apply_loot = checkpoint.get("auto_apply_loot", [])
         # Restore room flags
         cleared = set(checkpoint.get("room_cleared_flags", []))
         revealed = set(checkpoint.get("room_revealed_flags", []))
@@ -250,6 +263,13 @@ class RestRequest(BaseModel):
     """Rest at a rest site."""
 
     agent_ids: list[UUID] = Field(..., min_length=1)
+
+
+class LootAssignment(BaseModel):
+    """Assign one loot item to an agent during distribution phase."""
+
+    loot_id: str
+    agent_id: UUID
 
 
 # ── API Response Schemas ────────────────────────────────────────────────────
@@ -456,6 +476,11 @@ class DungeonClientState(BaseModel):
     # Phase
     phase: DungeonPhase = "exploring"
     phase_timer: PhaseTimer | None = None
+
+    # Loot distribution (populated only during 'distributing' phase)
+    pending_loot: list[dict] | None = None
+    loot_assignments: dict[str, str] = Field(default_factory=dict)
+    loot_suggestions: dict[str, str] = Field(default_factory=dict)
 
 
 # ── Encounter/Loot Data Models ──────────────────────────────────────────────

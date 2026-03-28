@@ -20,6 +20,7 @@ export type DungeonStatus =
   | 'active'
   | 'combat'
   | 'exploring'
+  | 'distributing'
   | 'completed'
   | 'abandoned'
   | 'wiped';
@@ -36,6 +37,7 @@ export type DungeonPhase =
   | 'boss'
   | 'exit'
   | 'room_clear'
+  | 'distributing'
   | 'completed'
   | 'retreated'
   | 'wiped';
@@ -151,8 +153,15 @@ export interface DungeonClientState {
   /** Current state machine phase — drives HUD panel visibility. */
   phase: DungeonPhase;
 
-  /** Timer for timed phases (combat planning). Null when no timer active. */
+  /** Timer for timed phases (combat planning, distribution). Null when no timer active. */
   phase_timer: PhaseTimer | null;
+
+  /** Pending loot items for distribution (only during 'distributing' phase). */
+  pending_loot?: LootItem[] | null;
+  /** Current loot assignments: loot_id → agent_id (during 'distributing' phase). */
+  loot_assignments?: Record<string, string>;
+  /** Suggested assignments: loot_id → agent_id (computed by backend). */
+  loot_suggestions?: Record<string, string>;
 }
 
 /** Room as seen by the client (fog of war applied). */
@@ -501,4 +510,26 @@ export interface AgentLootEffect {
   source_archetype: string | null;
   source_difficulty: number | null;
   source_completed_at: string | null;
+}
+
+// ── Loot Distribution Request/Response ─────────────────────────────────────
+
+/** POST /dungeons/runs/{id}/distribute — assign one loot item. */
+export interface LootAssignmentRequest {
+  loot_id: string;
+  agent_id: string;
+}
+
+/** Response from assign loot endpoint. */
+export interface LootAssignmentResponse {
+  assignments: Record<string, string>;
+  remaining: number;
+  all_assigned: boolean;
+  state: DungeonClientState;
+}
+
+/** Response from confirm distribution endpoint. */
+export interface DistributeConfirmResponse {
+  loot_result: Record<string, unknown>;
+  state: DungeonClientState;
 }

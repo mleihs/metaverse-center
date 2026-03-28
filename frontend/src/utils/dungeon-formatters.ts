@@ -748,6 +748,116 @@ export function formatCombatStalemate(): TerminalLine[] {
   ];
 }
 
+// ── Loot Distribution (Debrief Terminal) ────────────────────────────────────
+
+/** Effect types that are auto-applied (no player choice). */
+const AUTO_APPLY_EFFECTS = new Set(['stress_heal', 'event_modifier', 'arc_modifier', 'dungeon_buff']);
+
+/** Human-readable effect type label for the distribution screen. */
+function _effectLabel(effectType: string): string {
+  const labels: Record<string, () => string> = {
+    aptitude_boost: () => msg('Aptitude Boost'),
+    memory: () => msg('Shadow Memory'),
+    moodlet: () => msg('Dungeon Moodlet'),
+    permanent_dungeon_bonus: () => msg('Permanent Bonus'),
+    next_dungeon_bonus: () => msg('Next Dungeon Bonus'),
+    stress_heal: () => msg('Stress Recovery'),
+    event_modifier: () => msg('Event Pressure Reduced'),
+    arc_modifier: () => msg('Arc Pressure Reduced'),
+  };
+  return labels[effectType]?.() ?? effectType;
+}
+
+/**
+ * Format the loot distribution debrief terminal.
+ * Shows after boss victory: auto-applied items dimmed, distributable items
+ * with assignment status and suggestion hints.
+ */
+export function formatLootDistribution(
+  state: DungeonClientState,
+  loot: LootItem[],
+  assignments: Record<string, string>,
+  suggestions: Record<string, string>,
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+  const W = 50;
+  const partyMap = new Map(state.party.map(a => [a.agent_id, a.agent_name]));
+
+  // ── Banner ──
+  lines.push(combatSystemLine('\u2550'.repeat(W)));
+  lines.push(combatSystemLine('\u2551' + ' '.repeat(W - 2) + '\u2551'));
+  lines.push(combatSystemLine(
+    '\u2551' + `D E B R I E F   T E R M I N A L`.padStart(Math.floor((W - 2 + 33) / 2)).padEnd(W - 2) + '\u2551',
+  ));
+  lines.push(combatSystemLine('\u2551' + ' '.repeat(W - 2) + '\u2551'));
+  lines.push(combatSystemLine('\u2550'.repeat(W)));
+  lines.push(systemLine(''));
+
+  // ── Auto-applied items ──
+  const autoItems = loot.filter(i => AUTO_APPLY_EFFECTS.has(i.effect_type));
+  if (autoItems.length > 0) {
+    lines.push(combatSystemLine(msg('SYSTEM EFFECTS')));
+    for (const item of autoItems) {
+      lines.push(combatMissLine(`  [${msg('AUTO')}] ${_effectLabel(item.effect_type)} \u2014 ${item.description_en}`));
+    }
+    lines.push(systemLine(''));
+  }
+
+  // ── Distributable items ──
+  const distributable = loot.filter(i => !AUTO_APPLY_EFFECTS.has(i.effect_type));
+  if (distributable.length > 0) {
+    lines.push(combatSystemLine(msg('ASSIGN SPOILS')));
+    lines.push(systemLine(''));
+
+    for (let i = 0; i < distributable.length; i++) {
+      const item = distributable[i];
+      const marker = LOOT_TIER_MARKERS[item.tier] ?? '\u25C6';
+      const assignedAgentId = assignments[item.id];
+      const suggestedAgentId = suggestions[item.id];
+      const assignedName = assignedAgentId ? partyMap.get(assignedAgentId) : null;
+      const suggestedName = suggestedAgentId ? partyMap.get(suggestedAgentId) : null;
+
+      // Item header: number + marker + name
+      lines.push(combatPlayerLine(`  [${i + 1}] ${marker} ${item.name_en}`));
+      lines.push(responseLine(`      ${item.description_en}`));
+
+      // Assignment status
+      if (assignedName) {
+        lines.push(combatHealLine(`      \u2192 ${assignedName}`));
+      } else {
+        const hint = suggestedName ? ` ${msg('Suggested')}: ${suggestedName}` : '';
+        lines.push(combatDamageLine(`      [${msg('UNASSIGNED')}]${hint}`));
+      }
+      lines.push(systemLine(''));
+    }
+  }
+
+  // ── Party overview (aptitudes for informed assignment) ──
+  lines.push(combatSystemLine(msg('PARTY')));
+  const nameWidth = Math.max(...state.party.map(a => a.agent_name.length), 10);
+  for (const agent of state.party) {
+    if (agent.condition === 'captured') continue;
+    const topApts = Object.entries(agent.aptitudes)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 3)
+      .map(([k, v]) => `${k.substring(0, 3).toUpperCase()} ${v}`)
+      .join('  ');
+    const cond = getConditionLabel(agent.condition).toUpperCase();
+    lines.push(responseLine(`  ${agent.agent_name.padEnd(nameWidth)}  ${cond.padEnd(12)} ${topApts}`));
+  }
+  lines.push(systemLine(''));
+
+  // ── Instructions ──
+  const unassigned = distributable.filter(i => !assignments[i.id]).length;
+  if (unassigned > 0) {
+    lines.push(hintLine(msg('Type "assign <#> <agent_name>" to assign an item.')));
+  } else {
+    lines.push(combatHealLine(msg('All items assigned. Type "confirm" to finalize.')));
+  }
+
+  return lines;
+}
+
 // ── Dungeon Status ───────────────────────────────────────────────────────────
 
 export function formatDungeonStatus(state: DungeonClientState): TerminalLine[] {

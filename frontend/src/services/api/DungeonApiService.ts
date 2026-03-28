@@ -1,5 +1,5 @@
 /**
- * API service for Resonance Dungeons — 13 authenticated + 2 public endpoints.
+ * API service for Resonance Dungeons — 15 authenticated + 2 public endpoints.
  *
  * Backend router: backend/routers/resonance_dungeons.py
  * Public router:  backend/routers/public.py (dungeon section)
@@ -14,12 +14,15 @@ import type {
   CombatSubmission,
   CombatSubmitResponse,
   CreateRunResponse,
+  DistributeConfirmResponse,
   DungeonAction,
   DungeonClientState,
   DungeonEventResponse,
   DungeonRunCreate,
   DungeonRunResponse,
   EncounterChoiceResponse,
+  LootAssignmentRequest,
+  LootAssignmentResponse,
   RestResponse,
   RetreatResponse,
   ScoutResponse,
@@ -87,6 +90,19 @@ export class DungeonApiService extends BaseApiService {
   /** Abandon dungeon (keep partial loot). */
   retreat(runId: string): Promise<ApiResponse<RetreatResponse>> {
     return this.post(`/dungeons/runs/${runId}/retreat`, {});
+  }
+
+  /** Assign a loot item to an agent during distribution phase. */
+  assignLoot(
+    runId: string,
+    body: LootAssignmentRequest,
+  ): Promise<ApiResponse<LootAssignmentResponse>> {
+    return this.post(`/dungeons/runs/${runId}/distribute`, body);
+  }
+
+  /** Finalize loot distribution and complete the dungeon run. */
+  confirmDistribution(runId: string): Promise<ApiResponse<DistributeConfirmResponse>> {
+    return this.post(`/dungeons/runs/${runId}/distribute/confirm`, {});
   }
 
   /** Get dungeon event log (paginated). */

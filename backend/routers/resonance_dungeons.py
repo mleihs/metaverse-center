@@ -1,6 +1,6 @@
 """REST API router for Resonance Dungeons.
 
-13 endpoints under /api/v1/dungeons.
+15 endpoints under /api/v1/dungeons.
 Auth: simulation membership checked via require_simulation_member().
 All mutations use admin_supabase (Review #16).
 """
@@ -34,6 +34,7 @@ from backend.models.resonance_dungeon import (
     DungeonMoveRequest,
     DungeonRunCreate,
     DungeonRunResponse,
+    LootAssignment,
     RestRequest,
     ScoutRequest,
 )
@@ -223,6 +224,34 @@ async def retreat(
         "abandon",
         {},
     )
+    return {"success": True, "data": result}
+
+
+# ── Loot Distribution ──────────────────────────────────────────────────────
+
+
+@router.post("/runs/{run_id}/distribute", response_model=SuccessResponse)
+async def assign_loot(
+    run_id: UUID,
+    body: LootAssignment,
+    user: CurrentUser = Depends(get_current_user),
+    admin: Client = Depends(get_admin_supabase),
+) -> dict:
+    """Assign a distributable loot item to an agent during the debrief phase."""
+    result = await DungeonEngineService.assign_loot(
+        admin, run_id, body.loot_id, body.agent_id,
+    )
+    return {"success": True, "data": result}
+
+
+@router.post("/runs/{run_id}/distribute/confirm", response_model=SuccessResponse)
+async def confirm_distribution(
+    run_id: UUID,
+    user: CurrentUser = Depends(get_current_user),
+    admin: Client = Depends(get_admin_supabase),
+) -> dict:
+    """Finalize loot distribution and complete the dungeon run."""
+    result = await DungeonEngineService.confirm_distribution(admin, run_id)
     return {"success": True, "data": result}
 
 

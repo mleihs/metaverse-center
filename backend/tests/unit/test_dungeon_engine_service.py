@@ -1498,7 +1498,8 @@ class TestHandleCombatVictory:
         assert instance.combat is None
 
     @pytest.mark.asyncio
-    async def test_boss_victory_completes_run(self, noop_checkpoint):
+    async def test_boss_victory_enters_distribution(self, noop_checkpoint):
+        """Boss victory with distributable loot + 2+ agents → distributing phase."""
         rooms = _make_rooms()
         rooms[1].room_type = "boss"
         enemy = _make_enemy()
@@ -1512,9 +1513,49 @@ class TestHandleCombatVictory:
             result = await DungeonEngineService._handle_combat_victory(mock_sb, instance)
 
         assert result["victory"] is True
-        assert instance.phase == "completed"
-        # complete_run RPC should have been called
+        assert instance.phase == "distributing"
+        assert len(instance.pending_loot) == 1
+        # fn_begin_distribution RPC should have been called
         mock_sb.rpc.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_boss_victory_auto_completes_single_agent(self, noop_checkpoint):
+        """Boss victory with only 1 operational agent → skip distribution, complete directly."""
+        rooms = _make_rooms()
+        rooms[1].room_type = "boss"
+        enemy = _make_enemy()
+        combat = CombatState(enemies=[enemy])
+        party = [_make_agent("Solo")]
+        instance = _make_instance(
+            phase="combat_resolving", current_room=1, combat=combat, rooms=rooms, party=party,
+        )
+        _register_instance(instance)
+
+        loot = [LootItem(id="l1", name_en="Legend", name_de="Legende", tier=3, effect_type="memory")]
+        mock_sb = _make_mock_supabase()
+        with patch("backend.services.dungeon_engine_service.roll_loot", return_value=loot):
+            result = await DungeonEngineService._handle_combat_victory(mock_sb, instance)
+
+        assert result["victory"] is True
+        assert instance.phase == "completed"
+
+    @pytest.mark.asyncio
+    async def test_boss_victory_auto_completes_no_distributable(self, noop_checkpoint):
+        """Boss victory with only auto-apply loot → skip distribution, complete directly."""
+        rooms = _make_rooms()
+        rooms[1].room_type = "boss"
+        enemy = _make_enemy()
+        combat = CombatState(enemies=[enemy])
+        instance = _make_instance(phase="combat_resolving", current_room=1, combat=combat, rooms=rooms)
+        _register_instance(instance)
+
+        loot = [LootItem(id="heal1", name_en="Heal", name_de="Heilung", tier=1, effect_type="stress_heal")]
+        mock_sb = _make_mock_supabase()
+        with patch("backend.services.dungeon_engine_service.roll_loot", return_value=loot):
+            result = await DungeonEngineService._handle_combat_victory(mock_sb, instance)
+
+        assert result["victory"] is True
+        assert instance.phase == "completed"
 
     @pytest.mark.asyncio
     async def test_shadow_vp_restored_on_combat_win(self, noop_checkpoint):
