@@ -314,9 +314,9 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         padding: 8px 16px;
         background: transparent;
         color: var(--_phosphor-dim);
-        border: 1px solid color-mix(in srgb, var(--_border) 40%, transparent);
+        border: 1px solid color-mix(in srgb, var(--_border) 60%, transparent);
         cursor: not-allowed;
-        opacity: 0.35;
+        opacity: 0.5; /* WCAG AA: ≥3:1 non-text contrast for disabled UI */
       }
 
       .execute--ready {

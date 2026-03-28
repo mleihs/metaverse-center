@@ -132,12 +132,26 @@ class TerminalStateManager {
     const stored = this._loadFromStorage();
 
     if (stored) {
-      // Guard against corrupt localStorage values
+      // Guard against corrupt localStorage values (arrays, numbers, enums)
       if (!Array.isArray(stored.commandHistory)) stored.commandHistory = [];
       if (!Array.isArray(stored.recentOutput)) stored.recentOutput = [];
       if (typeof stored.conversationMap !== 'object' || stored.conversationMap === null) {
         stored.conversationMap = {};
       }
+      if (typeof stored.clearanceLevel !== 'number' || isNaN(stored.clearanceLevel) || stored.clearanceLevel < 1 || stored.clearanceLevel > 5) {
+        stored.clearanceLevel = 1;
+      }
+      if (typeof stored.commandCount !== 'number' || isNaN(stored.commandCount) || stored.commandCount < 0) {
+        stored.commandCount = 0;
+      }
+      if (typeof stored.operationsPoints !== 'number' || isNaN(stored.operationsPoints)) {
+        stored.operationsPoints = DEFAULT_OPS_POINTS;
+      }
+      if (typeof stored.intelPoints !== 'number' || isNaN(stored.intelPoints)) {
+        stored.intelPoints = DEFAULT_INTEL_POINTS;
+      }
+      if (typeof stored.onboarded !== 'boolean') stored.onboarded = false;
+      if (typeof stored.onboardingStep !== 'number' || isNaN(stored.onboardingStep)) stored.onboardingStep = 0;
 
       this.currentZoneId.value = stored.currentZoneId;
       this.clearanceLevel.value = stored.clearanceLevel;

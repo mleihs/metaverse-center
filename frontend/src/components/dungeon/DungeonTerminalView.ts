@@ -357,22 +357,22 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
 
     return html`
       <div class="dungeon-hud" @terminal-command=${this._handleTerminalCommand}>
-        <div class="dungeon-hud__header">
+        <div class="dungeon-hud__header" role="banner" aria-label=${msg('Dungeon status')}>
           <velg-dungeon-header></velg-dungeon-header>
         </div>
-        <div class="dungeon-hud__main">
+        <div class="dungeon-hud__main" role="main" aria-label=${msg('Terminal')}>
           ${inCombat ? html`<velg-dungeon-enemy-panel></velg-dungeon-enemy-panel>` : nothing}
           <div class="terminal-wrapper">
             <velg-bureau-terminal .simulationId=${simulationId} .dungeonMode=${true}></velg-bureau-terminal>
           </div>
         </div>
-        <div class="dungeon-hud__party">
+        <div class="dungeon-hud__party" role="complementary" aria-label=${msg('Party status')}>
           <velg-dungeon-party-panel></velg-dungeon-party-panel>
         </div>
-        <div class="dungeon-hud__map">
+        <div class="dungeon-hud__map" role="region" aria-label=${msg('Dungeon map')}>
           <velg-dungeon-map></velg-dungeon-map>
         </div>
-        <div class="dungeon-hud__actions">
+        <div class="dungeon-hud__actions" role="toolbar" aria-label=${msg('Actions')}>
           ${inCombat
             ? html`<velg-dungeon-combat-bar></velg-dungeon-combat-bar>`
             : html`<velg-dungeon-quick-actions></velg-dungeon-quick-actions>`}

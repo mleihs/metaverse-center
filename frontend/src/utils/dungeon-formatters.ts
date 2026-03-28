@@ -20,6 +20,7 @@ import type {
 } from '../types/dungeon.js';
 import type { Agent, AptitudeSet } from '../types/index.js';
 import type { TerminalLine } from '../types/terminal.js';
+import { OPERATIVE_LABEL } from './operative-constants.js';
 import { responseLine, systemLine, hintLine } from './terminal-formatters.js';
 
 // ── Room Type Symbols (ASCII map) ────────────────────────────────────────────
@@ -721,16 +722,6 @@ export function formatAvailableDungeons(
 
 // ── Party Picker ─────────────────────────────────────────────────────────────
 
-/** Operative type abbreviations for compact display. */
-const APT_LABELS: Record<string, string> = {
-  spy: 'SPY',
-  guardian: 'GRD',
-  saboteur: 'SAB',
-  propagandist: 'PRP',
-  infiltrator: 'INF',
-  assassin: 'ASN',
-};
-
 /**
  * Format an agent picker list for terminal display.
  * Shows numbered agents with top aptitudes for party selection.
@@ -762,7 +753,7 @@ export function formatAgentPicker(
         .sort(([, a], [, b]) => b - a)
         .slice(0, 3);
       aptStr = sorted
-        .map(([k, v]) => `${APT_LABELS[k] ?? k.toUpperCase()} ${v}`)
+        .map(([k, v]) => `${OPERATIVE_LABEL[k as import('../types/index.js').OperativeType] ?? k.toUpperCase()} ${v}`)
         .join(' | ');
     }
     if (!aptStr) aptStr = msg('no aptitudes');

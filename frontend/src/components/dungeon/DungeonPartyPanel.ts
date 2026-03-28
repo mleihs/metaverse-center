@@ -26,7 +26,7 @@ import type {
 } from '../../types/dungeon.js';
 import type { OperativeType } from '../../types/index.js';
 import { getConditionLabel } from '../../utils/dungeon-formatters.js';
-import { OPERATIVE_COLORS } from '../../utils/operative-constants.js';
+import { OPERATIVE_COLORS, OPERATIVE_SHORT } from '../../utils/operative-constants.js';
 import {
   terminalComponentTokens,
   terminalTokens,
@@ -35,16 +35,6 @@ import '../shared/VelgAvatar.js';
 import '../shared/VelgBadge.js';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
-
-/** Operative type → compact 1-letter abbreviation for aptitude row. */
-const APT_SHORT: Record<string, string> = {
-  spy: 'S',
-  guardian: 'G',
-  saboteur: 'B',
-  propagandist: 'P',
-  infiltrator: 'I',
-  assassin: 'A',
-};
 
 /** Condition → gauge fill percentage (operational capacity). */
 const CONDITION_FILL: Record<Condition, number> = {
@@ -177,12 +167,9 @@ export class VelgDungeonPartyPanel extends SignalWatcher(LitElement) {
         gap: 6px;
         padding: 2px 0 4px;
         font-family: var(--_mono);
-        font-size: 8px;
+        font-size: 10px;
         color: var(--_phosphor-dim);
-      }
-
-      .apt {
-        letter-spacing: 0.3px;
+        letter-spacing: 0.5px;
       }
 
       /* ── Gauge Bars ── */
@@ -489,7 +476,7 @@ export class VelgDungeonPartyPanel extends SignalWatcher(LitElement) {
             ${Object.entries(agent.aptitudes)
               .filter(([, v]) => v > 0)
               .sort(([, a], [, b]) => (b as number) - (a as number))
-              .map(([k, v]) => html`<span class="apt">${APT_SHORT[k] ?? k.charAt(0).toUpperCase()}${v}</span>`)}
+              .map(([k, v]) => html`<span class="apt">${OPERATIVE_SHORT[k as OperativeType] ?? k.charAt(0).toUpperCase()}${v}</span>`)}
           </div>
         ` : nothing}
 

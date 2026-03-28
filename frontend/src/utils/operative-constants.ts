@@ -18,6 +18,26 @@ export const OPERATIVE_COLORS: Record<OperativeType, string> = {
   assassin: '#dc2626',
 };
 
+/** Single-letter abbreviations for ultra-compact displays (party panel cards). */
+export const OPERATIVE_SHORT: Record<OperativeType, string> = {
+  spy: 'S',
+  guardian: 'G',
+  saboteur: 'B',
+  propagandist: 'P',
+  infiltrator: 'I',
+  assassin: 'A',
+};
+
+/** Three-letter abbreviations for terminal/monospace displays. */
+export const OPERATIVE_LABEL: Record<OperativeType, string> = {
+  spy: 'SPY',
+  guardian: 'GRD',
+  saboteur: 'SAB',
+  propagandist: 'PRP',
+  infiltrator: 'INF',
+  assassin: 'ASN',
+};
+
 /** RP cost per operative type. */
 export const OPERATIVE_RP_COSTS: Record<OperativeType, number> = {
   spy: 3,
