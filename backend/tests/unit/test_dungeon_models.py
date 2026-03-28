@@ -223,9 +223,10 @@ class TestCombatSubmission:
         )
         assert len(sub.actions) == 2
 
-    def test_empty_actions_rejected(self):
-        with pytest.raises(ValidationError, match="too_short"):
-            CombatSubmission(actions=[])
+    def test_empty_actions_allowed(self):
+        """Empty actions = auto-defend all agents (timer expiry scenario)."""
+        sub = CombatSubmission(actions=[])
+        assert len(sub.actions) == 0
 
 
 # ── ScoutRequest / RestRequest ───────────────────────────────────────────

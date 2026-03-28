@@ -230,9 +230,14 @@ class CombatAction(BaseModel):
 
 
 class CombatSubmission(BaseModel):
-    """All combat actions for one planning phase."""
+    """All combat actions for one planning phase.
 
-    actions: list[CombatAction] = Field(..., min_length=1)
+    Empty actions list is valid: the backend auto-defends all agents
+    (guardian_shield or spy_observe). This happens on timer expiry when
+    the player hasn't selected any actions.
+    """
+
+    actions: list[CombatAction] = Field(default_factory=list)
 
 
 class ScoutRequest(BaseModel):

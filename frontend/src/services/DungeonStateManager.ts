@@ -25,9 +25,16 @@ import type {
   RoomNodeClient,
 } from '../types/dungeon.js';
 import type { Agent, AptitudeSet } from '../types/index.js';
+import {
+  formatCombatPlanning,
+  formatCombatResolution,
+  formatCombatStart,
+} from '../utils/dungeon-formatters.js';
+import { combatSystemLine } from '../utils/terminal-formatters.js';
 import { agentsApi } from './api/AgentsApiService.js';
 import { dungeonApi } from './api/DungeonApiService.js';
 import { captureError } from './SentryService.js';
+import { terminalState } from './TerminalStateManager.js';
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
@@ -369,8 +376,22 @@ class DungeonStateManager {
       };
       const resp = await dungeonApi.submitCombat(runId, submission);
       if (resp.success && resp.data) {
-        this.lastAutoSubmitResult.value = resp.data;
+        this.combatSubmitting.value = false;
         this.applyState(resp.data.state);
+
+        // Render battle log directly into terminal
+        if (resp.data.round_result) {
+          const partyNames = this.party.value.map((a) => a.agent_name);
+          const lines = [
+            combatSystemLine('[AUTO] Timer expired. Actions submitted.'),
+            ...formatCombatResolution(resp.data.round_result, partyNames),
+          ];
+          if (resp.data.state.phase === 'combat_planning' && resp.data.state.combat) {
+            lines.push(...formatCombatStart(resp.data.state.combat));
+            lines.push(...formatCombatPlanning(resp.data.state.party));
+          }
+          terminalState.appendOutput(lines);
+        }
         return;
       }
     } catch {

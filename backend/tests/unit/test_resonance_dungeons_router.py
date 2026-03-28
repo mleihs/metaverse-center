@@ -376,12 +376,15 @@ class TestSubmitCombatActions:
             )
         assert resp.status_code == 200
 
-    def test_empty_actions(self, client):
+    def test_empty_actions_accepted(self, client):
+        """Empty actions = auto-defend all agents (timer expiry)."""
         resp = client.post(
             f"/api/v1/dungeons/runs/{RUN_ID}/combat/submit",
             json={"actions": []},
         )
-        assert resp.status_code == 422
+        # 400 = "Not in combat planning phase" (mock has no active run)
+        # Key: NOT 422 — empty actions pass validation
+        assert resp.status_code != 422
 
 
 # ── POST /dungeons/runs/{run_id}/scout ───────────────────────────────────
