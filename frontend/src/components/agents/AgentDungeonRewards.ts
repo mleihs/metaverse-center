@@ -13,16 +13,14 @@
  */
 
 import { localized, msg } from '@lit/localize';
-import { css, html, LitElement, nothing } from 'lit';
+import { css, html, LitElement, nothing, type PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { dungeonApi } from '../../services/api/DungeonApiService.js';
 import type { AgentLootEffect } from '../../types/dungeon.js';
+import { LOOT_TIER_MARKERS } from '../../utils/dungeon-formatters.js';
 import { icons } from '../../utils/icons.js';
 
 import '../shared/LoadingState.js';
-
-/** Unicode markers matching LOOT_TIER_MARKERS in dungeon-formatters.ts. */
-const TIER_MARKERS: Record<number, string> = { 1: '\u25C6', 2: '\u2605', 3: '\u2726' };
 
 /** Human-readable effect type labels (i18n). */
 function getEffectLabel(effectType: string): string {
@@ -195,22 +193,6 @@ export class VelgAgentDungeonRewards extends LitElement {
       color: var(--color-text-tertiary);
     }
 
-    /* ── Count badge ─────────────────────────── */
-
-    .count {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 18px;
-      height: 18px;
-      padding: 0 var(--space-1);
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: 10px;
-      color: var(--color-text-primary);
-      border: var(--border-light);
-      background: var(--color-surface-sunken);
-    }
   `;
 
   @property() simulationId = '';
@@ -222,6 +204,12 @@ export class VelgAgentDungeonRewards extends LitElement {
   connectedCallback(): void {
     super.connectedCallback();
     this._loadEffects();
+  }
+
+  protected willUpdate(changed: PropertyValues): void {
+    if (changed.has('agentId') || changed.has('simulationId')) {
+      this._loadEffects();
+    }
   }
 
   private async _loadEffects(): Promise<void> {
@@ -258,7 +246,7 @@ export class VelgAgentDungeonRewards extends LitElement {
       }
       case 'permanent_dungeon_bonus':
       case 'next_dungeon_bonus':
-        return p.description_en as string ?? msg('Dungeon bonus');
+        return (p.description_en as string | undefined) ?? msg('Dungeon bonus');
       case 'event_modifier':
         return msg('Reduced event impact');
       case 'arc_modifier':
@@ -300,7 +288,7 @@ export class VelgAgentDungeonRewards extends LitElement {
 
   private _renderReward(effect: AgentLootEffect, index: number) {
     const tier = this._inferTier(effect);
-    const marker = TIER_MARKERS[tier] ?? '\u25C6';
+    const marker = LOOT_TIER_MARKERS[tier] ?? '\u25C6';
     const detail = this._formatDetail(effect);
 
     return html`

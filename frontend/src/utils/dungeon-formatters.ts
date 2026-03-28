@@ -50,7 +50,7 @@ const ROOM_SYMBOLS: Record<string, string> = {
 // ── Loot Tier Markers ───────────────────────────────────────────────────────
 
 /** Unicode markers for loot tiers: ◆ minor, ★ major, ✦ legendary. */
-const LOOT_TIER_MARKERS: Record<number, string> = { 1: '\u25C6', 2: '\u2605', 3: '\u2726' };
+export const LOOT_TIER_MARKERS: Record<number, string> = { 1: '\u25C6', 2: '\u2605', 3: '\u2726' };
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
