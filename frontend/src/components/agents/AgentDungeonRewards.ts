@@ -240,8 +240,10 @@ export class VelgAgentDungeonRewards extends LitElement {
     switch (effect.effect_type) {
       case 'aptitude_boost': {
         const choices = p.aptitude_choices as string[] | undefined;
+        const aptitude = p.aptitude as string | undefined;
         const bonus = (p.bonus as number) ?? 1;
         if (choices?.length) return `+${bonus} ${choices.join(' / ')}`;
+        if (aptitude) return `+${bonus} ${aptitude}`;
         return `+${bonus}`;
       }
       case 'permanent_dungeon_bonus':

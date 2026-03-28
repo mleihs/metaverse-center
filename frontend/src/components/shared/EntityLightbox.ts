@@ -194,6 +194,7 @@ export class VelgEntityLightbox extends LitElement {
     .lightbox__body {
       overflow-y: auto;
       overscroll-behavior: contain;
+      padding-bottom: var(--space-4);
       scrollbar-width: thin;
       scrollbar-color: var(--color-border) transparent;
     }
