@@ -134,8 +134,8 @@ export class VelgAdminAIUsageTab extends LitElement {
           <div class="stats-grid">
             <velg-metric-card label=${msg('Total Calls')} value=${s.total_calls.toLocaleString()}></velg-metric-card>
             <velg-metric-card label=${msg('Total Tokens')} value=${this._formatTokens(s.total_tokens)}></velg-metric-card>
-            <velg-metric-card label=${msg('Est. Cost')} value=${'$' + s.total_cost_usd.toFixed(2)} variant="warning"></velg-metric-card>
-            <velg-metric-card label=${msg('Avg/Call')} value=${'$' + s.avg_cost_per_call.toFixed(4)}></velg-metric-card>
+            <velg-metric-card label=${msg('Est. Cost')} value=${`$${s.total_cost_usd.toFixed(2)}`} variant="warning"></velg-metric-card>
+            <velg-metric-card label=${msg('Avg/Call')} value=${`$${s.avg_cost_per_call.toFixed(4)}`}></velg-metric-card>
           </div>
         </div>
 
@@ -174,8 +174,8 @@ export class VelgAdminAIUsageTab extends LitElement {
 
 
   private _formatTokens(n: number): string {
-    if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
-    if (n >= 1_000) return (n / 1_000).toFixed(0) + 'K';
+    if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+    if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K`;
     return n.toLocaleString();
   }
 

@@ -392,7 +392,7 @@ export function formatStatus(
     const lbl = zs.stability_label?.toUpperCase() ?? stabilityLabel(pct);
     const bar = stabilityBar(pct);
     lines.push(responseLine(
-      `  ${pad(zs.zone_name, 22)} ${pad(String(pct) + '%', 5)} [${pad(lbl, 10)}] ${bar}`,
+      `  ${pad(zs.zone_name, 22)} ${pad(`${pct}%`, 5)} [${pad(lbl, 10)}] ${bar}`,
     ));
   }
 
