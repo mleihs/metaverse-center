@@ -28,7 +28,6 @@ from backend.services.combat.stress_system import (
     stress_threshold,
 )
 
-
 # ── Constants verification ────────────────────────────────────────────────
 
 

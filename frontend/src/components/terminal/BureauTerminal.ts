@@ -698,6 +698,17 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
     });
   }
 
+  /**
+   * Public API: force-scroll to bottom and reset the user-scroll flag.
+   * Called by DungeonTerminalView after appending output from external
+   * command dispatch (Quick Actions, CombatBar) where async layout changes
+   * during the command may have incorrectly set _userScrolled to true.
+   */
+  forceScrollToBottom(): void {
+    this._userScrolled = false;
+    this._scrollToBottom();
+  }
+
   // ── Focus Management ─────────────────────────────────────────────────────
 
   private _focusInput(): void {

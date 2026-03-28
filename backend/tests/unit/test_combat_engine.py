@@ -14,11 +14,9 @@ Covers:
 """
 
 from unittest.mock import patch
-from uuid import UUID, uuid4
+from uuid import uuid4
 
-import pytest
-
-from backend.models.combat import AgentCombatState, CombatState, EnemyInstance
+from backend.models.combat import AgentCombatState, EnemyInstance
 from backend.services.combat.combat_engine import (
     AgentAction,
     CombatContext,
@@ -35,7 +33,6 @@ from backend.services.combat.combat_engine import (
     has_debuff,
     resolve_combat_round,
 )
-
 
 # ── Fixtures / Helpers ────────────────────────────────────────────────────
 
@@ -385,7 +382,6 @@ class TestResolveCombatRound:
             result = resolve_combat_round(ctx, actions, enemy_actions, SHADOW_TEMPLATES)
 
         # Should only resolve ONE action (the last submitted = assassin_precision_strike)
-        damage_events = [e for e in result.events if e.action == "Precision Strike"]
         # May or may not have damage event depending on hit, but should NOT have spy_observe effect
         spy_events = [e for e in result.events if e.action == "Observe"]
         assert len(spy_events) == 0  # deduped out
@@ -408,7 +404,7 @@ class TestResolveCombatRound:
 
         # Guaranteed hit
         with patch("backend.services.combat.combat_engine.random.randint", return_value=1):
-            result = resolve_combat_round(ctx, agent_actions, enemy_actions, SHADOW_TEMPLATES)
+            resolve_combat_round(ctx, agent_actions, enemy_actions, SHADOW_TEMPLATES)
 
         # Shield should have absorbed the hit
         assert agent.condition == "operational"
@@ -431,7 +427,7 @@ class TestResolveCombatRound:
             for e in enemies
         ]
 
-        result = resolve_combat_round(ctx, agent_actions, enemy_actions, SHADOW_TEMPLATES)
+        resolve_combat_round(ctx, agent_actions, enemy_actions, SHADOW_TEMPLATES)
 
         # Total stress should not exceed 150 (cap per round)
         assert agent.stress <= 150
@@ -489,7 +485,7 @@ class TestResolveCombatRound:
         ]
         enemy_actions = []
 
-        result = resolve_combat_round(ctx, agent_actions, enemy_actions, SHADOW_TEMPLATES)
+        resolve_combat_round(ctx, agent_actions, enemy_actions, SHADOW_TEMPLATES)
 
         # Enemy should NOT have taken damage
         assert enemy.condition_steps_remaining == 5
@@ -535,7 +531,7 @@ class TestResolveCombatRound:
             ),
         ]
 
-        result = resolve_combat_round(ctx, agent_actions, [], SHADOW_TEMPLATES)
+        resolve_combat_round(ctx, agent_actions, [], SHADOW_TEMPLATES)
 
         # Target should have healed 120 stress: 300 - 120 = 180
         assert target.stress == 180
@@ -567,7 +563,7 @@ class TestResolveCombatRound:
         ]
 
         with patch("backend.services.combat.combat_engine.random.randint", return_value=1):
-            result = resolve_combat_round(ctx, agent_actions, enemy_actions, SHADOW_TEMPLATES)
+            resolve_combat_round(ctx, agent_actions, enemy_actions, SHADOW_TEMPLATES)
 
         # Agent B should be protected by the shield cast this round
         assert target.condition == "operational"
@@ -627,7 +623,7 @@ class TestStressAttackResolveCheck:
         ]
 
         with patch("backend.services.combat.combat_engine.resolve_stress_check", return_value="affliction"):
-            result = resolve_combat_round(ctx, [], enemy_actions, SHADOW_TEMPLATES)
+            resolve_combat_round(ctx, [], enemy_actions, SHADOW_TEMPLATES)
 
         # Stress crossed 800 → resolve check → affliction → condition=afflicted
         assert agent.condition == "afflicted"
@@ -649,7 +645,7 @@ class TestStressAttackResolveCheck:
         ]
 
         with patch("backend.services.combat.combat_engine.resolve_stress_check", return_value="virtue"):
-            result = resolve_combat_round(ctx, [], enemy_actions, SHADOW_TEMPLATES)
+            resolve_combat_round(ctx, [], enemy_actions, SHADOW_TEMPLATES)
 
         # Virtue = agent stays operational (stress still high but no condition change)
         assert agent.condition == "operational"

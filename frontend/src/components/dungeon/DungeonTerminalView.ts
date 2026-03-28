@@ -19,7 +19,7 @@
 import { localized, msg } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property, query, state } from 'lit/decorators.js';
 
 import { appState } from '../../services/AppStateManager.js';
 import { dungeonState } from '../../services/DungeonStateManager.js';
@@ -35,6 +35,7 @@ import {
   terminalTokens,
   terminalWrapperStyles,
 } from '../shared/terminal-theme-styles.js';
+import type { VelgBureauTerminal } from '../terminal/BureauTerminal.js';
 import '../terminal/BureauTerminal.js';
 import './DungeonCombatBar.js';
 import './DungeonEnemyPanel.js';
@@ -234,6 +235,8 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
 
   @property({ type: String }) simulationId = '';
 
+  @query('velg-bureau-terminal') private _terminal?: VelgBureauTerminal;
+
   @state() private _initialized = false;
   @state() private _error: string | null = null;
 
@@ -326,6 +329,10 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
       ]);
     } finally {
       terminalState.isLoading.value = false;
+      // Force scroll: async operations (move, combat) change layout via
+      // applyState, which can shift scroll position and set _userScrolled
+      // before the output lines are appended. Reset and scroll.
+      this._terminal?.forceScrollToBottom();
     }
   }
 

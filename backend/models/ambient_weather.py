@@ -8,10 +8,10 @@ categories and agent moodlet effects. All classification is rule-based
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 
 
-class AmbientCategory(str, Enum):
+class AmbientCategory(StrEnum):
     """Weather condition categories derived from WMO codes + sensor thresholds."""
 
     CLEAR = "clear"
@@ -33,7 +33,7 @@ class AmbientCategory(str, Enum):
     NEW_MOON = "new_moon"
 
 
-class TimeOfDay(str, Enum):
+class TimeOfDay(StrEnum):
     """Time-of-day slot for atmospheric opener selection."""
 
     DAWN = "dawn"

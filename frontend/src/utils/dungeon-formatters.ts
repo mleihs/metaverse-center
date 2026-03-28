@@ -565,15 +565,15 @@ export function formatSkillCheckResult(
 export function formatLootDrop(items: LootItem[]): TerminalLine[] {
   const lines: TerminalLine[] = [];
 
-  lines.push(systemLine(`\u2550\u2550\u2550 ${msg('LOOT FOUND')} \u2550\u2550\u2550`));
+  lines.push(combatSystemLine(`\u2550\u2550\u2550 ${msg('LOOT FOUND')} \u2550\u2550\u2550`));
   lines.push(systemLine(''));
 
   const tierMarkers: Record<number, string> = { 1: '\u25C6', 2: '\u2605', 3: '\u2726' };
 
   for (const item of items) {
     const marker = tierMarkers[item.tier] ?? '\u25C6';
-    lines.push(responseLine(`  ${marker} ${item.name_en} (${msg('Tier')} ${item.tier})`));
-    lines.push(responseLine(`    ${item.description_en}`));
+    lines.push(combatHealLine(`  ${marker} ${item.name_en} (${msg('Tier')} ${item.tier})`));
+    lines.push(combatHealLine(`    ${item.description_en}`));
   }
 
   return lines;
@@ -652,47 +652,74 @@ export function formatRetreatResult(loot: LootItem[]): TerminalLine[] {
 
 // ── Dungeon Complete ─────────────────────────────────────────────────────────
 
+/** Pick the right line factory based on agent condition — visual severity. */
+function conditionLine(condition: string, content: string): TerminalLine {
+  switch (condition) {
+    case 'operational': return combatHealLine(content);
+    case 'stressed':    return combatPlayerLine(content);
+    case 'wounded':
+    case 'afflicted':   return combatDamageLine(content);
+    case 'captured':    return combatMissLine(content);
+    default:            return responseLine(content);
+  }
+}
+
 export function formatDungeonComplete(
   state: DungeonClientState,
   loot: LootItem[],
 ): TerminalLine[] {
   const lines: TerminalLine[] = [];
-  const mxDepth = getMaxDepth(state.rooms);
-
-  lines.push(systemLine('\u2550'.repeat(50)));
-  lines.push(systemLine(`  ${msg('DUNGEON COMPLETE')} \u2014 ${state.archetype.toUpperCase()}`));
-  lines.push(systemLine('\u2550'.repeat(50)));
-  lines.push(systemLine(''));
-
-  lines.push(responseLine(`  ${msg('Depth Reached')}: ${state.depth}/${mxDepth}`));
-
+  const maxDepth = getMaxDepth(state.rooms);
   const totalRooms = state.rooms.length;
   const clearedRooms = state.rooms.filter(r => r.cleared).length;
-  lines.push(responseLine(`  ${msg('Rooms Cleared')}: ${clearedRooms}/${totalRooms}`));
+  const W = 50; // box width
+
+  // ── Banner ──
+  lines.push(combatSystemLine('\u2550'.repeat(W)));
+  lines.push(combatSystemLine('\u2551' + ' '.repeat(W - 2) + '\u2551'));
+  lines.push(combatSystemLine(
+    '\u2551' + `D U N G E O N   C O M P L E T E`.padStart(Math.floor((W - 2 + 33) / 2)).padEnd(W - 2) + '\u2551',
+  ));
+  lines.push(combatSystemLine('\u2551' + ' '.repeat(W - 2) + '\u2551'));
+  lines.push(combatSystemLine(
+    '\u2551' + `${state.archetype.toUpperCase()} \u2014 ${msg('DIFFICULTY')} ${state.difficulty}`.padStart(Math.floor((W - 2 + state.archetype.length + 16) / 2)).padEnd(W - 2) + '\u2551',
+  ));
+  lines.push(combatSystemLine('\u2551' + ' '.repeat(W - 2) + '\u2551'));
+  lines.push(combatSystemLine('\u2550'.repeat(W)));
   lines.push(systemLine(''));
 
-  // Party status
-  lines.push(systemLine(msg('PARTY STATUS:')));
-  for (const agent of state.party) {
-    const stressLabel = agent.stress_threshold === 'critical'
-      ? `${msg('Stress')}: ${agent.stress} [${msg('CRITICAL')}]`
-      : `${msg('Stress')}: ${agent.stress}`;
-    lines.push(responseLine(`  ${agent.agent_name} \u2014 ${CONDITION_LABELS[agent.condition] ?? agent.condition} (${stressLabel})`));
-  }
+  // ── Expedition Summary ──
+  lines.push(combatSystemLine(msg('EXPEDITION SUMMARY')));
+  lines.push(responseLine(`  ${msg('Depth Reached').padEnd(18)} ${state.depth} / ${maxDepth}`));
+  lines.push(responseLine(`  ${msg('Rooms Cleared').padEnd(18)} ${clearedRooms} / ${totalRooms}`));
+  lines.push(systemLine(''));
 
-  // Loot
+  // ── Party Status ──
+  lines.push(combatSystemLine(msg('PARTY STATUS')));
+  const nameWidth = Math.max(...state.party.map(a => a.agent_name.length), 12);
+  for (const agent of state.party) {
+    const cond = CONDITION_LABELS[agent.condition] ?? agent.condition;
+    const bar = stressBar(agent.stress, 10);
+    const stressStr = String(agent.stress).padStart(4);
+    const label = `  ${agent.agent_name.padEnd(nameWidth)}  ${cond.padEnd(12)} ${stressStr}/1000 ${bar}`;
+    lines.push(conditionLine(agent.condition, label));
+  }
+  lines.push(systemLine(''));
+
+  // ── Spoils ──
   if (loot.length > 0) {
-    lines.push(systemLine(''));
-    lines.push(systemLine(msg('LOOT:')));
+    lines.push(combatSystemLine(msg('SPOILS CLAIMED')));
     const tierMarkers: Record<number, string> = { 1: '\u25C6', 2: '\u2605', 3: '\u2726' };
     for (const item of loot) {
       const marker = tierMarkers[item.tier] ?? '\u25C6';
-      lines.push(responseLine(`  ${marker} ${item.name_en} \u2014 ${item.description_en}`));
+      lines.push(combatHealLine(`  ${marker} ${item.name_en} \u2014 ${item.description_en}`));
     }
+    lines.push(systemLine(''));
   }
 
-  lines.push(systemLine(''));
-  lines.push(systemLine('\u2550'.repeat(50)));
+  // ── Closing ──
+  lines.push(combatMissLine(msg('The darkness recedes. Your agents emerge, changed.')));
+  lines.push(combatSystemLine('\u2550'.repeat(W)));
 
   return lines;
 }

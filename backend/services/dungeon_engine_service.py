@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import random
 from datetime import UTC, datetime
 from uuid import UUID
 
@@ -331,6 +332,10 @@ class DungeonEngineService:
             if can_act(agent.condition):
                 agent.stress = min(1000, agent.stress + ambient)
 
+        # Override banter trigger for boss rooms
+        if target_room.room_type == "boss":
+            banter_trigger = "boss_approach"
+
         # Generate banter
         banter = select_banter(
             banter_trigger,
@@ -340,6 +345,22 @@ class DungeonEngineService:
         banter_text = None
         if banter:
             instance.used_banter_ids.append(banter["id"])
+            # Resolve {agent}, {agent_a}, {agent_b} placeholders with party members
+            alive = [a for a in instance.party if can_act(a.condition)]
+            if alive:
+                agent = random.choice(alive)
+                for key in ("text_en", "text_de"):
+                    if key in banter:
+                        banter[key] = banter[key].replace("{agent}", agent.agent_name)
+                if len(alive) >= 2:
+                    pair = random.sample(alive, 2)
+                    for key in ("text_en", "text_de"):
+                        if key in banter:
+                            banter[key] = (
+                                banter[key]
+                                .replace("{agent_a}", pair[0].agent_name)
+                                .replace("{agent_b}", pair[1].agent_name)
+                            )
             banter_text = banter
 
         # Process room by type
@@ -433,32 +454,37 @@ class DungeonEngineService:
                 )
 
         # Auto-defend for agents without submitted actions.
-        # Prefers damage abilities so AFK combat can still win.
+        # Rotates through damage abilities per round for variety (not always
+        # the same move). Falls back to self-buff for pure support/tank agents.
         submitted_agent_ids = {str(a.agent_id) for a in agent_actions}
+        alive_enemies = [e for e in instance.combat.enemies if e.is_alive]
         for agent in instance.party:
             if can_act(agent.condition) and str(agent.agent_id) not in submitted_agent_ids:
-                first_enemy = next((e for e in instance.combat.enemies if e.is_alive), None)
-                if not first_enemy:
+                if not alive_enemies:
                     continue
                 abilities = get_agent_all_abilities(agent.aptitudes)
-                # Prefer damage ability → target enemy. Fall back to self-buff.
-                damage_ability = next(
-                    (a for a in abilities if a.effect_type == "damage" and a.targets == "single_enemy"),
-                    None,
-                )
-                if damage_ability:
+                damage_abilities = [
+                    a for a in abilities
+                    if a.effect_type == "damage" and a.targets == "single_enemy"
+                ]
+                if damage_abilities:
+                    # Rotate: round_num + agent hash → different ability each round
+                    idx = (instance.combat.round_num + hash(str(agent.agent_id))) % len(damage_abilities)
+                    chosen = damage_abilities[idx]
+                    # Also rotate target across alive enemies
+                    target_idx = (instance.combat.round_num + hash(str(agent.agent_id))) % len(alive_enemies)
                     agent_actions.append(
                         AgentAction(
                             agent_id=agent.agent_id,
-                            ability_id=damage_ability.id,
-                            target_id=first_enemy.instance_id,
+                            ability_id=chosen.id,
+                            target_id=alive_enemies[target_idx].instance_id,
                         )
                     )
                 else:
                     # No damage ability (pure support/tank): use first available
                     fallback = abilities[0] if abilities else None
                     if fallback:
-                        target = str(agent.agent_id) if fallback.targets == "self" else first_enemy.instance_id
+                        target = str(agent.agent_id) if fallback.targets == "self" else alive_enemies[0].instance_id
                         agent_actions.append(
                             AgentAction(
                                 agent_id=agent.agent_id,
@@ -512,11 +538,17 @@ class DungeonEngineService:
             },
         )
 
+        round_data = cls._build_round_result_dict(round_result)
+
         if round_result.combat_over:
             if round_result.victory:
-                return await cls._handle_combat_victory(admin_supabase, instance)
+                result = await cls._handle_combat_victory(admin_supabase, instance)
+                result["round_result"] = round_data
+                return result
             if round_result.party_wipe:
-                return await cls._handle_party_wipe(admin_supabase, instance)
+                result = await cls._handle_party_wipe(admin_supabase, instance)
+                result["round_result"] = round_data
+                return result
             if round_result.stalemate:
                 return await cls._handle_combat_stalemate(admin_supabase, instance, round_result)
 
@@ -527,28 +559,37 @@ class DungeonEngineService:
         await cls._checkpoint(admin_supabase, instance)
 
         return {
-            "round_result": {
-                "round": round_result.round_num,
-                "events": [
-                    {
-                        "actor": e.actor,
-                        "action": e.action,
-                        "target": e.target,
-                        "hit": e.hit,
-                        "damage": e.damage_steps,
-                        "stress": e.stress_delta,
-                        "narrative_en": e.narrative_en,
-                        "narrative_de": e.narrative_de,
-                    }
-                    for e in round_result.events
-                ],
-                "narrative_en": round_result.narrative_summary_en,
-                "narrative_de": round_result.narrative_summary_de,
-                "victory": round_result.victory,
-                "wipe": round_result.party_wipe,
-                "stalemate": round_result.stalemate,
-            },
+            "round_result": round_data,
             "state": cls._build_client_state(instance).model_dump(),
+        }
+
+    @staticmethod
+    def _build_round_result_dict(round_result: CombatRoundResult) -> dict:
+        """Serialize a CombatRoundResult into the API response dict.
+
+        Shared by normal rounds, victory, wipe, and stalemate responses
+        so the frontend always receives the final round's combat events.
+        """
+        return {
+            "round": round_result.round_num,
+            "events": [
+                {
+                    "actor": e.actor,
+                    "action": e.action,
+                    "target": e.target,
+                    "hit": e.hit,
+                    "damage": e.damage_steps,
+                    "stress": e.stress_delta,
+                    "narrative_en": e.narrative_en,
+                    "narrative_de": e.narrative_de,
+                }
+                for e in round_result.events
+            ],
+            "narrative_en": round_result.narrative_summary_en,
+            "narrative_de": round_result.narrative_summary_de,
+            "victory": round_result.victory,
+            "wipe": round_result.party_wipe,
+            "stalemate": round_result.stalemate,
         }
 
     @classmethod
@@ -695,27 +736,7 @@ class DungeonEngineService:
         )
 
         return {
-            "round_result": {
-                "round": round_result.round_num,
-                "events": [
-                    {
-                        "actor": e.actor,
-                        "action": e.action,
-                        "target": e.target,
-                        "hit": e.hit,
-                        "damage": e.damage_steps,
-                        "stress": e.stress_delta,
-                        "narrative_en": e.narrative_en,
-                        "narrative_de": e.narrative_de,
-                    }
-                    for e in round_result.events
-                ],
-                "narrative_en": round_result.narrative_summary_en,
-                "narrative_de": round_result.narrative_summary_de,
-                "victory": False,
-                "wipe": False,
-                "stalemate": True,
-            },
+            "round_result": cls._build_round_result_dict(round_result),
             "stalemate": True,
             "state": cls._build_client_state(instance).model_dump(),
         }
@@ -1293,7 +1314,7 @@ class DungeonEngineService:
         spawn_id = encounter.combat_encounter_id if encounter else None
 
         if not spawn_id:
-            spawn_id = "shadow_whispers_spawn"  # fallback
+            spawn_id = "shadow_remnant_spawn" if is_boss else "shadow_whispers_spawn"
 
         enemies = spawn_enemies(spawn_id, instance.difficulty, instance.depth)
         is_ambush = check_ambush(

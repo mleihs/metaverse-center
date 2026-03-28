@@ -15,13 +15,10 @@ Key edge cases from architecture fixes:
 
 from unittest.mock import patch
 
-import pytest
-
 from backend.services.combat.skill_checks import (
     APTITUDE_CHECK_TYPE_MAP,
     APTITUDE_MULTIPLIER,
     BASE_CHECK_VALUE,
-    CHECK_TYPE_PERSONALITY_MODIFIERS,
     CHECK_VALUE_CAP,
     CHECK_VALUE_FLOOR,
     FAIL_CEILING,
@@ -32,7 +29,6 @@ from backend.services.combat.skill_checks import (
     format_check_for_terminal,
     resolve_skill_check,
 )
-
 
 # ── Constants verification ────────────────────────────────────────────────
 

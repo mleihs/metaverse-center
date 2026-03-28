@@ -299,6 +299,32 @@ SHADOW_ELITE_ENCOUNTERS: list[EncounterTemplate] = [
     ),
 ]
 
+# ── Boss Encounter (1) ──────────────────────────────────────────────────────
+
+SHADOW_BOSS_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="shadow_the_remnant_boss",
+        archetype="The Shadow",
+        room_type="boss",
+        min_depth=1,
+        max_depth=99,
+        min_difficulty=1,
+        description_en=(
+            "The corridor ends. The darkness ahead is absolute \u2014 not absence of light, "
+            "but presence of something vast. The Remnant awaits: an echo of every suppressed "
+            "memory, every buried conflict, given terrible form. The whispers fall silent. "
+            "There is only the sound of your agents' breathing."
+        ),
+        description_de=(
+            "Der Korridor endet. Die Dunkelheit voraus ist absolut \u2014 nicht Abwesenheit von "
+            "Licht, sondern Anwesenheit von etwas Gewaltigem. Der \u00dcberrest wartet: ein Echo "
+            "jeder unterdrueckten Erinnerung, jedes begrabenen Konflikts, in schrecklicher "
+            "Gestalt. Das Fluestern verstummt. Nur noch das Atmen eurer Agenten ist zu hoeren."
+        ),
+        combat_encounter_id="shadow_remnant_spawn",
+    ),
+]
+
 # ── Rest Encounter (1) ──────────────────────────────────────────────────────
 
 SHADOW_REST_ENCOUNTERS: list[EncounterTemplate] = [
@@ -408,6 +434,7 @@ ALL_SHADOW_ENCOUNTERS: list[EncounterTemplate] = (
     SHADOW_COMBAT_ENCOUNTERS
     + SHADOW_NARRATIVE_ENCOUNTERS
     + SHADOW_ELITE_ENCOUNTERS
+    + SHADOW_BOSS_ENCOUNTERS
     + SHADOW_REST_ENCOUNTERS
     + SHADOW_TREASURE_ENCOUNTERS
 )

@@ -25,7 +25,12 @@ import type {
   RoomNodeClient,
 } from '../types/dungeon.js';
 import type { Agent, AptitudeSet } from '../types/index.js';
-import { formatCombatResolution } from '../utils/dungeon-formatters.js';
+import {
+  formatCombatResolution,
+  formatDungeonComplete,
+  formatLootDrop,
+  formatPartyWipe,
+} from '../utils/dungeon-formatters.js';
 import { combatSystemLine } from '../utils/terminal-formatters.js';
 import { agentsApi } from './api/AgentsApiService.js';
 import { dungeonApi } from './api/DungeonApiService.js';
@@ -392,13 +397,38 @@ class DungeonStateManager {
         // screen by 40+ lines of ability descriptions.
         if (resp.data.round_result) {
           const partyNames = this.party.value.map((a) => a.agent_name);
-          terminalState.appendOutput([
+          const lines = [
             combatSystemLine('[AUTO] Timer expired. Actions submitted.'),
             ...formatCombatResolution(resp.data.round_result, partyNames),
-          ]);
+          ];
+
+          // Victory loot
+          if (resp.data.round_result.victory && resp.data.loot && resp.data.loot.length > 0) {
+            lines.push(...formatLootDrop(resp.data.loot));
+          }
+
+          // Dungeon completion (boss victory)
+          if (resp.data.state.phase === 'completed') {
+            lines.push(...formatDungeonComplete(resp.data.state, resp.data.loot ?? []));
+          }
+
+          // Party wipe
+          if (resp.data.state.phase === 'wiped') {
+            lines.push(...formatPartyWipe());
+          }
+
+          terminalState.appendOutput(lines);
         }
+
         this.combatSubmitting.value = false;
-        this.applyState(resp.data.state);
+
+        // Exit dungeon on terminal states (after rendering output)
+        if (resp.data.state.phase === 'completed' || resp.data.state.phase === 'wiped') {
+          terminalState.clearDungeon();
+          this.clear();
+        } else {
+          this.applyState(resp.data.state);
+        }
         return;
       }
     } catch {

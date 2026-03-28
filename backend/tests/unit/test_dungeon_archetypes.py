@@ -16,7 +16,6 @@ from backend.services.dungeon.dungeon_archetypes import (
     get_depth_for_difficulty,
 )
 
-
 # ── ARCHETYPE_CONFIGS ─────────────────────────────────────────────────────
 
 

@@ -41,7 +41,7 @@ import {
   formatSkillCheckResult,
 } from './dungeon-formatters.js';
 import {
-  systemLine, hintLine, errorLine, responseLine,
+  combatSystemLine, systemLine, hintLine, errorLine, responseLine,
   formatInsufficientClearance,
 } from './terminal-formatters.js';
 import { fuzzyMatch as fuzzyMatchEntities } from './fuzzy-search.js';
@@ -720,10 +720,12 @@ async function handleDungeonSubmit(): Promise<TerminalLine[]> {
       const partyNames = dungeonState.party.value.map((a) => a.agent_name);
       lines.push(...formatCombatResolution(resp.data.round_result, partyNames));
 
-      // Victory → loot
+      // Victory → show loot
       if (resp.data.round_result.victory && resp.data.state.phase === 'room_clear') {
-        // Loot will be shown on next state update or separate endpoint
-        lines.push(systemLine(msg('Combat won. Room cleared.')));
+        lines.push(combatSystemLine(msg('VICTORY \u2014 ROOM CLEARED')));
+        if (resp.data.loot && resp.data.loot.length > 0) {
+          lines.push(...formatLootDrop(resp.data.loot));
+        }
       }
 
       // Wipe
@@ -744,9 +746,9 @@ async function handleDungeonSubmit(): Promise<TerminalLine[]> {
       }
     }
 
-    // Check for completion
+    // Check for completion (boss victory)
     if (resp.data.state.phase === 'completed') {
-      lines.push(...formatDungeonComplete(resp.data.state, []));
+      lines.push(...formatDungeonComplete(resp.data.state, resp.data.loot ?? []));
       _exitDungeon();
     }
 

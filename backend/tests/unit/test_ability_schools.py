@@ -23,7 +23,6 @@ from backend.services.combat.ability_schools import (
     get_available_abilities,
 )
 
-
 # ── Data integrity ─────────────────────────────────────────────────────────
 
 
@@ -69,7 +68,7 @@ class TestAbilityDataIntegrity:
         assert len(ids) == len(set(ids)), f"Duplicate IDs found: {[x for x in ids if ids.count(x) > 1]}"
 
     def test_all_abilities_have_bilingual_names(self):
-        for school, abilities in ALL_ABILITIES.items():
+        for _school, abilities in ALL_ABILITIES.items():
             for ability in abilities:
                 assert ability.name_en, f"{ability.id} missing name_en"
                 assert ability.name_de, f"{ability.id} missing name_de"
@@ -259,7 +258,7 @@ class TestGetAgentAllAbilities:
 
     def test_all_schools_at_max(self):
         """All 6 schools at level 9."""
-        aptitudes = {school: 9 for school in ALL_ABILITIES}
+        aptitudes = dict.fromkeys(ALL_ABILITIES, 9)
         abilities = get_agent_all_abilities(aptitudes)
         total = sum(len(v) for v in ALL_ABILITIES.values())
         assert len(abilities) == total

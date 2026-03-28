@@ -358,6 +358,10 @@ export interface EncounterChoiceClient {
 export interface CombatSubmitResponse {
   round_result?: CombatRoundResult | null;
   waiting_for_players?: boolean;
+  /** True when combat ended in victory (room_clear or completed phase). */
+  victory?: boolean;
+  /** Loot items rolled on combat victory. Empty/absent on wipe or stalemate. */
+  loot?: LootItem[];
   state: DungeonClientState;
 }
 

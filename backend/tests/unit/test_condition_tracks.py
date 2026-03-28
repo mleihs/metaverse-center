@@ -19,7 +19,6 @@ from backend.services.combat.condition_tracks import (
     get_condition_severity,
 )
 
-
 # ── apply_condition_damage ────────────────────────────────────────────────
 
 

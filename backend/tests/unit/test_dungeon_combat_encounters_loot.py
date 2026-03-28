@@ -41,7 +41,6 @@ from backend.services.dungeon.dungeon_loot import (
     roll_loot,
 )
 
-
 # ══════════════════════════════════════════════════════════════════════════
 # ── dungeon_combat ────────────────────────────────────────────────────────
 # ══════════════════════════════════════════════════════════════════════════
@@ -174,7 +173,7 @@ class TestGetEnemyTemplatesDict:
 
     def test_values_are_dicts(self):
         result = get_enemy_templates_dict()
-        for eid, data in result.items():
+        for _eid, data in result.items():
             assert isinstance(data, dict)
             assert "attack_power" in data
             assert "action_weights" in data

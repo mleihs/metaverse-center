@@ -13,7 +13,6 @@ import pytest
 
 from backend.services.dungeon.dungeon_generator import generate_dungeon_graph
 
-
 # ── Helpers ───────────────────────────────────────────────────────────────
 
 
@@ -191,7 +190,7 @@ class TestSeedReproducibility:
         rooms_a = generate_dungeon_graph("The Shadow", 3, 5, seed=42)
         rooms_b = generate_dungeon_graph("The Shadow", 3, 5, seed=42)
         assert len(rooms_a) == len(rooms_b)
-        for a, b in zip(rooms_a, rooms_b):
+        for a, b in zip(rooms_a, rooms_b, strict=True):
             assert a.index == b.index
             assert a.depth == b.depth
             assert a.room_type == b.room_type
