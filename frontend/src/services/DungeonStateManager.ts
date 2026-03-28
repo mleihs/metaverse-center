@@ -16,6 +16,7 @@ import type {
   AvailableDungeonResponse,
   CombatAction,
   CombatSubmission,
+  CombatSubmitResponse,
   CombatStateClient,
   DungeonClientState,
   DungeonPhase,
@@ -90,6 +91,10 @@ class DungeonStateManager {
   /** Fires once when the timer naturally expires and auto-submit runs.
    *  DungeonTerminalView watches this to append output to the terminal. */
   readonly timerAutoSubmitted = signal(false);
+
+  /** Last combat round result from auto-submit. DungeonTerminalView consumes
+   *  this to render the battle log when manual submit wasn't used. */
+  readonly lastAutoSubmitResult = signal<CombatSubmitResponse | null>(null);
 
   private _timerInterval: ReturnType<typeof setInterval> | null = null;
   private _autoSubmitFired = false;
@@ -364,6 +369,7 @@ class DungeonStateManager {
       };
       const resp = await dungeonApi.submitCombat(runId, submission);
       if (resp.success && resp.data) {
+        this.lastAutoSubmitResult.value = resp.data;
         this.applyState(resp.data.state);
         return;
       }

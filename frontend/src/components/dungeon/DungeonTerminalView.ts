@@ -27,7 +27,8 @@ import { captureError } from '../../services/SentryService.js';
 import { terminalState } from '../../services/TerminalStateManager.js';
 import type { AvailableDungeonResponse } from '../../types/dungeon.js';
 import { parseAndExecute } from '../../utils/terminal-commands.js';
-import { systemLine } from '../../utils/terminal-formatters.js';
+import { formatCombatResolution, formatCombatStart, formatCombatPlanning } from '../../utils/dungeon-formatters.js';
+import { combatSystemLine, systemLine } from '../../utils/terminal-formatters.js';
 import { initializeTerminalZones } from '../../utils/terminal-initialization.js';
 import {
   terminalAnimations,
@@ -327,6 +328,35 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
     }
   }
 
+  // ── Auto-Submit Battle Log ──────────────────────────────────────────────
+  // When the timer expires and auto-submit fires, the command system is
+  // bypassed. This method consumes the result signal and renders the
+  // battle log to the terminal — same semantic color-coded output as
+  // manual submit would produce.
+
+  private _consumeAutoSubmitResult(): void {
+    const result = dungeonState.lastAutoSubmitResult.value;
+    if (!result) return;
+
+    // Clear immediately to prevent re-consumption
+    dungeonState.lastAutoSubmitResult.value = null;
+
+    const lines = [combatSystemLine('[AUTO] Timer expired. Actions submitted.')];
+
+    if (result.round_result) {
+      const partyNames = dungeonState.party.value.map((a) => a.agent_name);
+      lines.push(...formatCombatResolution(result.round_result, partyNames));
+
+      // Next round planning info
+      if (result.state.phase === 'combat_planning' && result.state.combat) {
+        lines.push(...formatCombatStart(result.state.combat));
+        lines.push(...formatCombatPlanning(result.state.party));
+      }
+    }
+
+    terminalState.appendOutput(lines);
+  }
+
   // ── Render ──────────────────────────────────────────────────────────────
 
   protected render() {
@@ -337,6 +367,9 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
     if (!this._initialized) {
       return html`<div class="terminal-loading">${msg('Initializing dungeon interface...')}_</div>`;
     }
+
+    // Consume auto-submit battle log (timer expiry path)
+    this._consumeAutoSubmitResult();
 
     const sid = this.simulationId || appState.simulationId.value || '';
     const inDungeon = dungeonState.isInDungeon.value;

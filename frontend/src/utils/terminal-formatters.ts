@@ -48,6 +48,33 @@ function commandLine(input: string): TerminalLine {
   return { id: lineId(), type: 'command', content: `> ${input}`, timestamp: new Date() };
 }
 
+// ── Combat Line Factories (reusable across Dungeons + War Room Ops) ─────
+
+/** Party attack hit, ability activation, successful action. */
+function combatPlayerLine(content: string): TerminalLine {
+  return { id: lineId(), type: 'combat-player', content, timestamp: new Date() };
+}
+
+/** Missed attack or failed check — dim, italic. */
+function combatMissLine(content: string): TerminalLine {
+  return { id: lineId(), type: 'combat-miss', content, timestamp: new Date() };
+}
+
+/** Damage received by party — danger red, hull breach warning. */
+function combatDamageLine(content: string): TerminalLine {
+  return { id: lineId(), type: 'combat-damage', content, timestamp: new Date() };
+}
+
+/** Stress heals, condition recovery — life support green. */
+function combatHealLine(content: string): TerminalLine {
+  return { id: lineId(), type: 'combat-heal', content, timestamp: new Date() };
+}
+
+/** Round headers, victory, stalemate — bold tactical display. */
+function combatSystemLine(content: string): TerminalLine {
+  return { id: lineId(), type: 'combat-system', content, timestamp: new Date() };
+}
+
 /** Render a horizontal bar: ###-------- (width chars total). */
 function stabilityBar(value: number, width = 15): string {
   const filled = Math.round((value / 100) * width);
@@ -1120,4 +1147,7 @@ export function formatInsufficientRP(have: number, need: number): TerminalLine[]
   ];
 }
 
-export { commandLine, systemLine, errorLine, responseLine, hintLine };
+export {
+  commandLine, systemLine, errorLine, responseLine, hintLine,
+  combatPlayerLine, combatMissLine, combatDamageLine, combatHealLine, combatSystemLine,
+};

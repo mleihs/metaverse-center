@@ -717,7 +717,8 @@ async function handleDungeonSubmit(): Promise<TerminalLine[]> {
 
     // Round resolved
     if (resp.data.round_result) {
-      lines.push(...formatCombatResolution(resp.data.round_result));
+      const partyNames = dungeonState.party.value.map((a) => a.agent_name);
+      lines.push(...formatCombatResolution(resp.data.round_result, partyNames));
 
       // Victory → loot
       if (resp.data.round_result.victory && resp.data.state.phase === 'room_clear') {

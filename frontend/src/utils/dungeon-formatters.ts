@@ -21,7 +21,16 @@ import type {
 import type { Agent, AptitudeSet } from '../types/index.js';
 import type { TerminalLine } from '../types/terminal.js';
 import { OPERATIVE_LABEL } from './operative-constants.js';
-import { responseLine, systemLine, hintLine } from './terminal-formatters.js';
+import {
+  combatDamageLine,
+  combatHealLine,
+  combatMissLine,
+  combatPlayerLine,
+  combatSystemLine,
+  hintLine,
+  responseLine,
+  systemLine,
+} from './terminal-formatters.js';
 
 // ── Room Type Symbols (ASCII map) ────────────────────────────────────────────
 
@@ -321,52 +330,100 @@ export function formatCombatPlanning(
   return lines;
 }
 
-// ── Combat Resolution ────────────────────────────────────────────────────────
+// ── Combat Resolution (semantic color-coded battle log) ─────────────────────
 
 export function formatCombatResolution(
   result: CombatRoundResult,
+  partyNames?: string[],
 ): TerminalLine[] {
   const lines: TerminalLine[] = [];
+  const party = new Set(partyNames ?? []);
 
-  lines.push(systemLine(`\u2550\u2550\u2550 ${msg('RESOLUTION')} \u2014 ${msg('Round')} ${result.round} \u2550\u2550\u2550`));
-  lines.push(responseLine(''));
+  lines.push(combatSystemLine(`\u2550\u2550\u2550 ${msg('RESOLUTION')} \u2014 ${msg('Round')} ${result.round} \u2550\u2550\u2550`));
 
-  // Narrative text
-  if (result.narrative_en) {
-    for (const para of result.narrative_en.split('\n')) {
-      lines.push(responseLine(para));
-    }
-    lines.push(responseLine(''));
-  }
+  // Separate party actions from enemy actions
+  const partyEvents = result.events.filter((e) => party.size === 0 || party.has(e.actor) || e.actor === 'Trap');
+  const enemyEvents = result.events.filter((e) => party.size > 0 && !party.has(e.actor) && e.actor !== 'Trap');
 
-  // Mechanical outcomes
-  for (const event of result.events) {
-    const hitStr = event.hit ? msg('HIT') : msg('MISS');
-    lines.push(systemLine(`[${hitStr}] ${event.actor} \u2192 ${event.action} \u2192 ${event.target}`));
-    if (event.damage > 0) {
-      lines.push(responseLine(`  \u2192 ${msg('Condition')}: -${event.damage} ${event.damage === 1 ? msg('step') : msg('steps')}`));
-    }
-    if (event.stress !== 0) {
-      const sign = event.stress > 0 ? '+' : '';
-      lines.push(responseLine(`  \u2192 ${msg('Stress')}: ${sign}${event.stress}`));
-    }
-    if (event.narrative_en) {
-      lines.push(responseLine(`  ${event.narrative_en}`));
+  // Party actions
+  if (partyEvents.length > 0) {
+    lines.push(combatSystemLine(''));
+    lines.push(combatSystemLine(msg('PARTY ACTIONS:')));
+    for (const event of partyEvents) {
+      lines.push(_formatCombatEvent(event, false));
     }
   }
 
-  // Victory / Wipe
+  // Enemy actions
+  if (enemyEvents.length > 0) {
+    lines.push(combatSystemLine(''));
+    lines.push(combatSystemLine(msg('ENEMY ACTIONS:')));
+    for (const event of enemyEvents) {
+      lines.push(_formatCombatEvent(event, true));
+    }
+  }
+
+  // Victory / Wipe / Stalemate
   if (result.victory) {
-    lines.push(systemLine(''));
-    lines.push(systemLine(`\u2550\u2550\u2550 ${msg('VICTORY')} \u2550\u2550\u2550`));
+    lines.push(combatSystemLine(''));
+    lines.push(combatSystemLine(`\u2550\u2550\u2550 ${msg('VICTORY')} \u2550\u2550\u2550`));
   }
   if (result.wipe) {
-    lines.push(systemLine(''));
-    lines.push(systemLine(`\u2550\u2550\u2550 ${msg('PARTY WIPE')} \u2550\u2550\u2550`));
+    lines.push(combatSystemLine(''));
+    lines.push(combatSystemLine(`\u2550\u2550\u2550 ${msg('PARTY WIPE')} \u2550\u2550\u2550`));
+  }
+  if (result.stalemate) {
+    lines.push(combatSystemLine(''));
+    lines.push(combatSystemLine(`\u2550\u2550\u2550 ${msg('STALEMATE')} \u2550\u2550\u2550`));
   }
 
   return lines;
 }
+
+/** Format a single combat event with semantic color based on context. */
+function _formatCombatEvent(event: CombatEvent, isEnemyAction: boolean): TerminalLine {
+  const tag = _eventTag(event);
+  const summary = `  [${tag}] ${event.actor} \u2192 ${event.action} \u2192 ${event.target}`;
+
+  // Details suffix
+  const details: string[] = [];
+  if (event.damage > 0) {
+    details.push(`${event.damage} ${event.damage === 1 ? 'step' : 'steps'}`);
+  }
+  if (event.stress !== 0) {
+    details.push(`${event.stress > 0 ? '+' : ''}${event.stress} stress`);
+  }
+  const detailStr = details.length > 0 ? `. ${details.join(', ')}.` : '.';
+  const text = `${summary}${detailStr}`;
+
+  // Miss → always dim regardless of actor
+  if (!event.hit) return combatMissLine(text);
+
+  // Enemy action hitting party → damage (red)
+  if (isEnemyAction && event.damage > 0) return combatDamageLine(text);
+
+  // Heal/stress recovery → green
+  if (event.stress < 0) return combatHealLine(text);
+
+  // Party action → bright amber
+  if (!isEnemyAction) return combatPlayerLine(text);
+
+  // Enemy non-damage (defend, etc.) → dim
+  return combatMissLine(text);
+}
+
+/** Determine display tag for a combat event. */
+function _eventTag(event: CombatEvent): string {
+  if (!event.hit) return 'MISS';
+  if (event.action === 'defend') return 'DEF';
+  if (event.action === 'detonate') return 'TRAP';
+  if (event.stress < 0) return 'HEAL';
+  if (event.damage > 0) return 'HIT';
+  return 'ACT';
+}
+
+// Re-import type for local use
+type CombatEvent = CombatRoundResult['events'][number];
 
 // ── Resolve Check (Darkest Dungeon moment) ───────────────────────────────────
 

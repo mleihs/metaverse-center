@@ -253,6 +253,55 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
         font-size: 12px;
       }
 
+      /* ── Combat Log Lines — Submarine CIC tactical display ── */
+      /* lint-color-ok: CRT-fixed palette, exempt per design-tokens.md */
+
+      .line--combat-player {
+        color: var(--_phosphor);
+        font-weight: 600;
+      }
+
+      .line--combat-miss {
+        color: var(--_text-dim);
+        font-style: italic;
+        opacity: 0.65;
+      }
+
+      .line--combat-damage {
+        color: color-mix(in srgb, var(--_danger) 80%, var(--_phosphor));
+      }
+
+      .line--combat-heal {
+        color: color-mix(in srgb, var(--_success) 65%, var(--_phosphor));
+      }
+
+      .line--combat-system {
+        color: var(--_phosphor);
+        font-weight: 700;
+        letter-spacing: 0.5px;
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .line--combat-player {
+          text-shadow: 0 0 6px var(--_phosphor-glow);
+        }
+
+        .line--combat-damage {
+          text-shadow: 0 0 8px color-mix(in srgb, var(--_danger) 35%, transparent);
+        }
+
+        .line--combat-heal {
+          text-shadow: 0 0 6px color-mix(in srgb, var(--_success) 25%, transparent);
+        }
+
+        .line--combat-system {
+          text-shadow:
+            0 0 8px var(--_phosphor-glow),
+            0 0 2px color-mix(in srgb, var(--_danger) 10%, transparent),
+            0 0 2px color-mix(in srgb, var(--_success) 10%, transparent);
+        }
+      }
+
       /* Phosphor persistence — new lines appear bright then settle */
       @media (prefers-reduced-motion: no-preference) {
         .line--fresh {
