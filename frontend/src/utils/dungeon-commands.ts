@@ -337,13 +337,14 @@ async function handleDungeonMove(ctx: CommandContext): Promise<TerminalLine[]> {
       lines.push(...formatCombatPlanning(result.state.party));
     }
 
-    // Encounter
-    if (result.encounter && result.choices && result.description_en) {
+    // Encounter / treasure / rest choices (any room with interactive choices)
+    if (result.choices && result.description_en) {
+      dungeonState.encounterChoices.value = result.choices;
       lines.push(...formatEncounterChoices(result.description_en, result.choices, result.state.party));
     }
 
-    // Treasure (auto-loot)
-    if (result.treasure && result.loot && result.loot.length > 0) {
+    // Treasure (auto-loot, no choices)
+    if (result.treasure && result.auto_loot && result.loot && result.loot.length > 0) {
       lines.push(...formatLootDrop(result.loot));
     }
 
@@ -531,13 +532,37 @@ async function handleDungeonInteract(ctx: CommandContext): Promise<TerminalLine[
     return [hintLine(msg('Type "interact <number>" to choose an option.'))];
   }
 
-  const choiceId = ctx.args[0];
+  // Map number → actual choice ID from stored encounter choices
+  const choices = dungeonState.encounterChoices.value;
+  const choiceIndex = parseInt(ctx.args[0], 10);
+  if (choices.length === 0) {
+    return [errorLine(msg('No encounter choices available. Try "look" first.'))];
+  }
+  if (isNaN(choiceIndex) || choiceIndex < 1 || choiceIndex > choices.length) {
+    return [errorLine(`${msg('Invalid choice')}. ${msg('Choose')} 1-${choices.length}.`)];
+  }
+  const choice = choices[choiceIndex - 1];
+
+  // Auto-select best agent for skill check (if check_aptitude specified)
+  let agentId: string | undefined;
+  if (choice.check_aptitude) {
+    const party = dungeonState.party.value;
+    const candidates = party
+      .filter((a) => a.condition !== 'captured')
+      .sort(
+        (a, b) =>
+          (b.aptitudes[choice.check_aptitude!] ?? 0) -
+          (a.aptitudes[choice.check_aptitude!] ?? 0),
+      );
+    agentId = candidates[0]?.agent_id;
+  }
 
   dungeonState.loading.value = true;
   try {
     const resp = await dungeonApi.submitAction(runId, {
       action_type: 'encounter_choice',
-      choice_id: choiceId,
+      choice_id: choice.id,
+      agent_id: agentId,
     });
 
     if (!resp.success || !resp.data) {

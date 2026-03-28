@@ -1131,6 +1131,21 @@ class DungeonEngineService:
             phase_timer=instance.phase_timer,
         )
 
+    @staticmethod
+    def _format_encounter_choices(choices: list) -> list[dict]:
+        """Format encounter choices for client response with check info."""
+        return [
+            {
+                "id": c.id,
+                "label_en": c.label_en,
+                "label_de": c.label_de,
+                "requires_aptitude": c.requires_aptitude,
+                "check_aptitude": c.check_aptitude,
+                "check_difficulty": c.check_difficulty,
+            }
+            for c in choices
+        ]
+
     # ── Private Helpers ─────────────────────────────────────────────────
 
     @classmethod
@@ -1302,15 +1317,7 @@ class DungeonEngineService:
                 "encounter_id": encounter.id,
                 "description_en": encounter.description_en,
                 "description_de": encounter.description_de,
-                "choices": [
-                    {
-                        "id": c.id,
-                        "label_en": c.label_en,
-                        "label_de": c.label_de,
-                        "requires_aptitude": c.requires_aptitude,
-                    }
-                    for c in encounter.choices
-                ],
+                "choices": cls._format_encounter_choices(encounter.choices),
             }
         instance.phase = "room_clear"
         room.cleared = True
@@ -1327,15 +1334,7 @@ class DungeonEngineService:
                 "rest": True,
                 "description_en": encounter.description_en,
                 "description_de": encounter.description_de,
-                "choices": [
-                    {
-                        "id": c.id,
-                        "label_en": c.label_en,
-                        "label_de": c.label_de,
-                        "requires_aptitude": c.requires_aptitude,
-                    }
-                    for c in encounter.choices
-                ],
+                "choices": cls._format_encounter_choices(encounter.choices),
             }
         instance.phase = "rest"
         return {"rest": True}
@@ -1351,15 +1350,7 @@ class DungeonEngineService:
                 "treasure": True,
                 "description_en": encounter.description_en,
                 "description_de": encounter.description_de,
-                "choices": [
-                    {
-                        "id": c.id,
-                        "label_en": c.label_en,
-                        "label_de": c.label_de,
-                        "requires_aptitude": c.requires_aptitude,
-                    }
-                    for c in encounter.choices
-                ],
+                "choices": cls._format_encounter_choices(encounter.choices),
             }
         # No encounter template: auto-loot
         loot = roll_loot(room.loot_tier, instance.difficulty, instance.depth, instance.archetype_state)

@@ -19,6 +19,7 @@ import type {
   CombatStateClient,
   DungeonClientState,
   DungeonPhase,
+  EncounterChoiceClient,
   PhaseTimer,
   RoomNodeClient,
 } from '../types/dungeon.js';
@@ -59,6 +60,11 @@ class DungeonStateManager {
 
   /** Aptitude map for picker agents: agent_id → {spy: N, guardian: N, ...}. */
   readonly pickerAptitudes = signal<Map<string, AptitudeSet>>(new Map());
+
+  // ── Encounter State (client-only, ephemeral) ───────────────────────────
+
+  /** Encounter choices for the current room. Set from move response, cleared on phase change. */
+  readonly encounterChoices = signal<EncounterChoiceClient[]>([]);
 
   // ── Combat Planning (client-only, ephemeral) ───────────────────────────
 
@@ -182,6 +188,11 @@ class DungeonStateManager {
       this.selectedActions.value = new Map();
     }
 
+    // Clear encounter choices when leaving encounter phase
+    if (state.phase !== 'encounter' && state.phase !== 'rest') {
+      this.encounterChoices.value = [];
+    }
+
     // Manage timer based on phase_timer
     if (state.phase_timer) {
       this._startTimer(state.phase_timer);
@@ -221,6 +232,7 @@ class DungeonStateManager {
     this.error.value = null;
     this.loading.value = false;
     this.combatSubmitting.value = false;
+    this.encounterChoices.value = [];
     this.pickerAgents.value = [];
     this.pickerAptitudes.value = new Map();
     this._stopTimer();
