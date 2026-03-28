@@ -319,11 +319,23 @@ def _resolve_agent_actions(
             if target_enemy:
                 _apply_debuff_to_enemy(target_enemy, debuff_id)
 
+        # Resolve target name for display (not raw ID)
+        if ability.targets == "self":
+            target_name = agent.agent_name
+        elif ability.targets in ("single_ally", "all_allies") and action.target_id:
+            ally = agent_map.get(action.target_id)
+            target_name = ally.agent_name if ally else action.target_id
+        elif action.target_id:
+            enemy = enemy_map.get(action.target_id)
+            target_name = enemy.name_en if enemy else action.target_id
+        else:
+            target_name = "self"
+
         events.append(
             CombatEvent(
                 actor=agent.agent_name,
                 action=ability.name_en,
-                target=action.target_id or "self",
+                target=target_name,
                 narrative_en=f"{agent.agent_name} uses {ability.name_en}.",
                 narrative_de=f"{agent.agent_name} setzt {ability.name_de} ein.",
             )

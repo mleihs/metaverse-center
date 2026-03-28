@@ -25,11 +25,7 @@ import type {
   RoomNodeClient,
 } from '../types/dungeon.js';
 import type { Agent, AptitudeSet } from '../types/index.js';
-import {
-  formatCombatPlanning,
-  formatCombatResolution,
-  formatCombatStart,
-} from '../utils/dungeon-formatters.js';
+import { formatCombatResolution } from '../utils/dungeon-formatters.js';
 import { combatSystemLine } from '../utils/terminal-formatters.js';
 import { agentsApi } from './api/AgentsApiService.js';
 import { dungeonApi } from './api/DungeonApiService.js';
@@ -390,17 +386,16 @@ class DungeonStateManager {
       if (resp.success && resp.data) {
         // Render battle log BEFORE applyState so lines are in the buffer
         // before the re-render cycle triggered by state change.
+        // NOTE: Don't include next round's planning info — the CombatBar
+        // GUI already shows that. Keeping the log short ensures the
+        // resolution results stay visible instead of being pushed off
+        // screen by 40+ lines of ability descriptions.
         if (resp.data.round_result) {
           const partyNames = this.party.value.map((a) => a.agent_name);
-          const lines = [
+          terminalState.appendOutput([
             combatSystemLine('[AUTO] Timer expired. Actions submitted.'),
             ...formatCombatResolution(resp.data.round_result, partyNames),
-          ];
-          if (resp.data.state.phase === 'combat_planning' && resp.data.state.combat) {
-            lines.push(...formatCombatStart(resp.data.state.combat));
-            lines.push(...formatCombatPlanning(resp.data.state.party));
-          }
-          terminalState.appendOutput(lines);
+          ]);
         }
         this.combatSubmitting.value = false;
         this.applyState(resp.data.state);
