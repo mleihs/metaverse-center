@@ -3521,3 +3521,23 @@ Vervollstaendigt das Dungeon-System mit atomaren Transaktionen (ADR-007 Pattern)
 **VIEW:** `available_dungeons` — Pre-gefilterte Resonances mit Difficulty/Depth-Berechnung. Composite-Index `idx_dungeon_runs_sim_archetype`.
 
 **Sicherheit:** Alle Mutations-RPCs: `REVOKE FROM PUBLIC, anon, authenticated` + `GRANT TO service_role` (ADR-006).
+
+### Migration 165: Dungeon Loot Distribution Phase
+
+Fuegt eine 'distributing'-Phase zwischen Boss-Sieg und Run-Abschluss hinzu. Nach dem Boss weist der Spieler Loot (aptitude_boost, memory, moodlet, Boni) einzelnen Party-Agenten zu, bevor der Run finalisiert wird.
+
+**Schema-Aenderungen:**
+
+| Aenderung | Details |
+|-----------|---------|
+| `resonance_dungeon_runs.status` CHECK | Neuer Wert `'distributing'` hinzugefuegt |
+| `idx_dungeon_runs_active` | Rebuilt: `distributing` als aktiver Status einbezogen |
+| `idx_dungeon_runs_one_active_per_sim` | Rebuilt: `distributing` verhindert parallele Runs |
+| RLS Policies | Updated: Mitglieder koennen `distributing`-Runs lesen |
+
+**RPCs:**
+
+| Funktion | Zweck | Pattern |
+|----------|-------|---------|
+| `fn_begin_distribution(p_run_id, p_simulation_id, p_agent_outcomes)` | Setzt status='distributing', wendet Agent-Outcomes (Mood, Moodlets, Activities) an. Trennt Outcome-Anwendung von Loot-Zuweisung. | ADR-007 |
+| `fn_finalize_dungeon_run(p_run_id, p_simulation_id, p_loot_items, p_outcome)` | Setzt status='completed', wendet spieler-zugewiesenen Loot an. Ruft intern `fn_apply_dungeon_loot` auf. | ADR-007 |
