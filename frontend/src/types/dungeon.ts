@@ -198,6 +198,8 @@ export interface AbilityOption {
   cooldown_remaining: number;
   /** Once-per-dungeon ultimate ability. */
   is_ultimate: boolean;
+  /** Target type: determines whether target picker is shown. */
+  targets: 'single_enemy' | 'all_enemies' | 'single_ally' | 'all_allies' | 'self';
 }
 
 /** Combat state as seen by the client. */
@@ -367,6 +369,7 @@ export interface CombatRoundResult {
   narrative_de: string;
   victory: boolean;
   wipe: boolean;
+  stalemate: boolean;
 }
 
 /** Single combat event within a round resolution. */

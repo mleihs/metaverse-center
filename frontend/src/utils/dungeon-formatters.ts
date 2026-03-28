@@ -316,7 +316,7 @@ export function formatCombatPlanning(
     lines.push(systemLine(''));
   }
 
-  lines.push(hintLine(msg('Use "attack <agent> <ability> [target]" to select, "submit" when ready.')));
+  lines.push(hintLine(msg('Use the COMBAT BAR below or type "attack <agent> <ability> [target]" + "submit".')));
 
   return lines;
 }
@@ -650,6 +650,21 @@ export function formatPartyWipe(): TerminalLine[] {
     systemLine('\u2591'.repeat(50)),
     systemLine(''),
     responseLine(msg('All agents have fallen. The dungeon claims its due.')),
+    systemLine(''),
+  ];
+}
+
+// ── Combat Stalemate ────────────────────────────────────────────────────────
+
+export function formatCombatStalemate(): TerminalLine[] {
+  return [
+    systemLine(''),
+    systemLine('\u2550'.repeat(50)),
+    systemLine(`\u2550\u2550       ${msg('STALEMATE')}       \u2550\u2550`),
+    systemLine('\u2550'.repeat(50)),
+    systemLine(''),
+    responseLine(msg('Combat exceeded maximum rounds. The enemies retreat into the shadows.')),
+    responseLine(msg('Room cleared -- no spoils claimed. Stress penalty applied.')),
     systemLine(''),
   ];
 }

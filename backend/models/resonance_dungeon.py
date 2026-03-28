@@ -345,6 +345,7 @@ class AbilityOption(BaseModel):
     check_info: str | None = None  # "Spy 8: 73% success"
     cooldown_remaining: int = 0
     is_ultimate: bool = False
+    targets: str = "single_enemy"  # single_enemy, all_enemies, single_ally, all_allies, self
 
 
 class AgentCombatStateClient(BaseModel):

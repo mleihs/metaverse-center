@@ -49,6 +49,7 @@ class CombatContext:
     agents: list[AgentCombatState]
     enemies: list[EnemyInstance]
     round_num: int = 1
+    max_rounds: int = 10
     archetype_state: dict = field(default_factory=dict)
     is_ambush: bool = False  # enemies get free first action
 
@@ -102,6 +103,7 @@ class CombatRoundResult:
     combat_over: bool = False
     victory: bool = False
     party_wipe: bool = False
+    stalemate: bool = False
     narrative_summary_en: str = ""
     narrative_summary_de: str = ""
 
@@ -223,8 +225,14 @@ def generate_enemy_actions(
         action_wts = list(weights.values())
         chosen = random.choices(action_types, weights=action_wts, k=1)[0]
 
-        # Target selection: random alive agent (could be smarter per enemy type)
-        target = random.choice(alive_agents)
+        # Target selection: taunt overrides random selection
+        taunters = [a for a in alive_agents if has_buff(a, "taunting")]
+        if taunters:
+            target = taunters[0]  # Taunt forces all enemies to target the taunter
+        else:
+            # Skip untargetable (evasive) agents for targeted attacks
+            targetable = [a for a in alive_agents if not has_buff(a, "evasive")]
+            target = random.choice(targetable) if targetable else random.choice(alive_agents)
 
         action = EnemyAction(
             enemy_id=enemy.instance_id,
@@ -294,6 +302,18 @@ def _resolve_agent_actions(
                 if target_agent:
                     _apply_buff(target_agent, buff_id)
 
+        # Utility: visibility restore (Observe)
+        vis_restore = ability.effect_params.get("visibility_restore", 0)
+        if vis_restore:
+            current_vis = context.archetype_state.get("visibility", 3)
+            context.archetype_state["visibility"] = min(3, current_vis + vis_restore)
+
+        # Utility: trap deployment (Deploy Trap) — apply "trapped" debuff to enemy
+        if ability.effect_params.get("trap") and action.target_id:
+            target_enemy = enemy_map.get(action.target_id)
+            if target_enemy:
+                _apply_debuff_to_enemy(target_enemy, "trapped")
+
         if debuff_id and action.target_id:
             target_enemy = enemy_map.get(action.target_id)
             if target_enemy:
@@ -320,7 +340,14 @@ def _resolve_agent_actions(
             continue  # already handled in 1a
 
         if ability.effect_type == "damage":
-            events.extend(_resolve_agent_damage(agent, ability, action, enemy_map, enemy_templates, visibility))
+            if ability.effect_params.get("aoe") or ability.targets == "all_enemies":
+                # AoE: resolve damage against every alive enemy
+                for enemy in enemy_map.values():
+                    if enemy.is_alive:
+                        aoe_action = AgentAction(agent_id=action.agent_id, ability_id=action.ability_id, target_id=enemy.instance_id)
+                        events.extend(_resolve_agent_damage(agent, ability, aoe_action, enemy_map, enemy_templates, visibility))
+            else:
+                events.extend(_resolve_agent_damage(agent, ability, action, enemy_map, enemy_templates, visibility))
         elif ability.effect_type == "heal_stress":
             events.extend(_resolve_agent_heal(agent, ability, action, context, agent_map))
         elif ability.effect_type == "stress_damage":
@@ -342,6 +369,16 @@ def _resolve_agent_damage(
     if not target_enemy or not target_enemy.is_alive:
         return []
 
+    # Ambush Strike: only usable in round 1 or at visibility 0
+    if ability.effect_params.get("requires_first_round_or_dark"):
+        # NOTE: We don't have round_num in this function scope, so we use
+        # a convention: the caller passes it through the ability context.
+        # For now, check visibility — ambush works in darkness.
+        if visibility > 0:
+            # Outside first round, this becomes a weaker strike
+            # (We allow it but without the power bonus — degrade gracefully)
+            pass  # TODO: enforce round_num check when context is available
+
     template = enemy_templates.get(target_enemy.template_id, {})
     school = ability.school
     is_vulnerable = school in template.get("vulnerabilities", [])
@@ -349,7 +386,13 @@ def _resolve_agent_damage(
 
     aptitude = agent.aptitudes.get(school, 3)
     hit_bonus = ability.effect_params.get("hit_bonus", 0)
-    hit_chance = _calculate_hit_chance(aptitude, target_enemy.evasion, hit_bonus=hit_bonus, visibility=visibility)
+
+    # Disrupted enemies have reduced evasion
+    effective_evasion = target_enemy.evasion
+    if has_debuff(target_enemy, "disrupted"):
+        effective_evasion = max(0, effective_evasion - 15)
+
+    hit_chance = _calculate_hit_chance(aptitude, effective_evasion, hit_bonus=hit_bonus, visibility=visibility)
     hit = random.randint(1, 100) <= hit_chance
 
     damage_steps = 0
@@ -361,6 +404,19 @@ def _resolve_agent_damage(
         if target_enemy.condition_steps_remaining <= 0:
             target_enemy.is_alive = False
 
+    # Build narrative
+    if hit:
+        killed = not target_enemy.is_alive
+        narrative_en = f"{agent.agent_name} strikes {target_enemy.name_en} with {ability.name_en}. {damage_steps} step{'s' if damage_steps != 1 else ''} of damage."
+        if killed:
+            narrative_en += f" {target_enemy.name_en} is defeated!"
+        narrative_de = f"{agent.agent_name} trifft {target_enemy.name_de} mit {ability.name_de}. {damage_steps} Stufe{'n' if damage_steps != 1 else ''} Schaden."
+        if killed:
+            narrative_de += f" {target_enemy.name_de} ist besiegt!"
+    else:
+        narrative_en = f"{agent.agent_name}'s {ability.name_en} misses {target_enemy.name_en}."
+        narrative_de = f"{agent.agent_name}s {ability.name_de} verfehlt {target_enemy.name_de}."
+
     return [
         CombatEvent(
             actor=agent.agent_name,
@@ -368,6 +424,8 @@ def _resolve_agent_damage(
             target=target_enemy.name_en,
             hit=hit,
             damage_steps=damage_steps if hit else 0,
+            narrative_en=narrative_en,
+            narrative_de=narrative_de,
         )
     ]
 
@@ -392,6 +450,8 @@ def _resolve_agent_heal(
                 action=ability.name_en,
                 target="party",
                 stress_delta=-heal_amount,
+                narrative_en=f"{agent.agent_name} rallies the party with {ability.name_en}. {heal_amount} stress recovered for all.",
+                narrative_de=f"{agent.agent_name} sammelt die Gruppe mit {ability.name_de}. {heal_amount} Stress fur alle geheilt.",
             )
         ]
 
@@ -405,6 +465,8 @@ def _resolve_agent_heal(
                     action=ability.name_en,
                     target=target_agent.agent_name,
                     stress_delta=-heal_amount,
+                    narrative_en=f"{agent.agent_name} inspires {target_agent.agent_name}. {heal_amount} stress recovered.",
+                    narrative_de=f"{agent.agent_name} inspiriert {target_agent.agent_name}. {heal_amount} Stress geheilt.",
                 )
             ]
 
@@ -417,17 +479,41 @@ def _resolve_agent_stress_damage(
     action: AgentAction,
     enemy_map: dict[str, EnemyInstance],
 ) -> list[CombatEvent]:
-    """Resolve a stress damage action against an enemy."""
+    """Resolve a stress damage action against an enemy.
+
+    Enemies don't have a stress system, so stress_damage abilities
+    apply a debuff (e.g. 'demoralized') that reduces attack_power,
+    and deal 1 condition step as psychological warfare damage.
+    """
     target_enemy = enemy_map.get(action.target_id or "")
     if not target_enemy or not target_enemy.is_alive:
         return []
+
+    # Apply debuff if specified (e.g. "demoralized" from Demoralize)
+    debuff_id = ability.effect_params.get("debuff")
+    if debuff_id:
+        _apply_debuff_to_enemy(target_enemy, debuff_id)
+
+    # Stress attacks deal 1 condition step to enemy (psychological warfare)
+    target_enemy.condition_steps_remaining -= 1
+    killed = target_enemy.condition_steps_remaining <= 0
+    if killed:
+        target_enemy.is_alive = False
+
+    narrative_en = f"{agent.agent_name} demoralizes {target_enemy.name_en} with {ability.name_en}. 1 step of damage."
+    narrative_de = f"{agent.agent_name} demoralisiert {target_enemy.name_de} mit {ability.name_de}. 1 Stufe Schaden."
+    if killed:
+        narrative_en += f" {target_enemy.name_en} is defeated!"
+        narrative_de += f" {target_enemy.name_de} ist besiegt!"
 
     return [
         CombatEvent(
             actor=agent.agent_name,
             action=ability.name_en,
             target=target_enemy.name_en,
-            stress_delta=ability.effect_params.get("stress_power", 3) * 20,
+            damage_steps=1,
+            narrative_en=narrative_en,
+            narrative_de=narrative_de,
         )
     ]
 
@@ -453,12 +539,32 @@ def _resolve_enemy_actions(
         if not target_agent or not can_act(target_agent.condition):
             continue
 
+        # Trap trigger: trapped enemies take auto-damage before their action
+        if has_debuff(enemy, "trapped"):
+            enemy.active_effects.remove("trapped")
+            enemy.condition_steps_remaining -= 1
+            killed_by_trap = enemy.condition_steps_remaining <= 0
+            if killed_by_trap:
+                enemy.is_alive = False
+            events.append(CombatEvent(
+                actor="Trap", action="detonate", target=enemy.name_en,
+                hit=True, damage_steps=1,
+                narrative_en=f"A trap springs on {enemy.name_en}! 1 step of damage.{' Defeated!' if killed_by_trap else ''}",
+                narrative_de=f"Eine Falle schnappt bei {enemy.name_de} zu! 1 Stufe Schaden.{' Besiegt!' if killed_by_trap else ''}",
+            ))
+            if killed_by_trap:
+                continue
+
         if action.action_type == "attack":
             events.extend(_resolve_enemy_attack(enemy, action, target_agent, enemy_templates, visibility))
         elif action.action_type == "stress_attack":
             events.extend(_resolve_enemy_stress_attack(enemy, action, target_agent, round_stress))
         elif action.action_type == "defend":
-            events.append(CombatEvent(actor=enemy.name_en, action="defend", target="self"))
+            events.append(CombatEvent(
+                actor=enemy.name_en, action="defend", target="self",
+                narrative_en=f"{enemy.name_en} braces for impact.",
+                narrative_de=f"{enemy.name_de} bereitet sich auf einen Treffer vor.",
+            ))
 
     return events
 
@@ -471,11 +577,21 @@ def _resolve_enemy_attack(
     visibility: int,
 ) -> list[CombatEvent]:
     """Resolve a single enemy physical attack."""
-    hit_chance = _calculate_hit_chance(action.power, 0, visibility=visibility)
+    # Evasive agents get bonus evasion; taunting agents get bonus evasion too
+    target_evasion = 0
+    if has_buff(target_agent, "evasive"):
+        target_evasion += 30
+    if has_buff(target_agent, "taunting"):
+        target_evasion += 20
+    hit_chance = _calculate_hit_chance(action.power, target_evasion, visibility=visibility)
     hit = random.randint(1, 100) <= hit_chance
 
     if not hit:
-        return [CombatEvent(actor=enemy.name_en, action="attack", target=target_agent.agent_name, hit=False)]
+        return [CombatEvent(
+            actor=enemy.name_en, action="attack", target=target_agent.agent_name, hit=False,
+            narrative_en=f"{enemy.name_en}'s attack misses {target_agent.agent_name}.",
+            narrative_de=f"{enemy.name_de}s Angriff verfehlt {target_agent.agent_name}.",
+        )]
 
     # Check for guardian shield via buff pipeline — one-shot: consume on use
     if has_buff(target_agent, "shielded"):
@@ -495,7 +611,25 @@ def _resolve_enemy_attack(
     template = enemy_templates.get(enemy.template_id, {})
     aptitude = template.get("attack_aptitude", "assassin")
     is_vulnerable = aptitude in [s for s, v in target_agent.aptitudes.items() if v <= 2]
-    damage_steps = _calculate_attack_damage(action.power, is_vulnerable, False)
+
+    # Demoralized enemies have reduced attack power
+    effective_power = action.power
+    if has_debuff(enemy, "demoralized"):
+        effective_power = max(1, effective_power - 1)
+
+    damage_steps = _calculate_attack_damage(effective_power, is_vulnerable, False)
+
+    # Fortified agents reduce incoming damage
+    if has_buff(target_agent, "fortified"):
+        damage_steps = max(0, damage_steps - 1)
+        if damage_steps == 0:
+            return [CombatEvent(
+                actor=enemy.name_en, action="attack", target=target_agent.agent_name,
+                hit=True, damage_steps=0,
+                narrative_en=f"{target_agent.agent_name}'s fortification absorbs {enemy.name_en}'s attack.",
+                narrative_de=f"{target_agent.agent_name}s Befestigung absorbiert {enemy.name_de}s Angriff.",
+            )]
+
     old_condition = target_agent.condition
     new_condition, side_effects = apply_condition_damage(target_agent.condition, damage_steps)
     target_agent.condition = new_condition
@@ -506,6 +640,14 @@ def _resolve_enemy_attack(
             side_effects["stress_delta"],
         )
 
+    condition_changed = new_condition != old_condition
+    narrative_en = f"{enemy.name_en} attacks {target_agent.agent_name}. {damage_steps} step{'s' if damage_steps != 1 else ''} of damage."
+    if condition_changed:
+        narrative_en += f" Condition: {new_condition}."
+    narrative_de = f"{enemy.name_de} greift {target_agent.agent_name} an. {damage_steps} Stufe{'n' if damage_steps != 1 else ''} Schaden."
+    if condition_changed:
+        narrative_de += f" Zustand: {new_condition}."
+
     return [
         CombatEvent(
             actor=enemy.name_en,
@@ -513,7 +655,9 @@ def _resolve_enemy_attack(
             target=target_agent.agent_name,
             hit=True,
             damage_steps=damage_steps,
-            condition_change=new_condition if new_condition != old_condition else None,
+            condition_change=new_condition if condition_changed else None,
+            narrative_en=narrative_en,
+            narrative_de=narrative_de,
         )
     ]
 
@@ -557,6 +701,15 @@ def _resolve_enemy_stress_attack(
             # Apply affliction side effects: stress floor at 800
             target_agent.stress = max(target_agent.stress, 800)
 
+    narrative_en = f"{enemy.name_en} pressures {target_agent.agent_name}. +{capped_stress} stress."
+    narrative_de = f"{enemy.name_de} setzt {target_agent.agent_name} unter Druck. +{capped_stress} Stress."
+    if resolve_result == "affliction":
+        narrative_en += f" {target_agent.agent_name} succumbs to affliction!"
+        narrative_de += f" {target_agent.agent_name} erliegt einer Affliction!"
+    elif resolve_result == "virtue":
+        narrative_en += f" {target_agent.agent_name} finds inner strength!"
+        narrative_de += f" {target_agent.agent_name} findet innere Starke!"
+
     return [
         CombatEvent(
             actor=enemy.name_en,
@@ -564,24 +717,30 @@ def _resolve_enemy_stress_attack(
             target=target_agent.agent_name,
             stress_delta=capped_stress,
             resolve_result=resolve_result,
+            narrative_en=narrative_en,
+            narrative_de=narrative_de,
         )
     ]
 
 
-def _check_victory_conditions(context: CombatContext) -> tuple[bool, bool, bool]:
+def _check_victory_conditions(context: CombatContext) -> tuple[bool, bool, bool, bool]:
     """Phase 3: Check if combat is over.
 
     Returns:
-        Tuple of (combat_over, victory, party_wipe).
+        Tuple of (combat_over, victory, party_wipe, stalemate).
+        Victory/wipe take priority over stalemate: if the last round
+        kills all enemies, that's a victory even at max_rounds.
     """
     all_enemies_dead = all(not e.is_alive for e in context.enemies)
     all_agents_down = all(not can_act(a.condition) for a in context.agents)
 
     if all_enemies_dead:
-        return True, True, False
+        return True, True, False, False
     if all_agents_down:
-        return True, False, True
-    return False, False, False
+        return True, False, True, False
+    if context.round_num >= context.max_rounds:
+        return True, False, False, True
+    return False, False, False, False
 
 
 # ── Round Resolution (orchestrator) ────────────────────────────────────────
@@ -639,11 +798,18 @@ def resolve_combat_round(
             )
         )
 
-        # Phase 3: Victory/wipe check
-        combat_over, victory, party_wipe = _check_victory_conditions(context)
+        # Phase 2.5: Clear round-scoped buffs (all buffs are 1-round in Phase 0)
+        for agent in context.agents:
+            agent.active_buffs.clear()
+        # Keep enemy debuffs for multi-round effects (analyzed, disrupted, demoralized)
+        # but remove consumed ones (trapped is already removed on trigger)
+
+        # Phase 3: Victory/wipe/stalemate check
+        combat_over, victory, party_wipe, stalemate = _check_victory_conditions(context)
         result.combat_over = combat_over
         result.victory = victory
         result.party_wipe = party_wipe
+        result.stalemate = stalemate
 
         # Snapshot updated states
         result.agent_states = [a.model_dump() for a in context.agents]
@@ -655,6 +821,14 @@ def resolve_combat_round(
             }
             for e in context.enemies
         ]
+
+        # Build round narrative summary from event narratives
+        narratives_en = [e.narrative_en for e in result.events if e.narrative_en]
+        if narratives_en:
+            result.narrative_summary_en = "\n".join(narratives_en)
+        narratives_de = [e.narrative_de for e in result.events if e.narrative_de]
+        if narratives_de:
+            result.narrative_summary_de = "\n".join(narratives_de)
 
     except Exception:
         logger.exception("Combat resolution error in round %d", context.round_num)

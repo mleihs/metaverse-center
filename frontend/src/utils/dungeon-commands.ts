@@ -25,6 +25,7 @@ import {
   formatAvailableDungeons,
   formatCombatPlanning,
   formatCombatResolution,
+  formatCombatStalemate,
   formatCombatStart,
   formatDungeonComplete,
   formatDungeonEntry,
@@ -703,6 +704,11 @@ async function handleDungeonSubmit(): Promise<TerminalLine[]> {
       if (resp.data.round_result.wipe) {
         lines.push(...formatPartyWipe());
         _exitDungeon();
+      }
+
+      // Stalemate
+      if (resp.data.round_result.stalemate) {
+        lines.push(...formatCombatStalemate());
       }
 
       // Next round → show planning again

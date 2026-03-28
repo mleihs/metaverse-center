@@ -48,6 +48,7 @@ from backend.services.combat.ability_schools import get_agent_all_abilities
 from backend.services.combat.combat_engine import (
     AgentAction,
     CombatContext,
+    CombatRoundResult,
     generate_enemy_actions,
     resolve_combat_round,
 )
@@ -55,6 +56,7 @@ from backend.services.combat.condition_tracks import can_act
 from backend.services.combat.skill_checks import SkillCheckContext, resolve_skill_check
 from backend.services.combat.stress_system import (
     REST_STRESS_HEAL,
+    apply_stress,
     calculate_ambient_stress,
     stress_threshold,
 )
@@ -462,6 +464,7 @@ class DungeonEngineService:
             agents=instance.party,
             enemies=instance.combat.enemies,
             round_num=instance.combat.round_num,
+            max_rounds=instance.combat.max_rounds,
             archetype_state=instance.archetype_state,
         )
         round_result = resolve_combat_round(context, agent_actions, enemy_actions, enemy_templates)
@@ -491,6 +494,8 @@ class DungeonEngineService:
                 return await cls._handle_combat_victory(admin_supabase, instance)
             if round_result.party_wipe:
                 return await cls._handle_party_wipe(admin_supabase, instance)
+            if round_result.stalemate:
+                return await cls._handle_combat_stalemate(admin_supabase, instance, round_result)
 
         # Next round: back to planning
         instance.phase = "combat_planning"
@@ -509,11 +514,16 @@ class DungeonEngineService:
                         "hit": e.hit,
                         "damage": e.damage_steps,
                         "stress": e.stress_delta,
+                        "narrative_en": e.narrative_en,
+                        "narrative_de": e.narrative_de,
                     }
                     for e in round_result.events
                 ],
+                "narrative_en": round_result.narrative_summary_en,
+                "narrative_de": round_result.narrative_summary_de,
                 "victory": round_result.victory,
                 "wipe": round_result.party_wipe,
+                "stalemate": round_result.stalemate,
             },
             "state": cls._build_client_state(instance).model_dump(),
         }
@@ -613,6 +623,77 @@ class DungeonEngineService:
 
         return {
             "wipe": True,
+            "state": cls._build_client_state(instance).model_dump(),
+        }
+
+    @classmethod
+    async def _handle_combat_stalemate(
+        cls,
+        admin_supabase: Client,
+        instance: DungeonInstance,
+        round_result: CombatRoundResult,
+    ) -> dict:
+        """Handle combat stalemate: max rounds exceeded. Room cleared (no re-trigger) but no loot."""
+        # Cancel any active combat timer
+        timer = _combat_timers.pop(str(instance.run_id), None)
+        if timer and not timer.done():
+            timer.cancel()
+
+        current_room = instance.rooms[instance.current_room]
+        current_room.cleared = True
+        instance.rooms_cleared += 1
+        instance.combat = None
+        instance.phase = "room_clear"
+
+        # Apply stalemate stress penalty to all agents (+80 stress each)
+        for agent in instance.party:
+            if can_act(agent.condition):
+                agent.stress, _ = apply_stress(agent.stress, 80)
+
+        await cls._checkpoint(admin_supabase, instance)
+
+        await cls._log_event(
+            admin_supabase,
+            instance.run_id,
+            instance.simulation_id,
+            instance.depth,
+            instance.current_room,
+            "combat_stalemate",
+            {
+                "rounds_fought": round_result.round_num,
+                "stress_penalty": 80,
+            },
+        )
+
+        logger.info(
+            "Combat stalemate after %d rounds: run_id=%s",
+            round_result.round_num,
+            instance.run_id,
+        )
+
+        return {
+            "round_result": {
+                "round": round_result.round_num,
+                "events": [
+                    {
+                        "actor": e.actor,
+                        "action": e.action,
+                        "target": e.target,
+                        "hit": e.hit,
+                        "damage": e.damage_steps,
+                        "stress": e.stress_delta,
+                        "narrative_en": e.narrative_en,
+                        "narrative_de": e.narrative_de,
+                    }
+                    for e in round_result.events
+                ],
+                "narrative_en": round_result.narrative_summary_en,
+                "narrative_de": round_result.narrative_summary_de,
+                "victory": False,
+                "wipe": False,
+                "stalemate": True,
+            },
+            "stalemate": True,
             "state": cls._build_client_state(instance).model_dump(),
         }
 
@@ -1008,6 +1089,7 @@ class DungeonEngineService:
                             description=a.description_en,
                             cooldown_remaining=agent.cooldowns.get(a.id, 0),
                             is_ultimate=a.is_ultimate,
+                            targets=a.targets,
                         )
                         for a in abilities
                     ],

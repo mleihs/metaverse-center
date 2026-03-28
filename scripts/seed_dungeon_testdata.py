@@ -93,6 +93,15 @@ ARCHETYPE_DESCRIPTIONS: dict[str, str] = {
 _RES_PREFIX = "a0000000-0000-0000-0000-00000000"
 _IMP_PREFIX = "a1000000-0000-0000-0000-00000000"
 
+# Diversified aptitude profiles for party balance.
+# Cycling through these gives: DPS, Tank, Support, Flex.
+AGENT_APTITUDE_PROFILES = [
+    {"assassin": 6, "spy": 4},         # DPS: Precision Strike, Exploit + Observe, Analyze
+    {"guardian": 6, "infiltrator": 3},  # Tank: Shield, Taunt, Fortify + Evade
+    {"propagandist": 5, "spy": 3},     # Support: Inspire, Demoralize + Observe
+    {"saboteur": 5, "assassin": 4},    # Flex: Trap, Disrupt + Precision Strike
+]
+
 DEFAULT_SIM = "conventional-memory"
 BACKEND_URL = "http://localhost:8000"
 FRONTEND_URL = "http://localhost:5173"
@@ -247,6 +256,43 @@ def seed_impact(supabase, resonance_id: str, simulation_id: str, index: int) -> 
         _ok(f"resonance_impact: linked to simulation")
     else:
         _err(f"Failed to upsert impact")
+
+
+def seed_aptitudes(supabase, simulation_id: str, agents: list[dict]) -> None:
+    """Seed diversified aptitudes for party agents. Idempotent via upsert."""
+    _heading(f"Seeding aptitudes for {len(agents)} agents...")
+
+    for i, agent in enumerate(agents):
+        profile = AGENT_APTITUDE_PROFILES[i % len(AGENT_APTITUDE_PROFILES)]
+        agent_id = agent["id"]
+        agent_name = agent["name"]
+
+        for operative_type, level in profile.items():
+            data = {
+                "agent_id": agent_id,
+                "simulation_id": simulation_id,
+                "operative_type": operative_type,
+                "aptitude_level": level,
+            }
+            resp = (
+                supabase.table("agent_aptitudes")
+                .upsert(data, on_conflict="agent_id,operative_type")
+                .execute()
+            )
+            if resp.data:
+                _ok(f"  {agent_name}: {operative_type} = {level}")
+            else:
+                _err(f"  Failed to upsert {operative_type} for {agent_name}")
+
+    # Verify
+    resp = (
+        supabase.table("agent_aptitudes")
+        .select("agent_id, operative_type, aptitude_level")
+        .eq("simulation_id", simulation_id)
+        .execute()
+    )
+    count = len(resp.data) if resp.data else 0
+    _ok(f"Total aptitudes in DB for simulation: {count}")
 
 
 def verify(supabase, simulation_id: str, slug: str) -> list[dict]:
@@ -432,11 +478,15 @@ def main() -> None:
         res_id = seed_archetype(supabase, arch, i)
         seed_impact(supabase, res_id, sim_id, i)
 
+    # Seed aptitudes for party agents
+    agents = get_agents(supabase, sim_id, limit=6)
+    if agents:
+        seed_aptitudes(supabase, sim_id, agents[:4])
+
     # Verify
     _heading("Verification")
     available = verify(supabase, sim_id, args.simulation)
 
-    agents = get_agents(supabase, sim_id, limit=6)
     _info(f"{len(agents)} agents for party: {', '.join(a['name'] for a in agents)}")
 
     # Auto-start run

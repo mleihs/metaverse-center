@@ -278,27 +278,30 @@ class TestVictoryConditions:
         enemy = _make_enemy()
         enemy.is_alive = False
         ctx = CombatContext(agents=[_make_agent()], enemies=[enemy])
-        over, victory, wipe = _check_victory_conditions(ctx)
+        over, victory, wipe, stalemate = _check_victory_conditions(ctx)
         assert over is True
         assert victory is True
         assert wipe is False
+        assert stalemate is False
 
     def test_all_agents_captured_wipe(self):
         ctx = CombatContext(
             agents=[_make_agent(condition="captured")],
             enemies=[_make_enemy()],
         )
-        over, victory, wipe = _check_victory_conditions(ctx)
+        over, victory, wipe, stalemate = _check_victory_conditions(ctx)
         assert over is True
         assert victory is False
         assert wipe is True
+        assert stalemate is False
 
     def test_ongoing_combat(self):
         ctx = CombatContext(agents=[_make_agent()], enemies=[_make_enemy()])
-        over, victory, wipe = _check_victory_conditions(ctx)
+        over, victory, wipe, stalemate = _check_victory_conditions(ctx)
         assert over is False
         assert victory is False
         assert wipe is False
+        assert stalemate is False
 
     def test_mixed_agents_not_all_down(self):
         """One agent captured, one operational → combat continues."""
@@ -306,8 +309,37 @@ class TestVictoryConditions:
             agents=[_make_agent(condition="captured"), _make_agent(condition="operational")],
             enemies=[_make_enemy()],
         )
-        over, _, _ = _check_victory_conditions(ctx)
+        over, _, _, _ = _check_victory_conditions(ctx)
         assert over is False
+
+    def test_stalemate_at_max_rounds(self):
+        """Combat ends as stalemate when round_num >= max_rounds."""
+        ctx = CombatContext(
+            agents=[_make_agent()],
+            enemies=[_make_enemy()],
+            round_num=10,
+            max_rounds=10,
+        )
+        over, victory, wipe, stalemate = _check_victory_conditions(ctx)
+        assert over is True
+        assert victory is False
+        assert wipe is False
+        assert stalemate is True
+
+    def test_victory_takes_priority_over_stalemate(self):
+        """If all enemies die at max_rounds, it's a victory, not stalemate."""
+        enemy = _make_enemy()
+        enemy.is_alive = False
+        ctx = CombatContext(
+            agents=[_make_agent()],
+            enemies=[enemy],
+            round_num=10,
+            max_rounds=10,
+        )
+        over, victory, wipe, stalemate = _check_victory_conditions(ctx)
+        assert over is True
+        assert victory is True
+        assert stalemate is False
 
 
 # ── resolve_combat_round ──────────────────────────────────────────────────

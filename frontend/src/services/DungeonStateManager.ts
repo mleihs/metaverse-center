@@ -15,13 +15,14 @@ import type {
   AgentCombatStateClient,
   AvailableDungeonResponse,
   CombatAction,
+  CombatSubmission,
   CombatStateClient,
   DungeonClientState,
   DungeonPhase,
   PhaseTimer,
   RoomNodeClient,
 } from '../types/dungeon.js';
-import type { Agent, AgentAptitude, AptitudeSet } from '../types/index.js';
+import type { Agent, AptitudeSet } from '../types/index.js';
 import { agentsApi } from './api/AgentsApiService.js';
 import { dungeonApi } from './api/DungeonApiService.js';
 import { captureError } from './SentryService.js';
@@ -80,7 +81,12 @@ class DungeonStateManager {
   /** Remaining milliseconds on the active phase timer. Null when no timer. */
   readonly timerRemaining = signal<number | null>(null);
 
+  /** Fires once when the timer naturally expires and auto-submit runs.
+   *  DungeonTerminalView watches this to append output to the terminal. */
+  readonly timerAutoSubmitted = signal(false);
+
   private _timerInterval: ReturnType<typeof setInterval> | null = null;
+  private _autoSubmitFired = false;
 
   // ── Computed ───────────────────────────────────────────────────────────
 
@@ -168,6 +174,7 @@ class DungeonStateManager {
     this.clientState.value = state;
     this.runId.value = String(state.run_id);
     this.error.value = null;
+    this._autoSubmitFired = false;
     this._persistRunId(String(state.run_id));
 
     // Reset combat selections when leaving planning phase
@@ -307,6 +314,7 @@ class DungeonStateManager {
 
   private _startTimer(timer: PhaseTimer): void {
     this._stopTimer();
+    this._autoSubmitFired = false;
 
     const startMs = new Date(timer.started_at).getTime();
     const endMs = startMs + timer.duration_ms;
@@ -316,11 +324,52 @@ class DungeonStateManager {
       this.timerRemaining.value = Math.max(0, remaining);
       if (remaining <= 0) {
         this._stopTimer();
+        this._autoSubmitOnExpiry();
       }
     };
 
     tick(); // Immediate first tick
     this._timerInterval = setInterval(tick, TIMER_TICK_MS);
+  }
+
+  /**
+   * Auto-submit combat actions when the planning timer expires.
+   * Submits whatever is currently selected (may be empty — backend auto-defends).
+   * Falls back to polling getState if submission fails (backend already resolved).
+   */
+  private async _autoSubmitOnExpiry(): Promise<void> {
+    if (this._autoSubmitFired || this.combatSubmitting.value) return;
+    const runId = this.runId.value;
+    if (!runId || this.clientState.value?.phase !== 'combat_planning') return;
+
+    this._autoSubmitFired = true;
+    this.combatSubmitting.value = true;
+    this.timerAutoSubmitted.value = true;
+
+    try {
+      const submission: CombatSubmission = {
+        actions: Array.from(this.selectedActions.value.values()),
+      };
+      const resp = await dungeonApi.submitCombat(runId, submission);
+      if (resp.success && resp.data) {
+        this.applyState(resp.data.state);
+        return;
+      }
+    } catch {
+      // Backend may have already resolved (timer race). Fall back to getState.
+    }
+
+    // Fallback: poll for updated state
+    try {
+      const stateResp = await dungeonApi.getState(runId);
+      if (stateResp.success && stateResp.data) {
+        this.applyState(stateResp.data);
+      }
+    } catch (err) {
+      captureError(err, { source: 'DungeonStateManager._autoSubmitOnExpiry', runId });
+    } finally {
+      this.combatSubmitting.value = false;
+    }
   }
 
   private _stopTimer(): void {

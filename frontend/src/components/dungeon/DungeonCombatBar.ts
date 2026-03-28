@@ -286,6 +286,20 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         outline-offset: 1px;
       }
 
+      .target--ally {
+        color: var(--_phosphor);
+        border-color: color-mix(in srgb, var(--_phosphor) 40%, transparent);
+      }
+
+      .target--ally:hover {
+        background: color-mix(in srgb, var(--_phosphor) 8%, transparent);
+        border-color: var(--_phosphor);
+      }
+
+      .target--ally:focus-visible {
+        outline-color: var(--_phosphor);
+      }
+
       /* -- Footer: Counter + Submit -- */
       .footer {
         display: flex;
@@ -517,6 +531,112 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         }
       }
 
+      /* -- Agent Done Badge -- */
+      .agent__done {
+        font-family: var(--_mono);
+        font-size: 8px;
+        font-weight: 700;
+        color: var(--_phosphor);
+        letter-spacing: 1px;
+        padding: 1px 4px;
+        border: 1px solid color-mix(in srgb, var(--_phosphor) 50%, transparent);
+        flex-shrink: 0;
+      }
+
+      /* -- Onboarding Briefing -- */
+      .briefing {
+        padding: 8px 12px;
+        border-bottom: 1px solid color-mix(in srgb, var(--_border) 40%, transparent);
+        background: color-mix(in srgb, var(--_phosphor) 3%, var(--_screen-bg));
+      }
+
+      .briefing__header {
+        font-family: var(--_mono);
+        font-size: 8px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--_phosphor);
+        margin-bottom: 6px;
+        border-bottom: 1px solid color-mix(in srgb, var(--_phosphor) 20%, transparent);
+        padding-bottom: 4px;
+      }
+
+      .briefing__steps {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 6px;
+      }
+
+      .briefing__step {
+        font-family: var(--_mono);
+        font-size: 9px;
+        line-height: 1.6;
+        color: var(--_phosphor-dim);
+        padding-left: 16px;
+        position: relative;
+      }
+
+      .briefing__step::before {
+        content: attr(data-num);
+        position: absolute;
+        left: 0;
+        color: var(--_phosphor);
+        font-weight: 700;
+      }
+
+      .briefing__alt {
+        font-family: var(--_mono);
+        font-size: 8px;
+        color: color-mix(in srgb, var(--_phosphor-dim) 60%, transparent);
+        font-style: italic;
+        margin-bottom: 6px;
+      }
+
+      .briefing__ack {
+        font-family: var(--_mono);
+        font-size: 9px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        padding: 4px 12px;
+        background: transparent;
+        color: var(--_phosphor);
+        border: 1px solid var(--_phosphor-dim);
+        cursor: pointer;
+      }
+
+      .briefing__ack:hover {
+        background: color-mix(in srgb, var(--_phosphor) 8%, transparent);
+        border-color: var(--_phosphor);
+      }
+
+      .briefing__ack:focus-visible {
+        outline: 2px solid var(--_phosphor);
+        outline-offset: 1px;
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .briefing__ack::after {
+          content: '\u2588';
+          animation: cursor-blink 1s step-end infinite;
+          margin-left: 4px;
+        }
+      }
+
+      @keyframes cursor-blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0; }
+      }
+
+      /* -- Footer Hint -- */
+      .footer__hint {
+        font-family: var(--_mono);
+        font-size: 8px;
+        color: color-mix(in srgb, var(--_phosphor-dim) 50%, transparent);
+        letter-spacing: 0.3px;
+      }
+
       /* -- 4K / Ultra-wide (2560px+) -- */
       @media (min-width: 2560px) {
         .timer {
@@ -569,6 +689,10 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
 
   /** Ability ID selected for the agent in targeting mode. */
   @state() private _targetingAbilityId: string | null = null;
+
+  /** Combat onboarding briefing (shown once, persisted via localStorage). */
+  @state() private _showOnboarding =
+    !globalThis.localStorage?.getItem('dungeon_combat_onboarded');
 
   // -- Event Dispatch -------------------------------------------------------
 
@@ -631,6 +755,7 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
 
     return html`
       <div class="combat-bar" role="region" aria-label=${msg('Combat planning')}>
+        ${this._showOnboarding ? this._renderOnboarding() : nothing}
         ${this._renderTimer(remaining, combat?.timer?.duration_ms ?? 30_000)}
 
         <div class="agents" role="list" aria-label=${msg('Agent actions')}>
@@ -643,6 +768,7 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
           <span class="counter" aria-live="polite">
             ${selected.size}/${actionable.length} ${msg('ACTIONS')}
           </span>
+          <span class="footer__hint">${msg('or type "submit" in terminal')}</span>
           <button
             class="execute ${allSelected && !submitting ? 'execute--ready' : ''}"
             ?disabled=${!allSelected || submitting}
@@ -708,6 +834,9 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
       >
         <div class="agent__row">
           <span class="agent__name">${agent.agent_name}</span>
+          ${hasSelection
+            ? html`<span class="agent__done" aria-label=${msg('Action selected')}>${msg('OK')}</span>`
+            : nothing}
           <span class="agent__condition">${getConditionLabel(agent.condition)}</span>
           <div class="agent__abilities" role="radiogroup" aria-label=${msg('Abilities')}>
             ${agent.available_abilities.map((ability) =>
@@ -715,8 +844,8 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
             )}
           </div>
         </div>
-        ${isTargeting && enemies.length > 1
-          ? this._renderTargets(enemies)
+        ${isTargeting
+          ? this._renderTargetPicker(agent, enemies)
           : nothing}
       </div>
     `;
@@ -758,6 +887,42 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
     `;
   }
 
+  private _renderTargetPicker(
+    agent: AgentCombatStateClient,
+    enemies: EnemyCombatStateClient[],
+  ) {
+    // Determine if targeting allies or enemies based on selected ability
+    const selectedAbility = agent.available_abilities.find(
+      (a) => a.id === this._targetingAbilityId,
+    );
+    if (selectedAbility?.targets === 'single_ally') {
+      const allies = dungeonState.party.value.filter(
+        (a) => a.agent_id !== agent.agent_id && a.condition !== 'captured',
+      );
+      return this._renderAllyTargets(allies);
+    }
+    return this._renderTargets(enemies);
+  }
+
+  private _renderAllyTargets(allies: AgentCombatStateClient[]) {
+    return html`
+      <div class="targets" role="listbox" aria-label=${msg('Select ally')}>
+        <span class="targets__label">\u25BA ${msg('Ally')}:</span>
+        ${allies.map(
+          (ally) => html`
+            <button
+              class="target target--ally"
+              role="option"
+              @click=${() => this._handleTargetClick(ally.agent_id)}
+            >
+              ${ally.agent_name}
+            </button>
+          `,
+        )}
+      </div>
+    `;
+  }
+
   private _renderTargets(enemies: EnemyCombatStateClient[]) {
     return html`
       <div class="targets" role="listbox" aria-label=${msg('Select target')}>
@@ -788,16 +953,74 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
 
     const alive = enemies.filter((e) => e.is_alive);
 
-    if (alive.length <= 1) {
-      // Single or no enemy: auto-target and select immediately
-      dungeonState.selectAction(agent.agent_id, ability.id, alive[0]?.instance_id);
-      this._targetingAgentId = null;
-      this._targetingAbilityId = null;
-    } else {
-      // Multiple enemies: enter targeting mode
+    // Self-targeting (Observe, Taunt, Fortify, Evade): 1 click, auto-target self
+    if (ability.targets === 'self') {
+      dungeonState.selectAction(agent.agent_id, ability.id, agent.agent_id);
+      this._clearTargeting();
+      return;
+    }
+
+    // All-target (Rally, Detonate): 1 click, no target needed
+    if (ability.targets === 'all_enemies' || ability.targets === 'all_allies') {
+      dungeonState.selectAction(agent.agent_id, ability.id);
+      this._clearTargeting();
+      return;
+    }
+
+    // Single ally target (Shield, Inspire): auto-pick if only 1 other ally
+    if (ability.targets === 'single_ally') {
+      const allies = dungeonState.party.value.filter(
+        (a) => a.agent_id !== agent.agent_id && a.condition !== 'captured',
+      );
+      if (allies.length <= 1) {
+        dungeonState.selectAction(agent.agent_id, ability.id, allies[0]?.agent_id);
+        this._clearTargeting();
+        return;
+      }
+      // Multiple allies: enter targeting mode for ally selection
       this._targetingAgentId = agent.agent_id;
       this._targetingAbilityId = ability.id;
+      return;
     }
+
+    // Single enemy: auto-target if 1 alive, else target picker
+    if (alive.length <= 1) {
+      dungeonState.selectAction(agent.agent_id, ability.id, alive[0]?.instance_id);
+      this._clearTargeting();
+      return;
+    }
+
+    // Multiple enemies: enter targeting mode
+    this._targetingAgentId = agent.agent_id;
+    this._targetingAbilityId = ability.id;
+  }
+
+  private _clearTargeting(): void {
+    this._targetingAgentId = null;
+    this._targetingAbilityId = null;
+  }
+
+  private _renderOnboarding() {
+    return html`
+      <div class="briefing" role="note" aria-label=${msg('Combat briefing')}>
+        <div class="briefing__header">${msg('Combat briefing')}</div>
+        <ol class="briefing__steps">
+          <li class="briefing__step" data-num="1.">${msg('Click an ability for each agent below')}</li>
+          <li class="briefing__step" data-num="2.">${msg('Self-abilities auto-target -- one click')}</li>
+          <li class="briefing__step" data-num="3.">${msg('Attack abilities require an enemy target')}</li>
+          <li class="briefing__step" data-num="4.">${msg('Press EXECUTE when all agents have orders')}</li>
+        </ol>
+        <div class="briefing__alt">${msg('Or type "attack <agent> <ability> [target]" + "submit" in terminal')}</div>
+        <button class="briefing__ack" @click=${this._dismissOnboarding}>
+          ${msg('Acknowledged')}
+        </button>
+      </div>
+    `;
+  }
+
+  private _dismissOnboarding(): void {
+    this._showOnboarding = false;
+    globalThis.localStorage?.setItem('dungeon_combat_onboarded', '1');
   }
 
   private _handleTargetClick(targetId: string): void {

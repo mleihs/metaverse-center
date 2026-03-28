@@ -251,9 +251,11 @@ class TestGetAgentAllAbilities:
         abilities = get_agent_all_abilities({"spy": 5, "guardian": 0})
         assert all(a.school == "spy" for a in abilities)
 
-    def test_empty_aptitudes(self):
+    def test_empty_aptitudes_safety_net(self):
+        """Empty aptitudes triggers safety net: returns spy_observe."""
         abilities = get_agent_all_abilities({})
-        assert len(abilities) == 0
+        assert len(abilities) == 1
+        assert abilities[0].id == "spy_observe"
 
     def test_all_schools_at_max(self):
         """All 6 schools at level 9."""
