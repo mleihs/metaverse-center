@@ -691,10 +691,14 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
   }
 
   private _scrollToBottom(): void {
+    // Double-rAF: first frame ensures Lit microtask DOM updates complete,
+    // second frame ensures layout is finalized before reading scrollHeight.
     requestAnimationFrame(() => {
-      if (this._screen) {
-        this._screen.scrollTop = this._screen.scrollHeight;
-      }
+      requestAnimationFrame(() => {
+        if (this._screen) {
+          this._screen.scrollTop = this._screen.scrollHeight;
+        }
+      });
     });
   }
 

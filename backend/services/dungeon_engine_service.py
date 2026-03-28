@@ -484,7 +484,10 @@ class DungeonEngineService:
                     # No damage ability (pure support/tank): use first available
                     fallback = abilities[0] if abilities else None
                     if fallback:
-                        target = str(agent.agent_id) if fallback.targets == "self" else alive_enemies[0].instance_id
+                        if fallback.targets in ("self", "single_ally", "all_allies"):
+                            target = str(agent.agent_id)
+                        else:
+                            target = alive_enemies[0].instance_id
                         agent_actions.append(
                             AgentAction(
                                 agent_id=agent.agent_id,

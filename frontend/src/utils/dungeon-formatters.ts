@@ -365,8 +365,10 @@ export function formatCombatResolution(
 
   // Victory / Wipe / Stalemate
   if (result.victory) {
-    lines.push(combatSystemLine(''));
-    lines.push(combatSystemLine(`\u2550\u2550\u2550 ${msg('VICTORY')} \u2550\u2550\u2550`));
+    lines.push(combatHealLine(''));
+    lines.push(combatHealLine('\u2550'.repeat(50)));
+    lines.push(combatHealLine(`\u2550\u2550\u2550       ${msg('V I C T O R Y')}       \u2550\u2550\u2550`));
+    lines.push(combatHealLine('\u2550'.repeat(50)));
   }
   if (result.wipe) {
     lines.push(combatSystemLine(''));
