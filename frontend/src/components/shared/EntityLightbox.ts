@@ -1,13 +1,20 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
-import { focusFirstElement, trapFocus } from './focus-trap.js';
+import { customElement, property, query, state } from 'lit/decorators.js';
+import { icons } from '../../utils/icons.js';
 
 /**
  * Full-viewport cinematic lightbox for entity detail views.
  *
- * Uses the same slot API as VelgSidePanel (media, content, footer)
- * so detail panels can swap containers without visible transitions.
+ * Uses native <dialog> with showModal() for top-layer rendering,
+ * permanently immune to CSS containing block issues (filter/transform
+ * on ancestors can no longer break this modal).
+ *
+ * Animation strategy:
+ * - Entry: @starting-style for CSS-only open animation (Baseline 2024)
+ * - Exit: JS-managed .closing class + transitionend → close()
+ *   (cross-browser — avoids Chromium-only `overlay` property)
+ * - Backdrop: native ::backdrop with animated blur + opacity
  *
  * Features:
  * - Two-column desktop layout (hero image + content)
@@ -15,42 +22,80 @@ import { focusFirstElement, trapFocus } from './focus-trap.js';
  * - Arrow key / swipe navigation between entities
  * - Ken Burns idle animation on hero image
  * - Scanline sweep on entity transition
- * - Focus trap + ARIA dialog semantics
+ * - Native focus containment via showModal()
  * - prefers-reduced-motion support
+ * - WCAG AA accessible (aria-labelledby, focus management, contrast)
  */
 @localized()
 @customElement('velg-entity-lightbox')
 export class VelgEntityLightbox extends LitElement {
   static styles = css`
-    /* ── Reset ── */
+    /* ── Host ── */
     :host {
-      display: block;
+      display: contents;
     }
 
-    /* ── Backdrop ── */
-    .lightbox {
-      position: fixed;
-      inset: 0;
-      z-index: var(--z-modal);
+    /* ── Dialog (viewport-filling transparent shell) ── */
+    dialog {
+      box-sizing: border-box;
+      padding: 0;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--color-text-primary);
+      width: 100vw;
+      width: 100dvw;
+      max-width: 100vw;
+      max-width: 100dvw;
+      height: 100vh;
+      height: 100dvh;
+      max-height: 100vh;
+      max-height: 100dvh;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    dialog[open] {
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: display 350ms allow-discrete;
+    }
+
+    /* ── Backdrop (native ::backdrop with animated blur) ── */
+    dialog::backdrop {
+      background: rgba(0, 0, 0, 0);
+      backdrop-filter: blur(0px);
+      -webkit-backdrop-filter: blur(0px);
+      transition:
+        background 350ms cubic-bezier(0.22, 1, 0.36, 1),
+        backdrop-filter 350ms cubic-bezier(0.22, 1, 0.36, 1),
+        -webkit-backdrop-filter 350ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    dialog[open]::backdrop {
       background: rgba(0, 0, 0, 0.7);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
-      opacity: 0;
-      visibility: hidden;
-      transition:
-        opacity 200ms ease-out,
-        visibility 200ms ease-out;
     }
 
-    :host([open]) .lightbox {
-      opacity: 1;
-      visibility: visible;
+    /* Backdrop entry — MUST be standalone block for ::backdrop */
+    @starting-style {
+      dialog[open]::backdrop {
+        background: rgba(0, 0, 0, 0);
+        backdrop-filter: blur(0px);
+        -webkit-backdrop-filter: blur(0px);
+      }
     }
 
-    /* ── Container ── */
+    /* Backdrop exit (JS-managed via .closing class) */
+    dialog[open].closing::backdrop {
+      background: rgba(0, 0, 0, 0);
+      backdrop-filter: blur(0px);
+      -webkit-backdrop-filter: blur(0px);
+    }
+
+    /* ── Container (visible content with grid layout) ── */
     .lightbox__container {
       position: relative;
       width: 92vw;
@@ -64,16 +109,31 @@ export class VelgEntityLightbox extends LitElement {
       border: var(--border-medium);
       box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
       overflow: hidden;
-      transform: scale(0.95);
-      opacity: 0;
+
+      /* At-rest (open) state */
+      opacity: 1;
+      scale: 1;
+      translate: 0 0;
       transition:
-        transform 350ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)),
-        opacity 350ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1));
+        opacity 350ms cubic-bezier(0.22, 1, 0.36, 1),
+        scale 350ms cubic-bezier(0.22, 1, 0.36, 1),
+        translate 350ms cubic-bezier(0.22, 1, 0.36, 1);
     }
 
-    :host([open]) .lightbox__container {
-      transform: scale(1);
-      opacity: 1;
+    /* Container entry — slides up from below, scales in */
+    @starting-style {
+      dialog[open] .lightbox__container {
+        opacity: 0;
+        scale: 0.95;
+        translate: 0 12px;
+      }
+    }
+
+    /* Container exit — drifts upward, scales down slightly */
+    dialog[open].closing .lightbox__container {
+      opacity: 0;
+      scale: 0.97;
+      translate: 0 -8px;
     }
 
     /* ── Header (spans full width) ── */
@@ -118,10 +178,6 @@ export class VelgEntityLightbox extends LitElement {
       width: 36px;
       height: 36px;
       padding: 0;
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-lg);
-      line-height: 1;
       color: var(--color-text-primary);
       background: transparent;
       border: var(--border-medium);
@@ -134,6 +190,11 @@ export class VelgEntityLightbox extends LitElement {
       background: var(--color-primary);
       color: var(--color-text-inverse);
       border-color: var(--color-primary);
+    }
+
+    .lightbox__close:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
     }
 
     /* ── Hero (left column) ── */
@@ -222,7 +283,7 @@ export class VelgEntityLightbox extends LitElement {
       position: relative;
     }
 
-    /* Gradient fade above footer — scroll affordance (Figma/Notion pattern) */
+    /* Gradient fade above footer — scroll affordance */
     .lightbox__footer::before {
       content: '';
       position: absolute;
@@ -264,10 +325,18 @@ export class VelgEntityLightbox extends LitElement {
       cursor: not-allowed;
     }
 
+    .lightbox__nav-btn:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+
     .lightbox__nav-btn svg {
       width: 18px;
       height: 18px;
-      fill: currentColor;
+    }
+
+    .lightbox__nav-btn--prev svg {
+      transform: scaleX(-1);
     }
 
     .lightbox__footer-actions {
@@ -314,11 +383,12 @@ export class VelgEntityLightbox extends LitElement {
 
     /* ── Reduced motion ── */
     @media (prefers-reduced-motion: reduce) {
+      dialog::backdrop,
       .lightbox__container {
-        transition: none !important;
+        transition-duration: 0.01ms !important;
       }
 
-      .lightbox {
+      dialog[open] {
         transition-duration: 0.01ms !important;
       }
 
@@ -336,53 +406,88 @@ export class VelgEntityLightbox extends LitElement {
     }
   `;
 
+  // ── Public API (zero changes from previous implementation) ──
+
   @property({ type: Boolean, reflect: true }) open = false;
   @property({ type: String }) panelTitle = '';
   @property({ type: Number }) totalEntities = 0;
   @property({ type: Number }) currentIndex = 0;
 
+  // ── Internal state ──
+
   @state() private _scanlineActive = false;
   @state() private _contentExiting = false;
 
-  private _boundKeyDown: ((e: KeyboardEvent) => void) | null = null;
+  @query('dialog') private _dialog!: HTMLDialogElement;
+  @query('.lightbox__container') private _container!: HTMLDivElement;
+
+  private _isClosing = false;
   private _touchStartX = 0;
   private _touchStartY = 0;
 
-  connectedCallback(): void {
-    super.connectedCallback();
-    this._boundKeyDown = this._handleKeyDown.bind(this);
-    document.addEventListener('keydown', this._boundKeyDown);
-  }
+  // ── Lifecycle ──
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    if (this._boundKeyDown) {
-      document.removeEventListener('keydown', this._boundKeyDown);
-    }
     document.body.style.overflow = '';
   }
 
   protected updated(changedProperties: Map<PropertyKey, unknown>): void {
-    if (changedProperties.has('open')) {
+    if (changedProperties.has('open') && this._dialog) {
       if (this.open) {
-        document.body.style.overflow = 'hidden';
-        focusFirstElement(this.shadowRoot);
+        // Cancel any in-flight close animation
+        if (this._isClosing) {
+          this._isClosing = false;
+          this._dialog.classList.remove('closing');
+        }
+        if (!this._dialog.open) {
+          document.body.style.overflow = 'hidden';
+          this._dialog.showModal();
+        }
       } else {
-        document.body.style.overflow = '';
+        this._performClose();
       }
     }
   }
 
-  // ── Keyboard ──
+  // ── Close animation (JS-managed for cross-browser exit) ──
+
+  private async _performClose(): Promise<void> {
+    const dialog = this._dialog;
+    if (this._isClosing || !dialog?.open) {
+      document.body.style.overflow = '';
+      return;
+    }
+
+    this._isClosing = true;
+    dialog.classList.add('closing');
+
+    // Wait for container exit transition, with safety timeout
+    await Promise.race([
+      new Promise<void>(resolve => {
+        this._container?.addEventListener('transitionend', () => resolve(), { once: true });
+      }),
+      new Promise<void>(resolve => setTimeout(resolve, 380)),
+    ]);
+
+    // If re-opened during animation, abort close
+    if (!this._isClosing) return;
+
+    dialog.classList.remove('closing');
+    dialog.close();
+    document.body.style.overflow = '';
+    this._isClosing = false;
+  }
+
+  // ── Keyboard (arrow nav only — Escape handled by native cancel event) ──
 
   private _handleKeyDown(e: KeyboardEvent): void {
-    if (!this.open) return;
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+      return;
+    }
 
     switch (e.key) {
-      case 'Escape':
-        e.preventDefault();
-        this._emitClose();
-        break;
       case 'ArrowLeft':
         e.preventDefault();
         this._navigatePrev();
@@ -391,13 +496,15 @@ export class VelgEntityLightbox extends LitElement {
         e.preventDefault();
         this._navigateNext();
         break;
-      case 'Tab':
-        trapFocus(e, this.shadowRoot?.querySelector('.lightbox__container'), this);
-        break;
     }
   }
 
-  // ── Touch ──
+  private _onCancel(e: Event): void {
+    e.preventDefault(); // Block instant browser close
+    this._emitClose(); // Let consumer handle close flow
+  }
+
+  // ── Touch (swipe navigation) ──
 
   private _handleTouchStart(e: TouchEvent): void {
     this._touchStartX = e.touches[0].clientX;
@@ -408,7 +515,7 @@ export class VelgEntityLightbox extends LitElement {
     const dx = e.changedTouches[0].clientX - this._touchStartX;
     const dy = e.changedTouches[0].clientY - this._touchStartY;
 
-    // Only trigger if horizontal swipe > 50px and more horizontal than vertical
+    // Horizontal swipe > 50px and more horizontal than vertical
     if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
       if (dx < 0) {
         this._navigateNext();
@@ -435,10 +542,8 @@ export class VelgEntityLightbox extends LitElement {
   private _playTransition(): void {
     // Scanline sweep on hero
     this._scanlineActive = false;
-    // Force reflow
     requestAnimationFrame(() => {
       this._scanlineActive = true;
-      // Auto-clear after animation
       setTimeout(() => {
         this._scanlineActive = false;
       }, 320);
@@ -457,10 +562,12 @@ export class VelgEntityLightbox extends LitElement {
     this.dispatchEvent(new CustomEvent('panel-close', { bubbles: true, composed: true }));
   }
 
-  private _handleBackdropClick(e: MouseEvent): void {
-    if ((e.target as HTMLElement).classList.contains('lightbox')) {
-      this._emitClose();
-    }
+  private _handleBackdropClick(): void {
+    this._emitClose();
+  }
+
+  private _stopPropagation(e: Event): void {
+    e.stopPropagation();
   }
 
   // ── Render ──
@@ -471,22 +578,21 @@ export class VelgEntityLightbox extends LitElement {
     const showNav = this.totalEntities > 1;
 
     return html`
-      <div
-        class="lightbox"
+      <dialog
         @click=${this._handleBackdropClick}
+        @cancel=${this._onCancel}
+        @keydown=${this._handleKeyDown}
         @touchstart=${this._handleTouchStart}
         @touchend=${this._handleTouchEnd}
+        aria-labelledby="lightbox-title"
       >
         <div
           class="lightbox__container"
-          role="dialog"
-          aria-modal="true"
-          aria-roledescription=${msg('Entity viewer')}
-          aria-label=${this.panelTitle}
+          @click=${this._stopPropagation}
         >
           <!-- Header -->
           <div class="lightbox__header">
-            <h2 class="lightbox__title">${this.panelTitle}</h2>
+            <h2 id="lightbox-title" class="lightbox__title">${this.panelTitle}</h2>
             ${
               showNav
                 ? html`<span class="lightbox__counter" aria-live="polite">
@@ -498,7 +604,8 @@ export class VelgEntityLightbox extends LitElement {
               class="lightbox__close"
               @click=${this._emitClose}
               aria-label=${msg('Close')}
-            >X</button>
+              autofocus
+            >${icons.close(18)}</button>
           </div>
 
           <!-- Hero image -->
@@ -523,21 +630,17 @@ export class VelgEntityLightbox extends LitElement {
                 showNav
                   ? html`
                     <button
-                      class="lightbox__nav-btn"
+                      class="lightbox__nav-btn lightbox__nav-btn--prev"
                       ?disabled=${!hasPrev}
                       @click=${this._navigatePrev}
                       aria-label=${msg('Previous entity')}
-                    >
-                      <svg viewBox="0 0 16 16"><path d="M10.3 2.3a1 1 0 0 1 0 1.4L6.4 8l3.9 4.3a1 1 0 1 1-1.5 1.4l-4.5-5a1 1 0 0 1 0-1.4l4.5-5a1 1 0 0 1 1.5 0z"/></svg>
-                    </button>
+                    >${icons.chevronRight(18)}</button>
                     <button
                       class="lightbox__nav-btn"
                       ?disabled=${!hasNext}
                       @click=${this._navigateNext}
                       aria-label=${msg('Next entity')}
-                    >
-                      <svg viewBox="0 0 16 16"><path d="M5.7 2.3a1 1 0 0 1 1.5 0l4.5 5a1 1 0 0 1 0 1.4l-4.5 5a1 1 0 1 1-1.5-1.4L9.6 8 5.7 3.7a1 1 0 0 1 0-1.4z"/></svg>
-                    </button>
+                    >${icons.chevronRight(18)}</button>
                   `
                   : nothing
               }
@@ -547,7 +650,7 @@ export class VelgEntityLightbox extends LitElement {
             </div>
           </div>
         </div>
-      </div>
+      </dialog>
     `;
   }
 }
