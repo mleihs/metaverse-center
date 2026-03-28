@@ -32,6 +32,7 @@ import {
   formatDungeonMap,
   formatDungeonStatus,
   formatEncounterChoices,
+  AUTO_APPLY_EFFECTS,
   formatLootDistribution,
   formatLootDrop,
   formatPartyWipe,
@@ -540,7 +541,7 @@ async function handleDungeonAssign(ctx: CommandContext): Promise<TerminalLine[]>
   const agentNameInput = ctx.args.slice(1).join(' ').toLowerCase();
 
   // Find the distributable items (same filter as formatter)
-  const autoEffects = new Set(['stress_heal', 'event_modifier', 'arc_modifier', 'dungeon_buff']);
+  const autoEffects = AUTO_APPLY_EFFECTS;
   const distributable = (state.pending_loot ?? []).filter(
     i => !autoEffects.has(i.effect_type),
   );
@@ -551,13 +552,15 @@ async function handleDungeonAssign(ctx: CommandContext): Promise<TerminalLine[]>
 
   const lootItem = distributable[itemNum - 1];
 
-  // Fuzzy match agent name
-  const agent = state.party.find(
-    a => a.agent_name.toLowerCase().includes(agentNameInput) && a.condition !== 'captured',
-  );
-  if (!agent) {
+  // Fuzzy match agent name (same pattern as attack/encounter commands)
+  const operationalNames = state.party
+    .filter(a => a.condition !== 'captured')
+    .map(a => a.agent_name);
+  const matchedName = fuzzyName(agentNameInput, operationalNames);
+  if (!matchedName) {
     return [errorLine(msg('Agent not found or captured.'))];
   }
+  const agent = state.party.find(a => a.agent_name === matchedName)!;
 
   try {
     const resp = await dungeonApi.assignLoot(runId, {
@@ -596,7 +599,7 @@ async function handleDungeonConfirm(): Promise<TerminalLine[]> {
   }
 
   // Check all distributable items are assigned
-  const autoEffects = new Set(['stress_heal', 'event_modifier', 'arc_modifier', 'dungeon_buff']);
+  const autoEffects = AUTO_APPLY_EFFECTS;
   const distributable = (state.pending_loot ?? []).filter(
     i => !autoEffects.has(i.effect_type),
   );
@@ -613,10 +616,12 @@ async function handleDungeonConfirm(): Promise<TerminalLine[]> {
       return [errorLine(resp.error?.message ?? msg('Confirmation failed.'))];
     }
 
+    // Capture loot BEFORE applying new state (completed state may clear pending_loot)
+    const loot = state.pending_loot ?? [];
     dungeonState.applyState(resp.data.state);
 
     // Show completion banner + exit
-    const lines = formatDungeonComplete(resp.data.state, state.pending_loot ?? []);
+    const lines = formatDungeonComplete(resp.data.state, loot);
     _exitDungeon();
     return lines;
   } catch (err) {

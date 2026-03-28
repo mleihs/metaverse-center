@@ -751,7 +751,7 @@ export function formatCombatStalemate(): TerminalLine[] {
 // ── Loot Distribution (Debrief Terminal) ────────────────────────────────────
 
 /** Effect types that are auto-applied (no player choice). */
-const AUTO_APPLY_EFFECTS = new Set(['stress_heal', 'event_modifier', 'arc_modifier', 'dungeon_buff']);
+export const AUTO_APPLY_EFFECTS = new Set(['stress_heal', 'event_modifier', 'arc_modifier', 'dungeon_buff']);
 
 /** Human-readable effect type label for the distribution screen. */
 function _effectLabel(effectType: string): string {

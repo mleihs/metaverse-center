@@ -241,6 +241,12 @@ async def assign_loot(
     result = await DungeonEngineService.assign_loot(
         admin, run_id, body.loot_id, body.agent_id,
     )
+    await AuditService.safe_log(
+        admin, None, user.id,
+        "resonance_dungeon_runs", str(run_id),
+        "assign_loot",
+        {"loot_id": body.loot_id, "agent_id": str(body.agent_id)},
+    )
     return {"success": True, "data": result}
 
 
@@ -252,6 +258,11 @@ async def confirm_distribution(
 ) -> dict:
     """Finalize loot distribution and complete the dungeon run."""
     result = await DungeonEngineService.confirm_distribution(admin, run_id)
+    await AuditService.safe_log(
+        admin, None, user.id,
+        "resonance_dungeon_runs", str(run_id),
+        "finalize_distribution", {},
+    )
     return {"success": True, "data": result}
 
 

@@ -1433,6 +1433,28 @@ class DungeonEngineService:
         }
 
     @classmethod
+    def _build_agent_outcomes(cls, instance: DungeonInstance) -> list[dict]:
+        """Build agent outcomes for the completion RPC (mood, stress, moodlets, activities)."""
+        outcomes = []
+        for agent in instance.party:
+            outcomes.append({
+                "agent_id": str(agent.agent_id),
+                "mood_delta": -10 if agent.stress > 500 else 10,
+                "stress_delta": agent.stress,
+                "moodlets": [{
+                    "moodlet_type": "dungeon_survivor",
+                    "emotion": "pride" if agent.condition != "afflicted" else "dread",
+                    "strength": 10 if agent.condition != "afflicted" else -10,
+                    "source_description": f"Survived {instance.archetype} dungeon",
+                    "decay_type": "timed",
+                }],
+                "activity_narrative_en": f"Explored {instance.archetype} resonance dungeon and prevailed.",
+                "activity_narrative_de": f"Erkundete {instance.archetype} Resonanz-Dungeon und bestand.",
+                "significance": 8,
+            })
+        return outcomes
+
+    @classmethod
     async def _complete_run(
         cls,
         admin_supabase: Client,
@@ -1450,28 +1472,7 @@ class DungeonEngineService:
             "party_state": [a.model_dump(mode="json") for a in instance.party],
         }
 
-        # Build agent outcomes (mood, stress, moodlets, activities)
-        agent_outcomes = []
-        for agent in instance.party:
-            agent_outcomes.append(
-                {
-                    "agent_id": str(agent.agent_id),
-                    "mood_delta": -10 if agent.stress > 500 else 10,
-                    "stress_delta": agent.stress,
-                    "moodlets": [
-                        {
-                            "moodlet_type": "dungeon_survivor",
-                            "emotion": "pride" if agent.condition != "afflicted" else "dread",
-                            "strength": 10 if agent.condition != "afflicted" else -10,
-                            "source_description": f"Survived {instance.archetype} dungeon",
-                            "decay_type": "timed",
-                        }
-                    ],
-                    "activity_narrative_en": (f"Explored {instance.archetype} resonance dungeon and prevailed."),
-                    "activity_narrative_de": (f"Erkundete {instance.archetype} Resonanz-Dungeon und bestand."),
-                    "significance": 8,
-                }
-            )
+        agent_outcomes = cls._build_agent_outcomes(instance)
 
         # Build loot items for RPC (assign agents to loot effects)
         loot_items = cls._build_loot_items_for_rpc(instance, loot)
@@ -1620,23 +1621,7 @@ class DungeonEngineService:
             "depth_reached": instance.depth,
             "party_state": [a.model_dump(mode="json") for a in instance.party],
         }
-        agent_outcomes = []
-        for agent in instance.party:
-            agent_outcomes.append({
-                "agent_id": str(agent.agent_id),
-                "mood_delta": -10 if agent.stress > 500 else 10,
-                "stress_delta": agent.stress,
-                "moodlets": [{
-                    "moodlet_type": "dungeon_survivor",
-                    "emotion": "pride" if agent.condition != "afflicted" else "dread",
-                    "strength": 10 if agent.condition != "afflicted" else -10,
-                    "source_description": f"Survived {instance.archetype} dungeon",
-                    "decay_type": "timed",
-                }],
-                "activity_narrative_en": f"Explored {instance.archetype} resonance dungeon and prevailed.",
-                "activity_narrative_de": f"Erkundete {instance.archetype} Resonanz-Dungeon und bestand.",
-                "significance": 8,
-            })
+        agent_outcomes = cls._build_agent_outcomes(instance)
 
         try:
             await admin_supabase.rpc(
@@ -1676,14 +1661,7 @@ class DungeonEngineService:
         agent_id: UUID,
     ) -> dict:
         """Assign one distributable loot item to an agent."""
-        instance = _active_instances.get(str(run_id))
-        if not instance:
-            instance = await cls.recover_from_checkpoint(admin_supabase, run_id)
-            if instance:
-                _active_instances[str(run_id)] = instance
-
-        if not instance:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Dungeon run not found")
+        instance = await cls._get_instance(run_id, admin_supabase)
         if instance.phase != "distributing":
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Not in distribution phase")
 
@@ -1718,14 +1696,7 @@ class DungeonEngineService:
         run_id: UUID,
     ) -> dict:
         """Finalize loot distribution and complete the dungeon run."""
-        instance = _active_instances.get(str(run_id))
-        if not instance:
-            instance = await cls.recover_from_checkpoint(admin_supabase, run_id)
-            if instance:
-                _active_instances[str(run_id)] = instance
-
-        if not instance:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Dungeon run not found")
+        instance = await cls._get_instance(run_id, admin_supabase)
         if instance.phase != "distributing":
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Not in distribution phase")
         if cls._count_unassigned(instance) > 0:

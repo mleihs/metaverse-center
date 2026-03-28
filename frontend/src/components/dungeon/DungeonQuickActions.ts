@@ -26,7 +26,7 @@ import { customElement } from 'lit/decorators.js';
 
 import { dungeonState } from '../../services/DungeonStateManager.js';
 import type { DungeonPhase } from '../../types/dungeon.js';
-import { getRoomTypeLabel } from '../../utils/dungeon-formatters.js';
+import { AUTO_APPLY_EFFECTS, getRoomTypeLabel } from '../../utils/dungeon-formatters.js';
 import { terminalActionStyles, terminalComponentTokens, terminalTokens } from '../shared/terminal-theme-styles.js';
 
 @localized()
@@ -156,8 +156,7 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
     const state = dungeonState.clientState.value;
     if (!state?.pending_loot) return nothing;
 
-    const autoEffects = new Set(['stress_heal', 'event_modifier', 'arc_modifier', 'dungeon_buff']);
-    const distributable = state.pending_loot.filter(i => !autoEffects.has(i.effect_type));
+    const distributable = state.pending_loot.filter(i => !AUTO_APPLY_EFFECTS.has(i.effect_type));
     const assignments = state.loot_assignments ?? {};
     const suggestions = state.loot_suggestions ?? {};
     const party = state.party.filter(a => a.condition !== 'captured');
