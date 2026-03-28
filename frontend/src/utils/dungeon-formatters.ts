@@ -399,13 +399,13 @@ function _formatCombatEvent(event: CombatEvent, isEnemyAction: boolean): Termina
   // Miss → always dim regardless of actor
   if (!event.hit) return combatMissLine(text);
 
-  // Enemy action hitting party → damage (red)
-  if (isEnemyAction && event.damage > 0) return combatDamageLine(text);
+  // Enemy action → damage (red) for ANY hostile action (condition OR stress)
+  if (isEnemyAction && (event.damage > 0 || event.stress > 0)) return combatDamageLine(text);
 
   // Heal/stress recovery → green
   if (event.stress < 0) return combatHealLine(text);
 
-  // Party action → bright amber
+  // Party action with damage → bright amber hit
   if (!isEnemyAction) return combatPlayerLine(text);
 
   // Enemy non-damage (defend, etc.) → dim
