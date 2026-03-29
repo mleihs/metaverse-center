@@ -326,11 +326,11 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 | SQL migrations | 165 |
 | Routers | 49 |
 | Web Components | 238 custom elements |
-| Unit tests | 1,465 (pytest + vitest) |
+| Unit tests | 2,184+ (pytest) + vitest |
 | Localized UI strings | 5,906 (EN/DE, 0 missing) |
 | GA4 custom events | 44 |
 | Documentation files | 73 (Divio structure + 9 ADRs) |
-| Dungeon archetypes | 8 (tied to resonance types) |
+| Dungeon archetypes | 8 designed, 2 playable (Shadow + Tower) |
 | Flagship simulations | 5 + 2 community presets |
 | Operative types | 6 |
 | Scoring dimensions | 5 |
@@ -357,7 +357,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 - **Alliances** – Proposal-based, shared intelligence, RP upkeep, tension mechanic, betrayal penalties
 - **Bot AI** – 5 personality archetypes, 3 difficulty levels, fog-of-war compliant, dual-mode chat
 - **Academy Mode** – Solo training against AI opponents
-- **Resonance Dungeons** – Procedural FTL-style dungeons spawned from substrate resonances. 8 archetypes with unique enemies and encounters. Phase-based combat (30s planning → simultaneous resolution), 6 ability schools tied to operative types, condition tracks (Operational → Afflicted), stress system. Loot distribution debrief terminal with aptitude boosts (+2 cap per agent), memories, moodlets. Terminal-based submarine war room HUD.
+- **Resonance Dungeons** – Procedural FTL-style dungeons spawned from substrate resonances. 2 playable archetypes: The Shadow (visibility mechanic, 3 VP pips) and The Tower (stability countdown 100→0, structural collapse). 8 total designed. Phase-based combat (30s planning → simultaneous resolution), 18 abilities in 6 schools, condition tracks, stress system. Registry-based multi-archetype dispatch. Loot distribution debrief with aptitude boosts (+2 cap), memories, moodlets. Terminal-based submarine war room HUD.
 
 ### Cross-Simulation
 - **Diplomacy** – Embassies, ambassadors, event echoes (narrative bleed between worlds)
