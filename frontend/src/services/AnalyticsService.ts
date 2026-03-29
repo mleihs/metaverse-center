@@ -203,9 +203,9 @@ class AnalyticsService {
       window.dataLayer.push(args);
     };
 
-    // Consent mode v2 defaults (GDPR-safe: denied until user accepts)
+    // TEMPORARY: default granted to verify GA4 data flow (revert after confirmed)
     window.gtag('consent', 'default', {
-      analytics_storage: 'denied',
+      analytics_storage: 'granted',
       ad_storage: 'denied',
       ad_user_data: 'denied',
       ad_personalization: 'denied',
