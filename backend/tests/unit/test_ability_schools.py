@@ -36,8 +36,9 @@ class TestAbilityDataIntegrity:
     def test_spy_has_three_abilities(self):
         assert len(SPY_ABILITIES) == 3
 
-    def test_guardian_has_three_abilities(self):
-        assert len(GUARDIAN_ABILITIES) == 3
+    def test_guardian_has_four_abilities(self):
+        """3 base + Reinforce (Tower Phase E)."""
+        assert len(GUARDIAN_ABILITIES) == 4
 
     def test_assassin_has_three_abilities(self):
         assert len(ASSASSIN_ABILITIES) == 3
@@ -53,7 +54,7 @@ class TestAbilityDataIntegrity:
 
     def test_total_ability_count(self):
         total = sum(len(v) for v in ALL_ABILITIES.values())
-        assert total == 17  # 3+3+3+3+2+3
+        assert total == 18  # 3+4+3+3+2+3 (Guardian: +Reinforce)
 
     def test_all_abilities_are_frozen_dataclass(self):
         for abilities in ALL_ABILITIES.values():
@@ -243,7 +244,7 @@ class TestGetAgentAllAbilities:
         spy_count = sum(1 for a in abilities if a.school == "spy")
         guardian_count = sum(1 for a in abilities if a.school == "guardian")
         assert spy_count == 3
-        assert guardian_count == 1  # only shield at level 3
+        assert guardian_count == 2  # shield + reinforce at level 3
 
     def test_level_zero_skipped(self):
         """Schools at level 0 contribute no abilities."""
@@ -269,4 +270,4 @@ class TestGetAgentAllAbilities:
         spy_ids = {a.id for a in abilities if a.school == "spy"}
         guardian_ids = {a.id for a in abilities if a.school == "guardian"}
         assert spy_ids == {"spy_observe", "spy_analyze_weakness", "spy_counter_intel"}
-        assert guardian_ids == {"guardian_shield", "guardian_taunt"}
+        assert guardian_ids == {"guardian_shield", "guardian_reinforce", "guardian_taunt"}

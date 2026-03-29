@@ -480,6 +480,9 @@ class TestCheckpointRoundTrip:
             "room_revealed_flags",
             "used_banter_ids",
             "phase_timer",
+            "loot_assignments",
+            "auto_apply_loot",
+            "pending_loot",
         }
         assert set(checkpoint.keys()) == expected_keys
 
@@ -553,3 +556,68 @@ class TestClientStateModels:
         assert state.party == []
         assert state.combat is None
         assert state.phase == "exploring"
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# ── Tower Archetype State ─────────────────────────────────────────────────
+# ══════════════════════════════════════════════════════════════════════════
+
+
+class TestTowerArchetypeState:
+    """Tower-specific archetype_state initialization and checkpoint round-trip."""
+
+    def test_tower_instance_valid(self):
+        """Tower archetype creates a valid DungeonInstance."""
+        instance = _make_instance(
+            archetype="The Tower",
+            signature="economic_tremor",
+            archetype_state={"stability": 100, "max_stability": 100},
+        )
+        assert instance.archetype == "The Tower"
+        assert instance.signature == "economic_tremor"
+
+    def test_tower_archetype_state_has_stability(self):
+        """Tower archetype_state has 'stability' and 'max_stability' keys."""
+        instance = _make_instance(
+            archetype="The Tower",
+            signature="economic_tremor",
+            archetype_state={"stability": 100, "max_stability": 100},
+        )
+        assert "stability" in instance.archetype_state
+        assert "max_stability" in instance.archetype_state
+
+    def test_tower_archetype_state_round_trip(self):
+        """Tower archetype_state survives checkpoint round-trip."""
+        tower_state = {"stability": 75, "max_stability": 100}
+        instance = _make_instance(
+            archetype="The Tower",
+            signature="economic_tremor",
+            archetype_state=tower_state,
+        )
+        checkpoint = instance.to_checkpoint()
+
+        restored = _make_instance(
+            archetype="The Tower",
+            signature="economic_tremor",
+            rooms=instance.rooms,
+            party=[],
+            archetype_state={},
+        )
+        restored.restore_from_checkpoint(checkpoint)
+
+        assert restored.archetype_state == tower_state
+        assert restored.archetype_state["stability"] == 75
+        assert restored.archetype_state["max_stability"] == 100
+
+    def test_tower_client_state(self):
+        """Tower DungeonClientState creates valid."""
+        state = DungeonClientState(
+            run_id=uuid4(),
+            archetype="The Tower",
+            signature="economic_tremor",
+            difficulty=3,
+            depth=1,
+            current_room=1,
+        )
+        assert state.archetype == "The Tower"
+        assert state.signature == "economic_tremor"

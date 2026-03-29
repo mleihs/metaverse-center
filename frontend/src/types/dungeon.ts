@@ -119,12 +119,23 @@ export interface ShadowArchetypeState {
   rooms_since_vp_loss: number;
 }
 
-/** Archetype-specific state. Only Shadow has a typed shape; others are empty objects. */
-export type ArchetypeState = ShadowArchetypeState | Record<string, unknown>;
+/** Tower archetype: stability countdown mechanic state. */
+export interface TowerArchetypeState {
+  stability: number;
+  max_stability: number;
+}
+
+/** Archetype-specific state. Shadow and Tower have typed shapes; others are empty objects. */
+export type ArchetypeState = ShadowArchetypeState | TowerArchetypeState | Record<string, unknown>;
 
 /** Type guard: narrows ArchetypeState to ShadowArchetypeState. */
 export function isShadowState(state: ArchetypeState): state is ShadowArchetypeState {
   return 'visibility' in state && typeof state.visibility === 'number';
+}
+
+/** Type guard: narrows ArchetypeState to TowerArchetypeState. */
+export function isTowerState(state: ArchetypeState): state is TowerArchetypeState {
+  return 'stability' in state && typeof state.stability === 'number';
 }
 
 // ── Client State (fog-of-war filtered, from backend) ────────────────────────

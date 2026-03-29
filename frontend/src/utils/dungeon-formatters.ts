@@ -19,7 +19,7 @@ import type {
   RoomNodeClient,
   SkillCheckDetail,
 } from '../types/dungeon.js';
-import { isShadowState } from '../types/dungeon.js';
+import { isShadowState, isTowerState } from '../types/dungeon.js';
 import type { Agent, AptitudeSet } from '../types/index.js';
 import type { TerminalLine } from '../types/terminal.js';
 import { OPERATIVE_LABEL } from './operative-constants.js';
@@ -212,6 +212,12 @@ export function formatRoomEntry(
   if (isShadowState(archetypeState)) {
     const bar = '\u2588'.repeat(archetypeState.visibility) + '\u2591'.repeat(Math.max(0, archetypeState.max_visibility - archetypeState.visibility));
     lines.push(systemLine(`VISIBILITY: ${bar} [${archetypeState.visibility}/${archetypeState.max_visibility}]`));
+  } else if (isTowerState(archetypeState)) {
+    const { stability, max_stability } = archetypeState;
+    const filled = Math.round(stability / 5);
+    const empty = Math.round((max_stability - stability) / 5);
+    const bar = '\u2588'.repeat(filled) + '\u2591'.repeat(empty);
+    lines.push(systemLine(`STRUCTURAL INTEGRITY: ${bar} [${stability}/${max_stability}]`));
   }
 
   // Room type header
@@ -876,6 +882,11 @@ export function formatDungeonStatus(state: DungeonClientState): TerminalLine[] {
   if (isShadowState(state.archetype_state)) {
     const { visibility, max_visibility } = state.archetype_state;
     lines.push(responseLine(`${msg('Visibility')}: ${'\u2588'.repeat(visibility)}${'\u2591'.repeat(Math.max(0, max_visibility - visibility))} [${visibility}/${max_visibility}]`));
+  } else if (isTowerState(state.archetype_state)) {
+    const { stability, max_stability } = state.archetype_state;
+    const filled = Math.round(stability / 5);
+    const empty = Math.round((max_stability - stability) / 5);
+    lines.push(responseLine(`${msg('Stability')}: ${'\u2588'.repeat(filled)}${'\u2591'.repeat(empty)} [${stability}/${max_stability}]`));
   }
 
   lines.push(systemLine(''));

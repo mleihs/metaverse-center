@@ -100,6 +100,22 @@ CLIENT_TIMER_BUFFER_MS = 3_000
 _AUTO_APPLY_EFFECT_TYPES = frozenset({"stress_heal", "event_modifier", "arc_modifier", "dungeon_buff"})
 _distribution_timers: dict[str, asyncio.Task] = {}
 
+# ── Archetype Fallback Spawns ──────────────────────────────────────────────
+# Used when no encounter template matches (shouldn't happen, but safety net).
+
+_FALLBACK_SPAWNS: dict[str, dict[str, str]] = {
+    "The Shadow": {
+        "boss": "shadow_remnant_spawn",
+        "default": "shadow_whispers_spawn",
+        "rest_ambush": "shadow_rest_ambush_spawn",
+    },
+    "The Tower": {
+        "boss": "tower_collapse_spawn",
+        "default": "tower_tremor_spawn",
+        "rest_ambush": "tower_rest_ambush_spawn",
+    },
+}
+
 
 class DungeonEngineService:
     """Orchestrator for dungeon instance lifecycle and state machine."""
@@ -186,14 +202,7 @@ class DungeonEngineService:
         rooms = generate_dungeon_graph(archetype, difficulty, depth)
 
         # Build archetype initial state
-        archetype_state = {}
-        if config.get("mechanic") == "visibility":
-            mc = config["mechanic_config"]
-            archetype_state = {
-                "visibility": mc["start_visibility"],
-                "max_visibility": mc["max_visibility"],
-                "rooms_since_vp_loss": 0,
-            }
+        archetype_state = cls._init_archetype_state(archetype, config)
 
         # Create DB record (unique partial index prevents concurrent runs)
         signature = config.get("signature", "conflict_wave")
@@ -323,14 +332,13 @@ class DungeonEngineService:
         if target_room.depth > instance.depth:
             instance.depth = target_room.depth
 
-        # Apply archetype effects (Shadow: visibility drain)
+        # Apply archetype effects (drain on room entry)
         banter_trigger = "room_entered"
-        if instance.archetype == "The Shadow":
-            cls._apply_shadow_visibility(instance)
-            if instance.archetype_state.get("visibility", 3) == 0:
-                banter_trigger = "visibility_zero"
-            if target_room.depth > current_room.depth:
-                banter_trigger = "depth_change"
+        drain_trigger = cls._apply_archetype_drain(instance)
+        if drain_trigger:
+            banter_trigger = drain_trigger
+        if target_room.depth > current_room.depth:
+            banter_trigger = "depth_change"
 
         # Apply ambient stress
         ambient = calculate_ambient_stress(instance.depth, instance.difficulty)
@@ -347,6 +355,7 @@ class DungeonEngineService:
             banter_trigger,
             [{"personality": a.personality} for a in instance.party],
             instance.used_banter_ids,
+            instance.archetype,
         )
         banter_text = None
         if banter:
@@ -545,6 +554,10 @@ class DungeonEngineService:
 
         round_data = cls._build_round_result_dict(round_result)
 
+        # Tower: drain stability per combat round
+        if instance.archetype == "The Tower":
+            cls._apply_tower_combat_drain(instance)
+
         if round_result.combat_over:
             if round_result.victory:
                 result = await cls._handle_combat_victory(admin_supabase, instance)
@@ -605,17 +618,14 @@ class DungeonEngineService:
         instance.rooms_cleared += 1
         instance.combat = None
 
-        # Shadow: restore 1 VP on combat win (Review #7)
-        if instance.archetype == "The Shadow":
-            mc = ARCHETYPE_CONFIGS["The Shadow"]["mechanic_config"]
-            max_vp = mc["max_visibility"]
-            instance.archetype_state["visibility"] = min(
-                max_vp,
-                instance.archetype_state.get("visibility", 0) + mc["restore_on_combat_win"],
-            )
+        # Restore archetype resource on combat victory
+        cls._apply_archetype_restore(instance, "combat_victory")
 
         # Roll loot
-        loot = roll_loot(current_room.loot_tier, instance.difficulty, instance.depth, instance.archetype_state)
+        loot = roll_loot(
+            current_room.loot_tier, instance.difficulty, instance.depth,
+            instance.archetype_state, instance.archetype,
+        )
 
         if current_room.room_type == "boss":
             # Classify loot: auto-apply (simulation-wide + stress) vs distributable (agent-specific)
@@ -806,6 +816,10 @@ class DungeonEngineService:
                     "breakdown": outcome.breakdown,
                 }
 
+        # Tower: drain stability on failed skill check
+        if result_tier == "fail" and instance.archetype == "The Tower":
+            cls._apply_tower_failed_check_drain(instance)
+
         # Apply effects
         effects = getattr(choice, f"{result_tier}_effects", {})
         narrative_en = getattr(choice, f"{result_tier}_narrative_en", "")
@@ -821,17 +835,8 @@ class DungeonEngineService:
                 if stress_heal:
                     agent.stress = max(0, agent.stress - stress_heal)
 
-        # Apply visibility changes
-        vp_delta = effects.get("visibility", 0)
-        if vp_delta and instance.archetype == "The Shadow":
-            mc = ARCHETYPE_CONFIGS["The Shadow"]["mechanic_config"]
-            instance.archetype_state["visibility"] = max(
-                0,
-                min(
-                    mc["max_visibility"],
-                    instance.archetype_state.get("visibility", 0) + vp_delta,
-                ),
-            )
+        # Apply archetype state changes from encounter effects
+        cls._apply_encounter_archetype_effects(instance, effects)
 
         # Mark room cleared, return to exploring
         current_room.cleared = True
@@ -891,13 +896,8 @@ class DungeonEngineService:
                     instance.rooms[sub_conn].revealed = True
                     revealed_count += 1
 
-        # Restore visibility (Shadow mechanic)
-        if instance.archetype == "The Shadow":
-            mc = ARCHETYPE_CONFIGS["The Shadow"]["mechanic_config"]
-            instance.archetype_state["visibility"] = min(
-                mc["max_visibility"],
-                instance.archetype_state.get("visibility", 0) + mc["restore_on_spy_observe"],
-            )
+        # Restore archetype resource on scout
+        cls._apply_archetype_restore(instance, "scout")
 
         await cls._checkpoint(admin_supabase, instance)
 
@@ -919,13 +919,14 @@ class DungeonEngineService:
         if current_room.room_type != "rest":
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Current room is not a rest site")
 
-        # Check for ambush
-        visibility = instance.archetype_state.get("visibility", 3)
-        is_ambushed = check_ambush(visibility)
+        # Check for ambush (archetype-specific)
+        is_ambushed = check_ambush(instance.archetype_state, instance.archetype)
 
         if is_ambushed:
-            # Spawn light combat encounter
-            enemies = spawn_enemies("shadow_rest_ambush_spawn", instance.difficulty, instance.depth)
+            # Spawn archetype-specific rest ambush
+            fallbacks = _FALLBACK_SPAWNS.get(instance.archetype, _FALLBACK_SPAWNS["The Shadow"])
+            rest_spawn = fallbacks.get("rest_ambush", fallbacks["default"])
+            enemies = spawn_enemies(rest_spawn, instance.difficulty, instance.depth, instance.archetype)
             instance.combat = CombatState(enemies=enemies, is_ambush=True)
             instance.phase = "combat_planning"
             await cls._start_combat_timer(admin_supabase, instance)
@@ -942,13 +943,8 @@ class DungeonEngineService:
                 if agent.condition == "wounded":
                     agent.condition = "stressed"
 
-        # Shadow: restore VP at rest
-        if instance.archetype == "The Shadow":
-            mc = ARCHETYPE_CONFIGS["The Shadow"]["mechanic_config"]
-            instance.archetype_state["visibility"] = min(
-                mc["max_visibility"],
-                instance.archetype_state.get("visibility", 0) + mc["restore_on_rest"],
-            )
+        # Restore archetype resource on rest
+        cls._apply_archetype_restore(instance, "rest")
 
         current_room.cleared = True
         instance.rooms_cleared += 1
@@ -988,7 +984,7 @@ class DungeonEngineService:
         # Partial loot: Tier 1 for rooms cleared
         loot = []
         if instance.rooms_cleared > 0:
-            loot = roll_loot(1, instance.difficulty, instance.depth, instance.archetype_state)
+            loot = roll_loot(1, instance.difficulty, instance.depth, instance.archetype_state, instance.archetype)
 
         outcome = {
             "partial_loot": [item.model_dump() for item in loot],
@@ -1318,6 +1314,102 @@ class DungeonEngineService:
                 scope.set_tag("event_type", event_type)
                 sentry_sdk.capture_exception()
 
+    # ── Archetype Dispatch Methods ────────────────────────────────────────
+    # ONE dispatch point per event category. Adding archetype N = N elif lines.
+
+    @classmethod
+    def _init_archetype_state(cls, archetype: str, config: dict) -> dict:
+        """Initialize archetype-specific state. ONE dispatch point for all archetypes."""
+        mechanic = config.get("mechanic")
+        mc = config.get("mechanic_config", {})
+        if mechanic == "visibility":
+            return {
+                "visibility": mc["start_visibility"],
+                "max_visibility": mc["max_visibility"],
+                "rooms_since_vp_loss": 0,
+            }
+        if mechanic == "stability_countdown":
+            return {
+                "stability": mc["start_stability"],
+                "max_stability": mc["max_stability"],
+            }
+        return {}
+
+    @classmethod
+    def _apply_archetype_drain(cls, instance: DungeonInstance) -> str | None:
+        """Apply archetype resource drain on room entry.
+
+        Returns banter trigger override or None. ONE dispatch for all drain events.
+        """
+        if instance.archetype == "The Shadow":
+            cls._apply_shadow_visibility(instance)
+            if instance.archetype_state.get("visibility", 3) == 0:
+                return "visibility_zero"
+        elif instance.archetype == "The Tower":
+            cls._apply_tower_stability_drain(instance)
+            if instance.archetype_state.get("stability", 100) <= 20:
+                return "stability_critical"
+        return None
+
+    @classmethod
+    def _apply_archetype_restore(cls, instance: DungeonInstance, event: str) -> None:
+        """Apply archetype resource restore on combat_victory/rest/treasure/scout.
+
+        ONE dispatch for all restore events.
+        """
+        mc = ARCHETYPE_CONFIGS.get(instance.archetype, {}).get("mechanic_config", {})
+        if instance.archetype == "The Shadow":
+            restore_key = {
+                "combat_victory": "restore_on_combat_win",
+                "rest": "restore_on_rest",
+                "treasure": "restore_on_treasure",
+                "scout": "restore_on_spy_observe",
+            }.get(event)
+            if restore_key and mc.get(restore_key):
+                instance.archetype_state["visibility"] = min(
+                    mc["max_visibility"],
+                    instance.archetype_state.get("visibility", 0) + mc[restore_key],
+                )
+        elif instance.archetype == "The Tower":
+            restore_key = {
+                "combat_victory": "restore_on_combat_win",
+                "rest": "restore_on_guardian_rest",
+                "treasure": "restore_on_treasure",
+            }.get(event)
+            if restore_key and mc.get(restore_key):
+                instance.archetype_state["stability"] = min(
+                    mc["max_stability"],
+                    instance.archetype_state.get("stability", 0) + mc[restore_key],
+                )
+
+    @classmethod
+    def _apply_encounter_archetype_effects(cls, instance: DungeonInstance, effects: dict) -> None:
+        """Apply archetype state changes from encounter choice effects."""
+        if instance.archetype == "The Shadow":
+            vp_delta = effects.get("visibility", 0)
+            if vp_delta:
+                mc = ARCHETYPE_CONFIGS["The Shadow"]["mechanic_config"]
+                instance.archetype_state["visibility"] = max(
+                    0,
+                    min(
+                        mc["max_visibility"],
+                        instance.archetype_state.get("visibility", 0) + vp_delta,
+                    ),
+                )
+        elif instance.archetype == "The Tower":
+            stab_delta = effects.get("stability", 0)
+            if stab_delta:
+                mc = ARCHETYPE_CONFIGS["The Tower"]["mechanic_config"]
+                instance.archetype_state["stability"] = max(
+                    0,
+                    min(
+                        mc["max_stability"],
+                        instance.archetype_state.get("stability", 0) + stab_delta,
+                    ),
+                )
+
+    # ── Shadow-Specific Mechanic Methods ──────────────────────────────────
+
     @classmethod
     def _apply_shadow_visibility(cls, instance: DungeonInstance) -> None:
         """Apply Shadow visibility drain: -1 VP per 2 rooms entered (Review #7)."""
@@ -1329,6 +1421,39 @@ class DungeonEngineService:
         else:
             state["rooms_since_vp_loss"] = rooms_since
 
+    # ── Tower-Specific Mechanic Methods ──────────────────────────────────
+
+    @classmethod
+    def _apply_tower_stability_drain(cls, instance: DungeonInstance) -> None:
+        """Apply Tower stability drain on room entry: -5/-10/-15 by depth."""
+        mc = ARCHETYPE_CONFIGS["The Tower"]["mechanic_config"]
+        depth = instance.depth
+        if depth <= 2:
+            drain = mc["drain_depth_1_2"]
+        elif depth <= 4:
+            drain = mc["drain_depth_3_4"]
+        else:
+            drain = mc["drain_depth_5_plus"]
+        instance.archetype_state["stability"] = max(
+            0, instance.archetype_state.get("stability", 100) - drain,
+        )
+
+    @classmethod
+    def _apply_tower_combat_drain(cls, instance: DungeonInstance) -> None:
+        """Apply Tower stability drain per combat round: -3."""
+        mc = ARCHETYPE_CONFIGS["The Tower"]["mechanic_config"]
+        instance.archetype_state["stability"] = max(
+            0, instance.archetype_state.get("stability", 100) - mc["drain_per_combat_round"],
+        )
+
+    @classmethod
+    def _apply_tower_failed_check_drain(cls, instance: DungeonInstance) -> None:
+        """Apply Tower stability drain on failed skill check: -5."""
+        mc = ARCHETYPE_CONFIGS["The Tower"]["mechanic_config"]
+        instance.archetype_state["stability"] = max(
+            0, instance.archetype_state.get("stability", 100) - mc["drain_on_failed_check"],
+        )
+
     @classmethod
     async def _enter_combat_room(
         cls,
@@ -1339,15 +1464,17 @@ class DungeonEngineService:
         is_boss: bool = False,
     ) -> dict:
         """Set up combat encounter for a combat/elite/boss room."""
-        encounter = select_encounter(room.room_type, instance.depth, instance.difficulty)
+        encounter = select_encounter(room.room_type, instance.depth, instance.difficulty, instance.archetype)
         spawn_id = encounter.combat_encounter_id if encounter else None
 
         if not spawn_id:
-            spawn_id = "shadow_remnant_spawn" if is_boss else "shadow_whispers_spawn"
+            fallbacks = _FALLBACK_SPAWNS.get(instance.archetype, _FALLBACK_SPAWNS["The Shadow"])
+            spawn_id = fallbacks["boss"] if is_boss else fallbacks["default"]
 
-        enemies = spawn_enemies(spawn_id, instance.difficulty, instance.depth)
+        enemies = spawn_enemies(spawn_id, instance.difficulty, instance.depth, instance.archetype)
         is_ambush = check_ambush(
-            instance.archetype_state.get("visibility", 3),
+            instance.archetype_state,
+            instance.archetype,
             encounter.model_dump() if encounter else None,
         )
 
@@ -1386,7 +1513,7 @@ class DungeonEngineService:
         sees description + choices. Otherwise, a room-type-specific fallback runs.
         """
         room_type: str = room.room_type
-        encounter = select_encounter(room_type, instance.depth, instance.difficulty)
+        encounter = select_encounter(room_type, instance.depth, instance.difficulty, instance.archetype)
 
         # ── Common path: encounter template found ──
         if encounter:
@@ -1413,18 +1540,16 @@ class DungeonEngineService:
             return {"rest": True}
 
         # Treasure: auto-loot
-        loot = roll_loot(room.loot_tier, instance.difficulty, instance.depth, instance.archetype_state)
+        loot = roll_loot(
+            room.loot_tier, instance.difficulty, instance.depth,
+            instance.archetype_state, instance.archetype,
+        )
         room.cleared = True
         instance.rooms_cleared += 1
         instance.phase = "room_clear"
 
-        # Shadow: restore VP at treasure (Review #7)
-        if instance.archetype == "The Shadow":
-            mc = ARCHETYPE_CONFIGS["The Shadow"]["mechanic_config"]
-            instance.archetype_state["visibility"] = min(
-                mc["max_visibility"],
-                instance.archetype_state.get("visibility", 0) + mc["restore_on_treasure"],
-            )
+        # Restore archetype resource at treasure
+        cls._apply_archetype_restore(instance, "treasure")
 
         return {
             "treasure": True,

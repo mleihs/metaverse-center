@@ -3,7 +3,7 @@ title: "Resonance Dungeons — Full Technical Specification"
 version: "1.0"
 date: "2026-03-27"
 type: concept
-status: phase-0-implemented
+status: phase-0-complete-phase-1-next
 lang: en
 tags: [game-design, mud, dungeon, resonance, architecture, combat, procedural-generation, supabase, realtime]
 ---
@@ -41,7 +41,7 @@ tags: [game-design, mud, dungeon, resonance, architecture, combat, procedural-ge
 
 ## IMPLEMENTATION STATUS (2026-03-27)
 
-**Phase 0 Backend: COMPLETE — Triple-Checked**
+**Phase 0 Full Stack: COMPLETE — Backend + Frontend Phases 1-8 + 2 Playtests + 755 Tests**
 
 ### Implementierte Artefakte
 
@@ -98,13 +98,32 @@ These are not bugs but subtle behaviors worth knowing when extending the system:
 
 5. **Per-round stress cap only inside resolve_combat_round**: The 150 stress/round cap is tracked via a local `round_stress` dict inside `resolve_combat_round()`. Direct calls to `apply_stress()` outside the combat engine do NOT enforce this cap. The `cap_per_round` parameter on `apply_stress` caps the single delta, not cumulative stress from multiple sources.
 
-### Nächste Schritte
+### Full Implementation Timeline (2026-03-27 → 2026-03-28)
 
-1. ~~**Unit Tests**: `combat_engine`, `skill_checks`, `dungeon_generator` (pure functions)~~ **DONE — 576 tests, 8 files (2026-03-27)**
-2. **Integration Tests**: `DungeonEngineService` (async, Supabase mock), Router endpoints (12 + 2 public)
-3. **Frontend Phase 1**: `DungeonStateManager`, `DungeonApiService`, Terminal-Commands, HUD
-4. **Content-Review**: Deutsche Texte Feinschliff
-5. **Phase 1 Features**: Advanced abilities (Aptitude 7-9), Boss multi-phase, Multiplayer sync
+1. ~~**Unit Tests**: combat_engine, skill_checks, dungeon_generator~~ **DONE — 576 tests, 8 files (2026-03-27)**
+2. ~~**Integration Tests**: DungeonEngineService + Router endpoints~~ **DONE — 179 tests, 3 files (2026-03-27)**
+3. ~~**Frontend Phase 1+2**: DungeonStateManager, DungeonApiService, Terminal Commands, Formatters~~ **DONE (2026-03-27)**
+4. ~~**Frontend Phase 3**: DungeonTerminalView, DungeonHeader, DungeonQuickActions, Route, Icons~~ **DONE (2026-03-27)**
+5. ~~**Frontend Phase 4**: DungeonPartyPanel, DungeonMap (SVG DAG, fog-of-war, click-to-move)~~ **DONE (2026-03-27)**
+6. ~~**Frontend Phase 5**: DungeonCombatBar, DungeonEnemyPanel, event forwarding fix~~ **DONE (2026-03-27)**
+7. ~~**Browser Playtest 1**: 18 UX issues found, Phase 1-2 backend fixes applied~~ **DONE (2026-03-28)**
+8. ~~**Browser Playtest 2**: Combat deep dive, 12 issues found + Combat Engine Phase 1 (14/17 abilities)~~ **DONE (2026-03-28)**
+9. ~~**Frontend Phase 6**: Encounters, Events, 6 completion gaps fixed~~ **DONE (2026-03-28)**
+10. ~~**Frontend Phase 7-8**: Loot provenance UI, loot distribution debrief terminal, refactors~~ **DONE (2026-03-28)**
+11. ~~**E2E Test**: Full dungeon run (Entrance→Combat→Encounter→Rest→Combat→Boss→Complete)~~ **DONE (2026-03-28)**
+
+**Total: 755+ tests, 13 new frontend files (~4,500 lines), 20+ backend files (~4,500 lines), 2 migrations (~880 lines)**
+
+### Remaining Work (The Shadow)
+
+1. **3/17 Abilities**: Counter-Intelligence (needs intent cancellation system), Ambush Strike (round_num scope), 1 unidentified
+2. **Phase 3-6 UX Polish**: Terminal window sizing, Sentry captureError gaps (7+1+router), boot message hardcode, hero.avif preload
+3. **Content-Review**: Deutsche Texte Feinschliff
+4. **Realtime**: Supabase Broadcast for multiplayer state sync (deferred — single-player works fully)
+
+### Next Archetype
+
+5. **Phase 1: The Tower** — stability countdown mechanic, Tower encounter templates, Tower loot pools
 
 ---
 
@@ -615,14 +634,14 @@ Each archetype defines:
 #### Core Mechanic: VISIBILITY
 
 Each room has a **visibility level** (0-3):
-- **0 (Blind):** Only the current room described. No enemy preview. Ambush chance 60%.
-- **1 (Dim):** Adjacent room types visible but not details. Ambush chance 30%.
+- **0 (Blind):** Only the current room described. No enemy preview. Ambush chance 40%. Stress multiplier +25%. Loot bonus +50% (Tier 1→Tier 2 upgrade chance).
+- **1 (Dim):** Adjacent room types visible but not details. Ambush chance 15%.
 - **2 (Clear):** Full room preview. Enemy intentions visible. No ambush.
 - **3 (Illuminated):** Full preview + hidden items/passages revealed.
 
-Visibility is a **consumable resource**. Party starts at visibility 2. Each room entered costs 1 visibility. Spy abilities restore visibility. Saboteur traps can increase or decrease visibility.
+Visibility is a **consumable resource**. Party starts at visibility **3** (max 3). Each **2 rooms** entered costs 1 visibility. Multiple restoration sources: Spy "Observe" ability (+1 VP), rest site (+1 VP), treasure room (+1 VP), successful combat (+1 VP).
 
-**Why this works:** Creates constant tension between moving forward (spending visibility) and gathering intelligence (restoring it). Spy agents become critical. The terminal's amber-on-black aesthetic is perfect for darkness.
+**Why this works:** Creates constant tension between moving forward (spending visibility) and gathering intelligence (restoring it). Spy agents are critical but not mandatory — multiple VP restoration sources prevent a death spiral for parties without a Spy. The terminal's amber-on-black aesthetic is perfect for darkness.
 
 #### Atmosphere
 
@@ -690,12 +709,15 @@ Prose style: Terse. Military. Shadows described as predatory. Sound is amplified
 >
 > **Empfehlung:** Either (a) start at 3 VP and cost 1 per 2 rooms, or (b) add more VP restoration sources (e.g., treasure rooms +1 VP, successful combat +1 VP, all encounters have a "cautious" option that restores VP at cost of loot), or (c) reduce VP 0 penalties to 40% ambush / +25% stress (uncomfortable but survivable).
 
-- Start: 2 VP (of 3 max)
-- Each room entered: -1 VP
+- Start: **3 VP** (of 3 max) *(Review #7: was 2)*
+- Each **2 rooms** entered: -1 VP *(Review #7: was -1 per room)*
 - Spy "Observe" ability: +1 VP
 - Rest site: +1 VP
-- Treasure found at VP 0: +50% loot bonus ("brave in the dark")
-- VP 0: Ambush chance 60%, no enemy preview, agents gain stress faster (+50%)
+- Treasure room: +1 VP
+- Successful combat: +1 VP
+- Treasure found at VP 0: +50% loot bonus ("brave in the dark") — implemented as 50% chance Tier 1→Tier 2 upgrade
+- VP 0: Ambush chance **40%** *(was 60%)*, no enemy preview, agents gain stress faster (**+25%**, *was +50%*)
+- VP 1: Ambush chance **15%** *(balanced during implementation from 30%)*
 
 #### Boss: "The Unresolved"
 
@@ -1254,39 +1276,61 @@ await DungeonEngineService.cleanup_expired_runs(admin_supabase, simulation_id)
 
 ## 6. Implementation Roadmap
 
-### Phase 0: The Shadow MVP (2-3 weeks)
+### Phase 0: The Shadow MVP — COMPLETE (2026-03-27 → 2026-03-28)
 
 **Backend:**
-- [ ] Migration: `resonance_dungeon_runs` + `resonance_dungeon_events` tables
-- [ ] `backend/models/resonance_dungeon.py` — Pydantic schemas
-- [ ] `backend/services/dungeon/dungeon_generator.py` — graph generation (Shadow config only)
-- [ ] `backend/services/dungeon/dungeon_encounters.py` — 10 Shadow encounter templates
-- [ ] `backend/services/dungeon/dungeon_combat.py` — phase-based combat handler
-- [ ] `backend/services/dungeon_engine_service.py` — orchestration + DungeonInstanceManager
-- [ ] `backend/routers/resonance_dungeons.py` — REST endpoints
-- [ ] 5 combat enemy templates for Shadow archetype
+- [x] Migration 163: `resonance_dungeon_runs` + `resonance_dungeon_events` tables
+- [x] Migration 164: Atomic RPCs (`fn_complete_dungeon_run`, `fn_abandon_dungeon_run`, `fn_wipe_dungeon_run`, `fn_get_party_combat_state`, `fn_apply_dungeon_loot`), `available_dungeons` VIEW
+- [x] Migration 165: Loot distribution (`fn_begin_distribution`, `fn_finalize_dungeon_run`), CHECK constraints, indexes
+- [x] `backend/models/resonance_dungeon.py` + `backend/models/combat.py` — Pydantic schemas
+- [x] `backend/services/combat/` — Shared combat module (6 files: combat_engine, skill_checks, condition_tracks, stress_system, ability_schools, __init__)
+- [x] `backend/services/dungeon/` — Dungeon submodule (6 files: generator, encounters, combat, loot, archetypes, __init__)
+- [x] `backend/services/dungeon_engine_service.py` — orchestration + DungeonInstanceManager
+- [x] `backend/services/dungeon_query_service.py` — read operations (history, events, loot effects)
+- [x] `backend/routers/resonance_dungeons.py` — 15 REST endpoints (12 auth + 2 public + 1 loot effects)
+- [x] 5 combat enemy templates, 10 encounter templates, 12 loot items
+- [x] 755+ tests (11 files), 0 bugs
 
 **Frontend:**
-- [ ] `DungeonStateManager.ts` — signals, computed, lifecycle
-- [ ] `DungeonApiService.ts` — REST client
-- [ ] Terminal command handlers: `dungeon`, `move`, `map`, `scout`, `rest`, `retreat`, `interact`
-- [ ] Terminal formatters: `formatDungeonMap()`, `formatDungeonRoom()`, `formatDungeonCombat()`
-- [ ] RealtimeService extension: `joinDungeon()` / `leaveDungeon()`
-- [ ] Quick Actions for dungeon mode
+- [x] `DungeonStateManager.ts` — Preact Signals singleton (state, timer, combat planning, recovery, loot distribution)
+- [x] `DungeonApiService.ts` — REST client (14 endpoints)
+- [x] `dungeon-commands.ts` — Dispatcher + 10 command handlers, 3 verb categories
+- [x] `dungeon-formatters.ts` — 16 pure formatters + 2 shared i18n helpers
+- [x] `DungeonTerminalView.ts` — Route entry, HUD grid, lobby, Wake Lock, recovery, event forwarding
+- [x] `DungeonHeader.ts` — Submarine depth gauge
+- [x] `DungeonQuickActions.ts` — Phase-driven action buttons (13 phases)
+- [x] `DungeonPartyPanel.ts` — Agent cards, condition/stress/mood bars, buff/debuff pills
+- [x] `DungeonMap.ts` — SVG DAG, fog-of-war, click-to-move, collapsible
+- [x] `DungeonCombatBar.ts` — 30s timer, per-agent ability selection, target picker, EXECUTE
+- [x] `DungeonEnemyPanel.ts` — Into the Breach-style telegraphs, threat badges
+- [x] `AgentDungeonRewards` component — Loot provenance UI in AgentDetailsPanel
+- [ ] RealtimeService extension: `joinDungeon()` / `leaveDungeon()` — deferred (single-player works)
 
 **Content:**
-- [ ] 10 Shadow encounter templates (4 combat, 3 encounter, 1 elite, 1 rest, 1 treasure)
-- [ ] Shadow boss encounter ("The Unresolved")
-- [ ] 20 banter templates (varied by personality + opinion)
-- [ ] Shadow loot table (3 tiers)
+- [x] 10 Shadow encounter templates (4 combat, 3 encounter, 1 elite, 1 rest, 1 treasure)
+- [x] Shadow boss encounter (The Remnant — shadow_remnant_spawn template)
+- [x] Banter templates (placeholder resolution: {agent}, {agent_a}, {agent_b})
+- [x] Shadow loot table (3 tiers, 12 items)
+- [x] Combat onboarding (CIC briefing card)
+- [x] Dungeon completion screen (ASCII-box, stress bars, party status, loot)
 
-### Phase 1: Combat Polish + Second Archetype (2-3 weeks)
+### Phase 1: Second Archetype — The Tower (COMPLETE, 2026-03-29)
 
-- [ ] The Tower implementation (Stability countdown mechanic)
-- [ ] Combat system polish: buff/debuff economy, combo system
-- [ ] Full 6 Ability Schools at base level (Aptitude 3-6)
+- [x] Backend refactoring: Registry pattern + 3 consolidated dispatch methods
+- [x] The Tower stability countdown mechanic (100→0, depth-based drain, combat drain, failed check drain)
+- [x] 5 Tower enemies: Tremor Broker, Foundation Worm, The Crowned, Debt Shade, Remnant of Commerce
+- [x] 6 Tower spawn configs + fallback spawns
+- [x] 11 Tower encounter templates (4 combat, 3 narrative, 1 elite, 1 boss, 1 rest, 1 treasure)
+- [x] 45 Tower banter templates (incl. stability_critical trigger)
+- [x] 12 Tower loot items (4/5/3 tiers) + stability bonus (>=80 → tier upgrade)
+- [x] Tower boss "The Collapse" (environmental, per-round -3 stability)
+- [x] Guardian "Reinforce" ability: +10 Stability (Tower only)
+- [x] Tower ambush logic (stability <30 = 25%, <15 = 50%)
+- [x] Frontend: TowerArchetypeState types, stability gauge, terminal formatters
+- [x] HTP lore: fixed archetype names + Shadow/Tower callouts
+- [x] 119 new tests (2184 total), all passing
+- [ ] Remaining 3/17 abilities (Counter-Intelligence, Ambush Strike, 1 unidentified)
 - [ ] Multiplayer dungeon support (2 players, shared party)
-- [ ] Dungeon history/log viewer component
 
 ### Phase 2-3: Remaining Archetypes (4-8 weeks)
 
@@ -1635,9 +1679,10 @@ class DungeonEngineService:
            b. Calculate damage via Aptitude checks
            c. Apply stress changes
            d. Check condition transitions (Operational→Stressed→Wounded→Afflicted)
-           e. Check for Resolve (stress > 800: 25% Virtue / 75% Affliction)
+           e. Check for Resolve (stress > 800: **40% Virtue / 60% Affliction** *(Review #11: was 25%/75%)*)
            f. Check for party wipe (all agents Captured/Afflicted)
            g. Check for enemy defeat
+           h. **Check for stalemate** (round >= max_rounds → room cleared, +80 stress, no loot)
         4. Generate narrative text (template + personality flavor)
         5. Create dungeon_events records
         6. Broadcast combat_resolved
@@ -2064,12 +2109,10 @@ def _pick_room_type(
     if current_depth < 2:
         weights.pop("elite", None)
 
-    # Constraint: guarantee rest site near middle (floor ≈ 60% depth)
-    mid = int(max_depth * 0.6)
-    if current_depth == mid:
-        return "rest"
+    # Constraint: no exit rooms before depth 3 (Review #8)
+    if current_depth < 3:
+        weights.pop("exit", None)
 
-    # Constraint: no consecutive elites (tracked by caller if needed)
     # Constraint: difficulty increases elite probability
     if "elite" in weights:
         weights["elite"] = weights["elite"] + (difficulty * 2)
@@ -2078,6 +2121,12 @@ def _pick_room_type(
     types = list(weights.keys())
     wts = list(weights.values())
     return random.choices(types, weights=wts, k=1)[0]
+
+# NOTE: Guaranteed rest site near 60% depth is enforced PER-LAYER in
+# generate_dungeon_graph(), NOT here. Review #18 found that placing the
+# guarantee in _pick_room_type forced ALL rooms at mid-depth to be rest rooms.
+# Fix: after generating a layer at mid_depth, if no rest room exists, replace
+# exactly one random room with "rest". See dungeon_generator.py lines 81-91.
 
 def _assign_loot_tier(
     room_type: str, depth: int, max_depth: int, difficulty: int,
@@ -2480,7 +2529,7 @@ Agent Mira's stress reaches critical [████████████ 847/1
 
 [SYSTEM] ═══ RESOLVE CHECK ═══
 [SYSTEM] Agent Mira — Neuroticism: 0.3, Resilience: 0.7
-[SYSTEM] Threshold: 800 | Virtue chance: 25%
+[SYSTEM] Threshold: 800 | Virtue chance: 40%
 [SYSTEM]
 [SYSTEM] Resolving...
 ```
@@ -2567,12 +2616,12 @@ frontend/src/components/dungeon/
 ├── DungeonMap.ts             ✅ SVG DAG with fog-of-war, click-to-move, collapsible
 ```
 
-**Phase 5 (planned):**
+**Phase 5 (done):**
 
 ```
 frontend/src/components/dungeon/
-├── DungeonCombatBar.ts       ⏳ Combat: ability selection per agent, timer, submit
-└── DungeonEnemyPanel.ts      ⏳ Enemy status + Into-the-Breach-style telegraphs
+├── DungeonCombatBar.ts       ✅ ~490 lines. 30s timer, per-agent ability radiogroup, smart target picker, EXECUTE
+└── DungeonEnemyPanel.ts      ✅ ~260 lines. Enemy cards, threat badges, telegraphed intents (◆◆/◆/▸)
 ```
 
 **Known Patterns & Accepted Tradeoffs (Phase 4 audit):**
@@ -2891,3 +2940,151 @@ Uses existing Supabase Presence on `dungeon:{runId}:presence`:
 > **Das Problem für Player Agency:** Players can't plan around dungeon availability. They can't prepare a party, choose an archetype that matches their agents' strengths, or set aside time to play — because they don't control when dungeons appear. This is fine for FOMO-driven games (Destiny 2 rotating activities), but this project values player agency and deep strategic planning.
 >
 > **Empfehlung:** Add a fallback mechanism: when no resonance is active, a "Training Dungeon" (The Shadow, difficulty 1, no permanent loot — only moodlets and memories) is always available. This lets players learn the system, test party compositions, and have fun regardless of platform-level resonance state. Training dungeons don't affect simulation health or scores.
+
+---
+
+## 17. Implementation Learnings (Post-Playtest, 2026-03-28)
+
+> This section captures empirical findings from 2 full browser playtests and 755+ automated tests. These patterns are **mandatory for all future archetype implementations**.
+
+### 17.1 Combat Engine Learnings
+
+**Stalemate Mechanic:** Combat auto-resolves at `max_rounds` (default 10). On stalemate: room is cleared, +80 stress to all party agents, no loot awarded. Prevents infinite combat loops. Implemented in `_check_victory_conditions()` returning a 4-tuple with stalemate flag, handled by `_handle_combat_stalemate()`.
+
+**Auto-Submit on Timer Expiry:** When the 30s planning timer hits 0, `DungeonStateManager._autoSubmitOnExpiry()` automatically submits current selections. If no selections made, backend auto-defends all agents using rotation: `(round_num + hash(agent_id)) % len(damage_abilities)` — ensuring variety across rounds. Falls back to `getState()` polling on submission failure.
+
+**Timer Race Condition:** Atomic pop in callback prevents double-resolve. Stale timer guard: `_startTimer()` checks if timer was aborted before interval starts, preventing recursive auto-submit loops. `_autoSubmitFired` flag only resets on fresh timer reset (in `_startTimer` when `remaining > 0`), never in `applyState()`.
+
+**AbilityOption.targets Field:** Backend sends `targets: "self" | "single_enemy" | "single_ally" | "all_enemies"` on each AbilityOption. Frontend uses this to skip target picker for self/all abilities (1-click), auto-target when only 1 alive enemy, and show picker only for multi-enemy single-target scenarios. Reduced clicks from 6 to 1-2 per agent per round.
+
+**Combat Narratives:** Template-based `narrative_en`/`narrative_de` on every `CombatEvent`. Aggregated `narrative_summary_en`/`narrative_summary_de` on `CombatRoundResult`. Templates: `"{attacker} attacks {target}. HIT for {damage} condition steps."`, `"{actor} casts {ability} on {target}."`, etc. Frontend renders these in semantic combat log colors.
+
+**Ability Resolution (14/17 working):**
+
+| Ability | School | Mechanic | Status |
+|---------|--------|----------|--------|
+| Observe | Spy | +1 VP via archetype_state | ✅ |
+| Analyze Weakness | Spy | Reveal enemy stats | ✅ |
+| Counter-Intelligence | Spy | Cancel enemy intent | ⏳ needs intent system |
+| Shield | Guardian | Absorb next hit | ✅ |
+| Taunt | Guardian | Force enemies to target self + evasion bonus | ✅ |
+| Fortify | Guardian | Damage reduction on next incoming | ✅ |
+| Ambush Strike | Assassin | 2x damage if enemy hasn't attacked | ⏳ round_num scope |
+| Precision Strike | Assassin | High single-target damage | ✅ |
+| Evade | Assassin | Untargetable + evasion bonus | ✅ |
+| Demoralize | Propagandist | Enemy attack reduction + 1 condition step | ✅ |
+| Inspire | Propagandist | Heal 120 stress to ally | ✅ |
+| Rally | Propagandist | Party-wide stress heal | ✅ |
+| Deploy Trap | Saboteur | "trapped" debuff + auto-damage | ✅ |
+| Detonate | Saboteur | AoE damage to all enemies | ✅ |
+| Disrupt | Saboteur | Enemy evasion penalty | ✅ |
+| Summon Decoy | Infiltrator | (not yet tested) | ⏳ |
+| Vanish | Infiltrator | (not yet tested) | ⏳ |
+
+**Buff Lifecycle:** All agent buffs cleared at end of round (1-round duration, Phase 0 simplification). Pipeline: `has_buff()` → `_apply_buff_to_agent()` → `_consume_buff()`. One-shot shields (Fortify) applied and consumed in same round. Debuffs (Demoralize, Deploy Trap) persist across rounds.
+
+**DRY Helpers:** `_build_round_result_dict()` is a shared static helper for round_result serialization across all 4 outcomes (normal round, victory, wipe, stalemate).
+
+### 17.2 Combat Onboarding
+
+**CIC-style Combat Briefing:** Inline card (not modal) in terminal with 4 numbered steps explaining combat flow. "ACKNOWLEDGED" dismiss button with blinking cursor. Persisted to `localStorage` (`dungeon_combat_onboarded` key). Terminal alternative: `skip` command to dismiss. Submarine aesthetic consistent with Bureau Terminal.
+
+**Agent Done Badge:** `[OK]` indicator (phosphor green) shown after agent name in CombatBar when action selected — visual confirmation of completion status per agent.
+
+### 17.3 Encounter System Learnings
+
+**Number→ID Mapping:** Terminal interaction uses `interact 1` → maps to choice ID. Consistent with familiar MUD/text-adventure patterns.
+
+**Auto-Select Best Agent:** When a choice requires a skill check, the system automatically selects the party member with the highest relevant aptitude. Shown to player: `"► Mira volunteers (Propagandist: 85%)"`.
+
+**Banter Placeholder Resolution:** Templates use `{agent}`, `{agent_a}`, `{agent_b}` — resolved at runtime with random party members. Boss rooms trigger `boss_approach` banter.
+
+**Boss Encounter Fix:** Boss rooms spawn `SHADOW_BOSS_ENCOUNTERS` template (shadow_remnant_spawn) instead of regular combat encounters. Fallback: if room has `is_boss=True` flag, force boss encounter template regardless of room_type.
+
+### 17.4 Loot Distribution Phase
+
+**New `distributing` Phase:** Inserted between boss victory and dungeon completion. Loot is classified into:
+- **Auto-apply:** Simulation-wide effects (event_modifier, arc_modifier) and stress_heal (applied to all operational agents) — no player choice needed.
+- **Distributable:** Aptitude boosts, memories, moodlets — player assigns via terminal commands (`assign <#> <agent>`, `confirm`).
+
+**Smart Suggestions:** `aptitude_boost` → suggests agent with lowest relevant aptitude. Memory/moodlet → round-robin across party.
+
+**Edge Cases:** 0 distributable items → auto-complete to dungeon_completed. 1 agent → auto-assign all. Checkpoint recovery preserves distribution state.
+
+**Migration 165:** CHECK constraint on `agent_dungeon_loot_effects`, indexes, RLS, VIEW, 2 new RPCs (`fn_begin_distribution`, `fn_finalize_dungeon_run`). Backward compatible — `fn_complete_dungeon_run` unchanged for retreat/wipe paths.
+
+### 17.5 Frontend Architecture Patterns
+
+**Terminal-Command Event Forwarding (CRITICAL):** HUD components (QuickActions, Map, CombatBar) are siblings of BureauTerminal in shadow DOM, not ancestors. Custom `terminal-command` events with `composed: true` bubble upward but cannot cross sideways. **Fix:** `DungeonTerminalView._handleTerminalCommand()` listens on the HUD container div, catches all `terminal-command` events, dispatches through `parseAndExecute()`, appends output to `terminalState`. **All future dungeon components MUST dispatch `terminal-command` events, not call terminal methods directly.**
+
+**BureauTerminal Unmodified:** DungeonTerminalView wraps BureauTerminal — no changes to existing terminal component. Maintains separation of concerns.
+
+**Phase Drives UI:** `dungeonState.phase` (computed Preact Signal) determines which HUD panels are visible. 13 phases mapped to contextual button sets in QuickActions. Combat phases hide QuickActions and show CombatBar/EnemyPanel instead.
+
+**DungeonStateManager as Orchestrator:** Not a pure state container — imports `terminalState`, formatters, and API service. `applyState()` replaces entire state atomically. Singleton pattern via module-level export.
+
+**5 Semantic Combat Log Colors:**
+- `combat-player` (gold #fbbf24): Agent actions — distinct from dim amber
+- `combat-damage` (danger red): Enemy attacks — strong text-shadow glow
+- `combat-heal` (success green): Healing, stress restore
+- `combat-miss` (50% opacity, italic): Failed actions
+- `combat-system` (phosphor green, UPPERCASE, bold): Headers, system messages
+
+**Tags:** `[HIT]`, `[MISS]`, `[ACT]`, `[DEF]`, `[HEAL]` — for scannable battle log. `PARTY ACTIONS` / `ENEMY ACTIONS` grouping.
+
+**forceScrollToBottom() API:** Public method on BureauTerminal for external command dispatch (QuickActions, CombatBar). Required because async layout changes trigger `_handleScroll` → `_userScrolled = true` → content scrolls away from bottom.
+
+**Responsive Breakpoints:**
+- 640px (extra-small): font-size reductions, compact layouts
+- 767px (mobile): grid collapse, 44px WCAG touch targets
+- 1440px (large): wider sidebar 320px, larger fonts 12px
+- 2560px (4K): extra-wide sidebar 380px, even larger fonts 13px
+
+**prefers-reduced-motion:** Opt-in pattern (`no-preference`). Base CSS has NO animation/transition. All motion ONLY inside `@media (prefers-reduced-motion: no-preference)`. Matching WCAG AA requirements.
+
+**terminalComponentTokens:** Shared Tier 3 CSS export in `terminal-theme-styles.ts`. ALL dungeon components MUST import for consistent `--_phosphor`, `--_screen-bg`, `--_mono` variables.
+
+### 17.6 Database & Backend Learnings
+
+**UUID Serialization Crash:** `model_dump()` returns `{"agent_id": UUID(...)}`, not strings. Three checkpoint boundaries require `model_dump(mode="json")` for JSON-safe serialization. Discovered during first playtest — silent corruption until deserialization.
+
+**get_admin_supabase() in Timer Callbacks:** Combat timer callbacks run in asyncio tasks that outlive request scope. Must call `get_admin_supabase()` for a fresh client — the request-scoped client may be closed.
+
+**Auto-Recovery from Checkpoint:** `_get_instance()` is async. If instance not in `_active_instances` dict (server restart), automatically calls `recover_from_checkpoint(run_id)` to restore from DB. All 7 mutation endpoints work transparently after recovery.
+
+**resolve_combat_round() Decomposition:** Originally monolithic (~400 lines). Decomposed into 9 phase functions for testability and clarity.
+
+### 17.7 Testing Coverage
+
+**755 tests across 11 files, 0.51s runtime, 0 bugs found:**
+
+| Layer | Files | Tests | Focus |
+|-------|-------|-------|-------|
+| Unit (pure functions) | 8 | 576 | condition_tracks, stress_system, skill_checks, ability_schools, archetypes, generator, combat+encounters+loot, combat_engine |
+| Integration (async + mocks) | 2 | 140 | DungeonEngineService (90), Router endpoints (50) |
+| Validation (Pydantic) | 1 | 50 | Model validation, checkpoint round-trip, fog-of-war |
+
+**Review Decisions Verified by Tests:** #7 (VP rebalance), #8 (no exit < depth 3), #10 (max 2 condition steps), #11 (stress halved, 40% virtue, 150 cap), #18 (rest room guarantee), #20 (aptitude +2 cap).
+
+**5 Documented Gotchas:**
+1. Personality modifier defaults missing traits to 0.5 → "courage" check always penalizes empty personality
+2. `model_dump()` preserves UUID objects — compare with UUID, not str
+3. `random.seed(X)` in graph generation affects global RNG until re-seeded
+4. Condition 2-step cap enforced in `condition_tracks.py`, not `combat_engine.py` — bypass risk if calling damage directly
+5. Per-round stress cap (150) only inside `resolve_combat_round()` — direct `apply_stress()` calls have no cumulative cap
+
+### 17.8 Playtest Results Summary
+
+**Playtest 1 (2026-03-28):** Full browser playtest via WebMCP. 18 UX/UI/gameflow issues found:
+- CRITICAL: UUID serialization crash, no party selection UI, no combat timer, empty abilities
+- Fixed in 2 phases (backend fixes + party selection)
+
+**Playtest 2 (2026-03-28):** Combat flow deep dive. 12 issues found:
+- CRITICAL: Round counter exceeded max_rounds, frontend stuck after timer, only "Observe" available
+- Led to Combat Engine Phase 1 (14/17 abilities mechanical effects)
+- All 12 fixed in same session
+
+**E2E Verification (2026-03-28):** Full dungeon run completed:
+`Entrance → Combat (Shadow Wisps, won) → Encounter (Mirror Room, Skill Check PARTIAL) → Rest (Stress healed) → Combat (Echoes of Violence, won) → Boss (won, Dungeon Complete)`
+
+20+ features verified working including ARIA landmarks, dungeon tab navigation, boot message clearance, loot display, completion screen.

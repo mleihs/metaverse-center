@@ -853,7 +853,21 @@ export const TOPICS: TopicDefinition[] = [
             type: 'info',
             label: msg('The 8 Archetypes'),
             text: msg(
-              'Each resonance type spawns a distinct dungeon archetype: The Shadow (espionage), The Choir (propaganda), The Fracture (sabotage), The Bastion (defense), The Veil (infiltration), The Reaper (assassination), The Nexus (diplomacy), The Void (cosmic horror). Archetype determines enemy types, room layouts, encounter difficulty, and available loot.',
+              'Each resonance type spawns a distinct dungeon archetype: The Shadow (darkness and visibility), The Tower (structural stability), The Devouring Mother (parasitic drain), The Deluge (rising water), The Overthrow (faction navigation), The Prometheus (crafting and combination), The Awakening (memory and psychology), The Entropy (restoration vs. speed). Archetype determines enemy types, room layouts, encounter difficulty, and available loot.',
+            ),
+          },
+          {
+            type: 'info',
+            label: msg('The Shadow'),
+            text: msg(
+              'Visibility mechanic: 3 points, drain every 2 rooms, restore via combat, treasure, rest, and Spy Observe ability. At visibility 0: increased ambush chance (40%), no enemy preview, +25% stress. Risk-reward: finding loot at visibility 0 grants a 50% chance to upgrade loot tier.',
+            ),
+          },
+          {
+            type: 'info',
+            label: msg('The Tower'),
+            text: msg(
+              'Stability countdown: starts at 100, drains per room (faster at depth), per combat round, and on failed checks. At 0: forced evacuation with partial loot only. Guardian Reinforce ability restores +10. Reward: high stability (80+) at loot time grants a 50% chance to upgrade loot tier. Structures that seemed permanent reveal themselves as temporary.',
             ),
           },
         ],

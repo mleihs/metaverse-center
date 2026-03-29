@@ -58,22 +58,68 @@ ARCHETYPE_CONFIGS: dict[str, dict] = {
             "von etwas anderem. Eure Instrumente zeigen nichts an."
         ),
     },
-    # ── Stubbed archetypes (Phase 1-3) ──────────────────────────────────────
+    # ── The Tower (Phase 1) ───────────────────────────────────────────────────
     "The Tower": {
         "signature": "economic_tremor",
         "title_en": "Der Fallende Turm",
         "title_de": "Der Fallende Turm",
         "tagline_en": "Structures that seemed permanent reveal themselves as temporary.",
-        "tagline_de": "Strukturen, die dauerhaft schienen, erweisen sich als vergaenglich.",
+        "tagline_de": "Strukturen, die dauerhaft schienen, erweisen sich als vergänglich.",
+        "prose_style": "Clinical. Economic. Architecture described as organic failure.",
         "mechanic": "stability_countdown",
-        "mechanic_config": {"start_stability": 100, "max_stability": 100},
+        "mechanic_config": {
+            "start_stability": 100,
+            "max_stability": 100,
+            # Drain rates (per room entry, by depth)
+            "drain_depth_1_2": 5,
+            "drain_depth_3_4": 10,
+            "drain_depth_5_plus": 15,
+            # Combat drain
+            "drain_per_combat_round": 3,
+            # Failed skill check drain
+            "drain_on_failed_check": 5,
+            # Restore rates
+            "restore_on_combat_win": 5,
+            "restore_on_treasure": 5,
+            "restore_on_guardian_rest": 10,
+            "restore_on_reinforce": 10,
+            # Thresholds
+            "collapse_threshold": 0,
+            "critical_threshold": 20,
+            # Low-stability ambush chances
+            "low_stability_ambush_30": 0.25,  # stability < 30
+            "low_stability_ambush_15": 0.50,  # stability < 15
+            # Stress multiplier at low stability
+            "stress_multiplier": 1.20,
+        },
+        "aptitude_weights": {
+            "guardian": 30,   # critical: stabilize + tank
+            "spy": 20,        # high: efficiency, shortcuts
+            "saboteur": 20,   # high: controlled demolition
+            "propagandist": 12,
+            "assassin": 8,
+            "infiltrator": 10,
+        },
+        "atmosphere_enter_en": (
+            "Vertigo. The building leans. Numbers cascade down walls like stock\n"
+            "tickers counting toward zero. The floor counter reads 100.\n\n"
+            "The structure groans. Not from wind \u2014 from weight. From the accumulated\n"
+            "mass of every promise this tower was built on, coming due simultaneously."
+        ),
+        "atmosphere_enter_de": (
+            "Schwindel. Das Gebäude neigt sich. Zahlen rinnen die Wände herab wie\n"
+            "Kursticker, die gegen Null zählen. Der Stockwerkzähler zeigt 100.\n\n"
+            "Die Struktur ächzt. Nicht vom Wind \u2014 vom Gewicht. Von der akkumulierten\n"
+            "Masse jedes Versprechens, auf dem dieser Turm gebaut wurde, fällig werdend zugleich."
+        ),
     },
+    # ── Stubbed archetypes (Phase 2+) ──────────────────────────────────────
     "The Devouring Mother": {
         "signature": "biological_tide",
         "title_en": "Das Lebendige Labyrinth",
         "title_de": "Das Lebendige Labyrinth",
         "tagline_en": "That which sustains life turns against it.",
-        "tagline_de": "Was Leben erhaelt, wendet sich dagegen.",
+        "tagline_de": "Was Leben erhält, wendet sich dagegen.",
         "mechanic": "parasitic_drain",
         "mechanic_config": {},
     },
@@ -91,7 +137,7 @@ ARCHETYPE_CONFIGS: dict[str, dict] = {
         "title_en": "Der Spiegelpalast",
         "title_de": "Der Spiegelpalast",
         "tagline_en": "Power changes hands. The old order metamorphoses.",
-        "tagline_de": "Macht wechselt die Haende. Die alte Ordnung wandelt sich.",
+        "tagline_de": "Macht wechselt die Hände. Die alte Ordnung wandelt sich.",
         "mechanic": "faction_navigation",
         "mechanic_config": {},
     },
@@ -118,7 +164,7 @@ ARCHETYPE_CONFIGS: dict[str, dict] = {
         "title_en": "Der Verfall-Garten",
         "title_de": "Der Verfall-Garten",
         "tagline_en": "Decay is not destruction \u2014 it is transformation's dark twin.",
-        "tagline_de": "Verfall ist nicht Zerstoerung \u2014 er ist der dunkle Zwilling der Verwandlung.",
+        "tagline_de": "Verfall ist nicht Zerstörung \u2014 er ist der dunkle Zwilling der Verwandlung.",
         "mechanic": "restoration_vs_speed",
         "mechanic_config": {},
     },

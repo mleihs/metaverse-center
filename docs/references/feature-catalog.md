@@ -409,6 +409,18 @@ Features die innerhalb einer Simulation existieren. Benutzer können beliebig vi
 | J7 | **Balance Fixes v2** | ✅ IMPL | Infiltrator-Oppositionen (The Entropy + The Devouring Mother). Subsiding-Resonanzen 0.5x Decay. Caps reduziert (0.06→0.04 fuer Pressure + Modifier). Attacker-Pressure-Penalty (`fn_attacker_pressure_penalty`, max -0.04). `active_resonances`-View schliesst archivierte aus. `fn_target_zone_pressure` NULL-Bug Fix. |
 | J8 | **Auto-Processing Scheduler** | ✅ IMPL | `ResonanceScheduler` asyncio Background-Task (Lifespan-managed). Periodisch auf faellige Resonanzen pruefen (`status='detected'` + `impacts_at <= now()`). Auto-Process via `ResonanceService.process_impact()`. System-Actor-Pattern (Admin-Client, Zero-UUID). Konfigurierbar via `platform_settings` (`resonance_auto_process_enabled`, `resonance_auto_process_interval_seconds`). Fehlertoleranz: loggt Fehler pro Resonanz, setzt Loop fort. |
 
+### J+. Resonance Dungeons
+
+| # | Feature | Status | Beschreibung |
+|---|---------|--------|-------------|
+| RD1 | **Dungeon Engine** | ✅ IMPL | `DungeonEngineService` In-Memory-Orchestrator mit Checkpoint-to-DB nach jeder Transition. 13-Phasen-State-Machine (exploring→combat_planning→combat_resolving→...). Auto-Recovery aus Checkpoint bei Server-Neustart. Migration 163+164+165. |
+| RD2 | **Combat System** | ✅ IMPL | Shared `backend/services/combat/` Modul (6 Dateien). Phase-basierter Kampf: Planning (30s Timer) → Resolution → Outcome. 18 Fähigkeiten in 6 Schulen (Spy/Guardian/Assassin/Propagandist/Saboteur/Infiltrator). Stalemate-Mechanik bei Runde 10. |
+| RD3 | **The Shadow (Phase 0)** | ✅ IMPL | Erster Archetyp: Sichtbarkeits-Mechanik (3 VP, Drain alle 2 Räume). 5 Feinde, 11 Encounters, 41 Banter, 11 Loot-Items. Boss: "The Remnant". VP0-Bonus: +50% Loot-Upgrade-Chance. 2 Playtests, 755+ Tests. |
+| RD4 | **The Tower (Phase 1)** | ✅ IMPL | Zweiter Archetyp: Stabilitäts-Countdown (100→0, tiefenbasierter Drain). 5 Feinde (Bebenmakler, Grundwurm, Der Gekrönte, Schuldgespenst, Relikt des Handels), 11 Encounters, 45 Banter, 12 Loot-Items. Boss: "The Collapse". Guardian "Reinforce" (+10 Stabilität). Stabilitäts-Loot-Bonus (≥80 → Tier-Upgrade). 119 neue Tests. |
+| RD5 | **Multi-Archetype Dispatch** | ✅ IMPL | Registry-Pattern für Enemies/Encounters/Banter/Loot (dict-Lookup, null Conditionals). 3 konsolidierte Dispatch-Methoden (`_init_archetype_state`, `_apply_archetype_drain`, `_apply_archetype_restore`). Archetype N = 3 elif + 3 Handler. |
+| RD6 | **Dungeon Frontend** | ✅ IMPL | DungeonTerminalView (CRT/Submarine-Ästhetik), DungeonHeader (Depth Gauge + Visibility Pips + Stability Gauge), DungeonMap, DungeonCombatBar, DungeonPartyPanel, DungeonEnemyPanel. 5 semantische Combat-Log-Farben. Terminal-Command-Event-Forwarding. |
+| RD7 | **Loot Distribution** | ✅ IMPL | `distributing` Phase zwischen Boss-Sieg und Abschluss. Auto-Apply (Sim-weite Effekte) vs. Distributable (Spieler wählt Empfänger). Smart Suggestions. Migration 165 (CHECK constraint, RPCs). |
+
 ---
 
 ### K. Platform Admin Extensions

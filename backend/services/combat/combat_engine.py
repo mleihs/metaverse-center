@@ -308,6 +308,13 @@ def _resolve_agent_actions(
             current_vis = context.archetype_state.get("visibility", 3)
             context.archetype_state["visibility"] = min(3, current_vis + vis_restore)
 
+        # Utility: stability restore (Reinforce — Tower only)
+        stab_restore = ability.effect_params.get("stability_restore", 0)
+        if stab_restore and context.archetype_state.get("max_stability") is not None:
+            max_stab = context.archetype_state.get("max_stability", 100)
+            current_stab = context.archetype_state.get("stability", 100)
+            context.archetype_state["stability"] = min(max_stab, current_stab + stab_restore)
+
         # Utility: trap deployment (Deploy Trap) — apply "trapped" debuff to enemy
         if ability.effect_params.get("trap") and action.target_id:
             target_enemy = enemy_map.get(action.target_id)

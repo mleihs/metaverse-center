@@ -153,6 +153,7 @@ Restructuring the monolithic HowToPlayView (8,239 LOC, 33 sections, 1,237 i18n s
 | 10 | `diplomacy` | Alliances & Diplomacy | alliances, bot-players | rules |
 | 11 | `advanced` | Advanced Mechanics | bleed, resonance-guide, results-screen, epoch-comms | rules + features |
 | 12 | `terminal` | Bureau Terminal | bureau-terminal | features |
+| 13 | `dungeons` | Resonance Dungeons | resonance-dungeons, 8-archetypes, shadow, tower | features + rules |
 
 **Each topic page consistent template:**
 ```

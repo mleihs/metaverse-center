@@ -74,7 +74,7 @@ tags: [index, catalog, documentation]
 | [Game Systems Integration](concepts/game-systems-integration.md) | 3.4 | 2026-03-26 | en | active |
 | [MUD/Terminal Adventure Concepts (5 Designs)](concepts/mud-terminal-adventure-concepts.md) | 1.0 | 2026-03-27 | de | draft |
 | [MUD Combat & Gameplay Feasibility Analysis](concepts/mud-combat-feasibility-analysis.md) | 1.0 | 2026-03-27 | de | draft |
-| [Resonance Dungeons — Full Technical Spec](concepts/resonance-dungeons-spec.md) | 1.1 | 2026-03-27 | en | backend-phase-0 + frontend-phase-1-3 |
+| [Resonance Dungeons — Full Technical Spec](concepts/resonance-dungeons-spec.md) | 1.2 | 2026-03-29 | en | Phase 0 (Shadow) + Phase 1 (Tower) complete |
 
 ## Explanations (5)
 

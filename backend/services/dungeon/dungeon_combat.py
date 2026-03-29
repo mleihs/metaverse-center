@@ -1,6 +1,7 @@
-"""Shadow enemy templates and dungeon-specific combat logic.
+"""Dungeon enemy templates and combat logic.
 
-Contains the 5 Shadow enemies for Phase 0 MVP and combat spawn/ambush logic.
+Contains enemy templates, spawn configurations, and combat logic for all archetypes.
+Archetype data is stored in registries keyed by archetype name.
 All combat resolution is delegated to the shared combat/ module.
 
 Enemy Design Principles:
@@ -45,16 +46,16 @@ SHADOW_ENEMIES: dict[str, EnemyTemplate] = {
             "A flickering presence at the edge of perception. It doesn't attack the body \u2014 it erodes certainty."
         ),
         description_de=(
-            "Eine flackernde Prasenz am Rand der Wahrnehmung. "
-            "Sie greift nicht den Koerper an \u2014 sie zersetzt Gewissheit."
+            "Eine flackernde Präsenz am Rand der Wahrnehmung. "
+            "Sie greift nicht den Körper an \u2014 sie zersetzt Gewissheit."
         ),
         ambient_text_en=[
             "The wisp drifts closer, then retreats. Testing.",
             "You feel it before you see it \u2014 a chill that starts behind the eyes.",
         ],
         ambient_text_de=[
-            "Der Glimmer treibt naher, dann zurueck. Testend.",
-            "Ihr spuert es, bevor ihr es seht \u2014 eine Kalte, die hinter den Augen beginnt.",
+            "Der Glimmer treibt näher, dann zurück. Testend.",
+            "Ihr spürt es, bevor ihr es seht \u2014 eine Kälte, die hinter den Augen beginnt.",
         ],
     ),
     "shadow_tendril": EnemyTemplate(
@@ -134,7 +135,7 @@ SHADOW_ENEMIES: dict[str, EnemyTemplate] = {
             "Things your agents already suspect about each other."
         ),
         description_de=(
-            "Es fluestert. Nicht Luegen, genau genommen \u2014 plausible Aengste. "
+            "Es flüstert. Nicht Lügen, genau genommen \u2014 plausible Ängste. "
             "Dinge, die eure Agenten bereits voneinander vermuten."
         ),
         ambient_text_en=[
@@ -142,14 +143,14 @@ SHADOW_ENEMIES: dict[str, EnemyTemplate] = {
             "You can't tell if it's speaking or if the voice is in your head.",
         ],
         ambient_text_de=[
-            "Der Schatten fluestert {agent} etwas zu. Ihr Ausdruck andert sich.",
-            "Ihr koennt nicht sagen, ob er spricht oder ob die Stimme in eurem Kopf ist.",
+            "Der Schatten flüstert {agent} etwas zu. Ihr Ausdruck ändert sich.",
+            "Ihr könnt nicht sagen, ob er spricht oder ob die Stimme in eurem Kopf ist.",
         ],
     ),
     "shadow_remnant": EnemyTemplate(
         id="shadow_remnant",
         name_en="The Remnant",
-        name_de="Der Ueberrest",
+        name_de="Der Überrest",
         archetype="The Shadow",
         condition_threshold=5,
         stress_resistance=400,
@@ -168,7 +169,7 @@ SHADOW_ENEMIES: dict[str, EnemyTemplate] = {
             "It remembers what your agents have tried to forget."
         ),
         description_de=(
-            "Geformt aus dem staerksten ungeloesten Konflikt der Simulation. "
+            "Geformt aus dem stärksten ungelösten Konflikt der Simulation. "
             "Er erinnert sich an das, was eure Agenten zu vergessen versucht haben."
         ),
         ambient_text_en=[
@@ -176,8 +177,8 @@ SHADOW_ENEMIES: dict[str, EnemyTemplate] = {
             "Wisps orbit the Remnant like satellites. They pulse in unison.",
         ],
         ambient_text_de=[
-            "Der Ueberrest beobachtet euch. Er hat darauf gewartet, dass jemand so tief kommt.",
-            "Glimmer umkreisen den Ueberrest wie Satelliten. Sie pulsieren im Gleichklang.",
+            "Der Überrest beobachtet euch. Er hat darauf gewartet, dass jemand so tief kommt.",
+            "Glimmer umkreisen den Überrest wie Satelliten. Sie pulsieren im Gleichklang.",
         ],
     ),
 }
@@ -210,11 +211,235 @@ SHADOW_SPAWN_CONFIGS: dict[str, list[dict]] = {
     ],
 }
 
+# ── Tower Enemy Templates ─────────────────────────────────────────────────
+
+TOWER_ENEMIES: dict[str, EnemyTemplate] = {
+    "tower_tremor_broker": EnemyTemplate(
+        id="tower_tremor_broker",
+        name_en="Tremor Broker",
+        name_de="Bebenmakler",
+        archetype="The Tower",
+        condition_threshold=1,
+        stress_resistance=80,
+        threat_level="minion",
+        attack_aptitude="propagandist",
+        attack_power=1,
+        stress_attack_power=5,
+        telegraphed_intent=True,
+        evasion=30,
+        resistances=["guardian"],
+        vulnerabilities=["saboteur"],
+        action_weights={"stress_attack": 65, "evade": 25, "ambient": 10},
+        description_en=(
+            "A nervous figure wreathed in scrolling numbers. It doesn't fight "
+            "\u2014 it recites. Market figures, compound rates, the precise "
+            "mathematics of structures that can't hold."
+        ),
+        description_de=(
+            "Eine nervöse Gestalt, umweht von laufenden Zahlen. Sie kämpft "
+            "nicht \u2014 sie rezitiert. Marktkurse, Zinseszinsen, die präzise "
+            "Mathematik von Strukturen, die nicht halten können."
+        ),
+        ambient_text_en=[
+            "The broker whispers a number. The floor shudders.",
+            "Digits cascade down the walls like rain. None of them add up.",
+        ],
+        ambient_text_de=[
+            "Der Makler flüstert eine Zahl. Der Boden bebt.",
+            "Ziffern rinnen die Wände herab wie Regen. Keine davon geht auf.",
+        ],
+    ),
+    "tower_foundation_worm": EnemyTemplate(
+        id="tower_foundation_worm",
+        name_en="Foundation Worm",
+        name_de="Grundwurm",
+        archetype="The Tower",
+        condition_threshold=2,
+        stress_resistance=0,
+        threat_level="minion",
+        attack_aptitude="guardian",
+        attack_power=4,
+        stress_attack_power=1,
+        telegraphed_intent=True,
+        evasion=10,
+        resistances=[],
+        vulnerabilities=["assassin", "saboteur"],
+        action_weights={"attack": 40, "burrow": 50, "ambient": 10},
+        special_abilities=["burrow"],
+        description_en=(
+            "Patient. Eyeless. It navigates by stress fractures in the "
+            "load-bearing walls, widening them with each pass. The building "
+            "groans where it has been."
+        ),
+        description_de=(
+            "Geduldig. Augenlos. Er orientiert sich an Spannungsrissen in den "
+            "tragenden Wänden und weitet sie bei jedem Durchgang. Das Gebäude "
+            "stöhnt, wo er gewesen ist."
+        ),
+        ambient_text_en=["The floor vibrates. Something is chewing through the foundation."],
+        ambient_text_de=["Der Boden vibriert. Etwas frisst sich durch das Fundament."],
+    ),
+    "tower_crown_keeper": EnemyTemplate(
+        id="tower_crown_keeper",
+        name_en="The Crowned",
+        name_de="Der Gekrönte",
+        archetype="The Tower",
+        condition_threshold=3,
+        stress_resistance=250,
+        threat_level="standard",
+        attack_aptitude="guardian",
+        attack_power=5,
+        stress_attack_power=4,
+        telegraphed_intent=True,
+        evasion=15,
+        resistances=["propagandist", "infiltrator"],
+        vulnerabilities=["spy", "saboteur"],
+        action_weights={"attack": 30, "stability_drain": 35, "defend": 25, "ambient": 10},
+        special_abilities=["stability_drain"],
+        description_en=(
+            "It wears the crown of a structure that believed it would last "
+            "forever. The crown is cracked. The keeper does not acknowledge this."
+        ),
+        description_de=(
+            "Er trägt die Krone eines Bauwerks, das glaubte, ewig zu bestehen. "
+            "Die Krone ist geborsten. Der Träger nimmt dies nicht zur Kenntnis."
+        ),
+        ambient_text_en=[
+            "The Crowned raises one hand. A support beam splinters.",
+            "Its crown emits a low frequency that makes your teeth ache.",
+        ],
+        ambient_text_de=[
+            "Der Gekrönte hebt eine Hand. Ein Stützbalken splittert.",
+            "Seine Krone sendet eine tiefe Frequenz, die in den Zähnen schmerzt.",
+        ],
+    ),
+    "tower_debt_shade": EnemyTemplate(
+        id="tower_debt_shade",
+        name_en="Debt Shade",
+        name_de="Schuldgespenst",
+        archetype="The Tower",
+        condition_threshold=2,
+        stress_resistance=300,
+        threat_level="standard",
+        attack_aptitude="propagandist",
+        attack_power=2,
+        stress_attack_power=6,
+        telegraphed_intent=False,  # LIES about its intents
+        evasion=25,
+        resistances=["spy"],
+        vulnerabilities=["propagandist", "guardian"],
+        action_weights={"stress_attack": 45, "compound": 30, "disinformation": 15, "ambient": 10},
+        special_abilities=["compound", "disinformation"],
+        description_en=(
+            "It speaks in promises that were never kept. Each round it grows, "
+            "fed by the compound interest of unresolved obligations. It lies "
+            "about its intentions \u2014 not from malice, but because the "
+            "ledger demands it."
+        ),
+        description_de=(
+            "Es spricht in Versprechen, die nie gehalten wurden. Jede Runde "
+            "wächst es, genährt vom Zinseszins ungelöster Verpflichtungen. "
+            "Es lügt über seine Absichten \u2014 nicht aus Bosheit, sondern "
+            "weil das Hauptbuch es verlangt."
+        ),
+        ambient_text_en=[
+            "The shade presents a contract. The terms are always worsening.",
+            "You can hear it counting. The numbers only go up.",
+        ],
+        ambient_text_de=[
+            "Das Gespenst legt einen Vertrag vor. Die Konditionen verschlechtern sich stets.",
+            "Ihr hört es zählen. Die Zahlen steigen nur.",
+        ],
+    ),
+    "tower_remnant_commerce": EnemyTemplate(
+        id="tower_remnant_commerce",
+        name_en="Remnant of Commerce",
+        name_de="Relikt des Handels",
+        archetype="The Tower",
+        condition_threshold=5,
+        stress_resistance=400,
+        threat_level="elite",
+        attack_aptitude="propagandist",
+        attack_power=7,
+        stress_attack_power=8,
+        telegraphed_intent=True,
+        evasion=20,
+        resistances=["infiltrator", "propagandist"],
+        vulnerabilities=["saboteur"],
+        action_weights={
+            "attack": 20, "stress_attack": 20, "summon_brokers": 25,
+            "market_crash": 20, "defend": 15,
+        },
+        special_abilities=["summon_brokers", "market_crash"],
+        description_en=(
+            "What remains when a trading floor collapses. It moves through "
+            "the ruin with proprietary efficiency, summoning lesser brokers "
+            "from the rubble. Its market crash ability strips all pretense "
+            "of stability."
+        ),
+        description_de=(
+            "Was bleibt, wenn ein Handelsparkett einbricht. Es bewegt sich "
+            "durch die Ruine mit der Effizienz eines Insolvenzverwalters, ruft "
+            "geringere Makler aus dem Schutt. Seine Marktcrash-Fähigkeit reisst "
+            "jedes Stabilitätsversprechen ein."
+        ),
+        ambient_text_en=[
+            "The Remnant adjusts invisible ledgers. Something in the building responds.",
+            "Trading signals flicker across its surface. Buy. Sell. Collapse.",
+        ],
+        ambient_text_de=[
+            "Das Relikt korrigiert unsichtbare Hauptbücher. Etwas im Gebäude antwortet.",
+            "Handelssignale flackern über seine Oberflaeche. Kaufen. Verkaufen. Einsturz.",
+        ],
+    ),
+}
+
+# ── Tower Combat Spawn Configurations ──────────────────────────────────────
+
+TOWER_SPAWN_CONFIGS: dict[str, list[dict]] = {
+    "tower_tremor_spawn": [
+        {"template_id": "tower_tremor_broker", "count": 2},
+    ],
+    "tower_patrol_spawn": [
+        {"template_id": "tower_crown_keeper", "count": 1},
+        {"template_id": "tower_foundation_worm", "count": 1},
+    ],
+    "tower_ambush_spawn": [
+        {"template_id": "tower_debt_shade", "count": 2},
+    ],
+    "tower_compound_spawn": [
+        {"template_id": "tower_debt_shade", "count": 1},
+        {"template_id": "tower_tremor_broker", "count": 2},
+    ],
+    "tower_collapse_spawn": [
+        {"template_id": "tower_remnant_commerce", "count": 1},
+        {"template_id": "tower_tremor_broker", "count": 1},
+    ],
+    # Rest site ambush (light combat)
+    "tower_rest_ambush_spawn": [
+        {"template_id": "tower_foundation_worm", "count": 1},
+    ],
+}
+
+# ── Archetype Registries ──────────────────────────────────────────────────
+# Data lookup by archetype name — zero conditionals. New archetypes add entries.
+
+_ENEMY_REGISTRIES: dict[str, dict[str, EnemyTemplate]] = {
+    "The Shadow": SHADOW_ENEMIES,
+    "The Tower": TOWER_ENEMIES,
+}
+
+_SPAWN_REGISTRIES: dict[str, dict[str, list[dict]]] = {
+    "The Shadow": SHADOW_SPAWN_CONFIGS,
+    "The Tower": TOWER_SPAWN_CONFIGS,
+}
+
 
 def spawn_enemies(
     encounter_id: str,
     difficulty: int,
     depth: int,
+    archetype: str = "The Shadow",
 ) -> list[EnemyInstance]:
     """Spawn enemy instances for a combat encounter.
 
@@ -224,22 +449,25 @@ def spawn_enemies(
         encounter_id: Combat encounter spawn config ID.
         difficulty: 1-5 difficulty level.
         depth: Current dungeon depth.
+        archetype: Dungeon archetype for registry lookup.
 
     Returns:
         List of EnemyInstance ready for combat.
     """
     from backend.services.dungeon.dungeon_archetypes import DIFFICULTY_MULTIPLIERS
 
-    config = SHADOW_SPAWN_CONFIGS.get(encounter_id, [])
+    spawn_registry = _SPAWN_REGISTRIES.get(archetype, {})
+    config = spawn_registry.get(encounter_id, [])
     if not config:
-        logger.warning("No spawn config for encounter %s", encounter_id)
+        logger.warning("No spawn config for encounter %s (archetype: %s)", encounter_id, archetype)
         return []
 
     diff_mult = DIFFICULTY_MULTIPLIERS.get(difficulty, DIFFICULTY_MULTIPLIERS[1])
+    enemy_registry = _ENEMY_REGISTRIES.get(archetype, {})
     instances: list[EnemyInstance] = []
 
     for entry in config:
-        template = SHADOW_ENEMIES.get(entry["template_id"])
+        template = enemy_registry.get(entry["template_id"])
         if not template:
             logger.error("Unknown enemy template: %s", entry["template_id"])
             with sentry_sdk.push_scope() as scope:
@@ -275,29 +503,39 @@ def spawn_enemies(
 
 
 def check_ambush(
-    visibility: int,
+    archetype_state: dict,
+    archetype: str = "The Shadow",
     encounter: dict | None = None,
 ) -> bool:
-    """Check if an ambush occurs based on visibility and encounter config.
+    """Check if an ambush occurs based on archetype state and encounter config.
 
-    Review #7: VP 0 ambush chance reduced to 40% (was 60%).
+    Shadow: visibility-based (Review #7: VP 0 = 40%, VP 1 = 15%).
+    Tower: stability-based (added in Phase E).
     """
     from backend.services.dungeon.dungeon_archetypes import ARCHETYPE_CONFIGS
-
-    shadow_config = ARCHETYPE_CONFIGS["The Shadow"]["mechanic_config"]
 
     if encounter and encounter.get("is_ambush"):
         return True  # Forced ambush encounters always trigger
 
-    if visibility == 0:
-        return random.random() < shadow_config["blind_ambush_chance"]
-
-    if visibility == 1:
-        return random.random() < 0.15  # dim: 15% ambush
+    if archetype == "The Shadow":
+        shadow_config = ARCHETYPE_CONFIGS["The Shadow"]["mechanic_config"]
+        visibility = archetype_state.get("visibility", 3)
+        if visibility == 0:
+            return random.random() < shadow_config["blind_ambush_chance"]
+        if visibility == 1:
+            return random.random() < 0.15  # dim: 15% ambush
+    elif archetype == "The Tower":
+        tower_config = ARCHETYPE_CONFIGS["The Tower"]["mechanic_config"]
+        stability = archetype_state.get("stability", 100)
+        if stability < 15:
+            return random.random() < tower_config["low_stability_ambush_15"]
+        if stability < 30:
+            return random.random() < tower_config["low_stability_ambush_30"]
 
     return False
 
 
-def get_enemy_templates_dict() -> dict[str, dict]:
-    """Get all Shadow enemy templates as plain dicts for combat engine."""
-    return {eid: template.model_dump() for eid, template in SHADOW_ENEMIES.items()}
+def get_enemy_templates_dict(archetype: str = "The Shadow") -> dict[str, dict]:
+    """Get enemy templates as plain dicts for combat engine."""
+    registry = _ENEMY_REGISTRIES.get(archetype, {})
+    return {eid: template.model_dump() for eid, template in registry.items()}

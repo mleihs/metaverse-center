@@ -3,7 +3,7 @@
  *
  * Thin bar across the top of the dungeon view showing run-level telemetry:
  * archetype badge, depth progress gauge with danger zone, rooms cleared counter,
- * and archetype-specific readouts (Shadow: visibility diamond pips).
+ * and archetype-specific readouts (Shadow: visibility pips, Tower: stability gauge).
  *
  * Pure signal consumer — no internal state, no API calls.
  * Aesthetic: 1970s analog instrument panel with CRT amber phosphor.
@@ -17,6 +17,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
 import { dungeonState } from '../../services/DungeonStateManager.js';
+import { isShadowState, isTowerState } from '../../types/dungeon.js';
 import { icons } from '../../utils/icons.js';
 import { terminalComponentTokens, terminalTokens } from '../shared/terminal-theme-styles.js';
 
@@ -171,6 +172,64 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
         }
       }
 
+      /* ── Stability Gauge (archetype-specific: Tower) ── */
+      .stability {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+      }
+
+      .stability__icon {
+        display: inline-flex;
+        color: var(--_phosphor-dim);
+      }
+
+      .stability__label {
+        font-size: 10px;
+        letter-spacing: 0.05em;
+        color: var(--_phosphor-dim);
+      }
+
+      .stability__track {
+        position: relative;
+        width: 60px;
+        height: 8px;
+        background: color-mix(in srgb, var(--_phosphor) 10%, transparent);
+        border: 1px solid color-mix(in srgb, var(--_border) 50%, transparent);
+      }
+
+      .stability__fill {
+        height: 100%;
+        background: var(--_phosphor);
+        transform-origin: left;
+        transition: transform 0.3s ease-out;
+      }
+
+      .stability__fill--warning {
+        background: var(--color-warning);
+      }
+
+      .stability__fill--critical {
+        background: var(--color-danger);
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .stability__fill--critical {
+          animation: stability-pulse 2s ease-in-out infinite;
+        }
+      }
+
+      @keyframes stability-pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.6;
+        }
+      }
+
       /* ── Separator — vertical divider between sections ── */
       .sep {
         width: 1px;
@@ -214,12 +273,14 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
     const depthProgress = dungeonState.depthProgress.value;
     const maxDepth = Math.max(...rooms.map((r) => r.depth), 1);
 
-    // Archetype-specific: Shadow visibility pips
+    // Archetype-specific readouts
     const archState = dungeonState.archetypeState.value;
-    const visibility =
-      typeof archState.visibility === 'number' ? (archState.visibility as number) : null;
-    const maxVisibility =
-      typeof archState.max_visibility === 'number' ? (archState.max_visibility as number) : null;
+    const shadowState = isShadowState(archState) ? archState : null;
+    const towerState = isTowerState(archState) ? archState : null;
+    const visibility = shadowState?.visibility ?? null;
+    const maxVisibility = shadowState?.max_visibility ?? null;
+    const stability = towerState?.stability ?? null;
+    const maxStability = towerState?.max_stability ?? null;
 
     return html`
       <div class="header" role="banner" aria-label=${msg('Dungeon status')}>
@@ -271,6 +332,32 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
                     </span>
                   `,
                 )}
+              </div>
+            `
+          : nothing}
+        ${stability !== null && maxStability !== null
+          ? html`
+              <span class="sep"></span>
+              <div class="stability" aria-label=${msg('Stability') + ` ${stability}/${maxStability}`}>
+                <span class="stability__icon">${icons.shield(12)}</span>
+                <div
+                  class="stability__track"
+                  role="progressbar"
+                  aria-valuenow=${stability}
+                  aria-valuemin=${0}
+                  aria-valuemax=${maxStability}
+                  aria-label=${msg('Structural integrity')}
+                >
+                  <div
+                    class="stability__fill ${stability <= 20
+                      ? 'stability__fill--critical'
+                      : stability <= 40
+                        ? 'stability__fill--warning'
+                        : ''}"
+                    style="transform: scaleX(${maxStability > 0 ? stability / maxStability : 0})"
+                  ></div>
+                </div>
+                <span class="stability__label">${stability}</span>
               </div>
             `
           : nothing}
