@@ -17,7 +17,7 @@ from backend.dependencies import (
     require_platform_admin,
     require_role,
 )
-from backend.models.common import CurrentUser, PaginationMeta
+from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.models.heartbeat import (
     AnchorCreate,
     AttunementCreate,
@@ -41,7 +41,7 @@ router = APIRouter(tags=["Heartbeat"])
 # ═══════════════════════════════════════════════════════════════
 
 
-@router.get("/api/v1/simulations/{simulation_id}/heartbeat")
+@router.get("/api/v1/simulations/{simulation_id}/heartbeat", response_model=SuccessResponse)
 async def get_heartbeat_overview(
     simulation_id: UUID,
     user: CurrentUser = Depends(get_current_user),
@@ -52,7 +52,7 @@ async def get_heartbeat_overview(
     return {"success": True, "data": data}
 
 
-@router.get("/api/v1/simulations/{simulation_id}/heartbeat/briefing")
+@router.get("/api/v1/simulations/{simulation_id}/heartbeat/briefing", response_model=SuccessResponse)
 async def get_daily_briefing(
     simulation_id: UUID,
     user: CurrentUser = Depends(get_current_user),
@@ -63,7 +63,7 @@ async def get_daily_briefing(
     return {"success": True, "data": data}
 
 
-@router.get("/api/v1/simulations/{simulation_id}/heartbeat/entries")
+@router.get("/api/v1/simulations/{simulation_id}/heartbeat/entries", response_model=PaginatedResponse)
 async def list_heartbeat_entries(
     simulation_id: UUID,
     entry_type: str | None = Query(default=None),
@@ -86,7 +86,7 @@ async def list_heartbeat_entries(
     }
 
 
-@router.get("/api/v1/simulations/{simulation_id}/heartbeat/arcs")
+@router.get("/api/v1/simulations/{simulation_id}/heartbeat/arcs", response_model=PaginatedResponse)
 async def list_narrative_arcs(
     simulation_id: UUID,
     status_filter: str | None = Query(default=None, alias="status"),
@@ -112,7 +112,7 @@ async def list_narrative_arcs(
 # ═══════════════════════════════════════════════════════════════
 
 
-@router.get("/api/v1/public/simulations/{simulation_id}/heartbeat/entries")
+@router.get("/api/v1/public/simulations/{simulation_id}/heartbeat/entries", response_model=PaginatedResponse)
 async def public_list_heartbeat_entries(
     simulation_id: UUID,
     entry_type: str | None = Query(default=None),
@@ -138,7 +138,7 @@ async def public_list_heartbeat_entries(
 # ═══════════════════════════════════════════════════════════════
 
 
-@router.get("/api/v1/simulations/{simulation_id}/events/{event_id}/responses")
+@router.get("/api/v1/simulations/{simulation_id}/events/{event_id}/responses", response_model=PaginatedResponse)
 async def list_bureau_responses(
     simulation_id: UUID,
     event_id: UUID,
@@ -159,7 +159,7 @@ async def list_bureau_responses(
     }
 
 
-@router.post("/api/v1/simulations/{simulation_id}/events/{event_id}/responses")
+@router.post("/api/v1/simulations/{simulation_id}/events/{event_id}/responses", response_model=SuccessResponse)
 async def create_bureau_response(
     simulation_id: UUID,
     event_id: UUID,
@@ -181,7 +181,10 @@ async def create_bureau_response(
     return {"success": True, "data": data}
 
 
-@router.delete("/api/v1/simulations/{simulation_id}/events/{event_id}/responses/{response_id}")
+@router.delete(
+    "/api/v1/simulations/{simulation_id}/events/{event_id}/responses/{response_id}",
+    response_model=SuccessResponse,
+)
 async def cancel_bureau_response(
     simulation_id: UUID,
     event_id: UUID,
@@ -204,7 +207,7 @@ async def cancel_bureau_response(
 # ═══════════════════════════════════════════════════════════════
 
 
-@router.get("/api/v1/simulations/{simulation_id}/attunements")
+@router.get("/api/v1/simulations/{simulation_id}/attunements", response_model=SuccessResponse)
 async def list_attunements(
     simulation_id: UUID,
     user: CurrentUser = Depends(get_current_user),
@@ -216,7 +219,7 @@ async def list_attunements(
     return {"success": True, "data": data}
 
 
-@router.post("/api/v1/simulations/{simulation_id}/attunements")
+@router.post("/api/v1/simulations/{simulation_id}/attunements", response_model=SuccessResponse)
 async def set_attunement(
     simulation_id: UUID,
     body: AttunementCreate,
@@ -236,7 +239,7 @@ async def set_attunement(
     return {"success": True, "data": data}
 
 
-@router.delete("/api/v1/simulations/{simulation_id}/attunements/{signature}")
+@router.delete("/api/v1/simulations/{simulation_id}/attunements/{signature}", response_model=SuccessResponse)
 async def remove_attunement(
     simulation_id: UUID,
     signature: str,
@@ -259,7 +262,7 @@ async def remove_attunement(
 # ═══════════════════════════════════════════════════════════════
 
 
-@router.get("/api/v1/anchors")
+@router.get("/api/v1/anchors", response_model=PaginatedResponse)
 async def list_anchors(
     status_filter: str | None = Query(default=None, alias="status"),
     simulation_id: UUID | None = Query(default=None),
@@ -280,7 +283,7 @@ async def list_anchors(
     }
 
 
-@router.post("/api/v1/anchors")
+@router.post("/api/v1/anchors", response_model=SuccessResponse)
 async def create_anchor(
     body: AnchorCreate,
     simulation_id: UUID = Query(..., description="Simulation creating the anchor"),
@@ -301,7 +304,7 @@ async def create_anchor(
     return {"success": True, "data": data}
 
 
-@router.post("/api/v1/anchors/{anchor_id}/join")
+@router.post("/api/v1/anchors/{anchor_id}/join", response_model=SuccessResponse)
 async def join_anchor(
     anchor_id: UUID,
     simulation_id: UUID = Query(..., description="Simulation joining the anchor"),
@@ -318,7 +321,7 @@ async def join_anchor(
     return {"success": True, "data": data}
 
 
-@router.post("/api/v1/anchors/{anchor_id}/leave")
+@router.post("/api/v1/anchors/{anchor_id}/leave", response_model=SuccessResponse)
 async def leave_anchor(
     anchor_id: UUID,
     simulation_id: UUID = Query(..., description="Simulation leaving the anchor"),
@@ -340,7 +343,7 @@ async def leave_anchor(
 # ═══════════════════════════════════════════════════════════════
 
 
-@router.get("/api/v1/admin/heartbeat/dashboard")
+@router.get("/api/v1/admin/heartbeat/dashboard", response_model=SuccessResponse)
 async def get_heartbeat_dashboard(
     _user: CurrentUser = Depends(require_platform_admin()),
     admin_supabase: Client = Depends(get_admin_supabase),
@@ -350,7 +353,7 @@ async def get_heartbeat_dashboard(
     return {"success": True, "data": data}
 
 
-@router.get("/api/v1/admin/heartbeat/cascade-rules")
+@router.get("/api/v1/admin/heartbeat/cascade-rules", response_model=SuccessResponse)
 async def list_cascade_rules(
     _user: CurrentUser = Depends(require_platform_admin()),
     admin_supabase: Client = Depends(get_admin_supabase),
@@ -360,7 +363,7 @@ async def list_cascade_rules(
     return {"success": True, "data": data}
 
 
-@router.post("/api/v1/admin/heartbeat/force-tick/{simulation_id}")
+@router.post("/api/v1/admin/heartbeat/force-tick/{simulation_id}", response_model=SuccessResponse)
 async def force_tick(
     simulation_id: UUID,
     user: CurrentUser = Depends(require_platform_admin()),

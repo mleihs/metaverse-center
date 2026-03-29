@@ -285,6 +285,10 @@ export class VelgEpochOpsBoard extends LitElement {
     /* ── Dossier Card ─────────────────────── */
 
     .dossier-card {
+      appearance: none;
+      font: inherit;
+      text-align: start;
+      padding: 0;
       --dossier-color: var(--color-icon);
       --accent-bar-width: 3px;
       position: relative;
@@ -1249,23 +1253,16 @@ export class VelgEpochOpsBoard extends LitElement {
                 ${
                   isAuth
                     ? html`
-                  <div
+                  <button
+                    type="button"
                     class="dossier-card dossier-card--create"
-                    role="button"
-                    tabindex="0"
                     @click=${this._onCreateEpoch}
-                    @keydown=${(e: KeyboardEvent) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        this._onCreateEpoch();
-                      }
-                    }}
                   >
                     <div class="dossier-create__inner">
                       <span class="dossier-create__plus">+</span>
                       <span class="dossier-create__label">${msg('New Epoch')}</span>
                     </div>
-                  </div>
+                  </button>
                 `
                     : nothing
                 }
@@ -1443,17 +1440,10 @@ export class VelgEpochOpsBoard extends LitElement {
     const joinable = isLobby ? mySims : [];
 
     return html`
-      <div
+      <button
+        type="button"
         class="dossier-card dossier-card--${epoch.status}"
-        role="button"
-        tabindex="0"
         @click=${() => this._onSelectEpoch(epoch)}
-        @keydown=${(e: KeyboardEvent) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            this._onSelectEpoch(epoch);
-          }
-        }}
       >
         <div class="dossier-card__header">
           <span class="dossier-card__name">${epoch.name}</span>
@@ -1530,7 +1520,7 @@ export class VelgEpochOpsBoard extends LitElement {
           }
           <span class="dossier-card__view-hint">${isCompleted ? msg('View Results') : msg('View Details')} &rarr;</span>
         </div>
-      </div>
+      </button>
     `;
   }
 

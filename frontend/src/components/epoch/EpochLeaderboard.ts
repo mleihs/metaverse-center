@@ -511,7 +511,7 @@ export class VelgEpochLeaderboard extends LitElement {
             : html`
             <thead>
               <tr>
-                <th class="rank-col" role="columnheader" tabindex="0" aria-sort=${this._sortKey === 'rank' ? (this._sortAsc ? 'ascending' : 'descending') : 'none'} @click=${() => this._sort('rank')} @keydown=${(
+                <th scope="col" class="rank-col" role="columnheader" tabindex="0" aria-sort=${this._sortKey === 'rank' ? (this._sortAsc ? 'ascending' : 'descending') : 'none'} @click=${() => this._sort('rank')} @keydown=${(
                   e: KeyboardEvent,
                 ) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -521,7 +521,7 @@ export class VelgEpochLeaderboard extends LitElement {
                 }}>
                   #${this._renderSortArrow('rank')}
                 </th>
-                <th role="columnheader" tabindex="0" aria-sort=${this._sortKey === 'rank' ? (this._sortAsc ? 'ascending' : 'descending') : 'none'} @click=${() => this._sort('rank')} @keydown=${(
+                <th scope="col" role="columnheader" tabindex="0" aria-sort=${this._sortKey === 'rank' ? (this._sortAsc ? 'ascending' : 'descending') : 'none'} @click=${() => this._sort('rank')} @keydown=${(
                   e: KeyboardEvent,
                 ) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -531,7 +531,7 @@ export class VelgEpochLeaderboard extends LitElement {
                 }}>
                   ${msg('Simulation')}
                 </th>
-                <th class="score-col" role="columnheader" tabindex="0" aria-sort=${this._sortKey === 'composite' ? (this._sortAsc ? 'ascending' : 'descending') : 'none'} @click=${() => this._sort('composite')} @keydown=${(
+                <th scope="col" class="score-col" role="columnheader" tabindex="0" aria-sort=${this._sortKey === 'composite' ? (this._sortAsc ? 'ascending' : 'descending') : 'none'} @click=${() => this._sort('composite')} @keydown=${(
                   e: KeyboardEvent,
                 ) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -541,7 +541,7 @@ export class VelgEpochLeaderboard extends LitElement {
                 }}>
                   ${msg('Score')}${this._renderSortArrow('composite')}
                 </th>
-                <th class="bar-col" role="columnheader" tabindex="0" aria-sort=${this._sortKey === 'stability' ? (this._sortAsc ? 'ascending' : 'descending') : 'none'} @click=${() => this._sort('stability')} @keydown=${(
+                <th scope="col" class="bar-col" role="columnheader" tabindex="0" aria-sort=${this._sortKey === 'stability' ? (this._sortAsc ? 'ascending' : 'descending') : 'none'} @click=${() => this._sort('stability')} @keydown=${(
                   e: KeyboardEvent,
                 ) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -551,7 +551,7 @@ export class VelgEpochLeaderboard extends LitElement {
                 }}>
                   <span title=${msg('Stability')} aria-label=${msg('Stability')}>${msg('Stab')}</span>${this._renderSortArrow('stability')}
                 </th>
-                <th class="bar-col" role="columnheader" tabindex="0" aria-sort=${this._sortKey === 'influence' ? (this._sortAsc ? 'ascending' : 'descending') : 'none'} @click=${() => this._sort('influence')} @keydown=${(
+                <th scope="col" class="bar-col" role="columnheader" tabindex="0" aria-sort=${this._sortKey === 'influence' ? (this._sortAsc ? 'ascending' : 'descending') : 'none'} @click=${() => this._sort('influence')} @keydown=${(
                   e: KeyboardEvent,
                 ) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -561,7 +561,7 @@ export class VelgEpochLeaderboard extends LitElement {
                 }}>
                   <span title=${msg('Influence')} aria-label=${msg('Influence')}>${msg('Infl')}</span>${this._renderSortArrow('influence')}
                 </th>
-                <th class="bar-col" role="columnheader" tabindex="0" aria-sort=${this._sortKey === 'sovereignty' ? (this._sortAsc ? 'ascending' : 'descending') : 'none'} @click=${() => this._sort('sovereignty')} @keydown=${(
+                <th scope="col" class="bar-col" role="columnheader" tabindex="0" aria-sort=${this._sortKey === 'sovereignty' ? (this._sortAsc ? 'ascending' : 'descending') : 'none'} @click=${() => this._sort('sovereignty')} @keydown=${(
                   e: KeyboardEvent,
                 ) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -571,7 +571,7 @@ export class VelgEpochLeaderboard extends LitElement {
                 }}>
                   <span title=${msg('Sovereignty')} aria-label=${msg('Sovereignty')}>${msg('Sovr')}</span>${this._renderSortArrow('sovereignty')}
                 </th>
-                <th class="bar-col" role="columnheader" tabindex="0" aria-sort=${this._sortKey === 'diplomatic' ? (this._sortAsc ? 'ascending' : 'descending') : 'none'} @click=${() => this._sort('diplomatic')} @keydown=${(
+                <th scope="col" class="bar-col" role="columnheader" tabindex="0" aria-sort=${this._sortKey === 'diplomatic' ? (this._sortAsc ? 'ascending' : 'descending') : 'none'} @click=${() => this._sort('diplomatic')} @keydown=${(
                   e: KeyboardEvent,
                 ) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -581,7 +581,7 @@ export class VelgEpochLeaderboard extends LitElement {
                 }}>
                   <span title=${msg('Diplomacy')} aria-label=${msg('Diplomacy')}>${msg('Dipl')}</span>${this._renderSortArrow('diplomatic')}
                 </th>
-                <th class="bar-col" role="columnheader" tabindex="0" aria-sort=${this._sortKey === 'military' ? (this._sortAsc ? 'ascending' : 'descending') : 'none'} @click=${() => this._sort('military')} @keydown=${(
+                <th scope="col" class="bar-col" role="columnheader" tabindex="0" aria-sort=${this._sortKey === 'military' ? (this._sortAsc ? 'ascending' : 'descending') : 'none'} @click=${() => this._sort('military')} @keydown=${(
                   e: KeyboardEvent,
                 ) => {
                   if (e.key === 'Enter' || e.key === ' ') {

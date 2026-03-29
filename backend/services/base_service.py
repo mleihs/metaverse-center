@@ -6,8 +6,8 @@ import logging
 from datetime import UTC, date, datetime
 from uuid import UUID
 
-from fastapi import HTTPException, status
-
+from backend.utils.errors import bad_request, conflict, forbidden, not_found
+from backend.utils.responses import extract_one
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -117,16 +117,12 @@ class BaseService:
             .execute()
         )
 
-        data = (
-            response.data[0]
-            if response and response.data and isinstance(response.data, list)
-            else (response.data if response and response.data else None)
-        )
+        data = extract_one(response)
 
         if not data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"{cls.table_name} '{entity_id}' not found in simulation '{simulation_id}'.",
+            raise not_found(
+                cls.table_name, entity_id,
+                context=f"in simulation '{simulation_id}'",
             )
 
         return data
@@ -166,9 +162,8 @@ class BaseService:
                     "user_id": str(user_id),
                 },
             )
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Not authorized to create {cls.table_name} in this simulation.",
+            raise forbidden(
+                f"Not authorized to create {cls.table_name} in this simulation.",
             )
 
         return response.data[0]
@@ -196,10 +191,7 @@ class BaseService:
                 HTTP 409 Conflict.
         """
         if not data:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="No fields to update.",
-            )
+            raise bad_request("No fields to update.")
 
         update_data = serialize_for_json({**data, "updated_at": datetime.now(UTC).isoformat()})
 
@@ -242,22 +234,16 @@ class BaseService:
                             "simulation_id": str(simulation_id),
                         },
                     )
-                    raise HTTPException(
-                        status_code=status.HTTP_409_CONFLICT,
-                        detail=(
-                            "Conflict: entity was modified by another user. "
-                            "Please refresh and try again."
-                        ),
+                    raise conflict(
+                        "Conflict: entity was modified by another user. "
+                        "Please refresh and try again.",
                     )
 
             logger.warning(
                 "Update target not found",
                 extra={"table": cls.table_name, "entity_id": str(entity_id), "simulation_id": str(simulation_id)},
             )
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"{cls.table_name} '{entity_id}' not found.",
-            )
+            raise not_found(cls.table_name, entity_id)
 
         return response.data[0]
 
@@ -289,10 +275,7 @@ class BaseService:
                 "Delete target not found",
                 extra={"table": cls.table_name, "entity_id": str(entity_id), "simulation_id": str(simulation_id)},
             )
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"{cls.table_name} '{entity_id}' not found.",
-            )
+            raise not_found(cls.table_name, entity_id)
 
         return response.data[0]
 
@@ -318,8 +301,8 @@ class BaseService:
                 "Soft-delete target not found",
                 extra={"table": cls.table_name, "entity_id": str(entity_id), "simulation_id": str(simulation_id)},
             )
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
+            raise not_found(
+                cls.table_name, entity_id,
                 detail=f"{cls.table_name} '{entity_id}' not found or already deleted.",
             )
 

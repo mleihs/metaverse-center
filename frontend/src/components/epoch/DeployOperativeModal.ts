@@ -1188,7 +1188,8 @@ export class VelgDeployOperativeModal extends LitElement {
             });
 
             return html`
-							<div
+							<button
+								type="button"
 								class=${wrapClasses}
 								style=${styleMap({
                   '--fan-rot': `${rot}deg`,
@@ -1210,15 +1211,8 @@ export class VelgDeployOperativeModal extends LitElement {
 								@blur=${() => {
                   if (this._hoveredAgentId === agent.id) this._hoveredAgentId = '';
                 }}
-								role="button"
 								tabindex=${isDeployed ? -1 : 0}
 								aria-label=${agent.name}
-								@keydown=${(e: KeyboardEvent) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    this._selectAgent(agent.id);
-                  }
-                }}
 							>
 								<velg-game-card
 									type="agent"
@@ -1232,7 +1226,7 @@ export class VelgDeployOperativeModal extends LitElement {
 									.dimmed=${isDeployed || isSelected}
 								></velg-game-card>
 								${isDeployed ? html`<span class="hand__stamp">${msg('DEPLOYED')}</span>` : nothing}
-							</div>
+							</button>
 						`;
           })}
 				</div>
@@ -1394,28 +1388,20 @@ export class VelgDeployOperativeModal extends LitElement {
           return html`
 						<div class="target-zone-col" style="--zone-accent:${secColor}">
 							<!-- Zone card (clickable) -->
-							<div
+							<button
+								type="button"
 								class="target-card ${secClass} ${isZoneSelected ? 'target-card--selected' : ''}"
-								role="button"
-								tabindex="0"
 								aria-label=${z.name}
 								@click=${() => {
                   this._selectedZoneId = z.id;
                   if (missionInfo.needsTarget === 'zone') this._triggerSlam('target', '');
-                }}
-								@keydown=${(e: KeyboardEvent) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    this._selectedZoneId = z.id;
-                    if (missionInfo.needsTarget === 'zone') this._triggerSlam('target', '');
-                  }
                 }}
 							>
 								<div class="target-card__body">
 									<span class="target-card__name">${z.name}</span>
 									<span class="target-card__type">${z.security_level}</span>
 								</div>
-							</div>
+							</button>
 
 							<!-- Buildings under this zone (when building-targeting + zone selected) -->
 							${
@@ -1424,24 +1410,17 @@ export class VelgDeployOperativeModal extends LitElement {
 									<div class="target-zone-col__buildings">
 										${zoneBuildings.map(
                       (b) => html`
-											<div
+											<button
+												type="button"
 												class="target-card target-card--medium ${this._selectedBuildingId === b.id ? 'target-card--selected' : ''}"
-												role="button"
-												tabindex="0"
 												aria-label=${b.name}
 												@click=${() => this._selectTarget(b.id, 'building')}
-												@keydown=${(e: KeyboardEvent) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            this._selectTarget(b.id, 'building');
-                          }
-                        }}
 											>
 												<div class="target-card__body">
 													<span class="target-card__name">${b.name}</span>
 													<span class="target-card__type">${b.building_type}</span>
 												</div>
-											</div>
+											</button>
 										`,
                     )}
 									</div>
@@ -1460,24 +1439,17 @@ export class VelgDeployOperativeModal extends LitElement {
 			<div class="target-agent-grid">
 				${this._targetAgents.map(
           (a) => html`
-					<div
+					<button
+						type="button"
 						class="target-card target-card--high ${this._selectedTargetAgentId === a.id ? 'target-card--selected' : ''}"
-						role="button"
-						tabindex="0"
 						aria-label=${a.name}
 						@click=${() => this._selectTarget(a.id, 'agent')}
-						@keydown=${(e: KeyboardEvent) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                this._selectTarget(a.id, 'agent');
-              }
-            }}
 					>
 						<div class="target-card__body">
 							<span class="target-card__name">${a.name}</span>
 							<span class="target-card__type">${a.professions?.[0]?.profession ?? ''}</span>
 						</div>
-					</div>
+					</button>
 				`,
         )}
 			</div>

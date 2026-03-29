@@ -30,16 +30,58 @@ class ChatService:
             .execute()
         )
         conversations = response.data or []
+        if not conversations:
+            return []
 
-        # Enrich each conversation with agents from junction table
+        # Batch-load agents and event references for all conversations at once
+        # (replaces N+1 per-conversation queries with 2 batch queries)
+        conv_ids = [c["id"] for c in conversations]
+
+        agents_resp = await (
+            supabase.table("chat_conversation_agents")
+            .select("conversation_id, agent_id, agents(id, name, portrait_image_url)")
+            .in_("conversation_id", conv_ids)
+            .order("added_at")
+            .execute()
+        )
+
+        refs_resp = await (
+            supabase.table("chat_event_references")
+            .select(
+                "id, conversation_id, event_id, referenced_at, "
+                "events(title, event_type, description, occurred_at, impact_level)",
+            )
+            .in_("conversation_id", conv_ids)
+            .order("referenced_at")
+            .execute()
+        )
+
+        # Index agents by conversation_id
+        agents_by_conv: dict[str, list[dict]] = {}
+        for row in agents_resp.data or []:
+            agent_data = row.get("agents")
+            if agent_data:
+                agents_by_conv.setdefault(row["conversation_id"], []).append(agent_data)
+
+        # Index event references by conversation_id
+        refs_by_conv: dict[str, list[dict]] = {}
+        for row in refs_resp.data or []:
+            event_data = row.get("events", {}) or {}
+            refs_by_conv.setdefault(row["conversation_id"], []).append({
+                "id": row["id"],
+                "event_id": row["event_id"],
+                "event_title": event_data.get("title", ""),
+                "event_type": event_data.get("event_type"),
+                "event_description": event_data.get("description"),
+                "occurred_at": event_data.get("occurred_at"),
+                "impact_level": event_data.get("impact_level"),
+                "referenced_at": row["referenced_at"],
+            })
+
+        # Enrich conversations from batch results
         for conv in conversations:
-            conv["agents"] = await ChatService._load_conversation_agents(
-                supabase, conv["id"],
-            )
-            # Load event references
-            conv["event_references"] = await ChatService._load_event_references(
-                supabase, conv["id"],
-            )
+            conv["agents"] = agents_by_conv.get(conv["id"], [])
+            conv["event_references"] = refs_by_conv.get(conv["id"], [])
 
         return conversations
 

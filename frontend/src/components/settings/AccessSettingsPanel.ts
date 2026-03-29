@@ -363,6 +363,18 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
         color: var(--color-success);
       }
 
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
       @media (max-width: 640px) {
         :host {
           padding: var(--space-3);
@@ -786,6 +798,7 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
             : html`
               <select
                 class="members__role-select"
+                aria-label=${msg('Member role')}
                 .value=${member.member_role}
                 @change=${(e: Event) => this._handleRoleChange(member, e)}
               >
@@ -816,8 +829,10 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
     return html`
       <div class="invite-form">
         <div class="invite-form__row">
+          <label class="visually-hidden" for="invite-email">${msg('Invite email address')}</label>
           <input
             class="invite-form__input"
+            id="invite-email"
             type="email"
             placeholder=${msg('Email (optional)')}
             .value=${this._inviteEmail}
@@ -825,8 +840,10 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
               this._inviteEmail = (e.target as HTMLInputElement).value;
             }}
           />
+          <label class="visually-hidden" for="invite-role">${msg('Invite role')}</label>
           <select
             class="invite-form__select"
+            id="invite-role"
             .value=${this._inviteRole}
             @change=${(e: Event) => {
               this._inviteRole = (e.target as HTMLSelectElement).value as SimulationRole;

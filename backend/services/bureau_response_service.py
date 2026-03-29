@@ -234,6 +234,8 @@ class BureauResponseService:
         resolved_count = 0
 
         # Get pending responses due at this tick
+        # INNER JOIN: a bureau response without its parent event is unresolvable
+        # (title, impact_level needed) — LEFT JOIN would include orphans that crash resolution
         _resp = await (
             admin.table("bureau_responses")
             .select("*, events!inner(title, title_de, impact_level, event_status)")

@@ -397,6 +397,8 @@ class BattleLogService:
         limit: int = 20,
     ) -> list[dict]:
         """Get recent public battle log entries across all active epochs."""
+        # INNER JOIN: filtering by game_epochs.status requires !inner for PostgREST
+        # — LEFT JOIN would return all battle logs ignoring epoch status filter
         resp = await (
             supabase.table("battle_log")
             .select("*, game_epochs!inner(status)")

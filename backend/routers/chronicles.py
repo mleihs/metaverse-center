@@ -8,7 +8,8 @@ from fastapi import APIRouter, Depends, Query, Request
 from backend.dependencies import get_admin_supabase, get_current_user, get_supabase, require_role
 from backend.middleware.rate_limit import RATE_LIMIT_STANDARD, limiter
 from backend.models.chronicle import ChronicleGenerateRequest
-from backend.models.common import PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.services.audit_service import AuditService
 from backend.services.chronicle_service import ChronicleService
 from supabase import AsyncClient as Client
 
@@ -26,7 +27,7 @@ async def generate_chronicle(
     request: Request,
     simulation_id: UUID,
     body: ChronicleGenerateRequest,
-    _user=Depends(get_current_user),
+    user: CurrentUser = Depends(get_current_user),
     _role_check=Depends(require_role("editor")),
     admin_supabase: Client = Depends(get_admin_supabase),
 ) -> dict:
@@ -38,6 +39,16 @@ async def generate_chronicle(
         body.period_end,
         epoch_id=body.epoch_id,
         locale=body.locale,
+    )
+    await AuditService.safe_log(
+        admin_supabase, simulation_id, user.id,
+        "chronicles", None, "generate",
+        details={
+            "period_start": str(body.period_start),
+            "period_end": str(body.period_end),
+            "epoch_id": str(body.epoch_id) if body.epoch_id else None,
+            "locale": body.locale,
+        },
     )
     return {"success": True, "data": data}
 

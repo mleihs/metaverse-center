@@ -52,6 +52,9 @@ export class VelgZoneList extends LitElement {
     }
 
     .item {
+      appearance: none;
+      font: inherit;
+      text-align: start;
       background: var(--color-surface-raised);
       border: var(--border-default);
       box-shadow: var(--shadow-md);
@@ -523,14 +526,7 @@ export class VelgZoneList extends LitElement {
           const isQuarantined = stability?.is_quarantined ?? false;
           const isCriticalZone = (stability?.stability ?? 1) < 0.3;
           return html`
-            <div class="item ${isQuarantined ? 'item--quarantined' : ''} ${isCriticalZone ? 'item--critical-zone' : ''}" role="button" tabindex="0" @click=${() => this._handleSelect(zone)} @keydown=${(
-              e: KeyboardEvent,
-            ) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                this._handleSelect(zone);
-              }
-            }}>
+            <button type="button" class="item ${isQuarantined ? 'item--quarantined' : ''} ${isCriticalZone ? 'item--critical-zone' : ''}" @click=${() => this._handleSelect(zone)}>
               <h3 class="item__name">${zone.name}</h3>
               ${
                 zone.description
@@ -559,7 +555,7 @@ export class VelgZoneList extends LitElement {
               ${this._renderStabilityBar(zone.id)}
               ${this._renderOverlays(zone.id)}
               ${this._renderWeather(zone.id)}
-            </div>
+            </button>
           `;
         })}
       </div>

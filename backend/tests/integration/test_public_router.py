@@ -138,6 +138,28 @@ class TestPublicBuildings:
 
 
 class TestPublicEvents:
+    @pytest.fixture(autouse=True)
+    def _seed_event(self, admin_client):
+        """Insert a test event for the Velgarien simulation, clean up after."""
+        from uuid import uuid4
+
+        self._event_id = str(uuid4())
+        admin_client.table("events").insert({
+            "id": self._event_id,
+            "simulation_id": SIM_VELGARIEN,
+            "title": "Test Event for Public Router",
+            "event_type": "narrative",
+            "event_status": "active",
+            "impact_level": 1,
+        }).execute()
+        yield
+        try:
+            admin_client.table("events").delete().eq(
+                "id", self._event_id,
+            ).execute()
+        except Exception:  # noqa: S110
+            pass  # Best-effort cleanup
+
     def test_list_events(self, client: TestClient):
         r = client.get(f"/api/v1/public/simulations/{SIM_VELGARIEN}/events")
         assert r.status_code == 200
@@ -147,15 +169,10 @@ class TestPublicEvents:
 
     def test_get_event(self, client: TestClient):
         r = client.get(
-            f"/api/v1/public/simulations/{SIM_VELGARIEN}/events?limit=1"
-        )
-        event_id = r.json()["data"][0]["id"]
-
-        r = client.get(
-            f"/api/v1/public/simulations/{SIM_VELGARIEN}/events/{event_id}"
+            f"/api/v1/public/simulations/{SIM_VELGARIEN}/events/{self._event_id}",
         )
         assert r.status_code == 200
-        assert r.json()["data"]["id"] == event_id
+        assert r.json()["data"]["id"] == self._event_id
 
     def test_get_event_not_found(self, client: TestClient):
         r = client.get(

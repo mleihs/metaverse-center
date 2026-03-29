@@ -313,6 +313,17 @@ export class VelgChronicleView extends LitElement {
     }
 
     .archive__item {
+      animation: archive-enter 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation-delay: var(--archive-delay, 0ms);
+    }
+
+    .archive__btn {
+      appearance: none;
+      font: inherit;
+      text-align: start;
+      background: none;
+      border: none;
+      color: inherit;
       display: flex;
       align-items: baseline;
       gap: var(--space-3);
@@ -320,24 +331,23 @@ export class VelgChronicleView extends LitElement {
       border-bottom: var(--chron-rule-thin) solid var(--color-border-light);
       cursor: pointer;
       transition: background var(--transition-fast);
-      animation: archive-enter 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
-      animation-delay: var(--archive-delay, 0ms);
+      width: 100%;
     }
 
     @keyframes archive-enter {
       from { opacity: 0; transform: translateX(-4px); }
     }
 
-    .archive__item:hover {
+    .archive__btn:hover {
       background: color-mix(in srgb, var(--color-primary) 4%, transparent);
     }
 
-    .archive__item:focus-visible {
+    .archive__btn:focus-visible {
       outline: 2px solid var(--color-border-focus);
       outline-offset: -2px;
     }
 
-    .archive__item--active {
+    .archive__item--active .archive__btn {
       background: color-mix(in srgb, var(--color-primary) 6%, transparent);
     }
 
@@ -419,7 +429,7 @@ export class VelgChronicleView extends LitElement {
         text-align: center;
       }
 
-      .archive__item {
+      .archive__btn {
         flex-wrap: wrap;
       }
 
@@ -713,21 +723,17 @@ export class VelgChronicleView extends LitElement {
               <li
                 class="archive__item ${this._expandedId === c.id ? 'archive__item--active' : ''}"
                 style="--archive-delay: ${i * 40}ms"
-                tabindex="0"
-                role="button"
-                aria-label="${msg('Vol.')} ${c.edition_number}: ${t(c, 'title')}"
-                @click=${() => this._selectEdition(c.id)}
-                @keydown=${(e: KeyboardEvent) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    this._selectEdition(c.id);
-                  }
-                }}
               >
-                <span class="archive__num">${c.edition_number}</span>
-                <span class="archive__title">${t(c, 'title')}</span>
-                <span class="archive__dots"></span>
-                <span class="archive__date">${formatShortDateRange(c.period_start, c.period_end, { locale: getDateLocale() })}</span>
+                <button type="button"
+                  class="archive__btn"
+                  aria-label="${msg('Vol.')} ${c.edition_number}: ${t(c, 'title')}"
+                  @click=${() => this._selectEdition(c.id)}
+                >
+                  <span class="archive__num">${c.edition_number}</span>
+                  <span class="archive__title">${t(c, 'title')}</span>
+                  <span class="archive__dots"></span>
+                  <span class="archive__date">${formatShortDateRange(c.period_start, c.period_end, { locale: getDateLocale() })}</span>
+                </button>
               </li>
             `,
           )}

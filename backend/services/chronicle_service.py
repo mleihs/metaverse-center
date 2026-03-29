@@ -175,6 +175,8 @@ class ChronicleService:
         Returns chronicles joined with simulation name/slug/theme for the public
         chronicle feed page. Only includes chronicles from active template simulations.
         """
+        # INNER JOIN: filtering by simulations.status/simulation_type requires !inner
+        # — LEFT JOIN would return chronicles from inactive/deleted sims ignoring .eq() filters
         response = await (
             supabase.table("simulation_chronicles")
             .select(

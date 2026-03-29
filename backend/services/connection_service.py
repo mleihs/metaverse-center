@@ -287,6 +287,8 @@ class ConnectionService:
             return {}
         sparklines: dict[str, list[float]] = {}
         try:
+            # INNER JOIN: scores without a parent simulation are orphans;
+            # source_template_id required for grouping — LEFT JOIN would add unusable null rows
             spark_resp = await (
                 supabase.table("epoch_scores")
                 .select(

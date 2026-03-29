@@ -484,11 +484,11 @@ export class VelgWorldSettingsPanel extends LitElement {
           <table class="table">
             <thead class="table__head">
               <tr>
-                <th class="table__th">${msg('Value')}</th>
-                <th class="table__th">${msg('Label')}</th>
-                <th class="table__th">${msg('Sort Order')}</th>
-                <th class="table__th">${msg('Status')}</th>
-                <th class="table__th">${msg('Actions')}</th>
+                <th scope="col" class="table__th">${msg('Value')}</th>
+                <th scope="col" class="table__th">${msg('Label')}</th>
+                <th scope="col" class="table__th">${msg('Sort Order')}</th>
+                <th scope="col" class="table__th">${msg('Status')}</th>
+                <th scope="col" class="table__th">${msg('Actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -537,29 +537,32 @@ export class VelgWorldSettingsPanel extends LitElement {
         <h3 class="add-form__title">${msg(str`Add New ${this._selectedType.replace(/_/g, ' ')} Value`)}</h3>
         <div class="add-form__row">
           <div class="add-form__group">
-            <label class="form__label">${msg('Value (code)')}</label>
+            <label class="form__label" for="taxonomy-value">${msg('Value (code)')}</label>
             <input
               class="form__input"
+              id="taxonomy-value"
               type="text"
-              placeholder="e.g. male, warrior..."
+              placeholder=${msg('e.g. male, warrior...')}
               .value=${this._newForm.value}
               @input=${(e: Event) => this._handleNewFormInput('value', e)}
             />
           </div>
           <div class="add-form__group">
-            <label class="form__label">${msg('Label (display)')}</label>
+            <label class="form__label" for="taxonomy-label">${msg('Label (display)')}</label>
             <input
               class="form__input"
+              id="taxonomy-label"
               type="text"
-              placeholder="e.g. Male, Warrior..."
+              placeholder=${msg('e.g. Male, Warrior...')}
               .value=${this._newForm.label}
               @input=${(e: Event) => this._handleNewFormInput('label', e)}
             />
           </div>
           <div class="add-form__group add-form__group--narrow">
-            <label class="form__label">${msg('Sort')}</label>
+            <label class="form__label" for="taxonomy-sort">${msg('Sort')}</label>
             <input
               class="form__input"
+              id="taxonomy-sort"
               type="number"
               .value=${String(this._newForm.sort_order)}
               @input=${(e: Event) => this._handleNewFormInput('sort_order', e)}

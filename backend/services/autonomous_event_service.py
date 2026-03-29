@@ -321,6 +321,8 @@ class AutonomousEventService:
         simulation_id: UUID,
     ) -> list[dict]:
         """Check for zones with 3+ happy agents (mood > 50)."""
+        # INNER JOIN: mood records without a parent agent are orphans;
+        # name/current_zone_id required for grouping — LEFT JOIN would add unusable null rows
         result = await (
             supabase.table("agent_mood")
             .select("agent_id, agents!inner(name, current_zone_id)")

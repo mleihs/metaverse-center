@@ -934,14 +934,14 @@ export class VelgEpochResultsView extends LitElement {
         <table class="standings-table">
           <thead>
             <tr>
-              <th>#</th>
-              <th>${msg('Simulation')}</th>
-              <th style="text-align:right">${msg('Score')}</th>
-              <th style="text-align:right">${msg('Stab')}</th>
-              <th style="text-align:right">${msg('Infl')}</th>
-              <th style="text-align:right">${msg('Sovr')}</th>
-              <th style="text-align:right">${msg('Dipl')}</th>
-              <th style="text-align:right">${msg('Milt')}</th>
+              <th scope="col">#</th>
+              <th scope="col">${msg('Simulation')}</th>
+              <th scope="col" style="text-align:right">${msg('Score')}</th>
+              <th scope="col" style="text-align:right">${msg('Stab')}</th>
+              <th scope="col" style="text-align:right">${msg('Infl')}</th>
+              <th scope="col" style="text-align:right">${msg('Sovr')}</th>
+              <th scope="col" style="text-align:right">${msg('Dipl')}</th>
+              <th scope="col" style="text-align:right">${msg('Milt')}</th>
             </tr>
           </thead>
           <tbody>

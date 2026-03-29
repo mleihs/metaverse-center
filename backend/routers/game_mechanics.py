@@ -18,6 +18,7 @@ from backend.models.game_mechanics import (
     SimulationHealthResponse,
     ZoneStabilityResponse,
 )
+from backend.services.audit_service import AuditService
 from backend.services.game_mechanics_service import GameMechanicsService
 from supabase import AsyncClient as Client
 
@@ -171,4 +172,8 @@ async def refresh_metrics(
     but this allows a manual refresh if needed.
     """
     await GameMechanicsService.refresh_metrics(admin_supabase)
+    await AuditService.safe_log(
+        admin_supabase, simulation_id, user.id,
+        "game_mechanics", None, "refresh_metrics",
+    )
     return {"success": True, "data": {"message": "Game metrics refresh triggered."}}

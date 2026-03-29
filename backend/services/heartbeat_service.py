@@ -304,6 +304,8 @@ class HeartbeatService:
         # Check for active epoch (for tagging entries with epoch context)
         active_epoch_id: str | None = None
         try:
+            # INNER JOIN: filtering by game_epochs.status requires !inner
+            # — LEFT JOIN would return all participants ignoring epoch status filter
             epoch_resp = await (
                 admin.table("epoch_participants")
                 .select("epoch_id, game_epochs!inner(status)")

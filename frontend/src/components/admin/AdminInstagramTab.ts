@@ -466,6 +466,13 @@ export class VelgAdminInstagramTab extends LitElement {
     }
 
     .seq-header {
+      appearance: none;
+      font: inherit;
+      text-align: start;
+      background: none;
+      border: none;
+      color: inherit;
+      width: 100%;
       display: flex;
       align-items: center;
       gap: var(--space-3);
@@ -1936,11 +1943,9 @@ export class VelgAdminInstagramTab extends LitElement {
 
     return html`
       <div class="seq-accordion" style="--_seq-accent: ${accentHex}">
-        <div
+        <button type="button"
           class="seq-header"
           @click=${() => this._toggleSequence(seq.resonanceId)}
-          role="button"
-          tabindex="0"
           aria-expanded=${isOpen}
         >
           <span class="seq-header__chevron ${isOpen ? 'seq-header__chevron--open' : ''}">
@@ -1954,7 +1959,7 @@ export class VelgAdminInstagramTab extends LitElement {
             ${seq.magnitude.toFixed(2)}
           </span>
           <span class="seq-header__summary">${published}/${total} ${msg('published')}</span>
-        </div>
+        </button>
         ${isOpen ? html`
           <div class="seq-body">
             ${seq.stories.map((s) => this._renderStoryCard(s))}

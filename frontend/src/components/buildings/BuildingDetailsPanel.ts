@@ -152,6 +152,10 @@ export class VelgBuildingDetailsPanel extends LitElement {
     }
 
     .panel__ambassador {
+      appearance: none;
+      font: inherit;
+      text-align: start;
+      width: 100%;
       padding: var(--space-3);
       background: var(--color-surface-sunken);
       border: var(--border-width-thin) solid var(--color-border-light);
@@ -501,20 +505,13 @@ export class VelgBuildingDetailsPanel extends LitElement {
     if (!amb) return nothing;
 
     return html`
-      <div class="panel__ambassador" role="button" tabindex="0" @click=${this._handleAmbassadorClick} @keydown=${(
-        e: KeyboardEvent,
-      ) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          this._handleAmbassadorClick();
-        }
-      }}>
+      <button type="button" class="panel__ambassador" @click=${this._handleAmbassadorClick}>
         <div class="panel__ambassador-info">
           <span class="panel__ambassador-name">${amb.name}</span>
           <velg-badge variant="warning">${msg('Ambassador')}</velg-badge>
         </div>
         ${amb.role ? html`<span class="panel__ambassador-role">${amb.role}</span>` : nothing}
-      </div>
+      </button>
     `;
   }
 

@@ -10,7 +10,7 @@ from __future__ import annotations
 import logging
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query
 
 from backend.dependencies import (
     get_admin_supabase,
@@ -21,7 +21,6 @@ from backend.dependencies import (
 from backend.models.common import (
     CurrentUser,
     PaginatedResponse,
-    PaginationMeta,
     SuccessResponse,
 )
 from backend.models.resonance_dungeon import (
@@ -40,6 +39,7 @@ from backend.models.resonance_dungeon import (
 )
 from backend.services.audit_service import AuditService
 from backend.services.dungeon_engine_service import DungeonEngineService
+from backend.services.dungeon_query_service import DungeonQueryService
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -98,18 +98,8 @@ async def get_run(
     supabase: Client = Depends(get_supabase),
 ) -> dict:
     """Get run metadata."""
-    resp = (
-        await supabase.table("resonance_dungeon_runs")
-        .select(
-            "*",
-        )
-        .eq("id", str(run_id))
-        .maybe_single()
-        .execute()
-    )
-    if not resp.data:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Dungeon run not found")
-    return {"success": True, "data": resp.data}
+    data = await DungeonQueryService.get_run(supabase, run_id)
+    return {"success": True, "data": data}
 
 
 # ── Get Client State ────────────────────────────────────────────────────────
@@ -278,31 +268,10 @@ async def list_events(
     offset: int = Query(default=0, ge=0),
 ) -> dict:
     """Get dungeon event log (paginated)."""
-    resp = (
-        await supabase.table("resonance_dungeon_events")
-        .select(
-            "*",
-            count="exact",
-        )
-        .eq("run_id", str(run_id))
-        .order(
-            "created_at",
-            desc=False,
-        )
-        .range(offset, offset + limit - 1)
-        .execute()
+    data, meta = await DungeonQueryService.list_events(
+        supabase, run_id, limit=limit, offset=offset,
     )
-
-    return {
-        "success": True,
-        "data": resp.data or [],
-        "meta": PaginationMeta(
-            count=len(resp.data or []),
-            total=resp.count or 0,
-            limit=limit,
-            offset=offset,
-        ),
-    }
+    return {"success": True, "data": data, "meta": meta}
 
 
 # ── History ─────────────────────────────────────────────────────────────────
@@ -318,31 +287,10 @@ async def list_history(
     offset: int = Query(default=0, ge=0),
 ) -> dict:
     """List past dungeon runs for a simulation."""
-    resp = (
-        await supabase.table("resonance_dungeon_runs")
-        .select(
-            "*",
-            count="exact",
-        )
-        .eq("simulation_id", str(simulation_id))
-        .order(
-            "created_at",
-            desc=True,
-        )
-        .range(offset, offset + limit - 1)
-        .execute()
+    data, meta = await DungeonQueryService.list_history(
+        supabase, simulation_id, limit=limit, offset=offset,
     )
-
-    return {
-        "success": True,
-        "data": resp.data or [],
-        "meta": PaginationMeta(
-            count=len(resp.data or []),
-            total=resp.count or 0,
-            limit=limit,
-            offset=offset,
-        ),
-    }
+    return {"success": True, "data": data, "meta": meta}
 
 
 # ── Agent Loot Effects (Provenance) ─────────────────────────────────────────
@@ -364,28 +312,7 @@ async def get_agent_loot_effects(
     Joins with source run to provide provenance (archetype, difficulty, date).
     RLS enforced: user must be simulation member.
     """
-    resp = (
-        await supabase.table("agent_dungeon_loot_effects")
-        .select(
-            "id, agent_id, effect_type, effect_params, source_run_id, "
-            "source_loot_id, consumed, created_at, "
-            "resonance_dungeon_runs!source_run_id(archetype, difficulty, completed_at)"
-        )
-        .eq("agent_id", str(agent_id))
-        .eq("simulation_id", str(simulation_id))
-        .order("created_at", desc=True)
-        .execute()
+    effects = await DungeonQueryService.get_agent_loot_effects(
+        supabase, agent_id, simulation_id,
     )
-
-    # Flatten the joined run data into the response shape
-    effects = []
-    for row in resp.data or []:
-        run_data = row.pop("resonance_dungeon_runs", None) or {}
-        effects.append({
-            **row,
-            "source_archetype": run_data.get("archetype"),
-            "source_difficulty": run_data.get("difficulty"),
-            "source_completed_at": run_data.get("completed_at"),
-        })
-
     return {"success": True, "data": effects}

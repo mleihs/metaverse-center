@@ -18,6 +18,9 @@ export class VelgCityList extends LitElement {
     }
 
     .item {
+      appearance: none;
+      font: inherit;
+      text-align: start;
       background: var(--color-surface-raised);
       border: var(--border-default);
       box-shadow: var(--shadow-md);
@@ -95,14 +98,7 @@ export class VelgCityList extends LitElement {
       <div class="list">
         ${this.cities.map(
           (city) => html`
-            <div class="item" role="button" tabindex="0" @click=${() => this._handleSelect(city)} @keydown=${(
-              e: KeyboardEvent,
-            ) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                this._handleSelect(city);
-              }
-            }}>
+            <button type="button" class="item" @click=${() => this._handleSelect(city)}>
               <h3 class="item__name">${city.name}</h3>
               ${
                 city.description
@@ -121,7 +117,7 @@ export class VelgCityList extends LitElement {
                     : nothing
                 }
               </div>
-            </div>
+            </button>
           `,
         )}
       </div>

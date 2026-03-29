@@ -1644,11 +1644,11 @@ export class VelgAdminScannerTab extends LitElement {
       <table class="log-table" aria-label=${msg('Scan history log')}>
         <thead>
           <tr>
-            <th>${msg('Source')}</th>
-            <th>${msg('Title')}</th>
-            <th>${msg('Category')}</th>
-            <th>${msg('Magnitude')}</th>
-            <th>${msg('Scanned')}</th>
+            <th scope="col">${msg('Source')}</th>
+            <th scope="col">${msg('Title')}</th>
+            <th scope="col">${msg('Category')}</th>
+            <th scope="col">${msg('Magnitude')}</th>
+            <th scope="col">${msg('Scanned')}</th>
           </tr>
         </thead>
         <tbody>

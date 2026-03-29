@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, Query, Request
 
 from backend.dependencies import get_admin_supabase, require_platform_admin
 from backend.middleware.rate_limit import RATE_LIMIT_EXTERNAL_API, RATE_LIMIT_STANDARD, limiter
-from backend.models.common import CurrentUser, PaginationMeta
+from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.models.news_scanner import (
     ApproveCandidateRequest,
     TriggerScanRequest,
@@ -28,7 +28,7 @@ router = APIRouter(
 )
 
 
-@router.get("/dashboard")
+@router.get("/dashboard", response_model=SuccessResponse)
 async def get_dashboard(
     _user: CurrentUser = Depends(require_platform_admin()),
     admin_supabase: Client = Depends(get_admin_supabase),
@@ -38,7 +38,7 @@ async def get_dashboard(
     return {"success": True, "data": data}
 
 
-@router.get("/adapters")
+@router.get("/adapters", response_model=SuccessResponse)
 async def list_adapters(
     _user: CurrentUser = Depends(require_platform_admin()),
     admin_supabase: Client = Depends(get_admin_supabase),
@@ -48,7 +48,7 @@ async def list_adapters(
     return {"success": True, "data": dashboard["adapters"]}
 
 
-@router.patch("/adapters/{name}")
+@router.patch("/adapters/{name}", response_model=SuccessResponse)
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def toggle_adapter(
     request: Request,
@@ -66,7 +66,7 @@ async def toggle_adapter(
     return {"success": True, "data": data}
 
 
-@router.post("/trigger-scan")
+@router.post("/trigger-scan", response_model=SuccessResponse)
 @limiter.limit(RATE_LIMIT_EXTERNAL_API)
 async def trigger_scan(
     request: Request,
@@ -84,7 +84,7 @@ async def trigger_scan(
     return {"success": True, "data": metrics}
 
 
-@router.get("/candidates")
+@router.get("/candidates", response_model=PaginatedResponse)
 async def list_candidates(
     status: str | None = Query(default=None),
     category: str | None = Query(default=None),
@@ -111,7 +111,7 @@ async def list_candidates(
     }
 
 
-@router.post("/candidates/{candidate_id}/approve")
+@router.post("/candidates/{candidate_id}/approve", response_model=SuccessResponse)
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def approve_candidate(
     request: Request,
@@ -132,7 +132,7 @@ async def approve_candidate(
     return {"success": True, "data": resonance}
 
 
-@router.post("/candidates/{candidate_id}/reject")
+@router.post("/candidates/{candidate_id}/reject", response_model=SuccessResponse)
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def reject_candidate(
     request: Request,
@@ -148,7 +148,7 @@ async def reject_candidate(
     return {"success": True, "data": {"rejected": True}}
 
 
-@router.patch("/candidates/{candidate_id}")
+@router.patch("/candidates/{candidate_id}", response_model=SuccessResponse)
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def update_candidate(
     request: Request,
@@ -166,7 +166,7 @@ async def update_candidate(
     return {"success": True, "data": result}
 
 
-@router.get("/scan-log")
+@router.get("/scan-log", response_model=PaginatedResponse)
 async def get_scan_log(
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),

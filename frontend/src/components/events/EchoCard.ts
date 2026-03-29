@@ -13,6 +13,9 @@ export class VelgEchoCard extends LitElement {
     }
 
     .card {
+      appearance: none;
+      font: inherit;
+      text-align: start;
       background: var(--color-surface-raised);
       border: var(--border-default);
       box-shadow: var(--shadow-md);
@@ -166,7 +169,7 @@ export class VelgEchoCard extends LitElement {
     const vectorDisplay = this._getVectorDisplayName(echo.echo_vector);
 
     return html`
-      <div class="card" role="button" tabindex="0" @click=${this._handleClick} @keydown=${(e: KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this._handleClick(); } }}>
+      <button type="button" class="card" @click=${this._handleClick}>
         <div class="card__route">
           <span class="card__sim-name">${sourceName}</span>
           <span class="card__arrow">&rarr;</span>
@@ -191,7 +194,7 @@ export class VelgEchoCard extends LitElement {
         <div class="card__meta">
           <span class="card__depth">${msg(str`Depth ${echo.echo_depth}/3`)}</span>
         </div>
-      </div>
+      </button>
     `;
   }
 }

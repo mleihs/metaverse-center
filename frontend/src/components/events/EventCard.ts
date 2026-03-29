@@ -18,6 +18,9 @@ export class VelgEventCard extends LitElement {
     }
 
     .card {
+      appearance: none;
+      font: inherit;
+      text-align: start;
       background: var(--color-surface-raised);
       border: var(--border-default);
       box-shadow: var(--shadow-md);
@@ -336,14 +339,7 @@ export class VelgEventCard extends LitElement {
     const reactionCount = this._getReactionCount();
 
     return html`
-      <div class="card" role="button" tabindex="0" @click=${this._handleClick} @keydown=${(
-        e: KeyboardEvent,
-      ) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          this._handleClick();
-        }
-      }}>
+      <button type="button" class="card" @click=${this._handleClick}>
         <div class="card__header">
           <span
             class="card__status-dot card__status-dot--${evt.event_status ?? 'active'}"
@@ -425,7 +421,7 @@ export class VelgEventCard extends LitElement {
             `
             : nothing
         }
-      </div>
+      </button>
     `;
   }
 }

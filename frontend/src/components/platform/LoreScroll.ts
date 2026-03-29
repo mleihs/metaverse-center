@@ -746,6 +746,12 @@ export class VelgLoreScroll extends LitElement {
     }
 
     .section__header {
+      appearance: none;
+      font: inherit;
+      text-align: start;
+      border: none;
+      color: inherit;
+      width: 100%;
       position: relative;
       display: flex;
       align-items: center;
@@ -1512,18 +1518,10 @@ export class VelgLoreScroll extends LitElement {
 
           <div class="section ${isClassified ? 'section--classified' : ''}" style="animation-delay: ${delay + 0.05}s">
             <span class="classified-stamp">${msg('[CLASSIFIED // CLEARANCE LEVEL 4]')}</span>
-            <div
+            <button type="button"
               class="section__header ${isExpanded ? 'section__header--expanded' : ''}"
               @click=${() => this._toggleSection(section.id)}
-              role="button"
-              tabindex="0"
               aria-expanded=${isExpanded}
-              @keydown=${(e: KeyboardEvent) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  this._toggleSection(section.id);
-                }
-              }}
             >
               <span class="section__arcanum">${section.arcanum}</span>
               <h2 class="section__title">${section.title}</h2>
@@ -1531,7 +1529,7 @@ export class VelgLoreScroll extends LitElement {
                 class="section__toggle ${isExpanded ? 'section__toggle--open' : ''}"
                 >${icons.chevronRight()}</span
               >
-            </div>
+            </button>
 
             <p class="section__epigraph">${section.epigraph}</p>
 

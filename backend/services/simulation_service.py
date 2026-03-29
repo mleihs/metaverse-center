@@ -47,6 +47,8 @@ class SimulationService:
         # Get simulation IDs the user is a member of (templates only).
         # Filter at join level to avoid URI-too-long errors when the user has
         # many game instance / archived memberships (PostgREST URI limit).
+        # INNER JOIN: filtering by simulations.simulation_type requires !inner
+        # — LEFT JOIN would return all memberships ignoring the template-only filter
         membership_response = await (
             supabase.table("simulation_members")
             .select("simulation_id, simulations!inner(simulation_type)")

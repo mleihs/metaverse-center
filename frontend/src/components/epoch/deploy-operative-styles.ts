@@ -597,6 +597,10 @@ export const deployOperativeStyles = css`
 		.target-card--low    { --zone-accent: var(--color-success); }
 
 		.target-card {
+			appearance: none;
+			font: inherit;
+			text-align: start;
+			padding: 0;
 			--_accent: var(--zone-accent, var(--color-border));
 			position: relative;
 			flex-shrink: 0;
@@ -1068,6 +1072,11 @@ export const deployOperativeStyles = css`
 		}
 
 		.hand__card-wrapper {
+			appearance: none;
+			border: 0;
+			background: none;
+			font: inherit;
+			text-align: start;
 			position: relative;
 			transition:
 				opacity 200ms ease,

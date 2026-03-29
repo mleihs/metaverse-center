@@ -188,10 +188,10 @@ export class VelgAdminAIUsageTab extends LitElement {
       <table class="breakdown-table">
         <thead>
           <tr>
-            <th>${keyField}</th>
-            <th>${msg('Calls')}</th>
-            <th>${msg('Tokens')}</th>
-            <th>${msg('Cost')}</th>
+            <th scope="col">${keyField}</th>
+            <th scope="col">${msg('Calls')}</th>
+            <th scope="col">${msg('Tokens')}</th>
+            <th scope="col">${msg('Cost')}</th>
           </tr>
         </thead>
         <tbody>
@@ -215,9 +215,9 @@ export class VelgAdminAIUsageTab extends LitElement {
       <table class="breakdown-table">
         <thead>
           <tr>
-            <th>${msg('Source')}</th>
-            <th>${msg('Calls')}</th>
-            <th>${msg('Cost')}</th>
+            <th scope="col">${msg('Source')}</th>
+            <th scope="col">${msg('Calls')}</th>
+            <th scope="col">${msg('Cost')}</th>
           </tr>
         </thead>
         <tbody>
@@ -239,10 +239,10 @@ export class VelgAdminAIUsageTab extends LitElement {
       <table class="breakdown-table">
         <thead>
           <tr>
-            <th>${msg('Date')}</th>
-            <th>${msg('Calls')}</th>
-            <th>${msg('Tokens')}</th>
-            <th>${msg('Cost')}</th>
+            <th scope="col">${msg('Date')}</th>
+            <th scope="col">${msg('Calls')}</th>
+            <th scope="col">${msg('Tokens')}</th>
+            <th scope="col">${msg('Cost')}</th>
           </tr>
         </thead>
         <tbody>

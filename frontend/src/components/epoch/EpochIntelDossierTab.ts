@@ -333,6 +333,13 @@ export class VelgEpochIntelDossierTab extends LitElement {
     }
 
     .compact-header {
+      appearance: none;
+      font: inherit;
+      text-align: start;
+      background: none;
+      border: none;
+      color: inherit;
+      width: 100%;
       display: flex;
       align-items: center;
       gap: var(--space-2);
@@ -458,19 +465,11 @@ export class VelgEpochIntelDossierTab extends LitElement {
 
     if (this.compact) {
       return html`
-        <div
+        <button type="button"
           class="compact-header"
-          role="button"
-          tabindex="0"
           aria-expanded=${this._expanded}
           @click=${() => {
             this._expanded = !this._expanded;
-          }}
-          @keydown=${(e: KeyboardEvent) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              this._expanded = !this._expanded;
-            }
           }}
         >
           <span class="compact-header__icon ${this._expanded ? 'compact-header__icon--expanded' : ''}" aria-hidden="true">
@@ -478,7 +477,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
           </span>
           <span class="compact-header__title">${msg('Intel Dossier')}</span>
           ${dossiers.length > 0 ? html`<span class="compact-header__badge">${dossiers.length}</span>` : nothing}
-        </div>
+        </button>
         ${this._expanded ? this._renderContent(dossiers) : nothing}
       `;
     }

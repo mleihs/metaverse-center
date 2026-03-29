@@ -25,6 +25,10 @@ export class VelgMissionCard extends LitElement {
 		}
 
 		.card {
+			appearance: none;
+			font: inherit;
+			text-align: start;
+			padding: 0;
 			position: relative;
 			width: 120px;
 			height: 192px;
@@ -257,15 +261,14 @@ export class VelgMissionCard extends LitElement {
     });
 
     return html`
-			<div
+			<button
+				type="button"
 				class=${classes}
 				style=${styleMap({ '--mc-color': color })}
-				role="button"
 				tabindex=${this.disabled ? -1 : 0}
 				aria-pressed=${this.selected}
 				aria-label=${`${this.operativeType} - ${this.cost} RP`}
 				@click=${this._handleClick}
-				@keydown=${this._handleKey}
 			>
 				<div class="gem gem--cost"><span class="gem__inner">${this.cost}</span></div>
 				<div class="gem gem--icon"><span class="gem__inner">${getOperativeIcon(this.operativeType, 13)}</span></div>
@@ -279,7 +282,7 @@ export class VelgMissionCard extends LitElement {
 					${this.duration ? html`<div class="card__duration">${icons.timer(8)} ${this.duration}</div>` : nothing}
 				</div>
 				${this.disabled ? html`<div class="card__stamp">${msg('INSUFFICIENT RP')}</div>` : nothing}
-			</div>
+			</button>
 		`;
   }
 
@@ -294,12 +297,6 @@ export class VelgMissionCard extends LitElement {
     );
   }
 
-  private _handleKey(e: KeyboardEvent): void {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      this._handleClick();
-    }
-  }
 }
 
 declare global {

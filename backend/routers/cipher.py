@@ -23,6 +23,7 @@ from backend.models.cipher import (
     CipherStatsResponse,
 )
 from backend.models.common import CurrentUser, SuccessResponse
+from backend.services.audit_service import AuditService
 from backend.services.cipher_service import CipherService
 from supabase import AsyncClient as Client
 
@@ -79,6 +80,12 @@ async def redeem_cipher(
             user_id=user_id,
             ip_hash=ip_hash,
         )
+        if user_id is not None:
+            await AuditService.safe_log(
+                admin_supabase, None, user_id,
+                "cipher", None, "redeem",
+                details={"success": result.success, "ip_hash": ip_hash},
+            )
         return result
     except Exception as exc:
         logger.exception("Cipher redemption failed", extra={
@@ -142,6 +149,12 @@ async def set_cipher_for_post(
     # Update unlock code
     await CipherService.update_post_unlock_code(
         admin_supabase, post_id, body.unlock_code.upper(),
+    )
+
+    await AuditService.safe_log(
+        admin_supabase, None, user.id,
+        "cipher", post_id, "set_cipher",
+        details={"difficulty": body.difficulty},
     )
 
     return {

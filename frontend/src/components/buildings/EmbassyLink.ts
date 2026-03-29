@@ -79,6 +79,12 @@ export class VelgEmbassyLink extends LitElement {
     }
 
     .embassy__partner {
+      appearance: none;
+      border: 0;
+      background: none;
+      padding: 0;
+      font: inherit;
+      text-align: start;
       display: flex;
       gap: var(--space-3);
       align-items: flex-start;
@@ -202,14 +208,7 @@ export class VelgEmbassyLink extends LitElement {
           <velg-badge variant=${statusVariant}>${this.embassy.status}</velg-badge>
         </div>
 
-        <div class="embassy__partner" role="button" tabindex="0" @click=${this._handlePartnerClick} @keydown=${(
-          e: KeyboardEvent,
-        ) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            this._handlePartnerClick();
-          }
-        }}>
+        <button type="button" class="embassy__partner" @click=${this._handlePartnerClick}>
           ${
             partner.building.image_url
               ? html`<img
@@ -224,7 +223,7 @@ export class VelgEmbassyLink extends LitElement {
             <div class="embassy__name">${partner.building.name}</div>
             <div class="embassy__type">${partner.building.building_type}</div>
           </div>
-        </div>
+        </button>
 
         ${
           this.embassy.description

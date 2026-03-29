@@ -32,6 +32,7 @@ from backend.services.constants import (
     OPERATIVE_TARGET_TYPE,
     OPERATIVE_TYPE_COLORS,
 )
+from backend.services.dungeon_query_service import DungeonQueryService
 from backend.services.echo_service import EchoService
 from backend.services.embassy_service import EmbassyService
 from backend.services.epoch_invitation_service import EpochInvitationService
@@ -1093,24 +1094,10 @@ async def public_dungeon_history(
     offset: int = Query(default=0, ge=0),
 ) -> dict:
     """Public: list completed dungeon runs for a simulation."""
-    resp = await supabase.table("resonance_dungeon_runs").select(
-        "id, simulation_id, archetype, resonance_signature, difficulty, "
-        "depth_target, current_depth, rooms_cleared, rooms_total, status, "
-        "outcome, completed_at, created_at",
-        count="exact",
-    ).eq("simulation_id", str(simulation_id)).in_(
-        "status", ["completed", "abandoned", "wiped"],
-    ).order("created_at", desc=True).range(offset, offset + limit - 1).execute()
-    return {
-        "success": True,
-        "data": resp.data or [],
-        "meta": PaginationMeta(
-            count=len(resp.data or []),
-            total=resp.count or 0,
-            limit=limit,
-            offset=offset,
-        ),
-    }
+    data, meta = await DungeonQueryService.list_history_public(
+        supabase, simulation_id, limit=limit, offset=offset,
+    )
+    return {"success": True, "data": data, "meta": meta}
 
 
 @router.get("/dungeons/runs/{run_id}", response_model=SuccessResponse)
@@ -1121,11 +1108,5 @@ async def public_dungeon_run(
     supabase: Client = Depends(get_anon_supabase),
 ) -> dict:
     """Public: get a completed dungeon run detail."""
-    resp = await supabase.table("resonance_dungeon_runs").select(
-        "*",
-    ).eq("id", str(run_id)).in_(
-        "status", ["completed", "abandoned", "wiped"],
-    ).maybe_single().execute()
-    if not resp.data:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Dungeon run not found or still active")
-    return {"success": True, "data": resp.data}
+    data = await DungeonQueryService.get_run_public(supabase, run_id)
+    return {"success": True, "data": data}

@@ -714,6 +714,9 @@ export class VelgSocialTrendsView extends LitElement {
     }
 
     .embassy-card {
+      appearance: none;
+      font: inherit;
+      text-align: start;
       position: relative;
       display: flex;
       flex-direction: column;
@@ -1469,18 +1472,11 @@ export class VelgSocialTrendsView extends LitElement {
           : 'default';
 
     return html`
-      <div
+      <button
+        type="button"
         class="embassy-card"
         style="--embassy-theme-color: ${themeColor}"
-        role="button"
-        tabindex="0"
         @click=${() => this._handleEmbassyClick(embassy)}
-        @keydown=${(e: KeyboardEvent) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            this._handleEmbassyClick(embassy);
-          }
-        }}
       >
         <div class="embassy-card__header">
           <span
@@ -1561,7 +1557,7 @@ export class VelgSocialTrendsView extends LitElement {
         `
             : nothing
         }
-      </div>
+      </button>
     `;
   }
 

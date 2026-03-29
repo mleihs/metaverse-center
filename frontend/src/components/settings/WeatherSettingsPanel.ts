@@ -83,6 +83,18 @@ export class VelgWeatherSettingsPanel extends BaseSettingsPanel {
         margin-top: var(--space-1);
       }
 
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
       .disabled-notice {
         padding: var(--space-3);
         background: var(--color-surface-sunken);
@@ -200,8 +212,10 @@ export class VelgWeatherSettingsPanel extends BaseSettingsPanel {
           </label>
           <div class="coord-grid">
             <div>
+              <label class="visually-hidden" for="weather-lat">${msg('Latitude')}</label>
               <input
                 class="coord-input"
+                id="weather-lat"
                 type="number"
                 step="0.01"
                 min="-90"
@@ -213,8 +227,10 @@ export class VelgWeatherSettingsPanel extends BaseSettingsPanel {
               <div class="coord-hint">${msg('Latitude: -90 (South Pole) to 90 (North Pole)')}</div>
             </div>
             <div>
+              <label class="visually-hidden" for="weather-lon">${msg('Longitude')}</label>
               <input
                 class="coord-input"
+                id="weather-lon"
                 type="number"
                 step="0.01"
                 min="-180"
@@ -234,12 +250,13 @@ export class VelgWeatherSettingsPanel extends BaseSettingsPanel {
         <velg-section-header variant="large">${msg('Narrative Theme')}</velg-section-header>
 
         <div class="settings-form__group">
-          <label class="settings-form__label settings-form__label--xs">
+          <label class="settings-form__label settings-form__label--xs" for="weather-theme-override">
             ${msg('Weather Description Style')}
             ${renderInfoBubble(msg('Override the narrative tone of weather descriptions. By default, your simulation\'s theme determines the style (spy-thriller gets surveillance metaphors, sci-fi gets system alerts, etc.). Override only if you want a different atmosphere.'))}
           </label>
           <select
             class="theme-select"
+            id="weather-theme-override"
             .value=${themeOverride}
             @change=${(e: Event) => this._handleSelect('weather_theme_override', e)}
           >

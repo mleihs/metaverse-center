@@ -20,6 +20,9 @@ export class VelgRelationshipCard extends LitElement {
     }
 
     .card {
+      appearance: none;
+      font: inherit;
+      text-align: start;
       background: var(--color-surface-raised);
       border: var(--border-default);
       box-shadow: var(--shadow-md);
@@ -219,7 +222,7 @@ export class VelgRelationshipCard extends LitElement {
     const other = this._otherAgent;
 
     return html`
-      <div class="card" role="button" tabindex="0" @click=${this._handleClick} @keydown=${(e: KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this._handleClick(); } }}>
+      <button type="button" class="card" @click=${this._handleClick}>
         <div class="card__avatar">
           <velg-avatar
             .src=${other.portraitUrl}
@@ -268,7 +271,7 @@ export class VelgRelationshipCard extends LitElement {
           `
             : nothing
         }
-      </div>
+      </button>
     `;
   }
 }

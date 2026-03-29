@@ -352,7 +352,7 @@ Features die innerhalb einer Simulation existieren. Benutzer können beliebig vi
 |---|---------|--------|-------------|
 | F1 | **Slug-basierte URLs** | ✅ IMPL | `/simulations/speranza/lore` statt UUIDs. Backend: `/api/v1/public/simulations/by-slug/{slug}`. Frontend: `_resolveSimulation()` in app-shell `enter()` Callback. 301-Redirects von UUID→Slug für Crawler. |
 | F2 | **SEO Structured Data** | ✅ IMPL | JSON-LD Schema.org Markup (`SeoService`). Epoch → `Event`, Lore → `Thing`. robots.txt + dynamischer sitemap.xml aus DB. Server-side Crawler Meta-Injection (Middleware). Build-time Prerender (`scripts/prerender.py`): generiert statische HTML-Snapshots fuer alle Simulationen + Platform-Pages in Docker-Build-Stage (Supabase REST API). |
-| F3 | **GA4 Analytics** | ✅ IMPL | 37 GA4-Events via deklarative EVENT_MAP (29 DOM-Events, 8 Service-Level). Production-Only Guard. Consent Mode v2. Measurement ID `G-GP0Y16L51G`. |
+| F3 | **GA4 Analytics** | ✅ IMPL | 37 GA4-Events via deklarative EVENT_MAP (29 DOM-Events, 8 Service-Level). Production-Only Guard. Consent Mode v2. Measurement ID `G-G10NQ7LNYY`. |
 | F4 | **Cookie Consent** | ✅ IMPL | Fixed Bottom Banner. Accept/Decline Analytics. Privacy-Policy-Link. localStorage-Persistenz. GDPR-konform. |
 | F5 | **Crawler-Erkennung** | ✅ IMPL | SEO Middleware: Googlebot, Bingbot, AI-Bots (GPTBot, ChatGPT, Claude, Anthropic, PerplexityBot, etc.). HTML-Enrichment für Crawler. |
 | F6 | **IndexNow** | ✅ IMPL | Bing/Yandex/Seznam/Naver Benachrichtigung bei Seitenänderungen. API-Key auf Server hinterlegt. |

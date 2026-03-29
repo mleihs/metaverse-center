@@ -82,6 +82,9 @@ export class VelgPromptsSettingsPanel extends LitElement {
     .templates { display: flex; flex-direction: column; gap: var(--space-2); }
 
     .template {
+      appearance: none;
+      font: inherit;
+      text-align: start;
       display: grid; grid-template-columns: 1fr auto auto;
       align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4);
       background: var(--color-surface-raised); border: var(--border-default);
@@ -407,14 +410,7 @@ export class VelgPromptsSettingsPanel extends LitElement {
       <div class="templates">
         ${this._templates.map(
           (t) => html`
-            <div class="template" role="button" tabindex="0" @click=${() => this._openEdit(t)} @keydown=${(
-              e: KeyboardEvent,
-            ) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                this._openEdit(t);
-              }
-            }}>
+            <button type="button" class="template" @click=${() => this._openEdit(t)}>
               <div class="template__info">
                 <div class="template__name">${t.template_name}</div>
                 <div class="template__meta">
@@ -446,7 +442,7 @@ export class VelgPromptsSettingsPanel extends LitElement {
                   </svg>
                 </button>
               </div>
-            </div>
+            </button>
           `,
         )}
       </div>
@@ -472,8 +468,8 @@ export class VelgPromptsSettingsPanel extends LitElement {
         <div class="form">
           <div class="form__row">
             <div class="form__group">
-              <label class="form__label form__label--required">${msg('Template Name')}</label>
-              <input class="form__input" type="text" .value=${this._templateName}
+              <label class="form__label form__label--required" for="prompt-template-name">${msg('Template Name')}</label>
+              <input class="form__input" id="prompt-template-name" type="text" .value=${this._templateName}
                 @input=${(e: InputEvent) => {
                   this._templateName = (e.target as HTMLInputElement).value;
                 }}
@@ -481,8 +477,8 @@ export class VelgPromptsSettingsPanel extends LitElement {
               />
             </div>
             <div class="form__group">
-              <label class="form__label">${msg('Locale')}</label>
-              <select class="form__select" .value=${this._locale}
+              <label class="form__label" for="prompt-locale">${msg('Locale')}</label>
+              <select class="form__select" id="prompt-locale" .value=${this._locale}
                 @change=${(e: Event) => {
                   this._locale = (e.target as HTMLSelectElement).value;
                 }}>
@@ -494,8 +490,8 @@ export class VelgPromptsSettingsPanel extends LitElement {
 
           <div class="form__row">
             <div class="form__group">
-              <label class="form__label form__label--required">${msg('Template Type')}</label>
-              <select class="form__select" .value=${this._templateType}
+              <label class="form__label form__label--required" for="prompt-template-type">${msg('Template Type')}</label>
+              <select class="form__select" id="prompt-template-type" .value=${this._templateType}
                 @change=${(e: Event) => {
                   this._templateType = (e.target as HTMLSelectElement).value as PromptTemplateType;
                 }}>
@@ -503,8 +499,8 @@ export class VelgPromptsSettingsPanel extends LitElement {
               </select>
             </div>
             <div class="form__group">
-              <label class="form__label">${msg('Category')}</label>
-              <select class="form__select" .value=${this._promptCategory}
+              <label class="form__label" for="prompt-category">${msg('Category')}</label>
+              <select class="form__select" id="prompt-category" .value=${this._promptCategory}
                 @change=${(e: Event) => {
                   this._promptCategory = (e.target as HTMLSelectElement).value as PromptCategory;
                 }}>
@@ -514,8 +510,8 @@ export class VelgPromptsSettingsPanel extends LitElement {
           </div>
 
           <div class="form__group">
-            <label class="form__label">${msg('Description')}</label>
-            <input class="form__input" type="text" .value=${this._description}
+            <label class="form__label" for="prompt-description">${msg('Description')}</label>
+            <input class="form__input" id="prompt-description" type="text" .value=${this._description}
               @input=${(e: InputEvent) => {
                 this._description = (e.target as HTMLInputElement).value;
               }}
@@ -524,8 +520,8 @@ export class VelgPromptsSettingsPanel extends LitElement {
           </div>
 
           <div class="form__group">
-            <label class="form__label form__label--required">${msg('Prompt Content')}</label>
-            <textarea class="form__textarea" .value=${this._promptContent}
+            <label class="form__label form__label--required" for="prompt-content">${msg('Prompt Content')}</label>
+            <textarea class="form__textarea" id="prompt-content" .value=${this._promptContent}
               @input=${(e: InputEvent) => {
                 this._promptContent = (e.target as HTMLTextAreaElement).value;
               }}
@@ -536,8 +532,8 @@ export class VelgPromptsSettingsPanel extends LitElement {
           </div>
 
           <div class="form__group">
-            <label class="form__label">${msg('System Prompt')}</label>
-            <textarea class="form__textarea" .value=${this._systemPrompt}
+            <label class="form__label" for="prompt-system">${msg('System Prompt')}</label>
+            <textarea class="form__textarea" id="prompt-system" .value=${this._systemPrompt}
               @input=${(e: InputEvent) => {
                 this._systemPrompt = (e.target as HTMLTextAreaElement).value;
               }}
@@ -547,8 +543,8 @@ export class VelgPromptsSettingsPanel extends LitElement {
           </div>
 
           <div class="form__group">
-            <label class="form__label">${msg('Negative Prompt')}</label>
-            <textarea class="form__textarea" .value=${this._negativePrompt}
+            <label class="form__label" for="prompt-negative">${msg('Negative Prompt')}</label>
+            <textarea class="form__textarea" id="prompt-negative" .value=${this._negativePrompt}
               @input=${(e: InputEvent) => {
                 this._negativePrompt = (e.target as HTMLTextAreaElement).value;
               }}
@@ -559,8 +555,8 @@ export class VelgPromptsSettingsPanel extends LitElement {
 
           <div class="form__row--3 form__row">
             <div class="form__group">
-              <label class="form__label">${msg('Default Model')}</label>
-              <input class="form__input" type="text" .value=${this._defaultModel}
+              <label class="form__label" for="prompt-default-model">${msg('Default Model')}</label>
+              <input class="form__input" id="prompt-default-model" type="text" .value=${this._defaultModel}
                 @input=${(e: InputEvent) => {
                   this._defaultModel = (e.target as HTMLInputElement).value;
                 }}
@@ -568,8 +564,8 @@ export class VelgPromptsSettingsPanel extends LitElement {
               />
             </div>
             <div class="form__group">
-              <label class="form__label">${msg(str`Temperature (${this._temperature})`)}</label>
-              <input class="form__input" type="range" min="0" max="2" step="0.1"
+              <label class="form__label" for="prompt-temperature">${msg(str`Temperature (${this._temperature})`)}</label>
+              <input class="form__input" id="prompt-temperature" type="range" min="0" max="2" step="0.1"
                 .value=${String(this._temperature)}
                 @input=${(e: InputEvent) => {
                   this._temperature = Number((e.target as HTMLInputElement).value);
@@ -577,8 +573,8 @@ export class VelgPromptsSettingsPanel extends LitElement {
               />
             </div>
             <div class="form__group">
-              <label class="form__label">${msg('Max Tokens')}</label>
-              <input class="form__input" type="number" min="1" max="32000"
+              <label class="form__label" for="prompt-max-tokens">${msg('Max Tokens')}</label>
+              <input class="form__input" id="prompt-max-tokens" type="number" min="1" max="32000"
                 .value=${String(this._maxTokens)}
                 @input=${(e: InputEvent) => {
                   this._maxTokens = Number((e.target as HTMLInputElement).value);

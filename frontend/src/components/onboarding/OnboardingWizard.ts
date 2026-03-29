@@ -620,6 +620,9 @@ export class VelgOnboardingWizard extends LitElement {
     }
 
     .mission-card {
+      appearance: none;
+      font: inherit;
+      text-align: start;
       display: flex;
       align-items: center;
       gap: 16px;
@@ -991,18 +994,11 @@ export class VelgOnboardingWizard extends LitElement {
         </p>
 
         <div class="mission-cards">
-          <div
+          <button
+            type="button"
             class="mission-card mission-card--primary"
-            role="button"
-            tabindex="0"
             aria-label=${msg('Start Academy Epoch')}
             @click=${() => this._complete('academy')}
-            @keydown=${(e: KeyboardEvent) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                this._complete('academy');
-              }
-            }}
           >
             <div class="mission-card__icon" aria-hidden="true">${icons.crossedSwords(20)}</div>
             <div class="mission-card__text">
@@ -1010,20 +1006,13 @@ export class VelgOnboardingWizard extends LitElement {
               <div class="mission-card__desc">${msg('Solo training vs 3 AI opponents. Quick match, auto-resolve.')}</div>
             </div>
             <div class="mission-card__arrow" aria-hidden="true">${icons.chevronRight(14)}</div>
-          </div>
+          </button>
 
-          <div
+          <button
+            type="button"
             class="mission-card"
-            role="button"
-            tabindex="0"
             aria-label=${msg('Explore on my own')}
             @click=${() => this._complete('explore')}
-            @keydown=${(e: KeyboardEvent) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                this._complete('explore');
-              }
-            }}
           >
             <div class="mission-card__icon" aria-hidden="true">${icons.book(20)}</div>
             <div class="mission-card__text">
@@ -1031,7 +1020,7 @@ export class VelgOnboardingWizard extends LitElement {
               <div class="mission-card__desc">${msg('Head to the dashboard and discover at your own pace.')}</div>
             </div>
             <div class="mission-card__arrow" aria-hidden="true">${icons.chevronRight(14)}</div>
-          </div>
+          </button>
         </div>
       </div>
     `;

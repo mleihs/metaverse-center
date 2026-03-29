@@ -288,6 +288,9 @@ export class VelgAgentDetailsPanel extends LitElement {
     }
 
     .panel__embassy-local {
+      appearance: none;
+      font: inherit;
+      text-align: start;
       display: flex;
       gap: var(--space-3);
       align-items: center;
@@ -1245,14 +1248,7 @@ export class VelgAgentDetailsPanel extends LitElement {
               ${
                 localBuilding
                   ? html`
-                    <div class="panel__embassy-local" role="button" tabindex="0" @click=${() => this._handleNavigateLocalBuilding(localBuildingId)} @keydown=${(
-                      e: KeyboardEvent,
-                    ) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        this._handleNavigateLocalBuilding(localBuildingId);
-                      }
-                    }}>
+                    <button type="button" class="panel__embassy-local" @click=${() => this._handleNavigateLocalBuilding(localBuildingId)}>
                       ${
                         localBuilding.image_url
                           ? html`<img
@@ -1267,7 +1263,7 @@ export class VelgAgentDetailsPanel extends LitElement {
                         <div class="panel__embassy-name">${localBuilding.name}</div>
                         <div class="panel__embassy-label">${msg('Posted at')}</div>
                       </div>
-                    </div>
+                    </button>
                   `
                   : nothing
               }

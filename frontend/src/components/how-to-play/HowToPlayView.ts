@@ -745,12 +745,12 @@ export class VelgHowToPlay extends LitElement {
         <table class="presets-table">
           <thead>
             <tr>
-              <th>${msg('Preset')}</th>
-              <th>${msg('Stab')}</th>
-              <th>${msg('Infl')}</th>
-              <th>${msg('Sovr')}</th>
-              <th>${msg('Dipl')}</th>
-              <th>${msg('Milt')}</th>
+              <th scope="col">${msg('Preset')}</th>
+              <th scope="col">${msg('Stab')}</th>
+              <th scope="col">${msg('Infl')}</th>
+              <th scope="col">${msg('Sovr')}</th>
+              <th scope="col">${msg('Dipl')}</th>
+              <th scope="col">${msg('Milt')}</th>
             </tr>
           </thead>
           <tbody>
@@ -1124,17 +1124,9 @@ export class VelgHowToPlay extends LitElement {
 
     return html`
       <div class="match">
-        <div class="match__header"
-          role="button"
-          tabindex="0"
+        <button type="button" class="match__header"
           aria-expanded=${expanded}
           @click=${() => this._toggleMatch(index)}
-          @keydown=${(e: KeyboardEvent) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              this._toggleMatch(index);
-            }
-          }}
         >
           <div class="match__title-group">
             <h3 class="match__title">${match.title}</h3>
@@ -1146,7 +1138,7 @@ export class VelgHowToPlay extends LitElement {
             <span class="match__meta-tag">${msg(str`${match.players.length}P`)}</span>
           </div>
           <span class="match__toggle ${expanded ? 'match__toggle--open' : ''}">▼</span>
-        </div>
+        </button>
 
         ${expanded ? this._renderMatchBody(match) : nothing}
       </div>
@@ -1186,12 +1178,12 @@ export class VelgHowToPlay extends LitElement {
           <table class="cycles-table">
             <thead>
               <tr>
-                <th>${msg('Cycle')}</th>
-                <th>${msg('Phase')}</th>
-                <th>${msg('Simulation')}</th>
-                <th>${msg('Action')}</th>
-                <th>RP</th>
-                <th>${msg('Notes')}</th>
+                <th scope="col">${msg('Cycle')}</th>
+                <th scope="col">${msg('Phase')}</th>
+                <th scope="col">${msg('Simulation')}</th>
+                <th scope="col">${msg('Action')}</th>
+                <th scope="col">RP</th>
+                <th scope="col">${msg('Notes')}</th>
               </tr>
             </thead>
             <tbody>
@@ -1249,14 +1241,14 @@ export class VelgHowToPlay extends LitElement {
           <table class="standings-table">
             <thead>
               <tr>
-                <th>#</th>
-                <th>${msg('Simulation')}</th>
-                <th>${msg('Composite')}</th>
-                <th>${msg('Stab')}</th>
-                <th>${msg('Infl')}</th>
-                <th>${msg('Sovr')}</th>
-                <th>${msg('Dipl')}</th>
-                <th>${msg('Milt')}</th>
+                <th scope="col">#</th>
+                <th scope="col">${msg('Simulation')}</th>
+                <th scope="col">${msg('Composite')}</th>
+                <th scope="col">${msg('Stab')}</th>
+                <th scope="col">${msg('Infl')}</th>
+                <th scope="col">${msg('Sovr')}</th>
+                <th scope="col">${msg('Dipl')}</th>
+                <th scope="col">${msg('Milt')}</th>
               </tr>
             </thead>
             <tbody>
@@ -1315,17 +1307,9 @@ export class VelgHowToPlay extends LitElement {
     const expanded = this._expandedUpdates.has(index);
     return html`
       <div class="match">
-        <div class="match__header"
-          role="button"
-          tabindex="0"
+        <button type="button" class="match__header"
           aria-expanded=${expanded}
           @click=${() => this._toggleUpdate(index)}
-          @keydown=${(e: KeyboardEvent) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              this._toggleUpdate(index);
-            }
-          }}
         >
           <div class="match__title-group">
             <h3 class="match__title">
@@ -1335,7 +1319,7 @@ export class VelgHowToPlay extends LitElement {
             <span class="match__subtitle">${entry.date}</span>
           </div>
           <span class="match__toggle ${expanded ? 'match__toggle--open' : ''}">&#x25BC;</span>
-        </div>
+        </button>
 
         ${
           expanded

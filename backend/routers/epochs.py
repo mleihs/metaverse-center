@@ -306,7 +306,7 @@ async def get_battle_log(
     }
 
 
-@router.get("/{epoch_id}/results-summary")
+@router.get("/{epoch_id}/results-summary", response_model=SuccessResponse)
 async def get_results_summary(
     epoch_id: UUID,
     supabase: Client = Depends(get_supabase),
@@ -376,7 +376,7 @@ async def join_epoch(
     return {"success": True, "data": data}
 
 
-@router.delete("/{epoch_id}/participants/{simulation_id}")
+@router.delete("/{epoch_id}/participants/{simulation_id}", response_model=SuccessResponse)
 async def leave_epoch(
     epoch_id: UUID,
     simulation_id: UUID,
@@ -443,7 +443,7 @@ async def add_bot_to_epoch(
     return {"success": True, "data": data}
 
 
-@router.delete("/{epoch_id}/remove-bot/{participant_id}")
+@router.delete("/{epoch_id}/remove-bot/{participant_id}", response_model=SuccessResponse)
 async def remove_bot_from_epoch(
     epoch_id: UUID,
     participant_id: UUID,
@@ -503,7 +503,7 @@ async def create_team(
     return {"success": True, "data": data}
 
 
-@router.post("/{epoch_id}/teams/{team_id}/join")
+@router.post("/{epoch_id}/teams/{team_id}/join", response_model=SuccessResponse)
 async def join_team(
     epoch_id: UUID,
     team_id: UUID,
@@ -521,7 +521,7 @@ async def join_team(
     return {"success": True, "data": data}
 
 
-@router.post("/{epoch_id}/teams/leave")
+@router.post("/{epoch_id}/teams/leave", response_model=SuccessResponse)
 async def leave_team(
     epoch_id: UUID,
     simulation_id: UUID = Query(..., description="Your simulation ID"),

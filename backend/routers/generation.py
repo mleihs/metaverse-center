@@ -10,6 +10,7 @@ from backend.dependencies import get_current_user, get_supabase, require_role
 from backend.middleware.rate_limit import RATE_LIMIT_AI_GENERATION, limiter
 from backend.models.common import CurrentUser, SuccessResponse
 from backend.services.agent_service import AgentService
+from backend.services.audit_service import AuditService
 from backend.services.external.openrouter import OpenRouterError
 from backend.services.external_service_resolver import ExternalServiceResolver
 from backend.services.game_mechanics_service import GameMechanicsService
@@ -147,6 +148,11 @@ async def generate_agent(
             agent_gender=body.gender,
             locale=body.locale,
         )
+        await AuditService.safe_log(
+            supabase, simulation_id, user.id,
+            "generation", None, "generate_agent",
+            details={"agent_name": body.name, "locale": body.locale},
+        )
         return {"success": True, "data": result}
     except OpenRouterError as e:
         logger.warning("AI service unavailable", extra={"endpoint": "generate_agent", "error": str(e)})
@@ -180,6 +186,11 @@ async def generate_building(
             building_condition=body.condition,
             locale=body.locale,
         )
+        await AuditService.safe_log(
+            supabase, simulation_id, user.id,
+            "generation", None, "generate_building",
+            details={"building_type": body.building_type, "building_name": body.name, "locale": body.locale},
+        )
         return {"success": True, "data": result}
     except OpenRouterError as e:
         logger.warning("AI service unavailable", extra={"endpoint": "generate_building", "error": str(e)})
@@ -209,6 +220,11 @@ async def generate_portrait_description(
         description = await service.generate_portrait_description(
             agent_name=body.agent_name,
             agent_data=body.agent_data,
+        )
+        await AuditService.safe_log(
+            supabase, simulation_id, user.id,
+            "generation", body.agent_id, "generate_portrait_description",
+            details={"agent_name": body.agent_name},
         )
         return {"success": True, "data": {"description": description}}
     except OpenRouterError as e:
@@ -244,6 +260,11 @@ async def generate_event(
             event_type=body.event_type,
             locale=body.locale,
             game_context=game_context,
+        )
+        await AuditService.safe_log(
+            supabase, simulation_id, user.id,
+            "generation", None, "generate_event",
+            details={"event_type": body.event_type, "locale": body.locale},
         )
         return {"success": True, "data": result}
     except OpenRouterError as e:
@@ -284,6 +305,11 @@ async def generate_relationships(
             other_agents=other_agents,
             locale=body.locale,
         )
+        await AuditService.safe_log(
+            supabase, simulation_id, user.id,
+            "generation", body.agent_id, "generate_relationships",
+            details={"agent_id": str(body.agent_id), "locale": body.locale},
+        )
         return {"success": True, "data": result}
     except HTTPException:
         raise
@@ -320,6 +346,11 @@ async def generate_lore_image(
             image_slug=body.image_slug,
             sim_slug=body.sim_slug,
             image_caption=body.image_caption,
+        )
+        await AuditService.safe_log(
+            supabase, simulation_id, user.id,
+            "generation", None, "generate_lore_image",
+            details={"section_title": body.section_title, "image_slug": body.image_slug},
         )
         return {"success": True, "data": {"image_url": url}}
     except OpenRouterError as e:
@@ -386,6 +417,11 @@ async def generate_image(
                 description_override=description_override,
             )
 
+        await AuditService.safe_log(
+            supabase, simulation_id, user.id,
+            "generation", body.entity_id, "generate_image",
+            details={"entity_type": body.entity_type, "entity_name": body.entity_name},
+        )
         return {"success": True, "data": {"image_url": url}}
     except OpenRouterError as e:
         logger.warning("AI service unavailable", extra={"endpoint": "generate_image", "error": str(e)})
