@@ -17,7 +17,6 @@ import type {
   CombatAction,
   ArchetypeState,
   CombatSubmission,
-  CombatSubmitResponse,
   CombatStateClient,
   DungeonClientState,
   DungeonPhase,
@@ -89,21 +88,10 @@ class DungeonStateManager {
   /** Whether the SVG map panel is expanded (default: collapsed for terminal-first layout). */
   readonly mapExpanded = signal(false);
 
-  /** Whether the party panel is expanded (relevant on mobile). */
-  readonly partyPanelExpanded = signal(true);
-
   // ── Timer ──────────────────────────────────────────────────────────────
 
   /** Remaining milliseconds on the active phase timer. Null when no timer. */
   readonly timerRemaining = signal<number | null>(null);
-
-  /** Fires once when the timer naturally expires and auto-submit runs.
-   *  DungeonTerminalView watches this to append output to the terminal. */
-  readonly timerAutoSubmitted = signal(false);
-
-  /** Last combat round result from auto-submit. DungeonTerminalView consumes
-   *  this to render the battle log when manual submit wasn't used. */
-  readonly lastAutoSubmitResult = signal<CombatSubmitResponse | null>(null);
 
   private _timerInterval: ReturnType<typeof setInterval> | null = null;
   private _autoSubmitFired = false;
@@ -347,6 +335,10 @@ class DungeonStateManager {
     this._stopTimer();
 
     const startMs = new Date(timer.started_at).getTime();
+    if (Number.isNaN(startMs)) {
+      this.timerRemaining.value = 0;
+      return;
+    }
     const endMs = startMs + timer.duration_ms;
     const remaining = endMs - Date.now();
 
@@ -385,7 +377,6 @@ class DungeonStateManager {
 
     this._autoSubmitFired = true;
     this.combatSubmitting.value = true;
-    this.timerAutoSubmitted.value = true;
 
     try {
       const submission: CombatSubmission = {

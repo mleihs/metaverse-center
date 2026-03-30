@@ -559,7 +559,7 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
       }
     }
 
-    return svg`<g class="edges">${lines}</g>`;
+    return svg`<g class="edges" aria-hidden="true">${lines}</g>`;
   }
 
   private _renderNodes(nodes: NodePosition[], adjacentSet: Set<number>) {

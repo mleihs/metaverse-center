@@ -50,6 +50,8 @@ from backend.services.dungeon_engine_service import (
 )
 from backend.tests.conftest import make_async_supabase_mock, make_chain_mock
 
+_TEST_PLAYER = uuid4()
+
 # ── Helpers ───────────────────────────────────────────────────────────────
 
 
@@ -114,7 +116,7 @@ def _make_instance(
         "difficulty": 3,
         "rooms": rooms,
         "party": party,
-        "player_ids": [uuid4()],
+        "player_ids": [_TEST_PLAYER],
         "archetype_state": {"visibility": 3, "max_visibility": 3, "rooms_since_vp_loss": 0},
         "phase": phase,
         "depth": current_room,
@@ -565,7 +567,7 @@ class TestMoveToRoom:
         from fastapi import HTTPException
 
         with pytest.raises(HTTPException) as exc_info:
-            await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 1)
+            await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 1, user_id=_TEST_PLAYER)
         assert exc_info.value.status_code == 400
 
     @pytest.mark.asyncio
@@ -576,7 +578,7 @@ class TestMoveToRoom:
 
         # Room 0 only connects to room 1
         with pytest.raises(HTTPException) as exc_info:
-            await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 5)
+            await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 5, user_id=_TEST_PLAYER)
         assert exc_info.value.status_code == 400
         assert "not adjacent" in exc_info.value.detail.lower()
 
@@ -589,7 +591,7 @@ class TestMoveToRoom:
         from fastapi import HTTPException
 
         with pytest.raises(HTTPException) as exc_info:
-            await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 99)
+            await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 99, user_id=_TEST_PLAYER)
         assert exc_info.value.status_code == 400
 
     @pytest.mark.asyncio
@@ -603,7 +605,7 @@ class TestMoveToRoom:
             patch("backend.services.dungeon_engine_service.check_ambush", return_value=False),
             patch("backend.services.dungeon_engine_service.spawn_enemies", return_value=[]),
         ):
-            result = await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 1)
+            result = await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 1, user_id=_TEST_PLAYER)
 
         assert instance.current_room == 1
         assert instance.turn == 1
@@ -623,7 +625,7 @@ class TestMoveToRoom:
             patch("backend.services.dungeon_engine_service.check_ambush", return_value=False),
             patch("backend.services.dungeon_engine_service.spawn_enemies", return_value=[]),
         ):
-            await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 1)
+            await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 1, user_id=_TEST_PLAYER)
 
         assert instance.rooms[2].revealed is True
 
@@ -639,7 +641,7 @@ class TestMoveToRoom:
             patch("backend.services.dungeon_engine_service.check_ambush", return_value=False),
             patch("backend.services.dungeon_engine_service.spawn_enemies", return_value=[]),
         ):
-            await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 1)
+            await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 1, user_id=_TEST_PLAYER)
 
         # ambient stress = 8 + 3*depth + 5*difficulty (depth=1, diff=3 → 8+3+15=26)
         assert agent.stress == 26
@@ -656,7 +658,7 @@ class TestMoveToRoom:
             patch("backend.services.dungeon_engine_service.check_ambush", return_value=False),
             patch("backend.services.dungeon_engine_service.spawn_enemies", return_value=[]),
         ):
-            result = await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 1)
+            result = await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 1, user_id=_TEST_PLAYER)
 
         assert "banter_test_01" in instance.used_banter_ids
         assert result["banter"]["text_en"] == "Watch your step!"
@@ -673,7 +675,7 @@ class TestMoveToRoom:
             patch("backend.services.dungeon_engine_service.check_ambush", return_value=False),
             patch("backend.services.dungeon_engine_service.spawn_enemies", return_value=[]),
         ):
-            await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 1)
+            await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 1, user_id=_TEST_PLAYER)
 
         assert instance.depth == 1
 
@@ -687,7 +689,7 @@ class TestMoveToRoom:
         with (
             patch("backend.services.dungeon_engine_service.select_banter", return_value=None),
         ):
-            result = await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 1)
+            result = await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 1, user_id=_TEST_PLAYER)
 
         assert instance.phase == "exit"
         assert result.get("exit_available") is True
@@ -704,7 +706,7 @@ class TestMoveToRoom:
             patch("backend.services.dungeon_engine_service.check_ambush", return_value=False),
             patch("backend.services.dungeon_engine_service.spawn_enemies", return_value=[]),
         ):
-            result = await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 1)
+            result = await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 1, user_id=_TEST_PLAYER)
 
         assert instance.current_room == 1
         assert "state" in result
@@ -722,7 +724,7 @@ class TestMoveToRoom:
             patch("backend.services.dungeon_engine_service.check_ambush", return_value=False),
             patch("backend.services.dungeon_engine_service.spawn_enemies", return_value=[]),
         ):
-            await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 1)
+            await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 1, user_id=_TEST_PLAYER)
 
         assert active_agent.stress > 0
         assert captured_agent.stress == 100  # unchanged
@@ -829,7 +831,7 @@ class TestSubmitCombatActions:
         with pytest.raises(HTTPException) as exc_info:
             sub = CombatSubmission(actions=[CombatAction(agent_id=uuid4(), ability_id="spy_observe")])
             await DungeonEngineService.submit_combat_actions(
-                _make_mock_supabase(), instance.run_id, uuid4(), sub
+                _make_mock_supabase(), instance.run_id, _TEST_PLAYER, sub
             )
         assert exc_info.value.status_code == 400
 
@@ -903,7 +905,7 @@ class TestHandleEncounterChoice:
         action = DungeonAction(action_type="encounter_choice", choice_id="c1")
         with pytest.raises(HTTPException) as exc_info:
             await DungeonEngineService.handle_encounter_choice(
-                _make_mock_supabase(), instance.run_id, action
+                _make_mock_supabase(), instance.run_id, action, user_id=_TEST_PLAYER
             )
         assert exc_info.value.status_code == 400
 
@@ -920,7 +922,7 @@ class TestHandleEncounterChoice:
             pytest.raises(HTTPException) as exc_info,
         ):
             await DungeonEngineService.handle_encounter_choice(
-                _make_mock_supabase(), instance.run_id, action
+                _make_mock_supabase(), instance.run_id, action, user_id=_TEST_PLAYER
             )
         assert exc_info.value.status_code == 400
 
@@ -943,7 +945,7 @@ class TestHandleEncounterChoice:
             pytest.raises(HTTPException) as exc_info,
         ):
             await DungeonEngineService.handle_encounter_choice(
-                _make_mock_supabase(), instance.run_id, action
+                _make_mock_supabase(), instance.run_id, action, user_id=_TEST_PLAYER
             )
         assert exc_info.value.status_code == 400
 
@@ -971,7 +973,7 @@ class TestHandleEncounterChoice:
         action = DungeonAction(action_type="encounter_choice", choice_id="c1")
         with patch("backend.services.dungeon_engine_service.get_encounter_by_id", return_value=enc):
             result = await DungeonEngineService.handle_encounter_choice(
-                _make_mock_supabase(), instance.run_id, action
+                _make_mock_supabase(), instance.run_id, action, user_id=_TEST_PLAYER
             )
 
         assert result["result"] == "success"
@@ -1018,7 +1020,7 @@ class TestHandleEncounterChoice:
             patch("backend.services.dungeon_engine_service.resolve_skill_check", return_value=mock_outcome),
         ):
             result = await DungeonEngineService.handle_encounter_choice(
-                _make_mock_supabase(), instance.run_id, action
+                _make_mock_supabase(), instance.run_id, action, user_id=_TEST_PLAYER
             )
 
         assert result["result"] == "success"
@@ -1037,7 +1039,7 @@ class TestScout:
         from fastapi import HTTPException
 
         with pytest.raises(HTTPException) as exc_info:
-            await DungeonEngineService.scout(_make_mock_supabase(), instance.run_id, uuid4())
+            await DungeonEngineService.scout(_make_mock_supabase(), instance.run_id, uuid4(), user_id=_TEST_PLAYER)
         assert exc_info.value.status_code == 400
 
     @pytest.mark.asyncio
@@ -1048,7 +1050,7 @@ class TestScout:
         from fastapi import HTTPException
 
         with pytest.raises(HTTPException) as exc_info:
-            await DungeonEngineService.scout(_make_mock_supabase(), instance.run_id, agent.agent_id)
+            await DungeonEngineService.scout(_make_mock_supabase(), instance.run_id, agent.agent_id, user_id=_TEST_PLAYER)
         assert exc_info.value.status_code == 400
 
     @pytest.mark.asyncio
@@ -1059,7 +1061,7 @@ class TestScout:
         from fastapi import HTTPException
 
         with pytest.raises(HTTPException) as exc_info:
-            await DungeonEngineService.scout(_make_mock_supabase(), instance.run_id, agent.agent_id)
+            await DungeonEngineService.scout(_make_mock_supabase(), instance.run_id, agent.agent_id, user_id=_TEST_PLAYER)
         assert exc_info.value.status_code == 400
         assert "Spy 3+" in exc_info.value.detail
 
@@ -1073,7 +1075,7 @@ class TestScout:
         instance = _make_instance(current_room=0, party=[agent], rooms=rooms)
         _register_instance(instance)
 
-        result = await DungeonEngineService.scout(_make_mock_supabase(), instance.run_id, agent.agent_id)
+        result = await DungeonEngineService.scout(_make_mock_supabase(), instance.run_id, agent.agent_id, user_id=_TEST_PLAYER)
 
         assert result["revealed_rooms"] > 0
         assert "state" in result
@@ -1085,7 +1087,7 @@ class TestScout:
         instance.archetype_state = {"visibility": 1, "max_visibility": 3, "rooms_since_vp_loss": 0}
         _register_instance(instance)
 
-        result = await DungeonEngineService.scout(_make_mock_supabase(), instance.run_id, agent.agent_id)
+        result = await DungeonEngineService.scout(_make_mock_supabase(), instance.run_id, agent.agent_id, user_id=_TEST_PLAYER)
 
         assert instance.archetype_state["visibility"] > 1
         assert result["visibility"] == instance.archetype_state["visibility"]
@@ -1102,7 +1104,7 @@ class TestRest:
         from fastapi import HTTPException
 
         with pytest.raises(HTTPException) as exc_info:
-            await DungeonEngineService.rest(_make_mock_supabase(), instance.run_id, [uuid4()])
+            await DungeonEngineService.rest(_make_mock_supabase(), instance.run_id, [uuid4()], user_id=_TEST_PLAYER)
         assert exc_info.value.status_code == 400
 
     @pytest.mark.asyncio
@@ -1113,7 +1115,7 @@ class TestRest:
         from fastapi import HTTPException
 
         with pytest.raises(HTTPException) as exc_info:
-            await DungeonEngineService.rest(_make_mock_supabase(), instance.run_id, [uuid4()])
+            await DungeonEngineService.rest(_make_mock_supabase(), instance.run_id, [uuid4()], user_id=_TEST_PLAYER)
         assert exc_info.value.status_code == 400
 
     @pytest.mark.asyncio
@@ -1125,7 +1127,7 @@ class TestRest:
 
         with patch("backend.services.dungeon_engine_service.check_ambush", return_value=False):
             result = await DungeonEngineService.rest(
-                _make_mock_supabase(), instance.run_id, [agent.agent_id]
+                _make_mock_supabase(), instance.run_id, [agent.agent_id], user_id=_TEST_PLAYER
             )
 
         assert result["healed"] is True
@@ -1140,7 +1142,7 @@ class TestRest:
 
         with patch("backend.services.dungeon_engine_service.check_ambush", return_value=False):
             await DungeonEngineService.rest(
-                _make_mock_supabase(), instance.run_id, [agent.agent_id]
+                _make_mock_supabase(), instance.run_id, [agent.agent_id], user_id=_TEST_PLAYER
             )
 
         assert agent.condition == "stressed"
@@ -1158,7 +1160,7 @@ class TestRest:
             patch("backend.services.dungeon_engine_service.spawn_enemies", return_value=enemies),
         ):
             result = await DungeonEngineService.rest(
-                _make_mock_supabase(), instance.run_id, [agent.agent_id]
+                _make_mock_supabase(), instance.run_id, [agent.agent_id], user_id=_TEST_PLAYER
             )
 
         assert result["ambushed"] is True
@@ -1175,7 +1177,7 @@ class TestRest:
 
         with patch("backend.services.dungeon_engine_service.check_ambush", return_value=False):
             await DungeonEngineService.rest(
-                _make_mock_supabase(), instance.run_id, [agent.agent_id]
+                _make_mock_supabase(), instance.run_id, [agent.agent_id], user_id=_TEST_PLAYER
             )
 
         assert instance.rooms[3].cleared is True
@@ -1193,7 +1195,7 @@ class TestRetreat:
         _register_instance(instance)
 
         mock_sb = _make_mock_supabase()
-        result = await DungeonEngineService.retreat(mock_sb, instance.run_id)
+        result = await DungeonEngineService.retreat(mock_sb, instance.run_id, user_id=_TEST_PLAYER)
 
         assert result["retreated"] is True
         assert instance.phase == "retreated"
@@ -1207,7 +1209,7 @@ class TestRetreat:
         loot = [LootItem(id="l1", name_en="Shard", name_de="Scherbe", tier=1, effect_type="stress_heal")]
         mock_sb = _make_mock_supabase()
         with patch("backend.services.dungeon_engine_service.roll_loot", return_value=loot):
-            result = await DungeonEngineService.retreat(mock_sb, instance.run_id)
+            result = await DungeonEngineService.retreat(mock_sb, instance.run_id, user_id=_TEST_PLAYER)
 
         assert result["retreated"] is True
         assert len(result["loot"]) == 1
@@ -1219,7 +1221,7 @@ class TestRetreat:
         _register_instance(instance)
 
         mock_sb = _make_mock_supabase()
-        result = await DungeonEngineService.retreat(mock_sb, instance.run_id)
+        result = await DungeonEngineService.retreat(mock_sb, instance.run_id, user_id=_TEST_PLAYER)
 
         assert result["retreated"] is True
         assert len(result["loot"]) == 0
@@ -1230,7 +1232,7 @@ class TestRetreat:
         _register_instance(instance)
 
         mock_sb = _make_mock_supabase()
-        await DungeonEngineService.retreat(mock_sb, instance.run_id)
+        await DungeonEngineService.retreat(mock_sb, instance.run_id, user_id=_TEST_PLAYER)
 
         assert str(instance.run_id) not in _active_instances
 
@@ -1242,7 +1244,7 @@ class TestRetreat:
 
         mock_sb = _make_mock_supabase()
         with patch("backend.services.dungeon_engine_service.roll_loot", return_value=[]):
-            await DungeonEngineService.retreat(mock_sb, instance.run_id)
+            await DungeonEngineService.retreat(mock_sb, instance.run_id, user_id=_TEST_PLAYER)
 
         mock_sb.rpc.assert_called_once()
         rpc_name, rpc_args = mock_sb.rpc.call_args[0]

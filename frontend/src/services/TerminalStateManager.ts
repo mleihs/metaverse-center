@@ -67,18 +67,12 @@ class TerminalStateManager {
   readonly buildingsByZone = signal<Map<string, Building[]>>(new Map());
   readonly zoneStabilities = signal<ZoneStability[]>([]);
 
-  /** Timestamp of last fetched heartbeat entry (for polling delta). */
-  readonly lastFeedTimestamp = signal<string | null>(null);
-
   // --- Epoch State (NOT persisted — server-authoritative) ---
   readonly epochId = signal<string | null>(null);
   readonly epochParticipant = signal<EpochParticipant | null>(null);
   readonly epochParticipants = signal<EpochParticipant[]>([]);
   readonly epochStatus = signal<EpochStatus | null>(null);
   readonly epochTeams = signal<EpochTeam[]>([]);
-  /** Timestamp of last fetched battle log entry (for epoch feed polling). */
-  readonly lastBattleLogTimestamp = signal<string | null>(null);
-
   // --- Dungeon State (NOT persisted — DungeonStateManager owns actual state) ---
   /** Active dungeon run ID. Only used for command routing (isDungeonMode). */
   readonly dungeonRunId = signal<string | null>(null);
@@ -183,7 +177,6 @@ class TerminalStateManager {
     }
     this.conversationMode.value = null;
     this.isLoading.value = false;
-    this.lastFeedTimestamp.value = null;
   }
 
   // ── Epoch Context ────────────────────────────────────────────────────
@@ -205,7 +198,6 @@ class TerminalStateManager {
     this.epochParticipants.value = participants;
     this.epochTeams.value = teams;
     this.epochStatus.value = status;
-    this.lastBattleLogTimestamp.value = null;
     // Tier 4 clearance is derived via effectiveClearance computed — no mutation needed.
   }
 
@@ -216,7 +208,6 @@ class TerminalStateManager {
     this.epochParticipants.value = [];
     this.epochTeams.value = [];
     this.epochStatus.value = null;
-    this.lastBattleLogTimestamp.value = null;
     // effectiveClearance automatically reverts to earned tier (1-3) when isEpochMode becomes false.
   }
 

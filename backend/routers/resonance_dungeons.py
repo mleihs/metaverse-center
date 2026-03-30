@@ -1,7 +1,12 @@
 """REST API router for Resonance Dungeons.
 
 15 endpoints under /api/v1/dungeons.
-Auth: simulation membership checked via require_simulation_member().
+Auth: Two layers —
+  1. Simulation-scoped endpoints (available, create, history, loot-effects):
+     require_simulation_member() dependency (needs simulation_id query param).
+  2. Run-scoped endpoints (all /runs/{run_id}/* mutations + state read):
+     user_id passed to service → _get_instance(require_player=user_id)
+     verifies user is in instance.player_ids (dungeon participant check).
 All mutations use admin_supabase (Review #16).
 """
 
@@ -115,7 +120,7 @@ async def get_run_state(
 
     Tries in-memory first, falls back to checkpoint recovery.
     """
-    state = await DungeonEngineService.get_client_state(run_id, admin)
+    state = await DungeonEngineService.get_client_state(run_id, admin, user_id=user.id)
     return {"success": True, "data": state.model_dump()}
 
 
@@ -130,7 +135,7 @@ async def move_to_room(
     admin: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Move party to an adjacent room."""
-    result = await DungeonEngineService.move_to_room(admin, run_id, body.room_index)
+    result = await DungeonEngineService.move_to_room(admin, run_id, body.room_index, user_id=user.id)
     return {"success": True, "data": result}
 
 
@@ -145,7 +150,7 @@ async def submit_action(
     admin: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Submit an encounter choice or interaction."""
-    result = await DungeonEngineService.handle_encounter_choice(admin, run_id, body)
+    result = await DungeonEngineService.handle_encounter_choice(admin, run_id, body, user_id=user.id)
     return {"success": True, "data": result}
 
 
@@ -175,7 +180,7 @@ async def scout(
     admin: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Spy: reveal adjacent rooms and restore visibility."""
-    result = await DungeonEngineService.scout(admin, run_id, body.agent_id)
+    result = await DungeonEngineService.scout(admin, run_id, body.agent_id, user_id=user.id)
     return {"success": True, "data": result}
 
 
@@ -190,7 +195,7 @@ async def rest(
     admin: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Rest at a rest site."""
-    result = await DungeonEngineService.rest(admin, run_id, body.agent_ids)
+    result = await DungeonEngineService.rest(admin, run_id, body.agent_ids, user_id=user.id)
     return {"success": True, "data": result}
 
 
@@ -204,7 +209,7 @@ async def retreat(
     admin: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Abandon dungeon (keep partial loot)."""
-    result = await DungeonEngineService.retreat(admin, run_id)
+    result = await DungeonEngineService.retreat(admin, run_id, user_id=user.id)
     await AuditService.safe_log(
         admin,
         None,
@@ -229,7 +234,7 @@ async def assign_loot(
 ) -> dict:
     """Assign a distributable loot item to an agent during the debrief phase."""
     result = await DungeonEngineService.assign_loot(
-        admin, run_id, body.loot_id, body.agent_id,
+        admin, run_id, body.loot_id, body.agent_id, user_id=user.id,
     )
     await AuditService.safe_log(
         admin, None, user.id,
@@ -247,7 +252,7 @@ async def confirm_distribution(
     admin: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Finalize loot distribution and complete the dungeon run."""
-    result = await DungeonEngineService.confirm_distribution(admin, run_id)
+    result = await DungeonEngineService.confirm_distribution(admin, run_id, user_id=user.id)
     await AuditService.safe_log(
         admin, None, user.id,
         "resonance_dungeon_runs", str(run_id),
