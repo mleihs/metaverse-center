@@ -591,7 +591,7 @@ def sql_val(v: Any) -> str:
         return "NULL"
     if isinstance(v, bool):
         return "true" if v else "false"
-    if isinstance(v, (int, float)):
+    if isinstance(v, int | float):
         return str(v)
     if isinstance(v, Decimal):
         return str(v)
@@ -601,7 +601,7 @@ def sql_val(v: Any) -> str:
         return f"'{v.isoformat()}'"
     if isinstance(v, date):
         return f"'{v.isoformat()}'"
-    if isinstance(v, (dict, list)):
+    if isinstance(v, dict | list):
         dumped = json.dumps(v, default=str).replace("'", "''")
         return f"'{dumped}'::jsonb"
     if isinstance(v, str):
@@ -1063,7 +1063,7 @@ def sync_storage(
         f"SELECT banner_url, icon_url FROM simulations WHERE id IN ({id_list})",
     )
     if sims:
-        print(f"\n  simulation.assets (banners/icons):")
+        print("\n  simulation.assets (banners/icons):")
         bucket = STORAGE_BUCKETS["assets"]
         for row in sims:
             for col in ("banner_url", "icon_url"):

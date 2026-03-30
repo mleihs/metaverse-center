@@ -63,7 +63,7 @@ def delete_storage_object(bucket: str, path: str) -> bool:
     if resp.status_code in (200, 204):
         return True
     if resp.status_code == 404:
-        print(f"    (not found, skipping)")
+        print("    (not found, skipping)")
         return True
     print(f"    !! Delete failed: {resp.status_code} {resp.text}")
     return False

@@ -210,9 +210,9 @@ async def main():
         print(f"  [{i}/{len(templates)}] {subject}...")
         ok = await EmailService.send(RECIPIENT, subject, html_body)
         if ok:
-            print(f"           -> Sent!")
+            print("           -> Sent!")
         else:
-            print(f"           -> FAILED (check SMTP config)")
+            print("           -> FAILED (check SMTP config)")
         # Brief pause to avoid throttling
         await asyncio.sleep(0.5)
 

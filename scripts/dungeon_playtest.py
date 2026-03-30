@@ -735,7 +735,7 @@ def handle_distribution(client: DungeonAPIClient, run_id: str, state: dict, verb
             agent_id = operational_agents[idx]["agent_id"]
 
         try:
-            result = client.assign_loot(run_id, loot_id, agent_id)
+            client.assign_loot(run_id, loot_id, agent_id)
             if verbose:
                 _info(f"  Assigned loot '{item.get('name_en', loot_id)}' to agent")
         except APIError as e:
@@ -794,7 +794,7 @@ def run_single_playthrough(
         create_result = client.create_run(SIMULATION_ID, archetype, party_ids, difficulty)
     except APIError as e:
         if e.status == 409:
-            _err(f"Active run exists -- attempting retreat first")
+            _err("Active run exists -- attempting retreat first")
             # Try to find and retreat the active run
             try:
                 # Fetch history to find active run
@@ -877,7 +877,7 @@ def run_single_playthrough(
         if phase == "distributing":
             if verbose:
                 _info("Loot distribution phase...")
-            dist_result = handle_distribution(client, run_id, state, verbose)
+            handle_distribution(client, run_id, state, verbose)
             # After distribution, the run should be completed
             stats.outcome = "completed"
             if verbose:
@@ -1009,7 +1009,7 @@ def run_single_playthrough(
                 # Handle distribution
                 if verbose:
                     _info("Boss defeated! Entering loot distribution...")
-                dist_result = handle_distribution(client, run_id, state, verbose)
+                handle_distribution(client, run_id, state, verbose)
                 stats.outcome = "completed"
                 break
 
@@ -1284,7 +1284,7 @@ def print_summary(all_stats: list[RunStats], archetype: str, difficulty: int) ->
     for s in all_stats:
         if s.stress_snapshots:
             last_snap = s.stress_snapshots[-1]
-            for agent_name, data in last_snap.items():
+            for _agent_name, data in last_snap.items():
                 final_stresses.append(data.get("stress", 0))
 
     if final_stresses:

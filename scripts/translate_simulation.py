@@ -120,7 +120,10 @@ async def main():
     untranslated_zones = [z for z in zones if not z.get("description_de")]
     untranslated_streets = [s for s in streets if not s.get("street_type_de")]
 
-    total_untranslated = len(untranslated_agents) + len(untranslated_buildings) + len(untranslated_zones) + len(untranslated_streets)
+    total_untranslated = (
+        len(untranslated_agents) + len(untranslated_buildings)
+        + len(untranslated_zones) + len(untranslated_streets)
+    )
     sim_needs_description_de = not sim.get("description_de")
 
     logger.info(

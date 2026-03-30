@@ -20,7 +20,6 @@ import json
 import os
 import sys
 from pathlib import Path
-from uuid import UUID
 
 # Add project root to path so we can import backend modules
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -208,7 +207,8 @@ async def main() -> None:
     direct_conv_ids = {c["id"] for c in direct_convs}
     all_conv_ids = direct_conv_ids | group_conv_ids
     conversations = [{"id": cid} for cid in all_conv_ids]
-    print(f"Found {len(conversations)} conversation(s) ({len(direct_conv_ids)} direct, {len(group_conv_ids - direct_conv_ids)} group)")
+    group_only = len(group_conv_ids - direct_conv_ids)
+    print(f"Found {len(conversations)} conversation(s) ({len(direct_conv_ids)} direct, {group_only} group)")
 
     if not conversations:
         print("No conversations to reprocess.")

@@ -11,7 +11,6 @@ Usage:
 """
 
 import asyncio
-import json
 import os
 import sys
 
@@ -121,7 +120,7 @@ async def main():
                 ).execute()
                 print(f"    → Saved {len(update)} fields")
             else:
-                print(f"    ✗ No translations saved")
+                print("    ✗ No translations saved")
 
     print(f"\nAll done. Translated {len(sections)} sections.")
 

@@ -4,9 +4,7 @@
 Requires: backend running on localhost:8000, valid Replicate API key in .env.
 """
 
-import json
 import os
-import sys
 import time
 
 import requests

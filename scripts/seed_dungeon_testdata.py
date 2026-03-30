@@ -41,7 +41,7 @@ import os
 import sys
 import urllib.error
 import urllib.request
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, UTC
 
 # Ensure project root is on path for backend imports
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -214,7 +214,7 @@ def get_agents(supabase, simulation_id: str, limit: int = 10) -> list[dict]:
 def seed_archetype(supabase, archetype: str, index: int) -> str:
     """Upsert a substrate_resonance. Returns resonance UUID."""
     res_id = f"{_RES_PREFIX}{index:04d}"
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     data = {
         "id": res_id,
@@ -253,9 +253,9 @@ def seed_impact(supabase, resonance_id: str, simulation_id: str, index: int) -> 
 
     resp = supabase.table("resonance_impacts").upsert(data).execute()
     if resp.data:
-        _ok(f"resonance_impact: linked to simulation")
+        _ok("resonance_impact: linked to simulation")
     else:
-        _err(f"Failed to upsert impact")
+        _err("Failed to upsert impact")
 
 
 def seed_aptitudes(supabase, simulation_id: str, agents: list[dict]) -> None:
@@ -494,14 +494,14 @@ def main() -> None:
         first_archetype = archetypes[0]
         run_id = start_run(supabase, sim_id, args.simulation, first_archetype, args.difficulty)
         if run_id:
-            print(f"\n\033[1;32mDungeon active!\033[0m")
+            print("\n\033[1;32mDungeon active!\033[0m")
             print(f"  Open: {FRONTEND_URL}/simulations/{args.simulation}/dungeon")
             print(f"  Run ID: {run_id}")
     elif not args.start_run:
-        print(f"\n\033[1mReady!\033[0m Navigate to:")
+        print("\n\033[1mReady!\033[0m Navigate to:")
         print(f"  {FRONTEND_URL}/simulations/{args.simulation}/dungeon")
-        print(f"  Type 'dungeon' in the terminal to start a run.")
-        print(f"  Or re-run with --start-run to auto-start.")
+        print("  Type 'dungeon' in the terminal to start a run.")
+        print("  Or re-run with --start-run to auto-start.")
 
 
 if __name__ == "__main__":

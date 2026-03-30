@@ -202,7 +202,7 @@ async def main():
         research_context=research_context,
     )
 
-    for i, section in enumerate(sections):
+    for _i, section in enumerate(sections):
         print(f"\n{'─' * 60}")
         print(f"Chapter: {section['chapter']} | Arcanum: {section['arcanum']}")
         print(f"Title: {section['title']}")

@@ -9,13 +9,12 @@ Run: scripts/.analysis-venv/bin/python scripts/epoch_statistical_analysis.py
 Output: /tmp/epoch-analysis/ (charts + statistical-supplement.md)
 """
 
-import os
 import re
 from collections import defaultdict
 from pathlib import Path
 
-import matplotlib
-matplotlib.use("Agg")  # headless
+import matplotlib as mpl
+mpl.use("Agg")  # headless
 import matplotlib.pyplot as plt
 import nashpy as nash
 import numpy as np
@@ -63,7 +62,10 @@ def parse_analysis_file(filepath, player_count):
 
     # Parse summary table rows — only valid games (skip empty leaderboards)
     # | 1 | G1: SP+V s5i7v75d8m5 | Speranza | 93.0 | Velgarien | 55.3 | 37.7 |
-    pattern = r"\|\s*(\d+)\s*\|\s*G\d+:\s*([\w+]+)\s+s(\d+)i(\d+)v(\d+)d(\d+)m(\d+)\s*\|\s*([\w ]+?)\s*\|\s*([\d.]+)\s*\|\s*([\w ]+?)\s*\|\s*([\d.]+)\s*\|\s*([\d.]+)\s*\|"
+    pattern = (
+        r"\|\s*(\d+)\s*\|\s*G\d+:\s*([\w+]+)\s+s(\d+)i(\d+)v(\d+)d(\d+)m(\d+)"
+        r"\s*\|\s*([\w ]+?)\s*\|\s*([\d.]+)\s*\|\s*([\w ]+?)\s*\|\s*([\d.]+)\s*\|\s*([\d.]+)\s*\|"
+    )
     for m in re.finditer(pattern, text):
         players_str = m.group(2)
         players = players_str.split("+")
@@ -122,7 +124,10 @@ def parse_analysis_file(filepath, player_count):
     # Parse score dimension analysis
     # | stability | 6.1 | 6.7 | 0 | 17 | no |
     dimensions = {}
-    dim_pattern = r"\|\s*(stability|influence|sovereignty|diplomatic|military)\s*\|\s*([\d.]+)\s*\|\s*([\d.]+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|"
+    dim_pattern = (
+        r"\|\s*(stability|influence|sovereignty|diplomatic|military)"
+        r"\s*\|\s*([\d.]+)\s*\|\s*([\d.]+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|"
+    )
     for line in text.split("\n"):
         dm = re.match(dim_pattern, line)
         if dm:
@@ -136,7 +141,10 @@ def parse_analysis_file(filepath, player_count):
     # Parse average scores by simulation
     # | The Gaslit Reach | 82.0 | 9 | 13 | 79 | 9 | 22 |
     avg_scores = {}
-    avg_pattern = r"\|\s*(Velgarien|The Gaslit Reach|Station Null|Speranza|Nova Meridian)\s*\|\s*([\d.]+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|"
+    avg_pattern = (
+        r"\|\s*(Velgarien|The Gaslit Reach|Station Null|Speranza|Nova Meridian)"
+        r"\s*\|\s*([\d.]+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|"
+    )
     for line in text.split("\n"):
         am = re.match(avg_pattern, line)
         if am:
@@ -179,7 +187,7 @@ def compute_elo(all_data, k=32, initial=1500):
     winner beats each loser. This gives proper credit for winning against
     multiple opponents.
     """
-    elo = {name: initial for name in SIM_TAGS.values()}
+    elo = dict.fromkeys(SIM_TAGS.values(), initial)
     history = {name: [initial] for name in SIM_TAGS.values()}
     game_labels = []
 
@@ -215,7 +223,7 @@ def plot_elo(elo, history, game_labels):
     # Add vertical lines for player count boundaries
     game_idx = 0
     for pc in [2, 3, 4]:
-        game_idx += len([g for g in range(50)])  # 50 games per player count
+        game_idx += 50  # 50 games per player count
         ax1.axvline(x=game_idx, color="#30363d", linestyle="--", alpha=0.5)
         ax1.text(game_idx - 25, ax1.get_ylim()[0] + 10, f"{pc}P", color="#8b949e",
                  ha="center", fontsize=8)
@@ -239,7 +247,7 @@ def plot_elo(elo, history, game_labels):
     ax2.set_xlabel("Final Elo")
     ax2.set_title("FINAL RATINGS", fontweight="bold", fontsize=12)
     ax2.axvline(x=1500, color="#8b949e", linestyle="--", alpha=0.5, label="Starting (1500)")
-    for bar, rating in zip(bars, ratings):
+    for bar, rating in zip(bars, ratings, strict=False):
         ax2.text(bar.get_width() + 5, bar.get_y() + bar.get_height() / 2,
                  f"{rating:.0f}", va="center", fontsize=9, color="#c9d1d9")
     ax2.invert_yaxis()
@@ -426,7 +434,7 @@ def logistic_regression_analysis(all_data):
     top_n = min(12, len(coef_df))
     top = coef_df.head(top_n)
     colors = ["#27ae60" if c > 0 else "#c0392b" for c in top["coefficient"]]
-    bars = ax.barh(range(top_n), top["coefficient"], color=colors, alpha=0.8)
+    ax.barh(range(top_n), top["coefficient"], color=colors, alpha=0.8)
     ax.set_yticks(range(top_n))
     ax.set_yticklabels(top["feature"].values, fontsize=9)
     ax.set_xlabel("Logistic Regression Coefficient")
@@ -635,7 +643,7 @@ def strategy_analysis(all_data):
         ax3.set_title("NASH EQUILIBRIUM\n(approximate)", fontweight="bold")
         ax3.invert_yaxis()
         ax3.grid(True, alpha=0.3, axis="x")
-        for bar, prob in zip(bars, probs_eq):
+        for bar, prob in zip(bars, probs_eq, strict=False):
             ax3.text(bar.get_width() + 1, bar.get_y() + bar.get_height() / 2,
                      f"{prob:.1%}", va="center", fontsize=9, color="#c9d1d9")
 
@@ -667,7 +675,7 @@ def score_distributions(all_data):
     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
 
     # Winner score distributions by player count
-    for pc, color in zip([2, 3, 4, 5], ["#c0392b", "#27ae60", "#d4a017", "#2980b9"]):
+    for pc, color in zip([2, 3, 4, 5], ["#c0392b", "#27ae60", "#d4a017", "#2980b9"], strict=False):
         data = df[df["player_count"] == pc]["winner_score"]
         parts = axes[0, 0].violinplot([data.values], positions=[pc], showmeans=True,
                                        showmedians=True, widths=0.7)
@@ -685,7 +693,7 @@ def score_distributions(all_data):
     axes[0, 0].grid(True, alpha=0.3)
 
     # Margin distributions by player count
-    for pc, color in zip([2, 3, 4, 5], ["#c0392b", "#27ae60", "#d4a017", "#2980b9"]):
+    for pc, color in zip([2, 3, 4, 5], ["#c0392b", "#27ae60", "#d4a017", "#2980b9"], strict=False):
         data = df[df["player_count"] == pc]["margin"]
         parts = axes[0, 1].violinplot([data.values], positions=[pc], showmeans=True,
                                        showmedians=True, widths=0.7)
@@ -713,7 +721,7 @@ def score_distributions(all_data):
     box_colors = [SIM_COLORS[s] for s in sim_names]
     bp = axes[1, 0].boxplot(box_data, labels=[s.split()[0] for s in sim_names],
                              patch_artist=True, widths=0.6)
-    for patch, color in zip(bp["boxes"], box_colors):
+    for patch, color in zip(bp["boxes"], box_colors, strict=False):
         patch.set_facecolor(color)
         patch.set_alpha(0.6)
     axes[1, 0].set_ylabel("Winner's Score")
@@ -771,7 +779,7 @@ def score_distributions(all_data):
 
 def head_to_head(all_data):
     """Build head-to-head matrix from 2P games."""
-    sims_2p = sorted(set(s for g in all_data[2]["games"] for s in g["players"]))
+    sims_2p = sorted({s for g in all_data[2]["games"] for s in g["players"]})
     h2h = defaultdict(lambda: defaultdict(lambda: {"wins": 0, "games": 0}))
 
     for game in all_data[2]["games"]:
@@ -840,9 +848,9 @@ def dimension_impact(all_data):
             # KDE for winners vs losers at this player count
             if weights_win and weights_lose:
                 ax.hist(weights_win, bins=15, alpha=0.4, color="#27ae60",
-                        density=True, label=f"Win" if pc == 2 else "")
+                        density=True, label="Win" if pc == 2 else "")
                 ax.hist(weights_lose, bins=15, alpha=0.4, color="#c0392b",
-                        density=True, label=f"Lose" if pc == 2 else "")
+                        density=True, label="Lose" if pc == 2 else "")
 
         # Mann-Whitney U test: do winners have different weight distributions?
         all_win_weights = []
@@ -919,8 +927,8 @@ def bootstrap_ci(all_data, n_bootstrap=10000):
 
     ax.barh(y_pos, means, color=colors, alpha=0.7)
     ax.errorbar(means, y_pos,
-                xerr=[[m - l for m, l in zip(means, lows)],
-                      [h - m for m, h in zip(means, highs)]],
+                xerr=[[m - low for m, low in zip(means, lows, strict=False)],
+                      [h - m for m, h in zip(means, highs, strict=False)]],
                 fmt="none", ecolor="white", capsize=4, linewidth=2)
     ax.set_yticks(y_pos)
     ax.set_yticklabels([f"{s}\n(n={cis[s]['n']})" for s in sims], fontsize=9)
@@ -930,7 +938,7 @@ def bootstrap_ci(all_data, n_bootstrap=10000):
     ax.grid(True, alpha=0.3, axis="x")
 
     # Add CI text
-    for i, sim in enumerate(sims):
+    for i, _sim in enumerate(sims):
         ax.text(highs[i] + 1, i, f"[{lows[i]:.1f}%, {highs[i]:.1f}%]",
                 va="center", fontsize=8, color="#8b949e")
 
@@ -1104,7 +1112,9 @@ def generate_supplement(elo_results, chi_results, pairwise, per_pc_chi,
     lines.append("| Strategy | Win Rate | 95% CI | n |")
     lines.append("|----------|---------|--------|---|")
     for s in strat_combined:
-        lines.append(f"| {s['strategy']} | {s['win_rate']:.1f}% | [{s['ci_low']:.1f}%, {s['ci_high']:.1f}%] | {s['n']} |")
+        lines.append(
+            f"| {s['strategy']} | {s['win_rate']:.1f}%"
+            f" | [{s['ci_low']:.1f}%, {s['ci_high']:.1f}%] | {s['n']} |")
     lines.append("")
 
     # Charts index
@@ -1152,9 +1162,9 @@ def main():
 
     print("\n3. Chi-squared significance tests...")
     chi_results, pairwise, per_pc_chi = chi_squared_tests(all_data)
-    for label, chi2, p, df, sig in chi_results:
+    for label, chi2, p, _df, sig in chi_results:
         print(f"   {label}: χ²={chi2:.2f}, p={p:.4f} {'***' if sig else '(ns)'}")
-    for sim, w, g, rate, p, sig in pairwise:
+    for sim, _w, _g, rate, p, sig in pairwise:
         print(f"   {sim}: {rate:.1f}% (p={p:.4f}) {'*' if sig else ''}")
 
     print("\n4. PCA on score weights...")
@@ -1164,7 +1174,7 @@ def main():
 
     print("\n5. Logistic regression...")
     model, coef_df = logistic_regression_analysis(all_data)
-    print(f"   Top features:")
+    print("   Top features:")
     for _, row in coef_df.head(5).iterrows():
         print(f"     {row['feature']}: {row['coefficient']:+.4f}")
 
@@ -1182,7 +1192,7 @@ def main():
     score_distributions(all_data)
 
     print("\n9. Head-to-head matrix...")
-    h2h_matrix = head_to_head(all_data)
+    head_to_head(all_data)
 
     print("\n10. Dimension impact analysis...")
     dimension_impact(all_data)
