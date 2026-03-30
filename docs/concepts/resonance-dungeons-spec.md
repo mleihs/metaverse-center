@@ -752,6 +752,8 @@ The dungeon has a **Stability meter** (starts at 100, decreases every room). Whe
 - Successful "Reinforce" (Guardian ability): +10 Stability
 - Treasure room cleared: +5 Stability (structural salvage)
 
+At stability 0, the Tower enters **Structural Failure** mode: ambient stress is doubled (collapse_stress_multiplier: 2.0), ambush chance rises to 50% (collapse_ambush_chance), and the Reinforce ability becomes ineffective. The banter trigger changes from `stability_critical` to `stability_collapse`. This is not a party wipe — agents can still retreat or push to the boss, but the escalating penalties make prolonged exploration untenable.
+
 #### Atmosphere
 
 Vertigo. The building leans. Numbers cascade down walls like stock tickers. Markets collapse in text. Agents comment on the wrongness of value itself.
@@ -1457,7 +1459,7 @@ class AgentCombatStateClient(BaseModel):
     portrait_url: str | None
     condition: str
     stress: int
-    stress_threshold: str  # "normal", "tense", "critical"
+    stress_threshold: str  # "normal", "uneasy", "tense", "strained", "critical", "breaking"
     mood: int
     active_buffs: list[BuffDebuff]
     active_debuffs: list[BuffDebuff]
@@ -2365,11 +2367,13 @@ Right sidebar showing agent status. Uses `VelgAvatar` for portraits, existing st
 - Afflicted: `--color-danger` + chromatic aberration + `pulse-glow` 2s
 - Captured: `--color-text-muted` + strikethrough name
 
-**Stress bar thresholds (visual escalation):**
-- 0-200: Calm amber fill
-- 200-500: Brighter amber, text "TENSE" appears
-- 500-800: Orange-red gradient, `pulse-glow` animation starts
-- 800-1000: Deep red, rapid pulse, text "CRITICAL"
+**Stress bar thresholds (6-tier label system, visual escalation):**
+- 0-99: Calm amber fill (no label)
+- 100-249 (10%): Label "UNEASY", slightly brighter amber
+- 250-399 (25%): Label "TENSE", brighter amber
+- 400-599 (40%): Label "STRAINED", orange-red gradient, `pulse-glow` animation starts
+- 600-799 (60%): Label "CRITICAL", deep red, rapid pulse
+- 800-1000 (80%): Label "BREAKING", deep red, rapid pulse intensified
 
 **Micro-animations:**
 - Bar changes animate `transition: width var(--duration-slow) var(--ease-out)`
@@ -2466,6 +2470,13 @@ Replaces Quick Actions during combat. One column per agent with their available 
 ```
 
 Enemy condition as simple bar (existing `stabilityBar` pattern from terminal-formatters). Intent shown Into-the-Breach-style — `►` arrow + target description. Unknown intents (Paranoia Shade) show `???`.
+
+**Enemy condition labels (5-state, HP-percentage based):**
+- **healthy** (>80%) — full bar, default color
+- **scratched** (>60%) — minor damage, bar slightly reduced
+- **damaged** (>40%) — amber bar, visible wear
+- **wounded** (>20%) — red bar, significant damage
+- **critical** (<=20%) — deep red, rapid pulse, near defeat
 
 #### E. Encounter Panel (`VelgDungeonEncounterPanel.ts`)
 
@@ -2980,6 +2991,9 @@ Uses existing Supabase Presence on `dungeon:{runId}:presence`:
 | Disrupt | Saboteur | Enemy evasion penalty | ✅ |
 | Summon Decoy | Infiltrator | (not yet tested) | ⏳ |
 | Vanish | Infiltrator | (not yet tested) | ⏳ |
+| Basic Attack | Universal | Guaranteed damage (min_aptitude=0, power=3) | ✅ |
+
+**Universal school:** Basic Attack (min_aptitude=0, power=3) is a guaranteed damage ability available to all agents regardless of aptitude profile. `get_all_agent_abilities()` always includes universal abilities unconditionally, ensuring every agent can deal damage even with a zero-aptitude profile.
 
 **Buff Lifecycle:** All agent buffs cleared at end of round (1-round duration, Phase 0 simplification). Pipeline: `has_buff()` → `_apply_buff_to_agent()` → `_consume_buff()`. One-shot shields (Fortify) applied and consumed in same round. Debuffs (Demoralize, Deploy Trap) persist across rounds.
 
