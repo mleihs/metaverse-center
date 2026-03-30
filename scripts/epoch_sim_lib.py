@@ -12,6 +12,7 @@ import random
 import subprocess
 import sys
 import time
+import traceback
 from collections import defaultdict
 
 import httpx
@@ -19,6 +20,7 @@ import httpx
 BASE = "http://localhost:8000"
 AUTH_URL = "http://127.0.0.1:54321/auth/v1"
 ANON_KEY = None
+SERVICE_ROLE_KEY = None
 
 # Persistent HTTP client with connection pooling to avoid port exhaustion.
 # Low limits because each of our connections also triggers a backend→GoTrue
@@ -45,6 +47,7 @@ ALL_SIM_NAMES = {
 }
 ADMIN_EMAIL = os.environ.get("PLATFORM_ADMIN_EMAIL", "matthias@leihs.at")
 ADMIN_PASSWORD = os.environ.get("PLATFORM_ADMIN_PASSWORD", "met123")
+_TEST_PASSWORD = "sim-test-pw-2026"  # noqa: S105 — test harness only, never production
 
 
 class Player:
@@ -86,6 +89,7 @@ _current_phase = "foundation"
 _active_tags = []
 _current_players = {}  # tag→Player, for token refresh propagation
 _game_start_time = 0   # Wall clock when game started (for timeout)
+TEST_USERS = {}  # tag → {"email", "password", "token", "user_id"} — populated by provision_test_users()
 
 
 def set_active_tags(tags):
@@ -93,9 +97,18 @@ def set_active_tags(tags):
     _active_tags = tags
 
 
+# Flat stat keys: per-player int counters
+_FLAT_STAT_KEYS = [
+    "deployed", "success", "detected", "failed", "guardians",
+    "ci_sweeps", "rp_spent", "ci_caught", "rp_remaining",
+]
+# Nested stat keys: per-player dicts of {op_type: count}
+_NESTED_STAT_KEYS = ["deployed_by_type", "success_by_type", "detected_by_type", "failed_by_type"]
+
+
 def reset_game_state():
     global STATS, SCORE_HISTORY, CYCLE_ACTIONS, _game_total_failures
-    STATS = {k: {} for k in ["deployed", "success", "detected", "failed", "guardians", "ci_sweeps", "rp_spent"]}
+    STATS = {k: {} for k in _FLAT_STAT_KEYS + _NESTED_STAT_KEYS}
     SCORE_HISTORY = {}
     CYCLE_ACTIONS = []
     _game_total_failures = 0
@@ -106,15 +119,30 @@ def log(msg):
     LOG.append(msg)
 
 
-def action_log(cycle, phase, player_tag, action, detail, result=""):
-    CYCLE_ACTIONS.append({
+def action_log(cycle, phase, player_tag, action, detail, result="",
+               *, op_type=None, cost=None, prob=None, target=None, aptitude=None, caught=None):
+    entry = {
         "cycle": cycle,
         "phase": phase,
         "player": player_tag,
         "action": action,
         "detail": detail,
         "result": result,
-    })
+    }
+    # Structured fields — only include when present (keeps JSON compact)
+    if op_type is not None:
+        entry["op_type"] = op_type
+    if cost is not None:
+        entry["cost"] = cost
+    if prob is not None:
+        entry["prob"] = prob
+    if target is not None:
+        entry["target"] = target
+    if aptitude is not None:
+        entry["aptitude"] = aptitude
+    if caught is not None:
+        entry["caught"] = caught
+    CYCLE_ACTIONS.append(entry)
 
 
 # ── Port Exhaustion Monitor ──
@@ -145,12 +173,30 @@ def _count_stuck_ports():
         return 0, 0, 0
 
 def _restart_backend():
-    """Kill and restart the uvicorn backend to clear leaked CLOSE_WAIT sockets."""
+    """Kill and restart the uvicorn backend to clear leaked CLOSE_WAIT sockets.
+
+    Known limitation (P2.2): The Supabase Python client (supabase-py) creates new
+    httpx.AsyncClient instances on every set_session() / set_auth() call but never
+    closes the previous ones. Each leaked client holds ~20 CLOSE_WAIT TCP sockets
+    (the internal GoTrue and PostgREST connections). Over a 60-game battery, this
+    accumulates ~12,000 leaked sockets, eventually exhausting the macOS ephemeral
+    port pool (~16,384 ports with 30s TIME_WAIT).
+
+    Mitigations in this script:
+    - _http_client.close() after every game (our connections)
+    - Proactive backend restart every 5 games (clears supabase-py leaks)
+    - _wait_for_ports() with backoff before retrying after port exhaustion
+
+    Root cause fix would require either:
+    1. Patching supabase-py to reuse or close httpx clients, or
+    2. Using a connection pooler (pgBouncer) between backend and Supabase
+    """
     print("  🔄 Restarting backend to clear CLOSE_WAIT connections...")
     subprocess.run(["pkill", "-9", "-f", "uvicorn"], capture_output=True)
     # Also kill leaked multiprocessing workers
     subprocess.run(
-        "ps aux | grep 'multiprocessing.spawn\\|multiprocessing.resource_tracker' | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null",
+        "ps aux | grep 'multiprocessing.spawn\\|multiprocessing.resource_tracker'"
+        " | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null",
         shell=True, capture_output=True
     )
     time.sleep(3)
@@ -213,11 +259,41 @@ _game_total_failures = 0   # Total failures in current game (not reset by drain)
 _GAME_FAILURE_CAP = 30     # Abort game after this many total failures
 
 def _refresh_all_tokens():
-    """Re-authenticate and update token on all active Player instances."""
-    new_token = auth_login()
-    for p in _current_players.values():
-        p.token = new_token
-    return new_token
+    """Re-authenticate and update token on all active Player instances.
+
+    With per-user provisioning (P1.2), each player re-authenticates
+    with their own credentials instead of sharing the admin token.
+    """
+    for tag, p in _current_players.items():
+        if tag in TEST_USERS:
+            new_tok = _login_as(TEST_USERS[tag]["email"], TEST_USERS[tag]["password"])
+            TEST_USERS[tag]["token"] = new_tok
+            p.token = new_tok
+        else:
+            new_token = auth_login()
+            p.token = new_token
+    # Return any player's token for callers that expect a return value
+    if _current_players:
+        return next(iter(_current_players.values())).token
+    return auth_login()
+
+
+def _api_error(status_code=0, detail="unknown error"):
+    """Build structured error return from api(). Callers can distinguish
+    errors from empty successful responses via the ``_error`` key."""
+    return {"_error": True, "status": status_code, "detail": str(detail)}
+
+
+def _parse_error_detail(resp):
+    """Extract error detail from an HTTP response."""
+    try:
+        body = resp.json()
+        detail = body.get("detail", resp.text[:200])
+        if isinstance(detail, list):
+            detail = "; ".join(d.get("msg", str(d)) for d in detail)
+        return str(detail)
+    except Exception:
+        return resp.text[:200]
 
 
 def api(method, path, player=None, retries=2, **kwargs):
@@ -232,7 +308,7 @@ def api(method, path, player=None, retries=2, **kwargs):
         _wait_for_ports(f"api call #{_api_call_count}")
     # If too many total failures in this game, the backend is toast — bail out
     if _game_total_failures >= _GAME_FAILURE_CAP:
-        return {}
+        return _api_error(0, f"game failure cap ({_GAME_FAILURE_CAP}) exceeded")
     # If we've had consecutive failures, back off hard — the backend is drowning
     if _consecutive_failures >= 3:
         print(f"  ⚠ {_consecutive_failures} consecutive failures — draining ports...")
@@ -251,7 +327,7 @@ def api(method, path, player=None, retries=2, **kwargs):
                 continue
             if resp.status_code == 401 and not _token_refreshed:
                 # JWT expired mid-game — refresh all player tokens and retry
-                log(f"    TOKEN EXPIRED — refreshing...")
+                log("    TOKEN EXPIRED — refreshing...")
                 _refresh_all_tokens()
                 _token_refreshed = True
                 headers = player.headers() if player else {"Content-Type": "application/json"}
@@ -264,16 +340,18 @@ def api(method, path, player=None, retries=2, **kwargs):
                     time.sleep(3 + attempt * 3)  # 3s, 6s backoff
                     _wait_for_ports(f"500 on {path}")
                     continue
-                log(f"    API ERROR {resp.status_code}: {method} {path}: {resp.text[:200]}")
-                return {}
+                detail = _parse_error_detail(resp)
+                log(f"    API ERROR {resp.status_code}: {method} {path}: {detail}")
+                return _api_error(resp.status_code, detail)
             if resp.status_code >= 400:
                 _consecutive_failures += 1
                 _game_total_failures += 1
                 if attempt < retries:
                     time.sleep(1)
                     continue
-                log(f"    API ERROR {resp.status_code}: {method} {path}: {resp.text[:200]}")
-                return {}
+                detail = _parse_error_detail(resp)
+                log(f"    API ERROR {resp.status_code}: {method} {path}: {detail}")
+                return _api_error(resp.status_code, detail)
             _consecutive_failures = 0  # Reset on success
             return resp.json()
         except httpx.ConnectError:
@@ -284,7 +362,7 @@ def api(method, path, player=None, retries=2, **kwargs):
                 time.sleep(5)
                 continue
             log(f"    PORT EXHAUSTION: {method} {path}")
-            return {}
+            return _api_error(0, f"port exhaustion on {path}")
         except Exception as e:
             _consecutive_failures += 1
             _game_total_failures += 1
@@ -292,8 +370,8 @@ def api(method, path, player=None, retries=2, **kwargs):
                 time.sleep(2)
                 continue
             log(f"    API EXCEPTION: {method} {path}: {e}")
-            return {}
-    return {}
+            return _api_error(0, str(e))
+    return _api_error(0, f"all {retries + 1} retries exhausted for {method} {path}")
 
 
 def auth_login():
@@ -333,9 +411,119 @@ def auth_login():
             sys.exit(f"Auth failed after 10 attempts: {e}")
 
 
+def _get_service_role_key():
+    """Get Supabase service_role key for Auth Admin API (user provisioning)."""
+    global SERVICE_ROLE_KEY
+    if SERVICE_ROLE_KEY:
+        return SERVICE_ROLE_KEY
+    r = subprocess.run(
+        ["supabase", "status", "--output", "json"],
+        capture_output=True, text=True,
+        cwd="/Users/mleihs/Dev/velgarien-rebuild",
+    )
+    s = json.loads(r.stdout)
+    SERVICE_ROLE_KEY = s.get("SERVICE_ROLE_KEY") or s.get("service_role_key")
+    if not SERVICE_ROLE_KEY:
+        raise RuntimeError("Could not get SERVICE_ROLE_KEY from supabase status")
+    return SERVICE_ROLE_KEY
+
+
+def _create_test_user(tag):
+    """Create or find a unique test user for a simulation tag.
+
+    Uses _psql() to check for existing user, then Supabase Auth Admin API
+    to create if missing. Returns the user's UUID string.
+    """
+    email = f"sim-{tag.lower()}@test.velgarien.local"
+
+    # Fast path: check if user already exists
+    result = _psql(f"SELECT id FROM auth.users WHERE email = '{email}';")
+    try:
+        user_id = result.stdout.strip().split('\n')[2].strip()
+        if len(user_id) >= 32 and '-' in user_id:
+            return user_id
+    except (IndexError, ValueError):
+        pass
+
+    # Create via Supabase Auth Admin API
+    srv_key = _get_service_role_key()
+    resp = _http_client.post(
+        f"{AUTH_URL}/admin/users",
+        json={"email": email, "password": _TEST_PASSWORD, "email_confirm": True},
+        headers={
+            "apikey": srv_key,
+            "Authorization": f"Bearer {srv_key}",
+            "Content-Type": "application/json",
+        },
+    )
+    if resp.status_code in (200, 201):
+        return resp.json()["id"]
+
+    raise RuntimeError(
+        f"Failed to create test user {email}: {resp.status_code} {resp.text[:200]}"
+    )
+
+
+def _login_as(email, password):
+    """Login as a specific user, return their JWT access token.
+
+    Requires ANON_KEY to be set (call auth_login() first).
+    """
+    resp = _http_client.post(
+        f"{AUTH_URL}/token?grant_type=password",
+        json={"email": email, "password": password},
+        headers={"apikey": ANON_KEY, "Content-Type": "application/json"},
+    )
+    if resp.status_code != 200:
+        raise RuntimeError(
+            f"Login failed for {email}: {resp.status_code} {resp.text[:200]}"
+        )
+    return resp.json()["access_token"]
+
+
+def provision_test_users(tags):
+    """Create unique test users for each simulation tag and log them in.
+
+    Each user gets membership in their template simulation so that
+    clone_simulations_for_epoch (migration 060) copies the membership
+    to the game instance automatically. This solves the epoch_participants
+    user_id unique constraint — each simulated player now has their own
+    Supabase auth identity.
+    """
+    global TEST_USERS
+    log("Provisioning unique test users (one per simulation)...")
+
+    for tag in tags:
+        email = f"sim-{tag.lower()}@test.velgarien.local"
+        user_id = _create_test_user(tag)
+
+        # Ensure membership in template simulation (clone copies to instances)
+        sim_id = ALL_SIMS[tag]
+        _psql(f"""
+            INSERT INTO simulation_members (simulation_id, user_id, member_role)
+            VALUES ('{sim_id}', '{user_id}', 'member')
+            ON CONFLICT DO NOTHING;
+        """)
+
+        # Login to get JWT
+        token = _login_as(email, _TEST_PASSWORD)
+
+        TEST_USERS[tag] = {
+            "email": email,
+            "password": _TEST_PASSWORD,
+            "token": token,
+            "user_id": user_id,
+        }
+        log(f"  {tag}: {email} (uid:{user_id[:8]}...)")
+
+    log(f"  {len(TEST_USERS)} test users ready")
+
+
 def init_stats(tag):
-    for d in STATS.values():
-        d.setdefault(tag, 0)
+    for key in _FLAT_STAT_KEYS:
+        STATS[key].setdefault(tag, 0)
+    for key in _NESTED_STAT_KEYS:
+        STATS[key].setdefault(tag, {})
     SCORE_HISTORY.setdefault(tag, [])
 
 
@@ -440,7 +628,8 @@ def deploy(epoch_id, player, op_type, target_tag, players,
     agent = player.best_agent_for(op_type)
     if not agent:
         action_log(_current_cycle, _current_phase, player.tag,
-                   f"deploy_{op_type}", "No agents available", "SKIP")
+                   f"deploy_{op_type}", "No agents available", "SKIP",
+                   op_type=op_type)
         return None
     agent_name = agent.get("name", "?")
     apt_level = player.aptitudes.get(agent["id"], {}).get(op_type, 6)
@@ -454,7 +643,8 @@ def deploy(epoch_id, player, op_type, target_tag, players,
         emb = player.embassies.get(target.instance_id)
         if not emb:
             action_log(_current_cycle, _current_phase, player.tag,
-                       f"deploy_{op_type}", f"No embassy to {target_tag}", "SKIP")
+                       f"deploy_{op_type}", f"No embassy to {target_tag}", "SKIP",
+                       op_type=op_type, target=target_tag)
             return None
         body["embassy_id"] = emb
         if target_entity_id:
@@ -470,20 +660,26 @@ def deploy(epoch_id, player, op_type, target_tag, players,
         cost = mission.get("cost_rp", 0)
         prob = mission.get("success_probability", "?")
         STATS["deployed"][player.tag] += 1
+        by_type = STATS["deployed_by_type"][player.tag]
+        by_type[op_type] = by_type.get(op_type, 0) + 1
         STATS["rp_spent"][player.tag] += cost
         if op_type == "guardian":
             STATS["guardians"][player.tag] += 1
             player.guardians += 1
             action_log(_current_cycle, _current_phase, player.tag,
-                       "deploy_guardian", detail, f"OK cost={cost}")
+                       "deploy_guardian", detail, f"OK cost={cost}",
+                       op_type=op_type, cost=cost, aptitude=apt_level)
         else:
             action_log(_current_cycle, _current_phase, player.tag,
-                       f"deploy_{op_type}", detail, f"OK cost={cost} prob={prob}")
+                       f"deploy_{op_type}", detail, f"OK cost={cost} prob={prob}",
+                       op_type=op_type, cost=cost, prob=prob, target=target_tag,
+                       aptitude=apt_level)
         log(f"    {player.tag}: {op_type} {agent_name}→{target_tag or 'self'} cost={cost} prob={prob}")
     else:
         err = resp.get("detail", "unknown error")
         action_log(_current_cycle, _current_phase, player.tag,
-                   f"deploy_{op_type}", detail, f"FAIL: {err}")
+                   f"deploy_{op_type}", detail, f"FAIL: {err}",
+                   op_type=op_type, target=target_tag)
         log(f"    {player.tag}: {op_type} FAILED — {err}")
     return mission
 
@@ -493,9 +689,11 @@ def counter_intel(epoch_id, player):
     STATS["ci_sweeps"][player.tag] += 1
     STATS["rp_spent"][player.tag] += 3
     caught = resp.get("data", [])
+    STATS["ci_caught"][player.tag] += len(caught)
     action_log(_current_cycle, _current_phase, player.tag,
                "counter_intel", f"Sweep (RP:{player.rp}→{player.rp-3})",
-               f"caught={len(caught)}")
+               f"caught={len(caught)}",
+               caught=len(caught))
     log(f"    {player.tag}: counter-intel sweep → caught {len(caught)}")
     return caught
 
@@ -523,20 +721,30 @@ def resolve_and_score(epoch_id, admin, cycle, players):
 
         if outcome == "success":
             STATS["success"][tag] += 1
+            by_type = STATS["success_by_type"][tag]
+            by_type[op_type] = by_type.get(op_type, 0) + 1
             effect = mr.get("effect_description", "")
             action_log(cycle, "resolve", tag, f"outcome_{op_type}",
-                       f"→{target_tag} prob={prob}", f"SUCCESS {effect}")
+                       f"→{target_tag} prob={prob}", f"SUCCESS {effect}",
+                       op_type=op_type, prob=prob, target=target_tag)
         elif outcome == "detected":
             STATS["detected"][tag] += 1
+            by_type = STATS["detected_by_type"][tag]
+            by_type[op_type] = by_type.get(op_type, 0) + 1
             action_log(cycle, "resolve", tag, f"outcome_{op_type}",
-                       f"→{target_tag} prob={prob}", "DETECTED (-2 mil)")
+                       f"→{target_tag} prob={prob}", "DETECTED (-2 mil)",
+                       op_type=op_type, prob=prob, target=target_tag)
         elif outcome == "failed":
             STATS["failed"][tag] += 1
+            by_type = STATS["failed_by_type"][tag]
+            by_type[op_type] = by_type.get(op_type, 0) + 1
             action_log(cycle, "resolve", tag, f"outcome_{op_type}",
-                       f"→{target_tag} prob={prob}", "FAILED (undetected)")
+                       f"→{target_tag} prob={prob}", "FAILED (undetected)",
+                       op_type=op_type, prob=prob, target=target_tag)
         else:
             action_log(cycle, "resolve", tag, f"outcome_{op_type}",
-                       f"→{target_tag} prob={prob}", f"{outcome}")
+                       f"→{target_tag} prob={prob}", f"{outcome}",
+                       op_type=op_type, prob=prob, target=target_tag)
 
         outcomes_by_tag[tag].append(f"{op_type}→{target_tag}:{outcome}")
 
@@ -547,20 +755,27 @@ def resolve_and_score(epoch_id, admin, cycle, players):
     for tag, outs in outcomes_by_tag.items():
         log(f"    resolve {tag}: {', '.join(outs)}")
 
-    resp = api("POST", f"/api/v1/epochs/{epoch_id}/scores/compute?cycle={cycle}", admin)
-    for s in resp.get("data", []):
+    # Full cycle resolution: RP grant + missions (no-op, already resolved above) +
+    # scoring + bot cycle + advance counter. Replaces the previous explicit
+    # /scores/compute call — resolve_cycle_full handles scoring internally.
+    api("POST", f"/api/v1/epochs/{epoch_id}/resolve-cycle", admin)
+
+    # Query scores computed by resolve_cycle_full (stored under current_cycle after advance)
+    score_resp = api("GET", f"/api/v1/epochs/{epoch_id}/scores/leaderboard", admin)
+    for s in score_resp.get("data", []):
         sim_id = s.get("simulation_id", "")
         tag = next((t for t, p in players.items() if p.instance_id == sim_id), None)
         if tag:
-            sd = {d: s.get(f"{d}_score", 0) for d in ["stability", "influence", "sovereignty", "diplomatic", "military"]}
+            sd = {
+                d: s.get(f"{d}_score", 0)
+                for d in ["stability", "influence", "sovereignty", "diplomatic", "military"]
+            }
             sd["composite"] = s.get("composite_score", 0)
             SCORE_HISTORY[tag].append((cycle, sd))
             action_log(cycle, "score", tag, "score",
                        f"stab={sd['stability']:.1f} inf={sd['influence']:.1f} sov={sd['sovereignty']:.1f} "
                        f"dip={sd['diplomatic']:.1f} mil={sd['military']:.1f}",
                        f"composite={sd['composite']:.2f}")
-
-    api("POST", f"/api/v1/epochs/{epoch_id}/resolve-cycle", admin)
     parts = api("GET", f"/api/v1/epochs/{epoch_id}/participants", admin)
     part_map = {p["simulation_id"]: p for p in (parts.get("data") or [])}
     for tag, p in players.items():
@@ -596,7 +811,9 @@ def setup_game(token, name, config, tags, alliances=None):
     _game_start_time = time.time()
     players = {}
     for tag in tags:
-        p = Player(tag, ALL_SIMS[tag], token)
+        # Use per-user token if provisioned (P1.2), else fall back to shared token
+        player_token = TEST_USERS[tag]["token"] if tag in TEST_USERS else token
+        p = Player(tag, ALL_SIMS[tag], player_token)
         init_stats(tag)
         players[tag] = p
     _current_players = players  # Register for token refresh propagation
@@ -609,7 +826,10 @@ def setup_game(token, name, config, tags, alliances=None):
     epoch_id = resp["data"]["id"]
 
     for tag, p in players.items():
-        api("POST", f"/api/v1/epochs/{epoch_id}/participants", p, json={"simulation_id": p.sim_id})
+        resp = api("POST", f"/api/v1/epochs/{epoch_id}/participants", p, json={"simulation_id": p.sim_id})
+        if not resp.get("data"):
+            log(f"  FATAL: Player {tag} failed to join epoch: {resp.get('detail', 'no response')}")
+            return None, players, admin
 
     if alliances:
         for team_name, members in alliances.items():
@@ -619,7 +839,9 @@ def setup_game(token, name, config, tags, alliances=None):
             tid = resp.get("data", {}).get("id")
             if tid:
                 for joiner in members[1:]:
-                    api("POST", f"/api/v1/epochs/{epoch_id}/teams/{tid}/join?simulation_id={players[joiner].sim_id}", players[joiner])
+                    join_url = f"/api/v1/epochs/{epoch_id}/teams/{tid}/join"
+                    api("POST", f"{join_url}?simulation_id={players[joiner].sim_id}",
+                        players[joiner])
 
     api("POST", f"/api/v1/epochs/{epoch_id}/start", admin)
 
@@ -646,13 +868,16 @@ def setup_game(token, name, config, tags, alliances=None):
         p.buildings = api("GET", f"/api/v1/simulations/{p.instance_id}/buildings?limit=10", p).get("data", [])
         for e in api("GET", f"/api/v1/simulations/{p.instance_id}/embassies", p).get("data", []):
             sa, sb = e.get("simulation_a_id"), e.get("simulation_b_id")
-            if sa == p.instance_id: p.embassies[sb] = e["id"]
-            elif sb == p.instance_id: p.embassies[sa] = e["id"]
+            if sa == p.instance_id:
+                p.embassies[sb] = e["id"]
+            elif sb == p.instance_id:
+                p.embassies[sa] = e["id"]
 
-    # Validate all players got instance IDs
+    # Validate all players got instance IDs — abort if any are missing
     for tag, p in players.items():
         if not p.instance_id:
             log(f"  FATAL: Player {tag} has no instance_id after setup")
+            return None, players, admin
 
     emb_counts = {t: len(p.embassies) for t, p in players.items()}
     agent_counts = {t: len(p.agents) for t, p in players.items()}
@@ -669,7 +894,7 @@ def shorten_name(name):
     return name
 
 
-def finish_game(epoch_id, admin, players, game_name, game_desc, tags):
+def finish_game(epoch_id, admin, players, game_name, game_desc, tags, *, game_def=None):
     for _ in range(3):
         resp = api("POST", f"/api/v1/epochs/{epoch_id}/advance", admin)
         if resp.get("data", {}).get("status") == "completed":
@@ -678,23 +903,49 @@ def finish_game(epoch_id, admin, players, game_name, game_desc, tags):
     resp = api("GET", f"/api/v1/epochs/{epoch_id}/scores/leaderboard", admin)
     leaderboard = resp.get("data", [])
 
+    # Capture final RP before serializing stats (P3.2)
+    for tag in tags:
+        STATS["rp_remaining"][tag] = players[tag].rp
+
+    # Deep-copy nested stat dicts to isolate result from future state resets
+    serialized_stats = {}
+    for k, v in STATS.items():
+        serialized_stats[k] = {
+            t: (dict(inner) if isinstance(inner, dict) else inner)
+            for t, inner in v.items()
+        }
+
     result = {
         "name": game_name,
         "desc": game_desc,
         "epoch_id": epoch_id,
         "leaderboard": leaderboard,
-        "stats": {k: dict(v) for k, v in STATS.items()},
+        "stats": serialized_stats,
         "scores": {t: list(h) for t, h in SCORE_HISTORY.items()},
         "actions": list(CYCLE_ACTIONS),
         "tags": tags,
     }
+
+    # Store structured game definition for machine-parseable analysis (P3.1)
+    if game_def is not None:
+        result["config"] = game_def["config"]
+        result["strategies"] = game_def["strategies"]
+        result["ci_freq"] = game_def["ci_freq"]
+        result["alliances"] = game_def.get("alliances")
+        result["guardian_counts"] = game_def["guardian_counts"]
+        result["phase_timing"] = {
+            "foundation_cycles": game_def["foundation_cycles"],
+            "comp_end": game_def["comp_end"],
+            "reck_end": game_def["reck_end"],
+        }
+
     ALL_GAME_RESULTS.append(result)
 
     log(f"\n  LEADERBOARD — {game_name}:")
     for e in leaderboard:
         name = shorten_name(e.get("simulation_name", "?"))
         log(f"    #{e.get('rank')} {name}: {e.get('composite', 0):.1f}")
-    log(f"  STATS:")
+    log("  STATS:")
     for tag in tags:
         s = STATS["success"].get(tag, 0)
         d = STATS["detected"].get(tag, 0)
@@ -817,10 +1068,10 @@ def pick_op_for_strategy(strategy, cycle, rp, target_player):
     elif strategy == "all_out":
         if rp >= 7 and has_agents:
             return "assassin"
-        if rp >= 5:
-            return "infiltrator"
         if rp >= 5 and has_buildings:
             return "saboteur"
+        if rp >= 5:
+            return "infiltrator"
         if rp >= 4:
             return "propagandist"
         return "spy"
@@ -862,7 +1113,7 @@ def random_score_weights():
         remaining -= add
     weights[4] += remaining
     random.shuffle(weights)
-    return dict(zip(dims, weights))
+    return dict(zip(dims, weights, strict=True))
 
 
 def generate_game_config(game_num, player_count, rng):
@@ -960,7 +1211,7 @@ def run_parametric_game(token, game_def):
         token, game_def["name"], game_def["config"], tags, game_def.get("alliances"))
 
     if epoch_id is None:
-        log(f"  SKIPPING game — setup failed")
+        log("  SKIPPING game — setup failed")
         return None
 
     # Foundation
@@ -1017,7 +1268,7 @@ def run_parametric_game(token, game_def):
     run_reckoning(epoch_id, players, admin, comp_end + 1, reck_end, strategy_fn)
 
     return finish_game(epoch_id, admin, players, game_def["name"],
-                       game_def["desc"], tags)
+                       game_def["desc"], tags, game_def=game_def)
 
 
 # ── Analysis Generation ──
@@ -1028,7 +1279,7 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
     lines = [
         f"# Epoch {player_count}-Player Simulation: {len(ALL_GAME_RESULTS)}-Game Analysis",
         "",
-        f"> Simulated on 2026-02-28 (local API)",
+        f"> Simulated on {time.strftime('%Y-%m-%d')} (local API)",
         f"> Games played: {len(ALL_GAME_RESULTS)}",
         f"> Players per game: {player_count}",
         "",
@@ -1041,7 +1292,10 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
 
     win_counts = defaultdict(int)
     margins = []
-    total_stats = {k: defaultdict(int) for k in ["deployed", "success", "detected", "failed", "guardians", "ci_sweeps", "rp_spent"]}
+    total_stats = {
+        k: defaultdict(int)
+        for k in ["deployed", "success", "detected", "failed", "guardians", "ci_sweeps", "rp_spent"]
+    }
     all_composites = defaultdict(list)
     all_dim_scores = defaultdict(lambda: defaultdict(list))
     games_played = defaultdict(int)
@@ -1057,7 +1311,9 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
             margin = w_score - r_score
             margins.append(margin)
             win_counts[w_name] += 1
-            lines.append(f"| {i} | {g['name'][:40]} | {w_name} | {w_score:.1f} | {r_name} | {r_score:.1f} | {margin:.1f} |")
+            lines.append(
+                f"| {i} | {g['name'][:40]} | {w_name} | {w_score:.1f}"
+                f" | {r_name} | {r_score:.1f} | {margin:.1f} |")
 
             for e in lb:
                 name = shorten_name(e.get("simulation_name", "?"))
@@ -1099,7 +1355,9 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
                   f"- **Median margin:** {sorted(margins)[len(margins)//2]:.1f}",
                   f"- **Min margin:** {min(margins):.1f}",
                   f"- **Max margin:** {max(margins):.1f}",
-                  f"- **Close games (margin < 5):** {sum(1 for m in margins if m < 5)}/{len(margins)} ({100*sum(1 for m in margins if m < 5)/len(margins):.0f}%)",
+                  f"- **Close games (margin < 5):** "
+                  f"{sum(1 for m in margins if m < 5)}/{len(margins)}"
+                  f" ({100 * sum(1 for m in margins if m < 5) / len(margins):.0f}%)",
                   ]
 
     # Average Score by Dimension
@@ -1192,7 +1450,12 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
     rp_margins = defaultdict(list)
     rp_ops = defaultdict(lambda: [0, 0])  # [total_deployed, games]
     for g in ALL_GAME_RESULTS:
-        rpc = g["desc"].split("RP:")[1].split("/")[0] if "RP:" in g["desc"] else "?"
+        # Prefer structured config (P3.1), fall back to desc parsing for handcrafted games
+        config = g.get("config")
+        if config:
+            rpc = str(config.get("rp_per_cycle", "?"))
+        else:
+            rpc = g["desc"].split("RP:")[1].split("/")[0] if "RP:" in g["desc"] else "?"
         lb = g["leaderboard"]
         if len(lb) >= 2:
             margin = lb[0].get("composite", 0) - lb[1].get("composite", 0)
@@ -1218,17 +1481,23 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
         if not lb:
             continue
         winner = shorten_name(lb[0].get("simulation_name", "?"))
-        desc = g["desc"]
+        strategies = g.get("strategies")
         for tag in g["tags"]:
-            # Extract strategy from desc
-            strat_match = f"{tag}="
-            if strat_match in desc:
-                parts = desc.split(strat_match)
-                if len(parts) > 1:
-                    strat = parts[-1].split("/")[0].split(" ")[0]
-                    strat_wins[strat][1] += 1
-                    if ALL_SIM_NAMES.get(tag, tag) == winner:
-                        strat_wins[strat][0] += 1
+            # Prefer structured data (P3.1), fall back to desc parsing for handcrafted games
+            strat = None
+            if strategies:
+                strat = strategies.get(tag)
+            else:
+                strat_match = f"{tag}="
+                desc = g["desc"]
+                if strat_match in desc:
+                    parts = desc.split(strat_match)
+                    if len(parts) > 1:
+                        strat = parts[-1].split("/")[0].split(" ")[0]
+            if strat:
+                strat_wins[strat][1] += 1
+                if ALL_SIM_NAMES.get(tag, tag) == winner:
+                    strat_wins[strat][0] += 1
 
     lines.append("| Strategy | Appearances | Wins | Win Rate |")
     lines.append("|----------|------------|------|----------|")
@@ -1236,6 +1505,342 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
         wins, apps = strat_wins[strat]
         rate = f"{100*wins/apps:.0f}%" if apps > 0 else "N/A"
         lines.append(f"| {strat} | {apps} | {wins} | {rate} |")
+
+    # ── P3.4: Advanced Analysis Sections ──
+
+    # 1. Per-Operative-Type Effectiveness
+    lines += ["", "## Per-Operative-Type Effectiveness", "",
+              "Aggregate success rates by operative type across all games.", ""]
+    type_totals = defaultdict(lambda: {"deployed": 0, "success": 0, "detected": 0, "failed": 0})
+    for g in ALL_GAME_RESULTS:
+        for tag in g.get("tags", []):
+            for ot, count in g["stats"].get("deployed_by_type", {}).get(tag, {}).items():
+                type_totals[ot]["deployed"] += count
+            for ot, count in g["stats"].get("success_by_type", {}).get(tag, {}).items():
+                type_totals[ot]["success"] += count
+            for ot, count in g["stats"].get("detected_by_type", {}).get(tag, {}).items():
+                type_totals[ot]["detected"] += count
+            for ot, count in g["stats"].get("failed_by_type", {}).get(tag, {}).items():
+                type_totals[ot]["failed"] += count
+
+    if type_totals:
+        lines.append("| Op Type | Deployed | Success | Detected | Failed | Success Rate | Detection Rate |")
+        lines.append("|---------|----------|---------|----------|--------|-------------|---------------|")
+        for ot in sorted(type_totals.keys()):
+            t = type_totals[ot]
+            resolved = t["success"] + t["detected"] + t["failed"]
+            sr = f"{100 * t['success'] / resolved:.0f}%" if resolved > 0 else "N/A"
+            dr = f"{100 * t['detected'] / resolved:.0f}%" if resolved > 0 else "N/A"
+            lines.append(f"| {ot} | {t['deployed']} | {t['success']} "
+                         f"| {t['detected']} | {t['failed']} | {sr} | {dr} |")
+    else:
+        lines.append("*No per-type data available (handcrafted games only).*")
+
+    # 2. Counter-Intelligence Effectiveness
+    lines += ["", "## Counter-Intelligence Effectiveness", "",
+              "Catch rate per sweep and CI ROI.", ""]
+    total_ci_sw = 0
+    total_ci_ct = 0
+    ci_by_strat = defaultdict(lambda: [0, 0])  # [caught, sweeps]
+    for g in ALL_GAME_RESULTS:
+        strategies = g.get("strategies", {})
+        for tag in g.get("tags", []):
+            sweeps = g["stats"].get("ci_sweeps", {}).get(tag, 0)
+            caught_n = g["stats"].get("ci_caught", {}).get(tag, 0)
+            total_ci_sw += sweeps
+            total_ci_ct += caught_n
+            strat = strategies.get(tag, "unknown")
+            ci_by_strat[strat][0] += caught_n
+            ci_by_strat[strat][1] += sweeps
+
+    if total_ci_sw > 0:
+        lines.append(f"- **Total sweeps:** {total_ci_sw}")
+        lines.append(f"- **Total caught:** {total_ci_ct}")
+        lines.append(f"- **Catch rate:** {100 * total_ci_ct / total_ci_sw:.1f}%"
+                     f" ({total_ci_ct}/{total_ci_sw})")
+        if total_ci_ct > 0:
+            lines.append(f"- **RP cost per catch:** {3 * total_ci_sw / total_ci_ct:.1f}")
+        else:
+            lines.append("- **RP cost per catch:** ∞ (no catches)")
+        lines.append("")
+        lines.append("| Strategy | Sweeps | Caught | Catch Rate |")
+        lines.append("|----------|--------|--------|------------|")
+        for strat in sorted(ci_by_strat.keys()):
+            caught_s, sweeps_s = ci_by_strat[strat]
+            cr = f"{100 * caught_s / sweeps_s:.0f}%" if sweeps_s > 0 else "N/A"
+            lines.append(f"| {strat} | {sweeps_s} | {caught_s} | {cr} |")
+    else:
+        lines.append("*No CI sweeps recorded.*")
+
+    # 3. Score Trajectory Analysis
+    lines += ["", "## Score Trajectory Analysis", "",
+              "Tipping points, lead changes, and convergence patterns.", ""]
+    tipping_points = []
+    lead_changes_list = []
+    for g in ALL_GAME_RESULTS:
+        scores = g.get("scores", {})
+        if not scores or not g["leaderboard"]:
+            continue
+        winner_name = shorten_name(g["leaderboard"][0].get("simulation_name", "?"))
+        winner_tag = next(
+            (t for t in g["tags"] if ALL_SIM_NAMES.get(t) == winner_name), None)
+
+        all_cycles = sorted({c for hist in scores.values() for c, _ in hist})
+        lead_changes = 0
+        prev_leader = None
+        tipping = None
+        for cyc in all_cycles:
+            cycle_scores = {}
+            for tag_s, hist in scores.items():
+                for c, sd in hist:
+                    if c == cyc:
+                        cycle_scores[tag_s] = sd.get("composite", 0) if isinstance(sd, dict) else 0
+            if not cycle_scores:
+                continue
+            leader = max(cycle_scores, key=cycle_scores.get)
+            if leader != prev_leader and prev_leader is not None:
+                lead_changes += 1
+            prev_leader = leader
+            if leader == winner_tag and tipping is None:
+                tipping = cyc
+
+        if tipping is not None:
+            tipping_points.append(tipping)
+        lead_changes_list.append(lead_changes)
+
+    if tipping_points:
+        lines.append(f"- **Avg tipping point:** cycle {sum(tipping_points) / len(tipping_points):.1f}"
+                     f" (earliest: {min(tipping_points)}, latest: {max(tipping_points)})")
+    if lead_changes_list:
+        lines.append(f"- **Avg lead changes per game:** "
+                     f"{sum(lead_changes_list) / len(lead_changes_list):.1f}"
+                     f" (max: {max(lead_changes_list)})")
+        decided_early = sum(1 for lc in lead_changes_list if lc == 0)
+        contested = sum(1 for lc in lead_changes_list if lc >= 3)
+        lines.append(f"- **Decided early (0 lead changes):** {decided_early}/{len(lead_changes_list)}")
+        lines.append(f"- **Contested (3+ lead changes):** {contested}/{len(lead_changes_list)}")
+
+    # 4. Phase-Based Outcomes
+    lines += ["", "## Phase-Based Outcomes", "",
+              "Mission outcomes grouped by game phase.", ""]
+    phase_outcomes = defaultdict(lambda: {"deployed": 0, "success": 0, "detected": 0, "failed": 0})
+    for g in ALL_GAME_RESULTS:
+        for a in g.get("actions", []):
+            action = a.get("action", "")
+            result_str = a.get("result", "")
+            phase = a.get("phase", "?")
+            if action.startswith("outcome_"):
+                if "SUCCESS" in result_str:
+                    phase_outcomes[phase]["success"] += 1
+                elif "DETECTED" in result_str:
+                    phase_outcomes[phase]["detected"] += 1
+                elif "FAILED" in result_str:
+                    phase_outcomes[phase]["failed"] += 1
+            elif action.startswith("deploy_") and result_str.startswith("OK"):
+                phase_outcomes[phase]["deployed"] += 1
+
+    if phase_outcomes:
+        lines.append("| Phase | Deployed | Success | Detected | Failed | Success Rate |")
+        lines.append("|-------|----------|---------|----------|--------|-------------|")
+        for phase in ["foundation", "competition", "reckoning"]:
+            if phase not in phase_outcomes:
+                continue
+            po = phase_outcomes[phase]
+            resolved = po["success"] + po["detected"] + po["failed"]
+            sr = f"{100 * po['success'] / resolved:.0f}%" if resolved > 0 else "N/A"
+            lines.append(f"| {phase} | {po['deployed']} | {po['success']} "
+                         f"| {po['detected']} | {po['failed']} | {sr} |")
+    else:
+        lines.append("*No action data available.*")
+
+    # 5. Strategy Matchup Matrix
+    _strat_abbrev = {
+        "balanced": "BAL", "spy_heavy": "SPY", "saboteur_heavy": "SAB",
+        "assassin_rush": "ASN", "propagandist": "PRO", "ci_defensive": "CID",
+        "all_out": "ALL", "infiltrator": "INF", "econ_build": "ECO",
+        "random_mix": "RND",
+    }
+    lines += ["", "## Strategy Matchup Matrix", "",
+              "Win rate when two strategies co-appear. Row = strategy, column = opponent strategy.", ""]
+
+    strat_matchup = defaultdict(lambda: defaultdict(lambda: [0, 0]))  # [wins, meetings]
+    all_strats_seen = set()
+    for g in ALL_GAME_RESULTS:
+        strategies = g.get("strategies")
+        if not strategies:
+            continue
+        lb = g["leaderboard"]
+        if not lb:
+            continue
+        winner_name = shorten_name(lb[0].get("simulation_name", "?"))
+        winner_tag = next(
+            (t for t in g["tags"] if ALL_SIM_NAMES.get(t) == winner_name), None)
+        game_strats = [(tag, strategies[tag]) for tag in g["tags"]]
+        for tag_a, strat_a in game_strats:
+            all_strats_seen.add(strat_a)
+            for tag_b, strat_b in game_strats:
+                if tag_a == tag_b:
+                    continue
+                strat_matchup[strat_a][strat_b][1] += 1
+                if tag_a == winner_tag:
+                    strat_matchup[strat_a][strat_b][0] += 1
+
+    if all_strats_seen:
+        sorted_strats = sorted(all_strats_seen)
+        abbr = [_strat_abbrev.get(s, s[:6]) for s in sorted_strats]
+        header = "| vs | " + " | ".join(abbr) + " |"
+        sep = "|" + "|".join(["----"] * (len(sorted_strats) + 1)) + "|"
+        lines.append(header)
+        lines.append(sep)
+        for i_s, strat_a in enumerate(sorted_strats):
+            row = f"| **{abbr[i_s]}** |"
+            for j_s, strat_b in enumerate(sorted_strats):
+                if i_s == j_s:
+                    row += " - |"
+                else:
+                    wins, meets = strat_matchup[strat_a][strat_b]
+                    if meets >= 2:
+                        row += f" {100 * wins / meets:.0f}% |"
+                    elif meets == 1:
+                        row += f" {'W' if wins else 'L'} |"
+                    else:
+                        row += " - |"
+            lines.append(row)
+        lines.append("")
+        lines.append("Legend: " + ", ".join(
+            f"{a}={s}" for a, s in zip(abbr, sorted_strats, strict=True)))
+    else:
+        lines.append("*No structured strategy data available.*")
+
+    # 6. Alliance Impact
+    lines += ["", "## Alliance Impact", "",
+              "Win rates for allied vs solo players (parametric games only).", ""]
+    allied_wins = [0, 0]  # [wins, appearances]
+    solo_wins = [0, 0]
+    alliance_game_count = 0
+    no_alliance_game_count = 0
+    for g in ALL_GAME_RESULTS:
+        if "config" not in g:
+            continue  # Skip handcrafted games without structured data
+        alliances = g.get("alliances")
+        lb = g["leaderboard"]
+        if not lb:
+            continue
+        winner_name = shorten_name(lb[0].get("simulation_name", "?"))
+        allied_tags = set()
+        if alliances:
+            alliance_game_count += 1
+            for members in alliances.values():
+                allied_tags.update(members)
+        else:
+            no_alliance_game_count += 1
+        for tag in g["tags"]:
+            is_winner = ALL_SIM_NAMES.get(tag) == winner_name
+            if tag in allied_tags:
+                allied_wins[1] += 1
+                if is_winner:
+                    allied_wins[0] += 1
+            else:
+                solo_wins[1] += 1
+                if is_winner:
+                    solo_wins[0] += 1
+
+    if allied_wins[1] > 0 or solo_wins[1] > 0:
+        lines.append("| Status | Appearances | Wins | Win Rate |")
+        lines.append("|--------|------------|------|----------|")
+        if allied_wins[1] > 0:
+            lines.append(f"| Allied | {allied_wins[1]} | {allied_wins[0]} "
+                         f"| {100 * allied_wins[0] / allied_wins[1]:.0f}% |")
+        if solo_wins[1] > 0:
+            lines.append(f"| Solo | {solo_wins[1]} | {solo_wins[0]} "
+                         f"| {100 * solo_wins[0] / solo_wins[1]:.0f}% |")
+        lines.append("")
+        lines.append(f"- **Games with alliances:** {alliance_game_count}")
+        lines.append(f"- **Games without alliances:** {no_alliance_game_count}")
+    else:
+        lines.append("*No alliance data available.*")
+
+    # 7. Parameter Sensitivity
+    lines += ["", "## Parameter Sensitivity", "",
+              "How game configuration parameters affect victory margins.", ""]
+    param_margins = defaultdict(lambda: defaultdict(list))
+    for g in ALL_GAME_RESULTS:
+        config = g.get("config")
+        if not config:
+            continue
+        lb = g["leaderboard"]
+        margin = (lb[0].get("composite", 0) - lb[1].get("composite", 0)) if len(lb) >= 2 else None
+        if margin is None:
+            continue
+        for param in ["rp_per_cycle", "rp_cap", "foundation_pct", "reckoning_pct",
+                      "allow_betrayal", "max_team_size"]:
+            val = config.get(param)
+            if val is not None:
+                param_margins[param][str(val)].append(margin)
+
+    def _param_sort_key(x):
+        try:
+            return (0, float(x))
+        except ValueError:
+            return (1, x)
+
+    if param_margins:
+        for param in ["rp_per_cycle", "rp_cap", "foundation_pct", "reckoning_pct",
+                      "allow_betrayal", "max_team_size"]:
+            if param not in param_margins:
+                continue
+            lines.append(f"**{param}:**")
+            lines.append("")
+            lines.append("| Value | Games | Avg Margin | Min | Max |")
+            lines.append("|-------|-------|------------|-----|-----|")
+            for val in sorted(param_margins[param].keys(), key=_param_sort_key):
+                vals = param_margins[param][val]
+                avg = sum(vals) / len(vals)
+                lines.append(f"| {val} | {len(vals)} | {avg:.1f} | {min(vals):.1f} | {max(vals):.1f} |")
+            lines.append("")
+    else:
+        lines.append("*No structured config data available (handcrafted games only).*")
+
+    # 8. Probability Calibration
+    lines += ["", "## Probability Calibration", "",
+              "Predicted success probability vs actual outcome rate.", ""]
+    prob_buckets = defaultdict(lambda: [0, 0])  # [successes, total]
+    for g in ALL_GAME_RESULTS:
+        for a in g.get("actions", []):
+            if not a.get("action", "").startswith("outcome_"):
+                continue
+            prob_val = a.get("prob")
+            if prob_val is None or prob_val == "?":
+                continue
+            try:
+                p = float(prob_val)
+            except (ValueError, TypeError):
+                continue
+            bucket = min(int(p * 100) // 20, 4)
+            label = f"{bucket * 20}-{(bucket + 1) * 20}%"
+            prob_buckets[label][1] += 1
+            if "SUCCESS" in a.get("result", ""):
+                prob_buckets[label][0] += 1
+
+    if prob_buckets:
+        lines.append("| Predicted Range | Missions | Successes | Actual Rate | Calibration |")
+        lines.append("|----------------|----------|-----------|-------------|-------------|")
+        for bucket_idx in range(5):
+            label = f"{bucket_idx * 20}-{(bucket_idx + 1) * 20}%"
+            if label not in prob_buckets:
+                continue
+            suc, total = prob_buckets[label]
+            actual = 100 * suc / total if total > 0 else 0
+            midpoint = bucket_idx * 20 + 10
+            if actual > midpoint + 10:
+                cal = "over-performs"
+            elif actual < midpoint - 10:
+                cal = "under-performs"
+            else:
+                cal = "well-calibrated"
+            lines.append(f"| {label} | {total} | {suc} | {actual:.0f}% | {cal} |")
+    else:
+        lines.append("*No probability data available in action logs.*")
 
     # Per-game condensed details (no cycle-by-cycle actions for 60-game runs)
     if len(ALL_GAME_RESULTS) <= 20 or include_actions:
@@ -1289,6 +1894,13 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
         f.write(md)
     print(f"\nAnalysis written to: {output_path} ({len(lines)} lines)")
 
+    # P3.5: Export structured data as JSON for external analysis (pandas/jupyter)
+    json_path = output_path.replace("-analysis.md", "-data.json")
+    if json_path != output_path:  # Only write if the path actually changed
+        with open(json_path, "w") as f:
+            json.dump(ALL_GAME_RESULTS, f, indent=2, default=str)
+        print(f"Data export written to: {json_path} ({len(ALL_GAME_RESULTS)} games)")
+
 
 def run_battery(title, player_count, games, log_path, md_path, include_actions=False):
     """Run a battery of games and generate output."""
@@ -1302,6 +1914,8 @@ def run_battery(title, player_count, games, log_path, md_path, include_actions=F
     log("\nAuthenticating...")
     token = auth_login()
     log("OK\n")
+
+    provision_test_users(_active_tags)
 
     for i, fn in enumerate(games, 1):
         log(f"\n{'='*70}")
@@ -1393,6 +2007,8 @@ def run_parametric_battery(title, player_count, num_games, all_tags, log_path, m
     token = auth_login()
     log("OK\n")
 
+    provision_test_users(all_tags)
+
     # Regenerate RNG to the correct position (deterministic skip)
     rng = random.Random(seed)
     for i in range(1, start_game):
@@ -1404,7 +2020,13 @@ def run_parametric_battery(title, player_count, num_games, all_tags, log_path, m
         log(f"GAME {i}/{num_games}: {game_def['name']}")
         log(f"  {game_def['desc']}")
         log(f"{'='*70}")
-        result = run_parametric_game(token, game_def)
+        try:
+            result = run_parametric_game(token, game_def)
+        except Exception as e:
+            log(f"  ERROR in game {i}: {e}")
+            log(f"  {traceback.format_exc()}")
+            result = None
+
         if result is None:
             log(f"  Game {i} failed — restarting backend and retrying...")
             _http_client.close()
@@ -1418,7 +2040,12 @@ def run_parametric_battery(title, player_count, num_games, all_tags, log_path, m
             )
             token = auth_login()
             reset_game_state()
-            result = run_parametric_game(token, game_def)
+            try:
+                result = run_parametric_game(token, game_def)
+            except Exception as e:
+                log(f"  ERROR in game {i} (retry): {e}")
+                log(f"  {traceback.format_exc()}")
+                result = None
         log("")
 
         # Save checkpoint after every game
@@ -1433,7 +2060,7 @@ def run_parametric_battery(title, player_count, num_games, all_tags, log_path, m
         # (set_session() creates httpx clients that never close). After ~10 games,
         # this exhausts the ephemeral port pool (~16k on macOS).
         if i % 5 == 0:
-            log(f"  🔄 Proactive backend restart (every 5 games)...")
+            log("  🔄 Proactive backend restart (every 5 games)...")
             _restart_backend()
         time.sleep(5)
         _wait_for_ports(f"after game {i}")

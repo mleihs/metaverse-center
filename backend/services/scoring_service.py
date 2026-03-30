@@ -59,10 +59,27 @@ class ScoringService:
 
         scores = resp.data or []
         if not scores:
+            # Retry once with forced MV refresh — stale materialized views
+            # are the primary cause of empty scoring results (6% rate in v2.1).
             logger.warning(
-                "Scoring RPC returned no data",
+                "Scoring RPC returned no data — retrying after MV refresh",
                 extra={"epoch_id": str(epoch_id), "cycle_number": cycle_number},
             )
+            try:
+                await supabase.rpc("refresh_all_game_metrics").execute()
+            except (PostgrestAPIError, httpx.HTTPError):
+                logger.warning("MV refresh retry also failed")
+            resp = await supabase.rpc("fn_compute_cycle_scores", {
+                "p_epoch_id": str(epoch_id),
+                "p_cycle_number": cycle_number,
+                "p_score_weights": score_weights,
+            }).execute()
+            scores = resp.data or []
+            if not scores:
+                logger.error(
+                    "Scoring empty after MV refresh retry",
+                    extra={"epoch_id": str(epoch_id), "cycle_number": cycle_number},
+                )
 
         return scores
 
@@ -474,7 +491,14 @@ class ScoringService:
             if max_resp.data:
                 cycle_number = max_resp.data[0]["cycle_number"]
             else:
-                cycle_number = epoch.get("current_cycle", 1)
+                # No scores exist — fall back to last resolved cycle.
+                # current_cycle points one past the last resolved, so use -1.
+                cycle_number = max(1, epoch.get("current_cycle", 1) - 1)
+                logger.warning(
+                    "No epoch_scores found — falling back to cycle %d",
+                    cycle_number,
+                    extra={"epoch_id": str(epoch_id)},
+                )
 
         resp = await (
             supabase.table("epoch_scores")

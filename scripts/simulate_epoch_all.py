@@ -10,7 +10,7 @@ for reproducibility.
 import sys
 sys.path.insert(0, "/Users/mleihs/Dev/velgarien-rebuild/scripts")
 
-from epoch_sim_lib import run_parametric_battery, set_active_tags
+from epoch_sim_lib import run_parametric_battery
 
 BASE_DIR = "/Users/mleihs/Dev/velgarien-rebuild"
 NUM_GAMES = 50
@@ -20,7 +20,7 @@ PLAYER_COUNTS = [2, 3, 4, 5]
 
 
 def run_2p():
-    tags_2p = ["V", "CK", "SN", "SP"]  # NM excluded from 2P (only 4 possible matchups)
+    tags_2p = ["V", "GR", "SN", "SP"]  # NM excluded from 2P (only 4 possible matchups)
     run_parametric_battery(
         f"{NUM_GAMES} Games — 2 Players",
         2, NUM_GAMES, tags_2p,
@@ -31,7 +31,7 @@ def run_2p():
 
 
 def run_3p():
-    tags_3p = ["V", "CK", "SN", "SP", "NM"]
+    tags_3p = ["V", "GR", "SN", "SP", "NM"]
     run_parametric_battery(
         f"{NUM_GAMES} Games — 3 Players",
         3, NUM_GAMES, tags_3p,
@@ -43,7 +43,7 @@ def run_3p():
 
 
 def run_4p():
-    tags_4p = ["V", "CK", "SN", "SP", "NM"]
+    tags_4p = ["V", "GR", "SN", "SP", "NM"]
     run_parametric_battery(
         f"{NUM_GAMES} Games — 4 Players",
         4, NUM_GAMES, tags_4p,
@@ -55,7 +55,7 @@ def run_4p():
 
 
 def run_5p():
-    tags_5p = ["V", "CK", "SN", "SP", "NM"]
+    tags_5p = ["V", "GR", "SN", "SP", "NM"]
     run_parametric_battery(
         f"{NUM_GAMES} Games — 5 Players",
         5, NUM_GAMES, tags_5p,
