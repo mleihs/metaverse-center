@@ -582,6 +582,11 @@ export class VelgDarkroomStudio extends LitElement {
     }
 
     @media (prefers-reduced-motion: reduce) {
+      :host {
+        animation: none;
+        opacity: 1;
+      }
+
       .overlay,
       .regen-panel {
         animation: none;

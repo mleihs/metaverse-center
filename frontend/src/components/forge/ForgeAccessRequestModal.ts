@@ -309,6 +309,21 @@ export class VelgForgeAccessModal extends LitElement {
       transform: none;
       box-shadow: none;
     }
+
+    @media (prefers-reduced-motion: reduce) {
+      .classification,
+      .tier-upgrade,
+      .description,
+      .field-group,
+      .actions {
+        animation: none;
+        opacity: 1;
+      }
+
+      .btn--submit:hover {
+        transform: none;
+      }
+    }
   `;
 
   @property({ type: Boolean, reflect: true }) open = false;

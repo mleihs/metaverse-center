@@ -29,6 +29,7 @@ import {
   formatCombatResolution,
   formatCombatStalemate,
   formatCombatStart,
+  formatRoundTransition,
   formatDungeonComplete,
   formatDungeonEntry,
   formatDungeonMap,
@@ -265,7 +266,7 @@ export async function startDungeonRun(
     const { run, state } = resp.data;
     dungeonState.applyState(state);
     terminalState.clearOutput();
-    terminalState.initializeDungeon(String(run.id));
+    terminalState.initializeDungeon(String(run.id), state.archetype);
 
     // Atmosphere text from archetype config (placeholder for now)
     const atmosphereText = '';
@@ -868,8 +869,9 @@ async function handleDungeonSubmit(): Promise<TerminalLine[]> {
         lines.push(...formatCombatStalemate());
       }
 
-      // Next round → show planning again
+      // Next round → visual break, then new round header + planning
       if (resp.data.state.phase === 'combat_planning' && resp.data.state.combat) {
+        lines.push(...formatRoundTransition(resp.data.round_result.round));
         lines.push(...formatCombatStart(resp.data.state.combat));
         lines.push(...formatCombatPlanning(resp.data.state.party));
       }

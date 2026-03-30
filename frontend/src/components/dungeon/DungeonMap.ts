@@ -118,6 +118,13 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
   /** When true, map is always expanded (toggle hidden, no max-height). */
   @property({ type: Boolean, reflect: true }) persistent = false;
 
+  // ── Animation state-diffing (non-reactive) ────────────────────────────
+  private _diffInitialized = false;
+  private _previouslyRevealed = new Set<number>();
+  private _previousDepth: number | undefined;
+  private _newlyRevealed = new Set<number>();
+  private _depthHighlight = new Set<number>();
+
   static styles = [
     terminalTokens,
     terminalComponentTokens,
@@ -304,6 +311,28 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
         }
       }
 
+      /* ── Room reveal: radar-blip effect (circle scales in, label fades) ── */
+      @keyframes reveal-blip {
+        0% { transform: scale(0); opacity: 0; }
+        60% { transform: scale(1.15); opacity: 1; }
+        100% { transform: scale(1); }
+      }
+
+      @keyframes reveal-fade {
+        0%, 40% { opacity: 0; }
+        100% { opacity: 1; }
+      }
+
+      /* ── Depth transition: sonar-ping glow ── */
+      @keyframes depth-ping {
+        0% { filter: none; }
+        35% {
+          filter: drop-shadow(0 0 10px var(--_phosphor-glow))
+            drop-shadow(0 0 4px var(--_phosphor));
+        }
+        100% { filter: none; }
+      }
+
       /* ── Empty ── */
       .map-empty {
         padding: 8px;
@@ -335,6 +364,15 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
         }
         .node--boss .node__circle {
           animation: boss-pulse 3s ease-in-out infinite;
+        }
+        .node--just-revealed .node__circle {
+          animation: reveal-blip 300ms ease-out;
+        }
+        .node--just-revealed .node__label {
+          animation: reveal-fade 300ms ease-out;
+        }
+        .node--depth-highlight .node__circle {
+          animation: depth-ping 500ms ease-out;
         }
       }
 
@@ -382,6 +420,57 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
     ) {
       dungeonState.mapExpanded.value = false;
     }
+  }
+
+  /**
+   * Pre-render: compute animation diffs by comparing current signal
+   * values against the snapshot taken in updated(). First render
+   * skipped to prevent all rooms animating on mount/recovery.
+   */
+  override willUpdate(): void {
+    const rooms = dungeonState.rooms.value;
+    const currentRoom = dungeonState.currentRoom.value;
+
+    this._newlyRevealed.clear();
+    this._depthHighlight.clear();
+
+    if (!this._diffInitialized) {
+      this._diffInitialized = true;
+      return;
+    }
+
+    // Detect rooms that transitioned from fog to revealed
+    for (const room of rooms) {
+      if (room.revealed && !this._previouslyRevealed.has(room.index)) {
+        this._newlyRevealed.add(room.index);
+      }
+    }
+
+    // Detect depth change — highlight all revealed rooms at new depth
+    const currentDepth = currentRoom?.depth;
+    if (
+      currentDepth !== undefined &&
+      this._previousDepth !== undefined &&
+      currentDepth !== this._previousDepth
+    ) {
+      for (const room of rooms) {
+        if (room.depth === currentDepth && room.revealed) {
+          this._depthHighlight.add(room.index);
+        }
+      }
+    }
+  }
+
+  /** Post-render: snapshot current state for next diff cycle. */
+  override updated(): void {
+    const rooms = dungeonState.rooms.value;
+    const currentRoom = dungeonState.currentRoom.value;
+
+    this._previouslyRevealed.clear();
+    for (const room of rooms) {
+      if (room.revealed) this._previouslyRevealed.add(room.index);
+    }
+    this._previousDepth = currentRoom?.depth;
   }
 
   // ── Render ──────────────────────────────────────────────────────────────
@@ -490,6 +579,8 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
           !room.revealed ? 'node--fog' : '',
           isAdj ? 'node--adjacent' : '',
           room.room_type === 'boss' ? 'node--boss' : '',
+          this._newlyRevealed.has(room.index) ? 'node--just-revealed' : '',
+          this._depthHighlight.has(room.index) ? 'node--depth-highlight' : '',
         ]
           .filter(Boolean)
           .join(' ');

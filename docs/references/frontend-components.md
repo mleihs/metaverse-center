@@ -1,7 +1,7 @@
 ---
 title: "Frontend Components"
 id: frontend-components
-version: "3.6"
+version: "3.7"
 date: 2026-03-30
 lang: de
 type: reference
@@ -824,8 +824,8 @@ Alle Änderungen zeigen eine Live-Preview innerhalb der Shell. Preset-Auswahl f�
 | agents/ | 6 | 6 | View, Card, EditModal, DetailsPanel, RelationshipCard/EditModal |
 | buildings/ | 6 | 6 | View, Card, EditModal, DetailsPanel, EmbassyCreate/Link |
 | events/ | 6 | 6 | View, Card, EditModal, DetailsPanel, EchoCard/TriggerModal |
-| terminal/ | 4 | 4 | BureauTerminal (CRT MUD interface, Stage 1-3 + Epoch Tier 4: 23 commands), TerminalQuickActions (uses shared terminalActionStyles), TerminalView (template wrapper), EpochTerminalView (epoch wrapper) |
-| dungeon/ | 7 | 7 | DungeonTerminalView (route entry, 3-column grid at 1440px+ Terminal/Party/Map 1fr 300px 260px, FAB + dialog for map at <1200px, native dialog with showModal() for overlay, Wake Lock), DungeonHeader (depth gauge, archetype-specific badge color Shadow=violet/Tower=orange, room counter 'N visited', depth label 'D2/6', Tower stability FAILURE blink at 0), DungeonQuickActions (phase-driven, shares terminalActionStyles), DungeonMap (persistent property for sidebar/column mode, boss room red pulse animation 3s, responsive: always-visible in 3-column layout 1440px+, collapsible in sidebar 1200-1440px, dialog overlay <1200px), DungeonPartyPanel, DungeonEnemyPanel, DungeonCombatBar |
+| terminal/ | 4 | 4 | BureauTerminal (CRT MUD interface, Stage 1-3 + Epoch Tier 4: 23 commands, statusbar zone/dungeon-label switch via isDungeonMode), TerminalQuickActions (uses shared terminalActionStyles), TerminalView (template wrapper), EpochTerminalView (epoch wrapper) |
+| dungeon/ | 7 | 7 | DungeonTerminalView (route entry, 3-column grid at 1440px+ Terminal/Party/Map 1fr 300px 260px, FAB + dialog for map at <1200px, native dialog with showModal() for overlay, Wake Lock, dungeon recovery passes archetype label to terminal), DungeonHeader (depth gauge, archetype-specific badge color Shadow=violet/Tower=orange, room counter 'N visited', depth label 'D2/6', Tower stability FAILURE blink at 0), DungeonQuickActions (phase-driven, shares terminalActionStyles), DungeonMap (persistent property for sidebar/column mode, boss room red pulse 3s, room reveal radar-blip 300ms via state-diffing willUpdate/updated, depth-transition sonar-ping 500ms, all behind prefers-reduced-motion: no-preference, responsive: always-visible in 3-column layout 1440px+, collapsible in sidebar 1200-1440px, dialog overlay <1200px), DungeonPartyPanel, DungeonEnemyPanel, DungeonCombatBar |
 | chat/ | 7 | 7 | View, Window, ConversationList, MessageList/Input, AgentSelector, EventPicker |
 | social/ | 9 | 9 | TrendsView, MediaView, CampaignDashboard, Cards, Modals, TrendFilterBar |
 | locations/ | 5 | 5 | View, CityList, ZoneList, StreetList, LocationEditModal |
@@ -851,7 +851,7 @@ frontend/src/utils/
 ├── terminal-formatters.ts          # 20+ format functions: formatLook, formatExamine, formatScan, formatInvestigate, formatReport, formatDebrief, formatAskResponse, _wordWrap, _truncate, _timeAgo
 ├── terminal-initialization.ts      # initializeTerminalZones() — shared zone init (TerminalView, EpochTerminalView, DungeonTerminalView)
 ├── dungeon-commands.ts             # Dungeon-mode dispatcher + 10 handlers (dungeon, move, map, look, status, scout, rest, retreat, interact, attack, submit), 3 verb categories with clearance tiers
-├── dungeon-formatters.ts           # 16 pure formatters: formatDungeonMap, formatRoomEntry, formatCombatStart, formatCombatResolution, formatEncounterChoices, formatLootDrop, formatSkillCheckResult, formatPartyWipe, formatDungeonComplete, etc.
+├── dungeon-formatters.ts           # 17 pure formatters: formatDungeonMap, formatRoomEntry, formatCombatStart, formatCombatResolution, formatRoundTransition (inter-round visual break ─ vs ═ hierarchy), formatEncounterChoices, formatLootDrop, formatSkillCheckResult, formatPartyWipe, formatDungeonComplete, etc.
 └── theme-colors.ts                 # getThemeColor(), getThemeVariant(), getGlowColor(), THEME_COLORS map
 ```
 

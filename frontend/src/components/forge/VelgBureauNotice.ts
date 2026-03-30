@@ -145,6 +145,7 @@ export class VelgBureauNotice extends LitElement {
     @media (prefers-reduced-motion: reduce) {
       :host { animation: none; opacity: 1; }
       :host(.dismissing) { animation: none; display: none; }
+      .notice__cta { animation: none; }
     }
 
     @media (max-width: 480px) {

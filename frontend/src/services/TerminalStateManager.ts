@@ -82,6 +82,8 @@ class TerminalStateManager {
   // --- Dungeon State (NOT persisted — DungeonStateManager owns actual state) ---
   /** Active dungeon run ID. Only used for command routing (isDungeonMode). */
   readonly dungeonRunId = signal<string | null>(null);
+  /** Archetype label shown in statusbar during dungeon mode (e.g. "The Shadow"). */
+  readonly dungeonLabel = signal<string | null>(null);
 
   // --- Computed ---
   readonly isDungeonMode = computed(() => this.dungeonRunId.value !== null);
@@ -230,13 +232,15 @@ class TerminalStateManager {
    * Actual dungeon state lives in DungeonStateManager — this only tracks
    * the mode flag for command routing (move → room-move, look → room-look).
    */
-  initializeDungeon(runId: string): void {
+  initializeDungeon(runId: string, label?: string): void {
     this.dungeonRunId.value = runId;
+    this.dungeonLabel.value = label ?? null;
   }
 
   /** Exit dungeon mode. Called after completion, wipe, or retreat. */
   clearDungeon(): void {
     this.dungeonRunId.value = null;
+    this.dungeonLabel.value = null;
   }
 
   // ── Output Management ──────────────────────────────────────────────────

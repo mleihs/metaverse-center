@@ -890,7 +890,9 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
 
         <div class="terminal__status">
           <span class="terminal__status-zone">
-            ${zone ? zone.name.toUpperCase() : msg('NO SECTOR')}
+            ${terminalState.isDungeonMode.value
+              ? (terminalState.dungeonLabel.value?.toUpperCase() ?? msg('DUNGEON'))
+              : (zone ? zone.name.toUpperCase() : msg('NO SECTOR'))}
           </span>
           <div class="terminal__status-resources">
             <span>LVL ${clearance}</span>

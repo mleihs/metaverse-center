@@ -367,6 +367,12 @@ export const forgeStatusStyles = css`
   @keyframes blink {
     50% { opacity: 0; }
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    .generating-indicator::before {
+      animation: none;
+    }
+  }
 `;
 
 export const forgeSectionStyles = css`

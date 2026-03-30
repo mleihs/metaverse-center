@@ -233,6 +233,26 @@ export class VelgClearanceCard extends LitElement {
       letter-spacing: 1px;
     }
 
+    @media (prefers-reduced-motion: reduce) {
+      :host {
+        animation: none;
+        opacity: 1;
+      }
+
+      .btn-apply {
+        animation: none;
+        opacity: 1;
+      }
+
+      .btn-apply:hover {
+        transform: none;
+      }
+
+      .pending-dot {
+        animation: none;
+      }
+    }
+
     @media (max-width: 560px) {
       .card { padding: 16px; }
     }

@@ -436,6 +436,18 @@ export function formatCombatResolution(
   return lines;
 }
 
+/**
+ * Visual break between completed round and the next planning phase.
+ * Uses ─ (light horizontal) to distinguish from ═ (double) round headers.
+ */
+export function formatRoundTransition(completedRound: number): TerminalLine[] {
+  return [
+    combatSystemLine(''),
+    combatSystemLine(`${'─'.repeat(16)} ${msg('Round')} ${completedRound} ${msg('complete')} ${'─'.repeat(16)}`),
+    combatSystemLine(''),
+  ];
+}
+
 /** Format a single combat event with semantic color based on context. */
 function _formatCombatEvent(event: CombatEvent, isEnemyAction: boolean): TerminalLine {
   const tag = _eventTag(event, isEnemyAction);
