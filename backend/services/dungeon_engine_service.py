@@ -1007,7 +1007,7 @@ class DungeonEngineService:
         """Handle an encounter choice (skill check resolution)."""
         instance = await cls._get_instance(run_id, admin_supabase, require_player=user_id)
 
-        if instance.phase != "encounter":
+        if instance.phase not in ("encounter", "rest"):
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Not in encounter phase")
 
         current_room = instance.rooms[instance.current_room]

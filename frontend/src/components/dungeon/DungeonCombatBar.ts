@@ -31,7 +31,7 @@ import type {
   CombatAction,
   EnemyCombatStateClient,
 } from '../../types/dungeon.js';
-import { getConditionLabel } from '../../utils/dungeon-formatters.js';
+import { buildEnemyDisplayNames, getConditionLabel } from '../../utils/dungeon-formatters.js';
 import {
   terminalComponentTokens,
   terminalTokens,
@@ -978,32 +978,21 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
   }
 
   private _renderTargets(enemies: EnemyCombatStateClient[]) {
-    // Disambiguate enemies with the same name by appending condition or letter suffix
-    const nameCounts = new Map<string, number>();
-    for (const e of enemies) {
-      nameCounts.set(e.name_en, (nameCounts.get(e.name_en) ?? 0) + 1);
-    }
-    const nameIndexes = new Map<string, number>();
+    const displayNames = buildEnemyDisplayNames(enemies);
 
     return html`
       <div class="targets" role="listbox" aria-label=${msg('Select target')}>
         <span class="targets__label">\u25BA ${msg('Target')}:</span>
         ${enemies.map((enemy) => {
-          let label = enemy.name_en;
-          if ((nameCounts.get(enemy.name_en) ?? 0) > 1) {
-            const idx = nameIndexes.get(enemy.name_en) ?? 0;
-            nameIndexes.set(enemy.name_en, idx + 1);
-            const suffix = String.fromCharCode(65 + idx); // A, B, C...
-            const cond = enemy.condition_display !== 'healthy' ? ` ${enemy.condition_display}` : '';
-            label = `${enemy.name_en} ${suffix}${cond}`;
-          }
+          const baseName = displayNames.get(enemy.instance_id) ?? enemy.name_en;
+          const cond = enemy.condition_display !== 'healthy' ? ` (${enemy.condition_display})` : '';
           return html`
             <button
               class="target"
               role="option"
               @click=${() => this._handleTargetClick(enemy.instance_id)}
             >
-              ${label}
+              ${baseName}${cond}
             </button>
           `;
         })}

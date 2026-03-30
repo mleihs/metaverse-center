@@ -349,7 +349,7 @@ async function handleDungeonMove(ctx: CommandContext): Promise<TerminalLine[]> {
     // Encounter / treasure / rest choices (any room with interactive choices)
     if (result.choices && result.description_en) {
       dungeonState.encounterChoices.value = result.choices;
-      lines.push(...formatEncounterChoices(result.description_en, result.choices, result.state.party));
+      lines.push(...formatEncounterChoices(result.description_en, result.choices, result.state.party, room?.room_type));
     }
 
     // Treasure (auto-loot, no choices)
@@ -656,7 +656,7 @@ async function handleDungeonInteract(ctx: CommandContext): Promise<TerminalLine[
   const runId = dungeonState.runId.value;
   if (!state || !runId) return [errorLine(msg('No active dungeon.'))];
 
-  if (state.phase !== 'encounter') {
+  if (state.phase !== 'encounter' && state.phase !== 'rest') {
     return [errorLine(msg('No active encounter.'))];
   }
 

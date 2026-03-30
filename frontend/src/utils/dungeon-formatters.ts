@@ -14,6 +14,7 @@ import type {
   CombatRoundResult,
   CombatStateClient,
   DungeonClientState,
+  EnemyCombatStateClient,
   EncounterChoiceClient,
   LootItem,
   RoomNodeClient,
@@ -58,6 +59,42 @@ export const LOOT_TIER_MARKERS: Record<number, string> = { 1: '\u25C6', 2: '\u26
 function getMaxDepth(rooms: RoomNodeClient[]): number {
   if (rooms.length === 0) return 0;
   return Math.max(...rooms.map(r => r.depth));
+}
+
+// ── Enemy Name Disambiguation ───────────────────────────────────────────────
+
+/**
+ * Build display names for enemies, appending alphabetic suffixes (A, B, C...)
+ * when multiple enemies share the same base name.
+ * Returns a Map from instance_id to disambiguated display name.
+ *
+ * Example: two "Shadow Wisp" enemies become "Shadow Wisp A" and "Shadow Wisp B".
+ * Enemies with unique names are returned unchanged.
+ */
+export function buildEnemyDisplayNames(
+  enemies: EnemyCombatStateClient[],
+): Map<string, string> {
+  const nameCounts = new Map<string, number>();
+  for (const e of enemies) {
+    nameCounts.set(e.name_en, (nameCounts.get(e.name_en) ?? 0) + 1);
+  }
+
+  const nameIndexes = new Map<string, number>();
+  const displayNames = new Map<string, string>();
+
+  for (const e of enemies) {
+    const count = nameCounts.get(e.name_en) ?? 1;
+    if (count > 1) {
+      const idx = nameIndexes.get(e.name_en) ?? 0;
+      nameIndexes.set(e.name_en, idx + 1);
+      const suffix = String.fromCharCode(65 + idx); // A, B, C...
+      displayNames.set(e.instance_id, `${e.name_en} ${suffix}`);
+    } else {
+      displayNames.set(e.instance_id, e.name_en);
+    }
+  }
+
+  return displayNames;
 }
 
 // ── Condition Display ────────────────────────────────────────────────────────
@@ -141,13 +178,12 @@ export function formatDungeonEntry(
     lines.push(responseLine(`  ${agent.agent_name} \u2014 ${aptStr} \u2014 ${getConditionLabel(agent.condition).toUpperCase()}`));
   }
 
-  // Archetype protocol briefing (shown once per archetype, persisted via localStorage)
-  const briefingKey = `dungeon-briefing-ack:${state.archetype.toLowerCase().replace(/\s+/g, '-')}`;
-  if (!globalThis.localStorage?.getItem(briefingKey)) {
-    lines.push(systemLine(''));
-    lines.push(...formatArchetypeBriefing(state.archetype));
-    globalThis.localStorage?.setItem(briefingKey, '1');
-  }
+  // Archetype protocol briefing — always shown on dungeon entry.
+  // The protocol explains the core mechanic (visibility for Shadow,
+  // structural integrity for Tower) and is essential context for every run.
+  // Players can also recall it mid-run via the "protocol" command.
+  lines.push(systemLine(''));
+  lines.push(...formatArchetypeBriefing(state.archetype));
 
   lines.push(responseLine(''));
   lines.push(hintLine(msg('Type "map" to see the dungeon layout, "move <room>" to move.')));
@@ -539,6 +575,7 @@ export function formatEncounterChoices(
   descriptionEn: string,
   choices: EncounterChoiceClient[],
   party: AgentCombatStateClient[],
+  roomType?: string,
 ): TerminalLine[] {
   const lines: TerminalLine[] = [];
 
@@ -575,7 +612,11 @@ export function formatEncounterChoices(
   }
 
   lines.push(responseLine(''));
-  lines.push(hintLine(msg('Type "interact <number>" to choose.')));
+  if (roomType === 'rest') {
+    lines.push(hintLine(msg('Type "rest" to rest.')));
+  } else {
+    lines.push(hintLine(msg('Type "interact <number>" to choose.')));
+  }
 
   return lines;
 }

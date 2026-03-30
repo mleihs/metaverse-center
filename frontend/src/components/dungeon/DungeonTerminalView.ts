@@ -107,6 +107,10 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
       .dungeon-hud__actions {
         grid-column: 1 / -1;
         grid-row: 4;
+        /* Stack above DesperateActionsPanel (position:fixed z-index:20) which
+           otherwise intercepts clicks on dungeon action buttons at viewport bottom. */
+        position: relative;
+        z-index: 21;
       }
 
       /* ── Lobby Layout (no active dungeon) ── */

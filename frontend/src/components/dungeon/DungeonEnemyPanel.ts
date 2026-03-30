@@ -21,6 +21,7 @@ import type {
   EnemyCombatStateClient,
   TelegraphedAction,
 } from '../../types/dungeon.js';
+import { buildEnemyDisplayNames } from '../../utils/dungeon-formatters.js';
 import {
   terminalComponentTokens,
   terminalTokens,
@@ -350,6 +351,8 @@ export class VelgDungeonEnemyPanel extends SignalWatcher(LitElement) {
     const combat = dungeonState.combat.value;
     if (!combat || combat.enemies.length === 0) return nothing;
 
+    const displayNames = buildEnemyDisplayNames(combat.enemies);
+
     return html`
       <div class="panel" role="region" aria-label=${msg('Enemy status')}>
         <div class="panel__header">
@@ -359,17 +362,18 @@ export class VelgDungeonEnemyPanel extends SignalWatcher(LitElement) {
           </span>
         </div>
         <div class="enemies" role="list" aria-label=${msg('Enemies')}>
-          ${combat.enemies.map((enemy) => this._renderEnemy(enemy))}
+          ${combat.enemies.map((enemy) => this._renderEnemy(enemy, displayNames))}
         </div>
       </div>
     `;
   }
 
-  private _renderEnemy(enemy: EnemyCombatStateClient) {
+  private _renderEnemy(enemy: EnemyCombatStateClient, displayNames: Map<string, string>) {
     const variant = THREAT_BADGE[enemy.threat_level] ?? 'default';
     const isDead = !enemy.is_alive;
     const isBoss = enemy.threat_level === 'critical';
     const cond = enemy.condition_display;
+    const displayName = displayNames.get(enemy.instance_id) ?? enemy.name_en;
 
     // HP fill percentage (approximate from condition state)
     const hpPct = isDead ? 0
@@ -383,10 +387,10 @@ export class VelgDungeonEnemyPanel extends SignalWatcher(LitElement) {
       <div
         class="enemy ${isDead ? 'enemy--dead' : ''}"
         role="listitem"
-        aria-label=${`${enemy.name_en} ${isDead ? msg('defeated') : cond}`}
+        aria-label=${`${displayName} ${isDead ? msg('defeated') : cond}`}
       >
         <div class="enemy__header">
-          <span class="enemy__name">${enemy.name_en}</span>
+          <span class="enemy__name">${displayName}</span>
           <span class="enemy__threat ${isBoss ? 'enemy__threat--boss' : ''}">
             <velg-badge variant=${variant}>
               ${enemy.threat_level.toUpperCase()}
