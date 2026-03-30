@@ -180,11 +180,23 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
       .map-content {
         max-height: 180px;
         overflow: auto;
+        padding: 4px 8px;
         border-top: 1px solid
           color-mix(in srgb, var(--_border) 20%, transparent);
         background: color-mix(in srgb, var(--_screen-bg) 95%, transparent);
         scrollbar-width: thin;
         scrollbar-color: var(--_phosphor-dim) transparent;
+      }
+
+      /* ── Persistent mode heading (no toggle visible) ── */
+      .map-heading {
+        font-family: var(--font-brutalist, var(--_mono));
+        font-size: 9px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--_phosphor-dim);
+        padding: 4px 8px 0;
       }
 
       .map-svg {
@@ -505,6 +517,9 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
         ${msg('No rooms mapped')}
       </div>`;
     }
+    const heading = this.persistent
+      ? html`<div class="map-heading" aria-hidden="true">${msg('Map')}</div>`
+      : nothing;
 
     const adjacentSet = new Set(
       dungeonState.adjacentRooms.value.map((r) => r.index),
@@ -514,6 +529,7 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
     for (const n of nodes) posMap.set(n.room.index, n);
 
     return html`
+      ${heading}
       <div class="map-content" id="dungeon-map-content">
         <svg
           viewBox="0 0 ${w} ${h}"

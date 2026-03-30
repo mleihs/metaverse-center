@@ -1040,7 +1040,7 @@ export function formatAgentPicker(
         .map(([k, v]) => `${OPERATIVE_LABEL[k as import('../types/index.js').OperativeType] ?? k.toUpperCase()} ${v}`)
         .join(' | ');
     }
-    if (!aptStr) aptStr = msg('no aptitudes');
+    if (!aptStr) aptStr = msg('generalist');
 
     const num = String(i + 1).padStart(2, ' ');
     lines.push(responseLine(`  ${num}. ${agent.name.padEnd(20)} ${aptStr}`));
